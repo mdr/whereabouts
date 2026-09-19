@@ -15,7 +15,7 @@ export function Home() {
           <input
             type="text"
             maxLength={20}
-            placeholder="e.g. Matt"
+            placeholder="Your name"
             value={playerName.value}
             onInput={(e) => (playerName.value = (e.target as HTMLInputElement).value)}
           />

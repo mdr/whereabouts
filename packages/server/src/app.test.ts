@@ -308,3 +308,41 @@ async function pollErrors(p: TestPlayer, ms = 2000): Promise<string[]> {
   while (p.errors.length === 0 && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 10));
   return p.errors;
 }
+
+describe("static serving", () => {
+  let app: App;
+  let base: string;
+  let dir: string;
+
+  beforeEach(async () => {
+    const { mkdtempSync, mkdirSync, writeFileSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const path = await import("node:path");
+    dir = mkdtempSync(path.join(tmpdir(), "wa-static-"));
+    mkdirSync(path.join(dir, "assets"));
+    writeFileSync(path.join(dir, "index.html"), "<!doctype html><title>t</title>");
+    writeFileSync(path.join(dir, "assets", "index-abc123.js"), "export {};");
+    app = createApp({ staticDir: dir, logLevel: "warning" });
+    base = await app.listen(0);
+  });
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it("serves the bundle immutable and index.html with revalidation, and falls back for app routes", async () => {
+    const asset = await fetch(`${base}/assets/index-abc123.js`);
+    expect(asset.status).toBe(200);
+    expect(asset.headers.get("content-type")).toContain("javascript");
+    expect(asset.headers.get("cache-control")).toBe("public, max-age=31536000, immutable");
+
+    const index = await fetch(`${base}/`);
+    expect(index.headers.get("cache-control")).toBe("no-cache");
+    expect(index.headers.get("etag")).toBeNull();
+    expect(index.headers.get("last-modified")).toBeNull();
+
+    const fallback = await fetch(`${base}/some/app/route`);
+    expect(fallback.status).toBe(200);
+    expect(fallback.headers.get("content-type")).toContain("text/html");
+    expect(fallback.headers.get("cache-control")).toBe("no-cache");
+  });
+});

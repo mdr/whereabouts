@@ -35,7 +35,21 @@ export function createApp(options: AppOptions): App {
   fastify.get("/api/health", () => ({ ok: true }));
 
   if (options.staticDir) {
-    fastify.register(fastifyStatic, { root: options.staticDir, wildcard: false });
+    // Vite names bundled assets by content hash, so they can be cached for
+    // good; index.html must always be revalidated or a stale copy would point
+    // at assets a later deploy no longer has. File mtimes are meaningless in
+    // an immutable image (Nix sets them to the epoch), so no ETag or
+    // Last-Modified: a same-sized index.html would otherwise look unchanged.
+    fastify.register(fastifyStatic, {
+      root: options.staticDir,
+      wildcard: false,
+      etag: false,
+      lastModified: false,
+      cacheControl: false,
+      setHeaders(res, filePath) {
+        res.setHeader("Cache-Control", cacheControlFor(filePath));
+      },
+    });
     // Single-page app: unknown paths fall through to index.html.
     fastify.setNotFoundHandler((_req, reply) => reply.sendFile("index.html"));
   }
@@ -70,6 +84,11 @@ export function createApp(options: AppOptions): App {
       await fastify.close();
     },
   };
+}
+
+/** Hashed bundle assets are immutable; everything else must be revalidated. */
+export function cacheControlFor(filePath: string): string {
+  return /[/\\]assets[/\\]/.test(filePath) ? "public, max-age=31536000, immutable" : "no-cache";
 }
 
 export function defaultStaticDir(): string {

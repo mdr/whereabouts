@@ -30,6 +30,10 @@ Other commands:
   round and `node scripts/flows-smoke.mjs` for refresh mid-round, late
   joiners and play-again (run the server with
   `ROUND_MS=12000 ROUNDS=2` for those).
+- `node scripts/prod-smoke.mjs [baseUrl]` from `packages/client` checks a
+  production build actually loads the map, against `nix run` locally or the
+  live site. It catches bundling problems dev mode hides, such as the
+  MapLibre worker URL.
 
 Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
 `KERNEL` (a kernel id from `packages/shared/src/scoring.ts`),

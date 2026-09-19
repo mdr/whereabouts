@@ -121,7 +121,7 @@ function JoinAs({ code, onJoin }: { code: string; onJoin: (name: string) => void
           <input
             type="text"
             maxLength={20}
-            placeholder="e.g. Matt"
+            placeholder="Your name"
             value={name}
             onInput={(e) => setName((e.target as HTMLInputElement).value)}
             autoFocus

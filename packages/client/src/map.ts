@@ -1,8 +1,14 @@
-import { Map as MapLibreMap, NavigationControl, type GeoJSONSource } from "maplibre-gl";
+import { Map as MapLibreMap, NavigationControl, setWorkerUrl, type GeoJSONSource } from "maplibre-gl";
 import type * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+// MapLibre resolves its module worker as a sibling of its own script via
+// import.meta.url. After bundling that points into /assets where no such
+// file exists, so hand it a worker Vite has bundled and knows the URL of.
+import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { EARTH_RADIUS_KM, type LatLon } from "@whereabouts/shared";
 import type { Theme } from "./themes";
+
+setWorkerUrl(mapWorkerUrl);
 
 const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 const PAINT_SOURCE = "paint";
