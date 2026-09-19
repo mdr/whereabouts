@@ -13,6 +13,10 @@ describe("describeDisconnect", () => {
     expect(describeDisconnect(4001, undefined).title).toBe("No game with that code");
     expect(describeDisconnect(1000, "game has finished").title).toBe("That game has finished");
     expect(describeDisconnect(1000, "replaced by a newer connection").title).toBe("You joined from another tab");
+    expect(describeDisconnect(1000, "removed by the host")).toMatchObject({
+      title: "You were removed from the game",
+      removed: true,
+    });
     expect(describeDisconnect(0, "reconnect_failed").title).toBe("Lost the connection");
   });
 

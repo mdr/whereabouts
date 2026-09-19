@@ -44,9 +44,13 @@ export const ClientTopics = {
   next: "next",
   again: "again",
   rename: "rename",
+  kick: "kick",
+  end: "end",
 } as const;
 
 export const RenameSchema = z.object({ name: z.string().trim().min(1).max(20) });
+/** Host removes a player from the game. */
+export const KickSchema = z.object({ playerId: z.string().min(1).max(20) });
 
 /** Round lengths the host may pick, ms. */
 export const ROUND_LENGTHS_MS = [30_000, 45_000, 60_000, 90_000, 120_000] as const;
@@ -73,6 +77,8 @@ export const ClientMessageSchemas = {
   next: z.object({}),
   again: z.object({}),
   rename: RenameSchema,
+  kick: KickSchema,
+  end: z.object({}),
 } as const;
 
 // ---- server -> client ------------------------------------------------------

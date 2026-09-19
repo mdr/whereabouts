@@ -21,6 +21,7 @@ import {
   cellToParent,
   getHexagonEdgeLengthAvg,
   getResolution,
+  cellsToMultiPolygon,
   gridDisk,
   gridDiskDistances,
   gridDistance,
@@ -115,6 +116,12 @@ export class PaintLayer {
     const res = this.stampResolution(radiusKm);
     const rings = Math.min(MAX_RINGS, Math.max(1, Math.round(radiusKm / cellSpacingKm(res))));
     return { res, rings };
+  }
+
+  /** The cells a stamp of this radius at `at` would touch, for previewing its footprint. */
+  stampCells(at: LatLon, radiusKm: number): string[] {
+    const { res, rings } = this.stampPlan(radiusKm);
+    return gridDisk(latLngToCell(at.lat, at.lon, res), rings);
   }
 
   /**
@@ -428,4 +435,9 @@ export function compactRecord(cells: Record<string, number>, budget = PAINT_CELL
     count = Object.keys(current).length;
   }
   return current;
+}
+
+/** Outline of a set of cells as one GeoJSON MultiPolygon, e.g. a brush footprint. */
+export function cellsOutline(cells: string[]): GeoJSON.MultiPolygon {
+  return { type: "MultiPolygon", coordinates: cellsToMultiPolygon(cells, true) };
 }

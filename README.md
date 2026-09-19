@@ -30,6 +30,8 @@ Other commands:
   round and `node scripts/flows-smoke.mjs` for refresh mid-round, late
   joiners and play-again (run the server with
   `ROUND_MS=12000 ROUNDS=2` for those).
+  `node scripts/host-smoke.mjs` covers removing a player, rejoining as a
+  new one, ending the game early and the brush footprint.
 - `node scripts/prod-smoke.mjs [baseUrl]` from `packages/client` checks a
   production build actually loads the map, against `nix run` locally or the
   live site. It catches bundling problems dev mode hides, such as the
@@ -117,6 +119,12 @@ pnpm workspace with three packages:
   reconnect (a browser refresh is the common case). The host keeps the role
   while away; the longest-standing connected player acts as host meanwhile.
   In the lobby a departing host hands over for good.
+- The host can remove a player from any player list (the lobby, the players
+  panel during a round, the reveal scores). Their seat, score and paint go
+  and that tab cannot reclaim them; they may rejoin with the code as a new
+  player. The host can also end the game early: the running round is scored
+  as it stands and everyone goes to the final standings. Both are host-only;
+  ending asks for a second click.
 - State is in memory on a single server process; a restart ends games in
   progress.
 
@@ -157,6 +165,8 @@ pnpm workspace with three packages:
   paint onto a grid an eighth of their width before the pair sum. The live
   score card and the reveal show the score under every kernel side by side.
 - **Reveal** shows the answer, rings at one and two tolerances, and the score.
+  Country borders and place names are switched on for the reveal and off
+  again for the next round, since they are hints while guessing.
   In dev mode it also shows `A` and `B` and a live "score if the answer were
   here" readout on hover.
 
@@ -171,8 +181,10 @@ pnpm workspace with three packages:
 | Zoom                | scroll wheel                                         |
 | Submit / next       | `Enter`                                              |
 
-The dashed amber cursor ring is one tolerance; the solid ring that appears
-while you drag is the brush. Place names, country borders, man-made detail
+The dashed amber cursor ring is one tolerance. The outline under the pointer
+is the brush footprint: the exact hex cells the next stamp will touch, at the
+resolution the layer picks for that brush size, so at world zoom you see the
+large cells you are about to lay down. It is dotted when erasing. Place names, country borders, man-made detail
 (roads, railways, buildings, airports, urban land use), and inland water
 (rivers, lakes) are all hidden. Coastlines, woodland and ice stay visible.
 

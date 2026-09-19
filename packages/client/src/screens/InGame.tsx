@@ -11,6 +11,7 @@ import { ConnectionDev } from "../ui/ConnectionDev";
 import { Reveal } from "./Reveal";
 import { Icon } from "../ui/icons";
 import { PlayersPanel } from "../ui/PlayersPanel";
+import { EndGameButton } from "../ui/HostControls";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint();
@@ -95,7 +96,13 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
         </div>
         <div class="hud-right">
-          <PlayersPanel view={view} />
+          <PlayersPanel view={view} onKick={view.you.isHost ? (p) => conn.kick(p.id) : undefined} />
+          {view.you.isHost && (
+            <EndGameButton
+              onEnd={() => conn.end()}
+              title="Score this round as it stands and show the final standings"
+            />
+          )}
         </div>
         {!view.you.spectating && (
           <PaintTools>

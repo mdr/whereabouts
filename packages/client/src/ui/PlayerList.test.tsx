@@ -91,3 +91,20 @@ describe("HostTag", () => {
     expect(container.textContent).toBe("host");
   });
 });
+
+describe("PlayerList kick", () => {
+  it("offers a remove button on other players' rows only when asked", () => {
+    const kicked: string[] = [];
+    const players = [player({ id: "p1" }), player({ id: "p2", name: "Bob" })];
+    const { container: plain } = render(<PlayerList players={players} you="p1" showScores={false} />);
+    expect(plain.querySelector("button.kick")).toBeNull();
+    const { container } = render(
+      <PlayerList players={players} you="p1" showScores={false} onKick={(p) => kicked.push(p.id)} />,
+    );
+    const buttons = container.querySelectorAll<HTMLButtonElement>("button.kick");
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0]!.getAttribute("aria-label")).toBe("Remove Bob from the game");
+    buttons[0]!.click();
+    expect(kicked).toEqual(["p2"]);
+  });
+});

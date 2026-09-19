@@ -26,7 +26,13 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
         </button>
         <ConnectionNote conn={conn} />
         <h2>Players</h2>
-        <PlayerList players={view.players} you={view.you.id} showScores={false} onRename={() => setRenaming(true)} />
+        <PlayerList
+          players={view.players}
+          you={view.you.id}
+          showScores={false}
+          onRename={() => setRenaming(true)}
+          onKick={view.you.isHost ? (p) => conn.kick(p.id) : undefined}
+        />
         {renaming && (
           <RenameForm
             current={current}

@@ -28,6 +28,7 @@ export function PlayerList({
   arrows,
   showLocked,
   onRename,
+  onKick,
 }: {
   players: PlayerView[];
   you: string;
@@ -37,6 +38,8 @@ export function PlayerList({
   showLocked?: boolean;
   /** When given, your own row gets a pencil that calls this. */
   onRename?: () => void;
+  /** Host only: when given, every other row gets a remove button that calls this. */
+  onKick?: (player: PlayerView) => void;
 }) {
   return (
     <ul class="players">
@@ -60,6 +63,19 @@ export function PlayerList({
             {isYou && onRename && (
               <button class="icon" title="Change your name" aria-label="Change your name" onClick={onRename}>
                 ✎
+              </button>
+            )}
+            {!isYou && onKick && (
+              <button
+                class="icon kick"
+                title={`Remove ${p.name} from the game`}
+                aria-label={`Remove ${p.name} from the game`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onKick(p);
+                }}
+              >
+                <Icon name="kick" size={13} />
               </button>
             )}
             {showScores && (

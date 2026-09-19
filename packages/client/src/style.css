@@ -521,21 +521,9 @@ kbd {
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
-/* The brush ring only shows mid-stroke; the tolerance ring is always there. */
-#brush-cursor .ring.brush {
-  border: 1.5px solid var(--ring-brush);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
-  opacity: 0;
-  transition: opacity 120ms;
-}
-#brush-cursor.painting .ring.brush {
-  opacity: 1;
-}
+/* The brush footprint is drawn on the map itself (see GameMap.setCursorFootprint). */
 #brush-cursor .ring.tolerance {
   border: 1.5px dashed var(--ring-tol);
-}
-#brush-cursor.erase .ring.brush {
-  border-style: dotted;
 }
 
 .compare {
@@ -940,4 +928,16 @@ button.primary kbd {
 .settings select {
   font-size: 14px;
   padding: 8px 10px;
+}
+
+/* ---- host controls ------------------------------------------------------------ */
+button.icon.kick:hover {
+  color: var(--danger);
+}
+.reveal-list button.icon {
+  margin-right: 6px;
+}
+.hud-right .end-game {
+  align-self: flex-end;
+  font-size: 12px;
 }

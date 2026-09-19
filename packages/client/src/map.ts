@@ -5,7 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 // import.meta.url. After bundling that points into /assets where no such
 // file exists, so hand it a worker Vite has bundled and knows the URL of.
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-import { EARTH_RADIUS_KM, type LatLon } from "@whereabouts/shared";
+import { EARTH_RADIUS_KM, cellsOutline, type LatLon } from "@whereabouts/shared";
 import type { Theme } from "./themes";
 
 setWorkerUrl(mapWorkerUrl);
@@ -13,6 +13,7 @@ setWorkerUrl(mapWorkerUrl);
 const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 const PAINT_SOURCE = "paint";
 const REVEAL_SOURCE = "reveal";
+const CURSOR_SOURCE = "cursor";
 
 /** World circumference at the equator in metres, for metres-per-pixel maths. */
 const WORLD_M = 40075016.686;
@@ -145,6 +146,29 @@ export class GameMap {
         "circle-stroke-width": 2.5,
       },
     });
+
+    // Brush footprint: the exact cells the next stamp would touch.
+    this.map.addSource(CURSOR_SOURCE, {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
+    this.map.addLayer({
+      id: "cursor-fill",
+      type: "fill",
+      source: CURSOR_SOURCE,
+      paint: { "fill-color": "#ffffff", "fill-opacity": 0.08 },
+    });
+    this.map.addLayer({
+      id: "cursor-outline",
+      type: "line",
+      source: CURSOR_SOURCE,
+      paint: {
+        "line-color": "#ffffff",
+        "line-width": 1.5,
+        "line-opacity": 0.9,
+        "line-dasharray": ["case", ["==", ["get", "erase"], true], ["literal", [1, 1.5]], ["literal", [1, 0]]],
+      },
+    });
   }
 
   applyTheme(t: Theme): void {
@@ -174,6 +198,8 @@ export class GameMap {
     set("reveal-rings", "line-color", t.answer);
     set("reveal-answer", "circle-color", t.answer);
     set("reveal-answer", "circle-stroke-color", t.answerStroke);
+    set("cursor-fill", "fill-color", t.brush);
+    set("cursor-outline", "line-color", t.brush);
     document.documentElement.style.setProperty("--ring-brush", t.brush);
     document.documentElement.style.setProperty("--ring-tol", t.answer);
   }
@@ -206,6 +232,14 @@ export class GameMap {
 
   setPaint(data: GeoJSON.FeatureCollection): void {
     void this.source(PAINT_SOURCE)?.setData(data);
+  }
+
+  /** Outline the cells the next stamp would touch; null hides it. Dotted when erasing. */
+  setCursorFootprint(cells: string[] | null, erase = false): void {
+    const features: GeoJSON.Feature[] = cells
+      ? [{ type: "Feature", properties: { erase }, geometry: cellsOutline(cells) }]
+      : [];
+    void this.source(CURSOR_SOURCE)?.setData({ type: "FeatureCollection", features });
   }
 
   /**

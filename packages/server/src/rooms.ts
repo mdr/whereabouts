@@ -149,9 +149,21 @@ export class GameRoom extends Room<ActorData> {
         return this.game.again(token, now);
       case "rename":
         return this.game.rename(token, (data as z.infer<typeof ClientMessageSchemas.rename>).name);
+      case "kick":
+        return this.removePlayer(token, (data as z.infer<typeof ClientMessageSchemas.kick>).playerId, now);
+      case "end":
+        return this.game.end(token);
       default:
         return { ok: false as const, error: "unknown topic" };
     }
+  }
+
+  /** Remove a player from the game and close their connection, telling them why. */
+  private removePlayer(token: string, playerId: string, now: number) {
+    const target = this.game.tokenOf(playerId);
+    const result = this.game.kick(token, playerId, now);
+    if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick("removed by the host");
+    return result;
   }
 
   private sendError(actor: Actor<ActorData>, message: string): void {

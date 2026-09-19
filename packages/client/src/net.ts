@@ -65,6 +65,8 @@ export class Connection {
       const view = JSON.parse(this.decoder.decode(payload)) as GameView;
       this.clockOffset.value = view.serverTime - Date.now();
       this.view.value = view;
+      // A fresh state means the server is happy with us; stop showing an old complaint.
+      this.lastError.value = null;
     });
     client.on("error", (payload) => {
       const { message } = JSON.parse(this.decoder.decode(payload)) as { message: string };
@@ -109,6 +111,12 @@ export class Connection {
   rename(name: string): void {
     this.send("rename", { name });
   }
+  kick(playerId: string): void {
+    this.send("kick", { playerId });
+  }
+  end(): void {
+    this.send("end");
+  }
 
   /** Local-clock ms until a server deadline. */
   msUntil(serverEpochMs: number): number {
@@ -119,6 +127,8 @@ export class Connection {
 export interface Rejection {
   title: string;
   detail: string;
+  /** Set when the host removed this player; the client then forgets its seat token. */
+  removed?: boolean;
 }
 
 /**
@@ -132,6 +142,13 @@ export function describeDisconnect(code: number, reason: string | undefined): Re
     return {
       title: "That game has ended",
       detail: "Everyone left, so the room was closed. Game codes only live while someone is in the game.",
+    };
+  }
+  if (r.includes("removed by the host")) {
+    return {
+      title: "You were removed from the game",
+      detail: "The host took you out of this game. You can rejoin with the code as a new player, or start your own.",
+      removed: true,
     };
   }
   if (r.includes("game has finished")) {

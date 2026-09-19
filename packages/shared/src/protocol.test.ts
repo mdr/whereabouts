@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PaintSubmissionSchema, decodeTicket, encodeTicket, type Ticket } from "./protocol.ts";
+import { KickSchema, PaintSubmissionSchema, decodeTicket, encodeTicket, type Ticket } from "./protocol.ts";
 
 describe("ticket codec", () => {
   const ticket: Ticket = { v: 1, token: "0123456789abcdef0123456789abcdef", name: "Zoë 🌍", code: "AB12" };
@@ -50,5 +50,13 @@ describe("ConfigureSchema", () => {
     expect(ConfigureSchema.safeParse({ rounds: 0 }).success).toBe(false);
     expect(ConfigureSchema.safeParse({ rounds: 16 }).success).toBe(false);
     expect(ConfigureSchema.safeParse({ roundMs: 61_000 }).success).toBe(false);
+  });
+});
+
+describe("kick schema", () => {
+  it("needs a player id", () => {
+    expect(KickSchema.safeParse({ playerId: "p2" }).success).toBe(true);
+    expect(KickSchema.safeParse({}).success).toBe(false);
+    expect(KickSchema.safeParse({ playerId: "" }).success).toBe(false);
   });
 });

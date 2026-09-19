@@ -16,6 +16,7 @@ import { ConnectionDev } from "../ui/ConnectionDev";
 import { PaintDev } from "../ui/PaintTools";
 import { Icon } from "../ui/icons";
 import { HostTag } from "../ui/PlayerList";
+import { EndGameButton } from "../ui/HostControls";
 
 export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reveal: RevealView }) {
   const paint = usePaint();
@@ -27,6 +28,17 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
     paint.enabled.value = false;
     paint.gameMap.showReveal(reveal.answer, reveal.question.toleranceKm);
   }, [reveal.index]);
+
+  // Borders and place names help make sense of the answer; they are hints
+  // while guessing, so they go back off when the reveal unmounts.
+  useEffect(() => {
+    paint.gameMap.setBorders(true);
+    paint.gameMap.setLabels(true);
+    return () => {
+      paint.gameMap.setBorders(false);
+      paint.gameMap.setLabels(false);
+    };
+  }, []);
 
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
@@ -93,6 +105,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
                   ready={ready.has(p.id)}
                   selected={p.id === selected}
                   onSelect={() => setSelected(selected === p.id ? null : p.id)}
+                  onKick={view.you.isHost && p.id !== view.you.id ? () => conn.kick(p.id) : undefined}
                 />
               ))}
             </ul>
@@ -110,6 +123,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
           ) : (
             iAmReady && <span class="hint">Waiting for the others…</span>
           )}
+          {view.you.isHost && !last && <EndGameButton onEnd={() => conn.end()} />}
         </div>
       </div>
       <DevDrawer>
@@ -140,6 +154,7 @@ function RevealRow({
   ready,
   selected,
   onSelect,
+  onKick,
 }: {
   p: PlayerView;
   r?: RoundResultView;
@@ -147,6 +162,8 @@ function RevealRow({
   ready: boolean;
   selected: boolean;
   onSelect: () => void;
+  /** Host only: remove this player. */
+  onKick?: () => void;
 }) {
   const delta = p.previousRank !== null ? p.previousRank - p.rank : 0;
   return (
@@ -162,6 +179,19 @@ function RevealRow({
           </span>
         )}
       </span>
+      {onKick && (
+        <button
+          class="icon kick"
+          title={`Remove ${p.name} from the game`}
+          aria-label={`Remove ${p.name} from the game`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onKick();
+          }}
+        >
+          <Icon name="kick" size={13} />
+        </button>
+      )}
       <span class="round-score">{r ? (r.paint ? `+${Math.round(r.score)}` : "no guess") : "sat out"}</span>
       <span class={`arrow ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
         {delta > 0 ? "▲" : delta < 0 ? "▼" : ""}

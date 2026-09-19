@@ -30,6 +30,11 @@ export const soloKernelId = persisted<string>("wa.kernel", "single");
  */
 export const playerToken = persisted<string>("wa.token", randomToken(), sessionStorage);
 
+/** Forget this tab's seat, e.g. after the host removed us; the next join is as a new player. */
+export function resetPlayerToken(): void {
+  playerToken.value = randomToken();
+}
+
 function randomToken(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);

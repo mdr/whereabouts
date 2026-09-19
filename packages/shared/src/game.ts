@@ -68,6 +68,8 @@ export class Game {
   private ready_ = new Set<string>();
   private reveal: RevealView | null = null;
   private results: FinalStanding[] | null = null;
+  /** Tokens the host has removed; they may not reclaim a seat. */
+  private kicked = new Set<string>();
 
   private seed: number;
 
@@ -90,6 +92,7 @@ export class Game {
       if (this.hostToken === null) this.hostToken = token;
       return OK_CHANGED;
     }
+    if (this.kicked.has(token)) return fail("removed by the host");
     if (this.phase === "results") return fail("game has finished");
     const player: Player = {
       id: `p${this.nextPlayerId++}`,
@@ -207,6 +210,40 @@ export class Game {
     return OK_CHANGED;
   }
 
+  /** The token behind a public player id, for the server to act on a kick. */
+  tokenOf(playerId: string): string | undefined {
+    for (const p of this.players.values()) if (p.id === playerId) return p.token;
+    return undefined;
+  }
+
+  /**
+   * Remove a player. Their seat, score and paint go; their token may not
+   * rejoin (a fresh token can, as a new player). The acting host may remove
+   * an absent host, in which case the role passes on.
+   */
+  kick(token: string, playerId: string, now: number): CommandResult {
+    if (!this.isHost(token)) return fail("only the host can remove players");
+    const target = this.tokenOf(playerId);
+    if (target === undefined) return fail("unknown player");
+    if (target === token) return fail("you cannot remove yourself");
+    this.players.delete(target);
+    this.submissions.delete(target);
+    this.ready_.delete(target);
+    this.kicked.add(target);
+    if (this.hostToken === target) this.hostToken = this.pickHost();
+    this.settleIfEveryoneDone(now);
+    return OK_CHANGED;
+  }
+
+  /** Stop after the current round: score it if it is still running, then show final standings. */
+  end(token: string): CommandResult {
+    if (!this.isHost(token)) return fail("only the host can end the game");
+    if (this.phase === "guessing") this.finishRound();
+    else if (this.phase !== "reveal") return fail("nothing to end");
+    this.finish();
+    return OK_CHANGED;
+  }
+
   // ---- player commands -----------------------------------------------------
 
   rename(token: string, name: string): CommandResult {
@@ -220,10 +257,13 @@ export class Game {
   setPaint(token: string, paint: PaintSubmission): CommandResult {
     const player = this.players.get(token);
     if (!player) return fail("unknown player");
-    if (this.phase !== "guessing") return fail("not guessing");
+    // Uploads are debounced on the client, so one can arrive just after the
+    // round ended. It is stale rather than wrong: drop it quietly.
+    if (this.phase !== "guessing") return OK_SAME;
     if (player.joinedRound > this.roundIndex) return fail("spectating this round");
     const current = this.submissions.get(token);
-    if (current?.locked) return fail("already locked");
+    // A stroke's upload can land just after the player locked in; it changes nothing.
+    if (current?.locked) return OK_SAME;
     this.submissions.set(token, { paint, locked: false });
     // Paint is private until the reveal, so other views do not change.
     return OK_SAME;
@@ -350,6 +390,10 @@ export class Game {
       this.beginRound(this.roundIndex + 1, now);
       return;
     }
+    this.finish();
+  }
+
+  private finish(): void {
     this.phase = "results";
     this.reveal = null;
     this.results = [...this.players.values()]

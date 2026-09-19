@@ -35,7 +35,6 @@ export class PaintController {
   private lastStampPoint: Point | null = null;
   private renderQueued = false;
   private cursorEl: HTMLElement;
-  private brushRing: HTMLElement;
   private tolRing: HTMLElement;
   private hoverListeners = new Set<(pos: LatLon) => void>();
   private disposers: (() => void)[] = [];
@@ -47,11 +46,9 @@ export class PaintController {
     this.cursorEl = document.createElement("div");
     this.cursorEl.id = "brush-cursor";
     this.cursorEl.hidden = true;
-    this.brushRing = document.createElement("div");
-    this.brushRing.className = "ring brush";
     this.tolRing = document.createElement("div");
     this.tolRing.className = "ring tolerance";
-    this.cursorEl.append(this.brushRing, this.tolRing);
+    this.cursorEl.append(this.tolRing);
     container.appendChild(this.cursorEl);
 
     const map = gameMap.map;
@@ -73,7 +70,7 @@ export class PaintController {
       for (const l of this.hoverListeners) l({ lat: e.lngLat.lat, lon: e.lngLat.lng });
     };
     const onOut = () => {
-      this.cursorEl.hidden = true;
+      this.hideCursor();
     };
     const onUp = () => {
       this.painting = false;
@@ -256,7 +253,7 @@ export class PaintController {
     const el = map.getContainer();
     el.classList.toggle("tool-paint", canPaint && this.tool.value === "paint");
     el.classList.toggle("tool-erase", canPaint && this.tool.value === "erase");
-    if (!canPaint) this.cursorEl.hidden = true;
+    if (!canPaint) this.hideCursor();
   }
 
   private brushRadiusKm(lat: number): number {
@@ -265,7 +262,7 @@ export class PaintController {
 
   private updateCursor(point: Point, lngLat: LngLat): void {
     if (!this.canPaint()) {
-      this.cursorEl.hidden = true;
+      this.hideCursor();
       return;
     }
     this.cursorEl.hidden = false;
@@ -273,9 +270,19 @@ export class PaintController {
     this.cursorEl.classList.toggle("erase", this.tool.value === "erase");
     const mpp = this.gameMap.metersPerPixel(lngLat.lat);
     const tolPx = (this.toleranceKm.value * 1000) / mpp;
-    const px = this.brushPx.value;
-    this.brushRing.style.width = this.brushRing.style.height = `${px * 2}px`;
     this.tolRing.style.width = this.tolRing.style.height = `${tolPx * 2}px`;
+    // The brush itself is shown as the real footprint of the next stamp: the
+    // hex cells it would touch, at the resolution the layer would pick.
+    const at = { lat: lngLat.lat, lon: lngLat.lng };
+    this.gameMap.setCursorFootprint(
+      this.layer.stampCells(at, this.brushRadiusKm(lngLat.lat)),
+      this.tool.value === "erase",
+    );
+  }
+
+  private hideCursor(): void {
+    this.cursorEl.hidden = true;
+    this.gameMap.setCursorFootprint(null);
   }
 
   private stampAt(lngLat: LngLat): void {

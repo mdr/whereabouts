@@ -4,13 +4,13 @@
  * the session.
  */
 import { signal } from "@preact/signals";
-import type { GameView } from "@whereabouts/shared";
+import type { GameView, PlayerView } from "@whereabouts/shared";
 import { PlayerList } from "./PlayerList";
 import { Icon } from "./icons";
 
 const expanded = signal(false);
 
-export function PlayersPanel({ view }: { view: GameView }) {
+export function PlayersPanel({ view, onKick }: { view: GameView; onKick?: (player: PlayerView) => void }) {
   const online = view.players.filter((p) => p.connected).length;
   const open = expanded.value;
   return (
@@ -30,7 +30,13 @@ export function PlayersPanel({ view }: { view: GameView }) {
       </button>
       {open && (
         <div class="card players-card">
-          <PlayerList players={view.players} you={view.you.id} showScores showLocked={view.phase === "guessing"} />
+          <PlayerList
+            players={view.players}
+            you={view.you.id}
+            showScores
+            showLocked={view.phase === "guessing"}
+            onKick={onKick}
+          />
         </div>
       )}
     </div>

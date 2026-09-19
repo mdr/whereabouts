@@ -125,7 +125,7 @@ describe("round loop", () => {
     g.setPaint("tokA", paintAt(q, 0, 0));
     expect(g.lock("tokA", T0)).toEqual({ ok: true, changed: true });
     expect(g.view("tokA", T0).you.locked).toBe(true);
-    expect(g.setPaint("tokA", paintAt(q, 1, 1))).toEqual({ ok: false, error: "already locked" });
+    expect(g.setPaint("tokA", paintAt(q, 1, 1))).toEqual({ ok: true, changed: false }); // stale upload, ignored
   });
 
   it("the round ends as soon as every active connected player has locked in", () => {
@@ -380,5 +380,81 @@ describe("configure", () => {
     const players = g.view("tokB", T0 + 1).players;
     expect(players.find((p) => p.id === "p1")!.locked).toBe(true);
     expect(players.find((p) => p.id === "p2")!.locked).toBe(false);
+  });
+});
+
+describe("host removes a player", () => {
+  it("drops their seat and paint, bans the token, and lets a fresh token in", () => {
+    const g = twoPlayerGame();
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    g.setPaint("tokB", paintAt(q, q.answer.lat, q.answer.lon));
+    const bobId = g.view("tokB", T0).you.id;
+    expect(g.kick("tokB", g.view("tokA", T0).you.id, T0)).toEqual({
+      ok: false,
+      error: "only the host can remove players",
+    });
+    expect(g.kick("tokA", g.view("tokA", T0).you.id, T0)).toEqual({ ok: false, error: "you cannot remove yourself" });
+    expect(g.kick("tokA", "nope", T0)).toEqual({ ok: false, error: "unknown player" });
+    expect(g.kick("tokA", bobId, T0).ok).toBe(true);
+    expect(g.playerTokens).toEqual(["tokA"]);
+    expect(g.join("tokB", "Bob again", T0)).toEqual({ ok: false, error: "removed by the host" });
+    expect(g.join("tokC", "Carol", T0).ok).toBe(true);
+    // Bob's paint must not surface when the round ends.
+    g.setPaint("tokA", paintAt(q, 0, 0));
+    g.lock("tokA", T0);
+    expect(g.phase).toBe("reveal");
+    expect(g.view("tokA", T0).reveal!.results.map((r) => r.playerId)).not.toContain(bobId);
+  });
+
+  it("removing the last unlocked player ends the round; removing an absent host passes the role", () => {
+    const g = twoPlayerGame();
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    g.setPaint("tokA", paintAt(q, 0, 0));
+    g.lock("tokA", T0);
+    expect(g.phase).toBe("guessing");
+    g.kick("tokA", g.view("tokB", T0).you.id, T0);
+    expect(g.phase).toBe("reveal");
+
+    const h = twoPlayerGame();
+    h.start("tokA", T0);
+    h.disconnect("tokA", T0);
+    // Bob acts as host while Alice is away, and may remove her for good.
+    const alice = h.view("tokB", T0).players.find((p) => !p.connected)!;
+    expect(h.kick("tokB", alice.id, T0).ok).toBe(true);
+    expect(h.playerTokens).toEqual(["tokB"]);
+    expect(h.view("tokB", T0).you.isHost).toBe(true);
+    // Alice reconnecting does not get her seat or the role back.
+    expect(h.join("tokA", "Alice", T0).ok).toBe(false);
+  });
+});
+
+describe("host ends the game early", () => {
+  it("scores the running round and jumps to results; only the host; nothing to end in the lobby", () => {
+    const g = twoPlayerGame(3);
+    expect(g.end("tokA")).toEqual({ ok: false, error: "nothing to end" });
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    g.setPaint("tokA", paintAt(q, q.answer.lat, q.answer.lon));
+    expect(g.end("tokB")).toEqual({ ok: false, error: "only the host can end the game" });
+    expect(g.end("tokA").ok).toBe(true);
+    expect(g.phase).toBe("results");
+    const results = g.view("tokA", T0).results!;
+    expect(results[0]!.rounds).toHaveLength(1);
+    expect(results[0]!.total).toBeGreaterThan(500);
+  });
+
+  it("works from the reveal too", () => {
+    const g = twoPlayerGame(3);
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    g.setPaint("tokA", paintAt(q, 0, 0));
+    g.setPaint("tokB", paintAt(q, 0, 0));
+    g.lock("tokA", T0);
+    g.lock("tokB", T0);
+    expect(g.phase).toBe("reveal");
+    expect(g.end("tokA").ok).toBe(true);
+    expect(g.phase).toBe("results");
   });
 });

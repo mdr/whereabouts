@@ -1,7 +1,7 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { Connection } from "../net";
-import { joinedCode, nameHandoff, playerName, playerToken } from "../settings";
+import { joinedCode, nameHandoff, playerName, playerToken, resetPlayerToken } from "../settings";
 import { navigate } from "../router";
 import { MapView } from "../ui/MapView";
 import { Lobby } from "./Lobby";
@@ -56,6 +56,15 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
     joinedCode.value = assigned;
     if (create) history.replaceState(null, "", `#/game/${assigned}`);
   }, [assigned]);
+
+  // Removed by the host: this tab's token is banned from that game, so drop
+  // it (and the remembered code) and rejoin, if at all, as a new player.
+  const removed = conn.rejection.value?.removed ?? false;
+  useEffect(() => {
+    if (!removed) return;
+    resetPlayerToken();
+    joinedCode.value = "";
+  }, [removed]);
 
   const status = conn.status.value;
   const view = conn.view.value;
