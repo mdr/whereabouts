@@ -5,19 +5,32 @@ on:
     branches: [main]
   pull_request:
 
+# Nix in CI, kept simple: the installer action plus cache.nixos.org. The
+# checks only realise a dev shell whose every path is in the public cache,
+# so a per-repo Nix cache buys nothing there and the Magic Nix Cache's
+# post-run upload was costing one to three minutes per run. What does need
+# caching across runs is the pnpm store, which actions/cache handles.
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v16
-      - uses: DeterminateSystems/magic-nix-cache-action@v9
+      - name: Locate pnpm store
+        id: pnpm
+        run: echo "dir=$(nix develop .#ci -c pnpm store path)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm.outputs.dir }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-${{ runner.os }}-
       - name: Install dependencies
-        run: nix develop -c pnpm install --frozen-lockfile
+        run: nix develop .#ci -c pnpm install --frozen-lockfile
       - name: Typecheck, lint, format, test
-        run: nix develop -c pnpm check
+        run: nix develop .#ci -c pnpm check
       - name: Build client
-        run: nix develop -c pnpm build
+        run: nix develop .#ci -c pnpm build
 
   # Build the container with Nix, push it to Fly's registry tagged with the
   # commit, and roll it out. Needs the FLY_API_TOKEN secret: a deploy token
@@ -48,8 +61,14 @@ jobs:
         if: steps.token.outputs.present == 'true'
       - uses: DeterminateSystems/nix-installer-action@v16
         if: steps.token.outputs.present == 'true'
+      # The one thing worth caching between deploys is the pnpm dependency
+      # fetch (a fixed-output derivation that changes only with the
+      # lockfile). The Magic Nix Cache does that; it is on a best-effort,
+      # reverse-engineered GitHub cache API, so a failure here is harmless.
       - uses: DeterminateSystems/magic-nix-cache-action@v9
         if: steps.token.outputs.present == 'true'
+        with:
+          use-flakehub: false
       - name: Build image
         if: steps.token.outputs.present == 'true'
         run: nix build .#image --no-link --print-out-paths > image-streamer

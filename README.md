@@ -18,7 +18,9 @@ players because the reconnect token lives in session storage.
 Other commands:
 
 - `pnpm check`: typecheck, ESLint (type-aware), Prettier check and all tests.
-  CI runs exactly this plus the client build, inside the same Nix shell.
+  CI runs exactly this plus the client build, in a slimmer Nix shell
+  (`nix develop .#ci`: node, pnpm and jq) whose paths all come from
+  cache.nixos.org; the pnpm store is cached between runs with actions/cache.
 - `pnpm test`: unit tests for scoring, paint, the game state machine, the
   protocol codec, server config and client components, plus end-to-end
   server tests that drive the real server over WebSockets with the browser

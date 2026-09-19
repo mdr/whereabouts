@@ -136,6 +136,15 @@
           '';
         };
 
+        # What the checks need and nothing else: every path here comes
+        # straight from cache.nixos.org, so CI needs no cache of its own.
+        devShells.ci = pkgs.mkShell {
+          packages = [ nodejs pnpm pkgs.jq ];
+          COREPACK_ENABLE_STRICT = "0";
+          COREPACK_ENABLE_AUTO_PIN = "0";
+          COREPACK_ENABLE_NETWORK = "0";
+        };
+
         # Just what CI needs to push an image and deploy it.
         devShells.deploy = pkgs.mkShell { packages = deployTools; };
       });
