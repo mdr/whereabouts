@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { commonsImageUrl, commonsPageUrl, type QuestionView } from "@whereabouts/shared";
+import { Icon } from "./icons";
 
 export function fmtKm(km: number): string {
   return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km).toLocaleString()} km`;
@@ -51,17 +52,7 @@ export function QuestionCard({ q, children }: { q: QuestionView; children?: Comp
   return (
     <div class="card question">
       <p class="prompt">{q.prompt}</p>
-      {q.image && (
-        <>
-          <img src={commonsImageUrl(q.image)} alt="" referrerpolicy="no-referrer" />
-          <div class="credit">
-            Image:{" "}
-            <a href={commonsPageUrl(q.image)} target="_blank" rel="noopener">
-              Wikimedia Commons
-            </a>
-          </div>
-        </>
-      )}
+      {q.image && <QuestionImage image={q.image} />}
       <div class="tolerance" title="Credit halves at this distance from the true spot; shown as the dashed ring.">
         <span class="swatch" />
         <span>
@@ -70,6 +61,50 @@ export function QuestionCard({ q, children }: { q: QuestionView; children?: Comp
       </div>
       {children}
     </div>
+  );
+}
+
+/**
+ * The question photo. Click it to enlarge over the map; click again or press
+ * Escape to shrink back. The Wikimedia Commons credit sits behind a small
+ * info icon linking to the file page.
+ */
+function QuestionImage({ image }: { image: string }) {
+  const [large, setLarge] = useState(false);
+  useEffect(() => {
+    if (!large) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLarge(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [large]);
+  const credit = (
+    <a
+      class="credit-icon"
+      href={commonsPageUrl(image)}
+      target="_blank"
+      rel="noopener"
+      title="Image from Wikimedia Commons"
+      aria-label="Image credit: Wikimedia Commons"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <Icon name="info" size={14} />
+    </a>
+  );
+  return (
+    <>
+      <div class="thumb" title="Click to enlarge">
+        <img src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" onClick={() => setLarge(true)} />
+        {credit}
+      </div>
+      {large && (
+        <div class="lightbox" onClick={() => setLarge(false)} title="Click or press Escape to shrink">
+          <img src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
+          {credit}
+        </div>
+      )}
+    </>
   );
 }
 
