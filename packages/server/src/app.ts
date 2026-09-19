@@ -7,7 +7,6 @@ import { fileURLToPath } from "node:url";
 import Fastify, { type FastifyInstance } from "fastify";
 import fastifyStatic from "@fastify/static";
 import { Rivalis } from "@rivalis/core";
-import type { LoggerLevel } from "@toolcase/logging";
 import WSTransport from "./vendor/WSTransport.ts";
 import { GameAuth, GameRoom, ROOM_TYPE, type ActorData } from "./rooms.ts";
 
@@ -17,7 +16,7 @@ export interface AppOptions {
   allowedOrigins?: string[];
   logger?: boolean;
   /** Rivalis log level; defaults to info. */
-  logLevel?: LoggerLevel;
+  logLevel?: Rivalis["logging"]["level"];
 }
 
 export interface App {
