@@ -28,6 +28,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
       paint.version.value++;
     }
     paint.gameMap.clearReveal();
+    paint.gameMap.resetView();
     paint.showOwn();
     paint.tool.value = "paint";
     lastSentVersion.current = paint.version.peek();

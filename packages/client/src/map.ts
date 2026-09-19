@@ -10,6 +10,8 @@ const REVEAL_SOURCE = "reveal";
 
 /** World circumference at the equator in metres, for metres-per-pixel maths. */
 const WORLD_M = 40075016.686;
+const WORLD_CENTER: [number, number] = [10, 25];
+const WORLD_ZOOM = 1.6;
 /** MapLibre's world is 512 px wide at zoom 0. */
 const WORLD_PX_Z0 = 512;
 
@@ -30,8 +32,8 @@ export class GameMap {
     this.map = new MapLibreMap({
       container,
       style: STYLE_URL,
-      center: [10, 25],
-      zoom: 1.6,
+      center: WORLD_CENTER,
+      zoom: WORLD_ZOOM,
       minZoom: 1,
       maxZoom: 15,
       attributionControl: { compact: true },
@@ -253,6 +255,11 @@ export class GameMap {
   metersPerPixel(lat: number): number {
     const z = this.map.getZoom();
     return (WORLD_M * Math.cos((lat * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, z));
+  }
+
+  /** Back to the whole-world starting view, e.g. at the start of a round. */
+  resetView(): void {
+    void this.map.easeTo({ center: WORLD_CENTER, zoom: WORLD_ZOOM, duration: 700 });
   }
 
   /** Fit the answer and a paint layer's cells into view, with a sensible zoom cap. */

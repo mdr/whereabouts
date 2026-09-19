@@ -55,6 +55,7 @@ function SoloGame() {
     paint.reset(q.toleranceKm);
     paint.enabled.value = true;
     paint.gameMap.clearReveal();
+    paint.gameMap.resetView();
     paint.tool.value = "paint";
   }, [index, phase === "paint"]);
 
