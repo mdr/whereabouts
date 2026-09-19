@@ -50,7 +50,9 @@ export function MapView({ children }: { children: ComponentChildren }) {
     <>
       <div id="map" ref={el} />
       <aside id="panel">
-        <PaintContext.Provider value={controller}>{controller ? children : <p class="hint">Loading map…</p>}</PaintContext.Provider>
+        <PaintContext.Provider value={controller}>
+          {controller ? children : <p class="hint">Loading map…</p>}
+        </PaintContext.Provider>
       </aside>
     </>
   );

@@ -1,15 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": [
-      "ES2022"
-    ],
-    "types": [
-      "node",
-      "geojson"
-    ]
+    "lib": ["ES2022"],
+    "types": ["node", "geojson"]
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

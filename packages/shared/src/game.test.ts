@@ -3,9 +3,33 @@ import { Game, generateCode } from "./game.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import type { Question } from "./questions.ts";
 
-const petra: Question = { id: "petra", kind: "text", prompt: "Where is Petra?", answer: { lat: 30.3285, lon: 35.4444 }, toleranceKm: 200, label: "Petra", region: "world" };
-const paris: Question = { id: "paris", kind: "text", prompt: "Where is Paris?", answer: { lat: 48.8566, lon: 2.3522 }, toleranceKm: 100, label: "Paris", region: "world" };
-const tokyo: Question = { id: "tokyo", kind: "text", prompt: "Where is Tokyo?", answer: { lat: 35.6762, lon: 139.6503 }, toleranceKm: 100, label: "Tokyo", region: "world" };
+const petra: Question = {
+  id: "petra",
+  kind: "text",
+  prompt: "Where is Petra?",
+  answer: { lat: 30.3285, lon: 35.4444 },
+  toleranceKm: 200,
+  label: "Petra",
+  region: "world",
+};
+const paris: Question = {
+  id: "paris",
+  kind: "text",
+  prompt: "Where is Paris?",
+  answer: { lat: 48.8566, lon: 2.3522 },
+  toleranceKm: 100,
+  label: "Paris",
+  region: "world",
+};
+const tokyo: Question = {
+  id: "tokyo",
+  kind: "text",
+  prompt: "Where is Tokyo?",
+  answer: { lat: 35.6762, lon: 139.6503 },
+  toleranceKm: 100,
+  label: "Tokyo",
+  region: "world",
+};
 const pool = [petra, paris, tokyo];
 
 const T0 = 1_000_000;

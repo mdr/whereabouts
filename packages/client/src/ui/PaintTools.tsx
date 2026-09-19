@@ -15,19 +15,46 @@ export function PaintTools({ onClear }: { onClear?: () => void }) {
           </button>
         ))}
       </div>
-      <Slider label="Brush size" min={6} max={200} step={1} value={paint.brushPx.value} onInput={(v) => paint.setBrushPx(v)} format={(v) => `${v} px`} />
-      <Slider label="Strength" min={0.2} max={3} step={0.1} value={paint.strength.value} onInput={(v) => (paint.strength.value = v)} format={(v) => `${v.toFixed(1)}×`} />
-      <Slider label="World floor" min={0} max={0.5} step={0.01} value={paint.floor.value} onInput={(v) => (paint.floor.value = v)} format={(v) => `${Math.round(v * 100)}%`} />
+      <Slider
+        label="Brush size"
+        min={6}
+        max={200}
+        step={1}
+        value={paint.brushPx.value}
+        onInput={(v) => paint.setBrushPx(v)}
+        format={(v) => `${v} px`}
+      />
+      <Slider
+        label="Strength"
+        min={0.2}
+        max={3}
+        step={0.1}
+        value={paint.strength.value}
+        onInput={(v) => (paint.strength.value = v)}
+        format={(v) => `${v.toFixed(1)}×`}
+      />
+      <Slider
+        label="World floor"
+        min={0}
+        max={0.5}
+        step={0.01}
+        value={paint.floor.value}
+        onInput={(v) => (paint.floor.value = v)}
+        format={(v) => `${Math.round(v * 100)}%`}
+      />
       {paint.brushClamped.value && (
         <p class="hint warn">
-          Brush too large for this tolerance; capped at {PaintController.MAX_BRUSH_RINGS} cells radius. Use the world floor for broad uncertainty.
+          Brush too large for this tolerance; capped at {PaintController.MAX_BRUSH_RINGS} cells radius. Use the world
+          floor for broad uncertainty.
         </p>
       )}
       <p class="hint">
-        <span class="legend solid" /> Brush footprint &nbsp; <span class="legend dashed" /> One tolerance ({fmtKm(paint.toleranceKm.value)}): the distance at which credit halves.
+        <span class="legend solid" /> Brush footprint &nbsp; <span class="legend dashed" /> One tolerance (
+        {fmtKm(paint.toleranceKm.value)}): the distance at which credit halves.
       </p>
       <p class="hint">
-        Hold <kbd>Space</kbd> to pan while painting. <kbd>[</kbd> <kbd>]</kbd> resize the brush. Scroll to zoom. Paint again over an area to weight it more.
+        Hold <kbd>Space</kbd> to pan while painting. <kbd>[</kbd> <kbd>]</kbd> resize the brush. Scroll to zoom. Paint
+        again over an area to weight it more.
       </p>
       {onClear && (
         <div class="actions">
@@ -40,11 +67,26 @@ export function PaintTools({ onClear }: { onClear?: () => void }) {
   );
 }
 
-function Slider(props: { label: string; min: number; max: number; step: number; value: number; onInput: (v: number) => void; format: (v: number) => string }) {
+function Slider(props: {
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  onInput: (v: number) => void;
+  format: (v: number) => string;
+}) {
   return (
     <div class="row">
       <label>{props.label}</label>
-      <input type="range" min={props.min} max={props.max} step={props.step} value={props.value} onInput={(e) => props.onInput(Number((e.target as HTMLInputElement).value))} />
+      <input
+        type="range"
+        min={props.min}
+        max={props.max}
+        step={props.step}
+        value={props.value}
+        onInput={(e) => props.onInput(Number((e.target as HTMLInputElement).value))}
+      />
       <output>{props.format(props.value)}</output>
     </div>
   );

@@ -38,7 +38,8 @@ export class Connection {
     const client = new WSClient<"state" | "error">(wsUrl(), {
       ticketSource: "protocol",
       reconnect: { baseDelayMs: 500, maxDelayMs: 5000, maxAttempts: 20 },
-      getTicket: () => encodeTicket({ v: PROTOCOL_VERSION, ...ticket, create: false, code: this.code.value ?? ticket.code }),
+      getTicket: () =>
+        encodeTicket({ v: PROTOCOL_VERSION, ...ticket, create: false, code: this.code.value ?? ticket.code }),
     });
     client.on("client:connect", () => {
       this.status.value = "connected";

@@ -13,11 +13,7 @@ export function toXyz({ lat, lon }: LatLon): Xyz {
   const la = (lat * Math.PI) / 180;
   const lo = (lon * Math.PI) / 180;
   const c = Math.cos(la);
-  return [
-    EARTH_RADIUS_KM * c * Math.cos(lo),
-    EARTH_RADIUS_KM * c * Math.sin(lo),
-    EARTH_RADIUS_KM * Math.sin(la),
-  ];
+  return [EARTH_RADIUS_KM * c * Math.cos(lo), EARTH_RADIUS_KM * c * Math.sin(lo), EARTH_RADIUS_KM * Math.sin(la)];
 }
 
 /** Straight-line (chord) distance between two points on the sphere, km. */

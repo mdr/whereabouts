@@ -25,7 +25,10 @@ export const TicketSchema = z.object({
   token: z.string().min(16).max(64),
   name: z.string().trim().min(1).max(20),
   /** Join an existing game by code, or omit with `create: true` to host one. */
-  code: z.string().regex(/^[A-Z0-9]{4,6}$/).optional(),
+  code: z
+    .string()
+    .regex(/^[A-Z0-9]{4,6}$/)
+    .optional(),
   create: z.boolean().optional(),
 });
 export type Ticket = z.infer<typeof TicketSchema>;

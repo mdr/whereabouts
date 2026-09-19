@@ -1,6 +1,5 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { useSignal } from "@preact/signals";
 import {
   PaintLayer,
   playerColour,
@@ -165,7 +164,8 @@ function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     <h1>
       Whereabouts{" "}
       <small>
-        {view.code} · round {(view.round?.index ?? view.reveal?.index ?? 0) + 1} / {view.round?.total ?? view.reveal?.total ?? "?"}
+        {view.code} · round {(view.round?.index ?? view.reveal?.index ?? 0) + 1} /{" "}
+        {view.round?.total ?? view.reveal?.total ?? "?"}
       </small>
     </h1>
   );
@@ -250,7 +250,9 @@ function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reve
     <>
       <div class="timer-row">
         <Countdown msRemaining={() => conn.msUntil(reveal.autoAdvanceAt)} warnAt={-1} />
-        <span class="hint">{view.you.isHost ? "Next round starts when you press next or the clock runs out." : "Next round soon."}</span>
+        <span class="hint">
+          {view.you.isHost ? "Next round starts when you press next or the clock runs out." : "Next round soon."}
+        </span>
       </div>
       <QuestionCard q={reveal.question} />
       <div class="card score">
@@ -261,7 +263,14 @@ function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reve
       <Card title="Guesses">
         <ul class="reveal-list">
           {reveal.results.map((r) => (
-            <RevealRow key={r.playerId} r={r} p={byId.get(r.playerId)} you={r.playerId === view.you.id} selected={r.playerId === selected} onSelect={() => setSelected(r.playerId)} />
+            <RevealRow
+              key={r.playerId}
+              r={r}
+              p={byId.get(r.playerId)}
+              you={r.playerId === view.you.id}
+              selected={r.playerId === selected}
+              onSelect={() => setSelected(r.playerId)}
+            />
           ))}
         </ul>
         <p class="hint">Click a player to see their paint on the map.</p>
@@ -281,7 +290,19 @@ function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reve
   );
 }
 
-function RevealRow({ r, p, you, selected, onSelect }: { r: RoundResultView; p?: PlayerView; you: boolean; selected: boolean; onSelect: () => void }) {
+function RevealRow({
+  r,
+  p,
+  you,
+  selected,
+  onSelect,
+}: {
+  r: RoundResultView;
+  p?: PlayerView;
+  you: boolean;
+  selected: boolean;
+  onSelect: () => void;
+}) {
   return (
     <li class={`${selected ? "selected" : ""}`} onClick={onSelect}>
       <span class="swatch" style={{ background: p ? playerColour(p.colour) : "#888" }} />
@@ -341,7 +362,17 @@ function Results({ conn, view }: { conn: Connection; view: GameView }) {
 
 // ---- shared ------------------------------------------------------------------
 
-function PlayerList({ players, you, showScores, arrows }: { players: PlayerView[]; you: string; showScores: boolean; arrows?: boolean }) {
+function PlayerList({
+  players,
+  you,
+  showScores,
+  arrows,
+}: {
+  players: PlayerView[];
+  you: string;
+  showScores: boolean;
+  arrows?: boolean;
+}) {
   return (
     <ul class="players">
       {players.map((p) => {
@@ -357,7 +388,11 @@ function PlayerList({ players, you, showScores, arrows }: { players: PlayerView[
             </span>
             {showScores && (
               <>
-                {arrows && <span class={`arrow ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>{delta > 0 ? "▲" : delta < 0 ? "▼" : ""}</span>}
+                {arrows && (
+                  <span class={`arrow ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
+                    {delta > 0 ? "▲" : delta < 0 ? "▼" : ""}
+                  </span>
+                )}
                 <span class="score-num">{Math.round(p.score).toLocaleString()}</span>
               </>
             )}

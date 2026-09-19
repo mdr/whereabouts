@@ -3,8 +3,15 @@
  * This is the only module that knows about Rivalis rooms and actors; the
  * Game itself is I/O free and tested on its own.
  */
-import { Actor, AuthMiddleware, Room, type AuthResult, type ConnectionContext, type RoomManager } from "@rivalis/core";
-import { z } from "zod";
+import {
+  type Actor,
+  AuthMiddleware,
+  Room,
+  type AuthResult,
+  type ConnectionContext,
+  type RoomManager,
+} from "@rivalis/core";
+import { type z } from "zod";
 import {
   ClientMessageSchemas,
   Game,
@@ -59,9 +66,9 @@ export class GameRoom extends Room<ActorData> {
   // Rivalis runs onCreate from the base constructor, before subclass field
   // initialisers. `declare` fields emit no initialiser, so values assigned in
   // onCreate survive; anything with `= ...` here would be reset afterwards.
-  private declare game: Game;
-  private declare actorsByToken: Map<string, Actor<ActorData>>;
-  private declare timer: unknown;
+  declare private game: Game;
+  declare private actorsByToken: Map<string, Actor<ActorData>>;
+  declare private timer: unknown;
 
   protected override onCreate(): void {
     this.game = new Game(this.id, deps.pool, deps.config);

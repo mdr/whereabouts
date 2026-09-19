@@ -115,7 +115,9 @@ function SoloGame() {
 
   const header = (
     <h1>
-      <a href="#/" class="back">Whereabouts</a>{" "}
+      <a href="#/" class="back">
+        Whereabouts
+      </a>{" "}
       <small>
         Round {Math.min(index + 1, questions.length)} / {questions.length} · total {Math.round(total).toLocaleString()}
       </small>
@@ -154,7 +156,11 @@ function SoloGame() {
       <Check s={cheatLiveScore}>Show live score and the real answer while painting</Check>
       <label>
         Scoring kernel{" "}
-        <select value={soloKernelId.value} onChange={(e) => (soloKernelId.value = (e.target as HTMLSelectElement).value)} style={{ flex: 1 }}>
+        <select
+          value={soloKernelId.value}
+          onChange={(e) => (soloKernelId.value = (e.target as HTMLSelectElement).value)}
+          style={{ flex: 1 }}
+        >
           {KERNELS.map((k) => (
             <option key={k.id} value={k.id}>
               {k.label}
@@ -216,7 +222,10 @@ function SoloGame() {
       {cheatLiveScore.value && <LiveScore q={q} kernelId={kernel.id} />}
       <Card title="Your distribution">
         <DistributionList />
-        <p class="hint">All paint is normalised to 100% together with the world floor, which spreads that share evenly over the whole planet.</p>
+        <p class="hint">
+          All paint is normalised to 100% together with the world floor, which spreads that share evenly over the whole
+          planet.
+        </p>
       </Card>
       <DifficultyOptions extra={playtest} />
     </>

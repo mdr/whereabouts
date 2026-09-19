@@ -7,13 +7,19 @@ import { mkdirSync } from "node:fs";
 const out = process.argv[2] ?? "./smoke-out";
 mkdirSync(out, { recursive: true });
 const base = "http://localhost:5173/";
-const browser = await chromium.launch({ channel: "chrome", headless: true, args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
+const browser = await chromium.launch({
+  channel: "chrome",
+  headless: true,
+  args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
+});
 
 async function newPlayer(name) {
   const ctx = await browser.newContext({ viewport: { width: 1300, height: 900 } });
   const page = await ctx.newPage();
   page.on("pageerror", (e) => console.log(`[${name} pageerror]`, e.message));
-  page.on("console", (m) => { if (m.type() === "error") console.log(`[${name} console.error]`, m.text().slice(0, 200)); });
+  page.on("console", (m) => {
+    if (m.type() === "error") console.log(`[${name} console.error]`, m.text().slice(0, 200));
+  });
   await page.goto(base, { waitUntil: "networkidle" });
   await page.fill(".field input", name);
   return page;
@@ -43,13 +49,15 @@ console.log("guessing; prompt:", await alice.textContent(".prompt"));
 
 async function paint(page, fx, fy) {
   const box = await (await page.$("#map canvas")).boundingBox();
-  const x = box.x + box.width * fx, y = box.y + box.height * fy;
-  await page.mouse.move(x, y); await page.mouse.down();
+  const x = box.x + box.width * fx,
+    y = box.y + box.height * fy;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
   for (let i = 0; i <= 8; i++) await page.mouse.move(x + i * 5, y + Math.sin(i) * 6);
   await page.mouse.up();
 }
 await paint(alice, 0.62, 0.42);
-await paint(bob, 0.30, 0.55);
+await paint(bob, 0.3, 0.55);
 await alice.waitForTimeout(800);
 await alice.screenshot({ path: `${out}/mp-2-guessing-alice.png` });
 console.log("alice blobs:", (await alice.textContent(".blobs")).replace(/\s+/g, " ").slice(0, 120));
@@ -70,7 +78,7 @@ const features = await bob.evaluate(() => window.whereabouts.map.getSource("pain
 console.log("bob sees alice's paint cells:", features);
 await bob.screenshot({ path: `${out}/mp-4-reveal-bob-views-alice.png` });
 
-await alice.click("button:has-text(\"Next round\")");
+await alice.click('button:has-text("Next round")');
 await alice.waitForSelector("text=Lock in", { timeout: 10000 });
 console.log("round 2 started:", await alice.textContent("h1 small"));
 await browser.close();

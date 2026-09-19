@@ -90,7 +90,9 @@ describe("uniform floor", () => {
         EARTH_RADIUS_KM * s * Math.sin(phi),
         EARTH_RADIUS_KM * z,
       ];
-      const dx = x[0] - y[0], dy = x[1] - y[1], dz = x[2] - y[2];
+      const dx = x[0] - y[0],
+        dy = x[1] - y[1],
+        dz = x[2] - y[2];
       sum += kernel(Math.sqrt(dx * dx + dy * dy + dz * dz), tol);
     }
     expect(sum / n).toBeCloseTo(uniformKernelMean(tol), 2);

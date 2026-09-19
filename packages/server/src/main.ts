@@ -26,8 +26,7 @@ const address = await app.listen(port, host);
 app.fastify.log.info(`whereabouts server on ${address} (static: ${existsSync(staticDir) ? staticDir : "none"})`);
 
 for (const sig of ["SIGINT", "SIGTERM"] as const) {
-  process.on(sig, async () => {
-    await app.close();
-    process.exit(0);
+  process.on(sig, () => {
+    void app.close().then(() => process.exit(0));
   });
 }

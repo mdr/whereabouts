@@ -5,7 +5,8 @@ import { showBorders, showDetail, showInlandWater, showLabels } from "../setting
 function Check({ s, children }: { s: Signal<boolean>; children: ComponentChildren }) {
   return (
     <label>
-      <input type="checkbox" checked={s.value} onChange={(e) => (s.value = (e.target as HTMLInputElement).checked)} /> {children}
+      <input type="checkbox" checked={s.value} onChange={(e) => (s.value = (e.target as HTMLInputElement).checked)} />{" "}
+      {children}
     </label>
   );
 }

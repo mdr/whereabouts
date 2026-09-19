@@ -89,4 +89,3 @@ export const ALTERNATIVE_THEMES: Theme[] = [
     brush: "#222222",
   },
 ];
-

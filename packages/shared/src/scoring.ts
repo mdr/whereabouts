@@ -177,7 +177,7 @@ function gaussPairSum(points: WeightedPoint[], widthKm: number, exact: boolean):
   const inv = 1 / cutoff;
   // Coordinates are within +-6371 km, so offsetting by 8192 keeps indices positive.
   const OFF = 8192;
-  const SPAN = Math.ceil((2 * OFF) * inv) + 2;
+  const SPAN = Math.ceil(2 * OFF * inv) + 2;
   const bucketOf = (x: number, y: number, z: number) =>
     (Math.floor((x + OFF) * inv) * SPAN + Math.floor((y + OFF) * inv)) * SPAN + Math.floor((z + OFF) * inv);
 
@@ -191,7 +191,10 @@ function gaussPairSum(points: WeightedPoint[], widthKm: number, exact: boolean):
 
   let total = 0;
   for (let i = 0; i < n; i++) {
-    const xi = xs[i]!, yi = ys[i]!, zi = zs[i]!, pi = ps[i]!;
+    const xi = xs[i]!,
+      yi = ys[i]!,
+      zi = zs[i]!,
+      pi = ps[i]!;
     const bx = Math.floor((xi + OFF) * inv);
     const by = Math.floor((yi + OFF) * inv);
     const bz = Math.floor((zi + OFF) * inv);
@@ -202,7 +205,9 @@ function gaussPairSum(points: WeightedPoint[], widthKm: number, exact: boolean):
           if (!list) continue;
           for (let t = 0; t < list.length; t++) {
             const j = list[t]!;
-            const ddx = xi - xs[j]!, ddy = yi - ys[j]!, ddz = zi - zs[j]!;
+            const ddx = xi - xs[j]!,
+              ddy = yi - ys[j]!,
+              ddz = zi - zs[j]!;
             const dsq = ddx * ddx + ddy * ddy + ddz * ddz;
             if (dsq > cutoffSq) continue;
             total += pi * ps[j]! * Math.exp(invW2 * dsq);

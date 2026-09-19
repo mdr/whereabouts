@@ -84,13 +84,13 @@ pnpm workspace with three packages:
 
 ## Controls
 
-| Action | Control |
-| --- | --- |
+| Action              | Control                         |
+| ------------------- | ------------------------------- |
 | Pan / Paint / Erase | `1` / `2` / `3`, or the buttons |
-| Pan while painting | hold `Space` |
-| Brush size | slider, or `[` and `]` |
-| Zoom | scroll wheel |
-| Submit / next | `Enter` |
+| Pan while painting  | hold `Space`                    |
+| Brush size          | slider, or `[` and `]`          |
+| Zoom                | scroll wheel                    |
+| Submit / next       | `Enter`                         |
 
 The solid cursor ring is the brush; the dashed blue ring is one tolerance.
 The brush turns red when it is capped (about 5,000 cells per stamp).

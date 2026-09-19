@@ -15,8 +15,24 @@ import { configureGameRooms, encodeTicket, realClock, type Clock } from "./rooms
 const { WSClient } = await import("@rivalis/browser");
 
 const questions: Question[] = [
-  { id: "petra", kind: "text", prompt: "Where is Petra?", answer: { lat: 30.3285, lon: 35.4444 }, toleranceKm: 200, label: "Petra", region: "world" },
-  { id: "paris", kind: "text", prompt: "Where is Paris?", answer: { lat: 48.8566, lon: 2.3522 }, toleranceKm: 100, label: "Paris", region: "world" },
+  {
+    id: "petra",
+    kind: "text",
+    prompt: "Where is Petra?",
+    answer: { lat: 30.3285, lon: 35.4444 },
+    toleranceKm: 200,
+    label: "Petra",
+    region: "world",
+  },
+  {
+    id: "paris",
+    kind: "text",
+    prompt: "Where is Paris?",
+    answer: { lat: 48.8566, lon: 2.3522 },
+    toleranceKm: 100,
+    label: "Paris",
+    region: "world",
+  },
 ];
 
 /** Real timers, but time can be jumped forward so deadlines fire immediately. */
@@ -79,7 +95,9 @@ class TestPlayer {
       if (hit) return hit;
       await new Promise((r) => setTimeout(r, 10));
     }
-    throw new Error(`${this.name}: no state matched within ${ms}ms; last=${JSON.stringify(this.latest ?? null).slice(0, 300)}`);
+    throw new Error(
+      `${this.name}: no state matched within ${ms}ms; last=${JSON.stringify(this.latest ?? null).slice(0, 300)}`,
+    );
   }
   async untilLatest(pred: (v: GameView) => boolean, ms = 3000): Promise<GameView> {
     const start = Date.now();

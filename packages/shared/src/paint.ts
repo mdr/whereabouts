@@ -205,14 +205,17 @@ export class PaintLayer {
       const stack = [start];
       let mass = 0;
       let count = 0;
-      let sx = 0, sy = 0, sz = 0;
+      let sx = 0,
+        sy = 0,
+        sz = 0;
       while (stack.length) {
         const h = stack.pop()!;
         const m = this.cells.get(h)! * this.area(h);
         mass += m;
         count++;
         const [lat, lon] = this.centre(h);
-        const la = (lat * Math.PI) / 180, lo = (lon * Math.PI) / 180;
+        const la = (lat * Math.PI) / 180,
+          lo = (lon * Math.PI) / 180;
         sx += m * Math.cos(la) * Math.cos(lo);
         sy += m * Math.cos(la) * Math.sin(lo);
         sz += m * Math.sin(la);

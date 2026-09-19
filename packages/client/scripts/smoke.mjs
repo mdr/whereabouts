@@ -5,21 +5,28 @@ import { mkdirSync } from "node:fs";
 
 const out = process.argv[2] ?? "./smoke-out";
 mkdirSync(out, { recursive: true });
-const browser = await chromium.launch({ channel: "chrome", headless: true, args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
+const browser = await chromium.launch({
+  channel: "chrome",
+  headless: true,
+  args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
+});
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
 page.on("console", (m) => console.log(`[console.${m.type()}]`, m.text()));
 page.on("pageerror", (e) => console.log("[pageerror]", e.message));
 page.on("requestfailed", (r) => console.log("[requestfailed]", r.url(), r.failure()?.errorText));
 
 await page.goto("http://localhost:5173/#/solo", { waitUntil: "networkidle" });
-await page.waitForSelector("button:has-text(\"Submit\")", { timeout: 30000 }).catch(() => console.log("submit button not found"));
+await page
+  .waitForSelector('button:has-text("Submit")', { timeout: 30000 })
+  .catch(() => console.log("submit button not found"));
 await page.waitForTimeout(2500);
 await page.screenshot({ path: `${out}/1-start.png` });
 
 // Paint a stroke across the middle-left of the map, then a second blob.
 const map = await page.$("#map canvas");
 const box = await map.boundingBox();
-const cx = box.x + box.width * 0.55, cy = box.y + box.height * 0.45;
+const cx = box.x + box.width * 0.55,
+  cy = box.y + box.height * 0.45;
 await page.mouse.move(cx - 60, cy);
 await page.mouse.down();
 for (let i = 0; i <= 20; i++) await page.mouse.move(cx - 60 + i * 6, cy + Math.sin(i / 3) * 10);
@@ -32,7 +39,7 @@ await page.waitForTimeout(600);
 await page.screenshot({ path: `${out}/2-painted.png` });
 console.log("blobs:", await page.$eval(".blobs", (el) => el.innerText));
 
-await page.click("button:has-text(\"Submit\")");
+await page.click('button:has-text("Submit")');
 await page.waitForTimeout(1500);
 await page.mouse.move(cx + 40, cy - 40);
 await page.waitForTimeout(300);

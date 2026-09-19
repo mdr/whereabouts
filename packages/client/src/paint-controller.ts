@@ -192,7 +192,11 @@ export class PaintController {
   private stampAt(lngLat: LngLat): void {
     const sign = this.tool.value === "erase" ? -1 : 1;
     // Stamps overlap along a stroke, so scale each one down.
-    this.layer.stamp({ lat: lngLat.lat, lon: lngLat.lng }, this.brushRadiusKm(lngLat.lat), sign * this.strength.value * 0.3);
+    this.layer.stamp(
+      { lat: lngLat.lat, lon: lngLat.lng },
+      this.brushRadiusKm(lngLat.lat),
+      sign * this.strength.value * 0.3,
+    );
   }
 
   private strokeTo(point: Point): void {

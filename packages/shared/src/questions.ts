@@ -26,10 +26,6 @@ import questionsJson from "../questions.json" with { type: "json" };
 /** The bundled question pool. */
 export const QUESTIONS: Question[] = questionsJson as Question[];
 
-export async function loadQuestions(): Promise<Question[]> {
-  return QUESTIONS;
-}
-
 /** Deterministic shuffle so a playtest session can be replayed. */
 export function shuffle<T>(items: T[], seed: number): T[] {
   const out = items.slice();

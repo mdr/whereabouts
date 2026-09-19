@@ -54,7 +54,11 @@ export class GameMap {
     const layers = this.map.getStyle().layers ?? [];
     const detailSources = new Set(["transportation", "building", "aeroway", "landuse", "park"]);
     for (const l of layers) {
-      this.styleLayers.push({ id: l.id, type: l.type, sourceLayer: "source-layer" in l ? (l["source-layer"] ?? "") : "" });
+      this.styleLayers.push({
+        id: l.id,
+        type: l.type,
+        sourceLayer: "source-layer" in l ? (l["source-layer"] ?? "") : "",
+      });
       if (l.type === "symbol") this.labelLayers.push(l.id);
       else if (l.id.startsWith("boundary")) this.borderLayers.push(l.id);
       else if ("source-layer" in l && detailSources.has(l["source-layer"] ?? "")) this.detailLayers.push(l.id);
@@ -77,10 +81,14 @@ export class GameMap {
           "interpolate",
           ["linear"],
           ["get", "v"],
-          0, "#ffe082",
-          0.35, "#ffa726",
-          0.7, "#f4511e",
-          1, "#b71c1c",
+          0,
+          "#ffe082",
+          0.35,
+          "#ffa726",
+          0.7,
+          "#f4511e",
+          1,
+          "#b71c1c",
         ],
         "fill-opacity": ["interpolate", ["linear"], ["get", "v"], 0, 0.2, 1, 0.8],
         "fill-antialias": true,
@@ -163,7 +171,7 @@ export class GameMap {
     const base = this.waterFilter as maplibregl.FilterSpecification | undefined;
     const oceanOnly = ["==", ["get", "class"], "ocean"] as unknown as maplibregl.FilterSpecification;
     const combined = (base ? ["all", base, oceanOnly] : oceanOnly) as unknown as maplibregl.FilterSpecification;
-    this.map.setFilter("water", on ? base ?? null : combined);
+    this.map.setFilter("water", on ? (base ?? null) : combined);
   }
 
   setBorders(on: boolean): void {
@@ -171,11 +179,11 @@ export class GameMap {
   }
 
   private source(id: string): GeoJSONSource | undefined {
-    return this.map.getSource(id) as GeoJSONSource | undefined;
+    return this.map.getSource(id);
   }
 
   setPaint(data: GeoJSON.FeatureCollection): void {
-    this.source(PAINT_SOURCE)?.setData(data);
+    void this.source(PAINT_SOURCE)?.setData(data);
   }
 
   /**
@@ -195,10 +203,27 @@ export class GameMap {
   private applyPaintRamp(t: Theme): void {
     if (!this.map.getLayer("paint-fill")) return;
     this.map.setPaintProperty("paint-fill", "fill-color", [
-      "interpolate", ["linear"], ["get", "v"],
-      0, t.ramp[0], 1 / 3, t.ramp[1], 2 / 3, t.ramp[2], 1, t.ramp[3],
+      "interpolate",
+      ["linear"],
+      ["get", "v"],
+      0,
+      t.ramp[0],
+      1 / 3,
+      t.ramp[1],
+      2 / 3,
+      t.ramp[2],
+      1,
+      t.ramp[3],
     ]);
-    this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, t.rampOpacity[0], 1, t.rampOpacity[1]]);
+    this.map.setPaintProperty("paint-fill", "fill-opacity", [
+      "interpolate",
+      ["linear"],
+      ["get", "v"],
+      0,
+      t.rampOpacity[0],
+      1,
+      t.rampOpacity[1],
+    ]);
   }
 
   /** Marker at the answer plus rings at 1r and 2r. */
@@ -215,11 +240,11 @@ export class GameMap {
         circleFeature(answer, toleranceKm * 2, 2),
       ],
     };
-    this.source(REVEAL_SOURCE)?.setData(fc);
+    void this.source(REVEAL_SOURCE)?.setData(fc);
   }
 
   clearReveal(): void {
-    this.source(REVEAL_SOURCE)?.setData({
+    void this.source(REVEAL_SOURCE)?.setData({
       type: "FeatureCollection",
       features: [],
     });
@@ -232,7 +257,10 @@ export class GameMap {
 
   /** Fit the answer and a paint layer's cells into view, with a sensible zoom cap. */
   fitAnswerAndPaint(answer: LatLon, paint: GeoJSON.FeatureCollection, toleranceKm: number): void {
-    let minLon = answer.lon, maxLon = answer.lon, minLat = answer.lat, maxLat = answer.lat;
+    let minLon = answer.lon,
+      maxLon = answer.lon,
+      minLat = answer.lat,
+      maxLat = answer.lat;
     for (const f of paint.features) {
       if (f.geometry.type !== "Polygon") continue;
       for (const [lon, lat] of f.geometry.coordinates[0] as [number, number][]) {
@@ -253,10 +281,10 @@ export class GameMap {
     maxLon = Math.max(maxLon, answer.lon + dLon);
     if (maxLon - minLon > 300) {
       // Spans most of the world; just show it all.
-      this.map.easeTo({ center: [answer.lon, 20], zoom: this.map.getMinZoom(), duration: 900 });
+      void this.map.easeTo({ center: [answer.lon, 20], zoom: this.map.getMinZoom(), duration: 900 });
       return;
     }
-    this.map.fitBounds(
+    void this.map.fitBounds(
       [
         [minLon, Math.max(-85, minLat)],
         [maxLon, Math.min(85, maxLat)],
@@ -271,7 +299,7 @@ export class GameMap {
     const cos = Math.max(0.05, Math.cos((answer.lat * Math.PI) / 180));
     const targetMpp = (toleranceKm * 8 * 1000) / (0.4 * widthPx);
     const zoom = Math.log2((WORLD_M * cos) / (WORLD_PX_Z0 * targetMpp));
-    this.map.easeTo({
+    void this.map.easeTo({
       center: [answer.lon, answer.lat],
       zoom: Math.min(this.map.getMaxZoom(), Math.max(this.map.getMinZoom(), zoom)),
       duration: 900,
@@ -290,7 +318,7 @@ function circleFeature(centre: LatLon, radiusKm: number, ring: number): GeoJSON.
   for (let i = 0; i <= n; i++) {
     const brg = (2 * Math.PI * i) / n;
     const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(brg));
-    let lon2 =
+    const lon2 =
       lon1 + Math.atan2(Math.sin(brg) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2));
     let lonDeg = (lon2 * 180) / Math.PI;
     // Unwrap across the antimeridian so the ring stays a simple polygon.

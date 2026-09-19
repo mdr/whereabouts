@@ -36,7 +36,8 @@ export function QuestionCard({ q, res }: { q: QuestionView; res?: number }) {
           Tolerance <b>{fmtKm(q.toleranceKm)}</b>
           {res !== undefined && (
             <>
-              {" "}· cells ≈ {fmtKm(cellSpacingKm(res))} (H3 res {res})
+              {" "}
+              · cells ≈ {fmtKm(cellSpacingKm(res))} (H3 res {res})
             </>
           )}
         </span>

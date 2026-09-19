@@ -32,7 +32,7 @@ const MAX_PAYLOAD_BYTES = 1024 * 1024;
 export function createApp(options: AppOptions): App {
   const fastify = Fastify({ logger: options.logger ?? false });
 
-  fastify.get("/api/health", async () => ({ ok: true }));
+  fastify.get("/api/health", () => ({ ok: true }));
 
   if (options.staticDir) {
     fastify.register(fastifyStatic, { root: options.staticDir, wildcard: false });
@@ -66,7 +66,7 @@ export function createApp(options: AppOptions): App {
       return address;
     },
     async close() {
-      await rivalis!.shutdown({ timeoutMs: 2000 });
+      await rivalis.shutdown({ timeoutMs: 2000 });
       await fastify.close();
     },
   };
