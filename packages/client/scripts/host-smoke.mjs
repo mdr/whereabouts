@@ -75,10 +75,16 @@ await bob.mouse.move(700, 450, { steps: 8 });
 await bob.mouse.up();
 await bob.waitForTimeout(800);
 
-// Host removes Bob from the players panel.
+// Host removes Bob from the players panel, confirming in the dialog.
 await alice.click(".players-toggle");
 await alice.waitForSelector(".players-card button.kick");
 await alice.click(".players-card button.kick");
+await alice.waitForSelector(".modal");
+console.log("dialog:", (await alice.textContent(".modal h2")).trim());
+await alice.click('.modal button:has-text("Cancel")');
+console.log("cancel keeps bob:", (await alice.$$(".players-card li")).length === 2);
+await alice.click(".players-card button.kick");
+await alice.click('.modal button:has-text("Remove Bob")');
 await bob.waitForSelector('text="You were removed from the game"', { timeout: 10000 });
 console.log("bob removed:", await bob.textContent("h2"));
 await bob.screenshot({ path: `${out}/host-3-bob-removed.png` });
@@ -98,10 +104,12 @@ const rejoined = await bob
   .catch(() => false);
 console.log("bob rejoined as new player:", rejoined);
 
-// Host ends the game early: two clicks.
+// Host ends the game early, confirming in the dialog.
 await alice.click("button.end-game");
-console.log("armed label:", (await alice.textContent("button.end-game")).trim());
-await alice.click("button.end-game");
+await alice.waitForSelector(".modal");
+console.log("dialog:", (await alice.textContent(".modal h2")).trim());
+await alice.screenshot({ path: `${out}/host-3b-end-dialog.png` });
+await alice.click('.modal button:has-text("End game")');
 await alice.waitForSelector(".results-card", { timeout: 10000 });
 console.log("results reached:", (await alice.textContent(".results-card h1")).trim());
 await alice.screenshot({ path: `${out}/host-4-results.png` });

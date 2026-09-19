@@ -17,12 +17,14 @@ import { PaintDev } from "../ui/PaintTools";
 import { Icon } from "../ui/icons";
 import { HostTag } from "../ui/PlayerList";
 import { EndGameButton } from "../ui/HostControls";
+import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 
 export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reveal: RevealView }) {
   const paint = usePaint();
   const byId = new Map(view.players.map((p) => [p.id, p]));
   // null shows everyone's guesses at once; a player id shows just theirs.
   const [selected, setSelected] = useState<string | null>(null);
+  const { dialog, ask } = useConfirm();
 
   useEffect(() => {
     paint.enabled.value = false;
@@ -67,6 +69,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
 
   return (
     <>
+      {dialog}
       <div class="hud">
         <div class="hud-top">
           <HudHeader
@@ -105,7 +108,11 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
                   ready={ready.has(p.id)}
                   selected={p.id === selected}
                   onSelect={() => setSelected(selected === p.id ? null : p.id)}
-                  onKick={view.you.isHost && p.id !== view.you.id ? () => conn.kick(p.id) : undefined}
+                  onKick={
+                    view.you.isHost && p.id !== view.you.id
+                      ? () => ask(kickRequest(p.name, () => conn.kick(p.id)))
+                      : undefined
+                  }
                 />
               ))}
             </ul>

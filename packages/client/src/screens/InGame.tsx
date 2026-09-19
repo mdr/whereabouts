@@ -12,6 +12,7 @@ import { Reveal } from "./Reveal";
 import { Icon } from "../ui/icons";
 import { PlayersPanel } from "../ui/PlayersPanel";
 import { EndGameButton } from "../ui/HostControls";
+import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint();
@@ -19,6 +20,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const guessing = view.phase === "guessing";
   const sendTimer = useRef<number | null>(null);
   const lastSentVersion = useRef(-1);
+  const { dialog, ask } = useConfirm();
 
   // New round: fresh layer, painting on unless spectating. After a reconnect
   // the server hands back what we had painted, so restore it.
@@ -75,6 +77,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const round = view.round!;
   return (
     <>
+      {dialog}
       <div class="hud">
         <div class="hud-top">
           <HudHeader
@@ -96,7 +99,10 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
         </div>
         <div class="hud-right">
-          <PlayersPanel view={view} onKick={view.you.isHost ? (p) => conn.kick(p.id) : undefined} />
+          <PlayersPanel
+            view={view}
+            onKick={view.you.isHost ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
+          />
           {view.you.isHost && (
             <EndGameButton
               onEnd={() => conn.end()}

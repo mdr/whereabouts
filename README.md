@@ -123,15 +123,24 @@ pnpm workspace with three packages:
   panel during a round, the reveal scores). Their seat, score and paint go
   and that tab cannot reclaim them; they may rejoin with the code as a new
   player. The host can also end the game early: the running round is scored
-  as it stands and everyone goes to the final standings. Both are host-only;
-  ending asks for a second click.
+  as it stands and everyone goes to the final standings. Both are host-only
+  and ask for confirmation in a dialog first.
 - State is in memory on a single server process; a restart ends games in
   progress.
 
 ## How it works
 
-- **Questions** live in `public/questions.json`: a prompt or a Wikimedia Commons
-  photo, the answer coordinates, and a per-question tolerance in km.
+- **Questions** live in `packages/shared/questions.json`: a prompt or a
+  Wikimedia Commons photo, the answer coordinates, and a per-question
+  tolerance in km. Two kinds: `photo` ("Where is this?" plus a picture) and
+  `text` ("Where is Nauru?"). The text set leans towards capital cities and
+  small countries, with tolerances calibrated for a UK player: tens of km
+  for the British Isles and near neighbours, around 100 km for European
+  capitals and micro-states, a few hundred for capitals on other
+  continents and small countries further afield, up to 1,000 km for Pacific
+  micro-states. Every text answer was checked against the coordinates on
+  its English Wikipedia article, and `questions.test.ts` guards ids,
+  ranges and near-duplicate spots.
 - **Paint** is stored on sparse H3 hexagons (`src/paint.ts`) at mixed
   resolutions. The finest resolution is chosen per question so a cell edge is
   at most a quarter of the tolerance; each brush stroke then uses the coarsest

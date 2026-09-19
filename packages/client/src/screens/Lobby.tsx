@@ -5,15 +5,18 @@ import { playerName } from "../settings";
 import { HostWord, PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { Icon } from "../ui/icons";
+import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 
 export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   const url = `${location.origin}${location.pathname}#/game/${view.code}`;
   const [copied, setCopied] = useState(false);
   const [renaming, setRenaming] = useState(false);
+  const { dialog, ask } = useConfirm();
   const current = view.players.find((p) => p.id === view.you.id)?.name ?? "";
   return (
     <div class="home">
       <div class="home-card lobby">
+        {dialog}
         <h1>Whereabouts</h1>
         <p class="tagline">Share this code with your friends</p>
         <div class="code">{view.code}</div>
@@ -31,7 +34,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
           you={view.you.id}
           showScores={false}
           onRename={() => setRenaming(true)}
-          onKick={view.you.isHost ? (p) => conn.kick(p.id) : undefined}
+          onKick={view.you.isHost ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
         />
         {renaming && (
           <RenameForm
