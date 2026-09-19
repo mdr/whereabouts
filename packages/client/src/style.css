@@ -256,15 +256,22 @@ button.icon:hover {
 .reveal-list .round-score {
   color: var(--panel-fg);
   font-weight: 700;
-  font-size: 16px;
-  min-width: 56px;
+  font-size: 15px;
+  min-width: 3.2em;
   text-align: right;
 }
 .reveal-list .score-num {
   color: var(--muted);
   font-weight: 400;
   font-size: 12px;
-  min-width: 44px;
+  min-width: 2.8em;
+}
+.reveal-list li {
+  gap: 6px;
+}
+.reveal-list button.icon {
+  padding: 2px 3px;
+  margin-right: 0;
 }
 
 .card {
@@ -658,9 +665,32 @@ button.big {
 .players li.offline {
   opacity: 0.5;
 }
+/* The name shrinks and clips before the numbers ever move. */
 .players .name,
 .reveal-list .name {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.players .name-text,
+.reveal-list .name-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.players .name .tag,
+.reveal-list .name .tag {
+  flex: none;
+  margin-left: 0;
+}
+.reveal-list .round-score,
+.reveal-list .arrow,
+.reveal-list .score-num,
+.players .score-num {
+  flex: none;
 }
 .players .tag {
   font-size: 10px;

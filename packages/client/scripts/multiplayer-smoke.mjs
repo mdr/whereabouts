@@ -33,7 +33,8 @@ console.log("code:", code);
 await alice.screenshot({ path: `${out}/mp-1-lobby-host.png` });
 
 // Bob plays in dev mode so the drawer gets exercised too.
-const bob = await newPlayer("Bob", "?dev");
+// A long name, so the lists are checked for overflow.
+const bob = await newPlayer("Bobbington-Smythe", "?dev");
 await bob.fill(".code-input", code);
 await bob.click(".join button");
 await bob.waitForSelector(".lobby .code", { timeout: 15000 });

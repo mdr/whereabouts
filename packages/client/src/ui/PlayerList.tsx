@@ -50,7 +50,7 @@ export function PlayerList({
           <li key={p.id} class={`${isYou ? "you" : ""} ${p.connected ? "" : "offline"}`}>
             <span class="swatch" style={{ background: playerColour(p.colour) }} />
             <span class="name">
-              {p.name}
+              <span class="name-text">{p.name}</span>
               {p.isHost ? <HostTag /> : null}
               {isYou ? <span class="tag">you</span> : null}
               {!p.connected ? <span class="tag">offline</span> : null}

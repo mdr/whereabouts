@@ -177,8 +177,10 @@ function RevealRow({
     <li class={`${selected ? "selected" : ""}`} onClick={onSelect}>
       <span class="swatch" style={{ background: playerColour(p.colour) }} />
       <span class="name">
-        {p.name}
-        {you ? " (you)" : ""}
+        <span class="name-text">
+          {p.name}
+          {you ? " (you)" : ""}
+        </span>
         {p.isHost && <HostTag />}
         {ready && (
           <span class="tag ready" title="Ready for the next round">
