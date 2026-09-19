@@ -110,7 +110,7 @@ describe("game server", () => {
   beforeEach(async () => {
     clock = new FakeClock();
     configureGameRooms({ clock, pool: questions, config: { rounds: 2, roundMs: 60_000, revealMs: 20_000 } });
-    app = createApp({ staticDir: null, logLevel: "warn" });
+    app = createApp({ staticDir: null, logLevel: "warning" });
     const address = await app.listen(0);
     url = address.replace(/^http/, "ws") + "/ws";
   });

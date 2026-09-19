@@ -11,8 +11,8 @@ page.on("console", (m) => console.log(`[console.${m.type()}]`, m.text()));
 page.on("pageerror", (e) => console.log("[pageerror]", e.message));
 page.on("requestfailed", (r) => console.log("[requestfailed]", r.url(), r.failure()?.errorText));
 
-await page.goto("http://localhost:5173/", { waitUntil: "networkidle" });
-await page.waitForSelector("#submit", { timeout: 30000 }).catch(() => console.log("submit button not found"));
+await page.goto("http://localhost:5173/#/solo", { waitUntil: "networkidle" });
+await page.waitForSelector("button:has-text(\"Submit\")", { timeout: 30000 }).catch(() => console.log("submit button not found"));
 await page.waitForTimeout(2500);
 await page.screenshot({ path: `${out}/1-start.png` });
 
@@ -30,9 +30,9 @@ await page.mouse.move(cx + 210, cy + 85);
 await page.mouse.up();
 await page.waitForTimeout(600);
 await page.screenshot({ path: `${out}/2-painted.png` });
-console.log("blobs:", await page.$eval("#blobs", (el) => el.innerText));
+console.log("blobs:", await page.$eval(".blobs", (el) => el.innerText));
 
-await page.click("#submit");
+await page.click("button:has-text(\"Submit\")");
 await page.waitForTimeout(1500);
 await page.mouse.move(cx + 40, cy - 40);
 await page.waitForTimeout(300);

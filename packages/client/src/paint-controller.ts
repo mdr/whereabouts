@@ -1,0 +1,231 @@
+/**
+ * Imperative glue between the MapLibre map and a PaintLayer: brush input,
+ * cursor rings, keyboard shortcuts, and rendering. Screens configure it and
+ * read its signals; it never knows about game phases.
+ */
+import { Point, type LngLat, type MapMouseEvent } from "maplibre-gl";
+import { batch, signal } from "@preact/signals";
+import { PaintLayer, MAX_BRUSH_RINGS, resolutionForTolerance, type LatLon } from "@whereabouts/shared";
+import type { GameMap } from "./map";
+
+export type Tool = "pan" | "paint" | "erase";
+
+export class PaintController {
+  readonly tool = signal<Tool>("paint");
+  readonly brushPx = signal(40);
+  readonly strength = signal(1);
+  readonly floor = signal(0.05);
+  /** Increments whenever the paint changes; cheap dependency for panels. */
+  readonly version = signal(0);
+  /** Whether painting is currently allowed (guessing phase, not locked). */
+  readonly enabled = signal(false);
+  readonly brushClamped = signal(false);
+  /** Set by the active screen; drives the dashed tolerance ring. */
+  readonly toleranceKm = signal(100);
+
+  layer = new PaintLayer(4);
+  private spaceHeld = false;
+  private painting = false;
+  private lastStampPoint: Point | null = null;
+  private renderQueued = false;
+  private cursorEl: HTMLElement;
+  private brushRing: HTMLElement;
+  private tolRing: HTMLElement;
+  private hoverListeners = new Set<(pos: LatLon) => void>();
+  private disposers: (() => void)[] = [];
+  readonly gameMap: GameMap;
+
+  constructor(gameMap: GameMap) {
+    this.gameMap = gameMap;
+    const container = gameMap.map.getContainer();
+    this.cursorEl = document.createElement("div");
+    this.cursorEl.id = "brush-cursor";
+    this.cursorEl.hidden = true;
+    this.brushRing = document.createElement("div");
+    this.brushRing.className = "ring brush";
+    this.tolRing = document.createElement("div");
+    this.tolRing.className = "ring tolerance";
+    this.cursorEl.append(this.brushRing, this.tolRing);
+    container.appendChild(this.cursorEl);
+
+    const map = gameMap.map;
+    const onDown = (e: MapMouseEvent) => {
+      if (!this.canPaint() || e.originalEvent.button !== 0) return;
+      this.painting = true;
+      this.lastStampPoint = null;
+      this.strokeTo(e.point);
+      this.queueRender();
+    };
+    const onMove = (e: MapMouseEvent) => {
+      this.updateCursor(e.point, e.lngLat);
+      if (this.painting) {
+        this.strokeTo(e.point);
+        this.queueRender();
+      }
+      for (const l of this.hoverListeners) l({ lat: e.lngLat.lat, lon: e.lngLat.lng });
+    };
+    const onOut = () => {
+      this.cursorEl.hidden = true;
+    };
+    const onUp = () => {
+      this.painting = false;
+      this.lastStampPoint = null;
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+      if (e.code === "Space" && !this.spaceHeld) {
+        this.spaceHeld = true;
+        this.painting = false;
+        this.applyInteraction();
+        e.preventDefault();
+        return;
+      }
+      if (!this.enabled.value) return;
+      if (e.key === "1") this.tool.value = "pan";
+      if (e.key === "2") this.tool.value = "paint";
+      if (e.key === "3") this.tool.value = "erase";
+      if (e.key === "[") this.setBrushPx(this.brushPx.value / 1.25);
+      if (e.key === "]") this.setBrushPx(this.brushPx.value * 1.25);
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        this.spaceHeld = false;
+        this.applyInteraction();
+      }
+    };
+    map.on("mousedown", onDown);
+    map.on("mousemove", onMove);
+    map.on("mouseout", onOut);
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    this.disposers.push(() => {
+      map.off("mousedown", onDown);
+      map.off("mousemove", onMove);
+      map.off("mouseout", onOut);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      this.cursorEl.remove();
+    });
+    this.disposers.push(this.tool.subscribe(() => this.applyInteraction()));
+    this.disposers.push(this.enabled.subscribe(() => this.applyInteraction()));
+  }
+
+  dispose(): void {
+    for (const d of this.disposers) d();
+  }
+
+  /** Start a fresh layer sized for a question's tolerance. */
+  reset(toleranceKm: number): void {
+    batch(() => {
+      this.toleranceKm.value = toleranceKm;
+      this.layer = new PaintLayer(resolutionForTolerance(toleranceKm));
+      this.version.value++;
+    });
+    this.gameMap.setPaint(this.layer.toGeoJSON());
+  }
+
+  clear(): void {
+    this.layer.clear();
+    this.queueRender();
+  }
+
+  /** Show a foreign layer (another player's paint) without touching ours. */
+  showLayer(layer: PaintLayer | null, colour: string | null): void {
+    this.gameMap.setPaintColour(colour);
+    this.gameMap.setPaint(layer ? layer.toGeoJSON() : { type: "FeatureCollection", features: [] });
+  }
+
+  /** Put our own paint back on the map in the theme ramp. */
+  showOwn(): void {
+    this.gameMap.setPaintColour(null);
+    this.gameMap.setPaint(this.layer.toGeoJSON());
+  }
+
+  onHover(listener: (pos: LatLon) => void): () => void {
+    this.hoverListeners.add(listener);
+    return () => this.hoverListeners.delete(listener);
+  }
+
+  setBrushPx(px: number): void {
+    this.brushPx.value = Math.min(200, Math.max(6, Math.round(px)));
+  }
+
+  private canPaint(): boolean {
+    return this.enabled.value && this.tool.value !== "pan" && !this.spaceHeld;
+  }
+
+  private applyInteraction(): void {
+    const map = this.gameMap.map;
+    const canPaint = this.canPaint();
+    if (canPaint) map.dragPan.disable();
+    else map.dragPan.enable();
+    const el = map.getContainer();
+    el.classList.toggle("tool-paint", canPaint && this.tool.value === "paint");
+    el.classList.toggle("tool-erase", canPaint && this.tool.value === "erase");
+    if (!canPaint) this.cursorEl.hidden = true;
+  }
+
+  private brushRadiusKm(lat: number): number {
+    return (this.brushPx.value * this.gameMap.metersPerPixel(lat)) / 1000;
+  }
+
+  private updateCursor(point: Point, lngLat: LngLat): void {
+    if (!this.canPaint()) {
+      this.cursorEl.hidden = true;
+      return;
+    }
+    this.cursorEl.hidden = false;
+    this.cursorEl.style.transform = `translate(${point.x}px, ${point.y}px)`;
+    this.cursorEl.classList.toggle("erase", this.tool.value === "erase");
+    const mpp = this.gameMap.metersPerPixel(lngLat.lat);
+    const tolPx = (this.toleranceKm.value * 1000) / mpp;
+    const px = this.brushPx.value;
+    this.brushRing.style.width = this.brushRing.style.height = `${px * 2}px`;
+    this.tolRing.style.width = this.tolRing.style.height = `${tolPx * 2}px`;
+    const { clamped } = this.layer.ringsForRadius(this.brushRadiusKm(lngLat.lat));
+    this.brushRing.classList.toggle("clamped", clamped);
+    if (clamped !== this.brushClamped.peek()) this.brushClamped.value = clamped;
+  }
+
+  private stampAt(lngLat: LngLat): void {
+    const sign = this.tool.value === "erase" ? -1 : 1;
+    // Stamps overlap along a stroke, so scale each one down.
+    this.layer.stamp({ lat: lngLat.lat, lon: lngLat.lng }, this.brushRadiusKm(lngLat.lat), sign * this.strength.value * 0.3);
+  }
+
+  private strokeTo(point: Point): void {
+    const map = this.gameMap.map;
+    if (!this.lastStampPoint) {
+      this.stampAt(map.unproject(point));
+      this.lastStampPoint = point;
+      return;
+    }
+    const start = this.lastStampPoint;
+    const dx = point.x - start.x;
+    const dy = point.y - start.y;
+    const dist = Math.hypot(dx, dy);
+    const step = Math.max(2, this.brushPx.value / 4);
+    if (dist < step) return;
+    const n = Math.floor(dist / step);
+    for (let i = 1; i <= n; i++) {
+      const t = (i * step) / dist;
+      const p = new Point(start.x + dx * t, start.y + dy * t);
+      this.stampAt(map.unproject(p));
+      this.lastStampPoint = p;
+    }
+  }
+
+  private queueRender(): void {
+    if (this.renderQueued) return;
+    this.renderQueued = true;
+    requestAnimationFrame(() => {
+      this.renderQueued = false;
+      this.gameMap.setPaint(this.layer.toGeoJSON());
+      this.version.value++;
+    });
+  }
+
+  static readonly MAX_BRUSH_RINGS = MAX_BRUSH_RINGS;
+}

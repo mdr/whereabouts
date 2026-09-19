@@ -8,18 +8,53 @@ probability distribution** on a world map instead of dropping a pin.
 ```sh
 nix develop        # or let direnv load the shell
 pnpm install
-pnpm dev           # http://localhost:5173
+pnpm dev           # client on http://localhost:5173, game server on :8787
 ```
 
-Node and pnpm are pinned by the flake (`flake.lock`), and `pnpm-workspace.yaml`
-sets `pmOnFail: ignore` so pnpm never downloads or switches to another version
-of itself, plus `engineStrict: true` so a Node or pnpm major mismatch outside
-the Nix shell fails instead of silently proceeding. Corepack is disabled by
-environment variables in the dev shell.
+Open two browser tabs at http://localhost:5173 to play against yourself:
+host a game in one, join with the code in the other. Tabs are separate
+players because the reconnect token lives in session storage.
 
-Other commands: `pnpm test` (scoring and paint unit tests), `pnpm typecheck`,
-`pnpm build`, `pnpm smoke` (drives the dev server in the installed Chrome via
-Playwright, paints a stroke, submits, and saves screenshots to `./smoke-out`).
+Other commands: `pnpm test` (unit tests for scoring, paint and the game state
+machine, plus end-to-end server tests over real WebSockets), `pnpm typecheck`,
+`pnpm build`, `pnpm smoke` (Playwright drives the single-player mode in your
+installed Chrome), and from `packages/client`,
+`node scripts/multiplayer-smoke.mjs` (two players through a full online round
+against the running dev servers).
+
+Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
+`REVEAL_MS`, `KERNEL` (a kernel id from `packages/shared/src/scoring.ts`),
+`PORT`, `STATIC_DIR`.
+
+## Layout
+
+pnpm workspace with three packages:
+
+- `packages/shared`: geo, scoring, H3 paint model, question pool, the wire
+  protocol (zod schemas + view types), and the pure `Game` state machine. No
+  I/O anywhere; the same code runs in the browser and on the server.
+- `packages/client`: Vite + Preact. Screens: home, solo practice (with the
+  playtest tools), and the online game (lobby, timed guessing, reveal,
+  results). `PaintController` wraps the MapLibre map and brush input.
+- `packages/server`: Fastify for HTTP (health, static client in production)
+  and Rivalis for rooms over WebSockets. `GameRoom` adapts one Rivalis room to
+  one `Game`; `GameAuth` turns join tickets into room routing. The Rivalis
+  WebSocket transport is vendored under `src/vendor` to avoid the native
+  WebRTC dependency of `@rivalis/node`.
+
+## Online play
+
+- The host creates a game and gets a four-letter code; others join with it.
+- Rounds are 60 seconds. Whatever is painted at the deadline is the guess;
+  "Lock in" freezes it early. Blank guesses score the 500 baseline.
+- Paint is private until the deadline. The reveal shows the answer, every
+  player's score, and lets you click a player to see their paint in their
+  colour. Standings carry rank-change arrows.
+- Late joiners spectate the current round and play from the next. A dropped
+  player keeps their seat and score and reclaims it on reconnect. If the host
+  drops, the longest-standing player inherits the host controls.
+- State is in memory on a single server process; a restart ends games in
+  progress.
 
 ## How it works
 

@@ -24,8 +24,9 @@ export class GameMap {
   private waterwayLayers: string[] = [];
   private waterFilter: unknown = undefined;
   private styleLayers: { id: string; type: string; sourceLayer: string }[] = [];
+  private theme: Theme | null = null;
 
-  constructor(container: string) {
+  constructor(container: string | HTMLElement) {
     this.map = new MapLibreMap({
       container,
       style: STYLE_URL,
@@ -117,6 +118,7 @@ export class GameMap {
   }
 
   applyTheme(t: Theme): void {
+    this.theme = t;
     const set = (id: string, prop: string, value: unknown) => {
       if (this.map.getLayer(id)) this.map.setPaintProperty(id, prop as never, value as never);
     };
@@ -138,11 +140,7 @@ export class GameMap {
         if (l.id === "building") set(l.id, "fill-outline-color", t.urban);
       }
     }
-    set("paint-fill", "fill-color", [
-      "interpolate", ["linear"], ["get", "v"],
-      0, t.ramp[0], 1 / 3, t.ramp[1], 2 / 3, t.ramp[2], 1, t.ramp[3],
-    ]);
-    set("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, t.rampOpacity[0], 1, t.rampOpacity[1]]);
+    this.applyPaintRamp(t);
     set("reveal-rings", "line-color", t.answer);
     set("reveal-answer", "circle-color", t.answer);
     set("reveal-answer", "circle-stroke-color", t.answerStroke);
@@ -180,6 +178,29 @@ export class GameMap {
     this.source(PAINT_SOURCE)?.setData(data);
   }
 
+  /**
+   * Colour the paint layer with a single hue (a player's colour) instead of
+   * the theme ramp. Pass null to restore the ramp.
+   */
+  setPaintColour(colour: string | null): void {
+    if (!this.map.getLayer("paint-fill")) return;
+    if (colour === null) {
+      if (this.theme) this.applyPaintRamp(this.theme);
+      return;
+    }
+    this.map.setPaintProperty("paint-fill", "fill-color", colour);
+    this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9]);
+  }
+
+  private applyPaintRamp(t: Theme): void {
+    if (!this.map.getLayer("paint-fill")) return;
+    this.map.setPaintProperty("paint-fill", "fill-color", [
+      "interpolate", ["linear"], ["get", "v"],
+      0, t.ramp[0], 1 / 3, t.ramp[1], 2 / 3, t.ramp[2], 1, t.ramp[3],
+    ]);
+    this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, t.rampOpacity[0], 1, t.rampOpacity[1]]);
+  }
+
   /** Marker at the answer plus rings at 1r and 2r. */
   showReveal(answer: LatLon, toleranceKm: number): void {
     const fc: GeoJSON.FeatureCollection = {
@@ -207,6 +228,41 @@ export class GameMap {
   metersPerPixel(lat: number): number {
     const z = this.map.getZoom();
     return (WORLD_M * Math.cos((lat * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, z));
+  }
+
+  /** Fit the answer and a paint layer's cells into view, with a sensible zoom cap. */
+  fitAnswerAndPaint(answer: LatLon, paint: GeoJSON.FeatureCollection, toleranceKm: number): void {
+    let minLon = answer.lon, maxLon = answer.lon, minLat = answer.lat, maxLat = answer.lat;
+    for (const f of paint.features) {
+      if (f.geometry.type !== "Polygon") continue;
+      for (const [lon, lat] of f.geometry.coordinates[0] as [number, number][]) {
+        // Cells that were unwrapped past 180 are folded back for the bbox.
+        const l = lon > 180 ? lon - 360 : lon;
+        if (l < minLon) minLon = l;
+        if (l > maxLon) maxLon = l;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+      }
+    }
+    // Always include at least two tolerances around the answer.
+    const dLat = (2 * toleranceKm) / 111;
+    const dLon = dLat / Math.max(0.2, Math.cos((answer.lat * Math.PI) / 180));
+    minLat = Math.min(minLat, answer.lat - dLat);
+    maxLat = Math.max(maxLat, answer.lat + dLat);
+    minLon = Math.min(minLon, answer.lon - dLon);
+    maxLon = Math.max(maxLon, answer.lon + dLon);
+    if (maxLon - minLon > 300) {
+      // Spans most of the world; just show it all.
+      this.map.easeTo({ center: [answer.lon, 20], zoom: this.map.getMinZoom(), duration: 900 });
+      return;
+    }
+    this.map.fitBounds(
+      [
+        [minLon, Math.max(-85, minLat)],
+        [maxLon, Math.min(85, maxLat)],
+      ],
+      { padding: 60, duration: 900, maxZoom: 10 },
+    );
   }
 
   /** Ease so that about eight tolerances span 40% of the viewport width. */
