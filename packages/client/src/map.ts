@@ -1,7 +1,7 @@
 import { Map as MapLibreMap, NavigationControl, type GeoJSONSource } from "maplibre-gl";
 import type * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { EARTH_RADIUS_KM, type LatLon } from "./geo";
+import { EARTH_RADIUS_KM, type LatLon } from "@whereabouts/shared";
 import type { Theme } from "./themes";
 
 const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";

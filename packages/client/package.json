@@ -1,0 +1,25 @@
+{
+  "name": "@whereabouts/client",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@preact/signals": "^2.0.0",
+    "@whereabouts/shared": "workspace:*",
+    "maplibre-gl": "^6.7.0",
+    "preact": "^10.27.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.0",
+    "@types/geojson": "^7946.0.16",
+    "playwright-core": "^1.55.0",
+    "vite": "^7.1.0"
+  }
+}

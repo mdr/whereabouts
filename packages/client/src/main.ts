@@ -1,7 +1,7 @@
 import "./style.css";
 import { Point, type LngLat, type MapMouseEvent } from "maplibre-gl";
 import { GameMap } from "./map";
-import { PaintLayer, resolutionForTolerance, cellSpacingKm, MAX_BRUSH_RINGS } from "./paint";
+import { PaintLayer, resolutionForTolerance, cellSpacingKm, MAX_BRUSH_RINGS } from "@whereabouts/shared";
 import {
   KERNELS,
   buildDistribution,
@@ -11,9 +11,9 @@ import {
   selfSimilarity,
   similarityToAnswer,
   type Distribution,
-} from "./scoring";
-import { greatCircleDistance, toXyz, type LatLon } from "./geo";
-import { commonsImageUrl, commonsPageUrl, loadQuestions, shuffle, type Question } from "./questions";
+} from "@whereabouts/shared";
+import { greatCircleDistance, toXyz, type LatLon } from "@whereabouts/shared";
+import { commonsImageUrl, commonsPageUrl, loadQuestions, shuffle, type Question } from "@whereabouts/shared";
 import { THEME } from "./themes";
 
 type Tool = "pan" | "paint" | "erase";

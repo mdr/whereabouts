@@ -21,10 +21,13 @@ export function commonsPageUrl(file: string): string {
   return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, "_"))}`;
 }
 
+import questionsJson from "../questions.json";
+
+/** The bundled question pool. */
+export const QUESTIONS: Question[] = questionsJson as Question[];
+
 export async function loadQuestions(): Promise<Question[]> {
-  const res = await fetch("/questions.json");
-  if (!res.ok) throw new Error(`Failed to load questions: ${res.status}`);
-  return (await res.json()) as Question[];
+  return QUESTIONS;
 }
 
 /** Deterministic shuffle so a playtest session can be replayed. */

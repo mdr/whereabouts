@@ -8,23 +8,14 @@
     "pnpm": "11.x"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "dev": "pnpm --parallel --filter ./packages/client --filter ./packages/server dev",
+    "build": "pnpm -r build",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "smoke": "node scripts/smoke.mjs"
-  },
-  "dependencies": {
-    "h3-js": "^4.5.0",
-    "maplibre-gl": "^6.7.0"
+    "typecheck": "pnpm -r typecheck",
+    "smoke": "pnpm --filter ./packages/client smoke"
   },
   "devDependencies": {
-    "@types/geojson": "^7946.0.16",
-    "@types/node": "^26.4.1",
-    "playwright-core": "^1.63.0",
-    "typescript": "^7.0.2",
-    "vite": "^8.2.2",
+    "typescript": "^5.9.3",
     "vitest": "^5.0.0"
   }
 }

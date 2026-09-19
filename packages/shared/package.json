@@ -1,0 +1,21 @@
+{
+  "name": "@whereabouts/shared",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./questions.json": "./questions.json"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "h3-js": "^4.5.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.16"
+  }
+}
