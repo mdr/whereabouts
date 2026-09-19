@@ -2,11 +2,12 @@ import { useEffect, useRef } from "preact/hooks";
 import { PaintLayer, compactRecord, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { usePaint } from "../ui/MapView";
-import { Card, Countdown, QuestionCard } from "../ui/bits";
-import { Distribution, PaintTools } from "../ui/PaintTools";
-import { DifficultyOptions } from "../ui/Options";
+import { Card, Countdown, HudHeader, QuestionCard } from "../ui/bits";
+import { PaintDev, PaintTools } from "../ui/PaintTools";
 import { PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
+import { DevDrawer } from "../ui/DevDrawer";
+import { ConnectionDev } from "../ui/ConnectionDev";
 import { Reveal } from "./Reveal";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
@@ -62,61 +63,56 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     conn.lock();
   }
 
-  const header = (
-    <h1>
-      Whereabouts{" "}
-      <small>
-        {view.code} · round {(view.round?.index ?? view.reveal?.index ?? 0) + 1} /{" "}
-        {view.round?.total ?? view.reveal?.total ?? "?"}
-      </small>
-    </h1>
-  );
-
   if (view.phase === "reveal" && view.reveal) {
-    return (
-      <>
-        {header}
-        <Reveal conn={conn} view={view} reveal={view.reveal} />
-        <DifficultyOptions />
-      </>
-    );
+    return <Reveal conn={conn} view={view} reveal={view.reveal} />;
   }
 
   const round = view.round!;
   return (
     <>
-      {header}
-      <div class="timer-row">
-        <Countdown msRemaining={() => conn.msUntil(round.deadline)} />
-        <span class="hint">Whatever is painted when the clock hits zero is your guess.</span>
-      </div>
-      <QuestionCard q={round.question} res={paint.layer.res} />
-      {view.you.spectating ? (
-        <Card>
-          <p class="hint">You joined mid-round, so you're watching this one. You'll play from the next question.</p>
-        </Card>
-      ) : (
-        <Card title="Paint your hunch">
-          <PaintTools />
-          <div class="actions">
+      <div class="hud">
+        <div class="hud-top">
+          <HudHeader
+            round={round.index + 1}
+            total={round.total}
+            right={<Countdown msRemaining={() => conn.msUntil(round.deadline)} />}
+          />
+          <QuestionCard q={round.question} />
+          <ConnectionNote conn={conn} />
+          {view.you.spectating && (
+            <Card>
+              <p class="hint">You joined mid-round, so you're watching this one. You'll play from the next question.</p>
+            </Card>
+          )}
+          {view.you.locked && (
+            <Card>
+              <p class="hint">Locked in. Sit tight until the clock runs out.</p>
+            </Card>
+          )}
+        </div>
+        {!view.you.spectating && (
+          <PaintTools>
             <button class="danger" onClick={() => paint.clear()} disabled={!paint.enabled.value}>
               Clear
             </button>
-            <button class="primary" onClick={lockIn} disabled={view.you.locked || paint.layer.isEmpty}>
+            <button
+              class="primary"
+              title="Whatever is painted when the clock hits zero counts anyway."
+              onClick={lockIn}
+              disabled={view.you.locked || paint.layer.isEmpty}
+            >
               {view.you.locked ? "Locked in" : "Lock in"}
             </button>
-          </div>
-          {view.you.locked && <p class="hint">Locked. Sit tight until the clock runs out.</p>}
+          </PaintTools>
+        )}
+      </div>
+      <DevDrawer>
+        <Card title="Players">
+          <PlayerList players={view.players} you={view.you.id} showScores />
         </Card>
-      )}
-      <Card title="Your distribution">
-        <Distribution />
-      </Card>
-      <Card title="Players">
-        <PlayerList players={view.players} you={view.you.id} showScores />
-      </Card>
-      <ConnectionNote conn={conn} />
-      <DifficultyOptions />
+        <PaintDev />
+        <ConnectionDev conn={conn} view={view} />
+      </DevDrawer>
     </>
   );
 }

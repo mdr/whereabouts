@@ -109,6 +109,11 @@ export class PaintLayer {
     return this.cells.size === 0;
   }
 
+  /** Number of painted cells. */
+  get size(): number {
+    return this.cells.size;
+  }
+
   maxIntensity(): number {
     let m = 0;
     for (const v of this.cells.values()) if (v > m) m = v;

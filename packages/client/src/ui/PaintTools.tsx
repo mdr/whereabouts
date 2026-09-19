@@ -1,29 +1,60 @@
+import type { ComponentChildren } from "preact";
 import { usePaint } from "./MapView";
-import { fmtKm } from "./bits";
+import { Card, fmtKm } from "./bits";
 import { PaintController, type Tool } from "../paint-controller";
 
-export function PaintTools({ onClear }: { onClear?: () => void }) {
+const TOOL_HINT: Record<Tool, string> = {
+  pan: "Pan the map (1). Hold Space to pan while painting.",
+  paint: "Paint where you think it is (2). Paint again to weight an area more.",
+  erase: "Erase paint (3)",
+};
+
+/**
+ * The player-facing brush bar: tool, brush size, and whatever action buttons
+ * the screen passes in (clear, lock in, submit).
+ */
+export function PaintTools({ children }: { children?: ComponentChildren }) {
   const paint = usePaint();
   const tool = paint.tool.value;
-  const setTool = (t: Tool) => (paint.tool.value = t);
+  const enabled = paint.enabled.value;
   return (
-    <>
+    <div class="hud-bottom toolbar">
       <div class="tools">
-        {(["pan", "paint", "erase"] as Tool[]).map((t, i) => (
-          <button key={t} class={tool === t ? "active" : ""} onClick={() => setTool(t)} disabled={!paint.enabled.value}>
-            {t[0]!.toUpperCase() + t.slice(1)} <kbd>{i + 1}</kbd>
+        {(["pan", "paint", "erase"] as Tool[]).map((t) => (
+          <button
+            key={t}
+            class={tool === t ? "active" : ""}
+            title={TOOL_HINT[t]}
+            onClick={() => (paint.tool.value = t)}
+            disabled={!enabled}
+          >
+            {t[0]!.toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
-      <Slider
-        label="Brush size"
-        min={6}
-        max={200}
-        step={1}
-        value={paint.brushPx.value}
-        onInput={(v) => paint.setBrushPx(v)}
-        format={(v) => `${v} px`}
-      />
+      <label class="brush" title="Brush size ([ and ] also work)">
+        <span>Brush</span>
+        <input
+          type="range"
+          min={6}
+          max={200}
+          step={1}
+          value={paint.brushPx.value}
+          disabled={!enabled}
+          onInput={(e) => paint.setBrushPx(Number((e.target as HTMLInputElement).value))}
+        />
+      </label>
+      {children}
+    </div>
+  );
+}
+
+/** Developer-only paint settings and diagnostics. */
+export function PaintDev() {
+  const paint = usePaint();
+  void paint.version.value;
+  return (
+    <Card title="Paint">
       <Slider
         label="Strength"
         min={0.2}
@@ -44,26 +75,14 @@ export function PaintTools({ onClear }: { onClear?: () => void }) {
       />
       {paint.brushClamped.value && (
         <p class="hint warn">
-          Brush too large for this tolerance; capped at {PaintController.MAX_BRUSH_RINGS} cells radius. Use the world
-          floor for broad uncertainty.
+          Brush too large for this tolerance; capped at {PaintController.MAX_BRUSH_RINGS} cells radius.
         </p>
       )}
       <p class="hint">
-        <span class="legend solid" /> Brush footprint &nbsp; <span class="legend dashed" /> One tolerance (
-        {fmtKm(paint.toleranceKm.value)}): the distance at which credit halves.
+        Tolerance {fmtKm(paint.toleranceKm.value)} · H3 res {paint.layer.res} · {paint.layer.size} cells
       </p>
-      <p class="hint">
-        Hold <kbd>Space</kbd> to pan while painting. <kbd>[</kbd> <kbd>]</kbd> resize the brush. Scroll to zoom. Paint
-        again over an area to weight it more.
-      </p>
-      {onClear && (
-        <div class="actions">
-          <button class="danger" onClick={onClear} disabled={!paint.enabled.value}>
-            Clear
-          </button>
-        </div>
-      )}
-    </>
+      <Distribution />
+    </Card>
   );
 }
 

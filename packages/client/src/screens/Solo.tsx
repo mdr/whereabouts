@@ -1,4 +1,4 @@
-/** Single-player practice mode with the playtest tools (cheat, kernel switch, score-if-here). */
+/** Single-player practice mode. Playtest tools live in the dev drawer. */
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { useSignal } from "@preact/signals";
 import {
@@ -17,10 +17,11 @@ import {
   type Question,
 } from "@whereabouts/shared";
 import { MapView, usePaint } from "../ui/MapView";
-import { Card, QuestionCard, fmtKm } from "../ui/bits";
-import { Distribution as DistributionList, PaintTools } from "../ui/PaintTools";
-import { Check, DifficultyOptions } from "../ui/Options";
+import { Card, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../ui/bits";
+import { PaintDev, PaintTools } from "../ui/PaintTools";
+import { DevDrawer } from "../ui/DevDrawer";
 import { cheatLiveScore, soloKernelId } from "../settings";
+import { devMode } from "../dev";
 
 interface RoundResult {
   question: Question;
@@ -48,6 +49,7 @@ function SoloGame() {
   const kernel = kernelById(soloKernelId.value);
   const q = questions[index]!;
   const total = results.reduce((s, r) => s + r.score, 0);
+  const cheating = devMode.value && cheatLiveScore.value;
 
   // New round: fresh layer for this tolerance, painting on.
   useEffect(() => {
@@ -62,9 +64,9 @@ function SoloGame() {
   // Cheat: show the answer while painting.
   useEffect(() => {
     if (phase !== "paint") return;
-    if (cheatLiveScore.value) paint.gameMap.showReveal(q.answer, q.toleranceKm);
+    if (cheating) paint.gameMap.showReveal(q.answer, q.toleranceKm);
     else paint.gameMap.clearReveal();
-  }, [cheatLiveScore.value, phase, index]);
+  }, [cheating, phase, index]);
 
   useEffect(() => paint.onHover((p) => (hover.value = p)), [paint]);
 
@@ -115,47 +117,25 @@ function SoloGame() {
   }, [revealed, soloKernelId.value]);
 
   const header = (
-    <h1>
-      <a href="#/" class="back">
-        Whereabouts
-      </a>{" "}
-      <small>
-        Round {Math.min(index + 1, questions.length)} / {questions.length} · total {Math.round(total).toLocaleString()}
-      </small>
-    </h1>
+    <HudHeader
+      home
+      round={Math.min(index + 1, questions.length)}
+      total={questions.length}
+      right={<span class="total">{Math.round(total).toLocaleString()} pts</span>}
+    />
   );
 
-  if (phase === "done") {
-    return (
-      <>
-        {header}
-        <div class="card score">
-          <div class="label">Final score</div>
-          <div class="big">{Math.round(total).toLocaleString()}</div>
-          <div class="label">out of {(questions.length * 1000).toLocaleString()}</div>
-        </div>
-        <Card title="Rounds">
-          <ul class="results">
-            {results.map((r, i) => (
-              <li key={i}>
-                <span>{r.question.label}</span>
-                <span>{Math.round(r.score)}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-        <button class="primary" onClick={restart}>
-          Play again
-        </button>
-      </>
-    );
-  }
-
-  const playtest = (
-    <>
-      <h2 style={{ marginTop: 10 }}>Playtest</h2>
-      <Check s={cheatLiveScore}>Show live score and the real answer while painting</Check>
-      <label>
+  const cheats = (
+    <Card title="Cheats">
+      <label class="check">
+        <input
+          type="checkbox"
+          checked={cheatLiveScore.value}
+          onChange={(e) => (cheatLiveScore.value = (e.target as HTMLInputElement).checked)}
+        />{" "}
+        Show live score and the real answer while painting
+      </label>
+      <label class="check">
         Scoring kernel{" "}
         <select
           value={soloKernelId.value}
@@ -169,8 +149,39 @@ function SoloGame() {
           ))}
         </select>
       </label>
-    </>
+    </Card>
   );
+
+  if (phase === "done") {
+    return (
+      <div class="hud">
+        <div class="hud-center">
+          <div class="home-card">
+            <h1>Whereabouts</h1>
+            <div class="score">
+              <div class="label">Final score</div>
+              <div class="big">{Math.round(total).toLocaleString()}</div>
+              <div class="label">out of {(questions.length * 1000).toLocaleString()}</div>
+            </div>
+            <ul class="results">
+              {results.map((r, i) => (
+                <li key={i}>
+                  <span>{r.question.label}</span>
+                  <span>{Math.round(r.score)}</span>
+                </li>
+              ))}
+            </ul>
+            <button class="primary big" onClick={restart}>
+              Play again
+            </button>
+            <p class="hint">
+              <a href="#/">Leave</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (phase === "reveal" && revealed && shownResult) {
     const h = hover.value;
@@ -181,71 +192,60 @@ function SoloGame() {
       const d = greatCircleDistance(h, q.answer);
       hoverText = `If the answer were here: ${Math.round(s)} · ${fmtKm(d)} from the real answer (${(d / q.toleranceKm).toFixed(1)} tolerances)`;
     }
+    const last = index + 1 >= questions.length;
     return (
       <>
-        {header}
-        <QuestionCard q={q} res={paint.layer.res} />
-        <div class="card score">
-          <div class="label">{q.label}</div>
-          <div class="big">{Math.round(shownResult.score)}</div>
-          <Parts A={shownResult.A} B={shownResult.B} />
-          <div class="hover-score">{hoverText}</div>
-          <KernelComparison dist={revealed.dist} q={q} active={kernel.id} />
+        <div class="hud">
+          <div class="hud-top">
+            {header}
+            <QuestionCard q={q} />
+            <div class="card score">
+              <div class="label">{q.label}</div>
+              <div class="big">{Math.round(shownResult.score)}</div>
+              <div class="label">this round</div>
+            </div>
+          </div>
+          <div class="hud-bottom toolbar">
+            <button class="primary" onClick={next}>
+              {last ? "Finish" : "Next question"} <kbd>Enter</kbd>
+            </button>
+          </div>
         </div>
-        <Card title="Your distribution">
-          <DistributionList />
-        </Card>
-        <div class="actions">
-          <button class="primary" onClick={next}>
-            {index + 1 >= questions.length ? "Finish" : "Next question"} <kbd>Enter</kbd>
-          </button>
-        </div>
-        <DifficultyOptions extra={playtest} />
+        <DevDrawer>
+          <Card title="Score">
+            <ScoreParts A={shownResult.A} B={shownResult.B} />
+            <div class="hover-score">{hoverText}</div>
+            <KernelComparison dist={revealed.dist} q={q} active={kernel.id} />
+          </Card>
+          {cheats}
+          <PaintDev />
+        </DevDrawer>
       </>
     );
   }
 
   return (
     <>
-      {header}
-      <QuestionCard q={q} res={paint.layer.res} />
-      <Card title="Paint your hunch">
-        <PaintTools />
-        <div class="actions">
+      <div class="hud">
+        <div class="hud-top">
+          {header}
+          <QuestionCard q={q} />
+        </div>
+        <PaintTools>
           <button class="danger" onClick={() => paint.clear()}>
             Clear
           </button>
           <button class="primary" onClick={submit} disabled={paint.version.value < 0 || paint.layer.isEmpty}>
-            Submit <kbd>Enter</kbd>
+            Submit
           </button>
-        </div>
-      </Card>
-      {cheatLiveScore.value && <LiveScore q={q} kernelId={kernel.id} />}
-      <Card title="Your distribution">
-        <DistributionList />
-        <p class="hint">
-          All paint is normalised to 100% together with the world floor, which spreads that share evenly over the whole
-          planet.
-        </p>
-      </Card>
-      <DifficultyOptions extra={playtest} />
+        </PaintTools>
+      </div>
+      <DevDrawer>
+        {cheats}
+        {cheating && <LiveScore q={q} kernelId={kernel.id} />}
+        <PaintDev />
+      </DevDrawer>
     </>
-  );
-}
-
-function Parts({ A, B }: { A: number; B: number }) {
-  return (
-    <div class="parts">
-      <span>
-        A <b>{A.toFixed(3)}</b>
-      </span>
-      <span>
-        B <b>{B.toFixed(3)}</b>
-      </span>
-      <span>
-        2A−B <b>{(2 * A - B).toFixed(3)}</b>
-      </span>
-    </div>
   );
 }
 
@@ -271,13 +271,13 @@ function LiveScore({ q, kernelId }: { q: Question; kernelId: string }) {
   const dist = buildDistribution(paint.layer.toCells(), paint.floor.value);
   const { score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, kernelById(kernelId));
   return (
-    <Card title="Live score (cheat)">
+    <Card title="Live score">
       <p class="hint" style={{ margin: "0 0 6px" }}>
         Answer: {q.label}, marked on the map.
       </p>
       <div class="score">
         <div class="big">{Math.round(score)}</div>
-        <Parts A={A} B={B} />
+        <ScoreParts A={A} B={B} />
       </div>
       <KernelComparison dist={dist} q={q} active={kernelId} />
     </Card>

@@ -42,9 +42,10 @@ pnpm workspace with three packages:
 - `packages/shared`: geo, scoring, H3 paint model, question pool, the wire
   protocol (zod schemas + view types), and the pure `Game` state machine. No
   I/O anywhere; the same code runs in the browser and on the server.
-- `packages/client`: Vite + Preact. Screens: home, solo practice (with the
-  playtest tools), and the online game (lobby, timed guessing, reveal,
-  results). `PaintController` wraps the MapLibre map and brush input.
+- `packages/client`: Vite + Preact. Screens: home, solo practice, and the
+  online game (lobby, timed guessing, reveal, results). The map fills the
+  screen with HUD cards over it; `PaintController` wraps the MapLibre map and
+  brush input. Add `?dev` to the URL for the developer drawer.
 - `packages/server`: Fastify for HTTP (health, static client in production)
   and Rivalis for rooms over WebSockets. `GameRoom` adapts one Rivalis room to
   one `Game`; `GameAuth` turns join tickets into room routing. The Rivalis
@@ -84,14 +85,15 @@ pnpm workspace with three packages:
   glowing from teal to white and an amber answer marker. The theme recolours
   the basemap layers in place; two playtested alternatives (viridis, paper
   map) remain in `src/themes.ts` for reference.
-- **Kernel options** (Playtest section of the panel): the single Gaussian from
+- **Kernel options** (Cheats card of the developer drawer): the single Gaussian from
   the design note, or a mixture of Gaussians at `r`, `4r` and `16r` with equal
   or 0.5/0.3/0.2 weights. A positive mixture of Gaussians is still a valid
   kernel, so the rule stays proper and bounded. Coarse components aggregate the
   paint onto a grid an eighth of their width before the pair sum. The live
-  cheat card and the reveal show the score under every kernel side by side.
-- **Reveal** shows the answer, rings at one and two tolerances, the score with
-  `A` and `B`, and a live "score if the answer were here" readout on hover.
+  score card and the reveal show the score under every kernel side by side.
+- **Reveal** shows the answer, rings at one and two tolerances, and the score.
+  In dev mode it also shows `A` and `B` and a live "score if the answer were
+  here" readout on hover.
 
 ## Controls
 
@@ -103,9 +105,17 @@ pnpm workspace with three packages:
 | Zoom                | scroll wheel                    |
 | Submit / next       | `Enter`                         |
 
-The solid cursor ring is the brush; the dashed blue ring is one tolerance.
-The brush turns red when it is capped (about 5,000 cells per stamp).
-Place names, country borders, man-made detail (roads, railways, buildings,
-airports, urban land use), and inland water (rivers, lakes) are all off by
-default; toggle them under **Difficulty**. Coastlines, woodland and ice stay
-visible.
+The dashed amber cursor ring is one tolerance; the solid ring that appears
+while you drag is the brush. Place names, country borders, man-made detail
+(roads, railways, buildings, airports, urban land use), and inland water
+(rivers, lakes) are all hidden. Coastlines, woodland and ice stay visible.
+
+## Developer mode
+
+Add `?dev` to the URL (`http://localhost:5173/?dev#/solo`, or `#/solo?dev`)
+for a right-hand drawer with the playtest tools: live score and the true
+answer while painting, A and B, the kernel selector and side-by-side kernel
+scores, score-if-here on hover, the paint distribution by blob, H3 resolution
+and cell count, brush strength and world floor sliders, and connection
+diagnostics online. Players never see any of this; strength and floor are
+fixed for them.

@@ -52,4 +52,21 @@ describe("PlayerList", () => {
     expect(arrows).toEqual(["▲", "", "▼"]);
     expect([...container.querySelectorAll(".score-num")].map((s) => s.textContent)).toEqual(["900", "500", "100"]);
   });
+
+  it("puts a rename pencil on your own row only when asked", () => {
+    let clicks = 0;
+    const { container } = render(
+      <PlayerList
+        players={[player({ id: "p1" }), player({ id: "p2", name: "Bob" })]}
+        you="p2"
+        showScores={false}
+        onRename={() => clicks++}
+      />,
+    );
+    const pencils = container.querySelectorAll("button.icon");
+    expect(pencils).toHaveLength(1);
+    expect(pencils[0]!.closest("li")!.textContent).toContain("Bob");
+    (pencils[0] as HTMLButtonElement).click();
+    expect(clicks).toBe(1);
+  });
 });

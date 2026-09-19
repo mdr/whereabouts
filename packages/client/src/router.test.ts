@@ -16,6 +16,11 @@ describe("parseRoute", () => {
     expect(parseRoute("")).toEqual({ name: "home" });
     expect(parseRoute("#/nowhere")).toEqual({ name: "home" });
   });
+
+  it("ignores a query string after the path", () => {
+    expect(parseRoute("#/solo?dev")).toEqual({ name: "solo" });
+    expect(parseRoute("#/game/ab12?dev")).toEqual({ name: "game", code: "AB12", create: false });
+  });
 });
 
 describe("navigate", () => {

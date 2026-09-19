@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
-import { commonsImageUrl, commonsPageUrl, cellSpacingKm, type QuestionView } from "@whereabouts/shared";
+import { commonsImageUrl, commonsPageUrl, type QuestionView } from "@whereabouts/shared";
 
 export function fmtKm(km: number): string {
   return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km).toLocaleString()} km`;
@@ -15,7 +15,39 @@ export function Card({ title, children, class: cls }: { title?: string; children
   );
 }
 
-export function QuestionCard({ q, res }: { q: QuestionView; res?: number }) {
+/**
+ * One-line strip at the top of the HUD: title (a link home where allowed),
+ * round counter, and anything the screen wants on the right (a countdown).
+ */
+export function HudHeader({
+  home,
+  round,
+  total,
+  right,
+}: {
+  home?: boolean;
+  round: number;
+  total: number | string;
+  right?: ComponentChildren;
+}) {
+  return (
+    <div class="hud-header">
+      {home ? (
+        <a href="#/" class="brand">
+          Whereabouts
+        </a>
+      ) : (
+        <span class="brand">Whereabouts</span>
+      )}
+      <span class="round">
+        Round {round} / {total}
+      </span>
+      {right}
+    </div>
+  );
+}
+
+export function QuestionCard({ q, children }: { q: QuestionView; children?: ComponentChildren }) {
   return (
     <div class="card question">
       <p class="prompt">{q.prompt}</p>
@@ -30,18 +62,13 @@ export function QuestionCard({ q, res }: { q: QuestionView; res?: number }) {
           </div>
         </>
       )}
-      <div class="tolerance">
+      <div class="tolerance" title="Credit halves at this distance from the true spot; shown as the dashed ring.">
         <span class="swatch" />
         <span>
           Tolerance <b>{fmtKm(q.toleranceKm)}</b>
-          {res !== undefined && (
-            <>
-              {" "}
-              · cells ≈ {fmtKm(cellSpacingKm(res))} (H3 res {res})
-            </>
-          )}
         </span>
       </div>
+      {children}
     </div>
   );
 }
@@ -59,4 +86,21 @@ export function useCountdown(msRemaining: () => number): number {
 export function Countdown({ msRemaining, warnAt = 10 }: { msRemaining: () => number; warnAt?: number }) {
   const s = useCountdown(msRemaining);
   return <div class={`countdown ${s <= warnAt ? "warn" : ""}`}>{s}</div>;
+}
+
+/** Score, A and B in the dev drawer. */
+export function ScoreParts({ A, B }: { A: number; B: number }) {
+  return (
+    <div class="parts">
+      <span>
+        A <b>{A.toFixed(3)}</b>
+      </span>
+      <span>
+        B <b>{B.toFixed(3)}</b>
+      </span>
+      <span>
+        2A−B <b>{(2 * A - B).toFixed(3)}</b>
+      </span>
+    </div>
+  );
 }

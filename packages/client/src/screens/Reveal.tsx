@@ -9,9 +9,11 @@ import {
 } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { usePaint } from "../ui/MapView";
-import { Card, Countdown, QuestionCard } from "../ui/bits";
-import { PlayerList } from "../ui/PlayerList";
+import { Card, Countdown, HudHeader, QuestionCard, ScoreParts } from "../ui/bits";
 import { ConnectionNote } from "../ui/ConnectionNote";
+import { DevDrawer } from "../ui/DevDrawer";
+import { ConnectionDev } from "../ui/ConnectionDev";
+import { PaintDev } from "../ui/PaintTools";
 
 export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reveal: RevealView }) {
   const paint = usePaint();
@@ -34,72 +36,103 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   }, [selected, reveal.index]);
 
   const mine = reveal.results.find((r) => r.playerId === view.you.id);
+  const last = reveal.index + 1 >= reveal.total;
+  // Standings order, with this round's result alongside.
+  const rows = [...view.players]
+    .sort((a, b) => a.rank - b.rank)
+    .map((p) => ({ p, r: reveal.results.find((x) => x.playerId === p.id) }));
+
   return (
     <>
-      <div class="timer-row">
-        <Countdown msRemaining={() => conn.msUntil(reveal.autoAdvanceAt)} warnAt={-1} />
-        <span class="hint">
-          {view.you.isHost ? "Next round starts when you press next or the clock runs out." : "Next round soon."}
-        </span>
-      </div>
-      <QuestionCard q={reveal.question} />
-      <div class="card score">
-        <div class="label">{reveal.label}</div>
-        <div class="big">{mine ? Math.round(mine.score) : "—"}</div>
-        <div class="label">{mine ? "your score this round" : "you sat this one out"}</div>
-      </div>
-      <Card title="Guesses">
-        <ul class="reveal-list">
-          {reveal.results.map((r) => (
-            <RevealRow
-              key={r.playerId}
-              r={r}
-              p={byId.get(r.playerId)}
-              you={r.playerId === view.you.id}
-              selected={r.playerId === selected}
-              onSelect={() => setSelected(r.playerId)}
-            />
-          ))}
-        </ul>
-        <p class="hint">Click a player to see their paint on the map.</p>
-      </Card>
-      <Card title="Standings">
-        <PlayerList players={view.players} you={view.you.id} showScores arrows />
-      </Card>
-      {view.you.isHost && (
-        <div class="actions">
-          <button class="primary" onClick={() => conn.next()}>
-            {reveal.index + 1 >= reveal.total ? "Show final results" : "Next round"}
-          </button>
+      <div class="hud">
+        <div class="hud-top">
+          <HudHeader
+            round={reveal.index + 1}
+            total={reveal.total}
+            right={<Countdown msRemaining={() => conn.msUntil(reveal.autoAdvanceAt)} warnAt={-1} />}
+          />
+          <QuestionCard q={reveal.question}>
+            <p class="answer">
+              It's <b>{reveal.label}</b>
+            </p>
+          </QuestionCard>
+          <div class="card score">
+            <div class="big">{mine ? Math.round(mine.score) : "—"}</div>
+            <div class="label">{mine ? "your score this round" : "you sat this one out"}</div>
+          </div>
+          <ConnectionNote conn={conn} />
         </div>
-      )}
-      <ConnectionNote conn={conn} />
+        <div class="hud-right">
+          <Card title="Scores">
+            <ul class="reveal-list">
+              {rows.map(({ p, r }) => (
+                <RevealRow
+                  key={p.id}
+                  p={p}
+                  r={r}
+                  you={p.id === view.you.id}
+                  selected={p.id === selected}
+                  onSelect={() => setSelected(p.id)}
+                />
+              ))}
+            </ul>
+            <p class="hint">Click a player to see their guess.</p>
+          </Card>
+        </div>
+        <div class="hud-bottom toolbar">
+          {view.you.isHost ? (
+            <button class="primary" onClick={() => conn.next()}>
+              {last ? "Show final results" : "Next round"}
+            </button>
+          ) : (
+            <span class="hint">{last ? "Final results soon." : "Next round soon."}</span>
+          )}
+        </div>
+      </div>
+      <DevDrawer>
+        <Card title="Round results">
+          <ul class="results">
+            {reveal.results.map((r) => (
+              <li key={r.playerId}>
+                <span>{byId.get(r.playerId)?.name ?? "?"}</span>
+                <ScoreParts A={r.A} B={r.B} />
+              </li>
+            ))}
+          </ul>
+        </Card>
+        <PaintDev />
+        <ConnectionDev conn={conn} view={view} />
+      </DevDrawer>
     </>
   );
 }
 
 function RevealRow({
-  r,
   p,
+  r,
   you,
   selected,
   onSelect,
 }: {
-  r: RoundResultView;
-  p?: PlayerView;
+  p: PlayerView;
+  r?: RoundResultView;
   you: boolean;
   selected: boolean;
   onSelect: () => void;
 }) {
+  const delta = p.previousRank !== null ? p.previousRank - p.rank : 0;
   return (
     <li class={`${selected ? "selected" : ""}`} onClick={onSelect}>
-      <span class="swatch" style={{ background: p ? playerColour(p.colour) : "#888" }} />
+      <span class="swatch" style={{ background: playerColour(p.colour) }} />
       <span class="name">
-        {p?.name ?? "?"}
+        {p.name}
         {you ? " (you)" : ""}
       </span>
-      <span class="muted">{r.paint ? "" : "no guess"}</span>
-      <span class="score-num">{Math.round(r.score)}</span>
+      <span class="round-score">{r ? (r.paint ? `+${Math.round(r.score)}` : "no guess") : "sat out"}</span>
+      <span class={`arrow ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
+        {delta > 0 ? "▲" : delta < 0 ? "▼" : ""}
+      </span>
+      <span class="score-num">{Math.round(p.score).toLocaleString()}</span>
     </li>
   );
 }

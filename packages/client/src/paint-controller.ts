@@ -60,6 +60,7 @@ export class PaintController {
       if (!this.canPaint() || e.originalEvent.button !== 0) return;
       this.painting = true;
       this.lastStampPoint = null;
+      this.cursorEl.classList.add("painting");
       this.strokeTo(e.point);
       this.queueRender();
     };
@@ -76,6 +77,7 @@ export class PaintController {
     };
     const onUp = () => {
       this.painting = false;
+      this.cursorEl.classList.remove("painting");
       this.lastStampPoint = null;
     };
     const onKeyDown = (e: KeyboardEvent) => {
@@ -83,6 +85,7 @@ export class PaintController {
       if (e.code === "Space" && !this.spaceHeld) {
         this.spaceHeld = true;
         this.painting = false;
+        this.cursorEl.classList.remove("painting");
         this.applyInteraction();
         e.preventDefault();
         return;

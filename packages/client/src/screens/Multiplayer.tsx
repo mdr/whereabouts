@@ -1,7 +1,7 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { Connection } from "../net";
-import { playerName, playerToken } from "../settings";
+import { joinedCode, nameHandoff, playerName, playerToken } from "../settings";
 import { navigate } from "../router";
 import { MapView } from "../ui/MapView";
 import { Lobby } from "./Lobby";
@@ -10,9 +10,18 @@ import { Results } from "./Results";
 
 export function Multiplayer({ code, create }: { code: string; create: boolean }) {
   const conn = useMemo(() => new Connection(), []);
-  // Hosts have just typed their name on the home screen; anyone arriving by
-  // link confirms or edits theirs first, so two tabs need not share a name.
-  const [confirmedName, setConfirmedName] = useState<string | null>(create ? playerName.value.trim() || null : null);
+  // Hosts and code-joiners have just typed their name on the home screen;
+  // anyone arriving by link confirms or edits theirs first, so two tabs need
+  // not share a name.
+  const [confirmedName, setConfirmedName] = useState<string | null>(() => {
+    if (create) return playerName.value.trim() || null;
+    const handed = nameHandoff.value;
+    nameHandoff.value = null;
+    if (handed) return handed;
+    // A refresh of a tab that already holds a seat in this game.
+    if (code && joinedCode.value === code) return playerName.value.trim() || null;
+    return null;
+  });
 
   useEffect(() => {
     if (create && !confirmedName) {
@@ -43,7 +52,9 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
   // Once the server assigns a code to a new game, put it in the URL for sharing.
   const assigned = conn.code.value;
   useEffect(() => {
-    if (create && assigned) history.replaceState(null, "", `#/game/${assigned}`);
+    if (!assigned) return;
+    joinedCode.value = assigned;
+    if (create) history.replaceState(null, "", `#/game/${assigned}`);
   }, [assigned]);
 
   const status = conn.status.value;

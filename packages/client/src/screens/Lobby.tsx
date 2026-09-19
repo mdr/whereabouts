@@ -8,6 +8,8 @@ import { ConnectionNote } from "../ui/ConnectionNote";
 export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   const url = `${location.origin}${location.pathname}#/game/${view.code}`;
   const [copied, setCopied] = useState(false);
+  const [renaming, setRenaming] = useState(false);
+  const current = view.players.find((p) => p.id === view.you.id)?.name ?? "";
   return (
     <div class="home">
       <div class="home-card lobby">
@@ -23,8 +25,19 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
         </button>
         <ConnectionNote conn={conn} />
         <h2>Players</h2>
-        <PlayerList players={view.players} you={view.you.id} showScores={false} />
-        <RenameSelf conn={conn} current={view.players.find((p) => p.id === view.you.id)?.name ?? ""} />
+        <PlayerList players={view.players} you={view.you.id} showScores={false} onRename={() => setRenaming(true)} />
+        {renaming && (
+          <RenameForm
+            current={current}
+            onDone={(name) => {
+              if (name && name !== current) {
+                conn.rename(name);
+                playerName.value = name;
+              }
+              setRenaming(false);
+            }}
+          />
+        )}
         <p class="hint">
           {view.config.rounds} rounds · {view.config.roundMs / 1000} seconds each
         </p>
@@ -40,37 +53,14 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   );
 }
 
-function RenameSelf({ conn, current }: { conn: Connection; current: string }) {
-  const [editing, setEditing] = useState(false);
+function RenameForm({ current, onDone }: { current: string; onDone: (name: string | null) => void }) {
   const [name, setName] = useState(current);
-  if (!editing) {
-    return (
-      <p class="hint">
-        Playing as <b>{current}</b>.{" "}
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            setName(current);
-            setEditing(true);
-          }}
-        >
-          Change name
-        </a>
-      </p>
-    );
-  }
   return (
     <form
       class="join"
       onSubmit={(e) => {
         e.preventDefault();
-        const n = name.trim();
-        if (n && n !== current) {
-          conn.rename(n);
-          playerName.value = n;
-        }
-        setEditing(false);
+        onDone(name.trim());
       }}
     >
       <input
@@ -79,6 +69,9 @@ function RenameSelf({ conn, current }: { conn: Connection; current: string }) {
         maxLength={20}
         value={name}
         onInput={(e) => setName((e.target as HTMLInputElement).value)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") onDone(null);
+        }}
         autoFocus
       />
       <button type="submit" disabled={name.trim().length === 0}>

@@ -21,11 +21,7 @@ function persisted<T extends string | boolean>(key: string, initial: T, storage:
 }
 
 export const playerName = persisted<string>("wa.name", "");
-export const showLabels = persisted("wa.labels", false);
-export const showBorders = persisted("wa.borders", false);
-export const showDetail = persisted("wa.detail", false);
-export const showInlandWater = persisted("wa.water", false);
-export const cheatLiveScore = persisted("wa.cheat", false);
+export const cheatLiveScore = persisted<boolean>("wa.cheat", false);
 export const soloKernelId = persisted<string>("wa.kernel", "single");
 
 /**
@@ -39,3 +35,16 @@ function randomToken(): string {
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
+
+/**
+ * Name handed from the home screen to the game screen when joining by code
+ * there, so the player is not asked to confirm it a second time. Arriving by
+ * link leaves this null and the game screen asks.
+ */
+export const nameHandoff = signal<string | null>(null);
+
+/**
+ * The game this tab last sat in. A refresh of that tab reclaims the seat by
+ * token, so it should not ask for a name again.
+ */
+export const joinedCode = persisted<string>("wa.joined", "", sessionStorage);

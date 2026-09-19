@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { playerName } from "../settings";
+import { nameHandoff, playerName } from "../settings";
 import { navigate } from "../router";
 
 export function Home() {
@@ -32,7 +32,10 @@ export function Home() {
             onSubmit={(e) => {
               e.preventDefault();
               const c = code.trim().toUpperCase();
-              if (ready && c.length >= 4) navigate(`/game/${c}`);
+              if (ready && c.length >= 4) {
+                nameHandoff.value = name;
+                navigate(`/game/${c}`);
+              }
             }}
           >
             <input
@@ -50,7 +53,7 @@ export function Home() {
         </div>
 
         <p class="hint">
-          Or <a href="#/solo">practise on your own</a> with the playtest tools.
+          Or <a href="#/solo">practise on your own</a>.
         </p>
       </div>
     </div>

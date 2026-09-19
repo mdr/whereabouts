@@ -20,11 +20,11 @@ const check = (cond, msg) => {
   if (!cond) failures.push(msg);
 };
 
-async function newPlayer(name) {
+async function newPlayer(name, query = "") {
   const ctx = await browser.newContext({ viewport: { width: 1300, height: 900 } });
   const page = await ctx.newPage();
   page.on("pageerror", (e) => console.log(`[${name} pageerror]`, e.message));
-  await page.goto(base, { waitUntil: "networkidle" });
+  await page.goto(base + query, { waitUntil: "networkidle" });
   await page.fill(".field input", name);
   return page;
 }
@@ -41,7 +41,8 @@ const cellCount = (page) =>
   page.evaluate(() => window.whereabouts.map.getSource("paint").serialize().data.features.length);
 
 // ---- setup: Alice hosts, Bob joins, start ----
-const alice = await newPlayer("Alice");
+// Alice runs in dev mode: the in-game player list lives in the drawer.
+const alice = await newPlayer("Alice", "?dev");
 await alice.click("text=Host a game");
 await alice.waitForSelector(".lobby .code");
 const code = (await alice.textContent(".lobby .code")).trim();
@@ -62,7 +63,8 @@ await alice.reload({ waitUntil: "networkidle" });
 await alice.waitForSelector("#map canvas");
 await alice.waitForTimeout(2500);
 const after = await cellCount(alice);
-check(before > 0 && after === before, `paint restored after refresh (${before} -> ${after} cells)`);
+// The upload is compacted to coarser cells, so the count drops but stays non-zero.
+check(before > 0 && after > 0 && after <= before, `paint restored after refresh (${before} -> ${after} cells)`);
 const players = await alice.$$eval(".players li", (els) => els.map((e) => e.textContent.replace(/\s+/g, " ").trim()));
 check(
   players.length === 2 && players.some((p) => p.includes("Alice") && p.includes("host")),
@@ -76,10 +78,12 @@ await cara.click(".join button");
 await cara.waitForSelector("text=watching this one", { timeout: 10000 });
 check(true, "late joiner sees spectating notice");
 await alice.waitForSelector(".reveal-list", { timeout: 20000 });
-const revealNames = await alice.$$eval(".reveal-list li .name", (els) => els.map((e) => e.textContent.trim()));
+const revealRows = await alice.$$eval(".reveal-list li", (els) =>
+  els.map((e) => e.textContent.replace(/\s+/g, " ").trim()),
+);
 check(
-  !revealNames.some((n) => n.startsWith("Cara")),
-  `spectator absent from round-1 guesses: ${JSON.stringify(revealNames)}`,
+  revealRows.some((r) => r.startsWith("Cara") && r.includes("sat out")),
+  `spectator shown as sitting out round 1: ${JSON.stringify(revealRows)}`,
 );
 await alice.click('button:has-text("Next round")');
 await cara.waitForSelector("text=Lock in", { timeout: 10000 });

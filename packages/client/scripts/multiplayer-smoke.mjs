@@ -13,14 +13,14 @@ const browser = await chromium.launch({
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
 });
 
-async function newPlayer(name) {
+async function newPlayer(name, query = "") {
   const ctx = await browser.newContext({ viewport: { width: 1300, height: 900 } });
   const page = await ctx.newPage();
   page.on("pageerror", (e) => console.log(`[${name} pageerror]`, e.message));
   page.on("console", (m) => {
     if (m.type() === "error") console.log(`[${name} console.error]`, m.text().slice(0, 200));
   });
-  await page.goto(base, { waitUntil: "networkidle" });
+  await page.goto(base + query, { waitUntil: "networkidle" });
   await page.fill(".field input", name);
   return page;
 }
@@ -32,7 +32,8 @@ const code = (await alice.textContent(".lobby .code")).trim();
 console.log("code:", code);
 await alice.screenshot({ path: `${out}/mp-1-lobby-host.png` });
 
-const bob = await newPlayer("Bob");
+// Bob plays in dev mode so the drawer gets exercised too.
+const bob = await newPlayer("Bob", "?dev");
 await bob.fill(".code-input", code);
 await bob.click(".join button");
 await bob.waitForSelector(".lobby .code", { timeout: 15000 });
@@ -60,7 +61,7 @@ await paint(alice, 0.62, 0.42);
 await paint(bob, 0.3, 0.55);
 await alice.waitForTimeout(800);
 await alice.screenshot({ path: `${out}/mp-2-guessing-alice.png` });
-console.log("alice blobs:", (await alice.textContent(".blobs")).replace(/\s+/g, " ").slice(0, 120));
+console.log("bob blobs (dev):", (await bob.textContent(".blobs")).replace(/\s+/g, " ").slice(0, 120));
 await bob.click("text=Lock in");
 await bob.waitForSelector("text=Locked in", { timeout: 5000 });
 console.log("bob locked");
@@ -80,6 +81,6 @@ await bob.screenshot({ path: `${out}/mp-4-reveal-bob-views-alice.png` });
 
 await alice.click('button:has-text("Next round")');
 await alice.waitForSelector("text=Lock in", { timeout: 10000 });
-console.log("round 2 started:", await alice.textContent("h1 small"));
+console.log("round 2 started:", await alice.textContent(".hud-header .round"));
 await browser.close();
 console.log("done");
