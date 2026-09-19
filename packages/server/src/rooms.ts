@@ -143,6 +143,8 @@ export class GameRoom extends Room<ActorData> {
         return this.game.next(token, now);
       case "again":
         return this.game.again(token, now);
+      case "rename":
+        return this.game.rename(token, (data as z.infer<typeof ClientMessageSchemas.rename>).name);
       default:
         return { ok: false as const, error: "unknown topic" };
     }

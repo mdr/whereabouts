@@ -90,6 +90,9 @@ export class Connection {
   again(): void {
     this.send("again");
   }
+  rename(name: string): void {
+    this.send("rename", { name });
+  }
 
   /** Local-clock ms until a server deadline. */
   msUntil(serverEpochMs: number): number {

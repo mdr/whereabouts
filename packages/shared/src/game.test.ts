@@ -243,6 +243,23 @@ describe("joining and leaving mid-game", () => {
   });
 });
 
+describe("rename", () => {
+  it("changes the visible name for everyone, in any phase", () => {
+    const g = twoPlayerGame(1);
+    expect(g.rename("tokB", "Robert")).toEqual({ ok: true, changed: true });
+    expect(
+      g
+        .view("tokA", T0)
+        .players.map((p) => p.name)
+        .sort(),
+    ).toEqual(["Alice", "Robert"]);
+    g.start("tokA", T0);
+    expect(g.rename("tokB", "Bobby").ok).toBe(true);
+    expect(g.rename("tokB", "Bobby")).toEqual({ ok: true, changed: false });
+    expect(g.rename("nobody", "X")).toEqual({ ok: false, error: "unknown player" });
+  });
+});
+
 describe("ranks", () => {
   it("ranks share on ties and record the previous rank for arrows", () => {
     const g = twoPlayerGame(2);

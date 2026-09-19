@@ -194,6 +194,14 @@ export class Game {
 
   // ---- player commands -----------------------------------------------------
 
+  rename(token: string, name: string): CommandResult {
+    const player = this.players.get(token);
+    if (!player) return fail("unknown player");
+    if (player.name === name) return OK_SAME;
+    player.name = name;
+    return OK_CHANGED;
+  }
+
   setPaint(token: string, paint: PaintSubmission): CommandResult {
     const player = this.players.get(token);
     if (!player) return fail("unknown player");

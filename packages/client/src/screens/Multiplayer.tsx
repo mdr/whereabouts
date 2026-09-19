@@ -1,5 +1,5 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
-import { useEffect, useMemo } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import { Connection } from "../net";
 import { playerName, playerToken } from "../settings";
 import { navigate } from "../router";
@@ -10,16 +10,35 @@ import { Results } from "./Results";
 
 export function Multiplayer({ code, create }: { code: string; create: boolean }) {
   const conn = useMemo(() => new Connection(), []);
-  const name = playerName.value.trim();
+  // Hosts have just typed their name on the home screen; anyone arriving by
+  // link confirms or edits theirs first, so two tabs need not share a name.
+  const [confirmedName, setConfirmedName] = useState<string | null>(create ? playerName.value.trim() || null : null);
 
   useEffect(() => {
-    if (!name) {
+    if (create && !confirmedName) {
       navigate("/");
       return;
     }
-    conn.connect(create ? { token: playerToken.value, name, create: true } : { token: playerToken.value, name, code });
+    if (!confirmedName) return;
+    conn.connect(
+      create
+        ? { token: playerToken.value, name: confirmedName, create: true }
+        : { token: playerToken.value, name: confirmedName, code },
+    );
     return () => conn.disconnect();
-  }, [conn]);
+  }, [conn, confirmedName]);
+
+  if (!confirmedName) {
+    return (
+      <JoinAs
+        code={code}
+        onJoin={(name) => {
+          playerName.value = name;
+          setConfirmedName(name);
+        }}
+      />
+    );
+  }
 
   // Once the server assigns a code to a new game, put it in the URL for sharing.
   const assigned = conn.code.value;
@@ -59,5 +78,43 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
     <MapView>
       <InGame conn={conn} view={view} />
     </MapView>
+  );
+}
+
+function JoinAs({ code, onJoin }: { code: string; onJoin: (name: string) => void }) {
+  const [name, setName] = useState(playerName.value);
+  const ready = name.trim().length > 0;
+  return (
+    <div class="home">
+      <form
+        class="home-card"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (ready) onJoin(name.trim());
+        }}
+      >
+        <h1>Whereabouts</h1>
+        <p class="tagline">
+          Joining game <b>{code}</b>
+        </p>
+        <label class="field">
+          <span>Your name</span>
+          <input
+            type="text"
+            maxLength={20}
+            placeholder="e.g. Matt"
+            value={name}
+            onInput={(e) => setName((e.target as HTMLInputElement).value)}
+            autoFocus
+          />
+        </label>
+        <button class="primary big" type="submit" disabled={!ready}>
+          Join
+        </button>
+        <p class="hint">
+          <a href="#/">Back</a>
+        </p>
+      </form>
+    </div>
   );
 }

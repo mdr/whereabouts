@@ -41,7 +41,10 @@ export const ClientTopics = {
   start: "start",
   next: "next",
   again: "again",
+  rename: "rename",
 } as const;
+
+export const RenameSchema = z.object({ name: z.string().trim().min(1).max(20) });
 
 export const ClientMessageSchemas = {
   paint: PaintSubmissionSchema,
@@ -49,6 +52,7 @@ export const ClientMessageSchemas = {
   start: z.object({}),
   next: z.object({}),
   again: z.object({}),
+  rename: RenameSchema,
 } as const;
 
 // ---- server -> client ------------------------------------------------------

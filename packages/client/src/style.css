@@ -435,6 +435,11 @@ select {
   display: flex;
   gap: 8px;
 }
+.name-input {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 500;
+}
 .code-input {
   flex: 1;
   text-transform: uppercase;

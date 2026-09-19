@@ -1,6 +1,7 @@
 import { useState } from "preact/hooks";
 import type { GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
+import { playerName } from "../settings";
 import { PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
 
@@ -23,6 +24,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
         <ConnectionNote conn={conn} />
         <h2>Players</h2>
         <PlayerList players={view.players} you={view.you.id} showScores={false} />
+        <RenameSelf conn={conn} current={view.players.find((p) => p.id === view.you.id)?.name ?? ""} />
         <p class="hint">
           {view.config.rounds} rounds · {view.config.roundMs / 1000} seconds each
         </p>
@@ -35,5 +37,53 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
         )}
       </div>
     </div>
+  );
+}
+
+function RenameSelf({ conn, current }: { conn: Connection; current: string }) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(current);
+  if (!editing) {
+    return (
+      <p class="hint">
+        Playing as <b>{current}</b>.{" "}
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            setName(current);
+            setEditing(true);
+          }}
+        >
+          Change name
+        </a>
+      </p>
+    );
+  }
+  return (
+    <form
+      class="join"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const n = name.trim();
+        if (n && n !== current) {
+          conn.rename(n);
+          playerName.value = n;
+        }
+        setEditing(false);
+      }}
+    >
+      <input
+        class="code-input name-input"
+        type="text"
+        maxLength={20}
+        value={name}
+        onInput={(e) => setName((e.target as HTMLInputElement).value)}
+        autoFocus
+      />
+      <button type="submit" disabled={name.trim().length === 0}>
+        Save
+      </button>
+    </form>
   );
 }
