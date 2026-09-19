@@ -144,8 +144,10 @@ pnpm workspace with three packages:
   for the British Isles and near neighbours, around 100 km for European
   capitals and micro-states, a few hundred for capitals on other
   continents and small countries further afield, up to 1,000 km for Pacific
-  micro-states. Every text answer was checked against the coordinates on
-  its English Wikipedia article, and `questions.test.ts` guards ids,
+  micro-states. A country question is placed at the point Wikipedia uses
+  for the country itself (roughly its centre, or the main island of an
+  archipelago), not at its capital. Every text answer was checked against
+  the coordinates on its English Wikipedia article, and `questions.test.ts` guards ids,
   ranges and near-duplicate spots. Photo questions are famous landmarks,
   natural and built; each image is the lead picture of the landmark's
   Wikipedia article, checked to exist on Commons. A game draws as even a
