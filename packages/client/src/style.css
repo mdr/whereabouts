@@ -896,10 +896,20 @@ button.primary kbd {
 }
 .tag.host {
   color: #fbbf24;
-  border-color: #fbbf24;
+  border: 1px solid #fbbf24;
+  border-radius: 4px;
   display: inline-flex;
   align-items: center;
+  vertical-align: -3px;
   padding: 1px 4px;
+  margin-left: 6px;
+}
+.host-word {
+  color: #fbbf24;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  vertical-align: -2px;
 }
 .tag.locked {
   display: inline-flex;

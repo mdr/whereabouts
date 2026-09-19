@@ -1,6 +1,7 @@
 import { playerColour, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { Icon } from "../ui/icons";
+import { HostTag, HostWord } from "../ui/PlayerList";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -15,7 +16,8 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         <h1>Whereabouts</h1>
         {winner && (
           <p class="tagline">
-            <span class="swatch" style={{ background: playerColour(winner.colour) }} /> <b>{winner.name}</b> wins
+            <span class="swatch" style={{ background: playerColour(winner.colour) }} /> <b>{winner.name}</b>
+            {winner.isHost && <HostTag />} wins
           </p>
         )}
         {/* One grid: place, colour, name, a column per round, total. */}
@@ -39,7 +41,10 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
                 <span class="dot">
                   <i class="swatch" style={{ background: p ? playerColour(p.colour) : "#888" }} />
                 </span>
-                <span class="name">{p?.name ?? "?"}</span>
+                <span class="name">
+                  {p?.name ?? "?"}
+                  {p?.isHost && <HostTag />}
+                </span>
                 {Array.from({ length: rounds }, (_, r) => {
                   const score = s.rounds[r];
                   return (
@@ -58,7 +63,9 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             <Icon name="refresh" /> Play again
           </button>
         ) : (
-          <p class="hint">The host can start another game with the same group.</p>
+          <p class="hint">
+            <HostWord capital /> can start another game with the same group.
+          </p>
         )}
         <p class="hint">
           <a href="#/">Leave</a>

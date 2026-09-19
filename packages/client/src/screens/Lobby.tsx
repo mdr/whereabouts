@@ -2,7 +2,7 @@ import { useState } from "preact/hooks";
 import { MAX_ROUNDS, MIN_ROUNDS, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { playerName } from "../settings";
-import { PlayerList } from "../ui/PlayerList";
+import { HostWord, PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { Icon } from "../ui/icons";
 
@@ -71,7 +71,8 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
           </div>
         ) : (
           <p class="hint">
-            {view.config.rounds} rounds · {view.config.roundMs / 1000} seconds each. The host can change this.
+            {view.config.rounds} rounds · {view.config.roundMs / 1000} seconds each. <HostWord capital /> can change
+            this.
           </p>
         )}
         {view.you.isHost ? (
@@ -79,7 +80,9 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             <Icon name="play" /> Start game
           </button>
         ) : (
-          <p class="hint">Waiting for the host to start…</p>
+          <p class="hint">
+            Waiting for <HostWord /> to start…
+          </p>
         )}
       </div>
     </div>

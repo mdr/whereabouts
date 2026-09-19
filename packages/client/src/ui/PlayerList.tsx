@@ -1,6 +1,26 @@
 import { playerColour, type PlayerView } from "@whereabouts/shared";
 import { Icon } from "./icons";
 
+/** Crown tag marking the host in a player row; the word stays for screen readers. */
+export function HostTag() {
+  return (
+    <span class="tag host" title="Host">
+      <Icon name="crown" size={12} />
+      <span class="sr-only">host</span>
+    </span>
+  );
+}
+
+/** "the host" in running text, with the crown. */
+export function HostWord({ capital }: { capital?: boolean }) {
+  return (
+    <span class="host-word">
+      <Icon name="crown" size={12} />
+      {capital ? "The host" : "the host"}
+    </span>
+  );
+}
+
 export function PlayerList({
   players,
   you,
@@ -28,12 +48,7 @@ export function PlayerList({
             <span class="swatch" style={{ background: playerColour(p.colour) }} />
             <span class="name">
               {p.name}
-              {p.isHost ? (
-                <span class="tag host" title="Host">
-                  <Icon name="crown" size={12} />
-                  <span class="sr-only">host</span>
-                </span>
-              ) : null}
+              {p.isHost ? <HostTag /> : null}
               {isYou ? <span class="tag">you</span> : null}
               {!p.connected ? <span class="tag">offline</span> : null}
               {showLocked && p.locked ? (

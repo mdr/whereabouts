@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/preact";
 import type { PlayerView } from "@whereabouts/shared";
-import { PlayerList } from "./PlayerList";
+import { HostTag, PlayerList } from "./PlayerList";
 
 const player = (over: Partial<PlayerView>): PlayerView => ({
   id: "p1",
@@ -81,5 +81,13 @@ describe("PlayerList status", () => {
     const rows = container.querySelectorAll("li");
     expect(rows[0]!.querySelector(".tag.locked")).not.toBeNull();
     expect(rows[1]!.querySelector(".tag.locked")).toBeNull();
+  });
+});
+
+describe("HostTag", () => {
+  it("shows the crown with the word for screen readers", () => {
+    const { container } = render(<HostTag />);
+    expect(container.querySelector(".tag.host svg")).not.toBeNull();
+    expect(container.textContent).toBe("host");
   });
 });

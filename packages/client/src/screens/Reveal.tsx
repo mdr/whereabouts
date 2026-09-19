@@ -15,6 +15,7 @@ import { DevDrawer } from "../ui/DevDrawer";
 import { ConnectionDev } from "../ui/ConnectionDev";
 import { PaintDev } from "../ui/PaintTools";
 import { Icon } from "../ui/icons";
+import { HostTag } from "../ui/PlayerList";
 
 export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reveal: RevealView }) {
   const paint = usePaint();
@@ -116,7 +117,10 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
           <ul class="results">
             {reveal.results.map((r) => (
               <li key={r.playerId}>
-                <span>{byId.get(r.playerId)?.name ?? "?"}</span>
+                <span>
+                  {byId.get(r.playerId)?.name ?? "?"}
+                  {byId.get(r.playerId)?.isHost && <HostTag />}
+                </span>
                 <ScoreParts A={r.A} B={r.B} />
               </li>
             ))}
@@ -151,6 +155,7 @@ function RevealRow({
       <span class="name">
         {p.name}
         {you ? " (you)" : ""}
+        {p.isHost && <HostTag />}
         {ready && (
           <span class="tag ready" title="Ready for the next round">
             ✓
