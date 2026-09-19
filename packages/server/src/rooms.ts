@@ -96,7 +96,7 @@ export class GameRoom extends Room<ActorData> {
     const { token } = actor.data!;
     if (this.actorsByToken.get(token) !== actor) return; // superseded by a reconnect
     this.actorsByToken.delete(token);
-    this.game.disconnect(token, deps.clock.now());
+    this.game.disconnect(token);
     this.broadcastState();
   }
 

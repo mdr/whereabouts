@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "preact/hooks";
-import type { GameView } from "@whereabouts/shared";
+import { PaintLayer, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { usePaint } from "../ui/MapView";
 import { Card, Countdown, QuestionCard } from "../ui/bits";
@@ -16,14 +16,21 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const sendTimer = useRef<number | null>(null);
   const lastSentVersion = useRef(-1);
 
-  // New round: fresh layer, painting on unless spectating.
+  // New round: fresh layer, painting on unless spectating. After a reconnect
+  // the server hands back what we had painted, so restore it.
   useEffect(() => {
     if (!guessing || !view.round) return;
     paint.reset(view.round.question.toleranceKm);
+    const saved = view.you.paint;
+    if (saved) {
+      paint.layer = PaintLayer.fromRecord(paint.layer.res, saved.cells);
+      paint.floor.value = saved.floor;
+      paint.version.value++;
+    }
     paint.gameMap.clearReveal();
     paint.showOwn();
     paint.tool.value = "paint";
-    lastSentVersion.current = -1;
+    lastSentVersion.current = paint.version.peek();
   }, [roundKey, guessing]);
 
   useEffect(() => {

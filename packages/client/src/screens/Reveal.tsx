@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import {
   PaintLayer,
   playerColour,
@@ -17,13 +17,10 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   const paint = usePaint();
   const byId = new Map(view.players.map((p) => [p.id, p]));
   const [selected, setSelected] = useState<string>(view.you.id);
-  const shownOnce = useRef(false);
-  void shownOnce;
 
   useEffect(() => {
     paint.enabled.value = false;
     paint.gameMap.showReveal(reveal.answer, reveal.question.toleranceKm);
-    shownOnce.current = false;
   }, [reveal.index]);
 
   // Show the selected player's paint in their colour, framed with the answer.
@@ -34,7 +31,6 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
     paint.showLayer(layer, p ? playerColour(p.colour) : null);
     const fc = layer ? layer.toGeoJSON() : { type: "FeatureCollection" as const, features: [] };
     paint.gameMap.fitAnswerAndPaint(reveal.answer, fc, reveal.question.toleranceKm);
-    shownOnce.current = true;
   }, [selected, reveal.index]);
 
   const mine = reveal.results.find((r) => r.playerId === view.you.id);

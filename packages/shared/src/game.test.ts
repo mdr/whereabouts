@@ -58,7 +58,7 @@ describe("lobby", () => {
     const g = twoPlayerGame();
     expect(g.view("tokA", T0).you.isHost).toBe(true);
     expect(g.view("tokB", T0).you.isHost).toBe(false);
-    g.disconnect("tokA", T0 + 5);
+    g.disconnect("tokA");
     expect(g.playerTokens).toEqual(["tokB"]);
     expect(g.view("tokB", T0).you.isHost).toBe(true);
   });
@@ -177,11 +177,26 @@ describe("joining and leaving mid-game", () => {
     expect(g.setPaint("tokC", paintAt(q2, 0, 0)).ok).toBe(true);
   });
 
+  it("a reconnecting player gets their own paint back, and only their own", () => {
+    const g = twoPlayerGame(1);
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    const mine = paintAt(q, 10, 10);
+    g.setPaint("tokA", mine);
+    g.disconnect("tokA");
+    g.join("tokA", "Alice", T0 + 5);
+    expect(g.view("tokA", T0 + 5).you.paint).toEqual(mine);
+    expect(g.view("tokB", T0 + 5).you.paint).toBeNull();
+    expect(JSON.stringify(g.view("tokB", T0 + 5))).not.toContain(Object.keys(mine.cells)[0]);
+    g.tick(T0 + 60_000);
+    expect(g.view("tokA", T0 + 60_000).you.paint).toBeNull();
+  });
+
   it("a disconnected player keeps their seat and score, and reclaims it by token", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
     g.tick(T0 + 60_000);
-    g.disconnect("tokB", T0 + 60_001);
+    g.disconnect("tokB");
     expect(g.playerTokens).toContain("tokB");
     expect(g.view("tokA", T0 + 60_001).players.find((p) => p.id === "p2")!.connected).toBe(false);
     g.join("tokB", "Bob", T0 + 70_000);
@@ -190,12 +205,27 @@ describe("joining and leaving mid-game", () => {
     expect(bob.score).toBeGreaterThan(0);
   });
 
-  it("host role passes when the host drops mid-game and returns when they rejoin alone", () => {
+  it("while the host is away the longest-standing player acts as host; the host regains it on return", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
-    g.disconnect("tokA", T0 + 1);
+    g.disconnect("tokA");
     expect(g.view("tokB", T0 + 1).you.isHost).toBe(true);
+    expect(g.view("tokB", T0 + 1).players.find((p) => p.id === "p2")!.isHost).toBe(true);
+    g.tick(T0 + 60_000);
     expect(g.next("tokA", T0 + 60_000)).toEqual({ ok: false, error: "only the host can advance" });
+    expect(g.next("tokB", T0 + 60_000).ok).toBe(true);
+    // A refresh brings the original host straight back.
+    g.join("tokA", "Alice", T0 + 61_000);
+    expect(g.view("tokA", T0 + 61_000).you.isHost).toBe(true);
+    expect(g.view("tokB", T0 + 61_000).you.isHost).toBe(false);
+  });
+
+  it("in the lobby a departing host hands over for good", () => {
+    const g = twoPlayerGame(2);
+    g.disconnect("tokA");
+    g.join("tokA", "Alice", T0 + 5);
+    expect(g.view("tokA", T0 + 5).you.isHost).toBe(false);
+    expect(g.view("tokB", T0 + 5).you.isHost).toBe(true);
   });
 
   it("play again returns to the lobby with scores reset and dropped players pruned", () => {
@@ -205,7 +235,7 @@ describe("joining and leaving mid-game", () => {
     g.tick(T0 + 80_000);
     expect(g.phase).toBe("results");
     expect(g.join("tokZ", "Zed", T0 + 80_001)).toEqual({ ok: false, error: "game has finished" });
-    g.disconnect("tokB", T0 + 80_002);
+    g.disconnect("tokB");
     expect(g.again("tokA", T0 + 81_000).ok).toBe(true);
     expect(g.phase).toBe("lobby");
     expect(g.playerTokens).toEqual(["tokA"]);

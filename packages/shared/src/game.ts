@@ -80,7 +80,7 @@ export class Game {
 
   // ---- membership ----------------------------------------------------------
 
-  /** Join or reconnect. A known token reclaims its seat. */
+  /** Join or reconnect. A known token reclaims its seat (and the host role, if it was theirs). */
   join(token: string, name: string, now: number): CommandResult {
     const existing = this.players.get(token);
     if (existing) {
@@ -105,14 +105,19 @@ export class Game {
     return OK_CHANGED;
   }
 
-  /** Connection dropped. In the lobby the seat is freed; mid-game it is kept. */
-  disconnect(token: string, now: number): CommandResult {
+  /**
+   * Connection dropped. In the lobby the seat is freed; mid-game it is kept.
+   * The host keeps the role while away (a refresh is the common case); the
+   * longest-standing connected player acts as host in the meantime.
+   */
+  disconnect(token: string): CommandResult {
     const player = this.players.get(token);
     if (!player) return OK_SAME;
     player.connected = false;
-    if (this.phase === "lobby") this.players.delete(token);
-    if (this.hostToken === token) this.hostToken = this.pickHost();
-    void now;
+    if (this.phase === "lobby") {
+      this.players.delete(token);
+      if (this.hostToken === token) this.hostToken = this.pickHost();
+    }
     return OK_CHANGED;
   }
 
@@ -125,6 +130,17 @@ export class Game {
     return best?.token ?? null;
   }
 
+  /** Who may use the host controls right now: the host if connected, else the acting host. */
+  private effectiveHost(): string | null {
+    const host = this.hostToken ? this.players.get(this.hostToken) : undefined;
+    if (host?.connected) return host.token;
+    return this.pickHost() ?? this.hostToken;
+  }
+
+  private isHost(token: string): boolean {
+    return this.effectiveHost() === token;
+  }
+
   get connectedCount(): number {
     let n = 0;
     for (const p of this.players.values()) if (p.connected) n++;
@@ -134,7 +150,7 @@ export class Game {
   // ---- host commands -------------------------------------------------------
 
   start(token: string, now: number): CommandResult {
-    if (token !== this.hostToken) return fail("only the host can start");
+    if (!this.isHost(token)) return fail("only the host can start");
     if (this.phase !== "lobby") return fail("game already started");
     if (this.players.size === 0) return fail("no players");
     const count = Math.min(this.config.rounds, this.pool.length);
@@ -151,14 +167,14 @@ export class Game {
 
   /** Host advances from the reveal. Also called by tick on auto-advance. */
   next(token: string, now: number): CommandResult {
-    if (token !== this.hostToken) return fail("only the host can advance");
+    if (!this.isHost(token)) return fail("only the host can advance");
     if (this.phase !== "reveal") return fail("nothing to advance");
     this.advance(now);
     return OK_CHANGED;
   }
 
   again(token: string, now: number): CommandResult {
-    if (token !== this.hostToken) return fail("only the host can restart");
+    if (!this.isHost(token)) return fail("only the host can restart");
     if (this.phase !== "results") return fail("game is still running");
     this.phase = "lobby";
     this.roundIndex = -1;
@@ -172,7 +188,7 @@ export class Game {
       p.joinedRound = 0;
     }
     for (const [tok, p] of this.players) if (!p.connected) this.players.delete(tok);
-    if (this.hostToken !== null && !this.players.has(this.hostToken)) this.hostToken = this.pickHost();
+    if (this.hostToken === null || !this.players.has(this.hostToken)) this.hostToken = this.pickHost();
     return OK_CHANGED;
   }
 
@@ -293,13 +309,14 @@ export class Game {
   }
 
   private playerViews(): PlayerView[] {
+    const host = this.effectiveHost();
     return [...this.players.values()]
       .map((p) => ({
         id: p.id,
         name: p.name,
         colour: p.colour,
         connected: p.connected,
-        isHost: p.token === this.hostToken,
+        isHost: p.token === host,
         score: sum(p.scores),
         rank: this.rankOf(p),
         previousRank: p.previousRank,
@@ -317,9 +334,10 @@ export class Game {
       serverTime: now,
       you: {
         id: me?.id ?? "",
-        isHost: me !== undefined && me.token === this.hostToken,
+        isHost: me !== undefined && this.isHost(me.token),
         spectating: me !== undefined && this.phase !== "lobby" && me.joinedRound > this.roundIndex,
         locked: this.submissions.get(token)?.locked ?? false,
+        paint: this.phase === "guessing" ? (this.submissions.get(token)?.paint ?? null) : null,
       },
       players: this.playerViews(),
       round: q

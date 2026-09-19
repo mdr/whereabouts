@@ -191,11 +191,14 @@ describe("game server", () => {
     const q = questions.find((x) => x.prompt === round.round!.question.prompt)!;
 
     alice.send("paint", paintAt(q, q.answer.lat, q.answer.lon));
-    bob.send("paint", paintAt(q, -30, -60));
+    const bobPaint = paintAt(q, -30, -60);
+    bob.send("paint", bobPaint);
     bob.send("lock");
     await bob.untilLatest((v) => v.you.locked);
-    // Nobody else learns about Bob's paint yet.
-    expect(JSON.stringify(alice.latest)).not.toContain("cells");
+    // Bob gets his own paint back in his view; nobody else learns about it yet.
+    expect(bob.latest.you.paint).toEqual(bobPaint);
+    const aBobCell = Object.keys(bobPaint.cells)[0]!;
+    expect(JSON.stringify(alice.latest)).not.toContain(aBobCell);
 
     clock.advance(60_000);
     const reveal = await alice.until((v) => v.phase === "reveal");

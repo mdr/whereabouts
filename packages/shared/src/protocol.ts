@@ -135,6 +135,8 @@ export interface GameView {
     /** True when this player joined mid-round and sits this one out. */
     spectating: boolean;
     locked: boolean;
+    /** Your own current submission while guessing, so a reconnect can restore it. Never anyone else's. */
+    paint: PaintSubmission | null;
   };
   players: PlayerView[];
   round: RoundView | null;
