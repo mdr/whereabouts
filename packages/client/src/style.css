@@ -737,6 +737,10 @@ button.big {
 }
 /* ---- final standings grid ---- */
 /* Final standings: one row per player, total as the headline, rounds below. */
+/* The standings list benefits from room: a wider card on desktop, full width on phones. */
+.results-card {
+  width: min(720px, 100%);
+}
 .standings {
   list-style: none;
   margin: 0 0 4px;
