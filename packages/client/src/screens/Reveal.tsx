@@ -81,7 +81,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
               </span>
             }
           />
-          <QuestionCard q={reveal.question}>
+          <QuestionCard q={reveal.question} credit>
             <p class="answer">
               It's <b>{reveal.label}</b>
             </p>

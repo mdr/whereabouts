@@ -200,8 +200,7 @@ pnpm workspace with three packages:
 | Zoom                | scroll wheel                                         |
 | Submit / next       | `Enter`                                              |
 
-The dashed amber cursor ring is one tolerance. The outline under the pointer
-is the brush footprint: the exact hex cells the next stamp will touch, at the
+The outline under the pointer is the brush footprint: the exact hex cells the next stamp will touch, at the
 resolution the layer picks for that brush size, so at world zoom you see the
 large cells you are about to lay down. It is dotted when erasing.
 On a touchscreen one finger uses the current tool (so it paints, or pans

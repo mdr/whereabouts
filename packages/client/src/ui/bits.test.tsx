@@ -18,8 +18,12 @@ describe("QuestionCard image", () => {
     expect(container.querySelector(".lightbox")).toBeNull();
   });
 
-  it("keeps the Commons credit behind an info icon linking to the file page", () => {
-    const { container } = render(<QuestionCard q={q} />);
+  it("keeps the Commons credit behind an info icon linking to the file page, only when asked", () => {
+    // While guessing there is no credit link at all: the file name is a spoiler.
+    const { container: guessing } = render(<QuestionCard q={q} />);
+    expect(guessing.querySelector(".credit-icon")).toBeNull();
+
+    const { container } = render(<QuestionCard q={q} credit />);
     const credit = container.querySelector<HTMLAnchorElement>(".thumb .credit-icon")!;
     expect(credit.href).toContain("commons.wikimedia.org");
     expect(credit.getAttribute("aria-label")).toContain("Wikimedia Commons");

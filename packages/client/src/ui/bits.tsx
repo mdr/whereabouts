@@ -48,11 +48,20 @@ export function HudHeader({
   );
 }
 
-export function QuestionCard({ q, children }: { q: QuestionView; children?: ComponentChildren }) {
+export function QuestionCard({
+  q,
+  children,
+  credit,
+}: {
+  q: QuestionView;
+  children?: ComponentChildren;
+  /** Show the image credit link. Off while guessing: the Commons file name gives the answer away. */
+  credit?: boolean;
+}) {
   return (
     <div class="card question">
       <p class="prompt">{q.prompt}</p>
-      {q.image && <QuestionImage image={q.image} />}
+      {q.image && <QuestionImage image={q.image} credit={credit ?? false} />}
       <div class="tolerance" title="Credit halves at this distance from the true spot; shown as the dashed ring.">
         <span class="swatch" />
         <span>
@@ -69,7 +78,7 @@ export function QuestionCard({ q, children }: { q: QuestionView; children?: Comp
  * Escape to shrink back. The Wikimedia Commons credit sits behind a small
  * info icon linking to the file page.
  */
-function QuestionImage({ image }: { image: string }) {
+function QuestionImage({ image, credit: showCredit }: { image: string; credit: boolean }) {
   const [large, setLarge] = useState(false);
   useEffect(() => {
     if (!large) return;
@@ -79,7 +88,7 @@ function QuestionImage({ image }: { image: string }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [large]);
-  const credit = (
+  const credit = !showCredit ? null : (
     <a
       class="credit-icon"
       href={commonsPageUrl(image)}

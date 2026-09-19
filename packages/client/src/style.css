@@ -513,27 +513,6 @@ kbd {
   font-size: 11px;
 }
 
-#brush-cursor {
-  position: absolute;
-  pointer-events: none;
-  left: 0;
-  top: 0;
-  z-index: 5;
-}
-#brush-cursor .ring {
-  position: absolute;
-  left: 0;
-  top: 0;
-  margin: 0;
-  box-sizing: border-box;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-/* The brush footprint is drawn on the map itself (see GameMap.setCursorFootprint). */
-#brush-cursor .ring.tolerance {
-  border: 1.5px dashed var(--ring-tol);
-}
-
 .compare {
   margin-top: 10px;
   font-size: 12px;

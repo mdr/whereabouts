@@ -230,7 +230,7 @@ function SoloGame() {
       <div class="hud">
         <div class="hud-top">
           {header}
-          <QuestionCard q={q} />
+          <QuestionCard q={q} credit />
         </div>
         <PaintTools>
           <button class="danger" onClick={() => paint.clear()}>

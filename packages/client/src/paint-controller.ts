@@ -1,6 +1,6 @@
 /**
  * Imperative glue between the MapLibre map and a PaintLayer: brush input,
- * cursor rings, keyboard shortcuts, and rendering. Screens configure it and
+ * the brush footprint cursor, keyboard shortcuts, and rendering. Screens configure it and
  * read its signals; it never knows about game phases.
  */
 import { Point, type LngLat, type MapMouseEvent, type MapTouchEvent } from "maplibre-gl";
@@ -26,7 +26,7 @@ export class PaintController {
   private settleTimer: number | null = null;
   /** Whether painting is currently allowed (guessing phase, not locked). */
   readonly enabled = signal(false);
-  /** Set by the active screen; drives the dashed tolerance ring. */
+  /** The current question's tolerance, set by the active screen (used by dev tooling). */
   readonly toleranceKm = signal(100);
 
   layer = new PaintLayer(4);
@@ -34,23 +34,12 @@ export class PaintController {
   private painting = false;
   private lastStampPoint: Point | null = null;
   private renderQueued = false;
-  private cursorEl: HTMLElement;
-  private tolRing: HTMLElement;
   private hoverListeners = new Set<(pos: LatLon) => void>();
   private disposers: (() => void)[] = [];
   readonly gameMap: GameMap;
 
   constructor(gameMap: GameMap) {
     this.gameMap = gameMap;
-    const container = gameMap.map.getContainer();
-    this.cursorEl = document.createElement("div");
-    this.cursorEl.id = "brush-cursor";
-    this.cursorEl.hidden = true;
-    this.tolRing = document.createElement("div");
-    this.tolRing.className = "ring tolerance";
-    this.cursorEl.append(this.tolRing);
-    container.appendChild(this.cursorEl);
-
     const map = gameMap.map;
     const onDown = (e: MapMouseEvent) => {
       if (!this.canPaint() || e.originalEvent.button !== 0) return;
@@ -80,7 +69,7 @@ export class PaintController {
     };
     const onTouchEnd = () => this.endStroke();
     const onMove = (e: MapMouseEvent) => {
-      this.updateCursor(e.point, e.lngLat);
+      this.updateCursor(e.lngLat);
       if (this.painting) {
         this.strokeTo(e.point);
         this.queueRender();
@@ -95,8 +84,7 @@ export class PaintController {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
       if (e.code === "Space" && !this.spaceHeld) {
         this.spaceHeld = true;
-        this.painting = false;
-        this.cursorEl.classList.remove("painting");
+        this.endStroke();
         this.applyInteraction();
         e.preventDefault();
         return;
@@ -146,7 +134,6 @@ export class PaintController {
       window.removeEventListener("mouseup", onUp);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
-      this.cursorEl.remove();
     });
     this.disposers.push(this.tool.subscribe(() => this.applyInteraction()));
     this.disposers.push(this.enabled.subscribe(() => this.applyInteraction()));
@@ -288,14 +275,12 @@ export class PaintController {
     this.pushHistory();
     this.painting = true;
     this.lastStampPoint = null;
-    this.cursorEl.classList.add("painting");
     this.strokeTo(point);
     this.queueRender();
   }
 
   private endStroke(): void {
     this.painting = false;
-    this.cursorEl.classList.remove("painting");
     this.lastStampPoint = null;
   }
 
@@ -308,19 +293,15 @@ export class PaintController {
     this.syncHistoryFlags();
   }
 
-  private updateCursor(point: Point, lngLat: LngLat): void {
+  /**
+   * The cursor is the real footprint of the next stamp: the hex cells it
+   * would touch, at the resolution the layer would pick. Nothing else.
+   */
+  private updateCursor(lngLat: LngLat): void {
     if (!this.canPaint()) {
       this.hideCursor();
       return;
     }
-    this.cursorEl.hidden = false;
-    this.cursorEl.style.transform = `translate(${point.x}px, ${point.y}px)`;
-    this.cursorEl.classList.toggle("erase", this.tool.value === "erase");
-    const mpp = this.gameMap.metersPerPixel(lngLat.lat);
-    const tolPx = (this.toleranceKm.value * 1000) / mpp;
-    this.tolRing.style.width = this.tolRing.style.height = `${tolPx * 2}px`;
-    // The brush itself is shown as the real footprint of the next stamp: the
-    // hex cells it would touch, at the resolution the layer would pick.
     const at = { lat: lngLat.lat, lon: lngLat.lng };
     this.gameMap.setCursorFootprint(
       this.layer.stampCells(at, this.brushRadiusKm(lngLat.lat)),
@@ -329,7 +310,6 @@ export class PaintController {
   }
 
   private hideCursor(): void {
-    this.cursorEl.hidden = true;
     this.gameMap.setCursorFootprint(null);
   }
 
