@@ -736,79 +736,88 @@ button.big {
   background: #3a424d;
 }
 /* ---- final standings grid ---- */
+/* Final standings: one row per player, total as the headline, rounds below. */
 .standings {
-  display: grid;
-  grid-template-columns: 30px 20px minmax(80px, 1fr) repeat(var(--rounds), minmax(3.6ch, auto)) auto;
-  align-items: center;
-  font-variant-numeric: tabular-nums;
-  overflow-x: auto;
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  text-align: left;
 }
-.standings-head > span,
-.standings-row > span {
-  padding-left: 4px;
-  padding-right: 4px;
+.standings-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  border-top: 1px solid #333b45;
+  border-radius: 8px;
+}
+.standings-row.you {
+  background: #2a3038;
+  border-top-color: transparent;
+}
+.standings .place {
+  width: 28px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 20px;
+  flex: none;
 }
 .standings .dot {
   display: flex;
   align-items: center;
-  justify-content: center;
+  flex: none;
 }
-.standings-head,
-.standings-row {
-  display: contents;
+.standing-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-.standings-head span {
-  color: var(--muted);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding-bottom: 4px;
+.standing-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.standings-row > span {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  border-top: 1px solid #333b45;
-  line-height: 20px;
-}
-.standings-row.you > span {
-  background: #2a3038;
-}
-.standings-row.you > span:first-child {
-  border-radius: 6px 0 0 6px;
-}
-.standings-row.you > span:last-child {
-  border-radius: 0 6px 6px 0;
-}
-.standings .place {
-  text-align: center;
-  font-weight: 700;
-  color: var(--muted);
-  font-size: 18px;
-}
-.standings .num {
-  text-align: right;
-}
-/* Names never push into the numbers: they clip with an ellipsis instead. */
-.standings .name {
+.standing-main .name {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 16px;
+}
+.standing-main .name-text {
   min-width: 0;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.standings .name .tag.host {
+.standing-main .total {
+  font-weight: 700;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
   flex: none;
-  margin-left: 0;
+}
+.standings .rounds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 .standings .round {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
   color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 1px 5px;
+  min-width: 2.6em;
+  text-align: center;
 }
-.standings .total {
-  font-weight: 700;
-  font-size: 16px;
-  padding-left: 6px;
+.standings .round.best {
+  color: var(--panel-fg);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* ---- timer ----------------------------------------------------------------- */

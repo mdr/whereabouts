@@ -53,12 +53,12 @@ describe("Results", () => {
     expect(container.querySelector(".tagline")!.textContent).toContain("wins");
     const rows = container.querySelectorAll(".standings-row");
     expect(rows).toHaveLength(2);
-    // Medals for the podium, one column per round, then the total.
+    // Medals for the podium, the total as the headline, the rounds underneath.
     expect(rows[0]!.querySelector(".place")!.textContent).toBe("🥇");
     expect(rows[1]!.querySelector(".place")!.textContent).toBe("🥈");
-    expect([...rows[0]!.querySelectorAll(".round")].map((e) => e.textContent)).toEqual(["800", "700"]);
     expect(rows[0]!.querySelector(".total")!.textContent).toBe("1,500");
-    expect(container.querySelectorAll(".standings-head .num")).toHaveLength(3);
+    expect([...rows[0]!.querySelectorAll(".round")].map((e) => e.textContent)).toEqual(["800", "700"]);
+    expect(rows[0]!.querySelector(".round.best")!.textContent).toBe("800");
     expect(rows[1]!.className).toContain("you");
     expect(container.querySelector("button")).toBeNull();
     expect(container.textContent).toContain("The host can start another game");

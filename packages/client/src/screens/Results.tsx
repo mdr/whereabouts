@@ -9,7 +9,6 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   const byId = new Map(view.players.map((p) => [p.id, p]));
   const standings = view.results ?? [];
   const winner = standings[0] ? byId.get(standings[0].playerId) : undefined;
-  const rounds = Math.max(0, ...standings.map((s) => s.rounds.length));
   return (
     <div class="home">
       <div class="home-card results-card">
@@ -20,44 +19,43 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             {winner.isHost && <HostTag />} wins
           </p>
         )}
-        {/* One grid: place, colour, name, a column per round, total. */}
-        <div class="standings" style={{ "--rounds": rounds }} role="table" aria-label="Final standings">
-          <div class="standings-head" role="row">
-            <span />
-            <span />
-            <span />
-            {Array.from({ length: rounds }, (_, i) => (
-              <span key={i} class="num" title={`Round ${i + 1}`}>
-                R{i + 1}
-              </span>
-            ))}
-            <span class="num">Total</span>
-          </div>
+        {/* Total first and largest; the round scores sit underneath as a small strip. */}
+        <ol class="standings" aria-label="Final standings">
           {standings.map((s, i) => {
             const p = byId.get(s.playerId);
+            const best = Math.max(...s.rounds.map((r) => r ?? -1));
             return (
-              <div key={s.playerId} class={`standings-row ${s.playerId === view.you.id ? "you" : ""}`} role="row">
+              <li key={s.playerId} class={`standings-row ${s.playerId === view.you.id ? "you" : ""}`}>
                 <span class="place">{MEDALS[i] ?? i + 1}</span>
                 <span class="dot">
                   <i class="swatch" style={{ background: p ? playerColour(p.colour) : "#888" }} />
                 </span>
-                <span class="name">
-                  {p?.name ?? "?"}
-                  {p?.isHost && <HostTag />}
-                </span>
-                {Array.from({ length: rounds }, (_, r) => {
-                  const score = s.rounds[r];
-                  return (
-                    <span key={r} class="num round">
-                      {score == null ? "–" : Math.round(score)}
+                <span class="standing-body">
+                  <span class="standing-main">
+                    <span class="name">
+                      <span class="name-text">{p?.name ?? "?"}</span>
+                      {p?.isHost && <HostTag />}
                     </span>
-                  );
-                })}
-                <span class="num total">{Math.round(s.total).toLocaleString()}</span>
-              </div>
+                    <span class="total" title="Total">
+                      {Math.round(s.total).toLocaleString()}
+                    </span>
+                  </span>
+                  <span class="rounds" aria-label="Score by round">
+                    {s.rounds.map((score, r) => (
+                      <span
+                        key={r}
+                        class={`round ${score !== null && score === best ? "best" : ""}`}
+                        title={`Round ${r + 1}${score == null ? ": sat out" : ""}`}
+                      >
+                        {score == null ? "–" : Math.round(score)}
+                      </span>
+                    ))}
+                  </span>
+                </span>
+              </li>
             );
           })}
-        </div>
+        </ol>
         {view.you.isHost ? (
           <button class="primary big" onClick={() => conn.again()}>
             <Icon name="refresh" /> Play again
