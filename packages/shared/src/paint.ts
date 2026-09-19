@@ -9,6 +9,7 @@ import {
   cellArea,
   cellToBoundary,
   cellToLatLng,
+  cellToParent,
   getHexagonEdgeLengthAvg,
   getResolution,
   gridDisk,
@@ -140,11 +141,15 @@ export class PaintLayer {
     return out;
   }
 
-  /** Rebuild a layer from its wire form. Cells of another resolution are dropped. */
+  /**
+   * Rebuild a layer from its wire form. Cells may be at `res` or coarser
+   * (see compactRecord); finer cells are dropped because they would undercut
+   * the tolerance-based resolution the question was scored at.
+   */
   static fromRecord(res: number, cells: Record<string, number>): PaintLayer {
     const layer = new PaintLayer(res);
     for (const [h, v] of Object.entries(cells)) {
-      if (v > 0 && getResolution(h) === res) layer.cells.set(h, v);
+      if (v > 0 && getResolution(h) <= res) layer.cells.set(h, v);
     }
     layer.version++;
     return layer;
@@ -235,4 +240,42 @@ export class PaintLayer {
     out.sort((a, b) => b.fraction - a.fraction);
     return out;
   }
+}
+
+/** Cells a submission may carry after compaction; keeps frames well under the transport limit. */
+export const PAINT_CELL_BUDGET = 6000;
+
+/**
+ * Coarsen a sparse paint record until it fits the cell budget, merging
+ * children into their H3 parent while conserving mass (intensity x area).
+ * Painting a subcontinent at world zoom with a fine-resolution layer can
+ * produce tens of thousands of cells; scoring is insensitive to detail far
+ * below the tolerance, so a coarser representation loses almost nothing.
+ * Cells end up at mixed resolutions, all at or coarser than the original.
+ */
+export function compactRecord(cells: Record<string, number>, budget = PAINT_CELL_BUDGET): Record<string, number> {
+  let current = cells;
+  let count = Object.keys(current).length;
+  while (count > budget) {
+    // Coarsen only the finest resolution present, one level at a time.
+    let finest = -1;
+    for (const h of Object.keys(current)) finest = Math.max(finest, getResolution(h));
+    if (finest <= 0) break;
+    const next: Record<string, number> = {};
+    const mass = new Map<string, number>();
+    for (const [h, v] of Object.entries(current)) {
+      if (getResolution(h) !== finest) {
+        next[h] = (next[h] ?? 0) + v;
+        continue;
+      }
+      const parent = cellToParent(h, finest - 1);
+      mass.set(parent, (mass.get(parent) ?? 0) + v * cellArea(h, UNITS.km2));
+    }
+    for (const [parent, m] of mass) {
+      next[parent] = (next[parent] ?? 0) + m / cellArea(parent, UNITS.km2);
+    }
+    current = next;
+    count = Object.keys(current).length;
+  }
+  return current;
 }

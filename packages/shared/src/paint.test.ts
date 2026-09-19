@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getHexagonEdgeLengthAvg, UNITS } from "h3-js";
-import { PaintLayer, resolutionForTolerance } from "./paint.ts";
+import { PaintLayer, compactRecord, resolutionForTolerance } from "./paint.ts";
 
 describe("resolutionForTolerance", () => {
   it("picks cells with edge at most a quarter of the tolerance", () => {
@@ -39,5 +39,45 @@ describe("PaintLayer", () => {
     expect(blobs[0]!.fraction + blobs[1]!.fraction).toBeCloseTo(1, 9);
     expect(blobs[0]!.fraction).toBeGreaterThan(blobs[1]!.fraction);
     expect(blobs[0]!.centroid.lat).toBeCloseTo(27, 0);
+  });
+});
+
+describe("compactRecord", () => {
+  function totalMass(rec: Record<string, number>): number {
+    return [...PaintLayer.fromRecord(15, rec).toCells()].reduce((s, c) => s + c.intensity * c.areaKm2, 0);
+  }
+
+  it("leaves small records alone", () => {
+    const layer = new PaintLayer(4);
+    layer.stamp({ lat: 20, lon: 10 }, 300, 1);
+    const rec = layer.toRecord();
+    expect(compactRecord(rec, 6000)).toBe(rec);
+  });
+
+  it("coarsens to fit the budget while conserving mass and staying at or coarser than the origin", () => {
+    const layer = new PaintLayer(7); // fine cells, as a 3 km tolerance would use
+    for (let i = 0; i < 6; i++) layer.stamp({ lat: 51.5 + i * 0.05, lon: -0.1 + i * 0.1 }, 40, 1);
+    const rec = layer.toRecord();
+    const before = Object.keys(rec).length;
+    expect(before).toBeGreaterThan(500);
+    const small = compactRecord(rec, 500);
+    const after = Object.keys(small).length;
+    expect(after).toBeLessThanOrEqual(500);
+    expect(after).toBeGreaterThan(0);
+    const rebuilt = PaintLayer.fromRecord(7, small);
+    expect(rebuilt.cells.size).toBe(after);
+    expect(totalMass(small)).toBeCloseTo(totalMass(rec), 6);
+    for (const h of Object.keys(small)) expect(h.length).toBe(15);
+  });
+
+  it("scores almost identically before and after compaction", async () => {
+    const { buildDistribution, scoreDistribution } = await import("./scoring.ts");
+    const layer = new PaintLayer(7);
+    for (let i = 0; i < 6; i++) layer.stamp({ lat: 51.5 + i * 0.05, lon: -0.1 + i * 0.1 }, 40, 1);
+    const answer = { lat: 51.6, lon: 0.2 };
+    const full = scoreDistribution(buildDistribution(layer.toCells(), 0.05), answer, 3);
+    const compact = PaintLayer.fromRecord(7, compactRecord(layer.toRecord(), 500));
+    const small = scoreDistribution(buildDistribution(compact.toCells(), 0.05), answer, 3);
+    expect(Math.abs(full.score - small.score)).toBeLessThan(15);
   });
 });

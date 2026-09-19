@@ -15,8 +15,8 @@ export const PaintSubmissionSchema = z.object({
 });
 export type PaintSubmission = z.infer<typeof PaintSubmissionSchema>;
 
-/** Hard cap on cells per submission; the client's brush cap keeps it far lower. */
-export const MAX_PAINT_CELLS = 40_000;
+/** Hard cap on cells per submission; clients compact to PAINT_CELL_BUDGET before sending. */
+export const MAX_PAINT_CELLS = 12_000;
 
 /** Ticket presented on connect, carried in the WebSocket subprotocol header. */
 export const TicketSchema = z.object({

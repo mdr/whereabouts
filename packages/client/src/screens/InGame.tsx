@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "preact/hooks";
-import { PaintLayer, type GameView } from "@whereabouts/shared";
+import { PaintLayer, compactRecord, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { usePaint } from "../ui/MapView";
 import { Card, Countdown, QuestionCard } from "../ui/bits";
@@ -47,7 +47,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     sendTimer.current = window.setTimeout(() => {
       sendTimer.current = null;
       if (paint.layer.isEmpty) return;
-      conn.sendPaint({ cells: paint.layer.toRecord(), floor });
+      conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor });
       lastSentVersion.current = paint.version.peek();
     }, 400);
     return () => {
@@ -58,7 +58,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   function lockIn() {
     if (paint.layer.isEmpty) return;
     if (sendTimer.current) clearTimeout(sendTimer.current);
-    conn.sendPaint({ cells: paint.layer.toRecord(), floor: paint.floor.value });
+    conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.value });
     conn.lock();
   }
 

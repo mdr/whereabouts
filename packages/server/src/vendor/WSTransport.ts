@@ -4,9 +4,11 @@
  *
  * The published @rivalis/node package bundles this transport together with a
  * WebRTC transport that depends on the native node-datachannel module. We
- * only need WebSockets, so the file is copied here with one change: CloseCode
+ * only need WebSockets, so the file is copied here with two changes: CloseCode
  * is imported from @rivalis/core, which re-exports it, instead of the private
- * @rivalis/handshake package.
+ * @rivalis/handshake package; and every accepted socket gets an 'error'
+ * listener (see guardSocketErrors) so oversized frames cannot crash the
+ * process.
  */
 import type { IncomingMessage } from 'http'
 import { createHash } from 'node:crypto'
@@ -172,10 +174,27 @@ class WSTransport extends Transport {
     }
 
     private handleReject = (socket: WebSocket, _request: IncomingMessage): void => {
+        this.guardSocketErrors(socket)
         socket.close(CloseCode.INVALID_TICKET)
     }
 
+    /**
+     * Local change (whereabouts): `ws` emits 'error' on the socket for
+     * protocol violations such as a frame above `maxPayload` (close code
+     * 1009). Without a listener that is an unhandled 'error' event, which
+     * crashes the whole process. Log and let ws finish closing the socket.
+     */
+    private guardSocketErrors(socket: WebSocket): void {
+        socket.on('error', (error: Error) => {
+            this.logger.warning(`socket error: ${error.message}`)
+            if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+                socket.terminate()
+            }
+        })
+    }
+
     private handleConnect = async (socket: WebSocket, request: IncomingMessage): Promise<void> => {
+        this.guardSocketErrors(socket)
         if (this.transportLayer === null) {
             return socket.close(CloseCode.INVALID_TICKET)
         }

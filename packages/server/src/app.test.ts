@@ -244,6 +244,29 @@ describe("game server", () => {
     expect(alice.errors).toHaveLength(0);
   });
 
+  it("survives an oversized frame: the sender is dropped, everyone else carries on", async () => {
+    const alice = player("Alice");
+    alice.connect({ create: true });
+    const lobby = await alice.until((v) => v.phase === "lobby");
+    const bob = player("Bob");
+    bob.connect({ code: lobby.code });
+    await alice.until((v) => v.players.length === 2);
+
+    // Well over the 1 MiB transport limit. ws rejects it with close code 1009.
+    const huge = "x".repeat(2 * 1024 * 1024);
+    bob.client.send("paint", huge);
+    await bob.waitClosed();
+    expect(bob.client.connected).toBe(false);
+
+    // The process is alive and the room still works. In the lobby a dropped
+    // player is removed rather than marked offline.
+    expect(alice.client.connected).toBe(true);
+    await alice.untilLatest((v) => v.players.length === 1);
+    const cara = player("Cara");
+    cara.connect({ code: lobby.code });
+    await cara.until((v) => v.phase === "lobby");
+  });
+
   it("a reconnecting player keeps their seat", async () => {
     const alice = player("Alice");
     alice.connect({ create: true });
