@@ -156,6 +156,24 @@ export class PaintController {
     this.gameMap.setPaint(layer ? layer.toGeoJSON() : { type: "FeatureCollection", features: [] });
   }
 
+  /**
+   * Show several players' paint at once, each in its own colour. Earlier
+   * entries draw underneath later ones. Returns the combined GeoJSON so the
+   * caller can frame it.
+   */
+  showLayers(entries: { layer: PaintLayer; colour: string }[]): GeoJSON.FeatureCollection {
+    const features: GeoJSON.Feature[] = [];
+    for (const { layer, colour } of entries) {
+      for (const f of layer.toGeoJSON().features) {
+        features.push({ ...f, properties: { ...f.properties, colour } });
+      }
+    }
+    const fc: GeoJSON.FeatureCollection = { type: "FeatureCollection", features };
+    this.gameMap.setPaintColourPerFeature();
+    this.gameMap.setPaint(fc);
+    return fc;
+  }
+
   /** Put our own paint back on the map, in a player colour or the theme ramp. */
   showOwn(colour: string | null = null): void {
     this.gameMap.setPaintColour(colour);

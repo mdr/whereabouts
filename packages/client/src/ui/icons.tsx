@@ -1,0 +1,37 @@
+/** Button icons from Lucide, behind one component so screens name them by role. */
+import {
+  ArrowRight,
+  Check,
+  Eraser,
+  Flag,
+  Hand,
+  Link,
+  Lock,
+  Paintbrush,
+  Play,
+  RotateCcw,
+  Trash2,
+  type LucideProps,
+} from "lucide-preact";
+import type { FunctionComponent } from "preact";
+
+const ICONS = {
+  hand: Hand,
+  brush: Paintbrush,
+  eraser: Eraser,
+  trash: Trash2,
+  lock: Lock,
+  check: Check,
+  next: ArrowRight,
+  flag: Flag,
+  link: Link,
+  play: Play,
+  refresh: RotateCcw,
+} satisfies Record<string, FunctionComponent<LucideProps>>;
+
+export type IconName = keyof typeof ICONS;
+
+export function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
+  const Glyph = ICONS[name];
+  return <Glyph class="icon" size={size} strokeWidth={2} aria-hidden="true" />;
+}

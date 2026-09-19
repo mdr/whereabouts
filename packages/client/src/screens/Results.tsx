@@ -1,5 +1,6 @@
 import { playerColour, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
+import { Icon } from "../ui/icons";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -54,7 +55,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         </div>
         {view.you.isHost ? (
           <button class="primary big" onClick={() => conn.again()}>
-            Play again
+            <Icon name="refresh" /> Play again
           </button>
         ) : (
           <p class="hint">The host can start another game with the same group.</p>

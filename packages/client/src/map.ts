@@ -216,6 +216,13 @@ export class GameMap {
     this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9]);
   }
 
+  /** Colour each feature by its own `colour` property, for several players at once. */
+  setPaintColourPerFeature(): void {
+    if (!this.map.getLayer("paint-fill")) return;
+    this.map.setPaintProperty("paint-fill", "fill-color", ["coalesce", ["get", "colour"], "#888888"]);
+    this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9]);
+  }
+
   private applyPaintRamp(t: Theme): void {
     if (!this.map.getLayer("paint-fill")) return;
     this.map.setPaintProperty("paint-fill", "fill-color", [

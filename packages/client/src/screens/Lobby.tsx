@@ -4,6 +4,7 @@ import type { Connection } from "../net";
 import { playerName } from "../settings";
 import { PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
+import { Icon } from "../ui/icons";
 
 export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   const url = `${location.origin}${location.pathname}#/game/${view.code}`;
@@ -21,7 +22,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             void navigator.clipboard?.writeText(url).then(() => setCopied(true));
           }}
         >
-          {copied ? "Link copied" : "Copy invite link"}
+          <Icon name={copied ? "check" : "link"} /> {copied ? "Link copied" : "Copy invite link"}
         </button>
         <ConnectionNote conn={conn} />
         <h2>Players</h2>
@@ -43,7 +44,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
         </p>
         {view.you.isHost ? (
           <button class="primary big" onClick={() => conn.start()} disabled={view.players.length < 1}>
-            Start game
+            <Icon name="play" /> Start game
           </button>
         ) : (
           <p class="hint">Waiting for the host to start…</p>

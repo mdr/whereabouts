@@ -77,7 +77,10 @@ console.log("reveal reached early via lock-in");
 await alice.waitForTimeout(1500);
 await alice.screenshot({ path: `${out}/mp-3-reveal-alice.png` });
 console.log("reveal rows:", (await alice.textContent(".reveal-list")).replace(/\s+/g, " "));
-// Bob looks at Alice's paint.
+// By default everyone's paint is shown together; then Bob looks at Alice's alone.
+const everyone = await bob.evaluate(() => window.whereabouts.map.getSource("paint").serialize().data.features.length);
+console.log("bob sees everyone's paint cells:", everyone);
+await bob.screenshot({ path: `${out}/mp-3b-reveal-everyone.png` });
 await bob.click(".reveal-list li:has-text('Alice')");
 await bob.waitForTimeout(1200);
 const features = await bob.evaluate(() => window.whereabouts.map.getSource("paint").serialize().data.features.length);

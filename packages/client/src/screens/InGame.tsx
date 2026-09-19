@@ -9,6 +9,7 @@ import { ConnectionNote } from "../ui/ConnectionNote";
 import { DevDrawer } from "../ui/DevDrawer";
 import { ConnectionDev } from "../ui/ConnectionDev";
 import { Reveal } from "./Reveal";
+import { Icon } from "../ui/icons";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint();
@@ -95,7 +96,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
         {!view.you.spectating && (
           <PaintTools>
             <button class="danger" onClick={() => paint.clear()} disabled={!paint.enabled.value}>
-              Clear
+              <Icon name="trash" /> Clear
             </button>
             <button
               class="primary"
@@ -103,7 +104,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
               onClick={lockIn}
               disabled={view.you.locked || paint.layer.isEmpty}
             >
-              {view.you.locked ? "Locked in" : "Lock in"}
+              <Icon name="lock" /> {view.you.locked ? "Locked in" : "Lock in"}
             </button>
           </PaintTools>
         )}

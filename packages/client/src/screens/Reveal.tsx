@@ -14,24 +14,30 @@ import { ConnectionNote } from "../ui/ConnectionNote";
 import { DevDrawer } from "../ui/DevDrawer";
 import { ConnectionDev } from "../ui/ConnectionDev";
 import { PaintDev } from "../ui/PaintTools";
+import { Icon } from "../ui/icons";
 
 export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reveal: RevealView }) {
   const paint = usePaint();
   const byId = new Map(view.players.map((p) => [p.id, p]));
-  const [selected, setSelected] = useState<string>(view.you.id);
+  // null shows everyone's guesses at once; a player id shows just theirs.
+  const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
     paint.enabled.value = false;
     paint.gameMap.showReveal(reveal.answer, reveal.question.toleranceKm);
   }, [reveal.index]);
 
-  // Show the selected player's paint in their colour, framed with the answer.
+  // Show everyone's paint in their colours (best score drawn on top), or one
+  // player's, framed together with the answer.
   useEffect(() => {
-    const r = reveal.results.find((x) => x.playerId === selected);
-    const p = byId.get(selected);
-    const layer = r?.paint && p ? PaintLayer.fromRecord(r.res, r.paint.cells) : null;
-    paint.showLayer(layer, p ? playerColour(p.colour) : null);
-    const fc = layer ? layer.toGeoJSON() : { type: "FeatureCollection" as const, features: [] };
+    const shown = reveal.results.filter((r) => r.paint && (selected === null || r.playerId === selected));
+    const entries = [...shown].reverse().flatMap((r) => {
+      const p = byId.get(r.playerId);
+      return p && r.paint
+        ? [{ layer: PaintLayer.fromRecord(r.res, r.paint.cells), colour: playerColour(p.colour) }]
+        : [];
+    });
+    const fc = paint.showLayers(entries);
     paint.gameMap.fitAnswerAndPaint(reveal.answer, fc, reveal.question.toleranceKm);
   }, [selected, reveal.index]);
 
@@ -73,6 +79,10 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
         <div class="hud-right">
           <Card title="Scores">
             <ul class="reveal-list">
+              <li class={`everyone ${selected === null ? "selected" : ""}`} onClick={() => setSelected(null)}>
+                <span class="swatch multi" />
+                <span class="name">Everyone</span>
+              </li>
               {rows.map(({ p, r }) => (
                 <RevealRow
                   key={p.id}
@@ -81,20 +91,20 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
                   you={p.id === view.you.id}
                   ready={ready.has(p.id)}
                   selected={p.id === selected}
-                  onSelect={() => setSelected(p.id)}
+                  onSelect={() => setSelected(selected === p.id ? null : p.id)}
                 />
               ))}
             </ul>
-            <p class="hint">Click a player to see their guess.</p>
+            <p class="hint">Click a player to see just their guess.</p>
           </Card>
         </div>
         <div class="hud-bottom toolbar">
           <button class={iAmReady ? "" : "primary"} onClick={() => conn.ready()} disabled={iAmReady}>
-            {iAmReady ? "Ready ✓" : "Ready"}
+            <Icon name="check" /> Ready
           </button>
           {view.you.isHost ? (
             <button class={iAmReady ? "primary" : ""} onClick={() => conn.next()} title="Go on without waiting">
-              {last ? "Show final results" : "Next round"}
+              <Icon name={last ? "flag" : "next"} /> {last ? "Show final results" : "Next round"}
             </button>
           ) : (
             iAmReady && <span class="hint">Waiting for the others…</span>

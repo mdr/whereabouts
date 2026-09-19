@@ -793,3 +793,32 @@ button.big {
   padding: 0 4px;
   margin-left: 6px;
 }
+
+/* ---- icons ------------------------------------------------------------------- */
+button .icon {
+  vertical-align: -3px;
+  margin-right: 2px;
+}
+button.big .icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: -4px;
+}
+.swatch.multi {
+  background: conic-gradient(#4fc3f7, #f06292, #aed581, #ffb74d, #ba68c8, #4fc3f7);
+}
+.reveal-list li.everyone {
+  border-bottom: 1px solid #333b45;
+  margin-bottom: 2px;
+}
+.toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.toolbar button .icon {
+  flex: none;
+  margin: 0;
+  vertical-align: baseline;
+}

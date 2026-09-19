@@ -22,6 +22,7 @@ import { PaintDev, PaintTools } from "../ui/PaintTools";
 import { DevDrawer } from "../ui/DevDrawer";
 import { cheatLiveScore, soloKernelId } from "../settings";
 import { devMode } from "../dev";
+import { Icon } from "../ui/icons";
 
 interface RoundResult {
   question: Question;
@@ -172,7 +173,7 @@ function SoloGame() {
               ))}
             </ul>
             <button class="primary big" onClick={restart}>
-              Play again
+              <Icon name="refresh" /> Play again
             </button>
             <p class="hint">
               <a href="#/">Leave</a>
@@ -207,7 +208,7 @@ function SoloGame() {
           </div>
           <div class="hud-bottom toolbar">
             <button class="primary" onClick={next}>
-              {last ? "Finish" : "Next question"} <kbd>Enter</kbd>
+              <Icon name={last ? "flag" : "next"} /> {last ? "Finish" : "Next question"} <kbd>Enter</kbd>
             </button>
           </div>
         </div>
@@ -233,10 +234,10 @@ function SoloGame() {
         </div>
         <PaintTools>
           <button class="danger" onClick={() => paint.clear()}>
-            Clear
+            <Icon name="trash" /> Clear
           </button>
           <button class="primary" onClick={submit} disabled={paint.version.value < 0 || paint.layer.isEmpty}>
-            Submit
+            <Icon name="check" /> Submit
           </button>
         </PaintTools>
       </div>

@@ -2,7 +2,9 @@ import type { ComponentChildren } from "preact";
 import { usePaint } from "./MapView";
 import { Card, fmtKm } from "./bits";
 import type { Tool } from "../paint-controller";
+import { Icon, type IconName } from "./icons";
 
+const TOOL_ICON: Record<Tool, IconName> = { pan: "hand", paint: "brush", erase: "eraser" };
 const TOOL_HINT: Record<Tool, string> = {
   pan: "Pan the map (1). Hold Space to pan while painting.",
   paint: "Paint where you think it is (2). Paint again to weight an area more.",
@@ -28,7 +30,7 @@ export function PaintTools({ children }: { children?: ComponentChildren }) {
             onClick={() => (paint.tool.value = t)}
             disabled={!enabled}
           >
-            {t[0]!.toUpperCase() + t.slice(1)}
+            <Icon name={TOOL_ICON[t]} /> {t[0]!.toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>

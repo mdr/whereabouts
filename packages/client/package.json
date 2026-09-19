@@ -16,6 +16,7 @@
     "@toolcase/base": "3.x",
     "@toolcase/logging": "3.x",
     "@whereabouts/shared": "workspace:*",
+    "lucide-preact": "^1.47.0",
     "maplibre-gl": "^6.7.0",
     "preact": "^10.27.0"
   },
