@@ -1,4 +1,4 @@
-# Hunch Map
+# Whereabouts
 
 Single-player prototype of a geography game where you answer by **painting a
 probability distribution** on a world map instead of dropping a pin.

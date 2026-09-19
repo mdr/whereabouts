@@ -1,5 +1,5 @@
 {
-  description = "Hunch Map – a geography game where you paint a probability distribution";
+  description = "Whereabouts – a geography game where you paint a probability distribution";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -20,7 +20,7 @@
           ];
 
           shellHook = ''
-            echo "hunch-map dev shell: node $(node --version), pnpm $(pnpm --version)"
+            echo "whereabouts dev shell: node $(node --version), pnpm $(pnpm --version)"
           '';
         };
       });

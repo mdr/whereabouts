@@ -346,7 +346,7 @@ function total(): number {
 function renderPanel(): void {
   if (phase === "loading") return;
   const q = question();
-  const header = `<h1>Hunch Map <small>Round ${Math.min(index + 1, questions.length)} / ${questions.length} · total ${Math.round(total()).toLocaleString()}</small></h1>`;
+  const header = `<h1>Whereabouts <small>Round ${Math.min(index + 1, questions.length)} / ${questions.length} · total ${Math.round(total()).toLocaleString()}</small></h1>`;
 
   if (phase === "done") {
     panel.innerHTML = `${header}
@@ -493,7 +493,7 @@ function bindOptions(): void {
 // ---- boot ------------------------------------------------------------------
 
 async function boot(): Promise<void> {
-  panel.innerHTML = `<h1>Hunch Map</h1><p class="hint">Loading…</p>`;
+  panel.innerHTML = `<h1>Whereabouts</h1><p class="hint">Loading…</p>`;
   const [qs] = await Promise.all([loadQuestions(), gameMap.ready]);
   questions = shuffle(qs, 20260906);
   gameMap.applyTheme(THEME);
@@ -507,11 +507,11 @@ async function boot(): Promise<void> {
 // Handy for playtest scripts and the browser console.
 declare global {
   interface Window {
-    hunch: { map: typeof map; gameMap: GameMap };
+    whereabouts: { map: typeof map; gameMap: GameMap };
   }
 }
-window.hunch = { map, gameMap };
+window.whereabouts = { map, gameMap };
 
 boot().catch((err) => {
-  panel.innerHTML = `<h1>Hunch Map</h1><p class="warn">${String(err)}</p>`;
+  panel.innerHTML = `<h1>Whereabouts</h1><p class="warn">${String(err)}</p>`;
 });
