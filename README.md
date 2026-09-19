@@ -15,12 +15,21 @@ Open two browser tabs at http://localhost:5173 to play against yourself:
 host a game in one, join with the code in the other. Tabs are separate
 players because the reconnect token lives in session storage.
 
-Other commands: `pnpm test` (unit tests for scoring, paint and the game state
-machine, plus end-to-end server tests over real WebSockets), `pnpm typecheck`,
-`pnpm build`, `pnpm smoke` (Playwright drives the single-player mode in your
-installed Chrome), and from `packages/client`,
-`node scripts/multiplayer-smoke.mjs` (two players through a full online round
-against the running dev servers).
+Other commands:
+
+- `pnpm check`: typecheck, ESLint (type-aware), Prettier check and all tests.
+  CI runs exactly this plus the client build, inside the same Nix shell.
+- `pnpm test`: unit tests for scoring, paint, the game state machine, the
+  protocol codec, server config and client components, plus end-to-end
+  server tests that drive the real server over WebSockets with the browser
+  client.
+- `pnpm lint:fix` and `pnpm format` to tidy up.
+- Browser smoke scripts (Playwright driving your installed Chrome against
+  the running dev servers): `pnpm smoke` for solo mode, and from
+  `packages/client`, `node scripts/multiplayer-smoke.mjs` for a two-player
+  round and `node scripts/flows-smoke.mjs` for refresh mid-round, late
+  joiners and play-again (run the server with
+  `ROUND_MS=12000 REVEAL_MS=6000 ROUNDS=2` for those).
 
 Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
 `REVEAL_MS`, `KERNEL` (a kernel id from `packages/shared/src/scoring.ts`),
@@ -51,8 +60,10 @@ pnpm workspace with three packages:
   player's score, and lets you click a player to see their paint in their
   colour. Standings carry rank-change arrows.
 - Late joiners spectate the current round and play from the next. A dropped
-  player keeps their seat and score and reclaims it on reconnect. If the host
-  drops, the longest-standing player inherits the host controls.
+  player keeps their seat, score and current paint, and reclaims them on
+  reconnect (a browser refresh is the common case). The host keeps the role
+  while away; the longest-standing connected player acts as host meanwhile.
+  In the lobby a departing host hands over for good.
 - State is in memory on a single server process; a restart ends games in
   progress.
 

@@ -267,7 +267,7 @@ function KernelComparison({ dist, q, active }: { dist: Distribution; q: Question
 
 function LiveScore({ q, kernelId }: { q: Question; kernelId: string }) {
   const paint = usePaint();
-  void paint.version.value;
+  void paint.settledVersion.value;
   const dist = buildDistribution(paint.layer.toCells(), paint.floor.value);
   const { score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, kernelById(kernelId));
   return (

@@ -95,7 +95,7 @@ function Slider(props: {
 /** Mass per connected blob plus the floor. Re-renders on paint changes. */
 export function Distribution() {
   const paint = usePaint();
-  void paint.version.value;
+  void paint.settledVersion.value;
   const floor = paint.floor.value;
   const layer = paint.layer;
   const blobs = layer.blobs();

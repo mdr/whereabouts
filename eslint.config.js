@@ -54,7 +54,7 @@ export default tseslint.config(
     rules: { ...tseslint.configs.disableTypeChecked.rules, "no-console": "off" },
   },
   {
-    files: ["**/*.test.ts"],
+    files: ["**/*.test.{ts,tsx}"],
     rules: { "@typescript-eslint/no-unsafe-assignment": "off", "@typescript-eslint/no-explicit-any": "off" },
   },
 );

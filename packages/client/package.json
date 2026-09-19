@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.0",
+    "@testing-library/preact": "^3.2.4",
     "@types/geojson": "^7946.0.16",
     "happy-dom": "^20.0.0",
     "playwright-core": "^1.55.0",

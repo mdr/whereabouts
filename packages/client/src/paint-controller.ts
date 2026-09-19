@@ -17,6 +17,13 @@ export class PaintController {
   readonly floor = signal(0.05);
   /** Increments whenever the paint changes; cheap dependency for panels. */
   readonly version = signal(0);
+  /**
+   * Follows `version` about 200 ms after the last change. Panels that do
+   * heavier work per update (blob detection, live scoring) depend on this so
+   * they do not run on every animation frame mid-stroke.
+   */
+  readonly settledVersion = signal(0);
+  private settleTimer: number | null = null;
   /** Whether painting is currently allowed (guessing phase, not locked). */
   readonly enabled = signal(false);
   readonly brushClamped = signal(false);
@@ -110,9 +117,19 @@ export class PaintController {
     });
     this.disposers.push(this.tool.subscribe(() => this.applyInteraction()));
     this.disposers.push(this.enabled.subscribe(() => this.applyInteraction()));
+    this.disposers.push(
+      this.version.subscribe((v) => {
+        if (this.settleTimer !== null) window.clearTimeout(this.settleTimer);
+        this.settleTimer = window.setTimeout(() => {
+          this.settleTimer = null;
+          this.settledVersion.value = v;
+        }, 200);
+      }),
+    );
   }
 
   dispose(): void {
+    if (this.settleTimer !== null) window.clearTimeout(this.settleTimer);
     for (const d of this.disposers) d();
   }
 

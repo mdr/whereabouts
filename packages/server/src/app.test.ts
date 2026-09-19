@@ -218,6 +218,32 @@ describe("game server", () => {
     expect(results.results![0]!.playerId).toBe(byName.Alice);
   });
 
+  it("answers bad messages with errors instead of dropping the player", async () => {
+    const alice = player("Alice");
+    alice.connect({ create: true });
+    await alice.until((v) => v.phase === "lobby");
+    alice.send("start");
+    await alice.until((v) => v.phase === "guessing");
+
+    alice.client.send("paint", "this is not json");
+    expect(await pollErrors(alice)).toContain("malformed message");
+    alice.errors.length = 0;
+
+    alice.send("paint", { cells: { nope: 1 }, floor: 0 });
+    expect(await pollErrors(alice)).toContain("invalid paint");
+    alice.errors.length = 0;
+
+    alice.send("lock");
+    expect(await pollErrors(alice)).toContain("nothing painted");
+    alice.errors.length = 0;
+
+    // Unknown topics are dropped silently rather than kicking (version skew tolerance).
+    alice.client.send("no-such-topic", "{}");
+    await new Promise((r) => setTimeout(r, 200));
+    expect(alice.client.connected).toBe(true);
+    expect(alice.errors).toHaveLength(0);
+  });
+
   it("a reconnecting player keeps their seat", async () => {
     const alice = player("Alice");
     alice.connect({ create: true });
