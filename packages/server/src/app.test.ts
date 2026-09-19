@@ -6,9 +6,9 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { WSClient as WSClientType } from "@rivalis/browser";
-import { PaintLayer, resolutionForTolerance, type GameView, type Question } from "@whereabouts/shared";
+import { PaintLayer, encodeTicket, resolutionForTolerance, type GameView, type Question } from "@whereabouts/shared";
 import { createApp, type App } from "./app.ts";
-import { configureGameRooms, encodeTicket, realClock, type Clock } from "./rooms.ts";
+import { configureGameRooms, realClock, type Clock } from "./rooms.ts";
 
 // Static imports hoist above this line, so the client is loaded dynamically.
 (globalThis as unknown as { window: unknown }).window = globalThis;

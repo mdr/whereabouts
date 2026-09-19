@@ -18,13 +18,12 @@ import {
   MAX_PAINT_CELLS,
   QUESTIONS,
   ServerTopics,
-  TicketSchema,
   decodeMessage,
+  decodeTicket,
   encodeMessage,
   generateCode,
   type GameConfig,
   type Question,
-  type Ticket,
 } from "@whereabouts/shared";
 
 export interface ActorData {
@@ -205,12 +204,8 @@ export class GameAuth extends AuthMiddleware<ActorData> {
   }
 
   override async authenticate(ticket: string, _context?: ConnectionContext): Promise<AuthResult<ActorData> | null> {
-    let parsed: Ticket;
-    try {
-      parsed = TicketSchema.parse(JSON.parse(decodeTicket(ticket)));
-    } catch {
-      return null;
-    }
+    const parsed = decodeTicket(ticket);
+    if (!parsed) return null;
     const rooms = this.rooms();
     let roomId: string;
     if (parsed.create) {
@@ -225,13 +220,4 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     }
     return { data: { token: parsed.token, name: parsed.name }, roomId };
   }
-}
-
-/** Tickets travel in the Sec-WebSocket-Protocol header, which forbids most punctuation, so they are base64url. */
-export function encodeTicket(ticket: Ticket): string {
-  return Buffer.from(JSON.stringify(ticket), "utf8").toString("base64url");
-}
-
-export function decodeTicket(raw: string): string {
-  return Buffer.from(raw, "base64url").toString("utf8");
 }

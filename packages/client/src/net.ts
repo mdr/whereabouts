@@ -4,20 +4,13 @@
  */
 import { WSClient } from "@rivalis/browser";
 import { computed, signal } from "@preact/signals";
-import { PROTOCOL_VERSION, type GameView, type PaintSubmission, type Ticket } from "@whereabouts/shared";
+import { PROTOCOL_VERSION, encodeTicket, type GameView, type PaintSubmission, type Ticket } from "@whereabouts/shared";
 
 export type Status = "idle" | "connecting" | "connected" | "disconnected" | "rejected";
 
 function wsUrl(): string {
   const proto = location.protocol === "https:" ? "wss:" : "ws:";
   return `${proto}//${location.host}/ws`;
-}
-
-function encodeTicket(ticket: Ticket): string {
-  const bytes = new TextEncoder().encode(JSON.stringify(ticket));
-  let bin = "";
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 export class Connection {

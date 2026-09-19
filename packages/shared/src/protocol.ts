@@ -154,3 +154,31 @@ export function decodeMessage(payload: Uint8Array | string): unknown {
   const text = typeof payload === "string" ? payload : new TextDecoder().decode(payload);
   return JSON.parse(text) as unknown;
 }
+
+// ---- tickets ---------------------------------------------------------------
+
+/**
+ * Tickets travel in the Sec-WebSocket-Protocol header, which forbids most
+ * punctuation, so they are base64url-encoded JSON. TextEncoder and btoa are
+ * available in browsers and Node 22 alike.
+ */
+export function encodeTicket(ticket: Ticket): string {
+  const bytes = new TextEncoder().encode(JSON.stringify(ticket));
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/** Parses and validates a ticket; returns null for anything malformed. */
+export function decodeTicket(raw: string): Ticket | null {
+  try {
+    const b64 = raw.replace(/-/g, "+").replace(/_/g, "/");
+    const bin = atob(b64 + "=".repeat((4 - (b64.length % 4)) % 4));
+    const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+    const parsed: unknown = JSON.parse(new TextDecoder().decode(bytes));
+    const result = TicketSchema.safeParse(parsed);
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
+}
