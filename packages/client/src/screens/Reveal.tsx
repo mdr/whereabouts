@@ -199,11 +199,15 @@ function RevealRow({
           <Icon name="kick" size={13} />
         </button>
       )}
-      <span class="round-score">{r ? (r.paint ? `+${Math.round(r.score)}` : "no guess") : "sat out"}</span>
+      <span class="round-score" title="This round">
+        {r ? (r.paint ? `+${Math.round(r.score)}` : "no guess") : "sat out"}
+      </span>
       <span class={`arrow ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
         {delta > 0 ? "▲" : delta < 0 ? "▼" : ""}
       </span>
-      <span class="score-num">{Math.round(p.score).toLocaleString()}</span>
+      <span class="score-num" title="Total so far">
+        {Math.round(p.score).toLocaleString()}
+      </span>
     </li>
   );
 }

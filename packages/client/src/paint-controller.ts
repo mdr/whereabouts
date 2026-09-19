@@ -3,7 +3,7 @@
  * cursor rings, keyboard shortcuts, and rendering. Screens configure it and
  * read its signals; it never knows about game phases.
  */
-import { Point, type LngLat, type MapMouseEvent } from "maplibre-gl";
+import { Point, type LngLat, type MapMouseEvent, type MapTouchEvent } from "maplibre-gl";
 import { batch, signal } from "@preact/signals";
 import { PaintLayer, resolutionForTolerance, type LatLon } from "@whereabouts/shared";
 import type { GameMap } from "./map";
@@ -54,13 +54,31 @@ export class PaintController {
     const map = gameMap.map;
     const onDown = (e: MapMouseEvent) => {
       if (!this.canPaint() || e.originalEvent.button !== 0) return;
-      this.pushHistory();
-      this.painting = true;
-      this.lastStampPoint = null;
-      this.cursorEl.classList.add("painting");
+      this.beginStroke(e.point);
+    };
+    // Touch: one finger uses the current tool, so it paints when painting is
+    // on; two fingers always pan and zoom, which MapLibre handles itself once
+    // the one-finger stroke is abandoned (and undone, since a pinch starts
+    // with a single touch for a moment).
+    const onTouchStart = (e: MapTouchEvent) => {
+      if (e.points.length !== 1 || !this.canPaint()) {
+        this.abandonStroke();
+        return;
+      }
+      e.preventDefault();
+      this.beginStroke(e.point);
+    };
+    const onTouchMove = (e: MapTouchEvent) => {
+      if (!this.painting) return;
+      if (e.points.length !== 1) {
+        this.abandonStroke();
+        return;
+      }
+      e.preventDefault();
       this.strokeTo(e.point);
       this.queueRender();
     };
+    const onTouchEnd = () => this.endStroke();
     const onMove = (e: MapMouseEvent) => {
       this.updateCursor(e.point, e.lngLat);
       if (this.painting) {
@@ -72,11 +90,7 @@ export class PaintController {
     const onOut = () => {
       this.hideCursor();
     };
-    const onUp = () => {
-      this.painting = false;
-      this.cursorEl.classList.remove("painting");
-      this.lastStampPoint = null;
-    };
+    const onUp = () => this.endStroke();
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
       if (e.code === "Space" && !this.spaceHeld) {
@@ -114,6 +128,10 @@ export class PaintController {
     map.on("mousedown", onDown);
     map.on("mousemove", onMove);
     map.on("mouseout", onOut);
+    map.on("touchstart", onTouchStart);
+    map.on("touchmove", onTouchMove);
+    map.on("touchend", onTouchEnd);
+    map.on("touchcancel", onTouchEnd);
     window.addEventListener("mouseup", onUp);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
@@ -121,6 +139,10 @@ export class PaintController {
       map.off("mousedown", onDown);
       map.off("mousemove", onMove);
       map.off("mouseout", onOut);
+      map.off("touchstart", onTouchStart);
+      map.off("touchmove", onTouchMove);
+      map.off("touchend", onTouchEnd);
+      map.off("touchcancel", onTouchEnd);
       window.removeEventListener("mouseup", onUp);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
@@ -258,6 +280,32 @@ export class PaintController {
 
   private brushRadiusKm(lat: number): number {
     return (this.brushPx.value * this.gameMap.metersPerPixel(lat)) / 1000;
+  }
+
+  // ---- strokes: shared by mouse and touch -----------------------------------
+
+  private beginStroke(point: Point): void {
+    this.pushHistory();
+    this.painting = true;
+    this.lastStampPoint = null;
+    this.cursorEl.classList.add("painting");
+    this.strokeTo(point);
+    this.queueRender();
+  }
+
+  private endStroke(): void {
+    this.painting = false;
+    this.cursorEl.classList.remove("painting");
+    this.lastStampPoint = null;
+  }
+
+  /** A stroke that turned out to be the start of a pinch: end it and take its paint back. */
+  private abandonStroke(): void {
+    if (!this.painting) return;
+    this.endStroke();
+    this.undo();
+    this.redoStack.pop();
+    this.syncHistoryFlags();
   }
 
   private updateCursor(point: Point, lngLat: LngLat): void {

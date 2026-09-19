@@ -34,6 +34,8 @@ Other commands:
   `ROUND_MS=12000 ROUNDS=2` for those).
   `node scripts/host-smoke.mjs` covers removing a player, rejoining as a
   new one, ending the game early and the brush footprint.
+  `node scripts/touch-smoke.mjs` drives touch input through the DevTools
+  protocol: one finger paints, a two-finger pinch leaves no paint.
 - `node scripts/prod-smoke.mjs [baseUrl]` from `packages/client` checks a
   production build actually loads the map, against `nix run` locally or the
   live site. It catches bundling problems dev mode hides, such as the
@@ -113,7 +115,9 @@ pnpm workspace with three packages:
   player has locked in. Blank guesses score the 500 baseline.
 - Paint is private until the round ends. The reveal shows the answer, every
   player's score, and lets you click a player to see their paint in their
-  colour. Standings carry rank-change arrows. There is no timer on the
+  colour. The round score is the headline on each row; the running total
+  sits beside it, small, until the final standings. Standings carry
+  rank-change arrows. There is no timer on the
   reveal: it advances when everyone has pressed Ready, or when the host
   presses Next.
 - Late joiners spectate the current round and play from the next. A dropped
@@ -199,7 +203,10 @@ pnpm workspace with three packages:
 The dashed amber cursor ring is one tolerance. The outline under the pointer
 is the brush footprint: the exact hex cells the next stamp will touch, at the
 resolution the layer picks for that brush size, so at world zoom you see the
-large cells you are about to lay down. It is dotted when erasing. Place names, country borders, man-made detail
+large cells you are about to lay down. It is dotted when erasing.
+On a touchscreen one finger uses the current tool (so it paints, or pans
+with the Pan tool) and two fingers always pan and zoom; a pinch that
+started as a stray one-finger dab takes that paint back. Place names, country borders, man-made detail
 (roads, railways, buildings, airports, urban land use), and inland water
 (rivers, lakes) are all hidden. Coastlines, woodland and ice stay visible.
 

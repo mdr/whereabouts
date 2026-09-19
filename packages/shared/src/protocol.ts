@@ -152,7 +152,8 @@ export interface RevealView {
 export interface FinalStanding {
   playerId: string;
   total: number;
-  rounds: number[];
+  /** Per round played; null where the player sat out (joined late). */
+  rounds: (number | null)[];
 }
 
 export interface GameView {

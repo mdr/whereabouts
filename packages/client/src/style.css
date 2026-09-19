@@ -252,11 +252,19 @@ button.icon:hover {
   color: var(--muted);
   cursor: pointer;
 }
+/* On the reveal the round score is the news; the running total is context. */
 .reveal-list .round-score {
-  color: var(--muted);
-  font-size: 12px;
-  min-width: 52px;
+  color: var(--panel-fg);
+  font-weight: 700;
+  font-size: 16px;
+  min-width: 56px;
   text-align: right;
+}
+.reveal-list .score-num {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12px;
+  min-width: 44px;
 }
 
 .card {
@@ -721,7 +729,7 @@ button.big {
 /* ---- final standings grid ---- */
 .standings {
   display: grid;
-  grid-template-columns: 30px 20px minmax(60px, 1fr) repeat(var(--rounds), minmax(3.2ch, auto)) auto;
+  grid-template-columns: 30px 20px minmax(80px, 1fr) repeat(var(--rounds), minmax(3.6ch, auto)) auto;
   align-items: center;
   font-variant-numeric: tabular-nums;
   overflow-x: auto;
@@ -770,6 +778,20 @@ button.big {
 }
 .standings .num {
   text-align: right;
+}
+/* Names never push into the numbers: they clip with an ellipsis instead. */
+.standings .name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.standings .name .tag.host {
+  flex: none;
+  margin-left: 0;
 }
 .standings .round {
   color: var(--muted);

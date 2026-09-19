@@ -34,6 +34,8 @@ export class GameMap {
   private waterFilter: unknown = undefined;
   private styleLayers: { id: string; type: string; sourceLayer: string }[] = [];
   private theme: Theme | null = null;
+  /** Set once the map is removed; layer toggles become no-ops rather than throwing. */
+  private disposed = false;
 
   constructor(container: string | HTMLElement) {
     this.map = new MapLibreMap({
@@ -191,16 +193,29 @@ export class GameMap {
     document.documentElement.style.setProperty("--ring-tol", t.answer);
   }
 
+  /**
+   * Tear the map down. Effects that unmount alongside the map (the reveal
+   * turning borders back off, say) may still call the toggles afterwards;
+   * MapLibre throws on a removed map, so they check `disposed` first.
+   */
+  dispose(): void {
+    this.disposed = true;
+    this.map.remove();
+  }
+
   setLabels(on: boolean): void {
+    if (this.disposed) return;
     for (const id of this.labelLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
   }
 
   setDetail(on: boolean): void {
+    if (this.disposed) return;
     for (const id of this.detailLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
   }
 
   /** Rivers and lakes. Oceans always stay visible so coastlines remain. */
   setInlandWater(on: boolean): void {
+    if (this.disposed) return;
     for (const id of this.waterwayLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
     if (!this.map.getLayer("water")) return;
     const base = this.waterFilter as maplibregl.FilterSpecification | undefined;
@@ -210,6 +225,7 @@ export class GameMap {
   }
 
   setBorders(on: boolean): void {
+    if (this.disposed) return;
     for (const id of this.borderLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
   }
 

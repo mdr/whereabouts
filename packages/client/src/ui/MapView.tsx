@@ -39,7 +39,7 @@ export function MapView({ children }: { children: ComponentChildren }) {
     });
     return () => {
       ctl?.dispose();
-      gameMap.map.remove();
+      gameMap.dispose();
     };
   }, []);
 

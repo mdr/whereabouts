@@ -49,7 +49,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
                   const score = s.rounds[r];
                   return (
                     <span key={r} class="num round">
-                      {score === undefined ? "–" : Math.round(score)}
+                      {score == null ? "–" : Math.round(score)}
                     </span>
                   );
                 })}

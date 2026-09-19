@@ -397,7 +397,12 @@ export class Game {
     this.phase = "results";
     this.reveal = null;
     this.results = [...this.players.values()]
-      .map((p) => ({ playerId: p.id, total: sum(p.scores), rounds: p.scores.map((s) => s ?? 0) }))
+      .map((p) => ({
+        playerId: p.id,
+        total: sum(p.scores),
+        // One entry per round played; null where this player sat out.
+        rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => p.scores[i] ?? null),
+      }))
       .sort((a, b) => b.total - a.total);
   }
 
