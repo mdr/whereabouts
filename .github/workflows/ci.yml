@@ -62,4 +62,4 @@ jobs:
             docker-archive:/dev/stdin "docker://$IMAGE"
       - name: Deploy
         if: steps.token.outputs.present == 'true'
-        run: nix develop .#deploy -c fly deploy --image "$IMAGE" --yes
+        run: nix develop .#deploy -c fly deploy --image "$IMAGE" --ha=false --yes

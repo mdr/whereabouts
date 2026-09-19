@@ -3,7 +3,8 @@
 # [build] section here: deploys pass --image.
 #
 # Game state lives in the server process, so this runs as exactly one
-# always-on machine. Scaling out would split rooms across instances.
+# always-on machine: deploys pass --ha=false, since fly deploy otherwise adds
+# a second machine, which would split rooms across two processes.
 
 app = "whereabouts-game"
 primary_region = "lhr"
