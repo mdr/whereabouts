@@ -127,7 +127,7 @@ describe("game server", () => {
 
   beforeEach(async () => {
     clock = new FakeClock();
-    configureGameRooms({ clock, pool: questions, config: { rounds: 2, roundMs: 60_000, revealMs: 20_000 } });
+    configureGameRooms({ clock, pool: questions, config: { rounds: 2, roundMs: 60_000 } });
     app = createApp({ staticDir: null, logLevel: "warning" });
     const address = await app.listen(0);
     url = address.replace(/^http/, "ws") + "/ws";
@@ -212,7 +212,10 @@ describe("game server", () => {
     await bob.until((v) => v.phase === "guessing" && v.round!.index === 1);
     clock.advance(60_000);
     await bob.until((v) => v.phase === "reveal" && v.reveal!.index === 1);
-    clock.advance(20_000);
+    // No timer on the reveal: it advances when everyone is ready.
+    bob.send("ready");
+    await alice.until((v) => v.phase === "reveal" && v.reveal!.ready.length === 1);
+    alice.send("ready");
     const results = await bob.until((v) => v.phase === "results");
     expect(results.results).toHaveLength(2);
     expect(results.results![0]!.playerId).toBe(byName.Alice);

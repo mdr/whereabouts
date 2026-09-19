@@ -9,7 +9,7 @@ import {
 } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { usePaint } from "../ui/MapView";
-import { Card, Countdown, HudHeader, QuestionCard, ScoreParts } from "../ui/bits";
+import { Card, HudHeader, QuestionCard, ScoreParts } from "../ui/bits";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { DevDrawer } from "../ui/DevDrawer";
 import { ConnectionDev } from "../ui/ConnectionDev";
@@ -37,6 +37,10 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
 
   const mine = reveal.results.find((r) => r.playerId === view.you.id);
   const last = reveal.index + 1 >= reveal.total;
+  const ready = new Set(reveal.ready);
+  const present = view.players.filter((p) => p.connected);
+  const readyCount = present.filter((p) => ready.has(p.id)).length;
+  const iAmReady = ready.has(view.you.id);
   // Standings order, with this round's result alongside.
   const rows = [...view.players]
     .sort((a, b) => a.rank - b.rank)
@@ -49,7 +53,11 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
           <HudHeader
             round={reveal.index + 1}
             total={reveal.total}
-            right={<Countdown msRemaining={() => conn.msUntil(reveal.autoAdvanceAt)} warnAt={-1} />}
+            right={
+              <span class="ready-count" title="The next round starts when everyone is ready">
+                {readyCount} / {present.length} ready
+              </span>
+            }
           />
           <QuestionCard q={reveal.question}>
             <p class="answer">
@@ -71,6 +79,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
                   p={p}
                   r={r}
                   you={p.id === view.you.id}
+                  ready={ready.has(p.id)}
                   selected={p.id === selected}
                   onSelect={() => setSelected(p.id)}
                 />
@@ -80,12 +89,15 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
           </Card>
         </div>
         <div class="hud-bottom toolbar">
+          <button class={iAmReady ? "" : "primary"} onClick={() => conn.ready()} disabled={iAmReady}>
+            {iAmReady ? "Ready ✓" : "Ready"}
+          </button>
           {view.you.isHost ? (
-            <button class="primary" onClick={() => conn.next()}>
+            <button class={iAmReady ? "primary" : ""} onClick={() => conn.next()} title="Go on without waiting">
               {last ? "Show final results" : "Next round"}
             </button>
           ) : (
-            <span class="hint">{last ? "Final results soon." : "Next round soon."}</span>
+            iAmReady && <span class="hint">Waiting for the others…</span>
           )}
         </div>
       </div>
@@ -111,12 +123,14 @@ function RevealRow({
   p,
   r,
   you,
+  ready,
   selected,
   onSelect,
 }: {
   p: PlayerView;
   r?: RoundResultView;
   you: boolean;
+  ready: boolean;
   selected: boolean;
   onSelect: () => void;
 }) {
@@ -127,6 +141,11 @@ function RevealRow({
       <span class="name">
         {p.name}
         {you ? " (you)" : ""}
+        {ready && (
+          <span class="tag ready" title="Ready for the next round">
+            ✓
+          </span>
+        )}
       </span>
       <span class="round-score">{r ? (r.paint ? `+${Math.round(r.score)}` : "no guess") : "sat out"}</span>
       <span class={`arrow ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>

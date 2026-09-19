@@ -29,10 +29,10 @@ Other commands:
   `packages/client`, `node scripts/multiplayer-smoke.mjs` for a two-player
   round and `node scripts/flows-smoke.mjs` for refresh mid-round, late
   joiners and play-again (run the server with
-  `ROUND_MS=12000 REVEAL_MS=6000 ROUNDS=2` for those).
+  `ROUND_MS=12000 ROUNDS=2` for those).
 
 Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
-`REVEAL_MS`, `KERNEL` (a kernel id from `packages/shared/src/scoring.ts`),
+`KERNEL` (a kernel id from `packages/shared/src/scoring.ts`),
 `PORT`, `STATIC_DIR`.
 
 ## Layout
@@ -56,10 +56,13 @@ pnpm workspace with three packages:
 
 - The host creates a game and gets a four-letter code; others join with it.
 - Rounds are 60 seconds. Whatever is painted at the deadline is the guess;
-  "Lock in" freezes it early. Blank guesses score the 500 baseline.
-- Paint is private until the deadline. The reveal shows the answer, every
+  "Lock in" freezes it early, and the round ends as soon as every active
+  player has locked in. Blank guesses score the 500 baseline.
+- Paint is private until the round ends. The reveal shows the answer, every
   player's score, and lets you click a player to see their paint in their
-  colour. Standings carry rank-change arrows.
+  colour. Standings carry rank-change arrows. There is no timer on the
+  reveal: it advances when everyone has pressed Ready, or when the host
+  presses Next.
 - Late joiners spectate the current round and play from the next. A dropped
   player keeps their seat, score and current paint, and reclaims them on
   reconnect (a browser refresh is the common case). The host keeps the role

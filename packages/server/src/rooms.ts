@@ -96,7 +96,7 @@ export class GameRoom extends Room<ActorData> {
     const { token } = actor.data!;
     if (this.actorsByToken.get(token) !== actor) return; // superseded by a reconnect
     this.actorsByToken.delete(token);
-    this.game.disconnect(token);
+    this.game.disconnect(token, deps.clock.now());
     this.broadcastState();
   }
 
@@ -136,7 +136,9 @@ export class GameRoom extends Room<ActorData> {
         return this.game.setPaint(token, paint);
       }
       case "lock":
-        return this.game.lock(token);
+        return this.game.lock(token, now);
+      case "ready":
+        return this.game.ready(token, now);
       case "start":
         return this.game.start(token, now);
       case "next":

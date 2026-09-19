@@ -1,7 +1,7 @@
 // Exercises the awkward multiplayer paths against the running dev servers:
 // a refresh mid-round keeps the seat and paint, a late joiner spectates then
 // plays, and the results screen leads back to a lobby via Play again.
-// Run the server with ROUND_MS=12000 REVEAL_MS=6000 ROUNDS=2 for speed.
+// Run the server with ROUND_MS=12000 ROUNDS=2 for speed.
 // Usage: node scripts/flows-smoke.mjs [outDir]
 import { chromium } from "playwright-core";
 import { mkdirSync } from "node:fs";
@@ -93,7 +93,10 @@ await cara.waitForTimeout(800);
 await cara.screenshot({ path: `${out}/flows-cara-round2.png` });
 
 // ---- 3. results and play again ----
-await alice.waitForSelector(".results-card", { timeout: 30000 });
+// No timer on the reveal: the host moves everyone on.
+await alice.waitForSelector(".reveal-list", { timeout: 30000 });
+await alice.click('button:has-text("Show final results")');
+await alice.waitForSelector(".results-card", { timeout: 10000 });
 await bob.waitForSelector(".results-card", { timeout: 10000 });
 const standings = await alice.$$eval(".final li .name", (els) => els.map((e) => e.textContent.trim()));
 check(standings.length === 3, `three players in final standings: ${JSON.stringify(standings)}`);

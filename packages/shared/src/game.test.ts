@@ -41,7 +41,7 @@ function paintAt(q: Question, lat: number, lon: number) {
 }
 
 function twoPlayerGame(rounds = 2) {
-  const g = new Game("ABCD", pool, { rounds, roundMs: 60_000, revealMs: 20_000 }, 42);
+  const g = new Game("ABCD", pool, { rounds, roundMs: 60_000 }, 42);
   expect(g.join("tokA", "Alice", T0).ok).toBe(true);
   expect(g.join("tokB", "Bob", T0 + 1).ok).toBe(true);
   return g;
@@ -58,7 +58,7 @@ describe("lobby", () => {
     const g = twoPlayerGame();
     expect(g.view("tokA", T0).you.isHost).toBe(true);
     expect(g.view("tokB", T0).you.isHost).toBe(false);
-    g.disconnect("tokA");
+    g.disconnect("tokA", T0);
     expect(g.playerTokens).toEqual(["tokB"]);
     expect(g.view("tokB", T0).you.isHost).toBe(true);
   });
@@ -100,7 +100,8 @@ describe("round loop", () => {
     expect(second!.paint).toBeNull();
     expect(Math.round(second!.score)).toBeGreaterThanOrEqual(500);
     expect(Math.round(second!.score)).toBeLessThan(540);
-    expect(reveal.autoAdvanceAt).toBe(T0 + 80_000);
+    expect(reveal.ready).toEqual([]);
+    expect(g.nextWakeAt()).toBeNull();
   });
 
   it("paint is private during guessing and visible after the reveal", () => {
@@ -120,27 +121,63 @@ describe("round loop", () => {
     const g = twoPlayerGame(1);
     g.start("tokA", T0);
     const q = currentQuestion(g, "tokA", T0);
-    expect(g.lock("tokA")).toEqual({ ok: false, error: "nothing painted" });
+    expect(g.lock("tokA", T0)).toEqual({ ok: false, error: "nothing painted" });
     g.setPaint("tokA", paintAt(q, 0, 0));
-    expect(g.lock("tokA")).toEqual({ ok: true, changed: true });
+    expect(g.lock("tokA", T0)).toEqual({ ok: true, changed: true });
     expect(g.view("tokA", T0).you.locked).toBe(true);
     expect(g.setPaint("tokA", paintAt(q, 1, 1))).toEqual({ ok: false, error: "already locked" });
   });
 
-  it("host advances early; auto-advances after revealMs; ends in results", () => {
+  it("the round ends as soon as every active connected player has locked in", () => {
+    const g = twoPlayerGame(2);
+    g.start("tokA", T0);
+    g.join("tokC", "Cara", T0 + 5); // spectating: must not hold the round up
+    const q = currentQuestion(g, "tokA", T0);
+    g.setPaint("tokA", paintAt(q, 0, 0));
+    g.setPaint("tokB", paintAt(q, 1, 1));
+    g.lock("tokA", T0 + 10);
+    expect(g.phase).toBe("guessing");
+    g.lock("tokB", T0 + 20);
+    expect(g.phase).toBe("reveal");
+    expect(g.view("tokA", T0 + 20).reveal!.results).toHaveLength(2);
+  });
+
+  it("a dropped player does not hold up a round the others have locked", () => {
+    const g = twoPlayerGame(1);
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    g.setPaint("tokA", paintAt(q, 0, 0));
+    g.lock("tokA", T0 + 10);
+    expect(g.phase).toBe("guessing");
+    g.disconnect("tokB", T0 + 20);
+    expect(g.phase).toBe("reveal");
+    // Bob still gets scored (blank) and keeps his seat.
+    expect(g.view("tokA", T0 + 20).reveal!.results).toHaveLength(2);
+    expect(g.playerTokens).toContain("tokB");
+  });
+
+  it("the reveal advances when everyone is ready, or when the host says so; ends in results", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
     g.tick(T0 + 60_000);
+    expect(g.nextWakeAt()).toBeNull();
     expect(g.next("tokB", T0 + 61_000)).toEqual({ ok: false, error: "only the host can advance" });
-    expect(g.next("tokA", T0 + 61_000).ok).toBe(true);
-    expect(g.phase).toBe("guessing");
-    expect(g.view("tokA", T0 + 61_000).round!.index).toBe(1);
-    expect(g.nextWakeAt()).toBe(T0 + 121_000);
-    g.tick(T0 + 121_000);
+    expect(g.ready("tokB", T0 + 61_000)).toEqual({ ok: true, changed: true });
+    expect(g.ready("tokB", T0 + 61_000)).toEqual({ ok: true, changed: false });
     expect(g.phase).toBe("reveal");
-    expect(g.tick(T0 + 141_000)).toBe(true);
+    expect(g.view("tokA", T0 + 61_000).reveal!.ready).toEqual(["p2"]);
+    expect(g.ready("tokA", T0 + 62_000).ok).toBe(true);
+    expect(g.phase).toBe("guessing");
+    expect(g.view("tokA", T0 + 62_000).round!.index).toBe(1);
+    expect(g.nextWakeAt()).toBe(T0 + 122_000);
+    g.tick(T0 + 122_000);
+    expect(g.phase).toBe("reveal");
+    expect(g.view("tokA", T0 + 122_000).reveal!.ready).toEqual([]);
+    expect(g.ready("tokA", T0 + 123_000)).toEqual({ ok: true, changed: true });
+    // The host need not wait for Bob.
+    expect(g.next("tokA", T0 + 124_000).ok).toBe(true);
     expect(g.phase).toBe("results");
-    const results = g.view("tokA", T0 + 141_000).results!;
+    const results = g.view("tokA", T0 + 124_000).results!;
     expect(results).toHaveLength(2);
     expect(results[0]!.total).toBeGreaterThanOrEqual(results[1]!.total);
     expect(results[0]!.rounds).toHaveLength(2);
@@ -183,7 +220,7 @@ describe("joining and leaving mid-game", () => {
     const q = currentQuestion(g, "tokA", T0);
     const mine = paintAt(q, 10, 10);
     g.setPaint("tokA", mine);
-    g.disconnect("tokA");
+    g.disconnect("tokA", T0 + 1);
     g.join("tokA", "Alice", T0 + 5);
     expect(g.view("tokA", T0 + 5).you.paint).toEqual(mine);
     expect(g.view("tokB", T0 + 5).you.paint).toBeNull();
@@ -196,7 +233,7 @@ describe("joining and leaving mid-game", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
     g.tick(T0 + 60_000);
-    g.disconnect("tokB");
+    g.disconnect("tokB", T0 + 60_001);
     expect(g.playerTokens).toContain("tokB");
     expect(g.view("tokA", T0 + 60_001).players.find((p) => p.id === "p2")!.connected).toBe(false);
     g.join("tokB", "Bob", T0 + 70_000);
@@ -208,7 +245,7 @@ describe("joining and leaving mid-game", () => {
   it("while the host is away the longest-standing player acts as host; the host regains it on return", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
-    g.disconnect("tokA");
+    g.disconnect("tokA", T0 + 1);
     expect(g.view("tokB", T0 + 1).you.isHost).toBe(true);
     expect(g.view("tokB", T0 + 1).players.find((p) => p.id === "p2")!.isHost).toBe(true);
     g.tick(T0 + 60_000);
@@ -222,7 +259,7 @@ describe("joining and leaving mid-game", () => {
 
   it("in the lobby a departing host hands over for good", () => {
     const g = twoPlayerGame(2);
-    g.disconnect("tokA");
+    g.disconnect("tokA", T0 + 1);
     g.join("tokA", "Alice", T0 + 5);
     expect(g.view("tokA", T0 + 5).you.isHost).toBe(false);
     expect(g.view("tokB", T0 + 5).you.isHost).toBe(true);
@@ -232,10 +269,10 @@ describe("joining and leaving mid-game", () => {
     const g = twoPlayerGame(1);
     g.start("tokA", T0);
     g.tick(T0 + 60_000);
-    g.tick(T0 + 80_000);
+    g.next("tokA", T0 + 80_000);
     expect(g.phase).toBe("results");
     expect(g.join("tokZ", "Zed", T0 + 80_001)).toEqual({ ok: false, error: "game has finished" });
-    g.disconnect("tokB");
+    g.disconnect("tokB", T0 + 80_002);
     expect(g.again("tokA", T0 + 81_000).ok).toBe(true);
     expect(g.phase).toBe("lobby");
     expect(g.playerTokens).toEqual(["tokA"]);
@@ -280,5 +317,37 @@ describe("ranks", () => {
 describe("generateCode", () => {
   it("uses the unambiguous alphabet", () => {
     for (let i = 0; i < 50; i++) expect(generateCode()).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}$/);
+  });
+});
+
+describe("ready-up edge cases", () => {
+  it("a player leaving during the reveal does not hold the others up", () => {
+    const g = twoPlayerGame(2);
+    g.start("tokA", T0);
+    g.tick(T0 + 60_000);
+    g.ready("tokA", T0 + 61_000);
+    expect(g.phase).toBe("reveal");
+    g.disconnect("tokB", T0 + 62_000);
+    expect(g.phase).toBe("guessing");
+  });
+
+  it("nobody left connected means nothing advances", () => {
+    const g = twoPlayerGame(2);
+    g.start("tokA", T0);
+    g.tick(T0 + 60_000);
+    g.disconnect("tokA", T0 + 61_000);
+    g.disconnect("tokB", T0 + 61_001);
+    expect(g.phase).toBe("reveal");
+  });
+
+  it("ready is only meaningful during the reveal, and resets each round", () => {
+    const g = twoPlayerGame(2);
+    g.start("tokA", T0);
+    expect(g.ready("tokA", T0)).toEqual({ ok: false, error: "nothing to be ready for" });
+    g.tick(T0 + 60_000);
+    g.ready("tokA", T0 + 61_000);
+    g.ready("tokB", T0 + 61_000);
+    g.tick(T0 + 121_000);
+    expect(g.view("tokA", T0 + 121_000).reveal!.ready).toEqual([]);
   });
 });

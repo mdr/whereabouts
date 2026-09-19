@@ -65,10 +65,15 @@ console.log("bob blobs (dev):", (await bob.textContent(".blobs")).replace(/\s+/g
 await bob.click("text=Lock in");
 await bob.waitForSelector("text=Locked in", { timeout: 5000 });
 console.log("bob locked");
+await alice.waitForTimeout(1000);
+const stillGuessing = await alice.$(".reveal-list");
+console.log("round still open with one player locked:", stillGuessing === null);
 
-// Wait for the 60 s deadline.
-await alice.waitForSelector(".reveal-list", { timeout: 75000 });
+// Once everyone has locked in the round ends without waiting for the clock.
+await alice.click("text=Lock in");
+await alice.waitForSelector(".reveal-list", { timeout: 10000 });
 await bob.waitForSelector(".reveal-list", { timeout: 10000 });
+console.log("reveal reached early via lock-in");
 await alice.waitForTimeout(1500);
 await alice.screenshot({ path: `${out}/mp-3-reveal-alice.png` });
 console.log("reveal rows:", (await alice.textContent(".reveal-list")).replace(/\s+/g, " "));
@@ -79,8 +84,14 @@ const features = await bob.evaluate(() => window.whereabouts.map.getSource("pain
 console.log("bob sees alice's paint cells:", features);
 await bob.screenshot({ path: `${out}/mp-4-reveal-bob-views-alice.png` });
 
-await alice.click('button:has-text("Next round")');
+// Ready-up: Bob is ready, Alice (host) is not, so nothing moves until she is.
+await bob.click('button:has-text("Ready")');
+await alice.waitForSelector("text=1 / 2 ready", { timeout: 5000 });
+await alice.waitForTimeout(800);
+console.log("still on reveal after one ready:", (await alice.$(".reveal-list")) !== null);
+await alice.screenshot({ path: `${out}/mp-5-reveal-one-ready.png` });
+await alice.click('button:has-text("Ready")');
 await alice.waitForSelector("text=Lock in", { timeout: 10000 });
-console.log("round 2 started:", await alice.textContent(".hud-header .round"));
+console.log("round 2 started via everyone ready:", await alice.textContent(".hud-header .round"));
 await browser.close();
 console.log("done");

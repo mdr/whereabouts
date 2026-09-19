@@ -20,7 +20,6 @@ import type {
 export const DEFAULT_CONFIG: GameConfig = {
   rounds: 8,
   roundMs: 60_000,
-  revealMs: 20_000,
   kernelId: "multi-equal",
 };
 
@@ -64,6 +63,8 @@ export class Game {
   private roundIndex = -1;
   private deadline = 0;
   private submissions = new Map<string, Submission>();
+  /** Tokens of players who have pressed Ready on the current reveal. */
+  private ready_ = new Set<string>();
   private reveal: RevealView | null = null;
   private results: FinalStanding[] | null = null;
 
@@ -110,7 +111,7 @@ export class Game {
    * The host keeps the role while away (a refresh is the common case); the
    * longest-standing connected player acts as host in the meantime.
    */
-  disconnect(token: string): CommandResult {
+  disconnect(token: string, now: number): CommandResult {
     const player = this.players.get(token);
     if (!player) return OK_SAME;
     player.connected = false;
@@ -118,6 +119,8 @@ export class Game {
       this.players.delete(token);
       if (this.hostToken === token) this.hostToken = this.pickHost();
     }
+    // The others should not wait on someone who has gone.
+    this.settleIfEveryoneDone(now);
     return OK_CHANGED;
   }
 
@@ -165,7 +168,7 @@ export class Game {
     return OK_CHANGED;
   }
 
-  /** Host advances from the reveal. Also called by tick on auto-advance. */
+  /** Host advances from the reveal without waiting for the others. */
   next(token: string, now: number): CommandResult {
     if (!this.isHost(token)) return fail("only the host can advance");
     if (this.phase !== "reveal") return fail("nothing to advance");
@@ -181,6 +184,7 @@ export class Game {
     this.reveal = null;
     this.results = null;
     this.submissions.clear();
+    this.ready_.clear();
     this.seed = now;
     for (const p of this.players.values()) {
       p.scores = [];
@@ -214,7 +218,8 @@ export class Game {
     return OK_SAME;
   }
 
-  lock(token: string): CommandResult {
+  /** Freeze this player's guess. The round ends early once every active player has. */
+  lock(token: string, now: number): CommandResult {
     const player = this.players.get(token);
     if (!player) return fail("unknown player");
     if (this.phase !== "guessing") return fail("not guessing");
@@ -223,7 +228,45 @@ export class Game {
     if (!current) return fail("nothing painted");
     if (current.locked) return OK_SAME;
     current.locked = true;
+    this.settleIfEveryoneDone(now);
     return OK_CHANGED;
+  }
+
+  /** Done reading the reveal. The next round starts once every connected player is. */
+  ready(token: string, now: number): CommandResult {
+    const player = this.players.get(token);
+    if (!player) return fail("unknown player");
+    if (this.phase !== "reveal") return fail("nothing to be ready for");
+    if (this.ready_.has(token)) return OK_SAME;
+    this.ready_.add(token);
+    this.settleIfEveryoneDone(now);
+    return OK_CHANGED;
+  }
+
+  /**
+   * Both waiting phases end when everyone still here is done: guessing when
+   * every connected active player has locked in, the reveal when every
+   * connected player is ready. Nobody present means nothing happens; the
+   * deadline (or the host) still governs.
+   */
+  private settleIfEveryoneDone(now: number): void {
+    if (this.phase === "guessing") {
+      let active = 0;
+      for (const p of this.players.values()) {
+        if (!p.connected || p.joinedRound > this.roundIndex) continue;
+        active++;
+        if (!this.submissions.get(p.token)?.locked) return;
+      }
+      if (active > 0) this.finishRound();
+    } else if (this.phase === "reveal") {
+      let present = 0;
+      for (const p of this.players.values()) {
+        if (!p.connected) continue;
+        present++;
+        if (!this.ready_.has(p.token)) return;
+      }
+      if (present > 0) this.advance(now);
+    }
   }
 
   // ---- clock ---------------------------------------------------------------
@@ -231,11 +274,7 @@ export class Game {
   /** Advance time-driven transitions. Returns true if the state changed. */
   tick(now: number): boolean {
     if (this.phase === "guessing" && now >= this.deadline) {
-      this.finishRound(now);
-      return true;
-    }
-    if (this.phase === "reveal" && this.reveal && now >= this.reveal.autoAdvanceAt) {
-      this.advance(now);
+      this.finishRound();
       return true;
     }
     return false;
@@ -244,7 +283,6 @@ export class Game {
   /** Epoch ms of the next time-driven transition, or null if none is pending. */
   nextWakeAt(): number | null {
     if (this.phase === "guessing") return this.deadline;
-    if (this.phase === "reveal" && this.reveal) return this.reveal.autoAdvanceAt;
     return null;
   }
 
@@ -255,10 +293,11 @@ export class Game {
     this.phase = "guessing";
     this.deadline = now + this.config.roundMs;
     this.submissions.clear();
+    this.ready_.clear();
     this.reveal = null;
   }
 
-  private finishRound(now: number): void {
+  private finishRound(): void {
     const q = this.questions[this.roundIndex]!;
     const res = resolutionForTolerance(q.toleranceKm);
     const results: RoundResultView[] = [];
@@ -291,7 +330,7 @@ export class Game {
       answer: q.answer,
       label: q.label,
       results,
-      autoAdvanceAt: now + this.config.revealMs,
+      ready: [],
     };
   }
 
@@ -356,9 +395,18 @@ export class Game {
             deadline: this.deadline,
           }
         : null,
-      reveal: this.phase === "reveal" ? this.reveal : null,
+      reveal: this.phase === "reveal" && this.reveal ? { ...this.reveal, ready: this.readyIds() } : null,
       results: this.phase === "results" ? this.results : null,
     };
+  }
+
+  private readyIds(): string[] {
+    const ids: string[] = [];
+    for (const tok of this.ready_) {
+      const p = this.players.get(tok);
+      if (p) ids.push(p.id);
+    }
+    return ids;
   }
 
   /** For tests and diagnostics. */

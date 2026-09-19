@@ -13,10 +13,8 @@ export function configFromEnv(env: Record<string, string | undefined>, defaultSt
   const game: Partial<GameConfig> = {};
   const rounds = positiveInt(env.ROUNDS);
   const roundMs = positiveInt(env.ROUND_MS);
-  const revealMs = positiveInt(env.REVEAL_MS);
   if (rounds !== undefined) game.rounds = rounds;
   if (roundMs !== undefined) game.roundMs = roundMs;
-  if (revealMs !== undefined) game.revealMs = revealMs;
   if (env.KERNEL) game.kernelId = env.KERNEL;
   return {
     port: positiveInt(env.PORT) ?? 8787,

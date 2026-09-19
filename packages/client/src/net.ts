@@ -81,6 +81,9 @@ export class Connection {
   lock(): void {
     this.send("lock");
   }
+  ready(): void {
+    this.send("ready");
+  }
   start(): void {
     this.send("start");
   }

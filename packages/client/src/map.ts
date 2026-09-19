@@ -297,7 +297,8 @@ export class GameMap {
         [minLon, Math.max(-85, minLat)],
         [maxLon, Math.min(85, maxLat)],
       ],
-      { padding: 60, duration: 900, maxZoom: 10 },
+      // Keep clear of the HUD cards on the left and right and the toolbar below.
+      { padding: { top: 40, bottom: 90, left: 340, right: 340 }, duration: 900, maxZoom: 10 },
     );
   }
 

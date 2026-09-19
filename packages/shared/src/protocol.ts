@@ -38,6 +38,7 @@ export type Ticket = z.infer<typeof TicketSchema>;
 export const ClientTopics = {
   paint: "paint",
   lock: "lock",
+  ready: "ready",
   start: "start",
   next: "next",
   again: "again",
@@ -49,6 +50,7 @@ export const RenameSchema = z.object({ name: z.string().trim().min(1).max(20) })
 export const ClientMessageSchemas = {
   paint: PaintSubmissionSchema,
   lock: z.object({}),
+  ready: z.object({}),
   start: z.object({}),
   next: z.object({}),
   again: z.object({}),
@@ -67,7 +69,6 @@ export type Phase = "lobby" | "guessing" | "reveal" | "results";
 export interface GameConfig {
   rounds: number;
   roundMs: number;
-  revealMs: number;
   kernelId: string;
 }
 
@@ -118,8 +119,8 @@ export interface RevealView {
   answer: LatLon;
   label: string;
   results: RoundResultView[];
-  /** Server epoch ms when the round auto-advances. */
-  autoAdvanceAt: number;
+  /** Ids of players who have pressed Ready. The round advances when everyone connected has. */
+  ready: string[];
 }
 
 export interface FinalStanding {

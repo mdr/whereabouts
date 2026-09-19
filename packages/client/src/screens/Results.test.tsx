@@ -9,7 +9,7 @@ function view(isHost: boolean): GameView {
   return {
     code: "AB12",
     phase: "results",
-    config: { rounds: 2, roundMs: 60000, revealMs: 20000, kernelId: "multi-equal" },
+    config: { rounds: 2, roundMs: 60000, kernelId: "multi-equal" },
     serverTime: 0,
     you: { id: "p2", isHost, spectating: false, locked: false, paint: null },
     players: [
