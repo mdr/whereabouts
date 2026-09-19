@@ -59,14 +59,21 @@ fly auth login              # interactive, in your browser
 scripts/fly-bootstrap.sh    # creates the app and prints a deploy token
 ```
 
-Store the token in 1Password and add it to the GitHub repo as the
-`FLY_API_TOKEN` Actions secret. For local `fly` commands, `deploy/op.env`
-holds a 1Password reference so the token never sits in a file:
+Store the token in 1Password, then add it to the GitHub repo as the
+`FLY_API_TOKEN` Actions secret without it touching the clipboard:
 
 ```sh
-op run --env-file=deploy/op.env -- fly status
-op run --env-file=deploy/op.env -- fly logs
-op run --env-file=deploy/op.env -- fly deploy --image registry.fly.io/whereabouts-game:<sha>   # roll back or forward
+op --account my.1password.com read "op://Private/Fly whereabouts deploy token/credential" \
+  | gh secret set FLY_API_TOKEN -R mdr/whereabouts
+```
+
+For local `fly` commands, `scripts/fly.sh` pulls the token from 1Password
+for that one command (`deploy/op.env` holds the reference):
+
+```sh
+scripts/fly.sh status
+scripts/fly.sh logs
+scripts/fly.sh deploy --image registry.fly.io/whereabouts-game:<sha>   # roll back or forward
 ```
 
 Images are x86_64 Linux, so they are built in CI rather than on a Mac.
