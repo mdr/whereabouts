@@ -1,10 +1,13 @@
 import { playerColour, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 
+const MEDALS = ["🥇", "🥈", "🥉"];
+
 export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   const byId = new Map(view.players.map((p) => [p.id, p]));
   const standings = view.results ?? [];
   const winner = standings[0] ? byId.get(standings[0].playerId) : undefined;
+  const rounds = Math.max(0, ...standings.map((s) => s.rounds.length));
   return (
     <div class="home">
       <div class="home-card results-card">
@@ -14,20 +17,41 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             <span class="swatch" style={{ background: playerColour(winner.colour) }} /> <b>{winner.name}</b> wins
           </p>
         )}
-        <ol class="final">
+        {/* One grid: place, colour, name, a column per round, total. */}
+        <div class="standings" style={{ "--rounds": rounds }} role="table" aria-label="Final standings">
+          <div class="standings-head" role="row">
+            <span />
+            <span />
+            <span />
+            {Array.from({ length: rounds }, (_, i) => (
+              <span key={i} class="num" title={`Round ${i + 1}`}>
+                R{i + 1}
+              </span>
+            ))}
+            <span class="num">Total</span>
+          </div>
           {standings.map((s, i) => {
             const p = byId.get(s.playerId);
             return (
-              <li key={s.playerId} class={s.playerId === view.you.id ? "you" : ""}>
-                <span class="place">{i + 1}</span>
-                <span class="swatch" style={{ background: p ? playerColour(p.colour) : "#888" }} />
+              <div key={s.playerId} class={`standings-row ${s.playerId === view.you.id ? "you" : ""}`} role="row">
+                <span class="place">{MEDALS[i] ?? i + 1}</span>
+                <span class="dot">
+                  <i class="swatch" style={{ background: p ? playerColour(p.colour) : "#888" }} />
+                </span>
                 <span class="name">{p?.name ?? "?"}</span>
-                <span class="rounds">{s.rounds.map((r) => Math.round(r)).join(" · ")}</span>
-                <span class="score-num">{Math.round(s.total).toLocaleString()}</span>
-              </li>
+                {Array.from({ length: rounds }, (_, r) => {
+                  const score = s.rounds[r];
+                  return (
+                    <span key={r} class="num round">
+                      {score === undefined ? "–" : Math.round(score)}
+                    </span>
+                  );
+                })}
+                <span class="num total">{Math.round(s.total).toLocaleString()}</span>
+              </div>
             );
           })}
-        </ol>
+        </div>
         {view.you.isHost ? (
           <button class="primary big" onClick={() => conn.again()}>
             Play again

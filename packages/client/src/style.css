@@ -622,15 +622,13 @@ button.big {
 
 /* ---- players ------------------------------------------------------------- */
 .players,
-.reveal-list,
-.final {
+.reveal-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 .players li,
-.reveal-list li,
-.final li {
+.reveal-list li {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -639,16 +637,14 @@ button.big {
   font-variant-numeric: tabular-nums;
 }
 .players li:last-child,
-.reveal-list li:last-child,
-.final li:last-child {
+.reveal-list li:last-child {
   border-bottom: none;
 }
 .players li.offline {
   opacity: 0.5;
 }
 .players .name,
-.reveal-list .name,
-.final .name {
+.reveal-list .name {
   flex: 1;
 }
 .players .tag {
@@ -694,18 +690,66 @@ button.big {
 .reveal-list li.selected {
   background: #3a424d;
 }
-.final .place {
-  width: 22px;
-  color: var(--muted);
-  font-weight: 700;
+/* ---- final standings grid ---- */
+.standings {
+  display: grid;
+  grid-template-columns: 30px 20px minmax(60px, 1fr) repeat(var(--rounds), minmax(3.2ch, auto)) auto;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+  overflow-x: auto;
 }
-.final .rounds {
+.standings-head > span,
+.standings-row > span {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+.standings .dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.standings-head,
+.standings-row {
+  display: contents;
+}
+.standings-head span {
   color: var(--muted);
   font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-bottom: 4px;
 }
-.final li.you {
+.standings-row > span {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-top: 1px solid #333b45;
+  line-height: 20px;
+}
+.standings-row.you > span {
   background: #2a3038;
-  border-radius: 6px;
+}
+.standings-row.you > span:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.standings-row.you > span:last-child {
+  border-radius: 0 6px 6px 0;
+}
+.standings .place {
+  text-align: center;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 18px;
+}
+.standings .num {
+  text-align: right;
+}
+.standings .round {
+  color: var(--muted);
+}
+.standings .total {
+  font-weight: 700;
+  font-size: 16px;
+  padding-left: 6px;
 }
 
 /* ---- timer ----------------------------------------------------------------- */

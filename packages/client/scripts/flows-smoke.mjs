@@ -98,7 +98,7 @@ await alice.waitForSelector(".reveal-list", { timeout: 30000 });
 await alice.click('button:has-text("Show final results")');
 await alice.waitForSelector(".results-card", { timeout: 10000 });
 await bob.waitForSelector(".results-card", { timeout: 10000 });
-const standings = await alice.$$eval(".final li .name", (els) => els.map((e) => e.textContent.trim()));
+const standings = await alice.$$eval(".standings-row .name", (els) => els.map((e) => e.textContent.trim()));
 check(standings.length === 3, `three players in final standings: ${JSON.stringify(standings)}`);
 await alice.screenshot({ path: `${out}/flows-results.png` });
 await alice.click("text=Play again");
