@@ -100,8 +100,10 @@ function QuestionImage({ image }: { image: string }) {
       </div>
       {large && (
         <div class="lightbox" onClick={() => setLarge(false)} title="Click or press Escape to shrink">
-          <img src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
-          {credit}
+          <div class="lightbox-frame">
+            <img src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
+            {credit}
+          </div>
         </div>
       )}
     </>
