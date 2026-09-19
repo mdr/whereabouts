@@ -1,4 +1,4 @@
-import type { LatLon } from "./geo";
+import type { LatLon } from "./geo.ts";
 
 export interface Question {
   id: string;
@@ -21,7 +21,7 @@ export function commonsPageUrl(file: string): string {
   return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, "_"))}`;
 }
 
-import questionsJson from "../questions.json";
+import questionsJson from "../questions.json" with { type: "json" };
 
 /** The bundled question pool. */
 export const QUESTIONS: Question[] = questionsJson as Question[];

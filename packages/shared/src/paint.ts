@@ -10,12 +10,13 @@ import {
   cellToBoundary,
   cellToLatLng,
   getHexagonEdgeLengthAvg,
+  getResolution,
   gridDisk,
   gridDiskDistances,
   latLngToCell,
   UNITS,
 } from "h3-js";
-import type { LatLon } from "./geo";
+import type { LatLon } from "./geo.ts";
 
 /** Largest brush radius in hex rings. Caps cells touched per stamp (~5,000). */
 export const MAX_BRUSH_RINGS = 40;
@@ -130,6 +131,23 @@ export class PaintLayer {
       this.centreCache.set(h, c);
     }
     return c;
+  }
+
+  /** Sparse wire form: H3 index -> intensity. */
+  toRecord(): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const [h, v] of this.cells) out[h] = v;
+    return out;
+  }
+
+  /** Rebuild a layer from its wire form. Cells of another resolution are dropped. */
+  static fromRecord(res: number, cells: Record<string, number>): PaintLayer {
+    const layer = new PaintLayer(res);
+    for (const [h, v] of Object.entries(cells)) {
+      if (v > 0 && getResolution(h) === res) layer.cells.set(h, v);
+    }
+    layer.version++;
+    return layer;
   }
 
   *toCells(): IterableIterator<PaintCell> {

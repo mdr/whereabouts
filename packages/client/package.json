@@ -12,6 +12,9 @@
   },
   "dependencies": {
     "@preact/signals": "^2.0.0",
+    "@rivalis/browser": "^8.0.0",
+    "@toolcase/base": "3.x",
+    "@toolcase/logging": "3.x",
     "@whereabouts/shared": "workspace:*",
     "maplibre-gl": "^6.7.0",
     "preact": "^10.27.0"

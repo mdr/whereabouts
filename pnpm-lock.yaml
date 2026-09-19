@@ -20,6 +20,15 @@ importers:
       '@preact/signals':
         specifier: ^2.0.0
         version: 2.11.2(preact@10.29.8)
+      '@rivalis/browser':
+        specifier: ^8.0.0
+        version: 8.0.0(@rivalis/core@8.0.0(@toolcase/base@3.0.3)(@toolcase/logging@3.0.2))(@toolcase/base@3.0.3)(@toolcase/logging@3.0.2)
+      '@toolcase/base':
+        specifier: 3.x
+        version: 3.0.3
+      '@toolcase/logging':
+        specifier: 3.x
+        version: 3.0.2
       '@whereabouts/shared':
         specifier: workspace:*
         version: link:../shared
@@ -66,7 +75,16 @@ importers:
       ws:
         specifier: ^8.18.0
         version: 8.21.3
+      zod:
+        specifier: ^4.1.0
+        version: 4.6.5
     devDependencies:
+      '@rivalis/browser':
+        specifier: ^8.0.0
+        version: 8.0.0(@rivalis/core@8.0.0(@toolcase/base@3.0.3)(@toolcase/logging@3.0.2))(@toolcase/base@3.0.3)(@toolcase/logging@3.0.2)
+      '@types/geojson':
+        specifier: ^7946.0.16
+        version: 7946.0.16
       '@types/node':
         specifier: ^22.18.0
         version: 22.20.3
@@ -463,6 +481,13 @@ packages:
     peerDependencies:
       preact: ^10.4.0 || ^11.0.0-0
       vite: '>=2.0.0'
+
+  '@rivalis/browser@8.0.0':
+    resolution: {integrity: sha512-rR5dUEFZ9nENvNwQHbs7HLFwu3OG/sH0YCxwzv3I1T2VMPTNReTd5uFlnCX1dWJIXLwg3fGmIDD86zZpqGX+Xw==}
+    peerDependencies:
+      '@rivalis/core': '>=8 <9'
+      '@toolcase/base': 3.x
+      '@toolcase/logging': 3.x
 
   '@rivalis/core@8.0.0':
     resolution: {integrity: sha512-oFUebEWR7SSxf/4q8pwtHSHJ2ic2jtZM+bd1e1aKr1jR6Ezb4teG7bRBuudvreHxpDXuhmFc+8KGebUpupHqPw==}
@@ -1918,6 +1943,12 @@ snapshots:
       vite: 7.3.6(@types/node@26.4.1)(lightningcss@1.33.0)
     transitivePeerDependencies:
       - supports-color
+
+  '@rivalis/browser@8.0.0(@rivalis/core@8.0.0(@toolcase/base@3.0.3)(@toolcase/logging@3.0.2))(@toolcase/base@3.0.3)(@toolcase/logging@3.0.2)':
+    dependencies:
+      '@rivalis/core': 8.0.0(@toolcase/base@3.0.3)(@toolcase/logging@3.0.2)
+      '@toolcase/base': 3.0.3
+      '@toolcase/logging': 3.0.2
 
   '@rivalis/core@8.0.0(@toolcase/base@3.0.3)(@toolcase/logging@3.0.2)':
     dependencies:

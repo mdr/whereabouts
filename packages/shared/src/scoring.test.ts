@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toXyz, EARTH_RADIUS_KM } from "./geo";
+import { toXyz, EARTH_RADIUS_KM } from "./geo.ts";
 import {
   KERNELS,
   kernelById,
@@ -12,7 +12,7 @@ import {
   similarityToAnswer,
   uniformKernelMean,
   type Distribution,
-} from "./scoring";
+} from "./scoring.ts";
 
 const r = 100;
 const answer = { lat: 27.175, lon: 78.042 }; // Taj Mahal

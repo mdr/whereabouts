@@ -10,7 +10,7 @@
  * mass spread evenly over the whole sphere. Its kernel integrals have a closed
  * form (see uniformKernelMean), so it costs nothing to evaluate.
  */
-import { EARTH_RADIUS_KM, chordDistanceSq, toXyz, type LatLon, type Xyz } from "./geo";
+import { EARTH_RADIUS_KM, chordDistanceSq, toXyz, type LatLon, type Xyz } from "./geo.ts";
 
 const LN2 = Math.LN2;
 

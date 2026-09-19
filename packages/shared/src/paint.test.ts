@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getHexagonEdgeLengthAvg, UNITS } from "h3-js";
-import { PaintLayer, resolutionForTolerance } from "./paint";
+import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 
 describe("resolutionForTolerance", () => {
   it("picks cells with edge at most a quarter of the tolerance", () => {
