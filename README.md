@@ -11,6 +11,12 @@ pnpm install
 pnpm dev           # http://localhost:5173
 ```
 
+Node and pnpm are pinned by the flake (`flake.lock`), and `pnpm-workspace.yaml`
+sets `pmOnFail: ignore` so pnpm never downloads or switches to another version
+of itself, plus `engineStrict: true` so a Node or pnpm major mismatch outside
+the Nix shell fails instead of silently proceeding. Corepack is disabled by
+environment variables in the dev shell.
+
 Other commands: `pnpm test` (scoring and paint unit tests), `pnpm typecheck`,
 `pnpm build`, `pnpm smoke` (drives the dev server in the installed Chrome via
 Playwright, paints a stroke, submits, and saves screenshots to `./smoke-out`).

@@ -1,0 +1,9 @@
+# pnpm settings. pnpm >= 10 reads these from here, not from .npmrc.
+#
+# node and pnpm come from the Nix flake. `pmOnFail: ignore` stops pnpm
+# downloading and switching to whatever version package.json#packageManager
+# or devEngines might name (the pnpm 11 replacement for
+# managePackageManagerVersions: false). `engineStrict` makes a node or pnpm
+# major mismatch a hard error, so drift outside `nix develop` fails loudly.
+pmOnFail: ignore
+engineStrict: true
