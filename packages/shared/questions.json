@@ -1799,5 +1799,720 @@
     "toleranceKm": 800,
     "label": "Solomon Islands (Honiara)",
     "region": "world"
+  },
+  {
+    "id": "eiffel",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Tour Eiffel Wikimedia Commons (cropped).jpg",
+    "answer": {
+      "lat": 48.8584,
+      "lon": 2.2945
+    },
+    "toleranceKm": 60,
+    "label": "Eiffel Tower, Paris",
+    "region": "world"
+  },
+  {
+    "id": "colosseum",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Colosseo 2020.jpg",
+    "answer": {
+      "lat": 41.8902,
+      "lon": 12.4922
+    },
+    "toleranceKm": 80,
+    "label": "Colosseum, Rome",
+    "region": "world"
+  },
+  {
+    "id": "sagrada",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "SF maig 2 cropped.jpg",
+    "answer": {
+      "lat": 41.4036,
+      "lon": 2.1744
+    },
+    "toleranceKm": 80,
+    "label": "Sagrada Família, Barcelona",
+    "region": "world"
+  },
+  {
+    "id": "parthenon",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "The Parthenon in Athens.jpg",
+    "answer": {
+      "lat": 37.9715,
+      "lon": 23.7267
+    },
+    "toleranceKm": 100,
+    "label": "Parthenon, Athens",
+    "region": "world"
+  },
+  {
+    "id": "mont-saint-michel",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Mont-Saint-Michel vu du ciel.jpg",
+    "answer": {
+      "lat": 48.636,
+      "lon": -1.5115
+    },
+    "toleranceKm": 80,
+    "label": "Mont-Saint-Michel, Normandy",
+    "region": "world"
+  },
+  {
+    "id": "brandenburg",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Brandenburger Tor abends.jpg",
+    "answer": {
+      "lat": 52.5163,
+      "lon": 13.3777
+    },
+    "toleranceKm": 80,
+    "label": "Brandenburg Gate, Berlin",
+    "region": "world"
+  },
+  {
+    "id": "charles-bridge",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Prague 07-2016 view from Lesser Town Tower of Charles Bridge img3.jpg",
+    "answer": {
+      "lat": 50.0865,
+      "lon": 14.4114
+    },
+    "toleranceKm": 80,
+    "label": "Charles Bridge, Prague",
+    "region": "world"
+  },
+  {
+    "id": "hagia-sophia",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Hagia Sophia (228968325).jpeg",
+    "answer": {
+      "lat": 41.0086,
+      "lon": 28.98
+    },
+    "toleranceKm": 120,
+    "label": "Hagia Sophia, Istanbul",
+    "region": "world"
+  },
+  {
+    "id": "st-basils",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Saint Basil's Cathedral in Moscow.jpg",
+    "answer": {
+      "lat": 55.7525,
+      "lon": 37.6231
+    },
+    "toleranceKm": 150,
+    "label": "Saint Basil's Cathedral, Moscow",
+    "region": "world"
+  },
+  {
+    "id": "pisa",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Italy - Pisa - Leaning Tower.jpg",
+    "answer": {
+      "lat": 43.723,
+      "lon": 10.3966
+    },
+    "toleranceKm": 80,
+    "label": "Leaning Tower of Pisa",
+    "region": "world"
+  },
+  {
+    "id": "st-marks",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Venezia Basilica di San Marco Fassade 2.jpg",
+    "answer": {
+      "lat": 45.4345,
+      "lon": 12.3397
+    },
+    "toleranceKm": 80,
+    "label": "St Mark's Basilica, Venice",
+    "region": "world"
+  },
+  {
+    "id": "alhambra",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Dawn Charles V Palace Alhambra Granada Andalusia Spain.jpg",
+    "answer": {
+      "lat": 37.1761,
+      "lon": -3.5881
+    },
+    "toleranceKm": 100,
+    "label": "Alhambra, Granada",
+    "region": "world"
+  },
+  {
+    "id": "matterhorn",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Matterhorn from Domhütte - 2.jpg",
+    "answer": {
+      "lat": 45.9763,
+      "lon": 7.6586
+    },
+    "toleranceKm": 100,
+    "label": "Matterhorn, Swiss–Italian border",
+    "region": "world"
+  },
+  {
+    "id": "oia",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Oia sunset - panoramio (2).jpg",
+    "answer": {
+      "lat": 36.4618,
+      "lon": 25.3753
+    },
+    "toleranceKm": 150,
+    "label": "Oia, Santorini",
+    "region": "world"
+  },
+  {
+    "id": "meteora",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Meteora's monastery 2.jpg",
+    "answer": {
+      "lat": 39.7217,
+      "lon": 21.6306
+    },
+    "toleranceKm": 150,
+    "label": "Meteora monasteries, Greece",
+    "region": "world"
+  },
+  {
+    "id": "plitvice",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "View in Plitvice Lakes National Park.jpg",
+    "answer": {
+      "lat": 44.8654,
+      "lon": 15.582
+    },
+    "toleranceKm": 150,
+    "label": "Plitvice Lakes, Croatia",
+    "region": "world"
+  },
+  {
+    "id": "cliffs-moher",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Cliffs-Of-Moher-OBriens-From-South.JPG",
+    "answer": {
+      "lat": 52.9719,
+      "lon": -9.4265
+    },
+    "toleranceKm": 60,
+    "label": "Cliffs of Moher, County Clare",
+    "region": "world"
+  },
+  {
+    "id": "giants-causeway",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Causeway-code poet-4.jpg",
+    "answer": {
+      "lat": 55.2408,
+      "lon": -6.5116
+    },
+    "toleranceKm": 40,
+    "label": "Giant's Causeway, County Antrim",
+    "region": "uk"
+  },
+  {
+    "id": "tower-bridge",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Tower Bridge at Dawn.jpg",
+    "answer": {
+      "lat": 51.5055,
+      "lon": -0.0754
+    },
+    "toleranceKm": 5,
+    "label": "Tower Bridge, London",
+    "region": "uk"
+  },
+  {
+    "id": "durdle-door",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Durdle Door Overview.jpg",
+    "answer": {
+      "lat": 50.6212,
+      "lon": -2.2769
+    },
+    "toleranceKm": 25,
+    "label": "Durdle Door, Dorset",
+    "region": "uk"
+  },
+  {
+    "id": "forth-bridge",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Forth Bridge 2022.jpg",
+    "answer": {
+      "lat": 56.0003,
+      "lon": -3.3884
+    },
+    "toleranceKm": 25,
+    "label": "Forth Bridge, Firth of Forth",
+    "region": "uk"
+  },
+  {
+    "id": "hallstatt",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Hallstatt - Zentrum .JPG",
+    "answer": {
+      "lat": 47.5622,
+      "lon": 13.6493
+    },
+    "toleranceKm": 120,
+    "label": "Hallstatt, Austria",
+    "region": "world"
+  },
+  {
+    "id": "cinque-terre",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Manarola NW Cinque Terre Sep23 A7C 07233.jpg",
+    "answer": {
+      "lat": 44.1067,
+      "lon": 9.7275
+    },
+    "toleranceKm": 100,
+    "label": "Manarola, Cinque Terre",
+    "region": "world"
+  },
+  {
+    "id": "kremlin",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Moscow Kremlin (8281675670).jpg",
+    "answer": {
+      "lat": 55.752,
+      "lon": 37.6175
+    },
+    "toleranceKm": 150,
+    "label": "Moscow Kremlin",
+    "region": "world"
+  },
+  {
+    "id": "burj-khalifa",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Burj Khalifa (worlds tallest building) and the Dubai skyline (25781049892).jpg",
+    "answer": {
+      "lat": 25.1972,
+      "lon": 55.2744
+    },
+    "toleranceKm": 150,
+    "label": "Burj Khalifa, Dubai",
+    "region": "world"
+  },
+  {
+    "id": "angkor",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Angkor Wat.jpg",
+    "answer": {
+      "lat": 13.4125,
+      "lon": 103.867
+    },
+    "toleranceKm": 200,
+    "label": "Angkor Wat, Cambodia",
+    "region": "world"
+  },
+  {
+    "id": "great-wall",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Peking Grosse Mauer-20071019-RM-115708.jpg",
+    "answer": {
+      "lat": 40.3597,
+      "lon": 116.02
+    },
+    "toleranceKm": 250,
+    "label": "Great Wall at Badaling, near Beijing",
+    "region": "world"
+  },
+  {
+    "id": "forbidden-city",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "The Forbidden City - View from Coal Hill.jpg",
+    "answer": {
+      "lat": 39.9163,
+      "lon": 116.3972
+    },
+    "toleranceKm": 250,
+    "label": "Forbidden City, Beijing",
+    "region": "world"
+  },
+  {
+    "id": "fuji",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "View of Mount Fuji from Ōwakudani 20211202.jpg",
+    "answer": {
+      "lat": 35.3606,
+      "lon": 138.7274
+    },
+    "toleranceKm": 200,
+    "label": "Mount Fuji, Japan",
+    "region": "world"
+  },
+  {
+    "id": "fushimi-inari",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Torii path with lantern at Fushimi Inari Taisha Shrine, Kyoto, Japan.jpg",
+    "answer": {
+      "lat": 34.9671,
+      "lon": 135.7727
+    },
+    "toleranceKm": 200,
+    "label": "Fushimi Inari shrine, Kyoto",
+    "region": "world"
+  },
+  {
+    "id": "ha-long",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Ha Long Bay in 2019.jpg",
+    "answer": {
+      "lat": 20.9101,
+      "lon": 107.1839
+    },
+    "toleranceKm": 250,
+    "label": "Hạ Long Bay, Vietnam",
+    "region": "world"
+  },
+  {
+    "id": "borobudur",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Pradaksina.jpg",
+    "answer": {
+      "lat": -7.6079,
+      "lon": 110.2038
+    },
+    "toleranceKm": 300,
+    "label": "Borobudur, Java",
+    "region": "world"
+  },
+  {
+    "id": "marina-bay",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Marina Bay Sands (I).jpg",
+    "answer": {
+      "lat": 1.2834,
+      "lon": 103.8607
+    },
+    "toleranceKm": 200,
+    "label": "Marina Bay Sands, Singapore",
+    "region": "world"
+  },
+  {
+    "id": "everest",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Mt. Everest from Gokyo Ri November 5, 2012.jpg",
+    "answer": {
+      "lat": 27.9881,
+      "lon": 86.925
+    },
+    "toleranceKm": 250,
+    "label": "Mount Everest",
+    "region": "world"
+  },
+  {
+    "id": "statue-liberty",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Front view of Statue of Liberty (cropped).jpg",
+    "answer": {
+      "lat": 40.6892,
+      "lon": -74.0445
+    },
+    "toleranceKm": 100,
+    "label": "Statue of Liberty, New York",
+    "region": "world"
+  },
+  {
+    "id": "rushmore",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Mount Rushmore detail view (100MP).jpg",
+    "answer": {
+      "lat": 43.8791,
+      "lon": -103.4591
+    },
+    "toleranceKm": 400,
+    "label": "Mount Rushmore, South Dakota",
+    "region": "world"
+  },
+  {
+    "id": "niagara",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "3Falls Niagara.jpg",
+    "answer": {
+      "lat": 43.0799,
+      "lon": -79.0747
+    },
+    "toleranceKm": 200,
+    "label": "Niagara Falls",
+    "region": "world"
+  },
+  {
+    "id": "chichen-itza",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Chichen Itza 3.jpg",
+    "answer": {
+      "lat": 20.6843,
+      "lon": -88.5678
+    },
+    "toleranceKm": 300,
+    "label": "Chichen Itza, Yucatán",
+    "region": "world"
+  },
+  {
+    "id": "hollywood-sign",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Hollywood sign (8485145044).jpg",
+    "answer": {
+      "lat": 34.1341,
+      "lon": -118.3215
+    },
+    "toleranceKm": 150,
+    "label": "Hollywood Sign, Los Angeles",
+    "region": "world"
+  },
+  {
+    "id": "iguazu",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Aerial Foz de Iguaçu 26 Nov 2005.jpg",
+    "answer": {
+      "lat": -25.6953,
+      "lon": -54.4367
+    },
+    "toleranceKm": 400,
+    "label": "Iguazu Falls, Argentina–Brazil border",
+    "region": "world"
+  },
+  {
+    "id": "uyuni",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Salar Uyuni au01.jpg",
+    "answer": {
+      "lat": -20.1338,
+      "lon": -67.4891
+    },
+    "toleranceKm": 400,
+    "label": "Salar de Uyuni, Bolivia",
+    "region": "world"
+  },
+  {
+    "id": "perito-moreno",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Perito Moreno Glacier 2023.jpg",
+    "answer": {
+      "lat": -50.4953,
+      "lon": -73.1377
+    },
+    "toleranceKm": 400,
+    "label": "Perito Moreno Glacier, Patagonia",
+    "region": "world"
+  },
+  {
+    "id": "moai",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Ahu-Tongariki-from-south-west-2013.jpg",
+    "answer": {
+      "lat": -27.1258,
+      "lon": -109.2769
+    },
+    "toleranceKm": 800,
+    "label": "Ahu Tongariki, Easter Island",
+    "region": "world"
+  },
+  {
+    "id": "uluru",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "ULURU.jpg",
+    "answer": {
+      "lat": -25.3444,
+      "lon": 131.0369
+    },
+    "toleranceKm": 400,
+    "label": "Uluru, Northern Territory",
+    "region": "world"
+  },
+  {
+    "id": "harbour-bridge",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Sydney Harbour Bridge-16 October 2025.jpg",
+    "answer": {
+      "lat": -33.8523,
+      "lon": 151.2108
+    },
+    "toleranceKm": 100,
+    "label": "Sydney Harbour Bridge",
+    "region": "world"
+  },
+  {
+    "id": "milford-sound",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Milford Sound (New Zealand).JPG",
+    "answer": {
+      "lat": -44.6414,
+      "lon": 167.8974
+    },
+    "toleranceKm": 300,
+    "label": "Milford Sound, New Zealand",
+    "region": "world"
+  },
+  {
+    "id": "bora-bora",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Bora Bora ISS006.jpg",
+    "answer": {
+      "lat": -16.5004,
+      "lon": -151.7415
+    },
+    "toleranceKm": 800,
+    "label": "Bora Bora, French Polynesia",
+    "region": "world"
+  },
+  {
+    "id": "table-mountain",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Table Mountain DanieVDM.jpg",
+    "answer": {
+      "lat": -33.9628,
+      "lon": 18.4098
+    },
+    "toleranceKm": 200,
+    "label": "Table Mountain, Cape Town",
+    "region": "world"
+  },
+  {
+    "id": "victoria-falls",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Cataratas Victoria, Zambia-Zimbabue, 2018-07-27, DD 04.jpg",
+    "answer": {
+      "lat": -17.9243,
+      "lon": 25.8572
+    },
+    "toleranceKm": 300,
+    "label": "Victoria Falls, Zambia–Zimbabwe border",
+    "region": "world"
+  },
+  {
+    "id": "lalibela",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Lalibela, san giorgio, esterno 24.jpg",
+    "answer": {
+      "lat": 12.0316,
+      "lon": 39.0413
+    },
+    "toleranceKm": 300,
+    "label": "Church of Saint George, Lalibela",
+    "region": "world"
+  },
+  {
+    "id": "abu-simbel",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Ramsis, Aswan Governorate, Egypt - panoramio.jpg",
+    "answer": {
+      "lat": 22.3372,
+      "lon": 31.6258
+    },
+    "toleranceKm": 200,
+    "label": "Abu Simbel, Egypt",
+    "region": "world"
+  },
+  {
+    "id": "djenne",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Djenne great mud mosque.jpg",
+    "answer": {
+      "lat": 13.9053,
+      "lon": -4.5556
+    },
+    "toleranceKm": 400,
+    "label": "Great Mosque of Djenné, Mali",
+    "region": "world"
+  },
+  {
+    "id": "dubrovnik",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Dubrovnik s 24.jpg",
+    "answer": {
+      "lat": 42.6414,
+      "lon": 18.108
+    },
+    "toleranceKm": 120,
+    "label": "Walls of Dubrovnik, Croatia",
+    "region": "world"
+  },
+  {
+    "id": "kilimanjaro",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Kilimanjaro from Amboseli.jpg",
+    "answer": {
+      "lat": -3.0674,
+      "lon": 37.3556
+    },
+    "toleranceKm": 300,
+    "label": "Mount Kilimanjaro, Tanzania",
+    "region": "world"
+  },
+  {
+    "id": "grand-canyon",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Canyon River Tree (165872763).jpeg",
+    "answer": {
+      "lat": 36.1069,
+      "lon": -112.1129
+    },
+    "toleranceKm": 300,
+    "label": "Grand Canyon, Arizona",
+    "region": "world"
   }
 ]

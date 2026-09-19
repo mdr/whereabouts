@@ -5,7 +5,7 @@
  */
 import { buildDistribution, kernelById, scoreDistribution, type Kernel } from "./scoring.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
-import { shuffle, type Question } from "./questions.ts";
+import { pickQuestions, type Question } from "./questions.ts";
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -161,7 +161,7 @@ export class Game {
     if (this.phase !== "lobby") return fail("game already started");
     if (this.players.size === 0) return fail("no players");
     const count = Math.min(this.config.rounds, this.pool.length);
-    this.questions = shuffle(this.pool, this.seed).slice(0, count);
+    this.questions = pickQuestions(this.pool, count, this.seed);
     for (const p of this.players.values()) {
       p.scores = [];
       p.previousRank = null;

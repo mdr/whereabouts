@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { QUESTIONS } from "./questions.ts";
+import { QUESTIONS, pickQuestions } from "./questions.ts";
 import { greatCircleDistance } from "./geo.ts";
 
 describe("question pool", () => {
@@ -46,5 +46,49 @@ describe("question pool", () => {
         expect(d, `${text[i]!.id} and ${text[j]!.id} are ${d.toFixed(0)} km apart`).toBeGreaterThan(20);
       }
     }
+  });
+});
+
+describe("pickQuestions", () => {
+  const mk = (kind: "photo" | "text", n: number) =>
+    Array.from({ length: n }, (_, i) => ({
+      id: `${kind}${i}`,
+      kind,
+      prompt: kind === "photo" ? "Where is this?" : "Where is X?",
+      answer: { lat: 0, lon: 0 },
+      toleranceKm: 100,
+      label: "x",
+      region: "world" as const,
+    }));
+
+  it("balances kinds as evenly as the pool allows and is deterministic per seed", () => {
+    const pool = [...mk("photo", 20), ...mk("text", 100)];
+    const picked = pickQuestions(pool, 8, 7);
+    expect(picked).toHaveLength(8);
+    expect(picked.filter((q) => q.kind === "photo")).toHaveLength(4);
+    expect(new Set(picked.map((q) => q.id)).size).toBe(8);
+    expect(pickQuestions(pool, 8, 7).map((q) => q.id)).toEqual(picked.map((q) => q.id));
+    expect(pickQuestions(pool, 8, 8).map((q) => q.id)).not.toEqual(picked.map((q) => q.id));
+  });
+
+  it("tops up from the other kind when one runs short, and never exceeds the pool", () => {
+    const pool = [...mk("photo", 2), ...mk("text", 100)];
+    const picked = pickQuestions(pool, 8, 1);
+    expect(picked.filter((q) => q.kind === "photo")).toHaveLength(2);
+    expect(picked).toHaveLength(8);
+    expect(pickQuestions(mk("text", 3), 8, 1)).toHaveLength(3);
+  });
+
+  it("does not run the kinds in a fixed order", () => {
+    const pool = [...mk("photo", 50), ...mk("text", 50)];
+    const orders = new Set<string>();
+    for (let seed = 0; seed < 20; seed++) {
+      orders.add(
+        pickQuestions(pool, 6, seed)
+          .map((q) => q.kind[0])
+          .join(""),
+      );
+    }
+    expect(orders.size).toBeGreaterThan(1);
   });
 });

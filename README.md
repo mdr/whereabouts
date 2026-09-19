@@ -140,7 +140,11 @@ pnpm workspace with three packages:
   continents and small countries further afield, up to 1,000 km for Pacific
   micro-states. Every text answer was checked against the coordinates on
   its English Wikipedia article, and `questions.test.ts` guards ids,
-  ranges and near-duplicate spots.
+  ranges and near-duplicate spots. Photo questions are famous landmarks,
+  natural and built; each image is the lead picture of the landmark's
+  Wikipedia article, checked to exist on Commons. A game draws as even a
+  split of photo and text questions as the pool allows (`pickQuestions`),
+  in a shuffled order.
 - **Paint** is stored on sparse H3 hexagons (`src/paint.ts`) at mixed
   resolutions. The finest resolution is chosen per question so a cell edge is
   at most a quarter of the tolerance; each brush stroke then uses the coarsest
@@ -173,7 +177,7 @@ pnpm workspace with three packages:
   kernel, so the rule stays proper and bounded. Coarse components aggregate the
   paint onto a grid an eighth of their width before the pair sum. The live
   score card and the reveal show the score under every kernel side by side.
-- **Reveal** shows the answer, rings at one and two tolerances, and the score.
+- **Reveal** shows the answer as a single dot, and the score.
   Country borders and place names are switched on for the reveal and off
   again for the next round, since they are hints while guessing.
   In dev mode it also shows `A` and `B` and a live "score if the answer were

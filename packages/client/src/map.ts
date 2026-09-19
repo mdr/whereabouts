@@ -5,7 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 // import.meta.url. After bundling that points into /assets where no such
 // file exists, so hand it a worker Vite has bundled and knows the URL of.
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-import { EARTH_RADIUS_KM, cellsOutline, type LatLon } from "@whereabouts/shared";
+import { cellsOutline, type LatLon } from "@whereabouts/shared";
 import type { Theme } from "./themes";
 
 setWorkerUrl(mapWorkerUrl);
@@ -123,18 +123,6 @@ export class GameMap {
       data: { type: "FeatureCollection", features: [] },
     });
     this.map.addLayer({
-      id: "reveal-rings",
-      type: "line",
-      source: REVEAL_SOURCE,
-      filter: ["==", ["geometry-type"], "Polygon"],
-      paint: {
-        "line-color": "#1565c0",
-        "line-width": ["match", ["get", "ring"], 1, 2.5, 1.2],
-        "line-dasharray": [2, 2],
-        "line-opacity": 0.9,
-      },
-    });
-    this.map.addLayer({
       id: "reveal-answer",
       type: "circle",
       source: REVEAL_SOURCE,
@@ -195,7 +183,6 @@ export class GameMap {
       }
     }
     this.applyPaintRamp(t);
-    set("reveal-rings", "line-color", t.answer);
     set("reveal-answer", "circle-color", t.answer);
     set("reveal-answer", "circle-stroke-color", t.answerStroke);
     set("cursor-fill", "fill-color", t.brush);
@@ -289,8 +276,8 @@ export class GameMap {
     ]);
   }
 
-  /** Marker at the answer plus rings at 1r and 2r. */
-  showReveal(answer: LatLon, toleranceKm: number): void {
+  /** Marker at the answer. The tolerance rings were tried and dropped: one clear dot reads better. */
+  showReveal(answer: LatLon, _toleranceKm: number): void {
     const fc: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",
       features: [
@@ -299,8 +286,6 @@ export class GameMap {
           properties: {},
           geometry: { type: "Point", coordinates: [answer.lon, answer.lat] },
         },
-        circleFeature(answer, toleranceKm, 1),
-        circleFeature(answer, toleranceKm * 2, 2),
       ],
     };
     void this.source(REVEAL_SOURCE)?.setData(fc);
@@ -374,33 +359,4 @@ export class GameMap {
       duration: 900,
     });
   }
-}
-
-/** Polygon approximating a circle of `radiusKm` around `centre` on the sphere. */
-function circleFeature(centre: LatLon, radiusKm: number, ring: number): GeoJSON.Feature {
-  const n = 96;
-  const coords: [number, number][] = [];
-  const lat1 = (centre.lat * Math.PI) / 180;
-  const lon1 = (centre.lon * Math.PI) / 180;
-  const d = radiusKm / EARTH_RADIUS_KM;
-  let prevLon: number | null = null;
-  for (let i = 0; i <= n; i++) {
-    const brg = (2 * Math.PI * i) / n;
-    const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(brg));
-    const lon2 =
-      lon1 + Math.atan2(Math.sin(brg) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2));
-    let lonDeg = (lon2 * 180) / Math.PI;
-    // Unwrap across the antimeridian so the ring stays a simple polygon.
-    if (prevLon !== null) {
-      while (lonDeg - prevLon > 180) lonDeg -= 360;
-      while (lonDeg - prevLon < -180) lonDeg += 360;
-    }
-    prevLon = lonDeg;
-    coords.push([lonDeg, (lat2 * 180) / Math.PI]);
-  }
-  return {
-    type: "Feature",
-    properties: { ring },
-    geometry: { type: "Polygon", coordinates: [coords] },
-  };
 }
