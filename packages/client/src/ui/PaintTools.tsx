@@ -1,7 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { usePaint } from "./MapView";
 import { Card, fmtKm } from "./bits";
-import { PaintController, type Tool } from "../paint-controller";
+import type { Tool } from "../paint-controller";
 
 const TOOL_HINT: Record<Tool, string> = {
   pan: "Pan the map (1). Hold Space to pan while painting.",
@@ -73,13 +73,19 @@ export function PaintDev() {
         onInput={(v) => (paint.floor.value = v)}
         format={(v) => `${Math.round(v * 100)}%`}
       />
-      {paint.brushClamped.value && (
-        <p class="hint warn">
-          Brush too large for this tolerance; capped at {PaintController.MAX_BRUSH_RINGS} cells radius.
-        </p>
-      )}
       <p class="hint">
-        Tolerance {fmtKm(paint.toleranceKm.value)} · H3 res {paint.layer.res} · {paint.layer.size} cells
+        Tolerance {fmtKm(paint.toleranceKm.value)} · finest H3 res {paint.layer.res} · {paint.layer.size} cells
+        {paint.layer.size > 0 && (
+          <>
+            {" "}
+            (
+            {paint.layer
+              .resolutionCounts()
+              .map(([r, n]) => `res ${r}: ${n}`)
+              .join(", ")}
+            )
+          </>
+        )}
       </p>
       <Distribution />
     </Card>

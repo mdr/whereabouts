@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import * as h3 from "h3-js";
 import { toXyz, EARTH_RADIUS_KM } from "./geo.ts";
 import {
   KERNELS,
@@ -234,5 +235,71 @@ describe("mixture kernels", () => {
       const exact = pairSum(d.points, tol, true, k);
       expect(Math.abs(fast - exact)).toBeLessThan(2e-3);
     }
+  });
+});
+
+describe("patch-aware kernel", () => {
+  const { cellToChildren, latLngToCell } = h3;
+
+  function cellDistribution(cells: string[], floor = 0): Distribution {
+    return buildDistribution(
+      cells.map((h) => {
+        const [lat, lon] = h3.cellToLatLng(h);
+        return { lat, lon, intensity: 1, areaKm2: h3.cellArea(h, h3.UNITS.km2), h3: h };
+      }),
+      floor,
+    );
+  }
+
+  it("scores one coarse cell like its children, at every kernel", () => {
+    // A res-3 cell (~120 km across) scored against a 30 km tolerance. As a
+    // point mass it would be hundreds of points off; as a patch A matches to
+    // three decimals thanks to refinement near the answer, and B is within
+    // about 0.03 (a Gaussian has a denser core than a flat hexagon, which
+    // shows when the kernel is a few times narrower than the cell).
+    const parent = latLngToCell(48.8, 2.3, 3);
+    const children = cellToChildren(parent, 5);
+    const tol = 30;
+    for (const k of KERNELS) {
+      for (const ans of [
+        { lat: 48.8, lon: 2.3 },
+        { lat: 49.3, lon: 2.9 },
+        { lat: 47.5, lon: 1.0 },
+      ]) {
+        const coarse = scoreDistribution(cellDistribution([parent]), ans, tol, k);
+        const fine = scoreDistribution(cellDistribution(children), ans, tol, k);
+        expect(Math.abs(coarse.A - fine.A)).toBeLessThan(0.002);
+        expect(Math.abs(coarse.B - fine.B)).toBeLessThan(0.035);
+        expect(Math.abs(coarse.score - fine.score)).toBeLessThan(20);
+      }
+    }
+  });
+
+  it("a patch is less self-similar than a point mass of the same weight", () => {
+    const parent = latLngToCell(48.8, 2.3, 3);
+    const patch = cellDistribution([parent]);
+    const point: Distribution = { points: [{ xyz: patch.points[0]!.xyz, p: 1 }], floor: 0 };
+    expect(selfSimilarity(patch, 30)).toBeLessThan(selfSimilarity(point, 30));
+    expect(selfSimilarity(point, 30)).toBeCloseTo(1, 9);
+  });
+
+  it("truncated pair sum matches the exact sum with mixed patch sizes", () => {
+    const coarse = cellToChildren(latLngToCell(30, 35, 2), 3);
+    const fine = cellToChildren(latLngToCell(30.5, 35.5, 4), 6);
+    const d = cellDistribution([...coarse, ...fine]);
+    for (const k of KERNELS) {
+      const fast = pairSum(d.points, 40, false, k);
+      const exact = pairSum(d.points, 40, true, k);
+      expect(Math.abs(fast - exact)).toBeLessThan(3e-3);
+    }
+  });
+
+  it("fine cells are barely affected by the patch correction", () => {
+    const cells = h3.gridDisk(latLngToCell(27.175, 78.042, 7), 6); // ~1.2 km cells, 100 km tolerance
+    const asPatches = cellDistribution(cells);
+    const asPoints: Distribution = { points: asPatches.points.map((p) => ({ xyz: p.xyz, p: p.p })), floor: 0 };
+    const a = scoreDistribution(asPatches, answer, r);
+    const b = scoreDistribution(asPoints, answer, r);
+    expect(Math.abs(a.score - b.score)).toBeLessThan(1);
   });
 });

@@ -75,14 +75,27 @@ pnpm workspace with three packages:
 
 - **Questions** live in `public/questions.json`: a prompt or a Wikimedia Commons
   photo, the answer coordinates, and a per-question tolerance in km.
-- **Paint** is stored on sparse H3 hexagons (`src/paint.ts`). The resolution is
-  chosen per question so a cell edge is at most a quarter of the tolerance.
-  Cells are near-equal-area, so paint intensity is a density.
+- **Paint** is stored on sparse H3 hexagons (`src/paint.ts`) at mixed
+  resolutions. The finest resolution is chosen per question so a cell edge is
+  at most a quarter of the tolerance; each brush stroke then uses the coarsest
+  resolution that still fits about five cells across the brush, so painting a
+  continent at world zoom writes a few hundred large cells rather than tens of
+  thousands of tiny ones. Intensity is a density and densities add where
+  resolutions overlap. Erasing splits a coarser cell that straddles the brush
+  edge into its children first, so only the part under the brush goes.
 - **World floor** spreads a chosen share of the mass evenly over the whole
   planet. Its kernel integrals have a closed form, so it costs no cells.
 - **Scoring** (`src/scoring.ts`) is the Gaussian-kernel proper scoring rule
   from the design note: `score = 500 (1 + 2A - B)` with
   `k(a,b) = 2^-(d/r)^2` and `d` the chord distance on the Earth sphere.
+  Each painted cell is treated as a Gaussian patch with the hexagon's second
+  moment rather than a point mass, so a coarse cell scores like the fine cells
+  it stands for: the kernel between two Gaussian patches is another Gaussian
+  with a wider width and smaller amplitude. For `A`, cells much larger than
+  the tolerance and near the answer are split into children first, since a
+  narrow kernel can tell a peaked patch from a flat hexagon. `B` keeps the
+  patch form; in the regime where a cell is a few times the tolerance it runs
+  about 10% high, worth roughly 15 points, the price of not refining pairs.
   `B` is summed only over pairs within four kernel widths, using a 3D grid hash.
 - **Colour theme**: "dark ops", a near-black ocean and slate land with paint
   glowing from teal to white and an amber answer marker. The theme recolours

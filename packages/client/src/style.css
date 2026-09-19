@@ -491,9 +491,6 @@ kbd {
 #brush-cursor.painting .ring.brush {
   opacity: 1;
 }
-#brush-cursor .ring.brush.clamped {
-  border-color: var(--danger);
-}
 #brush-cursor .ring.tolerance {
   border: 1.5px dashed var(--ring-tol);
 }

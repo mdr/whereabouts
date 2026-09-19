@@ -5,7 +5,7 @@
  */
 import { Point, type LngLat, type MapMouseEvent } from "maplibre-gl";
 import { batch, signal } from "@preact/signals";
-import { PaintLayer, MAX_BRUSH_RINGS, resolutionForTolerance, type LatLon } from "@whereabouts/shared";
+import { PaintLayer, resolutionForTolerance, type LatLon } from "@whereabouts/shared";
 import type { GameMap } from "./map";
 
 export type Tool = "pan" | "paint" | "erase";
@@ -26,7 +26,6 @@ export class PaintController {
   private settleTimer: number | null = null;
   /** Whether painting is currently allowed (guessing phase, not locked). */
   readonly enabled = signal(false);
-  readonly brushClamped = signal(false);
   /** Set by the active screen; drives the dashed tolerance ring. */
   readonly toleranceKm = signal(100);
 
@@ -204,9 +203,6 @@ export class PaintController {
     const px = this.brushPx.value;
     this.brushRing.style.width = this.brushRing.style.height = `${px * 2}px`;
     this.tolRing.style.width = this.tolRing.style.height = `${tolPx * 2}px`;
-    const { clamped } = this.layer.ringsForRadius(this.brushRadiusKm(lngLat.lat));
-    this.brushRing.classList.toggle("clamped", clamped);
-    if (clamped !== this.brushClamped.peek()) this.brushClamped.value = clamped;
   }
 
   private stampAt(lngLat: LngLat): void {
@@ -250,6 +246,4 @@ export class PaintController {
       this.version.value++;
     });
   }
-
-  static readonly MAX_BRUSH_RINGS = MAX_BRUSH_RINGS;
 }
