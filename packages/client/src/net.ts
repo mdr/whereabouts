@@ -4,7 +4,14 @@
  */
 import { WSClient } from "@rivalis/browser";
 import { computed, signal } from "@preact/signals";
-import { PROTOCOL_VERSION, encodeTicket, type GameView, type PaintSubmission, type Ticket } from "@whereabouts/shared";
+import {
+  type ConfigurePatch,
+  PROTOCOL_VERSION,
+  encodeTicket,
+  type GameView,
+  type PaintSubmission,
+  type Ticket,
+} from "@whereabouts/shared";
 
 export type Status = "idle" | "connecting" | "connected" | "disconnected" | "rejected";
 
@@ -86,6 +93,9 @@ export class Connection {
   }
   ready(): void {
     this.send("ready");
+  }
+  configure(patch: ConfigurePatch): void {
+    this.send("configure", patch);
   }
   start(): void {
     this.send("start");

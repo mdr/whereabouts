@@ -351,3 +351,34 @@ describe("ready-up edge cases", () => {
     expect(g.view("tokA", T0 + 121_000).reveal!.ready).toEqual([]);
   });
 });
+
+describe("configure", () => {
+  it("lets the host change rounds and round length in the lobby only", () => {
+    const g = twoPlayerGame();
+    expect(g.configure("tokB", { rounds: 3 })).toEqual({ ok: false, error: "only the host can change settings" });
+    expect(g.configure("tokA", { rounds: 3 })).toEqual({ ok: true, changed: true });
+    expect(g.configure("tokA", { rounds: 3 })).toEqual({ ok: true, changed: false });
+    expect(g.configure("tokA", { roundMs: 30_000 }).ok).toBe(true);
+    const v = g.view("tokB", T0);
+    expect(v.config.rounds).toBe(3);
+    expect(v.config.roundMs).toBe(30_000);
+    g.start("tokA", T0);
+    expect(g.view("tokA", T0).round!.total).toBe(3);
+    expect(g.view("tokA", T0).round!.deadline).toBe(T0 + 30_000);
+    expect(g.configure("tokA", { rounds: 5 })).toEqual({
+      ok: false,
+      error: "settings are locked once the game starts",
+    });
+  });
+
+  it("reports who has locked in", () => {
+    const g = twoPlayerGame(1);
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    g.setPaint("tokA", paintAt(q, 0, 0));
+    g.lock("tokA", T0 + 1);
+    const players = g.view("tokB", T0 + 1).players;
+    expect(players.find((p) => p.id === "p1")!.locked).toBe(true);
+    expect(players.find((p) => p.id === "p2")!.locked).toBe(false);
+  });
+});

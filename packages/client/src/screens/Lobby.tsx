@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import type { GameView } from "@whereabouts/shared";
+import { MAX_ROUNDS, MIN_ROUNDS, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { playerName } from "../settings";
 import { PlayerList } from "../ui/PlayerList";
@@ -39,9 +39,41 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             }}
           />
         )}
-        <p class="hint">
-          {view.config.rounds} rounds · {view.config.roundMs / 1000} seconds each
-        </p>
+        <h2>Game setup</h2>
+        {view.you.isHost ? (
+          <div class="settings">
+            <label>
+              Rounds
+              <select
+                value={view.config.rounds}
+                onChange={(e) => conn.configure({ rounds: Number((e.target as HTMLSelectElement).value) })}
+              >
+                {Array.from({ length: MAX_ROUNDS - MIN_ROUNDS + 1 }, (_, i) => MIN_ROUNDS + i).map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Seconds per round
+              <select
+                value={view.config.roundMs}
+                onChange={(e) => conn.configure({ roundMs: Number((e.target as HTMLSelectElement).value) })}
+              >
+                {ROUND_LENGTHS_MS.map((ms) => (
+                  <option key={ms} value={ms}>
+                    {ms / 1000}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        ) : (
+          <p class="hint">
+            {view.config.rounds} rounds · {view.config.roundMs / 1000} seconds each. The host can change this.
+          </p>
+        )}
         {view.you.isHost ? (
           <button class="primary big" onClick={() => conn.start()} disabled={view.players.length < 1}>
             <Icon name="play" /> Start game

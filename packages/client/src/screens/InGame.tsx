@@ -10,6 +10,7 @@ import { DevDrawer } from "../ui/DevDrawer";
 import { ConnectionDev } from "../ui/ConnectionDev";
 import { Reveal } from "./Reveal";
 import { Icon } from "../ui/icons";
+import { PlayersPanel } from "../ui/PlayersPanel";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint();
@@ -92,6 +93,9 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
               <p class="hint">Locked in. The round ends when everyone has, or when the clock runs out.</p>
             </Card>
           )}
+        </div>
+        <div class="hud-right">
+          <PlayersPanel view={view} />
         </div>
         {!view.you.spectating && (
           <PaintTools>

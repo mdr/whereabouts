@@ -139,6 +139,8 @@ export class GameRoom extends Room<ActorData> {
         return this.game.lock(token, now);
       case "ready":
         return this.game.ready(token, now);
+      case "configure":
+        return this.game.configure(token, data as z.infer<typeof ClientMessageSchemas.configure>);
       case "start":
         return this.game.start(token, now);
       case "next":

@@ -10,6 +10,7 @@ const player = (over: Partial<PlayerView>): PlayerView => ({
   colour: 0,
   connected: true,
   isHost: false,
+  locked: false,
   score: 0,
   rank: 1,
   previousRank: null,
@@ -68,5 +69,17 @@ describe("PlayerList", () => {
     expect(pencils[0]!.closest("li")!.textContent).toContain("Bob");
     (pencils[0] as HTMLButtonElement).click();
     expect(clicks).toBe(1);
+  });
+});
+
+describe("PlayerList status", () => {
+  it("shows a lock tag for players who have locked in, only when asked", () => {
+    const players = [player({ id: "p1", locked: true }), player({ id: "p2", name: "Bob", locked: false })];
+    const { container: plain } = render(<PlayerList players={players} you="p2" showScores={false} />);
+    expect(plain.querySelector(".tag.locked")).toBeNull();
+    const { container } = render(<PlayerList players={players} you="p2" showScores={false} showLocked />);
+    const rows = container.querySelectorAll("li");
+    expect(rows[0]!.querySelector(".tag.locked")).not.toBeNull();
+    expect(rows[1]!.querySelector(".tag.locked")).toBeNull();
   });
 });

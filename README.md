@@ -55,6 +55,8 @@ pnpm workspace with three packages:
 ## Online play
 
 - The host creates a game and gets a four-letter code; others join with it.
+  In the lobby the host picks the number of rounds (1 to 15) and the round
+  length (30, 45, 60, 90 or 120 seconds).
 - Rounds are 60 seconds. Whatever is painted at the deadline is the guess;
   "Lock in" freezes it early, and the round ends as soon as every active
   player has locked in. Blank guesses score the 500 baseline.

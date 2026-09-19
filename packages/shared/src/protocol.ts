@@ -39,6 +39,7 @@ export const ClientTopics = {
   paint: "paint",
   lock: "lock",
   ready: "ready",
+  configure: "configure",
   start: "start",
   next: "next",
   again: "again",
@@ -47,10 +48,27 @@ export const ClientTopics = {
 
 export const RenameSchema = z.object({ name: z.string().trim().min(1).max(20) });
 
+/** Round lengths the host may pick, ms. */
+export const ROUND_LENGTHS_MS = [30_000, 45_000, 60_000, 90_000, 120_000] as const;
+export const MIN_ROUNDS = 1;
+export const MAX_ROUNDS = 15;
+
+/** Host changes to the game settings while in the lobby. */
+export const ConfigureSchema = z.object({
+  rounds: z.number().int().min(MIN_ROUNDS).max(MAX_ROUNDS).optional(),
+  roundMs: z
+    .number()
+    .int()
+    .refine((v) => (ROUND_LENGTHS_MS as readonly number[]).includes(v), "unsupported round length")
+    .optional(),
+});
+export type ConfigurePatch = z.infer<typeof ConfigureSchema>;
+
 export const ClientMessageSchemas = {
   paint: PaintSubmissionSchema,
   lock: z.object({}),
   ready: z.object({}),
+  configure: ConfigureSchema,
   start: z.object({}),
   next: z.object({}),
   again: z.object({}),
@@ -79,6 +97,8 @@ export interface PlayerView {
   colour: number;
   connected: boolean;
   isHost: boolean;
+  /** Has frozen their guess this round. */
+  locked: boolean;
   /** Total so far. */
   score: number;
   /** 1-based rank by score, ties share a rank. */

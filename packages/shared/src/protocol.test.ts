@@ -41,3 +41,14 @@ describe("paint submission schema", () => {
     expect(PaintSubmissionSchema.safeParse({ cells: {}, floor: 1.5 }).success).toBe(false);
   });
 });
+
+describe("ConfigureSchema", () => {
+  it("accepts supported values and rejects the rest", async () => {
+    const { ConfigureSchema } = await import("./protocol.ts");
+    expect(ConfigureSchema.safeParse({ rounds: 5 }).success).toBe(true);
+    expect(ConfigureSchema.safeParse({ roundMs: 45_000 }).success).toBe(true);
+    expect(ConfigureSchema.safeParse({ rounds: 0 }).success).toBe(false);
+    expect(ConfigureSchema.safeParse({ rounds: 16 }).success).toBe(false);
+    expect(ConfigureSchema.safeParse({ roundMs: 61_000 }).success).toBe(false);
+  });
+});

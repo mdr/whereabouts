@@ -39,6 +39,12 @@ await bob.click(".join button");
 await bob.waitForSelector(".lobby .code", { timeout: 15000 });
 await alice.waitForSelector("text=Bob", { timeout: 5000 });
 console.log("both in lobby");
+// Host trims the game to 3 rounds of 30 s; Bob sees the change.
+await alice.selectOption(".settings select >> nth=0", "3");
+await alice.selectOption(".settings select >> nth=1", "30000");
+await bob.waitForSelector("text=3 rounds · 30 seconds each", { timeout: 5000 });
+console.log("settings propagated to Bob");
+await alice.screenshot({ path: `${out}/mp-1b-lobby-settings.png` });
 
 await alice.click("text=Start game");
 await alice.waitForSelector(".countdown", { timeout: 15000 });
@@ -61,6 +67,10 @@ await paint(alice, 0.62, 0.42);
 await paint(bob, 0.3, 0.55);
 await alice.waitForTimeout(800);
 await alice.screenshot({ path: `${out}/mp-2-guessing-alice.png` });
+// Players panel starts collapsed; expand it on Alice's side.
+await alice.click(".players-toggle");
+await alice.waitForSelector(".players-card");
+await alice.screenshot({ path: `${out}/mp-2b-players-panel.png` });
 console.log("bob blobs (dev):", (await bob.textContent(".blobs")).replace(/\s+/g, " ").slice(0, 120));
 await bob.click("text=Lock in");
 await bob.waitForSelector("text=Locked in", { timeout: 5000 });

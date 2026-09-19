@@ -2,6 +2,9 @@
 import {
   ArrowRight,
   Check,
+  ChevronDown,
+  ChevronUp,
+  Crown,
   Eraser,
   Flag,
   Hand,
@@ -14,6 +17,7 @@ import {
   RotateCcw,
   Trash2,
   Undo2,
+  Users,
   type LucideProps,
 } from "lucide-preact";
 import type { FunctionComponent } from "preact";
@@ -33,6 +37,10 @@ const ICONS = {
   refresh: RotateCcw,
   undo: Undo2,
   redo: Redo2,
+  crown: Crown,
+  users: Users,
+  expand: ChevronDown,
+  collapse: ChevronUp,
 } satisfies Record<string, FunctionComponent<LucideProps>>;
 
 export type IconName = keyof typeof ICONS;

@@ -7,6 +7,7 @@ import { buildDistribution, kernelById, scoreDistribution, type Kernel } from ".
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { shuffle, type Question } from "./questions.ts";
 import type {
+  ConfigurePatch,
   FinalStanding,
   GameConfig,
   GameView,
@@ -49,7 +50,7 @@ const fail = (error: string): CommandResult => ({ ok: false, error });
 
 export class Game {
   readonly code: string;
-  readonly config: GameConfig;
+  config: GameConfig;
   private readonly pool: Question[];
   private readonly kernel: Kernel;
 
@@ -165,6 +166,16 @@ export class Game {
     }
     this.results = null;
     this.beginRound(0, now);
+    return OK_CHANGED;
+  }
+
+  /** Host tunes rounds and round length while everyone is still in the lobby. */
+  configure(token: string, patch: ConfigurePatch): CommandResult {
+    if (!this.isHost(token)) return fail("only the host can change settings");
+    if (this.phase !== "lobby") return fail("settings are locked once the game starts");
+    const next = { ...this.config, ...patch };
+    if (next.rounds === this.config.rounds && next.roundMs === this.config.roundMs) return OK_SAME;
+    this.config = next;
     return OK_CHANGED;
   }
 
@@ -364,6 +375,7 @@ export class Game {
         colour: p.colour,
         connected: p.connected,
         isHost: p.token === host,
+        locked: this.submissions.get(p.token)?.locked ?? false,
         score: sum(p.scores),
         rank: this.rankOf(p),
         previousRank: p.previousRank,
