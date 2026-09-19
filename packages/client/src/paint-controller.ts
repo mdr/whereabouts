@@ -156,9 +156,9 @@ export class PaintController {
     this.gameMap.setPaint(layer ? layer.toGeoJSON() : { type: "FeatureCollection", features: [] });
   }
 
-  /** Put our own paint back on the map in the theme ramp. */
-  showOwn(): void {
-    this.gameMap.setPaintColour(null);
+  /** Put our own paint back on the map, in a player colour or the theme ramp. */
+  showOwn(colour: string | null = null): void {
+    this.gameMap.setPaintColour(colour);
     this.gameMap.setPaint(this.layer.toGeoJSON());
   }
 

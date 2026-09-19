@@ -61,14 +61,22 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
   const view = conn.view.value;
 
   if (status === "rejected" || (status === "disconnected" && !view)) {
+    const why = conn.rejection.value ?? {
+      title: "Could not join that game",
+      detail: conn.lastError.value ?? "The game server did not let us in.",
+    };
     return (
       <div class="home">
         <div class="home-card">
           <h1>Whereabouts</h1>
-          <p class="warn">{conn.lastError.value ?? "Could not join that game."}</p>
-          <button class="primary" onClick={() => navigate("/")}>
-            Back
-          </button>
+          <h2>{why.title}</h2>
+          <p class="tagline">{why.detail}</p>
+          <div class="home-actions">
+            <button class="primary big" onClick={() => navigate("/game/new")}>
+              Host a new game
+            </button>
+            <button onClick={() => navigate("/")}>Back to start</button>
+          </div>
         </div>
       </div>
     );

@@ -19,6 +19,8 @@ export class Connection {
   readonly lastError = signal<string | null>(null);
   /** serverTime - Date.now(), so deadlines can be shown on the local clock. */
   readonly clockOffset = signal(0);
+  /** Why the server turned us away or closed the game, in words for the player. */
+  readonly rejection = signal<Rejection | null>(null);
   readonly code = computed(() => this.view.value?.code ?? null);
 
   private client: WSClient<"state" | "error"> | null = null;
@@ -28,6 +30,7 @@ export class Connection {
     this.disconnect();
     this.status.value = "connecting";
     this.lastError.value = null;
+    this.rejection.value = null;
     const client = new WSClient<"state" | "error">(wsUrl(), {
       ticketSource: "protocol",
       reconnect: { baseDelayMs: 500, maxDelayMs: 5000, maxAttempts: 20 },
@@ -42,11 +45,11 @@ export class Connection {
     });
     client.on("client:kicked", ({ code, reason }) => {
       this.status.value = "rejected";
-      this.lastError.value = reason || (code === 4001 ? "That game code was not found." : `Disconnected (${code}).`);
+      this.rejection.value = describeDisconnect(code, reason);
     });
     client.on("client:reconnect_failed", () => {
       this.status.value = "rejected";
-      this.lastError.value ??= "Lost the connection to the game.";
+      this.rejection.value ??= describeDisconnect(0, "reconnect_failed");
     });
     client.on("client:error", () => {
       /* surfaced via disconnect */
@@ -101,4 +104,46 @@ export class Connection {
   msUntil(serverEpochMs: number): number {
     return serverEpochMs - (Date.now() + this.clockOffset.value);
   }
+}
+
+export interface Rejection {
+  title: string;
+  detail: string;
+}
+
+/**
+ * Turn a WebSocket close code and the server's reason string into something a
+ * player can act on. Reasons come from Rivalis (room lifecycle) and from our
+ * own room (join rejections, superseded tabs).
+ */
+export function describeDisconnect(code: number, reason: string | undefined): Rejection {
+  const r = (reason ?? "").toLowerCase();
+  if (r === "room_destroyed") {
+    return {
+      title: "That game has ended",
+      detail: "Everyone left, so the room was closed. Game codes only live while someone is in the game.",
+    };
+  }
+  if (r.includes("game has finished")) {
+    return { title: "That game has finished", detail: "The final results are in. Ask the host to start a new game." };
+  }
+  if (r.includes("replaced by a newer connection")) {
+    return {
+      title: "You joined from another tab",
+      detail: "This game is now open in your newer tab, so this one has been signed out.",
+    };
+  }
+  if (r === "reconnect_failed") {
+    return {
+      title: "Lost the connection",
+      detail: "We could not reach the game server again. Check your network and rejoin.",
+    };
+  }
+  if (code === 4001 || code === 1008 || r.includes("unauthor") || r.includes("not found") || r.includes("rejected")) {
+    return {
+      title: "No game with that code",
+      detail: "Check the code with your host. If the game finished or everyone left, it will need starting again.",
+    };
+  }
+  return { title: "Disconnected", detail: reason ? reason : `The connection closed (code ${code}).` };
 }

@@ -46,11 +46,24 @@ export class GameMap {
     this.map.keyboard.disableRotation();
     this.ready = new Promise((resolve) => {
       this.map.once("load", () => {
+        this.collapseAttribution();
         this.indexStyleLayers();
         this.addSources();
         resolve();
       });
     });
+  }
+
+  /**
+   * MapLibre's compact attribution starts expanded; fold it to the (i)
+   * button so it does not sit on the toolbar. The full credit is one click
+   * away, as the OpenStreetMap and OpenMapTiles licences require.
+   */
+  private collapseAttribution(): void {
+    const el = this.map.getContainer().querySelector(".maplibregl-ctrl-attrib");
+    if (!el) return;
+    el.classList.remove("maplibregl-compact-show");
+    el.removeAttribute("open");
   }
 
   private indexStyleLayers(): void {

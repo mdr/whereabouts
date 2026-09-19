@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "preact/hooks";
-import { PaintLayer, compactRecord, type GameView } from "@whereabouts/shared";
+import { PaintLayer, compactRecord, playerColour, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { usePaint } from "../ui/MapView";
 import { Card, Countdown, HudHeader, QuestionCard } from "../ui/bits";
@@ -30,7 +30,9 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     }
     paint.gameMap.clearReveal();
     paint.gameMap.resetView();
-    paint.showOwn();
+    // Paint in your own colour, the same one others see at the reveal.
+    const me = view.players.find((p) => p.id === view.you.id);
+    paint.showOwn(me ? playerColour(me.colour) : null);
     paint.tool.value = "paint";
     lastSentVersion.current = paint.version.peek();
   }, [roundKey, guessing]);
@@ -86,7 +88,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
           {view.you.locked && (
             <Card>
-              <p class="hint">Locked in. Sit tight until the clock runs out.</p>
+              <p class="hint">Locked in. The round ends when everyone has, or when the clock runs out.</p>
             </Card>
           )}
         </div>
