@@ -17,7 +17,7 @@ import {
   type Question,
 } from "@whereabouts/shared";
 import { MapView, usePaint } from "../ui/MapView";
-import { Card, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../ui/bits";
+import { Card, HudBottom, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../ui/bits";
 import { PaintDev, PaintTools } from "../ui/PaintTools";
 import { DevDrawer } from "../ui/DevDrawer";
 import { cheatLiveScore, soloKernelId } from "../settings";
@@ -206,11 +206,11 @@ function SoloGame() {
               <div class="label">this round</div>
             </div>
           </div>
-          <div class="hud-bottom toolbar">
+          <HudBottom>
             <button class="primary" onClick={next}>
               <Icon name={last ? "flag" : "next"} /> {last ? "Finish" : "Next question"} <kbd>Enter</kbd>
             </button>
-          </div>
+          </HudBottom>
         </div>
         <DevDrawer>
           <Card title="Score">

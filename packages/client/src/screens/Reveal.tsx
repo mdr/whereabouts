@@ -9,7 +9,7 @@ import {
 } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { usePaint } from "../ui/MapView";
-import { Card, HudHeader, QuestionCard, ScoreParts } from "../ui/bits";
+import { Card, HudBottom, HudHeader, QuestionCard, ScoreParts } from "../ui/bits";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { DevDrawer } from "../ui/DevDrawer";
 import { ConnectionDev } from "../ui/ConnectionDev";
@@ -119,7 +119,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
             <p class="hint">Click a player to see just their guess.</p>
           </Card>
         </div>
-        <div class="hud-bottom toolbar">
+        <HudBottom>
           <button class={iAmReady ? "" : "primary"} onClick={() => conn.ready()} disabled={iAmReady}>
             <Icon name="check" /> Ready
           </button>
@@ -131,7 +131,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
             iAmReady && <span class="hint">Waiting for the others…</span>
           )}
           {view.you.isHost && !last && <EndGameButton onEnd={() => conn.end()} />}
-        </div>
+        </HudBottom>
       </div>
       <DevDrawer>
         <Card title="Round results">

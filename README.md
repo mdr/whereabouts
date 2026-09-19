@@ -36,6 +36,9 @@ Other commands:
   new one, ending the game early and the brush footprint.
   `node scripts/touch-smoke.mjs` drives touch input through the DevTools
   protocol: one finger paints, a two-finger pinch leaves no paint.
+  `node scripts/phone-smoke.mjs` walks every screen at iPhone size and
+  fails if anything forces the layout viewport wider than the screen, or
+  if the bottom controls are off screen or covered.
 - `node scripts/prod-smoke.mjs [baseUrl]` from `packages/client` checks a
   production build actually loads the map, against `nix run` locally or the
   live site. It catches bundling problems dev mode hides, such as the
@@ -207,7 +210,11 @@ resolution the layer picks for that brush size, so at world zoom you see the
 large cells you are about to lay down. It is dotted when erasing.
 On a touchscreen one finger uses the current tool (so it paints, or pans
 with the Pan tool) and two fingers always pan and zoom; a pinch that
-started as a stray one-finger dab takes that paint back. Place names, country borders, man-made detail
+started as a stray one-finger dab takes that paint back. Below 640px wide
+(phones) the HUD becomes one column: cards at the top, the toolbar across
+the bottom with icon-only tool buttons, and the map in between; the zoom
+buttons go (pinch instead) and the attribution button sits above the
+toolbar. Place names, country borders, man-made detail
 (roads, railways, buildings, airports, urban land use), and inland water
 (rivers, lakes) are all hidden. Coastlines, woodland and ice stay visible.
 

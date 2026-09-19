@@ -1,5 +1,5 @@
 import type { ComponentChildren } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { commonsImageUrl, commonsPageUrl, type QuestionView } from "@whereabouts/shared";
 import { Icon } from "./icons";
 
@@ -11,6 +11,34 @@ export function Card({ title, children, class: cls }: { title?: string; children
   return (
     <div class={`card ${cls ?? ""}`}>
       {title && <h2>{title}</h2>}
+      {children}
+    </div>
+  );
+}
+
+/**
+ * The bar along the bottom of the map. It publishes its height as
+ * `--toolbar-h` on the document so the map's own corner controls (the
+ * attribution button) can sit above it on phones, where the bar spans the
+ * full width.
+ */
+export function HudBottom({ children }: { children: ComponentChildren }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    const root = document.documentElement;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const publish = () => root.style.setProperty("--toolbar-h", `${el.offsetHeight}px`);
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.style.removeProperty("--toolbar-h");
+    };
+  }, []);
+  return (
+    <div class="hud-bottom toolbar" ref={ref}>
       {children}
     </div>
   );

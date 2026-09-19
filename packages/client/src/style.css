@@ -558,6 +558,7 @@ select {
 }
 .home-card {
   width: min(440px, 100%);
+  box-sizing: border-box;
   background: var(--panel-bg);
   border-radius: 12px;
   padding: 28px;
@@ -1003,6 +1004,7 @@ button.icon.kick:hover {
   padding: 20px 22px;
   max-width: 420px;
   width: 100%;
+  box-sizing: border-box;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 .modal h2 {
@@ -1024,4 +1026,101 @@ button.danger.solid {
   background: var(--danger);
   border-color: var(--danger);
   color: #fff;
+}
+
+/* ---- phones ---------------------------------------------------------------
+   Below this width the two 300px side columns cannot both fit, and the paint
+   toolbar (about 750px in one row) would force the layout viewport wider than
+   the screen, zooming the whole page out. The HUD becomes a single column:
+   cards at the top, the toolbar pinned to the bottom, the map in between. */
+@media (max-width: 640px) {
+  .hud {
+    --hud-gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: var(--hud-gap) var(--hud-gap) calc(var(--hud-gap) + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+  }
+  .hud-top,
+  .hud-right {
+    position: static;
+    width: auto;
+    max-height: none;
+    flex: 0 1 auto;
+    min-height: 0;
+  }
+  .hud-top {
+    max-height: 45%;
+  }
+  .hud-right {
+    max-height: 30%;
+  }
+  .hud-bottom {
+    position: static;
+    transform: none;
+    max-width: none;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: auto;
+  }
+  .toolbar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+  }
+  /* Tool buttons are icon-only so the brush slider fits beside them. */
+  .tools button .label {
+    display: none;
+  }
+  .tools button {
+    padding: 8px;
+  }
+  .tools button .icon {
+    margin: 0;
+  }
+  .toolbar .brush {
+    flex: 1 1 120px;
+    border-right: 0;
+    padding-right: 0;
+  }
+  .toolbar .brush input {
+    width: 100%;
+    min-width: 60px;
+  }
+  .toolbar button.primary {
+    flex: 1 1 auto;
+  }
+  .players-panel {
+    width: 100%;
+  }
+  .card.question .thumb img {
+    aspect-ratio: 2 / 1;
+  }
+  /* The round score reads as one line instead of a tall card. */
+  .hud-top .card.score {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    padding: 8px 12px;
+  }
+  .hud-top .score .big {
+    font-size: 28px;
+    margin: 0;
+  }
+  .home {
+    padding: 12px;
+  }
+  .home-card {
+    padding: 20px;
+  }
+  /* Pinch zoom covers the +/- buttons; the attribution button rises above the toolbar. */
+  #map .maplibregl-ctrl-bottom-left {
+    display: none;
+  }
+  #map .maplibregl-ctrl-bottom-right {
+    bottom: calc(var(--toolbar-h, 0px) + 10px + env(safe-area-inset-bottom, 0px));
+  }
 }

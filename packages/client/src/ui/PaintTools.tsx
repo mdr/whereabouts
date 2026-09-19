@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { usePaint } from "./MapView";
-import { Card, fmtKm } from "./bits";
+import { Card, HudBottom, fmtKm } from "./bits";
 import type { Tool } from "../paint-controller";
 import { Icon, type IconName } from "./icons";
 
@@ -20,7 +20,7 @@ export function PaintTools({ children }: { children?: ComponentChildren }) {
   const tool = paint.tool.value;
   const enabled = paint.enabled.value;
   return (
-    <div class="hud-bottom toolbar">
+    <HudBottom>
       <div class="tools">
         {(["pan", "paint", "erase"] as Tool[]).map((t) => (
           <button
@@ -30,7 +30,7 @@ export function PaintTools({ children }: { children?: ComponentChildren }) {
             onClick={() => (paint.tool.value = t)}
             disabled={!enabled}
           >
-            <Icon name={TOOL_ICON[t]} /> {t[0]!.toUpperCase() + t.slice(1)}
+            <Icon name={TOOL_ICON[t]} /> <span class="label">{t[0]!.toUpperCase() + t.slice(1)}</span>
           </button>
         ))}
       </div>
@@ -65,7 +65,7 @@ export function PaintTools({ children }: { children?: ComponentChildren }) {
         <Icon name="redo" />
       </button>
       {children}
-    </div>
+    </HudBottom>
   );
 }
 
