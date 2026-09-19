@@ -822,3 +822,10 @@ button.big .icon {
   margin: 0;
   vertical-align: baseline;
 }
+button.primary kbd {
+  background: rgba(10, 26, 34, 0.18);
+  color: #0a1a22;
+}
+.toolbar button.icon-only {
+  padding: 8px;
+}

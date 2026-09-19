@@ -208,6 +208,13 @@ export class PaintLayer {
     return this.cells.size === 0;
   }
 
+  /** Replace every cell at once (undo/redo). */
+  replaceCells(cells: Map<string, number>): void {
+    this.cells.clear();
+    for (const [h, v] of cells) this.cells.set(h, v);
+    this.version++;
+  }
+
   /** Number of painted cells. */
   get size(): number {
     return this.cells.size;

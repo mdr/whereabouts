@@ -46,6 +46,24 @@ export function PaintTools({ children }: { children?: ComponentChildren }) {
           onInput={(e) => paint.setBrushPx(Number((e.target as HTMLInputElement).value))}
         />
       </label>
+      <button
+        class="icon-only"
+        title="Undo (Ctrl+Z or ⌘Z)"
+        aria-label="Undo"
+        onClick={() => paint.undo()}
+        disabled={!enabled || !paint.canUndo.value}
+      >
+        <Icon name="undo" />
+      </button>
+      <button
+        class="icon-only"
+        title="Redo (Ctrl+Shift+Z, ⌘⇧Z or Ctrl+Y)"
+        aria-label="Redo"
+        onClick={() => paint.redo()}
+        disabled={!enabled || !paint.canRedo.value}
+      >
+        <Icon name="redo" />
+      </button>
       {children}
     </div>
   );

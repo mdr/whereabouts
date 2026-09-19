@@ -37,6 +37,17 @@ await page.mouse.move(cx + 210, cy + 85);
 await page.mouse.up();
 await page.waitForTimeout(600);
 await page.screenshot({ path: `${out}/2-painted.png` });
+
+// Undo the second blob with the keyboard, then redo it.
+const cells = () => page.evaluate(() => window.whereabouts.paint.layer.size);
+const twoBlobs = await cells();
+await page.keyboard.press("Control+z");
+await page.waitForTimeout(200);
+const oneBlob = await cells();
+await page.keyboard.press("Control+Shift+z");
+await page.waitForTimeout(200);
+const back = await cells();
+console.log(`undo/redo: ${twoBlobs} -> ${oneBlob} -> ${back}`, oneBlob < twoBlobs && back === twoBlobs ? "ok" : "FAIL");
 console.log("blobs:", await page.$eval(".blobs", (el) => el.innerText));
 
 await page.click('button:has-text("Submit")');

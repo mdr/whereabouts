@@ -57,6 +57,7 @@ export class PaintController {
     const map = gameMap.map;
     const onDown = (e: MapMouseEvent) => {
       if (!this.canPaint() || e.originalEvent.button !== 0) return;
+      this.pushHistory();
       this.painting = true;
       this.lastStampPoint = null;
       this.cursorEl.classList.add("painting");
@@ -90,6 +91,17 @@ export class PaintController {
         return;
       }
       if (!this.enabled.value) return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        if (e.shiftKey) this.redo();
+        else this.undo();
+        e.preventDefault();
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
+        this.redo();
+        e.preventDefault();
+        return;
+      }
       if (e.key === "1") this.tool.value = "pan";
       if (e.key === "2") this.tool.value = "paint";
       if (e.key === "3") this.tool.value = "erase";
@@ -141,13 +153,56 @@ export class PaintController {
       this.toleranceKm.value = toleranceKm;
       this.layer = new PaintLayer(resolutionForTolerance(toleranceKm));
       this.version.value++;
+      this.undoStack = [];
+      this.redoStack = [];
+      this.syncHistoryFlags();
     });
     this.gameMap.setPaint(this.layer.toGeoJSON());
   }
 
   clear(): void {
+    if (this.layer.isEmpty) return;
+    this.pushHistory();
     this.layer.clear();
     this.queueRender();
+  }
+
+  // ---- undo / redo: one entry per stroke or clear ---------------------------
+
+  private static readonly HISTORY_LIMIT = 50;
+  private undoStack: Map<string, number>[] = [];
+  private redoStack: Map<string, number>[] = [];
+  readonly canUndo = signal(false);
+  readonly canRedo = signal(false);
+
+  private pushHistory(): void {
+    this.undoStack.push(new Map(this.layer.cells));
+    if (this.undoStack.length > PaintController.HISTORY_LIMIT) this.undoStack.shift();
+    this.redoStack = [];
+    this.syncHistoryFlags();
+  }
+
+  undo(): void {
+    const prev = this.undoStack.pop();
+    if (!prev) return;
+    this.redoStack.push(new Map(this.layer.cells));
+    this.layer.replaceCells(prev);
+    this.syncHistoryFlags();
+    this.queueRender();
+  }
+
+  redo(): void {
+    const next = this.redoStack.pop();
+    if (!next) return;
+    this.undoStack.push(new Map(this.layer.cells));
+    this.layer.replaceCells(next);
+    this.syncHistoryFlags();
+    this.queueRender();
+  }
+
+  private syncHistoryFlags(): void {
+    this.canUndo.value = this.undoStack.length > 0;
+    this.canRedo.value = this.redoStack.length > 0;
   }
 
   /** Show a foreign layer (another player's paint) without touching ours. */

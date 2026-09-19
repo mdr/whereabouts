@@ -9,8 +9,10 @@ import {
   Lock,
   Paintbrush,
   Play,
+  Redo2,
   RotateCcw,
   Trash2,
+  Undo2,
   type LucideProps,
 } from "lucide-preact";
 import type { FunctionComponent } from "preact";
@@ -27,6 +29,8 @@ const ICONS = {
   link: Link,
   play: Play,
   refresh: RotateCcw,
+  undo: Undo2,
+  redo: Redo2,
 } satisfies Record<string, FunctionComponent<LucideProps>>;
 
 export type IconName = keyof typeof ICONS;

@@ -113,13 +113,14 @@ pnpm workspace with three packages:
 
 ## Controls
 
-| Action              | Control                         |
-| ------------------- | ------------------------------- |
-| Pan / Paint / Erase | `1` / `2` / `3`, or the buttons |
-| Pan while painting  | hold `Space`                    |
-| Brush size          | slider, or `[` and `]`          |
-| Zoom                | scroll wheel                    |
-| Submit / next       | `Enter`                         |
+| Action              | Control                                              |
+| ------------------- | ---------------------------------------------------- |
+| Pan / Paint / Erase | `1` / `2` / `3`, or the buttons                      |
+| Pan while painting  | hold `Space`                                         |
+| Brush size          | slider, or `[` and `]`                               |
+| Undo / redo         | `Ctrl+Z` / `Ctrl+Shift+Z` (⌘ on Mac), or the buttons |
+| Zoom                | scroll wheel                                         |
+| Submit / next       | `Enter`                                              |
 
 The dashed amber cursor ring is one tolerance; the solid ring that appears
 while you drag is the brush. Place names, country borders, man-made detail

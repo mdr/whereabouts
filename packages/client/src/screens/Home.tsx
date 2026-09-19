@@ -10,8 +10,6 @@ export function Home() {
     <div class="home">
       <div class="home-card">
         <h1>Whereabouts</h1>
-        <p class="tagline">Paint where you think it is. Hedge if you must. Honesty pays.</p>
-
         <label class="field">
           <span>Your name</span>
           <input
