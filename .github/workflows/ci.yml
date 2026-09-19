@@ -18,3 +18,48 @@ jobs:
         run: nix develop -c pnpm check
       - name: Build client
         run: nix develop -c pnpm build
+
+  # Build the container with Nix, push it to Fly's registry tagged with the
+  # commit, and roll it out. Needs the FLY_API_TOKEN secret: a deploy token
+  # scoped to the app, minted by scripts/fly-bootstrap.sh.
+  deploy:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      IMAGE: registry.fly.io/whereabouts-game:${{ github.sha }}
+    steps:
+      # Until the secret exists (see README, Deploy) the job passes but does
+      # nothing, so a fresh clone of the repo still has green CI.
+      - name: Check for deploy token
+        id: token
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "FLY_API_TOKEN secret not set; skipping deploy"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.token.outputs.present == 'true'
+      - uses: DeterminateSystems/nix-installer-action@v16
+        if: steps.token.outputs.present == 'true'
+      - uses: DeterminateSystems/magic-nix-cache-action@v9
+        if: steps.token.outputs.present == 'true'
+      - name: Build image
+        if: steps.token.outputs.present == 'true'
+        run: nix build .#image --no-link --print-out-paths > image-streamer
+      - name: Push image
+        if: steps.token.outputs.present == 'true'
+        run: |
+          "$(cat image-streamer)" | nix develop .#deploy -c skopeo copy \
+            --insecure-policy \
+            --dest-creds "x:$FLY_API_TOKEN" \
+            docker-archive:/dev/stdin "docker://$IMAGE"
+      - name: Deploy
+        if: steps.token.outputs.present == 'true'
+        run: nix develop .#deploy -c fly deploy --image "$IMAGE" --yes

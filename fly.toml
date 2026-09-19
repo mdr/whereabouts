@@ -1,0 +1,36 @@
+# Fly.io app definition. The image comes from CI (see .github/workflows/ci.yml),
+# built by Nix from flake.nix and pushed to registry.fly.io, so there is no
+# [build] section here: deploys pass --image.
+#
+# Game state lives in the server process, so this runs as exactly one
+# always-on machine. Scaling out would split rooms across instances.
+
+app = "whereabouts-game"
+primary_region = "lhr"
+
+[env]
+  PORT = "8080"
+  HOST = "0.0.0.0"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "connections"
+    soft_limit = 500
+    hard_limit = 1000
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/api/health"
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

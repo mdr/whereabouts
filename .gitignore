@@ -4,3 +4,4 @@ dist/
 .pnpm-store/
 *.log
 .DS_Store
+smoke-out/

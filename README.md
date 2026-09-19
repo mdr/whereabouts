@@ -35,6 +35,42 @@ Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
 `KERNEL` (a kernel id from `packages/shared/src/scoring.ts`),
 `PORT`, `STATIC_DIR`.
 
+## Deploy
+
+The game runs on Fly.io as one always-on machine (`fly.toml`, app
+`whereabouts-game`, London). Game state lives in the process, so it never
+scales out. The flake builds everything:
+
+- `nix build .#whereabouts`: the client bundle plus the server and its
+  production dependencies, in the workspace layout it runs from in dev.
+- `nix run`: serves that build locally on `PORT` (default 8787).
+- `nix build .#image` (Linux only): the container, as a script that streams
+  a docker archive to stdout.
+
+Every push to `main` runs the checks, then the `deploy` job builds the image
+with Nix, pushes it to `registry.fly.io/whereabouts-game:<sha>` with skopeo
+and runs `fly deploy --image`. It authenticates with the `FLY_API_TOKEN`
+repository secret, a deploy token scoped to the app.
+
+First-time setup, once, from the dev shell:
+
+```sh
+fly auth login              # interactive, in your browser
+scripts/fly-bootstrap.sh    # creates the app and prints a deploy token
+```
+
+Store the token in 1Password and add it to the GitHub repo as the
+`FLY_API_TOKEN` Actions secret. For local `fly` commands, `deploy/op.env`
+holds a 1Password reference so the token never sits in a file:
+
+```sh
+op run --env-file=deploy/op.env -- fly status
+op run --env-file=deploy/op.env -- fly logs
+op run --env-file=deploy/op.env -- fly deploy --image registry.fly.io/whereabouts-game:<sha>   # roll back or forward
+```
+
+Images are x86_64 Linux, so they are built in CI rather than on a Mac.
+
 ## Layout
 
 pnpm workspace with three packages:
@@ -57,7 +93,7 @@ pnpm workspace with three packages:
 - The host creates a game and gets a four-letter code; others join with it.
   In the lobby the host picks the number of rounds (1 to 15) and the round
   length (30, 45, 60, 90 or 120 seconds).
-- Rounds are 60 seconds. Whatever is painted at the deadline is the guess;
+- Rounds default to 60 seconds. Whatever is painted at the deadline is the guess;
   "Lock in" freezes it early, and the round ends as soon as every active
   player has locked in. Blank guesses score the 500 baseline.
 - Paint is private until the round ends. The reveal shows the answer, every
