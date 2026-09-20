@@ -55,7 +55,7 @@ export function PlayerList({
               {isYou ? <span class="tag">you</span> : null}
               {!p.connected ? <span class="tag">offline</span> : null}
               {showLocked && p.locked ? (
-                <span class="tag locked" title="Locked in">
+                <span class="tag locked" title="Done">
                   <Icon name="lock" size={11} /> locked
                 </span>
               ) : null}

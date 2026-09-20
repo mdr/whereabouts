@@ -94,13 +94,13 @@ await alice.click("text=Start game");
 await bob.waitForSelector("#map canvas");
 await bob.waitForTimeout(2500);
 await fits(bob, "ingame");
-await reachable(bob, ".toolbar button.primary", "Lock in button");
+await reachable(bob, ".toolbar button.primary", "Done button");
 await reachable(bob, ".toolbar .tools button:first-child", "Pan button");
 await reachable(bob, ".maplibregl-ctrl-attrib-button", "map attribution button");
 await attributionClear(bob, "ingame");
 
 // Paint with one finger in the clear strip of map between the cards and the
-// toolbar (a photo question makes the cards tall), then lock in.
+// toolbar (a photo question makes the cards tall), then press Done.
 const cdp = await bob.context().newCDPSession(bob);
 const { x, y } = await bob.evaluate(() => {
   const top = document.querySelector(".hud-right").getBoundingClientRect().bottom;
@@ -120,7 +120,7 @@ await bob.waitForTimeout(200);
 await fits(bob, "ingame-players");
 await bob.click(".players-toggle");
 await bob.click(".toolbar button.primary");
-await bob.waitForSelector("text=Locked in");
+await bob.waitForSelector("text=You're done");
 await fits(bob, "ingame-locked");
 
 await bob.waitForSelector(".ready-count", { timeout: 60000 });

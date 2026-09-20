@@ -46,8 +46,8 @@ console.log("lobby remove buttons:", JSON.stringify(lobbyKick));
 
 await alice.selectOption("select >> nth=1", "30000");
 await alice.click('button:has-text("Start game")');
-await alice.waitForSelector('button:has-text("Lock in")');
-await bob.waitForSelector('button:has-text("Lock in")');
+await alice.waitForSelector('button:has-text("Done")');
+await bob.waitForSelector('button:has-text("Done")');
 await alice.waitForTimeout(2500);
 
 // Footprint: hover over the map with the paint tool and check the cursor
@@ -99,7 +99,7 @@ await bob.fill('input[placeholder="Your name"]', "Bob II");
 await bob.fill('input[placeholder="CODE"]', code);
 await bob.click('button:has-text("Join")');
 const rejoined = await bob
-  .waitForSelector("text=/watching this one|Lock in/", { timeout: 10000 })
+  .waitForSelector("text=/watching this one|Done/", { timeout: 10000 })
   .then(() => true)
   .catch(() => false);
 console.log("bob rejoined as new player:", rejoined);

@@ -23,10 +23,10 @@ describe("HudBottom", () => {
     Object.defineProperty(HTMLElement.prototype, "offsetHeight", { configurable: true, get: () => 96 });
     const { container, unmount } = render(
       <HudBottom>
-        <button>Lock in</button>
+        <button>Done</button>
       </HudBottom>,
     );
-    expect(container.querySelector(".hud-bottom.toolbar button")!.textContent).toBe("Lock in");
+    expect(container.querySelector(".hud-bottom.toolbar button")!.textContent).toBe("Done");
     expect(document.documentElement.style.getPropertyValue("--toolbar-h")).toBe("96px");
     expect(observe).toHaveBeenCalledWith(container.firstElementChild);
     unmount();

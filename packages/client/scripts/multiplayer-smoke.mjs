@@ -73,15 +73,15 @@ await alice.click(".players-toggle");
 await alice.waitForSelector(".players-card");
 await alice.screenshot({ path: `${out}/mp-2b-players-panel.png` });
 console.log("bob blobs (dev):", (await bob.textContent(".blobs")).replace(/\s+/g, " ").slice(0, 120));
-await bob.click("text=Lock in");
-await bob.waitForSelector("text=Locked in", { timeout: 5000 });
+await bob.click('button:has-text("Done")');
+await bob.waitForSelector("text=You're done", { timeout: 5000 });
 console.log("bob locked");
 await alice.waitForTimeout(1000);
 const stillGuessing = await alice.$(".reveal-list");
 console.log("round still open with one player locked:", stillGuessing === null);
 
-// Once everyone has locked in the round ends without waiting for the clock.
-await alice.click("text=Lock in");
+// Once everyone is done the round ends without waiting for the clock.
+await alice.click('button:has-text("Done")');
 await alice.waitForSelector(".reveal-list", { timeout: 10000 });
 await bob.waitForSelector(".reveal-list", { timeout: 10000 });
 console.log("reveal reached early via lock-in");
@@ -105,7 +105,7 @@ await alice.waitForTimeout(800);
 console.log("still on reveal after one ready:", (await alice.$(".reveal-list")) !== null);
 await alice.screenshot({ path: `${out}/mp-5-reveal-one-ready.png` });
 await alice.click('button:has-text("Ready")');
-await alice.waitForSelector("text=Lock in", { timeout: 10000 });
+await alice.waitForSelector('button:has-text("Done")', { timeout: 10000 });
 console.log("round 2 started via everyone ready:", await alice.textContent(".hud-header .round"));
 await browser.close();
 console.log("done");

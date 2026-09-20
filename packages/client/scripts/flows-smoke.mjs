@@ -86,7 +86,7 @@ check(
   `spectator shown as sitting out round 1: ${JSON.stringify(revealRows)}`,
 );
 await alice.click('button:has-text("Next round")');
-await cara.waitForSelector("text=Lock in", { timeout: 10000 });
+await cara.waitForSelector('button:has-text("Done")', { timeout: 10000 });
 check(true, "late joiner can play round 2");
 await paint(cara, 0.4, 0.5);
 await cara.waitForTimeout(800);

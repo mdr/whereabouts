@@ -94,7 +94,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
           {view.you.locked && (
             <Card>
-              <p class="hint">Locked in. The round ends when everyone has, or when the clock runs out.</p>
+              <p class="hint">You're done. The round ends when everyone is, or when the clock runs out.</p>
             </Card>
           )}
         </div>
@@ -121,7 +121,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
               onClick={lockIn}
               disabled={view.you.locked || paint.layer.isEmpty}
             >
-              <Icon name="lock" /> {view.you.locked ? "Locked in" : "Lock in"}
+              <Icon name="check" /> Done
             </button>
           </PaintTools>
         )}

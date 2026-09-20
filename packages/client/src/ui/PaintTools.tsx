@@ -13,7 +13,7 @@ const TOOL_HINT: Record<Tool, string> = {
 
 /**
  * The player-facing brush bar: tool, brush size, and whatever action buttons
- * the screen passes in (clear, lock in, submit).
+ * the screen passes in (clear, done, next).
  */
 export function PaintTools({ children }: { children?: ComponentChildren }) {
   const paint = usePaint();

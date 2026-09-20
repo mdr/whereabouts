@@ -114,8 +114,8 @@ pnpm workspace with three packages:
   In the lobby the host picks the number of rounds (1 to 15) and the round
   length (30, 45, 60, 90 or 120 seconds).
 - Rounds default to 60 seconds. Whatever is painted at the deadline is the guess;
-  "Lock in" freezes it early, and the round ends as soon as every active
-  player has locked in. Blank guesses score the 500 baseline.
+  "Done" freezes it early, and the round ends as soon as every active
+  player is done. Blank guesses score the 500 baseline.
 - Paint is private until the round ends. The reveal shows the answer, every
   player's score, and lets you click a player to see their paint in their
   colour. The round score is the headline on each row; the running total
