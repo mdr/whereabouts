@@ -40,7 +40,7 @@ function view(isHost: boolean): GameView {
     reveal: null,
     results: [
       { playerId: "p1", total: 1500, rounds: [800, 700] },
-      { playerId: "p2", total: 900, rounds: [500, 400] },
+      { playerId: "p2", total: 1250, rounds: [500, 750] },
     ],
   };
 }
@@ -58,7 +58,9 @@ describe("Results", () => {
     expect(rows[1]!.querySelector(".place")!.textContent).toBe("🥈");
     expect(rows[0]!.querySelector(".total")!.textContent).toBe("1,500");
     expect([...rows[0]!.querySelectorAll(".round")].map((e) => e.textContent)).toEqual(["800", "700"]);
-    expect(rows[0]!.querySelector(".round.best")!.textContent).toBe("800");
+    // Each round's winner is picked out: Alice took round 1, Bob round 2.
+    expect([...rows[0]!.querySelectorAll(".round.best")].map((e) => e.textContent)).toEqual(["800"]);
+    expect([...rows[1]!.querySelectorAll(".round.best")].map((e) => e.textContent)).toEqual(["750"]);
     expect(rows[1]!.className).toContain("you");
     expect(container.querySelector("button")).toBeNull();
     expect(container.textContent).toContain("The host can start another game");

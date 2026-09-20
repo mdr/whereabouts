@@ -9,6 +9,11 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   const byId = new Map(view.players.map((p) => [p.id, p]));
   const standings = view.results ?? [];
   const winner = standings[0] ? byId.get(standings[0].playerId) : undefined;
+  // The top score in each round, so each round's winner is picked out.
+  const roundCount = Math.max(0, ...standings.map((s) => s.rounds.length));
+  const roundBest = Array.from({ length: roundCount }, (_, r) =>
+    Math.max(-1, ...standings.map((s) => s.rounds[r] ?? -1)),
+  );
   return (
     <div class="home">
       <div class="home-card results-card">
@@ -19,11 +24,10 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             {winner.isHost && <HostTag />} wins
           </p>
         )}
-        {/* Total first and largest; the round scores sit underneath as a small strip. */}
+        {/* Total first and largest; the round scores sit underneath as a small strip, each round's winner in bold. */}
         <ol class="standings" aria-label="Final standings">
           {standings.map((s, i) => {
             const p = byId.get(s.playerId);
-            const best = Math.max(...s.rounds.map((r) => r ?? -1));
             return (
               <li key={s.playerId} class={`standings-row ${s.playerId === view.you.id ? "you" : ""}`}>
                 <span class="place">{MEDALS[i] ?? i + 1}</span>
@@ -44,8 +48,8 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
                     {s.rounds.map((score, r) => (
                       <span
                         key={r}
-                        class={`round ${score !== null && score === best ? "best" : ""}`}
-                        title={`Round ${r + 1}${score == null ? ": sat out" : ""}`}
+                        class={`round ${score !== null && score === roundBest[r] ? "best" : ""}`}
+                        title={`Round ${r + 1}${score == null ? ": sat out" : score === roundBest[r] ? ": won the round" : ""}`}
                       >
                         {score == null ? "–" : Math.round(score)}
                       </span>

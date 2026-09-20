@@ -822,6 +822,7 @@ button.big {
 }
 .standings .round.best {
   color: var(--panel-fg);
+  font-weight: 700;
   background: rgba(255, 255, 255, 0.12);
 }
 
