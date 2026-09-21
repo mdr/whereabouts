@@ -111,10 +111,14 @@ export class PaintLayer {
     return this.res;
   }
 
-  /** How a stamp of this radius would be laid out. */
+  /**
+   * How a stamp of this radius would be laid out. At the layer's finest
+   * resolution a brush smaller than half a cell is a single cell (zero rings),
+   * so zoomed right in the smallest brush paints exactly one hex.
+   */
   stampPlan(radiusKm: number): { res: number; rings: number } {
     const res = this.stampResolution(radiusKm);
-    const rings = Math.min(MAX_RINGS, Math.max(1, Math.round(radiusKm / cellSpacingKm(res))));
+    const rings = Math.min(MAX_RINGS, Math.max(0, Math.round(radiusKm / cellSpacingKm(res))));
     return { res, rings };
   }
 

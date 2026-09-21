@@ -38,6 +38,21 @@ describe("PaintLayer", () => {
     expect(layer.stampResolution(0.5)).toBe(9);
   });
 
+  it("a brush smaller than half a cell at the finest resolution paints exactly one cell", () => {
+    const layer = new PaintLayer(5); // ~14.8 km between cell centres
+    expect(layer.stampPlan(2)).toEqual({ res: 5, rings: 0 });
+    expect(layer.stampCells({ lat: 51.5, lon: -0.1 }, 2)).toEqual([latLngToCell(51.5, -0.1, 5)]);
+    const r = layer.stamp({ lat: 51.5, lon: -0.1 }, 2, 1);
+    expect(r.cells).toBe(1);
+    expect(layer.size).toBe(1);
+    expect(layer.maxIntensity()).toBeCloseTo(1, 6);
+    // And erasing with the same tiny brush takes it away again.
+    layer.stamp({ lat: 51.5, lon: -0.1 }, 2, -1);
+    expect(layer.isEmpty).toBe(true);
+    // Just over half a cell is the familiar seven-cell stamp.
+    expect(layer.stampPlan(8).rings).toBe(1);
+  });
+
   it("erasing with a small brush inside a coarse cell removes only the part under the brush", () => {
     const layer = new PaintLayer(9);
     layer.stamp({ lat: 51.5, lon: -0.1 }, 400, 1); // coarse cells, ~res 3
