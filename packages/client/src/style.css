@@ -737,8 +737,25 @@ button.big {
 .reveal-list li:hover {
   background: #333b45;
 }
+/* Your own row is tinted rather than labelled. */
+.reveal-list li.you {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
 .reveal-list li.selected {
   background: #3a424d;
+}
+.reveal-list li.hide-paint {
+  color: var(--muted);
+  border-top: 1px solid #333b45;
+  margin-top: 2px;
+}
+.reveal-list .swatch-icon {
+  width: 12px;
+  height: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
 }
 /* ---- final standings grid ---- */
 /* Final standings: one row per player, total as the headline, rounds below. */

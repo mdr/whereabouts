@@ -8,6 +8,7 @@ import {
   ChevronUp,
   Crown,
   Eraser,
+  EyeOff,
   Flag,
   Hand,
   Info,
@@ -43,6 +44,7 @@ const ICONS = {
   kick: UserX,
   stop: CircleStop,
   users: Users,
+  eyeOff: EyeOff,
   expand: ChevronDown,
   collapse: ChevronUp,
 } satisfies Record<string, FunctionComponent<LucideProps>>;

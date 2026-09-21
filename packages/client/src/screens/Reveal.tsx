@@ -19,10 +19,29 @@ import { HostTag } from "../ui/PlayerList";
 import { EndGameButton } from "../ui/HostControls";
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 
+/** Selection meaning "show nobody's paint", alongside null (everyone) and a player id. */
+const NONE = "none";
+
+/**
+ * Rows for the reveal list: this round's winner first. Players who painted
+ * come in score order, then those who made no guess, then anyone who sat
+ * the round out; ties keep the standings order.
+ */
+export function revealOrder(
+  players: PlayerView[],
+  results: RoundResultView[],
+): { p: PlayerView; r?: RoundResultView }[] {
+  const group = (r?: RoundResultView) => (r ? (r.paint ? 0 : 1) : 2);
+  return [...players]
+    .sort((a, b) => a.rank - b.rank)
+    .map((p) => ({ p, r: results.find((x) => x.playerId === p.id) }))
+    .sort((a, b) => group(a.r) - group(b.r) || (b.r?.score ?? 0) - (a.r?.score ?? 0));
+}
+
 export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reveal: RevealView }) {
   const paint = usePaint();
   const byId = new Map(view.players.map((p) => [p.id, p]));
-  // null shows everyone's guesses at once; a player id shows just theirs.
+  // null shows everyone's guesses at once; a player id shows just theirs; NONE hides all paint.
   const [selected, setSelected] = useState<string | null>(null);
   const { dialog, ask } = useConfirm();
 
@@ -31,21 +50,18 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
     paint.gameMap.showReveal(reveal.answer, reveal.question.toleranceKm);
   }, [reveal.index]);
 
-  // Borders and place names help make sense of the answer; they are hints
-  // while guessing, so they go back off when the reveal unmounts.
+  // Borders, place names, rivers, ice and towns help make sense of the
+  // answer; they are hints while guessing, so they go back off on unmount.
   useEffect(() => {
-    paint.gameMap.setBorders(true);
-    paint.gameMap.setLabels(true);
-    return () => {
-      paint.gameMap.setBorders(false);
-      paint.gameMap.setLabels(false);
-    };
+    paint.gameMap.setGuessingHints(true);
+    return () => paint.gameMap.setGuessingHints(false);
   }, []);
 
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
   useEffect(() => {
-    const shown = reveal.results.filter((r) => r.paint && (selected === null || r.playerId === selected));
+    const shown =
+      selected === NONE ? [] : reveal.results.filter((r) => r.paint && (selected === null || r.playerId === selected));
     const entries = [...shown].reverse().flatMap((r) => {
       const p = byId.get(r.playerId);
       return p && r.paint
@@ -62,10 +78,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   const present = view.players.filter((p) => p.connected);
   const readyCount = present.filter((p) => ready.has(p.id)).length;
   const iAmReady = ready.has(view.you.id);
-  // Standings order, with this round's result alongside.
-  const rows = [...view.players]
-    .sort((a, b) => a.rank - b.rank)
-    .map((p) => ({ p, r: reveal.results.find((x) => x.playerId === p.id) }));
+  const rows = revealOrder(view.players, reveal.results);
 
   return (
     <>
@@ -115,6 +128,16 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
                   }
                 />
               ))}
+              <li
+                class={`hide-paint ${selected === NONE ? "selected" : ""}`}
+                onClick={() => setSelected(selected === NONE ? null : NONE)}
+                title="Show the map and the answer without anyone's paint"
+              >
+                <span class="swatch-icon">
+                  <Icon name="eyeOff" size={13} />
+                </span>
+                <span class="name">Hide paint</span>
+              </li>
             </ul>
             <p class="hint">Click a player to see just their guess.</p>
           </Card>
@@ -174,13 +197,10 @@ function RevealRow({
 }) {
   const delta = p.previousRank !== null ? p.previousRank - p.rank : 0;
   return (
-    <li class={`${selected ? "selected" : ""}`} onClick={onSelect}>
+    <li class={`${selected ? "selected" : ""} ${you ? "you" : ""}`} onClick={onSelect}>
       <span class="swatch" style={{ background: playerColour(p.colour) }} />
       <span class="name">
-        <span class="name-text">
-          {p.name}
-          {you ? " (you)" : ""}
-        </span>
+        <span class="name-text">{p.name}</span>
         {p.isHost && <HostTag />}
         {ready && (
           <span class="tag ready" title="Ready for the next round">

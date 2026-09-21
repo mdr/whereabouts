@@ -118,9 +118,11 @@ pnpm workspace with three packages:
   player is done. Blank guesses score the 500 baseline.
 - Paint is private until the round ends. The reveal shows the answer, every
   player's score, and lets you click a player to see their paint in their
-  colour. The round score is the headline on each row; the running total
-  sits beside it, small, until the final standings. Standings carry
-  rank-change arrows. There is no timer on the
+  colour, or hide everyone's paint to see just the map and the answer. Rows
+  are in this round's order, winner first, with no-guess and sat-out rows
+  at the bottom; your own row is tinted. The round score is the headline on
+  each row; the running total sits beside it, small, until the final
+  standings, and the arrows show rank changes. There is no timer on the
   reveal: it advances when everyone has pressed Ready, or when the host
   presses Next.
 - Late joiners spectate the current round and play from the next. A dropped
@@ -214,9 +216,12 @@ started as a stray one-finger dab takes that paint back. Below 640px wide
 (phones) the HUD becomes one column: cards at the top, the toolbar across
 the bottom with icon-only tool buttons, and the map in between; the zoom
 buttons go (pinch instead) and the attribution button sits above the
-toolbar. Place names, country borders, man-made detail
-(roads, railways, buildings, airports, urban land use), and inland water
-(rivers, lakes) are all hidden. Coastlines, woodland and ice stay visible.
+toolbar. While guessing, place names, country borders, man-made detail
+(roads, railways, buildings, airports, urban land use), inland water
+(rivers, lakes) and glaciers (they trace mountain ranges) are all hidden;
+coastlines and woodland stay. The reveal turns everything but roads back
+on. A lobby checkbox, remembered per device, starts each round on the Pan
+tool instead of Paint.
 
 ## Developer mode
 

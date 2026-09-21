@@ -97,6 +97,19 @@ await bob.waitForTimeout(1200);
 const features = await bob.evaluate(() => window.whereabouts.map.getSource("paint").serialize().data.features.length);
 console.log("bob sees alice's paint cells:", features);
 await bob.screenshot({ path: `${out}/mp-4-reveal-bob-views-alice.png` });
+// Hide paint leaves just the map and the answer; clicking it again brings everyone back.
+await bob.click(".reveal-list li.hide-paint");
+await bob.waitForTimeout(600);
+const hidden = await bob.evaluate(() => window.whereabouts.map.getSource("paint").serialize().data.features.length);
+console.log("bob hides all paint:", hidden === 0 ? "ok" : `FAIL (${hidden} cells)`);
+await bob.screenshot({ path: `${out}/mp-4b-reveal-hidden.png` });
+await bob.click(".reveal-list li.hide-paint");
+await bob.waitForTimeout(600);
+const restored = await bob.evaluate(() => window.whereabouts.map.getSource("paint").serialize().data.features.length);
+console.log("paint back after un-hiding:", restored === everyone ? "ok" : `FAIL (${restored} vs ${everyone})`);
+// Rows are in this round's order, and nobody is labelled "(you)".
+const rowText = await bob.textContent(".reveal-list");
+console.log("no (you) label:", rowText.includes("(you)") ? "FAIL" : "ok");
 
 // Ready-up: Bob is ready, Alice (host) is not, so nothing moves until she is.
 await bob.click('button:has-text("Ready")');
