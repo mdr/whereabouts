@@ -28,7 +28,9 @@ export class GameMap {
   private labelLayers: string[] = [];
   private borderLayers: string[] = [];
   /** Roads, railways, buildings, airports, urban land use: man-made hints. */
-  private detailLayers: string[] = [];
+  private roadLayers: string[] = [];
+  private urbanLayers: string[] = [];
+  private iceLayers: string[] = [];
   /** River lines; lakes are handled by filtering the shared water layer. */
   private waterwayLayers: string[] = [];
   private waterFilter: unknown = undefined;
@@ -77,17 +79,18 @@ export class GameMap {
 
   private indexStyleLayers(): void {
     const layers = this.map.getStyle().layers ?? [];
-    const detailSources = new Set(["transportation", "building", "aeroway", "landuse", "park"]);
+    const roadSources = new Set(["transportation", "aeroway"]);
+    const urbanSources = new Set(["building", "landuse", "park"]);
     for (const l of layers) {
-      this.styleLayers.push({
-        id: l.id,
-        type: l.type,
-        sourceLayer: "source-layer" in l ? (l["source-layer"] ?? "") : "",
-      });
+      const sourceLayer = "source-layer" in l ? (l["source-layer"] ?? "") : "";
+      this.styleLayers.push({ id: l.id, type: l.type, sourceLayer });
       if (l.type === "symbol") this.labelLayers.push(l.id);
       else if (l.id.startsWith("boundary")) this.borderLayers.push(l.id);
-      else if ("source-layer" in l && detailSources.has(l["source-layer"] ?? "")) this.detailLayers.push(l.id);
-      else if ("source-layer" in l && l["source-layer"] === "waterway") this.waterwayLayers.push(l.id);
+      else if (roadSources.has(sourceLayer)) this.roadLayers.push(l.id);
+      else if (urbanSources.has(sourceLayer)) this.urbanLayers.push(l.id);
+      else if (sourceLayer === "waterway") this.waterwayLayers.push(l.id);
+      // Glaciers and ice shelves: they trace mountain ranges and polar coasts.
+      else if (l.id.startsWith("landcover_") && l.id !== "landcover_wood") this.iceLayers.push(l.id);
       else if (l.id === "water") this.waterFilter = this.map.getFilter("water");
     }
   }
@@ -208,9 +211,38 @@ export class GameMap {
     for (const id of this.labelLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
   }
 
-  setDetail(on: boolean): void {
+  /** Roads, railways and airports. */
+  setRoads(on: boolean): void {
+    this.setVisible(this.roadLayers, on);
+  }
+
+  /** Built-up areas: buildings, urban land use, parks. */
+  setUrban(on: boolean): void {
+    this.setVisible(this.urbanLayers, on);
+  }
+
+  /** Glaciers and ice shelves. Off while guessing: they pick out mountain ranges. */
+  setIce(on: boolean): void {
+    this.setVisible(this.iceLayers, on);
+  }
+
+  /**
+   * Everything that could give a location away, as one switch. Off while
+   * guessing; the reveal turns most of it back on (roads stay off, they
+   * clutter at the zooms the reveal uses).
+   */
+  setGuessingHints(on: boolean): void {
+    this.setLabels(on);
+    this.setBorders(on);
+    this.setInlandWater(on);
+    this.setIce(on);
+    this.setUrban(on);
+    this.setRoads(false);
+  }
+
+  private setVisible(ids: string[], on: boolean): void {
     if (this.disposed) return;
-    for (const id of this.detailLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+    for (const id of ids) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
   }
 
   /** Rivers and lakes. Oceans always stay visible so coastlines remain. */

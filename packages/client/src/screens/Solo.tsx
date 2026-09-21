@@ -71,6 +71,11 @@ function SoloGame() {
 
   useEffect(() => paint.onHover((p) => (hover.value = p)), [paint]);
 
+  // Map detail that would give the answer away shows only on the reveal.
+  useEffect(() => {
+    paint.gameMap.setGuessingHints(phase === "reveal");
+  }, [phase]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Enter") return;
