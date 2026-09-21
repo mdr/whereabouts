@@ -79,6 +79,32 @@ describe("pickQuestions", () => {
     expect(pickQuestions(mk("text", 3), 8, 1)).toHaveLength(3);
   });
 
+  it("spreads a game's questions out geographically when the pool allows", () => {
+    // Three Paris landmarks and five far-flung ones: a game of six should
+    // take at most one from Paris, whatever the seed.
+    const paris = [
+      { lat: 48.8584, lon: 2.2945 },
+      { lat: 48.8738, lon: 2.295 },
+      { lat: 48.8611, lon: 2.3358 },
+    ];
+    const far = [
+      { lat: 40.7484, lon: -73.9857 },
+      { lat: 35.3606, lon: 138.7274 },
+      { lat: -33.8523, lon: 151.2108 },
+      { lat: -22.9519, lon: -43.2105 },
+      { lat: 30.0444, lon: 31.2357 },
+    ];
+    const pool = [...paris, ...far].map((answer, i) => ({ ...mk("photo", 1)[0]!, id: `q${i}`, answer }));
+    for (let seed = 0; seed < 30; seed++) {
+      const picked = pickQuestions(pool, 6, seed);
+      expect(picked).toHaveLength(6);
+      const inParis = picked.filter((q) => q.answer.lat > 48 && q.answer.lat < 49).length;
+      expect(inParis, `seed ${seed}`).toBe(1);
+    }
+    // When nothing else is left, nearby questions are still used rather than dropped.
+    expect(pickQuestions(pool, 8, 3)).toHaveLength(8);
+  });
+
   it("does not run the kinds in a fixed order", () => {
     const pool = [...mk("photo", 50), ...mk("text", 50)];
     const orders = new Set<string>();

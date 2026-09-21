@@ -1,4 +1,7 @@
-import type { LatLon } from "./geo.ts";
+import { greatCircleDistance, type LatLon } from "./geo.ts";
+
+/** Two questions in one game should be at least this far apart when the pool allows. */
+const MIN_SPREAD_KM = 50;
 
 export interface Question {
   id: string;
@@ -41,11 +44,15 @@ export function pickQuestions(pool: Question[], count: number, seed: number): Qu
   const kinds = [...byKind.values()];
   const picked: Question[] = [];
   // Round-robin over kinds, skipping any that has run dry, until we have
-  // enough or the pool is exhausted.
+  // enough or the pool is exhausted. Within a kind, prefer a question well
+  // away from those already picked (several London landmarks in one game
+  // would be dull); fall back to the next one when the pool cannot oblige.
+  const farFromPicked = (q: Question) => picked.every((p) => greatCircleDistance(p.answer, q.answer) > MIN_SPREAD_KM);
   let i = 0;
   while (picked.length < Math.min(count, pool.length)) {
     const list = kinds[i % kinds.length]!;
-    const q = list.shift();
+    const at = list.findIndex(farFromPicked);
+    const q = at >= 0 ? list.splice(at, 1)[0] : list.shift();
     if (q) picked.push(q);
     i++;
   }
