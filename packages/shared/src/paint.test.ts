@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getHexagonEdgeLengthAvg, getResolution, gridDisk, latLngToCell, UNITS } from "h3-js";
-import { PaintLayer, compactRecord, resolutionForTolerance } from "./paint.ts";
+import { PaintLayer, cellSpacingKm, compactRecord, resolutionForTolerance } from "./paint.ts";
 
 describe("resolutionForTolerance", () => {
   it("picks cells with edge at most a quarter of the tolerance", () => {
@@ -39,18 +39,20 @@ describe("PaintLayer", () => {
   });
 
   it("a brush smaller than half a cell at the finest resolution paints exactly one cell", () => {
-    const layer = new PaintLayer(5); // ~14.8 km between cell centres
-    expect(layer.stampPlan(2)).toEqual({ res: 5, rings: 0 });
-    expect(layer.stampCells({ lat: 51.5, lon: -0.1 }, 2)).toEqual([latLngToCell(51.5, -0.1, 5)]);
-    const r = layer.stamp({ lat: 51.5, lon: -0.1 }, 2, 1);
+    const layer = new PaintLayer(5);
+    const spacing = cellSpacingKm(5);
+    const tiny = 0.3 * spacing;
+    expect(layer.stampPlan(tiny)).toEqual({ res: 5, rings: 0 });
+    expect(layer.stampCells({ lat: 51.5, lon: -0.1 }, tiny)).toEqual([latLngToCell(51.5, -0.1, 5)]);
+    const r = layer.stamp({ lat: 51.5, lon: -0.1 }, tiny, 1);
     expect(r.cells).toBe(1);
     expect(layer.size).toBe(1);
     expect(layer.maxIntensity()).toBeCloseTo(1, 6);
     // And erasing with the same tiny brush takes it away again.
-    layer.stamp({ lat: 51.5, lon: -0.1 }, 2, -1);
+    layer.stamp({ lat: 51.5, lon: -0.1 }, tiny, -1);
     expect(layer.isEmpty).toBe(true);
     // Just over half a cell is the familiar seven-cell stamp.
-    expect(layer.stampPlan(8).rings).toBe(1);
+    expect(layer.stampPlan(0.6 * spacing).rings).toBe(1);
   });
 
   it("erasing with a small brush inside a coarse cell removes only the part under the brush", () => {
