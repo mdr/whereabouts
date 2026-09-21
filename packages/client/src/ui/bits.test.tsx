@@ -38,7 +38,7 @@ describe("HudBottom", () => {
 const q = { prompt: "Where is this?", image: "Some_file.jpg", toleranceKm: 50 };
 
 describe("QuestionCard image", () => {
-  it("enlarges on click and shrinks on Escape or click", () => {
+  it("enlarges on click and shrinks on Escape, the close button, or a backdrop click", () => {
     const { container } = render(<QuestionCard q={q} />);
     expect(container.querySelector(".lightbox")).toBeNull();
     fireEvent.click(container.querySelector(".thumb img")!);
@@ -48,6 +48,32 @@ describe("QuestionCard image", () => {
     fireEvent.click(container.querySelector(".thumb img")!);
     fireEvent.click(container.querySelector(".lightbox")!);
     expect(container.querySelector(".lightbox")).toBeNull();
+    fireEvent.click(container.querySelector(".thumb img")!);
+    fireEvent.click(container.querySelector(".lightbox-close")!);
+    expect(container.querySelector(".lightbox")).toBeNull();
+  });
+
+  it("zooms the enlarged photo: click toggles a closer look, the wheel zooms in and out", () => {
+    const { container } = render(<QuestionCard q={q} />);
+    fireEvent.click(container.querySelector(".thumb img")!);
+    const img = container.querySelector<HTMLImageElement>(".lightbox img")!;
+    expect(img.style.transform).toContain("scale(1)");
+    // The lightbox asks for a bigger rendition than the thumbnail.
+    expect(img.src).toContain("width=1600");
+    fireEvent.click(img);
+    expect(img.style.transform).toContain("scale(2.5)");
+    expect(container.querySelector(".lightbox-frame")!.className).toContain("zoomed");
+    // Clicking the picture does not close the lightbox.
+    expect(container.querySelector(".lightbox")).not.toBeNull();
+    fireEvent.click(img);
+    expect(img.style.transform).toContain("scale(1)");
+    fireEvent.wheel(container.querySelector(".lightbox-frame")!, { deltaY: -500 });
+    const scale = Number(/scale\(([\d.]+)\)/.exec(img.style.transform)![1]);
+    expect(scale).toBeGreaterThan(1);
+    expect(scale).toBeLessThanOrEqual(6);
+    fireEvent.wheel(container.querySelector(".lightbox-frame")!, { deltaY: 5000 });
+    expect(img.style.transform).toContain("scale(1)");
+    expect(img.style.transform).toContain("translate(0px, 0px)");
   });
 
   it("keeps the Commons credit behind an info icon linking to the file page, only when asked", () => {

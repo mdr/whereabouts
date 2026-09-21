@@ -331,12 +331,35 @@ button.icon:hover {
   max-width: 100%;
   max-height: 100%;
   display: flex;
+  touch-action: none; /* pinch and drag are ours, not the browser's */
+  cursor: zoom-in;
+}
+.lightbox-frame.zoomed {
+  cursor: grab;
 }
 .lightbox img {
   max-width: 100%;
   max-height: calc(100vh - 64px);
   border-radius: 8px;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+  transform-origin: center;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.lightbox-close {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+  background: rgba(0, 0, 0, 0.55);
+  border-color: transparent;
+  color: #e6e9ee;
 }
 .lightbox .credit-icon {
   right: 12px;
