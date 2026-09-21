@@ -118,7 +118,7 @@ await alice.waitForTimeout(800);
 console.log("still on reveal after one ready:", (await alice.$(".reveal-list")) !== null);
 await alice.screenshot({ path: `${out}/mp-5-reveal-one-ready.png` });
 await alice.click('button:has-text("Ready")');
-await alice.waitForSelector('button:has-text("Done")', { timeout: 10000 });
+await alice.waitForSelector(".toolbar button.primary", { timeout: 10000 });
 console.log("round 2 started via everyone ready:", await alice.textContent(".hud-header .round"));
 await browser.close();
 console.log("done");

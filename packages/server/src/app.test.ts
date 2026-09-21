@@ -236,8 +236,9 @@ describe("game server", () => {
     expect(await pollErrors(alice)).toContain("invalid paint");
     alice.errors.length = 0;
 
-    alice.send("lock");
-    expect(await pollErrors(alice)).toContain("nothing painted");
+    // A game-level rejection (as opposed to a schema one) also comes back as an error.
+    alice.send("ready");
+    expect(await pollErrors(alice)).toContain("nothing to be ready for");
     alice.errors.length = 0;
 
     // Unknown topics are dropped silently rather than kicking (version skew tolerance).

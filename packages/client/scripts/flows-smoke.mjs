@@ -86,11 +86,27 @@ check(
   `spectator shown as sitting out round 1: ${JSON.stringify(revealRows)}`,
 );
 await alice.click('button:has-text("Next round")');
-await cara.waitForSelector('button:has-text("Done")', { timeout: 10000 });
+await cara.waitForSelector(".toolbar button.primary", { timeout: 10000 });
 check(true, "late joiner can play round 2");
-await paint(cara, 0.4, 0.5);
-await cara.waitForTimeout(800);
+// With nothing painted the button is a pass; Cara has no idea and takes it.
+check((await cara.textContent(".toolbar button.primary")).includes("Pass"), "unpainted button reads Pass");
+await cara.click(".toolbar button.primary");
+await cara.waitForSelector("text=You're done", { timeout: 5000 });
 await cara.screenshot({ path: `${out}/flows-cara-round2.png` });
+await paint(alice, 0.4, 0.5);
+await paint(bob, 0.6, 0.5);
+await alice.waitForTimeout(800);
+// Everyone is done, so the round ends before the clock.
+await alice.click(".toolbar button.primary");
+await bob.click(".toolbar button.primary");
+await alice.waitForSelector(".reveal-list", { timeout: 10000 });
+const round2Rows = await alice.$$eval(".reveal-list li", (els) =>
+  els.map((e) => e.textContent.replace(/\s+/g, " ").trim()),
+);
+check(
+  round2Rows.some((r) => r.startsWith("Cara") && r.includes("no guess")),
+  `a pass shows as no guess at the reveal: ${JSON.stringify(round2Rows)}`,
+);
 
 // ---- 3. results and play again ----
 // No timer on the reveal: the host moves everyone on.

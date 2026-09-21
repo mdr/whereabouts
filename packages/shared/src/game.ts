@@ -269,14 +269,22 @@ export class Game {
     return OK_SAME;
   }
 
-  /** Freeze this player's guess. The round ends early once every active player has. */
+  /**
+   * Freeze this player's guess. The round ends early once every active
+   * player has. With nothing painted this is a pass: an empty submission
+   * that scores the baseline, so a player with no idea need not hold
+   * everyone up until the clock runs out.
+   */
   lock(token: string, now: number): CommandResult {
     const player = this.players.get(token);
     if (!player) return fail("unknown player");
     if (this.phase !== "guessing") return fail("not guessing");
     if (player.joinedRound > this.roundIndex) return fail("spectating this round");
-    const current = this.submissions.get(token);
-    if (!current) return fail("nothing painted");
+    let current = this.submissions.get(token);
+    if (!current) {
+      current = { paint: { cells: {}, floor: 1 }, locked: false };
+      this.submissions.set(token, current);
+    }
     if (current.locked) return OK_SAME;
     current.locked = true;
     this.settleIfEveryoneDone(now);

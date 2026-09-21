@@ -121,11 +121,27 @@ describe("round loop", () => {
     const g = twoPlayerGame(1);
     g.start("tokA", T0);
     const q = currentQuestion(g, "tokA", T0);
-    expect(g.lock("tokA", T0)).toEqual({ ok: false, error: "nothing painted" });
     g.setPaint("tokA", paintAt(q, 0, 0));
     expect(g.lock("tokA", T0)).toEqual({ ok: true, changed: true });
     expect(g.view("tokA", T0).you.locked).toBe(true);
     expect(g.setPaint("tokA", paintAt(q, 1, 1))).toEqual({ ok: true, changed: false }); // stale upload, ignored
+  });
+
+  it("locking with nothing painted is a pass: baseline score, no paint, and the round can end early", () => {
+    const g = twoPlayerGame(1);
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    expect(g.lock("tokA", T0)).toEqual({ ok: true, changed: true });
+    expect(g.view("tokA", T0).you.locked).toBe(true);
+    // Paint arriving after a pass is a stale upload and changes nothing.
+    expect(g.setPaint("tokA", paintAt(q, 0, 0))).toEqual({ ok: true, changed: false });
+    g.setPaint("tokB", paintAt(q, 0, 0));
+    g.lock("tokB", T0 + 5);
+    expect(g.phase).toBe("reveal");
+    const mine = g.view("tokA", T0 + 5).reveal!.results.find((r) => r.playerId === "p1")!;
+    expect(mine.paint).toBeNull();
+    expect(Math.round(mine.score)).toBeGreaterThanOrEqual(500);
+    expect(Math.round(mine.score)).toBeLessThan(540);
   });
 
   it("the round ends as soon as every active connected player has locked in", () => {

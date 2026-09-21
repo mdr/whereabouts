@@ -64,10 +64,13 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     };
   }, [version, floor, guessing]);
 
+  // Done with paint freezes it; Done with nothing painted is a pass, which
+  // scores the baseline and lets the round end without waiting on you.
   function lockIn() {
-    if (paint.layer.isEmpty) return;
     if (sendTimer.current) clearTimeout(sendTimer.current);
-    conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.value });
+    if (!paint.layer.isEmpty) {
+      conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.value });
+    }
     conn.lock();
   }
 
@@ -118,11 +121,15 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             </button>
             <button
               class="primary"
-              title="Whatever is painted when the clock hits zero counts anyway."
+              title={
+                paint.layer.isEmpty
+                  ? "No idea? Pass and take the baseline 500. A wide, vague area would score at least as well on average."
+                  : "Whatever is painted when the clock hits zero counts anyway."
+              }
               onClick={lockIn}
-              disabled={view.you.locked || paint.layer.isEmpty}
+              disabled={view.you.locked}
             >
-              <Icon name="check" /> Done
+              <Icon name="check" /> {paint.layer.isEmpty && !view.you.locked ? "Pass" : "Done"}
             </button>
           </PaintTools>
         )}

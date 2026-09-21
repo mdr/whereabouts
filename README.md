@@ -115,7 +115,9 @@ pnpm workspace with three packages:
   length (30, 45, 60, 90 or 120 seconds).
 - Rounds default to 60 seconds. Whatever is painted at the deadline is the guess;
   "Done" freezes it early, and the round ends as soon as every active
-  player is done. Blank guesses score the 500 baseline.
+  player is done. With nothing painted the button reads "Pass": it scores
+  the 500 baseline, the same as a blank at the deadline or a uniform wash
+  over the whole world, and stops the round waiting on you.
 - Paint is private until the round ends. The reveal shows the answer, every
   player's score, and lets you click a player to see their paint in their
   colour, or hide everyone's paint to see just the map and the answer. Rows
