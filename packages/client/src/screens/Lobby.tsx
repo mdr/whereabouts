@@ -1,7 +1,7 @@
 import { useState } from "preact/hooks";
 import { MAX_ROUNDS, MIN_ROUNDS, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
-import { playerName } from "../settings";
+import { playerName, startOnPan } from "../settings";
 import { HostWord, PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { Icon } from "../ui/icons";
@@ -84,6 +84,15 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             this.
           </p>
         )}
+        {/* Per-device preference, so it lives here rather than in the host's config. */}
+        <label class="check start-on-pan">
+          <input
+            type="checkbox"
+            checked={startOnPan.value}
+            onChange={(e) => (startOnPan.value = (e.target as HTMLInputElement).checked)}
+          />
+          Start each round with the Pan tool (handy on a tablet)
+        </label>
         {view.you.isHost ? (
           <button class="primary big" onClick={() => conn.start()} disabled={view.players.length < 1}>
             <Icon name="play" /> Start game

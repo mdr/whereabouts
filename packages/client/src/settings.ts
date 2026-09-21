@@ -23,6 +23,8 @@ function persisted<T extends string | boolean>(key: string, initial: T, storage:
 export const playerName = persisted<string>("wa.name", "");
 export const cheatLiveScore = persisted<boolean>("wa.cheat", false);
 export const soloKernelId = persisted<string>("wa.kernel", "single");
+/** Begin each round on the Pan tool rather than Paint; tablet players often want to look first. */
+export const startOnPan = persisted<boolean>("wa.startOnPan", false);
 
 /**
  * Reconnect token. Session storage so two tabs in one browser are two

@@ -252,6 +252,10 @@ button.icon:hover {
   color: var(--muted);
   cursor: pointer;
 }
+.lobby .start-on-pan {
+  font-size: 13px;
+  justify-content: center;
+}
 /* On the reveal the round score is the news; the running total is context. */
 .reveal-list .round-score {
   color: var(--panel-fg);

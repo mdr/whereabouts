@@ -13,6 +13,7 @@ import { Icon } from "../ui/icons";
 import { PlayersPanel } from "../ui/PlayersPanel";
 import { EndGameButton } from "../ui/HostControls";
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
+import { startOnPan } from "../settings";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint();
@@ -38,7 +39,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     // Paint in your own colour, the same one others see at the reveal.
     const me = view.players.find((p) => p.id === view.you.id);
     paint.showOwn(me ? playerColour(me.colour) : null);
-    paint.tool.value = "paint";
+    paint.tool.value = startOnPan.value ? "pan" : "paint";
     lastSentVersion.current = paint.version.peek();
   }, [roundKey, guessing]);
 

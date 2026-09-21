@@ -20,7 +20,7 @@ import { MapView, usePaint } from "../ui/MapView";
 import { Card, HudBottom, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../ui/bits";
 import { PaintDev, PaintTools } from "../ui/PaintTools";
 import { DevDrawer } from "../ui/DevDrawer";
-import { cheatLiveScore, soloKernelId } from "../settings";
+import { cheatLiveScore, soloKernelId, startOnPan } from "../settings";
 import { devMode } from "../dev";
 import { Icon } from "../ui/icons";
 
@@ -59,7 +59,7 @@ function SoloGame() {
     paint.enabled.value = true;
     paint.gameMap.clearReveal();
     paint.gameMap.resetView();
-    paint.tool.value = "paint";
+    paint.tool.value = startOnPan.value ? "pan" : "paint";
   }, [index, phase === "paint"]);
 
   // Cheat: show the answer while painting.
