@@ -2514,5 +2514,668 @@
     "toleranceKm": 300,
     "label": "Grand Canyon, Arizona",
     "region": "world"
+  },
+  {
+    "id": "big-ben",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Elizabeth Tower and the north front of the Palace of Westminster, London.jpg",
+    "answer": {
+      "lat": 51.5007,
+      "lon": -0.1246
+    },
+    "toleranceKm": 5,
+    "label": "Big Ben, London",
+    "region": "uk"
+  },
+  {
+    "id": "tower-of-london",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Tower of London from the Shard (8515883950).jpg",
+    "answer": {
+      "lat": 51.5081,
+      "lon": -0.0759
+    },
+    "toleranceKm": 5,
+    "label": "Tower of London",
+    "region": "uk"
+  },
+  {
+    "id": "arc-de-triomphe",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Arc de Triomphe - Août 2026.jpg",
+    "answer": {
+      "lat": 48.8738,
+      "lon": 2.295
+    },
+    "toleranceKm": 60,
+    "label": "Arc de Triomphe, Paris",
+    "region": "world"
+  },
+  {
+    "id": "notre-dame",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Notre-Dame de Paris, 4 October 2017.jpg",
+    "answer": {
+      "lat": 48.853,
+      "lon": 2.3499
+    },
+    "toleranceKm": 60,
+    "label": "Notre-Dame de Paris",
+    "region": "world"
+  },
+  {
+    "id": "versailles",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Vue aérienne du domaine de Versailles par ToucanWings - Creative Commons By Sa 3.0 - 081 (cropped).jpg",
+    "answer": {
+      "lat": 48.8049,
+      "lon": 2.1204
+    },
+    "toleranceKm": 60,
+    "label": "Palace of Versailles",
+    "region": "world"
+  },
+  {
+    "id": "trevi",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Trevi Fountain - Roma.jpg",
+    "answer": {
+      "lat": 41.9009,
+      "lon": 12.4833
+    },
+    "toleranceKm": 80,
+    "label": "Trevi Fountain, Rome",
+    "region": "world"
+  },
+  {
+    "id": "st-peters",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Basilica di San Pietro in Vaticano September 2015-1a.jpg",
+    "answer": {
+      "lat": 41.9022,
+      "lon": 12.4539
+    },
+    "toleranceKm": 80,
+    "label": "St Peter's Basilica, Vatican City",
+    "region": "world"
+  },
+  {
+    "id": "florence-duomo",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Cattedrale di Santa Maria del Fiore – Il Duomo di Firenze.jpg",
+    "answer": {
+      "lat": 43.7731,
+      "lon": 11.256
+    },
+    "toleranceKm": 80,
+    "label": "Florence Cathedral",
+    "region": "world"
+  },
+  {
+    "id": "cologne",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Kölner Dom - Westfassade 2022 ohne Gerüst-0968 b.jpg",
+    "answer": {
+      "lat": 50.9413,
+      "lon": 6.9583
+    },
+    "toleranceKm": 80,
+    "label": "Cologne Cathedral",
+    "region": "world"
+  },
+  {
+    "id": "atomium",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "The Atomium during civil twilight (DSCF1135).jpg",
+    "answer": {
+      "lat": 50.8949,
+      "lon": 4.3414
+    },
+    "toleranceKm": 80,
+    "label": "Atomium, Brussels",
+    "region": "world"
+  },
+  {
+    "id": "hungarian-parliament",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Hungarian Parliament Building from across the Danube, 2025-01-11.jpg",
+    "answer": {
+      "lat": 47.507,
+      "lon": 19.0457
+    },
+    "toleranceKm": 120,
+    "label": "Hungarian Parliament, Budapest",
+    "region": "world"
+  },
+  {
+    "id": "schonbrunn",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Wien - Schloss Schönbrunn.JPG",
+    "answer": {
+      "lat": 48.1847,
+      "lon": 16.3122
+    },
+    "toleranceKm": 120,
+    "label": "Schönbrunn Palace, Vienna",
+    "region": "world"
+  },
+  {
+    "id": "bran-castle",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Castelul Bran2.jpg",
+    "answer": {
+      "lat": 45.515,
+      "lon": 25.3672
+    },
+    "toleranceKm": 200,
+    "label": "Bran Castle, Transylvania",
+    "region": "world"
+  },
+  {
+    "id": "pena",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Sintra Portugal Palácio da Pena-01.jpg",
+    "answer": {
+      "lat": 38.7876,
+      "lon": -9.3906
+    },
+    "toleranceKm": 100,
+    "label": "Pena Palace, Sintra",
+    "region": "world"
+  },
+  {
+    "id": "hallgrimskirkja",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Hallgrimskirkja mai 2026.jpg",
+    "answer": {
+      "lat": 64.1417,
+      "lon": -21.9267
+    },
+    "toleranceKm": 200,
+    "label": "Hallgrímskirkja, Reykjavík",
+    "region": "world"
+  },
+  {
+    "id": "cappadocia",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Göreme town and valley 2015.JPG",
+    "answer": {
+      "lat": 38.6431,
+      "lon": 34.8289
+    },
+    "toleranceKm": 250,
+    "label": "Göreme, Cappadocia",
+    "region": "world"
+  },
+  {
+    "id": "pamukkale",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Pamukkale, Denizli 2026 68.jpg",
+    "answer": {
+      "lat": 37.9204,
+      "lon": 29.1211
+    },
+    "toleranceKm": 200,
+    "label": "Pamukkale, Turkey",
+    "region": "world"
+  },
+  {
+    "id": "kinkakuji",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Golden Pavilion Kinkaku-ji water mirror 2024.jpg",
+    "answer": {
+      "lat": 35.0394,
+      "lon": 135.7292
+    },
+    "toleranceKm": 200,
+    "label": "Kinkaku-ji, Kyoto",
+    "region": "world"
+  },
+  {
+    "id": "skytree",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Tokyo Skytree 2014 Ⅲ.jpg",
+    "answer": {
+      "lat": 35.7101,
+      "lon": 139.8107
+    },
+    "toleranceKm": 200,
+    "label": "Tokyo Skytree",
+    "region": "world"
+  },
+  {
+    "id": "shwedagon",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Shwedagon Pagoda 2017.jpg",
+    "answer": {
+      "lat": 16.7983,
+      "lon": 96.1497
+    },
+    "toleranceKm": 300,
+    "label": "Shwedagon Pagoda, Yangon",
+    "region": "world"
+  },
+  {
+    "id": "bagan",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Bagan, Burma.jpg",
+    "answer": {
+      "lat": 21.1722,
+      "lon": 94.86
+    },
+    "toleranceKm": 300,
+    "label": "Temples of Bagan, Myanmar",
+    "region": "world"
+  },
+  {
+    "id": "potala",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Potala Palace HQ.jpg",
+    "answer": {
+      "lat": 29.6578,
+      "lon": 91.117
+    },
+    "toleranceKm": 300,
+    "label": "Potala Palace, Lhasa",
+    "region": "world"
+  },
+  {
+    "id": "terracotta",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "51714-Terracota-Army.jpg",
+    "answer": {
+      "lat": 34.3848,
+      "lon": 109.2785
+    },
+    "toleranceKm": 300,
+    "label": "Terracotta Army, Xi'an",
+    "region": "world"
+  },
+  {
+    "id": "zhangjiajie",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "1 tianzishan wulingyuan zhangjiajie 2012.jpg",
+    "answer": {
+      "lat": 29.3167,
+      "lon": 110.4333
+    },
+    "toleranceKm": 300,
+    "label": "Zhangjiajie, Hunan",
+    "region": "world"
+  },
+  {
+    "id": "golden-temple",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "The Golden Temple of Amrithsar 7.jpg",
+    "answer": {
+      "lat": 31.62,
+      "lon": 74.8765
+    },
+    "toleranceKm": 200,
+    "label": "Golden Temple, Amritsar",
+    "region": "world"
+  },
+  {
+    "id": "sigiriya",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Sigiriya (141688197).jpeg",
+    "answer": {
+      "lat": 7.957,
+      "lon": 80.7603
+    },
+    "toleranceKm": 200,
+    "label": "Sigiriya, Sri Lanka",
+    "region": "world"
+  },
+  {
+    "id": "registan",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "RegistanSquare Samarkand.jpg",
+    "answer": {
+      "lat": 39.6547,
+      "lon": 66.9758
+    },
+    "toleranceKm": 300,
+    "label": "Registan, Samarkand",
+    "region": "world"
+  },
+  {
+    "id": "blue-mosque",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Istanbul (34223582516) (cropped).jpg",
+    "answer": {
+      "lat": 41.0054,
+      "lon": 28.9768
+    },
+    "toleranceKm": 120,
+    "label": "Blue Mosque, Istanbul",
+    "region": "world"
+  },
+  {
+    "id": "dome-rock",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Jerusalem DomeoftheRock J65 (cropped).JPG",
+    "answer": {
+      "lat": 31.778,
+      "lon": 35.2354
+    },
+    "toleranceKm": 120,
+    "label": "Dome of the Rock, Jerusalem",
+    "region": "world"
+  },
+  {
+    "id": "wadi-rum",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Mountain in Wadi Rum, Jordan.jpg",
+    "answer": {
+      "lat": 29.5766,
+      "lon": 35.42
+    },
+    "toleranceKm": 200,
+    "label": "Wadi Rum, Jordan",
+    "region": "world"
+  },
+  {
+    "id": "empire-state",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Empire State Building (aerial view).jpg",
+    "answer": {
+      "lat": 40.7484,
+      "lon": -73.9857
+    },
+    "toleranceKm": 100,
+    "label": "Empire State Building, New York",
+    "region": "world"
+  },
+  {
+    "id": "white-house",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "White House north and south sides.jpg",
+    "answer": {
+      "lat": 38.8977,
+      "lon": -77.0365
+    },
+    "toleranceKm": 150,
+    "label": "White House, Washington, D.C.",
+    "region": "world"
+  },
+  {
+    "id": "brooklyn-bridge",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Brooklyn Bridge and the Lower Manhattan skyline from Pebble Beach, New York.jpg",
+    "answer": {
+      "lat": 40.7061,
+      "lon": -73.9969
+    },
+    "toleranceKm": 100,
+    "label": "Brooklyn Bridge, New York",
+    "region": "world"
+  },
+  {
+    "id": "alcatraz",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Alcatraz 2021.jpg",
+    "answer": {
+      "lat": 37.827,
+      "lon": -122.423
+    },
+    "toleranceKm": 150,
+    "label": "Alcatraz Island, San Francisco",
+    "region": "world"
+  },
+  {
+    "id": "space-needle",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Space Needle 2011-07-04.jpg",
+    "answer": {
+      "lat": 47.6205,
+      "lon": -122.3493
+    },
+    "toleranceKm": 200,
+    "label": "Space Needle, Seattle",
+    "region": "world"
+  },
+  {
+    "id": "monument-valley",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Monument Valley, Utah, USA (23611451292).jpg",
+    "answer": {
+      "lat": 36.998,
+      "lon": -110.0985
+    },
+    "toleranceKm": 300,
+    "label": "Monument Valley, Arizona–Utah border",
+    "region": "world"
+  },
+  {
+    "id": "old-faithful",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Yellowstone National Park (WY, USA), Old Faithful Geyser -- 2022 -- 2599.jpg",
+    "answer": {
+      "lat": 44.4605,
+      "lon": -110.8281
+    },
+    "toleranceKm": 400,
+    "label": "Old Faithful, Yellowstone",
+    "region": "world"
+  },
+  {
+    "id": "teotihuacan",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "ZA77 Teotihuacán edo de mex Herberto de la rosa.jpg",
+    "answer": {
+      "lat": 19.6925,
+      "lon": -98.8438
+    },
+    "toleranceKm": 300,
+    "label": "Teotihuacan, Mexico",
+    "region": "world"
+  },
+  {
+    "id": "sugarloaf",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Pão de Açucar - Sugarloaf Mountain - Zuckerhut - 2022.jpg",
+    "answer": {
+      "lat": -22.9492,
+      "lon": -43.1545
+    },
+    "toleranceKm": 200,
+    "label": "Sugarloaf Mountain, Rio de Janeiro",
+    "region": "world"
+  },
+  {
+    "id": "nazca",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Líneas de Nazca, Nazca, Perú, 2015-07-29, DD 49.JPG",
+    "answer": {
+      "lat": -14.739,
+      "lon": -75.13
+    },
+    "toleranceKm": 400,
+    "label": "Nazca Lines, Peru",
+    "region": "world"
+  },
+  {
+    "id": "sphinx",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Sphinx with the third pyramid.jpg",
+    "answer": {
+      "lat": 29.9753,
+      "lon": 31.1376
+    },
+    "toleranceKm": 200,
+    "label": "Great Sphinx of Giza",
+    "region": "world"
+  },
+  {
+    "id": "luxor-temple",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Temple de Louxor 68.jpg",
+    "answer": {
+      "lat": 25.6995,
+      "lon": 32.6391
+    },
+    "toleranceKm": 200,
+    "label": "Luxor Temple, Egypt",
+    "region": "world"
+  },
+  {
+    "id": "deadvlei",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Dead Vlei 4.jpg",
+    "answer": {
+      "lat": -24.7592,
+      "lon": 15.2923
+    },
+    "toleranceKm": 400,
+    "label": "Deadvlei, Namib Desert",
+    "region": "world"
+  },
+  {
+    "id": "stone-town",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Zanzibar sultan palace.jpg",
+    "answer": {
+      "lat": -6.1622,
+      "lon": 39.1875
+    },
+    "toleranceKm": 300,
+    "label": "Stone Town, Zanzibar",
+    "region": "world"
+  },
+  {
+    "id": "louvre",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Louvre Museum Wikimedia Commons.jpg",
+    "answer": {
+      "lat": 48.8611,
+      "lon": 2.3358
+    },
+    "toleranceKm": 60,
+    "label": "Louvre Pyramid, Paris",
+    "region": "world"
+  },
+  {
+    "id": "kinderdijk",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "KinderdijkWindmills.jpg",
+    "answer": {
+      "lat": 51.8833,
+      "lon": 4.6333
+    },
+    "toleranceKm": 80,
+    "label": "Kinderdijk windmills, Netherlands",
+    "region": "world"
+  },
+  {
+    "id": "petronas",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Petronas Panorama II.jpg",
+    "answer": {
+      "lat": 3.1579,
+      "lon": 101.7116
+    },
+    "toleranceKm": 200,
+    "label": "Petronas Towers, Kuala Lumpur",
+    "region": "world"
+  },
+  {
+    "id": "cn-tower",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Toronto Skyline from Snake Island, September 11 2026 (01).jpg",
+    "answer": {
+      "lat": 43.6426,
+      "lon": -79.3871
+    },
+    "toleranceKm": 200,
+    "label": "CN Tower and the Toronto skyline",
+    "region": "world"
+  },
+  {
+    "id": "torres-paine",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Torres del Paine y cuernos del Paine, montaje.jpg",
+    "answer": {
+      "lat": -50.9423,
+      "lon": -73.4068
+    },
+    "toleranceKm": 400,
+    "label": "Torres del Paine, Chile",
+    "region": "world"
+  },
+  {
+    "id": "twelve-apostles",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "The twelve apostles Victoria Australia 2010.jpg",
+    "answer": {
+      "lat": -38.6662,
+      "lon": 143.1044
+    },
+    "toleranceKm": 300,
+    "label": "Twelve Apostles, Great Ocean Road",
+    "region": "world"
+  },
+  {
+    "id": "whitehaven",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Whitehaven Beach, Whitsunday Island, Queensland.jpg",
+    "answer": {
+      "lat": -20.2825,
+      "lon": 149.0389
+    },
+    "toleranceKm": 400,
+    "label": "Whitehaven Beach, Whitsunday Islands",
+    "region": "world"
   }
 ]

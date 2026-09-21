@@ -155,9 +155,13 @@ pnpm workspace with three packages:
   the coordinates on its English Wikipedia article, and `questions.test.ts` guards ids,
   ranges and near-duplicate spots. Photo questions are famous landmarks,
   natural and built; each image is the lead picture of the landmark's
-  Wikipedia article, checked to exist on Commons. A game draws as even a
-  split of photo and text questions as the pool allows (`pickQuestions`),
-  in a shuffled order.
+  Wikipedia article, checked to exist on Commons at 800px or more and
+  looked at when the file name gave any doubt. Several landmarks may share
+  a city (the photo is the clue), so a game draws as even a split of photo
+  and text questions as the pool allows (`pickQuestions`), in a shuffled
+  order, preferring questions at least 50 km apart. The question photo
+  enlarges on click; the enlarged view zooms with the wheel or a pinch and
+  pans by dragging.
 - **Paint** is stored on sparse H3 hexagons (`src/paint.ts`) at mixed
   resolutions. The finest resolution is chosen per question so a cell edge is
   at most a quarter of the tolerance; each brush stroke then uses the coarsest
