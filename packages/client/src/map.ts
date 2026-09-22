@@ -193,7 +193,6 @@ export class GameMap {
     set("cursor-fill", "fill-color", t.brush);
     set("cursor-outline", "line-color", t.brush);
     document.documentElement.style.setProperty("--ring-brush", t.brush);
-    document.documentElement.style.setProperty("--ring-tol", t.answer);
   }
 
   /**

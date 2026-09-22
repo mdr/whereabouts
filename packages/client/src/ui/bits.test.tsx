@@ -37,6 +37,13 @@ describe("HudBottom", () => {
 
 const q = { prompt: "Where is this?", image: "Some_file.jpg", toleranceKm: 50 };
 
+describe("QuestionCard", () => {
+  it("shows the prompt but not the tolerance, which only drives scoring", () => {
+    const { container } = render(<QuestionCard q={{ prompt: "Where is Dublin?", toleranceKm: 40 }} />);
+    expect(container.textContent).toBe("Where is Dublin?");
+  });
+});
+
 describe("QuestionCard image", () => {
   it("enlarges on click and shrinks on Escape, the close button, or a backdrop click", () => {
     const { container } = render(<QuestionCard q={q} />);

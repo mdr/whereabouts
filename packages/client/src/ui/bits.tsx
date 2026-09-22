@@ -90,12 +90,6 @@ export function QuestionCard({
     <div class="card question">
       <p class="prompt">{q.prompt}</p>
       {q.image && <QuestionImage image={q.image} credit={credit ?? false} />}
-      <div class="tolerance" title="Credit halves at this distance from the true spot; shown as the dashed ring.">
-        <span class="swatch" />
-        <span>
-          Tolerance <b>{fmtKm(q.toleranceKm)}</b>
-        </span>
-      </div>
       {children}
     </div>
   );

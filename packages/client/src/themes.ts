@@ -21,7 +21,7 @@ export interface Theme {
   ramp: [string, string, string, string];
   /** Fill opacity at intensity 0 and 1. */
   rampOpacity: [number, number];
-  /** Answer marker, reveal rings, and the cursor's tolerance ring. */
+  /** Answer marker. */
   answer: string;
   answerStroke: string;
   /** Cursor brush ring. */

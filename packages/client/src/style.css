@@ -7,7 +7,6 @@
   --danger: #ef5350;
   --panel-w: 360px;
   --ring-brush: #ffffff;
-  --ring-tol: #fbbf24;
   font-family:
     system-ui,
     -apple-system,
@@ -288,6 +287,9 @@ button.icon:hover {
   font-weight: 600;
   margin: 0 0 8px;
 }
+.card.question .prompt:last-child {
+  margin-bottom: 0;
+}
 .card.question .thumb {
   position: relative;
 }
@@ -366,19 +368,6 @@ button.icon:hover {
   bottom: 12px;
   width: 30px;
   height: 30px;
-}
-.card .tolerance {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  color: var(--ring-tol);
-}
-.card .tolerance .swatch {
-  width: 14px;
-  height: 14px;
-  border: 2px dashed var(--ring-tol);
-  border-radius: 50%;
 }
 
 .tools {
