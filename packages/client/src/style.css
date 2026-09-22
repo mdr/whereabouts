@@ -639,6 +639,7 @@ select {
 }
 .code-input {
   flex: 1;
+  min-width: 0; /* an input's default width would otherwise push the Join button out */
   text-transform: uppercase;
   letter-spacing: 0.25em;
   font-variant-numeric: tabular-nums;
@@ -1167,5 +1168,113 @@ button.danger.solid {
   }
   #map .maplibregl-ctrl-bottom-right {
     bottom: calc(var(--toolbar-h, 0px) + 10px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ---- front page --------------------------------------------------------- */
+.home-page {
+  width: min(960px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.hero {
+  position: relative;
+  margin: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.hero img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2.2 / 1;
+  object-fit: cover;
+  object-position: 50% 42%;
+}
+.hero-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 48px 28px 22px;
+  background: linear-gradient(to top, rgba(15, 18, 21, 0.92), rgba(15, 18, 21, 0));
+}
+.hero-text h1 {
+  margin: 0;
+  font-size: 44px;
+  letter-spacing: 0.01em;
+}
+.hero-text .tagline {
+  margin: 4px 0 0;
+  font-size: 17px;
+  color: #d5dbe3;
+}
+.home-name {
+  width: min(360px, 100%);
+}
+.modes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.mode {
+  background: var(--panel-bg);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+}
+.mode h2 {
+  margin: 0;
+  font-size: 17px;
+}
+.mode p {
+  margin: 0 0 6px;
+  color: var(--muted);
+  flex: 1;
+}
+.mode .join .code-input {
+  padding: 10px 10px;
+}
+.how {
+  background: rgba(31, 35, 40, 0.6);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.how h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.how ol {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+  color: #c8cfd8;
+}
+.how b {
+  color: var(--panel-fg);
+}
+@media (max-width: 760px) {
+  .modes {
+    grid-template-columns: 1fr;
+  }
+  .hero img {
+    aspect-ratio: 16 / 10;
+  }
+  .hero-text {
+    padding: 36px 16px 14px;
+  }
+  .hero-text h1 {
+    font-size: 32px;
+  }
+  .hero-text .tagline {
+    font-size: 15px;
   }
 }

@@ -110,6 +110,10 @@ pnpm workspace with three packages:
 
 ## Online play
 
+- The front page has a hero picture (AI-generated, served as WebP from
+  `packages/client/src/assets`, 800 px for phones), your name, three
+  separate panels for hosting, joining with a code and practising solo,
+  and a three-step how to play.
 - The host creates a game and gets a four-letter code; others join with it.
   In the lobby the host picks the number of rounds (1 to 15), the round
   length (30, 45, 60, 90 or 120 seconds) and the question mix: all photos,

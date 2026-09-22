@@ -31,7 +31,7 @@ let terrainRequests = 0;
 alice.on("request", (r) => {
   if (r.url().includes("elevation-tiles-prod")) terrainRequests++;
 });
-await alice.click("text=Host a game");
+await alice.click('button:has-text("Host a game")');
 await alice.waitForSelector(".lobby .code", { timeout: 15000 });
 const code = (await alice.textContent(".lobby .code")).trim();
 console.log("code:", code);

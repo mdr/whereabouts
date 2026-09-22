@@ -79,7 +79,7 @@ async function reachable(page, selector, label) {
 }
 
 const alice = await newPlayer("Alice", false);
-await alice.click("text=Host a game");
+await alice.click('button:has-text("Host a game")');
 await alice.waitForSelector(".lobby .code");
 const code = (await alice.textContent(".lobby .code")).trim();
 

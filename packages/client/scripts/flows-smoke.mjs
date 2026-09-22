@@ -43,7 +43,7 @@ const cellCount = (page) =>
 // ---- setup: Alice hosts, Bob joins, start ----
 // Alice runs in dev mode: the in-game player list lives in the drawer.
 const alice = await newPlayer("Alice", "?dev");
-await alice.click("text=Host a game");
+await alice.click('button:has-text("Host a game")');
 await alice.waitForSelector(".lobby .code");
 const code = (await alice.textContent(".lobby .code")).trim();
 const bob = await newPlayer("Bob");
