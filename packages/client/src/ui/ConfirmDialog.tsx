@@ -5,6 +5,7 @@
  */
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { ComponentChildren } from "preact";
+import { createPortal } from "preact/compat";
 
 export interface ConfirmRequest {
   title: string;
@@ -25,7 +26,9 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
     return () => window.removeEventListener("keydown", onKey);
   }, [request]);
   if (!request) return null;
-  return (
+  // Rendered into <body>: a transformed ancestor (the bottom toolbar is one)
+  // would otherwise become the box the fixed backdrop fills.
+  return createPortal(
     <div class="modal-backdrop" onClick={onClose}>
       <div
         class="modal"
@@ -51,7 +54,8 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
