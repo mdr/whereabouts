@@ -253,21 +253,14 @@ function Lightbox({ image, credit, onClose }: { image: string; credit: Component
   );
 }
 
-/**
- * Ticks four times a second; returns whole seconds remaining, never negative.
- * The value never goes back up: each server message re-estimates the clock
- * offset, and a late one would otherwise flash the previous second. Remount
- * (key on the deadline) to count down to a new one.
- */
+/** Ticks once a second; returns whole seconds remaining, never negative. */
 export function useCountdown(msRemaining: () => number): number {
   const [, force] = useState(0);
-  const lowest = useRef(Infinity);
   useEffect(() => {
     const id = setInterval(() => force((n) => n + 1), 250);
     return () => clearInterval(id);
   }, []);
-  lowest.current = Math.min(lowest.current, Math.max(0, Math.ceil(msRemaining() / 1000)));
-  return lowest.current;
+  return Math.max(0, Math.ceil(msRemaining() / 1000));
 }
 
 export function Countdown({ msRemaining, warnAt = 10 }: { msRemaining: () => number; warnAt?: number }) {

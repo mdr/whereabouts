@@ -87,7 +87,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           <HudHeader
             round={round.index + 1}
             total={round.total}
-            right={<Countdown key={round.deadline} msRemaining={() => conn.msUntil(round.deadline)} />}
+            right={<Countdown msRemaining={() => conn.msUntil(round.deadline)} />}
           />
           <QuestionCard q={round.question} />
           <ConnectionNote conn={conn} />
