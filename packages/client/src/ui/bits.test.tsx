@@ -1,7 +1,26 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render } from "@testing-library/preact";
-import { HudBottom, QuestionCard } from "./bits";
+import { act, fireEvent, render } from "@testing-library/preact";
+import { Countdown, HudBottom, QuestionCard } from "./bits";
+
+describe("Countdown", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it("never ticks back up when the clock estimate jumps", () => {
+    vi.useFakeTimers();
+    let ms = 10_100;
+    const { container } = render(<Countdown msRemaining={() => ms} />);
+    const shown = () => container.querySelector(".countdown")!.textContent;
+    expect(shown()).toBe("11");
+    ms = 9_900;
+    void act(() => void vi.advanceTimersByTime(250));
+    expect(shown()).toBe("10");
+    // A late server message nudges the offset so the deadline looks 300 ms further away.
+    ms = 10_200;
+    void act(() => void vi.advanceTimersByTime(250));
+    expect(shown()).toBe("10");
+  });
+});
 
 describe("HudBottom", () => {
   afterEach(() => {

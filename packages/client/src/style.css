@@ -890,9 +890,11 @@ button.big {
   color: var(--danger);
   animation: pulse 1s infinite;
 }
+/* Pulse the colour, not opacity: fading a composited layer let some browsers
+   show the stale white 11 through the red number. */
 @keyframes pulse {
   50% {
-    opacity: 0.55;
+    color: #8c3a3a;
   }
 }
 
