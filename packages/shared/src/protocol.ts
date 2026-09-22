@@ -58,6 +58,15 @@ export const ROUND_LENGTHS_MS = [30_000, 45_000, 60_000, 90_000, 120_000] as con
 export const MIN_ROUNDS = 1;
 export const MAX_ROUNDS = 15;
 
+/** Question mixes the host may pick: the share of photo questions, with a label. */
+export const PHOTO_MIXES = [
+  { share: 1, label: "All photos" },
+  { share: 0.75, label: "Mostly photos" },
+  { share: 0.5, label: "Even mix" },
+  { share: 0.25, label: "Mostly place names" },
+  { share: 0, label: "Place names only" },
+] as const;
+
 /** Host changes to the game settings while in the lobby. */
 export const ConfigureSchema = z.object({
   rounds: z.number().int().min(MIN_ROUNDS).max(MAX_ROUNDS).optional(),
@@ -65,6 +74,10 @@ export const ConfigureSchema = z.object({
     .number()
     .int()
     .refine((v) => (ROUND_LENGTHS_MS as readonly number[]).includes(v), "unsupported round length")
+    .optional(),
+  photoShare: z
+    .number()
+    .refine((v) => PHOTO_MIXES.some((m) => m.share === v), "unsupported question mix")
     .optional(),
 });
 export type ConfigurePatch = z.infer<typeof ConfigureSchema>;
@@ -95,6 +108,8 @@ export type Phase = "lobby" | "guessing" | "reveal" | "results";
 export interface GameConfig {
   rounds: number;
   roundMs: number;
+  /** Share of questions that are photos (one of PHOTO_MIXES); the rest name a place. */
+  photoShare: number;
   kernelId: string;
 }
 

@@ -50,6 +50,8 @@ describe("ConfigureSchema", () => {
     expect(ConfigureSchema.safeParse({ rounds: 0 }).success).toBe(false);
     expect(ConfigureSchema.safeParse({ rounds: 16 }).success).toBe(false);
     expect(ConfigureSchema.safeParse({ roundMs: 61_000 }).success).toBe(false);
+    expect(ConfigureSchema.safeParse({ photoShare: 0.75 }).success).toBe(true);
+    expect(ConfigureSchema.safeParse({ photoShare: 0.6 }).success).toBe(false);
   });
 });
 

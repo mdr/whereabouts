@@ -30,31 +30,31 @@ import questionsJson from "../questions.json" with { type: "json" };
 export const QUESTIONS: Question[] = questionsJson as Question[];
 
 /**
- * Choose a game's questions: as even a split between photo and text as the
- * pool allows, drawn without replacement, in a shuffled order so the kinds
- * do not simply alternate. Deterministic for a seed.
+ * Choose a game's questions: `photoShare` of them photos (rounded), the rest
+ * text, topping up from the other kind when one runs short. Drawn without
+ * replacement, in a shuffled order so the kinds do not simply alternate.
+ * Deterministic for a seed.
  */
-export function pickQuestions(pool: Question[], count: number, seed: number): Question[] {
-  const byKind = new Map<Question["kind"], Question[]>();
-  for (const q of shuffle(pool, seed)) {
-    const list = byKind.get(q.kind) ?? [];
-    list.push(q);
-    byKind.set(q.kind, list);
-  }
-  const kinds = [...byKind.values()];
+export function pickQuestions(pool: Question[], count: number, seed: number, photoShare = 0.5): Question[] {
+  const lists: Record<Question["kind"], Question[]> = { photo: [], text: [] };
+  for (const q of shuffle(pool, seed)) lists[q.kind].push(q);
+  const total = Math.min(count, pool.length);
+  const text = Math.min(total - Math.min(Math.round(total * photoShare), lists.photo.length), lists.text.length);
+  const want: Record<Question["kind"], number> = { photo: total - text, text };
   const picked: Question[] = [];
-  // Round-robin over kinds, skipping any that has run dry, until we have
-  // enough or the pool is exhausted. Within a kind, prefer a question well
-  // away from those already picked (several London landmarks in one game
+  const got: Record<Question["kind"], number> = { photo: 0, text: 0 };
+  // Take turns in proportion to the targets. Within a kind, prefer a question
+  // well away from those already picked (several London landmarks in one game
   // would be dull); fall back to the next one when the pool cannot oblige.
   const farFromPicked = (q: Question) => picked.every((p) => greatCircleDistance(p.answer, q.answer) > MIN_SPREAD_KM);
-  let i = 0;
-  while (picked.length < Math.min(count, pool.length)) {
-    const list = kinds[i % kinds.length]!;
+  while (picked.length < total) {
+    const kind = (["photo", "text"] as const)
+      .filter((k) => got[k] < want[k])
+      .sort((a, b) => got[a] / want[a] - got[b] / want[b])[0]!;
+    const list = lists[kind];
     const at = list.findIndex(farFromPicked);
-    const q = at >= 0 ? list.splice(at, 1)[0] : list.shift();
-    if (q) picked.push(q);
-    i++;
+    picked.push(at >= 0 ? list.splice(at, 1)[0]! : list.shift()!);
+    got[kind]++;
   }
   return shuffle(picked, seed ^ 0x9e3779b9);
 }

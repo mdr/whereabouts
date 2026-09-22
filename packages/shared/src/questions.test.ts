@@ -71,6 +71,16 @@ describe("pickQuestions", () => {
     expect(pickQuestions(pool, 8, 8).map((q) => q.id)).not.toEqual(picked.map((q) => q.id));
   });
 
+  it("honours the photo share, rounding to whole questions", () => {
+    const pool = [...mk("photo", 50), ...mk("text", 50)];
+    const photos = (share: number, n = 8) => pickQuestions(pool, n, 3, share).filter((q) => q.kind === "photo").length;
+    expect(photos(1)).toBe(8);
+    expect(photos(0.75)).toBe(6);
+    expect(photos(0.25)).toBe(2);
+    expect(photos(0)).toBe(0);
+    expect(photos(0.75, 5)).toBe(4); // 3.75 rounds to 4
+  });
+
   it("tops up from the other kind when one runs short, and never exceeds the pool", () => {
     const pool = [...mk("photo", 2), ...mk("text", 100)];
     const picked = pickQuestions(pool, 8, 1);

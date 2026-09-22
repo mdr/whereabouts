@@ -11,7 +11,7 @@ function view(isHost: boolean): GameView {
   return {
     code: "AB12",
     phase: "lobby",
-    config: { rounds: 5, roundMs: 60000, kernelId: "multi-equal" },
+    config: { rounds: 5, roundMs: 60000, photoShare: 0.5, kernelId: "multi-equal" },
     serverTime: 0,
     you: { id: "p1", isHost, spectating: false, locked: false, paint: null },
     players: [

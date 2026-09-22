@@ -406,6 +406,24 @@ describe("configure", () => {
     });
   });
 
+  it("the question mix reaches the picker", () => {
+    const photo: Question = {
+      ...petra,
+      id: "petra-photo",
+      kind: "photo",
+      prompt: "Where is this?",
+      image: "Petra.jpg",
+    };
+    const g = new Game("ABCD", [...pool, photo], { rounds: 1 }, 42);
+    g.join("tokA", "Alice", T0);
+    expect(g.configure("tokA", { photoShare: 1 })).toEqual({ ok: true, changed: true });
+    expect(g.configure("tokA", { photoShare: 1 })).toEqual({ ok: true, changed: false });
+    expect(g.view("tokA", T0).config.photoShare).toBe(1);
+    g.start("tokA", T0);
+    // One round, all photos: it must be the one photo question in the pool.
+    expect(g.view("tokA", T0).round!.question.image).toBe("Petra.jpg");
+  });
+
   it("reports who has locked in", () => {
     const g = twoPlayerGame(1);
     g.start("tokA", T0);

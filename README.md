@@ -111,8 +111,9 @@ pnpm workspace with three packages:
 ## Online play
 
 - The host creates a game and gets a four-letter code; others join with it.
-  In the lobby the host picks the number of rounds (1 to 15) and the round
-  length (30, 45, 60, 90 or 120 seconds).
+  In the lobby the host picks the number of rounds (1 to 15), the round
+  length (30, 45, 60, 90 or 120 seconds) and the question mix: all photos,
+  mostly photos, even (the default), mostly place names or names only.
 - Rounds default to 60 seconds. Whatever is painted at the deadline is the guess;
   "Done" freezes it early, and the round ends as soon as every active
   player is done. With nothing painted the button reads "Pass": it scores a
@@ -163,9 +164,10 @@ pnpm workspace with three packages:
   natural and built; each image is the lead picture of the landmark's
   Wikipedia article, checked to exist on Commons at 800px or more and
   looked at when the file name gave any doubt. Several landmarks may share
-  a city (the photo is the clue), so a game draws as even a split of photo
-  and text questions as the pool allows (`pickQuestions`), in a shuffled
-  order, preferring questions at least 50 km apart. The question photo
+  a city (the photo is the clue). A game draws the host's share of photo
+  and text questions, topping up from the other kind if one runs short
+  (`pickQuestions`), in a shuffled order, preferring questions at least
+  50 km apart. The question photo
   enlarges on click; the enlarged view zooms with the wheel or a pinch and
   pans by dragging.
 - **Paint** is stored on sparse H3 hexagons (`src/paint.ts`) at mixed

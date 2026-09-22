@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { MAX_ROUNDS, MIN_ROUNDS, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
+import { MAX_ROUNDS, MIN_ROUNDS, PHOTO_MIXES, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { playerName, startOnPan } from "../settings";
 import { HostWord, PlayerList } from "../ui/PlayerList";
@@ -77,11 +77,24 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                 ))}
               </select>
             </label>
+            <label>
+              Questions
+              <select
+                value={view.config.photoShare}
+                onChange={(e) => conn.configure({ photoShare: Number((e.target as HTMLSelectElement).value) })}
+              >
+                {PHOTO_MIXES.map((m) => (
+                  <option key={m.share} value={m.share}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         ) : (
           <p class="hint">
-            {view.config.rounds} rounds · {view.config.roundMs / 1000} seconds each. <HostWord capital /> can change
-            this.
+            {view.config.rounds} rounds · {view.config.roundMs / 1000} seconds each · {mixLabel(view.config.photoShare)}
+            . <HostWord capital /> can change this.
           </p>
         )}
         {/* Per-device preference, so it lives here rather than in the host's config. */}
@@ -133,4 +146,8 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: strin
       </button>
     </form>
   );
+}
+
+function mixLabel(share: number): string {
+  return (PHOTO_MIXES.find((m) => m.share === share)?.label ?? "Even mix").toLowerCase();
 }

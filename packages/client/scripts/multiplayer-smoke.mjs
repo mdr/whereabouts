@@ -43,7 +43,8 @@ console.log("both in lobby");
 // Host trims the game to 3 rounds of 30 s; Bob sees the change.
 await alice.selectOption(".settings select >> nth=0", "3");
 await alice.selectOption(".settings select >> nth=1", "30000");
-await bob.waitForSelector("text=3 rounds · 30 seconds each", { timeout: 5000 });
+await alice.selectOption(".settings select >> nth=2", "1");
+await bob.waitForSelector("text=3 rounds · 30 seconds each · all photos", { timeout: 5000 });
 console.log("settings propagated to Bob");
 await alice.screenshot({ path: `${out}/mp-1b-lobby-settings.png` });
 
@@ -54,6 +55,7 @@ await alice.waitForSelector("#map canvas");
 await bob.waitForSelector("#map canvas");
 await alice.waitForTimeout(2500);
 console.log("guessing; prompt:", await alice.textContent(".prompt"));
+console.log("all-photos mix gives a photo question:", (await alice.$(".card.question .thumb img")) ? "ok" : "FAIL");
 
 async function paint(page, fx, fy) {
   const box = await (await page.$("#map canvas")).boundingBox();

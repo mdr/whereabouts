@@ -21,6 +21,7 @@ import type {
 export const DEFAULT_CONFIG: GameConfig = {
   rounds: 8,
   roundMs: 60_000,
+  photoShare: 0.5,
   kernelId: "multi-equal",
 };
 
@@ -161,7 +162,7 @@ export class Game {
     if (this.phase !== "lobby") return fail("game already started");
     if (this.players.size === 0) return fail("no players");
     const count = Math.min(this.config.rounds, this.pool.length);
-    this.questions = pickQuestions(this.pool, count, this.seed);
+    this.questions = pickQuestions(this.pool, count, this.seed, this.config.photoShare);
     for (const p of this.players.values()) {
       p.scores = [];
       p.previousRank = null;
@@ -172,12 +173,17 @@ export class Game {
     return OK_CHANGED;
   }
 
-  /** Host tunes rounds and round length while everyone is still in the lobby. */
+  /** Host tunes rounds, round length and the question mix while everyone is still in the lobby. */
   configure(token: string, patch: ConfigurePatch): CommandResult {
     if (!this.isHost(token)) return fail("only the host can change settings");
     if (this.phase !== "lobby") return fail("settings are locked once the game starts");
     const next = { ...this.config, ...patch };
-    if (next.rounds === this.config.rounds && next.roundMs === this.config.roundMs) return OK_SAME;
+    if (
+      next.rounds === this.config.rounds &&
+      next.roundMs === this.config.roundMs &&
+      next.photoShare === this.config.photoShare
+    )
+      return OK_SAME;
     this.config = next;
     return OK_CHANGED;
   }
