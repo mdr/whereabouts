@@ -137,6 +137,8 @@ export class GameRoom extends Room<ActorData> {
       }
       case "lock":
         return this.game.lock(token, now);
+      case "unlock":
+        return this.game.unlock(token);
       case "ready":
         return this.game.ready(token, now);
       case "configure":

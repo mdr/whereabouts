@@ -119,7 +119,9 @@ pnpm workspace with three packages:
   fixed 250, the same as a blank at the deadline, and stops the round
   waiting on you. That is half what a uniform wash over the whole world
   earns (about 500), so even the vaguest honest guess beats passing, but
-  well above a confident guess in the wrong place (near 0).
+  well above a confident guess in the wrong place (near 0). Once done, the button
+  becomes "Keep editing", which takes Done back while the round is still
+  running.
 - Paint is private until the round ends. The reveal shows the answer, every
   player's score, and lets you click a player to see their paint in their
   colour, or hide everyone's paint to see just the map and the answer. Rows

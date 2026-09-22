@@ -127,6 +127,26 @@ describe("round loop", () => {
     expect(g.setPaint("tokA", paintAt(q, 1, 1))).toEqual({ ok: true, changed: false }); // stale upload, ignored
   });
 
+  it("unlocking after Done lets the guess change, only while the round runs", () => {
+    const g = twoPlayerGame(1);
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    expect(g.unlock("tokA")).toEqual({ ok: true, changed: false }); // not locked: nothing to undo
+    g.setPaint("tokA", paintAt(q, 0, 0));
+    g.lock("tokA", T0);
+    expect(g.unlock("tokA")).toEqual({ ok: true, changed: true });
+    expect(g.view("tokA", T0).you.locked).toBe(false);
+    // The new guess replaces the old one and is what gets scored.
+    g.setPaint("tokA", paintAt(q, q.answer.lat, q.answer.lon));
+    g.lock("tokA", T0 + 1);
+    g.setPaint("tokB", paintAt(q, 0, 0));
+    g.lock("tokB", T0 + 2); // everyone done: the round ends
+    expect(g.phase).toBe("reveal");
+    const mine = g.view("tokA", T0 + 2).reveal!.results.find((r) => r.playerId === "p1")!;
+    expect(mine.score).toBeGreaterThan(900);
+    expect(g.unlock("tokA")).toEqual({ ok: false, error: "not guessing" });
+  });
+
   it("locking with nothing painted is a pass: the pass score, no paint, and the round can end early", () => {
     const g = twoPlayerGame(1);
     g.start("tokA", T0);

@@ -38,6 +38,7 @@ export type Ticket = z.infer<typeof TicketSchema>;
 export const ClientTopics = {
   paint: "paint",
   lock: "lock",
+  unlock: "unlock",
   ready: "ready",
   configure: "configure",
   start: "start",
@@ -71,6 +72,7 @@ export type ConfigurePatch = z.infer<typeof ConfigureSchema>;
 export const ClientMessageSchemas = {
   paint: PaintSubmissionSchema,
   lock: z.object({}),
+  unlock: z.object({}),
   ready: z.object({}),
   configure: ConfigureSchema,
   start: z.object({}),

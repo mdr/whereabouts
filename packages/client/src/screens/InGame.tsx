@@ -98,7 +98,10 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
           {view.you.locked && (
             <Card>
-              <p class="hint">You're done. The round ends when everyone is, or when the clock runs out.</p>
+              <p class="hint">
+                You're done. The round ends when everyone is, or when the clock runs out. Changed your mind? Keep
+                editing.
+              </p>
             </Card>
           )}
         </div>
@@ -116,18 +119,23 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
         </div>
         {!view.you.spectating && (
           <PaintTools>
-            <button
-              class="primary"
-              title={
-                paint.layer.isEmpty
-                  ? "No idea? Passing scores 250. Even painting a wide, vague area scores better on average."
-                  : "Whatever is painted when the clock hits zero counts anyway."
-              }
-              onClick={lockIn}
-              disabled={view.you.locked}
-            >
-              <Icon name="check" /> {paint.layer.isEmpty && !view.you.locked ? "Pass" : "Done"}
-            </button>
+            {view.you.locked ? (
+              <button title="Take back Done and change your guess" onClick={() => conn.unlock()}>
+                <Icon name="undo" /> Keep editing
+              </button>
+            ) : (
+              <button
+                class="primary"
+                title={
+                  paint.layer.isEmpty
+                    ? "No idea? Passing scores 250. Even painting a wide, vague area scores better on average."
+                    : "Whatever is painted when the clock hits zero counts anyway."
+                }
+                onClick={lockIn}
+              >
+                <Icon name="check" /> {paint.layer.isEmpty ? "Pass" : "Done"}
+              </button>
+            )}
           </PaintTools>
         )}
       </div>

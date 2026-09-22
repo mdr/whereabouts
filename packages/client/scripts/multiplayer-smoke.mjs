@@ -76,6 +76,16 @@ console.log("bob blobs (dev):", (await bob.textContent(".blobs")).replace(/\s+/g
 await bob.click('button:has-text("Done")');
 await bob.waitForSelector("text=You're done", { timeout: 5000 });
 console.log("bob locked");
+// Bob changes his mind, then locks again.
+await bob.click('button:has-text("Keep editing")');
+await bob.waitForSelector('.toolbar button.primary:has-text("Done")', { timeout: 5000 });
+const toolsBack = await bob.waitForSelector('.tools button:has-text("Paint"):not([disabled])', { timeout: 3000 }).then(
+  () => "ok",
+  () => "FAIL",
+);
+console.log("bob unlocked: paint tools back:", toolsBack);
+await bob.click('button:has-text("Done")');
+await bob.waitForSelector("text=You're done", { timeout: 5000 });
 await alice.waitForTimeout(1000);
 const stillGuessing = await alice.$(".reveal-list");
 console.log("round still open with one player locked:", stillGuessing === null);

@@ -291,6 +291,20 @@ export class Game {
     return OK_CHANGED;
   }
 
+  /**
+   * Take back a Done (or a pass) to change the guess. Only while the round is
+   * still running: once everyone is done it has already ended.
+   */
+  unlock(token: string): CommandResult {
+    const player = this.players.get(token);
+    if (!player) return fail("unknown player");
+    if (this.phase !== "guessing") return fail("not guessing");
+    const current = this.submissions.get(token);
+    if (!current?.locked) return OK_SAME;
+    current.locked = false;
+    return OK_CHANGED;
+  }
+
   /** Done reading the reveal. The next round starts once every connected player is. */
   ready(token: string, now: number): CommandResult {
     const player = this.players.get(token);
