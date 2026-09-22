@@ -33,10 +33,11 @@ function view(isHost: boolean): GameView {
   };
 }
 
+const configure = vi.fn();
 const conn = {
   status: signal("connected"),
   lastError: signal(null),
-  configure: vi.fn(),
+  configure,
   start: vi.fn(),
 } as unknown as Connection;
 
@@ -61,5 +62,26 @@ describe("Lobby", () => {
     startOnPan.value = true;
     const { container } = render(<Lobby conn={conn} view={view(false)} />);
     expect(container.querySelector<HTMLInputElement>(".start-on-pan input")!.checked).toBe(true);
+  });
+});
+
+describe("Lobby setup", () => {
+  it("lets the host change settings and shows guests the same choices read-only", () => {
+    const { container, unmount } = render(<Lobby conn={conn} view={view(true)} />);
+    fireEvent.click(container.querySelector('[aria-label="More rounds"]')!);
+    expect(configure).toHaveBeenCalledWith({ rounds: 6 });
+    const photos = [...container.querySelectorAll<HTMLButtonElement>(".questions .pills button")].find(
+      (b) => b.textContent === "Photos",
+    )!;
+    fireEvent.click(photos);
+    expect(configure).toHaveBeenCalledWith({ photoShare: 1 });
+    unmount();
+
+    const guest = render(<Lobby conn={conn} view={view(false)} />).container;
+    expect(guest.querySelector('[aria-label="More rounds"]')).toBeNull();
+    expect(guest.querySelector(".rounds .value")!.textContent).toBe("5");
+    expect(guest.querySelector(".seconds .pills button.on")!.textContent).toBe("60");
+    expect(guest.querySelector(".questions .pills button.on")!.textContent).toBe("Even");
+    expect([...guest.querySelectorAll(".pills button")].every((b) => (b as HTMLButtonElement).disabled)).toBe(true);
   });
 });

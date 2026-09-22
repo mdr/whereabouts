@@ -27,6 +27,7 @@ export function PlayerList({
   showScores,
   arrows,
   showLocked,
+  avatars,
   onRename,
   onKick,
 }: {
@@ -36,6 +37,8 @@ export function PlayerList({
   arrows?: boolean;
   /** Mark players who have locked in this round. */
   showLocked?: boolean;
+  /** A coloured circle with the initial instead of the small dot (the lobby). */
+  avatars?: boolean;
   /** When given, your own row gets a pencil that calls this. */
   onRename?: () => void;
   /** Host only: when given, every other row gets a remove button that calls this. */
@@ -48,7 +51,13 @@ export function PlayerList({
         const isYou = p.id === you;
         return (
           <li key={p.id} class={`${isYou ? "you" : ""} ${p.connected ? "" : "offline"}`}>
-            <span class="swatch" style={{ background: playerColour(p.colour) }} />
+            {avatars ? (
+              <span class="avatar" style={{ background: playerColour(p.colour) }} aria-hidden="true">
+                {[...p.name.trim()][0]?.toUpperCase() ?? "?"}
+              </span>
+            ) : (
+              <span class="swatch" style={{ background: playerColour(p.colour) }} />
+            )}
             <span class="name">
               <span class="name-text">{p.name}</span>
               {p.isHost ? <HostTag /> : null}

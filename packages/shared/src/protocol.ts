@@ -60,11 +60,11 @@ export const MAX_ROUNDS = 15;
 
 /** Question mixes the host may pick: the share of photo questions, with a label. */
 export const PHOTO_MIXES = [
-  { share: 1, label: "All photos" },
+  { share: 1, label: "Photos" },
   { share: 0.75, label: "Mostly photos" },
-  { share: 0.5, label: "Even mix" },
-  { share: 0.25, label: "Mostly place names" },
-  { share: 0, label: "Place names only" },
+  { share: 0.5, label: "Even" },
+  { share: 0.25, label: "Mostly names" },
+  { share: 0, label: "Place names" },
 ] as const;
 
 /** Host changes to the game settings while in the lobby. */

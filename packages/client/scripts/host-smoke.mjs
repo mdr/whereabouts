@@ -44,7 +44,7 @@ await alice.waitForSelector('li:has-text("Bob")');
 const lobbyKick = await alice.$$eval("button.kick", (b) => b.map((x) => x.getAttribute("aria-label")));
 console.log("lobby remove buttons:", JSON.stringify(lobbyKick));
 
-await alice.selectOption("select >> nth=1", "30000");
+await alice.click('.seconds .pills button:text-is("30")');
 await alice.click('button:has-text("Start game")');
 await alice.waitForSelector(".toolbar button.primary");
 await bob.waitForSelector(".toolbar button.primary");

@@ -251,10 +251,6 @@ button.icon:hover {
   color: var(--muted);
   cursor: pointer;
 }
-.lobby .start-on-pan {
-  font-size: 13px;
-  justify-content: center;
-}
 /* On the reveal the round score is the news; the running total is context. */
 .reveal-list .round-score {
   color: var(--panel-fg);
@@ -1002,23 +998,6 @@ button.primary kbd {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
-.settings {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.settings label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  color: var(--muted);
-  font-size: 12px;
-}
-.settings select {
-  font-size: 14px;
-  padding: 8px 10px;
-}
 
 /* ---- host controls ------------------------------------------------------------ */
 button.icon.kick:hover {
@@ -1276,5 +1255,172 @@ button.danger.solid {
   }
   .hero-text .tagline {
     font-size: 15px;
+  }
+}
+
+/* ---- lobby --------------------------------------------------------------- */
+.home-card.lobby {
+  width: min(880px, 100%);
+}
+.lobby-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.lobby-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  background: #262b32;
+  border-radius: 10px;
+  padding: 16px;
+}
+.lobby-panel h2 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lobby-panel h2:not(:first-child) {
+  margin-top: 6px;
+}
+.lobby-panel h2 .count {
+  background: #3a424d;
+  color: var(--panel-fg);
+  border-radius: 999px;
+  padding: 0 7px;
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.invite-actions {
+  display: flex;
+  gap: 8px;
+}
+.invite-actions button {
+  flex: 1;
+}
+.lobby .players .avatar {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 13px;
+  color: #11151a;
+}
+.lobby .hint.waiting {
+  margin: 0;
+  font-style: italic;
+}
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.setting-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pills button {
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.pills button.on {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  color: #0d1b24;
+  font-weight: 700;
+}
+/* Guests see the host's choice, not a greyed-out control. */
+.pills button:disabled {
+  opacity: 1;
+}
+.pills button:disabled:not(.on) {
+  color: var(--muted);
+  background: transparent;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stepper button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.stepper .value {
+  min-width: 2ch;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+/* A checkbox drawn as an on/off switch. */
+.check.switch {
+  font-size: 13px;
+  gap: 10px;
+}
+.check.switch input {
+  appearance: none;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  margin: 0;
+  border-radius: 999px;
+  background: #4a5460;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.check.switch input::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #e6e9ee;
+  transition: transform 0.15s;
+}
+.check.switch input:checked {
+  background: var(--accent-2);
+}
+.check.switch input:checked::before {
+  transform: translateX(16px);
+}
+.check.switch input:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+.lobby-start {
+  margin-top: auto;
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 760px) {
+  .lobby-cols {
+    grid-template-columns: 1fr;
+  }
+  /* One card of panels is enough on a phone: drop the outer one. */
+  .home-card.lobby {
+    background: none;
+    box-shadow: none;
+    padding: 4px 0;
   }
 }

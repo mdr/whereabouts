@@ -46,10 +46,20 @@ await bob.waitForSelector(".lobby .code", { timeout: 15000 });
 await alice.waitForSelector("text=Bob", { timeout: 5000 });
 console.log("both in lobby");
 // Host trims the game to 3 rounds of 30 s; Bob sees the change.
-await alice.selectOption(".settings select >> nth=0", "3");
-await alice.selectOption(".settings select >> nth=1", "30000");
-await alice.selectOption(".settings select >> nth=2", "1");
-await bob.waitForSelector("text=3 rounds · 30 seconds each · all photos", { timeout: 5000 });
+// Step to 3 rounds from wherever the server default is, one change at a time.
+for (let n = Number(await alice.textContent(".rounds .value")); n !== 3;) {
+  const up = n < 3;
+  n += up ? 1 : -1;
+  await alice.click(up ? '[aria-label="More rounds"]' : '[aria-label="Fewer rounds"]');
+  await alice.waitForSelector(`.rounds .value:text-is("${n}")`);
+}
+await alice.click('.seconds .pills button:text-is("30")');
+await alice.click('.questions .pills button:text-is("Photos")');
+// Bob sees the host's choices on his own, read-only controls.
+await bob.waitForSelector('.rounds .value:text-is("3")', { timeout: 5000 });
+await bob.waitForSelector('.seconds .pills button.on:text-is("30")', { timeout: 5000 });
+await bob.waitForSelector('.questions .pills button.on:text-is("Photos")', { timeout: 5000 });
+console.log("bob cannot change settings:", (await bob.$('[aria-label="Fewer rounds"]')) === null ? "ok" : "FAIL");
 console.log("settings propagated to Bob");
 await alice.screenshot({ path: `${out}/mp-1b-lobby-settings.png` });
 

@@ -14,10 +14,13 @@ import {
   Info,
   Link,
   Lock,
+  Minus,
   Paintbrush,
   Play,
+  Plus,
   Redo2,
   RotateCcw,
+  Share2,
   Trash2,
   Undo2,
   Users,
@@ -47,6 +50,9 @@ const ICONS = {
   eyeOff: EyeOff,
   expand: ChevronDown,
   collapse: ChevronUp,
+  minus: Minus,
+  plus: Plus,
+  share: Share2,
 } satisfies Record<string, FunctionComponent<LucideProps>>;
 
 export type IconName = keyof typeof ICONS;
