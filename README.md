@@ -232,7 +232,10 @@ toolbar. While guessing, place names, country borders, man-made detail
 (roads, railways, buildings, airports, urban land use), inland water
 (rivers, lakes) and glaciers (they trace mountain ranges) are all hidden;
 coastlines and woodland stay. The reveal turns everything but roads back
-on. A lobby checkbox, remembered per device, starts each round on the Pan
+on and adds shaded relief from the public AWS terrain tiles (Terrarium
+encoding, no key). The relief sits under the water layer, since the tiles
+carry ocean depths too, and no terrain tiles are fetched while guessing
+(the multiplayer smoke checks this). A lobby checkbox, remembered per device, starts each round on the Pan
 tool instead of Paint.
 
 ## Developer mode

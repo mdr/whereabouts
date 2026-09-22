@@ -14,6 +14,8 @@ const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 const PAINT_SOURCE = "paint";
 const REVEAL_SOURCE = "reveal";
 const CURSOR_SOURCE = "cursor";
+const TERRAIN_SOURCE = "terrain";
+const TERRAIN_LAYER = "terrain-hillshade";
 
 /** World circumference at the equator in metres, for metres-per-pixel maths. */
 const WORLD_M = 40075016.686;
@@ -96,6 +98,36 @@ export class GameMap {
   }
 
   private addSources(): void {
+    // Shaded relief for the reveal, from the public AWS terrain tiles. It
+    // starts hidden, and MapLibre fetches nothing for a hidden layer, so
+    // guessing costs no tile requests. It goes just under the water layer:
+    // the tiles carry ocean depths too, and the sea should stay flat.
+    this.map.addSource(TERRAIN_SOURCE, {
+      type: "raster-dem",
+      tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+      encoding: "terrarium",
+      tileSize: 256,
+      maxzoom: 15,
+      attribution:
+        '<a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank">Terrain: Mapzen, AWS Open Data</a>',
+    });
+    const below = this.map.getLayer("water") ? "water" : this.labelLayers[0];
+    this.map.addLayer(
+      {
+        id: TERRAIN_LAYER,
+        type: "hillshade",
+        source: TERRAIN_SOURCE,
+        layout: { visibility: "none" },
+        paint: {
+          "hillshade-exaggeration": 0.3,
+          "hillshade-shadow-color": "rgba(0, 0, 0, 0.55)",
+          "hillshade-highlight-color": "rgba(255, 255, 255, 0.18)",
+          "hillshade-accent-color": "rgba(0, 0, 0, 0.3)",
+        },
+      },
+      below,
+    );
+
     this.map.addSource(PAINT_SOURCE, {
       type: "geojson",
       data: { type: "FeatureCollection", features: [] },
@@ -225,12 +257,18 @@ export class GameMap {
     this.setVisible(this.iceLayers, on);
   }
 
+  /** Shaded relief. Off while guessing: it would show where the mountains are. */
+  setTerrain(on: boolean): void {
+    this.setVisible([TERRAIN_LAYER], on);
+  }
+
   /**
    * Everything that could give a location away, as one switch. Off while
-   * guessing; the reveal turns most of it back on (roads stay off, they
-   * clutter at the zooms the reveal uses).
+   * guessing; the reveal turns most of it back on, adding shaded relief
+   * (roads stay off, they clutter at the zooms the reveal uses).
    */
   setGuessingHints(on: boolean): void {
+    this.setTerrain(on);
     this.setLabels(on);
     this.setBorders(on);
     this.setInlandWater(on);

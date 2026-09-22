@@ -26,6 +26,11 @@ async function newPlayer(name, query = "") {
 }
 
 const alice = await newPlayer("Alice");
+// Terrain tiles should load at the reveal only: shaded relief would give mountains away.
+let terrainRequests = 0;
+alice.on("request", (r) => {
+  if (r.url().includes("elevation-tiles-prod")) terrainRequests++;
+});
 await alice.click("text=Host a game");
 await alice.waitForSelector(".lobby .code", { timeout: 15000 });
 const code = (await alice.textContent(".lobby .code")).trim();
@@ -75,6 +80,7 @@ await alice.click(".players-toggle");
 await alice.waitForSelector(".players-card");
 await alice.screenshot({ path: `${out}/mp-2b-players-panel.png` });
 console.log("bob blobs (dev):", (await bob.textContent(".blobs")).replace(/\s+/g, " ").slice(0, 120));
+console.log("no terrain tiles while guessing:", terrainRequests === 0 ? "ok" : `FAIL (${terrainRequests})`);
 await bob.click('button:has-text("Done")');
 await bob.waitForSelector("text=You're done", { timeout: 5000 });
 console.log("bob locked");
@@ -99,6 +105,7 @@ await bob.waitForSelector(".reveal-list", { timeout: 10000 });
 console.log("reveal reached early via lock-in");
 await alice.waitForTimeout(1500);
 await alice.screenshot({ path: `${out}/mp-3-reveal-alice.png` });
+console.log("terrain tiles at the reveal:", terrainRequests > 0 ? `ok (${terrainRequests})` : "FAIL (0)");
 console.log("reveal rows:", (await alice.textContent(".reveal-list")).replace(/\s+/g, " "));
 // By default everyone's paint is shown together; then Bob looks at Alice's alone.
 const everyone = await bob.evaluate(() => window.whereabouts.map.getSource("paint").serialize().data.features.length);
