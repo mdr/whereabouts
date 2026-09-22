@@ -120,7 +120,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
         {!view.you.spectating && (
           <PaintTools>
             {view.you.locked ? (
-              <button title="Take back Done and change your guess" onClick={() => conn.unlock()}>
+              <button class="keep-editing" title="Take back Done and change your guess" onClick={() => conn.unlock()}>
                 <Icon name="undo" /> Keep editing
               </button>
             ) : (

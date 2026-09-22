@@ -1133,7 +1133,8 @@ button.danger.solid {
     width: 100%;
     min-width: 60px;
   }
-  .toolbar button.primary {
+  .toolbar button.primary,
+  .toolbar button.keep-editing {
     flex: 1 1 auto;
   }
   .players-panel {
