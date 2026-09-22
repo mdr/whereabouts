@@ -12,8 +12,8 @@ const TOOL_HINT: Record<Tool, string> = {
 };
 
 /**
- * The player-facing brush bar: tool, brush size, and whatever action buttons
- * the screen passes in (clear, done, next).
+ * The player-facing brush bar: tool, clear, brush size, undo/redo, and
+ * whatever action buttons the screen passes in (done, next).
  */
 export function PaintTools({ children }: { children?: ComponentChildren }) {
   const paint = usePaint();
@@ -33,6 +33,9 @@ export function PaintTools({ children }: { children?: ComponentChildren }) {
             <Icon name={TOOL_ICON[t]} /> <span class="label">{t[0]!.toUpperCase() + t.slice(1)}</span>
           </button>
         ))}
+        <button title="Clear all paint (Undo brings it back)" onClick={() => paint.clear()} disabled={!enabled}>
+          <Icon name="trash" /> <span class="label">Clear</span>
+        </button>
       </div>
       <label class="brush" title="Brush size ([ and ] also work)">
         <span>Brush</span>

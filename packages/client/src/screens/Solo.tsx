@@ -238,9 +238,6 @@ function SoloGame() {
           <QuestionCard q={q} credit />
         </div>
         <PaintTools>
-          <button class="danger" onClick={() => paint.clear()}>
-            <Icon name="trash" /> Clear
-          </button>
           <button class="primary" onClick={submit} disabled={paint.version.value < 0 || paint.layer.isEmpty}>
             <Icon name="check" /> Submit
           </button>

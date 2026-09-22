@@ -116,9 +116,6 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
         </div>
         {!view.you.spectating && (
           <PaintTools>
-            <button class="danger" onClick={() => paint.clear()} disabled={!paint.enabled.value}>
-              <Icon name="trash" /> Clear
-            </button>
             <button
               class="primary"
               title={
