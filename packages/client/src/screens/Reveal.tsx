@@ -23,15 +23,15 @@ import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 const NONE = "none";
 
 /**
- * Rows for the reveal list: this round's winner first. Players who painted
- * come in score order, then those who made no guess, then anyone who sat
- * the round out; ties keep the standings order.
+ * Rows for the reveal list: this round's winner first. Everyone who played,
+ * passes included, comes in score order, then anyone who sat the round out;
+ * ties keep the standings order.
  */
 export function revealOrder(
   players: PlayerView[],
   results: RoundResultView[],
 ): { p: PlayerView; r?: RoundResultView }[] {
-  const group = (r?: RoundResultView) => (r ? (r.paint ? 0 : 1) : 2);
+  const group = (r?: RoundResultView) => (r ? 0 : 1);
   return [...players]
     .sort((a, b) => a.rank - b.rank)
     .map((p) => ({ p, r: results.find((x) => x.playerId === p.id) }))
@@ -101,7 +101,9 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
           </QuestionCard>
           <div class="card score">
             <div class="big">{mine ? Math.round(mine.score) : "—"}</div>
-            <div class="label">{mine ? "your score this round" : "you sat this one out"}</div>
+            <div class="label">
+              {mine ? (mine.paint ? "your score this round" : "you passed this round") : "you sat this one out"}
+            </div>
           </div>
           <ConnectionNote conn={conn} />
         </div>
@@ -202,6 +204,11 @@ function RevealRow({
       <span class="name">
         <span class="name-text">{p.name}</span>
         {p.isHost && <HostTag />}
+        {r && !r.paint && (
+          <span class="tag passed" title="Made no guess this round">
+            passed
+          </span>
+        )}
         {ready && (
           <span class="tag ready" title="Ready for the next round">
             ✓
@@ -222,7 +229,7 @@ function RevealRow({
         </button>
       )}
       <span class="round-score" title="This round">
-        {r ? (r.paint ? `+${Math.round(r.score)}` : "no guess") : "sat out"}
+        {r ? `+${Math.round(r.score)}` : "sat out"}
       </span>
       <span class={`arrow ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
         {delta > 0 ? "▲" : delta < 0 ? "▼" : ""}

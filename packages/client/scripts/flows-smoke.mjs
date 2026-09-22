@@ -104,8 +104,8 @@ const round2Rows = await alice.$$eval(".reveal-list li", (els) =>
   els.map((e) => e.textContent.replace(/\s+/g, " ").trim()),
 );
 check(
-  round2Rows.some((r) => r.startsWith("Cara") && r.includes("no guess")),
-  `a pass shows as no guess at the reveal: ${JSON.stringify(round2Rows)}`,
+  round2Rows.some((r) => r.startsWith("Cara") && r.includes("passed") && r.includes("+250")),
+  `a pass shows as +250, tagged passed, at the reveal: ${JSON.stringify(round2Rows)}`,
 );
 
 // ---- 3. results and play again ----

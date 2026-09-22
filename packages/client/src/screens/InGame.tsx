@@ -65,7 +65,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   }, [version, floor, guessing]);
 
   // Done with paint freezes it; Done with nothing painted is a pass, which
-  // scores the baseline and lets the round end without waiting on you.
+  // scores PASS_SCORE (250) and lets the round end without waiting on you.
   function lockIn() {
     if (sendTimer.current) clearTimeout(sendTimer.current);
     if (!paint.layer.isEmpty) {
@@ -120,7 +120,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
               class="primary"
               title={
                 paint.layer.isEmpty
-                  ? "No idea? Pass and take the baseline 500. A wide, vague area would score at least as well on average."
+                  ? "No idea? Passing scores 250. Even painting a wide, vague area scores better on average."
                   : "Whatever is painted when the clock hits zero counts anyway."
               }
               onClick={lockIn}

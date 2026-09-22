@@ -3,7 +3,7 @@
  * and poll `nextWakeAt()` to know when to call `tick`. Every mutator returns
  * whether anything changed so the transport layer can rebroadcast views.
  */
-import { buildDistribution, kernelById, scoreDistribution, type Kernel } from "./scoring.ts";
+import { PASS_SCORE, buildDistribution, kernelById, scoreDistribution, type Kernel } from "./scoring.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { pickQuestions, type Question } from "./questions.ts";
 import type {
@@ -272,7 +272,7 @@ export class Game {
   /**
    * Freeze this player's guess. The round ends early once every active
    * player has. With nothing painted this is a pass: an empty submission
-   * that scores the baseline, so a player with no idea need not hold
+   * that scores PASS_SCORE, so a player with no idea need not hold
    * everyone up until the clock runs out.
    */
   lock(token: string, now: number): CommandResult {
@@ -375,7 +375,9 @@ export class Game {
         ({ score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, this.kernel));
         paint = sub.paint;
       } else {
-        ({ score, A, B } = scoreDistribution({ points: [], floor: 1 }, q.answer, q.toleranceKm, this.kernel));
+        // A pass, or a blank map at the deadline: the two score alike, so
+        // waiting out the clock never beats pressing Pass.
+        ({ score, A, B } = PASS_SCORE);
       }
       p.scores[this.roundIndex] = score;
       results.push({ playerId: p.id, score, A, B, paint, res });

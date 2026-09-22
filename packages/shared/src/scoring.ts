@@ -373,6 +373,15 @@ export function scoreFromParts(A: number, B: number): number {
   return 500 * (1 + 2 * A - B);
 }
 
+/**
+ * What a pass scores: Done with nothing painted, or a blank map when the clock
+ * runs out. Half the ~500 that spreading paint evenly over the world earns, so
+ * even the vaguest honest guess beats passing, yet far above the ~0 of a
+ * confident guess in the wrong place. Reported as A = 0, B = 0.5 so the parts
+ * still add up to the score.
+ */
+export const PASS_SCORE: ScoreBreakdown = { score: 250, A: 0, B: 0.5 };
+
 export function scoreDistribution(
   dist: Distribution,
   answer: LatLon,

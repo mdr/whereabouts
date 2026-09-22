@@ -891,6 +891,16 @@ button.big {
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
+.reveal-list .tag.passed {
+  color: var(--muted);
+  border: 1px solid #4a5460;
+  border-radius: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 4px;
+  margin-left: 6px;
+}
 .reveal-list .tag.ready {
   color: #66bb6a;
   border-color: #66bb6a;

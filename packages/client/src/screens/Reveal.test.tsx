@@ -22,17 +22,25 @@ function result(playerId: string, score: number, painted = true): RoundResultVie
 }
 
 describe("revealOrder", () => {
-  it("puts this round's winner first, then no-guess rows, then anyone who sat out", () => {
+  it("puts this round's winner first, passes in score order, then anyone who sat out", () => {
     // Standings say Alice leads overall, but Cara won this round.
-    const players = [player("alice", 1), player("bob", 2), player("cara", 3), player("dan", 4), player("eve", 5)];
+    const players = [
+      player("alice", 1),
+      player("bob", 2),
+      player("cara", 3),
+      player("dan", 4),
+      player("eve", 5),
+      player("fay", 6),
+    ];
     const results = [
       result("alice", 610),
-      result("bob", 500, false), // connected but painted nothing: the 500 baseline
+      result("bob", 250, false), // passed: scores 250, below the vague 590 but ranked by score
       result("cara", 842),
       result("dan", 590),
+      result("fay", 120), // a confident miss scores below a pass
       // eve joined mid-round: no result at all
     ];
-    expect(revealOrder(players, results).map((row) => row.p.id)).toEqual(["cara", "alice", "dan", "bob", "eve"]);
+    expect(revealOrder(players, results).map((row) => row.p.id)).toEqual(["cara", "alice", "dan", "bob", "fay", "eve"]);
   });
 
   it("keeps the standings order for ties", () => {

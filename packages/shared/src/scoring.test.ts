@@ -3,6 +3,7 @@ import * as h3 from "h3-js";
 import { toXyz, EARTH_RADIUS_KM } from "./geo.ts";
 import {
   KERNELS,
+  PASS_SCORE,
   kernelById,
   buildDistribution,
   kernel,
@@ -111,6 +112,16 @@ describe("uniform floor", () => {
     const miss = buildDistribution([{ ...north(answer, 5000), intensity: 1, areaKm2: 1 }], 0.1);
     expect(Math.round(scoreDistribution(hit, answer, r).score)).toBe(995);
     expect(Math.round(scoreDistribution(miss, answer, r).score)).toBe(95);
+  });
+});
+
+describe("pass", () => {
+  it("sits between a confident miss and a fully diffuse guess, and its parts add up", () => {
+    const diffuse = scoreDistribution({ points: [], floor: 1 }, answer, r).score;
+    const confidentMiss = scoreDistribution(pointMass([{ ...north(answer, 5000), p: 1 }]), answer, r).score;
+    expect(PASS_SCORE.score).toBeLessThan(diffuse);
+    expect(PASS_SCORE.score).toBeGreaterThan(confidentMiss);
+    expect(scoreFromParts(PASS_SCORE.A, PASS_SCORE.B)).toBe(PASS_SCORE.score);
   });
 });
 

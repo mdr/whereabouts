@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Game, generateCode } from "./game.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
+import { PASS_SCORE } from "./scoring.ts";
 import type { Question } from "./questions.ts";
 
 const petra: Question = {
@@ -79,7 +80,7 @@ describe("lobby", () => {
 });
 
 describe("round loop", () => {
-  it("scores at the deadline, exact hit beats blank, blank scores the baseline", () => {
+  it("scores at the deadline, exact hit beats blank, blank scores as a pass", () => {
     const g = twoPlayerGame(1);
     g.start("tokA", T0);
     const q = currentQuestion(g, "tokA", T0);
@@ -98,8 +99,7 @@ describe("round loop", () => {
     expect(first!.playerId).toBe("p1");
     expect(first!.score).toBeGreaterThan(900);
     expect(second!.paint).toBeNull();
-    expect(Math.round(second!.score)).toBeGreaterThanOrEqual(500);
-    expect(Math.round(second!.score)).toBeLessThan(540);
+    expect(second!.score).toBe(PASS_SCORE.score);
     expect(reveal.ready).toEqual([]);
     expect(g.nextWakeAt()).toBeNull();
   });
@@ -127,7 +127,7 @@ describe("round loop", () => {
     expect(g.setPaint("tokA", paintAt(q, 1, 1))).toEqual({ ok: true, changed: false }); // stale upload, ignored
   });
 
-  it("locking with nothing painted is a pass: baseline score, no paint, and the round can end early", () => {
+  it("locking with nothing painted is a pass: the pass score, no paint, and the round can end early", () => {
     const g = twoPlayerGame(1);
     g.start("tokA", T0);
     const q = currentQuestion(g, "tokA", T0);
@@ -140,8 +140,7 @@ describe("round loop", () => {
     expect(g.phase).toBe("reveal");
     const mine = g.view("tokA", T0 + 5).reveal!.results.find((r) => r.playerId === "p1")!;
     expect(mine.paint).toBeNull();
-    expect(Math.round(mine.score)).toBeGreaterThanOrEqual(500);
-    expect(Math.round(mine.score)).toBeLessThan(540);
+    expect(mine.score).toBe(250);
   });
 
   it("the round ends as soon as every active connected player has locked in", () => {

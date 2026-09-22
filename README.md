@@ -115,14 +115,16 @@ pnpm workspace with three packages:
   length (30, 45, 60, 90 or 120 seconds).
 - Rounds default to 60 seconds. Whatever is painted at the deadline is the guess;
   "Done" freezes it early, and the round ends as soon as every active
-  player is done. With nothing painted the button reads "Pass": it scores
-  the 500 baseline, the same as a blank at the deadline or a uniform wash
-  over the whole world, and stops the round waiting on you.
+  player is done. With nothing painted the button reads "Pass": it scores a
+  fixed 250, the same as a blank at the deadline, and stops the round
+  waiting on you. That is half what a uniform wash over the whole world
+  earns (about 500), so even the vaguest honest guess beats passing, but
+  well above a confident guess in the wrong place (near 0).
 - Paint is private until the round ends. The reveal shows the answer, every
   player's score, and lets you click a player to see their paint in their
   colour, or hide everyone's paint to see just the map and the answer. Rows
-  are in this round's order, winner first, with no-guess and sat-out rows
-  at the bottom; your own row is tinted. The round score is the headline on
+  are in this round's score order, winner first, with passes tagged and
+  sat-out rows at the bottom; your own row is tinted. The round score is the headline on
   each row; the running total sits beside it, small, until the final
   standings, and the arrows show rank changes. There is no timer on the
   reveal: it advances when everyone has pressed Ready, or when the host
