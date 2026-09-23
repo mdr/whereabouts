@@ -35,7 +35,7 @@ export function PlayerList({
   you: string;
   showScores: boolean;
   arrows?: boolean;
-  /** Mark players who have locked in this round. */
+  /** Mark players who have finished guessing this round. */
   showLocked?: boolean;
   /** A coloured circle with the initial instead of the small dot (the lobby). */
   avatars?: boolean;
@@ -64,8 +64,8 @@ export function PlayerList({
               {isYou ? <span class="tag">you</span> : null}
               {!p.connected ? <span class="tag">offline</span> : null}
               {showLocked && p.locked ? (
-                <span class="tag locked" title="Done">
-                  <Icon name="lock" size={11} /> locked
+                <span class="tag done" title="Finished guessing">
+                  <Icon name="check" size={11} /> done
                 </span>
               ) : null}
             </span>

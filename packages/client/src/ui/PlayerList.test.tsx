@@ -73,14 +73,14 @@ describe("PlayerList", () => {
 });
 
 describe("PlayerList status", () => {
-  it("shows a lock tag for players who have locked in, only when asked", () => {
+  it("shows a done tag for players who have finished guessing, only when asked", () => {
     const players = [player({ id: "p1", locked: true }), player({ id: "p2", name: "Bob", locked: false })];
     const { container: plain } = render(<PlayerList players={players} you="p2" showScores={false} />);
-    expect(plain.querySelector(".tag.locked")).toBeNull();
+    expect(plain.querySelector(".tag.done")).toBeNull();
     const { container } = render(<PlayerList players={players} you="p2" showScores={false} showLocked />);
     const rows = container.querySelectorAll("li");
-    expect(rows[0]!.querySelector(".tag.locked")).not.toBeNull();
-    expect(rows[1]!.querySelector(".tag.locked")).toBeNull();
+    expect(rows[0]!.querySelector(".tag.done")).not.toBeNull();
+    expect(rows[1]!.querySelector(".tag.done")).toBeNull();
   });
 });
 
