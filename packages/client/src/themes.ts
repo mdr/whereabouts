@@ -36,7 +36,7 @@ export const THEME: Theme = {
   water: "#131a23",
   wood: "#2f3b45",
   ice: "#3b4755",
-  waterway: "#1d3345",
+  waterway: "#3b6a8c",
   border: "#7b8a9c",
   road: "#465569",
   urban: "#344150",

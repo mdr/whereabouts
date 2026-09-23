@@ -21,7 +21,7 @@ import { Card, HudBottom, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../
 import { PaintDev, PaintTools } from "../ui/PaintTools";
 import { Banner } from "../ui/Banner";
 import { DevDrawer } from "../ui/DevDrawer";
-import { cheatLiveScore, soloKernelId, startOnPan } from "../settings";
+import { cheatLiveScore, soloKernelId, soloMapDetail, startOnPan } from "../settings";
 import { devMode } from "../dev";
 import { Icon } from "../ui/icons";
 
@@ -72,10 +72,11 @@ function SoloGame() {
 
   useEffect(() => paint.onHover((p) => (hover.value = p)), [paint]);
 
-  // Map detail that would give the answer away shows only on the reveal.
+  // The chosen map detail while painting; everything on the reveal.
+  const detail = soloMapDetail.value;
   useEffect(() => {
-    paint.gameMap.setGuessingHints(phase === "reveal");
-  }, [phase]);
+    paint.gameMap.setDetail(phase === "reveal" ? "reveal" : detail);
+  }, [phase, detail]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

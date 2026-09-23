@@ -29,7 +29,7 @@ export function MapView({ children }: { children: ComponentChildren }) {
     void gameMap.ready.then(() => {
       gameMap.applyTheme(THEME);
       // Anything that would give the location away stays hidden.
-      gameMap.setGuessingHints(false);
+      gameMap.setDetail("minimal");
       ctl = new PaintController(gameMap);
       window.whereabouts = { map: gameMap.map, gameMap, paint: ctl };
       setController(ctl);

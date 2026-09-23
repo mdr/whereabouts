@@ -1,5 +1,6 @@
 /** Per-browser preferences and identity, persisted where it makes sense. */
 import { effect, signal } from "@preact/signals";
+import type { MapDetail } from "@whereabouts/shared";
 
 function persisted<T extends string | boolean>(key: string, initial: T, storage: Storage = localStorage) {
   let start = initial;
@@ -23,6 +24,8 @@ function persisted<T extends string | boolean>(key: string, initial: T, storage:
 export const playerName = persisted<string>("wa.name", "");
 export const cheatLiveScore = persisted<boolean>("wa.cheat", false);
 export const soloKernelId = persisted<string>("wa.kernel", "single");
+/** Map detail while guessing in practice (one of MAP_DETAILS). */
+export const soloMapDetail = persisted<MapDetail>("wa.mapDetail", "minimal");
 /** Begin each round on the Pan tool rather than Paint; tablet players often want to look first. */
 export const startOnPan = persisted<boolean>("wa.startOnPan", false);
 

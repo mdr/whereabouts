@@ -1,7 +1,9 @@
 import { useState } from "preact/hooks";
-import { nameHandoff, playerName } from "../settings";
+import { MAP_DETAILS } from "@whereabouts/shared";
+import { nameHandoff, playerName, soloMapDetail } from "../settings";
 import { navigate } from "../router";
 import { Icon } from "../ui/icons";
+import { MapDetailPicker } from "../ui/MapDetailPicker";
 import hero800 from "../assets/hero-800.webp";
 import hero1448 from "../assets/hero-1448.webp";
 
@@ -83,6 +85,10 @@ export function Home() {
             <button class="big" onClick={() => navigate("/solo")}>
               <Icon name="brush" /> Practise
             </button>
+            <details class="practice-detail">
+              <summary>Map detail: {MAP_DETAILS.find((d) => d.id === soloMapDetail.value)?.label ?? "Minimal"}</summary>
+              <MapDetailPicker value={soloMapDetail.value} onChange={(v) => (soloMapDetail.value = v)} />
+            </details>
           </section>
         </div>
 

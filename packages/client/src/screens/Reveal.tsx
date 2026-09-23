@@ -50,13 +50,6 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
     paint.gameMap.showReveal(reveal.answer, reveal.question.toleranceKm);
   }, [reveal.index]);
 
-  // Borders, place names, rivers, ice and towns help make sense of the
-  // answer; they are hints while guessing, so they go back off on unmount.
-  useEffect(() => {
-    paint.gameMap.setGuessingHints(true);
-    return () => paint.gameMap.setGuessingHints(false);
-  }, []);
-
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
   useEffect(() => {

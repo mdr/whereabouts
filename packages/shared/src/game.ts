@@ -22,6 +22,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   rounds: 8,
   roundMs: 60_000,
   photoShare: 0.5,
+  mapDetail: "minimal",
   kernelId: "multi-equal",
 };
 
@@ -173,7 +174,7 @@ export class Game {
     return OK_CHANGED;
   }
 
-  /** Host tunes rounds, round length and the question mix while everyone is still in the lobby. */
+  /** Host tunes rounds, round length, the question mix and map detail while everyone is still in the lobby. */
   configure(token: string, patch: ConfigurePatch): CommandResult {
     if (!this.isHost(token)) return fail("only the host can change settings");
     if (this.phase !== "lobby") return fail("settings are locked once the game starts");
@@ -181,7 +182,8 @@ export class Game {
     if (
       next.rounds === this.config.rounds &&
       next.roundMs === this.config.roundMs &&
-      next.photoShare === this.config.photoShare
+      next.photoShare === this.config.photoShare &&
+      next.mapDetail === this.config.mapDetail
     )
       return OK_SAME;
     this.config = next;

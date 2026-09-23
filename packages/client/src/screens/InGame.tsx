@@ -43,6 +43,13 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     lastSentVersion.current = paint.version.peek();
   }, [roundKey, guessing]);
 
+  // The host's map detail while guessing; the reveal shows everything, since
+  // borders, place names, rivers and relief help make sense of the answer.
+  const reveal = view.phase === "reveal";
+  useEffect(() => {
+    paint.gameMap.setDetail(reveal ? "reveal" : view.config.mapDetail);
+  }, [reveal, view.config.mapDetail]);
+
   useEffect(() => {
     paint.enabled.value = guessing && !view.you.spectating && !view.you.locked;
   }, [guessing, view.you.spectating, view.you.locked]);

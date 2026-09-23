@@ -1523,3 +1523,65 @@ button.danger.solid {
     color: #0d1b24;
   }
 }
+
+/* Map detail: the same frame at each level, as picture choices. */
+.detail-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.detail-picker button {
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid transparent;
+  background: #2e343c;
+}
+.detail-picker img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+.detail-picker .name {
+  padding: 4px 6px 5px;
+  font-size: 12px;
+  text-align: center;
+}
+.detail-picker button.on {
+  border-color: var(--accent-2);
+}
+.detail-picker button.on .name {
+  background: var(--accent-2);
+  color: #0d1b24;
+  font-weight: 700;
+}
+.setup-summary .tile.map-detail {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  text-align: left;
+  gap: 12px;
+  padding: 8px;
+}
+.setup-summary .tile.map-detail img {
+  width: 96px;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.setup-summary .tile.map-detail .text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.practice-detail summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 4px 0;
+}
+.practice-detail[open] summary {
+  margin-bottom: 6px;
+}

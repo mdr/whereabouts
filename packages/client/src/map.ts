@@ -5,7 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 // import.meta.url. After bundling that points into /assets where no such
 // file exists, so hand it a worker Vite has bundled and knows the URL of.
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-import { cellsOutline, type LatLon } from "@whereabouts/shared";
+import { cellsOutline, type LatLon, type MapDetail } from "@whereabouts/shared";
 import type { Theme } from "./themes";
 
 setWorkerUrl(mapWorkerUrl);
@@ -36,6 +36,7 @@ export class GameMap {
   private roadLayers: string[] = [];
   private urbanLayers: string[] = [];
   private iceLayers: string[] = [];
+  private woodLayers: string[] = [];
   /** River lines; lakes are handled by filtering the shared water layer. */
   private waterwayLayers: string[] = [];
   private waterFilter: unknown = undefined;
@@ -95,7 +96,8 @@ export class GameMap {
       else if (urbanSources.has(sourceLayer)) this.urbanLayers.push(l.id);
       else if (sourceLayer === "waterway") this.waterwayLayers.push(l.id);
       // Glaciers and ice shelves: they trace mountain ranges and polar coasts.
-      else if (l.id.startsWith("landcover_") && l.id !== "landcover_wood") this.iceLayers.push(l.id);
+      else if (l.id === "landcover_wood") this.woodLayers.push(l.id);
+      else if (l.id.startsWith("landcover_")) this.iceLayers.push(l.id);
       else if (l.id === "water") this.waterFilter = this.map.getFilter("water");
     }
   }
@@ -280,23 +282,31 @@ export class GameMap {
     this.setVisible(this.iceLayers, on);
   }
 
-  /** Shaded relief. Off while guessing: it would show where the mountains are. */
+  /** Woodland (from zoom 10). */
+  setWood(on: boolean): void {
+    this.setVisible(this.woodLayers, on);
+  }
+
+  /** Shaded relief and natural colour. */
   setTerrain(on: boolean): void {
     this.setVisible([TERRAIN_LAYER, COLOUR_LAYER], on);
   }
 
   /**
-   * Everything that could give a location away, as one switch. Off while
-   * guessing; the reveal turns most of it back on, adding shaded relief
-   * (roads stay off, they clutter at the zooms the reveal uses).
+   * How much of the map shows: one of the game's guessing levels, or
+   * "reveal" for everything but roads (they clutter at the zooms the reveal
+   * uses). Place names and man-made detail show only on the reveal.
    */
-  setGuessingHints(on: boolean): void {
-    this.setTerrain(on);
-    this.setLabels(on);
-    this.setBorders(on);
-    this.setInlandWater(on);
-    this.setIce(on);
-    this.setUrban(on);
+  setDetail(level: MapDetail | "reveal"): void {
+    // An unknown level (a stale saved setting, say) counts as minimal.
+    const rank = { minimal: 0, water: 1, physical: 2, political: 3, reveal: 4 }[level] ?? 0;
+    this.setInlandWater(rank >= 1);
+    this.setTerrain(rank >= 2);
+    this.setIce(rank >= 2);
+    this.setWood(rank >= 2);
+    this.setBorders(rank >= 3);
+    this.setLabels(rank >= 4);
+    this.setUrban(rank >= 4);
     this.setRoads(false);
   }
 

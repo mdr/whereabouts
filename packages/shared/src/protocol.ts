@@ -67,6 +67,18 @@ export const PHOTO_MIXES = [
   { share: 0, label: "Place names" },
 ] as const;
 
+/**
+ * How much of the map shows while guessing, least first. The reveal always
+ * shows everything; place names never show while guessing.
+ */
+export const MAP_DETAILS = [
+  { id: "minimal", label: "Minimal", detail: "Coastlines only" },
+  { id: "water", label: "Water", detail: "Adds rivers and lakes" },
+  { id: "physical", label: "Physical", detail: "Adds mountains, forests, ice and colour" },
+  { id: "political", label: "Political", detail: "Adds country borders" },
+] as const;
+export type MapDetail = (typeof MAP_DETAILS)[number]["id"];
+
 /** Host changes to the game settings while in the lobby. */
 export const ConfigureSchema = z.object({
   rounds: z.number().int().min(MIN_ROUNDS).max(MAX_ROUNDS).optional(),
@@ -79,6 +91,7 @@ export const ConfigureSchema = z.object({
     .number()
     .refine((v) => PHOTO_MIXES.some((m) => m.share === v), "unsupported question mix")
     .optional(),
+  mapDetail: z.enum(MAP_DETAILS.map((d) => d.id) as [MapDetail, ...MapDetail[]]).optional(),
 });
 export type ConfigurePatch = z.infer<typeof ConfigureSchema>;
 
@@ -110,6 +123,8 @@ export interface GameConfig {
   roundMs: number;
   /** Share of questions that are photos (one of PHOTO_MIXES); the rest name a place. */
   photoShare: number;
+  /** How much of the map shows while guessing (one of MAP_DETAILS). */
+  mapDetail: MapDetail;
   kernelId: string;
 }
 

@@ -424,6 +424,17 @@ describe("configure", () => {
     expect(g.view("tokA", T0).round!.question.image).toBe("Petra.jpg");
   });
 
+  it("starts on minimal map detail and lets the host change it in the lobby", () => {
+    const g = twoPlayerGame(1);
+    expect(g.view("tokB", T0).config.mapDetail).toBe("minimal");
+    expect(g.configure("tokB", { mapDetail: "water" }).ok).toBe(false);
+    expect(g.configure("tokA", { mapDetail: "physical" })).toEqual({ ok: true, changed: true });
+    expect(g.configure("tokA", { mapDetail: "physical" })).toEqual({ ok: true, changed: false });
+    expect(g.view("tokB", T0).config.mapDetail).toBe("physical");
+    g.start("tokA", T0);
+    expect(g.configure("tokA", { mapDetail: "political" }).ok).toBe(false);
+  });
+
   it("reports who has locked in", () => {
     const g = twoPlayerGame(1);
     g.start("tokA", T0);

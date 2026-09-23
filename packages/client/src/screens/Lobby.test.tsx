@@ -11,7 +11,7 @@ function view(isHost: boolean): GameView {
   return {
     code: "AB12",
     phase: "lobby",
-    config: { rounds: 5, roundMs: 60000, photoShare: 0.5, kernelId: "multi-equal" },
+    config: { rounds: 5, roundMs: 60000, photoShare: 0.5, mapDetail: "minimal", kernelId: "multi-equal" },
     serverTime: 0,
     you: { id: "p1", isHost, spectating: false, locked: false, paint: null },
     players: [
@@ -73,14 +73,18 @@ describe("Lobby setup", () => {
     const slider = container.querySelector<HTMLInputElement>(".questions input[type=range]")!;
     fireEvent.input(slider, { target: { value: "0" } }); // the photos end
     expect(configure).toHaveBeenCalledWith({ photoShare: 1 });
+    const minimal = container.querySelector('.detail-picker [aria-checked="true"]')!;
+    expect(minimal.textContent).toBe("Minimal");
+    fireEvent.click([...container.querySelectorAll(".detail-picker button")].find((b) => b.textContent === "Water")!);
+    expect(configure).toHaveBeenCalledWith({ mapDetail: "water" });
     expect(container.querySelector(".setup-summary")).toBeNull();
   });
 
   it("shows guests the decided values, not controls", () => {
     const { container } = render(<Lobby conn={conn} view={view(false)} />);
-    expect(container.querySelector(".pills, .stepper, input[type=range]")).toBeNull();
+    expect(container.querySelector(".pills, .stepper, input[type=range], .detail-picker")).toBeNull();
     const tiles = [...container.querySelectorAll(".setup-summary .tile")].map((t) => t.textContent);
-    expect(tiles).toEqual(["5rounds", "60 sper round", "Evenquestions"]);
+    expect(tiles).toEqual(["5rounds", "60 sper round", "Evenquestions", "Minimalmap · coastlines only"]);
     // Nothing is highlighted on first load.
     expect(container.querySelector(".tile.changed")).toBeNull();
   });

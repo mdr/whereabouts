@@ -119,7 +119,13 @@ pnpm workspace with three packages:
   length (30, 45, 60, 90 or 120 seconds) and the question mix: photos, mostly
   photos, even (the default), mostly names or place names. Rounds use a − / +
   stepper, round length a row of pills, and the question mix a slider with
-  five fixed stops. Guests see just the decided values as tiles, which
+  five fixed stops. The host also picks the map detail while guessing, from
+  four picture choices (each a preview of the same frame, made by
+  `scripts/map-detail-previews.mjs`): Minimal (coastlines only, the
+  default), Water (adds rivers and lakes), Physical (adds relief, natural
+  colour, forests and ice) and Political (adds country borders). Place names
+  never show while guessing. Practice remembers its own choice, set under
+  the Practise button. Guests see just the decided values as tiles, which
   flash briefly when the host changes one. The lobby also offers Copy link and, where
   the browser supports it, Share.
 - Rounds default to 60 seconds. Whatever is painted at the deadline is the guess;
@@ -236,18 +242,17 @@ started as a stray one-finger dab takes that paint back. Below 640px wide
 (phones) the HUD becomes one column: cards at the top, the toolbar across
 the bottom with icon-only tool buttons, and the map in between; the zoom
 buttons go (pinch instead) and the attribution button sits above the
-toolbar. While guessing, place names, country borders, man-made detail
-(roads, railways, buildings, airports, urban land use), inland water
-(rivers, lakes) and glaciers (they trace mountain ranges) are all hidden;
-coastlines and woodland stay. The reveal turns everything but roads back
+toolbar. While guessing, place names and man-made detail (roads, railways,
+buildings, airports, urban land use) are always hidden; how much else shows
+depends on the game's map detail, and on Minimal only coastlines do. The reveal turns everything but roads back
 on and adds shaded relief from the public AWS terrain tiles (Terrarium
 encoding, no key). The relief sits under the water layer, since the tiles
-carry ocean depths too, and no terrain tiles are fetched while guessing
-(the multiplayer smoke checks this). Under the relief goes natural colour
+carry ocean depths too, and on Minimal and Water no terrain tiles are fetched
+while guessing (the multiplayer smoke checks this). Under the relief goes natural colour
 (green lowlands, desert sand, white ice) from the Natural Earth II tiles the
 positron style already declares on OpenFreeMap. They stop at zoom 6 and are
 stretched beyond it, which the relief on top hides. Dimmed to suit the dark
-theme, and likewise hidden while guessing. A lobby checkbox, remembered per device, starts each round on the Pan
+theme, and likewise hidden while guessing below Physical. A lobby checkbox, remembered per device, starts each round on the Pan
 tool instead of Paint.
 
 ## Developer mode

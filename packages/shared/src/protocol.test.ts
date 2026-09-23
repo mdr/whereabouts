@@ -52,6 +52,8 @@ describe("ConfigureSchema", () => {
     expect(ConfigureSchema.safeParse({ roundMs: 61_000 }).success).toBe(false);
     expect(ConfigureSchema.safeParse({ photoShare: 0.75 }).success).toBe(true);
     expect(ConfigureSchema.safeParse({ photoShare: 0.6 }).success).toBe(false);
+    expect(ConfigureSchema.safeParse({ mapDetail: "political" }).success).toBe(true);
+    expect(ConfigureSchema.safeParse({ mapDetail: "satellite" }).success).toBe(false);
   });
 });
 

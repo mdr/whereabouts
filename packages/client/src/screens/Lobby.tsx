@@ -8,6 +8,7 @@ import { Icon } from "../ui/icons";
 import { Pills, StopSlider, Stepper } from "../ui/Controls";
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 import { Banner } from "../ui/Banner";
+import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker";
 
 const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }));
 const MIXES = PHOTO_MIXES.map((m) => ({ value: m.share, label: m.label }));
@@ -114,6 +115,13 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     onChange={(photoShare) => conn.configure({ photoShare })}
                   />
                 </div>
+                <div class="setting map-detail">
+                  <span class="setting-label">Map detail</span>
+                  <MapDetailPicker
+                    value={view.config.mapDetail}
+                    onChange={(mapDetail) => conn.configure({ mapDetail })}
+                  />
+                </div>
               </>
             ) : (
               <>
@@ -185,7 +193,7 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: strin
  * that plays a short highlight; nothing flashes on first load.
  */
 function SetupSummary({ view }: { view: GameView }) {
-  const { rounds, roundMs, photoShare } = view.config;
+  const { rounds, roundMs, photoShare, mapDetail } = view.config;
   const shown = useRef(view.config);
   const before = shown.current;
   useEffect(() => {
@@ -210,6 +218,9 @@ function SetupSummary({ view }: { view: GameView }) {
           <span class="label">{t.label}</span>
         </div>
       ))}
+      <div key={`map:${mapDetail}`} class={`tile map-detail ${mapDetail !== before.mapDetail ? "changed" : ""}`}>
+        <MapDetailSummary value={mapDetail} />
+      </div>
     </div>
   );
 }
