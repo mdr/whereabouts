@@ -243,7 +243,11 @@ coastlines and woodland stay. The reveal turns everything but roads back
 on and adds shaded relief from the public AWS terrain tiles (Terrarium
 encoding, no key). The relief sits under the water layer, since the tiles
 carry ocean depths too, and no terrain tiles are fetched while guessing
-(the multiplayer smoke checks this). A lobby checkbox, remembered per device, starts each round on the Pan
+(the multiplayer smoke checks this). Under the relief goes natural colour
+(green lowlands, desert sand, white ice) from the Natural Earth II tiles the
+positron style already declares on OpenFreeMap. They stop at zoom 6 and are
+stretched beyond it, which the relief on top hides. Dimmed to suit the dark
+theme, and likewise hidden while guessing. A lobby checkbox, remembered per device, starts each round on the Pan
 tool instead of Paint.
 
 ## Developer mode

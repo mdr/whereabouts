@@ -16,6 +16,9 @@ const REVEAL_SOURCE = "reveal";
 const CURSOR_SOURCE = "cursor";
 const TERRAIN_SOURCE = "terrain";
 const TERRAIN_LAYER = "terrain-hillshade";
+/** Natural Earth II colour relief, declared (but not drawn) by the positron style. */
+const COLOUR_SOURCE = "ne2_shaded";
+const COLOUR_LAYER = "natural-colour";
 
 /** World circumference at the equator in metres, for metres-per-pixel maths. */
 const WORLD_M = 40075016.686;
@@ -112,6 +115,26 @@ export class GameMap {
         '<a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank">Terrain: Mapzen, AWS Open Data</a>',
     });
     const below = this.map.getLayer("water") ? "water" : this.labelLayers[0];
+    // Natural colour for the reveal: greens, desert sand, white ice, from
+    // Natural Earth II relief tiles on the same host as the map. Like the
+    // relief it starts hidden and sits under the water (the tiles have a
+    // transparent sea). Dimmed to sit on the dark theme.
+    if (this.map.getSource(COLOUR_SOURCE)) {
+      this.map.addLayer(
+        {
+          id: COLOUR_LAYER,
+          type: "raster",
+          source: COLOUR_SOURCE,
+          layout: { visibility: "none" },
+          paint: {
+            "raster-opacity": 0.9,
+            "raster-brightness-max": 0.55,
+            "raster-saturation": 0.2,
+          },
+        },
+        below,
+      );
+    }
     this.map.addLayer(
       {
         id: TERRAIN_LAYER,
@@ -259,7 +282,7 @@ export class GameMap {
 
   /** Shaded relief. Off while guessing: it would show where the mountains are. */
   setTerrain(on: boolean): void {
-    this.setVisible([TERRAIN_LAYER], on);
+    this.setVisible([TERRAIN_LAYER, COLOUR_LAYER], on);
   }
 
   /**
@@ -279,7 +302,9 @@ export class GameMap {
 
   private setVisible(ids: string[], on: boolean): void {
     if (this.disposed) return;
-    for (const id of ids) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+    for (const id of ids) {
+      if (this.map.getLayer(id)) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+    }
   }
 
   /** Rivers and lakes. Oceans always stay visible so coastlines remain. */
