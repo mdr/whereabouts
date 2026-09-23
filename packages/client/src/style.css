@@ -1262,6 +1262,29 @@ button.danger.solid {
 .home-card.lobby {
   width: min(880px, 100%);
 }
+/* A strip of the front-page picture, cropped to the spray, under the title. */
+.lobby-banner {
+  position: relative;
+  margin: 0;
+  height: 140px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.lobby-banner img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+.lobby-banner h1 {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 36px 20px 12px;
+  background: linear-gradient(to top, rgba(15, 18, 21, 0.9), rgba(15, 18, 21, 0));
+}
 .lobby-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1414,6 +1437,13 @@ button.danger.solid {
     background: none;
     box-shadow: none;
     padding: 4px 0;
+  }
+  .lobby-banner {
+    height: 96px;
+  }
+  .lobby-banner h1 {
+    padding: 28px 14px 8px;
+    font-size: 26px;
   }
 }
 
