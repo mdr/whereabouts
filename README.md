@@ -67,7 +67,9 @@ scales out. The flake builds everything:
 
 Every push to `main` runs the checks and, alongside them, the `image` job,
 which builds the image with Nix and pushes it to
-`registry.fly.io/whereabouts-game:<sha>` with skopeo. Once both pass, the
+`registry.fly.io/whereabouts-game:<sha>` with skopeo (caching skopeo's
+blob info between runs, so layers already in the registry are skipped
+rather than uploaded again). Once both pass, the
 `deploy` job runs `fly deploy --image`, so a failed check never goes live
 (it just leaves an unused image in the registry). It authenticates with the `FLY_API_TOKEN`
 repository secret, a deploy token scoped to the app.

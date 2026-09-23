@@ -44,6 +44,8 @@ jobs:
   image:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      flyctl: ${{ steps.flyctl.outputs.path }}
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       IMAGE: registry.fly.io/whereabouts-game:${{ github.sha }}
@@ -69,6 +71,17 @@ jobs:
       - name: Build image
         if: steps.token.outputs.present == 'true'
         run: nix build .#image --no-link --print-out-paths > image-streamer
+      # The image streams uncompressed layers and the registry holds them
+      # gzipped, so skopeo can only tell a layer is already there from its
+      # blob info cache, which maps one digest to the other. Without it, a
+      # fresh runner uploads all ~60 layers every time, though only the app's
+      # changes. The key is per run so each run saves the updated cache.
+      - uses: actions/cache@v6
+        if: steps.token.outputs.present == 'true'
+        with:
+          path: ~/.local/share/containers/cache
+          key: skopeo-blob-info-${{ github.run_id }}
+          restore-keys: skopeo-blob-info-
       - name: Push image
         if: steps.token.outputs.present == 'true'
         run: |
@@ -76,6 +89,13 @@ jobs:
             --insecure-policy \
             --dest-creds "x:$FLY_API_TOKEN" \
             docker-archive:/dev/stdin "docker://$IMAGE"
+      # Hand the deploy job flyctl's store path, from the flake's pinned
+      # nixpkgs, so it can fetch flyctl from cache.nixos.org without
+      # downloading and evaluating nixpkgs itself.
+      - name: Locate flyctl
+        id: flyctl
+        if: steps.token.outputs.present == 'true'
+        run: echo "path=$(nix eval --raw --inputs-from . nixpkgs#flyctl.outPath)" >> "$GITHUB_OUTPUT"
 
   # Roll out the image pushed above, once the checks have passed too.
   deploy:
@@ -104,4 +124,8 @@ jobs:
         if: steps.token.outputs.present == 'true'
       - name: Deploy
         if: steps.token.outputs.present == 'true'
-        run: nix develop .#deploy -c fly deploy --image "$IMAGE" --ha=false --yes
+        env:
+          FLYCTL: ${{ needs.image.outputs.flyctl }}
+        run: |
+          nix build "$FLYCTL" --no-link
+          "$FLYCTL/bin/fly" deploy --image "$IMAGE" --ha=false --yes
