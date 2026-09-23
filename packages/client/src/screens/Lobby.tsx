@@ -1,11 +1,11 @@
-import { useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { MAX_ROUNDS, MIN_ROUNDS, PHOTO_MIXES, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { playerName, startOnPan } from "../settings";
 import { HostWord, PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { Icon } from "../ui/icons";
-import { Pills, Stepper } from "../ui/Controls";
+import { Pills, StopSlider, Stepper } from "../ui/Controls";
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 
 const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }));
@@ -13,8 +13,8 @@ const MIXES = PHOTO_MIXES.map((m) => ({ value: m.share, label: m.label }));
 
 /**
  * Waiting room: invite on the left (code, link, players), the game setup on
- * the right. Guests see the same controls as the host, read-only, so they
- * follow along as settings change.
+ * the right. The host gets the controls; guests see the decided values,
+ * which highlight briefly when the host changes one.
  */
 export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   const url = `${location.origin}${location.pathname}#/game/${view.code}`;
@@ -83,38 +83,44 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
 
           <section class="lobby-panel">
             <h2>Game setup</h2>
-            <div class="setting rounds">
-              <span class="setting-label">Rounds</span>
-              <Stepper
-                label="Rounds"
-                value={view.config.rounds}
-                min={MIN_ROUNDS}
-                max={MAX_ROUNDS}
-                onChange={host ? (rounds) => conn.configure({ rounds }) : undefined}
-              />
-            </div>
-            <div class="setting seconds">
-              <span class="setting-label">Seconds per round</span>
-              <Pills
-                label="Seconds per round"
-                options={SECONDS}
-                value={view.config.roundMs}
-                onChange={host ? (roundMs) => conn.configure({ roundMs }) : undefined}
-              />
-            </div>
-            <div class="setting questions">
-              <span class="setting-label">Questions</span>
-              <Pills
-                label="Questions"
-                options={MIXES}
-                value={view.config.photoShare}
-                onChange={host ? (photoShare) => conn.configure({ photoShare }) : undefined}
-              />
-            </div>
-            {!host && (
-              <p class="hint">
-                <HostWord capital /> picks these.
-              </p>
+            {host ? (
+              <>
+                <div class="setting rounds">
+                  <span class="setting-label">Rounds</span>
+                  <Stepper
+                    label="Rounds"
+                    value={view.config.rounds}
+                    min={MIN_ROUNDS}
+                    max={MAX_ROUNDS}
+                    onChange={(rounds) => conn.configure({ rounds })}
+                  />
+                </div>
+                <div class="setting seconds">
+                  <span class="setting-label">Seconds per round</span>
+                  <Pills
+                    label="Seconds per round"
+                    options={SECONDS}
+                    value={view.config.roundMs}
+                    onChange={(roundMs) => conn.configure({ roundMs })}
+                  />
+                </div>
+                <div class="setting questions">
+                  <span class="setting-label">Questions</span>
+                  <StopSlider
+                    label="Questions"
+                    options={MIXES}
+                    value={view.config.photoShare}
+                    onChange={(photoShare) => conn.configure({ photoShare })}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <SetupSummary view={view} />
+                <p class="hint">
+                  <HostWord capital /> picks these.
+                </p>
+              </>
             )}
             <h2>This device</h2>
             <label class="check switch start-on-pan">
@@ -169,5 +175,40 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: strin
         Save
       </button>
     </form>
+  );
+}
+
+/**
+ * What a guest sees of the setup: the decided values as tiles. A tile whose
+ * value just changed is remounted (it is keyed on the value) with a class
+ * that plays a short highlight; nothing flashes on first load.
+ */
+function SetupSummary({ view }: { view: GameView }) {
+  const { rounds, roundMs, photoShare } = view.config;
+  const shown = useRef(view.config);
+  const before = shown.current;
+  useEffect(() => {
+    shown.current = view.config;
+  });
+  const mix = MIXES.find((m) => m.value === photoShare)?.label ?? "Even";
+  const tiles = [
+    {
+      key: "rounds",
+      value: String(rounds),
+      label: rounds === 1 ? "round" : "rounds",
+      changed: rounds !== before.rounds,
+    },
+    { key: "seconds", value: `${roundMs / 1000} s`, label: "per round", changed: roundMs !== before.roundMs },
+    { key: "questions", value: mix, label: "questions", changed: photoShare !== before.photoShare },
+  ];
+  return (
+    <div class="setup-summary">
+      {tiles.map((t) => (
+        <div key={`${t.key}:${t.value}`} class={`tile ${t.key} ${t.changed ? "changed" : ""}`}>
+          <span class="value">{t.value}</span>
+          <span class="label">{t.label}</span>
+        </div>
+      ))}
+    </div>
   );
 }

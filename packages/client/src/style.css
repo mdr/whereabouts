@@ -1341,14 +1341,6 @@ button.danger.solid {
   color: #0d1b24;
   font-weight: 700;
 }
-/* Guests see the host's choice, not a greyed-out control. */
-.pills button:disabled {
-  opacity: 1;
-}
-.pills button:disabled:not(.on) {
-  color: var(--muted);
-  background: transparent;
-}
 .stepper {
   display: flex;
   align-items: center;
@@ -1422,5 +1414,78 @@ button.danger.solid {
     background: none;
     box-shadow: none;
     padding: 4px 0;
+  }
+}
+
+/* Host: the question mix along a scale from photos to place names. */
+.stop-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stop-slider .current {
+  font-weight: 700;
+  font-size: 15px;
+}
+.stop-slider input[type="range"] {
+  width: 100%;
+  margin: 4px 0 0;
+  accent-color: var(--accent-2);
+  cursor: pointer;
+}
+/* Tick marks under the track; the side padding lines them up with the thumb's centre at each end. */
+.stop-slider .ticks {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 7px;
+}
+.stop-slider .ticks span {
+  width: 2px;
+  height: 6px;
+  background: #4a5460;
+  border-radius: 1px;
+}
+.stop-slider .ticks span.on {
+  background: var(--accent-2);
+}
+.stop-slider .ends {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Guest: the decided setup as tiles. */
+.setup-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.setup-summary .tile {
+  background: #2e343c;
+  border-radius: 8px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+}
+.setup-summary .value {
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.setup-summary .label {
+  color: var(--muted);
+  font-size: 12px;
+}
+.setup-summary .tile.changed {
+  animation: tile-changed 1.2s ease-out;
+}
+@keyframes tile-changed {
+  from {
+    background: var(--accent-2);
+    color: #0d1b24;
   }
 }

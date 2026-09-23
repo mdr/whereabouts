@@ -54,12 +54,19 @@ for (let n = Number(await alice.textContent(".rounds .value")); n !== 3;) {
   await alice.waitForSelector(`.rounds .value:text-is("${n}")`);
 }
 await alice.click('.seconds .pills button:text-is("30")');
-await alice.click('.questions .pills button:text-is("Photos")');
-// Bob sees the host's choices on his own, read-only controls.
-await bob.waitForSelector('.rounds .value:text-is("3")', { timeout: 5000 });
-await bob.waitForSelector('.seconds .pills button.on:text-is("30")', { timeout: 5000 });
-await bob.waitForSelector('.questions .pills button.on:text-is("Photos")', { timeout: 5000 });
-console.log("bob cannot change settings:", (await bob.$('[aria-label="Fewer rounds"]')) === null ? "ok" : "FAIL");
+// The question mix is a slider with fixed stops; its left end is all photos.
+await alice.$eval(".questions input[type=range]", (el) => {
+  el.value = "0";
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+});
+// Bob sees the decided values as tiles, not controls.
+await bob.waitForSelector('.setup-summary .rounds .value:text-is("3")', { timeout: 5000 });
+await bob.waitForSelector('.setup-summary .seconds .value:text-is("30 s")', { timeout: 5000 });
+await bob.waitForSelector('.setup-summary .questions .value:text-is("Photos")', { timeout: 5000 });
+console.log(
+  "bob cannot change settings:",
+  (await bob.$(".pills, .stepper, input[type=range]")) === null ? "ok" : "FAIL",
+);
 console.log("settings propagated to Bob");
 await alice.screenshot({ path: `${out}/mp-1b-lobby-settings.png` });
 

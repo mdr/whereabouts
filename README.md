@@ -118,8 +118,9 @@ pnpm workspace with three packages:
   In the lobby the host picks the number of rounds (1 to 15), the round
   length (30, 45, 60, 90 or 120 seconds) and the question mix: photos, mostly
   photos, even (the default), mostly names or place names. Rounds use a − / +
-  stepper and the rest are rows of pills; guests see the same controls,
-  read-only, so they follow along. The lobby also offers Copy link and, where
+  stepper, round length a row of pills, and the question mix a slider with
+  five fixed stops. Guests see just the decided values as tiles, which
+  flash briefly when the host changes one. The lobby also offers Copy link and, where
   the browser supports it, Share.
 - Rounds default to 60 seconds. Whatever is painted at the deadline is the guess;
   "Done" freezes it early, and the round ends as soon as every active

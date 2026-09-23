@@ -66,22 +66,30 @@ describe("Lobby", () => {
 });
 
 describe("Lobby setup", () => {
-  it("lets the host change settings and shows guests the same choices read-only", () => {
-    const { container, unmount } = render(<Lobby conn={conn} view={view(true)} />);
+  it("gives the host the controls", () => {
+    const { container } = render(<Lobby conn={conn} view={view(true)} />);
     fireEvent.click(container.querySelector('[aria-label="More rounds"]')!);
     expect(configure).toHaveBeenCalledWith({ rounds: 6 });
-    const photos = [...container.querySelectorAll<HTMLButtonElement>(".questions .pills button")].find(
-      (b) => b.textContent === "Photos",
-    )!;
-    fireEvent.click(photos);
+    const slider = container.querySelector<HTMLInputElement>(".questions input[type=range]")!;
+    fireEvent.input(slider, { target: { value: "0" } }); // the photos end
     expect(configure).toHaveBeenCalledWith({ photoShare: 1 });
-    unmount();
+    expect(container.querySelector(".setup-summary")).toBeNull();
+  });
 
-    const guest = render(<Lobby conn={conn} view={view(false)} />).container;
-    expect(guest.querySelector('[aria-label="More rounds"]')).toBeNull();
-    expect(guest.querySelector(".rounds .value")!.textContent).toBe("5");
-    expect(guest.querySelector(".seconds .pills button.on")!.textContent).toBe("60");
-    expect(guest.querySelector(".questions .pills button.on")!.textContent).toBe("Even");
-    expect([...guest.querySelectorAll(".pills button")].every((b) => (b as HTMLButtonElement).disabled)).toBe(true);
+  it("shows guests the decided values, not controls", () => {
+    const { container } = render(<Lobby conn={conn} view={view(false)} />);
+    expect(container.querySelector(".pills, .stepper, input[type=range]")).toBeNull();
+    const tiles = [...container.querySelectorAll(".setup-summary .tile")].map((t) => t.textContent);
+    expect(tiles).toEqual(["5rounds", "60 sper round", "Evenquestions"]);
+    // Nothing is highlighted on first load.
+    expect(container.querySelector(".tile.changed")).toBeNull();
+  });
+
+  it("highlights only the value the host just changed", () => {
+    const { container, rerender } = render(<Lobby conn={conn} view={view(false)} />);
+    const next = view(false);
+    next.config = { ...next.config, roundMs: 30_000 };
+    rerender(<Lobby conn={conn} view={next} />);
+    expect([...container.querySelectorAll(".tile.changed")].map((t) => t.textContent)).toEqual(["30 sper round"]);
   });
 });
