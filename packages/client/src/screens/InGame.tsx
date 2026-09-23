@@ -14,6 +14,7 @@ import { PlayersPanel } from "../ui/PlayersPanel";
 import { EndGameButton } from "../ui/HostControls";
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 import { startOnPan } from "../settings";
+import { sound } from "../sound";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint();
@@ -77,6 +78,8 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     if (sendTimer.current) clearTimeout(sendTimer.current);
     if (!paint.layer.isEmpty) {
       conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.value });
+    } else {
+      sound.play("chicken");
     }
     conn.lock();
   }

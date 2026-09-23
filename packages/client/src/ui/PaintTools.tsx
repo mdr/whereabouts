@@ -3,6 +3,7 @@ import { usePaint } from "./MapView";
 import { Card, HudBottom, fmtKm } from "./bits";
 import type { Tool } from "../paint-controller";
 import { Icon, type IconName } from "./icons";
+import { sound } from "../sound";
 
 const TOOL_ICON: Record<Tool, IconName> = { pan: "hand", paint: "brush", erase: "eraser" };
 const TOOL_HINT: Record<Tool, string> = {
@@ -19,6 +20,11 @@ export function PaintTools({ children }: { children?: ComponentChildren }) {
   const paint = usePaint();
   const tool = paint.tool.value;
   const enabled = paint.enabled.value;
+  // The whoosh only when there was paint to wipe.
+  const clear = () => {
+    if (!paint.layer.isEmpty) sound.play("clear");
+    paint.clear();
+  };
   return (
     <HudBottom>
       <div class="tools">
@@ -33,7 +39,7 @@ export function PaintTools({ children }: { children?: ComponentChildren }) {
             <Icon name={TOOL_ICON[t]} /> <span class="label">{t[0]!.toUpperCase() + t.slice(1)}</span>
           </button>
         ))}
-        <button title="Clear all paint (Undo brings it back)" onClick={() => paint.clear()} disabled={!enabled}>
+        <button title="Clear all paint (Undo brings it back)" onClick={clear} disabled={!enabled}>
           <Icon name="trash" /> <span class="label">Clear</span>
         </button>
       </div>

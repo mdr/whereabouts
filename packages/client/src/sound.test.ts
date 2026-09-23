@@ -42,8 +42,15 @@ describe("roundCue", () => {
     expect(roundCue(guessing(0), reveal(0), -300)).toBeNull();
   });
 
-  it("stops the countdown when the host ends the game mid-round", () => {
-    expect(roundCue(guessing(1), { phase: "results", round: null }, 30_000)).toBe("stop");
+  it("applauds the final results, whether reached from the reveal or by the host ending the game mid-round", () => {
+    const results = { phase: "results", round: null };
+    expect(roundCue(reveal(1), results, 0)).toBe("results");
+    expect(roundCue(guessing(1), results, 30_000)).toBe("results");
+    expect(roundCue(results, results, 0)).toBeNull();
+  });
+
+  it("does not applaud a refresh on the results screen", () => {
+    expect(roundCue(null, { phase: "results", round: null }, 0)).toBeNull();
   });
 
   it("stays quiet for changes within a phase", () => {

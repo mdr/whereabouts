@@ -1,9 +1,10 @@
 // Checks the game's sounds start and stop when they should, by recording
 // every Web Audio source the page starts (it cannot judge how they sound).
-// Two players: the rising cue at round start, the spray while painting (and
-// not while erasing), the countdown at ten seconds left, the falling cue and
-// no alarm when everyone finishes early, the alarm when time runs out, and
-// silence with the switch off. Needs the dev servers, with the game server
+// Two players: the rising cue at round start, the spray while painting and
+// the eraser while erasing, the whoosh for Clear, the chicken for a pass,
+// the countdown at ten seconds left, the falling cue and no alarm when
+// everyone finishes early, the alarm when time runs out, applause at the
+// final results, and silence with the switch off. Needs the dev servers, with the game server
 // run as ROUND_MS=12000 ROUNDS=2. Usage, from packages/client:
 // node scripts/sound-smoke.mjs
 import { chromium } from "playwright-core";
@@ -19,8 +20,10 @@ const browser = await chromium.launch({
 const recorder = () => {
   window.__audio = [];
   const log = (e) => window.__audio.push({ ...e, at: performance.now() });
-  // spray.mp3 is about 26 s long, countdown.mp3 12.5 s.
-  const clipOf = (b) => (!b ? null : b.duration > 20 ? "spray" : b.duration > 10 ? "countdown" : "other");
+  // Each clip is recognised by its length (decoded lengths can differ by a frame or two).
+  const LENGTHS = { spray: 26.38, eraser: 4.58, countdown: 12.5, chicken: 2.75, clear: 0.45, applause: 2.89 };
+  const clipOf = (b) =>
+    !b ? null : (Object.entries(LENGTHS).find(([, len]) => Math.abs(b.duration - len) < 0.06)?.[0] ?? "other");
   const bufStart = AudioBufferSourceNode.prototype.start;
   AudioBufferSourceNode.prototype.start = function (when, offset, duration) {
     log({ kind: "buffer", clip: clipOf(this.buffer), offset, duration });
@@ -48,6 +51,7 @@ async function player(name) {
 const events = (page) => page.evaluate(() => window.__audio.splice(0));
 const SPRAY = "spray";
 const COUNTDOWN = "countdown";
+const played = (evs, clip) => evs.some((e) => e.kind === "buffer" && e.clip === clip);
 const cueNotes = (evs) => evs.filter((e) => e.kind === "osc" && e.freq < 1500).map((e) => e.freq);
 let failures = 0;
 const check = (label, ok, detail = "") => {
@@ -110,8 +114,15 @@ await host.click('button:has-text("Erase")');
 await stroke(host, 800);
 evs = await events(host);
 sinceStart.push(...evs);
-check("erasing is silent", !evs.some((e) => e.kind === "buffer" && e.clip === SPRAY));
+check("erasing rubs the eraser, not the spray", played(evs, "eraser") && !played(evs, SPRAY));
 await host.click('button:has-text("Paint")');
+
+// Clear whooshes when there is paint to wipe; Undo brings the paint back for Done below.
+await host.click('button:has-text("Clear")');
+evs = await events(host);
+sinceStart.push(...evs);
+check("Clear plays the whoosh", played(evs, "clear"));
+await host.keyboard.press("Control+z");
 
 // The countdown starts with ten seconds left (the round is 12 s).
 await host.waitForTimeout(1500);
@@ -128,6 +139,8 @@ await events(guest);
 
 // Everyone done early: the falling pair, and the countdown stops before its alarm.
 await guest.click('button:has-text("Pass")');
+await guest.waitForTimeout(200);
+check("passing plays the chicken", played(await events(guest), "chicken"));
 await host.click('button:has-text("Done")');
 await host.waitForSelector(".reveal-list, .reveal", { timeout: 10000 });
 await host.waitForTimeout(300);
@@ -155,6 +168,13 @@ check(
   !evs.some((e) => e.kind === "stop" && e.clip === COUNTDOWN),
   JSON.stringify(evs.map((e) => e.kind + (e.clip ?? e.freq))),
 );
+
+// The final results: applause for everyone.
+await host.click('button:has-text("Show final results")');
+await host.waitForSelector(".results-card", { timeout: 10000 });
+await host.waitForTimeout(400);
+check("the host hears applause at the final results", played(await events(host), "applause"));
+check("the guest hears it too", played(await events(guest), "applause"));
 
 // With the switch off, painting is silent (checked in practice mode).
 const solo = await player("solo");

@@ -43,16 +43,18 @@ export function MapView({ children }: { children: ComponentChildren }) {
     };
   }, []);
 
-  // The spray plays while a paint stroke is held and painting is allowed;
-  // it stops when the stroke ends, the round locks you out, or the map goes.
+  // The spray (or the eraser) plays while a stroke is held and painting is
+  // allowed; it stops when the stroke ends, the round locks you out, or the
+  // map goes.
   useEffect(() => {
     if (!controller) return;
-    const stop = effect(() =>
-      sound.setSpraying(controller.spraying.value && controller.enabled.value && soundOn.value),
-    );
+    const stop = effect(() => {
+      const tool = controller.enabled.value && soundOn.value ? controller.stroking.value : null;
+      sound.setStroke(tool === "paint" ? "spray" : tool === "erase" ? "eraser" : null);
+    });
     return () => {
       stop();
-      sound.setSpraying(false);
+      sound.setStroke(null);
     };
   }, [controller]);
 

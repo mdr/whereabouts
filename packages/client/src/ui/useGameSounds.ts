@@ -6,8 +6,9 @@ import { roundCue, sound, type RoundState } from "../sound";
 /**
  * The online game's sounds, driven by changes of view: the rising cue when a
  * round starts, the countdown timed to each round's deadline, and the
- * falling cue (instead of the alarm) when everyone finishes early. The spray
- * is the map's business (MapView), since practice has it too.
+ * falling cue (instead of the alarm) when everyone finishes early, and
+ * applause at the final results. The spray and eraser are the map's
+ * business (MapView), and Pass and Clear play their own, where they happen.
  */
 export function useGameSounds(conn: Connection, view: GameView | null): void {
   const prev = useRef<RoundState | null>(null);
@@ -26,7 +27,10 @@ export function useGameSounds(conn: Connection, view: GameView | null): void {
       sound.stopCountdown();
       sound.cue("finishedEarly");
     }
-    if (cue === "stop") sound.stopCountdown();
+    if (cue === "results") {
+      sound.stopCountdown();
+      sound.play("applause");
+    }
     prev.current = next;
   }, [phase, round]);
 
