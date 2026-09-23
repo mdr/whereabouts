@@ -128,7 +128,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           <PaintTools>
             {view.you.locked ? (
               <button class="keep-editing" title="Take back Done and change your guess" onClick={() => conn.unlock()}>
-                <Icon name="undo" /> Keep editing
+                <Icon name="edit" /> Keep editing
               </button>
             ) : (
               <button
