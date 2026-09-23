@@ -2,6 +2,7 @@ import { playerColour, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { Icon } from "../ui/icons";
 import { HostTag, HostWord } from "../ui/PlayerList";
+import { Banner } from "../ui/Banner";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -17,7 +18,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   return (
     <div class="home">
       <div class="home-card results-card">
-        <h1>Whereabouts</h1>
+        <Banner />
         {winner && (
           <p class="tagline">
             <span class="swatch" style={{ background: playerColour(winner.colour) }} /> <b>{winner.name}</b>

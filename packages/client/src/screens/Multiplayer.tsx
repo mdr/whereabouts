@@ -7,6 +7,7 @@ import { MapView } from "../ui/MapView";
 import { Lobby } from "./Lobby";
 import { InGame } from "./InGame";
 import { Results } from "./Results";
+import { Banner } from "../ui/Banner";
 
 export function Multiplayer({ code, create }: { code: string; create: boolean }) {
   const conn = useMemo(() => new Connection(), []);
@@ -77,7 +78,7 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
     return (
       <div class="home">
         <div class="home-card">
-          <h1>Whereabouts</h1>
+          <Banner />
           <h2>{why.title}</h2>
           <p class="tagline">{why.detail}</p>
           <div class="home-actions">
@@ -94,7 +95,7 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
     return (
       <div class="home">
         <div class="home-card">
-          <h1>Whereabouts</h1>
+          <Banner />
           <p class="hint">{create ? "Creating your game…" : `Joining ${code}…`}</p>
         </div>
       </div>
@@ -121,7 +122,7 @@ function JoinAs({ code, onJoin }: { code: string; onJoin: (name: string) => void
           if (ready) onJoin(name.trim());
         }}
       >
-        <h1>Whereabouts</h1>
+        <Banner />
         <p class="tagline">
           Joining game <b>{code}</b>
         </p>

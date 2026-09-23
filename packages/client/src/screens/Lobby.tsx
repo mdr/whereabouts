@@ -7,8 +7,7 @@ import { ConnectionNote } from "../ui/ConnectionNote";
 import { Icon } from "../ui/icons";
 import { Pills, StopSlider, Stepper } from "../ui/Controls";
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
-import hero800 from "../assets/hero-800.webp";
-import hero1448 from "../assets/hero-1448.webp";
+import { Banner } from "../ui/Banner";
 
 const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }));
 const MIXES = PHOTO_MIXES.map((m) => ({ value: m.share, label: m.label }));
@@ -30,15 +29,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
     <div class="home">
       <div class="home-card lobby">
         {dialog}
-        <header class="lobby-banner">
-          <img
-            src={hero1448}
-            srcset={`${hero800} 800w, ${hero1448} 1448w`}
-            sizes="(max-width: 880px) 100vw, 824px"
-            alt=""
-          />
-          <h1>Whereabouts</h1>
-        </header>
+        <Banner />
         <div class="lobby-cols">
           <section class="lobby-panel">
             <h2>Invite</h2>

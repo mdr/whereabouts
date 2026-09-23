@@ -19,6 +19,7 @@ import {
 import { MapView, usePaint } from "../ui/MapView";
 import { Card, HudBottom, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../ui/bits";
 import { PaintDev, PaintTools } from "../ui/PaintTools";
+import { Banner } from "../ui/Banner";
 import { DevDrawer } from "../ui/DevDrawer";
 import { cheatLiveScore, soloKernelId, startOnPan } from "../settings";
 import { devMode } from "../dev";
@@ -163,7 +164,7 @@ function SoloGame() {
       <div class="hud">
         <div class="hud-center">
           <div class="home-card">
-            <h1>Whereabouts</h1>
+            <Banner />
             <div class="score">
               <div class="label">Final score</div>
               <div class="big">{Math.round(total).toLocaleString()}</div>
