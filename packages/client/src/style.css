@@ -30,6 +30,18 @@ body {
   inset: 0;
   color: var(--panel-fg);
 }
+/*
+ * On the map screens a pinch should never zoom the page: one that starts on
+ * a card or the toolbar would otherwise enlarge the whole UI on a tablet.
+ * Scrolling (panels, lists) still works. :where() keeps this at zero
+ * specificity, so the map canvas and the photo lightbox keep their own
+ * touch handling. Dialogs too, since they open over the map. The text-heavy
+ * screens (front page, lobby, results) are outside .stage and still zoom,
+ * for anyone who needs to.
+ */
+:where(.stage, .stage *, .modal-backdrop, .modal-backdrop *) {
+  touch-action: pan-x pan-y;
+}
 #map {
   position: absolute;
   inset: 0;

@@ -58,6 +58,20 @@ export function MapView({ children }: { children: ComponentChildren }) {
     };
   }, [controller]);
 
+  // Belt and braces with touch-action in style.css: Safari ignores the
+  // viewport's user-scalable, and cancelling its own gesture events is the
+  // known way to stop it zooming the page on a pinch. Only while a map
+  // screen is up; MapLibre and the photo lightbox read touch and pointer
+  // events, which this leaves alone.
+  useEffect(() => {
+    const block = (e: Event) => e.preventDefault();
+    const types = ["gesturestart", "gesturechange", "gestureend"];
+    for (const t of types) document.addEventListener(t, block, { passive: false });
+    return () => {
+      for (const t of types) document.removeEventListener(t, block);
+    };
+  }, []);
+
   // The drawer takes a strip off the right, so the map must resize with it.
   const dev = devMode.value;
   useEffect(() => {
