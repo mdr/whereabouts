@@ -6,6 +6,7 @@ import { WSClient } from "@rivalis/browser";
 import { computed, signal } from "@preact/signals";
 import {
   type ConfigurePatch,
+  MAX_PLAYERS,
   PROTOCOL_VERSION,
   encodeTicket,
   type GameView,
@@ -152,6 +153,12 @@ export function describeDisconnect(code: number, reason: string | undefined): Re
       title: "You were removed from the game",
       detail: "The host took you out of this game. You can rejoin with the code as a new player, or start your own.",
       removed: true,
+    };
+  }
+  if (r.includes("game is full")) {
+    return {
+      title: "That game is full",
+      detail: `It already has ${MAX_PLAYERS} players, the most a game can hold. Ask the host to remove someone, or start your own game.`,
     };
   }
   if (r.includes("game has finished")) {

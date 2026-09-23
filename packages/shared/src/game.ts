@@ -6,6 +6,7 @@
 import { PASS_SCORE, buildDistribution, kernelById, scoreDistribution, type Kernel } from "./scoring.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { pickQuestions, type Question } from "./questions.ts";
+import { MAX_PLAYERS } from "./protocol.ts";
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -59,7 +60,6 @@ export class Game {
   phase: Phase = "lobby";
   private players = new Map<string, Player>();
   private hostToken: string | null = null;
-  private nextColour = 0;
   private nextPlayerId = 1;
 
   private questions: Question[] = [];
@@ -86,6 +86,14 @@ export class Game {
 
   // ---- membership ----------------------------------------------------------
 
+  /** The lowest colour no current player has, so a removed player's colour is reused. */
+  private freeColour(): number {
+    const used = new Set([...this.players.values()].map((p) => p.colour));
+    let colour = 0;
+    while (used.has(colour)) colour++;
+    return colour;
+  }
+
   /** Join or reconnect. A known token reclaims its seat (and the host role, if it was theirs). */
   join(token: string, name: string, now: number): CommandResult {
     const existing = this.players.get(token);
@@ -96,11 +104,12 @@ export class Game {
     }
     if (this.kicked.has(token)) return fail("removed by the host");
     if (this.phase === "results") return fail("game has finished");
+    if (this.players.size >= MAX_PLAYERS) return fail("game is full");
     const player: Player = {
       id: `p${this.nextPlayerId++}`,
       token,
       name,
-      colour: this.nextColour++,
+      colour: this.freeColour(),
       connected: true,
       joinedAt: now,
       joinedRound: this.phase === "lobby" ? 0 : this.roundIndex + 1,

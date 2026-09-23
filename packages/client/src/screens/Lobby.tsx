@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { MAX_ROUNDS, MIN_ROUNDS, PHOTO_MIXES, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
+import { MAX_PLAYERS, MAX_ROUNDS, MIN_ROUNDS, PHOTO_MIXES, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { playerName, soundOn, startOnPan } from "../settings";
 import { HostWord, PlayerList } from "../ui/PlayerList";
@@ -58,7 +58,10 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             </div>
             <ConnectionNote conn={conn} />
             <h2>
-              Players <span class="count">{view.players.length}</span>
+              Players{" "}
+              <span class="count" title={`Up to ${MAX_PLAYERS} players`}>
+                {view.players.length}/{MAX_PLAYERS}
+              </span>
             </h2>
             <PlayerList
               players={view.players}

@@ -3,6 +3,8 @@ import { Game, generateCode } from "./game.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { PASS_SCORE } from "./scoring.ts";
 import type { Question } from "./questions.ts";
+import { MAX_PLAYERS } from "./protocol.ts";
+import { PLAYER_COLOURS } from "./colours.ts";
 
 const petra: Question = {
   id: "petra",
@@ -230,6 +232,41 @@ describe("round loop", () => {
       g.next("tokA", now);
     }
     expect(seen.size).toBe(3);
+  });
+});
+
+describe("player cap", () => {
+  function fullGame(): Game {
+    const g = twoPlayerGame(2);
+    for (let i = 3; i <= MAX_PLAYERS; i++) expect(g.join(`tok${i}`, `P${i}`, T0).ok).toBe(true);
+    return g;
+  }
+
+  it("has a colour for every player it allows", () => {
+    expect(PLAYER_COLOURS.length).toBeGreaterThanOrEqual(MAX_PLAYERS);
+  });
+
+  it("turns away a new player once the game has eight", () => {
+    const g = fullGame();
+    expect(g.view("tokA", T0).players).toHaveLength(MAX_PLAYERS);
+    expect(g.join("tokNew", "Nine", T0)).toEqual({ ok: false, error: "game is full" });
+  });
+
+  it("still lets a player who dropped out back in", () => {
+    const g = fullGame();
+    g.disconnect("tokB", T0);
+    expect(g.join("tokB", "Bob", T0).ok).toBe(true);
+  });
+
+  it("frees the seat and the colour when the host removes someone", () => {
+    const g = fullGame();
+    const bob = g.view("tokA", T0).players.find((p) => p.name === "Bob")!;
+    g.kick("tokA", bob.id, T0);
+    expect(g.join("tokNew", "Nine", T0).ok).toBe(true);
+    const nine = g.view("tokA", T0).players.find((p) => p.name === "Nine")!;
+    expect(nine.colour).toBe(bob.colour);
+    const colours = g.view("tokA", T0).players.map((p) => p.colour);
+    expect(new Set(colours).size).toBe(MAX_PLAYERS);
   });
 });
 

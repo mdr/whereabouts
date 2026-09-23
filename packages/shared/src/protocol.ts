@@ -57,6 +57,8 @@ export const KickSchema = z.object({ playerId: z.string().min(1).max(20) });
 export const ROUND_LENGTHS_MS = [30_000, 45_000, 60_000, 90_000, 120_000] as const;
 export const MIN_ROUNDS = 1;
 export const MAX_ROUNDS = 15;
+/** Players per game: one for each player colour, so no two share one at the reveal. */
+export const MAX_PLAYERS = 8;
 
 /** Question mixes the host may pick: the share of photo questions, with a label. */
 export const PHOTO_MIXES = [
