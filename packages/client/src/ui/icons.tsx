@@ -24,6 +24,8 @@ import {
   Trash2,
   Undo2,
   Users,
+  Volume2,
+  VolumeX,
   type LucideProps,
 } from "lucide-preact";
 import type { FunctionComponent } from "preact";
@@ -53,6 +55,8 @@ const ICONS = {
   minus: Minus,
   plus: Plus,
   share: Share2,
+  soundOn: Volume2,
+  soundOff: VolumeX,
 } satisfies Record<string, FunctionComponent<LucideProps>>;
 
 export type IconName = keyof typeof ICONS;

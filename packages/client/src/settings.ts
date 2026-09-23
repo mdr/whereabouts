@@ -28,6 +28,8 @@ export const soloKernelId = persisted<string>("wa.kernel", "single");
 export const soloMapDetail = persisted<MapDetail>("wa.mapDetail", "minimal");
 /** Begin each round on the Pan tool rather than Paint; tablet players often want to look first. */
 export const startOnPan = persisted<boolean>("wa.startOnPan", false);
+/** Game sounds on this device: the spray, the countdown and the round cues. */
+export const soundOn = persisted<boolean>("wa.sound", true);
 
 /**
  * Reconnect token. Session storage so two tabs in one browser are two

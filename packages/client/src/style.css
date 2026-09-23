@@ -1585,3 +1585,13 @@ button.danger.solid {
 .practice-detail[open] summary {
   margin-bottom: 6px;
 }
+
+/* The sound switch in the top bar: bright when on, muted (with a cross) when off. */
+.hud-header .sound-toggle {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+}
+.hud-header .sound-toggle[aria-pressed="true"] {
+  color: var(--panel-fg);
+}

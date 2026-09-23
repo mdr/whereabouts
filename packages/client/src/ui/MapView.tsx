@@ -10,6 +10,9 @@ import { GameMap } from "../map";
 import { PaintController } from "../paint-controller";
 import { THEME } from "../themes";
 import { devMode } from "../dev";
+import { effect } from "@preact/signals";
+import { sound } from "../sound";
+import { soundOn } from "../settings";
 
 export const PaintContext = createContext<PaintController | null>(null);
 
@@ -39,6 +42,19 @@ export function MapView({ children }: { children: ComponentChildren }) {
       gameMap.dispose();
     };
   }, []);
+
+  // The spray plays while a paint stroke is held and painting is allowed;
+  // it stops when the stroke ends, the round locks you out, or the map goes.
+  useEffect(() => {
+    if (!controller) return;
+    const stop = effect(() =>
+      sound.setSpraying(controller.spraying.value && controller.enabled.value && soundOn.value),
+    );
+    return () => {
+      stop();
+      sound.setSpraying(false);
+    };
+  }, [controller]);
 
   // The drawer takes a strip off the right, so the map must resize with it.
   const dev = devMode.value;

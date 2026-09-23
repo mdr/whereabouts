@@ -2,6 +2,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { commonsImageUrl, commonsPageUrl, type QuestionView } from "@whereabouts/shared";
 import { Icon } from "./icons";
+import { soundOn } from "../settings";
 
 export function fmtKm(km: number): string {
   return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km).toLocaleString()} km`;
@@ -44,9 +45,27 @@ export function HudBottom({ children }: { children: ComponentChildren }) {
   );
 }
 
+/** The per-device sound switch as a speaker button. */
+export function SoundToggle() {
+  const on = soundOn.value;
+  return (
+    <button
+      type="button"
+      class="icon sound-toggle"
+      aria-pressed={on}
+      aria-label={on ? "Sounds on: turn off" : "Sounds off: turn on"}
+      title={on ? "Turn sounds off" : "Turn sounds on"}
+      onClick={() => (soundOn.value = !on)}
+    >
+      <Icon name={on ? "soundOn" : "soundOff"} />
+    </button>
+  );
+}
+
 /**
  * One-line strip at the top of the HUD: title (a link home where allowed),
- * round counter, and anything the screen wants on the right (a countdown).
+ * round counter, the sound switch, and anything the screen wants on the
+ * right (a countdown).
  */
 export function HudHeader({
   home,
@@ -71,6 +90,7 @@ export function HudHeader({
       <span class="round">
         Round {round} / {total}
       </span>
+      <SoundToggle />
       {right}
     </div>
   );

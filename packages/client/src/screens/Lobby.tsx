@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { MAX_ROUNDS, MIN_ROUNDS, PHOTO_MIXES, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
-import { playerName, startOnPan } from "../settings";
+import { playerName, soundOn, startOnPan } from "../settings";
 import { HostWord, PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { Icon } from "../ui/icons";
@@ -140,6 +140,15 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                 onChange={(e) => (startOnPan.value = (e.target as HTMLInputElement).checked)}
               />
               Start each round with the Pan tool (handy on a tablet)
+            </label>
+            <label class="check switch sound-switch">
+              <input
+                type="checkbox"
+                role="switch"
+                checked={soundOn.value}
+                onChange={(e) => (soundOn.value = (e.target as HTMLInputElement).checked)}
+              />
+              Sounds (spray, countdown and round cues)
             </label>
             <div class="lobby-start">
               {host ? (

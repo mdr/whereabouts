@@ -24,6 +24,8 @@ export class PaintController {
    */
   readonly settledVersion = signal(0);
   private settleTimer: number | null = null;
+  /** True while a Paint-tool stroke is held (not erase, pan or a pinch); drives the spray sound. */
+  readonly spraying = signal(false);
   /** Whether painting is currently allowed (guessing phase, not locked). */
   readonly enabled = signal(false);
   /** The current question's tolerance, set by the active screen (used by dev tooling). */
@@ -274,6 +276,7 @@ export class PaintController {
   private beginStroke(point: Point): void {
     this.pushHistory();
     this.painting = true;
+    this.spraying.value = this.tool.value === "paint";
     this.lastStampPoint = null;
     this.strokeTo(point);
     this.queueRender();
@@ -281,6 +284,7 @@ export class PaintController {
 
   private endStroke(): void {
     this.painting = false;
+    this.spraying.value = false;
     this.lastStampPoint = null;
   }
 

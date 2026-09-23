@@ -8,6 +8,7 @@ import { Lobby } from "./Lobby";
 import { InGame } from "./InGame";
 import { Results } from "./Results";
 import { Banner } from "../ui/Banner";
+import { useGameSounds } from "../ui/useGameSounds";
 
 export function Multiplayer({ code, create }: { code: string; create: boolean }) {
   const conn = useMemo(() => new Connection(), []);
@@ -69,6 +70,7 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
 
   const status = conn.status.value;
   const view = conn.view.value;
+  useGameSounds(conn, view);
 
   if (status === "rejected" || (status === "disconnected" && !view)) {
     const why = conn.rejection.value ?? {

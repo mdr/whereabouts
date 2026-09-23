@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render } from "@testing-library/preact";
-import { HudBottom, QuestionCard } from "./bits";
+import { HudBottom, QuestionCard, SoundToggle } from "./bits";
+import { soundOn } from "../settings";
 
 describe("HudBottom", () => {
   afterEach(() => {
@@ -93,5 +94,19 @@ describe("QuestionCard image", () => {
     expect(credit.href).toContain("commons.wikimedia.org");
     expect(credit.getAttribute("aria-label")).toContain("Wikimedia Commons");
     expect(container.textContent).not.toContain("Wikimedia");
+  });
+});
+
+describe("SoundToggle", () => {
+  it("flips the per-device sound setting and shows which state it is in", () => {
+    soundOn.value = true;
+    const { container } = render(<SoundToggle />);
+    const button = container.querySelector<HTMLButtonElement>(".sound-toggle")!;
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(button);
+    expect(soundOn.value).toBe(false);
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(button);
+    expect(soundOn.value).toBe(true);
   });
 });

@@ -39,6 +39,11 @@ Other commands:
   `node scripts/phone-smoke.mjs` walks every screen at iPhone size and
   fails if anything forces the layout viewport wider than the screen, or
   if the bottom controls are off screen or covered.
+  `node scripts/sound-smoke.mjs` records every sound the page starts
+  through a two-player game and practice: the cues, the spray (not while
+  erasing), the countdown timing, finishing early, running out of time and
+  the switch (server with `ROUND_MS=12000 ROUNDS=2`). It cannot say how
+  anything sounds.
 - `node scripts/prod-smoke.mjs [baseUrl]` from `packages/client` checks a
   production build actually loads the map, against `nix run` locally or the
   live site. It catches bundling problems dev mode hides, such as the
@@ -139,6 +144,20 @@ pnpm workspace with three packages:
   well above a confident guess in the wrong place (near 0). Once done, the button
   becomes "Keep editing", which takes Done back while the round is still
   running.
+- Sounds, behind one per-device switch that starts on (a speaker button in
+  the top bar, and "Sounds" in the lobby's This device section): a spray
+  while a Paint stroke is held, random slices of a real spray-paint
+  recording crossfaded so a long stroke never repeats the same stretch
+  twice running (erasing and panning are silent); in online rounds a
+  ticking countdown over the last ten seconds, soft at first, timed to the
+  deadline so its alarm lands on zero; two soft marimba notes rising as
+  each round starts and falling when everyone finishes early (which stops
+  the countdown before its alarm). The recordings are CC0 from Freesound
+  ("paint in spray 02.wav" by lukebadluck, #339121; "marktimer.wav" by
+  MuzakPlz, #626908), cut and volume-matched into
+  `packages/client/src/assets/sounds`; the marimba is synthesised. Audio
+  starts on the first tap or key press, as browsers require, and on iPhone
+  and iPad the silent switch mutes it.
 - Paint is private until the round ends. The reveal shows the answer, every
   player's score, and lets you click a player to see their paint in their
   colour, or hide everyone's paint to see just the map and the answer. Rows
