@@ -6,6 +6,8 @@ on:
   pull_request:
 
 # Nix in CI, kept simple: the installer action plus cache.nixos.org. The
+# action installs Determinate Nix (the installer has ignored requests for
+# upstream Nix since 2026) and skips its FlakeHub login without id-token. The
 # checks only realise a dev shell whose every path is in the public cache,
 # and the image build is under a minute, so a per-repo Nix cache buys
 # nothing: the Magic Nix Cache's post-run upload was costing one to three
@@ -18,9 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: DeterminateSystems/nix-installer-action@v23
-        with:
-          # Upstream Nix, as v16 installed; newer versions default to Determinate Nix.
-          determinate: false
       - name: Locate pnpm store
         id: pnpm
         run: echo "dir=$(nix develop .#ci -c pnpm store path)" >> "$GITHUB_OUTPUT"
@@ -65,9 +64,6 @@ jobs:
         if: steps.token.outputs.present == 'true'
       - uses: DeterminateSystems/nix-installer-action@v23
         if: steps.token.outputs.present == 'true'
-        with:
-          # Upstream Nix, as v16 installed; newer versions default to Determinate Nix.
-          determinate: false
       # No Nix cache here either: the image build is well under a minute
       # from cache.nixos.org plus the pnpm fetch, and the Magic Nix Cache's
       # post-run upload of the image closure cost more than that.
