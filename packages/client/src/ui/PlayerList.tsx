@@ -30,6 +30,7 @@ export function PlayerList({
   avatars,
   onRename,
   onKick,
+  onMakeHost,
 }: {
   players: PlayerView[];
   you: string;
@@ -43,6 +44,8 @@ export function PlayerList({
   onRename?: () => void;
   /** Host only: when given, every other row gets a remove button that calls this. */
   onKick?: (player: PlayerView) => void;
+  /** Host only: when given, other connected players' rows get a crown button that calls this. */
+  onMakeHost?: (player: PlayerView) => void;
 }) {
   return (
     <ul class="players">
@@ -72,6 +75,19 @@ export function PlayerList({
             {isYou && onRename && (
               <button class="icon" title="Change your name" aria-label="Change your name" onClick={onRename}>
                 ✎
+              </button>
+            )}
+            {!isYou && onMakeHost && p.connected && !p.isHost && (
+              <button
+                class="icon make-host"
+                title={`Make ${p.name} the host`}
+                aria-label={`Make ${p.name} the host`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMakeHost(p);
+                }}
+              >
+                <Icon name="crown" size={13} />
               </button>
             )}
             {!isYou && onKick && (

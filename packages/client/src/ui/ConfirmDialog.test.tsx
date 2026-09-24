@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest";
 import { fireEvent, render } from "@testing-library/preact";
-import { ConfirmDialog, endGameRequest, kickRequest } from "./ConfirmDialog";
+import { ConfirmDialog, endGameRequest, kickRequest, makeHostRequest } from "./ConfirmDialog";
 
 describe("ConfirmDialog", () => {
   it("renders nothing without a request", () => {
@@ -50,5 +50,16 @@ describe("ConfirmDialog", () => {
     const r = endGameRequest(() => {});
     expect(r.title).toBe("End the game now?");
     expect(r.confirmLabel).toBe("End game");
+  });
+
+  it("shows handing over as a plain confirm, and removing as a red one", () => {
+    const { unmount } = render(<ConfirmDialog request={makeHostRequest("Bob", () => {})} onClose={() => {}} />);
+    const confirm = () =>
+      [...document.body.querySelectorAll<HTMLButtonElement>(".modal-actions button:last-child")].at(-1)!;
+    expect(confirm().textContent).toBe("Make Bob host");
+    expect(confirm().className).toBe("primary");
+    unmount();
+    render(<ConfirmDialog request={kickRequest("Bob", () => {})} onClose={() => {}} />);
+    expect(confirm().className).toContain("danger");
   });
 });

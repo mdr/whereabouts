@@ -6,7 +6,14 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { WSClient as WSClientType } from "@rivalis/browser";
-import { PaintLayer, encodeTicket, resolutionForTolerance, type GameView, type Question } from "@whereabouts/shared";
+import {
+  PaintLayer,
+  SEAT_GRACE_MS,
+  encodeTicket,
+  resolutionForTolerance,
+  type GameView,
+  type Question,
+} from "@whereabouts/shared";
 import { createApp, type App } from "./app.ts";
 import { configureGameRooms, realClock, type Clock } from "./rooms.ts";
 
@@ -262,9 +269,11 @@ describe("game server", () => {
     await bob.waitClosed();
     expect(bob.client.connected).toBe(false);
 
-    // The process is alive and the room still works. In the lobby a dropped
-    // player is removed rather than marked offline.
+    // The process is alive and the room still works. Bob shows offline, and
+    // his lobby seat is freed once the grace period passes.
     expect(alice.client.connected).toBe(true);
+    await alice.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected));
+    clock.advance(SEAT_GRACE_MS);
     await alice.untilLatest((v) => v.players.length === 1);
     const cara = player("Cara");
     cara.connect({ code: lobby.code });
@@ -292,15 +301,45 @@ describe("game server", () => {
     expect(own.you.spectating).toBe(false);
   });
 
-  it("frees the room when everyone leaves", async () => {
+  it("frees the room once it has been empty for the grace period", async () => {
     const alice = player("Alice");
     alice.connect({ create: true });
     const lobby = await alice.until((v) => v.phase === "lobby");
     expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull();
     alice.client.disconnect();
-    const start = Date.now();
-    while (app.rivalis.rooms.get(lobby.code) && Date.now() - start < 2000) await new Promise((r) => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 100));
+    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull();
+    clock.advance(SEAT_GRACE_MS);
     expect(app.rivalis.rooms.get(lobby.code)).toBeNull();
+  });
+
+  it("a lone host who refreshes in the lobby gets the game, and the host role, back", async () => {
+    const alice = player("Alice");
+    alice.connect({ create: true });
+    const lobby = await alice.until((v) => v.phase === "lobby");
+    alice.client.disconnect();
+    await alice.waitClosed();
+    clock.advance(SEAT_GRACE_MS - 1_000);
+    const again = player("Alice"); // same name => same token, like a refreshed tab
+    again.connect({ code: lobby.code });
+    const back = await again.until((v) => v.phase === "lobby");
+    expect(back.you.isHost).toBe(true);
+    expect(back.players).toHaveLength(1);
+    // The empty-room timer was cancelled on the way back in.
+    clock.advance(SEAT_GRACE_MS);
+    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull();
+  });
+
+  it("the host hands over to another player", async () => {
+    const alice = player("Alice");
+    alice.connect({ create: true });
+    const lobby = await alice.until((v) => v.phase === "lobby");
+    const bob = player("Bob");
+    bob.connect({ code: lobby.code });
+    const two = await alice.until((v) => v.players.length === 2);
+    alice.send("makeHost", { playerId: two.players.find((p) => p.name === "Bob")!.id });
+    await bob.until((v) => v.you.isHost);
+    await alice.untilLatest((v) => !v.you.isHost);
   });
 });
 

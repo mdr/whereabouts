@@ -12,6 +12,8 @@ export interface ConfirmRequest {
   body: ComponentChildren;
   confirmLabel: string;
   onConfirm: () => void;
+  /** Not something to undo with regret (handing over, say): a plain confirm button, not a red one. */
+  safe?: boolean;
 }
 
 export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | null; onClose: () => void }) {
@@ -44,7 +46,7 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
             Cancel
           </button>
           <button
-            class="danger solid"
+            class={request.safe ? "primary" : "danger solid"}
             onClick={() => {
               onClose();
               request.onConfirm();
@@ -75,6 +77,17 @@ export function kickRequest(name: string, onConfirm: () => void): ConfirmRequest
     body: "They lose their score and paint, and can't take their seat back. They can rejoin with the code as a new player.",
     confirmLabel: `Remove ${name}`,
     onConfirm,
+  };
+}
+
+/** The wording for handing the host role to another player. */
+export function makeHostRequest(name: string, onConfirm: () => void): ConfirmRequest {
+  return {
+    title: `Make ${name} the host?`,
+    body: "They take over starting the game, the setup, moving on and removing players. You carry on as a player.",
+    confirmLabel: `Make ${name} host`,
+    onConfirm,
+    safe: true,
   };
 }
 

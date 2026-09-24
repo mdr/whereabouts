@@ -17,6 +17,7 @@ import {
   Game,
   MAX_PAINT_CELLS,
   QUESTIONS,
+  SEAT_GRACE_MS,
   ServerTopics,
   decodeMessage,
   decodeTicket,
@@ -59,7 +60,9 @@ export function configureGameRooms(next: Partial<GameRoomDeps>): void {
 }
 
 export class GameRoom extends Room<ActorData> {
-  protected override destroyOnEmpty = true;
+  // Not Rivalis's destroyOnEmpty, which closes the room the moment the last
+  // player drops: a lone host's refresh would lose the game. An empty room
+  // stays open for SEAT_GRACE_MS instead (see onLeave).
   protected override unknownTopicPolicy = "drop" as const;
 
   // Rivalis runs onCreate from the base constructor, before subclass field
@@ -68,11 +71,13 @@ export class GameRoom extends Room<ActorData> {
   declare private game: Game;
   declare private actorsByToken: Map<string, Actor<ActorData>>;
   declare private timer: unknown;
+  declare private emptyTimer: unknown;
 
   protected override onCreate(): void {
     this.game = new Game(this.id, deps.pool, deps.config);
     this.actorsByToken = new Map();
     this.timer = null;
+    this.emptyTimer = null;
     for (const [topic, schema] of Object.entries(ClientMessageSchemas)) {
       this.bind(topic, (actor, payload) => this.handle(actor, topic, schema, payload));
     }
@@ -80,6 +85,7 @@ export class GameRoom extends Room<ActorData> {
 
   protected override onJoin(actor: Actor<ActorData>): void {
     const { token, name } = actor.data!;
+    this.cancelEmptyTimer();
     const previous = this.actorsByToken.get(token);
     if (previous && previous !== actor) previous.kick("replaced by a newer connection");
     this.actorsByToken.set(token, actor);
@@ -98,10 +104,23 @@ export class GameRoom extends Room<ActorData> {
     this.actorsByToken.delete(token);
     this.game.disconnect(token, deps.clock.now());
     this.broadcastState();
+    if (this.actorCount === 0) {
+      this.cancelEmptyTimer();
+      this.emptyTimer = deps.clock.setTimeout(() => {
+        this.emptyTimer = null;
+        if (this.actorCount === 0) this.destroy();
+      }, SEAT_GRACE_MS);
+    }
   }
 
   protected override onDestroy(): void {
     this.clearTimer();
+    this.cancelEmptyTimer();
+  }
+
+  private cancelEmptyTimer(): void {
+    if (this.emptyTimer !== null) deps.clock.clearTimeout(this.emptyTimer);
+    this.emptyTimer = null;
   }
 
   private handle(actor: Actor<ActorData>, topic: string, schema: z.ZodType, payload: Uint8Array): void {
@@ -153,6 +172,8 @@ export class GameRoom extends Room<ActorData> {
         return this.game.rename(token, (data as z.infer<typeof ClientMessageSchemas.rename>).name);
       case "kick":
         return this.removePlayer(token, (data as z.infer<typeof ClientMessageSchemas.kick>).playerId, now);
+      case "makeHost":
+        return this.game.makeHost(token, (data as z.infer<typeof ClientMessageSchemas.makeHost>).playerId);
       case "end":
         return this.game.end(token);
       default:

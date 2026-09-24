@@ -3,7 +3,7 @@ import { Game, generateCode } from "./game.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { PASS_SCORE } from "./scoring.ts";
 import type { Question } from "./questions.ts";
-import { MAX_PLAYERS } from "./protocol.ts";
+import { MAX_PLAYERS, SEAT_GRACE_MS } from "./protocol.ts";
 import { PLAYER_COLOURS } from "./colours.ts";
 
 const petra: Question = {
@@ -57,13 +57,62 @@ function currentQuestion(g: Game, token: string, now: number): Question {
 }
 
 describe("lobby", () => {
-  it("first joiner is host; host passes on disconnect; lobby leavers are removed", () => {
+  it("first joiner is host; while the host is away the next player acts as host; a lobby seat left empty is freed", () => {
     const g = twoPlayerGame();
     expect(g.view("tokA", T0).you.isHost).toBe(true);
     expect(g.view("tokB", T0).you.isHost).toBe(false);
     g.disconnect("tokA", T0);
-    expect(g.playerTokens).toEqual(["tokB"]);
     expect(g.view("tokB", T0).you.isHost).toBe(true);
+    expect(g.playerTokens).toEqual(["tokA", "tokB"]);
+    expect(g.nextWakeAt()).toBe(T0 + SEAT_GRACE_MS);
+    expect(g.tick(T0 + SEAT_GRACE_MS - 1)).toBe(false);
+    expect(g.tick(T0 + SEAT_GRACE_MS)).toBe(true);
+    expect(g.playerTokens).toEqual(["tokB"]);
+    expect(g.nextWakeAt()).toBeNull();
+  });
+
+  it("a refresh in the lobby keeps the seat, colour and host role", () => {
+    const g = twoPlayerGame();
+    const before = g.view("tokA", T0).players.find((p) => p.name === "Alice")!;
+    g.disconnect("tokA", T0);
+    g.join("tokA", "Alice", T0 + 2_000);
+    const after = g.view("tokA", T0 + 2_000).players.find((p) => p.name === "Alice")!;
+    expect(after).toMatchObject({ id: before.id, colour: before.colour, connected: true, isHost: true });
+    expect(g.view("tokB", T0 + 2_000).you.isHost).toBe(false);
+    // Back in time, so nothing is left to free.
+    expect(g.nextWakeAt()).toBeNull();
+    expect(g.tick(T0 + SEAT_GRACE_MS)).toBe(false);
+    expect(g.playerTokens).toContain("tokA");
+  });
+
+  it("the host can hand the role to another connected player, for good", () => {
+    const g = twoPlayerGame();
+    g.join("tokC", "Cara", T0);
+    const id = (name: string) => g.view("tokA", T0).players.find((p) => p.name === name)!.id;
+    expect(g.makeHost("tokB", id("Cara"))).toEqual({ ok: false, error: "only the host can hand over" });
+    expect(g.makeHost("tokA", id("Alice"))).toEqual({ ok: false, error: "you are already the host" });
+    expect(g.makeHost("tokA", "p99")).toEqual({ ok: false, error: "unknown player" });
+    g.disconnect("tokC", T0);
+    expect(g.makeHost("tokA", id("Cara"))).toEqual({ ok: false, error: "that player is offline" });
+    expect(g.makeHost("tokA", id("Bob"))).toEqual({ ok: true, changed: true });
+    expect(g.view("tokB", T0).you.isHost).toBe(true);
+    expect(g.view("tokA", T0).you.isHost).toBe(false);
+    // Alice leaving and coming back does not bring the role with her.
+    g.disconnect("tokA", T0 + 1);
+    g.join("tokA", "Alice", T0 + 2);
+    expect(g.view("tokA", T0 + 2).you.isHost).toBe(false);
+  });
+
+  it("an acting host can hand over too, and the absent host does not get it back", () => {
+    const g = twoPlayerGame();
+    g.join("tokC", "Cara", T0 + 2);
+    g.start("tokA", T0);
+    g.disconnect("tokA", T0 + 1);
+    const cara = g.view("tokB", T0 + 1).players.find((p) => p.name === "Cara")!;
+    expect(g.makeHost("tokB", cara.id).ok).toBe(true);
+    g.join("tokA", "Alice", T0 + 5);
+    expect(g.view("tokC", T0 + 5).you.isHost).toBe(true);
+    expect(g.view("tokA", T0 + 5).you.isHost).toBe(false);
   });
 
   it("only the host can start", () => {
@@ -329,12 +378,13 @@ describe("joining and leaving mid-game", () => {
     expect(g.view("tokB", T0 + 61_000).you.isHost).toBe(false);
   });
 
-  it("in the lobby a departing host hands over for good", () => {
+  it("in the lobby a host gone longer than the grace period hands over for good", () => {
     const g = twoPlayerGame(2);
     g.disconnect("tokA", T0 + 1);
-    g.join("tokA", "Alice", T0 + 5);
-    expect(g.view("tokA", T0 + 5).you.isHost).toBe(false);
-    expect(g.view("tokB", T0 + 5).you.isHost).toBe(true);
+    g.tick(T0 + 1 + SEAT_GRACE_MS);
+    g.join("tokA", "Alice", T0 + 1 + SEAT_GRACE_MS + 5);
+    expect(g.view("tokA", T0 + SEAT_GRACE_MS + 6).you.isHost).toBe(false);
+    expect(g.view("tokB", T0 + SEAT_GRACE_MS + 6).you.isHost).toBe(true);
   });
 
   it("play again returns to the lobby with scores reset and dropped players pruned", () => {

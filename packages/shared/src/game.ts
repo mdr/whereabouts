@@ -6,7 +6,7 @@
 import { PASS_SCORE, buildDistribution, kernelById, scoreDistribution, type Kernel } from "./scoring.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { pickQuestions, type Question } from "./questions.ts";
-import { MAX_PLAYERS } from "./protocol.ts";
+import { MAX_PLAYERS, SEAT_GRACE_MS } from "./protocol.ts";
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -33,6 +33,8 @@ interface Player {
   name: string;
   colour: number;
   connected: boolean;
+  /** When the connection dropped, while it is down. */
+  leftAt: number | null;
   joinedAt: number;
   /** First round index this player may play. Later joiners sit out the current one. */
   joinedRound: number;
@@ -99,6 +101,7 @@ export class Game {
     const existing = this.players.get(token);
     if (existing) {
       existing.connected = true;
+      existing.leftAt = null;
       if (this.hostToken === null) this.hostToken = token;
       return OK_CHANGED;
     }
@@ -111,6 +114,7 @@ export class Game {
       name,
       colour: this.freeColour(),
       connected: true,
+      leftAt: null,
       joinedAt: now,
       joinedRound: this.phase === "lobby" ? 0 : this.roundIndex + 1,
       scores: [],
@@ -122,18 +126,16 @@ export class Game {
   }
 
   /**
-   * Connection dropped. In the lobby the seat is freed; mid-game it is kept.
-   * The host keeps the role while away (a refresh is the common case); the
-   * longest-standing connected player acts as host in the meantime.
+   * Connection dropped. The seat is held, so a refresh takes it back: in the
+   * lobby for SEAT_GRACE_MS (then tick frees it), mid-game for good. The
+   * host keeps the role while away; the longest-standing connected player
+   * acts as host in the meantime.
    */
   disconnect(token: string, now: number): CommandResult {
     const player = this.players.get(token);
     if (!player) return OK_SAME;
     player.connected = false;
-    if (this.phase === "lobby") {
-      this.players.delete(token);
-      if (this.hostToken === token) this.hostToken = this.pickHost();
-    }
+    player.leftAt = now;
     // The others should not wait on someone who has gone.
     this.settleIfEveryoneDone(now);
     return OK_CHANGED;
@@ -224,6 +226,17 @@ export class Game {
     }
     for (const [tok, p] of this.players) if (!p.connected) this.players.delete(tok);
     if (this.hostToken === null || !this.players.has(this.hostToken)) this.hostToken = this.pickHost();
+    return OK_CHANGED;
+  }
+
+  /** Hand the host role to another connected player, for good. */
+  makeHost(token: string, playerId: string): CommandResult {
+    if (!this.isHost(token)) return fail("only the host can hand over");
+    const target = this.tokenOf(playerId);
+    if (target === undefined) return fail("unknown player");
+    if (target === token) return fail("you are already the host");
+    if (!this.players.get(target)!.connected) return fail("that player is offline");
+    this.hostToken = target;
     return OK_CHANGED;
   }
 
@@ -363,6 +376,7 @@ export class Game {
 
   /** Advance time-driven transitions. Returns true if the state changed. */
   tick(now: number): boolean {
+    if (this.phase === "lobby") return this.freeLapsedSeats(now);
     if (this.phase === "guessing" && now >= this.deadline) {
       this.finishRound();
       return true;
@@ -373,7 +387,28 @@ export class Game {
   /** Epoch ms of the next time-driven transition, or null if none is pending. */
   nextWakeAt(): number | null {
     if (this.phase === "guessing") return this.deadline;
+    if (this.phase === "lobby") {
+      let at: number | null = null;
+      for (const p of this.players.values()) {
+        if (p.leftAt === null) continue;
+        const due = p.leftAt + SEAT_GRACE_MS;
+        if (at === null || due < at) at = due;
+      }
+      return at;
+    }
     return null;
+  }
+
+  /** In the lobby, free the seats of players gone longer than SEAT_GRACE_MS, and the host role with one. */
+  private freeLapsedSeats(now: number): boolean {
+    let changed = false;
+    for (const [tok, p] of this.players) {
+      if (p.leftAt === null || now < p.leftAt + SEAT_GRACE_MS) continue;
+      this.players.delete(tok);
+      changed = true;
+    }
+    if (changed && this.hostToken !== null && !this.players.has(this.hostToken)) this.hostToken = this.pickHost();
+    return changed;
   }
 
   // ---- transitions ---------------------------------------------------------

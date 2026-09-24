@@ -118,6 +118,9 @@ export class Connection {
   kick(playerId: string): void {
     this.send("kick", { playerId });
   }
+  makeHost(playerId: string): void {
+    this.send("makeHost", { playerId });
+  }
   end(): void {
     this.send("end");
   }

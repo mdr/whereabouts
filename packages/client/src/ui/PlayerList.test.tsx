@@ -108,3 +108,24 @@ describe("PlayerList kick", () => {
     expect(kicked).toEqual(["p2"]);
   });
 });
+
+describe("PlayerList make host", () => {
+  it("offers the crown only on other players who are online and not already host", () => {
+    const picked: string[] = [];
+    const players = [
+      player({ id: "p1", isHost: true }),
+      player({ id: "p2", name: "Bob" }),
+      player({ id: "p3", name: "Cara", connected: false }),
+    ];
+    const { container: plain } = render(<PlayerList players={players} you="p1" showScores={false} />);
+    expect(plain.querySelector("button.make-host")).toBeNull();
+    const { container } = render(
+      <PlayerList players={players} you="p1" showScores={false} onMakeHost={(p) => picked.push(p.id)} />,
+    );
+    const buttons = container.querySelectorAll<HTMLButtonElement>("button.make-host");
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0]!.getAttribute("aria-label")).toBe("Make Bob the host");
+    buttons[0]!.click();
+    expect(picked).toEqual(["p2"]);
+  });
+});

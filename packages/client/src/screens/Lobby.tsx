@@ -7,7 +7,7 @@ import { HostWord, PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { Icon } from "../ui/icons";
 import { Pills, StopSlider, Stepper } from "../ui/Controls";
-import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
+import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog";
 import { Banner } from "../ui/Banner";
 import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker";
 
@@ -71,6 +71,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
               avatars
               onRename={() => setRenaming(true)}
               onKick={host ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
+              onMakeHost={host ? (p) => ask(makeHostRequest(p.name, () => conn.makeHost(p.id))) : undefined}
             />
             {view.players.length === 1 && <p class="hint waiting">Waiting for friends to join…</p>}
             {renaming && (

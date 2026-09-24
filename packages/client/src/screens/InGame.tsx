@@ -12,7 +12,7 @@ import { Reveal } from "./Reveal";
 import { Icon } from "../ui/icons";
 import { PlayersPanel } from "../ui/PlayersPanel";
 import { EndGameButton } from "../ui/HostControls";
-import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
+import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog";
 import { startOnPan } from "../settings";
 import { sound } from "../sound";
 
@@ -119,6 +119,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           <PlayersPanel
             view={view}
             onKick={view.you.isHost ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
+            onMakeHost={view.you.isHost ? (p) => ask(makeHostRequest(p.name, () => conn.makeHost(p.id))) : undefined}
           />
           {view.you.isHost && (
             <EndGameButton

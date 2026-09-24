@@ -1015,6 +1015,9 @@ button.primary kbd {
 button.icon.kick:hover {
   color: var(--danger);
 }
+button.icon.make-host:hover {
+  color: #fbbf24; /* the host crown gold */
+}
 .reveal-list button.icon {
   margin-right: 6px;
 }

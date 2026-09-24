@@ -60,6 +60,12 @@ export const MAX_ROUNDS = 15;
 /** Players per game: one for each player colour, so no two share one at the reveal. */
 export const MAX_PLAYERS = 8;
 
+/**
+ * How long a dropped player's seat is held (a refresh is the common case),
+ * and how long an empty game stays open, ms. Mid-game seats are held for good.
+ */
+export const SEAT_GRACE_MS = 30_000;
+
 /** Question mixes the host may pick: the share of photo questions, with a label. */
 export const PHOTO_MIXES = [
   { share: 1, label: "Photos" },
@@ -108,6 +114,7 @@ export const ClientMessageSchemas = {
   again: z.object({}),
   rename: RenameSchema,
   kick: KickSchema,
+  makeHost: KickSchema,
   end: z.object({}),
 } as const;
 

@@ -10,7 +10,15 @@ import { Icon } from "./icons";
 
 const expanded = signal(false);
 
-export function PlayersPanel({ view, onKick }: { view: GameView; onKick?: (player: PlayerView) => void }) {
+export function PlayersPanel({
+  view,
+  onKick,
+  onMakeHost,
+}: {
+  view: GameView;
+  onKick?: (player: PlayerView) => void;
+  onMakeHost?: (player: PlayerView) => void;
+}) {
   const online = view.players.filter((p) => p.connected).length;
   const open = expanded.value;
   return (
@@ -36,6 +44,7 @@ export function PlayersPanel({ view, onKick }: { view: GameView; onKick?: (playe
             showScores
             showLocked={view.phase === "guessing"}
             onKick={onKick}
+            onMakeHost={onMakeHost}
           />
         </div>
       )}

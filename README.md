@@ -178,9 +178,14 @@ pnpm workspace with three packages:
   presses Next.
 - Late joiners spectate the current round and play from the next. A dropped
   player keeps their seat, score and current paint, and reclaims them on
-  reconnect (a browser refresh is the common case). The host keeps the role
-  while away; the longest-standing connected player acts as host meanwhile.
-  In the lobby a departing host hands over for good.
+  reconnect (a browser refresh is the common case). In the lobby the seat is
+  held for 30 seconds (`SEAT_GRACE_MS`), then freed; mid-game it is held for
+  good. The host keeps the role while away; the longest-standing connected
+  player acts as host meanwhile. An empty game stays open for the same 30
+  seconds, so a host alone in the lobby can refresh without losing it.
+- The host (or acting host) can hand the role over with the crown button on
+  another online player's row, in the lobby or the players panel during a
+  round. It is for good: the old host carries on as a player.
 - The host can remove a player from any player list (the lobby, the players
   panel during a round, the reveal scores). Their seat, score and paint go
   and that tab cannot reclaim them; they may rejoin with the code as a new
