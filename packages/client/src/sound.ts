@@ -164,7 +164,9 @@ class SoundEngine {
       this.master = this.ctx.createGain();
       this.master.connect(this.ctx.destination);
     }
-    if (this.ctx.state === "suspended") void this.ctx.resume();
+    // Not just "suspended": Safari has a third state, "interrupted", that a
+    // tap should also try to leave.
+    if (this.ctx.state !== "running") void this.ctx.resume().catch(() => {});
     if (this.loading) return;
     this.loading = true;
     for (const [clip, url] of Object.entries(URLS) as [Clip, string][]) {

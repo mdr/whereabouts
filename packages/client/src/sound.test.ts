@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from "vitest";
-import { countdownPlan, roundCue } from "./sound";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { countdownPlan, roundCue, sound } from "./sound";
 
 describe("countdownPlan", () => {
   it("waits until ten seconds are left, then plays from the start", () => {
@@ -56,5 +56,28 @@ describe("roundCue", () => {
   it("stays quiet for changes within a phase", () => {
     expect(roundCue(guessing(1), guessing(1), 30_000)).toBeNull();
     expect(roundCue(reveal(1), reveal(1), 0)).toBeNull();
+  });
+});
+
+describe("unlocking audio", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  // iPad Safari can hand back a context that is "interrupted" rather than
+  // "suspended"; audio stayed silent until taps retried from that state too.
+  it("asks a context that is not running to resume, on every tap, whatever Safari calls its state", () => {
+    const resume = vi.fn(() => Promise.resolve());
+    class FakeContext {
+      state = "interrupted";
+      destination = {};
+      resume = resume;
+      createGain() {
+        return { connect() {} };
+      }
+    }
+    vi.stubGlobal("AudioContext", FakeContext);
+    vi.stubGlobal("fetch", () => new Promise(() => {}));
+    sound.unlock();
+    sound.unlock();
+    expect(resume).toHaveBeenCalledTimes(2);
   });
 });
