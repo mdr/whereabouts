@@ -21,6 +21,26 @@ function persisted<T extends string | boolean>(key: string, initial: T, storage:
   return s;
 }
 
+/** Like persisted, for a JSON value; anything unreadable starts from the initial value. */
+function persistedJson<T>(key: string, initial: T) {
+  let start = initial;
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw !== null) start = JSON.parse(raw) as T;
+  } catch {
+    /* storage unavailable, or not JSON */
+  }
+  const s = signal<T>(start);
+  effect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(s.value));
+    } catch {
+      /* ignore */
+    }
+  });
+  return s;
+}
+
 export const playerName = persisted<string>("wa.name", "");
 export const cheatLiveScore = persisted<boolean>("wa.cheat", false);
 export const soloKernelId = persisted<string>("wa.kernel", "single");
@@ -30,6 +50,11 @@ export const soloMapDetail = persisted<MapDetail>("wa.mapDetail", "minimal");
 export const startOnPan = persisted<boolean>("wa.startOnPan", false);
 /** Game sounds on this device: the spray, the countdown and the round cues. */
 export const soundOn = persisted<boolean>("wa.sound", true);
+/**
+ * The setup this browser last chose as host (see host-setup.ts). Stored as
+ * read, so each value is checked before it is used.
+ */
+export const hostSetup = persistedJson<unknown>("wa.hostSetup", {});
 
 /**
  * Reconnect token. Session storage so two tabs in one browser are two

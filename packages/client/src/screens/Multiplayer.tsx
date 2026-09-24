@@ -9,6 +9,7 @@ import { InGame } from "./InGame";
 import { Results } from "./Results";
 import { Banner } from "../ui/Banner";
 import { useGameSounds } from "../ui/useGameSounds";
+import { useSavedSetup } from "../host-setup";
 
 export function Multiplayer({ code, create }: { code: string; create: boolean }) {
   const conn = useMemo(() => new Connection(), []);
@@ -71,6 +72,7 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
   const status = conn.status.value;
   const view = conn.view.value;
   useGameSounds(conn, view);
+  useSavedSetup(conn, view, create);
 
   if (status === "rejected" || (status === "disconnected" && !view)) {
     const why = conn.rejection.value ?? {

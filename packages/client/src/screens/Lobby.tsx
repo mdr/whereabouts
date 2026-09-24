@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { MAX_PLAYERS, MAX_ROUNDS, MIN_ROUNDS, PHOTO_MIXES, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
+import { configureAsHost } from "../host-setup";
 import { playerName, soundOn, startOnPan } from "../settings";
 import { HostWord, PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
@@ -97,7 +98,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     value={view.config.rounds}
                     min={MIN_ROUNDS}
                     max={MAX_ROUNDS}
-                    onChange={(rounds) => conn.configure({ rounds })}
+                    onChange={(rounds) => configureAsHost(conn, { rounds })}
                   />
                 </div>
                 <div class="setting seconds">
@@ -106,7 +107,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     label="Seconds per round"
                     options={SECONDS}
                     value={view.config.roundMs}
-                    onChange={(roundMs) => conn.configure({ roundMs })}
+                    onChange={(roundMs) => configureAsHost(conn, { roundMs })}
                   />
                 </div>
                 <div class="setting questions">
@@ -115,14 +116,14 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     label="Questions"
                     options={MIXES}
                     value={view.config.photoShare}
-                    onChange={(photoShare) => conn.configure({ photoShare })}
+                    onChange={(photoShare) => configureAsHost(conn, { photoShare })}
                   />
                 </div>
                 <div class="setting map-detail">
                   <span class="setting-label">Map detail</span>
                   <MapDetailPicker
                     value={view.config.mapDetail}
-                    onChange={(mapDetail) => conn.configure({ mapDetail })}
+                    onChange={(mapDetail) => configureAsHost(conn, { mapDetail })}
                   />
                 </div>
               </>

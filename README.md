@@ -137,7 +137,10 @@ pnpm workspace with three packages:
   default), Water (adds rivers and lakes), Physical (adds relief, natural
   colour, forests and ice) and Political (adds country borders). Place names
   never show while guessing. Practice remembers its own choice, set under
-  the Practise button. Guests see just the decided values as tiles, which
+  the Practise button. The browser remembers the setup its host last chose,
+  and a game it creates starts from that (settings the game no longer
+  offers fall back to the default); joining someone else's game uses and
+  saves nothing. Guests see just the decided values as tiles, which
   flash briefly when the host changes one. The lobby also offers Copy link and, where
   the browser supports it, Share.
 - Rounds default to 60 seconds. Whatever is painted at the deadline is the guess;

@@ -4,7 +4,7 @@ import { fireEvent, render } from "@testing-library/preact";
 import { signal } from "@preact/signals";
 import type { GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
-import { startOnPan } from "../settings";
+import { hostSetup, startOnPan } from "../settings";
 import { Lobby } from "./Lobby";
 
 function view(isHost: boolean): GameView {
@@ -78,6 +78,9 @@ describe("Lobby setup", () => {
     fireEvent.click([...container.querySelectorAll(".detail-picker button")].find((b) => b.textContent === "Water")!);
     expect(configure).toHaveBeenCalledWith({ mapDetail: "water" });
     expect(container.querySelector(".setup-summary")).toBeNull();
+    // Remembered for the next game this browser hosts.
+    expect(hostSetup.value).toEqual({ rounds: 6, photoShare: 1, mapDetail: "water" });
+    hostSetup.value = {};
   });
 
   it("shows guests the decided values, not controls", () => {
