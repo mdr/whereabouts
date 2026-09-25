@@ -136,6 +136,8 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
             </ul>
             <p class="hint">Click a player to see just their guess.</p>
           </Card>
+          {/* Where it is while guessing too, and away from Next round below. */}
+          {view.you.isHost && !last && <EndGameButton onEnd={() => conn.end()} />}
         </div>
         <HudBottom>
           <button class={iAmReady ? "" : "primary"} onClick={() => conn.ready()} disabled={iAmReady}>
@@ -148,7 +150,6 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
           ) : (
             iAmReady && <span class="hint">Waiting for the others…</span>
           )}
-          {view.you.isHost && !last && <EndGameButton onEnd={() => conn.end()} />}
         </HudBottom>
       </div>
       <DevDrawer>
