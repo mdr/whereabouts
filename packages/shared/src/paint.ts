@@ -443,5 +443,12 @@ export function compactRecord(cells: Record<string, number>, budget = PAINT_CELL
 
 /** Outline of a set of cells as one GeoJSON MultiPolygon, e.g. a brush footprint. */
 export function cellsOutline(cells: string[]): GeoJSON.MultiPolygon {
-  return { type: "MultiPolygon", coordinates: cellsToMultiPolygon(cells, true) };
+  // As in PaintLayer.boundary: a polygon straddling the antimeridian comes
+  // back with longitudes on both sides; unwrap it so it does not span the world.
+  const coordinates = cellsToMultiPolygon(cells, true).map((polygon) => {
+    const lons = polygon.flat().map(([lon]) => lon);
+    if (Math.max(...lons) - Math.min(...lons) <= 180) return polygon;
+    return polygon.map((ring) => ring.map(([lon, lat]) => [lon < 0 ? lon + 360 : lon, lat]));
+  });
+  return { type: "MultiPolygon", coordinates };
 }

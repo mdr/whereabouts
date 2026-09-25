@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getHexagonEdgeLengthAvg, getResolution, gridDisk, latLngToCell, UNITS } from "h3-js";
-import { PaintLayer, cellSpacingKm, compactRecord, resolutionForTolerance } from "./paint.ts";
+import { PaintLayer, cellSpacingKm, cellsOutline, compactRecord, resolutionForTolerance } from "./paint.ts";
 
 describe("resolutionForTolerance", () => {
   it("picks cells with edge at most a quarter of the tolerance", () => {
@@ -172,6 +172,21 @@ describe("mixed resolutions", () => {
     for (let i = 1; i < sizes.length; i++) {
       if (sizes[i]! < sizes[i - 1]! * 0.5) decreased = true;
       if (decreased) expect(sizes[i]!).toBeLessThan(sizes[0]! * 0.5);
+    }
+  });
+});
+
+describe("cellsOutline", () => {
+  it("keeps a footprint on the antimeridian compact instead of spanning the world", () => {
+    const layer = new PaintLayer(4);
+    for (const radiusKm of [50, 400, 1500]) {
+      for (const lon of [179.9, -179.9, 180]) {
+        const outline = cellsOutline(layer.stampCells({ lat: -30, lon }, radiusKm));
+        for (const ring of outline.coordinates.flat()) {
+          const lons = ring.map(([x]) => x ?? 0);
+          expect(Math.max(...lons) - Math.min(...lons)).toBeLessThan(180);
+        }
+      }
     }
   });
 });
