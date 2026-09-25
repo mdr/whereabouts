@@ -1289,7 +1289,8 @@ button.danger.solid {
 }
 .modes {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* Equal thirds: plain 1fr would let the Join row's width squeeze the others. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 .mode {
@@ -1480,9 +1481,25 @@ button.danger.solid {
   align-items: center;
   gap: 6px;
 }
+/* "Just watch" on its own line under the code and Join, as a quiet text button. */
+.join {
+  flex-wrap: wrap;
+}
 .join button.watch {
-  flex: none;
-  padding-inline: 12px;
+  flex-basis: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-start;
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.join button.watch:not(:disabled):hover {
+  color: var(--panel-fg);
+  background: none;
 }
 .lobby .hint.waiting {
   margin: 0;
@@ -1696,6 +1713,10 @@ button.danger.solid {
   padding: 4px 6px 5px;
   font-size: 12px;
   text-align: center;
+}
+/* In the narrow Practice panel, two rows of two so every label has room. */
+.practice-detail .detail-picker {
+  grid-template-columns: repeat(2, 1fr);
 }
 .detail-picker button.on {
   border-color: var(--accent-2);

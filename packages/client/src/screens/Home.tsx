@@ -83,12 +83,11 @@ export function Home() {
               <button
                 type="submit"
                 value="watch"
-                class="big icon-only watch"
+                class="watch"
                 disabled={!ready || code.trim().length < 4}
-                title="Just watch: see every round without playing"
-                aria-label="Just watch"
+                title="See every round without playing"
               >
-                <Icon name="eye" />
+                <Icon name="eye" size={14} /> Just watch
               </button>
             </form>
           </section>
