@@ -1449,6 +1449,35 @@ button.danger.solid {
   font-size: 13px;
   color: #11151a;
 }
+/* Spectators: no colour of their own, so a neutral avatar with an eye. */
+.lobby .players .avatar.watcher {
+  background: #3a424d;
+  color: var(--muted);
+}
+.swatch.watcher {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--muted);
+}
+.lobby .watching-heading {
+  margin: 14px 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.lobby .role-switch {
+  margin-top: 10px;
+}
+.lobby .role-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.join button.watch {
+  flex: none;
+  padding-inline: 12px;
+}
 .lobby .hint.waiting {
   margin: 0;
   font-style: italic;

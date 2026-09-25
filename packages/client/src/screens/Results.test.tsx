@@ -11,12 +11,13 @@ function view(isHost: boolean): GameView {
     phase: "results",
     config: { rounds: 2, roundMs: 60000, photoShare: 0.5, mapDetail: "minimal", kernelId: "multi-equal" },
     serverTime: 0,
-    you: { id: "p2", isHost, spectating: false, locked: false, paint: null },
+    you: { id: "p2", isHost, spectating: false, watching: false, locked: false, paint: null },
     players: [
       {
         id: "p1",
         name: "Alice",
         colour: 0,
+        watching: false,
         connected: true,
         isHost: true,
         locked: false,
@@ -28,6 +29,7 @@ function view(isHost: boolean): GameView {
         id: "p2",
         name: "Bob",
         colour: 1,
+        watching: false,
         connected: true,
         isHost: false,
         locked: false,

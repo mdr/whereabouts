@@ -30,6 +30,8 @@ export const TicketSchema = z.object({
     .regex(/^[A-Z0-9]{4,6}$/)
     .optional(),
   create: z.boolean().optional(),
+  /** Join to watch rather than play. A full game seats a would-be player as a spectator anyway. */
+  watch: z.boolean().optional(),
 });
 export type Ticket = z.infer<typeof TicketSchema>;
 
@@ -57,8 +59,11 @@ export const KickSchema = z.object({ playerId: z.string().min(1).max(20) });
 export const ROUND_LENGTHS_MS = [30_000, 45_000, 60_000, 90_000, 120_000] as const;
 export const MIN_ROUNDS = 1;
 export const MAX_ROUNDS = 15;
-/** Players per game: one for each player colour, so no two share one at the reveal. */
-export const MAX_PLAYERS = 8;
+/** Players in one game, one per player colour. */
+export const MAX_PLAYERS = 16;
+
+/** Spectators in one game, on top of the players: they watch every round but do not play. */
+export const MAX_SPECTATORS = 8;
 
 /**
  * How long a dropped player's seat is held (a refresh is the common case),
@@ -116,6 +121,8 @@ export const ClientMessageSchemas = {
   kick: KickSchema,
   makeHost: KickSchema,
   leave: z.object({}),
+  /** In the lobby: watch instead of play, or take a player's seat. */
+  setRole: z.object({ watch: z.boolean() }),
   end: z.object({}),
 } as const;
 
@@ -141,8 +148,10 @@ export interface GameConfig {
 export interface PlayerView {
   id: string;
   name: string;
-  /** Index into the client palette. */
+  /** Index into the client palette; -1 for a spectator, who has no colour. */
   colour: number;
+  /** Watching rather than playing: no paint, no score, and never waited on. */
+  watching: boolean;
   connected: boolean;
   isHost: boolean;
   /** Has frozen their guess this round. */
@@ -208,6 +217,8 @@ export interface GameView {
     isHost: boolean;
     /** True when this player joined mid-round and sits this one out. */
     spectating: boolean;
+    /** True for a spectator, who watches the whole game (see PlayerView.watching). */
+    watching: boolean;
     locked: boolean;
     /** Your own current submission while guessing, so a reconnect can restore it. Never anyone else's. */
     paint: PaintSubmission | null;

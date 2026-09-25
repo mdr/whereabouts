@@ -1,7 +1,9 @@
+import { Fragment } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import {
   MAX_PLAYERS,
   MAX_ROUNDS,
+  MAX_SPECTATORS,
   MIN_ROUNDS,
   PHOTO_MIXES,
   ROUND_LENGTHS_MS,
@@ -10,7 +12,7 @@ import {
 } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { configureAsHost } from "../host-setup";
-import { joinedCode, playerName, soundOn, startOnPan } from "../settings";
+import { askedToWatch, joinedCode, playerName, soundOn, startOnPan } from "../settings";
 import { HostWord, PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { Icon } from "../ui/icons";
@@ -36,6 +38,9 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   const current = view.players.find((p) => p.id === view.you.id)?.name ?? "";
   const host = view.you.isHost;
   const canShare = typeof navigator.share === "function";
+  const players = view.players.filter((p) => !p.watching);
+  const watchers = view.players.filter((p) => p.watching);
+  const seatsFull = players.length >= MAX_PLAYERS;
   // Home, giving up the seat now; the tab forgets the game so a refresh or
   // Back does not quietly rejoin it. Leaving the screen disconnects.
   const leave = () => {
@@ -84,19 +89,57 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             <h2>
               Players{" "}
               <span class="count" title={`Up to ${MAX_PLAYERS} players`}>
-                {view.players.length}/{MAX_PLAYERS}
+                {players.length}/{MAX_PLAYERS}
               </span>
             </h2>
-            <PlayerList
-              players={view.players}
-              you={view.you.id}
-              showScores={false}
-              avatars
-              onRename={() => setRenaming(true)}
-              onKick={host ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
-              onMakeHost={host ? (p) => ask(makeHostRequest(p.name, () => conn.makeHost(p.id))) : undefined}
-            />
+            {[players, watchers].map((list, i) =>
+              list.length === 0 ? null : (
+                <Fragment key={i}>
+                  {i === 1 && (
+                    <h3 class="watching-heading">
+                      Watching{" "}
+                      <span class="count" title={`Up to ${MAX_SPECTATORS} people can watch`}>
+                        {watchers.length}/{MAX_SPECTATORS}
+                      </span>
+                    </h3>
+                  )}
+                  <PlayerList
+                    players={list}
+                    you={view.you.id}
+                    showScores={false}
+                    avatars
+                    onRename={() => setRenaming(true)}
+                    onKick={host ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
+                    onMakeHost={host ? (p) => ask(makeHostRequest(p.name, () => conn.makeHost(p.id))) : undefined}
+                  />
+                </Fragment>
+              ),
+            )}
             {view.players.length === 1 && <p class="hint waiting">Waiting for friends to join…</p>}
+            {view.you.watching && !askedToWatch.value && seatsFull && (
+              <p class="hint">
+                All {MAX_PLAYERS} player seats are taken, so you're watching. You can join if one frees up.
+              </p>
+            )}
+            <div class="role-switch">
+              {view.you.watching ? (
+                <button
+                  onClick={() => conn.setRole(false)}
+                  disabled={seatsFull}
+                  title={seatsFull ? `All ${MAX_PLAYERS} seats are taken` : undefined}
+                >
+                  <Icon name="play" /> Play instead
+                </button>
+              ) : (
+                <button
+                  onClick={() => conn.setRole(true)}
+                  disabled={watchers.length >= MAX_SPECTATORS}
+                  title="See every round without playing"
+                >
+                  <Icon name="eye" /> Just watch
+                </button>
+              )}
+            </div>
             {renaming && (
               <RenameForm
                 current={current}
@@ -180,7 +223,12 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             </label>
             <div class="lobby-start">
               {host ? (
-                <button class="primary big" onClick={() => conn.start()} disabled={view.players.length < 1}>
+                <button
+                  class="primary big"
+                  onClick={() => conn.start()}
+                  disabled={players.length < 1}
+                  title={players.length < 1 ? "Someone needs to play: take a seat, or wait for a player" : undefined}
+                >
                   <Icon name="play" /> Start game
                 </button>
               ) : (

@@ -8,6 +8,7 @@ function player(id: string, rank: number): PlayerView {
     id,
     name: id,
     colour: 0,
+    watching: false,
     connected: true,
     isHost: false,
     locked: false,
@@ -22,6 +23,12 @@ function result(playerId: string, score: number, painted = true): RoundResultVie
 }
 
 describe("revealOrder", () => {
+  it("leaves spectators out", () => {
+    const sam = { ...player("sam", 0), watching: true, colour: -1 };
+    const rows = revealOrder([player("alice", 1), sam], [result("alice", 500)]);
+    expect(rows.map((x) => x.p.id)).toEqual(["alice"]);
+  });
+
   it("puts this round's winner first, passes in score order, then anyone who sat out", () => {
     // Standings say Alice leads overall, but Cara won this round.
     const players = [

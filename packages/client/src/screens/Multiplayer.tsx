@@ -1,18 +1,33 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { Connection } from "../net";
-import { joinedCode, nameHandoff, playerName, playerToken, resetPlayerToken } from "../settings";
+import {
+  askedToWatch,
+  joinedCode,
+  nameHandoff,
+  playerName,
+  playerToken,
+  resetPlayerToken,
+  watchHandoff,
+} from "../settings";
 import { navigate } from "../router";
 import { MapView } from "../ui/MapView";
 import { Lobby } from "./Lobby";
 import { InGame } from "./InGame";
 import { Results } from "./Results";
 import { Banner } from "../ui/Banner";
+import { Icon } from "../ui/icons";
 import { useGameSounds } from "../ui/useGameSounds";
 import { useSavedSetup } from "../host-setup";
 
 export function Multiplayer({ code, create }: { code: string; create: boolean }) {
   const conn = useMemo(() => new Connection(), []);
+  // "Just watch" from the home screen or the join screen below.
+  const [watch, setWatch] = useState(() => {
+    const handed = watchHandoff.value;
+    watchHandoff.value = false;
+    return handed;
+  });
   // Hosts and code-joiners have just typed their name on the home screen;
   // anyone arriving by link confirms or edits theirs first, so two tabs need
   // not share a name.
@@ -32,10 +47,11 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
       return;
     }
     if (!confirmedName) return;
+    askedToWatch.value = watch;
     conn.connect(
       create
         ? { token: playerToken.value, name: confirmedName, create: true }
-        : { token: playerToken.value, name: confirmedName, code },
+        : { token: playerToken.value, name: confirmedName, code, ...(watch ? { watch } : {}) },
     );
     return () => conn.disconnect();
   }, [conn, confirmedName]);
@@ -44,8 +60,9 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
     return (
       <JoinAs
         code={code}
-        onJoin={(name) => {
+        onJoin={(name, asWatcher) => {
           playerName.value = name;
+          setWatch(asWatcher);
           setConfirmedName(name);
         }}
       />
@@ -114,7 +131,7 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
   );
 }
 
-function JoinAs({ code, onJoin }: { code: string; onJoin: (name: string) => void }) {
+function JoinAs({ code, onJoin }: { code: string; onJoin: (name: string, watch: boolean) => void }) {
   const [name, setName] = useState(playerName.value);
   const ready = name.trim().length > 0;
   return (
@@ -123,7 +140,7 @@ function JoinAs({ code, onJoin }: { code: string; onJoin: (name: string) => void
         class="home-card"
         onSubmit={(e) => {
           e.preventDefault();
-          if (ready) onJoin(name.trim());
+          if (ready) onJoin(name.trim(), false);
         }}
       >
         <Banner />
@@ -143,6 +160,9 @@ function JoinAs({ code, onJoin }: { code: string; onJoin: (name: string) => void
         </label>
         <button class="primary big" type="submit" disabled={!ready}>
           Join
+        </button>
+        <button class="big" type="button" disabled={!ready} onClick={() => onJoin(name.trim(), true)}>
+          <Icon name="eye" /> Just watch
         </button>
         <p class="hint">
           <a href="#/">Back</a>

@@ -14,12 +14,13 @@ function view(isHost: boolean): GameView {
     phase: "lobby",
     config: { rounds: 5, roundMs: 60000, photoShare: 0.5, mapDetail: "minimal", kernelId: "multi-equal" },
     serverTime: 0,
-    you: { id: "p1", isHost, spectating: false, locked: false, paint: null },
+    you: { id: "p1", isHost, spectating: false, watching: false, locked: false, paint: null },
     players: [
       {
         id: "p1",
         name: "Alice",
         colour: 0,
+        watching: false,
         connected: true,
         isHost: true,
         locked: false,
@@ -36,12 +37,14 @@ function view(isHost: boolean): GameView {
 
 const configure = vi.fn();
 const leave = vi.fn();
+const setRole = vi.fn();
 const conn = {
   status: signal("connected"),
   lastError: signal(null),
   configure,
   start: vi.fn(),
   leave,
+  setRole,
 } as unknown as Connection;
 
 describe("Lobby", () => {
@@ -109,6 +112,7 @@ describe("Lobby leave", () => {
     id: "p2",
     name: "Bob",
     colour: 1,
+    watching: false,
     connected: true,
     isHost: false,
     locked: false,
@@ -144,5 +148,59 @@ describe("Lobby leave", () => {
     fireEvent.click(container.querySelector(".banner-leave")!);
     const modals = document.body.querySelectorAll(".modal");
     expect(modals[modals.length - 1]!.textContent).toContain("It closes, since no one else is here.");
+  });
+});
+describe("Lobby spectators", () => {
+  const person = (id: string, name: string, watching: boolean, colour = 1) => ({
+    id,
+    name,
+    colour: watching ? -1 : colour,
+    watching,
+    connected: true,
+    isHost: false,
+    locked: false,
+    score: 0,
+    rank: watching ? 0 : 1,
+    previousRank: null,
+  });
+  afterEach(() => setRole.mockClear());
+
+  it("lists spectators apart from the players, with their own count", () => {
+    const v = view(true);
+    v.players = [...v.players, person("p2", "Bob", false), person("p3", "Sam", true)];
+    const { container } = render(<Lobby conn={conn} view={v} />);
+    const lists = container.querySelectorAll(".lobby .players");
+    expect(lists).toHaveLength(2);
+    expect(lists[0]!.textContent).toContain("Bob");
+    expect(lists[1]!.textContent).toContain("Sam");
+    expect(lists[1]!.querySelector(".avatar.watcher")).not.toBeNull();
+    expect(container.querySelector(".watching-heading")!.textContent).toContain("1/8");
+  });
+
+  it("lets a player step back to watch, and a spectator take a seat", () => {
+    const { container, unmount } = render(<Lobby conn={conn} view={view(false)} />);
+    fireEvent.click(container.querySelector(".role-switch button")!);
+    expect(setRole).toHaveBeenLastCalledWith(true);
+    unmount();
+    const v = view(false);
+    v.you.watching = true;
+    v.players = [person("p1", "Alice", true)];
+    const { container: c2 } = render(<Lobby conn={conn} view={v} />);
+    const play = c2.querySelector<HTMLButtonElement>(".role-switch button")!;
+    expect(play.textContent).toContain("Play instead");
+    fireEvent.click(play);
+    expect(setRole).toHaveBeenLastCalledWith(false);
+  });
+
+  it("keeps the seat button off when all sixteen seats are taken", () => {
+    const v = view(false);
+    v.you.watching = true;
+    v.players = [
+      ...Array.from({ length: 16 }, (_, i) => person(`p${i + 10}`, `P${i}`, false, i)),
+      person("p1", "Alice", true),
+    ];
+    const { container } = render(<Lobby conn={conn} view={v} />);
+    expect(container.querySelector<HTMLButtonElement>(".role-switch button")!.disabled).toBe(true);
+    expect(container.textContent).toContain("All 16 player seats are taken");
   });
 });

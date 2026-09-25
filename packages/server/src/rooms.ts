@@ -30,6 +30,8 @@ import {
 export interface ActorData {
   token: string;
   name: string;
+  /** Asked to join as a spectator. */
+  watch: boolean;
 }
 
 export const ROOM_TYPE = "game";
@@ -84,12 +86,12 @@ export class GameRoom extends Room<ActorData> {
   }
 
   protected override onJoin(actor: Actor<ActorData>): void {
-    const { token, name } = actor.data!;
+    const { token, name, watch } = actor.data!;
     this.cancelEmptyTimer();
     const previous = this.actorsByToken.get(token);
     if (previous && previous !== actor) previous.kick("replaced by a newer connection");
     this.actorsByToken.set(token, actor);
-    const result = this.game.join(token, name, deps.clock.now());
+    const result = this.game.join(token, name, deps.clock.now(), watch);
     if (!result.ok) {
       actor.send(ServerTopics.error, encodeMessage({ message: result.error }));
       actor.kick(result.error);
@@ -180,6 +182,8 @@ export class GameRoom extends Room<ActorData> {
         return this.game.rename(token, (data as z.infer<typeof ClientMessageSchemas.rename>).name);
       case "kick":
         return this.removePlayer(token, (data as z.infer<typeof ClientMessageSchemas.kick>).playerId, now);
+      case "setRole":
+        return this.game.setRole(token, (data as z.infer<typeof ClientMessageSchemas.setRole>).watch);
       case "leave":
         return this.leave(token);
       case "makeHost":
@@ -276,6 +280,6 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     } else {
       return null;
     }
-    return { data: { token: parsed.token, name: parsed.name }, roomId };
+    return { data: { token: parsed.token, name: parsed.name, watch: parsed.watch ?? false }, roomId };
   }
 }

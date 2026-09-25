@@ -25,14 +25,15 @@ const NONE = "none";
 /**
  * Rows for the reveal list: this round's winner first. Everyone who played,
  * passes included, comes in score order, then anyone who sat the round out;
- * ties keep the standings order.
+ * ties keep the standings order. Spectators are not listed: they never play.
  */
 export function revealOrder(
   players: PlayerView[],
   results: RoundResultView[],
 ): { p: PlayerView; r?: RoundResultView }[] {
   const group = (r?: RoundResultView) => (r ? 0 : 1);
-  return [...players]
+  return players
+    .filter((p) => !p.watching)
     .sort((a, b) => a.rank - b.rank)
     .map((p) => ({ p, r: results.find((x) => x.playerId === p.id) }))
     .sort((a, b) => group(a.r) - group(b.r) || (b.r?.score ?? 0) - (a.r?.score ?? 0));
@@ -68,7 +69,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   const mine = reveal.results.find((r) => r.playerId === view.you.id);
   const last = reveal.index + 1 >= reveal.total;
   const ready = new Set(reveal.ready);
-  const present = view.players.filter((p) => p.connected);
+  const present = view.players.filter((p) => p.connected && !p.watching);
   const readyCount = present.filter((p) => ready.has(p.id)).length;
   const iAmReady = ready.has(view.you.id);
   const rows = revealOrder(view.players, reveal.results);
@@ -140,11 +141,19 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
           {view.you.isHost && !last && <EndGameButton onEnd={() => conn.end()} />}
         </div>
         <HudBottom>
-          <button class={iAmReady ? "" : "primary"} onClick={() => conn.ready()} disabled={iAmReady}>
-            <Icon name="check" /> Ready
-          </button>
+          {view.you.watching ? (
+            <span class="hint">You're watching.</span>
+          ) : (
+            <button class={iAmReady ? "" : "primary"} onClick={() => conn.ready()} disabled={iAmReady}>
+              <Icon name="check" /> Ready
+            </button>
+          )}
           {view.you.isHost ? (
-            <button class={iAmReady ? "primary" : ""} onClick={() => conn.next()} title="Go on without waiting">
+            <button
+              class={iAmReady || view.you.watching ? "primary" : ""}
+              onClick={() => conn.next()}
+              title="Go on without waiting"
+            >
               <Icon name={last ? "flag" : "next"} /> {last ? "Show final results" : "Next round"}
             </button>
           ) : (

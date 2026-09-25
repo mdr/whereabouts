@@ -13,11 +13,13 @@ import { Icon } from "../ui/icons";
 import { PlayersPanel } from "../ui/PlayersPanel";
 import { EndGameButton } from "../ui/HostControls";
 import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog";
-import { startOnPan } from "../settings";
+import { askedToWatch, startOnPan } from "../settings";
 import { sound } from "../sound";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint();
+  // Not painting this round: a spectator, or a late joiner sitting one out.
+  const sittingOut = view.you.watching || view.you.spectating;
   const roundKey = view.round?.index ?? view.reveal?.index ?? -1;
   const guessing = view.phase === "guessing";
   const sendTimer = useRef<number | null>(null);
@@ -39,7 +41,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     paint.gameMap.resetView();
     // Paint in your own colour, the same one others see at the reveal.
     const me = view.players.find((p) => p.id === view.you.id);
-    paint.showOwn(me ? playerColour(me.colour) : null);
+    paint.showOwn(me && !me.watching ? playerColour(me.colour) : null);
     paint.tool.value = startOnPan.value ? "pan" : "paint";
     lastSentVersion.current = paint.version.peek();
   }, [roundKey, guessing]);
@@ -52,14 +54,14 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   }, [reveal, view.config.mapDetail]);
 
   useEffect(() => {
-    paint.enabled.value = guessing && !view.you.spectating && !view.you.locked;
-  }, [guessing, view.you.spectating, view.you.locked]);
+    paint.enabled.value = guessing && !sittingOut && !view.you.locked;
+  }, [guessing, sittingOut, view.you.locked]);
 
   // Debounced upload of the current paint while guessing.
   const version = paint.version.value;
   const floor = paint.floor.value;
   useEffect(() => {
-    if (!guessing || view.you.spectating || view.you.locked) return;
+    if (!guessing || sittingOut || view.you.locked) return;
     if (sendTimer.current) clearTimeout(sendTimer.current);
     sendTimer.current = window.setTimeout(() => {
       sendTimer.current = null;
@@ -101,6 +103,15 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           />
           <QuestionCard q={round.question} />
           <ConnectionNote conn={conn} />
+          {view.you.watching && (
+            <Card>
+              <p class="hint">
+                {askedToWatch.value
+                  ? "You're watching this game. You'll see each answer and everyone's guesses at the reveal."
+                  : "The game was full, so you're watching. You'll see each answer and everyone's guesses at the reveal."}
+              </p>
+            </Card>
+          )}
           {view.you.spectating && (
             <Card>
               <p class="hint">You joined mid-round, so you're watching this one. You'll play from the next question.</p>
@@ -128,7 +139,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             />
           )}
         </div>
-        {!view.you.spectating && (
+        {!sittingOut && (
           <PaintTools>
             {view.you.locked ? (
               <button class="keep-editing" title="Take back Done and change your guess" onClick={() => conn.unlock()}>

@@ -7,6 +7,7 @@ import { computed, signal } from "@preact/signals";
 import {
   type ConfigurePatch,
   MAX_PLAYERS,
+  MAX_SPECTATORS,
   PROTOCOL_VERSION,
   encodeTicket,
   type GameView,
@@ -122,6 +123,10 @@ export class Connection {
   leave(): void {
     this.send("leave");
   }
+  /** In the lobby: watch instead of play, or take a free seat. */
+  setRole(watch: boolean): void {
+    this.send("setRole", { watch });
+  }
   makeHost(playerId: string): void {
     this.send("makeHost", { playerId });
   }
@@ -165,7 +170,13 @@ export function describeDisconnect(code: number, reason: string | undefined): Re
   if (r.includes("game is full")) {
     return {
       title: "That game is full",
-      detail: `It already has ${MAX_PLAYERS} players, the most a game can hold. Ask the host to remove someone, or start your own game.`,
+      detail: `It already has ${MAX_PLAYERS} players and ${MAX_SPECTATORS} people watching, the most a game can hold. Ask the host to remove someone, or start your own game.`,
+    };
+  }
+  if (r.includes("no room to watch")) {
+    return {
+      title: "No room to watch",
+      detail: `${MAX_SPECTATORS} people are already watching that game, the most it allows. You can still join it as a player.`,
     };
   }
   if (r.includes("game has finished")) {

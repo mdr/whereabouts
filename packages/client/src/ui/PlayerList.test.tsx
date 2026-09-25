@@ -8,6 +8,7 @@ const player = (over: Partial<PlayerView>): PlayerView => ({
   id: "p1",
   name: "Alice",
   colour: 0,
+  watching: false,
   connected: true,
   isHost: false,
   locked: false,
@@ -127,5 +128,19 @@ describe("PlayerList make host", () => {
     expect(buttons[0]!.getAttribute("aria-label")).toBe("Make Bob the host");
     buttons[0]!.click();
     expect(picked).toEqual(["p2"]);
+  });
+});
+describe("PlayerList spectators", () => {
+  it("shows a spectator without a colour, tagged as watching", () => {
+    const { container } = render(
+      <PlayerList
+        players={[player({ id: "p2", name: "Sam", watching: true, colour: -1 })]}
+        you="p1"
+        showScores={false}
+      />,
+    );
+    const row = container.querySelector("li")!;
+    expect(row.querySelector(".swatch.watcher")).not.toBeNull();
+    expect(row.textContent).toContain("watching");
   });
 });

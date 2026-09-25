@@ -1,6 +1,6 @@
 import { useState } from "preact/hooks";
 import { MAP_DETAILS } from "@whereabouts/shared";
-import { nameHandoff, playerName, soloMapDetail } from "../settings";
+import { nameHandoff, playerName, soloMapDetail, watchHandoff } from "../settings";
 import { navigate } from "../router";
 import { Icon } from "../ui/icons";
 import { MapDetailPicker } from "../ui/MapDetailPicker";
@@ -61,6 +61,9 @@ export function Home() {
                 const c = code.trim().toUpperCase();
                 if (ready && c.length >= 4) {
                   nameHandoff.value = name;
+                  // The "Just watch" button submits too, and says which it was.
+                  const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | null;
+                  watchHandoff.value = submitter?.value === "watch";
                   navigate(`/game/${c}`);
                 }
               }}
@@ -76,6 +79,16 @@ export function Home() {
               />
               <button type="submit" class="big" disabled={!ready || code.trim().length < 4} title={needName}>
                 Join
+              </button>
+              <button
+                type="submit"
+                value="watch"
+                class="big icon-only watch"
+                disabled={!ready || code.trim().length < 4}
+                title="Just watch: see every round without playing"
+                aria-label="Just watch"
+              >
+                <Icon name="eye" />
               </button>
             </form>
           </section>

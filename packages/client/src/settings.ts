@@ -80,6 +80,15 @@ function randomToken(): string {
  */
 export const nameHandoff = signal<string | null>(null);
 
+/** Handed over with the name when the home screen's "Just watch" was used. */
+export const watchHandoff = signal(false);
+
+/**
+ * Whether this tab asked to watch the game it joined. A spectator who did
+ * not ask was seated as one because the game was full, and is told so.
+ */
+export const askedToWatch = signal(false);
+
 /**
  * The game this tab last sat in. A refresh of that tab reclaims the seat by
  * token, so it should not ask for a name again.

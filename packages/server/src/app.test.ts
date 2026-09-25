@@ -85,7 +85,7 @@ class TestPlayer {
     this.client.on("state", (p) => this.states.push(JSON.parse(dec.decode(p)) as GameView));
     this.client.on("error", (p) => this.errors.push((JSON.parse(dec.decode(p)) as { message: string }).message));
   }
-  connect(ticket: { create?: boolean; code?: string }) {
+  connect(ticket: { create?: boolean; code?: string; watch?: boolean }) {
     this.client.connect(encodeTicket({ v: 1, token: this.token, name: this.name, ...ticket }));
   }
   send(topic: string, body: unknown = {}) {
@@ -353,6 +353,20 @@ describe("game server", () => {
     const start = Date.now();
     while (app.rivalis.rooms.get(lobby.code) && Date.now() - start < 2000) await new Promise((r) => setTimeout(r, 10));
     expect(app.rivalis.rooms.get(lobby.code)).toBeNull();
+  });
+
+  it("a spectator joins to watch, and can take a seat in the lobby", async () => {
+    const alice = player("Alice");
+    alice.connect({ create: true });
+    const lobby = await alice.until((v) => v.phase === "lobby");
+    const sam = player("Sam");
+    sam.connect({ code: lobby.code, watch: true });
+    const watching = await sam.until((v) => v.players.length === 2);
+    expect(watching.you.watching).toBe(true);
+    expect(watching.players.find((p) => p.name === "Sam")).toMatchObject({ watching: true, colour: -1 });
+    sam.send("setRole", { watch: false });
+    const seated = await alice.untilLatest((v) => v.players.some((p) => p.name === "Sam" && !p.watching));
+    expect(seated.players.find((p) => p.name === "Sam")!.colour).toBeGreaterThanOrEqual(0);
   });
 
   it("the host hands over to another player", async () => {

@@ -19,7 +19,9 @@ export function PlayersPanel({
   onKick?: (player: PlayerView) => void;
   onMakeHost?: (player: PlayerView) => void;
 }) {
-  const online = view.players.filter((p) => p.connected).length;
+  const players = view.players.filter((p) => !p.watching);
+  const watching = view.players.length - players.length;
+  const online = players.filter((p) => p.connected).length;
   const open = expanded.value;
   return (
     <div class={`players-panel ${open ? "open" : ""}`}>
@@ -31,15 +33,16 @@ export function PlayersPanel({
       >
         <Icon name="users" />
         <span>
-          {view.players.length} {view.players.length === 1 ? "player" : "players"}
-          {online < view.players.length ? ` · ${online} online` : ""}
+          {players.length} {players.length === 1 ? "player" : "players"}
+          {online < players.length ? ` · ${online} online` : ""}
+          {watching > 0 ? ` · ${watching} watching` : ""}
         </span>
         <Icon name={open ? "collapse" : "expand"} size={14} />
       </button>
       {open && (
         <div class="card players-card">
           <PlayerList
-            players={view.players}
+            players={players}
             you={view.you.id}
             showScores
             showLocked={view.phase === "guessing"}

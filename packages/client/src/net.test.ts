@@ -25,4 +25,9 @@ describe("describeDisconnect", () => {
     expect(describeDisconnect(1006, undefined).detail).toContain("1006");
     expect(describeDisconnect(1000, "something odd").detail).toBe("something odd");
   });
+
+  it("explains a game with no room left to watch", () => {
+    expect(describeDisconnect(1008, "no room to watch").title).toBe("No room to watch");
+    expect(describeDisconnect(1008, "game is full").detail).toContain("16 players and 8 people watching");
+  });
 });

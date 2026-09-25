@@ -124,9 +124,15 @@ pnpm workspace with three packages:
   separate panels for hosting, joining with a code and practising solo,
   and a three-step how to play.
 - The host creates a game and gets a four-letter code; others join with it,
-  up to 8 players (one per player colour). Anyone already in the game can
-  always reconnect; a ninth new player is told the game is full, and a
-  player the host removes frees their seat and colour.
+  up to 16 players (one per player colour: the original eight plus eight
+  picked to stay distinct from them on the reveal's terrain) and up to 8
+  spectators. Spectators join with "Just watch", or are seated as one when
+  every player seat is taken; they see each question and every reveal but
+  have no paint, colour or score and are never waited on. In the lobby a
+  spectator can take a free seat and a player can step back to watch; roles
+  are then fixed until Play again, and the host may be a spectator. Anyone
+  already in the game can always reconnect; once both are full a newcomer is
+  told the game is full, and a player the host removes frees their seat and colour.
   In the lobby the host picks the number of rounds (1 to 15), the round
   length (30, 45, 60, 90 or 120 seconds) and the question mix: photos, mostly
   photos, even (the default), mostly names or place names. Rounds use a − / +

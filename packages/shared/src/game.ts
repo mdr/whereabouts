@@ -6,7 +6,7 @@
 import { PASS_SCORE, buildDistribution, kernelById, scoreDistribution, type Kernel } from "./scoring.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { pickQuestions, type Question } from "./questions.ts";
-import { MAX_PLAYERS, SEAT_GRACE_MS } from "./protocol.ts";
+import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS } from "./protocol.ts";
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -31,7 +31,10 @@ interface Player {
   id: string;
   token: string;
   name: string;
+  /** Index into the palette, or -1 while watching. */
   colour: number;
+  /** A spectator: sees every round, plays none, and is never waited on. */
+  watching: boolean;
   connected: boolean;
   /** When the connection dropped, while it is down. */
   leftAt: number | null;
@@ -90,14 +93,28 @@ export class Game {
 
   /** The lowest colour no current player has, so a removed player's colour is reused. */
   private freeColour(): number {
-    const used = new Set([...this.players.values()].map((p) => p.colour));
+    const used = new Set(this.playing().map((p) => p.colour));
     let colour = 0;
     while (used.has(colour)) colour++;
     return colour;
   }
 
-  /** Join or reconnect. A known token reclaims its seat (and the host role, if it was theirs). */
-  join(token: string, name: string, now: number): CommandResult {
+  /** The players, leaving out spectators. */
+  private playing(): Player[] {
+    return [...this.players.values()].filter((p) => !p.watching);
+  }
+
+  private watcherCount(): number {
+    return this.players.size - this.playing().length;
+  }
+
+  /**
+   * Join or reconnect. A known token reclaims its seat (and the host role, if
+   * it was theirs) in whatever role it had. A newcomer plays unless they asked
+   * to watch, or all MAX_PLAYERS seats are taken, in which case they watch if
+   * there is room for another spectator.
+   */
+  join(token: string, name: string, now: number, watch = false): CommandResult {
     const existing = this.players.get(token);
     if (existing) {
       existing.connected = true;
@@ -107,12 +124,18 @@ export class Game {
     }
     if (this.kicked.has(token)) return fail("removed by the host");
     if (this.phase === "results") return fail("game has finished");
-    if (this.players.size >= MAX_PLAYERS) return fail("game is full");
+    const seatFree = this.playing().length < MAX_PLAYERS;
+    const roomToWatch = this.watcherCount() < MAX_SPECTATORS;
+    let watching: boolean;
+    if (!watch && seatFree) watching = false;
+    else if (roomToWatch) watching = true;
+    else return fail(seatFree ? "no room to watch" : "game is full");
     const player: Player = {
       id: `p${this.nextPlayerId++}`,
       token,
       name,
-      colour: this.freeColour(),
+      colour: watching ? -1 : this.freeColour(),
+      watching,
       connected: true,
       leftAt: null,
       joinedAt: now,
@@ -189,7 +212,7 @@ export class Game {
   start(token: string, now: number): CommandResult {
     if (!this.isHost(token)) return fail("only the host can start");
     if (this.phase !== "lobby") return fail("game already started");
-    if (this.players.size === 0) return fail("no players");
+    if (this.playing().length === 0) return fail("no players");
     const count = Math.min(this.config.rounds, this.pool.length);
     this.questions = pickQuestions(this.pool, count, this.seed, this.config.photoShare);
     for (const p of this.players.values()) {
@@ -243,6 +266,24 @@ export class Game {
     }
     for (const [tok, p] of this.players) if (!p.connected) this.players.delete(tok);
     if (this.hostToken === null || !this.players.has(this.hostToken)) this.hostToken = this.pickHost();
+    return OK_CHANGED;
+  }
+
+  /** In the lobby, watch instead of playing (the colour is given up) or take a free seat. */
+  setRole(token: string, watch: boolean): CommandResult {
+    const player = this.players.get(token);
+    if (!player) return fail("unknown player");
+    if (this.phase !== "lobby") return fail("you can only switch in the lobby");
+    if (player.watching === watch) return OK_SAME;
+    if (watch) {
+      if (this.watcherCount() >= MAX_SPECTATORS) return fail("no room to watch");
+      player.watching = true;
+      player.colour = -1;
+    } else {
+      if (this.playing().length >= MAX_PLAYERS) return fail("game is full");
+      player.watching = false;
+      player.colour = this.freeColour();
+    }
     return OK_CHANGED;
   }
 
@@ -304,6 +345,7 @@ export class Game {
   setPaint(token: string, paint: PaintSubmission): CommandResult {
     const player = this.players.get(token);
     if (!player) return fail("unknown player");
+    if (player.watching) return fail("you are watching");
     // Uploads are debounced on the client, so one can arrive just after the
     // round ended. It is stale rather than wrong: drop it quietly.
     if (this.phase !== "guessing") return OK_SAME;
@@ -326,6 +368,7 @@ export class Game {
     const player = this.players.get(token);
     if (!player) return fail("unknown player");
     if (this.phase !== "guessing") return fail("not guessing");
+    if (player.watching) return fail("you are watching");
     if (player.joinedRound > this.roundIndex) return fail("spectating this round");
     let current = this.submissions.get(token);
     if (!current) {
@@ -357,6 +400,7 @@ export class Game {
     const player = this.players.get(token);
     if (!player) return fail("unknown player");
     if (this.phase !== "reveal") return fail("nothing to be ready for");
+    if (player.watching) return fail("you are watching");
     if (this.ready_.has(token)) return OK_SAME;
     this.ready_.add(token);
     this.settleIfEveryoneDone(now);
@@ -373,7 +417,7 @@ export class Game {
     if (this.phase === "guessing") {
       let active = 0;
       for (const p of this.players.values()) {
-        if (!p.connected || p.joinedRound > this.roundIndex) continue;
+        if (!p.connected || p.watching || p.joinedRound > this.roundIndex) continue;
         active++;
         if (!this.submissions.get(p.token)?.locked) return;
       }
@@ -381,7 +425,7 @@ export class Game {
     } else if (this.phase === "reveal") {
       let present = 0;
       for (const p of this.players.values()) {
-        if (!p.connected) continue;
+        if (!p.connected || p.watching) continue;
         present++;
         if (!this.ready_.has(p.token)) return;
       }
@@ -444,8 +488,8 @@ export class Game {
     const res = resolutionForTolerance(q.toleranceKm);
     const results: RoundResultView[] = [];
     // Snapshot ranks before any score changes so arrows compare like with like.
-    for (const p of this.players.values()) p.previousRank = this.rankOf(p);
-    for (const p of this.players.values()) {
+    for (const p of this.playing()) p.previousRank = this.rankOf(p);
+    for (const p of this.playing()) {
       if (p.joinedRound > this.roundIndex) continue;
       const sub = this.submissions.get(p.token);
       let score: number;
@@ -489,7 +533,7 @@ export class Game {
   private finish(): void {
     this.phase = "results";
     this.reveal = null;
-    this.results = [...this.players.values()]
+    this.results = this.playing()
       .map((p) => ({
         playerId: p.id,
         total: sum(p.scores),
@@ -504,7 +548,7 @@ export class Game {
   private rankOf(player: Player): number {
     const mine = sum(player.scores);
     let rank = 1;
-    for (const p of this.players.values()) if (sum(p.scores) > mine) rank++;
+    for (const p of this.playing()) if (sum(p.scores) > mine) rank++;
     return rank;
   }
 
@@ -515,14 +559,16 @@ export class Game {
         id: p.id,
         name: p.name,
         colour: p.colour,
+        watching: p.watching,
         connected: p.connected,
         isHost: p.token === host,
         locked: this.submissions.get(p.token)?.locked ?? false,
         score: sum(p.scores),
-        rank: this.rankOf(p),
+        // Spectators are unranked (0) and listed after the players.
+        rank: p.watching ? 0 : this.rankOf(p),
         previousRank: p.previousRank,
       }))
-      .sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name));
+      .sort((a, b) => Number(a.watching) - Number(b.watching) || a.rank - b.rank || a.name.localeCompare(b.name));
   }
 
   view(token: string, now: number): GameView {
@@ -536,7 +582,8 @@ export class Game {
       you: {
         id: me?.id ?? "",
         isHost: me !== undefined && this.isHost(me.token),
-        spectating: me !== undefined && this.phase !== "lobby" && me.joinedRound > this.roundIndex,
+        spectating: me !== undefined && !me.watching && this.phase !== "lobby" && me.joinedRound > this.roundIndex,
+        watching: me?.watching ?? false,
         locked: this.submissions.get(token)?.locked ?? false,
         paint: this.phase === "guessing" ? (this.submissions.get(token)?.paint ?? null) : null,
       },

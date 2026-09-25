@@ -3,7 +3,7 @@ import { Game, generateCode, nextHostAfter } from "./game.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { PASS_SCORE } from "./scoring.ts";
 import type { Question } from "./questions.ts";
-import { MAX_PLAYERS, SEAT_GRACE_MS } from "./protocol.ts";
+import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS } from "./protocol.ts";
 import { PLAYER_COLOURS } from "./colours.ts";
 
 const petra: Question = {
@@ -324,10 +324,14 @@ describe("player cap", () => {
     expect(PLAYER_COLOURS.length).toBeGreaterThanOrEqual(MAX_PLAYERS);
   });
 
-  it("turns away a new player once the game has eight", () => {
+  it("seats a newcomer to a full game as a spectator, and turns people away once the spectators are full too", () => {
     const g = fullGame();
     expect(g.view("tokA", T0).players).toHaveLength(MAX_PLAYERS);
-    expect(g.join("tokNew", "Nine", T0)).toEqual({ ok: false, error: "game is full" });
+    for (let i = 1; i <= MAX_SPECTATORS; i++) expect(g.join(`tokW${i}`, `W${i}`, T0).ok).toBe(true);
+    const w1 = g.view("tokW1", T0);
+    expect(w1.you.watching).toBe(true);
+    expect(w1.players.find((p) => p.name === "W1")).toMatchObject({ watching: true, colour: -1, rank: 0 });
+    expect(g.join("tokLate", "Late", T0)).toEqual({ ok: false, error: "game is full" });
   });
 
   it("still lets a player who dropped out back in", () => {
@@ -345,6 +349,86 @@ describe("player cap", () => {
     expect(nine.colour).toBe(bob.colour);
     const colours = g.view("tokA", T0).players.map((p) => p.colour);
     expect(new Set(colours).size).toBe(MAX_PLAYERS);
+  });
+});
+
+describe("spectators", () => {
+  const T1 = T0 + 60_000;
+  function withSpectator(): Game {
+    const g = twoPlayerGame(2);
+    expect(g.join("tokS", "Sam", T0 + 2, true).ok).toBe(true);
+    return g;
+  }
+  const sam = (g: Game) => g.view("tokA", T0).players.find((p) => p.name === "Sam")!;
+
+  it("joins to watch when asked, with no colour, listed after the players", () => {
+    const g = withSpectator();
+    const v = g.view("tokS", T0);
+    expect(v.you.watching).toBe(true);
+    expect(v.players.map((p) => p.name)).toEqual(["Alice", "Bob", "Sam"]);
+    expect(sam(g)).toMatchObject({ watching: true, colour: -1 });
+  });
+
+  it("does not paint, finish, get scored or hold up either waiting phase", () => {
+    const g = withSpectator();
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    expect(g.setPaint("tokS", paintAt(q, 0, 0))).toEqual({ ok: false, error: "you are watching" });
+    expect(g.lock("tokS", T0)).toEqual({ ok: false, error: "you are watching" });
+    // The two players finishing ends the round; Sam is not waited on.
+    g.lock("tokA", T0 + 1);
+    g.lock("tokB", T0 + 2);
+    expect(g.phase).toBe("reveal");
+    const reveal = g.view("tokS", T0 + 2).reveal!;
+    expect(reveal.results.map((r) => r.playerId).sort()).toEqual(["p1", "p2"]);
+    expect(g.ready("tokS", T0 + 3)).toEqual({ ok: false, error: "you are watching" });
+    g.ready("tokA", T0 + 3);
+    g.ready("tokB", T0 + 4);
+    expect(g.phase).toBe("guessing");
+    g.tick(T1 + 10_000);
+    g.next("tokA", T1 + 10_000);
+    expect(
+      g
+        .view("tokS", T1 + 10_000)
+        .results!.map((r) => r.playerId)
+        .sort(),
+    ).toEqual(["p1", "p2"]);
+  });
+
+  it("switches role in the lobby only, taking or giving up a colour", () => {
+    const g = withSpectator();
+    expect(g.setRole("tokS", false)).toEqual({ ok: true, changed: true });
+    expect(sam(g)).toMatchObject({ watching: false, colour: 2 });
+    expect(g.setRole("tokB", true)).toEqual({ ok: true, changed: true });
+    expect(g.view("tokB", T0).players.find((p) => p.name === "Bob")).toMatchObject({ watching: true, colour: -1 });
+    expect(g.setRole("tokB", true)).toEqual({ ok: true, changed: false });
+    g.start("tokA", T0);
+    expect(g.setRole("tokB", false)).toEqual({ ok: false, error: "you can only switch in the lobby" });
+  });
+
+  it("cannot take a seat when all the player seats are taken", () => {
+    const g = twoPlayerGame(2);
+    for (let i = 3; i <= MAX_PLAYERS; i++) g.join(`tok${i}`, `P${i}`, T0);
+    g.join("tokS", "Sam", T0, true);
+    expect(g.setRole("tokS", false)).toEqual({ ok: false, error: "game is full" });
+    expect(g.join("tokW", "Wes", T0, true).ok).toBe(true);
+  });
+
+  it("a host can watch and still run the game, but a game needs a player to start", () => {
+    const g = twoPlayerGame(1);
+    g.setRole("tokA", true);
+    expect(g.view("tokA", T0).you.isHost).toBe(true);
+    expect(g.start("tokA", T0).ok).toBe(true);
+    const h = new Game("WXYZ", pool, {}, 1);
+    h.join("tokH", "Hana", T0, true);
+    expect(h.start("tokH", T0)).toEqual({ ok: false, error: "no players" });
+  });
+
+  it("a spectator reclaims their seat as a spectator after a refresh", () => {
+    const g = withSpectator();
+    g.disconnect("tokS", T0 + 5);
+    g.join("tokS", "Sam", T0 + 6);
+    expect(g.view("tokS", T0 + 6).you.watching).toBe(true);
   });
 });
 

@@ -54,7 +54,11 @@ export function PlayerList({
         const isYou = p.id === you;
         return (
           <li key={p.id} class={`${isYou ? "you" : ""} ${p.connected ? "" : "offline"}`}>
-            {avatars ? (
+            {p.watching ? (
+              <span class={avatars ? "avatar watcher" : "swatch watcher"} title="Watching" aria-hidden="true">
+                {avatars && <Icon name="eye" size={14} />}
+              </span>
+            ) : avatars ? (
               <span class="avatar" style={{ background: playerColour(p.colour) }} aria-hidden="true">
                 {[...p.name.trim()][0]?.toUpperCase() ?? "?"}
               </span>
@@ -66,6 +70,7 @@ export function PlayerList({
               {p.isHost ? <HostTag /> : null}
               {isYou ? <span class="tag">you</span> : null}
               {!p.connected ? <span class="tag">offline</span> : null}
+              {p.watching && !avatars ? <span class="tag">watching</span> : null}
               {showLocked && p.locked ? (
                 <span class="tag done" title="Finished guessing">
                   <Icon name="check" size={11} /> done
