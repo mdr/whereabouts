@@ -203,12 +203,14 @@ pnpm workspace with three packages:
 - **Questions** live in `packages/shared/questions.json`: a prompt or a
   Wikimedia Commons photo, the answer coordinates, and a per-question
   tolerance in km. Two kinds: `photo` ("Where is this?" plus a picture) and
-  `text` ("Where is Nauru?"). The text set leans towards capital cities and
-  small countries, with tolerances calibrated for a UK player: tens of km
-  for the British Isles and near neighbours, around 100 km for European
-  capitals and micro-states, a few hundred for capitals on other
-  continents and small countries further afield, up to 1,000 km for Pacific
-  micro-states. A country question is placed at the point Wikipedia uses
+  `text` ("Where is Nauru?"). The text set is capital cities, major world
+  and UK cities, and small countries, with tolerances calibrated for a UK
+  player: tens of km for the British Isles and near neighbours, around
+  100 km for European cities and micro-states, 200 km for the most famous
+  cities elsewhere (New York, Tokyo, Sydney), a few hundred for other
+  cities and small countries further afield, up to 1,000 km for Pacific
+  micro-states. A name shared by two well-known places carries its country
+  in the prompt ("Where is Tripoli, Libya?"). A country question is placed at the point Wikipedia uses
   for the country itself (roughly its centre, or the main island of an
   archipelago), not at its capital. Every text answer was checked against
   the coordinates on its English Wikipedia article, and `questions.test.ts` guards ids,

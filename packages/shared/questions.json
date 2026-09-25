@@ -1801,6 +1801,1206 @@
     "region": "world"
   },
   {
+    "id": "tokyo",
+    "kind": "text",
+    "prompt": "Where is Tokyo?",
+    "answer": {
+      "lat": 35.6897,
+      "lon": 139.6922
+    },
+    "toleranceKm": 200,
+    "label": "Tokyo, Japan",
+    "region": "world"
+  },
+  {
+    "id": "beijing",
+    "kind": "text",
+    "prompt": "Where is Beijing?",
+    "answer": {
+      "lat": 39.9067,
+      "lon": 116.3975
+    },
+    "toleranceKm": 200,
+    "label": "Beijing, China",
+    "region": "world"
+  },
+  {
+    "id": "new-delhi",
+    "kind": "text",
+    "prompt": "Where is New Delhi?",
+    "answer": {
+      "lat": 28.6139,
+      "lon": 77.2089
+    },
+    "toleranceKm": 250,
+    "label": "New Delhi, India",
+    "region": "world"
+  },
+  {
+    "id": "bangkok",
+    "kind": "text",
+    "prompt": "Where is Bangkok?",
+    "answer": {
+      "lat": 13.7525,
+      "lon": 100.4942
+    },
+    "toleranceKm": 300,
+    "label": "Bangkok, Thailand",
+    "region": "world"
+  },
+  {
+    "id": "kuala-lumpur",
+    "kind": "text",
+    "prompt": "Where is Kuala Lumpur?",
+    "answer": {
+      "lat": 3.1478,
+      "lon": 101.6953
+    },
+    "toleranceKm": 300,
+    "label": "Kuala Lumpur, Malaysia",
+    "region": "world"
+  },
+  {
+    "id": "taipei",
+    "kind": "text",
+    "prompt": "Where is Taipei?",
+    "answer": {
+      "lat": 25.0375,
+      "lon": 121.5625
+    },
+    "toleranceKm": 250,
+    "label": "Taipei, Taiwan",
+    "region": "world"
+  },
+  {
+    "id": "pyongyang",
+    "kind": "text",
+    "prompt": "Where is Pyongyang?",
+    "answer": {
+      "lat": 39.0167,
+      "lon": 125.7475
+    },
+    "toleranceKm": 250,
+    "label": "Pyongyang, North Korea",
+    "region": "world"
+  },
+  {
+    "id": "naypyidaw",
+    "kind": "text",
+    "prompt": "Where is Naypyidaw?",
+    "answer": {
+      "lat": 19.7475,
+      "lon": 96.115
+    },
+    "toleranceKm": 300,
+    "label": "Naypyidaw, Myanmar",
+    "region": "world"
+  },
+  {
+    "id": "baku",
+    "kind": "text",
+    "prompt": "Where is Baku?",
+    "answer": {
+      "lat": 40.3756,
+      "lon": 49.8325
+    },
+    "toleranceKm": 300,
+    "label": "Baku, Azerbaijan",
+    "region": "world"
+  },
+  {
+    "id": "mogadishu",
+    "kind": "text",
+    "prompt": "Where is Mogadishu?",
+    "answer": {
+      "lat": 2.0392,
+      "lon": 45.3419
+    },
+    "toleranceKm": 300,
+    "label": "Mogadishu, Somalia",
+    "region": "world"
+  },
+  {
+    "id": "tbilisi",
+    "kind": "text",
+    "prompt": "Where is Tbilisi?",
+    "answer": {
+      "lat": 41.7225,
+      "lon": 44.7925
+    },
+    "toleranceKm": 300,
+    "label": "Tbilisi, Georgia",
+    "region": "world"
+  },
+  {
+    "id": "dushanbe",
+    "kind": "text",
+    "prompt": "Where is Dushanbe?",
+    "answer": {
+      "lat": 38.5367,
+      "lon": 68.78
+    },
+    "toleranceKm": 300,
+    "label": "Dushanbe, Tajikistan",
+    "region": "world"
+  },
+  {
+    "id": "ashgabat",
+    "kind": "text",
+    "prompt": "Where is Ashgabat?",
+    "answer": {
+      "lat": 37.9375,
+      "lon": 58.38
+    },
+    "toleranceKm": 300,
+    "label": "Ashgabat, Turkmenistan",
+    "region": "world"
+  },
+  {
+    "id": "bishkek",
+    "kind": "text",
+    "prompt": "Where is Bishkek?",
+    "answer": {
+      "lat": 42.8747,
+      "lon": 74.6122
+    },
+    "toleranceKm": 300,
+    "label": "Bishkek, Kyrgyzstan",
+    "region": "world"
+  },
+  {
+    "id": "damascus",
+    "kind": "text",
+    "prompt": "Where is Damascus?",
+    "answer": {
+      "lat": 33.5131,
+      "lon": 36.3094
+    },
+    "toleranceKm": 250,
+    "label": "Damascus, Syria",
+    "region": "world"
+  },
+  {
+    "id": "beirut",
+    "kind": "text",
+    "prompt": "Where is Beirut?",
+    "answer": {
+      "lat": 33.8981,
+      "lon": 35.5058
+    },
+    "toleranceKm": 150,
+    "label": "Beirut, Lebanon",
+    "region": "world"
+  },
+  {
+    "id": "amman",
+    "kind": "text",
+    "prompt": "Where is Amman?",
+    "answer": {
+      "lat": 31.9497,
+      "lon": 35.9328
+    },
+    "toleranceKm": 200,
+    "label": "Amman, Jordan",
+    "region": "world"
+  },
+  {
+    "id": "muscat",
+    "kind": "text",
+    "prompt": "Where is Muscat?",
+    "answer": {
+      "lat": 23.5889,
+      "lon": 58.4083
+    },
+    "toleranceKm": 300,
+    "label": "Muscat, Oman",
+    "region": "world"
+  },
+  {
+    "id": "abu-dhabi",
+    "kind": "text",
+    "prompt": "Where is Abu Dhabi?",
+    "answer": {
+      "lat": 24.4667,
+      "lon": 54.3667
+    },
+    "toleranceKm": 250,
+    "label": "Abu Dhabi, United Arab Emirates",
+    "region": "world"
+  },
+  {
+    "id": "sanaa",
+    "kind": "text",
+    "prompt": "Where is Sanaa?",
+    "answer": {
+      "lat": 15.3483,
+      "lon": 44.2064
+    },
+    "toleranceKm": 300,
+    "label": "Sanaa, Yemen",
+    "region": "world"
+  },
+  {
+    "id": "cairo",
+    "kind": "text",
+    "prompt": "Where is Cairo?",
+    "answer": {
+      "lat": 30.0444,
+      "lon": 31.2358
+    },
+    "toleranceKm": 200,
+    "label": "Cairo, Egypt",
+    "region": "world"
+  },
+  {
+    "id": "algiers",
+    "kind": "text",
+    "prompt": "Where is Algiers?",
+    "answer": {
+      "lat": 36.7325,
+      "lon": 3.0872
+    },
+    "toleranceKm": 300,
+    "label": "Algiers, Algeria",
+    "region": "world"
+  },
+  {
+    "id": "tunis",
+    "kind": "text",
+    "prompt": "Where is Tunis?",
+    "answer": {
+      "lat": 36.8064,
+      "lon": 10.1817
+    },
+    "toleranceKm": 250,
+    "label": "Tunis, Tunisia",
+    "region": "world"
+  },
+  {
+    "id": "rabat",
+    "kind": "text",
+    "prompt": "Where is Rabat?",
+    "answer": {
+      "lat": 34.0211,
+      "lon": -6.8414
+    },
+    "toleranceKm": 250,
+    "label": "Rabat, Morocco",
+    "region": "world"
+  },
+  {
+    "id": "tripoli",
+    "kind": "text",
+    "prompt": "Where is Tripoli, Libya?",
+    "answer": {
+      "lat": 32.8875,
+      "lon": 13.1875
+    },
+    "toleranceKm": 300,
+    "label": "Tripoli, Libya",
+    "region": "world"
+  },
+  {
+    "id": "khartoum",
+    "kind": "text",
+    "prompt": "Where is Khartoum?",
+    "answer": {
+      "lat": 15.6,
+      "lon": 32.5
+    },
+    "toleranceKm": 300,
+    "label": "Khartoum, Sudan",
+    "region": "world"
+  },
+  {
+    "id": "dakar",
+    "kind": "text",
+    "prompt": "Where is Dakar?",
+    "answer": {
+      "lat": 14.6928,
+      "lon": -17.4467
+    },
+    "toleranceKm": 300,
+    "label": "Dakar, Senegal",
+    "region": "world"
+  },
+  {
+    "id": "accra",
+    "kind": "text",
+    "prompt": "Where is Accra?",
+    "answer": {
+      "lat": 5.55,
+      "lon": -0.2
+    },
+    "toleranceKm": 300,
+    "label": "Accra, Ghana",
+    "region": "world"
+  },
+  {
+    "id": "luanda",
+    "kind": "text",
+    "prompt": "Where is Luanda?",
+    "answer": {
+      "lat": -8.8383,
+      "lon": 13.2344
+    },
+    "toleranceKm": 300,
+    "label": "Luanda, Angola",
+    "region": "world"
+  },
+  {
+    "id": "lusaka",
+    "kind": "text",
+    "prompt": "Where is Lusaka?",
+    "answer": {
+      "lat": -15.4167,
+      "lon": 28.2833
+    },
+    "toleranceKm": 300,
+    "label": "Lusaka, Zambia",
+    "region": "world"
+  },
+  {
+    "id": "harare",
+    "kind": "text",
+    "prompt": "Where is Harare?",
+    "answer": {
+      "lat": -17.8292,
+      "lon": 31.0522
+    },
+    "toleranceKm": 300,
+    "label": "Harare, Zimbabwe",
+    "region": "world"
+  },
+  {
+    "id": "maputo",
+    "kind": "text",
+    "prompt": "Where is Maputo?",
+    "answer": {
+      "lat": -25.9689,
+      "lon": 32.5733
+    },
+    "toleranceKm": 300,
+    "label": "Maputo, Mozambique",
+    "region": "world"
+  },
+  {
+    "id": "kampala",
+    "kind": "text",
+    "prompt": "Where is Kampala?",
+    "answer": {
+      "lat": 0.3136,
+      "lon": 32.5811
+    },
+    "toleranceKm": 300,
+    "label": "Kampala, Uganda",
+    "region": "world"
+  },
+  {
+    "id": "dodoma",
+    "kind": "text",
+    "prompt": "Where is Dodoma?",
+    "answer": {
+      "lat": -6.1731,
+      "lon": 35.7419
+    },
+    "toleranceKm": 300,
+    "label": "Dodoma, Tanzania",
+    "region": "world"
+  },
+  {
+    "id": "windhoek",
+    "kind": "text",
+    "prompt": "Where is Windhoek?",
+    "answer": {
+      "lat": -22.57,
+      "lon": 17.0836
+    },
+    "toleranceKm": 300,
+    "label": "Windhoek, Namibia",
+    "region": "world"
+  },
+  {
+    "id": "gaborone",
+    "kind": "text",
+    "prompt": "Where is Gaborone?",
+    "answer": {
+      "lat": -24.6581,
+      "lon": 25.9122
+    },
+    "toleranceKm": 300,
+    "label": "Gaborone, Botswana",
+    "region": "world"
+  },
+  {
+    "id": "antananarivo",
+    "kind": "text",
+    "prompt": "Where is Antananarivo?",
+    "answer": {
+      "lat": -18.91,
+      "lon": 47.525
+    },
+    "toleranceKm": 300,
+    "label": "Antananarivo, Madagascar",
+    "region": "world"
+  },
+  {
+    "id": "caracas",
+    "kind": "text",
+    "prompt": "Where is Caracas?",
+    "answer": {
+      "lat": 10.5061,
+      "lon": -66.9144
+    },
+    "toleranceKm": 300,
+    "label": "Caracas, Venezuela",
+    "region": "world"
+  },
+  {
+    "id": "quito",
+    "kind": "text",
+    "prompt": "Where is Quito?",
+    "answer": {
+      "lat": -0.22,
+      "lon": -78.5125
+    },
+    "toleranceKm": 300,
+    "label": "Quito, Ecuador",
+    "region": "world"
+  },
+  {
+    "id": "la-paz",
+    "kind": "text",
+    "prompt": "Where is La Paz?",
+    "answer": {
+      "lat": -16.4958,
+      "lon": -68.1333
+    },
+    "toleranceKm": 300,
+    "label": "La Paz, Bolivia",
+    "region": "world"
+  },
+  {
+    "id": "panama-city",
+    "kind": "text",
+    "prompt": "Where is Panama City?",
+    "answer": {
+      "lat": 8.9711,
+      "lon": -79.5347
+    },
+    "toleranceKm": 250,
+    "label": "Panama City, Panama",
+    "region": "world"
+  },
+  {
+    "id": "san-jose-cr",
+    "kind": "text",
+    "prompt": "Where is San José, Costa Rica?",
+    "answer": {
+      "lat": 9.9325,
+      "lon": -84.08
+    },
+    "toleranceKm": 250,
+    "label": "San José, Costa Rica",
+    "region": "world"
+  },
+  {
+    "id": "managua",
+    "kind": "text",
+    "prompt": "Where is Managua?",
+    "answer": {
+      "lat": 12.1364,
+      "lon": -86.2514
+    },
+    "toleranceKm": 250,
+    "label": "Managua, Nicaragua",
+    "region": "world"
+  },
+  {
+    "id": "tegucigalpa",
+    "kind": "text",
+    "prompt": "Where is Tegucigalpa?",
+    "answer": {
+      "lat": 14.1058,
+      "lon": -87.2047
+    },
+    "toleranceKm": 250,
+    "label": "Tegucigalpa, Honduras",
+    "region": "world"
+  },
+  {
+    "id": "san-salvador",
+    "kind": "text",
+    "prompt": "Where is San Salvador?",
+    "answer": {
+      "lat": 13.6989,
+      "lon": -89.1914
+    },
+    "toleranceKm": 250,
+    "label": "San Salvador, El Salvador",
+    "region": "world"
+  },
+  {
+    "id": "guatemala-city",
+    "kind": "text",
+    "prompt": "Where is Guatemala City?",
+    "answer": {
+      "lat": 14.6417,
+      "lon": -90.5133
+    },
+    "toleranceKm": 250,
+    "label": "Guatemala City, Guatemala",
+    "region": "world"
+  },
+  {
+    "id": "santo-domingo",
+    "kind": "text",
+    "prompt": "Where is Santo Domingo?",
+    "answer": {
+      "lat": 18.4625,
+      "lon": -69.9361
+    },
+    "toleranceKm": 250,
+    "label": "Santo Domingo, Dominican Republic",
+    "region": "world"
+  },
+  {
+    "id": "port-au-prince",
+    "kind": "text",
+    "prompt": "Where is Port-au-Prince?",
+    "answer": {
+      "lat": 18.5364,
+      "lon": -72.3464
+    },
+    "toleranceKm": 250,
+    "label": "Port-au-Prince, Haiti",
+    "region": "world"
+  },
+  {
+    "id": "moscow",
+    "kind": "text",
+    "prompt": "Where is Moscow?",
+    "answer": {
+      "lat": 55.7558,
+      "lon": 37.6178
+    },
+    "toleranceKm": 150,
+    "label": "Moscow, Russia",
+    "region": "world"
+  },
+  {
+    "id": "bern",
+    "kind": "text",
+    "prompt": "Where is Bern?",
+    "answer": {
+      "lat": 46.9481,
+      "lon": 7.4475
+    },
+    "toleranceKm": 80,
+    "label": "Bern, Switzerland",
+    "region": "world"
+  },
+  {
+    "id": "belgrade",
+    "kind": "text",
+    "prompt": "Where is Belgrade?",
+    "answer": {
+      "lat": 44.8178,
+      "lon": 20.4569
+    },
+    "toleranceKm": 100,
+    "label": "Belgrade, Serbia",
+    "region": "world"
+  },
+  {
+    "id": "new-york",
+    "kind": "text",
+    "prompt": "Where is New York City?",
+    "answer": {
+      "lat": 40.7128,
+      "lon": -74.0061
+    },
+    "toleranceKm": 200,
+    "label": "New York City",
+    "region": "world"
+  },
+  {
+    "id": "los-angeles",
+    "kind": "text",
+    "prompt": "Where is Los Angeles?",
+    "answer": {
+      "lat": 34.05,
+      "lon": -118.25
+    },
+    "toleranceKm": 200,
+    "label": "Los Angeles",
+    "region": "world"
+  },
+  {
+    "id": "chicago",
+    "kind": "text",
+    "prompt": "Where is Chicago?",
+    "answer": {
+      "lat": 41.8819,
+      "lon": -87.6278
+    },
+    "toleranceKm": 250,
+    "label": "Chicago",
+    "region": "world"
+  },
+  {
+    "id": "san-francisco",
+    "kind": "text",
+    "prompt": "Where is San Francisco?",
+    "answer": {
+      "lat": 37.7775,
+      "lon": -122.4164
+    },
+    "toleranceKm": 200,
+    "label": "San Francisco",
+    "region": "world"
+  },
+  {
+    "id": "houston",
+    "kind": "text",
+    "prompt": "Where is Houston?",
+    "answer": {
+      "lat": 29.7567,
+      "lon": -95.3653
+    },
+    "toleranceKm": 300,
+    "label": "Houston",
+    "region": "world"
+  },
+  {
+    "id": "miami",
+    "kind": "text",
+    "prompt": "Where is Miami?",
+    "answer": {
+      "lat": 25.7742,
+      "lon": -80.1936
+    },
+    "toleranceKm": 250,
+    "label": "Miami",
+    "region": "world"
+  },
+  {
+    "id": "seattle",
+    "kind": "text",
+    "prompt": "Where is Seattle?",
+    "answer": {
+      "lat": 47.6039,
+      "lon": -122.33
+    },
+    "toleranceKm": 250,
+    "label": "Seattle",
+    "region": "world"
+  },
+  {
+    "id": "toronto",
+    "kind": "text",
+    "prompt": "Where is Toronto?",
+    "answer": {
+      "lat": 43.6525,
+      "lon": -79.3817
+    },
+    "toleranceKm": 250,
+    "label": "Toronto, Canada",
+    "region": "world"
+  },
+  {
+    "id": "vancouver",
+    "kind": "text",
+    "prompt": "Where is Vancouver?",
+    "answer": {
+      "lat": 49.2608,
+      "lon": -123.1139
+    },
+    "toleranceKm": 250,
+    "label": "Vancouver, Canada",
+    "region": "world"
+  },
+  {
+    "id": "montreal",
+    "kind": "text",
+    "prompt": "Where is Montreal?",
+    "answer": {
+      "lat": 45.5089,
+      "lon": -73.5542
+    },
+    "toleranceKm": 250,
+    "label": "Montreal, Canada",
+    "region": "world"
+  },
+  {
+    "id": "sao-paulo",
+    "kind": "text",
+    "prompt": "Where is São Paulo?",
+    "answer": {
+      "lat": -23.55,
+      "lon": -46.6333
+    },
+    "toleranceKm": 300,
+    "label": "São Paulo, Brazil",
+    "region": "world"
+  },
+  {
+    "id": "rio-de-janeiro",
+    "kind": "text",
+    "prompt": "Where is Rio de Janeiro?",
+    "answer": {
+      "lat": -22.9111,
+      "lon": -43.2056
+    },
+    "toleranceKm": 200,
+    "label": "Rio de Janeiro, Brazil",
+    "region": "world"
+  },
+  {
+    "id": "shanghai",
+    "kind": "text",
+    "prompt": "Where is Shanghai?",
+    "answer": {
+      "lat": 31.2325,
+      "lon": 121.4692
+    },
+    "toleranceKm": 250,
+    "label": "Shanghai, China",
+    "region": "world"
+  },
+  {
+    "id": "hong-kong",
+    "kind": "text",
+    "prompt": "Where is Hong Kong?",
+    "answer": {
+      "lat": 22.3,
+      "lon": 114.2
+    },
+    "toleranceKm": 200,
+    "label": "Hong Kong",
+    "region": "world"
+  },
+  {
+    "id": "guangzhou",
+    "kind": "text",
+    "prompt": "Where is Guangzhou?",
+    "answer": {
+      "lat": 23.13,
+      "lon": 113.26
+    },
+    "toleranceKm": 300,
+    "label": "Guangzhou, China",
+    "region": "world"
+  },
+  {
+    "id": "shenzhen",
+    "kind": "text",
+    "prompt": "Where is Shenzhen?",
+    "answer": {
+      "lat": 22.5467,
+      "lon": 114.0544
+    },
+    "toleranceKm": 300,
+    "label": "Shenzhen, China",
+    "region": "world"
+  },
+  {
+    "id": "chongqing",
+    "kind": "text",
+    "prompt": "Where is Chongqing?",
+    "answer": {
+      "lat": 29.5637,
+      "lon": 106.5504
+    },
+    "toleranceKm": 300,
+    "label": "Chongqing, China",
+    "region": "world"
+  },
+  {
+    "id": "osaka",
+    "kind": "text",
+    "prompt": "Where is Osaka?",
+    "answer": {
+      "lat": 34.6939,
+      "lon": 135.5022
+    },
+    "toleranceKm": 200,
+    "label": "Osaka, Japan",
+    "region": "world"
+  },
+  {
+    "id": "mumbai",
+    "kind": "text",
+    "prompt": "Where is Mumbai?",
+    "answer": {
+      "lat": 19.0761,
+      "lon": 72.8775
+    },
+    "toleranceKm": 250,
+    "label": "Mumbai, India",
+    "region": "world"
+  },
+  {
+    "id": "kolkata",
+    "kind": "text",
+    "prompt": "Where is Kolkata?",
+    "answer": {
+      "lat": 22.5675,
+      "lon": 88.37
+    },
+    "toleranceKm": 300,
+    "label": "Kolkata, India",
+    "region": "world"
+  },
+  {
+    "id": "chennai",
+    "kind": "text",
+    "prompt": "Where is Chennai?",
+    "answer": {
+      "lat": 13.0825,
+      "lon": 80.275
+    },
+    "toleranceKm": 300,
+    "label": "Chennai, India",
+    "region": "world"
+  },
+  {
+    "id": "bengaluru",
+    "kind": "text",
+    "prompt": "Where is Bengaluru?",
+    "answer": {
+      "lat": 12.9789,
+      "lon": 77.5917
+    },
+    "toleranceKm": 300,
+    "label": "Bengaluru, India",
+    "region": "world"
+  },
+  {
+    "id": "karachi",
+    "kind": "text",
+    "prompt": "Where is Karachi?",
+    "answer": {
+      "lat": 24.86,
+      "lon": 67.01
+    },
+    "toleranceKm": 300,
+    "label": "Karachi, Pakistan",
+    "region": "world"
+  },
+  {
+    "id": "lahore",
+    "kind": "text",
+    "prompt": "Where is Lahore?",
+    "answer": {
+      "lat": 31.5497,
+      "lon": 74.3436
+    },
+    "toleranceKm": 300,
+    "label": "Lahore, Pakistan",
+    "region": "world"
+  },
+  {
+    "id": "ho-chi-minh-city",
+    "kind": "text",
+    "prompt": "Where is Ho Chi Minh City?",
+    "answer": {
+      "lat": 10.7756,
+      "lon": 106.7019
+    },
+    "toleranceKm": 300,
+    "label": "Ho Chi Minh City, Vietnam",
+    "region": "world"
+  },
+  {
+    "id": "istanbul",
+    "kind": "text",
+    "prompt": "Where is Istanbul?",
+    "answer": {
+      "lat": 41.0136,
+      "lon": 28.955
+    },
+    "toleranceKm": 150,
+    "label": "Istanbul, Turkey",
+    "region": "world"
+  },
+  {
+    "id": "dubai",
+    "kind": "text",
+    "prompt": "Where is Dubai?",
+    "answer": {
+      "lat": 25.2047,
+      "lon": 55.2708
+    },
+    "toleranceKm": 200,
+    "label": "Dubai, United Arab Emirates",
+    "region": "world"
+  },
+  {
+    "id": "lagos",
+    "kind": "text",
+    "prompt": "Where is Lagos?",
+    "answer": {
+      "lat": 6.4561,
+      "lon": 3.3936
+    },
+    "toleranceKm": 300,
+    "label": "Lagos, Nigeria",
+    "region": "world"
+  },
+  {
+    "id": "johannesburg",
+    "kind": "text",
+    "prompt": "Where is Johannesburg?",
+    "answer": {
+      "lat": -26.2044,
+      "lon": 28.0456
+    },
+    "toleranceKm": 300,
+    "label": "Johannesburg, South Africa",
+    "region": "world"
+  },
+  {
+    "id": "cape-town",
+    "kind": "text",
+    "prompt": "Where is Cape Town?",
+    "answer": {
+      "lat": -33.9253,
+      "lon": 18.4239
+    },
+    "toleranceKm": 250,
+    "label": "Cape Town, South Africa",
+    "region": "world"
+  },
+  {
+    "id": "casablanca",
+    "kind": "text",
+    "prompt": "Where is Casablanca?",
+    "answer": {
+      "lat": 33.5333,
+      "lon": -7.5833
+    },
+    "toleranceKm": 250,
+    "label": "Casablanca, Morocco",
+    "region": "world"
+  },
+  {
+    "id": "marrakesh",
+    "kind": "text",
+    "prompt": "Where is Marrakesh?",
+    "answer": {
+      "lat": 31.63,
+      "lon": -8.0089
+    },
+    "toleranceKm": 250,
+    "label": "Marrakesh, Morocco",
+    "region": "world"
+  },
+  {
+    "id": "alexandria",
+    "kind": "text",
+    "prompt": "Where is Alexandria?",
+    "answer": {
+      "lat": 31.1975,
+      "lon": 29.8925
+    },
+    "toleranceKm": 200,
+    "label": "Alexandria, Egypt",
+    "region": "world"
+  },
+  {
+    "id": "st-petersburg",
+    "kind": "text",
+    "prompt": "Where is Saint Petersburg?",
+    "answer": {
+      "lat": 59.9375,
+      "lon": 30.3086
+    },
+    "toleranceKm": 150,
+    "label": "Saint Petersburg, Russia",
+    "region": "world"
+  },
+  {
+    "id": "barcelona",
+    "kind": "text",
+    "prompt": "Where is Barcelona?",
+    "answer": {
+      "lat": 41.3833,
+      "lon": 2.1833
+    },
+    "toleranceKm": 100,
+    "label": "Barcelona, Spain",
+    "region": "world"
+  },
+  {
+    "id": "milan",
+    "kind": "text",
+    "prompt": "Where is Milan?",
+    "answer": {
+      "lat": 45.4669,
+      "lon": 9.19
+    },
+    "toleranceKm": 80,
+    "label": "Milan, Italy",
+    "region": "world"
+  },
+  {
+    "id": "munich",
+    "kind": "text",
+    "prompt": "Where is Munich?",
+    "answer": {
+      "lat": 48.1375,
+      "lon": 11.575
+    },
+    "toleranceKm": 80,
+    "label": "Munich, Germany",
+    "region": "world"
+  },
+  {
+    "id": "hamburg",
+    "kind": "text",
+    "prompt": "Where is Hamburg?",
+    "answer": {
+      "lat": 53.55,
+      "lon": 10
+    },
+    "toleranceKm": 80,
+    "label": "Hamburg, Germany",
+    "region": "world"
+  },
+  {
+    "id": "sydney",
+    "kind": "text",
+    "prompt": "Where is Sydney?",
+    "answer": {
+      "lat": -33.8678,
+      "lon": 151.21
+    },
+    "toleranceKm": 200,
+    "label": "Sydney, Australia",
+    "region": "world"
+  },
+  {
+    "id": "melbourne",
+    "kind": "text",
+    "prompt": "Where is Melbourne?",
+    "answer": {
+      "lat": -37.8142,
+      "lon": 144.9631
+    },
+    "toleranceKm": 250,
+    "label": "Melbourne, Australia",
+    "region": "world"
+  },
+  {
+    "id": "auckland",
+    "kind": "text",
+    "prompt": "Where is Auckland?",
+    "answer": {
+      "lat": -36.8492,
+      "lon": 174.7653
+    },
+    "toleranceKm": 200,
+    "label": "Auckland, New Zealand",
+    "region": "world"
+  },
+  {
+    "id": "manchester",
+    "kind": "text",
+    "prompt": "Where is Manchester?",
+    "answer": {
+      "lat": 53.4794,
+      "lon": -2.2453
+    },
+    "toleranceKm": 30,
+    "label": "Manchester, England",
+    "region": "uk"
+  },
+  {
+    "id": "glasgow",
+    "kind": "text",
+    "prompt": "Where is Glasgow?",
+    "answer": {
+      "lat": 55.8611,
+      "lon": -4.25
+    },
+    "toleranceKm": 30,
+    "label": "Glasgow, Scotland",
+    "region": "uk"
+  },
+  {
+    "id": "birmingham",
+    "kind": "text",
+    "prompt": "Where is Birmingham?",
+    "answer": {
+      "lat": 52.48,
+      "lon": -1.9025
+    },
+    "toleranceKm": 30,
+    "label": "Birmingham, England",
+    "region": "uk"
+  },
+  {
+    "id": "liverpool",
+    "kind": "text",
+    "prompt": "Where is Liverpool?",
+    "answer": {
+      "lat": 53.4072,
+      "lon": -2.9917
+    },
+    "toleranceKm": 30,
+    "label": "Liverpool, England",
+    "region": "uk"
+  },
+  {
+    "id": "leeds",
+    "kind": "text",
+    "prompt": "Where is Leeds?",
+    "answer": {
+      "lat": 53.7975,
+      "lon": -1.5436
+    },
+    "toleranceKm": 30,
+    "label": "Leeds, England",
+    "region": "uk"
+  },
+  {
+    "id": "newcastle",
+    "kind": "text",
+    "prompt": "Where is Newcastle upon Tyne?",
+    "answer": {
+      "lat": 54.9738,
+      "lon": -1.6131
+    },
+    "toleranceKm": 30,
+    "label": "Newcastle upon Tyne, England",
+    "region": "uk"
+  },
+  {
+    "id": "aberdeen",
+    "kind": "text",
+    "prompt": "Where is Aberdeen?",
+    "answer": {
+      "lat": 57.15,
+      "lon": -2.11
+    },
+    "toleranceKm": 40,
+    "label": "Aberdeen, Scotland",
+    "region": "uk"
+  },
+  {
+    "id": "plymouth",
+    "kind": "text",
+    "prompt": "Where is Plymouth?",
+    "answer": {
+      "lat": 50.3714,
+      "lon": -4.1422
+    },
+    "toleranceKm": 30,
+    "label": "Plymouth, England",
+    "region": "uk"
+  },
+  {
     "id": "eiffel",
     "kind": "photo",
     "prompt": "Where is this?",
