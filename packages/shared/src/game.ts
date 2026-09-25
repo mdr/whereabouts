@@ -269,12 +269,18 @@ export class Game {
     return OK_CHANGED;
   }
 
-  /** In the lobby, watch instead of playing (the colour is given up) or take a free seat. */
+  /**
+   * Watch instead of playing (the colour is given up), in the lobby only, since
+   * a player mid-game has scores. Or take a free seat: in the lobby, or
+   * mid-game like a late joiner, sitting out the round under way and playing
+   * from the next. Not on the final results; Play again starts a new lobby.
+   */
   setRole(token: string, watch: boolean): CommandResult {
     const player = this.players.get(token);
     if (!player) return fail("unknown player");
-    if (this.phase !== "lobby") return fail("you can only switch in the lobby");
     if (player.watching === watch) return OK_SAME;
+    if (watch && this.phase !== "lobby") return fail("you can only switch to watching in the lobby");
+    if (this.phase === "results") return fail("game has finished");
     if (watch) {
       if (this.watcherCount() >= MAX_SPECTATORS) return fail("no room to watch");
       player.watching = true;
@@ -283,6 +289,9 @@ export class Game {
       if (this.playing().length >= MAX_PLAYERS) return fail("game is full");
       player.watching = false;
       player.colour = this.freeColour();
+      player.joinedRound = this.phase === "lobby" ? 0 : this.roundIndex + 1;
+      player.scores = [];
+      player.previousRank = null;
     }
     return OK_CHANGED;
   }

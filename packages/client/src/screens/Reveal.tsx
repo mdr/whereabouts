@@ -17,6 +17,7 @@ import { PaintDev } from "../ui/PaintTools";
 import { Icon } from "../ui/icons";
 import { HostTag } from "../ui/PlayerList";
 import { EndGameButton } from "../ui/HostControls";
+import { TakeSeatButton } from "../ui/TakeSeat";
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 
 /** Selection meaning "show nobody's paint", alongside null (everyone) and a player id. */
@@ -142,7 +143,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
         </div>
         <HudBottom>
           {view.you.watching ? (
-            <span class="hint">You're watching.</span>
+            <TakeSeatButton conn={conn} view={view} />
           ) : (
             <button class={iAmReady ? "" : "primary"} onClick={() => conn.ready()} disabled={iAmReady}>
               <Icon name="check" /> Ready

@@ -1474,6 +1474,12 @@ button.danger.solid {
   gap: 6px;
   font-size: 13px;
 }
+.card .take-seat {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 .join button.watch {
   flex: none;
   padding-inline: 12px;

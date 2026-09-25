@@ -403,7 +403,51 @@ describe("spectators", () => {
     expect(g.view("tokB", T0).players.find((p) => p.name === "Bob")).toMatchObject({ watching: true, colour: -1 });
     expect(g.setRole("tokB", true)).toEqual({ ok: true, changed: false });
     g.start("tokA", T0);
-    expect(g.setRole("tokB", false)).toEqual({ ok: false, error: "you can only switch in the lobby" });
+    expect(g.setRole("tokA", true)).toEqual({ ok: false, error: "you can only switch to watching in the lobby" });
+  });
+
+  it("a spectator can take a free seat mid-round, sitting that round out and playing from the next", () => {
+    const g = withSpectator();
+    g.start("tokA", T0);
+    expect(g.setRole("tokS", false)).toEqual({ ok: true, changed: true });
+    const v = g.view("tokS", T0 + 1);
+    expect(v.you).toMatchObject({ watching: false, spectating: true });
+    expect(sam(g).colour).toBeGreaterThanOrEqual(0);
+    expect(g.lock("tokS", T0 + 1)).toEqual({ ok: false, error: "spectating this round" });
+    // Alice and Bob finishing still ends the round without Sam.
+    g.lock("tokA", T0 + 2);
+    g.lock("tokB", T0 + 3);
+    expect(g.phase).toBe("reveal");
+    // Sam is a player now, so the reveal waits for his Ready too.
+    g.ready("tokA", T0 + 4);
+    g.ready("tokB", T0 + 5);
+    expect(g.phase).toBe("reveal");
+    g.ready("tokS", T0 + 6);
+    expect(g.phase).toBe("guessing");
+    expect(g.view("tokS", T0 + 6).you.spectating).toBe(false);
+    g.tick(T0 + 6 + 60_000);
+    g.next("tokA", T0 + 6 + 60_000);
+    const standing = g.view("tokS", T0 + 6 + 60_000).results!.find((r) => r.playerId === sam(g).id)!;
+    expect(standing.rounds).toEqual([null, 250]);
+  });
+
+  it("taking a seat at the reveal means playing from the next round", () => {
+    const g = withSpectator();
+    g.start("tokA", T0);
+    g.tick(T0 + 60_000);
+    expect(g.phase).toBe("reveal");
+    g.setRole("tokS", false);
+    g.ready("tokA", T0 + 60_001);
+    g.ready("tokB", T0 + 60_002);
+    g.ready("tokS", T0 + 60_003);
+    expect(g.view("tokS", T0 + 60_003).you.spectating).toBe(false);
+  });
+
+  it("nobody switches on the final results", () => {
+    const g = withSpectator();
+    g.start("tokA", T0);
+    g.end("tokA");
+    expect(g.setRole("tokS", false)).toEqual({ ok: false, error: "game has finished" });
   });
 
   it("cannot take a seat when all the player seats are taken", () => {

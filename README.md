@@ -128,9 +128,11 @@ pnpm workspace with three packages:
   picked to stay distinct from them on the reveal's terrain) and up to 8
   spectators. Spectators join with "Just watch", or are seated as one when
   every player seat is taken; they see each question and every reveal but
-  have no paint, colour or score and are never waited on. In the lobby a
-  spectator can take a free seat and a player can step back to watch; roles
-  are then fixed until Play again, and the host may be a spectator. Anyone
+  have no paint, colour or score and are never waited on. A spectator can
+  take a free seat at any point before the final results, sitting out the
+  round under way and playing from the next, like a late joiner; a player
+  can step back to watch only in the lobby, since mid-game they have
+  scores. The host may be a spectator. Anyone
   already in the game can always reconnect; once both are full a newcomer is
   told the game is full, and a player the host removes frees their seat and colour.
   In the lobby the host picks the number of rounds (1 to 15), the round

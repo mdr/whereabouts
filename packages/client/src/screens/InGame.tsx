@@ -14,6 +14,7 @@ import { PlayersPanel } from "../ui/PlayersPanel";
 import { EndGameButton } from "../ui/HostControls";
 import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog";
 import { askedToWatch, startOnPan } from "../settings";
+import { TakeSeatButton } from "../ui/TakeSeat";
 import { sound } from "../sound";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
@@ -110,6 +111,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
                   ? "You're watching this game. You'll see each answer and everyone's guesses at the reveal."
                   : "The game was full, so you're watching. You'll see each answer and everyone's guesses at the reveal."}
               </p>
+              <TakeSeatButton conn={conn} view={view} />
             </Card>
           )}
           {view.you.spectating && (
