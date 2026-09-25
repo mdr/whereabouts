@@ -10,6 +10,7 @@
     },
     "toleranceKm": 150,
     "label": "Taj Mahal, Agra",
+    "wiki": "Taj Mahal",
     "region": "world"
   },
   {
@@ -23,6 +24,7 @@
     },
     "toleranceKm": 100,
     "label": "Sydney Opera House",
+    "wiki": "Sydney Opera House",
     "region": "world"
   },
   {
@@ -36,6 +38,7 @@
     },
     "toleranceKm": 200,
     "label": "Machu Picchu",
+    "wiki": "Machu Picchu",
     "region": "world"
   },
   {
@@ -49,6 +52,7 @@
     },
     "toleranceKm": 150,
     "label": "Christ the Redeemer, Rio de Janeiro",
+    "wiki": "Christ the Redeemer (statue)",
     "region": "world"
   },
   {
@@ -62,6 +66,7 @@
     },
     "toleranceKm": 200,
     "label": "Al-Khazneh, Petra",
+    "wiki": "Al-Khazneh",
     "region": "world"
   },
   {
@@ -75,6 +80,7 @@
     },
     "toleranceKm": 100,
     "label": "Great Pyramid of Giza",
+    "wiki": "Great Pyramid of Giza",
     "region": "world"
   },
   {
@@ -88,6 +94,7 @@
     },
     "toleranceKm": 100,
     "label": "Golden Gate Bridge, San Francisco",
+    "wiki": "Golden Gate Bridge",
     "region": "world"
   },
   {
@@ -101,6 +108,7 @@
     },
     "toleranceKm": 200,
     "label": "Neuschwanstein Castle, Bavaria",
+    "wiki": "Neuschwanstein Castle",
     "region": "world"
   },
   {
@@ -113,6 +121,7 @@
     },
     "toleranceKm": 300,
     "label": "Tashkent, Uzbekistan",
+    "wiki": "Tashkent",
     "region": "world"
   },
   {
@@ -125,6 +134,7 @@
     },
     "toleranceKm": 400,
     "label": "Ulaanbaatar, Mongolia",
+    "wiki": "Ulaanbaatar",
     "region": "world"
   },
   {
@@ -137,6 +147,7 @@
     },
     "toleranceKm": 400,
     "label": "Timbuktu, Mali",
+    "wiki": "Timbuktu",
     "region": "world"
   },
   {
@@ -149,6 +160,7 @@
     },
     "toleranceKm": 200,
     "label": "Wellington, New Zealand",
+    "wiki": "Wellington",
     "region": "world"
   },
   {
@@ -161,6 +173,7 @@
     },
     "toleranceKm": 200,
     "label": "Reykjavík, Iceland",
+    "wiki": "Reykjavík",
     "region": "world"
   },
   {
@@ -173,6 +186,7 @@
     },
     "toleranceKm": 400,
     "label": "Kinshasa, DR Congo",
+    "wiki": "Kinshasa",
     "region": "world"
   },
   {
@@ -185,6 +199,7 @@
     },
     "toleranceKm": 250,
     "label": "Montevideo, Uruguay",
+    "wiki": "Montevideo",
     "region": "world"
   },
   {
@@ -198,6 +213,7 @@
     },
     "toleranceKm": 3,
     "label": "Buckingham Palace, London",
+    "wiki": "Buckingham Palace",
     "region": "uk"
   },
   {
@@ -211,6 +227,7 @@
     },
     "toleranceKm": 15,
     "label": "Edinburgh Castle",
+    "wiki": "Edinburgh Castle",
     "region": "uk"
   },
   {
@@ -224,6 +241,7 @@
     },
     "toleranceKm": 25,
     "label": "Angel of the North, Gateshead",
+    "wiki": "Angel of the North",
     "region": "uk"
   },
   {
@@ -237,6 +255,7 @@
     },
     "toleranceKm": 20,
     "label": "Stonehenge, Wiltshire",
+    "wiki": "Stonehenge",
     "region": "uk"
   },
   {
@@ -250,6 +269,7 @@
     },
     "toleranceKm": 20,
     "label": "Clifton Suspension Bridge, Bristol",
+    "wiki": "Clifton Suspension Bridge",
     "region": "uk"
   },
   {
@@ -262,6 +282,7 @@
     },
     "toleranceKm": 30,
     "label": "Aberystwyth, Wales",
+    "wiki": "Aberystwyth",
     "region": "uk"
   },
   {
@@ -274,6 +295,7 @@
     },
     "toleranceKm": 40,
     "label": "Inverness, Scotland",
+    "wiki": "Inverness",
     "region": "uk"
   },
   {
@@ -286,6 +308,7 @@
     },
     "toleranceKm": 30,
     "label": "Norwich, England",
+    "wiki": "Norwich",
     "region": "uk"
   },
   {
@@ -298,6 +321,7 @@
     },
     "toleranceKm": 30,
     "label": "Edinburgh",
+    "wiki": "Edinburgh",
     "region": "uk"
   },
   {
@@ -310,6 +334,7 @@
     },
     "toleranceKm": 30,
     "label": "Cardiff",
+    "wiki": "Cardiff",
     "region": "uk"
   },
   {
@@ -322,6 +347,7 @@
     },
     "toleranceKm": 30,
     "label": "Belfast",
+    "wiki": "Belfast",
     "region": "uk"
   },
   {
@@ -334,6 +360,7 @@
     },
     "toleranceKm": 30,
     "label": "Douglas, Isle of Man",
+    "wiki": "Douglas, Isle of Man",
     "region": "uk"
   },
   {
@@ -346,6 +373,7 @@
     },
     "toleranceKm": 30,
     "label": "St Helier, Jersey",
+    "wiki": "St Helier",
     "region": "uk"
   },
   {
@@ -358,6 +386,7 @@
     },
     "toleranceKm": 40,
     "label": "Dublin",
+    "wiki": "Dublin",
     "region": "world"
   },
   {
@@ -370,6 +399,7 @@
     },
     "toleranceKm": 50,
     "label": "Paris",
+    "wiki": "Paris",
     "region": "world"
   },
   {
@@ -382,6 +412,7 @@
     },
     "toleranceKm": 50,
     "label": "Brussels",
+    "wiki": "Brussels",
     "region": "world"
   },
   {
@@ -394,6 +425,7 @@
     },
     "toleranceKm": 50,
     "label": "Amsterdam",
+    "wiki": "Amsterdam",
     "region": "world"
   },
   {
@@ -406,6 +438,7 @@
     },
     "toleranceKm": 60,
     "label": "Luxembourg",
+    "wiki": "Luxembourg",
     "region": "world"
   },
   {
@@ -418,6 +451,7 @@
     },
     "toleranceKm": 80,
     "label": "Berlin",
+    "wiki": "Berlin",
     "region": "world"
   },
   {
@@ -430,6 +464,7 @@
     },
     "toleranceKm": 100,
     "label": "Madrid",
+    "wiki": "Madrid",
     "region": "world"
   },
   {
@@ -442,6 +477,7 @@
     },
     "toleranceKm": 80,
     "label": "Lisbon",
+    "wiki": "Lisbon",
     "region": "world"
   },
   {
@@ -454,6 +490,7 @@
     },
     "toleranceKm": 80,
     "label": "Rome",
+    "wiki": "Rome",
     "region": "world"
   },
   {
@@ -466,6 +503,7 @@
     },
     "toleranceKm": 60,
     "label": "Vatican City",
+    "wiki": "Vatican City",
     "region": "world"
   },
   {
@@ -478,6 +516,7 @@
     },
     "toleranceKm": 60,
     "label": "Monaco",
+    "wiki": "Monaco",
     "region": "world"
   },
   {
@@ -490,6 +529,7 @@
     },
     "toleranceKm": 80,
     "label": "San Marino",
+    "wiki": "San Marino",
     "region": "world"
   },
   {
@@ -502,6 +542,7 @@
     },
     "toleranceKm": 80,
     "label": "Liechtenstein",
+    "wiki": "Liechtenstein",
     "region": "world"
   },
   {
@@ -514,6 +555,7 @@
     },
     "toleranceKm": 80,
     "label": "Andorra",
+    "wiki": "Andorra",
     "region": "world"
   },
   {
@@ -526,6 +568,7 @@
     },
     "toleranceKm": 100,
     "label": "Malta",
+    "wiki": "Malta",
     "region": "world"
   },
   {
@@ -538,6 +581,7 @@
     },
     "toleranceKm": 80,
     "label": "Vienna",
+    "wiki": "Vienna",
     "region": "world"
   },
   {
@@ -550,6 +594,7 @@
     },
     "toleranceKm": 80,
     "label": "Prague",
+    "wiki": "Prague",
     "region": "world"
   },
   {
@@ -562,6 +607,7 @@
     },
     "toleranceKm": 100,
     "label": "Warsaw",
+    "wiki": "Warsaw",
     "region": "world"
   },
   {
@@ -574,6 +620,7 @@
     },
     "toleranceKm": 80,
     "label": "Budapest",
+    "wiki": "Budapest",
     "region": "world"
   },
   {
@@ -586,6 +633,7 @@
     },
     "toleranceKm": 60,
     "label": "Copenhagen",
+    "wiki": "Copenhagen",
     "region": "world"
   },
   {
@@ -598,6 +646,7 @@
     },
     "toleranceKm": 80,
     "label": "Oslo",
+    "wiki": "Oslo",
     "region": "world"
   },
   {
@@ -610,6 +659,7 @@
     },
     "toleranceKm": 80,
     "label": "Stockholm",
+    "wiki": "Stockholm",
     "region": "world"
   },
   {
@@ -622,6 +672,7 @@
     },
     "toleranceKm": 100,
     "label": "Helsinki",
+    "wiki": "Helsinki",
     "region": "world"
   },
   {
@@ -634,6 +685,7 @@
     },
     "toleranceKm": 100,
     "label": "Athens",
+    "wiki": "Athens",
     "region": "world"
   },
   {
@@ -646,6 +698,7 @@
     },
     "toleranceKm": 100,
     "label": "Ljubljana, Slovenia",
+    "wiki": "Ljubljana",
     "region": "world"
   },
   {
@@ -658,6 +711,7 @@
     },
     "toleranceKm": 100,
     "label": "Zagreb, Croatia",
+    "wiki": "Zagreb",
     "region": "world"
   },
   {
@@ -670,6 +724,7 @@
     },
     "toleranceKm": 100,
     "label": "Sarajevo, Bosnia and Herzegovina",
+    "wiki": "Sarajevo",
     "region": "world"
   },
   {
@@ -682,6 +737,7 @@
     },
     "toleranceKm": 100,
     "label": "Montenegro",
+    "wiki": "Montenegro",
     "region": "world"
   },
   {
@@ -694,6 +750,7 @@
     },
     "toleranceKm": 100,
     "label": "North Macedonia",
+    "wiki": "North Macedonia",
     "region": "world"
   },
   {
@@ -706,6 +763,7 @@
     },
     "toleranceKm": 100,
     "label": "Albania",
+    "wiki": "Albania",
     "region": "world"
   },
   {
@@ -718,6 +776,7 @@
     },
     "toleranceKm": 100,
     "label": "Kosovo",
+    "wiki": "Kosovo",
     "region": "world"
   },
   {
@@ -730,6 +789,7 @@
     },
     "toleranceKm": 120,
     "label": "Moldova",
+    "wiki": "Moldova",
     "region": "world"
   },
   {
@@ -742,6 +802,7 @@
     },
     "toleranceKm": 100,
     "label": "Vilnius, Lithuania",
+    "wiki": "Vilnius",
     "region": "world"
   },
   {
@@ -754,6 +815,7 @@
     },
     "toleranceKm": 100,
     "label": "Riga, Latvia",
+    "wiki": "Riga",
     "region": "world"
   },
   {
@@ -766,6 +828,7 @@
     },
     "toleranceKm": 100,
     "label": "Tallinn, Estonia",
+    "wiki": "Tallinn",
     "region": "world"
   },
   {
@@ -778,6 +841,7 @@
     },
     "toleranceKm": 100,
     "label": "Bratislava, Slovakia",
+    "wiki": "Bratislava",
     "region": "world"
   },
   {
@@ -790,6 +854,7 @@
     },
     "toleranceKm": 120,
     "label": "Minsk, Belarus",
+    "wiki": "Minsk",
     "region": "world"
   },
   {
@@ -802,6 +867,7 @@
     },
     "toleranceKm": 120,
     "label": "Kyiv, Ukraine",
+    "wiki": "Kyiv",
     "region": "world"
   },
   {
@@ -814,6 +880,7 @@
     },
     "toleranceKm": 120,
     "label": "Bucharest, Romania",
+    "wiki": "Bucharest",
     "region": "world"
   },
   {
@@ -826,6 +893,7 @@
     },
     "toleranceKm": 120,
     "label": "Sofia, Bulgaria",
+    "wiki": "Sofia",
     "region": "world"
   },
   {
@@ -838,6 +906,7 @@
     },
     "toleranceKm": 120,
     "label": "Cyprus",
+    "wiki": "Cyprus",
     "region": "world"
   },
   {
@@ -850,6 +919,7 @@
     },
     "toleranceKm": 300,
     "label": "Ottawa, Canada",
+    "wiki": "Ottawa",
     "region": "world"
   },
   {
@@ -862,6 +932,7 @@
     },
     "toleranceKm": 200,
     "label": "Washington, D.C.",
+    "wiki": "Washington, D.C.",
     "region": "world"
   },
   {
@@ -874,6 +945,7 @@
     },
     "toleranceKm": 300,
     "label": "Canberra, Australia",
+    "wiki": "Canberra",
     "region": "world"
   },
   {
@@ -886,6 +958,7 @@
     },
     "toleranceKm": 300,
     "label": "Nairobi, Kenya",
+    "wiki": "Nairobi",
     "region": "world"
   },
   {
@@ -898,6 +971,7 @@
     },
     "toleranceKm": 400,
     "label": "Brasília, Brazil",
+    "wiki": "Brasília",
     "region": "world"
   },
   {
@@ -910,6 +984,7 @@
     },
     "toleranceKm": 300,
     "label": "Abuja, Nigeria",
+    "wiki": "Abuja",
     "region": "world"
   },
   {
@@ -922,6 +997,7 @@
     },
     "toleranceKm": 200,
     "label": "Ankara, Turkey",
+    "wiki": "Ankara",
     "region": "world"
   },
   {
@@ -934,6 +1010,7 @@
     },
     "toleranceKm": 400,
     "label": "Astana, Kazakhstan",
+    "wiki": "Astana",
     "region": "world"
   },
   {
@@ -946,6 +1023,7 @@
     },
     "toleranceKm": 300,
     "label": "Kathmandu, Nepal",
+    "wiki": "Kathmandu",
     "region": "world"
   },
   {
@@ -958,6 +1036,7 @@
     },
     "toleranceKm": 300,
     "label": "Hanoi, Vietnam",
+    "wiki": "Hanoi",
     "region": "world"
   },
   {
@@ -970,6 +1049,7 @@
     },
     "toleranceKm": 300,
     "label": "Addis Ababa, Ethiopia",
+    "wiki": "Addis Ababa",
     "region": "world"
   },
   {
@@ -982,6 +1062,7 @@
     },
     "toleranceKm": 300,
     "label": "Lima, Peru",
+    "wiki": "Lima",
     "region": "world"
   },
   {
@@ -994,6 +1075,7 @@
     },
     "toleranceKm": 300,
     "label": "Bogotá, Colombia",
+    "wiki": "Bogotá",
     "region": "world"
   },
   {
@@ -1006,6 +1088,7 @@
     },
     "toleranceKm": 300,
     "label": "Santiago, Chile",
+    "wiki": "Santiago",
     "region": "world"
   },
   {
@@ -1018,6 +1101,7 @@
     },
     "toleranceKm": 300,
     "label": "Pretoria, South Africa",
+    "wiki": "Pretoria",
     "region": "world"
   },
   {
@@ -1030,6 +1114,7 @@
     },
     "toleranceKm": 300,
     "label": "Riyadh, Saudi Arabia",
+    "wiki": "Riyadh",
     "region": "world"
   },
   {
@@ -1042,6 +1127,7 @@
     },
     "toleranceKm": 300,
     "label": "Islamabad, Pakistan",
+    "wiki": "Islamabad",
     "region": "world"
   },
   {
@@ -1054,6 +1140,7 @@
     },
     "toleranceKm": 300,
     "label": "Dhaka, Bangladesh",
+    "wiki": "Dhaka",
     "region": "world"
   },
   {
@@ -1066,6 +1153,7 @@
     },
     "toleranceKm": 300,
     "label": "Manila, Philippines",
+    "wiki": "Manila",
     "region": "world"
   },
   {
@@ -1078,6 +1166,7 @@
     },
     "toleranceKm": 300,
     "label": "Jakarta, Indonesia",
+    "wiki": "Jakarta",
     "region": "world"
   },
   {
@@ -1090,6 +1179,7 @@
     },
     "toleranceKm": 200,
     "label": "Seoul, South Korea",
+    "wiki": "Seoul",
     "region": "world"
   },
   {
@@ -1102,6 +1192,7 @@
     },
     "toleranceKm": 300,
     "label": "Tehran, Iran",
+    "wiki": "Tehran",
     "region": "world"
   },
   {
@@ -1114,6 +1205,7 @@
     },
     "toleranceKm": 250,
     "label": "Baghdad, Iraq",
+    "wiki": "Baghdad",
     "region": "world"
   },
   {
@@ -1126,6 +1218,7 @@
     },
     "toleranceKm": 300,
     "label": "Kabul, Afghanistan",
+    "wiki": "Kabul",
     "region": "world"
   },
   {
@@ -1138,6 +1231,7 @@
     },
     "toleranceKm": 300,
     "label": "Havana, Cuba",
+    "wiki": "Havana",
     "region": "world"
   },
   {
@@ -1150,6 +1244,7 @@
     },
     "toleranceKm": 300,
     "label": "Mexico City",
+    "wiki": "Mexico City",
     "region": "world"
   },
   {
@@ -1162,6 +1257,7 @@
     },
     "toleranceKm": 300,
     "label": "Buenos Aires, Argentina",
+    "wiki": "Buenos Aires",
     "region": "world"
   },
   {
@@ -1174,6 +1270,7 @@
     },
     "toleranceKm": 300,
     "label": "Eswatini",
+    "wiki": "Eswatini",
     "region": "world"
   },
   {
@@ -1186,6 +1283,7 @@
     },
     "toleranceKm": 300,
     "label": "Lesotho",
+    "wiki": "Lesotho",
     "region": "world"
   },
   {
@@ -1198,6 +1296,7 @@
     },
     "toleranceKm": 350,
     "label": "Bhutan",
+    "wiki": "Bhutan",
     "region": "world"
   },
   {
@@ -1210,6 +1309,7 @@
     },
     "toleranceKm": 300,
     "label": "Djibouti",
+    "wiki": "Djibouti",
     "region": "world"
   },
   {
@@ -1222,6 +1322,7 @@
     },
     "toleranceKm": 300,
     "label": "Belize",
+    "wiki": "Belize",
     "region": "world"
   },
   {
@@ -1234,6 +1335,7 @@
     },
     "toleranceKm": 400,
     "label": "Brunei",
+    "wiki": "Brunei",
     "region": "world"
   },
   {
@@ -1246,6 +1348,7 @@
     },
     "toleranceKm": 300,
     "label": "The Gambia",
+    "wiki": "The Gambia",
     "region": "world"
   },
   {
@@ -1258,6 +1361,7 @@
     },
     "toleranceKm": 300,
     "label": "Burundi",
+    "wiki": "Burundi",
     "region": "world"
   },
   {
@@ -1270,6 +1374,7 @@
     },
     "toleranceKm": 300,
     "label": "Rwanda",
+    "wiki": "Rwanda",
     "region": "world"
   },
   {
@@ -1282,6 +1387,7 @@
     },
     "toleranceKm": 200,
     "label": "Qatar",
+    "wiki": "Qatar",
     "region": "world"
   },
   {
@@ -1294,6 +1400,7 @@
     },
     "toleranceKm": 200,
     "label": "Bahrain",
+    "wiki": "Bahrain",
     "region": "world"
   },
   {
@@ -1306,6 +1413,7 @@
     },
     "toleranceKm": 200,
     "label": "Kuwait",
+    "wiki": "Kuwait",
     "region": "world"
   },
   {
@@ -1318,6 +1426,7 @@
     },
     "toleranceKm": 250,
     "label": "Singapore",
+    "wiki": "Singapore",
     "region": "world"
   },
   {
@@ -1330,6 +1439,7 @@
     },
     "toleranceKm": 400,
     "label": "Timor-Leste",
+    "wiki": "Timor-Leste",
     "region": "world"
   },
   {
@@ -1342,6 +1452,7 @@
     },
     "toleranceKm": 400,
     "label": "Maldives",
+    "wiki": "Maldives",
     "region": "world"
   },
   {
@@ -1354,6 +1465,7 @@
     },
     "toleranceKm": 500,
     "label": "Seychelles",
+    "wiki": "Seychelles",
     "region": "world"
   },
   {
@@ -1366,6 +1478,7 @@
     },
     "toleranceKm": 500,
     "label": "Comoros",
+    "wiki": "Comoros",
     "region": "world"
   },
   {
@@ -1378,6 +1491,7 @@
     },
     "toleranceKm": 500,
     "label": "Mauritius",
+    "wiki": "Mauritius",
     "region": "world"
   },
   {
@@ -1390,6 +1504,7 @@
     },
     "toleranceKm": 500,
     "label": "Cape Verde",
+    "wiki": "Cape Verde",
     "region": "world"
   },
   {
@@ -1402,6 +1517,7 @@
     },
     "toleranceKm": 500,
     "label": "São Tomé and Príncipe",
+    "wiki": "São Tomé and Príncipe",
     "region": "world"
   },
   {
@@ -1414,6 +1530,7 @@
     },
     "toleranceKm": 300,
     "label": "Barbados",
+    "wiki": "Barbados",
     "region": "world"
   },
   {
@@ -1426,6 +1543,7 @@
     },
     "toleranceKm": 300,
     "label": "Trinidad and Tobago",
+    "wiki": "Trinidad and Tobago",
     "region": "world"
   },
   {
@@ -1438,6 +1556,7 @@
     },
     "toleranceKm": 300,
     "label": "Jamaica",
+    "wiki": "Jamaica",
     "region": "world"
   },
   {
@@ -1450,6 +1569,7 @@
     },
     "toleranceKm": 400,
     "label": "Paraguay",
+    "wiki": "Paraguay",
     "region": "world"
   },
   {
@@ -1462,6 +1582,7 @@
     },
     "toleranceKm": 400,
     "label": "Suriname",
+    "wiki": "Suriname",
     "region": "world"
   },
   {
@@ -1474,6 +1595,7 @@
     },
     "toleranceKm": 400,
     "label": "Guyana",
+    "wiki": "Guyana",
     "region": "world"
   },
   {
@@ -1486,6 +1608,7 @@
     },
     "toleranceKm": 300,
     "label": "Armenia",
+    "wiki": "Armenia",
     "region": "world"
   },
   {
@@ -1498,6 +1621,7 @@
     },
     "toleranceKm": 300,
     "label": "Georgia",
+    "wiki": "Georgia (country)",
     "region": "world"
   },
   {
@@ -1510,6 +1634,7 @@
     },
     "toleranceKm": 500,
     "label": "Kyrgyzstan",
+    "wiki": "Kyrgyzstan",
     "region": "world"
   },
   {
@@ -1522,6 +1647,7 @@
     },
     "toleranceKm": 400,
     "label": "Laos",
+    "wiki": "Laos",
     "region": "world"
   },
   {
@@ -1534,6 +1660,7 @@
     },
     "toleranceKm": 300,
     "label": "Cambodia",
+    "wiki": "Cambodia",
     "region": "world"
   },
   {
@@ -1546,6 +1673,7 @@
     },
     "toleranceKm": 250,
     "label": "Sri Lanka",
+    "wiki": "Sri Lanka",
     "region": "world"
   },
   {
@@ -1558,6 +1686,7 @@
     },
     "toleranceKm": 300,
     "label": "Oman",
+    "wiki": "Oman",
     "region": "world"
   },
   {
@@ -1570,6 +1699,7 @@
     },
     "toleranceKm": 150,
     "label": "Jordan",
+    "wiki": "Jordan",
     "region": "world"
   },
   {
@@ -1582,6 +1712,7 @@
     },
     "toleranceKm": 120,
     "label": "Lebanon",
+    "wiki": "Lebanon",
     "region": "world"
   },
   {
@@ -1594,6 +1725,7 @@
     },
     "toleranceKm": 350,
     "label": "Malawi",
+    "wiki": "Malawi",
     "region": "world"
   },
   {
@@ -1606,6 +1738,7 @@
     },
     "toleranceKm": 300,
     "label": "Togo",
+    "wiki": "Togo",
     "region": "world"
   },
   {
@@ -1618,6 +1751,7 @@
     },
     "toleranceKm": 300,
     "label": "Benin",
+    "wiki": "Benin",
     "region": "world"
   },
   {
@@ -1630,6 +1764,7 @@
     },
     "toleranceKm": 300,
     "label": "Liberia",
+    "wiki": "Liberia",
     "region": "world"
   },
   {
@@ -1642,6 +1777,7 @@
     },
     "toleranceKm": 300,
     "label": "Sierra Leone",
+    "wiki": "Sierra Leone",
     "region": "world"
   },
   {
@@ -1654,6 +1790,7 @@
     },
     "toleranceKm": 300,
     "label": "Eritrea",
+    "wiki": "Eritrea",
     "region": "world"
   },
   {
@@ -1666,6 +1803,7 @@
     },
     "toleranceKm": 300,
     "label": "Madagascar",
+    "wiki": "Madagascar",
     "region": "world"
   },
   {
@@ -1678,6 +1816,7 @@
     },
     "toleranceKm": 800,
     "label": "Nauru",
+    "wiki": "Nauru",
     "region": "world"
   },
   {
@@ -1690,6 +1829,7 @@
     },
     "toleranceKm": 800,
     "label": "Tuvalu",
+    "wiki": "Tuvalu",
     "region": "world"
   },
   {
@@ -1702,6 +1842,7 @@
     },
     "toleranceKm": 1000,
     "label": "Kiribati",
+    "wiki": "Kiribati",
     "region": "world"
   },
   {
@@ -1714,6 +1855,7 @@
     },
     "toleranceKm": 800,
     "label": "Palau",
+    "wiki": "Palau",
     "region": "world"
   },
   {
@@ -1726,6 +1868,7 @@
     },
     "toleranceKm": 1000,
     "label": "Marshall Islands",
+    "wiki": "Marshall Islands",
     "region": "world"
   },
   {
@@ -1738,6 +1881,7 @@
     },
     "toleranceKm": 1000,
     "label": "Micronesia",
+    "wiki": "Federated States of Micronesia",
     "region": "world"
   },
   {
@@ -1750,6 +1894,7 @@
     },
     "toleranceKm": 800,
     "label": "Tonga",
+    "wiki": "Tonga",
     "region": "world"
   },
   {
@@ -1762,6 +1907,7 @@
     },
     "toleranceKm": 800,
     "label": "Samoa",
+    "wiki": "Samoa",
     "region": "world"
   },
   {
@@ -1774,6 +1920,7 @@
     },
     "toleranceKm": 700,
     "label": "Vanuatu",
+    "wiki": "Vanuatu",
     "region": "world"
   },
   {
@@ -1786,6 +1933,7 @@
     },
     "toleranceKm": 700,
     "label": "Fiji",
+    "wiki": "Fiji",
     "region": "world"
   },
   {
@@ -1798,6 +1946,7 @@
     },
     "toleranceKm": 800,
     "label": "Solomon Islands",
+    "wiki": "Solomon Islands",
     "region": "world"
   },
   {
@@ -1810,6 +1959,7 @@
     },
     "toleranceKm": 200,
     "label": "Tokyo, Japan",
+    "wiki": "Tokyo",
     "region": "world"
   },
   {
@@ -1822,6 +1972,7 @@
     },
     "toleranceKm": 200,
     "label": "Beijing, China",
+    "wiki": "Beijing",
     "region": "world"
   },
   {
@@ -1834,6 +1985,7 @@
     },
     "toleranceKm": 250,
     "label": "New Delhi, India",
+    "wiki": "New Delhi",
     "region": "world"
   },
   {
@@ -1846,6 +1998,7 @@
     },
     "toleranceKm": 300,
     "label": "Bangkok, Thailand",
+    "wiki": "Bangkok",
     "region": "world"
   },
   {
@@ -1858,6 +2011,7 @@
     },
     "toleranceKm": 300,
     "label": "Kuala Lumpur, Malaysia",
+    "wiki": "Kuala Lumpur",
     "region": "world"
   },
   {
@@ -1870,6 +2024,7 @@
     },
     "toleranceKm": 250,
     "label": "Taipei, Taiwan",
+    "wiki": "Taipei",
     "region": "world"
   },
   {
@@ -1882,6 +2037,7 @@
     },
     "toleranceKm": 250,
     "label": "Pyongyang, North Korea",
+    "wiki": "Pyongyang",
     "region": "world"
   },
   {
@@ -1894,6 +2050,7 @@
     },
     "toleranceKm": 300,
     "label": "Naypyidaw, Myanmar",
+    "wiki": "Naypyidaw",
     "region": "world"
   },
   {
@@ -1906,6 +2063,7 @@
     },
     "toleranceKm": 300,
     "label": "Baku, Azerbaijan",
+    "wiki": "Baku",
     "region": "world"
   },
   {
@@ -1918,6 +2076,7 @@
     },
     "toleranceKm": 300,
     "label": "Mogadishu, Somalia",
+    "wiki": "Mogadishu",
     "region": "world"
   },
   {
@@ -1930,6 +2089,7 @@
     },
     "toleranceKm": 300,
     "label": "Tbilisi, Georgia",
+    "wiki": "Tbilisi",
     "region": "world"
   },
   {
@@ -1942,6 +2102,7 @@
     },
     "toleranceKm": 300,
     "label": "Dushanbe, Tajikistan",
+    "wiki": "Dushanbe",
     "region": "world"
   },
   {
@@ -1954,6 +2115,7 @@
     },
     "toleranceKm": 300,
     "label": "Ashgabat, Turkmenistan",
+    "wiki": "Ashgabat",
     "region": "world"
   },
   {
@@ -1966,6 +2128,7 @@
     },
     "toleranceKm": 300,
     "label": "Bishkek, Kyrgyzstan",
+    "wiki": "Bishkek",
     "region": "world"
   },
   {
@@ -1978,6 +2141,7 @@
     },
     "toleranceKm": 250,
     "label": "Damascus, Syria",
+    "wiki": "Damascus",
     "region": "world"
   },
   {
@@ -1990,6 +2154,7 @@
     },
     "toleranceKm": 150,
     "label": "Beirut, Lebanon",
+    "wiki": "Beirut",
     "region": "world"
   },
   {
@@ -2002,6 +2167,7 @@
     },
     "toleranceKm": 200,
     "label": "Amman, Jordan",
+    "wiki": "Amman",
     "region": "world"
   },
   {
@@ -2014,6 +2180,7 @@
     },
     "toleranceKm": 300,
     "label": "Muscat, Oman",
+    "wiki": "Muscat",
     "region": "world"
   },
   {
@@ -2026,6 +2193,7 @@
     },
     "toleranceKm": 250,
     "label": "Abu Dhabi, United Arab Emirates",
+    "wiki": "Abu Dhabi",
     "region": "world"
   },
   {
@@ -2038,6 +2206,7 @@
     },
     "toleranceKm": 300,
     "label": "Sanaa, Yemen",
+    "wiki": "Sanaa",
     "region": "world"
   },
   {
@@ -2050,6 +2219,7 @@
     },
     "toleranceKm": 200,
     "label": "Cairo, Egypt",
+    "wiki": "Cairo",
     "region": "world"
   },
   {
@@ -2062,6 +2232,7 @@
     },
     "toleranceKm": 300,
     "label": "Algiers, Algeria",
+    "wiki": "Algiers",
     "region": "world"
   },
   {
@@ -2074,6 +2245,7 @@
     },
     "toleranceKm": 250,
     "label": "Tunis, Tunisia",
+    "wiki": "Tunis",
     "region": "world"
   },
   {
@@ -2086,6 +2258,7 @@
     },
     "toleranceKm": 250,
     "label": "Rabat, Morocco",
+    "wiki": "Rabat",
     "region": "world"
   },
   {
@@ -2098,6 +2271,7 @@
     },
     "toleranceKm": 300,
     "label": "Tripoli, Libya",
+    "wiki": "Tripoli, Libya",
     "region": "world"
   },
   {
@@ -2110,6 +2284,7 @@
     },
     "toleranceKm": 300,
     "label": "Khartoum, Sudan",
+    "wiki": "Khartoum",
     "region": "world"
   },
   {
@@ -2122,6 +2297,7 @@
     },
     "toleranceKm": 300,
     "label": "Dakar, Senegal",
+    "wiki": "Dakar",
     "region": "world"
   },
   {
@@ -2134,6 +2310,7 @@
     },
     "toleranceKm": 300,
     "label": "Accra, Ghana",
+    "wiki": "Accra",
     "region": "world"
   },
   {
@@ -2146,6 +2323,7 @@
     },
     "toleranceKm": 300,
     "label": "Luanda, Angola",
+    "wiki": "Luanda",
     "region": "world"
   },
   {
@@ -2158,6 +2336,7 @@
     },
     "toleranceKm": 300,
     "label": "Lusaka, Zambia",
+    "wiki": "Lusaka",
     "region": "world"
   },
   {
@@ -2170,6 +2349,7 @@
     },
     "toleranceKm": 300,
     "label": "Harare, Zimbabwe",
+    "wiki": "Harare",
     "region": "world"
   },
   {
@@ -2182,6 +2362,7 @@
     },
     "toleranceKm": 300,
     "label": "Maputo, Mozambique",
+    "wiki": "Maputo",
     "region": "world"
   },
   {
@@ -2194,6 +2375,7 @@
     },
     "toleranceKm": 300,
     "label": "Kampala, Uganda",
+    "wiki": "Kampala",
     "region": "world"
   },
   {
@@ -2206,6 +2388,7 @@
     },
     "toleranceKm": 300,
     "label": "Dodoma, Tanzania",
+    "wiki": "Dodoma",
     "region": "world"
   },
   {
@@ -2218,6 +2401,7 @@
     },
     "toleranceKm": 300,
     "label": "Windhoek, Namibia",
+    "wiki": "Windhoek",
     "region": "world"
   },
   {
@@ -2230,6 +2414,7 @@
     },
     "toleranceKm": 300,
     "label": "Gaborone, Botswana",
+    "wiki": "Gaborone",
     "region": "world"
   },
   {
@@ -2242,6 +2427,7 @@
     },
     "toleranceKm": 300,
     "label": "Antananarivo, Madagascar",
+    "wiki": "Antananarivo",
     "region": "world"
   },
   {
@@ -2254,6 +2440,7 @@
     },
     "toleranceKm": 300,
     "label": "Caracas, Venezuela",
+    "wiki": "Caracas",
     "region": "world"
   },
   {
@@ -2266,6 +2453,7 @@
     },
     "toleranceKm": 300,
     "label": "Quito, Ecuador",
+    "wiki": "Quito",
     "region": "world"
   },
   {
@@ -2278,6 +2466,7 @@
     },
     "toleranceKm": 300,
     "label": "La Paz, Bolivia",
+    "wiki": "La Paz",
     "region": "world"
   },
   {
@@ -2290,6 +2479,7 @@
     },
     "toleranceKm": 250,
     "label": "Panama City, Panama",
+    "wiki": "Panama City",
     "region": "world"
   },
   {
@@ -2302,6 +2492,7 @@
     },
     "toleranceKm": 250,
     "label": "San José, Costa Rica",
+    "wiki": "San José, Costa Rica",
     "region": "world"
   },
   {
@@ -2314,6 +2505,7 @@
     },
     "toleranceKm": 250,
     "label": "Managua, Nicaragua",
+    "wiki": "Managua",
     "region": "world"
   },
   {
@@ -2326,6 +2518,7 @@
     },
     "toleranceKm": 250,
     "label": "Tegucigalpa, Honduras",
+    "wiki": "Tegucigalpa",
     "region": "world"
   },
   {
@@ -2338,6 +2531,7 @@
     },
     "toleranceKm": 250,
     "label": "San Salvador, El Salvador",
+    "wiki": "San Salvador",
     "region": "world"
   },
   {
@@ -2350,6 +2544,7 @@
     },
     "toleranceKm": 250,
     "label": "Guatemala City, Guatemala",
+    "wiki": "Guatemala City",
     "region": "world"
   },
   {
@@ -2362,6 +2557,7 @@
     },
     "toleranceKm": 250,
     "label": "Santo Domingo, Dominican Republic",
+    "wiki": "Santo Domingo",
     "region": "world"
   },
   {
@@ -2374,6 +2570,7 @@
     },
     "toleranceKm": 250,
     "label": "Port-au-Prince, Haiti",
+    "wiki": "Port-au-Prince",
     "region": "world"
   },
   {
@@ -2386,6 +2583,7 @@
     },
     "toleranceKm": 150,
     "label": "Moscow, Russia",
+    "wiki": "Moscow",
     "region": "world"
   },
   {
@@ -2398,6 +2596,7 @@
     },
     "toleranceKm": 80,
     "label": "Bern, Switzerland",
+    "wiki": "Bern",
     "region": "world"
   },
   {
@@ -2410,6 +2609,7 @@
     },
     "toleranceKm": 100,
     "label": "Belgrade, Serbia",
+    "wiki": "Belgrade",
     "region": "world"
   },
   {
@@ -2422,6 +2622,7 @@
     },
     "toleranceKm": 200,
     "label": "New York City",
+    "wiki": "New York City",
     "region": "world"
   },
   {
@@ -2434,6 +2635,7 @@
     },
     "toleranceKm": 200,
     "label": "Los Angeles",
+    "wiki": "Los Angeles",
     "region": "world"
   },
   {
@@ -2446,6 +2648,7 @@
     },
     "toleranceKm": 250,
     "label": "Chicago",
+    "wiki": "Chicago",
     "region": "world"
   },
   {
@@ -2458,6 +2661,7 @@
     },
     "toleranceKm": 200,
     "label": "San Francisco",
+    "wiki": "San Francisco",
     "region": "world"
   },
   {
@@ -2470,6 +2674,7 @@
     },
     "toleranceKm": 300,
     "label": "Houston",
+    "wiki": "Houston",
     "region": "world"
   },
   {
@@ -2482,6 +2687,7 @@
     },
     "toleranceKm": 250,
     "label": "Miami",
+    "wiki": "Miami",
     "region": "world"
   },
   {
@@ -2494,6 +2700,7 @@
     },
     "toleranceKm": 250,
     "label": "Seattle",
+    "wiki": "Seattle",
     "region": "world"
   },
   {
@@ -2506,6 +2713,7 @@
     },
     "toleranceKm": 250,
     "label": "Toronto, Canada",
+    "wiki": "Toronto",
     "region": "world"
   },
   {
@@ -2518,6 +2726,7 @@
     },
     "toleranceKm": 250,
     "label": "Vancouver, Canada",
+    "wiki": "Vancouver",
     "region": "world"
   },
   {
@@ -2530,6 +2739,7 @@
     },
     "toleranceKm": 250,
     "label": "Montreal, Canada",
+    "wiki": "Montreal",
     "region": "world"
   },
   {
@@ -2542,6 +2752,7 @@
     },
     "toleranceKm": 300,
     "label": "São Paulo, Brazil",
+    "wiki": "São Paulo",
     "region": "world"
   },
   {
@@ -2554,6 +2765,7 @@
     },
     "toleranceKm": 200,
     "label": "Rio de Janeiro, Brazil",
+    "wiki": "Rio de Janeiro",
     "region": "world"
   },
   {
@@ -2566,6 +2778,7 @@
     },
     "toleranceKm": 250,
     "label": "Shanghai, China",
+    "wiki": "Shanghai",
     "region": "world"
   },
   {
@@ -2578,6 +2791,7 @@
     },
     "toleranceKm": 200,
     "label": "Hong Kong",
+    "wiki": "Hong Kong",
     "region": "world"
   },
   {
@@ -2590,6 +2804,7 @@
     },
     "toleranceKm": 300,
     "label": "Guangzhou, China",
+    "wiki": "Guangzhou",
     "region": "world"
   },
   {
@@ -2602,6 +2817,7 @@
     },
     "toleranceKm": 300,
     "label": "Shenzhen, China",
+    "wiki": "Shenzhen",
     "region": "world"
   },
   {
@@ -2614,6 +2830,7 @@
     },
     "toleranceKm": 300,
     "label": "Chongqing, China",
+    "wiki": "Chongqing",
     "region": "world"
   },
   {
@@ -2626,6 +2843,7 @@
     },
     "toleranceKm": 200,
     "label": "Osaka, Japan",
+    "wiki": "Osaka",
     "region": "world"
   },
   {
@@ -2638,6 +2856,7 @@
     },
     "toleranceKm": 250,
     "label": "Mumbai, India",
+    "wiki": "Mumbai",
     "region": "world"
   },
   {
@@ -2650,6 +2869,7 @@
     },
     "toleranceKm": 300,
     "label": "Kolkata, India",
+    "wiki": "Kolkata",
     "region": "world"
   },
   {
@@ -2662,6 +2882,7 @@
     },
     "toleranceKm": 300,
     "label": "Chennai, India",
+    "wiki": "Chennai",
     "region": "world"
   },
   {
@@ -2674,6 +2895,7 @@
     },
     "toleranceKm": 300,
     "label": "Bengaluru, India",
+    "wiki": "Bengaluru",
     "region": "world"
   },
   {
@@ -2686,6 +2908,7 @@
     },
     "toleranceKm": 300,
     "label": "Karachi, Pakistan",
+    "wiki": "Karachi",
     "region": "world"
   },
   {
@@ -2698,6 +2921,7 @@
     },
     "toleranceKm": 300,
     "label": "Lahore, Pakistan",
+    "wiki": "Lahore",
     "region": "world"
   },
   {
@@ -2710,6 +2934,7 @@
     },
     "toleranceKm": 300,
     "label": "Ho Chi Minh City, Vietnam",
+    "wiki": "Ho Chi Minh City",
     "region": "world"
   },
   {
@@ -2722,6 +2947,7 @@
     },
     "toleranceKm": 150,
     "label": "Istanbul, Turkey",
+    "wiki": "Istanbul",
     "region": "world"
   },
   {
@@ -2734,6 +2960,7 @@
     },
     "toleranceKm": 200,
     "label": "Dubai, United Arab Emirates",
+    "wiki": "Dubai",
     "region": "world"
   },
   {
@@ -2746,6 +2973,7 @@
     },
     "toleranceKm": 300,
     "label": "Lagos, Nigeria",
+    "wiki": "Lagos",
     "region": "world"
   },
   {
@@ -2758,6 +2986,7 @@
     },
     "toleranceKm": 300,
     "label": "Johannesburg, South Africa",
+    "wiki": "Johannesburg",
     "region": "world"
   },
   {
@@ -2770,6 +2999,7 @@
     },
     "toleranceKm": 250,
     "label": "Cape Town, South Africa",
+    "wiki": "Cape Town",
     "region": "world"
   },
   {
@@ -2782,6 +3012,7 @@
     },
     "toleranceKm": 250,
     "label": "Casablanca, Morocco",
+    "wiki": "Casablanca",
     "region": "world"
   },
   {
@@ -2794,6 +3025,7 @@
     },
     "toleranceKm": 250,
     "label": "Marrakesh, Morocco",
+    "wiki": "Marrakesh",
     "region": "world"
   },
   {
@@ -2806,6 +3038,7 @@
     },
     "toleranceKm": 200,
     "label": "Alexandria, Egypt",
+    "wiki": "Alexandria",
     "region": "world"
   },
   {
@@ -2818,6 +3051,7 @@
     },
     "toleranceKm": 150,
     "label": "Saint Petersburg, Russia",
+    "wiki": "Saint Petersburg",
     "region": "world"
   },
   {
@@ -2830,6 +3064,7 @@
     },
     "toleranceKm": 100,
     "label": "Barcelona, Spain",
+    "wiki": "Barcelona",
     "region": "world"
   },
   {
@@ -2842,6 +3077,7 @@
     },
     "toleranceKm": 80,
     "label": "Milan, Italy",
+    "wiki": "Milan",
     "region": "world"
   },
   {
@@ -2854,6 +3090,7 @@
     },
     "toleranceKm": 80,
     "label": "Munich, Germany",
+    "wiki": "Munich",
     "region": "world"
   },
   {
@@ -2866,6 +3103,7 @@
     },
     "toleranceKm": 80,
     "label": "Hamburg, Germany",
+    "wiki": "Hamburg",
     "region": "world"
   },
   {
@@ -2878,6 +3116,7 @@
     },
     "toleranceKm": 200,
     "label": "Sydney, Australia",
+    "wiki": "Sydney",
     "region": "world"
   },
   {
@@ -2890,6 +3129,7 @@
     },
     "toleranceKm": 250,
     "label": "Melbourne, Australia",
+    "wiki": "Melbourne",
     "region": "world"
   },
   {
@@ -2902,6 +3142,7 @@
     },
     "toleranceKm": 200,
     "label": "Auckland, New Zealand",
+    "wiki": "Auckland",
     "region": "world"
   },
   {
@@ -2914,6 +3155,7 @@
     },
     "toleranceKm": 30,
     "label": "Manchester, England",
+    "wiki": "Manchester",
     "region": "uk"
   },
   {
@@ -2926,6 +3168,7 @@
     },
     "toleranceKm": 30,
     "label": "Glasgow, Scotland",
+    "wiki": "Glasgow",
     "region": "uk"
   },
   {
@@ -2938,6 +3181,7 @@
     },
     "toleranceKm": 30,
     "label": "Birmingham, England",
+    "wiki": "Birmingham",
     "region": "uk"
   },
   {
@@ -2950,6 +3194,7 @@
     },
     "toleranceKm": 30,
     "label": "Liverpool, England",
+    "wiki": "Liverpool",
     "region": "uk"
   },
   {
@@ -2962,6 +3207,7 @@
     },
     "toleranceKm": 30,
     "label": "Leeds, England",
+    "wiki": "Leeds",
     "region": "uk"
   },
   {
@@ -2974,6 +3220,7 @@
     },
     "toleranceKm": 30,
     "label": "Newcastle upon Tyne, England",
+    "wiki": "Newcastle upon Tyne",
     "region": "uk"
   },
   {
@@ -2986,6 +3233,7 @@
     },
     "toleranceKm": 40,
     "label": "Aberdeen, Scotland",
+    "wiki": "Aberdeen",
     "region": "uk"
   },
   {
@@ -2998,6 +3246,7 @@
     },
     "toleranceKm": 30,
     "label": "Plymouth, England",
+    "wiki": "Plymouth",
     "region": "uk"
   },
   {
@@ -3011,6 +3260,7 @@
     },
     "toleranceKm": 60,
     "label": "Eiffel Tower, Paris",
+    "wiki": "Eiffel Tower",
     "region": "world"
   },
   {
@@ -3024,6 +3274,7 @@
     },
     "toleranceKm": 80,
     "label": "Colosseum, Rome",
+    "wiki": "Colosseum",
     "region": "world"
   },
   {
@@ -3037,6 +3288,7 @@
     },
     "toleranceKm": 80,
     "label": "Sagrada Família, Barcelona",
+    "wiki": "Sagrada Família",
     "region": "world"
   },
   {
@@ -3050,6 +3302,7 @@
     },
     "toleranceKm": 100,
     "label": "Parthenon, Athens",
+    "wiki": "Parthenon",
     "region": "world"
   },
   {
@@ -3063,6 +3316,7 @@
     },
     "toleranceKm": 80,
     "label": "Mont-Saint-Michel, Normandy",
+    "wiki": "Mont-Saint-Michel",
     "region": "world"
   },
   {
@@ -3076,6 +3330,7 @@
     },
     "toleranceKm": 80,
     "label": "Brandenburg Gate, Berlin",
+    "wiki": "Brandenburg Gate",
     "region": "world"
   },
   {
@@ -3089,6 +3344,7 @@
     },
     "toleranceKm": 80,
     "label": "Charles Bridge, Prague",
+    "wiki": "Charles Bridge",
     "region": "world"
   },
   {
@@ -3102,6 +3358,7 @@
     },
     "toleranceKm": 120,
     "label": "Hagia Sophia, Istanbul",
+    "wiki": "Hagia Sophia",
     "region": "world"
   },
   {
@@ -3115,6 +3372,7 @@
     },
     "toleranceKm": 150,
     "label": "Saint Basil's Cathedral, Moscow",
+    "wiki": "Saint Basil's Cathedral",
     "region": "world"
   },
   {
@@ -3128,6 +3386,7 @@
     },
     "toleranceKm": 80,
     "label": "Leaning Tower of Pisa",
+    "wiki": "Leaning Tower of Pisa",
     "region": "world"
   },
   {
@@ -3141,6 +3400,7 @@
     },
     "toleranceKm": 80,
     "label": "St Mark's Basilica, Venice",
+    "wiki": "St Mark's Basilica",
     "region": "world"
   },
   {
@@ -3154,6 +3414,7 @@
     },
     "toleranceKm": 100,
     "label": "Alhambra, Granada",
+    "wiki": "Alhambra",
     "region": "world"
   },
   {
@@ -3167,6 +3428,7 @@
     },
     "toleranceKm": 100,
     "label": "Matterhorn, Swiss–Italian border",
+    "wiki": "Matterhorn",
     "region": "world"
   },
   {
@@ -3180,6 +3442,7 @@
     },
     "toleranceKm": 150,
     "label": "Oia, Santorini",
+    "wiki": "Oia, Greece",
     "region": "world"
   },
   {
@@ -3193,6 +3456,7 @@
     },
     "toleranceKm": 150,
     "label": "Meteora monasteries, Greece",
+    "wiki": "Meteora",
     "region": "world"
   },
   {
@@ -3206,6 +3470,7 @@
     },
     "toleranceKm": 150,
     "label": "Plitvice Lakes, Croatia",
+    "wiki": "Plitvice Lakes National Park",
     "region": "world"
   },
   {
@@ -3219,6 +3484,7 @@
     },
     "toleranceKm": 60,
     "label": "Cliffs of Moher, County Clare",
+    "wiki": "Cliffs of Moher",
     "region": "world"
   },
   {
@@ -3232,6 +3498,7 @@
     },
     "toleranceKm": 40,
     "label": "Giant's Causeway, County Antrim",
+    "wiki": "Giant's Causeway",
     "region": "uk"
   },
   {
@@ -3245,6 +3512,7 @@
     },
     "toleranceKm": 5,
     "label": "Tower Bridge, London",
+    "wiki": "Tower Bridge",
     "region": "uk"
   },
   {
@@ -3258,6 +3526,7 @@
     },
     "toleranceKm": 25,
     "label": "Durdle Door, Dorset",
+    "wiki": "Durdle Door",
     "region": "uk"
   },
   {
@@ -3271,6 +3540,7 @@
     },
     "toleranceKm": 25,
     "label": "Forth Bridge, Firth of Forth",
+    "wiki": "Forth Bridge",
     "region": "uk"
   },
   {
@@ -3284,6 +3554,7 @@
     },
     "toleranceKm": 120,
     "label": "Hallstatt, Austria",
+    "wiki": "Hallstatt",
     "region": "world"
   },
   {
@@ -3297,6 +3568,7 @@
     },
     "toleranceKm": 100,
     "label": "Manarola, Cinque Terre",
+    "wiki": "Manarola",
     "region": "world"
   },
   {
@@ -3310,6 +3582,7 @@
     },
     "toleranceKm": 150,
     "label": "Moscow Kremlin",
+    "wiki": "Kremlin",
     "region": "world"
   },
   {
@@ -3323,6 +3596,7 @@
     },
     "toleranceKm": 150,
     "label": "Burj Khalifa, Dubai",
+    "wiki": "Burj Khalifa",
     "region": "world"
   },
   {
@@ -3336,6 +3610,7 @@
     },
     "toleranceKm": 200,
     "label": "Angkor Wat, Cambodia",
+    "wiki": "Angkor Wat",
     "region": "world"
   },
   {
@@ -3349,6 +3624,7 @@
     },
     "toleranceKm": 250,
     "label": "Great Wall at Badaling, near Beijing",
+    "wiki": "Badaling",
     "region": "world"
   },
   {
@@ -3362,6 +3638,7 @@
     },
     "toleranceKm": 250,
     "label": "Forbidden City, Beijing",
+    "wiki": "Forbidden City",
     "region": "world"
   },
   {
@@ -3375,6 +3652,7 @@
     },
     "toleranceKm": 200,
     "label": "Mount Fuji, Japan",
+    "wiki": "Mount Fuji",
     "region": "world"
   },
   {
@@ -3388,6 +3666,7 @@
     },
     "toleranceKm": 200,
     "label": "Fushimi Inari shrine, Kyoto",
+    "wiki": "Fushimi Inari-taisha",
     "region": "world"
   },
   {
@@ -3401,6 +3680,7 @@
     },
     "toleranceKm": 250,
     "label": "Hạ Long Bay, Vietnam",
+    "wiki": "Hạ Long Bay",
     "region": "world"
   },
   {
@@ -3414,6 +3694,7 @@
     },
     "toleranceKm": 300,
     "label": "Borobudur, Java",
+    "wiki": "Borobudur",
     "region": "world"
   },
   {
@@ -3427,6 +3708,7 @@
     },
     "toleranceKm": 200,
     "label": "Marina Bay Sands, Singapore",
+    "wiki": "Marina Bay Sands",
     "region": "world"
   },
   {
@@ -3440,6 +3722,7 @@
     },
     "toleranceKm": 250,
     "label": "Mount Everest",
+    "wiki": "Mount Everest",
     "region": "world"
   },
   {
@@ -3453,6 +3736,7 @@
     },
     "toleranceKm": 100,
     "label": "Statue of Liberty, New York",
+    "wiki": "Statue of Liberty",
     "region": "world"
   },
   {
@@ -3466,6 +3750,7 @@
     },
     "toleranceKm": 400,
     "label": "Mount Rushmore, South Dakota",
+    "wiki": "Mount Rushmore",
     "region": "world"
   },
   {
@@ -3479,6 +3764,7 @@
     },
     "toleranceKm": 200,
     "label": "Niagara Falls",
+    "wiki": "Niagara Falls",
     "region": "world"
   },
   {
@@ -3492,6 +3778,7 @@
     },
     "toleranceKm": 300,
     "label": "Chichen Itza, Yucatán",
+    "wiki": "Chichen Itza",
     "region": "world"
   },
   {
@@ -3505,6 +3792,7 @@
     },
     "toleranceKm": 150,
     "label": "Hollywood Sign, Los Angeles",
+    "wiki": "Hollywood Sign",
     "region": "world"
   },
   {
@@ -3518,6 +3806,7 @@
     },
     "toleranceKm": 400,
     "label": "Iguazu Falls, Argentina–Brazil border",
+    "wiki": "Iguazu Falls",
     "region": "world"
   },
   {
@@ -3531,6 +3820,7 @@
     },
     "toleranceKm": 400,
     "label": "Salar de Uyuni, Bolivia",
+    "wiki": "Salar de Uyuni",
     "region": "world"
   },
   {
@@ -3544,6 +3834,7 @@
     },
     "toleranceKm": 400,
     "label": "Perito Moreno Glacier, Patagonia",
+    "wiki": "Perito Moreno Glacier",
     "region": "world"
   },
   {
@@ -3557,6 +3848,7 @@
     },
     "toleranceKm": 800,
     "label": "Ahu Tongariki, Easter Island",
+    "wiki": "Ahu Tongariki",
     "region": "world"
   },
   {
@@ -3570,6 +3862,7 @@
     },
     "toleranceKm": 400,
     "label": "Uluru, Northern Territory",
+    "wiki": "Uluru",
     "region": "world"
   },
   {
@@ -3583,6 +3876,7 @@
     },
     "toleranceKm": 100,
     "label": "Sydney Harbour Bridge",
+    "wiki": "Sydney Harbour Bridge",
     "region": "world"
   },
   {
@@ -3596,6 +3890,7 @@
     },
     "toleranceKm": 300,
     "label": "Milford Sound, New Zealand",
+    "wiki": "Milford Sound",
     "region": "world"
   },
   {
@@ -3609,6 +3904,7 @@
     },
     "toleranceKm": 800,
     "label": "Bora Bora, French Polynesia",
+    "wiki": "Bora Bora",
     "region": "world"
   },
   {
@@ -3622,6 +3918,7 @@
     },
     "toleranceKm": 200,
     "label": "Table Mountain, Cape Town",
+    "wiki": "Table Mountain",
     "region": "world"
   },
   {
@@ -3635,6 +3932,7 @@
     },
     "toleranceKm": 300,
     "label": "Victoria Falls, Zambia–Zimbabwe border",
+    "wiki": "Victoria Falls",
     "region": "world"
   },
   {
@@ -3648,6 +3946,7 @@
     },
     "toleranceKm": 300,
     "label": "Church of Saint George, Lalibela",
+    "wiki": "Church of Saint George, Lalibela",
     "region": "world"
   },
   {
@@ -3661,6 +3960,7 @@
     },
     "toleranceKm": 200,
     "label": "Abu Simbel, Egypt",
+    "wiki": "Abu Simbel",
     "region": "world"
   },
   {
@@ -3674,6 +3974,7 @@
     },
     "toleranceKm": 400,
     "label": "Great Mosque of Djenné, Mali",
+    "wiki": "Great Mosque of Djenné",
     "region": "world"
   },
   {
@@ -3687,6 +3988,7 @@
     },
     "toleranceKm": 120,
     "label": "Walls of Dubrovnik, Croatia",
+    "wiki": "Walls of Dubrovnik",
     "region": "world"
   },
   {
@@ -3700,6 +4002,7 @@
     },
     "toleranceKm": 300,
     "label": "Mount Kilimanjaro, Tanzania",
+    "wiki": "Mount Kilimanjaro",
     "region": "world"
   },
   {
@@ -3713,6 +4016,7 @@
     },
     "toleranceKm": 300,
     "label": "Grand Canyon, Arizona",
+    "wiki": "Grand Canyon",
     "region": "world"
   },
   {
@@ -3726,6 +4030,7 @@
     },
     "toleranceKm": 5,
     "label": "Big Ben, London",
+    "wiki": "Big Ben",
     "region": "uk"
   },
   {
@@ -3739,6 +4044,7 @@
     },
     "toleranceKm": 5,
     "label": "Tower of London",
+    "wiki": "Tower of London",
     "region": "uk"
   },
   {
@@ -3752,6 +4058,7 @@
     },
     "toleranceKm": 60,
     "label": "Arc de Triomphe, Paris",
+    "wiki": "Arc de Triomphe",
     "region": "world"
   },
   {
@@ -3765,6 +4072,7 @@
     },
     "toleranceKm": 60,
     "label": "Notre-Dame de Paris",
+    "wiki": "Notre-Dame de Paris",
     "region": "world"
   },
   {
@@ -3778,6 +4086,7 @@
     },
     "toleranceKm": 60,
     "label": "Palace of Versailles",
+    "wiki": "Palace of Versailles",
     "region": "world"
   },
   {
@@ -3791,6 +4100,7 @@
     },
     "toleranceKm": 80,
     "label": "Trevi Fountain, Rome",
+    "wiki": "Trevi Fountain",
     "region": "world"
   },
   {
@@ -3804,6 +4114,7 @@
     },
     "toleranceKm": 80,
     "label": "St Peter's Basilica, Vatican City",
+    "wiki": "St. Peter's Basilica",
     "region": "world"
   },
   {
@@ -3817,6 +4128,7 @@
     },
     "toleranceKm": 80,
     "label": "Florence Cathedral",
+    "wiki": "Florence Cathedral",
     "region": "world"
   },
   {
@@ -3830,6 +4142,7 @@
     },
     "toleranceKm": 80,
     "label": "Cologne Cathedral",
+    "wiki": "Cologne Cathedral",
     "region": "world"
   },
   {
@@ -3843,6 +4156,7 @@
     },
     "toleranceKm": 80,
     "label": "Atomium, Brussels",
+    "wiki": "Atomium",
     "region": "world"
   },
   {
@@ -3856,6 +4170,7 @@
     },
     "toleranceKm": 120,
     "label": "Hungarian Parliament, Budapest",
+    "wiki": "Hungarian Parliament Building",
     "region": "world"
   },
   {
@@ -3869,6 +4184,7 @@
     },
     "toleranceKm": 120,
     "label": "Schönbrunn Palace, Vienna",
+    "wiki": "Schönbrunn Palace",
     "region": "world"
   },
   {
@@ -3882,6 +4198,7 @@
     },
     "toleranceKm": 200,
     "label": "Bran Castle, Transylvania",
+    "wiki": "Bran Castle",
     "region": "world"
   },
   {
@@ -3895,6 +4212,7 @@
     },
     "toleranceKm": 100,
     "label": "Pena Palace, Sintra",
+    "wiki": "Pena Palace",
     "region": "world"
   },
   {
@@ -3908,6 +4226,7 @@
     },
     "toleranceKm": 200,
     "label": "Hallgrímskirkja, Reykjavík",
+    "wiki": "Hallgrímskirkja",
     "region": "world"
   },
   {
@@ -3921,6 +4240,7 @@
     },
     "toleranceKm": 250,
     "label": "Göreme, Cappadocia",
+    "wiki": "Göreme",
     "region": "world"
   },
   {
@@ -3934,6 +4254,7 @@
     },
     "toleranceKm": 200,
     "label": "Pamukkale, Turkey",
+    "wiki": "Pamukkale",
     "region": "world"
   },
   {
@@ -3947,6 +4268,7 @@
     },
     "toleranceKm": 200,
     "label": "Kinkaku-ji, Kyoto",
+    "wiki": "Kinkaku-ji",
     "region": "world"
   },
   {
@@ -3960,6 +4282,7 @@
     },
     "toleranceKm": 200,
     "label": "Tokyo Skytree",
+    "wiki": "Tokyo Skytree",
     "region": "world"
   },
   {
@@ -3973,6 +4296,7 @@
     },
     "toleranceKm": 300,
     "label": "Shwedagon Pagoda, Yangon",
+    "wiki": "Shwedagon Pagoda",
     "region": "world"
   },
   {
@@ -3986,6 +4310,7 @@
     },
     "toleranceKm": 300,
     "label": "Temples of Bagan, Myanmar",
+    "wiki": "Bagan",
     "region": "world"
   },
   {
@@ -3999,6 +4324,7 @@
     },
     "toleranceKm": 300,
     "label": "Potala Palace, Lhasa",
+    "wiki": "Potala Palace",
     "region": "world"
   },
   {
@@ -4012,6 +4338,7 @@
     },
     "toleranceKm": 300,
     "label": "Terracotta Army, Xi'an",
+    "wiki": "Terracotta Army",
     "region": "world"
   },
   {
@@ -4025,6 +4352,7 @@
     },
     "toleranceKm": 300,
     "label": "Zhangjiajie, Hunan",
+    "wiki": "Zhangjiajie",
     "region": "world"
   },
   {
@@ -4038,6 +4366,7 @@
     },
     "toleranceKm": 200,
     "label": "Golden Temple, Amritsar",
+    "wiki": "Golden Temple",
     "region": "world"
   },
   {
@@ -4051,6 +4380,7 @@
     },
     "toleranceKm": 200,
     "label": "Sigiriya, Sri Lanka",
+    "wiki": "Sigiriya",
     "region": "world"
   },
   {
@@ -4064,6 +4394,7 @@
     },
     "toleranceKm": 300,
     "label": "Registan, Samarkand",
+    "wiki": "Registan",
     "region": "world"
   },
   {
@@ -4077,6 +4408,7 @@
     },
     "toleranceKm": 120,
     "label": "Blue Mosque, Istanbul",
+    "wiki": "Blue Mosque, Istanbul",
     "region": "world"
   },
   {
@@ -4090,6 +4422,7 @@
     },
     "toleranceKm": 120,
     "label": "Dome of the Rock, Jerusalem",
+    "wiki": "Dome of the Rock",
     "region": "world"
   },
   {
@@ -4103,6 +4436,7 @@
     },
     "toleranceKm": 200,
     "label": "Wadi Rum, Jordan",
+    "wiki": "Wadi Rum",
     "region": "world"
   },
   {
@@ -4116,6 +4450,7 @@
     },
     "toleranceKm": 100,
     "label": "Empire State Building, New York",
+    "wiki": "Empire State Building",
     "region": "world"
   },
   {
@@ -4129,6 +4464,7 @@
     },
     "toleranceKm": 150,
     "label": "White House, Washington, D.C.",
+    "wiki": "White House",
     "region": "world"
   },
   {
@@ -4142,6 +4478,7 @@
     },
     "toleranceKm": 100,
     "label": "Brooklyn Bridge, New York",
+    "wiki": "Brooklyn Bridge",
     "region": "world"
   },
   {
@@ -4155,6 +4492,7 @@
     },
     "toleranceKm": 150,
     "label": "Alcatraz Island, San Francisco",
+    "wiki": "Alcatraz Island",
     "region": "world"
   },
   {
@@ -4168,6 +4506,7 @@
     },
     "toleranceKm": 200,
     "label": "Space Needle, Seattle",
+    "wiki": "Space Needle",
     "region": "world"
   },
   {
@@ -4181,6 +4520,7 @@
     },
     "toleranceKm": 300,
     "label": "Monument Valley, Arizona–Utah border",
+    "wiki": "Monument Valley",
     "region": "world"
   },
   {
@@ -4194,6 +4534,7 @@
     },
     "toleranceKm": 400,
     "label": "Old Faithful, Yellowstone",
+    "wiki": "Old Faithful",
     "region": "world"
   },
   {
@@ -4207,6 +4548,7 @@
     },
     "toleranceKm": 300,
     "label": "Teotihuacan, Mexico",
+    "wiki": "Teotihuacan",
     "region": "world"
   },
   {
@@ -4220,6 +4562,7 @@
     },
     "toleranceKm": 200,
     "label": "Sugarloaf Mountain, Rio de Janeiro",
+    "wiki": "Sugarloaf Mountain",
     "region": "world"
   },
   {
@@ -4233,6 +4576,7 @@
     },
     "toleranceKm": 400,
     "label": "Nazca Lines, Peru",
+    "wiki": "Nazca lines",
     "region": "world"
   },
   {
@@ -4246,6 +4590,7 @@
     },
     "toleranceKm": 200,
     "label": "Great Sphinx of Giza",
+    "wiki": "Great Sphinx of Giza",
     "region": "world"
   },
   {
@@ -4259,6 +4604,7 @@
     },
     "toleranceKm": 200,
     "label": "Luxor Temple, Egypt",
+    "wiki": "Luxor Temple",
     "region": "world"
   },
   {
@@ -4272,6 +4618,7 @@
     },
     "toleranceKm": 400,
     "label": "Deadvlei, Namib Desert",
+    "wiki": "Deadvlei",
     "region": "world"
   },
   {
@@ -4285,6 +4632,7 @@
     },
     "toleranceKm": 300,
     "label": "Stone Town, Zanzibar",
+    "wiki": "Stone Town",
     "region": "world"
   },
   {
@@ -4298,6 +4646,7 @@
     },
     "toleranceKm": 60,
     "label": "Louvre Pyramid, Paris",
+    "wiki": "Louvre Pyramid",
     "region": "world"
   },
   {
@@ -4311,6 +4660,7 @@
     },
     "toleranceKm": 80,
     "label": "Kinderdijk windmills, Netherlands",
+    "wiki": "Kinderdijk windmills",
     "region": "world"
   },
   {
@@ -4324,6 +4674,7 @@
     },
     "toleranceKm": 200,
     "label": "Petronas Towers, Kuala Lumpur",
+    "wiki": "Petronas Towers",
     "region": "world"
   },
   {
@@ -4337,6 +4688,7 @@
     },
     "toleranceKm": 200,
     "label": "CN Tower and the Toronto skyline",
+    "wiki": "CN Tower",
     "region": "world"
   },
   {
@@ -4350,6 +4702,7 @@
     },
     "toleranceKm": 400,
     "label": "Torres del Paine, Chile",
+    "wiki": "Torres del Paine National Park",
     "region": "world"
   },
   {
@@ -4363,6 +4716,7 @@
     },
     "toleranceKm": 300,
     "label": "Twelve Apostles, Great Ocean Road",
+    "wiki": "The Twelve Apostles (Victoria)",
     "region": "world"
   },
   {
@@ -4376,6 +4730,7 @@
     },
     "toleranceKm": 400,
     "label": "Whitehaven Beach, Whitsunday Islands",
+    "wiki": "Whitehaven Beach",
     "region": "world"
   }
 ]

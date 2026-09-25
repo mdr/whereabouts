@@ -526,6 +526,7 @@ export class Game {
       question: { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm },
       answer: q.answer,
       label: q.label,
+      wiki: q.wiki,
       results,
       ready: [],
     };

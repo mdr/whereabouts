@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { QUESTIONS, pickQuestions } from "./questions.ts";
+import { QUESTIONS, pickQuestions, wikipediaUrl } from "./questions.ts";
 import { greatCircleDistance } from "./geo.ts";
+
+describe("wikipediaUrl", () => {
+  it("links the article, or searches for the label without one", () => {
+    expect(wikipediaUrl("St. Peter's Basilica", "St Peter's Basilica, Vatican City")).toBe(
+      "https://en.wikipedia.org/wiki/St._Peter's_Basilica",
+    );
+    expect(wikipediaUrl(undefined, "Oia, Santorini")).toBe(
+      "https://en.wikipedia.org/w/index.php?search=Oia%2C%20Santorini",
+    );
+  });
+});
 
 describe("question pool", () => {
   it("has unique ids, valid coordinates and sensible tolerances", () => {
@@ -14,6 +25,7 @@ describe("question pool", () => {
       expect(q.toleranceKm).toBeLessThanOrEqual(1500);
       expect(q.prompt.length).toBeGreaterThan(0);
       expect(q.label.length).toBeGreaterThan(0);
+      expect(q.wiki, `${q.id} needs a Wikipedia article`).toBeTruthy();
       if (q.kind === "photo") expect(q.image, `${q.id} needs an image`).toBeTruthy();
       else expect(q.image).toBeUndefined();
     }

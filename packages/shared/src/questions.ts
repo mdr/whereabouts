@@ -13,6 +13,8 @@ export interface Question {
   toleranceKm: number;
   /** Shown after the reveal. */
   label: string;
+  /** English Wikipedia article title, linked from the reveal. */
+  wiki?: string;
   region: "world" | "uk";
 }
 
@@ -22,6 +24,13 @@ export function commonsImageUrl(file: string, width = 900): string {
 
 export function commonsPageUrl(file: string): string {
   return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, "_"))}`;
+}
+
+/** The Wikipedia article for a place, or a search for its label when there is none. */
+export function wikipediaUrl(title: string | undefined, label: string): string {
+  return title
+    ? `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`
+    : `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(label)}`;
 }
 
 import questionsJson from "../questions.json" with { type: "json" };

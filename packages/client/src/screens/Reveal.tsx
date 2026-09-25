@@ -9,7 +9,7 @@ import {
 } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { usePaint } from "../ui/MapView";
-import { Card, HudBottom, HudHeader, QuestionCard, ScoreParts } from "../ui/bits";
+import { Answer, Card, HudBottom, HudHeader, QuestionCard, ScoreParts } from "../ui/bits";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { DevDrawer } from "../ui/DevDrawer";
 import { ConnectionDev } from "../ui/ConnectionDev";
@@ -90,9 +90,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
             }
           />
           <QuestionCard q={reveal.question} credit>
-            <p class="answer">
-              It's <b>{reveal.label}</b>
-            </p>
+            <Answer label={reveal.label} wiki={reveal.wiki} />
           </QuestionCard>
           <div class="card score">
             <div class="big">{mine ? Math.round(mine.score) : "—"}</div>

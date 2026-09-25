@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-import { commonsImageUrl, commonsPageUrl, type QuestionView } from "@whereabouts/shared";
+import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type QuestionView } from "@whereabouts/shared";
 import { Icon } from "./icons";
 import { soundOn } from "../settings";
 
@@ -93,6 +93,18 @@ export function HudHeader({
       <SoundToggle />
       {right}
     </div>
+  );
+}
+
+/** The revealed answer, with a link to read about it on Wikipedia. */
+export function Answer({ label, wiki }: { label: string; wiki?: string }) {
+  return (
+    <p class="answer">
+      It's <b>{label}</b>{" "}
+      <a class="wiki-link" href={wikipediaUrl(wiki, label)} target="_blank" rel="noopener noreferrer">
+        Wikipedia <Icon name="external" size={12} />
+      </a>
+    </p>
   );
 }
 

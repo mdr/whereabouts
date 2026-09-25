@@ -195,6 +195,8 @@ export interface RevealView {
   question: QuestionView;
   answer: LatLon;
   label: string;
+  /** Wikipedia article title for the answer, when known. */
+  wiki?: string;
   results: RoundResultView[];
   /** Ids of players who have pressed Ready. The round advances when everyone connected has. */
   ready: string[];

@@ -226,7 +226,11 @@ pnpm workspace with three packages:
   natural and built; each image is the lead picture of the landmark's
   Wikipedia article, checked to exist on Commons at 800px or more and
   looked at when the file name gave any doubt. Several landmarks may share
-  a city (the photo is the clue). A game draws the host's share of photo
+  a city (the photo is the clue). Each question also names its English
+  Wikipedia article (`wiki`), linked from the reveal so players can read
+  about the place; the titles were matched by name and checked against
+  the article's coordinates, and a question without one links to a
+  Wikipedia search for its label instead. A game draws the host's share of photo
   and text questions, topping up from the other kind if one runs short
   (`pickQuestions`), in a shuffled order, preferring questions at least
   50 km apart. The question photo

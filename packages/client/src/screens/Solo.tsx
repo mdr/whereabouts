@@ -17,7 +17,7 @@ import {
   type Question,
 } from "@whereabouts/shared";
 import { MapView, usePaint } from "../ui/MapView";
-import { Card, HudBottom, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../ui/bits";
+import { Answer, Card, HudBottom, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../ui/bits";
 import { PaintDev, PaintTools } from "../ui/PaintTools";
 import { Banner } from "../ui/Banner";
 import { DevDrawer } from "../ui/DevDrawer";
@@ -206,9 +206,10 @@ function SoloGame() {
         <div class="hud">
           <div class="hud-top">
             {header}
-            <QuestionCard q={q} />
+            <QuestionCard q={q}>
+              <Answer label={q.label} wiki={q.wiki} />
+            </QuestionCard>
             <div class="card score">
-              <div class="label">{q.label}</div>
               <div class="big">{Math.round(shownResult.score)}</div>
               <div class="label">this round</div>
             </div>

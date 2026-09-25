@@ -174,6 +174,7 @@ describe("round loop", () => {
 
     const reveal = g.view("tokB", T0 + 60_000).reveal!;
     expect(reveal.label).toBe(q.label);
+    expect(reveal.wiki).toBe(q.wiki);
     expect(reveal.results).toHaveLength(2);
     const [first, second] = reveal.results;
     expect(first!.playerId).toBe("p1");
