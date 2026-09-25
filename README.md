@@ -269,7 +269,8 @@ pnpm workspace with three packages:
 | Brush size          | slider, or `[` and `]`                               |
 | Undo / redo         | `Ctrl+Z` / `Ctrl+Shift+Z` (⌘ on Mac), or the buttons |
 | Zoom                | scroll wheel                                         |
-| Submit / next       | `Enter`                                              |
+| Submit / next       | `Enter` (practice)                                   |
+| List these keys     | `?`, or the keyboard button in the toolbar           |
 
 The outline under the pointer is the brush footprint: the exact hex cells the next stamp will touch, at the
 resolution the layer picks for that brush size, so at world zoom you see the

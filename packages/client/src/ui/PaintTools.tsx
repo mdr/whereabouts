@@ -4,6 +4,7 @@ import { Card, HudBottom, fmtKm } from "./bits";
 import type { Tool } from "../paint-controller";
 import { Icon, type IconName } from "./icons";
 import { sound } from "../sound";
+import { Shortcuts, ShortcutsButton } from "./Shortcuts";
 
 const TOOL_ICON: Record<Tool, IconName> = { pan: "hand", paint: "brush", erase: "eraser" };
 const TOOL_HINT: Record<Tool, string> = {
@@ -16,7 +17,7 @@ const TOOL_HINT: Record<Tool, string> = {
  * The player-facing brush bar: tool, clear, brush size, undo/redo, and
  * whatever action buttons the screen passes in (done, next).
  */
-export function PaintTools({ children }: { children?: ComponentChildren }) {
+export function PaintTools({ children, practice }: { children?: ComponentChildren; practice?: boolean }) {
   const paint = usePaint();
   const tool = paint.tool.value;
   const enabled = paint.enabled.value;
@@ -73,6 +74,8 @@ export function PaintTools({ children }: { children?: ComponentChildren }) {
       >
         <Icon name="redo" />
       </button>
+      <ShortcutsButton />
+      <Shortcuts practice={practice} />
       {children}
     </HudBottom>
   );
