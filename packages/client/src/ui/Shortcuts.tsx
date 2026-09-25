@@ -21,7 +21,7 @@ type Row = { action: string; combos: string[][]; sep?: "/" | "or" };
 function rows(practice: boolean): Row[] {
   return [
     { action: "Pan / Paint / Erase", combos: [["1"], ["2"], ["3"]], sep: "/" },
-    { action: "Pan while painting", combos: [["Space"]] },
+    { action: "Pan while painting", combos: [["Space"], ["Middle-drag"]], sep: "or" },
     { action: "Brush smaller / larger", combos: [["["], ["]"]], sep: "/" },
     { action: "Undo", combos: [[MOD, "Z"]] },
     {

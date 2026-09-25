@@ -275,7 +275,7 @@ pnpm workspace with three packages:
 | Action              | Control                                              |
 | ------------------- | ---------------------------------------------------- |
 | Pan / Paint / Erase | `1` / `2` / `3`, or the buttons                      |
-| Pan while painting  | hold `Space`                                         |
+| Pan while painting  | hold `Space`, or drag with the middle button         |
 | Brush size          | slider, or `[` and `]`                               |
 | Undo / redo         | `Ctrl+Z` / `Ctrl+Shift+Z` (⌘ on Mac), or the buttons |
 | Zoom                | scroll wheel                                         |

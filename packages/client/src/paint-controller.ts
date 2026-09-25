@@ -34,6 +34,8 @@ export class PaintController {
 
   layer = new PaintLayer(4);
   private spaceHeld = false;
+  /** Where a middle-button drag last was, while one pans the map. */
+  private middleFrom: { x: number; y: number } | null = null;
   private painting = false;
   private lastStampPoint: Point | null = null;
   private renderQueued = false;
@@ -116,6 +118,28 @@ export class PaintController {
       if (e.key === "[") this.setBrushPx(this.brushPx.value / 1.25);
       if (e.key === "]") this.setBrushPx(this.brushPx.value * 1.25);
     };
+    // A middle-button drag pans whatever the tool, like holding Space.
+    // MapLibre's own drag pan only listens to the left button.
+    const onMiddleDown = (e: MouseEvent) => {
+      if (e.button !== 1) return;
+      e.preventDefault(); // no autoscroll
+      this.endStroke();
+      this.middleFrom = { x: e.clientX, y: e.clientY };
+      map.getContainer().classList.add("panning");
+      this.applyInteraction();
+    };
+    const onMiddleMove = (e: MouseEvent) => {
+      if (!this.middleFrom) return;
+      map.panBy([this.middleFrom.x - e.clientX, this.middleFrom.y - e.clientY], { duration: 0 });
+      this.middleFrom = { x: e.clientX, y: e.clientY };
+    };
+    const onMiddleUp = (e: MouseEvent) => {
+      if (e.button !== 1 || !this.middleFrom) return;
+      this.middleFrom = null;
+      map.getContainer().classList.remove("panning");
+      this.applyInteraction();
+    };
+    const canvas = map.getCanvasContainer();
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.code === "Space") {
         this.spaceHeld = false;
@@ -131,6 +155,9 @@ export class PaintController {
     map.on("touchend", onTouchEnd);
     map.on("touchcancel", onTouchEnd);
     window.addEventListener("mouseup", onUp);
+    canvas.addEventListener("mousedown", onMiddleDown);
+    window.addEventListener("mousemove", onMiddleMove);
+    window.addEventListener("mouseup", onMiddleUp);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
     this.disposers.push(() => {
@@ -143,6 +170,9 @@ export class PaintController {
       map.off("touchend", onTouchEnd);
       map.off("touchcancel", onTouchEnd);
       window.removeEventListener("mouseup", onUp);
+      canvas.removeEventListener("mousedown", onMiddleDown);
+      window.removeEventListener("mousemove", onMiddleMove);
+      window.removeEventListener("mouseup", onMiddleUp);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     });
@@ -264,7 +294,7 @@ export class PaintController {
   }
 
   private canPaint(): boolean {
-    return this.enabled.value && this.tool.value !== "pan" && !this.spaceHeld;
+    return this.enabled.value && this.tool.value !== "pan" && !this.spaceHeld && !this.middleFrom;
   }
 
   private applyInteraction(): void {

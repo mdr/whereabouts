@@ -54,6 +54,9 @@ body {
 #map.tool-erase canvas {
   cursor: none;
 }
+#map.panning canvas {
+  cursor: grabbing;
+}
 
 /* The HUD itself lets clicks through to the map; its cards do not. */
 .hud {
