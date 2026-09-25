@@ -38,6 +38,8 @@ export class PaintController {
   private lastStampPoint: Point | null = null;
   private renderQueued = false;
   private hoverListeners = new Set<(pos: LatLon) => void>();
+  /** Where the mouse is over the map, so the footprint can be redrawn without it moving. */
+  private pointerAt: LngLat | null = null;
   private disposers: (() => void)[] = [];
   readonly gameMap: GameMap;
 
@@ -72,6 +74,7 @@ export class PaintController {
     };
     const onTouchEnd = () => this.endStroke();
     const onMove = (e: MapMouseEvent) => {
+      this.pointerAt = e.lngLat;
       this.updateCursor(e.lngLat);
       if (this.painting) {
         this.strokeTo(e.point);
@@ -80,8 +83,11 @@ export class PaintController {
       for (const l of this.hoverListeners) l({ lat: e.lngLat.lat, lon: e.lngLat.lng });
     };
     const onOut = () => {
+      this.pointerAt = null;
       this.hideCursor();
     };
+    // A zoom under a still pointer (the scroll wheel) changes the footprint too.
+    const onZoom = () => this.refreshCursor();
     const onUp = () => this.endStroke();
     const onKeyDown = (e: KeyboardEvent) => {
       if (isTyping(e.target)) return;
@@ -119,6 +125,7 @@ export class PaintController {
     map.on("mousedown", onDown);
     map.on("mousemove", onMove);
     map.on("mouseout", onOut);
+    map.on("zoom", onZoom);
     map.on("touchstart", onTouchStart);
     map.on("touchmove", onTouchMove);
     map.on("touchend", onTouchEnd);
@@ -130,6 +137,7 @@ export class PaintController {
       map.off("mousedown", onDown);
       map.off("mousemove", onMove);
       map.off("mouseout", onOut);
+      map.off("zoom", onZoom);
       map.off("touchstart", onTouchStart);
       map.off("touchmove", onTouchMove);
       map.off("touchend", onTouchEnd);
@@ -139,6 +147,8 @@ export class PaintController {
       window.removeEventListener("keyup", onKeyUp);
     });
     this.disposers.push(this.tool.subscribe(() => this.applyInteraction()));
+    // [ and ] or the slider resize the brush while the mouse stays put.
+    this.disposers.push(this.brushPx.subscribe(() => this.refreshCursor()));
     this.disposers.push(this.enabled.subscribe(() => this.applyInteraction()));
     this.disposers.push(
       this.version.subscribe((v) => {
@@ -265,7 +275,7 @@ export class PaintController {
     const el = map.getContainer();
     el.classList.toggle("tool-paint", canPaint && this.tool.value === "paint");
     el.classList.toggle("tool-erase", canPaint && this.tool.value === "erase");
-    if (!canPaint) this.hideCursor();
+    this.refreshCursor();
   }
 
   private brushRadiusKm(lat: number): number {
@@ -312,6 +322,12 @@ export class PaintController {
       this.layer.stampCells(at, this.brushRadiusKm(lngLat.lat)),
       this.tool.value === "erase",
     );
+  }
+
+  /** Redraw the footprint where the mouse already is, after the brush, tool or zoom changed. */
+  private refreshCursor(): void {
+    if (this.pointerAt) this.updateCursor(this.pointerAt);
+    else this.hideCursor();
   }
 
   private hideCursor(): void {
