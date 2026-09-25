@@ -118,6 +118,10 @@ export class Connection {
   kick(playerId: string): void {
     this.send("kick", { playerId });
   }
+  /** Give up this seat for good (the lobby's Leave); disconnect afterwards. */
+  leave(): void {
+    this.send("leave");
+  }
   makeHost(playerId: string): void {
     this.send("makeHost", { playerId });
   }

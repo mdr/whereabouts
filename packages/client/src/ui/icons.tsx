@@ -1,5 +1,6 @@
 /** Button icons from Lucide, behind one component so screens name them by role. */
 import {
+  ArrowLeft,
   ArrowRight,
   Check,
   ChevronDown,
@@ -38,6 +39,7 @@ const ICONS = {
   check: Check,
   info: Info,
   next: ArrowRight,
+  back: ArrowLeft,
   flag: Flag,
   link: Link,
   play: Play,

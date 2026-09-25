@@ -1303,6 +1303,23 @@ button.danger.solid {
   padding: 36px 20px 12px;
   background: linear-gradient(to top, rgba(15, 18, 21, 0.9), rgba(15, 18, 21, 0));
 }
+/* The lobby's way home, over the top left of the banner. */
+.banner-leave {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px 5px 8px;
+  font-size: 13px;
+  background: rgba(15, 18, 21, 0.72);
+  border-color: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+}
+.banner-leave:hover {
+  background: rgba(15, 18, 21, 0.9);
+}
 .lobby-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;

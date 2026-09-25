@@ -141,6 +141,19 @@ export class Game {
     return OK_CHANGED;
   }
 
+  /**
+   * Leave the lobby on purpose: the seat goes now rather than after the
+   * grace period, and the host role, if it was theirs, passes on. From the
+   * lobby only; mid-game the seat is kept whatever happens.
+   */
+  leave(token: string): CommandResult {
+    if (!this.players.has(token)) return fail("unknown player");
+    if (this.phase !== "lobby") return fail("you can only leave from the lobby");
+    this.players.delete(token);
+    if (this.hostToken === token) this.hostToken = this.pickHost();
+    return OK_CHANGED;
+  }
+
   private pickHost(): string | null {
     let best: Player | null = null;
     for (const p of this.players.values()) {
@@ -159,6 +172,10 @@ export class Game {
 
   private isHost(token: string): boolean {
     return this.effectiveHost() === token;
+  }
+
+  get playerCount(): number {
+    return this.players.size;
   }
 
   get connectedCount(): number {
@@ -556,6 +573,16 @@ function sum(xs: number[]): number {
   let t = 0;
   for (const x of xs) t += x ?? 0;
   return t;
+}
+
+/**
+ * Who takes over as host if this player leaves, read from a view: the
+ * longest-standing online player, as the server picks. Player ids are
+ * issued in join order (p1, p2, ...), so the lowest id is the earliest.
+ */
+export function nextHostAfter(players: PlayerView[], leavingId: string): PlayerView | undefined {
+  const seq = (p: PlayerView) => Number(p.id.slice(1));
+  return players.filter((p) => p.id !== leavingId && p.connected).sort((a, b) => seq(a) - seq(b))[0];
 }
 
 /** Generate a join code that avoids look-alike characters. */

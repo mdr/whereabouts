@@ -1,13 +1,22 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { MAX_PLAYERS, MAX_ROUNDS, MIN_ROUNDS, PHOTO_MIXES, ROUND_LENGTHS_MS, type GameView } from "@whereabouts/shared";
+import {
+  MAX_PLAYERS,
+  MAX_ROUNDS,
+  MIN_ROUNDS,
+  PHOTO_MIXES,
+  ROUND_LENGTHS_MS,
+  nextHostAfter,
+  type GameView,
+} from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { configureAsHost } from "../host-setup";
-import { playerName, soundOn, startOnPan } from "../settings";
+import { joinedCode, playerName, soundOn, startOnPan } from "../settings";
 import { HostWord, PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { Icon } from "../ui/icons";
 import { Pills, StopSlider, Stepper } from "../ui/Controls";
-import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog";
+import { kickRequest, leaveRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog";
+import { navigate } from "../router";
 import { Banner } from "../ui/Banner";
 import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker";
 
@@ -27,11 +36,25 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   const current = view.players.find((p) => p.id === view.you.id)?.name ?? "";
   const host = view.you.isHost;
   const canShare = typeof navigator.share === "function";
+  // Home, giving up the seat now; the tab forgets the game so a refresh or
+  // Back does not quietly rejoin it. Leaving the screen disconnects.
+  const leave = () => {
+    conn.leave();
+    joinedCode.value = "";
+    navigate("/");
+  };
   return (
     <div class="home">
       <div class="home-card lobby">
         {dialog}
-        <Banner />
+        <Banner>
+          <button
+            class="banner-leave"
+            onClick={() => (host ? ask(leaveRequest(nextHostAfter(view.players, view.you.id)?.name, leave)) : leave())}
+          >
+            <Icon name="back" size={15} /> Leave
+          </button>
+        </Banner>
         <div class="lobby-cols">
           <section class="lobby-panel">
             <h2>Invite</h2>

@@ -106,6 +106,14 @@ export class GameRoom extends Room<ActorData> {
     this.broadcastState();
     if (this.actorCount === 0) {
       this.cancelEmptyTimer();
+      // Everyone left on purpose: nobody is coming back, so close now. (After
+      // this leave has finished; Rivalis defers its own teardown the same way.)
+      if (this.game.playerCount === 0) {
+        queueMicrotask(() => {
+          if (this.actorCount === 0) this.destroy();
+        });
+        return;
+      }
       this.emptyTimer = deps.clock.setTimeout(() => {
         this.emptyTimer = null;
         if (this.actorCount === 0) this.destroy();
@@ -172,6 +180,8 @@ export class GameRoom extends Room<ActorData> {
         return this.game.rename(token, (data as z.infer<typeof ClientMessageSchemas.rename>).name);
       case "kick":
         return this.removePlayer(token, (data as z.infer<typeof ClientMessageSchemas.kick>).playerId, now);
+      case "leave":
+        return this.leave(token);
       case "makeHost":
         return this.game.makeHost(token, (data as z.infer<typeof ClientMessageSchemas.makeHost>).playerId);
       case "end":
@@ -179,6 +189,13 @@ export class GameRoom extends Room<ActorData> {
       default:
         return { ok: false as const, error: "unknown topic" };
     }
+  }
+
+  /** Give up this player's seat and close their connection; the client closes it too. */
+  private leave(token: string) {
+    const result = this.game.leave(token);
+    if (result.ok) this.actorsByToken.get(token)?.kick("left the game");
+    return result;
   }
 
   /** Remove a player from the game and close their connection, telling them why. */

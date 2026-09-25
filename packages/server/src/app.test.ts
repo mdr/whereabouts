@@ -330,6 +330,31 @@ describe("game server", () => {
     expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull();
   });
 
+  it("a host who leaves the lobby frees their seat at once and hands over", async () => {
+    const alice = player("Alice");
+    alice.connect({ create: true });
+    const lobby = await alice.until((v) => v.phase === "lobby");
+    const bob = player("Bob");
+    bob.connect({ code: lobby.code });
+    await alice.until((v) => v.players.length === 2);
+    alice.send("leave");
+    await alice.waitClosed();
+    expect(alice.client.connected).toBe(false);
+    const after = await bob.untilLatest((v) => v.players.length === 1);
+    expect(after.you.isHost).toBe(true);
+  });
+
+  it("the last player leaving closes the game without waiting", async () => {
+    const alice = player("Alice");
+    alice.connect({ create: true });
+    const lobby = await alice.until((v) => v.phase === "lobby");
+    alice.send("leave");
+    await alice.waitClosed();
+    const start = Date.now();
+    while (app.rivalis.rooms.get(lobby.code) && Date.now() - start < 2000) await new Promise((r) => setTimeout(r, 10));
+    expect(app.rivalis.rooms.get(lobby.code)).toBeNull();
+  });
+
   it("the host hands over to another player", async () => {
     const alice = player("Alice");
     alice.connect({ create: true });

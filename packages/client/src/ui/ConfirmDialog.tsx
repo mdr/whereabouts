@@ -91,6 +91,24 @@ export function makeHostRequest(name: string, onConfirm: () => void): ConfirmReq
   };
 }
 
+/** The host leaving the lobby: someone takes over, or the game closes. */
+export function leaveRequest(nextHost: string | undefined, onConfirm: () => void): ConfirmRequest {
+  return nextHost
+    ? {
+        title: "Leave the game?",
+        body: `${nextHost} becomes the host.`,
+        confirmLabel: "Leave",
+        onConfirm,
+        safe: true,
+      }
+    : {
+        title: "Leave the game?",
+        body: "It closes, since no one else is here.",
+        confirmLabel: "Leave and close",
+        onConfirm,
+      };
+}
+
 export function endGameRequest(onConfirm: () => void): ConfirmRequest {
   return {
     title: "End the game now?",

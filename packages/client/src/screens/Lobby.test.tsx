@@ -4,7 +4,8 @@ import { fireEvent, render } from "@testing-library/preact";
 import { signal } from "@preact/signals";
 import type { GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
-import { hostSetup, startOnPan } from "../settings";
+import { hostSetup, joinedCode, startOnPan } from "../settings";
+import { route } from "../router";
 import { Lobby } from "./Lobby";
 
 function view(isHost: boolean): GameView {
@@ -34,11 +35,13 @@ function view(isHost: boolean): GameView {
 }
 
 const configure = vi.fn();
+const leave = vi.fn();
 const conn = {
   status: signal("connected"),
   lastError: signal(null),
   configure,
   start: vi.fn(),
+  leave,
 } as unknown as Connection;
 
 describe("Lobby", () => {
@@ -98,5 +101,48 @@ describe("Lobby setup", () => {
     next.config = { ...next.config, roundMs: 30_000 };
     rerender(<Lobby conn={conn} view={next} />);
     expect([...container.querySelectorAll(".tile.changed")].map((t) => t.textContent)).toEqual(["30 sper round"]);
+  });
+});
+
+describe("Lobby leave", () => {
+  const bob = {
+    id: "p2",
+    name: "Bob",
+    colour: 1,
+    connected: true,
+    isHost: false,
+    locked: false,
+    score: 0,
+    rank: 1,
+    previousRank: null,
+  };
+  afterEach(() => leave.mockClear());
+
+  it("takes a guest straight home, giving up the seat and forgetting the game", () => {
+    joinedCode.value = "AB12";
+    const { container } = render(<Lobby conn={conn} view={view(false)} />);
+    fireEvent.click(container.querySelector(".banner-leave")!);
+    expect(leave).toHaveBeenCalledTimes(1);
+    expect(joinedCode.value).toBe("");
+    expect(route.value).toEqual({ name: "home" });
+  });
+
+  it("asks the host first, naming who takes over", () => {
+    const v = view(true);
+    v.players = [...v.players, bob];
+    const { container } = render(<Lobby conn={conn} view={v} />);
+    fireEvent.click(container.querySelector(".banner-leave")!);
+    expect(leave).not.toHaveBeenCalled();
+    const modal = document.body.querySelector(".modal")!;
+    expect(modal.textContent).toContain("Bob becomes the host.");
+    fireEvent.click([...modal.querySelectorAll("button")].find((b) => b.textContent === "Leave")!);
+    expect(leave).toHaveBeenCalledTimes(1);
+  });
+
+  it("warns a host on their own that the game closes", () => {
+    const { container } = render(<Lobby conn={conn} view={view(true)} />);
+    fireEvent.click(container.querySelector(".banner-leave")!);
+    const modals = document.body.querySelectorAll(".modal");
+    expect(modals[modals.length - 1]!.textContent).toContain("It closes, since no one else is here.");
   });
 });

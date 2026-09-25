@@ -115,6 +115,7 @@ export const ClientMessageSchemas = {
   rename: RenameSchema,
   kick: KickSchema,
   makeHost: KickSchema,
+  leave: z.object({}),
   end: z.object({}),
 } as const;
 

@@ -142,7 +142,10 @@ pnpm workspace with three packages:
   offers fall back to the default); joining someone else's game uses and
   saves nothing. Guests see just the decided values as tiles, which
   flash briefly when the host changes one. The lobby also offers Copy link and, where
-  the browser supports it, Share.
+  the browser supports it, Share, and a Leave button over the banner that
+  goes home and gives the seat up at once. A guest just leaves; the host is
+  asked first, told who takes over or that the game will close, since
+  leaving alone closes it straight away.
 - Rounds default to 60 seconds. Whatever is painted at the deadline is the guess;
   "Done" freezes it early, and the round ends as soon as every active
   player is done. With nothing painted the button reads "Pass": it scores a

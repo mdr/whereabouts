@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Game, generateCode } from "./game.ts";
+import { Game, generateCode, nextHostAfter } from "./game.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { PASS_SCORE } from "./scoring.ts";
 import type { Question } from "./questions.ts";
@@ -83,6 +83,35 @@ describe("lobby", () => {
     expect(g.nextWakeAt()).toBeNull();
     expect(g.tick(T0 + SEAT_GRACE_MS)).toBe(false);
     expect(g.playerTokens).toContain("tokA");
+  });
+
+  it("leaving frees the seat at once and passes the host role to the longest-standing online player", () => {
+    const g = twoPlayerGame();
+    g.join("tokC", "Cara", T0 + 2);
+    g.join("tokD", "Dev", T0 + 3);
+    g.disconnect("tokB", T0 + 4); // Bob is away, so he is passed over
+    const before = g.view("tokA", T0 + 4);
+    const predicted = nextHostAfter(before.players, before.you.id);
+    expect(predicted?.name).toBe("Cara");
+    expect(g.leave("tokA")).toEqual({ ok: true, changed: true });
+    expect(g.playerTokens).toEqual(["tokB", "tokC", "tokD"]);
+    expect(g.view("tokC", T0 + 5).you.isHost).toBe(true);
+    // Nothing waits on a grace period for Alice.
+    expect(g.nextWakeAt()).toBe(T0 + 4 + SEAT_GRACE_MS);
+    expect(g.leave("tokA")).toEqual({ ok: false, error: "unknown player" });
+  });
+
+  it("the last player leaving empties the game; nobody leaves mid-game", () => {
+    const g = twoPlayerGame();
+    expect(nextHostAfter(g.view("tokB", T0).players, "p1")?.name).toBe("Bob");
+    g.leave("tokB");
+    expect(nextHostAfter(g.view("tokA", T0).players, "p1")).toBeUndefined();
+    g.leave("tokA");
+    expect(g.playerCount).toBe(0);
+
+    const h = twoPlayerGame();
+    h.start("tokA", T0);
+    expect(h.leave("tokB")).toEqual({ ok: false, error: "you can only leave from the lobby" });
   });
 
   it("the host can hand the role to another connected player, for good", () => {
