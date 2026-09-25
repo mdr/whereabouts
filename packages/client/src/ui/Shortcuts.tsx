@@ -8,6 +8,7 @@ import { signal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import { createPortal } from "preact/compat";
 import { Icon } from "./icons";
+import { isTyping } from "../keys";
 
 export const shortcutsOpen = signal(false);
 
@@ -58,8 +59,7 @@ export function ShortcutsButton() {
 export function Shortcuts({ practice = false }: { practice?: boolean }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const t = e.target;
-      if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement) return;
+      if (isTyping(e.target)) return;
       if (e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey) {
         shortcutsOpen.value = !shortcutsOpen.value;
         e.preventDefault();

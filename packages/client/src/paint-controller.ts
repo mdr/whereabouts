@@ -7,6 +7,7 @@ import { Point, type LngLat, type MapMouseEvent, type MapTouchEvent } from "mapl
 import { batch, signal } from "@preact/signals";
 import { PaintLayer, resolutionForTolerance, type LatLon } from "@whereabouts/shared";
 import type { GameMap } from "./map";
+import { isTyping } from "./keys";
 
 export type Tool = "pan" | "paint" | "erase";
 
@@ -83,7 +84,7 @@ export class PaintController {
     };
     const onUp = () => this.endStroke();
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+      if (isTyping(e.target)) return;
       if (e.code === "Space" && !this.spaceHeld) {
         this.spaceHeld = true;
         this.endStroke();
