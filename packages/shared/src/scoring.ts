@@ -399,6 +399,101 @@ export function scoreDistribution(
   return { score: scoreFromParts(A, B), A, B };
 }
 
+// ---- region answers ---------------------------------------------------------
+//
+// A region question ("Paint Germany") has a distribution as its answer: q,
+// the region's cells spread evenly by area. The score generalises the point
+// rule, 1000 - 500 ||p - y||^2, to 1000 - 500 ||p - q||^2 / <q,q>:
+//
+//   A = <p,q> = sum_i sum_j p_i q_j k(x_i, y_j)   (the point A, averaged over q)
+//   B = <p,p>                                     (unchanged)
+//   Q = <q,q>                                     (a constant per question)
+//   score = 1000 - 500 (B - 2A + Q) / Q
+//
+// A point is a region with Q = 1, where this is exactly scoreFromParts. The
+// division by Q is what keeps a large region on the same scale: ||p - q||^2
+// shrinks when both are spread wide against the kernel, so without it an
+// even paint of the whole world would score near 1000 for Russia. It is a
+// fixed rescale per question, so the rule stays proper; scores below 0 (a
+// confident guess far off, possible now that Q < 1) are clamped.
+
+export interface RegionAnswer {
+  /** The region's cells as patches, masses summing to 1. */
+  points: WeightedPoint[];
+  /** <q,q> under the kernel and tolerance it was built for. */
+  Q: number;
+  toleranceKm: number;
+  kernel: Kernel;
+}
+
+export interface RegionScore extends ScoreBreakdown {
+  Q: number;
+}
+
+/** Region answer from H3 cells (any mix of resolutions), weighted by area. */
+export function regionAnswer(cells: Iterable<string>, toleranceKm: number, k: Kernel = DEFAULT_KERNEL): RegionAnswer {
+  const raw: WeightedPoint[] = [];
+  let total = 0;
+  for (const h of cells) {
+    const area = cellArea(h, UNITS.km2);
+    const [lat, lon] = cellToLatLng(h);
+    raw.push({ xyz: toXyz({ lat, lon }), p: area, s2: HEX_VARIANCE_PER_AREA * area, cell: h });
+    total += area;
+  }
+  const points = raw.map((pt) => ({ ...pt, p: pt.p / total }));
+  return { points, Q: pairSum(points, toleranceKm, false, k), toleranceKm, kernel: k };
+}
+
+/**
+ * Sum over i in `left`, j in `right` of p_i p_j k(x_i, y_j) between two sets
+ * of patches, grouped by patch size and aggregated for wide components as in
+ * pairSum.
+ */
+export function crossSum(
+  left: WeightedPoint[],
+  right: WeightedPoint[],
+  toleranceKm: number,
+  exact = false,
+  k: Kernel = DEFAULT_KERNEL,
+): number {
+  if (exact) {
+    let total = 0;
+    for (const a of left) {
+      for (const b of right) {
+        total += a.p * b.p * kernelFromSq(chordDistanceSq(a.xyz, b.xyz), toleranceKm, k, (a.s2 ?? 0) + (b.s2 ?? 0));
+      }
+    }
+    return total;
+  }
+  const lg = groupByPatchSize(left);
+  const rg = groupByPatchSize(right);
+  let total = 0;
+  for (let c = 0; c < k.scales.length; c++) {
+    const width = k.scales[c]! * toleranceKm;
+    const w2 = width * width;
+    for (const ga of lg) {
+      for (const gb of rg) {
+        const eff = Math.sqrt(patchWidthSq(width, ga.s2 + gb.s2));
+        const coarse = eff >= 2 * toleranceKm;
+        const pa = coarse ? aggregate(ga.points, eff / 8) : ga.points;
+        const pb = coarse ? aggregate(gb.points, eff / 8) : gb.points;
+        total += k.weights[c]! * (w2 / (eff * eff)) * gaussCrossSum(pa, pb, eff);
+      }
+    }
+  }
+  return total;
+}
+
+export function scoreRegion(dist: Distribution, region: RegionAnswer, exact = false): RegionScore {
+  const { toleranceKm, kernel: k, Q } = region;
+  // The floor against q: the uniform kernel mean is the same from every point.
+  const A =
+    crossSum(dist.points, region.points, toleranceKm, exact, k) + dist.floor * uniformKernelMean(toleranceKm, k);
+  const B = selfSimilarity(dist, toleranceKm, exact, k);
+  const score = Math.max(0, 1000 - (500 * (B - 2 * A + Q)) / Q);
+  return { score, A, B, Q };
+}
+
 /**
  * Build a normalised Distribution from raw painted cells.
  * `intensity` is paint density; `areaKm2` is the cell's real area, so mass is

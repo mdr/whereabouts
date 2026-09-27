@@ -8,6 +8,9 @@ import {
   SINGLE_KERNEL,
   kernelById,
   buildDistribution,
+  crossSum,
+  regionAnswer,
+  scoreRegion,
   kernel,
   pairSum,
   scoreDistribution,
@@ -333,5 +336,83 @@ describe("patch-aware kernel", () => {
     const a = scoreDistribution(asPatches, answer, r);
     const b = scoreDistribution(asPoints, answer, r);
     expect(Math.abs(a.score - b.score)).toBeLessThan(1);
+  });
+});
+
+describe("region answers", () => {
+  const centre = { lat: 50.5, lon: 10.5 }; // central Germany
+  const tol = 60;
+  const res = 4;
+
+  /** Cells within `rings` of the cell at `at`: a rough disc. */
+  const discCells = (at: { lat: number; lon: number }, rings: number) =>
+    h3.gridDisk(h3.latLngToCell(at.lat, at.lon, res), rings);
+  /** An even coat of paint on `cells`. */
+  const paint = (cells: string[]) =>
+    cells.map((h) => {
+      const [lat, lon] = h3.cellToLatLng(h);
+      return { lat, lon, intensity: 1, areaKm2: h3.cellArea(h, h3.UNITS.km2), h3: h };
+    });
+  const dist = (cells: string[], floor = 0.05) => buildDistribution(paint(cells), floor);
+
+  const region = regionAnswer(discCells(centre, 10), tol);
+
+  it("a region of one tiny cell scores like the point rule", () => {
+    const point = regionAnswer([h3.latLngToCell(centre.lat, centre.lon, 10)], tol);
+    expect(point.Q).toBeCloseTo(1, 4);
+    for (const offset of [0, 30, 60, 150, 400]) {
+      const d = dist(discCells(north(centre, offset), 2));
+      const [lat, lon] = h3.cellToLatLng(h3.latLngToCell(centre.lat, centre.lon, 10));
+      const expected = scoreDistribution(d, { lat, lon }, tol).score;
+      expect(Math.abs(scoreRegion(d, point).score - expected)).toBeLessThan(1);
+    }
+  });
+
+  it("painting the region exactly scores 1000, a little less with the world floor", () => {
+    expect(scoreRegion(dist(discCells(centre, 10), 0), region).score).toBeGreaterThan(999);
+    const withFloor = scoreRegion(dist(discCells(centre, 10)), region).score;
+    expect(withFloor).toBeGreaterThan(950);
+    expect(withFloor).toBeLessThan(1000);
+  });
+
+  it("an even paint of the whole world scores 500 (1 + K/Q), about 500", () => {
+    const { score, Q } = scoreRegion({ points: [], floor: 1 }, region);
+    expect(score).toBeCloseTo(500 * (1 + uniformKernelMean(tol) / Q), 6);
+    expect(score).toBeGreaterThan(495);
+    expect(score).toBeLessThan(560);
+  });
+
+  it("the right shape further away scores less", () => {
+    const scores = [0, 100, 250, 500, 1000, 3000].map(
+      (km) => scoreRegion(dist(discCells(north(centre, km), 10)), region).score,
+    );
+    for (let i = 1; i < scores.length; i++) expect(scores[i]!).toBeLessThan(scores[i - 1]!);
+    expect(scores.at(-1)!).toBeLessThan(250); // below a pass
+  });
+
+  it("a tight blob in the middle scores below the whole shape, a bloated shape too", () => {
+    const shape = scoreRegion(dist(discCells(centre, 10)), region).score;
+    const blob = scoreRegion(dist(discCells(centre, 2)), region).score;
+    const bloated = scoreRegion(dist(discCells(centre, 16)), region).score;
+    expect(blob).toBeLessThan(shape);
+    expect(bloated).toBeLessThan(shape);
+  });
+
+  it("honest hedging pays: with a 50/50 belief, painting both beats betting on one", () => {
+    const here = discCells(centre, 6);
+    const there = discCells(north(centre, 1500), 6);
+    const rHere = regionAnswer(here, tol);
+    const rThere = regionAnswer(there, tol);
+    const expected = (d: Distribution) => (scoreRegion(d, rHere).score + scoreRegion(d, rThere).score) / 2;
+    const both = expected(dist([...here, ...there]));
+    expect(both).toBeGreaterThan(expected(dist(here)));
+    expect(both).toBeGreaterThan(expected(dist(there)));
+  });
+
+  it("the fast cross sum matches the exact one", () => {
+    const d = dist([...discCells(north(centre, 200), 7), ...discCells(north(centre, 2500), 3)]);
+    const fast = crossSum(d.points, region.points, tol);
+    const exact = crossSum(d.points, region.points, tol, true);
+    expect(Math.abs(fast - exact) / exact).toBeLessThan(2e-3);
   });
 });
