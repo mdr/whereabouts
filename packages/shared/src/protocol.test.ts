@@ -61,17 +61,12 @@ describe("ConfigureSchema", () => {
   });
 });
 
-describe("question mix presets", () => {
-  it("split the rounds in proportion, by largest remainder", async () => {
-    const { MIX_PRESETS, mixFor, presetOf } = await import("./protocol.ts");
-    const everything = MIX_PRESETS.find((p) => p.id === "everything")!.weights;
-    expect(mixFor(everything, 8)).toEqual({ landmarks: 2, places: 2, countries: 2, flags: 2 });
-    expect(mixFor(everything, 6)).toEqual({ landmarks: 2, places: 2, countries: 1, flags: 1 });
-    expect(mixFor(everything, 1)).toEqual({ landmarks: 1, places: 0, countries: 0, flags: 0 });
-    expect(presetOf({ landmarks: 2, places: 2, countries: 1, flags: 1 })).toBe("everything");
-    expect(presetOf({ landmarks: 3, places: 2, countries: 0, flags: 0 })).toBe("classic");
-    expect(presetOf({ landmarks: 0, places: 0, countries: 0, flags: 7 })).toBe("flags");
-    expect(presetOf({ landmarks: 1, places: 0, countries: 0, flags: 7 })).toBeNull();
+describe("evenMix", () => {
+  it("splits the rounds evenly, the rest to the first kinds", async () => {
+    const { evenMix } = await import("./protocol.ts");
+    expect(evenMix(8)).toEqual({ landmarks: 2, places: 2, countries: 2, flags: 2 });
+    expect(evenMix(6)).toEqual({ landmarks: 2, places: 2, countries: 1, flags: 1 });
+    expect(evenMix(1)).toEqual({ landmarks: 1, places: 0, countries: 0, flags: 0 });
   });
 });
 

@@ -50,7 +50,9 @@ function paintAt(q: Question, lat: number, lon: number) {
 }
 
 function twoPlayerGame(rounds = 2) {
-  const g = new Game("ABCD", pool, { rounds, roundMs: 60_000 }, 42);
+  // The test pool is place names only.
+  const mix = { landmarks: 0, places: rounds, countries: 0, flags: 0 };
+  const g = new Game("ABCD", pool, { mix, roundMs: 60_000 }, 42);
   expect(g.join("tokA", "Alice", T0).ok).toBe(true);
   expect(g.join("tokB", "Bob", T0 + 1).ok).toBe(true);
   return g;
@@ -813,11 +815,11 @@ describe("the question mix", () => {
     return seen;
   }
 
-  it("a length alone is the classic mix: landmarks and place names, half each", () => {
+  it("defaults to 2 of each kind; a length alone is an even mix of that length", () => {
+    expect(new Game("ABCD", pool, {}, 42).config.mix).toEqual(mix(2, 2, 2, 2));
     const g = new Game("ABCD", pool, { rounds: 5 }, 42);
-    expect(g.config.mix).toEqual(mix(3, 2));
+    expect(g.config.mix).toEqual(mix(2, 1, 1, 1));
     expect(g.config.rounds).toBe(5);
-    expect(new Game("ABCD", pool, {}, 42).config.mix).toEqual(mix(4, 4));
   });
 
   it("with only landmarks and place names, a game asks what pickQuestions picks", () => {

@@ -1688,7 +1688,7 @@ button.danger.solid {
 }
 
 /* Host: the question mix along a scale from photos to place names. */
-/* The question mix: presets, a − / + per kind, and a strip of the rounds. */
+/* The question mix: a − / + per kind, and a strip of the rounds. */
 .type-landmarks {
   --type: #ffb74d;
 }

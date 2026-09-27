@@ -85,35 +85,14 @@ export type QuestionMix = Record<QuestionType, number>;
 
 export const mixTotal = (mix: QuestionMix): number => QUESTION_TYPES.reduce((s, t) => s + mix[t.id], 0);
 
-/** One-tap mixes for the host, as proportions: applied at the game's current length. */
-export const MIX_PRESETS: readonly { id: string; label: string; weights: QuestionMix }[] = [
-  { id: "classic", label: "Classic", weights: { landmarks: 1, places: 1, countries: 0, flags: 0 } },
-  { id: "everything", label: "A bit of everything", weights: { landmarks: 1, places: 1, countries: 1, flags: 1 } },
-  { id: "countries", label: "Countries", weights: { landmarks: 0, places: 0, countries: 1, flags: 1 } },
-  { id: "flags", label: "Flags", weights: { landmarks: 0, places: 0, countries: 0, flags: 1 } },
-];
-
 /**
- * Split `rounds` in proportion to `weights`, by largest remainder, ties to
- * the earlier type: 8 rounds of "a bit of everything" is 2 of each, 6 is
- * 2, 2, 1, 1.
+ * An even mix of `rounds`: the same of each kind, the rest one each to the
+ * first kinds. The default game is 8 rounds, 2 of each.
  */
-export function mixFor(weights: QuestionMix, rounds: number): QuestionMix {
-  const sum = mixTotal(weights);
-  const exact = QUESTION_TYPES.map((t) => (rounds * weights[t.id]) / sum);
-  const mix = Object.fromEntries(QUESTION_TYPES.map((t, i) => [t.id, Math.floor(exact[i]!)])) as QuestionMix;
-  const order = QUESTION_TYPES.map((t, i) => ({ id: t.id, rest: exact[i]! - Math.floor(exact[i]!), i })).sort(
-    (a, b) => b.rest - a.rest || a.i - b.i,
-  );
-  for (let left = rounds - mixTotal(mix), k = 0; left > 0; left--, k++) mix[order[k]!.id]++;
-  return mix;
-}
-
-/** The preset a mix is, at its own length, if any. */
-export function presetOf(mix: QuestionMix): string | null {
-  const rounds = mixTotal(mix);
-  const same = (a: QuestionMix, b: QuestionMix) => QUESTION_TYPES.every((t) => a[t.id] === b[t.id]);
-  return MIX_PRESETS.find((p) => same(mixFor(p.weights, rounds), mix))?.id ?? null;
+export function evenMix(rounds: number): QuestionMix {
+  const each = Math.floor(rounds / QUESTION_TYPES.length);
+  const rest = rounds % QUESTION_TYPES.length;
+  return Object.fromEntries(QUESTION_TYPES.map((t, i) => [t.id, each + (i < rest ? 1 : 0)])) as QuestionMix;
 }
 
 const roundCount = z.number().int().min(0).max(MAX_ROUNDS);

@@ -15,15 +15,7 @@ import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { pickQuestions, shuffle, type Question } from "./questions.ts";
 import { regionFit, scoreRegionQuestion, type RegionQuestion } from "./regions.ts";
 import { flagRound, type FlagQuestion } from "./flags.ts";
-import {
-  MAX_PLAYERS,
-  MAX_SPECTATORS,
-  MIX_PRESETS,
-  QUESTION_TYPES,
-  SEAT_GRACE_MS,
-  mixFor,
-  mixTotal,
-} from "./protocol.ts";
+import { MAX_PLAYERS, MAX_SPECTATORS, QUESTION_TYPES, SEAT_GRACE_MS, evenMix, mixTotal } from "./protocol.ts";
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -37,13 +29,10 @@ import type {
   RoundResultView,
 } from "./protocol.ts";
 
-/** A game of the classic mix at a given length: landmarks and place names, half each. */
-export const classicMix = (rounds: number) => mixFor(MIX_PRESETS[0]!.weights, rounds);
-
 export const DEFAULT_CONFIG: GameConfig = {
   rounds: 8,
   roundMs: 60_000,
-  mix: classicMix(8),
+  mix: evenMix(8),
   mapDetail: "minimal",
   kernelId: DEFAULT_KERNEL.id,
 };
@@ -115,8 +104,8 @@ export class Game {
   ) {
     this.seed = seed;
     this.code = code;
-    // A mix sets the rounds; a length alone (ROUNDS on the server, tests) is the classic mix at that length.
-    const mix = config.mix ?? (config.rounds !== undefined ? classicMix(config.rounds) : DEFAULT_CONFIG.mix);
+    // A mix sets the rounds; a length alone (ROUNDS on the server, tests) is an even mix of that length.
+    const mix = config.mix ?? (config.rounds !== undefined ? evenMix(config.rounds) : DEFAULT_CONFIG.mix);
     this.config = { ...DEFAULT_CONFIG, ...config, mix, rounds: mixTotal(mix) };
     this.pool = pool;
     this.regions = regions;

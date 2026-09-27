@@ -140,10 +140,8 @@ pnpm workspace with three packages:
   15). The kinds are landmarks (photos), place names (cities, capitals and
   small countries), whole countries ("Paint the whole of …") and flags (a
   country's flag in place of its name, painted whole or, for a small country,
-  asked as a point; see docs/country-scoring.md). Presets set the mix in one
-  tap at the game's current length: Classic (landmarks and place names, half
-  each: the default, 8 rounds), A bit of everything, Countries (whole
-  countries and flags) and Flags. A strip of coloured cells, one per round,
+  asked as a point; see docs/country-scoring.md). The default is 2 of each,
+  8 rounds. A strip of coloured cells, one per round,
   shows the mix to host and guests; the rounds come in a random order, and no
   country is asked twice. A setup saved before the mix is converted to one.
   The host also picks the round length (30, 45, 60, 90 or 120 seconds, as

@@ -84,13 +84,8 @@ describe("Lobby setup", () => {
     const { container } = render(<Lobby conn={conn} view={view(true)} />);
     fireEvent.click(container.querySelector('[aria-label="More flags"]')!);
     expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, flags: 1 } });
-    // Classic is highlighted; "A bit of everything" keeps the game's length.
-    const preset = (label: string) =>
-      [...container.querySelectorAll(".mix-editor .pills button")].find((b) => b.textContent === label)!;
-    expect(preset("Classic").getAttribute("aria-checked")).toBe("true");
-    fireEvent.click(preset("A bit of everything"));
-    const everything = { landmarks: 2, places: 1, countries: 1, flags: 1 };
-    expect(configure).toHaveBeenCalledWith({ mix: everything });
+    fireEvent.click(container.querySelector('[aria-label="Fewer landmarks"]')!);
+    expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, landmarks: 2 } });
     expect(container.querySelectorAll(".round-strip .cell")).toHaveLength(5);
     const minimal = container.querySelector('.detail-picker [aria-checked="true"]')!;
     expect(minimal.textContent).toBe("Minimal");
@@ -98,7 +93,7 @@ describe("Lobby setup", () => {
     expect(configure).toHaveBeenCalledWith({ mapDetail: "water" });
     expect(container.querySelector(".setup-summary")).toBeNull();
     // Remembered for the next game this browser hosts.
-    expect(hostSetup.value).toEqual({ mix: everything, mapDetail: "water" });
+    expect(hostSetup.value).toEqual({ mix: { ...MIX, landmarks: 2 }, mapDetail: "water" });
     hostSetup.value = {};
   });
 

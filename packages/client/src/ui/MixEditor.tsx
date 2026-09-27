@@ -1,22 +1,10 @@
 /**
- * The question mix: how many rounds of each kind of question. The host picks
- * a preset or sets a count per kind with − / +; the counts are the game's
- * rounds. A strip of coloured cells, one per round, shows the game at a
+ * The question mix: how many rounds of each kind of question. The host sets
+ * a count per kind with − / +; the counts are the game's rounds. A strip of coloured cells, one per round, shows the game at a
  * glance, to the host and (in the setup summary) to guests.
  */
-import {
-  MAX_ROUNDS,
-  MIX_PRESETS,
-  QUESTION_TYPES,
-  mixFor,
-  mixTotal,
-  presetOf,
-  type QuestionMix,
-  type QuestionType,
-} from "@whereabouts/shared";
-import { Pills, Stepper } from "./Controls";
-
-const PRESETS = MIX_PRESETS.map((p) => ({ value: p.id, label: p.label }));
+import { MAX_ROUNDS, QUESTION_TYPES, mixTotal, type QuestionMix, type QuestionType } from "@whereabouts/shared";
+import { Stepper } from "./Controls";
 
 const UNITS: Record<QuestionType, [string, string]> = {
   landmarks: ["landmark", "landmarks"],
@@ -36,12 +24,6 @@ export function MixEditor({ mix, onChange }: { mix: QuestionMix; onChange: (mix:
   const rounds = mixTotal(mix);
   return (
     <div class="mix-editor">
-      <Pills
-        label="Question presets"
-        options={PRESETS}
-        value={presetOf(mix) ?? ""}
-        onChange={(id) => onChange(mixFor(MIX_PRESETS.find((p) => p.id === id)!.weights, rounds))}
-      />
       <ul class="mix-rows">
         {QUESTION_TYPES.map((t) => {
           const others = rounds - mix[t.id];
