@@ -69,7 +69,7 @@
             # Per package: manifest, what it runs from, and its links.
             for dir in packages/*; do
               mkdir -p $out/$dir
-              for entry in package.json src dist questions.json node_modules; do
+              for entry in package.json src dist questions.json regions.json node_modules; do
                 [ -e "$dir/$entry" ] && cp -a "$dir/$entry" "$out/$dir/"
               done
             done
