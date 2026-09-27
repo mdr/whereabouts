@@ -217,8 +217,8 @@ describe("shape and nearness", () => {
 describe("coarsenDistribution", () => {
   it("keeps the mass and barely moves a point question's score", () => {
     const answer = { lat: 48.8584, lon: 2.2945 };
-    const d = coat(regionCells(byId("france-region"), 6));
-    const coarse = coarsenDistribution(d, 5);
+    const d = coat(regionCells(byId("france-region"), 5));
+    const coarse = coarsenDistribution(d, 4);
     const mass = (x: typeof d) => x.points.reduce((s, p) => s + p.p, 0) + x.floor;
     expect(mass(coarse)).toBeCloseTo(1, 9);
     expect(coarse.points.length).toBeLessThan(d.points.length / 4);
