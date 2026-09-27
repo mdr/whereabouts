@@ -387,7 +387,7 @@ country under it with an even coat; fill several if unsure, each weighted by
 its area, and click a filled one to take it off. The outline under the
 pointer is the country a click would fill, dotted when it would unfill, and
 the map still drags. A country scored as a shape is filled with the outline
-it is scored by, so filling the right one scores 970 to 999; any other is
+it is scored by, so filling the right one scores about 999; any other is
 filled with its land from `borders.json`, and a flag round asked as a point
 scores like an even coat of the country (Russia about 880, Malta about 980).
 See `packages/shared/src/fill.ts`.

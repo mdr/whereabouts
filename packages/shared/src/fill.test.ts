@@ -33,8 +33,8 @@ function fillAndScore(code: string, finestRes?: number): { score: number; cells:
 describe("countryFill", () => {
   it("fills the right country, painted whole, for a near-perfect score", () => {
     for (const code of ["fr", "br", "cl", "id"]) expect(fillAndScore(code).score, code).toBeGreaterThan(990);
-    // On a much finer grid than its own, a big country still scores well.
-    expect(fillAndScore("br", 7).score).toBeGreaterThan(980);
+    // On a much finer grid than its own, a big country still scores as well.
+    expect(fillAndScore("br", 7).score).toBeGreaterThan(990);
   });
 
   it("scores a country asked as a point like an even coat of it", () => {
@@ -42,10 +42,20 @@ describe("countryFill", () => {
     expect(fillAndScore("mt").score).toBeGreaterThan(900);
   });
 
-  it("keeps a big country within budget on a fine grid", () => {
+  it("keeps a big country within budget on a fine grid, at one resolution", () => {
     const { cells } = fillAndScore("ru", 7);
     expect(cells.length).toBeLessThanOrEqual(FILL_CELL_BUDGET);
-    expect(Math.max(...cells.map(getResolution))).toBeLessThan(7);
+    const resolutions = new Set(cells.map(getResolution));
+    expect(resolutions.size).toBe(1);
+    expect([...resolutions][0]).toBeLessThan(7);
+  });
+
+  it("fills a country round at its own resolution, uncompacted, so it draws without gaps", () => {
+    // Compacted, a parent hexagon is turned from its children and left gaps.
+    const bg = regions.get("bulgaria-region")!;
+    const res = resolutionForTolerance(bg.toleranceKm);
+    const cells = countryFill({ polygons: bg.outline, answer: bg.answer }, res);
+    expect(new Set(cells.map(getResolution))).toEqual(new Set([res]));
   });
 
   it("fills a country too small for a cell around its answer", () => {
