@@ -10,7 +10,8 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit"
+    "build": "tsc --noEmit",
+    "calibrate": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/calibrate-regions.mjs"
   },
   "dependencies": {
     "h3-js": "^4.5.0",

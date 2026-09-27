@@ -233,9 +233,23 @@ at world zoom would otherwise mean millions of cells.
 
 ## Recalibrating
 
-The calibration harness (synthetic partial, bloated, shifted, hedged and
-uneven paints over Natural Earth shapes, plus real neighbour and far-country
-answers) was run from a scratch directory and is not in the repository. The
-constants to tune are `DENSITY_CAP`, `OFF_COUNTRY_FLOOR`, `NEARNESS_WEIGHT`
-and `NEARNESS_KERNEL` in `regions.ts`, and `TOLERANCE_FRACTION` in the build
-script; `regions.test.ts` pins the behaviours above and will say which change.
+`packages/shared/scripts/calibrate-regions.mjs` (`pnpm calibrate` from
+`packages/shared`, about 5 seconds) scores, with the game's own rule:
+
+- synthetic paints built from each country's outline (partial, bloated,
+  shifted, hedged, uneven, brushed with overlapping strokes, a big faint blob
+  far away, the whole world), averaged over nine countries and reported
+  against the target ranges they were tuned to;
+- real wrong countries: neighbours against far countries of similar size;
+- every country painted exactly.
+
+Cases that fall outside their range by a trade-off made on purpose are marked
+as accepted, with the reason: slightly-off paints (decision 5) and misses near
+the country, lifted by the nearness safety net. Anything else outside its
+range is a miss, and the script exits non-zero. `-- --detail` adds each
+country's own scores; naming countries (`-- Germany Chile`) runs just those.
+
+The constants to tune are `DENSITY_CAP`, `OFF_COUNTRY_FLOOR`,
+`NEARNESS_WEIGHT` and `NEARNESS_KERNEL` in `regions.ts`, and
+`TOLERANCE_FRACTION` in the build script. `regions.test.ts` pins the main
+behaviours; update it with the numbers when a change is meant.
