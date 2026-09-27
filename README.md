@@ -290,17 +290,28 @@ pnpm workspace with three packages:
   The outlines load only when practice asks for countries (their own
   ~70 KB gzipped chunk). Scoring (`scoreRegion`) is the point rule with the
   country as the answer: q is the country spread evenly by area, and
-  `score = 1000 - 500 (B - 2A + Q) / Q` with `A = <p,q>`, `Q = <q,q>`. A point
-  is the case `Q = 1`. Dividing by `Q` keeps a large country on the same
-  scale: an even paint of the whole world scores about 500 either way.
-  Scores below 0 (a confident guess far away) are clamped. Countries use
-  their own kernel, `REGION_KERNEL` (`r`, `4r`, `16r` weighted 0.7 / 0.2 /
-  0.1): under the game's equal mixture nearly any paint near the right
-  country scored 900 or more, so the shape hardly counted. Scoring runs one
+  `score = 1000 - 500 (B - 2A + Q) / Q` with `A = <p,q>`, `Q = <q,q>`, taken
+  for each Gaussian component of the kernel on its own and then weighted. A
+  point is the case `Q = 1`. Dividing by `Q` keeps a large country on the
+  same scale: an even paint of the whole world scores about 500 either way.
+  Each component has its own `Q`: a wide component sees the country as one
+  compact blob, with `Q` near 1, so dividing the total by the total `Q` let
+  it swamp the narrow component and forgive leaving much of the country
+  out. Scores below 0 (a confident guess far away) are clamped. Countries
+  use their own kernel, `REGION_KERNEL`: `r` and `16r` weighted 0.6 / 0.4.
+  The narrow component judges the shape (evenly painting a fraction c of
+  the country scores about `1000 - 500 (1/c - 1)`, a little more for the
+  blur at the edges); the wide one makes distance count, so a neighbour
+  beats a far country of similar size (without it, a paint that misses
+  scores only by how spread out it is). A middle component, at about the
+  country's size, mostly forgave leaving part of it out, so there is none.
+  This was chosen by scoring synthetic paints (partial, shifted, blurred,
+  hedged) and real wrong countries against seven countries; two thirds of
+  a country painted evenly scores about 870. Scoring runs one
   H3 resolution coarser than painting (cells up to half the tolerance
   across), which moved calibration scores by a few points and made it 6 to
   15 times faster. Against Germany, painting Germany scores 998, France
-  460, Poland 416 and Japan 186. The reveal outlines the country and frames
+  422, Poland 323 and Japan 151. The reveal outlines the country and frames
   it with the paint, and says how much of the country was covered and how
   much of the paint was on it.
 

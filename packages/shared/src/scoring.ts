@@ -36,18 +36,23 @@ export const KERNELS: Kernel[] = [
   SINGLE_KERNEL,
   { id: "multi-equal", label: "Mixture r, 4r, 16r (equal)", scales: [1, 4, 16], weights: [1 / 3, 1 / 3, 1 / 3] },
   { id: "multi-weighted", label: "Mixture r, 4r, 16r (0.5 / 0.3 / 0.2)", scales: [1, 4, 16], weights: [0.5, 0.3, 0.2] },
-  { id: "region", label: "Mixture r, 4r, 16r (0.7 / 0.2 / 0.1)", scales: [1, 4, 16], weights: [0.7, 0.2, 0.1] },
+  { id: "region", label: "Mixture r, 16r (0.6 / 0.4)", scales: [1, 16], weights: [0.6, 0.4] },
 ];
 
 /** The kernel games and practice score with; the others are for comparison in the dev drawer. */
 export const DEFAULT_KERNEL: Kernel = KERNELS[1]!;
 
 /**
- * The kernel region questions score with. Lighter on the wide components than
- * DEFAULT_KERNEL: under the equal mixture nearly any paint in the right part
- * of the world scores 900 or more against a whole country, so the shape
- * hardly counts. Calibrated against Natural Earth shapes at r = R / 5, with R
- * the country's equivalent radius.
+ * The kernel region questions score with, at r = R / 5 with R the country's
+ * equivalent radius; calibrated against Natural Earth shapes. The narrow
+ * component judges the shape: on its own, evenly painting a fraction c of a
+ * country scores about 1000 - 500 (1/c - 1), a little more for the blur at
+ * the edges. The wide one makes distance count: without it a paint that
+ * misses the country scores by how spread out it is, wherever it is, so a
+ * neighbour (Poland for Germany: 11) scored below a country on another
+ * continent (Japan: 159). With it, neighbours beat far countries of similar
+ * size. There is no middle component: at about R it mostly forgives leaving
+ * part of the country out.
  */
 export const REGION_KERNEL: Kernel = KERNELS[3]!;
 
@@ -413,31 +418,42 @@ export function scoreDistribution(
 //
 // A region question ("Paint Germany") has a distribution as its answer: q,
 // the region's cells spread evenly by area. The score generalises the point
-// rule, 1000 - 500 ||p - y||^2, to 1000 - 500 ||p - q||^2 / <q,q>:
+// rule, 1000 - 500 ||p - y||^2, to 1000 - 500 ||p - q||^2 / <q,q>, taken for
+// each Gaussian component c of the kernel on its own and then weighted:
 //
-//   A = <p,q> = sum_i sum_j p_i q_j k(x_i, y_j)   (the point A, averaged over q)
-//   B = <p,p>                                     (unchanged)
-//   Q = <q,q>                                     (a constant per question)
-//   score = 1000 - 500 (B - 2A + Q) / Q
+//   A_c = <p,q>_c = sum_i sum_j p_i q_j k_c(x_i, y_j)   (the point A, averaged over q)
+//   B_c = <p,p>_c                                       (unchanged)
+//   Q_c = <q,q>_c                                       (a constant per question)
+//   score = sum_c w_c max(0, 1000 - 500 (B_c - 2 A_c + Q_c) / Q_c)
 //
-// A point is a region with Q = 1, where this is exactly scoreFromParts. The
-// division by Q is what keeps a large region on the same scale: ||p - q||^2
-// shrinks when both are spread wide against the kernel, so without it an
-// even paint of the whole world would score near 1000 for Russia. It is a
-// fixed rescale per question, so the rule stays proper; scores below 0 (a
-// confident guess far off, possible now that Q < 1) are clamped.
+// A point is a region with every Q_c = 1, where this is exactly
+// scoreFromParts. The division by Q_c is what keeps a large region on the
+// same scale: ||p - q||^2 shrinks when both are spread wide against the
+// kernel, so without it an even paint of the whole world would score near
+// 1000 for Russia. It is a fixed rescale per question and component, so the
+// rule stays proper. Each component is divided by its own Q_c: a wide one
+// sees the country as a compact blob and has Q_c near 1, so dividing the
+// total by the total Q let even a small wide weight swamp the narrow one and
+// forgive leaving much of the country out. Scores below 0 (a confident guess
+// far off, possible now that Q_c < 1) are clamped.
 
 export interface RegionAnswer {
   /** The region's cells as patches, masses summing to 1. */
   points: WeightedPoint[];
-  /** <q,q> under the kernel and tolerance it was built for. */
-  Q: number;
+  /** <q,q> for each component of the kernel, at the tolerance it was built for. */
+  Q: number[];
   toleranceKm: number;
   kernel: Kernel;
 }
 
 export interface RegionScore extends ScoreBreakdown {
+  /** <q,q>, weighted over the components like A and B. */
   Q: number;
+}
+
+/** One Gaussian component of a kernel, as a kernel of its own. */
+function component(k: Kernel, c: number): Kernel {
+  return { id: `${k.id}#${c}`, label: k.label, scales: [k.scales[c]!], weights: [1] };
 }
 
 /** Region answer from H3 cells (any mix of resolutions), weighted by area. */
@@ -451,7 +467,8 @@ export function regionAnswer(cells: Iterable<string>, toleranceKm: number, k: Ke
     total += area;
   }
   const points = raw.map((pt) => ({ ...pt, p: pt.p / total }));
-  return { points, Q: pairSum(points, toleranceKm, false, k), toleranceKm, kernel: k };
+  const Q = k.scales.map((_, c) => pairSum(points, toleranceKm, false, component(k, c)));
+  return { points, Q, toleranceKm, kernel: k };
 }
 
 /**
@@ -517,12 +534,24 @@ export function coarsenDistribution(dist: Distribution, res: number): Distributi
 }
 
 export function scoreRegion(dist: Distribution, region: RegionAnswer, exact = false): RegionScore {
-  const { toleranceKm, kernel: k, Q } = region;
-  // The floor against q: the uniform kernel mean is the same from every point.
-  const A =
-    crossSum(dist.points, region.points, toleranceKm, exact, k) + dist.floor * uniformKernelMean(toleranceKm, k);
-  const B = selfSimilarity(dist, toleranceKm, exact, k);
-  const score = Math.max(0, 1000 - (500 * (B - 2 * A + Q)) / Q);
+  const { toleranceKm, kernel: k } = region;
+  let score = 0;
+  let A = 0;
+  let B = 0;
+  let Q = 0;
+  for (let c = 0; c < k.scales.length; c++) {
+    const kc = component(k, c);
+    const Qc = region.Q[c]!;
+    // The floor against q: the uniform kernel mean is the same from every point.
+    const Ac =
+      crossSum(dist.points, region.points, toleranceKm, exact, kc) + dist.floor * uniformKernelMean(toleranceKm, kc);
+    const Bc = selfSimilarity(dist, toleranceKm, exact, kc);
+    const w = k.weights[c]!;
+    score += w * Math.max(0, 1000 - (500 * (Bc - 2 * Ac + Qc)) / Qc);
+    A += w * Ac;
+    B += w * Bc;
+    Q += w * Qc;
+  }
   return { score, A, B, Q };
 }
 

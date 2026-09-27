@@ -359,7 +359,7 @@ describe("region answers", () => {
 
   it("a region of one tiny cell scores like the point rule", () => {
     const point = regionAnswer([h3.latLngToCell(centre.lat, centre.lon, 10)], tol);
-    expect(point.Q).toBeCloseTo(1, 4);
+    for (const Q of point.Q) expect(Q).toBeCloseTo(1, 4);
     for (const offset of [0, 30, 60, 150, 400]) {
       const d = dist(discCells(north(centre, offset), 2));
       const [lat, lon] = h3.cellToLatLng(h3.latLngToCell(centre.lat, centre.lon, 10));
@@ -375,9 +375,14 @@ describe("region answers", () => {
     expect(withFloor).toBeLessThan(1000);
   });
 
-  it("an even paint of the whole world scores 500 (1 + K/Q), about 500", () => {
-    const { score, Q } = scoreRegion({ points: [], floor: 1 }, region);
-    expect(score).toBeCloseTo(500 * (1 + uniformKernelMean(tol) / Q), 6);
+  it("an even paint of the whole world scores 500 (1 + K/Q) per component, about 500", () => {
+    const { score } = scoreRegion({ points: [], floor: 1 }, region);
+    const k = region.kernel;
+    const expected = k.scales.reduce((sum, scale, c) => {
+      const K = uniformKernelMean(tol, { ...k, scales: [scale], weights: [1] });
+      return sum + k.weights[c]! * 500 * (1 + K / region.Q[c]!);
+    }, 0);
+    expect(score).toBeCloseTo(expected, 6);
     expect(score).toBeGreaterThan(495);
     expect(score).toBeLessThan(560);
   });
