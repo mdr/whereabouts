@@ -208,19 +208,54 @@ near-versus-far case: Iran for Germany fell from 401 to 274, below Poland
 - **Different from points in one place.** The whole world painted evenly
   scores about 300 here and about 500 for a point question.
 
+## Flag rounds
+
+A flag round shows a country's flag instead of its name. A country is painted
+whole, by the rule above, unless no outline would be fair to paint, in which
+case it is asked as a point and scored by the point rule, like a place:
+
+- under 10,000 km² (Luxembourg, Singapore, the Caribbean and Pacific island
+  states): too small to paint the shape of;
+- a disputed border (China, India, Pakistan, Israel, Morocco, Serbia, Somalia,
+  Ukraine, Cyprus);
+- crossing the antimeridian (Russia), or with Alaska and Hawaii (the United
+  States);
+- a scattered archipelago, whose kept islands hold less than 75% of its land
+  (the Bahamas, Vanuatu).
+
+The question says which, with a badge ("Paint the whole country" or "Paint
+where it is"), since the two are painted so differently. That gives a clue
+for a few look-alike pairs (Indonesia is painted, Monaco is a point), which
+was accepted for the clarity.
+
+A point's answer is Natural Earth's label point for small countries and the
+area centroid for large ones. Its tolerance is half the country's equivalent
+radius, at least 15 km; for small and scattered island states, at least a
+quarter of the greatest distance from the answer to any of their land
+(Kiribati 925 km, the Bahamas 180 km). At half the radius, painting the
+country evenly scores about 890, a tight blob at its centre about 990, and a
+neighbour's area two radii away about 640 (India, Pakistan, Serbia, Somalia,
+Ukraine). A full radius scored the country about 950 and the neighbour about
+725, too generous next to the region rule's 435 for Poland against Germany.
+
 ## Data
 
-`packages/shared/regions.json` holds 37 countries from Natural Earth's 1:50m
+`packages/shared/regions.json` holds 150 countries from Natural Earth's 1:50m
 admin-0 outlines (public domain), built by
-`packages/shared/scripts/build-regions.mjs`. Each keeps its largest landmass
-and islands of at least 1,500 km² within 500 km of what is kept, chained (so
-Sicily and Crete stay; the Canaries, Svalbard and Alaska go), simplified to
-about 1.5 km. Countries with disputed borders, and those crossing the
-antimeridian, are left out for now. The tolerance is set in the build script.
+`packages/shared/scripts/build-regions.mjs`: every sovereign country but
+those asked only as a point in flag rounds (above), with the contiguous
+United States in place of the whole. Each keeps its largest landmass and
+islands of at least 1,500 km² within 500 km of what is kept, chained (so
+Sicily and Crete stay; the Canaries, Svalbard and Alaska go; Malaysia chains
+to 800 km to keep Borneo), simplified to about 1.5 km. The tolerance is set
+in the build script. `flags.json`, built alongside, has one flag round per
+country, 194 in all: the region's id, or a point and tolerance. Northern
+Cyprus, Somaliland, Taiwan and Kosovo are left out.
 
-The client fetches the file on demand (its own ~70 KB gzipped chunk); the
-server holds it and scores multiplayer rounds, which tell clients only the
-country's id until the reveal.
+The client fetches both files on demand (their own chunk); the server holds
+regions.json and scores multiplayer rounds, which tell clients only the
+country's id until the reveal. Flag pictures come from the flag-icons package
+(MIT), one small file per flag, fetched when its round comes up.
 
 ## Cost
 

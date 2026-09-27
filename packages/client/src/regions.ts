@@ -1,22 +1,27 @@
 /**
- * Country outlines for "Paint the whole of …" questions. They are a separate
- * chunk (regions.json, ~70 KB gzipped), fetched the first time something
- * needs them and kept from then on: practice with whole countries, or a game
- * whose host switched countries on.
+ * Country outlines for "Paint the whole of …" questions, and the flag rounds
+ * that use them. They are a separate chunk (regions.json and flags.json,
+ * ~150 KB gzipped), fetched the first time something needs them and kept from
+ * then on: practice with whole countries or flags, or a game whose host
+ * switched countries on.
  */
 import { signal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
-import type { RegionQuestion } from "@whereabouts/shared";
+import type { FlagQuestion, RegionQuestion } from "@whereabouts/shared";
 
 /** The countries by id, once loaded. */
 export const regions = signal<Map<string, RegionQuestion> | null>(null);
 
+/** One flag round per country, once loaded (with the countries). */
+export const flagQuestions = signal<FlagQuestion[] | null>(null);
+
 let loading: Promise<Map<string, RegionQuestion>> | null = null;
 
 export function loadRegions(): Promise<Map<string, RegionQuestion>> {
-  loading ??= import("@whereabouts/shared/regions.json").then(
-    (m) => {
-      const byId = new Map((m.default as RegionQuestion[]).map((q) => [q.id, q]));
+  loading ??= Promise.all([import("@whereabouts/shared/regions.json"), import("@whereabouts/shared/flags.json")]).then(
+    ([r, f]) => {
+      const byId = new Map((r.default as RegionQuestion[]).map((q) => [q.id, q]));
+      flagQuestions.value = f.default;
       regions.value = byId;
       return byId;
     },

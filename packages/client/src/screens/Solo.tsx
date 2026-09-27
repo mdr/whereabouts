@@ -1,7 +1,8 @@
 /**
  * Single-player practice mode. Playtest tools live in the dev drawer. It asks
- * places (the answer is a point) or whole countries (the answer is an area,
- * loaded on demand), as chosen on the front page.
+ * places (the answer is a point), whole countries (the answer is an area,
+ * loaded on demand) or flags (a country's flag: painted whole when it is big
+ * enough, else a point), as chosen on the front page.
  */
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { useSignal } from "@preact/signals";
@@ -10,6 +11,7 @@ import {
   NEARNESS_WEIGHT,
   QUESTIONS,
   buildDistribution,
+  flagRound,
   regionFit,
   scoreRegionQuestion,
   greatCircleDistance,
@@ -27,14 +29,14 @@ import {
 } from "@whereabouts/shared";
 import type { GameMap } from "../map";
 import { MapView, usePaint } from "../ui/MapView";
-import { Answer, Card, HudBottom, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../ui/bits";
+import { Answer, AnswerMode, Card, HudBottom, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../ui/bits";
 import { PaintDev, PaintTools } from "../ui/PaintTools";
 import { Banner } from "../ui/Banner";
 import { DevDrawer } from "../ui/DevDrawer";
 import { cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings";
 import { devMode } from "../dev";
 import { Icon } from "../ui/icons";
-import { loadRegions, regions } from "../regions";
+import { flagQuestions, loadRegions, regions } from "../regions";
 
 type PracticeQuestion = Question | RegionQuestion;
 
@@ -86,15 +88,15 @@ export function Solo() {
   );
 }
 
-/** Countries come in their own chunk (their outlines), fetched when asked for. */
+/** Countries and flags come in their own chunk (the outlines), fetched when asked for. */
 function SoloLoader() {
   const pool = soloPool.value;
   const byId = regions.value;
+  const needsCountries = pool === "countries" || pool === "flags";
   useEffect(() => {
-    if (pool === "countries" && !byId)
-      loadRegions().catch((err: unknown) => console.warn("could not load countries", err));
+    if (needsCountries && !byId) loadRegions().catch((err: unknown) => console.warn("could not load countries", err));
   }, [pool, byId]);
-  if (pool === "countries" && !byId) {
+  if (needsCountries && !byId) {
     return (
       <div class="hud">
         <div class="hud-center">
@@ -103,7 +105,17 @@ function SoloLoader() {
       </div>
     );
   }
-  return <SoloGame pool={pool === "countries" ? [...byId!.values()] : QUESTIONS} />;
+  return (
+    <SoloGame
+      pool={
+        pool === "countries"
+          ? [...byId!.values()]
+          : pool === "flags"
+            ? flagQuestions.value!.flatMap((f) => flagRound(f, byId!) ?? [])
+            : QUESTIONS
+      }
+    />
+  );
 }
 
 function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
@@ -323,7 +335,11 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
         <div class="hud-top">
           {header}
           <QuestionCard q={q} credit>
-            {isRegion(q) && <p class="hint region-hint">Cover the whole country: its shape counts.</p>}
+            {q.flag ? (
+              <AnswerMode area={isRegion(q)} />
+            ) : (
+              isRegion(q) && <p class="hint region-hint">Cover the whole country: its shape counts.</p>
+            )}
           </QuestionCard>
         </div>
         <PaintTools practice>

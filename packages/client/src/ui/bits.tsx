@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type QuestionView } from "@whereabouts/shared";
 import { Icon } from "./icons";
 import { soundOn } from "../settings";
+import { flagUrl } from "../flags";
 
 export function fmtKm(km: number): string {
   return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km).toLocaleString()} km`;
@@ -125,7 +126,46 @@ export function QuestionCard({
     <div class="card question">
       <p class="prompt">{q.prompt}</p>
       {q.image && <QuestionImage image={q.image} credit={credit ?? false} />}
+      {q.flag && <FlagImage code={q.flag} />}
       {children}
+    </div>
+  );
+}
+
+/** A flag round's flag. No alt text naming it: that would give the answer away. */
+function FlagImage({ code }: { code: string }) {
+  const [src, setSrc] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    setSrc(null);
+    void flagUrl(code).then((url) => live && setSrc(url));
+    return () => {
+      live = false;
+    };
+  }, [code]);
+  return <div class="flag">{src && <img src={src} alt="The flag" draggable={false} />}</div>;
+}
+
+/**
+ * How to answer a flag round, big and plain, since the two are painted so
+ * differently: cover the whole country, or mark where a small one is.
+ */
+export function AnswerMode({ area }: { area: boolean }) {
+  return area ? (
+    <div class="answer-mode area">
+      <Icon name="brush" size={18} />
+      <div>
+        <b>Paint the whole country</b>
+        <span>Its shape counts: cover all of it, and nothing else.</span>
+      </div>
+    </div>
+  ) : (
+    <div class="answer-mode point">
+      <Icon name="pin" size={18} />
+      <div>
+        <b>Paint where it is</b>
+        <span>A place, not a shape: the tighter your paint, the surer you are.</span>
+      </div>
     </div>
   );
 }
