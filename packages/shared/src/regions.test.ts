@@ -54,7 +54,21 @@ describe("region questions", () => {
   });
 
   it("painting the country as it is scores close to 1000", () => {
-    for (const q of REGIONS) {
+    // A spread of shapes and sizes: big, small, long, in two parts, and
+    // islands. All 150 take too long for CI; pnpm calibrate paints every one.
+    const sample = [
+      "germany-region",
+      "canada-region",
+      "indonesia-region",
+      "chile-region",
+      "norway-region",
+      "malaysia-region",
+      "the-gambia-region",
+      "lebanon-region",
+      "solomon-islands-region",
+      "new-zealand-region",
+    ].map(byId);
+    for (const q of sample) {
       const { score } = scoreRegionQuestion(paintRegion(q), q);
       expect(score, q.label).toBeGreaterThan(985);
     }
