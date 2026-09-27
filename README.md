@@ -305,7 +305,13 @@ pnpm workspace with three packages:
     about 90 points (892 in play). A country is uniform, so painting part of
     it again says nothing; lighter paint, a hedge on a second guess, stays
     under the cap. Simulated brushed paints of Mexico with a second pass now
-    score 939 to 952, against 961 for one even coat.
+    score 939 to 952, against 961 for one even coat. Paint off the country
+    counts as no thinner than half the country's own even coat
+    (`OFF_COUNTRY_FLOOR`): otherwise wrong paint spread thinly earned the
+    credit the score gives vagueness, and a big faint blob in North America
+    scored 444 for Madagascar. It now scores about 274, and the whole world
+    painted evenly about 297, just above a pass; bloating the border, 50/50
+    hedges and confident misses are unaffected.
   - **nearness** is the kernel score (`scoreRegion`) under one Gaussian 16
     tolerances wide, run one H3 resolution coarser than painting. A paint
     that misses the country has a shape score near 0 whether it is next door

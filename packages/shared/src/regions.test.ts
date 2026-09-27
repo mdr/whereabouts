@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cellArea, cellToLatLng, gridDisk, UNITS } from "h3-js";
+import { cellArea, cellToChildren, cellToLatLng, getRes0Cells, gridDisk, latLngToCell, UNITS } from "h3-js";
 import regionsJson from "../regions.json" with { type: "json" };
 import { resolutionForTolerance } from "./paint.ts";
 import { QUESTIONS } from "./questions.ts";
@@ -65,7 +65,7 @@ describe("region questions", () => {
     const exact = scoreRegionQuestion(paintRegion(germany), germany).score;
     const poland = scoreRegionQuestion(paintRegion(byId("poland-region")), germany).score;
     const japan = scoreRegionQuestion(paintRegion(byId("japan-region")), germany).score;
-    // A far bigger country painted thinly is nearly as vague as the whole world.
+    // A far bigger country, painted thinly: its paint counts as no thinner than half Germany's.
     const brazil = scoreRegionQuestion(paintRegion(byId("brazil-region")), germany).score;
     expect(exact).toBeGreaterThan(poland);
     expect(poland).toBeGreaterThan(250); // a near miss still beats a pass
@@ -183,6 +183,20 @@ describe("shape and nearness", () => {
     ]);
     const on = (2 * area(cells)) / (2 * area(cells) + area(poland));
     expect(regionFit(hedge, germany).precision).toBeCloseTo(on, 2);
+  });
+
+  it("wrong paint spread thinly does not pass for vagueness (the off-country floor)", () => {
+    // A faint blob eight times Germany's area, centred in North America.
+    const blob = gridDisk(latLngToCell(40, -100, res - 1), 22);
+    expect(area(blob)).toBeGreaterThan(6 * area(cells));
+    const s = scoreRegionQuestion(coat(blob), germany);
+    expect(s.score).toBeGreaterThan(230);
+    expect(s.score).toBeLessThan(320);
+    // The whole world painted evenly: just above a pass.
+    const world = getRes0Cells().flatMap((c) => cellToChildren(c, 2));
+    const w = scoreRegionQuestion(coat(world), germany);
+    expect(w.score).toBeGreaterThan(250);
+    expect(w.score).toBeLessThan(350);
   });
 
   it("uneven brushing costs little: a bright middle fading to half density at the edges", () => {

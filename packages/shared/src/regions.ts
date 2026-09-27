@@ -13,7 +13,10 @@
  *   share P of the paint evenly on the country (the rest just outside) scores
  *   500 + 500 P; covering a fraction c of it evenly scores
  *   1000 - 500 (1/c - 1); half on the country and half elsewhere scores 750,
- *   like a 50/50 point answer.
+ *   like a 50/50 point answer. Before comparing, paint density is capped
+ *   (DENSITY_CAP), and paint off the country counts as no thinner than
+ *   OFF_COUNTRY_FLOOR of the country's own even coat, so wrong paint spread
+ *   thinly is not taken for vagueness.
  * - nearness is the kernel score (scoreRegion) under one wide Gaussian, 16
  *   tolerances across. A paint that misses the country has a shape score
  *   near 0 whether it is next door or on another continent; nearness is
@@ -63,6 +66,18 @@ export interface RegionQuestion {
  * second guess say, stays below the cap and keeps its weight.
  */
 export const DENSITY_CAP = 1.5;
+
+/**
+ * Paint off the country counts in the shape score as at least this
+ * concentrated, relative to an even coat of the country itself, however
+ * thinly it is spread. Without it, spreading wrong paint thinly earned the
+ * credit the score gives vagueness: a big faint blob in North America scored
+ * 444 for Madagascar, and an even paint of the whole world about 500. With
+ * it they score about 274 and 297, just above a pass. Paint on the country,
+ * and paint off it that is already concentrated (bloating the border, a
+ * 50/50 hedge, a confident miss), are unaffected.
+ */
+export const OFF_COUNTRY_FLOOR = 0.5;
 
 /** How much of its nearness score a paint that misses the country keeps. */
 export const NEARNESS_WEIGHT = 0.55;
@@ -172,10 +187,18 @@ export function capDensity(dist: Distribution): Distribution {
   return { floor: dist.floor, points: cells.map((c, i) => ({ ...c.pt, p: (capped[i]! / total) * painted })) };
 }
 
-const regions = new Map<string, { cells: Map<string, number>; area: number }>();
+interface Region {
+  /** The country's cells at the painting resolution, with their areas. */
+  cells: Map<string, number>;
+  area: number;
+  /** Their ancestors at each coarser resolution, filled in as needed. */
+  ancestors: Map<number, Set<string>>;
+}
+
+const regions = new Map<string, Region>();
 
 /** The country's cells at the painting resolution, with their areas. */
-function regionAt(q: RegionQuestion): { cells: Map<string, number>; area: number } {
+function regionAt(q: RegionQuestion): Region {
   let region = regions.get(q.id);
   if (!region) {
     const cells = new Map<string, number>();
@@ -185,25 +208,40 @@ function regionAt(q: RegionQuestion): { cells: Map<string, number>; area: number
       cells.set(h, a);
       area += a;
     }
-    region = { cells, area };
+    region = { cells, area, ancestors: new Map() };
     regions.set(q.id, region);
   }
   return region;
 }
 
+/** Whether a cell coarser than the painting resolution overlaps the country. */
+function overlaps(region: Region, h: string, r: number): boolean {
+  let set = region.ancestors.get(r);
+  if (!set) {
+    set = new Set([...region.cells.keys()].map((c) => cellToParent(c, r)));
+    region.ancestors.set(r, set);
+  }
+  return set.has(h);
+}
+
 /**
  * The paint's mass per cell at the painting resolution: finer cells merged
- * into their parents, coarser ones (a big brush) shared among their children
- * by area. The world floor is left out.
+ * into their parents, coarser ones (a big brush) over the country shared
+ * among their children by area. Coarser cells off the country stay whole:
+ * every score here sums p^2 / a over off-country cells, which an even split
+ * leaves unchanged, and splitting a world painted at world zoom would mean
+ * millions of cells. The world floor is left out.
  */
 function paintMass(dist: Distribution, q: RegionQuestion): Map<string, number> {
   const res = resolutionForTolerance(q.toleranceKm);
+  const region = regionAt(q);
   const mass = new Map<string, number>();
   const add = (h: string, p: number) => mass.set(h, (mass.get(h) ?? 0) + p);
   for (const pt of dist.points) {
     if (!pt.cell) continue;
     const r = getResolution(pt.cell);
     if (r >= res) add(r === res ? pt.cell : cellToParent(pt.cell, res), pt.p);
+    else if (!overlaps(region, pt.cell, r)) add(pt.cell, pt.p);
     else {
       const children = cellToChildren(pt.cell, res);
       const areas = children.map((c) => cellArea(c, UNITS.km2));
@@ -226,8 +264,13 @@ function shapeScore(mass: Map<string, number>, q: RegionQuestion): number {
     const diff = (mass.get(h) ?? 0) - a / region.area;
     sum += (diff * diff) / a;
   }
+  let off = 0;
+  let offMass = 0;
   for (const [h, p] of mass) {
-    if (!region.cells.has(h)) sum += (p * p) / cellArea(h, UNITS.km2);
+    if (region.cells.has(h)) continue;
+    off += (p * p) / cellArea(h, UNITS.km2);
+    offMass += p;
   }
+  sum += Math.max(off, (OFF_COUNTRY_FLOOR * offMass * offMass) / region.area);
   return Math.max(0, 1000 - 500 * sum * region.area);
 }
