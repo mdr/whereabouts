@@ -1,6 +1,6 @@
 /** Per-browser preferences and identity, persisted where it makes sense. */
 import { effect, signal } from "@preact/signals";
-import type { MapDetail } from "@whereabouts/shared";
+import { DEFAULT_KERNEL, type MapDetail } from "@whereabouts/shared";
 
 function persisted<T extends string | boolean>(key: string, initial: T, storage: Storage = localStorage) {
   let start = initial;
@@ -43,7 +43,17 @@ function persistedJson<T>(key: string, initial: T) {
 
 export const playerName = persisted<string>("wa.name", "");
 export const cheatLiveScore = persisted<boolean>("wa.cheat", false);
-export const soloKernelId = persisted<string>("wa.kernel", "single");
+/**
+ * Practice scores with the same kernel as games unless the dev drawer picks
+ * another. A new key: "wa.kernel" was written on every visit while practice
+ * defaulted to the single Gaussian, so its value says nothing about a choice.
+ */
+export const soloKernelId = persisted<string>("wa.practiceKernel", DEFAULT_KERNEL.id);
+try {
+  localStorage.removeItem("wa.kernel");
+} catch {
+  /* storage unavailable */
+}
 /** Map detail while guessing in practice (one of MAP_DETAILS). */
 export const soloMapDetail = persisted<MapDetail>("wa.mapDetail", "minimal");
 /** Begin each round on the Pan tool rather than Paint; tablet players often want to look first. */

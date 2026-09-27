@@ -1,5 +1,7 @@
 /**
  * Gaussian-kernel proper scoring rule for painted geographic distributions.
+ * Shown here with a single Gaussian; games score with DEFAULT_KERNEL, a
+ * mixture of Gaussians at r, 4r and 16r (see Kernel).
  *
  *   k(a,b) = 2^-(d(a,b)/r)^2        d = chord distance on the Earth sphere, km
  *   A = sum_i p_i k(x_i, y)
@@ -36,8 +38,11 @@ export const KERNELS: Kernel[] = [
   { id: "multi-weighted", label: "Mixture r, 4r, 16r (0.5 / 0.3 / 0.2)", scales: [1, 4, 16], weights: [0.5, 0.3, 0.2] },
 ];
 
+/** The kernel games and practice score with; the others are for comparison in the dev drawer. */
+export const DEFAULT_KERNEL: Kernel = KERNELS[1]!;
+
 export function kernelById(id: string): Kernel {
-  return KERNELS.find((k) => k.id === id) ?? SINGLE_KERNEL;
+  return KERNELS.find((k) => k.id === id) ?? DEFAULT_KERNEL;
 }
 
 export interface WeightedPoint {
@@ -73,7 +78,7 @@ export interface ScoreBreakdown {
   B: number;
 }
 
-export function kernel(distanceKm: number, toleranceKm: number, k: Kernel = SINGLE_KERNEL): number {
+export function kernel(distanceKm: number, toleranceKm: number, k: Kernel = DEFAULT_KERNEL): number {
   return kernelFromSq(distanceKm * distanceKm, toleranceKm, k);
 }
 
@@ -116,7 +121,7 @@ function kernelFromSq(distSqKm: number, toleranceKm: number, k: Kernel, s2 = 0):
  * With t = 1 - cos(theta) and a = 2 R^2 ln2 / r^2, k = exp(-a t) and the
  * uniform measure in t is dt/2 on [0, 2], giving (1 - e^{-2a}) / (2a).
  */
-export function uniformKernelMean(toleranceKm: number, k: Kernel = SINGLE_KERNEL): number {
+export function uniformKernelMean(toleranceKm: number, k: Kernel = DEFAULT_KERNEL): number {
   let v = 0;
   for (let i = 0; i < k.scales.length; i++) {
     v += k.weights[i]! * gaussUniformMean(k.scales[i]! * toleranceKm);
@@ -145,7 +150,7 @@ export function pairSum(
   points: WeightedPoint[],
   toleranceKm: number,
   exact = false,
-  k: Kernel = SINGLE_KERNEL,
+  k: Kernel = DEFAULT_KERNEL,
 ): number {
   if (exact) return exactPairSum(points, toleranceKm, k);
   const groups = groupByPatchSize(points);
@@ -315,7 +320,7 @@ export function similarityToAnswer(
   dist: Distribution,
   answer: Xyz,
   toleranceKm: number,
-  k: Kernel = SINGLE_KERNEL,
+  k: Kernel = DEFAULT_KERNEL,
 ): number {
   let A = 0;
   const widest = toleranceKm * Math.max(...k.scales);
@@ -358,7 +363,7 @@ export function selfSimilarity(
   dist: Distribution,
   toleranceKm: number,
   exact = false,
-  k: Kernel = SINGLE_KERNEL,
+  k: Kernel = DEFAULT_KERNEL,
 ): number {
   const K = uniformKernelMean(toleranceKm, k);
   const painted = 1 - dist.floor;
@@ -386,7 +391,7 @@ export function scoreDistribution(
   dist: Distribution,
   answer: LatLon,
   toleranceKm: number,
-  k: Kernel = SINGLE_KERNEL,
+  k: Kernel = DEFAULT_KERNEL,
   exact = false,
 ): ScoreBreakdown {
   const A = similarityToAnswer(dist, toXyz(answer), toleranceKm, k);

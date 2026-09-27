@@ -249,6 +249,10 @@ pnpm workspace with three packages:
 - **Scoring** (`src/scoring.ts`) is the Gaussian-kernel proper scoring rule
   from the design note: `score = 500 (1 + 2A - B)` with
   `k(a,b) = 2^-(d/r)^2` and `d` the chord distance on the Earth sphere.
+  Games and practice both use a mixture of that Gaussian at `r`, `4r` and
+  `16r` with equal weights (`DEFAULT_KERNEL`), so a confident guess a few
+  tolerances off still earns partial credit (818 at one tolerance, 631 at
+  two, 486 at four, against 500, 63 and 0 for the single Gaussian).
   Each painted cell is treated as a Gaussian patch with the hexagon's second
   moment rather than a point mass, so a coarse cell scores like the fine cells
   it stands for: the kernel between two Gaussian patches is another Gaussian
@@ -262,9 +266,9 @@ pnpm workspace with three packages:
   glowing from teal to white and an amber answer marker. The theme recolours
   the basemap layers in place; two playtested alternatives (viridis, paper
   map) remain in `src/themes.ts` for reference.
-- **Kernel options** (Cheats card of the developer drawer): the single Gaussian from
-  the design note, or a mixture of Gaussians at `r`, `4r` and `16r` with equal
-  or 0.5/0.3/0.2 weights. A positive mixture of Gaussians is still a valid
+- **Kernel options** (Cheats card of the developer drawer): practice can
+  switch from the game's kernel to the single Gaussian of the design note or
+  the 0.5/0.3/0.2 mixture, for comparison. A positive mixture of Gaussians is still a valid
   kernel, so the rule stays proper and bounded. Coarse components aggregate the
   paint onto a grid an eighth of their width before the pair sum. The live
   score card and the reveal show the score under every kernel side by side.

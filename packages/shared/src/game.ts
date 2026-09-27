@@ -3,7 +3,14 @@
  * and poll `nextWakeAt()` to know when to call `tick`. Every mutator returns
  * whether anything changed so the transport layer can rebroadcast views.
  */
-import { PASS_SCORE, buildDistribution, kernelById, scoreDistribution, type Kernel } from "./scoring.ts";
+import {
+  DEFAULT_KERNEL,
+  PASS_SCORE,
+  buildDistribution,
+  kernelById,
+  scoreDistribution,
+  type Kernel,
+} from "./scoring.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { pickQuestions, type Question } from "./questions.ts";
 import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS } from "./protocol.ts";
@@ -24,7 +31,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   roundMs: 60_000,
   photoShare: 0.5,
   mapDetail: "minimal",
-  kernelId: "multi-equal",
+  kernelId: DEFAULT_KERNEL.id,
 };
 
 interface Player {

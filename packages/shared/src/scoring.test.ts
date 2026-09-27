@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import * as h3 from "h3-js";
 import { toXyz, EARTH_RADIUS_KM } from "./geo.ts";
 import {
+  DEFAULT_KERNEL,
   KERNELS,
   PASS_SCORE,
+  SINGLE_KERNEL,
   kernelById,
   buildDistribution,
   kernel,
@@ -30,44 +32,58 @@ function pointMass(locs: { lat: number; lon: number; p: number }[]): Distributio
 
 describe("kernel", () => {
   it("is 1 at zero distance, 0.5 at r, 0.0625 at 2r", () => {
-    expect(kernel(0, r)).toBe(1);
-    expect(kernel(r, r)).toBeCloseTo(0.5, 12);
-    expect(kernel(2 * r, r)).toBeCloseTo(0.0625, 12);
+    expect(kernel(0, r, SINGLE_KERNEL)).toBe(1);
+    expect(kernel(r, r, SINGLE_KERNEL)).toBeCloseTo(0.5, 12);
+    expect(kernel(2 * r, r, SINGLE_KERNEL)).toBeCloseTo(0.0625, 12);
+  });
+
+  it("games and practice score with the equal mixture of r, 4r and 16r", () => {
+    expect(DEFAULT_KERNEL).toBe(kernelById("multi-equal"));
+    expect(kernelById("no-such-kernel")).toBe(DEFAULT_KERNEL);
   });
 });
 
-describe("example outcomes from the design note", () => {
-  const cases: [string, number, number][] = [
-    ["exact hit", 0, 1000],
-    ["half a tolerance away", 0.5, 841],
-    ["one tolerance away", 1, 500],
-    ["two tolerances away", 2, 63],
-    ["far away", 50, 0],
+describe("example outcomes", () => {
+  // Distance in tolerances; the single Gaussian of the design note, then the
+  // game's mixture, whose wider components give partial credit further out.
+  const cases: [string, number, number, number][] = [
+    ["exact hit", 0, 1000, 1000],
+    ["half a tolerance away", 0.5, 841, 943],
+    ["one tolerance away", 1, 500, 818],
+    ["two tolerances away", 2, 63, 631],
+    ["four tolerances away", 4, 0, 486],
+    ["eight tolerances away", 8, 0, 301],
+    ["far away", 60, 0, 0],
   ];
-  for (const [name, tol, expected] of cases) {
-    it(`100% ${name} scores ~${expected}`, () => {
+  for (const [name, tol, single, game] of cases) {
+    it(`100% ${name} scores ~${single} (single Gaussian), ~${game} (game kernel)`, () => {
       const d = pointMass([{ ...north(answer, tol * r), p: 1 }]);
-      const { score } = scoreDistribution(d, answer, r);
-      expect(Math.round(score)).toBe(expected);
+      expect(Math.round(scoreDistribution(d, answer, r, SINGLE_KERNEL).score)).toBe(single);
+      expect(Math.round(scoreDistribution(d, answer, r).score)).toBe(game);
     });
   }
 
-  const far = north(answer, 40 * r);
+  // Far enough apart that even the widest component (16r) does not reach.
+  const far = north(answer, 60 * r);
   it("50/50 between two far-apart places, either correct: 750", () => {
     const d = pointMass([
       { ...answer, p: 0.5 },
       { ...far, p: 0.5 },
     ]);
-    expect(Math.round(scoreDistribution(d, answer, r).score)).toBe(750);
-    expect(Math.round(scoreDistribution(d, far, r).score)).toBe(750);
+    for (const k of [SINGLE_KERNEL, DEFAULT_KERNEL]) {
+      expect(Math.round(scoreDistribution(d, answer, r, k).score)).toBe(750);
+      expect(Math.round(scoreDistribution(d, far, r, k).score)).toBe(750);
+    }
   });
   it("80/20, favoured correct: 960; other correct: 360", () => {
     const d = pointMass([
       { ...answer, p: 0.8 },
       { ...far, p: 0.2 },
     ]);
-    expect(Math.round(scoreDistribution(d, answer, r).score)).toBe(960);
-    expect(Math.round(scoreDistribution(d, far, r).score)).toBe(360);
+    for (const k of [SINGLE_KERNEL, DEFAULT_KERNEL]) {
+      expect(Math.round(scoreDistribution(d, answer, r, k).score)).toBe(960);
+      expect(Math.round(scoreDistribution(d, far, r, k).score)).toBe(360);
+    }
   });
 });
 
@@ -100,18 +116,22 @@ describe("uniform floor", () => {
     expect(sum / n).toBeCloseTo(uniformKernelMean(tol), 2);
   });
 
-  it("a fully diffuse guess scores ~500 for small tolerance", () => {
+  it("a fully diffuse guess scores ~500 for small tolerance, 500 (1 + K) in general", () => {
     const d: Distribution = { points: [], floor: 1 };
-    const { score } = scoreDistribution(d, answer, r);
-    expect(score).toBeGreaterThan(499);
-    expect(score).toBeLessThan(501);
+    for (const k of [SINGLE_KERNEL, DEFAULT_KERNEL]) {
+      const { score } = scoreDistribution(d, answer, 30, k);
+      expect(score).toBeGreaterThan(499);
+      expect(score).toBeLessThan(501);
+      // Wider components see more of the uniform floor.
+      expect(scoreDistribution(d, answer, 800, k).score).toBeCloseTo(500 * (1 + uniformKernelMean(800, k)), 6);
+    }
   });
 
   it("10% floor is cheap insurance", () => {
     const hit = buildDistribution([{ ...answer, intensity: 1, areaKm2: 1 }], 0.1);
     const miss = buildDistribution([{ ...north(answer, 5000), intensity: 1, areaKm2: 1 }], 0.1);
     expect(Math.round(scoreDistribution(hit, answer, r).score)).toBe(995);
-    expect(Math.round(scoreDistribution(miss, answer, r).score)).toBe(95);
+    expect(Math.round(scoreDistribution(miss, answer, r).score)).toBe(96);
   });
 });
 
@@ -140,8 +160,9 @@ describe("pair sum", () => {
       pts.push({ lat: rnd() * 160 - 80, lon: rnd() * 360 - 180, intensity: rnd() * 0.1, areaKm2: 1 });
     }
     const d = buildDistribution(pts, 0);
-    const fast = pairSum(d.points, r);
-    const exact = pairSum(d.points, r, true);
+    // The truncation alone; aggregation for wide components is tested with the mixtures.
+    const fast = pairSum(d.points, r, false, SINGLE_KERNEL);
+    const exact = pairSum(d.points, r, true, SINGLE_KERNEL);
     expect(Math.abs(fast - exact)).toBeLessThan(1e-4);
   });
 });
@@ -201,7 +222,7 @@ describe("mixture kernels", () => {
 
   it("a broad regional blob four tolerances off: ~0 under single, partial credit under the mixture", () => {
     const blob = disc(north(petra, 800), 500);
-    const single = scoreDistribution(blob, petra, tol).score;
+    const single = scoreDistribution(blob, petra, tol, SINGLE_KERNEL).score;
     const mixed = scoreDistribution(blob, petra, tol, multi).score;
     expect(single).toBeLessThan(520);
     expect(mixed).toBeGreaterThan(600);
