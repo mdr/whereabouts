@@ -18,6 +18,7 @@ function view(isHost: boolean): GameView {
       photoShare: 0.5,
       mapDetail: "minimal",
       countries: "off",
+      flags: "off",
       kernelId: "multi-equal",
     },
     serverTime: 0,
@@ -105,6 +106,7 @@ describe("Lobby setup", () => {
       "60 sper round",
       "Evenquestions",
       "Offwhole countries",
+      "Offflags",
       "Minimalmap · coastlines only",
     ]);
     // Nothing is highlighted on first load.

@@ -15,9 +15,11 @@ import {
   resolutionForTolerance,
   type GameView,
   type Question,
+  type FlagQuestion,
   type RegionQuestion,
 } from "@whereabouts/shared";
 import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" };
+import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" };
 import { createApp, type App } from "./app.ts";
 import { configureGameRooms, realClock, type Clock } from "./rooms.ts";
 
@@ -263,6 +265,26 @@ describe("game server", () => {
     expect(aliceResult.region!.coverage).toBeGreaterThan(0.95);
     const bobResult = reveal.reveal!.results.find((r) => r.playerId === byName.Bob)!;
     expect(bobResult.score).toBe(250);
+  });
+
+  it("plays a flag round: the flag is shown, the name only at the reveal", async () => {
+    const alice = player("Alice");
+    alice.connect({ create: true });
+    await alice.until((v) => v.phase === "lobby");
+    alice.send("configure", { rounds: 1, flags: "only" });
+    await alice.until((v) => v.config.flags === "only" && v.config.rounds === 1);
+
+    alice.send("start");
+    const round = await alice.until((v) => v.phase === "guessing");
+    const q = round.round!.question;
+    expect(q.flag).toMatch(/^[a-z]{2}$/);
+    const f = (flagsJson as FlagQuestion[]).find((x) => x.flag === q.flag)!;
+    expect(JSON.stringify(round)).not.toContain(f.label);
+
+    clock.advance(60_000);
+    const reveal = await alice.until((v) => v.phase === "reveal");
+    expect(reveal.reveal!.label).toBe(f.label);
+    expect(reveal.reveal!.question.flag).toBe(q.flag);
   });
 
   it("answers bad messages with errors instead of dropping the player", async () => {

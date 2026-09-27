@@ -2,7 +2,7 @@ import { useEffect, useRef } from "preact/hooks";
 import { PaintLayer, compactRecord, playerColour, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { usePaint } from "../ui/MapView";
-import { Card, Countdown, HudHeader, QuestionCard } from "../ui/bits";
+import { AnswerMode, Card, Countdown, HudHeader, QuestionCard } from "../ui/bits";
 import { PaintDev, PaintTools } from "../ui/PaintTools";
 import { PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
@@ -28,11 +28,11 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const lastSentVersion = useRef(-1);
   const { dialog, ask } = useConfirm();
 
-  // A game with countries needs their outlines at the reveal: fetch them now.
-  const countries = view.config.countries;
+  // A game with countries or flags needs the outlines at the reveal: fetch them now.
+  const outlines = view.config.countries !== "off" || view.config.flags !== "off";
   useEffect(() => {
-    if (countries !== "off") loadRegions().catch((err: unknown) => console.warn("could not load countries", err));
-  }, [countries]);
+    if (outlines) loadRegions().catch((err: unknown) => console.warn("could not load countries", err));
+  }, [outlines]);
 
   // New round: fresh layer, painting on unless spectating. After a reconnect
   // the server hands back what we had painted, so restore it.
@@ -110,7 +110,11 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             right={<Countdown msRemaining={() => conn.msUntil(round.deadline)} />}
           />
           <QuestionCard q={round.question}>
-            {round.question.regionId && <p class="hint region-hint">Cover the whole country: its shape counts.</p>}
+            {round.question.flag ? (
+              <AnswerMode area={round.question.regionId !== undefined} />
+            ) : (
+              round.question.regionId && <p class="hint region-hint">Cover the whole country: its shape counts.</p>
+            )}
           </QuestionCard>
           <ConnectionNote conn={conn} />
           {view.you.watching && (

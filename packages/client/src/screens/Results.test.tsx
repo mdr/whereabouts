@@ -15,6 +15,7 @@ function view(isHost: boolean): GameView {
       photoShare: 0.5,
       mapDetail: "minimal",
       countries: "off",
+      flags: "off",
       kernelId: "multi-equal",
     },
     serverTime: 0,

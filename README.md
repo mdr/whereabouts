@@ -107,7 +107,7 @@ pnpm workspace with three packages:
 - `packages/shared`: geo, scoring, H3 paint model, question pool, the wire
   protocol (zod schemas + view types), and the pure `Game` state machine. No
   I/O anywhere; the same code runs in the browser and on the server.
-- `packages/client`: Vite + Preact. Screens: home, solo practice (places or whole countries), and the
+- `packages/client`: Vite + Preact. Screens: home, solo practice (places, whole countries or flags), and the
   online game (lobby, timed guessing, reveal, results). The map fills the
   screen with HUD cards over it; `PaintController` wraps the MapLibre map and
   brush input. Add `?dev` to the URL for the developer drawer.
@@ -142,7 +142,10 @@ pnpm workspace with three packages:
   five fixed stops. Whole countries (pills: Off, the default; Mixed in, about
   one round in four; Only) adds "Paint the whole of …" rounds, drawn from the
   countries while they last, with the photo mix applying to the rest; with
-  countries off a game picks exactly the places it did before. The host also picks the map detail while guessing, from
+  countries off a game picks exactly the places it did before. Flags (the same
+  pills) adds flag rounds: a country's flag in place of its name, painted whole
+  or, for a small country, asked as a point (see docs/country-scoring.md).
+  The host also picks the map detail while guessing, from
   four picture choices (each a preview of the same frame, made by
   `scripts/map-detail-previews.mjs`): Minimal (coastlines only, the
   default), Water (adds rivers and lakes), Physical (adds relief, natural

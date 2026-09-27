@@ -2,6 +2,7 @@ import { Fragment } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import {
   COUNTRY_MIXES,
+  FLAG_MIXES,
   MAX_PLAYERS,
   MAX_ROUNDS,
   MAX_SPECTATORS,
@@ -26,6 +27,7 @@ import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker";
 const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }));
 const MIXES = PHOTO_MIXES.map((m) => ({ value: m.share, label: m.label }));
 const COUNTRIES = COUNTRY_MIXES.map((c) => ({ value: c.id, label: c.label }));
+const FLAGS = FLAG_MIXES.map((c) => ({ value: c.id, label: c.label }));
 
 /**
  * Waiting room: invite on the left (code, link, players), the game setup on
@@ -197,6 +199,15 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     onChange={(countries) => configureAsHost(conn, { countries })}
                   />
                 </div>
+                <div class="setting flags">
+                  <span class="setting-label">Flags</span>
+                  <Pills
+                    label="Flags"
+                    options={FLAGS}
+                    value={view.config.flags}
+                    onChange={(flags) => configureAsHost(conn, { flags })}
+                  />
+                </div>
                 <div class="setting map-detail">
                   <span class="setting-label">Map detail</span>
                   <MapDetailPicker
@@ -289,7 +300,7 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: strin
  * that plays a short highlight; nothing flashes on first load.
  */
 function SetupSummary({ view }: { view: GameView }) {
-  const { rounds, roundMs, photoShare, mapDetail, countries } = view.config;
+  const { rounds, roundMs, photoShare, mapDetail, countries, flags } = view.config;
   const shown = useRef(view.config);
   const before = shown.current;
   useEffect(() => {
@@ -310,6 +321,12 @@ function SetupSummary({ view }: { view: GameView }) {
       value: COUNTRIES.find((c) => c.value === countries)?.label ?? "Off",
       label: "whole countries",
       changed: countries !== before.countries,
+    },
+    {
+      key: "flags",
+      value: FLAGS.find((c) => c.value === flags)?.label ?? "Off",
+      label: "flags",
+      changed: flags !== before.flags,
     },
   ];
   return (

@@ -23,15 +23,18 @@ import {
   decodeTicket,
   encodeMessage,
   generateCode,
+  type FlagQuestion,
   type GameConfig,
   type Question,
   type RegionQuestion,
 } from "@whereabouts/shared";
-// The countries for "Paint the whole of …" rounds. The client loads the same
-// file on demand; the server holds it all.
+// The countries for "Paint the whole of …" rounds, and the flag rounds. The
+// client loads the same files on demand; the server holds them all.
 import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" };
+import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" };
 
 const REGIONS = regionsJson as RegionQuestion[];
+const FLAGS: FlagQuestion[] = flagsJson;
 
 export interface ActorData {
   token: string;
@@ -59,11 +62,12 @@ export interface GameRoomDeps {
   clock: Clock;
   pool: Question[];
   regions: RegionQuestion[];
+  flags: FlagQuestion[];
   config: Partial<GameConfig>;
 }
 
 /** Set once at startup; rooms are constructed by Rivalis so cannot take arguments. */
-let deps: GameRoomDeps = { clock: realClock, pool: QUESTIONS, regions: REGIONS, config: {} };
+let deps: GameRoomDeps = { clock: realClock, pool: QUESTIONS, regions: REGIONS, flags: FLAGS, config: {} };
 export function configureGameRooms(next: Partial<GameRoomDeps>): void {
   deps = { ...deps, ...next };
 }
@@ -83,7 +87,7 @@ export class GameRoom extends Room<ActorData> {
   declare private emptyTimer: unknown;
 
   protected override onCreate(): void {
-    this.game = new Game(this.id, deps.pool, deps.config, Date.now(), deps.regions);
+    this.game = new Game(this.id, deps.pool, deps.config, Date.now(), deps.regions, deps.flags);
     this.actorsByToken = new Map();
     this.timer = null;
     this.emptyTimer = null;

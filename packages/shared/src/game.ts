@@ -14,6 +14,7 @@ import {
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { pickQuestions, shuffle, type Question } from "./questions.ts";
 import { regionFit, scoreRegionQuestion, type RegionQuestion } from "./regions.ts";
+import { flagRound, type FlagQuestion } from "./flags.ts";
 import { COUNTRY_MIXES, MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS } from "./protocol.ts";
 import type {
   ConfigurePatch,
@@ -34,6 +35,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   photoShare: 0.5,
   mapDetail: "minimal",
   countries: "off",
+  flags: "off",
   kernelId: DEFAULT_KERNEL.id,
 };
 
@@ -72,6 +74,8 @@ export class Game {
   private readonly pool: Question[];
   /** Countries for "Paint the whole of …" rounds; the server passes regions.json. */
   private readonly regions: RegionQuestion[];
+  /** Flag rounds, from flags.json and the countries: each a region or a point question. */
+  private readonly flagRounds: (Question | RegionQuestion)[];
   private readonly kernel: Kernel;
 
   phase: Phase = "lobby";
@@ -98,12 +102,15 @@ export class Game {
     config: Partial<GameConfig> = {},
     seed = Date.now(),
     regions: RegionQuestion[] = [],
+    flags: FlagQuestion[] = [],
   ) {
     this.seed = seed;
     this.code = code;
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.pool = pool;
     this.regions = regions;
+    const byId = new Map(regions.map((q) => [q.id, q]));
+    this.flagRounds = flags.flatMap((f) => flagRound(f, byId) ?? []);
     this.kernel = kernelById(this.config.kernelId);
     if (pool.length === 0) throw new Error("question pool is empty");
   }
@@ -245,20 +252,36 @@ export class Game {
 
   /**
    * The rounds' questions: the country share of COUNTRY_MIXES drawn from the
-   * countries (while they last), the rest places in the host's photo mix, in
-   * a shuffled order. With countries off this is exactly pickQuestions.
+   * countries and the flag share of FLAG_MIXES from the flag rounds (while
+   * they last, and never the same country twice), the rest places in the
+   * host's photo mix, in a shuffled order. Shares adding up past the whole
+   * game are scaled down in proportion. With countries and flags off this is
+   * exactly pickQuestions.
    */
   private pickRounds(): (Question | RegionQuestion)[] {
-    const share = COUNTRY_MIXES.find((c) => c.id === this.config.countries)?.share ?? 0;
-    const countries = Math.min(this.regions.length, Math.round(this.config.rounds * share));
-    const places = Math.min(this.pool.length, this.config.rounds - countries);
+    const shareOf = (id: string) => COUNTRY_MIXES.find((c) => c.id === id)?.share ?? 0;
+    let countryShare = shareOf(this.config.countries);
+    let flagShare = shareOf(this.config.flags);
+    const sum = countryShare + flagShare;
+    if (sum > 1) {
+      countryShare /= sum;
+      flagShare /= sum;
+    }
+    const { rounds } = this.config;
+    const countries = Math.min(this.regions.length, Math.round(rounds * countryShare));
+    const flags = Math.min(this.flagRounds.length, Math.round(rounds * flagShare), rounds - countries);
+    const places = Math.min(this.pool.length, rounds - countries - flags);
     const picked = pickQuestions(this.pool, places, this.seed, this.config.photoShare);
-    if (countries === 0) return picked;
+    if (countries === 0 && flags === 0) return picked;
     const regions = shuffle(this.regions, this.seed ^ 0x2545f491).slice(0, countries);
-    return shuffle<Question | RegionQuestion>([...picked, ...regions], this.seed ^ 0x5bd1e995);
+    const asked = new Set(regions.map((q) => q.id));
+    const flagged = shuffle(this.flagRounds, this.seed ^ 0x68e31da4)
+      .filter((q) => !asked.has(q.id))
+      .slice(0, flags);
+    return shuffle<Question | RegionQuestion>([...picked, ...regions, ...flagged], this.seed ^ 0x5bd1e995);
   }
 
-  /** Host tunes rounds, round length, the question mix and map detail while everyone is still in the lobby. */
+  /** Host tunes rounds, round length, the question mix, countries, flags and map detail while everyone is still in the lobby. */
   configure(token: string, patch: ConfigurePatch): CommandResult {
     if (!this.isHost(token)) return fail("only the host can change settings");
     if (this.phase !== "lobby") return fail("settings are locked once the game starts");
@@ -268,7 +291,8 @@ export class Game {
       next.roundMs === this.config.roundMs &&
       next.photoShare === this.config.photoShare &&
       next.mapDetail === this.config.mapDetail &&
-      next.countries === this.config.countries
+      next.countries === this.config.countries &&
+      next.flags === this.config.flags
     )
       return OK_SAME;
     this.config = next;
@@ -693,8 +717,13 @@ export function generateCode(rnd: () => number = Math.random, length = 4): strin
   return out;
 }
 
-/** What players see of a question: never the answer, only the country's id, which the prompt names anyway. */
+/**
+ * What players see of a question: never the answer. A country round sends
+ * the country's id, which the prompt names anyway; a flag round sends the
+ * flag's code, which the flag gives away anyway.
+ */
 function questionView(q: Question | RegionQuestion): QuestionView {
-  if (q.kind === "region") return { prompt: q.prompt, toleranceKm: q.toleranceKm, regionId: q.id };
-  return { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm };
+  const flag = q.flag ? { flag: q.flag } : {};
+  if (q.kind === "region") return { prompt: q.prompt, toleranceKm: q.toleranceKm, regionId: q.id, ...flag };
+  return { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm, ...flag };
 }

@@ -92,6 +92,13 @@ export const COUNTRY_MIXES = [
 export type CountryMix = (typeof COUNTRY_MIXES)[number]["id"];
 
 /**
+ * Whether a game asks flag rounds (a flag in place of the country's name), and
+ * how many, as for countries. When the two shares add up to more than the
+ * whole game, they split it in proportion (both "Only" is half each).
+ */
+export const FLAG_MIXES = COUNTRY_MIXES;
+
+/**
  * How much of the map shows while guessing, least first. The reveal always
  * shows everything; place names never show while guessing.
  */
@@ -117,6 +124,7 @@ export const ConfigureSchema = z.object({
     .optional(),
   mapDetail: z.enum(MAP_DETAILS.map((d) => d.id) as [MapDetail, ...MapDetail[]]).optional(),
   countries: z.enum(COUNTRY_MIXES.map((c) => c.id) as [CountryMix, ...CountryMix[]]).optional(),
+  flags: z.enum(FLAG_MIXES.map((c) => c.id) as [CountryMix, ...CountryMix[]]).optional(),
 });
 export type ConfigurePatch = z.infer<typeof ConfigureSchema>;
 
@@ -156,6 +164,8 @@ export interface GameConfig {
   mapDetail: MapDetail;
   /** Whether rounds ask whole countries too (one of COUNTRY_MIXES). */
   countries: CountryMix;
+  /** Whether rounds ask flags too (one of FLAG_MIXES). */
+  flags: CountryMix;
   kernelId: string;
 }
 
