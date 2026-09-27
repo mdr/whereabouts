@@ -33,11 +33,24 @@ const WORLD_ZOOM = 1.6;
 /** MapLibre's world is 512 px wide at zoom 0. */
 const WORLD_PX_Z0 = 512;
 
+/**
+ * National borders on the reveal: opaque and wider as the map zooms in, but
+ * thinner and dimmer at world zoom, where they would crowd the map (and the
+ * low-zoom data traces some coasts). While guessing they keep the style's
+ * faint look, so the Political map detail stays a light hint.
+ */
+const NATIONAL_BORDERS = ["boundary_2", "boundary_disputed"];
+const REVEAL_BORDER_WIDTH = ["interpolate", ["linear"], ["zoom"], 1, 0.8, 3, 1.3, 5, 1.8, 8, 2.5];
+const REVEAL_BORDER_OPACITY = ["interpolate", ["linear"], ["zoom"], 1, 0.55, 2.5, 1];
+
 export class GameMap {
   readonly map: MapLibreMap;
   readonly ready: Promise<void>;
   private labelLayers: string[] = [];
   private borderLayers: string[] = [];
+  /** The style's own width and opacity for the national borders, restored after the reveal. */
+  private borderPaint = new Map<string, { width: unknown; opacity: unknown }>();
+  private revealBorders = false;
   /** Roads, railways, buildings, airports, urban land use: man-made hints. */
   private roadLayers: string[] = [];
   private urbanLayers: string[] = [];
@@ -97,8 +110,14 @@ export class GameMap {
       const sourceLayer = "source-layer" in l ? (l["source-layer"] ?? "") : "";
       this.styleLayers.push({ id: l.id, type: l.type, sourceLayer });
       if (l.type === "symbol") this.labelLayers.push(l.id);
-      else if (l.id.startsWith("boundary")) this.borderLayers.push(l.id);
-      else if (roadSources.has(sourceLayer)) this.roadLayers.push(l.id);
+      else if (l.id.startsWith("boundary")) {
+        this.borderLayers.push(l.id);
+        if (NATIONAL_BORDERS.includes(l.id))
+          this.borderPaint.set(l.id, {
+            width: this.map.getPaintProperty(l.id, "line-width"),
+            opacity: this.map.getPaintProperty(l.id, "line-opacity"),
+          });
+      } else if (roadSources.has(sourceLayer)) this.roadLayers.push(l.id);
       else if (urbanSources.has(sourceLayer)) this.urbanLayers.push(l.id);
       else if (sourceLayer === "waterway") this.waterwayLayers.push(l.id);
       // Glaciers and ice shelves: they trace mountain ranges and polar coasts.
@@ -254,7 +273,6 @@ export class GameMap {
       else if (l.id === "landcover_wood") set(l.id, "fill-color", t.wood);
       else if (l.id.startsWith("landcover_")) set(l.id, "fill-color", t.ice);
       else if (l.sourceLayer === "waterway" && l.type === "line") set(l.id, "line-color", t.waterway);
-      else if (l.id.startsWith("boundary")) set(l.id, "line-color", t.border);
       else if (l.type === "symbol") {
         set(l.id, "text-color", t.labelText);
         set(l.id, "text-halo-color", t.labelHalo);
@@ -266,6 +284,7 @@ export class GameMap {
         if (l.id === "building") set(l.id, "fill-outline-color", t.urban);
       }
     }
+    this.styleBorders();
     this.applyPaintRamp(t);
     set("reveal-answer", "circle-color", t.answer);
     set("reveal-answer", "circle-stroke-color", t.answerStroke);
@@ -329,6 +348,7 @@ export class GameMap {
     this.setIce(rank >= 2);
     this.setWood(rank >= 2);
     this.setBorders(rank >= 3);
+    this.setRevealBorders(level === "reveal");
     this.setLabels(rank >= 4);
     this.setUrban(rank >= 4);
     this.setRoads(false);
@@ -355,6 +375,25 @@ export class GameMap {
   setBorders(on: boolean): void {
     if (this.disposed) return;
     for (const id of this.borderLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+  }
+
+  /** Bold national borders for the reveal, or the style's faint ones. */
+  private setRevealBorders(on: boolean): void {
+    this.revealBorders = on;
+    this.styleBorders();
+  }
+
+  private styleBorders(): void {
+    if (this.disposed || !this.theme) return;
+    for (const id of this.borderLayers) {
+      if (!this.map.getLayer(id)) continue;
+      const own = this.borderPaint.get(id);
+      const bold = this.revealBorders && own !== undefined;
+      this.map.setPaintProperty(id, "line-color", bold ? this.theme.revealBorder : this.theme.border);
+      if (!own) continue;
+      this.map.setPaintProperty(id, "line-width", (bold ? REVEAL_BORDER_WIDTH : own.width) as never);
+      this.map.setPaintProperty(id, "line-opacity", (bold ? REVEAL_BORDER_OPACITY : own.opacity) as never);
+    }
   }
 
   private source(id: string): GeoJSONSource | undefined {

@@ -13,6 +13,8 @@ export interface Theme {
   ice: string;
   waterway: string;
   border: string;
+  /** National borders on the reveal, drawn bolder than while guessing. */
+  revealBorder: string;
   road: string;
   urban: string;
   labelText: string;
@@ -38,6 +40,7 @@ export const THEME: Theme = {
   ice: "#3b4755",
   waterway: "#3b6a8c",
   border: "#7b8a9c",
+  revealBorder: "#c4d0de",
   road: "#465569",
   urban: "#344150",
   labelText: "#cfd8e3",
@@ -59,6 +62,7 @@ export const ALTERNATIVE_THEMES: Theme[] = [
     ice: "#404a56",
     waterway: "#26313d",
     border: "#8391a3",
+    revealBorder: "#c9d2dd",
     road: "#4a5768",
     urban: "#3a4552",
     labelText: "#d3dae3",
@@ -78,6 +82,7 @@ export const ALTERNATIVE_THEMES: Theme[] = [
     ice: "#ffffff",
     waterway: "#8fa9bd",
     border: "#b6a789",
+    revealBorder: "#7a6a4f",
     road: "#d7cab0",
     urban: "#eadcc1",
     labelText: "#4a4030",
