@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "preact/hooks";
 import { useSignal } from "@preact/signals";
 import {
   KERNELS,
+  NEARNESS_WEIGHT,
   QUESTIONS,
   buildDistribution,
   regionFit,
@@ -23,7 +24,6 @@ import {
   type LatLon,
   type Question,
   type RegionQuestion,
-  type ScoreBreakdown,
 } from "@whereabouts/shared";
 import type { GameMap } from "../map";
 import { MapView, usePaint } from "../ui/MapView";
@@ -31,7 +31,7 @@ import { Answer, Card, HudBottom, HudHeader, QuestionCard, ScoreParts, fmtKm } f
 import { PaintDev, PaintTools } from "../ui/PaintTools";
 import { Banner } from "../ui/Banner";
 import { DevDrawer } from "../ui/DevDrawer";
-import { cheatLiveScore, soloKernelId, soloMapDetail, soloPool, soloRegionKernelId, startOnPan } from "../settings";
+import { cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings";
 import { devMode } from "../dev";
 import { Icon } from "../ui/icons";
 
@@ -39,8 +39,32 @@ type PracticeQuestion = Question | RegionQuestion;
 
 const isRegion = (q: PracticeQuestion): q is RegionQuestion => q.kind === "region";
 
-function scoreQuestion(dist: Distribution, q: PracticeQuestion, k: Kernel): ScoreBreakdown {
-  return isRegion(q) ? scoreRegionQuestion(dist, q, k) : scoreDistribution(dist, q.answer, q.toleranceKm, k);
+/** What explains a score: A and B for a place, shape and nearness for a country. */
+type Parts = { A: number; B: number } | { shape: number; nearness: number };
+
+/** Places score with the chosen kernel; countries have their own rule (see regions.ts). */
+function scoreQuestion(dist: Distribution, q: PracticeQuestion, k: Kernel): { score: number; parts: Parts } {
+  if (isRegion(q)) {
+    const { score, shape, nearness } = scoreRegionQuestion(dist, q);
+    return { score, parts: { shape, nearness } };
+  }
+  const { score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, k);
+  return { score, parts: { A, B } };
+}
+
+function PartsLine({ parts }: { parts: Parts }) {
+  if ("A" in parts) return <ScoreParts A={parts.A} B={parts.B} />;
+  return (
+    <div class="parts">
+      <span>
+        shape <b>{Math.round(parts.shape)}</b>
+      </span>
+      <span>
+        nearness <b>{Math.round(parts.nearness)}</b> × {NEARNESS_WEIGHT} ={" "}
+        <b>{Math.round(parts.nearness * NEARNESS_WEIGHT)}</b>
+      </span>
+    </div>
+  );
 }
 
 function showAnswer(gameMap: GameMap, q: PracticeQuestion): void {
@@ -51,8 +75,6 @@ function showAnswer(gameMap: GameMap, q: PracticeQuestion): void {
 interface RoundResult {
   question: PracticeQuestion;
   score: number;
-  A: number;
-  B: number;
 }
 
 export function Solo() {
@@ -98,9 +120,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const [revealed, setRevealed] = useState<{ dist: Distribution; result: RoundResult } | null>(null);
   const hover = useSignal<LatLon | null>(null);
   const q = questions[index]!;
-  // Countries score with their own kernel; the dev drawer can change either.
-  const kernelSetting = isRegion(q) ? soloRegionKernelId : soloKernelId;
-  const kernel = kernelById(kernelSetting.value);
+  const kernel = kernelById(soloKernelId.value);
   const total = results.reduce((s, r) => s + r.score, 0);
   const cheating = devMode.value && cheatLiveScore.value;
 
@@ -141,8 +161,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
 
   function submit() {
     const dist = buildDistribution(paint.layer.toCells(), paint.floor.value);
-    const { score, A, B } = scoreQuestion(dist, q, kernel);
-    const result = { question: q, score, A, B };
+    const { score } = scoreQuestion(dist, q, kernel);
+    const result = { question: q, score };
     setResults((r) => [...r, result]);
     setRevealed({ dist, result });
     setPhase("reveal");
@@ -185,8 +205,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   // Re-score the revealed paint if the kernel changes on the reveal screen.
   const shownResult = useMemo(() => {
     if (!revealed) return null;
-    const { score, A, B } = scoreQuestion(revealed.dist, q, kernel);
-    return { score, A, B, fit: isRegion(q) ? regionFit(revealed.dist, q) : null };
+    const { score, parts } = scoreQuestion(revealed.dist, q, kernel);
+    return { score, parts, fit: isRegion(q) ? regionFit(revealed.dist, q) : null };
   }, [revealed, kernel.id]);
 
   const header = (
@@ -208,20 +228,24 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
         />{" "}
         Show live score and the real answer while painting
       </label>
-      <label class="check">
-        {isRegion(q) ? "Kernel for countries" : "Scoring kernel"}{" "}
-        <select
-          value={kernelSetting.value}
-          onChange={(e) => (kernelSetting.value = (e.target as HTMLSelectElement).value)}
-          style={{ flex: 1 }}
-        >
-          {KERNELS.map((k) => (
-            <option key={k.id} value={k.id}>
-              {k.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      {isRegion(q) ? (
+        <p class="hint">Countries score by shape and nearness, not a kernel: see regions.ts.</p>
+      ) : (
+        <label class="check">
+          Scoring kernel{" "}
+          <select
+            value={soloKernelId.value}
+            onChange={(e) => (soloKernelId.value = (e.target as HTMLSelectElement).value)}
+            style={{ flex: 1 }}
+          >
+            {KERNELS.map((k) => (
+              <option key={k.id} value={k.id}>
+                {k.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
     </Card>
   );
 
@@ -264,7 +288,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
       : "Move the mouse over the map to see the score for other answers.";
     if (h && !isRegion(q)) {
       const A = similarityToAnswer(revealed.dist, toXyz(h), q.toleranceKm, kernel);
-      const s = scoreFromParts(A, shownResult.B);
+      const s = "B" in shownResult.parts ? scoreFromParts(A, shownResult.parts.B) : 0;
       const d = greatCircleDistance(h, q.answer);
       hoverText = `If the answer were here: ${Math.round(s)} · ${fmtKm(d)} from the real answer (${(d / q.toleranceKm).toFixed(1)} tolerances)`;
     }
@@ -296,9 +320,9 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
         </div>
         <DevDrawer>
           <Card title="Score">
-            <ScoreParts A={shownResult.A} B={shownResult.B} />
+            <PartsLine parts={shownResult.parts} />
             {hoverText && <div class="hover-score">{hoverText}</div>}
-            <KernelComparison dist={revealed.dist} q={q} active={kernel.id} />
+            {!isRegion(q) && <KernelComparison dist={revealed.dist} q={q} active={kernel.id} />}
           </Card>
           {cheats}
           <PaintDev />
@@ -353,7 +377,7 @@ function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: string }) {
   const paint = usePaint();
   void paint.settledVersion.value;
   const dist = buildDistribution(paint.layer.toCells(), paint.floor.value);
-  const { score, A, B } = scoreQuestion(dist, q, kernelById(kernelId));
+  const { score, parts } = scoreQuestion(dist, q, kernelById(kernelId));
   return (
     <Card title="Live score">
       <p class="hint" style={{ margin: "0 0 6px" }}>
@@ -361,9 +385,9 @@ function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: string }) {
       </p>
       <div class="score">
         <div class="big">{Math.round(score)}</div>
-        <ScoreParts A={A} B={B} />
+        <PartsLine parts={parts} />
       </div>
-      <KernelComparison dist={dist} q={q} active={kernelId} />
+      {!isRegion(q) && <KernelComparison dist={dist} q={q} active={kernelId} />}
     </Card>
   );
 }

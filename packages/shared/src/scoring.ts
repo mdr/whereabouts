@@ -36,25 +36,10 @@ export const KERNELS: Kernel[] = [
   SINGLE_KERNEL,
   { id: "multi-equal", label: "Mixture r, 4r, 16r (equal)", scales: [1, 4, 16], weights: [1 / 3, 1 / 3, 1 / 3] },
   { id: "multi-weighted", label: "Mixture r, 4r, 16r (0.5 / 0.3 / 0.2)", scales: [1, 4, 16], weights: [0.5, 0.3, 0.2] },
-  { id: "region", label: "Mixture r, 16r (0.6 / 0.4)", scales: [1, 16], weights: [0.6, 0.4] },
 ];
 
 /** The kernel games and practice score with; the others are for comparison in the dev drawer. */
 export const DEFAULT_KERNEL: Kernel = KERNELS[1]!;
-
-/**
- * The kernel region questions score with, at r = R / 5 with R the country's
- * equivalent radius; calibrated against Natural Earth shapes. The narrow
- * component judges the shape: on its own, evenly painting a fraction c of a
- * country scores about 1000 - 500 (1/c - 1), a little more for the blur at
- * the edges. The wide one makes distance count: without it a paint that
- * misses the country scores by how spread out it is, wherever it is, so a
- * neighbour (Poland for Germany: 11) scored below a country on another
- * continent (Japan: 159). With it, neighbours beat far countries of similar
- * size. There is no middle component: at about R it mostly forgives leaving
- * part of the country out.
- */
-export const REGION_KERNEL: Kernel = KERNELS[3]!;
 
 export function kernelById(id: string): Kernel {
   return KERNELS.find((k) => k.id === id) ?? DEFAULT_KERNEL;

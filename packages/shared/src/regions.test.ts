@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { cellArea, cellToLatLng, UNITS } from "h3-js";
+import { cellArea, cellToLatLng, gridDisk, UNITS } from "h3-js";
 import regionsJson from "../regions.json" with { type: "json" };
 import { resolutionForTolerance } from "./paint.ts";
 import { QUESTIONS } from "./questions.ts";
 import {
-  regionAnswerFor,
+  NEARNESS_WEIGHT,
   regionCells,
   regionFit,
   regionScoringRes,
   scoreRegionQuestion,
   type RegionQuestion,
 } from "./regions.ts";
-import { buildDistribution, coarsenDistribution, scoreDistribution, scoreRegion } from "./scoring.ts";
+import { buildDistribution, coarsenDistribution, scoreDistribution } from "./scoring.ts";
 
 const REGIONS = regionsJson as RegionQuestion[];
 const byId = (id: string) => REGIONS.find((q) => q.id === id)!;
@@ -104,38 +104,58 @@ describe("region questions", () => {
   });
 });
 
-describe("the coverage factor", () => {
+describe("shape and nearness", () => {
   const germany = byId("germany-region");
   const res = resolutionForTolerance(germany.toleranceKm);
-  /** The kernel rule on its own, without the factor. */
-  const raw = (d: ReturnType<typeof coat>) =>
-    scoreRegion(coarsenDistribution(d, regionScoringRes(germany.toleranceKm)), regionAnswerFor(germany)).score;
+  const cells = regionCells(germany, res);
+  const area = (cs: string[]) => cs.reduce((s, h) => s + cellArea(h, UNITS.km2), 0);
 
-  it("scales down paint that covers only part of the country", () => {
-    // The western half of Germany: west of its centre, by longitude.
-    const west = coat(regionCells(germany, res).filter((h) => cellToLatLng(h)[1] < germany.answer.lon));
-    const { coverage, precision } = regionFit(west, germany);
-    expect(coverage).toBeGreaterThan(0.4);
-    expect(coverage).toBeLessThan(0.65);
-    const expected = raw(west) * (1 - precision * (1 - Math.sqrt(coverage)));
-    expect(scoreRegionQuestion(west, germany).score).toBeCloseTo(expected, 6);
-    expect(scoreRegionQuestion(west, germany).score).toBeLessThan(raw(west) * 0.85);
+  it("bloating the paint until half of it is off the country scores about 750", () => {
+    let bloated = cells;
+    for (let rings = 1; area(bloated) < 2 * area(cells); rings++) {
+      bloated = [...new Set(cells.flatMap((h) => gridDisk(h, rings)))];
+    }
+    const s = scoreRegionQuestion(coat(bloated), germany);
+    expect(s.score).toBe(s.shape);
+    expect(s.score).toBeGreaterThan(700);
+    expect(s.score).toBeLessThan(790);
+    expect(regionFit(coat(bloated), germany).coverage).toBeGreaterThan(0.95);
   });
 
-  it("leaves a paint that misses the country alone", () => {
-    // Poland shares a few coarse border cells with Germany, so it moves a point at most.
-    const poland = coat(regionCells(byId("poland-region"), res));
-    expect(scoreRegionQuestion(poland, germany).score).toBeGreaterThan(raw(poland) - 2);
-    expect(scoreRegionQuestion(coat(regionCells(byId("japan-region"), res)), germany).score).toBeCloseTo(
-      raw(coat(regionCells(byId("japan-region"), res))),
-      6,
+  it("covering half the country scores about 500, or what nearness gives it", () => {
+    const west = coat(cells.filter((h) => cellToLatLng(h)[1] < germany.answer.lon));
+    const s = scoreRegionQuestion(west, germany);
+    expect(s.shape).toBeGreaterThan(420);
+    expect(s.shape).toBeLessThan(580);
+    expect(s.score).toBeCloseTo(Math.max(s.shape, NEARNESS_WEIGHT * s.nearness), 9);
+    expect(s.score).toBeLessThan(620);
+  });
+
+  it("half on the country and half on a far one of its size scores about 750, like a 50/50 point answer", () => {
+    const japan = regionCells(byId("japan-region"), res);
+    const s = scoreRegionQuestion(coat([...cells, ...japan]), germany);
+    expect(s.score).toBeGreaterThan(720);
+    expect(s.score).toBeLessThan(790);
+  });
+
+  it("a paint that misses the country scores by its nearness", () => {
+    const s = scoreRegionQuestion(coat(regionCells(byId("poland-region"), res)), germany);
+    expect(s.shape).toBeLessThan(50);
+    expect(s.score).toBeCloseTo(NEARNESS_WEIGHT * s.nearness, 9);
+  });
+
+  it("uneven brushing costs little: a bright middle fading to half density at the edges", () => {
+    const R = Math.sqrt(area(cells) / Math.PI);
+    const uneven = buildDistribution(
+      cells.map((h) => {
+        const [lat, lon] = cellToLatLng(h);
+        const km =
+          Math.hypot(lat - germany.answer.lat, (lon - germany.answer.lon) * Math.cos((lat * Math.PI) / 180)) * 111;
+        return { lat, lon, intensity: Math.max(0.5, 1.5 - km / R), areaKm2: cellArea(h, UNITS.km2), h3: h };
+      }),
+      0.05,
     );
-    expect(scoreRegionQuestion({ points: [], floor: 1 }, germany).score).toBeCloseTo(raw({ points: [], floor: 1 }), 6);
-  });
-
-  it("does not punish an even hedge between the country and a neighbour", () => {
-    const hedge = coat([...regionCells(germany, res), ...regionCells(byId("poland-region"), res)]);
-    expect(scoreRegionQuestion(hedge, germany).score).toBeGreaterThan(raw(hedge) * 0.98);
+    expect(scoreRegionQuestion(uneven, germany).score).toBeGreaterThan(900);
   });
 });
 

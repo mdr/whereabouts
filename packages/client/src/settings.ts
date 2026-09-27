@@ -1,6 +1,6 @@
 /** Per-browser preferences and identity, persisted where it makes sense. */
 import { effect, signal } from "@preact/signals";
-import { DEFAULT_KERNEL, REGION_KERNEL, type MapDetail } from "@whereabouts/shared";
+import { DEFAULT_KERNEL, type MapDetail } from "@whereabouts/shared";
 
 function persisted<T extends string | boolean>(key: string, initial: T, storage: Storage = localStorage) {
   let start = initial;
@@ -54,8 +54,6 @@ try {
 } catch {
   /* storage unavailable */
 }
-/** Region questions ("Paint the whole of Germany") score with their own kernel. */
-export const soloRegionKernelId = persisted<string>("wa.practiceRegionKernel", REGION_KERNEL.id);
 /** What practice asks: places (points) or whole countries (regions). */
 export type PracticePool = "places" | "countries";
 export const soloPool = persisted<PracticePool>("wa.practicePool", "places");

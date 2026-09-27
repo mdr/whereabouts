@@ -288,44 +288,47 @@ pnpm workspace with three packages:
   of the country's equivalent radius, sqrt(area / π). Countries with
   disputed borders, or crossing the antimeridian, are left out for now.
   The outlines load only when practice asks for countries (their own
-  ~70 KB gzipped chunk). Scoring (`scoreRegion`) is the point rule with the
-  country as the answer: q is the country spread evenly by area, and
-  `score = 1000 - 500 (B - 2A + Q) / Q` with `A = <p,q>`, `Q = <q,q>`, taken
-  for each Gaussian component of the kernel on its own and then weighted. A
-  point is the case `Q = 1`. Dividing by `Q` keeps a large country on the
-  same scale: an even paint of the whole world scores about 500 either way.
-  Each component has its own `Q`: a wide component sees the country as one
-  compact blob, with `Q` near 1, so dividing the total by the total `Q` let
-  it swamp the narrow component and forgive leaving much of the country
-  out. Scores below 0 (a confident guess far away) are clamped. Countries
-  use their own kernel, `REGION_KERNEL`: `r` and `16r` weighted 0.6 / 0.4.
-  The narrow component judges the shape (evenly painting a fraction c of
-  the country scores about `1000 - 500 (1/c - 1)`, a little more for the
-  blur at the edges); the wide one makes distance count, so a neighbour
-  beats a far country of similar size (without it, a paint that misses
-  scores only by how spread out it is). A middle component, at about the
-  country's size, mostly forgave leaving part of it out, so there is none.
-  This was chosen by scoring synthetic paints (partial, shifted, blurred,
-  hedged) and real wrong countries against seven countries. Scoring runs one
-  H3 resolution coarser than painting (cells up to half the tolerance
-  across), which moved calibration scores by a few points and made it 6 to
-  15 times faster.
-  The kernel rule alone still forgave leaving part of a country out (65% of
-  Australia scored 879 in play), so `scoreRegionQuestion` scales it by a
-  coverage factor, `1 - precision (1 - sqrt(coverage))`. Precision is the
-  share of the paint (leaving out the world floor) on the country; coverage
-  is the share of the country that got at least half its fair share of that
-  paint, with partial credit below. So all the paint on the country gets the
-  full `sqrt(coverage)`, a paint that misses it is unchanged, and an even
-  hedge between the country and somewhere else is not punished. Both are
-  measured at the painting resolution, since coarse cells along a coast
-  would count much of an exact paint as off the country. This bends the rule
-  away from strictly proper, but the only nudge it adds is towards covering
-  the whole country. Painting 80% of a country scores about 850, two thirds
-  about 730, half about 550, the whole of it 985 or more. Against Germany,
-  painting Germany scores 998, France 422, Poland 323 and Japan 151. The
-  reveal outlines the country and frames it with the paint, and shows the
-  same coverage and precision.
+  ~70 KB gzipped chunk). Scoring (`scoreRegionQuestion`) is
+  `max(shape, 0.55 x nearness)`:
+  - **shape** compares the paint with the country cell by cell at the
+    painting resolution, `1000 - 500 sum (p - q)^2 / a / sum q^2 / a` with p
+    and q the paint's and the country's mass in each cell of area a. It is
+    the kernel score in the limit of a vanishing kernel width, and proper.
+    Putting a share P of the paint evenly on the country (the rest just
+    outside) scores `500 + 500 P`; covering a fraction c of it evenly scores
+    `1000 - 500 (1/c - 1)`; half on the country and half elsewhere scores
+    750, like a 50/50 point answer; uneven brushing (a bright middle fading
+    to half density at the edges) costs about 50.
+  - **nearness** is the kernel score (`scoreRegion`) under one Gaussian 16
+    tolerances wide, run one H3 resolution coarser than painting. A paint
+    that misses the country has a shape score near 0 whether it is next door
+    or on another continent; nearness is what puts a neighbour above a far
+    country. A paint on the right country gets at least 0.55 of its
+    nearness, about 545.
+
+  `scoreRegion` is the point rule with the country as the answer:
+  `1000 - 500 (B - 2A + Q) / Q` with `A = <p,q>`, `Q = <q,q>`, for each
+  Gaussian component on its own and then weighted, scores below 0 clamped. A
+  point is the case `Q = 1`; dividing by `Q` keeps a large country on the
+  same scale (an even paint of the whole world scores about 500), and each
+  component needs its own `Q`, or a wide one, which sees the country as a
+  compact blob with `Q` near 1, swamps the rest.
+
+  How it got here, from playtest feedback and calibration against synthetic
+  paints (partial, bloated, shifted, hedged, uneven) and real wrong
+  countries: a mixture of Gaussians about the tolerance wide forgave leaving
+  part of a country out (65% of Australia scored 879), and blurred the
+  country's edge so that paint spilling well outside it was nearly free
+  (South Africa with half the paint off it scored 883); a single narrow
+  Gaussian ranked Poland (11) below Japan (159) as an answer for Germany; a
+  coverage factor fixed the first but not the second. Taking the maximum of
+  two proper scores is not proper, but it only lifts misses, towards their
+  nearness. Now 80% of a country scores about 885, 65% about 757, half about
+  550, and South Africa bloated to about half on it 741; against Germany,
+  painting Germany scores 999, Poland 435, France 402 and Japan 76. The
+  reveal outlines the country and frames it with the paint, and shows how
+  much of the country was covered and how much of the paint was on it
+  (explanation only; neither feeds the score).
 
 ## Controls
 
