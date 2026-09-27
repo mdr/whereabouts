@@ -8,7 +8,8 @@
     "./questions.json": "./questions.json",
     "./regions.json": "./regions.json",
     "./flags.json": "./flags.json",
-    "./land.json": "./land.json"
+    "./land.json": "./land.json",
+    "./borders.json": "./borders.json"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

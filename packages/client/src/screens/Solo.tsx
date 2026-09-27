@@ -37,6 +37,8 @@ import { cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } fro
 import { devMode } from "../dev";
 import { Icon } from "../ui/icons";
 import { flagQuestions, loadRegions, regions } from "../regions";
+import { useBorders } from "../borders";
+import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal";
 
 type PracticeQuestion = Question | RegionQuestion;
 
@@ -200,6 +202,14 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     setPhase("paint");
   }
 
+  // A flag round's reveal names the country under the pointer, and where the
+  // paint mostly was. Loaded while the flag is still being painted.
+  const borders = useBorders(q.flag !== undefined);
+  const where = useMemo(
+    () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : null),
+    [revealed, borders],
+  );
+
   // Re-score the revealed paint if the kernel changes on the reveal screen.
   const shownResult = useMemo(() => {
     if (!revealed) return null;
@@ -293,6 +303,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     const last = index + 1 >= questions.length;
     return (
       <>
+        {borders && <FlagHover gameMap={paint.gameMap} borders={borders} />}
         <div class="hud">
           <div class="hud-top">
             {header}
@@ -306,6 +317,11 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
                 <div class="fit">
                   You covered {pct(shownResult.fit.coverage)} of {q.label}; {pct(shownResult.fit.precision)} of your
                   paint was on it
+                </div>
+              )}
+              {where && (
+                <div class="fit">
+                  Your paint: <PaintedIn where={where} answer={q.flag} whose="your" />
                 </div>
               )}
             </div>

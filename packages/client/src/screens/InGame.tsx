@@ -9,6 +9,7 @@ import { ConnectionNote } from "../ui/ConnectionNote";
 import { DevDrawer } from "../ui/DevDrawer";
 import { ConnectionDev } from "../ui/ConnectionDev";
 import { Reveal } from "./Reveal";
+import { loadBorders } from "../borders";
 import { Icon } from "../ui/icons";
 import { PlayersPanel } from "../ui/PlayersPanel";
 import { EndGameButton } from "../ui/HostControls";
@@ -33,6 +34,11 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   useEffect(() => {
     if (outlines) loadRegions().catch((err: unknown) => console.warn("could not load countries", err));
   }, [outlines]);
+  // And a game with flags, the borders its reveals name countries by.
+  const flags = view.config.mix.flags > 0;
+  useEffect(() => {
+    if (flags) loadBorders().catch((err: unknown) => console.warn("could not load borders", err));
+  }, [flags]);
 
   // New round: fresh layer, painting on unless spectating. After a reconnect
   // the server hands back what we had painted, so restore it.

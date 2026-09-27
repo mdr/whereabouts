@@ -1,5 +1,5 @@
 /**
- * The land mask for the "Trim sea" button (land.json, ~36 KB gzipped): its
+ * The land mask for the "Trim sea" button (land.json, ~110 KB gzipped): its
  * own chunk, fetched the first time the button is pressed and kept from then
  * on.
  */

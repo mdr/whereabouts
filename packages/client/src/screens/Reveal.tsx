@@ -1,8 +1,9 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import {
   PaintLayer,
   playerColour,
   type GameView,
+  type PaintedCountry,
   type PlayerView,
   type RevealView,
   type RoundResultView,
@@ -20,6 +21,8 @@ import { EndGameButton } from "../ui/HostControls";
 import { TakeSeatButton } from "../ui/TakeSeat";
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 import { useRegion } from "../regions";
+import { useBorders } from "../borders";
+import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal";
 
 /** Selection meaning "show nobody's paint", alongside null (everyone) and a player id. */
 const NONE = "none";
@@ -51,6 +54,17 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   // A country round shows the country's outline, once the outlines are loaded.
   const region = useRegion(reveal.question.regionId);
   const isCountry = reveal.question.regionId !== undefined;
+
+  // A flag round names the country under the pointer, and where each player's paint mostly was.
+  const answerFlag = reveal.question.flag;
+  const borders = useBorders(answerFlag !== undefined);
+  const where = useMemo(() => {
+    const m = new Map<string, PaintedCountry | null>();
+    if (borders)
+      for (const r of reveal.results)
+        if (r.paint) m.set(r.playerId, mainCountry(borders, PaintLayer.fromRecord(r.res, r.paint.cells).toCells()));
+    return m;
+  }, [borders, reveal.index]);
 
   useEffect(() => {
     paint.enabled.value = false;
@@ -86,6 +100,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   return (
     <>
       {dialog}
+      {borders && <FlagHover gameMap={paint.gameMap} borders={borders} />}
       <div class="hud">
         <div class="hud-top">
           <HudHeader
@@ -111,6 +126,11 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
                 was on it
               </div>
             )}
+            {mine && where.get(mine.playerId) && (
+              <div class="fit">
+                Your paint: <PaintedIn where={where.get(mine.playerId)!} answer={answerFlag} whose="your" />
+              </div>
+            )}
           </div>
           <ConnectionNote conn={conn} />
         </div>
@@ -129,6 +149,8 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
                   you={p.id === view.you.id}
                   ready={ready.has(p.id)}
                   selected={p.id === selected}
+                  where={where.get(p.id) ?? null}
+                  answerFlag={answerFlag}
                   onSelect={() => setSelected(selected === p.id ? null : p.id)}
                   onKick={
                     view.you.isHost && p.id !== view.you.id
@@ -209,6 +231,8 @@ function RevealRow({
   you,
   ready,
   selected,
+  where,
+  answerFlag,
   onSelect,
   onKick,
 }: {
@@ -217,13 +241,16 @@ function RevealRow({
   you: boolean;
   ready: boolean;
   selected: boolean;
+  /** A flag round: the country most of their paint was in. */
+  where: PaintedCountry | null;
+  answerFlag?: string;
   onSelect: () => void;
   /** Host only: remove this player. */
   onKick?: () => void;
 }) {
   const delta = p.previousRank !== null ? p.previousRank - p.rank : 0;
   return (
-    <li class={`${selected ? "selected" : ""} ${you ? "you" : ""}`} onClick={onSelect}>
+    <li class={`${selected ? "selected" : ""} ${you ? "you" : ""} ${where ? "with-where" : ""}`} onClick={onSelect}>
       <span class="swatch" style={{ background: playerColour(p.colour) }} />
       <span class="name">
         <span class="name-text">{p.name}</span>
@@ -261,6 +288,11 @@ function RevealRow({
       <span class="score-num" title="Total so far">
         {Math.round(p.score).toLocaleString()}
       </span>
+      {where && (
+        <span class="where">
+          <PaintedIn where={where} answer={answerFlag} whose={you ? "your" : `${p.name}'s`} />
+        </span>
+      )}
     </li>
   );
 }

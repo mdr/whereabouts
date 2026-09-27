@@ -233,6 +233,20 @@ ask, alongside landmarks, place names and whole countries (the question mix),
 and no country is asked twice, whether by name, whole or by flag. Players are
 sent the flag's code, never the name, until the reveal.
 
+The reveal shows the flag and name of the country under the pointer (on a
+phone, the one tapped, until the next tap or a drag), and under each player
+the country with the largest share of their paint, if it has at least a fifth
+("Peru 62%", green when it is the answer), so a wrong guess shows whose flag
+it was taken for. Each paint cell counts where its centre is. Within a small
+or scattered country's tolerance of its answer, the point counts as that
+country, even on a neighbour's land (paint on San Marino, or near Tuvalu,
+which is far smaller than a cell); for the pointer, so does within 12 pixels
+of it. Where Natural Earth marks an area indeterminate (part of Western
+Sahara, Palestine, the Siachen Glacier), in the rest of Western Sahara (its
+Morocco includes the part Morocco controls) and in Crimea, no country is
+named. Elsewhere Natural Earth's lines of control stand (Kashmir, the Golan
+Heights).
+
 A point's answer is Natural Earth's label point for small countries and the
 area centroid for large ones. Its tolerance is half the country's equivalent
 radius, at least 15 km; for small and scattered island states, at least a
@@ -255,7 +269,11 @@ Sicily and Crete stay; the Canaries, Svalbard and Alaska go; Malaysia chains
 to 800 km to keep Borneo), simplified to about 1.5 km. The tolerance is set
 in the build script. `flags.json`, built alongside, has one flag round per
 country, 194 in all: the region's id, or a point and tolerance. Northern
-Cyprus, Somaliland, Taiwan and Kosovo are left out.
+Cyprus, Somaliland, Taiwan and Kosovo are left out. `borders.json`, also
+built alongside, has every flag country's land for the reveal, coarser
+(simplified to about 5 km, islands under 50 km² left out) and delta-encoded:
+about 65 KB gzipped, fetched when a game with flags starts or a flag round
+comes up in practice.
 
 The client fetches both files on demand (their own chunk); the server holds
 regions.json and scores multiplayer rounds, which tell clients only the

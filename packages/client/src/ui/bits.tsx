@@ -132,8 +132,8 @@ export function QuestionCard({
   );
 }
 
-/** A flag round's flag. No alt text naming it: that would give the answer away. */
-function FlagImage({ code }: { code: string }) {
+/** The picture of a flag, once its chunk has loaded. */
+function useFlagUrl(code: string): string | null {
   const [src, setSrc] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
@@ -143,7 +143,19 @@ function FlagImage({ code }: { code: string }) {
       live = false;
     };
   }, [code]);
+  return src;
+}
+
+/** A flag round's flag. No alt text naming it: that would give the answer away. */
+function FlagImage({ code }: { code: string }) {
+  const src = useFlagUrl(code);
   return <div class="flag">{src && <img src={src} alt="The flag" draggable={false} />}</div>;
+}
+
+/** A small flag beside a country's name, which says the name: no alt text of its own. */
+export function SmallFlag({ code }: { code: string }) {
+  const src = useFlagUrl(code);
+  return <span class="small-flag">{src && <img src={src} alt="" draggable={false} />}</span>;
 }
 
 /**

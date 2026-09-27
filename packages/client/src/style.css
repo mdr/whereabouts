@@ -1894,3 +1894,71 @@ button.danger.solid {
 .facts.region-fit {
   margin-top: 8px;
 }
+
+/* A flag round's reveal: the flag under the pointer, and where paint mostly was. */
+.small-flag {
+  flex: none;
+  display: inline-block;
+  width: 20px;
+  aspect-ratio: 4 / 3;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #3a414b;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+  vertical-align: middle;
+}
+.small-flag img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.flag-hover {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--panel-bg);
+  color: var(--panel-fg);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+}
+.flag-hover .small-flag {
+  width: 32px;
+}
+.painted-in {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--panel-fg);
+}
+.painted-in .country {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.painted-in .share {
+  color: var(--muted);
+}
+.painted-in.right .country {
+  color: #66bb6a;
+}
+.reveal-list li.with-where {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+/* Under the name, lined up with it past the swatch. */
+.reveal-list .where {
+  flex-basis: 100%;
+  display: flex;
+  min-width: 0;
+  padding-left: 18px;
+  font-size: 12px;
+}

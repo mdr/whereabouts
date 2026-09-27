@@ -140,7 +140,10 @@ pnpm workspace with three packages:
   15). The kinds are landmarks (photos), place names (cities, capitals and
   small countries), whole countries ("Paint the whole of …") and flags (a
   country's flag in place of its name, painted whole or, for a small country,
-  asked as a point; see docs/country-scoring.md). The default is 2 of each,
+  asked as a point; see docs/country-scoring.md). A flag round's reveal
+  shows the flag of the country under the pointer (tapped, on a phone), and
+  under each player the country most of their paint was in ("Peru 62%",
+  green when it is the answer). The default is 2 of each,
   8 rounds. A strip of coloured cells, one per round,
   shows the mix to host and guests; the rounds come in a random order, and no
   country is asked twice. A setup saved before the mix is converted to one.
