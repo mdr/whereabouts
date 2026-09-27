@@ -115,6 +115,39 @@ function ringAreaKm2(ring) {
   return Math.abs((sum * R * R) / 2);
 }
 
+/** Whether [lon, lat] is inside a ring (ray casting, in degrees: fine at island scale). */
+function inRing([x, y], ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+const onLand = (pt, polygons) =>
+  polygons.some(([outer, ...holes]) => inRing(pt, outer) && !holes.some((h) => inRing(pt, h)));
+
+/**
+ * Where a small country is asked: its label point, unless that is out at sea
+ * (São Tomé and Príncipe's lies between its two islands, 70 km from each),
+ * then the middle of its largest island. Within LABEL_SLACK_KM of the land
+ * counts as on it: the 1:50m outline of Vatican City misses its label point.
+ */
+const LABEL_SLACK_KM = 5;
+function islandAnswer(p, polygons) {
+  const label = { lat: round4(p.LABEL_Y), lon: round4(p.LABEL_X) };
+  const pt = [label.lon, label.lat];
+  const near = polygons.some((poly) => poly[0].some((v) => km(pt, v) <= LABEL_SLACK_KM));
+  if (near || onLand(pt, polygons)) return label;
+  const largest = polygons.reduce((a, b) => (polygonAreaKm2(b) > polygonAreaKm2(a) ? b : a));
+  const cells = cellsOf(largest, 9);
+  const middle = cells.length > 0 ? centroid(cells) : null;
+  if (middle && onLand([middle.lon, middle.lat], [largest])) return middle;
+  const [lon, lat] = largest[0][0];
+  return { lat: round4(lat), lon: round4(lon) };
+}
+
 /** A polygon's area, km²: its outer ring less its holes. */
 const polygonAreaKm2 = ([outer, ...holes]) => ringAreaKm2(outer) - holes.reduce((s, h) => s + ringAreaKm2(h), 0);
 
@@ -302,13 +335,11 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
       `${label}: painted, ${kept.length} part(s), ${Math.round(100 * keptShare)}% of its land, tolerance ${region.toleranceKm} km`,
     );
   } else {
-    // Small and scattered countries are asked at their label point (a
-    // centroid could fall in the sea between islands); larger ones at their
-    // centre.
+    // Small and scattered countries are asked on land near their label
+    // point (a centroid could fall in the sea between islands); larger ones
+    // at their centre.
     const island = why === "small" || why === "scattered";
-    const answer = island
-      ? { lat: round4(p.LABEL_Y), lon: round4(p.LABEL_X) }
-      : centroid(all.flatMap((poly) => cellsOf(poly, 4)));
+    const answer = island ? islandAnswer(p, all) : centroid(all.flatMap((poly) => cellsOf(poly, 4)));
     const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => km([answer.lon, answer.lat], pt))));
     const toleranceKm = pointToleranceKm(area, spread, island);
     flags.push({ id: `flag-${flag}`, flag, label, wiki, answer, toleranceKm });
