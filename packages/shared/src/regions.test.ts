@@ -3,8 +3,15 @@ import { cellArea, cellToLatLng, UNITS } from "h3-js";
 import regionsJson from "../regions.json" with { type: "json" };
 import { resolutionForTolerance } from "./paint.ts";
 import { QUESTIONS } from "./questions.ts";
-import { regionCells, regionFit, regionScoringRes, scoreRegionQuestion, type RegionQuestion } from "./regions.ts";
-import { buildDistribution, coarsenDistribution, scoreDistribution } from "./scoring.ts";
+import {
+  regionAnswerFor,
+  regionCells,
+  regionFit,
+  regionScoringRes,
+  scoreRegionQuestion,
+  type RegionQuestion,
+} from "./regions.ts";
+import { buildDistribution, coarsenDistribution, scoreDistribution, scoreRegion } from "./scoring.ts";
 
 const REGIONS = regionsJson as RegionQuestion[];
 const byId = (id: string) => REGIONS.find((q) => q.id === id)!;
@@ -91,8 +98,44 @@ describe("region questions", () => {
       ]),
       germany,
     );
+    expect(both.coverage).toBeGreaterThan(0.95);
     expect(both.precision).toBeGreaterThan(0.4);
     expect(both.precision).toBeLessThan(0.6);
+  });
+});
+
+describe("the coverage factor", () => {
+  const germany = byId("germany-region");
+  const res = resolutionForTolerance(germany.toleranceKm);
+  /** The kernel rule on its own, without the factor. */
+  const raw = (d: ReturnType<typeof coat>) =>
+    scoreRegion(coarsenDistribution(d, regionScoringRes(germany.toleranceKm)), regionAnswerFor(germany)).score;
+
+  it("scales down paint that covers only part of the country", () => {
+    // The western half of Germany: west of its centre, by longitude.
+    const west = coat(regionCells(germany, res).filter((h) => cellToLatLng(h)[1] < germany.answer.lon));
+    const { coverage, precision } = regionFit(west, germany);
+    expect(coverage).toBeGreaterThan(0.4);
+    expect(coverage).toBeLessThan(0.65);
+    const expected = raw(west) * (1 - precision * (1 - Math.sqrt(coverage)));
+    expect(scoreRegionQuestion(west, germany).score).toBeCloseTo(expected, 6);
+    expect(scoreRegionQuestion(west, germany).score).toBeLessThan(raw(west) * 0.85);
+  });
+
+  it("leaves a paint that misses the country alone", () => {
+    // Poland shares a few coarse border cells with Germany, so it moves a point at most.
+    const poland = coat(regionCells(byId("poland-region"), res));
+    expect(scoreRegionQuestion(poland, germany).score).toBeGreaterThan(raw(poland) - 2);
+    expect(scoreRegionQuestion(coat(regionCells(byId("japan-region"), res)), germany).score).toBeCloseTo(
+      raw(coat(regionCells(byId("japan-region"), res))),
+      6,
+    );
+    expect(scoreRegionQuestion({ points: [], floor: 1 }, germany).score).toBeCloseTo(raw({ points: [], floor: 1 }), 6);
+  });
+
+  it("does not punish an even hedge between the country and a neighbour", () => {
+    const hedge = coat([...regionCells(germany, res), ...regionCells(byId("poland-region"), res)]);
+    expect(scoreRegionQuestion(hedge, germany).score).toBeGreaterThan(raw(hedge) * 0.98);
   });
 });
 

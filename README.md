@@ -306,14 +306,26 @@ pnpm workspace with three packages:
   scores only by how spread out it is). A middle component, at about the
   country's size, mostly forgave leaving part of it out, so there is none.
   This was chosen by scoring synthetic paints (partial, shifted, blurred,
-  hedged) and real wrong countries against seven countries; two thirds of
-  a country painted evenly scores about 870. Scoring runs one
+  hedged) and real wrong countries against seven countries. Scoring runs one
   H3 resolution coarser than painting (cells up to half the tolerance
   across), which moved calibration scores by a few points and made it 6 to
-  15 times faster. Against Germany, painting Germany scores 998, France
-  422, Poland 323 and Japan 151. The reveal outlines the country and frames
-  it with the paint, and says how much of the country was covered and how
-  much of the paint was on it.
+  15 times faster.
+  The kernel rule alone still forgave leaving part of a country out (65% of
+  Australia scored 879 in play), so `scoreRegionQuestion` scales it by a
+  coverage factor, `1 - precision (1 - sqrt(coverage))`. Precision is the
+  share of the paint (leaving out the world floor) on the country; coverage
+  is the share of the country that got at least half its fair share of that
+  paint, with partial credit below. So all the paint on the country gets the
+  full `sqrt(coverage)`, a paint that misses it is unchanged, and an even
+  hedge between the country and somewhere else is not punished. Both are
+  measured at the painting resolution, since coarse cells along a coast
+  would count much of an exact paint as off the country. This bends the rule
+  away from strictly proper, but the only nudge it adds is towards covering
+  the whole country. Painting 80% of a country scores about 850, two thirds
+  about 730, half about 550, the whole of it 985 or more. Against Germany,
+  painting Germany scores 998, France 422, Poland 323 and Japan 151. The
+  reveal outlines the country and frames it with the paint, and shows the
+  same coverage and precision.
 
 ## Controls
 
