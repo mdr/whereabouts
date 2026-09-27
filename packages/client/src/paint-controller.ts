@@ -6,6 +6,7 @@
 import { Point, type LngLat, type MapMouseEvent, type MapTouchEvent } from "maplibre-gl";
 import { batch, signal } from "@preact/signals";
 import {
+  FILL_DENSITY,
   PaintLayer,
   paintAmount,
   resolutionForTolerance,
@@ -14,9 +15,19 @@ import {
   type LatLon,
 } from "@whereabouts/shared";
 import type { GameMap } from "./map";
+import type { CountryFiller } from "./fill";
 import { isTyping } from "./keys";
 
-export type Tool = "pan" | "paint" | "erase";
+export type Tool = "pan" | "paint" | "erase" | "fill";
+
+/** How near the pointer a small country's answer counts as under it, for the Fill tool. */
+const FILL_SMALL_PX = 12;
+
+/** One undo step: the cells, and which countries are filled. */
+interface Snapshot {
+  cells: Map<string, number>;
+  fills: Map<string, string[]>;
+}
 
 export class PaintController {
   readonly tool = signal<Tool>("paint");
@@ -38,6 +49,14 @@ export class PaintController {
   readonly enabled = signal(false);
   /** The current question's tolerance, set by the active screen (used by dev tooling). */
   readonly toleranceKm = signal(100);
+  /**
+   * Whether the Fill tool is offered: a round asking for a country, on the
+   * Political map. Set by the screen; the countries come in `filler`.
+   */
+  readonly fillable = signal(false);
+  filler: CountryFiller | null = null;
+  /** The countries filled, by flag code, with the cells each was filled with. */
+  private fills = new Map<string, string[]>();
 
   layer = new PaintLayer(4);
   private spaceHeld = false;
@@ -98,6 +117,10 @@ export class PaintController {
     // A zoom under a still pointer (the scroll wheel) changes the footprint too.
     const onZoom = () => this.refreshCursor();
     const onUp = () => this.endStroke();
+    // The Fill tool acts on a click (a tap, on a phone), so the map still drags.
+    const onClick = (e: MapMouseEvent) => {
+      if (this.canFill()) this.fillAt(e.lngLat);
+    };
     const onKeyDown = (e: KeyboardEvent) => {
       if (isTyping(e.target)) return;
       if (e.code === "Space" && !this.spaceHeld) {
@@ -122,6 +145,7 @@ export class PaintController {
       if (e.key === "1") this.tool.value = "pan";
       if (e.key === "2") this.tool.value = "paint";
       if (e.key === "3") this.tool.value = "erase";
+      if (e.key === "4" && this.fillable.value) this.tool.value = "fill";
       if (e.key === "[") this.setBrushPx(this.brushPx.value / 1.25);
       if (e.key === "]") this.setBrushPx(this.brushPx.value * 1.25);
     };
@@ -154,6 +178,7 @@ export class PaintController {
       }
     };
     map.on("mousedown", onDown);
+    map.on("click", onClick);
     map.on("mousemove", onMove);
     map.on("mouseout", onOut);
     map.on("zoom", onZoom);
@@ -169,6 +194,7 @@ export class PaintController {
     window.addEventListener("keyup", onKeyUp);
     this.disposers.push(() => {
       map.off("mousedown", onDown);
+      map.off("click", onClick);
       map.off("mousemove", onMove);
       map.off("mouseout", onOut);
       map.off("zoom", onZoom);
@@ -187,6 +213,13 @@ export class PaintController {
     // [ and ] or the slider resize the brush while the mouse stays put.
     this.disposers.push(this.brushPx.subscribe(() => this.refreshCursor()));
     this.disposers.push(this.enabled.subscribe(() => this.applyInteraction()));
+    // No Fill tool this round: back to the brush.
+    this.disposers.push(
+      this.fillable.subscribe((on) => {
+        if (!on && this.tool.value === "fill") this.tool.value = "paint";
+        this.refreshCursor();
+      }),
+    );
     this.disposers.push(
       this.version.subscribe((v) => {
         if (this.settleTimer !== null) window.clearTimeout(this.settleTimer);
@@ -208,6 +241,7 @@ export class PaintController {
     batch(() => {
       this.toleranceKm.value = toleranceKm;
       this.layer = new PaintLayer(resolutionForTolerance(toleranceKm));
+      this.fills = new Map();
       this.version.value++;
       this.undoStack = [];
       this.redoStack = [];
@@ -220,7 +254,35 @@ export class PaintController {
     if (this.layer.isEmpty) return;
     this.pushHistory();
     this.layer.clear();
+    this.fills = new Map();
     this.queueRender();
+  }
+
+  /**
+   * Fill the country at a point with an even coat (see fill.ts), or take the
+   * fill off if it is already filled; one undoable step. Nothing at sea.
+   */
+  fillAt(lngLat: LngLat): void {
+    const f = this.countryAt(lngLat);
+    if (!f) return;
+    this.pushHistory();
+    const filled = this.fills.get(f.flag);
+    if (filled) {
+      this.layer.removeCoat(filled, FILL_DENSITY);
+      this.fills.delete(f.flag);
+    } else {
+      const cells = this.filler!.cells(f, this.layer.res);
+      this.layer.addCoat(cells, FILL_DENSITY);
+      this.fills.set(f.flag, cells);
+    }
+    this.queueRender();
+    this.refreshCursor();
+  }
+
+  private countryAt(lngLat: LngLat) {
+    if (!this.filler) return null;
+    const p = { lat: lngLat.lat, lon: lngLat.lng };
+    return this.filler.countryAt(p, this.gameMap.metersPerPixel(p.lat) / 1000, FILL_SMALL_PX);
   }
 
   /**
@@ -240,13 +302,22 @@ export class PaintController {
   // ---- undo / redo: one entry per stroke, clear or trim ---------------------
 
   private static readonly HISTORY_LIMIT = 50;
-  private undoStack: Map<string, number>[] = [];
-  private redoStack: Map<string, number>[] = [];
+  private undoStack: Snapshot[] = [];
+  private redoStack: Snapshot[] = [];
   readonly canUndo = signal(false);
   readonly canRedo = signal(false);
 
+  private snapshot(): Snapshot {
+    return { cells: new Map(this.layer.cells), fills: new Map(this.fills) };
+  }
+
+  private restore(s: Snapshot): void {
+    this.layer.replaceCells(s.cells);
+    this.fills = s.fills;
+  }
+
   private pushHistory(): void {
-    this.undoStack.push(new Map(this.layer.cells));
+    this.undoStack.push(this.snapshot());
     if (this.undoStack.length > PaintController.HISTORY_LIMIT) this.undoStack.shift();
     this.redoStack = [];
     this.syncHistoryFlags();
@@ -255,8 +326,8 @@ export class PaintController {
   undo(): void {
     const prev = this.undoStack.pop();
     if (!prev) return;
-    this.redoStack.push(new Map(this.layer.cells));
-    this.layer.replaceCells(prev);
+    this.redoStack.push(this.snapshot());
+    this.restore(prev);
     this.syncHistoryFlags();
     this.queueRender();
   }
@@ -264,8 +335,8 @@ export class PaintController {
   redo(): void {
     const next = this.redoStack.pop();
     if (!next) return;
-    this.undoStack.push(new Map(this.layer.cells));
-    this.layer.replaceCells(next);
+    this.undoStack.push(this.snapshot());
+    this.restore(next);
     this.syncHistoryFlags();
     this.queueRender();
   }
@@ -315,7 +386,24 @@ export class PaintController {
   }
 
   private canPaint(): boolean {
-    return this.enabled.value && this.tool.value !== "pan" && !this.spaceHeld && !this.middleFrom;
+    return (
+      this.enabled.value &&
+      this.tool.value !== "pan" &&
+      this.tool.value !== "fill" &&
+      !this.spaceHeld &&
+      !this.middleFrom
+    );
+  }
+
+  private canFill(): boolean {
+    return (
+      this.enabled.value &&
+      this.tool.value === "fill" &&
+      this.fillable.value &&
+      this.filler !== null &&
+      !this.spaceHeld &&
+      !this.middleFrom
+    );
   }
 
   private applyInteraction(): void {
@@ -326,6 +414,7 @@ export class PaintController {
     const el = map.getContainer();
     el.classList.toggle("tool-paint", canPaint && this.tool.value === "paint");
     el.classList.toggle("tool-erase", canPaint && this.tool.value === "erase");
+    el.classList.toggle("tool-fill", this.canFill());
     this.refreshCursor();
   }
 
@@ -338,7 +427,8 @@ export class PaintController {
   private beginStroke(point: Point): void {
     this.pushHistory();
     this.painting = true;
-    this.stroking.value = this.tool.value === "pan" ? null : this.tool.value;
+    const tool = this.tool.value;
+    this.stroking.value = tool === "paint" || tool === "erase" ? tool : null;
     this.lastStampPoint = null;
     this.strokeTo(point);
     this.queueRender();
@@ -364,6 +454,12 @@ export class PaintController {
    * would touch, at the resolution the layer would pick. Nothing else.
    */
   private updateCursor(lngLat: LngLat): void {
+    if (this.canFill()) {
+      // The country a click would fill, or unfill (dotted).
+      const f = this.countryAt(lngLat);
+      this.gameMap.setCursorShape(f ? this.filler!.outline(f) : null, f ? this.fills.has(f.flag) : false);
+      return;
+    }
     if (!this.canPaint()) {
       this.hideCursor();
       return;

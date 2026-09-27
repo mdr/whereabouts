@@ -10,6 +10,7 @@ import { DevDrawer } from "../ui/DevDrawer";
 import { ConnectionDev } from "../ui/ConnectionDev";
 import { Reveal } from "./Reveal";
 import { loadBorders } from "../borders";
+import { useFillTool } from "../fill";
 import { Icon } from "../ui/icons";
 import { PlayersPanel } from "../ui/PlayersPanel";
 import { EndGameButton } from "../ui/HostControls";
@@ -25,6 +26,13 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const sittingOut = view.you.watching || view.you.spectating;
   const roundKey = view.round?.index ?? view.reveal?.index ?? -1;
   const guessing = view.phase === "guessing";
+  // The Fill tool, for a country on the Political map; on through the
+  // reveal, so a run of country rounds keeps the tool chosen.
+  const question = view.round?.question ?? view.reveal?.question;
+  useFillTool(
+    paint,
+    view.config.mapDetail === "political" && (question?.regionId !== undefined || question?.flag !== undefined),
+  );
   const sendTimer = useRef<number | null>(null);
   const lastSentVersion = useRef(-1);
   const { dialog, ask } = useConfirm();

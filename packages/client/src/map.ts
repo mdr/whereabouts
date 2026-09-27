@@ -412,6 +412,12 @@ export class GameMap {
     void this.source(CURSOR_SOURCE)?.setData({ type: "FeatureCollection", features });
   }
 
+  /** Outline a shape as the cursor instead (the country the Fill tool would fill); dotted when it would unfill. */
+  setCursorShape(shape: GeoJSON.MultiPolygon | null, erase = false): void {
+    const features: GeoJSON.Feature[] = shape ? [{ type: "Feature", properties: { erase }, geometry: shape }] : [];
+    void this.source(CURSOR_SOURCE)?.setData({ type: "FeatureCollection", features });
+  }
+
   /**
    * Colour the paint layer with a single hue (a player's colour) instead of
    * the theme ramp. Pass null to restore the ramp.

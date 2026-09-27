@@ -203,6 +203,33 @@ export class PaintLayer {
     return { res: eraseRes, rings, cells: touched };
   }
 
+  /** Add an even coat of `v` over these cells (a Fill: at or coarser than the layer, disjoint). */
+  addCoat(cells: readonly string[], v: number): void {
+    for (const h of cells) this.add(h, v);
+    this.version++;
+  }
+
+  /**
+   * Take back a coat laid with addCoat. Where the eraser or Trim sea has
+   * since split one of its cells (so it is gone), the coat comes off the
+   * pieces instead; finer paint inside a cell still there is left alone.
+   */
+  removeCoat(cells: readonly string[], v: number): void {
+    const split = new Set<string>();
+    for (const h of cells) {
+      if (this.cells.has(h)) this.add(h, -v);
+      else split.add(h);
+    }
+    if (split.size > 0) {
+      const resolutions = [...new Set([...split].map(getResolution))];
+      for (const h of [...this.cells.keys()]) {
+        const r = getResolution(h);
+        if (resolutions.some((sr) => sr < r && split.has(cellToParent(h, sr)))) this.add(h, -v);
+      }
+    }
+    this.version++;
+  }
+
   private add(h: string, w: number): void {
     const cur = this.cells.get(h) ?? 0;
     const next = cur + w;

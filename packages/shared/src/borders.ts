@@ -18,6 +18,7 @@
 import { greatCircleDistance, type LatLon } from "./geo.ts";
 import type { FlagQuestion } from "./flags.ts";
 import type { PaintCell } from "./paint.ts";
+import type { FillShape } from "./fill.ts";
 
 export interface BorderData {
   /** The flag's ISO code, as in flags.json. */
@@ -52,6 +53,7 @@ export class Borders {
   private readonly countries: Country[] = [];
   private readonly small: { f: FlagQuestion; near: number }[] = [];
   private readonly none: Float64Array[];
+  private readonly byFlag = new Map<string, { rings: Float64Array[]; near?: number }>();
 
   constructor(data: BordersData, flags: readonly FlagQuestion[]) {
     this.none = data.none.map(decodeRing);
@@ -61,6 +63,7 @@ export class Borders {
       if (!f) continue;
       if (d.near) this.small.push({ f, near: d.near });
       const rings = d.rings.map(decodeRing);
+      this.byFlag.set(f.flag, { rings, near: d.near });
       if (rings.length === 0) continue;
       const box: Country["box"] = [Infinity, Infinity, -Infinity, -Infinity];
       for (const r of rings)
@@ -111,6 +114,17 @@ export class Borders {
       if (f) mass.set(f, (mass.get(f) ?? 0) + m);
     }
     return [...mass].map(([country, m]) => ({ country, share: m / total })).sort((a, b) => b.share - a.share);
+  }
+
+  /** A country's land, to fill (see fill.ts): its rings, answer and `near`. */
+  fillShape(f: FlagQuestion): FillShape {
+    const d = this.byFlag.get(f.flag);
+    const rings = (d?.rings ?? []).map((r) => {
+      const out: number[][] = [];
+      for (let i = 0; i < r.length; i += 2) out.push([r[i]!, r[i + 1]!]);
+      return out;
+    });
+    return { rings, answer: f.answer, near: d?.near };
   }
 
   private nearSmall(p: LatLon): FlagQuestion | null {

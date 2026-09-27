@@ -38,6 +38,7 @@ import { devMode } from "../dev";
 import { Icon } from "../ui/icons";
 import { flagQuestions, loadRegions, regions } from "../regions";
 import { useBorders } from "../borders";
+import { useFillTool } from "../fill";
 import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal";
 
 type PracticeQuestion = Question | RegionQuestion;
@@ -154,6 +155,9 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
 
   // The chosen map detail while painting; everything on the reveal.
   const detail = soloMapDetail.value;
+  // The Fill tool, for a country on the Political map. It stays on through
+  // the reveal, so a run of country rounds keeps the tool chosen.
+  useFillTool(paint, detail === "political" && (isRegion(q) || q.flag !== undefined));
   useEffect(() => {
     paint.gameMap.setDetail(phase === "reveal" ? "reveal" : detail);
   }, [phase, detail]);

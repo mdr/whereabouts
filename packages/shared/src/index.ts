@@ -9,3 +9,4 @@ export * from "./regions.ts";
 export * from "./flags.ts";
 export * from "./land.ts";
 export * from "./borders.ts";
+export * from "./fill.ts";
