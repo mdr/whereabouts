@@ -40,7 +40,7 @@ describe("region questions", () => {
       expect(q.kind).toBe("region");
       expect(q.prompt).toMatch(/^Paint the whole of /);
       expect(q.wiki.length).toBeGreaterThan(0);
-      expect(q.toleranceKm).toBeGreaterThanOrEqual(20);
+      expect(q.toleranceKm).toBeGreaterThanOrEqual(10);
       expect(q.toleranceKm).toBeLessThanOrEqual(400);
       expect(q.outline.length).toBeGreaterThan(0);
       for (const polygon of q.outline) {

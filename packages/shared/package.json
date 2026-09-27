@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./questions.json": "./questions.json",
-    "./regions.json": "./regions.json"
+    "./regions.json": "./regions.json",
+    "./flags.json": "./flags.json"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

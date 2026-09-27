@@ -16,6 +16,8 @@ export interface Question {
   /** English Wikipedia article title, linked from the reveal. */
   wiki?: string;
   region: "world" | "uk";
+  /** A flag round asked as a point: the flag shown in place of a name (see flags.ts). */
+  flag?: string;
 }
 
 export function commonsImageUrl(file: string, width = 900): string {

@@ -184,6 +184,8 @@ export interface QuestionView {
   toleranceKm: number;
   /** Set for a country question ("Paint the whole of Mexico"): its id in regions.json, for the outline. */
   regionId?: string;
+  /** A flag round: the flag's ISO code, shown in place of a name. */
+  flag?: string;
 }
 
 export interface RoundView {

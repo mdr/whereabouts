@@ -54,6 +54,8 @@ export interface RegionQuestion {
   toleranceKm: number;
   /** GeoJSON MultiPolygon coordinates: [lon, lat] rings, outer ring first. */
   outline: number[][][][];
+  /** A flag round: the flag shown in place of the name (see flags.ts). */
+  flag?: string;
 }
 
 /**
