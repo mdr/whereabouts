@@ -363,16 +363,19 @@ pnpm workspace with three packages:
 | Pan while painting  | hold `Space`, or drag with the middle button                  |
 | Brush size          | slider, or `[` and `]`                                        |
 | Undo / redo         | `Ctrl+Z` / `Ctrl+Shift+Z` (⌘ on Mac), or the buttons          |
-| Trim sea            | the Trim sea button: removes paint more than ~50 km from land |
+| Trim sea            | the Trim sea button: removes paint more than ~20 km from land |
 | Zoom                | scroll wheel                                                  |
 | Submit / next       | `Enter` (practice)                                            |
 | List these keys     | `?`, or the keyboard button in the toolbar                    |
 
 Trim sea uses a land mask (`packages/shared/land.json`, built by
-`scripts/build-land.mjs` from Natural Earth's 1:10m land and minor islands),
-fetched on the first press. It is one undoable step and says how much it
-removed. It is the player's choice, not a free gain: a blob centred on a
-coastal answer loses its sea side and can score a little lower.
+`scripts/build-land.mjs` from Natural Earth's 1:10m land and minor islands):
+the H3 cells about 17 km across that touch land, about 110 KB gzipped,
+fetched on the first press. Most sea paint within 10 km of land stays,
+and none beyond about 20 km does. It is one undoable step and says
+how much it removed. It is the player's choice, not a free gain: a blob
+centred on a coastal answer loses its sea side and can score lower (up to
+about 85 points in testing), while island answers often gain.
 
 The outline under the pointer is the brush footprint: the exact hex cells the next stamp will touch, at the
 resolution the layer picks for that brush size, so at world zoom you see the

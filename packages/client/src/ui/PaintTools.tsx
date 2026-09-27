@@ -200,7 +200,7 @@ export function Distribution() {
 }
 
 /**
- * Remove paint more than about 50 km out to sea, as one undoable step. The
+ * Remove paint more than about 20 km out to sea, as one undoable step. The
  * land mask loads on the first press. For a moment the button says what it
  * did. It does not promise a better score: a blob centred on a coastal
  * answer loses its sea side (see land.ts).
@@ -230,7 +230,7 @@ function TrimSea({ enabled }: { enabled: boolean }) {
   };
   return (
     <button
-      title="Remove paint out at sea, more than about 50 km from land (Undo brings it back)"
+      title="Remove paint out at sea, more than about 20 km from land (Undo brings it back)"
       onClick={() => void trim()}
       disabled={!enabled || busy || paint.layer.isEmpty}
       aria-live="polite"

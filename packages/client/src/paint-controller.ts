@@ -5,7 +5,14 @@
  */
 import { Point, type LngLat, type MapMouseEvent, type MapTouchEvent } from "maplibre-gl";
 import { batch, signal } from "@preact/signals";
-import { PaintLayer, resolutionForTolerance, trimSea, type LandMask, type LatLon } from "@whereabouts/shared";
+import {
+  PaintLayer,
+  paintAmount,
+  resolutionForTolerance,
+  trimSea,
+  type LandMask,
+  type LatLon,
+} from "@whereabouts/shared";
 import type { GameMap } from "./map";
 import { isTyping } from "./keys";
 
@@ -221,10 +228,9 @@ export class PaintController {
    * the share of the paint's mass removed: 0 when there was none at sea.
    */
   trimSea(mask: LandMask): number {
-    const kept = trimSea(this.layer.cells, mask);
-    if (kept.size === this.layer.cells.size) return 0;
-    const mass = (cells: Map<string, number>) => [...cells.values()].reduce((s, v) => s + v, 0);
-    const share = 1 - mass(kept) / mass(this.layer.cells);
+    const kept = trimSea(this.layer.cells, mask, this.layer.res);
+    const share = 1 - paintAmount(kept) / paintAmount(this.layer.cells);
+    if (!(share > 1e-9)) return 0;
     this.pushHistory();
     this.layer.replaceCells(kept);
     this.queueRender();

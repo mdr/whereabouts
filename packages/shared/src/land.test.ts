@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cellToChildren, cellToParent, latLngToCell } from "h3-js";
+import { cellToChildren, cellToParent, getResolution, latLngToCell } from "h3-js";
 import landJson from "../land.json" with { type: "json" };
 import flagsJson from "../flags.json" with { type: "json" };
 import regionsJson from "../regions.json" with { type: "json" };
@@ -69,7 +69,39 @@ describe("land mask", () => {
         [ocean, 1],
       ]),
       mask,
+      6,
     );
     expect([...kept]).toEqual([[london, 2]]);
+  });
+
+  it("splits a coarse cell that is partly at sea into its cells near land, at the same density", () => {
+    // A res-3 cell on the Italian coast near Naples: part land, part Tyrrhenian Sea.
+    const coast = at(40.7, 14.0, 3);
+    const kept = trimSea(new Map([[coast, 3]]), mask, 7);
+    expect(kept.has(coast)).toBe(false);
+    expect(kept.size).toBeGreaterThan(0);
+    expect(kept.size).toBeLessThan(cellToChildren(coast, 5).length);
+    for (const [h, v] of kept) {
+      expect(getResolution(h)).toBe(5);
+      expect(v).toBe(3);
+      expect(mask.nearLand(h)).toBe(true);
+    }
+    // Never finer than the layer: at a coarse layer it splits only that far.
+    for (const h of trimSea(new Map([[coast, 3]]), mask, 4).keys()) expect(getResolution(h)).toBeLessThanOrEqual(4);
+    // A split child that is also painted on its own gets both densities.
+    const child = [...kept.keys()][0]!;
+    expect(
+      trimSea(
+        new Map([
+          [coast, 3],
+          [child, 1],
+        ]),
+        mask,
+        7,
+      ).get(child),
+    ).toBe(4);
+    // A coarse cell wholly on land stays as it is.
+    const inland = at(5, 22, 3);
+    expect([...trimSea(new Map([[inland, 1]]), mask, 7)]).toEqual([[inland, 1]]);
   });
 });

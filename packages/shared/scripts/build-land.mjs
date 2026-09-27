@@ -1,21 +1,21 @@
 // Builds land.json, the land mask the "Trim sea" button uses: every H3 cell
-// at LAND_RES (see src/land.ts) that touches land, plus one ring around them,
-// compacted. From Natural Earth's 1:10m land and minor islands (public
+// at LAND_RES (see src/land.ts) that touches land, compacted. From Natural Earth's 1:10m land and minor islands (public
 // domain): the 1:50m land misses atolls such as the Marshall Islands and
 // Tonga, which have questions of their own.
 //
 // Usage: node scripts/build-land.mjs [dir with ne_10m_land.geojson and ne_10m_minor_islands.geojson]
 // Without a directory it downloads both from the Natural Earth repository.
-// Takes about a minute.
+// Takes about five minutes.
 //
-// A painted cell is trimmed when its LAND_RES cell is not in the mask. With
-// cells about 26 km across and the extra ring, that removes paint more than
-// about 50 km from any land and keeps everything nearer, so a coast or an
-// island is never nibbled.
+// A painted cell is trimmed when its LAND_RES cell is not in the mask. A
+// cell touching land by a sliver is kept whole, so with cells about 17 km
+// across, sea paint within roughly 0 to 20 km of land stays and the rest
+// goes. There is no further margin: answers are all on land (a test checks),
+// so the mask need not keep open sea for them.
 import { readFileSync, writeFileSync } from "node:fs";
-import { compactCells, gridDisk, polygonToCellsExperimental, POLYGON_TO_CELLS_FLAGS } from "h3-js";
+import { compactCells, polygonToCellsExperimental, POLYGON_TO_CELLS_FLAGS } from "h3-js";
 
-const LAND_RES = 4;
+const LAND_RES = 5;
 const NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson";
 const FILES = ["ne_10m_land", "ne_10m_minor_islands"];
 
@@ -42,11 +42,7 @@ for (const name of FILES) {
     }
   }
 }
-const mask = new Set(land);
-for (const h of land) for (const n of gridDisk(h, 1)) mask.add(n);
-const cells = compactCells([...mask]).sort();
+const cells = compactCells([...land]).sort();
 const json = JSON.stringify({ res: LAND_RES, cells });
 writeFileSync(new URL("../land.json", import.meta.url), json + "\n");
-console.log(
-  `${land.size} land cells, ${mask.size} with the ring, ${cells.length} compacted: ${Math.round(json.length / 1024)} KB`,
-);
+console.log(`${land.size} land cells, ${cells.length} compacted: ${Math.round(json.length / 1024)} KB`);

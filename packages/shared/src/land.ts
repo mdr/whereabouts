@@ -1,17 +1,21 @@
 /**
- * The land mask behind the "Trim sea" button: the H3 cells at a fixed
- * resolution that touch land, plus a ring around them, compacted (land.json,
- * built by scripts/build-land.mjs). A painted cell of any resolution is
- * "near land" when it overlaps the mask; trimming keeps only those. Paint
- * more than about 50 km from any land goes, and coasts and islands keep all
- * theirs.
+ * The land mask behind the "Trim sea" button: the H3 res-5 cells (about
+ * 17 km across) that touch land, compacted (land.json, built by
+ * scripts/build-land.mjs). A painted cell of any resolution is "near land"
+ * when it overlaps the mask; trimming keeps only those. Around Italy that
+ * kept 82% of sea paint within 10 km of land, 17% at 10 to 20 km, and none
+ * beyond. Paint is never finer than its question's painting resolution, so
+ * the painted cell holding an answer always holds land too: no answer is
+ * trimmed, even one between islands (a test checks every answer).
  *
- * Trimming is the player's choice, like the eraser, not a free gain: every
- * answer is on land, but a blob centred on a coastal answer loses its sea
- * side and leans inland, which the point rule scores lower (Cape Town, 899
- * down to 881, in testing). Whole countries nearly always gain.
+ * Trimming is the player's choice, like the eraser, not a free gain: a blob
+ * centred on a coastal answer loses its sea side and leans inland, which the
+ * point rule scores lower (Malta, painted twice its tolerance across, 899
+ * down to 815 in testing; Cape Town 899 to 866), while island and flag
+ * answers often gain (Palau's flag 900 to 992). Whole countries nearly
+ * always gain.
  */
-import { cellToParent, getResolution } from "h3-js";
+import { cellArea, cellToChildren, cellToParent, getResolution, UNITS } from "h3-js";
 
 export interface LandMaskData {
   /** The mask's finest resolution. */
@@ -21,7 +25,8 @@ export interface LandMaskData {
 }
 
 export class LandMask {
-  private readonly res: number;
+  /** The mask's finest resolution. */
+  readonly res: number;
   private readonly cells: Set<string>;
   /** Every strict ancestor of a mask cell: a coarse cell with land somewhere inside. */
   private readonly ancestors = new Set<string>();
@@ -40,9 +45,36 @@ export class LandMask {
   }
 }
 
-/** The paint without its cells out at sea; the same map when there are none. */
-export function trimSea(cells: ReadonlyMap<string, number>, mask: LandMask): Map<string, number> {
+/**
+ * The paint without its cells out at sea. A cell coarser than the mask that
+ * is partly at sea (a big brush at world zoom lays cells 100 km across) is
+ * split into its children that are near land, at the same density: the
+ * mask's resolution, or the layer's finest (`finestRes`) if that is
+ * coarser, since paint is never finer than its layer. Where a split child
+ * meets a painted cell of its own, their densities add, as overlapping
+ * cells always do.
+ */
+export function trimSea(cells: ReadonlyMap<string, number>, mask: LandMask, finestRes: number): Map<string, number> {
+  const target = Math.min(mask.res, finestRes);
   const kept = new Map<string, number>();
-  for (const [h, v] of cells) if (mask.nearLand(h)) kept.set(h, v);
+  const add = (h: string, v: number) => kept.set(h, (kept.get(h) ?? 0) + v);
+  for (const [h, v] of cells) {
+    if (!mask.nearLand(h)) continue;
+    if (getResolution(h) >= target) {
+      add(h, v);
+      continue;
+    }
+    const children = cellToChildren(h, target);
+    const land = children.filter((c) => mask.nearLand(c));
+    if (land.length === children.length) add(h, v);
+    else for (const c of land) add(c, v);
+  }
   return kept;
+}
+
+/** How much paint there is, in intensity × km²: intensity is a density, so a cell holds intensity times its area. */
+export function paintAmount(cells: ReadonlyMap<string, number>): number {
+  let sum = 0;
+  for (const [h, v] of cells) sum += v * cellArea(h, UNITS.km2);
+  return sum;
 }
