@@ -3,6 +3,9 @@ import { Game, generateCode, nextHostAfter } from "./game.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { PASS_SCORE } from "./scoring.ts";
 import type { Question } from "./questions.ts";
+import { regionCells, type RegionQuestion } from "./regions.ts";
+import type { GameConfig, QuestionView } from "./protocol.ts";
+import regionsJson from "../regions.json" with { type: "json" };
 import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS } from "./protocol.ts";
 import { PLAYER_COLOURS } from "./colours.ts";
 
@@ -765,5 +768,80 @@ describe("host ends the game early", () => {
     expect(g.phase).toBe("reveal");
     expect(g.end("tokA").ok).toBe(true);
     expect(g.phase).toBe("results");
+  });
+});
+
+describe("country rounds", () => {
+  const REGIONS = regionsJson as RegionQuestion[];
+  const germany = REGIONS.find((q) => q.id === "germany-region")!;
+
+  function game(countries: GameConfig["countries"], rounds: number, regions = REGIONS) {
+    const g = new Game("ABCD", pool, { rounds, roundMs: 60_000, countries }, 42, regions);
+    g.join("tokA", "Alice", T0);
+    g.join("tokB", "Bob", T0 + 1);
+    return g;
+  }
+
+  /** Play every round through, passing, and collect each round's question. */
+  function questions(g: Game): QuestionView[] {
+    g.start("tokA", T0);
+    const seen: QuestionView[] = [];
+    let now = T0;
+    while (g.phase !== "results") {
+      seen.push(g.view("tokA", now).round!.question);
+      now += 60_000;
+      g.tick(now);
+      g.next("tokA", now);
+    }
+    return seen;
+  }
+
+  it("with countries off, a game asks exactly the places it asked before countries existed", () => {
+    const plain = new Game("ABCD", pool, { rounds: 3, roundMs: 60_000 }, 42);
+    plain.join("tokA", "Alice", T0);
+    plain.join("tokB", "Bob", T0 + 1);
+    const before = questions(plain).map((q) => q.prompt);
+    // The same seed, now with the countries on hand but switched off.
+    const g = game("off", 3);
+    expect(questions(g).map((q) => q.prompt)).toEqual(before);
+  });
+
+  it("mixed in makes about one round in four a country; only makes them all countries", () => {
+    const mixed = questions(game("mixed", 8, REGIONS));
+    expect(mixed.filter((q) => q.regionId).length).toBe(2);
+    const only = questions(game("only", 5));
+    expect(only.every((q) => q.regionId && q.prompt.startsWith("Paint the whole of"))).toBe(true);
+    expect(new Set(only.map((q) => q.regionId)).size).toBe(5);
+    // Without the countries on hand (a test pool, say), the rounds are places.
+    expect(questions(game("only", 3, [])).some((q) => q.regionId)).toBe(false);
+  });
+
+  it("scores a country round against the outline; a pass still scores 250", () => {
+    const g = game("only", 1, [germany]);
+    g.start("tokA", T0);
+    const q = g.view("tokA", T0).round!.question;
+    expect(q.regionId).toBe("germany-region");
+    expect(JSON.stringify(g.view("tokA", T0).round)).not.toContain("outline");
+    const res = resolutionForTolerance(q.toleranceKm);
+    const cells = Object.fromEntries(regionCells(germany, res).map((h) => [h, 1]));
+    expect(g.setPaint("tokA", { cells, floor: 0.05 }).ok).toBe(true);
+    g.tick(T0 + 60_000);
+    const reveal = g.view("tokB", T0 + 60_000).reveal!;
+    expect(reveal.question.regionId).toBe("germany-region");
+    expect(reveal.label).toBe("Germany");
+    const alice = reveal.results.find((r) => r.playerId === "p1")!;
+    expect(alice.score).toBeGreaterThan(985);
+    expect(alice.region!.coverage).toBeGreaterThan(0.95);
+    expect(alice.region!.precision).toBeGreaterThan(0.95);
+    const bob = reveal.results.find((r) => r.playerId === "p2")!;
+    expect(bob.score).toBe(PASS_SCORE.score);
+    expect(bob.region).toBeUndefined();
+  });
+
+  it("the host can switch countries in the lobby", () => {
+    const g = game("off", 3);
+    expect(g.configure("tokA", { countries: "mixed" })).toEqual({ ok: true, changed: true });
+    expect(g.configure("tokA", { countries: "mixed" })).toEqual({ ok: true, changed: false });
+    expect(g.config.countries).toBe("mixed");
   });
 });

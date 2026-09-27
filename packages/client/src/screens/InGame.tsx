@@ -16,6 +16,7 @@ import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog";
 import { askedToWatch, startOnPan } from "../settings";
 import { TakeSeatButton } from "../ui/TakeSeat";
 import { sound } from "../sound";
+import { loadRegions } from "../regions";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint();
@@ -26,6 +27,12 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const sendTimer = useRef<number | null>(null);
   const lastSentVersion = useRef(-1);
   const { dialog, ask } = useConfirm();
+
+  // A game with countries needs their outlines at the reveal: fetch them now.
+  const countries = view.config.countries;
+  useEffect(() => {
+    if (countries !== "off") loadRegions().catch((err: unknown) => console.warn("could not load countries", err));
+  }, [countries]);
 
   // New round: fresh layer, painting on unless spectating. After a reconnect
   // the server hands back what we had painted, so restore it.
@@ -102,7 +109,9 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             total={round.total}
             right={<Countdown msRemaining={() => conn.msUntil(round.deadline)} />}
           />
-          <QuestionCard q={round.question} />
+          <QuestionCard q={round.question}>
+            {round.question.regionId && <p class="hint region-hint">Cover the whole country: its shape counts.</p>}
+          </QuestionCard>
           <ConnectionNote conn={conn} />
           {view.you.watching && (
             <Card>

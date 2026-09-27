@@ -12,8 +12,9 @@ import {
   type Kernel,
 } from "./scoring.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
-import { pickQuestions, type Question } from "./questions.ts";
-import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS } from "./protocol.ts";
+import { pickQuestions, shuffle, type Question } from "./questions.ts";
+import { regionFit, scoreRegionQuestion, type RegionQuestion } from "./regions.ts";
+import { COUNTRY_MIXES, MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS } from "./protocol.ts";
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -22,6 +23,7 @@ import type {
   PaintSubmission,
   Phase,
   PlayerView,
+  QuestionView,
   RevealView,
   RoundResultView,
 } from "./protocol.ts";
@@ -31,6 +33,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   roundMs: 60_000,
   photoShare: 0.5,
   mapDetail: "minimal",
+  countries: "off",
   kernelId: DEFAULT_KERNEL.id,
 };
 
@@ -67,6 +70,8 @@ export class Game {
   readonly code: string;
   config: GameConfig;
   private readonly pool: Question[];
+  /** Countries for "Paint the whole of …" rounds; the server passes regions.json. */
+  private readonly regions: RegionQuestion[];
   private readonly kernel: Kernel;
 
   phase: Phase = "lobby";
@@ -74,7 +79,7 @@ export class Game {
   private hostToken: string | null = null;
   private nextPlayerId = 1;
 
-  private questions: Question[] = [];
+  private questions: (Question | RegionQuestion)[] = [];
   private roundIndex = -1;
   private deadline = 0;
   private submissions = new Map<string, Submission>();
@@ -87,11 +92,18 @@ export class Game {
 
   private seed: number;
 
-  constructor(code: string, pool: Question[], config: Partial<GameConfig> = {}, seed = Date.now()) {
+  constructor(
+    code: string,
+    pool: Question[],
+    config: Partial<GameConfig> = {},
+    seed = Date.now(),
+    regions: RegionQuestion[] = [],
+  ) {
     this.seed = seed;
     this.code = code;
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.pool = pool;
+    this.regions = regions;
     this.kernel = kernelById(this.config.kernelId);
     if (pool.length === 0) throw new Error("question pool is empty");
   }
@@ -220,8 +232,7 @@ export class Game {
     if (!this.isHost(token)) return fail("only the host can start");
     if (this.phase !== "lobby") return fail("game already started");
     if (this.playing().length === 0) return fail("no players");
-    const count = Math.min(this.config.rounds, this.pool.length);
-    this.questions = pickQuestions(this.pool, count, this.seed, this.config.photoShare);
+    this.questions = this.pickRounds();
     for (const p of this.players.values()) {
       p.scores = [];
       p.previousRank = null;
@@ -230,6 +241,21 @@ export class Game {
     this.results = null;
     this.beginRound(0, now);
     return OK_CHANGED;
+  }
+
+  /**
+   * The rounds' questions: the country share of COUNTRY_MIXES drawn from the
+   * countries (while they last), the rest places in the host's photo mix, in
+   * a shuffled order. With countries off this is exactly pickQuestions.
+   */
+  private pickRounds(): (Question | RegionQuestion)[] {
+    const share = COUNTRY_MIXES.find((c) => c.id === this.config.countries)?.share ?? 0;
+    const countries = Math.min(this.regions.length, Math.round(this.config.rounds * share));
+    const places = Math.min(this.pool.length, this.config.rounds - countries);
+    const picked = pickQuestions(this.pool, places, this.seed, this.config.photoShare);
+    if (countries === 0) return picked;
+    const regions = shuffle(this.regions, this.seed ^ 0x2545f491).slice(0, countries);
+    return shuffle<Question | RegionQuestion>([...picked, ...regions], this.seed ^ 0x5bd1e995);
   }
 
   /** Host tunes rounds, round length, the question mix and map detail while everyone is still in the lobby. */
@@ -241,7 +267,8 @@ export class Game {
       next.rounds === this.config.rounds &&
       next.roundMs === this.config.roundMs &&
       next.photoShare === this.config.photoShare &&
-      next.mapDetail === this.config.mapDetail
+      next.mapDetail === this.config.mapDetail &&
+      next.countries === this.config.countries
     )
       return OK_SAME;
     this.config = next;
@@ -511,11 +538,20 @@ export class Game {
       let score: number;
       let A: number;
       let B: number;
+      let region: RoundResultView["region"];
       let paint: PaintSubmission | null = null;
       if (sub && Object.keys(sub.paint.cells).length > 0) {
         const layer = PaintLayer.fromRecord(res, sub.paint.cells);
         const dist = buildDistribution(layer.toCells(), sub.paint.floor);
-        ({ score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, this.kernel));
+        if (q.kind === "region") {
+          const s = scoreRegionQuestion(dist, q);
+          ({ score } = s);
+          A = 0;
+          B = 0;
+          region = { shape: s.shape, nearness: s.nearness, ...regionFit(dist, q) };
+        } else {
+          ({ score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, this.kernel));
+        }
         paint = sub.paint;
       } else {
         // A pass, or a blank map at the deadline: the two score alike, so
@@ -523,14 +559,14 @@ export class Game {
         ({ score, A, B } = PASS_SCORE);
       }
       p.scores[this.roundIndex] = score;
-      results.push({ playerId: p.id, score, A, B, paint, res });
+      results.push({ playerId: p.id, score, A, B, paint, res, ...(region ? { region } : {}) });
     }
     results.sort((a, b) => b.score - a.score);
     this.phase = "reveal";
     this.reveal = {
       index: this.roundIndex,
       total: this.questions.length,
-      question: { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm },
+      question: questionView(q),
       answer: q.answer,
       label: q.label,
       wiki: q.wiki,
@@ -609,7 +645,7 @@ export class Game {
         ? {
             index: this.roundIndex,
             total: this.questions.length,
-            question: { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm },
+            question: questionView(q),
             deadline: this.deadline,
           }
         : null,
@@ -655,4 +691,10 @@ export function generateCode(rnd: () => number = Math.random, length = 4): strin
   let out = "";
   for (let i = 0; i < length; i++) out += alphabet[Math.floor(rnd() * alphabet.length)];
   return out;
+}
+
+/** What players see of a question: never the answer, only the country's id, which the prompt names anyway. */
+function questionView(q: Question | RegionQuestion): QuestionView {
+  if (q.kind === "region") return { prompt: q.prompt, toleranceKm: q.toleranceKm, regionId: q.id };
+  return { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm };
 }

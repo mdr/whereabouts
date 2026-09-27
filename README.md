@@ -139,7 +139,10 @@ pnpm workspace with three packages:
   length (30, 45, 60, 90 or 120 seconds) and the question mix: photos, mostly
   photos, even (the default), mostly names or place names. Rounds use a − / +
   stepper, round length a row of pills, and the question mix a slider with
-  five fixed stops. The host also picks the map detail while guessing, from
+  five fixed stops. Whole countries (pills: Off, the default; Mixed in, about
+  one round in four; Only) adds "Paint the whole of …" rounds, drawn from the
+  countries while they last, with the photo mix applying to the rest; with
+  countries off a game picks exactly the places it did before. The host also picks the map detail while guessing, from
   four picture choices (each a preview of the same frame, made by
   `scripts/map-detail-previews.mjs`): Minimal (coastlines only, the
   default), Water (adds rivers and lakes), Physical (adds relief, natural
@@ -277,8 +280,14 @@ pnpm workspace with three packages:
   again for the next round, since they are hints while guessing.
   In dev mode it also shows `A` and `B` and a live "score if the answer were
   here" readout on hover.
-- **Whole countries** (practice only, for now): the Practise panel on the
-  front page chooses Places or Whole countries. A country question ("Paint
+- **Whole countries**: in practice, the Practise panel on the front page
+  chooses Places or Whole countries; in a game, the host's Whole countries
+  setting mixes them in. The server holds `regions.json` and scores country
+  rounds with `scoreRegionQuestion` (16 players in 170 to 270 ms); a round
+  tells clients only the country's id, and a client fetches the outlines
+  when a game with countries starts, to draw the country at the reveal,
+  where each player's score card also says how much of the country they
+  covered and how much of their paint was on it. A country question ("Paint
   the whole of Germany") has an area as its answer, not a point: 37
   countries from Natural Earth's 1:50m outlines (public domain), built into
   `packages/shared/regions.json` by `scripts/build-regions.mjs`, which keeps

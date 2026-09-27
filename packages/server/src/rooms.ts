@@ -25,7 +25,13 @@ import {
   generateCode,
   type GameConfig,
   type Question,
+  type RegionQuestion,
 } from "@whereabouts/shared";
+// The countries for "Paint the whole of …" rounds. The client loads the same
+// file on demand; the server holds it all.
+import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" };
+
+const REGIONS = regionsJson as RegionQuestion[];
 
 export interface ActorData {
   token: string;
@@ -52,11 +58,12 @@ export const realClock: Clock = {
 export interface GameRoomDeps {
   clock: Clock;
   pool: Question[];
+  regions: RegionQuestion[];
   config: Partial<GameConfig>;
 }
 
 /** Set once at startup; rooms are constructed by Rivalis so cannot take arguments. */
-let deps: GameRoomDeps = { clock: realClock, pool: QUESTIONS, config: {} };
+let deps: GameRoomDeps = { clock: realClock, pool: QUESTIONS, regions: REGIONS, config: {} };
 export function configureGameRooms(next: Partial<GameRoomDeps>): void {
   deps = { ...deps, ...next };
 }
@@ -76,7 +83,7 @@ export class GameRoom extends Room<ActorData> {
   declare private emptyTimer: unknown;
 
   protected override onCreate(): void {
-    this.game = new Game(this.id, deps.pool, deps.config);
+    this.game = new Game(this.id, deps.pool, deps.config, Date.now(), deps.regions);
     this.actorsByToken = new Map();
     this.timer = null;
     this.emptyTimer = null;

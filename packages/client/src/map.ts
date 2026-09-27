@@ -499,6 +499,21 @@ export class GameMap {
     );
   }
 
+  /** Frame a country's outline (GeoJSON MultiPolygon coordinates) together with paint. */
+  fitRegionAndPaint(
+    answer: LatLon,
+    outline: number[][][][],
+    paint: GeoJSON.FeatureCollection,
+    toleranceKm: number,
+  ): void {
+    const parts = outline.map((coordinates): GeoJSON.Feature => ({
+      type: "Feature",
+      properties: {},
+      geometry: { type: "Polygon", coordinates },
+    }));
+    this.fitAnswerAndPaint(answer, { type: "FeatureCollection", features: [...paint.features, ...parts] }, toleranceKm);
+  }
+
   /** Ease so that about eight tolerances span 40% of the viewport width. */
   focusOn(answer: LatLon, toleranceKm: number): void {
     const widthPx = this.map.getContainer().clientWidth;

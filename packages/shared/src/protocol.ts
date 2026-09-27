@@ -81,6 +81,17 @@ export const PHOTO_MIXES = [
 ] as const;
 
 /**
+ * Whether a game asks whole countries ("Paint the whole of Mexico") among its
+ * places, and how many: the share of rounds, rounded, while countries last.
+ */
+export const COUNTRY_MIXES = [
+  { id: "off", label: "Off", share: 0 },
+  { id: "mixed", label: "Mixed in", share: 0.25 },
+  { id: "only", label: "Only", share: 1 },
+] as const;
+export type CountryMix = (typeof COUNTRY_MIXES)[number]["id"];
+
+/**
  * How much of the map shows while guessing, least first. The reveal always
  * shows everything; place names never show while guessing.
  */
@@ -105,6 +116,7 @@ export const ConfigureSchema = z.object({
     .refine((v) => PHOTO_MIXES.some((m) => m.share === v), "unsupported question mix")
     .optional(),
   mapDetail: z.enum(MAP_DETAILS.map((d) => d.id) as [MapDetail, ...MapDetail[]]).optional(),
+  countries: z.enum(COUNTRY_MIXES.map((c) => c.id) as [CountryMix, ...CountryMix[]]).optional(),
 });
 export type ConfigurePatch = z.infer<typeof ConfigureSchema>;
 
@@ -142,6 +154,8 @@ export interface GameConfig {
   photoShare: number;
   /** How much of the map shows while guessing (one of MAP_DETAILS). */
   mapDetail: MapDetail;
+  /** Whether rounds ask whole countries too (one of COUNTRY_MIXES). */
+  countries: CountryMix;
   kernelId: string;
 }
 
@@ -168,6 +182,8 @@ export interface QuestionView {
   prompt: string;
   image?: string;
   toleranceKm: number;
+  /** Set for a country question ("Paint the whole of Mexico"): its id in regions.json, for the outline. */
+  regionId?: string;
 }
 
 export interface RoundView {
@@ -181,8 +197,11 @@ export interface RoundView {
 export interface RoundResultView {
   playerId: string;
   score: number;
+  /** The point rule's parts; 0 in a country round, which reports `region` instead. */
   A: number;
   B: number;
+  /** A country round's parts (see regions.ts), for a paint that was scored. */
+  region?: { shape: number; nearness: number; coverage: number; precision: number };
   /** Null when the player made no guess. */
   paint: PaintSubmission | null;
   /** H3 resolution the paint was made at, for rendering. */

@@ -12,7 +12,14 @@ function view(isHost: boolean): GameView {
   return {
     code: "AB12",
     phase: "lobby",
-    config: { rounds: 5, roundMs: 60000, photoShare: 0.5, mapDetail: "minimal", kernelId: "multi-equal" },
+    config: {
+      rounds: 5,
+      roundMs: 60000,
+      photoShare: 0.5,
+      mapDetail: "minimal",
+      countries: "off",
+      kernelId: "multi-equal",
+    },
     serverTime: 0,
     you: { id: "p1", isHost, spectating: false, watching: false, locked: false, paint: null },
     players: [
@@ -93,7 +100,13 @@ describe("Lobby setup", () => {
     const { container } = render(<Lobby conn={conn} view={view(false)} />);
     expect(container.querySelector(".pills, .stepper, input[type=range], .detail-picker")).toBeNull();
     const tiles = [...container.querySelectorAll(".setup-summary .tile")].map((t) => t.textContent);
-    expect(tiles).toEqual(["5rounds", "60 sper round", "Evenquestions", "Minimalmap · coastlines only"]);
+    expect(tiles).toEqual([
+      "5rounds",
+      "60 sper round",
+      "Evenquestions",
+      "Offwhole countries",
+      "Minimalmap · coastlines only",
+    ]);
     // Nothing is highlighted on first load.
     expect(container.querySelector(".tile.changed")).toBeNull();
   });

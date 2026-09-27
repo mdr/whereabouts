@@ -19,6 +19,7 @@ import { HostTag } from "../ui/PlayerList";
 import { EndGameButton } from "../ui/HostControls";
 import { TakeSeatButton } from "../ui/TakeSeat";
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
+import { useRegion } from "../regions";
 
 /** Selection meaning "show nobody's paint", alongside null (everyone) and a player id. */
 const NONE = "none";
@@ -47,10 +48,16 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   const [selected, setSelected] = useState<string | null>(null);
   const { dialog, ask } = useConfirm();
 
+  // A country round shows the country's outline, once the outlines are loaded.
+  const region = useRegion(reveal.question.regionId);
+  const isCountry = reveal.question.regionId !== undefined;
+
   useEffect(() => {
     paint.enabled.value = false;
-    paint.gameMap.showReveal(reveal.answer, reveal.question.toleranceKm);
-  }, [reveal.index]);
+    if (!isCountry) paint.gameMap.showReveal(reveal.answer, reveal.question.toleranceKm);
+    else if (region) paint.gameMap.showRegionReveal(region.outline);
+    else paint.gameMap.clearReveal();
+  }, [reveal.index, region]);
 
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
@@ -64,8 +71,9 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
         : [];
     });
     const fc = paint.showLayers(entries);
-    paint.gameMap.fitAnswerAndPaint(reveal.answer, fc, reveal.question.toleranceKm);
-  }, [selected, reveal.index]);
+    if (region) paint.gameMap.fitRegionAndPaint(reveal.answer, region.outline, fc, reveal.question.toleranceKm);
+    else paint.gameMap.fitAnswerAndPaint(reveal.answer, fc, reveal.question.toleranceKm);
+  }, [selected, reveal.index, region]);
 
   const mine = reveal.results.find((r) => r.playerId === view.you.id);
   const last = reveal.index + 1 >= reveal.total;
@@ -97,6 +105,12 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
             <div class="label">
               {mine ? (mine.paint ? "your score this round" : "you passed this round") : "you sat this one out"}
             </div>
+            {mine?.region && (
+              <div class="fit">
+                You covered {pct(mine.region.coverage)} of {reveal.label}; {pct(mine.region.precision)} of your paint
+                was on it
+              </div>
+            )}
           </div>
           <ConnectionNote conn={conn} />
         </div>
@@ -169,7 +183,13 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
                   {byId.get(r.playerId)?.name ?? "?"}
                   {byId.get(r.playerId)?.isHost && <HostTag />}
                 </span>
-                <ScoreParts A={r.A} B={r.B} />
+                {r.region ? (
+                  <span class="parts">
+                    shape <b>{Math.round(r.region.shape)}</b> · nearness <b>{Math.round(r.region.nearness)}</b>
+                  </span>
+                ) : (
+                  <ScoreParts A={r.A} B={r.B} />
+                )}
               </li>
             ))}
           </ul>
@@ -180,6 +200,8 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
     </>
   );
 }
+
+const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 function RevealRow({
   p,

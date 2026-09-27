@@ -9,11 +9,15 @@ import type { WSClient as WSClientType } from "@rivalis/browser";
 import {
   PaintLayer,
   SEAT_GRACE_MS,
+  compactRecord,
   encodeTicket,
+  regionCells,
   resolutionForTolerance,
   type GameView,
   type Question,
+  type RegionQuestion,
 } from "@whereabouts/shared";
+import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" };
 import { createApp, type App } from "./app.ts";
 import { configureGameRooms, realClock, type Clock } from "./rooms.ts";
 
@@ -226,6 +230,39 @@ describe("game server", () => {
     const results = await bob.until((v) => v.phase === "results");
     expect(results.results).toHaveLength(2);
     expect(results.results![0]!.playerId).toBe(byName.Alice);
+  });
+
+  it("plays a country round: scored against the outline, with coverage and precision", async () => {
+    const alice = player("Alice");
+    alice.connect({ create: true });
+    const lobby = await alice.until((v) => v.phase === "lobby");
+    const bob = player("Bob");
+    bob.connect({ code: lobby.code });
+    await alice.until((v) => v.players.length === 2);
+    alice.send("configure", { rounds: 1, countries: "only" });
+    await bob.until((v) => v.config.countries === "only" && v.config.rounds === 1);
+
+    alice.send("start");
+    const round = await bob.until((v) => v.phase === "guessing");
+    const id = round.round!.question.regionId!;
+    expect(round.round!.question.prompt).toMatch(/^Paint the whole of /);
+    const country = (regionsJson as RegionQuestion[]).find((q) => q.id === id)!;
+    // Paint it exactly, compacted the way the client sends paint.
+    const res = resolutionForTolerance(round.round!.question.toleranceKm);
+    const cells = compactRecord(Object.fromEntries(regionCells(country, res).map((h) => [h, 1])));
+    alice.send("paint", { cells, floor: 0.05 });
+    await alice.untilLatest((v) => v.you.paint !== null);
+
+    clock.advance(60_000);
+    const reveal = await bob.until((v) => v.phase === "reveal");
+    expect(reveal.reveal!.question.regionId).toBe(id);
+    expect(reveal.reveal!.label).toBe(country.label);
+    const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]));
+    const aliceResult = reveal.reveal!.results.find((r) => r.playerId === byName.Alice)!;
+    expect(aliceResult.score).toBeGreaterThan(980);
+    expect(aliceResult.region!.coverage).toBeGreaterThan(0.95);
+    const bobResult = reveal.reveal!.results.find((r) => r.playerId === byName.Bob)!;
+    expect(bobResult.score).toBe(250);
   });
 
   it("answers bad messages with errors instead of dropping the player", async () => {

@@ -34,6 +34,7 @@ import { DevDrawer } from "../ui/DevDrawer";
 import { cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings";
 import { devMode } from "../dev";
 import { Icon } from "../ui/icons";
+import { loadRegions, regions } from "../regions";
 
 type PracticeQuestion = Question | RegionQuestion;
 
@@ -88,18 +89,12 @@ export function Solo() {
 /** Countries come in their own chunk (their outlines), fetched when asked for. */
 function SoloLoader() {
   const pool = soloPool.value;
-  const [regions, setRegions] = useState<RegionQuestion[] | null>(null);
+  const byId = regions.value;
   useEffect(() => {
-    if (pool !== "countries" || regions) return;
-    let live = true;
-    void import("@whereabouts/shared/regions.json").then((m) => {
-      if (live) setRegions(m.default as RegionQuestion[]);
-    });
-    return () => {
-      live = false;
-    };
-  }, [pool]);
-  if (pool === "countries" && !regions) {
+    if (pool === "countries" && !byId)
+      loadRegions().catch((err: unknown) => console.warn("could not load countries", err));
+  }, [pool, byId]);
+  if (pool === "countries" && !byId) {
     return (
       <div class="hud">
         <div class="hud-center">
@@ -108,7 +103,7 @@ function SoloLoader() {
       </div>
     );
   }
-  return <SoloGame pool={pool === "countries" ? regions! : QUESTIONS} />;
+  return <SoloGame pool={pool === "countries" ? [...byId!.values()] : QUESTIONS} />;
 }
 
 function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
@@ -170,16 +165,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     showAnswer(paint.gameMap, q);
     if (isRegion(q)) {
       // Frame the country and the paint together, wherever the paint went.
-      const outline = q.outline.map((coordinates): GeoJSON.Feature => ({
-        type: "Feature",
-        properties: {},
-        geometry: { type: "Polygon", coordinates },
-      }));
-      const fc: GeoJSON.FeatureCollection = {
-        type: "FeatureCollection",
-        features: [...paint.layer.toGeoJSON().features, ...outline],
-      };
-      paint.gameMap.fitAnswerAndPaint(q.answer, fc, q.toleranceKm);
+      paint.gameMap.fitRegionAndPaint(q.answer, q.outline, paint.layer.toGeoJSON(), q.toleranceKm);
     } else {
       paint.gameMap.focusOn(q.answer, q.toleranceKm);
     }
