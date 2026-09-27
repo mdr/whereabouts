@@ -241,8 +241,8 @@ describe("game server", () => {
     const bob = player("Bob");
     bob.connect({ code: lobby.code });
     await alice.until((v) => v.players.length === 2);
-    alice.send("configure", { rounds: 1, countries: "only" });
-    await bob.until((v) => v.config.countries === "only" && v.config.rounds === 1);
+    alice.send("configure", { mix: { landmarks: 0, places: 0, countries: 1, flags: 0 } });
+    await bob.until((v) => v.config.mix.countries === 1 && v.config.rounds === 1);
 
     alice.send("start");
     const round = await bob.until((v) => v.phase === "guessing");
@@ -271,8 +271,8 @@ describe("game server", () => {
     const alice = player("Alice");
     alice.connect({ create: true });
     await alice.until((v) => v.phase === "lobby");
-    alice.send("configure", { rounds: 1, flags: "only" });
-    await alice.until((v) => v.config.flags === "only" && v.config.rounds === 1);
+    alice.send("configure", { mix: { landmarks: 0, places: 0, countries: 0, flags: 1 } });
+    await alice.until((v) => v.config.mix.flags === 1 && v.config.rounds === 1);
 
     alice.send("start");
     const round = await alice.until((v) => v.phase === "guessing");

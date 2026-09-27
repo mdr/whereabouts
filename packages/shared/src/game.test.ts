@@ -3,7 +3,7 @@ import { latLngToCell } from "h3-js";
 import { Game, generateCode, nextHostAfter } from "./game.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { PASS_SCORE } from "./scoring.ts";
-import type { Question } from "./questions.ts";
+import { pickQuestions, type Question } from "./questions.ts";
 import { regionCells, type RegionQuestion } from "./regions.ts";
 import type { GameConfig, QuestionView } from "./protocol.ts";
 import regionsJson from "../regions.json" with { type: "json" };
@@ -639,11 +639,18 @@ describe("ready-up edge cases", () => {
 });
 
 describe("configure", () => {
-  it("lets the host change rounds and round length in the lobby only", () => {
+  const mix = (landmarks: number, places: number, countries = 0, flags = 0) => ({
+    landmarks,
+    places,
+    countries,
+    flags,
+  });
+
+  it("lets the host change the mix, and so the rounds, and round length in the lobby only", () => {
     const g = twoPlayerGame();
-    expect(g.configure("tokB", { rounds: 3 })).toEqual({ ok: false, error: "only the host can change settings" });
-    expect(g.configure("tokA", { rounds: 3 })).toEqual({ ok: true, changed: true });
-    expect(g.configure("tokA", { rounds: 3 })).toEqual({ ok: true, changed: false });
+    expect(g.configure("tokB", { mix: mix(0, 3) })).toEqual({ ok: false, error: "only the host can change settings" });
+    expect(g.configure("tokA", { mix: mix(0, 3) })).toEqual({ ok: true, changed: true });
+    expect(g.configure("tokA", { mix: mix(0, 3) })).toEqual({ ok: true, changed: false });
     expect(g.configure("tokA", { roundMs: 30_000 }).ok).toBe(true);
     const v = g.view("tokB", T0);
     expect(v.config.rounds).toBe(3);
@@ -651,7 +658,7 @@ describe("configure", () => {
     g.start("tokA", T0);
     expect(g.view("tokA", T0).round!.total).toBe(3);
     expect(g.view("tokA", T0).round!.deadline).toBe(T0 + 30_000);
-    expect(g.configure("tokA", { rounds: 5 })).toEqual({
+    expect(g.configure("tokA", { mix: mix(0, 5) })).toEqual({
       ok: false,
       error: "settings are locked once the game starts",
     });
@@ -665,11 +672,11 @@ describe("configure", () => {
       prompt: "Where is this?",
       image: "Petra.jpg",
     };
-    const g = new Game("ABCD", [...pool, photo], { rounds: 1 }, 42);
+    const g = new Game("ABCD", [...pool, photo], { mix: mix(0, 1) }, 42);
     g.join("tokA", "Alice", T0);
-    expect(g.configure("tokA", { photoShare: 1 })).toEqual({ ok: true, changed: true });
-    expect(g.configure("tokA", { photoShare: 1 })).toEqual({ ok: true, changed: false });
-    expect(g.view("tokA", T0).config.photoShare).toBe(1);
+    expect(g.configure("tokA", { mix: mix(1, 0) })).toEqual({ ok: true, changed: true });
+    expect(g.configure("tokA", { mix: mix(1, 0) })).toEqual({ ok: true, changed: false });
+    expect(g.view("tokA", T0).config.mix).toEqual(mix(1, 0));
     g.start("tokA", T0);
     // One round, all photos: it must be the one photo question in the pool.
     expect(g.view("tokA", T0).round!.question.image).toBe("Petra.jpg");
@@ -774,12 +781,19 @@ describe("host ends the game early", () => {
   });
 });
 
-describe("country rounds", () => {
+describe("the question mix", () => {
   const REGIONS = regionsJson as RegionQuestion[];
+  const FLAGS = flagsJson as FlagQuestion[];
   const germany = REGIONS.find((q) => q.id === "germany-region")!;
+  const mix = (landmarks: number, places: number, countries = 0, flags = 0) => ({
+    landmarks,
+    places,
+    countries,
+    flags,
+  });
 
-  function game(countries: GameConfig["countries"], rounds: number, regions = REGIONS) {
-    const g = new Game("ABCD", pool, { rounds, roundMs: 60_000, countries }, 42, regions);
+  function game(config: Partial<GameConfig>, regions = REGIONS, flags = FLAGS) {
+    const g = new Game("ABCD", pool, { roundMs: 60_000, ...config }, 42, regions, flags);
     g.join("tokA", "Alice", T0);
     g.join("tokB", "Bob", T0 + 1);
     return g;
@@ -799,28 +813,46 @@ describe("country rounds", () => {
     return seen;
   }
 
-  it("with countries off, a game asks exactly the places it asked before countries existed", () => {
-    const plain = new Game("ABCD", pool, { rounds: 3, roundMs: 60_000 }, 42);
-    plain.join("tokA", "Alice", T0);
-    plain.join("tokB", "Bob", T0 + 1);
-    const before = questions(plain).map((q) => q.prompt);
-    // The same seed, now with the countries on hand but switched off.
-    const g = game("off", 3);
-    expect(questions(g).map((q) => q.prompt)).toEqual(before);
+  it("a length alone is the classic mix: landmarks and place names, half each", () => {
+    const g = new Game("ABCD", pool, { rounds: 5 }, 42);
+    expect(g.config.mix).toEqual(mix(3, 2));
+    expect(g.config.rounds).toBe(5);
+    expect(new Game("ABCD", pool, {}, 42).config.mix).toEqual(mix(4, 4));
   });
 
-  it("mixed in makes about one round in four a country; only makes them all countries", () => {
-    const mixed = questions(game("mixed", 8, REGIONS));
-    expect(mixed.filter((q) => q.regionId).length).toBe(2);
-    const only = questions(game("only", 5));
-    expect(only.every((q) => q.regionId && q.prompt.startsWith("Paint the whole of"))).toBe(true);
-    expect(new Set(only.map((q) => q.regionId)).size).toBe(5);
-    // Without the countries on hand (a test pool, say), the rounds are places.
-    expect(questions(game("only", 3, [])).some((q) => q.regionId)).toBe(false);
+  it("with only landmarks and place names, a game asks what pickQuestions picks", () => {
+    const seen = questions(game({ mix: mix(0, 3) })).map((q) => q.prompt);
+    expect(seen.sort()).toEqual(
+      pickQuestions(pool, 3, 42, 0)
+        .map((q) => q.prompt)
+        .sort(),
+    );
+  });
+
+  it("asks as many of each kind as the mix says, never a country twice", () => {
+    const seen = questions(game({ mix: mix(0, 3, 4, 5) }));
+    const flags = seen.filter((q) => q.flag);
+    const countries = seen.filter((q) => q.regionId && !q.flag);
+    expect(flags).toHaveLength(5);
+    expect(countries).toHaveLength(4);
+    expect(countries.every((q) => q.prompt.startsWith("Paint the whole of"))).toBe(true);
+    expect(seen).toHaveLength(12);
+    const regionIds = seen.flatMap((q) => (q.regionId ? [q.regionId] : []));
+    expect(new Set(regionIds).size).toBe(regionIds.length);
+    // Without the countries on hand (a test pool, say), there are only the places.
+    expect(questions(game({ mix: mix(0, 3, 3) }, [], []))).toHaveLength(3);
+  });
+
+  it("does not ask a place's country again as a flag", () => {
+    const monacoPlace: Question = { ...petra, id: "monaco", label: "Monaco", prompt: "Where is Monaco?" };
+    const monacoFlag = FLAGS.find((f) => f.flag === "mc")!;
+    const g = new Game("ABCD", [monacoPlace], { mix: mix(0, 1, 0, 1) }, 42, REGIONS, [monacoFlag]);
+    g.join("tokA", "Alice", T0);
+    expect(questions(g).map((q) => q.prompt)).toEqual(["Where is Monaco?"]);
   });
 
   it("scores a country round against the outline; a pass still scores 250", () => {
-    const g = game("only", 1, [germany]);
+    const g = game({ mix: mix(0, 0, 1) }, [germany]);
     g.start("tokA", T0);
     const q = g.view("tokA", T0).round!.question;
     expect(q.regionId).toBe("germany-region");
@@ -841,48 +873,8 @@ describe("country rounds", () => {
     expect(bob.region).toBeUndefined();
   });
 
-  it("the host can switch countries in the lobby", () => {
-    const g = game("off", 3);
-    expect(g.configure("tokA", { countries: "mixed" })).toEqual({ ok: true, changed: true });
-    expect(g.configure("tokA", { countries: "mixed" })).toEqual({ ok: true, changed: false });
-    expect(g.config.countries).toBe("mixed");
-  });
-});
-
-describe("flag rounds", () => {
-  const REGIONS = regionsJson as RegionQuestion[];
-  const FLAGS = flagsJson as FlagQuestion[];
-
-  function game(config: Partial<GameConfig>, flags = FLAGS) {
-    const g = new Game("ABCD", pool, { roundMs: 60_000, ...config }, 42, REGIONS, flags);
-    g.join("tokA", "Alice", T0);
-    g.join("tokB", "Bob", T0 + 1);
-    return g;
-  }
-
-  function questions(g: Game): QuestionView[] {
-    g.start("tokA", T0);
-    const seen: QuestionView[] = [];
-    let now = T0;
-    while (g.phase !== "results") {
-      seen.push(g.view("tokA", now).round!.question);
-      now += 60_000;
-      g.tick(now);
-      g.next("tokA", now);
-    }
-    return seen;
-  }
-
-  it("with flags off, a game asks what it asked before flags existed", () => {
-    const plain = new Game("ABCD", pool, { rounds: 3, roundMs: 60_000, countries: "mixed" }, 42, REGIONS);
-    plain.join("tokA", "Alice", T0);
-    plain.join("tokB", "Bob", T0 + 1);
-    const before = questions(plain).map((q) => q.prompt);
-    expect(questions(game({ rounds: 3, countries: "mixed", flags: "off" })).map((q) => q.prompt)).toEqual(before);
-  });
-
-  it("show a flag, never the name, and say whether to paint the country or a point", () => {
-    const seen = questions(game({ rounds: 15, flags: "only" }));
+  it("flag rounds show a flag, never the name, and say whether to paint the country or a point", () => {
+    const seen = questions(game({ mix: mix(0, 0, 0, 15) }));
     expect(seen.every((q) => q.flag)).toBe(true);
     expect(new Set(seen.map((q) => q.flag)).size).toBe(15);
     for (const q of seen) {
@@ -893,20 +885,9 @@ describe("flag rounds", () => {
     }
   });
 
-  it("share the game with countries in proportion, never asking one country twice", () => {
-    const seen = questions(game({ rounds: 8, countries: "only", flags: "only" }));
-    expect(seen.filter((q) => q.flag).length).toBe(4);
-    expect(seen.filter((q) => q.regionId && !q.flag).length).toBe(4);
-    const regionIds = seen.flatMap((q) => (q.regionId ? [q.regionId] : []));
-    expect(new Set(regionIds).size).toBe(regionIds.length);
-    const mixed = questions(game({ rounds: 8, countries: "mixed", flags: "mixed" }));
-    expect(mixed.filter((q) => q.flag).length).toBe(2);
-    expect(mixed.filter((q) => q.regionId && !q.flag).length).toBe(2);
-  });
-
-  it("scores a small country as a point and reveals its name", () => {
+  it("scores a small country's flag as a point and reveals its name", () => {
     const monaco = FLAGS.find((f) => f.flag === "mc")!;
-    const g = game({ rounds: 1, flags: "only" }, [monaco]);
+    const g = game({ mix: mix(0, 0, 0, 1) }, REGIONS, [monaco]);
     g.start("tokA", T0);
     const q = g.view("tokA", T0).round!.question;
     expect(q).toEqual({ prompt: FLAG_POINT_PROMPT, toleranceKm: 15, flag: "mc" });
@@ -918,12 +899,5 @@ describe("flag rounds", () => {
     expect(reveal.label).toBe("Monaco");
     expect(reveal.question.flag).toBe("mc");
     expect(reveal.results.find((r) => r.playerId === "p1")!.score).toBeGreaterThan(900);
-  });
-
-  it("the host can switch flags in the lobby", () => {
-    const g = game({ rounds: 3 });
-    expect(g.configure("tokA", { flags: "mixed" })).toEqual({ ok: true, changed: true });
-    expect(g.configure("tokA", { flags: "mixed" })).toEqual({ ok: true, changed: false });
-    expect(g.config.flags).toBe("mixed");
   });
 });

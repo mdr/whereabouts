@@ -6,7 +6,8 @@ import type { Connection } from "./net";
 import { hostSetup } from "./settings";
 import { configureAsHost, savedSetupPatch, useSavedSetup } from "./host-setup";
 
-const SAVED = { rounds: 12, roundMs: 90_000, photoShare: 0, mapDetail: "political" };
+const MIX = { landmarks: 3, places: 3, countries: 2, flags: 2 };
+const SAVED = { mix: MIX, roundMs: 90_000, mapDetail: "political" };
 
 function lobby(isHost: boolean, phase: GameView["phase"] = "lobby"): GameView {
   return { phase, you: { isHost } } as GameView;
@@ -27,14 +28,32 @@ describe("savedSetupPatch", () => {
   });
 
   it("drops only the settings the game no longer offers, so the rest still apply", () => {
-    expect(savedSetupPatch({ ...SAVED, roundMs: 75_000, rounds: 99 })).toEqual({
-      photoShare: 0,
+    expect(savedSetupPatch({ ...SAVED, roundMs: 75_000, mix: { ...MIX, flags: 9 } })).toEqual({
       mapDetail: "political",
     });
   });
 
+  it("turns a setup saved before the question mix into one", () => {
+    const old = (setup: object) => savedSetupPatch({ roundMs: 90_000, ...setup }).mix;
+    expect(old({ rounds: 12, photoShare: 0 })).toEqual({ landmarks: 0, places: 12, countries: 0, flags: 0 });
+    expect(old({ rounds: 8, photoShare: 0.75, countries: "mixed" })).toEqual({
+      landmarks: 5,
+      places: 1,
+      countries: 2,
+      flags: 0,
+    });
+    expect(old({ rounds: 8, countries: "only", flags: "only" })).toEqual({
+      landmarks: 0,
+      places: 0,
+      countries: 4,
+      flags: 4,
+    });
+    expect(old({ flags: "mixed" })).toEqual({ landmarks: 3, places: 3, countries: 0, flags: 2 });
+    expect(savedSetupPatch({ roundMs: 90_000 })).toEqual({ roundMs: 90_000 });
+  });
+
   it("ignores unknown keys and anything that is not a saved setup", () => {
-    expect(savedSetupPatch({ rounds: 3, kernelId: "single", colour: "red" })).toEqual({ rounds: 3 });
+    expect(savedSetupPatch({ roundMs: 30_000, kernelId: "single", colour: "red" })).toEqual({ roundMs: 30_000 });
     for (const junk of [null, undefined, "rounds", 7, []]) expect(savedSetupPatch(junk)).toEqual({});
   });
 });
@@ -43,10 +62,10 @@ describe("configureAsHost", () => {
   it("sends the change and remembers it alongside the earlier ones", () => {
     const configure = vi.fn();
     const conn = { configure } as unknown as Connection;
-    configureAsHost(conn, { rounds: 4 });
+    configureAsHost(conn, { mix: MIX });
     configureAsHost(conn, { mapDetail: "water" });
     expect(configure).toHaveBeenLastCalledWith({ mapDetail: "water" });
-    expect(hostSetup.value).toEqual({ rounds: 4, mapDetail: "water" });
+    expect(hostSetup.value).toEqual({ mix: MIX, mapDetail: "water" });
   });
 });
 

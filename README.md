@@ -135,17 +135,19 @@ pnpm workspace with three packages:
   scores. The host may be a spectator. Anyone
   already in the game can always reconnect; once both are full a newcomer is
   told the game is full, and a player the host removes frees their seat and colour.
-  In the lobby the host picks the number of rounds (1 to 15), the round
-  length (30, 45, 60, 90 or 120 seconds) and the question mix: photos, mostly
-  photos, even (the default), mostly names or place names. Rounds use a − / +
-  stepper, round length a row of pills, and the question mix a slider with
-  five fixed stops. Whole countries (pills: Off, the default; Mixed in, about
-  one round in four; Only) adds "Paint the whole of …" rounds, drawn from the
-  countries while they last, with the photo mix applying to the rest; with
-  countries off a game picks exactly the places it did before. Flags (the same
-  pills) adds flag rounds: a country's flag in place of its name, painted whole
-  or, for a small country, asked as a point (see docs/country-scoring.md).
-  The host also picks the map detail while guessing, from
+  In the lobby the host picks the question mix: how many rounds of each kind
+  of question, with a − / + per kind, and the rounds are their total (1 to
+  15). The kinds are landmarks (photos), place names (cities, capitals and
+  small countries), whole countries ("Paint the whole of …") and flags (a
+  country's flag in place of its name, painted whole or, for a small country,
+  asked as a point; see docs/country-scoring.md). Presets set the mix in one
+  tap at the game's current length: Classic (landmarks and place names, half
+  each: the default, 8 rounds), A bit of everything, Countries (whole
+  countries and flags) and Flags. A strip of coloured cells, one per round,
+  shows the mix to host and guests; the rounds come in a random order, and no
+  country is asked twice. A setup saved before the mix is converted to one.
+  The host also picks the round length (30, 45, 60, 90 or 120 seconds, as
+  pills) and the map detail while guessing, from
   four picture choices (each a preview of the same frame, made by
   `scripts/map-detail-previews.mjs`): Minimal (coastlines only, the
   default), Water (adds rivers and lakes), Physical (adds relief, natural

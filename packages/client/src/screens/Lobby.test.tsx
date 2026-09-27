@@ -8,6 +8,8 @@ import { hostSetup, joinedCode, startOnPan } from "../settings";
 import { route } from "../router";
 import { Lobby } from "./Lobby";
 
+const MIX = { landmarks: 3, places: 2, countries: 0, flags: 0 };
+
 function view(isHost: boolean): GameView {
   return {
     code: "AB12",
@@ -15,10 +17,8 @@ function view(isHost: boolean): GameView {
     config: {
       rounds: 5,
       roundMs: 60000,
-      photoShare: 0.5,
+      mix: MIX,
       mapDetail: "minimal",
-      countries: "off",
-      flags: "off",
       kernelId: "multi-equal",
     },
     serverTime: 0,
@@ -82,33 +82,32 @@ describe("Lobby", () => {
 describe("Lobby setup", () => {
   it("gives the host the controls", () => {
     const { container } = render(<Lobby conn={conn} view={view(true)} />);
-    fireEvent.click(container.querySelector('[aria-label="More rounds"]')!);
-    expect(configure).toHaveBeenCalledWith({ rounds: 6 });
-    const slider = container.querySelector<HTMLInputElement>(".questions input[type=range]")!;
-    fireEvent.input(slider, { target: { value: "0" } }); // the photos end
-    expect(configure).toHaveBeenCalledWith({ photoShare: 1 });
+    fireEvent.click(container.querySelector('[aria-label="More flags"]')!);
+    expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, flags: 1 } });
+    // Classic is highlighted; "A bit of everything" keeps the game's length.
+    const preset = (label: string) =>
+      [...container.querySelectorAll(".mix-editor .pills button")].find((b) => b.textContent === label)!;
+    expect(preset("Classic").getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(preset("A bit of everything"));
+    const everything = { landmarks: 2, places: 1, countries: 1, flags: 1 };
+    expect(configure).toHaveBeenCalledWith({ mix: everything });
+    expect(container.querySelectorAll(".round-strip .cell")).toHaveLength(5);
     const minimal = container.querySelector('.detail-picker [aria-checked="true"]')!;
     expect(minimal.textContent).toBe("Minimal");
     fireEvent.click([...container.querySelectorAll(".detail-picker button")].find((b) => b.textContent === "Water")!);
     expect(configure).toHaveBeenCalledWith({ mapDetail: "water" });
     expect(container.querySelector(".setup-summary")).toBeNull();
     // Remembered for the next game this browser hosts.
-    expect(hostSetup.value).toEqual({ rounds: 6, photoShare: 1, mapDetail: "water" });
+    expect(hostSetup.value).toEqual({ mix: everything, mapDetail: "water" });
     hostSetup.value = {};
   });
 
   it("shows guests the decided values, not controls", () => {
     const { container } = render(<Lobby conn={conn} view={view(false)} />);
-    expect(container.querySelector(".pills, .stepper, input[type=range], .detail-picker")).toBeNull();
+    expect(container.querySelector(".pills, .stepper, .detail-picker")).toBeNull();
+    expect(container.querySelectorAll(".setup-summary .round-strip .cell")).toHaveLength(5);
     const tiles = [...container.querySelectorAll(".setup-summary .tile")].map((t) => t.textContent);
-    expect(tiles).toEqual([
-      "5rounds",
-      "60 sper round",
-      "Evenquestions",
-      "Offwhole countries",
-      "Offflags",
-      "Minimalmap · coastlines only",
-    ]);
+    expect(tiles).toEqual(["5rounds", "60 sper round", "3 landmarks · 2 place names", "Minimalmap · coastlines only"]);
     // Nothing is highlighted on first load.
     expect(container.querySelector(".tile.changed")).toBeNull();
   });

@@ -71,32 +71,55 @@ export const MAX_SPECTATORS = 8;
  */
 export const SEAT_GRACE_MS = 30_000;
 
-/** Question mixes the host may pick: the share of photo questions, with a label. */
-export const PHOTO_MIXES = [
-  { share: 1, label: "Photos" },
-  { share: 0.75, label: "Mostly photos" },
-  { share: 0.5, label: "Even" },
-  { share: 0.25, label: "Mostly names" },
-  { share: 0, label: "Place names" },
+/** The kinds of question a game can ask, in the order the host sees them. */
+export const QUESTION_TYPES = [
+  { id: "landmarks", label: "Landmarks", detail: "Photos of famous places" },
+  { id: "places", label: "Place names", detail: "Cities, capitals and small countries" },
+  { id: "countries", label: "Whole countries", detail: "Paint a country's shape" },
+  { id: "flags", label: "Flags", detail: "Find the country from its flag" },
 ] as const;
+export type QuestionType = (typeof QUESTION_TYPES)[number]["id"];
+
+/** How many rounds of each kind a game asks; the rounds are their total, in a shuffled order. */
+export type QuestionMix = Record<QuestionType, number>;
+
+export const mixTotal = (mix: QuestionMix): number => QUESTION_TYPES.reduce((s, t) => s + mix[t.id], 0);
+
+/** One-tap mixes for the host, as proportions: applied at the game's current length. */
+export const MIX_PRESETS: readonly { id: string; label: string; weights: QuestionMix }[] = [
+  { id: "classic", label: "Classic", weights: { landmarks: 1, places: 1, countries: 0, flags: 0 } },
+  { id: "everything", label: "A bit of everything", weights: { landmarks: 1, places: 1, countries: 1, flags: 1 } },
+  { id: "countries", label: "Countries", weights: { landmarks: 0, places: 0, countries: 1, flags: 1 } },
+  { id: "flags", label: "Flags", weights: { landmarks: 0, places: 0, countries: 0, flags: 1 } },
+];
 
 /**
- * Whether a game asks whole countries ("Paint the whole of Mexico") among its
- * places, and how many: the share of rounds, rounded, while countries last.
+ * Split `rounds` in proportion to `weights`, by largest remainder, ties to
+ * the earlier type: 8 rounds of "a bit of everything" is 2 of each, 6 is
+ * 2, 2, 1, 1.
  */
-export const COUNTRY_MIXES = [
-  { id: "off", label: "Off", share: 0 },
-  { id: "mixed", label: "Mixed in", share: 0.25 },
-  { id: "only", label: "Only", share: 1 },
-] as const;
-export type CountryMix = (typeof COUNTRY_MIXES)[number]["id"];
+export function mixFor(weights: QuestionMix, rounds: number): QuestionMix {
+  const sum = mixTotal(weights);
+  const exact = QUESTION_TYPES.map((t) => (rounds * weights[t.id]) / sum);
+  const mix = Object.fromEntries(QUESTION_TYPES.map((t, i) => [t.id, Math.floor(exact[i]!)])) as QuestionMix;
+  const order = QUESTION_TYPES.map((t, i) => ({ id: t.id, rest: exact[i]! - Math.floor(exact[i]!), i })).sort(
+    (a, b) => b.rest - a.rest || a.i - b.i,
+  );
+  for (let left = rounds - mixTotal(mix), k = 0; left > 0; left--, k++) mix[order[k]!.id]++;
+  return mix;
+}
 
-/**
- * Whether a game asks flag rounds (a flag in place of the country's name), and
- * how many, as for countries. When the two shares add up to more than the
- * whole game, they split it in proportion (both "Only" is half each).
- */
-export const FLAG_MIXES = COUNTRY_MIXES;
+/** The preset a mix is, at its own length, if any. */
+export function presetOf(mix: QuestionMix): string | null {
+  const rounds = mixTotal(mix);
+  const same = (a: QuestionMix, b: QuestionMix) => QUESTION_TYPES.every((t) => a[t.id] === b[t.id]);
+  return MIX_PRESETS.find((p) => same(mixFor(p.weights, rounds), mix))?.id ?? null;
+}
+
+const roundCount = z.number().int().min(0).max(MAX_ROUNDS);
+export const MixSchema = z
+  .object({ landmarks: roundCount, places: roundCount, countries: roundCount, flags: roundCount })
+  .refine((m) => mixTotal(m) >= MIN_ROUNDS && mixTotal(m) <= MAX_ROUNDS, "a game has 1 to 15 rounds");
 
 /**
  * How much of the map shows while guessing, least first. The reveal always
@@ -112,19 +135,13 @@ export type MapDetail = (typeof MAP_DETAILS)[number]["id"];
 
 /** Host changes to the game settings while in the lobby. */
 export const ConfigureSchema = z.object({
-  rounds: z.number().int().min(MIN_ROUNDS).max(MAX_ROUNDS).optional(),
   roundMs: z
     .number()
     .int()
     .refine((v) => (ROUND_LENGTHS_MS as readonly number[]).includes(v), "unsupported round length")
     .optional(),
-  photoShare: z
-    .number()
-    .refine((v) => PHOTO_MIXES.some((m) => m.share === v), "unsupported question mix")
-    .optional(),
+  mix: MixSchema.optional(),
   mapDetail: z.enum(MAP_DETAILS.map((d) => d.id) as [MapDetail, ...MapDetail[]]).optional(),
-  countries: z.enum(COUNTRY_MIXES.map((c) => c.id) as [CountryMix, ...CountryMix[]]).optional(),
-  flags: z.enum(FLAG_MIXES.map((c) => c.id) as [CountryMix, ...CountryMix[]]).optional(),
 });
 export type ConfigurePatch = z.infer<typeof ConfigureSchema>;
 
@@ -156,16 +173,13 @@ export const ServerTopics = {
 export type Phase = "lobby" | "guessing" | "reveal" | "results";
 
 export interface GameConfig {
+  /** The mix's total: set from it, never on its own. */
   rounds: number;
   roundMs: number;
-  /** Share of questions that are photos (one of PHOTO_MIXES); the rest name a place. */
-  photoShare: number;
+  /** How many rounds of each kind of question. */
+  mix: QuestionMix;
   /** How much of the map shows while guessing (one of MAP_DETAILS). */
   mapDetail: MapDetail;
-  /** Whether rounds ask whole countries too (one of COUNTRY_MIXES). */
-  countries: CountryMix;
-  /** Whether rounds ask flags too (one of FLAG_MIXES). */
-  flags: CountryMix;
   kernelId: string;
 }
 

@@ -45,15 +45,33 @@ describe("paint submission schema", () => {
 describe("ConfigureSchema", () => {
   it("accepts supported values and rejects the rest", async () => {
     const { ConfigureSchema } = await import("./protocol.ts");
-    expect(ConfigureSchema.safeParse({ rounds: 5 }).success).toBe(true);
+    const mix = (landmarks: number, places: number, countries: number, flags: number) => ({
+      mix: { landmarks, places, countries, flags },
+    });
+    expect(ConfigureSchema.safeParse(mix(2, 2, 2, 2)).success).toBe(true);
     expect(ConfigureSchema.safeParse({ roundMs: 45_000 }).success).toBe(true);
-    expect(ConfigureSchema.safeParse({ rounds: 0 }).success).toBe(false);
-    expect(ConfigureSchema.safeParse({ rounds: 16 }).success).toBe(false);
+    expect(ConfigureSchema.safeParse(mix(0, 0, 0, 0)).success).toBe(false);
+    expect(ConfigureSchema.safeParse(mix(4, 4, 4, 4)).success).toBe(false);
+    expect(ConfigureSchema.safeParse(mix(-1, 2, 0, 0)).success).toBe(false);
+    expect(ConfigureSchema.safeParse(mix(1.5, 2, 0, 0)).success).toBe(false);
+    expect(ConfigureSchema.safeParse({ mix: { landmarks: 3 } }).success).toBe(false);
     expect(ConfigureSchema.safeParse({ roundMs: 61_000 }).success).toBe(false);
-    expect(ConfigureSchema.safeParse({ photoShare: 0.75 }).success).toBe(true);
-    expect(ConfigureSchema.safeParse({ photoShare: 0.6 }).success).toBe(false);
     expect(ConfigureSchema.safeParse({ mapDetail: "political" }).success).toBe(true);
     expect(ConfigureSchema.safeParse({ mapDetail: "satellite" }).success).toBe(false);
+  });
+});
+
+describe("question mix presets", () => {
+  it("split the rounds in proportion, by largest remainder", async () => {
+    const { MIX_PRESETS, mixFor, presetOf } = await import("./protocol.ts");
+    const everything = MIX_PRESETS.find((p) => p.id === "everything")!.weights;
+    expect(mixFor(everything, 8)).toEqual({ landmarks: 2, places: 2, countries: 2, flags: 2 });
+    expect(mixFor(everything, 6)).toEqual({ landmarks: 2, places: 2, countries: 1, flags: 1 });
+    expect(mixFor(everything, 1)).toEqual({ landmarks: 1, places: 0, countries: 0, flags: 0 });
+    expect(presetOf({ landmarks: 2, places: 2, countries: 1, flags: 1 })).toBe("everything");
+    expect(presetOf({ landmarks: 3, places: 2, countries: 0, flags: 0 })).toBe("classic");
+    expect(presetOf({ landmarks: 0, places: 0, countries: 0, flags: 7 })).toBe("flags");
+    expect(presetOf({ landmarks: 1, places: 0, countries: 0, flags: 7 })).toBeNull();
   });
 });
 

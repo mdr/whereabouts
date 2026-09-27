@@ -5,6 +5,8 @@ import type { GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { Results } from "./Results";
 
+const MIX = { landmarks: 1, places: 1, countries: 0, flags: 0 };
+
 function view(isHost: boolean): GameView {
   return {
     code: "AB12",
@@ -12,10 +14,8 @@ function view(isHost: boolean): GameView {
     config: {
       rounds: 2,
       roundMs: 60000,
-      photoShare: 0.5,
+      mix: MIX,
       mapDetail: "minimal",
-      countries: "off",
-      flags: "off",
       kernelId: "multi-equal",
     },
     serverTime: 0,

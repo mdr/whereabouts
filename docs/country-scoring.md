@@ -228,11 +228,10 @@ where it is"), since the two are painted so differently. That gives a clue
 for a few look-alike pairs (Indonesia is painted, Monaco is a point), which
 was accepted for the clarity.
 
-Practice has a Flags mode. In a game the host sets flags to Off, Mixed in (a
-quarter of the rounds) or Only, as for whole countries; when the two shares
-add up to more than the game they split it in proportion, and no country is
-asked twice. Players are sent the flag's code, never the name, until the
-reveal.
+Practice has a Flags mode. In a game the host sets how many flag rounds to
+ask, alongside landmarks, place names and whole countries (the question mix),
+and no country is asked twice, whether by name, whole or by flag. Players are
+sent the flag's code, never the name, until the reveal.
 
 A point's answer is Natural Earth's label point for small countries and the
 area centroid for large ones. Its tolerance is half the country's equivalent

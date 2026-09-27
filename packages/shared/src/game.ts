@@ -15,7 +15,15 @@ import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { pickQuestions, shuffle, type Question } from "./questions.ts";
 import { regionFit, scoreRegionQuestion, type RegionQuestion } from "./regions.ts";
 import { flagRound, type FlagQuestion } from "./flags.ts";
-import { COUNTRY_MIXES, MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS } from "./protocol.ts";
+import {
+  MAX_PLAYERS,
+  MAX_SPECTATORS,
+  MIX_PRESETS,
+  QUESTION_TYPES,
+  SEAT_GRACE_MS,
+  mixFor,
+  mixTotal,
+} from "./protocol.ts";
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -29,13 +37,14 @@ import type {
   RoundResultView,
 } from "./protocol.ts";
 
+/** A game of the classic mix at a given length: landmarks and place names, half each. */
+export const classicMix = (rounds: number) => mixFor(MIX_PRESETS[0]!.weights, rounds);
+
 export const DEFAULT_CONFIG: GameConfig = {
   rounds: 8,
   roundMs: 60_000,
-  photoShare: 0.5,
+  mix: classicMix(8),
   mapDetail: "minimal",
-  countries: "off",
-  flags: "off",
   kernelId: DEFAULT_KERNEL.id,
 };
 
@@ -106,7 +115,9 @@ export class Game {
   ) {
     this.seed = seed;
     this.code = code;
-    this.config = { ...DEFAULT_CONFIG, ...config };
+    // A mix sets the rounds; a length alone (ROUNDS on the server, tests) is the classic mix at that length.
+    const mix = config.mix ?? (config.rounds !== undefined ? classicMix(config.rounds) : DEFAULT_CONFIG.mix);
+    this.config = { ...DEFAULT_CONFIG, ...config, mix, rounds: mixTotal(mix) };
     this.pool = pool;
     this.regions = regions;
     const byId = new Map(regions.map((q) => [q.id, q]));
@@ -251,48 +262,39 @@ export class Game {
   }
 
   /**
-   * The rounds' questions: the country share of COUNTRY_MIXES drawn from the
-   * countries and the flag share of FLAG_MIXES from the flag rounds (while
-   * they last, and never the same country twice), the rest places in the
-   * host's photo mix, in a shuffled order. Shares adding up past the whole
-   * game are scaled down in proportion. With countries and flags off this is
-   * exactly pickQuestions.
+   * The rounds' questions, as many of each kind as the mix asks while they
+   * last, in a shuffled order. Landmarks and place names come from the pool
+   * through pickQuestions (so a game of only those is exactly what it picks);
+   * whole countries and flags from theirs, never a country already asked
+   * another way ("Where is Monaco?" and Monaco's flag, say).
    */
   private pickRounds(): (Question | RegionQuestion)[] {
-    const shareOf = (id: string) => COUNTRY_MIXES.find((c) => c.id === id)?.share ?? 0;
-    let countryShare = shareOf(this.config.countries);
-    let flagShare = shareOf(this.config.flags);
-    const sum = countryShare + flagShare;
-    if (sum > 1) {
-      countryShare /= sum;
-      flagShare /= sum;
-    }
-    const { rounds } = this.config;
-    const countries = Math.min(this.regions.length, Math.round(rounds * countryShare));
-    const flags = Math.min(this.flagRounds.length, Math.round(rounds * flagShare), rounds - countries);
-    const places = Math.min(this.pool.length, rounds - countries - flags);
-    const picked = pickQuestions(this.pool, places, this.seed, this.config.photoShare);
+    const { landmarks, places, countries, flags } = this.config.mix;
+    const named = landmarks + places;
+    const picked = pickQuestions(this.pool, named, this.seed, named > 0 ? landmarks / named : 0.5);
     if (countries === 0 && flags === 0) return picked;
-    const regions = shuffle(this.regions, this.seed ^ 0x2545f491).slice(0, countries);
-    const asked = new Set(regions.map((q) => q.id));
+    const asked = new Set(picked.map((q) => q.label));
+    const fresh = (q: Question | RegionQuestion) => !asked.has(q.id) && !asked.has(q.label);
+    const regions = shuffle(this.regions, this.seed ^ 0x2545f491)
+      .filter(fresh)
+      .slice(0, countries);
+    for (const q of regions) asked.add(q.id).add(q.label);
     const flagged = shuffle(this.flagRounds, this.seed ^ 0x68e31da4)
-      .filter((q) => !asked.has(q.id))
+      .filter(fresh)
       .slice(0, flags);
     return shuffle<Question | RegionQuestion>([...picked, ...regions, ...flagged], this.seed ^ 0x5bd1e995);
   }
 
-  /** Host tunes rounds, round length, the question mix, countries, flags and map detail while everyone is still in the lobby. */
+  /** Host tunes the question mix (and so the rounds), round length and map detail while everyone is still in the lobby. */
   configure(token: string, patch: ConfigurePatch): CommandResult {
     if (!this.isHost(token)) return fail("only the host can change settings");
     if (this.phase !== "lobby") return fail("settings are locked once the game starts");
-    const next = { ...this.config, ...patch };
+    const mix = patch.mix ?? this.config.mix;
+    const next = { ...this.config, ...patch, mix, rounds: mixTotal(mix) };
     if (
-      next.rounds === this.config.rounds &&
       next.roundMs === this.config.roundMs &&
-      next.photoShare === this.config.photoShare &&
       next.mapDetail === this.config.mapDetail &&
-      next.countries === this.config.countries &&
-      next.flags === this.config.flags
+      QUESTION_TYPES.every((t) => mix[t.id] === this.config.mix[t.id])
     )
       return OK_SAME;
     this.config = next;

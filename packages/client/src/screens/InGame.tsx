@@ -29,7 +29,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const { dialog, ask } = useConfirm();
 
   // A game with countries or flags needs the outlines at the reveal: fetch them now.
-  const outlines = view.config.countries !== "off" || view.config.flags !== "off";
+  const outlines = view.config.mix.countries + view.config.mix.flags > 0;
   useEffect(() => {
     if (outlines) loadRegions().catch((err: unknown) => console.warn("could not load countries", err));
   }, [outlines]);

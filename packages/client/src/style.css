@@ -1688,39 +1688,74 @@ button.danger.solid {
 }
 
 /* Host: the question mix along a scale from photos to place names. */
-.stop-slider {
+/* The question mix: presets, a − / + per kind, and a strip of the rounds. */
+.type-landmarks {
+  --type: #ffb74d;
+}
+.type-places {
+  --type: #4fc3f7;
+}
+.type-countries {
+  --type: #81c784;
+}
+.type-flags {
+  --type: #f06292;
+}
+.mix-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mix-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mix-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mix-row .swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--type);
+}
+.mix-row .type {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mix-row .type b {
+  font-size: 14px;
+}
+.mix-row .type small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.round-strip {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.stop-slider .current {
-  font-weight: 700;
-  font-size: 15px;
-}
-.stop-slider input[type="range"] {
-  width: 100%;
-  margin: 4px 0 0;
-  accent-color: var(--accent-2);
-  cursor: pointer;
-}
-/* Tick marks under the track; the side padding lines them up with the thumb's centre at each end. */
-.stop-slider .ticks {
+.round-strip .cells {
   display: flex;
-  justify-content: space-between;
-  padding: 0 7px;
+  gap: 3px;
 }
-.stop-slider .ticks span {
-  width: 2px;
-  height: 6px;
-  background: #4a5460;
-  border-radius: 1px;
+.round-strip .cell {
+  flex: 1;
+  max-width: 28px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--type);
 }
-.stop-slider .ticks span.on {
-  background: var(--accent-2);
-}
-.stop-slider .ends {
-  display: flex;
-  justify-content: space-between;
+.round-strip .strip-text {
   color: var(--muted);
   font-size: 12px;
 }
@@ -1728,7 +1763,7 @@ button.danger.solid {
 /* Guest: the decided setup as tiles. */
 .setup-summary {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 }
 .setup-summary .tile {
@@ -1797,6 +1832,14 @@ button.danger.solid {
   background: var(--accent-2);
   color: #0d1b24;
   font-weight: 700;
+}
+.setup-summary .tile.questions {
+  grid-column: 1 / -1;
+  align-items: stretch;
+  gap: 6px;
+}
+.setup-summary .tile.questions .cells {
+  justify-content: center;
 }
 .setup-summary .tile.map-detail {
   grid-column: 1 / -1;

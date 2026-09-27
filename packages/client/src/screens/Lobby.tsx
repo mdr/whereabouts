@@ -1,13 +1,9 @@
 import { Fragment } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import {
-  COUNTRY_MIXES,
-  FLAG_MIXES,
   MAX_PLAYERS,
-  MAX_ROUNDS,
   MAX_SPECTATORS,
-  MIN_ROUNDS,
-  PHOTO_MIXES,
+  QUESTION_TYPES,
   ROUND_LENGTHS_MS,
   nextHostAfter,
   type GameView,
@@ -18,16 +14,14 @@ import { askedToWatch, joinedCode, playerName, soundOn, startOnPan } from "../se
 import { HostWord, PlayerList } from "../ui/PlayerList";
 import { ConnectionNote } from "../ui/ConnectionNote";
 import { Icon } from "../ui/icons";
-import { Pills, StopSlider, Stepper } from "../ui/Controls";
+import { Pills } from "../ui/Controls";
+import { MixEditor, RoundStrip, describeMix } from "../ui/MixEditor";
 import { kickRequest, leaveRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog";
 import { navigate } from "../router";
 import { Banner } from "../ui/Banner";
 import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker";
 
 const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }));
-const MIXES = PHOTO_MIXES.map((m) => ({ value: m.share, label: m.label }));
-const COUNTRIES = COUNTRY_MIXES.map((c) => ({ value: c.id, label: c.label }));
-const FLAGS = FLAG_MIXES.map((c) => ({ value: c.id, label: c.label }));
 
 /**
  * Waiting room: invite on the left (code, link, players), the game setup on
@@ -162,15 +156,9 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             <h2>Game setup</h2>
             {host ? (
               <>
-                <div class="setting rounds">
-                  <span class="setting-label">Rounds</span>
-                  <Stepper
-                    label="Rounds"
-                    value={view.config.rounds}
-                    min={MIN_ROUNDS}
-                    max={MAX_ROUNDS}
-                    onChange={(rounds) => configureAsHost(conn, { rounds })}
-                  />
+                <div class="setting questions">
+                  <span class="setting-label">Questions</span>
+                  <MixEditor mix={view.config.mix} onChange={(mix) => configureAsHost(conn, { mix })} />
                 </div>
                 <div class="setting seconds">
                   <span class="setting-label">Seconds per round</span>
@@ -179,33 +167,6 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     options={SECONDS}
                     value={view.config.roundMs}
                     onChange={(roundMs) => configureAsHost(conn, { roundMs })}
-                  />
-                </div>
-                <div class="setting questions">
-                  <span class="setting-label">Questions</span>
-                  <StopSlider
-                    label="Questions"
-                    options={MIXES}
-                    value={view.config.photoShare}
-                    onChange={(photoShare) => configureAsHost(conn, { photoShare })}
-                  />
-                </div>
-                <div class="setting countries">
-                  <span class="setting-label">Whole countries</span>
-                  <Pills
-                    label="Whole countries"
-                    options={COUNTRIES}
-                    value={view.config.countries}
-                    onChange={(countries) => configureAsHost(conn, { countries })}
-                  />
-                </div>
-                <div class="setting flags">
-                  <span class="setting-label">Flags</span>
-                  <Pills
-                    label="Flags"
-                    options={FLAGS}
-                    value={view.config.flags}
-                    onChange={(flags) => configureAsHost(conn, { flags })}
                   />
                 </div>
                 <div class="setting map-detail">
@@ -300,13 +261,13 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: strin
  * that plays a short highlight; nothing flashes on first load.
  */
 function SetupSummary({ view }: { view: GameView }) {
-  const { rounds, roundMs, photoShare, mapDetail, countries, flags } = view.config;
+  const { rounds, roundMs, mix, mapDetail } = view.config;
   const shown = useRef(view.config);
   const before = shown.current;
   useEffect(() => {
     shown.current = view.config;
   });
-  const mix = MIXES.find((m) => m.value === photoShare)?.label ?? "Even";
+  const mixChanged = QUESTION_TYPES.some((t) => mix[t.id] !== before.mix[t.id]);
   const tiles = [
     {
       key: "rounds",
@@ -315,19 +276,6 @@ function SetupSummary({ view }: { view: GameView }) {
       changed: rounds !== before.rounds,
     },
     { key: "seconds", value: `${roundMs / 1000} s`, label: "per round", changed: roundMs !== before.roundMs },
-    { key: "questions", value: mix, label: "questions", changed: photoShare !== before.photoShare },
-    {
-      key: "countries",
-      value: COUNTRIES.find((c) => c.value === countries)?.label ?? "Off",
-      label: "whole countries",
-      changed: countries !== before.countries,
-    },
-    {
-      key: "flags",
-      value: FLAGS.find((c) => c.value === flags)?.label ?? "Off",
-      label: "flags",
-      changed: flags !== before.flags,
-    },
   ];
   return (
     <div class="setup-summary">
@@ -337,6 +285,10 @@ function SetupSummary({ view }: { view: GameView }) {
           <span class="label">{t.label}</span>
         </div>
       ))}
+      <div key={`questions:${describeMix(mix)}`} class={`tile questions ${mixChanged ? "changed" : ""}`}>
+        <span class="label">{describeMix(mix)}</span>
+        <RoundStrip mix={mix} total={false} />
+      </div>
       <div key={`map:${mapDetail}`} class={`tile map-detail ${mapDetail !== before.mapDetail ? "changed" : ""}`}>
         <MapDetailSummary value={mapDetail} />
       </div>
