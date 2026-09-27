@@ -368,8 +368,9 @@ tool instead of Paint.
 
 Add `?dev` to the URL (`http://localhost:5173/?dev#/solo`, or `#/solo?dev`)
 for a right-hand drawer with the playtest tools: live score and the true
-answer while painting, A and B, the kernel selector and side-by-side kernel
-scores, score-if-here on hover, the paint distribution by blob, H3 resolution
+answer while painting (for a country: its shape and nearness scores and how
+much of the paint is on and off it), A and B, the kernel selector and
+side-by-side kernel scores, score-if-here on hover, the paint distribution by blob, H3 resolution
 and cell count, brush strength and world floor sliders, and connection
 diagnostics online. Players never see any of this; strength and floor are
 fixed for them.

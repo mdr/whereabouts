@@ -387,7 +387,29 @@ function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: string }) {
         <div class="big">{Math.round(score)}</div>
         <PartsLine parts={parts} />
       </div>
+      {isRegion(q) && !paint.layer.isEmpty && <RegionFitFacts dist={dist} q={q} />}
       {!isRegion(q) && <KernelComparison dist={dist} q={q} active={kernelId} />}
     </Card>
+  );
+}
+
+/** Where the paint is against the country (the world floor left out). */
+function RegionFitFacts({ dist, q }: { dist: Distribution; q: RegionQuestion }) {
+  const { coverage, precision } = regionFit(dist, q);
+  return (
+    <dl class="facts region-fit">
+      <div>
+        <dt>Paint on {q.label}</dt>
+        <dd>{pct(precision)}</dd>
+      </div>
+      <div>
+        <dt>Paint off it</dt>
+        <dd>{pct(1 - precision)}</dd>
+      </div>
+      <div>
+        <dt>{q.label} covered</dt>
+        <dd>{pct(coverage)}</dd>
+      </div>
+    </dl>
   );
 }

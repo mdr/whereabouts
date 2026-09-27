@@ -1793,3 +1793,6 @@ button.danger.solid {
 .hud-header .sound-toggle[aria-pressed="true"] {
   color: var(--panel-fg);
 }
+.facts.region-fit {
+  margin-top: 8px;
+}
