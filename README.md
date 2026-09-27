@@ -107,7 +107,7 @@ pnpm workspace with three packages:
 - `packages/shared`: geo, scoring, H3 paint model, question pool, the wire
   protocol (zod schemas + view types), and the pure `Game` state machine. No
   I/O anywhere; the same code runs in the browser and on the server.
-- `packages/client`: Vite + Preact. Screens: home, solo practice, and the
+- `packages/client`: Vite + Preact. Screens: home, solo practice (places or whole countries), and the
   online game (lobby, timed guessing, reveal, results). The map fills the
   screen with HUD cards over it; `PaintController` wraps the MapLibre map and
   brush input. Add `?dev` to the URL for the developer drawer.
@@ -277,6 +277,32 @@ pnpm workspace with three packages:
   again for the next round, since they are hints while guessing.
   In dev mode it also shows `A` and `B` and a live "score if the answer were
   here" readout on hover.
+- **Whole countries** (practice only, for now): the Practise panel on the
+  front page chooses Places or Whole countries. A country question ("Paint
+  the whole of Germany") has an area as its answer, not a point: 37
+  countries from Natural Earth's 1:50m outlines (public domain), built into
+  `packages/shared/regions.json` by `scripts/build-regions.mjs`, which keeps
+  each country's main landmass and the islands of 1,500 km² or more within
+  500 km of it (so Sicily stays; the Canaries, Svalbard and Alaska go),
+  simplifies the outlines to about 1.5 km and sets the tolerance to a fifth
+  of the country's equivalent radius, sqrt(area / π). Countries with
+  disputed borders, or crossing the antimeridian, are left out for now.
+  The outlines load only when practice asks for countries (their own
+  ~70 KB gzipped chunk). Scoring (`scoreRegion`) is the point rule with the
+  country as the answer: q is the country spread evenly by area, and
+  `score = 1000 - 500 (B - 2A + Q) / Q` with `A = <p,q>`, `Q = <q,q>`. A point
+  is the case `Q = 1`. Dividing by `Q` keeps a large country on the same
+  scale: an even paint of the whole world scores about 500 either way.
+  Scores below 0 (a confident guess far away) are clamped. Countries use
+  their own kernel, `REGION_KERNEL` (`r`, `4r`, `16r` weighted 0.7 / 0.2 /
+  0.1): under the game's equal mixture nearly any paint near the right
+  country scored 900 or more, so the shape hardly counted. Scoring runs one
+  H3 resolution coarser than painting (cells up to half the tolerance
+  across), which moved calibration scores by a few points and made it 6 to
+  15 times faster. Against Germany, painting Germany scores 998, France
+  460, Poland 416 and Japan 186. The reveal outlines the country and frames
+  it with the paint, and says how much of the country was covered and how
+  much of the paint was on it.
 
 ## Controls
 

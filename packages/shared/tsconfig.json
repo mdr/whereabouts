@@ -4,5 +4,5 @@
     "lib": ["ES2022", "DOM"],
     "types": ["geojson"]
   },
-  "include": ["src", "questions.json"]
+  "include": ["src", "questions.json", "regions.json"]
 }

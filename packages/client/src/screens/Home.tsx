@@ -1,9 +1,15 @@
 import { useState } from "preact/hooks";
 import { MAP_DETAILS } from "@whereabouts/shared";
-import { nameHandoff, playerName, soloMapDetail, watchHandoff } from "../settings";
+import { nameHandoff, playerName, soloMapDetail, soloPool, watchHandoff, type PracticePool } from "../settings";
 import { navigate } from "../router";
 import { Icon } from "../ui/icons";
 import { MapDetailPicker } from "../ui/MapDetailPicker";
+import { Pills } from "../ui/Controls";
+
+const POOLS: { value: PracticePool; label: string }[] = [
+  { value: "places", label: "Places" },
+  { value: "countries", label: "Whole countries" },
+];
 import hero800 from "../assets/hero-800.webp";
 import hero1448 from "../assets/hero-1448.webp";
 
@@ -94,6 +100,14 @@ export function Home() {
           <section class="mode">
             <h2>Practise</h2>
             <p>On your own, no clock. See how the scoring works.</p>
+            <div class="practice-pool">
+              <Pills
+                label="What to practise"
+                options={POOLS}
+                value={soloPool.value}
+                onChange={(v) => (soloPool.value = v)}
+              />
+            </div>
             <button class="big" onClick={() => navigate("/solo")}>
               <Icon name="brush" /> Practise
             </button>

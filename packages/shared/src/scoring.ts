@@ -12,7 +12,7 @@
  * mass spread evenly over the whole sphere. Its kernel integrals have a closed
  * form (see uniformKernelMean), so it costs nothing to evaluate.
  */
-import { cellArea, cellToChildren, cellToLatLng, getResolution, UNITS } from "h3-js";
+import { cellArea, cellToChildren, cellToLatLng, cellToParent, getResolution, UNITS } from "h3-js";
 import { EARTH_RADIUS_KM, chordDistanceSq, toXyz, type LatLon, type Xyz } from "./geo.ts";
 
 const LN2 = Math.LN2;
@@ -36,10 +36,20 @@ export const KERNELS: Kernel[] = [
   SINGLE_KERNEL,
   { id: "multi-equal", label: "Mixture r, 4r, 16r (equal)", scales: [1, 4, 16], weights: [1 / 3, 1 / 3, 1 / 3] },
   { id: "multi-weighted", label: "Mixture r, 4r, 16r (0.5 / 0.3 / 0.2)", scales: [1, 4, 16], weights: [0.5, 0.3, 0.2] },
+  { id: "region", label: "Mixture r, 4r, 16r (0.7 / 0.2 / 0.1)", scales: [1, 4, 16], weights: [0.7, 0.2, 0.1] },
 ];
 
 /** The kernel games and practice score with; the others are for comparison in the dev drawer. */
 export const DEFAULT_KERNEL: Kernel = KERNELS[1]!;
+
+/**
+ * The kernel region questions score with. Lighter on the wide components than
+ * DEFAULT_KERNEL: under the equal mixture nearly any paint in the right part
+ * of the world scores 900 or more against a whole country, so the shape
+ * hardly counts. Calibrated against Natural Earth shapes at r = R / 5, with R
+ * the country's equivalent radius.
+ */
+export const REGION_KERNEL: Kernel = KERNELS[3]!;
 
 export function kernelById(id: string): Kernel {
   return KERNELS.find((k) => k.id === id) ?? DEFAULT_KERNEL;
@@ -482,6 +492,28 @@ export function crossSum(
     }
   }
   return total;
+}
+
+/**
+ * Merge painted cells finer than `res` into their parents at `res`, keeping
+ * their mass; coarser cells are left alone. Cells are scored as patches, so
+ * this changes scores only slightly while cutting the work sharply.
+ */
+export function coarsenDistribution(dist: Distribution, res: number): Distribution {
+  const merged = new Map<string, number>();
+  const points: WeightedPoint[] = [];
+  for (const pt of dist.points) {
+    if (!pt.cell || getResolution(pt.cell) <= res) points.push(pt);
+    else {
+      const parent = cellToParent(pt.cell, res);
+      merged.set(parent, (merged.get(parent) ?? 0) + pt.p);
+    }
+  }
+  for (const [h, p] of merged) {
+    const [lat, lon] = cellToLatLng(h);
+    points.push({ xyz: toXyz({ lat, lon }), p, s2: HEX_VARIANCE_PER_AREA * cellArea(h, UNITS.km2), cell: h });
+  }
+  return { points, floor: dist.floor };
 }
 
 export function scoreRegion(dist: Distribution, region: RegionAnswer, exact = false): RegionScore {

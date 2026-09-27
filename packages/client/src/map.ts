@@ -1,4 +1,10 @@
-import { Map as MapLibreMap, NavigationControl, setWorkerUrl, type GeoJSONSource } from "maplibre-gl";
+import {
+  Map as MapLibreMap,
+  NavigationControl,
+  setWorkerUrl,
+  type FilterSpecification,
+  type GeoJSONSource,
+} from "maplibre-gl";
 import type * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 // MapLibre resolves its module worker as a sibling of its own script via
@@ -184,6 +190,22 @@ export class GameMap {
       type: "geojson",
       data: { type: "FeatureCollection", features: [] },
     });
+    // A region answer: the country filled faintly and outlined.
+    const isArea: FilterSpecification = ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]];
+    this.map.addLayer({
+      id: "reveal-region-fill",
+      type: "fill",
+      source: REVEAL_SOURCE,
+      filter: isArea,
+      paint: { "fill-color": "#fbbf24", "fill-opacity": 0.12 },
+    });
+    this.map.addLayer({
+      id: "reveal-region-line",
+      type: "line",
+      source: REVEAL_SOURCE,
+      filter: isArea,
+      paint: { "line-color": "#fbbf24", "line-width": 2 },
+    });
     this.map.addLayer({
       id: "reveal-answer",
       type: "circle",
@@ -247,6 +269,8 @@ export class GameMap {
     this.applyPaintRamp(t);
     set("reveal-answer", "circle-color", t.answer);
     set("reveal-answer", "circle-stroke-color", t.answerStroke);
+    set("reveal-region-fill", "fill-color", t.answer);
+    set("reveal-region-line", "line-color", t.answer);
     set("cursor-fill", "fill-color", t.brush);
     set("cursor-outline", "line-color", t.brush);
     document.documentElement.style.setProperty("--ring-brush", t.brush);
@@ -409,6 +433,14 @@ export class GameMap {
       ],
     };
     void this.source(REVEAL_SOURCE)?.setData(fc);
+  }
+
+  /** A region answer: the outline (GeoJSON MultiPolygon coordinates), filled faintly. */
+  showRegionReveal(outline: number[][][][]): void {
+    void this.source(REVEAL_SOURCE)?.setData({
+      type: "FeatureCollection",
+      features: [{ type: "Feature", properties: {}, geometry: { type: "MultiPolygon", coordinates: outline } }],
+    });
   }
 
   clearReveal(): void {

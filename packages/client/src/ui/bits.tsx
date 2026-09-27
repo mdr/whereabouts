@@ -88,7 +88,10 @@ export function HudHeader({
         <span class="brand">Whereabouts</span>
       )}
       <span class="round">
-        Round {round} / {total}
+        Round{" "}
+        <span class="nowrap">
+          {round} / {total}
+        </span>
       </span>
       <SoundToggle />
       {right}
