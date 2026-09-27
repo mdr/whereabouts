@@ -5,7 +5,7 @@
  */
 import { Point, type LngLat, type MapMouseEvent, type MapTouchEvent } from "maplibre-gl";
 import { batch, signal } from "@preact/signals";
-import { PaintLayer, resolutionForTolerance, type LatLon } from "@whereabouts/shared";
+import { PaintLayer, resolutionForTolerance, trimSea, type LandMask, type LatLon } from "@whereabouts/shared";
 import type { GameMap } from "./map";
 import { isTyping } from "./keys";
 
@@ -216,7 +216,22 @@ export class PaintController {
     this.queueRender();
   }
 
-  // ---- undo / redo: one entry per stroke or clear ---------------------------
+  /**
+   * Drop the paint out at sea (see land.ts) as one undoable step. Returns
+   * the share of the paint's mass removed: 0 when there was none at sea.
+   */
+  trimSea(mask: LandMask): number {
+    const kept = trimSea(this.layer.cells, mask);
+    if (kept.size === this.layer.cells.size) return 0;
+    const mass = (cells: Map<string, number>) => [...cells.values()].reduce((s, v) => s + v, 0);
+    const share = 1 - mass(kept) / mass(this.layer.cells);
+    this.pushHistory();
+    this.layer.replaceCells(kept);
+    this.queueRender();
+    return share;
+  }
+
+  // ---- undo / redo: one entry per stroke, clear or trim ---------------------
 
   private static readonly HISTORY_LIMIT = 50;
   private undoStack: Map<string, number>[] = [];

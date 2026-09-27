@@ -454,6 +454,19 @@ button.icon:hover {
 .tools button {
   padding: 8px 10px;
 }
+/* Between phone and desktop widths the toolbar stays on one row: tool buttons
+   go icon-only (their titles still say what they do) so it fits. */
+@media (min-width: 641px) and (max-width: 1080px) {
+  .tools button .label {
+    display: none;
+  }
+  .tools button {
+    padding: 8px;
+  }
+  .tools button .icon {
+    margin: 0;
+  }
+}
 button {
   background: #3a424d;
   color: var(--panel-fg);

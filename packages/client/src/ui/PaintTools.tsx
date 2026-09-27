@@ -1,10 +1,12 @@
 import type { ComponentChildren } from "preact";
+import { useEffect, useState } from "preact/hooks";
 import { usePaint } from "./MapView";
 import { Card, HudBottom, fmtKm } from "./bits";
 import type { Tool } from "../paint-controller";
 import { Icon, type IconName } from "./icons";
 import { sound } from "../sound";
 import { Shortcuts, ShortcutsButton } from "./Shortcuts";
+import { loadLandMask } from "../land";
 
 const TOOL_ICON: Record<Tool, IconName> = { pan: "hand", paint: "brush", erase: "eraser" };
 const TOOL_HINT: Record<Tool, string> = {
@@ -43,6 +45,7 @@ export function PaintTools({ children, practice }: { children?: ComponentChildre
         <button title="Clear all paint (Undo brings it back)" onClick={clear} disabled={!enabled}>
           <Icon name="trash" /> <span class="label">Clear</span>
         </button>
+        <TrimSea enabled={enabled} />
       </div>
       <label class="brush" title="Brush size ([ and ] also work)">
         <span>Brush</span>
@@ -193,5 +196,46 @@ export function Distribution() {
         <span>{(effectiveFloor * 100).toFixed(1)}%</span>
       </li>
     </ul>
+  );
+}
+
+/**
+ * Remove paint more than about 50 km out to sea, as one undoable step. The
+ * land mask loads on the first press. For a moment the button says what it
+ * did. It does not promise a better score: a blob centred on a coastal
+ * answer loses its sea side (see land.ts).
+ */
+function TrimSea({ enabled }: { enabled: boolean }) {
+  const paint = usePaint();
+  void paint.version.value; // re-render as the paint changes, for the disabled state
+  const [note, setNote] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (!note) return;
+    const t = setTimeout(() => setNote(null), 2500);
+    return () => clearTimeout(t);
+  }, [note]);
+  const trim = async () => {
+    setBusy(true);
+    try {
+      const share = paint.trimSea(await loadLandMask());
+      if (share > 0) sound.play("clear");
+      setNote(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : "None at sea");
+    } catch (err) {
+      console.warn("could not load the land mask", err);
+      setNote("Try again");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button
+      title="Remove paint out at sea, more than about 50 km from land (Undo brings it back)"
+      onClick={() => void trim()}
+      disabled={!enabled || busy || paint.layer.isEmpty}
+      aria-live="polite"
+    >
+      <Icon name="sea" /> <span class="label">{note ?? "Trim sea"}</span>
+    </button>
   );
 }

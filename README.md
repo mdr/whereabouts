@@ -357,15 +357,22 @@ pnpm workspace with three packages:
 
 ## Controls
 
-| Action              | Control                                              |
-| ------------------- | ---------------------------------------------------- |
-| Pan / Paint / Erase | `1` / `2` / `3`, or the buttons                      |
-| Pan while painting  | hold `Space`, or drag with the middle button         |
-| Brush size          | slider, or `[` and `]`                               |
-| Undo / redo         | `Ctrl+Z` / `Ctrl+Shift+Z` (⌘ on Mac), or the buttons |
-| Zoom                | scroll wheel                                         |
-| Submit / next       | `Enter` (practice)                                   |
-| List these keys     | `?`, or the keyboard button in the toolbar           |
+| Action              | Control                                                       |
+| ------------------- | ------------------------------------------------------------- |
+| Pan / Paint / Erase | `1` / `2` / `3`, or the buttons                               |
+| Pan while painting  | hold `Space`, or drag with the middle button                  |
+| Brush size          | slider, or `[` and `]`                                        |
+| Undo / redo         | `Ctrl+Z` / `Ctrl+Shift+Z` (⌘ on Mac), or the buttons          |
+| Trim sea            | the Trim sea button: removes paint more than ~50 km from land |
+| Zoom                | scroll wheel                                                  |
+| Submit / next       | `Enter` (practice)                                            |
+| List these keys     | `?`, or the keyboard button in the toolbar                    |
+
+Trim sea uses a land mask (`packages/shared/land.json`, built by
+`scripts/build-land.mjs` from Natural Earth's 1:10m land and minor islands),
+fetched on the first press. It is one undoable step and says how much it
+removed. It is the player's choice, not a free gain: a blob centred on a
+coastal answer loses its sea side and can score a little lower.
 
 The outline under the pointer is the brush footprint: the exact hex cells the next stamp will touch, at the
 resolution the layer picks for that brush size, so at world zoom you see the

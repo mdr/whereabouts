@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./questions.json": "./questions.json",
     "./regions.json": "./regions.json",
-    "./flags.json": "./flags.json"
+    "./flags.json": "./flags.json",
+    "./land.json": "./land.json"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

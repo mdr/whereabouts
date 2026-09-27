@@ -31,6 +31,7 @@ import {
   Users,
   Volume2,
   VolumeX,
+  Waves,
   type LucideProps,
 } from "lucide-preact";
 import type { FunctionComponent } from "preact";
@@ -67,6 +68,7 @@ const ICONS = {
   share: Share2,
   soundOn: Volume2,
   soundOff: VolumeX,
+  sea: Waves,
 } satisfies Record<string, FunctionComponent<LucideProps>>;
 
 export type IconName = keyof typeof ICONS;

@@ -7,3 +7,4 @@ export * from "./game.ts";
 export * from "./colours.ts";
 export * from "./regions.ts";
 export * from "./flags.ts";
+export * from "./land.ts";
