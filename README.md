@@ -280,7 +280,7 @@ pnpm workspace with three packages:
   again for the next round, since they are hints while guessing.
   In dev mode it also shows `A` and `B` and a live "score if the answer were
   here" readout on hover.
-- **Whole countries**: in practice, the Practise panel on the front page
+- **Whole countries** (design notes and the decisions behind the scoring: [docs/country-scoring.md](docs/country-scoring.md)): in practice, the Practise panel on the front page
   chooses Places or Whole countries; in a game, the host's Whole countries
   setting mixes them in. The server holds `regions.json` and scores country
   rounds with `scoreRegionQuestion` (16 players in 170 to 270 ms); a round
