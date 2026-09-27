@@ -5,6 +5,7 @@ import { resolutionForTolerance } from "./paint.ts";
 import { QUESTIONS } from "./questions.ts";
 import {
   NEARNESS_WEIGHT,
+  capDensity,
   regionCells,
   regionFit,
   regionScoringRes,
@@ -142,6 +143,46 @@ describe("shape and nearness", () => {
     const s = scoreRegionQuestion(coat(regionCells(byId("poland-region"), res)), germany);
     expect(s.shape).toBeLessThan(50);
     expect(s.score).toBeCloseTo(NEARNESS_WEIGHT * s.nearness, 9);
+  });
+
+  /** Paint the given cells at the given intensity each. */
+  const layered = (layers: [string[], number][]) => {
+    const byCell = new Map<string, number>();
+    for (const [cs, intensity] of layers) for (const h of cs) byCell.set(h, (byCell.get(h) ?? 0) + intensity);
+    return buildDistribution(
+      [...byCell].map(([h, intensity]) => {
+        const [lat, lon] = cellToLatLng(h);
+        return { lat, lon, intensity, areaKm2: cellArea(h, UNITS.km2), h3: h };
+      }),
+      0.05,
+    );
+  };
+
+  it("a second coat over part of the country costs little (the density cap)", () => {
+    // A band through the middle third, painted twice.
+    const lats = cells.map((h) => cellToLatLng(h)[0]).sort((a, b) => a - b);
+    const lo = lats[Math.floor(lats.length / 3)]!;
+    const hi = lats[Math.floor((2 * lats.length) / 3)]!;
+    const band = cells.filter((h) => cellToLatLng(h)[0] >= lo && cellToLatLng(h)[0] < hi);
+    const twice = layered([
+      [cells, 1],
+      [band, 1],
+    ]);
+    const { shape } = scoreRegionQuestion(twice, germany);
+    expect(shape).toBeGreaterThan(960);
+    // Uncapped, the band would be twice as dense as the rest; capped, 1.5 times.
+    const densities = capDensity(twice).points.map((pt) => pt.p / cellArea(pt.cell!, UNITS.km2));
+    expect(Math.max(...densities) / Math.min(...densities)).toBeCloseTo(1.5, 1);
+  });
+
+  it("a lighter hedge on a second country keeps its weight under the cap", () => {
+    const poland = regionCells(byId("poland-region"), res);
+    const hedge = layered([
+      [cells, 2],
+      [poland, 1],
+    ]);
+    const on = (2 * area(cells)) / (2 * area(cells) + area(poland));
+    expect(regionFit(hedge, germany).precision).toBeCloseTo(on, 2);
   });
 
   it("uneven brushing costs little: a bright middle fading to half density at the edges", () => {

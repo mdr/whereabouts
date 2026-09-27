@@ -298,7 +298,14 @@ pnpm workspace with three packages:
     outside) scores `500 + 500 P`; covering a fraction c of it evenly scores
     `1000 - 500 (1/c - 1)`; half on the country and half elsewhere scores
     750, like a 50/50 point answer; uneven brushing (a bright middle fading
-    to half density at the edges) costs about 50.
+    to half density at the edges) costs about 50. Before scoring, each
+    cell's paint density is capped at 1.5 times the median painted density
+    (`capDensity`): strokes overlap, and a second pass down the middle of
+    Mexico, doubling the density there, cost an otherwise near-perfect paint
+    about 90 points (892 in play). A country is uniform, so painting part of
+    it again says nothing; lighter paint, a hedge on a second guess, stays
+    under the cap. Simulated brushed paints of Mexico with a second pass now
+    score 939 to 952, against 961 for one even coat.
   - **nearness** is the kernel score (`scoreRegion`) under one Gaussian 16
     tolerances wide, run one H3 resolution coarser than painting. A paint
     that misses the country has a shape score near 0 whether it is next door

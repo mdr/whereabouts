@@ -53,6 +53,17 @@ export interface RegionQuestion {
   outline: number[][][][];
 }
 
+/**
+ * Paint density is capped at this multiple of the median painted density
+ * (by area) before a country is scored. Strokes overlap: a second pass down
+ * the middle of Mexico doubled the density there, and against an even coat
+ * that cost about 90 points of an otherwise near-perfect answer. A country
+ * is uniform, so painting part of it again says nothing; the cap trims such
+ * hot spots and leaves an even paint alone. Lighter paint, a hedge on a
+ * second guess say, stays below the cap and keeps its weight.
+ */
+export const DENSITY_CAP = 1.5;
+
 /** How much of its nearness score a paint that misses the country keeps. */
 export const NEARNESS_WEIGHT = 0.55;
 
@@ -96,7 +107,8 @@ export function regionAnswerFor(q: RegionQuestion, k: Kernel = NEARNESS_KERNEL):
   return a;
 }
 
-export function scoreRegionQuestion(dist: Distribution, q: RegionQuestion): RegionQuestionScore {
+export function scoreRegionQuestion(painted: Distribution, q: RegionQuestion): RegionQuestionScore {
+  const dist = capDensity(painted);
   const shape = shapeScore(paintMass(dist, q), q);
   const coarse = coarsenDistribution(dist, regionScoringRes(q.toleranceKm));
   const nearness = scoreRegion(coarse, regionAnswerFor(q)).score;
@@ -112,7 +124,8 @@ export function scoreRegionQuestion(dist: Distribution, q: RegionQuestion): Regi
  * credit below; so an exact paint covers all of it, and so does a 50/50
  * hedge with another place.
  */
-export function regionFit(dist: Distribution, q: RegionQuestion): { coverage: number; precision: number } {
+export function regionFit(paint: Distribution, q: RegionQuestion): { coverage: number; precision: number } {
+  const dist = capDensity(paint);
   const painted = 1 - dist.floor;
   const region = regionAt(q);
   let onMass = 0;
@@ -128,6 +141,35 @@ export function regionFit(dist: Distribution, q: RegionQuestion): { coverage: nu
   let covered = 0;
   for (const c of on) covered += Math.min(1, c.p / c.area / half) * c.area;
   return { coverage: covered / region.area, precision: onMass / painted };
+}
+
+/**
+ * The paint with each cell's density capped at DENSITY_CAP times the median
+ * density (area-weighted, so mixed resolutions count fairly), renormalised to
+ * the same painted mass.
+ */
+export function capDensity(dist: Distribution): Distribution {
+  const cells = dist.points.map((pt) => {
+    const area = pt.cell ? cellArea(pt.cell, UNITS.km2) : 1;
+    return { pt, area, density: pt.p / area };
+  });
+  if (cells.length === 0) return dist;
+  const byDensity = [...cells].sort((a, b) => a.density - b.density);
+  const half = byDensity.reduce((s, c) => s + c.area, 0) / 2;
+  let acc = 0;
+  let median = byDensity.at(-1)!.density;
+  for (const c of byDensity) {
+    acc += c.area;
+    if (acc >= half) {
+      median = c.density;
+      break;
+    }
+  }
+  const cap = DENSITY_CAP * median;
+  const capped = cells.map((c) => Math.min(c.density, cap) * c.area);
+  const total = capped.reduce((s, m) => s + m, 0);
+  const painted = 1 - dist.floor;
+  return { floor: dist.floor, points: cells.map((c, i) => ({ ...c.pt, p: (capped[i]! / total) * painted })) };
 }
 
 const regions = new Map<string, { cells: Map<string, number>; area: number }>();
