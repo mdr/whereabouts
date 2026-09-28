@@ -3,6 +3,7 @@ import { defineConfig } from "eslint/config";
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
+import vitest from "@vitest/eslint-plugin";
 import globals from "globals";
 
 export default defineConfig(
@@ -61,7 +62,17 @@ export default defineConfig(
   },
   {
     files: ["**/*.test.{ts,tsx}"],
+    ...vitest.configs.recommended,
     rules: {
+      ...vitest.configs.recommended.rules,
+      // A stray .only makes CI pass while skipping the rest of the file.
+      "vitest/no-focused-tests": "error",
+      // Vitest takes a message as expect's second argument.
+      "vitest/valid-expect": ["error", { maxArgs: 2 }],
+      // The server tests' until() helpers throw when no state matches in time.
+      "vitest/expect-expect": ["error", { assertFunctionNames: ["expect", "*.until", "*.untilLatest"] }],
+      // Tests over the game data branch on each item's kind to choose what to check.
+      "vitest/no-conditional-expect": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-explicit-any": "off",
       // No-op callbacks and stubs are the point in a test.
