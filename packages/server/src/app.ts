@@ -87,7 +87,7 @@ export function createApp(options: AppOptions): App {
 }
 
 /** Hashed bundle assets are immutable; everything else must be revalidated. */
-export function cacheControlFor(filePath: string): string {
+function cacheControlFor(filePath: string): string {
   return /[/\\]assets[/\\]/.test(filePath) ? "public, max-age=31536000, immutable" : "no-cache";
 }
 

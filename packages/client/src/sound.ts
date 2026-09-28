@@ -77,16 +77,16 @@ const LOOPS = {
     crossfadeS: 0.06,
   },
 } satisfies Record<string, Loop>;
-export type LoopName = keyof typeof LOOPS;
+type LoopName = keyof typeof LOOPS;
 
 const RELEASE_S = 0.06;
 /** Seconds of ticking before the alarm in countdown.mp3. */
-export const COUNTDOWN_S = 10;
+const COUNTDOWN_S = 10;
 /** The countdown starts soft and reaches full volume at the alarm. */
 const COUNTDOWN_START_GAIN = 0.25;
 
 const ONE_SHOT_VOLUME = { chicken: 0.45, clear: 0.5, applause: 0.6 };
-export type OneShot = keyof typeof ONE_SHOT_VOLUME;
+type OneShot = keyof typeof ONE_SHOT_VOLUME;
 const VOLUME = { countdown: 0.6, cue: 0.3 };
 
 const URLS = {

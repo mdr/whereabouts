@@ -55,7 +55,7 @@ const OLD_SHARES: Record<string, number> = { off: 0, mixed: 0.25, only: 1 };
  * of photos, and whole countries and flags as off, mixed in (a quarter) or
  * only, split as those games split them. Undefined when none were saved.
  */
-export function mixFromOldSetup(setup: Record<string, unknown>): QuestionMix | undefined {
+function mixFromOldSetup(setup: Record<string, unknown>): QuestionMix | undefined {
   const { rounds, photoShare, countries, flags } = setup;
   if ([rounds, photoShare, countries, flags].every((v) => v === undefined)) return undefined;
   const r = typeof rounds === "number" && Number.isInteger(rounds) && rounds >= 1 && rounds <= MAX_ROUNDS ? rounds : 8;

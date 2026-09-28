@@ -5,7 +5,7 @@ import physical from "../assets/map-physical.jpg";
 import political from "../assets/map-political.jpg";
 
 /** The same frame at each level, from scripts/map-detail-previews.mjs. */
-export const MAP_PREVIEWS: Record<MapDetail, string> = { minimal, water, physical, political };
+const MAP_PREVIEWS: Record<MapDetail, string> = { minimal, water, physical, political };
 
 /** Map detail as four picture choices, least detail (hardest) first. */
 export function MapDetailPicker({ value, onChange }: { value: MapDetail; onChange: (value: MapDetail) => void }) {

@@ -14,7 +14,7 @@ import { effect } from "@preact/signals";
 import { sound } from "../sound";
 import { soundOn } from "../settings";
 
-export const PaintContext = createContext<PaintController | null>(null);
+const PaintContext = createContext<PaintController | null>(null);
 
 export function usePaint(): PaintController {
   const p = useContext(PaintContext);

@@ -17,7 +17,7 @@ players because the reconnect token lives in session storage.
 
 Other commands:
 
-- `pnpm check`: typecheck, ESLint (type-aware), Prettier check and all tests.
+- `pnpm check`: typecheck, ESLint (type-aware), Knip (unused files, exports and dependencies), Prettier check and all tests.
   CI runs exactly this plus the client build, in a slimmer Nix shell
   (`nix develop .#ci`: node, pnpm and jq) whose paths all come from
   cache.nixos.org; the pnpm store is cached between runs with actions/cache.

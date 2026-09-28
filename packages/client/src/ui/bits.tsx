@@ -351,7 +351,7 @@ function Lightbox({ image, credit, onClose }: { image: string; credit: Component
 }
 
 /** Ticks once a second; returns whole seconds remaining, never negative. */
-export function useCountdown(msRemaining: () => number): number {
+function useCountdown(msRemaining: () => number): number {
   const [, force] = useState(0);
   useEffect(() => {
     const id = setInterval(() => force((n) => n + 1), 250);
