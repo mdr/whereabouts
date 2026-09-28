@@ -46,6 +46,19 @@ describe("QuestionCard", () => {
 });
 
 describe("QuestionCard image", () => {
+  // First in this file: the label shows only on the session's first photo.
+  it("says it can be enlarged: a button with a badge, labelled on the first photo only", () => {
+    const { container: first } = render(<QuestionCard q={q} />);
+    const button = first.querySelector<HTMLButtonElement>(".thumb button.thumb-button")!;
+    expect(button.textContent).toContain("Enlarge photo");
+    expect(first.querySelector(".enlarge-badge")!.textContent).toBe("Enlarge");
+    const { container: later } = render(<QuestionCard q={q} />);
+    expect(later.querySelector(".enlarge-badge")).not.toBeNull();
+    expect(later.querySelector(".enlarge-badge")!.textContent).toBe("");
+    fireEvent.click(later.querySelector(".thumb-button")!);
+    expect(later.querySelector(".lightbox")).not.toBeNull();
+  });
+
   it("enlarges on click and shrinks on Escape, the close button, or a backdrop click", () => {
     const { container } = render(<QuestionCard q={q} />);
     expect(container.querySelector(".lightbox")).toBeNull();

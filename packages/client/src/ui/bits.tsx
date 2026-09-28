@@ -187,8 +187,16 @@ export function AnswerMode({ area }: { area: boolean }) {
  * Escape to shrink back. The Wikimedia Commons credit sits behind a small
  * info icon linking to the file page.
  */
+/** Whether a photo has shown its "Enlarge" label yet this session: after the first, just the icon. */
+let enlargeLabelShown = false;
+
 function QuestionImage({ image, credit: showCredit }: { image: string; credit: boolean }) {
   const [large, setLarge] = useState(false);
+  const [withLabel] = useState(() => {
+    const first = !enlargeLabelShown;
+    enlargeLabelShown = true;
+    return first;
+  });
   useEffect(() => {
     if (!large) return;
     const onKey = (e: KeyboardEvent) => {
@@ -212,8 +220,16 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
   );
   return (
     <>
-      <div class="thumb" title="Click to enlarge">
-        <img src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" onClick={() => setLarge(true)} />
+      <div class="thumb">
+        {/* The whole photo is the button; the badge says so, on phones too, where there is no hover. */}
+        <button type="button" class="thumb-button" title="Enlarge the photo" onClick={() => setLarge(true)}>
+          <img src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
+          <span class={`enlarge-badge ${withLabel ? "with-label" : ""}`} aria-hidden="true">
+            <Icon name="enlarge" size={14} />
+            {withLabel && <span>Enlarge</span>}
+          </span>
+          <span class="sr-only">Enlarge photo</span>
+        </button>
         {credit}
       </div>
       {large && <Lightbox image={image} credit={credit} onClose={() => setLarge(false)} />}
