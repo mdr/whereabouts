@@ -68,7 +68,11 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
       />
     );
   }
+  return <Joined conn={conn} code={code} create={create} />;
+}
 
+/** The game once a name is settled: its own component so its hooks always run. */
+function Joined({ conn, code, create }: { conn: Connection; code: string; create: boolean }) {
   // Once the server assigns a code to a new game, put it in the URL for sharing.
   const assigned = conn.code.value;
   useEffect(() => {

@@ -1,10 +1,11 @@
 // @ts-check
+import { defineConfig } from "eslint/config";
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 
-export default tseslint.config(
+export default defineConfig(
   { ignores: ["**/dist/**", "**/node_modules/**", "**/vendor/**", "result", ".direnv"] },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -33,11 +34,13 @@ export default tseslint.config(
     files: ["packages/client/src/**/*.{ts,tsx}"],
     plugins: { "react-hooks": reactHooks },
     languageOptions: { globals: globals.browser },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      // Signals and imperative controllers are read inside effects deliberately.
-      "react-hooks/exhaustive-deps": "off",
-    },
+    // Only the rules of hooks. The plugin's recommended set also carries the
+    // React Compiler rules, which misread this code: they know `useRef` only
+    // from "react", not "preact/hooks", and treat a signal write through a
+    // hook's result (`paint.version.value++`) as mutating a frozen value.
+    // exhaustive-deps stays off: signals and imperative controllers are read
+    // inside effects deliberately.
+    rules: { "react-hooks/rules-of-hooks": "error" },
   },
   {
     files: ["packages/server/src/**/*.ts"],
