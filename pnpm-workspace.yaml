@@ -11,6 +11,9 @@ packages:
 pmOnFail: ignore
 engineStrict: true
 
+# Set explicitly so pnpm enforces it strictly; the built-in default isn't strict.
+minimumReleaseAge: 2880
+
 # Build scripts are opt-in; esbuild needs its postinstall to place its binary.
 allowBuilds:
   esbuild: true
