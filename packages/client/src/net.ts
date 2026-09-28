@@ -200,5 +200,5 @@ export function describeDisconnect(code: number, reason: string | undefined): Re
       detail: "Check the code with your host. If the game finished or everyone left, it will need starting again.",
     };
   }
-  return { title: "Disconnected", detail: reason ? reason : `The connection closed (code ${code}).` };
+  return { title: "Disconnected", detail: reason || `The connection closed (code ${code}).` };
 }

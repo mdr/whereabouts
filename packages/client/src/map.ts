@@ -103,7 +103,7 @@ export class GameMap {
   }
 
   private indexStyleLayers(): void {
-    const layers = this.map.getStyle().layers ?? [];
+    const layers = this.map.getStyle().layers;
     const roadSources = new Set(["transportation", "aeroway"]);
     const urbanSources = new Set(["building", "landuse", "park"]);
     for (const l of layers) {
@@ -342,6 +342,7 @@ export class GameMap {
    */
   setDetail(level: MapDetail | "reveal"): void {
     // An unknown level (a stale saved setting, say) counts as minimal.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- saved settings are not checked against the type
     const rank = { minimal: 0, water: 1, physical: 2, political: 3, reveal: 4 }[level] ?? 0;
     this.setInlandWater(rank >= 1);
     this.setTerrain(rank >= 2);

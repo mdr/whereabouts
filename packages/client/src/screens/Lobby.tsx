@@ -66,6 +66,8 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             <div class="invite-actions">
               <button
                 onClick={() => {
+                  // Missing outside a secure context (a LAN address over http), whatever the DOM types say.
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   void navigator.clipboard?.writeText(url).then(() => setCopied(true));
                 }}
               >
@@ -76,7 +78,9 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                   onClick={() => {
                     void navigator
                       .share({ title: "Whereabouts", text: `Join my game: ${view.code}`, url })
-                      .catch(() => {});
+                      .catch(() => {
+                        // Closing the share sheet rejects too; there is nothing to report.
+                      });
                   }}
                 >
                   <Icon name="share" /> Share

@@ -109,7 +109,7 @@ class TestPlayer {
       await new Promise((r) => setTimeout(r, 10));
     }
     throw new Error(
-      `${this.name}: no state matched within ${ms}ms; last=${JSON.stringify(this.latest ?? null).slice(0, 300)}`,
+      `${this.name}: no state matched within ${ms}ms; last=${JSON.stringify(this.states.at(-1) ?? null).slice(0, 300)}`,
     );
   }
   async untilLatest(pred: (v: GameView) => boolean, ms = 3000): Promise<GameView> {
@@ -118,7 +118,9 @@ class TestPlayer {
       if (this.states.length && pred(this.latest)) return this.latest;
       await new Promise((r) => setTimeout(r, 10));
     }
-    throw new Error(`${this.name}: latest never matched; last=${JSON.stringify(this.latest ?? null).slice(0, 300)}`);
+    throw new Error(
+      `${this.name}: latest never matched; last=${JSON.stringify(this.states.at(-1) ?? null).slice(0, 300)}`,
+    );
   }
   async waitClosed(ms = 3000): Promise<void> {
     const start = Date.now();

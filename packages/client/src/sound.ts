@@ -166,7 +166,11 @@ class SoundEngine {
     }
     // Not just "suspended": Safari has a third state, "interrupted", that a
     // tap should also try to leave.
-    if (this.ctx.state !== "running") void this.ctx.resume().catch(() => {});
+    if (this.ctx.state !== "running") {
+      void this.ctx.resume().catch(() => {
+        // Refused without a user gesture; the next tap tries again.
+      });
+    }
     if (this.loading) return;
     this.loading = true;
     for (const [clip, url] of Object.entries(URLS) as [Clip, string][]) {
@@ -180,7 +184,7 @@ class SoundEngine {
   }
 
   private ready(): AudioContext | null {
-    return soundOn.value && this.ctx && this.ctx.state === "running" ? this.ctx : null;
+    return soundOn.value && this.ctx?.state === "running" ? this.ctx : null;
   }
 
   // ---- strokes: spray and eraser ----------------------------------------------

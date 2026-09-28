@@ -12,11 +12,15 @@ import { isTyping } from "../keys";
 
 export const shortcutsOpen = signal(false);
 
-const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent);
 const MOD = isMac ? "⌘" : "Ctrl";
 
 /** An action, its key combinations, and whether those are one per action ("/") or alternatives ("or"). */
-type Row = { action: string; combos: string[][]; sep?: "/" | "or" };
+interface Row {
+  action: string;
+  combos: string[][];
+  sep?: "/" | "or";
+}
 
 function rows(practice: boolean): Row[] {
   return [

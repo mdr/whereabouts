@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/preact";
 import type { PlayerView } from "@whereabouts/shared";
-import { HostTag, PlayerList } from "./PlayerList";
+import { HostTag, PlayerList, initial } from "./PlayerList";
 
 const player = (over: Partial<PlayerView>): PlayerView => ({
   id: "p1",
@@ -142,5 +142,14 @@ describe("PlayerList spectators", () => {
     const row = container.querySelector("li")!;
     expect(row.querySelector(".swatch.watcher")).not.toBeNull();
     expect(row.textContent).toContain("watching");
+  });
+});
+
+describe("initial", () => {
+  it("keeps a multi-part emoji whole", () => {
+    expect(initial("alice")).toBe("A");
+    expect(initial("  🇫🇷 Marie")).toBe("🇫🇷");
+    expect(initial("👨‍👩‍👧 family")).toBe("👨‍👩‍👧");
+    expect(initial("   ")).toBe("?");
   });
 });

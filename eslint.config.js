@@ -8,7 +8,8 @@ import globals from "globals";
 export default defineConfig(
   { ignores: ["**/dist/**", "**/node_modules/**", "**/vendor/**", "result", ".direnv"] },
   js.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
   {
     languageOptions: {
       parserOptions: {
@@ -22,6 +23,8 @@ export default defineConfig(
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true, allowBoolean: true }],
       "@typescript-eslint/no-floating-promises": ["error", { ignoreVoid: true }],
+      // `||` on a string treats "" as missing too, which is usually the intent.
+      "@typescript-eslint/prefer-nullish-coalescing": ["error", { ignorePrimitives: { string: true } }],
       "@typescript-eslint/no-confusing-void-expression": "off",
       // Interface-conforming async methods often have nothing to await.
       "@typescript-eslint/require-await": "off",
@@ -58,6 +61,11 @@ export default defineConfig(
   },
   {
     files: ["**/*.test.{ts,tsx}"],
-    rules: { "@typescript-eslint/no-unsafe-assignment": "off", "@typescript-eslint/no-explicit-any": "off" },
+    rules: {
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      // No-op callbacks and stubs are the point in a test.
+      "@typescript-eslint/no-empty-function": "off",
+    },
   },
 );

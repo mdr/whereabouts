@@ -145,7 +145,7 @@ export class Game {
     if (existing) {
       existing.connected = true;
       existing.leftAt = null;
-      if (this.hostToken === null) this.hostToken = token;
+      this.hostToken ??= token;
       return OK_CHANGED;
     }
     if (this.kicked.has(token)) return fail("removed by the host");
@@ -170,7 +170,7 @@ export class Game {
       previousRank: null,
     };
     this.players.set(token, player);
-    if (this.hostToken === null) this.hostToken = token;
+    this.hostToken ??= token;
     return OK_CHANGED;
   }
 
@@ -686,7 +686,7 @@ export class Game {
 
 function sum(xs: number[]): number {
   let t = 0;
-  for (const x of xs) t += x ?? 0;
+  for (const x of xs) t += x;
   return t;
 }
 
@@ -704,7 +704,7 @@ export function nextHostAfter(players: PlayerView[], leavingId: string): PlayerV
 export function generateCode(rnd: () => number = Math.random, length = 4): string {
   const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   let out = "";
-  for (let i = 0; i < length; i++) out += alphabet[Math.floor(rnd() * alphabet.length)];
+  for (let i = 0; i < length; i++) out += alphabet.charAt(Math.floor(rnd() * alphabet.length));
   return out;
 }
 

@@ -10,7 +10,7 @@ export const PROTOCOL_VERSION = 1;
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export const PaintSubmissionSchema = z.object({
-  cells: z.record(z.string().regex(/^[0-9a-f]{15}$/), z.number().positive().finite()),
+  cells: z.record(z.string().regex(/^[0-9a-f]{15}$/), z.number().positive()),
   floor: z.number().min(0).max(1),
 });
 export type PaintSubmission = z.infer<typeof PaintSubmissionSchema>;

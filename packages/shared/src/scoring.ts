@@ -287,8 +287,7 @@ function gaussCrossSum(left: WeightedPoint[], right: WeightedPoint[], widthKm: n
         for (let dz = -1; dz <= 1; dz++) {
           const list = buckets.get(((bx + dx) * SPAN + (by + dy)) * SPAN + (bz + dz));
           if (!list) continue;
-          for (let t = 0; t < list.length; t++) {
-            const j = list[t]!;
+          for (const j of list) {
             const ddx = xi - xs[j]!,
               ddy = yi - ys[j]!,
               ddz = zi - zs[j]!;

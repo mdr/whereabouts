@@ -1,6 +1,14 @@
 import { playerColour, type PlayerView } from "@whereabouts/shared";
 import { Icon } from "./icons";
 
+const graphemes = new Intl.Segmenter();
+
+/** A name's first character as a reader sees it, so a flag or family emoji stays whole. */
+export function initial(name: string): string {
+  const first = graphemes.segment(name.trim())[Symbol.iterator]().next();
+  return first.done ? "?" : first.value.segment.toUpperCase();
+}
+
 /** Crown tag marking the host in a player row; the word stays for screen readers. */
 export function HostTag() {
   return (
@@ -60,7 +68,7 @@ export function PlayerList({
               </span>
             ) : avatars ? (
               <span class="avatar" style={{ background: playerColour(p.colour) }} aria-hidden="true">
-                {[...p.name.trim()][0]?.toUpperCase() ?? "?"}
+                {initial(p.name)}
               </span>
             ) : (
               <span class="swatch" style={{ background: playerColour(p.colour) }} />
