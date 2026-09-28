@@ -178,13 +178,13 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
               <button
                 class="primary"
                 title={
-                  paint.layer.isEmpty
+                  paint.isEmpty.value
                     ? "No idea? Passing scores 250. Even painting a wide, vague area scores better on average."
                     : "Whatever is painted when the clock hits zero counts anyway."
                 }
                 onClick={lockIn}
               >
-                <Icon name="check" /> {paint.layer.isEmpty ? "Pass" : "Done"}
+                <Icon name="check" /> {paint.isEmpty.value ? "Pass" : "Done"}
               </button>
             )}
           </PaintTools>

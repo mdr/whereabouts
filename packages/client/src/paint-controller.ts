@@ -4,7 +4,7 @@
  * read its signals; it never knows about game phases.
  */
 import { Point, type LngLat, type MapMouseEvent, type MapTouchEvent } from "maplibre-gl";
-import { batch, signal } from "@preact/signals";
+import { batch, computed, signal, type ReadonlySignal } from "@preact/signals";
 import {
   FILL_DENSITY,
   PaintLayer,
@@ -29,6 +29,20 @@ interface Snapshot {
   fills: Map<string, string[]>;
 }
 
+/**
+ * A value read from the layer, recomputed when `version` changes. The layer
+ * is mutated in place, which no signal can see, so every change to it bumps
+ * a version counter, and this is the one place that reads a counter only to
+ * depend on it.
+ */
+function following<T>(version: ReadonlySignal<number>, read: () => T): ReadonlySignal<T> {
+  return computed(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions -- the read is the dependency
+    version.value;
+    return read();
+  });
+}
+
 export class PaintController {
   readonly tool = signal<Tool>("paint");
   readonly brushPx = signal(40);
@@ -43,6 +57,18 @@ export class PaintController {
    */
   readonly settledVersion = signal(0);
   private settleTimer: number | null = null;
+  /** Whether nothing is painted. */
+  readonly isEmpty = following(this.version, () => this.layer.isEmpty);
+  /** The layer's size and resolutions, for the dev panel. */
+  readonly stats = following(this.version, () => ({
+    res: this.layer.res,
+    size: this.layer.size,
+    resolutionCounts: this.layer.resolutionCounts(),
+  }));
+  /** The painted cells as of `settledVersion`, for live scoring. */
+  readonly settledCells = following(this.settledVersion, () => [...this.layer.toCells()]);
+  /** Connected blobs as of `settledVersion`, largest first; none when nothing is painted. */
+  readonly settledBlobs = following(this.settledVersion, () => this.layer.blobs());
   /** The tool of the stroke being held (never pan, nor a pinch), or null; drives the spray and eraser sounds. */
   readonly stroking = signal<"paint" | "erase" | null>(null);
   /** Whether painting is currently allowed (guessing phase, not locked). */

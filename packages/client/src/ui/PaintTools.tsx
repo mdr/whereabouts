@@ -90,7 +90,7 @@ export function PaintTools({ children, practice }: { children?: ComponentChildre
 /** Developer-only paint settings and diagnostics. */
 export function PaintDev() {
   const paint = usePaint();
-  void paint.version.value;
+  const stats = paint.stats.value;
   return (
     <Card title="Paint">
       <Slider
@@ -112,18 +112,8 @@ export function PaintDev() {
         format={(v) => `${Math.round(v * 100)}%`}
       />
       <p class="hint">
-        Tolerance {fmtKm(paint.toleranceKm.value)} · finest H3 res {paint.layer.res} · {paint.layer.size} cells
-        {paint.layer.size > 0 && (
-          <>
-            {" "}
-            (
-            {paint.layer
-              .resolutionCounts()
-              .map(([r, n]) => `res ${r}: ${n}`)
-              .join(", ")}
-            )
-          </>
-        )}
+        Tolerance {fmtKm(paint.toleranceKm.value)} · finest H3 res {stats.res} · {stats.size} cells
+        {stats.size > 0 && <> ({stats.resolutionCounts.map(([r, n]) => `res ${r}: ${n}`).join(", ")})</>}
       </p>
       <Distribution />
     </Card>
@@ -158,12 +148,11 @@ function Slider(props: {
 /** Mass per connected blob plus the floor. Re-renders on paint changes. */
 export function Distribution() {
   const paint = usePaint();
-  void paint.settledVersion.value;
   const floor = paint.floor.value;
-  const layer = paint.layer;
-  const blobs = layer.blobs();
-  const painted = layer.isEmpty ? 0 : 1 - floor;
-  const effectiveFloor = layer.isEmpty ? 1 : floor;
+  const blobs = paint.settledBlobs.value;
+  const empty = blobs.length === 0;
+  const painted = empty ? 0 : 1 - floor;
+  const effectiveFloor = empty ? 1 : floor;
   const shown = blobs.slice(0, 6);
   const rest = blobs.slice(6).reduce((s, b) => s + b.fraction, 0) * painted * 100;
   return (
@@ -210,7 +199,6 @@ export function Distribution() {
  */
 function TrimSea({ enabled }: { enabled: boolean }) {
   const paint = usePaint();
-  void paint.version.value; // re-render as the paint changes, for the disabled state
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -235,7 +223,7 @@ function TrimSea({ enabled }: { enabled: boolean }) {
     <button
       title="Remove paint out at sea, more than about 20 km from land (Undo brings it back)"
       onClick={() => void trim()}
-      disabled={!enabled || busy || paint.layer.isEmpty}
+      disabled={!enabled || busy || paint.isEmpty.value}
       aria-live="polite"
     >
       <Icon name="sea" /> <span class="label">{note ?? "Trim sea"}</span>

@@ -363,7 +363,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           </QuestionCard>
         </div>
         <PaintTools practice>
-          <button class="primary" onClick={submit} disabled={paint.version.value < 0 || paint.layer.isEmpty}>
+          <button class="primary" onClick={submit} disabled={paint.isEmpty.value}>
             <Icon name="check" /> Submit
           </button>
         </PaintTools>
@@ -397,8 +397,7 @@ function KernelComparison({ dist, q, active }: { dist: Distribution; q: Practice
 
 function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: string }) {
   const paint = usePaint();
-  void paint.settledVersion.value;
-  const dist = buildDistribution(paint.layer.toCells(), paint.floor.value);
+  const dist = buildDistribution(paint.settledCells.value, paint.floor.value);
   const { score, parts } = scoreQuestion(dist, q, kernelById(kernelId));
   return (
     <Card title="Live score">
@@ -409,7 +408,7 @@ function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: string }) {
         <div class="big">{Math.round(score)}</div>
         <PartsLine parts={parts} />
       </div>
-      {isRegion(q) && !paint.layer.isEmpty && <RegionFitFacts dist={dist} q={q} />}
+      {isRegion(q) && paint.settledCells.value.length > 0 && <RegionFitFacts dist={dist} q={q} />}
       {!isRegion(q) && <KernelComparison dist={dist} q={q} active={kernelId} />}
     </Card>
   );
