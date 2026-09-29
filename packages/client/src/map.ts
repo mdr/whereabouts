@@ -80,6 +80,7 @@ export class GameMap {
     // Bottom-left keeps the buttons clear of the HUD cards and the toolbar.
     this.map.addControl(new NavigationControl({ showCompass: false }), "bottom-left");
     this.map.keyboard.disableRotation();
+    this.map.touchZoomRotate.disableRotation();
     this.ready = new Promise((resolve) => {
       this.map.once("load", () => {
         this.collapseAttribution();
