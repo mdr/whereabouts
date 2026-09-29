@@ -94,6 +94,8 @@ export class PaintController {
   private hoverListeners = new Set<(pos: LatLon) => void>();
   /** Where the mouse is over the map, so the footprint can be redrawn without it moving. */
   private pointerAt: LngLat | null = null;
+  /** Whether the last pointer on the map can hover: a mouse or pen, not a finger. */
+  private hovering = true;
   private disposers: (() => void)[] = [];
   readonly gameMap: GameMap;
 
@@ -128,8 +130,11 @@ export class PaintController {
     };
     const onTouchEnd = () => this.endStroke();
     const onMove = (e: MapMouseEvent) => {
-      this.pointerAt = e.lngLat;
-      this.updateCursor(e.lngLat);
+      // A tap also sends a mouse move, which shouldn't leave a footprint behind.
+      if (this.hovering) {
+        this.pointerAt = e.lngLat;
+        this.updateCursor(e.lngLat);
+      }
       if (this.painting) {
         this.strokeTo(e.point);
         this.queueRender();
@@ -203,6 +208,13 @@ export class PaintController {
         this.applyInteraction();
       }
     };
+    const onPointer = (e: PointerEvent) => {
+      this.hovering = e.pointerType !== "touch";
+      if (!this.hovering && this.pointerAt) {
+        this.pointerAt = null;
+        this.hideCursor();
+      }
+    };
     map.on("mousedown", onDown);
     map.on("click", onClick);
     map.on("mousemove", onMove);
@@ -213,6 +225,8 @@ export class PaintController {
     map.on("touchend", onTouchEnd);
     map.on("touchcancel", onTouchEnd);
     window.addEventListener("mouseup", onUp);
+    canvas.addEventListener("pointerdown", onPointer);
+    canvas.addEventListener("pointermove", onPointer);
     canvas.addEventListener("mousedown", onMiddleDown);
     window.addEventListener("mousemove", onMiddleMove);
     window.addEventListener("mouseup", onMiddleUp);
@@ -229,6 +243,8 @@ export class PaintController {
       map.off("touchend", onTouchEnd);
       map.off("touchcancel", onTouchEnd);
       window.removeEventListener("mouseup", onUp);
+      canvas.removeEventListener("pointerdown", onPointer);
+      canvas.removeEventListener("pointermove", onPointer);
       canvas.removeEventListener("mousedown", onMiddleDown);
       window.removeEventListener("mousemove", onMiddleMove);
       window.removeEventListener("mouseup", onMiddleUp);
