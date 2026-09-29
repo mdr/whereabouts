@@ -501,6 +501,21 @@ describe("joining and leaving mid-game", () => {
     expect(g.setPaint("tokC", paintAt(q2, 0, 0)).ok).toBe(true);
   });
 
+  it("a late joiner's total counts the rounds they played", () => {
+    const g = twoPlayerGame(2);
+    g.start("tokA", T0);
+    g.join("tokC", "Cara", T0 + 5);
+    g.tick(T0 + 60_000);
+    g.next("tokA", T0 + 60_001);
+    g.tick(T0 + 120_001);
+    const cara = g.view("tokC", T0 + 120_001).players.find((p) => p.id === "p3")!;
+    expect(cara.score).toBeGreaterThan(0);
+    g.next("tokA", T0 + 120_002);
+    const standing = g.view("tokC", T0 + 120_002).results!.find((s) => s.playerId === "p3")!;
+    expect(standing.total).toBe(cara.score);
+    expect(standing.rounds).toEqual([null, cara.score]);
+  });
+
   it("a reconnecting player gets their own paint back, and only their own", () => {
     const g = twoPlayerGame(1);
     g.start("tokA", T0);

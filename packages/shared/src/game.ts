@@ -51,7 +51,8 @@ interface Player {
   joinedAt: number;
   /** First round index this player may play. Later joiners sit out the current one. */
   joinedRound: number;
-  scores: number[];
+  /** By round index; a hole for each round not played. */
+  scores: (number | undefined)[];
   previousRank: number | null;
 }
 
@@ -684,9 +685,9 @@ export class Game {
   }
 }
 
-function sum(xs: number[]): number {
+function sum(xs: (number | undefined)[]): number {
   let t = 0;
-  for (const x of xs) t += x;
+  for (const x of xs) t += x ?? 0;
   return t;
 }
 
