@@ -7,6 +7,7 @@ import { Icon, type IconName } from "./icons";
 import { sound } from "../sound";
 import { Shortcuts, ShortcutsButton } from "./Shortcuts";
 import { loadLandMask } from "../land";
+import { paintDevTestIds, paintToolsTestIds } from "./PaintToolsTestIds";
 
 const TOOL_ICON: Record<Tool, IconName> = { pan: "hand", paint: "brush", erase: "eraser", fill: "bucket" };
 const TOOL_HINT: Record<Tool, string> = {
@@ -41,11 +42,18 @@ export function PaintTools({ children, practice }: { children?: ComponentChildre
             title={TOOL_HINT[t]}
             onClick={() => (paint.tool.value = t)}
             disabled={!enabled}
+            data-testid={paintToolsTestIds.toolButton}
+            data-tool={t}
           >
             <Icon name={TOOL_ICON[t]} /> <span class="label">{t[0]!.toUpperCase() + t.slice(1)}</span>
           </button>
         ))}
-        <button title="Clear all paint (Undo brings it back)" onClick={clear} disabled={!enabled}>
+        <button
+          title="Clear all paint (Undo brings it back)"
+          onClick={clear}
+          disabled={!enabled}
+          data-testid={paintToolsTestIds.clearButton}
+        >
           <Icon name="trash" /> <span class="label">Clear</span>
         </button>
         <TrimSea enabled={enabled} />
@@ -156,7 +164,7 @@ function Distribution() {
   const shown = blobs.slice(0, 6);
   const rest = blobs.slice(6).reduce((s, b) => s + b.fraction, 0) * painted * 100;
   return (
-    <ul class="blobs">
+    <ul class="blobs" data-testid={paintDevTestIds.blobs}>
       {shown.map((b, i) => {
         const pct = b.fraction * painted * 100;
         return (

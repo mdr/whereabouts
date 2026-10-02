@@ -5,6 +5,7 @@
  */
 import { MAX_ROUNDS, QUESTION_TYPES, mixTotal, type QuestionMix, type QuestionType } from "@whereabouts/shared";
 import { Stepper } from "./Controls";
+import { mixEditorTestIds } from "./MixEditorTestIds";
 
 const UNITS: Record<QuestionType, [string, string]> = {
   landmarks: ["landmark", "landmarks"],
@@ -28,7 +29,7 @@ export function MixEditor({ mix, onChange }: { mix: QuestionMix; onChange: (mix:
         {QUESTION_TYPES.map((t) => {
           const others = rounds - mix[t.id];
           return (
-            <li key={t.id} class={`mix-row type-${t.id}`}>
+            <li key={t.id} class={`mix-row type-${t.id}`} data-testid={mixEditorTestIds.row} data-type={t.id}>
               <span class="swatch" aria-hidden="true" />
               <span class="type">
                 <b>{t.label}</b>

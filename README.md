@@ -26,28 +26,29 @@ Other commands:
   server tests that drive the real server over WebSockets with the browser
   client.
 - `pnpm lint:fix` and `pnpm format` to tidy up.
-- Browser smoke scripts (Playwright driving your installed Chrome against
-  the running dev servers): `pnpm smoke` for solo mode, and from
-  `packages/client`, `node scripts/multiplayer-smoke.mjs` for a two-player
-  round and `node scripts/flows-smoke.mjs` for refresh mid-round, late
-  joiners and play-again (run the server with
-  `ROUND_MS=12000 ROUNDS=2` for those).
-  `node scripts/host-smoke.mjs` covers removing a player, rejoining as a
-  new one, ending the game early and the brush footprint.
-  `node scripts/touch-smoke.mjs` drives touch input through the DevTools
-  protocol: one finger paints, a two-finger pinch leaves no paint.
-  `node scripts/phone-smoke.mjs` walks every screen at iPhone size and
-  fails if anything forces the layout viewport wider than the screen, or
-  if the bottom controls are off screen or covered.
-  `node scripts/sound-smoke.mjs` records every sound the page starts
-  through a two-player game and practice: the cues, the spray and eraser,
-  Clear, Pass, the countdown timing, finishing early, running out of time,
-  the final applause and the switch (server with `ROUND_MS=12000 ROUNDS=2`). It cannot say how
-  anything sounds.
-- `node scripts/prod-smoke.mjs [baseUrl]` from `packages/client` checks a
-  production build actually loads the map, against `nix run` locally or the
-  live site. It catches bundling problems dev mode hides, such as the
-  MapLibre worker URL.
+- Browser end-to-end scripts in `packages/client/browser/e2e`, which
+  drive your installed Chrome with Playwright against the running dev
+  servers. They are written against the page objects in
+  `packages/client/browser/pages`, which find elements by the test ids
+  each component declares in its `*TestIds.ts` module. Run them from
+  `packages/client` with `node browser/e2e/<name>.ts [outDir]`
+  (`pnpm smoke` runs `solo`); screenshots go to `smoke-out/`.
+  Run the game server with `ROUND_MS=12000 ROUNDS=2` for `flows`,
+  `phone` and `sound`.
+  - `solo`: practice mode: paint, undo and redo, submit.
+  - `multiplayer`: two players through setup, guessing, Done and Keep
+    editing, the reveal and ready-up.
+  - `flows`: refresh mid-round, late joiners and passing, play again.
+  - `host`: removing a player, rejoining as a new one, ending the game
+    early, the brush footprint.
+  - `touch`: one finger paints; a two-finger pinch leaves no paint.
+  - `phone`: every screen at iPhone size; fails if anything forces the
+    page wider than the screen, or a control is off screen or covered.
+  - `sound`: every sound the page starts through a two-player game and
+    practice. It cannot say how anything sounds.
+  - `prod [baseUrl]`: a production build actually loads the map, against
+    `nix run` locally or the live site. It catches bundling problems dev
+    mode hides, such as the MapLibre worker URL.
 
 Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
 `KERNEL` (a kernel id from `packages/shared/src/scoring.ts`),
@@ -407,7 +408,7 @@ depends on the game's map detail, and on Minimal only coastlines do. The reveal 
 on and adds shaded relief from the public AWS terrain tiles (Terrarium
 encoding, no key). The relief sits under the water layer, since the tiles
 carry ocean depths too, and on Minimal and Water no terrain tiles are fetched
-while guessing (the multiplayer smoke checks this). Under the relief goes natural colour
+while guessing (the multiplayer end-to-end script checks this). Under the relief goes natural colour
 (green lowlands, desert sand, white ice) from the Natural Earth II tiles the
 positron style already declares on OpenFreeMap. They stop at zoom 6 and are
 stretched beyond it, which the relief on top hides. Dimmed to suit the dark

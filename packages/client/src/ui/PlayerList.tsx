@@ -1,5 +1,6 @@
 import { playerColour, type PlayerView } from "@whereabouts/shared";
 import { Icon } from "./icons";
+import { playerListTestIds } from "./PlayerListTestIds";
 
 const graphemes = new Intl.Segmenter();
 
@@ -12,7 +13,7 @@ export function initial(name: string): string {
 /** Crown tag marking the host in a player row; the word stays for screen readers. */
 export function HostTag() {
   return (
-    <span class="tag host" title="Host">
+    <span class="tag host" title="Host" data-testid={playerListTestIds.hostTag}>
       <Icon name="crown" size={12} />
       <span class="sr-only">host</span>
     </span>
@@ -61,7 +62,12 @@ export function PlayerList({
         const delta = arrows && p.previousRank !== null ? p.previousRank - p.rank : 0;
         const isYou = p.id === you;
         return (
-          <li key={p.id} class={`${isYou ? "you" : ""} ${p.connected ? "" : "offline"}`}>
+          <li
+            key={p.id}
+            class={`${isYou ? "you" : ""} ${p.connected ? "" : "offline"}`}
+            data-testid={playerListTestIds.player}
+            data-player={p.name}
+          >
             {p.watching ? (
               <span class={avatars ? "avatar watcher" : "swatch watcher"} title="Watching" aria-hidden="true">
                 {avatars && <Icon name="eye" size={14} />}
@@ -74,7 +80,9 @@ export function PlayerList({
               <span class="swatch" style={{ background: playerColour(p.colour) }} />
             )}
             <span class="name">
-              <span class="name-text">{p.name}</span>
+              <span class="name-text" data-testid={playerListTestIds.name}>
+                {p.name}
+              </span>
               {p.isHost ? <HostTag /> : null}
               {isYou ? <span class="tag">you</span> : null}
               {!p.connected ? <span class="tag">offline</span> : null}
@@ -106,6 +114,7 @@ export function PlayerList({
             {!isYou && onKick && (
               <button
                 class="icon kick"
+                data-testid={playerListTestIds.kickButton}
                 title={`Remove ${p.name} from the game`}
                 aria-label={`Remove ${p.name} from the game`}
                 onClick={(e) => {

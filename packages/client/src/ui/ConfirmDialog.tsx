@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { ComponentChildren } from "preact";
 import { createPortal } from "preact/compat";
+import { confirmDialogTestIds } from "./ConfirmDialogTestIds";
 
 export interface ConfirmRequest {
   title: string;
@@ -37,16 +38,20 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
+        data-testid={confirmDialogTestIds.dialog}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="confirm-title">{request.title}</h2>
+        <h2 id="confirm-title" data-testid={confirmDialogTestIds.title}>
+          {request.title}
+        </h2>
         <p>{request.body}</p>
         <div class="modal-actions">
-          <button ref={cancelRef} onClick={onClose}>
+          <button ref={cancelRef} onClick={onClose} data-testid={confirmDialogTestIds.cancelButton}>
             Cancel
           </button>
           <button
             class={request.safe ? "primary" : "danger solid"}
+            data-testid={confirmDialogTestIds.confirmButton}
             onClick={() => {
               onClose();
               request.onConfirm();

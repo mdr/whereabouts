@@ -4,6 +4,13 @@ import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type QuestionView } from
 import { Icon } from "./icons";
 import { soundOn } from "../settings";
 import { flagUrl } from "../flags";
+import {
+  countdownTestIds,
+  hudBottomTestIds,
+  hudHeaderTestIds,
+  questionCardTestIds,
+  soundToggleTestIds,
+} from "./bitsTestIds";
 
 export function fmtKm(km: number): string {
   return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km).toLocaleString()} km`;
@@ -40,7 +47,7 @@ export function HudBottom({ children }: { children: ComponentChildren }) {
     };
   }, []);
   return (
-    <div class="hud-bottom toolbar" ref={ref}>
+    <div class="hud-bottom toolbar" ref={ref} data-testid={hudBottomTestIds.toolbar}>
       {children}
     </div>
   );
@@ -53,6 +60,7 @@ export function SoundToggle() {
     <button
       type="button"
       class="icon sound-toggle"
+      data-testid={soundToggleTestIds.button}
       aria-pressed={on}
       aria-label={on ? "Sounds on: turn off" : "Sounds off: turn on"}
       title={on ? "Turn sounds off" : "Turn sounds on"}
@@ -88,7 +96,7 @@ export function HudHeader({
       ) : (
         <span class="brand">Whereabouts</span>
       )}
-      <span class="round">
+      <span class="round" data-testid={hudHeaderTestIds.round}>
         Round{" "}
         <span class="nowrap">
           {round} / {total}
@@ -123,8 +131,10 @@ export function QuestionCard({
   credit?: boolean;
 }) {
   return (
-    <div class="card question">
-      <p class="prompt">{q.prompt}</p>
+    <div class="card question" data-testid={questionCardTestIds.card}>
+      <p class="prompt" data-testid={questionCardTestIds.prompt}>
+        {q.prompt}
+      </p>
       {q.image && <QuestionImage image={q.image} credit={credit ?? false} />}
       {q.flag && <FlagImage code={q.flag} />}
       {children}
@@ -220,7 +230,7 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
   );
   return (
     <>
-      <div class="thumb">
+      <div class="thumb" data-testid={questionCardTestIds.photo}>
         {/* The whole photo is the button; the badge says so, on phones too, where there is no hover. */}
         <button type="button" class="thumb-button" title="Enlarge the photo" onClick={() => setLarge(true)}>
           <img src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
@@ -362,7 +372,11 @@ function useCountdown(msRemaining: () => number): number {
 
 export function Countdown({ msRemaining, warnAt = 10 }: { msRemaining: () => number; warnAt?: number }) {
   const s = useCountdown(msRemaining);
-  return <div class={`countdown ${s <= warnAt ? "warn" : ""}`}>{s}</div>;
+  return (
+    <div class={`countdown ${s <= warnAt ? "warn" : ""}`} data-testid={countdownTestIds.countdown}>
+      {s}
+    </div>
+  );
 }
 
 /** Score, A and B in the dev drawer. */

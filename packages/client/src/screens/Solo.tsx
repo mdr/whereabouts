@@ -40,6 +40,7 @@ import { flagQuestions, loadRegions, regions } from "../regions";
 import { useBorders } from "../borders";
 import { useFillTool } from "../fill";
 import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal";
+import { soloTestIds } from "./SoloTestIds";
 
 type PracticeQuestion = Question | RegionQuestion;
 
@@ -315,7 +316,9 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               <Answer label={q.label} wiki={q.wiki} />
             </QuestionCard>
             <div class="card score">
-              <div class="big">{Math.round(shownResult.score)}</div>
+              <div class="big" data-testid={soloTestIds.roundScore}>
+                {Math.round(shownResult.score)}
+              </div>
               <div class="label">this round</div>
               {shownResult.fit && (
                 <div class="fit">
@@ -363,7 +366,12 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           </QuestionCard>
         </div>
         <PaintTools practice>
-          <button class="primary" onClick={submit} disabled={paint.isEmpty.value}>
+          <button
+            class="primary"
+            onClick={submit}
+            disabled={paint.isEmpty.value}
+            data-testid={soloTestIds.submitButton}
+          >
             <Icon name="check" /> Submit
           </button>
         </PaintTools>

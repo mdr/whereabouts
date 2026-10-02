@@ -7,6 +7,7 @@ import { signal } from "@preact/signals";
 import type { GameView, PlayerView } from "@whereabouts/shared";
 import { PlayerList } from "./PlayerList";
 import { Icon } from "./icons";
+import { playersPanelTestIds } from "./PlayersPanelTestIds";
 
 const expanded = signal(false);
 
@@ -27,6 +28,7 @@ export function PlayersPanel({
     <div class={`players-panel ${open ? "open" : ""}`}>
       <button
         class="players-toggle"
+        data-testid={playersPanelTestIds.toggle}
         onClick={() => (expanded.value = !open)}
         aria-expanded={open}
         title={open ? "Hide players" : "Show players"}
@@ -40,7 +42,7 @@ export function PlayersPanel({
         <Icon name={open ? "collapse" : "expand"} size={14} />
       </button>
       {open && (
-        <div class="card players-card">
+        <div class="card players-card" data-testid={playersPanelTestIds.card}>
           <PlayerList
             players={players}
             you={view.you.id}

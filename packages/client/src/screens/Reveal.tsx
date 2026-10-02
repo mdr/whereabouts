@@ -23,6 +23,7 @@ import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 import { useRegion } from "../regions";
 import { useBorders } from "../borders";
 import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal";
+import { revealTestIds } from "./RevealTestIds";
 
 /** Selection meaning "show nobody's paint", alongside null (everyone) and a player id. */
 const NONE = "none";
@@ -107,7 +108,11 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
             round={reveal.index + 1}
             total={reveal.total}
             right={
-              <span class="ready-count" title="The next round starts when everyone is ready">
+              <span
+                class="ready-count"
+                title="The next round starts when everyone is ready"
+                data-testid={revealTestIds.readyCount}
+              >
                 {readyCount} / {present.length} ready
               </span>
             }
@@ -136,8 +141,12 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
         </div>
         <div class="hud-right">
           <Card title="Scores">
-            <ul class="reveal-list">
-              <li class={`everyone ${selected === null ? "selected" : ""}`} onClick={() => setSelected(null)}>
+            <ul class="reveal-list" data-testid={revealTestIds.scoresList}>
+              <li
+                class={`everyone ${selected === null ? "selected" : ""}`}
+                onClick={() => setSelected(null)}
+                data-testid={revealTestIds.everyoneRow}
+              >
                 <span class="swatch multi" />
                 <span class="name">Everyone</span>
               </li>
@@ -162,6 +171,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
               <li
                 class={`hide-paint ${selected === NONE ? "selected" : ""}`}
                 onClick={() => setSelected(selected === NONE ? null : NONE)}
+                data-testid={revealTestIds.hidePaintRow}
                 title="Show the map and the answer without anyone's paint"
               >
                 <span class="swatch-icon">
@@ -179,7 +189,12 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
           {view.you.watching ? (
             <TakeSeatButton conn={conn} view={view} />
           ) : (
-            <button class={iAmReady ? "" : "primary"} onClick={() => conn.ready()} disabled={iAmReady}>
+            <button
+              class={iAmReady ? "" : "primary"}
+              onClick={() => conn.ready()}
+              disabled={iAmReady}
+              data-testid={revealTestIds.readyButton}
+            >
               <Icon name="check" /> Ready
             </button>
           )}
@@ -188,6 +203,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
               class={iAmReady || view.you.watching ? "primary" : ""}
               onClick={() => conn.next()}
               title="Go on without waiting"
+              data-testid={revealTestIds.nextButton}
             >
               <Icon name={last ? "flag" : "next"} /> {last ? "Show final results" : "Next round"}
             </button>
@@ -250,13 +266,20 @@ function RevealRow({
 }) {
   const delta = p.previousRank !== null ? p.previousRank - p.rank : 0;
   return (
-    <li class={`${selected ? "selected" : ""} ${you ? "you" : ""} ${where ? "with-where" : ""}`} onClick={onSelect}>
+    <li
+      class={`${selected ? "selected" : ""} ${you ? "you" : ""} ${where ? "with-where" : ""}`}
+      onClick={onSelect}
+      data-testid={revealTestIds.playerRow}
+      data-player={p.name}
+    >
       <span class="swatch" style={{ background: playerColour(p.colour) }} />
       <span class="name">
-        <span class="name-text">{p.name}</span>
+        <span class="name-text" data-testid={revealTestIds.playerName}>
+          {p.name}
+        </span>
         {p.isHost && <HostTag />}
         {r && !r.paint && (
-          <span class="tag passed" title="Made no guess this round">
+          <span class="tag passed" title="Made no guess this round" data-testid={revealTestIds.passedTag}>
             passed
           </span>
         )}
@@ -279,7 +302,7 @@ function RevealRow({
           <Icon name="kick" size={13} />
         </button>
       )}
-      <span class="round-score" title="This round">
+      <span class="round-score" title="This round" data-testid={revealTestIds.roundScore}>
         {r ? `+${Math.round(r.score)}` : "sat out"}
       </span>
       <span class={`arrow ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>

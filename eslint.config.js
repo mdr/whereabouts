@@ -51,6 +51,15 @@ export default defineConfig(
     languageOptions: { globals: globals.node },
   },
   {
+    // Node programs driving a browser; page.evaluate callbacks run in the page.
+    files: ["packages/client/browser/**/*.ts"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+  {
+    files: ["packages/client/browser/e2e/**/*.ts"],
+    rules: { "no-console": "off" },
+  },
+  {
     // Scripts and configs are plain Node programs outside any tsconfig.
     files: ["**/*.mjs", "**/*.config.{js,ts}", "eslint.config.js"],
     ...tseslint.configs.disableTypeChecked,

@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     "packages/client": {
-      "entry": ["scripts/*.mjs"],
+      "entry": ["scripts/*.mjs", "browser/e2e/*.ts"],
       "ignoreDependencies": ["flag-icons"]
     },
     "packages/shared": {

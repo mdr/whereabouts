@@ -3,6 +3,7 @@
  * set of choices, and a − / + stepper for a count.
  */
 import { Icon } from "./icons";
+import { pillsTestIds, stepperTestIds } from "./ControlsTestIds";
 
 export function Pills<T extends string | number>({
   label,
@@ -25,6 +26,8 @@ export function Pills<T extends string | number>({
           aria-checked={o.value === value}
           class={o.value === value ? "on" : ""}
           onClick={() => onChange(o.value)}
+          data-testid={pillsTestIds.option}
+          data-value={o.value}
         >
           {o.label}
         </button>
@@ -51,17 +54,19 @@ export function Stepper({
       <button
         type="button"
         aria-label={`Fewer ${label.toLowerCase()}`}
+        data-testid={stepperTestIds.fewerButton}
         disabled={value <= min}
         onClick={() => onChange(value - 1)}
       >
         <Icon name="minus" />
       </button>
-      <span class="value" aria-live="polite">
+      <span class="value" aria-live="polite" data-testid={stepperTestIds.value}>
         {value}
       </span>
       <button
         type="button"
         aria-label={`More ${label.toLowerCase()}`}
+        data-testid={stepperTestIds.moreButton}
         disabled={value >= max}
         onClick={() => onChange(value + 1)}
       >

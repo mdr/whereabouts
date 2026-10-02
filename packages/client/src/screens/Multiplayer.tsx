@@ -19,6 +19,7 @@ import { Banner } from "../ui/Banner";
 import { Icon } from "../ui/icons";
 import { useGameSounds } from "../ui/useGameSounds";
 import { useSavedSetup } from "../host-setup";
+import { joinAsTestIds, joinedTestIds } from "./MultiplayerTestIds";
 
 export function Multiplayer({ code, create }: { code: string; create: boolean }) {
   const conn = useMemo(() => new Connection(), []);
@@ -101,16 +102,18 @@ function Joined({ conn, code, create }: { conn: Connection; code: string; create
       detail: conn.lastError.value ?? "The game server did not let us in.",
     };
     return (
-      <div class="home">
+      <div class="home" data-testid={joinedTestIds.problem}>
         <div class="home-card">
           <Banner />
-          <h2>{why.title}</h2>
+          <h2 data-testid={joinedTestIds.problemTitle}>{why.title}</h2>
           <p class="tagline">{why.detail}</p>
           <div class="home-actions">
             <button class="primary big" onClick={() => navigate("/game/new")}>
               Host a new game
             </button>
-            <button onClick={() => navigate("/")}>Back to start</button>
+            <button onClick={() => navigate("/")} data-testid={joinedTestIds.backToStartButton}>
+              Back to start
+            </button>
           </div>
         </div>
       </div>
@@ -139,7 +142,7 @@ function JoinAs({ code, onJoin }: { code: string; onJoin: (name: string, watch: 
   const [name, setName] = useState(playerName.value);
   const ready = name.trim().length > 0;
   return (
-    <div class="home">
+    <div class="home" data-testid={joinAsTestIds.page}>
       <form
         class="home-card"
         onSubmit={(e) => {
@@ -160,9 +163,10 @@ function JoinAs({ code, onJoin }: { code: string; onJoin: (name: string, watch: 
             value={name}
             onInput={(e) => setName((e.target as HTMLInputElement).value)}
             autoFocus
+            data-testid={joinAsTestIds.nameInput}
           />
         </label>
-        <button class="primary big" type="submit" disabled={!ready}>
+        <button class="primary big" type="submit" disabled={!ready} data-testid={joinAsTestIds.joinButton}>
           Join
         </button>
         <button class="big" type="button" disabled={!ready} onClick={() => onJoin(name.trim(), true)}>

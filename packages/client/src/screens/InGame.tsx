@@ -19,6 +19,7 @@ import { askedToWatch, startOnPan } from "../settings";
 import { TakeSeatButton } from "../ui/TakeSeat";
 import { sound } from "../sound";
 import { loadRegions } from "../regions";
+import { inGameTestIds } from "./InGameTestIds";
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint();
@@ -143,12 +144,14 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
           {view.you.spectating && (
             <Card>
-              <p class="hint">You joined mid-round, so you're watching this one. You'll play from the next question.</p>
+              <p class="hint" data-testid={inGameTestIds.sittingOutNote}>
+                You joined mid-round, so you're watching this one. You'll play from the next question.
+              </p>
             </Card>
           )}
           {view.you.locked && (
             <Card>
-              <p class="hint">
+              <p class="hint" data-testid={inGameTestIds.doneNote}>
                 You're done. The round ends when everyone is, or when the clock runs out. Changed your mind? Keep
                 editing.
               </p>
@@ -171,12 +174,18 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
         {!sittingOut && (
           <PaintTools>
             {view.you.locked ? (
-              <button class="keep-editing" title="Take back Done and change your guess" onClick={() => conn.unlock()}>
+              <button
+                class="keep-editing"
+                title="Take back Done and change your guess"
+                onClick={() => conn.unlock()}
+                data-testid={inGameTestIds.keepEditingButton}
+              >
                 <Icon name="edit" /> Keep editing
               </button>
             ) : (
               <button
                 class="primary"
+                data-testid={inGameTestIds.doneButton}
                 title={
                   paint.isEmpty.value
                     ? "No idea? Passing scores 250. Even painting a wide, vague area scores better on average."

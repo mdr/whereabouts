@@ -20,6 +20,7 @@ import { kickRequest, leaveRequest, makeHostRequest, useConfirm } from "../ui/Co
 import { navigate } from "../router";
 import { Banner } from "../ui/Banner";
 import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker";
+import { lobbyTestIds, setupSummaryTestIds } from "./LobbyTestIds";
 
 const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }));
 
@@ -48,7 +49,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   };
   return (
     <div class="home">
-      <div class="home-card lobby">
+      <div class="home-card lobby" data-testid={lobbyTestIds.page}>
         {dialog}
         <Banner>
           <button
@@ -62,7 +63,9 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
           <section class="lobby-panel">
             <h2>Invite</h2>
             <p class="tagline">Share this code with your friends</p>
-            <div class="code">{view.code}</div>
+            <div class="code" data-testid={lobbyTestIds.code}>
+              {view.code}
+            </div>
             <div class="invite-actions">
               <button
                 onClick={() => {
@@ -160,11 +163,11 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             <h2>Game setup</h2>
             {host ? (
               <>
-                <div class="setting questions">
+                <div class="setting questions" data-testid={lobbyTestIds.questionsSetting}>
                   <span class="setting-label">Questions</span>
                   <MixEditor mix={view.config.mix} onChange={(mix) => configureAsHost(conn, { mix })} />
                 </div>
-                <div class="setting seconds">
+                <div class="setting seconds" data-testid={lobbyTestIds.secondsSetting}>
                   <span class="setting-label">Seconds per round</span>
                   <Pills
                     label="Seconds per round"
@@ -212,6 +215,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
               {host ? (
                 <button
                   class="primary big"
+                  data-testid={lobbyTestIds.startButton}
                   onClick={() => conn.start()}
                   disabled={players.length < 1}
                   title={players.length < 1 ? "Someone needs to play: take a seat, or wait for a player" : undefined}
@@ -275,21 +279,34 @@ function SetupSummary({ view }: { view: GameView }) {
   const tiles = [
     {
       key: "rounds",
+      testId: setupSummaryTestIds.rounds,
       value: String(rounds),
       label: rounds === 1 ? "round" : "rounds",
       changed: rounds !== before.rounds,
     },
-    { key: "seconds", value: `${roundMs / 1000} s`, label: "per round", changed: roundMs !== before.roundMs },
+    {
+      key: "seconds",
+      testId: setupSummaryTestIds.seconds,
+      value: `${roundMs / 1000} s`,
+      label: "per round",
+      changed: roundMs !== before.roundMs,
+    },
   ];
   return (
-    <div class="setup-summary">
+    <div class="setup-summary" data-testid={setupSummaryTestIds.summary}>
       {tiles.map((t) => (
-        <div key={`${t.key}:${t.value}`} class={`tile ${t.key} ${t.changed ? "changed" : ""}`}>
-          <span class="value">{t.value}</span>
+        <div key={`${t.key}:${t.value}`} class={`tile ${t.key} ${t.changed ? "changed" : ""}`} data-testid={t.testId}>
+          <span class="value" data-testid={setupSummaryTestIds.tileValue}>
+            {t.value}
+          </span>
           <span class="label">{t.label}</span>
         </div>
       ))}
-      <div key={`questions:${describeMix(mix)}`} class={`tile questions ${mixChanged ? "changed" : ""}`}>
+      <div
+        key={`questions:${describeMix(mix)}`}
+        class={`tile questions ${mixChanged ? "changed" : ""}`}
+        data-testid={setupSummaryTestIds.questions}
+      >
         <span class="label">{describeMix(mix)}</span>
         <RoundStrip mix={mix} total={false} />
       </div>

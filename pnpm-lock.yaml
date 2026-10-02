@@ -78,6 +78,9 @@ importers:
       '@types/geojson':
         specifier: ^7946.0.16
         version: 7946.0.16
+      '@types/node':
+        specifier: ^22.20.3
+        version: 22.20.3
       happy-dom:
         specifier: ^20.0.0
         version: 20.14.5

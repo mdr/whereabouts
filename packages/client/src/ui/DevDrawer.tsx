@@ -4,11 +4,12 @@
  */
 import type { ComponentChildren } from "preact";
 import { devMode } from "../dev";
+import { devDrawerTestIds } from "./DevDrawerTestIds";
 
 export function DevDrawer({ children }: { children?: ComponentChildren }) {
   if (!devMode.value) return null;
   return (
-    <aside id="dev" data-testid="dev-drawer">
+    <aside id="dev" data-testid={devDrawerTestIds.drawer}>
       <div class="dev-head">
         <span class="badge">DEV</span>
         <span class="hint">Playtest tools. Add ?dev to the URL to get here.</span>

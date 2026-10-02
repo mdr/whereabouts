@@ -13,6 +13,7 @@ import { devMode } from "../dev";
 import { effect } from "@preact/signals";
 import { sound } from "../sound";
 import { soundOn } from "../settings";
+import { mapViewTestIds } from "./MapViewTestIds";
 
 const PaintContext = createContext<PaintController | null>(null);
 
@@ -80,7 +81,7 @@ export function MapView({ children }: { children: ComponentChildren }) {
 
   return (
     <div class={`stage ${dev ? "dev" : ""}`}>
-      <div id="map" ref={el} />
+      <div id="map" ref={el} data-testid={mapViewTestIds.map} />
       <PaintContext.Provider value={controller}>
         {controller ? (
           children
@@ -88,7 +89,9 @@ export function MapView({ children }: { children: ComponentChildren }) {
           <div class="hud">
             <div class="hud-top">
               <div class="card">
-                <p class="hint">Loading map…</p>
+                <p class="hint" data-testid={mapViewTestIds.loading}>
+                  Loading map…
+                </p>
               </div>
             </div>
           </div>

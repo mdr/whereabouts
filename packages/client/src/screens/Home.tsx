@@ -13,6 +13,7 @@ const POOLS: { value: PracticePool; label: string }[] = [
 ];
 import hero800 from "../assets/hero-800.webp";
 import hero1448 from "../assets/hero-1448.webp";
+import { homeTestIds } from "./HomeTestIds";
 
 /**
  * The front door: a hero picture, your name, then three clearly separate
@@ -24,7 +25,7 @@ export function Home() {
   const ready = name.length > 0;
   const needName = ready ? undefined : "Enter your name first";
   return (
-    <div class="home">
+    <div class="home" data-testid={homeTestIds.page}>
       <div class="home-page">
         <header class="hero">
           <img
@@ -45,6 +46,7 @@ export function Home() {
             type="text"
             maxLength={20}
             placeholder="Your name"
+            data-testid={homeTestIds.nameInput}
             value={playerName.value}
             onInput={(e) => (playerName.value = (e.target as HTMLInputElement).value)}
           />
@@ -54,7 +56,13 @@ export function Home() {
           <section class="mode">
             <h2>Host a game</h2>
             <p>Start a room and share the code with friends.</p>
-            <button class="primary big" disabled={!ready} title={needName} onClick={() => navigate("/game/new")}>
+            <button
+              class="primary big"
+              disabled={!ready}
+              title={needName}
+              onClick={() => navigate("/game/new")}
+              data-testid={homeTestIds.hostButton}
+            >
               <Icon name="play" /> Host a game
             </button>
           </section>
@@ -83,8 +91,15 @@ export function Home() {
                 onInput={(e) => setCode((e.target as HTMLInputElement).value.toUpperCase())}
                 class="code-input"
                 aria-label="Game code"
+                data-testid={homeTestIds.codeInput}
               />
-              <button type="submit" class="big" disabled={!ready || code.trim().length < 4} title={needName}>
+              <button
+                type="submit"
+                class="big"
+                disabled={!ready || code.trim().length < 4}
+                title={needName}
+                data-testid={homeTestIds.joinButton}
+              >
                 Join
               </button>
               <button
@@ -109,7 +124,7 @@ export function Home() {
                 onChange={(v) => (soloPool.value = v)}
               />
             </div>
-            <button class="big" onClick={() => navigate("/solo")}>
+            <button class="big" onClick={() => navigate("/solo")} data-testid={homeTestIds.practiseButton}>
               <Icon name="brush" /> Practise
             </button>
             <details class="practice-detail">

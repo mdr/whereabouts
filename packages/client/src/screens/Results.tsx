@@ -3,6 +3,7 @@ import type { Connection } from "../net";
 import { Icon } from "../ui/icons";
 import { HostTag, HostWord } from "../ui/PlayerList";
 import { Banner } from "../ui/Banner";
+import { resultsTestIds } from "./ResultsTestIds";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -17,7 +18,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   );
   return (
     <div class="home">
-      <div class="home-card results-card">
+      <div class="home-card results-card" data-testid={resultsTestIds.page}>
         <Banner />
         {winner && (
           <p class="tagline">
@@ -30,7 +31,12 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
           {standings.map((s, i) => {
             const p = byId.get(s.playerId);
             return (
-              <li key={s.playerId} class={`standings-row ${s.playerId === view.you.id ? "you" : ""}`}>
+              <li
+                key={s.playerId}
+                class={`standings-row ${s.playerId === view.you.id ? "you" : ""}`}
+                data-testid={resultsTestIds.standingsRow}
+                data-player={p?.name}
+              >
                 <span class="place">{MEDALS[i] ?? i + 1}</span>
                 <span class="dot">
                   <i class="swatch" style={{ background: p ? playerColour(p.colour) : "#888" }} />
@@ -62,7 +68,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
           })}
         </ol>
         {view.you.isHost ? (
-          <button class="primary big" onClick={() => conn.again()}>
+          <button class="primary big" onClick={() => conn.again()} data-testid={resultsTestIds.playAgainButton}>
             <Icon name="refresh" /> Play again
           </button>
         ) : (

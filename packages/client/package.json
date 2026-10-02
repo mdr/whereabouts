@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "smoke": "node scripts/smoke.mjs"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p browser",
+    "smoke": "node browser/e2e/solo.ts"
   },
   "dependencies": {
     "@preact/signals": "^2.0.0",
@@ -25,6 +25,7 @@
     "@preact/preset-vite": "^2.10.0",
     "@testing-library/preact": "^3.2.4",
     "@types/geojson": "^7946.0.16",
+    "@types/node": "^22.20.3",
     "happy-dom": "^20.0.0",
     "playwright-core": "^1.55.0",
     "vite": "^7.1.0"
