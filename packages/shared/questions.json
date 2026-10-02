@@ -4732,5 +4732,1025 @@
     "label": "Whitehaven Beach, Whitsunday Islands",
     "wiki": "Whitehaven Beach",
     "region": "world"
+  },
+  {
+    "id": "nyhavn",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "The Nyhavn Canal 3.jpg",
+    "answer": {
+      "lat": 55.6797,
+      "lon": 12.5906
+    },
+    "toleranceKm": 80,
+    "label": "Nyhavn, Copenhagen",
+    "wiki": "Nyhavn",
+    "region": "world"
+  },
+  {
+    "id": "grand-place",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Grand-Place, Brussels - panorama, June 2018.jpg",
+    "answer": {
+      "lat": 50.8467,
+      "lon": 4.3525
+    },
+    "toleranceKm": 80,
+    "label": "Grand-Place, Brussels",
+    "wiki": "Grand-Place",
+    "region": "world"
+  },
+  {
+    "id": "belfry-of-bruges",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Brugge Belfort HDR.jpg",
+    "answer": {
+      "lat": 51.2083,
+      "lon": 3.2247
+    },
+    "toleranceKm": 80,
+    "label": "Belfry of Bruges",
+    "wiki": "Belfry of Bruges",
+    "region": "world"
+  },
+  {
+    "id": "pompeii",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Aerial image of Pompeii and Mount Vesuvius (view from the southeast).jpg",
+    "answer": {
+      "lat": 40.75,
+      "lon": 14.4861
+    },
+    "toleranceKm": 100,
+    "label": "Pompeii",
+    "wiki": "Pompeii",
+    "region": "world"
+  },
+  {
+    "id": "positano",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Positano Sunset.JPG",
+    "answer": {
+      "lat": 40.6333,
+      "lon": 14.4833
+    },
+    "toleranceKm": 100,
+    "label": "Positano, Amalfi Coast",
+    "wiki": "Positano",
+    "region": "world"
+  },
+  {
+    "id": "tre-cime-di-lavaredo",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "2019 Tre Cime.jpg",
+    "answer": {
+      "lat": 46.6167,
+      "lon": 12.3
+    },
+    "toleranceKm": 120,
+    "label": "Tre Cime di Lavaredo, Dolomites",
+    "wiki": "Tre Cime di Lavaredo",
+    "region": "world"
+  },
+  {
+    "id": "plaza-de-espana",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Plaza de España (Sevilla) - 01.jpg",
+    "answer": {
+      "lat": 37.3769,
+      "lon": -5.9869
+    },
+    "toleranceKm": 100,
+    "label": "Plaza de España, Seville",
+    "wiki": "Plaza de España, Seville",
+    "region": "world"
+  },
+  {
+    "id": "mosque-cathedral-of-cordoba",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Mezquita de Córdoba desde el aire (Córdoba, España).jpg",
+    "answer": {
+      "lat": 37.8792,
+      "lon": -4.7797
+    },
+    "toleranceKm": 100,
+    "label": "Mosque–Cathedral of Córdoba",
+    "wiki": "Mosque–Cathedral of Córdoba",
+    "region": "world"
+  },
+  {
+    "id": "guggenheim-museum",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Museo Guggenheim, Bilbao (31273245344).jpg",
+    "answer": {
+      "lat": 43.2686,
+      "lon": -2.9339
+    },
+    "toleranceKm": 100,
+    "label": "Guggenheim Museum, Bilbao",
+    "wiki": "Guggenheim Museum Bilbao",
+    "region": "world"
+  },
+  {
+    "id": "rock-of-gibraltar",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Clouds covering the walls of Gibraltar Rock.jpg",
+    "answer": {
+      "lat": 36.1245,
+      "lon": -5.3431
+    },
+    "toleranceKm": 80,
+    "label": "Rock of Gibraltar",
+    "wiki": "Rock of Gibraltar",
+    "region": "world"
+  },
+  {
+    "id": "cite-de-carcassonne",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "1 carcassonne aerial 2016.jpg",
+    "answer": {
+      "lat": 43.2133,
+      "lon": 2.3508
+    },
+    "toleranceKm": 100,
+    "label": "Cité de Carcassonne",
+    "wiki": "Carcassonne",
+    "region": "world"
+  },
+  {
+    "id": "pont-du-gard",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Pont du Gard BLS.jpg",
+    "answer": {
+      "lat": 43.9472,
+      "lon": 4.5356
+    },
+    "toleranceKm": 100,
+    "label": "Pont du Gard",
+    "wiki": "Pont du Gard",
+    "region": "world"
+  },
+  {
+    "id": "chateau-de-chillon",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "001 Chateau de Chillon and Dents du Midi Photo by Giles Laurent.jpg",
+    "answer": {
+      "lat": 46.4142,
+      "lon": 6.9275
+    },
+    "toleranceKm": 80,
+    "label": "Château de Chillon, Lake Geneva",
+    "wiki": "Chillon Castle",
+    "region": "world"
+  },
+  {
+    "id": "preikestolen",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Lyse Fjord et Preikestolen.jpg",
+    "answer": {
+      "lat": 58.9867,
+      "lon": 6.1875
+    },
+    "toleranceKm": 150,
+    "label": "Preikestolen, Norway",
+    "wiki": "Preikestolen",
+    "region": "world"
+  },
+  {
+    "id": "gullfoss",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Gullfoss from the Air (cropped).jpg",
+    "answer": {
+      "lat": 64.3261,
+      "lon": -20.1211
+    },
+    "toleranceKm": 150,
+    "label": "Gullfoss, Iceland",
+    "wiki": "Gullfoss",
+    "region": "world"
+  },
+  {
+    "id": "lake-bled",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Lake Bled from the Mountain.jpg",
+    "answer": {
+      "lat": 46.3644,
+      "lon": 14.0947
+    },
+    "toleranceKm": 100,
+    "label": "Lake Bled, Slovenia",
+    "wiki": "Lake Bled",
+    "region": "world"
+  },
+  {
+    "id": "stari-most",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Mostar Old Town Panorama 2007.jpg",
+    "answer": {
+      "lat": 43.3373,
+      "lon": 17.815
+    },
+    "toleranceKm": 120,
+    "label": "Stari Most, Mostar",
+    "wiki": "Stari Most",
+    "region": "world"
+  },
+  {
+    "id": "bay-of-kotor",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Kotor aerial 1.jpg",
+    "answer": {
+      "lat": 42.45,
+      "lon": 18.67
+    },
+    "toleranceKm": 120,
+    "label": "Bay of Kotor, Montenegro",
+    "wiki": "Bay of Kotor",
+    "region": "world"
+  },
+  {
+    "id": "st-mary-s-basilica",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Church of Our Lady Assumed into Heaven, 5 Mariacki square, Old Town, Kraków, Poland.jpg",
+    "answer": {
+      "lat": 50.0617,
+      "lon": 19.9392
+    },
+    "toleranceKm": 100,
+    "label": "St Mary's Basilica, Kraków",
+    "wiki": "Church of the Assumption of the Blessed Virgin Mary, Kraków",
+    "region": "world"
+  },
+  {
+    "id": "library-of-celsus",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Ephesus Celsus Library Façade.jpg",
+    "answer": {
+      "lat": 37.9391,
+      "lon": 27.3407
+    },
+    "toleranceKm": 150,
+    "label": "Library of Celsus, Ephesus",
+    "wiki": "Library of Celsus",
+    "region": "world"
+  },
+  {
+    "id": "lake-como",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Varenna Italy, waterfront at sunset.jpg",
+    "answer": {
+      "lat": 46,
+      "lon": 9.2667
+    },
+    "toleranceKm": 100,
+    "label": "Lake Como, Italy",
+    "wiki": "Lake Como",
+    "region": "world"
+  },
+  {
+    "id": "blue-lagoon",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "BlueLagoon Noface.jpg",
+    "answer": {
+      "lat": 63.8792,
+      "lon": -22.4455
+    },
+    "toleranceKm": 150,
+    "label": "Blue Lagoon, Iceland",
+    "wiki": "Blue Lagoon (geothermal spa)",
+    "region": "world"
+  },
+  {
+    "id": "las-vegas-strip",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Las Vegas Strip 09 2017 4897.jpg",
+    "answer": {
+      "lat": 36.12,
+      "lon": -115.1725
+    },
+    "toleranceKm": 200,
+    "label": "Las Vegas Strip",
+    "wiki": "Las Vegas Strip",
+    "region": "world"
+  },
+  {
+    "id": "gateway-arch",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "St Louis night expblend cropped.jpg",
+    "answer": {
+      "lat": 38.6246,
+      "lon": -90.185
+    },
+    "toleranceKm": 200,
+    "label": "Gateway Arch, St. Louis",
+    "wiki": "Gateway Arch",
+    "region": "world"
+  },
+  {
+    "id": "half-dome",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Half Dome with Eastern Yosemite Valley (Zuschnitt).jpg",
+    "answer": {
+      "lat": 37.746,
+      "lon": -119.5329
+    },
+    "toleranceKm": 200,
+    "label": "Half Dome, Yosemite",
+    "wiki": "Half Dome",
+    "region": "world"
+  },
+  {
+    "id": "times-square",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "New york times square-terabass.jpg",
+    "answer": {
+      "lat": 40.7575,
+      "lon": -73.9858
+    },
+    "toleranceKm": 150,
+    "label": "Times Square, New York",
+    "wiki": "Times Square",
+    "region": "world"
+  },
+  {
+    "id": "moraine-lake",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Moraine Lake 17092005.jpg",
+    "answer": {
+      "lat": 51.3225,
+      "lon": -116.1856
+    },
+    "toleranceKm": 300,
+    "label": "Moraine Lake, Banff",
+    "wiki": "Moraine Lake",
+    "region": "world"
+  },
+  {
+    "id": "chateau-frontenac",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Château Frontenac 02.jpg",
+    "answer": {
+      "lat": 46.8119,
+      "lon": -71.205
+    },
+    "toleranceKm": 200,
+    "label": "Château Frontenac, Quebec City",
+    "wiki": "Château Frontenac",
+    "region": "world"
+  },
+  {
+    "id": "tulum",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Tulum 2.jpg",
+    "answer": {
+      "lat": 20.2147,
+      "lon": -87.4289
+    },
+    "toleranceKm": 300,
+    "label": "Tulum, Mexico",
+    "wiki": "Tulum",
+    "region": "world"
+  },
+  {
+    "id": "angel-falls",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Kerepakupai Vena (Salto Angel).JPG",
+    "answer": {
+      "lat": 5.9675,
+      "lon": -62.5356
+    },
+    "toleranceKm": 400,
+    "label": "Angel Falls, Venezuela",
+    "wiki": "Angel Falls",
+    "region": "world"
+  },
+  {
+    "id": "chefchaouen",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Chefchaouen-the-blue-city-of-morocco-with-palm-trees-and-the-mountain-view-in-the-backrgound.jpg",
+    "answer": {
+      "lat": 35.1714,
+      "lon": -5.2697
+    },
+    "toleranceKm": 200,
+    "label": "Chefchaouen, Morocco",
+    "wiki": "Chefchaouen",
+    "region": "world"
+  },
+  {
+    "id": "hiroshima-peace-memorial",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Genbaku Dome04-r.JPG",
+    "answer": {
+      "lat": 34.3956,
+      "lon": 132.4536
+    },
+    "toleranceKm": 150,
+    "label": "Hiroshima Peace Memorial",
+    "wiki": "Hiroshima Peace Memorial",
+    "region": "world"
+  },
+  {
+    "id": "victoria-harbour",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Hong Kong Skyline viewed from Victoria Peak.jpg",
+    "answer": {
+      "lat": 22.29,
+      "lon": 114.17
+    },
+    "toleranceKm": 150,
+    "label": "Victoria Harbour, Hong Kong",
+    "wiki": "Victoria Harbour",
+    "region": "world"
+  },
+  {
+    "id": "paro-taktsang",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Paro Taktsang, Bhutan (edited).jpg",
+    "answer": {
+      "lat": 27.4919,
+      "lon": 89.3635
+    },
+    "toleranceKm": 300,
+    "label": "Paro Taktsang (Tiger's Nest), Bhutan",
+    "wiki": "Paro Taktsang",
+    "region": "world"
+  },
+  {
+    "id": "maya-bay",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Maya Bay, Thailand by Mike Clegg Photography.jpg",
+    "answer": {
+      "lat": 7.6789,
+      "lon": 98.765
+    },
+    "toleranceKm": 300,
+    "label": "Maya Bay, Thailand",
+    "wiki": "Ko Phi Phi Le",
+    "region": "world"
+  },
+  {
+    "id": "gateway-of-india",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Mumbai 03-2016 30 Gateway of India.jpg",
+    "answer": {
+      "lat": 18.922,
+      "lon": 72.8347
+    },
+    "toleranceKm": 200,
+    "label": "Gateway of India, Mumbai",
+    "wiki": "Gateway of India",
+    "region": "world"
+  },
+  {
+    "id": "bondi-beach",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Bondi from above.jpg",
+    "answer": {
+      "lat": -33.8911,
+      "lon": 151.2742
+    },
+    "toleranceKm": 200,
+    "label": "Bondi Beach, Sydney",
+    "wiki": "Bondi Beach",
+    "region": "world"
+  },
+  {
+    "id": "hobbiton",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Waterhouse Lake Front.jpg",
+    "answer": {
+      "lat": -37.8575,
+      "lon": 175.6797
+    },
+    "toleranceKm": 300,
+    "label": "Hobbiton, Matamata",
+    "wiki": "Hobbiton Movie Set",
+    "region": "world"
+  },
+  {
+    "id": "hadrian-s-wall",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Hadrians Wall from Housesteads1 crop.jpg",
+    "answer": {
+      "lat": 55.0167,
+      "lon": -2.2833
+    },
+    "toleranceKm": 40,
+    "label": "Hadrian's Wall",
+    "wiki": "Hadrian's Wall",
+    "region": "uk"
+  },
+  {
+    "id": "blackpool-tower",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Blackpool Tower 05082017 (cropped).jpg",
+    "answer": {
+      "lat": 53.8158,
+      "lon": -3.0553
+    },
+    "toleranceKm": 20,
+    "label": "Blackpool Tower",
+    "wiki": "Blackpool Tower",
+    "region": "uk"
+  },
+  {
+    "id": "eilean-donan-castle",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Eilean Donan Castle, Scotland - Jan 2011.jpg",
+    "answer": {
+      "lat": 57.274,
+      "lon": -5.5161
+    },
+    "toleranceKm": 30,
+    "label": "Eilean Donan Castle",
+    "wiki": "Eilean Donan",
+    "region": "uk"
+  },
+  {
+    "id": "glenfinnan-viaduct",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Glenfinnan Viaduct - 2022.jpg",
+    "answer": {
+      "lat": 56.8763,
+      "lon": -5.4319
+    },
+    "toleranceKm": 30,
+    "label": "Glenfinnan Viaduct",
+    "wiki": "Glenfinnan Viaduct",
+    "region": "uk"
+  },
+  {
+    "id": "conwy-castle",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Conwy Castle, water view1.jpg",
+    "answer": {
+      "lat": 53.28,
+      "lon": -3.8256
+    },
+    "toleranceKm": 20,
+    "label": "Conwy Castle",
+    "wiki": "Conwy Castle",
+    "region": "uk"
+  },
+  {
+    "id": "radcliffe-camera",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "Radcliffe Camera, Oxford - Oct 2006.jpg",
+    "answer": {
+      "lat": 51.7534,
+      "lon": -1.2539
+    },
+    "toleranceKm": 15,
+    "label": "Radcliffe Camera, Oxford",
+    "wiki": "Radcliffe Camera",
+    "region": "uk"
+  },
+  {
+    "id": "st-michael-s-mount",
+    "kind": "photo",
+    "prompt": "Where is this?",
+    "image": "St Michael's Mount View.jpg",
+    "answer": {
+      "lat": 50.116,
+      "lon": -5.4772
+    },
+    "toleranceKm": 25,
+    "label": "St Michael's Mount, Cornwall",
+    "wiki": "St Michael's Mount",
+    "region": "uk"
+  },
+  {
+    "id": "venice",
+    "kind": "text",
+    "prompt": "Where is Venice?",
+    "answer": {
+      "lat": 45.4375,
+      "lon": 12.3358
+    },
+    "toleranceKm": 80,
+    "label": "Venice, Italy",
+    "wiki": "Venice",
+    "region": "world"
+  },
+  {
+    "id": "florence",
+    "kind": "text",
+    "prompt": "Where is Florence?",
+    "answer": {
+      "lat": 43.7714,
+      "lon": 11.2542
+    },
+    "toleranceKm": 80,
+    "label": "Florence, Italy",
+    "wiki": "Florence",
+    "region": "world"
+  },
+  {
+    "id": "naples",
+    "kind": "text",
+    "prompt": "Where is Naples?",
+    "answer": {
+      "lat": 40.8358,
+      "lon": 14.2486
+    },
+    "toleranceKm": 80,
+    "label": "Naples, Italy",
+    "wiki": "Naples",
+    "region": "world"
+  },
+  {
+    "id": "marseille",
+    "kind": "text",
+    "prompt": "Where is Marseille?",
+    "answer": {
+      "lat": 43.2964,
+      "lon": 5.37
+    },
+    "toleranceKm": 80,
+    "label": "Marseille, France",
+    "wiki": "Marseille",
+    "region": "world"
+  },
+  {
+    "id": "lyon",
+    "kind": "text",
+    "prompt": "Where is Lyon?",
+    "answer": {
+      "lat": 45.7675,
+      "lon": 4.835
+    },
+    "toleranceKm": 80,
+    "label": "Lyon, France",
+    "wiki": "Lyon",
+    "region": "world"
+  },
+  {
+    "id": "seville",
+    "kind": "text",
+    "prompt": "Where is Seville?",
+    "answer": {
+      "lat": 37.3886,
+      "lon": -5.995
+    },
+    "toleranceKm": 100,
+    "label": "Seville, Spain",
+    "wiki": "Seville",
+    "region": "world"
+  },
+  {
+    "id": "malaga",
+    "kind": "text",
+    "prompt": "Where is Málaga?",
+    "answer": {
+      "lat": 36.7194,
+      "lon": -4.42
+    },
+    "toleranceKm": 100,
+    "label": "Málaga, Spain",
+    "wiki": "Málaga",
+    "region": "world"
+  },
+  {
+    "id": "porto",
+    "kind": "text",
+    "prompt": "Where is Porto?",
+    "answer": {
+      "lat": 41.15,
+      "lon": -8.6108
+    },
+    "toleranceKm": 100,
+    "label": "Porto, Portugal",
+    "wiki": "Porto",
+    "region": "world"
+  },
+  {
+    "id": "palma",
+    "kind": "text",
+    "prompt": "Where is Palma de Mallorca?",
+    "answer": {
+      "lat": 39.5667,
+      "lon": 2.65
+    },
+    "toleranceKm": 100,
+    "label": "Palma, Mallorca",
+    "wiki": "Palma de Mallorca",
+    "region": "world"
+  },
+  {
+    "id": "tenerife",
+    "kind": "text",
+    "prompt": "Where is Tenerife?",
+    "answer": {
+      "lat": 28.2686,
+      "lon": -16.6056
+    },
+    "toleranceKm": 150,
+    "label": "Tenerife",
+    "wiki": "Tenerife",
+    "region": "world"
+  },
+  {
+    "id": "crete",
+    "kind": "text",
+    "prompt": "Where is Crete?",
+    "answer": {
+      "lat": 35.21,
+      "lon": 24.91
+    },
+    "toleranceKm": 150,
+    "label": "Crete",
+    "wiki": "Crete",
+    "region": "world"
+  },
+  {
+    "id": "krakow",
+    "kind": "text",
+    "prompt": "Where is Kraków?",
+    "answer": {
+      "lat": 50.0614,
+      "lon": 19.9372
+    },
+    "toleranceKm": 100,
+    "label": "Kraków, Poland",
+    "wiki": "Kraków",
+    "region": "world"
+  },
+  {
+    "id": "geneva",
+    "kind": "text",
+    "prompt": "Where is Geneva?",
+    "answer": {
+      "lat": 46.2017,
+      "lon": 6.1469
+    },
+    "toleranceKm": 80,
+    "label": "Geneva, Switzerland",
+    "wiki": "Geneva",
+    "region": "world"
+  },
+  {
+    "id": "salzburg",
+    "kind": "text",
+    "prompt": "Where is Salzburg?",
+    "answer": {
+      "lat": 47.8,
+      "lon": 13.045
+    },
+    "toleranceKm": 80,
+    "label": "Salzburg, Austria",
+    "wiki": "Salzburg",
+    "region": "world"
+  },
+  {
+    "id": "las-vegas",
+    "kind": "text",
+    "prompt": "Where is Las Vegas?",
+    "answer": {
+      "lat": 36.1692,
+      "lon": -115.1406
+    },
+    "toleranceKm": 250,
+    "label": "Las Vegas, United States",
+    "wiki": "Las Vegas",
+    "region": "world"
+  },
+  {
+    "id": "boston",
+    "kind": "text",
+    "prompt": "Where is Boston, Massachusetts?",
+    "answer": {
+      "lat": 42.3603,
+      "lon": -71.0578
+    },
+    "toleranceKm": 250,
+    "label": "Boston, United States",
+    "wiki": "Boston",
+    "region": "world"
+  },
+  {
+    "id": "orlando",
+    "kind": "text",
+    "prompt": "Where is Orlando?",
+    "answer": {
+      "lat": 28.5422,
+      "lon": -81.3792
+    },
+    "toleranceKm": 250,
+    "label": "Orlando, United States",
+    "wiki": "Orlando, Florida",
+    "region": "world"
+  },
+  {
+    "id": "honolulu",
+    "kind": "text",
+    "prompt": "Where is Honolulu?",
+    "answer": {
+      "lat": 21.3,
+      "lon": -157.85
+    },
+    "toleranceKm": 300,
+    "label": "Honolulu, Hawaii",
+    "wiki": "Honolulu",
+    "region": "world"
+  },
+  {
+    "id": "cancun",
+    "kind": "text",
+    "prompt": "Where is Cancún?",
+    "answer": {
+      "lat": 21.1606,
+      "lon": -86.8475
+    },
+    "toleranceKm": 250,
+    "label": "Cancún, Mexico",
+    "wiki": "Cancún",
+    "region": "world"
+  },
+  {
+    "id": "bali",
+    "kind": "text",
+    "prompt": "Where is Bali?",
+    "answer": {
+      "lat": -8.335,
+      "lon": 115.0881
+    },
+    "toleranceKm": 300,
+    "label": "Bali, Indonesia",
+    "wiki": "Bali",
+    "region": "world"
+  },
+  {
+    "id": "phuket",
+    "kind": "text",
+    "prompt": "Where is Phuket?",
+    "answer": {
+      "lat": 7.8881,
+      "lon": 98.3975
+    },
+    "toleranceKm": 250,
+    "label": "Phuket, Thailand",
+    "wiki": "Phuket (city)",
+    "region": "world"
+  },
+  {
+    "id": "kyoto",
+    "kind": "text",
+    "prompt": "Where is Kyoto?",
+    "answer": {
+      "lat": 35.0116,
+      "lon": 135.7681
+    },
+    "toleranceKm": 200,
+    "label": "Kyoto, Japan",
+    "wiki": "Kyoto",
+    "region": "world"
+  },
+  {
+    "id": "perth",
+    "kind": "text",
+    "prompt": "Where is Perth, Western Australia?",
+    "answer": {
+      "lat": -32,
+      "lon": 115.9
+    },
+    "toleranceKm": 300,
+    "label": "Perth, Australia",
+    "wiki": "Perth",
+    "region": "world"
+  },
+  {
+    "id": "queenstown",
+    "kind": "text",
+    "prompt": "Where is Queenstown?",
+    "answer": {
+      "lat": -45.0311,
+      "lon": 168.6625
+    },
+    "toleranceKm": 250,
+    "label": "Queenstown, New Zealand",
+    "wiki": "Queenstown, New Zealand",
+    "region": "world"
+  },
+  {
+    "id": "york",
+    "kind": "text",
+    "prompt": "Where is York?",
+    "answer": {
+      "lat": 53.96,
+      "lon": -1.08
+    },
+    "toleranceKm": 30,
+    "label": "York, England",
+    "wiki": "York",
+    "region": "uk"
+  },
+  {
+    "id": "bristol",
+    "kind": "text",
+    "prompt": "Where is Bristol?",
+    "answer": {
+      "lat": 51.4536,
+      "lon": -2.5975
+    },
+    "toleranceKm": 30,
+    "label": "Bristol, England",
+    "wiki": "Bristol",
+    "region": "uk"
+  },
+  {
+    "id": "cambridge",
+    "kind": "text",
+    "prompt": "Where is Cambridge?",
+    "answer": {
+      "lat": 52.205,
+      "lon": 0.1225
+    },
+    "toleranceKm": 30,
+    "label": "Cambridge, England",
+    "wiki": "Cambridge",
+    "region": "uk"
+  },
+  {
+    "id": "brighton",
+    "kind": "text",
+    "prompt": "Where is Brighton?",
+    "answer": {
+      "lat": 50.8208,
+      "lon": -0.1375
+    },
+    "toleranceKm": 30,
+    "label": "Brighton, England",
+    "wiki": "Brighton",
+    "region": "uk"
+  },
+  {
+    "id": "swansea",
+    "kind": "text",
+    "prompt": "Where is Swansea?",
+    "answer": {
+      "lat": 51.6167,
+      "lon": -3.95
+    },
+    "toleranceKm": 30,
+    "label": "Swansea, Wales",
+    "wiki": "Swansea",
+    "region": "uk"
+  },
+  {
+    "id": "dundee",
+    "kind": "text",
+    "prompt": "Where is Dundee?",
+    "answer": {
+      "lat": 56.4606,
+      "lon": -2.97
+    },
+    "toleranceKm": 40,
+    "label": "Dundee, Scotland",
+    "wiki": "Dundee",
+    "region": "uk"
   }
 ]
