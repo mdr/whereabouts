@@ -156,10 +156,35 @@ function useFlagUrl(code: string): string | null {
   return src;
 }
 
-/** A flag round's flag. No alt text naming it: that would give the answer away. */
+/** A flag round's flag; click it to enlarge. No alt text naming it: that would give the answer away. */
 function FlagImage({ code }: { code: string }) {
   const src = useFlagUrl(code);
-  return <div class="flag">{src && <img src={src} alt="The flag" draggable={false} />}</div>;
+  const [large, setLarge] = useState(false);
+  useEscape(large, () => setLarge(false));
+  return (
+    <>
+      <button type="button" class="flag" title="Enlarge the flag" disabled={!src} onClick={() => setLarge(true)}>
+        {src && <img src={src} alt="The flag" draggable={false} />}
+        <span class="enlarge-badge" aria-hidden="true">
+          <Icon name="enlarge" size={14} />
+        </span>
+        <span class="sr-only">Enlarge flag</span>
+      </button>
+      {large && src && <Lightbox src={src} kind="flag" credit={null} onClose={() => setLarge(false)} />}
+    </>
+  );
+}
+
+/** Calls `close` on Escape while `open`. */
+function useEscape(open: boolean, close: () => void): void {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 }
 
 /** A small flag beside a country's name, which says the name: no alt text of its own. */
@@ -207,14 +232,7 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
     enlargeLabelShown = true;
     return first;
   });
-  useEffect(() => {
-    if (!large) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setLarge(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [large]);
+  useEscape(large, () => setLarge(false));
   const credit = !showCredit ? null : (
     <a
       class="credit-icon"
@@ -242,7 +260,9 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
         </button>
         {credit}
       </div>
-      {large && <Lightbox image={image} credit={credit} onClose={() => setLarge(false)} />}
+      {large && (
+        <Lightbox src={commonsImageUrl(image, 1600)} kind="photo" credit={credit} onClose={() => setLarge(false)} />
+      )}
     </>
   );
 }
@@ -251,12 +271,22 @@ const MAX_ZOOM = 6;
 const CLICK_ZOOM = 2.5;
 
 /**
- * The enlarged photo. Scroll or pinch to zoom about the pointer, drag to pan
+ * The enlarged photo or flag. Scroll or pinch to zoom about the pointer, drag to pan
  * once zoomed, click the picture to jump between fit and a closer look, and
- * click the backdrop, the close button or press Escape to leave. A larger
- * rendition is fetched than the thumbnail's so zooming has detail to show.
+ * click the backdrop, the close button or press Escape to leave. A photo is
+ * a larger rendition than the thumbnail's, so zooming has detail to show.
  */
-function Lightbox({ image, credit, onClose }: { image: string; credit: ComponentChildren; onClose: () => void }) {
+function Lightbox({
+  src,
+  kind,
+  credit,
+  onClose,
+}: {
+  src: string;
+  kind: "photo" | "flag";
+  credit: ComponentChildren;
+  onClose: () => void;
+}) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const frame = useRef<HTMLDivElement>(null);
@@ -285,7 +315,8 @@ function Lightbox({ image, credit, onClose }: { image: string; credit: Component
     zoomAt(Math.exp(-e.deltaY * 0.002), cx, cy);
   };
   const onPointerDown = (e: PointerEvent) => {
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    // Captured, the click that follows goes to the frame, so onClick lives there; the credit link keeps its own.
+    if (!(e.target as Element).closest("a")) (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     dragged.current = false;
     if (pointers.current.size === 2) pinchDist.current = pinchDistance();
@@ -316,8 +347,9 @@ function Lightbox({ image, credit, onClose }: { image: string; credit: Component
     const [a, b] = [...pointers.current.values()];
     return Math.hypot(a!.x - b!.x, a!.y - b!.y) || 1;
   }
-  const onImageClick = (e: MouseEvent) => {
+  const onFrameClick = (e: MouseEvent) => {
     e.stopPropagation();
+    if ((e.target as Element).closest("a")) return;
     if (dragged.current) return; // the end of a drag or pinch, not a click
     if (zoom > 1) zoomAt(1 / zoom, 0, 0);
     else {
@@ -345,14 +377,15 @@ function Lightbox({ image, credit, onClose }: { image: string; credit: Component
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        onClick={onFrameClick}
       >
         <img
-          src={commonsImageUrl(image, 1600)}
+          src={src}
+          class={`lightbox-${kind}`}
           alt=""
           referrerpolicy="no-referrer"
           draggable={false}
           style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
-          onClick={onImageClick}
         />
         {credit}
       </div>
