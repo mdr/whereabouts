@@ -11,6 +11,7 @@ import {
   NEARNESS_WEIGHT,
   QUESTIONS,
   buildDistribution,
+  encodeCase,
   flagRound,
   regionFit,
   scoreRegionQuestion,
@@ -259,6 +260,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           </select>
         </label>
       )}
+      <CopyCase q={q} kernel={kernel} />
     </Card>
   );
 
@@ -386,6 +388,56 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
 }
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
+
+/** Copies the paint and its score as text, to paste into a chat about the scoring (see scoring-case.ts). */
+function CopyCase({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
+  const paint = usePaint();
+  const [copied, setCopied] = useState(false);
+  // Where the clipboard is out of reach (a LAN address over http), the text to copy by hand.
+  const [fallback, setFallback] = useState<string | null>(null);
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(t);
+  }, [copied]);
+  const copy = async () => {
+    const floor = paint.floor.value;
+    const { score, parts } = scoreQuestion(buildDistribution(paint.layer.toCells(), floor), q, kernel);
+    const text = await encodeCase({
+      question: {
+        kind: isRegion(q) ? "region" : q.kind,
+        id: q.id,
+        label: q.label,
+        answer: q.answer,
+        toleranceKm: q.toleranceKm,
+        ...(q.flag ? { flag: q.flag } : {}),
+      },
+      kernel: isRegion(q) ? "region" : kernel.id,
+      floor,
+      res: paint.layer.res,
+      score,
+      parts,
+      cells: paint.layer.toRecord(),
+    });
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setFallback(null);
+    } catch {
+      setFallback(text);
+    }
+  };
+  return (
+    <>
+      <button class="small" onClick={() => void copy()} disabled={paint.isEmpty.value}>
+        {copied ? "Copied" : "Copy test case"}
+      </button>
+      {fallback && (
+        <textarea class="case-text" readOnly rows={6} value={fallback} onFocus={(e) => e.currentTarget.select()} />
+      )}
+    </>
+  );
+}
 
 function KernelComparison({ dist, q, active }: { dist: Distribution; q: PracticeQuestion; active: string }) {
   return (
