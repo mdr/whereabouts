@@ -67,8 +67,9 @@ const DISPUTED = new Set([
 ]);
 
 // Overrides by Natural Earth ADMIN name. label: shown after the reveal
-// (default NAME_EN); the: prompts say "the Netherlands"; wiki: English
-// Wikipedia title (default the label); id: kept from before flags.
+// (default NAME_EN); the: prompts say "the Netherlands"; name: what the
+// prompt calls it, where the outline is only part of the country; wiki:
+// English Wikipedia title (default the label); id: kept from before flags.
 const NAMES = {
   "United Kingdom": { the: true, id: "uk-region" },
   "Democratic Republic of the Congo": { the: true, id: "drc-region" },
@@ -93,6 +94,8 @@ const NAMES = {
   Comoros: { the: true },
   Seychelles: { the: true },
   "Federated States of Micronesia": { the: true },
+  // The outline leaves out the overseas regions (French Guiana, Réunion and the rest).
+  France: { name: "European France" },
 };
 
 const R = 6371;
@@ -345,7 +348,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
   const p = feature.properties;
   const names = NAMES[p.ADMIN] ?? {};
   const label = names.label ?? p.NAME_EN;
-  const name = names.the ? `the ${label.replace(/^The /, "")}` : label;
+  const name = names.name ?? (names.the ? `the ${label.replace(/^The /, "")}` : label);
   const wiki = names.wiki ?? label;
   const flag = p.ISO_A2_EH.toLowerCase();
   if (!/^[a-z]{2}$/.test(flag)) throw new Error(`no ISO code for ${p.ADMIN}`);
