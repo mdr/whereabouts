@@ -4,17 +4,17 @@
 // Run the game server with ROUND_MS=12000 ROUNDS=2.
 // Usage, from packages/client: node browser/e2e/phone.ts [outDir]
 import { devices } from "playwright-core";
-import type { App } from "../pages/App.ts";
-import { Checks, launchChrome, openApp, outDir } from "./support.ts";
+import type { Screen } from "../pages/Screen.ts";
+import { Checks, launchChrome, newTab, outDir } from "./support.ts";
 
 const out = outDir();
 const checks = new Checks();
 const browser = await launchChrome();
 const phone = devices["iPhone 13"];
 
-async function fits(app: App, label: string): Promise<void> {
-  const fit = await app.layout.fit();
-  await app.screenshot(`${out}/phone-${label}.png`);
+async function fits(screen: Screen, label: string): Promise<void> {
+  const fit = await screen.fit();
+  await screen.screenshot(`${out}/phone-${label}.png`);
   checks.check(
     fit.viewportWidth === phone.viewport.width,
     `${label}: layout viewport ${fit.viewportWidth} is the screen width`,
@@ -26,51 +26,48 @@ async function fits(app: App, label: string): Promise<void> {
   );
 }
 
-const alice = await openApp(browser, "Alice");
-await alice.openHome();
-await alice.home.enterName("Alice");
-await alice.home.hostGame();
-await alice.lobby.waitUntilShown();
-const code = await alice.lobby.code();
+const aliceHomePage = await (await newTab(browser, "Alice")).openHome();
+await aliceHomePage.enterName("Alice");
+const aliceLobbyPage = await aliceHomePage.hostGame();
+const code = await aliceLobbyPage.code();
 
-const bob = await openApp(browser, "Bob", { context: { ...phone, isMobile: true, hasTouch: true } });
-await bob.openHome();
-await fits(bob, "home");
-await bob.home.enterName("Bobbington");
-await bob.home.joinGame(code);
-await bob.lobby.waitUntilShown();
-await fits(bob, "lobby");
+const bobHomePage = await (
+  await newTab(browser, "Bob", { context: { ...phone, isMobile: true, hasTouch: true } })
+).openHome();
+await fits(bobHomePage, "home");
+await bobHomePage.enterName("Bobbington");
+const bobLobbyPage = await bobHomePage.joinGame(code);
+await fits(bobLobbyPage, "lobby");
 
-await alice.lobby.startGame();
-await bob.inGame.waitUntilPlaying();
-await bob.map.waitUntilSettled();
-await fits(bob, "ingame");
-checks.check(await bob.inGame.doneButtonIsUsable(), "ingame: the Done button is usable");
-checks.check(await bob.paintTools.toolIsUsable("pan"), "ingame: the Pan tool is usable");
-checks.check(await bob.map.attributionIsUsable(), "ingame: the map attribution button is usable");
-checks.check(await bob.map.attributionClearsToolbar(), "ingame: the attribution button clears the toolbar");
+const aliceRoundPage = await aliceLobbyPage.startGame();
+const bobRoundPage = await bobLobbyPage.waitForGameToStart();
+await fits(bobRoundPage, "ingame");
+checks.check(await bobRoundPage.doneButtonIsUsable(), "ingame: the Done button is usable");
+checks.check(await bobRoundPage.paintTools.toolIsUsable("pan"), "ingame: the Pan tool is usable");
+checks.check(await bobRoundPage.map.attributionIsUsable(), "ingame: the map attribution button is usable");
+checks.check(await bobRoundPage.map.attributionClearsToolbar(), "ingame: the attribution button clears the toolbar");
 
 // One finger on the strip of map left clear (a photo makes the question card tall).
-await bob.map.fingerDrag(await bob.map.spotClearOfCards());
-const cells = await bob.map.yourPaintCells();
+await bobRoundPage.map.fingerDrag(await bobRoundPage.map.spotClearOfCards());
+const cells = await bobRoundPage.map.yourPaintCells();
 checks.check(cells > 0, `a one-finger drag paints (${cells} cells)`);
-await bob.playersPanel.open();
-await fits(bob, "ingame-players");
-await bob.playersPanel.close();
-await bob.inGame.finish();
-await fits(bob, "ingame-done");
+await bobRoundPage.playersPanel.open();
+await fits(bobRoundPage, "ingame-players");
+await bobRoundPage.playersPanel.close();
+const bobRoundDonePage = await bobRoundPage.finish();
+await fits(bobRoundDonePage, "ingame-done");
 
-await bob.reveal.waitUntilShown(60_000);
-await bob.map.waitUntilSettled();
-await fits(bob, "reveal");
-checks.check(await bob.reveal.readyButtonIsUsable(), "reveal: the Ready button is usable");
-checks.check(await bob.reveal.scoresAreUsable(), "reveal: the scores list is usable");
-checks.check(await bob.map.attributionClearsToolbar(), "reveal: the attribution button clears the toolbar");
+// Alice never presses Done, so the round runs out of time.
+const aliceRevealPage = await aliceRoundPage.waitForReveal(60_000);
+const bobRevealPage = await bobRoundDonePage.waitForReveal(60_000);
+await fits(bobRevealPage, "reveal");
+checks.check(await bobRevealPage.readyButtonIsUsable(), "reveal: the Ready button is usable");
+checks.check(await bobRevealPage.scoresAreUsable(), "reveal: the scores list is usable");
+checks.check(await bobRevealPage.map.attributionClearsToolbar(), "reveal: the attribution button clears the toolbar");
 
-await alice.hud.askToEndGame();
-await alice.dialog.confirm();
-await bob.results.waitUntilShown(60_000);
-await fits(bob, "results");
+await (await aliceRevealPage.hud.askToEndGame()).confirm();
+const bobResultsPage = await bobRevealPage.waitForResults(60_000);
+await fits(bobResultsPage, "results");
 
 await browser.close();
 checks.finish();

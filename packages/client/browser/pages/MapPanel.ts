@@ -139,15 +139,6 @@ export class MapPanel {
     });
   }
 
-  /** Starts counting requests for terrain tiles (the shaded relief, which gives mountains away). */
-  countTerrainTileRequests(): { count: () => number } {
-    let n = 0;
-    this.#page.on("request", (r) => {
-      if (r.url().includes("elevation-tiles-prod")) n++;
-    });
-    return { count: () => n };
-  }
-
   async attributionIsUsable(): Promise<boolean> {
     return isUsable(this.#page.locator(".maplibregl-ctrl-attrib-button"));
   }

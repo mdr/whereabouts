@@ -1,4 +1,4 @@
-import type { App } from "../pages/App.ts";
+import type { Tab } from "../pages/Tab.ts";
 
 export interface SoundEvent {
   kind: "buffer" | "stop" | "osc";
@@ -53,13 +53,13 @@ export function recordSounds(): void {
 /* eslint-enable @typescript-eslint/unbound-method */
 
 /** The page clock, to time sounds against. */
-export function pageTime(app: App): Promise<number> {
-  return app.page.evaluate(() => performance.now());
+export function pageTime(tab: Tab): Promise<number> {
+  return tab.page.evaluate(() => performance.now());
 }
 
 /** The sounds recorded since the last call. */
-export function takeSounds(app: App): Promise<SoundEvent[]> {
-  return app.page.evaluate(() => window.__audio.splice(0));
+export function takeSounds(tab: Tab): Promise<SoundEvent[]> {
+  return tab.page.evaluate(() => window.__audio.splice(0));
 }
 
 export const played = (events: SoundEvent[], clip: string): boolean =>

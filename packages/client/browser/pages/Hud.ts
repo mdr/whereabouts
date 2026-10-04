@@ -1,35 +1,38 @@
-import type { Page } from "playwright-core";
 import { hudHeaderTestIds, questionCardTestIds, soundToggleTestIds } from "../../src/ui/bitsTestIds.ts";
 import { hostControlsTestIds } from "../../src/ui/HostControlsTestIds.ts";
+import { ConfirmDialog } from "./ConfirmDialog.ts";
+import { ResultsPage } from "./ResultsPage.ts";
 import { text } from "./support.ts";
+import type { Tab } from "./Tab.ts";
 
-/** What sits over the map on every game screen: the header strip and the question. */
+/** What sits over the map on every game screen: the header strip, the question, the host's End game. */
 export class Hud {
-  readonly #page: Page;
+  readonly #tab: Tab;
 
-  constructor(page: Page) {
-    this.#page = page;
+  constructor(tab: Tab) {
+    this.#tab = tab;
   }
 
   /** "Round 2 / 3" */
   async round(): Promise<string> {
-    return text(this.#page.getByTestId(hudHeaderTestIds.round));
+    return text(this.#tab.page.getByTestId(hudHeaderTestIds.round));
   }
 
   async toggleSound(): Promise<void> {
-    await this.#page.getByTestId(soundToggleTestIds.button).click();
+    await this.#tab.page.getByTestId(soundToggleTestIds.button).click();
   }
 
   async prompt(): Promise<string> {
-    return text(this.#page.getByTestId(questionCardTestIds.prompt));
+    return text(this.#tab.page.getByTestId(questionCardTestIds.prompt));
   }
 
   async questionHasPhoto(): Promise<boolean> {
-    return (await this.#page.getByTestId(questionCardTestIds.photo).count()) > 0;
+    return (await this.#tab.page.getByTestId(questionCardTestIds.photo).count()) > 0;
   }
 
-  /** Host: opens the confirmation for ending the game early. */
-  async askToEndGame(): Promise<void> {
-    await this.#page.getByTestId(hostControlsTestIds.endGameButton).click();
+  /** Host only: ending the game early asks first. */
+  async askToEndGame(): Promise<ConfirmDialog<ResultsPage>> {
+    await this.#tab.page.getByTestId(hostControlsTestIds.endGameButton).click();
+    return ConfirmDialog.whenShown(this.#tab.page, () => ResultsPage.whenShown(this.#tab));
   }
 }

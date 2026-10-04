@@ -1,4 +1,5 @@
 import type { Page } from "playwright-core";
+import type { Tab } from "./Tab.ts";
 
 export interface Fit {
   viewportWidth: number;
@@ -7,16 +8,28 @@ export interface Fit {
   overflowing: string[];
 }
 
-/** The page as a whole, for checking it fits a small screen. */
-export class Layout {
-  readonly #page: Page;
+/** What every screen can do, whichever it is. */
+export abstract class Screen {
+  protected readonly tab: Tab;
+  protected readonly page: Page;
 
-  constructor(page: Page) {
-    this.#page = page;
+  constructor(tab: Tab) {
+    this.tab = tab;
+    this.page = tab.page;
   }
 
+  async screenshot(path: string): Promise<void> {
+    await this.page.screenshot({ path });
+  }
+
+  /** Wait a while, for something that should not happen. */
+  async pause(ms: number): Promise<void> {
+    await this.page.waitForTimeout(ms);
+  }
+
+  /** How the screen fits the width of the window. */
   async fit(): Promise<Fit> {
-    return this.#page.evaluate(() => {
+    return this.page.evaluate(() => {
       const vw = window.innerWidth;
       const overflowing: string[] = [];
       for (const el of document.querySelectorAll("body *")) {

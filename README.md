@@ -29,8 +29,9 @@ Other commands:
 - Browser end-to-end scripts in `packages/client/browser/e2e`, which
   drive your installed Chrome with Playwright against the running dev
   servers. They are written against the page objects in
-  `packages/client/browser/pages`, which find elements by the test ids
-  each component declares in its `*TestIds.ts` module. Run them from
+  `packages/client/browser/pages`: one per screen, and each action that
+  moves to another screen returns that screen. Page objects find elements
+  by the test ids each component declares in its `*TestIds.ts` module. Run them from
   `packages/client` with `node browser/e2e/<name>.ts [outDir]`
   (`pnpm smoke` runs `solo`); screenshots go to `smoke-out/`.
   Run the game server with `ROUND_MS=12000 ROUNDS=2` for `flows`,

@@ -1,10 +1,12 @@
-import type { Page } from "playwright-core";
 import type { QuestionType } from "@whereabouts/shared";
 import { lobbyTestIds, setupSummaryTestIds } from "../../src/screens/LobbyTestIds.ts";
 import { mixEditorTestIds } from "../../src/ui/MixEditorTestIds.ts";
 import { pillsTestIds, stepperTestIds } from "../../src/ui/ControlsTestIds.ts";
 import { PlayerList } from "./PlayerList.ts";
+import { RoundPage } from "./RoundPage.ts";
+import { Screen } from "./Screen.ts";
 import { byTestIdWith, text, until } from "./support.ts";
+import type { Tab } from "./Tab.ts";
 
 export interface SetupSummary {
   rounds: string;
@@ -13,26 +15,26 @@ export interface SetupSummary {
 }
 
 /** The waiting room: the code to share, who is here, and the game setup. */
-export class Lobby {
-  readonly #page: Page;
+export class LobbyPage extends Screen {
   readonly players: PlayerList;
 
-  constructor(page: Page) {
-    this.#page = page;
-    this.players = new PlayerList(page.getByTestId(lobbyTestIds.page));
+  static async whenShown(tab: Tab, timeoutMs = 15_000): Promise<LobbyPage> {
+    await tab.page.getByTestId(lobbyTestIds.page).waitFor({ timeout: timeoutMs });
+    return new LobbyPage(tab);
   }
 
-  async waitUntilShown(timeoutMs = 15_000): Promise<void> {
-    await this.#page.getByTestId(lobbyTestIds.page).waitFor({ timeout: timeoutMs });
+  constructor(tab: Tab) {
+    super(tab);
+    this.players = new PlayerList(tab.page.getByTestId(lobbyTestIds.page));
   }
 
   async code(): Promise<string> {
-    return text(this.#page.getByTestId(lobbyTestIds.code));
+    return text(this.page.getByTestId(lobbyTestIds.code));
   }
 
   /** Host: set how many rounds ask this kind of question, one step at a time. */
   async setQuestionCount(type: QuestionType, count: number): Promise<void> {
-    const row = byTestIdWith(this.#page, mixEditorTestIds.row, "type", type);
+    const row = byTestIdWith(this.page, mixEditorTestIds.row, "type", type);
     const value = row.getByTestId(stepperTestIds.value);
     for (;;) {
       const now = Number(await text(value));
@@ -58,7 +60,7 @@ export class Lobby {
 
   async chooseSecondsPerRound(seconds: number): Promise<void> {
     await byTestIdWith(
-      this.#page.getByTestId(lobbyTestIds.secondsSetting),
+      this.page.getByTestId(lobbyTestIds.secondsSetting),
       pillsTestIds.option,
       "value",
       String(seconds * 1000),
@@ -68,18 +70,18 @@ export class Lobby {
   /** Whether this player has the host's setup controls. */
   async canChangeSetup(): Promise<boolean> {
     const controls =
-      (await this.#page.getByTestId(lobbyTestIds.questionsSetting).count()) +
-      (await this.#page.getByTestId(lobbyTestIds.secondsSetting).count());
+      (await this.page.getByTestId(lobbyTestIds.questionsSetting).count()) +
+      (await this.page.getByTestId(lobbyTestIds.secondsSetting).count());
     return controls > 0;
   }
 
   /** A guest's view of the setup the host chose. */
   async setupSummary(): Promise<SetupSummary> {
-    const tile = (id: string) => this.#page.getByTestId(id);
+    const value = (id: string) => text(this.page.getByTestId(id).getByTestId(setupSummaryTestIds.tileValue));
     return {
-      rounds: await text(tile(setupSummaryTestIds.rounds).getByTestId(setupSummaryTestIds.tileValue)),
-      seconds: await text(tile(setupSummaryTestIds.seconds).getByTestId(setupSummaryTestIds.tileValue)),
-      questions: await text(tile(setupSummaryTestIds.questions)),
+      rounds: await value(setupSummaryTestIds.rounds),
+      seconds: await value(setupSummaryTestIds.seconds),
+      questions: await text(this.page.getByTestId(setupSummaryTestIds.questions)),
     };
   }
 
@@ -91,7 +93,14 @@ export class Lobby {
     );
   }
 
-  async startGame(): Promise<void> {
-    await this.#page.getByTestId(lobbyTestIds.startButton).click();
+  /** Host only. */
+  async startGame(): Promise<RoundPage> {
+    await this.page.getByTestId(lobbyTestIds.startButton).click();
+    return RoundPage.whenShown(this.tab);
+  }
+
+  /** A guest waiting for the host to start. */
+  async waitForGameToStart(): Promise<RoundPage> {
+    return RoundPage.whenShown(this.tab);
   }
 }

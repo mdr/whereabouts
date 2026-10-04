@@ -1,6 +1,6 @@
 import type { Locator } from "playwright-core";
 import { playerListTestIds } from "../../src/ui/PlayerListTestIds.ts";
-import { byTestIdWith, until } from "./support.ts";
+import { until } from "./support.ts";
 
 export interface ListedPlayer {
   name: string;
@@ -39,12 +39,5 @@ export class PlayerList {
       (names) => names.includes(name),
       timeoutMs,
     );
-  }
-
-  /** Opens the confirmation for removing them. */
-  async askToRemove(name: string): Promise<void> {
-    await byTestIdWith(this.#root, playerListTestIds.player, "player", name)
-      .getByTestId(playerListTestIds.kickButton)
-      .click();
   }
 }

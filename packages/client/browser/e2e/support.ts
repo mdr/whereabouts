@@ -1,6 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { chromium, type Browser, type BrowserContextOptions } from "playwright-core";
-import { App } from "../pages/App.ts";
+import { Tab } from "../pages/Tab.ts";
 
 /** The Vite dev server, which proxies the game server. */
 export const DEV_URL = "http://localhost:5173";
@@ -30,7 +30,7 @@ export interface PlayerOptions {
 }
 
 /** A new browser context and tab, with its page errors logged under `label`. */
-export async function openApp(browser: Browser, label: string, options: PlayerOptions = {}): Promise<App> {
+export async function newTab(browser: Browser, label: string, options: PlayerOptions = {}): Promise<Tab> {
   const context = await browser.newContext(options.context ?? { viewport: { width: 1300, height: 900 } });
   if (options.initScript) await context.addInitScript(options.initScript);
   const page = await context.newPage();
@@ -38,7 +38,7 @@ export async function openApp(browser: Browser, label: string, options: PlayerOp
   page.on("console", (m) => {
     if (m.type() === "error") console.log(`[${label} console.error]`, m.text().slice(0, 200));
   });
-  return new App(page, options.baseUrl ?? DEV_URL, { dev: options.dev ?? false });
+  return new Tab(page, options.baseUrl ?? DEV_URL, { dev: options.dev ?? false });
 }
 
 /** Collects pass/fail results, printing each as it comes. */
