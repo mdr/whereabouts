@@ -86,8 +86,7 @@ const areaScore = (d) => {
   return { ...s, ...regionFit(d, C) };
 };
 const fmt = (v) => String(Math.round(v)).padStart(5);
-const areaCols = (s) =>
-  `${fmt(s.score)}  (shape ${fmt(s.shape)}, 0.55×near ${fmt(0.55 * s.nearness)}${s.score === s.shape ? "" : " *"})`;
+const areaCols = (s) => `${fmt(s.score)}  (shape ${fmt(s.shape)}, nearness ${fmt(s.nearness)})`;
 
 console.log(
   `Point: ${P.label}, r = ${r} km.  Area: ${C.label}, r = ${rc} km, R = ${Math.round(R)} km.  Painting res ${res}.\n`,

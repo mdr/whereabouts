@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "preact/hooks";
 import { useSignal } from "@preact/signals";
 import {
   KERNELS,
-  NEARNESS_WEIGHT,
+  SHAPE_WEIGHT,
   QUESTIONS,
   buildDistribution,
   encodeCase,
@@ -65,11 +65,10 @@ function PartsLine({ parts }: { parts: Parts }) {
   return (
     <div class="parts">
       <span>
-        shape <b>{Math.round(parts.shape)}</b>
+        shape <b>{Math.round(parts.shape)}</b> × {SHAPE_WEIGHT}
       </span>
       <span>
-        nearness <b>{Math.round(parts.nearness)}</b> × {NEARNESS_WEIGHT} ={" "}
-        <b>{Math.round(parts.nearness * NEARNESS_WEIGHT)}</b>
+        nearness <b>{Math.round(parts.nearness)}</b> × {Math.round((1 - SHAPE_WEIGHT) * 10) / 10}
       </span>
     </div>
   );
@@ -243,7 +242,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
         Show live score and the real answer while painting
       </label>
       {isRegion(q) ? (
-        <p class="hint">Countries score by shape and nearness, not a kernel: see regions.ts.</p>
+        <p class="hint">Countries score by shape and nearness, with their own kernel: see regions.ts.</p>
       ) : (
         <label class="check">
           Scoring kernel{" "}

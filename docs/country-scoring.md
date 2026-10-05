@@ -10,8 +10,7 @@ calibration runs and playtests described, and the tests in
 
 Point rounds score about right; country rounds were too harsh on near misses
 and hedges. These goals came from comparing the two, case by case, on maps
-(October 2026). The rule described under "The rule" predates them and misses
-many of the targets; see "Where the current rule falls short".
+(October 2026), and the rule below was refitted to them (decision 8).
 
 1. **Where matters more than shape.** The question is where the country is.
    Covering all of it, with little paint outside, is what defines its shape;
@@ -56,30 +55,6 @@ neighbour played by the country's own shape moved two radii away.
 | France's shape moved 1400 / 2700 / 4000 km                                   | 400 / 270 / 185                          |
 | Brushed once / a second pass over the middle third / two more over the north | 964 / 945 / 920–945                      |
 
-### Where the current rule falls short
-
-Measured with the cases above (`scripts/compare-modes.mjs` compares the same
-paints as point and country answers):
-
-- **Nearness is a maximum, not a sum.** A paint scores its shape or 0.55 of
-  its nearness, whichever is higher, so near misses and partial coverage
-  never add up. Everything from "half the country" to "a neighbour" lands
-  between 500 and 550, and half on Germany (696) scores no better than half
-  5000 km away (698).
-- **Shape ignores distance.** Paint off the country is charged the same
-  wherever it is, and charged more when it is packed tighter.
-- **The density cap erases emphasis.** It caps paint at 1.5 times the
-  median density, so when the lighter candidate covers more area, the
-  heavier one is trimmed down to it: Germany 90% with France 10% scores
-  exactly as 50/50 (784; 987 without the cap), and France solid with any
-  wash over Western Europe scores 663 however faint the wash.
-- **Partial coverage falls off a cliff.** `1000 − 500 (1/c − 1)` reaches 0
-  at a third covered.
-- **Confident misses fall too fast.** The nearness kernel is 16 tolerances
-  wide (about 1360 km for France) and counts at 0.55, so a confident miss at
-  2700 km scores 71 against about 270 for the point rule at the tolerance it
-  would give France as a point.
-
 ## The rule
 
 The player's paint `p` and the country `q` are both distributions over H3
@@ -87,70 +62,73 @@ cells: the paint's mass in each cell, and the country spread evenly by area.
 The country's tolerance `r` is a fifth of its equivalent radius,
 `R = sqrt(area / π)`: 30 km for Ireland, 65 km for Germany, 330 km for
 Brazil. It sets the painting resolution (as for points) and the nearness
-kernel's width.
+kernel's widths.
 
 ```
-score = max(shape, 0.55 × nearness)
+score = 0.4 × shape + 0.6 × nearness
 ```
+
+A sum, like the point rule's mixture of kernels, so credit for covering the
+country and for being near it add up. Paint density is not capped: how
+heavily each candidate is painted is how a player hedges.
 
 **Shape** compares the paint with the country cell by cell, at the painting
-resolution (cell edge at most `r / 4`):
+resolution (cell edge at most `r / 4`), on the country's cells, and charges
+paint off the country by its amount `m` alone:
 
 ```
-shape = 1000 − 500 · Σ (p − q)² / a  ÷  Σ q² / a        (a = cell area)
+shape = 1000 − 500 · ( Σ (p − q)² / a  ÷  Σ q² / a  +  2 m² )        (a = cell area)
 ```
 
-This is the kernel score of the point rule in the limit of a vanishing kernel
-width, so on its own it is proper. It has simple closed forms, which is much
-of why it was chosen:
+Where the paint off the country is, and how it is spread, is left to
+nearness. Closed forms:
 
-| Paint                                                | Shape                          |
-| ---------------------------------------------------- | ------------------------------ |
-| The country, evenly                                  | 1000                           |
-| A share P on the country, the rest bloated round it  | 500 + 500 P                    |
-| A fraction c of the country, evenly                  | 1000 − 500 (1/c − 1)           |
-| Half on the country, half on a far place of its size | 750, like a 50/50 point answer |
-
-Before comparing, two adjustments:
-
-- **Density cap** (`DENSITY_CAP = 1.5`): each cell's density is capped at
-  1.5 times the median painted density (area-weighted). See decision 6.
-- **Off-country floor** (`OFF_COUNTRY_FLOOR = 0.5`): the off-country term,
-  `Σ p² / a` over cells outside the country, is at least `0.5 × (off mass)² / A`,
-  as if that paint were no thinner than half an even coat of the country. See
-  decision 7.
+| Paint                                              | Shape                |
+| -------------------------------------------------- | -------------------- |
+| The country, evenly                                | 1000                 |
+| A share P on the country evenly, the rest anywhere | 1000 − 1500 (1 − P)² |
+| A fraction c of the country, evenly                | 1000 − 500 (1/c − 1) |
+| Half on the country, half anywhere else            | 625                  |
 
 **Nearness** is the point rule's kernel score with the country as the answer
-(`scoreRegion`), under one Gaussian 16 tolerances wide (about 3.2 R),
-normalised by the country's self-similarity so a big country sits on the same
-scale as a small one. It sees the whole country as one blob, so it knows
-nothing of shape; it is there so that a paint that misses the country, whose
-shape score is near 0 wherever it is, still scores by how near it is. It runs
-one H3 resolution coarser than painting, which is far finer than its width.
+(`scoreRegion`), normalised by the country's self-similarity so a big
+country sits on the same scale as a small one, under Gaussians 5, 10, 20 and
+40 tolerances wide (one, two, four and eight radii), weighted 1 : 1 : 2 : 2.
+Each Gaussian is normalised and clamped at 0 on its own (decision 3). It
+gives partial coverage, spill and misses credit by how near they are, fading
+like the point rule. It runs one H3 resolution coarser than painting, which
+is finer than its narrowest Gaussian.
 
 A pass scores 250, as for points.
 
 ### What it scores
 
-From the final calibration (averages over Germany, Italy, Chile, Egypt,
+From `pnpm calibrate` (averages over Germany, Italy, Chile, Egypt,
 Indonesia, the UK, Brazil, Australia and South Africa, with synthetic paints
-built from the Natural Earth outlines):
+built from the Natural Earth outlines; the shape moved 2R stands in for a
+neighbour):
 
-| Paint                                             | Score    |
-| ------------------------------------------------- | -------- |
-| Exact shape                                       | ~999     |
-| 80% of the country covered                        | ~886     |
-| 65% covered                                       | ~757     |
-| Half covered                                      | ~550     |
-| Bloated so about half the paint is off            | 741–764  |
-| Half on the country, half on a far place          | ~760     |
-| Bright middle fading to half density at the edges | ~945–970 |
-| Big faint blob far away (8× the area)             | ~274     |
-| The whole world painted evenly                    | ~297     |
+| Paint                                                             | Score                |
+| ----------------------------------------------------------------- | -------------------- |
+| Exact shape                                                       | ~999                 |
+| About 28% / half of the paint spilt round it                      | 931 / 838            |
+| 75% / half / a tenth covered                                      | 929 / 803 / 590      |
+| Half on it, half on a neighbour / far away                        | 828 / 742            |
+| 80/20 / 20/80 with a neighbour                                    | 969 / 574            |
+| A neighbour only                                                  | 457                  |
+| Solid, with a 10% / 25% / 50% wash over 4× the area               | 961 / 880 / 774      |
+| 4× the area evenly / the whole world evenly                       | 656 / 342            |
+| Moved 3.4R / 6.5R / 9.6R / to the antipode                        | 352 / 243 / 177 / 57 |
+| Brushed once / a second pass over the middle / two over the north | 975 / 960 / 927      |
 
-Real wrong countries, against Germany: Poland 435, France 402, Iran 274,
-Japan 76. Neighbours beat far countries of similar size in all seven
-calibration questions (Germany, Brazil, Chile, Egypt, UK, Spain, Poland).
+Six of the 23 targets are missed, none by more than 15 points: a neighbour
+hedge, the faintest wash and plain brushing score a little high, and a tenth
+covered a little low.
+
+Real wrong countries, against Germany: Poland 444, France 431, Iran 135,
+Japan 82. For France: Belgium 505, Germany 455; half France and half Germany
+816, half France and half a copy of Germany 5000 km away 713. Neighbours beat
+far countries of similar size in all seven calibration questions.
 
 ## Decisions, in the order they were made
 
@@ -194,7 +172,7 @@ Playtest: 65% of Australia scored 879. A factor of
 `1 − precision (1 − sqrt(coverage))` brought partial paints down (65% to about 707) without touching misses or hedges. It was dropped in decision 5, which
 made it unnecessary.
 
-### 5. Shape cell by cell, nearness only as a floor
+### 5. Shape cell by cell, nearness only as a floor (later a sum)
 
 Playtest: South Africa with 98% covered but only 53% of the paint on it scored
 883; the target was about 750. The narrow Gaussian itself was the cause: it
@@ -213,7 +191,7 @@ The cost: slightly-off paints lose more than under a kernel, since nothing
 blurs the border (a border 0.1 R too big scores about 850 to 907 rather than
 about 980).
 
-### 6. Cap paint density
+### 6. Cap paint density (later dropped)
 
 Playtest: a near-perfect Mexico scored 892. Simulated brush strokes
 (`PaintLayer.stamp`, a stamp every quarter brush as in the paint controller)
@@ -233,7 +211,7 @@ Trade-off: repainting can no longer express much confidence between two
 candidate countries; when the lighter candidate is the larger one, the median
 follows it and the heavier one is capped to 1.5 times its level.
 
-### 7. A floor for paint off the country
+### 7. A floor for paint off the country (later replaced)
 
 Playtest: a big soft blob over North America scored 444 for Madagascar. With
 no paint on the country, shape is `500 (1 − P² A / A_paint)`: spreading wrong
@@ -246,22 +224,53 @@ hedges, confident misses) are unaffected. It also fixed the one fragile
 near-versus-far case: Iran for Germany fell from 401 to 274, below Poland
 (435). `α = 0.35` was the softer alternative (blob about 342).
 
+### 8. A sum of shape and nearness, fitted to new targets
+
+Comparing the same paints as point and country answers (`scripts/compare-modes.mjs`)
+and then case by case on maps gave the goals and targets above. The rule then
+fell short of them in five ways:
+
+- **Nearness was a maximum, not a sum.** A paint scored its shape or 0.55 of
+  its nearness, so near misses and partial coverage never added up.
+  Everything from half the country to a neighbour landed between 500 and 550,
+  and half on Germany (696) scored no better than half 5000 km away (698).
+- **Shape ignored distance**, and charged packed wrong paint more than spread.
+- **The density cap erased emphasis.** When the lighter candidate covered
+  more area, the heavier one was trimmed to 1.5 times it: Germany 90% with
+  France 10% scored exactly as 50/50 (784; 987 without the cap), and France
+  solid with any wash over Western Europe scored 663 however faint the wash.
+- **Partial coverage fell off a cliff**: half covered scored about 550.
+- **Confident misses fell too fast**: one Gaussian 16 tolerances wide at 0.55
+  gave 71 at 2700 km from France, against about 270 from the point rule at
+  the tolerance it would give France as a point.
+
+The fix follows the point rule: a weighted sum of proper parts. The scores of
+each part (shape, and kernel scores under single Gaussians from a quarter of
+a radius to sixteen) were computed once per calibration case, and weights
+searched to fit the targets. The best fits put 0.4 on shape and the rest on
+Gaussians one to eight radii wide, and charged off-country paint as if at
+least twice an even coat's density, which in practice is by amount alone;
+the rule takes that form outright. Without the cap, plain brushing still
+scores 975 and a heavy lean over a third of the country 927.
+
+Scoring 16 brushed paints, compacted as the client sends them, takes 57 to
+184 ms (Brazil, Canada, Germany, France, Indonesia), a little faster than
+before: the cap's sort cost more than three more Gaussians.
+
 ## Known limits
 
-- **Not strictly proper.** The maximum, the density cap and the off-country
-  floor each bend the rule. Each was chosen because its only incentive points
-  the way the question asks (cover the whole country, and nothing else).
-- **A floor near the country.** Any paint touching the right country gets at
-  least about 0.55 of its nearness, about 545, so a tiny blob inside the
-  country scores about as well as covering half of it. Lowering `λ` lowers it,
-  and neighbours with it.
-- **Big thin paints of big countries.** A much larger country painted thinly
-  as the answer (Brazil for Germany) still scores in the 400s, above a
-  neighbour.
+- **Not strictly proper.** Charging off-country paint by its amount alone,
+  and clamping each part at 0, bend the rule. Both push the way the question
+  asks: put paint on the country, and the rest near it.
+- **Partial coverage is still steep in shape.** Shape reaches 0 at a third of
+  the country covered, so a blob inside the country (about 590) beats a
+  neighbour (about 450 to 500) by less than the targets ask.
+- **Hedges with a neighbour are a little generous**, since every Gaussian is
+  at least a radius wide: half on Germany and half on Poland scores 813.
 - **Map projection.** The brush is a fixed size on screen, so painting evenly
   on screen puts more paint per km² towards the poles: an estimated 40% more at
   Germany's northern edge than its southern, and two to three times more across
-  Norway or Finland. Not measured in play; the density cap softens it.
+  Norway or Finland. Not measured in play.
 - **Different from points in one place.** The whole world painted evenly
   scores about 300 here and about 500 for a point question.
 
@@ -339,12 +348,12 @@ country's id until the reveal. Flag pictures come from the flag-icons package
 
 ## Cost
 
-Typical paints score in 3 to 16 ms, a 31,000-cell paint in about 80 ms.
-Scoring 16 players at the end of a round took 170 to 270 ms (Brazil, Germany,
-Indonesia, with compacted paint as the client sends it). Coarse paint cells
-off the country are not split to the painting resolution: every term sums
-`p² / a` over them, which an even split leaves unchanged, and a world painted
-at world zoom would otherwise mean millions of cells.
+Scoring 16 brushed paints at the end of a round, compacted as the client
+sends them, takes 57 to 184 ms (Brazil, Canada, Germany, France, Indonesia),
+4 to 12 ms a paint; the whole world painted evenly about 220 ms. Coarse paint
+cells off the country are not split to the painting resolution: only their
+total mass counts, and a world painted at world zoom would otherwise mean
+millions of cells.
 
 ## Recalibrating
 
@@ -359,11 +368,11 @@ at world zoom would otherwise mean millions of cells.
 - every country painted exactly.
 
 A few older cases have no target yet and are only reported. Anything outside
-its range is a miss, and the script exits non-zero; today's rule misses 13 of
-the 23 ranges. `-- --detail` adds each
+its range is a miss, and the script exits non-zero; the rule misses 6 of the
+23 ranges, each by 15 points or less. `-- --detail` adds each
 country's own scores; naming countries (`-- Germany Chile`) runs just those.
 
-The constants to tune are `DENSITY_CAP`, `OFF_COUNTRY_FLOOR`,
-`NEARNESS_WEIGHT` and `NEARNESS_KERNEL` in `regions.ts`, and
-`TOLERANCE_FRACTION` in the build script. `regions.test.ts` pins the main
+The constants to tune are `SHAPE_WEIGHT`, `OFF_COUNTRY_COST` and
+`NEARNESS_KERNEL` in `regions.ts`, and `TOLERANCE_FRACTION` in the build
+script. `regions.test.ts` pins the main
 behaviours; update it with the numbers when a change is meant.

@@ -4,29 +4,22 @@
  * Practice only for now. The outlines live in regions.json, which the client
  * loads on demand rather than bundling.
  *
- * The score is max(shape, NEARNESS_WEIGHT x nearness):
+ * The score is SHAPE_WEIGHT x shape + (1 - SHAPE_WEIGHT) x nearness, a sum
+ * like the point rule's mixture of kernels, so credit for covering the
+ * country and for being near it add up (docs/country-scoring.md):
  *
  * - shape compares the paint with the country cell by cell, at the painting
- *   resolution: 1000 - 500 sum (p - q)^2 / a / sum q^2 / a, with p and q the
- *   paint's and the country's mass in each cell of area a. It is the kernel
- *   score in the limit of a vanishing kernel width, and proper. Putting a
- *   share P of the paint evenly on the country (the rest just outside) scores
- *   500 + 500 P; covering a fraction c of it evenly scores
- *   1000 - 500 (1/c - 1); half on the country and half elsewhere scores 750,
- *   like a 50/50 point answer. Before comparing, paint density is capped
- *   (DENSITY_CAP), and paint off the country counts as no thinner than
- *   OFF_COUNTRY_FLOOR of the country's own even coat, so wrong paint spread
- *   thinly is not taken for vagueness.
- * - nearness is the kernel score (scoreRegion) under one wide Gaussian, 16
- *   tolerances across. A paint that misses the country has a shape score
- *   near 0 whether it is next door or on another continent; nearness is
- *   what puts a neighbour above a far country.
+ *   resolution: 1000 - 500 (sum (p - q)^2 / a / sum q^2 / a + OFF_COUNTRY_COST
+ *   x m^2), with p and q the paint's and the country's mass in each of the
+ *   country's cells of area a, and m the paint's mass off the country. Off
+ *   the country only the amount counts, not how it is spread: where it is
+ *   is nearness's business.
+ * - nearness is the kernel score (scoreRegion) under NEARNESS_KERNEL,
+ *   Gaussians one to eight country radii wide, so it sees partial coverage,
+ *   spill and misses by how near they are.
  *
- * Kernel widths of about the tolerance were tried for the shape and dropped:
- * they blur the country's edge, and a paint spilling well outside it fills
- * exactly the blur, so a paint with half its mass off the country still
- * scored 850 to 900. Taking the maximum of two proper scores is not proper,
- * but it only lifts misses, towards their nearness.
+ * Paint density is not capped: how heavily each candidate is painted is how
+ * a player hedges.
  */
 import { cellArea, cellToChildren, cellToParent, getResolution, polygonToCells, UNITS } from "h3-js";
 import type { LatLon } from "./geo.ts";
@@ -58,46 +51,39 @@ export interface RegionQuestion {
   flag?: string;
 }
 
-/**
- * Paint density is capped at this multiple of the median painted density
- * (by area) before a country is scored. Strokes overlap: a second pass down
- * the middle of Mexico doubled the density there, and against an even coat
- * that cost about 90 points of an otherwise near-perfect answer. A country
- * is uniform, so painting part of it again says nothing; the cap trims such
- * hot spots and leaves an even paint alone. Lighter paint, a hedge on a
- * second guess say, stays below the cap and keeps its weight.
- */
-export const DENSITY_CAP = 1.5;
+/** The share of the score that is shape; the rest is nearness. */
+export const SHAPE_WEIGHT = 0.4;
 
 /**
- * Paint off the country counts in the shape score as at least this
- * concentrated, relative to an even coat of the country itself, however
- * thinly it is spread. Without it, spreading wrong paint thinly earned the
- * credit the score gives vagueness: a big faint blob in North America scored
- * 444 for Madagascar, and an even paint of the whole world about 500. With
- * it they score about 274 and 297, just above a pass. Paint on the country,
- * and paint off it that is already concentrated (bloating the border, a
- * 50/50 hedge, a confident miss), are unaffected.
+ * What paint off the country costs in the shape score, per squared share of
+ * the paint: as if spread twice as densely as an even coat of the country,
+ * however thinly it really is. Spreading wrong paint thinly is still wrong.
  */
-export const OFF_COUNTRY_FLOOR = 0.5;
+export const OFF_COUNTRY_COST = 2;
 
-/** How much of its nearness score a paint that misses the country keeps. */
-export const NEARNESS_WEIGHT = 0.55;
-
-/** The nearness kernel: one Gaussian, 16 tolerances wide. */
-export const NEARNESS_KERNEL: Kernel = { id: "nearness", label: "Nearness (16r)", scales: [16], weights: [1] };
+/**
+ * Gaussians 5, 10, 20 and 40 tolerances wide: one to eight country radii,
+ * since a country's tolerance is a fifth of its radius. Fitted to the
+ * targets in calibrate-regions.mjs.
+ */
+export const NEARNESS_KERNEL: Kernel = {
+  id: "nearness",
+  label: "Nearness (5r, 10r, 20r, 40r)",
+  scales: [5, 10, 20, 40],
+  weights: [1 / 6, 1 / 6, 1 / 3, 1 / 3],
+};
 
 export interface RegionQuestionScore {
   score: number;
   /** Cell-by-cell comparison with the country. */
   shape: number;
-  /** Wide kernel score, before NEARNESS_WEIGHT. */
+  /** Kernel score under NEARNESS_KERNEL. */
   nearness: number;
 }
 
 /**
  * Nearness is scored one H3 resolution coarser than painting, with cells up
- * to half the tolerance across: far finer than its 16-tolerance kernel, and
+ * to half the tolerance across: far finer than its narrowest Gaussian, and
  * much faster.
  */
 export function regionScoringRes(toleranceKm: number): number {
@@ -125,11 +111,10 @@ export function regionAnswerFor(q: RegionQuestion, k: Kernel = NEARNESS_KERNEL):
 }
 
 export function scoreRegionQuestion(painted: Distribution, q: RegionQuestion): RegionQuestionScore {
-  const dist = capDensity(painted);
-  const shape = shapeScore(paintMass(dist, q), q);
-  const coarse = coarsenDistribution(dist, regionScoringRes(q.toleranceKm));
+  const shape = shapeScore(paintMass(painted, q), q);
+  const coarse = coarsenDistribution(painted, regionScoringRes(q.toleranceKm));
   const nearness = scoreRegion(coarse, regionAnswerFor(q)).score;
-  return { score: Math.max(shape, NEARNESS_WEIGHT * nearness), shape, nearness };
+  return { score: SHAPE_WEIGHT * shape + (1 - SHAPE_WEIGHT) * nearness, shape, nearness };
 }
 
 /**
@@ -141,8 +126,7 @@ export function scoreRegionQuestion(painted: Distribution, q: RegionQuestion): R
  * credit below; so an exact paint covers all of it, and so does a 50/50
  * hedge with another place.
  */
-export function regionFit(paint: Distribution, q: RegionQuestion): { coverage: number; precision: number } {
-  const dist = capDensity(paint);
+export function regionFit(dist: Distribution, q: RegionQuestion): { coverage: number; precision: number } {
   const painted = 1 - dist.floor;
   const region = regionAt(q);
   let onMass = 0;
@@ -158,35 +142,6 @@ export function regionFit(paint: Distribution, q: RegionQuestion): { coverage: n
   let covered = 0;
   for (const c of on) covered += Math.min(1, c.p / c.area / half) * c.area;
   return { coverage: covered / region.area, precision: onMass / painted };
-}
-
-/**
- * The paint with each cell's density capped at DENSITY_CAP times the median
- * density (area-weighted, so mixed resolutions count fairly), renormalised to
- * the same painted mass.
- */
-export function capDensity(dist: Distribution): Distribution {
-  const cells = dist.points.map((pt) => {
-    const area = pt.cell ? cellArea(pt.cell, UNITS.km2) : 1;
-    return { pt, area, density: pt.p / area };
-  });
-  if (cells.length === 0) return dist;
-  const byDensity = [...cells].sort((a, b) => a.density - b.density);
-  const half = byDensity.reduce((s, c) => s + c.area, 0) / 2;
-  let acc = 0;
-  let median = byDensity.at(-1)!.density;
-  for (const c of byDensity) {
-    acc += c.area;
-    if (acc >= half) {
-      median = c.density;
-      break;
-    }
-  }
-  const cap = DENSITY_CAP * median;
-  const capped = cells.map((c) => Math.min(c.density, cap) * c.area);
-  const total = capped.reduce((s, m) => s + m, 0);
-  const painted = 1 - dist.floor;
-  return { floor: dist.floor, points: cells.map((c, i) => ({ ...c.pt, p: (capped[i]! / total) * painted })) };
 }
 
 interface Region {
@@ -230,9 +185,8 @@ function overlaps(region: Region, h: string, r: number): boolean {
  * The paint's mass per cell at the painting resolution: finer cells merged
  * into their parents, coarser ones (a big brush) over the country shared
  * among their children by area. Coarser cells off the country stay whole:
- * every score here sums p^2 / a over off-country cells, which an even split
- * leaves unchanged, and splitting a world painted at world zoom would mean
- * millions of cells. The world floor is left out.
+ * only their total mass counts, and splitting a world painted at world zoom
+ * would mean millions of cells. The world floor is left out.
  */
 function paintMass(dist: Distribution, q: RegionQuestion): Map<string, number> {
   const res = resolutionForTolerance(q.toleranceKm);
@@ -255,9 +209,9 @@ function paintMass(dist: Distribution, q: RegionQuestion): Map<string, number> {
 }
 
 /**
- * 1000 - 500 sum (p - q)^2 / a / sum q^2 / a over cells, clamped at 0. With q
- * spread evenly by area, q = a / A in each of the country's cells (A its
- * area), so sum q^2 / a = 1 / A.
+ * 1000 - 500 (sum (p - q)^2 / a / sum q^2 / a + OFF_COUNTRY_COST m^2) over
+ * the country's cells, clamped at 0. With q spread evenly by area, q = a / A
+ * in each of them (A its area), so sum q^2 / a = 1 / A.
  */
 function shapeScore(mass: Map<string, number>, q: RegionQuestion): number {
   const region = regionAt(q);
@@ -266,13 +220,7 @@ function shapeScore(mass: Map<string, number>, q: RegionQuestion): number {
     const diff = (mass.get(h) ?? 0) - a / region.area;
     sum += (diff * diff) / a;
   }
-  let off = 0;
   let offMass = 0;
-  for (const [h, p] of mass) {
-    if (region.cells.has(h)) continue;
-    off += (p * p) / cellArea(h, UNITS.km2);
-    offMass += p;
-  }
-  sum += Math.max(off, (OFF_COUNTRY_FLOOR * offMass * offMass) / region.area);
-  return Math.max(0, 1000 - 500 * sum * region.area);
+  for (const [h, p] of mass) if (!region.cells.has(h)) offMass += p;
+  return Math.max(0, 1000 - 500 * (sum * region.area + OFF_COUNTRY_COST * offMass * offMass));
 }

@@ -4,15 +4,14 @@ import regionsJson from "../regions.json" with { type: "json" };
 import { resolutionForTolerance } from "./paint.ts";
 import { QUESTIONS } from "./questions.ts";
 import {
-  NEARNESS_WEIGHT,
-  capDensity,
+  SHAPE_WEIGHT,
   regionCells,
   regionFit,
   regionScoringRes,
   scoreRegionQuestion,
   type RegionQuestion,
 } from "./regions.ts";
-import { buildDistribution, coarsenDistribution, scoreDistribution } from "./scoring.ts";
+import { buildDistribution, coarsenDistribution, scoreDistribution, type Distribution } from "./scoring.ts";
 
 const REGIONS = regionsJson as RegionQuestion[];
 const byId = (id: string) => REGIONS.find((q) => q.id === id)!;
@@ -79,7 +78,7 @@ describe("region questions", () => {
     const exact = scoreRegionQuestion(paintRegion(germany), germany).score;
     const poland = scoreRegionQuestion(paintRegion(byId("poland-region")), germany).score;
     const japan = scoreRegionQuestion(paintRegion(byId("japan-region")), germany).score;
-    // A far bigger country, painted thinly: its paint counts as no thinner than half Germany's.
+    // A far bigger country, painted thinly: spreading wrong paint thinly is still wrong.
     const brazil = scoreRegionQuestion(paintRegion(byId("brazil-region")), germany).score;
     expect(exact).toBeGreaterThan(poland);
     expect(poland).toBeGreaterThan(250); // a near miss still beats a pass
@@ -87,14 +86,6 @@ describe("region questions", () => {
     expect(japan).toBeLessThan(250); // a confident wrong answer is worse than passing
     expect(brazil).toBeGreaterThan(japan);
     expect(brazil).toBeLessThan(500);
-  });
-
-  it("an even paint of the whole world scores about 500", () => {
-    for (const id of ["germany-region", "chile-region", "brazil-region"]) {
-      const { score } = scoreRegionQuestion({ points: [], floor: 1 }, byId(id));
-      expect(score).toBeGreaterThan(495);
-      expect(score).toBeLessThan(600);
-    }
   });
 
   it("reports coverage and precision", () => {
@@ -123,97 +114,132 @@ describe("shape and nearness", () => {
   const germany = byId("germany-region");
   const res = resolutionForTolerance(germany.toleranceKm);
   const cells = regionCells(germany, res);
+  const poland = regionCells(byId("poland-region"), res);
   const area = (cs: string[]) => cs.reduce((s, h) => s + cellArea(h, UNITS.km2), 0);
+  const score = (d: Distribution) => scoreRegionQuestion(d, germany).score;
 
-  it("bloating the paint until half of it is off the country scores about 750", () => {
-    let bloated = cells;
-    for (let rings = 1; area(bloated) < 2 * area(cells); rings++) {
-      bloated = [...new Set(cells.flatMap((h) => gridDisk(h, rings)))];
+  /** Each part's share of the paint, spread evenly over its cells. */
+  const shares = (parts: [string[], number][]) => {
+    const density = new Map<string, number>();
+    for (const [cs, share] of parts) {
+      const d = share / area(cs);
+      for (const h of cs) density.set(h, (density.get(h) ?? 0) + d);
     }
-    const s = scoreRegionQuestion(coat(bloated), germany);
-    expect(s.score).toBe(s.shape);
-    expect(s.score).toBeGreaterThan(700);
-    expect(s.score).toBeLessThan(790);
-    expect(regionFit(coat(bloated), germany).coverage).toBeGreaterThan(0.95);
-  });
-
-  it("covering half the country scores about 500, or what nearness gives it", () => {
-    const west = coat(cells.filter((h) => cellToLatLng(h)[1] < germany.answer.lon));
-    const s = scoreRegionQuestion(west, germany);
-    expect(s.shape).toBeGreaterThan(420);
-    expect(s.shape).toBeLessThan(580);
-    expect(s.score).toBeCloseTo(Math.max(s.shape, NEARNESS_WEIGHT * s.nearness), 9);
-    expect(s.score).toBeLessThan(620);
-  });
-
-  it("half on the country and half on a far one of its size scores about 750, like a 50/50 point answer", () => {
-    const japan = regionCells(byId("japan-region"), res);
-    const s = scoreRegionQuestion(coat([...cells, ...japan]), germany);
-    expect(s.score).toBeGreaterThan(720);
-    expect(s.score).toBeLessThan(790);
-  });
-
-  it("a paint that misses the country scores by its nearness", () => {
-    const s = scoreRegionQuestion(coat(regionCells(byId("poland-region"), res)), germany);
-    expect(s.shape).toBeLessThan(50);
-    expect(s.score).toBeCloseTo(NEARNESS_WEIGHT * s.nearness, 9);
-  });
-
-  /** Paint the given cells at the given intensity each. */
-  const layered = (layers: [string[], number][]) => {
-    const byCell = new Map<string, number>();
-    for (const [cs, intensity] of layers) for (const h of cs) byCell.set(h, (byCell.get(h) ?? 0) + intensity);
     return buildDistribution(
-      [...byCell].map(([h, intensity]) => {
+      [...density].map(([h, intensity]) => {
         const [lat, lon] = cellToLatLng(h);
         return { lat, lon, intensity, areaKm2: cellArea(h, UNITS.km2), h3: h };
       }),
       0.05,
     );
   };
+  /** Germany grown ring by ring until it covers `times` its area. */
+  const grown = (times: number) => {
+    const set = new Set(cells);
+    let frontier = cells;
+    while (area([...set]) < times * area(cells)) {
+      const next: string[] = [];
+      for (const h of frontier) {
+        for (const n of gridDisk(h, 1)) {
+          if (set.has(n)) continue;
+          next.push(n);
+          set.add(n);
+        }
+      }
+      frontier = next;
+    }
+    return [...set];
+  };
 
-  it("a second coat over part of the country costs little (the density cap)", () => {
+  it("adds the two up: SHAPE_WEIGHT of shape, the rest nearness", () => {
+    const s = scoreRegionQuestion(coat(poland), germany);
+    expect(s.score).toBeCloseTo(SHAPE_WEIGHT * s.shape + (1 - SHAPE_WEIGHT) * s.nearness, 9);
+  });
+
+  it("spilling half the paint just past the border scores about 850", () => {
+    const s = score(coat(grown(2)));
+    expect(s).toBeGreaterThan(800);
+    expect(s).toBeLessThan(890);
+  });
+
+  it("covering half the country scores about 750", () => {
+    const s = score(coat(cells.filter((h) => cellToLatLng(h)[1] < germany.answer.lon)));
+    expect(s).toBeGreaterThan(710);
+    expect(s).toBeLessThan(830);
+  });
+
+  it("half on the country and half on a far one of its size scores about 750, like a 50/50 point answer", () => {
+    const s = score(
+      shares([
+        [cells, 0.5],
+        [regionCells(byId("japan-region"), res), 0.5],
+      ]),
+    );
+    expect(s).toBeGreaterThan(700);
+    expect(s).toBeLessThan(790);
+  });
+
+  it("a neighbour scores about half, and a hedge with it more the more paint is on the country", () => {
+    const only = score(coat(poland));
+    expect(only).toBeGreaterThan(400);
+    expect(only).toBeLessThan(550);
+    const hedges = [0.2, 0.5, 0.8].map((w) =>
+      score(
+        shares([
+          [cells, w],
+          [poland, 1 - w],
+        ]),
+      ),
+    );
+    expect(hedges[0]).toBeGreaterThan(only);
+    expect(hedges[0]).toBeLessThan(620);
+    expect(hedges[1]).toBeGreaterThan(hedges[0]! + 150);
+    expect(hedges[2]).toBeGreaterThan(hedges[1]! + 100);
+    expect(hedges[2]).toBeGreaterThan(940);
+  });
+
+  it("a faint wash around the country costs more the heavier it is", () => {
+    const inside = new Set(cells);
+    const ring = grown(4).filter((h) => !inside.has(h));
+    const washed = (x: number) =>
+      score(
+        shares([
+          [cells, area(cells)],
+          [ring, x * area(ring)],
+        ]),
+      );
+    expect(washed(0.1)).toBeGreaterThan(920);
+    expect(washed(0.5)).toBeGreaterThan(740);
+    expect(washed(0.5)).toBeLessThan(washed(0.1) - 120);
+  });
+
+  it("wrong paint spread thinly does not pass for vagueness", () => {
+    // A faint blob eight times Germany's area, centred in North America.
+    const blob = gridDisk(latLngToCell(40, -100, res - 1), 22);
+    expect(area(blob)).toBeGreaterThan(6 * area(cells));
+    expect(score(coat(blob))).toBeLessThan(250);
+    // The whole world painted evenly: just above a pass.
+    const world = getRes0Cells().flatMap((c) => cellToChildren(c, 2));
+    const w = score(coat(world));
+    expect(w).toBeGreaterThan(250);
+    expect(w).toBeLessThan(350);
+  });
+
+  it("uneven brushing costs little", () => {
     // A band through the middle third, painted twice.
     const lats = cells.map((h) => cellToLatLng(h)[0]).sort((a, b) => a - b);
     const lo = lats[Math.floor(lats.length / 3)]!;
     const hi = lats[Math.floor((2 * lats.length) / 3)]!;
     const band = cells.filter((h) => cellToLatLng(h)[0] >= lo && cellToLatLng(h)[0] < hi);
-    const twice = layered([
-      [cells, 1],
-      [band, 1],
-    ]);
-    const { shape } = scoreRegionQuestion(twice, germany);
-    expect(shape).toBeGreaterThan(960);
-    // Uncapped, the band would be twice as dense as the rest; capped, 1.5 times.
-    const densities = capDensity(twice).points.map((pt) => pt.p / cellArea(pt.cell!, UNITS.km2));
-    expect(Math.max(...densities) / Math.min(...densities)).toBeCloseTo(1.5, 1);
-  });
-
-  it("a lighter hedge on a second country keeps its weight under the cap", () => {
-    const poland = regionCells(byId("poland-region"), res);
-    const hedge = layered([
-      [cells, 2],
-      [poland, 1],
-    ]);
-    const on = (2 * area(cells)) / (2 * area(cells) + area(poland));
-    expect(regionFit(hedge, germany).precision).toBeCloseTo(on, 2);
-  });
-
-  it("wrong paint spread thinly does not pass for vagueness (the off-country floor)", () => {
-    // A faint blob eight times Germany's area, centred in North America.
-    const blob = gridDisk(latLngToCell(40, -100, res - 1), 22);
-    expect(area(blob)).toBeGreaterThan(6 * area(cells));
-    const s = scoreRegionQuestion(coat(blob), germany);
-    expect(s.score).toBeGreaterThan(230);
-    expect(s.score).toBeLessThan(320);
-    // The whole world painted evenly: just above a pass.
-    const world = getRes0Cells().flatMap((c) => cellToChildren(c, 2));
-    const w = scoreRegionQuestion(coat(world), germany);
-    expect(w.score).toBeGreaterThan(250);
-    expect(w.score).toBeLessThan(350);
-  });
-
-  it("uneven brushing costs little: a bright middle fading to half density at the edges", () => {
+    expect(
+      score(
+        shares([
+          [cells, area(cells)],
+          [band, area(band)],
+        ]),
+      ),
+    ).toBeGreaterThan(950);
+    // A bright middle fading to half density at the edges.
     const R = Math.sqrt(area(cells) / Math.PI);
     const uneven = buildDistribution(
       cells.map((h) => {
@@ -224,7 +250,7 @@ describe("shape and nearness", () => {
       }),
       0.05,
     );
-    expect(scoreRegionQuestion(uneven, germany).score).toBeGreaterThan(900);
+    expect(score(uneven)).toBeGreaterThan(950);
   });
 });
 
