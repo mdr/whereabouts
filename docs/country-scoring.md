@@ -8,20 +8,77 @@ calibration runs and playtests described, and the tests in
 
 ## What a good rule has to do
 
-These came from the first design discussion and from playtesting:
+Point rounds score about right; country rounds were too harsh on near misses
+and hedges. These goals came from comparing the two, case by case, on maps
+(October 2026). The rule described under "The rule" predates them and misses
+many of the targets; see "Where the current rule falls short".
 
-1. Painting the country's shape scores about 1000.
-2. Hedging earns partial credit: honest uncertainty should pay, as it does for
-   point questions (where a 50/50 split between two far places scores 750).
-3. A confident wrong answer scores low, and lower the further away it is: a
-   neighbour beats another continent.
-4. Leaving part of the country out costs points.
-5. Spilling well past the border costs points, symmetrically with (4).
-6. Wrong paint spread thinly is still wrong, not "vague".
-7. Uneven brushing (overlapping strokes) costs little: the question is where
-   the country is, not how evenly you painted.
-8. Point questions are unaffected.
-9. Scoring 16 players at the end of a round stays well under a second.
+1. **Where matters more than shape.** The question is where the country is.
+   Covering all of it, with little paint outside, is what defines its shape;
+   the outline is not tested for its own sake.
+2. **Paint on the country always earns solid credit.** A confident blob
+   inside it beats a confident neighbour clearly.
+3. **Missing part of the country costs a little more than spilling past it.**
+4. **Paint outside costs less the nearer it is.** A margin hugging the
+   border costs less than a neighbour, which costs less than another
+   continent.
+5. **Emphasis counts, and hedging pays.** How heavily each candidate is
+   painted sets how much it counts, and the score bows: a modest hedge on the
+   right answer loses little, so painting what you believe is the best
+   strategy, as in point rounds.
+6. **Only the amount of wrong paint and its distance count**, not its shape
+   or how tightly it is packed. Wrong paint spread thinly is still wrong.
+7. **Confident misses tail off like point rounds**: about half credit for a
+   neighbour, fading to the point rule's floor (about 75) on the far side of
+   the world. Like point rounds, a pass (250) beats a wild guess.
+8. **Brushing noise is nearly free**, but a clear lean within the country
+   (a part painted two or three times over) costs a little.
+9. Point questions are unaffected.
+10. Scoring 16 players at the end of a round stays well under a second.
+
+### Targets
+
+Indicative scores for "Paint the whole of France", from that discussion.
+`calibrate-regions.mjs` checks the same cases over nine countries, with the
+neighbour played by the country's own shape moved two radii away.
+
+| Paint                                                                        | Target                                   |
+| ---------------------------------------------------------------------------- | ---------------------------------------- |
+| France, exactly                                                              | 1000                                     |
+| France, 28% / 52% of the paint outside, hugging it                           | 925 / 850                                |
+| All inside France, covering 75% / 50% / 10% of it                            | 870 / 750 / 650                          |
+| Half on France, half on Germany / 5000 km away                               | 775 / 750                                |
+| France and Germany, 80/20 / 20/80                                            | 950 / 600                                |
+| Germany, Belgium or another neighbour only                                   | about 500                                |
+| Half on France, the Germany half squeezed into its east                      | a little below spreading it over Germany |
+| France solid, a 10% / 25% / 50% wash over Western Europe                     | 920 / 860 / 800                          |
+| Western Europe evenly / the whole world evenly                               | 700 / 300                                |
+| France's shape moved 1400 / 2700 / 4000 km                                   | 400 / 270 / 185                          |
+| Brushed once / a second pass over the middle third / two more over the north | 964 / 945 / 920–945                      |
+
+### Where the current rule falls short
+
+Measured with the cases above (`scripts/compare-modes.mjs` compares the same
+paints as point and country answers):
+
+- **Nearness is a maximum, not a sum.** A paint scores its shape or 0.55 of
+  its nearness, whichever is higher, so near misses and partial coverage
+  never add up. Everything from "half the country" to "a neighbour" lands
+  between 500 and 550, and half on Germany (696) scores no better than half
+  5000 km away (698).
+- **Shape ignores distance.** Paint off the country is charged the same
+  wherever it is, and charged more when it is packed tighter.
+- **The density cap erases emphasis.** It caps paint at 1.5 times the
+  median density, so when the lighter candidate covers more area, the
+  heavier one is trimmed down to it: Germany 90% with France 10% scores
+  exactly as 50/50 (784; 987 without the cap), and France solid with any
+  wash over Western Europe scores 663 however faint the wash.
+- **Partial coverage falls off a cliff.** `1000 − 500 (1/c − 1)` reaches 0
+  at a third covered.
+- **Confident misses fall too fast.** The nearness kernel is 16 tolerances
+  wide (about 1360 km for France) and counts at 0.55, so a confident miss at
+  2700 km scores 71 against about 270 for the point rule at the tolerance it
+  would give France as a point.
 
 ## The rule
 
@@ -292,19 +349,18 @@ at world zoom would otherwise mean millions of cells.
 ## Recalibrating
 
 `packages/shared/scripts/calibrate-regions.mjs` (`pnpm calibrate` from
-`packages/shared`, about 5 seconds) scores, with the game's own rule:
+`packages/shared`, about 10 seconds) scores, with the game's own rule:
 
 - synthetic paints built from each country's outline (partial, bloated,
-  shifted, hedged, uneven, brushed with overlapping strokes, a big faint blob
-  far away, the whole world), averaged over nine countries and reported
-  against the target ranges they were tuned to;
+  hedged, washed, shifted, brushed with overlapping strokes, the whole
+  world), averaged over nine countries and reported against the ranges in
+  "Targets" above, plus the orderings those imply;
 - real wrong countries: neighbours against far countries of similar size;
 - every country painted exactly.
 
-Cases that fall outside their range by a trade-off made on purpose are marked
-as accepted, with the reason: slightly-off paints (decision 5) and misses near
-the country, lifted by the nearness safety net. Anything else outside its
-range is a miss, and the script exits non-zero. `-- --detail` adds each
+A few older cases have no target yet and are only reported. Anything outside
+its range is a miss, and the script exits non-zero; today's rule misses 13 of
+the 23 ranges. `-- --detail` adds each
 country's own scores; naming countries (`-- Germany Chile`) runs just those.
 
 The constants to tune are `DENSITY_CAP`, `OFF_COUNTRY_FLOOR`,

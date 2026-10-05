@@ -13,7 +13,7 @@
 // world floor. Distances are in R, the country's equivalent radius.
 import { readFileSync } from "node:fs";
 import * as h3 from "h3-js";
-import { buildDistribution } from "../src/scoring.ts";
+import { PASS_SCORE, buildDistribution } from "../src/scoring.ts";
 import { PaintLayer, resolutionForTolerance } from "../src/paint.ts";
 import { regionCells, regionFit, scoreRegionQuestion } from "../src/regions.ts";
 
@@ -34,32 +34,58 @@ const COUNTRIES = chosen.length
 // Countries where a paint shrunk or centred on the middle makes sense (not thin or island chains).
 const COMPACT = ["Germany", "Egypt", "Brazil", "South Africa", "Australia"];
 
-// [case, low, high, only for these countries?, accepted?]: the judgement
-// targets from playtesting. A case marked accepted falls outside its range
-// under the current rule by a trade-off made on purpose (see the doc); it is
-// shown but not counted as a miss.
-const SLIGHTLY_OFF = "no kernel blurs the border now (decision 5)";
-const NEAR_FLOOR = "the nearness safety net lifts misses near the country (decision 5)";
+// [case, low, high, only for these countries?]: the targets in the doc's
+// "What a good rule has to do", as ranges round the indicative score. The
+// country's shape moved 2R plays a neighbour; misses are in R so that they
+// match the point rule at the tolerance a country gets as a point (R / 2).
+// Cases with no range have no target yet and are only reported.
 const TARGETS = [
   ["exact shape", 985, 1000],
-  ["border 0.1R outward", 870, 960, null, SLIGHTLY_OFF],
-  ["border 0.25R outward", 750, 880, null, SLIGHTLY_OFF],
-  ["bloated until about half is off", 700, 790],
-  ["west 65% only", 620, 760],
-  ["west half only", 450, 620],
-  ["missing the southern third", 620, 780],
-  ["shape shifted 0.25R east", 780, 920, null, SLIGHTLY_OFF],
-  ["shape shifted 0.5R east", 500, 720],
-  ["shape shifted 1R east", 200, 450, null, NEAR_FLOOR],
-  ["shape shifted 2R east", 30, 300, null, NEAR_FLOOR],
-  ["shape shifted 5000 km east", 0, 120, null, `${NEAR_FLOOR}; 5000 km is about 3R for Australia`],
-  ["circle of the same area, centred", 780, 950, COMPACT],
-  ["vague: border 1R outward", 480, 700],
-  ["bright middle, half density at the edges", 850, 980],
-  ["brushed, with a second pass through the middle", 850, 980],
-  ["50/50: the country and its shape 2R away", 650, 800],
-  ["big faint blob far away (8x the area)", 230, 320],
+  ["bloated until about 28% is off", 885, 965],
+  ["bloated until about half is off", 810, 890],
+  ["west 75% only", 830, 910],
+  ["west half only", 710, 790],
+  ["circle a tenth of the area, centred", 600, 700, COMPACT],
+  ["50/50: the country and its shape 2R away", 735, 815],
+  ["50/50: the country and its shape 5000 km away", 710, 790],
+  ["80/20: the country and its shape 2R away", 910, 980],
+  ["20/80: the country and its shape 2R away", 560, 640],
+  ["its shape 2R away only", 450, 550],
+  ["solid, with a 10% wash over 4x the area", 880, 960],
+  ["solid, with a 25% wash over 4x the area", 820, 900],
+  ["solid, with a 50% wash over 4x the area", 760, 840],
+  ["4x the area evenly, centred", 650, 750],
   ["the whole world painted evenly", 250, 350],
+  ["shape shifted 3.4R east", 350, 450],
+  ["shape shifted 6.5R east", 220, 320],
+  ["shape shifted 9.6R east", 140, 230],
+  ["shape at the antipode", 40, 120],
+  // Today's rule brushes about right; these sit round its scores.
+  ["brushed once", 910, 970],
+  ["brushed, with a second pass through the middle", 895, 955],
+  ["brushed, with two more passes over the north", 875, 935],
+  ["missing the southern third"],
+  ["shape shifted 0.25R east"],
+  ["shape shifted 0.5R east"],
+  ["shape shifted 1R east"],
+  ["circle of the same area, centred", null, null, COMPACT],
+  ["bright middle, half density at the edges"],
+  ["big faint blob far away (8x the area)"],
+];
+
+// [what should hold, lower case, higher case]: orderings the targets imply.
+const ORDERS = [
+  [
+    "squeezing the wrong half costs a little",
+    "50/50: the country and half its shape 2R away, squeezed",
+    "50/50: the country and its shape 2R away",
+  ],
+  [
+    "nearer wrong paint costs less",
+    "50/50: the country and its shape 5000 km away",
+    "50/50: the country and its shape 2R away",
+  ],
+  ["a pass beats a wild guess", "shape at the antipode", "pass"],
 ];
 
 // Real wrong answers: [question, neighbours, far away and of broadly similar size].
@@ -111,7 +137,6 @@ function growRings(cells, rings) {
   }
   return [...set];
 }
-const grow = (cells, km, res) => growRings(cells, Math.max(1, Math.round(km / spacing(res))));
 
 /** Grow outward until the country is `share` of the painted area. */
 function bloatTo(cells, share) {
@@ -156,9 +181,10 @@ const disc = (centre, km, res) =>
 /**
  * Brush strokes as the paint controller lays them (a stamp every quarter
  * brush along each stroke): rows across the country a brush apart, keeping
- * the brush centre inside, then a second pass over the middle third.
+ * the brush centre inside, then extra passes over a band: none, once over the
+ * middle third, or twice over the northern third.
  */
-function brushed(q, res, R) {
+function brushed(q, res, R, extra) {
   const inside = new Set(regionCells(q, res));
   const layer = new PaintLayer(res);
   const brush = R / 6;
@@ -177,7 +203,11 @@ function brushed(q, res, R) {
   const step = brush / 111;
   for (let lat = lat0; lat <= lat1; lat += step) row(lat);
   const third = (lat1 - lat0) / 3;
-  for (let lat = lat0 + third; lat <= lat1 - third; lat += step) row(lat);
+  const band = (from, to) => {
+    for (let lat = from; lat <= to; lat += step) row(lat);
+  };
+  if (extra === "middle") band(lat0 + third, lat1 - third);
+  if (extra === "north") for (let i = 0; i < 2; i++) band(lat1 - third, lat1);
   return buildDistribution(layer.toCells(), 0.05);
 }
 
@@ -187,21 +217,64 @@ function cases(q) {
   const R = Math.sqrt(area(cells) / Math.PI);
   const moved = (km) => regionCells(shifted(q, km), res);
   const blobRes = Math.max(0, res - 1);
+  const neighbour = moved(2 * R);
+  const hedge = (w, other) =>
+    coat([
+      { cells, weight: w },
+      { cells: other, weight: 1 - w },
+    ]);
+  // Solid on the country, `x` as dense over the rest of 4x its area.
+  const fourfold = bloatTo(cells, 0.25);
+  const inside = new Set(cells);
+  const ring = fourfold.filter((h) => !inside.has(h));
+  const washed = (x) =>
+    coat([
+      { cells, weight: area(cells) },
+      { cells: ring, weight: x * area(ring) },
+    ]);
+  const antipode = [
+    ...new Set(
+      cells.map((h) => {
+        const [lat, lon] = h3.cellToLatLng(h);
+        return h3.latLngToCell(-lat, lon > 0 ? lon - 180 : lon + 180, res);
+      }),
+    ),
+  ];
   return [
     ["exact shape", even(cells)],
-    ["border 0.1R outward", even(grow(cells, 0.1 * R, res))],
-    ["border 0.25R outward", even(grow(cells, 0.25 * R, res))],
-    ["bloated until about half is off", even(bloatTo(cells, 0.53))],
-    ["west 65% only", even(portion(cells, 0.65, (_, lon) => -lon))],
+    ["bloated until about 28% is off", even(bloatTo(cells, 0.75))],
+    ["bloated until about half is off", even(bloatTo(cells, 0.5))],
+    ["west 75% only", even(portion(cells, 0.75, (_, lon) => -lon))],
     ["west half only", even(portion(cells, 0.5, (_, lon) => -lon))],
+    ["circle a tenth of the area, centred", even(disc(q.answer, R * Math.sqrt(0.1), res))],
+    ["50/50: the country and its shape 2R away", hedge(0.5, neighbour)],
+    [
+      "50/50: the country and half its shape 2R away, squeezed",
+      hedge(
+        0.5,
+        portion(neighbour, 0.5, (_, lon) => lon),
+      ),
+    ],
+    ["50/50: the country and its shape 5000 km away", hedge(0.5, moved(5000))],
+    ["80/20: the country and its shape 2R away", hedge(0.8, neighbour)],
+    ["20/80: the country and its shape 2R away", hedge(0.2, neighbour)],
+    ["its shape 2R away only", even(neighbour)],
+    ["solid, with a 10% wash over 4x the area", washed(0.1)],
+    ["solid, with a 25% wash over 4x the area", washed(0.25)],
+    ["solid, with a 50% wash over 4x the area", washed(0.5)],
+    ["4x the area evenly, centred", even(fourfold)],
+    ["shape shifted 3.4R east", even(moved(3.4 * R))],
+    ["shape shifted 6.5R east", even(moved(6.5 * R))],
+    ["shape shifted 9.6R east", even(moved(9.6 * R))],
+    ["shape at the antipode", even(antipode)],
+    ["brushed once", brushed(q, res, R)],
+    ["brushed, with a second pass through the middle", brushed(q, res, R, "middle")],
+    ["brushed, with two more passes over the north", brushed(q, res, R, "north")],
     ["missing the southern third", even(portion(cells, 2 / 3, (lat) => lat))],
     ["shape shifted 0.25R east", even(moved(0.25 * R))],
     ["shape shifted 0.5R east", even(moved(0.5 * R))],
     ["shape shifted 1R east", even(moved(R))],
-    ["shape shifted 2R east", even(moved(2 * R))],
-    ["shape shifted 5000 km east", even(moved(5000))],
     ["circle of the same area, centred", even(disc(q.answer, R, res))],
-    ["vague: border 1R outward", even(grow(cells, R, res))],
     [
       "bright middle, half density at the edges",
       coat([{ cells, weight: 1 }], (h) => {
@@ -209,14 +282,6 @@ function cases(q) {
         const km = Math.hypot(lat - q.answer.lat, (lon - q.answer.lon) * Math.cos((lat * Math.PI) / 180)) * 111;
         return Math.max(0.5, 1.5 - km / R);
       }),
-    ],
-    ["brushed, with a second pass through the middle", brushed(q, res, R)],
-    [
-      "50/50: the country and its shape 2R away",
-      coat([
-        { cells, weight: 0.5 },
-        { cells: moved(2 * R), weight: 0.5 },
-      ]),
     ],
     [
       "big faint blob far away (8x the area)",
@@ -246,17 +311,29 @@ for (const label of COUNTRIES) {
 const pad = (s, n) => String(s).padEnd(n);
 const num = (v) => String(Math.round(v)).padStart(5);
 let misses = 0;
-let accepted = 0;
+const means = new Map([["pass", PASS_SCORE.score]]);
 console.log(`Synthetic paints: mean over ${COUNTRIES.length} countries, against the target range\n`);
-for (const [name, lo, hi, only, why] of TARGETS) {
+for (const [name, lo, hi, only] of TARGETS) {
   const scores = [...table.get(name)].filter(([c]) => !only || only.includes(c)).map(([, s]) => s);
   if (scores.length === 0) continue;
   const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
-  const ok = mean >= lo && mean <= hi;
-  const mark = ok ? " " : why ? "~" : "✗";
-  if (!ok && why) accepted++;
-  else if (!ok) misses++;
-  console.log(`${mark} ${pad(name, 50)}${num(mean)}   [${lo}–${hi}]${!ok && why ? `  accepted: ${why}` : ""}`);
+  means.set(name, mean);
+  const targeted = lo !== undefined && lo !== null;
+  const ok = !targeted || (mean >= lo && mean <= hi);
+  if (!ok) misses++;
+  console.log(`${ok ? " " : "✗"} ${pad(name, 50)}${num(mean)}   ${targeted ? `[${lo}–${hi}]` : "no target yet"}`);
+}
+for (const [name] of ORDERS.flatMap(([, a, b]) => [[a], [b]])) {
+  if (!means.has(name)) {
+    const scores = [...table.get(name).values()];
+    means.set(name, scores.reduce((a, b) => a + b, 0) / scores.length);
+  }
+}
+console.log("\nOrderings\n");
+for (const [what, lower, higher] of ORDERS) {
+  const ok = means.get(lower) < means.get(higher);
+  if (!ok) misses++;
+  console.log(`${ok ? " " : "✗"} ${pad(what, 50)}${num(means.get(lower))} < ${num(means.get(higher)).trim()}`);
 }
 
 if (DETAIL) {
@@ -302,8 +379,5 @@ console.log(
 console.log(
   `Slowest single score: ${slowest.ms.toFixed(0)} ms (${slowest.what}); total ${((performance.now() - started) / 1000).toFixed(1)} s`,
 );
-console.log(
-  `\n${misses === 0 ? "Nothing unexpected outside target." : `${misses} outside target (marked ✗).`}` +
-    (accepted ? ` ${accepted} accepted trade-off${accepted === 1 ? "" : "s"} (marked ~).` : ""),
-);
+console.log(`\n${misses === 0 ? "Everything within target." : `${misses} outside target (marked ✗).`}`);
 process.exitCode = misses === 0 ? 0 : 1;
