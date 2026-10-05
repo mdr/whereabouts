@@ -41,6 +41,7 @@ import { flagQuestions, loadRegions, regions } from "../regions";
 import { useBorders } from "../borders";
 import { useFillTool } from "../fill";
 import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal";
+import { PointWhy, RegionWhy } from "../ui/ScoreWhy";
 import { soloTestIds } from "./SoloTestIds";
 
 type PracticeQuestion = Question | RegionQuestion;
@@ -219,7 +220,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const shownResult = useMemo(() => {
     if (!revealed) return null;
     const { score, parts } = scoreQuestion(revealed.dist, q, kernel);
-    return { score, parts, fit: isRegion(q) ? regionFit(revealed.dist, q) : null };
+    return { score, parts };
   }, [revealed, kernel.id]);
 
   const header = (
@@ -321,11 +322,20 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
                 {Math.round(shownResult.score)}
               </div>
               <div class="label">this round</div>
-              {shownResult.fit && (
-                <div class="fit">
-                  You covered {pct(shownResult.fit.coverage)} of {q.label}; {pct(shownResult.fit.precision)} of your
-                  paint was on it
-                </div>
+              {isRegion(q) ? (
+                <RegionWhy dist={revealed.dist} q={q} />
+              ) : (
+                "A" in shownResult.parts && (
+                  <PointWhy
+                    dist={revealed.dist}
+                    answer={q.answer}
+                    toleranceKm={q.toleranceKm}
+                    score={shownResult.score}
+                    A={shownResult.parts.A}
+                    B={shownResult.parts.B}
+                    kernel={kernel}
+                  />
+                )
               )}
               {where && (
                 <div class="fit">

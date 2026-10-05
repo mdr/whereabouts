@@ -21,8 +21,17 @@
  * Paint density is not capped: how heavily each candidate is painted is how
  * a player hedges.
  */
-import { cellArea, cellToChildren, cellToParent, getResolution, polygonToCells, UNITS } from "h3-js";
-import type { LatLon } from "./geo.ts";
+import {
+  cellArea,
+  cellToChildren,
+  cellToLatLng,
+  cellToParent,
+  getResolution,
+  latLngToCell,
+  polygonToCells,
+  UNITS,
+} from "h3-js";
+import { bearing, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts";
 import { resolutionForTolerance } from "./paint.ts";
 import {
   coarsenDistribution,
@@ -144,7 +153,82 @@ export function regionFit(dist: Distribution, q: RegionQuestion): { coverage: nu
   return { coverage: covered / region.area, precision: onMass / painted };
 }
 
+export interface RegionMisfit {
+  coverage: number;
+  precision: number;
+  /**
+   * Where the paint off the country mostly is: its bearing from the country's
+   * centre and its distance from the nearest part of the country. Null when
+   * there is none, or when it surrounds the country rather than leaning one way.
+   */
+  off: { bearing: number; km: number } | null;
+  /** Which way from the centre the bare or thin part of the country lies; null when it does not lean one way. */
+  bare: { bearing: number } | null;
+}
+
+/**
+ * Below this, weights surround the centre rather than lean one way: the
+ * distance from the centre to their mass centre over their mean distance
+ * from it.
+ */
+const LEAN = 0.4;
+
+/** Facts for explaining a score in words: regionFit, and which way the misses lie. */
+export function regionMisfit(dist: Distribution, q: RegionQuestion): RegionMisfit {
+  const { coverage, precision } = regionFit(dist, q);
+  const region = regionAt(q);
+  const mass = paintMass(dist, q);
+
+  const offCells: [string, number][] = [];
+  for (const [h, p] of mass) if (!region.cells.has(h)) offCells.push([h, p]);
+  let off: RegionMisfit["off"] = null;
+  const offCentre = leaning(q.answer, offCells);
+  if (offCentre && !region.cells.has(latLngToCell(offCentre.lat, offCentre.lon, region.res))) {
+    let km = Infinity;
+    for (const h of region.cells.keys()) km = Math.min(km, greatCircleDistance(offCentre, latLng(h)));
+    off = { bearing: bearing(q.answer, offCentre), km };
+  }
+
+  // Shortfall below half the density the paint on the country would have spread evenly, as regionFit counts it.
+  let onMass = 0;
+  for (const h of region.cells.keys()) onMass += mass.get(h) ?? 0;
+  const half = onMass / region.area / 2;
+  const short: [string, number][] = [];
+  if (half > 0) {
+    for (const [h, a] of region.cells) {
+      const s = Math.max(0, 1 - (mass.get(h) ?? 0) / a / half) * a;
+      if (s > 0) short.push([h, s]);
+    }
+  }
+  const bareCentre = leaning(q.answer, short);
+  return { coverage, precision, off, bare: bareCentre && { bearing: bearing(q.answer, bareCentre) } };
+}
+
+function latLng(h: string): LatLon {
+  const [lat, lon] = cellToLatLng(h);
+  return { lat, lon };
+}
+
+/** The weighted cells' mass centre, if they lean away from `centre` rather than surround it. */
+function leaning(centre: LatLon, cells: [string, number][]): LatLon | null {
+  let total = 0;
+  let meanKm = 0;
+  const sum = [0, 0, 0];
+  for (const [h, w] of cells) {
+    const p = latLng(h);
+    const v = toXyz(p);
+    for (let i = 0; i < 3; i++) sum[i]! += w * v[i]!;
+    meanKm += w * greatCircleDistance(centre, p);
+    total += w;
+  }
+  if (total <= 0) return null;
+  const m = fromXyz([sum[0]!, sum[1]!, sum[2]!]);
+  return greatCircleDistance(centre, m) >= LEAN * (meanKm / total) ? m : null;
+}
+
 interface Region {
+  /** The painting resolution. */
+  res: number;
   /** The country's cells at the painting resolution, with their areas. */
   cells: Map<string, number>;
   area: number;
@@ -158,14 +242,15 @@ const regions = new Map<string, Region>();
 function regionAt(q: RegionQuestion): Region {
   let region = regions.get(q.id);
   if (!region) {
+    const res = resolutionForTolerance(q.toleranceKm);
     const cells = new Map<string, number>();
     let area = 0;
-    for (const h of regionCells(q, resolutionForTolerance(q.toleranceKm))) {
+    for (const h of regionCells(q, res)) {
       const a = cellArea(h, UNITS.km2);
       cells.set(h, a);
       area += a;
     }
-    region = { cells, area, ancestors: new Map() };
+    region = { res, cells, area, ancestors: new Map() };
     regions.set(q.id, region);
   }
   return region;

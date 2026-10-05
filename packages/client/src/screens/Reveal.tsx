@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import {
+  buildDistribution,
+  kernelById,
   PaintLayer,
   playerColour,
   type GameView,
@@ -23,6 +25,7 @@ import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
 import { useRegion } from "../regions";
 import { useBorders } from "../borders";
 import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal";
+import { PointWhy, RegionWhy } from "../ui/ScoreWhy";
 import { revealTestIds } from "./RevealTestIds";
 
 /** Selection meaning "show nobody's paint", alongside null (everyone) and a player id. */
@@ -91,6 +94,13 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   }, [selected, reveal.index, region]);
 
   const mine = reveal.results.find((r) => r.playerId === view.you.id);
+  const myDist = useMemo(
+    () =>
+      mine?.paint
+        ? buildDistribution(PaintLayer.fromRecord(mine.res, mine.paint.cells).toCells(), mine.paint.floor)
+        : null,
+    [reveal.index, mine?.playerId],
+  );
   const last = reveal.index + 1 >= reveal.total;
   const ready = new Set(reveal.ready);
   const present = view.players.filter((p) => p.connected && !p.watching);
@@ -125,12 +135,21 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
             <div class="label">
               {mine ? (mine.paint ? "your score this round" : "you passed this round") : "you sat this one out"}
             </div>
-            {mine?.region && (
-              <div class="fit">
-                You covered {pct(mine.region.coverage)} of {reveal.label}; {pct(mine.region.precision)} of your paint
-                was on it
-              </div>
-            )}
+            {myDist &&
+              mine &&
+              (isCountry ? (
+                region && <RegionWhy dist={myDist} q={region} />
+              ) : (
+                <PointWhy
+                  dist={myDist}
+                  answer={reveal.answer}
+                  toleranceKm={reveal.question.toleranceKm}
+                  score={mine.score}
+                  A={mine.A}
+                  B={mine.B}
+                  kernel={kernelById(view.config.kernelId)}
+                />
+              ))}
             {mine && where.get(mine.playerId) && (
               <div class="fit">
                 Your paint: <PaintedIn where={where.get(mine.playerId)!} answer={answerFlag} whose="your" />
@@ -238,8 +257,6 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
     </>
   );
 }
-
-const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 function RevealRow({
   p,
