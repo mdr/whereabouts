@@ -78,22 +78,25 @@ function latLngOf(h: string): LatLon {
   return { lat, lon };
 }
 
-/** Costs below this are not worth a mention. */
-const NEGLIGIBLE = 25;
-
-/** One or two sentences: what the distance cost, and what spreading the paint cost. */
+/** One short sentence: how near the paint was, and how spread out. */
 export function describePoint(e: PointExplanation, score: number, toleranceKm: number): string {
-  const best = Math.round(Math.max(e.best, score));
-  const distance = best - Math.round(score);
+  const best = Math.max(e.best, score);
+  const distance = best - score;
   const spread = 1000 - best;
-  if (distance < NEGLIGIBLE && spread < NEGLIGIBLE) return "Tight, and right on the answer.";
+  if (distance >= 25 && e.nearShare >= 0.15 && e.km > NEAR * toleranceKm) {
+    return "Hedged: some of your paint was near the answer, but most was elsewhere.";
+  }
   const where =
-    distance < NEGLIGIBLE
-      ? "Your paint was centred on the answer."
-      : e.nearShare >= 0.15 && e.km > NEAR * toleranceKm
-        ? `${pct(e.nearShare)} of your paint was near the answer, but most was ${roughKm(e.km)} away: −${distance}.`
-        : `The answer was ${roughKm(e.km)} from the heart of your paint: −${distance}.`;
-  return spread < NEGLIGIBLE ? where : `${where} Spreading it cost ${spread}.`;
+    distance < 25
+      ? "right on the answer"
+      : distance < 150
+        ? "just off the answer"
+        : distance < 400
+          ? "well off the answer"
+          : "far from the answer";
+  if (spread < 60) return distance < 25 ? "Tight, and right on the answer." : `Tight, but ${where}.`;
+  const how = spread < 200 ? "a little spread out" : "spread wide";
+  return distance < 25 ? `Around the answer, but ${how}.` : `${cap(where)}, and ${how}.`;
 }
 
 /** Shares of the paint or the country below this are not worth a mention. */
@@ -104,25 +107,24 @@ export function describeRegion(m: RegionMisfit, label: string, toleranceKm: numb
   // A country's tolerance is a fifth of its equivalent radius.
   const radiusKm = 5 * toleranceKm;
   if (m.precision < MENTION) {
-    if (!m.off) return `Hardly any of your paint was on ${label}.`;
-    return m.off.km < radiusKm
-      ? `Your paint was just ${compass(m.off.bearing)} of ${label}.`
-      : `Your paint was ${roughKm(m.off.km)} ${compass(m.off.bearing)} of ${label}.`;
+    if (!m.off) return `Your paint was all around ${label}, but hardly any on it.`;
+    const how = m.off.km < radiusKm ? "just" : m.off.km < 4 * radiusKm ? "well" : "far to the";
+    return `Your paint was ${how} ${compass(m.off.bearing)} of ${label}.`;
   }
   const offShare = 1 - m.precision;
   const bareShare = 1 - m.coverage;
   const parts: [number, string][] = [];
   if (offShare >= MENTION) {
     const where = !m.off
-      ? "spilled all round it"
+      ? `spilled all round ${label}`
       : m.off.km < radiusKm
-        ? `spilled over its ${compass(m.off.bearing)} border`
-        : `${roughKm(m.off.km)} ${compass(m.off.bearing)} of it`;
-    parts.push([offShare, `${pct(offShare)} of your paint was off ${label}: ${where}.`]);
+        ? `spilled over ${label}'s ${compass(m.off.bearing)} border`
+        : `was well ${compass(m.off.bearing)} of ${label}`;
+    parts.push([offShare, `${amount(offShare)} your paint ${where}.`]);
   }
   if (bareShare >= MENTION) {
     const where = m.bare ? `, mostly in the ${compass(m.bare.bearing)}` : "";
-    parts.push([bareShare, `${pct(bareShare)} of ${label} was bare or thinly painted${where}.`]);
+    parts.push([bareShare, `${amount(bareShare)} ${label} was left bare or thin${where}.`]);
   }
   if (parts.length === 0) return `A close match to ${label}.`;
   return parts
@@ -131,17 +133,14 @@ export function describeRegion(m: RegionMisfit, label: string, toleranceKm: numb
     .join(" ");
 }
 
+function amount(share: number): string {
+  return share < 0.25 ? "Some of" : share < 0.6 ? "Much of" : "Most of";
+}
+
+const cap = (s: string) => s[0]!.toUpperCase() + s.slice(1);
+
 const POINTS = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"];
 
 function compass(deg: number): string {
   return POINTS[Math.round(deg / 45) % 8]!;
-}
-
-const pct = (x: number) => `${Math.round(x * 100)}%`;
-
-/** Two significant figures: the explanation is qualitative. */
-function roughKm(km: number): string {
-  if (km < 10) return `${Math.max(1, Math.round(km))} km`;
-  const step = 10 ** (Math.floor(Math.log10(km)) - 1);
-  return `${(Math.round(km / step) * step).toLocaleString("en")} km`;
 }

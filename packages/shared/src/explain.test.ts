@@ -26,26 +26,25 @@ describe("explaining a place's score", () => {
     return { s, e, text: describePoint(e, s.score, tol) };
   };
 
-  it("a tight guess on the answer costs nothing worth mentioning", () => {
+  it("a tight guess on the answer is tight and right on it", () => {
     const { s, e, text } = explain(answer.lat, answer.lon, res, 1);
     expect(e.best - s.score).toBeLessThan(25);
     expect(text).toBe("Tight, and right on the answer.");
   });
 
-  it("a tight miss keeps its best score and charges the distance", () => {
+  it("a tight miss is told it was off", () => {
     const { s, e, text } = explain(answer.lat + 2.7, answer.lon, res, 1);
     expect(e.best).toBeGreaterThan(930);
     expect(e.km).toBeGreaterThan(250);
     expect(e.km).toBeLessThan(350);
-    expect(text).toBe(
-      `The answer was 300 km from the heart of your paint: −${Math.round(e.best) - Math.round(s.score)}.`,
-    );
+    expect(e.best - s.score).toBeGreaterThan(150);
+    expect(text).toBe("Tight, but well off the answer.");
   });
 
-  it("a broad guess on the answer is charged for the spread alone", () => {
+  it("a broad guess on the answer is is told it was spread", () => {
     const { e, text } = explain(answer.lat, answer.lon, res - 2, 6);
     expect(e.best).toBeLessThan(780);
-    expect(text).toBe(`Your paint was centred on the answer. Spreading it cost ${1000 - Math.round(e.best)}.`);
+    expect(text).toBe("Around the answer, but spread wide.");
   });
 });
 
@@ -63,12 +62,14 @@ describe("explaining a country's score", () => {
   });
 
   it("names the side left bare", () => {
-    expect(say(cells.filter((h) => cellToLatLng(h)[1] < france.answer.lon))).toMatch(/mostly in the east\.$/);
+    expect(say(cells.filter((h) => cellToLatLng(h)[1] < france.answer.lon))).toBe(
+      `Much of ${france.label} was left bare or thin, mostly in the east.`,
+    );
   });
 
   it("names the border paint spilled over, and a neighbour painted instead", () => {
     const germany = regionCells(byId("germany-region"), res);
-    expect(say([...cells, ...germany])).toMatch(/spilled over its north-east border/);
+    expect(say([...cells, ...germany])).toBe(`Much of your paint spilled over ${france.label}'s north-east border.`);
     expect(say(germany)).toBe(`Your paint was just north-east of ${france.label}.`);
   });
 });
