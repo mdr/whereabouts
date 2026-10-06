@@ -26,10 +26,10 @@ describe("explaining a place's score", () => {
     return { s, e, text: describePoint(e, s.score, tol) };
   };
 
-  it("a tight guess on the answer is confident and right on it", () => {
+  it("a tight guess on the answer costs nothing worth mentioning", () => {
     const { s, e, text } = explain(answer.lat, answer.lon, res, 1);
     expect(e.best - s.score).toBeLessThan(25);
-    expect(text).toMatch(/^A confident guess: \d+ at best\. Right on it\.$/);
+    expect(text).toBe("Tight, and right on the answer.");
   });
 
   it("a tight miss keeps its best score and charges the distance", () => {
@@ -37,13 +37,15 @@ describe("explaining a place's score", () => {
     expect(e.best).toBeGreaterThan(930);
     expect(e.km).toBeGreaterThan(250);
     expect(e.km).toBeLessThan(350);
-    expect(text).toContain(`−${Math.round(e.best) - Math.round(s.score)}`);
+    expect(text).toBe(
+      `The answer was 300 km from the heart of your paint: −${Math.round(e.best) - Math.round(s.score)}.`,
+    );
   });
 
   it("a broad guess on the answer is charged for the spread alone", () => {
     const { e, text } = explain(answer.lat, answer.lon, res - 2, 6);
     expect(e.best).toBeLessThan(780);
-    expect(text).toContain("the spread cost");
+    expect(text).toBe(`Your paint was centred on the answer. Spreading it cost ${1000 - Math.round(e.best)}.`);
   });
 });
 

@@ -78,27 +78,22 @@ function latLngOf(h: string): LatLon {
   return { lat, lon };
 }
 
-/** One or two sentences: how much the paint risked, and what the distance cost. */
+/** Costs below this are not worth a mention. */
+const NEGLIGIBLE = 25;
+
+/** One or two sentences: what the distance cost, and what spreading the paint cost. */
 export function describePoint(e: PointExplanation, score: number, toleranceKm: number): string {
   const best = Math.round(Math.max(e.best, score));
-  const cost = best - Math.round(score);
-  const kind =
-    best >= 930
-      ? "A confident guess"
-      : best >= 780
-        ? "A fairly confident guess"
-        : best >= 600
-          ? "A broad guess"
-          : "A very broad guess";
-  const risk = `${kind}: ${best} at best.`;
-  if (cost < 25)
-    return best >= 930
-      ? `${risk} Right on it.`
-      : `${risk} The answer was near its heart; the spread cost ${1000 - best}.`;
-  if (e.nearShare >= 0.15 && e.km > NEAR * toleranceKm) {
-    return `${risk} ${pct(e.nearShare)} of your paint was near the answer, but more was ${roughKm(e.km)} away: −${cost}.`;
-  }
-  return `${risk} The answer was ${roughKm(e.km)} from the heart of your paint: −${cost}.`;
+  const distance = best - Math.round(score);
+  const spread = 1000 - best;
+  if (distance < NEGLIGIBLE && spread < NEGLIGIBLE) return "Tight, and right on the answer.";
+  const where =
+    distance < NEGLIGIBLE
+      ? "Your paint was centred on the answer."
+      : e.nearShare >= 0.15 && e.km > NEAR * toleranceKm
+        ? `${pct(e.nearShare)} of your paint was near the answer, but most was ${roughKm(e.km)} away: −${distance}.`
+        : `The answer was ${roughKm(e.km)} from the heart of your paint: −${distance}.`;
+  return spread < NEGLIGIBLE ? where : `${where} Spreading it cost ${spread}.`;
 }
 
 /** Shares of the paint or the country below this are not worth a mention. */
