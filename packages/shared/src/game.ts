@@ -13,7 +13,9 @@ import {
 } from "./scoring.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { pickQuestions, shuffle, type Question } from "./questions.ts";
-import { regionFit, scoreRegionQuestion, type RegionQuestion } from "./regions.ts";
+import { regionFit, regionMisfit, scoreRegionQuestion, type RegionQuestion } from "./regions.ts";
+import { explainPoint, isHedge } from "./explain.ts";
+import { pickAwards, type Award, type RoundFacts } from "./awards.ts";
 import { flagRound, type FlagQuestion } from "./flags.ts";
 import { MAX_PLAYERS, MAX_SPECTATORS, QUESTION_TYPES, SEAT_GRACE_MS, evenMix, mixTotal } from "./protocol.ts";
 import type {
@@ -53,12 +55,16 @@ interface Player {
   joinedRound: number;
   /** By round index; a hole for each round not played. */
   scores: (number | undefined)[];
+  /** By round index, for the awards; a hole for each round not played. */
+  facts: (RoundFacts | undefined)[];
   previousRank: number | null;
 }
 
 interface Submission {
   paint: PaintSubmission;
   locked: boolean;
+  /** When the player last locked in. */
+  lockedAt?: number;
 }
 
 export type CommandResult = { ok: true; changed: boolean } | { ok: false; error: string };
@@ -90,6 +96,7 @@ export class Game {
   private ready_ = new Set<string>();
   private reveal: RevealView | null = null;
   private results: FinalStanding[] | null = null;
+  private awards: Award[] | null = null;
   /** Tokens the host has removed; they may not reclaim a seat. */
   private kicked = new Set<string>();
 
@@ -168,6 +175,7 @@ export class Game {
       joinedAt: now,
       joinedRound: this.phase === "lobby" ? 0 : this.roundIndex + 1,
       scores: [],
+      facts: [],
       previousRank: null,
     };
     this.players.set(token, player);
@@ -243,6 +251,7 @@ export class Game {
     this.questions = this.pickRounds();
     for (const p of this.players.values()) {
       p.scores = [];
+      p.facts = [];
       p.previousRank = null;
       p.joinedRound = 0;
     }
@@ -306,6 +315,7 @@ export class Game {
     this.roundIndex = -1;
     this.reveal = null;
     this.results = null;
+    this.awards = null;
     this.submissions.clear();
     this.ready_.clear();
     this.seed = now;
@@ -341,6 +351,7 @@ export class Game {
       player.colour = this.freeColour();
       player.joinedRound = this.phase === "lobby" ? 0 : this.roundIndex + 1;
       player.scores = [];
+      player.facts = [];
       player.previousRank = null;
     }
     return OK_CHANGED;
@@ -436,6 +447,7 @@ export class Game {
     }
     if (current.locked) return OK_SAME;
     current.locked = true;
+    current.lockedAt = now;
     this.settleIfEveryoneDone(now);
     return OK_CHANGED;
   }
@@ -556,17 +568,46 @@ export class Game {
       let B: number;
       let region: RoundResultView["region"];
       let paint: PaintSubmission | null = null;
+      const roundMs = this.config.roundMs;
+      const lockMs = sub?.locked && sub.lockedAt !== undefined ? sub.lockedAt - (this.deadline - roundMs) : null;
+      const facts: RoundFacts = {
+        label: q.label,
+        score: 0,
+        passed: true,
+        lockSeconds: lockMs === null ? null : lockMs / 1000,
+        roundSeconds: roundMs / 1000,
+        areaKm2: 0,
+      };
       if (sub && Object.keys(sub.paint.cells).length > 0) {
         const layer = PaintLayer.fromRecord(res, sub.paint.cells);
-        const dist = buildDistribution(layer.toCells(), sub.paint.floor);
+        const cells = [...layer.toCells()];
+        const dist = buildDistribution(cells, sub.paint.floor);
+        facts.passed = false;
+        facts.areaKm2 = cells.reduce((a, c) => a + c.areaKm2, 0);
         if (q.kind === "region") {
           const s = scoreRegionQuestion(dist, q);
           ({ score } = s);
           A = 0;
           B = 0;
           region = { shape: s.shape, nearness: s.nearness, ...regionFit(dist, q) };
+          const m = regionMisfit(dist, q);
+          // A country's tolerance is a fifth of its equivalent radius.
+          facts.region = {
+            precision: m.precision,
+            nextDoor: m.precision < 0.1 && m.off !== null && m.off.km < 5 * q.toleranceKm,
+          };
         } else {
           ({ score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, this.kernel));
+          const e = explainPoint(dist, q.answer, q.toleranceKm, A, B, this.kernel);
+          const best = Math.max(e.best, score);
+          facts.point = {
+            spot: e.spot,
+            km: e.km,
+            spread: 1000 - best,
+            distance: best - score,
+            hedged: isHedge(e, score, q.toleranceKm),
+            toleranceKm: q.toleranceKm,
+          };
         }
         paint = sub.paint;
       } else {
@@ -575,6 +616,7 @@ export class Game {
         ({ score, A, B } = PASS_SCORE);
       }
       p.scores[this.roundIndex] = score;
+      p.facts[this.roundIndex] = { ...facts, score };
       results.push({ playerId: p.id, score, A, B, paint, res, ...(region ? { region } : {}) });
     }
     results.sort((a, b) => b.score - a.score);
@@ -610,6 +652,13 @@ export class Game {
         rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => p.scores[i] ?? null),
       }))
       .sort((a, b) => b.total - a.total);
+    this.awards = pickAwards(
+      this.playing().map((p) => ({
+        playerId: p.id,
+        rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => p.facts[i] ?? null),
+      })),
+      this.seed,
+    );
   }
 
   // ---- views ---------------------------------------------------------------
@@ -667,6 +716,7 @@ export class Game {
         : null,
       reveal: this.phase === "reveal" && this.reveal ? { ...this.reveal, ready: this.readyIds() } : null,
       results: this.phase === "results" ? this.results : null,
+      awards: this.phase === "results" ? this.awards : null,
     };
   }
 

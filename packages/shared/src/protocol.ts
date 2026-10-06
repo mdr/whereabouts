@@ -4,6 +4,7 @@
  * types are shared with the client.
  */
 import { z } from "zod";
+import type { Award } from "./awards.ts";
 import type { LatLon } from "./geo.ts";
 
 export const PROTOCOL_VERSION = 1;
@@ -253,6 +254,8 @@ export interface GameView {
   round: RoundView | null;
   reveal: RevealView | null;
   results: FinalStanding[] | null;
+  /** Prizes and booby prizes, on the final results. */
+  awards: Award[] | null;
 }
 
 export interface ServerError {

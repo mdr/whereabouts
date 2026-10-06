@@ -40,6 +40,7 @@ function view(isHost: boolean): GameView {
     round: null,
     reveal: null,
     results: null,
+    awards: null,
   };
 }
 

@@ -307,6 +307,27 @@ describe("round loop", () => {
     expect(results[0]!.rounds).toHaveLength(2);
   });
 
+  it("hands out awards at the end, and clears them for the next game", () => {
+    const g = twoPlayerGame(3);
+    g.start("tokA", T0);
+    let now = T0;
+    for (let i = 0; i < 3; i++) {
+      // Alice passes straight away; Bob paints one confident dab in the Gulf of Guinea.
+      g.lock("tokA", now + 1_000);
+      g.setPaint("tokB", paintAt(petra, 0, 0));
+      g.lock("tokB", now + 2_000);
+      now += 3_000;
+      g.next("tokA", now);
+    }
+    expect(g.phase).toBe("results");
+    const awards = g.view("tokA", now).awards!;
+    expect(awards.length).toBeGreaterThanOrEqual(2);
+    expect(awards.find((a) => a.title === "Chicken")?.playerIds).toEqual(["p1"]);
+    expect(awards.some((a) => a.playerIds.includes("p2"))).toBe(true);
+    g.again("tokA", now);
+    expect(g.view("tokA", now).awards).toBeNull();
+  });
+
   it("asks each question at most once per game", () => {
     const g = twoPlayerGame(3);
     g.start("tokA", T0);

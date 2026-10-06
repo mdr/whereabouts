@@ -12,3 +12,4 @@ export * from "./borders.ts";
 export * from "./fill.ts";
 export * from "./scoring-case.ts";
 export * from "./explain.ts";
+export * from "./awards.ts";

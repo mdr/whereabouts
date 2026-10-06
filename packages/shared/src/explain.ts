@@ -78,12 +78,17 @@ function latLngOf(h: string): LatLon {
   return { lat, lon };
 }
 
+/** Some paint near the answer, but most of it somewhere else, and that cost something. */
+export function isHedge(e: PointExplanation, score: number, toleranceKm: number): boolean {
+  return Math.max(e.best, score) - score >= 25 && e.nearShare >= 0.15 && e.km > NEAR * toleranceKm;
+}
+
 /** A short, plain sentence: how near the paint was, and how spread out. */
 export function describePoint(e: PointExplanation, score: number, toleranceKm: number): string {
   const best = Math.max(e.best, score);
   const distance = best - score;
   const spread = 1000 - best;
-  if (distance >= 25 && e.nearShare >= 0.15 && e.km > NEAR * toleranceKm) {
+  if (isHedge(e, score, toleranceKm)) {
     return "Some of your paint was on it, but most was somewhere else.";
   }
   const where =

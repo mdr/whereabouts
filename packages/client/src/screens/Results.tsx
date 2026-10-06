@@ -1,4 +1,4 @@
-import { playerColour, type GameView } from "@whereabouts/shared";
+import { playerColour, type Award, type GameView, type PlayerView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { Icon } from "../ui/icons";
 import { HostTag, HostWord } from "../ui/PlayerList";
@@ -67,6 +67,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             );
           })}
         </ol>
+        {view.awards && view.awards.length > 0 && <Awards awards={view.awards} byId={byId} />}
         {view.you.isHost ? (
           <button class="primary big" onClick={() => conn.again()} data-testid={resultsTestIds.playAgainButton}>
             <Icon name="refresh" /> Play again
@@ -81,5 +82,46 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         </p>
       </div>
     </div>
+  );
+}
+
+function Awards({ awards, byId }: { awards: Award[]; byId: Map<string, PlayerView> }) {
+  return (
+    <section class="awards" aria-label="Awards">
+      <h2>Awards</h2>
+      <ul>
+        {awards.map((a) => (
+          <li key={a.title} class="award" data-testid={resultsTestIds.award}>
+            <span class="award-emoji" aria-hidden="true">
+              {a.emoji}
+            </span>
+            <span class="award-body">
+              <b class="award-title">{a.title}</b>
+              <span class="award-line">
+                <AwardLine line={a.line} players={a.playerIds.map((id) => byId.get(id))} />
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** The line with each {n} replaced by that player's name, in their colour. */
+function AwardLine({ line, players }: { line: string; players: (PlayerView | undefined)[] }) {
+  return (
+    <>
+      {line.split(/(\{\d\})/).map((part, i) => {
+        const m = /^\{(\d)\}$/.exec(part);
+        if (!m) return part;
+        const p = players[Number(m[1])];
+        return (
+          <b key={i} class="award-name" style={{ color: p ? playerColour(p.colour) : undefined }}>
+            {p?.name ?? "Someone"}
+          </b>
+        );
+      })}
+    </>
   );
 }

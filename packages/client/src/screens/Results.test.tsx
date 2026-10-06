@@ -52,6 +52,7 @@ function view(isHost: boolean): GameView {
       { playerId: "p1", total: 1500, rounds: [800, 700] },
       { playerId: "p2", total: 1250, rounds: [500, 750] },
     ],
+    awards: [{ emoji: "🐔", title: "Chicken", playerIds: ["p2"], line: "{0} passed 2 times. Brave." }],
   };
 }
 

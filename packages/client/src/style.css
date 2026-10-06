@@ -1021,6 +1021,53 @@ button.big {
   background: rgba(255, 255, 255, 0.12);
 }
 
+/* ---- awards ---- */
+.awards {
+  margin: 16px 0 8px;
+  text-align: left;
+}
+.awards h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.awards ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.award {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.award-emoji {
+  font-size: 26px;
+  line-height: 1;
+  flex: none;
+}
+.award-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.award-title {
+  font-size: 15px;
+}
+.award-line {
+  font-size: 13px;
+  color: var(--muted);
+}
+
 /* ---- timer ----------------------------------------------------------------- */
 .timer-row {
   display: flex;
