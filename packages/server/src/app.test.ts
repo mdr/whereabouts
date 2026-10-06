@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { WSClient as WSClientType } from "@rivalis/browser";
 import {
   PaintLayer,
+  ROUND_GRACE_MS,
   SEAT_GRACE_MS,
   compactRecord,
   encodeTicket,
@@ -215,7 +216,7 @@ describe("game server", () => {
     const aBobCell = Object.keys(bobPaint.cells)[0]!;
     expect(JSON.stringify(alice.latest)).not.toContain(aBobCell);
 
-    clock.advance(60_000);
+    clock.advance(60_000 + ROUND_GRACE_MS);
     const reveal = await alice.until((v) => v.phase === "reveal");
     expect(reveal.reveal!.label).toBe(q.label);
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]));
@@ -225,7 +226,7 @@ describe("game server", () => {
 
     alice.send("next");
     await bob.until((v) => v.phase === "guessing" && v.round!.index === 1);
-    clock.advance(60_000);
+    clock.advance(60_000 + ROUND_GRACE_MS);
     await bob.until((v) => v.phase === "reveal" && v.reveal!.index === 1);
     // No timer on the reveal: it advances when everyone is ready.
     bob.send("ready");
@@ -257,7 +258,7 @@ describe("game server", () => {
     alice.send("paint", { cells, floor: 0.05 });
     await alice.untilLatest((v) => v.you.paint !== null);
 
-    clock.advance(60_000);
+    clock.advance(60_000 + ROUND_GRACE_MS);
     const reveal = await bob.until((v) => v.phase === "reveal");
     expect(reveal.reveal!.question.regionId).toBe(id);
     expect(reveal.reveal!.label).toBe(country.label);
@@ -283,7 +284,7 @@ describe("game server", () => {
     const f = (flagsJson as FlagQuestion[]).find((x) => x.flag === q.flag)!;
     expect(JSON.stringify(round)).not.toContain(f.label);
 
-    clock.advance(60_000);
+    clock.advance(60_000 + ROUND_GRACE_MS);
     const reveal = await alice.until((v) => v.phase === "reveal");
     expect(reveal.reveal!.label).toBe(f.label);
     expect(reveal.reveal!.question.flag).toBe(q.flag);

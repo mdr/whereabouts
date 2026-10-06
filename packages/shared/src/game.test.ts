@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { latLngToCell } from "h3-js";
-import { Game, generateCode, nextHostAfter } from "./game.ts";
+import { Game, ROUND_GRACE_MS, generateCode, nextHostAfter } from "./game.ts";
 import { PaintLayer, resolutionForTolerance } from "./paint.ts";
 import { PASS_SCORE } from "./scoring.ts";
 import { pickQuestions, type Question } from "./questions.ts";
@@ -176,8 +176,8 @@ describe("round loop", () => {
 
     expect(g.setPaint("tokA", paintAt(q, q.answer.lat, q.answer.lon))).toEqual({ ok: true, changed: false });
     // Bob paints nothing.
-    expect(g.tick(T0 + 59_999)).toBe(false);
-    expect(g.tick(T0 + 60_000)).toBe(true);
+    expect(g.tick(T0 + 60_000 + ROUND_GRACE_MS - 1)).toBe(false);
+    expect(g.tick(T0 + 60_000 + ROUND_GRACE_MS)).toBe(true);
     expect(g.phase).toBe("reveal");
 
     const reveal = g.view("tokB", T0 + 60_000).reveal!;
@@ -201,7 +201,7 @@ describe("round loop", () => {
     const during = g.view("tokB", T0 + 10);
     expect(during.reveal).toBeNull();
     expect(JSON.stringify(during)).not.toContain("cells");
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     const after = g.view("tokB", T0 + 60_000);
     expect(after.reveal!.results.find((r) => r.playerId === "p1")!.paint).not.toBeNull();
   });
@@ -283,7 +283,7 @@ describe("round loop", () => {
   it("the reveal advances when everyone is ready, or when the host says so; ends in results", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     expect(g.nextWakeAt()).toBeNull();
     expect(g.next("tokB", T0 + 61_000)).toEqual({ ok: false, error: "only the host can advance" });
     expect(g.ready("tokB", T0 + 61_000)).toEqual({ ok: true, changed: true });
@@ -293,8 +293,8 @@ describe("round loop", () => {
     expect(g.ready("tokA", T0 + 62_000).ok).toBe(true);
     expect(g.phase).toBe("guessing");
     expect(g.view("tokA", T0 + 62_000).round!.index).toBe(1);
-    expect(g.nextWakeAt()).toBe(T0 + 122_000);
-    g.tick(T0 + 122_000);
+    expect(g.nextWakeAt()).toBe(T0 + 122_000 + ROUND_GRACE_MS);
+    g.tick(T0 + 122_000 + ROUND_GRACE_MS);
     expect(g.phase).toBe("reveal");
     expect(g.view("tokA", T0 + 122_000).reveal!.ready).toEqual([]);
     expect(g.ready("tokA", T0 + 123_000)).toEqual({ ok: true, changed: true });
@@ -328,6 +328,24 @@ describe("round loop", () => {
     expect(g.view("tokA", now).awards).toBeNull();
   });
 
+  it("paint arriving just after the deadline still counts, and an empty upload takes paint back", () => {
+    const g = twoPlayerGame(1);
+    g.start("tokA", T0);
+    const q = currentQuestion(g, "tokA", T0);
+    // Alice painted, then erased it all: the empty upload replaces her paint.
+    g.setPaint("tokA", paintAt(q, q.answer.lat, q.answer.lon));
+    g.setPaint("tokA", { cells: {}, floor: 0.05 });
+    // Bob's last stroke, sent at zero, lands within the grace period.
+    expect(g.tick(T0 + 60_000)).toBe(false);
+    g.setPaint("tokB", paintAt(q, q.answer.lat, q.answer.lon));
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
+    const results = g.view("tokA", T0 + 61_000).reveal!.results;
+    const alice = results.find((r) => r.playerId === "p1")!;
+    expect(alice.score).toBe(PASS_SCORE.score);
+    expect(alice.paint).toBeNull();
+    expect(results.find((r) => r.playerId === "p2")!.score).toBeGreaterThan(900);
+  });
+
   it("asks each question at most once per game", () => {
     const g = twoPlayerGame(3);
     g.start("tokA", T0);
@@ -335,7 +353,7 @@ describe("round loop", () => {
     let now = T0;
     for (let i = 0; i < 3; i++) {
       seen.add(g.view("tokA", now).round!.question.prompt);
-      now += 60_000;
+      now += 60_000 + ROUND_GRACE_MS;
       g.tick(now);
       g.next("tokA", now);
     }
@@ -415,7 +433,7 @@ describe("spectators", () => {
     g.ready("tokA", T0 + 3);
     g.ready("tokB", T0 + 4);
     expect(g.phase).toBe("guessing");
-    g.tick(T1 + 10_000);
+    g.tick(T1 + 10_000 + ROUND_GRACE_MS);
     g.next("tokA", T1 + 10_000);
     expect(
       g
@@ -455,7 +473,7 @@ describe("spectators", () => {
     g.ready("tokS", T0 + 6);
     expect(g.phase).toBe("guessing");
     expect(g.view("tokS", T0 + 6).you.spectating).toBe(false);
-    g.tick(T0 + 6 + 60_000);
+    g.tick(T0 + 6 + 60_000 + ROUND_GRACE_MS);
     g.next("tokA", T0 + 6 + 60_000);
     const standing = g.view("tokS", T0 + 6 + 60_000).results!.find((r) => r.playerId === sam(g).id)!;
     expect(standing.rounds).toEqual([null, 250]);
@@ -464,7 +482,7 @@ describe("spectators", () => {
   it("taking a seat at the reveal means playing from the next round", () => {
     const g = withSpectator();
     g.start("tokA", T0);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     expect(g.phase).toBe("reveal");
     g.setRole("tokS", false);
     g.ready("tokA", T0 + 60_001);
@@ -514,7 +532,7 @@ describe("joining and leaving mid-game", () => {
     expect(g.view("tokC", T0 + 5).you.spectating).toBe(true);
     const q = currentQuestion(g, "tokA", T0);
     expect(g.setPaint("tokC", paintAt(q, 0, 0))).toEqual({ ok: false, error: "spectating this round" });
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     expect(g.view("tokC", T0 + 60_000).reveal!.results.map((r) => r.playerId)).not.toContain("p3");
     g.next("tokA", T0 + 60_001);
     expect(g.view("tokC", T0 + 60_001).you.spectating).toBe(false);
@@ -526,9 +544,9 @@ describe("joining and leaving mid-game", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
     g.join("tokC", "Cara", T0 + 5);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     g.next("tokA", T0 + 60_001);
-    g.tick(T0 + 120_001);
+    g.tick(T0 + 120_001 + ROUND_GRACE_MS);
     const cara = g.view("tokC", T0 + 120_001).players.find((p) => p.id === "p3")!;
     expect(cara.score).toBeGreaterThan(0);
     g.next("tokA", T0 + 120_002);
@@ -548,14 +566,14 @@ describe("joining and leaving mid-game", () => {
     expect(g.view("tokA", T0 + 5).you.paint).toEqual(mine);
     expect(g.view("tokB", T0 + 5).you.paint).toBeNull();
     expect(JSON.stringify(g.view("tokB", T0 + 5))).not.toContain(Object.keys(mine.cells)[0]);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     expect(g.view("tokA", T0 + 60_000).you.paint).toBeNull();
   });
 
   it("a disconnected player keeps their seat and score, and reclaims it by token", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     g.disconnect("tokB", T0 + 60_001);
     expect(g.playerTokens).toContain("tokB");
     expect(g.view("tokA", T0 + 60_001).players.find((p) => p.id === "p2")!.connected).toBe(false);
@@ -571,7 +589,7 @@ describe("joining and leaving mid-game", () => {
     g.disconnect("tokA", T0 + 1);
     expect(g.view("tokB", T0 + 1).you.isHost).toBe(true);
     expect(g.view("tokB", T0 + 1).players.find((p) => p.id === "p2")!.isHost).toBe(true);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     expect(g.next("tokA", T0 + 60_000)).toEqual({ ok: false, error: "only the host can advance" });
     expect(g.next("tokB", T0 + 60_000).ok).toBe(true);
     // A refresh brings the original host straight back.
@@ -592,7 +610,7 @@ describe("joining and leaving mid-game", () => {
   it("play again returns to the lobby with scores reset and dropped players pruned", () => {
     const g = twoPlayerGame(1);
     g.start("tokA", T0);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     g.next("tokA", T0 + 80_000);
     expect(g.phase).toBe("results");
     expect(g.join("tokZ", "Zed", T0 + 80_001)).toEqual({ ok: false, error: "game has finished" });
@@ -627,7 +645,7 @@ describe("ranks", () => {
     g.start("tokA", T0);
     const q = currentQuestion(g, "tokA", T0);
     g.setPaint("tokA", paintAt(q, q.answer.lat, q.answer.lon));
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     const v = g.view("tokA", T0 + 60_000);
     const a = v.players.find((p) => p.id === "p1")!;
     const b = v.players.find((p) => p.id === "p2")!;
@@ -648,7 +666,7 @@ describe("ready-up edge cases", () => {
   it("a player leaving during the reveal does not hold the others up", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     g.ready("tokA", T0 + 61_000);
     expect(g.phase).toBe("reveal");
     g.disconnect("tokB", T0 + 62_000);
@@ -658,7 +676,7 @@ describe("ready-up edge cases", () => {
   it("nobody left connected means nothing advances", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     g.disconnect("tokA", T0 + 61_000);
     g.disconnect("tokB", T0 + 61_001);
     expect(g.phase).toBe("reveal");
@@ -668,10 +686,10 @@ describe("ready-up edge cases", () => {
     const g = twoPlayerGame(2);
     g.start("tokA", T0);
     expect(g.ready("tokA", T0)).toEqual({ ok: false, error: "nothing to be ready for" });
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     g.ready("tokA", T0 + 61_000);
     g.ready("tokB", T0 + 61_000);
-    g.tick(T0 + 121_000);
+    g.tick(T0 + 121_000 + ROUND_GRACE_MS);
     expect(g.view("tokA", T0 + 121_000).reveal!.ready).toEqual([]);
   });
 });
@@ -844,7 +862,7 @@ describe("the question mix", () => {
     let now = T0;
     while (g.phase !== "results") {
       seen.push(g.view("tokA", now).round!.question);
-      now += 60_000;
+      now += 60_000 + ROUND_GRACE_MS;
       g.tick(now);
       g.next("tokA", now);
     }
@@ -898,7 +916,7 @@ describe("the question mix", () => {
     const res = resolutionForTolerance(q.toleranceKm);
     const cells = Object.fromEntries(regionCells(germany, res).map((h) => [h, 1]));
     expect(g.setPaint("tokA", { cells, floor: 0.05 }).ok).toBe(true);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     const reveal = g.view("tokB", T0 + 60_000).reveal!;
     expect(reveal.question.regionId).toBe("germany-region");
     expect(reveal.label).toBe("Germany");
@@ -932,7 +950,7 @@ describe("the question mix", () => {
     const res = resolutionForTolerance(q.toleranceKm);
     const cell = latLngToCell(monaco.answer.lat, monaco.answer.lon, res);
     expect(g.setPaint("tokA", { cells: { [cell]: 1 }, floor: 0.05 }).ok).toBe(true);
-    g.tick(T0 + 60_000);
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS);
     const reveal = g.view("tokB", T0 + 60_000).reveal!;
     expect(reveal.label).toBe("Monaco");
     expect(reveal.question.flag).toBe("mc");

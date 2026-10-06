@@ -1,4 +1,9 @@
-import { hudHeaderTestIds, questionCardTestIds, soundToggleTestIds } from "../../src/ui/bitsTestIds.ts";
+import {
+  countdownTestIds,
+  hudHeaderTestIds,
+  questionCardTestIds,
+  soundToggleTestIds,
+} from "../../src/ui/bitsTestIds.ts";
 import { hostControlsTestIds } from "../../src/ui/HostControlsTestIds.ts";
 import { ConfirmDialog } from "./ConfirmDialog.ts";
 import { ResultsPage } from "./ResultsPage.ts";
@@ -11,6 +16,15 @@ export class Hud {
 
   constructor(tab: Tab) {
     this.#tab = tab;
+  }
+
+  /** Waits until the round's countdown shows `seconds` or fewer. */
+  async waitForCountdown(seconds: number, timeoutMs = 60_000): Promise<void> {
+    await this.#tab.page.waitForFunction(
+      ([id, s]) => Number(document.querySelector(`[data-testid="${id}"]`)?.textContent ?? Infinity) <= s,
+      [countdownTestIds.countdown, seconds] as const,
+      { timeout: timeoutMs, polling: 50 },
+    );
   }
 
   /** "Round 2 / 3" */

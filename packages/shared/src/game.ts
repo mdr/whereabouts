@@ -39,6 +39,12 @@ export const DEFAULT_CONFIG: GameConfig = {
   kernelId: DEFAULT_KERNEL.id,
 };
 
+/**
+ * How long after the deadline a round is scored. Clients stop painting at
+ * zero and send what they have; this lets that paint arrive.
+ */
+export const ROUND_GRACE_MS = 1000;
+
 interface Player {
   id: string;
   token: string;
@@ -509,7 +515,7 @@ export class Game {
   /** Advance time-driven transitions. Returns true if the state changed. */
   tick(now: number): boolean {
     if (this.phase === "lobby") return this.freeLapsedSeats(now);
-    if (this.phase === "guessing" && now >= this.deadline) {
+    if (this.phase === "guessing" && now >= this.deadline + ROUND_GRACE_MS) {
       this.finishRound();
       return true;
     }
@@ -518,7 +524,7 @@ export class Game {
 
   /** Epoch ms of the next time-driven transition, or null if none is pending. */
   nextWakeAt(): number | null {
-    if (this.phase === "guessing") return this.deadline;
+    if (this.phase === "guessing") return this.deadline + ROUND_GRACE_MS;
     if (this.phase === "lobby") {
       let at: number | null = null;
       for (const p of this.players.values()) {

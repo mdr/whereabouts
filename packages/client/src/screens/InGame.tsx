@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { PaintLayer, compactRecord, playerColour, type GameView } from "@whereabouts/shared";
 import type { Connection } from "../net";
 import { usePaint } from "../ui/MapView";
@@ -36,6 +36,8 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   );
   const sendTimer = useRef<number | null>(null);
   const lastSentVersion = useRef(-1);
+  // The countdown has reached zero: painting stops, and what is on screen is what counts.
+  const [timeUp, setTimeUp] = useState(false);
   const { dialog, ask } = useConfirm();
 
   // A game with countries or flags needs the outlines at the reveal: fetch them now.
@@ -76,36 +78,48 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     paint.gameMap.setDetail(reveal ? "reveal" : view.config.mapDetail);
   }, [reveal, view.config.mapDetail]);
 
+  // The server scores a moment after the deadline (ROUND_GRACE_MS), so paint sent at zero still counts.
+  const deadline = view.round?.deadline;
   useEffect(() => {
-    paint.enabled.value = guessing && !sittingOut && !view.you.locked;
-  }, [guessing, sittingOut, view.you.locked]);
+    setTimeUp(false);
+    if (!guessing || deadline === undefined) return;
+    const timer = window.setTimeout(() => setTimeUp(true), Math.max(0, conn.msUntil(deadline)));
+    return () => clearTimeout(timer);
+  }, [roundKey, guessing, deadline]);
+
+  useEffect(() => {
+    paint.enabled.value = guessing && !sittingOut && !view.you.locked && !timeUp;
+  }, [guessing, sittingOut, view.you.locked, timeUp]);
+
+  /** Upload the paint now. An empty map is sent too: it takes back paint sent earlier. */
+  function sendNow() {
+    if (sendTimer.current) clearTimeout(sendTimer.current);
+    sendTimer.current = null;
+    conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.peek() });
+    lastSentVersion.current = paint.version.peek();
+  }
 
   // Debounced upload of the current paint while guessing.
   const version = paint.version.value;
   const floor = paint.floor.value;
   useEffect(() => {
-    if (!guessing || sittingOut || view.you.locked) return;
+    if (!guessing || sittingOut || view.you.locked || timeUp) return;
     if (sendTimer.current) clearTimeout(sendTimer.current);
-    sendTimer.current = window.setTimeout(() => {
-      sendTimer.current = null;
-      if (paint.layer.isEmpty) return;
-      conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor });
-      lastSentVersion.current = paint.version.peek();
-    }, 400);
+    sendTimer.current = window.setTimeout(sendNow, 400);
     return () => {
       if (sendTimer.current) clearTimeout(sendTimer.current);
     };
   }, [version, floor, guessing]);
 
+  useEffect(() => {
+    if (timeUp && guessing && !sittingOut && !view.you.locked) sendNow();
+  }, [timeUp]);
+
   // Done with paint freezes it; Done with nothing painted is a pass, which
   // scores PASS_SCORE (250) and lets the round end without waiting on you.
   function lockIn() {
-    if (sendTimer.current) clearTimeout(sendTimer.current);
-    if (!paint.layer.isEmpty) {
-      conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.value });
-    } else {
-      sound.play("chicken");
-    }
+    if (paint.layer.isEmpty) sound.play("chicken");
+    sendNow();
     conn.lock();
   }
 

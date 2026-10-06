@@ -90,7 +90,8 @@ export class PaintController {
   private middleFrom: { x: number; y: number } | null = null;
   private painting = false;
   private lastStampPoint: Point | null = null;
-  private renderQueued = false;
+  /** The frame that will draw our paint, while one is queued. */
+  private renderFrame: number | null = null;
   private hoverListeners = new Set<(pos: LatLon) => void>();
   /** Where the mouse is over the map, so the footprint can be redrawn without it moving. */
   private pointerAt: LngLat | null = null;
@@ -254,7 +255,17 @@ export class PaintController {
     this.disposers.push(this.tool.subscribe(() => this.applyInteraction()));
     // [ and ] or the slider resize the brush while the mouse stays put.
     this.disposers.push(this.brushPx.subscribe(() => this.refreshCursor()));
-    this.disposers.push(this.enabled.subscribe(() => this.applyInteraction()));
+    this.disposers.push(
+      this.enabled.subscribe((on) => {
+        // Painting can be switched off mid-stroke, when the round ends. Stop
+        // there, and keep a queued draw of our paint off whatever is shown next.
+        if (!on) {
+          this.endStroke();
+          this.cancelRender();
+        }
+        this.applyInteraction();
+      }),
+    );
     // No Fill tool this round: back to the brush.
     this.disposers.push(
       this.fillable.subscribe((on) => {
@@ -556,12 +567,19 @@ export class PaintController {
   }
 
   private queueRender(): void {
-    if (this.renderQueued) return;
-    this.renderQueued = true;
-    requestAnimationFrame(() => {
-      this.renderQueued = false;
+    if (this.renderFrame !== null) return;
+    this.renderFrame = requestAnimationFrame(() => {
+      this.renderFrame = null;
       this.gameMap.setPaint(this.layer.toGeoJSON());
       this.version.value++;
     });
+  }
+
+  /** Drop a queued draw, still counting the change it was for. */
+  private cancelRender(): void {
+    if (this.renderFrame === null) return;
+    cancelAnimationFrame(this.renderFrame);
+    this.renderFrame = null;
+    this.version.value++;
   }
 }

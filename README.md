@@ -35,11 +35,13 @@ Other commands:
   `packages/client` with `node browser/e2e/<name>.ts [outDir]`
   (`pnpm smoke` runs `solo`); screenshots go to `smoke-out/`.
   Run the game server with `ROUND_MS=12000 ROUNDS=2` for `flows`,
-  `phone` and `sound`.
+  `deadline`, `phone` and `sound`.
   - `solo`: practice mode: paint, undo and redo, submit.
   - `multiplayer`: two players through setup, guessing, Done and Keep
     editing, the reveal and ready-up.
   - `flows`: refresh mid-round, late joiners and passing, play again.
+  - `deadline`: paint cleared before the clock runs out scores as a pass;
+    a stroke still going at zero counts, and everyone sees the same reveal.
   - `host`: removing a player, rejoining as a new one, ending the game
     early, the brush footprint.
   - `touch`: one finger paints; a two-finger pinch leaves no paint.
