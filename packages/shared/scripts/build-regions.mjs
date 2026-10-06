@@ -69,14 +69,16 @@ const DISPUTED = new Set([
 // Overrides by Natural Earth ADMIN name. label: shown after the reveal
 // (default NAME_EN); the: prompts say "the Netherlands"; name: what the
 // prompt calls it, where the outline is only part of the country; wiki:
-// English Wikipedia title (default the label); id: kept from before flags.
+// English Wikipedia title (default the label); flagWiki: the title of the
+// article on its flag, linked from a flag round (default "Flag of" the
+// label); id: kept from before flags.
 const NAMES = {
   "United Kingdom": { the: true, id: "uk-region" },
   "Democratic Republic of the Congo": { the: true, id: "drc-region" },
   "Republic of the Congo": { the: true },
   "United States of America": { label: "United States", the: true, wiki: "United States" },
   Ireland: { wiki: "Republic of Ireland" },
-  Georgia: { wiki: "Georgia (country)" },
+  Georgia: { wiki: "Georgia (country)", flagWiki: "Flag of Georgia (country)" },
   China: { label: "China", wiki: "China" },
   Vatican: { label: "Vatican City", wiki: "Vatican City" },
   "East Timor": { label: "Timor-Leste" },
@@ -350,6 +352,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
   const label = names.label ?? p.NAME_EN;
   const name = names.name ?? (names.the ? `the ${label.replace(/^The /, "")}` : label);
   const wiki = names.wiki ?? label;
+  const flagWiki = names.flagWiki ?? `Flag of ${names.the ? "the " : ""}${label.replace(/^The /, "")}`;
   const flag = p.ISO_A2_EH.toLowerCase();
   if (!/^[a-z]{2}$/.test(flag)) throw new Error(`no ISO code for ${p.ADMIN}`);
   const all = polygonsOf(feature.geometry);
@@ -401,7 +404,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
       id: `flag-${flag}`,
       flag,
       label,
-      wiki,
+      wiki: flagWiki,
       answer: region.answer,
       toleranceKm: region.toleranceKm,
       regionId: region.id,
@@ -417,7 +420,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
     const answer = island ? islandAnswer(p, all) : centroid(all.flatMap((poly) => cellsOf(poly, 4)));
     const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => km([answer.lon, answer.lat], pt))));
     const toleranceKm = pointToleranceKm(area, spread, island);
-    flags.push({ id: `flag-${flag}`, flag, label, wiki, answer, toleranceKm });
+    flags.push({ id: `flag-${flag}`, flag, label, wiki: flagWiki, answer, toleranceKm });
     if (island) border.near = toleranceKm;
     console.log(
       `${label}: point (${why}), ${Math.round(area)} km², spread ${Math.round(spread)} km, tolerance ${toleranceKm} km`,

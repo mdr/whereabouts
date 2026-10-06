@@ -16,7 +16,7 @@ export interface FlagQuestion {
   flag: string;
   /** The country's name, shown after the reveal. */
   label: string;
-  /** English Wikipedia article title. */
+  /** English Wikipedia title of the article on the flag, linked at the reveal. */
   wiki: string;
   /** Where a point answer is; the centre of a painted one, for framing. */
   answer: LatLon;
