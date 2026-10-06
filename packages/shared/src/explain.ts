@@ -78,25 +78,19 @@ function latLngOf(h: string): LatLon {
   return { lat, lon };
 }
 
-/** One short sentence: how near the paint was, and how spread out. */
+/** A short, plain sentence: how near the paint was, and how spread out. */
 export function describePoint(e: PointExplanation, score: number, toleranceKm: number): string {
   const best = Math.max(e.best, score);
   const distance = best - score;
   const spread = 1000 - best;
   if (distance >= 25 && e.nearShare >= 0.15 && e.km > NEAR * toleranceKm) {
-    return "Hedged: some of your paint was near the answer, but most was elsewhere.";
+    return "Some of your paint was on it, but most was somewhere else.";
   }
   const where =
-    distance < 25
-      ? "right on the answer"
-      : distance < 150
-        ? "just off the answer"
-        : distance < 400
-          ? "well off the answer"
-          : "far from the answer";
-  if (spread < 60) return distance < 25 ? "Tight, and right on the answer." : `Tight, but ${where}.`;
-  const how = spread < 200 ? "a little spread out" : "spread wide";
-  return distance < 25 ? `Around the answer, but ${how}.` : `${cap(where)}, and ${how}.`;
+    distance < 25 ? "Right area" : distance < 150 ? "Close" : distance < 400 ? "Some way off" : "A long way off";
+  if (spread < 60) return distance < 25 ? "Spot on." : distance < 150 ? "Close, but slightly off." : `${where}.`;
+  const how = spread < 200 ? "a bit spread out" : "very spread out";
+  return `${where}, ${distance < 150 ? "but" : "and"} ${how}.`;
 }
 
 /** Shares of the paint or the country below this are not worth a mention. */
@@ -107,8 +101,8 @@ export function describeRegion(m: RegionMisfit, label: string, toleranceKm: numb
   // A country's tolerance is a fifth of its equivalent radius.
   const radiusKm = 5 * toleranceKm;
   if (m.precision < MENTION) {
-    if (!m.off) return `Your paint was all around ${label}, but hardly any on it.`;
-    const how = m.off.km < radiusKm ? "just" : m.off.km < 4 * radiusKm ? "well" : "far to the";
+    if (!m.off) return `Your paint was around ${label}, but not on it.`;
+    const how = m.off.km < radiusKm ? "just" : m.off.km < 4 * radiusKm ? "well" : "a long way";
     return `Your paint was ${how} ${compass(m.off.bearing)} of ${label}.`;
   }
   const offShare = 1 - m.precision;
@@ -116,17 +110,17 @@ export function describeRegion(m: RegionMisfit, label: string, toleranceKm: numb
   const parts: [number, string][] = [];
   if (offShare >= MENTION) {
     const where = !m.off
-      ? `spilled all round ${label}`
+      ? "went over the border all round"
       : m.off.km < radiusKm
-        ? `spilled over ${label}'s ${compass(m.off.bearing)} border`
-        : `was well ${compass(m.off.bearing)} of ${label}`;
+        ? `went over the ${compass(m.off.bearing)} border`
+        : `was well to the ${compass(m.off.bearing)}`;
     parts.push([offShare, `${amount(offShare)} your paint ${where}.`]);
   }
   if (bareShare >= MENTION) {
-    const where = m.bare ? `, mostly in the ${compass(m.bare.bearing)}` : "";
-    parts.push([bareShare, `${amount(bareShare)} ${label} was left bare or thin${where}.`]);
+    const what = m.bare ? `the ${compass(m.bare.bearing)}` : label;
+    parts.push([bareShare, `You missed ${amount(bareShare).toLowerCase()} ${what}.`]);
   }
-  if (parts.length === 0) return `A close match to ${label}.`;
+  if (parts.length === 0) return "A good match.";
   return parts
     .sort((a, b) => b[0] - a[0])
     .map(([, s]) => s)
@@ -134,10 +128,8 @@ export function describeRegion(m: RegionMisfit, label: string, toleranceKm: numb
 }
 
 function amount(share: number): string {
-  return share < 0.25 ? "Some of" : share < 0.6 ? "Much of" : "Most of";
+  return share < 0.25 ? "Some of" : share < 0.6 ? "A lot of" : "Most of";
 }
-
-const cap = (s: string) => s[0]!.toUpperCase() + s.slice(1);
 
 const POINTS = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"];
 

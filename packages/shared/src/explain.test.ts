@@ -29,7 +29,7 @@ describe("explaining a place's score", () => {
   it("a tight guess on the answer is tight and right on it", () => {
     const { s, e, text } = explain(answer.lat, answer.lon, res, 1);
     expect(e.best - s.score).toBeLessThan(25);
-    expect(text).toBe("Tight, and right on the answer.");
+    expect(text).toBe("Spot on.");
   });
 
   it("a tight miss is told it was off", () => {
@@ -38,13 +38,13 @@ describe("explaining a place's score", () => {
     expect(e.km).toBeGreaterThan(250);
     expect(e.km).toBeLessThan(350);
     expect(e.best - s.score).toBeGreaterThan(150);
-    expect(text).toBe("Tight, but well off the answer.");
+    expect(text).toBe("Some way off.");
   });
 
   it("a broad guess on the answer is is told it was spread", () => {
     const { e, text } = explain(answer.lat, answer.lon, res - 2, 6);
     expect(e.best).toBeLessThan(780);
-    expect(text).toBe("Around the answer, but spread wide.");
+    expect(text).toBe("Right area, but very spread out.");
   });
 });
 
@@ -58,18 +58,16 @@ describe("explaining a country's score", () => {
 
   it("an exact paint is a close match", () => {
     expect(scoreRegionQuestion(coat(cells), france).score).toBeGreaterThan(985);
-    expect(say(cells)).toBe(`A close match to ${france.label}.`);
+    expect(say(cells)).toBe("A good match.");
   });
 
   it("names the side left bare", () => {
-    expect(say(cells.filter((h) => cellToLatLng(h)[1] < france.answer.lon))).toBe(
-      `Much of ${france.label} was left bare or thin, mostly in the east.`,
-    );
+    expect(say(cells.filter((h) => cellToLatLng(h)[1] < france.answer.lon))).toBe("You missed a lot of the east.");
   });
 
   it("names the border paint spilled over, and a neighbour painted instead", () => {
     const germany = regionCells(byId("germany-region"), res);
-    expect(say([...cells, ...germany])).toBe(`Much of your paint spilled over ${france.label}'s north-east border.`);
+    expect(say([...cells, ...germany])).toBe("A lot of your paint went over the north-east border.");
     expect(say(germany)).toBe(`Your paint was just north-east of ${france.label}.`);
   });
 });
