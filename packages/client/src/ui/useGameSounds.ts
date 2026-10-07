@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "preact/hooks";
-import type { GameView } from "@whereabouts/shared";
-import type { Connection } from "../net";
-import { roundCue, sound, type RoundState } from "../sound";
+import { useEffect, useRef } from "preact/hooks"
+import type { GameView } from "@whereabouts/shared"
+import type { Connection } from "../net"
+import { roundCue, sound, type RoundState } from "../sound"
 
 /**
  * The online game's sounds, driven by changes of view: the rising cue when a
@@ -11,37 +11,37 @@ import { roundCue, sound, type RoundState } from "../sound";
  * business (MapView), and Pass and Clear play their own, where they happen.
  */
 export function useGameSounds(conn: Connection, view: GameView | null): void {
-  const prev = useRef<RoundState | null>(null);
-  const lastDeadline = useRef<number | null>(null);
-  const phase = view?.phase ?? null;
-  const round = view?.round?.index ?? view?.reveal?.index ?? null;
-  const deadline = view?.phase === "guessing" ? (view.round?.deadline ?? null) : null;
+  const prev = useRef<RoundState | null>(null)
+  const lastDeadline = useRef<number | null>(null)
+  const phase = view?.phase ?? null
+  const round = view?.round?.index ?? view?.reveal?.index ?? null
+  const deadline = view?.phase === "guessing" ? (view.round?.deadline ?? null) : null
 
   useEffect(() => {
-    if (phase === null) return;
-    const next = { phase, round };
-    const msLeft = lastDeadline.current === null ? 0 : conn.msUntil(lastDeadline.current);
-    const cue = roundCue(prev.current, next, msLeft);
-    if (cue === "roundStart") sound.cue("roundStart");
+    if (phase === null) return
+    const next = { phase, round }
+    const msLeft = lastDeadline.current === null ? 0 : conn.msUntil(lastDeadline.current)
+    const cue = roundCue(prev.current, next, msLeft)
+    if (cue === "roundStart") sound.cue("roundStart")
     if (cue === "finishedEarly") {
-      sound.stopCountdown();
-      sound.cue("finishedEarly");
+      sound.stopCountdown()
+      sound.cue("finishedEarly")
     }
     if (cue === "results") {
-      sound.stopCountdown();
-      sound.play("applause");
+      sound.stopCountdown()
+      sound.play("applause")
     }
-    prev.current = next;
-  }, [phase, round]);
+    prev.current = next
+  }, [phase, round])
 
   // Each round's countdown, including one joined partway through (after a
   // refresh, say). Nothing cancels it when the round ends on time, so the
   // alarm plays out; finishing early stops it above.
   useEffect(() => {
-    if (deadline === null) return;
-    lastDeadline.current = deadline;
-    sound.scheduleCountdown(conn.msUntil(deadline));
-  }, [deadline]);
+    if (deadline === null) return
+    lastDeadline.current = deadline
+    sound.scheduleCountdown(conn.msUntil(deadline))
+  }, [deadline])
 
-  useEffect(() => () => sound.stopAll(), []);
+  useEffect(() => () => sound.stopAll(), [])
 }

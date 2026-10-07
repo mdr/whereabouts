@@ -1,21 +1,21 @@
-import { playerColour, type Award, type GameView, type PlayerView } from "@whereabouts/shared";
-import type { Connection } from "../net";
-import { Icon } from "../ui/icons";
-import { HostTag, HostWord } from "../ui/PlayerList";
-import { Banner } from "../ui/Banner";
-import { resultsTestIds } from "./ResultsTestIds";
+import { playerColour, type Award, type GameView, type PlayerView } from "@whereabouts/shared"
+import type { Connection } from "../net"
+import { Icon } from "../ui/icons"
+import { HostTag, HostWord } from "../ui/PlayerList"
+import { Banner } from "../ui/Banner"
+import { resultsTestIds } from "./ResultsTestIds"
 
-const MEDALS = ["🥇", "🥈", "🥉"];
+const MEDALS = ["🥇", "🥈", "🥉"]
 
 export function Results({ conn, view }: { conn: Connection; view: GameView }) {
-  const byId = new Map(view.players.map((p) => [p.id, p]));
-  const standings = view.results ?? [];
-  const winner = standings[0] ? byId.get(standings[0].playerId) : undefined;
+  const byId = new Map(view.players.map((p) => [p.id, p]))
+  const standings = view.results ?? []
+  const winner = standings[0] ? byId.get(standings[0].playerId) : undefined
   // The top score in each round, so each round's winner is picked out.
-  const roundCount = Math.max(0, ...standings.map((s) => s.rounds.length));
+  const roundCount = Math.max(0, ...standings.map((s) => s.rounds.length))
   const roundBest = Array.from({ length: roundCount }, (_, r) =>
-    Math.max(-1, ...standings.map((s) => s.rounds[r] ?? -1)),
-  );
+    Math.max(-1, ...standings.map((s) => s.rounds[r] ?? -1))
+  )
   return (
     <div class="home">
       <div class="home-card results-card" data-testid={resultsTestIds.page}>
@@ -29,7 +29,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         {/* Total first and largest; the round scores sit underneath as a small strip, each round's winner in bold. */}
         <ol class="standings" aria-label="Final standings">
           {standings.map((s, i) => {
-            const p = byId.get(s.playerId);
+            const p = byId.get(s.playerId)
             return (
               <li
                 key={s.playerId}
@@ -64,7 +64,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
                   </span>
                 </span>
               </li>
-            );
+            )
           })}
         </ol>
         {view.awards && view.awards.length > 0 && <Awards awards={view.awards} byId={byId} />}
@@ -82,7 +82,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         </p>
       </div>
     </div>
-  );
+  )
 }
 
 function Awards({ awards, byId }: { awards: Award[]; byId: Map<string, PlayerView> }) {
@@ -105,7 +105,7 @@ function Awards({ awards, byId }: { awards: Award[]; byId: Map<string, PlayerVie
         ))}
       </ul>
     </section>
-  );
+  )
 }
 
 /** The line with each {n} replaced by that player's name, in their colour. */
@@ -113,15 +113,15 @@ function AwardLine({ line, players }: { line: string; players: (PlayerView | und
   return (
     <>
       {line.split(/(\{\d\})/).map((part, i) => {
-        const m = /^\{(\d)\}$/.exec(part);
-        if (!m) return part;
-        const p = players[Number(m[1])];
+        const m = /^\{(\d)\}$/.exec(part)
+        if (!m) return part
+        const p = players[Number(m[1])]
         return (
           <b key={i} class="award-name" style={{ color: p ? playerColour(p.colour) : undefined }}>
             {p?.name ?? "Someone"}
           </b>
-        );
+        )
       })}
     </>
-  );
+  )
 }

@@ -1,3 +1,3 @@
 export const devDrawerTestIds = {
-  drawer: "DevDrawer.drawer",
-};
+  drawer: "DevDrawer.drawer"
+}

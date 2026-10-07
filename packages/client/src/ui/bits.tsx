@@ -1,19 +1,19 @@
-import type { ComponentChildren } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
-import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type QuestionView } from "@whereabouts/shared";
-import { Icon } from "./icons";
-import { soundOn } from "../settings";
-import { flagUrl } from "../flags";
+import type { ComponentChildren } from "preact"
+import { useEffect, useRef, useState } from "preact/hooks"
+import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type QuestionView } from "@whereabouts/shared"
+import { Icon } from "./icons"
+import { soundOn } from "../settings"
+import { flagUrl } from "../flags"
 import {
   countdownTestIds,
   hudBottomTestIds,
   hudHeaderTestIds,
   questionCardTestIds,
-  soundToggleTestIds,
-} from "./bitsTestIds";
+  soundToggleTestIds
+} from "./bitsTestIds"
 
 export function fmtKm(km: number): string {
-  return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km).toLocaleString()} km`;
+  return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km).toLocaleString()} km`
 }
 
 export function Card({ title, children, class: cls }: { title?: string; children: ComponentChildren; class?: string }) {
@@ -22,7 +22,7 @@ export function Card({ title, children, class: cls }: { title?: string; children
       {title && <h2>{title}</h2>}
       {children}
     </div>
-  );
+  )
 }
 
 /**
@@ -32,30 +32,30 @@ export function Card({ title, children, class: cls }: { title?: string; children
  * full width.
  */
 export function HudBottom({ children }: { children: ComponentChildren }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const el = ref.current;
-    const root = document.documentElement;
-    if (!el || typeof ResizeObserver === "undefined") return;
-    const publish = () => root.style.setProperty("--toolbar-h", `${el.offsetHeight}px`);
-    publish();
-    const ro = new ResizeObserver(publish);
-    ro.observe(el);
+    const el = ref.current
+    const root = document.documentElement
+    if (!el || typeof ResizeObserver === "undefined") return
+    const publish = () => root.style.setProperty("--toolbar-h", `${el.offsetHeight}px`)
+    publish()
+    const ro = new ResizeObserver(publish)
+    ro.observe(el)
     return () => {
-      ro.disconnect();
-      root.style.removeProperty("--toolbar-h");
-    };
-  }, []);
+      ro.disconnect()
+      root.style.removeProperty("--toolbar-h")
+    }
+  }, [])
   return (
     <div class="hud-bottom toolbar" ref={ref} data-testid={hudBottomTestIds.toolbar}>
       {children}
     </div>
-  );
+  )
 }
 
 /** The per-device sound switch as a speaker button. */
 export function SoundToggle() {
-  const on = soundOn.value;
+  const on = soundOn.value
   return (
     <button
       type="button"
@@ -68,7 +68,7 @@ export function SoundToggle() {
     >
       <Icon name={on ? "soundOn" : "soundOff"} />
     </button>
-  );
+  )
 }
 
 /**
@@ -80,12 +80,12 @@ export function HudHeader({
   home,
   round,
   total,
-  right,
+  right
 }: {
-  home?: boolean;
-  round: number;
-  total: number | string;
-  right?: ComponentChildren;
+  home?: boolean
+  round: number
+  total: number | string
+  right?: ComponentChildren
 }) {
   return (
     <div class="hud-header">
@@ -105,7 +105,7 @@ export function HudHeader({
       <SoundToggle />
       {right}
     </div>
-  );
+  )
 }
 
 /** The revealed answer, with a link to read about it on Wikipedia. */
@@ -117,18 +117,18 @@ export function Answer({ label, wiki }: { label: string; wiki?: string }) {
         Wikipedia <Icon name="external" size={12} />
       </a>
     </p>
-  );
+  )
 }
 
 export function QuestionCard({
   q,
   children,
-  credit,
+  credit
 }: {
-  q: QuestionView;
-  children?: ComponentChildren;
+  q: QuestionView
+  children?: ComponentChildren
   /** Show the image credit link. Off while guessing: the Commons file name gives the answer away. */
-  credit?: boolean;
+  credit?: boolean
 }) {
   return (
     <div class="card question" data-testid={questionCardTestIds.card}>
@@ -139,28 +139,28 @@ export function QuestionCard({
       {q.flag && <FlagImage code={q.flag} />}
       {children}
     </div>
-  );
+  )
 }
 
 /** The picture of a flag, once its chunk has loaded. */
 function useFlagUrl(code: string): string | null {
-  const [src, setSrc] = useState<string | null>(null);
+  const [src, setSrc] = useState<string | null>(null)
   useEffect(() => {
-    let live = true;
-    setSrc(null);
-    void flagUrl(code).then((url) => live && setSrc(url));
+    let live = true
+    setSrc(null)
+    void flagUrl(code).then((url) => live && setSrc(url))
     return () => {
-      live = false;
-    };
-  }, [code]);
-  return src;
+      live = false
+    }
+  }, [code])
+  return src
 }
 
 /** A flag round's flag; click it to enlarge. No alt text naming it: that would give the answer away. */
 function FlagImage({ code }: { code: string }) {
-  const src = useFlagUrl(code);
-  const [large, setLarge] = useState(false);
-  useEscape(large, () => setLarge(false));
+  const src = useFlagUrl(code)
+  const [large, setLarge] = useState(false)
+  useEscape(large, () => setLarge(false))
   return (
     <>
       <button type="button" class="flag" title="Enlarge the flag" disabled={!src} onClick={() => setLarge(true)}>
@@ -172,25 +172,25 @@ function FlagImage({ code }: { code: string }) {
       </button>
       {large && src && <Lightbox src={src} kind="flag" credit={null} onClose={() => setLarge(false)} />}
     </>
-  );
+  )
 }
 
 /** Calls `close` on Escape while `open`. */
 function useEscape(open: boolean, close: () => void): void {
   useEffect(() => {
-    if (!open) return;
+    if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+      if (e.key === "Escape") close()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [open])
 }
 
 /** A small flag beside a country's name, which says the name: no alt text of its own. */
 export function SmallFlag({ code }: { code: string }) {
-  const src = useFlagUrl(code);
-  return <span class="small-flag">{src && <img src={src} alt="" draggable={false} />}</span>;
+  const src = useFlagUrl(code)
+  return <span class="small-flag">{src && <img src={src} alt="" draggable={false} />}</span>
 }
 
 /**
@@ -214,7 +214,7 @@ export function AnswerMode({ area }: { area: boolean }) {
         <span>A place, not a shape: the tighter your paint, the surer you are.</span>
       </div>
     </div>
-  );
+  )
 }
 
 /**
@@ -223,16 +223,16 @@ export function AnswerMode({ area }: { area: boolean }) {
  * info icon linking to the file page.
  */
 /** Whether a photo has shown its "Enlarge" label yet this session: after the first, just the icon. */
-let enlargeLabelShown = false;
+let enlargeLabelShown = false
 
 function QuestionImage({ image, credit: showCredit }: { image: string; credit: boolean }) {
-  const [large, setLarge] = useState(false);
+  const [large, setLarge] = useState(false)
   const [withLabel] = useState(() => {
-    const first = !enlargeLabelShown;
-    enlargeLabelShown = true;
-    return first;
-  });
-  useEscape(large, () => setLarge(false));
+    const first = !enlargeLabelShown
+    enlargeLabelShown = true
+    return first
+  })
+  useEscape(large, () => setLarge(false))
   const credit = !showCredit ? null : (
     <a
       class="credit-icon"
@@ -245,7 +245,7 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
     >
       <Icon name="info" size={14} />
     </a>
-  );
+  )
   return (
     <>
       <div class="thumb" data-testid={questionCardTestIds.photo}>
@@ -264,11 +264,11 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
         <Lightbox src={commonsImageUrl(image, 1600)} kind="photo" credit={credit} onClose={() => setLarge(false)} />
       )}
     </>
-  );
+  )
 }
 
-const MAX_ZOOM = 6;
-const CLICK_ZOOM = 2.5;
+const MAX_ZOOM = 6
+const CLICK_ZOOM = 2.5
 
 /**
  * The enlarged photo or flag. Scroll or pinch to zoom about the pointer, drag to pan
@@ -280,89 +280,89 @@ function Lightbox({
   src,
   kind,
   credit,
-  onClose,
+  onClose
 }: {
-  src: string;
-  kind: "photo" | "flag";
-  credit: ComponentChildren;
-  onClose: () => void;
+  src: string
+  kind: "photo" | "flag"
+  credit: ComponentChildren
+  onClose: () => void
 }) {
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const frame = useRef<HTMLDivElement>(null);
-  const pointers = useRef(new Map<number, { x: number; y: number }>());
-  const pinchDist = useRef<number | null>(null);
-  const dragged = useRef(false);
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const frame = useRef<HTMLDivElement>(null)
+  const pointers = useRef(new Map<number, { x: number; y: number }>())
+  const pinchDist = useRef<number | null>(null)
+  const dragged = useRef(false)
 
   /** Zoom by `factor` keeping the point (cx, cy), relative to the frame centre, fixed. */
   function zoomAt(factor: number, cx: number, cy: number) {
-    const next = Math.min(MAX_ZOOM, Math.max(1, zoom * factor));
-    if (next === zoom) return;
-    const k = next / zoom;
-    setPan(next === 1 ? { x: 0, y: 0 } : { x: pan.x * k + cx * (1 - k), y: pan.y * k + cy * (1 - k) });
-    setZoom(next);
+    const next = Math.min(MAX_ZOOM, Math.max(1, zoom * factor))
+    if (next === zoom) return
+    const k = next / zoom
+    setPan(next === 1 ? { x: 0, y: 0 } : { x: pan.x * k + cx * (1 - k), y: pan.y * k + cy * (1 - k) })
+    setZoom(next)
   }
   /** Client coordinates to an offset from the frame centre. */
   function fromCentre(clientX: number, clientY: number) {
-    const r = frame.current?.getBoundingClientRect();
-    if (!r) return { cx: 0, cy: 0 };
-    return { cx: clientX - (r.left + r.width / 2), cy: clientY - (r.top + r.height / 2) };
+    const r = frame.current?.getBoundingClientRect()
+    if (!r) return { cx: 0, cy: 0 }
+    return { cx: clientX - (r.left + r.width / 2), cy: clientY - (r.top + r.height / 2) }
   }
 
   const onWheel = (e: WheelEvent) => {
-    e.preventDefault();
-    const { cx, cy } = fromCentre(e.clientX, e.clientY);
-    zoomAt(Math.exp(-e.deltaY * 0.002), cx, cy);
-  };
+    e.preventDefault()
+    const { cx, cy } = fromCentre(e.clientX, e.clientY)
+    zoomAt(Math.exp(-e.deltaY * 0.002), cx, cy)
+  }
   const onPointerDown = (e: PointerEvent) => {
     // Captured, the click that follows goes to the frame, so onClick lives there; the credit link keeps its own.
-    if (!(e.target as Element).closest("a")) (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    dragged.current = false;
-    if (pointers.current.size === 2) pinchDist.current = pinchDistance();
-  };
+    if (!(e.target as Element).closest("a")) (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    dragged.current = false
+    if (pointers.current.size === 2) pinchDist.current = pinchDistance()
+  }
   const onPointerMove = (e: PointerEvent) => {
-    const prev = pointers.current.get(e.pointerId);
-    if (!prev) return;
-    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const prev = pointers.current.get(e.pointerId)
+    if (!prev) return
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     if (pointers.current.size === 2 && pinchDist.current) {
-      const dist = pinchDistance();
-      const [a, b] = [...pointers.current.values()];
-      const { cx, cy } = fromCentre((a!.x + b!.x) / 2, (a!.y + b!.y) / 2);
-      zoomAt(dist / pinchDist.current, cx, cy);
-      pinchDist.current = dist;
-      dragged.current = true;
+      const dist = pinchDistance()
+      const [a, b] = [...pointers.current.values()]
+      const { cx, cy } = fromCentre((a!.x + b!.x) / 2, (a!.y + b!.y) / 2)
+      zoomAt(dist / pinchDist.current, cx, cy)
+      pinchDist.current = dist
+      dragged.current = true
     } else if (pointers.current.size === 1 && zoom > 1) {
-      const dx = e.clientX - prev.x;
-      const dy = e.clientY - prev.y;
-      if (Math.abs(dx) + Math.abs(dy) > 2) dragged.current = true;
-      setPan({ x: pan.x + dx, y: pan.y + dy });
+      const dx = e.clientX - prev.x
+      const dy = e.clientY - prev.y
+      if (Math.abs(dx) + Math.abs(dy) > 2) dragged.current = true
+      setPan({ x: pan.x + dx, y: pan.y + dy })
     }
-  };
+  }
   const onPointerUp = (e: PointerEvent) => {
-    pointers.current.delete(e.pointerId);
-    if (pointers.current.size < 2) pinchDist.current = null;
-  };
+    pointers.current.delete(e.pointerId)
+    if (pointers.current.size < 2) pinchDist.current = null
+  }
   function pinchDistance() {
-    const [a, b] = [...pointers.current.values()];
-    return Math.hypot(a!.x - b!.x, a!.y - b!.y) || 1;
+    const [a, b] = [...pointers.current.values()]
+    return Math.hypot(a!.x - b!.x, a!.y - b!.y) || 1
   }
   const onFrameClick = (e: MouseEvent) => {
-    e.stopPropagation();
-    if ((e.target as Element).closest("a")) return;
-    if (dragged.current) return; // the end of a drag or pinch, not a click
-    if (zoom > 1) zoomAt(1 / zoom, 0, 0);
+    e.stopPropagation()
+    if ((e.target as Element).closest("a")) return
+    if (dragged.current) return // the end of a drag or pinch, not a click
+    if (zoom > 1) zoomAt(1 / zoom, 0, 0)
     else {
-      const { cx, cy } = fromCentre(e.clientX, e.clientY);
-      zoomAt(CLICK_ZOOM, cx, cy);
+      const { cx, cy } = fromCentre(e.clientX, e.clientY)
+      zoomAt(CLICK_ZOOM, cx, cy)
     }
-  };
+  }
 
   return (
     <div
       class="lightbox"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) onClose()
       }}
       title="Scroll or pinch to zoom, drag to pan; click the backdrop or press Escape to close"
     >
@@ -390,26 +390,26 @@ function Lightbox({
         {credit}
       </div>
     </div>
-  );
+  )
 }
 
 /** Ticks once a second; returns whole seconds remaining, never negative. */
 function useCountdown(msRemaining: () => number): number {
-  const [, force] = useState(0);
+  const [, force] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => force((n) => n + 1), 250);
-    return () => clearInterval(id);
-  }, []);
-  return Math.max(0, Math.ceil(msRemaining() / 1000));
+    const id = setInterval(() => force((n) => n + 1), 250)
+    return () => clearInterval(id)
+  }, [])
+  return Math.max(0, Math.ceil(msRemaining() / 1000))
 }
 
 export function Countdown({ msRemaining, warnAt = 10 }: { msRemaining: () => number; warnAt?: number }) {
-  const s = useCountdown(msRemaining);
+  const s = useCountdown(msRemaining)
   return (
     <div class={`countdown ${s <= warnAt ? "warn" : ""}`} data-testid={countdownTestIds.countdown}>
       {s}
     </div>
-  );
+  )
 }
 
 /** Score, A and B in the dev drawer. */
@@ -426,5 +426,5 @@ export function ScoreParts({ A, B }: { A: number; B: number }) {
         2A−B <b>{(2 * A - B).toFixed(3)}</b>
       </span>
     </div>
-  );
+  )
 }

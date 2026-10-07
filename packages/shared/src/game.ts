@@ -3,21 +3,14 @@
  * and poll `nextWakeAt()` to know when to call `tick`. Every mutator returns
  * whether anything changed so the transport layer can rebroadcast views.
  */
-import {
-  DEFAULT_KERNEL,
-  PASS_SCORE,
-  buildDistribution,
-  kernelById,
-  scoreDistribution,
-  type Kernel,
-} from "./scoring.ts";
-import { PaintLayer, resolutionForTolerance } from "./paint.ts";
-import { pickQuestions, shuffle, type Question } from "./questions.ts";
-import { regionFit, regionMisfit, scoreRegionQuestion, type RegionQuestion } from "./regions.ts";
-import { explainPoint, isHedge } from "./explain.ts";
-import { pickAwards, type Award, type RoundFacts } from "./awards.ts";
-import { flagRound, type FlagQuestion } from "./flags.ts";
-import { MAX_PLAYERS, MAX_SPECTATORS, QUESTION_TYPES, SEAT_GRACE_MS, evenMix, mixTotal } from "./protocol.ts";
+import { DEFAULT_KERNEL, PASS_SCORE, buildDistribution, kernelById, scoreDistribution, type Kernel } from "./scoring.ts"
+import { PaintLayer, resolutionForTolerance } from "./paint.ts"
+import { pickQuestions, shuffle, type Question } from "./questions.ts"
+import { regionFit, regionMisfit, scoreRegionQuestion, type RegionQuestion } from "./regions.ts"
+import { explainPoint, isHedge } from "./explain.ts"
+import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
+import { flagRound, type FlagQuestion } from "./flags.ts"
+import { MAX_PLAYERS, MAX_SPECTATORS, QUESTION_TYPES, SEAT_GRACE_MS, evenMix, mixTotal } from "./protocol.ts"
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -28,85 +21,85 @@ import type {
   PlayerView,
   QuestionView,
   RevealView,
-  RoundResultView,
-} from "./protocol.ts";
+  RoundResultView
+} from "./protocol.ts"
 
 export const DEFAULT_CONFIG: GameConfig = {
   rounds: 8,
   roundMs: 60_000,
   mix: evenMix(8),
   mapDetail: "minimal",
-  kernelId: DEFAULT_KERNEL.id,
-};
+  kernelId: DEFAULT_KERNEL.id
+}
 
 /**
  * How long after the deadline a round is scored. Clients stop painting at
  * zero and send what they have; this lets that paint arrive.
  */
-export const ROUND_GRACE_MS = 1000;
+export const ROUND_GRACE_MS = 1000
 
 interface Player {
-  id: string;
-  token: string;
-  name: string;
+  id: string
+  token: string
+  name: string
   /** Index into the palette, or -1 while watching. */
-  colour: number;
+  colour: number
   /** A spectator: sees every round, plays none, and is never waited on. */
-  watching: boolean;
-  connected: boolean;
+  watching: boolean
+  connected: boolean
   /** When the connection dropped, while it is down. */
-  leftAt: number | null;
-  joinedAt: number;
+  leftAt: number | null
+  joinedAt: number
   /** First round index this player may play. Later joiners sit out the current one. */
-  joinedRound: number;
+  joinedRound: number
   /** By round index; a hole for each round not played. */
-  scores: (number | undefined)[];
+  scores: (number | undefined)[]
   /** By round index, for the awards; a hole for each round not played. */
-  facts: (RoundFacts | undefined)[];
-  previousRank: number | null;
+  facts: (RoundFacts | undefined)[]
+  previousRank: number | null
 }
 
 interface Submission {
-  paint: PaintSubmission;
-  locked: boolean;
+  paint: PaintSubmission
+  locked: boolean
   /** When the player last locked in. */
-  lockedAt?: number;
+  lockedAt?: number
 }
 
-export type CommandResult = { ok: true; changed: boolean } | { ok: false; error: string };
+export type CommandResult = { ok: true; changed: boolean } | { ok: false; error: string }
 
-const OK_CHANGED: CommandResult = { ok: true, changed: true };
-const OK_SAME: CommandResult = { ok: true, changed: false };
-const fail = (error: string): CommandResult => ({ ok: false, error });
+const OK_CHANGED: CommandResult = { ok: true, changed: true }
+const OK_SAME: CommandResult = { ok: true, changed: false }
+const fail = (error: string): CommandResult => ({ ok: false, error })
 
 export class Game {
-  readonly code: string;
-  config: GameConfig;
-  private readonly pool: Question[];
+  readonly code: string
+  config: GameConfig
+  private readonly pool: Question[]
   /** Countries for "Paint the whole of …" rounds; the server passes regions.json. */
-  private readonly regions: RegionQuestion[];
+  private readonly regions: RegionQuestion[]
   /** Flag rounds, from flags.json and the countries: each a region or a point question. */
-  private readonly flagRounds: (Question | RegionQuestion)[];
-  private readonly kernel: Kernel;
+  private readonly flagRounds: (Question | RegionQuestion)[]
+  private readonly kernel: Kernel
 
-  phase: Phase = "lobby";
-  private players = new Map<string, Player>();
-  private hostToken: string | null = null;
-  private nextPlayerId = 1;
+  phase: Phase = "lobby"
+  private players = new Map<string, Player>()
+  private hostToken: string | null = null
+  private nextPlayerId = 1
 
-  private questions: (Question | RegionQuestion)[] = [];
-  private roundIndex = -1;
-  private deadline = 0;
-  private submissions = new Map<string, Submission>();
+  private questions: (Question | RegionQuestion)[] = []
+  private roundIndex = -1
+  private deadline = 0
+  private submissions = new Map<string, Submission>()
   /** Tokens of players who have pressed Ready on the current reveal. */
-  private ready_ = new Set<string>();
-  private reveal: RevealView | null = null;
-  private results: FinalStanding[] | null = null;
-  private awards: Award[] | null = null;
+  private ready_ = new Set<string>()
+  private reveal: RevealView | null = null
+  private results: FinalStanding[] | null = null
+  private awards: Award[] | null = null
   /** Tokens the host has removed; they may not reclaim a seat. */
-  private kicked = new Set<string>();
+  private kicked = new Set<string>()
 
-  private seed: number;
+  private seed: number
 
   constructor(
     code: string,
@@ -114,38 +107,38 @@ export class Game {
     config: Partial<GameConfig> = {},
     seed = Date.now(),
     regions: RegionQuestion[] = [],
-    flags: FlagQuestion[] = [],
+    flags: FlagQuestion[] = []
   ) {
-    this.seed = seed;
-    this.code = code;
+    this.seed = seed
+    this.code = code
     // A mix sets the rounds; a length alone (ROUNDS on the server, tests) is an even mix of that length.
-    const mix = config.mix ?? (config.rounds !== undefined ? evenMix(config.rounds) : DEFAULT_CONFIG.mix);
-    this.config = { ...DEFAULT_CONFIG, ...config, mix, rounds: mixTotal(mix) };
-    this.pool = pool;
-    this.regions = regions;
-    const byId = new Map(regions.map((q) => [q.id, q]));
-    this.flagRounds = flags.flatMap((f) => flagRound(f, byId) ?? []);
-    this.kernel = kernelById(this.config.kernelId);
-    if (pool.length === 0) throw new Error("question pool is empty");
+    const mix = config.mix ?? (config.rounds !== undefined ? evenMix(config.rounds) : DEFAULT_CONFIG.mix)
+    this.config = { ...DEFAULT_CONFIG, ...config, mix, rounds: mixTotal(mix) }
+    this.pool = pool
+    this.regions = regions
+    const byId = new Map(regions.map((q) => [q.id, q]))
+    this.flagRounds = flags.flatMap((f) => flagRound(f, byId) ?? [])
+    this.kernel = kernelById(this.config.kernelId)
+    if (pool.length === 0) throw new Error("question pool is empty")
   }
 
   // ---- membership ----------------------------------------------------------
 
   /** The lowest colour no current player has, so a removed player's colour is reused. */
   private freeColour(): number {
-    const used = new Set(this.playing().map((p) => p.colour));
-    let colour = 0;
-    while (used.has(colour)) colour++;
-    return colour;
+    const used = new Set(this.playing().map((p) => p.colour))
+    let colour = 0
+    while (used.has(colour)) colour++
+    return colour
   }
 
   /** The players, leaving out spectators. */
   private playing(): Player[] {
-    return [...this.players.values()].filter((p) => !p.watching);
+    return [...this.players.values()].filter((p) => !p.watching)
   }
 
   private watcherCount(): number {
-    return this.players.size - this.playing().length;
+    return this.players.size - this.playing().length
   }
 
   /**
@@ -155,21 +148,21 @@ export class Game {
    * there is room for another spectator.
    */
   join(token: string, name: string, now: number, watch = false): CommandResult {
-    const existing = this.players.get(token);
+    const existing = this.players.get(token)
     if (existing) {
-      existing.connected = true;
-      existing.leftAt = null;
-      this.hostToken ??= token;
-      return OK_CHANGED;
+      existing.connected = true
+      existing.leftAt = null
+      this.hostToken ??= token
+      return OK_CHANGED
     }
-    if (this.kicked.has(token)) return fail("removed by the host");
-    if (this.phase === "results") return fail("game has finished");
-    const seatFree = this.playing().length < MAX_PLAYERS;
-    const roomToWatch = this.watcherCount() < MAX_SPECTATORS;
-    let watching: boolean;
-    if (!watch && seatFree) watching = false;
-    else if (roomToWatch) watching = true;
-    else return fail(seatFree ? "no room to watch" : "game is full");
+    if (this.kicked.has(token)) return fail("removed by the host")
+    if (this.phase === "results") return fail("game has finished")
+    const seatFree = this.playing().length < MAX_PLAYERS
+    const roomToWatch = this.watcherCount() < MAX_SPECTATORS
+    let watching: boolean
+    if (!watch && seatFree) watching = false
+    else if (roomToWatch) watching = true
+    else return fail(seatFree ? "no room to watch" : "game is full")
     const player: Player = {
       id: `p${this.nextPlayerId++}`,
       token,
@@ -182,11 +175,11 @@ export class Game {
       joinedRound: this.phase === "lobby" ? 0 : this.roundIndex + 1,
       scores: [],
       facts: [],
-      previousRank: null,
-    };
-    this.players.set(token, player);
-    this.hostToken ??= token;
-    return OK_CHANGED;
+      previousRank: null
+    }
+    this.players.set(token, player)
+    this.hostToken ??= token
+    return OK_CHANGED
   }
 
   /**
@@ -196,13 +189,13 @@ export class Game {
    * acts as host in the meantime.
    */
   disconnect(token: string, now: number): CommandResult {
-    const player = this.players.get(token);
-    if (!player) return OK_SAME;
-    player.connected = false;
-    player.leftAt = now;
+    const player = this.players.get(token)
+    if (!player) return OK_SAME
+    player.connected = false
+    player.leftAt = now
     // The others should not wait on someone who has gone.
-    this.settleIfEveryoneDone(now);
-    return OK_CHANGED;
+    this.settleIfEveryoneDone(now)
+    return OK_CHANGED
   }
 
   /**
@@ -211,59 +204,59 @@ export class Game {
    * lobby only; mid-game the seat is kept whatever happens.
    */
   leave(token: string): CommandResult {
-    if (!this.players.has(token)) return fail("unknown player");
-    if (this.phase !== "lobby") return fail("you can only leave from the lobby");
-    this.players.delete(token);
-    if (this.hostToken === token) this.hostToken = this.pickHost();
-    return OK_CHANGED;
+    if (!this.players.has(token)) return fail("unknown player")
+    if (this.phase !== "lobby") return fail("you can only leave from the lobby")
+    this.players.delete(token)
+    if (this.hostToken === token) this.hostToken = this.pickHost()
+    return OK_CHANGED
   }
 
   private pickHost(): string | null {
-    let best: Player | null = null;
+    let best: Player | null = null
     for (const p of this.players.values()) {
-      if (!p.connected) continue;
-      if (!best || p.joinedAt < best.joinedAt) best = p;
+      if (!p.connected) continue
+      if (!best || p.joinedAt < best.joinedAt) best = p
     }
-    return best?.token ?? null;
+    return best?.token ?? null
   }
 
   /** Who may use the host controls right now: the host if connected, else the acting host. */
   private effectiveHost(): string | null {
-    const host = this.hostToken ? this.players.get(this.hostToken) : undefined;
-    if (host?.connected) return host.token;
-    return this.pickHost() ?? this.hostToken;
+    const host = this.hostToken ? this.players.get(this.hostToken) : undefined
+    if (host?.connected) return host.token
+    return this.pickHost() ?? this.hostToken
   }
 
   private isHost(token: string): boolean {
-    return this.effectiveHost() === token;
+    return this.effectiveHost() === token
   }
 
   get playerCount(): number {
-    return this.players.size;
+    return this.players.size
   }
 
   get connectedCount(): number {
-    let n = 0;
-    for (const p of this.players.values()) if (p.connected) n++;
-    return n;
+    let n = 0
+    for (const p of this.players.values()) if (p.connected) n++
+    return n
   }
 
   // ---- host commands -------------------------------------------------------
 
   start(token: string, now: number): CommandResult {
-    if (!this.isHost(token)) return fail("only the host can start");
-    if (this.phase !== "lobby") return fail("game already started");
-    if (this.playing().length === 0) return fail("no players");
-    this.questions = this.pickRounds();
+    if (!this.isHost(token)) return fail("only the host can start")
+    if (this.phase !== "lobby") return fail("game already started")
+    if (this.playing().length === 0) return fail("no players")
+    this.questions = this.pickRounds()
     for (const p of this.players.values()) {
-      p.scores = [];
-      p.facts = [];
-      p.previousRank = null;
-      p.joinedRound = 0;
+      p.scores = []
+      p.facts = []
+      p.previousRank = null
+      p.joinedRound = 0
     }
-    this.results = null;
-    this.beginRound(0, now);
-    return OK_CHANGED;
+    this.results = null
+    this.beginRound(0, now)
+    return OK_CHANGED
   }
 
   /**
@@ -274,65 +267,65 @@ export class Game {
    * another way ("Where is Monaco?" and Monaco's flag, say).
    */
   private pickRounds(): (Question | RegionQuestion)[] {
-    const { landmarks, places, countries, flags } = this.config.mix;
-    const named = landmarks + places;
-    const picked = pickQuestions(this.pool, named, this.seed, named > 0 ? landmarks / named : 0.5);
-    if (countries === 0 && flags === 0) return picked;
-    const asked = new Set(picked.map((q) => q.label));
-    const fresh = (q: Question | RegionQuestion) => !asked.has(q.id) && !asked.has(q.label);
+    const { landmarks, places, countries, flags } = this.config.mix
+    const named = landmarks + places
+    const picked = pickQuestions(this.pool, named, this.seed, named > 0 ? landmarks / named : 0.5)
+    if (countries === 0 && flags === 0) return picked
+    const asked = new Set(picked.map((q) => q.label))
+    const fresh = (q: Question | RegionQuestion) => !asked.has(q.id) && !asked.has(q.label)
     const regions = shuffle(this.regions, this.seed ^ 0x2545f491)
       .filter(fresh)
-      .slice(0, countries);
-    for (const q of regions) asked.add(q.id).add(q.label);
+      .slice(0, countries)
+    for (const q of regions) asked.add(q.id).add(q.label)
     const flagged = shuffle(this.flagRounds, this.seed ^ 0x68e31da4)
       .filter(fresh)
-      .slice(0, flags);
-    return shuffle<Question | RegionQuestion>([...picked, ...regions, ...flagged], this.seed ^ 0x5bd1e995);
+      .slice(0, flags)
+    return shuffle<Question | RegionQuestion>([...picked, ...regions, ...flagged], this.seed ^ 0x5bd1e995)
   }
 
   /** Host tunes the question mix (and so the rounds), round length and map detail while everyone is still in the lobby. */
   configure(token: string, patch: ConfigurePatch): CommandResult {
-    if (!this.isHost(token)) return fail("only the host can change settings");
-    if (this.phase !== "lobby") return fail("settings are locked once the game starts");
-    const mix = patch.mix ?? this.config.mix;
-    const next = { ...this.config, ...patch, mix, rounds: mixTotal(mix) };
+    if (!this.isHost(token)) return fail("only the host can change settings")
+    if (this.phase !== "lobby") return fail("settings are locked once the game starts")
+    const mix = patch.mix ?? this.config.mix
+    const next = { ...this.config, ...patch, mix, rounds: mixTotal(mix) }
     if (
       next.roundMs === this.config.roundMs &&
       next.mapDetail === this.config.mapDetail &&
       QUESTION_TYPES.every((t) => mix[t.id] === this.config.mix[t.id])
     )
-      return OK_SAME;
-    this.config = next;
-    return OK_CHANGED;
+      return OK_SAME
+    this.config = next
+    return OK_CHANGED
   }
 
   /** Host advances from the reveal without waiting for the others. */
   next(token: string, now: number): CommandResult {
-    if (!this.isHost(token)) return fail("only the host can advance");
-    if (this.phase !== "reveal") return fail("nothing to advance");
-    this.advance(now);
-    return OK_CHANGED;
+    if (!this.isHost(token)) return fail("only the host can advance")
+    if (this.phase !== "reveal") return fail("nothing to advance")
+    this.advance(now)
+    return OK_CHANGED
   }
 
   again(token: string, now: number): CommandResult {
-    if (!this.isHost(token)) return fail("only the host can restart");
-    if (this.phase !== "results") return fail("game is still running");
-    this.phase = "lobby";
-    this.roundIndex = -1;
-    this.reveal = null;
-    this.results = null;
-    this.awards = null;
-    this.submissions.clear();
-    this.ready_.clear();
-    this.seed = now;
+    if (!this.isHost(token)) return fail("only the host can restart")
+    if (this.phase !== "results") return fail("game is still running")
+    this.phase = "lobby"
+    this.roundIndex = -1
+    this.reveal = null
+    this.results = null
+    this.awards = null
+    this.submissions.clear()
+    this.ready_.clear()
+    this.seed = now
     for (const p of this.players.values()) {
-      p.scores = [];
-      p.previousRank = null;
-      p.joinedRound = 0;
+      p.scores = []
+      p.previousRank = null
+      p.joinedRound = 0
     }
-    for (const [tok, p] of this.players) if (!p.connected) this.players.delete(tok);
-    if (this.hostToken === null || !this.players.has(this.hostToken)) this.hostToken = this.pickHost();
-    return OK_CHANGED;
+    for (const [tok, p] of this.players) if (!p.connected) this.players.delete(tok)
+    if (this.hostToken === null || !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
+    return OK_CHANGED
   }
 
   /**
@@ -342,42 +335,42 @@ export class Game {
    * from the next. Not on the final results; Play again starts a new lobby.
    */
   setRole(token: string, watch: boolean): CommandResult {
-    const player = this.players.get(token);
-    if (!player) return fail("unknown player");
-    if (player.watching === watch) return OK_SAME;
-    if (watch && this.phase !== "lobby") return fail("you can only switch to watching in the lobby");
-    if (this.phase === "results") return fail("game has finished");
+    const player = this.players.get(token)
+    if (!player) return fail("unknown player")
+    if (player.watching === watch) return OK_SAME
+    if (watch && this.phase !== "lobby") return fail("you can only switch to watching in the lobby")
+    if (this.phase === "results") return fail("game has finished")
     if (watch) {
-      if (this.watcherCount() >= MAX_SPECTATORS) return fail("no room to watch");
-      player.watching = true;
-      player.colour = -1;
+      if (this.watcherCount() >= MAX_SPECTATORS) return fail("no room to watch")
+      player.watching = true
+      player.colour = -1
     } else {
-      if (this.playing().length >= MAX_PLAYERS) return fail("game is full");
-      player.watching = false;
-      player.colour = this.freeColour();
-      player.joinedRound = this.phase === "lobby" ? 0 : this.roundIndex + 1;
-      player.scores = [];
-      player.facts = [];
-      player.previousRank = null;
+      if (this.playing().length >= MAX_PLAYERS) return fail("game is full")
+      player.watching = false
+      player.colour = this.freeColour()
+      player.joinedRound = this.phase === "lobby" ? 0 : this.roundIndex + 1
+      player.scores = []
+      player.facts = []
+      player.previousRank = null
     }
-    return OK_CHANGED;
+    return OK_CHANGED
   }
 
   /** Hand the host role to another connected player, for good. */
   makeHost(token: string, playerId: string): CommandResult {
-    if (!this.isHost(token)) return fail("only the host can hand over");
-    const target = this.tokenOf(playerId);
-    if (target === undefined) return fail("unknown player");
-    if (target === token) return fail("you are already the host");
-    if (!this.players.get(target)!.connected) return fail("that player is offline");
-    this.hostToken = target;
-    return OK_CHANGED;
+    if (!this.isHost(token)) return fail("only the host can hand over")
+    const target = this.tokenOf(playerId)
+    if (target === undefined) return fail("unknown player")
+    if (target === token) return fail("you are already the host")
+    if (!this.players.get(target)!.connected) return fail("that player is offline")
+    this.hostToken = target
+    return OK_CHANGED
   }
 
   /** The token behind a public player id, for the server to act on a kick. */
   tokenOf(playerId: string): string | undefined {
-    for (const p of this.players.values()) if (p.id === playerId) return p.token;
-    return undefined;
+    for (const p of this.players.values()) if (p.id === playerId) return p.token
+    return undefined
   }
 
   /**
@@ -386,52 +379,52 @@ export class Game {
    * an absent host, in which case the role passes on.
    */
   kick(token: string, playerId: string, now: number): CommandResult {
-    if (!this.isHost(token)) return fail("only the host can remove players");
-    const target = this.tokenOf(playerId);
-    if (target === undefined) return fail("unknown player");
-    if (target === token) return fail("you cannot remove yourself");
-    this.players.delete(target);
-    this.submissions.delete(target);
-    this.ready_.delete(target);
-    this.kicked.add(target);
-    if (this.hostToken === target) this.hostToken = this.pickHost();
-    this.settleIfEveryoneDone(now);
-    return OK_CHANGED;
+    if (!this.isHost(token)) return fail("only the host can remove players")
+    const target = this.tokenOf(playerId)
+    if (target === undefined) return fail("unknown player")
+    if (target === token) return fail("you cannot remove yourself")
+    this.players.delete(target)
+    this.submissions.delete(target)
+    this.ready_.delete(target)
+    this.kicked.add(target)
+    if (this.hostToken === target) this.hostToken = this.pickHost()
+    this.settleIfEveryoneDone(now)
+    return OK_CHANGED
   }
 
   /** Stop after the current round: score it if it is still running, then show final standings. */
   end(token: string): CommandResult {
-    if (!this.isHost(token)) return fail("only the host can end the game");
-    if (this.phase === "guessing") this.finishRound();
-    else if (this.phase !== "reveal") return fail("nothing to end");
-    this.finish();
-    return OK_CHANGED;
+    if (!this.isHost(token)) return fail("only the host can end the game")
+    if (this.phase === "guessing") this.finishRound()
+    else if (this.phase !== "reveal") return fail("nothing to end")
+    this.finish()
+    return OK_CHANGED
   }
 
   // ---- player commands -----------------------------------------------------
 
   rename(token: string, name: string): CommandResult {
-    const player = this.players.get(token);
-    if (!player) return fail("unknown player");
-    if (player.name === name) return OK_SAME;
-    player.name = name;
-    return OK_CHANGED;
+    const player = this.players.get(token)
+    if (!player) return fail("unknown player")
+    if (player.name === name) return OK_SAME
+    player.name = name
+    return OK_CHANGED
   }
 
   setPaint(token: string, paint: PaintSubmission): CommandResult {
-    const player = this.players.get(token);
-    if (!player) return fail("unknown player");
-    if (player.watching) return fail("you are watching");
+    const player = this.players.get(token)
+    if (!player) return fail("unknown player")
+    if (player.watching) return fail("you are watching")
     // Uploads are debounced on the client, so one can arrive just after the
     // round ended. It is stale rather than wrong: drop it quietly.
-    if (this.phase !== "guessing") return OK_SAME;
-    if (player.joinedRound > this.roundIndex) return fail("spectating this round");
-    const current = this.submissions.get(token);
+    if (this.phase !== "guessing") return OK_SAME
+    if (player.joinedRound > this.roundIndex) return fail("spectating this round")
+    const current = this.submissions.get(token)
     // A stroke's upload can land just after the player locked in; it changes nothing.
-    if (current?.locked) return OK_SAME;
-    this.submissions.set(token, { paint, locked: false });
+    if (current?.locked) return OK_SAME
+    this.submissions.set(token, { paint, locked: false })
     // Paint is private until the reveal, so other views do not change.
-    return OK_SAME;
+    return OK_SAME
   }
 
   /**
@@ -441,21 +434,21 @@ export class Game {
    * everyone up until the clock runs out.
    */
   lock(token: string, now: number): CommandResult {
-    const player = this.players.get(token);
-    if (!player) return fail("unknown player");
-    if (this.phase !== "guessing") return fail("not guessing");
-    if (player.watching) return fail("you are watching");
-    if (player.joinedRound > this.roundIndex) return fail("spectating this round");
-    let current = this.submissions.get(token);
+    const player = this.players.get(token)
+    if (!player) return fail("unknown player")
+    if (this.phase !== "guessing") return fail("not guessing")
+    if (player.watching) return fail("you are watching")
+    if (player.joinedRound > this.roundIndex) return fail("spectating this round")
+    let current = this.submissions.get(token)
     if (!current) {
-      current = { paint: { cells: {}, floor: 1 }, locked: false };
-      this.submissions.set(token, current);
+      current = { paint: { cells: {}, floor: 1 }, locked: false }
+      this.submissions.set(token, current)
     }
-    if (current.locked) return OK_SAME;
-    current.locked = true;
-    current.lockedAt = now;
-    this.settleIfEveryoneDone(now);
-    return OK_CHANGED;
+    if (current.locked) return OK_SAME
+    current.locked = true
+    current.lockedAt = now
+    this.settleIfEveryoneDone(now)
+    return OK_CHANGED
   }
 
   /**
@@ -463,25 +456,25 @@ export class Game {
    * still running: once everyone is done it has already ended.
    */
   unlock(token: string): CommandResult {
-    const player = this.players.get(token);
-    if (!player) return fail("unknown player");
-    if (this.phase !== "guessing") return fail("not guessing");
-    const current = this.submissions.get(token);
-    if (!current?.locked) return OK_SAME;
-    current.locked = false;
-    return OK_CHANGED;
+    const player = this.players.get(token)
+    if (!player) return fail("unknown player")
+    if (this.phase !== "guessing") return fail("not guessing")
+    const current = this.submissions.get(token)
+    if (!current?.locked) return OK_SAME
+    current.locked = false
+    return OK_CHANGED
   }
 
   /** Done reading the reveal. The next round starts once every connected player is. */
   ready(token: string, now: number): CommandResult {
-    const player = this.players.get(token);
-    if (!player) return fail("unknown player");
-    if (this.phase !== "reveal") return fail("nothing to be ready for");
-    if (player.watching) return fail("you are watching");
-    if (this.ready_.has(token)) return OK_SAME;
-    this.ready_.add(token);
-    this.settleIfEveryoneDone(now);
-    return OK_CHANGED;
+    const player = this.players.get(token)
+    if (!player) return fail("unknown player")
+    if (this.phase !== "reveal") return fail("nothing to be ready for")
+    if (player.watching) return fail("you are watching")
+    if (this.ready_.has(token)) return OK_SAME
+    this.ready_.add(token)
+    this.settleIfEveryoneDone(now)
+    return OK_CHANGED
   }
 
   /**
@@ -492,21 +485,21 @@ export class Game {
    */
   private settleIfEveryoneDone(now: number): void {
     if (this.phase === "guessing") {
-      let active = 0;
+      let active = 0
       for (const p of this.players.values()) {
-        if (!p.connected || p.watching || p.joinedRound > this.roundIndex) continue;
-        active++;
-        if (!this.submissions.get(p.token)?.locked) return;
+        if (!p.connected || p.watching || p.joinedRound > this.roundIndex) continue
+        active++
+        if (!this.submissions.get(p.token)?.locked) return
       }
-      if (active > 0) this.finishRound();
+      if (active > 0) this.finishRound()
     } else if (this.phase === "reveal") {
-      let present = 0;
+      let present = 0
       for (const p of this.players.values()) {
-        if (!p.connected || p.watching) continue;
-        present++;
-        if (!this.ready_.has(p.token)) return;
+        if (!p.connected || p.watching) continue
+        present++
+        if (!this.ready_.has(p.token)) return
       }
-      if (present > 0) this.advance(now);
+      if (present > 0) this.advance(now)
     }
   }
 
@@ -514,119 +507,119 @@ export class Game {
 
   /** Advance time-driven transitions. Returns true if the state changed. */
   tick(now: number): boolean {
-    if (this.phase === "lobby") return this.freeLapsedSeats(now);
+    if (this.phase === "lobby") return this.freeLapsedSeats(now)
     if (this.phase === "guessing" && now >= this.deadline + ROUND_GRACE_MS) {
-      this.finishRound();
-      return true;
+      this.finishRound()
+      return true
     }
-    return false;
+    return false
   }
 
   /** Epoch ms of the next time-driven transition, or null if none is pending. */
   nextWakeAt(): number | null {
-    if (this.phase === "guessing") return this.deadline + ROUND_GRACE_MS;
+    if (this.phase === "guessing") return this.deadline + ROUND_GRACE_MS
     if (this.phase === "lobby") {
-      let at: number | null = null;
+      let at: number | null = null
       for (const p of this.players.values()) {
-        if (p.leftAt === null) continue;
-        const due = p.leftAt + SEAT_GRACE_MS;
-        if (at === null || due < at) at = due;
+        if (p.leftAt === null) continue
+        const due = p.leftAt + SEAT_GRACE_MS
+        if (at === null || due < at) at = due
       }
-      return at;
+      return at
     }
-    return null;
+    return null
   }
 
   /** In the lobby, free the seats of players gone longer than SEAT_GRACE_MS, and the host role with one. */
   private freeLapsedSeats(now: number): boolean {
-    let changed = false;
+    let changed = false
     for (const [tok, p] of this.players) {
-      if (p.leftAt === null || now < p.leftAt + SEAT_GRACE_MS) continue;
-      this.players.delete(tok);
-      changed = true;
+      if (p.leftAt === null || now < p.leftAt + SEAT_GRACE_MS) continue
+      this.players.delete(tok)
+      changed = true
     }
-    if (changed && this.hostToken !== null && !this.players.has(this.hostToken)) this.hostToken = this.pickHost();
-    return changed;
+    if (changed && this.hostToken !== null && !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
+    return changed
   }
 
   // ---- transitions ---------------------------------------------------------
 
   private beginRound(index: number, now: number): void {
-    this.roundIndex = index;
-    this.phase = "guessing";
-    this.deadline = now + this.config.roundMs;
-    this.submissions.clear();
-    this.ready_.clear();
-    this.reveal = null;
+    this.roundIndex = index
+    this.phase = "guessing"
+    this.deadline = now + this.config.roundMs
+    this.submissions.clear()
+    this.ready_.clear()
+    this.reveal = null
   }
 
   private finishRound(): void {
-    const q = this.questions[this.roundIndex]!;
-    const res = resolutionForTolerance(q.toleranceKm);
-    const results: RoundResultView[] = [];
+    const q = this.questions[this.roundIndex]!
+    const res = resolutionForTolerance(q.toleranceKm)
+    const results: RoundResultView[] = []
     // Snapshot ranks before any score changes so arrows compare like with like.
-    for (const p of this.playing()) p.previousRank = this.rankOf(p);
+    for (const p of this.playing()) p.previousRank = this.rankOf(p)
     for (const p of this.playing()) {
-      if (p.joinedRound > this.roundIndex) continue;
-      const sub = this.submissions.get(p.token);
-      let score: number;
-      let A: number;
-      let B: number;
-      let region: RoundResultView["region"];
-      let paint: PaintSubmission | null = null;
-      const roundMs = this.config.roundMs;
-      const lockMs = sub?.locked && sub.lockedAt !== undefined ? sub.lockedAt - (this.deadline - roundMs) : null;
+      if (p.joinedRound > this.roundIndex) continue
+      const sub = this.submissions.get(p.token)
+      let score: number
+      let A: number
+      let B: number
+      let region: RoundResultView["region"]
+      let paint: PaintSubmission | null = null
+      const roundMs = this.config.roundMs
+      const lockMs = sub?.locked && sub.lockedAt !== undefined ? sub.lockedAt - (this.deadline - roundMs) : null
       const facts: RoundFacts = {
         label: q.label,
         score: 0,
         passed: true,
         lockSeconds: lockMs === null ? null : lockMs / 1000,
         roundSeconds: roundMs / 1000,
-        areaKm2: 0,
-      };
+        areaKm2: 0
+      }
       if (sub && Object.keys(sub.paint.cells).length > 0) {
-        const layer = PaintLayer.fromRecord(res, sub.paint.cells);
-        const cells = [...layer.toCells()];
-        const dist = buildDistribution(cells, sub.paint.floor);
-        facts.passed = false;
-        facts.areaKm2 = cells.reduce((a, c) => a + c.areaKm2, 0);
+        const layer = PaintLayer.fromRecord(res, sub.paint.cells)
+        const cells = [...layer.toCells()]
+        const dist = buildDistribution(cells, sub.paint.floor)
+        facts.passed = false
+        facts.areaKm2 = cells.reduce((a, c) => a + c.areaKm2, 0)
         if (q.kind === "region") {
-          const s = scoreRegionQuestion(dist, q);
-          ({ score } = s);
-          A = 0;
-          B = 0;
-          region = { shape: s.shape, nearness: s.nearness, ...regionFit(dist, q) };
-          const m = regionMisfit(dist, q);
+          const s = scoreRegionQuestion(dist, q)
+          ;({ score } = s)
+          A = 0
+          B = 0
+          region = { shape: s.shape, nearness: s.nearness, ...regionFit(dist, q) }
+          const m = regionMisfit(dist, q)
           // A country's tolerance is a fifth of its equivalent radius.
           facts.region = {
             precision: m.precision,
-            nextDoor: m.precision < 0.1 && m.off !== null && m.off.km < 5 * q.toleranceKm,
-          };
+            nextDoor: m.precision < 0.1 && m.off !== null && m.off.km < 5 * q.toleranceKm
+          }
         } else {
-          ({ score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, this.kernel));
-          const e = explainPoint(dist, q.answer, q.toleranceKm, A, B, this.kernel);
-          const best = Math.max(e.best, score);
+          ;({ score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, this.kernel))
+          const e = explainPoint(dist, q.answer, q.toleranceKm, A, B, this.kernel)
+          const best = Math.max(e.best, score)
           facts.point = {
             spot: e.spot,
             km: e.km,
             spread: 1000 - best,
             distance: best - score,
             hedged: isHedge(e, score, q.toleranceKm),
-            toleranceKm: q.toleranceKm,
-          };
+            toleranceKm: q.toleranceKm
+          }
         }
-        paint = sub.paint;
+        paint = sub.paint
       } else {
         // A pass, or a blank map at the deadline: the two score alike, so
         // waiting out the clock never beats pressing Pass.
-        ({ score, A, B } = PASS_SCORE);
+        ;({ score, A, B } = PASS_SCORE)
       }
-      p.scores[this.roundIndex] = score;
-      p.facts[this.roundIndex] = { ...facts, score };
-      results.push({ playerId: p.id, score, A, B, paint, res, ...(region ? { region } : {}) });
+      p.scores[this.roundIndex] = score
+      p.facts[this.roundIndex] = { ...facts, score }
+      results.push({ playerId: p.id, score, A, B, paint, res, ...(region ? { region } : {}) })
     }
-    results.sort((a, b) => b.score - a.score);
-    this.phase = "reveal";
+    results.sort((a, b) => b.score - a.score)
+    this.phase = "reveal"
     this.reveal = {
       index: this.roundIndex,
       total: this.questions.length,
@@ -635,49 +628,49 @@ export class Game {
       label: q.label,
       wiki: q.wiki,
       results,
-      ready: [],
-    };
+      ready: []
+    }
   }
 
   private advance(now: number): void {
     if (this.roundIndex + 1 < this.questions.length) {
-      this.beginRound(this.roundIndex + 1, now);
-      return;
+      this.beginRound(this.roundIndex + 1, now)
+      return
     }
-    this.finish();
+    this.finish()
   }
 
   private finish(): void {
-    this.phase = "results";
-    this.reveal = null;
+    this.phase = "results"
+    this.reveal = null
     this.results = this.playing()
       .map((p) => ({
         playerId: p.id,
         total: sum(p.scores),
         // One entry per round played; null where this player sat out.
-        rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => p.scores[i] ?? null),
+        rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => p.scores[i] ?? null)
       }))
-      .sort((a, b) => b.total - a.total);
+      .sort((a, b) => b.total - a.total)
     this.awards = pickAwards(
       this.playing().map((p) => ({
         playerId: p.id,
-        rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => p.facts[i] ?? null),
+        rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => p.facts[i] ?? null)
       })),
-      this.seed,
-    );
+      this.seed
+    )
   }
 
   // ---- views ---------------------------------------------------------------
 
   private rankOf(player: Player): number {
-    const mine = sum(player.scores);
-    let rank = 1;
-    for (const p of this.playing()) if (sum(p.scores) > mine) rank++;
-    return rank;
+    const mine = sum(player.scores)
+    let rank = 1
+    for (const p of this.playing()) if (sum(p.scores) > mine) rank++
+    return rank
   }
 
   private playerViews(): PlayerView[] {
-    const host = this.effectiveHost();
+    const host = this.effectiveHost()
     return [...this.players.values()]
       .map((p) => ({
         id: p.id,
@@ -690,14 +683,14 @@ export class Game {
         score: sum(p.scores),
         // Spectators are unranked (0) and listed after the players.
         rank: p.watching ? 0 : this.rankOf(p),
-        previousRank: p.previousRank,
+        previousRank: p.previousRank
       }))
-      .sort((a, b) => Number(a.watching) - Number(b.watching) || a.rank - b.rank || a.name.localeCompare(b.name));
+      .sort((a, b) => Number(a.watching) - Number(b.watching) || a.rank - b.rank || a.name.localeCompare(b.name))
   }
 
   view(token: string, now: number): GameView {
-    const me = this.players.get(token);
-    const q = this.phase === "guessing" ? this.questions[this.roundIndex] : undefined;
+    const me = this.players.get(token)
+    const q = this.phase === "guessing" ? this.questions[this.roundIndex] : undefined
     return {
       code: this.code,
       phase: this.phase,
@@ -709,7 +702,7 @@ export class Game {
         spectating: me !== undefined && !me.watching && this.phase !== "lobby" && me.joinedRound > this.roundIndex,
         watching: me?.watching ?? false,
         locked: this.submissions.get(token)?.locked ?? false,
-        paint: this.phase === "guessing" ? (this.submissions.get(token)?.paint ?? null) : null,
+        paint: this.phase === "guessing" ? (this.submissions.get(token)?.paint ?? null) : null
       },
       players: this.playerViews(),
       round: q
@@ -717,34 +710,34 @@ export class Game {
             index: this.roundIndex,
             total: this.questions.length,
             question: questionView(q),
-            deadline: this.deadline,
+            deadline: this.deadline
           }
         : null,
       reveal: this.phase === "reveal" && this.reveal ? { ...this.reveal, ready: this.readyIds() } : null,
       results: this.phase === "results" ? this.results : null,
-      awards: this.phase === "results" ? this.awards : null,
-    };
+      awards: this.phase === "results" ? this.awards : null
+    }
   }
 
   private readyIds(): string[] {
-    const ids: string[] = [];
+    const ids: string[] = []
     for (const tok of this.ready_) {
-      const p = this.players.get(tok);
-      if (p) ids.push(p.id);
+      const p = this.players.get(tok)
+      if (p) ids.push(p.id)
     }
-    return ids;
+    return ids
   }
 
   /** For tests and diagnostics. */
   get playerTokens(): string[] {
-    return [...this.players.keys()];
+    return [...this.players.keys()]
   }
 }
 
 function sum(xs: (number | undefined)[]): number {
-  let t = 0;
-  for (const x of xs) t += x ?? 0;
-  return t;
+  let t = 0
+  for (const x of xs) t += x ?? 0
+  return t
 }
 
 /**
@@ -753,16 +746,16 @@ function sum(xs: (number | undefined)[]): number {
  * issued in join order (p1, p2, ...), so the lowest id is the earliest.
  */
 export function nextHostAfter(players: PlayerView[], leavingId: string): PlayerView | undefined {
-  const seq = (p: PlayerView) => Number(p.id.slice(1));
-  return players.filter((p) => p.id !== leavingId && p.connected).sort((a, b) => seq(a) - seq(b))[0];
+  const seq = (p: PlayerView) => Number(p.id.slice(1))
+  return players.filter((p) => p.id !== leavingId && p.connected).sort((a, b) => seq(a) - seq(b))[0]
 }
 
 /** Generate a join code that avoids look-alike characters. */
 export function generateCode(rnd: () => number = Math.random, length = 4): string {
-  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  let out = "";
-  for (let i = 0; i < length; i++) out += alphabet.charAt(Math.floor(rnd() * alphabet.length));
-  return out;
+  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+  let out = ""
+  for (let i = 0; i < length; i++) out += alphabet.charAt(Math.floor(rnd() * alphabet.length))
+  return out
 }
 
 /**
@@ -771,7 +764,7 @@ export function generateCode(rnd: () => number = Math.random, length = 4): strin
  * flag's code, which the flag gives away anyway.
  */
 function questionView(q: Question | RegionQuestion): QuestionView {
-  const flag = q.flag ? { flag: q.flag } : {};
-  if (q.kind === "region") return { prompt: q.prompt, toleranceKm: q.toleranceKm, regionId: q.id, ...flag };
-  return { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm, ...flag };
+  const flag = q.flag ? { flag: q.flag } : {}
+  if (q.kind === "region") return { prompt: q.prompt, toleranceKm: q.toleranceKm, regionId: q.id, ...flag }
+  return { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm, ...flag }
 }

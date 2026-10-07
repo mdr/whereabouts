@@ -1,10 +1,10 @@
 // @ts-check
-import { defineConfig } from "eslint/config";
-import js from "@eslint/js";
-import tseslint from "typescript-eslint";
-import reactHooks from "eslint-plugin-react-hooks";
-import vitest from "@vitest/eslint-plugin";
-import globals from "globals";
+import { defineConfig } from "eslint/config"
+import js from "@eslint/js"
+import tseslint from "typescript-eslint"
+import reactHooks from "eslint-plugin-react-hooks"
+import vitest from "@vitest/eslint-plugin"
+import globals from "globals"
 
 export default defineConfig(
   { ignores: ["**/dist/**", "**/node_modules/**", "**/vendor/**", "result", ".direnv"] },
@@ -15,8 +15,8 @@ export default defineConfig(
     languageOptions: {
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
+        tsconfigRootDir: import.meta.dirname
+      }
     },
     rules: {
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
@@ -30,8 +30,8 @@ export default defineConfig(
       // Interface-conforming async methods often have nothing to await.
       "@typescript-eslint/require-await": "off",
       "no-console": ["warn", { allow: ["warn", "error"] }],
-      eqeqeq: ["error", "smart"],
-    },
+      eqeqeq: ["error", "smart"]
+    }
   },
   {
     // Client: browser globals and Preact hooks discipline.
@@ -44,20 +44,20 @@ export default defineConfig(
     // hook's result (`paint.version.value++`) as mutating a frozen value.
     // exhaustive-deps stays off: signals and imperative controllers are read
     // inside effects deliberately.
-    rules: { "react-hooks/rules-of-hooks": "error" },
+    rules: { "react-hooks/rules-of-hooks": "error" }
   },
   {
     files: ["packages/server/src/**/*.ts"],
-    languageOptions: { globals: globals.node },
+    languageOptions: { globals: globals.node }
   },
   {
     // Node programs driving a browser; page.evaluate callbacks run in the page.
     files: ["packages/client/browser/**/*.ts"],
-    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+    languageOptions: { globals: { ...globals.node, ...globals.browser } }
   },
   {
     files: ["packages/client/browser/e2e/**/*.ts"],
-    rules: { "no-console": "off" },
+    rules: { "no-console": "off" }
   },
   {
     // Scripts and configs are plain Node programs outside any tsconfig.
@@ -65,9 +65,9 @@ export default defineConfig(
     ...tseslint.configs.disableTypeChecked,
     languageOptions: {
       ...tseslint.configs.disableTypeChecked.languageOptions,
-      globals: { ...globals.node, ...globals.browser },
+      globals: { ...globals.node, ...globals.browser }
     },
-    rules: { ...tseslint.configs.disableTypeChecked.rules, "no-console": "off" },
+    rules: { ...tseslint.configs.disableTypeChecked.rules, "no-console": "off" }
   },
   {
     files: ["**/*.test.{ts,tsx}"],
@@ -85,7 +85,7 @@ export default defineConfig(
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-explicit-any": "off",
       // No-op callbacks and stubs are the point in a test.
-      "@typescript-eslint/no-empty-function": "off",
-    },
-  },
-);
+      "@typescript-eslint/no-empty-function": "off"
+    }
+  }
+)

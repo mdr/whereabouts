@@ -1,3 +1,3 @@
 export const mixEditorTestIds = {
-  row: "MixEditor.row",
-};
+  row: "MixEditor.row"
+}

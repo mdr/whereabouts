@@ -1,133 +1,133 @@
-import { useEffect, useRef, useState } from "preact/hooks";
-import { PaintLayer, compactRecord, playerColour, type GameView } from "@whereabouts/shared";
-import type { Connection } from "../net";
-import { usePaint } from "../ui/MapView";
-import { AnswerMode, Card, Countdown, HudHeader, QuestionCard } from "../ui/bits";
-import { PaintDev, PaintTools } from "../ui/PaintTools";
-import { PlayerList } from "../ui/PlayerList";
-import { ConnectionNote } from "../ui/ConnectionNote";
-import { DevDrawer } from "../ui/DevDrawer";
-import { ConnectionDev } from "../ui/ConnectionDev";
-import { Reveal } from "./Reveal";
-import { loadBorders } from "../borders";
-import { useFillTool } from "../fill";
-import { Icon } from "../ui/icons";
-import { PlayersPanel } from "../ui/PlayersPanel";
-import { EndGameButton } from "../ui/HostControls";
-import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog";
-import { askedToWatch, startOnPan } from "../settings";
-import { TakeSeatButton } from "../ui/TakeSeat";
-import { sound } from "../sound";
-import { loadRegions } from "../regions";
-import { inGameTestIds } from "./InGameTestIds";
+import { useEffect, useRef, useState } from "preact/hooks"
+import { PaintLayer, compactRecord, playerColour, type GameView } from "@whereabouts/shared"
+import type { Connection } from "../net"
+import { usePaint } from "../ui/MapView"
+import { AnswerMode, Card, Countdown, HudHeader, QuestionCard } from "../ui/bits"
+import { PaintDev, PaintTools } from "../ui/PaintTools"
+import { PlayerList } from "../ui/PlayerList"
+import { ConnectionNote } from "../ui/ConnectionNote"
+import { DevDrawer } from "../ui/DevDrawer"
+import { ConnectionDev } from "../ui/ConnectionDev"
+import { Reveal } from "./Reveal"
+import { loadBorders } from "../borders"
+import { useFillTool } from "../fill"
+import { Icon } from "../ui/icons"
+import { PlayersPanel } from "../ui/PlayersPanel"
+import { EndGameButton } from "../ui/HostControls"
+import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog"
+import { askedToWatch, startOnPan } from "../settings"
+import { TakeSeatButton } from "../ui/TakeSeat"
+import { sound } from "../sound"
+import { loadRegions } from "../regions"
+import { inGameTestIds } from "./InGameTestIds"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
-  const paint = usePaint();
+  const paint = usePaint()
   // Not painting this round: a spectator, or a late joiner sitting one out.
-  const sittingOut = view.you.watching || view.you.spectating;
-  const roundKey = view.round?.index ?? view.reveal?.index ?? -1;
-  const guessing = view.phase === "guessing";
+  const sittingOut = view.you.watching || view.you.spectating
+  const roundKey = view.round?.index ?? view.reveal?.index ?? -1
+  const guessing = view.phase === "guessing"
   // The Fill tool, for a country on the Political map; on through the
   // reveal, so a run of country rounds keeps the tool chosen.
-  const question = view.round?.question ?? view.reveal?.question;
+  const question = view.round?.question ?? view.reveal?.question
   useFillTool(
     paint,
-    view.config.mapDetail === "political" && (question?.regionId !== undefined || question?.flag !== undefined),
-  );
-  const sendTimer = useRef<number | null>(null);
-  const lastSentVersion = useRef(-1);
+    view.config.mapDetail === "political" && (question?.regionId !== undefined || question?.flag !== undefined)
+  )
+  const sendTimer = useRef<number | null>(null)
+  const lastSentVersion = useRef(-1)
   // The countdown has reached zero: painting stops, and what is on screen is what counts.
-  const [timeUp, setTimeUp] = useState(false);
-  const { dialog, ask } = useConfirm();
+  const [timeUp, setTimeUp] = useState(false)
+  const { dialog, ask } = useConfirm()
 
   // A game with countries or flags needs the outlines at the reveal: fetch them now.
-  const outlines = view.config.mix.countries + view.config.mix.flags > 0;
+  const outlines = view.config.mix.countries + view.config.mix.flags > 0
   useEffect(() => {
-    if (outlines) loadRegions().catch((err: unknown) => console.warn("could not load countries", err));
-  }, [outlines]);
+    if (outlines) loadRegions().catch((err: unknown) => console.warn("could not load countries", err))
+  }, [outlines])
   // And a game with flags, the borders its reveals name countries by.
-  const flags = view.config.mix.flags > 0;
+  const flags = view.config.mix.flags > 0
   useEffect(() => {
-    if (flags) loadBorders().catch((err: unknown) => console.warn("could not load borders", err));
-  }, [flags]);
+    if (flags) loadBorders().catch((err: unknown) => console.warn("could not load borders", err))
+  }, [flags])
 
   // New round: fresh layer, painting on unless spectating. After a reconnect
   // the server hands back what we had painted, so restore it.
   useEffect(() => {
-    if (!guessing || !view.round) return;
-    paint.reset(view.round.question.toleranceKm);
-    const saved = view.you.paint;
+    if (!guessing || !view.round) return
+    paint.reset(view.round.question.toleranceKm)
+    const saved = view.you.paint
     if (saved) {
-      paint.layer = PaintLayer.fromRecord(paint.layer.res, saved.cells);
-      paint.floor.value = saved.floor;
-      paint.version.value++;
+      paint.layer = PaintLayer.fromRecord(paint.layer.res, saved.cells)
+      paint.floor.value = saved.floor
+      paint.version.value++
     }
-    paint.gameMap.clearReveal();
-    paint.gameMap.resetView();
+    paint.gameMap.clearReveal()
+    paint.gameMap.resetView()
     // Paint in your own colour, the same one others see at the reveal.
-    const me = view.players.find((p) => p.id === view.you.id);
-    paint.showOwn(me && !me.watching ? playerColour(me.colour) : null);
-    paint.tool.value = startOnPan.value ? "pan" : "paint";
-    lastSentVersion.current = paint.version.peek();
-  }, [roundKey, guessing]);
+    const me = view.players.find((p) => p.id === view.you.id)
+    paint.showOwn(me && !me.watching ? playerColour(me.colour) : null)
+    paint.tool.value = startOnPan.value ? "pan" : "paint"
+    lastSentVersion.current = paint.version.peek()
+  }, [roundKey, guessing])
 
   // The host's map detail while guessing; the reveal shows everything, since
   // borders, place names, rivers and relief help make sense of the answer.
-  const reveal = view.phase === "reveal";
+  const reveal = view.phase === "reveal"
   useEffect(() => {
-    paint.gameMap.setDetail(reveal ? "reveal" : view.config.mapDetail);
-  }, [reveal, view.config.mapDetail]);
+    paint.gameMap.setDetail(reveal ? "reveal" : view.config.mapDetail)
+  }, [reveal, view.config.mapDetail])
 
   // The server scores a moment after the deadline (ROUND_GRACE_MS), so paint sent at zero still counts.
-  const deadline = view.round?.deadline;
+  const deadline = view.round?.deadline
   useEffect(() => {
-    setTimeUp(false);
-    if (!guessing || deadline === undefined) return;
-    const timer = window.setTimeout(() => setTimeUp(true), Math.max(0, conn.msUntil(deadline)));
-    return () => clearTimeout(timer);
-  }, [roundKey, guessing, deadline]);
+    setTimeUp(false)
+    if (!guessing || deadline === undefined) return
+    const timer = window.setTimeout(() => setTimeUp(true), Math.max(0, conn.msUntil(deadline)))
+    return () => clearTimeout(timer)
+  }, [roundKey, guessing, deadline])
 
   useEffect(() => {
-    paint.enabled.value = guessing && !sittingOut && !view.you.locked && !timeUp;
-  }, [guessing, sittingOut, view.you.locked, timeUp]);
+    paint.enabled.value = guessing && !sittingOut && !view.you.locked && !timeUp
+  }, [guessing, sittingOut, view.you.locked, timeUp])
 
   /** Upload the paint now. An empty map is sent too: it takes back paint sent earlier. */
   function sendNow() {
-    if (sendTimer.current) clearTimeout(sendTimer.current);
-    sendTimer.current = null;
-    conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.peek() });
-    lastSentVersion.current = paint.version.peek();
+    if (sendTimer.current) clearTimeout(sendTimer.current)
+    sendTimer.current = null
+    conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.peek() })
+    lastSentVersion.current = paint.version.peek()
   }
 
   // Debounced upload of the current paint while guessing.
-  const version = paint.version.value;
-  const floor = paint.floor.value;
+  const version = paint.version.value
+  const floor = paint.floor.value
   useEffect(() => {
-    if (!guessing || sittingOut || view.you.locked || timeUp) return;
-    if (sendTimer.current) clearTimeout(sendTimer.current);
-    sendTimer.current = window.setTimeout(sendNow, 400);
+    if (!guessing || sittingOut || view.you.locked || timeUp) return
+    if (sendTimer.current) clearTimeout(sendTimer.current)
+    sendTimer.current = window.setTimeout(sendNow, 400)
     return () => {
-      if (sendTimer.current) clearTimeout(sendTimer.current);
-    };
-  }, [version, floor, guessing]);
+      if (sendTimer.current) clearTimeout(sendTimer.current)
+    }
+  }, [version, floor, guessing])
 
   useEffect(() => {
-    if (timeUp && guessing && !sittingOut && !view.you.locked) sendNow();
-  }, [timeUp]);
+    if (timeUp && guessing && !sittingOut && !view.you.locked) sendNow()
+  }, [timeUp])
 
   // Done with paint freezes it; Done with nothing painted is a pass, which
   // scores PASS_SCORE (250) and lets the round end without waiting on you.
   function lockIn() {
-    if (paint.layer.isEmpty) sound.play("chicken");
-    sendNow();
-    conn.lock();
+    if (paint.layer.isEmpty) sound.play("chicken")
+    sendNow()
+    conn.lock()
   }
 
   if (view.phase === "reveal" && view.reveal) {
-    return <Reveal conn={conn} view={view} reveal={view.reveal} />;
+    return <Reveal conn={conn} view={view} reveal={view.reveal} />
   }
 
-  const round = view.round!;
+  const round = view.round!
   return (
     <>
       {dialog}
@@ -221,5 +221,5 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
         <ConnectionDev conn={conn} view={view} />
       </DevDrawer>
     </>
-  );
+  )
 }

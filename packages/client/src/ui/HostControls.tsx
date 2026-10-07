@@ -2,12 +2,12 @@
  * Host-only controls that affect everyone. Ending the game is not undoable,
  * so the button opens a confirmation dialog first.
  */
-import { Icon } from "./icons";
-import { endGameRequest, useConfirm } from "./ConfirmDialog";
-import { hostControlsTestIds } from "./HostControlsTestIds";
+import { Icon } from "./icons"
+import { endGameRequest, useConfirm } from "./ConfirmDialog"
+import { hostControlsTestIds } from "./HostControlsTestIds"
 
 export function EndGameButton({ onEnd, title }: { onEnd: () => void; title?: string }) {
-  const { dialog, ask } = useConfirm();
+  const { dialog, ask } = useConfirm()
   return (
     <>
       <button
@@ -20,5 +20,5 @@ export function EndGameButton({ onEnd, title }: { onEnd: () => void; title?: str
       </button>
       {dialog}
     </>
-  );
+  )
 }

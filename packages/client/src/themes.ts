@@ -4,30 +4,30 @@
  * answer marker, tolerance rings, and cursor.
  */
 export interface Theme {
-  id: string;
-  label: string;
+  id: string
+  label: string
   /** Basemap */
-  land: string;
-  water: string;
-  wood: string;
-  ice: string;
-  waterway: string;
-  border: string;
+  land: string
+  water: string
+  wood: string
+  ice: string
+  waterway: string
+  border: string
   /** National borders on the reveal, drawn bolder than while guessing. */
-  revealBorder: string;
-  road: string;
-  urban: string;
-  labelText: string;
-  labelHalo: string;
+  revealBorder: string
+  road: string
+  urban: string
+  labelText: string
+  labelHalo: string
   /** Paint ramp: colours at intensity 0, 1/3, 2/3, 1 (relative to the peak). */
-  ramp: [string, string, string, string];
+  ramp: [string, string, string, string]
   /** Fill opacity at intensity 0 and 1. */
-  rampOpacity: [number, number];
+  rampOpacity: [number, number]
   /** Answer marker. */
-  answer: string;
-  answerStroke: string;
+  answer: string
+  answerStroke: string
   /** Cursor brush ring. */
-  brush: string;
+  brush: string
 }
 
 /** The chosen theme. The alternatives below were playtested and passed over. */
@@ -49,5 +49,5 @@ export const THEME: Theme = {
   rampOpacity: [0.08, 0.92],
   answer: "#fbbf24",
   answerStroke: "#1a1a1a",
-  brush: "#ffffff",
-};
+  brush: "#ffffff"
+}

@@ -1,13 +1,13 @@
-import { playerColour, type PlayerView } from "@whereabouts/shared";
-import { Icon } from "./icons";
-import { playerListTestIds } from "./PlayerListTestIds";
+import { playerColour, type PlayerView } from "@whereabouts/shared"
+import { Icon } from "./icons"
+import { playerListTestIds } from "./PlayerListTestIds"
 
-const graphemes = new Intl.Segmenter();
+const graphemes = new Intl.Segmenter()
 
 /** A name's first character as a reader sees it, so a flag or family emoji stays whole. */
 export function initial(name: string): string {
-  const first = graphemes.segment(name.trim())[Symbol.iterator]().next();
-  return first.done ? "?" : first.value.segment.toUpperCase();
+  const first = graphemes.segment(name.trim())[Symbol.iterator]().next()
+  return first.done ? "?" : first.value.segment.toUpperCase()
 }
 
 /** Crown tag marking the host in a player row; the word stays for screen readers. */
@@ -17,7 +17,7 @@ export function HostTag() {
       <Icon name="crown" size={12} />
       <span class="sr-only">host</span>
     </span>
-  );
+  )
 }
 
 /** "the host" in running text, with the crown. */
@@ -27,7 +27,7 @@ export function HostWord({ capital }: { capital?: boolean }) {
       <Icon name="crown" size={12} />
       {capital ? "The host" : "the host"}
     </span>
-  );
+  )
 }
 
 export function PlayerList({
@@ -39,28 +39,28 @@ export function PlayerList({
   avatars,
   onRename,
   onKick,
-  onMakeHost,
+  onMakeHost
 }: {
-  players: PlayerView[];
-  you: string;
-  showScores: boolean;
-  arrows?: boolean;
+  players: PlayerView[]
+  you: string
+  showScores: boolean
+  arrows?: boolean
   /** Mark players who have finished guessing this round. */
-  showLocked?: boolean;
+  showLocked?: boolean
   /** A coloured circle with the initial instead of the small dot (the lobby). */
-  avatars?: boolean;
+  avatars?: boolean
   /** When given, your own row gets a pencil that calls this. */
-  onRename?: () => void;
+  onRename?: () => void
   /** Host only: when given, every other row gets a remove button that calls this. */
-  onKick?: (player: PlayerView) => void;
+  onKick?: (player: PlayerView) => void
   /** Host only: when given, other connected players' rows get a crown button that calls this. */
-  onMakeHost?: (player: PlayerView) => void;
+  onMakeHost?: (player: PlayerView) => void
 }) {
   return (
     <ul class="players">
       {players.map((p) => {
-        const delta = arrows && p.previousRank !== null ? p.previousRank - p.rank : 0;
-        const isYou = p.id === you;
+        const delta = arrows && p.previousRank !== null ? p.previousRank - p.rank : 0
+        const isYou = p.id === you
         return (
           <li
             key={p.id}
@@ -104,8 +104,8 @@ export function PlayerList({
                 title={`Make ${p.name} the host`}
                 aria-label={`Make ${p.name} the host`}
                 onClick={(e) => {
-                  e.stopPropagation();
-                  onMakeHost(p);
+                  e.stopPropagation()
+                  onMakeHost(p)
                 }}
               >
                 <Icon name="crown" size={13} />
@@ -118,8 +118,8 @@ export function PlayerList({
                 title={`Remove ${p.name} from the game`}
                 aria-label={`Remove ${p.name} from the game`}
                 onClick={(e) => {
-                  e.stopPropagation();
-                  onKick(p);
+                  e.stopPropagation()
+                  onKick(p)
                 }}
               >
                 <Icon name="kick" size={13} />
@@ -136,8 +136,8 @@ export function PlayerList({
               </>
             )}
           </li>
-        );
+        )
       })}
     </ul>
-  );
+  )
 }

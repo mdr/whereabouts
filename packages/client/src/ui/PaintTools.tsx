@@ -1,37 +1,37 @@
-import type { ComponentChildren } from "preact";
-import { useEffect, useState } from "preact/hooks";
-import { usePaint } from "./MapView";
-import { Card, HudBottom, fmtKm } from "./bits";
-import type { Tool } from "../paint-controller";
-import { Icon, type IconName } from "./icons";
-import { sound } from "../sound";
-import { Shortcuts, ShortcutsButton } from "./Shortcuts";
-import { loadLandMask } from "../land";
-import { paintDevTestIds, paintToolsTestIds } from "./PaintToolsTestIds";
+import type { ComponentChildren } from "preact"
+import { useEffect, useState } from "preact/hooks"
+import { usePaint } from "./MapView"
+import { Card, HudBottom, fmtKm } from "./bits"
+import type { Tool } from "../paint-controller"
+import { Icon, type IconName } from "./icons"
+import { sound } from "../sound"
+import { Shortcuts, ShortcutsButton } from "./Shortcuts"
+import { loadLandMask } from "../land"
+import { paintDevTestIds, paintToolsTestIds } from "./PaintToolsTestIds"
 
-const TOOL_ICON: Record<Tool, IconName> = { pan: "hand", paint: "brush", erase: "eraser", fill: "bucket" };
+const TOOL_ICON: Record<Tool, IconName> = { pan: "hand", paint: "brush", erase: "eraser", fill: "bucket" }
 const TOOL_HINT: Record<Tool, string> = {
   pan: "Pan the map (1). Hold Space to pan while painting.",
   paint: "Paint where you think it is (2). Paint again to weight an area more.",
   erase: "Erase paint (3)",
-  fill: "Fill a whole country (4). Fill several if unsure; click a filled one to take it off.",
-};
+  fill: "Fill a whole country (4). Fill several if unsure; click a filled one to take it off."
+}
 
 /**
  * The player-facing brush bar: tool, clear, brush size, undo/redo, and
  * whatever action buttons the screen passes in (done, next).
  */
 export function PaintTools({ children, practice }: { children?: ComponentChildren; practice?: boolean }) {
-  const paint = usePaint();
-  const tool = paint.tool.value;
-  const enabled = paint.enabled.value;
+  const paint = usePaint()
+  const tool = paint.tool.value
+  const enabled = paint.enabled.value
   // Fill only in a round asking for a country, on the Political map.
-  const tools: Tool[] = paint.fillable.value ? ["pan", "paint", "erase", "fill"] : ["pan", "paint", "erase"];
+  const tools: Tool[] = paint.fillable.value ? ["pan", "paint", "erase", "fill"] : ["pan", "paint", "erase"]
   // The whoosh only when there was paint to wipe.
   const clear = () => {
-    if (!paint.layer.isEmpty) sound.play("clear");
-    paint.clear();
-  };
+    if (!paint.layer.isEmpty) sound.play("clear")
+    paint.clear()
+  }
   return (
     <HudBottom>
       <div class="tools">
@@ -92,13 +92,13 @@ export function PaintTools({ children, practice }: { children?: ComponentChildre
       <Shortcuts practice={practice} />
       {children}
     </HudBottom>
-  );
+  )
 }
 
 /** Developer-only paint settings and diagnostics. */
 export function PaintDev() {
-  const paint = usePaint();
-  const stats = paint.stats.value;
+  const paint = usePaint()
+  const stats = paint.stats.value
   return (
     <Card title="Paint">
       <Slider
@@ -125,17 +125,17 @@ export function PaintDev() {
       </p>
       <Distribution />
     </Card>
-  );
+  )
 }
 
 function Slider(props: {
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  value: number;
-  onInput: (v: number) => void;
-  format: (v: number) => string;
+  label: string
+  min: number
+  max: number
+  step: number
+  value: number
+  onInput: (v: number) => void
+  format: (v: number) => string
 }) {
   return (
     <div class="row">
@@ -150,23 +150,23 @@ function Slider(props: {
       />
       <output>{props.format(props.value)}</output>
     </div>
-  );
+  )
 }
 
 /** Mass per connected blob plus the floor. Re-renders on paint changes. */
 function Distribution() {
-  const paint = usePaint();
-  const floor = paint.floor.value;
-  const blobs = paint.settledBlobs.value;
-  const empty = blobs.length === 0;
-  const painted = empty ? 0 : 1 - floor;
-  const effectiveFloor = empty ? 1 : floor;
-  const shown = blobs.slice(0, 6);
-  const rest = blobs.slice(6).reduce((s, b) => s + b.fraction, 0) * painted * 100;
+  const paint = usePaint()
+  const floor = paint.floor.value
+  const blobs = paint.settledBlobs.value
+  const empty = blobs.length === 0
+  const painted = empty ? 0 : 1 - floor
+  const effectiveFloor = empty ? 1 : floor
+  const shown = blobs.slice(0, 6)
+  const rest = blobs.slice(6).reduce((s, b) => s + b.fraction, 0) * painted * 100
   return (
     <ul class="blobs" data-testid={paintDevTestIds.blobs}>
       {shown.map((b, i) => {
-        const pct = b.fraction * painted * 100;
+        const pct = b.fraction * painted * 100
         return (
           <li key={i}>
             <span>
@@ -177,7 +177,7 @@ function Distribution() {
             </span>
             <span>{pct.toFixed(1)}%</span>
           </li>
-        );
+        )
       })}
       {blobs.length > shown.length && (
         <li class="muted">
@@ -196,7 +196,7 @@ function Distribution() {
         <span>{(effectiveFloor * 100).toFixed(1)}%</span>
       </li>
     </ul>
-  );
+  )
 }
 
 /**
@@ -206,27 +206,27 @@ function Distribution() {
  * answer loses its sea side (see land.ts).
  */
 function TrimSea({ enabled }: { enabled: boolean }) {
-  const paint = usePaint();
-  const [note, setNote] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const paint = usePaint()
+  const [note, setNote] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
   useEffect(() => {
-    if (!note) return;
-    const t = setTimeout(() => setNote(null), 2500);
-    return () => clearTimeout(t);
-  }, [note]);
+    if (!note) return
+    const t = setTimeout(() => setNote(null), 2500)
+    return () => clearTimeout(t)
+  }, [note])
   const trim = async () => {
-    setBusy(true);
+    setBusy(true)
     try {
-      const share = paint.trimSea(await loadLandMask());
-      if (share > 0) sound.play("clear");
-      setNote(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : "None at sea");
+      const share = paint.trimSea(await loadLandMask())
+      if (share > 0) sound.play("clear")
+      setNote(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : "None at sea")
     } catch (err) {
-      console.warn("could not load the land mask", err);
-      setNote("Try again");
+      console.warn("could not load the land mask", err)
+      setNote("Try again")
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
-  };
+  }
   return (
     <button
       title="Remove paint out at sea, more than about 20 km from land (Undo brings it back)"
@@ -236,5 +236,5 @@ function TrimSea({ enabled }: { enabled: boolean }) {
     >
       <Icon name="sea" /> <span class="label">{note ?? "Trim sea"}</span>
     </button>
-  );
+  )
 }

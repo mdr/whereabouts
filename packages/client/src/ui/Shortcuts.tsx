@@ -4,22 +4,22 @@
  * outside closes it. The keys themselves are handled where they act
  * (PaintController, the practice screen); this only lists them.
  */
-import { signal } from "@preact/signals";
-import { useEffect } from "preact/hooks";
-import { createPortal } from "preact/compat";
-import { Icon } from "./icons";
-import { isTyping } from "../keys";
+import { signal } from "@preact/signals"
+import { useEffect } from "preact/hooks"
+import { createPortal } from "preact/compat"
+import { Icon } from "./icons"
+import { isTyping } from "../keys"
 
-export const shortcutsOpen = signal(false);
+export const shortcutsOpen = signal(false)
 
-const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent);
-const MOD = isMac ? "⌘" : "Ctrl";
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent)
+const MOD = isMac ? "⌘" : "Ctrl"
 
 /** An action, its key combinations, and whether those are one per action ("/") or alternatives ("or"). */
 interface Row {
-  action: string;
-  combos: string[][];
-  sep?: "/" | "or";
+  action: string
+  combos: string[][]
+  sep?: "/" | "or"
 }
 
 function rows(practice: boolean): Row[] {
@@ -34,14 +34,14 @@ function rows(practice: boolean): Row[] {
         ? [[MOD, "⇧", "Z"]]
         : [
             [MOD, "Shift", "Z"],
-            ["Ctrl", "Y"],
+            ["Ctrl", "Y"]
           ],
-      sep: "or",
+      sep: "or"
     },
     ...(practice ? [{ action: "Submit / next question", combos: [["Enter"]] }] : []),
     { action: "Enlarged photo back", combos: [["Esc"]] },
-    { action: "These shortcuts", combos: [["?"]] },
-  ];
+    { action: "These shortcuts", combos: [["?"]] }
+  ]
 }
 
 /** Toolbar button that opens the card; hidden where there is no keyboard (see CSS). */
@@ -56,28 +56,28 @@ export function ShortcutsButton() {
     >
       <Icon name="keyboard" />
     </button>
-  );
+  )
 }
 
 /** The card itself, plus the `?` and Escape keys. Mount once per painting screen. */
 export function Shortcuts({ practice = false }: { practice?: boolean }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (isTyping(e.target)) return;
+      if (isTyping(e.target)) return
       if (e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        shortcutsOpen.value = !shortcutsOpen.value;
-        e.preventDefault();
+        shortcutsOpen.value = !shortcutsOpen.value
+        e.preventDefault()
       } else if (e.key === "Escape" && shortcutsOpen.value) {
-        shortcutsOpen.value = false;
+        shortcutsOpen.value = false
       }
-    };
-    window.addEventListener("keydown", onKey);
+    }
+    window.addEventListener("keydown", onKey)
     return () => {
-      window.removeEventListener("keydown", onKey);
-      shortcutsOpen.value = false;
-    };
-  }, []);
-  if (!shortcutsOpen.value) return null;
+      window.removeEventListener("keydown", onKey)
+      shortcutsOpen.value = false
+    }
+  }, [])
+  if (!shortcutsOpen.value) return null
   // Into <body>, like the confirm dialog: the toolbar's transform would
   // otherwise trap a fixed card.
   return createPortal(
@@ -113,6 +113,6 @@ export function Shortcuts({ practice = false }: { practice?: boolean }) {
         </dl>
       </section>
     </div>,
-    document.body,
-  );
+    document.body
+  )
 }

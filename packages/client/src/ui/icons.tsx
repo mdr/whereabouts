@@ -34,9 +34,9 @@ import {
   Volume2,
   VolumeX,
   Waves,
-  type LucideProps,
-} from "lucide-preact";
-import type { FunctionComponent } from "preact";
+  type LucideProps
+} from "lucide-preact"
+import type { FunctionComponent } from "preact"
 
 const ICONS = {
   hand: Hand,
@@ -72,12 +72,12 @@ const ICONS = {
   share: Share2,
   soundOn: Volume2,
   soundOff: VolumeX,
-  sea: Waves,
-} satisfies Record<string, FunctionComponent<LucideProps>>;
+  sea: Waves
+} satisfies Record<string, FunctionComponent<LucideProps>>
 
-export type IconName = keyof typeof ICONS;
+export type IconName = keyof typeof ICONS
 
 export function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
-  const Glyph = ICONS[name];
-  return <Glyph class="icon" size={size} strokeWidth={2} aria-hidden="true" />;
+  const Glyph = ICONS[name]
+  return <Glyph class="icon" size={size} strokeWidth={2} aria-hidden="true" />
 }

@@ -3,35 +3,35 @@ import {
   NavigationControl,
   setWorkerUrl,
   type FilterSpecification,
-  type GeoJSONSource,
-} from "maplibre-gl";
-import type * as maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
+  type GeoJSONSource
+} from "maplibre-gl"
+import type * as maplibregl from "maplibre-gl"
+import "maplibre-gl/dist/maplibre-gl.css"
 // MapLibre resolves its module worker as a sibling of its own script via
 // import.meta.url. After bundling that points into /assets where no such
 // file exists, so hand it a worker Vite has bundled and knows the URL of.
-import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-import { cellsOutline, type LatLon, type MapDetail } from "@whereabouts/shared";
-import type { Theme } from "./themes";
+import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url"
+import { cellsOutline, type LatLon, type MapDetail } from "@whereabouts/shared"
+import type { Theme } from "./themes"
 
-setWorkerUrl(mapWorkerUrl);
+setWorkerUrl(mapWorkerUrl)
 
-const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
-const PAINT_SOURCE = "paint";
-const REVEAL_SOURCE = "reveal";
-const CURSOR_SOURCE = "cursor";
-const TERRAIN_SOURCE = "terrain";
-const TERRAIN_LAYER = "terrain-hillshade";
+const STYLE_URL = "https://tiles.openfreemap.org/styles/positron"
+const PAINT_SOURCE = "paint"
+const REVEAL_SOURCE = "reveal"
+const CURSOR_SOURCE = "cursor"
+const TERRAIN_SOURCE = "terrain"
+const TERRAIN_LAYER = "terrain-hillshade"
 /** Natural Earth II colour relief, declared (but not drawn) by the positron style. */
-const COLOUR_SOURCE = "ne2_shaded";
-const COLOUR_LAYER = "natural-colour";
+const COLOUR_SOURCE = "ne2_shaded"
+const COLOUR_LAYER = "natural-colour"
 
 /** World circumference at the equator in metres, for metres-per-pixel maths. */
-const WORLD_M = 40075016.686;
-const WORLD_CENTER: [number, number] = [10, 25];
-const WORLD_ZOOM = 1.6;
+const WORLD_M = 40075016.686
+const WORLD_CENTER: [number, number] = [10, 25]
+const WORLD_ZOOM = 1.6
 /** MapLibre's world is 512 px wide at zoom 0. */
-const WORLD_PX_Z0 = 512;
+const WORLD_PX_Z0 = 512
 
 /**
  * National borders on the reveal: opaque and wider as the map zooms in, but
@@ -39,30 +39,30 @@ const WORLD_PX_Z0 = 512;
  * low-zoom data traces some coasts). While guessing they keep the style's
  * faint look, so the Political map detail stays a light hint.
  */
-const NATIONAL_BORDERS = ["boundary_2", "boundary_disputed"];
-const REVEAL_BORDER_WIDTH = ["interpolate", ["linear"], ["zoom"], 1, 0.8, 3, 1.3, 5, 1.8, 8, 2.5];
-const REVEAL_BORDER_OPACITY = ["interpolate", ["linear"], ["zoom"], 1, 0.55, 2.5, 1];
+const NATIONAL_BORDERS = ["boundary_2", "boundary_disputed"]
+const REVEAL_BORDER_WIDTH = ["interpolate", ["linear"], ["zoom"], 1, 0.8, 3, 1.3, 5, 1.8, 8, 2.5]
+const REVEAL_BORDER_OPACITY = ["interpolate", ["linear"], ["zoom"], 1, 0.55, 2.5, 1]
 
 export class GameMap {
-  readonly map: MapLibreMap;
-  readonly ready: Promise<void>;
-  private labelLayers: string[] = [];
-  private borderLayers: string[] = [];
+  readonly map: MapLibreMap
+  readonly ready: Promise<void>
+  private labelLayers: string[] = []
+  private borderLayers: string[] = []
   /** The style's own width and opacity for the national borders, restored after the reveal. */
-  private borderPaint = new Map<string, { width: unknown; opacity: unknown }>();
-  private revealBorders = false;
+  private borderPaint = new Map<string, { width: unknown; opacity: unknown }>()
+  private revealBorders = false
   /** Roads, railways, buildings, airports, urban land use: man-made hints. */
-  private roadLayers: string[] = [];
-  private urbanLayers: string[] = [];
-  private iceLayers: string[] = [];
-  private woodLayers: string[] = [];
+  private roadLayers: string[] = []
+  private urbanLayers: string[] = []
+  private iceLayers: string[] = []
+  private woodLayers: string[] = []
   /** River lines; lakes are handled by filtering the shared water layer. */
-  private waterwayLayers: string[] = [];
-  private waterFilter: unknown = undefined;
-  private styleLayers: { id: string; type: string; sourceLayer: string }[] = [];
-  private theme: Theme | null = null;
+  private waterwayLayers: string[] = []
+  private waterFilter: unknown = undefined
+  private styleLayers: { id: string; type: string; sourceLayer: string }[] = []
+  private theme: Theme | null = null
   /** Set once the map is removed; layer toggles become no-ops rather than throwing. */
-  private disposed = false;
+  private disposed = false
 
   constructor(container: string | HTMLElement) {
     this.map = new MapLibreMap({
@@ -75,20 +75,20 @@ export class GameMap {
       attributionControl: { compact: true },
       dragRotate: false,
       pitchWithRotate: false,
-      touchPitch: false,
-    });
+      touchPitch: false
+    })
     // Bottom-left keeps the buttons clear of the HUD cards and the toolbar.
-    this.map.addControl(new NavigationControl({ showCompass: false }), "bottom-left");
-    this.map.keyboard.disableRotation();
-    this.map.touchZoomRotate.disableRotation();
+    this.map.addControl(new NavigationControl({ showCompass: false }), "bottom-left")
+    this.map.keyboard.disableRotation()
+    this.map.touchZoomRotate.disableRotation()
     this.ready = new Promise((resolve) => {
       this.map.once("load", () => {
-        this.collapseAttribution();
-        this.indexStyleLayers();
-        this.addSources();
-        resolve();
-      });
-    });
+        this.collapseAttribution()
+        this.indexStyleLayers()
+        this.addSources()
+        resolve()
+      })
+    })
   }
 
   /**
@@ -97,34 +97,34 @@ export class GameMap {
    * away, as the OpenStreetMap and OpenMapTiles licences require.
    */
   private collapseAttribution(): void {
-    const el = this.map.getContainer().querySelector(".maplibregl-ctrl-attrib");
-    if (!el) return;
-    el.classList.remove("maplibregl-compact-show");
-    el.removeAttribute("open");
+    const el = this.map.getContainer().querySelector(".maplibregl-ctrl-attrib")
+    if (!el) return
+    el.classList.remove("maplibregl-compact-show")
+    el.removeAttribute("open")
   }
 
   private indexStyleLayers(): void {
-    const layers = this.map.getStyle().layers;
-    const roadSources = new Set(["transportation", "aeroway"]);
-    const urbanSources = new Set(["building", "landuse", "park"]);
+    const layers = this.map.getStyle().layers
+    const roadSources = new Set(["transportation", "aeroway"])
+    const urbanSources = new Set(["building", "landuse", "park"])
     for (const l of layers) {
-      const sourceLayer = "source-layer" in l ? (l["source-layer"] ?? "") : "";
-      this.styleLayers.push({ id: l.id, type: l.type, sourceLayer });
-      if (l.type === "symbol") this.labelLayers.push(l.id);
+      const sourceLayer = "source-layer" in l ? (l["source-layer"] ?? "") : ""
+      this.styleLayers.push({ id: l.id, type: l.type, sourceLayer })
+      if (l.type === "symbol") this.labelLayers.push(l.id)
       else if (l.id.startsWith("boundary")) {
-        this.borderLayers.push(l.id);
+        this.borderLayers.push(l.id)
         if (NATIONAL_BORDERS.includes(l.id))
           this.borderPaint.set(l.id, {
             width: this.map.getPaintProperty(l.id, "line-width"),
-            opacity: this.map.getPaintProperty(l.id, "line-opacity"),
-          });
-      } else if (roadSources.has(sourceLayer)) this.roadLayers.push(l.id);
-      else if (urbanSources.has(sourceLayer)) this.urbanLayers.push(l.id);
-      else if (sourceLayer === "waterway") this.waterwayLayers.push(l.id);
+            opacity: this.map.getPaintProperty(l.id, "line-opacity")
+          })
+      } else if (roadSources.has(sourceLayer)) this.roadLayers.push(l.id)
+      else if (urbanSources.has(sourceLayer)) this.urbanLayers.push(l.id)
+      else if (sourceLayer === "waterway") this.waterwayLayers.push(l.id)
       // Glaciers and ice shelves: they trace mountain ranges and polar coasts.
-      else if (l.id === "landcover_wood") this.woodLayers.push(l.id);
-      else if (l.id.startsWith("landcover_")) this.iceLayers.push(l.id);
-      else if (l.id === "water") this.waterFilter = this.map.getFilter("water");
+      else if (l.id === "landcover_wood") this.woodLayers.push(l.id)
+      else if (l.id.startsWith("landcover_")) this.iceLayers.push(l.id)
+      else if (l.id === "water") this.waterFilter = this.map.getFilter("water")
     }
   }
 
@@ -140,9 +140,9 @@ export class GameMap {
       tileSize: 256,
       maxzoom: 15,
       attribution:
-        '<a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank">Terrain: Mapzen, AWS Open Data</a>',
-    });
-    const below = this.map.getLayer("water") ? "water" : this.labelLayers[0];
+        '<a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank">Terrain: Mapzen, AWS Open Data</a>'
+    })
+    const below = this.map.getLayer("water") ? "water" : this.labelLayers[0]
     // Natural colour for the reveal: greens, desert sand, white ice, from
     // Natural Earth II relief tiles on the same host as the map. Like the
     // relief it starts hidden and sits under the water (the tiles have a
@@ -157,11 +157,11 @@ export class GameMap {
           paint: {
             "raster-opacity": 0.9,
             "raster-brightness-max": 0.55,
-            "raster-saturation": 0.2,
-          },
+            "raster-saturation": 0.2
+          }
         },
-        below,
-      );
+        below
+      )
     }
     this.map.addLayer(
       {
@@ -173,16 +173,16 @@ export class GameMap {
           "hillshade-exaggeration": 0.3,
           "hillshade-shadow-color": "rgba(0, 0, 0, 0.55)",
           "hillshade-highlight-color": "rgba(255, 255, 255, 0.18)",
-          "hillshade-accent-color": "rgba(0, 0, 0, 0.3)",
-        },
+          "hillshade-accent-color": "rgba(0, 0, 0, 0.3)"
+        }
       },
-      below,
-    );
+      below
+    )
 
     this.map.addSource(PAINT_SOURCE, {
       type: "geojson",
-      data: { type: "FeatureCollection", features: [] },
-    });
+      data: { type: "FeatureCollection", features: [] }
+    })
     this.map.addLayer({
       id: "paint-fill",
       type: "fill",
@@ -199,33 +199,33 @@ export class GameMap {
           0.7,
           "#f4511e",
           1,
-          "#b71c1c",
+          "#b71c1c"
         ],
         "fill-opacity": ["interpolate", ["linear"], ["get", "v"], 0, 0.2, 1, 0.8],
-        "fill-antialias": true,
-      },
-    });
+        "fill-antialias": true
+      }
+    })
 
     this.map.addSource(REVEAL_SOURCE, {
       type: "geojson",
-      data: { type: "FeatureCollection", features: [] },
-    });
+      data: { type: "FeatureCollection", features: [] }
+    })
     // A region answer: the country filled faintly and outlined.
-    const isArea: FilterSpecification = ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]];
+    const isArea: FilterSpecification = ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]]
     this.map.addLayer({
       id: "reveal-region-fill",
       type: "fill",
       source: REVEAL_SOURCE,
       filter: isArea,
-      paint: { "fill-color": "#fbbf24", "fill-opacity": 0.12 },
-    });
+      paint: { "fill-color": "#fbbf24", "fill-opacity": 0.12 }
+    })
     this.map.addLayer({
       id: "reveal-region-line",
       type: "line",
       source: REVEAL_SOURCE,
       filter: isArea,
-      paint: { "line-color": "#fbbf24", "line-width": 2 },
-    });
+      paint: { "line-color": "#fbbf24", "line-width": 2 }
+    })
     this.map.addLayer({
       id: "reveal-answer",
       type: "circle",
@@ -235,21 +235,21 @@ export class GameMap {
         "circle-radius": 7,
         "circle-color": "#1565c0",
         "circle-stroke-color": "#ffffff",
-        "circle-stroke-width": 2.5,
-      },
-    });
+        "circle-stroke-width": 2.5
+      }
+    })
 
     // Brush footprint: the exact cells the next stamp would touch.
     this.map.addSource(CURSOR_SOURCE, {
       type: "geojson",
-      data: { type: "FeatureCollection", features: [] },
-    });
+      data: { type: "FeatureCollection", features: [] }
+    })
     this.map.addLayer({
       id: "cursor-fill",
       type: "fill",
       source: CURSOR_SOURCE,
-      paint: { "fill-color": "#ffffff", "fill-opacity": 0.08 },
-    });
+      paint: { "fill-color": "#ffffff", "fill-opacity": 0.08 }
+    })
     this.map.addLayer({
       id: "cursor-outline",
       type: "line",
@@ -258,42 +258,42 @@ export class GameMap {
         "line-color": "#ffffff",
         "line-width": 1.5,
         "line-opacity": 0.9,
-        "line-dasharray": ["case", ["==", ["get", "erase"], true], ["literal", [1, 1.5]], ["literal", [1, 0]]],
-      },
-    });
+        "line-dasharray": ["case", ["==", ["get", "erase"], true], ["literal", [1, 1.5]], ["literal", [1, 0]]]
+      }
+    })
   }
 
   applyTheme(t: Theme): void {
-    this.theme = t;
+    this.theme = t
     const set = (id: string, prop: string, value: unknown) => {
-      if (this.map.getLayer(id)) this.map.setPaintProperty(id, prop as never, value as never);
-    };
+      if (this.map.getLayer(id)) this.map.setPaintProperty(id, prop as never, value as never)
+    }
     for (const l of this.styleLayers) {
-      if (l.type === "background") set(l.id, "background-color", t.land);
-      else if (l.id === "water") set(l.id, "fill-color", t.water);
-      else if (l.id === "landcover_wood") set(l.id, "fill-color", t.wood);
-      else if (l.id.startsWith("landcover_")) set(l.id, "fill-color", t.ice);
-      else if (l.sourceLayer === "waterway" && l.type === "line") set(l.id, "line-color", t.waterway);
+      if (l.type === "background") set(l.id, "background-color", t.land)
+      else if (l.id === "water") set(l.id, "fill-color", t.water)
+      else if (l.id === "landcover_wood") set(l.id, "fill-color", t.wood)
+      else if (l.id.startsWith("landcover_")) set(l.id, "fill-color", t.ice)
+      else if (l.sourceLayer === "waterway" && l.type === "line") set(l.id, "line-color", t.waterway)
       else if (l.type === "symbol") {
-        set(l.id, "text-color", t.labelText);
-        set(l.id, "text-halo-color", t.labelHalo);
+        set(l.id, "text-color", t.labelText)
+        set(l.id, "text-halo-color", t.labelHalo)
       } else if (["transportation", "aeroway"].includes(l.sourceLayer)) {
-        if (l.type === "line") set(l.id, "line-color", t.road);
-        else if (l.type === "fill") set(l.id, "fill-color", t.road);
+        if (l.type === "line") set(l.id, "line-color", t.road)
+        else if (l.type === "fill") set(l.id, "fill-color", t.road)
       } else if (["landuse", "park", "building"].includes(l.sourceLayer)) {
-        set(l.id, "fill-color", t.urban);
-        if (l.id === "building") set(l.id, "fill-outline-color", t.urban);
+        set(l.id, "fill-color", t.urban)
+        if (l.id === "building") set(l.id, "fill-outline-color", t.urban)
       }
     }
-    this.styleBorders();
-    this.applyPaintRamp(t);
-    set("reveal-answer", "circle-color", t.answer);
-    set("reveal-answer", "circle-stroke-color", t.answerStroke);
-    set("reveal-region-fill", "fill-color", t.answer);
-    set("reveal-region-line", "line-color", t.answer);
-    set("cursor-fill", "fill-color", t.brush);
-    set("cursor-outline", "line-color", t.brush);
-    document.documentElement.style.setProperty("--ring-brush", t.brush);
+    this.styleBorders()
+    this.applyPaintRamp(t)
+    set("reveal-answer", "circle-color", t.answer)
+    set("reveal-answer", "circle-stroke-color", t.answerStroke)
+    set("reveal-region-fill", "fill-color", t.answer)
+    set("reveal-region-line", "line-color", t.answer)
+    set("cursor-fill", "fill-color", t.brush)
+    set("cursor-outline", "line-color", t.brush)
+    document.documentElement.style.setProperty("--ring-brush", t.brush)
   }
 
   /**
@@ -302,38 +302,38 @@ export class GameMap {
    * MapLibre throws on a removed map, so they check `disposed` first.
    */
   dispose(): void {
-    this.disposed = true;
-    this.map.remove();
+    this.disposed = true
+    this.map.remove()
   }
 
   setLabels(on: boolean): void {
-    if (this.disposed) return;
-    for (const id of this.labelLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+    if (this.disposed) return
+    for (const id of this.labelLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none")
   }
 
   /** Roads, railways and airports. */
   setRoads(on: boolean): void {
-    this.setVisible(this.roadLayers, on);
+    this.setVisible(this.roadLayers, on)
   }
 
   /** Built-up areas: buildings, urban land use, parks. */
   setUrban(on: boolean): void {
-    this.setVisible(this.urbanLayers, on);
+    this.setVisible(this.urbanLayers, on)
   }
 
   /** Glaciers and ice shelves. Off while guessing: they pick out mountain ranges. */
   setIce(on: boolean): void {
-    this.setVisible(this.iceLayers, on);
+    this.setVisible(this.iceLayers, on)
   }
 
   /** Woodland (from zoom 10). */
   setWood(on: boolean): void {
-    this.setVisible(this.woodLayers, on);
+    this.setVisible(this.woodLayers, on)
   }
 
   /** Shaded relief and natural colour. */
   setTerrain(on: boolean): void {
-    this.setVisible([TERRAIN_LAYER, COLOUR_LAYER], on);
+    this.setVisible([TERRAIN_LAYER, COLOUR_LAYER], on)
   }
 
   /**
@@ -344,80 +344,80 @@ export class GameMap {
   setDetail(level: MapDetail | "reveal"): void {
     // An unknown level (a stale saved setting, say) counts as minimal.
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- saved settings are not checked against the type
-    const rank = { minimal: 0, water: 1, physical: 2, political: 3, reveal: 4 }[level] ?? 0;
-    this.setInlandWater(rank >= 1);
-    this.setTerrain(rank >= 2);
-    this.setIce(rank >= 2);
-    this.setWood(rank >= 2);
-    this.setBorders(rank >= 3);
-    this.setRevealBorders(level === "reveal");
-    this.setLabels(rank >= 4);
-    this.setUrban(rank >= 4);
-    this.setRoads(false);
+    const rank = { minimal: 0, water: 1, physical: 2, political: 3, reveal: 4 }[level] ?? 0
+    this.setInlandWater(rank >= 1)
+    this.setTerrain(rank >= 2)
+    this.setIce(rank >= 2)
+    this.setWood(rank >= 2)
+    this.setBorders(rank >= 3)
+    this.setRevealBorders(level === "reveal")
+    this.setLabels(rank >= 4)
+    this.setUrban(rank >= 4)
+    this.setRoads(false)
   }
 
   private setVisible(ids: string[], on: boolean): void {
-    if (this.disposed) return;
+    if (this.disposed) return
     for (const id of ids) {
-      if (this.map.getLayer(id)) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+      if (this.map.getLayer(id)) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none")
     }
   }
 
   /** Rivers and lakes. Oceans always stay visible so coastlines remain. */
   setInlandWater(on: boolean): void {
-    if (this.disposed) return;
-    for (const id of this.waterwayLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
-    if (!this.map.getLayer("water")) return;
-    const base = this.waterFilter as maplibregl.FilterSpecification | undefined;
-    const oceanOnly = ["==", ["get", "class"], "ocean"] as unknown as maplibregl.FilterSpecification;
-    const combined = (base ? ["all", base, oceanOnly] : oceanOnly) as unknown as maplibregl.FilterSpecification;
-    this.map.setFilter("water", on ? (base ?? null) : combined);
+    if (this.disposed) return
+    for (const id of this.waterwayLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none")
+    if (!this.map.getLayer("water")) return
+    const base = this.waterFilter as maplibregl.FilterSpecification | undefined
+    const oceanOnly = ["==", ["get", "class"], "ocean"] as unknown as maplibregl.FilterSpecification
+    const combined = (base ? ["all", base, oceanOnly] : oceanOnly) as unknown as maplibregl.FilterSpecification
+    this.map.setFilter("water", on ? (base ?? null) : combined)
   }
 
   setBorders(on: boolean): void {
-    if (this.disposed) return;
-    for (const id of this.borderLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+    if (this.disposed) return
+    for (const id of this.borderLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none")
   }
 
   /** Bold national borders for the reveal, or the style's faint ones. */
   private setRevealBorders(on: boolean): void {
-    this.revealBorders = on;
-    this.styleBorders();
+    this.revealBorders = on
+    this.styleBorders()
   }
 
   private styleBorders(): void {
-    if (this.disposed || !this.theme) return;
+    if (this.disposed || !this.theme) return
     for (const id of this.borderLayers) {
-      if (!this.map.getLayer(id)) continue;
-      const own = this.borderPaint.get(id);
-      const bold = this.revealBorders && own !== undefined;
-      this.map.setPaintProperty(id, "line-color", bold ? this.theme.revealBorder : this.theme.border);
-      if (!own) continue;
-      this.map.setPaintProperty(id, "line-width", (bold ? REVEAL_BORDER_WIDTH : own.width) as never);
-      this.map.setPaintProperty(id, "line-opacity", (bold ? REVEAL_BORDER_OPACITY : own.opacity) as never);
+      if (!this.map.getLayer(id)) continue
+      const own = this.borderPaint.get(id)
+      const bold = this.revealBorders && own !== undefined
+      this.map.setPaintProperty(id, "line-color", bold ? this.theme.revealBorder : this.theme.border)
+      if (!own) continue
+      this.map.setPaintProperty(id, "line-width", (bold ? REVEAL_BORDER_WIDTH : own.width) as never)
+      this.map.setPaintProperty(id, "line-opacity", (bold ? REVEAL_BORDER_OPACITY : own.opacity) as never)
     }
   }
 
   private source(id: string): GeoJSONSource | undefined {
-    return this.map.getSource(id);
+    return this.map.getSource(id)
   }
 
   setPaint(data: GeoJSON.FeatureCollection): void {
-    void this.source(PAINT_SOURCE)?.setData(data);
+    void this.source(PAINT_SOURCE)?.setData(data)
   }
 
   /** Outline the cells the next stamp would touch; null hides it. Dotted when erasing. */
   setCursorFootprint(cells: string[] | null, erase = false): void {
     const features: GeoJSON.Feature[] = cells
       ? [{ type: "Feature", properties: { erase }, geometry: cellsOutline(cells) }]
-      : [];
-    void this.source(CURSOR_SOURCE)?.setData({ type: "FeatureCollection", features });
+      : []
+    void this.source(CURSOR_SOURCE)?.setData({ type: "FeatureCollection", features })
   }
 
   /** Outline a shape as the cursor instead (the country the Fill tool would fill); dotted when it would unfill. */
   setCursorShape(shape: GeoJSON.MultiPolygon | null, erase = false): void {
-    const features: GeoJSON.Feature[] = shape ? [{ type: "Feature", properties: { erase }, geometry: shape }] : [];
-    void this.source(CURSOR_SOURCE)?.setData({ type: "FeatureCollection", features });
+    const features: GeoJSON.Feature[] = shape ? [{ type: "Feature", properties: { erase }, geometry: shape }] : []
+    void this.source(CURSOR_SOURCE)?.setData({ type: "FeatureCollection", features })
   }
 
   /**
@@ -425,24 +425,24 @@ export class GameMap {
    * the theme ramp. Pass null to restore the ramp.
    */
   setPaintColour(colour: string | null): void {
-    if (!this.map.getLayer("paint-fill")) return;
+    if (!this.map.getLayer("paint-fill")) return
     if (colour === null) {
-      if (this.theme) this.applyPaintRamp(this.theme);
-      return;
+      if (this.theme) this.applyPaintRamp(this.theme)
+      return
     }
-    this.map.setPaintProperty("paint-fill", "fill-color", colour);
-    this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9]);
+    this.map.setPaintProperty("paint-fill", "fill-color", colour)
+    this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9])
   }
 
   /** Colour each feature by its own `colour` property, for several players at once. */
   setPaintColourPerFeature(): void {
-    if (!this.map.getLayer("paint-fill")) return;
-    this.map.setPaintProperty("paint-fill", "fill-color", ["coalesce", ["get", "colour"], "#888888"]);
-    this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9]);
+    if (!this.map.getLayer("paint-fill")) return
+    this.map.setPaintProperty("paint-fill", "fill-color", ["coalesce", ["get", "colour"], "#888888"])
+    this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9])
   }
 
   private applyPaintRamp(t: Theme): void {
-    if (!this.map.getLayer("paint-fill")) return;
+    if (!this.map.getLayer("paint-fill")) return
     this.map.setPaintProperty("paint-fill", "fill-color", [
       "interpolate",
       ["linear"],
@@ -454,8 +454,8 @@ export class GameMap {
       2 / 3,
       t.ramp[2],
       1,
-      t.ramp[3],
-    ]);
+      t.ramp[3]
+    ])
     this.map.setPaintProperty("paint-fill", "fill-opacity", [
       "interpolate",
       ["linear"],
@@ -463,8 +463,8 @@ export class GameMap {
       0,
       t.rampOpacity[0],
       1,
-      t.rampOpacity[1],
-    ]);
+      t.rampOpacity[1]
+    ])
   }
 
   /** Marker at the answer. The tolerance rings were tried and dropped: one clear dot reads better. */
@@ -475,36 +475,36 @@ export class GameMap {
         {
           type: "Feature",
           properties: {},
-          geometry: { type: "Point", coordinates: [answer.lon, answer.lat] },
-        },
-      ],
-    };
-    void this.source(REVEAL_SOURCE)?.setData(fc);
+          geometry: { type: "Point", coordinates: [answer.lon, answer.lat] }
+        }
+      ]
+    }
+    void this.source(REVEAL_SOURCE)?.setData(fc)
   }
 
   /** A region answer: the outline (GeoJSON MultiPolygon coordinates), filled faintly. */
   showRegionReveal(outline: number[][][][]): void {
     void this.source(REVEAL_SOURCE)?.setData({
       type: "FeatureCollection",
-      features: [{ type: "Feature", properties: {}, geometry: { type: "MultiPolygon", coordinates: outline } }],
-    });
+      features: [{ type: "Feature", properties: {}, geometry: { type: "MultiPolygon", coordinates: outline } }]
+    })
   }
 
   clearReveal(): void {
     void this.source(REVEAL_SOURCE)?.setData({
       type: "FeatureCollection",
-      features: [],
-    });
+      features: []
+    })
   }
 
   metersPerPixel(lat: number): number {
-    const z = this.map.getZoom();
-    return (WORLD_M * Math.cos((lat * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, z));
+    const z = this.map.getZoom()
+    return (WORLD_M * Math.cos((lat * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, z))
   }
 
   /** Back to the whole-world starting view, e.g. at the start of a round. */
   resetView(): void {
-    void this.map.easeTo({ center: WORLD_CENTER, zoom: WORLD_ZOOM, duration: 700 });
+    void this.map.easeTo({ center: WORLD_CENTER, zoom: WORLD_ZOOM, duration: 700 })
   }
 
   /** Fit the answer and a paint layer's cells into view, with a sensible zoom cap. */
@@ -512,38 +512,38 @@ export class GameMap {
     let minLon = answer.lon,
       maxLon = answer.lon,
       minLat = answer.lat,
-      maxLat = answer.lat;
+      maxLat = answer.lat
     for (const f of paint.features) {
-      if (f.geometry.type !== "Polygon") continue;
+      if (f.geometry.type !== "Polygon") continue
       for (const [lon, lat] of f.geometry.coordinates[0] as [number, number][]) {
         // Cells that were unwrapped past 180 are folded back for the bbox.
-        const l = lon > 180 ? lon - 360 : lon;
-        if (l < minLon) minLon = l;
-        if (l > maxLon) maxLon = l;
-        if (lat < minLat) minLat = lat;
-        if (lat > maxLat) maxLat = lat;
+        const l = lon > 180 ? lon - 360 : lon
+        if (l < minLon) minLon = l
+        if (l > maxLon) maxLon = l
+        if (lat < minLat) minLat = lat
+        if (lat > maxLat) maxLat = lat
       }
     }
     // Always include at least two tolerances around the answer.
-    const dLat = (2 * toleranceKm) / 111;
-    const dLon = dLat / Math.max(0.2, Math.cos((answer.lat * Math.PI) / 180));
-    minLat = Math.min(minLat, answer.lat - dLat);
-    maxLat = Math.max(maxLat, answer.lat + dLat);
-    minLon = Math.min(minLon, answer.lon - dLon);
-    maxLon = Math.max(maxLon, answer.lon + dLon);
+    const dLat = (2 * toleranceKm) / 111
+    const dLon = dLat / Math.max(0.2, Math.cos((answer.lat * Math.PI) / 180))
+    minLat = Math.min(minLat, answer.lat - dLat)
+    maxLat = Math.max(maxLat, answer.lat + dLat)
+    minLon = Math.min(minLon, answer.lon - dLon)
+    maxLon = Math.max(maxLon, answer.lon + dLon)
     if (maxLon - minLon > 300) {
       // Spans most of the world; just show it all.
-      void this.map.easeTo({ center: [answer.lon, 20], zoom: this.map.getMinZoom(), duration: 900 });
-      return;
+      void this.map.easeTo({ center: [answer.lon, 20], zoom: this.map.getMinZoom(), duration: 900 })
+      return
     }
     void this.map.fitBounds(
       [
         [minLon, Math.max(-85, minLat)],
-        [maxLon, Math.min(85, maxLat)],
+        [maxLon, Math.min(85, maxLat)]
       ],
       // Keep clear of the HUD cards on the left and right and the toolbar below.
-      { padding: { top: 40, bottom: 90, left: 340, right: 340 }, duration: 900, maxZoom: 10 },
-    );
+      { padding: { top: 40, bottom: 90, left: 340, right: 340 }, duration: 900, maxZoom: 10 }
+    )
   }
 
   /** Frame a country's outline (GeoJSON MultiPolygon coordinates) together with paint. */
@@ -551,26 +551,26 @@ export class GameMap {
     answer: LatLon,
     outline: number[][][][],
     paint: GeoJSON.FeatureCollection,
-    toleranceKm: number,
+    toleranceKm: number
   ): void {
     const parts = outline.map((coordinates): GeoJSON.Feature => ({
       type: "Feature",
       properties: {},
-      geometry: { type: "Polygon", coordinates },
-    }));
-    this.fitAnswerAndPaint(answer, { type: "FeatureCollection", features: [...paint.features, ...parts] }, toleranceKm);
+      geometry: { type: "Polygon", coordinates }
+    }))
+    this.fitAnswerAndPaint(answer, { type: "FeatureCollection", features: [...paint.features, ...parts] }, toleranceKm)
   }
 
   /** Ease so that about eight tolerances span 40% of the viewport width. */
   focusOn(answer: LatLon, toleranceKm: number): void {
-    const widthPx = this.map.getContainer().clientWidth;
-    const cos = Math.max(0.05, Math.cos((answer.lat * Math.PI) / 180));
-    const targetMpp = (toleranceKm * 8 * 1000) / (0.4 * widthPx);
-    const zoom = Math.log2((WORLD_M * cos) / (WORLD_PX_Z0 * targetMpp));
+    const widthPx = this.map.getContainer().clientWidth
+    const cos = Math.max(0.05, Math.cos((answer.lat * Math.PI) / 180))
+    const targetMpp = (toleranceKm * 8 * 1000) / (0.4 * widthPx)
+    const zoom = Math.log2((WORLD_M * cos) / (WORLD_PX_Z0 * targetMpp))
     void this.map.easeTo({
       center: [answer.lon, answer.lat],
       zoom: Math.min(this.map.getMaxZoom(), Math.max(this.map.getMinZoom(), zoom)),
-      duration: 900,
-    });
+      duration: 900
+    })
   }
 }

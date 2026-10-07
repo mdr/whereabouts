@@ -1,6 +1,6 @@
-import hero800 from "../assets/hero-800.webp";
-import hero1448 from "../assets/hero-1448.webp";
-import type { ComponentChildren } from "preact";
+import hero800 from "../assets/hero-800.webp"
+import hero1448 from "../assets/hero-1448.webp"
+import type { ComponentChildren } from "preact"
 
 /**
  * The title on the card screens: a strip of the front-page picture, cropped
@@ -19,5 +19,5 @@ export function Banner({ children }: { children?: ComponentChildren }) {
       <h1>Whereabouts</h1>
       {children}
     </header>
-  );
+  )
 }

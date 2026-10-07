@@ -1,8 +1,8 @@
-import "./style.css";
-import { render } from "preact";
-import { App } from "./app";
-import { installSound } from "./sound";
+import "./style.css"
+import { render } from "preact"
+import { App } from "./app"
+import { installSound } from "./sound"
 
-installSound();
+installSound()
 
-render(<App />, document.getElementById("app")!);
+render(<App />, document.getElementById("app")!)

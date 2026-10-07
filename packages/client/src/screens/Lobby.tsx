@@ -1,28 +1,28 @@
-import { Fragment } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { Fragment } from "preact"
+import { useEffect, useRef, useState } from "preact/hooks"
 import {
   MAX_PLAYERS,
   MAX_SPECTATORS,
   QUESTION_TYPES,
   ROUND_LENGTHS_MS,
   nextHostAfter,
-  type GameView,
-} from "@whereabouts/shared";
-import type { Connection } from "../net";
-import { configureAsHost } from "../host-setup";
-import { askedToWatch, joinedCode, playerName, soundOn, startOnPan } from "../settings";
-import { HostWord, PlayerList } from "../ui/PlayerList";
-import { ConnectionNote } from "../ui/ConnectionNote";
-import { Icon } from "../ui/icons";
-import { Pills } from "../ui/Controls";
-import { MixEditor, RoundStrip, describeMix } from "../ui/MixEditor";
-import { kickRequest, leaveRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog";
-import { navigate } from "../router";
-import { Banner } from "../ui/Banner";
-import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker";
-import { lobbyTestIds, setupSummaryTestIds } from "./LobbyTestIds";
+  type GameView
+} from "@whereabouts/shared"
+import type { Connection } from "../net"
+import { configureAsHost } from "../host-setup"
+import { askedToWatch, joinedCode, playerName, soundOn, startOnPan } from "../settings"
+import { HostWord, PlayerList } from "../ui/PlayerList"
+import { ConnectionNote } from "../ui/ConnectionNote"
+import { Icon } from "../ui/icons"
+import { Pills } from "../ui/Controls"
+import { MixEditor, RoundStrip, describeMix } from "../ui/MixEditor"
+import { kickRequest, leaveRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog"
+import { navigate } from "../router"
+import { Banner } from "../ui/Banner"
+import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker"
+import { lobbyTestIds, setupSummaryTestIds } from "./LobbyTestIds"
 
-const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }));
+const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }))
 
 /**
  * Waiting room: invite on the left (code, link, players), the game setup on
@@ -30,23 +30,23 @@ const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 10
  * which highlight briefly when the host changes one.
  */
 export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
-  const url = `${location.origin}${location.pathname}#/game/${view.code}`;
-  const [copied, setCopied] = useState(false);
-  const [renaming, setRenaming] = useState(false);
-  const { dialog, ask } = useConfirm();
-  const current = view.players.find((p) => p.id === view.you.id)?.name ?? "";
-  const host = view.you.isHost;
-  const canShare = typeof navigator.share === "function";
-  const players = view.players.filter((p) => !p.watching);
-  const watchers = view.players.filter((p) => p.watching);
-  const seatsFull = players.length >= MAX_PLAYERS;
+  const url = `${location.origin}${location.pathname}#/game/${view.code}`
+  const [copied, setCopied] = useState(false)
+  const [renaming, setRenaming] = useState(false)
+  const { dialog, ask } = useConfirm()
+  const current = view.players.find((p) => p.id === view.you.id)?.name ?? ""
+  const host = view.you.isHost
+  const canShare = typeof navigator.share === "function"
+  const players = view.players.filter((p) => !p.watching)
+  const watchers = view.players.filter((p) => p.watching)
+  const seatsFull = players.length >= MAX_PLAYERS
   // Home, giving up the seat now; the tab forgets the game so a refresh or
   // Back does not quietly rejoin it. Leaving the screen disconnects.
   const leave = () => {
-    conn.leave();
-    joinedCode.value = "";
-    navigate("/");
-  };
+    conn.leave()
+    joinedCode.value = ""
+    navigate("/")
+  }
   return (
     <div class="home">
       <div class="home-card lobby" data-testid={lobbyTestIds.page}>
@@ -71,7 +71,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                 onClick={() => {
                   // Missing outside a secure context (a LAN address over http), whatever the DOM types say.
                   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                  void navigator.clipboard?.writeText(url).then(() => setCopied(true));
+                  void navigator.clipboard?.writeText(url).then(() => setCopied(true))
                 }}
               >
                 <Icon name={copied ? "check" : "link"} /> {copied ? "Link copied" : "Copy link"}
@@ -83,7 +83,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                       .share({ title: "Whereabouts", text: `Join my game: ${view.code}`, url })
                       .catch(() => {
                         // Closing the share sheet rejects too; there is nothing to report.
-                      });
+                      })
                   }}
                 >
                   <Icon name="share" /> Share
@@ -118,7 +118,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     onMakeHost={host ? (p) => ask(makeHostRequest(p.name, () => conn.makeHost(p.id))) : undefined}
                   />
                 </Fragment>
-              ),
+              )
             )}
             {view.players.length === 1 && <p class="hint waiting">Waiting for friends to join…</p>}
             {view.you.watching && !askedToWatch.value && seatsFull && (
@@ -150,10 +150,10 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                 current={current}
                 onDone={(name) => {
                   if (name && name !== current) {
-                    conn.rename(name);
-                    playerName.value = name;
+                    conn.rename(name)
+                    playerName.value = name
                   }
-                  setRenaming(false);
+                  setRenaming(false)
                 }}
               />
             )}
@@ -232,17 +232,17 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function RenameForm({ current, onDone }: { current: string; onDone: (name: string | null) => void }) {
-  const [name, setName] = useState(current);
+  const [name, setName] = useState(current)
   return (
     <form
       class="join"
       onSubmit={(e) => {
-        e.preventDefault();
-        onDone(name.trim());
+        e.preventDefault()
+        onDone(name.trim())
       }}
     >
       <input
@@ -252,7 +252,7 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: strin
         value={name}
         onInput={(e) => setName((e.target as HTMLInputElement).value)}
         onKeyDown={(e) => {
-          if (e.key === "Escape") onDone(null);
+          if (e.key === "Escape") onDone(null)
         }}
         autoFocus
       />
@@ -260,7 +260,7 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: strin
         Save
       </button>
     </form>
-  );
+  )
 }
 
 /**
@@ -269,29 +269,29 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: strin
  * that plays a short highlight; nothing flashes on first load.
  */
 function SetupSummary({ view }: { view: GameView }) {
-  const { rounds, roundMs, mix, mapDetail } = view.config;
-  const shown = useRef(view.config);
-  const before = shown.current;
+  const { rounds, roundMs, mix, mapDetail } = view.config
+  const shown = useRef(view.config)
+  const before = shown.current
   useEffect(() => {
-    shown.current = view.config;
-  });
-  const mixChanged = QUESTION_TYPES.some((t) => mix[t.id] !== before.mix[t.id]);
+    shown.current = view.config
+  })
+  const mixChanged = QUESTION_TYPES.some((t) => mix[t.id] !== before.mix[t.id])
   const tiles = [
     {
       key: "rounds",
       testId: setupSummaryTestIds.rounds,
       value: String(rounds),
       label: rounds === 1 ? "round" : "rounds",
-      changed: rounds !== before.rounds,
+      changed: rounds !== before.rounds
     },
     {
       key: "seconds",
       testId: setupSummaryTestIds.seconds,
       value: `${roundMs / 1000} s`,
       label: "per round",
-      changed: roundMs !== before.roundMs,
-    },
-  ];
+      changed: roundMs !== before.roundMs
+    }
+  ]
   return (
     <div class="setup-summary" data-testid={setupSummaryTestIds.summary}>
       {tiles.map((t) => (
@@ -314,5 +314,5 @@ function SetupSummary({ view }: { view: GameView }) {
         <MapDetailSummary value={mapDetail} />
       </div>
     </div>
-  );
+  )
 }

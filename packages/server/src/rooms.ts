@@ -9,9 +9,9 @@ import {
   Room,
   type AuthResult,
   type ConnectionContext,
-  type RoomManager,
-} from "@rivalis/core";
-import { type z } from "zod";
+  type RoomManager
+} from "@rivalis/core"
+import { type z } from "zod"
 import {
   ClientMessageSchemas,
   Game,
@@ -26,240 +26,240 @@ import {
   type FlagQuestion,
   type GameConfig,
   type Question,
-  type RegionQuestion,
-} from "@whereabouts/shared";
+  type RegionQuestion
+} from "@whereabouts/shared"
 // The countries for "Paint the whole of …" rounds, and the flag rounds. The
 // client loads the same files on demand; the server holds them all.
-import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" };
-import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" };
+import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
+import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
 
-const REGIONS = regionsJson as RegionQuestion[];
-const FLAGS: FlagQuestion[] = flagsJson;
+const REGIONS = regionsJson as RegionQuestion[]
+const FLAGS: FlagQuestion[] = flagsJson
 
 export interface ActorData {
-  token: string;
-  name: string;
+  token: string
+  name: string
   /** Asked to join as a spectator. */
-  watch: boolean;
+  watch: boolean
 }
 
-export const ROOM_TYPE = "game";
+export const ROOM_TYPE = "game"
 
 /** Injected clock so tests can drive time. */
 export interface Clock {
-  now(): number;
-  setTimeout(fn: () => void, ms: number): unknown;
-  clearTimeout(handle: unknown): void;
+  now(): number
+  setTimeout(fn: () => void, ms: number): unknown
+  clearTimeout(handle: unknown): void
 }
 
 export const realClock: Clock = {
   now: () => Date.now(),
   setTimeout: (fn, ms) => setTimeout(fn, ms),
-  clearTimeout: (h) => clearTimeout(h as ReturnType<typeof setTimeout>),
-};
+  clearTimeout: (h) => clearTimeout(h as ReturnType<typeof setTimeout>)
+}
 
 export interface GameRoomDeps {
-  clock: Clock;
-  pool: Question[];
-  regions: RegionQuestion[];
-  flags: FlagQuestion[];
-  config: Partial<GameConfig>;
+  clock: Clock
+  pool: Question[]
+  regions: RegionQuestion[]
+  flags: FlagQuestion[]
+  config: Partial<GameConfig>
 }
 
 /** Set once at startup; rooms are constructed by Rivalis so cannot take arguments. */
-let deps: GameRoomDeps = { clock: realClock, pool: QUESTIONS, regions: REGIONS, flags: FLAGS, config: {} };
+let deps: GameRoomDeps = { clock: realClock, pool: QUESTIONS, regions: REGIONS, flags: FLAGS, config: {} }
 export function configureGameRooms(next: Partial<GameRoomDeps>): void {
-  deps = { ...deps, ...next };
+  deps = { ...deps, ...next }
 }
 
 export class GameRoom extends Room<ActorData> {
   // Not Rivalis's destroyOnEmpty, which closes the room the moment the last
   // player drops: a lone host's refresh would lose the game. An empty room
   // stays open for SEAT_GRACE_MS instead (see onLeave).
-  protected override unknownTopicPolicy = "drop" as const;
+  protected override unknownTopicPolicy = "drop" as const
 
   // Rivalis runs onCreate from the base constructor, before subclass field
   // initialisers. `declare` fields emit no initialiser, so values assigned in
   // onCreate survive; anything with `= ...` here would be reset afterwards.
-  declare private game: Game;
-  declare private actorsByToken: Map<string, Actor<ActorData>>;
-  declare private timer: unknown;
-  declare private emptyTimer: unknown;
+  declare private game: Game
+  declare private actorsByToken: Map<string, Actor<ActorData>>
+  declare private timer: unknown
+  declare private emptyTimer: unknown
 
   protected override onCreate(): void {
-    this.game = new Game(this.id, deps.pool, deps.config, Date.now(), deps.regions, deps.flags);
-    this.actorsByToken = new Map();
-    this.timer = null;
-    this.emptyTimer = null;
+    this.game = new Game(this.id, deps.pool, deps.config, Date.now(), deps.regions, deps.flags)
+    this.actorsByToken = new Map()
+    this.timer = null
+    this.emptyTimer = null
     for (const [topic, schema] of Object.entries(ClientMessageSchemas)) {
-      this.bind(topic, (actor, payload) => this.handle(actor, topic, schema, payload));
+      this.bind(topic, (actor, payload) => this.handle(actor, topic, schema, payload))
     }
   }
 
   protected override onJoin(actor: Actor<ActorData>): void {
-    const { token, name, watch } = actor.data!;
-    this.cancelEmptyTimer();
-    const previous = this.actorsByToken.get(token);
-    if (previous && previous !== actor) previous.kick("replaced by a newer connection");
-    this.actorsByToken.set(token, actor);
-    const result = this.game.join(token, name, deps.clock.now(), watch);
+    const { token, name, watch } = actor.data!
+    this.cancelEmptyTimer()
+    const previous = this.actorsByToken.get(token)
+    if (previous && previous !== actor) previous.kick("replaced by a newer connection")
+    this.actorsByToken.set(token, actor)
+    const result = this.game.join(token, name, deps.clock.now(), watch)
     if (!result.ok) {
-      actor.send(ServerTopics.error, encodeMessage({ message: result.error }));
-      actor.kick(result.error);
-      return;
+      actor.send(ServerTopics.error, encodeMessage({ message: result.error }))
+      actor.kick(result.error)
+      return
     }
-    this.broadcastState();
+    this.broadcastState()
   }
 
   protected override onLeave(actor: Actor<ActorData>): void {
-    const { token } = actor.data!;
-    if (this.actorsByToken.get(token) !== actor) return; // superseded by a reconnect
-    this.actorsByToken.delete(token);
-    this.game.disconnect(token, deps.clock.now());
-    this.broadcastState();
+    const { token } = actor.data!
+    if (this.actorsByToken.get(token) !== actor) return // superseded by a reconnect
+    this.actorsByToken.delete(token)
+    this.game.disconnect(token, deps.clock.now())
+    this.broadcastState()
     if (this.actorCount === 0) {
-      this.cancelEmptyTimer();
+      this.cancelEmptyTimer()
       // Everyone left on purpose: nobody is coming back, so close now. (After
       // this leave has finished; Rivalis defers its own teardown the same way.)
       if (this.game.playerCount === 0) {
         queueMicrotask(() => {
-          if (this.actorCount === 0) this.destroy();
-        });
-        return;
+          if (this.actorCount === 0) this.destroy()
+        })
+        return
       }
       this.emptyTimer = deps.clock.setTimeout(() => {
-        this.emptyTimer = null;
-        if (this.actorCount === 0) this.destroy();
-      }, SEAT_GRACE_MS);
+        this.emptyTimer = null
+        if (this.actorCount === 0) this.destroy()
+      }, SEAT_GRACE_MS)
     }
   }
 
   protected override onDestroy(): void {
-    this.clearTimer();
-    this.cancelEmptyTimer();
+    this.clearTimer()
+    this.cancelEmptyTimer()
   }
 
   private cancelEmptyTimer(): void {
-    if (this.emptyTimer !== null) deps.clock.clearTimeout(this.emptyTimer);
-    this.emptyTimer = null;
+    if (this.emptyTimer !== null) deps.clock.clearTimeout(this.emptyTimer)
+    this.emptyTimer = null
   }
 
   private handle(actor: Actor<ActorData>, topic: string, schema: z.ZodType, payload: Uint8Array): void {
-    let body: unknown;
+    let body: unknown
     try {
-      body = decodeMessage(payload);
+      body = decodeMessage(payload)
     } catch {
-      this.sendError(actor, "malformed message");
-      return;
+      this.sendError(actor, "malformed message")
+      return
     }
-    const parsed = schema.safeParse(body);
+    const parsed = schema.safeParse(body)
     if (!parsed.success) {
-      this.sendError(actor, `invalid ${topic}`);
-      return;
+      this.sendError(actor, `invalid ${topic}`)
+      return
     }
-    const token = actor.data!.token;
-    const now = deps.clock.now();
-    const result = this.dispatch(topic, token, parsed.data, now);
+    const token = actor.data!.token
+    const now = deps.clock.now()
+    const result = this.dispatch(topic, token, parsed.data, now)
     if (!result.ok) {
-      this.sendError(actor, result.error);
-      return;
+      this.sendError(actor, result.error)
+      return
     }
-    if (result.changed) this.broadcastState();
-    else if (topic === "paint") this.sendState(actor); // echo lock/paint status to the sender only
+    if (result.changed) this.broadcastState()
+    else if (topic === "paint") this.sendState(actor) // echo lock/paint status to the sender only
   }
 
   private dispatch(topic: string, token: string, data: unknown, now: number) {
     switch (topic) {
       case "paint": {
-        const paint = data as z.infer<typeof ClientMessageSchemas.paint>;
-        if (Object.keys(paint.cells).length > MAX_PAINT_CELLS) return { ok: false as const, error: "too many cells" };
-        return this.game.setPaint(token, paint);
+        const paint = data as z.infer<typeof ClientMessageSchemas.paint>
+        if (Object.keys(paint.cells).length > MAX_PAINT_CELLS) return { ok: false as const, error: "too many cells" }
+        return this.game.setPaint(token, paint)
       }
       case "lock":
-        return this.game.lock(token, now);
+        return this.game.lock(token, now)
       case "unlock":
-        return this.game.unlock(token);
+        return this.game.unlock(token)
       case "ready":
-        return this.game.ready(token, now);
+        return this.game.ready(token, now)
       case "configure":
-        return this.game.configure(token, data as z.infer<typeof ClientMessageSchemas.configure>);
+        return this.game.configure(token, data as z.infer<typeof ClientMessageSchemas.configure>)
       case "start":
-        return this.game.start(token, now);
+        return this.game.start(token, now)
       case "next":
-        return this.game.next(token, now);
+        return this.game.next(token, now)
       case "again":
-        return this.game.again(token, now);
+        return this.game.again(token, now)
       case "rename":
-        return this.game.rename(token, (data as z.infer<typeof ClientMessageSchemas.rename>).name);
+        return this.game.rename(token, (data as z.infer<typeof ClientMessageSchemas.rename>).name)
       case "kick":
-        return this.removePlayer(token, (data as z.infer<typeof ClientMessageSchemas.kick>).playerId, now);
+        return this.removePlayer(token, (data as z.infer<typeof ClientMessageSchemas.kick>).playerId, now)
       case "setRole":
-        return this.game.setRole(token, (data as z.infer<typeof ClientMessageSchemas.setRole>).watch);
+        return this.game.setRole(token, (data as z.infer<typeof ClientMessageSchemas.setRole>).watch)
       case "leave":
-        return this.leave(token);
+        return this.leave(token)
       case "makeHost":
-        return this.game.makeHost(token, (data as z.infer<typeof ClientMessageSchemas.makeHost>).playerId);
+        return this.game.makeHost(token, (data as z.infer<typeof ClientMessageSchemas.makeHost>).playerId)
       case "end":
-        return this.game.end(token);
+        return this.game.end(token)
       default:
-        return { ok: false as const, error: "unknown topic" };
+        return { ok: false as const, error: "unknown topic" }
     }
   }
 
   /** Give up this player's seat and close their connection; the client closes it too. */
   private leave(token: string) {
-    const result = this.game.leave(token);
-    if (result.ok) this.actorsByToken.get(token)?.kick("left the game");
-    return result;
+    const result = this.game.leave(token)
+    if (result.ok) this.actorsByToken.get(token)?.kick("left the game")
+    return result
   }
 
   /** Remove a player from the game and close their connection, telling them why. */
   private removePlayer(token: string, playerId: string, now: number) {
-    const target = this.game.tokenOf(playerId);
-    const result = this.game.kick(token, playerId, now);
-    if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick("removed by the host");
-    return result;
+    const target = this.game.tokenOf(playerId)
+    const result = this.game.kick(token, playerId, now)
+    if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick("removed by the host")
+    return result
   }
 
   private sendError(actor: Actor<ActorData>, message: string): void {
-    actor.send(ServerTopics.error, encodeMessage({ message }));
+    actor.send(ServerTopics.error, encodeMessage({ message }))
   }
 
   private sendState(actor: Actor<ActorData>): void {
-    const now = deps.clock.now();
-    actor.send(ServerTopics.state, encodeMessage(this.game.view(actor.data!.token, now)));
+    const now = deps.clock.now()
+    actor.send(ServerTopics.state, encodeMessage(this.game.view(actor.data!.token, now)))
   }
 
   /** Views are per player (host flag, lock state), so send individually. */
   private broadcastState(): void {
-    const now = deps.clock.now();
+    const now = deps.clock.now()
     this.each((actor) => {
-      actor.send(ServerTopics.state, encodeMessage(this.game.view(actor.data!.token, now)));
-    });
-    this.joinable = this.game.phase !== "results";
-    this.armTimer();
+      actor.send(ServerTopics.state, encodeMessage(this.game.view(actor.data!.token, now)))
+    })
+    this.joinable = this.game.phase !== "results"
+    this.armTimer()
   }
 
   private armTimer(): void {
-    this.clearTimer();
-    const at = this.game.nextWakeAt();
-    if (at === null) return;
-    const delay = Math.max(0, at - deps.clock.now());
+    this.clearTimer()
+    const at = this.game.nextWakeAt()
+    if (at === null) return
+    const delay = Math.max(0, at - deps.clock.now())
     this.timer = deps.clock.setTimeout(() => {
-      this.timer = null;
-      if (this.game.tick(deps.clock.now())) this.broadcastState();
-      else this.armTimer();
-    }, delay);
+      this.timer = null
+      if (this.game.tick(deps.clock.now())) this.broadcastState()
+      else this.armTimer()
+    }, delay)
   }
 
   private clearTimer(): void {
-    if (this.timer !== null) deps.clock.clearTimeout(this.timer);
-    this.timer = null;
+    if (this.timer !== null) deps.clock.clearTimeout(this.timer)
+    this.timer = null
   }
 
   /** Test hook. */
   get state(): Game {
-    return this.game;
+    return this.game
   }
 }
 
@@ -269,28 +269,28 @@ export class GameRoom extends Room<ActorData> {
  * joinable.
  */
 export class GameAuth extends AuthMiddleware<ActorData> {
-  private rooms: () => RoomManager<ActorData>;
+  private rooms: () => RoomManager<ActorData>
 
   constructor(rooms: () => RoomManager<ActorData>) {
-    super();
-    this.rooms = rooms;
+    super()
+    this.rooms = rooms
   }
 
   override async authenticate(ticket: string, _context?: ConnectionContext): Promise<AuthResult<ActorData> | null> {
-    const parsed = decodeTicket(ticket);
-    if (!parsed) return null;
-    const rooms = this.rooms();
-    let roomId: string;
+    const parsed = decodeTicket(ticket)
+    if (!parsed) return null
+    const rooms = this.rooms()
+    let roomId: string
     if (parsed.create) {
-      roomId = generateCode();
-      for (let i = 0; i < 20 && rooms.get(roomId); i++) roomId = generateCode();
-      if (rooms.get(roomId)) return null;
-      rooms.create(ROOM_TYPE, roomId);
+      roomId = generateCode()
+      for (let i = 0; i < 20 && rooms.get(roomId); i++) roomId = generateCode()
+      if (rooms.get(roomId)) return null
+      rooms.create(ROOM_TYPE, roomId)
     } else if (parsed.code && rooms.get(parsed.code)) {
-      roomId = parsed.code;
+      roomId = parsed.code
     } else {
-      return null;
+      return null
     }
-    return { data: { token: parsed.token, name: parsed.name, watch: parsed.watch ?? false }, roomId };
+    return { data: { token: parsed.token, name: parsed.name, watch: parsed.watch ?? false }, roomId }
   }
 }

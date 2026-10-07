@@ -4,5 +4,5 @@ export const homeTestIds = {
   hostButton: "Home.hostButton",
   codeInput: "Home.codeInput",
   joinButton: "Home.joinButton",
-  practiseButton: "Home.practiseButton",
-};
+  practiseButton: "Home.practiseButton"
+}

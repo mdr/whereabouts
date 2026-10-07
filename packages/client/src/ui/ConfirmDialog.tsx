@@ -3,32 +3,32 @@
  * the backdrop and Cancel all dismiss it; the confirm button is styled as
  * destructive. `useConfirm` gives a screen one dialog and an `ask` function.
  */
-import { useEffect, useRef, useState } from "preact/hooks";
-import type { ComponentChildren } from "preact";
-import { createPortal } from "preact/compat";
-import { confirmDialogTestIds } from "./ConfirmDialogTestIds";
+import { useEffect, useRef, useState } from "preact/hooks"
+import type { ComponentChildren } from "preact"
+import { createPortal } from "preact/compat"
+import { confirmDialogTestIds } from "./ConfirmDialogTestIds"
 
 export interface ConfirmRequest {
-  title: string;
-  body: ComponentChildren;
-  confirmLabel: string;
-  onConfirm: () => void;
+  title: string
+  body: ComponentChildren
+  confirmLabel: string
+  onConfirm: () => void
   /** Not something to undo with regret (handing over, say): a plain confirm button, not a red one. */
-  safe?: boolean;
+  safe?: boolean
 }
 
 export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | null; onClose: () => void }) {
-  const cancelRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
-    if (!request) return;
-    cancelRef.current?.focus();
+    if (!request) return
+    cancelRef.current?.focus()
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [request]);
-  if (!request) return null;
+      if (e.key === "Escape") onClose()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [request])
+  if (!request) return null
   // Rendered into <body>: a transformed ancestor (the bottom toolbar is one)
   // would otherwise become the box the fixed backdrop fills.
   return createPortal(
@@ -53,8 +53,8 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
             class={request.safe ? "primary" : "danger solid"}
             data-testid={confirmDialogTestIds.confirmButton}
             onClick={() => {
-              onClose();
-              request.onConfirm();
+              onClose()
+              request.onConfirm()
             }}
           >
             {request.confirmLabel}
@@ -62,17 +62,17 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
         </div>
       </div>
     </div>,
-    document.body,
-  );
+    document.body
+  )
 }
 
 /** One dialog per screen: render `dialog`, call `ask` to open it. */
 export function useConfirm(): { dialog: ComponentChildren; ask: (request: ConfirmRequest) => void } {
-  const [request, setRequest] = useState<ConfirmRequest | null>(null);
+  const [request, setRequest] = useState<ConfirmRequest | null>(null)
   return {
     dialog: <ConfirmDialog request={request} onClose={() => setRequest(null)} />,
-    ask: setRequest,
-  };
+    ask: setRequest
+  }
 }
 
 /** The wording for removing a player, shared by every list that offers it. */
@@ -81,8 +81,8 @@ export function kickRequest(name: string, onConfirm: () => void): ConfirmRequest
     title: `Remove ${name} from the game?`,
     body: "They lose their score and paint, and can't take their seat back. They can rejoin with the code as a new player.",
     confirmLabel: `Remove ${name}`,
-    onConfirm,
-  };
+    onConfirm
+  }
 }
 
 /** The wording for handing the host role to another player. */
@@ -92,8 +92,8 @@ export function makeHostRequest(name: string, onConfirm: () => void): ConfirmReq
     body: "They take over starting the game, the setup, moving on and removing players. You carry on as a player.",
     confirmLabel: `Make ${name} host`,
     onConfirm,
-    safe: true,
-  };
+    safe: true
+  }
 }
 
 /** The host leaving the lobby: someone takes over, or the game closes. */
@@ -104,14 +104,14 @@ export function leaveRequest(nextHost: string | undefined, onConfirm: () => void
         body: `${nextHost} becomes the host.`,
         confirmLabel: "Leave",
         onConfirm,
-        safe: true,
+        safe: true
       }
     : {
         title: "Leave the game?",
         body: "It closes, since no one else is here.",
         confirmLabel: "Leave and close",
-        onConfirm,
-      };
+        onConfirm
+      }
 }
 
 export function endGameRequest(onConfirm: () => void): ConfirmRequest {
@@ -119,6 +119,6 @@ export function endGameRequest(onConfirm: () => void): ConfirmRequest {
     title: "End the game now?",
     body: "This round is scored as it stands and everyone goes to the final standings.",
     confirmLabel: "End game",
-    onConfirm,
-  };
+    onConfirm
+  }
 }

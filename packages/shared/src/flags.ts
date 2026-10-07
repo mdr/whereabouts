@@ -6,27 +6,27 @@
  * knows whether to cover the country or mark where it is. The countries are
  * in flags.json, built with regions.json by scripts/build-regions.mjs.
  */
-import type { LatLon } from "./geo.ts";
-import type { Question } from "./questions.ts";
-import type { RegionQuestion } from "./regions.ts";
+import type { LatLon } from "./geo.ts"
+import type { Question } from "./questions.ts"
+import type { RegionQuestion } from "./regions.ts"
 
 export interface FlagQuestion {
-  id: string;
+  id: string
   /** ISO 3166-1 alpha-2 code, lower case: the flag to show. */
-  flag: string;
+  flag: string
   /** The country's name, shown after the reveal. */
-  label: string;
+  label: string
   /** English Wikipedia title of the article on the flag, linked at the reveal. */
-  wiki: string;
+  wiki: string
   /** Where a point answer is; the centre of a painted one, for framing. */
-  answer: LatLon;
-  toleranceKm: number;
+  answer: LatLon
+  toleranceKm: number
   /** Set when the country is painted whole: its id in regions.json. */
-  regionId?: string;
+  regionId?: string
 }
 
-export const FLAG_AREA_PROMPT = "Paint the whole of the country with this flag";
-export const FLAG_POINT_PROMPT = "Where is the country with this flag?";
+export const FLAG_AREA_PROMPT = "Paint the whole of the country with this flag"
+export const FLAG_POINT_PROMPT = "Where is the country with this flag?"
 
 /**
  * The question a flag round asks: the country's region with a flag in place
@@ -35,11 +35,11 @@ export const FLAG_POINT_PROMPT = "Where is the country with this flag?";
  */
 export function flagRound(
   f: FlagQuestion,
-  regions: ReadonlyMap<string, RegionQuestion>,
+  regions: ReadonlyMap<string, RegionQuestion>
 ): Question | RegionQuestion | null {
   if (f.regionId) {
-    const region = regions.get(f.regionId);
-    return region ? { ...region, prompt: FLAG_AREA_PROMPT, label: f.label, wiki: f.wiki, flag: f.flag } : null;
+    const region = regions.get(f.regionId)
+    return region ? { ...region, prompt: FLAG_AREA_PROMPT, label: f.label, wiki: f.wiki, flag: f.flag } : null
   }
   return {
     id: f.id,
@@ -50,6 +50,6 @@ export function flagRound(
     label: f.label,
     wiki: f.wiki,
     region: "world",
-    flag: f.flag,
-  };
+    flag: f.flag
+  }
 }

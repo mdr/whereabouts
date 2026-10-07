@@ -23,9 +23,9 @@ export const PLAYER_COLOURS = [
   "#0aff0a", // bright green
   "#f9b4d6", // pale pink
   "#5c9dff", // cornflower blue
-  "#ff3b0a", // red orange
-] as const;
+  "#ff3b0a" // red orange
+] as const
 
 export function playerColour(index: number): string {
-  return PLAYER_COLOURS[index % PLAYER_COLOURS.length]!;
+  return PLAYER_COLOURS[index % PLAYER_COLOURS.length]!
 }

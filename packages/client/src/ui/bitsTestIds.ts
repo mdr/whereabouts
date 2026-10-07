@@ -1,21 +1,21 @@
 export const hudHeaderTestIds = {
-  round: "HudHeader.round",
-};
+  round: "HudHeader.round"
+}
 
 export const hudBottomTestIds = {
-  toolbar: "HudBottom.toolbar",
-};
+  toolbar: "HudBottom.toolbar"
+}
 
 export const soundToggleTestIds = {
-  button: "SoundToggle.button",
-};
+  button: "SoundToggle.button"
+}
 
 export const questionCardTestIds = {
   card: "QuestionCard.card",
   prompt: "QuestionCard.prompt",
-  photo: "QuestionCard.photo",
-};
+  photo: "QuestionCard.photo"
+}
 
 export const countdownTestIds = {
-  countdown: "Countdown.countdown",
-};
+  countdown: "Countdown.countdown"
+}

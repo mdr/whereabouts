@@ -2,12 +2,12 @@
  * Right-hand drawer with playtest information and cheats. Renders nothing
  * unless dev mode is on, so screens can include it unconditionally.
  */
-import type { ComponentChildren } from "preact";
-import { devMode } from "../dev";
-import { devDrawerTestIds } from "./DevDrawerTestIds";
+import type { ComponentChildren } from "preact"
+import { devMode } from "../dev"
+import { devDrawerTestIds } from "./DevDrawerTestIds"
 
 export function DevDrawer({ children }: { children?: ComponentChildren }) {
-  if (!devMode.value) return null;
+  if (!devMode.value) return null
   return (
     <aside id="dev" data-testid={devDrawerTestIds.drawer}>
       <div class="dev-head">
@@ -19,7 +19,7 @@ export function DevDrawer({ children }: { children?: ComponentChildren }) {
       </div>
       {children}
     </aside>
-  );
+  )
 }
 
 /** Small label/value rows for the drawer. */
@@ -33,5 +33,5 @@ export function DevFacts({ facts }: { facts: [string, string | number][] }) {
         </div>
       ))}
     </dl>
-  );
+  )
 }

@@ -1,29 +1,29 @@
-import { useState } from "preact/hooks";
-import { MAP_DETAILS } from "@whereabouts/shared";
-import { nameHandoff, playerName, soloMapDetail, soloPool, watchHandoff, type PracticePool } from "../settings";
-import { navigate } from "../router";
-import { Icon } from "../ui/icons";
-import { MapDetailPicker } from "../ui/MapDetailPicker";
-import { Pills } from "../ui/Controls";
+import { useState } from "preact/hooks"
+import { MAP_DETAILS } from "@whereabouts/shared"
+import { nameHandoff, playerName, soloMapDetail, soloPool, watchHandoff, type PracticePool } from "../settings"
+import { navigate } from "../router"
+import { Icon } from "../ui/icons"
+import { MapDetailPicker } from "../ui/MapDetailPicker"
+import { Pills } from "../ui/Controls"
 
 const POOLS: { value: PracticePool; label: string }[] = [
   { value: "places", label: "Places" },
   { value: "countries", label: "Whole countries" },
-  { value: "flags", label: "Flags" },
-];
-import hero800 from "../assets/hero-800.webp";
-import hero1448 from "../assets/hero-1448.webp";
-import { homeTestIds } from "./HomeTestIds";
+  { value: "flags", label: "Flags" }
+]
+import hero800 from "../assets/hero-800.webp"
+import hero1448 from "../assets/hero-1448.webp"
+import { homeTestIds } from "./HomeTestIds"
 
 /**
  * The front door: a hero picture, your name, then three clearly separate
  * ways in (host, join, practise) and a short how-to-play.
  */
 export function Home() {
-  const [code, setCode] = useState("");
-  const name = playerName.value.trim();
-  const ready = name.length > 0;
-  const needName = ready ? undefined : "Enter your name first";
+  const [code, setCode] = useState("")
+  const name = playerName.value.trim()
+  const ready = name.length > 0
+  const needName = ready ? undefined : "Enter your name first"
   return (
     <div class="home" data-testid={homeTestIds.page}>
       <div class="home-page">
@@ -72,14 +72,14 @@ export function Home() {
             <form
               class="join"
               onSubmit={(e) => {
-                e.preventDefault();
-                const c = code.trim().toUpperCase();
+                e.preventDefault()
+                const c = code.trim().toUpperCase()
                 if (ready && c.length >= 4) {
-                  nameHandoff.value = name;
+                  nameHandoff.value = name
                   // The "Just watch" button submits too, and says which it was.
-                  const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | null;
-                  watchHandoff.value = submitter?.value === "watch";
-                  navigate(`/game/${c}`);
+                  const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | null
+                  watchHandoff.value = submitter?.value === "watch"
+                  navigate(`/game/${c}`)
                 }
               }}
             >
@@ -152,5 +152,5 @@ export function Home() {
         </section>
       </div>
     </div>
-  );
+  )
 }

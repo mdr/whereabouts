@@ -8,5 +8,5 @@ export const revealTestIds = {
   passedTag: "Reveal.passedTag",
   hidePaintRow: "Reveal.hidePaintRow",
   readyButton: "Reveal.readyButton",
-  nextButton: "Reveal.nextButton",
-};
+  nextButton: "Reveal.nextButton"
+}

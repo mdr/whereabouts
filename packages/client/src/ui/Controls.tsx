@@ -2,19 +2,19 @@
  * Host settings controls that read at a glance: a row of pills for a small
  * set of choices, and a − / + stepper for a count.
  */
-import { Icon } from "./icons";
-import { pillsTestIds, stepperTestIds } from "./ControlsTestIds";
+import { Icon } from "./icons"
+import { pillsTestIds, stepperTestIds } from "./ControlsTestIds"
 
 export function Pills<T extends string | number>({
   label,
   options,
   value,
-  onChange,
+  onChange
 }: {
-  label: string;
-  options: readonly { value: T; label: string }[];
-  value: T;
-  onChange: (value: T) => void;
+  label: string
+  options: readonly { value: T; label: string }[]
+  value: T
+  onChange: (value: T) => void
 }) {
   return (
     <div class="pills" role="radiogroup" aria-label={label}>
@@ -33,7 +33,7 @@ export function Pills<T extends string | number>({
         </button>
       ))}
     </div>
-  );
+  )
 }
 
 export function Stepper({
@@ -41,13 +41,13 @@ export function Stepper({
   value,
   min,
   max,
-  onChange,
+  onChange
 }: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (value: number) => void;
+  label: string
+  value: number
+  min: number
+  max: number
+  onChange: (value: number) => void
 }) {
   return (
     <div class="stepper" role="group" aria-label={label}>
@@ -73,5 +73,5 @@ export function Stepper({
         <Icon name="plus" />
       </button>
     </div>
-  );
+  )
 }

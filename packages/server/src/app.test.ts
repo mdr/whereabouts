@@ -4,8 +4,8 @@
  * Node 22 provides global WebSocket, TextEncoder and URL; the client reads
  * them from `window`, so the test aliases window to globalThis.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { WSClient as WSClientType } from "@rivalis/browser";
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import type { WSClient as WSClientType } from "@rivalis/browser"
 import {
   PaintLayer,
   ROUND_GRACE_MS,
@@ -17,16 +17,16 @@ import {
   type GameView,
   type Question,
   type FlagQuestion,
-  type RegionQuestion,
-} from "@whereabouts/shared";
-import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" };
-import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" };
-import { createApp, type App } from "./app.ts";
-import { configureGameRooms, realClock, type Clock } from "./rooms.ts";
+  type RegionQuestion
+} from "@whereabouts/shared"
+import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
+import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
+import { createApp, type App } from "./app.ts"
+import { configureGameRooms, realClock, type Clock } from "./rooms.ts"
 
 // Static imports hoist above this line, so the client is loaded dynamically.
-(globalThis as unknown as { window: unknown }).window = globalThis;
-const { WSClient } = await import("@rivalis/browser");
+;(globalThis as unknown as { window: unknown }).window = globalThis
+const { WSClient } = await import("@rivalis/browser")
 
 const questions: Question[] = [
   {
@@ -36,7 +36,7 @@ const questions: Question[] = [
     answer: { lat: 30.3285, lon: 35.4444 },
     toleranceKm: 200,
     label: "Petra",
-    region: "world",
+    region: "world"
   },
   {
     id: "paris",
@@ -45,445 +45,445 @@ const questions: Question[] = [
     answer: { lat: 48.8566, lon: 2.3522 },
     toleranceKm: 100,
     label: "Paris",
-    region: "world",
-  },
-];
+    region: "world"
+  }
+]
 
 /** Real timers, but time can be jumped forward so deadlines fire immediately. */
 class FakeClock implements Clock {
-  offset = 0;
-  private pending = new Map<number, { at: number; fn: () => void }>();
-  private seq = 0;
+  offset = 0
+  private pending = new Map<number, { at: number; fn: () => void }>()
+  private seq = 0
   now() {
-    return Date.now() + this.offset;
+    return Date.now() + this.offset
   }
   setTimeout(fn: () => void, ms: number) {
-    const id = ++this.seq;
-    this.pending.set(id, { at: this.now() + ms, fn });
-    return id;
+    const id = ++this.seq
+    this.pending.set(id, { at: this.now() + ms, fn })
+    return id
   }
   clearTimeout(handle: unknown) {
-    this.pending.delete(handle as number);
+    this.pending.delete(handle as number)
   }
   /** Jump forward and fire everything now due, in order. */
   advance(ms: number) {
-    this.offset += ms;
-    const due = [...this.pending.entries()].filter(([, t]) => t.at <= this.now()).sort((a, b) => a[1].at - b[1].at);
+    this.offset += ms
+    const due = [...this.pending.entries()].filter(([, t]) => t.at <= this.now()).sort((a, b) => a[1].at - b[1].at)
     for (const [id, t] of due) {
-      this.pending.delete(id);
-      t.fn();
+      this.pending.delete(id)
+      t.fn()
     }
   }
 }
 
-type Topics = "state" | "error";
+type Topics = "state" | "error"
 
 class TestPlayer {
-  readonly client: WSClientType<Topics>;
-  readonly states: GameView[] = [];
-  readonly errors: string[] = [];
-  readonly token: string;
-  readonly name: string;
+  readonly client: WSClientType<Topics>
+  readonly states: GameView[] = []
+  readonly errors: string[] = []
+  readonly token: string
+  readonly name: string
   constructor(url: string, name: string) {
-    this.name = name;
-    this.token = `${name}-token-0123456789abcdef`;
-    this.client = new WSClient<Topics>(url, { ticketSource: "protocol", reconnect: false });
-    const dec = new TextDecoder();
-    this.client.on("state", (p) => this.states.push(JSON.parse(dec.decode(p)) as GameView));
-    this.client.on("error", (p) => this.errors.push((JSON.parse(dec.decode(p)) as { message: string }).message));
+    this.name = name
+    this.token = `${name}-token-0123456789abcdef`
+    this.client = new WSClient<Topics>(url, { ticketSource: "protocol", reconnect: false })
+    const dec = new TextDecoder()
+    this.client.on("state", (p) => this.states.push(JSON.parse(dec.decode(p)) as GameView))
+    this.client.on("error", (p) => this.errors.push((JSON.parse(dec.decode(p)) as { message: string }).message))
   }
   connect(ticket: { create?: boolean; code?: string; watch?: boolean }) {
-    this.client.connect(encodeTicket({ v: 1, token: this.token, name: this.name, ...ticket }));
+    this.client.connect(encodeTicket({ v: 1, token: this.token, name: this.name, ...ticket }))
   }
   send(topic: string, body: unknown = {}) {
-    this.client.send(topic, JSON.stringify(body));
+    this.client.send(topic, JSON.stringify(body))
   }
   get latest(): GameView {
-    return this.states[this.states.length - 1]!;
+    return this.states[this.states.length - 1]!
   }
   /** Wait until a state arrives that satisfies the predicate. */
   async until(pred: (v: GameView) => boolean, ms = 3000): Promise<GameView> {
-    const start = Date.now();
+    const start = Date.now()
     while (Date.now() - start < ms) {
-      const hit = this.states.find(pred);
-      if (hit) return hit;
-      await new Promise((r) => setTimeout(r, 10));
+      const hit = this.states.find(pred)
+      if (hit) return hit
+      await new Promise((r) => setTimeout(r, 10))
     }
     throw new Error(
-      `${this.name}: no state matched within ${ms}ms; last=${JSON.stringify(this.states.at(-1) ?? null).slice(0, 300)}`,
-    );
+      `${this.name}: no state matched within ${ms}ms; last=${JSON.stringify(this.states.at(-1) ?? null).slice(0, 300)}`
+    )
   }
   async untilLatest(pred: (v: GameView) => boolean, ms = 3000): Promise<GameView> {
-    const start = Date.now();
+    const start = Date.now()
     while (Date.now() - start < ms) {
-      if (this.states.length && pred(this.latest)) return this.latest;
-      await new Promise((r) => setTimeout(r, 10));
+      if (this.states.length && pred(this.latest)) return this.latest
+      await new Promise((r) => setTimeout(r, 10))
     }
     throw new Error(
-      `${this.name}: latest never matched; last=${JSON.stringify(this.states.at(-1) ?? null).slice(0, 300)}`,
-    );
+      `${this.name}: latest never matched; last=${JSON.stringify(this.states.at(-1) ?? null).slice(0, 300)}`
+    )
   }
   async waitClosed(ms = 3000): Promise<void> {
-    const start = Date.now();
-    while (this.client.connected && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 10));
+    const start = Date.now()
+    while (this.client.connected && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 10))
   }
 }
 
 function paintAt(q: Question, lat: number, lon: number) {
-  const layer = new PaintLayer(resolutionForTolerance(q.toleranceKm));
-  layer.stamp({ lat, lon }, q.toleranceKm / 2, 1);
-  return { cells: layer.toRecord(), floor: 0.05 };
+  const layer = new PaintLayer(resolutionForTolerance(q.toleranceKm))
+  layer.stamp({ lat, lon }, q.toleranceKm / 2, 1)
+  return { cells: layer.toRecord(), floor: 0.05 }
 }
 
 describe("game server", () => {
-  let app: App;
-  let url: string;
-  let clock: FakeClock;
-  const players: TestPlayer[] = [];
+  let app: App
+  let url: string
+  let clock: FakeClock
+  const players: TestPlayer[] = []
 
   beforeEach(async () => {
-    clock = new FakeClock();
-    configureGameRooms({ clock, pool: questions, config: { rounds: 2, roundMs: 60_000 } });
-    app = createApp({ staticDir: null, logLevel: "warning" });
-    const address = await app.listen(0);
-    url = address.replace(/^http/, "ws") + "/ws";
-  });
+    clock = new FakeClock()
+    configureGameRooms({ clock, pool: questions, config: { rounds: 2, roundMs: 60_000 } })
+    app = createApp({ staticDir: null, logLevel: "warning" })
+    const address = await app.listen(0)
+    url = address.replace(/^http/, "ws") + "/ws"
+  })
 
   afterEach(async () => {
-    for (const p of players) p.client.disconnect();
-    players.length = 0;
-    await app.close();
-    configureGameRooms({ clock: realClock });
-  });
+    for (const p of players) p.client.disconnect()
+    players.length = 0
+    await app.close()
+    configureGameRooms({ clock: realClock })
+  })
 
   function player(name: string) {
-    const p = new TestPlayer(url, name);
-    players.push(p);
-    return p;
+    const p = new TestPlayer(url, name)
+    players.push(p)
+    return p
   }
 
   it("host creates a game, a friend joins by code, both see the lobby", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    expect(lobby.code).toMatch(/^[A-Z0-9]{4}$/);
-    expect(lobby.you.isHost).toBe(true);
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    expect(lobby.code).toMatch(/^[A-Z0-9]{4}$/)
+    expect(lobby.you.isHost).toBe(true)
 
-    const bob = player("Bob");
-    bob.connect({ code: lobby.code });
-    const seen = await alice.until((v) => v.players.length === 2);
-    expect(seen.players.map((p) => p.name).sort()).toEqual(["Alice", "Bob"]);
-    const bobView = await bob.until((v) => v.players.length === 2);
-    expect(bobView.you.isHost).toBe(false);
-  });
+    const bob = player("Bob")
+    bob.connect({ code: lobby.code })
+    const seen = await alice.until((v) => v.players.length === 2)
+    expect(seen.players.map((p) => p.name).sort()).toEqual(["Alice", "Bob"])
+    const bobView = await bob.until((v) => v.players.length === 2)
+    expect(bobView.you.isHost).toBe(false)
+  })
 
   it("rejects bad codes and malformed tickets", async () => {
-    const nobody = player("Nobody");
-    nobody.connect({ code: "ZZZZ" });
-    await nobody.waitClosed();
-    expect(nobody.client.connected).toBe(false);
-    expect(nobody.states).toHaveLength(0);
+    const nobody = player("Nobody")
+    nobody.connect({ code: "ZZZZ" })
+    await nobody.waitClosed()
+    expect(nobody.client.connected).toBe(false)
+    expect(nobody.states).toHaveLength(0)
 
-    const garbage = player("Garbage");
-    garbage.client.connect("not-a-ticket");
-    await garbage.waitClosed();
-    expect(garbage.client.connected).toBe(false);
-  });
+    const garbage = player("Garbage")
+    garbage.client.connect("not-a-ticket")
+    await garbage.waitClosed()
+    expect(garbage.client.connected).toBe(false)
+  })
 
   it("plays a full two-round game with a deadline, reveal, and results", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    const bob = player("Bob");
-    bob.connect({ code: lobby.code });
-    await alice.until((v) => v.players.length === 2);
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    const bob = player("Bob")
+    bob.connect({ code: lobby.code })
+    await alice.until((v) => v.players.length === 2)
 
-    bob.send("start");
-    expect(await pollErrors(bob)).toContain("only the host can start");
+    bob.send("start")
+    expect(await pollErrors(bob)).toContain("only the host can start")
 
-    alice.send("start");
-    const round = await bob.until((v) => v.phase === "guessing");
-    expect(round.round!.total).toBe(2);
-    const q = questions.find((x) => x.prompt === round.round!.question.prompt)!;
+    alice.send("start")
+    const round = await bob.until((v) => v.phase === "guessing")
+    expect(round.round!.total).toBe(2)
+    const q = questions.find((x) => x.prompt === round.round!.question.prompt)!
 
-    alice.send("paint", paintAt(q, q.answer.lat, q.answer.lon));
-    const bobPaint = paintAt(q, -30, -60);
-    bob.send("paint", bobPaint);
-    bob.send("lock");
-    await bob.untilLatest((v) => v.you.locked);
+    alice.send("paint", paintAt(q, q.answer.lat, q.answer.lon))
+    const bobPaint = paintAt(q, -30, -60)
+    bob.send("paint", bobPaint)
+    bob.send("lock")
+    await bob.untilLatest((v) => v.you.locked)
     // Bob gets his own paint back in his view; nobody else learns about it yet.
-    expect(bob.latest.you.paint).toEqual(bobPaint);
-    const aBobCell = Object.keys(bobPaint.cells)[0]!;
-    expect(JSON.stringify(alice.latest)).not.toContain(aBobCell);
+    expect(bob.latest.you.paint).toEqual(bobPaint)
+    const aBobCell = Object.keys(bobPaint.cells)[0]!
+    expect(JSON.stringify(alice.latest)).not.toContain(aBobCell)
 
-    clock.advance(60_000 + ROUND_GRACE_MS);
-    const reveal = await alice.until((v) => v.phase === "reveal");
-    expect(reveal.reveal!.label).toBe(q.label);
-    const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]));
-    const scores = Object.fromEntries(reveal.reveal!.results.map((r) => [r.playerId, r.score]));
-    expect(scores[byName.Alice!]).toBeGreaterThan(scores[byName.Bob!]!);
-    expect(reveal.reveal!.results.every((r) => r.paint !== null)).toBe(true);
+    clock.advance(60_000 + ROUND_GRACE_MS)
+    const reveal = await alice.until((v) => v.phase === "reveal")
+    expect(reveal.reveal!.label).toBe(q.label)
+    const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
+    const scores = Object.fromEntries(reveal.reveal!.results.map((r) => [r.playerId, r.score]))
+    expect(scores[byName.Alice!]).toBeGreaterThan(scores[byName.Bob!]!)
+    expect(reveal.reveal!.results.every((r) => r.paint !== null)).toBe(true)
 
-    alice.send("next");
-    await bob.until((v) => v.phase === "guessing" && v.round!.index === 1);
-    clock.advance(60_000 + ROUND_GRACE_MS);
-    await bob.until((v) => v.phase === "reveal" && v.reveal!.index === 1);
+    alice.send("next")
+    await bob.until((v) => v.phase === "guessing" && v.round!.index === 1)
+    clock.advance(60_000 + ROUND_GRACE_MS)
+    await bob.until((v) => v.phase === "reveal" && v.reveal!.index === 1)
     // No timer on the reveal: it advances when everyone is ready.
-    bob.send("ready");
-    await alice.until((v) => v.phase === "reveal" && v.reveal!.ready.length === 1);
-    alice.send("ready");
-    const results = await bob.until((v) => v.phase === "results");
-    expect(results.results).toHaveLength(2);
-    expect(results.results![0]!.playerId).toBe(byName.Alice);
-  });
+    bob.send("ready")
+    await alice.until((v) => v.phase === "reveal" && v.reveal!.ready.length === 1)
+    alice.send("ready")
+    const results = await bob.until((v) => v.phase === "results")
+    expect(results.results).toHaveLength(2)
+    expect(results.results![0]!.playerId).toBe(byName.Alice)
+  })
 
   it("plays a country round: scored against the outline, with coverage and precision", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    const bob = player("Bob");
-    bob.connect({ code: lobby.code });
-    await alice.until((v) => v.players.length === 2);
-    alice.send("configure", { mix: { landmarks: 0, places: 0, countries: 1, flags: 0 } });
-    await bob.until((v) => v.config.mix.countries === 1 && v.config.rounds === 1);
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    const bob = player("Bob")
+    bob.connect({ code: lobby.code })
+    await alice.until((v) => v.players.length === 2)
+    alice.send("configure", { mix: { landmarks: 0, places: 0, countries: 1, flags: 0 } })
+    await bob.until((v) => v.config.mix.countries === 1 && v.config.rounds === 1)
 
-    alice.send("start");
-    const round = await bob.until((v) => v.phase === "guessing");
-    const id = round.round!.question.regionId!;
-    expect(round.round!.question.prompt).toMatch(/^Paint the whole of /);
-    const country = (regionsJson as RegionQuestion[]).find((q) => q.id === id)!;
+    alice.send("start")
+    const round = await bob.until((v) => v.phase === "guessing")
+    const id = round.round!.question.regionId!
+    expect(round.round!.question.prompt).toMatch(/^Paint the whole of /)
+    const country = (regionsJson as RegionQuestion[]).find((q) => q.id === id)!
     // Paint it exactly, compacted the way the client sends paint.
-    const res = resolutionForTolerance(round.round!.question.toleranceKm);
-    const cells = compactRecord(Object.fromEntries(regionCells(country, res).map((h) => [h, 1])));
-    alice.send("paint", { cells, floor: 0.05 });
-    await alice.untilLatest((v) => v.you.paint !== null);
+    const res = resolutionForTolerance(round.round!.question.toleranceKm)
+    const cells = compactRecord(Object.fromEntries(regionCells(country, res).map((h) => [h, 1])))
+    alice.send("paint", { cells, floor: 0.05 })
+    await alice.untilLatest((v) => v.you.paint !== null)
 
-    clock.advance(60_000 + ROUND_GRACE_MS);
-    const reveal = await bob.until((v) => v.phase === "reveal");
-    expect(reveal.reveal!.question.regionId).toBe(id);
-    expect(reveal.reveal!.label).toBe(country.label);
-    const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]));
-    const aliceResult = reveal.reveal!.results.find((r) => r.playerId === byName.Alice)!;
-    expect(aliceResult.score).toBeGreaterThan(980);
-    expect(aliceResult.region!.coverage).toBeGreaterThan(0.95);
-    const bobResult = reveal.reveal!.results.find((r) => r.playerId === byName.Bob)!;
-    expect(bobResult.score).toBe(250);
-  });
+    clock.advance(60_000 + ROUND_GRACE_MS)
+    const reveal = await bob.until((v) => v.phase === "reveal")
+    expect(reveal.reveal!.question.regionId).toBe(id)
+    expect(reveal.reveal!.label).toBe(country.label)
+    const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
+    const aliceResult = reveal.reveal!.results.find((r) => r.playerId === byName.Alice)!
+    expect(aliceResult.score).toBeGreaterThan(980)
+    expect(aliceResult.region!.coverage).toBeGreaterThan(0.95)
+    const bobResult = reveal.reveal!.results.find((r) => r.playerId === byName.Bob)!
+    expect(bobResult.score).toBe(250)
+  })
 
   it("plays a flag round: the flag is shown, the name only at the reveal", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    await alice.until((v) => v.phase === "lobby");
-    alice.send("configure", { mix: { landmarks: 0, places: 0, countries: 0, flags: 1 } });
-    await alice.until((v) => v.config.mix.flags === 1 && v.config.rounds === 1);
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    await alice.until((v) => v.phase === "lobby")
+    alice.send("configure", { mix: { landmarks: 0, places: 0, countries: 0, flags: 1 } })
+    await alice.until((v) => v.config.mix.flags === 1 && v.config.rounds === 1)
 
-    alice.send("start");
-    const round = await alice.until((v) => v.phase === "guessing");
-    const q = round.round!.question;
-    expect(q.flag).toMatch(/^[a-z]{2}$/);
-    const f = (flagsJson as FlagQuestion[]).find((x) => x.flag === q.flag)!;
-    expect(JSON.stringify(round)).not.toContain(f.label);
+    alice.send("start")
+    const round = await alice.until((v) => v.phase === "guessing")
+    const q = round.round!.question
+    expect(q.flag).toMatch(/^[a-z]{2}$/)
+    const f = (flagsJson as FlagQuestion[]).find((x) => x.flag === q.flag)!
+    expect(JSON.stringify(round)).not.toContain(f.label)
 
-    clock.advance(60_000 + ROUND_GRACE_MS);
-    const reveal = await alice.until((v) => v.phase === "reveal");
-    expect(reveal.reveal!.label).toBe(f.label);
-    expect(reveal.reveal!.question.flag).toBe(q.flag);
-  });
+    clock.advance(60_000 + ROUND_GRACE_MS)
+    const reveal = await alice.until((v) => v.phase === "reveal")
+    expect(reveal.reveal!.label).toBe(f.label)
+    expect(reveal.reveal!.question.flag).toBe(q.flag)
+  })
 
   it("answers bad messages with errors instead of dropping the player", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    await alice.until((v) => v.phase === "lobby");
-    alice.send("start");
-    await alice.until((v) => v.phase === "guessing");
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    await alice.until((v) => v.phase === "lobby")
+    alice.send("start")
+    await alice.until((v) => v.phase === "guessing")
 
-    alice.client.send("paint", "this is not json");
-    expect(await pollErrors(alice)).toContain("malformed message");
-    alice.errors.length = 0;
+    alice.client.send("paint", "this is not json")
+    expect(await pollErrors(alice)).toContain("malformed message")
+    alice.errors.length = 0
 
-    alice.send("paint", { cells: { nope: 1 }, floor: 0 });
-    expect(await pollErrors(alice)).toContain("invalid paint");
-    alice.errors.length = 0;
+    alice.send("paint", { cells: { nope: 1 }, floor: 0 })
+    expect(await pollErrors(alice)).toContain("invalid paint")
+    alice.errors.length = 0
 
     // A game-level rejection (as opposed to a schema one) also comes back as an error.
-    alice.send("ready");
-    expect(await pollErrors(alice)).toContain("nothing to be ready for");
-    alice.errors.length = 0;
+    alice.send("ready")
+    expect(await pollErrors(alice)).toContain("nothing to be ready for")
+    alice.errors.length = 0
 
     // Unknown topics are dropped silently rather than kicking (version skew tolerance).
-    alice.client.send("no-such-topic", "{}");
-    await new Promise((r) => setTimeout(r, 200));
-    expect(alice.client.connected).toBe(true);
-    expect(alice.errors).toHaveLength(0);
-  });
+    alice.client.send("no-such-topic", "{}")
+    await new Promise((r) => setTimeout(r, 200))
+    expect(alice.client.connected).toBe(true)
+    expect(alice.errors).toHaveLength(0)
+  })
 
   it("survives an oversized frame: the sender is dropped, everyone else carries on", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    const bob = player("Bob");
-    bob.connect({ code: lobby.code });
-    await alice.until((v) => v.players.length === 2);
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    const bob = player("Bob")
+    bob.connect({ code: lobby.code })
+    await alice.until((v) => v.players.length === 2)
 
     // Well over the 1 MiB transport limit. ws rejects it with close code 1009.
-    const huge = "x".repeat(2 * 1024 * 1024);
-    bob.client.send("paint", huge);
-    await bob.waitClosed();
-    expect(bob.client.connected).toBe(false);
+    const huge = "x".repeat(2 * 1024 * 1024)
+    bob.client.send("paint", huge)
+    await bob.waitClosed()
+    expect(bob.client.connected).toBe(false)
 
     // The process is alive and the room still works. Bob shows offline, and
     // his lobby seat is freed once the grace period passes.
-    expect(alice.client.connected).toBe(true);
-    await alice.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected));
-    clock.advance(SEAT_GRACE_MS);
-    await alice.untilLatest((v) => v.players.length === 1);
-    const cara = player("Cara");
-    cara.connect({ code: lobby.code });
-    await cara.until((v) => v.phase === "lobby");
-  });
+    expect(alice.client.connected).toBe(true)
+    await alice.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
+    clock.advance(SEAT_GRACE_MS)
+    await alice.untilLatest((v) => v.players.length === 1)
+    const cara = player("Cara")
+    cara.connect({ code: lobby.code })
+    await cara.until((v) => v.phase === "lobby")
+  })
 
   it("a reconnecting player keeps their seat", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    const bob = player("Bob");
-    bob.connect({ code: lobby.code });
-    await alice.until((v) => v.players.length === 2);
-    alice.send("start");
-    await bob.until((v) => v.phase === "guessing");
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    const bob = player("Bob")
+    bob.connect({ code: lobby.code })
+    await alice.until((v) => v.players.length === 2)
+    alice.send("start")
+    await bob.until((v) => v.phase === "guessing")
 
-    bob.client.disconnect();
-    await alice.until((v) => v.players.some((p) => p.name === "Bob" && !p.connected));
+    bob.client.disconnect()
+    await alice.until((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
 
-    const bobAgain = player("Bob"); // same name => same deterministic token
-    bobAgain.connect({ code: lobby.code });
-    const back = await alice.untilLatest((v) => v.players.length === 2 && v.players.every((p) => p.connected));
-    expect(back.players.filter((p) => p.name === "Bob")).toHaveLength(1);
-    const own = await bobAgain.until((v) => v.phase === "guessing");
-    expect(own.you.spectating).toBe(false);
-  });
+    const bobAgain = player("Bob") // same name => same deterministic token
+    bobAgain.connect({ code: lobby.code })
+    const back = await alice.untilLatest((v) => v.players.length === 2 && v.players.every((p) => p.connected))
+    expect(back.players.filter((p) => p.name === "Bob")).toHaveLength(1)
+    const own = await bobAgain.until((v) => v.phase === "guessing")
+    expect(own.you.spectating).toBe(false)
+  })
 
   it("frees the room once it has been empty for the grace period", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull();
-    alice.client.disconnect();
-    await new Promise((r) => setTimeout(r, 100));
-    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull();
-    clock.advance(SEAT_GRACE_MS);
-    expect(app.rivalis.rooms.get(lobby.code)).toBeNull();
-  });
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull()
+    alice.client.disconnect()
+    await new Promise((r) => setTimeout(r, 100))
+    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull()
+    clock.advance(SEAT_GRACE_MS)
+    expect(app.rivalis.rooms.get(lobby.code)).toBeNull()
+  })
 
   it("a lone host who refreshes in the lobby gets the game, and the host role, back", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    alice.client.disconnect();
-    await alice.waitClosed();
-    clock.advance(SEAT_GRACE_MS - 1_000);
-    const again = player("Alice"); // same name => same token, like a refreshed tab
-    again.connect({ code: lobby.code });
-    const back = await again.until((v) => v.phase === "lobby");
-    expect(back.you.isHost).toBe(true);
-    expect(back.players).toHaveLength(1);
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    alice.client.disconnect()
+    await alice.waitClosed()
+    clock.advance(SEAT_GRACE_MS - 1_000)
+    const again = player("Alice") // same name => same token, like a refreshed tab
+    again.connect({ code: lobby.code })
+    const back = await again.until((v) => v.phase === "lobby")
+    expect(back.you.isHost).toBe(true)
+    expect(back.players).toHaveLength(1)
     // The empty-room timer was cancelled on the way back in.
-    clock.advance(SEAT_GRACE_MS);
-    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull();
-  });
+    clock.advance(SEAT_GRACE_MS)
+    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull()
+  })
 
   it("a host who leaves the lobby frees their seat at once and hands over", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    const bob = player("Bob");
-    bob.connect({ code: lobby.code });
-    await alice.until((v) => v.players.length === 2);
-    alice.send("leave");
-    await alice.waitClosed();
-    expect(alice.client.connected).toBe(false);
-    const after = await bob.untilLatest((v) => v.players.length === 1);
-    expect(after.you.isHost).toBe(true);
-  });
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    const bob = player("Bob")
+    bob.connect({ code: lobby.code })
+    await alice.until((v) => v.players.length === 2)
+    alice.send("leave")
+    await alice.waitClosed()
+    expect(alice.client.connected).toBe(false)
+    const after = await bob.untilLatest((v) => v.players.length === 1)
+    expect(after.you.isHost).toBe(true)
+  })
 
   it("the last player leaving closes the game without waiting", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    alice.send("leave");
-    await alice.waitClosed();
-    const start = Date.now();
-    while (app.rivalis.rooms.get(lobby.code) && Date.now() - start < 2000) await new Promise((r) => setTimeout(r, 10));
-    expect(app.rivalis.rooms.get(lobby.code)).toBeNull();
-  });
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    alice.send("leave")
+    await alice.waitClosed()
+    const start = Date.now()
+    while (app.rivalis.rooms.get(lobby.code) && Date.now() - start < 2000) await new Promise((r) => setTimeout(r, 10))
+    expect(app.rivalis.rooms.get(lobby.code)).toBeNull()
+  })
 
   it("a spectator joins to watch, and can take a seat in the lobby", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    const sam = player("Sam");
-    sam.connect({ code: lobby.code, watch: true });
-    const watching = await sam.until((v) => v.players.length === 2);
-    expect(watching.you.watching).toBe(true);
-    expect(watching.players.find((p) => p.name === "Sam")).toMatchObject({ watching: true, colour: -1 });
-    sam.send("setRole", { watch: false });
-    const seated = await alice.untilLatest((v) => v.players.some((p) => p.name === "Sam" && !p.watching));
-    expect(seated.players.find((p) => p.name === "Sam")!.colour).toBeGreaterThanOrEqual(0);
-  });
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    const sam = player("Sam")
+    sam.connect({ code: lobby.code, watch: true })
+    const watching = await sam.until((v) => v.players.length === 2)
+    expect(watching.you.watching).toBe(true)
+    expect(watching.players.find((p) => p.name === "Sam")).toMatchObject({ watching: true, colour: -1 })
+    sam.send("setRole", { watch: false })
+    const seated = await alice.untilLatest((v) => v.players.some((p) => p.name === "Sam" && !p.watching))
+    expect(seated.players.find((p) => p.name === "Sam")!.colour).toBeGreaterThanOrEqual(0)
+  })
 
   it("the host hands over to another player", async () => {
-    const alice = player("Alice");
-    alice.connect({ create: true });
-    const lobby = await alice.until((v) => v.phase === "lobby");
-    const bob = player("Bob");
-    bob.connect({ code: lobby.code });
-    const two = await alice.until((v) => v.players.length === 2);
-    alice.send("makeHost", { playerId: two.players.find((p) => p.name === "Bob")!.id });
-    await bob.until((v) => v.you.isHost);
-    await alice.untilLatest((v) => !v.you.isHost);
-  });
-});
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    const bob = player("Bob")
+    bob.connect({ code: lobby.code })
+    const two = await alice.until((v) => v.players.length === 2)
+    alice.send("makeHost", { playerId: two.players.find((p) => p.name === "Bob")!.id })
+    await bob.until((v) => v.you.isHost)
+    await alice.untilLatest((v) => !v.you.isHost)
+  })
+})
 
 async function pollErrors(p: TestPlayer, ms = 2000): Promise<string[]> {
-  const start = Date.now();
-  while (p.errors.length === 0 && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 10));
-  return p.errors;
+  const start = Date.now()
+  while (p.errors.length === 0 && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 10))
+  return p.errors
 }
 
 describe("static serving", () => {
-  let app: App;
-  let base: string;
-  let dir: string;
+  let app: App
+  let base: string
+  let dir: string
 
   beforeEach(async () => {
-    const { mkdtempSync, mkdirSync, writeFileSync } = await import("node:fs");
-    const { tmpdir } = await import("node:os");
-    const path = await import("node:path");
-    dir = mkdtempSync(path.join(tmpdir(), "wa-static-"));
-    mkdirSync(path.join(dir, "assets"));
-    writeFileSync(path.join(dir, "index.html"), "<!doctype html><title>t</title>");
-    writeFileSync(path.join(dir, "assets", "index-abc123.js"), "export {};");
-    app = createApp({ staticDir: dir, logLevel: "warning" });
-    base = await app.listen(0);
-  });
+    const { mkdtempSync, mkdirSync, writeFileSync } = await import("node:fs")
+    const { tmpdir } = await import("node:os")
+    const path = await import("node:path")
+    dir = mkdtempSync(path.join(tmpdir(), "wa-static-"))
+    mkdirSync(path.join(dir, "assets"))
+    writeFileSync(path.join(dir, "index.html"), "<!doctype html><title>t</title>")
+    writeFileSync(path.join(dir, "assets", "index-abc123.js"), "export {};")
+    app = createApp({ staticDir: dir, logLevel: "warning" })
+    base = await app.listen(0)
+  })
   afterEach(async () => {
-    await app.close();
-  });
+    await app.close()
+  })
 
   it("serves the bundle immutable and index.html with revalidation, and falls back for app routes", async () => {
-    const asset = await fetch(`${base}/assets/index-abc123.js`);
-    expect(asset.status).toBe(200);
-    expect(asset.headers.get("content-type")).toContain("javascript");
-    expect(asset.headers.get("cache-control")).toBe("public, max-age=31536000, immutable");
+    const asset = await fetch(`${base}/assets/index-abc123.js`)
+    expect(asset.status).toBe(200)
+    expect(asset.headers.get("content-type")).toContain("javascript")
+    expect(asset.headers.get("cache-control")).toBe("public, max-age=31536000, immutable")
 
-    const index = await fetch(`${base}/`);
-    expect(index.headers.get("cache-control")).toBe("no-cache");
-    expect(index.headers.get("etag")).toBeNull();
-    expect(index.headers.get("last-modified")).toBeNull();
+    const index = await fetch(`${base}/`)
+    expect(index.headers.get("cache-control")).toBe("no-cache")
+    expect(index.headers.get("etag")).toBeNull()
+    expect(index.headers.get("last-modified")).toBeNull()
 
-    const fallback = await fetch(`${base}/some/app/route`);
-    expect(fallback.status).toBe(200);
-    expect(fallback.headers.get("content-type")).toContain("text/html");
-    expect(fallback.headers.get("cache-control")).toBe("no-cache");
-  });
-});
+    const fallback = await fetch(`${base}/some/app/route`)
+    expect(fallback.status).toBe(200)
+    expect(fallback.headers.get("content-type")).toContain("text/html")
+    expect(fallback.headers.get("cache-control")).toBe("no-cache")
+  })
+})

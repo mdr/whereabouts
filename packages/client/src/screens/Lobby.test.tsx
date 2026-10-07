@@ -1,14 +1,14 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render } from "@testing-library/preact";
-import { signal } from "@preact/signals";
-import type { GameView } from "@whereabouts/shared";
-import type { Connection } from "../net";
-import { hostSetup, joinedCode, startOnPan } from "../settings";
-import { route } from "../router";
-import { Lobby } from "./Lobby";
+import { afterEach, describe, expect, it, vi } from "vitest"
+import { fireEvent, render } from "@testing-library/preact"
+import { signal } from "@preact/signals"
+import type { GameView } from "@whereabouts/shared"
+import type { Connection } from "../net"
+import { hostSetup, joinedCode, startOnPan } from "../settings"
+import { route } from "../router"
+import { Lobby } from "./Lobby"
 
-const MIX = { landmarks: 3, places: 2, countries: 0, flags: 0 };
+const MIX = { landmarks: 3, places: 2, countries: 0, flags: 0 }
 
 function view(isHost: boolean): GameView {
   return {
@@ -19,7 +19,7 @@ function view(isHost: boolean): GameView {
       roundMs: 60000,
       mix: MIX,
       mapDetail: "minimal",
-      kernelId: "multi-equal",
+      kernelId: "multi-equal"
     },
     serverTime: 0,
     you: { id: "p1", isHost, spectating: false, watching: false, locked: false, paint: null },
@@ -34,88 +34,88 @@ function view(isHost: boolean): GameView {
         locked: false,
         score: 0,
         rank: 1,
-        previousRank: null,
-      },
+        previousRank: null
+      }
     ],
     round: null,
     reveal: null,
     results: null,
-    awards: null,
-  };
+    awards: null
+  }
 }
 
-const configure = vi.fn();
-const leave = vi.fn();
-const setRole = vi.fn();
+const configure = vi.fn()
+const leave = vi.fn()
+const setRole = vi.fn()
 const conn = {
   status: signal("connected"),
   lastError: signal(null),
   configure,
   start: vi.fn(),
   leave,
-  setRole,
-} as unknown as Connection;
+  setRole
+} as unknown as Connection
 
 describe("Lobby", () => {
   afterEach(() => {
-    startOnPan.value = false;
-  });
+    startOnPan.value = false
+  })
 
   it("offers a per-device choice to start rounds on the Pan tool, to hosts and guests alike", () => {
     for (const isHost of [true, false]) {
-      const { container, unmount } = render(<Lobby conn={conn} view={view(isHost)} />);
-      const box = container.querySelector<HTMLInputElement>(".start-on-pan input")!;
-      expect(box.checked).toBe(false);
-      fireEvent.click(box);
-      expect(startOnPan.value).toBe(true);
-      unmount();
-      startOnPan.value = false;
+      const { container, unmount } = render(<Lobby conn={conn} view={view(isHost)} />)
+      const box = container.querySelector<HTMLInputElement>(".start-on-pan input")!
+      expect(box.checked).toBe(false)
+      fireEvent.click(box)
+      expect(startOnPan.value).toBe(true)
+      unmount()
+      startOnPan.value = false
     }
-  });
+  })
 
   it("shows the saved choice", () => {
-    startOnPan.value = true;
-    const { container } = render(<Lobby conn={conn} view={view(false)} />);
-    expect(container.querySelector<HTMLInputElement>(".start-on-pan input")!.checked).toBe(true);
-  });
-});
+    startOnPan.value = true
+    const { container } = render(<Lobby conn={conn} view={view(false)} />)
+    expect(container.querySelector<HTMLInputElement>(".start-on-pan input")!.checked).toBe(true)
+  })
+})
 
 describe("Lobby setup", () => {
   it("gives the host the controls", () => {
-    const { container } = render(<Lobby conn={conn} view={view(true)} />);
-    fireEvent.click(container.querySelector('[aria-label="More flags"]')!);
-    expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, flags: 1 } });
-    fireEvent.click(container.querySelector('[aria-label="Fewer landmarks"]')!);
-    expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, landmarks: 2 } });
-    expect(container.querySelectorAll(".round-strip .cell")).toHaveLength(5);
-    const minimal = container.querySelector('.detail-picker [aria-checked="true"]')!;
-    expect(minimal.textContent).toBe("Minimal");
-    fireEvent.click([...container.querySelectorAll(".detail-picker button")].find((b) => b.textContent === "Water")!);
-    expect(configure).toHaveBeenCalledWith({ mapDetail: "water" });
-    expect(container.querySelector(".setup-summary")).toBeNull();
+    const { container } = render(<Lobby conn={conn} view={view(true)} />)
+    fireEvent.click(container.querySelector('[aria-label="More flags"]')!)
+    expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, flags: 1 } })
+    fireEvent.click(container.querySelector('[aria-label="Fewer landmarks"]')!)
+    expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, landmarks: 2 } })
+    expect(container.querySelectorAll(".round-strip .cell")).toHaveLength(5)
+    const minimal = container.querySelector('.detail-picker [aria-checked="true"]')!
+    expect(minimal.textContent).toBe("Minimal")
+    fireEvent.click([...container.querySelectorAll(".detail-picker button")].find((b) => b.textContent === "Water")!)
+    expect(configure).toHaveBeenCalledWith({ mapDetail: "water" })
+    expect(container.querySelector(".setup-summary")).toBeNull()
     // Remembered for the next game this browser hosts.
-    expect(hostSetup.value).toEqual({ mix: { ...MIX, landmarks: 2 }, mapDetail: "water" });
-    hostSetup.value = {};
-  });
+    expect(hostSetup.value).toEqual({ mix: { ...MIX, landmarks: 2 }, mapDetail: "water" })
+    hostSetup.value = {}
+  })
 
   it("shows guests the decided values, not controls", () => {
-    const { container } = render(<Lobby conn={conn} view={view(false)} />);
-    expect(container.querySelector(".pills, .stepper, .detail-picker")).toBeNull();
-    expect(container.querySelectorAll(".setup-summary .round-strip .cell")).toHaveLength(5);
-    const tiles = [...container.querySelectorAll(".setup-summary .tile")].map((t) => t.textContent);
-    expect(tiles).toEqual(["5rounds", "60 sper round", "3 landmarks · 2 place names", "Minimalmap · coastlines only"]);
+    const { container } = render(<Lobby conn={conn} view={view(false)} />)
+    expect(container.querySelector(".pills, .stepper, .detail-picker")).toBeNull()
+    expect(container.querySelectorAll(".setup-summary .round-strip .cell")).toHaveLength(5)
+    const tiles = [...container.querySelectorAll(".setup-summary .tile")].map((t) => t.textContent)
+    expect(tiles).toEqual(["5rounds", "60 sper round", "3 landmarks · 2 place names", "Minimalmap · coastlines only"])
     // Nothing is highlighted on first load.
-    expect(container.querySelector(".tile.changed")).toBeNull();
-  });
+    expect(container.querySelector(".tile.changed")).toBeNull()
+  })
 
   it("highlights only the value the host just changed", () => {
-    const { container, rerender } = render(<Lobby conn={conn} view={view(false)} />);
-    const next = view(false);
-    next.config = { ...next.config, roundMs: 30_000 };
-    rerender(<Lobby conn={conn} view={next} />);
-    expect([...container.querySelectorAll(".tile.changed")].map((t) => t.textContent)).toEqual(["30 sper round"]);
-  });
-});
+    const { container, rerender } = render(<Lobby conn={conn} view={view(false)} />)
+    const next = view(false)
+    next.config = { ...next.config, roundMs: 30_000 }
+    rerender(<Lobby conn={conn} view={next} />)
+    expect([...container.querySelectorAll(".tile.changed")].map((t) => t.textContent)).toEqual(["30 sper round"])
+  })
+})
 
 describe("Lobby leave", () => {
   const bob = {
@@ -128,38 +128,38 @@ describe("Lobby leave", () => {
     locked: false,
     score: 0,
     rank: 1,
-    previousRank: null,
-  };
-  afterEach(() => leave.mockClear());
+    previousRank: null
+  }
+  afterEach(() => leave.mockClear())
 
   it("takes a guest straight home, giving up the seat and forgetting the game", () => {
-    joinedCode.value = "AB12";
-    const { container } = render(<Lobby conn={conn} view={view(false)} />);
-    fireEvent.click(container.querySelector(".banner-leave")!);
-    expect(leave).toHaveBeenCalledTimes(1);
-    expect(joinedCode.value).toBe("");
-    expect(route.value).toEqual({ name: "home" });
-  });
+    joinedCode.value = "AB12"
+    const { container } = render(<Lobby conn={conn} view={view(false)} />)
+    fireEvent.click(container.querySelector(".banner-leave")!)
+    expect(leave).toHaveBeenCalledTimes(1)
+    expect(joinedCode.value).toBe("")
+    expect(route.value).toEqual({ name: "home" })
+  })
 
   it("asks the host first, naming who takes over", () => {
-    const v = view(true);
-    v.players = [...v.players, bob];
-    const { container } = render(<Lobby conn={conn} view={v} />);
-    fireEvent.click(container.querySelector(".banner-leave")!);
-    expect(leave).not.toHaveBeenCalled();
-    const modal = document.body.querySelector(".modal")!;
-    expect(modal.textContent).toContain("Bob becomes the host.");
-    fireEvent.click([...modal.querySelectorAll("button")].find((b) => b.textContent === "Leave")!);
-    expect(leave).toHaveBeenCalledTimes(1);
-  });
+    const v = view(true)
+    v.players = [...v.players, bob]
+    const { container } = render(<Lobby conn={conn} view={v} />)
+    fireEvent.click(container.querySelector(".banner-leave")!)
+    expect(leave).not.toHaveBeenCalled()
+    const modal = document.body.querySelector(".modal")!
+    expect(modal.textContent).toContain("Bob becomes the host.")
+    fireEvent.click([...modal.querySelectorAll("button")].find((b) => b.textContent === "Leave")!)
+    expect(leave).toHaveBeenCalledTimes(1)
+  })
 
   it("warns a host on their own that the game closes", () => {
-    const { container } = render(<Lobby conn={conn} view={view(true)} />);
-    fireEvent.click(container.querySelector(".banner-leave")!);
-    const modals = document.body.querySelectorAll(".modal");
-    expect(modals[modals.length - 1]!.textContent).toContain("It closes, since no one else is here.");
-  });
-});
+    const { container } = render(<Lobby conn={conn} view={view(true)} />)
+    fireEvent.click(container.querySelector(".banner-leave")!)
+    const modals = document.body.querySelectorAll(".modal")
+    expect(modals[modals.length - 1]!.textContent).toContain("It closes, since no one else is here.")
+  })
+})
 describe("Lobby spectators", () => {
   const person = (id: string, name: string, watching: boolean, colour = 1) => ({
     id,
@@ -171,46 +171,46 @@ describe("Lobby spectators", () => {
     locked: false,
     score: 0,
     rank: watching ? 0 : 1,
-    previousRank: null,
-  });
-  afterEach(() => setRole.mockClear());
+    previousRank: null
+  })
+  afterEach(() => setRole.mockClear())
 
   it("lists spectators apart from the players, with their own count", () => {
-    const v = view(true);
-    v.players = [...v.players, person("p2", "Bob", false), person("p3", "Sam", true)];
-    const { container } = render(<Lobby conn={conn} view={v} />);
-    const lists = container.querySelectorAll(".lobby .players");
-    expect(lists).toHaveLength(2);
-    expect(lists[0]!.textContent).toContain("Bob");
-    expect(lists[1]!.textContent).toContain("Sam");
-    expect(lists[1]!.querySelector(".avatar.watcher")).not.toBeNull();
-    expect(container.querySelector(".watching-heading")!.textContent).toContain("1/8");
-  });
+    const v = view(true)
+    v.players = [...v.players, person("p2", "Bob", false), person("p3", "Sam", true)]
+    const { container } = render(<Lobby conn={conn} view={v} />)
+    const lists = container.querySelectorAll(".lobby .players")
+    expect(lists).toHaveLength(2)
+    expect(lists[0]!.textContent).toContain("Bob")
+    expect(lists[1]!.textContent).toContain("Sam")
+    expect(lists[1]!.querySelector(".avatar.watcher")).not.toBeNull()
+    expect(container.querySelector(".watching-heading")!.textContent).toContain("1/8")
+  })
 
   it("lets a player step back to watch, and a spectator take a seat", () => {
-    const { container, unmount } = render(<Lobby conn={conn} view={view(false)} />);
-    fireEvent.click(container.querySelector(".role-switch button")!);
-    expect(setRole).toHaveBeenLastCalledWith(true);
-    unmount();
-    const v = view(false);
-    v.you.watching = true;
-    v.players = [person("p1", "Alice", true)];
-    const { container: c2 } = render(<Lobby conn={conn} view={v} />);
-    const play = c2.querySelector<HTMLButtonElement>(".role-switch button")!;
-    expect(play.textContent).toContain("Play instead");
-    fireEvent.click(play);
-    expect(setRole).toHaveBeenLastCalledWith(false);
-  });
+    const { container, unmount } = render(<Lobby conn={conn} view={view(false)} />)
+    fireEvent.click(container.querySelector(".role-switch button")!)
+    expect(setRole).toHaveBeenLastCalledWith(true)
+    unmount()
+    const v = view(false)
+    v.you.watching = true
+    v.players = [person("p1", "Alice", true)]
+    const { container: c2 } = render(<Lobby conn={conn} view={v} />)
+    const play = c2.querySelector<HTMLButtonElement>(".role-switch button")!
+    expect(play.textContent).toContain("Play instead")
+    fireEvent.click(play)
+    expect(setRole).toHaveBeenLastCalledWith(false)
+  })
 
   it("keeps the seat button off when all sixteen seats are taken", () => {
-    const v = view(false);
-    v.you.watching = true;
+    const v = view(false)
+    v.you.watching = true
     v.players = [
       ...Array.from({ length: 16 }, (_, i) => person(`p${i + 10}`, `P${i}`, false, i)),
-      person("p1", "Alice", true),
-    ];
-    const { container } = render(<Lobby conn={conn} view={v} />);
-    expect(container.querySelector<HTMLButtonElement>(".role-switch button")!.disabled).toBe(true);
-    expect(container.textContent).toContain("All 16 player seats are taken");
-  });
-});
+      person("p1", "Alice", true)
+    ]
+    const { container } = render(<Lobby conn={conn} view={v} />)
+    expect(container.querySelector<HTMLButtonElement>(".role-switch button")!.disabled).toBe(true)
+    expect(container.textContent).toContain("All 16 player seats are taken")
+  })
+})

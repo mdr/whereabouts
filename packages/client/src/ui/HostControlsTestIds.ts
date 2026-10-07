@@ -1,3 +1,3 @@
 export const hostControlsTestIds = {
-  endGameButton: "HostControls.endGameButton",
-};
+  endGameButton: "HostControls.endGameButton"
+}

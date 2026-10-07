@@ -15,71 +15,71 @@
  * otherwise all be Italy's. Where two such circles overlap, the nearer
  * answer wins.
  */
-import { greatCircleDistance, type LatLon } from "./geo.ts";
-import type { FlagQuestion } from "./flags.ts";
-import type { PaintCell } from "./paint.ts";
-import type { FillShape } from "./fill.ts";
+import { greatCircleDistance, type LatLon } from "./geo.ts"
+import type { FlagQuestion } from "./flags.ts"
+import type { PaintCell } from "./paint.ts"
+import type { FillShape } from "./fill.ts"
 
 export interface BorderData {
   /** The flag's ISO code, as in flags.json. */
-  flag: string;
+  flag: string
   /** Rings of [lon, lat] steps in hundredths of a degree, the first from 0, 0. */
-  rings: number[][];
+  rings: number[][]
   /** For a small or scattered country: how far from its answer counts as the country, km. */
-  near?: number;
+  near?: number
 }
 
 export interface BordersData {
-  countries: BorderData[];
+  countries: BorderData[]
   /** Rings, encoded the same way, where no country is named. */
-  none: number[][];
+  none: number[][]
 }
 
 interface Country {
-  f: FlagQuestion;
+  f: FlagQuestion
   /** Decoded rings: lon, lat, lon, lat, … in degrees. */
-  rings: Float64Array[];
+  rings: Float64Array[]
   /** West, south, east, north of all its rings. */
-  box: [number, number, number, number];
+  box: [number, number, number, number]
 }
 
 export interface PaintedCountry {
-  country: FlagQuestion;
+  country: FlagQuestion
   /** Its share of all the paint, 0 to 1. */
-  share: number;
+  share: number
 }
 
 export class Borders {
-  private readonly countries: Country[] = [];
-  private readonly small: { f: FlagQuestion; near: number }[] = [];
-  private readonly none: Float64Array[];
-  private readonly byFlag = new Map<string, { rings: Float64Array[]; near?: number }>();
+  private readonly countries: Country[] = []
+  private readonly small: { f: FlagQuestion; near: number }[] = []
+  private readonly none: Float64Array[]
+  private readonly byFlag = new Map<string, { rings: Float64Array[]; near?: number }>()
 
   constructor(data: BordersData, flags: readonly FlagQuestion[]) {
-    this.none = data.none.map(decodeRing);
-    const byFlag = new Map(flags.map((f) => [f.flag, f]));
+    this.none = data.none.map(decodeRing)
+    const byFlag = new Map(flags.map((f) => [f.flag, f]))
     for (const d of data.countries) {
-      const f = byFlag.get(d.flag);
-      if (!f) continue;
-      if (d.near) this.small.push({ f, near: d.near });
-      const rings = d.rings.map(decodeRing);
-      this.byFlag.set(f.flag, { rings, near: d.near });
-      if (rings.length === 0) continue;
-      const box: Country["box"] = [Infinity, Infinity, -Infinity, -Infinity];
+      const f = byFlag.get(d.flag)
+      if (!f) continue
+      if (d.near) this.small.push({ f, near: d.near })
+      const rings = d.rings.map(decodeRing)
+      this.byFlag.set(f.flag, { rings, near: d.near })
+      if (rings.length === 0) continue
+      const box: Country["box"] = [Infinity, Infinity, -Infinity, -Infinity]
       for (const r of rings)
         for (let i = 0; i < r.length; i += 2) {
-          box[0] = Math.min(box[0], r[i]!);
-          box[1] = Math.min(box[1], r[i + 1]!);
-          box[2] = Math.max(box[2], r[i]!);
-          box[3] = Math.max(box[3], r[i + 1]!);
+          box[0] = Math.min(box[0], r[i]!)
+          box[1] = Math.min(box[1], r[i + 1]!)
+          box[2] = Math.max(box[2], r[i]!)
+          box[3] = Math.max(box[3], r[i + 1]!)
         }
-      this.countries.push({ f, rings, box });
+      this.countries.push({ f, rings, box })
     }
   }
 
   /** The country at this point, or null (at sea, or somewhere without a flag round). */
   countryAt(p: LatLon): FlagQuestion | null {
-    return this.nearSmall(p) ?? this.onLand(p);
+    return this.nearSmall(p) ?? this.onLand(p)
   }
 
   /**
@@ -88,13 +88,13 @@ export class Borders {
    * the pointer: at world zoom Tuvalu is far less than a pixel across.
    */
   smallNear(p: LatLon, kmPerPx: number, px: number): FlagQuestion | null {
-    let best: FlagQuestion | null = null;
-    let bestD = Infinity;
+    let best: FlagQuestion | null = null
+    let bestD = Infinity
     for (const { f, near } of this.small) {
-      const d = greatCircleDistance(p, f.answer);
-      if (d <= Math.max(near, px * kmPerPx) && d < bestD) [best, bestD] = [f, d];
+      const d = greatCircleDistance(p, f.answer)
+      if (d <= Math.max(near, px * kmPerPx) && d < bestD) [best, bestD] = [f, d]
     }
-    return best;
+    return best
   }
 
   /**
@@ -104,68 +104,68 @@ export class Borders {
    * than 1.
    */
   paintedCountries(cells: Iterable<PaintCell>): PaintedCountry[] {
-    const mass = new Map<FlagQuestion, number>();
-    let total = 0;
+    const mass = new Map<FlagQuestion, number>()
+    let total = 0
     for (const c of cells) {
-      const m = c.intensity * c.areaKm2;
-      if (!(m > 0)) continue;
-      total += m;
-      const f = this.countryAt(c);
-      if (f) mass.set(f, (mass.get(f) ?? 0) + m);
+      const m = c.intensity * c.areaKm2
+      if (!(m > 0)) continue
+      total += m
+      const f = this.countryAt(c)
+      if (f) mass.set(f, (mass.get(f) ?? 0) + m)
     }
-    return [...mass].map(([country, m]) => ({ country, share: m / total })).sort((a, b) => b.share - a.share);
+    return [...mass].map(([country, m]) => ({ country, share: m / total })).sort((a, b) => b.share - a.share)
   }
 
   /** A country's land, to fill (see fill.ts): its rings, answer and `near`. */
   fillShape(f: FlagQuestion): FillShape {
-    const d = this.byFlag.get(f.flag);
+    const d = this.byFlag.get(f.flag)
     const rings = (d?.rings ?? []).map((r) => {
-      const out: number[][] = [];
-      for (let i = 0; i < r.length; i += 2) out.push([r[i]!, r[i + 1]!]);
-      return out;
-    });
-    return { rings, answer: f.answer, near: d?.near };
+      const out: number[][] = []
+      for (let i = 0; i < r.length; i += 2) out.push([r[i]!, r[i + 1]!])
+      return out
+    })
+    return { rings, answer: f.answer, near: d?.near }
   }
 
   private nearSmall(p: LatLon): FlagQuestion | null {
-    return this.smallNear(p, 0, 0);
+    return this.smallNear(p, 0, 0)
   }
 
   private onLand({ lat, lon }: LatLon): FlagQuestion | null {
-    if (this.none.some((r) => inRing(r, lon, lat))) return null;
+    if (this.none.some((r) => inRing(r, lon, lat))) return null
     for (const { f, rings, box } of this.countries) {
-      if (lon < box[0] || lon > box[2] || lat < box[1] || lat > box[3]) continue;
+      if (lon < box[0] || lon > box[2] || lat < box[1] || lat > box[3]) continue
       // Even-odd over all the country's rings: holes (Lesotho in South Africa) cancel.
-      let inside = false;
-      for (const r of rings) if (inRing(r, lon, lat)) inside = !inside;
-      if (inside) return f;
+      let inside = false
+      for (const r of rings) if (inRing(r, lon, lat)) inside = !inside
+      if (inside) return f
     }
-    return null;
+    return null
   }
 }
 
 function decodeRing(steps: number[]): Float64Array {
-  const out = new Float64Array(steps.length);
+  const out = new Float64Array(steps.length)
   let x = 0,
-    y = 0;
+    y = 0
   for (let i = 0; i < steps.length; i += 2) {
-    x += steps[i]!;
-    y += steps[i + 1]!;
-    out[i] = x / 100;
-    out[i + 1] = y / 100;
+    x += steps[i]!
+    y += steps[i + 1]!
+    out[i] = x / 100
+    out[i + 1] = y / 100
   }
-  return out;
+  return out
 }
 
 /** Ray casting in plain longitude and latitude, as Natural Earth's rings are drawn. */
 function inRing(r: Float64Array, x: number, y: number): boolean {
-  let inside = false;
+  let inside = false
   for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2) {
     const xi = r[i]!,
       yi = r[i + 1]!,
       xj = r[j]!,
-      yj = r[j + 1]!;
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+      yj = r[j + 1]!
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside
   }
-  return inside;
+  return inside
 }

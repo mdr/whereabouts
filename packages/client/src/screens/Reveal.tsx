@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks"
 import {
   buildDistribution,
   kernelById,
@@ -8,28 +8,28 @@ import {
   type PaintedCountry,
   type PlayerView,
   type RevealView,
-  type RoundResultView,
-} from "@whereabouts/shared";
-import type { Connection } from "../net";
-import { usePaint } from "../ui/MapView";
-import { Answer, Card, HudBottom, HudHeader, QuestionCard, ScoreParts } from "../ui/bits";
-import { ConnectionNote } from "../ui/ConnectionNote";
-import { DevDrawer } from "../ui/DevDrawer";
-import { ConnectionDev } from "../ui/ConnectionDev";
-import { PaintDev } from "../ui/PaintTools";
-import { Icon } from "../ui/icons";
-import { HostTag } from "../ui/PlayerList";
-import { EndGameButton } from "../ui/HostControls";
-import { TakeSeatButton } from "../ui/TakeSeat";
-import { kickRequest, useConfirm } from "../ui/ConfirmDialog";
-import { useRegion } from "../regions";
-import { useBorders } from "../borders";
-import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal";
-import { PointWhy, RegionWhy } from "../ui/ScoreWhy";
-import { revealTestIds } from "./RevealTestIds";
+  type RoundResultView
+} from "@whereabouts/shared"
+import type { Connection } from "../net"
+import { usePaint } from "../ui/MapView"
+import { Answer, Card, HudBottom, HudHeader, QuestionCard, ScoreParts } from "../ui/bits"
+import { ConnectionNote } from "../ui/ConnectionNote"
+import { DevDrawer } from "../ui/DevDrawer"
+import { ConnectionDev } from "../ui/ConnectionDev"
+import { PaintDev } from "../ui/PaintTools"
+import { Icon } from "../ui/icons"
+import { HostTag } from "../ui/PlayerList"
+import { EndGameButton } from "../ui/HostControls"
+import { TakeSeatButton } from "../ui/TakeSeat"
+import { kickRequest, useConfirm } from "../ui/ConfirmDialog"
+import { useRegion } from "../regions"
+import { useBorders } from "../borders"
+import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
+import { PointWhy, RegionWhy } from "../ui/ScoreWhy"
+import { revealTestIds } from "./RevealTestIds"
 
 /** Selection meaning "show nobody's paint", alongside null (everyone) and a player id. */
-const NONE = "none";
+const NONE = "none"
 
 /**
  * Rows for the reveal list: this round's winner first. Everyone who played,
@@ -38,75 +38,75 @@ const NONE = "none";
  */
 export function revealOrder(
   players: PlayerView[],
-  results: RoundResultView[],
+  results: RoundResultView[]
 ): { p: PlayerView; r?: RoundResultView }[] {
-  const group = (r?: RoundResultView) => (r ? 0 : 1);
+  const group = (r?: RoundResultView) => (r ? 0 : 1)
   return players
     .filter((p) => !p.watching)
     .sort((a, b) => a.rank - b.rank)
     .map((p) => ({ p, r: results.find((x) => x.playerId === p.id) }))
-    .sort((a, b) => group(a.r) - group(b.r) || (b.r?.score ?? 0) - (a.r?.score ?? 0));
+    .sort((a, b) => group(a.r) - group(b.r) || (b.r?.score ?? 0) - (a.r?.score ?? 0))
 }
 
 export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reveal: RevealView }) {
-  const paint = usePaint();
-  const byId = new Map(view.players.map((p) => [p.id, p]));
+  const paint = usePaint()
+  const byId = new Map(view.players.map((p) => [p.id, p]))
   // null shows everyone's guesses at once; a player id shows just theirs; NONE hides all paint.
-  const [selected, setSelected] = useState<string | null>(null);
-  const { dialog, ask } = useConfirm();
+  const [selected, setSelected] = useState<string | null>(null)
+  const { dialog, ask } = useConfirm()
 
   // A country round shows the country's outline, once the outlines are loaded.
-  const region = useRegion(reveal.question.regionId);
-  const isCountry = reveal.question.regionId !== undefined;
+  const region = useRegion(reveal.question.regionId)
+  const isCountry = reveal.question.regionId !== undefined
 
   // A flag round names the country under the pointer, and where each player's paint mostly was.
-  const answerFlag = reveal.question.flag;
-  const borders = useBorders(answerFlag !== undefined);
+  const answerFlag = reveal.question.flag
+  const borders = useBorders(answerFlag !== undefined)
   const where = useMemo(() => {
-    const m = new Map<string, PaintedCountry | null>();
+    const m = new Map<string, PaintedCountry | null>()
     if (borders)
       for (const r of reveal.results)
-        if (r.paint) m.set(r.playerId, mainCountry(borders, PaintLayer.fromRecord(r.res, r.paint.cells).toCells()));
-    return m;
-  }, [borders, reveal.index]);
+        if (r.paint) m.set(r.playerId, mainCountry(borders, PaintLayer.fromRecord(r.res, r.paint.cells).toCells()))
+    return m
+  }, [borders, reveal.index])
 
   useEffect(() => {
-    paint.enabled.value = false;
-    if (!isCountry) paint.gameMap.showReveal(reveal.answer, reveal.question.toleranceKm);
-    else if (region) paint.gameMap.showRegionReveal(region.outline);
-    else paint.gameMap.clearReveal();
-  }, [reveal.index, region]);
+    paint.enabled.value = false
+    if (!isCountry) paint.gameMap.showReveal(reveal.answer, reveal.question.toleranceKm)
+    else if (region) paint.gameMap.showRegionReveal(region.outline)
+    else paint.gameMap.clearReveal()
+  }, [reveal.index, region])
 
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
   useEffect(() => {
     const shown =
-      selected === NONE ? [] : reveal.results.filter((r) => r.paint && (selected === null || r.playerId === selected));
+      selected === NONE ? [] : reveal.results.filter((r) => r.paint && (selected === null || r.playerId === selected))
     const entries = [...shown].reverse().flatMap((r) => {
-      const p = byId.get(r.playerId);
+      const p = byId.get(r.playerId)
       return p && r.paint
         ? [{ layer: PaintLayer.fromRecord(r.res, r.paint.cells), colour: playerColour(p.colour) }]
-        : [];
-    });
-    const fc = paint.showLayers(entries);
-    if (region) paint.gameMap.fitRegionAndPaint(reveal.answer, region.outline, fc, reveal.question.toleranceKm);
-    else paint.gameMap.fitAnswerAndPaint(reveal.answer, fc, reveal.question.toleranceKm);
-  }, [selected, reveal.index, region]);
+        : []
+    })
+    const fc = paint.showLayers(entries)
+    if (region) paint.gameMap.fitRegionAndPaint(reveal.answer, region.outline, fc, reveal.question.toleranceKm)
+    else paint.gameMap.fitAnswerAndPaint(reveal.answer, fc, reveal.question.toleranceKm)
+  }, [selected, reveal.index, region])
 
-  const mine = reveal.results.find((r) => r.playerId === view.you.id);
+  const mine = reveal.results.find((r) => r.playerId === view.you.id)
   const myDist = useMemo(
     () =>
       mine?.paint
         ? buildDistribution(PaintLayer.fromRecord(mine.res, mine.paint.cells).toCells(), mine.paint.floor)
         : null,
-    [reveal.index, mine?.playerId],
-  );
-  const last = reveal.index + 1 >= reveal.total;
-  const ready = new Set(reveal.ready);
-  const present = view.players.filter((p) => p.connected && !p.watching);
-  const readyCount = present.filter((p) => ready.has(p.id)).length;
-  const iAmReady = ready.has(view.you.id);
-  const rows = revealOrder(view.players, reveal.results);
+    [reveal.index, mine?.playerId]
+  )
+  const last = reveal.index + 1 >= reveal.total
+  const ready = new Set(reveal.ready)
+  const present = view.players.filter((p) => p.connected && !p.watching)
+  const readyCount = present.filter((p) => ready.has(p.id)).length
+  const iAmReady = ready.has(view.you.id)
+  const rows = revealOrder(view.players, reveal.results)
 
   return (
     <>
@@ -255,7 +255,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
         <ConnectionDev conn={conn} view={view} />
       </DevDrawer>
     </>
-  );
+  )
 }
 
 function RevealRow({
@@ -267,21 +267,21 @@ function RevealRow({
   where,
   answerFlag,
   onSelect,
-  onKick,
+  onKick
 }: {
-  p: PlayerView;
-  r?: RoundResultView;
-  you: boolean;
-  ready: boolean;
-  selected: boolean;
+  p: PlayerView
+  r?: RoundResultView
+  you: boolean
+  ready: boolean
+  selected: boolean
   /** A flag round: the country most of their paint was in. */
-  where: PaintedCountry | null;
-  answerFlag?: string;
-  onSelect: () => void;
+  where: PaintedCountry | null
+  answerFlag?: string
+  onSelect: () => void
   /** Host only: remove this player. */
-  onKick?: () => void;
+  onKick?: () => void
 }) {
-  const delta = p.previousRank !== null ? p.previousRank - p.rank : 0;
+  const delta = p.previousRank !== null ? p.previousRank - p.rank : 0
   return (
     <li
       class={`${selected ? "selected" : ""} ${you ? "you" : ""} ${where ? "with-where" : ""}`}
@@ -312,8 +312,8 @@ function RevealRow({
           title={`Remove ${p.name} from the game`}
           aria-label={`Remove ${p.name} from the game`}
           onClick={(e) => {
-            e.stopPropagation();
-            onKick();
+            e.stopPropagation()
+            onKick()
           }}
         >
           <Icon name="kick" size={13} />
@@ -334,5 +334,5 @@ function RevealRow({
         </span>
       )}
     </li>
-  );
+  )
 }

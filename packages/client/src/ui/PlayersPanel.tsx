@@ -3,27 +3,27 @@
  * in the HUD so the map stays clear. Starts collapsed; the choice sticks for
  * the session.
  */
-import { signal } from "@preact/signals";
-import type { GameView, PlayerView } from "@whereabouts/shared";
-import { PlayerList } from "./PlayerList";
-import { Icon } from "./icons";
-import { playersPanelTestIds } from "./PlayersPanelTestIds";
+import { signal } from "@preact/signals"
+import type { GameView, PlayerView } from "@whereabouts/shared"
+import { PlayerList } from "./PlayerList"
+import { Icon } from "./icons"
+import { playersPanelTestIds } from "./PlayersPanelTestIds"
 
-const expanded = signal(false);
+const expanded = signal(false)
 
 export function PlayersPanel({
   view,
   onKick,
-  onMakeHost,
+  onMakeHost
 }: {
-  view: GameView;
-  onKick?: (player: PlayerView) => void;
-  onMakeHost?: (player: PlayerView) => void;
+  view: GameView
+  onKick?: (player: PlayerView) => void
+  onMakeHost?: (player: PlayerView) => void
 }) {
-  const players = view.players.filter((p) => !p.watching);
-  const watching = view.players.length - players.length;
-  const online = players.filter((p) => p.connected).length;
-  const open = expanded.value;
+  const players = view.players.filter((p) => !p.watching)
+  const watching = view.players.length - players.length
+  const online = players.filter((p) => p.connected).length
+  const open = expanded.value
   return (
     <div class={`players-panel ${open ? "open" : ""}`}>
       <button
@@ -54,5 +54,5 @@ export function PlayersPanel({
         </div>
       )}
     </div>
-  );
+  )
 }

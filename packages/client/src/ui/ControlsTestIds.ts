@@ -1,9 +1,9 @@
 export const pillsTestIds = {
-  option: "Pills.option",
-};
+  option: "Pills.option"
+}
 
 export const stepperTestIds = {
   fewerButton: "Stepper.fewerButton",
   moreButton: "Stepper.moreButton",
-  value: "Stepper.value",
-};
+  value: "Stepper.value"
+}
