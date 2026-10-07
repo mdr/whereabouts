@@ -585,7 +585,7 @@ export class Game {
         facts.areaKm2 = cells.reduce((a, c) => a + c.areaKm2, 0)
         if (q.kind === "region") {
           const s = scoreRegionQuestion(dist, q)
-          ;({ score } = s)
+          score = s.score
           A = 0
           B = 0
           region = { shape: s.shape, nearness: s.nearness, ...regionFit(dist, q) }
