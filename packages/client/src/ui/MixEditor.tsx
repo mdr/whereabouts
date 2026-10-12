@@ -11,7 +11,9 @@ const UNITS: Record<QuestionType, [string, string]> = {
   landmarks: ["landmark", "landmarks"],
   places: ["place name", "place names"],
   countries: ["whole country", "whole countries"],
-  flags: ["flag", "flags"]
+  flags: ["flag", "flags"],
+  features: ["island, lake or sea", "islands, lakes or seas"],
+  states: ["US state", "US states"]
 }
 
 /** "4 landmarks · 1 flag": the kinds a game asks, in the host's order. */

@@ -8,7 +8,7 @@ import { hostSetup, joinedCode, startOnPan } from "../settings"
 import { route } from "../router"
 import { Lobby } from "./Lobby"
 
-const MIX = { landmarks: 3, places: 2, countries: 0, flags: 0 }
+const MIX = { landmarks: 3, places: 2, countries: 0, flags: 0, features: 0, states: 0 }
 
 function view(isHost: boolean): GameView {
   return {

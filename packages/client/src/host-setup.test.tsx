@@ -6,7 +6,7 @@ import type { Connection } from "./net"
 import { hostSetup } from "./settings"
 import { configureAsHost, savedSetupPatch, useSavedSetup } from "./host-setup"
 
-const MIX = { landmarks: 3, places: 3, countries: 2, flags: 2 }
+const MIX = { landmarks: 3, places: 3, countries: 2, flags: 2, features: 0, states: 0 }
 const SAVED = { mix: MIX, roundMs: 90_000, mapDetail: "political" }
 
 function lobby(isHost: boolean, phase: GameView["phase"] = "lobby"): GameView {
@@ -35,21 +35,44 @@ describe("savedSetupPatch", () => {
 
   it("turns a setup saved before the question mix into one", () => {
     const old = (setup: object) => savedSetupPatch({ roundMs: 90_000, ...setup }).mix
-    expect(old({ rounds: 12, photoShare: 0 })).toEqual({ landmarks: 0, places: 12, countries: 0, flags: 0 })
+    expect(old({ rounds: 12, photoShare: 0 })).toEqual({
+      landmarks: 0,
+      places: 12,
+      countries: 0,
+      flags: 0,
+      features: 0,
+      states: 0
+    })
     expect(old({ rounds: 8, photoShare: 0.75, countries: "mixed" })).toEqual({
       landmarks: 5,
       places: 1,
       countries: 2,
-      flags: 0
+      flags: 0,
+      features: 0,
+      states: 0
     })
     expect(old({ rounds: 8, countries: "only", flags: "only" })).toEqual({
       landmarks: 0,
       places: 0,
       countries: 4,
-      flags: 4
+      flags: 4,
+      features: 0,
+      states: 0
     })
-    expect(old({ flags: "mixed" })).toEqual({ landmarks: 3, places: 3, countries: 0, flags: 2 })
+    expect(old({ flags: "mixed" })).toEqual({
+      landmarks: 3,
+      places: 3,
+      countries: 0,
+      flags: 2,
+      features: 0,
+      states: 0
+    })
     expect(savedSetupPatch({ roundMs: 90_000 })).toEqual({ roundMs: 90_000 })
+  })
+
+  it("keeps a mix saved before islands, lakes, seas and US states, with none of them", () => {
+    const { features: _f, states: _s, ...before } = MIX
+    expect(savedSetupPatch({ mix: before }).mix).toEqual(MIX)
   })
 
   it("ignores unknown keys and anything that is not a saved setup", () => {

@@ -71,5 +71,5 @@ function mixFromOldSetup(setup: Record<string, unknown>): QuestionMix | undefine
   const f = Math.min(Math.round(r * flagShare), r - c)
   const named = r - c - f
   const landmarks = Math.round(named * photos)
-  return { landmarks, places: named - landmarks, countries: c, flags: f }
+  return { landmarks, places: named - landmarks, countries: c, flags: f, features: 0, states: 0 }
 }

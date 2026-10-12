@@ -10,7 +10,15 @@ import { regionFit, regionMisfit, scoreRegionQuestion, type RegionQuestion } fro
 import { explainPoint, isHedge } from "./explain.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
 import { flagRound, type FlagQuestion } from "./flags.ts"
-import { MAX_PLAYERS, MAX_SPECTATORS, QUESTION_TYPES, SEAT_GRACE_MS, evenMix, mixTotal } from "./protocol.ts"
+import {
+  MAX_PLAYERS,
+  MAX_SPECTATORS,
+  QUESTION_TYPES,
+  SEAT_GRACE_MS,
+  evenMix,
+  mixTotal,
+  showsLakes
+} from "./protocol.ts"
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -80,6 +88,8 @@ export class Game {
   private readonly regions: RegionQuestion[]
   /** Flag rounds, from flags.json and the countries: each a region or a point question. */
   private readonly flagRounds: (Question | RegionQuestion)[]
+  /** Islands, lakes, seas and US states; the server passes features.json. */
+  private readonly features: (Question | RegionQuestion)[]
   private readonly kernel: Kernel
 
   phase: Phase = "lobby"
@@ -107,7 +117,8 @@ export class Game {
     config: Partial<GameConfig> = {},
     seed = Date.now(),
     regions: RegionQuestion[] = [],
-    flags: FlagQuestion[] = []
+    flags: FlagQuestion[] = [],
+    features: (Question | RegionQuestion)[] = []
   ) {
     this.seed = seed
     this.code = code
@@ -118,6 +129,7 @@ export class Game {
     this.regions = regions
     const byId = new Map(regions.map((q) => [q.id, q]))
     this.flagRounds = flags.flatMap((f) => flagRound(f, byId) ?? [])
+    this.features = features
     this.kernel = kernelById(this.config.kernelId)
     if (pool.length === 0) throw new Error("question pool is empty")
   }
@@ -263,24 +275,43 @@ export class Game {
    * The rounds' questions, as many of each kind as the mix asks while they
    * last, in a shuffled order. Landmarks and place names come from the pool
    * through pickQuestions (so a game of only those is exactly what it picks);
-   * whole countries and flags from theirs, never a country already asked
-   * another way ("Where is Monaco?" and Monaco's flag, say).
+   * the rest from their own lists, never a country already asked another way
+   * ("Where is Monaco?" and Monaco's flag, say). Lakes only on a map that
+   * shows them.
    */
   private pickRounds(): (Question | RegionQuestion)[] {
-    const { landmarks, places, countries, flags } = this.config.mix
+    const { landmarks, places, countries, flags, features, states } = this.config.mix
     const named = landmarks + places
     const picked = pickQuestions(this.pool, named, this.seed, named > 0 ? landmarks / named : 0.5)
-    if (countries === 0 && flags === 0) return picked
+    if (countries + flags + features + states === 0) return picked
     const asked = new Set(picked.map((q) => q.label))
     const fresh = (q: Question | RegionQuestion) => !asked.has(q.id) && !asked.has(q.label)
-    const regions = shuffle(this.regions, this.seed ^ 0x2545f491)
-      .filter(fresh)
-      .slice(0, countries)
-    for (const q of regions) asked.add(q.id).add(q.label)
-    const flagged = shuffle(this.flagRounds, this.seed ^ 0x68e31da4)
-      .filter(fresh)
-      .slice(0, flags)
-    return shuffle<Question | RegionQuestion>([...picked, ...regions, ...flagged], this.seed ^ 0x5bd1e995)
+    const take = (from: (Question | RegionQuestion)[], salt: number, count: number) => {
+      const out = shuffle(from, this.seed ^ salt)
+        .filter(fresh)
+        .slice(0, count)
+      for (const q of out) asked.add(q.id).add(q.label)
+      return out
+    }
+    const lakes = showsLakes(this.config.mapDetail)
+    return shuffle<Question | RegionQuestion>(
+      [
+        ...picked,
+        ...take(this.regions, 0x2545f491, countries),
+        ...take(this.flagRounds, 0x68e31da4, flags),
+        ...take(
+          this.features.filter((q) => q.topic !== "state" && (lakes || q.topic !== "lake")),
+          0x1b873593,
+          features
+        ),
+        ...take(
+          this.features.filter((q) => q.topic === "state"),
+          0x85ebca6b,
+          states
+        )
+      ],
+      this.seed ^ 0x5bd1e995
+    )
   }
 
   /** Host tunes the question mix (and so the rounds), round length and map detail while everyone is still in the lobby. */
@@ -764,7 +795,7 @@ export function generateCode(rnd: () => number = Math.random, length = 4): strin
  * flag's code, which the flag gives away anyway.
  */
 function questionView(q: Question | RegionQuestion): QuestionView {
-  const flag = q.flag ? { flag: q.flag } : {}
-  if (q.kind === "region") return { prompt: q.prompt, toleranceKm: q.toleranceKm, regionId: q.id, ...flag }
-  return { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm, ...flag }
+  const extra = { ...(q.flag ? { flag: q.flag } : {}), ...(q.topic ? { topic: q.topic } : {}) }
+  if (q.kind === "region") return { prompt: q.prompt, toleranceKm: q.toleranceKm, regionId: q.id, ...extra }
+  return { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm, ...extra }
 }

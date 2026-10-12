@@ -3,6 +3,9 @@ import { greatCircleDistance, type LatLon } from "./geo.ts"
 /** Two questions in one game should be at least this far apart when the pool allows. */
 const MIN_SPREAD_KM = 50
 
+/** What an "Islands, lakes & seas" or "US states" round asks for (features.json). */
+export type Topic = "island" | "lake" | "sea" | "state"
+
 export interface Question {
   id: string
   kind: "photo" | "text"
@@ -18,6 +21,8 @@ export interface Question {
   region: "world" | "uk"
   /** A flag round asked as a point: the flag shown in place of a name (see flags.ts). */
   flag?: string
+  /** A state small enough to ask as a point (features.json). */
+  topic?: Topic
 }
 
 export function commonsImageUrl(file: string, width = 900): string {

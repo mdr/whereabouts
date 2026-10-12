@@ -323,6 +323,29 @@ neighbour's area two radii away about 640 (India, Pakistan, Serbia, Somalia,
 Ukraine). A full radius scored the country about 950 and the neighbour about
 725, too generous next to the region rule's 435 for Poland against Germany.
 
+## Islands, lakes, seas and US states
+
+Two more kinds in the question mix, scored exactly as countries are, with the
+same limits: under 10,000 km², or too scattered, a place is asked as a point.
+`features.json`, built by `scripts/build-features.mjs`, holds:
+
+- **Islands:** the 20 largest that are not already a country round
+  (Madagascar, Cuba, Iceland, Sri Lanka, Great Britain and Ireland are left
+  out), from the same 1:50m land as the country outlines.
+- **Lakes:** the 15 of 10,000 km² or more. A lake is asked only on a map
+  detail that draws lakes (Water and up): on Minimal they are drawn as land.
+- **Seas:** the nearly closed ones (Mediterranean, Black, Caspian, Red,
+  Baltic, Persian Gulf, Hudson Bay), each the union of Natural Earth's 1:10m
+  marine areas, since it splits off the Adriatic, the Gulf of Bothnia and
+  the like. Under 1% of each falls on land. A sea round has no Trim sea.
+- **US states:** all 50 from the 1:50m admin-1 outlines with the Great Lakes
+  cut out. Rhode Island and Delaware are points; Hawaii keeps its three
+  largest islands. State lines never show while guessing, even on the
+  Political map; the reveal draws them.
+
+The Fill tool is off for these rounds, since it fills countries. The reveal
+explains a miss by the coast or shore rather than the border.
+
 ## Data
 
 `packages/shared/regions.json` holds 150 countries from Natural Earth's 1:50m
@@ -332,8 +355,8 @@ those asked only as a point in flag rounds (above), with the contiguous
 United States in place of the whole. Each keeps its largest landmass and
 islands of at least 1,500 km² within 500 km of what is kept, chained (so
 Sicily and Crete stay; the Canaries, Svalbard and Alaska go; Malaysia chains
-to 800 km to keep Borneo), simplified to about 1.5 km. The tolerance is set
-in the build script. `flags.json`, built alongside, has one flag round per
+to 800 km to keep Borneo), simplified to about 1.5 km. The tolerance and
+these limits are set in `scripts/outline.mjs`, shared with the features. `flags.json`, built alongside, has one flag round per
 country, 194 in all: the region's id, or a point and tolerance. Northern
 Cyprus, Somaliland, Taiwan and Kosovo are left out. `borders.json`, also
 built alongside, has every flag country's land for the reveal, coarser
@@ -373,6 +396,6 @@ its range is a miss, and the script exits non-zero; the rule misses 6 of the
 country's own scores; naming countries (`-- Germany Chile`) runs just those.
 
 The constants to tune are `SHAPE_WEIGHT`, `OFF_COUNTRY_COST` and
-`NEARNESS_KERNEL` in `regions.ts`, and `TOLERANCE_FRACTION` in the build
+`NEARNESS_KERNEL` in `regions.ts`, and `TOLERANCE_FRACTION` in `outline.mjs`, next to the build
 script. `regions.test.ts` pins the main
 behaviours; update it with the numbers when a change is meant.

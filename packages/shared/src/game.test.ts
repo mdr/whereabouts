@@ -8,6 +8,7 @@ import { regionCells, type RegionQuestion } from "./regions.ts"
 import type { GameConfig, QuestionView } from "./protocol.ts"
 import regionsJson from "../regions.json" with { type: "json" }
 import flagsJson from "../flags.json" with { type: "json" }
+import featuresJson from "../features.json" with { type: "json" }
 import { FLAG_POINT_PROMPT, type FlagQuestion } from "./flags.ts"
 import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS } from "./protocol.ts"
 import { PLAYER_COLOURS } from "./colours.ts"
@@ -51,7 +52,7 @@ function paintAt(q: Question, lat: number, lon: number) {
 
 function twoPlayerGame(rounds = 2) {
   // The test pool is place names only.
-  const mix = { landmarks: 0, places: rounds, countries: 0, flags: 0 }
+  const mix = { landmarks: 0, places: rounds, countries: 0, flags: 0, features: 0, states: 0 }
   const g = new Game("ABCD", pool, { mix, roundMs: 60_000 }, 42)
   expect(g.join("tokA", "Alice", T0).ok).toBe(true)
   expect(g.join("tokB", "Bob", T0 + 1).ok).toBe(true)
@@ -695,11 +696,13 @@ describe("ready-up edge cases", () => {
 })
 
 describe("configure", () => {
-  const mix = (landmarks: number, places: number, countries = 0, flags = 0) => ({
+  const mix = (landmarks: number, places: number, countries = 0, flags = 0, features = 0, states = 0) => ({
     landmarks,
     places,
     countries,
-    flags
+    flags,
+    features,
+    states
   })
 
   it("lets the host change the mix, and so the rounds, and round length in the lobby only", () => {
@@ -840,16 +843,19 @@ describe("host ends the game early", () => {
 describe("the question mix", () => {
   const REGIONS = regionsJson as RegionQuestion[]
   const FLAGS = flagsJson as FlagQuestion[]
+  const FEATURES = featuresJson as (Question | RegionQuestion)[]
   const germany = REGIONS.find((q) => q.id === "germany-region")!
-  const mix = (landmarks: number, places: number, countries = 0, flags = 0) => ({
+  const mix = (landmarks: number, places: number, countries = 0, flags = 0, features = 0, states = 0) => ({
     landmarks,
     places,
     countries,
-    flags
+    flags,
+    features,
+    states
   })
 
-  function game(config: Partial<GameConfig>, regions = REGIONS, flags = FLAGS) {
-    const g = new Game("ABCD", pool, { roundMs: 60_000, ...config }, 42, regions, flags)
+  function game(config: Partial<GameConfig>, regions = REGIONS, flags = FLAGS, features = FEATURES) {
+    const g = new Game("ABCD", pool, { roundMs: 60_000, ...config }, 42, regions, flags, features)
     g.join("tokA", "Alice", T0)
     g.join("tokB", "Bob", T0 + 1)
     return g
@@ -897,6 +903,38 @@ describe("the question mix", () => {
     expect(new Set(regionIds).size).toBe(regionIds.length)
     // Without the countries on hand (a test pool, say), there are only the places.
     expect(questions(game({ mix: mix(0, 3, 3) }, [], []))).toHaveLength(3)
+  })
+
+  it("asks islands, lakes and seas, and US states, as many as the mix says", () => {
+    const seen = questions(game({ mix: mix(0, 0, 0, 0, 6, 7), mapDetail: "water" }))
+    expect(seen).toHaveLength(13)
+    const topics = seen.map((q) => q.topic)
+    expect(topics.filter((t) => t === "state")).toHaveLength(7)
+    expect(topics.filter((t) => t === "island" || t === "lake" || t === "sea")).toHaveLength(6)
+    expect(new Set(seen.map((q) => q.prompt)).size).toBe(13)
+  })
+
+  it("asks a lake only when the map shows lakes", () => {
+    const lake = FEATURES.find((q) => q.topic === "lake")!
+    const island = FEATURES.find((q) => q.topic === "island")!
+    const asked = (mapDetail: GameConfig["mapDetail"]) =>
+      questions(game({ mix: mix(0, 0, 0, 0, 2), mapDetail }, REGIONS, FLAGS, [lake, island])).map((q) => q.topic)
+    expect(asked("minimal")).toEqual(["island"])
+    expect(asked("water").sort()).toEqual(["island", "lake"])
+  })
+
+  it("scores an island against its outline, as a country", () => {
+    const borneo = FEATURES.find((q): q is RegionQuestion => q.id === "island-borneo")!
+    const g = game({ mix: mix(0, 0, 0, 0, 1) }, REGIONS, FLAGS, [borneo])
+    g.start("tokA", T0)
+    const q = g.view("tokA", T0).round!.question
+    expect(q).toMatchObject({ prompt: "Paint the whole of Borneo", regionId: "island-borneo", topic: "island" })
+    const cells = Object.fromEntries(regionCells(borneo, resolutionForTolerance(q.toleranceKm)).map((h) => [h, 1]))
+    expect(g.setPaint("tokA", { cells, floor: 0.05 }).ok).toBe(true)
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS)
+    const reveal = g.view("tokB", T0 + 60_000).reveal!
+    expect(reveal.label).toBe("Borneo")
+    expect(reveal.results.find((r) => r.playerId === "p1")!.score).toBeGreaterThan(985)
   })
 
   it("does not ask a place's country again as a flag", () => {

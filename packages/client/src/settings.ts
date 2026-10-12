@@ -54,8 +54,8 @@ try {
 } catch {
   /* storage unavailable */
 }
-/** What practice asks: places (points), whole countries (regions) or flags (either, by size). */
-export type PracticePool = "places" | "countries" | "flags"
+/** What practice asks: places (points), whole countries (regions), flags (either, by size), islands, lakes and seas, or US states. */
+export type PracticePool = "places" | "countries" | "flags" | "features" | "states"
 export const soloPool = persisted<PracticePool>("wa.practicePool", "places")
 /** Map detail while guessing in practice (one of MAP_DETAILS). */
 export const soloMapDetail = persisted<MapDetail>("wa.mapDetail", "minimal")

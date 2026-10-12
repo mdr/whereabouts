@@ -5,7 +5,7 @@ import type { GameView } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { Results } from "./Results"
 
-const MIX = { landmarks: 1, places: 1, countries: 0, flags: 0 }
+const MIX = { landmarks: 1, places: 1, countries: 0, flags: 0, features: 0, states: 0 }
 
 function view(isHost: boolean): GameView {
   return {

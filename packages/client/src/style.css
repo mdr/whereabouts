@@ -1832,6 +1832,12 @@ button.danger.solid {
 .type-flags {
   --type: #f06292;
 }
+.type-features {
+  --type: #9575cd;
+}
+.type-states {
+  --type: #fff176;
+}
 .mix-editor {
   display: flex;
   flex-direction: column;

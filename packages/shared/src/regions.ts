@@ -32,6 +32,7 @@ import {
   UNITS
 } from "h3-js"
 import { bearing, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
+import type { Topic } from "./questions.ts"
 import { resolutionForTolerance } from "./paint.ts"
 import {
   coarsenDistribution,
@@ -58,6 +59,8 @@ export interface RegionQuestion {
   outline: number[][][][]
   /** A flag round: the flag shown in place of the name (see flags.ts). */
   flag?: string
+  /** An island, lake, sea or US state (features.json) rather than a country. */
+  topic?: Topic
 }
 
 /** The share of the score that is shape; the rest is nearness. */

@@ -9,7 +9,9 @@ import { Pills } from "../ui/Controls"
 const POOLS: { value: PracticePool; label: string }[] = [
   { value: "places", label: "Places" },
   { value: "countries", label: "Whole countries" },
-  { value: "flags", label: "Flags" }
+  { value: "flags", label: "Flags" },
+  { value: "features", label: "Islands, lakes & seas" },
+  { value: "states", label: "US states" }
 ]
 import hero800 from "../assets/hero-800.webp"
 import hero1448 from "../assets/hero-1448.webp"

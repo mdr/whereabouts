@@ -6,6 +6,7 @@
 import { z } from "zod"
 import type { Award } from "./awards.ts"
 import type { LatLon } from "./geo.ts"
+import type { Topic } from "./questions.ts"
 
 export const PROTOCOL_VERSION = 1
 
@@ -72,12 +73,17 @@ export const MAX_SPECTATORS = 8
  */
 export const SEAT_GRACE_MS = 30_000
 
-/** The kinds of question a game can ask, in the order the host sees them. */
+/**
+ * The kinds of question a game can ask, in the order the host sees them. An
+ * even mix (the default game) leaves out those marked extra.
+ */
 export const QUESTION_TYPES = [
   { id: "landmarks", label: "Landmarks", detail: "Photos of famous places" },
   { id: "places", label: "Place names", detail: "Cities, capitals and small countries" },
   { id: "countries", label: "Whole countries", detail: "Paint a country's shape" },
-  { id: "flags", label: "Flags", detail: "Find the country from its flag" }
+  { id: "flags", label: "Flags", detail: "Find the country from its flag" },
+  { id: "features", label: "Islands, lakes & seas", detail: "Paint a big island, lake or sea", extra: true },
+  { id: "states", label: "US states", detail: "Paint a state's shape", extra: true }
 ] as const
 export type QuestionType = (typeof QUESTION_TYPES)[number]["id"]
 
@@ -87,18 +93,32 @@ export type QuestionMix = Record<QuestionType, number>
 export const mixTotal = (mix: QuestionMix): number => QUESTION_TYPES.reduce((s, t) => s + mix[t.id], 0)
 
 /**
- * An even mix of `rounds`: the same of each kind, the rest one each to the
- * first kinds. The default game is 8 rounds, 2 of each.
+ * An even mix of `rounds`: the same of each kind but the extras, the rest one
+ * each to the first kinds. The default game is 8 rounds, 2 of each.
  */
 export function evenMix(rounds: number): QuestionMix {
-  const each = Math.floor(rounds / QUESTION_TYPES.length)
-  const rest = rounds % QUESTION_TYPES.length
-  return Object.fromEntries(QUESTION_TYPES.map((t, i) => [t.id, each + (i < rest ? 1 : 0)])) as QuestionMix
+  const kinds = QUESTION_TYPES.filter((t) => !("extra" in t))
+  const each = Math.floor(rounds / kinds.length)
+  const rest = rounds % kinds.length
+  return Object.fromEntries(
+    QUESTION_TYPES.map((t) => {
+      const i = kinds.findIndex((k) => k.id === t.id)
+      return [t.id, i < 0 ? 0 : each + (i < rest ? 1 : 0)]
+    })
+  ) as QuestionMix
 }
 
 const roundCount = z.number().int().min(0).max(MAX_ROUNDS)
 export const MixSchema = z
-  .object({ landmarks: roundCount, places: roundCount, countries: roundCount, flags: roundCount })
+  .object({
+    landmarks: roundCount,
+    places: roundCount,
+    countries: roundCount,
+    flags: roundCount,
+    // A setup saved before these kinds existed has none of them.
+    features: roundCount.default(0),
+    states: roundCount.default(0)
+  })
   .refine((m) => mixTotal(m) >= MIN_ROUNDS && mixTotal(m) <= MAX_ROUNDS, "a game has 1 to 15 rounds")
 
 /**
@@ -112,6 +132,9 @@ export const MAP_DETAILS = [
   { id: "political", label: "Political", detail: "Adds country borders" }
 ] as const
 export type MapDetail = (typeof MAP_DETAILS)[number]["id"]
+
+/** Whether the map draws lakes while guessing: lake rounds are asked only when it does. */
+export const showsLakes = (detail: MapDetail): boolean => detail !== "minimal"
 
 /** Host changes to the game settings while in the lobby. */
 export const ConfigureSchema = z.object({
@@ -190,6 +213,8 @@ export interface QuestionView {
   regionId?: string
   /** A flag round: the flag's ISO code, shown in place of a name. */
   flag?: string
+  /** What an "Islands, lakes & seas" or "US states" round asks for. */
+  topic?: Topic
 }
 
 export interface RoundView {

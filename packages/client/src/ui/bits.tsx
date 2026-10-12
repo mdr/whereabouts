@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact"
 import { useEffect, useRef, useState } from "preact/hooks"
-import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type QuestionView } from "@whereabouts/shared"
+import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type QuestionView, type Topic } from "@whereabouts/shared"
 import { Icon } from "./icons"
 import { soundOn } from "../settings"
 import { flagUrl } from "../flags"
@@ -191,6 +191,11 @@ function useEscape(open: boolean, close: () => void): void {
 export function SmallFlag({ code }: { code: string }) {
   const src = useFlagUrl(code)
   return <span class="small-flag">{src && <img src={src} alt="" draggable={false} />}</span>
+}
+
+/** Under a "Paint the whole of …" question: what to cover. */
+export function RegionHint({ topic }: { topic?: Topic }) {
+  return <p class="hint region-hint">Cover the whole {topic ?? "country"}: its shape counts.</p>
 }
 
 /**

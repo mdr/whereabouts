@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks"
 import { PaintLayer, compactRecord, playerColour, type GameView } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
-import { AnswerMode, Card, Countdown, HudHeader, QuestionCard } from "../ui/bits"
+import { AnswerMode, Card, Countdown, HudHeader, QuestionCard, RegionHint } from "../ui/bits"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
 import { PlayerList } from "../ui/PlayerList"
 import { ConnectionNote } from "../ui/ConnectionNote"
@@ -32,7 +32,9 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const question = view.round?.question ?? view.reveal?.question
   useFillTool(
     paint,
-    view.config.mapDetail === "political" && (question?.regionId !== undefined || question?.flag !== undefined)
+    view.config.mapDetail === "political" &&
+      question?.topic === undefined &&
+      (question?.regionId !== undefined || question?.flag !== undefined)
   )
   const sendTimer = useRef<number | null>(null)
   const lastSentVersion = useRef(-1)
@@ -40,13 +42,14 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const [timeUp, setTimeUp] = useState(false)
   const { dialog, ask } = useConfirm()
 
-  // A game with countries or flags needs the outlines at the reveal: fetch them now.
-  const outlines = view.config.mix.countries + view.config.mix.flags > 0
+  // A game with outlines to show at the reveal: fetch them now.
+  const { countries, flags: flagRounds, features, states } = view.config.mix
+  const outlines = countries + flagRounds + features + states > 0
   useEffect(() => {
     if (outlines) loadRegions().catch((err: unknown) => console.warn("could not load countries", err))
   }, [outlines])
   // And a game with flags, the borders its reveals name countries by.
-  const flags = view.config.mix.flags > 0
+  const flags = flagRounds > 0
   useEffect(() => {
     if (flags) loadBorders().catch((err: unknown) => console.warn("could not load borders", err))
   }, [flags])
@@ -74,9 +77,11 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   // The host's map detail while guessing; the reveal shows everything, since
   // borders, place names, rivers and relief help make sense of the answer.
   const reveal = view.phase === "reveal"
+  const stateRound = question?.topic === "state"
   useEffect(() => {
     paint.gameMap.setDetail(reveal ? "reveal" : view.config.mapDetail)
-  }, [reveal, view.config.mapDetail])
+    paint.gameMap.setStateBorders(reveal && stateRound)
+  }, [reveal, view.config.mapDetail, stateRound])
 
   // The server scores a moment after the deadline (ROUND_GRACE_MS), so paint sent at zero still counts.
   const deadline = view.round?.deadline
@@ -142,7 +147,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             {round.question.flag ? (
               <AnswerMode area={round.question.regionId !== undefined} />
             ) : (
-              round.question.regionId && <p class="hint region-hint">Cover the whole country: its shape counts.</p>
+              round.question.regionId && <RegionHint topic={round.question.topic} />
             )}
           </QuestionCard>
           <ConnectionNote conn={conn} />
@@ -186,7 +191,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
         </div>
         {!sittingOut && (
-          <PaintTools>
+          <PaintTools atSea={round.question.topic === "sea"}>
             {view.you.locked ? (
               <button
                 class="keep-editing"

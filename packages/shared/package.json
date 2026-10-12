@@ -8,6 +8,7 @@
     "./questions.json": "./questions.json",
     "./regions.json": "./regions.json",
     "./flags.json": "./flags.json",
+    "./features.json": "./features.json",
     "./land.json": "./land.json",
     "./borders.json": "./borders.json"
   },

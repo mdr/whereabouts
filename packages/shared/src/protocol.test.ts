@@ -55,6 +55,11 @@ describe("ConfigureSchema", () => {
     expect(ConfigureSchema.safeParse(mix(-1, 2, 0, 0)).success).toBe(false)
     expect(ConfigureSchema.safeParse(mix(1.5, 2, 0, 0)).success).toBe(false)
     expect(ConfigureSchema.safeParse({ mix: { landmarks: 3 } }).success).toBe(false)
+    // A mix from before islands, lakes, seas and US states asks none of them.
+    expect(ConfigureSchema.parse({ mix: { landmarks: 3, places: 2, countries: 0, flags: 0 } }).mix).toMatchObject({
+      features: 0,
+      states: 0
+    })
     expect(ConfigureSchema.safeParse({ roundMs: 61_000 }).success).toBe(false)
     expect(ConfigureSchema.safeParse({ mapDetail: "political" }).success).toBe(true)
     expect(ConfigureSchema.safeParse({ mapDetail: "satellite" }).success).toBe(false)
@@ -64,9 +69,10 @@ describe("ConfigureSchema", () => {
 describe("evenMix", () => {
   it("splits the rounds evenly, the rest to the first kinds", async () => {
     const { evenMix } = await import("./protocol.ts")
-    expect(evenMix(8)).toEqual({ landmarks: 2, places: 2, countries: 2, flags: 2 })
-    expect(evenMix(6)).toEqual({ landmarks: 2, places: 2, countries: 1, flags: 1 })
-    expect(evenMix(1)).toEqual({ landmarks: 1, places: 0, countries: 0, flags: 0 })
+    const none = { features: 0, states: 0 }
+    expect(evenMix(8)).toEqual({ landmarks: 2, places: 2, countries: 2, flags: 2, ...none })
+    expect(evenMix(6)).toEqual({ landmarks: 2, places: 2, countries: 1, flags: 1, ...none })
+    expect(evenMix(1)).toEqual({ landmarks: 1, places: 0, countries: 0, flags: 0, ...none })
   })
 })
 

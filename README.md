@@ -111,7 +111,7 @@ pnpm workspace with three packages:
 - `packages/shared`: geo, scoring, H3 paint model, question pool, the wire
   protocol (zod schemas + view types), and the pure `Game` state machine. No
   I/O anywhere; the same code runs in the browser and on the server.
-- `packages/client`: Vite + Preact. Screens: home, solo practice (places, whole countries or flags), and the
+- `packages/client`: Vite + Preact. Screens: home, solo practice (places, whole countries, flags, islands, lakes and seas, or US states), and the
   online game (lobby, timed guessing, reveal, results). The map fills the
   screen with HUD cards over it; `PaintController` wraps the MapLibre map and
   brush input. Add `?dev` to the URL for the developer drawer.
@@ -144,10 +144,12 @@ pnpm workspace with three packages:
   15). The kinds are landmarks (photos), place names (cities, capitals and
   small countries), whole countries ("Paint the whole of …") and flags (a
   country's flag in place of its name, painted whole or, for a small country,
-  asked as a point; see docs/country-scoring.md). A flag round's reveal
+  asked as a point; see docs/country-scoring.md), islands, lakes and seas,
+  and US states (painted whole like countries; lakes only on a map that
+  shows them). A flag round's reveal
   shows the flag of the country under the pointer (tapped, on a phone), and
   under each player the country most of their paint was in ("Peru 62%",
-  green when it is the answer). The default is 2 of each,
+  green when it is the answer). The default is 2 of each of the first four,
   8 rounds. A strip of coloured cells, one per round,
   shows the mix to host and guests; the rounds come in a random order, and no
   country is asked twice. A setup saved before the mix is converted to one.
@@ -385,7 +387,7 @@ how much it removed. It is the player's choice, not a free gain: a blob
 centred on a coastal answer loses its sea side and can score lower (up to
 about 85 points in testing), while island answers often gain.
 
-Fill appears in a round that asks for a country (whole countries and flags)
+Fill appears in a round that asks for a country (whole countries and flags, not islands, lakes, seas or states)
 when the map detail is Political. A click (a tap, on a phone) fills the
 country under it with an even coat; fill several if unsure, each weighted by
 its area, and click a filled one to take it off. The outline under the

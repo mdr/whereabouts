@@ -21,7 +21,16 @@ const TOOL_HINT: Record<Tool, string> = {
  * The player-facing brush bar: tool, clear, brush size, undo/redo, and
  * whatever action buttons the screen passes in (done, next).
  */
-export function PaintTools({ children, practice }: { children?: ComponentChildren; practice?: boolean }) {
+/** `atSea`: the answer is a sea, so there is no Trim sea. */
+export function PaintTools({
+  children,
+  practice,
+  atSea
+}: {
+  children?: ComponentChildren
+  practice?: boolean
+  atSea?: boolean
+}) {
   const paint = usePaint()
   const tool = paint.tool.value
   const enabled = paint.enabled.value
@@ -56,7 +65,7 @@ export function PaintTools({ children, practice }: { children?: ComponentChildre
         >
           <Icon name="trash" /> <span class="label">Clear</span>
         </button>
-        <TrimSea enabled={enabled} />
+        {!atSea && <TrimSea enabled={enabled} />}
       </div>
       <label class="brush" title="Brush size ([ and ] also work)">
         <span>Brush</span>

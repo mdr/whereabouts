@@ -2,6 +2,7 @@ import { useMemo } from "preact/hooks"
 import {
   describePoint,
   describeRegion,
+  edgeName,
   explainPoint,
   regionMisfit,
   type Distribution,
@@ -30,6 +31,9 @@ export function PointWhy(props: {
 
 /** A line under a country's score: what kept the paint from matching it. */
 export function RegionWhy({ dist, q }: { dist: Distribution; q: RegionQuestion }) {
-  const text = useMemo(() => describeRegion(regionMisfit(dist, q), q.label, q.toleranceKm), [dist, q.id])
+  const text = useMemo(
+    () => describeRegion(regionMisfit(dist, q), q.label, q.toleranceKm, edgeName(q.topic)),
+    [dist, q.id]
+  )
   return <div class="fit">{text}</div>
 }

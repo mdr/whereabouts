@@ -1,8 +1,9 @@
 /**
  * Single-player practice mode. Playtest tools live in the dev drawer. It asks
  * places (the answer is a point), whole countries (the answer is an area,
- * loaded on demand) or flags (a country's flag: painted whole when it is big
- * enough, else a point), as chosen on the front page.
+ * loaded on demand), flags (a country's flag: painted whole when it is big
+ * enough, else a point), islands, lakes and seas, or US states, as chosen on
+ * the front page.
  */
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { useSignal } from "@preact/signals"
@@ -19,6 +20,7 @@ import {
   kernelById,
   scoreDistribution,
   scoreFromParts,
+  showsLakes,
   shuffle,
   similarityToAnswer,
   toXyz,
@@ -30,14 +32,14 @@ import {
 } from "@whereabouts/shared"
 import type { GameMap } from "../map"
 import { MapView, usePaint } from "../ui/MapView"
-import { Answer, AnswerMode, Card, HudBottom, HudHeader, QuestionCard, ScoreParts, fmtKm } from "../ui/bits"
+import { Answer, AnswerMode, Card, HudBottom, HudHeader, QuestionCard, RegionHint, ScoreParts, fmtKm } from "../ui/bits"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
 import { Banner } from "../ui/Banner"
 import { DevDrawer } from "../ui/DevDrawer"
 import { cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings"
 import { devMode } from "../dev"
 import { Icon } from "../ui/icons"
-import { flagQuestions, loadRegions, regions } from "../regions"
+import { featureQuestions, flagQuestions, loadRegions, regions } from "../regions"
 import { useBorders } from "../borders"
 import { useFillTool } from "../fill"
 import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
@@ -93,31 +95,36 @@ export function Solo() {
   )
 }
 
-/** Countries and flags come in their own chunk (the outlines), fetched when asked for. */
+/** All but places come in their own chunk (the outlines), fetched when asked for. */
 function SoloLoader() {
   const pool = soloPool.value
   const byId = regions.value
-  const needsCountries = pool === "countries" || pool === "flags"
+  const needsOutlines = pool !== "places"
   useEffect(() => {
-    if (needsCountries && !byId) loadRegions().catch((err: unknown) => console.warn("could not load countries", err))
+    if (needsOutlines && !byId) loadRegions().catch((err: unknown) => console.warn("could not load countries", err))
   }, [pool, byId])
-  if (needsCountries && !byId) {
+  if (needsOutlines && !byId) {
     return (
       <div class="hud">
         <div class="hud-center">
-          <p class="card">Loading countries…</p>
+          <p class="card">Loading outlines…</p>
         </div>
       </div>
     )
   }
+  const lakes = showsLakes(soloMapDetail.value)
   return (
     <SoloGame
       pool={
         pool === "countries"
-          ? [...byId!.values()]
+          ? [...byId!.values()].filter((q) => q.topic === undefined)
           : pool === "flags"
             ? flagQuestions.value!.flatMap((f) => flagRound(f, byId!) ?? [])
-            : QUESTIONS
+            : pool === "features"
+              ? featureQuestions.value!.filter((q) => q.topic !== "state" && (lakes || q.topic !== "lake"))
+              : pool === "states"
+                ? featureQuestions.value!.filter((q) => q.topic === "state")
+                : QUESTIONS
       }
     />
   )
@@ -159,10 +166,12 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const detail = soloMapDetail.value
   // The Fill tool, for a country on the Political map. It stays on through
   // the reveal, so a run of country rounds keeps the tool chosen.
-  useFillTool(paint, detail === "political" && (isRegion(q) || q.flag !== undefined))
+  useFillTool(paint, detail === "political" && q.topic === undefined && (isRegion(q) || q.flag !== undefined))
+  const stateRound = q.topic === "state"
   useEffect(() => {
     paint.gameMap.setDetail(phase === "reveal" ? "reveal" : detail)
-  }, [phase, detail])
+    paint.gameMap.setStateBorders(phase === "reveal" && stateRound)
+  }, [phase, detail, stateRound])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -369,14 +378,10 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
         <div class="hud-top">
           {header}
           <QuestionCard q={q} credit>
-            {q.flag ? (
-              <AnswerMode area={isRegion(q)} />
-            ) : (
-              isRegion(q) && <p class="hint region-hint">Cover the whole country: its shape counts.</p>
-            )}
+            {q.flag ? <AnswerMode area={isRegion(q)} /> : isRegion(q) && <RegionHint topic={q.topic} />}
           </QuestionCard>
         </div>
-        <PaintTools practice>
+        <PaintTools practice atSea={q.topic === "sea"}>
           <button
             class="primary"
             onClick={submit}

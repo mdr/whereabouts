@@ -9,6 +9,7 @@
  */
 import { cellToLatLng, getResolution } from "h3-js"
 import { chordDistance, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
+import type { Topic } from "./questions.ts"
 import {
   coarsenDistribution,
   DEFAULT_KERNEL,
@@ -101,8 +102,13 @@ export function describePoint(e: PointExplanation, score: number, toleranceKm: n
 /** Shares of the paint or the country below this are not worth a mention. */
 const MENTION = 0.1
 
+/** What the edge of a painted place is called: a country's or state's border, an island's coast, a lake's or sea's shore. */
+export function edgeName(topic?: Topic): string {
+  return topic === "island" ? "coast" : topic === "lake" || topic === "sea" ? "shore" : "border"
+}
+
 /** What kept a country round's paint from matching the country, biggest first. */
-export function describeRegion(m: RegionMisfit, label: string, toleranceKm: number): string {
+export function describeRegion(m: RegionMisfit, label: string, toleranceKm: number, edge = "border"): string {
   // A country's tolerance is a fifth of its equivalent radius.
   const radiusKm = 5 * toleranceKm
   if (m.precision < MENTION) {
@@ -115,9 +121,9 @@ export function describeRegion(m: RegionMisfit, label: string, toleranceKm: numb
   const parts: [number, string][] = []
   if (offShare >= MENTION) {
     const where = !m.off
-      ? "went over the border all round"
+      ? `went over the ${edge} all round`
       : m.off.km < radiusKm
-        ? `went over the ${compass(m.off.bearing)} border`
+        ? `went over the ${compass(m.off.bearing)} ${edge}`
         : `was well to the ${compass(m.off.bearing)}`
     parts.push([offShare, `${amount(offShare)} your paint ${where}.`])
   }

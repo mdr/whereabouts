@@ -42,6 +42,8 @@ const WORLD_PX_Z0 = 512
 const NATIONAL_BORDERS = ["boundary_2", "boundary_disputed"]
 const REVEAL_BORDER_WIDTH = ["interpolate", ["linear"], ["zoom"], 1, 0.8, 3, 1.3, 5, 1.8, 8, 2.5]
 const REVEAL_BORDER_OPACITY = ["interpolate", ["linear"], ["zoom"], 1, 0.55, 2.5, 1]
+/** US states, and other countries' provinces, for the reveal of a state round. The style draws them only from zoom 8. */
+const STATE_BORDERS = "state-borders"
 
 export class GameMap {
   readonly map: MapLibreMap
@@ -178,6 +180,20 @@ export class GameMap {
       },
       below
     )
+    if (this.map.getSource("openmaptiles")) {
+      this.map.addLayer(
+        {
+          id: STATE_BORDERS,
+          type: "line",
+          source: "openmaptiles",
+          "source-layer": "boundary",
+          filter: ["all", ["==", ["get", "admin_level"], 4], ["!=", ["get", "maritime"], 1]],
+          layout: { visibility: "none", "line-join": "round" },
+          paint: { "line-color": this.theme?.revealBorder ?? "#c4d0de", "line-width": 1, "line-opacity": 0.7 }
+        },
+        this.labelLayers[0]
+      )
+    }
 
     this.map.addSource(PAINT_SOURCE, {
       type: "geojson",
@@ -287,6 +303,7 @@ export class GameMap {
     }
     this.styleBorders()
     this.applyPaintRamp(t)
+    set(STATE_BORDERS, "line-color", t.revealBorder)
     set("reveal-answer", "circle-color", t.answer)
     set("reveal-answer", "circle-stroke-color", t.answerStroke)
     set("reveal-region-fill", "fill-color", t.answer)
@@ -349,7 +366,7 @@ export class GameMap {
     this.setTerrain(rank >= 2)
     this.setIce(rank >= 2)
     this.setWood(rank >= 2)
-    this.setBorders(rank >= 3)
+    this.setBorders(rank >= 3, rank >= 4)
     this.setRevealBorders(level === "reveal")
     this.setLabels(rank >= 4)
     this.setUrban(rank >= 4)
@@ -374,9 +391,18 @@ export class GameMap {
     this.map.setFilter("water", on ? (base ?? null) : combined)
   }
 
-  setBorders(on: boolean): void {
+  /** National borders, and with `subnational` the style's state and province lines (zoom 8 on). */
+  setBorders(on: boolean, subnational = on): void {
     if (this.disposed) return
-    for (const id of this.borderLayers) this.map.setLayoutProperty(id, "visibility", on ? "visible" : "none")
+    for (const id of this.borderLayers) {
+      const shown = on && (subnational || NATIONAL_BORDERS.includes(id))
+      this.map.setLayoutProperty(id, "visibility", shown ? "visible" : "none")
+    }
+  }
+
+  /** State and province lines at every zoom, for the reveal of a state round; never while guessing one. */
+  setStateBorders(on: boolean): void {
+    this.setVisible([STATE_BORDERS], on)
   }
 
   /** Bold national borders for the reveal, or the style's faint ones. */

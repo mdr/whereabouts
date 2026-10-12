@@ -28,13 +28,16 @@ import {
   type Question,
   type RegionQuestion
 } from "@whereabouts/shared"
-// The countries for "Paint the whole of …" rounds, and the flag rounds. The
-// client loads the same files on demand; the server holds them all.
+// The countries for "Paint the whole of …" rounds, the flag rounds, and the
+// islands, lakes, seas and US states. The client loads the same files on
+// demand; the server holds them all.
 import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
 import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
+import featuresJson from "@whereabouts/shared/features.json" with { type: "json" }
 
 const REGIONS = regionsJson as RegionQuestion[]
 const FLAGS: FlagQuestion[] = flagsJson
+const FEATURES = featuresJson as (Question | RegionQuestion)[]
 
 export interface ActorData {
   token: string
@@ -63,11 +66,19 @@ export interface GameRoomDeps {
   pool: Question[]
   regions: RegionQuestion[]
   flags: FlagQuestion[]
+  features: (Question | RegionQuestion)[]
   config: Partial<GameConfig>
 }
 
 /** Set once at startup; rooms are constructed by Rivalis so cannot take arguments. */
-let deps: GameRoomDeps = { clock: realClock, pool: QUESTIONS, regions: REGIONS, flags: FLAGS, config: {} }
+let deps: GameRoomDeps = {
+  clock: realClock,
+  pool: QUESTIONS,
+  regions: REGIONS,
+  flags: FLAGS,
+  features: FEATURES,
+  config: {}
+}
 export function configureGameRooms(next: Partial<GameRoomDeps>): void {
   deps = { ...deps, ...next }
 }
@@ -87,7 +98,7 @@ export class GameRoom extends Room<ActorData> {
   declare private emptyTimer: unknown
 
   protected override onCreate(): void {
-    this.game = new Game(this.id, deps.pool, deps.config, Date.now(), deps.regions, deps.flags)
+    this.game = new Game(this.id, deps.pool, deps.config, Date.now(), deps.regions, deps.flags, deps.features)
     this.actorsByToken = new Map()
     this.timer = null
     this.emptyTimer = null
