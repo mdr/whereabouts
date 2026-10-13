@@ -4,16 +4,18 @@ import regionsJson from "../regions.json" with { type: "json" }
 import { resolutionForTolerance } from "./paint.ts"
 import { QUESTIONS } from "./questions.ts"
 import {
-  SHAPE_WEIGHT,
   regionCells,
+  type RegionData,
   regionFit,
+  regionFrom,
+  type RegionQuestion,
   regionScoringRes,
   scoreRegionQuestion,
-  type RegionQuestion
+  SHAPE_WEIGHT
 } from "./regions.ts"
 import { buildDistribution, coarsenDistribution, scoreDistribution, type Distribution } from "./scoring.ts"
 
-const REGIONS = regionsJson as RegionQuestion[]
+const REGIONS = (regionsJson as RegionData[]).map(regionFrom)
 const byId = (id: string) => REGIONS.find((q) => q.id === id)!
 
 /** An even coat of paint over `cells`, with the usual 5% world floor. */
@@ -32,7 +34,7 @@ const paintRegion = (q: RegionQuestion) => coat(regionCells(q, resolutionForTole
 
 describe("region questions", () => {
   it("are well formed, with ids of their own", () => {
-    const ids = new Set(QUESTIONS.map((q) => q.id))
+    const ids = new Set<string>(QUESTIONS.map((q) => q.id))
     for (const q of REGIONS) {
       expect(ids.has(q.id), `duplicate id ${q.id}`).toBe(false)
       ids.add(q.id)

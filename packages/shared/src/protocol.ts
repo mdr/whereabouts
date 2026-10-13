@@ -7,6 +7,15 @@ import { z } from "zod"
 import type { Award } from "./awards.ts"
 import type { LatLon } from "./geo.ts"
 import type { Topic } from "./questions.ts"
+import {
+  PlayerIdSchema,
+  PlayerTokenSchema,
+  RoomCodeSchema,
+  type FlagCode,
+  type PlayerId,
+  type RegionId,
+  type RoomCode
+} from "./ids.ts"
 
 export const PROTOCOL_VERSION = 1
 
@@ -24,13 +33,10 @@ export const MAX_PAINT_CELLS = 12_000
 export const TicketSchema = z.object({
   v: z.literal(PROTOCOL_VERSION),
   /** Per-player secret used to reclaim the same seat after a reconnect. */
-  token: z.string().min(16).max(64),
+  token: PlayerTokenSchema,
   name: z.string().trim().min(1).max(20),
   /** Join an existing game by code, or omit with `create: true` to host one. */
-  code: z
-    .string()
-    .regex(/^[A-Z0-9]{4,6}$/)
-    .optional(),
+  code: RoomCodeSchema.optional(),
   create: z.boolean().optional(),
   /** Join to watch rather than play. A full game seats a would-be player as a spectator anyway. */
   watch: z.boolean().optional()
@@ -55,7 +61,7 @@ export const ClientTopics = {
 
 export const RenameSchema = z.object({ name: z.string().trim().min(1).max(20) })
 /** Host removes a player from the game. */
-export const KickSchema = z.object({ playerId: z.string().min(1).max(20) })
+export const KickSchema = z.object({ playerId: PlayerIdSchema })
 
 /** Round lengths the host may pick, ms. */
 export const ROUND_LENGTHS_MS = [30_000, 45_000, 60_000, 90_000, 120_000] as const
@@ -187,7 +193,7 @@ export interface GameConfig {
 }
 
 export interface PlayerView {
-  id: string
+  id: PlayerId
   name: string
   /** Index into the client palette; -1 for a spectator, who has no colour. */
   colour: number
@@ -210,9 +216,9 @@ export interface QuestionView {
   image?: string
   toleranceKm: number
   /** Set for a country question ("Paint the whole of Mexico"): its id in regions.json, for the outline. */
-  regionId?: string
+  regionId?: RegionId
   /** A flag round: the flag's ISO code, shown in place of a name. */
-  flag?: string
+  flag?: FlagCode
   /** What an "Islands, lakes & seas" or "US states" round asks for. */
   topic?: Topic
 }
@@ -226,7 +232,7 @@ export interface RoundView {
 }
 
 export interface RoundResultView {
-  playerId: string
+  playerId: PlayerId
   score: number
   /** The point rule's parts; 0 in a country round, which reports `region` instead. */
   A: number
@@ -253,19 +259,20 @@ export interface RevealView {
 }
 
 export interface FinalStanding {
-  playerId: string
+  playerId: PlayerId
   total: number
   /** Per round played; null where the player sat out (joined late). */
   rounds: (number | null)[]
 }
 
 export interface GameView {
-  code: string
+  code: RoomCode
   phase: Phase
   config: GameConfig
   serverTime: number
   you: {
-    id: string
+    /** Null for a view of no player (none is sent). */
+    id: PlayerId | null
     isHost: boolean
     /** True when this player joined mid-round and sits this one out. */
     spectating: boolean

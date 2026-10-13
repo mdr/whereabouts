@@ -1,4 +1,4 @@
-import { playerColour, type PlayerView } from "@whereabouts/shared"
+import { playerColour, type PlayerId, type PlayerView } from "@whereabouts/shared"
 import { Icon } from "./icons"
 import { playerListTestIds } from "./PlayerListTestIds"
 
@@ -42,7 +42,8 @@ export function PlayerList({
   onMakeHost
 }: {
   players: PlayerView[]
-  you: string
+  /** Null in a view of no player. */
+  you: PlayerId | null
   showScores: boolean
   arrows?: boolean
   /** Mark players who have finished guessing this round. */

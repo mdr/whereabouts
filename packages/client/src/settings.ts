@@ -1,6 +1,6 @@
 /** Per-browser preferences and identity, persisted where it makes sense. */
 import { effect, signal } from "@preact/signals"
-import { DEFAULT_KERNEL, type MapDetail } from "@whereabouts/shared"
+import { DEFAULT_KERNEL, PlayerTokenSchema, playerToken, type MapDetail, type PlayerToken } from "@whereabouts/shared"
 
 function persisted<T extends string | boolean>(key: string, initial: T, storage: Storage = localStorage) {
   let start = initial
@@ -73,17 +73,26 @@ export const hostSetup = persistedJson<unknown>("wa.hostSetup", {})
  * Reconnect token. Session storage so two tabs in one browser are two
  * players, while a refresh of one tab keeps its seat.
  */
-export const playerToken = persisted<string>("wa.token", randomToken(), sessionStorage)
+const storedToken = persisted<string>("wa.token", randomToken(), sessionStorage)
+
+/** This tab's seat token: a new one if what was stored is not one. */
+export function seatToken(): PlayerToken {
+  const stored = PlayerTokenSchema.safeParse(storedToken.value)
+  if (stored.success) return stored.data
+  const fresh = randomToken()
+  storedToken.value = fresh
+  return fresh
+}
 
 /** Forget this tab's seat, e.g. after the host removed us; the next join is as a new player. */
 export function resetPlayerToken(): void {
-  playerToken.value = randomToken()
+  storedToken.value = randomToken()
 }
 
-function randomToken(): string {
+function randomToken(): PlayerToken {
   const bytes = new Uint8Array(16)
   crypto.getRandomValues(bytes)
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")
+  return playerToken(Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join(""))
 }
 
 /**

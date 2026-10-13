@@ -3,7 +3,7 @@ import { cellArea, cellToLatLng, gridDisk, latLngToCell, UNITS } from "h3-js"
 import regionsJson from "../regions.json" with { type: "json" }
 import { describePoint, describeRegion, explainPoint } from "./explain.ts"
 import { resolutionForTolerance } from "./paint.ts"
-import { regionCells, regionMisfit, scoreRegionQuestion, type RegionQuestion } from "./regions.ts"
+import { regionCells, type RegionData, regionFrom, regionMisfit, scoreRegionQuestion } from "./regions.ts"
 import { buildDistribution, scoreDistribution } from "./scoring.ts"
 
 const coat = (cells: string[]) =>
@@ -49,7 +49,7 @@ describe("explaining a place's score", () => {
 })
 
 describe("explaining a country's score", () => {
-  const regions = regionsJson as RegionQuestion[]
+  const regions = (regionsJson as RegionData[]).map(regionFrom)
   const byId = (id: string) => regions.find((q) => q.id === id)!
   const france = byId("france-region")
   const res = resolutionForTolerance(france.toleranceKm)

@@ -6,8 +6,8 @@ import regionsJson from "../regions.json" with { type: "json" }
 import { LandMask, trimSea } from "./land.ts"
 import { QUESTIONS } from "./questions.ts"
 import { resolutionForTolerance } from "./paint.ts"
-import type { FlagQuestion } from "./flags.ts"
-import { regionCells, regionScoringRes, type RegionQuestion } from "./regions.ts"
+import { regionCells, type RegionData, regionFrom, regionScoringRes } from "./regions.ts"
+import { type FlagData, flagFrom } from "./flags.ts"
 
 const mask = new LandMask(landJson)
 const at = (lat: number, lon: number, res: number) => latLngToCell(lat, lon, res)
@@ -16,7 +16,8 @@ describe("land mask", () => {
   it("keeps paint on every answer, at the resolution it is painted", () => {
     const answers = [
       ...QUESTIONS.map((q) => ({ name: q.label, ...q.answer, t: q.toleranceKm })),
-      ...(flagsJson as FlagQuestion[])
+      ...(flagsJson as FlagData[])
+        .map(flagFrom)
         .filter((f) => !f.regionId)
         .map((f) => ({ name: f.label, ...f.answer, t: f.toleranceKm }))
     ]
@@ -27,7 +28,7 @@ describe("land mask", () => {
   it("keeps a whole country painted exactly", () => {
     // Every cell whose centre is in the outline, at the scoring resolution (the
     // region's own answer point is only for framing: Indonesia's is at sea).
-    for (const q of regionsJson as RegionQuestion[]) {
+    for (const q of (regionsJson as RegionData[]).map(regionFrom)) {
       const lost = regionCells(q, regionScoringRes(q.toleranceKm)).filter((h) => !mask.nearLand(h))
       expect(lost, q.label).toEqual([])
     }

@@ -3,10 +3,10 @@ import { cellArea, cellToLatLng, latLngToCell, gridDisk, UNITS } from "h3-js"
 import bordersJson from "../borders.json" with { type: "json" }
 import flagsJson from "../flags.json" with { type: "json" }
 import { Borders } from "./borders.ts"
-import type { FlagQuestion } from "./flags.ts"
 import type { PaintCell } from "./paint.ts"
+import { type FlagData, flagFrom } from "./flags.ts"
 
-const flags = flagsJson as FlagQuestion[]
+const flags = (flagsJson as FlagData[]).map(flagFrom)
 const borders = new Borders(bordersJson, flags)
 const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label ?? null
 

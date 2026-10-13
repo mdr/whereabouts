@@ -105,7 +105,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   const ready = new Set(reveal.ready)
   const present = view.players.filter((p) => p.connected && !p.watching)
   const readyCount = present.filter((p) => ready.has(p.id)).length
-  const iAmReady = ready.has(view.you.id)
+  const iAmReady = view.you.id !== null && ready.has(view.you.id)
   const rows = revealOrder(view.players, reveal.results)
 
   return (

@@ -1,11 +1,11 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest"
 import { render } from "@testing-library/preact"
-import type { PlayerView } from "@whereabouts/shared"
+import { playerId, type PlayerView } from "@whereabouts/shared"
 import { HostTag, PlayerList, initial } from "./PlayerList"
 
 const player = (over: Partial<PlayerView>): PlayerView => ({
-  id: "p1",
+  id: playerId("p1"),
   name: "Alice",
   colour: 0,
   watching: false,
@@ -22,8 +22,8 @@ describe("PlayerList", () => {
   it("tags host, you and offline players", () => {
     const { container } = render(
       <PlayerList
-        players={[player({ isHost: true }), player({ id: "p2", name: "Bob", connected: false, colour: 1 })]}
-        you="p1"
+        players={[player({ isHost: true }), player({ id: playerId("p2"), name: "Bob", connected: false, colour: 1 })]}
+        you={playerId("p1")}
         showScores={false}
       />
     )
@@ -41,11 +41,11 @@ describe("PlayerList", () => {
     const { container } = render(
       <PlayerList
         players={[
-          player({ id: "p1", name: "Up", rank: 1, previousRank: 2, score: 900 }),
-          player({ id: "p2", name: "Same", rank: 2, previousRank: 2, score: 500 }),
-          player({ id: "p3", name: "Down", rank: 3, previousRank: 1, score: 100 })
+          player({ id: playerId("p1"), name: "Up", rank: 1, previousRank: 2, score: 900 }),
+          player({ id: playerId("p2"), name: "Same", rank: 2, previousRank: 2, score: 500 }),
+          player({ id: playerId("p3"), name: "Down", rank: 3, previousRank: 1, score: 100 })
         ]}
-        you="p2"
+        you={playerId("p2")}
         showScores
         arrows
       />
@@ -59,8 +59,8 @@ describe("PlayerList", () => {
     let clicks = 0
     const { container } = render(
       <PlayerList
-        players={[player({ id: "p1" }), player({ id: "p2", name: "Bob" })]}
-        you="p2"
+        players={[player({ id: playerId("p1") }), player({ id: playerId("p2"), name: "Bob" })]}
+        you={playerId("p2")}
         showScores={false}
         onRename={() => clicks++}
       />
@@ -75,10 +75,13 @@ describe("PlayerList", () => {
 
 describe("PlayerList status", () => {
   it("shows a done tag for players who have finished guessing, only when asked", () => {
-    const players = [player({ id: "p1", locked: true }), player({ id: "p2", name: "Bob", locked: false })]
-    const { container: plain } = render(<PlayerList players={players} you="p2" showScores={false} />)
+    const players = [
+      player({ id: playerId("p1"), locked: true }),
+      player({ id: playerId("p2"), name: "Bob", locked: false })
+    ]
+    const { container: plain } = render(<PlayerList players={players} you={playerId("p2")} showScores={false} />)
     expect(plain.querySelector(".tag.done")).toBeNull()
-    const { container } = render(<PlayerList players={players} you="p2" showScores={false} showLocked />)
+    const { container } = render(<PlayerList players={players} you={playerId("p2")} showScores={false} showLocked />)
     const rows = container.querySelectorAll("li")
     expect(rows[0]!.querySelector(".tag.done")).not.toBeNull()
     expect(rows[1]!.querySelector(".tag.done")).toBeNull()
@@ -96,11 +99,11 @@ describe("HostTag", () => {
 describe("PlayerList kick", () => {
   it("offers a remove button on other players' rows only when asked", () => {
     const kicked: string[] = []
-    const players = [player({ id: "p1" }), player({ id: "p2", name: "Bob" })]
-    const { container: plain } = render(<PlayerList players={players} you="p1" showScores={false} />)
+    const players = [player({ id: playerId("p1") }), player({ id: playerId("p2"), name: "Bob" })]
+    const { container: plain } = render(<PlayerList players={players} you={playerId("p1")} showScores={false} />)
     expect(plain.querySelector("button.kick")).toBeNull()
     const { container } = render(
-      <PlayerList players={players} you="p1" showScores={false} onKick={(p) => kicked.push(p.id)} />
+      <PlayerList players={players} you={playerId("p1")} showScores={false} onKick={(p) => kicked.push(p.id)} />
     )
     const buttons = container.querySelectorAll<HTMLButtonElement>("button.kick")
     expect(buttons).toHaveLength(1)
@@ -114,14 +117,14 @@ describe("PlayerList make host", () => {
   it("offers the crown only on other players who are online and not already host", () => {
     const picked: string[] = []
     const players = [
-      player({ id: "p1", isHost: true }),
-      player({ id: "p2", name: "Bob" }),
-      player({ id: "p3", name: "Cara", connected: false })
+      player({ id: playerId("p1"), isHost: true }),
+      player({ id: playerId("p2"), name: "Bob" }),
+      player({ id: playerId("p3"), name: "Cara", connected: false })
     ]
-    const { container: plain } = render(<PlayerList players={players} you="p1" showScores={false} />)
+    const { container: plain } = render(<PlayerList players={players} you={playerId("p1")} showScores={false} />)
     expect(plain.querySelector("button.make-host")).toBeNull()
     const { container } = render(
-      <PlayerList players={players} you="p1" showScores={false} onMakeHost={(p) => picked.push(p.id)} />
+      <PlayerList players={players} you={playerId("p1")} showScores={false} onMakeHost={(p) => picked.push(p.id)} />
     )
     const buttons = container.querySelectorAll<HTMLButtonElement>("button.make-host")
     expect(buttons).toHaveLength(1)
@@ -134,8 +137,8 @@ describe("PlayerList spectators", () => {
   it("shows a spectator without a colour, tagged as watching", () => {
     const { container } = render(
       <PlayerList
-        players={[player({ id: "p2", name: "Sam", watching: true, colour: -1 })]}
-        you="p1"
+        players={[player({ id: playerId("p2"), name: "Sam", watching: true, colour: -1 })]}
+        you={playerId("p1")}
         showScores={false}
       />
     )

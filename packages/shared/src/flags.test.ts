@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest"
 import { cellArea, cellToLatLng, gridDisk, latLngToCell, UNITS } from "h3-js"
 import flagsJson from "../flags.json" with { type: "json" }
 import regionsJson from "../regions.json" with { type: "json" }
-import { FLAG_AREA_PROMPT, FLAG_POINT_PROMPT, flagRound, type FlagQuestion } from "./flags.ts"
+import { FLAG_AREA_PROMPT, FLAG_POINT_PROMPT, type FlagData, flagFrom, flagRound } from "./flags.ts"
 import { resolutionForTolerance } from "./paint.ts"
-import type { RegionQuestion } from "./regions.ts"
 import { buildDistribution, scoreDistribution } from "./scoring.ts"
+import { type RegionData, regionFrom } from "./regions.ts"
 
-const FLAGS = flagsJson as FlagQuestion[]
-const REGIONS = new Map((regionsJson as RegionQuestion[]).map((q) => [q.id, q]))
+const FLAGS = (flagsJson as FlagData[]).map(flagFrom)
+const REGIONS = new Map((regionsJson as RegionData[]).map(regionFrom).map((q) => [q.id, q]))
 const flag = (code: string) => FLAGS.find((f) => f.flag === code)!
 
 describe("flag questions", () => {

@@ -10,6 +10,7 @@ import { regionFit, regionMisfit, scoreRegionQuestion, type RegionQuestion } fro
 import { explainPoint, isHedge } from "./explain.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
 import { flagRound, type FlagQuestion } from "./flags.ts"
+import { playerId, roomCode, type PlayerId, type PlayerToken, type RoomCode } from "./ids.ts"
 import {
   MAX_PLAYERS,
   MAX_SPECTATORS,
@@ -47,8 +48,8 @@ export const DEFAULT_CONFIG: GameConfig = {
 export const ROUND_GRACE_MS = 1000
 
 interface Player {
-  id: string
-  token: string
+  id: PlayerId
+  token: PlayerToken
   name: string
   /** Index into the palette, or -1 while watching. */
   colour: number
@@ -81,7 +82,7 @@ const OK_SAME: CommandResult = { ok: true, changed: false }
 const fail = (error: string): CommandResult => ({ ok: false, error })
 
 export class Game {
-  readonly code: string
+  readonly code: RoomCode
   config: GameConfig
   private readonly pool: Question[]
   /** Countries for "Paint the whole of …" rounds; the server passes regions.json. */
@@ -93,26 +94,26 @@ export class Game {
   private readonly kernel: Kernel
 
   phase: Phase = "lobby"
-  private players = new Map<string, Player>()
-  private hostToken: string | null = null
+  private players = new Map<PlayerToken, Player>()
+  private hostToken: PlayerToken | null = null
   private nextPlayerId = 1
 
   private questions: (Question | RegionQuestion)[] = []
   private roundIndex = -1
   private deadline = 0
-  private submissions = new Map<string, Submission>()
+  private submissions = new Map<PlayerToken, Submission>()
   /** Tokens of players who have pressed Ready on the current reveal. */
-  private ready_ = new Set<string>()
+  private ready_ = new Set<PlayerToken>()
   private reveal: RevealView | null = null
   private results: FinalStanding[] | null = null
   private awards: Award[] | null = null
   /** Tokens the host has removed; they may not reclaim a seat. */
-  private kicked = new Set<string>()
+  private kicked = new Set<PlayerToken>()
 
   private seed: number
 
   constructor(
-    code: string,
+    code: RoomCode,
     pool: Question[],
     config: Partial<GameConfig> = {},
     seed = Date.now(),
@@ -159,7 +160,7 @@ export class Game {
    * to watch, or all MAX_PLAYERS seats are taken, in which case they watch if
    * there is room for another spectator.
    */
-  join(token: string, name: string, now: number, watch = false): CommandResult {
+  join(token: PlayerToken, name: string, now: number, watch = false): CommandResult {
     const existing = this.players.get(token)
     if (existing) {
       existing.connected = true
@@ -176,7 +177,7 @@ export class Game {
     else if (roomToWatch) watching = true
     else return fail(seatFree ? "no room to watch" : "game is full")
     const player: Player = {
-      id: `p${this.nextPlayerId++}`,
+      id: playerId(`p${this.nextPlayerId++}`),
       token,
       name,
       colour: watching ? -1 : this.freeColour(),
@@ -200,7 +201,7 @@ export class Game {
    * host keeps the role while away; the longest-standing connected player
    * acts as host in the meantime.
    */
-  disconnect(token: string, now: number): CommandResult {
+  disconnect(token: PlayerToken, now: number): CommandResult {
     const player = this.players.get(token)
     if (!player) return OK_SAME
     player.connected = false
@@ -215,7 +216,7 @@ export class Game {
    * grace period, and the host role, if it was theirs, passes on. From the
    * lobby only; mid-game the seat is kept whatever happens.
    */
-  leave(token: string): CommandResult {
+  leave(token: PlayerToken): CommandResult {
     if (!this.players.has(token)) return fail("unknown player")
     if (this.phase !== "lobby") return fail("you can only leave from the lobby")
     this.players.delete(token)
@@ -223,7 +224,7 @@ export class Game {
     return OK_CHANGED
   }
 
-  private pickHost(): string | null {
+  private pickHost(): PlayerToken | null {
     let best: Player | null = null
     for (const p of this.players.values()) {
       if (!p.connected) continue
@@ -233,13 +234,13 @@ export class Game {
   }
 
   /** Who may use the host controls right now: the host if connected, else the acting host. */
-  private effectiveHost(): string | null {
+  private effectiveHost(): PlayerToken | null {
     const host = this.hostToken ? this.players.get(this.hostToken) : undefined
     if (host?.connected) return host.token
     return this.pickHost() ?? this.hostToken
   }
 
-  private isHost(token: string): boolean {
+  private isHost(token: PlayerToken): boolean {
     return this.effectiveHost() === token
   }
 
@@ -255,7 +256,7 @@ export class Game {
 
   // ---- host commands -------------------------------------------------------
 
-  start(token: string, now: number): CommandResult {
+  start(token: PlayerToken, now: number): CommandResult {
     if (!this.isHost(token)) return fail("only the host can start")
     if (this.phase !== "lobby") return fail("game already started")
     if (this.playing().length === 0) return fail("no players")
@@ -315,7 +316,7 @@ export class Game {
   }
 
   /** Host tunes the question mix (and so the rounds), round length and map detail while everyone is still in the lobby. */
-  configure(token: string, patch: ConfigurePatch): CommandResult {
+  configure(token: PlayerToken, patch: ConfigurePatch): CommandResult {
     if (!this.isHost(token)) return fail("only the host can change settings")
     if (this.phase !== "lobby") return fail("settings are locked once the game starts")
     const mix = patch.mix ?? this.config.mix
@@ -331,14 +332,14 @@ export class Game {
   }
 
   /** Host advances from the reveal without waiting for the others. */
-  next(token: string, now: number): CommandResult {
+  next(token: PlayerToken, now: number): CommandResult {
     if (!this.isHost(token)) return fail("only the host can advance")
     if (this.phase !== "reveal") return fail("nothing to advance")
     this.advance(now)
     return OK_CHANGED
   }
 
-  again(token: string, now: number): CommandResult {
+  again(token: PlayerToken, now: number): CommandResult {
     if (!this.isHost(token)) return fail("only the host can restart")
     if (this.phase !== "results") return fail("game is still running")
     this.phase = "lobby"
@@ -365,7 +366,7 @@ export class Game {
    * mid-game like a late joiner, sitting out the round under way and playing
    * from the next. Not on the final results; Play again starts a new lobby.
    */
-  setRole(token: string, watch: boolean): CommandResult {
+  setRole(token: PlayerToken, watch: boolean): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (player.watching === watch) return OK_SAME
@@ -388,7 +389,7 @@ export class Game {
   }
 
   /** Hand the host role to another connected player, for good. */
-  makeHost(token: string, playerId: string): CommandResult {
+  makeHost(token: PlayerToken, playerId: PlayerId): CommandResult {
     if (!this.isHost(token)) return fail("only the host can hand over")
     const target = this.tokenOf(playerId)
     if (target === undefined) return fail("unknown player")
@@ -399,7 +400,7 @@ export class Game {
   }
 
   /** The token behind a public player id, for the server to act on a kick. */
-  tokenOf(playerId: string): string | undefined {
+  tokenOf(playerId: PlayerId): PlayerToken | undefined {
     for (const p of this.players.values()) if (p.id === playerId) return p.token
     return undefined
   }
@@ -409,7 +410,7 @@ export class Game {
    * rejoin (a fresh token can, as a new player). The acting host may remove
    * an absent host, in which case the role passes on.
    */
-  kick(token: string, playerId: string, now: number): CommandResult {
+  kick(token: PlayerToken, playerId: PlayerId, now: number): CommandResult {
     if (!this.isHost(token)) return fail("only the host can remove players")
     const target = this.tokenOf(playerId)
     if (target === undefined) return fail("unknown player")
@@ -424,7 +425,7 @@ export class Game {
   }
 
   /** Stop after the current round: score it if it is still running, then show final standings. */
-  end(token: string): CommandResult {
+  end(token: PlayerToken): CommandResult {
     if (!this.isHost(token)) return fail("only the host can end the game")
     if (this.phase === "guessing") this.finishRound()
     else if (this.phase !== "reveal") return fail("nothing to end")
@@ -434,7 +435,7 @@ export class Game {
 
   // ---- player commands -----------------------------------------------------
 
-  rename(token: string, name: string): CommandResult {
+  rename(token: PlayerToken, name: string): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (player.name === name) return OK_SAME
@@ -442,7 +443,7 @@ export class Game {
     return OK_CHANGED
   }
 
-  setPaint(token: string, paint: PaintSubmission): CommandResult {
+  setPaint(token: PlayerToken, paint: PaintSubmission): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (player.watching) return fail("you are watching")
@@ -464,7 +465,7 @@ export class Game {
    * that scores PASS_SCORE, so a player with no idea need not hold
    * everyone up until the clock runs out.
    */
-  lock(token: string, now: number): CommandResult {
+  lock(token: PlayerToken, now: number): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (this.phase !== "guessing") return fail("not guessing")
@@ -486,7 +487,7 @@ export class Game {
    * Take back a Done (or a pass) to change the guess. Only while the round is
    * still running: once everyone is done it has already ended.
    */
-  unlock(token: string): CommandResult {
+  unlock(token: PlayerToken): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (this.phase !== "guessing") return fail("not guessing")
@@ -497,7 +498,7 @@ export class Game {
   }
 
   /** Done reading the reveal. The next round starts once every connected player is. */
-  ready(token: string, now: number): CommandResult {
+  ready(token: PlayerToken, now: number): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (this.phase !== "reveal") return fail("nothing to be ready for")
@@ -719,7 +720,7 @@ export class Game {
       .sort((a, b) => Number(a.watching) - Number(b.watching) || a.rank - b.rank || a.name.localeCompare(b.name))
   }
 
-  view(token: string, now: number): GameView {
+  view(token: PlayerToken, now: number): GameView {
     const me = this.players.get(token)
     const q = this.phase === "guessing" ? this.questions[this.roundIndex] : undefined
     return {
@@ -728,7 +729,7 @@ export class Game {
       config: this.config,
       serverTime: now,
       you: {
-        id: me?.id ?? "",
+        id: me?.id ?? null,
         isHost: me !== undefined && this.isHost(me.token),
         spectating: me !== undefined && !me.watching && this.phase !== "lobby" && me.joinedRound > this.roundIndex,
         watching: me?.watching ?? false,
@@ -750,8 +751,8 @@ export class Game {
     }
   }
 
-  private readyIds(): string[] {
-    const ids: string[] = []
+  private readyIds(): PlayerId[] {
+    const ids: PlayerId[] = []
     for (const tok of this.ready_) {
       const p = this.players.get(tok)
       if (p) ids.push(p.id)
@@ -760,7 +761,7 @@ export class Game {
   }
 
   /** For tests and diagnostics. */
-  get playerTokens(): string[] {
+  get playerTokens(): PlayerToken[] {
     return [...this.players.keys()]
   }
 }
@@ -776,17 +777,17 @@ function sum(xs: (number | undefined)[]): number {
  * longest-standing online player, as the server picks. Player ids are
  * issued in join order (p1, p2, ...), so the lowest id is the earliest.
  */
-export function nextHostAfter(players: PlayerView[], leavingId: string): PlayerView | undefined {
+export function nextHostAfter(players: PlayerView[], leavingId: PlayerId | null): PlayerView | undefined {
   const seq = (p: PlayerView) => Number(p.id.slice(1))
   return players.filter((p) => p.id !== leavingId && p.connected).sort((a, b) => seq(a) - seq(b))[0]
 }
 
 /** Generate a join code that avoids look-alike characters. */
-export function generateCode(rnd: () => number = Math.random, length = 4): string {
+export function generateCode(rnd: () => number = Math.random, length = 4): RoomCode {
   const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
   let out = ""
   for (let i = 0; i < length; i++) out += alphabet.charAt(Math.floor(rnd() * alphabet.length))
-  return out
+  return roomCode(out)
 }
 
 /**

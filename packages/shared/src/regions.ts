@@ -32,7 +32,8 @@ import {
   UNITS
 } from "h3-js"
 import { bearing, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
-import type { Topic } from "./questions.ts"
+import { questionFrom, type Question, type QuestionData, type Topic } from "./questions.ts"
+import { flagCode, regionId, type FlagCode, type RegionId } from "./ids.ts"
 import { resolutionForTolerance } from "./paint.ts"
 import {
   coarsenDistribution,
@@ -44,7 +45,7 @@ import {
 } from "./scoring.ts"
 
 export interface RegionQuestion {
-  id: string
+  id: RegionId
   kind: "region"
   prompt: string
   /** Shown after the reveal. */
@@ -58,11 +59,33 @@ export interface RegionQuestion {
   /** GeoJSON MultiPolygon coordinates: [lon, lat] rings, outer ring first. */
   outline: number[][][][]
   /** A flag round: the flag shown in place of the name (see flags.ts). */
-  flag?: string
+  flag?: FlagCode
   /** A country's own flag (its ISO code), shown beside its name to help players learn it. */
-  countryFlag?: string
+  countryFlag?: FlagCode
   /** An island, lake, sea or US state (features.json) rather than a country. */
   topic?: Topic
+}
+
+/** A region as the JSON files hold it, its ids plain strings. */
+export type RegionData = Omit<RegionQuestion, "id" | "flag" | "countryFlag"> & {
+  id: string
+  flag?: string
+  countryFlag?: string
+}
+
+/** A region from regions.json or features.json, its ids parsed. */
+export function regionFrom({ id, flag, countryFlag, ...rest }: RegionData): RegionQuestion {
+  return {
+    ...rest,
+    id: regionId(id),
+    ...(flag === undefined ? {} : { flag: flagCode(flag) }),
+    ...(countryFlag === undefined ? {} : { countryFlag: flagCode(countryFlag) })
+  }
+}
+
+/** An island, lake, sea or US state from features.json: most painted whole, a few asked as a point. */
+export function featureFrom(d: QuestionData | RegionData): Question | RegionQuestion {
+  return d.kind === "region" ? regionFrom(d) : questionFrom(d)
 }
 
 /** The share of the score that is shape; the rest is nearness. */

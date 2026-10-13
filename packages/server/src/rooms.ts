@@ -22,10 +22,19 @@ import {
   decodeMessage,
   decodeTicket,
   encodeMessage,
+  featureFrom,
+  flagFrom,
   generateCode,
+  regionFrom,
+  roomCode,
+  type FlagData,
   type FlagQuestion,
   type GameConfig,
+  type PlayerId,
+  type PlayerToken,
   type Question,
+  type QuestionData,
+  type RegionData,
   type RegionQuestion
 } from "@whereabouts/shared"
 // The countries for "Paint the whole of …" rounds, the flag rounds, and the
@@ -35,12 +44,12 @@ import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
 import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
 import featuresJson from "@whereabouts/shared/features.json" with { type: "json" }
 
-const REGIONS = regionsJson as RegionQuestion[]
-const FLAGS: FlagQuestion[] = flagsJson
-const FEATURES = featuresJson as (Question | RegionQuestion)[]
+const REGIONS = (regionsJson as RegionData[]).map(regionFrom)
+const FLAGS = (flagsJson as FlagData[]).map(flagFrom)
+const FEATURES = (featuresJson as (QuestionData | RegionData)[]).map(featureFrom)
 
 export interface ActorData {
-  token: string
+  token: PlayerToken
   name: string
   /** Asked to join as a spectator. */
   watch: boolean
@@ -93,12 +102,12 @@ export class GameRoom extends Room<ActorData> {
   // initialisers. `declare` fields emit no initialiser, so values assigned in
   // onCreate survive; anything with `= ...` here would be reset afterwards.
   declare private game: Game
-  declare private actorsByToken: Map<string, Actor<ActorData>>
+  declare private actorsByToken: Map<PlayerToken, Actor<ActorData>>
   declare private timer: unknown
   declare private emptyTimer: unknown
 
   protected override onCreate(): void {
-    this.game = new Game(this.id, deps.pool, deps.config, Date.now(), deps.regions, deps.flags, deps.features)
+    this.game = new Game(roomCode(this.id), deps.pool, deps.config, Date.now(), deps.regions, deps.flags, deps.features)
     this.actorsByToken = new Map()
     this.timer = null
     this.emptyTimer = null
@@ -179,7 +188,7 @@ export class GameRoom extends Room<ActorData> {
     else if (topic === "paint") this.sendState(actor) // echo lock/paint status to the sender only
   }
 
-  private dispatch(topic: string, token: string, data: unknown, now: number) {
+  private dispatch(topic: string, token: PlayerToken, data: unknown, now: number) {
     switch (topic) {
       case "paint": {
         const paint = data as z.infer<typeof ClientMessageSchemas.paint>
@@ -218,14 +227,14 @@ export class GameRoom extends Room<ActorData> {
   }
 
   /** Give up this player's seat and close their connection; the client closes it too. */
-  private leave(token: string) {
+  private leave(token: PlayerToken) {
     const result = this.game.leave(token)
     if (result.ok) this.actorsByToken.get(token)?.kick("left the game")
     return result
   }
 
   /** Remove a player from the game and close their connection, telling them why. */
-  private removePlayer(token: string, playerId: string, now: number) {
+  private removePlayer(token: PlayerToken, playerId: PlayerId, now: number) {
     const target = this.game.tokenOf(playerId)
     const result = this.game.kick(token, playerId, now)
     if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick("removed by the host")

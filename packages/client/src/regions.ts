@@ -7,10 +7,21 @@
  */
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
-import type { FlagQuestion, Question, RegionQuestion } from "@whereabouts/shared"
+import {
+  featureFrom,
+  flagFrom,
+  regionFrom,
+  type FlagData,
+  type FlagQuestion,
+  type Question,
+  type QuestionData,
+  type RegionData,
+  type RegionId,
+  type RegionQuestion
+} from "@whereabouts/shared"
 
 /** Every outline by id, countries and features alike, once loaded. */
-export const regions = signal<Map<string, RegionQuestion> | null>(null)
+export const regions = signal<Map<RegionId, RegionQuestion> | null>(null)
 
 /** One flag round per country, once loaded (with the countries). */
 export const flagQuestions = signal<FlagQuestion[] | null>(null)
@@ -18,20 +29,21 @@ export const flagQuestions = signal<FlagQuestion[] | null>(null)
 /** The islands, lakes, seas and US states, once loaded: most painted whole, a few small states asked as a point. */
 export const featureQuestions = signal<(Question | RegionQuestion)[] | null>(null)
 
-let loading: Promise<Map<string, RegionQuestion>> | null = null
+let loading: Promise<Map<RegionId, RegionQuestion>> | null = null
 
-export function loadRegions(): Promise<Map<string, RegionQuestion>> {
+export function loadRegions(): Promise<Map<RegionId, RegionQuestion>> {
   loading ??= Promise.all([
     import("@whereabouts/shared/regions.json"),
     import("@whereabouts/shared/flags.json"),
     import("@whereabouts/shared/features.json")
   ]).then(
     ([r, f, x]) => {
-      const features = x.default as (Question | RegionQuestion)[]
+      const features = (x.default as (QuestionData | RegionData)[]).map(featureFrom)
+      const countries = (r.default as RegionData[]).map(regionFrom)
       const byId = new Map(
-        [...(r.default as RegionQuestion[]), ...features.filter((q) => q.kind === "region")].map((q) => [q.id, q])
+        [...countries, ...features.filter((q): q is RegionQuestion => q.kind === "region")].map((q) => [q.id, q])
       )
-      flagQuestions.value = f.default
+      flagQuestions.value = (f.default as FlagData[]).map(flagFrom)
       featureQuestions.value = features
       regions.value = byId
       return byId
@@ -46,7 +58,7 @@ export function loadRegions(): Promise<Map<string, RegionQuestion>> {
 }
 
 /** An outline by id, loading them first if need be; null until they arrive. */
-export function useRegion(id: string | undefined): RegionQuestion | null {
+export function useRegion(id: RegionId | undefined): RegionQuestion | null {
   const byId = regions.value
   useEffect(() => {
     if (id && !byId) loadRegions().catch((err: unknown) => console.warn("could not load countries", err))

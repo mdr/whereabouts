@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vitest"
 import { fireEvent, render } from "@testing-library/preact"
-import type { GameView } from "@whereabouts/shared"
+import { type GameView, playerId, roomCode } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { Results } from "./Results"
 
@@ -9,7 +9,7 @@ const MIX = { landmarks: 1, places: 1, countries: 0, flags: 0, features: 0, stat
 
 function view(isHost: boolean): GameView {
   return {
-    code: "AB12",
+    code: roomCode("AB12"),
     phase: "results",
     config: {
       rounds: 2,
@@ -19,10 +19,10 @@ function view(isHost: boolean): GameView {
       kernelId: "multi-equal"
     },
     serverTime: 0,
-    you: { id: "p2", isHost, spectating: false, watching: false, locked: false, paint: null },
+    you: { id: playerId("p2"), isHost, spectating: false, watching: false, locked: false, paint: null },
     players: [
       {
-        id: "p1",
+        id: playerId("p1"),
         name: "Alice",
         colour: 0,
         watching: false,
@@ -34,7 +34,7 @@ function view(isHost: boolean): GameView {
         previousRank: 1
       },
       {
-        id: "p2",
+        id: playerId("p2"),
         name: "Bob",
         colour: 1,
         watching: false,
@@ -49,8 +49,8 @@ function view(isHost: boolean): GameView {
     round: null,
     reveal: null,
     results: [
-      { playerId: "p1", total: 1500, rounds: [800, 700] },
-      { playerId: "p2", total: 1250, rounds: [500, 750] }
+      { playerId: playerId("p1"), total: 1500, rounds: [800, 700] },
+      { playerId: playerId("p2"), total: 1250, rounds: [500, 750] }
     ],
     awards: [{ emoji: "🐔", title: "Chicken", playerIds: ["p2"], line: "{0} passed 2 times. Brave." }]
   }

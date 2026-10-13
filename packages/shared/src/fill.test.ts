@@ -5,14 +5,15 @@ import flagsJson from "../flags.json" with { type: "json" }
 import regionsJson from "../regions.json" with { type: "json" }
 import { Borders } from "./borders.ts"
 import { countryFill, FILL_CELL_BUDGET, FILL_DENSITY } from "./fill.ts"
-import { flagRound, type FlagQuestion } from "./flags.ts"
+import { type FlagData, flagFrom, flagRound } from "./flags.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
-import { scoreRegionQuestion, type RegionQuestion } from "./regions.ts"
+import { type RegionData, regionFrom, scoreRegionQuestion } from "./regions.ts"
 import { buildDistribution, scoreDistribution } from "./scoring.ts"
+import { regionId } from "./ids.ts"
 
-const flags = flagsJson as FlagQuestion[]
+const flags = (flagsJson as FlagData[]).map(flagFrom)
 const borders = new Borders(bordersJson, flags)
-const regions = new Map((regionsJson as RegionQuestion[]).map((r) => [r.id, r]))
+const regions = new Map((regionsJson as RegionData[]).map(regionFrom).map((r) => [r.id, r]))
 const flag = (code: string) => flags.find((f) => f.flag === code)!
 
 /** A flag round filled with its own country, as the client does it, and scored. */
@@ -52,7 +53,7 @@ describe("countryFill", () => {
 
   it("fills a country round at its own resolution, uncompacted, so it draws without gaps", () => {
     // Compacted, a parent hexagon is turned from its children and left gaps.
-    const bg = regions.get("bulgaria-region")!
+    const bg = regions.get(regionId("bulgaria-region"))!
     const res = resolutionForTolerance(bg.toleranceKm)
     const cells = countryFill({ polygons: bg.outline, answer: bg.answer }, res)
     expect(new Set(cells.map(getResolution))).toEqual(new Set([res]))

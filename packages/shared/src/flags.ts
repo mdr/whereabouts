@@ -7,13 +7,14 @@
  * in flags.json, built with regions.json by scripts/build-regions.mjs.
  */
 import type { LatLon } from "./geo.ts"
+import { flagCode, questionId, regionId, type FlagCode, type QuestionId, type RegionId } from "./ids.ts"
 import type { Question } from "./questions.ts"
 import type { RegionQuestion } from "./regions.ts"
 
 export interface FlagQuestion {
-  id: string
-  /** ISO 3166-1 alpha-2 code, lower case: the flag to show. */
-  flag: string
+  id: QuestionId
+  /** The flag to show. */
+  flag: FlagCode
   /** The country's name, shown after the reveal. */
   label: string
   /** English Wikipedia title of the article on the flag, linked at the reveal. */
@@ -22,7 +23,20 @@ export interface FlagQuestion {
   answer: LatLon
   toleranceKm: number
   /** Set when the country is painted whole: its id in regions.json. */
-  regionId?: string
+  regionId?: RegionId
+}
+
+/** A flag round as flags.json holds it, its ids plain strings. */
+export type FlagData = Omit<FlagQuestion, "id" | "flag" | "regionId"> & { id: string; flag: string; regionId?: string }
+
+/** A flag round from flags.json, its ids parsed. */
+export function flagFrom({ id, flag, regionId: region, ...rest }: FlagData): FlagQuestion {
+  return {
+    ...rest,
+    id: questionId(id),
+    flag: flagCode(flag),
+    ...(region === undefined ? {} : { regionId: regionId(region) })
+  }
 }
 
 export const FLAG_AREA_PROMPT = "Paint the whole of the country with this flag"

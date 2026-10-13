@@ -12,12 +12,19 @@ import {
   SEAT_GRACE_MS,
   compactRecord,
   encodeTicket,
+  flagFrom,
+  playerToken,
+  questionId,
   regionCells,
+  regionFrom,
+  roomCode,
   resolutionForTolerance,
+  type FlagData,
   type GameView,
+  type PlayerToken,
   type Question,
-  type FlagQuestion,
-  type RegionQuestion
+  type RegionData,
+  type RoomCode
 } from "@whereabouts/shared"
 import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
 import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
@@ -30,7 +37,7 @@ const { WSClient } = await import("@rivalis/browser")
 
 const questions: Question[] = [
   {
-    id: "petra",
+    id: questionId("petra"),
     kind: "text",
     prompt: "Where is Petra?",
     answer: { lat: 30.3285, lon: 35.4444 },
@@ -39,7 +46,7 @@ const questions: Question[] = [
     region: "world"
   },
   {
-    id: "paris",
+    id: questionId("paris"),
     kind: "text",
     prompt: "Where is Paris?",
     answer: { lat: 48.8566, lon: 2.3522 },
@@ -82,17 +89,17 @@ class TestPlayer {
   readonly client: WSClientType<Topics>
   readonly states: GameView[] = []
   readonly errors: string[] = []
-  readonly token: string
+  readonly token: PlayerToken
   readonly name: string
   constructor(url: string, name: string) {
     this.name = name
-    this.token = `${name}-token-0123456789abcdef`
+    this.token = playerToken(`${name}-token-0123456789abcdef`)
     this.client = new WSClient<Topics>(url, { ticketSource: "protocol", reconnect: false })
     const dec = new TextDecoder()
     this.client.on("state", (p) => this.states.push(JSON.parse(dec.decode(p)) as GameView))
     this.client.on("error", (p) => this.errors.push((JSON.parse(dec.decode(p)) as { message: string }).message))
   }
-  connect(ticket: { create?: boolean; code?: string; watch?: boolean }) {
+  connect(ticket: { create?: boolean; code?: RoomCode; watch?: boolean }) {
     this.client.connect(encodeTicket({ v: 1, token: this.token, name: this.name, ...ticket }))
   }
   send(topic: string, body: unknown = {}) {
@@ -179,7 +186,7 @@ describe("game server", () => {
 
   it("rejects bad codes and malformed tickets", async () => {
     const nobody = player("Nobody")
-    nobody.connect({ code: "ZZZZ" })
+    nobody.connect({ code: roomCode("ZZZZ") })
     await nobody.waitClosed()
     expect(nobody.client.connected).toBe(false)
     expect(nobody.states).toHaveLength(0)
@@ -251,7 +258,7 @@ describe("game server", () => {
     const round = await bob.until((v) => v.phase === "guessing")
     const id = round.round!.question.regionId!
     expect(round.round!.question.prompt).toMatch(/^Paint the whole of /)
-    const country = (regionsJson as RegionQuestion[]).find((q) => q.id === id)!
+    const country = (regionsJson as RegionData[]).map(regionFrom).find((q) => q.id === id)!
     // Paint it exactly, compacted the way the client sends paint.
     const res = resolutionForTolerance(round.round!.question.toleranceKm)
     const cells = compactRecord(Object.fromEntries(regionCells(country, res).map((h) => [h, 1])))
@@ -281,7 +288,7 @@ describe("game server", () => {
     const round = await alice.until((v) => v.phase === "guessing")
     const q = round.round!.question
     expect(q.flag).toMatch(/^[a-z]{2}$/)
-    const f = (flagsJson as FlagQuestion[]).find((x) => x.flag === q.flag)!
+    const f = (flagsJson as FlagData[]).map(flagFrom).find((x) => x.flag === q.flag)!
     expect(JSON.stringify(round)).not.toContain(f.label)
 
     clock.advance(60_000 + ROUND_GRACE_MS)

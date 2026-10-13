@@ -1,4 +1,5 @@
 import { greatCircleDistance, type LatLon } from "./geo.ts"
+import { flagCode, questionId, type FlagCode, type QuestionId } from "./ids.ts"
 
 /** Two questions in one game should be at least this far apart when the pool allows. */
 const MIN_SPREAD_KM = 50
@@ -7,7 +8,7 @@ const MIN_SPREAD_KM = 50
 export type Topic = "island" | "lake" | "sea" | "state"
 
 export interface Question {
-  id: string
+  id: QuestionId
   kind: "photo" | "text"
   prompt: string
   /** Wikimedia Commons file name (without the File: prefix). */
@@ -20,7 +21,7 @@ export interface Question {
   wiki?: string
   region: "world" | "uk"
   /** A flag round asked as a point: the flag shown in place of a name (see flags.ts). */
-  flag?: string
+  flag?: FlagCode
   /** A state small enough to ask as a point (features.json). */
   topic?: Topic
 }
@@ -43,7 +44,15 @@ export function wikipediaUrl(title: string | undefined, label: string): string {
 import questionsJson from "../questions.json" with { type: "json" }
 
 /** The bundled question pool. */
-export const QUESTIONS: Question[] = questionsJson as Question[]
+export const QUESTIONS: Question[] = (questionsJson as QuestionData[]).map(questionFrom)
+
+/** A question as the JSON files hold it, its ids plain strings. */
+export type QuestionData = Omit<Question, "id" | "flag"> & { id: string; flag?: string }
+
+/** A question from the JSON files, its ids parsed. */
+export function questionFrom({ id, flag, ...rest }: QuestionData): Question {
+  return { ...rest, id: questionId(id), ...(flag === undefined ? {} : { flag: flagCode(flag) }) }
+}
 
 /**
  * Choose a game's questions: `photoShare` of them photos (rounded), the rest

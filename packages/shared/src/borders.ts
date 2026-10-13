@@ -17,6 +17,7 @@
  */
 import { greatCircleDistance, type LatLon } from "./geo.ts"
 import type { FlagQuestion } from "./flags.ts"
+import { flagCode, type FlagCode } from "./ids.ts"
 import type { PaintCell } from "./paint.ts"
 import type { FillShape } from "./fill.ts"
 
@@ -53,13 +54,13 @@ export class Borders {
   private readonly countries: Country[] = []
   private readonly small: { f: FlagQuestion; near: number }[] = []
   private readonly none: Float64Array[]
-  private readonly byFlag = new Map<string, { rings: Float64Array[]; near?: number }>()
+  private readonly byFlag = new Map<FlagCode, { rings: Float64Array[]; near?: number }>()
 
   constructor(data: BordersData, flags: readonly FlagQuestion[]) {
     this.none = data.none.map(decodeRing)
     const byFlag = new Map(flags.map((f) => [f.flag, f]))
     for (const d of data.countries) {
-      const f = byFlag.get(d.flag)
+      const f = byFlag.get(flagCode(d.flag))
       if (!f) continue
       if (d.near) this.small.push({ f, near: d.near })
       const rings = d.rings.map(decodeRing)

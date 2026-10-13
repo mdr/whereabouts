@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest"
 import { KickSchema, PaintSubmissionSchema, decodeTicket, encodeTicket, type Ticket } from "./protocol.ts"
+import { playerToken, roomCode } from "./ids.ts"
 
 describe("ticket codec", () => {
-  const ticket: Ticket = { v: 1, token: "0123456789abcdef0123456789abcdef", name: "Zoë 🌍", code: "AB12" }
+  const ticket: Ticket = {
+    v: 1,
+    token: playerToken("0123456789abcdef0123456789abcdef"),
+    name: "Zoë 🌍",
+    code: roomCode("AB12")
+  }
 
   it("round-trips unicode names and stays header-safe", () => {
     const raw = encodeTicket(ticket)

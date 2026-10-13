@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { fireEvent, render, waitFor } from "@testing-library/preact"
 import { HudBottom, QuestionCard, SoundToggle } from "./bits"
 import { soundOn } from "../settings"
+import { flagCode, regionId } from "@whereabouts/shared"
 
 vi.mock("../flags", () => ({ flagUrl: (code: string) => Promise.resolve(`/flags/${code}.svg`) }))
 
@@ -49,13 +50,16 @@ describe("QuestionCard", () => {
   it("shows a country round's flag beside the name, and a flag round's own flag", async () => {
     const country = render(
       <QuestionCard
-        q={{ prompt: "Paint the whole of Germany", toleranceKm: 65, regionId: "germany-region" }}
-        countryFlag="de"
+        q={{ prompt: "Paint the whole of Germany", toleranceKm: 65, regionId: regionId("germany-region") }}
+        countryFlag={flagCode("de")}
       />
     )
     await waitFor(() => expect(country.container.querySelector(".flag img")!.getAttribute("src")).toBe("/flags/de.svg"))
     const flagRound = render(
-      <QuestionCard q={{ prompt: "Paint the country with this flag", toleranceKm: 65, flag: "fr" }} countryFlag="de" />
+      <QuestionCard
+        q={{ prompt: "Paint the country with this flag", toleranceKm: 65, flag: flagCode("fr") }}
+        countryFlag={flagCode("de")}
+      />
     )
     await waitFor(() =>
       expect(flagRound.container.querySelector(".flag img")!.getAttribute("src")).toBe("/flags/fr.svg")

@@ -17,7 +17,7 @@ export function ConnectionDev({ conn, view }: { conn: Connection; view: GameView
           ["Server time", new Date(view.serverTime).toISOString().slice(11, 23)],
           ["Kernel", view.config.kernelId],
           ["Host", view.you.isHost ? "you" : (view.players.find((p) => p.isHost)?.name ?? "?")],
-          ["You", `${you?.name ?? "?"} (${view.you.id.slice(0, 8)})`]
+          ["You", `${you?.name ?? "?"} (${view.you.id ?? "none"})`]
         ]}
       />
       {conn.lastError.value && <p class="hint warn">{conn.lastError.value}</p>}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { QUESTIONS, pickQuestions, wikipediaUrl } from "./questions.ts"
 import { greatCircleDistance } from "./geo.ts"
+import { questionId } from "./ids.ts"
 
 describe("wikipediaUrl", () => {
   it("links the article, or searches for the label without one", () => {
@@ -64,7 +65,7 @@ describe("question pool", () => {
 describe("pickQuestions", () => {
   const mk = (kind: "photo" | "text", n: number) =>
     Array.from({ length: n }, (_, i) => ({
-      id: `${kind}${i}`,
+      id: questionId(`${kind}${i}`),
       kind,
       prompt: kind === "photo" ? "Where is this?" : "Where is X?",
       answer: { lat: 0, lon: 0 },
@@ -116,7 +117,7 @@ describe("pickQuestions", () => {
       { lat: -22.9519, lon: -43.2105 },
       { lat: 30.0444, lon: 31.2357 }
     ]
-    const pool = [...paris, ...far].map((answer, i) => ({ ...mk("photo", 1)[0]!, id: `q${i}`, answer }))
+    const pool = [...paris, ...far].map((answer, i) => ({ ...mk("photo", 1)[0]!, id: questionId(`q${i}`), answer }))
     for (let seed = 0; seed < 30; seed++) {
       const picked = pickQuestions(pool, 6, seed)
       expect(picked).toHaveLength(6)

@@ -12,7 +12,7 @@ describe("parseRoute", () => {
 
   it("recognises solo, new-game and home", () => {
     expect(parseRoute("#/solo")).toEqual({ name: "solo" })
-    expect(parseRoute("#/game/new")).toEqual({ name: "game", code: "", create: true })
+    expect(parseRoute("#/game/new")).toEqual({ name: "game", code: null, create: true })
     expect(parseRoute("")).toEqual({ name: "home" })
     expect(parseRoute("#/nowhere")).toEqual({ name: "home" })
   })

@@ -1,12 +1,13 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks"
+import type { RoomCode } from "@whereabouts/shared"
 import { Connection } from "../net"
 import {
   askedToWatch,
   joinedCode,
   nameHandoff,
   playerName,
-  playerToken,
+  seatToken,
   resetPlayerToken,
   watchHandoff
 } from "../settings"
@@ -21,7 +22,7 @@ import { useGameSounds } from "../ui/useGameSounds"
 import { useSavedSetup } from "../host-setup"
 import { joinAsTestIds, joinedTestIds } from "./MultiplayerTestIds"
 
-export function Multiplayer({ code, create }: { code: string; create: boolean }) {
+export function Multiplayer({ code, create }: { code: RoomCode | null; create: boolean }) {
   const conn = useMemo(() => new Connection(), [])
   // "Just watch" from the home screen or the join screen below.
   const [watch, setWatch] = useState(() => {
@@ -51,8 +52,8 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
     askedToWatch.value = watch
     conn.connect(
       create
-        ? { token: playerToken.value, name: confirmedName, create: true }
-        : { token: playerToken.value, name: confirmedName, code, ...(watch ? { watch } : {}) }
+        ? { token: seatToken(), name: confirmedName, create: true }
+        : { token: seatToken(), name: confirmedName, code: code ?? undefined, ...(watch ? { watch } : {}) }
     )
     return () => conn.disconnect()
   }, [conn, confirmedName])
@@ -73,7 +74,7 @@ export function Multiplayer({ code, create }: { code: string; create: boolean })
 }
 
 /** The game once a name is settled: its own component so its hooks always run. */
-function Joined({ conn, code, create }: { conn: Connection; code: string; create: boolean }) {
+function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | null; create: boolean }) {
   // Once the server assigns a code to a new game, put it in the URL for sharing.
   const assigned = conn.code.value
   useEffect(() => {
@@ -138,7 +139,7 @@ function Joined({ conn, code, create }: { conn: Connection; code: string; create
   )
 }
 
-function JoinAs({ code, onJoin }: { code: string; onJoin: (name: string, watch: boolean) => void }) {
+function JoinAs({ code, onJoin }: { code: RoomCode | null; onJoin: (name: string, watch: boolean) => void }) {
   const [name, setName] = useState(playerName.value)
   const ready = name.trim().length > 0
   return (

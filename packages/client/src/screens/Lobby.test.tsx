@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { fireEvent, render } from "@testing-library/preact"
 import { signal } from "@preact/signals"
-import type { GameView } from "@whereabouts/shared"
+import { type GameView, playerId, roomCode } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { hostSetup, joinedCode, startOnPan } from "../settings"
 import { route } from "../router"
@@ -12,7 +12,7 @@ const MIX = { landmarks: 3, places: 2, countries: 0, flags: 0, features: 0, stat
 
 function view(isHost: boolean): GameView {
   return {
-    code: "AB12",
+    code: roomCode("AB12"),
     phase: "lobby",
     config: {
       rounds: 5,
@@ -22,10 +22,10 @@ function view(isHost: boolean): GameView {
       kernelId: "multi-equal"
     },
     serverTime: 0,
-    you: { id: "p1", isHost, spectating: false, watching: false, locked: false, paint: null },
+    you: { id: playerId("p1"), isHost, spectating: false, watching: false, locked: false, paint: null },
     players: [
       {
-        id: "p1",
+        id: playerId("p1"),
         name: "Alice",
         colour: 0,
         watching: false,
@@ -119,7 +119,7 @@ describe("Lobby setup", () => {
 
 describe("Lobby leave", () => {
   const bob = {
-    id: "p2",
+    id: playerId("p2"),
     name: "Bob",
     colour: 1,
     watching: false,
@@ -162,7 +162,7 @@ describe("Lobby leave", () => {
 })
 describe("Lobby spectators", () => {
   const person = (id: string, name: string, watching: boolean, colour = 1) => ({
-    id,
+    id: playerId(id),
     name,
     colour: watching ? -1 : colour,
     watching,

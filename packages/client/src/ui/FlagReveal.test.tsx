@@ -1,12 +1,12 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest"
 import { render } from "@testing-library/preact"
-import { Borders, PaintLayer, type FlagQuestion } from "@whereabouts/shared"
+import { Borders, type FlagData, flagFrom, PaintLayer } from "@whereabouts/shared"
 import bordersJson from "@whereabouts/shared/borders.json"
 import flagsJson from "@whereabouts/shared/flags.json"
 import { mainCountry, PaintedIn } from "./FlagReveal"
 
-const flags = flagsJson as FlagQuestion[]
+const flags = (flagsJson as FlagData[]).map(flagFrom)
 const borders = new Borders(bordersJson, flags)
 const brazil = flags.find((f) => f.flag === "br")!
 

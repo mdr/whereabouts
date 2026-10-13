@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest"
 import featuresJson from "../features.json" with { type: "json" }
 import regionsJson from "../regions.json" with { type: "json" }
-import type { Question } from "./questions.ts"
-import type { RegionQuestion } from "./regions.ts"
+import { featureFrom, type RegionData, regionFrom } from "./regions.ts"
+import { type QuestionData } from "./questions.ts"
 
-const FEATURES = featuresJson as (Question | RegionQuestion)[]
-const COUNTRIES = regionsJson as RegionQuestion[]
+const FEATURES = (featuresJson as (QuestionData | RegionData)[]).map(featureFrom)
+const COUNTRIES = (regionsJson as RegionData[]).map(regionFrom)
 const of = (topic: string) => FEATURES.filter((q) => q.topic === topic)
 
 describe("islands, lakes, seas and US states", () => {
