@@ -123,12 +123,15 @@ export function Answer({ label, wiki }: { label: string; wiki?: string }) {
 export function QuestionCard({
   q,
   children,
-  credit
+  credit,
+  countryFlag
 }: {
   q: QuestionView
   children?: ComponentChildren
   /** Show the image credit link. Off while guessing: the Commons file name gives the answer away. */
   credit?: boolean
+  /** A country round names the country, so its flag can show too. */
+  countryFlag?: string
 }) {
   return (
     <div class="card question" data-testid={questionCardTestIds.card}>
@@ -136,7 +139,7 @@ export function QuestionCard({
         {q.prompt}
       </p>
       {q.image && <QuestionImage image={q.image} credit={credit ?? false} />}
-      {q.flag && <FlagImage code={q.flag} />}
+      {(q.flag ?? countryFlag) && <FlagImage code={(q.flag ?? countryFlag)!} />}
       {children}
     </div>
   )

@@ -219,6 +219,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
       wiki: contiguous ? "Contiguous United States" : wiki,
       answer: centroid(cells),
       toleranceKm,
+      countryFlag: flag,
       outline: kept
         .map((poly) => poly.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
         .filter((poly) => poly.length > 0)

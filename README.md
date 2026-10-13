@@ -299,7 +299,9 @@ pnpm workspace with three packages:
   tells clients only the country's id, and a client fetches the outlines
   when a game with countries starts, to draw the country at the reveal,
   where each player's score card also says how much of the country they
-  covered and how much of their paint was on it. A country question ("Paint
+  covered and how much of their paint was on it. The country's flag shows
+  beside its name, guessing and at the reveal, to help players learn the
+  flags. A country question ("Paint
   the whole of Germany") has an area as its answer, not a point: 37
   countries from Natural Earth's 1:50m outlines (public domain), built into
   `packages/shared/regions.json` by `scripts/build-regions.mjs`, which keeps

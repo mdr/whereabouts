@@ -1,8 +1,10 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { fireEvent, render } from "@testing-library/preact"
+import { fireEvent, render, waitFor } from "@testing-library/preact"
 import { HudBottom, QuestionCard, SoundToggle } from "./bits"
 import { soundOn } from "../settings"
+
+vi.mock("../flags", () => ({ flagUrl: (code: string) => Promise.resolve(`/flags/${code}.svg`) }))
 
 describe("HudBottom", () => {
   afterEach(() => {
@@ -42,6 +44,24 @@ describe("QuestionCard", () => {
   it("shows the prompt but not the tolerance, which only drives scoring", () => {
     const { container } = render(<QuestionCard q={{ prompt: "Where is Dublin?", toleranceKm: 40 }} />)
     expect(container.textContent).toBe("Where is Dublin?")
+  })
+
+  it("shows a country round's flag beside the name, and a flag round's own flag", async () => {
+    const country = render(
+      <QuestionCard
+        q={{ prompt: "Paint the whole of Germany", toleranceKm: 65, regionId: "germany-region" }}
+        countryFlag="de"
+      />
+    )
+    await waitFor(() => expect(country.container.querySelector(".flag img")!.getAttribute("src")).toBe("/flags/de.svg"))
+    const flagRound = render(
+      <QuestionCard q={{ prompt: "Paint the country with this flag", toleranceKm: 65, flag: "fr" }} countryFlag="de" />
+    )
+    await waitFor(() =>
+      expect(flagRound.container.querySelector(".flag img")!.getAttribute("src")).toBe("/flags/fr.svg")
+    )
+    const place = render(<QuestionCard q={{ prompt: "Where is Dublin?", toleranceKm: 40 }} />)
+    expect(place.container.querySelector(".flag")).toBeNull()
   })
 })
 

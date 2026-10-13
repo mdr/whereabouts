@@ -323,7 +323,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
         <div class="hud">
           <div class="hud-top">
             {header}
-            <QuestionCard q={q}>
+            <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined}>
               <Answer label={q.label} wiki={q.wiki} />
             </QuestionCard>
             <div class="card score">
@@ -377,7 +377,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
       <div class="hud">
         <div class="hud-top">
           {header}
-          <QuestionCard q={q} credit>
+          <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined} credit>
             {q.flag ? <AnswerMode area={isRegion(q)} /> : isRegion(q) && <RegionHint topic={q.topic} />}
           </QuestionCard>
         </div>

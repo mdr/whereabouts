@@ -127,7 +127,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
               </span>
             }
           />
-          <QuestionCard q={reveal.question} credit>
+          <QuestionCard q={reveal.question} credit countryFlag={region?.countryFlag}>
             <Answer label={reveal.label} wiki={reveal.wiki} />
           </QuestionCard>
           <div class="card score">

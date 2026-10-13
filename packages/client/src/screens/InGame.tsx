@@ -18,7 +18,7 @@ import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog"
 import { askedToWatch, startOnPan } from "../settings"
 import { TakeSeatButton } from "../ui/TakeSeat"
 import { sound } from "../sound"
-import { loadRegions } from "../regions"
+import { loadRegions, useRegion } from "../regions"
 import { inGameTestIds } from "./InGameTestIds"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
@@ -128,6 +128,9 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     conn.lock()
   }
 
+  // A country round shows the country's flag beside its name, once the outlines have loaded.
+  const region = useRegion(view.round?.question.regionId)
+
   if (view.phase === "reveal" && view.reveal) {
     return <Reveal conn={conn} view={view} reveal={view.reveal} />
   }
@@ -143,7 +146,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             total={round.total}
             right={<Countdown msRemaining={() => conn.msUntil(round.deadline)} />}
           />
-          <QuestionCard q={round.question}>
+          <QuestionCard q={round.question} countryFlag={region?.countryFlag}>
             {round.question.flag ? (
               <AnswerMode area={round.question.regionId !== undefined} />
             ) : (

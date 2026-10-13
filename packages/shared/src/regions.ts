@@ -59,6 +59,8 @@ export interface RegionQuestion {
   outline: number[][][][]
   /** A flag round: the flag shown in place of the name (see flags.ts). */
   flag?: string
+  /** A country's own flag (its ISO code), shown beside its name to help players learn it. */
+  countryFlag?: string
   /** An island, lake, sea or US state (features.json) rather than a country. */
   topic?: Topic
 }
