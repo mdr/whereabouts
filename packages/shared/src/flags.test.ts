@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { cellArea, cellToLatLng, gridDisk, latLngToCell, UNITS } from "h3-js"
+import { cellArea, cellToLatLng, gridDisk, latLngToCell, UNITS } from "./h3.ts"
 import flagsJson from "../flags.json" with { type: "json" }
 import regionsJson from "../regions.json" with { type: "json" }
 import { FLAG_AREA_PROMPT, FLAG_POINT_PROMPT, type FlagData, flagFrom, flagRound } from "./flags.ts"

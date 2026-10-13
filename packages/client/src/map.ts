@@ -11,7 +11,7 @@ import "maplibre-gl/dist/maplibre-gl.css"
 // import.meta.url. After bundling that points into /assets where no such
 // file exists, so hand it a worker Vite has bundled and knows the URL of.
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url"
-import { cellsOutline, type LatLon, type MapDetail } from "@whereabouts/shared"
+import { cellsOutline, type H3Cell, type LatLon, type MapDetail } from "@whereabouts/shared"
 import type { Theme } from "./themes"
 
 setWorkerUrl(mapWorkerUrl)
@@ -433,7 +433,7 @@ export class GameMap {
   }
 
   /** Outline the cells the next stamp would touch; null hides it. Dotted when erasing. */
-  setCursorFootprint(cells: string[] | null, erase = false): void {
+  setCursorFootprint(cells: H3Cell[] | null, erase = false): void {
     const features: GeoJSON.Feature[] = cells
       ? [{ type: "Feature", properties: { erase }, geometry: cellsOutline(cells) }]
       : []

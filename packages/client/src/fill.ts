@@ -10,6 +10,10 @@ import {
   countryFill,
   type Borders,
   type FillShape,
+  type FlagCode,
+  type H3Cell,
+  type H3Res,
+  type RegionId,
   type FlagQuestion,
   type LatLon,
   type RegionQuestion
@@ -19,14 +23,14 @@ import { borders, loadBorders } from "./borders"
 import { regions } from "./regions"
 
 export class CountryFiller {
-  private readonly shapes = new Map<string, FillShape>()
-  private readonly outlines = new Map<string, GeoJSON.MultiPolygon>()
-  private readonly fills = new Map<string, string[]>()
+  private readonly shapes = new Map<FlagCode, FillShape>()
+  private readonly outlines = new Map<FlagCode, GeoJSON.MultiPolygon>()
+  private readonly fills = new Map<string, H3Cell[]>()
 
   private readonly borders: Borders
-  private readonly regions: ReadonlyMap<string, RegionQuestion>
+  private readonly regions: ReadonlyMap<RegionId, RegionQuestion>
 
-  constructor(borders: Borders, regions: ReadonlyMap<string, RegionQuestion>) {
+  constructor(borders: Borders, regions: ReadonlyMap<RegionId, RegionQuestion>) {
     this.borders = borders
     this.regions = regions
   }
@@ -56,7 +60,7 @@ export class CountryFiller {
   }
 
   /** The cells filling the country on a layer of this finest resolution, compacted. */
-  cells(f: FlagQuestion, finestRes: number): string[] {
+  cells(f: FlagQuestion, finestRes: H3Res): H3Cell[] {
     const key = `${f.flag}:${finestRes}`
     let cells = this.fills.get(key)
     if (!cells) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { latLngToCell } from "h3-js"
+import { latLngToCell } from "./h3.ts"
 import { Game, ROUND_GRACE_MS, generateCode, nextHostAfter } from "./game.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { PASS_SCORE } from "./scoring.ts"

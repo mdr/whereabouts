@@ -26,8 +26,13 @@ import {
   gridDiskDistances,
   gridDistance,
   latLngToCell,
-  UNITS
-} from "h3-js"
+  UNITS,
+  cellEntries,
+  finerRes,
+  h3Res,
+  type H3Cell,
+  type H3Res
+} from "./h3.ts"
 import { chordDistanceSq, toXyz, type LatLon } from "./geo.ts"
 
 /** Cells across the brush radius a stamp aims for; sets the stamp resolution. */
@@ -35,16 +40,16 @@ const TARGET_RINGS = 5
 /** Safety cap on rings per stamp; unreachable in practice now that the resolution adapts. */
 const MAX_RINGS = 40
 
-export function resolutionForTolerance(toleranceKm: number): number {
+export function resolutionForTolerance(toleranceKm: number): H3Res {
   const target = toleranceKm / 4
   for (let res = 0; res <= 10; res++) {
-    if (getHexagonEdgeLengthAvg(res, UNITS.km) <= target) return Math.max(1, res)
+    if (getHexagonEdgeLengthAvg(h3Res(res), UNITS.km) <= target) return h3Res(Math.max(1, res))
   }
-  return 10
+  return h3Res(10)
 }
 
 /** Centre-to-centre distance between neighbouring cells, km. */
-export function cellSpacingKm(res: number): number {
+export function cellSpacingKm(res: H3Res): number {
   return getHexagonEdgeLengthAvg(res, UNITS.km) * Math.sqrt(3)
 }
 
@@ -54,7 +59,7 @@ export interface PaintCell {
   intensity: number
   areaKm2: number
   /** H3 index, so scoring can refine a coarse cell where precision matters. */
-  h3: string
+  h3: H3Cell
 }
 
 export interface Blob {
@@ -66,7 +71,7 @@ export interface Blob {
 
 export interface StampResult {
   /** Resolution the stamp was written at. */
-  res: number
+  res: H3Res
   rings: number
   /** Cells touched. */
   cells: number
@@ -75,7 +80,7 @@ export interface StampResult {
 const EPS = 1e-4
 
 /** Grid distance, or null where H3 cannot compute one (across pentagons or far apart). */
-function safeGridDistance(a: string, b: string): number | null {
+function safeGridDistance(a: H3Cell, b: H3Cell): number | null {
   try {
     const d = gridDistance(a, b)
     return Number.isFinite(d) && d >= 0 ? d : null
@@ -88,15 +93,15 @@ const CIRCUMRADIUS_FACTOR = 1.1 * Math.sqrt(2 / (3 * Math.sqrt(3)))
 
 export class PaintLayer {
   /** Finest resolution this layer may use, from the question's tolerance. */
-  readonly res: number
-  readonly cells = new Map<string, number>()
-  private boundaryCache = new Map<string, number[][]>()
-  private areaCache = new Map<string, number>()
-  private centreCache = new Map<string, [number, number]>()
+  readonly res: H3Res
+  readonly cells = new Map<H3Cell, number>()
+  private boundaryCache = new Map<H3Cell, number[][]>()
+  private areaCache = new Map<H3Cell, number>()
+  private centreCache = new Map<H3Cell, [number, number]>()
   /** Incremented on every change; cheap dirty-check for renderers. */
   version = 0
 
-  constructor(res: number) {
+  constructor(res: H3Res) {
     this.res = res
   }
 
@@ -104,9 +109,9 @@ export class PaintLayer {
    * The coarsest resolution (not finer than the layer's) that still puts
    * about TARGET_RINGS cells across the brush radius.
    */
-  stampResolution(radiusKm: number): number {
+  stampResolution(radiusKm: number): H3Res {
     for (let r = 0; r < this.res; r++) {
-      if (cellSpacingKm(r) <= radiusKm / TARGET_RINGS) return r
+      if (cellSpacingKm(h3Res(r)) <= radiusKm / TARGET_RINGS) return h3Res(r)
     }
     return this.res
   }
@@ -116,14 +121,14 @@ export class PaintLayer {
    * resolution a brush smaller than half a cell is a single cell (zero rings),
    * so zoomed right in the smallest brush paints exactly one hex.
    */
-  stampPlan(radiusKm: number): { res: number; rings: number } {
+  stampPlan(radiusKm: number): { res: H3Res; rings: number } {
     const res = this.stampResolution(radiusKm)
     const rings = Math.min(MAX_RINGS, Math.max(0, Math.round(radiusKm / cellSpacingKm(res))))
     return { res, rings }
   }
 
   /** The cells a stamp of this radius at `at` would touch, for previewing its footprint. */
-  stampCells(at: LatLon, radiusKm: number): string[] {
+  stampCells(at: LatLon, radiusKm: number): H3Cell[] {
     const { res, rings } = this.stampPlan(radiusKm)
     return gridDisk(latLngToCell(at.lat, at.lon, res), rings)
   }
@@ -194,7 +199,7 @@ export class PaintLayer {
       }
       // Straddles the edge and is coarser than the brush: refine one level.
       this.cells.delete(h)
-      for (const child of cellToChildren(h, hRes + 1)) {
+      for (const child of cellToChildren(h, finerRes(hRes))) {
         this.cells.set(child, v)
         queue.push(child)
       }
@@ -204,7 +209,7 @@ export class PaintLayer {
   }
 
   /** Add an even coat of `v` over these cells (a Fill: at or coarser than the layer, disjoint). */
-  addCoat(cells: readonly string[], v: number): void {
+  addCoat(cells: readonly H3Cell[], v: number): void {
     for (const h of cells) this.add(h, v)
     this.version++
   }
@@ -214,8 +219,8 @@ export class PaintLayer {
    * since split one of its cells (so it is gone), the coat comes off the
    * pieces instead; finer paint inside a cell still there is left alone.
    */
-  removeCoat(cells: readonly string[], v: number): void {
-    const split = new Set<string>()
+  removeCoat(cells: readonly H3Cell[], v: number): void {
+    const split = new Set<H3Cell>()
     for (const h of cells) {
       if (this.cells.has(h)) this.add(h, -v)
       else split.add(h)
@@ -230,7 +235,7 @@ export class PaintLayer {
     this.version++
   }
 
-  private add(h: string, w: number): void {
+  private add(h: H3Cell, w: number): void {
     const cur = this.cells.get(h) ?? 0
     const next = cur + w
     if (next <= EPS) this.cells.delete(h)
@@ -247,7 +252,7 @@ export class PaintLayer {
   }
 
   /** Replace every cell at once (undo/redo). */
-  replaceCells(cells: Map<string, number>): void {
+  replaceCells(cells: Map<H3Cell, number>): void {
     this.cells.clear()
     for (const [h, v] of cells) this.cells.set(h, v)
     this.version++
@@ -281,7 +286,7 @@ export class PaintLayer {
     return t
   }
 
-  area(h: string): number {
+  area(h: H3Cell): number {
     let a = this.areaCache.get(h)
     if (a === undefined) {
       a = cellArea(h, UNITS.km2)
@@ -290,7 +295,7 @@ export class PaintLayer {
     return a
   }
 
-  centre(h: string): [number, number] {
+  centre(h: H3Cell): [number, number] {
     let c = this.centreCache.get(h)
     if (c === undefined) {
       const [lat, lon] = cellToLatLng(h)
@@ -301,8 +306,8 @@ export class PaintLayer {
   }
 
   /** Sparse wire form: H3 index -> intensity. */
-  toRecord(): Record<string, number> {
-    const out: Record<string, number> = {}
+  toRecord(): Record<H3Cell, number> {
+    const out: Record<H3Cell, number> = {}
     for (const [h, v] of this.cells) out[h] = v
     return out
   }
@@ -312,9 +317,9 @@ export class PaintLayer {
    * finer cells are dropped because they would undercut the tolerance-based
    * resolution the question was scored at.
    */
-  static fromRecord(res: number, cells: Record<string, number>): PaintLayer {
+  static fromRecord(res: H3Res, cells: Record<H3Cell, number>): PaintLayer {
     const layer = new PaintLayer(res)
-    for (const [h, v] of Object.entries(cells)) {
+    for (const [h, v] of cellEntries(cells)) {
       if (v > 0 && getResolution(h) <= res) layer.cells.set(h, v)
     }
     layer.version++
@@ -336,7 +341,7 @@ export class PaintLayer {
     const max = this.maxIntensity() || 1
     const byRes: GeoJSON.Feature<GeoJSON.Polygon, { v: number }>[][] = []
     for (const [h, intensity] of this.cells) {
-      const r = getResolution(h)
+      const r: number = getResolution(h)
       ;(byRes[r] ??= []).push({
         type: "Feature",
         properties: { v: intensity / max },
@@ -346,7 +351,7 @@ export class PaintLayer {
     return { type: "FeatureCollection", features: byRes.flat() }
   }
 
-  private boundary(h: string): number[][] {
+  private boundary(h: H3Cell): number[][] {
     let b = this.boundaryCache.get(h)
     if (b === undefined) {
       b = cellToBoundary(h, true)
@@ -375,11 +380,12 @@ export class PaintLayer {
   blobs(): Blob[] {
     const out: Blob[] = []
     if (this.cells.size === 0) return out
-    let coarsest = Infinity
-    for (const h of this.cells.keys()) coarsest = Math.min(coarsest, getResolution(h))
+    let min = Infinity
+    for (const h of this.cells.keys()) min = Math.min(min, getResolution(h))
+    const coarsest = h3Res(min)
 
     // Group cells under their ancestor at the coarsest resolution.
-    const groups = new Map<string, string[]>()
+    const groups = new Map<H3Cell, H3Cell[]>()
     for (const h of this.cells.keys()) {
       const key = getResolution(h) === coarsest ? h : cellToParent(h, coarsest)
       const list = groups.get(key)
@@ -390,7 +396,7 @@ export class PaintLayer {
     let totalMass = 0
     for (const [h, v] of this.cells) totalMass += v * this.area(h)
 
-    const seen = new Set<string>()
+    const seen = new Set<H3Cell>()
     for (const start of groups.keys()) {
       if (seen.has(start)) continue
       seen.add(start)
@@ -441,22 +447,22 @@ export const PAINT_CELL_BUDGET = 6000
  * mass scores almost identically. Cells end up at mixed resolutions, all at
  * or coarser than the original.
  */
-export function compactRecord(cells: Record<string, number>, budget = PAINT_CELL_BUDGET): Record<string, number> {
+export function compactRecord(cells: Record<H3Cell, number>, budget = PAINT_CELL_BUDGET): Record<H3Cell, number> {
   let current = cells
   let count = Object.keys(current).length
   while (count > budget) {
     // Coarsen only the finest resolution present, one level at a time.
     let finest = -1
-    for (const h of Object.keys(current)) finest = Math.max(finest, getResolution(h))
+    for (const [h] of cellEntries(current)) finest = Math.max(finest, getResolution(h))
     if (finest <= 0) break
-    const next: Record<string, number> = {}
-    const mass = new Map<string, number>()
-    for (const [h, v] of Object.entries(current)) {
+    const next: Record<H3Cell, number> = {}
+    const mass = new Map<H3Cell, number>()
+    for (const [h, v] of cellEntries(current)) {
       if (getResolution(h) !== finest) {
         next[h] = (next[h] ?? 0) + v
         continue
       }
-      const parent = cellToParent(h, finest - 1)
+      const parent = cellToParent(h, h3Res(finest - 1))
       mass.set(parent, (mass.get(parent) ?? 0) + v * cellArea(h, UNITS.km2))
     }
     for (const [parent, m] of mass) {
@@ -469,7 +475,7 @@ export function compactRecord(cells: Record<string, number>, budget = PAINT_CELL
 }
 
 /** Outline of a set of cells as one GeoJSON MultiPolygon, e.g. a brush footprint. */
-export function cellsOutline(cells: string[]): GeoJSON.MultiPolygon {
+export function cellsOutline(cells: H3Cell[]): GeoJSON.MultiPolygon {
   // As in PaintLayer.boundary: a polygon straddling the antimeridian comes
   // back with longitudes on both sides; unwrap it so it does not span the world.
   const coordinates = cellsToMultiPolygon(cells, true).map((polygon) => {

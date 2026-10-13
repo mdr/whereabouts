@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { getResolution, latLngToCell } from "h3-js"
+import { getResolution, h3Res, latLngToCell } from "./h3.ts"
 import waterJson from "../water.json" with { type: "json" }
 import featuresJson from "../features.json" with { type: "json" }
 import { WaterMask, paintAmount, trimLand } from "./land.ts"
@@ -8,7 +8,7 @@ import { featureFrom, regionCells, type RegionData, type RegionQuestion } from "
 import { type QuestionData } from "./questions.ts"
 
 const mask = new WaterMask(waterJson)
-const at = (lat: number, lon: number, res: number) => latLngToCell(lat, lon, res)
+const at = (lat: number, lon: number, res: number) => latLngToCell(lat, lon, h3Res(res))
 
 describe("water mask", () => {
   it("keeps a lake or sea painted exactly", () => {
@@ -43,7 +43,7 @@ describe("water mask", () => {
   it("splits a coarse cell on the shore into its cells near water", () => {
     // A res-3 cell on the Italian coast near Naples: part land, part Tyrrhenian Sea.
     const coast = at(40.7, 14.0, 3)
-    const kept = trimLand(new Map([[coast, 2]]), mask, 7)
+    const kept = trimLand(new Map([[coast, 2]]), mask, h3Res(7))
     expect(kept.has(coast)).toBe(false)
     expect(kept.size).toBeGreaterThan(0)
     for (const [h, v] of kept) {
@@ -51,6 +51,6 @@ describe("water mask", () => {
       expect(v).toBe(2)
       expect(mask.nearWater(h)).toBe(true)
     }
-    expect([...trimLand(new Map([[at(30, -40, 3), 1]]), mask, 7).keys()]).toEqual([at(30, -40, 3)])
+    expect([...trimLand(new Map([[at(30, -40, 3), 1]]), mask, h3Res(7)).keys()]).toEqual([at(30, -40, 3)])
   })
 })

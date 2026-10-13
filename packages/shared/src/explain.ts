@@ -7,7 +7,7 @@
  * the spread (1000 less the best this paint could score, had the answer been
  * where it is strongest) and the distance (that best less the score).
  */
-import { cellToLatLng, getResolution } from "h3-js"
+import { cellToLatLng, coarserRes, getResolution, h3Res, type H3Cell } from "./h3.ts"
 import { chordDistance, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
 import type { Topic } from "./questions.ts"
 import {
@@ -44,8 +44,11 @@ export function explainPoint(
   k: Kernel = DEFAULT_KERNEL
 ): PointExplanation {
   let coarse = dist
-  let res = Math.max(0, ...dist.points.map((pt) => (pt.cell ? getResolution(pt.cell) : 0)))
-  while (coarse.points.length > SEARCH_CELLS && res > 0) coarse = coarsenDistribution(dist, --res)
+  let res = h3Res(Math.max(0, ...dist.points.map((pt) => (pt.cell ? getResolution(pt.cell) : 0))))
+  while (coarse.points.length > SEARCH_CELLS && res > 0) {
+    res = coarserRes(res)
+    coarse = coarsenDistribution(dist, res)
+  }
   // Without cells, A treats each as a patch rather than refining it: fast, and close enough to rank spots.
   const patches: Distribution = { points: coarse.points.map(({ cell: _, ...pt }) => pt), floor: dist.floor }
   const ranked = coarse.points
@@ -74,7 +77,7 @@ export function explainPoint(
   }
 }
 
-function latLngOf(h: string): LatLon {
+function latLngOf(h: H3Cell): LatLon {
   const [lat, lon] = cellToLatLng(h)
   return { lat, lon }
 }

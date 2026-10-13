@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest"
-import { cellArea, cellToLatLng, gridDisk, latLngToCell, UNITS } from "h3-js"
+import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell, UNITS } from "./h3.ts"
 import regionsJson from "../regions.json" with { type: "json" }
 import { describePoint, describeRegion, explainPoint } from "./explain.ts"
 import { resolutionForTolerance } from "./paint.ts"
 import { regionCells, type RegionData, regionFrom, regionMisfit, scoreRegionQuestion } from "./regions.ts"
 import { buildDistribution, scoreDistribution } from "./scoring.ts"
 
-const coat = (cells: string[]) =>
+const coat = (cells: H3Cell[]) =>
   buildDistribution(
     cells.map((h) => {
       const [lat, lon] = cellToLatLng(h)
@@ -20,7 +20,7 @@ describe("explaining a place's score", () => {
   const tol = 150
   const res = resolutionForTolerance(tol)
   const explain = (lat: number, lon: number, r: number, k: number) => {
-    const d = coat(gridDisk(latLngToCell(lat, lon, r), k))
+    const d = coat(gridDisk(latLngToCell(lat, lon, h3Res(r)), k))
     const s = scoreDistribution(d, answer, tol)
     const e = explainPoint(d, answer, tol, s.A, s.B)
     return { s, e, text: describePoint(e, s.score, tol) }
@@ -54,7 +54,7 @@ describe("explaining a country's score", () => {
   const france = byId("france-region")
   const res = resolutionForTolerance(france.toleranceKm)
   const cells = regionCells(france, res)
-  const say = (cs: string[]) => describeRegion(regionMisfit(coat(cs), france), france.label, france.toleranceKm)
+  const say = (cs: H3Cell[]) => describeRegion(regionMisfit(coat(cs), france), france.label, france.toleranceKm)
 
   it("an exact paint is a close match", () => {
     expect(scoreRegionQuestion(coat(cells), france).score).toBeGreaterThan(985)

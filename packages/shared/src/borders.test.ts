@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { cellArea, cellToLatLng, latLngToCell, gridDisk, UNITS } from "h3-js"
+import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell, UNITS } from "./h3.ts"
 import bordersJson from "../borders.json" with { type: "json" }
 import flagsJson from "../flags.json" with { type: "json" }
 import { Borders } from "./borders.ts"
@@ -10,7 +10,7 @@ const flags = (flagsJson as FlagData[]).map(flagFrom)
 const borders = new Borders(bordersJson, flags)
 const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label ?? null
 
-function cell(h: string, intensity = 1): PaintCell {
+function cell(h: H3Cell, intensity = 1): PaintCell {
   const [lat, lon] = cellToLatLng(h)
   return { lat, lon, intensity, areaKm2: cellArea(h, UNITS.km2), h3: h }
 }
@@ -60,17 +60,17 @@ describe("borders", () => {
   })
 
   it("splits paint by country, by mass", () => {
-    const paris = latLngToCell(48.85, 2.35, 6)
-    const lima = latLngToCell(-12.05, -77.04, 6)
-    const sea = latLngToCell(30, -40, 6)
+    const paris = latLngToCell(48.85, 2.35, h3Res(6))
+    const lima = latLngToCell(-12.05, -77.04, h3Res(6))
+    const sea = latLngToCell(30, -40, h3Res(6))
     // Equal areas, so the shares are the intensities': 3 of 5 in France, 1 in Peru, 1 at sea.
-    const even = (h: string, v: number) => ({ ...cell(h, v), areaKm2: 1 })
+    const even = (h: H3Cell, v: number) => ({ ...cell(h, v), areaKm2: 1 })
     const split = borders.paintedCountries([even(paris, 3), even(lima, 1), even(sea, 1)])
     expect(split.map((s) => s.country.label)).toEqual(["France", "Peru"])
     expect(split[0]!.share).toBeCloseTo(0.6, 1)
     expect(split[1]!.share).toBeCloseTo(0.2, 1)
     // A blob on Peru is mostly in Peru.
-    const blob = gridDisk(latLngToCell(-10, -75, 4), 3).map((h) => cell(h))
+    const blob = gridDisk(latLngToCell(-10, -75, h3Res(4)), 3).map((h) => cell(h))
     expect(borders.paintedCountries(blob)[0]!.country.label).toBe("Peru")
     expect(borders.paintedCountries([])).toEqual([])
   })

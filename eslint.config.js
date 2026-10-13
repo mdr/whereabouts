@@ -30,8 +30,16 @@ export default defineConfig(
       // Interface-conforming async methods often have nothing to await.
       "@typescript-eslint/require-await": "off",
       "no-console": ["warn", { allow: ["warn", "error"] }],
-      eqeqeq: ["error", "smart"]
+      eqeqeq: ["error", "smart"],
+      "no-restricted-imports": [
+        "error",
+        { paths: [{ name: "h3-js", message: "Import H3 from shared/src/h3.ts, which brands cells and resolutions." }] }
+      ]
     }
+  },
+  {
+    files: ["packages/shared/src/h3.ts"],
+    rules: { "no-restricted-imports": "off" }
   },
   {
     // Client: browser globals and Preact hooks discipline.
@@ -67,7 +75,8 @@ export default defineConfig(
       ...tseslint.configs.disableTypeChecked.languageOptions,
       globals: { ...globals.node, ...globals.browser }
     },
-    rules: { ...tseslint.configs.disableTypeChecked.rules, "no-console": "off" }
+    // The build scripts are plain JavaScript, so a brand would mean nothing there.
+    rules: { ...tseslint.configs.disableTypeChecked.rules, "no-console": "off", "no-restricted-imports": "off" }
   },
   {
     files: ["**/*.test.{ts,tsx}"],

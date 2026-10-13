@@ -7,6 +7,7 @@ import { z } from "zod"
 import type { Award } from "./awards.ts"
 import type { LatLon } from "./geo.ts"
 import type { Topic } from "./questions.ts"
+import { H3CellSchema, type H3Res } from "./h3.ts"
 import {
   PlayerIdSchema,
   PlayerTokenSchema,
@@ -21,7 +22,7 @@ export const PROTOCOL_VERSION = 1
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export const PaintSubmissionSchema = z.object({
-  cells: z.record(z.string().regex(/^[0-9a-f]{15}$/), z.number().positive()),
+  cells: z.record(H3CellSchema, z.number().positive()),
   floor: z.number().min(0).max(1)
 })
 export type PaintSubmission = z.infer<typeof PaintSubmissionSchema>
@@ -242,7 +243,7 @@ export interface RoundResultView {
   /** Null when the player made no guess. */
   paint: PaintSubmission | null
   /** H3 resolution the paint was made at, for rendering. */
-  res: number
+  res: H3Res
 }
 
 export interface RevealView {

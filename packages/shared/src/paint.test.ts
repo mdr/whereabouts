@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { getHexagonEdgeLengthAvg, getResolution, gridDisk, latLngToCell, UNITS } from "h3-js"
+import { getHexagonEdgeLengthAvg, getResolution, gridDisk, h3Res, latLngToCell, UNITS } from "./h3.ts"
 import { PaintLayer, cellSpacingKm, cellsOutline, compactRecord, resolutionForTolerance } from "./paint.ts"
 
 describe("resolutionForTolerance", () => {
@@ -7,7 +7,7 @@ describe("resolutionForTolerance", () => {
     for (const tol of [2, 3, 15, 50, 150, 400, 2000]) {
       const res = resolutionForTolerance(tol)
       expect(getHexagonEdgeLengthAvg(res, UNITS.km)).toBeLessThanOrEqual(tol / 4)
-      if (res > 1) expect(getHexagonEdgeLengthAvg(res - 1, UNITS.km)).toBeGreaterThan(tol / 4)
+      if (res > 1) expect(getHexagonEdgeLengthAvg(h3Res(res - 1), UNITS.km)).toBeGreaterThan(tol / 4)
     }
   })
 })
@@ -24,9 +24,9 @@ describe("PaintLayer", () => {
   })
 
   it("picks a coarser resolution for a big brush, so the cell count stays bounded at any zoom", () => {
-    const layer = new PaintLayer(9) // ~0.2 km cells, as a 1 km tolerance would use
+    const layer = new PaintLayer(h3Res(9)) // ~0.2 km cells, as a 1 km tolerance would use
     for (const radiusKm of [0.5, 5, 50, 500, 3000]) {
-      const fresh = new PaintLayer(9)
+      const fresh = new PaintLayer(h3Res(9))
       const r = fresh.stamp({ lat: 51.5, lon: -0.1 }, radiusKm, 1)
       expect(r.res).toBeLessThanOrEqual(9)
       // Between 5 and 13 rings depending on where the radius falls between H3 steps.
@@ -39,11 +39,11 @@ describe("PaintLayer", () => {
   })
 
   it("a brush smaller than half a cell at the finest resolution paints exactly one cell", () => {
-    const layer = new PaintLayer(5)
-    const spacing = cellSpacingKm(5)
+    const layer = new PaintLayer(h3Res(5))
+    const spacing = cellSpacingKm(h3Res(5))
     const tiny = 0.3 * spacing
     expect(layer.stampPlan(tiny)).toEqual({ res: 5, rings: 0 })
-    expect(layer.stampCells({ lat: 51.5, lon: -0.1 }, tiny)).toEqual([latLngToCell(51.5, -0.1, 5)])
+    expect(layer.stampCells({ lat: 51.5, lon: -0.1 }, tiny)).toEqual([latLngToCell(51.5, -0.1, h3Res(5))])
     const r = layer.stamp({ lat: 51.5, lon: -0.1 }, tiny, 1)
     expect(r.cells).toBe(1)
     expect(layer.size).toBe(1)
@@ -56,7 +56,7 @@ describe("PaintLayer", () => {
   })
 
   it("erasing with a small brush inside a coarse cell removes only the part under the brush", () => {
-    const layer = new PaintLayer(9)
+    const layer = new PaintLayer(h3Res(9))
     layer.stamp({ lat: 51.5, lon: -0.1 }, 400, 1) // coarse cells, ~res 3
     const before = layer.mass()
     const coarseRes = Math.min(...layer.resolutionCounts().map(([r]) => r))
@@ -74,14 +74,14 @@ describe("PaintLayer", () => {
   })
 
   it("erasing everything under a brush of the same size clears it", () => {
-    const layer = new PaintLayer(7)
+    const layer = new PaintLayer(h3Res(7))
     layer.stamp({ lat: 27, lon: 78 }, 100, 1)
     layer.erase({ lat: 27, lon: 78 }, 100, 1)
     expect(layer.isEmpty).toBe(true)
   })
 
   it("splitting a cell conserves mass exactly", () => {
-    const layer = new PaintLayer(9)
+    const layer = new PaintLayer(h3Res(9))
     layer.stamp({ lat: 40, lon: -3 }, 300, 1)
     const before = layer.mass()
     // A zero-strength erase still refines the straddling cells.
@@ -104,11 +104,11 @@ describe("PaintLayer", () => {
 
 describe("compactRecord", () => {
   function totalMass(rec: Record<string, number>): number {
-    return [...PaintLayer.fromRecord(15, rec).toCells()].reduce((s, c) => s + c.intensity * c.areaKm2, 0)
+    return [...PaintLayer.fromRecord(h3Res(15), rec).toCells()].reduce((s, c) => s + c.intensity * c.areaKm2, 0)
   }
 
   it("leaves small records alone", () => {
-    const layer = new PaintLayer(4)
+    const layer = new PaintLayer(h3Res(4))
     layer.stamp({ lat: 20, lon: 10 }, 300, 1)
     const rec = layer.toRecord()
     expect(compactRecord(rec, 6000)).toBe(rec)
@@ -117,7 +117,7 @@ describe("compactRecord", () => {
   /** A disc of fine cells at one resolution, as a zoomed-in player would paint. */
   function fineDisc(res: number, rings: number): Record<string, number> {
     const rec: Record<string, number> = {}
-    for (const h of gridDisk(latLngToCell(51.5, -0.1, res), rings)) rec[h] = 1
+    for (const h of gridDisk(latLngToCell(51.5, -0.1, h3Res(res)), rings)) rec[h] = 1
     return rec
   }
 
@@ -129,7 +129,7 @@ describe("compactRecord", () => {
     const after = Object.keys(small).length
     expect(after).toBeLessThanOrEqual(500)
     expect(after).toBeGreaterThan(0)
-    const rebuilt = PaintLayer.fromRecord(7, small)
+    const rebuilt = PaintLayer.fromRecord(h3Res(7), small)
     expect(rebuilt.cells.size).toBe(after)
     expect(totalMass(small)).toBeCloseTo(totalMass(rec), 6)
     for (const h of Object.keys(small)) expect(h.length).toBe(15)
@@ -137,10 +137,10 @@ describe("compactRecord", () => {
 
   it("scores almost identically before and after compaction", async () => {
     const { buildDistribution, scoreDistribution } = await import("./scoring.ts")
-    const layer = PaintLayer.fromRecord(7, fineDisc(7, 15))
+    const layer = PaintLayer.fromRecord(h3Res(7), fineDisc(7, 15))
     const answer = { lat: 51.6, lon: 0.2 }
     const full = scoreDistribution(buildDistribution(layer.toCells(), 0.05), answer, 3)
-    const compact = PaintLayer.fromRecord(7, compactRecord(layer.toRecord(), 500))
+    const compact = PaintLayer.fromRecord(h3Res(7), compactRecord(layer.toRecord(), 500))
     const small = scoreDistribution(buildDistribution(compact.toCells(), 0.05), answer, 3)
     expect(Math.abs(full.score - small.score)).toBeLessThan(15)
   })
@@ -148,7 +148,7 @@ describe("compactRecord", () => {
 
 describe("mixed resolutions", () => {
   it("blobs still sum to one when fine and coarse cells overlap", () => {
-    const layer = new PaintLayer(8)
+    const layer = new PaintLayer(h3Res(8))
     layer.stamp({ lat: 27, lon: 78 }, 800, 1) // coarse
     layer.stamp({ lat: 27, lon: 78 }, 3, 1) // fine, on top
     layer.stamp({ lat: -30, lon: 140 }, 3, 1) // fine, elsewhere
@@ -159,7 +159,7 @@ describe("mixed resolutions", () => {
   })
 
   it("draws coarse cells before fine ones", () => {
-    const layer = new PaintLayer(8)
+    const layer = new PaintLayer(h3Res(8))
     layer.stamp({ lat: 27, lon: 78 }, 3, 1)
     layer.stamp({ lat: 27, lon: 78 }, 800, 1)
     const fc = layer.toGeoJSON()
@@ -178,7 +178,7 @@ describe("mixed resolutions", () => {
 
 describe("cellsOutline", () => {
   it("keeps a footprint on the antimeridian compact instead of spanning the world", () => {
-    const layer = new PaintLayer(4)
+    const layer = new PaintLayer(h3Res(4))
     for (const radiusKm of [50, 400, 1500]) {
       for (const lon of [179.9, -179.9, 180]) {
         const outline = cellsOutline(layer.stampCells({ lat: -30, lon }, radiusKm))

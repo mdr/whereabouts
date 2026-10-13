@@ -16,7 +16,17 @@
  * centre (Tuvalu, on a coarse grid) is filled around its answer instead, out
  * to its `near` distance, or just the cell its answer is in.
  */
-import { getHexagonEdgeLengthAvg, gridDisk, latLngToCell, polygonToCells, UNITS } from "h3-js"
+import {
+  getHexagonEdgeLengthAvg,
+  gridDisk,
+  latLngToCell,
+  polygonToCells,
+  UNITS,
+  finerRes,
+  h3Res,
+  type H3Cell,
+  type H3Res
+} from "./h3.ts"
 import type { LatLon } from "./geo.ts"
 
 /** The density of a fill: equal for every country filled. */
@@ -36,28 +46,29 @@ export interface FillShape {
   near?: number
 }
 
-function cellsAt(shape: FillShape, res: number): string[] {
+function cellsAt(shape: FillShape, res: H3Res): H3Cell[] {
   if (shape.polygons) {
-    const out = new Set<string>()
+    const out = new Set<H3Cell>()
     for (const p of shape.polygons) for (const h of polygonToCells(p, res, true)) out.add(h)
     return [...out]
   }
   // Plain rings: a cell is in the country when its centre is in an odd number of them.
-  const parity = new Map<string, boolean>()
+  const parity = new Map<H3Cell, boolean>()
   for (const r of shape.rings ?? []) for (const h of polygonToCells([r], res, true)) parity.set(h, !parity.get(h))
   return [...parity].filter(([, odd]) => odd).map(([h]) => h)
 }
 
 /** The cells filling a country, all at one resolution, never finer than `finestRes`. */
-export function countryFill(shape: FillShape, finestRes: number): string[] {
+export function countryFill(shape: FillShape, finestRes: H3Res): H3Cell[] {
   // Step finer while the next level stays in budget. It has about 7 times
   // the cells, so a level far over is not even laid out.
-  let res = 0
-  let cells = cellsAt(shape, 0)
+  let res = h3Res(0)
+  let cells = cellsAt(shape, res)
   while (res < finestRes && cells.length * 7 <= 2 * FILL_CELL_BUDGET) {
-    const finer = cellsAt(shape, res + 1)
+    const next = finerRes(res)
+    const finer = cellsAt(shape, next)
     if (finer.length > FILL_CELL_BUDGET) break
-    ;[res, cells] = [res + 1, finer]
+    ;[res, cells] = [next, finer]
   }
   if (cells.length === 0) {
     const centre = latLngToCell(shape.answer.lat, shape.answer.lon, res)

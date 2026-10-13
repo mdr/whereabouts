@@ -12,6 +12,9 @@ import {
   resolutionForTolerance,
   trimLand,
   trimSea,
+  h3Res,
+  type FlagCode,
+  type H3Cell,
   type LandMask,
   type WaterMask,
   type LatLon
@@ -27,8 +30,8 @@ const FILL_SMALL_PX = 12
 
 /** One undo step: the cells, and which countries are filled. */
 interface Snapshot {
-  cells: Map<string, number>
-  fills: Map<string, string[]>
+  cells: Map<H3Cell, number>
+  fills: Map<FlagCode, H3Cell[]>
 }
 
 /**
@@ -84,9 +87,9 @@ export class PaintController {
   readonly fillable = signal(false)
   filler: CountryFiller | null = null
   /** The countries filled, by flag code, with the cells each was filled with. */
-  private fills = new Map<string, string[]>()
+  private fills = new Map<FlagCode, H3Cell[]>()
 
-  layer = new PaintLayer(4)
+  layer = new PaintLayer(h3Res(4))
   private spaceHeld = false
   /** Where a middle-button drag last was, while one pans the map. */
   private middleFrom: { x: number; y: number } | null = null
@@ -353,7 +356,7 @@ export class PaintController {
     return this.keepOnly(trimLand(this.layer.cells, mask, this.layer.res))
   }
 
-  private keepOnly(kept: Map<string, number>): number {
+  private keepOnly(kept: Map<H3Cell, number>): number {
     const share = 1 - paintAmount(kept) / paintAmount(this.layer.cells)
     if (!(share > 1e-9)) return 0
     this.pushHistory()

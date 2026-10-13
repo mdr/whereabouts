@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest"
-import { playerId, type PlayerView, type RoundResultView } from "@whereabouts/shared"
+import { h3Res, playerId, type PlayerView, type RoundResultView } from "@whereabouts/shared"
 import { revealOrder } from "./Reveal"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
@@ -22,7 +22,7 @@ function player(name: string, rank: number): PlayerView {
 }
 const paint = { cells: { "85283473fffffff": 1 }, floor: 0.05 }
 function result(name: string, score: number, painted = true): RoundResultView {
-  return { playerId: idOf(name), score, A: 0, B: 0, res: 5, paint: painted ? paint : null }
+  return { playerId: idOf(name), score, A: 0, B: 0, res: h3Res(5), paint: painted ? paint : null }
 }
 
 describe("revealOrder", () => {

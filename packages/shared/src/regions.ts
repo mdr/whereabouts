@@ -29,8 +29,11 @@ import {
   getResolution,
   latLngToCell,
   polygonToCells,
-  UNITS
-} from "h3-js"
+  UNITS,
+  h3Res,
+  type H3Cell,
+  type H3Res
+} from "./h3.ts"
 import { bearing, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
 import { questionFrom, type Question, type QuestionData, type Topic } from "./questions.ts"
 import { flagCode, regionId, type FlagCode, type RegionId } from "./ids.ts"
@@ -123,13 +126,13 @@ export interface RegionQuestionScore {
  * to half the tolerance across: far finer than its narrowest Gaussian, and
  * much faster.
  */
-export function regionScoringRes(toleranceKm: number): number {
-  return Math.max(0, resolutionForTolerance(toleranceKm) - 1)
+export function regionScoringRes(toleranceKm: number): H3Res {
+  return h3Res(Math.max(0, resolutionForTolerance(toleranceKm) - 1))
 }
 
 /** The region's cells at `res`: those whose centres fall inside the outline. */
-export function regionCells(q: RegionQuestion, res: number): string[] {
-  const cells = new Set<string>()
+export function regionCells(q: RegionQuestion, res: H3Res): H3Cell[] {
+  const cells = new Set<H3Cell>()
   for (const polygon of q.outline) for (const h of polygonToCells(polygon, res, true)) cells.add(h)
   return [...cells]
 }
@@ -207,7 +210,7 @@ export function regionMisfit(dist: Distribution, q: RegionQuestion): RegionMisfi
   const region = regionAt(q)
   const mass = paintMass(dist, q)
 
-  const offCells: [string, number][] = []
+  const offCells: [H3Cell, number][] = []
   for (const [h, p] of mass) if (!region.cells.has(h)) offCells.push([h, p])
   let off: RegionMisfit["off"] = null
   const offCentre = leaning(q.answer, offCells)
@@ -221,7 +224,7 @@ export function regionMisfit(dist: Distribution, q: RegionQuestion): RegionMisfi
   let onMass = 0
   for (const h of region.cells.keys()) onMass += mass.get(h) ?? 0
   const half = onMass / region.area / 2
-  const short: [string, number][] = []
+  const short: [H3Cell, number][] = []
   if (half > 0) {
     for (const [h, a] of region.cells) {
       const s = Math.max(0, 1 - (mass.get(h) ?? 0) / a / half) * a
@@ -232,13 +235,13 @@ export function regionMisfit(dist: Distribution, q: RegionQuestion): RegionMisfi
   return { coverage, precision, off, bare: bareCentre && { bearing: bearing(q.answer, bareCentre) } }
 }
 
-function latLng(h: string): LatLon {
+function latLng(h: H3Cell): LatLon {
   const [lat, lon] = cellToLatLng(h)
   return { lat, lon }
 }
 
 /** The weighted cells' mass centre, if they lean away from `centre` rather than surround it. */
-function leaning(centre: LatLon, cells: [string, number][]): LatLon | null {
+function leaning(centre: LatLon, cells: [H3Cell, number][]): LatLon | null {
   let total = 0
   let meanKm = 0
   const sum = [0, 0, 0]
@@ -256,22 +259,22 @@ function leaning(centre: LatLon, cells: [string, number][]): LatLon | null {
 
 interface Region {
   /** The painting resolution. */
-  res: number
+  res: H3Res
   /** The country's cells at the painting resolution, with their areas. */
-  cells: Map<string, number>
+  cells: Map<H3Cell, number>
   area: number
   /** Their ancestors at each coarser resolution, filled in as needed. */
-  ancestors: Map<number, Set<string>>
+  ancestors: Map<H3Res, Set<H3Cell>>
 }
 
-const regions = new Map<string, Region>()
+const regions = new Map<RegionId, Region>()
 
 /** The country's cells at the painting resolution, with their areas. */
 function regionAt(q: RegionQuestion): Region {
   let region = regions.get(q.id)
   if (!region) {
     const res = resolutionForTolerance(q.toleranceKm)
-    const cells = new Map<string, number>()
+    const cells = new Map<H3Cell, number>()
     let area = 0
     for (const h of regionCells(q, res)) {
       const a = cellArea(h, UNITS.km2)
@@ -285,7 +288,7 @@ function regionAt(q: RegionQuestion): Region {
 }
 
 /** Whether a cell coarser than the painting resolution overlaps the country. */
-function overlaps(region: Region, h: string, r: number): boolean {
+function overlaps(region: Region, h: H3Cell, r: H3Res): boolean {
   let set = region.ancestors.get(r)
   if (!set) {
     set = new Set([...region.cells.keys()].map((c) => cellToParent(c, r)))
@@ -301,11 +304,11 @@ function overlaps(region: Region, h: string, r: number): boolean {
  * only their total mass counts, and splitting a world painted at world zoom
  * would mean millions of cells. The world floor is left out.
  */
-function paintMass(dist: Distribution, q: RegionQuestion): Map<string, number> {
+function paintMass(dist: Distribution, q: RegionQuestion): Map<H3Cell, number> {
   const res = resolutionForTolerance(q.toleranceKm)
   const region = regionAt(q)
-  const mass = new Map<string, number>()
-  const add = (h: string, p: number) => mass.set(h, (mass.get(h) ?? 0) + p)
+  const mass = new Map<H3Cell, number>()
+  const add = (h: H3Cell, p: number) => mass.set(h, (mass.get(h) ?? 0) + p)
   for (const pt of dist.points) {
     if (!pt.cell) continue
     const r = getResolution(pt.cell)
@@ -326,7 +329,7 @@ function paintMass(dist: Distribution, q: RegionQuestion): Map<string, number> {
  * the country's cells, clamped at 0. With q spread evenly by area, q = a / A
  * in each of them (A its area), so sum q^2 / a = 1 / A.
  */
-function shapeScore(mass: Map<string, number>, q: RegionQuestion): number {
+function shapeScore(mass: Map<H3Cell, number>, q: RegionQuestion): number {
   const region = regionAt(q)
   let sum = 0
   for (const [h, a] of region.cells) {

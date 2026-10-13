@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { PaintLayer } from "./paint.ts"
 import { decodeCase, encodeCase, type ScoringCase } from "./scoring-case.ts"
+import { h3Res } from "./h3.ts"
 
 function sample(): ScoringCase {
-  const layer = new PaintLayer(6)
+  const layer = new PaintLayer(h3Res(6))
   layer.stamp({ lat: 48.86, lon: 2.35 }, 80, 1)
   layer.stamp({ lat: 48.9, lon: 2.5 }, 30, 0.6)
   layer.stamp({ lat: 51.5, lon: -0.12 }, 400, 0.3)

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest"
 import { render } from "@testing-library/preact"
-import { Borders, type FlagData, flagFrom, PaintLayer } from "@whereabouts/shared"
+import { Borders, type FlagData, flagFrom, h3Res, PaintLayer } from "@whereabouts/shared"
 import bordersJson from "@whereabouts/shared/borders.json"
 import flagsJson from "@whereabouts/shared/flags.json"
 import { mainCountry, PaintedIn } from "./FlagReveal"
@@ -11,7 +11,8 @@ const borders = new Borders(bordersJson, flags)
 const brazil = flags.find((f) => f.flag === "br")!
 
 /** A paint of these cells, one intensity each, as a reveal gets it. */
-const paint = (cells: string[]) => PaintLayer.fromRecord(5, Object.fromEntries(cells.map((h) => [h, 1]))).toCells()
+const paint = (cells: string[]) =>
+  PaintLayer.fromRecord(h3Res(5), Object.fromEntries(cells.map((h) => [h, 1]))).toCells()
 
 describe("mainCountry", () => {
   it("names the country with most of the paint", () => {

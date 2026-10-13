@@ -15,7 +15,18 @@
  * answers often gain (Palau's flag 900 to 992). Whole countries nearly
  * always gain.
  */
-import { cellArea, cellToChildren, cellToParent, getResolution, UNITS } from "h3-js"
+import {
+  cellArea,
+  cellToChildren,
+  cellToParent,
+  getResolution,
+  UNITS,
+  h3Cell,
+  h3Res,
+  resolutionsTo,
+  type H3Cell,
+  type H3Res
+} from "./h3.ts"
 
 export interface LandMaskData {
   /** The mask's finest resolution. */
@@ -26,21 +37,23 @@ export interface LandMaskData {
 
 export class LandMask {
   /** The mask's finest resolution. */
-  readonly res: number
-  private readonly cells: Set<string>
+  readonly res: H3Res
+  private readonly cells: Set<H3Cell>
   /** Every strict ancestor of a mask cell: a coarse cell with land somewhere inside. */
-  private readonly ancestors = new Set<string>()
+  private readonly ancestors = new Set<H3Cell>()
 
   constructor(data: LandMaskData) {
-    this.res = data.res
-    this.cells = new Set(data.cells)
-    for (const h of data.cells) for (let r = 0; r < getResolution(h); r++) this.ancestors.add(cellToParent(h, r))
+    this.res = h3Res(data.res)
+    this.cells = new Set(data.cells.map(h3Cell))
+    for (const h of this.cells)
+      for (const r of resolutionsTo(getResolution(h) - 1)) this.ancestors.add(cellToParent(h, r))
   }
 
   /** Whether any of this cell is within the mask. */
-  nearLand(h: string): boolean {
+  nearLand(h: H3Cell): boolean {
     const r = getResolution(h)
-    for (let k = 0; k <= Math.min(r, this.res); k++) if (this.cells.has(k === r ? h : cellToParent(h, k))) return true
+    for (const k of resolutionsTo(Math.min(r, this.res)))
+      if (this.cells.has(k === r ? h : cellToParent(h, k))) return true
     return r < this.res && this.ancestors.has(h)
   }
 }
@@ -54,8 +67,8 @@ export class LandMask {
  * meets a painted cell of its own, their densities add, as overlapping
  * cells always do.
  */
-export function trimSea(cells: ReadonlyMap<string, number>, mask: LandMask, finestRes: number): Map<string, number> {
-  return trim(cells, (h) => mask.nearLand(h), Math.min(mask.res, finestRes))
+export function trimSea(cells: ReadonlyMap<H3Cell, number>, mask: LandMask, finestRes: H3Res): Map<H3Cell, number> {
+  return trim(cells, (h) => mask.nearLand(h), h3Res(Math.min(mask.res, finestRes)))
 }
 
 /**
@@ -72,30 +85,31 @@ export interface WaterMaskData {
 }
 
 export class WaterMask {
-  readonly res: number
-  private readonly dry: Set<string>
+  readonly res: H3Res
+  private readonly dry: Set<H3Cell>
 
   constructor(data: WaterMaskData) {
-    this.res = data.res
-    this.dry = new Set(data.dry)
+    this.res = h3Res(data.res)
+    this.dry = new Set(data.dry.map(h3Cell))
   }
 
   /** Whether any of this cell is outside the dry cells. Compaction puts any cell wholly dry, or an ancestor, in the set. */
-  nearWater(h: string): boolean {
+  nearWater(h: H3Cell): boolean {
     const r = getResolution(h)
-    for (let k = 0; k <= Math.min(r, this.res); k++) if (this.dry.has(k === r ? h : cellToParent(h, k))) return false
+    for (const k of resolutionsTo(Math.min(r, this.res)))
+      if (this.dry.has(k === r ? h : cellToParent(h, k))) return false
     return true
   }
 }
 
 /** The paint without its cells on dry land, split as trimSea splits. */
-export function trimLand(cells: ReadonlyMap<string, number>, mask: WaterMask, finestRes: number): Map<string, number> {
-  return trim(cells, (h) => mask.nearWater(h), Math.min(mask.res, finestRes))
+export function trimLand(cells: ReadonlyMap<H3Cell, number>, mask: WaterMask, finestRes: H3Res): Map<H3Cell, number> {
+  return trim(cells, (h) => mask.nearWater(h), h3Res(Math.min(mask.res, finestRes)))
 }
 
-function trim(cells: ReadonlyMap<string, number>, keep: (h: string) => boolean, target: number): Map<string, number> {
-  const kept = new Map<string, number>()
-  const add = (h: string, v: number) => kept.set(h, (kept.get(h) ?? 0) + v)
+function trim(cells: ReadonlyMap<H3Cell, number>, keep: (h: H3Cell) => boolean, target: H3Res): Map<H3Cell, number> {
+  const kept = new Map<H3Cell, number>()
+  const add = (h: H3Cell, v: number) => kept.set(h, (kept.get(h) ?? 0) + v)
   for (const [h, v] of cells) {
     if (!keep(h)) continue
     if (getResolution(h) >= target) {
@@ -111,7 +125,7 @@ function trim(cells: ReadonlyMap<string, number>, keep: (h: string) => boolean, 
 }
 
 /** How much paint there is, in intensity × km²: intensity is a density, so a cell holds intensity times its area. */
-export function paintAmount(cells: ReadonlyMap<string, number>): number {
+export function paintAmount(cells: ReadonlyMap<H3Cell, number>): number {
   let sum = 0
   for (const [h, v] of cells) sum += v * cellArea(h, UNITS.km2)
   return sum

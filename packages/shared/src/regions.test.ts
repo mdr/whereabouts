@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest"
-import { cellArea, cellToChildren, cellToLatLng, getRes0Cells, gridDisk, latLngToCell, UNITS } from "h3-js"
+import {
+  cellArea,
+  cellToChildren,
+  cellToLatLng,
+  getRes0Cells,
+  gridDisk,
+  type H3Cell,
+  h3Res,
+  latLngToCell,
+  UNITS
+} from "./h3.ts"
 import regionsJson from "../regions.json" with { type: "json" }
 import { resolutionForTolerance } from "./paint.ts"
 import { QUESTIONS } from "./questions.ts"
@@ -19,7 +29,7 @@ const REGIONS = (regionsJson as RegionData[]).map(regionFrom)
 const byId = (id: string) => REGIONS.find((q) => q.id === id)!
 
 /** An even coat of paint over `cells`, with the usual 5% world floor. */
-function coat(cells: string[], floor = 0.05) {
+function coat(cells: H3Cell[], floor = 0.05) {
   return buildDistribution(
     cells.map((h) => {
       const [lat, lon] = cellToLatLng(h)
@@ -117,12 +127,12 @@ describe("shape and nearness", () => {
   const res = resolutionForTolerance(germany.toleranceKm)
   const cells = regionCells(germany, res)
   const poland = regionCells(byId("poland-region"), res)
-  const area = (cs: string[]) => cs.reduce((s, h) => s + cellArea(h, UNITS.km2), 0)
+  const area = (cs: H3Cell[]) => cs.reduce((s, h) => s + cellArea(h, UNITS.km2), 0)
   const score = (d: Distribution) => scoreRegionQuestion(d, germany).score
 
   /** Each part's share of the paint, spread evenly over its cells. */
-  const shares = (parts: [string[], number][]) => {
-    const density = new Map<string, number>()
+  const shares = (parts: [H3Cell[], number][]) => {
+    const density = new Map<H3Cell, number>()
     for (const [cs, share] of parts) {
       const d = share / area(cs)
       for (const h of cs) density.set(h, (density.get(h) ?? 0) + d)
@@ -140,7 +150,7 @@ describe("shape and nearness", () => {
     const set = new Set(cells)
     let frontier = cells
     while (area([...set]) < times * area(cells)) {
-      const next: string[] = []
+      const next: H3Cell[] = []
       for (const h of frontier) {
         for (const n of gridDisk(h, 1)) {
           if (set.has(n)) continue
@@ -217,11 +227,11 @@ describe("shape and nearness", () => {
 
   it("wrong paint spread thinly does not pass for vagueness", () => {
     // A faint blob eight times Germany's area, centred in North America.
-    const blob = gridDisk(latLngToCell(40, -100, res - 1), 22)
+    const blob = gridDisk(latLngToCell(40, -100, h3Res(res - 1)), 22)
     expect(area(blob)).toBeGreaterThan(6 * area(cells))
     expect(score(coat(blob))).toBeLessThan(250)
     // The whole world painted evenly: just above a pass.
-    const world = getRes0Cells().flatMap((c) => cellToChildren(c, 2))
+    const world = getRes0Cells().flatMap((c) => cellToChildren(c, h3Res(2)))
     const w = score(coat(world))
     expect(w).toBeGreaterThan(250)
     expect(w).toBeLessThan(350)
@@ -259,8 +269,8 @@ describe("shape and nearness", () => {
 describe("coarsenDistribution", () => {
   it("keeps the mass and barely moves a point question's score", () => {
     const answer = { lat: 48.8584, lon: 2.2945 }
-    const d = coat(regionCells(byId("france-region"), 5))
-    const coarse = coarsenDistribution(d, 4)
+    const d = coat(regionCells(byId("france-region"), h3Res(5)))
+    const coarse = coarsenDistribution(d, h3Res(4))
     const mass = (x: typeof d) => x.points.reduce((s, p) => s + p.p, 0) + x.floor
     expect(mass(coarse)).toBeCloseTo(1, 9)
     expect(coarse.points.length).toBeLessThan(d.points.length / 4)

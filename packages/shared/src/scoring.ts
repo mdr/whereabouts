@@ -12,7 +12,17 @@
  * mass spread evenly over the whole sphere. Its kernel integrals have a closed
  * form (see uniformKernelMean), so it costs nothing to evaluate.
  */
-import { cellArea, cellToChildren, cellToLatLng, cellToParent, getResolution, UNITS } from "h3-js"
+import {
+  cellArea,
+  cellToChildren,
+  cellToLatLng,
+  cellToParent,
+  finerRes,
+  getResolution,
+  UNITS,
+  type H3Cell,
+  type H3Res
+} from "./h3.ts"
 import { EARTH_RADIUS_KM, chordDistanceSq, toXyz, type LatLon, type Xyz } from "./geo.ts"
 
 const LN2 = Math.LN2
@@ -57,7 +67,7 @@ export interface WeightedPoint {
    */
   s2?: number
   /** H3 index of the cell, when the mass is a painted cell; lets A refine it. */
-  cell?: string
+  cell?: H3Cell
 }
 
 /**
@@ -340,7 +350,7 @@ function patchSimilarity(pt: WeightedPoint, answer: Xyz, toleranceKm: number, wi
   if (Math.sqrt(dSq) - R > reach) return pt.p * kernelFromSq(dSq, toleranceKm, k, s2)
   const res = getResolution(pt.cell)
   if (res >= 15) return pt.p * kernelFromSq(dSq, toleranceKm, k, s2)
-  const children = cellToChildren(pt.cell, res + 1)
+  const children = cellToChildren(pt.cell, finerRes(res))
   const areas = children.map((c) => cellArea(c, UNITS.km2))
   const total = areas.reduce((s, a) => s + a, 0)
   let A = 0
@@ -441,7 +451,7 @@ function component(k: Kernel, c: number): Kernel {
 }
 
 /** Region answer from H3 cells (any mix of resolutions), weighted by area. */
-export function regionAnswer(cells: Iterable<string>, toleranceKm: number, k: Kernel = DEFAULT_KERNEL): RegionAnswer {
+export function regionAnswer(cells: Iterable<H3Cell>, toleranceKm: number, k: Kernel = DEFAULT_KERNEL): RegionAnswer {
   const raw: WeightedPoint[] = []
   let total = 0
   for (const h of cells) {
@@ -500,8 +510,8 @@ export function crossSum(
  * their mass; coarser cells are left alone. Cells are scored as patches, so
  * this changes scores only slightly while cutting the work sharply.
  */
-export function coarsenDistribution(dist: Distribution, res: number): Distribution {
-  const merged = new Map<string, number>()
+export function coarsenDistribution(dist: Distribution, res: H3Res): Distribution {
+  const merged = new Map<H3Cell, number>()
   const points: WeightedPoint[] = []
   for (const pt of dist.points) {
     if (!pt.cell || getResolution(pt.cell) <= res) points.push(pt)
@@ -545,10 +555,10 @@ export function scoreRegion(dist: Distribution, region: RegionAnswer, exact = fa
  * proportional to intensity x area. `floor` is the requested uniform fraction.
  */
 export function buildDistribution(
-  cells: Iterable<{ lat: number; lon: number; intensity: number; areaKm2: number; h3?: string }>,
+  cells: Iterable<{ lat: number; lon: number; intensity: number; areaKm2: number; h3?: H3Cell }>,
   floor: number
 ): Distribution {
-  const raw: { xyz: Xyz; w: number; s2: number; cell?: string }[] = []
+  const raw: { xyz: Xyz; w: number; s2: number; cell?: H3Cell }[] = []
   let total = 0
   for (const c of cells) {
     if (c.intensity <= 0) continue
