@@ -10,6 +10,7 @@
     "./flags.json": "./flags.json",
     "./features.json": "./features.json",
     "./land.json": "./land.json",
+    "./water.json": "./water.json",
     "./borders.json": "./borders.json"
   },
   "scripts": {

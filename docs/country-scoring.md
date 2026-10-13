@@ -337,7 +337,8 @@ same limits: under 10,000 km², or too scattered, a place is asked as a point.
 - **Seas:** the nearly closed ones (Mediterranean, Black, Caspian, Red,
   Baltic, Persian Gulf, Hudson Bay), each the union of Natural Earth's 1:10m
   marine areas, since it splits off the Adriatic, the Gulf of Bothnia and
-  the like. Under 1% of each falls on land. A sea round has no Trim sea.
+  the like. Under 1% of each falls on land. Lake and sea rounds have Trim land in place
+  of Trim sea.
 - **US states:** all 50 from the 1:50m admin-1 outlines with the Great Lakes
   cut out. Rhode Island and Delaware are points; Hawaii keeps its three
   largest islands. State lines never show while guessing, even on the

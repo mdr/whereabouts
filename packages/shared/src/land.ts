@@ -55,19 +55,57 @@ export class LandMask {
  * cells always do.
  */
 export function trimSea(cells: ReadonlyMap<string, number>, mask: LandMask, finestRes: number): Map<string, number> {
-  const target = Math.min(mask.res, finestRes)
+  return trim(cells, (h) => mask.nearLand(h), Math.min(mask.res, finestRes))
+}
+
+/**
+ * The mask behind "Trim land", in a lake or sea round: the H3 res-5 cells
+ * wholly on land and touching no lake, compacted (water.json, built by
+ * scripts/build-water.mjs). The land mask cannot serve, since lakes are land
+ * in it. Paint within a cell of water stays, as paint within a cell of land
+ * stays when trimming the sea.
+ */
+export interface WaterMaskData {
+  res: number
+  /** Compacted cells: each at res or coarser. */
+  dry: string[]
+}
+
+export class WaterMask {
+  readonly res: number
+  private readonly dry: Set<string>
+
+  constructor(data: WaterMaskData) {
+    this.res = data.res
+    this.dry = new Set(data.dry)
+  }
+
+  /** Whether any of this cell is outside the dry cells. Compaction puts any cell wholly dry, or an ancestor, in the set. */
+  nearWater(h: string): boolean {
+    const r = getResolution(h)
+    for (let k = 0; k <= Math.min(r, this.res); k++) if (this.dry.has(k === r ? h : cellToParent(h, k))) return false
+    return true
+  }
+}
+
+/** The paint without its cells on dry land, split as trimSea splits. */
+export function trimLand(cells: ReadonlyMap<string, number>, mask: WaterMask, finestRes: number): Map<string, number> {
+  return trim(cells, (h) => mask.nearWater(h), Math.min(mask.res, finestRes))
+}
+
+function trim(cells: ReadonlyMap<string, number>, keep: (h: string) => boolean, target: number): Map<string, number> {
   const kept = new Map<string, number>()
   const add = (h: string, v: number) => kept.set(h, (kept.get(h) ?? 0) + v)
   for (const [h, v] of cells) {
-    if (!mask.nearLand(h)) continue
+    if (!keep(h)) continue
     if (getResolution(h) >= target) {
       add(h, v)
       continue
     }
     const children = cellToChildren(h, target)
-    const land = children.filter((c) => mask.nearLand(c))
-    if (land.length === children.length) add(h, v)
-    else for (const c of land) add(c, v)
+    const wanted = children.filter(keep)
+    if (wanted.length === children.length) add(h, v)
+    else for (const c of wanted) add(c, v)
   }
   return kept
 }

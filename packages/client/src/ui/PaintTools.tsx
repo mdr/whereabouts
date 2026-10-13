@@ -6,7 +6,7 @@ import type { Tool } from "../paint-controller"
 import { Icon, type IconName } from "./icons"
 import { sound } from "../sound"
 import { Shortcuts, ShortcutsButton } from "./Shortcuts"
-import { loadLandMask } from "../land"
+import { loadLandMask, loadWaterMask } from "../land"
 import { paintDevTestIds, paintToolsTestIds } from "./PaintToolsTestIds"
 
 const TOOL_ICON: Record<Tool, IconName> = { pan: "hand", paint: "brush", erase: "eraser", fill: "bucket" }
@@ -21,15 +21,15 @@ const TOOL_HINT: Record<Tool, string> = {
  * The player-facing brush bar: tool, clear, brush size, undo/redo, and
  * whatever action buttons the screen passes in (done, next).
  */
-/** `atSea`: the answer is a sea, so there is no Trim sea. */
+/** `water`: the answer is a lake or sea, so Trim land replaces Trim sea. */
 export function PaintTools({
   children,
   practice,
-  atSea
+  water
 }: {
   children?: ComponentChildren
   practice?: boolean
-  atSea?: boolean
+  water?: boolean
 }) {
   const paint = usePaint()
   const tool = paint.tool.value
@@ -65,7 +65,7 @@ export function PaintTools({
         >
           <Icon name="trash" /> <span class="label">Clear</span>
         </button>
-        {!atSea && <TrimSea enabled={enabled} />}
+        <Trim enabled={enabled} water={water ?? false} />
       </div>
       <label class="brush" title="Brush size ([ and ] also work)">
         <span>Brush</span>
@@ -209,12 +209,13 @@ function Distribution() {
 }
 
 /**
- * Remove paint more than about 20 km out to sea, as one undoable step. The
- * land mask loads on the first press. For a moment the button says what it
- * did. It does not promise a better score: a blob centred on a coastal
- * answer loses its sea side (see land.ts).
+ * Remove paint more than about 20 km out to sea, or in a lake or sea round
+ * that far onto land, as one undoable step. The mask loads on the first
+ * press. For a moment the button says what it did. It does not promise a
+ * better score: a blob centred on a coastal answer loses its sea side (see
+ * land.ts).
  */
-function TrimSea({ enabled }: { enabled: boolean }) {
+function Trim({ enabled, water }: { enabled: boolean; water: boolean }) {
   const paint = usePaint()
   const [note, setNote] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -226,11 +227,11 @@ function TrimSea({ enabled }: { enabled: boolean }) {
   const trim = async () => {
     setBusy(true)
     try {
-      const share = paint.trimSea(await loadLandMask())
+      const share = water ? paint.trimLand(await loadWaterMask()) : paint.trimSea(await loadLandMask())
       if (share > 0) sound.play("clear")
-      setNote(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : "None at sea")
+      setNote(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : water ? "None on land" : "None at sea")
     } catch (err) {
-      console.warn("could not load the land mask", err)
+      console.warn("could not load the trim mask", err)
       setNote("Try again")
     } finally {
       setBusy(false)
@@ -238,12 +239,16 @@ function TrimSea({ enabled }: { enabled: boolean }) {
   }
   return (
     <button
-      title="Remove paint out at sea, more than about 20 km from land (Undo brings it back)"
+      title={
+        water
+          ? "Remove paint on land, more than about 20 km from water (Undo brings it back)"
+          : "Remove paint out at sea, more than about 20 km from land (Undo brings it back)"
+      }
       onClick={() => void trim()}
       disabled={!enabled || busy || paint.isEmpty.value}
       aria-live="polite"
     >
-      <Icon name="sea" /> <span class="label">{note ?? "Trim sea"}</span>
+      <Icon name={water ? "land" : "sea"} /> <span class="label">{note ?? (water ? "Trim land" : "Trim sea")}</span>
     </button>
   )
 }

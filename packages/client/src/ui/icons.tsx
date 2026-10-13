@@ -18,6 +18,7 @@ import {
   Keyboard,
   Link,
   MapPin,
+  Mountain,
   Maximize2,
   PaintBucket,
   Minus,
@@ -72,7 +73,8 @@ const ICONS = {
   share: Share2,
   soundOn: Volume2,
   soundOff: VolumeX,
-  sea: Waves
+  sea: Waves,
+  land: Mountain
 } satisfies Record<string, FunctionComponent<LucideProps>>
 
 export type IconName = keyof typeof ICONS

@@ -381,7 +381,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             {q.flag ? <AnswerMode area={isRegion(q)} /> : isRegion(q) && <RegionHint topic={q.topic} />}
           </QuestionCard>
         </div>
-        <PaintTools practice atSea={q.topic === "sea"}>
+        <PaintTools practice water={q.topic === "lake" || q.topic === "sea"}>
           <button
             class="primary"
             onClick={submit}

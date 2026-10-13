@@ -10,8 +10,10 @@ import {
   PaintLayer,
   paintAmount,
   resolutionForTolerance,
+  trimLand,
   trimSea,
   type LandMask,
+  type WaterMask,
   type LatLon
 } from "@whereabouts/shared"
 import type { GameMap } from "./map"
@@ -343,7 +345,15 @@ export class PaintController {
    * the share of the paint's mass removed: 0 when there was none at sea.
    */
   trimSea(mask: LandMask): number {
-    const kept = trimSea(this.layer.cells, mask, this.layer.res)
+    return this.keepOnly(trimSea(this.layer.cells, mask, this.layer.res))
+  }
+
+  /** Drop the paint on dry land, for a lake or sea, as trimSea drops it at sea. */
+  trimLand(mask: WaterMask): number {
+    return this.keepOnly(trimLand(this.layer.cells, mask, this.layer.res))
+  }
+
+  private keepOnly(kept: Map<string, number>): number {
     const share = 1 - paintAmount(kept) / paintAmount(this.layer.cells)
     if (!(share > 1e-9)) return 0
     this.pushHistory()

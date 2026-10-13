@@ -366,17 +366,17 @@ pnpm workspace with three packages:
 
 ## Controls
 
-| Action              | Control                                                       |
-| ------------------- | ------------------------------------------------------------- |
-| Pan / Paint / Erase | `1` / `2` / `3`, or the buttons                               |
-| Fill                | `4`, or the button (a country round on the Political map)     |
-| Pan while painting  | hold `Space`, or drag with the middle button                  |
-| Brush size          | slider, or `[` and `]`                                        |
-| Undo / redo         | `Ctrl+Z` / `Ctrl+Shift+Z` (⌘ on Mac), or the buttons          |
-| Trim sea            | the Trim sea button: removes paint more than ~20 km from land |
-| Zoom                | scroll wheel                                                  |
-| Submit / next       | `Enter` (practice)                                            |
-| List these keys     | `?`, or the keyboard button in the toolbar                    |
+| Action              | Control                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Pan / Paint / Erase | `1` / `2` / `3`, or the buttons                                                                               |
+| Fill                | `4`, or the button (a country round on the Political map)                                                     |
+| Pan while painting  | hold `Space`, or drag with the middle button                                                                  |
+| Brush size          | slider, or `[` and `]`                                                                                        |
+| Undo / redo         | `Ctrl+Z` / `Ctrl+Shift+Z` (⌘ on Mac), or the buttons                                                          |
+| Trim sea / land     | the Trim sea button: removes paint more than ~20 km from land; Trim land, in a lake or sea round, the reverse |
+| Zoom                | scroll wheel                                                                                                  |
+| Submit / next       | `Enter` (practice)                                                                                            |
+| List these keys     | `?`, or the keyboard button in the toolbar                                                                    |
 
 Trim sea uses a land mask (`packages/shared/land.json`, built by
 `scripts/build-land.mjs` from Natural Earth's 1:10m land and minor islands):
@@ -386,6 +386,14 @@ and none beyond about 20 km does. It is one undoable step and says
 how much it removed. It is the player's choice, not a free gain: a blob
 centred on a coastal answer loses its sea side and can score lower (up to
 about 85 points in testing), while island answers often gain.
+
+In a lake or sea round the button is Trim land instead: it removes paint
+more than about 20 km from water, using a water mask
+(`packages/shared/water.json`, built by `scripts/build-water.mjs`): the
+same-sized cells wholly on land and touching no lake, about 130 KB
+gzipped, fetched on the first press. The land mask cannot serve, since
+lakes are land in it. A lake or sea painted exactly loses nothing (a test
+checks every one).
 
 Fill appears in a round that asks for a country (whole countries and flags, not islands, lakes, seas or states)
 when the map detail is Political. A click (a tap, on a phone) fills the
