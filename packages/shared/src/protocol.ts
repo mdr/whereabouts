@@ -256,7 +256,7 @@ export interface RevealView {
   wiki?: string
   results: RoundResultView[]
   /** Ids of players who have pressed Ready. The round advances when everyone connected has. */
-  ready: string[]
+  ready: PlayerId[]
 }
 
 export interface FinalStanding {

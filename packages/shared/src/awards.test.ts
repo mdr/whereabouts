@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { pickAwards, type PlayerFacts, type RoundFacts } from "./awards.ts"
+import { playerId } from "./ids.ts"
 
 const round = (score: number, extra: Partial<RoundFacts> = {}): RoundFacts => ({
   label: "Paris",
@@ -10,7 +11,9 @@ const round = (score: number, extra: Partial<RoundFacts> = {}): RoundFacts => ({
   areaKm2: 10_000,
   ...extra
 })
-const player = (id: string, rounds: (RoundFacts | null)[]): PlayerFacts => ({ playerId: id, rounds })
+/** Player "a" is p1, "b" p2, and so on. */
+const idOf = (letter: string) => playerId(`p${letter.charCodeAt(0) - 96}`)
+const player = (letter: string, rounds: (RoundFacts | null)[]): PlayerFacts => ({ playerId: idOf(letter), rounds })
 const SEEDS = Array.from({ length: 20 }, (_, i) => ((i + 1) * 2654435761) >>> 0)
 
 describe("pickAwards", () => {
@@ -22,10 +25,10 @@ describe("pickAwards", () => {
       const awards = pickAwards(players, seed)
       // Four were earned, two each by the passer and the last-placed player: all are handed out.
       expect(awards.map((a) => `${a.title}:${a.playerIds.join()}`).sort()).toEqual([
-        "Chicken:a",
-        "Comeback Kid:a",
-        "Rollercoaster:f",
-        "Wooden Spoon:f"
+        "Chicken:p1",
+        "Comeback Kid:p1",
+        "Rollercoaster:p6",
+        "Wooden Spoon:p6"
       ])
     }
   })
@@ -41,8 +44,8 @@ describe("pickAwards", () => {
     expect(all).toContain("Chicken")
     expect(all).toContain("Bottled It")
     expect(all).toContain("Wooden Spoon")
-    expect(awards.find((a) => a.title === "Chicken")!.playerIds).toEqual(["a"])
-    expect(awards.find((a) => a.title === "Bottled It")!.playerIds).toEqual(["b"])
+    expect(awards.find((a) => a.title === "Chicken")!.playerIds).toEqual([idOf("a")])
+    expect(awards.find((a) => a.title === "Bottled It")!.playerIds).toEqual([idOf("b")])
   })
 
   it("only awards what someone earned", () => {

@@ -12,6 +12,7 @@ import featuresJson from "../features.json" with { type: "json" }
 import { FLAG_POINT_PROMPT, type FlagData, flagFrom } from "./flags.ts"
 import { playerId, playerToken, questionId, roomCode, type PlayerToken } from "./ids.ts"
 import { PLAYER_COLOURS } from "./colours.ts"
+import { GameViewSchema } from "./view-schema.ts"
 
 const petra: Question = {
   id: questionId("petra"),
@@ -339,7 +340,7 @@ describe("round loop", () => {
     const awards = g.view(tokA, now).awards!
     expect(awards.length).toBeGreaterThanOrEqual(2)
     expect(awards.find((a) => a.title === "Chicken")?.playerIds).toEqual(["p1"])
-    expect(awards.some((a) => a.playerIds.includes("p2"))).toBe(true)
+    expect(awards.some((a) => a.playerIds.includes(playerId("p2")))).toBe(true)
     g.again(tokA, now)
     expect(g.view(tokA, now).awards).toBeNull()
   })
@@ -927,6 +928,34 @@ describe("the question mix", () => {
     expect(topics.filter((t) => t === "state")).toHaveLength(7)
     expect(topics.filter((t) => t === "island" || t === "lake" || t === "sea")).toHaveLength(6)
     expect(new Set(seen.map((q) => q.prompt)).size).toBe(13)
+  })
+
+  it("sends every player and spectator views that match GameViewSchema, through every kind of round", () => {
+    const g = game({ mix: mix(1, 1, 1, 1, 1, 1), mapDetail: "water" })
+    g.join(tokS, "Sam", T0 + 2, true)
+    let now = T0
+    const check = () => {
+      for (const token of [tokA, tokB, tokS]) {
+        const checked = GameViewSchema.safeParse(g.view(token, now))
+        expect(checked.success, JSON.stringify(checked.error?.issues)).toBe(true)
+      }
+    }
+    check()
+    g.start(tokA, now)
+    while (g.phase !== "results") {
+      const q = g.view(tokA, now).round!.question
+      const layer = new PaintLayer(resolutionForTolerance(q.toleranceKm))
+      layer.stamp({ lat: 10, lon: 10 }, q.toleranceKm, 1)
+      g.setPaint(tokA, { cells: layer.toRecord(), floor: 0.05 })
+      g.lock(tokB, now)
+      check()
+      now += 60_000 + ROUND_GRACE_MS
+      g.tick(now)
+      check()
+      g.next(tokA, now)
+    }
+    check()
+    expect(g.view(tokA, now).awards!.length).toBeGreaterThan(0)
   })
 
   it("asks a lake only when the map shows lakes", () => {

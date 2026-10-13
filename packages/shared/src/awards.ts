@@ -2,6 +2,7 @@
  * Prizes and booby prizes for the results screen: a few picked at random from
  * those someone earned, spread across the players where possible.
  */
+import type { PlayerId } from "./ids.ts"
 import { greatCircleDistance, type LatLon } from "./geo.ts"
 import { shuffle } from "./questions.ts"
 
@@ -23,7 +24,7 @@ export interface RoundFacts {
 }
 
 export interface PlayerFacts {
-  playerId: string
+  playerId: PlayerId
   /** By round; null where the player sat out. */
   rounds: (RoundFacts | null)[]
 }
@@ -32,7 +33,7 @@ export interface Award {
   emoji: string
   title: string
   /** Usually one; two for an award shared by a pair. */
-  playerIds: string[]
+  playerIds: PlayerId[]
   /** The joke, with {0} and {1} where the players' names go. */
   line: string
 }
@@ -55,7 +56,7 @@ export function pickAwards(players: PlayerFacts[], seed: number): Award[] {
   }
   const max = Math.min(5, Math.max(3, players.length))
   const picked: Candidate[] = []
-  const awarded = new Set<string>()
+  const awarded = new Set<PlayerId>()
   // One each first, then seconds if there are fewer players than awards.
   for (const firstPass of [true, false]) {
     for (const c of ordered) {
@@ -92,7 +93,7 @@ const total = (p: PlayerFacts) => played(p).reduce((s, r) => s + r.score, 0)
 /** Awards for a single round or a habit across rounds. */
 function soloAwards(players: PlayerFacts[]): Candidate[] {
   const out: Candidate[] = []
-  const add = (booby: boolean, emoji: string, title: string, playerId: string, line: string) =>
+  const add = (booby: boolean, emoji: string, title: string, playerId: PlayerId, line: string) =>
     out.push({ booby, emoji, title, playerIds: [playerId], line })
 
   // The best and worst single rounds.
@@ -220,7 +221,7 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
 /** Awards for the shape of a whole game: standings, streaks and swings. */
 function gameAwards(players: PlayerFacts[]): Candidate[] {
   const out: Candidate[] = []
-  const add = (booby: boolean, emoji: string, title: string, playerId: string, line: string) =>
+  const add = (booby: boolean, emoji: string, title: string, playerId: PlayerId, line: string) =>
     out.push({ booby, emoji, title, playerIds: [playerId], line })
   const n = Math.max(0, ...players.map((p) => p.rounds.length))
   const ranks = rankHistory(players, n)

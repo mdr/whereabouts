@@ -88,7 +88,10 @@ export default defineConfig(
       // Vitest takes a message as expect's second argument.
       "vitest/valid-expect": ["error", { maxArgs: 2 }],
       // The server tests' until() helpers throw when no state matches in time.
-      "vitest/expect-expect": ["error", { assertFunctionNames: ["expect", "*.until", "*.untilLatest"] }],
+      "vitest/expect-expect": [
+        "error",
+        { assertFunctionNames: ["expect", "expectTypeOf", "*.until", "*.untilLatest"] }
+      ],
       // Tests over the game data branch on each item's kind to choose what to check.
       "vitest/no-conditional-expect": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",

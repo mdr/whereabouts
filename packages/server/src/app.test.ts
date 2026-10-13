@@ -11,6 +11,7 @@ import {
   ROUND_GRACE_MS,
   SEAT_GRACE_MS,
   compactRecord,
+  GameViewSchema,
   encodeTicket,
   flagFrom,
   playerToken,
@@ -89,6 +90,8 @@ class TestPlayer {
   readonly client: WSClientType<Topics>
   readonly states: GameView[] = []
   readonly errors: string[] = []
+  /** Why each state message that did not match GameViewSchema failed: checked after every test. */
+  readonly invalidStates: string[] = []
   readonly token: PlayerToken
   readonly name: string
   constructor(url: string, name: string) {
@@ -96,7 +99,12 @@ class TestPlayer {
     this.token = playerToken(`${name}-token-0123456789abcdef`)
     this.client = new WSClient<Topics>(url, { ticketSource: "protocol", reconnect: false })
     const dec = new TextDecoder()
-    this.client.on("state", (p) => this.states.push(JSON.parse(dec.decode(p)) as GameView))
+    this.client.on("state", (p) => {
+      const view = JSON.parse(dec.decode(p)) as GameView
+      const checked = GameViewSchema.safeParse(view)
+      if (!checked.success) this.invalidStates.push(checked.error.message)
+      this.states.push(view)
+    })
     this.client.on("error", (p) => this.errors.push((JSON.parse(dec.decode(p)) as { message: string }).message))
   }
   connect(ticket: { create?: boolean; code?: RoomCode; watch?: boolean }) {
@@ -157,6 +165,9 @@ describe("game server", () => {
   })
 
   afterEach(async () => {
+    // Every state the server sent matched the schema the client's cast trusts.
+    const invalid = players.flatMap((p) => p.invalidStates.map((why) => `${p.name}: ${why}`))
+    if (invalid.length > 0) throw new Error(`state did not match GameViewSchema:\n${invalid.join("\n")}`)
     for (const p of players) p.client.disconnect()
     players.length = 0
     await app.close()
