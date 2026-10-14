@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { getHexagonEdgeLengthAvg, getResolution, gridDisk, h3Res, latLngToCell, UNITS } from "./h3.ts"
 import { PaintLayer, cellSpacingKm, cellsOutline, compactRecord, resolutionForTolerance } from "./paint.ts"
 
@@ -173,6 +173,7 @@ describe("mixed resolutions", () => {
       if (sizes[i]! < sizes[i - 1]! * 0.5) decreased = true
       if (decreased) expect(sizes[i]!).toBeLessThan(sizes[0]! * 0.5)
     }
+    expect(decreased).toBe(true)
   })
 })
 

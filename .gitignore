@@ -8,3 +8,4 @@ smoke-out/
 
 # nix build output
 result
+.vitest/

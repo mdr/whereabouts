@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell, UNITS } from "./h3.ts"
 import regionsJson from "../regions.json" with { type: "json" }
 import { describePoint, describeRegion, explainPoint } from "./explain.ts"

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { playerColour, playerId, playerName, roomCode, type GameView } from "@whereabouts/shared"

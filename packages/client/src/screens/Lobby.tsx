@@ -71,7 +71,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
               <button
                 onClick={() => {
                   // Missing outside a secure context (a LAN address over http), whatever the DOM types say.
-                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                  // oxlint-disable-next-line typescript/no-unnecessary-condition
                   void navigator.clipboard?.writeText(url).then(() => setCopied(true))
                 }}
               >

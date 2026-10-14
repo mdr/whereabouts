@@ -134,7 +134,8 @@ export class MapPanel {
   async shownPaintCells(): Promise<number> {
     return this.#page.evaluate(() => {
       const source = window.whereabouts.map.getSource("paint") as unknown as
-        { serialize: () => { data: GeoJSON.FeatureCollection } } | undefined
+        | { serialize: () => { data: GeoJSON.FeatureCollection } }
+        | undefined
       return source?.serialize().data.features.length ?? 0
     })
   }

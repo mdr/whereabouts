@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { QUESTIONS, pickQuestions, wikipediaUrl } from "./questions.ts"
 import { greatCircleDistance } from "./geo.ts"
 import { questionId } from "./ids.ts"

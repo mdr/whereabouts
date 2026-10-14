@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import * as h3 from "./h3.ts"
 import { type H3Cell, h3Res } from "./h3.ts"
 import { toXyz, EARTH_RADIUS_KM } from "./geo.ts"

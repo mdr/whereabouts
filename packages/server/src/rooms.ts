@@ -299,7 +299,7 @@ export class GameAuth extends AuthMiddleware<ActorData> {
 
   override async authenticate(ticket: string, _context?: ConnectionContext) {
     // Rivalis takes null as a refusal.
-    // eslint-disable-next-line no-restricted-syntax
+    // oxlint-disable-next-line hunch/no-null
     return this.route(ticket) ?? null
   }
 

@@ -42,7 +42,7 @@ interface Snapshot {
  */
 function following<T>(version: ReadonlySignal<number>, read: () => T): ReadonlySignal<T> {
   return computed(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions -- the read is the dependency
+    // oxlint-disable-next-line typescript/no-unused-expressions -- the read is the dependency
     version.value
     return read()
   })

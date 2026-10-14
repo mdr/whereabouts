@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
 import { DevDrawer, DevFacts } from "./DevDrawer"
 import { devMode } from "../dev"

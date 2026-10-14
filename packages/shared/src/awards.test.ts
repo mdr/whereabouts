@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { pickAwards, type PlayerFacts, type RoundFacts } from "./awards.ts"
 import { playerId } from "./ids.ts"
 

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import featuresJson from "../features.json" with { type: "json" }
 import regionsJson from "../regions.json" with { type: "json" }
 import { featureFrom, type RegionData, regionFrom } from "./regions.ts"

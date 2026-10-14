@@ -17,3 +17,13 @@ minimumReleaseAge: 2880
 # Build scripts are opt-in; esbuild needs its postinstall to place its binary.
 allowBuilds:
   esbuild: true
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@1.1.0
+  vite-plus: 1.1.0
+overrides:
+  vite@*: "catalog:"
+peerDependencyRules:
+  allowAny:
+    - vite
+  allowedVersions:
+    vite: "*"

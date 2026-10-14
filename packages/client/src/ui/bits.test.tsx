@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render, waitFor } from "@testing-library/preact"
 import { HudBottom, QuestionCard, SoundToggle } from "./bits"
 import { soundOn } from "../settings"

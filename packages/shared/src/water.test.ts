@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { getResolution, h3Res, latLngToCell } from "./h3.ts"
 import waterJson from "../water.json" with { type: "json" }
 import featuresJson from "../features.json" with { type: "json" }

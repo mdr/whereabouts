@@ -1,8 +1,8 @@
-import { defineConfig } from "vite"
+import { defineConfig, lazyPlugins } from "vite-plus"
 import preact from "@preact/preset-vite"
 
 export default defineConfig({
-  plugins: [preact()],
+  plugins: lazyPlugins(() => [preact()]),
   server: {
     port: 5173,
     open: false,

@@ -4,7 +4,7 @@
  * Node 22 provides global WebSocket, TextEncoder and URL; the client reads
  * them from `window`, so the test aliases window to globalThis.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
 import type { WSClient as WSClientType } from "@rivalis/browser"
 import {
   PaintLayer,

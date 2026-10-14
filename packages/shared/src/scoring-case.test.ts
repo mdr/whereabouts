@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { PaintLayer } from "./paint.ts"
 import { decodeCase, encodeCase, type ScoringCase } from "./scoring-case.ts"
 import { h3Res } from "./h3.ts"

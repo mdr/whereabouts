@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { coarserRes, finerRes, getResolution, h3Cell, h3Res, latLngToCell, resolutionsTo } from "./h3.ts"
 import { PaintSubmissionSchema } from "./protocol.ts"
 

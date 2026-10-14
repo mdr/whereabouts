@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { isTyping } from "./keys"
 
 const input = (type: string) => Object.assign(document.createElement("input"), { type })

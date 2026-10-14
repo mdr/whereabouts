@@ -19,7 +19,7 @@ declare global {
  * Runs in the page before the app: records each Web Audio source started or
  * stopped. It can tell which sound played, not how it sounded.
  */
-/* eslint-disable @typescript-eslint/unbound-method -- each original is applied with the node as this */
+/* oxlint-disable typescript/unbound-method -- each original is applied with the node as this */
 export function recordSounds(): void {
   window.__audio = []
   const log = (e: Omit<SoundEvent, "at">) => window.__audio.push({ ...e, at: performance.now() })
@@ -50,7 +50,7 @@ export function recordSounds(): void {
     oscStart.apply(this, args)
   }
 }
-/* eslint-enable @typescript-eslint/unbound-method */
+/* oxlint-enable typescript/unbound-method */
 
 /** The page clock, to time sounds against. */
 export function pageTime(tab: Tab): Promise<number> {

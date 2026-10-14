@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { flagCode, playerId, playerToken, questionId, regionId, roomCode } from "./ids.ts"
 import { KickSchema, TicketSchema } from "./protocol.ts"
 

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
 import { Pills, Stepper } from "./Controls"
 

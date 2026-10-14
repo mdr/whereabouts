@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { cellToChildren, cellToParent, getResolution, h3Res, latLngToCell } from "./h3.ts"
 import landJson from "../land.json" with { type: "json" }
 import flagsJson from "../flags.json" with { type: "json" }

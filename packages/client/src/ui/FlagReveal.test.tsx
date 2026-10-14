@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { render } from "@testing-library/preact"
 import { Borders, type FlagData, flagFrom, h3Res, PaintLayer } from "@whereabouts/shared"
 import bordersJson from "@whereabouts/shared/borders.json"
