@@ -228,7 +228,14 @@ export default defineConfig({
           "no-unreachable": "off",
           "no-unsafe-negation": "off",
           "no-var": "error",
-          "hunch/no-null": "error",
+          // One absence value: undefined, which the language produces anyway. Where an
+          // outside API hands back null, convert it on the spot (`?? undefined`).
+          "eslint-js/no-restricted-syntax": [
+            "error",
+            { selector: "Literal[raw='null']", message: "Use undefined, not null." },
+            { selector: "TSNullKeyword", message: "Use undefined, not null." },
+            { selector: "MemberExpression[property.name='toBeNull']", message: "Use toBeUndefined, not toBeNull." }
+          ],
           "no-with": "off",
           "prefer-const": "error",
           "prefer-rest-params": "error",
@@ -382,7 +389,7 @@ export default defineConfig({
         name: "vite-plus",
         specifier: "vite-plus/oxlint-plugin"
       },
-      { name: "hunch", specifier: "./lint/plugin.mjs" }
+      { name: "eslint-js", specifier: "oxlint-plugin-eslint" }
     ]
   },
   fmt: {

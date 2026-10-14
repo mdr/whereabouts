@@ -23,6 +23,9 @@ importers:
       knip:
         specifier: ^6.38.0
         version: 6.38.0
+      oxlint-plugin-eslint:
+        specifier: 1.87.0
+        version: 1.87.0
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2406,6 +2409,10 @@ packages:
         optional: true
       vite-plus:
         optional: true
+
+  oxlint-plugin-eslint@1.87.0:
+    resolution: {integrity: sha512-EiIglWDc5jqP56sRSHWusLvAoEDWL8vi00WvkMaZYKi9ofF5BtQ4iaBa6DU+cXT4oY89xIgUZ3k8li4IO1JMVQ==}
+    engines: {node: ^20.19.0 || >=22.12.0}
 
   oxlint-tsgolint@7.0.2003:
     resolution: {integrity: sha512-VnK4zlqgmgq/7ZcjzCk/WpN8kKFsYGcB85Io9qT3wL4K8Un3RKmJkp793crNETieMusPMKOA4a+Mw2wbteI6TQ==}
@@ -4791,6 +4798,8 @@ snapshots:
       '@oxfmt/binding-win32-ia32-msvc': 0.72.0
       '@oxfmt/binding-win32-x64-msvc': 0.72.0
       vite-plus: 1.1.0(@types/node@26.4.1)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1)
+
+  oxlint-plugin-eslint@1.87.0: {}
 
   oxlint-tsgolint@7.0.2003:
     optionalDependencies:

@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "knip": "^6.38.0",
+    "oxlint-plugin-eslint": "1.87.0",
     "typescript": "^7.0.2",
     "vite-plus": "catalog:"
   }
