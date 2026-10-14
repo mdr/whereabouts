@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest"
-import { h3Res, playerId, type PlayerView, type RoundResultView } from "@whereabouts/shared"
+import { h3Res, playerColour, playerId, playerName, type PlayerView, type RoundResultView } from "@whereabouts/shared"
 import { revealOrder } from "./Reveal"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
@@ -9,8 +9,8 @@ const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
 function player(name: string, rank: number): PlayerView {
   return {
     id: idOf(name),
-    name,
-    colour: 0,
+    name: playerName(name),
+    colour: playerColour(0),
     watching: false,
     connected: true,
     isHost: false,
@@ -27,7 +27,7 @@ function result(name: string, score: number, painted = true): RoundResultView {
 
 describe("revealOrder", () => {
   it("leaves spectators out", () => {
-    const sam = { ...player("sam", 0), watching: true, colour: -1 }
+    const sam = { ...player("sam", 0), watching: true, colour: null }
     const rows = revealOrder([player("alice", 1), sam], [result("alice", 500)])
     expect(rows.map((x) => x.p.name)).toEqual(["alice"])
   })

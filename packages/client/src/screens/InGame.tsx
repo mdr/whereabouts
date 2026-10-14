@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "preact/hooks"
-import { PaintLayer, compactRecord, playerColour, type GameView } from "@whereabouts/shared"
+import { PaintLayer, compactRecord, colourCss, type GameView } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { AnswerMode, Card, Countdown, HudHeader, QuestionCard, RegionHint } from "../ui/bits"
@@ -69,7 +69,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     paint.gameMap.resetView()
     // Paint in your own colour, the same one others see at the reveal.
     const me = view.players.find((p) => p.id === view.you.id)
-    paint.showOwn(me && !me.watching ? playerColour(me.colour) : null)
+    paint.showOwn(me && !me.watching ? colourCss(me.colour) : null)
     paint.tool.value = startOnPan.value ? "pan" : "paint"
     lastSentVersion.current = paint.version.peek()
   }, [roundKey, guessing])

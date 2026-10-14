@@ -7,8 +7,10 @@
  */
 import { z } from "zod"
 import { H3ResSchema } from "./h3.ts"
-import { FlagCodeSchema, PlayerIdSchema, RegionIdSchema, RoomCodeSchema } from "./ids.ts"
-import { MAP_DETAILS, MixSchema, PaintSubmissionSchema, type MapDetail } from "./protocol.ts"
+import { PlayerColourSchema } from "./colours.ts"
+import { FlagCodeSchema, PlayerIdSchema, PlayerNameSchema, RegionIdSchema, RoomCodeSchema } from "./ids.ts"
+import { KernelIdSchema } from "./scoring.ts"
+import { MapDetailSchema, MixSchema, PaintSubmissionSchema } from "./protocol.ts"
 
 const LatLonSchema = z.strictObject({ lat: z.number(), lon: z.number() })
 
@@ -23,8 +25,8 @@ const QuestionViewSchema = z.strictObject({
 
 const PlayerViewSchema = z.strictObject({
   id: PlayerIdSchema,
-  name: z.string(),
-  colour: z.number().int(),
+  name: PlayerNameSchema,
+  colour: PlayerColourSchema.nullable(),
   watching: z.boolean(),
   connected: z.boolean(),
   isHost: z.boolean(),
@@ -53,8 +55,8 @@ export const GameViewSchema = z.strictObject({
     rounds: z.number().int(),
     roundMs: z.number().int(),
     mix: MixSchema,
-    mapDetail: z.enum(MAP_DETAILS.map((d) => d.id) as [MapDetail, ...MapDetail[]]),
-    kernelId: z.string()
+    mapDetail: MapDetailSchema,
+    kernelId: KernelIdSchema
   }),
   serverTime: z.number(),
   you: z.strictObject({

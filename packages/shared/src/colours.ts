@@ -7,6 +7,8 @@
  * against captures of the real map). Players can still pick one guess out
  * from the reveal's list when two look alike.
  */
+import { z } from "zod"
+
 export const PLAYER_COLOURS = [
   "#4fc3f7", // sky
   "#f06292", // pink
@@ -26,6 +28,17 @@ export const PLAYER_COLOURS = [
   "#ff3b0a" // red orange
 ] as const
 
-export function playerColour(index: number): string {
-  return PLAYER_COLOURS[index % PLAYER_COLOURS.length]!
+/** A player's place in PLAYER_COLOURS. Spectators have none. */
+export const PlayerColourSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(PLAYER_COLOURS.length - 1)
+  .brand<"PlayerColour">()
+export type PlayerColour = z.infer<typeof PlayerColourSchema>
+export const playerColour = (n: number): PlayerColour => PlayerColourSchema.parse(n)
+
+/** The CSS colour to draw a player in; grey for a spectator. */
+export function colourCss(c: PlayerColour | null): string {
+  return c === null ? "#888888" : PLAYER_COLOURS[c]!
 }

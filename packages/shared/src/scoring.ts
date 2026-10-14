@@ -23,6 +23,7 @@ import {
   type H3Cell,
   type H3Res
 } from "./h3.ts"
+import { z } from "zod"
 import { EARTH_RADIUS_KM, chordDistanceSq, toXyz, type LatLon, type Xyz } from "./geo.ts"
 
 const LN2 = Math.LN2
@@ -40,19 +41,24 @@ export interface Kernel {
   weights: number[]
 }
 
-export const SINGLE_KERNEL: Kernel = { id: "single", label: "Single Gaussian (r)", scales: [1], weights: [1] }
+/** The kernels a game or practice may score with. */
+export const KernelIdSchema = z.enum(["single", "multi-equal", "multi-weighted"])
+export type KernelId = z.infer<typeof KernelIdSchema>
+export type ChoosableKernel = Kernel & { id: KernelId }
 
-export const KERNELS: Kernel[] = [
+export const SINGLE_KERNEL: ChoosableKernel = { id: "single", label: "Single Gaussian (r)", scales: [1], weights: [1] }
+
+export const KERNELS: ChoosableKernel[] = [
   SINGLE_KERNEL,
   { id: "multi-equal", label: "Mixture r, 4r, 16r (equal)", scales: [1, 4, 16], weights: [1 / 3, 1 / 3, 1 / 3] },
   { id: "multi-weighted", label: "Mixture r, 4r, 16r (0.5 / 0.3 / 0.2)", scales: [1, 4, 16], weights: [0.5, 0.3, 0.2] }
 ]
 
 /** The kernel games and practice score with; the others are for comparison in the dev drawer. */
-export const DEFAULT_KERNEL: Kernel = KERNELS[1]!
+export const DEFAULT_KERNEL: ChoosableKernel = KERNELS[1]!
 
-export function kernelById(id: string): Kernel {
-  return KERNELS.find((k) => k.id === id) ?? DEFAULT_KERNEL
+export function kernelById(id: KernelId): ChoosableKernel {
+  return KERNELS.find((k) => k.id === id)!
 }
 
 export interface WeightedPoint {

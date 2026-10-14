@@ -7,13 +7,17 @@ import { z } from "zod"
 import type { Award } from "./awards.ts"
 import type { LatLon } from "./geo.ts"
 import type { Topic } from "./questions.ts"
+import type { PlayerColour } from "./colours.ts"
 import { H3CellSchema, type H3Res } from "./h3.ts"
+import type { KernelId } from "./scoring.ts"
 import {
   PlayerIdSchema,
+  PlayerNameSchema,
   PlayerTokenSchema,
   RoomCodeSchema,
   type FlagCode,
   type PlayerId,
+  type PlayerName,
   type RegionId,
   type RoomCode
 } from "./ids.ts"
@@ -35,7 +39,7 @@ export const TicketSchema = z.object({
   v: z.literal(PROTOCOL_VERSION),
   /** Per-player secret used to reclaim the same seat after a reconnect. */
   token: PlayerTokenSchema,
-  name: z.string().trim().min(1).max(20),
+  name: PlayerNameSchema,
   /** Join an existing game by code, or omit with `create: true` to host one. */
   code: RoomCodeSchema.optional(),
   create: z.boolean().optional(),
@@ -60,7 +64,7 @@ export const ClientTopics = {
   end: "end"
 } as const
 
-export const RenameSchema = z.object({ name: z.string().trim().min(1).max(20) })
+export const RenameSchema = z.object({ name: PlayerNameSchema })
 /** Host removes a player from the game. */
 export const KickSchema = z.object({ playerId: PlayerIdSchema })
 
@@ -139,6 +143,7 @@ export const MAP_DETAILS = [
   { id: "political", label: "Political", detail: "Adds country borders" }
 ] as const
 export type MapDetail = (typeof MAP_DETAILS)[number]["id"]
+export const MapDetailSchema = z.enum(MAP_DETAILS.map((d) => d.id) as [MapDetail, ...MapDetail[]])
 
 /** Whether the map draws lakes while guessing: lake rounds are asked only when it does. */
 export const showsLakes = (detail: MapDetail): boolean => detail !== "minimal"
@@ -151,7 +156,7 @@ export const ConfigureSchema = z.object({
     .refine((v) => (ROUND_LENGTHS_MS as readonly number[]).includes(v), "unsupported round length")
     .optional(),
   mix: MixSchema.optional(),
-  mapDetail: z.enum(MAP_DETAILS.map((d) => d.id) as [MapDetail, ...MapDetail[]]).optional()
+  mapDetail: MapDetailSchema.optional()
 })
 export type ConfigurePatch = z.infer<typeof ConfigureSchema>
 
@@ -190,14 +195,14 @@ export interface GameConfig {
   mix: QuestionMix
   /** How much of the map shows while guessing (one of MAP_DETAILS). */
   mapDetail: MapDetail
-  kernelId: string
+  kernelId: KernelId
 }
 
 export interface PlayerView {
   id: PlayerId
-  name: string
-  /** Index into the client palette; -1 for a spectator, who has no colour. */
-  colour: number
+  name: PlayerName
+  /** Null for a spectator, who has no colour. */
+  colour: PlayerColour | null
   /** Watching rather than playing: no paint, no score, and never waited on. */
   watching: boolean
   connected: boolean

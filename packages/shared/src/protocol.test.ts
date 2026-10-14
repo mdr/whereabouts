@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest"
 import { KickSchema, PaintSubmissionSchema, decodeTicket, encodeTicket, type Ticket } from "./protocol.ts"
-import { playerToken, roomCode } from "./ids.ts"
+import { playerName, playerToken, roomCode } from "./ids.ts"
 
 describe("ticket codec", () => {
   const ticket: Ticket = {
     v: 1,
     token: playerToken("0123456789abcdef0123456789abcdef"),
-    name: "Zoë 🌍",
+    name: playerName("Zoë 🌍"),
     code: roomCode("AB12")
   }
 
@@ -30,8 +30,7 @@ describe("ticket codec", () => {
   })
 
   it("trims names", () => {
-    const raw = encodeTicket({ ...ticket, name: "  Matt  " })
-    expect(decodeTicket(raw)?.name).toBe("Matt")
+    expect(decodeTicket(enc({ ...ticket, name: "  Matt  " }))?.name).toBe("Matt")
   })
 })
 

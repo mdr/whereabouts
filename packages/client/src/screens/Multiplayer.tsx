@@ -1,12 +1,13 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks"
-import type { RoomCode } from "@whereabouts/shared"
+import type { PlayerName, RoomCode } from "@whereabouts/shared"
 import { Connection } from "../net"
 import {
   askedToWatch,
   joinedCode,
   nameHandoff,
-  playerName,
+  nameToJoin,
+  savedName,
   seatToken,
   resetPlayerToken,
   watchHandoff
@@ -33,13 +34,13 @@ export function Multiplayer({ code, create }: { code: RoomCode | null; create: b
   // Hosts and code-joiners have just typed their name on the home screen;
   // anyone arriving by link confirms or edits theirs first, so two tabs need
   // not share a name.
-  const [confirmedName, setConfirmedName] = useState<string | null>(() => {
-    if (create) return playerName.value.trim() || null
+  const [confirmedName, setConfirmedName] = useState<PlayerName | null>(() => {
+    if (create) return nameToJoin(savedName.value)
     const handed = nameHandoff.value
     nameHandoff.value = null
     if (handed) return handed
     // A refresh of a tab that already holds a seat in this game.
-    if (code && joinedCode.value === code) return playerName.value.trim() || null
+    if (code && joinedCode.value === code) return nameToJoin(savedName.value)
     return null
   })
 
@@ -63,7 +64,7 @@ export function Multiplayer({ code, create }: { code: RoomCode | null; create: b
       <JoinAs
         code={code}
         onJoin={(name, asWatcher) => {
-          playerName.value = name
+          savedName.value = name
           setWatch(asWatcher)
           setConfirmedName(name)
         }}
@@ -139,16 +140,16 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | nul
   )
 }
 
-function JoinAs({ code, onJoin }: { code: RoomCode | null; onJoin: (name: string, watch: boolean) => void }) {
-  const [name, setName] = useState(playerName.value)
-  const ready = name.trim().length > 0
+function JoinAs({ code, onJoin }: { code: RoomCode | null; onJoin: (name: PlayerName, watch: boolean) => void }) {
+  const [name, setName] = useState(savedName.value)
+  const ready = nameToJoin(name)
   return (
     <div class="home" data-testid={joinAsTestIds.page}>
       <form
         class="home-card"
         onSubmit={(e) => {
           e.preventDefault()
-          if (ready) onJoin(name.trim(), false)
+          if (ready) onJoin(ready, false)
         }}
       >
         <Banner />
@@ -170,7 +171,7 @@ function JoinAs({ code, onJoin }: { code: RoomCode | null; onJoin: (name: string
         <button class="primary big" type="submit" disabled={!ready} data-testid={joinAsTestIds.joinButton}>
           Join
         </button>
-        <button class="big" type="button" disabled={!ready} onClick={() => onJoin(name.trim(), true)}>
+        <button class="big" type="button" disabled={!ready} onClick={() => ready && onJoin(ready, true)}>
           <Icon name="eye" /> Just watch
         </button>
         <p class="hint">

@@ -9,6 +9,8 @@ import { useEffect, useMemo, useState } from "preact/hooks"
 import { useSignal } from "@preact/signals"
 import {
   KERNELS,
+  KernelIdSchema,
+  type KernelId,
   SHAPE_WEIGHT,
   QUESTIONS,
   buildDistribution,
@@ -258,7 +260,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           Scoring kernel{" "}
           <select
             value={soloKernelId.value}
-            onChange={(e) => (soloKernelId.value = (e.target as HTMLSelectElement).value)}
+            onChange={(e) => (soloKernelId.value = KernelIdSchema.parse((e.target as HTMLSelectElement).value))}
             style={{ flex: 1 }}
           >
             {KERNELS.map((k) => (
@@ -469,7 +471,7 @@ function KernelComparison({ dist, q, active }: { dist: Distribution; q: Practice
   )
 }
 
-function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: string }) {
+function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: KernelId }) {
   const paint = usePaint()
   const dist = buildDistribution(paint.settledCells.value, paint.floor.value)
   const { score, parts } = scoreQuestion(dist, q, kernelById(kernelId))

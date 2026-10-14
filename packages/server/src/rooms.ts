@@ -31,6 +31,7 @@ import {
   type FlagQuestion,
   type GameConfig,
   type PlayerId,
+  type PlayerName,
   type PlayerToken,
   type Question,
   type QuestionData,
@@ -50,7 +51,7 @@ const FEATURES = (featuresJson as (QuestionData | RegionData)[]).map(featureFrom
 
 export interface ActorData {
   token: PlayerToken
-  name: string
+  name: PlayerName
   /** Asked to join as a spectator. */
   watch: boolean
 }

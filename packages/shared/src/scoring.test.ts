@@ -43,7 +43,6 @@ describe("kernel", () => {
 
   it("games and practice score with the equal mixture of r, 4r and 16r", () => {
     expect(DEFAULT_KERNEL).toBe(kernelById("multi-equal"))
-    expect(kernelById("no-such-kernel")).toBe(DEFAULT_KERNEL)
   })
 })
 

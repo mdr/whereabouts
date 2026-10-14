@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { fireEvent, render } from "@testing-library/preact"
 import { signal } from "@preact/signals"
-import { type GameView, playerId, roomCode } from "@whereabouts/shared"
+import { playerColour, playerId, playerName, roomCode, type GameView } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { hostSetup, joinedCode, startOnPan } from "../settings"
 import { route } from "../router"
@@ -26,8 +26,8 @@ function view(isHost: boolean): GameView {
     players: [
       {
         id: playerId("p1"),
-        name: "Alice",
-        colour: 0,
+        name: playerName("Alice"),
+        colour: playerColour(0),
         watching: false,
         connected: true,
         isHost: true,
@@ -120,8 +120,8 @@ describe("Lobby setup", () => {
 describe("Lobby leave", () => {
   const bob = {
     id: playerId("p2"),
-    name: "Bob",
-    colour: 1,
+    name: playerName("Bob"),
+    colour: playerColour(1),
     watching: false,
     connected: true,
     isHost: false,
@@ -133,12 +133,12 @@ describe("Lobby leave", () => {
   afterEach(() => leave.mockClear())
 
   it("takes a guest straight home, giving up the seat and forgetting the game", () => {
-    joinedCode.value = "AB12"
+    joinedCode.value = roomCode("AB12")
     const { container } = render(<Lobby conn={conn} view={view(false)} />)
     fireEvent.click(container.querySelector(".banner-leave")!)
     expect(leave).toHaveBeenCalledTimes(1)
     expect(joinedCode.value).toBe("")
-    expect(route.value).toEqual({ name: "home" })
+    expect(route.value).toEqual({ name: playerName("home") })
   })
 
   it("asks the host first, naming who takes over", () => {
@@ -163,8 +163,8 @@ describe("Lobby leave", () => {
 describe("Lobby spectators", () => {
   const person = (id: string, name: string, watching: boolean, colour = 1) => ({
     id: playerId(id),
-    name,
-    colour: watching ? -1 : colour,
+    name: playerName(name),
+    colour: watching ? null : playerColour(colour),
     watching,
     connected: true,
     isHost: false,

@@ -3,7 +3,7 @@ import {
   buildDistribution,
   kernelById,
   PaintLayer,
-  playerColour,
+  colourCss,
   type GameView,
   type PaintedCountry,
   type PlayerView,
@@ -84,9 +84,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
       selected === NONE ? [] : reveal.results.filter((r) => r.paint && (selected === null || r.playerId === selected))
     const entries = [...shown].reverse().flatMap((r) => {
       const p = byId.get(r.playerId)
-      return p && r.paint
-        ? [{ layer: PaintLayer.fromRecord(r.res, r.paint.cells), colour: playerColour(p.colour) }]
-        : []
+      return p && r.paint ? [{ layer: PaintLayer.fromRecord(r.res, r.paint.cells), colour: colourCss(p.colour) }] : []
     })
     const fc = paint.showLayers(entries)
     if (region) paint.gameMap.fitRegionAndPaint(reveal.answer, region.outline, fc, reveal.question.toleranceKm)
@@ -289,7 +287,7 @@ function RevealRow({
       data-testid={revealTestIds.playerRow}
       data-player={p.name}
     >
-      <span class="swatch" style={{ background: playerColour(p.colour) }} />
+      <span class="swatch" style={{ background: colourCss(p.colour) }} />
       <span class="name">
         <span class="name-text" data-testid={revealTestIds.playerName}>
           {p.name}

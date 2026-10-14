@@ -23,6 +23,10 @@ describe("configFromEnv", () => {
     expect(c.port).toBe(8787)
   })
 
+  it("refuses an unknown kernel", () => {
+    expect(() => configFromEnv({ KERNEL: "singel" }, "/x")).toThrow(/KERNEL must be one of single/)
+  })
+
   it("empty STATIC_DIR disables static serving", () => {
     expect(configFromEnv({ STATIC_DIR: "" }, "/x").staticDir).toBeNull()
     expect(configFromEnv({ STATIC_DIR: "/custom" }, "/x").staticDir).toBe("/custom")

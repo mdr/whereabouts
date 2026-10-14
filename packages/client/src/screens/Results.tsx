@@ -1,4 +1,4 @@
-import { playerColour, type Award, type GameView, type PlayerView } from "@whereabouts/shared"
+import { colourCss, type Award, type GameView, type PlayerView } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { Icon } from "../ui/icons"
 import { HostTag, HostWord } from "../ui/PlayerList"
@@ -22,7 +22,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         <Banner />
         {winner && (
           <p class="tagline">
-            <span class="swatch" style={{ background: playerColour(winner.colour) }} /> <b>{winner.name}</b>
+            <span class="swatch" style={{ background: colourCss(winner.colour) }} /> <b>{winner.name}</b>
             {winner.isHost && <HostTag />} wins
           </p>
         )}
@@ -39,7 +39,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
               >
                 <span class="place">{MEDALS[i] ?? i + 1}</span>
                 <span class="dot">
-                  <i class="swatch" style={{ background: p ? playerColour(p.colour) : "#888" }} />
+                  <i class="swatch" style={{ background: colourCss(p?.colour ?? null) }} />
                 </span>
                 <span class="standing-body">
                   <span class="standing-main">
@@ -117,7 +117,7 @@ function AwardLine({ line, players }: { line: string; players: (PlayerView | und
         if (!m) return part
         const p = players[Number(m[1])]
         return (
-          <b key={i} class="award-name" style={{ color: p ? playerColour(p.colour) : undefined }}>
+          <b key={i} class="award-name" style={{ color: p ? colourCss(p.colour) : undefined }}>
             {p?.name ?? "Someone"}
           </b>
         )

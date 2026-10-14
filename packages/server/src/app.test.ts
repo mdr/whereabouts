@@ -18,10 +18,12 @@ import {
   questionId,
   regionCells,
   regionFrom,
+  playerName,
   roomCode,
   resolutionForTolerance,
   type FlagData,
   type GameView,
+  type PlayerName,
   type PlayerToken,
   type Question,
   type RegionData,
@@ -93,9 +95,9 @@ class TestPlayer {
   /** Why each state message that did not match GameViewSchema failed: checked after every test. */
   readonly invalidStates: string[] = []
   readonly token: PlayerToken
-  readonly name: string
+  readonly name: PlayerName
   constructor(url: string, name: string) {
-    this.name = name
+    this.name = playerName(name)
     this.token = playerToken(`${name}-token-0123456789abcdef`)
     this.client = new WSClient<Topics>(url, { ticketSource: "protocol", reconnect: false })
     const dec = new TextDecoder()
@@ -443,7 +445,7 @@ describe("game server", () => {
     sam.connect({ code: lobby.code, watch: true })
     const watching = await sam.until((v) => v.players.length === 2)
     expect(watching.you.watching).toBe(true)
-    expect(watching.players.find((p) => p.name === "Sam")).toMatchObject({ watching: true, colour: -1 })
+    expect(watching.players.find((p) => p.name === "Sam")).toMatchObject({ watching: true, colour: null })
     sam.send("setRole", { watch: false })
     const seated = await alice.untilLatest((v) => v.players.some((p) => p.name === "Sam" && !p.watching))
     expect(seated.players.find((p) => p.name === "Sam")!.colour).toBeGreaterThanOrEqual(0)

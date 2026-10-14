@@ -12,6 +12,7 @@ import {
   encodeTicket,
   type GameView,
   type PaintSubmission,
+  type PlayerName,
   type Ticket
 } from "@whereabouts/shared"
 
@@ -113,7 +114,7 @@ export class Connection {
   again(): void {
     this.send("again")
   }
-  rename(name: string): void {
+  rename(name: PlayerName): void {
     this.send("rename", { name })
   }
   kick(playerId: string): void {

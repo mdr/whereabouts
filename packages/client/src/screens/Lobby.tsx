@@ -6,11 +6,12 @@ import {
   QUESTION_TYPES,
   ROUND_LENGTHS_MS,
   nextHostAfter,
-  type GameView
+  type GameView,
+  type PlayerName
 } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { configureAsHost } from "../host-setup"
-import { askedToWatch, joinedCode, playerName, soundOn, startOnPan } from "../settings"
+import { askedToWatch, joinedCode, nameToJoin, savedName, soundOn, startOnPan } from "../settings"
 import { HostWord, PlayerList } from "../ui/PlayerList"
 import { ConnectionNote } from "../ui/ConnectionNote"
 import { Icon } from "../ui/icons"
@@ -151,7 +152,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                 onDone={(name) => {
                   if (name && name !== current) {
                     conn.rename(name)
-                    playerName.value = name
+                    savedName.value = name
                   }
                   setRenaming(false)
                 }}
@@ -235,14 +236,14 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   )
 }
 
-function RenameForm({ current, onDone }: { current: string; onDone: (name: string | null) => void }) {
+function RenameForm({ current, onDone }: { current: string; onDone: (name: PlayerName | null) => void }) {
   const [name, setName] = useState(current)
   return (
     <form
       class="join"
       onSubmit={(e) => {
         e.preventDefault()
-        onDone(name.trim())
+        onDone(nameToJoin(name))
       }}
     >
       <input
@@ -256,7 +257,7 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: strin
         }}
         autoFocus
       />
-      <button type="submit" disabled={name.trim().length === 0}>
+      <button type="submit" disabled={nameToJoin(name) === null}>
         Save
       </button>
     </form>

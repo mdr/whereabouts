@@ -47,3 +47,8 @@ export const FlagCodeSchema = z
   .brand<"FlagCode">()
 export type FlagCode = z.infer<typeof FlagCodeSchema>
 export const flagCode = (s: string): FlagCode => FlagCodeSchema.parse(s)
+
+/** A player's display name, trimmed, as a game accepts it. */
+export const PlayerNameSchema = z.string().trim().min(1).max(20).brand<"PlayerName">()
+export type PlayerName = z.infer<typeof PlayerNameSchema>
+export const playerName = (s: string): PlayerName => PlayerNameSchema.parse(s)

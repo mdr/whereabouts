@@ -1,14 +1,14 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vitest"
 import { fireEvent, render } from "@testing-library/preact"
-import { type GameView, playerId, type PlayerView } from "@whereabouts/shared"
+import { playerColour, playerId, playerName, type GameView, type PlayerView } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { TakeSeatButton } from "./TakeSeat"
 
 const person = (i: number, watching = false): PlayerView => ({
   id: playerId(`p${i + 1}`),
-  name: `P${i}`,
-  colour: watching ? -1 : i,
+  name: playerName(`P${i}`),
+  colour: watching ? null : playerColour(i),
   watching,
   connected: true,
   isHost: false,

@@ -1,6 +1,14 @@
 import { useState } from "preact/hooks"
 import { MAP_DETAILS } from "@whereabouts/shared"
-import { nameHandoff, playerName, soloMapDetail, soloPool, watchHandoff, type PracticePool } from "../settings"
+import {
+  nameHandoff,
+  nameToJoin,
+  savedName,
+  soloMapDetail,
+  soloPool,
+  watchHandoff,
+  type PracticePool
+} from "../settings"
 import { navigate } from "../router"
 import { Icon } from "../ui/icons"
 import { MapDetailPicker } from "../ui/MapDetailPicker"
@@ -23,8 +31,8 @@ import { homeTestIds } from "./HomeTestIds"
  */
 export function Home() {
   const [code, setCode] = useState("")
-  const name = playerName.value.trim()
-  const ready = name.length > 0
+  const name = nameToJoin(savedName.value)
+  const ready = name !== null
   const needName = ready ? undefined : "Enter your name first"
   return (
     <div class="home" data-testid={homeTestIds.page}>
@@ -49,8 +57,8 @@ export function Home() {
             maxLength={20}
             placeholder="Your name"
             data-testid={homeTestIds.nameInput}
-            value={playerName.value}
-            onInput={(e) => (playerName.value = (e.target as HTMLInputElement).value)}
+            value={savedName.value}
+            onInput={(e) => (savedName.value = (e.target as HTMLInputElement).value)}
           />
         </label>
 
@@ -76,7 +84,7 @@ export function Home() {
               onSubmit={(e) => {
                 e.preventDefault()
                 const c = code.trim().toUpperCase()
-                if (ready && c.length >= 4) {
+                if (name && c.length >= 4) {
                   nameHandoff.value = name
                   // The "Just watch" button submits too, and says which it was.
                   const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | null

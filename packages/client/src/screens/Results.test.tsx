@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vitest"
 import { fireEvent, render } from "@testing-library/preact"
-import { type GameView, playerId, roomCode } from "@whereabouts/shared"
+import { playerColour, playerId, playerName, roomCode, type GameView } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { Results } from "./Results"
 
@@ -23,8 +23,8 @@ function view(isHost: boolean): GameView {
     players: [
       {
         id: playerId("p1"),
-        name: "Alice",
-        colour: 0,
+        name: playerName("Alice"),
+        colour: playerColour(0),
         watching: false,
         connected: true,
         isHost: true,
@@ -35,8 +35,8 @@ function view(isHost: boolean): GameView {
       },
       {
         id: playerId("p2"),
-        name: "Bob",
-        colour: 1,
+        name: playerName("Bob"),
+        colour: playerColour(1),
         watching: false,
         connected: true,
         isHost: false,

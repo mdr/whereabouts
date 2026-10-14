@@ -10,7 +10,8 @@ import { regionFit, regionMisfit, scoreRegionQuestion, type RegionQuestion } fro
 import { explainPoint, isHedge } from "./explain.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
 import { flagRound, type FlagQuestion } from "./flags.ts"
-import { playerId, roomCode, type PlayerId, type PlayerToken, type RoomCode } from "./ids.ts"
+import { playerColour, type PlayerColour } from "./colours.ts"
+import { playerId, roomCode, type PlayerId, type PlayerName, type PlayerToken, type RoomCode } from "./ids.ts"
 import {
   MAX_PLAYERS,
   MAX_SPECTATORS,
@@ -50,9 +51,9 @@ export const ROUND_GRACE_MS = 1000
 interface Player {
   id: PlayerId
   token: PlayerToken
-  name: string
-  /** Index into the palette, or -1 while watching. */
-  colour: number
+  name: PlayerName
+  /** Null while watching. */
+  colour: PlayerColour | null
   /** A spectator: sees every round, plays none, and is never waited on. */
   watching: boolean
   connected: boolean
@@ -138,11 +139,11 @@ export class Game {
   // ---- membership ----------------------------------------------------------
 
   /** The lowest colour no current player has, so a removed player's colour is reused. */
-  private freeColour(): number {
-    const used = new Set(this.playing().map((p) => p.colour))
+  private freeColour(): PlayerColour {
+    const used = new Set<number | null>(this.playing().map((p) => p.colour))
     let colour = 0
     while (used.has(colour)) colour++
-    return colour
+    return playerColour(colour)
   }
 
   /** The players, leaving out spectators. */
@@ -160,7 +161,7 @@ export class Game {
    * to watch, or all MAX_PLAYERS seats are taken, in which case they watch if
    * there is room for another spectator.
    */
-  join(token: PlayerToken, name: string, now: number, watch = false): CommandResult {
+  join(token: PlayerToken, name: PlayerName, now: number, watch = false): CommandResult {
     const existing = this.players.get(token)
     if (existing) {
       existing.connected = true
@@ -180,7 +181,7 @@ export class Game {
       id: playerId(`p${this.nextPlayerId++}`),
       token,
       name,
-      colour: watching ? -1 : this.freeColour(),
+      colour: watching ? null : this.freeColour(),
       watching,
       connected: true,
       leftAt: null,
@@ -375,7 +376,7 @@ export class Game {
     if (watch) {
       if (this.watcherCount() >= MAX_SPECTATORS) return fail("no room to watch")
       player.watching = true
-      player.colour = -1
+      player.colour = null
     } else {
       if (this.playing().length >= MAX_PLAYERS) return fail("game is full")
       player.watching = false
@@ -435,7 +436,7 @@ export class Game {
 
   // ---- player commands -----------------------------------------------------
 
-  rename(token: PlayerToken, name: string): CommandResult {
+  rename(token: PlayerToken, name: PlayerName): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (player.name === name) return OK_SAME

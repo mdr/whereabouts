@@ -10,7 +10,7 @@ import regionsJson from "../regions.json" with { type: "json" }
 import flagsJson from "../flags.json" with { type: "json" }
 import featuresJson from "../features.json" with { type: "json" }
 import { FLAG_POINT_PROMPT, type FlagData, flagFrom } from "./flags.ts"
-import { playerId, playerToken, questionId, roomCode, type PlayerToken } from "./ids.ts"
+import { playerId, playerName, playerToken, questionId, roomCode, type PlayerToken } from "./ids.ts"
 import { PLAYER_COLOURS } from "./colours.ts"
 import { GameViewSchema } from "./view-schema.ts"
 
@@ -70,8 +70,8 @@ function twoPlayerGame(rounds = 2) {
   // The test pool is place names only.
   const mix = { landmarks: 0, places: rounds, countries: 0, flags: 0, features: 0, states: 0 }
   const g = new Game(CODE, pool, { mix, roundMs: 60_000 }, 42)
-  expect(g.join(tokA, "Alice", T0).ok).toBe(true)
-  expect(g.join(tokB, "Bob", T0 + 1).ok).toBe(true)
+  expect(g.join(tokA, playerName("Alice"), T0).ok).toBe(true)
+  expect(g.join(tokB, playerName("Bob"), T0 + 1).ok).toBe(true)
   return g
 }
 
@@ -100,7 +100,7 @@ describe("lobby", () => {
     const g = twoPlayerGame()
     const before = g.view(tokA, T0).players.find((p) => p.name === "Alice")!
     g.disconnect(tokA, T0)
-    g.join(tokA, "Alice", T0 + 2_000)
+    g.join(tokA, playerName("Alice"), T0 + 2_000)
     const after = g.view(tokA, T0 + 2_000).players.find((p) => p.name === "Alice")!
     expect(after).toMatchObject({ id: before.id, colour: before.colour, connected: true, isHost: true })
     expect(g.view(tokB, T0 + 2_000).you.isHost).toBe(false)
@@ -112,8 +112,8 @@ describe("lobby", () => {
 
   it("leaving frees the seat at once and passes the host role to the longest-standing online player", () => {
     const g = twoPlayerGame()
-    g.join(tokC, "Cara", T0 + 2)
-    g.join(tokD, "Dev", T0 + 3)
+    g.join(tokC, playerName("Cara"), T0 + 2)
+    g.join(tokD, playerName("Dev"), T0 + 3)
     g.disconnect(tokB, T0 + 4) // Bob is away, so he is passed over
     const before = g.view(tokA, T0 + 4)
     const predicted = nextHostAfter(before.players, before.you.id)
@@ -141,7 +141,7 @@ describe("lobby", () => {
 
   it("the host can hand the role to another connected player, for good", () => {
     const g = twoPlayerGame()
-    g.join(tokC, "Cara", T0)
+    g.join(tokC, playerName("Cara"), T0)
     const id = (name: string) => g.view(tokA, T0).players.find((p) => p.name === name)!.id
     expect(g.makeHost(tokB, id("Cara"))).toEqual({ ok: false, error: "only the host can hand over" })
     expect(g.makeHost(tokA, id("Alice"))).toEqual({ ok: false, error: "you are already the host" })
@@ -153,18 +153,18 @@ describe("lobby", () => {
     expect(g.view(tokA, T0).you.isHost).toBe(false)
     // Alice leaving and coming back does not bring the role with her.
     g.disconnect(tokA, T0 + 1)
-    g.join(tokA, "Alice", T0 + 2)
+    g.join(tokA, playerName("Alice"), T0 + 2)
     expect(g.view(tokA, T0 + 2).you.isHost).toBe(false)
   })
 
   it("an acting host can hand over too, and the absent host does not get it back", () => {
     const g = twoPlayerGame()
-    g.join(tokC, "Cara", T0 + 2)
+    g.join(tokC, playerName("Cara"), T0 + 2)
     g.start(tokA, T0)
     g.disconnect(tokA, T0 + 1)
     const cara = g.view(tokB, T0 + 1).players.find((p) => p.name === "Cara")!
     expect(g.makeHost(tokB, cara.id).ok).toBe(true)
-    g.join(tokA, "Alice", T0 + 5)
+    g.join(tokA, playerName("Alice"), T0 + 5)
     expect(g.view(tokC, T0 + 5).you.isHost).toBe(true)
     expect(g.view(tokA, T0 + 5).you.isHost).toBe(false)
   })
@@ -178,7 +178,7 @@ describe("lobby", () => {
 
   it("caps rounds at the pool size", () => {
     const g = new Game(CODE, pool, { rounds: 10 }, 1)
-    g.join(tokH, "H", T0)
+    g.join(tokH, playerName("H"), T0)
     g.start(tokH, T0)
     expect(g.view(tokH, T0).round!.total).toBe(3)
   })
@@ -272,7 +272,7 @@ describe("round loop", () => {
   it("the round ends as soon as every active connected player has locked in", () => {
     const g = twoPlayerGame(2)
     g.start(tokA, T0)
-    g.join(tokC, "Cara", T0 + 5) // spectating: must not hold the round up
+    g.join(tokC, playerName("Cara"), T0 + 5) // spectating: must not hold the round up
     const q = currentQuestion(g, tokA, T0)
     g.setPaint(tokA, paintAt(q, 0, 0))
     g.setPaint(tokB, paintAt(q, 1, 1))
@@ -381,7 +381,7 @@ describe("round loop", () => {
 describe("player cap", () => {
   function fullGame(): Game {
     const g = twoPlayerGame(2)
-    for (let i = 3; i <= MAX_PLAYERS; i++) expect(g.join(tok(`${i}`), `P${i}`, T0).ok).toBe(true)
+    for (let i = 3; i <= MAX_PLAYERS; i++) expect(g.join(tok(`${i}`), playerName(`P${i}`), T0).ok).toBe(true)
     return g
   }
 
@@ -392,24 +392,24 @@ describe("player cap", () => {
   it("seats a newcomer to a full game as a spectator, and turns people away once the spectators are full too", () => {
     const g = fullGame()
     expect(g.view(tokA, T0).players).toHaveLength(MAX_PLAYERS)
-    for (let i = 1; i <= MAX_SPECTATORS; i++) expect(g.join(tok(`W${i}`), `W${i}`, T0).ok).toBe(true)
+    for (let i = 1; i <= MAX_SPECTATORS; i++) expect(g.join(tok(`W${i}`), playerName(`W${i}`), T0).ok).toBe(true)
     const w1 = g.view(tokW1, T0)
     expect(w1.you.watching).toBe(true)
-    expect(w1.players.find((p) => p.name === "W1")).toMatchObject({ watching: true, colour: -1, rank: 0 })
-    expect(g.join(tokLate, "Late", T0)).toEqual({ ok: false, error: "game is full" })
+    expect(w1.players.find((p) => p.name === "W1")).toMatchObject({ watching: true, colour: null, rank: 0 })
+    expect(g.join(tokLate, playerName("Late"), T0)).toEqual({ ok: false, error: "game is full" })
   })
 
   it("still lets a player who dropped out back in", () => {
     const g = fullGame()
     g.disconnect(tokB, T0)
-    expect(g.join(tokB, "Bob", T0).ok).toBe(true)
+    expect(g.join(tokB, playerName("Bob"), T0).ok).toBe(true)
   })
 
   it("frees the seat and the colour when the host removes someone", () => {
     const g = fullGame()
     const bob = g.view(tokA, T0).players.find((p) => p.name === "Bob")!
     g.kick(tokA, bob.id, T0)
-    expect(g.join(tokNew, "Nine", T0).ok).toBe(true)
+    expect(g.join(tokNew, playerName("Nine"), T0).ok).toBe(true)
     const nine = g.view(tokA, T0).players.find((p) => p.name === "Nine")!
     expect(nine.colour).toBe(bob.colour)
     const colours = g.view(tokA, T0).players.map((p) => p.colour)
@@ -421,7 +421,7 @@ describe("spectators", () => {
   const T1 = T0 + 60_000
   function withSpectator(): Game {
     const g = twoPlayerGame(2)
-    expect(g.join(tokS, "Sam", T0 + 2, true).ok).toBe(true)
+    expect(g.join(tokS, playerName("Sam"), T0 + 2, true).ok).toBe(true)
     return g
   }
   const sam = (g: Game) => g.view(tokA, T0).players.find((p) => p.name === "Sam")!
@@ -431,7 +431,7 @@ describe("spectators", () => {
     const v = g.view(tokS, T0)
     expect(v.you.watching).toBe(true)
     expect(v.players.map((p) => p.name)).toEqual(["Alice", "Bob", "Sam"])
-    expect(sam(g)).toMatchObject({ watching: true, colour: -1 })
+    expect(sam(g)).toMatchObject({ watching: true, colour: null })
   })
 
   it("does not paint, finish, get scored or hold up either waiting phase", () => {
@@ -465,7 +465,7 @@ describe("spectators", () => {
     expect(g.setRole(tokS, false)).toEqual({ ok: true, changed: true })
     expect(sam(g)).toMatchObject({ watching: false, colour: 2 })
     expect(g.setRole(tokB, true)).toEqual({ ok: true, changed: true })
-    expect(g.view(tokB, T0).players.find((p) => p.name === "Bob")).toMatchObject({ watching: true, colour: -1 })
+    expect(g.view(tokB, T0).players.find((p) => p.name === "Bob")).toMatchObject({ watching: true, colour: null })
     expect(g.setRole(tokB, true)).toEqual({ ok: true, changed: false })
     g.start(tokA, T0)
     expect(g.setRole(tokA, true)).toEqual({ ok: false, error: "you can only switch to watching in the lobby" })
@@ -517,10 +517,10 @@ describe("spectators", () => {
 
   it("cannot take a seat when all the player seats are taken", () => {
     const g = twoPlayerGame(2)
-    for (let i = 3; i <= MAX_PLAYERS; i++) g.join(tok(`${i}`), `P${i}`, T0)
-    g.join(tokS, "Sam", T0, true)
+    for (let i = 3; i <= MAX_PLAYERS; i++) g.join(tok(`${i}`), playerName(`P${i}`), T0)
+    g.join(tokS, playerName("Sam"), T0, true)
     expect(g.setRole(tokS, false)).toEqual({ ok: false, error: "game is full" })
-    expect(g.join(tokW, "Wes", T0, true).ok).toBe(true)
+    expect(g.join(tokW, playerName("Wes"), T0, true).ok).toBe(true)
   })
 
   it("a host can watch and still run the game, but a game needs a player to start", () => {
@@ -529,14 +529,14 @@ describe("spectators", () => {
     expect(g.view(tokA, T0).you.isHost).toBe(true)
     expect(g.start(tokA, T0).ok).toBe(true)
     const h = new Game(roomCode("WXYZ"), pool, {}, 1)
-    h.join(tokH, "Hana", T0, true)
+    h.join(tokH, playerName("Hana"), T0, true)
     expect(h.start(tokH, T0)).toEqual({ ok: false, error: "no players" })
   })
 
   it("a spectator reclaims their seat as a spectator after a refresh", () => {
     const g = withSpectator()
     g.disconnect(tokS, T0 + 5)
-    g.join(tokS, "Sam", T0 + 6)
+    g.join(tokS, playerName("Sam"), T0 + 6)
     expect(g.view(tokS, T0 + 6).you.watching).toBe(true)
   })
 })
@@ -545,7 +545,7 @@ describe("joining and leaving mid-game", () => {
   it("late joiner spectates the current round and plays the next", () => {
     const g = twoPlayerGame(2)
     g.start(tokA, T0)
-    expect(g.join(tokC, "Cara", T0 + 5).ok).toBe(true)
+    expect(g.join(tokC, playerName("Cara"), T0 + 5).ok).toBe(true)
     expect(g.view(tokC, T0 + 5).you.spectating).toBe(true)
     const q = currentQuestion(g, tokA, T0)
     expect(g.setPaint(tokC, paintAt(q, 0, 0))).toEqual({ ok: false, error: "spectating this round" })
@@ -560,7 +560,7 @@ describe("joining and leaving mid-game", () => {
   it("a late joiner's total counts the rounds they played", () => {
     const g = twoPlayerGame(2)
     g.start(tokA, T0)
-    g.join(tokC, "Cara", T0 + 5)
+    g.join(tokC, playerName("Cara"), T0 + 5)
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     g.next(tokA, T0 + 60_001)
     g.tick(T0 + 120_001 + ROUND_GRACE_MS)
@@ -579,7 +579,7 @@ describe("joining and leaving mid-game", () => {
     const mine = paintAt(q, 10, 10)
     g.setPaint(tokA, mine)
     g.disconnect(tokA, T0 + 1)
-    g.join(tokA, "Alice", T0 + 5)
+    g.join(tokA, playerName("Alice"), T0 + 5)
     expect(g.view(tokA, T0 + 5).you.paint).toEqual(mine)
     expect(g.view(tokB, T0 + 5).you.paint).toBeNull()
     expect(JSON.stringify(g.view(tokB, T0 + 5))).not.toContain(Object.keys(mine.cells)[0])
@@ -594,7 +594,7 @@ describe("joining and leaving mid-game", () => {
     g.disconnect(tokB, T0 + 60_001)
     expect(g.playerTokens).toContain(tokB)
     expect(g.view(tokA, T0 + 60_001).players.find((p) => p.id === "p2")!.connected).toBe(false)
-    g.join(tokB, "Bob", T0 + 70_000)
+    g.join(tokB, playerName("Bob"), T0 + 70_000)
     const bob = g.view(tokB, T0 + 70_000).players.find((p) => p.id === "p2")!
     expect(bob.connected).toBe(true)
     expect(bob.score).toBeGreaterThan(0)
@@ -610,7 +610,7 @@ describe("joining and leaving mid-game", () => {
     expect(g.next(tokA, T0 + 60_000)).toEqual({ ok: false, error: "only the host can advance" })
     expect(g.next(tokB, T0 + 60_000).ok).toBe(true)
     // A refresh brings the original host straight back.
-    g.join(tokA, "Alice", T0 + 61_000)
+    g.join(tokA, playerName("Alice"), T0 + 61_000)
     expect(g.view(tokA, T0 + 61_000).you.isHost).toBe(true)
     expect(g.view(tokB, T0 + 61_000).you.isHost).toBe(false)
   })
@@ -619,7 +619,7 @@ describe("joining and leaving mid-game", () => {
     const g = twoPlayerGame(2)
     g.disconnect(tokA, T0 + 1)
     g.tick(T0 + 1 + SEAT_GRACE_MS)
-    g.join(tokA, "Alice", T0 + 1 + SEAT_GRACE_MS + 5)
+    g.join(tokA, playerName("Alice"), T0 + 1 + SEAT_GRACE_MS + 5)
     expect(g.view(tokA, T0 + SEAT_GRACE_MS + 6).you.isHost).toBe(false)
     expect(g.view(tokB, T0 + SEAT_GRACE_MS + 6).you.isHost).toBe(true)
   })
@@ -630,7 +630,7 @@ describe("joining and leaving mid-game", () => {
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     g.next(tokA, T0 + 80_000)
     expect(g.phase).toBe("results")
-    expect(g.join(tokZ, "Zed", T0 + 80_001)).toEqual({ ok: false, error: "game has finished" })
+    expect(g.join(tokZ, playerName("Zed"), T0 + 80_001)).toEqual({ ok: false, error: "game has finished" })
     g.disconnect(tokB, T0 + 80_002)
     expect(g.again(tokA, T0 + 81_000).ok).toBe(true)
     expect(g.phase).toBe("lobby")
@@ -642,7 +642,7 @@ describe("joining and leaving mid-game", () => {
 describe("rename", () => {
   it("changes the visible name for everyone, in any phase", () => {
     const g = twoPlayerGame(1)
-    expect(g.rename(tokB, "Robert")).toEqual({ ok: true, changed: true })
+    expect(g.rename(tokB, playerName("Robert"))).toEqual({ ok: true, changed: true })
     expect(
       g
         .view(tokA, T0)
@@ -650,9 +650,9 @@ describe("rename", () => {
         .sort()
     ).toEqual(["Alice", "Robert"])
     g.start(tokA, T0)
-    expect(g.rename(tokB, "Bobby").ok).toBe(true)
-    expect(g.rename(tokB, "Bobby")).toEqual({ ok: true, changed: false })
-    expect(g.rename(tok("nobody"), "X")).toEqual({ ok: false, error: "unknown player" })
+    expect(g.rename(tokB, playerName("Bobby")).ok).toBe(true)
+    expect(g.rename(tokB, playerName("Bobby"))).toEqual({ ok: true, changed: false })
+    expect(g.rename(tok("nobody"), playerName("X"))).toEqual({ ok: false, error: "unknown player" })
   })
 })
 
@@ -748,7 +748,7 @@ describe("configure", () => {
       image: "Petra.jpg"
     }
     const g = new Game(CODE, [...pool, photo], { mix: mix(0, 1) }, 42)
-    g.join(tokA, "Alice", T0)
+    g.join(tokA, playerName("Alice"), T0)
     expect(g.configure(tokA, { mix: mix(1, 0) })).toEqual({ ok: true, changed: true })
     expect(g.configure(tokA, { mix: mix(1, 0) })).toEqual({ ok: true, changed: false })
     expect(g.view(tokA, T0).config.mix).toEqual(mix(1, 0))
@@ -795,8 +795,8 @@ describe("host removes a player", () => {
     expect(g.kick(tokA, playerId("p99"), T0)).toEqual({ ok: false, error: "unknown player" })
     expect(g.kick(tokA, bobId, T0).ok).toBe(true)
     expect(g.playerTokens).toEqual([tokA])
-    expect(g.join(tokB, "Bob again", T0)).toEqual({ ok: false, error: "removed by the host" })
-    expect(g.join(tokC, "Carol", T0).ok).toBe(true)
+    expect(g.join(tokB, playerName("Bob again"), T0)).toEqual({ ok: false, error: "removed by the host" })
+    expect(g.join(tokC, playerName("Carol"), T0).ok).toBe(true)
     // Bob's paint must not surface when the round ends.
     g.setPaint(tokA, paintAt(q, 0, 0))
     g.lock(tokA, T0)
@@ -823,7 +823,7 @@ describe("host removes a player", () => {
     expect(h.playerTokens).toEqual([tokB])
     expect(h.view(tokB, T0).you.isHost).toBe(true)
     // Alice reconnecting does not get her seat or the role back.
-    expect(h.join(tokA, "Alice", T0).ok).toBe(false)
+    expect(h.join(tokA, playerName("Alice"), T0).ok).toBe(false)
   })
 })
 
@@ -872,8 +872,8 @@ describe("the question mix", () => {
 
   function game(config: Partial<GameConfig>, regions = REGIONS, flags = FLAGS, features = FEATURES) {
     const g = new Game(CODE, pool, { roundMs: 60_000, ...config }, 42, regions, flags, features)
-    g.join(tokA, "Alice", T0)
-    g.join(tokB, "Bob", T0 + 1)
+    g.join(tokA, playerName("Alice"), T0)
+    g.join(tokB, playerName("Bob"), T0 + 1)
     return g
   }
 
@@ -932,7 +932,7 @@ describe("the question mix", () => {
 
   it("sends every player and spectator views that match GameViewSchema, through every kind of round", () => {
     const g = game({ mix: mix(1, 1, 1, 1, 1, 1), mapDetail: "water" })
-    g.join(tokS, "Sam", T0 + 2, true)
+    g.join(tokS, playerName("Sam"), T0 + 2, true)
     let now = T0
     const check = () => {
       for (const token of [tokA, tokB, tokS]) {
@@ -985,7 +985,7 @@ describe("the question mix", () => {
     const monacoPlace: Question = { ...petra, id: questionId("monaco"), label: "Monaco", prompt: "Where is Monaco?" }
     const monacoFlag = FLAGS.find((f) => f.flag === "mc")!
     const g = new Game(CODE, [monacoPlace], { mix: mix(0, 1, 0, 1) }, 42, REGIONS, [monacoFlag])
-    g.join(tokA, "Alice", T0)
+    g.join(tokA, playerName("Alice"), T0)
     expect(questions(g).map((q) => q.prompt)).toEqual(["Where is Monaco?"])
   })
 

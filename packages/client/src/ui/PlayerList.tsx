@@ -1,4 +1,4 @@
-import { playerColour, type PlayerId, type PlayerView } from "@whereabouts/shared"
+import { colourCss, type PlayerId, type PlayerView } from "@whereabouts/shared"
 import { Icon } from "./icons"
 import { playerListTestIds } from "./PlayerListTestIds"
 
@@ -74,11 +74,11 @@ export function PlayerList({
                 {avatars && <Icon name="eye" size={14} />}
               </span>
             ) : avatars ? (
-              <span class="avatar" style={{ background: playerColour(p.colour) }} aria-hidden="true">
+              <span class="avatar" style={{ background: colourCss(p.colour) }} aria-hidden="true">
                 {initial(p.name)}
               </span>
             ) : (
-              <span class="swatch" style={{ background: playerColour(p.colour) }} />
+              <span class="swatch" style={{ background: colourCss(p.colour) }} />
             )}
             <span class="name">
               <span class="name-text" data-testid={playerListTestIds.name}>

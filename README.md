@@ -54,7 +54,7 @@ Other commands:
     mode hides, such as the MapLibre worker URL.
 
 Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
-`KERNEL` (a kernel id from `packages/shared/src/scoring.ts`),
+`KERNEL` (`single`, `multi-equal` or `multi-weighted`; the server refuses to start on anything else),
 `PORT`, `STATIC_DIR`.
 
 ## Deploy

@@ -1,16 +1,33 @@
 /** Per-browser preferences and identity, persisted where it makes sense. */
 import { effect, signal } from "@preact/signals"
-import { DEFAULT_KERNEL, PlayerTokenSchema, playerToken, type MapDetail, type PlayerToken } from "@whereabouts/shared"
+import { z } from "zod"
+import {
+  DEFAULT_KERNEL,
+  KernelIdSchema,
+  MapDetailSchema,
+  PlayerNameSchema,
+  PlayerTokenSchema,
+  RoomCodeSchema,
+  playerToken,
+  type PlayerName,
+  type PlayerToken
+} from "@whereabouts/shared"
 
-function persisted<T extends string | boolean>(key: string, initial: T, storage: Storage = localStorage) {
+/** A stored value that fails `schema`, such as one an older version wrote, starts from the initial value. */
+function persisted<S extends z.ZodType<string | boolean>>(
+  key: string,
+  schema: S,
+  initial: z.output<S>,
+  storage: Storage = localStorage
+) {
   let start = initial
   try {
-    const raw = storage.getItem(key)
-    if (raw !== null) start = (typeof initial === "boolean" ? raw === "true" : raw) as T
+    const parsed = schema.safeParse(storage.getItem(key))
+    if (parsed.success) start = parsed.data
   } catch {
     /* storage unavailable */
   }
-  const s = signal<T>(start)
+  const s = signal(start)
   effect(() => {
     try {
       storage.setItem(key, String(s.value))
@@ -41,28 +58,30 @@ function persistedJson<T>(key: string, initial: T) {
   return s
 }
 
-export const playerName = persisted<string>("wa.name", "")
-export const cheatLiveScore = persisted<boolean>("wa.cheat", false)
+/** The name as last typed, which may not yet be one a game accepts (see nameToJoin). */
+export const savedName = persisted("wa.name", z.string(), "")
+export const cheatLiveScore = persisted("wa.cheat", z.stringbool(), false)
 /**
  * Practice scores with the same kernel as games unless the dev drawer picks
  * another. A new key: "wa.kernel" was written on every visit while practice
  * defaulted to the single Gaussian, so its value says nothing about a choice.
  */
-export const soloKernelId = persisted<string>("wa.practiceKernel", DEFAULT_KERNEL.id)
+export const soloKernelId = persisted("wa.practiceKernel", KernelIdSchema, DEFAULT_KERNEL.id)
 try {
   localStorage.removeItem("wa.kernel")
 } catch {
   /* storage unavailable */
 }
 /** What practice asks: places (points), whole countries (regions), flags (either, by size), islands, lakes and seas, or US states. */
-export type PracticePool = "places" | "countries" | "flags" | "features" | "states"
-export const soloPool = persisted<PracticePool>("wa.practicePool", "places")
+const PracticePoolSchema = z.enum(["places", "countries", "flags", "features", "states"])
+export type PracticePool = z.infer<typeof PracticePoolSchema>
+export const soloPool = persisted("wa.practicePool", PracticePoolSchema, "places")
 /** Map detail while guessing in practice (one of MAP_DETAILS). */
-export const soloMapDetail = persisted<MapDetail>("wa.mapDetail", "minimal")
+export const soloMapDetail = persisted("wa.mapDetail", MapDetailSchema, "minimal")
 /** Begin each round on the Pan tool rather than Paint; tablet players often want to look first. */
-export const startOnPan = persisted<boolean>("wa.startOnPan", false)
+export const startOnPan = persisted("wa.startOnPan", z.stringbool(), false)
 /** Game sounds on this device: the spray, the countdown and the round cues. */
-export const soundOn = persisted<boolean>("wa.sound", true)
+export const soundOn = persisted("wa.sound", z.stringbool(), true)
 /**
  * The setup this browser last chose as host (see host-setup.ts). Stored as
  * read, so each value is checked before it is used.
@@ -73,15 +92,10 @@ export const hostSetup = persistedJson<unknown>("wa.hostSetup", {})
  * Reconnect token. Session storage so two tabs in one browser are two
  * players, while a refresh of one tab keeps its seat.
  */
-const storedToken = persisted<string>("wa.token", randomToken(), sessionStorage)
+const storedToken = persisted("wa.token", PlayerTokenSchema, randomToken(), sessionStorage)
 
-/** This tab's seat token: a new one if what was stored is not one. */
 export function seatToken(): PlayerToken {
-  const stored = PlayerTokenSchema.safeParse(storedToken.value)
-  if (stored.success) return stored.data
-  const fresh = randomToken()
-  storedToken.value = fresh
-  return fresh
+  return storedToken.value
 }
 
 /** Forget this tab's seat, e.g. after the host removed us; the next join is as a new player. */
@@ -100,7 +114,7 @@ function randomToken(): PlayerToken {
  * there, so the player is not asked to confirm it a second time. Arriving by
  * link leaves this null and the game screen asks.
  */
-export const nameHandoff = signal<string | null>(null)
+export const nameHandoff = signal<PlayerName | null>(null)
 
 /** Handed over with the name when the home screen's "Just watch" was used. */
 export const watchHandoff = signal(false)
@@ -115,4 +129,10 @@ export const askedToWatch = signal(false)
  * The game this tab last sat in. A refresh of that tab reclaims the seat by
  * token, so it should not ask for a name again.
  */
-export const joinedCode = persisted<string>("wa.joined", "", sessionStorage)
+export const joinedCode = persisted("wa.joined", RoomCodeSchema.or(z.literal("")), "", sessionStorage)
+
+/** A typed name as a game takes it, or null if it would not. */
+export function nameToJoin(typed: string): PlayerName | null {
+  const parsed = PlayerNameSchema.safeParse(typed)
+  return parsed.success ? parsed.data : null
+}
