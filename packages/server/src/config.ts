@@ -4,8 +4,8 @@ import { KernelIdSchema, type GameConfig } from "@whereabouts/shared"
 export interface ServerConfig {
   port: number
   host: string
-  /** Directory of built client files, or null to serve the API only. */
-  staticDir: string | null
+  /** Directory of built client files, or undefined to serve the API only. */
+  staticDir: string | undefined
   game: Partial<GameConfig>
 }
 
@@ -19,7 +19,7 @@ export function configFromEnv(env: Record<string, string | undefined>, defaultSt
   return {
     port: positiveInt(env.PORT) ?? 8787,
     host: env.HOST ?? "0.0.0.0",
-    staticDir: env.STATIC_DIR === "" ? null : (env.STATIC_DIR ?? defaultStaticDir),
+    staticDir: env.STATIC_DIR === "" ? undefined : (env.STATIC_DIR ?? defaultStaticDir),
     game
   }
 }

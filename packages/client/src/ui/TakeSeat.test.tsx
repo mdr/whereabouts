@@ -8,14 +8,14 @@ import { TakeSeatButton } from "./TakeSeat"
 const person = (i: number, watching = false): PlayerView => ({
   id: playerId(`p${i + 1}`),
   name: playerName(`P${i}`),
-  colour: watching ? null : playerColour(i),
+  colour: watching ? undefined : playerColour(i),
   watching,
   connected: true,
   isHost: false,
   locked: false,
   score: 0,
   rank: watching ? 0 : 1,
-  previousRank: null
+  previousRank: undefined
 })
 const viewWith = (players: number) =>
   ({ players: [...Array.from({ length: players }, (_, i) => person(i)), person(99, true)] }) as GameView

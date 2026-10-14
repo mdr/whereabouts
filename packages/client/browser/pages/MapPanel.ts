@@ -18,7 +18,7 @@ export interface MapSpot {
  */
 export class MapPanel {
   readonly #page: Page
-  #cdp: CDPSession | null = null
+  #cdp: CDPSession | undefined = undefined
 
   constructor(page: Page) {
     this.#page = page
@@ -145,8 +145,8 @@ export class MapPanel {
 
   /** On a phone the toolbar spans the screen, so the attribution button has to sit above it. */
   async attributionClearsToolbar(): Promise<boolean> {
-    const attribution = await this.#page.locator(".maplibregl-ctrl-bottom-right").boundingBox()
-    const toolbar = await this.#page.getByTestId(hudBottomTestIds.toolbar).boundingBox()
-    return attribution !== null && toolbar !== null && attribution.y + attribution.height <= toolbar.y + 1
+    const attribution = (await this.#page.locator(".maplibregl-ctrl-bottom-right").boundingBox()) ?? undefined
+    const toolbar = (await this.#page.getByTestId(hudBottomTestIds.toolbar).boundingBox()) ?? undefined
+    return attribution !== undefined && toolbar !== undefined && attribution.y + attribution.height <= toolbar.y + 1
   }
 }

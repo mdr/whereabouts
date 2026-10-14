@@ -5,8 +5,8 @@ import { ConfirmDialog, endGameRequest, kickRequest, makeHostRequest } from "./C
 
 describe("ConfirmDialog", () => {
   it("renders nothing without a request", () => {
-    render(<ConfirmDialog request={null} onClose={() => {}} />)
-    expect(document.body.querySelector(".modal")).toBeNull()
+    render(<ConfirmDialog request={undefined} onClose={() => {}} />)
+    expect(document.body.querySelectorAll(".modal")).toHaveLength(0)
   })
 
   it("confirms only on the confirm button; cancel, backdrop and Escape just close", () => {
@@ -43,7 +43,7 @@ describe("ConfirmDialog", () => {
     )
     const backdrop = document.body.querySelector(".modal-backdrop")!
     expect(backdrop.parentElement).toBe(document.body)
-    expect(backdrop.closest(".hud-bottom")).toBeNull()
+    expect(backdrop.closest(".hud-bottom") ?? undefined).toBeUndefined()
   })
 
   it("words the end-game request as a destructive action", () => {

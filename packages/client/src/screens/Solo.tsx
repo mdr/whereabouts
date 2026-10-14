@@ -138,8 +138,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<"paint" | "reveal" | "done">("paint")
   const [results, setResults] = useState<RoundResult[]>([])
-  const [revealed, setRevealed] = useState<{ dist: Distribution; result: RoundResult } | null>(null)
-  const hover = useSignal<LatLon | null>(null)
+  const [revealed, setRevealed] = useState<{ dist: Distribution; result: RoundResult } | undefined>(undefined)
+  const hover = useSignal<LatLon | undefined>(undefined)
   const q = questions[index]!
   const kernel = kernelById(soloKernelId.value)
   const total = results.reduce((s, r) => s + r.score, 0)
@@ -223,13 +223,13 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   // paint mostly was. Loaded while the flag is still being painted.
   const borders = useBorders(q.flag !== undefined)
   const where = useMemo(
-    () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : null),
+    () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : undefined),
     [revealed, borders]
   )
 
   // Re-score the revealed paint if the kernel changes on the reveal screen.
   const shownResult = useMemo(() => {
-    if (!revealed) return null
+    if (!revealed) return undefined
     const { score, parts } = scoreQuestion(revealed.dist, q, kernel)
     return { score, parts }
   }, [revealed, kernel.id])
@@ -309,8 +309,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   if (phase === "reveal" && revealed && shownResult) {
     const h = hover.value
     // "What if the answer were here" only means something for a point answer.
-    let hoverText: string | null = isRegion(q)
-      ? null
+    let hoverText: string | undefined = isRegion(q)
+      ? undefined
       : "Move the mouse over the map to see the score for other answers."
     if (h && !isRegion(q)) {
       const A = similarityToAnswer(revealed.dist, toXyz(h), q.toleranceKm, kernel)
@@ -410,7 +410,7 @@ function CopyCase({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
   const paint = usePaint()
   const [copied, setCopied] = useState(false)
   // Where the clipboard is out of reach (a LAN address over http), the text to copy by hand.
-  const [fallback, setFallback] = useState<string | null>(null)
+  const [fallback, setFallback] = useState<string | undefined>(undefined)
   useEffect(() => {
     if (!copied) return
     const t = setTimeout(() => setCopied(false), 2000)
@@ -438,7 +438,7 @@ function CopyCase({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
-      setFallback(null)
+      setFallback(undefined)
     } catch {
       setFallback(text)
     }

@@ -3,7 +3,7 @@ import type { Tab } from "../pages/Tab.ts"
 export interface SoundEvent {
   kind: "buffer" | "stop" | "osc"
   /** A recorded clip, known by its length. */
-  clip?: string | null
+  clip?: string
   freq?: number
   /** performance.now() in the page. */
   at: number
@@ -32,16 +32,16 @@ export function recordSounds(): void {
     clear: 0.45,
     applause: 2.89
   }
-  const clipOf = (b: AudioBuffer | null) =>
-    !b ? null : (Object.entries(LENGTHS).find(([, len]) => Math.abs(b.duration - len) < 0.06)?.[0] ?? "other")
+  const clipOf = (b: AudioBuffer | undefined) =>
+    !b ? undefined : (Object.entries(LENGTHS).find(([, len]) => Math.abs(b.duration - len) < 0.06)?.[0] ?? "other")
   const bufferStart = AudioBufferSourceNode.prototype.start
   AudioBufferSourceNode.prototype.start = function (this: AudioBufferSourceNode, ...args) {
-    log({ kind: "buffer", clip: clipOf(this.buffer) })
+    log({ kind: "buffer", clip: clipOf(this.buffer ?? undefined) })
     bufferStart.apply(this, args)
   }
   const bufferStop = AudioBufferSourceNode.prototype.stop
   AudioBufferSourceNode.prototype.stop = function (this: AudioBufferSourceNode, ...args) {
-    log({ kind: "stop", clip: clipOf(this.buffer) })
+    log({ kind: "stop", clip: clipOf(this.buffer ?? undefined) })
     bufferStop.apply(this, args)
   }
   const oscStart = OscillatorNode.prototype.start

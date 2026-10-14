@@ -32,7 +32,7 @@ import { homeTestIds } from "./HomeTestIds"
 export function Home() {
   const [code, setCode] = useState("")
   const name = nameToJoin(savedName.value)
-  const ready = name !== null
+  const ready = name !== undefined
   const needName = ready ? undefined : "Enter your name first"
   return (
     <div class="home" data-testid={homeTestIds.page}>
@@ -87,7 +87,7 @@ export function Home() {
                 if (name && c.length >= 4) {
                   nameHandoff.value = name
                   // The "Just watch" button submits too, and says which it was.
-                  const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | null
+                  const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | undefined
                   watchHandoff.value = submitter?.value === "watch"
                   navigate(`/game/${c}`)
                 }

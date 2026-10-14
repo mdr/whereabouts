@@ -11,8 +11,8 @@ import WSTransport from "./vendor/WSTransport.ts"
 import { GameAuth, GameRoom, ROOM_TYPE, type ActorData } from "./rooms.ts"
 
 export interface AppOptions {
-  /** Directory of built client files to serve, or null for API-only (dev, behind Vite). */
-  staticDir: string | null
+  /** Directory of built client files to serve, or undefined for API-only (dev, behind Vite). */
+  staticDir: string | undefined
   allowedOrigins?: string[]
   logger?: boolean
   /** Rivalis log level; defaults to info. */
@@ -54,12 +54,12 @@ export function createApp(options: AppOptions): App {
     fastify.setNotFoundHandler((_req, reply) => reply.sendFile("index.html"))
   }
 
-  let rivalis: Rivalis<ActorData> | null = null
+  let rivalis: Rivalis<ActorData> | undefined = undefined
   const rooms = () => {
     if (!rivalis) throw new Error("rivalis not ready")
     return rivalis.rooms
   }
-  const transport = new WSTransport({ server: fastify.server, path: "/ws" }, null, {
+  const transport = new WSTransport({ server: fastify.server, path: "/ws" }, undefined, {
     maxPayload: MAX_PAYLOAD_BYTES,
     ticketSource: "protocol",
     allowedOrigins: options.allowedOrigins ?? (() => true)

@@ -17,17 +17,17 @@ function player(name: string, rank: number): PlayerView {
     locked: false,
     score: 0,
     rank,
-    previousRank: null
+    previousRank: undefined
   }
 }
 const paint = { cells: { "85283473fffffff": 1 }, floor: 0.05 }
 function result(name: string, score: number, painted = true): RoundResultView {
-  return { playerId: idOf(name), score, A: 0, B: 0, res: h3Res(5), paint: painted ? paint : null }
+  return { playerId: idOf(name), score, A: 0, B: 0, res: h3Res(5), paint: painted ? paint : undefined }
 }
 
 describe("revealOrder", () => {
   it("leaves spectators out", () => {
-    const sam = { ...player("sam", 0), watching: true, colour: null }
+    const sam = { ...player("sam", 0), watching: true, colour: undefined }
     const rows = revealOrder([player("alice", 1), sam], [result("alice", 500)])
     expect(rows.map((x) => x.p.name)).toEqual(["alice"])
   })

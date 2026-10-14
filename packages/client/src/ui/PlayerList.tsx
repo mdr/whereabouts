@@ -42,8 +42,8 @@ export function PlayerList({
   onMakeHost
 }: {
   players: PlayerView[]
-  /** Null in a view of no player. */
-  you: PlayerId | null
+  /** Undefined in a view of no player. */
+  you: PlayerId | undefined
   showScores: boolean
   arrows?: boolean
   /** Mark players who have finished guessing this round. */
@@ -60,7 +60,7 @@ export function PlayerList({
   return (
     <ul class="players">
       {players.map((p) => {
-        const delta = arrows && p.previousRank !== null ? p.previousRank - p.rank : 0
+        const delta = arrows && p.previousRank !== undefined ? p.previousRank - p.rank : 0
         const isYou = p.id === you
         return (
           <li
@@ -84,15 +84,15 @@ export function PlayerList({
               <span class="name-text" data-testid={playerListTestIds.name}>
                 {p.name}
               </span>
-              {p.isHost ? <HostTag /> : null}
-              {isYou ? <span class="tag">you</span> : null}
-              {!p.connected ? <span class="tag">offline</span> : null}
-              {p.watching && !avatars ? <span class="tag">watching</span> : null}
+              {p.isHost ? <HostTag /> : undefined}
+              {isYou ? <span class="tag">you</span> : undefined}
+              {!p.connected ? <span class="tag">offline</span> : undefined}
+              {p.watching && !avatars ? <span class="tag">watching</span> : undefined}
               {showLocked && p.locked ? (
                 <span class="tag done" title="Finished guessing">
                   <Icon name="check" size={11} /> done
                 </span>
-              ) : null}
+              ) : undefined}
             </span>
             {isYou && onRename && (
               <button class="icon" title="Change your name" aria-label="Change your name" onClick={onRename}>

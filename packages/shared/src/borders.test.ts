@@ -8,7 +8,7 @@ import { type FlagData, flagFrom } from "./flags.ts"
 
 const flags = (flagsJson as FlagData[]).map(flagFrom)
 const borders = new Borders(bordersJson, flags)
-const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label ?? null
+const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label
 
 function cell(h: H3Cell, intensity = 1): PaintCell {
   const [lat, lon] = cellToLatLng(h)
@@ -24,7 +24,7 @@ describe("borders", () => {
     expect(at(61.2, -149.9)).toBe("United States") // Anchorage
     expect(at(-26.2, 28.05)).toBe("South Africa")
     expect(at(-29.31, 27.48)).toBe("Lesotho") // a hole in South Africa
-    expect(at(30, -40)).toBeNull() // the mid-Atlantic
+    expect(at(30, -40)).toBeUndefined() // the mid-Atlantic
   })
 
   it("names a small country near its answer, even on a neighbour's land", () => {
@@ -35,10 +35,10 @@ describe("borders", () => {
   })
 
   it("names no country where the border is in dispute", () => {
-    expect(at(44.95, 34.1)).toBeNull() // Simferopol, Crimea
-    expect(at(27.15, -13.2)).toBeNull() // Laayoune, Western Sahara
-    expect(at(24, -14)).toBeNull() // Western Sahara, further south
-    expect(at(31.9, 35.2)).toBeNull() // Ramallah
+    expect(at(44.95, 34.1)).toBeUndefined() // Simferopol, Crimea
+    expect(at(27.15, -13.2)).toBeUndefined() // Laayoune, Western Sahara
+    expect(at(24, -14)).toBeUndefined() // Western Sahara, further south
+    expect(at(31.9, 35.2)).toBeUndefined() // Ramallah
     expect(at(50.45, 30.52)).toBe("Ukraine") // Kyiv
     expect(at(28.0, -11.0)).toBe("Morocco") // north of the border
     expect(at(22, -12)).toBe("Mauritania")
@@ -55,7 +55,7 @@ describe("borders", () => {
 
   it("finds a small country within a few pixels of the pointer", () => {
     // 25 km off Funafuti: beyond Tuvalu's own 15 km, but within 10 px at 5 km a pixel.
-    expect(borders.smallNear({ lat: -8.3, lon: 179.2 }, 0, 0)).toBeNull()
+    expect(borders.smallNear({ lat: -8.3, lon: 179.2 }, 0, 0)).toBeUndefined()
     expect(borders.smallNear({ lat: -8.3, lon: 179.2 }, 5, 10)?.label).toBe("Tuvalu")
   })
 

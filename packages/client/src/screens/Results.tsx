@@ -14,7 +14,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   // The top score in each round, so each round's winner is picked out.
   const roundCount = Math.max(0, ...standings.map((s) => s.rounds.length))
   const roundBest = Array.from({ length: roundCount }, (_, r) =>
-    Math.max(-1, ...standings.map((s) => s.rounds[r] ?? -1))
+    Math.max(-1, ...standings.map((s) => s.rounds[r]?.score ?? -1))
   )
   return (
     <div class="home">
@@ -39,7 +39,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
               >
                 <span class="place">{MEDALS[i] ?? i + 1}</span>
                 <span class="dot">
-                  <i class="swatch" style={{ background: colourCss(p?.colour ?? null) }} />
+                  <i class="swatch" style={{ background: colourCss(p?.colour) }} />
                 </span>
                 <span class="standing-body">
                   <span class="standing-main">
@@ -52,13 +52,13 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
                     </span>
                   </span>
                   <span class="rounds" aria-label="Score by round">
-                    {s.rounds.map((score, r) => (
+                    {s.rounds.map(({ score }, r) => (
                       <span
                         key={r}
-                        class={`round ${score !== null && score === roundBest[r] ? "best" : ""}`}
-                        title={`Round ${r + 1}${score == null ? ": sat out" : score === roundBest[r] ? ": won the round" : ""}`}
+                        class={`round ${score !== undefined && score === roundBest[r] ? "best" : ""}`}
+                        title={`Round ${r + 1}${score === undefined ? ": sat out" : score === roundBest[r] ? ": won the round" : ""}`}
                       >
-                        {score == null ? "–" : Math.round(score)}
+                        {score === undefined ? "–" : Math.round(score)}
                       </span>
                     ))}
                   </span>

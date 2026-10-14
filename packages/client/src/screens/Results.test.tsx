@@ -19,7 +19,7 @@ function view(isHost: boolean): GameView {
       kernelId: "multi-equal"
     },
     serverTime: 0,
-    you: { id: playerId("p2"), isHost, spectating: false, watching: false, locked: false, paint: null },
+    you: { id: playerId("p2"), isHost, spectating: false, watching: false, locked: false, paint: undefined },
     players: [
       {
         id: playerId("p1"),
@@ -46,11 +46,11 @@ function view(isHost: boolean): GameView {
         previousRank: 2
       }
     ],
-    round: null,
-    reveal: null,
+    round: undefined,
+    reveal: undefined,
     results: [
-      { playerId: playerId("p1"), total: 1500, rounds: [800, 700] },
-      { playerId: playerId("p2"), total: 1250, rounds: [500, 750] }
+      { playerId: playerId("p1"), total: 1500, rounds: [{ score: 800 }, { score: 700 }] },
+      { playerId: playerId("p2"), total: 1250, rounds: [{ score: 500 }, { score: 750 }] }
     ],
     awards: [{ emoji: "🐔", title: "Chicken", playerIds: [playerId("p2")], line: "{0} passed 2 times. Brave." }]
   }
@@ -73,7 +73,7 @@ describe("Results", () => {
     expect([...rows[0]!.querySelectorAll(".round.best")].map((e) => e.textContent)).toEqual(["800"])
     expect([...rows[1]!.querySelectorAll(".round.best")].map((e) => e.textContent)).toEqual(["750"])
     expect(rows[1]!.className).toContain("you")
-    expect(container.querySelector("button")).toBeNull()
+    expect(container.querySelectorAll("button")).toHaveLength(0)
     expect(container.textContent).toContain("The host can start another game")
   })
 

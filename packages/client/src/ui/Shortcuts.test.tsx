@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import { cleanup, fireEvent, render } from "@testing-library/preact"
 import { Shortcuts, ShortcutsButton, shortcutsOpen } from "./Shortcuts"
 
-const card = () => document.body.querySelector(".shortcuts")
+const card = () => document.body.querySelector(".shortcuts") ?? undefined
 const press = (key: string, target: Window | Element = window) => fireEvent.keyDown(target, { key, bubbles: true })
 
 afterEach(() => {
@@ -14,14 +14,14 @@ afterEach(() => {
 describe("Shortcuts", () => {
   it("opens and closes with ?, and closes with Escape", () => {
     render(<Shortcuts />)
-    expect(card()).toBeNull()
+    expect(card()).toBeUndefined()
     press("?")
-    expect(card()).not.toBeNull()
+    expect(card()).not.toBeUndefined()
     press("?")
-    expect(card()).toBeNull()
+    expect(card()).toBeUndefined()
     press("?")
     press("Escape")
-    expect(card()).toBeNull()
+    expect(card()).toBeUndefined()
   })
 
   it("opens from the toolbar button too, and closes on a click outside the card", () => {
@@ -32,11 +32,11 @@ describe("Shortcuts", () => {
       </>
     )
     fireEvent.click(container.querySelector(".shortcuts-button")!)
-    expect(card()).not.toBeNull()
+    expect(card()).not.toBeUndefined()
     fireEvent.click(card()!) // inside: stays
-    expect(card()).not.toBeNull()
+    expect(card()).not.toBeUndefined()
     fireEvent.click(document.body.querySelector(".shortcuts-backdrop")!)
-    expect(card()).toBeNull()
+    expect(card()).toBeUndefined()
   })
 
   it("ignores ? typed into a field", () => {
@@ -47,7 +47,7 @@ describe("Shortcuts", () => {
       </>
     )
     press("?", container.querySelector("input")!)
-    expect(card()).toBeNull()
+    expect(card()).toBeUndefined()
   })
 
   it("lists Enter only in practice, where it works", () => {

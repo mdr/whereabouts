@@ -7,11 +7,11 @@
 import { LandMask, WaterMask } from "@whereabouts/shared"
 
 function once<T>(load: () => Promise<T>): () => Promise<T> {
-  let loading: Promise<T> | null = null
+  let loading: Promise<T> | undefined = undefined
   return () =>
     (loading ??= load().catch((err: unknown) => {
       // Let the next press try again, after a dropped connection say.
-      loading = null
+      loading = undefined
       throw err
     }))
 }

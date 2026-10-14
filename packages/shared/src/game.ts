@@ -52,13 +52,13 @@ interface Player {
   id: PlayerId
   token: PlayerToken
   name: PlayerName
-  /** Null while watching. */
-  colour: PlayerColour | null
+  /** Unset while watching. */
+  colour: PlayerColour | undefined
   /** A spectator: sees every round, plays none, and is never waited on. */
   watching: boolean
   connected: boolean
   /** When the connection dropped, while it is down. */
-  leftAt: number | null
+  leftAt: number | undefined
   joinedAt: number
   /** First round index this player may play. Later joiners sit out the current one. */
   joinedRound: number
@@ -66,7 +66,7 @@ interface Player {
   scores: (number | undefined)[]
   /** By round index, for the awards; a hole for each round not played. */
   facts: (RoundFacts | undefined)[]
-  previousRank: number | null
+  previousRank: number | undefined
 }
 
 interface Submission {
@@ -96,7 +96,7 @@ export class Game {
 
   phase: Phase = "lobby"
   private players = new Map<PlayerToken, Player>()
-  private hostToken: PlayerToken | null = null
+  private hostToken: PlayerToken | undefined = undefined
   private nextPlayerId = 1
 
   private questions: (Question | RegionQuestion)[] = []
@@ -105,9 +105,9 @@ export class Game {
   private submissions = new Map<PlayerToken, Submission>()
   /** Tokens of players who have pressed Ready on the current reveal. */
   private ready_ = new Set<PlayerToken>()
-  private reveal: RevealView | null = null
-  private results: FinalStanding[] | null = null
-  private awards: Award[] | null = null
+  private reveal: RevealView | undefined = undefined
+  private results: FinalStanding[] | undefined = undefined
+  private awards: Award[] | undefined = undefined
   /** Tokens the host has removed; they may not reclaim a seat. */
   private kicked = new Set<PlayerToken>()
 
@@ -140,7 +140,7 @@ export class Game {
 
   /** The lowest colour no current player has, so a removed player's colour is reused. */
   private freeColour(): PlayerColour {
-    const used = new Set<number | null>(this.playing().map((p) => p.colour))
+    const used = new Set<number | undefined>(this.playing().map((p) => p.colour))
     let colour = 0
     while (used.has(colour)) colour++
     return playerColour(colour)
@@ -165,7 +165,7 @@ export class Game {
     const existing = this.players.get(token)
     if (existing) {
       existing.connected = true
-      existing.leftAt = null
+      existing.leftAt = undefined
       this.hostToken ??= token
       return OK_CHANGED
     }
@@ -181,15 +181,15 @@ export class Game {
       id: playerId(`p${this.nextPlayerId++}`),
       token,
       name,
-      colour: watching ? null : this.freeColour(),
+      colour: watching ? undefined : this.freeColour(),
       watching,
       connected: true,
-      leftAt: null,
+      leftAt: undefined,
       joinedAt: now,
       joinedRound: this.phase === "lobby" ? 0 : this.roundIndex + 1,
       scores: [],
       facts: [],
-      previousRank: null
+      previousRank: undefined
     }
     this.players.set(token, player)
     this.hostToken ??= token
@@ -225,17 +225,17 @@ export class Game {
     return OK_CHANGED
   }
 
-  private pickHost(): PlayerToken | null {
-    let best: Player | null = null
+  private pickHost(): PlayerToken | undefined {
+    let best: Player | undefined = undefined
     for (const p of this.players.values()) {
       if (!p.connected) continue
       if (!best || p.joinedAt < best.joinedAt) best = p
     }
-    return best?.token ?? null
+    return best?.token
   }
 
   /** Who may use the host controls right now: the host if connected, else the acting host. */
-  private effectiveHost(): PlayerToken | null {
+  private effectiveHost(): PlayerToken | undefined {
     const host = this.hostToken ? this.players.get(this.hostToken) : undefined
     if (host?.connected) return host.token
     return this.pickHost() ?? this.hostToken
@@ -265,10 +265,10 @@ export class Game {
     for (const p of this.players.values()) {
       p.scores = []
       p.facts = []
-      p.previousRank = null
+      p.previousRank = undefined
       p.joinedRound = 0
     }
-    this.results = null
+    this.results = undefined
     this.beginRound(0, now)
     return OK_CHANGED
   }
@@ -345,19 +345,19 @@ export class Game {
     if (this.phase !== "results") return fail("game is still running")
     this.phase = "lobby"
     this.roundIndex = -1
-    this.reveal = null
-    this.results = null
-    this.awards = null
+    this.reveal = undefined
+    this.results = undefined
+    this.awards = undefined
     this.submissions.clear()
     this.ready_.clear()
     this.seed = now
     for (const p of this.players.values()) {
       p.scores = []
-      p.previousRank = null
+      p.previousRank = undefined
       p.joinedRound = 0
     }
     for (const [tok, p] of this.players) if (!p.connected) this.players.delete(tok)
-    if (this.hostToken === null || !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
+    if (this.hostToken === undefined || !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
     return OK_CHANGED
   }
 
@@ -376,7 +376,7 @@ export class Game {
     if (watch) {
       if (this.watcherCount() >= MAX_SPECTATORS) return fail("no room to watch")
       player.watching = true
-      player.colour = null
+      player.colour = undefined
     } else {
       if (this.playing().length >= MAX_PLAYERS) return fail("game is full")
       player.watching = false
@@ -384,7 +384,7 @@ export class Game {
       player.joinedRound = this.phase === "lobby" ? 0 : this.roundIndex + 1
       player.scores = []
       player.facts = []
-      player.previousRank = null
+      player.previousRank = undefined
     }
     return OK_CHANGED
   }
@@ -548,30 +548,30 @@ export class Game {
     return false
   }
 
-  /** Epoch ms of the next time-driven transition, or null if none is pending. */
-  nextWakeAt(): number | null {
+  /** Epoch ms of the next time-driven transition, or undefined if none is pending. */
+  nextWakeAt(): number | undefined {
     if (this.phase === "guessing") return this.deadline + ROUND_GRACE_MS
     if (this.phase === "lobby") {
-      let at: number | null = null
+      let at: number | undefined = undefined
       for (const p of this.players.values()) {
-        if (p.leftAt === null) continue
+        if (p.leftAt === undefined) continue
         const due = p.leftAt + SEAT_GRACE_MS
-        if (at === null || due < at) at = due
+        if (at === undefined || due < at) at = due
       }
       return at
     }
-    return null
+    return undefined
   }
 
   /** In the lobby, free the seats of players gone longer than SEAT_GRACE_MS, and the host role with one. */
   private freeLapsedSeats(now: number): boolean {
     let changed = false
     for (const [tok, p] of this.players) {
-      if (p.leftAt === null || now < p.leftAt + SEAT_GRACE_MS) continue
+      if (p.leftAt === undefined || now < p.leftAt + SEAT_GRACE_MS) continue
       this.players.delete(tok)
       changed = true
     }
-    if (changed && this.hostToken !== null && !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
+    if (changed && this.hostToken !== undefined && !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
     return changed
   }
 
@@ -583,7 +583,7 @@ export class Game {
     this.deadline = now + this.config.roundMs
     this.submissions.clear()
     this.ready_.clear()
-    this.reveal = null
+    this.reveal = undefined
   }
 
   private finishRound(): void {
@@ -599,14 +599,14 @@ export class Game {
       let A: number
       let B: number
       let region: RoundResultView["region"]
-      let paint: PaintSubmission | null = null
+      let paint: PaintSubmission | undefined = undefined
       const roundMs = this.config.roundMs
-      const lockMs = sub?.locked && sub.lockedAt !== undefined ? sub.lockedAt - (this.deadline - roundMs) : null
+      const lockMs = sub?.locked && sub.lockedAt !== undefined ? sub.lockedAt - (this.deadline - roundMs) : undefined
       const facts: RoundFacts = {
         label: q.label,
         score: 0,
         passed: true,
-        lockSeconds: lockMs === null ? null : lockMs / 1000,
+        lockSeconds: lockMs === undefined ? undefined : lockMs / 1000,
         roundSeconds: roundMs / 1000,
         areaKm2: 0
       }
@@ -626,7 +626,7 @@ export class Game {
           // A country's tolerance is a fifth of its equivalent radius.
           facts.region = {
             precision: m.precision,
-            nextDoor: m.precision < 0.1 && m.off !== null && m.off.km < 5 * q.toleranceKm
+            nextDoor: m.precision < 0.1 && m.off !== undefined && m.off.km < 5 * q.toleranceKm
           }
         } else {
           ;({ score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, this.kernel))
@@ -675,19 +675,21 @@ export class Game {
 
   private finish(): void {
     this.phase = "results"
-    this.reveal = null
+    this.reveal = undefined
     this.results = this.playing()
       .map((p) => ({
         playerId: p.id,
         total: sum(p.scores),
-        // One entry per round played; null where this player sat out.
-        rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => p.scores[i] ?? null)
+        rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => {
+          const score = p.scores[i]
+          return score === undefined ? {} : { score }
+        })
       }))
       .sort((a, b) => b.total - a.total)
     this.awards = pickAwards(
       this.playing().map((p) => ({
         playerId: p.id,
-        rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => p.facts[i] ?? null)
+        rounds: Array.from({ length: this.roundIndex + 1 }, (_, i) => p.facts[i])
       })),
       this.seed
     )
@@ -730,12 +732,12 @@ export class Game {
       config: this.config,
       serverTime: now,
       you: {
-        id: me?.id ?? null,
+        id: me?.id,
         isHost: me !== undefined && this.isHost(me.token),
         spectating: me !== undefined && !me.watching && this.phase !== "lobby" && me.joinedRound > this.roundIndex,
         watching: me?.watching ?? false,
         locked: this.submissions.get(token)?.locked ?? false,
-        paint: this.phase === "guessing" ? (this.submissions.get(token)?.paint ?? null) : null
+        paint: this.phase === "guessing" ? this.submissions.get(token)?.paint : undefined
       },
       players: this.playerViews(),
       round: q
@@ -745,10 +747,10 @@ export class Game {
             question: questionView(q),
             deadline: this.deadline
           }
-        : null,
-      reveal: this.phase === "reveal" && this.reveal ? { ...this.reveal, ready: this.readyIds() } : null,
-      results: this.phase === "results" ? this.results : null,
-      awards: this.phase === "results" ? this.awards : null
+        : undefined,
+      reveal: this.phase === "reveal" && this.reveal ? { ...this.reveal, ready: this.readyIds() } : undefined,
+      results: this.phase === "results" ? this.results : undefined,
+      awards: this.phase === "results" ? this.awards : undefined
     }
   }
 
@@ -778,7 +780,7 @@ function sum(xs: (number | undefined)[]): number {
  * longest-standing online player, as the server picks. Player ids are
  * issued in join order (p1, p2, ...), so the lowest id is the earliest.
  */
-export function nextHostAfter(players: PlayerView[], leavingId: PlayerId | null): PlayerView | undefined {
+export function nextHostAfter(players: PlayerView[], leavingId: PlayerId | undefined): PlayerView | undefined {
   const seq = (p: PlayerView) => Number(p.id.slice(1))
   return players.filter((p) => p.id !== leavingId && p.connected).sort((a, b) => seq(a) - seq(b))[0]
 }

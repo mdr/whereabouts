@@ -4,7 +4,8 @@
  * top of it, plus the developer drawer when dev mode is on.
  */
 import { createContext } from "preact"
-import { useContext, useEffect, useRef, useState } from "preact/hooks"
+import { useContext, useEffect, useState } from "preact/hooks"
+import { useElementRef } from "./element-ref"
 import type { ComponentChildren } from "preact"
 import { GameMap } from "../map"
 import { PaintController } from "../paint-controller"
@@ -15,7 +16,7 @@ import { sound } from "../sound"
 import { soundOn } from "../settings"
 import { mapViewTestIds } from "./MapViewTestIds"
 
-const PaintContext = createContext<PaintController | null>(null)
+const PaintContext = createContext<PaintController | undefined>(undefined)
 
 export function usePaint(): PaintController {
   const p = useContext(PaintContext)
@@ -24,12 +25,12 @@ export function usePaint(): PaintController {
 }
 
 export function MapView({ children }: { children: ComponentChildren }) {
-  const el = useRef<HTMLDivElement>(null)
-  const [controller, setController] = useState<PaintController | null>(null)
+  const el = useElementRef<HTMLDivElement>()
+  const [controller, setController] = useState<PaintController | undefined>(undefined)
 
   useEffect(() => {
     const gameMap = new GameMap(el.current!)
-    let ctl: PaintController | null = null
+    let ctl: PaintController | undefined = undefined
     void gameMap.ready.then(() => {
       gameMap.applyTheme(THEME)
       // Anything that would give the location away stays hidden.
@@ -50,12 +51,12 @@ export function MapView({ children }: { children: ComponentChildren }) {
   useEffect(() => {
     if (!controller) return
     const stop = effect(() => {
-      const tool = controller.enabled.value && soundOn.value ? controller.stroking.value : null
-      sound.setStroke(tool === "paint" ? "spray" : tool === "erase" ? "eraser" : null)
+      const tool = controller.enabled.value && soundOn.value ? controller.stroking.value : undefined
+      sound.setStroke(tool === "paint" ? "spray" : tool === "erase" ? "eraser" : undefined)
     })
     return () => {
       stop()
-      sound.setStroke(null)
+      sound.setStroke(undefined)
     }
   }, [controller])
 

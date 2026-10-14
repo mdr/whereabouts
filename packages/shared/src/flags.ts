@@ -44,16 +44,16 @@ export const FLAG_POINT_PROMPT = "Where is the country with this flag?"
 
 /**
  * The question a flag round asks: the country's region with a flag in place
- * of its name, or a point. Null when the region is missing (it should not be;
+ * of its name, or a point. Undefined when the region is missing (it should not be;
  * the build writes both files together).
  */
 export function flagRound(
   f: FlagQuestion,
   regions: ReadonlyMap<string, RegionQuestion>
-): Question | RegionQuestion | null {
+): Question | RegionQuestion | undefined {
   if (f.regionId) {
     const region = regions.get(f.regionId)
-    return region ? { ...region, prompt: FLAG_AREA_PROMPT, label: f.label, wiki: f.wiki, flag: f.flag } : null
+    return region ? { ...region, prompt: FLAG_AREA_PROMPT, label: f.label, wiki: f.wiki, flag: f.flag } : undefined
   }
   return {
     id: f.id,

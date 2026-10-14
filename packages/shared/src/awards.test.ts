@@ -13,7 +13,7 @@ const round = (score: number, extra: Partial<RoundFacts> = {}): RoundFacts => ({
 })
 /** Player "a" is p1, "b" p2, and so on. */
 const idOf = (letter: string) => playerId(`p${letter.charCodeAt(0) - 96}`)
-const player = (letter: string, rounds: (RoundFacts | null)[]): PlayerFacts => ({ playerId: idOf(letter), rounds })
+const player = (letter: string, rounds: (RoundFacts | undefined)[]): PlayerFacts => ({ playerId: idOf(letter), rounds })
 const SEEDS = Array.from({ length: 20 }, (_, i) => ((i + 1) * 2654435761) >>> 0)
 
 describe("pickAwards", () => {

@@ -127,7 +127,7 @@ class TestPlayer {
       await new Promise((r) => setTimeout(r, 10))
     }
     throw new Error(
-      `${this.name}: no state matched within ${ms}ms; last=${JSON.stringify(this.states.at(-1) ?? null).slice(0, 300)}`
+      `${this.name}: no state matched within ${ms}ms; last=${JSON.stringify(this.states.at(-1)).slice(0, 300)}`
     )
   }
   async untilLatest(pred: (v: GameView) => boolean, ms = 3000): Promise<GameView> {
@@ -136,9 +136,7 @@ class TestPlayer {
       if (this.states.length && pred(this.latest)) return this.latest
       await new Promise((r) => setTimeout(r, 10))
     }
-    throw new Error(
-      `${this.name}: latest never matched; last=${JSON.stringify(this.states.at(-1) ?? null).slice(0, 300)}`
-    )
+    throw new Error(`${this.name}: latest never matched; last=${JSON.stringify(this.states.at(-1)).slice(0, 300)}`)
   }
   async waitClosed(ms = 3000): Promise<void> {
     const start = Date.now()
@@ -161,7 +159,7 @@ describe("game server", () => {
   beforeEach(async () => {
     clock = new FakeClock()
     configureGameRooms({ clock, pool: questions, config: { rounds: 2, roundMs: 60_000 } })
-    app = createApp({ staticDir: null, logLevel: "warning" })
+    app = createApp({ staticDir: undefined, logLevel: "warning" })
     const address = await app.listen(0)
     url = address.replace(/^http/, "ws") + "/ws"
   })
@@ -242,7 +240,7 @@ describe("game server", () => {
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
     const scores = Object.fromEntries(reveal.reveal!.results.map((r) => [r.playerId, r.score]))
     expect(scores[byName.Alice!]).toBeGreaterThan(scores[byName.Bob!]!)
-    expect(reveal.reveal!.results.every((r) => r.paint !== null)).toBe(true)
+    expect(reveal.reveal!.results.every((r) => r.paint !== undefined)).toBe(true)
 
     alice.send("next")
     await bob.until((v) => v.phase === "guessing" && v.round!.index === 1)
@@ -276,7 +274,7 @@ describe("game server", () => {
     const res = resolutionForTolerance(round.round!.question.toleranceKm)
     const cells = compactRecord(Object.fromEntries(regionCells(country, res).map((h) => [h, 1])))
     alice.send("paint", { cells, floor: 0.05 })
-    await alice.untilLatest((v) => v.you.paint !== null)
+    await alice.untilLatest((v) => v.you.paint !== undefined)
 
     clock.advance(60_000 + ROUND_GRACE_MS)
     const reveal = await bob.until((v) => v.phase === "reveal")
@@ -387,12 +385,12 @@ describe("game server", () => {
     const alice = player("Alice")
     alice.connect({ create: true })
     const lobby = await alice.until((v) => v.phase === "lobby")
-    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull()
+    expect(app.rivalis.rooms.get(lobby.code) ?? undefined).not.toBeUndefined()
     alice.client.disconnect()
     await new Promise((r) => setTimeout(r, 100))
-    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull()
+    expect(app.rivalis.rooms.get(lobby.code) ?? undefined).not.toBeUndefined()
     clock.advance(SEAT_GRACE_MS)
-    expect(app.rivalis.rooms.get(lobby.code)).toBeNull()
+    expect(app.rivalis.rooms.get(lobby.code) ?? undefined).toBeUndefined()
   })
 
   it("a lone host who refreshes in the lobby gets the game, and the host role, back", async () => {
@@ -409,7 +407,7 @@ describe("game server", () => {
     expect(back.players).toHaveLength(1)
     // The empty-room timer was cancelled on the way back in.
     clock.advance(SEAT_GRACE_MS)
-    expect(app.rivalis.rooms.get(lobby.code)).not.toBeNull()
+    expect(app.rivalis.rooms.get(lobby.code) ?? undefined).not.toBeUndefined()
   })
 
   it("a host who leaves the lobby frees their seat at once and hands over", async () => {
@@ -434,7 +432,7 @@ describe("game server", () => {
     await alice.waitClosed()
     const start = Date.now()
     while (app.rivalis.rooms.get(lobby.code) && Date.now() - start < 2000) await new Promise((r) => setTimeout(r, 10))
-    expect(app.rivalis.rooms.get(lobby.code)).toBeNull()
+    expect(app.rivalis.rooms.get(lobby.code) ?? undefined).toBeUndefined()
   })
 
   it("a spectator joins to watch, and can take a seat in the lobby", async () => {
@@ -445,7 +443,9 @@ describe("game server", () => {
     sam.connect({ code: lobby.code, watch: true })
     const watching = await sam.until((v) => v.players.length === 2)
     expect(watching.you.watching).toBe(true)
-    expect(watching.players.find((p) => p.name === "Sam")).toMatchObject({ watching: true, colour: null })
+    const samSeen = watching.players.find((p) => p.name === "Sam")
+    expect(samSeen).toMatchObject({ watching: true })
+    expect(samSeen).not.toHaveProperty("colour")
     sam.send("setRole", { watch: false })
     const seated = await alice.untilLatest((v) => v.players.some((p) => p.name === "Sam" && !p.watching))
     expect(seated.players.find((p) => p.name === "Sam")!.colour).toBeGreaterThanOrEqual(0)
@@ -498,8 +498,8 @@ describe("static serving", () => {
 
     const index = await fetch(`${base}/`)
     expect(index.headers.get("cache-control")).toBe("no-cache")
-    expect(index.headers.get("etag")).toBeNull()
-    expect(index.headers.get("last-modified")).toBeNull()
+    expect(index.headers.has("etag")).toBe(false)
+    expect(index.headers.has("last-modified")).toBe(false)
 
     const fallback = await fetch(`${base}/some/app/route`)
     expect(fallback.status).toBe(200)

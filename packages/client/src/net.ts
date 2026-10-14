@@ -24,23 +24,23 @@ function wsUrl(): string {
 }
 
 export class Connection {
-  readonly view = signal<GameView | null>(null)
+  readonly view = signal<GameView | undefined>(undefined)
   readonly status = signal<Status>("idle")
-  readonly lastError = signal<string | null>(null)
+  readonly lastError = signal<string | undefined>(undefined)
   /** serverTime - Date.now(), so deadlines can be shown on the local clock. */
   readonly clockOffset = signal(0)
   /** Why the server turned us away or closed the game, in words for the player. */
-  readonly rejection = signal<Rejection | null>(null)
-  readonly code = computed(() => this.view.value?.code ?? null)
+  readonly rejection = signal<Rejection | undefined>(undefined)
+  readonly code = computed(() => this.view.value?.code)
 
-  private client: WSClient<"state" | "error"> | null = null
+  private client: WSClient<"state" | "error"> | undefined = undefined
   private decoder = new TextDecoder()
 
   connect(ticket: Omit<Ticket, "v">): void {
     this.disconnect()
     this.status.value = "connecting"
-    this.lastError.value = null
-    this.rejection.value = null
+    this.lastError.value = undefined
+    this.rejection.value = undefined
     const client = new WSClient<"state" | "error">(wsUrl(), {
       ticketSource: "protocol",
       reconnect: { baseDelayMs: 500, maxDelayMs: 5000, maxAttempts: 20 },
@@ -69,7 +69,7 @@ export class Connection {
       this.clockOffset.value = view.serverTime - Date.now()
       this.view.value = view
       // A fresh state means the server is happy with us; stop showing an old complaint.
-      this.lastError.value = null
+      this.lastError.value = undefined
     })
     client.on("error", (payload) => {
       const { message } = JSON.parse(this.decoder.decode(payload)) as { message: string }
@@ -81,7 +81,7 @@ export class Connection {
 
   disconnect(): void {
     this.client?.disconnect()
-    this.client = null
+    this.client = undefined
     if (this.status.value !== "rejected") this.status.value = "idle"
   }
 

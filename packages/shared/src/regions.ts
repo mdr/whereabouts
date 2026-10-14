@@ -189,12 +189,12 @@ export interface RegionMisfit {
   precision: number
   /**
    * Where the paint off the country mostly is: its bearing from the country's
-   * centre and its distance from the nearest part of the country. Null when
+   * centre and its distance from the nearest part of the country. Undefined when
    * there is none, or when it surrounds the country rather than leaning one way.
    */
-  off: { bearing: number; km: number } | null
-  /** Which way from the centre the bare or thin part of the country lies; null when it does not lean one way. */
-  bare: { bearing: number } | null
+  off: { bearing: number; km: number } | undefined
+  /** Which way from the centre the bare or thin part of the country lies; undefined when it does not lean one way. */
+  bare: { bearing: number } | undefined
 }
 
 /**
@@ -212,7 +212,7 @@ export function regionMisfit(dist: Distribution, q: RegionQuestion): RegionMisfi
 
   const offCells: [H3Cell, number][] = []
   for (const [h, p] of mass) if (!region.cells.has(h)) offCells.push([h, p])
-  let off: RegionMisfit["off"] = null
+  let off: RegionMisfit["off"] = undefined
   const offCentre = leaning(q.answer, offCells)
   if (offCentre && !region.cells.has(latLngToCell(offCentre.lat, offCentre.lon, region.res))) {
     let km = Infinity
@@ -241,7 +241,7 @@ function latLng(h: H3Cell): LatLon {
 }
 
 /** The weighted cells' mass centre, if they lean away from `centre` rather than surround it. */
-function leaning(centre: LatLon, cells: [H3Cell, number][]): LatLon | null {
+function leaning(centre: LatLon, cells: [H3Cell, number][]): LatLon | undefined {
   let total = 0
   let meanKm = 0
   const sum = [0, 0, 0]
@@ -252,9 +252,9 @@ function leaning(centre: LatLon, cells: [H3Cell, number][]): LatLon | null {
     meanKm += w * greatCircleDistance(centre, p)
     total += w
   }
-  if (total <= 0) return null
+  if (total <= 0) return undefined
   const m = fromXyz([sum[0]!, sum[1]!, sum[2]!])
-  return greatCircleDistance(centre, m) >= LEAN * (meanKm / total) ? m : null
+  return greatCircleDistance(centre, m) >= LEAN * (meanKm / total) ? m : undefined
 }
 
 interface Region {

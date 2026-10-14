@@ -201,8 +201,8 @@ export interface GameConfig {
 export interface PlayerView {
   id: PlayerId
   name: PlayerName
-  /** Null for a spectator, who has no colour. */
-  colour: PlayerColour | null
+  /** Absent for a spectator, who has no colour. */
+  colour?: PlayerColour
   /** Watching rather than playing: no paint, no score, and never waited on. */
   watching: boolean
   connected: boolean
@@ -214,7 +214,7 @@ export interface PlayerView {
   /** 1-based rank by score, ties share a rank. */
   rank: number
   /** Rank at the end of the previous round, for change arrows. */
-  previousRank: number | null
+  previousRank?: number
 }
 
 export interface QuestionView {
@@ -245,8 +245,8 @@ export interface RoundResultView {
   B: number
   /** A country round's parts (see regions.ts), for a paint that was scored. */
   region?: { shape: number; nearness: number; coverage: number; precision: number }
-  /** Null when the player made no guess. */
-  paint: PaintSubmission | null
+  /** Absent when the player made no guess. */
+  paint?: PaintSubmission
   /** H3 resolution the paint was made at, for rendering. */
   res: H3Res
 }
@@ -267,8 +267,8 @@ export interface RevealView {
 export interface FinalStanding {
   playerId: PlayerId
   total: number
-  /** Per round played; null where the player sat out (joined late). */
-  rounds: (number | null)[]
+  /** Per round played; no score where the player sat out (joined late). Objects, since JSON turns undefined in an array into null. */
+  rounds: { score?: number }[]
 }
 
 export interface GameView {
@@ -277,8 +277,8 @@ export interface GameView {
   config: GameConfig
   serverTime: number
   you: {
-    /** Null for a view of no player (none is sent). */
-    id: PlayerId | null
+    /** Absent in a view of no player. */
+    id?: PlayerId
     isHost: boolean
     /** True when this player joined mid-round and sits this one out. */
     spectating: boolean
@@ -286,14 +286,14 @@ export interface GameView {
     watching: boolean
     locked: boolean
     /** Your own current submission while guessing, so a reconnect can restore it. Never anyone else's. */
-    paint: PaintSubmission | null
+    paint?: PaintSubmission
   }
   players: PlayerView[]
-  round: RoundView | null
-  reveal: RevealView | null
-  results: FinalStanding[] | null
+  round?: RoundView
+  reveal?: RevealView
+  results?: FinalStanding[]
   /** Prizes and booby prizes, on the final results. */
-  awards: Award[] | null
+  awards?: Award[]
 }
 
 export interface ServerError {
@@ -323,16 +323,16 @@ export function encodeTicket(ticket: Ticket): string {
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
 }
 
-/** Parses and validates a ticket; returns null for anything malformed. */
-export function decodeTicket(raw: string): Ticket | null {
+/** Parses and validates a ticket; returns undefined for anything malformed. */
+export function decodeTicket(raw: string): Ticket | undefined {
   try {
     const b64 = raw.replace(/-/g, "+").replace(/_/g, "/")
     const bin = atob(b64 + "=".repeat((4 - (b64.length % 4)) % 4))
     const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0))
     const parsed: unknown = JSON.parse(new TextDecoder().decode(bytes))
     const result = TicketSchema.safeParse(parsed)
-    return result.success ? result.data : null
+    return result.success ? result.data : undefined
   } catch {
-    return null
+    return undefined
   }
 }

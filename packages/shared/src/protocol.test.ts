@@ -20,13 +20,13 @@ describe("ticket codec", () => {
   const enc = (value: unknown) => encodeTicket(value as Ticket)
 
   it("rejects garbage, wrong versions and bad shapes", () => {
-    expect(decodeTicket("not-base64!!")).toBeNull()
-    expect(decodeTicket(enc({}))).toBeNull()
-    expect(decodeTicket(enc({ ...ticket, v: 2 }))).toBeNull()
-    expect(decodeTicket(enc({ ...ticket, token: "short" }))).toBeNull()
-    expect(decodeTicket(enc({ ...ticket, code: "ab12" }))).toBeNull()
-    expect(decodeTicket(enc({ ...ticket, name: "   " }))).toBeNull()
-    expect(decodeTicket(enc("a string"))).toBeNull()
+    expect(decodeTicket("not-base64!!")).toBeUndefined()
+    expect(decodeTicket(enc({}))).toBeUndefined()
+    expect(decodeTicket(enc({ ...ticket, v: 2 }))).toBeUndefined()
+    expect(decodeTicket(enc({ ...ticket, token: "short" }))).toBeUndefined()
+    expect(decodeTicket(enc({ ...ticket, code: "ab12" }))).toBeUndefined()
+    expect(decodeTicket(enc({ ...ticket, name: "   " }))).toBeUndefined()
+    expect(decodeTicket(enc("a string"))).toBeUndefined()
   })
 
   it("trims names", () => {

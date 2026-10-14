@@ -26,14 +26,14 @@ const QuestionViewSchema = z.strictObject({
 const PlayerViewSchema = z.strictObject({
   id: PlayerIdSchema,
   name: PlayerNameSchema,
-  colour: PlayerColourSchema.nullable(),
+  colour: PlayerColourSchema.optional(),
   watching: z.boolean(),
   connected: z.boolean(),
   isHost: z.boolean(),
   locked: z.boolean(),
   score: z.number(),
   rank: z.number().int(),
-  previousRank: z.number().int().nullable()
+  previousRank: z.number().int().optional()
 })
 
 const RoundResultViewSchema = z.strictObject({
@@ -44,7 +44,7 @@ const RoundResultViewSchema = z.strictObject({
   region: z
     .strictObject({ shape: z.number(), nearness: z.number(), coverage: z.number(), precision: z.number() })
     .optional(),
-  paint: PaintSubmissionSchema.nullable(),
+  paint: PaintSubmissionSchema.optional(),
   res: H3ResSchema
 })
 
@@ -60,12 +60,12 @@ export const GameViewSchema = z.strictObject({
   }),
   serverTime: z.number(),
   you: z.strictObject({
-    id: PlayerIdSchema.nullable(),
+    id: PlayerIdSchema.optional(),
     isHost: z.boolean(),
     spectating: z.boolean(),
     watching: z.boolean(),
     locked: z.boolean(),
-    paint: PaintSubmissionSchema.nullable()
+    paint: PaintSubmissionSchema.optional()
   }),
   players: z.array(PlayerViewSchema),
   round: z
@@ -75,7 +75,7 @@ export const GameViewSchema = z.strictObject({
       question: QuestionViewSchema,
       deadline: z.number()
     })
-    .nullable(),
+    .optional(),
   reveal: z
     .strictObject({
       index: z.number().int(),
@@ -87,13 +87,19 @@ export const GameViewSchema = z.strictObject({
       results: z.array(RoundResultViewSchema),
       ready: z.array(PlayerIdSchema)
     })
-    .nullable(),
+    .optional(),
   results: z
-    .array(z.strictObject({ playerId: PlayerIdSchema, total: z.number(), rounds: z.array(z.number().nullable()) }))
-    .nullable(),
+    .array(
+      z.strictObject({
+        playerId: PlayerIdSchema,
+        total: z.number(),
+        rounds: z.array(z.strictObject({ score: z.number().optional() }))
+      })
+    )
+    .optional(),
   awards: z
     .array(
       z.strictObject({ emoji: z.string(), title: z.string(), playerIds: z.array(PlayerIdSchema), line: z.string() })
     )
-    .nullable()
+    .optional()
 })

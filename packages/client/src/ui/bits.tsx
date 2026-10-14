@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact"
 import { useEffect, useRef, useState } from "preact/hooks"
+import { useElementRef } from "./element-ref"
 import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type QuestionView, type Topic } from "@whereabouts/shared"
 import { Icon } from "./icons"
 import { soundOn } from "../settings"
@@ -32,7 +33,7 @@ export function Card({ title, children, class: cls }: { title?: string; children
  * full width.
  */
 export function HudBottom({ children }: { children: ComponentChildren }) {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useElementRef<HTMLDivElement>()
   useEffect(() => {
     const el = ref.current
     const root = document.documentElement
@@ -146,11 +147,11 @@ export function QuestionCard({
 }
 
 /** The picture of a flag, once its chunk has loaded. */
-function useFlagUrl(code: string): string | null {
-  const [src, setSrc] = useState<string | null>(null)
+function useFlagUrl(code: string): string | undefined {
+  const [src, setSrc] = useState<string | undefined>(undefined)
   useEffect(() => {
     let live = true
-    setSrc(null)
+    setSrc(undefined)
     void flagUrl(code).then((url) => live && setSrc(url))
     return () => {
       live = false
@@ -173,7 +174,7 @@ function FlagImage({ code }: { code: string }) {
         </span>
         <span class="sr-only">Enlarge flag</span>
       </button>
-      {large && src && <Lightbox src={src} kind="flag" credit={null} onClose={() => setLarge(false)} />}
+      {large && src && <Lightbox src={src} kind="flag" credit={undefined} onClose={() => setLarge(false)} />}
     </>
   )
 }
@@ -241,7 +242,7 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
     return first
   })
   useEscape(large, () => setLarge(false))
-  const credit = !showCredit ? null : (
+  const credit = !showCredit ? undefined : (
     <a
       class="credit-icon"
       href={commonsPageUrl(image)}
@@ -297,9 +298,9 @@ function Lightbox({
 }) {
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
-  const frame = useRef<HTMLDivElement>(null)
+  const frame = useElementRef<HTMLDivElement>()
   const pointers = useRef(new Map<number, { x: number; y: number }>())
-  const pinchDist = useRef<number | null>(null)
+  const pinchDist = useRef<number | undefined>(undefined)
   const dragged = useRef(false)
 
   /** Zoom by `factor` keeping the point (cx, cy), relative to the frame centre, fixed. */
@@ -349,7 +350,7 @@ function Lightbox({
   }
   const onPointerUp = (e: PointerEvent) => {
     pointers.current.delete(e.pointerId)
-    if (pointers.current.size < 2) pinchDist.current = null
+    if (pointers.current.size < 2) pinchDist.current = undefined
   }
   function pinchDistance() {
     const [a, b] = [...pointers.current.values()]

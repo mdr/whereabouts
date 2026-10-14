@@ -38,6 +38,19 @@ export default defineConfig(
     }
   },
   {
+    // One absence value: undefined, which the language produces anyway. Where an
+    // outside API hands back null, convert it on the spot (`?? undefined`).
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        { selector: "Literal[raw='null']", message: "Use undefined, not null." },
+        { selector: "TSNullKeyword", message: "Use undefined, not null." },
+        { selector: "MemberExpression[property.name='toBeNull']", message: "Use toBeUndefined, not toBeNull." }
+      ]
+    }
+  },
+  {
     files: ["packages/shared/src/h3.ts"],
     rules: { "no-restricted-imports": "off" }
   },

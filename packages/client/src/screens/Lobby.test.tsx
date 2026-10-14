@@ -22,7 +22,7 @@ function view(isHost: boolean): GameView {
       kernelId: "multi-equal"
     },
     serverTime: 0,
-    you: { id: playerId("p1"), isHost, spectating: false, watching: false, locked: false, paint: null },
+    you: { id: playerId("p1"), isHost, spectating: false, watching: false, locked: false, paint: undefined },
     players: [
       {
         id: playerId("p1"),
@@ -34,13 +34,13 @@ function view(isHost: boolean): GameView {
         locked: false,
         score: 0,
         rank: 1,
-        previousRank: null
+        previousRank: undefined
       }
     ],
-    round: null,
-    reveal: null,
-    results: null,
-    awards: null
+    round: undefined,
+    reveal: undefined,
+    results: undefined,
+    awards: undefined
   }
 }
 
@@ -49,7 +49,7 @@ const leave = vi.fn()
 const setRole = vi.fn()
 const conn = {
   status: signal("connected"),
-  lastError: signal(null),
+  lastError: signal(undefined),
   configure,
   start: vi.fn(),
   leave,
@@ -92,7 +92,7 @@ describe("Lobby setup", () => {
     expect(minimal.textContent).toBe("Minimal")
     fireEvent.click([...container.querySelectorAll(".detail-picker button")].find((b) => b.textContent === "Water")!)
     expect(configure).toHaveBeenCalledWith({ mapDetail: "water" })
-    expect(container.querySelector(".setup-summary")).toBeNull()
+    expect(container.querySelectorAll(".setup-summary")).toHaveLength(0)
     // Remembered for the next game this browser hosts.
     expect(hostSetup.value).toEqual({ mix: { ...MIX, landmarks: 2 }, mapDetail: "water" })
     hostSetup.value = {}
@@ -100,12 +100,12 @@ describe("Lobby setup", () => {
 
   it("shows guests the decided values, not controls", () => {
     const { container } = render(<Lobby conn={conn} view={view(false)} />)
-    expect(container.querySelector(".pills, .stepper, .detail-picker")).toBeNull()
+    expect(container.querySelectorAll(".pills, .stepper, .detail-picker")).toHaveLength(0)
     expect(container.querySelectorAll(".setup-summary .round-strip .cell")).toHaveLength(5)
     const tiles = [...container.querySelectorAll(".setup-summary .tile")].map((t) => t.textContent)
     expect(tiles).toEqual(["5rounds", "60 sper round", "3 landmarks · 2 place names", "Minimalmap · coastlines only"])
     // Nothing is highlighted on first load.
-    expect(container.querySelector(".tile.changed")).toBeNull()
+    expect(container.querySelectorAll(".tile.changed")).toHaveLength(0)
   })
 
   it("highlights only the value the host just changed", () => {
@@ -128,7 +128,7 @@ describe("Lobby leave", () => {
     locked: false,
     score: 0,
     rank: 1,
-    previousRank: null
+    previousRank: undefined
   }
   afterEach(() => leave.mockClear())
 
@@ -164,14 +164,14 @@ describe("Lobby spectators", () => {
   const person = (id: string, name: string, watching: boolean, colour = 1) => ({
     id: playerId(id),
     name: playerName(name),
-    colour: watching ? null : playerColour(colour),
+    colour: watching ? undefined : playerColour(colour),
     watching,
     connected: true,
     isHost: false,
     locked: false,
     score: 0,
     rank: watching ? 0 : 1,
-    previousRank: null
+    previousRank: undefined
   })
   afterEach(() => setRole.mockClear())
 
@@ -183,7 +183,7 @@ describe("Lobby spectators", () => {
     expect(lists).toHaveLength(2)
     expect(lists[0]!.textContent).toContain("Bob")
     expect(lists[1]!.textContent).toContain("Sam")
-    expect(lists[1]!.querySelector(".avatar.watcher")).not.toBeNull()
+    expect(lists[1]!.querySelectorAll(".avatar.watcher")).not.toHaveLength(0)
     expect(container.querySelector(".watching-heading")!.textContent).toContain("1/8")
   })
 

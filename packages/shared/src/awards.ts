@@ -12,8 +12,8 @@ export interface RoundFacts {
   label: string
   score: number
   passed: boolean
-  /** Seconds from the round's start to locking in; null when the clock ran out. */
-  lockSeconds: number | null
+  /** Seconds from the round's start to locking in; undefined when the clock ran out. */
+  lockSeconds: number | undefined
   roundSeconds: number
   /** Painted area, km². */
   areaKm2: number
@@ -25,8 +25,8 @@ export interface RoundFacts {
 
 export interface PlayerFacts {
   playerId: PlayerId
-  /** By round; null where the player sat out. */
-  rounds: (RoundFacts | null)[]
+  /** By round; undefined where the player sat out. */
+  rounds: (RoundFacts | undefined)[]
 }
 
 export interface Award {
@@ -71,21 +71,21 @@ export function pickAwards(players: PlayerFacts[], seed: number): Award[] {
 }
 
 /** The one player with the highest value, or none on a tie or when nobody qualifies. */
-function top<T>(items: T[], value: (t: T) => number | null): { item: T; value: number } | null {
-  let best: { item: T; value: number } | null = null
+function top<T>(items: T[], value: (t: T) => number | undefined): { item: T; value: number } | undefined {
+  let best: { item: T; value: number } | undefined = undefined
   let tied = false
   for (const item of items) {
     const v = value(item)
-    if (v === null || !Number.isFinite(v)) continue
+    if (v === undefined || !Number.isFinite(v)) continue
     if (!best || v > best.value) {
       best = { item, value: v }
       tied = false
     } else if (v === best.value) tied = true
   }
-  return tied ? null : best
+  return tied ? undefined : best
 }
 
-const played = (p: PlayerFacts) => p.rounds.filter((r): r is RoundFacts => r !== null)
+const played = (p: PlayerFacts) => p.rounds.filter((r): r is RoundFacts => r !== undefined)
 const painted = (p: PlayerFacts) => played(p).filter((r) => !r.passed)
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length
 const total = (p: PlayerFacts) => played(p).reduce((s, r) => s + r.score, 0)
@@ -98,7 +98,7 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
 
   // The best and worst single rounds.
   const rounds = players.flatMap((p) => painted(p).map((r) => ({ p, r })))
-  const bull = top(rounds, ({ r }) => (r.score >= 950 ? r.score : null))
+  const bull = top(rounds, ({ r }) => (r.score >= 950 ? r.score : undefined))
   if (bull)
     add(
       PRIZE,
@@ -108,7 +108,9 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
       `{0} put ${bull.item.r.label} dead centre. Nobody likes a show-off.`
     )
 
-  const mile = top(rounds, ({ r }) => (r.point && r.point.km >= 1500 && r.point.distance >= 400 ? r.point.km : null))
+  const mile = top(rounds, ({ r }) =>
+    r.point && r.point.km >= 1500 && r.point.distance >= 400 ? r.point.km : undefined
+  )
   if (mile) {
     add(
       BOOBY,
@@ -120,7 +122,7 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
   }
 
   const sure = top(rounds, ({ r }) =>
-    r.point && r.point.spread < 100 && r.point.distance >= 600 ? r.point.distance : null
+    r.point && r.point.spread < 100 && r.point.distance >= 600 ? r.point.distance : undefined
   )
   if (sure)
     add(
@@ -142,14 +144,14 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
     )
 
   const spill = top(rounds, ({ r }) =>
-    r.region && r.region.precision >= 0.1 && r.region.precision <= 0.5 ? 1 - r.region.precision : null
+    r.region && r.region.precision >= 0.1 && r.region.precision <= 0.5 ? 1 - r.region.precision : undefined
   )
   if (spill) add(BOOBY, "🚧", "Border Control", spill.item.p.playerId, `{0} treats borders as more of a suggestion.`)
 
   // Habits.
   const fence = top(players, (p) => {
     const spreads = painted(p).flatMap((r) => (r.point ? [r.point.spread] : []))
-    return spreads.length >= 2 && mean(spreads) >= 300 ? mean(spreads) : null
+    return spreads.length >= 2 && mean(spreads) >= 300 ? mean(spreads) : undefined
   })
   if (fence)
     add(
@@ -162,7 +164,7 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
 
   const hedge = top(players, (p) => {
     const n = painted(p).filter((r) => r.point?.hedged).length
-    return n >= 2 ? n : null
+    return n >= 2 ? n : undefined
   })
   if (hedge)
     add(
@@ -175,14 +177,14 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
 
   const chicken = top(players, (p) => {
     const n = played(p).filter((r) => r.passed).length
-    return n >= 2 ? n : null
+    return n >= 2 ? n : undefined
   })
   if (chicken) add(BOOBY, "🐔", "Chicken", chicken.item.playerId, `{0} passed ${chicken.value} times. Brave.`)
 
   const fast = top(players, (p) => {
     const rs = painted(p)
-    const times = rs.flatMap((r) => (r.lockSeconds === null ? [] : [r.lockSeconds / r.roundSeconds]))
-    return rs.length >= 3 && times.length === rs.length && mean(times) < 0.4 ? -mean(times) : null
+    const times = rs.flatMap((r) => (r.lockSeconds === undefined ? [] : [r.lockSeconds / r.roundSeconds]))
+    return rs.length >= 3 && times.length === rs.length && mean(times) < 0.4 ? -mean(times) : undefined
   })
   if (fast) {
     const secs = Math.round(mean(painted(fast.item).map((r) => r.lockSeconds!)))
@@ -196,21 +198,21 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
   }
 
   const slow = top(players, (p) => {
-    const n = painted(p).filter((r) => r.lockSeconds === null || r.roundSeconds - r.lockSeconds < 5).length
-    return n >= 2 ? n : null
+    const n = painted(p).filter((r) => r.lockSeconds === undefined || r.roundSeconds - r.lockSeconds < 5).length
+    return n >= 2 ? n : undefined
   })
   if (slow) add(BOOBY, "⏰", "Last-Second Merchant", slow.item.playerId, `{0} made everyone wait. ${slow.value} times.`)
 
   const areas = players.map((p) => painted(p).reduce((s, r) => s + r.areaKm2, 0))
   const picasso = top(players, (p) => {
     const a = painted(p).reduce((s, r) => s + r.areaKm2, 0)
-    return a > 0 && a >= 2 * median(areas) ? a : null
+    return a > 0 && a >= 2 * median(areas) ? a : undefined
   })
   if (picasso) add(BOOBY, "🎨", "Picasso", picasso.item.playerId, "{0} used twice the paint of anyone sensible.")
 
   const dab = top(players, (p) => {
     const rs = painted(p)
-    return rs.length >= 3 ? -mean(rs.map((r) => r.areaKm2)) : null
+    return rs.length >= 3 ? -mean(rs.map((r) => r.areaKm2)) : undefined
   })
   if (dab && players.length >= 2) {
     add(PRIZE, "🤏", "One Careful Dab", dab.item.playerId, "{0} painted like the paint was coming out of their wages.")
@@ -231,7 +233,7 @@ function gameAwards(players: PlayerFacts[]): Candidate[] {
     const back = top(players, (p) => {
       const worst = Math.max(...ranks.slice(0, -1).map((r) => r.get(p.playerId)!))
       const climb = worst - final.get(p.playerId)!
-      return climb >= 2 ? climb : null
+      return climb >= 2 ? climb : undefined
     })
     if (back) {
       const id = back.item.playerId
@@ -261,7 +263,7 @@ function gameAwards(players: PlayerFacts[]): Candidate[] {
 
   const coaster = top(players, (p) => {
     const s = painted(p).map((r) => r.score)
-    return s.length >= 2 && Math.max(...s) - Math.min(...s) >= 700 ? Math.max(...s) - Math.min(...s) : null
+    return s.length >= 2 && Math.max(...s) - Math.min(...s) >= 700 ? Math.max(...s) - Math.min(...s) : undefined
   })
   if (coaster) {
     const s = painted(coaster.item).map((r) => Math.round(r.score))
@@ -276,9 +278,9 @@ function gameAwards(players: PlayerFacts[]): Candidate[] {
 
   const steady = top(players, (p) => {
     const s = played(p).map((r) => r.score)
-    if (s.length < 4) return null
+    if (s.length < 4) return undefined
     const sd = Math.sqrt(mean(s.map((x) => (x - mean(s)) ** 2)))
-    return sd < 80 ? -sd : null
+    return sd < 80 ? -sd : undefined
   })
   if (steady) {
     const s = played(steady.item).map((r) => Math.round(r.score))
@@ -298,7 +300,7 @@ function gameAwards(players: PlayerFacts[]): Candidate[] {
       run = r && r.score >= 850 ? run + 1 : 0
       longest = Math.max(longest, run)
     }
-    return longest >= 3 ? longest : null
+    return longest >= 3 ? longest : undefined
   })
   if (streak)
     add(PRIZE, "🔥", "On Fire", streak.item.playerId, `${streak.value} big rounds in a row for {0}. Unbearable.`)
@@ -324,7 +326,7 @@ function gameAwards(players: PlayerFacts[]): Candidate[] {
 
 /** Awards shared by two players. */
 function pairAwards(players: PlayerFacts[]): Candidate[] {
-  let best: { a: PlayerFacts; b: PlayerFacts; n: number } | null = null
+  let best: { a: PlayerFacts; b: PlayerFacts; n: number } | undefined = undefined
   for (let i = 0; i < players.length; i++) {
     for (let j = i + 1; j < players.length; j++) {
       const a = players[i]!

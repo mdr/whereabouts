@@ -36,10 +36,10 @@ export class CountryFiller {
   }
 
   /**
-   * The country at a point, or null (at sea, or where no country is named);
+   * The country at a point, or undefined (at sea, or where no country is named);
    * failing that, a small country within `px` pixels at `kmPerPx`.
    */
-  countryAt(p: LatLon, kmPerPx: number, px: number): FlagQuestion | null {
+  countryAt(p: LatLon, kmPerPx: number, px: number): FlagQuestion | undefined {
     return this.borders.countryAt(p) ?? this.borders.smallNear(p, kmPerPx, px)
   }
 
@@ -106,7 +106,7 @@ export function useFillTool(paint: PaintController, active: boolean): void {
   }, [active, b])
   useEffect(() => {
     if (b && r && !paint.filler) paint.filler = new CountryFiller(b, r)
-    paint.fillable.value = active && paint.filler !== null
+    paint.fillable.value = active && paint.filler !== undefined
   }, [paint, active, b, r])
   useEffect(() => () => void (paint.fillable.value = false), [paint])
 }

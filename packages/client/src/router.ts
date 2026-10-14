@@ -8,13 +8,13 @@ import { roomCode, type RoomCode } from "@whereabouts/shared"
 export type Route =
   | { name: "home" }
   | { name: "solo" }
-  | { name: "game"; code: null; create: true }
+  | { name: "game"; code: undefined; create: true }
   | { name: "game"; code: RoomCode; create: false }
 
 export function parseRoute(hash: string): Route {
   const path = hash.replace(/^#/, "").replace(/\?.*$/, "")
   if (path === "/solo") return { name: "solo" }
-  if (path === "/game/new") return { name: "game", code: null, create: true }
+  if (path === "/game/new") return { name: "game", code: undefined, create: true }
   const m = /^\/game\/([A-Z0-9]{4,6})$/i.exec(path)
   if (m) return { name: "game", code: roomCode(m[1]!.toUpperCase()), create: false }
   return { name: "home" }

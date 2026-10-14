@@ -79,13 +79,13 @@ export interface StampResult {
 
 const EPS = 1e-4
 
-/** Grid distance, or null where H3 cannot compute one (across pentagons or far apart). */
-function safeGridDistance(a: H3Cell, b: H3Cell): number | null {
+/** Grid distance, or undefined where H3 cannot compute one (across pentagons or far apart). */
+function safeGridDistance(a: H3Cell, b: H3Cell): number | undefined {
   try {
     const d = gridDistance(a, b)
-    return Number.isFinite(d) && d >= 0 ? d : null
+    return Number.isFinite(d) && d >= 0 ? d : undefined
   } catch {
-    return null
+    return undefined
   }
 }
 /** Circumradius of a hexagon from its area, with a margin for H3's distortion. */
@@ -186,7 +186,7 @@ export class PaintLayer {
         // Same grid as the stamp: mirror its ring weights exactly, so an
         // erase over a stamp of the same size cancels it.
         const ring = safeGridDistance(centreCell, h)
-        if (ring === null || ring > rings) continue
+        if (ring === undefined || ring > rings) continue
         this.add(h, -strength * Math.exp((-Math.LN10 * ring * ring) / denom))
         touched++
         continue

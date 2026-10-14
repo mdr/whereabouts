@@ -217,11 +217,11 @@ function Distribution() {
  */
 function Trim({ enabled, water }: { enabled: boolean; water: boolean }) {
   const paint = usePaint()
-  const [note, setNote] = useState<string | null>(null)
+  const [note, setNote] = useState<string | undefined>(undefined)
   const [busy, setBusy] = useState(false)
   useEffect(() => {
     if (!note) return
-    const t = setTimeout(() => setNote(null), 2500)
+    const t = setTimeout(() => setNote(undefined), 2500)
     return () => clearTimeout(t)
   }, [note])
   const trim = async () => {

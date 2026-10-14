@@ -6,7 +6,7 @@
  */
 const NOT_TEXT = new Set(["range", "checkbox", "radio", "button", "submit", "reset", "color", "file", "image"])
 
-export function isTyping(target: EventTarget | null): boolean {
+export function isTyping(target: EventTarget | undefined): boolean {
   if (target instanceof HTMLInputElement) return !NOT_TEXT.has(target.type)
   if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return true
   return target instanceof HTMLElement && target.isContentEditable

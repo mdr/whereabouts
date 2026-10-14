@@ -14,18 +14,18 @@ describe("countdownPlan", () => {
   })
 
   it("plays nothing once time is up", () => {
-    expect(countdownPlan(0)).toBeNull()
-    expect(countdownPlan(-200)).toBeNull()
+    expect(countdownPlan(0)).toBeUndefined()
+    expect(countdownPlan(-200)).toBeUndefined()
   })
 })
 
 describe("roundCue", () => {
-  const lobby = { phase: "lobby", round: null }
+  const lobby = { phase: "lobby", round: undefined }
   const guessing = (round: number) => ({ phase: "guessing", round })
   const reveal = (round: number) => ({ phase: "reveal", round })
 
   it("says nothing on the first view, so a refresh mid-round is not announced", () => {
-    expect(roundCue(null, guessing(2), 30_000)).toBeNull()
+    expect(roundCue(undefined, guessing(2), 30_000)).toBeUndefined()
   })
 
   it("cues a round starting, from the lobby or from the reveal", () => {
@@ -38,24 +38,24 @@ describe("roundCue", () => {
   })
 
   it("leaves the alarm to play when the round ends on time", () => {
-    expect(roundCue(guessing(0), reveal(0), 100)).toBeNull()
-    expect(roundCue(guessing(0), reveal(0), -300)).toBeNull()
+    expect(roundCue(guessing(0), reveal(0), 100)).toBeUndefined()
+    expect(roundCue(guessing(0), reveal(0), -300)).toBeUndefined()
   })
 
   it("applauds the final results, whether reached from the reveal or by the host ending the game mid-round", () => {
-    const results = { phase: "results", round: null }
+    const results = { phase: "results", round: undefined }
     expect(roundCue(reveal(1), results, 0)).toBe("results")
     expect(roundCue(guessing(1), results, 30_000)).toBe("results")
-    expect(roundCue(results, results, 0)).toBeNull()
+    expect(roundCue(results, results, 0)).toBeUndefined()
   })
 
   it("does not applaud a refresh on the results screen", () => {
-    expect(roundCue(null, { phase: "results", round: null }, 0)).toBeNull()
+    expect(roundCue(undefined, { phase: "results", round: undefined }, 0)).toBeUndefined()
   })
 
   it("stays quiet for changes within a phase", () => {
-    expect(roundCue(guessing(1), guessing(1), 30_000)).toBeNull()
-    expect(roundCue(reveal(1), reveal(1), 0)).toBeNull()
+    expect(roundCue(guessing(1), guessing(1), 30_000)).toBeUndefined()
+    expect(roundCue(reveal(1), reveal(1), 0)).toBeUndefined()
   })
 })
 

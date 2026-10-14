@@ -3,7 +3,8 @@
  * the backdrop and Cancel all dismiss it; the confirm button is styled as
  * destructive. `useConfirm` gives a screen one dialog and an `ask` function.
  */
-import { useEffect, useRef, useState } from "preact/hooks"
+import { useEffect, useState } from "preact/hooks"
+import { useElementRef } from "./element-ref"
 import type { ComponentChildren } from "preact"
 import { createPortal } from "preact/compat"
 import { confirmDialogTestIds } from "./ConfirmDialogTestIds"
@@ -17,8 +18,8 @@ export interface ConfirmRequest {
   safe?: boolean
 }
 
-export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | null; onClose: () => void }) {
-  const cancelRef = useRef<HTMLButtonElement>(null)
+export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | undefined; onClose: () => void }) {
+  const cancelRef = useElementRef<HTMLButtonElement>()
   useEffect(() => {
     if (!request) return
     cancelRef.current?.focus()
@@ -28,7 +29,7 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
   }, [request])
-  if (!request) return null
+  if (!request) return undefined
   // Rendered into <body>: a transformed ancestor (the bottom toolbar is one)
   // would otherwise become the box the fixed backdrop fills.
   return createPortal(
@@ -68,9 +69,9 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
 
 /** One dialog per screen: render `dialog`, call `ask` to open it. */
 export function useConfirm(): { dialog: ComponentChildren; ask: (request: ConfirmRequest) => void } {
-  const [request, setRequest] = useState<ConfirmRequest | null>(null)
+  const [request, setRequest] = useState<ConfirmRequest | undefined>(undefined)
   return {
-    dialog: <ConfirmDialog request={request} onClose={() => setRequest(null)} />,
+    dialog: <ConfirmDialog request={request} onClose={() => setRequest(undefined)} />,
     ask: setRequest
   }
 }

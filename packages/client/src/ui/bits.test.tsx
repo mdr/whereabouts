@@ -65,7 +65,7 @@ describe("QuestionCard", () => {
       expect(flagRound.container.querySelector(".flag img")!.getAttribute("src")).toBe("/flags/fr.svg")
     )
     const place = render(<QuestionCard q={{ prompt: "Where is Dublin?", toleranceKm: 40 }} />)
-    expect(place.container.querySelector(".flag")).toBeNull()
+    expect(place.container.querySelectorAll(".flag")).toHaveLength(0)
   })
 })
 
@@ -77,25 +77,25 @@ describe("QuestionCard image", () => {
     expect(button.textContent).toContain("Enlarge photo")
     expect(first.querySelector(".enlarge-badge")!.textContent).toBe("Enlarge")
     const { container: later } = render(<QuestionCard q={q} />)
-    expect(later.querySelector(".enlarge-badge")).not.toBeNull()
+    expect(later.querySelectorAll(".enlarge-badge")).not.toHaveLength(0)
     expect(later.querySelector(".enlarge-badge")!.textContent).toBe("")
     fireEvent.click(later.querySelector(".thumb-button")!)
-    expect(later.querySelector(".lightbox")).not.toBeNull()
+    expect(later.querySelectorAll(".lightbox")).not.toHaveLength(0)
   })
 
   it("enlarges on click and shrinks on Escape, the close button, or a backdrop click", () => {
     const { container } = render(<QuestionCard q={q} />)
-    expect(container.querySelector(".lightbox")).toBeNull()
+    expect(container.querySelectorAll(".lightbox")).toHaveLength(0)
     fireEvent.click(container.querySelector(".thumb img")!)
-    expect(container.querySelector(".lightbox img")).not.toBeNull()
+    expect(container.querySelectorAll(".lightbox img")).not.toHaveLength(0)
     fireEvent.keyDown(window, { key: "Escape" })
-    expect(container.querySelector(".lightbox")).toBeNull()
+    expect(container.querySelectorAll(".lightbox")).toHaveLength(0)
     fireEvent.click(container.querySelector(".thumb img")!)
     fireEvent.click(container.querySelector(".lightbox")!)
-    expect(container.querySelector(".lightbox")).toBeNull()
+    expect(container.querySelectorAll(".lightbox")).toHaveLength(0)
     fireEvent.click(container.querySelector(".thumb img")!)
     fireEvent.click(container.querySelector(".lightbox-close")!)
-    expect(container.querySelector(".lightbox")).toBeNull()
+    expect(container.querySelectorAll(".lightbox")).toHaveLength(0)
   })
 
   it("zooms the enlarged photo: click toggles a closer look, the wheel zooms in and out", () => {
@@ -109,7 +109,7 @@ describe("QuestionCard image", () => {
     expect(img.style.transform).toContain("scale(2.5)")
     expect(container.querySelector(".lightbox-frame")!.className).toContain("zoomed")
     // Clicking the picture does not close the lightbox.
-    expect(container.querySelector(".lightbox")).not.toBeNull()
+    expect(container.querySelectorAll(".lightbox")).not.toHaveLength(0)
     fireEvent.click(img)
     expect(img.style.transform).toContain("scale(1)")
     fireEvent.wheel(container.querySelector(".lightbox-frame")!, { deltaY: -500 })
@@ -124,7 +124,7 @@ describe("QuestionCard image", () => {
   it("keeps the Commons credit behind an info icon linking to the file page, only when asked", () => {
     // While guessing there is no credit link at all: the file name is a spoiler.
     const { container: guessing } = render(<QuestionCard q={q} />)
-    expect(guessing.querySelector(".credit-icon")).toBeNull()
+    expect(guessing.querySelectorAll(".credit-icon")).toHaveLength(0)
 
     const { container } = render(<QuestionCard q={q} credit />)
     const credit = container.querySelector<HTMLAnchorElement>(".thumb .credit-icon")!

@@ -63,7 +63,7 @@ export function ShortcutsButton() {
 export function Shortcuts({ practice = false }: { practice?: boolean }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (isTyping(e.target)) return
+      if (isTyping(e.target ?? undefined)) return
       if (e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey) {
         shortcutsOpen.value = !shortcutsOpen.value
         e.preventDefault()
@@ -77,7 +77,7 @@ export function Shortcuts({ practice = false }: { practice?: boolean }) {
       shortcutsOpen.value = false
     }
   }, [])
-  if (!shortcutsOpen.value) return null
+  if (!shortcutsOpen.value) return undefined
   // Into <body>, like the confirm dialog: the toolbar's transform would
   // otherwise trap a fixed card.
   return createPortal(

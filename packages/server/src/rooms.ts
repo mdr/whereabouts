@@ -110,8 +110,8 @@ export class GameRoom extends Room<ActorData> {
   protected override onCreate(): void {
     this.game = new Game(roomCode(this.id), deps.pool, deps.config, Date.now(), deps.regions, deps.flags, deps.features)
     this.actorsByToken = new Map()
-    this.timer = null
-    this.emptyTimer = null
+    this.timer = undefined
+    this.emptyTimer = undefined
     for (const [topic, schema] of Object.entries(ClientMessageSchemas)) {
       this.bind(topic, (actor, payload) => this.handle(actor, topic, schema, payload))
     }
@@ -149,7 +149,7 @@ export class GameRoom extends Room<ActorData> {
         return
       }
       this.emptyTimer = deps.clock.setTimeout(() => {
-        this.emptyTimer = null
+        this.emptyTimer = undefined
         if (this.actorCount === 0) this.destroy()
       }, SEAT_GRACE_MS)
     }
@@ -161,8 +161,8 @@ export class GameRoom extends Room<ActorData> {
   }
 
   private cancelEmptyTimer(): void {
-    if (this.emptyTimer !== null) deps.clock.clearTimeout(this.emptyTimer)
-    this.emptyTimer = null
+    if (this.emptyTimer !== undefined) deps.clock.clearTimeout(this.emptyTimer)
+    this.emptyTimer = undefined
   }
 
   private handle(actor: Actor<ActorData>, topic: string, schema: z.ZodType, payload: Uint8Array): void {
@@ -264,18 +264,18 @@ export class GameRoom extends Room<ActorData> {
   private armTimer(): void {
     this.clearTimer()
     const at = this.game.nextWakeAt()
-    if (at === null) return
+    if (at === undefined) return
     const delay = Math.max(0, at - deps.clock.now())
     this.timer = deps.clock.setTimeout(() => {
-      this.timer = null
+      this.timer = undefined
       if (this.game.tick(deps.clock.now())) this.broadcastState()
       else this.armTimer()
     }, delay)
   }
 
   private clearTimer(): void {
-    if (this.timer !== null) deps.clock.clearTimeout(this.timer)
-    this.timer = null
+    if (this.timer !== undefined) deps.clock.clearTimeout(this.timer)
+    this.timer = undefined
   }
 
   /** Test hook. */
@@ -297,20 +297,26 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     this.rooms = rooms
   }
 
-  override async authenticate(ticket: string, _context?: ConnectionContext): Promise<AuthResult<ActorData> | null> {
+  override async authenticate(ticket: string, _context?: ConnectionContext) {
+    // Rivalis takes null as a refusal.
+    // eslint-disable-next-line no-restricted-syntax
+    return this.route(ticket) ?? null
+  }
+
+  private route(ticket: string): AuthResult<ActorData> | undefined {
     const parsed = decodeTicket(ticket)
-    if (!parsed) return null
+    if (!parsed) return undefined
     const rooms = this.rooms()
     let roomId: string
     if (parsed.create) {
       roomId = generateCode()
       for (let i = 0; i < 20 && rooms.get(roomId); i++) roomId = generateCode()
-      if (rooms.get(roomId)) return null
+      if (rooms.get(roomId)) return undefined
       rooms.create(ROOM_TYPE, roomId)
     } else if (parsed.code && rooms.get(parsed.code)) {
       roomId = parsed.code
     } else {
-      return null
+      return undefined
     }
     return { data: { token: parsed.token, name: parsed.name, watch: parsed.watch ?? false }, roomId }
   }

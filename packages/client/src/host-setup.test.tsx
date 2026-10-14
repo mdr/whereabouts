@@ -13,9 +13,9 @@ function lobby(isHost: boolean, phase: GameView["phase"] = "lobby"): GameView {
   return { phase, you: { isHost } } as GameView
 }
 
-function Harness({ conn, view, created }: { conn: Connection; view: GameView | null; created: boolean }) {
+function Harness({ conn, view, created }: { conn: Connection; view: GameView | undefined; created: boolean }) {
   useSavedSetup(conn, view, created)
-  return null
+  return undefined
 }
 
 afterEach(() => {
@@ -77,7 +77,7 @@ describe("savedSetupPatch", () => {
 
   it("ignores unknown keys and anything that is not a saved setup", () => {
     expect(savedSetupPatch({ roundMs: 30_000, kernelId: "single", colour: "red" })).toEqual({ roundMs: 30_000 })
-    for (const junk of [null, undefined, "rounds", 7, []]) expect(savedSetupPatch(junk)).toEqual({})
+    for (const junk of [JSON.parse("null"), undefined, "rounds", 7, []]) expect(savedSetupPatch(junk)).toEqual({})
   })
 })
 
@@ -97,7 +97,7 @@ describe("useSavedSetup", () => {
     hostSetup.value = SAVED
     const configure = vi.fn()
     const conn = { configure } as unknown as Connection
-    const { rerender } = render(<Harness conn={conn} view={null} created />)
+    const { rerender } = render(<Harness conn={conn} view={undefined} created />)
     expect(configure).not.toHaveBeenCalled()
     rerender(<Harness conn={conn} view={lobby(true)} created />)
     rerender(<Harness conn={conn} view={{ ...lobby(true) }} created />)

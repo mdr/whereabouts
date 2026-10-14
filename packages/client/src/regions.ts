@@ -21,15 +21,15 @@ import {
 } from "@whereabouts/shared"
 
 /** Every outline by id, countries and features alike, once loaded. */
-export const regions = signal<Map<RegionId, RegionQuestion> | null>(null)
+export const regions = signal<Map<RegionId, RegionQuestion> | undefined>(undefined)
 
 /** One flag round per country, once loaded (with the countries). */
-export const flagQuestions = signal<FlagQuestion[] | null>(null)
+export const flagQuestions = signal<FlagQuestion[] | undefined>(undefined)
 
 /** The islands, lakes, seas and US states, once loaded: most painted whole, a few small states asked as a point. */
-export const featureQuestions = signal<(Question | RegionQuestion)[] | null>(null)
+export const featureQuestions = signal<(Question | RegionQuestion)[] | undefined>(undefined)
 
-let loading: Promise<Map<RegionId, RegionQuestion>> | null = null
+let loading: Promise<Map<RegionId, RegionQuestion>> | undefined = undefined
 
 export function loadRegions(): Promise<Map<RegionId, RegionQuestion>> {
   loading ??= Promise.all([
@@ -50,18 +50,18 @@ export function loadRegions(): Promise<Map<RegionId, RegionQuestion>> {
     },
     (err: unknown) => {
       // Let the next caller try again, after a dropped connection say.
-      loading = null
+      loading = undefined
       throw err
     }
   )
   return loading
 }
 
-/** An outline by id, loading them first if need be; null until they arrive. */
-export function useRegion(id: RegionId | undefined): RegionQuestion | null {
+/** An outline by id, loading them first if need be; undefined until they arrive. */
+export function useRegion(id: RegionId | undefined): RegionQuestion | undefined {
   const byId = regions.value
   useEffect(() => {
     if (id && !byId) loadRegions().catch((err: unknown) => console.warn("could not load countries", err))
   }, [id, byId])
-  return id && byId ? (byId.get(id) ?? null) : null
+  return id && byId ? byId.get(id) : undefined
 }

@@ -28,8 +28,8 @@ export async function isUsable(locator: Locator): Promise<boolean> {
   return locator.evaluate((el) => {
     const b = el.getBoundingClientRect()
     const onScreen = b.left >= 0 && b.right <= window.innerWidth && b.top >= 0 && b.bottom <= window.innerHeight
-    const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2)
-    return onScreen && hit !== null && (hit === el || el.contains(hit))
+    const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) ?? undefined
+    return onScreen && hit !== undefined && (hit === el || el.contains(hit))
   })
 }
 

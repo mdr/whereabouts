@@ -17,7 +17,7 @@ const FIELDS = Object.keys(ConfigureSchema.shape) as (keyof ConfigurePatch)[]
  */
 export function savedSetupPatch(saved: unknown): ConfigurePatch {
   const patch: Record<string, unknown> = {}
-  if (typeof saved !== "object" || saved === null) return patch
+  if (typeof saved !== "object" || !saved) return patch
   const setup = { ...(saved as Record<string, unknown>) }
   setup.mix ??= mixFromOldSetup(setup)
   for (const field of FIELDS) {
@@ -36,7 +36,7 @@ export function configureAsHost(conn: Connection, patch: ConfigurePatch): void {
 }
 
 /** Once a game this tab created reaches its lobby, give it the remembered setup. */
-export function useSavedSetup(conn: Connection, view: GameView | null, created: boolean): void {
+export function useSavedSetup(conn: Connection, view: GameView | undefined, created: boolean): void {
   const applied = useRef(false)
   const ready = created && view?.phase === "lobby" && view.you.isHost
   useEffect(() => {

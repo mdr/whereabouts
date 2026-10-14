@@ -10,17 +10,17 @@ import { roundCue, sound, type RoundState } from "../sound"
  * applause at the final results. The spray and eraser are the map's
  * business (MapView), and Pass and Clear play their own, where they happen.
  */
-export function useGameSounds(conn: Connection, view: GameView | null): void {
-  const prev = useRef<RoundState | null>(null)
-  const lastDeadline = useRef<number | null>(null)
-  const phase = view?.phase ?? null
-  const round = view?.round?.index ?? view?.reveal?.index ?? null
-  const deadline = view?.phase === "guessing" ? (view.round?.deadline ?? null) : null
+export function useGameSounds(conn: Connection, view: GameView | undefined): void {
+  const prev = useRef<RoundState | undefined>(undefined)
+  const lastDeadline = useRef<number | undefined>(undefined)
+  const phase = view?.phase
+  const round = view?.round?.index ?? view?.reveal?.index
+  const deadline = view?.phase === "guessing" ? view.round?.deadline : undefined
 
   useEffect(() => {
-    if (phase === null) return
+    if (phase === undefined) return
     const next = { phase, round }
-    const msLeft = lastDeadline.current === null ? 0 : conn.msUntil(lastDeadline.current)
+    const msLeft = lastDeadline.current === undefined ? 0 : conn.msUntil(lastDeadline.current)
     const cue = roundCue(prev.current, next, msLeft)
     if (cue === "roundStart") sound.cue("roundStart")
     if (cue === "finishedEarly") {
@@ -38,7 +38,7 @@ export function useGameSounds(conn: Connection, view: GameView | null): void {
   // refresh, say). Nothing cancels it when the round ends on time, so the
   // alarm plays out; finishing early stops it above.
   useEffect(() => {
-    if (deadline === null) return
+    if (deadline === undefined) return
     lastDeadline.current = deadline
     sound.scheduleCountdown(conn.msUntil(deadline))
   }, [deadline])

@@ -99,7 +99,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
               </span>
             </h2>
             {[players, watchers].map((list, i) =>
-              list.length === 0 ? null : (
+              list.length === 0 ? undefined : (
                 <Fragment key={i}>
                   {i === 1 && (
                     <h3 class="watching-heading">
@@ -236,7 +236,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   )
 }
 
-function RenameForm({ current, onDone }: { current: string; onDone: (name: PlayerName | null) => void }) {
+function RenameForm({ current, onDone }: { current: string; onDone: (name: PlayerName | undefined) => void }) {
   const [name, setName] = useState(current)
   return (
     <form
@@ -253,11 +253,11 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: Playe
         value={name}
         onInput={(e) => setName((e.target as HTMLInputElement).value)}
         onKeyDown={(e) => {
-          if (e.key === "Escape") onDone(null)
+          if (e.key === "Escape") onDone(undefined)
         }}
         autoFocus
       />
-      <button type="submit" disabled={nameToJoin(name) === null}>
+      <button type="submit" disabled={nameToJoin(name) === undefined}>
         Save
       </button>
     </form>

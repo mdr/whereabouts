@@ -42,8 +42,8 @@ function persisted<S extends z.ZodType<string | boolean>>(
 function persistedJson<T>(key: string, initial: T) {
   let start = initial
   try {
-    const raw = localStorage.getItem(key)
-    if (raw !== null) start = JSON.parse(raw) as T
+    const raw = localStorage.getItem(key) ?? undefined
+    if (raw !== undefined) start = JSON.parse(raw) as T
   } catch {
     /* storage unavailable, or not JSON */
   }
@@ -112,9 +112,9 @@ function randomToken(): PlayerToken {
 /**
  * Name handed from the home screen to the game screen when joining by code
  * there, so the player is not asked to confirm it a second time. Arriving by
- * link leaves this null and the game screen asks.
+ * link leaves this undefined and the game screen asks.
  */
-export const nameHandoff = signal<PlayerName | null>(null)
+export const nameHandoff = signal<PlayerName | undefined>(undefined)
 
 /** Handed over with the name when the home screen's "Just watch" was used. */
 export const watchHandoff = signal(false)
@@ -131,8 +131,8 @@ export const askedToWatch = signal(false)
  */
 export const joinedCode = persisted("wa.joined", RoomCodeSchema.or(z.literal("")), "", sessionStorage)
 
-/** A typed name as a game takes it, or null if it would not. */
-export function nameToJoin(typed: string): PlayerName | null {
+/** A typed name as a game takes it, or undefined if it would not. */
+export function nameToJoin(typed: string): PlayerName | undefined {
   const parsed = PlayerNameSchema.safeParse(typed)
-  return parsed.success ? parsed.data : null
+  return parsed.success ? parsed.data : undefined
 }

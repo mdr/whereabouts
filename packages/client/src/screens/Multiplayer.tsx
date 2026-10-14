@@ -23,7 +23,7 @@ import { useGameSounds } from "../ui/useGameSounds"
 import { useSavedSetup } from "../host-setup"
 import { joinAsTestIds, joinedTestIds } from "./MultiplayerTestIds"
 
-export function Multiplayer({ code, create }: { code: RoomCode | null; create: boolean }) {
+export function Multiplayer({ code, create }: { code: RoomCode | undefined; create: boolean }) {
   const conn = useMemo(() => new Connection(), [])
   // "Just watch" from the home screen or the join screen below.
   const [watch, setWatch] = useState(() => {
@@ -34,14 +34,14 @@ export function Multiplayer({ code, create }: { code: RoomCode | null; create: b
   // Hosts and code-joiners have just typed their name on the home screen;
   // anyone arriving by link confirms or edits theirs first, so two tabs need
   // not share a name.
-  const [confirmedName, setConfirmedName] = useState<PlayerName | null>(() => {
+  const [confirmedName, setConfirmedName] = useState<PlayerName | undefined>(() => {
     if (create) return nameToJoin(savedName.value)
     const handed = nameHandoff.value
-    nameHandoff.value = null
+    nameHandoff.value = undefined
     if (handed) return handed
     // A refresh of a tab that already holds a seat in this game.
     if (code && joinedCode.value === code) return nameToJoin(savedName.value)
-    return null
+    return undefined
   })
 
   useEffect(() => {
@@ -75,13 +75,13 @@ export function Multiplayer({ code, create }: { code: RoomCode | null; create: b
 }
 
 /** The game once a name is settled: its own component so its hooks always run. */
-function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | null; create: boolean }) {
+function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | undefined; create: boolean }) {
   // Once the server assigns a code to a new game, put it in the URL for sharing.
   const assigned = conn.code.value
   useEffect(() => {
     if (!assigned) return
     joinedCode.value = assigned
-    if (create) history.replaceState(null, "", `#/game/${assigned}`)
+    if (create) history.replaceState(undefined, "", `#/game/${assigned}`)
   }, [assigned])
 
   // Removed by the host: this tab's token is banned from that game, so drop
@@ -140,7 +140,7 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | nul
   )
 }
 
-function JoinAs({ code, onJoin }: { code: RoomCode | null; onJoin: (name: PlayerName, watch: boolean) => void }) {
+function JoinAs({ code, onJoin }: { code: RoomCode | undefined; onJoin: (name: PlayerName, watch: boolean) => void }) {
   const [name, setName] = useState(savedName.value)
   const ready = nameToJoin(name)
   return (

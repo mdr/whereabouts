@@ -14,7 +14,7 @@ const player = (over: Partial<PlayerView>): PlayerView => ({
   locked: false,
   score: 0,
   rank: 1,
-  previousRank: null,
+  previousRank: undefined,
   ...over
 })
 
@@ -37,7 +37,7 @@ describe("PlayerList", () => {
     expect(rows[1]!.className).toContain("offline")
     expect(rows[1]!.textContent).toContain("offline")
     // No scores requested.
-    expect(container.querySelector(".score-num")).toBeNull()
+    expect(container.querySelectorAll(".score-num")).toHaveLength(0)
   })
 
   it("shows rank-change arrows only when a rank moved", () => {
@@ -83,18 +83,18 @@ describe("PlayerList status", () => {
       player({ id: playerId("p2"), name: playerName("Bob"), locked: false })
     ]
     const { container: plain } = render(<PlayerList players={players} you={playerId("p2")} showScores={false} />)
-    expect(plain.querySelector(".tag.done")).toBeNull()
+    expect(plain.querySelectorAll(".tag.done")).toHaveLength(0)
     const { container } = render(<PlayerList players={players} you={playerId("p2")} showScores={false} showLocked />)
     const rows = container.querySelectorAll("li")
-    expect(rows[0]!.querySelector(".tag.done")).not.toBeNull()
-    expect(rows[1]!.querySelector(".tag.done")).toBeNull()
+    expect(rows[0]!.querySelectorAll(".tag.done")).not.toHaveLength(0)
+    expect(rows[1]!.querySelectorAll(".tag.done")).toHaveLength(0)
   })
 })
 
 describe("HostTag", () => {
   it("shows the crown with the word for screen readers", () => {
     const { container } = render(<HostTag />)
-    expect(container.querySelector(".tag.host svg")).not.toBeNull()
+    expect(container.querySelectorAll(".tag.host svg")).not.toHaveLength(0)
     expect(container.textContent).toBe("host")
   })
 })
@@ -104,7 +104,7 @@ describe("PlayerList kick", () => {
     const kicked: string[] = []
     const players = [player({ id: playerId("p1") }), player({ id: playerId("p2"), name: playerName("Bob") })]
     const { container: plain } = render(<PlayerList players={players} you={playerId("p1")} showScores={false} />)
-    expect(plain.querySelector("button.kick")).toBeNull()
+    expect(plain.querySelectorAll("button.kick")).toHaveLength(0)
     const { container } = render(
       <PlayerList players={players} you={playerId("p1")} showScores={false} onKick={(p) => kicked.push(p.id)} />
     )
@@ -125,7 +125,7 @@ describe("PlayerList make host", () => {
       player({ id: playerId("p3"), name: playerName("Cara"), connected: false })
     ]
     const { container: plain } = render(<PlayerList players={players} you={playerId("p1")} showScores={false} />)
-    expect(plain.querySelector("button.make-host")).toBeNull()
+    expect(plain.querySelectorAll("button.make-host")).toHaveLength(0)
     const { container } = render(
       <PlayerList players={players} you={playerId("p1")} showScores={false} onMakeHost={(p) => picked.push(p.id)} />
     )
@@ -140,13 +140,13 @@ describe("PlayerList spectators", () => {
   it("shows a spectator without a colour, tagged as watching", () => {
     const { container } = render(
       <PlayerList
-        players={[player({ id: playerId("p2"), name: playerName("Sam"), watching: true, colour: null })]}
+        players={[player({ id: playerId("p2"), name: playerName("Sam"), watching: true, colour: undefined })]}
         you={playerId("p1")}
         showScores={false}
       />
     )
     const row = container.querySelector("li")!
-    expect(row.querySelector(".swatch.watcher")).not.toBeNull()
+    expect(row.querySelectorAll(".swatch.watcher")).not.toHaveLength(0)
     expect(row.textContent).toContain("watching")
   })
 })

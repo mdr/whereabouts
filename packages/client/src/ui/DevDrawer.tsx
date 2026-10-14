@@ -7,7 +7,7 @@ import { devMode } from "../dev"
 import { devDrawerTestIds } from "./DevDrawerTestIds"
 
 export function DevDrawer({ children }: { children?: ComponentChildren }) {
-  if (!devMode.value) return null
+  if (!devMode.value) return undefined
   return (
     <aside id="dev" data-testid={devDrawerTestIds.drawer}>
       <div class="dev-head">

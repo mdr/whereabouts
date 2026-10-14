@@ -20,22 +20,22 @@ const TOUCH_MS = 1000
 const MIN_SHARE = 0.2
 
 /** The country with most of the paint, if it has at least MIN_SHARE of it. */
-export function mainCountry(borders: Borders, cells: Iterable<PaintCell>): PaintedCountry | null {
+export function mainCountry(borders: Borders, cells: Iterable<PaintCell>): PaintedCountry | undefined {
   const top = borders.paintedCountries(cells)[0]
-  return top && top.share >= MIN_SHARE ? top : null
+  return top && top.share >= MIN_SHARE ? top : undefined
 }
 
 /** A card by the pointer with the flag and name of the country under it. */
 export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Borders }) {
-  const [hit, setHit] = useState<{ f: FlagQuestion; x: number; y: number } | null>(null)
+  const [hit, setHit] = useState<{ f: FlagQuestion; x: number; y: number } | undefined>(undefined)
   useEffect(() => {
     const map = gameMap.map
     const show = (e: MapMouseEvent) => {
       const p = { lat: e.lngLat.lat, lon: e.lngLat.lng }
       const f = borders.countryAt(p) ?? borders.smallNear(p, gameMap.metersPerPixel(p.lat) / 1000, SMALL_PX)
-      setHit(f ? { f, x: e.originalEvent.clientX, y: e.originalEvent.clientY } : null)
+      setHit(f ? { f, x: e.originalEvent.clientX, y: e.originalEvent.clientY } : undefined)
     }
-    const hide = () => setHit(null)
+    const hide = () => setHit(undefined)
     // A mouse hovers; a finger taps (a click), and the card stays until the
     // next tap or a drag. A tap is followed by emulated mouse events, a
     // mouseout among them (in Chrome), which must not hide it.
@@ -55,7 +55,7 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
       map.off("dragstart", hide)
     }
   }, [gameMap, borders])
-  if (!hit) return null
+  if (!hit) return undefined
   // Beside the pointer, flipped left near the right edge so it stays on screen.
   const left = hit.x > window.innerWidth - 220
   return (

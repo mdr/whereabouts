@@ -36,7 +36,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
       question?.topic === undefined &&
       (question?.regionId !== undefined || question?.flag !== undefined)
   )
-  const sendTimer = useRef<number | null>(null)
+  const sendTimer = useRef<number | undefined>(undefined)
   const lastSentVersion = useRef(-1)
   // The countdown has reached zero: painting stops, and what is on screen is what counts.
   const [timeUp, setTimeUp] = useState(false)
@@ -69,7 +69,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     paint.gameMap.resetView()
     // Paint in your own colour, the same one others see at the reveal.
     const me = view.players.find((p) => p.id === view.you.id)
-    paint.showOwn(me && !me.watching ? colourCss(me.colour) : null)
+    paint.showOwn(me && !me.watching ? colourCss(me.colour) : undefined)
     paint.tool.value = startOnPan.value ? "pan" : "paint"
     lastSentVersion.current = paint.version.peek()
   }, [roundKey, guessing])
@@ -99,7 +99,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   /** Upload the paint now. An empty map is sent too: it takes back paint sent earlier. */
   function sendNow() {
     if (sendTimer.current) clearTimeout(sendTimer.current)
-    sendTimer.current = null
+    sendTimer.current = undefined
     conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.peek() })
     lastSentVersion.current = paint.version.peek()
   }

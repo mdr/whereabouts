@@ -93,7 +93,7 @@ describe("lobby", () => {
     expect(g.tick(T0 + SEAT_GRACE_MS - 1)).toBe(false)
     expect(g.tick(T0 + SEAT_GRACE_MS)).toBe(true)
     expect(g.playerTokens).toEqual([tokB])
-    expect(g.nextWakeAt()).toBeNull()
+    expect(g.nextWakeAt()).toBeUndefined()
   })
 
   it("a refresh in the lobby keeps the seat, colour and host role", () => {
@@ -105,7 +105,7 @@ describe("lobby", () => {
     expect(after).toMatchObject({ id: before.id, colour: before.colour, connected: true, isHost: true })
     expect(g.view(tokB, T0 + 2_000).you.isHost).toBe(false)
     // Back in time, so nothing is left to free.
-    expect(g.nextWakeAt()).toBeNull()
+    expect(g.nextWakeAt()).toBeUndefined()
     expect(g.tick(T0 + SEAT_GRACE_MS)).toBe(false)
     expect(g.playerTokens).toContain(tokA)
   })
@@ -204,10 +204,10 @@ describe("round loop", () => {
     const [first, second] = reveal.results
     expect(first!.playerId).toBe("p1")
     expect(first!.score).toBeGreaterThan(900)
-    expect(second!.paint).toBeNull()
+    expect(second!.paint).toBeUndefined()
     expect(second!.score).toBe(PASS_SCORE.score)
     expect(reveal.ready).toEqual([])
-    expect(g.nextWakeAt()).toBeNull()
+    expect(g.nextWakeAt()).toBeUndefined()
   })
 
   it("paint is private during guessing and visible after the reveal", () => {
@@ -216,11 +216,11 @@ describe("round loop", () => {
     const q = currentQuestion(g, tokA, T0)
     g.setPaint(tokA, paintAt(q, 10, 10))
     const during = g.view(tokB, T0 + 10)
-    expect(during.reveal).toBeNull()
+    expect(during.reveal).toBeUndefined()
     expect(JSON.stringify(during)).not.toContain("cells")
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     const after = g.view(tokB, T0 + 60_000)
-    expect(after.reveal!.results.find((r) => r.playerId === "p1")!.paint).not.toBeNull()
+    expect(after.reveal!.results.find((r) => r.playerId === "p1")!.paint).not.toBeUndefined()
   })
 
   it("locking freezes paint; late paint is rejected", () => {
@@ -265,7 +265,7 @@ describe("round loop", () => {
     g.lock(tokB, T0 + 5)
     expect(g.phase).toBe("reveal")
     const mine = g.view(tokA, T0 + 5).reveal!.results.find((r) => r.playerId === "p1")!
-    expect(mine.paint).toBeNull()
+    expect(mine.paint).toBeUndefined()
     expect(mine.score).toBe(250)
   })
 
@@ -301,7 +301,7 @@ describe("round loop", () => {
     const g = twoPlayerGame(2)
     g.start(tokA, T0)
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
-    expect(g.nextWakeAt()).toBeNull()
+    expect(g.nextWakeAt()).toBeUndefined()
     expect(g.next(tokB, T0 + 61_000)).toEqual({ ok: false, error: "only the host can advance" })
     expect(g.ready(tokB, T0 + 61_000)).toEqual({ ok: true, changed: true })
     expect(g.ready(tokB, T0 + 61_000)).toEqual({ ok: true, changed: false })
@@ -342,7 +342,7 @@ describe("round loop", () => {
     expect(awards.find((a) => a.title === "Chicken")?.playerIds).toEqual(["p1"])
     expect(awards.some((a) => a.playerIds.includes(playerId("p2")))).toBe(true)
     g.again(tokA, now)
-    expect(g.view(tokA, now).awards).toBeNull()
+    expect(g.view(tokA, now).awards).toBeUndefined()
   })
 
   it("paint arriving just after the deadline still counts, and an empty upload takes paint back", () => {
@@ -359,7 +359,7 @@ describe("round loop", () => {
     const results = g.view(tokA, T0 + 61_000).reveal!.results
     const alice = results.find((r) => r.playerId === "p1")!
     expect(alice.score).toBe(PASS_SCORE.score)
-    expect(alice.paint).toBeNull()
+    expect(alice.paint).toBeUndefined()
     expect(results.find((r) => r.playerId === "p2")!.score).toBeGreaterThan(900)
   })
 
@@ -395,7 +395,7 @@ describe("player cap", () => {
     for (let i = 1; i <= MAX_SPECTATORS; i++) expect(g.join(tok(`W${i}`), playerName(`W${i}`), T0).ok).toBe(true)
     const w1 = g.view(tokW1, T0)
     expect(w1.you.watching).toBe(true)
-    expect(w1.players.find((p) => p.name === "W1")).toMatchObject({ watching: true, colour: null, rank: 0 })
+    expect(w1.players.find((p) => p.name === "W1")).toMatchObject({ watching: true, colour: undefined, rank: 0 })
     expect(g.join(tokLate, playerName("Late"), T0)).toEqual({ ok: false, error: "game is full" })
   })
 
@@ -431,7 +431,7 @@ describe("spectators", () => {
     const v = g.view(tokS, T0)
     expect(v.you.watching).toBe(true)
     expect(v.players.map((p) => p.name)).toEqual(["Alice", "Bob", "Sam"])
-    expect(sam(g)).toMatchObject({ watching: true, colour: null })
+    expect(sam(g)).toMatchObject({ watching: true, colour: undefined })
   })
 
   it("does not paint, finish, get scored or hold up either waiting phase", () => {
@@ -465,7 +465,7 @@ describe("spectators", () => {
     expect(g.setRole(tokS, false)).toEqual({ ok: true, changed: true })
     expect(sam(g)).toMatchObject({ watching: false, colour: 2 })
     expect(g.setRole(tokB, true)).toEqual({ ok: true, changed: true })
-    expect(g.view(tokB, T0).players.find((p) => p.name === "Bob")).toMatchObject({ watching: true, colour: null })
+    expect(g.view(tokB, T0).players.find((p) => p.name === "Bob")).toMatchObject({ watching: true, colour: undefined })
     expect(g.setRole(tokB, true)).toEqual({ ok: true, changed: false })
     g.start(tokA, T0)
     expect(g.setRole(tokA, true)).toEqual({ ok: false, error: "you can only switch to watching in the lobby" })
@@ -493,7 +493,7 @@ describe("spectators", () => {
     g.tick(T0 + 6 + 60_000 + ROUND_GRACE_MS)
     g.next(tokA, T0 + 6 + 60_000)
     const standing = g.view(tokS, T0 + 6 + 60_000).results!.find((r) => r.playerId === sam(g).id)!
-    expect(standing.rounds).toEqual([null, 250])
+    expect(standing.rounds).toEqual([{}, { score: 250 }])
   })
 
   it("taking a seat at the reveal means playing from the next round", () => {
@@ -569,7 +569,7 @@ describe("joining and leaving mid-game", () => {
     g.next(tokA, T0 + 120_002)
     const standing = g.view(tokC, T0 + 120_002).results!.find((s) => s.playerId === "p3")!
     expect(standing.total).toBe(cara.score)
-    expect(standing.rounds).toEqual([null, cara.score])
+    expect(standing.rounds).toEqual([{}, { score: cara.score }])
   })
 
   it("a reconnecting player gets their own paint back, and only their own", () => {
@@ -581,10 +581,10 @@ describe("joining and leaving mid-game", () => {
     g.disconnect(tokA, T0 + 1)
     g.join(tokA, playerName("Alice"), T0 + 5)
     expect(g.view(tokA, T0 + 5).you.paint).toEqual(mine)
-    expect(g.view(tokB, T0 + 5).you.paint).toBeNull()
+    expect(g.view(tokB, T0 + 5).you.paint).toBeUndefined()
     expect(JSON.stringify(g.view(tokB, T0 + 5))).not.toContain(Object.keys(mine.cells)[0])
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
-    expect(g.view(tokA, T0 + 60_000).you.paint).toBeNull()
+    expect(g.view(tokA, T0 + 60_000).you.paint).toBeUndefined()
   })
 
   it("a disconnected player keeps their seat and score, and reclaims it by token", () => {

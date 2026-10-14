@@ -28,7 +28,7 @@ import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
 import { PointWhy, RegionWhy } from "../ui/ScoreWhy"
 import { revealTestIds } from "./RevealTestIds"
 
-/** Selection meaning "show nobody's paint", alongside null (everyone) and a player id. */
+/** Selection meaning "show nobody's paint", alongside undefined (everyone) and a player id. */
 const NONE = "none"
 
 /**
@@ -51,8 +51,8 @@ export function revealOrder(
 export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reveal: RevealView }) {
   const paint = usePaint()
   const byId = new Map(view.players.map((p) => [p.id, p]))
-  // null shows everyone's guesses at once; a player id shows just theirs; NONE hides all paint.
-  const [selected, setSelected] = useState<string | null>(null)
+  // undefined shows everyone's guesses at once; a player id shows just theirs; NONE hides all paint.
+  const [selected, setSelected] = useState<string | undefined>(undefined)
   const { dialog, ask } = useConfirm()
 
   // A country round shows the country's outline, once the outlines are loaded.
@@ -63,7 +63,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   const answerFlag = reveal.question.flag
   const borders = useBorders(answerFlag !== undefined)
   const where = useMemo(() => {
-    const m = new Map<string, PaintedCountry | null>()
+    const m = new Map<string, PaintedCountry | undefined>()
     if (borders)
       for (const r of reveal.results)
         if (r.paint) m.set(r.playerId, mainCountry(borders, PaintLayer.fromRecord(r.res, r.paint.cells).toCells()))
@@ -81,7 +81,9 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
   // player's, framed together with the answer.
   useEffect(() => {
     const shown =
-      selected === NONE ? [] : reveal.results.filter((r) => r.paint && (selected === null || r.playerId === selected))
+      selected === NONE
+        ? []
+        : reveal.results.filter((r) => r.paint && (selected === undefined || r.playerId === selected))
     const entries = [...shown].reverse().flatMap((r) => {
       const p = byId.get(r.playerId)
       return p && r.paint ? [{ layer: PaintLayer.fromRecord(r.res, r.paint.cells), colour: colourCss(p.colour) }] : []
@@ -96,14 +98,14 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
     () =>
       mine?.paint
         ? buildDistribution(PaintLayer.fromRecord(mine.res, mine.paint.cells).toCells(), mine.paint.floor)
-        : null,
+        : undefined,
     [reveal.index, mine?.playerId]
   )
   const last = reveal.index + 1 >= reveal.total
   const ready = new Set(reveal.ready)
   const present = view.players.filter((p) => p.connected && !p.watching)
   const readyCount = present.filter((p) => ready.has(p.id)).length
-  const iAmReady = view.you.id !== null && ready.has(view.you.id)
+  const iAmReady = view.you.id !== undefined && ready.has(view.you.id)
   const rows = revealOrder(view.players, reveal.results)
 
   return (
@@ -160,8 +162,8 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
           <Card title="Scores">
             <ul class="reveal-list" data-testid={revealTestIds.scoresList}>
               <li
-                class={`everyone ${selected === null ? "selected" : ""}`}
-                onClick={() => setSelected(null)}
+                class={`everyone ${selected === undefined ? "selected" : ""}`}
+                onClick={() => setSelected(undefined)}
                 data-testid={revealTestIds.everyoneRow}
               >
                 <span class="swatch multi" />
@@ -175,9 +177,9 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
                   you={p.id === view.you.id}
                   ready={ready.has(p.id)}
                   selected={p.id === selected}
-                  where={where.get(p.id) ?? null}
+                  where={where.get(p.id)}
                   answerFlag={answerFlag}
-                  onSelect={() => setSelected(selected === p.id ? null : p.id)}
+                  onSelect={() => setSelected(selected === p.id ? undefined : p.id)}
                   onKick={
                     view.you.isHost && p.id !== view.you.id
                       ? () => ask(kickRequest(p.name, () => conn.kick(p.id)))
@@ -187,7 +189,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
               ))}
               <li
                 class={`hide-paint ${selected === NONE ? "selected" : ""}`}
-                onClick={() => setSelected(selected === NONE ? null : NONE)}
+                onClick={() => setSelected(selected === NONE ? undefined : NONE)}
                 data-testid={revealTestIds.hidePaintRow}
                 title="Show the map and the answer without anyone's paint"
               >
@@ -273,13 +275,13 @@ function RevealRow({
   ready: boolean
   selected: boolean
   /** A flag round: the country most of their paint was in. */
-  where: PaintedCountry | null
+  where: PaintedCountry | undefined
   answerFlag?: string
   onSelect: () => void
   /** Host only: remove this player. */
   onKick?: () => void
 }) {
-  const delta = p.previousRank !== null ? p.previousRank - p.rank : 0
+  const delta = p.previousRank !== undefined ? p.previousRank - p.rank : 0
   return (
     <li
       class={`${selected ? "selected" : ""} ${you ? "you" : ""} ${where ? "with-where" : ""}`}

@@ -8,14 +8,14 @@ const FLAGS = import.meta.glob<string>("/node_modules/flag-icons/flags/4x3/*.svg
   import: "default"
 })
 
-const urls = new Map<string, Promise<string | null>>()
+const urls = new Map<string, Promise<string | undefined>>()
 
-/** The picture of the flag with this ISO code, or null when there is none. */
-export function flagUrl(code: string): Promise<string | null> {
+/** The picture of the flag with this ISO code, or undefined when there is none. */
+export function flagUrl(code: string): Promise<string | undefined> {
   let url = urls.get(code)
   if (!url) {
     const load = FLAGS[`/node_modules/flag-icons/flags/4x3/${code}.svg`]
-    url = load ? load().catch(() => null) : Promise.resolve(null)
+    url = load ? load().catch(() => undefined) : Promise.resolve(undefined)
     urls.set(code, url)
   }
   return url

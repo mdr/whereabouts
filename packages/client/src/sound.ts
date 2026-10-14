@@ -104,8 +104,8 @@ type Clip = keyof typeof URLS
  * `delayMs`, from `offsetS` into the clip. Arriving with 6 s left starts 4 s
  * in, so the alarm still lands on zero; with no time left there is nothing.
  */
-export function countdownPlan(msLeft: number): { delayMs: number; offsetS: number } | null {
-  if (msLeft <= 0) return null
+export function countdownPlan(msLeft: number): { delayMs: number; offsetS: number } | undefined {
+  if (msLeft <= 0) return undefined
   const leadMs = COUNTDOWN_S * 1000
   if (msLeft >= leadMs) return { delayMs: msLeft - leadMs, offsetS: 0 }
   return { delayMs: 0, offsetS: (leadMs - msLeft) / 1000 }
@@ -114,7 +114,7 @@ export function countdownPlan(msLeft: number): { delayMs: number; offsetS: numbe
 export interface RoundState {
   phase: string
   /** Index of the round being played or revealed, if any. */
-  round: number | null
+  round: number | undefined
 }
 
 /** More than this left when a round ends counts as finishing early rather than on time. */
@@ -126,19 +126,20 @@ const EARLY_MS = 750
  * clock means everyone finished early: the falling pair, and the countdown
  * stops before its alarm; ending on time lets the alarm play out. Reaching
  * the final results gets applause (and stops a countdown, if the host ended
- * the game mid-round). `prev` is null on the first view after loading, which
+ * the game mid-round). `prev` is undefined on the first view after loading, which
  * never cues anything: a refresh should not announce what is already there.
  */
 export function roundCue(
-  prev: RoundState | null,
+  prev: RoundState | undefined,
   next: RoundState,
   msLeftAtChange: number
-): "roundStart" | "finishedEarly" | "results" | null {
-  if (!prev) return null
+): "roundStart" | "finishedEarly" | "results" | undefined {
+  if (!prev) return undefined
   if (next.phase === "guessing" && (prev.phase !== "guessing" || prev.round !== next.round)) return "roundStart"
-  if (prev.phase === "guessing" && next.phase === "reveal") return msLeftAtChange > EARLY_MS ? "finishedEarly" : null
+  if (prev.phase === "guessing" && next.phase === "reveal")
+    return msLeftAtChange > EARLY_MS ? "finishedEarly" : undefined
   if (next.phase === "results" && prev.phase !== "results") return "results"
-  return null
+  return undefined
 }
 
 interface Voice {
@@ -147,13 +148,14 @@ interface Voice {
 }
 
 class SoundEngine {
-  private ctx: AudioContext | null = null
-  private master: GainNode | null = null
+  private ctx: AudioContext | undefined = undefined
+  private master: GainNode | undefined = undefined
   private buffers: Partial<Record<Clip, AudioBuffer>> = {}
   private loading = false
-  private stroke: { loop: LoopName; voices: Voice[]; nextAt: number; last: number; timer: number } | null = null
-  private ticking: Voice | null = null
-  private pendingCountdown: number | null = null
+  private stroke: { loop: LoopName; voices: Voice[]; nextAt: number; last: number; timer: number } | undefined =
+    undefined
+  private ticking: Voice | undefined = undefined
+  private pendingCountdown: number | undefined = undefined
 
   /** Create the audio context and start loading; call from a user gesture. */
   unlock(): void {
@@ -183,14 +185,14 @@ class SoundEngine {
     return this.ctx!.decodeAudioData(await res.arrayBuffer())
   }
 
-  private ready(): AudioContext | null {
-    return soundOn.value && this.ctx?.state === "running" ? this.ctx : null
+  private ready(): AudioContext | undefined {
+    return soundOn.value && this.ctx?.state === "running" ? this.ctx : undefined
   }
 
   // ---- strokes: spray and eraser ----------------------------------------------
 
-  /** The sound for the stroke being held: a loop's name, or null for none. Safe to repeat. */
-  setStroke(loop: LoopName | null): void {
+  /** The sound for the stroke being held: a loop's name, or undefined for none. Safe to repeat. */
+  setStroke(loop: LoopName | undefined): void {
     if (this.stroke && this.stroke.loop !== loop) this.stopStroke()
     if (loop) this.startStroke(loop)
   }
@@ -239,7 +241,7 @@ class SoundEngine {
   private stopStroke(): void {
     const stroke = this.stroke
     if (!stroke) return
-    this.stroke = null
+    this.stroke = undefined
     clearTimeout(stroke.timer)
     for (const v of stroke.voices) this.fadeOut(v, RELEASE_S)
   }
@@ -266,7 +268,7 @@ class SoundEngine {
     const plan = countdownPlan(msLeft)
     if (!plan) return
     this.pendingCountdown = window.setTimeout(() => {
-      this.pendingCountdown = null
+      this.pendingCountdown = undefined
       this.playCountdown(plan.offsetS)
     }, plan.delayMs)
   }
@@ -286,17 +288,17 @@ class SoundEngine {
     gain.gain.linearRampToValueAtTime(VOLUME.countdown, t + Math.max(0, COUNTDOWN_S - offsetS))
     src.start(t, offsetS)
     src.onended = () => {
-      if (this.ticking?.src === src) this.ticking = null
+      if (this.ticking?.src === src) this.ticking = undefined
     }
     this.ticking = { src, gain }
   }
 
   /** Stop the countdown (and cancel one still to come) before its alarm. */
   stopCountdown(): void {
-    if (this.pendingCountdown !== null) clearTimeout(this.pendingCountdown)
-    this.pendingCountdown = null
+    if (this.pendingCountdown !== undefined) clearTimeout(this.pendingCountdown)
+    this.pendingCountdown = undefined
     if (this.ticking) this.fadeOut(this.ticking, 0.08)
-    this.ticking = null
+    this.ticking = undefined
   }
 
   // ---- one-shots and cues ------------------------------------------------------

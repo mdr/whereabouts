@@ -61,7 +61,7 @@ export class PaintController {
    * they do not run on every animation frame mid-stroke.
    */
   readonly settledVersion = signal(0)
-  private settleTimer: number | null = null
+  private settleTimer: number | undefined = undefined
   /** Whether nothing is painted. */
   readonly isEmpty = following(this.version, () => this.layer.isEmpty)
   /** The layer's size and resolutions, for the dev panel. */
@@ -74,8 +74,8 @@ export class PaintController {
   readonly settledCells = following(this.settledVersion, () => [...this.layer.toCells()])
   /** Connected blobs as of `settledVersion`, largest first; none when nothing is painted. */
   readonly settledBlobs = following(this.settledVersion, () => this.layer.blobs())
-  /** The tool of the stroke being held (never pan, nor a pinch), or null; drives the spray and eraser sounds. */
-  readonly stroking = signal<"paint" | "erase" | null>(null)
+  /** The tool of the stroke being held (never pan, nor a pinch), or undefined; drives the spray and eraser sounds. */
+  readonly stroking = signal<"paint" | "erase" | undefined>(undefined)
   /** Whether painting is currently allowed (guessing phase, not locked). */
   readonly enabled = signal(false)
   /** The current question's tolerance, set by the active screen (used by dev tooling). */
@@ -85,21 +85,21 @@ export class PaintController {
    * Political map. Set by the screen; the countries come in `filler`.
    */
   readonly fillable = signal(false)
-  filler: CountryFiller | null = null
+  filler: CountryFiller | undefined = undefined
   /** The countries filled, by flag code, with the cells each was filled with. */
   private fills = new Map<FlagCode, H3Cell[]>()
 
   layer = new PaintLayer(h3Res(4))
   private spaceHeld = false
   /** Where a middle-button drag last was, while one pans the map. */
-  private middleFrom: { x: number; y: number } | null = null
+  private middleFrom: { x: number; y: number } | undefined = undefined
   private painting = false
-  private lastStampPoint: Point | null = null
+  private lastStampPoint: Point | undefined = undefined
   /** The frame that will draw our paint, while one is queued. */
-  private renderFrame: number | null = null
+  private renderFrame: number | undefined = undefined
   private hoverListeners = new Set<(pos: LatLon) => void>()
   /** Where the mouse is over the map, so the footprint can be redrawn without it moving. */
-  private pointerAt: LngLat | null = null
+  private pointerAt: LngLat | undefined = undefined
   /** Whether the last pointer on the map can hover: a mouse or pen, not a finger. */
   private hovering = true
   private disposers: (() => void)[] = []
@@ -148,7 +148,7 @@ export class PaintController {
       for (const l of this.hoverListeners) l({ lat: e.lngLat.lat, lon: e.lngLat.lng })
     }
     const onOut = () => {
-      this.pointerAt = null
+      this.pointerAt = undefined
       this.hideCursor()
     }
     // A zoom under a still pointer (the scroll wheel) changes the footprint too.
@@ -159,7 +159,7 @@ export class PaintController {
       if (this.canFill()) this.fillAt(e.lngLat)
     }
     const onKeyDown = (e: KeyboardEvent) => {
-      if (isTyping(e.target)) return
+      if (isTyping(e.target ?? undefined)) return
       if (e.code === "Space" && !this.spaceHeld) {
         this.spaceHeld = true
         this.endStroke()
@@ -203,7 +203,7 @@ export class PaintController {
     }
     const onMiddleUp = (e: MouseEvent) => {
       if (e.button !== 1 || !this.middleFrom) return
-      this.middleFrom = null
+      this.middleFrom = undefined
       map.getContainer().classList.remove("panning")
       this.applyInteraction()
     }
@@ -217,7 +217,7 @@ export class PaintController {
     const onPointer = (e: PointerEvent) => {
       this.hovering = e.pointerType !== "touch"
       if (!this.hovering && this.pointerAt) {
-        this.pointerAt = null
+        this.pointerAt = undefined
         this.hideCursor()
       }
     }
@@ -280,9 +280,9 @@ export class PaintController {
     )
     this.disposers.push(
       this.version.subscribe((v) => {
-        if (this.settleTimer !== null) window.clearTimeout(this.settleTimer)
+        if (this.settleTimer !== undefined) window.clearTimeout(this.settleTimer)
         this.settleTimer = window.setTimeout(() => {
-          this.settleTimer = null
+          this.settleTimer = undefined
           this.settledVersion.value = v
         }, 200)
       })
@@ -290,7 +290,7 @@ export class PaintController {
   }
 
   dispose(): void {
-    if (this.settleTimer !== null) window.clearTimeout(this.settleTimer)
+    if (this.settleTimer !== undefined) window.clearTimeout(this.settleTimer)
     for (const d of this.disposers) d()
   }
 
@@ -338,7 +338,7 @@ export class PaintController {
   }
 
   private countryAt(lngLat: LngLat) {
-    if (!this.filler) return null
+    if (!this.filler) return undefined
     const p = { lat: lngLat.lat, lon: lngLat.lng }
     return this.filler.countryAt(p, this.gameMap.metersPerPixel(p.lat) / 1000, FILL_SMALL_PX)
   }
@@ -413,7 +413,7 @@ export class PaintController {
   }
 
   /** Show a foreign layer (another player's paint) without touching ours. */
-  showLayer(layer: PaintLayer | null, colour: string | null): void {
+  showLayer(layer: PaintLayer | undefined, colour: string | undefined): void {
     this.gameMap.setPaintColour(colour)
     this.gameMap.setPaint(layer ? layer.toGeoJSON() : { type: "FeatureCollection", features: [] })
   }
@@ -437,7 +437,7 @@ export class PaintController {
   }
 
   /** Put our own paint back on the map, in a player colour or the theme ramp. */
-  showOwn(colour: string | null = null): void {
+  showOwn(colour?: string): void {
     this.gameMap.setPaintColour(colour)
     this.gameMap.setPaint(this.layer.toGeoJSON())
   }
@@ -466,7 +466,7 @@ export class PaintController {
       this.enabled.value &&
       this.tool.value === "fill" &&
       this.fillable.value &&
-      this.filler !== null &&
+      this.filler !== undefined &&
       !this.spaceHeld &&
       !this.middleFrom
     )
@@ -494,16 +494,16 @@ export class PaintController {
     this.pushHistory()
     this.painting = true
     const tool = this.tool.value
-    this.stroking.value = tool === "paint" || tool === "erase" ? tool : null
-    this.lastStampPoint = null
+    this.stroking.value = tool === "paint" || tool === "erase" ? tool : undefined
+    this.lastStampPoint = undefined
     this.strokeTo(point)
     this.queueRender()
   }
 
   private endStroke(): void {
     this.painting = false
-    this.stroking.value = null
-    this.lastStampPoint = null
+    this.stroking.value = undefined
+    this.lastStampPoint = undefined
   }
 
   /** A stroke that turned out to be the start of a pinch: end it and take its paint back. */
@@ -523,7 +523,7 @@ export class PaintController {
     if (this.canFill()) {
       // The country a click would fill, or unfill (dotted).
       const f = this.countryAt(lngLat)
-      this.gameMap.setCursorShape(f ? this.filler!.outline(f) : null, f ? this.fills.has(f.flag) : false)
+      this.gameMap.setCursorShape(f ? this.filler!.outline(f) : undefined, f ? this.fills.has(f.flag) : false)
       return
     }
     if (!this.canPaint()) {
@@ -544,7 +544,7 @@ export class PaintController {
   }
 
   private hideCursor(): void {
-    this.gameMap.setCursorFootprint(null)
+    this.gameMap.setCursorFootprint(undefined)
   }
 
   private stampAt(lngLat: LngLat): void {
@@ -580,9 +580,9 @@ export class PaintController {
   }
 
   private queueRender(): void {
-    if (this.renderFrame !== null) return
+    if (this.renderFrame !== undefined) return
     this.renderFrame = requestAnimationFrame(() => {
-      this.renderFrame = null
+      this.renderFrame = undefined
       this.gameMap.setPaint(this.layer.toGeoJSON())
       this.version.value++
     })
@@ -590,9 +590,9 @@ export class PaintController {
 
   /** Drop a queued draw, still counting the change it was for. */
   private cancelRender(): void {
-    if (this.renderFrame === null) return
+    if (this.renderFrame === undefined) return
     cancelAnimationFrame(this.renderFrame)
-    this.renderFrame = null
+    this.renderFrame = undefined
     this.version.value++
   }
 }

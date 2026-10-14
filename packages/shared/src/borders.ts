@@ -78,8 +78,8 @@ export class Borders {
     }
   }
 
-  /** The country at this point, or null (at sea, or somewhere without a flag round). */
-  countryAt(p: LatLon): FlagQuestion | null {
+  /** The country at this point, or undefined (at sea, or somewhere without a flag round). */
+  countryAt(p: LatLon): FlagQuestion | undefined {
     return this.nearSmall(p) ?? this.onLand(p)
   }
 
@@ -88,8 +88,8 @@ export class Borders {
    * it is within `px` pixels (at `kmPerPx`) or the country's own `near`. For
    * the pointer: at world zoom Tuvalu is far less than a pixel across.
    */
-  smallNear(p: LatLon, kmPerPx: number, px: number): FlagQuestion | null {
-    let best: FlagQuestion | null = null
+  smallNear(p: LatLon, kmPerPx: number, px: number): FlagQuestion | undefined {
+    let best: FlagQuestion | undefined = undefined
     let bestD = Infinity
     for (const { f, near } of this.small) {
       const d = greatCircleDistance(p, f.answer)
@@ -128,12 +128,12 @@ export class Borders {
     return { rings, answer: f.answer, near: d?.near }
   }
 
-  private nearSmall(p: LatLon): FlagQuestion | null {
+  private nearSmall(p: LatLon): FlagQuestion | undefined {
     return this.smallNear(p, 0, 0)
   }
 
-  private onLand({ lat, lon }: LatLon): FlagQuestion | null {
-    if (this.none.some((r) => inRing(r, lon, lat))) return null
+  private onLand({ lat, lon }: LatLon): FlagQuestion | undefined {
+    if (this.none.some((r) => inRing(r, lon, lat))) return undefined
     for (const { f, rings, box } of this.countries) {
       if (lon < box[0] || lon > box[2] || lat < box[1] || lat > box[3]) continue
       // Even-odd over all the country's rings: holes (Lesotho in South Africa) cancel.
@@ -141,7 +141,7 @@ export class Borders {
       for (const r of rings) if (inRing(r, lon, lat)) inside = !inside
       if (inside) return f
     }
-    return null
+    return undefined
   }
 }
 

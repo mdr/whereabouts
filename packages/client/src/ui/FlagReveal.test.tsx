@@ -25,7 +25,7 @@ describe("mainCountry", () => {
   it("names none when the paint is mostly at sea", () => {
     // Five cells in the mid-Atlantic and one in Brasília: a sixth is under the bar.
     const sea = ["853a6507fffffff", "853a6597fffffff", "853b4b33fffffff", "853b4b87fffffff", "853b4823fffffff"]
-    expect(mainCountry(borders, paint([...sea, "85a8c24bfffffff"]))).toBeNull()
+    expect(mainCountry(borders, paint([...sea, "85a8c24bfffffff"]))).toBeUndefined()
   })
 })
 

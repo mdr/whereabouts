@@ -62,7 +62,7 @@ export class GameMap {
   private waterwayLayers: string[] = []
   private waterFilter: unknown = undefined
   private styleLayers: { id: string; type: string; sourceLayer: string }[] = []
-  private theme: Theme | null = null
+  private theme: Theme | undefined = undefined
   /** Set once the map is removed; layer toggles become no-ops rather than throwing. */
   private disposed = false
 
@@ -388,7 +388,7 @@ export class GameMap {
     const base = this.waterFilter as maplibregl.FilterSpecification | undefined
     const oceanOnly = ["==", ["get", "class"], "ocean"] as unknown as maplibregl.FilterSpecification
     const combined = (base ? ["all", base, oceanOnly] : oceanOnly) as unknown as maplibregl.FilterSpecification
-    this.map.setFilter("water", on ? (base ?? null) : combined)
+    this.map.setFilter("water", on ? base : combined)
   }
 
   /** National borders, and with `subnational` the style's state and province lines (zoom 8 on). */
@@ -432,8 +432,8 @@ export class GameMap {
     void this.source(PAINT_SOURCE)?.setData(data)
   }
 
-  /** Outline the cells the next stamp would touch; null hides it. Dotted when erasing. */
-  setCursorFootprint(cells: H3Cell[] | null, erase = false): void {
+  /** Outline the cells the next stamp would touch; undefined hides it. Dotted when erasing. */
+  setCursorFootprint(cells: H3Cell[] | undefined, erase = false): void {
     const features: GeoJSON.Feature[] = cells
       ? [{ type: "Feature", properties: { erase }, geometry: cellsOutline(cells) }]
       : []
@@ -441,18 +441,18 @@ export class GameMap {
   }
 
   /** Outline a shape as the cursor instead (the country the Fill tool would fill); dotted when it would unfill. */
-  setCursorShape(shape: GeoJSON.MultiPolygon | null, erase = false): void {
+  setCursorShape(shape: GeoJSON.MultiPolygon | undefined, erase = false): void {
     const features: GeoJSON.Feature[] = shape ? [{ type: "Feature", properties: { erase }, geometry: shape }] : []
     void this.source(CURSOR_SOURCE)?.setData({ type: "FeatureCollection", features })
   }
 
   /**
    * Colour the paint layer with a single hue (a player's colour) instead of
-   * the theme ramp. Pass null to restore the ramp.
+   * the theme ramp. Pass undefined to restore the ramp.
    */
-  setPaintColour(colour: string | null): void {
+  setPaintColour(colour: string | undefined): void {
     if (!this.map.getLayer("paint-fill")) return
-    if (colour === null) {
+    if (colour === undefined) {
       if (this.theme) this.applyPaintRamp(this.theme)
       return
     }

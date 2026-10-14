@@ -28,7 +28,7 @@ describe("configFromEnv", () => {
   })
 
   it("empty STATIC_DIR disables static serving", () => {
-    expect(configFromEnv({ STATIC_DIR: "" }, "/x").staticDir).toBeNull()
+    expect(configFromEnv({ STATIC_DIR: "" }, "/x").staticDir).toBeUndefined()
     expect(configFromEnv({ STATIC_DIR: "/custom" }, "/x").staticDir).toBe("/custom")
   })
 })
