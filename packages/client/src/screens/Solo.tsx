@@ -190,7 +190,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const stateRound = q.topic === "state"
   useEffect(() => {
     paint.gameMap.setDetail(phase === "reveal" ? "reveal" : detail)
-    paint.gameMap.setStateBorders(phase === "reveal" && stateRound)
+    paint.gameMap.setStateReveal(phase === "reveal" && stateRound)
   }, [phase, detail, stateRound])
 
   useEffect(() => {

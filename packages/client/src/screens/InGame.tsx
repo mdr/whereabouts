@@ -81,7 +81,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const stateRound = question?.topic === "state"
   useEffect(() => {
     paint.gameMap.setDetail(reveal ? "reveal" : view.config.mapDetail)
-    paint.gameMap.setStateBorders(reveal && stateRound)
+    paint.gameMap.setStateReveal(reveal && stateRound)
   }, [reveal, view.config.mapDetail, stateRound])
 
   // The server scores a moment after the deadline (ROUND_GRACE_MS), so paint sent at zero still counts.

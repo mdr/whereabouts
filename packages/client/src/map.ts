@@ -45,6 +45,9 @@ const REVEAL_BORDER_WIDTH = ["interpolate", ["linear"], ["zoom"], 1, 0.8, 3, 1.3
 const REVEAL_BORDER_OPACITY = ["interpolate", ["linear"], ["zoom"], 1, 0.55, 2.5, 1]
 /** US states, and other countries' provinces, for the reveal of a state round. The style draws them only from zoom 8. */
 const STATE_BORDERS = "state-borders"
+const STATE_LABELS = "state-labels"
+/** Town and city names, hidden at a state reveal so the state names stand out. */
+const PLACE_LABELS = ["label_other", "label_village", "label_town", "label_state", "label_city", "label_city_capital"]
 
 export class GameMap {
   readonly map: MapLibreMap
@@ -194,6 +197,29 @@ export class GameMap {
         },
         this.labelLayers[0]
       )
+      // The style's own state names start at zoom 5, closer in than a state reveal.
+      this.map.addLayer({
+        id: STATE_LABELS,
+        type: "symbol",
+        source: "openmaptiles",
+        "source-layer": "place",
+        maxzoom: 9,
+        filter: ["==", ["get", "class"], "state"],
+        layout: {
+          visibility: "none",
+          "text-field": ["coalesce", ["get", "name_en"], ["get", "name"]],
+          "text-font": ["Noto Sans Bold"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 3, 10, 6, 15],
+          "text-transform": "uppercase",
+          "text-letter-spacing": 0.08,
+          "text-max-width": 8
+        },
+        paint: {
+          "text-color": this.theme?.labelText ?? "#cfd8e3",
+          "text-halo-color": this.theme?.labelHalo ?? "#000000",
+          "text-halo-width": 1.5
+        }
+      })
     }
 
     // A hint's band, under the paint so painting over it stays readable.
@@ -323,6 +349,8 @@ export class GameMap {
     this.styleBorders()
     this.applyPaintRamp(t)
     set(STATE_BORDERS, "line-color", t.revealBorder)
+    set(STATE_LABELS, "text-color", t.labelText)
+    set(STATE_LABELS, "text-halo-color", t.labelHalo)
     set("reveal-answer", "circle-color", t.answer)
     set("reveal-answer", "circle-stroke-color", t.answerStroke)
     set("reveal-region-fill", "fill-color", t.answer)
@@ -421,9 +449,13 @@ export class GameMap {
     }
   }
 
-  /** State and province lines at every zoom, for the reveal of a state round; never while guessing one. */
-  setStateBorders(on: boolean): void {
-    this.setVisible([STATE_BORDERS], on)
+  /**
+   * For the reveal of a state round: state lines and names at every zoom,
+   * without town and city names. Never while guessing one. Call after setDetail.
+   */
+  setStateReveal(on: boolean): void {
+    this.setVisible([STATE_BORDERS, STATE_LABELS], on)
+    if (on) this.setVisible(PLACE_LABELS, false)
   }
 
   /** Bold national borders for the reveal, or the style's faint ones. */
