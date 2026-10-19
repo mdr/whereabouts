@@ -300,6 +300,11 @@ function RevealRow({
             passed
           </span>
         )}
+        {r?.hint && (
+          <span class="tag hinted" title={`Used a ${r.hint} hint this round`} data-testid={revealTestIds.hintTag}>
+            <Icon name="hint" size={11} />
+          </span>
+        )}
         {ready && (
           <span class="tag ready" title="Ready for the next round">
             ✓

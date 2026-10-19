@@ -9,6 +9,7 @@ import { z } from "zod"
 import { H3ResSchema } from "./h3.ts"
 import { PlayerColourSchema } from "./colours.ts"
 import { FlagCodeSchema, PlayerIdSchema, PlayerNameSchema, RegionIdSchema, RoomCodeSchema } from "./ids.ts"
+import { HintAxisSchema } from "./hints.ts"
 import { KernelIdSchema } from "./scoring.ts"
 import { MapDetailSchema, MixSchema, PaintSubmissionSchema } from "./protocol.ts"
 
@@ -45,7 +46,8 @@ const RoundResultViewSchema = z.strictObject({
     .strictObject({ shape: z.number(), nearness: z.number(), coverage: z.number(), precision: z.number() })
     .optional(),
   paint: PaintSubmissionSchema.optional(),
-  res: H3ResSchema
+  res: H3ResSchema,
+  hint: HintAxisSchema.optional()
 })
 
 export const GameViewSchema = z.strictObject({
@@ -56,7 +58,8 @@ export const GameViewSchema = z.strictObject({
     roundMs: z.number().int(),
     mix: MixSchema,
     mapDetail: MapDetailSchema,
-    kernelId: KernelIdSchema
+    kernelId: KernelIdSchema,
+    hints: z.number().int()
   }),
   serverTime: z.number(),
   you: z.strictObject({
@@ -65,7 +68,9 @@ export const GameViewSchema = z.strictObject({
     spectating: z.boolean(),
     watching: z.boolean(),
     locked: z.boolean(),
-    paint: PaintSubmissionSchema.optional()
+    paint: PaintSubmissionSchema.optional(),
+    hint: z.strictObject({ axis: HintAxisSchema, from: z.number(), to: z.number() }).optional(),
+    hintsLeft: z.number().int()
   }),
   players: z.array(PlayerViewSchema),
   round: z

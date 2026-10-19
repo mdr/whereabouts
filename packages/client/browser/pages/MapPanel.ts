@@ -140,6 +140,16 @@ export class MapPanel {
     })
   }
 
+  /** Shapes in the hint band shaded on the map: 0 without a hint, 2 for a longitude band across 180°. */
+  async shownHintShapes(): Promise<number> {
+    return this.#page.evaluate(() => {
+      const source = window.whereabouts.map.getSource("hint") as unknown as
+        | { serialize: () => { data: GeoJSON.FeatureCollection } }
+        | undefined
+      return source?.serialize().data.features.length ?? 0
+    })
+  }
+
   async attributionIsUsable(): Promise<boolean> {
     return isUsable(this.#page.locator(".maplibregl-ctrl-attrib-button"))
   }

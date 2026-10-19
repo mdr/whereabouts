@@ -9,6 +9,7 @@ import type { LatLon } from "./geo.ts"
 import type { Topic } from "./questions.ts"
 import type { PlayerColour } from "./colours.ts"
 import { H3CellSchema, type H3Res } from "./h3.ts"
+import { HintAxisSchema, MAX_HINTS, type HintAxis, type HintBand } from "./hints.ts"
 import type { KernelId } from "./scoring.ts"
 import {
   PlayerIdSchema,
@@ -61,7 +62,8 @@ export const ClientTopics = {
   again: "again",
   rename: "rename",
   kick: "kick",
-  end: "end"
+  end: "end",
+  hint: "hint"
 } as const
 
 export const RenameSchema = z.object({ name: PlayerNameSchema })
@@ -156,7 +158,8 @@ export const ConfigureSchema = z.object({
     .refine((v) => (ROUND_LENGTHS_MS as readonly number[]).includes(v), "unsupported round length")
     .optional(),
   mix: MixSchema.optional(),
-  mapDetail: MapDetailSchema.optional()
+  mapDetail: MapDetailSchema.optional(),
+  hints: z.number().int().min(0).max(MAX_HINTS).optional()
 })
 export type ConfigurePatch = z.infer<typeof ConfigureSchema>
 
@@ -175,7 +178,9 @@ export const ClientMessageSchemas = {
   leave: z.object({}),
   /** In the lobby: watch instead of play, or take a player's seat. */
   setRole: z.object({ watch: z.boolean() }),
-  end: z.object({})
+  end: z.object({}),
+  /** Use one of the game's hints on this round. */
+  hint: z.object({ axis: HintAxisSchema })
 } as const
 
 // ---- server -> client ------------------------------------------------------
@@ -196,6 +201,8 @@ export interface GameConfig {
   /** How much of the map shows while guessing (one of MAP_DETAILS). */
   mapDetail: MapDetail
   kernelId: KernelId
+  /** Hints each player may use in the game, one per round at most. */
+  hints: number
 }
 
 export interface PlayerView {
@@ -249,6 +256,8 @@ export interface RoundResultView {
   paint?: PaintSubmission
   /** H3 resolution the paint was made at, for rendering. */
   res: H3Res
+  /** The hint this player used on the round. */
+  hint?: HintAxis
 }
 
 export interface RevealView {
@@ -293,6 +302,9 @@ export interface GameView {
     locked: boolean
     /** Your own current submission while guessing, so a reconnect can restore it. Never anyone else's. */
     paint?: PaintSubmission
+    /** Your hint on this round, while guessing and at its reveal. */
+    hint?: HintBand
+    hintsLeft: number
   }
   players: PlayerView[]
   round?: RoundView

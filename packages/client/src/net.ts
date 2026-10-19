@@ -11,6 +11,7 @@ import {
   PROTOCOL_VERSION,
   encodeTicket,
   type GameView,
+  type HintAxis,
   type PaintSubmission,
   type PlayerName,
   type Ticket
@@ -116,6 +117,9 @@ export class Connection {
   }
   rename(name: PlayerName): void {
     this.send("rename", { name })
+  }
+  hint(axis: HintAxis): void {
+    this.send("hint", { axis })
   }
   kick(playerId: string): void {
     this.send("kick", { playerId })

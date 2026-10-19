@@ -2081,3 +2081,34 @@ button.danger.solid {
   padding-left: 18px;
   font-size: 12px;
 }
+
+/* Hints: a band of latitude or longitude, chosen once per round. */
+.hint-card {
+  padding: 8px 12px;
+}
+.hint-choose {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.hint-label,
+.hint-band {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--muted);
+}
+.hint-label {
+  margin-right: auto;
+}
+.hint-band {
+  margin: 0;
+  color: var(--accent-2);
+  font-weight: 600;
+}
+.tag.hinted {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-2);
+}

@@ -4,6 +4,7 @@ import {
   MAX_PLAYERS,
   MAX_SPECTATORS,
   QUESTION_TYPES,
+  MAX_HINTS,
   ROUND_LENGTHS_MS,
   nextHostAfter,
   type GameView,
@@ -24,6 +25,7 @@ import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker"
 import { lobbyTestIds, setupSummaryTestIds } from "./LobbyTestIds"
 
 const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }))
+const HINTS = Array.from({ length: MAX_HINTS + 1 }, (_, n) => ({ value: n, label: String(n) }))
 
 /**
  * Waiting room: invite on the left (code, link, players), the game setup on
@@ -177,6 +179,15 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     onChange={(roundMs) => configureAsHost(conn, { roundMs })}
                   />
                 </div>
+                <div class="setting hints" data-testid={lobbyTestIds.hintsSetting}>
+                  <span class="setting-label">Hints per player</span>
+                  <Pills
+                    label="Hints per player"
+                    options={HINTS}
+                    value={view.config.hints}
+                    onChange={(hints) => configureAsHost(conn, { hints })}
+                  />
+                </div>
                 <div class="setting map-detail">
                   <span class="setting-label">Map detail</span>
                   <MapDetailPicker
@@ -270,7 +281,7 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: Playe
  * that plays a short highlight; nothing flashes on first load.
  */
 function SetupSummary({ view }: { view: GameView }) {
-  const { rounds, roundMs, mix, mapDetail } = view.config
+  const { rounds, roundMs, mix, mapDetail, hints } = view.config
   const shown = useRef(view.config)
   const before = shown.current
   useEffect(() => {
@@ -291,6 +302,13 @@ function SetupSummary({ view }: { view: GameView }) {
       value: `${roundMs / 1000} s`,
       label: "per round",
       changed: roundMs !== before.roundMs
+    },
+    {
+      key: "hints",
+      testId: setupSummaryTestIds.hints,
+      value: String(hints),
+      label: hints === 1 ? "hint each" : "hints each",
+      changed: hints !== before.hints
     }
   ]
   return (

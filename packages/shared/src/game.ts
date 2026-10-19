@@ -10,6 +10,7 @@ import { regionFit, regionMisfit, scoreRegionQuestion, type RegionQuestion } fro
 import { explainPoint, isHedge } from "./explain.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
 import { flagRound, type FlagQuestion } from "./flags.ts"
+import { DEFAULT_HINTS, hintBand, seededUnit, type HintAxis, type HintBand } from "./hints.ts"
 import { playerColour, type PlayerColour } from "./colours.ts"
 import { playerId, roomCode, type PlayerId, type PlayerName, type PlayerToken, type RoomCode } from "./ids.ts"
 import {
@@ -40,7 +41,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   roundMs: 60_000,
   mix: evenMix(8),
   mapDetail: "minimal",
-  kernelId: DEFAULT_KERNEL.id
+  kernelId: DEFAULT_KERNEL.id,
+  hints: DEFAULT_HINTS
 }
 
 /**
@@ -68,6 +70,7 @@ interface Player {
   /** By round index, for the awards; a hole for each round not played. */
   facts: (RoundFacts | undefined)[]
   previousRank: number | undefined
+  hintsUsed: number
 }
 
 interface Submission {
@@ -104,6 +107,8 @@ export class Game {
   private roundIndex = -1
   private deadline = 0
   private submissions = new Map<PlayerToken, Submission>()
+  /** The hint each player used on the current round. */
+  private hints = new Map<PlayerToken, HintAxis>()
   /** Tokens of players who have pressed Ready on the current reveal. */
   private ready_ = new Set<PlayerToken>()
   private reveal: RevealView | undefined = undefined
@@ -191,7 +196,8 @@ export class Game {
       joinedRound: this.phase === "lobby" ? 0 : this.roundIndex + 1,
       scores: [],
       facts: [],
-      previousRank: undefined
+      previousRank: undefined,
+      hintsUsed: 0
     }
     this.players.set(token, player)
     this.hostToken ??= token
@@ -268,6 +274,7 @@ export class Game {
       p.facts = []
       p.previousRank = undefined
       p.joinedRound = 0
+      p.hintsUsed = 0
     }
     this.results = undefined
     this.beginRound(0, now)
@@ -326,6 +333,7 @@ export class Game {
     if (
       next.roundMs === this.config.roundMs &&
       next.mapDetail === this.config.mapDetail &&
+      next.hints === this.config.hints &&
       QUESTION_TYPES.every((t) => mix[t.id] === this.config.mix[t.id])
     )
       return OK_SAME
@@ -358,6 +366,7 @@ export class Game {
       p.scores = []
       p.previousRank = undefined
       p.joinedRound = 0
+      p.hintsUsed = 0
     }
     for (const [tok, p] of this.players) if (!p.connected) this.players.delete(tok)
     if (this.hostToken === undefined || !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
@@ -444,6 +453,19 @@ export class Game {
     if (!player) return fail("unknown player")
     if (player.name === name) return OK_SAME
     player.name = name
+    return OK_CHANGED
+  }
+
+  /** Use one of the game's hints on this round: one per round, so two bands never box the answer in. */
+  hint(token: PlayerToken, axis: HintAxis): CommandResult {
+    const player = this.players.get(token)
+    if (!player) return fail("unknown player")
+    if (this.phase !== "guessing") return fail("no round to hint")
+    if (player.watching || player.joinedRound > this.roundIndex) return fail("you are not playing this round")
+    if (this.hints.has(token)) return fail("one hint per round")
+    if (player.hintsUsed >= this.config.hints) return fail("no hints left")
+    this.hints.set(token, axis)
+    player.hintsUsed++
     return OK_CHANGED
   }
 
@@ -585,6 +607,7 @@ export class Game {
     this.phase = "guessing"
     this.deadline = now + this.config.roundMs
     this.submissions.clear()
+    this.hints.clear()
     this.ready_.clear()
     this.reveal = undefined
   }
@@ -652,7 +675,17 @@ export class Game {
       }
       p.scores[this.roundIndex] = score
       p.facts[this.roundIndex] = { ...facts, score }
-      results.push({ playerId: p.id, score, A, B, paint, res, ...(region ? { region } : {}) })
+      const hint = this.hints.get(p.token)
+      results.push({
+        playerId: p.id,
+        score,
+        A,
+        B,
+        paint,
+        res,
+        ...(region ? { region } : {}),
+        ...(hint ? { hint } : {})
+      })
     }
     results.sort((a, b) => b.score - a.score)
     this.phase = "reveal"
@@ -740,7 +773,9 @@ export class Game {
         spectating: me !== undefined && !me.watching && this.phase !== "lobby" && me.joinedRound > this.roundIndex,
         watching: me?.watching ?? false,
         locked: this.submissions.get(token)?.locked ?? false,
-        paint: this.phase === "guessing" ? this.submissions.get(token)?.paint : undefined
+        paint: this.phase === "guessing" ? this.submissions.get(token)?.paint : undefined,
+        ...this.hintView(token),
+        hintsLeft: me && !me.watching ? Math.max(0, this.config.hints - me.hintsUsed) : 0
       },
       players: this.playerViews(),
       round: q
@@ -756,6 +791,20 @@ export class Game {
       results: this.phase === "results" ? this.results : undefined,
       awards: this.phase === "results" ? this.awards : undefined
     }
+  }
+
+  /** This player's hint band on the current round, while it is played and revealed. */
+  private hintView(token: PlayerToken): { hint?: HintBand } {
+    const axis = this.hints.get(token)
+    const q = this.questions[this.roundIndex]
+    if (!axis || !q || (this.phase !== "guessing" && this.phase !== "reveal")) return {}
+    return { hint: this.roundBand(q, axis) }
+  }
+
+  /** The round's band of each axis: the same for everyone who asks. */
+  private roundBand(q: Question | RegionQuestion, axis: HintAxis): HintBand {
+    const u = seededUnit(this.seed, this.roundIndex, axis === "latitude" ? 1 : 2)
+    return hintBand(q.answer, q.toleranceKm, axis, u)
   }
 
   /** The next round's pictures: round 1's in the lobby, the following round's while one is played or revealed. */

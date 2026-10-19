@@ -12,6 +12,7 @@ export interface RevealRow {
   /** "+412", or "sat out". */
   roundScore: string
   passed: boolean
+  hinted: boolean
 }
 
 /** An online round's reveal: the answer, everyone's scores, and getting ready for the next. */
@@ -43,7 +44,8 @@ export class RevealPage extends Screen {
       rows.map(async (row) => ({
         name: await text(row.getByTestId(revealTestIds.playerName)),
         roundScore: await text(row.getByTestId(revealTestIds.roundScore)),
-        passed: (await row.getByTestId(revealTestIds.passedTag).count()) > 0
+        passed: (await row.getByTestId(revealTestIds.passedTag).count()) > 0,
+        hinted: (await row.getByTestId(revealTestIds.hintTag).count()) > 0
       }))
     )
   }

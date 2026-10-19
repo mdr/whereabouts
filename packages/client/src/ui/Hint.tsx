@@ -1,0 +1,44 @@
+/** The round's hint: a band of latitude or longitude the answer lies in, shaded on the map once used. */
+import { describeHint, type HintAxis, type HintBand } from "@whereabouts/shared"
+import { Card } from "./bits"
+import { Icon } from "./icons"
+import { hintTestIds } from "./HintTestIds"
+
+/** `left` is how many the player has; undefined in practice, where they are unlimited. */
+export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number; onUse: (axis: HintAxis) => void }) {
+  if (band) {
+    return (
+      <Card class="hint-card">
+        <p class="hint-band" data-testid={hintTestIds.band}>
+          <Icon name="hint" size={14} /> {describeHint(band)}
+        </p>
+      </Card>
+    )
+  }
+  if (left === 0) return undefined
+  return (
+    <Card class="hint-card">
+      <div class="hint-choose" data-testid={hintTestIds.card}>
+        <span class="hint-label">
+          <Icon name="hint" size={14} /> {left === undefined ? "Hint" : `Hint (${left} left)`}
+        </span>
+        <button
+          type="button"
+          title="Show a band of latitude the answer lies in"
+          onClick={() => onUse("latitude")}
+          data-testid={hintTestIds.latitude}
+        >
+          Latitude band
+        </button>
+        <button
+          type="button"
+          title="Show a band of longitude the answer lies in"
+          onClick={() => onUse("longitude")}
+          data-testid={hintTestIds.longitude}
+        >
+          Longitude band
+        </button>
+      </div>
+    </Card>
+  )
+}

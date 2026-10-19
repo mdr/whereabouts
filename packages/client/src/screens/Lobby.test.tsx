@@ -19,10 +19,19 @@ function view(isHost: boolean): GameView {
       roundMs: 60000,
       mix: MIX,
       mapDetail: "minimal",
-      kernelId: "multi-equal"
+      kernelId: "multi-equal",
+      hints: 1
     },
     serverTime: 0,
-    you: { id: playerId("p1"), isHost, spectating: false, watching: false, locked: false, paint: undefined },
+    you: {
+      id: playerId("p1"),
+      isHost,
+      spectating: false,
+      watching: false,
+      locked: false,
+      paint: undefined,
+      hintsLeft: 1
+    },
     players: [
       {
         id: playerId("p1"),
@@ -103,7 +112,13 @@ describe("Lobby setup", () => {
     expect(container.querySelectorAll(".pills, .stepper, .detail-picker")).toHaveLength(0)
     expect(container.querySelectorAll(".setup-summary .round-strip .cell")).toHaveLength(5)
     const tiles = [...container.querySelectorAll(".setup-summary .tile")].map((t) => t.textContent)
-    expect(tiles).toEqual(["5rounds", "60 sper round", "3 landmarks · 2 place names", "Minimalmap · coastlines only"])
+    expect(tiles).toEqual([
+      "5rounds",
+      "60 sper round",
+      "1hint each",
+      "3 landmarks · 2 place names",
+      "Minimalmap · coastlines only"
+    ])
     // Nothing is highlighted on first load.
     expect(container.querySelectorAll(".tile.changed")).toHaveLength(0)
   })

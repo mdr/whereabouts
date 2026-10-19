@@ -9,6 +9,8 @@ import { useEffect, useMemo, useState } from "preact/hooks"
 import { useSignal } from "@preact/signals"
 import {
   KERNELS,
+  hintBand,
+  type HintBand,
   questionPictures,
   KernelIdSchema,
   type KernelId,
@@ -46,6 +48,7 @@ import { featureQuestions, flagQuestions, loadRegions, regions } from "../region
 import { useBorders } from "../borders"
 import { useFillTool } from "../fill"
 import { preloadPictures } from "../preload"
+import { HintCard } from "../ui/Hint"
 import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
 import { PointWhy, RegionWhy } from "../ui/ScoreWhy"
 import { soloTestIds } from "./SoloTestIds"
@@ -142,6 +145,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const [results, setResults] = useState<RoundResult[]>([])
   const [revealed, setRevealed] = useState<{ dist: Distribution; result: RoundResult } | undefined>(undefined)
   const hover = useSignal<LatLon | undefined>(undefined)
+  // Practice hints are unlimited, still one per question.
+  const [hint, setHint] = useState<HintBand | undefined>(undefined)
   const q = questions[index]!
   const kernel = kernelById(soloKernelId.value)
   const total = results.reduce((s, r) => s + r.score, 0)
@@ -165,6 +170,12 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   }, [cheating, phase, index])
 
   useEffect(() => paint.onHover((p) => (hover.value = p)), [paint])
+
+  useEffect(() => setHint(undefined), [index, questions])
+  useEffect(() => {
+    paint.gameMap.setHint(hint)
+    return () => paint.gameMap.setHint(undefined)
+  }, [hint])
 
   useEffect(() => {
     const next = questions[index + 1]
@@ -389,6 +400,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined} credit>
             {q.flag ? <AnswerMode area={isRegion(q)} /> : isRegion(q) && <RegionHint topic={q.topic} />}
           </QuestionCard>
+          <HintCard band={hint} onUse={(axis) => setHint(hintBand(q.answer, q.toleranceKm, axis, Math.random()))} />
         </div>
         <PaintTools practice water={q.topic === "lake" || q.topic === "sea"}>
           <button

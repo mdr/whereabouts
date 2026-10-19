@@ -17,6 +17,7 @@ import { EndGameButton } from "../ui/HostControls"
 import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog"
 import { askedToWatch, startOnPan } from "../settings"
 import { TakeSeatButton } from "../ui/TakeSeat"
+import { HintCard } from "../ui/Hint"
 import { sound } from "../sound"
 import { loadRegions, useRegion } from "../regions"
 import { inGameTestIds } from "./InGameTestIds"
@@ -128,6 +129,13 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     conn.lock()
   }
 
+  // Our hint's band, shaded on the map from when it is used until the next round.
+  const hint = view.you.hint
+  useEffect(() => {
+    paint.gameMap.setHint(hint)
+    return () => paint.gameMap.setHint(undefined)
+  }, [hint?.axis, hint?.from, hint?.to])
+
   // A country round shows the country's flag beside its name, once the outlines have loaded.
   const region = useRegion(view.round?.question.regionId)
 
@@ -153,6 +161,9 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
               round.question.regionId && <RegionHint topic={round.question.topic} />
             )}
           </QuestionCard>
+          {!sittingOut && view.config.hints > 0 && (
+            <HintCard band={view.you.hint} left={view.you.hintsLeft} onUse={(axis) => conn.hint(axis)} />
+          )}
           <ConnectionNote conn={conn} />
           {view.you.watching && (
             <Card>

@@ -1,6 +1,7 @@
 /** Button icons from Lucide, behind one component so screens name them by role. */
 import {
   ArrowLeft,
+  Lightbulb,
   ArrowRight,
   Check,
   ChevronDown,
@@ -74,7 +75,8 @@ const ICONS = {
   soundOn: Volume2,
   soundOff: VolumeX,
   sea: Waves,
-  land: Mountain
+  land: Mountain,
+  hint: Lightbulb
 } satisfies Record<string, FunctionComponent<LucideProps>>
 
 export type IconName = keyof typeof ICONS

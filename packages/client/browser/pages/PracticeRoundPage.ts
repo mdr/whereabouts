@@ -1,4 +1,5 @@
 import { soloTestIds } from "../../src/screens/SoloTestIds.ts"
+import { hintTestIds } from "../../src/ui/HintTestIds.ts"
 import { DevDrawer } from "./DevDrawer.ts"
 import { Hud } from "./Hud.ts"
 import { MapPanel } from "./MapPanel.ts"
@@ -27,6 +28,14 @@ export class PracticeRoundPage extends Screen {
     this.map = new MapPanel(tab.page)
     this.paintTools = new PaintTools(tab.page)
     this.devDrawer = new DevDrawer(tab.page)
+  }
+
+  /** Use a hint: a band of latitude or longitude. Returns what the band says. */
+  async useHint(axis: "latitude" | "longitude"): Promise<string> {
+    await this.page.getByTestId(hintTestIds[axis]).click()
+    const band = await this.page.getByTestId(hintTestIds.band).innerText()
+    await this.map.waitUntilSettled()
+    return band.trim()
   }
 
   async submit(): Promise<PracticeRevealPage> {

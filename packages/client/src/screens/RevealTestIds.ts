@@ -6,6 +6,7 @@ export const revealTestIds = {
   playerName: "Reveal.playerName",
   roundScore: "Reveal.roundScore",
   passedTag: "Reveal.passedTag",
+  hintTag: "Reveal.hintTag",
   hidePaintRow: "Reveal.hidePaintRow",
   readyButton: "Reveal.readyButton",
   nextButton: "Reveal.nextButton"

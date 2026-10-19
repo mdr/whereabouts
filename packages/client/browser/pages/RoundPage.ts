@@ -1,4 +1,5 @@
 import { inGameTestIds } from "../../src/screens/InGameTestIds.ts"
+import { hintTestIds } from "../../src/ui/HintTestIds.ts"
 import { DevDrawer } from "./DevDrawer.ts"
 import { Hud } from "./Hud.ts"
 import { MapPanel } from "./MapPanel.ts"
@@ -34,6 +35,19 @@ export class RoundPage extends Screen {
     this.paintTools = new PaintTools(tab.page)
     this.playersPanel = new PlayersPanel(tab.page)
     this.devDrawer = new DevDrawer(tab.page)
+  }
+
+  /** Use a hint: a band of latitude or longitude. Returns what the band says. */
+  async useHint(axis: "latitude" | "longitude"): Promise<string> {
+    await this.page.getByTestId(hintTestIds[axis]).click()
+    const band = await text(this.page.getByTestId(hintTestIds.band))
+    await this.map.waitUntilSettled()
+    return band
+  }
+
+  /** Whether a hint is on offer this round. */
+  async canUseHint(): Promise<boolean> {
+    return (await this.page.getByTestId(hintTestIds.card).count()) > 0
   }
 
   /** "Done", or "Pass" while nothing is painted. */

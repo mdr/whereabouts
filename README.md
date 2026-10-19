@@ -160,7 +160,15 @@ pnpm workspace with three packages:
   default), Water (adds rivers and lakes), Physical (adds relief, natural
   colour, forests and ice) and Political (adds country borders). Place names
   never show while guessing. Practice remembers its own choice, set under
-  the Practise button. The browser remembers the setup its host last chose,
+  the Practise button. The host also sets hints per player (0 to 3, default
+  1): a hint shades a band of latitude or longitude the answer lies in,
+  about ten tolerances wide, with the answer away from its edges. A band
+  narrows one direction only (painting a whole band right round the world
+  scores about 525, against 250 for a pass), so knowing where along it to
+  look still counts. One per round at most, so two bands never box the
+  answer in; the band is the same for everyone that round, private while
+  guessing, and the reveal marks who used one. Practice hints are unlimited.
+  The browser remembers the setup its host last chose,
   and a game it creates starts from that (settings the game no longer
   offers fall back to the default); joining someone else's game uses and
   saves nothing. Guests see just the decided values as tiles, which

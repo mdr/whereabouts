@@ -13,6 +13,7 @@ import { FLAG_POINT_PROMPT, type FlagData, flagFrom } from "./flags.ts"
 import { playerId, playerName, playerToken, questionId, roomCode, type PlayerToken } from "./ids.ts"
 import { PLAYER_COLOURS } from "./colours.ts"
 import { GameViewSchema } from "./view-schema.ts"
+import { inHintBand } from "./hints.ts"
 
 const petra: Question = {
   id: questionId("petra"),
@@ -1077,5 +1078,54 @@ describe("upcoming pictures", () => {
     const first = g.view(tokA, T0).upcoming?.image
     g.start(tokA, T0)
     expect(imageOf(g, T0)).toBe(first)
+  })
+})
+
+describe("hints", () => {
+  it("gives a band holding the answer, the same one to everyone, one per round and as many as the host allows", () => {
+    const g = new Game(
+      CODE,
+      pool,
+      { mix: { landmarks: 0, places: 3, countries: 0, flags: 0, features: 0, states: 0 }, hints: 2 },
+      42
+    )
+    g.join(tokA, playerName("Alice"), T0)
+    g.join(tokB, playerName("Bob"), T0)
+    expect(g.view(tokA, T0).you.hintsLeft).toBe(2)
+    expect(g.hint(tokA, "latitude")).toEqual({ ok: false, error: "no round to hint" })
+    g.start(tokA, T0)
+    const q = currentQuestion(g, tokA, T0)
+    expect(g.hint(tokA, "latitude")).toEqual({ ok: true, changed: true })
+    expect(g.hint(tokA, "longitude")).toEqual({ ok: false, error: "one hint per round" })
+    expect(g.hint(tokB, "latitude").ok).toBe(true)
+    const band = g.view(tokA, T0).you.hint!
+    expect(band.axis).toBe("latitude")
+    expect(inHintBand(band, q.answer)).toBe(true)
+    expect(g.view(tokB, T0).you.hint).toEqual(band)
+    expect(g.view(tokA, T0).you.hintsLeft).toBe(1)
+
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS)
+    const reveal = g.view(tokA, T0 + 61_000)
+    expect(reveal.you.hint).toEqual(band)
+    expect(reveal.reveal!.results.map((r) => r.hint)).toEqual(["latitude", "latitude"])
+
+    g.next(tokA, T0 + 62_000)
+    expect(g.view(tokA, T0 + 62_000).you.hint).toBeUndefined()
+    expect(g.hint(tokA, "longitude").ok).toBe(true)
+    g.tick(T0 + 122_000 + ROUND_GRACE_MS)
+    g.next(tokA, T0 + 124_000)
+    expect(g.hint(tokA, "latitude")).toEqual({ ok: false, error: "no hints left" })
+    expect(g.view(tokA, T0 + 124_000).you.hintsLeft).toBe(0)
+  })
+
+  it("lets the host set 0 to 3, and gives spectators none", () => {
+    const g = twoPlayerGame()
+    expect(g.configure(tokA, { hints: 0 })).toEqual({ ok: true, changed: true })
+    expect(g.view(tokA, T0).you.hintsLeft).toBe(0)
+    g.join(tokW, playerName("Wes"), T0, true)
+    g.configure(tokA, { hints: 3 })
+    expect(g.view(tokW, T0).you.hintsLeft).toBe(0)
+    g.start(tokA, T0)
+    expect(g.hint(tokW, "latitude")).toEqual({ ok: false, error: "you are not playing this round" })
   })
 })

@@ -222,6 +222,8 @@ export class GameRoom extends Room<ActorData> {
         return this.game.makeHost(token, (data as z.infer<typeof ClientMessageSchemas.makeHost>).playerId)
       case "end":
         return this.game.end(token)
+      case "hint":
+        return this.game.hint(token, (data as z.infer<typeof ClientMessageSchemas.hint>).axis)
       default:
         return { ok: false as const, error: "unknown topic" }
     }

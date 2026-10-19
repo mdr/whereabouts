@@ -11,7 +11,7 @@ import "maplibre-gl/dist/maplibre-gl.css"
 // import.meta.url. After bundling that points into /assets where no such
 // file exists, so hand it a worker Vite has bundled and knows the URL of.
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url"
-import { cellsOutline, type H3Cell, type LatLon, type MapDetail } from "@whereabouts/shared"
+import { cellsOutline, type H3Cell, type HintBand, type LatLon, type MapDetail } from "@whereabouts/shared"
 import type { Theme } from "./themes"
 
 setWorkerUrl(mapWorkerUrl)
@@ -20,6 +20,7 @@ const STYLE_URL = "https://tiles.openfreemap.org/styles/positron"
 const PAINT_SOURCE = "paint"
 const REVEAL_SOURCE = "reveal"
 const CURSOR_SOURCE = "cursor"
+const HINT_SOURCE = "hint"
 const TERRAIN_SOURCE = "terrain"
 const TERRAIN_LAYER = "terrain-hillshade"
 /** Natural Earth II colour relief, declared (but not drawn) by the positron style. */
@@ -195,6 +196,24 @@ export class GameMap {
       )
     }
 
+    // A hint's band, under the paint so painting over it stays readable.
+    this.map.addSource(HINT_SOURCE, {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] }
+    })
+    this.map.addLayer({
+      id: "hint-fill",
+      type: "fill",
+      source: HINT_SOURCE,
+      paint: { "fill-color": "#ffffff", "fill-opacity": 0.1 }
+    })
+    this.map.addLayer({
+      id: "hint-edge",
+      type: "line",
+      source: HINT_SOURCE,
+      paint: { "line-color": "#ffffff", "line-width": 1.5, "line-opacity": 0.8, "line-dasharray": [4, 3] }
+    })
+
     this.map.addSource(PAINT_SOURCE, {
       type: "geojson",
       data: { type: "FeatureCollection", features: [] }
@@ -308,6 +327,8 @@ export class GameMap {
     set("reveal-answer", "circle-stroke-color", t.answerStroke)
     set("reveal-region-fill", "fill-color", t.answer)
     set("reveal-region-line", "line-color", t.answer)
+    set("hint-fill", "fill-color", t.brush)
+    set("hint-edge", "line-color", t.brush)
     set("cursor-fill", "fill-color", t.brush)
     set("cursor-outline", "line-color", t.brush)
     document.documentElement.style.setProperty("--ring-brush", t.brush)
@@ -516,6 +537,12 @@ export class GameMap {
     })
   }
 
+  /** Shade a hint's band, or clear it. */
+  setHint(band: HintBand | undefined): void {
+    if (this.disposed) return
+    void this.source(HINT_SOURCE)?.setData({ type: "FeatureCollection", features: band ? hintFeatures(band) : [] })
+  }
+
   clearReveal(): void {
     void this.source(REVEAL_SOURCE)?.setData({
       type: "FeatureCollection",
@@ -599,4 +626,28 @@ export class GameMap {
       duration: 900
     })
   }
+}
+
+/** A band as polygons: a longitude band across 180° is two, one each side. */
+function hintFeatures(band: HintBand): GeoJSON.Feature[] {
+  const box = (west: number, east: number, south: number, north: number): GeoJSON.Feature => ({
+    type: "Feature",
+    properties: {},
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [west, south],
+          [east, south],
+          [east, north],
+          [west, north],
+          [west, south]
+        ]
+      ]
+    }
+  })
+  // Mercator stops short of the poles.
+  if (band.axis === "latitude") return [box(-180, 180, Math.max(band.from, -85), Math.min(band.to, 85))]
+  if (band.from <= band.to) return [box(band.from, band.to, -85, 85)]
+  return [box(band.from, 180, -85, 85), box(-180, band.to, -85, 85)]
 }

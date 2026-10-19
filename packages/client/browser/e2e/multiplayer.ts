@@ -38,6 +38,12 @@ let bobRoundPage = await bobLobbyPage.waitForGameToStart()
 console.log("prompt:", await aliceRoundPage.hud.prompt())
 checks.check(await aliceRoundPage.hud.questionHasPhoto(), "a photos-only game asks a photo question")
 
+// Alice uses the game's one hint: a latitude band, shaded on her map only.
+const band = await aliceRoundPage.useHint("latitude")
+checks.check(/^Between \d+(\.\d)?°[NS]? and \d+(\.\d)?°[NS]?$/.test(band), `Alice's hint names a band: ${band}`)
+checks.check((await aliceRoundPage.map.shownHintShapes()) === 1, "the band is shaded on Alice's map")
+checks.check((await bobRoundPage.map.shownHintShapes()) === 0, "and not on Bob's")
+checks.check(await bobRoundPage.canUseHint(), "Bob still has his hint")
 await aliceRoundPage.map.drag({ across: 0.62, down: 0.42 })
 await bobRoundPage.map.drag({ across: 0.3, down: 0.55 })
 await aliceRoundPage.screenshot(`${out}/mp-2-guessing-alice.png`)
@@ -65,6 +71,10 @@ checks.check(
   rows.every((r) => !r.name.includes("(you)")),
   "nobody is labelled (you)"
 )
+checks.check(
+  rows.find((r) => r.name === "Alice")?.hinted === true && rows.find((r) => r.name !== "Alice")?.hinted === false,
+  "the reveal marks who used a hint"
+)
 
 // Everyone's paint shows together; then Bob looks at Alice's alone, hides all, and brings it back.
 const everyone = await bobRevealPage.map.shownPaintCells()
@@ -87,6 +97,8 @@ checks.check(await aliceRevealPage.isStillShown(), "still on the reveal with one
 await aliceRevealPage.screenshot(`${out}/mp-5-reveal-one-ready.png`)
 const aliceRound2Page = await aliceRevealPage.readyLast()
 checks.check((await aliceRound2Page.hud.round()) === "Round 2 / 3", "round 2 starts once everyone is ready")
+checks.check((await aliceRound2Page.map.shownHintShapes()) === 0, "round 2 starts without round 1's band")
+checks.check(!(await aliceRound2Page.canUseHint()), "Alice has no hints left")
 
 await browser.close()
 checks.finish()

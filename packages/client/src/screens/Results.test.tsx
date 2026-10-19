@@ -16,10 +16,19 @@ function view(isHost: boolean): GameView {
       roundMs: 60000,
       mix: MIX,
       mapDetail: "minimal",
-      kernelId: "multi-equal"
+      kernelId: "multi-equal",
+      hints: 1
     },
     serverTime: 0,
-    you: { id: playerId("p2"), isHost, spectating: false, watching: false, locked: false, paint: undefined },
+    you: {
+      id: playerId("p2"),
+      isHost,
+      spectating: false,
+      watching: false,
+      locked: false,
+      paint: undefined,
+      hintsLeft: 1
+    },
     players: [
       {
         id: playerId("p1"),
