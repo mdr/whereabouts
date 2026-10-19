@@ -20,23 +20,26 @@ export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number
     <Card class="hint-card">
       <div class="hint-choose" data-testid={hintTestIds.card}>
         <span class="hint-label">
-          <Icon name="hint" size={14} /> {left === undefined ? "Hint" : `Hint (${left} left)`}
+          <Icon name="hint" size={14} /> Hint
+          {left !== undefined && <span class="hint-left">{left} left</span>}
         </span>
         <button
           type="button"
+          class="small"
           title="Show a band of latitude the answer lies in"
           onClick={() => onUse("latitude")}
           data-testid={hintTestIds.latitude}
         >
-          Latitude band
+          Latitude
         </button>
         <button
           type="button"
+          class="small"
           title="Show a band of longitude the answer lies in"
           onClick={() => onUse("longitude")}
           data-testid={hintTestIds.longitude}
         >
-          Longitude band
+          Longitude
         </button>
       </div>
     </Card>

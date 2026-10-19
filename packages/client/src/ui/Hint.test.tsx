@@ -10,7 +10,7 @@ describe("HintCard", () => {
   it("offers both bands with the count left, and says which was chosen", () => {
     const onUse = vi.fn<(axis: string) => void>()
     const { getByTestId } = render(<HintCard left={2} onUse={onUse} />)
-    expect(getByTestId(hintTestIds.card).textContent).toContain("Hint (2 left)")
+    expect(getByTestId(hintTestIds.card).textContent).toContain("2 left")
     fireEvent.click(getByTestId(hintTestIds.longitude))
     expect(onUse).toHaveBeenCalledWith("longitude")
   })
