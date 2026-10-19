@@ -860,6 +860,11 @@ button.big {
   flex: none;
   margin-left: 0;
 }
+/* Tags drop below a name they would otherwise squeeze. */
+.reveal-list .name {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
 .reveal-list .round-score,
 .reveal-list .arrow,
 .reveal-list .score-num,
@@ -1103,7 +1108,6 @@ button.big {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 0 4px;
-  margin-left: 6px;
 }
 .reveal-list .tag.ready {
   color: #66bb6a;
