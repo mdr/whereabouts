@@ -264,6 +264,12 @@ export interface RevealView {
   ready: PlayerId[]
 }
 
+/** The pictures a question shows, so a client can load the next round's before it starts. */
+export interface QuestionPictures {
+  image?: string
+  flag?: FlagCode
+}
+
 export interface FinalStanding {
   playerId: PlayerId
   total: number
@@ -294,6 +300,8 @@ export interface GameView {
   results?: FinalStanding[]
   /** Prizes and booby prizes, on the final results. */
   awards?: Award[]
+  /** The next round's pictures, from the lobby on, so they are loaded before it starts. */
+  upcoming?: QuestionPictures
 }
 
 export interface ServerError {

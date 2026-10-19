@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "preact/hooks"
 import { useSignal } from "@preact/signals"
 import {
   KERNELS,
+  questionPictures,
   KernelIdSchema,
   type KernelId,
   SHAPE_WEIGHT,
@@ -44,6 +45,7 @@ import { Icon } from "../ui/icons"
 import { featureQuestions, flagQuestions, loadRegions, regions } from "../regions"
 import { useBorders } from "../borders"
 import { useFillTool } from "../fill"
+import { preloadPictures } from "../preload"
 import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
 import { PointWhy, RegionWhy } from "../ui/ScoreWhy"
 import { soloTestIds } from "./SoloTestIds"
@@ -163,6 +165,11 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   }, [cheating, phase, index])
 
   useEffect(() => paint.onHover((p) => (hover.value = p)), [paint])
+
+  useEffect(() => {
+    const next = questions[index + 1]
+    if (next) preloadPictures(questionPictures(next))
+  }, [questions, index])
 
   // The chosen map detail while painting; everything on the reveal.
   const detail = soloMapDetail.value

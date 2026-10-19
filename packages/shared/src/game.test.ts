@@ -1039,3 +1039,43 @@ describe("the question mix", () => {
     expect(reveal.results.find((r) => r.playerId === "p1")!.score).toBeGreaterThan(900)
   })
 })
+
+describe("upcoming pictures", () => {
+  const photo = (id: string, image: string): Question => ({
+    ...petra,
+    id: questionId(id),
+    kind: "photo",
+    prompt: "Where is this?",
+    label: id,
+    image
+  })
+  const photos = [photo("one", "One.jpg"), photo("two", "Two.jpg"), photo("three", "Three.jpg")]
+  const mix = { landmarks: 2, places: 0, countries: 0, flags: 0, features: 0, states: 0 }
+  const imageOf = (g: Game, at: number) => g.view(tokA, at).round?.question.image
+
+  it("sends round 1's photo in the lobby, the next round's while one is played, and nothing after the last", () => {
+    const g = new Game(CODE, photos, { mix, roundMs: 60_000 }, 7)
+    g.join(tokA, playerName("Alice"), T0)
+    const first = g.view(tokA, T0).upcoming?.image
+    expect(first).toBeDefined()
+    g.start(tokA, T0)
+    expect(imageOf(g, T0)).toBe(first)
+    const second = g.view(tokA, T0).upcoming?.image
+    expect(second).toBeDefined()
+    expect(second).not.toBe(first)
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS)
+    expect(g.view(tokA, T0 + 61_000).upcoming?.image).toBe(second)
+    g.next(tokA, T0 + 62_000)
+    expect(imageOf(g, T0 + 62_000)).toBe(second)
+    expect(g.view(tokA, T0 + 62_000).upcoming).toBeUndefined()
+  })
+
+  it("picks the rounds again when the host changes the setup, so round 1's photo is still the one asked", () => {
+    const g = new Game(CODE, photos, { mix, roundMs: 60_000 }, 7)
+    g.join(tokA, playerName("Alice"), T0)
+    g.configure(tokA, { mix: { ...mix, landmarks: 3 } })
+    const first = g.view(tokA, T0).upcoming?.image
+    g.start(tokA, T0)
+    expect(imageOf(g, T0)).toBe(first)
+  })
+})

@@ -12,6 +12,7 @@ import {
   resetPlayerToken,
   watchHandoff
 } from "../settings"
+import { preloadPictures } from "../preload"
 import { navigate } from "../router"
 import { MapView } from "../ui/MapView"
 import { Lobby } from "./Lobby"
@@ -97,6 +98,10 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
   const view = conn.view.value
   useGameSounds(conn, view)
   useSavedSetup(conn, view, create)
+  const upcoming = view?.upcoming
+  useEffect(() => {
+    if (upcoming) preloadPictures(upcoming)
+  }, [upcoming?.image, upcoming?.flag])
 
   if (status === "rejected" || (status === "disconnected" && !view)) {
     const why = conn.rejection.value ?? {

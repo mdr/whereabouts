@@ -29,6 +29,7 @@ import type {
   PaintSubmission,
   Phase,
   PlayerView,
+  QuestionPictures,
   QuestionView,
   RevealView,
   RoundResultView
@@ -134,6 +135,7 @@ export class Game {
     this.features = features
     this.kernel = kernelById(this.config.kernelId)
     if (pool.length === 0) throw new Error("question pool is empty")
+    this.questions = this.pickRounds()
   }
 
   // ---- membership ----------------------------------------------------------
@@ -261,7 +263,6 @@ export class Game {
     if (!this.isHost(token)) return fail("only the host can start")
     if (this.phase !== "lobby") return fail("game already started")
     if (this.playing().length === 0) return fail("no players")
-    this.questions = this.pickRounds()
     for (const p of this.players.values()) {
       p.scores = []
       p.facts = []
@@ -329,6 +330,7 @@ export class Game {
     )
       return OK_SAME
     this.config = next
+    this.questions = this.pickRounds()
     return OK_CHANGED
   }
 
@@ -351,6 +353,7 @@ export class Game {
     this.submissions.clear()
     this.ready_.clear()
     this.seed = now
+    this.questions = this.pickRounds()
     for (const p of this.players.values()) {
       p.scores = []
       p.previousRank = undefined
@@ -749,9 +752,19 @@ export class Game {
           }
         : undefined,
       reveal: this.phase === "reveal" && this.reveal ? { ...this.reveal, ready: this.readyIds() } : undefined,
+      ...this.upcoming(),
       results: this.phase === "results" ? this.results : undefined,
       awards: this.phase === "results" ? this.awards : undefined
     }
+  }
+
+  /** The next round's pictures: round 1's in the lobby, the following round's while one is played or revealed. */
+  private upcoming(): { upcoming?: QuestionPictures } {
+    const next = this.phase === "lobby" ? 0 : this.phase === "results" ? -1 : this.roundIndex + 1
+    const q = this.questions[next]
+    if (!q) return {}
+    const pictures = questionPictures(q)
+    return pictures.image || pictures.flag ? { upcoming: pictures } : {}
   }
 
   private readyIds(): PlayerId[] {
@@ -791,6 +804,12 @@ export function generateCode(rnd: () => number = Math.random, length = 4): RoomC
   let out = ""
   for (let i = 0; i < length; i++) out += alphabet.charAt(Math.floor(rnd() * alphabet.length))
   return roomCode(out)
+}
+
+/** A question's photo and flag, including the flag shown beside a country's name. */
+export function questionPictures(q: Question | RegionQuestion): QuestionPictures {
+  const flag = q.flag ?? (q.kind === "region" ? q.countryFlag : undefined)
+  return { ...(q.kind !== "region" && q.image ? { image: q.image } : {}), ...(flag ? { flag } : {}) }
 }
 
 /**
