@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact"
 import { useEffect, useState } from "preact/hooks"
+import type { HintBand } from "@whereabouts/shared"
 import { usePaint } from "./MapView"
 import { Card, HudBottom, fmtKm } from "./bits"
 import type { Tool } from "../paint-controller"
@@ -21,15 +22,20 @@ const TOOL_HINT: Record<Tool, string> = {
  * The player-facing brush bar: tool, clear, brush size, undo/redo, and
  * whatever action buttons the screen passes in (done, next).
  */
-/** `water`: the answer is a lake or sea, so Trim land replaces Trim sea. */
+/**
+ * `water`: the answer is a lake or sea, so Trim land replaces Trim sea.
+ * `hint`: the band of a hint taken this round, offered as a trim too.
+ */
 export function PaintTools({
   children,
   practice,
-  water
+  water,
+  hint
 }: {
   children?: ComponentChildren
   practice?: boolean
   water?: boolean
+  hint?: HintBand
 }) {
   const paint = usePaint()
   const tool = paint.tool.value
@@ -66,6 +72,7 @@ export function PaintTools({
           <Icon name="trash" /> <span class="label">Clear</span>
         </button>
         <Trim enabled={enabled} water={water ?? false} />
+        {hint && <TrimToHint enabled={enabled} band={hint} />}
       </div>
       <label class="brush" title="Brush size ([ and ] also work)">
         <span>Brush</span>
@@ -205,6 +212,33 @@ function Distribution() {
         <span>{(effectiveFloor * 100).toFixed(1)}%</span>
       </li>
     </ul>
+  )
+}
+
+/** Remove the paint outside the hint's band, as one undoable step. For a moment the button says what it did. */
+function TrimToHint({ enabled, band }: { enabled: boolean; band: HintBand }) {
+  const paint = usePaint()
+  const [note, setNote] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    if (!note) return
+    const t = setTimeout(() => setNote(undefined), 2500)
+    return () => clearTimeout(t)
+  }, [note])
+  const trim = () => {
+    const share = paint.trimToHint(band)
+    if (share > 0) sound.play("clear")
+    setNote(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : "None outside")
+  }
+  return (
+    <button
+      title="Remove paint outside the hint's band (Undo brings it back)"
+      onClick={trim}
+      disabled={!enabled || paint.isEmpty.value}
+      aria-live="polite"
+      data-testid={paintToolsTestIds.trimToHintButton}
+    >
+      <Icon name="hint" /> <span class="label">{note ?? "Trim to hint"}</span>
+    </button>
   )
 }
 

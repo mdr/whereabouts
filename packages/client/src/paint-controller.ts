@@ -12,8 +12,10 @@ import {
   resolutionForTolerance,
   trimLand,
   trimSea,
+  trimToHint,
   h3Res,
   type FlagCode,
+  type HintBand,
   type H3Cell,
   type LandMask,
   type WaterMask,
@@ -354,6 +356,11 @@ export class PaintController {
   /** Drop the paint on dry land, for a lake or sea, as trimSea drops it at sea. */
   trimLand(mask: WaterMask): number {
     return this.keepOnly(trimLand(this.layer.cells, mask, this.layer.res))
+  }
+
+  /** Drop the paint outside a hint's band, as trimSea drops it at sea. */
+  trimToHint(band: HintBand): number {
+    return this.keepOnly(trimToHint(this.layer.cells, band, this.layer.res))
   }
 
   private keepOnly(kept: Map<H3Cell, number>): number {

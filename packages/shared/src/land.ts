@@ -68,7 +68,7 @@ export class LandMask {
  * cells always do.
  */
 export function trimSea(cells: ReadonlyMap<H3Cell, number>, mask: LandMask, finestRes: H3Res): Map<H3Cell, number> {
-  return trim(cells, (h) => mask.nearLand(h), h3Res(Math.min(mask.res, finestRes)))
+  return keepCells(cells, (h) => mask.nearLand(h), h3Res(Math.min(mask.res, finestRes)))
 }
 
 /**
@@ -104,10 +104,18 @@ export class WaterMask {
 
 /** The paint without its cells on dry land, split as trimSea splits. */
 export function trimLand(cells: ReadonlyMap<H3Cell, number>, mask: WaterMask, finestRes: H3Res): Map<H3Cell, number> {
-  return trim(cells, (h) => mask.nearWater(h), h3Res(Math.min(mask.res, finestRes)))
+  return keepCells(cells, (h) => mask.nearWater(h), h3Res(Math.min(mask.res, finestRes)))
 }
 
-function trim(cells: ReadonlyMap<H3Cell, number>, keep: (h: H3Cell) => boolean, target: H3Res): Map<H3Cell, number> {
+/**
+ * The paint in the cells `keep` accepts. A cell coarser than `target` that
+ * `keep` accepts only some children of is split into those children.
+ */
+export function keepCells(
+  cells: ReadonlyMap<H3Cell, number>,
+  keep: (h: H3Cell) => boolean,
+  target: H3Res
+): Map<H3Cell, number> {
   const kept = new Map<H3Cell, number>()
   const add = (h: H3Cell, v: number) => kept.set(h, (kept.get(h) ?? 0) + v)
   for (const [h, v] of cells) {

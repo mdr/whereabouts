@@ -402,7 +402,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           </QuestionCard>
           <HintCard band={hint} onUse={(axis) => setHint(hintBand(q.answer, q.toleranceKm, axis, Math.random()))} />
         </div>
-        <PaintTools practice water={q.topic === "lake" || q.topic === "sea"}>
+        <PaintTools practice water={q.topic === "lake" || q.topic === "sea"} hint={hint}>
           <button
             class="primary"
             onClick={submit}

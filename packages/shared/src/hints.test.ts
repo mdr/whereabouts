@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vite-plus/test"
-import { HINT_WIDTH_TOLERANCES, describeHint, hintBand, inHintBand, seededUnit, type HintAxis } from "./hints.ts"
+import {
+  HINT_WIDTH_TOLERANCES,
+  describeHint,
+  hintBand,
+  inHintBand,
+  seededUnit,
+  trimToHint,
+  type HintAxis
+} from "./hints.ts"
 import { QUESTIONS } from "./questions.ts"
+import { PaintLayer, resolutionForTolerance } from "./paint.ts"
+import { cellToLatLng, h3Res, latLngToCell, type H3Cell } from "./h3.ts"
 
 describe("hintBand", () => {
   const axes: HintAxis[] = ["latitude", "longitude"]
@@ -39,6 +49,40 @@ describe("hintBand", () => {
     const band = hintBand({ lat: 51.5, lon: -0.1 }, 10, "latitude", 0.5)
     expect(band.to - band.from).toBeLessThan(2)
     expect(band.from * 10).toBe(Math.round(band.from * 10))
+  })
+})
+
+describe("trimToHint", () => {
+  const latLon = (h: H3Cell) => {
+    const [lat, lon] = cellToLatLng(h)
+    return { lat, lon }
+  }
+
+  it("keeps the paint in the band, cut down to the layer's finest cells at its edges", () => {
+    const layer = new PaintLayer(resolutionForTolerance(150))
+    layer.stamp({ lat: 30, lon: 10 }, 1500, 1)
+    const band = { axis: "latitude" as const, from: 28, to: 34 }
+    const kept = trimToHint(layer.cells, band, layer.res)
+    expect(kept.size).toBeGreaterThan(0)
+    expect(kept.size).toBeLessThan(layer.cells.size * 4)
+    const lats = [...kept.keys()].map((h) => latLon(h).lat)
+    expect(Math.min(...lats)).toBeGreaterThan(27)
+    expect(Math.max(...lats)).toBeLessThan(35)
+    // The paint in the band is all still there.
+    expect(
+      [...layer.cells.keys()].filter((h) => latLon(h).lat > 29 && latLon(h).lat < 33).every((h) => kept.has(h))
+    ).toBe(true)
+  })
+
+  it("keeps a longitude band across 180° as one band", () => {
+    const res = h3Res(3)
+    const cells = new Map([
+      [latLngToCell(0, 179, res), 1],
+      [latLngToCell(0, -179, res), 1],
+      [latLngToCell(0, 0, res), 1]
+    ])
+    const kept = trimToHint(cells, { axis: "longitude", from: 175, to: -175 }, res)
+    expect([...kept.keys()].map((h) => Math.round(latLon(h).lon)).sort()).toEqual([-179, 179])
   })
 })
 

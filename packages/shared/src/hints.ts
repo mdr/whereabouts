@@ -5,6 +5,8 @@
  */
 import { z } from "zod"
 import type { LatLon } from "./geo.ts"
+import { cellToBoundary, cellToLatLng, type H3Cell, type H3Res } from "./h3.ts"
+import { keepCells } from "./land.ts"
 
 export const HintAxisSchema = z.enum(["latitude", "longitude"])
 export type HintAxis = z.infer<typeof HintAxisSchema>
@@ -56,6 +58,26 @@ export function hintBand(answer: LatLon, toleranceKm: number, axis: HintAxis, u:
 export function inHintBand(band: HintBand, p: LatLon): boolean {
   if (band.axis === "latitude") return p.lat >= band.from && p.lat <= band.to
   return band.from <= band.to ? p.lon >= band.from && p.lon <= band.to : p.lon >= band.from || p.lon <= band.to
+}
+
+/** The paint without its cells wholly outside the band, split at the band's edges down to `finestRes`. */
+export function trimToHint(cells: ReadonlyMap<H3Cell, number>, band: HintBand, finestRes: H3Res): Map<H3Cell, number> {
+  return keepCells(cells, (h) => cellMeetsBand(h, band), finestRes)
+}
+
+function cellMeetsBand(h: H3Cell, band: HintBand): boolean {
+  const corners = cellToBoundary(h)
+  if (band.axis === "latitude") {
+    const lats = corners.map(([lat]) => lat)
+    return Math.max(...lats) >= band.from && Math.min(...lats) <= band.to
+  }
+  // Corner longitudes taken around the centre, so a cell across 180° stays one span.
+  const [, centre] = cellToLatLng(h)
+  const lons = corners.map(([, lon]) => centre + wrap(lon - centre))
+  const lo = Math.min(...lons)
+  const hi = Math.max(...lons)
+  const to = band.to < band.from ? band.to + 360 : band.to
+  return [-360, 0, 360].some((shift) => hi + shift >= band.from && lo + shift <= to)
 }
 
 /** "Between 23°N and 37°N", "Between 170°E and 165°W". */

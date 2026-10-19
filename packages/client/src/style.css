@@ -61,6 +61,7 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  container: hud / inline-size;
   --hud-w: 300px;
   --hud-gap: 14px;
 }
@@ -520,9 +521,9 @@ button.icon:hover {
 .tools button {
   padding: 8px 10px;
 }
-/* Between phone and desktop widths the toolbar stays on one row: tool buttons
+/* On a map narrower than the full toolbar it stays on one row: tool buttons
    go icon-only (their titles still say what they do) so it fits. */
-@media (min-width: 641px) and (max-width: 1080px) {
+@container hud (max-width: 1100px) {
   .tools button .label {
     display: none;
   }

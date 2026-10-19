@@ -1,5 +1,6 @@
-// Practice mode against the Vite dev server: paint two blobs, undo and redo
-// the second with the keyboard, submit, and see a score. Saves screenshots.
+// Practice mode against the Vite dev server: take a hint, paint two blobs,
+// undo and redo the second with the keyboard, trim to the hint and undo it,
+// submit, and see a score. Saves screenshots.
 // Usage, from packages/client: node browser/e2e/solo.ts [outDir]
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
 
@@ -25,6 +26,17 @@ const oneBlob = await practiceRoundPage.map.yourPaintCells()
 await practiceRoundPage.paintTools.redoWithKeyboard()
 const back = await practiceRoundPage.map.yourPaintCells()
 checks.check(oneBlob < twoBlobs && back === twoBlobs, `undo then redo: ${twoBlobs} -> ${oneBlob} -> ${back} cells`)
+
+// Trim to hint drops whatever paint is outside the band; undo brings it back.
+await practiceRoundPage.paintTools.trimToHint()
+const trimmed = await practiceRoundPage.map.yourPaintCells()
+await practiceRoundPage.screenshot(`${out}/2b-trimmed-to-hint.png`)
+await practiceRoundPage.paintTools.undoWithKeyboard()
+const untrimmed = await practiceRoundPage.map.yourPaintCells()
+checks.check(
+  trimmed <= back && untrimmed === back,
+  `trim to hint, then undo: ${back} -> ${trimmed} -> ${untrimmed} cells`
+)
 console.log("blobs:", await practiceRoundPage.devDrawer.blobs())
 
 const practiceRevealPage = await practiceRoundPage.submit()

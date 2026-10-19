@@ -1,6 +1,7 @@
 export const paintToolsTestIds = {
   toolButton: "PaintTools.toolButton",
-  clearButton: "PaintTools.clearButton"
+  clearButton: "PaintTools.clearButton",
+  trimToHintButton: "PaintTools.trimToHintButton"
 }
 
 export const paintDevTestIds = {

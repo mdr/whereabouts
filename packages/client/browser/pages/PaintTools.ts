@@ -27,6 +27,10 @@ export class PaintTools {
     await this.#page.getByTestId(paintToolsTestIds.clearButton).click()
   }
 
+  async trimToHint(): Promise<void> {
+    await this.#page.getByTestId(paintToolsTestIds.trimToHintButton).click()
+  }
+
   async undoWithKeyboard(): Promise<void> {
     await this.#page.keyboard.press("Control+z")
   }

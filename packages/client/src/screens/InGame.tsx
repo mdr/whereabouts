@@ -205,7 +205,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
         </div>
         {!sittingOut && (
-          <PaintTools water={round.question.topic === "lake" || round.question.topic === "sea"}>
+          <PaintTools water={round.question.topic === "lake" || round.question.topic === "sea"} hint={view.you.hint}>
             {view.you.locked ? (
               <button
                 class="keep-editing"
