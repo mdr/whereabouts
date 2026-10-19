@@ -7,5 +7,6 @@ export const joinAsTestIds = {
 export const joinedTestIds = {
   problem: "Joined.problem",
   problemTitle: "Joined.problemTitle",
-  backToStartButton: "Joined.backToStartButton"
+  backToStartButton: "Joined.backToStartButton",
+  hostUnderCodeButton: "Joined.hostUnderCodeButton"
 }

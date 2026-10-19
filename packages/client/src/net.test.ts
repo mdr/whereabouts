@@ -10,7 +10,8 @@ describe("describeDisconnect", () => {
   })
 
   it("recognises unknown codes, finished games and superseded tabs", () => {
-    expect(describeDisconnect(4001, undefined).title).toBe("No game with that code")
+    expect(describeDisconnect(4001, undefined)).toMatchObject({ title: "No game with that code", missing: true })
+    expect(describeDisconnect(1000, "game is full").missing).toBeUndefined()
     expect(describeDisconnect(1000, "game has finished").title).toBe("That game has finished")
     expect(describeDisconnect(1000, "game is full").title).toBe("That game is full")
     expect(describeDisconnect(1000, "replaced by a newer connection").title).toBe("You joined from another tab")

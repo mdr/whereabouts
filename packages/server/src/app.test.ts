@@ -208,6 +208,19 @@ describe("game server", () => {
     expect(garbage.client.connected).toBe(false)
   })
 
+  it("hosts a game under a code no game has, and joins it if someone just did", async () => {
+    const alice = player("Alice")
+    alice.connect({ create: true, code: roomCode("VWZR") })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    expect(lobby.code).toBe("VWZR")
+    expect(lobby.you.isHost).toBe(true)
+
+    const bob = player("Bob")
+    bob.connect({ create: true, code: roomCode("VWZR") })
+    const bobView = await bob.until((v) => v.players.length === 2)
+    expect(bobView.you.isHost).toBe(false)
+  })
+
   it("plays a full two-round game with a deadline, reveal, and results", async () => {
     const alice = player("Alice")
     alice.connect({ create: true })

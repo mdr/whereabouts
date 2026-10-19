@@ -54,7 +54,7 @@ export function Multiplayer({ code, create }: { code: RoomCode | undefined; crea
     askedToWatch.value = watch
     conn.connect(
       create
-        ? { token: seatToken(), name: confirmedName, create: true }
+        ? { token: seatToken(), name: confirmedName, create: true, ...(code ? { code } : {}) }
         : { token: seatToken(), name: confirmedName, code: code ?? undefined, ...(watch ? { watch } : {}) }
     )
     return () => conn.disconnect()
@@ -115,9 +115,19 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
           <h2 data-testid={joinedTestIds.problemTitle}>{why.title}</h2>
           <p class="tagline">{why.detail}</p>
           <div class="home-actions">
-            <button class="primary big" onClick={() => navigate("/game/new")}>
-              Host a new game
-            </button>
+            {why.missing && code ? (
+              <button
+                class="primary big"
+                onClick={() => navigate(`/game/new/${code}`)}
+                data-testid={joinedTestIds.hostUnderCodeButton}
+              >
+                Host game {code}
+              </button>
+            ) : (
+              <button class="primary big" onClick={() => navigate("/game/new")}>
+                Host a new game
+              </button>
+            )}
             <button onClick={() => navigate("/")} data-testid={joinedTestIds.backToStartButton}>
               Back to start
             </button>

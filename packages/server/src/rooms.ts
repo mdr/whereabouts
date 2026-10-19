@@ -310,7 +310,11 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     if (!parsed) return undefined
     const rooms = this.rooms()
     let roomId: string
-    if (parsed.create) {
+    if (parsed.create && parsed.code) {
+      // Hosting again under an old code; if someone just did, join them.
+      roomId = parsed.code
+      if (!rooms.get(roomId)) rooms.create(ROOM_TYPE, roomId)
+    } else if (parsed.create) {
       roomId = generateCode()
       for (let i = 0; i < 20 && rooms.get(roomId); i++) roomId = generateCode()
       if (rooms.get(roomId)) return undefined

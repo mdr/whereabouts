@@ -1,7 +1,8 @@
 // Host controls and the brush footprint, against the dev servers: Alice
 // hosts and Bob joins by link; the footprint shows under Alice's cursor;
 // Alice removes Bob, who can come back as a new player; Alice ends the game
-// early. Saves screenshots.
+// early. Carol opens a link to a game that has gone and hosts one under its
+// code. Saves screenshots.
 // Usage, from packages/client: node browser/e2e/host.ts [outDir]
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
 
@@ -66,6 +67,19 @@ await aliceRoundPage.screenshot(`${out}/host-3b-end-dialog.png`)
 const resultsPage = await ending.confirm()
 checks.check(true, "ending the game goes to the final standings")
 await resultsPage.screenshot(`${out}/host-4-results.png`)
+
+const oldCode = Array.from({ length: 4 }, () => "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 31)]).join(
+  ""
+)
+const carolJoinAsPage = await (await newTab(browser, "Carol", { context: viewport })).openGameLink(oldCode)
+await carolJoinAsPage.enterName("Carol")
+const carolTurnedAwayPage = await carolJoinAsPage.joinMissingGame()
+const missing = await carolTurnedAwayPage.reason()
+checks.check(missing === "No game with that code", `Carol is told: ${missing}`)
+await carolTurnedAwayPage.screenshot(`${out}/host-5-no-such-game.png`)
+const carolLobbyPage = await carolTurnedAwayPage.hostUnderCode()
+checks.check((await carolLobbyPage.code()) === oldCode, `Carol hosts a game under ${oldCode}`)
+await carolLobbyPage.screenshot(`${out}/host-6-hosting-old-code.png`)
 
 await browser.close()
 checks.finish()

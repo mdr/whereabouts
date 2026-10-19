@@ -9,7 +9,7 @@ export function App() {
     case "solo":
       return <Solo />
     case "game":
-      return <Multiplayer key={r.code ?? "new"} code={r.code} create={r.create} />
+      return <Multiplayer key={`${r.create ? "new" : "join"}:${r.code ?? ""}`} code={r.code} create={r.create} />
     default:
       return <Home />
   }

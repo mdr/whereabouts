@@ -41,7 +41,7 @@ export const TicketSchema = z.object({
   /** Per-player secret used to reclaim the same seat after a reconnect. */
   token: PlayerTokenSchema,
   name: PlayerNameSchema,
-  /** Join an existing game by code, or omit with `create: true` to host one. */
+  /** Join an existing game by code, or omit with `create: true` to host one; both host one under that code. */
   code: RoomCodeSchema.optional(),
   create: z.boolean().optional(),
   /** Join to watch rather than play. A full game seats a would-be player as a spectator anyway. */

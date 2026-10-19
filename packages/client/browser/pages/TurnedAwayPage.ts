@@ -1,5 +1,6 @@
 import { joinedTestIds } from "../../src/screens/MultiplayerTestIds.ts"
 import { HomePage } from "./HomePage.ts"
+import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"
 import { text } from "./support.ts"
 import type { Tab } from "./Tab.ts"
@@ -13,6 +14,12 @@ export class TurnedAwayPage extends Screen {
 
   async reason(): Promise<string> {
     return text(this.page.getByTestId(joinedTestIds.problemTitle))
+  }
+
+  /** Host a game under the code that no game had. */
+  async hostUnderCode(): Promise<LobbyPage> {
+    await this.page.getByTestId(joinedTestIds.hostUnderCodeButton).click()
+    return LobbyPage.whenShown(this.tab)
   }
 
   async backToStart(): Promise<HomePage> {

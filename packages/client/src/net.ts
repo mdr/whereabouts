@@ -150,6 +150,8 @@ export interface Rejection {
   detail: string
   /** Set when the host removed this player; the client then forgets its seat token. */
   removed?: boolean
+  /** Set when no game has the code, so the player may host one under it. */
+  missing?: boolean
 }
 
 /**
@@ -202,7 +204,9 @@ export function describeDisconnect(code: number, reason: string | undefined): Re
   if (code === 4001 || code === 1008 || r.includes("unauthor") || r.includes("not found") || r.includes("rejected")) {
     return {
       title: "No game with that code",
-      detail: "Check the code with your host. If the game finished or everyone left, it will need starting again."
+      detail:
+        "Check the code with your host. If the game finished or everyone left, you can host a new one under the same code.",
+      missing: true
     }
   }
   return { title: "Disconnected", detail: reason || `The connection closed (code ${code}).` }
