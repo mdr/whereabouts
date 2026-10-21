@@ -20,12 +20,6 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   const byId = new Map(view.players.map((p) => [p.id, p]))
   const standings = view.results ?? []
   const winner = standings[0] ? byId.get(standings[0].playerId) : undefined
-  // The top score in each round, so each round's winner is picked out.
-  const roundCount = Math.max(0, ...standings.map((s) => s.rounds.length))
-  const roundBest = Array.from({ length: roundCount }, (_, r) =>
-    Math.max(-1, ...standings.map((s) => s.rounds[r]?.score ?? -1))
-  )
-  const played = view.playedRounds ?? []
   return (
     <div class="home">
       <div class="home-card results-card" data-testid={resultsTestIds.page}>
@@ -36,7 +30,6 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             {winner.isHost && <HostTag />} wins
           </p>
         )}
-        {/* Total first and largest; the round scores sit underneath as a small strip, each round's winner in bold. */}
         <ol class="standings" aria-label="Final standings">
           {standings.map((s, i) => {
             const p = byId.get(s.playerId)
@@ -51,34 +44,17 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
                 <span class="dot">
                   <i class="swatch" style={{ background: colourCss(p?.colour) }} />
                 </span>
-                <span class="standing-body">
-                  <span class="standing-main">
-                    <span class="name">
-                      <span class="name-text">{p?.name ?? "?"}</span>
-                      {p?.isHost && <HostTag />}
-                    </span>
-                    <span class="total" title="Total">
-                      {Math.round(s.total).toLocaleString()}
-                    </span>
-                  </span>
-                  <span class="rounds" aria-label="Score by round">
-                    {s.rounds.map(({ score }, r) => (
-                      <span
-                        key={r}
-                        class={`round ${score !== undefined && score === roundBest[r] ? "best" : ""}`}
-                        title={`Round ${r + 1}${played[r] ? `, ${played[r].label}` : ""}${score === undefined ? ": sat out" : score === roundBest[r] ? ": won the round" : ""}`}
-                      >
-                        {score === undefined ? "–" : Math.round(score)}
-                      </span>
-                    ))}
-                  </span>
+                <span class="name">
+                  <span class="name-text">{p?.name ?? "?"}</span>
+                  {p?.isHost && <HostTag />}
+                </span>
+                <span class="total" title="Total">
+                  {Math.round(s.total).toLocaleString()}
                 </span>
               </li>
             )
           })}
         </ol>
-        {played.length > 0 && <PlayedRounds rounds={played} standings={standings} best={roundBest} byId={byId} />}
-        {view.awards && view.awards.length > 0 && <Awards awards={view.awards} byId={byId} />}
         {view.you.isHost ? (
           <button class="primary big" onClick={() => conn.again()} data-testid={resultsTestIds.playAgainButton}>
             <Icon name="refresh" /> Play again
@@ -88,6 +64,8 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             <HostWord capital /> can start another game with the same group.
           </p>
         )}
+        <ScoreTable rounds={view.playedRounds ?? []} standings={standings} byId={byId} you={view.you.id} />
+        {view.awards && view.awards.length > 0 && <Awards awards={view.awards} byId={byId} />}
         <p class="hint">
           <a href="#/">Leave</a>
         </p>
@@ -96,51 +74,83 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   )
 }
 
-/** What each round asked about, and who won it. */
-function PlayedRounds({
+/**
+ * Every round's score for every player: a row per round, saying what it
+ * asked, and a column per player in finishing order, each round's best
+ * picked out. Many players scroll sideways, the rounds staying in view.
+ */
+function ScoreTable({
   rounds,
   standings,
-  best,
-  byId
+  byId,
+  you
 }: {
   rounds: PlayedRound[]
   standings: FinalStanding[]
-  best: number[]
   byId: Map<string, PlayerView>
+  you: string | undefined
 }) {
+  if (rounds.length === 0) return undefined
+  const best = rounds.map((_, r) => Math.max(-1, ...standings.map((s) => s.rounds[r]?.score ?? -1)))
   return (
-    <section class="played-rounds" aria-label="Rounds">
+    <section class="score-table" aria-label="Scores by round">
       <h2>Rounds</h2>
-      <ol>
-        {rounds.map((round, r) => {
-          const winners = standings.filter((s) => s.rounds[r]?.score === best[r]).map((s) => byId.get(s.playerId))
-          return (
-            <li key={r} class="played-round" data-testid={resultsTestIds.playedRound}>
-              <span class="played-number">{r + 1}</span>
-              <RoundPicture round={round} />
-              <span class="played-label">{round.label}</span>
-              {winners.length > 0 && (
-                <span class="played-best" title={`Won by ${winners.map((p) => p?.name ?? "?").join(" and ")}`}>
-                  {winners.map((p, i) => (
-                    <i key={i} class="swatch" style={{ background: colourCss(p?.colour) }} />
-                  ))}
-                  {Math.round(best[r]!)}
-                </span>
-              )}
-            </li>
-          )
-        })}
-      </ol>
+      <div class="score-table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="round-cell" scope="col">
+                <span class="sr-only">Round</span>
+              </th>
+              {standings.map((s) => {
+                const p = byId.get(s.playerId)
+                return (
+                  <th key={s.playerId} scope="col" class={s.playerId === you ? "you" : ""} title={p?.name}>
+                    <i class="swatch" style={{ background: colourCss(p?.colour) }} />
+                    <span class="player-name">{p?.name ?? "?"}</span>
+                  </th>
+                )
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {rounds.map((round, r) => (
+              <tr key={r} data-testid={resultsTestIds.playedRound}>
+                <th class="round-cell" scope="row">
+                  <span class="round-what">
+                    <span class="round-number">{r + 1}</span>
+                    <RoundPicture round={round} />
+                    <span class="round-label">{round.label}</span>
+                  </span>
+                </th>
+                {standings.map((s) => {
+                  const score = s.rounds[r]?.score
+                  const won = score !== undefined && score === best[r]
+                  return (
+                    <td
+                      key={s.playerId}
+                      class={`${won ? "best" : ""} ${s.playerId === you ? "you" : ""}`}
+                      title={score === undefined ? "Sat out" : won ? "Won the round" : undefined}
+                    >
+                      {score === undefined ? "–" : Math.round(score)}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   )
 }
 
 function RoundPicture({ round }: { round: PlayedRound }) {
   if (round.image)
-    return <img class="played-photo" src={commonsImageUrl(round.image, 120)} alt="" referrerpolicy="no-referrer" />
+    return <img class="round-photo" src={commonsImageUrl(round.image, 120)} alt="" referrerpolicy="no-referrer" />
   if (round.flag) return <SmallFlag code={round.flag} />
   return (
-    <span class="played-pin">
+    <span class="round-pin">
       <Icon name="pin" size={14} />
     </span>
   )

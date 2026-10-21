@@ -67,39 +67,38 @@ function view(isHost: boolean): GameView {
 }
 
 describe("Results", () => {
-  it("names the winner, lists standings with per-round scores, and highlights you", () => {
+  it("names the winner, lists the standings by total, and highlights you", () => {
     const conn = { again: vi.fn() } as unknown as Connection
     const { container } = render(<Results conn={conn} view={view(false)} />)
     expect(container.querySelector(".tagline")!.textContent).toContain("Alice")
     expect(container.querySelector(".tagline")!.textContent).toContain("wins")
     const rows = container.querySelectorAll(".standings-row")
     expect(rows).toHaveLength(2)
-    // Medals for the podium, the total as the headline, the rounds underneath.
     expect(rows[0]!.querySelector(".place")!.textContent).toBe("🥇")
     expect(rows[1]!.querySelector(".place")!.textContent).toBe("🥈")
     expect(rows[0]!.querySelector(".total")!.textContent).toBe("1,500")
-    expect([...rows[0]!.querySelectorAll(".round")].map((e) => e.textContent)).toEqual(["800", "700"])
-    // Each round's winner is picked out: Alice took round 1, Bob round 2.
-    expect([...rows[0]!.querySelectorAll(".round.best")].map((e) => e.textContent)).toEqual(["800"])
-    expect([...rows[1]!.querySelectorAll(".round.best")].map((e) => e.textContent)).toEqual(["750"])
     expect(rows[1]!.className).toContain("you")
     expect(container.querySelectorAll("button")).toHaveLength(0)
     expect(container.textContent).toContain("The host can start another game")
   })
 
-  it("lists what each round asked about, with its best score", () => {
+  it("tables each round: what it asked, everyone's score in finishing order, its best picked out", () => {
     const conn = { again: vi.fn() } as unknown as Connection
     const { container } = render(<Results conn={conn} view={view(false)} />)
-    const rounds = [...container.querySelectorAll(".played-round")]
-    expect(rounds.map((r) => r.querySelector(".played-label")!.textContent)).toEqual([
+    const heads = [...container.querySelectorAll(".score-table thead th .player-name")].map((h) => h.textContent)
+    expect(heads).toEqual(["Alice", "Bob"])
+    const rounds = [...container.querySelectorAll(".score-table tbody tr")]
+    expect(rounds.map((r) => r.querySelector(".round-label")!.textContent)).toEqual([
       "Taj Mahal, Agra",
       "Perth, Australia"
     ])
-    expect(rounds.map((r) => r.querySelector(".played-best")!.textContent)).toEqual(["800", "750"])
-    expect(rounds[0]!.querySelectorAll(".played-photo")).toHaveLength(1)
-    expect(container.querySelector(".standings-row .round")!.getAttribute("title")).toBe(
-      "Round 1, Taj Mahal, Agra: won the round"
-    )
+    expect(rounds.map((r) => [...r.querySelectorAll("td")].map((c) => c.textContent))).toEqual([
+      ["800", "500"],
+      ["700", "750"]
+    ])
+    // Alice took round 1, Bob round 2.
+    expect(rounds.map((r) => r.querySelector("td.best")!.textContent)).toEqual(["800", "750"])
+    expect(rounds[0]!.querySelectorAll(".round-photo")).toHaveLength(1)
   })
 
   it("lets the host play again", () => {

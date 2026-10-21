@@ -969,19 +969,7 @@ button.big {
   align-items: center;
   flex: none;
 }
-.standing-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.standing-main {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.standing-main .name {
+.standings-row .name {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -989,47 +977,27 @@ button.big {
   gap: 6px;
   font-size: 16px;
 }
-.standing-main .name-text {
+.standings-row .name-text {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.standing-main .total {
+.standings-row .total {
   font-weight: 700;
   font-size: 22px;
   font-variant-numeric: tabular-nums;
   flex: none;
 }
-.standings .rounds {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.standings .round {
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  padding: 1px 5px;
-  min-width: 2.6em;
-  text-align: center;
-}
-.standings .round.best {
-  color: var(--panel-fg);
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.12);
-}
 
-/* ---- awards ---- */
-.awards,
-.played-rounds {
-  margin: 16px 0 8px;
+/* ---- scores by round ---- */
+.score-table {
+  margin: 20px 0 8px;
   text-align: left;
+  /* Its width comes from the card, never the table, so many players scroll inside it. */
+  contain: inline-size;
 }
-.awards h2,
-.played-rounds h2 {
+.score-table h2 {
   margin: 0 0 8px;
   font-size: 13px;
   font-weight: 600;
@@ -1037,63 +1005,114 @@ button.big {
   text-transform: uppercase;
   color: var(--muted);
 }
-/* What each round asked, one compact line each: number, picture, answer, best score. */
-.played-rounds ol {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.score-table-scroll {
+  overflow-x: auto;
 }
-.played-round {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 4px;
+.score-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.score-table th,
+.score-table td {
+  padding: 5px 6px;
   border-bottom: 1px solid #333b45;
-  font-size: 14px;
+  white-space: nowrap;
 }
-.played-round:last-child {
+.score-table tbody tr:last-child > * {
   border-bottom: none;
 }
-.played-number {
+.score-table thead th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: right;
+}
+.score-table thead th .swatch {
+  margin-right: 4px;
+}
+.score-table .player-name {
+  display: inline-block;
+  max-width: 5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+.score-table td {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+  min-width: 3em;
+}
+.score-table td.best {
+  color: var(--panel-fg);
+  font-weight: 700;
+}
+.score-table .you {
+  background: rgba(255, 255, 255, 0.04);
+}
+/* The round column keeps its place while many players scroll sideways. */
+.score-table .round-cell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--panel-bg);
+  text-align: left;
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--panel-fg);
+  /* Takes the width the score columns leave; a long answer wraps. */
+  width: 100%;
+  max-width: 0;
+  min-width: 9em;
+}
+.round-what {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.round-number {
   flex: none;
   width: 1.4em;
   color: var(--muted);
   font-size: 12px;
-  font-variant-numeric: tabular-nums;
   text-align: right;
 }
-.played-photo,
-.played-pin {
+.round-photo,
+.round-pin {
   flex: none;
   width: 20px;
   height: 15px;
   border-radius: 2px;
 }
-.played-photo {
+.round-photo {
   object-fit: cover;
   background: #3a414b;
 }
-.played-pin {
+.round-pin {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--muted);
 }
-.played-label {
-  flex: 1;
+.round-label {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.25;
 }
-.played-best {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+
+/* ---- awards ---- */
+.awards {
+  margin: 16px 0 8px;
+  text-align: left;
+}
+.awards h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--muted);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
 }
 .awards ul {
   list-style: none;
