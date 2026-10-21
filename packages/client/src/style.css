@@ -2116,6 +2116,9 @@ button.danger.solid {
   font-variant-numeric: tabular-nums;
 }
 .hint-choose button {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
   white-space: nowrap;
 }
 .hint-band {

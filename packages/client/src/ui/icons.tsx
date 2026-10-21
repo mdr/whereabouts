@@ -36,9 +36,40 @@ import {
   Volume2,
   VolumeX,
   Waves,
+  createLucideIcon,
   type LucideProps
 } from "lucide-preact"
 import type { FunctionComponent } from "preact"
+
+// A globe with the band each hint shades on the map: across it, or up and down it.
+const LatitudeBand = createLucideIcon("latitude-band", [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "globe" }],
+  [
+    "path",
+    {
+      d: "M2.46 9h19.08a10 10 0 0 1 0 6H2.46a10 10 0 0 1 0-6z",
+      fill: "currentColor",
+      "fill-opacity": "0.35",
+      stroke: "none",
+      key: "band"
+    }
+  ],
+  ["path", { d: "M2.46 9h19.08M2.46 15h19.08", key: "edges" }]
+])
+const LongitudeBand = createLucideIcon("longitude-band", [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "globe" }],
+  [
+    "path",
+    {
+      d: "M9 2.46v19.08a10 10 0 0 0 6 0V2.46a10 10 0 0 0-6 0z",
+      fill: "currentColor",
+      "fill-opacity": "0.35",
+      stroke: "none",
+      key: "band"
+    }
+  ],
+  ["path", { d: "M9 2.46v19.08M15 2.46v19.08", key: "edges" }]
+])
 
 const ICONS = {
   hand: Hand,
@@ -76,7 +107,9 @@ const ICONS = {
   soundOff: VolumeX,
   sea: Waves,
   land: Mountain,
-  hint: Lightbulb
+  hint: Lightbulb,
+  latitude: LatitudeBand,
+  longitude: LongitudeBand
 } satisfies Record<string, FunctionComponent<LucideProps>>
 
 export type IconName = keyof typeof ICONS

@@ -10,7 +10,7 @@ export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number
     return (
       <Card class="hint-card">
         <p class="hint-band" data-testid={hintTestIds.band}>
-          <Icon name="hint" size={14} /> {describeHint(band)}
+          <Icon name={band.axis} size={14} /> {describeHint(band)}
         </p>
       </Card>
     )
@@ -30,7 +30,7 @@ export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number
           onClick={() => onUse("latitude")}
           data-testid={hintTestIds.latitude}
         >
-          Latitude
+          <Icon name="latitude" /> Latitude
         </button>
         <button
           type="button"
@@ -39,7 +39,7 @@ export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number
           onClick={() => onUse("longitude")}
           data-testid={hintTestIds.longitude}
         >
-          Longitude
+          <Icon name="longitude" /> Longitude
         </button>
       </div>
     </Card>
