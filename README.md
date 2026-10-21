@@ -240,8 +240,9 @@ pnpm workspace with three packages:
   100 km for European cities and micro-states, 200 km for the most famous
   cities elsewhere (New York, Tokyo, Sydney), a few hundred for other
   cities and small countries further afield, up to 1,000 km for Pacific
-  micro-states. A name shared by two well-known places carries its country
-  in the prompt ("Where is Tripoli, Libya?"). A country question is placed at the point Wikipedia uses
+  micro-states. A prompt never names the country or region: a name shared by
+  two well-known places is told apart some other way ("Where is Tripoli,
+  the capital city?"). A country question is placed at the point Wikipedia uses
   for the country itself (roughly its centre, or the main island of an
   archipelago), not at its capital. Every text answer was checked against
   the coordinates on its English Wikipedia article, and `questions.test.ts` guards ids,

@@ -353,7 +353,7 @@
   {
     "id": "douglas-iom",
     "kind": "text",
-    "prompt": "Where is Douglas, the capital of the Isle of Man?",
+    "prompt": "Where is Douglas, the capital city?",
     "answer": {
       "lat": 54.1509,
       "lon": -4.4815
@@ -366,7 +366,7 @@
   {
     "id": "st-helier",
     "kind": "text",
-    "prompt": "Where is St Helier, the capital of Jersey?",
+    "prompt": "Where is St Helier?",
     "answer": {
       "lat": 49.1868,
       "lon": -2.1071
@@ -691,7 +691,7 @@
   {
     "id": "ljubljana",
     "kind": "text",
-    "prompt": "Where is Ljubljana, the capital of Slovenia?",
+    "prompt": "Where is Ljubljana?",
     "answer": {
       "lat": 46.0569,
       "lon": 14.5058
@@ -704,7 +704,7 @@
   {
     "id": "zagreb",
     "kind": "text",
-    "prompt": "Where is Zagreb, the capital of Croatia?",
+    "prompt": "Where is Zagreb?",
     "answer": {
       "lat": 45.815,
       "lon": 15.9819
@@ -795,7 +795,7 @@
   {
     "id": "vilnius",
     "kind": "text",
-    "prompt": "Where is Vilnius, the capital of Lithuania?",
+    "prompt": "Where is Vilnius?",
     "answer": {
       "lat": 54.6872,
       "lon": 25.2797
@@ -808,7 +808,7 @@
   {
     "id": "riga",
     "kind": "text",
-    "prompt": "Where is Riga, the capital of Latvia?",
+    "prompt": "Where is Riga?",
     "answer": {
       "lat": 56.9496,
       "lon": 24.1052
@@ -821,7 +821,7 @@
   {
     "id": "tallinn",
     "kind": "text",
-    "prompt": "Where is Tallinn, the capital of Estonia?",
+    "prompt": "Where is Tallinn?",
     "answer": {
       "lat": 59.437,
       "lon": 24.7536
@@ -834,7 +834,7 @@
   {
     "id": "bratislava",
     "kind": "text",
-    "prompt": "Where is Bratislava, the capital of Slovakia?",
+    "prompt": "Where is Bratislava?",
     "answer": {
       "lat": 48.1486,
       "lon": 17.1077
@@ -847,7 +847,7 @@
   {
     "id": "minsk",
     "kind": "text",
-    "prompt": "Where is Minsk, the capital of Belarus?",
+    "prompt": "Where is Minsk?",
     "answer": {
       "lat": 53.9006,
       "lon": 27.559
@@ -886,7 +886,7 @@
   {
     "id": "sofia",
     "kind": "text",
-    "prompt": "Where is Sofia, the capital of Bulgaria?",
+    "prompt": "Where is Sofia?",
     "answer": {
       "lat": 42.6977,
       "lon": 23.3219
@@ -977,7 +977,7 @@
   {
     "id": "abuja",
     "kind": "text",
-    "prompt": "Where is Abuja, the capital of Nigeria?",
+    "prompt": "Where is Abuja?",
     "answer": {
       "lat": 9.0765,
       "lon": 7.3986
@@ -1003,7 +1003,7 @@
   {
     "id": "astana",
     "kind": "text",
-    "prompt": "Where is Astana, the capital of Kazakhstan?",
+    "prompt": "Where is Astana?",
     "answer": {
       "lat": 51.1694,
       "lon": 71.4491
@@ -1081,7 +1081,7 @@
   {
     "id": "santiago",
     "kind": "text",
-    "prompt": "Where is Santiago, the capital of Chile?",
+    "prompt": "Where is Santiago, the capital city?",
     "answer": {
       "lat": -33.4489,
       "lon": -70.6693
@@ -2264,7 +2264,7 @@
   {
     "id": "tripoli",
     "kind": "text",
-    "prompt": "Where is Tripoli, Libya?",
+    "prompt": "Where is Tripoli, the capital city?",
     "answer": {
       "lat": 32.8875,
       "lon": 13.1875
@@ -2485,7 +2485,7 @@
   {
     "id": "san-jose-cr",
     "kind": "text",
-    "prompt": "Where is San José, Costa Rica?",
+    "prompt": "Where is San José, the capital city?",
     "answer": {
       "lat": 9.9325,
       "lon": -84.08
@@ -5561,7 +5561,7 @@
   {
     "id": "boston",
     "kind": "text",
-    "prompt": "Where is Boston, Massachusetts?",
+    "prompt": "Where is Boston?",
     "answer": {
       "lat": 42.3603,
       "lon": -71.0578
@@ -5652,7 +5652,7 @@
   {
     "id": "perth",
     "kind": "text",
-    "prompt": "Where is Perth, Western Australia?",
+    "prompt": "Where is Perth, the state capital?",
     "answer": {
       "lat": -32,
       "lon": 115.9
