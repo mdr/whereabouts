@@ -1,8 +1,17 @@
-import { colourCss, type Award, type GameView, type PlayerView } from "@whereabouts/shared"
+import {
+  colourCss,
+  commonsImageUrl,
+  type Award,
+  type FinalStanding,
+  type GameView,
+  type PlayedRound,
+  type PlayerView
+} from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { Icon } from "../ui/icons"
 import { HostTag, HostWord } from "../ui/PlayerList"
 import { Banner } from "../ui/Banner"
+import { SmallFlag } from "../ui/bits"
 import { resultsTestIds } from "./ResultsTestIds"
 
 const MEDALS = ["🥇", "🥈", "🥉"]
@@ -16,6 +25,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   const roundBest = Array.from({ length: roundCount }, (_, r) =>
     Math.max(-1, ...standings.map((s) => s.rounds[r]?.score ?? -1))
   )
+  const played = view.playedRounds ?? []
   return (
     <div class="home">
       <div class="home-card results-card" data-testid={resultsTestIds.page}>
@@ -56,7 +66,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
                       <span
                         key={r}
                         class={`round ${score !== undefined && score === roundBest[r] ? "best" : ""}`}
-                        title={`Round ${r + 1}${score === undefined ? ": sat out" : score === roundBest[r] ? ": won the round" : ""}`}
+                        title={`Round ${r + 1}${played[r] ? `, ${played[r].label}` : ""}${score === undefined ? ": sat out" : score === roundBest[r] ? ": won the round" : ""}`}
                       >
                         {score === undefined ? "–" : Math.round(score)}
                       </span>
@@ -67,6 +77,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             )
           })}
         </ol>
+        {played.length > 0 && <PlayedRounds rounds={played} standings={standings} best={roundBest} byId={byId} />}
         {view.awards && view.awards.length > 0 && <Awards awards={view.awards} byId={byId} />}
         {view.you.isHost ? (
           <button class="primary big" onClick={() => conn.again()} data-testid={resultsTestIds.playAgainButton}>
@@ -82,6 +93,56 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         </p>
       </div>
     </div>
+  )
+}
+
+/** What each round asked about, and who won it. */
+function PlayedRounds({
+  rounds,
+  standings,
+  best,
+  byId
+}: {
+  rounds: PlayedRound[]
+  standings: FinalStanding[]
+  best: number[]
+  byId: Map<string, PlayerView>
+}) {
+  return (
+    <section class="played-rounds" aria-label="Rounds">
+      <h2>Rounds</h2>
+      <ol>
+        {rounds.map((round, r) => {
+          const winners = standings.filter((s) => s.rounds[r]?.score === best[r]).map((s) => byId.get(s.playerId))
+          return (
+            <li key={r} class="played-round" data-testid={resultsTestIds.playedRound}>
+              <span class="played-number">{r + 1}</span>
+              <RoundPicture round={round} />
+              <span class="played-label">{round.label}</span>
+              {winners.length > 0 && (
+                <span class="played-best" title={`Won by ${winners.map((p) => p?.name ?? "?").join(" and ")}`}>
+                  {winners.map((p, i) => (
+                    <i key={i} class="swatch" style={{ background: colourCss(p?.colour) }} />
+                  ))}
+                  {Math.round(best[r]!)}
+                </span>
+              )}
+            </li>
+          )
+        })}
+      </ol>
+    </section>
+  )
+}
+
+function RoundPicture({ round }: { round: PlayedRound }) {
+  if (round.image)
+    return <img class="played-photo" src={commonsImageUrl(round.image, 120)} alt="" referrerpolicy="no-referrer" />
+  if (round.flag) return <SmallFlag code={round.flag} />
+  return (
+    <span class="played-pin">
+      <Icon name="pin" size={14} />
+    </span>
   )
 }
 

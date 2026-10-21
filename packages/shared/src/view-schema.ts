@@ -102,6 +102,9 @@ export const GameViewSchema = z.strictObject({
       })
     )
     .optional(),
+  playedRounds: z
+    .array(z.strictObject({ label: z.string(), image: z.string().optional(), flag: FlagCodeSchema.optional() }))
+    .optional(),
   awards: z
     .array(
       z.strictObject({ emoji: z.string(), title: z.string(), playerIds: z.array(PlayerIdSchema), line: z.string() })

@@ -279,6 +279,11 @@ export interface QuestionPictures {
   flag?: FlagCode
 }
 
+/** A round of a finished game, for the final results: what it asked about. */
+export interface PlayedRound extends QuestionPictures {
+  label: string
+}
+
 export interface FinalStanding {
   playerId: PlayerId
   total: number
@@ -310,6 +315,8 @@ export interface GameView {
   round?: RoundView
   reveal?: RevealView
   results?: FinalStanding[]
+  /** The rounds played, in order, on the final results. */
+  playedRounds?: PlayedRound[]
   /** Prizes and booby prizes, on the final results. */
   awards?: Award[]
   /** The next round's pictures, from the lobby on, so they are loaded before it starts. */

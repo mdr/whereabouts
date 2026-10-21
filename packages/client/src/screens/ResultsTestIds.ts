@@ -2,5 +2,6 @@ export const resultsTestIds = {
   page: "Results.page",
   standingsRow: "Results.standingsRow",
   playAgainButton: "Results.playAgainButton",
-  award: "Results.award"
+  award: "Results.award",
+  playedRound: "Results.playedRound"
 }

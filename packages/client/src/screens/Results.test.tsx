@@ -61,6 +61,7 @@ function view(isHost: boolean): GameView {
       { playerId: playerId("p1"), total: 1500, rounds: [{ score: 800 }, { score: 700 }] },
       { playerId: playerId("p2"), total: 1250, rounds: [{ score: 500 }, { score: 750 }] }
     ],
+    playedRounds: [{ label: "Taj Mahal, Agra", image: "Taj Mahal.jpeg" }, { label: "Perth, Australia" }],
     awards: [{ emoji: "🐔", title: "Chicken", playerIds: [playerId("p2")], line: "{0} passed 2 times. Brave." }]
   }
 }
@@ -84,6 +85,21 @@ describe("Results", () => {
     expect(rows[1]!.className).toContain("you")
     expect(container.querySelectorAll("button")).toHaveLength(0)
     expect(container.textContent).toContain("The host can start another game")
+  })
+
+  it("lists what each round asked about, with its best score", () => {
+    const conn = { again: vi.fn() } as unknown as Connection
+    const { container } = render(<Results conn={conn} view={view(false)} />)
+    const rounds = [...container.querySelectorAll(".played-round")]
+    expect(rounds.map((r) => r.querySelector(".played-label")!.textContent)).toEqual([
+      "Taj Mahal, Agra",
+      "Perth, Australia"
+    ])
+    expect(rounds.map((r) => r.querySelector(".played-best")!.textContent)).toEqual(["800", "750"])
+    expect(rounds[0]!.querySelectorAll(".played-photo")).toHaveLength(1)
+    expect(container.querySelector(".standings-row .round")!.getAttribute("title")).toBe(
+      "Round 1, Taj Mahal, Agra: won the round"
+    )
   })
 
   it("lets the host play again", () => {

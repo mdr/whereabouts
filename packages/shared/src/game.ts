@@ -789,6 +789,10 @@ export class Game {
       reveal: this.phase === "reveal" && this.reveal ? { ...this.reveal, ready: this.readyIds() } : undefined,
       ...this.upcoming(),
       results: this.phase === "results" ? this.results : undefined,
+      playedRounds:
+        this.phase === "results"
+          ? this.questions.slice(0, this.roundIndex + 1).map((q) => ({ label: q.label, ...questionPictures(q) }))
+          : undefined,
       awards: this.phase === "results" ? this.awards : undefined
     }
   }
