@@ -3,5 +3,6 @@ export const resultsTestIds = {
   standingsRow: "Results.standingsRow",
   playAgainButton: "Results.playAgainButton",
   award: "Results.award",
-  playedRound: "Results.playedRound"
+  playedRound: "Results.playedRound",
+  everyoneToggle: "Results.everyoneToggle"
 }

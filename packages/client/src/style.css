@@ -990,6 +990,20 @@ button.big {
   flex: none;
 }
 
+/* A big game's standings: the podium as usual, everyone else on tighter rows. */
+.standings.many .standings-row.minor {
+  padding: 4px 8px;
+}
+.standings.many .minor .place {
+  font-size: 14px;
+}
+.standings.many .minor .name {
+  font-size: 14px;
+}
+.standings.many .minor .total {
+  font-size: 15px;
+}
+
 /* ---- scores by round ---- */
 .score-table {
   margin: 20px 0 8px;
@@ -1066,6 +1080,10 @@ button.big {
   max-width: 0;
   min-width: 9em;
 }
+/* Scrolling sideways anyway, so the answers get room to read. */
+.score-table-scroll.scrolls .round-cell {
+  min-width: 13em;
+}
 .round-what {
   display: flex;
   align-items: center;
@@ -1099,6 +1117,70 @@ button.big {
   min-width: 0;
   white-space: normal;
   line-height: 1.25;
+}
+/* Where the table won't fit: a line per round, its winner and your score. */
+.round-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.round-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 4px;
+  border-bottom: 1px solid #333b45;
+  font-size: 14px;
+}
+.round-list li.round-list-head {
+  padding-top: 0;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.round-list li.round-list-head .round-yours {
+  font-size: 11px;
+}
+.round-list li:last-child {
+  border-bottom: none;
+}
+.round-list .round-label {
+  flex: 1;
+}
+.round-winner {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.round-winner .winner-name {
+  max-width: 6em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.round-winner .tied {
+  color: var(--muted);
+  font-size: 11px;
+}
+.round-yours {
+  flex: none;
+  min-width: 2.6em;
+  text-align: right;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.round-yours.best {
+  color: var(--panel-fg);
+  font-weight: 700;
+}
+.everyone-toggle {
+  margin-top: 10px;
 }
 
 /* ---- awards ---- */
