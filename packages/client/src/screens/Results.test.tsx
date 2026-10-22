@@ -106,7 +106,10 @@ describe("Results", () => {
     vi.stubGlobal(
       "ResizeObserver",
       class {
-        constructor(private readonly report: () => void) {}
+        private readonly report: () => void
+        constructor(report: () => void) {
+          this.report = report
+        }
         observe() {
           this.report()
         }
