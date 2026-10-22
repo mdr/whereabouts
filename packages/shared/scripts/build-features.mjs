@@ -17,7 +17,9 @@
 //   detail that draws lakes (see questions.ts).
 // - Seas: the nearly closed ones, each the union of 1:10m marine areas, since
 //   Natural Earth splits off the Adriatic, the Gulf of Bothnia and the like.
-// - US states: 1:50m admin-1 with the Great Lakes cut out; not DC.
+// - US states: 1:10m admin-1 with the Great Lakes cut out; not DC. Islands
+//   down to STATE_MIN_PART_KM2 count, far smaller than a country's: Hawaii
+//   is eight islands, most under MIN_PART_KM2.
 import { readFileSync, writeFileSync } from "node:fs"
 import {
   MIN_KEPT_SHARE,
@@ -39,11 +41,14 @@ import {
 } from "./outline.mjs"
 
 const NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson"
+/** A state's islands of at least this much land are part of its outline. */
+const STATE_MIN_PART_KM2 = 100
+
 const FILES = {
   land: "ne_50m_land",
   lakes: "ne_50m_lakes",
   seas: "ne_10m_geography_marine_polys",
-  states: "ne_50m_admin_1_states_provinces_lakes"
+  states: "ne_10m_admin_1_states_provinces_lakes"
 }
 
 /** Label, a point on the island [lon, lat], and where the default would not do, prompt name and Wikipedia title. */
@@ -179,7 +184,7 @@ for (const f of states.sort((a, b) => a.properties.name.localeCompare(b.properti
   const wiki = names.wiki ?? p.name
   const all = polygonsOf(f.geometry)
   const area = all.reduce((s, poly) => s + polygonAreaKm2(poly), 0)
-  const kept = area >= POINT_BELOW_KM2 ? keptParts(f.geometry) : null
+  const kept = area >= POINT_BELOW_KM2 ? keptParts(f.geometry, undefined, STATE_MIN_PART_KM2) : null
   const keptShare = kept ? kept.reduce((s, poly) => s + polygonAreaKm2(poly), 0) / area : 0
   if (kept && keptShare >= MIN_KEPT_SHARE && !crossesAntimeridian(kept)) {
     out.push(region("state", label, names.name ?? p.name, wiki, kept))

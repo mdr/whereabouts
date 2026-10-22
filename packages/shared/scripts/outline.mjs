@@ -84,10 +84,10 @@ export const polygonAreaKm2 = ([outer, ...holes]) => ringAreaKm2(outer) - holes.
 
 export const polygonsOf = (geometry) => (geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates)
 
-export function keptParts(geometry, chainKm = CHAIN_KM) {
+export function keptParts(geometry, chainKm = CHAIN_KM, minPartKm2 = MIN_PART_KM2) {
   const parts = polygonsOf(geometry)
     .map((polygon) => ({ polygon, area: areaOf(cellsOf(polygon, 6)) }))
-    .filter((p) => p.area >= MIN_PART_KM2)
+    .filter((p) => p.area >= minPartKm2)
     .sort((a, b) => b.area - a.area)
   const kept = [parts.shift()]
   // Grow the set: an island joins if it is near any part already kept.
