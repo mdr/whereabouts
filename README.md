@@ -314,8 +314,9 @@ pnpm workspace with three packages:
   the whole of Germany") has an area as its answer, not a point: 37
   countries from Natural Earth's 1:50m outlines (public domain), built into
   `packages/shared/regions.json` by `scripts/build-regions.mjs`, which keeps
-  each country's main landmass and the islands of 1,500 km² or more within
-  500 km of it (so Sicily stays; the Canaries, Svalbard and Alaska go),
+  each country's main landmass, the islands of 1,500 km² or more chained
+  to it within 500 km, and every smaller island within 500 km of those (so
+  Sicily and the Aegean stay; the Canaries, Svalbard and Alaska go),
   simplifies the outlines to about 1.5 km and sets the tolerance to a fifth
   of the country's equivalent radius, sqrt(area / π). Countries with
   disputed borders, or crossing the antimeridian, are left out for now.

@@ -45,11 +45,24 @@ describe("borders", () => {
   })
 
   it("finds every flag country somewhere: on its answer, or in its land", () => {
-    // A painted country's answer is its centre, which can be at sea (Japan)
-    // or in a neighbour (Vietnam's is in Laos); only those miss.
+    // A painted country's answer is its centre, which can be at sea (Japan,
+    // the Bahamas) or in a neighbour (Vietnam's is in Laos, Croatia's in
+    // Bosnia); only those miss.
     const missed = flags.filter((f) => borders.countryAt(f.answer)?.flag !== f.flag).map((f) => f.label)
     expect(missed.sort()).toEqual(
-      ["Fiji", "Haiti", "Indonesia", "Japan", "Malaysia", "Philippines", "Solomon Islands", "Vietnam"].sort()
+      [
+        "Croatia",
+        "Fiji",
+        "Haiti",
+        "Indonesia",
+        "Japan",
+        "Malaysia",
+        "Philippines",
+        "Solomon Islands",
+        "The Bahamas",
+        "Vanuatu",
+        "Vietnam"
+      ].sort()
     )
   })
 

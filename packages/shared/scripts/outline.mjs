@@ -2,6 +2,7 @@
 // the parts of a place that are kept, simplification, and the tolerances.
 import { cellArea, cellToLatLng, polygonToCells, UNITS } from "h3-js"
 
+/** Islands this big can carry the outline on to land within CHAIN_KM of them; smaller ones only join it. */
 export const MIN_PART_KM2 = 1500
 export const CHAIN_KM = 500
 export const TOLERANCE_FRACTION = 0.2
@@ -10,8 +11,8 @@ export const SIMPLIFY_DEG = 0.015
 export const POINT_BELOW_KM2 = 10_000
 /**
  * Countries whose kept parts hold less than this share of their land are
- * asked as a point too: scattered archipelagos (the Bahamas, Vanuatu), whose
- * outline would leave out many of the islands a player paints.
+ * asked as a point too: their outline would leave out land far from the rest
+ * that a player might paint.
  */
 export const MIN_KEPT_SHARE = 0.75
 
@@ -84,11 +85,17 @@ export const polygonAreaKm2 = ([outer, ...holes]) => ringAreaKm2(outer) - holes.
 
 export const polygonsOf = (geometry) => (geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates)
 
-export function keptParts(geometry, chainKm = CHAIN_KM, minPartKm2 = MIN_PART_KM2) {
-  const parts = polygonsOf(geometry)
-    .map((polygon) => ({ polygon, area: areaOf(cellsOf(polygon, 6)) }))
-    .filter((p) => p.area >= minPartKm2)
-    .sort((a, b) => b.area - a.area)
+/**
+ * The largest landmass, the islands of at least MIN_PART_KM2 chained to it
+ * within chainKm, and every smaller island within chainKm of those. Small
+ * islands do not extend the chain, or Bear Island would bring Svalbard into
+ * Norway.
+ */
+export function keptParts(geometry, chainKm = CHAIN_KM) {
+  const all = polygonsOf(geometry).map((polygon) => ({ polygon, area: areaOf(cellsOf(polygon, 6)) }))
+  const parts = all.filter((p) => p.area >= MIN_PART_KM2).sort((a, b) => b.area - a.area)
+  const largest = all.reduce((a, b) => (b.area > a.area ? b : a))
+  if (parts[0] !== largest) parts.unshift(largest)
   const kept = [parts.shift()]
   // Grow the set: an island joins if it is near any part already kept.
   for (let grew = true; grew;) {
@@ -100,6 +107,15 @@ export function keptParts(geometry, chainKm = CHAIN_KM, minPartKm2 = MIN_PART_KM
         i--
       }
     }
+  }
+  const big = [...kept]
+  const bigPolygons = big.map((k) => k.polygon)
+  // Nor may they take an outline across the antimeridian (Fiji's Lau Islands), which would make it a point round.
+  const mayCross = crossesAntimeridian(bigPolygons)
+  for (const p of all) {
+    if (kept.includes(p) || !big.some((k) => gapKm(k.polygon, p.polygon) <= chainKm)) continue
+    if (!mayCross && crossesAntimeridian([...bigPolygons, p.polygon])) continue
+    kept.push(p)
   }
   return kept.map((p) => p.polygon)
 }

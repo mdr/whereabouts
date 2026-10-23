@@ -26,8 +26,8 @@ describe("flag questions", () => {
   })
 
   it("paints big countries whole and asks small, disputed and far-flung ones as a point", () => {
-    for (const code of ["de", "br", "ca", "au", "ie", "lb"]) expect(flag(code).regionId, code).toBeDefined()
-    for (const code of ["va", "mc", "sg", "lu", "mt", "ki", "bs", "in", "cn", "ru", "us", "ua", "cy"])
+    for (const code of ["de", "br", "ca", "au", "ie", "lb", "bs", "vu"]) expect(flag(code).regionId, code).toBeDefined()
+    for (const code of ["va", "mc", "sg", "lu", "mt", "ki", "in", "cn", "ru", "us", "ua", "cy"])
       expect(flag(code).regionId, code).toBeUndefined()
   })
 

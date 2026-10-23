@@ -7,9 +7,9 @@
 // regions.json holds the answers for "Paint the whole of Germany": every
 // sovereign country of at least POINT_BELOW_KM2 whose borders are not in
 // dispute and which does not cross the antimeridian, as an outline. Each keeps
-// its largest landmass and every island of at least MIN_PART_KM2 within
-// CHAIN_KM of what is already kept (so Sicily and Crete stay, the Canaries,
-// Svalbard and Alaska go). The tolerance is a fifth of the country's
+// its largest landmass, the islands of at least MIN_PART_KM2 chained to it
+// within CHAIN_KM, and every smaller island within CHAIN_KM of those (so
+// Sicily, Crete and the Aegean stay; the Canaries, Svalbard and Alaska go). The tolerance is a fifth of the country's
 // equivalent radius, sqrt(area / pi): the scale the region kernel was
 // calibrated at. Outlines are simplified to about SIMPLIFY_DEG
 // (Douglas-Peucker), far finer than any tolerance, and rounded to match.
