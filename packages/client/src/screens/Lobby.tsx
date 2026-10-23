@@ -12,7 +12,7 @@ import {
 } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { configureAsHost } from "../host-setup"
-import { askedToWatch, joinedCode, nameToJoin, savedName, soundOn, startOnPan } from "../settings"
+import { askedToWatch, globeView, joinedCode, nameToJoin, savedName, soundOn, startOnPan } from "../settings"
 import { HostWord, PlayerList } from "../ui/PlayerList"
 import { ConnectionNote } from "../ui/ConnectionNote"
 import { Icon } from "../ui/icons"
@@ -222,6 +222,15 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                 onChange={(e) => (soundOn.value = (e.target as HTMLInputElement).checked)}
               />
               Sounds (spray, countdown and round cues)
+            </label>
+            <label class="check switch globe-switch">
+              <input
+                type="checkbox"
+                role="switch"
+                checked={globeView.value}
+                onChange={(e) => (globeView.value = (e.target as HTMLInputElement).checked)}
+              />
+              Paint on a globe
             </label>
             <div class="lobby-start">
               {host ? (

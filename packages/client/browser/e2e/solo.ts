@@ -1,6 +1,7 @@
 // Practice mode against the Vite dev server: take a hint, paint two blobs,
 // undo and redo the second with the keyboard, trim to the hint and undo it,
-// submit, and see a score. Saves screenshots.
+// paint on the globe but not the space around it, submit, and see a score.
+// Saves screenshots.
 // Usage, from packages/client: node browser/e2e/solo.ts [outDir]
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
 
@@ -37,6 +38,20 @@ checks.check(
   trimmed <= back && untrimmed === back,
   `trim to hint, then undo: ${back} -> ${trimmed} -> ${untrimmed} cells`
 )
+
+await practiceRoundPage.map.toggleGlobe()
+checks.check(await practiceRoundPage.map.showsGlobe(), "the globe button shows the globe")
+await practiceRoundPage.map.dab({ across: 0.98, down: 0.5 })
+const afterSpace = await practiceRoundPage.map.yourPaintCells()
+await practiceRoundPage.map.dab({ across: 0.4, down: 0.5 })
+const afterGlobe = await practiceRoundPage.map.yourPaintCells()
+await practiceRoundPage.screenshot(`${out}/2c-globe.png`)
+checks.check(
+  afterSpace === untrimmed && afterGlobe > afterSpace,
+  `a dab beside the globe paints nothing, one on it paints: ${untrimmed} -> ${afterSpace} -> ${afterGlobe} cells`
+)
+await practiceRoundPage.map.toggleGlobe()
+checks.check(!(await practiceRoundPage.map.showsGlobe()), "and the button goes back to the flat map")
 console.log("blobs:", await practiceRoundPage.devDrawer.blobs())
 
 const practiceRevealPage = await practiceRoundPage.submit()

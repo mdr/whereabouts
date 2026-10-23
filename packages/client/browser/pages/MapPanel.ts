@@ -125,6 +125,16 @@ export class MapPanel {
     await this.#touch("touchEnd", [])
   }
 
+  /** The button by the zoom buttons that switches between the flat map and the globe. */
+  async toggleGlobe(): Promise<void> {
+    await this.#page.getByTestId(mapViewTestIds.globeButton).click()
+    await this.waitUntilSettled()
+  }
+
+  async showsGlobe(): Promise<boolean> {
+    return this.#page.evaluate(() => window.whereabouts.map.getProjection().type === "globe")
+  }
+
   /** Cells in your own paint this round. */
   async yourPaintCells(): Promise<number> {
     return this.#page.evaluate(() => window.whereabouts.paint.layer.size)

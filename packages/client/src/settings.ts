@@ -80,6 +80,8 @@ export const soloPool = persisted("wa.practicePool", PracticePoolSchema, "places
 export const soloMapDetail = persisted("wa.mapDetail", MapDetailSchema, "minimal")
 /** Begin each round on the Pan tool rather than Paint; tablet players often want to look first. */
 export const startOnPan = persisted("wa.startOnPan", z.stringbool(), false)
+/** Paint on a globe instead of the flat map. */
+export const globeView = persisted("wa.globe", z.stringbool(), false)
 /** Game sounds on this device: the spray, the countdown and the round cues. */
 export const soundOn = persisted("wa.sound", z.stringbool(), true)
 /**

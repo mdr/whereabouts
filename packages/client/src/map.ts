@@ -2,6 +2,8 @@ import {
   Map as MapLibreMap,
   NavigationControl,
   setWorkerUrl,
+  type IControl,
+  type Point,
   type FilterSpecification,
   type GeoJSONSource
 } from "maplibre-gl"
@@ -11,7 +13,14 @@ import "maplibre-gl/dist/maplibre-gl.css"
 // import.meta.url. After bundling that points into /assets where no such
 // file exists, so hand it a worker Vite has bundled and knows the URL of.
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url"
-import { cellsOutline, type H3Cell, type HintBand, type LatLon, type MapDetail } from "@whereabouts/shared"
+import {
+  cellToBoundary,
+  cellsOutline,
+  type H3Cell,
+  type HintBand,
+  type LatLon,
+  type MapDetail
+} from "@whereabouts/shared"
 import type { Theme } from "./themes"
 
 setWorkerUrl(mapWorkerUrl)
@@ -33,6 +42,13 @@ const WORLD_CENTER: [number, number] = [10, 25]
 const WORLD_ZOOM = 1.6
 /** MapLibre's world is 512 px wide at zoom 0. */
 const WORLD_PX_Z0 = 512
+/**
+ * MapLibre's tiles stop this far north and south. Paint beyond it is never
+ * seen on the flat map, and a globe smears it into a fan at the pole.
+ */
+const MAX_LAT = 85.0511
+/** The globe's starting size: its radius as a share of the map's shorter side. */
+const GLOBE_FILL = 0.4
 
 /**
  * National borders on the reveal: opaque and wider as the map zooms in, but
@@ -69,6 +85,8 @@ export class GameMap {
   private theme: Theme | undefined = undefined
   /** Set once the map is removed; layer toggles become no-ops rather than throwing. */
   private disposed = false
+  private globe = false
+  private globeButton: HTMLButtonElement | undefined = undefined
 
   constructor(container: string | HTMLElement) {
     this.map = new MapLibreMap({
@@ -367,6 +385,54 @@ export class GameMap {
    * turning borders back off, say) may still call the toggles afterwards;
    * MapLibre throws on a removed map, so they check `disposed` first.
    */
+  /** Switch between the flat map and the globe, keeping a whole-world view whole. */
+  setGlobe(on: boolean): void {
+    if (this.disposed || on === this.globe) return
+    const wasWhole = this.map.getZoom() < this.worldZoom() + 0.5
+    this.globe = on
+    this.map.setProjection({ type: on ? "globe" : "mercator" })
+    this.showGlobeButton()
+    if (wasWhole) this.resetView()
+  }
+
+  /** A button with the zoom buttons that asks for the other projection; setGlobe makes the switch. */
+  addGlobeButton(onToggle: () => void, testId: string): void {
+    const button = document.createElement("button")
+    button.type = "button"
+    button.dataset.testid = testId
+    button.innerHTML = '<span class="maplibregl-ctrl-icon" aria-hidden="true"></span>'
+    button.addEventListener("click", onToggle)
+    this.globeButton = button
+    this.showGlobeButton()
+    const control: IControl = {
+      onAdd: () => {
+        const el = document.createElement("div")
+        el.className = "maplibregl-ctrl maplibregl-ctrl-group globe-ctrl"
+        el.append(button)
+        return el
+      },
+      onRemove: () => button.parentElement?.remove()
+    }
+    this.map.addControl(control, "bottom-left")
+  }
+
+  private showGlobeButton(): void {
+    const button = this.globeButton
+    if (!button) return
+    // MapLibre's own globe icons: the one shown says what a click switches to.
+    button.classList.toggle("maplibregl-ctrl-globe-enabled", this.globe)
+    button.classList.toggle("maplibregl-ctrl-globe", !this.globe)
+    button.title = this.globe ? "Flat map" : "Globe"
+    button.setAttribute("aria-pressed", String(this.globe))
+  }
+
+  /** Whether a point on screen shows the Earth: not the space around a globe, nor past a flat map's poles. */
+  onSurface(point: Point): boolean {
+    const at = this.map.unproject(point)
+    const back = this.map.project(at)
+    return drawable(at.lat) && Math.hypot(back.x - point.x, back.y - point.y) < 1
+  }
+
   dispose(): void {
     this.disposed = true
     this.map.remove()
@@ -482,13 +548,18 @@ export class GameMap {
   }
 
   setPaint(data: GeoJSON.FeatureCollection): void {
-    void this.source(PAINT_SOURCE)?.setData(data)
+    const features = data.features.filter(
+      (f) =>
+        f.geometry.type !== "Polygon" || f.geometry.coordinates.every((ring) => ring.every(([, lat]) => drawable(lat!)))
+    )
+    void this.source(PAINT_SOURCE)?.setData({ ...data, features })
   }
 
   /** Outline the cells the next stamp would touch; undefined hides it. Dotted when erasing. */
   setCursorFootprint(cells: H3Cell[] | undefined, erase = false): void {
-    const features: GeoJSON.Feature[] = cells
-      ? [{ type: "Feature", properties: { erase }, geometry: cellsOutline(cells) }]
+    const shown = cells?.filter((c) => cellToBoundary(c).every(([lat]) => drawable(lat)))
+    const features: GeoJSON.Feature[] = shown?.length
+      ? [{ type: "Feature", properties: { erase }, geometry: cellsOutline(shown) }]
       : []
     void this.source(CURSOR_SOURCE)?.setData({ type: "FeatureCollection", features })
   }
@@ -572,7 +643,10 @@ export class GameMap {
   /** Shade a hint's band, or clear it. */
   setHint(band: HintBand | undefined): void {
     if (this.disposed) return
-    void this.source(HINT_SOURCE)?.setData({ type: "FeatureCollection", features: band ? hintFeatures(band) : [] })
+    void this.source(HINT_SOURCE)?.setData({
+      type: "FeatureCollection",
+      features: band ? hintFeatures(band) : []
+    })
   }
 
   clearReveal(): void {
@@ -582,14 +656,32 @@ export class GameMap {
     })
   }
 
+  /** At a latitude on the flat map. A globe has one scale, the flat map's at the view's centre. */
   metersPerPixel(lat: number): number {
     const z = this.map.getZoom()
-    return (WORLD_M * Math.cos((lat * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, z))
+    const at = this.globe ? this.map.getCenter().lat : lat
+    return (WORLD_M * Math.cos((at * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, z))
   }
 
   /** Back to the whole-world starting view, e.g. at the start of a round. */
   resetView(): void {
-    void this.map.easeTo({ center: WORLD_CENTER, zoom: WORLD_ZOOM, duration: 700 })
+    void this.map.easeTo({ center: WORLD_CENTER, zoom: this.worldZoom(), duration: 700 })
+  }
+
+  /**
+   * The zoom of the whole-world view. A globe is sized to the map: in the
+   * camera's perspective a sphere of radius R px, seen from f px away, shows
+   * a disc of radius f tan(asin(R / (f + R))).
+   */
+  private worldZoom(lat = WORLD_CENTER[1]): number {
+    if (!this.globe) return WORLD_ZOOM
+    const el = this.map.getContainer()
+    const disc = GLOBE_FILL * Math.min(el.clientWidth, el.clientHeight)
+    const f = el.clientHeight / 2 / Math.tan((this.map.getVerticalFieldOfView() * Math.PI) / 360)
+    const sin = disc / Math.hypot(f, disc)
+    const radius = (f * sin) / (1 - sin)
+    const worldPx = 2 * Math.PI * radius * Math.cos((lat * Math.PI) / 180)
+    return Math.max(this.map.getMinZoom(), Math.log2(worldPx / WORLD_PX_Z0))
   }
 
   /** Fit the answer and a paint layer's cells into view, with a sensible zoom cap. */
@@ -618,7 +710,8 @@ export class GameMap {
     maxLon = Math.max(maxLon, answer.lon + dLon)
     if (maxLon - minLon > 300) {
       // Spans most of the world; just show it all.
-      void this.map.easeTo({ center: [answer.lon, 20], zoom: this.map.getMinZoom(), duration: 900 })
+      const zoom = this.globe ? this.worldZoom(20) : this.map.getMinZoom()
+      void this.map.easeTo({ center: [answer.lon, 20], zoom, duration: 900 })
       return
     }
     void this.map.fitBounds(
@@ -661,6 +754,10 @@ export class GameMap {
 }
 
 /** A band as polygons: a longitude band across 180° is two, one each side. */
+function drawable(lat: number): boolean {
+  return Math.abs(lat) <= MAX_LAT
+}
+
 function hintFeatures(band: HintBand): GeoJSON.Feature[] {
   const box = (west: number, east: number, south: number, north: number): GeoJSON.Feature => ({
     type: "Feature",
@@ -678,8 +775,8 @@ function hintFeatures(band: HintBand): GeoJSON.Feature[] {
       ]
     }
   })
-  // Mercator stops short of the poles.
-  if (band.axis === "latitude") return [box(-180, 180, Math.max(band.from, -85), Math.min(band.to, 85))]
-  if (band.from <= band.to) return [box(band.from, band.to, -85, 85)]
-  return [box(band.from, 180, -85, 85), box(-180, band.to, -85, 85)]
+  const p = MAX_LAT
+  if (band.axis === "latitude") return [box(-180, 180, Math.max(band.from, -p), Math.min(band.to, p))]
+  if (band.from <= band.to) return [box(band.from, band.to, -p, p)]
+  return [box(band.from, 180, -p, p), box(-180, band.to, -p, p)]
 }

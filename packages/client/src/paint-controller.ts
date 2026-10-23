@@ -111,7 +111,7 @@ export class PaintController {
     this.gameMap = gameMap
     const map = gameMap.map
     const onDown = (e: MapMouseEvent) => {
-      if (!this.canPaint() || e.originalEvent.button !== 0) return
+      if (!this.canPaint() || e.originalEvent.button !== 0 || !gameMap.onSurface(e.point)) return
       this.beginStroke(e.point)
     }
     // Touch: one finger uses the current tool, so it paints when painting is
@@ -123,6 +123,7 @@ export class PaintController {
         this.abandonStroke()
         return
       }
+      if (!gameMap.onSurface(e.point)) return
       e.preventDefault()
       this.beginStroke(e.point)
     }
@@ -138,16 +139,17 @@ export class PaintController {
     }
     const onTouchEnd = () => this.endStroke()
     const onMove = (e: MapMouseEvent) => {
+      const onEarth = gameMap.onSurface(e.point)
       // A tap also sends a mouse move, which shouldn't leave a footprint behind.
       if (this.hovering) {
-        this.pointerAt = e.lngLat
-        this.updateCursor(e.lngLat)
+        this.pointerAt = onEarth ? e.lngLat : undefined
+        this.refreshCursor()
       }
       if (this.painting) {
         this.strokeTo(e.point)
         this.queueRender()
       }
-      for (const l of this.hoverListeners) l({ lat: e.lngLat.lat, lon: e.lngLat.lng })
+      if (onEarth) for (const l of this.hoverListeners) l({ lat: e.lngLat.lat, lon: e.lngLat.lng })
     }
     const onOut = () => {
       this.pointerAt = undefined
@@ -158,7 +160,7 @@ export class PaintController {
     const onUp = () => this.endStroke()
     // The Fill tool acts on a click (a tap, on a phone), so the map still drags.
     const onClick = (e: MapMouseEvent) => {
-      if (this.canFill()) this.fillAt(e.lngLat)
+      if (this.canFill() && gameMap.onSurface(e.point)) this.fillAt(e.lngLat)
     }
     const onKeyDown = (e: KeyboardEvent) => {
       if (isTyping(e.target ?? undefined)) return
@@ -565,9 +567,8 @@ export class PaintController {
   }
 
   private strokeTo(point: Point): void {
-    const map = this.gameMap.map
     if (!this.lastStampPoint) {
-      this.stampAt(map.unproject(point))
+      this.stampOnSurface(point)
       this.lastStampPoint = point
       return
     }
@@ -581,9 +582,14 @@ export class PaintController {
     for (let i = 1; i <= n; i++) {
       const t = (i * step) / dist
       const p = new Point(start.x + dx * t, start.y + dy * t)
-      this.stampAt(map.unproject(p))
+      this.stampOnSurface(p)
       this.lastStampPoint = p
     }
+  }
+
+  /** A stroke carries on across the space around a globe, painting only where it crosses the Earth. */
+  private stampOnSurface(point: Point): void {
+    if (this.gameMap.onSurface(point)) this.stampAt(this.gameMap.map.unproject(point))
   }
 
   private queueRender(): void {

@@ -13,7 +13,7 @@ import { THEME } from "../themes"
 import { devMode } from "../dev"
 import { effect } from "@preact/signals"
 import { sound } from "../sound"
-import { soundOn } from "../settings"
+import { globeView, soundOn } from "../settings"
 import { mapViewTestIds } from "./MapViewTestIds"
 
 const PaintContext = createContext<PaintController | undefined>(undefined)
@@ -35,6 +35,7 @@ export function MapView({ children }: { children: ComponentChildren }) {
       gameMap.applyTheme(THEME)
       // Anything that would give the location away stays hidden.
       gameMap.setDetail("minimal")
+      gameMap.addGlobeButton(() => (globeView.value = !globeView.value), mapViewTestIds.globeButton)
       ctl = new PaintController(gameMap)
       window.whereabouts = { map: gameMap.map, gameMap, paint: ctl }
       setController(ctl)
@@ -44,6 +45,11 @@ export function MapView({ children }: { children: ComponentChildren }) {
       gameMap.dispose()
     }
   }, [])
+
+  useEffect(() => {
+    if (!controller) return
+    return effect(() => controller.gameMap.setGlobe(globeView.value))
+  }, [controller])
 
   // The spray (or the eraser) plays while a stroke is held and painting is
   // allowed; it stops when the stroke ends, the round locks you out, or the

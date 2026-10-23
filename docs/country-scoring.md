@@ -270,7 +270,8 @@ before: the cap's sort cost more than three more Gaussians.
 - **Map projection.** The brush is a fixed size on screen, so painting evenly
   on screen puts more paint per km² towards the poles: an estimated 40% more at
   Germany's northern edge than its southern, and two to three times more across
-  Norway or Finland. Not measured in play.
+  Norway or Finland. Not measured in play. On the globe the brush is one
+  size on the ground across the view, so this applies to the flat map only.
 - **Different from points in one place.** The whole world painted evenly
   scores about 300 here and about 500 for a point question.
 

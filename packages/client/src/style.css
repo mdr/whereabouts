@@ -1597,10 +1597,11 @@ button.danger.solid {
   .home-card {
     padding: 20px;
   }
-  /* Pinch zoom covers the +/- buttons; the attribution button rises above the toolbar. */
-  #map .maplibregl-ctrl-bottom-left {
+  /* Pinch zoom covers the +/- buttons; the globe and attribution buttons rise above the toolbar. */
+  #map .maplibregl-ctrl-bottom-left .maplibregl-ctrl:not(.globe-ctrl) {
     display: none;
   }
+  #map .maplibregl-ctrl-bottom-left,
   #map .maplibregl-ctrl-bottom-right {
     bottom: calc(var(--toolbar-h, 0px) + 10px + env(safe-area-inset-bottom, 0px));
   }
