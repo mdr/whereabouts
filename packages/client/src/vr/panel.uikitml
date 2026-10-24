@@ -33,17 +33,9 @@
 <Panel class="root">
   <span id="prompt" class="prompt">…</span>
   <span id="score" class="score">…</span>
-  <span id="hint" class="hint">Trigger sprays: nearer for a small dense spot, further back for a wide faint one. Grip grabs the globe to spin it; grip with both hands to zoom. A or X swaps paint and erase. Grip the picture to hold it.</span>
+  <span id="hint" class="hint">Trigger: the right hand paints, the left erases; A or X swaps that hand's tool. Nearer the globe for a small dense spot, further back for a wide faint one. Grip grabs the globe to spin it; grip with both hands to zoom. Grip the picture to hold it. Turn your left palm up for more tools and a hint.</span>
   <div id="tools" class="row">
-    <Button id="paint" variant="primary">
-      <ButtonIcon><SprayCan></SprayCan></ButtonIcon>
-      Paint
-    </Button>
-    <Button id="erase" class="gap" variant="secondary">
-      <ButtonIcon><Eraser></Eraser></ButtonIcon>
-      Erase
-    </Button>
-    <Button id="undo" class="gap" variant="secondary">
+    <Button id="undo" variant="secondary">
       <ButtonIcon><Undo></Undo></ButtonIcon>
       Undo
     </Button>

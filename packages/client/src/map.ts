@@ -170,8 +170,8 @@ export class GameMap {
     const below = this.map.getLayer("water") ? "water" : this.labelLayers[0]
     // Natural colour for the reveal: greens, desert sand, white ice, from
     // Natural Earth II relief tiles on the same host as the map. Like the
-    // relief it starts hidden and sits under the water (the tiles have a
-    // transparent sea). Dimmed to sit on the dark theme.
+    // relief it starts hidden and sits under the water (the tiles paint
+    // the sea white). Dimmed to sit on the dark theme.
     if (this.map.getSource(COLOUR_SOURCE)) {
       this.map.addLayer(
         {

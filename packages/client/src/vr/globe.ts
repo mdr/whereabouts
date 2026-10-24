@@ -7,15 +7,18 @@
 import {
   BufferGeometry,
   CanvasTexture,
+  CylinderGeometry,
   DoubleSide,
   Group,
   Matrix4,
   Mesh,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   Quaternion,
   type Object3D,
   SRGBColorSpace,
   SphereGeometry,
+  TorusGeometry,
   Vector3,
   type WebGLRenderer
 } from "three"
@@ -28,6 +31,7 @@ export type Hand = "left" | "right"
 const RADIUS = 0.22
 /** Just above the land, so neither fights it for depth; the paint on top. */
 export const DETAIL_RADIUS = RADIUS * 1.0015
+export const HINT_RADIUS = RADIUS * 1.002
 export const PAINT_RADIUS = RADIUS * 1.003
 export const ANSWER_RADIUS = RADIUS * 1.004
 const MIN_SCALE = 1
@@ -44,8 +48,15 @@ const w = new Vector3()
 
 export class Globe {
   readonly group = new Group()
+  /** What holds the globe up: it stays upright and behind as the globe turns, and grows as it zooms. */
+  readonly stand = new Group()
   readonly landCanvas = document.createElement("canvas")
+  /** The land in natural colour, for the reveal. */
+  readonly colourCanvas = document.createElement("canvas")
   private readonly landTexture: CanvasTexture
+  private colourTexture: CanvasTexture | undefined = undefined
+  private colourWanted = false
+  private readonly surface: Mesh<SphereGeometry, MeshBasicMaterial>
   private readonly paint = new Mesh(
     new BufferGeometry(),
     new MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: DoubleSide })
@@ -67,9 +78,35 @@ export class Globe {
     this.landTexture = new CanvasTexture(this.landCanvas)
     this.landTexture.colorSpace = SRGBColorSpace
     this.landTexture.anisotropy = anisotropy
-    this.group.add(new Mesh(new SphereGeometry(RADIUS, 128, 64), new MeshBasicMaterial({ map: this.landTexture })))
+    this.colourCanvas.width = this.landCanvas.width
+    this.colourCanvas.height = this.landCanvas.height
+    this.surface = new Mesh(new SphereGeometry(RADIUS, 128, 64), new MeshBasicMaterial({ map: this.landTexture }))
+    this.group.add(this.surface)
     this.paint.renderOrder = 2
     this.group.add(this.paint)
+    this.buildStand()
+  }
+
+  /** A desk globe's: a half ring round the back from pole to pole, on a stem and round foot. */
+  private buildStand(): void {
+    const brass = new MeshStandardMaterial({ color: "#b08d57", metalness: 0.3, roughness: 0.45 })
+    const wood = new MeshStandardMaterial({ color: "#5a3d2b", roughness: 0.7 })
+    const ring = RADIUS * 1.08
+    // A torus arc runs from +x round through +y; turned, from the bottom pole round the back (+x) to the top.
+    const arc = new Mesh(new TorusGeometry(ring, RADIUS * 0.02, 8, 64, Math.PI), brass)
+    arc.rotation.z = -Math.PI / 2
+    const pin = (y: number) => {
+      const m = new Mesh(new CylinderGeometry(RADIUS * 0.025, RADIUS * 0.025, ring - RADIUS), brass)
+      m.position.y = (y * (ring + RADIUS)) / 2
+      return m
+    }
+    const stemLength = RADIUS * 0.45
+    const stem = new Mesh(new CylinderGeometry(RADIUS * 0.04, RADIUS * 0.06, stemLength, 16), wood)
+    stem.position.y = -ring - stemLength / 2
+    const footHeight = RADIUS * 0.08
+    const foot = new Mesh(new CylinderGeometry(RADIUS * 0.45, RADIUS * 0.5, footHeight, 48), wood)
+    foot.position.y = -ring - stemLength - footHeight / 2
+    this.stand.add(arc, pin(1), pin(-1), stem, foot)
   }
 
   get centre(): Vector3 {
@@ -100,6 +137,25 @@ export class Globe {
     renderer.initTexture(this.landTexture)
   }
 
+  colourDrawn(renderer: WebGLRenderer): void {
+    const texture = new CanvasTexture(this.colourCanvas)
+    texture.colorSpace = SRGBColorSpace
+    texture.anisotropy = this.landTexture.anisotropy
+    renderer.initTexture(texture)
+    this.colourTexture = texture
+    this.showColour(this.colourWanted)
+  }
+
+  /** Natural colour on the land, once it has loaded, or the plain land. */
+  showColour(on: boolean): void {
+    this.colourWanted = on
+    this.surface.material.map = (on ? this.colourTexture : undefined) ?? this.landTexture
+  }
+
+  get colourShown(): boolean {
+    return this.surface.material.map === this.colourTexture
+  }
+
   showPaint(geometry: BufferGeometry): void {
     this.paint.geometry.dispose()
     this.paint.geometry = geometry
@@ -113,6 +169,7 @@ export class Globe {
       .addScaledVector(this.toward, 0.45)
       .add(v.set(0, -0.3, 0))
     this.group.quaternion.setFromUnitVectors(v.set(1, 0, 0), w.copy(this.toward).negate())
+    this.stand.quaternion.setFromUnitVectors(v.set(1, 0, 0), this.toward)
     this.spin.set(0, 0, 0)
     this.turning = undefined
     this.setScale(MIN_SCALE)
@@ -187,6 +244,8 @@ export class Globe {
     const scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s))
     this.group.scale.setScalar(scale)
     this.group.position.copy(this.anchor).addScaledVector(this.toward, RADIUS * scale)
+    this.stand.scale.setScalar(scale)
+    this.stand.position.copy(this.group.position)
   }
 }
 

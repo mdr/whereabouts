@@ -1,3 +1,4 @@
+import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import type { Vr, VrView } from "../vr"
 import { loadVr, loadedVr, vrSupported } from "../vr-support"
@@ -24,42 +25,66 @@ export function useVrView(view: VrView, key: string): void {
 
 /**
  * Paint this round in a VR headset. Shown only where the browser can open
- * one. The first press loads the VR code; the headset opens once it has,
- * or on a second press if the browser no longer counts the first as the
- * player's.
+ * one. The first press loads the VR code. A headset opens only in answer to
+ * a press the browser still counts as the player's, a few seconds at most,
+ * and loading can take longer: then a second, larger button asks again.
  */
 export function VrButton({ view }: { view: VrView }) {
   const paint = usePaint()
-  const [loading, setLoading] = useState(false)
+  const [stage, setStage] = useState<"loading" | "ready" | undefined>(undefined)
   const latest = useRef(view)
   latest.current = view
 
   if (!vrSupported.value) return undefined
   const vr = loadedVr.value
-  const enter = (v: Vr) => v.enter(latest.current)
+  const enter = (v: Vr) => {
+    setStage(undefined)
+    v.enter(latest.current)
+  }
   const press = () => {
     if (vr) return enter(vr)
-    setLoading(true)
+    setStage("loading")
     loadVr().then(
       (v) => {
-        setLoading(false)
-        enter(v)
+        if (navigator.userActivation.isActive) enter(v)
+        else setStage("ready")
       },
       (err: unknown) => {
-        setLoading(false)
+        setStage(undefined)
         console.warn("could not load VR", err)
       }
     )
   }
   const inVr = vr?.active.value ?? false
   return (
-    <button
-      onClick={press}
-      disabled={loading || inVr || !paint.enabled.value}
-      title="Paint this round in your VR headset"
-      data-testid={vrButtonTestIds.button}
-    >
-      <Icon name="vr" /> <span class="label">{loading ? "Loading VR…" : inVr ? "In VR" : "VR"}</span>
-    </button>
+    <>
+      <button
+        onClick={press}
+        disabled={stage !== undefined || inVr || !paint.enabled.value}
+        title="Paint this round in your VR headset"
+        data-testid={vrButtonTestIds.button}
+      >
+        <Icon name="vr" /> <span class="label">{inVr ? "In VR" : "VR"}</span>
+      </button>
+      {stage &&
+        // Into <body>: the toolbar is transformed, and would be the box a fixed overlay fills.
+        createPortal(
+          <div class="modal-backdrop vr-launch" data-testid={vrButtonTestIds.loading}>
+            {stage === "loading" ? (
+              <p>Loading VR…</p>
+            ) : (
+              <div class="vr-launch-ready">
+                <button class="primary" onClick={() => vr && enter(vr)} data-testid={vrButtonTestIds.enterButton}>
+                  <Icon name="vr" /> Enter VR
+                </button>
+                <button onClick={() => setStage(undefined)} data-testid={vrButtonTestIds.cancelButton}>
+                  Not now
+                </button>
+              </div>
+            )}
+          </div>,
+          document.body
+        )}
+    </>
   )
 }

@@ -10,6 +10,7 @@ import { useSignal } from "@preact/signals"
 import {
   KERNELS,
   hintBand,
+  type HintAxis,
   type HintBand,
   questionPictures,
   KernelIdSchema,
@@ -247,7 +248,17 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     setPhase("paint")
   }
 
-  const vrRound: VrRound = { paint, prompt: q.prompt, detail, picture: vrPicture(q), submit }
+  const useHint = (axis: HintAxis) => setHint(hintBand(q.answer, q.toleranceKm, axis, Math.random()))
+  const vrRound: VrRound = {
+    paint,
+    prompt: q.prompt,
+    detail,
+    picture: vrPicture(q),
+    water: q.topic === "lake" || q.topic === "sea",
+    hint,
+    useHint,
+    submit
+  }
   const vrView: VrView =
     phase === "done"
       ? { kind: "done", summary: { total, max: questions.length * 1000, again: restart } }
@@ -259,6 +270,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               label: q.label,
               answer: isRegion(q) ? { outline: q.outline } : { point: q.answer },
               focus: q.answer,
+              stateRound,
               score: revealed.result.score,
               total,
               last: index + 1 >= questions.length,
@@ -266,7 +278,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             }
           }
         : { kind: "paint", round: vrRound }
-  useVrView(vrView, `${phase} ${index} ${questions[0]?.id}`)
+  useVrView(vrView, `${phase} ${index} ${questions[0]?.id} ${hint?.axis}`)
 
   // A flag round's reveal names the country under the pointer, and where the
   // paint mostly was. Loaded while the flag is still being painted.
@@ -431,7 +443,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined} credit>
             {q.flag ? <AnswerMode area={isRegion(q)} /> : isRegion(q) && <RegionHint topic={q.topic} />}
           </QuestionCard>
-          <HintCard band={hint} onUse={(axis) => setHint(hintBand(q.answer, q.toleranceKm, axis, Math.random()))} />
+          <HintCard band={hint} onUse={useHint} />
         </div>
         <PaintTools practice water={q.topic === "lake" || q.topic === "sea"} hint={hint}>
           <VrButton view={vrView} />

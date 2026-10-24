@@ -5,7 +5,7 @@
  * MapLibre draws on, so it is drawn here on demand with map.redraw().
  */
 import { BufferAttribute, BufferGeometry, CanvasTexture, Mesh, MeshBasicMaterial, SRGBColorSpace } from "three"
-import { greatCircleDistance, type LatLon, type MapDetail } from "@whereabouts/shared"
+import { greatCircleDistance, type HintBand, type LatLon, type MapDetail } from "@whereabouts/shared"
 import { GameMap } from "../map"
 import type { Theme } from "../themes"
 import { latLonToLocal } from "./sphere"
@@ -60,11 +60,26 @@ export class DetailPatch {
     this.mesh.visible = false
   }
 
-  /** As the page's map shows it while painting, but always with national borders, as the globe has. */
-  setDetail(detail: MapDetail): void {
+  /**
+   * As the page's map shows it: while painting with national borders
+   * always, as the globe has; on the reveal with everything.
+   */
+  setDetail(detail: MapDetail | { stateRound: boolean }): void {
     void this.gameMap.ready.then(() => {
-      this.gameMap.setDetail(detail)
-      this.gameMap.setBorders(true, false)
+      if (typeof detail === "string") {
+        this.gameMap.setDetail(detail)
+        this.gameMap.setBorders(true, false)
+      } else {
+        this.gameMap.setDetail("reveal")
+        this.gameMap.setStateReveal(detail.stateRound)
+      }
+      this.shown = false
+    })
+  }
+
+  setHint(band: HintBand | undefined): void {
+    void this.gameMap.ready.then(() => {
+      this.gameMap.setHint(band)
       this.shown = false
     })
   }

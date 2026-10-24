@@ -1,0 +1,52 @@
+<style>
+  .root {
+    flex-direction: column;
+    width: 300px;
+    padding: 14px;
+  }
+  .row {
+    flex-direction: row;
+    margin-top: 8px;
+  }
+  .gap {
+    margin-left: 8px;
+  }
+  .note {
+    font-size: 15px;
+    line-height: 20px;
+    color: #67e8f9;
+  }
+</style>
+<Panel class="root">
+  <span id="note" class="note">Hint: a band the answer lies in</span>
+  <div id="hints" class="row">
+    <Button id="latitude" variant="secondary">
+      <ButtonIcon><MoveVertical></MoveVertical></ButtonIcon>
+      Latitude
+    </Button>
+    <Button id="longitude" class="gap" variant="secondary">
+      <ButtonIcon><MoveHorizontal></MoveHorizontal></ButtonIcon>
+      Longitude
+    </Button>
+  </div>
+  <div class="row">
+    <Button id="trim" variant="secondary">
+      <ButtonIcon><Scissors></Scissors></ButtonIcon>
+      <span id="trimLabel">Trim sea</span>
+    </Button>
+    <Button id="trimHint" class="gap" variant="secondary">
+      <ButtonIcon><Lightbulb></Lightbulb></ButtonIcon>
+      Trim to hint
+    </Button>
+  </div>
+  <div class="row">
+    <Button id="clear" variant="negative">
+      <ButtonIcon><Trash2></Trash2></ButtonIcon>
+      Clear
+    </Button>
+    <Button id="redo" class="gap" variant="secondary">
+      <ButtonIcon><Redo></Redo></ButtonIcon>
+      Redo
+    </Button>
+  </div>
+</Panel>

@@ -5,6 +5,7 @@
 // Usage, from packages/client: node browser/e2e/vr.ts [outDir] [baseUrl]
 import { Headset } from "../pages/Headset.ts"
 import { soloTestIds } from "../../src/screens/SoloTestIds.ts"
+import { hintTestIds } from "../../src/ui/HintTestIds.ts"
 import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
 import { until } from "../pages/support.ts"
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
@@ -21,6 +22,7 @@ const headset = await Headset.install(tab.page)
 const round = await tab.openPractice()
 const button = tab.page.getByTestId(vrButtonTestIds.button)
 checks.check(await button.isVisible(), "a headset browser offers VR")
+const pressed = Date.now()
 await button.click()
 await until(
   "the headset session",
@@ -28,7 +30,10 @@ await until(
   (on) => on,
   60_000
 )
-checks.check((await button.innerText()).includes("In VR"), "the VR button opens a headset session")
+checks.check(
+  (await button.innerText()).includes("In VR"),
+  `the VR button opens a headset session, loading for ${((Date.now() - pressed) / 1000).toFixed(1)} s`
+)
 await round.pause(1500)
 await round.screenshot(`${out}/vr-1-entered.png`)
 
@@ -62,6 +67,85 @@ const shown = await until(
 checks.check(shown === after, `the globe shows it (${shown} cells)`)
 await round.pause(300)
 await round.screenshot(`${out}/vr-3-sprayed.png`)
+
+// The left hand holds an eraser: its trigger rubs paint out where the right
+// hand painted. Undo puts it back.
+await headset.pointRight(can, centre)
+await round.pause(300)
+const painted = (await headset.target("right"))!
+await headset.point("left", [can[0] - 0.3, can[1], can[2]], painted)
+await round.pause(300)
+await headset.trigger("left", 1)
+await round.pause(1500)
+await headset.trigger("left", 0)
+await round.pause(300)
+const erased = await round.map.yourPaintCells()
+checks.check(erased < after, `the left hand erases (${after} -> ${erased} cells)`)
+await round.paintTools.undoWithKeyboard()
+await until(
+  "the erasing undone",
+  () => round.map.yourPaintCells(),
+  (n) => n === after
+)
+
+// Turning the left palm up opens the wrist menu; the right hand's
+// ray presses its buttons.
+const leftHand: [number, number, number] = [can[0] - 0.3, can[1], can[2]]
+checks.check(!(await headset.wristOpen()), "the wrist menu stays shut while the left hand points ahead")
+// A quarter turn about the ray brings the left palm (its grip's +X) round to face up.
+await headset.hold("left", leftHand, [0, 0, Math.SQRT1_2, Math.SQRT1_2])
+checks.check(
+  await until(
+    "the wrist menu",
+    () => headset.wristOpen(),
+    (open) => open
+  ),
+  "turning the left palm up opens the wrist menu"
+)
+await round.pause(800)
+const press = async (id: Parameters<typeof headset.wristButton>[0]) => {
+  await headset.pointRight(can, await headset.wristButton(id))
+  await round.pause(400)
+  await headset.rightTrigger(1)
+  await round.pause(300)
+  await headset.rightTrigger(0)
+  await round.pause(300)
+}
+await round.screenshot(`${out}/vr-wrist.png`)
+const undone = async (what: string) => {
+  await round.paintTools.undoWithKeyboard()
+  await until(
+    what,
+    () => round.map.yourPaintCells(),
+    (n) => n === after
+  )
+}
+await press("clear")
+checks.check((await round.map.yourPaintCells()) === 0, "its Clear clears the paint, and the press sprays none")
+await undone("the clear undone")
+await press("latitude")
+checks.check(
+  await until(
+    "the hint band",
+    () => headset.hintShown(),
+    (on) => on
+  ),
+  "its Latitude button gives the hint, shaded on the globe"
+)
+checks.check(await tab.page.getByTestId(hintTestIds.band).isVisible(), "and on the page")
+await press("trimHint")
+const trimmed = await round.map.yourPaintCells()
+checks.check(trimmed <= after, `Trim to hint keeps only the paint in the band (${after} -> ${trimmed} cells)`)
+if (trimmed < after) await undone("the trim undone")
+await headset.point("left", leftHand, centre)
+checks.check(
+  !(await until(
+    "the wrist menu shut",
+    () => headset.wristOpen(),
+    (open) => !open
+  )),
+  "turning the palm away shuts it"
+)
 
 // Grab the globe by its right side and sweep the hand left: the same spray
 // then lands somewhere else.
@@ -108,9 +192,14 @@ await headset.pointRight(can, centre)
 await round.pause(500)
 await round.screenshot(`${out}/vr-6-zoomed-aim.png`)
 
-// Submit, as the VR menu does (the emulator covers the page): the headset
-// stays on and shows the answer, and Next brings the next round to it.
-await tab.page.getByTestId(soloTestIds.submitButton).dispatchEvent("click")
+// Submit with the menu's button, pointing and pulling the trigger: the
+// headset stays on and shows the answer, and Next brings the next round to it.
+const submit = await headset.menuButton("done")
+await headset.pointRight(can, submit)
+await round.pause(500)
+await headset.rightTrigger(1)
+await round.pause(300)
+await headset.rightTrigger(0)
 // Not PracticeRevealPage.whenShown: the page's map, which it waits on, draws nothing while VR shows.
 const scoreText = tab.page.getByTestId(soloTestIds.roundScore)
 await scoreText.waitFor()
@@ -122,6 +211,17 @@ const revealed = await until(
   (v) => v === "reveal"
 )
 checks.check((await headset.inSession()) && revealed === "reveal", "submitting shows the answer in VR")
+checks.check(
+  await until(
+    "the globe in colour",
+    () => headset.globeColourShown(),
+    (on) => on,
+    30_000
+  ),
+  "the answer shows the land in natural colour"
+)
+await round.pause(1000)
+await round.screenshot(`${out}/vr-reveal.png`)
 await round.pause(1500)
 await round.screenshot(`${out}/vr-8-answer.png`)
 await tab.page.getByTestId(soloTestIds.nextButton).dispatchEvent("click")
@@ -131,6 +231,7 @@ const nextRound = await until(
   (v) => v === "paint"
 )
 checks.check((await headset.inSession()) && nextRound === "paint", "Next brings the next round to VR")
+checks.check(!(await headset.globeColourShown()), "and the plain land back")
 await tab.page.evaluate(() => window.whereaboutsVr.exit())
 await until(
   "the session to end",
@@ -144,11 +245,20 @@ await tab.page.context().close()
 const flagTab = await newTab(browser, "vr-flag", {
   context: { viewport: { width: 1200, height: 800 } },
   baseUrl: process.argv[3],
-  initScript: () => localStorage.setItem("wa.practicePool", "flags")
+  initScript: () => {
+    localStorage.setItem("wa.practicePool", "flags")
+    // As if loading outlasted the press: the browser would refuse it the headset.
+    Object.defineProperty(UserActivation.prototype, "isActive", { get: () => false })
+  }
 })
 const flagHeadset = await Headset.install(flagTab.page)
 const flagRound = await flagTab.openPractice()
 await flagTab.page.getByTestId(vrButtonTestIds.button).click()
+checks.check(await flagTab.page.getByTestId(vrButtonTestIds.loading).isVisible(), "loading VR covers the screen")
+const enterVr = flagTab.page.getByTestId(vrButtonTestIds.enterButton)
+await enterVr.waitFor({ timeout: 60_000 })
+checks.check(!(await flagHeadset.inSession()), "once the press has gone stale, VR waits to be asked again")
+await enterVr.click()
 await until(
   "the flag round's headset session",
   () => flagHeadset.inSession(),

@@ -25,16 +25,20 @@ import {
   type UIKitDocument
 } from "@iwsdk/core"
 import { effect, signal } from "@preact/signals"
-import type { LatLon, MapDetail } from "@whereabouts/shared"
+import { describeHint, type HintAxis, type HintBand, type LatLon, type MapDetail } from "@whereabouts/shared"
+import { loadLandMask, loadWaterMask } from "../land"
 import type { PaintController } from "../paint-controller"
+import { sound } from "../sound"
 import { THEME } from "../themes"
-import { ANSWER_RADIUS, DETAIL_RADIUS, Globe, PAINT_RADIUS, type Hand } from "./globe"
+import { ANSWER_RADIUS, DETAIL_RADIUS, Globe, HINT_RADIUS, PAINT_RADIUS, type Hand } from "./globe"
 import { AnswerMarker, type VrAnswer } from "./answer"
 import { DetailPatch } from "./detail-patch"
-import { drawLand } from "./globe-texture"
+import { drawColour, drawLand } from "./globe-texture"
 import { paintGeometry } from "./paint-mesh"
 import { Picture, type VrPicture } from "./picture"
-import { SprayCan, TRIGGER_DEAD, type SprayTool } from "./spray"
+import { HintMarker } from "./hint"
+import { HandTool, TRIGGER_DEAD } from "./spray"
+import { WristMenu, type WristButton } from "./wrist"
 import panelUrl from "./panel.uikitml?url"
 
 export interface VrRound {
@@ -44,6 +48,10 @@ export interface VrRound {
   /** What the page's map shows while painting. */
   detail: MapDetail
   picture: VrPicture | undefined
+  /** A lake or sea round: trimming drops paint on land, not at sea. */
+  water: boolean
+  hint: HintBand | undefined
+  useHint(axis: HintAxis): void
   submit(): void
 }
 
@@ -53,6 +61,8 @@ export interface VrReveal {
   answer: VrAnswer
   /** Where the globe turns to show the answer. */
   focus: LatLon
+  /** The map then shows state lines and names, as the page's does. */
+  stateRound: boolean
   score: number
   total: number
   last: boolean
@@ -86,7 +96,6 @@ export class Vr {
   shownPaintCells = 0
   private view: VrView | undefined = undefined
   private pictureKey = ""
-  private tool: SprayTool = "paint"
   private stroking = false
   private placed = false
   private paintDirty = true
@@ -96,7 +105,9 @@ export class Vr {
   private readonly detail: DetailPatch
   private readonly picture = new Picture()
   private readonly answer = new AnswerMarker(THEME, ANSWER_RADIUS)
-  private readonly cans: Record<Hand, SprayCan>
+  private readonly hint = new HintMarker(HINT_RADIUS)
+  private readonly wrist: WristMenu
+  private readonly tools: Record<Hand, HandTool>
   private readonly panel: Entity
   private panelDoc: UIKitDocument | undefined = undefined
 
@@ -120,8 +131,13 @@ export class Vr {
       import("@whereabouts/shared/land.json"),
       import("@whereabouts/shared/borders.json")
     ])
-    drawLand(vr.globe.landCanvas, land.default, borders.default, THEME)
+    const landOnly = drawLand(vr.globe.landCanvas, land.default, borders.default, THEME)
     vr.globe.landDrawn(world.renderer)
+    // Not needed until the first answer, and it waits on the network.
+    drawColour(vr.globe.colourCanvas, vr.globe.landCanvas, landOnly, borders.default, THEME).then(
+      () => vr.globe.colourDrawn(world.renderer),
+      (err: unknown) => console.warn("could not colour the VR globe", err)
+    )
     window.whereaboutsVr = vr
     return vr
   }
@@ -137,21 +153,23 @@ export class Vr {
     world.scene.add(sun)
 
     this.globe = new Globe(world.renderer.capabilities.getMaxAnisotropy())
-    world.scene.add(this.globe.group)
+    world.scene.add(this.globe.group, this.globe.stand)
     this.detail = new DetailPatch(THEME, DETAIL_RADIUS, world.renderer.capabilities.getMaxAnisotropy())
     this.globe.add(this.detail.mesh)
-    this.globe.group.add(this.answer.group)
+    this.globe.group.add(this.answer.group, this.hint.group)
 
     const { gripSpaces, raySpaces } = world.player
-    this.cans = {
-      left: new SprayCan(gripSpaces.left, raySpaces.left, world.scene, THEME),
-      right: new SprayCan(gripSpaces.right, raySpaces.right, world.scene, THEME)
+    this.tools = {
+      left: new HandTool(gripSpaces.left, raySpaces.left, world.scene, THEME),
+      right: new HandTool(gripSpaces.right, raySpaces.right, world.scene, THEME)
     }
+    this.tools.left.setTool("erase")
 
     this.panel = world.createTransformEntity(new Group(), { persistent: true })
     this.panel.addComponent(RayInteractable)
     this.panel.addComponent(PanelUI, { config: panelUrl })
     this.panel.object3D!.add(this.picture.mesh)
+    this.wrist = new WristMenu(world, this.wristHandlers())
 
     world.visibilityState.subscribe((state) => {
       const active = state !== VisibilityState.NonImmersive
@@ -175,8 +193,10 @@ export class Vr {
     this.picture.release(this.panel.object3D!)
     this.view = view
     const round = this.round
-    if (view.kind === "paint") this.setTool("paint")
-    if (round) this.detail.setDetail(round.detail)
+    if (round) this.detail.setDetail(view.kind === "reveal" ? { stateRound: view.reveal.stateRound } : round.detail)
+    this.hint.show(round?.hint)
+    this.detail.setHint(round?.hint)
+    if (round) this.wrist.setState(round.water, round.hint && describeHint(round.hint))
     const picture = round?.picture
     const key = picture ? JSON.stringify(picture) : ""
     if (key !== this.pictureKey) {
@@ -184,6 +204,10 @@ export class Vr {
       this.picture.show(picture)
     }
     this.answer.show(view.kind === "reveal" ? view.reveal.answer : undefined)
+    // As the page's map: natural colour on the reveal, and while painting on the maps that show terrain.
+    this.globe.showColour(
+      view.kind === "reveal" || (view.kind === "paint" && ["physical", "political"].includes(view.round.detail))
+    )
     if (view.kind === "reveal" && this.placed)
       this.globe.turnToward(view.reveal.focus, this.world.player.head.getWorldPosition(new Vector3()))
     this.paintDirty = true
@@ -208,6 +232,10 @@ export class Vr {
   }
 
   /** Whether the page's map shows over the globe, for the browser tests. */
+  get colourShown(): boolean {
+    return this.globe.colourShown
+  }
+
   get detailShown(): boolean {
     return this.detail.mesh.visible
   }
@@ -224,6 +252,77 @@ export class Vr {
     return { held: this.picture.heldBy !== undefined, at: [p.x, p.y, p.z] }
   }
 
+  /**
+   * The can and eraser stand in for the controllers. Not toggleVisual():
+   * IWSDK sets the model itself visible again every frame, but leaves the
+   * parts inside it alone. The model loads some frames into the session.
+   */
+  private hideControllers(): void {
+    for (const h of HANDS) {
+      const model = this.world.input.xr.visualAdapters.controller[h].visual?.model
+      if (model) for (const part of model.children) part.visible = false
+    }
+  }
+
+  get wristOpen(): boolean {
+    return this.wrist.open
+  }
+
+  get hintShown(): boolean {
+    return this.hint.band !== undefined
+  }
+
+  /** Where a button on the wrist menu is, for the browser tests. */
+  wristButtonAt(id: WristButton): [number, number, number] {
+    return this.wrist.buttonAt(id)
+  }
+
+  private wristHandlers(): Record<WristButton, () => void> {
+    // Each acts on the round being painted, and the globe redraws its paint.
+    const act = (f: (round: VrRound) => void) => () => {
+      const round = this.round
+      if (this.view?.kind !== "paint" || !round) return
+      f(round)
+      this.paintDirty = true
+    }
+    const trimmed = (share: number, none: string) => {
+      if (share > 0) sound.play("clear")
+      this.wrist.note(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : none)
+      this.paintDirty = true
+    }
+    return {
+      latitude: act((r) => r.useHint("latitude")),
+      longitude: act((r) => r.useHint("longitude")),
+      trim: act((r) => {
+        const trim = r.water
+          ? loadWaterMask().then((mask) => trimmed(r.paint.trimLand(mask), "None on land"))
+          : loadLandMask().then((mask) => trimmed(r.paint.trimSea(mask), "None at sea"))
+        trim.catch((err: unknown) => {
+          console.warn("could not load the trim mask", err)
+          this.wrist.note("Try again")
+        })
+      }),
+      trimHint: act((r) => r.hint && trimmed(r.paint.trimToHint(r.hint), "None outside")),
+      clear: act((r) => {
+        if (!r.paint.layer.isEmpty) sound.play("clear")
+        r.paint.clear()
+      }),
+      redo: act((r) => r.paint.redo())
+    }
+  }
+
+  /** Where a hand's tool would land on the globe, for the browser tests. */
+  targetOf(hand: Hand): [number, number, number] | undefined {
+    const p = this.tools[hand].target
+    return p && [p.x, p.y, p.z]
+  }
+
+  /** Where a button on the menu is, for the browser tests. */
+  menuButtonAt(id: string): [number, number, number] {
+    const p = this.panelDoc!.requireElementById(id).getWorldPosition(new Vector3())
+    return [p.x, p.y, p.z]
+  }
+
   exit(): void {
     if (this.active.value) this.world.exitXR()
   }
@@ -237,6 +336,7 @@ export class Vr {
   }
 
   private frame(dt: number, now: number): void {
+    this.hideControllers()
     if (!this.view) return
     const { player } = this.world
     if (!this.placed) {
@@ -276,6 +376,7 @@ export class Vr {
     const zoomed = this.globe.scale >= DETAIL_SCALE
     this.detail.update(now, this.globe.nearest(head), zoomed ? (DETAIL_HALF_M * 6371) / this.globe.radius : undefined)
     this.answer.update(this.globe.scale)
+    this.wrist.update(this.view.kind === "paint", player.gripSpaces.left, head)
 
     const round = this.round
     if (round && this.paintDirty && now - this.lastPaintDraw >= PAINT_REDRAW_S) {
@@ -286,27 +387,36 @@ export class Vr {
       this.lastPaintDraw = now
     }
     if (this.view.kind !== "paint" || !round) {
-      for (const h of HANDS) this.cans[h].hide()
+      for (const h of HANDS) this.tools[h].hide()
       return
     }
 
-    if (pads.right?.getButtonDown(InputComponent.A_Button) || pads.left?.getButtonDown(InputComponent.X_Button))
-      this.setTool(this.tool === "paint" ? "erase" : "paint")
+    // A swaps the right hand's tool, X the left's.
+    for (const [h, button] of [
+      ["right", InputComponent.A_Button],
+      ["left", InputComponent.X_Button]
+    ] as const) {
+      const tool = this.tools[h]
+      if (pads[h]?.getButtonDown(button)) tool.setTool(tool.tool === "paint" ? "erase" : "paint")
+    }
 
     // The trigger also presses the menu's buttons; pointing at it, it sprays nothing.
-    const onMenu = this.panel.hasComponent(Hovered)
-    const triggers = HANDS.map((h) => pads[h]?.getButtonValue(InputComponent.Trigger) ?? 0)
-    const wants =
-      !onMenu &&
-      round.paint.enabled.value &&
-      HANDS.some((h, i) => triggers[i]! > TRIGGER_DEAD && this.cans[h].aim(this.globe) !== undefined)
-    if (wants && !this.stroking) {
-      round.paint.beginOutsideStroke(this.tool)
+    const onMenu = this.panel.hasComponent(Hovered) || this.wrist.hovered
+    // The left hand is turned to show the wrist menu, not to erase.
+    const triggers = HANDS.map((h) =>
+      h === "left" && this.wrist.open ? 0 : (pads[h]?.getButtonValue(InputComponent.Trigger) ?? 0)
+    )
+    const working = onMenu
+      ? undefined
+      : HANDS.find((h, i) => triggers[i]! > TRIGGER_DEAD && this.tools[h].aim(this.globe) !== undefined)
+    if (working && round.paint.enabled.value && !this.stroking) {
+      // Both hands make one undo step; the first sets the stroke's sound.
+      round.paint.beginOutsideStroke(this.tools[working].tool)
       this.stroking = true
     }
-    // Every can updates, even once one has sprayed: each moves its own spot.
+    // Every hand updates, even once one has sprayed: each moves its own spot.
     const sprayed = HANDS.map((h, i) =>
-      this.cans[h].update(now, this.globe, triggers[i]!, onMenu, this.tool, round.paint, pads[h]?.gamepad)
+      this.tools[h].update(now, this.globe, triggers[i]!, onMenu, round.paint, pads[h]?.gamepad)
     )
     // Not left to paint.version: that moves on a window animation frame, and a
     // standalone headset runs none of those while it shows the session.
@@ -349,30 +459,21 @@ export class Vr {
     this.panelDoc = doc
     doc.setTargetDimensions(PANEL_M, PANEL_M)
     const on = (id: string, f: () => void) => doc.requireElementById(id).addEventListener("click", f)
-    on("paint", () => this.setTool("paint"))
-    on("erase", () => this.setTool("erase"))
     on("undo", () => {
       this.round?.paint.undo()
       this.paintDirty = true
     })
     on("done", () => {
       const round = this.round
-      if (this.view?.kind === "paint" && round && !round.paint.isEmpty.value) round.submit()
+      // Not paint.isEmpty: that follows the page's animation frames, which stop while VR shows.
+      if (this.view?.kind === "paint" && round && !round.paint.layer.isEmpty) round.submit()
     })
     const next = () => this.view?.kind === "reveal" && this.view.reveal.next()
     on("next", next)
     on("finish", next)
     on("again", () => this.view?.kind === "done" && this.view.summary.again())
     on("exit", () => this.exit())
-    this.setTool(this.tool)
     this.applyView()
-  }
-
-  private setTool(tool: SprayTool): void {
-    this.tool = tool
-    for (const h of HANDS) this.cans[h].setTool(tool)
-    this.panelDoc?.getElementById("paint")?.setProperties({ variant: tool === "paint" ? "primary" : "secondary" })
-    this.panelDoc?.getElementById("erase")?.setProperties({ variant: tool === "erase" ? "primary" : "secondary" })
   }
 
   private applyView(): void {

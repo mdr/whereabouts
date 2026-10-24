@@ -1477,6 +1477,20 @@ button.icon.make-host:hover {
   place-items: center;
   padding: 24px;
 }
+.vr-launch {
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 22px;
+}
+.vr-launch-ready {
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+}
+.vr-launch-ready .primary {
+  font-size: 28px;
+  padding: 24px 48px;
+}
 .modal {
   background: var(--panel-bg);
   color: var(--panel-fg);

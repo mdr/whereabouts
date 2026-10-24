@@ -1,8 +1,10 @@
 import { createRequire } from "node:module"
+import type { WristButton } from "../../src/vr/wrist.ts"
 import type { Page } from "playwright-core"
 import type {} from "../../src/vr/index.ts"
 
 type Vec = [number, number, number]
+type Hand = "left" | "right"
 
 declare global {
   interface Window {
@@ -87,6 +89,11 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.detailShown)
   }
 
+  /** Whether the globe's land shows in natural colour. */
+  async globeColourShown(): Promise<boolean> {
+    return this.#page.evaluate(() => window.whereaboutsVr.colourShown)
+  }
+
   /** The question's picture over the VR menu, width by height in metres. */
   async picture(): Promise<[number, number] | undefined> {
     return this.#page.evaluate(() => window.whereaboutsVr.pictureShown)
@@ -111,9 +118,13 @@ export class Headset {
 
   /** Hold the right controller at `from`, its ray pointing at `at`. */
   async pointRight(from: Vec, at: Vec): Promise<void> {
+    await this.point("right", from, at)
+  }
+
+  async point(hand: Hand, from: Vec, at: Vec): Promise<void> {
     await this.#page.evaluate(
-      ([from, at]) => {
-        const c = window.headset.controllers.right!
+      ([hand, from, at]) => {
+        const c = window.headset.controllers[hand]!
         c.position.x = from[0]
         c.position.y = from[1]
         c.position.z = from[2]
@@ -126,12 +137,19 @@ export class Headset {
         const m = Math.hypot(...q)
         c.quaternion.set(q[0]! / m, q[1]! / m, q[2]! / m, q[3]! / m)
       },
-      [from, at] as const
+      [hand, from, at] as const
     )
   }
 
   async rightGrip(value: number): Promise<void> {
     await this.#page.evaluate((v) => window.headset.controllers.right!.updateButtonValue("squeeze", v), value)
+  }
+
+  async trigger(hand: Hand, value: number): Promise<void> {
+    await this.#page.evaluate(([h, v]) => window.headset.controllers[h]!.updateButtonValue("trigger", v), [
+      hand,
+      value
+    ] as const)
   }
 
   /** Push the right thumbstick: up is y -1. */
@@ -143,6 +161,44 @@ export class Headset {
   }
 
   async rightTrigger(value: number): Promise<void> {
-    await this.#page.evaluate((v) => window.headset.controllers.right!.updateButtonValue("trigger", v), value)
+    await this.trigger("right", value)
+  }
+
+  /** Hold a controller at `at`, turned by the quaternion `rotation` from its rest pose. */
+  async hold(hand: Hand, at: Vec, rotation: [number, number, number, number]): Promise<void> {
+    await this.#page.evaluate(
+      ([hand, at, r]) => {
+        const c = window.headset.controllers[hand]!
+        c.position.x = at[0]
+        c.position.y = at[1]
+        c.position.z = at[2]
+        c.quaternion.set(r[0], r[1], r[2], r[3])
+      },
+      [hand, at, rotation] as const
+    )
+  }
+
+  async wristOpen(): Promise<boolean> {
+    return this.#page.evaluate(() => window.whereaboutsVr.wristOpen)
+  }
+
+  /** Where a button on the wrist menu is. */
+  async wristButton(id: WristButton): Promise<Vec> {
+    return this.#page.evaluate((id) => window.whereaboutsVr.wristButtonAt(id), id)
+  }
+
+  /** Whether the globe shades a hint's band. */
+  async hintShown(): Promise<boolean> {
+    return this.#page.evaluate(() => window.whereaboutsVr.hintShown)
+  }
+
+  /** Where a hand's tool would land on the globe, if it points at it. */
+  async target(hand: Hand): Promise<Vec | undefined> {
+    return this.#page.evaluate((h) => window.whereaboutsVr.targetOf(h), hand)
+  }
+
+  /** Where a button on the VR menu is. */
+  async menuButton(id: string): Promise<Vec> {
+    return this.#page.evaluate((id) => window.whereaboutsVr.menuButtonAt(id), id)
   }
 }

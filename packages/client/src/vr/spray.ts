@@ -1,10 +1,11 @@
 /**
- * A spray can in each hand. The trigger sprays along the controller's ray,
- * as hard as it is pulled; the nearer the can to the globe, the smaller and
- * denser the spot, like real spray paint. A ring on the globe shows where
- * the spot would land before any paint goes on.
+ * A tool in each hand: a spray can, or an eraser. The trigger works along
+ * the controller's ray, as hard as it is pulled; the nearer the hand to the
+ * globe, the smaller and denser the spot, like real spray paint. A ring on
+ * the globe shows where the spot would land before anything happens.
  */
 import {
+  BoxGeometry,
   ConeGeometry,
   CylinderGeometry,
   DoubleSide,
@@ -45,26 +46,41 @@ interface Pulsing {
   pulse?(intensity: number, ms: number): Promise<boolean>
 }
 
-export class SprayCan {
-  private readonly cap: MeshStandardMaterial
-  private readonly spot: Mesh
+export class HandTool {
+  private readonly can = new Group()
+  private readonly eraser = new Group()
+  private readonly spot: Mesh<RingGeometry, MeshBasicMaterial>
   private readonly mist: Mesh
   private readonly ray: Object3D
   private readonly theme: Theme
   private stroke: { at: LatLon; t: number } | undefined = undefined
   private lastPulse = 0
+  private toolNow: SprayTool = "paint"
 
   constructor(grip: Object3D, ray: Object3D, scene: Object3D, theme: Theme) {
     this.ray = ray
     this.theme = theme
-    const can = new Group()
     const body = new CylinderGeometry(0.033, 0.033, 0.13, 24).rotateX(-Math.PI / 2)
-    can.add(new Mesh(body, new MeshStandardMaterial({ color: "#9aa7b8", metalness: 0.6, roughness: 0.35 })))
-    this.cap = new MeshStandardMaterial({ color: theme.ramp[1] })
-    const cap = new Mesh(new CylinderGeometry(0.026, 0.03, 0.03, 24).rotateX(-Math.PI / 2), this.cap)
+    this.can.add(new Mesh(body, new MeshStandardMaterial({ color: "#9aa7b8", metalness: 0.6, roughness: 0.35 })))
+    const cap = new Mesh(
+      new CylinderGeometry(0.026, 0.03, 0.03, 24).rotateX(-Math.PI / 2),
+      new MeshStandardMaterial({ color: theme.ramp[1] })
+    )
     cap.position.z = -0.08
-    can.add(cap)
-    grip.add(can)
+    this.can.add(cap)
+    // A pink rubbing end in a blue sleeve, the rubber towards the globe.
+    const rubber = new Mesh(
+      new BoxGeometry(0.045, 0.025, 0.06),
+      new MeshStandardMaterial({ color: "#f4a3b4", roughness: 0.9 })
+    )
+    rubber.position.z = -0.045
+    const sleeve = new Mesh(
+      new BoxGeometry(0.047, 0.027, 0.07),
+      new MeshStandardMaterial({ color: "#2f6fd6", roughness: 0.6 })
+    )
+    sleeve.position.z = 0.02
+    this.eraser.add(rubber, sleeve)
+    grip.add(this.can, this.eraser)
 
     this.spot = new Mesh(
       new RingGeometry(0.85, 1, 48),
@@ -94,8 +110,20 @@ export class SprayCan {
     scene.add(this.spot, this.mist)
   }
 
+  /** Where the ring shows on the globe, if it does. */
+  get target(): Vector3 | undefined {
+    return this.spot.visible ? this.spot.position : undefined
+  }
+
+  get tool(): SprayTool {
+    return this.toolNow
+  }
+
   setTool(tool: SprayTool): void {
-    this.cap.color.set(tool === "erase" ? this.theme.answer : this.theme.ramp[1])
+    this.toolNow = tool
+    this.can.visible = tool === "paint"
+    this.eraser.visible = tool === "erase"
+    this.spot.material.color.set(tool === "erase" ? this.theme.answer : this.theme.brush)
   }
 
   hide(): void {
@@ -119,7 +147,6 @@ export class SprayCan {
     globe: Globe,
     trigger: number,
     blocked: boolean,
-    tool: SprayTool,
     paint: PaintController,
     gamepad: Gamepad | undefined
   ): boolean {
@@ -137,7 +164,7 @@ export class SprayCan {
     this.spot.scale.setScalar(spotM)
 
     const spraying = paint.enabled.value && trigger > TRIGGER_DEAD
-    this.mist.visible = spraying
+    this.mist.visible = spraying && this.toolNow === "paint"
     if (!spraying) {
       this.stroke = undefined
       return false
@@ -152,7 +179,7 @@ export class SprayCan {
     if (!last || greatCircleDistance(last.at, at) >= radiusKm / 4 || now - last.t >= STILL_STAMP_S) {
       const thin = Math.min(1, FULL_STRENGTH_M / d)
       // Stamps overlap along a stroke, so each is a fraction, as on the map.
-      paint.stampOutside(at, radiusKm, (tool === "erase" ? -1 : 1) * 0.3 * trigger * thin)
+      paint.stampOutside(at, radiusKm, (this.toolNow === "erase" ? -1 : 1) * 0.3 * trigger * thin)
       this.stroke = { at, t: now }
     }
     if (now - this.lastPulse > 0.05) {
