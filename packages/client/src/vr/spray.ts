@@ -98,6 +98,11 @@ export class SprayCan {
     this.cap.color.set(tool === "erase" ? this.theme.answer : this.theme.ramp[1])
   }
 
+  hide(): void {
+    this.spot.visible = this.mist.visible = false
+    this.stroke = undefined
+  }
+
   /** Where the ray meets the globe, if it does: distance from the can. */
   aim(globe: Globe): number | undefined {
     this.ray.getWorldPosition(origin)
@@ -120,8 +125,7 @@ export class SprayCan {
   ): boolean {
     const d = blocked ? undefined : this.aim(globe)
     if (d === undefined) {
-      this.spot.visible = this.mist.visible = false
-      this.stroke = undefined
+      this.hide()
       return false
     }
     hit.copy(origin).addScaledVector(dir, d)

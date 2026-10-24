@@ -50,7 +50,8 @@ Other commands:
   - `sound`: every sound the page starts through a two-player game and
     practice. It cannot say how anything sounds.
   - `vr [outDir] [baseUrl]`: practice in VR on an emulated Quest 3 (Meta's
-    IWER): enter VR, spray the globe, spin it, submit.
+    IWER): enter VR, spray the globe, spin and zoom it, submit and see the
+    answer, go on to the next round; then a flag round's flag, held in hand.
   - `prod [baseUrl]`: a production build actually loads the map, against
     `nix run` locally or the live site. It catches bundling problems dev
     mode hides, such as the MapLibre worker URL.

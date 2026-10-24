@@ -9,6 +9,7 @@ import {
   CanvasTexture,
   DoubleSide,
   Group,
+  Matrix4,
   Mesh,
   MeshBasicMaterial,
   Quaternion,
@@ -20,7 +21,7 @@ import {
 } from "three"
 
 import type { LatLon } from "@whereabouts/shared"
-import { localToLatLon } from "./sphere"
+import { latLonToLocal, localToLatLon } from "./sphere"
 
 export type Hand = "left" | "right"
 
@@ -28,11 +29,14 @@ const RADIUS = 0.22
 /** Just above the land, so neither fights it for depth; the paint on top. */
 export const DETAIL_RADIUS = RADIUS * 1.0015
 export const PAINT_RADIUS = RADIUS * 1.003
+export const ANSWER_RADIUS = RADIUS * 1.004
 const MIN_SCALE = 1
 const MAX_SCALE = 12
 /** How quickly a flung globe slows, per second. */
 const SPIN_DECAY = 1.5
 const STICK_DEAD = 0.15
+/** How long the globe takes to turn a place to face the player. */
+const TURN_S = 0.8
 
 const q = new Quaternion()
 const v = new Vector3()
@@ -55,6 +59,7 @@ export class Globe {
   /** Each grabbing hand's last offset from the centre. */
   private readonly held: Partial<Record<Hand, Vector3>> = {}
   private pair: { from: Vector3; length: number; scale: number } | undefined = undefined
+  private turning: { from: Quaternion; to: Quaternion; scale: number; t: number } | undefined = undefined
 
   constructor(anisotropy: number) {
     this.landCanvas.width = 4096
@@ -109,12 +114,35 @@ export class Globe {
       .add(v.set(0, -0.3, 0))
     this.group.quaternion.setFromUnitVectors(v.set(1, 0, 0), w.copy(this.toward).negate())
     this.spin.set(0, 0, 0)
+    this.turning = undefined
     this.setScale(MIN_SCALE)
+  }
+
+  /**
+   * Turn the globe until `at` faces `eye`, zooming all the way out so the
+   * paint shows around it. Grabbing it or the thumbstick stops the turn.
+   */
+  turnToward(at: LatLon, eye: Vector3): void {
+    // Towards the eye from where the centre will be once zoomed out, north as near up as it goes.
+    const centre = w.copy(this.anchor).addScaledVector(this.toward, RADIUS * MIN_SCALE)
+    const local = basis(latLonToLocal(at), new Vector3(0, 1, 0))
+    const world = basis(eye.clone().sub(centre).normalize(), new Vector3(0, 1, 0))
+    const to = new Quaternion().setFromRotationMatrix(world.multiply(local.transpose()))
+    this.turning = { from: this.group.quaternion.clone(), to, scale: this.scale, t: 0 }
+    this.spin.set(0, 0, 0)
   }
 
   /** `grips`: where each hand holding the grip button is. `stick`: the thumbsticks, summed. */
   update(dt: number, grips: Partial<Record<Hand, Vector3>>, stick: { x: number; y: number }): void {
     const { left, right } = grips
+    if (left || right || Math.abs(stick.x) > STICK_DEAD || Math.abs(stick.y) > STICK_DEAD) this.turning = undefined
+    if (this.turning) {
+      const t = (this.turning.t = Math.min(1, this.turning.t + dt / TURN_S))
+      const eased = t * t * (3 - 2 * t)
+      this.group.quaternion.slerpQuaternions(this.turning.from, this.turning.to, eased)
+      this.setScale(this.turning.scale + (MIN_SCALE - this.turning.scale) * eased)
+      if (t === 1) this.turning = undefined
+    }
     if (left && right) {
       const between = v.copy(right).sub(left)
       if (this.pair) {
@@ -160,4 +188,13 @@ export class Globe {
     this.group.scale.setScalar(scale)
     this.group.position.copy(this.anchor).addScaledVector(this.toward, RADIUS * scale)
   }
+}
+
+/** Axes with `out` first and `up` made square to it, as a rotation's columns. */
+function basis(out: Vector3, up: Vector3): Matrix4 {
+  const u = up.clone().addScaledVector(out, -up.dot(out))
+  // At a pole, any up will do.
+  if (u.lengthSq() < 1e-8) u.set(1, 0, 0).addScaledVector(out, -out.x)
+  u.normalize()
+  return new Matrix4().makeBasis(out, u, new Vector3().crossVectors(out, u))
 }

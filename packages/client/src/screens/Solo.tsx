@@ -39,7 +39,9 @@ import type { GameMap } from "../map"
 import { MapView, usePaint } from "../ui/MapView"
 import { Answer, AnswerMode, Card, HudBottom, HudHeader, QuestionCard, RegionHint, ScoreParts, fmtKm } from "../ui/bits"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
-import { VrButton } from "../ui/VrButton"
+import { VrButton, useVrView } from "../ui/VrButton"
+import type { VrRound, VrView } from "../vr"
+import type { VrPicture } from "../vr/picture"
 import { Banner } from "../ui/Banner"
 import { DevDrawer } from "../ui/DevDrawer"
 import { cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings"
@@ -60,6 +62,13 @@ const isRegion = (q: PracticeQuestion): q is RegionQuestion => q.kind === "regio
 
 /** What explains a score: A and B for a place, shape and nearness for a country. */
 type Parts = { A: number; B: number } | { shape: number; nearness: number }
+
+/** What the VR menu shows above the question, as the card does. */
+function vrPicture(q: PracticeQuestion): VrPicture | undefined {
+  if ("image" in q && q.image) return { photo: q.image }
+  const flag = q.flag ?? (isRegion(q) ? q.countryFlag : undefined)
+  return flag && { flag }
+}
 
 /** Places score with the chosen kernel; countries have their own rule (see regions.ts). */
 function scoreQuestion(dist: Distribution, q: PracticeQuestion, k: Kernel): { score: number; parts: Parts } {
@@ -238,6 +247,27 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     setPhase("paint")
   }
 
+  const vrRound: VrRound = { paint, prompt: q.prompt, detail, picture: vrPicture(q), submit }
+  const vrView: VrView =
+    phase === "done"
+      ? { kind: "done", summary: { total, max: questions.length * 1000, again: restart } }
+      : phase === "reveal" && revealed
+        ? {
+            kind: "reveal",
+            round: vrRound,
+            reveal: {
+              label: q.label,
+              answer: isRegion(q) ? { outline: q.outline } : { point: q.answer },
+              focus: q.answer,
+              score: revealed.result.score,
+              total,
+              last: index + 1 >= questions.length,
+              next
+            }
+          }
+        : { kind: "paint", round: vrRound }
+  useVrView(vrView, `${phase} ${index} ${questions[0]?.id}`)
+
   // A flag round's reveal names the country under the pointer, and where the
   // paint mostly was. Loaded while the flag is still being painted.
   const borders = useBorders(q.flag !== undefined)
@@ -375,7 +405,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             </div>
           </div>
           <HudBottom>
-            <button class="primary" onClick={next}>
+            <button class="primary" onClick={next} data-testid={soloTestIds.nextButton}>
               <Icon name={last ? "flag" : "next"} /> {last ? "Finish" : "Next question"} <kbd>Enter</kbd>
             </button>
           </HudBottom>
@@ -404,15 +434,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           <HintCard band={hint} onUse={(axis) => setHint(hintBand(q.answer, q.toleranceKm, axis, Math.random()))} />
         </div>
         <PaintTools practice water={q.topic === "lake" || q.topic === "sea"} hint={hint}>
-          <VrButton
-            prompt={
-              ("image" in q && q.image) || q.flag
-                ? `${q.prompt} (The picture is on the page; VR can't show it yet.)`
-                : q.prompt
-            }
-            detail={detail}
-            submit={submit}
-          />
+          <VrButton view={vrView} />
           <button
             class="primary"
             onClick={submit}

@@ -7,6 +7,8 @@ import { signal } from "@preact/signals"
 import type { Vr } from "./vr"
 
 export const vrSupported = signal(false)
+/** The VR code, once loaded. */
+export const loadedVr = signal<Vr | undefined>(undefined)
 
 navigator.xr?.isSessionSupported("immersive-vr").then(
   (ok) => (vrSupported.value = ok),
@@ -17,7 +19,7 @@ let loading: Promise<Vr> | undefined = undefined
 
 export function loadVr(): Promise<Vr> {
   return (loading ??= import("./vr").then(
-    (m) => m.Vr.create(),
+    async (m) => (loadedVr.value = await m.Vr.create()),
     (err: unknown) => {
       // Let the next press try again, after a dropped connection say.
       loading = undefined

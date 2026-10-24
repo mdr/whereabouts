@@ -10,6 +10,12 @@
     line-height: 32px;
     color: #f0fdff;
   }
+  .score {
+    margin-top: 6px;
+    font-size: 20px;
+    line-height: 26px;
+    color: #67e8f9;
+  }
   .hint {
     margin-top: 8px;
     font-size: 14px;
@@ -26,8 +32,9 @@
 </style>
 <Panel class="root">
   <span id="prompt" class="prompt">…</span>
-  <span class="hint">Trigger sprays: nearer for a small dense spot, further back for a wide faint one. Grip grabs the globe to spin it; grip with both hands to zoom. A or X swaps paint and erase.</span>
-  <div class="row">
+  <span id="score" class="score">…</span>
+  <span id="hint" class="hint">Trigger sprays: nearer for a small dense spot, further back for a wide faint one. Grip grabs the globe to spin it; grip with both hands to zoom. A or X swaps paint and erase. Grip the picture to hold it.</span>
+  <div id="tools" class="row">
     <Button id="paint" variant="primary">
       <ButtonIcon><SprayCan></SprayCan></ButtonIcon>
       Paint
@@ -45,6 +52,18 @@
     <Button id="done" variant="positive">
       <ButtonIcon><Check></Check></ButtonIcon>
       Submit
+    </Button>
+    <Button id="next" variant="positive">
+      <ButtonIcon><ArrowRight></ArrowRight></ButtonIcon>
+      Next question
+    </Button>
+    <Button id="finish" variant="positive">
+      <ButtonIcon><Flag></Flag></ButtonIcon>
+      Finish
+    </Button>
+    <Button id="again" variant="positive">
+      <ButtonIcon><RefreshCw></RefreshCw></ButtonIcon>
+      Play again
     </Button>
     <Button id="exit" class="gap" variant="tertiary">
       <ButtonIcon><LogOut></LogOut></ButtonIcon>

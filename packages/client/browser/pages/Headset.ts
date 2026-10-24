@@ -87,6 +87,21 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.detailShown)
   }
 
+  /** The question's picture over the VR menu, width by height in metres. */
+  async picture(): Promise<[number, number] | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.pictureShown)
+  }
+
+  /** What the headset shows: a round to paint, its answer, or the final score. */
+  async view(): Promise<string | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.viewKind)
+  }
+
+  /** Whether a hand holds the question's picture, and where the picture is. */
+  async pictureHeld(): Promise<{ held: boolean; at: Vec }> {
+    return this.#page.evaluate(() => window.whereaboutsVr.pictureHeld)
+  }
+
   async eyes(): Promise<Vec> {
     return this.#page.evaluate(() => {
       const p = window.headset.position
