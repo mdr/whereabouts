@@ -3,7 +3,19 @@
  * sea" mask with every country's outline. No labels, so nothing gives an
  * answer away.
  */
-import { cellToBoundary, decodeRing, h3Cell, type BordersData, type LandMaskData } from "@whereabouts/shared"
+import {
+  cellToBoundary,
+  cellToChildren,
+  cellToLatLng,
+  decodeRing,
+  getResolution,
+  h3Cell,
+  h3Res,
+  latLngToCell,
+  type BordersData,
+  type H3Cell,
+  type LandMaskData
+} from "@whereabouts/shared"
 import type { Theme } from "../themes"
 
 /** [lon, lat] points, as GeoJSON has them; longitudes past 180 wrap. */
@@ -28,13 +40,35 @@ function traceRing(ctx: CanvasRenderingContext2D, ring: Ring, w: number, h: numb
 }
 
 /** A cell's outline, unwrapped across the antimeridian; undefined for one around a pole. */
-function cellRing(cell: string): number[][] | undefined {
-  let b = cellToBoundary(h3Cell(cell), true)
+function cellRing(cell: H3Cell): number[][] | undefined {
+  let b = cellToBoundary(cell, true)
   const lons = b.map(([lon]) => lon)
   if (Math.max(...lons) - Math.min(...lons) <= 180) return b
   b = b.map(([lon, lat]) => [lon < 0 ? lon + 360 : lon, lat])
   const shifted = b.map(([lon]) => lon)
   return Math.max(...shifted) - Math.min(...shifted) <= 180 ? b : undefined
+}
+
+/**
+ * The mask's cells, plus any finest cell of a coarse one that no mask
+ * cell's hexagon covers: an H3 parent's outline only roughly follows its
+ * children, so filling the mask alone leaves slivers of land undrawn.
+ */
+export function landCells(land: LandMaskData): H3Cell[] {
+  const finest = h3Res(land.res)
+  const mask = new Set(land.cells.map(h3Cell))
+  const resolutions = Array.from({ length: finest + 1 }, (_, r) => h3Res(r))
+  const out = [...mask]
+  for (const c of mask) {
+    const res = getResolution(c)
+    if (res === finest) continue
+    for (const k of cellToChildren(c, finest)) {
+      const [lat, lon] = cellToLatLng(k)
+      if (latLngToCell(lat, lon, res) === c) continue
+      if (!resolutions.some((r) => mask.has(latLngToCell(lat, lon, r)))) out.push(k)
+    }
+  }
+  return out
 }
 
 export function drawLand(canvas: HTMLCanvasElement, land: LandMaskData, borders: BordersData, theme: Theme): void {
@@ -46,7 +80,7 @@ export function drawLand(canvas: HTMLCanvasElement, land: LandMaskData, borders:
   // Chrome builds one huge path far more slowly than many small ones: all
   // 40,000 cells in one took 5 s, in fills of 500 under 1 s.
   ctx.beginPath()
-  land.cells.forEach((cell, i) => {
+  landCells(land).forEach((cell, i) => {
     const ring = cellRing(cell)
     if (ring) traceRing(ctx, ring, w, h)
     if (i % 500 === 499) {
