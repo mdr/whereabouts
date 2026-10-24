@@ -24,8 +24,11 @@ import { TakeSeatButton } from "../ui/TakeSeat"
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog"
 import { useRegion } from "../regions"
 import { useBorders } from "../borders"
-import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
+import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
 import { PointWhy, RegionWhy } from "../ui/ScoreWhy"
+import { VrButton } from "../ui/VrButton"
+import { allFlags } from "../settings"
+import type { VrView } from "../vr"
 import { revealTestIds } from "./RevealTestIds"
 
 /** Selection meaning "show nobody's paint", alongside undefined (everyone) and a player id. */
@@ -48,7 +51,17 @@ export function revealOrder(
     .sort((a, b) => group(a.r) - group(b.r) || (b.r?.score ?? 0) - (a.r?.score ?? 0))
 }
 
-export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameView; reveal: RevealView }) {
+export function Reveal({
+  conn,
+  view,
+  reveal,
+  vrView
+}: {
+  conn: Connection
+  view: GameView
+  reveal: RevealView
+  vrView: VrView
+}) {
   const paint = usePaint()
   const byId = new Map(view.players.map((p) => [p.id, p]))
   // undefined shows everyone's guesses at once; a player id shows just theirs; NONE hides all paint.
@@ -112,6 +125,7 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
     <>
       {dialog}
       {borders && <FlagHover gameMap={paint.gameMap} borders={borders} />}
+      {borders && allFlags.value && <AllFlags gameMap={paint.gameMap} borders={borders} />}
       <div class="hud">
         <div class="hud-top">
           <HudHeader
@@ -205,6 +219,8 @@ export function Reveal({ conn, view, reveal }: { conn: Connection; view: GameVie
           {view.you.isHost && !last && <EndGameButton onEnd={() => conn.end()} />}
         </div>
         <HudBottom>
+          {answerFlag && <AllFlagsSwitch />}
+          <VrButton view={vrView} />
           {view.you.watching ? (
             <TakeSeatButton conn={conn} view={view} />
           ) : (

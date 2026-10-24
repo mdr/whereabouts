@@ -5,10 +5,14 @@
  * took it for.
  */
 import { useEffect, useState } from "preact/hooks"
-import type { MapMouseEvent } from "maplibre-gl"
+import { Marker, type MapMouseEvent } from "maplibre-gl"
 import type { Borders, FlagQuestion, PaintCell, PaintedCountry } from "@whereabouts/shared"
 import type { GameMap } from "../map"
 import { SmallFlag } from "./bits"
+import { flagPins } from "../borders"
+import { flagUrl } from "../flags"
+import { allFlags } from "../settings"
+import { flagRevealTestIds } from "./FlagRevealTestIds"
 
 /** How near the pointer a small country's answer counts as under it: Tuvalu is far less than a pixel at world zoom. */
 const SMALL_PX = 12
@@ -23,6 +27,41 @@ const MIN_SHARE = 0.2
 export function mainCountry(borders: Borders, cells: Iterable<PaintCell>): PaintedCountry | undefined {
   const top = borders.paintedCountries(cells)[0]
   return top && top.share >= MIN_SHARE ? top : undefined
+}
+
+/** Every country's flag, on a pin stuck in its land. */
+export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Borders }) {
+  useEffect(() => {
+    const markers = flagPins(borders).map(({ f, at }) => {
+      const el = document.createElement("div")
+      el.className = "flag-pin"
+      const img = document.createElement("img")
+      img.alt = f.label
+      void flagUrl(f.flag).then((url) => url && (img.src = url))
+      el.append(img)
+      return new Marker({ element: el, anchor: "bottom-left" }).setLngLat([at.lon, at.lat]).addTo(gameMap.map)
+    })
+    return () => {
+      for (const m of markers) m.remove()
+    }
+  }, [gameMap, borders])
+  return undefined
+}
+
+/** The switch for AllFlags. */
+export function AllFlagsSwitch() {
+  return (
+    <label class="check switch all-flags-switch">
+      <input
+        type="checkbox"
+        role="switch"
+        checked={allFlags.value}
+        onChange={(e) => (allFlags.value = (e.target as HTMLInputElement).checked)}
+        data-testid={flagRevealTestIds.allFlagsSwitch}
+      />
+      Show all flags
+    </label>
+  )
 }
 
 /** A card by the pointer with the flag and name of the country under it. */

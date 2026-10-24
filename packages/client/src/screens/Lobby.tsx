@@ -6,6 +6,7 @@ import {
   QUESTION_TYPES,
   MAX_HINTS,
   ROUND_LENGTHS_MS,
+  colourCss,
   nextHostAfter,
   type GameView,
   type PlayerName
@@ -22,6 +23,8 @@ import { kickRequest, leaveRequest, makeHostRequest, useConfirm } from "../ui/Co
 import { navigate } from "../router"
 import { Banner } from "../ui/Banner"
 import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker"
+import { VrButton, useVrView } from "../ui/VrButton"
+import type { VrView } from "../vr"
 import { lobbyTestIds, setupSummaryTestIds } from "./LobbyTestIds"
 
 const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }))
@@ -43,6 +46,25 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   const players = view.players.filter((p) => !p.watching)
   const watchers = view.players.filter((p) => p.watching)
   const seatsFull = players.length >= MAX_PLAYERS
+  const vrView: VrView = {
+    kind: "lobby",
+    summary: {
+      title: `Game ${view.code}`,
+      scoreLine: host ? "Start when everyone's in" : "Waiting for the host to start",
+      table: {
+        title: `Players ${players.length}/${MAX_PLAYERS}`,
+        rows: view.players.map((p) => ({
+          colour: colourCss(p.colour),
+          name: `${p.name}${p.id === view.you.id ? " (you)" : ""}`,
+          detail: p.watching ? "watching" : undefined,
+          total: ""
+        }))
+      },
+      note: `Friends join with the code ${view.code}.`,
+      actions: host ? [{ label: "Start game", press: () => conn.start(), enabled: players.length >= 1 }] : []
+    }
+  }
+  useVrView(vrView, "lobby")
   // Home, giving up the seat now; the tab forgets the game so a refresh or
   // Back does not quietly rejoin it. Leaving the screen disconnects.
   const leave = () => {
@@ -233,6 +255,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
               Paint on a globe
             </label>
             <div class="lobby-start">
+              <VrButton view={vrView} />
               {host ? (
                 <button
                   class="primary big"

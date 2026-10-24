@@ -43,8 +43,8 @@ checks.check(!(await headset.globeBordersShown()), "the globe shows no borders w
 const [x, y, z] = await headset.eyes()
 const centre: [number, number, number] = [x, y - 0.3, z - 0.67]
 const can: [number, number, number] = [x + 0.15, y - 0.25, z - 0.15]
-/** A short stroke from the same spot each time, across the middle of the globe. */
-async function spray(screenshot?: string): Promise<void> {
+/** A short stroke from the same spot each time, across the middle of the globe; returns the droplets in the air. */
+async function spray(screenshot?: string): Promise<number> {
   await headset.pointRight(can, centre)
   await round.pause(300)
   await headset.rightTrigger(1)
@@ -53,11 +53,14 @@ async function spray(screenshot?: string): Promise<void> {
     await round.pause(100)
   }
   if (screenshot) await round.screenshot(screenshot)
+  const droplets = await headset.particles()
   await headset.rightTrigger(0)
+  return droplets
 }
 
 const before = await round.map.yourPaintCells()
-await spray(`${out}/vr-2-spraying.png`)
+const droplets = await spray(`${out}/vr-2-spraying.png`)
+checks.check(droplets > 20, `spraying throws droplets (${droplets} in the air)`)
 const after = await round.map.yourPaintCells()
 checks.check(after > before, `spraying the globe paints the round (${before} -> ${after} cells)`)
 const shown = await until(
@@ -187,6 +190,8 @@ const detailed = await until(
   30_000
 )
 checks.check(detailed, "zooming in brings the map over the globe")
+const gap = await headset.panelGap()
+checks.check(gap > -0.005, `the panels stay clear of the zoomed globe (gap ${gap.toFixed(3)} rad)`)
 await round.pause(500)
 await round.screenshot(`${out}/vr-5-zoomed.png`)
 await headset.pointRight(can, centre)
@@ -327,6 +332,86 @@ await flagRound.pause(500)
 const back = await flagHeadset.pictureHeld()
 const off = Math.hypot(...back.at.map((c, i) => c - home[i]!))
 checks.check(!back.held && off < 0.01, `letting go puts it back (${off.toFixed(3)} m off)`)
+
+// Pass the flag round: its reveal offers every country's flag, in VR and on the page.
+const flagCan: [number, number, number] = [hand[0], hand[1], hand[2]]
+/** Points at a menu button of the flag round's headset and pulls the trigger. */
+async function flagPress(id: string): Promise<void> {
+  await flagHeadset.pointRight(flagCan, await flagHeadset.menuButton(id))
+  await flagRound.pause(500)
+  await flagHeadset.trigger("right", 1)
+  await flagRound.pause(300)
+  await flagHeadset.trigger("right", 0)
+  await flagRound.pause(300)
+}
+await flagPress("done")
+await until(
+  "the flag round's answer",
+  () => flagHeadset.view(),
+  (v) => v === "reveal"
+)
+await flagPress("flags")
+const pins = await until(
+  "the flags on the globe",
+  () => flagHeadset.flagPins(),
+  (n) => n > 190,
+  30_000
+)
+checks.check(pins > 190, `Show all flags pins every country's flag on the globe (${pins})`)
+const pagePins = await flagTab.page.locator(".flag-pin").count()
+checks.check(pagePins > 190, `and on the page's map (${pagePins})`)
+await flagRound.pause(1500)
+await flagRound.screenshot(`${out}/vr-11-all-flags.png`)
+await flagPress("flags")
+checks.check(
+  (await until(
+    "the flags off the globe",
+    () => flagHeadset.flagPins(),
+    (n) => n === 0
+  )) === 0,
+  "Hide all flags takes them off"
+)
+
+// VR from the home screen, staying on into practice.
+await flagTab.page.context().close()
+const homeTab = await newTab(browser, "vr-home", {
+  context: { viewport: { width: 1200, height: 800 } },
+  baseUrl: process.argv[3]
+})
+const homeHeadset = await Headset.install(homeTab.page)
+const homePage = await homeTab.openHome()
+await homeTab.page.getByTestId(vrButtonTestIds.button).click()
+await until(
+  "the home screen's headset session",
+  () => homeHeadset.inSession(),
+  (on) => on,
+  60_000
+)
+const homeView = await until(
+  "the menu in VR",
+  () => homeHeadset.view(),
+  (v) => v === "lobby"
+)
+const offered = (await homeHeadset.menu()).actions.map((a) => a.label).join(", ")
+checks.check(homeView === "lobby" && offered === "Practise, Change topic", `the home screen opens VR (${offered})`)
+await homePage.pause(1500)
+await homePage.screenshot(`${out}/vr-12-home.png`)
+const [hx, hy, hz] = await homeHeadset.eyes()
+await homeHeadset.pointRight([hx + 0.15, hy - 0.25, hz - 0.15], await homeHeadset.menuButton("act0"))
+await homePage.pause(500)
+await homeHeadset.trigger("right", 1)
+await homePage.pause(300)
+await homeHeadset.trigger("right", 0)
+const practising = await until(
+  "practice in VR",
+  () => homeHeadset.view(),
+  (v) => v === "paint",
+  30_000
+)
+checks.check(
+  practising === "paint" && (await homeHeadset.inSession()),
+  "Practise in VR starts practice, the headset still on"
+)
 
 await browser.close()
 checks.finish()

@@ -21,7 +21,7 @@ export interface VrTable {
  * start with text: an empty one has none for setProperties to change.
  */
 const TABLE_ROWS = 16
-const SCORES_M = 0.34
+export const SCORES_M = 0.34
 
 export class ScoreBoard {
   private readonly entity: Entity
@@ -32,6 +32,10 @@ export class ScoreBoard {
     this.entity = world.createTransformEntity(new Group(), { persistent: true })
     this.entity.addComponent(PanelUI, { config: scoresUrl })
     this.entity.object3D!.visible = false
+  }
+
+  get object3D() {
+    return this.entity.object3D!
   }
 
   get shown(): VrTable | undefined {

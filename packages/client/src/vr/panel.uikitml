@@ -4,6 +4,13 @@
     width: 420px;
     padding: 20px;
   }
+  .heading {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 18px;
+    color: #94a3b8;
+    margin-bottom: 2px;
+  }
   .prompt {
     font-size: 26px;
     font-weight: 700;
@@ -43,17 +50,12 @@
   }
 </style>
 <Panel class="root">
-  <span id="prompt" class="prompt">…</span>
-  <span id="clock" class="clock">…</span>
-  <span id="score" class="score">…</span>
-  <span id="note" class="note">…</span>
-  <span id="hint" class="hint">Trigger: the right hand paints, the left erases; A or X swaps that hand's tool. Nearer the globe for a small dense spot, further back for a wide faint one. Grip grabs the globe to spin or tilt it; grip with both hands to zoom. Grip the picture to hold it. Turn your left palm up for more tools and a hint.</span>
-  <div id="tools" class="row">
-    <Button id="undo" variant="secondary">
-      <ButtonIcon><Undo></Undo></ButtonIcon>
-      Undo
-    </Button>
-  </div>
+  <span id="heading" class="heading">THIS ROUND</span>
+  <span id="prompt" class="prompt">-</span>
+  <span id="clock" class="clock">-</span>
+  <span id="score" class="score">-</span>
+  <span id="note" class="note">-</span>
+  <span id="hint" class="hint">Turn your left palm up for paint tools and hints.</span>
   <div class="row">
     <Button id="done" variant="positive">
       <ButtonIcon><Check></Check></ButtonIcon>
@@ -74,6 +76,12 @@
     <Button id="exit" class="gap" variant="tertiary">
       <ButtonIcon><LogOut></LogOut></ButtonIcon>
       Leave VR
+    </Button>
+  </div>
+  <div id="extras" class="row">
+    <Button id="flags" variant="secondary">
+      <ButtonIcon><Flag></Flag></ButtonIcon>
+      <span id="flagsLabel">Show all flags</span>
     </Button>
   </div>
 </Panel>

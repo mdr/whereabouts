@@ -4,6 +4,15 @@
     width: 300px;
     padding: 14px;
   }
+  .heading {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 18px;
+    color: #94a3b8;
+  }
+  .section {
+    margin-top: 12px;
+  }
   .row {
     flex-direction: row;
     margin-top: 8px;
@@ -12,21 +21,28 @@
     margin-left: 8px;
   }
   .note {
+    margin-top: 4px;
     font-size: 15px;
     line-height: 20px;
     color: #67e8f9;
   }
+  .help {
+    margin-top: 12px;
+    font-size: 12px;
+    line-height: 16px;
+    color: #cfd8e3;
+  }
 </style>
 <Panel class="root">
-  <span id="note" class="note">Hint: a band the answer lies in</span>
-  <div id="hints" class="row">
-    <Button id="latitude" variant="secondary">
-      <ButtonIcon><MoveVertical></MoveVertical></ButtonIcon>
-      Latitude
+  <span class="heading">PAINT TOOLS</span>
+  <div class="row">
+    <Button id="undo" variant="secondary">
+      <ButtonIcon><Undo></Undo></ButtonIcon>
+      Undo
     </Button>
-    <Button id="longitude" class="gap" variant="secondary">
-      <ButtonIcon><MoveHorizontal></MoveHorizontal></ButtonIcon>
-      Longitude
+    <Button id="redo" class="gap" variant="secondary">
+      <ButtonIcon><Redo></Redo></ButtonIcon>
+      Redo
     </Button>
   </div>
   <div class="row">
@@ -40,13 +56,26 @@
     </Button>
   </div>
   <div class="row">
-    <Button id="clear" variant="negative">
+    <Button id="swap" variant="secondary">
+      <ButtonIcon><ArrowLeftRight></ArrowLeftRight></ButtonIcon>
+      Swap hands
+    </Button>
+    <Button id="clear" class="gap" variant="negative">
       <ButtonIcon><Trash2></Trash2></ButtonIcon>
       Clear
     </Button>
-    <Button id="redo" class="gap" variant="secondary">
-      <ButtonIcon><Redo></Redo></ButtonIcon>
-      Redo
+  </div>
+  <span class="heading section">HINT</span>
+  <span id="note" class="note">A band the answer lies in</span>
+  <div id="hints" class="row">
+    <Button id="latitude" variant="secondary">
+      <ButtonIcon><MoveVertical></MoveVertical></ButtonIcon>
+      Latitude
+    </Button>
+    <Button id="longitude" class="gap" variant="secondary">
+      <ButtonIcon><MoveHorizontal></MoveHorizontal></ButtonIcon>
+      Longitude
     </Button>
   </div>
+  <span class="help">Trigger: right hand paints, left erases; A or X swaps that hand's tool. Nearer the globe for a small dense spot. Grip turns the globe, both grips zoom. Grip the picture to hold it.</span>
 </Panel>

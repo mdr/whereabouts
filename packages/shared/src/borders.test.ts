@@ -88,3 +88,17 @@ describe("borders", () => {
     expect(borders.paintedCountries([])).toEqual([])
   })
 })
+
+describe("flag pins", () => {
+  const pins = borders.pins()
+
+  it("pins every flag country once", () => {
+    expect(new Set(pins.map((p) => p.f.flag)).size).toBe(pins.length)
+    expect(pins.length).toBeGreaterThan(190)
+  })
+
+  it("puts each pin on its own country", () => {
+    const off = pins.filter(({ f, at }) => borders.countryAt(at) !== f).map(({ f }) => f.label)
+    expect(off).toEqual([])
+  })
+})

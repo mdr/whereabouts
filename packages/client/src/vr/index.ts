@@ -22,6 +22,7 @@ import {
   VisibilityState,
   World,
   type Entity,
+  type Object3D,
   type UIKitDocument
 } from "@iwsdk/core"
 import { effect, signal } from "@preact/signals"
@@ -37,7 +38,8 @@ import { loadLandMask, loadWaterMask } from "../land"
 import type { PaintController } from "../paint-controller"
 import { sound } from "../sound"
 import { THEME } from "../themes"
-import { ANSWER_RADIUS, DETAIL_RADIUS, Globe, HINT_RADIUS, PAINT_RADIUS, type Hand } from "./globe"
+import { ANSWER_RADIUS, DETAIL_RADIUS, Globe, HINT_RADIUS, PAINT_RADIUS, PIN_RADIUS, type Hand } from "./globe"
+import { FlagPins, type VrFlagPin } from "./flag-pins"
 import { AnswerMarker, type VrAnswer } from "./answer"
 import { DetailPatch } from "./detail-patch"
 import { drawBorders, drawColour, drawLand } from "./globe-texture"
@@ -45,8 +47,10 @@ import { paintGeometry } from "./paint-mesh"
 import { Picture, type VrPicture } from "./picture"
 import { HintMarker } from "./hint"
 import { reflect, reflections } from "./models"
+import { timerFrames } from "./frames"
 import { HandTool, TRIGGER_DEAD } from "./spray"
-import { ScoreBoard, type VrTable } from "./scores"
+import { SCORES_M, ScoreBoard, type VrTable } from "./scores"
+import { ResultsBoard, type VrBoard } from "./board"
 import { WristMenu, type WristButton } from "./wrist"
 import panelUrl from "./panel.uikitml?url"
 
@@ -98,6 +102,8 @@ export interface VrReveal {
   table?: VrTable
   note?: string
   actions: VrAction[]
+  /** On a flag round: every country's flag, on or off; `pins` once the borders have loaded. */
+  flags?: { on: boolean; toggle: () => void; pins: VrFlagPin[] | undefined }
 }
 
 export interface VrSummary {
@@ -106,18 +112,31 @@ export interface VrSummary {
   table?: VrTable
   note?: string
   actions: VrAction[]
+  /** The awards and every round's scores, at the end of a game. */
+  board?: VrBoard
 }
 
-/** What the headset shows: a round to paint, its answer, or the final score. */
+/** What the headset shows: a menu, a round to paint, its answer, or the final score. */
 export type VrView =
   | { kind: "paint"; round: VrRound }
   | { kind: "reveal"; round: VrRound; reveal: VrReveal }
   | { kind: "done"; summary: VrSummary }
+  /** Before a game: the home screen or a game's lobby. */
+  | { kind: "lobby"; summary: VrSummary }
 
 const HANDS = ["left", "right"] as const
+const HEADINGS: Record<VrView["kind"], string> = {
+  lobby: "WELCOME",
+  paint: "THIS ROUND",
+  reveal: "THE ANSWER",
+  done: "GAME OVER"
+}
 /** Rebuilding the paint is the costly part of a stroke, so at most this often. */
 const PAINT_REDRAW_S = 0.1
 const PANEL_M = 0.38
+/** The gap a panel keeps from the globe, in radians as seen from the player. */
+const PANEL_CLEAR = 0.04
+const UP = new Vector3(0, 1, 0)
 /** From this zoom on, the page's map shows over the globe. */
 const DETAIL_SCALE = 2
 /** How far either side of the near point the map covers. */
@@ -141,6 +160,11 @@ export class Vr {
   private readonly hint = new HintMarker(HINT_RADIUS)
   private readonly wrist: WristMenu
   private readonly scores: ScoreBoard
+  private readonly board = new ResultsBoard()
+  private readonly flagPins = new FlagPins(PIN_RADIUS, { pin: 0.008, w: 0.012, h: 0.009 })
+  /** Where the panels were placed, and from where. */
+  private homes: { obj: Object3D; at: Vector3; half: number }[] = []
+  private readonly eye = new Vector3()
   /** What the menu last said, so it is set only when it changes. */
   private doneText = ""
   private clockText = ""
@@ -199,7 +223,7 @@ export class Vr {
     world.scene.add(this.globe.group, this.globe.stand)
     this.detail = new DetailPatch(THEME, DETAIL_RADIUS, world.renderer.capabilities.getMaxAnisotropy())
     this.globe.add(this.detail.mesh)
-    this.globe.group.add(this.answer.group, this.hint.group)
+    this.globe.group.add(this.answer.group, this.hint.group, this.flagPins.group)
 
     const { gripSpaces, raySpaces } = world.player
     this.tools = {
@@ -216,10 +240,12 @@ export class Vr {
     this.panel.object3D!.add(this.picture.mesh)
     this.wrist = new WristMenu(world, this.wristHandlers())
     this.scores = new ScoreBoard(world)
+    world.scene.add(this.board.mesh)
 
     world.visibilityState.subscribe((state) => {
       const active = state !== VisibilityState.NonImmersive
       if (active === this.active.value) return
+      timerFrames(active)
       this.active.value = active
       if (!active) this.leave()
     })
@@ -268,12 +294,16 @@ export class Vr {
     this.hint.show(round?.hint)
     this.detail.setHint(round?.hint)
     if (round) this.wrist.setState(round.water, round.hint && describeHint(round.hint), round.hintsLeft)
+    for (const h of HANDS) this.tools[h].setColour(round?.colour)
     // As the page's map: natural colour on the reveal, and while painting on the maps that show terrain.
     this.globe.showColour(
       view.kind === "reveal" || (view.kind === "paint" && ["physical", "political"].includes(view.round.detail))
     )
     this.globe.showBorders(view.kind === "reveal" || (view.kind === "paint" && view.round.detail === "political"))
-    this.scores.show(view.kind === "reveal" ? view.reveal.table : view.kind === "done" ? view.summary.table : undefined)
+    this.scores.show(view.kind === "reveal" ? view.reveal.table : "summary" in view ? view.summary.table : undefined)
+    this.board.show("summary" in view ? view.summary.board : undefined)
+    const flags = view.kind === "reveal" ? view.reveal.flags : undefined
+    this.flagPins.show(flags?.on ? flags.pins : undefined)
     this.applyView()
   }
 
@@ -295,6 +325,34 @@ export class Vr {
   /** The score table, for the browser tests. */
   get tableShown(): VrTable | undefined {
     return this.scores.shown
+  }
+
+  /** Droplets and crumbs in the air, for the browser tests. */
+  get particlesLive(): number {
+    return this.tools.left.particlesLive + this.tools.right.particlesLive
+  }
+
+  /** The narrowest gap, in radians as the player sees it, between a panel and the globe. */
+  get panelGap(): number {
+    const eye = this.eye
+    const yaw = (p: Vector3) => Math.atan2(p.x - eye.x, p.z - eye.z)
+    const flat = (p: Vector3) => Math.hypot(p.x - eye.x, p.z - eye.z)
+    const centre = this.globe.centre
+    const globeHalf = Math.asin(Math.min(1, this.globe.radius / flat(centre)))
+    return Math.min(
+      ...this.homes.map(({ obj, half }) => {
+        const d = yaw(obj.position) - yaw(centre)
+        return Math.abs(Math.atan2(Math.sin(d), Math.cos(d))) - globeHalf - Math.atan(half / flat(obj.position))
+      })
+    )
+  }
+
+  get flagPinsShown(): number {
+    return this.flagPins.shown
+  }
+
+  get boardShown(): VrBoard | undefined {
+    return this.board.mesh.visible ? this.board.shown : undefined
   }
 
   /** Whether the land shows in natural colour, for the browser tests. */
@@ -373,6 +431,12 @@ export class Vr {
       this.paintDirty = true
     }
     return {
+      undo: act((r) => r.paint.undo()),
+      swap: () => {
+        const right = this.tools.right.tool
+        this.tools.right.setTool(this.tools.left.tool)
+        this.tools.left.setTool(right)
+      },
       latitude: act((r) => r.useHint("latitude")),
       longitude: act((r) => r.useHint("longitude")),
       trim: act((r) => {
@@ -427,8 +491,15 @@ export class Vr {
       this.globe.place(head, forward)
       this.placePanel(head, forward)
       this.scores.place(head, forward)
+      this.board.place(head, forward)
+      this.eye.copy(head)
+      this.homes = [
+        { obj: this.panel.object3D!, at: this.panel.object3D!.position.clone(), half: PANEL_M / 2 },
+        { obj: this.scores.object3D, at: this.scores.object3D.position.clone(), half: SCORES_M / 2 }
+      ]
       this.placed = true
     }
+    this.clearGlobe()
     this.wirePanel()
     this.scores.update()
     this.placePicture()
@@ -460,6 +531,7 @@ export class Vr {
     const zoomed = this.globe.scale >= DETAIL_SCALE
     this.detail.update(now, this.globe.nearest(head), zoomed ? (DETAIL_HALF_M * 6371) / this.globe.radius : undefined)
     this.answer.update(this.globe.scale)
+    this.flagPins.setHidden(this.detail.mesh.visible)
     this.wrist.update(this.painting !== undefined, player.gripSpaces.left, head)
 
     const round = this.round
@@ -473,7 +545,10 @@ export class Vr {
     }
     this.updateLabels(round)
     if (!this.painting || !round) {
-      for (const h of HANDS) this.tools[h].hide()
+      for (const h of HANDS) {
+        this.tools[h].hide()
+        this.tools[h].settle(now)
+      }
       return
     }
 
@@ -525,6 +600,26 @@ export class Vr {
   }
 
   /** To the left of the globe, turned to face the player. */
+  /**
+   * Swings each panel round the player, from where it was placed, until it
+   * clears the globe as seen from there: zooming in pushes them aside.
+   */
+  private clearGlobe(): void {
+    const eye = this.eye
+    const yaw = (p: Vector3) => Math.atan2(p.x - eye.x, p.z - eye.z)
+    const flat = (p: Vector3) => Math.hypot(p.x - eye.x, p.z - eye.z)
+    const centre = this.globe.centre
+    const globeHalf = Math.asin(Math.min(1, this.globe.radius / Math.max(1e-6, flat(centre))))
+    const globeYaw = yaw(centre)
+    for (const { obj, at, half } of this.homes) {
+      const offset = Math.atan2(Math.sin(yaw(at) - globeYaw), Math.cos(yaw(at) - globeYaw))
+      const need = globeHalf + Math.atan(half / flat(at)) + PANEL_CLEAR
+      const by = Math.abs(offset) >= need ? 0 : Math.sign(offset || 1) * need - offset
+      obj.position.copy(at).sub(eye).applyAxisAngle(UP, by).add(eye)
+      obj.lookAt(eye)
+    }
+  }
+
   private placePanel(head: Vector3, forward: Vector3): void {
     const obj = this.panel.object3D!
     const level = new Vector3(forward.x, 0, forward.z).normalize()
@@ -544,10 +639,6 @@ export class Vr {
     this.panelDoc = doc
     doc.setTargetDimensions(PANEL_M, PANEL_M)
     const on = (id: string, f: () => void) => doc.requireElementById(id).addEventListener("click", f)
-    on("undo", () => {
-      this.round?.paint.undo()
-      this.paintDirty = true
-    })
     on("done", () => this.painting?.done())
     on("unlock", () => this.view?.kind === "paint" && this.view.round.unlock?.())
     for (const i of [0, 1]) {
@@ -556,13 +647,14 @@ export class Vr {
         if (action && action.enabled !== false) action.press()
       })
     }
+    on("flags", () => this.view?.kind === "reveal" && this.view.reveal.flags?.toggle())
     on("exit", () => this.exit())
     this.applyView()
   }
 
   private get actions(): VrAction[] {
     const view = this.view
-    return view?.kind === "reveal" ? view.reveal.actions : view?.kind === "done" ? view.summary.actions : []
+    return view?.kind === "reveal" ? view.reveal.actions : view && "summary" in view ? view.summary.actions : []
   }
 
   /** Done says Pass with nothing painted, and the clock counts down. */
@@ -590,10 +682,9 @@ export class Vr {
     const show = (id: string, on: boolean) => doc.getElementById(id)?.setProperties({ display: on ? "flex" : "none" })
     const text = (id: string, t: string) => doc.getElementById(id)?.setProperties({ text: t })
     const reveal = view.kind === "reveal" ? view.reveal : undefined
-    const summary = view.kind === "done" ? view.summary : undefined
+    const summary = "summary" in view ? view.summary : undefined
     const round = view.kind === "paint" ? view.round : undefined
     const painting = round?.playing === true && round.unlock === undefined
-    show("tools", painting)
     show("hint", painting)
     show("done", painting)
     show("unlock", round?.unlock !== undefined)
@@ -610,6 +701,9 @@ export class Vr {
       text(`act${i}Label`, action.label)
       doc.getElementById(`act${i}`)?.setProperties({ disabled: action.enabled === false })
     }
+    text("heading", HEADINGS[view.kind])
+    show("extras", reveal?.flags !== undefined)
+    if (reveal?.flags) text("flagsLabel", reveal.flags.on ? "Hide all flags" : "Show all flags")
     if (round) text("prompt", round.prompt)
     if (reveal) {
       text("prompt", reveal.label)

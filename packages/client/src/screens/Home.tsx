@@ -13,6 +13,8 @@ import { navigate } from "../router"
 import { Icon } from "../ui/icons"
 import { MapDetailPicker } from "../ui/MapDetailPicker"
 import { Pills } from "../ui/Controls"
+import { VrButton, useVrView } from "../ui/VrButton"
+import type { VrView } from "../vr"
 
 const POOLS: { value: PracticePool; label: string }[] = [
   { value: "places", label: "Places" },
@@ -34,6 +36,23 @@ export function Home() {
   const name = nameToJoin(savedName.value)
   const ready = name !== undefined
   const needName = ready ? undefined : "Enter your name first"
+  const pool = POOLS.find((p) => p.value === soloPool.value) ?? POOLS[0]!
+  const vrView: VrView = {
+    kind: "lobby",
+    summary: {
+      title: "Whereabouts",
+      scoreLine: `Practise: ${pool.label}`,
+      note: "Take the headset off to host or join a game.",
+      actions: [
+        { label: "Practise", press: () => navigate("/solo") },
+        {
+          label: "Change topic",
+          press: () => (soloPool.value = POOLS[(POOLS.indexOf(pool) + 1) % POOLS.length]!.value)
+        }
+      ]
+    }
+  }
+  useVrView(vrView, "home")
   return (
     <div class="home" data-testid={homeTestIds.page}>
       <div class="home-page">
@@ -134,9 +153,12 @@ export function Home() {
                 onChange={(v) => (soloPool.value = v)}
               />
             </div>
-            <button class="big" onClick={() => navigate("/solo")} data-testid={homeTestIds.practiseButton}>
-              <Icon name="brush" /> Practise
-            </button>
+            <div class="practice-go">
+              <button class="big" onClick={() => navigate("/solo")} data-testid={homeTestIds.practiseButton}>
+                <Icon name="brush" /> Practise
+              </button>
+              <VrButton view={vrView} />
+            </div>
             <details class="practice-detail">
               <summary>Map detail: {MAP_DETAILS.find((d) => d.id === soloMapDetail.value)?.label ?? "Minimal"}</summary>
               <MapDetailPicker value={soloMapDetail.value} onChange={(v) => (soloMapDetail.value = v)} />

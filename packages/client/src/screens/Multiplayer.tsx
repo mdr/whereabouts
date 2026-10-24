@@ -22,7 +22,7 @@ import { Banner } from "../ui/Banner"
 import { Icon } from "../ui/icons"
 import { useGameSounds } from "../ui/useGameSounds"
 import { useSavedSetup } from "../host-setup"
-import { useVrSession } from "../ui/VrButton"
+import { useVrHold } from "../ui/VrButton"
 import { joinAsTestIds, joinedTestIds } from "./MultiplayerTestIds"
 
 export function Multiplayer({ code, create }: { code: RoomCode | undefined; create: boolean }) {
@@ -99,8 +99,7 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
   const view = conn.view.value
   useGameSounds(conn, view)
   useSavedSetup(conn, view, create)
-  // The headset stays on from round to reveal to the final standings, and comes off in the lobby.
-  useVrSession(view?.phase !== "lobby")
+  useVrHold()
   const upcoming = view?.upcoming
   useEffect(() => {
     if (upcoming) preloadPictures(upcoming)

@@ -41,13 +41,14 @@ import type { GameMap } from "../map"
 import { MapView, usePaint } from "../ui/MapView"
 import { Answer, AnswerMode, Card, HudBottom, HudHeader, QuestionCard, RegionHint, ScoreParts, fmtKm } from "../ui/bits"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
-import { VrButton, useVrSession, useVrView } from "../ui/VrButton"
+import { VrButton, useVrHold, useVrView } from "../ui/VrButton"
 import type { VrRound, VrView } from "../vr"
 import type { VrTable } from "../vr/scores"
+import { vrFlagPins } from "../borders"
 import type { VrPicture } from "../vr/picture"
 import { Banner } from "../ui/Banner"
 import { DevDrawer } from "../ui/DevDrawer"
-import { cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings"
+import { allFlags, cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings"
 import { devMode } from "../dev"
 import { Icon } from "../ui/icons"
 import { featureQuestions, flagQuestions, loadRegions, regions } from "../regions"
@@ -55,7 +56,7 @@ import { useBorders } from "../borders"
 import { useFillTool } from "../fill"
 import { preloadPictures } from "../preload"
 import { HintCard } from "../ui/Hint"
-import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
+import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
 import { PointWhy, RegionWhy } from "../ui/ScoreWhy"
 import { sound } from "../sound"
 import { soloTestIds } from "./SoloTestIds"
@@ -121,6 +122,7 @@ function roundsTable(results: RoundResult[]): VrTable {
 }
 
 export function Solo() {
+  useVrHold()
   return (
     <MapView>
       <SoloLoader />
@@ -268,6 +270,9 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   }
 
   const useHint = (axis: HintAxis) => setHint(hintBand(q.answer, q.toleranceKm, axis, Math.random()))
+  // A flag round's reveal names the country under the pointer, and where the
+  // paint mostly was. Loaded while the flag is still being painted.
+  const borders = useBorders(q.flag !== undefined)
   const vrRound: VrRound = {
     paint,
     prompt: q.prompt,
@@ -303,16 +308,17 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               stateRound,
               scoreLine: `${revealed.dist ? "" : "Passed: "}${pts(revealed.result.score)} this round, ${pts(total)} in all`,
               table: roundsTable(results),
-              actions: [{ label: index + 1 >= questions.length ? "Finish" : "Next question", press: next }]
+              actions: [{ label: index + 1 >= questions.length ? "Finish" : "Next question", press: next }],
+              flags: q.flag && {
+                on: allFlags.value,
+                toggle: () => (allFlags.value = !allFlags.value),
+                pins: borders && vrFlagPins(borders)
+              }
             }
           }
         : { kind: "paint", round: vrRound }
   useVrView(vrView, `${phase} ${index} ${questions[0]?.id} ${hint?.axis}`)
-  useVrSession()
 
-  // A flag round's reveal names the country under the pointer, and where the
-  // paint mostly was. Loaded while the flag is still being painted.
-  const borders = useBorders(q.flag !== undefined)
   const where = useMemo(
     () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : undefined),
     [revealed, borders]
@@ -389,6 +395,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             <button class="primary big" onClick={restart}>
               <Icon name="refresh" /> Play again
             </button>
+            <VrButton view={vrView} />
             <p class="hint">
               <a href="#/">Leave</a>
             </p>
@@ -415,6 +422,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     return (
       <>
         {borders && <FlagHover gameMap={paint.gameMap} borders={borders} />}
+        {borders && allFlags.value && <AllFlags gameMap={paint.gameMap} borders={borders} />}
         <div class="hud">
           <div class="hud-top">
             {header}
@@ -449,6 +457,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             </div>
           </div>
           <HudBottom>
+            {q.flag && <AllFlagsSwitch />}
+            <VrButton view={vrView} />
             <button class="primary" onClick={next} data-testid={soloTestIds.nextButton}>
               <Icon name={last ? "flag" : "next"} /> {last ? "Finish" : "Next question"} <kbd>Enter</kbd>
             </button>

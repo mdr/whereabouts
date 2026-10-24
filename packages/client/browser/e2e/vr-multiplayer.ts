@@ -1,7 +1,8 @@
 // An online game with the host in VR, on an emulated Quest 3 (see
 // pages/Headset.ts), and a second player on the page: the clock, Pass and
 // Done, Keep editing, the reveal's score table and Ready, the host's Next,
-// and the final standings, all in the headset. Saves screenshots.
+// and the final standings, awards and rounds, all in the headset from the
+// lobby on. Saves screenshots.
 // Usage, from packages/client: node browser/e2e/vr-multiplayer.ts [outDir] [baseUrl]
 import { Headset } from "../pages/Headset.ts"
 import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
@@ -25,9 +26,8 @@ const bobLobby = await bobHome.joinGame(code)
 await aliceLobby.players.waitForPlayer("Bob", 5_000)
 await aliceLobby.setOnlyQuestions("places", 2)
 await aliceLobby.chooseSecondsPerRound(60)
-const aliceRound = await aliceLobby.startGame()
-const bobRound = await bobLobby.waitForGameToStart()
 
+// The host goes into VR in the lobby, and starts the game from there.
 await aliceTab.page.getByTestId(vrButtonTestIds.button).click()
 await until(
   "the headset session",
@@ -35,7 +35,47 @@ await until(
   (on) => on,
   60_000
 )
-checks.check(true, "the host takes the round into VR")
+const lobby = await until(
+  "the lobby in VR",
+  () => headset.view(),
+  (v) => v === "lobby"
+)
+const lobbyTable = await until(
+  "the players in VR",
+  () => headset.scoreTable(),
+  (t) => t?.rows.length === 2
+)
+checks.check(
+  lobby === "lobby" && lobbyTable?.rows.length === 2,
+  `the lobby opens VR, listing the players (${JSON.stringify(lobbyTable?.rows.map((r) => r.name))})`
+)
+const [x, y, z] = await headset.eyes()
+const centre: [number, number, number] = [x, y - 0.3, z - 0.67]
+const can: [number, number, number] = [x + 0.15, y - 0.25, z - 0.15]
+const wait = (ms: number) => aliceTab.page.waitForTimeout(ms)
+/** Points at a menu button and pulls the trigger. */
+async function press(id: string): Promise<void> {
+  await headset.pointRight(can, await headset.menuButton(id))
+  await wait(500)
+  await headset.rightTrigger(1)
+  await wait(300)
+  await headset.rightTrigger(0)
+  await wait(300)
+}
+await wait(1500)
+await aliceLobby.screenshot(`${out}/vrmp-0-lobby.png`)
+await press("act0")
+const aliceRound = await aliceLobby.waitForGameToStart()
+const bobRound = await bobLobby.waitForGameToStart()
+checks.check(
+  (await until(
+    "round 1 in VR",
+    () => headset.view(),
+    (v) => v === "paint",
+    30_000
+  )) === "paint" && (await headset.inSession()),
+  "Start game in VR starts it, the headset still on"
+)
 const clock = await until(
   "the clock in VR",
   async () => (await headset.menu()).clock,
@@ -44,9 +84,6 @@ const clock = await until(
 checks.check(/^\d:\d\d left$/.test(clock), `the menu counts down the round (${clock})`)
 checks.check((await headset.doneLabel()) === "Pass", "with nothing painted, Done says Pass")
 
-const [x, y, z] = await headset.eyes()
-const centre: [number, number, number] = [x, y - 0.3, z - 0.67]
-const can: [number, number, number] = [x + 0.15, y - 0.25, z - 0.15]
 await headset.pointRight(can, centre)
 await aliceRound.pause(300)
 await headset.rightTrigger(1)
@@ -62,16 +99,6 @@ const done = await until(
 )
 checks.check(done === "Done", "with paint down, it says Done")
 await aliceRound.screenshot(`${out}/vrmp-1-painted.png`)
-
-/** Points at a menu button and pulls the trigger. */
-async function press(id: string): Promise<void> {
-  await headset.pointRight(can, await headset.menuButton(id))
-  await aliceRound.pause(500)
-  await headset.rightTrigger(1)
-  await aliceRound.pause(300)
-  await headset.rightTrigger(0)
-  await aliceRound.pause(300)
-}
 
 await press("done")
 checks.check(
@@ -164,6 +191,15 @@ checks.check(
 checks.check(
   (await headset.menu()).actions.map((a) => a.label).join() === "Play again",
   "and the host can play again from there"
+)
+const board = await until(
+  "the results board",
+  () => headset.board(),
+  (b) => b !== undefined
+)
+checks.check(
+  board?.rounds.length === 2,
+  `a board shows the awards and every round (${board?.awards.map((a) => a.title).join(", ")}; ${board?.rounds.length} rounds)`
 )
 await aliceRound.pause(1500)
 await aliceRound.screenshot(`${out}/vrmp-3-standings.png`)

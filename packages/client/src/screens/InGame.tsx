@@ -9,13 +9,13 @@ import { ConnectionNote } from "../ui/ConnectionNote"
 import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
 import { Reveal } from "./Reveal"
-import { loadBorders } from "../borders"
+import { borders, loadBorders, vrFlagPins } from "../borders"
 import { useFillTool } from "../fill"
 import { Icon } from "../ui/icons"
 import { PlayersPanel } from "../ui/PlayersPanel"
 import { EndGameButton } from "../ui/HostControls"
 import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog"
-import { askedToWatch, startOnPan } from "../settings"
+import { allFlags, askedToWatch, startOnPan } from "../settings"
 import { TakeSeatButton } from "../ui/TakeSeat"
 import { HintCard } from "../ui/Hint"
 import { sound } from "../sound"
@@ -147,7 +147,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   useVrView(vrView, `${view.phase} ${roundKey}`)
 
   if (view.phase === "reveal" && view.reveal) {
-    return <Reveal conn={conn} view={view} reveal={view.reveal} />
+    return <Reveal conn={conn} view={view} reveal={view.reveal} vrView={vrView} />
   }
 
   const round = view.round!
@@ -337,7 +337,12 @@ function gameVrView(
           ? []
           : [{ label: iAmReady ? "Waiting for the others" : "Ready", press: () => conn.ready(), enabled: !iAmReady }]),
         ...(view.you.isHost ? [{ label: last ? "Show final results" : "Next round", press: () => conn.next() }] : [])
-      ]
+      ],
+      flags: question.flag && {
+        on: allFlags.value,
+        toggle: () => (allFlags.value = !allFlags.value),
+        pins: borders.value && vrFlagPins(borders.value)
+      }
     }
   }
 }

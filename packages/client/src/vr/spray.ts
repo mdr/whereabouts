@@ -4,12 +4,13 @@
  * globe, the smaller and denser the spot, like real spray paint. A ring on
  * the globe shows where the spot would land before anything happens.
  */
-import { ConeGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry, Vector3, type Object3D } from "three"
+import { DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry, Vector3, type Object3D } from "three"
 import { greatCircleDistance, type LatLon } from "@whereabouts/shared"
 import type { PaintController } from "../paint-controller"
 import type { Theme } from "../themes"
 import type { Globe } from "./globe"
 import { buildCan, buildEraser } from "./models"
+import { SprayParticles } from "./particles"
 import { localToLatLon, raySphere } from "./sphere"
 
 export type SprayTool = "paint" | "erase"
@@ -39,7 +40,10 @@ export class HandTool {
   private readonly can = new Group()
   private readonly eraser = new Group()
   private readonly spot: Mesh<RingGeometry, MeshBasicMaterial>
-  private readonly mist: Mesh
+  private readonly particles = new SprayParticles()
+  /** The paint's colour, when a player has one of their own. */
+  private colour: string | undefined = undefined
+  private lastNow: number | undefined = undefined
   private readonly ray: Object3D
   private readonly theme: Theme
   private stroke: { at: LatLon; t: number } | undefined = undefined
@@ -63,22 +67,10 @@ export class HandTool {
         side: DoubleSide
       })
     )
-    // The cone's tip at its origin, opening along +Z, one unit long and wide.
-    const cone = new ConeGeometry(1, 1, 24, 1, true).translate(0, -0.5, 0).rotateX(-Math.PI / 2)
-    this.mist = new Mesh(
-      cone,
-      new MeshBasicMaterial({
-        color: theme.ramp[2],
-        transparent: true,
-        opacity: 0.12,
-        depthWrite: false,
-        side: DoubleSide
-      })
-    )
-    this.spot.visible = this.mist.visible = false
-    // After the globe's map and paint, which would otherwise cover them: none of the three writes depth.
-    this.spot.renderOrder = this.mist.renderOrder = 3
-    scene.add(this.spot, this.mist)
+    this.spot.visible = false
+    // After the globe's map and paint, which would otherwise cover it: neither writes depth.
+    this.spot.renderOrder = 3
+    scene.add(this.spot, this.particles.points)
   }
 
   /** Where the ring shows on the globe, if it does. */
@@ -97,8 +89,24 @@ export class HandTool {
     this.spot.material.color.set(tool === "erase" ? this.theme.answer : this.theme.brush)
   }
 
+  /** Moves the droplets already in the air on; returns the seconds since last time. */
+  settle(now: number): number {
+    const dt = this.lastNow === undefined ? 0 : Math.min(0.1, now - this.lastNow)
+    this.lastNow = now
+    this.particles.update(dt)
+    return dt
+  }
+
+  get particlesLive(): number {
+    return this.particles.live
+  }
+
+  setColour(colour: string | undefined): void {
+    this.colour = colour
+  }
+
   hide(): void {
-    this.spot.visible = this.mist.visible = false
+    this.spot.visible = false
     this.stroke = undefined
   }
 
@@ -121,6 +129,7 @@ export class HandTool {
     paint: PaintController,
     gamepad: Gamepad | undefined
   ): boolean {
+    const dt = this.settle(now)
     const d = blocked ? undefined : this.aim(globe)
     if (d === undefined) {
       this.hide()
@@ -135,14 +144,13 @@ export class HandTool {
     this.spot.scale.setScalar(spotM)
 
     const spraying = paint.enabled.value && trigger > TRIGGER_DEAD
-    this.mist.visible = spraying && this.toolNow === "paint"
     if (!spraying) {
       this.stroke = undefined
       return false
     }
-    this.mist.position.copy(origin)
-    this.mist.lookAt(hit)
-    this.mist.scale.set(spotM, spotM, d)
+    if (this.toolNow === "paint")
+      this.particles.spray(dt, 700 * trigger, origin, hit, spotM, this.colour ?? this.theme.ramp[2])
+    else this.particles.crumbs(dt, 90 * trigger, hit, normal, spotM)
 
     const radiusKm = Math.min(MAX_KM, Math.max(MIN_KM, (spotM / globe.radius) * EARTH_KM))
     const at = localToLatLon(globe.group.worldToLocal(local.copy(hit)))

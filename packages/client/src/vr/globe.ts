@@ -35,6 +35,7 @@ export const DETAIL_RADIUS = RADIUS * 1.0015
 export const HINT_RADIUS = RADIUS * 1.002
 export const PAINT_RADIUS = RADIUS * 1.003
 export const ANSWER_RADIUS = RADIUS * 1.004
+export const PIN_RADIUS = RADIUS * 1.001
 const MIN_SCALE = 1
 const MAX_SCALE = 12
 /** How quickly a flung globe slows, per second. */

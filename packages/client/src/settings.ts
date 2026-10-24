@@ -78,6 +78,8 @@ export type PracticePool = z.infer<typeof PracticePoolSchema>
 export const soloPool = persisted("wa.practicePool", PracticePoolSchema, "places")
 /** Map detail while guessing in practice (one of MAP_DETAILS). */
 export const soloMapDetail = persisted("wa.mapDetail", MapDetailSchema, "minimal")
+/** On the reveal of a flag round, every country's flag on the map. */
+export const allFlags = persisted("wa.allFlags", z.stringbool(), false)
 /** Begin each round on the Pan tool rather than Paint; tablet players often want to look first. */
 export const startOnPan = persisted("wa.startOnPan", z.stringbool(), false)
 /** Paint on a globe instead of the flat map. */

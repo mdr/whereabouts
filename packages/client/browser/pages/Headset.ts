@@ -114,6 +114,26 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.menuShown)
   }
 
+  /** Droplets and crumbs in the air. */
+  async particles(): Promise<number> {
+    return this.#page.evaluate(() => window.whereaboutsVr.particlesLive)
+  }
+
+  /** The narrowest gap, in radians as the player sees it, between a panel and the globe: negative if one overlaps it. */
+  async panelGap(): Promise<number> {
+    return this.#page.evaluate(() => window.whereaboutsVr.panelGap)
+  }
+
+  /** How many countries' flags are pinned on the globe. */
+  async flagPins(): Promise<number> {
+    return this.#page.evaluate(() => window.whereaboutsVr.flagPinsShown)
+  }
+
+  /** The awards and rounds board at the end of a game, if it shows. */
+  async board(): Promise<{ awards: { title: string }[]; rounds: { label: string }[] } | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.boardShown)
+  }
+
   /** The score table beside the globe, if it shows. */
   async scoreTable(): Promise<{ title: string; rows: { name: string; total: string }[] } | undefined> {
     return this.#page.evaluate(() => window.whereaboutsVr.tableShown)

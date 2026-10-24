@@ -14,7 +14,8 @@ import { HostTag, HostWord } from "../ui/PlayerList"
 import { Banner } from "../ui/Banner"
 import { SmallFlag } from "../ui/bits"
 import { useElementRef } from "../ui/element-ref"
-import { useVrView } from "../ui/VrButton"
+import { VrButton, useVrView } from "../ui/VrButton"
+import type { VrView } from "../vr"
 import { resultsTestIds } from "./ResultsTestIds"
 
 const MEDALS = ["🥇", "🥈", "🥉"]
@@ -28,29 +29,45 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   const byId = new Map(view.players.map((p) => [p.id, p]))
   const standings = view.results ?? []
   const winner = standings[0] ? byId.get(standings[0].playerId) : undefined
-  useVrView(
-    {
-      kind: "done",
-      summary: {
-        title: "Final standings",
-        scoreLine: winner ? `${winner.name} wins` : "",
-        table: {
-          title: "Standings",
-          rows: standings.map((s, i) => {
-            const p = byId.get(s.playerId)
-            return {
-              colour: p && colourCss(p.colour),
-              name: `${i + 1}. ${p?.name ?? "?"}${s.playerId === view.you.id ? " (you)" : ""}`,
-              total: Math.round(s.total).toLocaleString()
-            }
-          })
-        },
-        note: view.you.isHost ? undefined : "The host can start another game with the same group.",
-        actions: view.you.isHost ? [{ label: "Play again", press: () => conn.again() }] : []
+  const vrView: VrView = {
+    kind: "done",
+    summary: {
+      title: "Final standings",
+      scoreLine: winner ? `${winner.name} wins` : "",
+      table: {
+        title: "Standings",
+        rows: standings.map((s, i) => {
+          const p = byId.get(s.playerId)
+          return {
+            colour: p && colourCss(p.colour),
+            name: `${i + 1}. ${p?.name ?? "?"}${s.playerId === view.you.id ? " (you)" : ""}`,
+            total: Math.round(s.total).toLocaleString()
+          }
+        })
+      },
+      note: view.you.isHost ? undefined : "The host can start another game with the same group.",
+      actions: view.you.isHost ? [{ label: "Play again", press: () => conn.again() }] : [],
+      board: {
+        awards: (view.awards ?? []).map((a) => ({
+          emoji: a.emoji,
+          title: a.title,
+          line: awardParts(
+            a.line,
+            a.playerIds.map((id) => byId.get(id))
+          )
+        })),
+        players: standings.map((s) => {
+          const p = byId.get(s.playerId)
+          return { name: p?.name ?? "?", colour: colourCss(p?.colour) }
+        }),
+        rounds: (view.playedRounds ?? []).map((round, r) => ({
+          label: round.label,
+          scores: standings.map((s) => s.rounds[r]?.score)
+        }))
       }
-    },
-    "results"
-  )
+    }
+  }
+  useVrView(vrView, "results")
   return (
     <div class="home">
       <div class="home-card results-card" data-testid={resultsTestIds.page}>
@@ -86,6 +103,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             )
           })}
         </ol>
+        <VrButton view={vrView} />
         {view.you.isHost ? (
           <button class="primary big" onClick={() => conn.again()} data-testid={resultsTestIds.playAgainButton}>
             <Icon name="refresh" /> Play again
@@ -285,6 +303,19 @@ function Awards({ awards, byId }: { awards: Award[]; byId: Map<string, PlayerVie
       </ul>
     </section>
   )
+}
+
+/** An award's line in pieces, each player's name in their colour. */
+function awardParts(line: string, players: (PlayerView | undefined)[]): { text: string; colour?: string }[] {
+  return line
+    .split(/(\{\d\})/)
+    .filter((part) => part !== "")
+    .map((part) => {
+      const m = /^\{(\d)\}$/.exec(part)
+      if (!m) return { text: part }
+      const p = players[Number(m[1])]
+      return { text: p?.name ?? "Someone", colour: p ? colourCss(p.colour) : undefined }
+    })
 }
 
 /** The line with each {n} replaced by that player's name, in their colour. */

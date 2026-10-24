@@ -1,5 +1,5 @@
 /**
- * The page's other paint tools, over the left hand: it shows while the left
+ * The paint tools and hints, over the left hand: it shows while the left
  * palm is turned up, and the right hand's ray presses it. Up rather than
  * towards the eyes: aiming the eraser across the body turns the palm to them.
  */
@@ -17,7 +17,7 @@ import {
 } from "@iwsdk/core"
 import wristUrl from "./wrist.uikitml?url"
 
-export type WristButton = "latitude" | "longitude" | "trim" | "trimHint" | "clear" | "redo"
+export type WristButton = "undo" | "redo" | "trim" | "trimHint" | "swap" | "clear" | "latitude" | "longitude"
 
 const WRIST_M = 0.2
 /** How squarely the palm must face up to open the menu, and how far it may turn away before it shuts. */
@@ -30,10 +30,10 @@ const palm = new Vector3()
 const up = new Vector3(0, 1, 0)
 
 function hintOffer(left: number | "unlimited" | "none"): string {
-  if (left === "unlimited") return "Hint, as many as you like in practice: a band the answer lies in"
+  if (left === "unlimited") return "A band the answer lies in, as many as you like in practice"
   if (left === "none") return "This game has no hints"
   if (left === 0) return "No hints left this game"
-  return `Hint: a band the answer lies in. ${left} left this game`
+  return `A band the answer lies in. ${left} left this game`
 }
 
 export class WristMenu {
@@ -114,7 +114,7 @@ export class WristMenu {
     if (this.doc || !this.entity.hasComponent(PanelDocument)) return
     const doc = PanelDocument.data.document[this.entity.index] as UIKitDocument
     this.doc = doc
-    doc.setTargetDimensions(WRIST_M, WRIST_M)
+    doc.setTargetDimensions(WRIST_M, WRIST_M * 1.6)
     for (const [id, f] of Object.entries(this.handlers)) doc.requireElementById(id).addEventListener("click", f)
     this.apply()
   }

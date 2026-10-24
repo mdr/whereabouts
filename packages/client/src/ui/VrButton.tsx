@@ -2,15 +2,20 @@ import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import type { Vr, VrView } from "../vr"
 import { VR_LOAD_STAGES, loadVr, loadedVr, vrLoadStage, vrSupported, type VrLoadStage } from "../vr-support"
-import { usePaint } from "./MapView"
 import { Icon } from "./icons"
 import { vrButtonTestIds } from "./VrButtonTestIds"
 
+/** How many screens now keep the headset on. */
+let showing = 0
+/** Long enough for the next screen's effects, which wait for a frame or 100 ms. */
+const HANDOVER_MS = 500
+
 /**
- * Keep the headset showing what the screen shows: the round, its answer,
- * the final score. `key` changes when that moves on to something new;
- * between, each render passes on what changed, such as the clock or who is
- * ready.
+ * Keep the headset showing what the screen shows: the menu, the round, its
+ * answer, the final score. `key` changes when that moves on to something
+ * new; between, each render passes on what changed, such as the clock or
+ * who is ready. The headset comes off when the player goes where it has
+ * nothing to show.
  */
 export function useVrView(view: VrView, key: string): void {
   // The headset calls back long after this render; it should reach the screen as it is then.
@@ -24,24 +29,32 @@ export function useVrView(view: VrView, key: string): void {
   useEffect(() => {
     if (vr && active) vr.refresh(latest.current)
   })
-}
-
-/** Take the headset off on leaving the game, or once `playing` turns false. */
-export function useVrSession(playing = true): void {
-  useEffect(() => {
-    if (!playing) loadedVr.value?.exit()
-  }, [playing])
-  useEffect(() => () => loadedVr.value?.exit(), [])
+  useVrHold()
 }
 
 /**
- * Paint this round in a VR headset. Shown only where the browser can open
+ * Keep the headset on while this screen shows, though it has nothing for
+ * the headset yet: a game or practice still loading.
+ */
+export function useVrHold(): void {
+  useEffect(() => {
+    showing++
+    return () => {
+      showing--
+      setTimeout(() => {
+        if (showing === 0) loadedVr.value?.exit()
+      }, HANDOVER_MS)
+    }
+  }, [])
+}
+
+/**
+ * Play in a VR headset. Shown only where the browser can open
  * one. The first press loads the VR code. A headset opens only in answer to
  * a press the browser still counts as the player's, a few seconds at most,
  * and loading can take longer: then a second, larger button asks again.
  */
 export function VrButton({ view }: { view: VrView }) {
-  const paint = usePaint()
   const [stage, setStage] = useState<"loading" | "ready" | undefined>(undefined)
   const latest = useRef(view)
   latest.current = view
@@ -71,8 +84,8 @@ export function VrButton({ view }: { view: VrView }) {
     <>
       <button
         onClick={press}
-        disabled={stage !== undefined || inVr || !paint.enabled.value}
-        title="Paint this round in your VR headset"
+        disabled={stage !== undefined || inVr}
+        title="Play in your VR headset"
         data-testid={vrButtonTestIds.button}
       >
         <Icon name="vr" /> <span class="label">{inVr ? "In VR" : "VR"}</span>

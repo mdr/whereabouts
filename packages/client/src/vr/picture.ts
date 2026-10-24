@@ -32,16 +32,12 @@ const at = new Vector3()
 
 export class Picture {
   readonly mesh: Mesh<PlaneGeometry, MeshBasicMaterial>
-  private readonly canvas = document.createElement("canvas")
-  private readonly texture: CanvasTexture
   /** Each show() outdates the pictures still loading for earlier ones. */
   private asked = 0
   private held: Hand | undefined = undefined
 
   constructor() {
-    this.texture = new CanvasTexture(this.canvas)
-    this.texture.colorSpace = SRGBColorSpace
-    this.mesh = new Mesh(new PlaneGeometry(1, 1), new MeshBasicMaterial({ map: this.texture }))
+    this.mesh = new Mesh(new PlaneGeometry(1, 1), new MeshBasicMaterial())
     this.mesh.visible = false
   }
 
@@ -90,10 +86,16 @@ export class Picture {
         // An SVG flag can report no size of its own; flags are 4:3.
         const [w, h] = img.naturalWidth > 0 ? [img.naturalWidth, img.naturalHeight] : [4, 3]
         const fit = Math.min(MAX_PX / w, MAX_PX / h)
-        this.canvas.width = Math.round(w * fit)
-        this.canvas.height = Math.round(h * fit)
-        this.canvas.getContext("2d")!.drawImage(img, 0, 0, this.canvas.width, this.canvas.height)
-        this.texture.needsUpdate = true
+        const canvas = document.createElement("canvas")
+        canvas.width = Math.round(w * fit)
+        canvas.height = Math.round(h * fit)
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height)
+        // A new texture each time: one already on the GPU keeps its first size.
+        const texture = new CanvasTexture(canvas)
+        texture.colorSpace = SRGBColorSpace
+        this.mesh.material.map?.dispose()
+        this.mesh.material.map = texture
+        this.mesh.material.needsUpdate = true
         const size = Math.min(MAX_W / w, MAX_H / h)
         this.mesh.scale.set(w * size, h * size, 1)
         this.mesh.visible = true

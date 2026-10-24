@@ -128,6 +128,22 @@ export class Borders {
     return { rings, answer: f.answer, near: d?.near }
   }
 
+  /**
+   * A point on each country's land, for its flag: its answer where that is
+   * on its land, else a point well inside its largest piece. A country's
+   * middle can be outside it (Chile, Croatia). Small countries, with no
+   * land drawn, keep their answer.
+   */
+  pins(): { f: FlagQuestion; at: LatLon }[] {
+    const out: { f: FlagQuestion; at: LatLon }[] = [...this.small.map(({ f }) => ({ f, at: f.answer }))]
+    const small = new Set(this.small.map(({ f }) => f))
+    for (const c of this.countries) {
+      if (small.has(c.f)) continue
+      out.push({ f: c.f, at: this.onLand(c.f.answer) === c.f ? c.f.answer : inside(c) })
+    }
+    return out
+  }
+
   private nearSmall(p: LatLon): FlagQuestion | undefined {
     return this.smallNear(p, 0, 0)
   }
@@ -143,6 +159,39 @@ export class Borders {
     }
     return undefined
   }
+}
+
+const GRID = 24
+
+/** A point inside the country's largest ring, as far from its edge as a grid search finds. */
+function inside({ f, rings }: Country): LatLon {
+  const box = (r: Float64Array): [number, number, number, number] => {
+    const b: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity]
+    for (let i = 0; i < r.length; i += 2) {
+      b[0] = Math.min(b[0], r[i]!)
+      b[1] = Math.min(b[1], r[i + 1]!)
+      b[2] = Math.max(b[2], r[i]!)
+      b[3] = Math.max(b[3], r[i + 1]!)
+    }
+    return b
+  }
+  const area = (b: number[]) => (b[2]! - b[0]!) * (b[3]! - b[1]!)
+  const ring = rings.reduce((a, b) => (area(box(b)) > area(box(a)) ? b : a))
+  const [w, s, e, n] = box(ring)
+  let best: LatLon = f.answer
+  let bestD = -1
+  for (let i = 0; i <= GRID; i++)
+    for (let j = 0; j <= GRID; j++) {
+      const lon = w + ((e - w) * (i + 0.5)) / (GRID + 1)
+      const lat = s + ((n - s) * (j + 0.5)) / (GRID + 1)
+      if (!inRing(ring, lon, lat)) continue
+      // Nearest vertex, east-west distances shrunk towards the poles.
+      const k = Math.cos((lat * Math.PI) / 180)
+      let d = Infinity
+      for (let v = 0; v < ring.length; v += 2) d = Math.min(d, Math.hypot((ring[v]! - lon) * k, ring[v + 1]! - lat))
+      if (d > bestD) [best, bestD] = [{ lat, lon }, d]
+    }
+  return best
 }
 
 /** A ring of borders.json as lon, lat, lon, lat, … in degrees. */

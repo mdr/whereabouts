@@ -7,7 +7,7 @@
  */
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
-import { Borders } from "@whereabouts/shared"
+import { Borders, type FlagCode, type FlagQuestion, type LatLon } from "@whereabouts/shared"
 import { loadRegions, flagQuestions } from "./regions"
 
 /** The borders, once loaded. */
@@ -25,6 +25,20 @@ export function loadBorders(): Promise<Borders> {
     }
   )
   return loading
+}
+
+const pinsOf = new WeakMap<Borders, { f: FlagQuestion; at: LatLon }[]>()
+
+/** Where each country's flag goes on a map: worked out once. */
+export function flagPins(b: Borders): { f: FlagQuestion; at: LatLon }[] {
+  let pins = pinsOf.get(b)
+  if (!pins) pinsOf.set(b, (pins = b.pins()))
+  return pins
+}
+
+/** The same, as the headset takes them. */
+export function vrFlagPins(b: Borders): { flag: FlagCode; at: LatLon }[] {
+  return flagPins(b).map(({ f, at }) => ({ flag: f.flag, at }))
 }
 
 /** The borders when `wanted` (a flag round), loading them if need be; undefined until they arrive. */
