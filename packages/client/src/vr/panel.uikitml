@@ -54,12 +54,30 @@
   .gap {
     margin-left: 8px;
   }
+  .mode {
+    margin-top: 6px;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 22px;
+    color: #fde68a;
+  }
+  .wrap {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .more {
+    margin-top: 8px;
+    margin-right: 8px;
+  }
 </style>
 <Panel class="root">
   <span id="heading" class="heading">THIS ROUND</span>
   <span id="prompt" class="prompt">-</span>
+  <span id="mode" class="mode">-</span>
   <span id="clock" class="clock">-</span>
   <span id="score" class="score">-</span>
+  <span id="why" class="fact">-</span>
   <span id="fact" class="fact">-</span>
   <span id="note" class="note">-</span>
   <span id="hint" class="hint">Turn your left palm up for paint tools and hints.</span>
@@ -91,10 +109,20 @@
       <span id="flagsLabel">Show all flags</span>
     </Button>
   </div>
+  <div id="more" class="wrap">
+    <Button id="more0" class="more" variant="secondary"><span id="more0Label">-</span></Button>
+    <Button id="more1" class="more" variant="secondary"><span id="more1Label">-</span></Button>
+    <Button id="more2" class="more" variant="secondary"><span id="more2Label">-</span></Button>
+    <Button id="more3" class="more" variant="secondary"><span id="more3Label">-</span></Button>
+  </div>
   <div id="modes" class="row">
     <Button id="passthrough" variant="tertiary">
       <ButtonIcon><Eye></Eye></ButtonIcon>
       <span id="passthroughLabel">See your room</span>
+    </Button>
+    <Button id="sound" class="gap" variant="tertiary">
+      <ButtonIcon><Volume2></Volume2></ButtonIcon>
+      <span id="soundLabel">Sound on</span>
     </Button>
   </div>
 </Panel>

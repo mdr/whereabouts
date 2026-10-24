@@ -19,6 +19,7 @@ import {
   type H3Cell,
   type LandMask,
   type WaterMask,
+  type FlagQuestion,
   type LatLon
 } from "@whereabouts/shared"
 import type { GameMap } from "./map"
@@ -330,7 +331,17 @@ export class PaintController {
    */
   fillAt(lngLat: LngLat): void {
     const f = this.countryAt(lngLat)
-    if (!f) return
+    if (f) this.fill(f)
+    this.refreshCursor()
+  }
+
+  /** As fillAt, from outside the map: a small country counts within `nearKm`. */
+  fillOutside(at: LatLon, nearKm: number): void {
+    const f = this.filler?.countryAt(at, nearKm / FILL_SMALL_PX, FILL_SMALL_PX)
+    if (f) this.fill(f)
+  }
+
+  private fill(f: FlagQuestion): void {
     this.pushHistory()
     const filled = this.fills.get(f.flag)
     if (filled) {
@@ -342,7 +353,6 @@ export class PaintController {
       this.fills.set(f.flag, cells)
     }
     this.queueRender()
-    this.refreshCursor()
   }
 
   private countryAt(lngLat: LngLat) {

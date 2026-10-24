@@ -6,6 +6,7 @@ import {
   QUESTION_TYPES,
   MAX_HINTS,
   ROUND_LENGTHS_MS,
+  MAP_DETAILS,
   colourCss,
   nextHostAfter,
   type GameView,
@@ -15,7 +16,8 @@ import type { Connection } from "../net"
 import { configureAsHost } from "../host-setup"
 import { askedToWatch, globeView, joinedCode, nameToJoin, savedName, soundOn, startOnPan } from "../settings"
 import { HostWord, PlayerList } from "../ui/PlayerList"
-import { ConnectionNote } from "../ui/ConnectionNote"
+import { ConnectionNote, connectionText } from "../ui/ConnectionNote"
+import { hostActions, pickable, takeSeat, vrPicked } from "../vr-actions"
 import { Icon } from "../ui/icons"
 import { Pills } from "../ui/Controls"
 import { MixEditor, RoundStrip, describeMix } from "../ui/MixEditor"
@@ -56,13 +58,26 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
         rows: view.players.map((p) => ({
           colour: colourCss(p.colour),
           name: `${p.name}${p.id === view.you.id ? " (you)" : ""}`,
-          detail: p.watching ? "watching" : undefined,
-          total: ""
-        }))
+          detail: [p.isHost && "host", p.watching && "watching", !p.connected && "away"].filter(Boolean).join(", "),
+          total: "",
+          ...pickable(view, p)
+        })),
+        hint: host ? "Point at a player to remove them or make them host." : undefined
       },
-      note: `Friends join with the code ${view.code}.`,
+      note:
+        connectionText(conn) ??
+        (host
+          ? `Friends join with the code ${view.code}.`
+          : `Friends join with the code ${view.code}. ${setupLine(view)}`),
       actions: host ? [{ label: "Start game", press: () => conn.start(), enabled: players.length >= 1 }] : []
-    }
+    },
+    more: [
+      view.you.watching
+        ? takeSeat(conn, view, "Play instead")
+        : { label: "Just watch", press: () => conn.setRole(true), enabled: watchers.length < MAX_SPECTATORS },
+      ...hostActions(conn, view, vrPicked.value),
+      { label: "Leave", confirm: host ? "Press again to leave" : undefined, press: () => leave() }
+    ]
   }
   useVrView(vrView, "lobby")
   // Home, giving up the seat now; the tab forgets the game so a refresh or
@@ -305,6 +320,13 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: Playe
       </button>
     </form>
   )
+}
+
+/** The setup in a line, for a guest in the headset. */
+function setupLine(view: GameView): string {
+  const { rounds, roundMs, mix, mapDetail, hints } = view.config
+  const map = MAP_DETAILS.find((d) => d.id === mapDetail)?.label ?? mapDetail
+  return `${rounds} ${rounds === 1 ? "round" : "rounds"} of ${roundMs / 1000} s, ${hints} ${hints === 1 ? "hint" : "hints"} each: ${describeMix(mix)}. ${map} map.`
 }
 
 /**

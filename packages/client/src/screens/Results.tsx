@@ -15,6 +15,7 @@ import { Banner } from "../ui/Banner"
 import { SmallFlag } from "../ui/bits"
 import { useElementRef } from "../ui/element-ref"
 import { VrButton, useVrView } from "../ui/VrButton"
+import { navigate } from "../router"
 import type { VrView } from "../vr"
 import { resultsTestIds } from "./ResultsTestIds"
 
@@ -65,7 +66,8 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
           scores: standings.map((s) => s.rounds[r]?.score)
         }))
       }
-    }
+    },
+    more: [{ label: "Leave", press: () => navigate("/") }]
   }
   useVrView(vrView, "results")
   return (

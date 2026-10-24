@@ -49,6 +49,7 @@ import {
   QuestionCard,
   RegionHint,
   ScoreParts,
+  answerModeText,
   fmtKm
 } from "../ui/bits"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
@@ -69,7 +70,8 @@ import { useFillTool } from "../fill"
 import { preloadPictures } from "../preload"
 import { HintCard } from "../ui/Hint"
 import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
-import { PointWhy, RegionWhy } from "../ui/ScoreWhy"
+import { PointWhy, RegionWhy, pointWhy, regionWhy } from "../ui/ScoreWhy"
+import { navigate } from "../router"
 import { sound } from "../sound"
 import { soloTestIds } from "./SoloTestIds"
 
@@ -287,9 +289,34 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const borders = useBorders(q.flag !== undefined)
   // Each practice run shuffles anew, so its first question picks this run's facts.
   const fact = useFact(q.wiki, questions[0]!.id, index)
+  // Re-score the revealed paint if the kernel changes on the reveal screen.
+  const shownResult = useMemo(() => {
+    if (!revealed) return undefined
+    if (!revealed.dist) return { score: PASS_SCORE.score, parts: { A: PASS_SCORE.A, B: PASS_SCORE.B } }
+    const { score, parts } = scoreQuestion(revealed.dist, q, kernel)
+    return { score, parts }
+  }, [revealed, kernel.id])
+  const why = useMemo(() => {
+    if (!revealed?.dist || !shownResult) return undefined
+    if (isRegion(q)) return regionWhy(revealed.dist, q)
+    if (!("A" in shownResult.parts)) return undefined
+    const { A, B } = shownResult.parts
+    return pointWhy({
+      dist: revealed.dist,
+      answer: q.answer,
+      toleranceKm: q.toleranceKm,
+      score: shownResult.score,
+      A,
+      B,
+      kernel
+    })
+  }, [shownResult])
+  const home = { label: "Home", press: () => navigate("/") }
   const vrRound: VrRound = {
     paint,
     prompt: q.prompt,
+    heading: `QUESTION ${index + 1} OF ${questions.length}, ${pts(total)}`,
+    mode: answerModeText(q),
     detail,
     picture: vrPicture(q),
     water: q.topic === "lake" || q.topic === "sea",
@@ -309,18 +336,21 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             scoreLine: `${pts(total)} out of ${(questions.length * 1000).toLocaleString()}`,
             table: roundsTable(results),
             actions: [{ label: "Play again", press: restart }]
-          }
+          },
+          more: [home]
         }
       : phase === "reveal" && revealed
         ? {
             kind: "reveal",
             round: vrRound,
+            more: [{ ...home, confirm: "Press again to leave" }],
             reveal: {
               label: q.label,
               answer: isRegion(q) ? { outline: q.outline } : { point: q.answer },
               focus: q.answer,
               stateRound,
               fact: fact?.text,
+              why,
               scoreLine: `${revealed.dist ? "" : "Passed: "}${pts(revealed.result.score)} this round, ${pts(total)} in all`,
               table: roundsTable(results),
               actions: [{ label: index + 1 >= questions.length ? "Finish" : "Next question", press: next }],
@@ -331,21 +361,13 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               }
             }
           }
-        : { kind: "paint", round: vrRound }
+        : { kind: "paint", round: vrRound, more: [{ ...home, confirm: "Press again to leave" }] }
   useVrView(vrView, `${phase} ${index} ${questions[0]?.id} ${hint?.axis}`)
 
   const where = useMemo(
     () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : undefined),
     [revealed, borders]
   )
-
-  // Re-score the revealed paint if the kernel changes on the reveal screen.
-  const shownResult = useMemo(() => {
-    if (!revealed) return undefined
-    if (!revealed.dist) return { score: PASS_SCORE.score, parts: { A: PASS_SCORE.A, B: PASS_SCORE.B } }
-    const { score, parts } = scoreQuestion(revealed.dist, q, kernel)
-    return { score, parts }
-  }, [revealed, kernel.id])
 
   const header = (
     <HudHeader

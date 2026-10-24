@@ -36,7 +36,7 @@ import {
   type PaintLayer
 } from "@whereabouts/shared"
 import { loadLandMask, loadWaterMask } from "../land"
-import { headsetPassthrough } from "../settings"
+import { headsetPassthrough, soundOn } from "../settings"
 import type { PaintController } from "../paint-controller"
 import { sound } from "../sound"
 import { THEME } from "../themes"
@@ -59,7 +59,7 @@ import { Picture, type VrPicture } from "./picture"
 import { HintMarker } from "./hint"
 import { reflect, reflections } from "./models"
 import { timerFrames } from "./frames"
-import { HandTool, TRIGGER_DEAD } from "./spray"
+import { HandTool, TRIGGER_DEAD, type SprayTool } from "./spray"
 import { Moon } from "./moon"
 import { STARS_M, Space } from "./space"
 import { latLonToLocal, localToLatLon } from "./sphere"
@@ -72,6 +72,12 @@ export interface VrRound {
   paint: PaintController
   /** The question as the card words it. */
   prompt: string
+  /** Over the prompt: which round of how many, and in practice the total so far. */
+  heading?: string
+  /** How to answer: the whole country's shape, or where a place is. */
+  mode?: string
+  /** The players while they guess: who is done, who is away. */
+  table?: VrTable
   /** What the page's map shows while painting. */
   detail: MapDetail
   picture: VrPicture | undefined
@@ -100,6 +106,8 @@ export interface VrAction {
   label: string
   press(): void
   enabled?: boolean
+  /** For what can't be undone: the label a first press shows, asking for a second. */
+  confirm?: string
 }
 
 /** After a round: its answer and score. */
@@ -113,7 +121,9 @@ export interface VrReveal {
   /** A line of interest about the answer. */
   fact?: string
   scoreLine: string
-  /** Everyone's paint in their colours; your own paint when absent. */
+  /** What the paint risked and what the distance cost, or what kept it from the country's shape. */
+  why?: string
+  /** The paint shown in players' colours, as the score table picks it; your own paint when absent. */
   paints?: { layer: PaintLayer; colour: string }[]
   table?: VrTable
   note?: string
@@ -133,12 +143,16 @@ export interface VrSummary {
 }
 
 /** What the headset shows: a menu, a round to paint, its answer, or the final score. */
-export type VrView =
+export type VrView = (
   | { kind: "paint"; round: VrRound }
   | { kind: "reveal"; round: VrRound; reveal: VrReveal }
   | { kind: "done"; summary: VrSummary }
   /** Before a game: the home screen or a game's lobby. */
   | { kind: "lobby"; summary: VrSummary }
+) & {
+  /** Below the main actions: leaving, taking a seat, the host's controls. */
+  more?: VrAction[]
+}
 
 const HANDS = ["left", "right"] as const
 const HEADINGS: Record<VrView["kind"], string> = {
@@ -147,6 +161,10 @@ const HEADINGS: Record<VrView["kind"], string> = {
   reveal: "THE ANSWER",
   done: "GAME OVER"
 }
+/** As many as the menu has buttons for, below the main actions. */
+const MORE = 4
+/** How long a press waits for its confirming second press. */
+const CONFIRM_S = 4
 /** Rebuilding the paint is the costly part of a stroke, so at most this often. */
 const PAINT_REDRAW_S = 0.1
 const PANEL_M = 0.38
@@ -170,6 +188,7 @@ export class Vr {
   clicks = 0
   private view: VrView | undefined = undefined
   private pictureKey = ""
+  private paintsKey = ""
   private stroking = false
   private placed = false
   private paintDirty = true
@@ -195,6 +214,9 @@ export class Vr {
   private readonly eye = new Vector3()
   /** What the menu last said, so it is set only when it changes. */
   private doneText = ""
+  /** An action pressed once, waiting for its confirming press until `until`. */
+  private armed: { action: VrAction; until: number } | undefined = undefined
+  private now = 0
   private clockText = ""
   private readonly tools: Record<Hand, HandTool>
   private readonly panel: Entity
@@ -286,7 +308,7 @@ export class Vr {
         ])
       ) as Record<WristButton, () => void>
     )
-    this.scores = new ScoreBoard(world)
+    this.scores = new ScoreBoard(world, () => this.clicks++)
     world.scene.add(this.board.mesh)
 
     void navigator.xr?.isSessionSupported(SessionMode.ImmersiveAR).then((ok) => {
@@ -378,7 +400,15 @@ export class Vr {
       view.kind === "reveal" || (view.kind === "paint" && ["physical", "political"].includes(view.round.detail))
     )
     this.globe.showBorders(view.kind === "reveal" || (view.kind === "paint" && view.round.detail === "political"))
-    this.scores.show(view.kind === "reveal" ? view.reveal.table : "summary" in view ? view.summary.table : undefined)
+    this.scores.show(
+      view.kind === "reveal" ? view.reveal.table : "summary" in view ? view.summary.table : view.round.table
+    )
+    // Players' colours tell them apart, so they tell whose paint is shown.
+    const paintsKey = view.kind === "reveal" ? (view.reveal.paints?.map((p) => p.colour).join() ?? "own") : ""
+    if (paintsKey !== this.paintsKey) {
+      this.paintsKey = paintsKey
+      this.paintDirty = true
+    }
     this.board.show("summary" in view ? view.summary.board : undefined)
     const flags = view.kind === "reveal" ? view.reveal.flags : undefined
     this.flagPins.show(flags?.on ? flags.pins : undefined)
@@ -492,14 +522,36 @@ export class Vr {
   }
 
   /** What the menu offers, for the browser tests. */
-  get menuShown(): { done: string; clock: string; unlock: boolean; actions: { label: string; enabled: boolean }[] } {
-    const round = this.view?.kind === "paint" ? this.view.round : undefined
+  get menuShown(): {
+    done: string
+    clock: string
+    unlock: boolean
+    actions: { label: string; enabled: boolean }[]
+    more: { label: string; enabled: boolean }[]
+    heading: string
+    mode: string | undefined
+    why: string | undefined
+    note: string | undefined
+  } {
+    const view = this.view
+    const round = view?.kind === "paint" ? view.round : undefined
+    const shown = (a: VrAction) => ({ label: this.label(a), enabled: a.enabled !== false })
     return {
       done: this.doneText,
       clock: this.clockText,
       unlock: round?.unlock !== undefined,
-      actions: this.actions.map((a) => ({ label: a.label, enabled: a.enabled !== false }))
+      actions: this.actions.map(shown),
+      more: (view?.more ?? []).slice(0, MORE).map(shown),
+      heading: view ? this.heading(view) : "",
+      mode: round?.mode,
+      why: view?.kind === "reveal" ? view.reveal.why : undefined,
+      note: view && this.note(view)
     }
+  }
+
+  /** What each hand holds, for the browser tests. */
+  get toolInHand(): Record<Hand, string> {
+    return { left: this.tools.left.tool, right: this.tools.right.tool }
   }
 
   /** Whether the page's map shows over the globe, for the browser tests. */
@@ -514,10 +566,20 @@ export class Vr {
   }
 
   /** Whether a hand holds the question's picture, and where it is, for the browser tests. */
-  get pictureHeld(): { held: boolean; at: [number, number, number]; facing: [number, number, number] } {
+  get pictureHeld(): {
+    held: boolean
+    at: [number, number, number]
+    facing: [number, number, number]
+    back: "reverse" | "postcard" | undefined
+  } {
     const p = this.picture.mesh.getWorldPosition(new Vector3())
     const f = this.picture.mesh.getWorldDirection(new Vector3())
-    return { held: this.picture.heldBy !== undefined, at: [p.x, p.y, p.z], facing: [f.x, f.y, f.z] }
+    return {
+      held: this.picture.heldBy !== undefined,
+      at: [p.x, p.y, p.z],
+      facing: [f.x, f.y, f.z],
+      back: this.picture.back
+    }
   }
 
   /**
@@ -618,6 +680,11 @@ export class Vr {
     return [p.x, p.y, p.z]
   }
 
+  /** Where a row of the score table is, for the browser tests. */
+  scoreRowAt(i: number): [number, number, number] {
+    return this.scores.rowAt(i)
+  }
+
   exit(): void {
     if (this.active.value) this.world.exitXR()
   }
@@ -639,6 +706,11 @@ export class Vr {
 
   private frame(dt: number, now: number): void {
     this.frames++
+    this.now = now
+    if (this.armed && now > this.armed.until) {
+      this.armed = undefined
+      this.applyView()
+    }
     this.showControllers(this.painting === undefined)
     if (!this.view) return
     const { player } = this.world
@@ -715,13 +787,16 @@ export class Vr {
       return
     }
 
-    // A swaps the right hand's tool, X the left's.
+    // A steps through the right hand's tools, X the left's: Fill too on a country round.
+    const fillable = round.paint.fillable.value
+    const order: SprayTool[] = fillable ? ["paint", "erase", "fill"] : ["paint", "erase"]
     for (const [h, button] of [
       ["right", InputComponent.A_Button],
       ["left", InputComponent.X_Button]
     ] as const) {
       const tool = this.tools[h]
-      if (pads[h]?.getButtonDown(button)) tool.setTool(tool.tool === "paint" ? "erase" : "paint")
+      if (!fillable && tool.tool === "fill") tool.setTool(h === "left" ? "erase" : "paint")
+      if (pads[h]?.getButtonDown(button)) tool.setTool(order[(order.indexOf(tool.tool) + 1) % order.length]!)
     }
 
     // The trigger also presses the menu's buttons; pointing at it, it sprays nothing.
@@ -735,11 +810,15 @@ export class Vr {
       : HANDS.find(
           (h, i) =>
             this.tools[h].touching(this.globe) !== undefined ||
-            (!this.tools[h].busy && triggers[i]! > TRIGGER_DEAD && this.tools[h].aim(this.globe) !== undefined)
+            (!this.tools[h].busy &&
+              this.tools[h].tool !== "fill" &&
+              triggers[i]! > TRIGGER_DEAD &&
+              this.tools[h].aim(this.globe) !== undefined)
         )
-    if (working && !this.stroking) {
+    const workingTool = working && this.tools[working].tool
+    if (workingTool && workingTool !== "fill" && !this.stroking) {
       // Both hands make one undo step; the first sets the stroke's sound.
-      round.paint.beginOutsideStroke(this.tools[working].tool)
+      round.paint.beginOutsideStroke(workingTool)
       this.stroking = true
     }
     // Every hand updates, even once one has sprayed: each moves its own spot.
@@ -812,16 +891,40 @@ export class Vr {
       })
     on("done", () => this.painting?.done())
     on("unlock", () => this.view?.kind === "paint" && this.view.round.unlock?.())
-    for (const i of [0, 1]) {
-      on(`act${i}`, () => {
-        const action = this.actions[i]
-        if (action && action.enabled !== false) action.press()
-      })
-    }
+    for (const i of [0, 1]) on(`act${i}`, () => this.press(this.actions[i]))
+    for (let i = 0; i < MORE; i++) on(`more${i}`, () => this.press(this.view?.more?.[i]))
+    on("sound", () => {
+      soundOn.value = !soundOn.value
+      this.applyView()
+    })
     on("flags", () => this.view?.kind === "reveal" && this.view.reveal.flags?.toggle())
     on("passthrough", () => this.togglePassthrough())
     on("exit", () => this.exit())
     this.applyView()
+  }
+
+  /** An action asking for confirmation waits for a second press. */
+  private press(action: VrAction | undefined): void {
+    if (!action || action.enabled === false) return
+    if (action.confirm && this.armed?.action.label !== action.label) {
+      this.armed = { action, until: this.now + CONFIRM_S }
+      this.applyView()
+      return
+    }
+    this.armed = undefined
+    action.press()
+  }
+
+  private label(action: VrAction): string {
+    return this.armed?.action.label === action.label && action.confirm ? action.confirm : action.label
+  }
+
+  private heading(view: VrView): string {
+    return (view.kind === "paint" && view.round.heading) || HEADINGS[view.kind]
+  }
+
+  private note(view: VrView): string | undefined {
+    return view.kind === "paint" ? view.round.note : view.kind === "reveal" ? view.reveal.note : view.summary.note
   }
 
   private get actions(): VrAction[] {
@@ -858,11 +961,19 @@ export class Vr {
     const round = view.kind === "paint" ? view.round : undefined
     const painting = round?.playing === true && round.unlock === undefined
     show("hint", painting)
+    text(
+      "hint",
+      round?.paint.fillable.value
+        ? "Turn your left palm up for paint tools and hints. A or X brings out the fill pail: a pull fills the country it points at."
+        : "Turn your left palm up for paint tools and hints."
+    )
+    show("mode", round?.mode !== undefined)
+    if (round?.mode) text("mode", round.mode)
     show("done", painting)
     show("unlock", round?.unlock !== undefined)
     show("clock", round?.msLeft !== undefined)
     show("score", round === undefined)
-    const note = round?.note ?? reveal?.note ?? summary?.note
+    const note = this.note(view)
     show("note", note !== undefined)
     if (note !== undefined) text("note", note)
     const actions = this.actions
@@ -870,19 +981,31 @@ export class Vr {
       const action = actions[i]
       show(`act${i}`, action !== undefined)
       if (!action) continue
-      text(`act${i}Label`, action.label)
+      text(`act${i}Label`, this.label(action))
       doc.getElementById(`act${i}`)?.setProperties({ disabled: action.enabled === false })
     }
-    text("heading", HEADINGS[view.kind])
+    const more = view.more ?? []
+    show("more", more.length > 0)
+    for (let i = 0; i < MORE; i++) {
+      const action = more[i]
+      show(`more${i}`, action !== undefined)
+      if (!action) continue
+      text(`more${i}Label`, this.label(action))
+      doc.getElementById(`more${i}`)?.setProperties({ disabled: action.enabled === false })
+    }
+    text("soundLabel", soundOn.value ? "Sound on" : "Sound off")
+    show("passthrough", this.passthroughOffered)
+    text("heading", this.heading(view))
     show("extras", reveal?.flags !== undefined)
-    show("modes", this.passthroughOffered)
     text("passthroughLabel", headsetPassthrough.value ? "Show space" : "See your room")
     if (reveal?.flags) text("flagsLabel", reveal.flags.on ? "Hide all flags" : "Show all flags")
     if (round) text("prompt", round.prompt)
     show("fact", reveal?.fact !== undefined)
+    show("why", reveal?.why !== undefined)
     if (reveal) {
       text("prompt", reveal.label)
       text("score", reveal.scoreLine)
+      if (reveal.why !== undefined) text("why", reveal.why)
       if (reveal.fact !== undefined) text("fact", reveal.fact)
     }
     if (summary) {

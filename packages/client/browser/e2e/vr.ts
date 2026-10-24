@@ -36,6 +36,11 @@ checks.check(
 )
 await round.pause(1500)
 await round.screenshot(`${out}/vr-1-entered.png`)
+const startMenu = await headset.menu()
+checks.check(
+  startMenu.heading.startsWith("QUESTION 1 OF") && startMenu.more.map((m) => m.label).join() === "Home",
+  `the menu heads the question and offers Home (${startMenu.heading}; ${startMenu.more.map((m) => m.label).join()})`
+)
 checks.check(!(await headset.globeBordersShown()), "the globe shows no borders when the page's map would not")
 
 // The globe starts 45 cm ahead of the eyes and 30 cm below them, its near
@@ -205,16 +210,15 @@ const first = new Set(await round.map.yourPaintCellIds())
 await round.paintTools.undoWithKeyboard()
 await headset.pointRight([centre[0] + 0.2, centre[1], centre[2] + 0.1], centre)
 await round.pause(200)
-// The globe turns between frames that both see the grip held, and the
-// emulator draws few frames a second: hold still at each end long enough
-// for several.
+// The globe turns between frames that both see the grip held: hold each
+// pose for a few frames.
 await headset.rightGrip(1)
-await round.pause(500)
+await headset.frames(5)
 for (let i = 1; i <= 10; i++) {
   await headset.pointRight([centre[0] + 0.2 - 0.03 * i, centre[1], centre[2] + 0.1], centre)
-  await round.pause(150)
+  await headset.frames(3)
 }
-await round.pause(500)
+await headset.frames(5)
 await headset.rightGrip(0)
 await round.pause(1000)
 await round.screenshot(`${out}/vr-4-spun.png`)
@@ -271,6 +275,8 @@ const vrFact = await until(
   (f) => f !== undefined
 )
 checks.check((vrFact ?? "").length > 20, `with a line about it (${vrFact})`)
+const why = (await headset.menu()).why
+checks.check((why ?? "").length > 20, `and why it scored that (${why})`)
 checks.check(!(await headset.toolsHeld()), "the hands put the can and eraser away for the answer")
 checks.check(
   await until(
@@ -341,6 +347,8 @@ const flagTab = await newTab(browser, "vr-flag", {
   baseUrl: process.argv[3],
   initScript: () => {
     localStorage.setItem("wa.practicePool", "flags")
+    // The Political map, where a country round offers the fill tool.
+    localStorage.setItem("wa.mapDetail", "political")
     // As if loading outlasted the press: the browser would refuse it the headset.
     Object.defineProperty(UserActivation.prototype, "isActive", { get: () => false })
   }
@@ -401,11 +409,62 @@ checks.check(
   `and turns with the hand (${pictureTurn.toFixed(2)} rad, the hand ${handTurn.toFixed(2)})`
 )
 await flagRound.screenshot(`${out}/vr-9b-tilted.png`)
+// Turned right round, it shows its back: the flag's reverse.
+const grip: [number, number, number] = [hand[0] + 0.1, hand[1], hand[2]]
+const awayTo = grip.map((c, i) => 2 * c - home[i]!) as [number, number, number]
+await flagHeadset.pointRight(grip, awayTo)
+await flagRound.pause(800)
+const turned = await flagHeadset.pictureHeld()
+const turnedBy = angle(held.facing, turned.facing)
+checks.check(
+  turned.held && turnedBy > 2.5 && turned.back === "reverse",
+  `turned round, it shows the flag's reverse (${turnedBy.toFixed(2)} rad)`
+)
+await flagRound.screenshot(`${out}/vr-9c-back.png`)
 await flagHeadset.rightGrip(0)
 await flagRound.pause(500)
 const back = await flagHeadset.pictureHeld()
 const off = Math.hypot(...back.at.map((c, i) => c - home[i]!))
 checks.check(!back.held && off < 0.01, `letting go puts it back (${off.toFixed(3)} m off)`)
+
+// It says how to answer; A brings out the fill pail, whose pull fills the
+// country it points at, and a second pull takes the fill off.
+const mode = (await flagHeadset.menu()).mode
+checks.check(mode?.startsWith("Paint ") === true, `a flag round says how to answer it (${mode})`)
+await flagHeadset.button("right", "a-button")
+await flagHeadset.button("right", "a-button")
+checks.check((await flagHeadset.toolInHand()).right === "fill", "A twice brings out the fill pail")
+const [fx, fy, fz] = await flagHeadset.eyes()
+const fillFrom: [number, number, number] = [fx + 0.15, fy - 0.25, fz - 0.15]
+// Up and right of the globe's middle, at the prime meridian and the equator: the Sahel.
+const sahel: [number, number, number] = [fx + 0.06, fy - 0.3 + 0.05, fz - 0.67 + 0.2]
+const pull = async () => {
+  await flagHeadset.pointRight(fillFrom, sahel)
+  await flagHeadset.frames(3)
+  await flagHeadset.rightTrigger(1)
+  await flagHeadset.frames(3)
+  await flagHeadset.rightTrigger(0)
+  await flagHeadset.frames(3)
+}
+await pull()
+const filled = await until(
+  "the filled country",
+  () => flagRound.map.yourPaintCells(),
+  (n) => n > 0
+)
+checks.check(filled > 0, `a pull fills the country it points at (${filled} cells)`)
+await flagRound.screenshot(`${out}/vr-9d-filled.png`)
+await pull()
+checks.check(
+  (await until(
+    "the fill taken off",
+    () => flagRound.map.yourPaintCells(),
+    (n) => n === 0
+  )) === 0,
+  "and a second pull takes it off"
+)
+await flagHeadset.button("right", "a-button")
+checks.check((await flagHeadset.toolInHand()).right === "paint", "A again goes back to the spray can")
 
 // Pass the flag round: its reveal offers every country's flag, in VR and on the page.
 const flagCan: [number, number, number] = [hand[0], hand[1], hand[2]]

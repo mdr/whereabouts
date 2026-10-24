@@ -1,5 +1,6 @@
 /**
- * A tool in each hand: a spray can, or an eraser. The trigger works along
+ * A tool in each hand: a spray can, an eraser, or on a country round a pail
+ * that fills the country under the ray at a pull. The trigger works along
  * the controller's ray, as hard as it is pulled; the nearer the hand to the
  * globe, the smaller and denser the spot, like real spray paint. A ring on
  * the globe shows where the spot would land before anything happens. The
@@ -23,11 +24,11 @@ import { greatCircleDistance, type LatLon } from "@whereabouts/shared"
 import type { PaintController } from "../paint-controller"
 import type { Theme } from "../themes"
 import type { Globe } from "./globe"
-import { buildCan, buildEraser } from "./models"
+import { buildCan, buildEraser, buildPail } from "./models"
 import { SprayParticles } from "./particles"
 import { localToLatLon, raySphere } from "./sphere"
 
-export type SprayTool = "paint" | "erase"
+export type SprayTool = "paint" | "erase" | "fill"
 
 const EARTH_KM = 6371
 /** Half the spray cone's angle: the spot's radius is this much of the can's distance. */
@@ -60,6 +61,9 @@ interface Pulsing {
 export class HandTool {
   private readonly can = new Group()
   private readonly eraser = new Group()
+  private readonly pail = new Group()
+  /** The trigger held since a fill, so one pull fills once. */
+  private pulled = false
   private readonly spot: Mesh<RingGeometry, MeshBasicMaterial>
   private readonly particles = new SprayParticles()
   /** The paint's colour, when a player has one of their own. */
@@ -88,7 +92,8 @@ export class HandTool {
     this.theme = theme
     this.can.add(buildCan(theme.ramp[1]))
     this.eraser.add(buildEraser())
-    grip.add(this.can, this.eraser)
+    this.pail.add(buildPail(theme.ramp[1]))
+    grip.add(this.can, this.eraser, this.pail)
 
     this.spot = new Mesh(
       new RingGeometry(0.85, 1, 48),
@@ -125,7 +130,7 @@ export class HandTool {
   }
 
   get held(): boolean {
-    return this.can.visible || this.eraser.visible
+    return this.can.visible || this.eraser.visible || this.pail.visible
   }
 
   /** Puts the tool in the hand, or away. */
@@ -133,6 +138,7 @@ export class HandTool {
     this.holding = on
     this.can.visible = on && this.toolNow === "paint"
     this.eraser.visible = on && this.toolNow === "erase"
+    this.pail.visible = on && this.toolNow === "fill"
   }
 
   /** Moves the droplets already in the air on; returns the seconds since last time. */
@@ -204,6 +210,7 @@ export class HandTool {
     gamepad: Gamepad | undefined
   ): boolean {
     const dt = this.settle(now)
+    if (trigger <= TRIGGER_DEAD) this.pulled = false
     if (this.busy) {
       this.hide()
       return false
@@ -224,6 +231,15 @@ export class HandTool {
     this.spot.scale.setScalar(spotM)
 
     const spraying = paint.enabled.value && trigger > TRIGGER_DEAD
+    if (this.toolNow === "fill") {
+      if (spraying && !this.pulled) {
+        const radiusKm = Math.min(MAX_KM, Math.max(MIN_KM, (spotM / globe.radius) * EARTH_KM))
+        paint.fillOutside(localToLatLon(globe.group.worldToLocal(local.copy(hit))), radiusKm)
+        this.pulse(now, 0.6, gamepad)
+      }
+      this.pulled = spraying
+      return false
+    }
     if (!spraying) {
       this.stroke = undefined
       return false

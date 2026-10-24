@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "preact/hooks"
+import { useEffect, useMemo } from "preact/hooks"
+import { signal } from "@preact/signals"
 import {
   buildDistribution,
   kernelById,
@@ -33,7 +34,15 @@ import type { VrView } from "../vr"
 import { revealTestIds } from "./RevealTestIds"
 
 /** Selection meaning "show nobody's paint", alongside undefined (everyone) and a player id. */
-const NONE = "none"
+export const NONE = "none"
+
+/** Whose paint the reveal shows, on the page and in the headset alike. */
+export const revealShown = signal<string | undefined>(undefined)
+
+/** The results whose paint to show, best first. */
+export function shownResults(results: RoundResultView[], shown: string | undefined): RoundResultView[] {
+  return shown === NONE ? [] : results.filter((r) => r.paint && (shown === undefined || r.playerId === shown))
+}
 
 /**
  * Rows for the reveal list: this round's winner first. Everyone who played,
@@ -67,8 +76,14 @@ export function Reveal({
 }) {
   const paint = usePaint()
   const byId = new Map(view.players.map((p) => [p.id, p]))
-  // undefined shows everyone's guesses at once; a player id shows just theirs; NONE hides all paint.
-  const [selected, setSelected] = useState<string | undefined>(undefined)
+  const selected = revealShown.value
+  const setSelected = (s: string | undefined) => (revealShown.value = s)
+  useEffect(
+    () => () => {
+      revealShown.value = undefined
+    },
+    []
+  )
   const { dialog, ask } = useConfirm()
 
   // A country round shows the country's outline, once the outlines are loaded.
@@ -96,11 +111,7 @@ export function Reveal({
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
   useEffect(() => {
-    const shown =
-      selected === NONE
-        ? []
-        : reveal.results.filter((r) => r.paint && (selected === undefined || r.playerId === selected))
-    const entries = [...shown].reverse().flatMap((r) => {
+    const entries = [...shownResults(reveal.results, selected)].reverse().flatMap((r) => {
       const p = byId.get(r.playerId)
       return p && r.paint ? [{ layer: PaintLayer.fromRecord(r.res, r.paint.cells), colour: colourCss(p.colour) }] : []
     })

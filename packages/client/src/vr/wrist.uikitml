@@ -3,6 +3,7 @@
     flex-direction: column;
     width: 300px;
     padding: 14px;
+    render-order: 10;
   }
   .heading {
     font-size: 13px;

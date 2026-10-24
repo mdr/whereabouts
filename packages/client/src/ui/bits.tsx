@@ -226,6 +226,13 @@ export function RegionHint({ topic }: { topic?: Topic }) {
   return <p class="hint region-hint">Cover the whole {topic ?? "country"}: its shape counts.</p>
 }
 
+/** AnswerMode and RegionHint in a line, for the headset; undefined for a place. */
+export function answerModeText(q: { flag?: unknown; regionId?: unknown; topic?: Topic }): string | undefined {
+  const area = q.regionId !== undefined
+  if (q.flag) return area ? "Paint the whole country: its shape counts." : "Paint where it is: a place, not a shape."
+  return area ? `Cover the whole ${q.topic ?? "country"}: its shape counts.` : undefined
+}
+
 /**
  * How to answer a flag round, big and plain, since the two are painted so
  * differently: cover the whole country, or mark where a small one is.

@@ -14,7 +14,12 @@
   .row {
     flex-direction: row;
     align-items: center;
-    margin-top: 4px;
+    margin-top: 2px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+    border-radius: 6px;
   }
   .swatch {
     width: 12px;
@@ -69,5 +74,8 @@
   <div id="row13" class="row"><div id="swatch13" class="swatch"></div><span id="name13" class="name">-</span><span id="detail13" class="detail">-</span><span id="total13" class="total">-</span></div>
   <div id="row14" class="row"><div id="swatch14" class="swatch"></div><span id="name14" class="name">-</span><span id="detail14" class="detail">-</span><span id="total14" class="total">-</span></div>
   <div id="row15" class="row"><div id="swatch15" class="swatch"></div><span id="name15" class="name">-</span><span id="detail15" class="detail">-</span><span id="total15" class="total">-</span></div>
+  <div id="row16" class="row"><div id="swatch16" class="swatch"></div><span id="name16" class="name">-</span><span id="detail16" class="detail">-</span><span id="total16" class="total">-</span></div>
+  <div id="row17" class="row"><div id="swatch17" class="swatch"></div><span id="name17" class="name">-</span><span id="detail17" class="detail">-</span><span id="total17" class="total">-</span></div>
   <span id="more" class="more">-</span>
+  <span id="hint" class="more">-</span>
 </Panel>

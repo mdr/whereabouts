@@ -1,12 +1,13 @@
 /**
  * The things in the player's hands and the globe's stand, turned and shaped
- * in code: a spray can, an eraser in its sleeve, a wooden stand with a brass
+ * in code: a spray can, an eraser in its sleeve, a paint pail, a wooden stand with a brass
  * yoke. Metal and lacquer reflect a soft room (see `reflections`).
  */
 import {
   BoxGeometry,
   CanvasTexture,
   CylinderGeometry,
+  DoubleSide,
   Group,
   LatheGeometry,
   type Material,
@@ -95,8 +96,12 @@ export function buildCan(brush: string): Group {
     ctx.fillRect(0, 18, 512, 92)
     ctx.fillStyle = "#16202b"
     ctx.font = "bold 44px system-ui, sans-serif"
+    // Twice round the can, each copy within its half.
+    const size = Math.min(44, (44 * 224) / ctx.measureText("WHEREABOUTS").width)
+    ctx.font = `bold ${Math.floor(size)}px system-ui, sans-serif`
+    ctx.textAlign = "center"
     ctx.textBaseline = "middle"
-    for (const x of [24, 280]) ctx.fillText("WHEREABOUTS", x, 66)
+    for (const x of [128, 384]) ctx.fillText("WHEREABOUTS", x, 66)
     ctx.fillStyle = "rgba(255,255,255,0.5)"
     ctx.fillRect(0, 22, 512, 4)
   })
@@ -159,6 +164,47 @@ export function buildEraser(): Group {
   sleeve.position.z = 0.017
   eraser.add(rubber, sleeve)
   return eraser
+}
+
+/** A paint pail lying along -Z, its open top forward and full to the brim in the brush's colour, a wire handle over it. */
+export function buildPail(brush: string): Group {
+  const pail = new Group()
+  const metal = new MeshStandardMaterial({ color: "#c9d1db", metalness: 0.85, roughness: 0.3, side: DoubleSide })
+  const body = new Mesh(
+    lathe([
+      [0, -0.03],
+      [0.022, -0.03],
+      [0.028, 0.026],
+      [0.03, 0.028]
+    ]),
+    metal
+  )
+  const label = canvasTexture(512, 128, (ctx) => {
+    ctx.fillStyle = brush
+    ctx.fillRect(0, 0, 512, 128)
+    ctx.fillStyle = "#16202b"
+    ctx.font = "bold 64px system-ui, sans-serif"
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle"
+    for (const x of [128, 384]) ctx.fillText("FILL", x, 68)
+  })
+  const band = new Mesh(
+    new CylinderGeometry(0.0262, 0.0234, 0.024, 32, 1, true),
+    new MeshStandardMaterial({ map: label, roughness: 0.5 })
+  )
+  const paint = new Mesh(
+    new CylinderGeometry(0.0272, 0.0272, 0.001, 32),
+    new MeshStandardMaterial({ color: brush, roughness: 0.2 })
+  )
+  paint.position.y = 0.022
+  const handle = new Mesh(new TorusGeometry(0.03, 0.0015, 8, 32, Math.PI), metal)
+  handle.position.y = 0.024
+  pail.add(body, band, paint, handle)
+  // Lathes turn about +Y; the pail's mouth points along the ray.
+  pail.rotation.x = -Math.PI / 2
+  const held = new Group()
+  held.add(pail)
+  return held
 }
 
 /**

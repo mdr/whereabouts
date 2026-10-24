@@ -1,15 +1,16 @@
 /**
  * The question's photo or flag, on a card above the VR menu. A grip on it
  * takes it in hand, facing the player, for a closer look; letting go puts
- * it back. WebGL takes only pictures the browser may read back, and the
+ * it back. Turned over, a flag shows its reverse and a photo a postcard's
+ * back. WebGL takes only pictures the browser may read back, and the
  * page's photo links go through redirects that don't allow it, so photos
  * come by Commons' API.
  */
 import {
+  BoxGeometry,
   CanvasTexture,
   Mesh,
   MeshBasicMaterial,
-  PlaneGeometry,
   Raycaster,
   SRGBColorSpace,
   Vector3,
@@ -30,19 +31,39 @@ const MAX_H = 0.26
 const MAX_PX = 1920
 /** How close a hand need be to take the picture without pointing at it. */
 const REACH_M = 0.08
+/** A card's thickness, so it has an edge when turned. */
+const THICK_M = 0.003
+const CARD = "#efe9dd"
+/** BoxGeometry's material groups: the four edges, then front (+z) and back (−z). */
+const FRONT = 4
+const BACK = 5
 
 const raycaster = new Raycaster()
 const at = new Vector3()
 
 export class Picture {
-  readonly mesh: Mesh<PlaneGeometry, MeshBasicMaterial>
+  readonly mesh: Mesh<BoxGeometry, MeshBasicMaterial[]>
   /** Each show() outdates the pictures still loading for earlier ones. */
   private asked = 0
   private held: Hand | undefined = undefined
+  private shownBack: "reverse" | "postcard" | undefined = undefined
 
   constructor() {
-    this.mesh = new Mesh(new PlaneGeometry(1, 1), new MeshBasicMaterial())
+    const edge = new MeshBasicMaterial({ color: CARD })
+    this.mesh = new Mesh(new BoxGeometry(1, 1, THICK_M), [
+      edge,
+      edge,
+      edge,
+      edge,
+      new MeshBasicMaterial(),
+      new MeshBasicMaterial()
+    ])
     this.mesh.visible = false
+  }
+
+  /** What its back shows, for the browser tests. */
+  get back(): "reverse" | "postcard" | undefined {
+    return this.mesh.visible ? this.shownBack : undefined
   }
 
   get height(): number {
@@ -100,9 +121,17 @@ export class Picture {
         texture.colorSpace = SRGBColorSpace
         // Sharp when tilted too; three caps it at what the GPU allows.
         texture.anisotropy = 16
-        this.mesh.material.map?.dispose()
-        this.mesh.material.map = texture
-        this.mesh.material.needsUpdate = true
+        const back = "flag" in picture ? reverse(texture) : postcard(canvas.width / canvas.height)
+        for (const [i, map] of [
+          [FRONT, texture],
+          [BACK, back]
+        ] as const) {
+          const material = this.mesh.material[i]!
+          material.map?.dispose()
+          material.map = map
+          material.needsUpdate = true
+        }
+        this.shownBack = "flag" in picture ? "reverse" : "postcard"
         const size = Math.min(MAX_W / w, MAX_H / h)
         this.mesh.scale.set(w * size, h * size, 1)
         this.mesh.visible = true
@@ -110,6 +139,46 @@ export class Picture {
       (err: unknown) => console.warn("could not load the picture for VR", err)
     )
   }
+}
+
+/** A flag seen from behind: the same, mirrored. */
+function reverse(front: CanvasTexture): CanvasTexture {
+  const t = front.clone()
+  t.repeat.set(-1, 1)
+  t.offset.set(1, 0)
+  return t
+}
+
+/** The back of a postcard, for a photo: a line down the middle, lines to write the address on and a box for the stamp. */
+function postcard(aspect: number): CanvasTexture {
+  const canvas = document.createElement("canvas")
+  canvas.height = 512
+  canvas.width = Math.round(512 * aspect)
+  const { width: w, height: h } = canvas
+  const g = canvas.getContext("2d")!
+  g.fillStyle = CARD
+  g.fillRect(0, 0, w, h)
+  g.strokeStyle = "#b9b0a0"
+  g.lineWidth = 3
+  g.beginPath()
+  g.moveTo(w * 0.55, h * 0.1)
+  g.lineTo(w * 0.55, h * 0.9)
+  for (const y of [0.5, 0.62, 0.74, 0.86]) {
+    g.moveTo(w * 0.6, h * y)
+    g.lineTo(w * 0.94, h * y)
+  }
+  g.stroke()
+  g.setLineDash([8, 6])
+  g.strokeRect(w * 0.94 - h * 0.22, h * 0.08, h * 0.22, h * 0.26)
+  g.fillStyle = "#8a8072"
+  g.font = `600 ${Math.round(h * 0.07)}px system-ui, sans-serif`
+  g.fillText("Where is this?", w * 0.06, h * 0.18)
+  g.font = `${Math.round(h * 0.045)}px system-ui, sans-serif`
+  g.fillText("Whereabouts", w * 0.06, h * 0.9)
+  const t = new CanvasTexture(canvas)
+  t.colorSpace = SRGBColorSpace
+  t.anisotropy = 16
+  return t
 }
 
 async function load(picture: VrPicture): Promise<HTMLImageElement | undefined> {

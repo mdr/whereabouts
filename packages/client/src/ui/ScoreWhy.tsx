@@ -11,8 +11,7 @@ import {
   type RegionQuestion
 } from "@whereabouts/shared"
 
-/** A line under a place's score: what the paint risked, and what the distance cost. */
-export function PointWhy(props: {
+interface PointScore {
   dist: Distribution
   answer: LatLon
   toleranceKm: number
@@ -20,20 +19,27 @@ export function PointWhy(props: {
   A: number
   B: number
   kernel: Kernel
-}) {
+}
+
+/** What the paint risked, and what the distance cost. */
+export function pointWhy({ dist, answer, toleranceKm, score, A, B, kernel }: PointScore): string {
+  return describePoint(explainPoint(dist, answer, toleranceKm, A, B, kernel), score, toleranceKm)
+}
+
+/** What kept the paint from matching a country's shape. */
+export function regionWhy(dist: Distribution, q: RegionQuestion): string {
+  return describeRegion(regionMisfit(dist, q), q.label, q.toleranceKm, edgeName(q.topic))
+}
+
+/** A line under a place's score. */
+export function PointWhy(props: PointScore) {
   const { dist, answer, toleranceKm, score, A, B, kernel } = props
-  const text = useMemo(
-    () => describePoint(explainPoint(dist, answer, toleranceKm, A, B, kernel), score, toleranceKm),
-    [dist, answer, toleranceKm, A, B, kernel.id]
-  )
+  const text = useMemo(() => pointWhy(props), [dist, answer, toleranceKm, score, A, B, kernel.id])
   return <div class="fit">{text}</div>
 }
 
-/** A line under a country's score: what kept the paint from matching it. */
+/** A line under a country's score. */
 export function RegionWhy({ dist, q }: { dist: Distribution; q: RegionQuestion }) {
-  const text = useMemo(
-    () => describeRegion(regionMisfit(dist, q), q.label, q.toleranceKm, edgeName(q.topic)),
-    [dist, q.id]
-  )
+  const text = useMemo(() => regionWhy(dist, q), [dist, q.id])
   return <div class="fit">{text}</div>
 }

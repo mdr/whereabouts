@@ -110,6 +110,11 @@ export class Headset {
     clock: string
     unlock: boolean
     actions: { label: string; enabled: boolean }[]
+    more: { label: string; enabled: boolean }[]
+    heading: string
+    mode: string | undefined
+    why: string | undefined
+    note: string | undefined
   }> {
     return this.#page.evaluate(() => window.whereaboutsVr.menuShown)
   }
@@ -188,7 +193,9 @@ export class Headset {
   }
 
   /** The score table beside the globe, if it shows. */
-  async scoreTable(): Promise<{ title: string; rows: { name: string; total: string }[] } | undefined> {
+  async scoreTable(): Promise<
+    { title: string; rows: { name: string; detail?: string; total: string; selected?: boolean }[] } | undefined
+  > {
     return this.#page.evaluate(() => window.whereaboutsVr.tableShown)
   }
 
@@ -208,7 +215,7 @@ export class Headset {
   }
 
   /** Whether a hand holds the question's picture, where it is, and which way its face points. */
-  async pictureHeld(): Promise<{ held: boolean; at: Vec; facing: Vec }> {
+  async pictureHeld(): Promise<{ held: boolean; at: Vec; facing: Vec; back: "reverse" | "postcard" | undefined }> {
     return this.#page.evaluate(() => window.whereaboutsVr.pictureHeld)
   }
 
@@ -270,21 +277,22 @@ export class Headset {
    */
   async press(from: Vec, at: Vec): Promise<void> {
     await this.pointRight(from, at)
-    await this.#frames(3)
+    await this.frames(3)
     // A stall while it is held can still outlast that: then press again.
     for (let tries = 1; ; tries++) {
       const clicks = await this.#page.evaluate(() => window.whereaboutsVr.clicks)
       await this.trigger("right", 1)
-      await this.#frames(2)
+      await this.frames(2)
       await this.trigger("right", 0)
-      await this.#frames(3)
+      await this.frames(3)
       if ((await this.#page.evaluate(() => window.whereaboutsVr.clicks)) > clicks) return
       if (tries === 3) throw new Error("Three presses and no click")
       console.warn("  (no click: pressing again)")
     }
   }
 
-  async #frames(n: number): Promise<void> {
+  /** Wait for `n` frames to be drawn: the emulator can stall for a second or more, so time is no measure. */
+  async frames(n: number): Promise<void> {
     const start = await this.#page.evaluate(() => window.whereaboutsVr.frames)
     await this.#page.waitForFunction((end) => window.whereaboutsVr.frames >= end, start + n)
   }
@@ -295,6 +303,19 @@ export class Headset {
       x,
       y
     ] as const)
+  }
+
+  /** Press and let go a controller's face button: "a-button" or "x-button" steps through its hand's tools. */
+  async button(hand: Hand, id: "a-button" | "x-button"): Promise<void> {
+    await this.#page.evaluate(([h, id]) => window.headset.controllers[h]!.updateButtonValue(id, 1), [hand, id] as const)
+    await this.frames(3)
+    await this.#page.evaluate(([h, id]) => window.headset.controllers[h]!.updateButtonValue(id, 0), [hand, id] as const)
+    await this.frames(3)
+  }
+
+  /** What each hand holds: paint, erase or fill. */
+  async toolInHand(): Promise<Record<Hand, string>> {
+    return this.#page.evaluate(() => window.whereaboutsVr.toolInHand)
   }
 
   async rightTrigger(value: number): Promise<void> {
@@ -336,14 +357,29 @@ export class Headset {
 
   /** Where a button on the VR menu is. */
   async menuButton(id: string): Promise<Vec> {
-    // Once it has stopped moving: a button just shown is laid out a frame
-    // or two later, and the menu swings clear of a globe zooming in. Counted
-    // in frames, not time: the emulator can stall for a second or more.
-    const at = () =>
-      this.#page.evaluate((id) => {
-        const vr = window.whereaboutsVr
-        return { at: vr.menuButtonAt(id), frame: vr.frames, turning: vr.globeTurning }
-      }, id)
+    return this.#settled(() => this.#page.evaluate((id) => window.whereaboutsVr.menuButtonAt(id), id))
+  }
+
+  /** Where a row of the score table is: Everyone, the players, then Hide paint on the reveal. */
+  async scoreRow(i: number): Promise<Vec> {
+    return this.#settled(() => this.#page.evaluate((i) => window.whereaboutsVr.scoreRowAt(i), i))
+  }
+
+  /**
+   * Where something on a panel is, once it has stopped moving: an element
+   * just shown is laid out a frame or two later, and the panels swing clear
+   * of a globe zooming in. Counted in frames, not time: the emulator can
+   * stall for a second or more.
+   */
+  async #settled(where: () => Promise<Vec>): Promise<Vec> {
+    const at = async () => {
+      const at = await where()
+      const { frame, turning } = await this.#page.evaluate(() => ({
+        frame: window.whereaboutsVr.frames,
+        turning: window.whereaboutsVr.globeTurning
+      }))
+      return { at, frame, turning }
+    }
     let was = await at()
     for (;;) {
       await this.#page.waitForTimeout(100)

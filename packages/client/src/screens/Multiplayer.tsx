@@ -22,7 +22,8 @@ import { Banner } from "../ui/Banner"
 import { Icon } from "../ui/icons"
 import { useGameSounds } from "../ui/useGameSounds"
 import { useSavedSetup } from "../host-setup"
-import { useVrHold } from "../ui/VrButton"
+import { useVrHold, useVrView } from "../ui/VrButton"
+import type { VrAction } from "../vr"
 import { joinAsTestIds, joinedTestIds } from "./MultiplayerTestIds"
 
 export function Multiplayer({ code, create }: { code: RoomCode | undefined; create: boolean }) {
@@ -112,6 +113,16 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
     }
     return (
       <div class="home" data-testid={joinedTestIds.problem}>
+        <VrNotice
+          title={why.title}
+          line={why.detail}
+          actions={[
+            why.missing && code
+              ? { label: `Host game ${code}`, press: () => navigate(`/game/new/${code}`) }
+              : { label: "Host a new game", press: () => navigate("/game/new") },
+            { label: "Back to start", press: () => navigate("/") }
+          ]}
+        />
         <div class="home-card">
           <Banner />
           <h2 data-testid={joinedTestIds.problemTitle}>{why.title}</h2>
@@ -141,6 +152,7 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
   if (!view) {
     return (
       <div class="home">
+        <VrNotice title={create ? "Creating your game…" : `Joining ${code}…`} line="" actions={[]} />
         <div class="home-card">
           <Banner />
           <p class="hint">{create ? "Creating your game…" : `Joining ${code}…`}</p>
@@ -155,6 +167,12 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
       <InGame conn={conn} view={view} />
     </MapView>
   )
+}
+
+/** The headset's view while there is no game to show: joining it, or why not. */
+function VrNotice({ title, line, actions }: { title: string; line: string; actions: VrAction[] }) {
+  useVrView({ kind: "lobby", summary: { title, scoreLine: line, actions } }, title)
+  return undefined
 }
 
 function JoinAs({ code, onJoin }: { code: RoomCode | undefined; onJoin: (name: PlayerName, watch: boolean) => void }) {
