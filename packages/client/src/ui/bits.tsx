@@ -1,12 +1,20 @@
 import type { ComponentChildren } from "preact"
 import { useEffect, useRef, useState } from "preact/hooks"
 import { useElementRef } from "./element-ref"
-import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type QuestionView, type Topic } from "@whereabouts/shared"
+import {
+  commonsImageUrl,
+  commonsPageUrl,
+  wikipediaUrl,
+  type Fact,
+  type QuestionView,
+  type Topic
+} from "@whereabouts/shared"
 import { Icon } from "./icons"
 import { soundOn } from "../settings"
 import { flagUrl } from "../flags"
 import {
   countdownTestIds,
+  factTestIds,
   hudBottomTestIds,
   hudHeaderTestIds,
   questionCardTestIds,
@@ -106,6 +114,22 @@ export function HudHeader({
       <SoundToggle />
       {right}
     </div>
+  )
+}
+
+const FACT_LABELS: Record<Fact["kind"], string> = {
+  fame: "Why it's known",
+  trivia: "Did you know?",
+  flag: "About the flag"
+}
+
+/** A line of interest about the revealed answer. */
+export function FactLine({ fact }: { fact: Fact | undefined }) {
+  if (!fact) return undefined
+  return (
+    <p class="fact" data-testid={factTestIds.fact}>
+      <span class="fact-kind">{FACT_LABELS[fact.kind]}</span> {fact.text}
+    </p>
   )
 }
 

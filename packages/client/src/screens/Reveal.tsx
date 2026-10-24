@@ -4,6 +4,7 @@ import {
   kernelById,
   PaintLayer,
   colourCss,
+  type Fact,
   type GameView,
   type PaintedCountry,
   type PlayerView,
@@ -12,7 +13,7 @@ import {
 } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
-import { Answer, Card, HudBottom, HudHeader, QuestionCard, ScoreParts } from "../ui/bits"
+import { Answer, Card, FactLine, HudBottom, HudHeader, QuestionCard, ScoreParts } from "../ui/bits"
 import { ConnectionNote } from "../ui/ConnectionNote"
 import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
@@ -55,12 +56,14 @@ export function Reveal({
   conn,
   view,
   reveal,
-  vrView
+  vrView,
+  fact
 }: {
   conn: Connection
   view: GameView
   reveal: RevealView
   vrView: VrView
+  fact: Fact | undefined
 }) {
   const paint = usePaint()
   const byId = new Map(view.players.map((p) => [p.id, p]))
@@ -143,6 +146,7 @@ export function Reveal({
           />
           <QuestionCard q={reveal.question} credit countryFlag={region?.countryFlag}>
             <Answer label={reveal.label} wiki={reveal.wiki} />
+            <FactLine fact={fact} />
           </QuestionCard>
           <div class="card score">
             <div class="big">{mine ? Math.round(mine.score) : "—"}</div>

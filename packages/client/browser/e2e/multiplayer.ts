@@ -63,6 +63,12 @@ checks.check(await aliceRoundPage.isStillShown(), "the round stays open while Al
 const aliceRevealPage = await aliceRoundPage.finishLast()
 const bobRevealPage = await bobRoundDonePage.waitForReveal(10_000)
 checks.check(true, "the reveal comes as soon as everyone is done")
+const aliceFact = await aliceRevealPage.fact()
+const bobFact = await bobRevealPage.fact()
+checks.check(
+  aliceFact.length > 20 && aliceFact === bobFact,
+  `everyone gets the same line about the answer (${aliceFact})`
+)
 await aliceRevealPage.screenshot(`${out}/mp-3-reveal-alice.png`)
 checks.check(terrain.count() > 0, `terrain tiles at the reveal (${terrain.count()})`)
 const rows = await aliceRevealPage.rows()

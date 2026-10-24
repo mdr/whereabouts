@@ -57,6 +57,8 @@ console.log("blobs:", await practiceRoundPage.devDrawer.blobs())
 const practiceRevealPage = await practiceRoundPage.submit()
 const score = await practiceRevealPage.score()
 checks.check(/^-?\d+$/.test(score), `a score on the reveal (${score})`)
+const fact = await practiceRevealPage.fact()
+checks.check(fact.length > 20, `and a line about the answer (${fact})`)
 await practiceRevealPage.map.hover({ across: 0.55, down: 0.4 })
 await practiceRevealPage.screenshot(`${out}/3-reveal.png`)
 

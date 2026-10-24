@@ -197,6 +197,11 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.pictureShown)
   }
 
+  /** The line of interest on the headset's reveal. */
+  async fact(): Promise<string | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.factShown)
+  }
+
   /** What the headset shows: a round to paint, its answer, or the final score. */
   async view(): Promise<string | undefined> {
     return this.#page.evaluate(() => window.whereaboutsVr.viewKind)

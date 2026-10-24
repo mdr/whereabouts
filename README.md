@@ -275,7 +275,14 @@ pnpm workspace with three packages:
   Wikipedia article (`wiki`), linked from the reveal so players can read
   about the place; the titles were matched by name and checked against
   the article's coordinates, and a question without one links to a
-  Wikipedia search for its label instead. A game draws the host's share of photo
+  Wikipedia search for its label instead. Under the answer the reveal adds one
+  line of interest from `facts.json`: three or four short facts per article,
+  what makes the place notable, trivia, or on a flag round the flag's own
+  story. Each was researched with its source and a quote from it, then checked
+  separately against that source and a second one; overstated ones were
+  reworded and unsupported ones dropped. `pickFact` alternates notable and
+  trivia by round, seeded by the room's code so everyone sees the same line.
+  A game draws the host's share of photo
   and text questions, topping up from the other kind if one runs short
   (`pickQuestions`), in a shuffled order, preferring questions at least
   50 km apart. The question photo

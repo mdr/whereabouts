@@ -110,6 +110,8 @@ export interface VrReveal {
   focus: LatLon
   /** The map then shows state lines and names, as the page's does. */
   stateRound: boolean
+  /** A line of interest about the answer. */
+  fact?: string
   scoreLine: string
   /** Everyone's paint in their colours; your own paint when absent. */
   paints?: { layer: PaintLayer; colour: string }[]
@@ -381,6 +383,11 @@ export class Vr {
     const flags = view.kind === "reveal" ? view.reveal.flags : undefined
     this.flagPins.show(flags?.on ? flags.pins : undefined)
     this.applyView()
+  }
+
+  /** The reveal's line of interest, for the browser tests. */
+  get factShown(): string | undefined {
+    return this.view?.kind === "reveal" ? this.view.reveal.fact : undefined
   }
 
   /** What the headset shows, for the browser tests. */
@@ -872,9 +879,11 @@ export class Vr {
     text("passthroughLabel", headsetPassthrough.value ? "Show space" : "See your room")
     if (reveal?.flags) text("flagsLabel", reveal.flags.on ? "Hide all flags" : "Show all flags")
     if (round) text("prompt", round.prompt)
+    show("fact", reveal?.fact !== undefined)
     if (reveal) {
       text("prompt", reveal.label)
       text("score", reveal.scoreLine)
+      if (reveal.fact !== undefined) text("fact", reveal.fact)
     }
     if (summary) {
       text("prompt", summary.title)

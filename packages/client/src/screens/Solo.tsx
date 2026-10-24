@@ -39,7 +39,18 @@ import {
 } from "@whereabouts/shared"
 import type { GameMap } from "../map"
 import { MapView, usePaint } from "../ui/MapView"
-import { Answer, AnswerMode, Card, HudBottom, HudHeader, QuestionCard, RegionHint, ScoreParts, fmtKm } from "../ui/bits"
+import {
+  Answer,
+  AnswerMode,
+  Card,
+  FactLine,
+  HudBottom,
+  HudHeader,
+  QuestionCard,
+  RegionHint,
+  ScoreParts,
+  fmtKm
+} from "../ui/bits"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
 import { VrButton, useVrHold, useVrView } from "../ui/VrButton"
 import type { VrRound, VrView } from "../vr"
@@ -53,6 +64,7 @@ import { devMode } from "../dev"
 import { Icon } from "../ui/icons"
 import { featureQuestions, flagQuestions, loadRegions, regions } from "../regions"
 import { useBorders } from "../borders"
+import { useFact } from "../facts"
 import { useFillTool } from "../fill"
 import { preloadPictures } from "../preload"
 import { HintCard } from "../ui/Hint"
@@ -273,6 +285,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   // A flag round's reveal names the country under the pointer, and where the
   // paint mostly was. Loaded while the flag is still being painted.
   const borders = useBorders(q.flag !== undefined)
+  // Each practice run shuffles anew, so its first question picks this run's facts.
+  const fact = useFact(q.wiki, questions[0]!.id, index)
   const vrRound: VrRound = {
     paint,
     prompt: q.prompt,
@@ -306,6 +320,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               answer: isRegion(q) ? { outline: q.outline } : { point: q.answer },
               focus: q.answer,
               stateRound,
+              fact: fact?.text,
               scoreLine: `${revealed.dist ? "" : "Passed: "}${pts(revealed.result.score)} this round, ${pts(total)} in all`,
               table: roundsTable(results),
               actions: [{ label: index + 1 >= questions.length ? "Finish" : "Next question", press: next }],
@@ -428,6 +443,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             {header}
             <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined}>
               <Answer label={q.label} wiki={q.wiki} />
+              <FactLine fact={fact} />
             </QuestionCard>
             <div class="card score">
               <div class="big" data-testid={soloTestIds.roundScore}>

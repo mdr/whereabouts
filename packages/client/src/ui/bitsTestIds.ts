@@ -16,6 +16,10 @@ export const questionCardTestIds = {
   photo: "QuestionCard.photo"
 }
 
+export const factTestIds = {
+  fact: "Fact.fact"
+}
+
 export const countdownTestIds = {
   countdown: "Countdown.countdown"
 }

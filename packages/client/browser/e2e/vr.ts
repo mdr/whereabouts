@@ -265,6 +265,12 @@ const revealed = await until(
   (v) => v === "reveal"
 )
 checks.check((await headset.inSession()) && revealed === "reveal", "submitting shows the answer in VR")
+const vrFact = await until(
+  "the line about the answer",
+  () => headset.fact(),
+  (f) => f !== undefined
+)
+checks.check((vrFact ?? "").length > 20, `with a line about it (${vrFact})`)
 checks.check(!(await headset.toolsHeld()), "the hands put the can and eraser away for the answer")
 checks.check(
   await until(

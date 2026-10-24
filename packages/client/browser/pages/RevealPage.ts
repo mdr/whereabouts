@@ -1,4 +1,5 @@
 import { revealTestIds } from "../../src/screens/RevealTestIds.ts"
+import { factTestIds } from "../../src/ui/bitsTestIds.ts"
 import { Hud } from "./Hud.ts"
 import { MapPanel } from "./MapPanel.ts"
 import { ResultsPage } from "./ResultsPage.ts"
@@ -35,6 +36,11 @@ export class RevealPage extends Screen {
 
   async isStillShown(): Promise<boolean> {
     return (await this.page.getByTestId(revealTestIds.scoresList).count()) > 0
+  }
+
+  /** The line of interest about the answer, once the facts have loaded. */
+  async fact(): Promise<string> {
+    return text(this.page.getByTestId(factTestIds.fact))
   }
 
   /** The players' rows, in the order shown. */

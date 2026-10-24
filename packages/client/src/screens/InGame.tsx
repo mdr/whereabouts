@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from "preact/hooks"
-import { PaintLayer, compactRecord, colourCss, type FlagCode, type GameView, type HintAxis } from "@whereabouts/shared"
+import {
+  PaintLayer,
+  compactRecord,
+  colourCss,
+  type Fact,
+  type FlagCode,
+  type GameView,
+  type HintAxis
+} from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { AnswerMode, Card, Countdown, HudHeader, QuestionCard, RegionHint } from "../ui/bits"
@@ -25,6 +33,7 @@ import type { VrView } from "../vr"
 import type { PaintController } from "../paint-controller"
 import { revealOrder } from "./Reveal"
 import { inGameTestIds } from "./InGameTestIds"
+import { useFact } from "../facts"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint()
@@ -143,11 +152,14 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   // A country round shows the country's flag beside its name, once the outlines have loaded.
   const region = useRegion(question?.regionId)
 
-  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, region })
+  // The room's code, so everyone in the game sees the same one.
+  const fact = useFact(view.reveal?.wiki, view.code, view.reveal?.index ?? 0)
+
+  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, region, fact })
   useVrView(vrView, `${view.phase} ${roundKey}`)
 
   if (view.phase === "reveal" && view.reveal) {
-    return <Reveal conn={conn} view={view} reveal={view.reveal} vrView={vrView} />
+    return <Reveal conn={conn} view={view} reveal={view.reveal} vrView={vrView} fact={fact} />
   }
 
   const round = view.round!
@@ -262,12 +274,14 @@ function gameVrView(
     lockIn,
     timeUp,
     sittingOut,
-    region
+    region,
+    fact
   }: {
     lockIn: () => void
     timeUp: boolean
     sittingOut: boolean
     region: { outline: number[][][][]; countryFlag?: FlagCode } | undefined
+    fact: Fact | undefined
   }
 ): VrView {
   const question = (view.round ?? view.reveal)!.question
@@ -314,6 +328,7 @@ function gameVrView(
       answer: region ? { outline: region.outline } : { point: reveal.answer },
       focus: reveal.answer,
       stateRound: question.topic === "state",
+      fact: fact?.text,
       scoreLine: mine
         ? `${mine.paint ? "" : "Passed: "}${pts(mine.score)} this round, ${pts(me?.score ?? 0)} in all`
         : "You sat this one out",

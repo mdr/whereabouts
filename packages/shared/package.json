@@ -11,7 +11,8 @@
     "./features.json": "./features.json",
     "./land.json": "./land.json",
     "./water.json": "./water.json",
-    "./borders.json": "./borders.json"
+    "./borders.json": "./borders.json",
+    "./facts.json": "./facts.json"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
