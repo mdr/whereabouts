@@ -43,7 +43,7 @@
             inherit (finalAttrs) pname version src;
             inherit pnpm;
             fetcherVersion = 4;
-            hash = "sha256-7Csfpkki1gnUoOPLZRfMJv+pOyTqVYoj0bLHqZLRTc8=";
+            hash = "sha256-mlK4CTmTSU4T4oEgUiv928Mc1YsShg2hmjnFrvkaco0=";
           };
 
           # Keep corepack out of the way, as in the dev shell.
