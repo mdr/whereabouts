@@ -94,6 +94,31 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.colourShown)
   }
 
+  /** Whether national borders show on the globe. */
+  async globeBordersShown(): Promise<boolean> {
+    return this.#page.evaluate(() => window.whereaboutsVr.bordersShown)
+  }
+
+  /** What the menu's Done button says: Submit, or Pass with nothing painted. */
+  async doneLabel(): Promise<string> {
+    return (await this.menu()).done
+  }
+
+  /** What the menu offers: Done's label, the clock, Keep editing, and the buttons after a round. */
+  async menu(): Promise<{
+    done: string
+    clock: string
+    unlock: boolean
+    actions: { label: string; enabled: boolean }[]
+  }> {
+    return this.#page.evaluate(() => window.whereaboutsVr.menuShown)
+  }
+
+  /** The score table beside the globe, if it shows. */
+  async scoreTable(): Promise<{ title: string; rows: { name: string; total: string }[] } | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.tableShown)
+  }
+
   /** The question's picture over the VR menu, width by height in metres. */
   async picture(): Promise<[number, number] | undefined> {
     return this.#page.evaluate(() => window.whereaboutsVr.pictureShown)

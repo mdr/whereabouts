@@ -25,6 +25,7 @@ import {
   greatCircleDistance,
   kernelById,
   scoreDistribution,
+  PASS_SCORE,
   scoreFromParts,
   showsLakes,
   shuffle,
@@ -40,8 +41,9 @@ import type { GameMap } from "../map"
 import { MapView, usePaint } from "../ui/MapView"
 import { Answer, AnswerMode, Card, HudBottom, HudHeader, QuestionCard, RegionHint, ScoreParts, fmtKm } from "../ui/bits"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
-import { VrButton, useVrView } from "../ui/VrButton"
+import { VrButton, useVrSession, useVrView } from "../ui/VrButton"
 import type { VrRound, VrView } from "../vr"
+import type { VrTable } from "../vr/scores"
 import type { VrPicture } from "../vr/picture"
 import { Banner } from "../ui/Banner"
 import { DevDrawer } from "../ui/DevDrawer"
@@ -55,6 +57,7 @@ import { preloadPictures } from "../preload"
 import { HintCard } from "../ui/Hint"
 import { FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
 import { PointWhy, RegionWhy } from "../ui/ScoreWhy"
+import { sound } from "../sound"
 import { soloTestIds } from "./SoloTestIds"
 
 type PracticeQuestion = Question | RegionQuestion
@@ -103,6 +106,18 @@ function showAnswer(gameMap: GameMap, q: PracticeQuestion): void {
 interface RoundResult {
   question: PracticeQuestion
   score: number
+}
+
+const pts = (n: number) => `${Math.round(n).toLocaleString()} pts`
+
+/** The rounds so far, latest first, for the headset's score table. */
+function roundsTable(results: RoundResult[]): VrTable {
+  return {
+    title: "Your rounds",
+    rows: results
+      .map((r, i) => ({ name: `${i + 1}. ${r.question.label}`, total: Math.round(r.score).toLocaleString() }))
+      .reverse()
+  }
 }
 
 export function Solo() {
@@ -154,7 +169,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<"paint" | "reveal" | "done">("paint")
   const [results, setResults] = useState<RoundResult[]>([])
-  const [revealed, setRevealed] = useState<{ dist: Distribution; result: RoundResult } | undefined>(undefined)
+  // No distribution for a pass.
+  const [revealed, setRevealed] = useState<{ dist?: Distribution; result: RoundResult } | undefined>(undefined)
   const hover = useSignal<LatLon | undefined>(undefined)
   // Practice hints are unlimited, still one per question.
   const [hint, setHint] = useState<HintBand | undefined>(undefined)
@@ -214,9 +230,12 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     return () => window.removeEventListener("keydown", onKey)
   })
 
+  // With nothing painted, a pass: it scores PASS_SCORE, as in a game.
   function submit() {
-    const dist = buildDistribution(paint.layer.toCells(), paint.floor.value)
-    const { score } = scoreQuestion(dist, q, kernel)
+    const passed = paint.layer.isEmpty
+    if (passed) sound.play("chicken")
+    const dist = passed ? undefined : buildDistribution(paint.layer.toCells(), paint.floor.value)
+    const score = dist ? scoreQuestion(dist, q, kernel).score : PASS_SCORE.score
     const result = { question: q, score }
     setResults((r) => [...r, result])
     setRevealed({ dist, result })
@@ -256,12 +275,23 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     picture: vrPicture(q),
     water: q.topic === "lake" || q.topic === "sea",
     hint,
+    hintsLeft: "unlimited",
     useHint,
-    submit
+    doneLabel: "Submit",
+    done: submit,
+    playing: true
   }
   const vrView: VrView =
     phase === "done"
-      ? { kind: "done", summary: { total, max: questions.length * 1000, again: restart } }
+      ? {
+          kind: "done",
+          summary: {
+            title: "Final score",
+            scoreLine: `${pts(total)} out of ${(questions.length * 1000).toLocaleString()}`,
+            table: roundsTable(results),
+            actions: [{ label: "Play again", press: restart }]
+          }
+        }
       : phase === "reveal" && revealed
         ? {
             kind: "reveal",
@@ -271,14 +301,14 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               answer: isRegion(q) ? { outline: q.outline } : { point: q.answer },
               focus: q.answer,
               stateRound,
-              score: revealed.result.score,
-              total,
-              last: index + 1 >= questions.length,
-              next
+              scoreLine: `${revealed.dist ? "" : "Passed: "}${pts(revealed.result.score)} this round, ${pts(total)} in all`,
+              table: roundsTable(results),
+              actions: [{ label: index + 1 >= questions.length ? "Finish" : "Next question", press: next }]
             }
           }
         : { kind: "paint", round: vrRound }
   useVrView(vrView, `${phase} ${index} ${questions[0]?.id} ${hint?.axis}`)
+  useVrSession()
 
   // A flag round's reveal names the country under the pointer, and where the
   // paint mostly was. Loaded while the flag is still being painted.
@@ -291,6 +321,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   // Re-score the revealed paint if the kernel changes on the reveal screen.
   const shownResult = useMemo(() => {
     if (!revealed) return undefined
+    if (!revealed.dist) return { score: PASS_SCORE.score, parts: { A: PASS_SCORE.A, B: PASS_SCORE.B } }
     const { score, parts } = scoreQuestion(revealed.dist, q, kernel)
     return { score, parts }
   }, [revealed, kernel.id])
@@ -368,13 +399,14 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   }
 
   if (phase === "reveal" && revealed && shownResult) {
+    const dist = revealed.dist
     const h = hover.value
     // "What if the answer were here" only means something for a point answer.
     let hoverText: string | undefined = isRegion(q)
       ? undefined
       : "Move the mouse over the map to see the score for other answers."
-    if (h && !isRegion(q)) {
-      const A = similarityToAnswer(revealed.dist, toXyz(h), q.toleranceKm, kernel)
+    if (h && !isRegion(q) && dist) {
+      const A = similarityToAnswer(dist, toXyz(h), q.toleranceKm, kernel)
       const s = "B" in shownResult.parts ? scoreFromParts(A, shownResult.parts.B) : 0
       const d = greatCircleDistance(h, q.answer)
       hoverText = `If the answer were here: ${Math.round(s)} · ${fmtKm(d)} from the real answer (${(d / q.toleranceKm).toFixed(1)} tolerances)`
@@ -393,13 +425,13 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               <div class="big" data-testid={soloTestIds.roundScore}>
                 {Math.round(shownResult.score)}
               </div>
-              <div class="label">this round</div>
-              {isRegion(q) ? (
-                <RegionWhy dist={revealed.dist} q={q} />
+              <div class="label">{dist ? "this round" : "you passed this round"}</div>
+              {!dist ? undefined : isRegion(q) ? (
+                <RegionWhy dist={dist} q={q} />
               ) : (
                 "A" in shownResult.parts && (
                   <PointWhy
-                    dist={revealed.dist}
+                    dist={dist}
                     answer={q.answer}
                     toleranceKm={q.toleranceKm}
                     score={shownResult.score}
@@ -426,7 +458,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           <Card title="Score">
             <PartsLine parts={shownResult.parts} />
             {hoverText && <div class="hover-score">{hoverText}</div>}
-            {!isRegion(q) && <KernelComparison dist={revealed.dist} q={q} active={kernel.id} />}
+            {!isRegion(q) && dist && <KernelComparison dist={dist} q={q} active={kernel.id} />}
           </Card>
           {cheats}
           <PaintDev />
@@ -450,10 +482,14 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           <button
             class="primary"
             onClick={submit}
-            disabled={paint.isEmpty.value}
+            title={
+              paint.isEmpty.value
+                ? "No idea? Passing scores 250. Even painting a wide, vague area scores better on average."
+                : undefined
+            }
             data-testid={soloTestIds.submitButton}
           >
-            <Icon name="check" /> Submit
+            <Icon name="check" /> {paint.isEmpty.value ? "Pass" : "Submit"}
           </button>
         </PaintTools>
       </div>

@@ -36,6 +36,7 @@ checks.check(
 )
 await round.pause(1500)
 await round.screenshot(`${out}/vr-1-entered.png`)
+checks.check(!(await headset.globeBordersShown()), "the globe shows no borders when the page's map would not")
 
 // The globe starts 45 cm ahead of the eyes and 30 cm below them, its near
 // side there, 22 cm in radius.
@@ -194,12 +195,16 @@ await round.screenshot(`${out}/vr-6-zoomed-aim.png`)
 
 // Submit with the menu's button, pointing and pulling the trigger: the
 // headset stays on and shows the answer, and Next brings the next round to it.
-const submit = await headset.menuButton("done")
-await headset.pointRight(can, submit)
-await round.pause(500)
-await headset.rightTrigger(1)
-await round.pause(300)
-await headset.rightTrigger(0)
+checks.check((await headset.doneLabel()) === "Submit", "with paint down, the menu offers Submit")
+/** Points at the menu's Done and pulls the trigger. */
+async function pressDone(): Promise<void> {
+  await headset.pointRight(can, await headset.menuButton("done"))
+  await round.pause(500)
+  await headset.rightTrigger(1)
+  await round.pause(300)
+  await headset.rightTrigger(0)
+}
+await pressDone()
 // Not PracticeRevealPage.whenShown: the page's map, which it waits on, draws nothing while VR shows.
 const scoreText = tab.page.getByTestId(soloTestIds.roundScore)
 await scoreText.waitFor()
@@ -220,6 +225,12 @@ checks.check(
   ),
   "the answer shows the land in natural colour"
 )
+checks.check(await headset.globeBordersShown(), "and the borders, as the page's reveal does")
+const table = await headset.scoreTable()
+checks.check(
+  table?.rows.length === 1 && table.rows[0]!.total === String(score),
+  `a score table beside the globe lists the round (${JSON.stringify(table?.rows)})`
+)
 await round.pause(1000)
 await round.screenshot(`${out}/vr-reveal.png`)
 await round.pause(1500)
@@ -232,6 +243,25 @@ const nextRound = await until(
 )
 checks.check((await headset.inSession()) && nextRound === "paint", "Next brings the next round to VR")
 checks.check(!(await headset.globeColourShown()), "and the plain land back")
+checks.check(
+  await until(
+    "Pass on the menu",
+    () => headset.doneLabel(),
+    (l) => l === "Pass"
+  ).then((l) => l === "Pass"),
+  "with nothing painted, the menu offers Pass"
+)
+await pressDone()
+const passed = await until(
+  "the passed round's answer in VR",
+  () => headset.view(),
+  (v) => v === "reveal"
+)
+await scoreText.waitFor()
+const passScore = Number(await scoreText.innerText())
+checks.check(passed === "reveal" && passScore === 250, `passing in VR scores ${passScore}`)
+checks.check((await headset.scoreTable())?.rows.length === 2, "the score table lists both rounds")
+await round.screenshot(`${out}/vr-10-passed.png`)
 await tab.page.evaluate(() => window.whereaboutsVr.exit())
 await until(
   "the session to end",

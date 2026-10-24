@@ -25,7 +25,14 @@ import {
   type UIKitDocument
 } from "@iwsdk/core"
 import { effect, signal } from "@preact/signals"
-import { describeHint, type HintAxis, type HintBand, type LatLon, type MapDetail } from "@whereabouts/shared"
+import {
+  describeHint,
+  type HintAxis,
+  type HintBand,
+  type LatLon,
+  type MapDetail,
+  type PaintLayer
+} from "@whereabouts/shared"
 import { loadLandMask, loadWaterMask } from "../land"
 import type { PaintController } from "../paint-controller"
 import { sound } from "../sound"
@@ -33,11 +40,13 @@ import { THEME } from "../themes"
 import { ANSWER_RADIUS, DETAIL_RADIUS, Globe, HINT_RADIUS, PAINT_RADIUS, type Hand } from "./globe"
 import { AnswerMarker, type VrAnswer } from "./answer"
 import { DetailPatch } from "./detail-patch"
-import { drawColour, drawLand } from "./globe-texture"
+import { drawBorders, drawColour, drawLand } from "./globe-texture"
 import { paintGeometry } from "./paint-mesh"
 import { Picture, type VrPicture } from "./picture"
 import { HintMarker } from "./hint"
+import { reflect, reflections } from "./models"
 import { HandTool, TRIGGER_DEAD } from "./spray"
+import { ScoreBoard, type VrTable } from "./scores"
 import { WristMenu, type WristButton } from "./wrist"
 import panelUrl from "./panel.uikitml?url"
 
@@ -50,9 +59,29 @@ export interface VrRound {
   picture: VrPicture | undefined
   /** A lake or sea round: trimming drops paint on land, not at sea. */
   water: boolean
+  /** Your paint's colour in a game, as the others see it; the map's ramp in practice. */
+  colour?: string
   hint: HintBand | undefined
+  hintsLeft: number | "unlimited" | "none"
   useHint(axis: HintAxis): void
-  submit(): void
+  /** Ms until guessing ends, in a timed round. */
+  msLeft?: () => number
+  /** What Done is called; with nothing painted it is a pass, and says so. */
+  doneLabel: string
+  done(): void
+  /** Done in a game, until Keep editing takes it back; undefined where it can't be. */
+  unlock?: () => void
+  /** Whether this player paints the round at all. */
+  playing: boolean
+  /** What the round means for this player just now: done, or sitting it out. */
+  note?: string
+}
+
+/** A button on the menu: Next question, Ready, Play again. */
+export interface VrAction {
+  label: string
+  press(): void
+  enabled?: boolean
 }
 
 /** After a round: its answer and score. */
@@ -63,16 +92,20 @@ export interface VrReveal {
   focus: LatLon
   /** The map then shows state lines and names, as the page's does. */
   stateRound: boolean
-  score: number
-  total: number
-  last: boolean
-  next(): void
+  scoreLine: string
+  /** Everyone's paint in their colours; your own paint when absent. */
+  paints?: { layer: PaintLayer; colour: string }[]
+  table?: VrTable
+  note?: string
+  actions: VrAction[]
 }
 
 export interface VrSummary {
-  total: number
-  max: number
-  again(): void
+  title: string
+  scoreLine: string
+  table?: VrTable
+  note?: string
+  actions: VrAction[]
 }
 
 /** What the headset shows: a round to paint, its answer, or the final score. */
@@ -107,11 +140,16 @@ export class Vr {
   private readonly answer = new AnswerMarker(THEME, ANSWER_RADIUS)
   private readonly hint = new HintMarker(HINT_RADIUS)
   private readonly wrist: WristMenu
+  private readonly scores: ScoreBoard
+  /** What the menu last said, so it is set only when it changes. */
+  private doneText = ""
+  private clockText = ""
   private readonly tools: Record<Hand, HandTool>
   private readonly panel: Entity
   private panelDoc: UIKitDocument | undefined = undefined
 
-  static async create(): Promise<Vr> {
+  static async create(onStage: (stage: "headset" | "land") => void): Promise<Vr> {
+    onStage("headset")
     // WebGL needs somewhere to put its canvas; in the headset nobody sees the page.
     const host = document.createElement("div")
     host.style.cssText = "position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none"
@@ -126,15 +164,20 @@ export class Vr {
       input: { canvasPointerEvents: false }
     })
     const vr = new Vr(world)
+    onStage("land")
     // Drawn now, while the page says it is loading, so the pause never comes in the headset.
     const [land, borders] = await Promise.all([
       import("@whereabouts/shared/land.json"),
       import("@whereabouts/shared/borders.json")
     ])
-    const landOnly = drawLand(vr.globe.landCanvas, land.default, borders.default, THEME)
+    // The drawing holds the page up for a second: let it show the stage first.
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)))
+    const landOnly = drawLand(vr.globe.landCanvas, land.default, THEME)
     vr.globe.landDrawn(world.renderer)
+    drawBorders(vr.globe.bordersCanvas, borders.default, THEME)
+    vr.globe.bordersDrawn(world.renderer)
     // Not needed until the first answer, and it waits on the network.
-    drawColour(vr.globe.colourCanvas, vr.globe.landCanvas, landOnly, borders.default, THEME).then(
+    drawColour(vr.globe.colourCanvas, vr.globe.landCanvas, landOnly).then(
       () => vr.globe.colourDrawn(world.renderer),
       (err: unknown) => console.warn("could not colour the VR globe", err)
     )
@@ -164,12 +207,15 @@ export class Vr {
       right: new HandTool(gripSpaces.right, raySpaces.right, world.scene, THEME)
     }
     this.tools.left.setTool("erase")
+    const room = reflections(world.renderer)
+    for (const o of [this.globe.stand, gripSpaces.left, gripSpaces.right]) reflect(o, room)
 
     this.panel = world.createTransformEntity(new Group(), { persistent: true })
     this.panel.addComponent(RayInteractable)
     this.panel.addComponent(PanelUI, { config: panelUrl })
     this.panel.object3D!.add(this.picture.mesh)
     this.wrist = new WristMenu(world, this.wristHandlers())
+    this.scores = new ScoreBoard(world)
 
     world.visibilityState.subscribe((state) => {
       const active = state !== VisibilityState.NonImmersive
@@ -193,10 +239,6 @@ export class Vr {
     this.picture.release(this.panel.object3D!)
     this.view = view
     const round = this.round
-    if (round) this.detail.setDetail(view.kind === "reveal" ? { stateRound: view.reveal.stateRound } : round.detail)
-    this.hint.show(round?.hint)
-    this.detail.setHint(round?.hint)
-    if (round) this.wrist.setState(round.water, round.hint && describeHint(round.hint))
     const picture = round?.picture
     const key = picture ? JSON.stringify(picture) : ""
     if (key !== this.pictureKey) {
@@ -204,10 +246,6 @@ export class Vr {
       this.picture.show(picture)
     }
     this.answer.show(view.kind === "reveal" ? view.reveal.answer : undefined)
-    // As the page's map: natural colour on the reveal, and while painting on the maps that show terrain.
-    this.globe.showColour(
-      view.kind === "reveal" || (view.kind === "paint" && ["physical", "political"].includes(view.round.detail))
-    )
     if (view.kind === "reveal" && this.placed)
       this.globe.turnToward(view.reveal.focus, this.world.player.head.getWorldPosition(new Vector3()))
     this.paintDirty = true
@@ -219,6 +257,23 @@ export class Vr {
           this.paintDirty = true
         })
       : undefined
+    this.refresh(view)
+  }
+
+  /** The same round, answer or score, as it changes: the clock, Done, who is ready. */
+  refresh(view: VrView): void {
+    this.view = view
+    const round = this.round
+    if (round) this.detail.setDetail(view.kind === "reveal" ? { stateRound: view.reveal.stateRound } : round.detail)
+    this.hint.show(round?.hint)
+    this.detail.setHint(round?.hint)
+    if (round) this.wrist.setState(round.water, round.hint && describeHint(round.hint), round.hintsLeft)
+    // As the page's map: natural colour on the reveal, and while painting on the maps that show terrain.
+    this.globe.showColour(
+      view.kind === "reveal" || (view.kind === "paint" && ["physical", "political"].includes(view.round.detail))
+    )
+    this.globe.showBorders(view.kind === "reveal" || (view.kind === "paint" && view.round.detail === "political"))
+    this.scores.show(view.kind === "reveal" ? view.reveal.table : view.kind === "done" ? view.summary.table : undefined)
     this.applyView()
   }
 
@@ -231,11 +286,38 @@ export class Vr {
     return this.view && "round" in this.view ? this.view.round : undefined
   }
 
-  /** Whether the page's map shows over the globe, for the browser tests. */
+  /** The round, while this player may paint it. */
+  private get painting(): VrRound | undefined {
+    const round = this.round
+    return this.view?.kind === "paint" && round?.playing && round.paint.enabled.value ? round : undefined
+  }
+
+  /** The score table, for the browser tests. */
+  get tableShown(): VrTable | undefined {
+    return this.scores.shown
+  }
+
+  /** Whether the land shows in natural colour, for the browser tests. */
   get colourShown(): boolean {
     return this.globe.colourShown
   }
 
+  get bordersShown(): boolean {
+    return this.globe.bordersShown
+  }
+
+  /** What the menu offers, for the browser tests. */
+  get menuShown(): { done: string; clock: string; unlock: boolean; actions: { label: string; enabled: boolean }[] } {
+    const round = this.view?.kind === "paint" ? this.view.round : undefined
+    return {
+      done: this.doneText,
+      clock: this.clockText,
+      unlock: round?.unlock !== undefined,
+      actions: this.actions.map((a) => ({ label: a.label, enabled: a.enabled !== false }))
+    }
+  }
+
+  /** Whether the page's map shows over the globe, for the browser tests. */
   get detailShown(): boolean {
     return this.detail.mesh.visible
   }
@@ -280,8 +362,8 @@ export class Vr {
   private wristHandlers(): Record<WristButton, () => void> {
     // Each acts on the round being painted, and the globe redraws its paint.
     const act = (f: (round: VrRound) => void) => () => {
-      const round = this.round
-      if (this.view?.kind !== "paint" || !round) return
+      const round = this.painting
+      if (!round) return
       f(round)
       this.paintDirty = true
     }
@@ -344,9 +426,11 @@ export class Vr {
       const forward = player.head.getWorldDirection(new Vector3()).negate()
       this.globe.place(head, forward)
       this.placePanel(head, forward)
+      this.scores.place(head, forward)
       this.placed = true
     }
     this.wirePanel()
+    this.scores.update()
     this.placePicture()
 
     const pads = this.world.input.xr.gamepads
@@ -376,17 +460,19 @@ export class Vr {
     const zoomed = this.globe.scale >= DETAIL_SCALE
     this.detail.update(now, this.globe.nearest(head), zoomed ? (DETAIL_HALF_M * 6371) / this.globe.radius : undefined)
     this.answer.update(this.globe.scale)
-    this.wrist.update(this.view.kind === "paint", player.gripSpaces.left, head)
+    this.wrist.update(this.painting !== undefined, player.gripSpaces.left, head)
 
     const round = this.round
     if (round && this.paintDirty && now - this.lastPaintDraw >= PAINT_REDRAW_S) {
-      const paint = round.paint.layer.toGeoJSON()
-      this.globe.showPaint(paintGeometry(paint, THEME, PAINT_RADIUS))
+      const paints = this.view.kind === "reveal" ? this.view.reveal.paints : undefined
+      const paint = paints ? colouredPaint(paints) : round.paint.layer.toGeoJSON()
+      this.globe.showPaint(paintGeometry(paint, THEME, PAINT_RADIUS, paints ? undefined : round.colour))
       this.shownPaintCells = paint.features.length
       this.paintDirty = false
       this.lastPaintDraw = now
     }
-    if (this.view.kind !== "paint" || !round) {
+    this.updateLabels(round)
+    if (!this.painting || !round) {
       for (const h of HANDS) this.tools[h].hide()
       return
     }
@@ -409,7 +495,7 @@ export class Vr {
     const working = onMenu
       ? undefined
       : HANDS.find((h, i) => triggers[i]! > TRIGGER_DEAD && this.tools[h].aim(this.globe) !== undefined)
-    if (working && round.paint.enabled.value && !this.stroking) {
+    if (working && !this.stroking) {
       // Both hands make one undo step; the first sets the stroke's sound.
       round.paint.beginOutsideStroke(this.tools[working].tool)
       this.stroking = true
@@ -418,8 +504,7 @@ export class Vr {
     const sprayed = HANDS.map((h, i) =>
       this.tools[h].update(now, this.globe, triggers[i]!, onMenu, round.paint, pads[h]?.gamepad)
     )
-    // Not left to paint.version: that moves on a window animation frame, and a
-    // standalone headset runs none of those while it shows the session.
+    // Sooner than paint.version, which waits a little for an animation frame.
     if (sprayed.includes(true)) this.paintDirty = true
     else this.endStroke()
   }
@@ -463,17 +548,39 @@ export class Vr {
       this.round?.paint.undo()
       this.paintDirty = true
     })
-    on("done", () => {
-      const round = this.round
-      // Not paint.isEmpty: that follows the page's animation frames, which stop while VR shows.
-      if (this.view?.kind === "paint" && round && !round.paint.layer.isEmpty) round.submit()
-    })
-    const next = () => this.view?.kind === "reveal" && this.view.reveal.next()
-    on("next", next)
-    on("finish", next)
-    on("again", () => this.view?.kind === "done" && this.view.summary.again())
+    on("done", () => this.painting?.done())
+    on("unlock", () => this.view?.kind === "paint" && this.view.round.unlock?.())
+    for (const i of [0, 1]) {
+      on(`act${i}`, () => {
+        const action = this.actions[i]
+        if (action && action.enabled !== false) action.press()
+      })
+    }
     on("exit", () => this.exit())
     this.applyView()
+  }
+
+  private get actions(): VrAction[] {
+    const view = this.view
+    return view?.kind === "reveal" ? view.reveal.actions : view?.kind === "done" ? view.summary.actions : []
+  }
+
+  /** Done says Pass with nothing painted, and the clock counts down. */
+  private updateLabels(round: VrRound | undefined): void {
+    const doc = this.panelDoc
+    if (!doc || !round || this.view?.kind !== "paint") return
+    const done = round.paint.layer.isEmpty ? "Pass" : round.doneLabel
+    if (done !== this.doneText) {
+      this.doneText = done
+      doc.getElementById("doneLabel")?.setProperties({ text: done })
+    }
+    if (!round.msLeft) return
+    const s = Math.ceil(Math.max(0, round.msLeft()) / 1000)
+    const clock = s > 0 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} left` : "Time's up"
+    if (clock !== this.clockText) {
+      this.clockText = clock
+      doc.getElementById("clock")?.setProperties({ text: clock })
+    }
   }
 
   private applyView(): void {
@@ -484,27 +591,50 @@ export class Vr {
     const text = (id: string, t: string) => doc.getElementById(id)?.setProperties({ text: t })
     const reveal = view.kind === "reveal" ? view.reveal : undefined
     const summary = view.kind === "done" ? view.summary : undefined
-    show("tools", view.kind === "paint")
-    show("hint", view.kind === "paint")
-    show("done", view.kind === "paint")
-    show("score", view.kind !== "paint")
-    show("next", reveal !== undefined && !reveal.last)
-    show("finish", reveal?.last ?? false)
-    show("again", summary !== undefined)
-    if (view.kind === "paint") text("prompt", view.round.prompt)
+    const round = view.kind === "paint" ? view.round : undefined
+    const painting = round?.playing === true && round.unlock === undefined
+    show("tools", painting)
+    show("hint", painting)
+    show("done", painting)
+    show("unlock", round?.unlock !== undefined)
+    show("clock", round?.msLeft !== undefined)
+    show("score", round === undefined)
+    const note = round?.note ?? reveal?.note ?? summary?.note
+    show("note", note !== undefined)
+    if (note !== undefined) text("note", note)
+    const actions = this.actions
+    for (const i of [0, 1]) {
+      const action = actions[i]
+      show(`act${i}`, action !== undefined)
+      if (!action) continue
+      text(`act${i}Label`, action.label)
+      doc.getElementById(`act${i}`)?.setProperties({ disabled: action.enabled === false })
+    }
+    if (round) text("prompt", round.prompt)
     if (reveal) {
       text("prompt", reveal.label)
-      // The menu's font has no middle dot.
-      text("score", `${pts(reveal.score)} this round, ${pts(reveal.total)} in all`)
+      text("score", reveal.scoreLine)
     }
     if (summary) {
-      text("prompt", "Final score")
-      text("score", `${pts(summary.total)} out of ${summary.max.toLocaleString()}`)
+      text("prompt", summary.title)
+      text("score", summary.scoreLine)
     }
+    // Set again from the round next frame.
+    this.doneText = this.clockText = ""
   }
 }
 
-const pts = (n: number) => `${Math.round(n).toLocaleString()} pts`
+/** Several players' paint as one collection, each cell in its player's colour. */
+function colouredPaint(
+  paints: { layer: PaintLayer; colour: string }[]
+): GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: string }> {
+  return {
+    type: "FeatureCollection",
+    features: paints.flatMap(({ layer, colour }) =>
+      layer.toGeoJSON().features.map((f) => ({ ...f, properties: { ...f.properties, colour } }))
+    )
+  }
+}
 
 declare global {
   interface Window {

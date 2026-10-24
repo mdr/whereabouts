@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "preact/hooks"
-import { PaintLayer, compactRecord, colourCss, type GameView } from "@whereabouts/shared"
+import { PaintLayer, compactRecord, colourCss, type FlagCode, type GameView, type HintAxis } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { AnswerMode, Card, Countdown, HudHeader, QuestionCard, RegionHint } from "../ui/bits"
@@ -20,6 +20,10 @@ import { TakeSeatButton } from "../ui/TakeSeat"
 import { HintCard } from "../ui/Hint"
 import { sound } from "../sound"
 import { loadRegions, useRegion } from "../regions"
+import { VrButton, useVrView } from "../ui/VrButton"
+import type { VrView } from "../vr"
+import type { PaintController } from "../paint-controller"
+import { revealOrder } from "./Reveal"
 import { inGameTestIds } from "./InGameTestIds"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
@@ -137,7 +141,10 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   }, [hint?.axis, hint?.from, hint?.to])
 
   // A country round shows the country's flag beside its name, once the outlines have loaded.
-  const region = useRegion(view.round?.question.regionId)
+  const region = useRegion(question?.regionId)
+
+  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, region })
+  useVrView(vrView, `${view.phase} ${roundKey}`)
 
   if (view.phase === "reveal" && view.reveal) {
     return <Reveal conn={conn} view={view} reveal={view.reveal} />
@@ -216,18 +223,21 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
                 <Icon name="edit" /> Keep editing
               </button>
             ) : (
-              <button
-                class="primary"
-                data-testid={inGameTestIds.doneButton}
-                title={
-                  paint.isEmpty.value
-                    ? "No idea? Passing scores 250. Even painting a wide, vague area scores better on average."
-                    : "Whatever is painted when the clock hits zero counts anyway."
-                }
-                onClick={lockIn}
-              >
-                <Icon name="check" /> {paint.isEmpty.value ? "Pass" : "Done"}
-              </button>
+              <>
+                <VrButton view={vrView} />
+                <button
+                  class="primary"
+                  data-testid={inGameTestIds.doneButton}
+                  title={
+                    paint.isEmpty.value
+                      ? "No idea? Passing scores 250. Even painting a wide, vague area scores better on average."
+                      : "Whatever is painted when the clock hits zero counts anyway."
+                  }
+                  onClick={lockIn}
+                >
+                  <Icon name="check" /> {paint.isEmpty.value ? "Pass" : "Done"}
+                </button>
+              </>
             )}
           </PaintTools>
         )}
@@ -241,4 +251,93 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
       </DevDrawer>
     </>
   )
+}
+
+/** The round or its reveal as the headset shows it. */
+function gameVrView(
+  view: GameView,
+  conn: Connection,
+  paint: PaintController,
+  {
+    lockIn,
+    timeUp,
+    sittingOut,
+    region
+  }: {
+    lockIn: () => void
+    timeUp: boolean
+    sittingOut: boolean
+    region: { outline: number[][][][]; countryFlag?: FlagCode } | undefined
+  }
+): VrView {
+  const question = (view.round ?? view.reveal)!.question
+  const me = view.players.find((p) => p.id === view.you.id)
+  const flag = question.flag ?? region?.countryFlag
+  const round = {
+    paint,
+    prompt: question.prompt,
+    detail: view.config.mapDetail,
+    picture: question.image ? { photo: question.image } : flag ? { flag } : undefined,
+    water: question.topic === "lake" || question.topic === "sea",
+    colour: me && !me.watching ? colourCss(me.colour) : undefined,
+    hint: view.you.hint,
+    hintsLeft: view.config.hints > 0 ? view.you.hintsLeft : ("none" as const),
+    useHint: (axis: HintAxis) => conn.hint(axis),
+    msLeft: view.round ? () => conn.msUntil(view.round!.deadline) : undefined,
+    doneLabel: "Done",
+    done: lockIn,
+    unlock: view.you.locked && !timeUp ? () => conn.unlock() : undefined,
+    playing: !sittingOut,
+    note: view.you.watching
+      ? "You're watching this game: you'll see each answer and everyone's guesses at the reveal."
+      : view.you.spectating
+        ? "You joined mid-round, so you're watching this one. You'll play from the next question."
+        : view.you.locked
+          ? "You're done. The round ends when everyone is, or when the clock runs out."
+          : undefined
+  }
+  const reveal = view.reveal
+  if (view.phase !== "reveal" || !reveal) return { kind: "paint", round }
+
+  const byId = new Map(view.players.map((p) => [p.id, p]))
+  const ready = new Set(reveal.ready)
+  const present = view.players.filter((p) => p.connected && !p.watching)
+  const iAmReady = view.you.id !== undefined && ready.has(view.you.id)
+  const last = reveal.index + 1 >= reveal.total
+  const mine = reveal.results.find((r) => r.playerId === view.you.id)
+  const pts = (n: number) => `${Math.round(n).toLocaleString()} pts`
+  return {
+    kind: "reveal",
+    round,
+    reveal: {
+      label: reveal.label,
+      answer: region ? { outline: region.outline } : { point: reveal.answer },
+      focus: reveal.answer,
+      stateRound: question.topic === "state",
+      scoreLine: mine
+        ? `${mine.paint ? "" : "Passed: "}${pts(mine.score)} this round, ${pts(me?.score ?? 0)} in all`
+        : "You sat this one out",
+      // Best on top, as the page draws them.
+      paints: [...reveal.results].reverse().flatMap((r) => {
+        const p = byId.get(r.playerId)
+        return p && r.paint ? [{ layer: PaintLayer.fromRecord(r.res, r.paint.cells), colour: colourCss(p.colour) }] : []
+      }),
+      table: {
+        title: `Round ${reveal.index + 1} of ${reveal.total}`,
+        rows: revealOrder(view.players, reveal.results).map(({ p, r }) => ({
+          colour: colourCss(p.colour),
+          name: `${p.name}${p.id === view.you.id ? " (you)" : ""}`,
+          detail: `${r ? (r.paint ? `+${Math.round(r.score)}` : "passed") : "sat out"}${ready.has(p.id) ? ", ready" : ""}`,
+          total: Math.round(p.score).toLocaleString()
+        }))
+      },
+      note: `${present.filter((p) => ready.has(p.id)).length} of ${present.length} ready`,
+      actions: [
+        ...(view.you.watching
+          ? []
+          : [{ label: iAmReady ? "Waiting for the others" : "Ready", press: () => conn.ready(), enabled: !iAmReady }]),
+        ...(view.you.isHost ? [{ label: last ? "Show final results" : "Next round", press: () => conn.next() }] : [])
+      ]
+    }
+  }
 }

@@ -4,23 +4,12 @@
  * globe, the smaller and denser the spot, like real spray paint. A ring on
  * the globe shows where the spot would land before anything happens.
  */
-import {
-  BoxGeometry,
-  ConeGeometry,
-  CylinderGeometry,
-  DoubleSide,
-  Group,
-  Mesh,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
-  RingGeometry,
-  Vector3,
-  type Object3D
-} from "three"
+import { ConeGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry, Vector3, type Object3D } from "three"
 import { greatCircleDistance, type LatLon } from "@whereabouts/shared"
 import type { PaintController } from "../paint-controller"
 import type { Theme } from "../themes"
 import type { Globe } from "./globe"
+import { buildCan, buildEraser } from "./models"
 import { localToLatLon, raySphere } from "./sphere"
 
 export type SprayTool = "paint" | "erase"
@@ -60,26 +49,8 @@ export class HandTool {
   constructor(grip: Object3D, ray: Object3D, scene: Object3D, theme: Theme) {
     this.ray = ray
     this.theme = theme
-    const body = new CylinderGeometry(0.033, 0.033, 0.13, 24).rotateX(-Math.PI / 2)
-    this.can.add(new Mesh(body, new MeshStandardMaterial({ color: "#9aa7b8", metalness: 0.6, roughness: 0.35 })))
-    const cap = new Mesh(
-      new CylinderGeometry(0.026, 0.03, 0.03, 24).rotateX(-Math.PI / 2),
-      new MeshStandardMaterial({ color: theme.ramp[1] })
-    )
-    cap.position.z = -0.08
-    this.can.add(cap)
-    // A pink rubbing end in a blue sleeve, the rubber towards the globe.
-    const rubber = new Mesh(
-      new BoxGeometry(0.045, 0.025, 0.06),
-      new MeshStandardMaterial({ color: "#f4a3b4", roughness: 0.9 })
-    )
-    rubber.position.z = -0.045
-    const sleeve = new Mesh(
-      new BoxGeometry(0.047, 0.027, 0.07),
-      new MeshStandardMaterial({ color: "#2f6fd6", roughness: 0.6 })
-    )
-    sleeve.position.z = 0.02
-    this.eraser.add(rubber, sleeve)
+    this.can.add(buildCan(theme.ramp[1]))
+    this.eraser.add(buildEraser())
     grip.add(this.can, this.eraser)
 
     this.spot = new Mesh(

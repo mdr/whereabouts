@@ -34,6 +34,9 @@ export class DetailPatch {
   /** Whether the globe shows the map's latest picture. */
   private shown = true
   private lastPoll = 0
+  /** What setDetail and setHint were last asked, so asking again redraws nothing. */
+  private detailKey = ""
+  private hintKey = ""
 
   constructor(theme: Theme, radius: number, anisotropy: number) {
     this.radius = radius
@@ -60,15 +63,14 @@ export class DetailPatch {
     this.mesh.visible = false
   }
 
-  /**
-   * As the page's map shows it: while painting with national borders
-   * always, as the globe has; on the reveal with everything.
-   */
+  /** As the page's map shows it: while painting at the game's detail; on the reveal with everything. */
   setDetail(detail: MapDetail | { stateRound: boolean }): void {
+    const key = JSON.stringify(detail)
+    if (key === this.detailKey) return
+    this.detailKey = key
     void this.gameMap.ready.then(() => {
       if (typeof detail === "string") {
         this.gameMap.setDetail(detail)
-        this.gameMap.setBorders(true, false)
       } else {
         this.gameMap.setDetail("reveal")
         this.gameMap.setStateReveal(detail.stateRound)
@@ -78,6 +80,9 @@ export class DetailPatch {
   }
 
   setHint(band: HintBand | undefined): void {
+    const key = JSON.stringify(band)
+    if (key === this.hintKey) return
+    this.hintKey = key
     void this.gameMap.ready.then(() => {
       this.gameMap.setHint(band)
       this.shown = false

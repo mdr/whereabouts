@@ -1,15 +1,16 @@
 import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import type { Vr, VrView } from "../vr"
-import { loadVr, loadedVr, vrSupported } from "../vr-support"
+import { VR_LOAD_STAGES, loadVr, loadedVr, vrLoadStage, vrSupported, type VrLoadStage } from "../vr-support"
 import { usePaint } from "./MapView"
 import { Icon } from "./icons"
 import { vrButtonTestIds } from "./VrButtonTestIds"
 
 /**
  * Keep the headset showing what the screen shows: the round, its answer,
- * the final score. `key` changes when that moves on; leaving the screen
- * takes the headset off.
+ * the final score. `key` changes when that moves on to something new;
+ * between, each render passes on what changed, such as the clock or who is
+ * ready.
  */
 export function useVrView(view: VrView, key: string): void {
   // The headset calls back long after this render; it should reach the screen as it is then.
@@ -20,6 +21,16 @@ export function useVrView(view: VrView, key: string): void {
   useEffect(() => {
     if (vr && active) vr.show(latest.current)
   }, [vr, active, key])
+  useEffect(() => {
+    if (vr && active) vr.refresh(latest.current)
+  })
+}
+
+/** Take the headset off on leaving the game, or once `playing` turns false. */
+export function useVrSession(playing = true): void {
+  useEffect(() => {
+    if (!playing) loadedVr.value?.exit()
+  }, [playing])
   useEffect(() => () => loadedVr.value?.exit(), [])
 }
 
@@ -71,7 +82,7 @@ export function VrButton({ view }: { view: VrView }) {
         createPortal(
           <div class="modal-backdrop vr-launch" data-testid={vrButtonTestIds.loading}>
             {stage === "loading" ? (
-              <p>Loading VR…</p>
+              <VrLoading stage={vrLoadStage.value} />
             ) : (
               <div class="vr-launch-ready">
                 <button class="primary" onClick={() => vr && enter(vr)} data-testid={vrButtonTestIds.enterButton}>
@@ -86,5 +97,30 @@ export function VrButton({ view }: { view: VrView }) {
           document.body
         )}
     </>
+  )
+}
+
+const STAGE_TEXT: Record<VrLoadStage, string> = {
+  code: "Fetching the paint and the globe",
+  headset: "Setting up the headset",
+  land: "Drawing the land"
+}
+
+/** A globe turning while the VR code loads, filling with paint stage by stage. */
+function VrLoading({ stage }: { stage: VrLoadStage }) {
+  const done = VR_LOAD_STAGES.indexOf(stage)
+  return (
+    <div class="vr-loading" role="status">
+      <div class="vr-loading-globe" aria-hidden="true">
+        <div class="vr-loading-land" />
+        <div class="vr-loading-spray" style={{ opacity: 0.25 + (0.75 * (done + 1)) / VR_LOAD_STAGES.length }} />
+      </div>
+      <p>{STAGE_TEXT[stage]}…</p>
+      <ol class="vr-loading-steps" data-testid={vrButtonTestIds.loadingStage} data-stage={stage}>
+        {VR_LOAD_STAGES.map((s, i) => (
+          <li key={s} class={i < done ? "done" : i === done ? "now" : undefined} />
+        ))}
+      </ol>
+    </div>
   )
 }

@@ -10,6 +10,11 @@ export const vrSupported = signal(false)
 /** The VR code, once loaded. */
 export const loadedVr = signal<Vr | undefined>(undefined)
 
+/** How far loading has got, in order. */
+export const VR_LOAD_STAGES = ["code", "headset", "land"] as const
+export type VrLoadStage = (typeof VR_LOAD_STAGES)[number]
+export const vrLoadStage = signal<VrLoadStage>("code")
+
 navigator.xr?.isSessionSupported("immersive-vr").then(
   (ok) => (vrSupported.value = ok),
   () => (vrSupported.value = false)
@@ -18,8 +23,9 @@ navigator.xr?.isSessionSupported("immersive-vr").then(
 let loading: Promise<Vr> | undefined = undefined
 
 export function loadVr(): Promise<Vr> {
+  if (!loading) vrLoadStage.value = "code"
   return (loading ??= import("./vr").then(
-    async (m) => (loadedVr.value = await m.Vr.create()),
+    async (m) => (loadedVr.value = await m.Vr.create((stage) => (vrLoadStage.value = stage))),
     (err: unknown) => {
       // Let the next press try again, after a dropped connection say.
       loading = undefined

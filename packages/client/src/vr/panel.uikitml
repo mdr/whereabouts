@@ -26,14 +26,28 @@
     flex-direction: row;
     margin-top: 14px;
   }
+  .clock {
+    margin-top: 4px;
+    font-size: 18px;
+    line-height: 24px;
+    color: #fbbf24;
+  }
+  .note {
+    margin-top: 8px;
+    font-size: 15px;
+    line-height: 20px;
+    color: #f0fdff;
+  }
   .gap {
     margin-left: 8px;
   }
 </style>
 <Panel class="root">
   <span id="prompt" class="prompt">…</span>
+  <span id="clock" class="clock">…</span>
   <span id="score" class="score">…</span>
-  <span id="hint" class="hint">Trigger: the right hand paints, the left erases; A or X swaps that hand's tool. Nearer the globe for a small dense spot, further back for a wide faint one. Grip grabs the globe to spin it; grip with both hands to zoom. Grip the picture to hold it. Turn your left palm up for more tools and a hint.</span>
+  <span id="note" class="note">…</span>
+  <span id="hint" class="hint">Trigger: the right hand paints, the left erases; A or X swaps that hand's tool. Nearer the globe for a small dense spot, further back for a wide faint one. Grip grabs the globe to spin or tilt it; grip with both hands to zoom. Grip the picture to hold it. Turn your left palm up for more tools and a hint.</span>
   <div id="tools" class="row">
     <Button id="undo" variant="secondary">
       <ButtonIcon><Undo></Undo></ButtonIcon>
@@ -43,19 +57,19 @@
   <div class="row">
     <Button id="done" variant="positive">
       <ButtonIcon><Check></Check></ButtonIcon>
-      Submit
+      <span id="doneLabel">Submit</span>
     </Button>
-    <Button id="next" variant="positive">
+    <Button id="unlock" variant="secondary">
+      <ButtonIcon><Pencil></Pencil></ButtonIcon>
+      Keep editing
+    </Button>
+    <Button id="act0" variant="positive">
       <ButtonIcon><ArrowRight></ArrowRight></ButtonIcon>
-      Next question
+      <span id="act0Label">Next</span>
     </Button>
-    <Button id="finish" variant="positive">
-      <ButtonIcon><Flag></Flag></ButtonIcon>
-      Finish
-    </Button>
-    <Button id="again" variant="positive">
-      <ButtonIcon><RefreshCw></RefreshCw></ButtonIcon>
-      Play again
+    <Button id="act1" class="gap" variant="secondary">
+      <ButtonIcon><ArrowRight></ArrowRight></ButtonIcon>
+      <span id="act1Label">Next</span>
     </Button>
     <Button id="exit" class="gap" variant="tertiary">
       <ButtonIcon><LogOut></LogOut></ButtonIcon>

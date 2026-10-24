@@ -14,6 +14,7 @@ import { HostTag, HostWord } from "../ui/PlayerList"
 import { Banner } from "../ui/Banner"
 import { SmallFlag } from "../ui/bits"
 import { useElementRef } from "../ui/element-ref"
+import { useVrView } from "../ui/VrButton"
 import { resultsTestIds } from "./ResultsTestIds"
 
 const MEDALS = ["🥇", "🥈", "🥉"]
@@ -27,6 +28,29 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   const byId = new Map(view.players.map((p) => [p.id, p]))
   const standings = view.results ?? []
   const winner = standings[0] ? byId.get(standings[0].playerId) : undefined
+  useVrView(
+    {
+      kind: "done",
+      summary: {
+        title: "Final standings",
+        scoreLine: winner ? `${winner.name} wins` : "",
+        table: {
+          title: "Standings",
+          rows: standings.map((s, i) => {
+            const p = byId.get(s.playerId)
+            return {
+              colour: p && colourCss(p.colour),
+              name: `${i + 1}. ${p?.name ?? "?"}${s.playerId === view.you.id ? " (you)" : ""}`,
+              total: Math.round(s.total).toLocaleString()
+            }
+          })
+        },
+        note: view.you.isHost ? undefined : "The host can start another game with the same group.",
+        actions: view.you.isHost ? [{ label: "Play again", press: () => conn.again() }] : []
+      }
+    },
+    "results"
+  )
   return (
     <div class="home">
       <div class="home-card results-card" data-testid={resultsTestIds.page}>

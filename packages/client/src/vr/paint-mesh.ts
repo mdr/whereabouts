@@ -27,10 +27,15 @@ function rampColour(theme: Theme, v: number, out: Color): number {
   return o0 + (o1 - o0) * v
 }
 
+/**
+ * A cell in a player's colour (its own, or `colour` for all) shows as the
+ * map shows one (GameMap.setPaintColour): more opaque the heavier it is.
+ */
 export function paintGeometry(
-  paint: GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number }>,
+  paint: GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: string }>,
   theme: Theme,
-  radius: number
+  radius: number,
+  colour?: string
 ): BufferGeometry {
   const rings = paint.features.map((f) => {
     const ring = f.geometry.coordinates[0]!
@@ -40,19 +45,22 @@ export function paintGeometry(
   const vertices = rings.reduce((n, r) => n + r.length + 1, 0)
   const triangles = rings.reduce((n, r) => n + r.length, 0)
   const position = new Float32Array(vertices * 3)
-  const colour = new Float32Array(vertices * 4)
+  const colours = new Float32Array(vertices * 4)
   const index = new Uint32Array(triangles * 3)
   let vi = 0
   let ii = 0
   paint.features.forEach((f, k) => {
     const ring = rings[k]!
-    const alpha = rampColour(theme, f.properties.v, c)
+    const own = f.properties.colour ?? colour
+    const alpha = own
+      ? (c.set(own), 0.12 + 0.78 * Math.min(1, Math.max(0, f.properties.v)))
+      : rampColour(theme, f.properties.v, c)
     const centre = vi
     const put = (q: Vector3) => {
       q.normalize()
         .multiplyScalar(radius)
         .toArray(position, vi * 3)
-      colour.set([c.r, c.g, c.b, alpha], vi * 4)
+      colours.set([c.r, c.g, c.b, alpha], vi * 4)
       vi++
     }
     mid.set(0, 0, 0)
@@ -67,7 +75,7 @@ export function paintGeometry(
   })
   const g = new BufferGeometry()
   g.setAttribute("position", new BufferAttribute(position, 3))
-  g.setAttribute("color", new BufferAttribute(colour, 4))
+  g.setAttribute("color", new BufferAttribute(colours, 4))
   g.setIndex(new BufferAttribute(index, 1))
   return g
 }

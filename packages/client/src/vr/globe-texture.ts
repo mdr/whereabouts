@@ -103,12 +103,7 @@ export function landCells(land: LandMaskData): H3Cell[] {
 }
 
 /** Returns the land alone, on a clear sea. */
-export function drawLand(
-  canvas: HTMLCanvasElement,
-  land: LandMaskData,
-  borders: BordersData,
-  theme: Theme
-): HTMLCanvasElement {
+export function drawLand(canvas: HTMLCanvasElement, land: LandMaskData, theme: Theme): HTMLCanvasElement {
   const { width: w, height: h } = canvas
   const landOnly = document.createElement("canvas")
   landOnly.width = w
@@ -141,7 +136,6 @@ export function drawLand(
   out.fillStyle = theme.water
   out.fillRect(0, 0, w, h)
   out.drawImage(landOnly, 0, 0)
-  drawBorders(out, borders, theme)
   return landOnly
 }
 
@@ -152,15 +146,12 @@ const MERCATOR_MAX_LAT = 85.0511
 
 /**
  * The land picture with natural colour over the land, dimmed as the page's
- * map dims it for the dark theme, and the borders again on top. The
- * colour's own sea is opaque, so `landOnly` (from drawLand) cuts it to the land.
+ * map dims it for the dark theme. The colour's own sea is opaque, so `landOnly` (from drawLand) cuts it to the land.
  */
 export async function drawColour(
   canvas: HTMLCanvasElement,
   land: HTMLCanvasElement,
-  landOnly: HTMLCanvasElement,
-  borders: BordersData,
-  theme: Theme
+  landOnly: HTMLCanvasElement
 ): Promise<void> {
   const tiles = await Promise.all(
     Array.from({ length: COLOUR_TILE_COUNT ** 2 }, async (_, i) => {
@@ -204,11 +195,12 @@ export async function drawColour(
   ctx.globalAlpha = 0.9
   ctx.drawImage(flat, 0, 0)
   ctx.globalAlpha = 1
-  drawBorders(ctx, borders, theme)
 }
 
-function drawBorders(ctx: CanvasRenderingContext2D, borders: BordersData, theme: Theme): void {
-  const { width: w, height: h } = ctx.canvas
+/** National borders on a clear canvas, to lay over the land when the map shows them. */
+export function drawBorders(canvas: HTMLCanvasElement, borders: BordersData, theme: Theme): void {
+  const ctx = canvas.getContext("2d")!
+  const { width: w, height: h } = canvas
   ctx.strokeStyle = theme.border
   ctx.lineWidth = Math.max(1, w / 4096)
   ctx.beginPath()

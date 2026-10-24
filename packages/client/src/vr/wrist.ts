@@ -29,6 +29,13 @@ const at = new Vector3()
 const palm = new Vector3()
 const up = new Vector3(0, 1, 0)
 
+function hintOffer(left: number | "unlimited" | "none"): string {
+  if (left === "unlimited") return "Hint, as many as you like in practice: a band the answer lies in"
+  if (left === "none") return "This game has no hints"
+  if (left === 0) return "No hints left this game"
+  return `Hint: a band the answer lies in. ${left} left this game`
+}
+
 export class WristMenu {
   private readonly entity: Entity
   private readonly handlers: Record<WristButton, () => void>
@@ -36,7 +43,11 @@ export class WristMenu {
   private shown = false
   private noteText = ""
   private noteTimer: ReturnType<typeof setTimeout> | undefined = undefined
-  private state: { water: boolean; hint: string | undefined } = { water: false, hint: undefined }
+  private state: { water: boolean; hint: string | undefined; left: number | "unlimited" | "none" } = {
+    water: false,
+    hint: undefined,
+    left: "unlimited"
+  }
 
   constructor(world: World, handlers: Record<WristButton, () => void>) {
     this.handlers = handlers
@@ -73,8 +84,11 @@ export class WristMenu {
     obj.lookAt(eyes)
   }
 
-  setState(water: boolean, hint: string | undefined): void {
-    this.state = { water, hint }
+  /** `hint`: the band used this round, in words. `left`: how many more hints there are. */
+  setState(water: boolean, hint: string | undefined, left: number | "unlimited" | "none"): void {
+    const s = this.state
+    if (s.water === water && s.hint === hint && s.left === left) return
+    this.state = { water, hint, left }
     this.apply()
   }
 
@@ -108,12 +122,12 @@ export class WristMenu {
   private apply(): void {
     const doc = this.doc
     if (!doc) return
-    const { water, hint } = this.state
+    const { water, hint, left } = this.state
     const show = (id: string, on: boolean) => doc.getElementById(id)?.setProperties({ display: on ? "flex" : "none" })
     const text = (id: string, t: string) => doc.getElementById(id)?.setProperties({ text: t })
-    show("hints", hint === undefined)
+    show("hints", hint === undefined && left !== 0 && left !== "none")
     show("trimHint", hint !== undefined)
     text("trimLabel", water ? "Trim land" : "Trim sea")
-    text("note", this.noteText || (hint ?? "Hint: a band the answer lies in"))
+    text("note", this.noteText || (hint ?? hintOffer(left)))
   }
 }

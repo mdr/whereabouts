@@ -29,6 +29,8 @@ export type Tool = "pan" | "paint" | "erase" | "fill"
 
 /** How near the pointer a small country's answer counts as under it, for the Fill tool. */
 const FILL_SMALL_PX = 12
+/** How long a change waits for an animation frame before `version` moves without one. */
+const VERSION_WAIT_MS = 100
 
 /** One undo step: the cells, and which countries are filled. */
 interface Snapshot {
@@ -99,6 +101,7 @@ export class PaintController {
   private lastStampPoint: Point | undefined = undefined
   /** The frame that will draw our paint, while one is queued. */
   private renderFrame: number | undefined = undefined
+  private versionTimer: number | undefined = undefined
   private hoverListeners = new Set<(pos: LatLon) => void>()
   /** Where the mouse is over the map, so the footprint can be redrawn without it moving. */
   private pointerAt: LngLat | undefined = undefined
@@ -295,6 +298,7 @@ export class PaintController {
 
   dispose(): void {
     if (this.settleTimer !== undefined) window.clearTimeout(this.settleTimer)
+    window.clearTimeout(this.versionTimer)
     for (const d of this.disposers) d()
   }
 
@@ -611,9 +615,18 @@ export class PaintController {
   }
 
   private queueRender(): void {
+    // A VR headset runs no window animation frames while it shows its session,
+    // and what follows `version` (uploads, Undo, Pass) must still hear of the
+    // change. The map draws once frames come back.
+    this.versionTimer ??= window.setTimeout(() => {
+      this.versionTimer = undefined
+      this.version.value++
+    }, VERSION_WAIT_MS)
     if (this.renderFrame !== undefined) return
     this.renderFrame = requestAnimationFrame(() => {
       this.renderFrame = undefined
+      window.clearTimeout(this.versionTimer)
+      this.versionTimer = undefined
       this.gameMap.setPaint(this.layer.toGeoJSON())
       this.version.value++
     })
@@ -624,6 +637,8 @@ export class PaintController {
     if (this.renderFrame === undefined) return
     cancelAnimationFrame(this.renderFrame)
     this.renderFrame = undefined
+    window.clearTimeout(this.versionTimer)
+    this.versionTimer = undefined
     this.version.value++
   }
 }

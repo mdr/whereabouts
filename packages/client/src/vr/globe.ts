@@ -1,35 +1,36 @@
 /**
- * The globe in VR: land on a sphere and paint just above it, spun by grabbing (the
- * surface follows the hand, and a let-go keeps it turning), zoomed with two
- * hands or a thumbstick. Zooming grows it towards the far side, so the near
- * surface stays where it was rather than swallowing the player.
+ * The globe in VR: land on a sphere and paint just above it, turned by
+ * grabbing (the surface follows the hand, and a let-go keeps it turning),
+ * zoomed with two hands or a thumbstick. It turns two ways only, as a
+ * tilting desk globe does: spinning about its poles, and tilting about the
+ * axis across the player's view, where its stand's pivots are. It never rolls.
+ * Zooming grows it towards the far side, so the near surface stays where it
+ * was rather than swallowing the player.
  */
 import {
   BufferGeometry,
   CanvasTexture,
-  CylinderGeometry,
   DoubleSide,
   Group,
-  Matrix4,
   Mesh,
   MeshBasicMaterial,
-  MeshStandardMaterial,
   Quaternion,
   type Object3D,
   SRGBColorSpace,
   SphereGeometry,
-  TorusGeometry,
   Vector3,
   type WebGLRenderer
 } from "three"
 
 import type { LatLon } from "@whereabouts/shared"
 import { latLonToLocal, localToLatLon } from "./sphere"
+import { buildStand } from "./models"
 
 export type Hand = "left" | "right"
 
 const RADIUS = 0.22
 /** Just above the land, so neither fights it for depth; the paint on top. */
+const BORDERS_RADIUS = RADIUS * 1.0005
 export const DETAIL_RADIUS = RADIUS * 1.0015
 export const HINT_RADIUS = RADIUS * 1.002
 export const PAINT_RADIUS = RADIUS * 1.003
@@ -38,21 +39,35 @@ const MIN_SCALE = 1
 const MAX_SCALE = 12
 /** How quickly a flung globe slows, per second. */
 const SPIN_DECAY = 1.5
+/** As far as it tilts either way: a pole faces the player. */
+const MAX_TILT = Math.PI / 2
 const STICK_DEAD = 0.15
 /** How long the globe takes to turn a place to face the player. */
 const TURN_S = 0.8
 
+const UP = new Vector3(0, 1, 0)
 const q = new Quaternion()
 const v = new Vector3()
 const w = new Vector3()
 
+/** An angle the short way round, in (-π, π]. */
+const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
+
+/** How the globe is turned: spun about its poles, then tilted. */
+interface Turn {
+  spin: number
+  tilt: number
+}
+
 export class Globe {
   readonly group = new Group()
-  /** What holds the globe up: it stays upright and behind as the globe turns, and grows as it zooms. */
+  /** What holds the globe up, on pivots at the ends of its tilt axis. It stays upright as the globe turns, and grows as it zooms. */
   readonly stand = new Group()
   readonly landCanvas = document.createElement("canvas")
   /** The land in natural colour, for the reveal. */
   readonly colourCanvas = document.createElement("canvas")
+  readonly bordersCanvas = document.createElement("canvas")
+  private readonly borders: Mesh<SphereGeometry, MeshBasicMaterial>
   private readonly landTexture: CanvasTexture
   private colourTexture: CanvasTexture | undefined = undefined
   private colourWanted = false
@@ -65,12 +80,15 @@ export class Globe {
   private readonly anchor = new Vector3()
   /** From the player towards the centre, level. */
   private readonly toward = new Vector3(0, 0, -1)
-  /** Angular velocity while flung: axis times radians per second. */
-  private readonly spin = new Vector3()
+  /** Turned with the prime meridian facing the player, north up. */
+  private readonly base = new Quaternion()
+  private readonly turned: Turn = { spin: 0, tilt: 0 }
+  /** Radians per second of each, while flung. */
+  private readonly rate: Turn = { spin: 0, tilt: 0 }
   /** Each grabbing hand's last offset from the centre. */
   private readonly held: Partial<Record<Hand, Vector3>> = {}
-  private pair: { from: Vector3; length: number; scale: number } | undefined = undefined
-  private turning: { from: Quaternion; to: Quaternion; scale: number; t: number } | undefined = undefined
+  private pair: { length: number; scale: number } | undefined = undefined
+  private turning: { from: Turn; to: Turn; scale: number; t: number } | undefined = undefined
 
   constructor(anisotropy: number) {
     this.landCanvas.width = 4096
@@ -82,31 +100,20 @@ export class Globe {
     this.colourCanvas.height = this.landCanvas.height
     this.surface = new Mesh(new SphereGeometry(RADIUS, 128, 64), new MeshBasicMaterial({ map: this.landTexture }))
     this.group.add(this.surface)
+    this.bordersCanvas.width = this.landCanvas.width
+    this.bordersCanvas.height = this.landCanvas.height
+    const borders = new CanvasTexture(this.bordersCanvas)
+    borders.colorSpace = SRGBColorSpace
+    borders.anisotropy = anisotropy
+    this.borders = new Mesh(
+      new SphereGeometry(BORDERS_RADIUS, 128, 64),
+      new MeshBasicMaterial({ map: borders, transparent: true, depthWrite: false })
+    )
+    this.borders.visible = false
+    this.group.add(this.borders)
     this.paint.renderOrder = 2
     this.group.add(this.paint)
-    this.buildStand()
-  }
-
-  /** A desk globe's: a half ring round the back from pole to pole, on a stem and round foot. */
-  private buildStand(): void {
-    const brass = new MeshStandardMaterial({ color: "#b08d57", metalness: 0.3, roughness: 0.45 })
-    const wood = new MeshStandardMaterial({ color: "#5a3d2b", roughness: 0.7 })
-    const ring = RADIUS * 1.08
-    // A torus arc runs from +x round through +y; turned, from the bottom pole round the back (+x) to the top.
-    const arc = new Mesh(new TorusGeometry(ring, RADIUS * 0.02, 8, 64, Math.PI), brass)
-    arc.rotation.z = -Math.PI / 2
-    const pin = (y: number) => {
-      const m = new Mesh(new CylinderGeometry(RADIUS * 0.025, RADIUS * 0.025, ring - RADIUS), brass)
-      m.position.y = (y * (ring + RADIUS)) / 2
-      return m
-    }
-    const stemLength = RADIUS * 0.45
-    const stem = new Mesh(new CylinderGeometry(RADIUS * 0.04, RADIUS * 0.06, stemLength, 16), wood)
-    stem.position.y = -ring - stemLength / 2
-    const footHeight = RADIUS * 0.08
-    const foot = new Mesh(new CylinderGeometry(RADIUS * 0.45, RADIUS * 0.5, footHeight, 48), wood)
-    foot.position.y = -ring - stemLength - footHeight / 2
-    this.stand.add(arc, pin(1), pin(-1), stem, foot)
+    this.stand.add(buildStand(RADIUS))
   }
 
   get centre(): Vector3 {
@@ -135,6 +142,20 @@ export class Globe {
   landDrawn(renderer: WebGLRenderer): void {
     this.landTexture.needsUpdate = true
     renderer.initTexture(this.landTexture)
+  }
+
+  bordersDrawn(renderer: WebGLRenderer): void {
+    this.borders.material.map!.needsUpdate = true
+    renderer.initTexture(this.borders.material.map!)
+  }
+
+  /** National borders, when the page's map would show them. */
+  showBorders(on: boolean): void {
+    this.borders.visible = on
+  }
+
+  get bordersShown(): boolean {
+    return this.borders.visible
   }
 
   colourDrawn(renderer: WebGLRenderer): void {
@@ -168,10 +189,12 @@ export class Globe {
       .copy(head)
       .addScaledVector(this.toward, 0.45)
       .add(v.set(0, -0.3, 0))
-    this.group.quaternion.setFromUnitVectors(v.set(1, 0, 0), w.copy(this.toward).negate())
+    this.base.setFromUnitVectors(v.set(1, 0, 0), w.copy(this.toward).negate())
     this.stand.quaternion.setFromUnitVectors(v.set(1, 0, 0), this.toward)
-    this.spin.set(0, 0, 0)
+    this.turned.spin = this.turned.tilt = 0
+    this.rate.spin = this.rate.tilt = 0
     this.turning = undefined
+    this.orient()
     this.setScale(MIN_SCALE)
   }
 
@@ -180,13 +203,47 @@ export class Globe {
    * paint shows around it. Grabbing it or the thumbstick stops the turn.
    */
   turnToward(at: LatLon, eye: Vector3): void {
-    // Towards the eye from where the centre will be once zoomed out, north as near up as it goes.
+    // Spun until the place is straight ahead, then tilted to the eye, as
+    // seen from where the centre will be once zoomed out.
     const centre = w.copy(this.anchor).addScaledVector(this.toward, RADIUS * MIN_SCALE)
-    const local = basis(latLonToLocal(at), new Vector3(0, 1, 0))
-    const world = basis(eye.clone().sub(centre).normalize(), new Vector3(0, 1, 0))
-    const to = new Quaternion().setFromRotationMatrix(world.multiply(local.transpose()))
-    this.turning = { from: this.group.quaternion.clone(), to, scale: this.scale, t: 0 }
-    this.spin.set(0, 0, 0)
+    const place = this.angles(latLonToLocal(at).applyQuaternion(this.base), 0)
+    // Spinning it straight ahead leaves its height: that is the tilt it starts from.
+    const placeTilt = Math.asin(latLonToLocal(at).applyQuaternion(this.base).normalize().dot(UP))
+    const eyeAt = this.angles(eye.clone().sub(centre), 0)
+    const to = {
+      spin: this.turned.spin + wrap(-place.spin - this.turned.spin),
+      tilt: Math.max(-MAX_TILT, Math.min(MAX_TILT, eyeAt.tilt - placeTilt))
+    }
+    this.turning = { from: { ...this.turned }, to, scale: this.scale, t: 0 }
+    this.rate.spin = this.rate.tilt = 0
+  }
+
+  /**
+   * Where `offset` (from the centre, in the world) points, as the turns
+   * that bring straight ahead round to it: the spin about the poles (undoing
+   * `tilt` first) and the tilt.
+   */
+  private angles(offset: Vector3, tilt: number): Turn {
+    const back = this.toward.clone().negate()
+    const side = new Vector3().crossVectors(back, UP)
+    const tilted = Math.atan2(offset.dot(UP), offset.dot(back))
+    const flat = offset.clone().applyAxisAngle(side, -tilt)
+    // A spin about up carries straight ahead (back) towards -side.
+    return { spin: Math.atan2(-flat.dot(side), flat.dot(back)), tilt: tilted }
+  }
+
+  private turnBy(spin: number, tilt: number): void {
+    this.turned.spin += spin
+    this.turned.tilt = Math.max(-MAX_TILT, Math.min(MAX_TILT, this.turned.tilt + tilt))
+    this.orient()
+  }
+
+  private orient(): void {
+    const side = w.crossVectors(v.copy(this.toward).negate(), UP)
+    this.group.quaternion
+      .setFromAxisAngle(side, this.turned.tilt)
+      .multiply(q.setFromAxisAngle(UP, this.turned.spin))
+      .multiply(this.base)
   }
 
   /** `grips`: where each hand holding the grip button is. `stick`: the thumbsticks, summed. */
@@ -194,37 +251,38 @@ export class Globe {
     const { left, right } = grips
     if (left || right || Math.abs(stick.x) > STICK_DEAD || Math.abs(stick.y) > STICK_DEAD) this.turning = undefined
     if (this.turning) {
+      const { from, to } = this.turning
       const t = (this.turning.t = Math.min(1, this.turning.t + dt / TURN_S))
       const eased = t * t * (3 - 2 * t)
-      this.group.quaternion.slerpQuaternions(this.turning.from, this.turning.to, eased)
+      this.turned.spin = from.spin + (to.spin - from.spin) * eased
+      this.turned.tilt = from.tilt + (to.tilt - from.tilt) * eased
+      this.orient()
       this.setScale(this.turning.scale + (MIN_SCALE - this.turning.scale) * eased)
       if (t === 1) this.turning = undefined
     }
     if (left && right) {
-      const between = v.copy(right).sub(left)
-      if (this.pair) {
-        this.turn(q.setFromUnitVectors(w.copy(this.pair.from).normalize(), between.clone().normalize()))
-        this.setScale((this.pair.scale * between.length()) / this.pair.length)
-        this.pair.from.copy(between)
-      } else this.pair = { from: between.clone(), length: between.length(), scale: this.group.scale.x }
-      this.spin.set(0, 0, 0)
+      // Two hands zoom; turning is for one.
+      const apart = left.distanceTo(right)
+      if (this.pair) this.setScale((this.pair.scale * apart) / this.pair.length)
+      else this.pair = { length: apart, scale: this.group.scale.x }
+      this.rate.spin = this.rate.tilt = 0
     } else {
       this.pair = undefined
       const hand: Hand | undefined = left ? "left" : right ? "right" : undefined
       const prev = hand && this.held[hand]
       if (hand && prev && dt > 0) {
-        const now = v.copy(grips[hand]!).sub(this.centre).normalize()
-        this.turn(q.setFromUnitVectors(prev.normalize(), now))
-        const angle = 2 * Math.acos(Math.min(1, Math.abs(q.w)))
-        const axis = w.set(q.x, q.y, q.z)
-        // A hand held still has no axis to turn about, and must still slow the fling to nothing.
-        const velocity =
-          axis.lengthSq() > 1e-12 ? axis.normalize().multiplyScalar((Math.sign(q.w) * angle) / dt) : axis.set(0, 0, 0)
-        this.spin.lerp(velocity, 0.5)
-      } else if (!hand && this.spin.lengthSq() > 1e-6) {
-        const rate = this.spin.length()
-        this.turn(q.setFromAxisAngle(w.copy(this.spin).divideScalar(rate), rate * dt))
-        this.spin.multiplyScalar(Math.exp(-SPIN_DECAY * dt))
+        const was = this.angles(prev, this.turned.tilt)
+        const now = this.angles(v.copy(grips[hand]!).sub(this.centre), this.turned.tilt)
+        const spin = wrap(now.spin - was.spin)
+        const tilt = wrap(now.tilt - was.tilt)
+        this.turnBy(spin, tilt)
+        this.rate.spin += (spin / dt - this.rate.spin) * 0.5
+        this.rate.tilt += (tilt / dt - this.rate.tilt) * 0.5
+      } else if (!hand && Math.abs(this.rate.spin) + Math.abs(this.rate.tilt) > 1e-3) {
+        this.turnBy(this.rate.spin * dt, this.rate.tilt * dt)
+        const decay = Math.exp(-SPIN_DECAY * dt)
+        this.rate.spin *= decay
+        this.rate.tilt *= decay
       }
     }
     for (const h of ["left", "right"] as const) {
@@ -232,12 +290,8 @@ export class Globe {
       this.held[h] = p ? (this.held[h] ?? new Vector3()).copy(p).sub(this.centre) : undefined
     }
 
-    if (Math.abs(stick.x) > STICK_DEAD) this.turn(q.setFromAxisAngle(v.set(0, 1, 0), stick.x * 1.5 * dt))
+    if (Math.abs(stick.x) > STICK_DEAD) this.turnBy(stick.x * 1.5 * dt, 0)
     if (Math.abs(stick.y) > STICK_DEAD) this.setScale(this.group.scale.x * Math.exp(-stick.y * 1.2 * dt))
-  }
-
-  private turn(by: Quaternion): void {
-    this.group.quaternion.premultiply(by)
   }
 
   private setScale(s: number): void {
@@ -247,13 +301,4 @@ export class Globe {
     this.stand.scale.setScalar(scale)
     this.stand.position.copy(this.group.position)
   }
-}
-
-/** Axes with `out` first and `up` made square to it, as a rotation's columns. */
-function basis(out: Vector3, up: Vector3): Matrix4 {
-  const u = up.clone().addScaledVector(out, -up.dot(out))
-  // At a pole, any up will do.
-  if (u.lengthSq() < 1e-8) u.set(1, 0, 0).addScaledVector(out, -out.x)
-  u.normalize()
-  return new Matrix4().makeBasis(out, u, new Vector3().crossVectors(out, u))
 }

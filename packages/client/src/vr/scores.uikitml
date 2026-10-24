@@ -1,0 +1,73 @@
+<style>
+  .root {
+    flex-direction: column;
+    width: 380px;
+    padding: 18px;
+  }
+  .title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 28px;
+    color: #f0fdff;
+    margin-bottom: 6px;
+  }
+  .row {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 4px;
+  }
+  .swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    margin-right: 8px;
+  }
+  .name {
+    flex-grow: 1;
+    flex-shrink: 1;
+    font-size: 16px;
+    line-height: 21px;
+    color: #cfd8e3;
+  }
+  .detail {
+    margin-left: 8px;
+    font-size: 15px;
+    line-height: 21px;
+    color: #67e8f9;
+  }
+  .total {
+    margin-left: 10px;
+    width: 64px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 21px;
+    color: #f0fdff;
+    text-align: right;
+  }
+  .more {
+    margin-top: 6px;
+    font-size: 14px;
+    line-height: 19px;
+    color: #94a3b8;
+  }
+</style>
+<Panel class="root">
+  <span id="title" class="title">Scores</span>
+  <div id="row0" class="row"><div id="swatch0" class="swatch"></div><span id="name0" class="name">-</span><span id="detail0" class="detail">-</span><span id="total0" class="total">-</span></div>
+  <div id="row1" class="row"><div id="swatch1" class="swatch"></div><span id="name1" class="name">-</span><span id="detail1" class="detail">-</span><span id="total1" class="total">-</span></div>
+  <div id="row2" class="row"><div id="swatch2" class="swatch"></div><span id="name2" class="name">-</span><span id="detail2" class="detail">-</span><span id="total2" class="total">-</span></div>
+  <div id="row3" class="row"><div id="swatch3" class="swatch"></div><span id="name3" class="name">-</span><span id="detail3" class="detail">-</span><span id="total3" class="total">-</span></div>
+  <div id="row4" class="row"><div id="swatch4" class="swatch"></div><span id="name4" class="name">-</span><span id="detail4" class="detail">-</span><span id="total4" class="total">-</span></div>
+  <div id="row5" class="row"><div id="swatch5" class="swatch"></div><span id="name5" class="name">-</span><span id="detail5" class="detail">-</span><span id="total5" class="total">-</span></div>
+  <div id="row6" class="row"><div id="swatch6" class="swatch"></div><span id="name6" class="name">-</span><span id="detail6" class="detail">-</span><span id="total6" class="total">-</span></div>
+  <div id="row7" class="row"><div id="swatch7" class="swatch"></div><span id="name7" class="name">-</span><span id="detail7" class="detail">-</span><span id="total7" class="total">-</span></div>
+  <div id="row8" class="row"><div id="swatch8" class="swatch"></div><span id="name8" class="name">-</span><span id="detail8" class="detail">-</span><span id="total8" class="total">-</span></div>
+  <div id="row9" class="row"><div id="swatch9" class="swatch"></div><span id="name9" class="name">-</span><span id="detail9" class="detail">-</span><span id="total9" class="total">-</span></div>
+  <div id="row10" class="row"><div id="swatch10" class="swatch"></div><span id="name10" class="name">-</span><span id="detail10" class="detail">-</span><span id="total10" class="total">-</span></div>
+  <div id="row11" class="row"><div id="swatch11" class="swatch"></div><span id="name11" class="name">-</span><span id="detail11" class="detail">-</span><span id="total11" class="total">-</span></div>
+  <div id="row12" class="row"><div id="swatch12" class="swatch"></div><span id="name12" class="name">-</span><span id="detail12" class="detail">-</span><span id="total12" class="total">-</span></div>
+  <div id="row13" class="row"><div id="swatch13" class="swatch"></div><span id="name13" class="name">-</span><span id="detail13" class="detail">-</span><span id="total13" class="total">-</span></div>
+  <div id="row14" class="row"><div id="swatch14" class="swatch"></div><span id="name14" class="name">-</span><span id="detail14" class="detail">-</span><span id="total14" class="total">-</span></div>
+  <div id="row15" class="row"><div id="swatch15" class="swatch"></div><span id="name15" class="name">-</span><span id="detail15" class="detail">-</span><span id="total15" class="total">-</span></div>
+  <span id="more" class="more">-</span>
+</Panel>
