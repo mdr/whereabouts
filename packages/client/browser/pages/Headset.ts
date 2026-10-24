@@ -134,6 +134,11 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.flagNamed)
   }
 
+  /** The country whose border is picked out on the globe, and in how many line segments. */
+  async flagOutlined(): Promise<{ name: string; segments: number } | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.flagOutlined)
+  }
+
   /** The flag nearest the eyes, and where its middle is. */
   async flagFacing(): Promise<{ name: string; at: Vec } | undefined> {
     return this.#page.evaluate(() => window.whereaboutsVr.flagFacing)
@@ -197,8 +202,8 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.viewKind)
   }
 
-  /** Whether a hand holds the question's picture, and where the picture is. */
-  async pictureHeld(): Promise<{ held: boolean; at: Vec }> {
+  /** Whether a hand holds the question's picture, where it is, and which way its face points. */
+  async pictureHeld(): Promise<{ held: boolean; at: Vec; facing: Vec }> {
     return this.#page.evaluate(() => window.whereaboutsVr.pictureHeld)
   }
 
@@ -250,6 +255,33 @@ export class Headset {
       hand,
       value
     ] as const)
+  }
+
+  /**
+   * Point the right hand from `from` at `at` and click the trigger. Timed
+   * in frames: a press only clicks if the frame seeing it released comes
+   * within 300 ms of the frame seeing it pressed (pointer-events'
+   * clickThresholdMs), and the emulator can stall for longer than that.
+   */
+  async press(from: Vec, at: Vec): Promise<void> {
+    await this.pointRight(from, at)
+    await this.#frames(3)
+    // A stall while it is held can still outlast that: then press again.
+    for (let tries = 1; ; tries++) {
+      const clicks = await this.#page.evaluate(() => window.whereaboutsVr.clicks)
+      await this.trigger("right", 1)
+      await this.#frames(2)
+      await this.trigger("right", 0)
+      await this.#frames(3)
+      if ((await this.#page.evaluate(() => window.whereaboutsVr.clicks)) > clicks) return
+      if (tries === 3) throw new Error("Three presses and no click")
+      console.warn("  (no click: pressing again)")
+    }
+  }
+
+  async #frames(n: number): Promise<void> {
+    const start = await this.#page.evaluate(() => window.whereaboutsVr.frames)
+    await this.#page.waitForFunction((end) => window.whereaboutsVr.frames >= end, start + n)
   }
 
   /** Push the right thumbstick: up is y -1. */

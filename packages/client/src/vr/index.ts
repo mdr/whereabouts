@@ -40,7 +40,16 @@ import { headsetPassthrough } from "../settings"
 import type { PaintController } from "../paint-controller"
 import { sound } from "../sound"
 import { THEME } from "../themes"
-import { ANSWER_RADIUS, DETAIL_RADIUS, Globe, HINT_RADIUS, PAINT_RADIUS, PIN_RADIUS, type Hand } from "./globe"
+import {
+  ANSWER_RADIUS,
+  DETAIL_RADIUS,
+  Globe,
+  HINT_RADIUS,
+  OUTLINE_RADIUS,
+  PAINT_RADIUS,
+  PIN_RADIUS,
+  type Hand
+} from "./globe"
 import { FlagPins, type Pointer, type VrFlagPin } from "./flag-pins"
 import { AnswerMarker, type VrAnswer } from "./answer"
 import { DetailPatch } from "./detail-patch"
@@ -155,6 +164,8 @@ export class Vr {
   shownPaintCells = 0
   /** Frames drawn, for the browser tests to wait on frames rather than time. */
   frames = 0
+  /** Menu buttons clicked, for the browser tests to know a press landed. */
+  clicks = 0
   private view: VrView | undefined = undefined
   private pictureKey = ""
   private stroking = false
@@ -170,7 +181,7 @@ export class Vr {
   private readonly wrist: WristMenu
   private readonly scores: ScoreBoard
   private readonly board = new ResultsBoard()
-  private readonly flagPins = new FlagPins(PIN_RADIUS)
+  private readonly flagPins = new FlagPins(PIN_RADIUS, OUTLINE_RADIUS)
   private readonly space = new Space()
   private readonly moon = new Moon()
   /** Whether the headset can show the room (immersive-ar), once asked. */
@@ -245,6 +256,7 @@ export class Vr {
     this.globe.overlay(this.answer.group, ANSWER_RADIUS)
     this.globe.overlay(this.hint.group, HINT_RADIUS)
     this.globe.overlay(this.flagPins.group, PIN_RADIUS)
+    this.globe.overlay(this.flagPins.border, OUTLINE_RADIUS)
     world.scene.add(this.flagPins.label)
 
     const { gripSpaces, raySpaces } = world.player
@@ -260,7 +272,18 @@ export class Vr {
     this.panel.addComponent(RayInteractable)
     this.panel.addComponent(PanelUI, { config: panelUrl })
     this.panel.object3D!.add(this.picture.mesh)
-    this.wrist = new WristMenu(world, this.wristHandlers())
+    this.wrist = new WristMenu(
+      world,
+      Object.fromEntries(
+        Object.entries(this.wristHandlers()).map(([id, f]) => [
+          id,
+          () => {
+            this.clicks++
+            f()
+          }
+        ])
+      ) as Record<WristButton, () => void>
+    )
     this.scores = new ScoreBoard(world)
     world.scene.add(this.board.mesh)
 
@@ -409,6 +432,11 @@ export class Vr {
     return this.flagPins.named
   }
 
+  /** The country whose border is picked out, and in how many line segments, for the browser tests. */
+  get flagOutlined(): { name: string; segments: number } | undefined {
+    return this.flagPins.outlined
+  }
+
   /** The flag nearest the eyes, and where, for the browser tests. */
   get flagFacing(): { name: string; at: [number, number, number] } | undefined {
     const f = this.flagPins.nearest(this.world.player.head.getWorldPosition(new Vector3()))
@@ -479,9 +507,10 @@ export class Vr {
   }
 
   /** Whether a hand holds the question's picture, and where it is, for the browser tests. */
-  get pictureHeld(): { held: boolean; at: [number, number, number] } {
+  get pictureHeld(): { held: boolean; at: [number, number, number]; facing: [number, number, number] } {
     const p = this.picture.mesh.getWorldPosition(new Vector3())
-    return { held: this.picture.heldBy !== undefined, at: [p.x, p.y, p.z] }
+    const f = this.picture.mesh.getWorldDirection(new Vector3())
+    return { held: this.picture.heldBy !== undefined, at: [p.x, p.y, p.z], facing: [f.x, f.y, f.z] }
   }
 
   /**
@@ -639,7 +668,7 @@ export class Vr {
         const ray = player.raySpaces[h]
         const origin = ray.getWorldPosition(new Vector3())
         if (this.picture.reaches(grip, origin, ray.getWorldDirection(new Vector3()).negate()))
-          this.picture.grab(h, this.world.scene)
+          this.picture.grab(h, this.world.scene, player.gripSpaces[h], player.head.getWorldPosition(new Vector3()))
       }
       if (this.picture.heldBy === h && !squeezed) this.picture.release(this.panel.object3D!)
       if (squeezed && this.picture.heldBy !== h) grips[h] = grip
@@ -649,8 +678,6 @@ export class Vr {
     }
     this.globe.update(dt, grips, stick)
     const head = player.head.getWorldPosition(new Vector3())
-    const holder = this.picture.heldBy
-    if (holder) this.picture.hold(player.gripSpaces[holder].getWorldPosition(new Vector3()), head)
     const zoomed = this.globe.scale >= DETAIL_SCALE
     this.detail.update(now, this.globe.nearest(head), zoomed ? (DETAIL_HALF_M * 6371) / this.globe.radius : undefined)
     this.answer.update(this.globe.scale)
@@ -771,7 +798,11 @@ export class Vr {
     const doc = PanelDocument.data.document[this.panel.index] as UIKitDocument
     this.panelDoc = doc
     doc.setTargetDimensions(PANEL_M, PANEL_M)
-    const on = (id: string, f: () => void) => doc.requireElementById(id).addEventListener("click", f)
+    const on = (id: string, f: () => void) =>
+      doc.requireElementById(id).addEventListener("click", () => {
+        this.clicks++
+        f()
+      })
     on("done", () => this.painting?.done())
     on("unlock", () => this.view?.kind === "paint" && this.view.round.unlock?.())
     for (const i of [0, 1]) {

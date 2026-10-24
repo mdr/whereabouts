@@ -55,12 +55,7 @@ const can: [number, number, number] = [x + 0.15, y - 0.25, z - 0.15]
 const wait = (ms: number) => aliceTab.page.waitForTimeout(ms)
 /** Points at a menu button and pulls the trigger. */
 async function press(id: string): Promise<void> {
-  await headset.pointRight(can, await headset.menuButton(id))
-  await wait(500)
-  await headset.rightTrigger(1)
-  await wait(300)
-  await headset.rightTrigger(0)
-  await wait(300)
+  await headset.press(can, await headset.menuButton(id))
 }
 await wait(1500)
 await aliceLobby.screenshot(`${out}/vrmp-0-lobby.png`)

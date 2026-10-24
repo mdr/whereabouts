@@ -161,12 +161,7 @@ checks.check(
 )
 await round.pause(800)
 const press = async (id: Parameters<typeof headset.wristButton>[0]) => {
-  await headset.pointRight(can, await headset.wristButton(id))
-  await round.pause(400)
-  await headset.rightTrigger(1)
-  await round.pause(300)
-  await headset.rightTrigger(0)
-  await round.pause(300)
+  await headset.press(can, await headset.wristButton(id))
 }
 await round.screenshot(`${out}/vr-wrist.png`)
 const undone = async (what: string) => {
@@ -256,11 +251,7 @@ await round.screenshot(`${out}/vr-6-zoomed-aim.png`)
 checks.check((await headset.doneLabel()) === "Submit", "with paint down, the menu offers Submit")
 /** Points at the menu's Done and pulls the trigger. */
 async function pressDone(): Promise<void> {
-  await headset.pointRight(can, await headset.menuButton("done"))
-  await round.pause(500)
-  await headset.rightTrigger(1)
-  await round.pause(300)
-  await headset.rightTrigger(0)
+  await headset.press(can, await headset.menuButton("done"))
 }
 await pressDone()
 // Not PracticeRevealPage.whenShown: the page's map, which it waits on, draws nothing while VR shows.
@@ -389,6 +380,21 @@ const held = await flagHeadset.pictureHeld()
 const moved = Math.hypot(...held.at.map((c, i) => c - home[i]!))
 checks.check(held.held && moved > 0.2, `gripping the flag takes it in hand (moved ${moved.toFixed(2)} m)`)
 await flagRound.screenshot(`${out}/vr-9-held.png`)
+// Turning the hand tilts it, as a card held up would.
+const handDir = (to: [number, number, number]) => to.map((c, i) => c - [hand[0] + 0.1, hand[1], hand[2]][i]!)
+const angle = (a: number[], b: number[]) =>
+  Math.acos(a.reduce((s, x, i) => s + x * b[i]!, 0) / Math.hypot(...a) / Math.hypot(...b))
+const tiltedTo: [number, number, number] = [hand[0] + 0.1, home[1] - 0.5, home[2]]
+await flagHeadset.pointRight([hand[0] + 0.1, hand[1], hand[2]], tiltedTo)
+await flagRound.pause(800)
+const tilted = await flagHeadset.pictureHeld()
+const handTurn = angle(handDir(home), handDir(tiltedTo))
+const pictureTurn = angle(held.facing, tilted.facing)
+checks.check(
+  Math.abs(pictureTurn - handTurn) < 0.05,
+  `and turns with the hand (${pictureTurn.toFixed(2)} rad, the hand ${handTurn.toFixed(2)})`
+)
+await flagRound.screenshot(`${out}/vr-9b-tilted.png`)
 await flagHeadset.rightGrip(0)
 await flagRound.pause(500)
 const back = await flagHeadset.pictureHeld()
@@ -399,12 +405,7 @@ checks.check(!back.held && off < 0.01, `letting go puts it back (${off.toFixed(3
 const flagCan: [number, number, number] = [hand[0], hand[1], hand[2]]
 /** Points at a menu button of the flag round's headset and pulls the trigger. */
 async function flagPress(id: string): Promise<void> {
-  await flagHeadset.pointRight(flagCan, await flagHeadset.menuButton(id))
-  await flagRound.pause(500)
-  await flagHeadset.trigger("right", 1)
-  await flagRound.pause(300)
-  await flagHeadset.trigger("right", 0)
-  await flagRound.pause(300)
+  await flagHeadset.press(flagCan, await flagHeadset.menuButton(id))
 }
 await flagPress("done")
 await until(
@@ -436,18 +437,43 @@ await flagRound.screenshot(`${out}/vr-11-all-flags.png`)
 // Pointing at a flag enlarges it and names its country.
 const facing = (await flagHeadset.flagFacing())!
 await flagHeadset.pointRight(flagCan, facing.at)
+// The other hand may rest on some flag already: wait for this one.
 const named = await until(
   "the flag's name",
   () => flagHeadset.flagNamed(),
-  (n) => n !== undefined
+  (n) => n === facing.name
 )
 checks.check(named === facing.name, `pointing at a flag names its country (${named})`)
+const outlined = await flagHeadset.flagOutlined()
+checks.check(
+  outlined?.name === named && (outlined?.segments ?? 0) >= 3,
+  `and picks out its border (${outlined?.segments} segments)`
+)
 await flagRound.pause(500)
 await flagRound.screenshot(`${out}/vr-11b-flag-named.png`)
 
+// And with the whole globe in view.
+await flagHeadset.rightStick(0, 1)
+await flagRound.pause(3000)
+await flagHeadset.rightStick(0, 0)
+const wide = await flagHeadset.globeScale()
+const wideFacing = (await flagHeadset.flagFacing())!
+await flagHeadset.pointRight(flagCan, wideFacing.at)
+const wideOutlined = await until(
+  "the border, zoomed out",
+  () => flagHeadset.flagOutlined(),
+  (o) => o?.name === wideFacing.name
+)
+checks.check(
+  wide === 1 && (wideOutlined?.segments ?? 0) >= 3,
+  `zoomed right out, it still picks out the border (${wideOutlined?.name}, ${wide.toFixed(1)} times)`
+)
+await flagRound.pause(500)
+await flagRound.screenshot(`${out}/vr-11b-border-zoomed-out.png`)
+
 // Zoomed right in, to a city's width, the flags still show.
 await flagHeadset.rightStick(0, -1)
-await flagRound.pause(4000)
+await flagRound.pause(6000)
 await flagHeadset.rightStick(0, 0)
 const deep = await flagHeadset.globeScale()
 checks.check(deep >= 150, `the globe zooms in to a city's width (${deep.toFixed(0)} times)`)
@@ -510,11 +536,7 @@ checks.check(homeView === "lobby" && offered === "Practise, Change topic", `the 
 await homePage.pause(1500)
 await homePage.screenshot(`${out}/vr-12-home.png`)
 const [hx, hy, hz] = await homeHeadset.eyes()
-await homeHeadset.pointRight([hx + 0.15, hy - 0.25, hz - 0.15], await homeHeadset.menuButton("act0"))
-await homePage.pause(500)
-await homeHeadset.trigger("right", 1)
-await homePage.pause(300)
-await homeHeadset.trigger("right", 0)
+await homeHeadset.press([hx + 0.15, hy - 0.25, hz - 0.15], await homeHeadset.menuButton("act0"))
 const practising = await until(
   "practice in VR",
   () => homeHeadset.view(),

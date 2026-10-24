@@ -92,6 +92,14 @@ describe("borders", () => {
 describe("flag pins", () => {
   const pins = borders.pins()
 
+  it("gives each pinned country's outline round its pin", () => {
+    const france = pins.find((p) => p.f.flag === "fr")!
+    const rings = borders.rings(france.f.flag)
+    expect(rings.length).toBeGreaterThan(0)
+    expect(rings.every((r) => r.length >= 6 && r.length % 2 === 0)).toBe(true)
+    expect(borders.countryAt(france.at)?.flag).toBe("fr")
+  })
+
   it("pins every flag country once", () => {
     expect(new Set(pins.map((p) => p.f.flag)).size).toBe(pins.length)
     expect(pins.length).toBeGreaterThan(190)

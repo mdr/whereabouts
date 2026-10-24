@@ -28,6 +28,8 @@ export interface VrFlagPin {
   flag: FlagCode
   name: string
   at: LatLon
+  /** The country's outline: rings of lon, lat, lon, lat, … in degrees. */
+  rings: Float64Array[]
 }
 
 /** In metres, whatever the globe's zoom. */
@@ -35,8 +37,9 @@ const PIN_M = 0.012
 const FLAG_W_M = 0.016
 const FLAG_H_M = 0.012
 const LABEL_W_M = 0.16
-/** Pointed at, a flag grows this much. */
+/** Pointed at, a flag grows this much, and its country's border shows in this colour. */
 const HIGHLIGHT = 1.8
+const BORDER = "#ff40ff"
 /** How far off a flag a ray may pass and still point at it: metres, and radians beyond. */
 const POINT_M = 0.01
 const POINT_RAD = 0.015
@@ -86,10 +89,15 @@ export class FlagPins {
   private built: Built | undefined = undefined
   private readonly labelCanvas = document.createElement("canvas")
   private pointed: number | undefined = undefined
+  /** The pointed-at country's border, a layer of the globe's own. */
+  readonly border = new LineSegments(new BufferGeometry(), new LineBasicMaterial({ color: BORDER }))
+  private readonly borderRadius: number
 
   /** `base`: the radius pins stand on, in the globe's frame. */
-  constructor(base: number) {
+  /** `borderRadius`: where the pointed-at country's border is drawn, likewise. */
+  constructor(base: number, borderRadius: number) {
     this.base = base
+    this.borderRadius = borderRadius
     this.group.visible = false
     this.labelCanvas.width = 512
     this.labelCanvas.height = 96
@@ -101,6 +109,7 @@ export class FlagPins {
     )
     this.label.renderOrder = 5
     this.label.visible = false
+    this.border.visible = false
   }
 
   /** How many flags show, for the browser tests. */
@@ -111,6 +120,14 @@ export class FlagPins {
   /** The country pointed at, if any, for the browser tests. */
   get named(): string | undefined {
     return this.pointed === undefined ? undefined : this.built?.pins[this.pointed]?.name
+  }
+
+  /** The country whose border shows, and in how many segments, for the browser tests. */
+  get outlined(): { name: string; segments: number } | undefined {
+    if (!this.border.visible || this.pointed === undefined) return undefined
+    const name = this.built?.pins[this.pointed]?.name
+    const n = this.border.geometry.getAttribute("position").count
+    return name === undefined ? undefined : { name, segments: n / 2 }
   }
 
   /** The flag nearest `to`, and where its middle is, for the browser tests. */
@@ -146,8 +163,12 @@ export class FlagPins {
     if (pointed !== this.pointed) {
       this.pointed = pointed
       this.uniforms.uHi.value = pointed ?? -1
-      if (pointed !== undefined) void this.drawLabel(this.built!.pins[pointed]!)
+      if (pointed !== undefined) {
+        void this.drawLabel(this.built!.pins[pointed]!)
+        this.outline(this.built!.pins[pointed]!)
+      }
     }
+    this.border.visible = pointed !== undefined
     this.label.visible = pointed !== undefined
     if (pointed === undefined) return
     // Above the enlarged flag, turned to the eyes.
@@ -155,6 +176,23 @@ export class FlagPins {
     const out = w.copy(mid).sub(this.group.getWorldPosition(centre)).normalize()
     this.label.position.copy(mid).addScaledVector(out, FLAG_H_M * HIGHLIGHT + 0.025)
     this.label.lookAt(head)
+  }
+
+  private outline(pin: VrFlagPin): void {
+    const points: number[] = []
+    for (const ring of pin.rings)
+      for (let i = 0; i < ring.length; i += 2) {
+        const j = (i + 2) % ring.length
+        for (const k of [i, j])
+          latLonToLocal({ lat: ring[k + 1]!, lon: ring[k]! }, v)
+            .multiplyScalar(this.borderRadius)
+            .toArray(points, points.length)
+      }
+    this.border.geometry.dispose()
+    this.border.geometry = new BufferGeometry().setAttribute(
+      "position",
+      new BufferAttribute(new Float32Array(points), 3)
+    )
   }
 
   private find(pointers: Pointer[]): number | undefined {
@@ -187,6 +225,7 @@ export class FlagPins {
     const built = this.built
     this.group.visible = false
     this.label.visible = false
+    this.border.visible = false
     this.pointed = undefined
     this.uniforms.uHi.value = -1
     if (!built) return

@@ -62,15 +62,16 @@ export class Picture {
     return this.mesh.getWorldPosition(at).distanceTo(grip) < size + REACH_M
   }
 
-  grab(hand: Hand, scene: Object3D): void {
+  /**
+   * Into the hand: held by its lower edge, turned to the eyes, and from then
+   * on turning and tilting with the hand.
+   */
+  grab(hand: Hand, scene: Object3D, grip: Object3D, head: Vector3): void {
     this.held = hand
     scene.attach(this.mesh)
-  }
-
-  /** Held by its lower edge, turned to the eyes. */
-  hold(grip: Vector3, head: Vector3): void {
-    this.mesh.position.copy(grip).add(at.set(0, 0.02 + this.mesh.scale.y / 2, 0))
+    this.mesh.position.copy(grip.getWorldPosition(at)).add(at.set(0, 0.02 + this.mesh.scale.y / 2, 0))
     this.mesh.lookAt(head)
+    grip.attach(this.mesh)
   }
 
   release(home: Object3D): void {

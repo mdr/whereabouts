@@ -2373,17 +2373,19 @@ button.danger.solid {
 
 /* Hints: a band of latitude or longitude, chosen once per round. */
 .hint-card {
-  padding: 6px 8px 6px 12px;
+  padding: 6px 8px;
 }
+/* Tight enough for the label, a hints-left count and both buttons in the HUD's width; wraps if not. */
 .hint-choose {
   display: flex;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 4px;
   align-items: center;
 }
 .hint-label,
 .hint-band {
   display: inline-flex;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
   color: var(--muted);
 }
@@ -2401,7 +2403,7 @@ button.danger.solid {
 }
 .hint-choose button {
   display: inline-flex;
-  gap: 5px;
+  gap: 4px;
   align-items: center;
   white-space: nowrap;
 }

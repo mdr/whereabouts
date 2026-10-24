@@ -8,7 +8,7 @@
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
 import { Borders, type FlagQuestion, type LatLon } from "@whereabouts/shared"
-import { loadRegions, flagQuestions } from "./regions"
+import { loadRegions, flagQuestions, regions } from "./regions"
 import type { VrFlagPin } from "./vr/flag-pins"
 
 /** The borders, once loaded. */
@@ -39,10 +39,21 @@ export function flagPins(b: Borders): { f: FlagQuestion; at: LatLon }[] {
 
 const vrPinsOf = new WeakMap<Borders, VrFlagPin[]>()
 
+/** The outline the reveal draws where the country is painted whole, finer than its borders; else those. */
+function outline(b: Borders, f: FlagQuestion): Float64Array[] {
+  const region = f.regionId === undefined ? undefined : regions.value?.get(f.regionId)
+  if (!region) return b.rings(f.flag)
+  return region.outline.flatMap((polygon) => polygon.map((ring) => Float64Array.from(ring.flat())))
+}
+
 /** The same, as the headset takes them: the same array each time, so it sees no change. */
 export function vrFlagPins(b: Borders): VrFlagPin[] {
   let pins = vrPinsOf.get(b)
-  if (!pins) vrPinsOf.set(b, (pins = flagPins(b).map(({ f, at }) => ({ flag: f.flag, name: f.label, at }))))
+  if (!pins)
+    vrPinsOf.set(
+      b,
+      (pins = flagPins(b).map(({ f, at }) => ({ flag: f.flag, name: f.label, at, rings: outline(b, f) })))
+    )
   return pins
 }
 

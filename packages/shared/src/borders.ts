@@ -128,6 +128,11 @@ export class Borders {
     return { rings, answer: f.answer, near: d?.near }
   }
 
+  /** A country's outline: rings of lon, lat, lon, lat, … in degrees; none if it has no shape here. */
+  rings(flag: FlagCode): Float64Array[] {
+    return this.byFlag.get(flag)?.rings ?? []
+  }
+
   /**
    * A point on each country's land, for its flag: its answer where that is
    * on its land, else a point well inside its largest piece. A country's
