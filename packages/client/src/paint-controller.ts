@@ -374,6 +374,24 @@ export class PaintController {
     return share
   }
 
+  // ---- strokes from outside the map: the VR spray can -----------------------
+
+  /** One undo step for every stamp until `endOutsideStroke`. */
+  beginOutsideStroke(tool: "paint" | "erase"): void {
+    this.pushHistory()
+    this.stroking.value = tool
+  }
+
+  /** Negative strength erases. */
+  stampOutside(at: LatLon, radiusKm: number, strength: number): void {
+    this.layer.stamp(at, radiusKm, strength)
+    this.queueRender()
+  }
+
+  endOutsideStroke(): void {
+    this.stroking.value = undefined
+  }
+
   // ---- undo / redo: one entry per stroke, clear or trim ---------------------
 
   private static readonly HISTORY_LIMIT = 50

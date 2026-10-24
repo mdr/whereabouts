@@ -1,0 +1,81 @@
+<!doctype html>
+<!--
+  What this browser's WebXR offers, for checking a headset: VR and passthrough
+  AR, and whether either will show page elements over the 3D view (DOM
+  Overlay). The dev server serves it at /xr-check.html; the build leaves it out.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WebXR check</title>
+    <style>
+      body {
+        font:
+          20px/1.5 system-ui,
+          sans-serif;
+        background: #131a23;
+        color: #cfd8e3;
+        margin: 0;
+        padding: 24px;
+      }
+      button {
+        font: inherit;
+        padding: 12px 20px;
+        margin: 6px 6px 6px 0;
+        border-radius: 10px;
+        border: 0;
+        background: #06b6d4;
+        color: #0b1016;
+      }
+      pre {
+        white-space: pre-wrap;
+        background: #0b1016;
+        padding: 16px;
+        border-radius: 10px;
+      }
+      #overlay {
+        padding: 24px;
+        background: #fbbf24;
+        color: #1a1a1a;
+        font-size: 28px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>WebXR check</h1>
+    <p>Each button opens a session for two seconds, then closes it. Try both.</p>
+    <button data-mode="immersive-vr">VR with page overlay</button>
+    <button data-mode="immersive-ar">Passthrough AR with page overlay</button>
+    <pre id="log"></pre>
+    <div id="overlay">If you can read this inside the session, page overlays work.</div>
+    <script type="module">
+      const log = (line) => (document.getElementById("log").textContent += line + "\n")
+      log(`User agent: ${navigator.userAgent}`)
+      if (!navigator.xr) log("No navigator.xr: this browser has no WebXR, or the page is not secure.")
+      else
+        for (const mode of ["immersive-vr", "immersive-ar"])
+          log(`${mode} supported: ${await navigator.xr.isSessionSupported(mode)}`)
+
+      for (const button of document.querySelectorAll("button")) {
+        button.onclick = async () => {
+          const mode = button.dataset.mode
+          try {
+            const session = await navigator.xr.requestSession(mode, {
+              optionalFeatures: ["dom-overlay"],
+              domOverlay: { root: document.getElementById("overlay") }
+            })
+            const overlay = session.domOverlayState?.type
+            log(
+              `${mode}: started. Features: ${[...(session.enabledFeatures ?? [])].join(", ") || "(not listed)"}. ` +
+                `Overlay: ${overlay ?? "none"}`
+            )
+            setTimeout(() => session.end(), 2000)
+          } catch (err) {
+            log(`${mode}: failed: ${err}`)
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

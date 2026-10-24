@@ -145,7 +145,8 @@ export class Borders {
   }
 }
 
-function decodeRing(steps: number[]): Float64Array {
+/** A ring of borders.json as lon, lat, lon, lat, … in degrees. */
+export function decodeRing(steps: number[]): Float64Array {
   const out = new Float64Array(steps.length)
   let x = 0,
     y = 0

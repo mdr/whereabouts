@@ -88,7 +88,7 @@ export class GameMap {
   private globe = false
   private globeButton: HTMLButtonElement | undefined = undefined
 
-  constructor(container: string | HTMLElement) {
+  constructor(container: string | HTMLElement, options: Partial<maplibregl.MapOptions> = {}) {
     this.map = new MapLibreMap({
       container,
       style: STYLE_URL,
@@ -99,7 +99,8 @@ export class GameMap {
       attributionControl: { compact: true },
       dragRotate: false,
       pitchWithRotate: false,
-      touchPitch: false
+      touchPitch: false,
+      ...options
     })
     // Bottom-left keeps the buttons clear of the HUD cards and the toolbar.
     this.map.addControl(new NavigationControl({ showCompass: false }), "bottom-left")

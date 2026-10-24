@@ -140,6 +140,11 @@ export class MapPanel {
     return this.#page.evaluate(() => window.whereabouts.paint.layer.size)
   }
 
+  /** Which cells your paint is in. */
+  async yourPaintCellIds(): Promise<string[]> {
+    return this.#page.evaluate(() => [...window.whereabouts.paint.layer.cells.keys()])
+  }
+
   /** Cells of paint drawn on the map: yours while guessing, whoever's is chosen at the reveal. */
   async shownPaintCells(): Promise<number> {
     return this.#page.evaluate(() => {

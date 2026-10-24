@@ -27,6 +27,7 @@ import {
   Pencil,
   Play,
   Plus,
+  RectangleGoggles,
   Redo2,
   RotateCcw,
   Share2,
@@ -109,7 +110,8 @@ const ICONS = {
   land: Mountain,
   hint: Lightbulb,
   latitude: LatitudeBand,
-  longitude: LongitudeBand
+  longitude: LongitudeBand,
+  vr: RectangleGoggles
 } satisfies Record<string, FunctionComponent<LucideProps>>
 
 export type IconName = keyof typeof ICONS

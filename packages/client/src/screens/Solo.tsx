@@ -39,6 +39,7 @@ import type { GameMap } from "../map"
 import { MapView, usePaint } from "../ui/MapView"
 import { Answer, AnswerMode, Card, HudBottom, HudHeader, QuestionCard, RegionHint, ScoreParts, fmtKm } from "../ui/bits"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
+import { VrButton } from "../ui/VrButton"
 import { Banner } from "../ui/Banner"
 import { DevDrawer } from "../ui/DevDrawer"
 import { cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings"
@@ -403,6 +404,15 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           <HintCard band={hint} onUse={(axis) => setHint(hintBand(q.answer, q.toleranceKm, axis, Math.random()))} />
         </div>
         <PaintTools practice water={q.topic === "lake" || q.topic === "sea"} hint={hint}>
+          <VrButton
+            prompt={
+              ("image" in q && q.image) || q.flag
+                ? `${q.prompt} (The picture is on the page; VR can't show it yet.)`
+                : q.prompt
+            }
+            detail={detail}
+            submit={submit}
+          />
           <button
             class="primary"
             onClick={submit}

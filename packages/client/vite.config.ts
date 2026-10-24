@@ -6,6 +6,8 @@ export default defineConfig({
   server: {
     port: 5173,
     open: false,
+    // A Cloudflare quick tunnel, for opening the dev server on a headset (see README).
+    allowedHosts: [".trycloudflare.com"],
     proxy: {
       // Game server (Fastify + Rivalis) during development.
       "/ws": { target: "ws://localhost:8787", ws: true },

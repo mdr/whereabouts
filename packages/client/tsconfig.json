@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client", "geojson"],
+    "types": ["vite/client", "geojson", "webxr"],
     "jsx": "react-jsx",
     "jsxImportSource": "preact"
   },

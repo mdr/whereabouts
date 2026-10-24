@@ -11,6 +11,7 @@
     "smoke": "node browser/e2e/solo.ts"
   },
   "dependencies": {
+    "@iwsdk/core": "1.0.1",
     "@preact/signals": "^2.0.0",
     "@rivalis/browser": "^8.0.0",
     "@toolcase/base": "3.x",
@@ -20,6 +21,7 @@
     "lucide-preact": "^1.47.0",
     "maplibre-gl": "^6.7.0",
     "preact": "^10.27.0",
+    "three": "npm:super-three@0.181.0",
     "zod": "^4.1.0"
   },
   "devDependencies": {
@@ -27,7 +29,10 @@
     "@testing-library/preact": "^3.2.4",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^22.20.3",
+    "@types/three": "0.181.0",
+    "@types/webxr": "0.5.24",
     "happy-dom": "^20.0.0",
+    "iwer": "^2.7.0",
     "playwright-core": "^1.55.0",
     "vite": "catalog:",
     "vite-plus": "catalog:"

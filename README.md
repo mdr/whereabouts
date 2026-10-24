@@ -49,9 +49,28 @@ Other commands:
     page wider than the screen, or a control is off screen or covered.
   - `sound`: every sound the page starts through a two-player game and
     practice. It cannot say how anything sounds.
+  - `vr [outDir] [baseUrl]`: practice in VR on an emulated Quest 3 (Meta's
+    IWER): enter VR, spray the globe, spin it, submit.
   - `prod [baseUrl]`: a production build actually loads the map, against
     `nix run` locally or the live site. It catches bundling problems dev
     mode hides, such as the MapLibre worker URL.
+
+### On a VR headset
+
+WebXR needs HTTPS, so a headset reaches the dev server through a Cloudflare
+quick tunnel (no account needed; Vite allows its hostnames):
+
+```sh
+nix shell nixpkgs#cloudflared -c cloudflared tunnel --url http://localhost:5173
+```
+
+Open the `https://….trycloudflare.com` address it prints in the headset's
+browser. The address changes every run, and anyone who has it can reach the
+dev server, so stop the tunnel when done. If the address won't resolve at
+first, give it a minute: a lookup made before the tunnel was ready can be
+cached as missing. In practice, the VR button by Submit opens the headset
+view. `/xr-check.html` (dev server only) reports what the browser's WebXR
+supports, including whether page elements can show inside a session.
 
 Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
 `KERNEL` (`single`, `multi-equal` or `multi-weighted`; the server refuses to start on anything else),

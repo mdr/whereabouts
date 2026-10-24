@@ -1,0 +1,54 @@
+<style>
+  .root {
+    flex-direction: column;
+    width: 420px;
+    padding: 20px;
+  }
+  .prompt {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 32px;
+    color: #f0fdff;
+  }
+  .hint {
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 19px;
+    color: #cfd8e3;
+  }
+  .row {
+    flex-direction: row;
+    margin-top: 14px;
+  }
+  .gap {
+    margin-left: 8px;
+  }
+</style>
+<Panel class="root">
+  <span id="prompt" class="prompt">…</span>
+  <span class="hint">Trigger sprays: nearer for a small dense spot, further back for a wide faint one. Grip grabs the globe to spin it; grip with both hands to zoom. A or X swaps paint and erase.</span>
+  <div class="row">
+    <Button id="paint" variant="primary">
+      <ButtonIcon><SprayCan></SprayCan></ButtonIcon>
+      Paint
+    </Button>
+    <Button id="erase" class="gap" variant="secondary">
+      <ButtonIcon><Eraser></Eraser></ButtonIcon>
+      Erase
+    </Button>
+    <Button id="undo" class="gap" variant="secondary">
+      <ButtonIcon><Undo></Undo></ButtonIcon>
+      Undo
+    </Button>
+  </div>
+  <div class="row">
+    <Button id="done" variant="positive">
+      <ButtonIcon><Check></Check></ButtonIcon>
+      Submit
+    </Button>
+    <Button id="exit" class="gap" variant="tertiary">
+      <ButtonIcon><LogOut></LogOut></ButtonIcon>
+      Leave VR
+    </Button>
+  </div>
+</Panel>
