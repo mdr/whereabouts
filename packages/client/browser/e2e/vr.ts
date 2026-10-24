@@ -69,6 +69,9 @@ const shown = await until(
   (n) => n === after
 )
 checks.check(shown === after, `the globe shows it (${shown} cells)`)
+checks.check(await headset.toolsHeld(), "while painting, the hands hold the can and eraser")
+const around = await headset.surroundings()
+checks.check(around.space && !around.passthrough, "space shows round the globe")
 await round.pause(300)
 await round.screenshot(`${out}/vr-3-sprayed.png`)
 
@@ -88,6 +91,33 @@ checks.check(erased < after, `the left hand erases (${after} -> ${erased} cells)
 await round.paintTools.undoWithKeyboard()
 await until(
   "the erasing undone",
+  () => round.map.yourPaintCells(),
+  (n) => n === after
+)
+
+// Rubbing the eraser on the globe rubs out too, with no trigger. The grip,
+// and so the eraser, sits behind the ray's origin and angled down from it:
+// the ray starts inside the globe for the tip to reach the surface.
+const rubFrom: [number, number, number] = [can[0] - 0.3, can[1], can[2]]
+const unrubbed = await headset.paintMass()
+const toward = painted.map((c, i) => c - rubFrom[i]!)
+const length = Math.hypot(...toward)
+await headset.point(
+  "left",
+  painted.map((c, i) => c - (toward[i]! / length) * -0.04) as [number, number, number],
+  painted
+)
+await round.pause(1500)
+await headset.point("left", rubFrom, painted)
+await round.pause(300)
+const rubbed = await headset.paintMass()
+checks.check(
+  rubbed < unrubbed * 0.995,
+  `rubbing the eraser on the globe rubs paint out (${unrubbed.toFixed(1)} -> ${rubbed.toFixed(1)} in all)`
+)
+await round.paintTools.undoWithKeyboard()
+await until(
+  "the rubbing undone",
   () => round.map.yourPaintCells(),
   (n) => n === after
 )
@@ -221,6 +251,7 @@ const revealed = await until(
   (v) => v === "reveal"
 )
 checks.check((await headset.inSession()) && revealed === "reveal", "submitting shows the answer in VR")
+checks.check(!(await headset.toolsHeld()), "the hands put the can and eraser away for the answer")
 checks.check(
   await until(
     "the globe in colour",
@@ -362,6 +393,29 @@ const pagePins = await flagTab.page.locator(".flag-pin").count()
 checks.check(pagePins > 190, `and on the page's map (${pagePins})`)
 await flagRound.pause(1500)
 await flagRound.screenshot(`${out}/vr-11-all-flags.png`)
+
+// Pointing at a flag enlarges it and names its country.
+const facing = (await flagHeadset.flagFacing())!
+await flagHeadset.pointRight(flagCan, facing.at)
+const named = await until(
+  "the flag's name",
+  () => flagHeadset.flagNamed(),
+  (n) => n !== undefined
+)
+checks.check(named === facing.name, `pointing at a flag names its country (${named})`)
+await flagRound.pause(500)
+await flagRound.screenshot(`${out}/vr-11b-flag-named.png`)
+
+// Zoomed right in, to a city's width, the flags still show.
+await flagHeadset.rightStick(0, -1)
+await flagRound.pause(4000)
+await flagHeadset.rightStick(0, 0)
+const deep = await flagHeadset.globeScale()
+checks.check(deep >= 150, `the globe zooms in to a city's width (${deep.toFixed(0)} times)`)
+const zoomedPins = await flagHeadset.flagPins()
+checks.check(zoomedPins > 190, `with the flags still shown (${zoomedPins})`)
+await flagRound.pause(1500)
+await flagRound.screenshot(`${out}/vr-11c-flags-zoomed.png`)
 await flagPress("flags")
 checks.check(
   (await until(
@@ -371,6 +425,25 @@ checks.check(
   )) === 0,
   "Hide all flags takes them off"
 )
+
+// See your room swaps space for passthrough, in a new session, still on the answer.
+await flagPress("passthrough")
+const room = await until(
+  "passthrough",
+  async () => ({
+    ...(await flagHeadset.surroundings()),
+    on: await flagHeadset.inSession(),
+    view: await flagHeadset.view()
+  }),
+  (s) => !s.space && s.passthrough && s.on && s.view === "reveal",
+  30_000
+)
+checks.check(
+  !room.space && room.passthrough && room.on && room.view === "reveal",
+  "See your room swaps space for passthrough, the answer still showing"
+)
+await flagRound.pause(1500)
+await flagRound.screenshot(`${out}/vr-11d-passthrough.png`)
 
 // VR from the home screen, staying on into practice.
 await flagTab.page.context().close()

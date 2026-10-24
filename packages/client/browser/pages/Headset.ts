@@ -129,6 +129,39 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.flagPinsShown)
   }
 
+  /** The country whose flag the player points at, if any. */
+  async flagNamed(): Promise<string | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.flagNamed)
+  }
+
+  /** The flag nearest the eyes, and where its middle is. */
+  async flagFacing(): Promise<{ name: string; at: Vec } | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.flagFacing)
+  }
+
+  /** How much paint the round has: every cell's intensity, summed. */
+  async paintMass(): Promise<number> {
+    return this.#page.evaluate(() => window.whereaboutsVr.paintMass)
+  }
+
+  /** How many times its smallest size the globe is. */
+  async globeScale(): Promise<number> {
+    return this.#page.evaluate(() => window.whereaboutsVr.globeScale)
+  }
+
+  /** Whether either hand holds its can or eraser. */
+  async toolsHeld(): Promise<boolean> {
+    return this.#page.evaluate(() => window.whereaboutsVr.toolsHeld)
+  }
+
+  /** Whether space shows round the player, and whether the room should instead. */
+  async surroundings(): Promise<{ space: boolean; passthrough: boolean }> {
+    return this.#page.evaluate(() => ({
+      space: window.whereaboutsVr.spaceShown,
+      passthrough: window.whereaboutsVr.passthrough
+    }))
+  }
+
   /** The awards and rounds board at the end of a game, if it shows. */
   async board(): Promise<{ awards: { title: string }[]; rounds: { label: string }[] } | undefined> {
     return this.#page.evaluate(() => window.whereaboutsVr.boardShown)
@@ -244,6 +277,15 @@ export class Headset {
 
   /** Where a button on the VR menu is. */
   async menuButton(id: string): Promise<Vec> {
-    return this.#page.evaluate((id) => window.whereaboutsVr.menuButtonAt(id), id)
+    // Once it has stopped moving: a button just shown is laid out a frame
+    // or two later, and the menu swings clear of a globe zooming in.
+    const at = () => this.#page.evaluate((id) => window.whereaboutsVr.menuButtonAt(id), id)
+    let was = await at()
+    for (;;) {
+      await this.#page.waitForTimeout(300)
+      const now = await at()
+      if (Math.hypot(...now.map((c, i) => c - was[i]!)) < 0.001) return now
+      was = now
+    }
   }
 }

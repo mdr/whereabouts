@@ -84,4 +84,10 @@
       <span id="flagsLabel">Show all flags</span>
     </Button>
   </div>
+  <div id="modes" class="row">
+    <Button id="passthrough" variant="tertiary">
+      <ButtonIcon><Eye></Eye></ButtonIcon>
+      <span id="passthroughLabel">See your room</span>
+    </Button>
+  </div>
 </Panel>

@@ -80,6 +80,8 @@ export const soloPool = persisted("wa.practicePool", PracticePoolSchema, "places
 export const soloMapDetail = persisted("wa.mapDetail", MapDetailSchema, "minimal")
 /** On the reveal of a flag round, every country's flag on the map. */
 export const allFlags = persisted("wa.allFlags", z.stringbool(), false)
+/** In a headset, see the room round the globe rather than space. */
+export const headsetPassthrough = persisted("wa.passthrough", z.stringbool(), false)
 /** Begin each round on the Pan tool rather than Paint; tablet players often want to look first. */
 export const startOnPan = persisted("wa.startOnPan", z.stringbool(), false)
 /** Paint on a globe instead of the flat map. */

@@ -10,7 +10,7 @@ import type { Borders, FlagQuestion, PaintCell, PaintedCountry } from "@whereabo
 import type { GameMap } from "../map"
 import { SmallFlag } from "./bits"
 import { flagPins } from "../borders"
-import { flagUrl } from "../flags"
+import { FLAG_ATLAS, atlasCell } from "../flag-atlas"
 import { allFlags } from "../settings"
 import { flagRevealTestIds } from "./FlagRevealTestIds"
 
@@ -35,10 +35,17 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
     const markers = flagPins(borders).map(({ f, at }) => {
       const el = document.createElement("div")
       el.className = "flag-pin"
-      const img = document.createElement("img")
-      img.alt = f.label
-      void flagUrl(f.flag).then((url) => url && (img.src = url))
-      el.append(img)
+      const flag = document.createElement("i")
+      flag.title = f.label
+      const cell = atlasCell(f.flag)
+      if (cell) {
+        // The picture's cells are four times the size shown.
+        const [w, h] = FLAG_ATLAS.cell.map((n) => n / 4) as [number, number]
+        flag.style.backgroundImage = `url(${FLAG_ATLAS.url})`
+        flag.style.backgroundSize = `${FLAG_ATLAS.columns * w}px ${FLAG_ATLAS.rows * h}px`
+        flag.style.backgroundPosition = `${-cell[0] * w}px ${-cell[1] * h}px`
+      }
+      el.append(flag)
       return new Marker({ element: el, anchor: "bottom-left" }).setLngLat([at.lon, at.lat]).addTo(gameMap.map)
     })
     return () => {

@@ -5,7 +5,8 @@
  * tilting desk globe does: spinning about its poles, and tilting about the
  * axis across the player's view, where its stand's pivots are. It never rolls.
  * Zooming grows it towards the far side, so the near surface stays where it
- * was rather than swallowing the player.
+ * was rather than swallowing the player. Zoomed right in it is a gently
+ * curved wall, a city across.
  */
 import {
   BufferGeometry,
@@ -29,7 +30,10 @@ import { buildStand } from "./models"
 export type Hand = "left" | "right"
 
 const RADIUS = 0.22
-/** Just above the land, so neither fights it for depth; the paint on top. */
+/**
+ * Just above the land, so neither fights it for depth; the paint on top.
+ * However far it zooms, each stays the same real height above it.
+ */
 const BORDERS_RADIUS = RADIUS * 1.0005
 export const DETAIL_RADIUS = RADIUS * 1.0015
 export const HINT_RADIUS = RADIUS * 1.002
@@ -37,7 +41,7 @@ export const PAINT_RADIUS = RADIUS * 1.003
 export const ANSWER_RADIUS = RADIUS * 1.004
 export const PIN_RADIUS = RADIUS * 1.001
 const MIN_SCALE = 1
-const MAX_SCALE = 12
+const MAX_SCALE = 200
 /** How quickly a flung globe slows, per second. */
 const SPIN_DECAY = 1.5
 /** As far as it tilts either way: a pole faces the player. */
@@ -45,6 +49,10 @@ const MAX_TILT = Math.PI / 2
 const STICK_DEAD = 0.15
 /** How long the globe takes to turn a place to face the player. */
 const TURN_S = 0.8
+/** How wide, in metres, a place the globe turns to show is made. */
+const FRAME_M = 0.35
+/** The deepest the reveal zooms to frame the guesses: deeper swings the menus far aside. */
+const MAX_FRAME_SCALE = 8
 
 const UP = new Vector3(0, 1, 0)
 const q = new Quaternion()
@@ -89,7 +97,9 @@ export class Globe {
   /** Each grabbing hand's last offset from the centre. */
   private readonly held: Partial<Record<Hand, Vector3>> = {}
   private pair: { length: number; scale: number } | undefined = undefined
-  private turning: { from: Turn; to: Turn; scale: number; t: number } | undefined = undefined
+  private turning: { from: Turn; to: Turn; scale: number; toScale: number; t: number } | undefined = undefined
+  /** What sits just above the land, and how far above it at the smallest. */
+  private readonly overlays: { obj: Object3D; radius: number }[] = []
 
   constructor(anisotropy: number) {
     this.landCanvas.width = 4096
@@ -99,7 +109,11 @@ export class Globe {
     this.landTexture.anisotropy = anisotropy
     this.colourCanvas.width = this.landCanvas.width
     this.colourCanvas.height = this.landCanvas.height
-    this.surface = new Mesh(new SphereGeometry(RADIUS, 128, 64), new MeshBasicMaterial({ map: this.landTexture }))
+    this.surface = new Mesh(
+      new SphereGeometry(RADIUS, 128, 64),
+      // Pushed back, for the layers above to clear the flat facets the sphere is made of.
+      new MeshBasicMaterial({ map: this.landTexture, polygonOffset: true, polygonOffsetFactor: 1 })
+    )
     this.group.add(this.surface)
     this.bordersCanvas.width = this.landCanvas.width
     this.bordersCanvas.height = this.landCanvas.height
@@ -111,9 +125,9 @@ export class Globe {
       new MeshBasicMaterial({ map: borders, transparent: true, depthWrite: false })
     )
     this.borders.visible = false
-    this.group.add(this.borders)
+    this.overlay(this.borders, BORDERS_RADIUS)
     this.paint.renderOrder = 2
-    this.group.add(this.paint)
+    this.overlay(this.paint, PAINT_RADIUS)
     this.stand.add(buildStand(RADIUS))
   }
 
@@ -134,9 +148,10 @@ export class Globe {
     return localToLatLon(this.group.worldToLocal(v.copy(to)))
   }
 
-  add(detail: Object3D): void {
-    detail.renderOrder = 1
-    this.group.add(detail)
+  /** Adds `obj`, drawn at `radius` on the smallest globe, to sit that high above the land at any zoom. */
+  overlay(obj: Object3D, radius: number): void {
+    this.overlays.push({ obj, radius })
+    this.group.add(obj)
   }
 
   /** Sends the land to the GPU straight away rather than on the first frame that shows it. */
@@ -200,13 +215,17 @@ export class Globe {
   }
 
   /**
-   * Turn the globe until `at` faces `eye`, zooming all the way out so the
-   * paint shows around it. Grabbing it or the thumbstick stops the turn.
+   * Turn the globe until `at` faces `eye`, zoomed so a cap of `reach`
+   * radians round it fits in view. Grabbing it or the thumbstick stops the turn.
    */
-  turnToward(at: LatLon, eye: Vector3): void {
+  turnToward(at: LatLon, reach: number, eye: Vector3): void {
+    const toScale =
+      reach >= Math.PI / 2
+        ? MIN_SCALE
+        : Math.min(MAX_FRAME_SCALE, Math.max(MIN_SCALE, FRAME_M / (RADIUS * Math.sin(Math.max(reach, 1e-4)))))
     // Spun until the place is straight ahead, then tilted to the eye, as
-    // seen from where the centre will be once zoomed out.
-    const centre = w.copy(this.anchor).addScaledVector(this.toward, RADIUS * MIN_SCALE)
+    // seen from where the centre will be once zoomed.
+    const centre = w.copy(this.anchor).addScaledVector(this.toward, RADIUS * toScale)
     const place = this.angles(latLonToLocal(at).applyQuaternion(this.base), 0)
     // Spinning it straight ahead leaves its height: that is the tilt it starts from.
     const placeTilt = Math.asin(latLonToLocal(at).applyQuaternion(this.base).normalize().dot(UP))
@@ -215,7 +234,7 @@ export class Globe {
       spin: this.turned.spin + wrap(-place.spin - this.turned.spin),
       tilt: Math.max(-MAX_TILT, Math.min(MAX_TILT, eyeAt.tilt - placeTilt))
     }
-    this.turning = { from: { ...this.turned }, to, scale: this.scale, t: 0 }
+    this.turning = { from: { ...this.turned }, to, scale: this.scale, toScale, t: 0 }
     this.rate.spin = this.rate.tilt = 0
   }
 
@@ -258,7 +277,9 @@ export class Globe {
       this.turned.spin = from.spin + (to.spin - from.spin) * eased
       this.turned.tilt = from.tilt + (to.tilt - from.tilt) * eased
       this.orient()
-      this.setScale(this.turning.scale + (MIN_SCALE - this.turning.scale) * eased)
+      // Evenly in the logarithm, as the thumbstick zooms.
+      const { scale, toScale } = this.turning
+      this.setScale(scale * Math.pow(toScale / scale, eased))
       if (t === 1) this.turning = undefined
     }
     if (left && right) {
@@ -301,5 +322,8 @@ export class Globe {
     this.group.position.copy(this.anchor).addScaledVector(this.toward, RADIUS * scale)
     this.stand.scale.setScalar(scale)
     this.stand.position.copy(this.group.position)
+    for (const { obj, radius } of this.overlays) obj.scale.setScalar((RADIUS + (radius - RADIUS) / scale) / radius)
+    // The facets' sag grows with the globe; the layers' height above them doesn't.
+    this.surface.material.polygonOffsetUnits = 64 * scale
   }
 }

@@ -29,17 +29,19 @@ import { effect, signal } from "@preact/signals"
 import {
   describeHint,
   type HintAxis,
+  type H3Cell,
   type HintBand,
   type LatLon,
   type MapDetail,
   type PaintLayer
 } from "@whereabouts/shared"
 import { loadLandMask, loadWaterMask } from "../land"
+import { headsetPassthrough } from "../settings"
 import type { PaintController } from "../paint-controller"
 import { sound } from "../sound"
 import { THEME } from "../themes"
 import { ANSWER_RADIUS, DETAIL_RADIUS, Globe, HINT_RADIUS, PAINT_RADIUS, PIN_RADIUS, type Hand } from "./globe"
-import { FlagPins, type VrFlagPin } from "./flag-pins"
+import { FlagPins, type Pointer, type VrFlagPin } from "./flag-pins"
 import { AnswerMarker, type VrAnswer } from "./answer"
 import { DetailPatch } from "./detail-patch"
 import { drawBorders, drawColour, drawLand } from "./globe-texture"
@@ -49,6 +51,8 @@ import { HintMarker } from "./hint"
 import { reflect, reflections } from "./models"
 import { timerFrames } from "./frames"
 import { HandTool, TRIGGER_DEAD } from "./spray"
+import { Space } from "./space"
+import { latLonToLocal, localToLatLon } from "./sphere"
 import { SCORES_M, ScoreBoard, type VrTable } from "./scores"
 import { ResultsBoard, type VrBoard } from "./board"
 import { WristMenu, type WristButton } from "./wrist"
@@ -137,6 +141,8 @@ const PANEL_M = 0.38
 /** The gap a panel keeps from the globe, in radians as seen from the player. */
 const PANEL_CLEAR = 0.04
 const UP = new Vector3(0, 1, 0)
+/** How long a new session may take to open, when switching to or from passthrough. */
+const SWITCH_MS = 5000
 /** From this zoom on, the page's map shows over the globe. */
 const DETAIL_SCALE = 2
 /** How far either side of the near point the map covers. */
@@ -161,7 +167,12 @@ export class Vr {
   private readonly wrist: WristMenu
   private readonly scores: ScoreBoard
   private readonly board = new ResultsBoard()
-  private readonly flagPins = new FlagPins(PIN_RADIUS, { pin: 0.008, w: 0.012, h: 0.009 })
+  private readonly flagPins = new FlagPins(PIN_RADIUS)
+  private readonly space = new Space()
+  /** Whether the headset can show the room (immersive-ar), once asked. */
+  private passthroughOffered = false
+  /** Ending one kind of session to start the other. */
+  private switching = false
   /** Where the panels were placed, and from where. */
   private homes: { obj: Object3D; at: Vector3; half: number }[] = []
   private readonly eye = new Vector3()
@@ -213,7 +224,8 @@ export class Vr {
 
   private constructor(world: World) {
     this.world = world
-    world.scene.background = new Color("#0b1016")
+    world.scene.background = new Color("#03050b")
+    world.scene.add(this.space.group)
     world.scene.add(new AmbientLight(0xffffff, 1.2))
     const sun = new DirectionalLight(0xffffff, 1.5)
     sun.position.set(1, 3, 2)
@@ -222,8 +234,12 @@ export class Vr {
     this.globe = new Globe(world.renderer.capabilities.getMaxAnisotropy())
     world.scene.add(this.globe.group, this.globe.stand)
     this.detail = new DetailPatch(THEME, DETAIL_RADIUS, world.renderer.capabilities.getMaxAnisotropy())
-    this.globe.add(this.detail.mesh)
-    this.globe.group.add(this.answer.group, this.hint.group, this.flagPins.group)
+    this.detail.mesh.renderOrder = 1
+    this.globe.overlay(this.detail.mesh, DETAIL_RADIUS)
+    this.globe.overlay(this.answer.group, ANSWER_RADIUS)
+    this.globe.overlay(this.hint.group, HINT_RADIUS)
+    this.globe.overlay(this.flagPins.group, PIN_RADIUS)
+    world.scene.add(this.flagPins.label)
 
     const { gripSpaces, raySpaces } = world.player
     this.tools = {
@@ -242,12 +258,27 @@ export class Vr {
     this.scores = new ScoreBoard(world)
     world.scene.add(this.board.mesh)
 
+    void navigator.xr?.isSessionSupported(SessionMode.ImmersiveAR).then((ok) => {
+      this.passthroughOffered = ok
+      this.applyView()
+    })
     world.visibilityState.subscribe((state) => {
       const active = state !== VisibilityState.NonImmersive
+      if (!active && this.switching) {
+        // Still within the press's activation, which a new session needs.
+        this.switching = false
+        this.launch()
+        // Refused, it leaves the player on the page.
+        setTimeout(() => {
+          if (this.world.visibilityState.value === VisibilityState.NonImmersive) this.ended()
+        }, SWITCH_MS)
+        return
+      }
       if (active === this.active.value) return
-      timerFrames(active)
-      this.active.value = active
-      if (!active) this.leave()
+      if (active) {
+        timerFrames(true)
+        this.active.value = true
+      } else this.ended()
     })
     world.onXRFrame((_frame, delta, time) => this.frame(delta, time))
   }
@@ -256,7 +287,21 @@ export class Vr {
   enter(view: VrView): void {
     this.placed = false
     this.show(view)
-    this.world.launchXR()
+    this.launch()
+  }
+
+  private launch(): void {
+    const passthrough = headsetPassthrough.value
+    this.space.group.visible = !passthrough
+    this.world.launchXR({ sessionMode: passthrough ? SessionMode.ImmersiveAR : SessionMode.ImmersiveVR })
+  }
+
+  /** Swaps space for the room round the player, or back: a new session of the other kind. */
+  private togglePassthrough(): void {
+    if (this.switching) return
+    headsetPassthrough.value = !headsetPassthrough.value
+    this.switching = true
+    this.world.exitXR()
   }
 
   /** Change what the headset shows, as the screen moves from round to answer to round. */
@@ -272,8 +317,10 @@ export class Vr {
       this.picture.show(picture)
     }
     this.answer.show(view.kind === "reveal" ? view.reveal.answer : undefined)
-    if (view.kind === "reveal" && this.placed)
-      this.globe.turnToward(view.reveal.focus, this.world.player.head.getWorldPosition(new Vector3()))
+    if (view.kind === "reveal" && this.placed) {
+      const { at, reach } = framing(view.reveal, view.round)
+      this.globe.turnToward(at, reach, this.world.player.head.getWorldPosition(new Vector3()))
+    }
     this.paintDirty = true
     this.stopPaintWatch?.()
     this.stopPaintWatch = round
@@ -349,6 +396,40 @@ export class Vr {
 
   get flagPinsShown(): number {
     return this.flagPins.shown
+  }
+
+  /** The country whose flag is pointed at, for the browser tests. */
+  get flagNamed(): string | undefined {
+    return this.flagPins.named
+  }
+
+  /** The flag nearest the eyes, and where, for the browser tests. */
+  get flagFacing(): { name: string; at: [number, number, number] } | undefined {
+    const f = this.flagPins.nearest(this.world.player.head.getWorldPosition(new Vector3()))
+    return f && { name: f.name, at: [f.at.x, f.at.y, f.at.z] }
+  }
+
+  /** How much paint the round has, all cells' intensities summed, for the browser tests. */
+  get paintMass(): number {
+    return this.round?.paint.layer.mass() ?? 0
+  }
+
+  /** How far the globe is zoomed, for the browser tests. */
+  get globeScale(): number {
+    return this.globe.scale
+  }
+
+  /** Whether the hands hold their tools, and space shows, for the browser tests. */
+  get toolsHeld(): boolean {
+    return this.tools.left.held || this.tools.right.held
+  }
+
+  get spaceShown(): boolean {
+    return this.space.group.visible
+  }
+
+  get passthrough(): boolean {
+    return headsetPassthrough.value
   }
 
   get boardShown(): VrBoard | undefined {
@@ -473,6 +554,13 @@ export class Vr {
     if (this.active.value) this.world.exitXR()
   }
 
+  private ended(): void {
+    if (!this.active.value) return
+    timerFrames(false)
+    this.active.value = false
+    this.leave()
+  }
+
   private leave(): void {
     this.endStroke()
     this.picture.release(this.panel.object3D!)
@@ -531,8 +619,11 @@ export class Vr {
     const zoomed = this.globe.scale >= DETAIL_SCALE
     this.detail.update(now, this.globe.nearest(head), zoomed ? (DETAIL_HALF_M * 6371) / this.globe.radius : undefined)
     this.answer.update(this.globe.scale)
-    this.flagPins.setHidden(this.detail.mesh.visible)
+    this.space.update(head)
+    const pointers: Pointer[] = HANDS.map((h) => ({ ...this.tools[h].pointer(), globe: this.tools[h].aim(this.globe) }))
+    this.flagPins.update(this.globe.scale, this.view.kind === "reveal" ? pointers : [], head)
     this.wrist.update(this.painting !== undefined, player.gripSpaces.left, head)
+    for (const h of HANDS) this.tools[h].hold(this.painting !== undefined)
 
     const round = this.round
     if (round && this.paintDirty && now - this.lastPaintDraw >= PAINT_REDRAW_S) {
@@ -569,7 +660,11 @@ export class Vr {
     )
     const working = onMenu
       ? undefined
-      : HANDS.find((h, i) => triggers[i]! > TRIGGER_DEAD && this.tools[h].aim(this.globe) !== undefined)
+      : HANDS.find(
+          (h, i) =>
+            this.tools[h].touching(this.globe) !== undefined ||
+            (triggers[i]! > TRIGGER_DEAD && this.tools[h].aim(this.globe) !== undefined)
+        )
     if (working && !this.stroking) {
       // Both hands make one undo step; the first sets the stroke's sound.
       round.paint.beginOutsideStroke(this.tools[working].tool)
@@ -648,6 +743,7 @@ export class Vr {
       })
     }
     on("flags", () => this.view?.kind === "reveal" && this.view.reveal.flags?.toggle())
+    on("passthrough", () => this.togglePassthrough())
     on("exit", () => this.exit())
     this.applyView()
   }
@@ -703,6 +799,8 @@ export class Vr {
     }
     text("heading", HEADINGS[view.kind])
     show("extras", reveal?.flags !== undefined)
+    show("modes", this.passthroughOffered)
+    text("passthroughLabel", headsetPassthrough.value ? "Show space" : "See your room")
     if (reveal?.flags) text("flagsLabel", reveal.flags.on ? "Hide all flags" : "Show all flags")
     if (round) text("prompt", round.prompt)
     if (reveal) {
@@ -716,6 +814,29 @@ export class Vr {
     // Set again from the round next frame.
     this.doneText = this.clockText = ""
   }
+}
+
+/**
+ * Where the reveal turns the globe to, and how wide round it to show: the
+ * answer and every guess's paint.
+ */
+function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: number } {
+  const points = [latLonToLocal(reveal.focus)]
+  const { answer } = reveal
+  if ("outline" in answer)
+    for (const polygon of answer.outline)
+      for (const [lon, lat] of polygon[0] ?? []) points.push(latLonToLocal({ lat: lat!, lon: lon! }))
+  for (const { layer } of reveal.paints ?? [{ layer: round.paint.layer }])
+    for (const h of Object.keys(layer.toRecord()) as H3Cell[]) {
+      const [lat, lon] = layer.centre(h)
+      points.push(latLonToLocal({ lat, lon }))
+    }
+  const mid = points.reduce((sum, p) => sum.add(p), new Vector3())
+  // Spread round the world: show it all.
+  if (mid.length() < points.length * 0.2) return { at: reveal.focus, reach: Math.PI }
+  mid.normalize()
+  const reach = Math.max(...points.map((p) => p.angleTo(mid)))
+  return { at: localToLatLon(mid), reach: reach * 1.15 + 0.002 }
 }
 
 /** Several players' paint as one collection, each cell in its player's colour. */

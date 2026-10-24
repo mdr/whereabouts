@@ -31,13 +31,30 @@ describe("the VR globe", () => {
   it("turns to bring an answer to face the eye, north up", () => {
     const globe = placed()
     const at = { lat: -51, lon: -73 }
-    globe.turnToward(at, eye)
+    globe.turnToward(at, Math.PI, eye)
     for (let i = 0; i < 20; i++) globe.update(0.1, {}, { x: 0, y: 0 })
     const q = globe.group.quaternion
     const toEye = eye.clone().sub(globe.centre).normalize()
     expect(latLonToLocal(at).applyQuaternion(q).dot(toEye)).toBeCloseTo(1, 5)
     expect(new Vector3(0, 1, 0).applyQuaternion(q).y).toBeGreaterThan(0)
     expectNoRoll(globe)
+    expect(globe.scale).toBe(1)
+  })
+
+  it("zooms in to frame a small place, and out to frame a wide one", () => {
+    const globe = placed()
+    const at = { lat: 51.5, lon: -0.1 }
+    globe.turnToward(at, 0.25, eye)
+    for (let i = 0; i < 20; i++) globe.update(0.1, {}, { x: 0, y: 0 })
+    const toEye = eye.clone().sub(globe.centre).normalize()
+    expect(latLonToLocal(at).applyQuaternion(globe.group.quaternion).dot(toEye)).toBeCloseTo(1, 5)
+    // The 0.25 radians either side spans some tens of centimetres.
+    const across = 2 * globe.radius * Math.sin(0.25)
+    expect(across).toBeGreaterThan(0.3)
+    expect(across).toBeLessThan(1)
+    globe.turnToward(at, 1, eye)
+    for (let i = 0; i < 20; i++) globe.update(0.1, {}, { x: 0, y: 0 })
+    expect(globe.scale).toBeLessThan(3)
   })
 
   it("spins and tilts with a hand dragged across it, and never rolls", () => {

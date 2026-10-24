@@ -2314,7 +2314,7 @@ button.danger.solid {
   height: 22px;
   border-left: 1.5px solid #e5e7eb;
 }
-.flag-pin img {
+.flag-pin i {
   display: block;
   width: 16px;
   height: 12px;
