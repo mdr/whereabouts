@@ -72,6 +72,12 @@ checks.check(shown === after, `the globe shows it (${shown} cells)`)
 checks.check(await headset.toolsHeld(), "while painting, the hands hold the can and eraser")
 const around = await headset.surroundings()
 checks.check(around.space && !around.passthrough, "space shows round the globe")
+const moon = await headset.moon()
+checks.check(
+  moon !== undefined && Math.abs(moon.distance - 7.54) < 0.01 && Math.abs(moon.radius - 0.2727) < 0.001,
+  `with the moon to the globe's scale (${moon?.distance.toFixed(1)} and ${moon?.radius.toFixed(3)} of its radius)`
+)
+checks.check(!(await headset.controllersShown()), "while painting, the controllers themselves are hidden")
 await round.pause(300)
 await round.screenshot(`${out}/vr-3-sprayed.png`)
 
@@ -120,6 +126,23 @@ await until(
   "the rubbing undone",
   () => round.map.yourPaintCells(),
   (n) => n === after
+)
+// Gripping, to turn or zoom the globe, it rubs nothing out.
+const ungripped = await headset.paintMass()
+await headset.grip("left", 1)
+await headset.point(
+  "left",
+  painted.map((c, i) => c - (toward[i]! / length) * -0.04) as [number, number, number],
+  painted
+)
+await round.pause(1500)
+await headset.point("left", rubFrom, painted)
+await headset.grip("left", 0)
+await round.pause(300)
+const gripped = await headset.paintMass()
+checks.check(
+  gripped === ungripped,
+  `gripping the globe, the eraser rubs nothing out (${ungripped.toFixed(1)} -> ${gripped.toFixed(1)})`
 )
 
 // Turning the left palm up opens the wrist menu; the right hand's
@@ -252,6 +275,14 @@ const revealed = await until(
 )
 checks.check((await headset.inSession()) && revealed === "reveal", "submitting shows the answer in VR")
 checks.check(!(await headset.toolsHeld()), "the hands put the can and eraser away for the answer")
+checks.check(
+  await until(
+    "the controllers",
+    () => headset.controllersShown(),
+    (on) => on
+  ),
+  "and the controllers show again"
+)
 checks.check(
   await until(
     "the globe in colour",
@@ -389,6 +420,14 @@ const pins = await until(
   30_000
 )
 checks.check(pins > 190, `Show all flags pins every country's flag on the globe (${pins})`)
+checks.check(
+  await until(
+    "the rays",
+    () => flagHeadset.beamsShown(),
+    (on) => on
+  ),
+  "rays from the hands show what they point at"
+)
 const pagePins = await flagTab.page.locator(".flag-pin").count()
 checks.check(pagePins > 190, `and on the page's map (${pagePins})`)
 await flagRound.pause(1500)
@@ -442,6 +481,7 @@ checks.check(
   !room.space && room.passthrough && room.on && room.view === "reveal",
   "See your room swaps space for passthrough, the answer still showing"
 )
+checks.check((await flagHeadset.moon()) === undefined, "and the moon goes with space")
 await flagRound.pause(1500)
 await flagRound.screenshot(`${out}/vr-11d-passthrough.png`)
 

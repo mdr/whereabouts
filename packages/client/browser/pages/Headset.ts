@@ -144,6 +144,21 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.paintMass)
   }
 
+  /** Whether the controllers themselves show, rather than the can and eraser. */
+  async controllersShown(): Promise<boolean> {
+    return this.#page.evaluate(() => window.whereaboutsVr.controllersShown)
+  }
+
+  /** Whether a pointing ray shows from either hand. */
+  async beamsShown(): Promise<boolean> {
+    return this.#page.evaluate(() => window.whereaboutsVr.beamsShown)
+  }
+
+  /** The moon's distance from the globe and its radius, in globe radii, if it shows. */
+  async moon(): Promise<{ distance: number; radius: number } | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.moonShown)
+  }
+
   /** How many times its smallest size the globe is. */
   async globeScale(): Promise<number> {
     return this.#page.evaluate(() => window.whereaboutsVr.globeScale)
@@ -220,7 +235,14 @@ export class Headset {
   }
 
   async rightGrip(value: number): Promise<void> {
-    await this.#page.evaluate((v) => window.headset.controllers.right!.updateButtonValue("squeeze", v), value)
+    await this.grip("right", value)
+  }
+
+  async grip(hand: Hand, value: number): Promise<void> {
+    await this.#page.evaluate(([h, v]) => window.headset.controllers[h]!.updateButtonValue("squeeze", v), [
+      hand,
+      value
+    ] as const)
   }
 
   async trigger(hand: Hand, value: number): Promise<void> {
@@ -278,14 +300,22 @@ export class Headset {
   /** Where a button on the VR menu is. */
   async menuButton(id: string): Promise<Vec> {
     // Once it has stopped moving: a button just shown is laid out a frame
-    // or two later, and the menu swings clear of a globe zooming in.
-    const at = () => this.#page.evaluate((id) => window.whereaboutsVr.menuButtonAt(id), id)
+    // or two later, and the menu swings clear of a globe zooming in. Counted
+    // in frames, not time: the emulator can stall for a second or more.
+    const at = () =>
+      this.#page.evaluate((id) => {
+        const vr = window.whereaboutsVr
+        return { at: vr.menuButtonAt(id), frame: vr.frames, turning: vr.globeTurning }
+      }, id)
     let was = await at()
     for (;;) {
-      await this.#page.waitForTimeout(300)
+      await this.#page.waitForTimeout(100)
       const now = await at()
-      if (Math.hypot(...now.map((c, i) => c - was[i]!)) < 0.001) return now
-      was = now
+      if (now.turning) was = now
+      else if (now.frame - was.frame >= 5) {
+        if (Math.hypot(...now.at.map((c, i) => c - was.at[i]!)) < 0.001) return now.at
+        was = now
+      }
     }
   }
 }

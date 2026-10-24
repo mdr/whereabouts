@@ -5,7 +5,20 @@
  * the globe shows where the spot would land before anything happens. The
  * eraser also rubs out wherever its tip touches the globe.
  */
-import { DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry, Vector3, type Object3D } from "three"
+import {
+  BufferGeometry,
+  DoubleSide,
+  Float32BufferAttribute,
+  Group,
+  Line,
+  LineBasicMaterial,
+  Mesh,
+  MeshBasicMaterial,
+  RingGeometry,
+  SphereGeometry,
+  Vector3,
+  type Object3D
+} from "three"
 import { greatCircleDistance, type LatLon } from "@whereabouts/shared"
 import type { PaintController } from "../paint-controller"
 import type { Theme } from "../themes"
@@ -31,6 +44,8 @@ const TIP_M = 0.012
 /** How near the surface counts as touching it: the rubber gives a little. */
 const TOUCH_M = 0.004
 export const TRIGGER_DEAD = 0.05
+/** How far a pointing ray reaches when it misses the globe. */
+const BEAM_M = 1.5
 
 const origin = new Vector3()
 const dir = new Vector3()
@@ -54,6 +69,14 @@ export class HandTool {
   private readonly grip: Object3D
   /** Whether the hand holds its tool: only while there is a round to paint. */
   private holding = true
+  /** Gripping, to turn or zoom the globe or hold the picture: it paints and rubs out nothing. */
+  busy = false
+  /** A ray out to the globe, to point with, and a dot where it lands. */
+  private readonly beam = new Line(
+    new BufferGeometry().setAttribute("position", new Float32BufferAttribute([0, 0, 0, 0, 0, -1], 3)),
+    new LineBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.7 })
+  )
+  private readonly beamEnd = new Mesh(new SphereGeometry(0.004, 12, 8), new MeshBasicMaterial({ color: "#ffffff" }))
   private readonly theme: Theme
   private stroke: { at: LatLon; t: number } | undefined = undefined
   private lastPulse = 0
@@ -81,6 +104,9 @@ export class HandTool {
     // After the globe's map and paint, which would otherwise cover it: neither writes depth.
     this.spot.renderOrder = 3
     scene.add(this.spot, this.particles.points)
+    this.beam.visible = this.beamEnd.visible = false
+    ray.add(this.beam)
+    scene.add(this.beamEnd)
   }
 
   /** Where the ring shows on the globe, if it does. */
@@ -145,9 +171,22 @@ export class HandTool {
     }
   }
 
+  /** Shows the ray out to where it meets the globe, or a little way if it misses; or hides it. */
+  showBeam(globe: Globe | undefined): void {
+    this.beam.visible = this.beamEnd.visible = globe !== undefined
+    if (!globe) return
+    const d = this.aim(globe) ?? BEAM_M
+    this.beam.scale.set(1, 1, d)
+    this.beamEnd.position.copy(origin).addScaledVector(dir, d)
+  }
+
+  get beamShown(): boolean {
+    return this.beam.visible
+  }
+
   /** Where the eraser's tip touches the globe, if it is the tool held and it does. */
   touching(globe: Globe): Vector3 | undefined {
-    if (this.toolNow !== "erase" || !this.holding) return undefined
+    if (this.toolNow !== "erase" || !this.holding || this.busy) return undefined
     const tip = this.grip.localToWorld(local.copy(TIP))
     return tip.distanceTo(globe.centre) <= globe.radius + TOUCH_M ? tip : undefined
   }
@@ -165,6 +204,10 @@ export class HandTool {
     gamepad: Gamepad | undefined
   ): boolean {
     const dt = this.settle(now)
+    if (this.busy) {
+      this.hide()
+      return false
+    }
     const tip = paint.enabled.value ? this.touching(globe) : undefined
     if (tip) return this.rub(now, globe, tip, paint, gamepad, dt)
     const d = blocked ? undefined : this.aim(globe)

@@ -96,7 +96,8 @@ export class Globe {
   private readonly rate: Turn = { spin: 0, tilt: 0 }
   /** Each grabbing hand's last offset from the centre. */
   private readonly held: Partial<Record<Hand, Vector3>> = {}
-  private pair: { length: number; scale: number } | undefined = undefined
+  /** Two hands' gesture: how far apart they started, the zoom then, and the place between them. */
+  private pair: { length: number; scale: number; spot: Vector3 } | undefined = undefined
   private turning: { from: Turn; to: Turn; scale: number; toScale: number; t: number } | undefined = undefined
   /** What sits just above the land, and how far above it at the smallest. */
   private readonly overlays: { obj: Object3D; radius: number }[] = []
@@ -137,6 +138,11 @@ export class Globe {
 
   get scale(): number {
     return this.group.scale.x
+  }
+
+  /** Whether it is turning to show a place. */
+  get busy(): boolean {
+    return this.turning !== undefined
   }
 
   get radius(): number {
@@ -283,10 +289,18 @@ export class Globe {
       if (t === 1) this.turning = undefined
     }
     if (left && right) {
-      // Two hands zoom; turning is for one.
+      // Two hands zoom, as a map pinches: the place between them stays between them.
       const apart = left.distanceTo(right)
-      if (this.pair) this.setScale((this.pair.scale * apart) / this.pair.length)
-      else this.pair = { length: apart, scale: this.group.scale.x }
+      const mid = w.addVectors(left, right).multiplyScalar(0.5)
+      if (this.pair) {
+        this.setScale((this.pair.scale * apart) / this.pair.length)
+        const was = this.angles(v.copy(this.pair.spot).applyQuaternion(this.group.quaternion), this.turned.tilt)
+        const now = this.angles(mid.sub(this.centre), this.turned.tilt)
+        this.turnBy(wrap(now.spin - was.spin), wrap(now.tilt - was.tilt))
+      } else {
+        const spot = this.group.worldToLocal(mid.clone()).normalize()
+        this.pair = { length: apart, scale: this.group.scale.x, spot }
+      }
       this.rate.spin = this.rate.tilt = 0
     } else {
       this.pair = undefined

@@ -51,7 +51,8 @@ import { HintMarker } from "./hint"
 import { reflect, reflections } from "./models"
 import { timerFrames } from "./frames"
 import { HandTool, TRIGGER_DEAD } from "./spray"
-import { Space } from "./space"
+import { Moon } from "./moon"
+import { STARS_M, Space } from "./space"
 import { latLonToLocal, localToLatLon } from "./sphere"
 import { SCORES_M, ScoreBoard, type VrTable } from "./scores"
 import { ResultsBoard, type VrBoard } from "./board"
@@ -152,6 +153,8 @@ export class Vr {
   readonly active = signal(false)
   /** Cells of paint the globe last drew, for the browser tests. */
   shownPaintCells = 0
+  /** Frames drawn, for the browser tests to wait on frames rather than time. */
+  frames = 0
   private view: VrView | undefined = undefined
   private pictureKey = ""
   private stroking = false
@@ -169,6 +172,7 @@ export class Vr {
   private readonly board = new ResultsBoard()
   private readonly flagPins = new FlagPins(PIN_RADIUS)
   private readonly space = new Space()
+  private readonly moon = new Moon()
   /** Whether the headset can show the room (immersive-ar), once asked. */
   private passthroughOffered = false
   /** Ending one kind of session to start the other. */
@@ -196,7 +200,9 @@ export class Vr {
         offer: "none"
       },
       features: { spatialUI: { preferredColorScheme: ColorSchemeType.Dark } },
-      input: { canvasPointerEvents: false }
+      input: { canvasPointerEvents: false },
+      // The moon of a globe zoomed right in is kilometres off.
+      render: { far: STARS_M * 1.2 }
     })
     const vr = new Vr(world)
     onStage("land")
@@ -225,7 +231,7 @@ export class Vr {
   private constructor(world: World) {
     this.world = world
     world.scene.background = new Color("#03050b")
-    world.scene.add(this.space.group)
+    world.scene.add(this.space.group, this.moon.mesh)
     world.scene.add(new AmbientLight(0xffffff, 1.2))
     const sun = new DirectionalLight(0xffffff, 1.5)
     sun.position.set(1, 3, 2)
@@ -292,7 +298,7 @@ export class Vr {
 
   private launch(): void {
     const passthrough = headsetPassthrough.value
-    this.space.group.visible = !passthrough
+    this.space.group.visible = this.moon.mesh.visible = !passthrough
     this.world.launchXR({ sessionMode: passthrough ? SessionMode.ImmersiveAR : SessionMode.ImmersiveVR })
   }
 
@@ -414,6 +420,11 @@ export class Vr {
     return this.round?.paint.layer.mass() ?? 0
   }
 
+  /** Whether the globe is turning to show a place, for the browser tests. */
+  get globeTurning(): boolean {
+    return this.globe.busy
+  }
+
   /** How far the globe is zoomed, for the browser tests. */
   get globeScale(): number {
     return this.globe.scale
@@ -474,15 +485,36 @@ export class Vr {
   }
 
   /**
-   * The can and eraser stand in for the controllers. Not toggleVisual():
-   * IWSDK sets the model itself visible again every frame, but leaves the
-   * parts inside it alone. The model loads some frames into the session.
+   * While painting, the can and eraser stand in for the controllers. Not
+   * toggleVisual(): IWSDK sets the model itself visible again every frame,
+   * but leaves the parts inside it alone. The model loads some frames into
+   * the session.
    */
-  private hideControllers(): void {
+  private showControllers(on: boolean): void {
     for (const h of HANDS) {
       const model = this.world.input.xr.visualAdapters.controller[h].visual?.model
-      if (model) for (const part of model.children) part.visible = false
+      if (model) for (const part of model.children) part.visible = on
     }
+  }
+
+  /** Whether the controllers themselves show, for the browser tests. */
+  get controllersShown(): boolean {
+    return HANDS.some((h) =>
+      this.world.input.xr.visualAdapters.controller[h].visual?.model.children.some((part) => part.visible)
+    )
+  }
+
+  /** Whether a ray shows from either hand, to point at flags, for the browser tests. */
+  get beamsShown(): boolean {
+    return HANDS.some((h) => this.tools[h].beamShown)
+  }
+
+  /** How far the moon is from the globe, and how big, in globe radii, for the browser tests. */
+  get moonShown(): { distance: number; radius: number } | undefined {
+    const { mesh } = this.moon
+    if (!mesh.visible) return undefined
+    const r = this.globe.radius
+    return { distance: mesh.position.distanceTo(this.globe.centre) / r, radius: mesh.scale.x / r }
   }
 
   get wristOpen(): boolean {
@@ -570,7 +602,8 @@ export class Vr {
   }
 
   private frame(dt: number, now: number): void {
-    this.hideControllers()
+    this.frames++
+    this.showControllers(this.painting === undefined)
     if (!this.view) return
     const { player } = this.world
     if (!this.placed) {
@@ -597,9 +630,11 @@ export class Vr {
     const stick = { x: 0, y: 0 }
     for (const h of HANDS) {
       const pad = pads[h]
+      this.tools[h].busy = false
       if (!pad) continue
       const grip = player.gripSpaces[h].getWorldPosition(new Vector3())
       const squeezed = pad.getButtonPressed(InputComponent.Squeeze)
+      this.tools[h].busy = squeezed
       if (pad.getButtonDown(InputComponent.Squeeze) && !this.picture.heldBy) {
         const ray = player.raySpaces[h]
         const origin = ray.getWorldPosition(new Vector3())
@@ -620,8 +655,11 @@ export class Vr {
     this.detail.update(now, this.globe.nearest(head), zoomed ? (DETAIL_HALF_M * 6371) / this.globe.radius : undefined)
     this.answer.update(this.globe.scale)
     this.space.update(head)
+    this.moon.update(dt, this.globe.centre, this.globe.radius)
+    const pointing = this.view.kind === "reveal" && this.flagPins.shown > 0
     const pointers: Pointer[] = HANDS.map((h) => ({ ...this.tools[h].pointer(), globe: this.tools[h].aim(this.globe) }))
-    this.flagPins.update(this.globe.scale, this.view.kind === "reveal" ? pointers : [], head)
+    this.flagPins.update(this.globe.scale, pointing ? pointers : [], head)
+    for (const h of HANDS) this.tools[h].showBeam(pointing ? this.globe : undefined)
     this.wrist.update(this.painting !== undefined, player.gripSpaces.left, head)
     for (const h of HANDS) this.tools[h].hold(this.painting !== undefined)
 
@@ -663,7 +701,7 @@ export class Vr {
       : HANDS.find(
           (h, i) =>
             this.tools[h].touching(this.globe) !== undefined ||
-            (triggers[i]! > TRIGGER_DEAD && this.tools[h].aim(this.globe) !== undefined)
+            (!this.tools[h].busy && triggers[i]! > TRIGGER_DEAD && this.tools[h].aim(this.globe) !== undefined)
         )
     if (working && !this.stroking) {
       // Both hands make one undo step; the first sets the stroke's sound.

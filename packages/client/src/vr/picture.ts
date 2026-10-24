@@ -23,7 +23,11 @@ export type VrPicture = { photo: string } | { flag: FlagCode }
 
 const MAX_W = 0.38
 const MAX_H = 0.26
-const MAX_PX = 1024
+/**
+ * Sharp held a hand's width from the eyes, about 25 pixels a degree; a
+ * width Commons serves (it rounds others up).
+ */
+const MAX_PX = 1920
 /** How close a hand need be to take the picture without pointing at it. */
 const REACH_M = 0.08
 
@@ -93,6 +97,8 @@ export class Picture {
         // A new texture each time: one already on the GPU keeps its first size.
         const texture = new CanvasTexture(canvas)
         texture.colorSpace = SRGBColorSpace
+        // Sharp when tilted too; three caps it at what the GPU allows.
+        texture.anisotropy = 16
         this.mesh.material.map?.dispose()
         this.mesh.material.map = texture
         this.mesh.material.needsUpdate = true

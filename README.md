@@ -72,6 +72,7 @@ first, give it a minute: a lookup made before the tunnel was ready can be
 cached as missing. In practice, the VR button by Submit opens the headset
 view. `/xr-check.html` (dev server only) reports what the browser's WebXR
 supports, including whether page elements can show inside a session.
+Outside passthrough the headset shows the moon, to the globe's scale, mapped with NASA's Lunar Reconnaissance Orbiter colour map (credit: NASA's Scientific Visualization Studio, [SVS 4720](https://svs.gsfc.nasa.gov/4720), public domain).
 
 Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
 `KERNEL` (`single`, `multi-equal` or `multi-weighted`; the server refuses to start on anything else),

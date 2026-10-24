@@ -57,6 +57,25 @@ describe("the VR globe", () => {
     expect(globe.scale).toBeLessThan(3)
   })
 
+  it("zooms with two hands about the place between them, not the middle", () => {
+    const globe = placed()
+    // Gripped up and off to one side, the hands then drawn apart.
+    const mid = globe.centre.clone().add(new Vector3(0.12, 0.14, 0.12))
+    const across = new Vector3(1, 0, 0)
+    const hands = (apart: number) => ({
+      left: mid.clone().addScaledVector(across, -apart / 2),
+      right: mid.clone().addScaledVector(across, apart / 2)
+    })
+    globe.update(1 / 60, hands(0.1), { x: 0, y: 0 })
+    const spot = globe.group.worldToLocal(mid.clone()).normalize()
+    for (let i = 1; i <= 30; i++) globe.update(1 / 60, hands(0.1 + i * 0.01), { x: 0, y: 0 })
+    expect(globe.scale).toBeCloseTo(4, 5)
+    const spotNow = spot.applyQuaternion(globe.group.quaternion)
+    const midNow = mid.clone().sub(globe.centre).normalize()
+    expect(spotNow.angleTo(midNow)).toBeLessThan(0.01)
+    expectNoRoll(globe)
+  })
+
   it("spins and tilts with a hand dragged across it, and never rolls", () => {
     const globe = placed()
     const start = globe.centre.clone().add(new Vector3(-0.1, 0.1, 0.2))
