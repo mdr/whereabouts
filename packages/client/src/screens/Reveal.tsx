@@ -140,7 +140,7 @@ export function Reveal({
       {dialog}
       {borders && <FlagHover gameMap={paint.gameMap} borders={borders} />}
       {borders && allFlags.value && <AllFlags gameMap={paint.gameMap} borders={borders} />}
-      <div class="hud">
+      <div class="hud reveal">
         <div class="hud-top">
           <HudHeader
             round={reveal.index + 1}
@@ -159,7 +159,7 @@ export function Reveal({
             <Answer label={reveal.label} wiki={reveal.wiki} />
             <FactLine fact={fact} />
           </QuestionCard>
-          <div class="card score">
+          <div class="card score" data-testid={revealTestIds.scoreCard}>
             <div class="big">{mine ? Math.round(mine.score) : "—"}</div>
             <div class="label">
               {mine ? (mine.paint ? "your score this round" : "you passed this round") : "you sat this one out"}

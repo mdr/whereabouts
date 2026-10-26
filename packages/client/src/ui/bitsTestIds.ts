@@ -1,4 +1,5 @@
 export const hudHeaderTestIds = {
+  header: "HudHeader.header",
   round: "HudHeader.round"
 }
 

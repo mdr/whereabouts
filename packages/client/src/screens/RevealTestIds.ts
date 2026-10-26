@@ -1,5 +1,6 @@
 export const revealTestIds = {
   readyCount: "Reveal.readyCount",
+  scoreCard: "Reveal.scoreCard",
   scoresList: "Reveal.scoresList",
   everyoneRow: "Reveal.everyoneRow",
   playerRow: "Reveal.playerRow",

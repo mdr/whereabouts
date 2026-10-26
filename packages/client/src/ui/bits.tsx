@@ -97,7 +97,7 @@ export function HudHeader({
   right?: ComponentChildren
 }) {
   return (
-    <div class="hud-header">
+    <div class="hud-header" data-testid={hudHeaderTestIds.header}>
       {home ? (
         <a href="#/" class="brand">
           Whereabouts

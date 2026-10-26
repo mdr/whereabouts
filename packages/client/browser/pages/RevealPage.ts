@@ -1,5 +1,5 @@
 import { revealTestIds } from "../../src/screens/RevealTestIds.ts"
-import { factTestIds } from "../../src/ui/bitsTestIds.ts"
+import { factTestIds, hudHeaderTestIds } from "../../src/ui/bitsTestIds.ts"
 import { Hud } from "./Hud.ts"
 import { MapPanel } from "./MapPanel.ts"
 import { ResultsPage } from "./ResultsPage.ts"
@@ -117,7 +117,23 @@ export class RevealPage extends Screen {
     return isUsable(this.page.getByTestId(revealTestIds.readyButton))
   }
 
+  /** On a phone the scores are further down the sheet: scrolled to first. */
   async scoresAreUsable(): Promise<boolean> {
-    return isUsable(this.page.getByTestId(revealTestIds.everyoneRow))
+    const row = this.page.getByTestId(revealTestIds.everyoneRow)
+    // Not scrollIntoViewIfNeeded: a row under the sticky toolbar counts as in view.
+    await row.evaluate((el) => el.scrollIntoView({ block: "center" }))
+    return isUsable(row)
+  }
+
+  async scoreIsUsable(): Promise<boolean> {
+    return isUsable(this.page.getByTestId(revealTestIds.scoreCard))
+  }
+
+  /** On a phone, whether the answer shows in full on the map between the header and the sheet of cards. */
+  async answerShowsAboveSheet(): Promise<boolean> {
+    const header = await this.page.getByTestId(hudHeaderTestIds.header).boundingBox()
+    const sheet = await this.page.getByTestId(revealTestIds.scoreCard).boundingBox()
+    if (!header || !sheet) return false
+    return (await this.map.answerShareBetween(header.y + header.height, sheet.y)) === 1
   }
 }

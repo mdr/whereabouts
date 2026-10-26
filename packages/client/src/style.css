@@ -1723,6 +1723,76 @@ button.danger.solid {
   }
 }
 
+/*
+ * A phone's reveal: the map shows the answer in the top half (SHEET_TOP in
+ * map.ts) and the cards make one sheet below it, scrolling up over the map.
+ * The HUD itself scrolls; it still lets touches through to the map where
+ * there is no card.
+ */
+@media (max-width: 640px) {
+  .hud.reveal {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    /* Over the map's buttons, and hiding cards as they pass the gaps above the header and below the toolbar. */
+    z-index: 3;
+    mask-image: linear-gradient(
+      transparent var(--hud-gap),
+      #000 var(--hud-gap),
+      #000 calc(100% - var(--hud-gap) - env(safe-area-inset-bottom, 0px)),
+      transparent calc(100% - var(--hud-gap) - env(safe-area-inset-bottom, 0px))
+    );
+  }
+  .hud.reveal .hud-top,
+  .hud.reveal .hud-right {
+    display: contents;
+  }
+  .hud.reveal .hud-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    order: -2;
+    flex: none;
+    margin-bottom: calc(50svh - var(--hud-gap) - 44px);
+  }
+  .hud.reveal > * > .card,
+  .hud.reveal > * > .end-game {
+    flex: none;
+  }
+  /* What you scored first, then what the answer was. */
+  .hud.reveal .card.score {
+    order: -1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-content: start;
+    align-items: center;
+    column-gap: 12px;
+    text-align: left;
+  }
+  .hud.reveal .card.score .big {
+    grid-row: span 3;
+  }
+  .hud.reveal .card.score .fit {
+    margin-top: 2px;
+  }
+  /* A long country name in "Your paint" is cut short rather than widening the card. */
+  .hud.reveal .card.score .fit:has(.painted-in) {
+    display: flex;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .hud.reveal .hud-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    flex: none;
+  }
+  .stage:has(.hud.reveal) #map .maplibregl-ctrl-bottom-left,
+  .stage:has(.hud.reveal) #map .maplibregl-ctrl-bottom-right {
+    bottom: calc(50svh + 6px);
+  }
+}
+
 /* ---- front page --------------------------------------------------------- */
 .home-page {
   width: min(960px, 100%);

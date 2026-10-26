@@ -460,7 +460,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
       <>
         {borders && <FlagHover gameMap={paint.gameMap} borders={borders} />}
         {borders && allFlags.value && <AllFlags gameMap={paint.gameMap} borders={borders} />}
-        <div class="hud">
+        <div class="hud reveal">
           <div class="hud-top">
             {header}
             <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined}>

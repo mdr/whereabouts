@@ -131,6 +131,26 @@ export class MapPanel {
     await this.waitUntilSettled()
   }
 
+  /** The share of the answer (its marker, or a country's outline) on screen between `top` and `bottom`. */
+  async answerShareBetween(top: number, bottom: number): Promise<number> {
+    return this.#page.evaluate(
+      async ({ top, bottom }) => {
+        const { map } = window.whereabouts
+        const source = map.getSource("reveal") as unknown as { getData(): Promise<GeoJSON.FeatureCollection> }
+        const points: GeoJSON.Position[] = []
+        for (const { geometry: g } of (await source.getData()).features) {
+          if (g.type === "Point") points.push(g.coordinates)
+          if (g.type === "MultiPolygon") for (const polygon of g.coordinates) points.push(...polygon[0]!)
+        }
+        const inside = points
+          .map(([lon, lat]) => map.project([lon!, lat!]))
+          .filter((p) => p.x >= 0 && p.x <= innerWidth && p.y >= top - 2 && p.y <= bottom + 2)
+        return points.length === 0 ? 0 : inside.length / points.length
+      },
+      { top, bottom }
+    )
+  }
+
   async showsGlobe(): Promise<boolean> {
     return this.#page.evaluate(() => window.whereabouts.map.getProjection().type === "globe")
   }

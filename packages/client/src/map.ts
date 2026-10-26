@@ -49,6 +49,9 @@ const WORLD_PX_Z0 = 512
 const MAX_LAT = 85.0511
 /** The globe's starting size: its radius as a share of the map's shorter side. */
 const GLOBE_FILL = 0.4
+/** The phone layout's width, and where its reveal sheet starts, as a share of the screen's height (style.css). */
+const PHONE = "(max-width: 640px)"
+const SHEET_TOP = 0.5
 
 /**
  * National borders on the reveal: opaque and wider as the map zooms in, but
@@ -685,44 +688,33 @@ export class GameMap {
     return Math.max(this.map.getMinZoom(), Math.log2(worldPx / WORLD_PX_Z0))
   }
 
-  /** Fit the answer and a paint layer's cells into view, with a sensible zoom cap. */
-  fitAnswerAndPaint(answer: LatLon, paint: GeoJSON.FeatureCollection, toleranceKm: number): void {
-    let minLon = answer.lon,
-      maxLon = answer.lon,
-      minLat = answer.lat,
-      maxLat = answer.lat
-    for (const f of paint.features) {
-      if (f.geometry.type !== "Polygon") continue
-      for (const [lon, lat] of f.geometry.coordinates[0] as [number, number][]) {
-        // Cells that were unwrapped past 180 are folded back for the bbox.
-        const l = lon > 180 ? lon - 360 : lon
-        if (l < minLon) minLon = l
-        if (l > maxLon) maxLon = l
-        if (lat < minLat) minLat = lat
-        if (lat > maxLat) maxLat = lat
-      }
-    }
-    // Always include at least two tolerances around the answer.
+  /**
+   * Fit the answer (with a country's outline) and a paint layer's cells into
+   * view, with a sensible zoom cap; just the answer when both won't fit.
+   */
+  fitAnswerAndPaint(
+    answer: LatLon,
+    paint: GeoJSON.FeatureCollection,
+    toleranceKm: number,
+    outline: GeoJSON.Feature[] = []
+  ): void {
+    // Always at least two tolerances around the answer.
     const dLat = (2 * toleranceKm) / 111
     const dLon = dLat / Math.max(0.2, Math.cos((answer.lat * Math.PI) / 180))
-    minLat = Math.min(minLat, answer.lat - dLat)
-    maxLat = Math.max(maxLat, answer.lat + dLat)
-    minLon = Math.min(minLon, answer.lon - dLon)
-    maxLon = Math.max(maxLon, answer.lon + dLon)
-    if (maxLon - minLon > 300) {
+    const around: Box = [answer.lon - dLon, answer.lat - dLat, answer.lon + dLon, answer.lat + dLat]
+    const answerBox = boxAround(outline, around)
+    const box = boxAround(paint.features, answerBox)
+    const padding = this.revealPadding()
+    if (box[2] - box[0] > 300) {
       // Spans most of the world; just show it all.
       const zoom = this.globe ? this.worldZoom(20) : this.map.getMinZoom()
-      void this.map.easeTo({ center: [answer.lon, 20], zoom, duration: 900 })
+      void this.map.easeTo({ center: [answer.lon, 20], zoom, offset: offsetFor(padding), duration: 900 })
       return
     }
-    void this.map.fitBounds(
-      [
-        [minLon, Math.max(-85, minLat)],
-        [maxLon, Math.min(85, maxLat)]
-      ],
-      // Keep clear of the HUD cards on the left and right and the toolbar below.
-      { padding: { top: 40, bottom: 90, left: 340, right: 340 }, duration: 900, maxZoom: 10 }
-    )
+    const camera = this.map.cameraForBounds(bounds(box), { padding, maxZoom: 10 })
+    // Too wide even zoomed right out, as paint far off can be on a phone: the answer matters more.
+    const fits = camera !== undefined && (camera.zoom ?? 0) >= this.map.getMinZoom()
+    void this.map.fitBounds(bounds(fits ? box : answerBox), { padding, duration: 900, maxZoom: 10 })
   }
 
   /** Frame a country's outline (GeoJSON MultiPolygon coordinates) together with paint. */
@@ -737,11 +729,25 @@ export class GameMap {
       properties: {},
       geometry: { type: "Polygon", coordinates }
     }))
-    this.fitAnswerAndPaint(answer, { type: "FeatureCollection", features: [...paint.features, ...parts] }, toleranceKm)
+    this.fitAnswerAndPaint(answer, paint, toleranceKm, parts)
+  }
+
+  /**
+   * Where the reveal's cards leave the map clear: between the cards on the
+   * left and right and above the toolbar, or on a phone, between the header
+   * and the sheet.
+   */
+  private revealPadding(): Required<maplibregl.PaddingOptions> {
+    const { clientWidth: w, clientHeight: h } = this.map.getContainer()
+    if (matchMedia(PHONE).matches) return { top: 64, bottom: h * (1 - SHEET_TOP) + 16, left: 24, right: 24 }
+    // A narrow window has less room beside the cards than they take.
+    const side = Math.min(340, w * 0.3)
+    return { top: 40, bottom: 90, left: side, right: side }
   }
 
   /** Ease so that about eight tolerances span 40% of the viewport width. */
   focusOn(answer: LatLon, toleranceKm: number): void {
+    const padding = this.revealPadding()
     const widthPx = this.map.getContainer().clientWidth
     const cos = Math.max(0.05, Math.cos((answer.lat * Math.PI) / 180))
     const targetMpp = (toleranceKm * 8 * 1000) / (0.4 * widthPx)
@@ -749,9 +755,42 @@ export class GameMap {
     void this.map.easeTo({
       center: [answer.lon, answer.lat],
       zoom: Math.min(this.map.getMaxZoom(), Math.max(this.map.getMinZoom(), zoom)),
+      offset: offsetFor(padding),
       duration: 900
     })
   }
+}
+
+/** West, south, east, north. */
+type Box = [number, number, number, number]
+
+/** `box` grown to take in the polygons' outer rings. */
+function boxAround(features: GeoJSON.Feature[], box: Box): Box {
+  let [minLon, minLat, maxLon, maxLat] = box
+  for (const f of features) {
+    if (f.geometry.type !== "Polygon") continue
+    for (const [lon, lat] of f.geometry.coordinates[0] as [number, number][]) {
+      // Cells that were unwrapped past 180 are folded back for the bbox.
+      const l = lon > 180 ? lon - 360 : lon
+      if (l < minLon) minLon = l
+      if (l > maxLon) maxLon = l
+      if (lat < minLat) minLat = lat
+      if (lat > maxLat) maxLat = lat
+    }
+  }
+  return [minLon, minLat, maxLon, maxLat]
+}
+
+function bounds([w, s, e, n]: Box): maplibregl.LngLatBoundsLike {
+  return [
+    [w, Math.max(-85, s)],
+    [e, Math.min(85, n)]
+  ]
+}
+
+/** Moves the centre into the middle of the clear part of the map. Unlike easeTo's padding, it does not stay set. */
+function offsetFor(p: Required<maplibregl.PaddingOptions>): [number, number] {
+  return [(p.left - p.right) / 2, (p.top - p.bottom) / 2]
 }
 
 /** A band as polygons: a longitude band across 180° is two, one each side. */
