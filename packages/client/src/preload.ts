@@ -1,6 +1,6 @@
 /**
  * Loads a question's pictures before its round starts, so the photo or flag
- * is already in the page's image cache when it is shown.
+ * (and the reveal's photo) is already in the page's image cache when it is shown.
  */
 import { commonsImageUrl, type QuestionPictures } from "@whereabouts/shared"
 import { flagUrl } from "./flags"
@@ -16,7 +16,8 @@ function load(url: string): void {
   loading.set(url, img)
 }
 
-export function preloadPictures({ image, flag }: QuestionPictures): void {
+export function preloadPictures({ image, flag, revealPhoto }: QuestionPictures): void {
   if (image) load(commonsImageUrl(image))
+  if (revealPhoto) load(commonsImageUrl(revealPhoto))
   if (flag) void flagUrl(flag).then((url) => url && load(url))
 }

@@ -149,7 +149,8 @@ export function QuestionCard({
   q,
   children,
   credit,
-  countryFlag
+  countryFlag,
+  photo
 }: {
   q: QuestionView
   children?: ComponentChildren
@@ -157,13 +158,16 @@ export function QuestionCard({
   credit?: boolean
   /** A country round names the country, so its flag can show too. */
   countryFlag?: string
+  /** At the reveal, the answer's photo on a round that showed none. */
+  photo?: string
 }) {
+  const image = q.image ?? photo
   return (
     <div class="card question" data-testid={questionCardTestIds.card}>
       <p class="prompt" data-testid={questionCardTestIds.prompt}>
         {q.prompt}
       </p>
-      {q.image && <QuestionImage image={q.image} credit={credit ?? false} />}
+      {image && <QuestionImage image={image} credit={credit ?? false} />}
       {(q.flag ?? countryFlag) && <FlagImage code={(q.flag ?? countryFlag)!} />}
       {children}
     </div>

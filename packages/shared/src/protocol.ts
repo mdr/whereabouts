@@ -268,6 +268,8 @@ export interface RevealView {
   label: string
   /** Wikipedia article title for the answer, when known. */
   wiki?: string
+  /** A photo of the answer, on a round that showed none while guessing (see photos.ts). */
+  photo?: string
   results: RoundResultView[]
   /** Ids of players who have pressed Ready. The round advances when everyone connected has. */
   ready: PlayerId[]
@@ -277,6 +279,8 @@ export interface RevealView {
 export interface QuestionPictures {
   image?: string
   flag?: FlagCode
+  /** Shown at the reveal (see photos.ts). */
+  revealPhoto?: string
 }
 
 /** A round of a finished game, for the final results: what it asked about. */

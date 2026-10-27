@@ -155,7 +155,7 @@ export function Reveal({
               </span>
             }
           />
-          <QuestionCard q={reveal.question} credit countryFlag={region?.countryFlag}>
+          <QuestionCard q={reveal.question} credit countryFlag={region?.countryFlag} photo={reveal.photo}>
             <Answer label={reveal.label} wiki={reveal.wiki} />
             <FactLine fact={fact} />
           </QuestionCard>

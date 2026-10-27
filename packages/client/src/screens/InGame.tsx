@@ -39,6 +39,7 @@ import type { PaintController } from "../paint-controller"
 import { revealOrder } from "./Reveal"
 import { inGameTestIds } from "./InGameTestIds"
 import { useFact } from "../facts"
+import { vrPicture } from "../vr-picture"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint()
@@ -343,7 +344,7 @@ function gameVrView(
       hint: view.you.isHost ? "Point at a player to remove them or make them host." : undefined
     },
     detail: view.config.mapDetail,
-    picture: question.image ? { photo: question.image } : flag ? { flag } : undefined,
+    picture: vrPicture(question.image ?? reveal?.photo, flag, reveal && { place: reveal.label, text: fact?.text }),
     water: question.topic === "lake" || question.topic === "sea",
     colour: me && !me.watching ? colourCss(me.colour) : undefined,
     hint: view.you.hint,

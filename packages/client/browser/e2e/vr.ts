@@ -275,6 +275,12 @@ const vrFact = await until(
   (f) => f !== undefined
 )
 checks.check((vrFact ?? "").length > 20, `with a line about it (${vrFact})`)
+const postcard = await until(
+  "the answer's photo",
+  () => headset.postcard(),
+  (p) => p !== undefined
+)
+checks.check(postcard !== undefined, `the answer's photo shows, its postcard back from ${postcard}`)
 const why = (await headset.menu()).why
 checks.check((why ?? "").length > 20, `and why it scored that (${why})`)
 checks.check(!(await headset.toolsHeld()), "the hands put the can and eraser away for the answer")

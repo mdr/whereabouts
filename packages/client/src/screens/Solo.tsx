@@ -13,6 +13,7 @@ import {
   type HintAxis,
   type HintBand,
   questionPictures,
+  revealPhoto,
   KernelIdSchema,
   type KernelId,
   SHAPE_WEIGHT,
@@ -57,7 +58,7 @@ import { VrButton, useVrHold, useVrView } from "../ui/VrButton"
 import type { VrRound, VrView } from "../vr"
 import type { VrTable } from "../vr/scores"
 import { vrFlagPins } from "../borders"
-import type { VrPicture } from "../vr/picture"
+import { vrPicture, type Postcard, type VrPicture } from "../vr-picture"
 import { Banner } from "../ui/Banner"
 import { DevDrawer } from "../ui/DevDrawer"
 import { allFlags, cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings"
@@ -83,10 +84,10 @@ const isRegion = (q: PracticeQuestion): q is RegionQuestion => q.kind === "regio
 type Parts = { A: number; B: number } | { shape: number; nearness: number }
 
 /** What the VR menu shows above the question, as the card does. */
-function vrPicture(q: PracticeQuestion): VrPicture | undefined {
-  if ("image" in q && q.image) return { photo: q.image }
-  const flag = q.flag ?? (isRegion(q) ? q.countryFlag : undefined)
-  return flag && { flag }
+/** The question's picture; at the reveal, the answer's photo where it showed none, its postcard back telling of the answer. */
+function questionVrPicture(q: PracticeQuestion, reveal: Postcard | undefined): VrPicture | undefined {
+  const photo = ("image" in q && q.image) || (reveal ? revealPhoto(q) : undefined)
+  return vrPicture(photo || undefined, q.flag ?? (isRegion(q) ? q.countryFlag : undefined), reveal)
 }
 
 /** Places score with the chosen kernel; countries have their own rule (see regions.ts). */
@@ -318,7 +319,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     heading: `QUESTION ${index + 1} OF ${questions.length}, ${pts(total)}`,
     mode: answerModeText(q),
     detail,
-    picture: vrPicture(q),
+    picture: questionVrPicture(q, phase === "reveal" ? { place: q.label, text: fact?.text } : undefined),
     water: q.topic === "lake" || q.topic === "sea",
     hint,
     hintsLeft: "unlimited",
@@ -463,7 +464,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
         <div class="hud reveal">
           <div class="hud-top">
             {header}
-            <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined}>
+            <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined} credit photo={revealPhoto(q)}>
               <Answer label={q.label} wiki={q.wiki} />
               <FactLine fact={fact} />
             </QuestionCard>

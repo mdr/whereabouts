@@ -204,6 +204,11 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.pictureShown)
   }
 
+  /** The place the picture's postcard back names at the reveal. */
+  async postcard(): Promise<string | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.picturePostcard)
+  }
+
   /** The line of interest on the headset's reveal. */
   async fact(): Promise<string | undefined> {
     return this.#page.evaluate(() => window.whereaboutsVr.factShown)

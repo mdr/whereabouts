@@ -16,11 +16,9 @@ import {
   Vector3,
   type Object3D
 } from "three"
-import type { FlagCode } from "@whereabouts/shared"
+import type { Postcard, VrPicture } from "../vr-picture"
 import { flagUrl } from "../flags"
 import type { Hand } from "./globe"
-
-export type VrPicture = { photo: string } | { flag: FlagCode }
 
 const MAX_W = 0.38
 const MAX_H = 0.26
@@ -47,6 +45,7 @@ export class Picture {
   private asked = 0
   private held: Hand | undefined = undefined
   private shownBack: "reverse" | "postcard" | undefined = undefined
+  private shownPostcard: Postcard | undefined = undefined
 
   constructor() {
     const edge = new MeshBasicMaterial({ color: CARD })
@@ -64,6 +63,11 @@ export class Picture {
   /** What its back shows, for the browser tests. */
   get back(): "reverse" | "postcard" | undefined {
     return this.mesh.visible ? this.shownBack : undefined
+  }
+
+  /** The place its postcard back names, for the browser tests. */
+  get postcardPlace(): string | undefined {
+    return this.mesh.visible ? this.shownPostcard?.place : undefined
   }
 
   get height(): number {
@@ -121,7 +125,7 @@ export class Picture {
         texture.colorSpace = SRGBColorSpace
         // Sharp when tilted too; three caps it at what the GPU allows.
         texture.anisotropy = 16
-        const back = "flag" in picture ? reverse(texture) : postcard(canvas.width / canvas.height)
+        const back = "flag" in picture ? reverse(texture) : postcard(canvas.width / canvas.height, picture.postcard)
         for (const [i, map] of [
           [FRONT, texture],
           [BACK, back]
@@ -132,6 +136,7 @@ export class Picture {
           material.needsUpdate = true
         }
         this.shownBack = "flag" in picture ? "reverse" : "postcard"
+        this.shownPostcard = "flag" in picture ? undefined : picture.postcard
         const size = Math.min(MAX_W / w, MAX_H / h)
         this.mesh.scale.set(w * size, h * size, 1)
         this.mesh.visible = true
@@ -149,8 +154,12 @@ function reverse(front: CanvasTexture): CanvasTexture {
   return t
 }
 
-/** The back of a postcard, for a photo: a line down the middle, lines to write the address on and a box for the stamp. */
-function postcard(aspect: number): CanvasTexture {
+/**
+ * The back of a postcard, for a photo: a line down the middle, lines to
+ * write the address on and a box for the stamp. At the reveal, the message
+ * names the place and tells of it.
+ */
+function postcard(aspect: number, message: Postcard | undefined): CanvasTexture {
   const canvas = document.createElement("canvas")
   canvas.height = 512
   canvas.width = Math.round(512 * aspect)
@@ -172,13 +181,49 @@ function postcard(aspect: number): CanvasTexture {
   g.strokeRect(w * 0.94 - h * 0.22, h * 0.08, h * 0.22, h * 0.26)
   g.fillStyle = "#8a8072"
   g.font = `600 ${Math.round(h * 0.07)}px system-ui, sans-serif`
-  g.fillText("Where is this?", w * 0.06, h * 0.18)
+  if (!message) g.fillText("Where is this?", w * 0.06, h * 0.18)
+  else {
+    const width = w * 0.45
+    const lines = wrap(g, `Greetings from ${message.place}!`, width)
+    g.fillStyle = "#4a443c"
+    lines.forEach((line, i) => g.fillText(line, w * 0.06, h * (0.18 + i * 0.09)))
+    if (message.text) {
+      const top = h * (0.2 + lines.length * 0.09)
+      // Smaller for a long fact on a narrow card, to stay clear of the name at the foot.
+      let size = Math.round(h * 0.052)
+      let text: string[]
+      for (;;) {
+        g.font = `italic ${size}px system-ui, sans-serif`
+        text = wrap(g, message.text, width)
+        if (top + text.length * size * 1.3 <= h * 0.82 || size <= h * 0.032) break
+        size--
+      }
+      g.fillStyle = "#5c554b"
+      text.forEach((line, i) => g.fillText(line, w * 0.06, top + i * size * 1.3))
+    }
+    g.fillStyle = "#8a8072"
+  }
   g.font = `${Math.round(h * 0.045)}px system-ui, sans-serif`
   g.fillText("Whereabouts", w * 0.06, h * 0.9)
   const t = new CanvasTexture(canvas)
   t.colorSpace = SRGBColorSpace
   t.anisotropy = 16
   return t
+}
+
+/** `text` broken into lines no wider than `width` in the canvas's current font. */
+function wrap(g: CanvasRenderingContext2D, text: string, width: number): string[] {
+  const lines: string[] = []
+  let line = ""
+  for (const word of text.split(" ")) {
+    const longer = line ? `${line} ${word}` : word
+    if (line && g.measureText(longer).width > width) {
+      lines.push(line)
+      line = word
+    } else line = longer
+  }
+  if (line) lines.push(line)
+  return lines
 }
 
 async function load(picture: VrPicture): Promise<HTMLImageElement | undefined> {

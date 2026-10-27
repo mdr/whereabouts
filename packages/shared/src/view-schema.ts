@@ -24,6 +24,12 @@ const QuestionViewSchema = z.strictObject({
   topic: z.enum(["island", "lake", "sea", "state"]).optional()
 })
 
+const QuestionPicturesSchema = z.strictObject({
+  image: z.string().optional(),
+  flag: FlagCodeSchema.optional(),
+  revealPhoto: z.string().optional()
+})
+
 const PlayerViewSchema = z.strictObject({
   id: PlayerIdSchema,
   name: PlayerNameSchema,
@@ -89,6 +95,7 @@ export const GameViewSchema = z.strictObject({
       answer: LatLonSchema,
       label: z.string(),
       wiki: z.string().optional(),
+      photo: z.string().optional(),
       results: z.array(RoundResultViewSchema),
       ready: z.array(PlayerIdSchema)
     })
@@ -102,13 +109,11 @@ export const GameViewSchema = z.strictObject({
       })
     )
     .optional(),
-  playedRounds: z
-    .array(z.strictObject({ label: z.string(), image: z.string().optional(), flag: FlagCodeSchema.optional() }))
-    .optional(),
+  playedRounds: z.array(z.strictObject({ label: z.string(), ...QuestionPicturesSchema.shape })).optional(),
   awards: z
     .array(
       z.strictObject({ emoji: z.string(), title: z.string(), playerIds: z.array(PlayerIdSchema), line: z.string() })
     )
     .optional(),
-  upcoming: z.strictObject({ image: z.string().optional(), flag: FlagCodeSchema.optional() }).optional()
+  upcoming: QuestionPicturesSchema.optional()
 })

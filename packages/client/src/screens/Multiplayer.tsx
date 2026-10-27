@@ -104,7 +104,7 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
   const upcoming = view?.upcoming
   useEffect(() => {
     if (upcoming) preloadPictures(upcoming)
-  }, [upcoming?.image, upcoming?.flag])
+  }, [upcoming?.image, upcoming?.flag, upcoming?.revealPhoto])
 
   if (status === "rejected" || (status === "disconnected" && !view)) {
     const why = conn.rejection.value ?? {

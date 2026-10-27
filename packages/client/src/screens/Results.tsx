@@ -277,6 +277,8 @@ function RoundPicture({ round }: { round: PlayedRound }) {
   if (round.image)
     return <img class="round-photo" src={commonsImageUrl(round.image, 120)} alt="" referrerpolicy="no-referrer" />
   if (round.flag) return <SmallFlag code={round.flag} />
+  if (round.revealPhoto)
+    return <img class="round-photo" src={commonsImageUrl(round.revealPhoto, 120)} alt="" referrerpolicy="no-referrer" />
   return (
     <span class="round-pin">
       <Icon name="pin" size={14} />

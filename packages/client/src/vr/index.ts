@@ -55,7 +55,8 @@ import { AnswerMarker, type VrAnswer } from "./answer"
 import { DetailPatch } from "./detail-patch"
 import { drawBorders, drawColour, drawLand } from "./globe-texture"
 import { paintGeometry } from "./paint-mesh"
-import { Picture, type VrPicture } from "./picture"
+import { Picture } from "./picture"
+import type { VrPicture } from "../vr-picture"
 import { HintMarker } from "./hint"
 import { reflect, reflections } from "./models"
 import { timerFrames } from "./frames"
@@ -563,6 +564,11 @@ export class Vr {
   get pictureShown(): [number, number] | undefined {
     const { mesh } = this.picture
     return mesh.visible ? [mesh.scale.x, mesh.scale.y] : undefined
+  }
+
+  /** The place the picture's postcard back names at the reveal, for the browser tests. */
+  get picturePostcard(): string | undefined {
+    return this.picture.postcardPlace
   }
 
   /** Whether a hand holds the question's picture, and where it is, for the browser tests. */

@@ -3,7 +3,8 @@ import { latLngToCell } from "./h3.ts"
 import { Game, ROUND_GRACE_MS, generateCode, nextHostAfter } from "./game.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { PASS_SCORE } from "./scoring.ts"
-import { pickQuestions, type Question, type QuestionData } from "./questions.ts"
+import { QUESTIONS, pickQuestions, type Question, type QuestionData } from "./questions.ts"
+import { REVEAL_PHOTOS } from "./photos.ts"
 import { featureFrom, regionCells, type RegionData, regionFrom, type RegionQuestion } from "./regions.ts"
 import { type GameConfig, MAX_PLAYERS, MAX_SPECTATORS, type QuestionView, SEAT_GRACE_MS } from "./protocol.ts"
 import regionsJson from "../regions.json" with { type: "json" }
@@ -1069,6 +1070,22 @@ describe("upcoming pictures", () => {
     g.next(tokA, T0 + 62_000)
     expect(imageOf(g, T0 + 62_000)).toBe(second)
     expect(g.view(tokA, T0 + 62_000).upcoming).toBeUndefined()
+  })
+
+  it("sends a place-name round's reveal photo with its pictures, and shows it at the reveal", () => {
+    const paris = QUESTIONS.find((q) => q.id === "paris")!
+    const g = new Game(CODE, [paris], { mix: { ...mix, landmarks: 0, places: 1 }, roundMs: 60_000 }, 7)
+    g.join(tokA, playerName("Alice"), T0)
+    const photo = g.view(tokA, T0).upcoming?.revealPhoto
+    expect(photo).toBeDefined()
+    expect(photo).toBe(REVEAL_PHOTOS.Paris)
+    g.start(tokA, T0)
+    expect(g.view(tokA, T0).round?.question.image).toBeUndefined()
+    g.tick(T0 + 60_000 + ROUND_GRACE_MS)
+    const view = g.view(tokA, T0 + 61_000)
+    expect(view.reveal?.photo).toBe(photo)
+    g.next(tokA, T0 + 62_000)
+    expect(g.view(tokA, T0 + 62_000).playedRounds?.[0]?.revealPhoto).toBe(photo)
   })
 
   it("picks the rounds again when the host changes the setup, so round 1's photo is still the one asked", () => {

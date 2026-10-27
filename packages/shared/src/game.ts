@@ -10,6 +10,7 @@ import { regionFit, regionMisfit, scoreRegionQuestion, type RegionQuestion } fro
 import { explainPoint, isHedge } from "./explain.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
 import { flagRound, type FlagQuestion } from "./flags.ts"
+import { revealPhoto } from "./photos.ts"
 import { DEFAULT_HINTS, hintBand, seededUnit, type HintAxis, type HintBand } from "./hints.ts"
 import { playerColour, type PlayerColour } from "./colours.ts"
 import { playerId, roomCode, type PlayerId, type PlayerName, type PlayerToken, type RoomCode } from "./ids.ts"
@@ -688,6 +689,7 @@ export class Game {
       })
     }
     results.sort((a, b) => b.score - a.score)
+    const photo = revealPhoto(q)
     this.phase = "reveal"
     this.reveal = {
       index: this.roundIndex,
@@ -696,6 +698,7 @@ export class Game {
       answer: q.answer,
       label: q.label,
       wiki: q.wiki,
+      ...(photo ? { photo } : {}),
       results,
       ready: []
     }
@@ -817,7 +820,7 @@ export class Game {
     const q = this.questions[next]
     if (!q) return {}
     const pictures = questionPictures(q)
-    return pictures.image || pictures.flag ? { upcoming: pictures } : {}
+    return Object.keys(pictures).length > 0 ? { upcoming: pictures } : {}
   }
 
   private readyIds(): PlayerId[] {
@@ -859,10 +862,15 @@ export function generateCode(rnd: () => number = Math.random, length = 4): RoomC
   return roomCode(out)
 }
 
-/** A question's photo and flag, including the flag shown beside a country's name. */
+/** A question's photo and flag, including the flag shown beside a country's name, and the photo for its reveal. */
 export function questionPictures(q: Question | RegionQuestion): QuestionPictures {
   const flag = q.flag ?? (q.kind === "region" ? q.countryFlag : undefined)
-  return { ...(q.kind !== "region" && q.image ? { image: q.image } : {}), ...(flag ? { flag } : {}) }
+  const photo = revealPhoto(q)
+  return {
+    ...(q.kind !== "region" && q.image ? { image: q.image } : {}),
+    ...(flag ? { flag } : {}),
+    ...(photo ? { revealPhoto: photo } : {})
+  }
 }
 
 /**
