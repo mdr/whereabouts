@@ -28,6 +28,11 @@ describe("the reveal photos", () => {
     for (const q of QUESTIONS.filter((q) => q.kind === "text")) expect(revealPhoto(q), q.id).toBeDefined()
   })
 
+  it("give every island, lake and sea round a photo", () => {
+    const features = (featuresJson as { wiki: string; topic: string }[]).filter((f) => f.topic !== "state")
+    for (const f of features) expect(REVEAL_PHOTOS[f.wiki], f.wiki).toBeDefined()
+  })
+
   it("leave photo rounds their own photo", () => {
     for (const q of QUESTIONS.filter((q) => q.kind === "photo")) expect(revealPhoto(q), q.id).toBeUndefined()
   })
