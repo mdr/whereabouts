@@ -24,6 +24,7 @@
     "zod": "^4.1.0"
   },
   "devDependencies": {
-    "@types/geojson": "^7946.0.16"
+    "@types/geojson": "^7946.0.16",
+    "polygon-clipping": "^0.15.7"
   }
 }

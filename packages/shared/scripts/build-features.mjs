@@ -19,6 +19,7 @@
 //   Natural Earth splits off the Adriatic, the Gulf of Bothnia and the like.
 // - US states: 1:10m admin-1 with the Great Lakes cut out; not DC.
 import { readFileSync, writeFileSync } from "node:fs"
+import polygonClipping from "polygon-clipping"
 import {
   MIN_KEPT_SHARE,
   POINT_BELOW_KM2,
@@ -166,7 +167,7 @@ for (const [label, parts] of SEAS) {
     if (f.length === 0) throw new Error(`${label}: no marine area named ${part}`)
     return f.flatMap((m) => polygonsOf(m.geometry))
   })
-  out.push(region("sea", label, `the ${label}`, label, polygons))
+  out.push(region("sea", label, `the ${label}`, label, polygonClipping.union(...polygons)))
 }
 
 const states = (await features(FILES.states)).filter(
