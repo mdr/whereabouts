@@ -486,3 +486,13 @@ side-by-side kernel scores, score-if-here on hover, the paint distribution by bl
 and cell count, brush strength and world floor sliders, and connection
 diagnostics online. Players never see any of this; strength and floor are
 fixed for them.
+
+`#/score-review`, linked from nowhere, is for tuning the scoring: a set of
+28 made-up guesses at place-name questions (`score-review.ts`: on the
+answer, near it, far off, spread wide, hedged or scattered, seeded by the
+set number so every playtester sees the same ones), each with the answer
+and the score it gets under the practice kernel. The playtester says
+whether the score is fair, from much too low to much too high (keys 1 to 5,
+then Enter), optionally with what it should be and why. Verdicts stay in the
+browser until exported as JSON lines, each carrying its case in the
+`scoring-case.ts` format, so it can be re-scored as the scoring changes.

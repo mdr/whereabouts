@@ -1,7 +1,8 @@
 /**
  * Tiny hash router: "#/", "#/solo", "#/game/CODE", "#/game/new", and
- * "#/game/new/CODE" to host a game under a code no game has now. A query
- * string after the path ("#/solo?dev") is ignored here; see dev.ts.
+ * "#/game/new/CODE" to host a game under a code no game has now; and
+ * "#/score-review", linked from nowhere, for playtesters. A query string
+ * after the path ("#/solo?dev") is ignored here; see dev.ts.
  */
 import { signal } from "@preact/signals"
 import { roomCode, type RoomCode } from "@whereabouts/shared"
@@ -9,12 +10,14 @@ import { roomCode, type RoomCode } from "@whereabouts/shared"
 export type Route =
   | { name: "home" }
   | { name: "solo" }
+  | { name: "score-review" }
   | { name: "game"; code: RoomCode | undefined; create: true }
   | { name: "game"; code: RoomCode; create: false }
 
 export function parseRoute(hash: string): Route {
   const path = hash.replace(/^#/, "").replace(/\?.*$/, "")
   if (path === "/solo") return { name: "solo" }
+  if (path === "/score-review") return { name: "score-review" }
   if (path === "/game/new") return { name: "game", code: undefined, create: true }
   const again = /^\/game\/new\/([A-Z0-9]{4,6})$/i.exec(path)
   if (again) return { name: "game", code: roomCode(again[1]!.toUpperCase()), create: true }

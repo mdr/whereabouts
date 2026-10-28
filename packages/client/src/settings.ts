@@ -10,7 +10,8 @@ import {
   RoomCodeSchema,
   playerToken,
   type PlayerName,
-  type PlayerToken
+  type PlayerToken,
+  type ScoreVerdict
 } from "@whereabouts/shared"
 
 /** A stored value that fails `schema`, such as one an older version wrote, starts from the initial value. */
@@ -93,6 +94,9 @@ export const soundOn = persisted("wa.sound", z.stringbool(), true)
  * read, so each value is checked before it is used.
  */
 export const hostSetup = persistedJson<unknown>("wa.hostSetup", {})
+/** The score review's set of guesses (see score-review.ts), and the verdicts given on this browser. */
+export const reviewSet = persistedJson<number>("wa.reviewSet", 1)
+export const scoreVerdicts = persistedJson<ScoreVerdict[]>("wa.scoreVerdicts", [])
 
 /**
  * Reconnect token. Session storage so two tabs in one browser are two

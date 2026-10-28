@@ -2,6 +2,7 @@ import type { Page } from "playwright-core"
 import { HomePage } from "./HomePage.ts"
 import { JoinAsPage } from "./JoinAsPage.ts"
 import { PracticeRoundPage } from "./PracticeRoundPage.ts"
+import { ScoreReviewPage } from "./ScoreReviewPage.ts"
 
 /** One player's browser tab: where each test starts, and what it opens first. */
 export class Tab {
@@ -24,6 +25,11 @@ export class Tab {
   async openHome(): Promise<HomePage> {
     await this.#open("/")
     return HomePage.whenShown(this)
+  }
+
+  async openScoreReview(): Promise<ScoreReviewPage> {
+    await this.#open("/score-review")
+    return ScoreReviewPage.whenShown(this)
   }
 
   async openPractice(): Promise<PracticeRoundPage> {

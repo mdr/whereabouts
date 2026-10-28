@@ -12,6 +12,7 @@ describe("parseRoute", () => {
 
   it("recognises solo, new-game and home", () => {
     expect(parseRoute("#/solo")).toEqual({ name: "solo" })
+    expect(parseRoute("#/score-review")).toEqual({ name: "score-review" })
     expect(parseRoute("#/game/new")).toEqual({ name: "game", code: undefined, create: true })
     expect(parseRoute("#/game/new/vwzr")).toEqual({ name: "game", code: "VWZR", create: true })
     expect(parseRoute("")).toEqual({ name: "home" })
