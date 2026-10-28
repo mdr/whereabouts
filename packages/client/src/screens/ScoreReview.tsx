@@ -6,7 +6,7 @@
  * line of JSON each, every one carrying its cases so they can be re-scored
  * as the scoring changes. Linked from nowhere.
  */
-import { useEffect, useMemo, useState } from "preact/hooks"
+import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import {
   QUESTIONS,
   REVIEW_VERSION,
@@ -95,7 +95,13 @@ function Review({ pools }: { pools: ReviewPools }) {
   }
   const [index, setIndex] = useState(() => firstOpen(0) ?? 0)
   useEffect(() => setIndex(firstOpen(0) ?? 0), [set])
-  const [choice, setChoice] = useState<Choice | undefined>(undefined)
+  const [choice, setChoiceState] = useState<Choice | undefined>(undefined)
+  // Read by submit, so Enter straight after a number key sees the new choice before a render.
+  const chosen = useRef<Choice | undefined>(undefined)
+  const setChoice = (c: Choice | undefined) => {
+    chosen.current = c
+    setChoiceState(c)
+  }
   const [shouldBe, setShouldBe] = useState("")
   const [note, setNote] = useState("")
   /** In a pair, the one guess shown alone: pinned by a click, or under the mouse. */
@@ -143,6 +149,7 @@ function Review({ pools }: { pools: ReviewPools }) {
   }, [hovered, pinned])
 
   const submit = async () => {
+    const choice = chosen.current
     if (choice === undefined) return
     const base = {
       version: REVIEW_VERSION,

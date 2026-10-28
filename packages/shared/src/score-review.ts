@@ -3,16 +3,17 @@
  * screen) where a playtester says whether scores are fair. Each guess is
  * one kind the scoring has to weigh: on the answer, near it, far off,
  * spread wide, hedged; for a place painted whole, all of it, part of it,
- * spilling over its edge, or its neighbour. Most cases are one guess to
+ * spilling over its edge, or its neighbour. Painted in brush strokes, unevenly,
+ * as people paint. Most cases are one guess to
  * judge on its own; some are two at the same answer, to say which deserves
  * more. Seeded by the set number, so everyone reviewing a set sees the same.
  */
 import { EARTH_RADIUS_KM, greatCircleDistance, type LatLon } from "./geo.ts"
-import { cellToLatLng } from "./h3.ts"
+import { UNITS, cellArea, cellToLatLng } from "./h3.ts"
 import { seededUnit } from "./hints.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { shuffle, type Question } from "./questions.ts"
-import { regionCells, scoreRegionQuestion, type RegionQuestion } from "./regions.ts"
+import { insideRegion, regionCells, scoreRegionQuestion, type RegionQuestion } from "./regions.ts"
 import { encodeCase, type ScoringCase } from "./scoring-case.ts"
 import { buildDistribution, scoreDistribution, type Kernel } from "./scoring.ts"
 
@@ -23,7 +24,7 @@ export type GuessKind = (typeof POINT_GUESSES)[number] | (typeof REGION_GUESSES)
 /** The practice default: what the guesses would score with. */
 export const REVIEW_FLOOR = 0.05
 /** Changes when the same set number would give different cases, so verdicts on the old ones stay apart. */
-export const REVIEW_VERSION = 2
+export const REVIEW_VERSION = 3
 
 export type ReviewQuestion = Question | RegionQuestion
 
@@ -103,9 +104,18 @@ function paintGuess(q: ReviewQuestion, kind: GuessKind, rnd: () => number): Revi
   const between = (lo: number, hi: number) => lo + (hi - lo) * rnd()
   const t = q.toleranceKm
   const layer = new PaintLayer(resolutionForTolerance(t))
-  /** A blob `at` tolerances from the answer in a random direction, `radius` tolerances across. */
-  const blob = (at: number, radius: number, strength = 1) =>
-    layer.stamp(offset(q.answer, at * t, rnd() * 360), radius * t, strength)
+  /** A rough patch `radius` tolerances across, `at` tolerances from the answer in a random direction. */
+  const blob = (at: number, radius: number, strength = 1) => {
+    const centre = offset(q.answer, at * t, rnd() * 360)
+    const r = radius * t
+    scribble(layer, rnd, {
+      sample: () => offset(centre, r * Math.sqrt(rnd()), rnd() * 360),
+      inside: (p) => greatCircleDistance(centre, p) <= r,
+      areaKm2: Math.PI * r * r,
+      brushKm: Math.max(0.3 * t, r * between(0.45, 0.7)),
+      strength
+    })
+  }
   if (q.kind !== "region") {
     pointGuess(kind, blob, between, rnd)
     return { kind, layer }
@@ -113,25 +123,35 @@ function paintGuess(q: ReviewQuestion, kind: GuessKind, rnd: () => number): Revi
   // A region's tolerance is a fifth of its radius: R is about its radius.
   const R = 5
   const cells = regionCells(q, layer.res)
-  const whole = (v: number) => layer.addCoat(cells, v)
+  const centres = cells.map((h) => {
+    const [lat, lon] = cellToLatLng(h)
+    return { lat, lon }
+  })
+  const cellKm2 = cells.length > 0 ? cellArea(cells[0]!, UNITS.km2) : 0
+  /** Brush strokes over the region, or the part of it `keep` allows, `acrossKm` in radius. */
+  const shape = (strength: number, keep: (p: LatLon) => boolean = () => true, acrossKm = R * t) => {
+    const kept = centres.filter(keep)
+    const from = kept.length > 0 ? kept : [q.answer]
+    scribble(layer, rnd, {
+      sample: () => from[Math.floor(rnd() * from.length)]!,
+      inside: (p) => keep(p) && insideRegion(q, p),
+      areaKm2: Math.max(kept.length * cellKm2, Math.PI * t * t),
+      brushKm: between(0.2, 0.32) * acrossKm,
+      strength
+    })
+  }
   switch (kind) {
     case "whole":
-      whole(1)
+      shape(1)
       break
     case "part": {
-      const [lat, lon] = cellToLatLng(cells[Math.floor(rnd() * cells.length)]!)
+      const from = centres[Math.floor(rnd() * centres.length)] ?? q.answer
       const reach = between(0.4, 0.8) * R * t
-      layer.addCoat(
-        cells.filter((h) => {
-          const [hLat, hLon] = cellToLatLng(h)
-          return greatCircleDistance({ lat, lon }, { lat: hLat, lon: hLon }) <= reach
-        }),
-        1
-      )
+      shape(1, (p) => greatCircleDistance(from, p) <= reach, reach)
       break
     }
     case "spill":
-      whole(1)
+      shape(1)
       blob(between(0.8, 1.2) * R, between(0.4, 0.7) * R)
       break
     case "centre":
@@ -148,7 +168,7 @@ function paintGuess(q: ReviewQuestion, kind: GuessKind, rnd: () => number): Revi
       break
     case "hedge": {
       const share = [0.3, 0.5, 0.7][Math.floor(rnd() * 3)]!
-      whole(share)
+      shape(share)
       blob(between(4, 8) * R, 0.8 * R, 1 - share)
       break
     }
@@ -156,6 +176,40 @@ function paintGuess(q: ReviewQuestion, kind: GuessKind, rnd: () => number): Revi
       throw new Error(`${kind} is not a guess at a region`)
   }
   return { kind, layer }
+}
+
+/** Enough dabs for the biggest patch without making a set slow to paint. */
+const MAX_DABS = 600
+
+interface Patch {
+  /** A point to start a stroke from. */
+  sample: () => LatLon
+  /** Whether a point is in what the hand is aiming to cover. */
+  inside: (p: LatLon) => boolean
+  areaKm2: number
+  brushKm: number
+  strength: number
+}
+
+/**
+ * Cover a patch as a hand would: wandering strokes of dabs that vary in
+ * size and weight, about two coats in all, so some places get more and a
+ * few none. A stroke that runs over the edge leaves a dab there before turning
+ * back, so the paint overshoots the outline in places and misses others.
+ */
+function scribble(layer: PaintLayer, rnd: () => number, patch: Patch): void {
+  const step = 0.7 * patch.brushKm
+  let dabs = Math.min(MAX_DABS, Math.ceil((patch.areaKm2 / (1.5 * step * patch.brushKm)) * (1.8 + 0.8 * rnd())))
+  while (dabs > 0) {
+    let at = patch.sample()
+    let heading = rnd() * 360
+    for (let k = 6 + Math.floor(rnd() * 14); k > 0 && dabs > 0; k--, dabs--) {
+      layer.stamp(at, patch.brushKm * (0.85 + 0.3 * rnd()), patch.strength * (0.75 + 0.35 * rnd()))
+      heading += (rnd() - 0.5) * 60
+      at = offset(at, step, heading)
+      if (!patch.inside(at)) heading += 140 + rnd() * 80
+    }
+  }
 }
 
 function pointGuess(

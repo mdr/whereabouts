@@ -140,7 +140,7 @@ export function regionCells(q: RegionQuestion, res: H3Res): H3Cell[] {
 const boxes = new WeakMap<RegionQuestion, [number, number, number, number]>()
 
 /** Whether a point is inside a region's outline: inside an odd number of each polygon's rings. */
-function inside(q: RegionQuestion, { lat, lon }: LatLon): boolean {
+export function insideRegion(q: RegionQuestion, { lat, lon }: LatLon): boolean {
   let box = boxes.get(q)
   if (!box) {
     const points = q.outline.flatMap((polygon) => polygon[0]!)
@@ -169,7 +169,7 @@ function inside(q: RegionQuestion, { lat, lon }: LatLon): boolean {
  */
 export function roundsOverlap(a: Question | RegionQuestion, b: Question | RegionQuestion): boolean {
   if (a.kind !== "region" && b.kind !== "region") return greatCircleDistance(a.answer, b.answer) <= MIN_SPREAD_KM
-  return (a.kind === "region" && inside(a, b.answer)) || (b.kind === "region" && inside(b, a.answer))
+  return (a.kind === "region" && insideRegion(a, b.answer)) || (b.kind === "region" && insideRegion(b, a.answer))
 }
 
 const answers = new Map<string, RegionAnswer>()
