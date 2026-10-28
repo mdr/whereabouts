@@ -82,9 +82,17 @@ checks.check(
   "the reveal marks who used a hint"
 )
 
-// Everyone's paint shows together; then Bob looks at Alice's alone, hides all, and brings it back.
+// Everyone's paint shows together; Bob hovers Alice's name, then looks at her paint alone, hides all, and brings it back.
 const everyone = await bobRevealPage.map.shownPaintCells()
 await bobRevealPage.screenshot(`${out}/mp-3b-reveal-everyone.png`)
+await bobRevealPage.hoverPlayer("Alice")
+const hoveringAlice = await bobRevealPage.map.shownPaintCells()
+await bobRevealPage.stopHovering()
+const afterHover = await bobRevealPage.map.shownPaintCells()
+checks.check(
+  hoveringAlice > 0 && hoveringAlice < everyone && afterHover === everyone,
+  `hovering Alice's name shows her paint alone (${hoveringAlice} cells), then everyone's again (${afterHover})`
+)
 await bobRevealPage.showOnly("Alice")
 const alicesOnly = await bobRevealPage.map.shownPaintCells()
 checks.check(alicesOnly > 0 && alicesOnly < everyone, `Alice's paint alone (${alicesOnly} of ${everyone} cells)`)

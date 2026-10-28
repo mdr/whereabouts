@@ -62,6 +62,18 @@ export class RevealPage extends Screen {
     await this.map.waitUntilSettled()
   }
 
+  /** Rest the mouse on this player's name. */
+  async hoverPlayer(name: string): Promise<void> {
+    await byTestIdWith(this.page, revealTestIds.playerRow, "player", name).hover()
+    await this.map.waitUntilSettled()
+  }
+
+  /** Move the mouse off the scores, onto the map. */
+  async stopHovering(): Promise<void> {
+    await this.map.hover({ across: 0.5, down: 0.5 })
+    await this.map.waitUntilSettled()
+  }
+
   /** Hide everyone's paint, or bring it back if hidden. */
   async toggleHidePaint(): Promise<void> {
     await this.page.getByTestId(revealTestIds.hidePaintRow).click()

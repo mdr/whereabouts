@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "preact/hooks"
+import { useEffect, useMemo, useState } from "preact/hooks"
 import { signal } from "@preact/signals"
 import {
   buildDistribution,
@@ -78,6 +78,8 @@ export function Reveal({
   const byId = new Map(view.players.map((p) => [p.id, p]))
   const selected = revealShown.value
   const setSelected = (s: string | undefined) => (revealShown.value = s)
+  /** A player row under the mouse: their paint alone, until the mouse moves off. */
+  const [hovered, setHovered] = useState<string | undefined>(undefined)
   useEffect(
     () => () => {
       revealShown.value = undefined
@@ -110,15 +112,23 @@ export function Reveal({
 
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
-  useEffect(() => {
-    const entries = [...shownResults(reveal.results, selected)].reverse().flatMap((r) => {
+  const layersOf = (shown: string | undefined) =>
+    [...shownResults(reveal.results, shown)].reverse().flatMap((r) => {
       const p = byId.get(r.playerId)
       return p && r.paint ? [{ layer: PaintLayer.fromRecord(r.res, r.paint.cells), colour: colourCss(p.colour) }] : []
     })
-    const fc = paint.showLayers(entries)
+  useEffect(() => {
+    const fc = paint.showLayers(layersOf(selected))
     if (region) paint.gameMap.fitRegionAndPaint(reveal.answer, region.outline, fc, reveal.question.toleranceKm)
     else paint.gameMap.fitAnswerAndPaint(reveal.answer, fc, reveal.question.toleranceKm)
   }, [selected, reveal.index, region])
+  // Not framed: the map would jump about as the mouse crosses the rows.
+  useEffect(() => {
+    if (hovered === undefined) return
+    paint.showLayers(layersOf(hovered))
+    return () => paint.showLayers(layersOf(selected))
+  }, [hovered, selected, reveal.index])
+  useEffect(() => setHovered(undefined), [reveal.index])
 
   const mine = reveal.results.find((r) => r.playerId === view.you.id)
   const myDist = useMemo(
@@ -209,6 +219,7 @@ export function Reveal({
                   where={where.get(p.id)}
                   answerFlag={answerFlag}
                   onSelect={() => setSelected(selected === p.id ? undefined : p.id)}
+                  onHover={(on) => setHovered(on && r?.paint ? p.id : undefined)}
                   onKick={
                     view.you.isHost && p.id !== view.you.id
                       ? () => ask(kickRequest(p.name, () => conn.kick(p.id)))
@@ -298,6 +309,7 @@ function RevealRow({
   where,
   answerFlag,
   onSelect,
+  onHover,
   onKick
 }: {
   p: PlayerView
@@ -309,6 +321,8 @@ function RevealRow({
   where: PaintedCountry | undefined
   answerFlag?: string
   onSelect: () => void
+  /** The mouse coming onto the row or leaving it. Not a touch, which would leave it on. */
+  onHover: (on: boolean) => void
   /** Host only: remove this player. */
   onKick?: () => void
 }) {
@@ -317,6 +331,8 @@ function RevealRow({
     <li
       class={`${selected ? "selected" : ""} ${you ? "you" : ""} ${where ? "with-where" : ""}`}
       onClick={onSelect}
+      onPointerEnter={(e) => e.pointerType === "mouse" && onHover(true)}
+      onPointerLeave={(e) => e.pointerType === "mouse" && onHover(false)}
       data-testid={revealTestIds.playerRow}
       data-player={p.name}
     >
