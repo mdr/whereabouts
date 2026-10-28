@@ -60,7 +60,7 @@ function persistedJson<T>(key: string, initial: T) {
 
 /** The name as last typed, which may not yet be one a game accepts (see nameToJoin). */
 export const savedName = persisted("wa.name", z.string(), "")
-export const cheatLiveScore = persisted("wa.cheat", z.stringbool(), false)
+export const cheatLiveScore = persisted("wa.cheat", z.stringbool(), true)
 /**
  * Practice scores with the same kernel as games unless the dev drawer picks
  * another. A new key: "wa.kernel" was written on every visit while practice
