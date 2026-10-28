@@ -281,8 +281,6 @@ const postcard = await until(
   (p) => p !== undefined
 )
 checks.check(postcard !== undefined, `the answer's photo shows, its postcard back from ${postcard}`)
-const why = (await headset.menu()).why
-checks.check((why ?? "").length > 20, `and why it scored that (${why})`)
 checks.check(!(await headset.toolsHeld()), "the hands put the can and eraser away for the answer")
 checks.check(
   await until(

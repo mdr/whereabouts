@@ -113,7 +113,6 @@ export class Headset {
     more: { label: string; enabled: boolean }[]
     heading: string
     mode: string | undefined
-    why: string | undefined
     note: string | undefined
   }> {
     return this.#page.evaluate(() => window.whereaboutsVr.menuShown)

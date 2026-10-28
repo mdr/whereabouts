@@ -345,8 +345,7 @@ same limits: under 10,000 km², or too scattered, a place is asked as a point.
   largest islands. State lines never show while guessing, even on the
   Political map; the reveal draws them.
 
-The Fill tool is off for these rounds, since it fills countries. The reveal
-explains a miss by the coast or shore rather than the border.
+The Fill tool is off for these rounds, since it fills countries.
 
 ## Data
 

@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "preact/hooks"
+import { useEffect, useRef, useState } from "preact/hooks"
 import {
   PaintLayer,
-  buildDistribution,
   compactRecord,
   colourCss,
-  kernelById,
   type Fact,
   type GameView,
   type HintAxis,
@@ -13,7 +11,6 @@ import {
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { AnswerMode, Card, Countdown, HudHeader, QuestionCard, RegionHint, answerModeText } from "../ui/bits"
-import { pointWhy, regionWhy } from "../ui/ScoreWhy"
 import { hostActions, pickable, takeSeat, vrPicked } from "../vr-actions"
 import { navigate } from "../router"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
@@ -161,25 +158,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   // The room's code, so everyone in the game sees the same one.
   const fact = useFact(view.reveal?.wiki, view.code, view.reveal?.index ?? 0)
 
-  // Your score explained, for the headset: the page works it out in Reveal.
-  const revealed = view.reveal
-  const mine = revealed?.results.find((r) => r.playerId === view.you.id)
-  const why = useMemo(() => {
-    if (!revealed || !mine?.paint) return undefined
-    const dist = buildDistribution(PaintLayer.fromRecord(mine.res, mine.paint.cells).toCells(), mine.paint.floor)
-    if (revealed.question.regionId !== undefined) return region && regionWhy(dist, region)
-    return pointWhy({
-      dist,
-      answer: revealed.answer,
-      toleranceKm: revealed.question.toleranceKm,
-      score: mine.score,
-      A: mine.A,
-      B: mine.B,
-      kernel: kernelById(view.config.kernelId)
-    })
-  }, [revealed?.index, mine?.playerId, region])
-
-  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, region, fact, why })
+  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, region, fact })
   useVrView(vrView, `${view.phase} ${roundKey}`)
 
   if (view.phase === "reveal" && view.reveal) {
@@ -299,15 +278,13 @@ function gameVrView(
     timeUp,
     sittingOut,
     region,
-    fact,
-    why
+    fact
   }: {
     lockIn: () => void
     timeUp: boolean
     sittingOut: boolean
     region: RegionQuestion | undefined
     fact: Fact | undefined
-    why: string | undefined
   }
 ): VrView {
   const question = (view.round ?? view.reveal)!.question
@@ -385,7 +362,6 @@ function gameVrView(
       focus: reveal.answer,
       stateRound: question.topic === "state",
       fact: fact?.text,
-      why,
       scoreLine: mine
         ? `${mine.paint ? "" : "Passed: "}${pts(mine.score)} this round, ${pts(me?.score ?? 0)} in all`
         : "You sat this one out",

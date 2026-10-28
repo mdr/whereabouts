@@ -122,8 +122,6 @@ export interface VrReveal {
   /** A line of interest about the answer. */
   fact?: string
   scoreLine: string
-  /** What the paint risked and what the distance cost, or what kept it from the country's shape. */
-  why?: string
   /** The paint shown in players' colours, as the score table picks it; your own paint when absent. */
   paints?: { layer: PaintLayer; colour: string }[]
   table?: VrTable
@@ -531,7 +529,6 @@ export class Vr {
     more: { label: string; enabled: boolean }[]
     heading: string
     mode: string | undefined
-    why: string | undefined
     note: string | undefined
   } {
     const view = this.view
@@ -545,7 +542,6 @@ export class Vr {
       more: (view?.more ?? []).slice(0, MORE).map(shown),
       heading: view ? this.heading(view) : "",
       mode: round?.mode,
-      why: view?.kind === "reveal" ? view.reveal.why : undefined,
       note: view && this.note(view)
     }
   }
@@ -1007,11 +1003,9 @@ export class Vr {
     if (reveal?.flags) text("flagsLabel", reveal.flags.on ? "Hide all flags" : "Show all flags")
     if (round) text("prompt", round.prompt)
     show("fact", reveal?.fact !== undefined)
-    show("why", reveal?.why !== undefined)
     if (reveal) {
       text("prompt", reveal.label)
       text("score", reveal.scoreLine)
-      if (reveal.why !== undefined) text("why", reveal.why)
       if (reveal.fact !== undefined) text("fact", reveal.fact)
     }
     if (summary) {

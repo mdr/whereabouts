@@ -71,7 +71,6 @@ import { useFillTool } from "../fill"
 import { preloadPictures } from "../preload"
 import { HintCard } from "../ui/Hint"
 import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
-import { PointWhy, RegionWhy, pointWhy, regionWhy } from "../ui/ScoreWhy"
 import { navigate } from "../router"
 import { sound } from "../sound"
 import { soloTestIds } from "./SoloTestIds"
@@ -297,21 +296,6 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     const { score, parts } = scoreQuestion(revealed.dist, q, kernel)
     return { score, parts }
   }, [revealed, kernel.id])
-  const why = useMemo(() => {
-    if (!revealed?.dist || !shownResult) return undefined
-    if (isRegion(q)) return regionWhy(revealed.dist, q)
-    if (!("A" in shownResult.parts)) return undefined
-    const { A, B } = shownResult.parts
-    return pointWhy({
-      dist: revealed.dist,
-      answer: q.answer,
-      toleranceKm: q.toleranceKm,
-      score: shownResult.score,
-      A,
-      B,
-      kernel
-    })
-  }, [shownResult])
   const home = { label: "Home", press: () => navigate("/") }
   const vrRound: VrRound = {
     paint,
@@ -351,7 +335,6 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               focus: q.answer,
               stateRound,
               fact: fact?.text,
-              why,
               scoreLine: `${revealed.dist ? "" : "Passed: "}${pts(revealed.result.score)} this round, ${pts(total)} in all`,
               table: roundsTable(results),
               actions: [{ label: index + 1 >= questions.length ? "Finish" : "Next question", press: next }],
@@ -473,21 +456,6 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
                 {Math.round(shownResult.score)}
               </div>
               <div class="label">{dist ? "this round" : "you passed this round"}</div>
-              {!dist ? undefined : isRegion(q) ? (
-                <RegionWhy dist={dist} q={q} />
-              ) : (
-                "A" in shownResult.parts && (
-                  <PointWhy
-                    dist={dist}
-                    answer={q.answer}
-                    toleranceKm={q.toleranceKm}
-                    score={shownResult.score}
-                    A={shownResult.parts.A}
-                    B={shownResult.parts.B}
-                    kernel={kernel}
-                  />
-                )
-              )}
               {where && (
                 <div class="fit">
                   Your paint: <PaintedIn where={where} answer={q.flag} whose="your" />

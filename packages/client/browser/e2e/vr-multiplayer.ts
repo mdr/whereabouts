@@ -195,8 +195,6 @@ checks.check(hidden.selected, "Hide paint hides all paint")
 const back = await pick("Everyone", (n) => n === everyone)
 checks.check(back.selected, "Everyone brings it all back")
 
-const why = (await headset.menu()).why
-checks.check((why ?? "").length > 20, `the reveal says why Alice scored what she did (${why})`)
 const actions = (await headset.menu()).actions.map((a) => a.label)
 checks.check(actions.join() === "Ready,Next round", `the host is offered Ready and Next round (${actions.join(", ")})`)
 await aliceRound.pause(1500)
