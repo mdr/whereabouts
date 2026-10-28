@@ -45,6 +45,9 @@ interface Candidate extends Award {
 const BOOBY = true
 const PRIZE = false
 
+/** The end of a round that counts as the last second: 5 s, less in short rounds. */
+const lastSeconds = (roundSeconds: number) => Math.min(5, roundSeconds / 6)
+
 export function pickAwards(players: PlayerFacts[], seed: number): Award[] {
   const all = shuffle([...soloAwards(players), ...gameAwards(players), ...pairAwards(players)], seed)
   // Two booby prizes to every real one, while both last.
@@ -198,7 +201,9 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
   }
 
   const slow = top(players, (p) => {
-    const n = painted(p).filter((r) => r.lockSeconds === undefined || r.roundSeconds - r.lockSeconds < 5).length
+    const n = painted(p).filter(
+      (r) => r.lockSeconds === undefined || r.roundSeconds - r.lockSeconds < lastSeconds(r.roundSeconds)
+    ).length
     return n >= 2 ? n : undefined
   })
   if (slow) add(BOOBY, "⏰", "Last-Second Merchant", slow.item.playerId, `{0} made everyone wait. ${slow.value} times.`)

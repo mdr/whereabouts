@@ -71,7 +71,7 @@ export const RenameSchema = z.object({ name: PlayerNameSchema })
 export const KickSchema = z.object({ playerId: PlayerIdSchema })
 
 /** Round lengths the host may pick, ms. */
-export const ROUND_LENGTHS_MS = [30_000, 45_000, 60_000, 90_000, 120_000] as const
+export const ROUND_LENGTHS_MS = [10_000, 20_000, 30_000, 45_000, 60_000, 90_000, 120_000] as const
 export const MIN_ROUNDS = 1
 export const MAX_ROUNDS = 15
 /** Players in one game, one per player colour. */

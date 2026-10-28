@@ -174,7 +174,7 @@ pnpm workspace with three packages:
   8 rounds. A strip of coloured cells, one per round,
   shows the mix to host and guests; the rounds come in a random order, and no
   country is asked twice. A setup saved before the mix is converted to one.
-  The host also picks the round length (30, 45, 60, 90 or 120 seconds, as
+  The host also picks the round length (10, 20, 30, 45, 60, 90 or 120 seconds, as
   pills) and the map detail while guessing, from
   four picture choices (each a preview of the same frame, made by
   `scripts/map-detail-previews.mjs`): Minimal (coastlines only, the

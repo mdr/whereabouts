@@ -2072,7 +2072,7 @@ button.danger.solid {
 }
 .pills button {
   border-radius: 999px;
-  padding: 6px 13px;
+  padding: 6px 10px;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }

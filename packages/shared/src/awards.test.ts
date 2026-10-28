@@ -54,6 +54,16 @@ describe("pickAwards", () => {
     expect(pickAwards(dull, 1)).toEqual([])
   })
 
+  it("leaves a short round's last seconds to the end of it", () => {
+    const at = (lockSeconds: number) => round(500, { lockSeconds, roundSeconds: 10 })
+    const titles = (rounds: RoundFacts[]) =>
+      SEEDS.flatMap((seed) => pickAwards([player("a", rounds), player("b", [round(500), round(500)])], seed)).map(
+        (a) => a.title
+      )
+    expect(titles([at(6), at(7)])).not.toContain("Last-Second Merchant")
+    expect(titles([at(9), at(9)])).toContain("Last-Second Merchant")
+  })
+
   it("names a confident miss, with the distance", () => {
     const miss = round(60, {
       label: "Tokyo",
