@@ -282,14 +282,14 @@ pnpm workspace with three packages:
   separately against that source and a second one; overstated ones were
   reworded and unsupported ones dropped. `pickFact` alternates notable and
   trivia by round, seeded by the room's code so everyone sees the same line.
-  A place-name, island, lake or sea round, which shows no photo while
+  A place-name, island, lake, sea or US state round, which shows no photo while
   guessing, shows one at the reveal from `photos.json`: one Wikimedia
   Commons file per article, chosen by looking at the candidates to show a
   famous landmark or a recognisable view of the place, landscape and at
   least 1,600px wide, and checked to exist.
   It is loaded with the round's other pictures, shows on the final results
   in place of a pin, and in the headset its postcard back names the place
-  and tells the fact. Flag rounds keep just their flag.
+  and tells the fact. Country and flag rounds keep just their flag.
   A game draws the host's share of photo
   and text questions, topping up from the other kind if one runs short
   (`pickQuestions`), in a shuffled order, preferring questions at least
