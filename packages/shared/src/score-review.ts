@@ -1,80 +1,190 @@
 /**
  * Made-up guesses at real questions, for the score review (a hidden dev
- * screen) where a playtester says whether each score is fair. Each is one
- * kind of guess the scoring has to weigh: on the answer, near it, far off,
- * spread wide, or hedged between places. Seeded by the set number, so
- * everyone reviewing a set sees the same guesses.
+ * screen) where a playtester says whether scores are fair. Each guess is
+ * one kind the scoring has to weigh: on the answer, near it, far off,
+ * spread wide, hedged; for a place painted whole, all of it, part of it,
+ * spilling over its edge, or its neighbour. Most cases are one guess to
+ * judge on its own; some are two at the same answer, to say which deserves
+ * more. Seeded by the set number, so everyone reviewing a set sees the same.
  */
-import { EARTH_RADIUS_KM, type LatLon } from "./geo.ts"
+import { EARTH_RADIUS_KM, greatCircleDistance, type LatLon } from "./geo.ts"
+import { cellToLatLng } from "./h3.ts"
 import { seededUnit } from "./hints.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
-import { QUESTIONS, shuffle, type Question } from "./questions.ts"
+import { shuffle, type Question } from "./questions.ts"
+import { regionCells, scoreRegionQuestion, type RegionQuestion } from "./regions.ts"
+import { encodeCase, type ScoringCase } from "./scoring-case.ts"
+import { buildDistribution, scoreDistribution, type Kernel } from "./scoring.ts"
 
-export const GUESS_KINDS = ["bullseye", "close", "near-miss", "far-miss", "wide", "hedge", "scattered"] as const
-export type GuessKind = (typeof GUESS_KINDS)[number]
+export const POINT_GUESSES = ["bullseye", "close", "near-miss", "far-miss", "wide", "hedge", "scattered"] as const
+export const REGION_GUESSES = ["whole", "part", "spill", "centre", "neighbour", "far-miss", "wide", "hedge"] as const
+export type GuessKind = (typeof POINT_GUESSES)[number] | (typeof REGION_GUESSES)[number]
 
-export const REVIEW_SET_SIZE = 28
 /** The practice default: what the guesses would score with. */
 export const REVIEW_FLOOR = 0.05
+/** Changes when the same set number would give different cases, so verdicts on the old ones stay apart. */
+export const REVIEW_VERSION = 2
 
-export interface ReviewCase {
-  question: Question
-  guess: GuessKind
+export type ReviewQuestion = Question | RegionQuestion
+
+export interface ReviewGuess {
+  kind: GuessKind
   layer: PaintLayer
 }
 
-/** Blobs as [distance from the answer, radius] in tolerances, and strength. */
-interface Blob {
-  at: number
-  radius: number
-  strength: number
+export type ReviewCase =
+  | { kind: "single"; question: ReviewQuestion; guess: ReviewGuess }
+  | { kind: "pair"; question: ReviewQuestion; guesses: [ReviewGuess, ReviewGuess] }
+
+export interface ReviewPools {
+  places: Question[]
+  countries: RegionQuestion[]
+  /** Islands, lakes and seas. */
+  features: ReviewQuestion[]
+  states: ReviewQuestion[]
 }
 
-export function reviewCases(set: number): ReviewCase[] {
-  const questions = shuffle(QUESTIONS, set * 7919 + 1).slice(0, REVIEW_SET_SIZE)
-  const kinds = shuffle(
-    questions.map((_, i) => GUESS_KINDS[i % GUESS_KINDS.length]!),
-    set * 104729 + 3
-  )
-  return questions.map((question, i) => {
-    let n = 0
-    const rnd = () => seededUnit(set, i, n++)
-    const between = (lo: number, hi: number) => lo + (hi - lo) * rnd()
-    const guess = kinds[i]!
-    const layer = new PaintLayer(resolutionForTolerance(question.toleranceKm))
-    for (const b of blobs(guess, between, rnd)) {
-      const at = offset(question.answer, b.at * question.toleranceKm, rnd() * 360)
-      layer.stamp(at, b.radius * question.toleranceKm, b.strength)
-    }
-    return { question, guess, layer }
+/** Cases a set holds from each pool: single guesses, then pairs. */
+const MIX: [keyof ReviewPools, number, number][] = [
+  ["places", 8, 2],
+  ["countries", 6, 2],
+  ["features", 5, 2],
+  ["states", 5, 2]
+]
+
+export const REVIEW_SET_SIZE = MIX.reduce((n, [, singles, pairs]) => n + singles + pairs, 0)
+
+export function reviewCases(set: number, pools: ReviewPools): ReviewCase[] {
+  const cases: ReviewCase[] = []
+  MIX.forEach(([pool, singles, pairs], p) => {
+    const questions = shuffle(pools[pool], set * 7919 + p).slice(0, singles + pairs)
+    questions.forEach((question, i) => {
+      let n = 0
+      const rnd = () => seededUnit(set, p, i, n++)
+      const kinds = shuffle([...guessesFor(question)], set * 104729 + p * 31 + i)
+      if (i < singles) cases.push({ kind: "single", question, guess: paintGuess(question, kinds[0]!, rnd) })
+      else
+        cases.push({
+          kind: "pair",
+          question,
+          guesses: [paintGuess(question, kinds[0]!, rnd), paintGuess(question, kinds[1]!, rnd)]
+        })
+    })
+  })
+  return shuffle(cases, set * 15485863)
+}
+
+const guessesFor = (q: ReviewQuestion) => (q.kind === "region" ? REGION_GUESSES : POINT_GUESSES)
+
+/** A guess's score, as practice would give it. */
+export function scoreGuess(q: ReviewQuestion, layer: PaintLayer, kernel: Kernel): Pick<ScoringCase, "score" | "parts"> {
+  const dist = buildDistribution(layer.toCells(), REVIEW_FLOOR)
+  if (q.kind === "region") {
+    const { score, shape, nearness } = scoreRegionQuestion(dist, q)
+    return { score, parts: { shape, nearness } }
+  }
+  const { score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, kernel)
+  return { score, parts: { A, B } }
+}
+
+/** A guess and its score as a scoring case's text, for the export. */
+export function guessCase(q: ReviewQuestion, layer: PaintLayer, kernel: Kernel): Promise<string> {
+  return encodeCase({
+    question: { kind: q.kind, id: q.id, label: q.label, answer: q.answer, toleranceKm: q.toleranceKm },
+    kernel: q.kind === "region" ? "region" : kernel.id,
+    floor: REVIEW_FLOOR,
+    res: layer.res,
+    ...scoreGuess(q, layer, kernel),
+    cells: layer.toRecord()
   })
 }
 
-function blobs(kind: GuessKind, between: (lo: number, hi: number) => number, rnd: () => number): Blob[] {
+function paintGuess(q: ReviewQuestion, kind: GuessKind, rnd: () => number): ReviewGuess {
+  const between = (lo: number, hi: number) => lo + (hi - lo) * rnd()
+  const t = q.toleranceKm
+  const layer = new PaintLayer(resolutionForTolerance(t))
+  /** A blob `at` tolerances from the answer in a random direction, `radius` tolerances across. */
+  const blob = (at: number, radius: number, strength = 1) =>
+    layer.stamp(offset(q.answer, at * t, rnd() * 360), radius * t, strength)
+  if (q.kind !== "region") {
+    pointGuess(kind, blob, between, rnd)
+    return { kind, layer }
+  }
+  // A region's tolerance is a fifth of its radius: R is about its radius.
+  const R = 5
+  const cells = regionCells(q, layer.res)
+  const whole = (v: number) => layer.addCoat(cells, v)
   switch (kind) {
-    case "bullseye":
-      return [{ at: between(0, 0.3), radius: between(0.5, 1), strength: 1 }]
-    case "close":
-      return [{ at: between(0.5, 1.5), radius: between(0.4, 0.8), strength: 1 }]
-    case "near-miss":
-      return [{ at: between(2, 4), radius: between(0.5, 1.5), strength: 1 }]
+    case "whole":
+      whole(1)
+      break
+    case "part": {
+      const [lat, lon] = cellToLatLng(cells[Math.floor(rnd() * cells.length)]!)
+      const reach = between(0.4, 0.8) * R * t
+      layer.addCoat(
+        cells.filter((h) => {
+          const [hLat, hLon] = cellToLatLng(h)
+          return greatCircleDistance({ lat, lon }, { lat: hLat, lon: hLon }) <= reach
+        }),
+        1
+      )
+      break
+    }
+    case "spill":
+      whole(1)
+      blob(between(0.8, 1.2) * R, between(0.4, 0.7) * R)
+      break
+    case "centre":
+      blob(0, between(0.4, 0.8) * R)
+      break
+    case "neighbour":
+      blob(between(1.5, 2.5) * R, between(0.5, 1) * R)
+      break
     case "far-miss":
-      return [{ at: between(6, 20), radius: between(0.5, 2), strength: 1 }]
+      blob(between(6, 15) * R, between(0.5, 1) * R)
+      break
     case "wide":
-      return [{ at: between(0, 3), radius: between(4, 10), strength: 1 }]
+      blob(between(0, 1) * R, between(3, 5) * R)
+      break
     case "hedge": {
       const share = [0.3, 0.5, 0.7][Math.floor(rnd() * 3)]!
-      return [
-        { at: between(0, 1), radius: 1, strength: share },
-        { at: between(4, 10), radius: 1, strength: 1 - share }
-      ]
+      whole(share)
+      blob(between(4, 8) * R, 0.8 * R, 1 - share)
+      break
+    }
+    default:
+      throw new Error(`${kind} is not a guess at a region`)
+  }
+  return { kind, layer }
+}
+
+function pointGuess(
+  kind: GuessKind,
+  blob: (at: number, radius: number, strength?: number) => void,
+  between: (lo: number, hi: number) => number,
+  rnd: () => number
+): void {
+  switch (kind) {
+    case "bullseye":
+      return blob(between(0, 0.3), between(0.5, 1))
+    case "close":
+      return blob(between(0.5, 1.5), between(0.4, 0.8))
+    case "near-miss":
+      return blob(between(2, 4), between(0.5, 1.5))
+    case "far-miss":
+      return blob(between(6, 20), between(0.5, 2))
+    case "wide":
+      return blob(between(0, 3), between(4, 10))
+    case "hedge": {
+      const share = [0.3, 0.5, 0.7][Math.floor(rnd() * 3)]!
+      blob(between(0, 1), 1, share)
+      return blob(between(4, 10), 1, 1 - share)
     }
     case "scattered":
-      return Array.from({ length: 3 + Math.floor(rnd() * 3) }, () => ({
-        at: between(0, 12),
-        radius: between(0.5, 1.5),
-        strength: between(0.5, 1)
-      }))
+      for (let i = 3 + Math.floor(rnd() * 3); i > 0; i--) blob(between(0, 12), between(0.5, 1.5), between(0.5, 1))
+      return
+    default:
+      throw new Error(`${kind} is not a guess at a point`)
   }
 }
 
@@ -90,18 +200,34 @@ function offset(from: LatLon, km: number, bearingDeg: number): LatLon {
   return { lat: (lat2 * 180) / Math.PI, lon: (((lon2 * 180) / Math.PI + 540) % 360) - 180 }
 }
 
-/** A playtester's verdict on one score, as the review exports it (one JSON object a line). */
-export interface ScoreVerdict {
+interface VerdictBase {
+  /** REVIEW_VERSION when given; absent on the first version's. */
+  version?: number
   set: number
   index: number
-  guess: GuessKind
-  /** Much too low (-2) to much too high (2). */
-  verdict: -2 | -1 | 0 | 1 | 2
-  /** What they think it should have scored. */
-  shouldBe?: number
   note?: string
   /** When, as an ISO date. */
   at: string
-  /** The question, paint, kernel and the score shown, as encodeCase writes them. */
-  case: string
 }
+
+/**
+ * A playtester's verdict, as the review exports it (one JSON object a line).
+ * Each carries its cases as encodeCase writes them, with the score shown,
+ * so it can be re-scored as the scoring changes.
+ */
+export type ScoreVerdict =
+  | (VerdictBase & {
+      guess: GuessKind
+      /** Much too low (-2) to much too high (2). */
+      verdict: -2 | -1 | 0 | 1 | 2
+      /** What they think it should have scored. */
+      shouldBe?: number
+      case: string
+    })
+  | (VerdictBase & {
+      pair: true
+      guesses: [GuessKind, GuessKind]
+      /** A clearly deserves more (-2) to B clearly does (2). */
+      prefer: -2 | -1 | 0 | 1 | 2
+      cases: [string, string]
+    })

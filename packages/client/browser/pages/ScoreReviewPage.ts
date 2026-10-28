@@ -10,7 +10,7 @@ export class ScoreReviewPage extends Screen {
 
   static async whenShown(tab: Tab): Promise<ScoreReviewPage> {
     const review = new ScoreReviewPage(tab)
-    await tab.page.getByTestId(scoreReviewTestIds.score).waitFor()
+    await tab.page.getByTestId(scoreReviewTestIds.progress).waitFor()
     await review.map.waitUntilSettled()
     return review
   }
@@ -20,11 +20,40 @@ export class ScoreReviewPage extends Screen {
     this.map = new MapPanel(tab.page)
   }
 
+  /** A single guess's score. */
   async score(): Promise<string> {
     return text(this.page.getByTestId(scoreReviewTestIds.score))
   }
 
-  /** "3 of 28 judged in this set." */
+  /** Whether this case is two guesses to compare. */
+  async isPair(): Promise<boolean> {
+    return (await this.page.getByTestId(scoreReviewTestIds.pair).count()) > 0
+  }
+
+  /** A pair's two scores, A then B. */
+  async pairScores(): Promise<string[]> {
+    return this.page.getByTestId(scoreReviewTestIds.pairScore).allTextContents()
+  }
+
+  /** Rest the mouse on guess A (0) or B (1) of a pair. */
+  async hoverGuess(i: 0 | 1): Promise<void> {
+    await this.page.getByTestId(scoreReviewTestIds.pair).locator("li").nth(i).hover()
+    await this.map.waitUntilSettled()
+  }
+
+  /** Move the mouse off the cards, onto the map. */
+  async stopHovering(): Promise<void> {
+    await this.map.hover({ across: 0.5, down: 0.5 })
+    await this.map.waitUntilSettled()
+  }
+
+  /** Skip to the next case without judging this one. */
+  async skip(): Promise<void> {
+    await this.page.getByRole("button", { name: "Skip" }).click()
+    await this.map.waitUntilSettled()
+  }
+
+  /** "3 of 32 judged in this set." */
   async progress(): Promise<string> {
     return text(this.page.getByTestId(scoreReviewTestIds.progress))
   }

@@ -488,11 +488,16 @@ diagnostics online. Players never see any of this; strength and floor are
 fixed for them.
 
 `#/score-review`, linked from nowhere, is for tuning the scoring: a set of
-28 made-up guesses at place-name questions (`score-review.ts`: on the
-answer, near it, far off, spread wide, hedged or scattered, seeded by the
-set number so every playtester sees the same ones), each with the answer
-and the score it gets under the practice kernel. The playtester says
-whether the score is fair, from much too low to much too high (keys 1 to 5,
-then Enter), optionally with what it should be and why. Verdicts stay in the
-browser until exported as JSON lines, each carrying its case in the
-`scoring-case.ts` format, so it can be re-scored as the scoring changes.
+32 made-up guesses (`score-review.ts`) at place names, countries, islands,
+lakes and seas, and US states, seeded by the set number so every playtester
+sees the same ones. A guess at a point is on the answer, near it, far off,
+spread wide, hedged or scattered; one at a place painted whole is all of
+it, part of it, spilling over its edge, a blob in its middle, its
+neighbour, far off, wide or hedged. Most cases are one guess, with the
+answer and the score practice would give it: the playtester says whether
+the score is fair, from much too low to much too high (keys 1 to 5, then
+Enter), optionally with what it should be and why. Eight are two guesses at
+the same answer in two colours, both scores shown, and the playtester says
+which deserves more. Verdicts stay in the browser until exported as JSON
+lines, each carrying its cases in the `scoring-case.ts` format, so they can
+be re-scored as the scoring changes.
