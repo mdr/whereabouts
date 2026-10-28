@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { QUESTIONS } from "./questions.ts"
 import { REVEAL_PHOTOS, revealPhoto } from "./photos.ts"
+import { regionFrom, type RegionData } from "./regions.ts"
 import regionsJson from "../regions.json" with { type: "json" }
 import featuresJson from "../features.json" with { type: "json" }
 
@@ -30,6 +31,10 @@ describe("the reveal photos", () => {
 
   it("give every island, lake, sea and US state round a photo", () => {
     for (const f of featuresJson as { wiki: string }[]) expect(REVEAL_PHOTOS[f.wiki], f.wiki).toBeDefined()
+  })
+
+  it("show no photo on a country round, which shows the flag", () => {
+    for (const q of (regionsJson as RegionData[]).map(regionFrom)) expect(revealPhoto(q), q.label).toBeUndefined()
   })
 
   it("leave photo rounds their own photo", () => {

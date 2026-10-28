@@ -9,8 +9,12 @@ import photosJson from "../photos.json" with { type: "json" }
  */
 export const REVEAL_PHOTOS: Readonly<Record<string, string>> = photosJson
 
-/** The photo for a round's reveal: none on a photo round, which has its own, or a flag round, which shows the flag. */
+/**
+ * The photo for a round's reveal: none on a photo round, which has its own,
+ * or a country or flag round, which shows the flag.
+ */
 export function revealPhoto(q: Question | RegionQuestion): string | undefined {
   if (q.kind === "photo" || q.flag || q.wiki === undefined) return undefined
+  if (q.kind === "region" && q.topic === undefined) return undefined
   return REVEAL_PHOTOS[q.wiki]
 }
