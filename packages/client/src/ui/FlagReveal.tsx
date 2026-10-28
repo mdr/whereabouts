@@ -46,7 +46,10 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
         flag.style.backgroundPosition = `${-cell[0] * w}px ${-cell[1] * h}px`
       }
       el.append(flag)
-      return new Marker({ element: el, anchor: "bottom-left" }).setLngLat([at.lon, at.lat]).addTo(gameMap.map)
+      // On the far side of the globe, hidden rather than faded.
+      return new Marker({ element: el, anchor: "bottom-left", opacityWhenCovered: "0" })
+        .setLngLat([at.lon, at.lat])
+        .addTo(gameMap.map)
     })
     return () => {
       for (const m of markers) m.remove()
