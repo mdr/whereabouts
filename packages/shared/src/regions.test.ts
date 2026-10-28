@@ -11,9 +11,11 @@ import {
   UNITS
 } from "./h3.ts"
 import regionsJson from "../regions.json" with { type: "json" }
+import featuresJson from "../features.json" with { type: "json" }
 import { resolutionForTolerance } from "./paint.ts"
 import { QUESTIONS } from "./questions.ts"
 import {
+  roundsOverlap,
   regionCells,
   type RegionData,
   regionFit,
@@ -278,5 +280,22 @@ describe("coarsenDistribution", () => {
       const diff = Math.abs(scoreDistribution(coarse, answer, tol).score - scoreDistribution(d, answer, tol).score)
       expect(diff).toBeLessThan(5)
     }
+  })
+})
+
+describe("roundsOverlap", () => {
+  const gaborone = QUESTIONS.find((q) => q.wiki === "Gaborone")!
+  const paris = QUESTIONS.find((q) => q.wiki === "Paris")!
+
+  it("finds a place inside a country, and not one far away", () => {
+    expect(roundsOverlap(gaborone, byId("botswana-region"))).toBe(true)
+    expect(roundsOverlap(byId("botswana-region"), gaborone)).toBe(true)
+    expect(roundsOverlap(paris, byId("botswana-region"))).toBe(false)
+  })
+
+  it("finds an island inside a country, but not neighbouring countries", () => {
+    const honshu = (featuresJson as RegionData[]).find((q) => q.label === "Honshu")!
+    expect(roundsOverlap(regionFrom(honshu), byId("japan-region"))).toBe(true)
+    expect(roundsOverlap(byId("france-region"), byId("germany-region"))).toBe(false)
   })
 })

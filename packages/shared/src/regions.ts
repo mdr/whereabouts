@@ -35,7 +35,7 @@ import {
   type H3Res
 } from "./h3.ts"
 import { bearing, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
-import { questionFrom, type Question, type QuestionData, type Topic } from "./questions.ts"
+import { MIN_SPREAD_KM, questionFrom, type Question, type QuestionData, type Topic } from "./questions.ts"
 import { flagCode, regionId, type FlagCode, type RegionId } from "./ids.ts"
 import { resolutionForTolerance } from "./paint.ts"
 import {
@@ -135,6 +135,41 @@ export function regionCells(q: RegionQuestion, res: H3Res): H3Cell[] {
   const cells = new Set<H3Cell>()
   for (const polygon of q.outline) for (const h of polygonToCells(polygon, res, true)) cells.add(h)
   return [...cells]
+}
+
+const boxes = new WeakMap<RegionQuestion, [number, number, number, number]>()
+
+/** Whether a point is inside a region's outline: inside an odd number of each polygon's rings. */
+function inside(q: RegionQuestion, { lat, lon }: LatLon): boolean {
+  let box = boxes.get(q)
+  if (!box) {
+    const points = q.outline.flatMap((polygon) => polygon[0]!)
+    const lons = points.map(([x]) => x!)
+    const lats = points.map(([, y]) => y!)
+    box = [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)]
+    boxes.set(q, box)
+  }
+  if (lon < box[0] || lat < box[1] || lon > box[2] || lat > box[3]) return false
+  return q.outline.some((polygon) => {
+    let odd = false
+    for (const ring of polygon)
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const [x1, y1] = ring[i]!
+        const [x2, y2] = ring[j]!
+        if (y1! > lat !== y2! > lat && lon < x1! + ((lat - y1!) * (x2! - x1!)) / (y2! - y1!)) odd = !odd
+      }
+    return odd
+  })
+}
+
+/**
+ * Whether two rounds ask about the same part of the world: one's answer
+ * inside the other's outline (Gaborone and Botswana, Honshu and Japan), or
+ * two places close together.
+ */
+export function roundsOverlap(a: Question | RegionQuestion, b: Question | RegionQuestion): boolean {
+  if (a.kind !== "region" && b.kind !== "region") return greatCircleDistance(a.answer, b.answer) <= MIN_SPREAD_KM
+  return (a.kind === "region" && inside(a, b.answer)) || (b.kind === "region" && inside(b, a.answer))
 }
 
 const answers = new Map<string, RegionAnswer>()

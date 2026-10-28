@@ -6,7 +6,7 @@
 import { DEFAULT_KERNEL, PASS_SCORE, buildDistribution, kernelById, scoreDistribution, type Kernel } from "./scoring.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { pickQuestions, shuffle, type Question } from "./questions.ts"
-import { regionFit, regionMisfit, scoreRegionQuestion, type RegionQuestion } from "./regions.ts"
+import { regionFit, regionMisfit, scoreRegionQuestion, roundsOverlap, type RegionQuestion } from "./regions.ts"
 import { explainPoint, isHedge } from "./explain.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
 import { flagRound, type FlagQuestion } from "./flags.ts"
@@ -287,8 +287,9 @@ export class Game {
    * last, in a shuffled order. Landmarks and place names come from the pool
    * through pickQuestions (so a game of only those is exactly what it picks);
    * the rest from their own lists, never a country already asked another way
-   * ("Where is Monaco?" and Monaco's flag, say). Lakes only on a map that
-   * shows them.
+   * ("Where is Monaco?" and Monaco's flag, say), and where the lists allow,
+   * none overlapping a round already chosen. Lakes only on a map that shows
+   * them.
    */
   private pickRounds(): (Question | RegionQuestion)[] {
     const { landmarks, places, countries, flags, features, states } = this.config.mix
@@ -297,11 +298,17 @@ export class Game {
     if (countries + flags + features + states === 0) return picked
     const asked = new Set(picked.map((q) => q.label))
     const fresh = (q: Question | RegionQuestion) => !asked.has(q.id) && !asked.has(q.label)
+    const chosen: (Question | RegionQuestion)[] = [...picked]
     const take = (from: (Question | RegionQuestion)[], salt: number, count: number) => {
-      const out = shuffle(from, this.seed ^ salt)
-        .filter(fresh)
-        .slice(0, count)
-      for (const q of out) asked.add(q.id).add(q.label)
+      const candidates = shuffle(from, this.seed ^ salt).filter(fresh)
+      const out: (Question | RegionQuestion)[] = []
+      while (out.length < count && candidates.length > 0) {
+        const apart = candidates.findIndex((q) => !chosen.some((c) => roundsOverlap(c, q)))
+        const q = candidates.splice(Math.max(apart, 0), 1)[0]!
+        out.push(q)
+        chosen.push(q)
+        asked.add(q.id).add(q.label)
+      }
       return out
     }
     const lakes = showsLakes(this.config.mapDetail)

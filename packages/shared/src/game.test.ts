@@ -991,6 +991,16 @@ describe("the question mix", () => {
     expect(questions(g).map((q) => q.prompt)).toEqual(["Where is Monaco?"])
   })
 
+  it("keeps a place's country out of the same game when another country will do", () => {
+    const gaborone = QUESTIONS.find((q) => q.wiki === "Gaborone")!
+    const botswana = REGIONS.find((q) => q.id === "botswana-region")!
+    for (let seed = 1; seed <= 10; seed++) {
+      const g = new Game(CODE, [gaborone], { mix: mix(0, 1, 1) }, seed, [botswana, germany])
+      g.join(tokA, playerName("Alice"), T0)
+      expect(questions(g).map((q) => q.prompt)).toContain("Paint the whole of Germany")
+    }
+  })
+
   it("scores a country round against the outline; a pass still scores 250", () => {
     const g = game({ mix: mix(0, 0, 1) }, [germany])
     g.start(tokA, T0)

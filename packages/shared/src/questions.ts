@@ -2,7 +2,7 @@ import { greatCircleDistance, type LatLon } from "./geo.ts"
 import { flagCode, questionId, type FlagCode, type QuestionId } from "./ids.ts"
 
 /** Two questions in one game should be at least this far apart when the pool allows. */
-const MIN_SPREAD_KM = 50
+export const MIN_SPREAD_KM = 50
 
 /** What an "Islands, lakes & seas" or "US states" round asks for (features.json). */
 export type Topic = "island" | "lake" | "sea" | "state"
