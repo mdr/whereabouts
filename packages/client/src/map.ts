@@ -105,6 +105,12 @@ export class GameMap {
       touchPitch: false,
       ...options
     })
+    // A phone is too narrow for the usual view to show the whole world.
+    if (options.zoom === undefined && matchMedia(PHONE).matches) {
+      const zoom = this.worldZoom()
+      this.map.setMinZoom(Math.min(1, zoom))
+      this.map.jumpTo({ zoom })
+    }
     // Bottom-left keeps the buttons clear of the HUD cards and the toolbar.
     this.map.addControl(new NavigationControl({ showCompass: false }), "bottom-left")
     this.map.keyboard.disableRotation()
@@ -673,13 +679,17 @@ export class GameMap {
   }
 
   /**
-   * The zoom of the whole-world view. A globe is sized to the map: in the
+   * The zoom of the whole-world view. On a phone the flat map fits the
+   * world's width to the screen. A globe is sized to the map: in the
    * camera's perspective a sphere of radius R px, seen from f px away, shows
    * a disc of radius f tan(asin(R / (f + R))).
    */
   private worldZoom(lat = WORLD_CENTER[1]): number {
-    if (!this.globe) return WORLD_ZOOM
     const el = this.map.getContainer()
+    if (!this.globe) {
+      if (!matchMedia(PHONE).matches) return WORLD_ZOOM
+      return Math.min(WORLD_ZOOM, Math.log2(el.clientWidth / WORLD_PX_Z0))
+    }
     const disc = GLOBE_FILL * Math.min(el.clientWidth, el.clientHeight)
     const f = el.clientHeight / 2 / Math.tan((this.map.getVerticalFieldOfView() * Math.PI) / 360)
     const sin = disc / Math.hypot(f, disc)
@@ -706,9 +716,10 @@ export class GameMap {
     const box = boxAround(paint.features, answerBox)
     const padding = this.revealPadding()
     if (box[2] - box[0] > 300) {
-      // Spans most of the world; just show it all.
+      // Spans most of the world; just show it all, at the answer's latitude in case the world is taller than the view.
       const zoom = this.globe ? this.worldZoom(20) : this.map.getMinZoom()
-      void this.map.easeTo({ center: [answer.lon, 20], zoom, offset: offsetFor(padding), duration: 900 })
+      const lat = this.globe ? 20 : answer.lat
+      void this.map.easeTo({ center: [answer.lon, lat], zoom, offset: offsetFor(padding), duration: 900 })
       return
     }
     const camera = this.map.cameraForBounds(bounds(box), { padding, maxZoom: 10 })
@@ -734,12 +745,16 @@ export class GameMap {
 
   /**
    * Where the reveal's cards leave the map clear: between the cards on the
-   * left and right and above the toolbar, or on a phone, between the header
-   * and the sheet.
+   * left and right and above the toolbar, or on a phone, between the
+   * question card and the sheet.
    */
   private revealPadding(): Required<maplibregl.PaddingOptions> {
     const { clientWidth: w, clientHeight: h } = this.map.getContainer()
-    if (matchMedia(PHONE).matches) return { top: 64, bottom: h * (1 - SHEET_TOP) + 16, left: 24, right: 24 }
+    if (matchMedia(PHONE).matches) {
+      // Below the header and the question card (--question-h, from the card).
+      const card = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--question-h")) || 0
+      return { top: 64 + card + 8, bottom: h * (1 - SHEET_TOP) + 16, left: 24, right: 24 }
+    }
     // A narrow window has less room beside the cards than they take.
     const side = Math.min(340, w * 0.3)
     return { top: 40, bottom: 90, left: side, right: side }

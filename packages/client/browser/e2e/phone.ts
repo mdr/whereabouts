@@ -29,6 +29,8 @@ async function fits(screen: Screen, label: string): Promise<void> {
 const aliceHomePage = await (await newTab(browser, "Alice")).openHome()
 await aliceHomePage.enterName("Alice")
 const aliceLobbyPage = await aliceHomePage.hostGame()
+// Photos make the tallest question card.
+await aliceLobbyPage.setOnlyQuestions("landmarks", 2)
 const code = await aliceLobbyPage.code()
 
 const bobHomePage = await (
@@ -46,6 +48,17 @@ checks.check(await bobRoundPage.doneButtonIsUsable(), "ingame: the Done button i
 checks.check(await bobRoundPage.paintTools.toolIsUsable("pan"), "ingame: the Pan tool is usable")
 checks.check(await bobRoundPage.map.attributionIsUsable(), "ingame: the map attribution button is usable")
 checks.check(await bobRoundPage.map.attributionClearsToolbar(), "ingame: the attribution button clears the toolbar")
+checks.check(await bobRoundPage.hud.questionFoldIsUsable(), "ingame: the question's fold button is usable")
+const unfoldedPx = await bobRoundPage.hud.questionHeight()
+await bobRoundPage.hud.toggleQuestionFold()
+const foldedPx = await bobRoundPage.hud.questionHeight()
+await fits(bobRoundPage, "ingame-folded")
+checks.check(foldedPx < unfoldedPx, `ingame: folding shrinks the question (${unfoldedPx} to ${foldedPx} px)`)
+await bobRoundPage.hud.toggleQuestionFold()
+checks.check(
+  (await bobRoundPage.hud.questionHeight()) === unfoldedPx,
+  "ingame: unfolding brings the whole question back"
+)
 
 // One finger on the strip of map left clear (a photo makes the question card tall).
 await bobRoundPage.map.fingerDrag(await bobRoundPage.map.spotClearOfCards())
@@ -62,7 +75,11 @@ const aliceRevealPage = await aliceRoundPage.waitForReveal(60_000)
 const bobRevealPage = await bobRoundDonePage.waitForReveal(60_000)
 await bobRevealPage.pause(1500)
 await fits(bobRevealPage, "reveal")
-checks.check(await bobRevealPage.answerShowsAboveSheet(), "reveal: the answer shows on the map above the cards")
+checks.check(await bobRevealPage.answerLineIsUsable(), "reveal: the question card at the top names the answer")
+checks.check(await bobRevealPage.answerShowsAboveSheet(), "reveal: the answer shows on the map between the cards")
+await bobRevealPage.hud.toggleQuestionFold()
+await fits(bobRevealPage, "reveal-unfolded")
+await bobRevealPage.hud.toggleQuestionFold()
 checks.check(await bobRevealPage.scoreIsUsable(), "reveal: your score is on screen")
 checks.check(await bobRevealPage.readyButtonIsUsable(), "reveal: the Ready button is usable")
 checks.check(await bobRevealPage.scoresAreUsable(), "reveal: the scores list is usable")

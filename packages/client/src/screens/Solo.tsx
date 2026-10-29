@@ -258,13 +258,18 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     setPhase("reveal")
     paint.enabled.value = false
     showAnswer(paint.gameMap, q)
+  }
+
+  // Framed after the reveal's cards are in place: on a phone the map frames the answer around them.
+  useEffect(() => {
+    if (phase !== "reveal") return
     if (isRegion(q)) {
       // Frame the country and the paint together, wherever the paint went.
       paint.gameMap.fitRegionAndPaint(q.answer, q.outline, paint.layer.toGeoJSON(), q.toleranceKm)
     } else {
       paint.gameMap.focusOn(q.answer, q.toleranceKm)
     }
-  }
+  }, [phase, index])
 
   function next() {
     if (index + 1 >= questions.length) {
@@ -447,7 +452,14 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
         <div class="hud reveal">
           <div class="hud-top">
             {header}
-            <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined} credit photo={revealPhoto(q)}>
+            <QuestionCard
+              q={q}
+              countryFlag={isRegion(q) ? q.countryFlag : undefined}
+              credit
+              photo={revealPhoto(q)}
+              foldable
+              startFolded
+            >
               <Answer label={q.label} wiki={q.wiki} />
               <FactLine fact={fact} />
             </QuestionCard>
@@ -489,7 +501,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
       <div class="hud">
         <div class="hud-top">
           {header}
-          <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined} credit>
+          <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined} credit foldable>
             {q.flag ? <AnswerMode area={isRegion(q)} /> : isRegion(q) && <RegionHint topic={q.topic} />}
           </QuestionCard>
           <HintCard band={hint} onUse={useHint} />

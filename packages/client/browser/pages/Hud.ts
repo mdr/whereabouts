@@ -7,7 +7,7 @@ import {
 import { hostControlsTestIds } from "../../src/ui/HostControlsTestIds.ts"
 import { ConfirmDialog } from "./ConfirmDialog.ts"
 import { ResultsPage } from "./ResultsPage.ts"
-import { text } from "./support.ts"
+import { isUsable, text } from "./support.ts"
 import type { Tab } from "./Tab.ts"
 
 /** What sits over the map on every game screen: the header strip, the question, the host's End game. */
@@ -42,6 +42,20 @@ export class Hud {
 
   async questionHasPhoto(): Promise<boolean> {
     return (await this.#tab.page.getByTestId(questionCardTestIds.photo).count()) > 0
+  }
+
+  /** Phones only: fold the question card down to its prompt, or open it out again. */
+  async toggleQuestionFold(): Promise<void> {
+    await this.#tab.page.getByTestId(questionCardTestIds.foldButton).click()
+  }
+
+  async questionFoldIsUsable(): Promise<boolean> {
+    return isUsable(this.#tab.page.getByTestId(questionCardTestIds.foldButton))
+  }
+
+  /** The question card's height on screen, in CSS pixels. */
+  async questionHeight(): Promise<number> {
+    return (await this.#tab.page.getByTestId(questionCardTestIds.card).boundingBox())?.height ?? 0
   }
 
   /** Host only: ending the game early asks first. */

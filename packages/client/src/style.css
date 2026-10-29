@@ -133,6 +133,9 @@ body {
 .toolbar .brush input {
   width: 120px;
 }
+.toolbar .history {
+  display: contents;
+}
 .toolbar button.primary {
   padding-left: 18px;
   padding-right: 18px;
@@ -168,6 +171,12 @@ body {
 .hud-header .nowrap,
 .hud-header .total {
   white-space: nowrap;
+}
+/* Keeps the header to one line on the narrowest phones. */
+@container hud (max-width: 380px) {
+  .hud-header .round-word {
+    display: none;
+  }
 }
 .hud-header .countdown {
   font-size: 20px;
@@ -397,6 +406,32 @@ button.icon:hover {
 }
 .card.question .prompt:last-child {
   margin-bottom: 0;
+}
+/* Folding is for small screens, where the card takes much of the map. */
+.card.question .fold-toggle {
+  display: none;
+}
+@media (max-width: 640px), (max-height: 500px) {
+  .card.question.foldable {
+    position: relative;
+  }
+  .card.question .fold-toggle {
+    display: block;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    padding: 8px;
+  }
+  .card.question.foldable .prompt {
+    padding-right: 32px;
+  }
+  /* The answer, at the reveal, stays. */
+  .card.question.folded > :not(.prompt, .fold-toggle, .answer) {
+    display: none;
+  }
+  .card.question.folded .prompt {
+    margin-bottom: 0;
+  }
 }
 .card.question .thumb {
   position: relative;
@@ -737,6 +772,8 @@ select {
   position: absolute;
   inset: 0;
   display: grid;
+  /* Never wider than the screen, even for an unbreakable name in the standings. */
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   background: radial-gradient(ellipse at top, #223040 0%, #0f1215 65%);
   color: var(--panel-fg);
@@ -1161,10 +1198,14 @@ button.big {
   border-bottom: none;
 }
 .round-list .round-label {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 4.5em;
+  overflow-wrap: break-word;
 }
+/* On a narrow phone the winner's name gives way to the round's label. */
 .round-winner {
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1172,11 +1213,16 @@ button.big {
   font-variant-numeric: tabular-nums;
 }
 .round-winner .winner-name {
+  min-width: 0;
   max-width: 6em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--muted);
+}
+.round-winner .tied,
+.round-winner b {
+  flex: none;
 }
 .round-winner .tied {
   color: var(--muted);
@@ -1479,7 +1525,8 @@ button.icon.make-host:hover {
 }
 /* No keyboard to speak of on phones and touch-only tablets. */
 @media (hover: none), (max-width: 640px) {
-  .toolbar .shortcuts-button {
+  .toolbar .shortcuts-button,
+  button kbd {
     display: none;
   }
 }
@@ -1624,6 +1671,53 @@ button.danger.solid {
   color: #fff;
 }
 
+/* Where the cards would overrun their column (a phone, upright or on its
+   side), the photo or flag gives up height so the hints below stay on screen. */
+.hud:not(.reveal) .hud-top > * {
+  flex-shrink: 0;
+}
+.hud:not(.reveal) .hud-top > .card.question {
+  flex-shrink: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.hud:not(.reveal) .card.question .thumb {
+  flex: 0 1 auto;
+  min-height: 64px;
+  aspect-ratio: 16 / 10;
+}
+.hud:not(.reveal) .card.question .thumb-button {
+  position: absolute;
+  inset: 0;
+}
+.hud:not(.reveal) .card.question .thumb img {
+  height: 100%;
+  aspect-ratio: auto;
+}
+.hud:not(.reveal) .card.question .flag {
+  flex: 0 1 165px;
+  min-height: 56px;
+  width: auto;
+  max-width: 100%;
+}
+@media (max-height: 500px) {
+  .hud-header .round-word {
+    display: none;
+  }
+  /* The round's score before the question, which is already known. */
+  .hud.reveal .hud-top > .hud-header {
+    order: -2;
+  }
+  .hud.reveal .hud-top > .card.score {
+    order: -1;
+  }
+  /* Pinch zoom covers the +/- buttons, which would sit under the cards. */
+  #map .maplibregl-ctrl-bottom-left .maplibregl-ctrl:not(.globe-ctrl) {
+    display: none;
+  }
+}
+
 /* ---- phones ---------------------------------------------------------------
    Below this width the two 300px side columns cannot both fit, and the paint
    toolbar (about 750px in one row) would force the layout viewport wider than
@@ -1652,6 +1746,23 @@ button.danger.solid {
   .hud-right {
     max-height: 30%;
   }
+  /* End game sits beside the players pill, so the pair takes one row of the map. */
+  .hud:not(.reveal) .hud-right {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: flex-start;
+  }
+  .hud:not(.reveal) .hud-right .end-game {
+    order: -1;
+    align-self: auto;
+  }
+  .hud:not(.reveal) .hud-right:has(.players-panel.open) {
+    max-height: 60%;
+  }
+  .players-panel.open {
+    width: 100%;
+  }
   .hud-bottom {
     position: static;
     transform: none;
@@ -1677,9 +1788,14 @@ button.danger.solid {
     margin: 0;
   }
   .toolbar .brush {
-    flex: 1 1 120px;
-    border-right: 0;
-    padding-right: 0;
+    flex: 1 1 100px;
+    border: 0;
+    padding: 0 0 0 4px;
+  }
+  /* Undo and redo wrap as a pair. */
+  .toolbar .history {
+    display: flex;
+    gap: 6px;
   }
   .toolbar .brush input {
     width: 100%;
@@ -1689,10 +1805,8 @@ button.danger.solid {
   .toolbar button.keep-editing {
     flex: 1 1 auto;
   }
-  .players-panel {
-    width: 100%;
-  }
-  .card.question .thumb img {
+  .card.question .thumb img,
+  .hud:not(.reveal) .card.question .thumb {
     aspect-ratio: 2 / 1;
   }
   /* The round score reads as one line instead of a tall card. */
@@ -1724,8 +1838,10 @@ button.danger.solid {
 }
 
 /*
- * A phone's reveal: the map shows the answer in the top half (SHEET_TOP in
- * map.ts) and the cards make one sheet below it, scrolling up over the map.
+ * A phone's reveal: the question card stays at the top, where it was while
+ * guessing, now with the answer; the map shows the answer below it, in the
+ * top half (SHEET_TOP in map.ts); the other cards make one sheet below that,
+ * scrolling up over the map.
  * The HUD itself scrolls; it still lets touches through to the map where
  * there is no card.
  */
@@ -1751,15 +1867,19 @@ button.danger.solid {
     position: sticky;
     top: 0;
     z-index: 1;
-    order: -2;
+    order: -3;
     flex: none;
-    margin-bottom: calc(50svh - var(--hud-gap) - 44px);
+  }
+  /* The gap below it leaves the sheet starting halfway down, whatever the card's height. */
+  .hud.reveal .card.question {
+    order: -2;
+    margin-bottom: max(0px, calc(50svh - var(--hud-gap) - 54px - var(--question-h, 0px)));
   }
   .hud.reveal > * > .card,
   .hud.reveal > * > .end-game {
     flex: none;
   }
-  /* What you scored first, then what the answer was. */
+  /* The sheet opens with what you scored. */
   .hud.reveal .card.score {
     order: -1;
     display: grid;
@@ -2157,6 +2277,15 @@ button.danger.solid {
 @media (max-width: 760px) {
   .lobby-cols {
     grid-template-columns: 1fr;
+  }
+  /* Start stays in reach below the setup, however far it scrolls. */
+  .lobby-start {
+    position: sticky;
+    bottom: 0;
+    margin: 0 -16px -16px;
+    padding: 10px 16px 16px;
+    background: linear-gradient(transparent, #262b32 14px);
+    border-radius: 0 0 10px 10px;
   }
   /* One card of panels is enough on a phone: drop the outer one. */
   .home-card.lobby {

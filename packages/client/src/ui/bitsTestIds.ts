@@ -14,7 +14,9 @@ export const soundToggleTestIds = {
 export const questionCardTestIds = {
   card: "QuestionCard.card",
   prompt: "QuestionCard.prompt",
-  photo: "QuestionCard.photo"
+  photo: "QuestionCard.photo",
+  foldButton: "QuestionCard.foldButton",
+  answer: "QuestionCard.answer"
 }
 
 export const factTestIds = {

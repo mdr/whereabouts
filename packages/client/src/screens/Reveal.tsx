@@ -155,7 +155,14 @@ export function Reveal({
               </span>
             }
           />
-          <QuestionCard q={reveal.question} credit countryFlag={region?.countryFlag} photo={reveal.photo}>
+          <QuestionCard
+            q={reveal.question}
+            credit
+            countryFlag={region?.countryFlag}
+            photo={reveal.photo}
+            foldable
+            startFolded
+          >
             <Answer label={reveal.label} wiki={reveal.wiki} />
             <FactLine fact={fact} />
           </QuestionCard>
@@ -214,7 +221,7 @@ export function Reveal({
                 <span class="name">Hide paint</span>
               </li>
             </ul>
-            <p class="hint">Click a player to see just their guess.</p>
+            <p class="hint">Pick a player to see just their guess.</p>
           </Card>
           {/* Where it is while guessing too, and away from Next round below. */}
           {view.you.isHost && !last && <EndGameButton onEnd={() => conn.end()} />}

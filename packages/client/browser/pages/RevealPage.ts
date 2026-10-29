@@ -1,5 +1,5 @@
 import { revealTestIds } from "../../src/screens/RevealTestIds.ts"
-import { factTestIds, hudHeaderTestIds } from "../../src/ui/bitsTestIds.ts"
+import { factTestIds, questionCardTestIds } from "../../src/ui/bitsTestIds.ts"
 import { Hud } from "./Hud.ts"
 import { MapPanel } from "./MapPanel.ts"
 import { ResultsPage } from "./ResultsPage.ts"
@@ -141,11 +141,16 @@ export class RevealPage extends Screen {
     return isUsable(this.page.getByTestId(revealTestIds.scoreCard))
   }
 
-  /** On a phone, whether the answer shows in full on the map between the header and the sheet of cards. */
+  /** On a phone, whether the answer shows in full on the map between the question card and the sheet of cards. */
   async answerShowsAboveSheet(): Promise<boolean> {
-    const header = await this.page.getByTestId(hudHeaderTestIds.header).boundingBox()
+    const question = await this.page.getByTestId(questionCardTestIds.card).boundingBox()
     const sheet = await this.page.getByTestId(revealTestIds.scoreCard).boundingBox()
-    if (!header || !sheet) return false
-    return (await this.map.answerShareBetween(header.y + header.height, sheet.y)) === 1
+    if (!question || !sheet) return false
+    return (await this.map.answerShareBetween(question.y + question.height, sheet.y)) === 1
+  }
+
+  /** The question card's line naming the answer, on screen and uncovered. */
+  async answerLineIsUsable(): Promise<boolean> {
+    return isUsable(this.page.getByTestId(questionCardTestIds.answer))
   }
 }

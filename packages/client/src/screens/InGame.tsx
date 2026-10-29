@@ -176,7 +176,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             total={round.total}
             right={<Countdown msRemaining={() => conn.msUntil(round.deadline)} />}
           />
-          <QuestionCard q={round.question} countryFlag={region?.countryFlag}>
+          <QuestionCard q={round.question} countryFlag={region?.countryFlag} foldable>
             {round.question.flag ? (
               <AnswerMode area={round.question.regionId !== undefined} />
             ) : (

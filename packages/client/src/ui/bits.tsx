@@ -1,5 +1,5 @@
-import type { ComponentChildren } from "preact"
-import { useEffect, useRef, useState } from "preact/hooks"
+import type { ComponentChildren, RefObject } from "preact"
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks"
 import { useElementRef } from "./element-ref"
 import {
   commonsImageUrl,
@@ -106,7 +106,7 @@ export function HudHeader({
         <span class="brand">Whereabouts</span>
       )}
       <span class="round" data-testid={hudHeaderTestIds.round}>
-        Round{" "}
+        <span class="round-word">Round </span>
         <span class="nowrap">
           {round} / {total}
         </span>
@@ -136,7 +136,7 @@ export function FactLine({ fact }: { fact: Fact | undefined }) {
 /** The revealed answer, with a link to read about it on Wikipedia. */
 export function Answer({ label, wiki }: { label: string; wiki?: string }) {
   return (
-    <p class="answer">
+    <p class="answer" data-testid={questionCardTestIds.answer}>
       It's <b>{label}</b>{" "}
       <a class="wiki-link" href={wikipediaUrl(wiki, label)} target="_blank" rel="noopener noreferrer">
         Wikipedia <Icon name="external" size={12} />
@@ -150,7 +150,9 @@ export function QuestionCard({
   children,
   credit,
   countryFlag,
-  photo
+  photo,
+  foldable,
+  startFolded
 }: {
   q: QuestionView
   children?: ComponentChildren
@@ -160,18 +162,94 @@ export function QuestionCard({
   countryFlag?: string
   /** At the reveal, the answer's photo on a round that showed none. */
   photo?: string
+  /** On a phone, offer to fold the card down to its prompt for more map, if there is more. Each new question starts unfolded. */
+  foldable?: boolean
+  /** Fold it at first: at the reveal, the answer line shows folded, and the map matters more. */
+  startFolded?: boolean
 }) {
   const image = q.image ?? photo
+  const ref = useElementRef<HTMLDivElement>()
+  const question = `${q.prompt} ${q.image ?? ""} ${q.flag ?? ""}`
+  const [toggledQuestion, setToggledQuestion] = useState<string | undefined>(undefined)
+  const flag = q.flag ?? countryFlag
+  const canFold = foldable === true && Boolean(image || flag || children)
+  const toggled = toggledQuestion === question
+  const folded = canFold && (startFolded === true) !== toggled
+  usePictureFloor(ref, folded)
+  usePublishedHeight(ref)
   return (
-    <div class="card question" data-testid={questionCardTestIds.card}>
+    <div
+      class={`card question ${canFold ? "foldable" : ""} ${folded ? "folded" : ""}`}
+      ref={ref}
+      data-testid={questionCardTestIds.card}
+    >
+      {canFold && (
+        <button
+          type="button"
+          class="icon fold-toggle"
+          aria-expanded={!folded}
+          aria-label={folded ? "Show the whole question" : "Fold the question away"}
+          title={folded ? "Show the whole question" : "Fold the question away for more map"}
+          onClick={() => setToggledQuestion(toggled ? undefined : question)}
+          data-testid={questionCardTestIds.foldButton}
+        >
+          <Icon name={folded ? "expand" : "collapse"} size={18} />
+        </button>
+      )}
       <p class="prompt" data-testid={questionCardTestIds.prompt}>
         {q.prompt}
       </p>
       {image && <QuestionImage image={image} credit={credit ?? false} />}
-      {(q.flag ?? countryFlag) && <FlagImage code={(q.flag ?? countryFlag)!} />}
+      {flag && <FlagImage code={flag} />}
       {children}
     </div>
   )
+}
+
+/**
+ * On a short screen the question's photo or flag shrinks to keep the cards
+ * below it in view (style.css). CSS alone cannot stop the card shrinking past
+ * its text, so this sets the card's least height: everything else, plus the
+ * picture at its own min-height. Below that the column of cards scrolls.
+ */
+function usePictureFloor(ref: RefObject<HTMLDivElement>, folded: boolean): void {
+  // Before paint, so folding never shows a frame held at the unfolded floor.
+  useLayoutEffect(() => {
+    const card = ref.current
+    if (!card || typeof ResizeObserver === "undefined") return
+    const ro = new ResizeObserver(() => {
+      const picture = card.querySelector<HTMLElement>(".thumb, .flag")
+      const least = picture ? parseFloat(getComputedStyle(picture).minHeight) : NaN
+      const shown = picture ? picture.getClientRects().length > 0 : false
+      card.style.minHeight =
+        picture && shown && least > 0 ? `${card.scrollHeight - picture.offsetHeight + least}px` : ""
+    })
+    ro.observe(card)
+    return () => {
+      ro.disconnect()
+      card.style.minHeight = ""
+    }
+  }, [folded])
+}
+
+/**
+ * Publishes the question card's height as `--question-h` on the document:
+ * a phone's reveal leaves the map clear below the card (style.css, map.ts).
+ */
+function usePublishedHeight(ref: RefObject<HTMLDivElement>): void {
+  useLayoutEffect(() => {
+    const card = ref.current
+    const root = document.documentElement
+    if (!card || typeof ResizeObserver === "undefined") return
+    const publish = () => root.style.setProperty("--question-h", `${card.offsetHeight}px`)
+    publish()
+    const ro = new ResizeObserver(publish)
+    ro.observe(card)
+    return () => {
+      ro.disconnect()
+      root.style.removeProperty("--question-h")
+    }
+  }, [])
 }
 
 /** The picture of a flag, once its chunk has loaded. */
