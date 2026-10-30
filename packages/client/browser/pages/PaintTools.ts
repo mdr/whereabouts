@@ -23,6 +23,19 @@ export class PaintTools {
     await byTestIdWith(this.#page, paintToolsTestIds.toolButton, "tool", tool).click()
   }
 
+  async selectedTool(): Promise<string | undefined> {
+    const tool = await this.#page
+      .locator(`[data-testid="${paintToolsTestIds.toolButton}"][aria-pressed="true"]`)
+      .getAttribute("data-tool")
+    return tool ?? undefined
+  }
+
+  /** Tab to the next control, as a keyboard player would, and press it with Space. */
+  async tabOnAndPressSpace(): Promise<void> {
+    await this.#page.keyboard.press("Tab")
+    await this.#page.keyboard.press("Space")
+  }
+
   async clear(): Promise<void> {
     await this.#page.getByTestId(paintToolsTestIds.clearButton).click()
   }

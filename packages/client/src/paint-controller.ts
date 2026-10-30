@@ -166,8 +166,22 @@ export class PaintController {
     const onClick = (e: MapMouseEvent) => {
       if (this.canFill() && gameMap.onSurface(e.point)) this.fillAt(e.lngLat)
     }
+    // Checked as focus arrives: any key press, Space included, turns a
+    // clicked button's focus ring on too.
+    let tabbedTo: Element | undefined = undefined
+    const onFocusIn = (e: FocusEvent) => {
+      const target = e.target
+      tabbedTo =
+        target instanceof HTMLElement && !map.getContainer().contains(target) && target.matches(":focus-visible")
+          ? target
+          : undefined
+    }
+    const onPointerDown = () => (tabbedTo = undefined)
     const onKeyDown = (e: KeyboardEvent) => {
       if (isTyping(e.target ?? undefined)) return
+      // Space presses a control the player Tabbed to, but still pans with a
+      // clicked tool button focused.
+      if (e.code === "Space" && tabbedTo && e.target === tabbedTo) return
       if (e.code === "Space" && !this.spaceHeld) {
         this.spaceHeld = true
         this.endStroke()
@@ -245,6 +259,8 @@ export class PaintController {
     window.addEventListener("mousemove", onMiddleMove)
     window.addEventListener("mouseup", onMiddleUp)
     window.addEventListener("keydown", onKeyDown)
+    window.addEventListener("focusin", onFocusIn)
+    window.addEventListener("pointerdown", onPointerDown, true)
     window.addEventListener("keyup", onKeyUp)
     this.disposers.push(() => {
       map.off("mousedown", onDown)
@@ -263,6 +279,8 @@ export class PaintController {
       window.removeEventListener("mousemove", onMiddleMove)
       window.removeEventListener("mouseup", onMiddleUp)
       window.removeEventListener("keydown", onKeyDown)
+      window.removeEventListener("focusin", onFocusIn)
+      window.removeEventListener("pointerdown", onPointerDown, true)
       window.removeEventListener("keyup", onKeyUp)
     })
     this.disposers.push(this.tool.subscribe(() => this.applyInteraction()))

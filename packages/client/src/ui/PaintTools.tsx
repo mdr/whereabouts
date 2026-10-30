@@ -54,6 +54,7 @@ export function PaintTools({
           <button
             key={t}
             class={tool === t ? "active" : ""}
+            aria-pressed={tool === t}
             title={TOOL_HINT[t]}
             onClick={() => (paint.tool.value = t)}
             disabled={!enabled}

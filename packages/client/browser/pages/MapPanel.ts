@@ -64,6 +64,13 @@ export class MapPanel {
     await mouse.up()
   }
 
+  /** Drag with Space held, which pans whatever the tool. */
+  async dragHoldingSpace(at: MapSpot): Promise<void> {
+    await this.#page.keyboard.down("Space")
+    await this.drag(at, { distancePx: 120, steps: 12 })
+    await this.#page.keyboard.up("Space")
+  }
+
   /** A click without moving. */
   async dab(at: MapSpot): Promise<void> {
     await this.drag(at, { distancePx: 10, steps: 1 })

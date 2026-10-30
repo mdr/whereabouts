@@ -1,5 +1,6 @@
 // Practice mode against the Vite dev server: take a hint, paint two blobs,
-// undo and redo the second with the keyboard, trim to the hint and undo it,
+// undo and redo the second with the keyboard, pan with Space and press a
+// button with it, trim to the hint and undo it,
 // paint on the globe but not the space around it, submit, and see a score.
 // Saves screenshots.
 // Usage, from packages/client: node browser/e2e/solo.ts [outDir]
@@ -27,6 +28,17 @@ const oneBlob = await practiceRoundPage.map.yourPaintCells()
 await practiceRoundPage.paintTools.redoWithKeyboard()
 const back = await practiceRoundPage.map.yourPaintCells()
 checks.check(oneBlob < twoBlobs && back === twoBlobs, `undo then redo: ${twoBlobs} -> ${oneBlob} -> ${back} cells`)
+
+// Space presses a button the player Tabbed to, but pans with a clicked
+// tool button focused.
+await practiceRoundPage.paintTools.selectTool("pan")
+await practiceRoundPage.paintTools.tabOnAndPressSpace()
+const tabbedTo = await practiceRoundPage.paintTools.selectedTool()
+checks.check(tabbedTo === "paint", `Space presses the tool button Tabbed to (${tabbedTo})`)
+await practiceRoundPage.paintTools.selectTool("paint")
+await practiceRoundPage.map.dragHoldingSpace({ across: 0.3, down: 0.6 })
+const afterSpaceDrag = await practiceRoundPage.map.yourPaintCells()
+checks.check(afterSpaceDrag === back, `a drag holding Space paints nothing: ${back} -> ${afterSpaceDrag} cells`)
 
 // Trim to hint drops whatever paint is outside the band; undo brings it back.
 await practiceRoundPage.paintTools.trimToHint()
