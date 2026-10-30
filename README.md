@@ -41,7 +41,7 @@ Other commands:
     editing, the reveal and ready-up.
   - `flows`: refresh mid-round, late joiners and passing, play again.
   - `reconnect`: paint drawn while the connection is down reaches the
-    server once it is back. Needs the default `ROUND_MS`.
+    server once it is back.
   - `deadline`: paint cleared before the clock runs out scores as a pass;
     a stroke still going at zero counts, and everyone sees the same reveal.
   - `host`: removing a player, rejoining as a new one, ending the game

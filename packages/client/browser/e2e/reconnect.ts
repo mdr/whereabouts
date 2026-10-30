@@ -1,7 +1,5 @@
 // A dropped connection, against the dev servers: paint drawn while it is
 // down reaches the server once it is back.
-// Needs rounds longer than the default test length: run the game server
-// with its default ROUND_MS.
 // Usage, from packages/client: node browser/e2e/reconnect.ts [outDir]
 import type { WebSocketRoute } from "playwright-core"
 import { Checks, launchChrome, newTab } from "./support.ts"
@@ -26,6 +24,8 @@ const bobHomePage = await (await newTab(browser, "Bob")).openHome()
 await bobHomePage.enterName("Bob")
 await bobHomePage.joinGame(code)
 await aliceLobbyPage.players.waitForPlayer("Bob")
+// Waiting out the reconnect takes most of a short test round.
+await aliceLobbyPage.chooseSecondsPerRound(120)
 let aliceRoundPage = await aliceLobbyPage.startGame()
 
 // Cut the connection, and keep it down while Alice paints.
