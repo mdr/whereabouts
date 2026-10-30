@@ -14,6 +14,8 @@ import {
 import { type z } from "zod"
 import {
   ClientMessageSchemas,
+  type ClientMessages,
+  type ClientTopic,
   SEAT_GRACE_MS,
   ServerTopics,
   decodeMessage,
@@ -25,7 +27,7 @@ import {
   type PaintSubmission,
   type RoundReveal
 } from "@whereabouts/shared/protocol"
-import { Game, generateCode, type QuestionBank } from "@whereabouts/shared/game"
+import { Game, generateCode, type CommandResult, type QuestionBank } from "@whereabouts/shared/game"
 import { QUESTIONS, type QuestionData } from "@whereabouts/shared/questions"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import type { CloseReason } from "@whereabouts/shared/close-reason"
@@ -112,10 +114,33 @@ export class GameRoom extends Room<ActorData> {
     this.timer = undefined
     this.emptyTimer = undefined
     this.sentReveal = undefined
-    for (const [topic, schema] of Object.entries(ClientMessageSchemas)) {
-      this.bind(topic, (actor, payload) => this.handle(actor, topic, readJson(topic, schema, payload)))
+    const handlers = this.handlers()
+    for (const topic of Object.keys(ClientMessageSchemas) as ClientTopic[]) this.bindTopic(topic, handlers)
+    this.bind("paint", (actor, payload) => this.handle(actor, "paint", readPaint(payload), handlers.paint))
+  }
+
+  private bindTopic<K extends ClientTopic>(topic: K, handlers: Pick<Commands, K>): void {
+    this.bind(topic, (actor, payload) => this.handle(actor, topic, readJson(topic, payload), handlers[topic]))
+  }
+
+  private handlers(): Handlers {
+    return {
+      paint: (token, paint) => this.game.setPaint(token, paint),
+      lock: (token, _, now) => this.game.lock(token, now),
+      unlock: (token) => this.game.unlock(token),
+      ready: (token, _, now) => this.game.ready(token, now),
+      configure: (token, patch) => this.game.configure(token, patch),
+      start: (token, _, now) => this.game.start(token, now),
+      next: (token, _, now) => this.game.next(token, now),
+      again: (token, _, now) => this.game.again(token, now),
+      rename: (token, { name }) => this.game.rename(token, name),
+      kick: (token, { playerId }, now) => this.removePlayer(token, playerId, now),
+      setRole: (token, { watch }) => this.game.setRole(token, watch),
+      leave: (token) => this.leave(token),
+      makeHost: (token, { playerId }) => this.game.makeHost(token, playerId),
+      end: (token) => this.game.end(token),
+      hint: (token, { axis }) => this.game.hint(token, axis)
     }
-    this.bind("paint", (actor, payload) => this.handle(actor, "paint", readPaint(payload)))
   }
 
   protected override onJoin(actor: Actor<ActorData>): void {
@@ -171,15 +196,13 @@ export class GameRoom extends Room<ActorData> {
     this.emptyTimer = undefined
   }
 
-  private handle(actor: Actor<ActorData>, topic: string, parsed: Parsed): void {
+  private handle<T>(actor: Actor<ActorData>, topic: string, parsed: Parsed<T>, handler: Handler<T>): void {
     if (!parsed.ok) {
       this.logger?.warning(`${actor.id} (${actor.data!.name}) sent ${topic}: ${parsed.error}`)
       this.sendError(actor, parsed.error)
       return
     }
-    const token = actor.data!.token
-    const now = deps.clock.now()
-    const result = this.dispatch(topic, token, parsed.data, now)
+    const result = handler(actor.data!.token, parsed.data, deps.clock.now())
     if (!result.ok) {
       this.sendError(actor, result.error)
       return
@@ -187,52 +210,15 @@ export class GameRoom extends Room<ActorData> {
     if (result.changed) this.broadcastState()
   }
 
-  private dispatch(topic: string, token: PlayerToken, data: unknown, now: number) {
-    switch (topic) {
-      case "paint":
-        return this.game.setPaint(token, data as PaintSubmission)
-      case "lock":
-        return this.game.lock(token, now)
-      case "unlock":
-        return this.game.unlock(token)
-      case "ready":
-        return this.game.ready(token, now)
-      case "configure":
-        return this.game.configure(token, data as z.infer<typeof ClientMessageSchemas.configure>)
-      case "start":
-        return this.game.start(token, now)
-      case "next":
-        return this.game.next(token, now)
-      case "again":
-        return this.game.again(token, now)
-      case "rename":
-        return this.game.rename(token, (data as z.infer<typeof ClientMessageSchemas.rename>).name)
-      case "kick":
-        return this.removePlayer(token, (data as z.infer<typeof ClientMessageSchemas.kick>).playerId, now)
-      case "setRole":
-        return this.game.setRole(token, (data as z.infer<typeof ClientMessageSchemas.setRole>).watch)
-      case "leave":
-        return this.leave(token)
-      case "makeHost":
-        return this.game.makeHost(token, (data as z.infer<typeof ClientMessageSchemas.makeHost>).playerId)
-      case "end":
-        return this.game.end(token)
-      case "hint":
-        return this.game.hint(token, (data as z.infer<typeof ClientMessageSchemas.hint>).axis)
-      default:
-        return { ok: false as const, error: "unknown topic" }
-    }
-  }
-
   /** Give up this player's seat and close their connection; the client closes it too. */
-  private leave(token: PlayerToken) {
+  private leave(token: PlayerToken): CommandResult {
     const result = this.game.leave(token)
     if (result.ok) this.actorsByToken.get(token)?.kick(closeReason("left"))
     return result
   }
 
   /** Remove a player from the game and close their connection, telling them why. */
-  private removePlayer(token: PlayerToken, playerId: PlayerId, now: number) {
+  private removePlayer(token: PlayerToken, playerId: PlayerId, now: number): CommandResult {
     const target = this.game.tokenOf(playerId)
     const result = this.game.kick(token, playerId, now)
     if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick(closeReason("removed"))
@@ -293,20 +279,29 @@ export class GameRoom extends Room<ActorData> {
   }
 }
 
-type Parsed = { ok: true; data: unknown } | { ok: false; error: string }
+type Handler<T> = (token: PlayerToken, body: T, now: number) => CommandResult
+type Commands = { [K in ClientTopic]: Handler<ClientMessages[K]> }
+/** One handler per topic, paint included, each given its topic's parsed body. */
+type Handlers = Commands & { paint: Handler<PaintSubmission> }
 
-function readJson(topic: string, schema: z.ZodType, payload: Uint8Array): Parsed {
+// The schemas seen as a mapped type, so indexing with a generic topic gives
+// that topic's body rather than a union of all of them.
+const schemas: { [K in ClientTopic]: z.ZodType<ClientMessages[K]> } = ClientMessageSchemas
+
+type Parsed<T> = { ok: true; data: T } | { ok: false; error: string }
+
+function readJson<K extends ClientTopic>(topic: K, payload: Uint8Array): Parsed<ClientMessages[K]> {
   let body: unknown
   try {
     body = decodeMessage(payload)
   } catch {
     return { ok: false, error: "malformed message" }
   }
-  const parsed = schema.safeParse(body)
+  const parsed = schemas[topic].safeParse(body)
   return parsed.success ? { ok: true, data: parsed.data } : { ok: false, error: `invalid ${topic}` }
 }
 
-function readPaint(payload: Uint8Array): Parsed {
+function readPaint(payload: Uint8Array): Parsed<PaintSubmission> {
   const paint = decodePaint(payload)
   return paint ? { ok: true, data: paint } : { ok: false, error: "invalid paint" }
 }

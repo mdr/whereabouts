@@ -9,6 +9,8 @@ import type { WSClient as WSClientType } from "@rivalis/browser"
 import { PAINT_CELL_BUDGET, PaintLayer, compactRecord, resolutionForTolerance } from "@whereabouts/shared/paint"
 import {
   PROTOCOL_VERSION,
+  type ClientSend,
+  type ClientTopic,
   SEAT_GRACE_MS,
   encodeTicket,
   type Ticket,
@@ -140,8 +142,8 @@ class TestPlayer {
   connect(ticket: { create?: boolean; code?: RoomCode; watch?: boolean }) {
     this.client.connect(encodeTicket({ v: PROTOCOL_VERSION, token: this.token, name: this.name, ...ticket }))
   }
-  send(topic: string, body: unknown = {}) {
-    this.client.send(topic, JSON.stringify(body))
+  send<K extends ClientTopic>(...[topic, body]: ClientSend<K>) {
+    this.client.send(topic, JSON.stringify(body ?? {}))
   }
   sendPaint(paint: PaintSubmission) {
     this.client.send("paint", encodePaint(paint))

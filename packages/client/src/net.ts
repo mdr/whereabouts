@@ -5,6 +5,8 @@
 import { WSClient } from "@rivalis/browser"
 import { computed, signal } from "@preact/signals"
 import {
+  type ClientSend,
+  type ClientTopic,
   type ConfigurePatch,
   MAX_PLAYERS,
   MAX_SPECTATORS,
@@ -22,7 +24,7 @@ import {
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import { isCloseReason } from "@whereabouts/shared/close-reason"
 import type { HintAxis } from "@whereabouts/shared/hints"
-import type { PlayerName } from "@whereabouts/shared/ids"
+import type { PlayerId, PlayerName } from "@whereabouts/shared/ids"
 import { reloadForNewBuild } from "./stale-build"
 
 export type Status = "idle" | "connecting" | "connected" | "disconnected" | "rejected"
@@ -126,9 +128,9 @@ export class Connection {
     if (this.status.value !== "rejected") this.status.value = "idle"
   }
 
-  private send(topic: string, body: unknown = {}): void {
+  private send<K extends ClientTopic>(...[topic, body]: ClientSend<K>): void {
     if (!this.client?.connected) return
-    this.client.send(topic, JSON.stringify(body))
+    this.client.send(topic, JSON.stringify(body ?? {}))
   }
 
   sendPaint(paint: PaintSubmission): void {
@@ -161,7 +163,7 @@ export class Connection {
   hint(axis: HintAxis): void {
     this.send("hint", { axis })
   }
-  kick(playerId: string): void {
+  kick(playerId: PlayerId): void {
     this.send("kick", { playerId })
   }
   /** Give up this seat for good (the lobby's Leave); disconnect afterwards. */
@@ -172,7 +174,7 @@ export class Connection {
   setRole(watch: boolean): void {
     this.send("setRole", { watch })
   }
-  makeHost(playerId: string): void {
+  makeHost(playerId: PlayerId): void {
     this.send("makeHost", { playerId })
   }
   end(): void {

@@ -165,6 +165,13 @@ export const ClientMessageSchemas = {
   /** Use one of the game's hints on this round. */
   hint: z.object({ axis: HintAxisSchema })
 } as const
+export type ClientTopic = keyof typeof ClientMessageSchemas
+/** Each JSON topic's body, as its schema parses it. */
+export type ClientMessages = { [K in ClientTopic]: z.infer<(typeof ClientMessageSchemas)[K]> }
+type ClientBody<K extends ClientTopic> = z.input<(typeof ClientMessageSchemas)[K]>
+/** A topic and a body its schema accepts, which may be left out when an empty body will do. */
+export type ClientSend<K extends ClientTopic> =
+  Record<string, never> extends ClientBody<K> ? [topic: K, body?: ClientBody<K>] : [topic: K, body: ClientBody<K>]
 
 // ---- server -> client ------------------------------------------------------
 
