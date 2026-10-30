@@ -6,14 +6,16 @@
  * same as GameView. Strict objects, so a field the type lacks fails too.
  */
 import { z } from "zod"
-import { H3ResSchema } from "./h3.ts"
 import { PlayerColourSchema } from "./colours.ts"
 import { FlagCodeSchema, PlayerIdSchema, PlayerNameSchema, RegionIdSchema, RoomCodeSchema } from "./ids.ts"
 import { HintAxisSchema } from "./hints.ts"
 import { KernelIdSchema } from "./scoring.ts"
-import { MapDetailSchema, MixSchema, PaintSubmissionSchema, QUESTION_TYPES, type QuestionType } from "./protocol.ts"
+import { H3CellSchema, H3ResSchema } from "./h3.ts"
+import { MapDetailSchema, MixSchema, QUESTION_TYPES, type QuestionType } from "./protocol.ts"
 
 const TopicSchema = z.enum(["island", "lake", "sea", "state"])
+
+const PaintSchema = z.strictObject({ cells: z.record(H3CellSchema, z.number()), floor: z.number() })
 
 const LatLonSchema = z.strictObject({ lat: z.number(), lon: z.number() })
 
@@ -53,7 +55,7 @@ const RoundResultViewSchema = z.strictObject({
   region: z
     .strictObject({ shape: z.number(), nearness: z.number(), coverage: z.number(), precision: z.number() })
     .optional(),
-  paint: PaintSubmissionSchema.optional(),
+  paint: PaintSchema.optional(),
   res: H3ResSchema,
   hint: HintAxisSchema.optional()
 })
@@ -76,7 +78,7 @@ export const GameViewSchema = z.strictObject({
     spectating: z.boolean(),
     watching: z.boolean(),
     locked: z.boolean(),
-    paint: PaintSubmissionSchema.optional(),
+    paint: PaintSchema.optional(),
     hint: z.strictObject({ axis: HintAxisSchema, from: z.number(), to: z.number() }).optional(),
     hintsLeft: z.number().int()
   }),

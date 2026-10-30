@@ -1,12 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import {
-  KickSchema,
-  PROTOCOL_VERSION,
-  PaintSubmissionSchema,
-  decodeTicket,
-  encodeTicket,
-  type Ticket
-} from "./protocol.ts"
+import { KickSchema, PROTOCOL_VERSION, decodeTicket, encodeTicket, type Ticket } from "./protocol.ts"
 import { playerName, playerToken, roomCode } from "./ids.ts"
 
 describe("ticket codec", () => {
@@ -38,22 +31,6 @@ describe("ticket codec", () => {
 
   it("trims names", () => {
     expect(decodeTicket(enc({ ...ticket, name: "  Matt  " }))?.name).toBe("Matt")
-  })
-})
-
-describe("paint submission schema", () => {
-  it("accepts H3 indexes with positive weights and a floor in range", () => {
-    const ok = PaintSubmissionSchema.safeParse({ cells: { "8428309ffffffff": 0.5 }, floor: 0.1 })
-    expect(ok.success).toBe(true)
-  })
-  it("rejects bad indexes, weights out of range and floors out of range", () => {
-    expect(PaintSubmissionSchema.safeParse({ cells: { nope: 1 }, floor: 0 }).success).toBe(false)
-    expect(PaintSubmissionSchema.safeParse({ cells: { "8428309ffffffff": 0 }, floor: 0 }).success).toBe(false)
-    expect(PaintSubmissionSchema.safeParse({ cells: { "8428309ffffffff": Infinity }, floor: 0 }).success).toBe(false)
-    // Either would make scoring's sums overflow or underflow into a NaN score.
-    expect(PaintSubmissionSchema.safeParse({ cells: { "8428309ffffffff": 1e308 }, floor: 0 }).success).toBe(false)
-    expect(PaintSubmissionSchema.safeParse({ cells: { "8428309ffffffff": 5e-324 }, floor: 0 }).success).toBe(false)
-    expect(PaintSubmissionSchema.safeParse({ cells: {}, floor: 1.5 }).success).toBe(false)
   })
 })
 

@@ -784,7 +784,7 @@ export class Game {
         spectating: me !== undefined && !me.watching && this.phase !== "lobby" && me.joinedRound > this.roundIndex,
         watching: me?.watching ?? false,
         locked: this.submissions.get(token)?.locked ?? false,
-        paint: this.phase === "guessing" ? this.submissions.get(token)?.paint : undefined,
+        paint: this.paintOf(token),
         ...this.hintView(token),
         hintsLeft: me && !me.watching ? Math.max(0, this.config.hints - me.hintsUsed) : 0
       },
@@ -836,6 +836,11 @@ export class Game {
       if (p) ids.push(p.id)
     }
     return ids
+  }
+
+  /** This player's paint on the round being guessed, as last uploaded. */
+  paintOf(token: PlayerToken): PaintSubmission | undefined {
+    return this.phase === "guessing" ? this.submissions.get(token)?.paint : undefined
   }
 
   /** The reveal on show, the same object for as long as it shows. */

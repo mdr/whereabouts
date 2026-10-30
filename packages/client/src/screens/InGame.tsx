@@ -56,7 +56,6 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
       (question?.regionId !== undefined || question?.flag !== undefined)
   )
   const sendTimer = useRef<number | undefined>(undefined)
-  const lastSentVersion = useRef(-1)
   // The countdown has reached zero: painting stops, and what is on screen is what counts.
   const [timeUp, setTimeUp] = useState(false)
   const { dialog, ask } = useConfirm()
@@ -90,7 +89,6 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     const me = view.players.find((p) => p.id === view.you.id)
     paint.showOwn(me && !me.watching ? colourCss(me.colour) : undefined)
     paint.tool.value = startOnPan.value ? "pan" : "paint"
-    lastSentVersion.current = paint.version.peek()
   }, [roundKey, guessing])
 
   // The host's map detail while guessing; the reveal shows everything, since
@@ -120,7 +118,6 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     if (sendTimer.current) clearTimeout(sendTimer.current)
     sendTimer.current = undefined
     conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.peek() })
-    lastSentVersion.current = paint.version.peek()
   }
 
   // Debounced upload of the current paint while guessing.
@@ -138,6 +135,19 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   useEffect(() => {
     if (timeUp && guessing && !sittingOut && !view.you.locked) sendNow()
   }, [timeUp])
+
+  // Uploads made while the connection was down were lost. Once the server
+  // has us back (its first state since), send the paint again.
+  const status = conn.status.value
+  const resend = useRef(false)
+  useEffect(() => {
+    if (status !== "connected") resend.current = true
+  }, [status])
+  useEffect(() => {
+    if (!resend.current || status !== "connected") return
+    resend.current = false
+    if (guessing && !sittingOut && !view.you.locked && !timeUp) sendNow()
+  }, [view])
 
   // Done with paint freezes it; Done with nothing painted is a pass, which
   // scores PASS_SCORE (250) and lets the round end without waiting on you.

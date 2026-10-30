@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { coarserRes, finerRes, getResolution, h3Cell, h3Res, latLngToCell, resolutionsTo } from "./h3.ts"
-import { PaintSubmissionSchema } from "./protocol.ts"
+import { decodePaint, encodePaint } from "./paint-wire.ts"
 
 describe("H3 cells and resolutions", () => {
   it("are made only from values of their own format", () => {
@@ -22,7 +22,6 @@ describe("H3 cells and resolutions", () => {
 
   it("come out of a paint upload checked", () => {
     const cell = latLngToCell(0, 0, h3Res(5))
-    expect(PaintSubmissionSchema.safeParse({ cells: { [cell]: 1 }, floor: 0.05 }).success).toBe(true)
-    expect(PaintSubmissionSchema.safeParse({ cells: { paris: 1 }, floor: 0.05 }).success).toBe(false)
+    expect(decodePaint(encodePaint({ cells: { [cell]: 1 }, floor: 0.05 }))?.cells).toEqual({ [cell]: 1 })
   })
 })

@@ -1,6 +1,7 @@
 export * from "./geo.ts"
 export * from "./scoring.ts"
 export * from "./paint.ts"
+export * from "./paint-wire.ts"
 export * from "./ids.ts"
 export * from "./h3.ts"
 export * from "./questions.ts"

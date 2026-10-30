@@ -19,17 +19,21 @@ import {
   SEAT_GRACE_MS,
   ServerTopics,
   decodeMessage,
+  decodePaint,
   decodeTicket,
   encodeMessage,
+  encodePaint,
   featureFrom,
   flagFrom,
   generateCode,
   regionFrom,
+  revealMessage,
   roomCode,
   stateMessage,
   type FlagData,
   type FlagQuestion,
   type GameConfig,
+  type PaintSubmission,
   type PlayerId,
   type PlayerName,
   type PlayerToken,
@@ -117,8 +121,9 @@ export class GameRoom extends Room<ActorData> {
     this.emptyTimer = undefined
     this.sentReveal = undefined
     for (const [topic, schema] of Object.entries(ClientMessageSchemas)) {
-      this.bind(topic, (actor, payload) => this.handle(actor, topic, schema, payload))
+      this.bind(topic, (actor, payload) => this.handle(actor, topic, readJson(topic, schema, payload)))
     }
+    this.bind("paint", (actor, payload) => this.handle(actor, "paint", readPaint(payload)))
   }
 
   protected override onJoin(actor: Actor<ActorData>): void {
@@ -133,6 +138,8 @@ export class GameRoom extends Room<ActorData> {
       actor.kick(result.error)
       return
     }
+    const paint = this.game.paintOf(token)
+    if (paint) actor.send(ServerTopics.paint, encodePaint(paint))
     this.broadcastState()
   }
 
@@ -169,17 +176,9 @@ export class GameRoom extends Room<ActorData> {
     this.emptyTimer = undefined
   }
 
-  private handle(actor: Actor<ActorData>, topic: string, schema: z.ZodType, payload: Uint8Array): void {
-    let body: unknown
-    try {
-      body = decodeMessage(payload)
-    } catch {
-      this.sendError(actor, "malformed message")
-      return
-    }
-    const parsed = schema.safeParse(body)
-    if (!parsed.success) {
-      this.sendError(actor, `invalid ${topic}`)
+  private handle(actor: Actor<ActorData>, topic: string, parsed: Parsed): void {
+    if (!parsed.ok) {
+      this.sendError(actor, parsed.error)
       return
     }
     const token = actor.data!.token
@@ -190,13 +189,12 @@ export class GameRoom extends Room<ActorData> {
       return
     }
     if (result.changed) this.broadcastState()
-    else if (topic === "paint") this.sendState(actor) // echo lock/paint status to the sender only
   }
 
   private dispatch(topic: string, token: PlayerToken, data: unknown, now: number) {
     switch (topic) {
       case "paint":
-        return this.game.setPaint(token, data as z.infer<typeof ClientMessageSchemas.paint>)
+        return this.game.setPaint(token, data as PaintSubmission)
       case "lock":
         return this.game.lock(token, now)
       case "unlock":
@@ -254,7 +252,7 @@ export class GameRoom extends Room<ActorData> {
     const reveal = this.game.roundReveal
     if (reveal) {
       if (this.sentReveal?.reveal !== reveal)
-        this.sentReveal = { reveal, text: encodeMessage(reveal), to: new WeakSet() }
+        this.sentReveal = { reveal, text: encodeMessage(revealMessage(reveal)), to: new WeakSet() }
       if (!this.sentReveal.to.has(actor)) {
         actor.send(ServerTopics.reveal, this.sentReveal.text)
         this.sentReveal.to.add(actor)
@@ -297,6 +295,24 @@ export class GameRoom extends Room<ActorData> {
   get state(): Game {
     return this.game
   }
+}
+
+type Parsed = { ok: true; data: unknown } | { ok: false; error: string }
+
+function readJson(topic: string, schema: z.ZodType, payload: Uint8Array): Parsed {
+  let body: unknown
+  try {
+    body = decodeMessage(payload)
+  } catch {
+    return { ok: false, error: "malformed message" }
+  }
+  const parsed = schema.safeParse(body)
+  return parsed.success ? { ok: true, data: parsed.data } : { ok: false, error: `invalid ${topic}` }
+}
+
+function readPaint(payload: Uint8Array): Parsed {
+  const paint = decodePaint(payload)
+  return paint ? { ok: true, data: paint } : { ok: false, error: "invalid paint" }
 }
 
 /**

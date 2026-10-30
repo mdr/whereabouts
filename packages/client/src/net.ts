@@ -9,11 +9,15 @@ import {
   MAX_PLAYERS,
   MAX_SPECTATORS,
   PROTOCOL_VERSION,
+  decodePaint,
+  encodePaint,
   encodeTicket,
+  revealFrom,
   type GameView,
   type HintAxis,
   type PaintSubmission,
   type PlayerName,
+  type RevealMessage,
   type RoundReveal,
   type StateMessage,
   type Ticket,
@@ -37,23 +41,27 @@ export class Connection {
   readonly rejection = signal<Rejection | undefined>(undefined)
   readonly code = computed(() => this.view.value?.code)
 
-  private client: WSClient<"state" | "reveal" | "error"> | undefined = undefined
+  private client: WSClient<"state" | "reveal" | "paint" | "error"> | undefined = undefined
   private decoder = new TextDecoder()
+  /** What the server has sent since this connection opened, for the state messages that follow. */
   private reveal: RoundReveal | undefined = undefined
+  private paint: PaintSubmission | undefined = undefined
 
   connect(ticket: Omit<Ticket, "v">): void {
     this.disconnect()
     this.status.value = "connecting"
     this.lastError.value = undefined
     this.rejection.value = undefined
-    this.reveal = undefined
-    const client = new WSClient<"state" | "reveal" | "error">(wsUrl(), {
+    const client = new WSClient<"state" | "reveal" | "paint" | "error">(wsUrl(), {
       ticketSource: "protocol",
       reconnect: { baseDelayMs: 500, maxDelayMs: 5000, maxAttempts: 20 },
       getTicket: () =>
         encodeTicket({ v: PROTOCOL_VERSION, ...ticket, create: false, code: this.code.value ?? ticket.code })
     })
     client.on("client:connect", () => {
+      // The server sends again whatever a fresh connection needs.
+      this.reveal = undefined
+      this.paint = undefined
       this.status.value = "connected"
     })
     client.on("client:disconnect", () => {
@@ -71,12 +79,16 @@ export class Connection {
       /* surfaced via disconnect */
     })
     client.on("reveal", (payload) => {
-      this.reveal = JSON.parse(this.decoder.decode(payload)) as RoundReveal
+      this.reveal = revealFrom(JSON.parse(this.decoder.decode(payload)) as RevealMessage)
+    })
+    client.on("paint", (payload) => {
+      this.paint = decodePaint(payload)
     })
     client.on("state", (payload) => {
       const state = JSON.parse(this.decoder.decode(payload)) as StateMessage
       if (!state.reveal) this.reveal = undefined
-      const view = viewFrom(state, this.reveal)
+      if (state.phase !== "guessing") this.paint = undefined
+      const view = viewFrom(state, this.reveal, this.paint)
       this.clockOffset.value = view.serverTime - Date.now()
       this.view.value = view
       // A fresh state means the server is happy with us; stop showing an old complaint.
@@ -102,7 +114,7 @@ export class Connection {
   }
 
   sendPaint(paint: PaintSubmission): void {
-    this.send("paint", paint)
+    if (this.client?.connected) this.client.send("paint", encodePaint(paint))
   }
   lock(): void {
     this.send("lock")

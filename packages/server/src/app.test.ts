@@ -13,6 +13,8 @@ import {
   ROUND_GRACE_MS,
   SEAT_GRACE_MS,
   compactRecord,
+  decodePaint,
+  encodePaint,
   GameViewSchema,
   encodeTicket,
   flagFrom,
@@ -26,13 +28,16 @@ import {
   playerName,
   roomCode,
   resolutionForTolerance,
+  revealFrom,
   viewFrom,
   type FlagData,
   type GameView,
+  type PaintSubmission,
   type PlayerName,
   type PlayerToken,
   type Question,
   type RegionData,
+  type RevealMessage,
   type RoomCode,
   type RoundReveal,
   type StateMessage
@@ -94,11 +99,11 @@ class FakeClock implements Clock {
   }
 }
 
-type Topics = "state" | "reveal" | "error"
+type Topics = "state" | "reveal" | "paint" | "error"
 
 class TestPlayer {
   readonly client: WSClientType<Topics>
-  /** Views as the client puts them together from state and reveal messages. */
+  /** Views as the client puts them together from state, reveal and paint messages. */
   readonly states: GameView[] = []
   readonly rawStates: string[] = []
   readonly reveals: RoundReveal[] = []
@@ -113,15 +118,20 @@ class TestPlayer {
     this.client = new WSClient<Topics>(url, { ticketSource: "protocol", reconnect: false })
     const dec = new TextDecoder()
     let reveal: RoundReveal | undefined = undefined
+    let paint: PaintSubmission | undefined = undefined
     this.client.on("reveal", (p) => {
-      reveal = JSON.parse(dec.decode(p)) as RoundReveal
+      reveal = revealFrom(JSON.parse(dec.decode(p)) as RevealMessage)
       this.reveals.push(reveal)
+    })
+    this.client.on("paint", (p) => {
+      paint = decodePaint(p)
     })
     this.client.on("state", (p) => {
       const raw = dec.decode(p)
       const state = JSON.parse(raw) as StateMessage
       if (!state.reveal) reveal = undefined
-      const view = viewFrom(state, reveal)
+      if (state.phase !== "guessing") paint = undefined
+      const view = viewFrom(state, reveal, paint)
       if (state.reveal && !view.reveal) this.invalidStates.push(`reveal ${state.reveal.index} came after its state`)
       this.rawStates.push(raw)
       const checked = GameViewSchema.safeParse(view)
@@ -135,6 +145,9 @@ class TestPlayer {
   }
   send(topic: string, body: unknown = {}) {
     this.client.send(topic, JSON.stringify(body))
+  }
+  sendPaint(paint: PaintSubmission) {
+    this.client.send("paint", encodePaint(paint))
   }
   get latest(): GameView {
     return this.states[this.states.length - 1]!
@@ -258,13 +271,12 @@ describe("game server", () => {
     expect(round.round!.total).toBe(2)
     const q = questions.find((x) => x.prompt === round.round!.question.prompt)!
 
-    alice.send("paint", paintAt(q, q.answer.lat, q.answer.lon))
+    alice.sendPaint(paintAt(q, q.answer.lat, q.answer.lon))
     const bobPaint = paintAt(q, -30, -60)
-    bob.send("paint", bobPaint)
+    bob.sendPaint(bobPaint)
     bob.send("lock")
     await bob.untilLatest((v) => v.you.locked)
-    // Bob gets his own paint back in his view; nobody else learns about it yet.
-    expect(bob.latest.you.paint).toEqual(bobPaint)
+    // Nobody else learns about Bob's paint before the reveal.
     const aBobCell = Object.keys(bobPaint.cells)[0]!
     expect(JSON.stringify(alice.latest)).not.toContain(aBobCell)
 
@@ -307,8 +319,9 @@ describe("game server", () => {
     // Paint it exactly, compacted the way the client sends paint.
     const res = resolutionForTolerance(round.round!.question.toleranceKm)
     const cells = compactRecord(Object.fromEntries(regionCells(country, res).map((h) => [h, 1])))
-    alice.send("paint", { cells, floor: 0.05 })
-    await alice.untilLatest((v) => v.you.paint !== undefined)
+    alice.sendPaint({ cells, floor: 0.05 })
+    alice.send("lock")
+    await alice.untilLatest((v) => v.you.locked)
 
     clock.advance(60_000 + ROUND_GRACE_MS)
     const reveal = await bob.until((v) => v.phase === "reveal")
@@ -349,21 +362,23 @@ describe("game server", () => {
     alice.send("start")
     await alice.until((v) => v.phase === "guessing")
 
-    alice.client.send("paint", "this is not json")
+    alice.client.send("rename", "this is not json")
     expect(await pollErrors(alice)).toContain("malformed message")
     alice.errors.length = 0
 
-    alice.send("paint", { cells: { nope: 1 }, floor: 0 })
+    alice.client.send("paint", "this is not paint")
     expect(await pollErrors(alice)).toContain("invalid paint")
     alice.errors.length = 0
 
     const tooMany = gridDisk(latLngToCell(0, 0, h3Res(7)), 45).slice(0, PAINT_CELL_BUDGET + 1)
-    alice.send("paint", { cells: Object.fromEntries(tooMany.map((h) => [h, 1])), floor: 0 })
+    alice.sendPaint({ cells: Object.fromEntries(tooMany.map((h) => [h, 1])), floor: 0 })
     expect(await pollErrors(alice)).toContain("invalid paint")
     alice.errors.length = 0
 
-    // Shaped like a cell but not one: scoring it would throw.
-    alice.send("paint", { cells: { fffffffffffffff: 1 }, floor: 0 })
+    // Not a cell: scoring it would throw.
+    const notACell = encodePaint({ cells: { [latLngToCell(0, 0, h3Res(5))]: 1 }, floor: 0 })
+    notACell.fill(0xff, 8, 16)
+    alice.client.send("paint", notACell)
     expect(await pollErrors(alice)).toContain("invalid paint")
     alice.errors.length = 0
 
@@ -415,7 +430,7 @@ describe("game server", () => {
     const round = await bob.until((v) => v.phase === "guessing")
     const q = questions.find((x) => x.prompt === round.round!.question.prompt)!
     const paint = paintAt(q, q.answer.lat, q.answer.lon)
-    alice.send("paint", paint)
+    alice.sendPaint(paint)
     alice.send("lock")
     bob.send("lock")
     await alice.until((v) => v.phase === "reveal")
@@ -438,7 +453,7 @@ describe("game server", () => {
     expect(alice.reveals).toHaveLength(1)
   })
 
-  it("a reconnecting player keeps their seat", async () => {
+  it("a reconnecting player keeps their seat, and gets their paint back", async () => {
     const alice = player("Alice")
     alice.connect({ create: true })
     const lobby = await alice.until((v) => v.phase === "lobby")
@@ -446,7 +461,14 @@ describe("game server", () => {
     bob.connect({ code: lobby.code })
     await alice.until((v) => v.players.length === 2)
     alice.send("start")
-    await bob.until((v) => v.phase === "guessing")
+    const round = await bob.until((v) => v.phase === "guessing")
+    const q = questions.find((x) => x.prompt === round.round!.question.prompt)!
+    const bobPaint = paintAt(q, q.answer.lat, q.answer.lon)
+    bob.sendPaint(bobPaint)
+    bob.send("lock")
+    await bob.untilLatest((v) => v.you.locked)
+    // Paint goes back only to a player who rejoins, not with every state.
+    expect(bob.latest.you.paint).toBeUndefined()
 
     bob.client.disconnect()
     await alice.until((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
@@ -457,6 +479,7 @@ describe("game server", () => {
     expect(back.players.filter((p) => p.name === "Bob")).toHaveLength(1)
     const own = await bobAgain.until((v) => v.phase === "guessing")
     expect(own.you.spectating).toBe(false)
+    expect(own.you.paint).toEqual(decodePaint(encodePaint(bobPaint)))
   })
 
   it("frees the room once it has been empty for the grace period", async () => {

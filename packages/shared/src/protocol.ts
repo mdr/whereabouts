@@ -1,15 +1,16 @@
 /**
  * Wire protocol between client and game server. Every message is JSON text on
- * a Rivalis topic. Schemas validate inbound data on the server; the inferred
- * types are shared with the client.
+ * a Rivalis topic, except paint, which is binary (see paint-wire.ts). Schemas
+ * validate inbound data on the server; the inferred types are shared with the
+ * client.
  */
 import { z } from "zod"
 import type { Award } from "./awards.ts"
 import type { LatLon } from "./geo.ts"
 import type { Topic } from "./questions.ts"
 import type { PlayerColour } from "./colours.ts"
-import { H3CellSchema, type H3Res } from "./h3.ts"
-import { PAINT_CELL_BUDGET } from "./paint.ts"
+import type { H3Cell, H3Res } from "./h3.ts"
+import { paintFromBase64, paintToBase64 } from "./paint-wire.ts"
 import { HintAxisSchema, MAX_HINTS, type HintAxis, type HintBand } from "./hints.ts"
 import type { KernelId } from "./scoring.ts"
 import {
@@ -24,23 +25,13 @@ import {
   type RoomCode
 } from "./ids.ts"
 
-export const PROTOCOL_VERSION = 2
+export const PROTOCOL_VERSION = 3
 
-/**
- * Sparse paint: H3 cell index -> intensity. Plus the uniform world floor.
- * Clients compact to PAINT_CELL_BUDGET; more is refused before any cell is
- * checked, since checking them all is the costly part. Intensities are
- * bounded far beyond any real brush, so scoring's intensity x area can
- * neither overflow nor underflow into NaN.
- */
-export const PaintSubmissionSchema = z.object({
-  cells: z
-    .record(z.string(), z.unknown())
-    .refine((cells) => Object.keys(cells).length <= PAINT_CELL_BUDGET, "too many cells")
-    .pipe(z.record(H3CellSchema, z.number().min(1e-30).max(1e9))),
-  floor: z.number().min(0).max(1)
-})
-export type PaintSubmission = z.infer<typeof PaintSubmissionSchema>
+/** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
+export interface PaintSubmission {
+  cells: Record<H3Cell, number>
+  floor: number
+}
 
 /** Ticket presented on connect, carried in the WebSocket subprotocol header. */
 export const TicketSchema = z.object({
@@ -170,8 +161,8 @@ export const ConfigureSchema = z.object({
 })
 export type ConfigurePatch = z.infer<typeof ConfigureSchema>
 
+/** The JSON messages. Paint goes on the paint topic in binary (see paint-wire.ts). */
 export const ClientMessageSchemas = {
-  paint: PaintSubmissionSchema,
   lock: z.object({}),
   unlock: z.object({}),
   ready: z.object({}),
@@ -196,6 +187,8 @@ export const ServerTopics = {
   state: "state",
   /** A round's RoundReveal, once per connection, before the first state that shows it. */
   reveal: "reveal",
+  /** Your own paint, in binary, when you join mid-round: a refresh gets back what was painted. */
+  paint: "paint",
   error: "error"
 } as const
 
@@ -344,19 +337,56 @@ export interface GameView {
 /** What a reveal shows that stays the same while it shows: the bulk of it, every player's paint. */
 export type RoundReveal = Omit<RevealView, "ready">
 
-/** A view as the state topic carries it: of the reveal, only what changes while it shows. */
-export type StateMessage = Omit<GameView, "reveal"> & { reveal?: Pick<RevealView, "index" | "ready"> }
-
-export function stateMessage(view: GameView): StateMessage {
-  const { reveal, ...rest } = view
-  return reveal ? { ...rest, reveal: { index: reveal.index, ready: reveal.ready } } : rest
+/**
+ * A view as the state topic carries it: of the reveal, only what changes
+ * while it shows, and none of your paint, which goes on its own topic.
+ */
+export type StateMessage = Omit<GameView, "reveal" | "you"> & {
+  you: Omit<GameView["you"], "paint">
+  reveal?: Pick<RevealView, "index" | "ready">
 }
 
-/** The view a state message stands for, given the last reveal received: no reveal unless it is that round's. */
-export function viewFrom(state: StateMessage, reveal: RoundReveal | undefined): GameView {
-  const { reveal: progress, ...rest } = state
-  if (!progress || reveal?.index !== progress.index) return rest
-  return { ...rest, reveal: { ...reveal, ready: progress.ready } }
+export function stateMessage({ reveal, you, ...rest }: GameView): StateMessage {
+  const { paint: _paint, ...yours } = you
+  return { ...rest, you: yours, ...(reveal ? { reveal: { index: reveal.index, ready: reveal.ready } } : {}) }
+}
+
+/**
+ * The view a state message stands for, given the reveal and paint received
+ * since connecting: no reveal unless it is that round's, and the paint only
+ * while guessing.
+ */
+export function viewFrom(
+  state: StateMessage,
+  reveal: RoundReveal | undefined,
+  paint: PaintSubmission | undefined
+): GameView {
+  const { reveal: progress, you, ...rest } = state
+  const view: GameView = { ...rest, you: state.phase === "guessing" && paint ? { ...you, paint } : you }
+  if (progress && reveal?.index === progress.index) view.reveal = { ...reveal, ready: progress.ready }
+  return view
+}
+
+/** A RoundReveal as the reveal topic carries it: JSON, with each paint as base64 binary. */
+export type RevealMessage = Omit<RoundReveal, "results"> & {
+  results: (Omit<RoundResultView, "paint"> & { paint?: string })[]
+}
+
+export function revealMessage(reveal: RoundReveal): RevealMessage {
+  return {
+    ...reveal,
+    results: reveal.results.map(({ paint, ...result }) => (paint ? { ...result, paint: paintToBase64(paint) } : result))
+  }
+}
+
+export function revealFrom(message: RevealMessage): RoundReveal {
+  return {
+    ...message,
+    results: message.results.map(({ paint, ...result }) => {
+      const decoded = paint === undefined ? undefined : paintFromBase64(paint)
+      return decoded ? { ...result, paint: decoded } : result
+    })
+  }
 }
 
 export interface ServerError {
