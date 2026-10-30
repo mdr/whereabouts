@@ -2,7 +2,7 @@ import type { ComponentChildren, RefObject } from "preact"
 import { createPortal } from "preact/compat"
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks"
 import { useElementRef } from "./element-ref"
-import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type Topic } from "@whereabouts/shared/questions"
+import { commonsImageUrl, commonsPageUrl, wikipediaUrl } from "@whereabouts/shared/questions"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { QuestionView } from "@whereabouts/shared/protocol"
 import { Icon } from "./icons"
@@ -320,42 +320,6 @@ export function SmallFlag({ code }: { code: string }) {
     <span class="small-flag" style={flagShape(code)}>
       {src && <img src={src} alt="" draggable={false} />}
     </span>
-  )
-}
-
-/** Under a "Paint the whole of …" question: what to cover. */
-export function RegionHint({ topic }: { topic?: Topic }) {
-  return <p class="hint region-hint">Cover the whole {topic ?? "country"}: its shape counts.</p>
-}
-
-/** AnswerMode and RegionHint in a line, for the headset; undefined for a place. */
-export function answerModeText(q: { flag?: unknown; regionId?: unknown; topic?: Topic }): string | undefined {
-  const area = q.regionId !== undefined
-  if (q.flag) return area ? "Paint the whole country: its shape counts." : "Paint where it is: a place, not a shape."
-  return area ? `Cover the whole ${q.topic ?? "country"}: its shape counts.` : undefined
-}
-
-/**
- * How to answer a flag round, big and plain, since the two are painted so
- * differently: cover the whole country, or mark where a small one is.
- */
-export function AnswerMode({ area }: { area: boolean }) {
-  return area ? (
-    <div class="answer-mode area">
-      <Icon name="brush" size={18} />
-      <div>
-        <b>Paint the whole country</b>
-        <span>Its shape counts: cover all of it, and nothing else.</span>
-      </div>
-    </div>
-  ) : (
-    <div class="answer-mode point">
-      <Icon name="pin" size={18} />
-      <div>
-        <b>Paint where it is</b>
-        <span>A place, not a shape: the tighter your paint, the surer you are.</span>
-      </div>
-    </div>
   )
 }
 

@@ -4,9 +4,12 @@ import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { GameView, PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
+import type { RegionQuestion } from "@whereabouts/shared/regions"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
-import { Answer, Card, FactLine, HudBottom, HudHeader, QuestionCard, ScoreParts } from "../ui/bits"
+import { Card, HudBottom, HudHeader, ScoreParts } from "../ui/bits"
+import { RevealCards } from "../ui/Round"
+import { frameReveal, showAnswer, type RevealedAnswer } from "../round"
 import { ConnectionNote } from "../ui/ConnectionNote"
 import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
@@ -24,6 +27,16 @@ import { allFlags } from "../settings"
 import type { VrView } from "../vr"
 import { revealTestIds } from "./RevealTestIds"
 import { paintLayer, paintsOf } from "../reveal-paint"
+
+export function revealedAnswer(reveal: RevealView, region: RegionQuestion | undefined): RevealedAnswer {
+  return {
+    label: reveal.label,
+    wiki: reveal.wiki,
+    answer: reveal.answer,
+    outline: region?.outline,
+    photo: reveal.photo
+  }
+}
 
 /** Selection meaning "show nobody's paint", alongside undefined (everyone) and a player id. */
 export const NONE = "none"
@@ -82,7 +95,7 @@ export function Reveal({
 
   // A country round shows the country's outline, once the outlines are loaded.
   const region = useRegion(reveal.question.regionId)
-  const isCountry = reveal.question.regionId !== undefined
+  const answer = revealedAnswer(reveal, region)
 
   // A flag round names the country under the pointer, and where each player's paint mostly was.
   const answerFlag = reveal.question.flag
@@ -97,9 +110,7 @@ export function Reveal({
 
   useEffect(() => {
     paint.enabled.value = false
-    if (!isCountry) paint.gameMap.showReveal(reveal.answer, reveal.question.toleranceKm)
-    else if (region) paint.gameMap.showRegionReveal(region.outline)
-    else paint.gameMap.clearReveal()
+    showAnswer(paint.gameMap, reveal.question, answer)
   }, [reveal.index, region])
 
   // Show everyone's paint in their colours (best score drawn on top), or one
@@ -107,9 +118,7 @@ export function Reveal({
   const show = (shown: string | undefined) =>
     paint.showColoured(paintsOf(shownResults(reveal.results, shown), view.players).flatMap((p) => p.features))
   useEffect(() => {
-    const fc = show(selected)
-    if (region) paint.gameMap.fitRegionAndPaint(reveal.answer, region.outline, fc, reveal.question.toleranceKm)
-    else paint.gameMap.fitAnswerAndPaint(reveal.answer, fc, reveal.question.toleranceKm)
+    frameReveal(paint.gameMap, reveal.question, answer, show(selected))
   }, [selected, reveal.index, region])
   // Not framed: the map would jump about as the mouse crosses the rows.
   useEffect(() => {
@@ -147,28 +156,16 @@ export function Reveal({
               </span>
             }
           />
-          <QuestionCard
-            q={reveal.question}
-            credit
+          <RevealCards
+            question={reveal.question}
             countryFlag={region?.countryFlag}
-            photo={reveal.photo}
-            foldable
-            startFolded
-          >
-            <Answer label={reveal.label} wiki={reveal.wiki} />
-            <FactLine fact={fact} />
-          </QuestionCard>
-          <div class="card score" data-testid={revealTestIds.scoreCard}>
-            <div class="big">{mine ? Math.round(mine.score) : "—"}</div>
-            <div class="label">
-              {mine ? (mine.paint ? "your score this round" : "you passed this round") : "you sat this one out"}
-            </div>
-            {mine && where.get(mine.playerId) && (
-              <div class="fit">
-                Your paint: <PaintedIn where={where.get(mine.playerId)!} answer={answerFlag} whose="your" />
-              </div>
-            )}
-          </div>
+            revealed={answer}
+            fact={fact}
+            you={mine && { score: mine.score, passed: !mine.paint }}
+            playedLabel="your score this round"
+            where={mine && where.get(mine.playerId)}
+            testIds={{ scoreCard: revealTestIds.scoreCard }}
+          />
           <ConnectionNote conn={conn} />
         </div>
         <div class="hud-right">

@@ -13,14 +13,13 @@ import {
   type KernelId,
   buildDistribution,
   kernelById,
-  PASS_SCORE,
   scoreFromParts,
   similarityToAnswer,
   type Distribution,
   type Kernel
 } from "@whereabouts/shared/scoring"
 import { hintBand, type HintAxis, type HintBand } from "@whereabouts/shared/hints"
-import { questionPictures } from "@whereabouts/shared/game"
+import { questionPictures, questionView } from "@whereabouts/shared/game"
 import { revealPhoto } from "@whereabouts/shared/photos"
 import {
   SHAPE_WEIGHT,
@@ -29,61 +28,48 @@ import {
   type AnswerParts,
   type RegionQuestion
 } from "@whereabouts/shared/regions"
-import { QUESTIONS, shuffle, type Question } from "@whereabouts/shared/questions"
+import { QUESTIONS, isWater, shuffle, type Question } from "@whereabouts/shared/questions"
 import { encodeCase } from "@whereabouts/shared/scoring-case"
 import { flagRound } from "@whereabouts/shared/flags"
 import { greatCircleDistance, toXyz, type LatLon } from "@whereabouts/shared/geo"
 import { showsLakes } from "@whereabouts/shared/protocol"
-import type { GameMap } from "../map"
 import { MapView, usePaint } from "../ui/MapView"
 import { forTabbedControl } from "../keys"
 import { LoadingOutlines } from "../ui/LoadingOutlines"
-import {
-  Answer,
-  AnswerMode,
-  Card,
-  FactLine,
-  HudBottom,
-  HudHeader,
-  QuestionCard,
-  RegionHint,
-  ScoreParts,
-  answerModeText,
-  fmtKm
-} from "../ui/bits"
+import { Card, HudBottom, HudHeader, ScoreParts, fmtKm } from "../ui/bits"
+import { DoneButton, RevealCards, RoundPrompt } from "../ui/Round"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
 import { VrButton, useVrHold, useVrView } from "../ui/VrButton"
-import type { VrRound, VrView } from "../vr"
+import type { VrView } from "../vr"
 import type { VrTable } from "../vr/scores"
-import { vrFlagPins } from "../borders"
-import { vrPicture, type Postcard, type VrPicture } from "../vr-picture"
+import { pts, vrReveal, vrRound, type VrRoundShown } from "../vr-round"
 import { Banner } from "../ui/Banner"
 import { DevDrawer } from "../ui/DevDrawer"
-import { allFlags, cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings"
+import { allFlags, cheatLiveScore, soloKernelId, soloMapDetail, soloPool } from "../settings"
 import { devMode } from "../dev"
 import { Icon } from "../ui/icons"
 import { featureQuestions, flagQuestions, regions } from "../regions"
 import { useBorders } from "../borders"
 import { useFact } from "../facts"
-import { useFillTool } from "../fill"
 import { preloadPictures } from "../preload"
 import { HintCard } from "../ui/Hint"
-import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry, PaintedIn, paintedInText } from "../ui/FlagReveal"
+import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry } from "../ui/FlagReveal"
 import { navigate } from "../router"
-import { sound } from "../sound"
+import { announcePass, frameReveal, showAnswer, useRoundMap, type RevealedAnswer } from "../round"
 import { soloTestIds } from "./SoloTestIds"
 
 type PracticeQuestion = Question | RegionQuestion
 
 const isRegion = (q: PracticeQuestion): q is RegionQuestion => q.kind === "region"
 
-/** What explains a score: A and B for a place, shape and nearness for a country. */
-
-/** What the VR menu shows above the question, as the card does. */
-/** The question's picture; at the reveal, the answer's photo where it showed none, its postcard back telling of the answer. */
-function questionVrPicture(q: PracticeQuestion, reveal: Postcard | undefined): VrPicture | undefined {
-  const photo = ("image" in q && q.image) || (reveal ? revealPhoto(q) : undefined)
-  return vrPicture(photo || undefined, q.flag ?? (isRegion(q) ? q.countryFlag : undefined), reveal)
+function revealedAnswer(q: PracticeQuestion): RevealedAnswer {
+  return {
+    label: q.label,
+    wiki: q.wiki,
+    answer: q.answer,
+    outline: isRegion(q) ? q.outline : undefined,
+    photo: revealPhoto(q)
+  }
 }
 
 function PartsLine({ parts }: { parts: AnswerParts }) {
@@ -100,17 +86,10 @@ function PartsLine({ parts }: { parts: AnswerParts }) {
   )
 }
 
-function showAnswer(gameMap: GameMap, q: PracticeQuestion): void {
-  if (isRegion(q)) gameMap.showRegionReveal(q.outline)
-  else gameMap.showReveal(q.answer, q.toleranceKm)
-}
-
 interface RoundResult {
   question: PracticeQuestion
   score: number
 }
-
-const pts = (n: number) => `${Math.round(n).toLocaleString()} pts`
 
 /** The rounds so far, latest first, for the headset's score table. */
 function roundsTable(results: RoundResult[]): VrTable {
@@ -169,47 +148,36 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const kernel = kernelById(soloKernelId.value)
   const total = results.reduce((s, r) => s + r.score, 0)
   const cheating = devMode.value && cheatLiveScore.value
+  const question = questionView(q)
+  const answer = revealedAnswer(q)
+  const countryFlag = isRegion(q) ? q.countryFlag : undefined
+  const detail = soloMapDetail.value
 
-  // New round: fresh layer for this tolerance, painting on.
-  useEffect(() => {
-    if (phase !== "paint") return
-    paint.reset(q.toleranceKm)
-    paint.enabled.value = true
-    paint.gameMap.clearReveal()
-    paint.gameMap.resetView()
-    paint.tool.value = startOnPan.value ? "pan" : "paint"
-  }, [index, phase === "paint"])
+  useRoundMap(paint, {
+    round: index,
+    painting: phase === "paint",
+    question,
+    detail,
+    reveal: phase === "reveal",
+    hint,
+    start: () => (paint.enabled.value = true)
+  })
 
   // Cheat: show the answer while painting.
   useEffect(() => {
     if (phase !== "paint") return
-    if (cheating) showAnswer(paint.gameMap, q)
+    if (cheating) showAnswer(paint.gameMap, question, answer)
     else paint.gameMap.clearReveal()
   }, [cheating, phase, index])
 
   useEffect(() => paint.onHover((p) => (hover.value = p)), [paint])
 
   useEffect(() => setHint(undefined), [index, questions])
-  useEffect(() => {
-    paint.gameMap.setHint(hint)
-    return () => paint.gameMap.setHint(undefined)
-  }, [hint])
 
   useEffect(() => {
     const next = questions[index + 1]
     if (next) preloadPictures(questionPictures(next))
   }, [questions, index])
-
-  // The chosen map detail while painting; everything on the reveal.
-  const detail = soloMapDetail.value
-  // The Fill tool, for a country on the Political map. It stays on through
-  // the reveal, so a run of country rounds keeps the tool chosen.
-  useFillTool(paint, detail === "political" && q.topic === undefined && (isRegion(q) || q.flag !== undefined))
-  const stateRound = q.topic === "state"
-  useEffect(() => {
-    paint.gameMap.setDetail(phase === "reveal" ? "reveal" : detail)
-    paint.gameMap.setStateReveal(phase === "reveal" && stateRound)
-  }, [phase, detail, stateRound])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -228,8 +196,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
 
   // With nothing painted, a pass: it scores PASS_SCORE, as in a game.
   function submit() {
-    const passed = paint.layer.isEmpty
-    if (passed) sound.play("chicken")
+    const passed = announcePass(paint)
     const dist = passed ? undefined : buildDistribution(paint.layer.toCells(), paint.floor.value)
     const { score } = scoreAnswer(dist, q, kernel)
     const result = { question: q, score }
@@ -237,18 +204,14 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     setRevealed({ dist, result })
     setPhase("reveal")
     paint.enabled.value = false
-    showAnswer(paint.gameMap, q)
+    showAnswer(paint.gameMap, question, answer)
   }
 
   // Framed after the reveal's cards are in place: on a phone the map frames the answer around them.
   useEffect(() => {
     if (phase !== "reveal") return
-    if (isRegion(q)) {
-      // Frame the country and the paint together, wherever the paint went.
-      paint.gameMap.fitRegionAndPaint(q.answer, q.outline, paint.layer.toGeoJSON(), q.toleranceKm)
-    } else {
-      paint.gameMap.focusOn(q.answer, q.toleranceKm)
-    }
+    if (isRegion(q)) frameReveal(paint.gameMap, question, answer, paint.layer.toGeoJSON())
+    else paint.gameMap.focusOn(q.answer, q.toleranceKm)
   }, [phase, index])
 
   function next() {
@@ -284,21 +247,23 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     [revealed, borders]
   )
   const home = { label: "Home", press: () => navigate("/") }
-  const vrRound: VrRound = {
+  const shown: VrRoundShown = {
+    question,
+    countryFlag,
+    revealed: phase === "reveal" ? answer : undefined,
+    fact
+  }
+  const round = vrRound(shown, {
     paint,
-    prompt: q.prompt,
     heading: `QUESTION ${index + 1} OF ${questions.length}, ${pts(total)}`,
-    mode: answerModeText(q),
     detail,
-    picture: questionVrPicture(q, phase === "reveal" ? { place: q.label, text: fact?.text } : undefined),
-    water: q.topic === "lake" || q.topic === "sea",
     hint,
     hintsLeft: "unlimited",
     useHint,
     doneLabel: "Submit",
     done: submit,
     playing: true
-  }
+  })
   const vrView: VrView =
     phase === "done"
       ? {
@@ -314,25 +279,20 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
       : phase === "reveal" && revealed
         ? {
             kind: "reveal",
-            round: vrRound,
+            round,
             more: [{ ...home, confirm: "Press again to leave" }],
-            reveal: {
-              label: q.label,
-              answer: isRegion(q) ? { outline: q.outline } : { point: q.answer },
-              focus: q.answer,
-              stateRound,
-              fact: fact?.text,
-              scoreLine: `${revealed.dist ? "" : "Passed: "}${pts(revealed.result.score)} this round, ${pts(total)} in all${where ? `. ${paintedInText(where, q.flag)}` : ""}`,
-              table: roundsTable(results),
-              actions: [{ label: index + 1 >= questions.length ? "Finish" : "Next question", press: next }],
-              flags: q.flag && {
-                on: allFlags.value,
-                toggle: () => (allFlags.value = !allFlags.value),
-                pins: borders && vrFlagPins(borders)
+            reveal: vrReveal(
+              shown,
+              answer,
+              { score: revealed.result.score, passed: !revealed.dist, total, painted: where },
+              borders,
+              {
+                table: roundsTable(results),
+                actions: [{ label: index + 1 >= questions.length ? "Finish" : "Next question", press: next }]
               }
-            }
+            )
           }
-        : { kind: "paint", round: vrRound, more: [{ ...home, confirm: "Press again to leave" }] }
+        : { kind: "paint", round, more: [{ ...home, confirm: "Press again to leave" }] }
   useVrView(vrView, `${phase} ${index} ${questions[0]?.id} ${hint?.axis}`)
 
   const header = (
@@ -429,28 +389,16 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
         <div class="hud reveal">
           <div class="hud-top">
             {header}
-            <QuestionCard
-              q={q}
-              countryFlag={isRegion(q) ? q.countryFlag : undefined}
-              credit
-              photo={revealPhoto(q)}
-              foldable
-              startFolded
-            >
-              <Answer label={q.label} wiki={q.wiki} />
-              <FactLine fact={fact} />
-            </QuestionCard>
-            <div class="card score">
-              <div class="big" data-testid={soloTestIds.roundScore}>
-                {Math.round(shownResult.score)}
-              </div>
-              <div class="label">{dist ? "this round" : "you passed this round"}</div>
-              {where && (
-                <div class="fit">
-                  Your paint: <PaintedIn where={where} answer={q.flag} whose="your" />
-                </div>
-              )}
-            </div>
+            <RevealCards
+              question={question}
+              countryFlag={countryFlag}
+              revealed={answer}
+              fact={fact}
+              you={{ score: shownResult.score, passed: !dist }}
+              playedLabel="this round"
+              where={where}
+              testIds={{ score: soloTestIds.roundScore }}
+            />
           </div>
           <HudBottom>
             {q.flag && <AllFlagsSwitch />}
@@ -478,25 +426,12 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
       <div class="hud">
         <div class="hud-top">
           {header}
-          <QuestionCard q={q} countryFlag={isRegion(q) ? q.countryFlag : undefined} credit foldable>
-            {q.flag ? <AnswerMode area={isRegion(q)} /> : isRegion(q) && <RegionHint topic={q.topic} />}
-          </QuestionCard>
+          <RoundPrompt question={question} countryFlag={countryFlag} credit />
           <HintCard band={hint} onUse={useHint} />
         </div>
-        <PaintTools practice water={q.topic === "lake" || q.topic === "sea"} hint={hint}>
+        <PaintTools practice water={isWater(q.topic)} hint={hint}>
           <VrButton view={vrView} />
-          <button
-            class="primary"
-            onClick={submit}
-            title={
-              paint.isEmpty.value
-                ? `No idea? Passing scores ${PASS_SCORE.score}. Even painting a wide, vague area scores better on average.`
-                : undefined
-            }
-            data-testid={soloTestIds.submitButton}
-          >
-            <Icon name="check" /> {paint.isEmpty.value ? "Pass" : "Submit"}
-          </button>
+          <DoneButton label="Submit" onDone={submit} testId={soloTestIds.submitButton} />
         </PaintTools>
       </div>
       <DevDrawer>

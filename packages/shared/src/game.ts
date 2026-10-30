@@ -914,7 +914,7 @@ export function questionPictures(q: Question | RegionQuestion): QuestionPictures
  * the country's id, which the prompt names anyway; a flag round sends the
  * flag's code, which the flag gives away anyway.
  */
-function questionView(q: Question | RegionQuestion): QuestionView {
+export function questionView(q: Question | RegionQuestion): QuestionView {
   const extra = { ...(q.flag ? { flag: q.flag } : {}), ...(q.topic ? { topic: q.topic } : {}) }
   if (q.kind === "region") return { prompt: q.prompt, toleranceKm: q.toleranceKm, regionId: q.id, ...extra }
   return { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm, ...extra }

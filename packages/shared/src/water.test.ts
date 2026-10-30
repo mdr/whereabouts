@@ -5,7 +5,7 @@ import featuresJson from "../features.json" with { type: "json" }
 import { WaterMask, paintAmount, trimLand } from "./land.ts"
 import { resolutionForTolerance } from "./paint.ts"
 import { featureFrom, regionCells, type RegionData, type RegionQuestion } from "./regions.ts"
-import { type QuestionData } from "./questions.ts"
+import { isWater, type QuestionData } from "./questions.ts"
 
 const mask = new WaterMask(waterJson)
 const at = (lat: number, lon: number, res: number) => latLngToCell(lat, lon, h3Res(res))
@@ -14,7 +14,7 @@ describe("water mask", () => {
   it("keeps a lake or sea painted exactly", () => {
     const water = (featuresJson as (QuestionData | RegionData)[])
       .map(featureFrom)
-      .filter((q): q is RegionQuestion => q.kind === "region" && (q.topic === "lake" || q.topic === "sea"))
+      .filter((q): q is RegionQuestion => q.kind === "region" && isWater(q.topic))
     expect(water).toHaveLength(22)
     for (const q of water) {
       const cells = new Map(regionCells(q, resolutionForTolerance(q.toleranceKm)).map((h) => [h, 1]))

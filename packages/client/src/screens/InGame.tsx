@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
-import { PASS_SCORE } from "@whereabouts/shared/scoring"
 import { PaintLayer, compactRecord } from "@whereabouts/shared/paint"
 import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/facts"
@@ -7,9 +6,11 @@ import type { GameView } from "@whereabouts/shared/protocol"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import type { RegionQuestion } from "@whereabouts/shared/regions"
+import { isWater } from "@whereabouts/shared/questions"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
-import { AnswerMode, Card, Countdown, HudHeader, QuestionCard, RegionHint, answerModeText } from "../ui/bits"
+import { Card, Countdown, HudHeader } from "../ui/bits"
+import { DoneButton, RoundPrompt } from "../ui/Round"
 import { hostActions, pickable, takeSeat, vrPicked } from "../vr-actions"
 import { navigate } from "../router"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
@@ -17,27 +18,25 @@ import { PlayerList } from "../ui/PlayerList"
 import { ConnectionNote, connectionText } from "../ui/ConnectionNote"
 import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
-import { NONE, Reveal, revealShown, shownResults } from "./Reveal"
-import { borders, loadBorders, vrFlagPins } from "../borders"
-import { useFillTool } from "../fill"
+import { NONE, Reveal, revealedAnswer, revealOrder, revealShown, shownResults } from "./Reveal"
+import { borders, loadBorders } from "../borders"
 import { Icon } from "../ui/icons"
 import { PlayersPanel } from "../ui/PlayersPanel"
 import { EndGameButton } from "../ui/HostControls"
 import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog"
-import { allFlags, askedToWatch, startOnPan } from "../settings"
+import { askedToWatch } from "../settings"
 import { TakeSeatButton } from "../ui/TakeSeat"
 import { HintCard } from "../ui/Hint"
-import { sound } from "../sound"
 import { loadRegions, useRegion } from "../regions"
 import { VrButton, useVrView } from "../ui/VrButton"
-import { mainCountry, paintedInText } from "../ui/FlagReveal"
+import { mainCountry } from "../ui/FlagReveal"
 import type { VrView } from "../vr"
 import type { PaintController } from "../paint-controller"
-import { revealOrder } from "./Reveal"
 import { inGameTestIds } from "./InGameTestIds"
 import { useFact } from "../facts"
-import { vrPicture } from "../vr-picture"
 import { paintLayer, paintsOf } from "../reveal-paint"
+import { announcePass, useRoundMap } from "../round"
+import { vrReveal, vrRound, type VrRoundShown } from "../vr-round"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint()
@@ -45,15 +44,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const sittingOut = view.you.watching || view.you.spectating
   const roundKey = view.round?.index ?? view.reveal?.index ?? -1
   const guessing = view.phase === "guessing"
-  // The Fill tool, for a country on the Political map; on through the
-  // reveal, so a run of country rounds keeps the tool chosen.
   const question = view.round?.question ?? view.reveal?.question
-  useFillTool(
-    paint,
-    view.config.mapDetail === "political" &&
-      question?.topic === undefined &&
-      (question?.regionId !== undefined || question?.flag !== undefined)
-  )
   const sendTimer = useRef<number | undefined>(undefined)
   // The countdown has reached zero: painting stops, and what is on screen is what counts.
   const [timeUp, setTimeUp] = useState(false)
@@ -71,33 +62,26 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     if (flags) loadBorders().catch((err: unknown) => console.warn("could not load borders", err))
   }, [flags])
 
-  // New round: fresh layer, painting on unless spectating. After a reconnect
-  // the server hands back what we had painted, so restore it.
-  useEffect(() => {
-    if (!guessing || !view.round) return
-    paint.reset(view.round.question.toleranceKm)
-    const saved = view.you.paint
-    if (saved) {
-      paint.layer = PaintLayer.fromRecord(paint.layer.res, saved.cells)
-      paint.floor.value = saved.floor
-      paint.version.value++
+  useRoundMap(paint, {
+    round: roundKey,
+    painting: guessing && view.round !== undefined,
+    question,
+    detail: view.config.mapDetail,
+    reveal: view.phase === "reveal",
+    hint: view.you.hint,
+    start: () => {
+      // After a reconnect the server hands back what we had painted.
+      const saved = view.you.paint
+      if (saved) {
+        paint.layer = PaintLayer.fromRecord(paint.layer.res, saved.cells)
+        paint.floor.value = saved.floor
+        paint.version.value++
+      }
+      // Paint in your own colour, the same one others see at the reveal.
+      const me = view.players.find((p) => p.id === view.you.id)
+      paint.showOwn(me && !me.watching ? colourCss(me.colour) : undefined)
     }
-    paint.gameMap.clearReveal()
-    paint.gameMap.resetView()
-    // Paint in your own colour, the same one others see at the reveal.
-    const me = view.players.find((p) => p.id === view.you.id)
-    paint.showOwn(me && !me.watching ? colourCss(me.colour) : undefined)
-    paint.tool.value = startOnPan.value ? "pan" : "paint"
-  }, [roundKey, guessing])
-
-  // The host's map detail while guessing; the reveal shows everything, since
-  // borders, place names, rivers and relief help make sense of the answer.
-  const reveal = view.phase === "reveal"
-  const stateRound = question?.topic === "state"
-  useEffect(() => {
-    paint.gameMap.setDetail(reveal ? "reveal" : view.config.mapDetail)
-    paint.gameMap.setStateReveal(reveal && stateRound)
-  }, [reveal, view.config.mapDetail, stateRound])
+  })
 
   // The server scores a moment after the deadline (ROUND_GRACE_MS), so paint sent at zero still counts.
   const deadline = view.round?.deadline
@@ -151,17 +135,10 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   // Done with paint freezes it; Done with nothing painted is a pass, which
   // scores PASS_SCORE and lets the round end without waiting on you.
   function lockIn() {
-    if (paint.layer.isEmpty) sound.play("chicken")
+    announcePass(paint)
     sendNow()
     conn.lock()
   }
-
-  // Our hint's band, shaded on the map from when it is used until the next round.
-  const hint = view.you.hint
-  useEffect(() => {
-    paint.gameMap.setHint(hint)
-    return () => paint.gameMap.setHint(undefined)
-  }, [hint?.axis, hint?.from, hint?.to])
 
   // A country round shows the country's flag beside its name, once the outlines have loaded.
   const region = useRegion(question?.regionId)
@@ -195,13 +172,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             total={round.total}
             right={<Countdown msRemaining={() => conn.msUntil(round.deadline)} />}
           />
-          <QuestionCard q={round.question} countryFlag={region?.countryFlag} foldable>
-            {round.question.flag ? (
-              <AnswerMode area={round.question.regionId !== undefined} />
-            ) : (
-              round.question.regionId && <RegionHint topic={round.question.topic} />
-            )}
-          </QuestionCard>
+          <RoundPrompt question={round.question} countryFlag={region?.countryFlag} />
           {!sittingOut && view.config.hints > 0 && (
             <HintCard band={view.you.hint} left={view.you.hintsLeft} onUse={(axis) => conn.hint(axis)} />
           )}
@@ -246,7 +217,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
         </div>
         {!sittingOut && (
-          <PaintTools water={round.question.topic === "lake" || round.question.topic === "sea"} hint={view.you.hint}>
+          <PaintTools water={isWater(round.question.topic)} hint={view.you.hint}>
             {view.you.locked ? (
               <button
                 class="keep-editing"
@@ -259,18 +230,12 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             ) : (
               <>
                 <VrButton view={vrView} />
-                <button
-                  class="primary"
-                  data-testid={inGameTestIds.doneButton}
-                  title={
-                    paint.isEmpty.value
-                      ? `No idea? Passing scores ${PASS_SCORE.score}. Even painting a wide, vague area scores better on average.`
-                      : "Whatever is painted when the clock hits zero counts anyway."
-                  }
-                  onClick={lockIn}
-                >
-                  <Icon name="check" /> {paint.isEmpty.value ? "Pass" : "Done"}
-                </button>
+                <DoneButton
+                  label="Done"
+                  onDone={lockIn}
+                  paintedTitle="Whatever is painted when the clock hits zero counts anyway."
+                  testId={inGameTestIds.doneButton}
+                />
               </>
             )}
           </PaintTools>
@@ -310,10 +275,15 @@ function gameVrView(
 ): VrView {
   const question = (view.round ?? view.reveal)!.question
   const me = view.players.find((p) => p.id === view.you.id)
-  const flag = question.flag ?? region?.countryFlag
   const at = view.round ?? view.reveal!
   const connection = connectionText(conn)
   const reveal = view.reveal
+  const shown: VrRoundShown = {
+    question,
+    countryFlag: region?.countryFlag,
+    revealed: reveal && revealedAnswer(reveal, region),
+    fact
+  }
   const more = [
     ...(view.you.watching ? [takeSeat(conn, view, "Play from the next question")] : []),
     ...hostActions(conn, view, view.phase === "reveal" ? revealShown.value : vrPicked.value),
@@ -322,11 +292,9 @@ function gameVrView(
       : []),
     { label: "Leave game", confirm: "Press again to leave", press: () => navigate("/") }
   ]
-  const round = {
+  const round = vrRound(shown, {
     paint,
-    prompt: question.prompt,
     heading: `ROUND ${at.index + 1} OF ${at.total}`,
-    mode: answerModeText(question),
     table: {
       title: "Players",
       rows: view.players
@@ -342,8 +310,6 @@ function gameVrView(
       hint: view.you.isHost ? "Point at a player to remove them or make them host." : undefined
     },
     detail: view.config.mapDetail,
-    picture: vrPicture(question.image ?? reveal?.photo, flag, reveal && { place: reveal.label, text: fact?.text }),
-    water: question.topic === "lake" || question.topic === "sea",
     colour: me && !me.watching ? colourCss(me.colour) : undefined,
     hint: view.you.hint,
     hintsLeft: view.config.hints > 0 ? view.you.hintsLeft : ("none" as const),
@@ -362,7 +328,7 @@ function gameVrView(
           : view.you.locked
             ? "You're done. The round ends when everyone is, or when the clock runs out."
             : undefined)
-  }
+  })
   if (view.phase !== "reveal" || !reveal) return { kind: "paint", round, more }
 
   const ready = new Set(reveal.ready)
@@ -370,39 +336,31 @@ function gameVrView(
   const iAmReady = view.you.id !== undefined && ready.has(view.you.id)
   const last = reveal.index + 1 >= reveal.total
   const mine = reveal.results.find((r) => r.playerId === view.you.id)
-  const pts = (n: number) => `${Math.round(n).toLocaleString()} pts`
-  const shown = revealShown.value
+  const whose = revealShown.value
+  const you = mine && { score: mine.score, passed: !mine.paint, total: me?.score ?? 0, painted }
   return {
     kind: "reveal",
     round,
     more,
-    reveal: {
-      label: reveal.label,
-      answer: region ? { outline: region.outline } : { point: reveal.answer },
-      focus: reveal.answer,
-      stateRound: question.topic === "state",
-      fact: fact?.text,
-      scoreLine: mine
-        ? `${mine.paint ? "" : "Passed: "}${pts(mine.score)} this round, ${pts(me?.score ?? 0)} in all${painted ? `. ${paintedInText(painted, question.flag)}` : ""}`
-        : "You sat this one out",
-      paints: paintsOf(shownResults(reveal.results, shown), view.players),
+    reveal: vrReveal(shown, revealedAnswer(reveal, region), you, borders.value, {
+      paints: paintsOf(shownResults(reveal.results, whose), view.players),
       table: {
         title: `Round ${reveal.index + 1} of ${reveal.total}`,
         rows: [
-          { name: "Everyone", total: "", selected: shown === undefined, select: () => (revealShown.value = undefined) },
+          { name: "Everyone", total: "", selected: whose === undefined, select: () => (revealShown.value = undefined) },
           ...revealOrder(view.players, reveal.results).map(({ p, r }) => ({
             colour: colourCss(p.colour),
             name: `${p.name}${p.id === view.you.id ? " (you)" : ""}`,
             detail: `${r ? (r.paint ? `+${Math.round(r.score)}` : "passed") : "sat out"}${r?.hint ? ", hint" : ""}${ready.has(p.id) ? ", ready" : ""}`,
             total: Math.round(p.score).toLocaleString(),
-            selected: shown === p.id,
-            select: () => (revealShown.value = shown === p.id ? undefined : p.id)
+            selected: whose === p.id,
+            select: () => (revealShown.value = whose === p.id ? undefined : p.id)
           })),
           {
             name: "Hide paint",
             total: "",
-            selected: shown === NONE,
-            select: () => (revealShown.value = shown === NONE ? undefined : NONE)
+            selected: whose === NONE,
+            select: () => (revealShown.value = whose === NONE ? undefined : NONE)
           }
         ],
         hint: "Point at a player to see just their guess."
@@ -413,12 +371,7 @@ function gameVrView(
           ? []
           : [{ label: iAmReady ? "Waiting for the others" : "Ready", press: () => conn.ready(), enabled: !iAmReady }]),
         ...(view.you.isHost ? [{ label: last ? "Show final results" : "Next round", press: () => conn.next() }] : [])
-      ],
-      flags: question.flag && {
-        on: allFlags.value,
-        toggle: () => (allFlags.value = !allFlags.value),
-        pins: borders.value && vrFlagPins(borders.value)
-      }
-    }
+      ]
+    })
   }
 }

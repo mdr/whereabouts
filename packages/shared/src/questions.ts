@@ -7,6 +7,11 @@ export const MIN_SPREAD_KM = 50
 /** What an "Islands, lakes & seas" or "US states" round asks for (features.json). */
 export type Topic = "island" | "lake" | "sea" | "state"
 
+/** A lake or sea: painted on water, so trimming drops paint on land. */
+export function isWater(topic: Topic | undefined): boolean {
+  return topic === "lake" || topic === "sea"
+}
+
 export interface Question {
   id: QuestionId
   kind: "photo" | "text"

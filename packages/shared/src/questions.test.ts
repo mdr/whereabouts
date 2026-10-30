@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { QUESTIONS, pickQuestions, wikipediaUrl } from "./questions.ts"
+import { QUESTIONS, isWater, pickQuestions, wikipediaUrl } from "./questions.ts"
 import { greatCircleDistance } from "./geo.ts"
 import { questionId } from "./ids.ts"
 
@@ -11,6 +11,16 @@ describe("wikipediaUrl", () => {
     expect(wikipediaUrl(undefined, "Oia, Santorini")).toBe(
       "https://en.wikipedia.org/w/index.php?search=Oia%2C%20Santorini"
     )
+  })
+})
+
+describe("isWater", () => {
+  it("is a lake or a sea: not an island, a state or a place", () => {
+    expect(isWater("lake")).toBe(true)
+    expect(isWater("sea")).toBe(true)
+    expect(isWater("island")).toBe(false)
+    expect(isWater("state")).toBe(false)
+    expect(isWater(undefined)).toBe(false)
   })
 })
 

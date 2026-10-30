@@ -123,12 +123,6 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
   )
 }
 
-/** PaintedIn as a line of text, for the headset. */
-export function paintedInText(where: PaintedCountry, answer?: string): string {
-  const right = where.country.flag === answer
-  return `Your paint: ${Math.round(where.share * 100)}% in ${where.country.label}${right ? ", the answer" : ""}`
-}
-
 /**
  * Where some paint mostly was: "[flag] Peru 62%", marked when it is the
  * answer. `whose` names the painter for the title: "your", "Ann's".
