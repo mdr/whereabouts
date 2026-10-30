@@ -7,7 +7,7 @@ import type { Fact } from "@whereabouts/shared/facts"
 import type { QuestionView } from "@whereabouts/shared/protocol"
 import { Icon } from "./icons"
 import { soundOn } from "../settings"
-import { flagUrl } from "../flags"
+import { flagFile, flagRatio, flagUrl } from "../flags"
 import {
   countdownTestIds,
   factTestIds,
@@ -274,16 +274,31 @@ function FlagImage({ code }: { code: string }) {
   useEscape(large, () => setLarge(false))
   return (
     <>
-      <button type="button" class="flag" title="Enlarge the flag" disabled={!src} onClick={() => setLarge(true)}>
+      <button
+        type="button"
+        class="flag"
+        title="Enlarge the flag"
+        disabled={!src}
+        onClick={() => setLarge(true)}
+        style={flagShape(code)}
+        data-testid={questionCardTestIds.flag}
+      >
         {src && <img src={src} alt="The flag" draggable={false} />}
         <span class="enlarge-badge" aria-hidden="true">
           <Icon name="enlarge" size={14} />
         </span>
         <span class="sr-only">Enlarge flag</span>
       </button>
-      {large && src && <Lightbox src={src} kind="flag" credit={undefined} onClose={() => setLarge(false)} />}
+      {large && src && (
+        <Lightbox src={src} kind="flag" ratio={flagRatio(code)} credit={undefined} onClose={() => setLarge(false)} />
+      )}
     </>
   )
+}
+
+/** The flag's shape, for its frame to take before the picture loads (style.css). */
+function flagShape(code: string): Record<string, string> {
+  return { "--flag-ratio": String(flagRatio(code)) }
 }
 
 /** Calls `close` on Escape while `open`. */
@@ -301,7 +316,11 @@ function useEscape(open: boolean, close: () => void): void {
 /** A small flag beside a country's name, which says the name: no alt text of its own. */
 export function SmallFlag({ code }: { code: string }) {
   const src = useFlagUrl(code)
-  return <span class="small-flag">{src && <img src={src} alt="" draggable={false} />}</span>
+  return (
+    <span class="small-flag" style={flagShape(code)}>
+      {src && <img src={src} alt="" draggable={false} />}
+    </span>
+  )
 }
 
 /** Under a "Paint the whole of …" question: what to cover. */
@@ -416,24 +435,38 @@ export function SmallPhoto({ image }: { image: string }) {
   )
 }
 
-/** A flag the size of a list row; click it to enlarge. */
+/**
+ * A flag the size of a list row; click it to enlarge. Shown once the round
+ * is over, so its Commons credit (which names the country) can show too.
+ */
 export function SmallFlagButton({ code }: { code: string }) {
   const src = useFlagUrl(code)
+  const file = flagFile(code)
   const [large, setLarge] = useState(false)
   useEscape(large, () => setLarge(false))
   return (
     <>
       <button
         type="button"
-        class="small-picture"
+        class="small-picture small-flag-picture"
         title="Enlarge the flag"
         disabled={!src}
         onClick={() => setLarge(true)}
       >
-        {src && <img src={src} alt="" draggable={false} />}
+        <span class="flag-shape" style={flagShape(code)}>
+          {src && <img src={src} alt="" draggable={false} />}
+        </span>
         <span class="sr-only">Enlarge flag</span>
       </button>
-      {large && src && <Lightbox src={src} kind="flag" credit={undefined} onClose={() => setLarge(false)} />}
+      {large && src && (
+        <Lightbox
+          src={src}
+          kind="flag"
+          ratio={flagRatio(code)}
+          credit={file && <CommonsCredit image={file} />}
+          onClose={() => setLarge(false)}
+        />
+      )}
     </>
   )
 }
@@ -450,11 +483,14 @@ const CLICK_ZOOM = 2.5
 function Lightbox({
   src,
   kind,
+  ratio,
   credit,
   onClose
 }: {
   src: string
   kind: "photo" | "flag"
+  /** A flag's width over its height: its SVG has no size of its own. */
+  ratio?: number
   credit: ComponentChildren
   onClose: () => void
 }) {
@@ -560,7 +596,10 @@ function Lightbox({
           alt=""
           referrerpolicy="no-referrer"
           draggable={false}
-          style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            ...(ratio && { "--flag-ratio": String(ratio) })
+          }}
         />
         {credit}
       </div>

@@ -1,0 +1,972 @@
+{
+  "ad": {
+    "ratio": 1.4286,
+    "file": "Flag_of_Andorra.svg",
+    "licence": "Public domain"
+  },
+  "ae": {
+    "ratio": 2,
+    "file": "Flag_of_the_United_Arab_Emirates.svg",
+    "licence": "Public domain"
+  },
+  "af": {
+    "ratio": 2,
+    "file": "Flag_of_the_Taliban.svg",
+    "licence": "Public domain"
+  },
+  "ag": {
+    "ratio": 1.5,
+    "file": "Flag_of_Antigua_and_Barbuda.svg",
+    "licence": "Public domain"
+  },
+  "al": {
+    "ratio": 1.4,
+    "file": "Flag_of_Albania.svg",
+    "licence": "Public domain"
+  },
+  "am": {
+    "ratio": 2,
+    "file": "Flag_of_Armenia.svg",
+    "licence": "Public domain"
+  },
+  "ao": {
+    "ratio": 1.5,
+    "file": "Flag_of_Angola_using_the_specifications_prescribed_in_\"Manual_Simbolos_Nacionais\",_V01.05.2021D.svg",
+    "licence": "Public domain"
+  },
+  "ar": {
+    "ratio": 1.6,
+    "file": "Flag_of_Argentina.svg",
+    "licence": "Public domain"
+  },
+  "at": {
+    "ratio": 1.5,
+    "file": "Flag_of_Austria.svg",
+    "licence": "Public domain"
+  },
+  "au": {
+    "ratio": 2,
+    "file": "Flag_of_Australia_(converted).svg",
+    "licence": "Public domain"
+  },
+  "az": {
+    "ratio": 2,
+    "file": "Flag_of_Azerbaijan.svg",
+    "licence": "Public domain"
+  },
+  "ba": {
+    "ratio": 2,
+    "file": "Flag_of_Bosnia_and_Herzegovina.svg",
+    "licence": "Public domain"
+  },
+  "bb": {
+    "ratio": 1.5,
+    "file": "Flag_of_Barbados.svg",
+    "licence": "Public domain"
+  },
+  "bd": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Bangladesh.svg",
+    "licence": "Public domain"
+  },
+  "be": {
+    "ratio": 1.1538,
+    "file": "Flag_of_Belgium.svg",
+    "licence": "Public domain"
+  },
+  "bf": {
+    "ratio": 1.5,
+    "file": "Flag_of_Burkina_Faso.svg",
+    "licence": "Public domain"
+  },
+  "bg": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Bulgaria.svg",
+    "licence": "Public domain"
+  },
+  "bh": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Bahrain.svg",
+    "licence": "Public domain"
+  },
+  "bi": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Burundi.svg",
+    "licence": "Public domain"
+  },
+  "bj": {
+    "ratio": 1.5,
+    "file": "Flag_of_Benin.svg",
+    "licence": "Public domain"
+  },
+  "bn": {
+    "ratio": 2,
+    "file": "Flag_of_Brunei.svg",
+    "licence": "Public domain"
+  },
+  "bo": {
+    "ratio": 1.4667,
+    "file": "Flag_of_Bolivia.svg",
+    "licence": "Public domain"
+  },
+  "br": {
+    "ratio": 1.4286,
+    "file": "Flag_of_Brazil.svg",
+    "licence": "Public domain"
+  },
+  "bs": {
+    "ratio": 2,
+    "file": "Flag_of_the_Bahamas.svg",
+    "licence": "Public domain"
+  },
+  "bt": {
+    "ratio": 1.5,
+    "file": "Flag_of_Bhutan.svg",
+    "licence": "Public domain"
+  },
+  "bw": {
+    "ratio": 1.5,
+    "file": "Flag_of_Botswana.svg",
+    "licence": "Public domain"
+  },
+  "by": {
+    "ratio": 2,
+    "file": "Flag_of_Belarus.svg",
+    "licence": "Public domain"
+  },
+  "bz": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Belize.svg",
+    "licence": "Public domain"
+  },
+  "ca": {
+    "ratio": 2,
+    "file": "Flag_of_Canada_(Pantone).svg",
+    "licence": "Public domain"
+  },
+  "cd": {
+    "ratio": 1.3333,
+    "file": "Flag_of_the_Democratic_Republic_of_the_Congo.svg",
+    "licence": "Public domain"
+  },
+  "cf": {
+    "ratio": 1.5,
+    "file": "Flag_of_the_Central_African_Republic.svg",
+    "licence": "Public domain"
+  },
+  "cg": {
+    "ratio": 1.5,
+    "file": "Flag_of_the_Republic_of_the_Congo.svg",
+    "licence": "Public domain"
+  },
+  "ch": {
+    "ratio": 1,
+    "file": "Flag_of_Switzerland_(Pantone).svg",
+    "licence": "Public domain"
+  },
+  "ci": {
+    "ratio": 1.5,
+    "file": "Flag_of_Côte_d'Ivoire.svg",
+    "licence": "Public domain"
+  },
+  "cl": {
+    "ratio": 1.5,
+    "file": "Flag_of_Chile.svg",
+    "licence": "Public domain"
+  },
+  "cm": {
+    "ratio": 1.5,
+    "file": "Flag_of_Cameroon.svg",
+    "licence": "Public domain"
+  },
+  "cn": {
+    "ratio": 1.5,
+    "file": "Flag_of_the_People's_Republic_of_China.svg",
+    "licence": "Public domain"
+  },
+  "co": {
+    "ratio": 1.5,
+    "file": "Flag_of_Colombia.svg",
+    "licence": "Public domain"
+  },
+  "cr": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Costa_Rica.svg",
+    "licence": "Public domain"
+  },
+  "cu": {
+    "ratio": 2,
+    "file": "Flag_of_Cuba.svg",
+    "licence": "Public domain"
+  },
+  "cv": {
+    "ratio": 1.5,
+    "file": "Flag_of_Cape_Verde_(3-2).svg",
+    "licence": "Public domain"
+  },
+  "cy": {
+    "ratio": 1.5,
+    "file": "Flag_of_Cyprus.svg",
+    "licence": "Public domain"
+  },
+  "cz": {
+    "ratio": 1.5,
+    "file": "Flag_of_the_Czech_Republic.svg",
+    "licence": "Public domain"
+  },
+  "de": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Germany.svg",
+    "licence": "Public domain"
+  },
+  "dj": {
+    "ratio": 1.5,
+    "file": "Flag_of_Djibouti.svg",
+    "licence": "Public domain"
+  },
+  "dk": {
+    "ratio": 1.3214,
+    "file": "Flag_of_Denmark.svg",
+    "licence": "Public domain"
+  },
+  "dm": {
+    "ratio": 2,
+    "file": "Flag_of_Dominica.svg",
+    "licence": "Public domain"
+  },
+  "do": {
+    "ratio": 1.5,
+    "file": "Flag_of_the_Dominican_Republic.svg",
+    "licence": "Public domain"
+  },
+  "dz": {
+    "ratio": 1.5,
+    "file": "Flag_of_Algeria.svg",
+    "licence": "Public domain"
+  },
+  "ec": {
+    "ratio": 1.5,
+    "file": "Flag_of_Ecuador.svg",
+    "licence": "Public domain"
+  },
+  "ee": {
+    "ratio": 1.5714,
+    "file": "Flag_of_Estonia.svg",
+    "licence": "Public domain"
+  },
+  "eg": {
+    "ratio": 1.5,
+    "file": "Flag_of_Egypt.svg",
+    "licence": "Public domain"
+  },
+  "er": {
+    "ratio": 2,
+    "file": "Flag_of_Eritrea.svg",
+    "licence": "Public domain"
+  },
+  "es": {
+    "ratio": 1.5,
+    "file": "Flag_of_the_Kingdom_of_Spain.svg",
+    "licence": "Public domain"
+  },
+  "et": {
+    "ratio": 2,
+    "file": "Flag_of_Ethiopia.svg",
+    "licence": "Public domain"
+  },
+  "fi": {
+    "ratio": 1.6364,
+    "file": "Flag_of_Finland.svg",
+    "licence": "Public domain"
+  },
+  "fj": {
+    "ratio": 2,
+    "file": "Flag_of_Fiji.svg",
+    "licence": "Public domain"
+  },
+  "fm": {
+    "ratio": 1.9,
+    "file": "Flag_of_the_Federated_States_of_Micronesia.svg",
+    "licence": "Public domain"
+  },
+  "fr": {
+    "ratio": 1.5,
+    "file": "Flag_of_France.svg",
+    "licence": "Public domain"
+  },
+  "ga": {
+    "ratio": 1.3333,
+    "file": "Flag_of_Gabon.svg",
+    "licence": "Public domain"
+  },
+  "gb": {
+    "ratio": 2,
+    "file": "Flag_of_the_United_Kingdom_(1-2).svg",
+    "licence": "Public domain"
+  },
+  "gd": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Grenada.svg",
+    "licence": "Public domain"
+  },
+  "ge": {
+    "ratio": 1.5,
+    "file": "Flag_of_Georgia.svg",
+    "licence": "Public domain"
+  },
+  "gh": {
+    "ratio": 1.5,
+    "file": "Flag_of_Ghana.svg",
+    "licence": "Public domain"
+  },
+  "gm": {
+    "ratio": 1.5,
+    "file": "Flag_of_The_Gambia.svg",
+    "licence": "Public domain"
+  },
+  "gn": {
+    "ratio": 1.5,
+    "file": "Flag_of_Guinea.svg",
+    "licence": "Public domain"
+  },
+  "gq": {
+    "ratio": 1.5,
+    "file": "Flag_of_Equatorial_Guinea.svg",
+    "licence": "Public domain"
+  },
+  "gr": {
+    "ratio": 1.5,
+    "file": "Flag_of_Greece.svg",
+    "licence": "Public domain"
+  },
+  "gt": {
+    "ratio": 1.6,
+    "file": "Flag_of_Guatemala.svg",
+    "licence": "Public domain"
+  },
+  "gw": {
+    "ratio": 2,
+    "file": "Flag_of_Guinea-Bissau.svg",
+    "licence": "Public domain"
+  },
+  "gy": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Guyana.svg",
+    "licence": "Public domain"
+  },
+  "hn": {
+    "ratio": 2,
+    "file": "Flag_of_Honduras_(1949–2022,_2026–present).svg",
+    "licence": "Public domain"
+  },
+  "hr": {
+    "ratio": 2,
+    "file": "Flag_of_Croatia.svg",
+    "licence": "Public domain"
+  },
+  "ht": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Haiti.svg",
+    "licence": "Public domain"
+  },
+  "hu": {
+    "ratio": 2,
+    "file": "Flag_of_Hungary.svg",
+    "licence": "Public domain"
+  },
+  "id": {
+    "ratio": 1.5,
+    "file": "Flag_of_Indonesia.svg",
+    "licence": "Public domain"
+  },
+  "ie": {
+    "ratio": 2,
+    "file": "Flag_of_Ireland.svg",
+    "licence": "Public domain"
+  },
+  "il": {
+    "ratio": 1.375,
+    "file": "Flag_of_Israel.svg",
+    "licence": "Public domain"
+  },
+  "in": {
+    "ratio": 1.5,
+    "file": "Flag_of_India.svg",
+    "licence": "Public domain"
+  },
+  "iq": {
+    "ratio": 1.5,
+    "file": "Flag_of_Iraq.svg",
+    "licence": "Public domain"
+  },
+  "ir": {
+    "ratio": 1.75,
+    "file": "Flag_of_Iran.svg",
+    "licence": "Public domain"
+  },
+  "is": {
+    "ratio": 1.3889,
+    "file": "Flag_of_Iceland.svg",
+    "licence": "Public domain"
+  },
+  "it": {
+    "ratio": 1.5,
+    "file": "Flag_of_Italy.svg",
+    "licence": "Public domain"
+  },
+  "jm": {
+    "ratio": 2,
+    "file": "Flag_of_Jamaica.svg",
+    "licence": "Public domain"
+  },
+  "jo": {
+    "ratio": 2,
+    "file": "Flag_of_Jordan.svg",
+    "licence": "Public domain"
+  },
+  "jp": {
+    "ratio": 1.5,
+    "file": "Flag_of_Japan.svg",
+    "licence": "Public domain"
+  },
+  "ke": {
+    "ratio": 1.5,
+    "file": "Flag_of_Kenya.svg",
+    "licence": "Public domain"
+  },
+  "kg": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Kyrgyzstan.svg",
+    "licence": "Public domain"
+  },
+  "kh": {
+    "ratio": 1.5625,
+    "file": "Flag_of_Cambodia.svg",
+    "licence": "Public domain"
+  },
+  "ki": {
+    "ratio": 2,
+    "file": "Flag_of_Kiribati.svg",
+    "licence": "Public domain"
+  },
+  "km": {
+    "ratio": 1.6667,
+    "file": "Flag_of_the_Comoros.svg",
+    "licence": "Public domain"
+  },
+  "kn": {
+    "ratio": 1.5,
+    "file": "Flag_of_Saint_Kitts_and_Nevis.svg",
+    "licence": "Public domain"
+  },
+  "kp": {
+    "ratio": 1.65,
+    "file": "Flag_of_North_Korea_(20-33).svg",
+    "licence": "Public domain"
+  },
+  "kr": {
+    "ratio": 1.5,
+    "file": "Flag_of_South_Korea.svg",
+    "licence": "Public domain"
+  },
+  "kw": {
+    "ratio": 2,
+    "file": "Flag_of_Kuwait.svg",
+    "licence": "Public domain"
+  },
+  "kz": {
+    "ratio": 2,
+    "file": "Flag_of_Kazakhstan.svg",
+    "licence": "Public domain"
+  },
+  "la": {
+    "ratio": 1.5,
+    "file": "Flag_of_Laos.svg",
+    "licence": "Public domain"
+  },
+  "lb": {
+    "ratio": 1.5,
+    "file": "Flag_of_Lebanon.svg",
+    "licence": "Public domain"
+  },
+  "lc": {
+    "ratio": 2,
+    "file": "Flag_of_Saint_Lucia.svg",
+    "licence": "Public domain"
+  },
+  "li": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Liechtenstein.svg",
+    "licence": "Public domain"
+  },
+  "lk": {
+    "ratio": 2,
+    "file": "Flag_of_Sri_Lanka.svg",
+    "licence": "Public domain"
+  },
+  "lr": {
+    "ratio": 1.9,
+    "file": "Flag_of_Liberia.svg",
+    "licence": "Public domain"
+  },
+  "ls": {
+    "ratio": 1.5,
+    "file": "Flag_of_Lesotho.svg",
+    "licence": "Public domain"
+  },
+  "lt": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Lithuania.svg",
+    "licence": "Public domain"
+  },
+  "lu": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Luxembourg.svg",
+    "licence": "Public domain"
+  },
+  "lv": {
+    "ratio": 2,
+    "file": "Flag_of_Latvia.svg",
+    "licence": "Public domain"
+  },
+  "ly": {
+    "ratio": 2,
+    "file": "Flag_of_Libya.svg",
+    "licence": "Public domain"
+  },
+  "ma": {
+    "ratio": 1.5,
+    "file": "Flag_of_Morocco.svg",
+    "licence": "Public domain"
+  },
+  "mc": {
+    "ratio": 1.25,
+    "file": "Flag_of_Monaco.svg",
+    "licence": "Public domain"
+  },
+  "md": {
+    "ratio": 2,
+    "file": "Flag_of_Moldova.svg",
+    "licence": "Public domain"
+  },
+  "me": {
+    "ratio": 2,
+    "file": "Flag_of_Montenegro.svg",
+    "licence": "Public domain"
+  },
+  "mg": {
+    "ratio": 1.5,
+    "file": "Flag_of_Madagascar.svg",
+    "licence": "Public domain"
+  },
+  "mh": {
+    "ratio": 1.9,
+    "file": "Flag_of_the_Marshall_Islands.svg",
+    "licence": "Public domain"
+  },
+  "mk": {
+    "ratio": 2,
+    "file": "Flag_of_North_Macedonia.svg",
+    "licence": "Public domain"
+  },
+  "ml": {
+    "ratio": 1.5,
+    "file": "Flag_of_Mali.svg",
+    "licence": "Public domain"
+  },
+  "mm": {
+    "ratio": 1.5,
+    "file": "Flag_of_Myanmar.svg",
+    "licence": "Public domain"
+  },
+  "mn": {
+    "ratio": 2,
+    "file": "Flag_of_Mongolia.svg",
+    "licence": "Public domain"
+  },
+  "mr": {
+    "ratio": 1.5,
+    "file": "Flag_of_Mauritania.svg",
+    "licence": "Public domain"
+  },
+  "mt": {
+    "ratio": 1.5,
+    "file": "Flag_of_Malta.svg",
+    "licence": "Public domain"
+  },
+  "mu": {
+    "ratio": 1.5,
+    "file": "Flag_of_Mauritius.svg",
+    "licence": "Public domain"
+  },
+  "mv": {
+    "ratio": 1.5,
+    "file": "Flag_of_Maldives.svg",
+    "licence": "Public domain"
+  },
+  "mw": {
+    "ratio": 1.5,
+    "file": "Flag_of_Malawi.svg",
+    "licence": "Public domain"
+  },
+  "mx": {
+    "ratio": 1.75,
+    "file": "Flag_of_Mexico.svg",
+    "licence": "Public domain"
+  },
+  "my": {
+    "ratio": 2,
+    "file": "Flag_of_Malaysia.svg",
+    "licence": "Public domain"
+  },
+  "mz": {
+    "ratio": 1.5,
+    "file": "Flag_of_Mozambique.svg",
+    "licence": "Public domain"
+  },
+  "na": {
+    "ratio": 1.5,
+    "file": "Flag_of_Namibia.svg",
+    "licence": "Public domain"
+  },
+  "ne": {
+    "ratio": 1.1667,
+    "file": "Flag_of_Niger.svg",
+    "licence": "Public domain"
+  },
+  "ng": {
+    "ratio": 2,
+    "file": "Flag_of_Nigeria.svg",
+    "licence": "Public domain"
+  },
+  "ni": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Nicaragua.svg",
+    "licence": "Public domain"
+  },
+  "nl": {
+    "ratio": 1.5,
+    "file": "Flag_of_the_Netherlands.svg",
+    "licence": "Public domain"
+  },
+  "no": {
+    "ratio": 1.375,
+    "file": "Flag_of_Norway.svg",
+    "licence": "Public domain"
+  },
+  "np": {
+    "ratio": 0.8203,
+    "file": "Flag_of_Nepal.svg",
+    "licence": "Public domain"
+  },
+  "nr": {
+    "ratio": 2,
+    "file": "Flag_of_Nauru.svg",
+    "licence": "Public domain"
+  },
+  "nz": {
+    "ratio": 2,
+    "file": "Flag_of_New_Zealand.svg",
+    "licence": "Public domain"
+  },
+  "om": {
+    "ratio": 1.75,
+    "file": "Flag_of_Oman.svg",
+    "licence": "OGL-om 1.0"
+  },
+  "pa": {
+    "ratio": 1.5,
+    "file": "Flag_of_Panama.svg",
+    "licence": "Public domain"
+  },
+  "pe": {
+    "ratio": 1.5,
+    "file": "Flag_of_Peru.svg",
+    "licence": "Public domain"
+  },
+  "pg": {
+    "ratio": 1.3333,
+    "file": "Flag_of_Papua_New_Guinea.svg",
+    "licence": "Public domain"
+  },
+  "ph": {
+    "ratio": 2,
+    "file": "Flag_of_the_Philippines.svg",
+    "licence": "Public domain"
+  },
+  "pk": {
+    "ratio": 1.5,
+    "file": "Flag_of_Pakistan.svg",
+    "licence": "Public domain"
+  },
+  "pl": {
+    "ratio": 1.6,
+    "file": "Flag_of_Poland.svg",
+    "licence": "Public domain"
+  },
+  "pt": {
+    "ratio": 1.5,
+    "file": "Flag_of_Portugal_(official).svg",
+    "licence": "Public domain"
+  },
+  "pw": {
+    "ratio": 1.6,
+    "file": "Flag_of_Palau.svg",
+    "licence": "Public domain"
+  },
+  "py": {
+    "ratio": 1.8182,
+    "file": "Flag_of_Paraguay.svg",
+    "licence": "Public domain"
+  },
+  "qa": {
+    "ratio": 2.5455,
+    "file": "Flag_of_Qatar.svg",
+    "licence": "Public domain"
+  },
+  "ro": {
+    "ratio": 1.5,
+    "file": "Flag_of_Romania.svg",
+    "licence": "Public domain"
+  },
+  "rs": {
+    "ratio": 1.5,
+    "file": "Flag_of_Serbia.svg",
+    "licence": "Public domain"
+  },
+  "ru": {
+    "ratio": 1.5,
+    "file": "Flag_of_Russia.svg",
+    "licence": "Public domain"
+  },
+  "rw": {
+    "ratio": 1.5,
+    "file": "Flag_of_Rwanda.svg",
+    "licence": "Public domain"
+  },
+  "sa": {
+    "ratio": 1.5,
+    "file": "Flag_of_Saudi_Arabia.svg",
+    "licence": "Public domain"
+  },
+  "sb": {
+    "ratio": 2,
+    "file": "Flag_of_the_Solomon_Islands.svg",
+    "licence": "Public domain"
+  },
+  "sc": {
+    "ratio": 2,
+    "file": "Flag_of_Seychelles.svg",
+    "licence": "Public domain"
+  },
+  "sd": {
+    "ratio": 2,
+    "file": "Flag_of_Sudan.svg",
+    "licence": "Public domain"
+  },
+  "se": {
+    "ratio": 1.6,
+    "file": "Flag_of_Sweden.svg",
+    "licence": "Public domain"
+  },
+  "sg": {
+    "ratio": 1.5,
+    "file": "Flag_of_Singapore.svg",
+    "licence": "Public domain"
+  },
+  "si": {
+    "ratio": 2,
+    "file": "Flag_of_Slovenia.svg",
+    "licence": "Public domain"
+  },
+  "sk": {
+    "ratio": 1.5,
+    "file": "Flag_of_Slovakia.svg",
+    "licence": "Public domain"
+  },
+  "sl": {
+    "ratio": 1.5,
+    "file": "Flag_of_Sierra_Leone.svg",
+    "licence": "Public domain"
+  },
+  "sm": {
+    "ratio": 1.3333,
+    "file": "Flag_of_San_Marino.svg",
+    "licence": "Public domain"
+  },
+  "sn": {
+    "ratio": 1.5,
+    "file": "Flag_of_Senegal.svg",
+    "licence": "Public domain"
+  },
+  "so": {
+    "ratio": 1.5,
+    "file": "Flag_of_Somalia.svg",
+    "licence": "Public domain"
+  },
+  "sr": {
+    "ratio": 1.5,
+    "file": "Flag_of_Suriname.svg",
+    "licence": "Public domain"
+  },
+  "ss": {
+    "ratio": 2,
+    "file": "Flag_of_South_Sudan.svg",
+    "licence": "Public domain"
+  },
+  "st": {
+    "ratio": 2,
+    "file": "Flag_of_São_Tomé_and_Príncipe.svg",
+    "licence": "Public domain"
+  },
+  "sv": {
+    "ratio": 1.7725,
+    "file": "Flag_of_El_Salvador.svg",
+    "licence": "Public domain"
+  },
+  "sy": {
+    "ratio": 1.5,
+    "file": "Flag_of_Syria_(2025-).svg",
+    "licence": "Public domain"
+  },
+  "sz": {
+    "ratio": 1.5,
+    "file": "Flag_of_Eswatini.svg",
+    "licence": "Public domain"
+  },
+  "td": {
+    "ratio": 1.5,
+    "file": "Flag_of_Chad.svg",
+    "licence": "Public domain"
+  },
+  "tg": {
+    "ratio": 1.618,
+    "file": "Flag_of_Togo.svg",
+    "licence": "Public domain"
+  },
+  "th": {
+    "ratio": 1.5,
+    "file": "Flag_of_Thailand.svg",
+    "licence": "Public domain"
+  },
+  "tj": {
+    "ratio": 2,
+    "file": "Flag_of_Tajikistan.svg",
+    "licence": "Public domain"
+  },
+  "tl": {
+    "ratio": 2,
+    "file": "Flag_of_East_Timor.svg",
+    "licence": "Public domain"
+  },
+  "tm": {
+    "ratio": 1.5,
+    "file": "Flag_of_Turkmenistan.svg",
+    "licence": "Public domain"
+  },
+  "tn": {
+    "ratio": 1.5,
+    "file": "Flag_of_Tunisia.svg",
+    "licence": "Public domain"
+  },
+  "to": {
+    "ratio": 2,
+    "file": "Flag_of_Tonga.svg",
+    "licence": "Public domain"
+  },
+  "tr": {
+    "ratio": 1.5,
+    "file": "Flag_of_Turkey.svg",
+    "licence": "Public domain"
+  },
+  "tt": {
+    "ratio": 1.6667,
+    "file": "Flag_of_Trinidad_and_Tobago.svg",
+    "licence": "Public domain"
+  },
+  "tv": {
+    "ratio": 2,
+    "file": "Flag_of_Tuvalu.svg",
+    "licence": "Public domain"
+  },
+  "tz": {
+    "ratio": 1.5,
+    "file": "Flag_of_Tanzania.svg",
+    "licence": "Public domain"
+  },
+  "ua": {
+    "ratio": 1.5,
+    "file": "Flag_of_Ukraine.svg",
+    "licence": "Public domain"
+  },
+  "ug": {
+    "ratio": 1.5,
+    "file": "Flag_of_Uganda.svg",
+    "licence": "Public domain"
+  },
+  "us": {
+    "ratio": 1.9,
+    "file": "Flag_of_the_United_States_(DDD-F-416E_specifications).svg",
+    "licence": "Public domain"
+  },
+  "uy": {
+    "ratio": 1.5,
+    "file": "Flag_of_Uruguay.svg",
+    "licence": "Public domain"
+  },
+  "uz": {
+    "ratio": 2,
+    "file": "Flag_of_Uzbekistan.svg",
+    "licence": "Public domain"
+  },
+  "va": {
+    "ratio": 1,
+    "file": "Flag_of_Vatican_City_(2023–present).svg",
+    "licence": "Public domain"
+  },
+  "vc": {
+    "ratio": 1.5,
+    "file": "Flag_of_Saint_Vincent_and_the_Grenadines.svg",
+    "licence": "Public domain"
+  },
+  "ve": {
+    "ratio": 1.5,
+    "file": "Flag_of_Venezuela.svg",
+    "licence": "Public domain"
+  },
+  "vn": {
+    "ratio": 1.5,
+    "file": "Flag_of_Vietnam.svg",
+    "licence": "Public domain"
+  },
+  "vu": {
+    "ratio": 1.5,
+    "file": "Flag_of_Vanuatu_(official).svg",
+    "licence": "Public domain"
+  },
+  "ws": {
+    "ratio": 2,
+    "file": "Flag_of_Samoa.svg",
+    "licence": "Public domain"
+  },
+  "ye": {
+    "ratio": 1.5,
+    "file": "Flag_of_Yemen.svg",
+    "licence": "Public domain"
+  },
+  "za": {
+    "ratio": 1.5,
+    "file": "Flag_of_South_Africa.svg",
+    "licence": "Public domain"
+  },
+  "zm": {
+    "ratio": 1.5,
+    "file": "Flag_of_Zambia.svg",
+    "licence": "Public domain"
+  },
+  "zw": {
+    "ratio": 2,
+    "file": "Flag_of_Zimbabwe.svg",
+    "licence": "Public domain"
+  }
+}

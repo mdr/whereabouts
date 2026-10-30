@@ -6,6 +6,7 @@
 import { Headset } from "../pages/Headset.ts"
 import { soloTestIds } from "../../src/screens/SoloTestIds.ts"
 import { hintTestIds } from "../../src/ui/HintTestIds.ts"
+import { questionCardTestIds } from "../../src/ui/bitsTestIds.ts"
 import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
 import { until } from "../pages/support.ts"
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
@@ -356,7 +357,7 @@ await round.pause(500)
 const drawnSince = (await headset.scenesDrawn()) - drawnOnLeaving
 checks.check(drawnSince === 0, `and the VR scene is no longer drawn on the page (${drawnSince} frames in 0.5 s)`)
 
-// A flag round shows its flag over the VR menu, a 4:3 card.
+// A flag round shows its flag over the VR menu, a card in the flag's own shape.
 await tab.page.context().close()
 const flagTab = await newTab(browser, "vr-flag", {
   context: { viewport: { width: 1200, height: 800 } },
@@ -389,9 +390,14 @@ const flag = await until(
   (p) => p !== undefined,
   60_000
 )
+const flagRatio = Number(
+  await flagTab.page
+    .getByTestId(questionCardTestIds.flag)
+    .evaluate((el) => (el as HTMLElement).style.getPropertyValue("--flag-ratio"))
+)
 checks.check(
-  flag !== undefined && Math.abs(flag[0] / flag[1] - 4 / 3) < 0.01,
-  `a flag round shows the flag in VR (${flag?.map((m) => m.toFixed(2)).join(" × ")} m)`
+  flag !== undefined && Math.abs(flag[0] / flag[1] / flagRatio - 1) < 0.01,
+  `a flag round shows the flag in VR in its own shape (${flag?.map((m) => m.toFixed(2)).join(" × ")} m, ratio ${flagRatio})`
 )
 await flagRound.pause(1500)
 await flagRound.screenshot(`${out}/vr-7-flag.png`)

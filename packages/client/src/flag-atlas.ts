@@ -5,17 +5,21 @@
 import atlas from "./flag-atlas.json"
 import url from "./assets/flag-atlas.webp"
 
+const [cellW, cellH] = atlas.cell as [number, number]
+const rows = Math.ceil(atlas.codes.length / atlas.columns)
+
 export const FLAG_ATLAS = {
   url,
-  columns: atlas.columns,
-  rows: Math.ceil(atlas.codes.length / atlas.columns),
-  cell: atlas.cell as [number, number]
+  /** The picture's size in pixels. */
+  width: atlas.columns * cellW,
+  height: rows * cellH
 }
 
 const index = new Map(atlas.codes.map((c, i) => [c, i]))
 
-/** A flag's cell in the picture, by column and row, if it has one. */
-export function atlasCell(code: string): [number, number] | undefined {
+/** Where a flag is in the picture, in pixels, if it is there: each in its own shape. */
+export function atlasCell(code: string): { x: number; y: number; w: number; h: number } | undefined {
   const i = index.get(code)
-  return i === undefined ? undefined : [i % atlas.columns, Math.floor(i / atlas.columns)]
+  if (i === undefined) return undefined
+  return { x: (i % atlas.columns) * cellW, y: Math.floor(i / atlas.columns) * cellH, w: atlas.widths[i]!, h: cellH }
 }

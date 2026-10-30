@@ -4,7 +4,7 @@
   "workspaces": {
     "packages/client": {
       "entry": ["scripts/*.mjs", "browser/e2e/*.ts"],
-      "ignoreDependencies": ["flag-icons", "iwer"]
+      "ignoreDependencies": ["iwer"]
     },
     "packages/shared": {
       "entry": ["scripts/*.mjs"]

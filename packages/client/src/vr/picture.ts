@@ -17,7 +17,7 @@ import {
   type Object3D
 } from "three"
 import type { Postcard, VrPicture } from "../vr-picture"
-import { flagUrl } from "../flags"
+import { flagRatio, flagUrl } from "../flags"
 import type { Hand } from "./globe"
 
 const MAX_W = 0.38
@@ -113,8 +113,8 @@ export class Picture {
     void load(picture).then(
       (img) => {
         if (asked !== this.asked || !img) return
-        // An SVG flag can report no size of its own; flags are 4:3.
-        const [w, h] = img.naturalWidth > 0 ? [img.naturalWidth, img.naturalHeight] : [4, 3]
+        // A flag's SVG has no size of its own.
+        const [w, h] = "flag" in picture ? [flagRatio(picture.flag), 1] : [img.naturalWidth, img.naturalHeight]
         const fit = Math.min(MAX_PX / w, MAX_PX / h)
         const canvas = document.createElement("canvas")
         canvas.width = Math.round(w * fit)

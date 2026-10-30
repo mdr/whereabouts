@@ -35,7 +35,7 @@ export interface VrFlagPin {
 
 /** In metres, whatever the globe's zoom. */
 const PIN_M = 0.012
-const FLAG_W_M = 0.016
+/** Each flag's width follows from its own shape. */
 const FLAG_H_M = 0.012
 const LABEL_W_M = 0.16
 /** Pointed at, a flag grows this much, and its country's border shows in this colour. */
@@ -253,8 +253,12 @@ export class FlagPins {
     ctx.roundRect(0, 0, w, h, 24)
     ctx.fill()
     const cell = atlasCell(pin.flag)
-    const [cw, ch] = FLAG_ATLAS.cell
-    if (cell) ctx.drawImage(img, cell[0] * cw, cell[1] * ch, cw, ch, 18, 18, 80, 60)
+    if (cell) {
+      // As large as fits 80 × 60, beside the name.
+      const scale = Math.min(80 / cell.w, 60 / cell.h)
+      const [fw, fh] = [cell.w * scale, cell.h * scale]
+      ctx.drawImage(img, cell.x, cell.y, cell.w, cell.h, 18 + (80 - fw) / 2, (h - fh) / 2, fw, fh)
+    }
     ctx.fillStyle = "#f0fdff"
     ctx.font = "700 40px system-ui, sans-serif"
     ctx.textBaseline = "middle"
@@ -293,8 +297,11 @@ export class FlagPins {
     const east = new Vector3()
     const north = new Vector3()
     const corner = new Vector3()
-    const { columns, rows } = FLAG_ATLAS
+    const { width, height } = FLAG_ATLAS
     pins.forEach((p, i) => {
+      // Without a flag, a blank corner of the picture.
+      const cell = atlasCell(p.flag) ?? { x: width - 1, y: height - 1, w: 1, h: 1 }
+      const flagW = (FLAG_H_M * cell.w) / cell.h
       const n = latLonToLocal(p.at)
       const foot = n.clone().multiplyScalar(this.base)
       feet.push(foot)
@@ -304,7 +311,7 @@ export class FlagPins {
         n
           .clone()
           .multiplyScalar(PIN_M + FLAG_H_M / 2)
-          .addScaledVector(east, FLAG_W_M / 2)
+          .addScaledVector(east, flagW / 2)
       )
       for (const k of [0, 1]) foot.toArray(linePosition, (i * 2 + k) * 3)
       v.copy(n)
@@ -314,8 +321,8 @@ export class FlagPins {
       // The flag's lower left corner at the pin's top, in the plane facing out.
       for (const [k, [x, y]] of [
         [0, 0],
-        [FLAG_W_M, 0],
-        [FLAG_W_M, FLAG_H_M],
+        [flagW, 0],
+        [flagW, FLAG_H_M],
         [0, FLAG_H_M]
       ].entries()) {
         foot.toArray(position, (i * 4 + k) * 3)
@@ -327,9 +334,8 @@ export class FlagPins {
           .toArray(offset, (i * 4 + k) * 3)
       }
       pinIndex.fill(i, i * 4, i * 4 + 4)
-      const [c, r] = atlasCell(p.flag) ?? [0, rows - 1]
-      const [u0, u1] = [c / columns, (c + 1) / columns]
-      const [v0, v1] = [1 - (r + 1) / rows, 1 - r / rows]
+      const [u0, u1] = [cell.x / width, (cell.x + cell.w) / width]
+      const [v0, v1] = [1 - (cell.y + cell.h) / height, 1 - cell.y / height]
       uv.set([u0, v0, u1, v0, u1, v1, u0, v1], i * 8)
       index.set([i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3], i * 6)
     })

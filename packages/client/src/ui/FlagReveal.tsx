@@ -41,11 +41,11 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
       flag.title = f.label
       const cell = atlasCell(f.flag)
       if (cell) {
-        // The picture's cells are four times the size shown.
-        const [w, h] = FLAG_ATLAS.cell.map((n) => n / 4) as [number, number]
+        // The picture's flags are four times the size shown.
+        flag.style.width = `${cell.w / 4}px`
         flag.style.backgroundImage = `url(${FLAG_ATLAS.url})`
-        flag.style.backgroundSize = `${FLAG_ATLAS.columns * w}px ${FLAG_ATLAS.rows * h}px`
-        flag.style.backgroundPosition = `${-cell[0] * w}px ${-cell[1] * h}px`
+        flag.style.backgroundSize = `${FLAG_ATLAS.width / 4}px ${FLAG_ATLAS.height / 4}px`
+        flag.style.backgroundPosition = `${-cell.x / 4}px ${-cell.y / 4}px`
       }
       el.append(flag)
       // On the far side of the globe, hidden rather than faded.

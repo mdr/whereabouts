@@ -189,8 +189,9 @@ body {
 .card.question .flag {
   position: relative;
   display: block;
-  width: min(100%, 220px);
-  aspect-ratio: 4 / 3;
+  /* The flag's own shape, as large as fits 220 × 165. */
+  width: min(100%, 220px, 165px * var(--flag-ratio));
+  aspect-ratio: var(--flag-ratio);
   margin: 0 auto;
   padding: 0;
   border: none;
@@ -203,6 +204,14 @@ body {
 .card.question .flag:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+/* Loaded, a flag's edge follows its shape: Nepal's is not a rectangle. */
+.card.question .flag:has(img),
+.small-flag:has(img),
+.small-flag-picture .flag-shape:has(img) {
+  background: none;
+  box-shadow: none;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.3));
 }
 .card.question .flag img {
   width: 100%;
@@ -536,10 +545,10 @@ button.icon:hover {
   user-select: none;
   -webkit-user-drag: none;
 }
-/* An SVG flag has no size of its own: as large as fits, at 4:3. */
+/* An SVG flag has no size of its own: as large as fits, in its own shape. */
 .lightbox img.lightbox-flag {
-  width: min(calc(100vw - 64px), calc((100vh - 64px) * 4 / 3));
-  aspect-ratio: 4 / 3;
+  width: min(calc(100vw - 64px), calc((100vh - 64px) * var(--flag-ratio)));
+  aspect-ratio: var(--flag-ratio);
   border-radius: 4px;
 }
 .lightbox-close {
@@ -1154,8 +1163,9 @@ button.big {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  --picture-h: 42px;
   width: 56px;
-  height: 42px;
+  height: var(--picture-h);
   padding: 0;
   border: none;
   border-radius: 4px;
@@ -1172,6 +1182,20 @@ button.small-picture {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+/* A flag in its own shape, as large as fits the picture's box. */
+.small-picture.small-flag-picture {
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+.small-flag-picture .flag-shape {
+  width: min(100%, var(--picture-h) * var(--flag-ratio));
+  aspect-ratio: var(--flag-ratio);
+  border-radius: 3px;
+  overflow: hidden;
+  background: #3a414b;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 .round-shape {
   background: #2a3038;
@@ -1200,7 +1224,7 @@ button.small-picture {
   line-height: 1.25;
 }
 .round-label .small-flag {
-  width: 16px;
+  height: 12px;
   margin-left: 6px;
   vertical-align: -1px;
 }
@@ -1252,8 +1276,8 @@ button.small-picture {
   overflow-wrap: break-word;
 }
 .round-list .small-picture {
+  --picture-h: 36px;
   width: 48px;
-  height: 36px;
 }
 /* On a narrow phone the winner's name gives way to the round's label. */
 .round-winner {
@@ -1748,7 +1772,7 @@ button.danger.solid {
   aspect-ratio: auto;
 }
 .hud:not(.reveal) .card.question .flag {
-  flex: 0 1 165px;
+  flex: 0 1 min(165px, 220px / var(--flag-ratio));
   min-height: 56px;
   width: auto;
   max-width: 100%;
@@ -2570,8 +2594,8 @@ button.danger.solid {
 .small-flag {
   flex: none;
   display: inline-block;
-  width: 20px;
-  aspect-ratio: 4 / 3;
+  height: 15px;
+  aspect-ratio: var(--flag-ratio);
   border-radius: 2px;
   overflow: hidden;
   background: #3a414b;
@@ -2613,7 +2637,7 @@ button.danger.solid {
   white-space: nowrap;
 }
 .flag-hover .small-flag {
-  width: 32px;
+  height: 24px;
 }
 .painted-in {
   display: inline-flex;

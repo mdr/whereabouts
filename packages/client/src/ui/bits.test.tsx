@@ -1,11 +1,15 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
-import { HudBottom, QuestionCard, SoundToggle } from "./bits"
+import { HudBottom, QuestionCard, SmallFlag, SmallFlagButton, SoundToggle } from "./bits"
 import { soundOn } from "../settings"
 import { flagCode, regionId } from "@whereabouts/shared/ids"
+import type * as flags from "../flags"
 
-vi.mock("../flags", () => ({ flagUrl: (code: string) => Promise.resolve(`/flags/${code}.svg`) }))
+vi.mock("../flags", async (original) => ({
+  ...(await original<typeof flags>()),
+  flagUrl: (code: string) => Promise.resolve(`/flags/${code}.svg`)
+}))
 
 describe("HudBottom", () => {
   afterEach(() => {
@@ -66,6 +70,54 @@ describe("QuestionCard", () => {
     )
     const place = render(<QuestionCard q={{ prompt: "Where is Dublin?", toleranceKm: 40 }} />)
     expect(place.container.querySelectorAll(".flag")).toHaveLength(0)
+  })
+})
+
+describe("flag frames", () => {
+  afterEach(() => {
+    cleanup()
+  })
+
+  const ratio = (el: unknown) => Number((el as HTMLElement).style.getPropertyValue("--flag-ratio"))
+  // Nepal's is taller than wide, Switzerland's square, Qatar's the widest.
+  const shapes = [
+    ["np", 0.8203],
+    ["ch", 1],
+    ["qa", 2.5455]
+  ] as const
+
+  it("take each flag's own shape before its picture loads, here and enlarged", async () => {
+    for (const [code, shape] of shapes) {
+      const { container } = render(
+        <QuestionCard q={{ prompt: "Paint the country with this flag", toleranceKm: 65, flag: flagCode(code) }} />
+      )
+      const button = container.querySelector<HTMLButtonElement>(".card.question .flag")!
+      expect(button.querySelectorAll("img")).toHaveLength(0)
+      expect(ratio(button)).toBe(shape)
+      await waitFor(() => expect(button.disabled).toBe(false))
+      fireEvent.click(button)
+      expect(ratio(document.body.querySelector(".lightbox img.lightbox-flag"))).toBe(shape)
+      // No credit while guessing: the Commons file is named for the country.
+      expect(document.body.querySelectorAll(".lightbox .credit-icon")).toHaveLength(0)
+      cleanup()
+    }
+  })
+
+  it("take each flag's own shape beside a name and in the results, where the flag is credited", async () => {
+    for (const [code, shape] of shapes) {
+      const small = render(<SmallFlag code={code} />)
+      expect(ratio(small.container.querySelector(".small-flag"))).toBe(shape)
+      const listed = render(<SmallFlagButton code={code} />)
+      expect(ratio(listed.container.querySelector(".small-flag-picture .flag-shape"))).toBe(shape)
+      const button = listed.container.querySelector<HTMLButtonElement>(".small-flag-picture")!
+      await waitFor(() => expect(button.disabled).toBe(false))
+      fireEvent.click(button)
+      expect(ratio(document.body.querySelector(".lightbox img.lightbox-flag"))).toBe(shape)
+      expect(document.body.querySelector<HTMLAnchorElement>(".lightbox .credit-icon")!.href).toContain(
+        "commons.wikimedia.org"
+      )
+      cleanup()
+    }
   })
 })
 

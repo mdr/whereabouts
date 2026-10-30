@@ -367,8 +367,10 @@ comes up in practice.
 
 The client fetches both files on demand (their own chunk); the server holds
 regions.json and scores multiplayer rounds, which tell clients only the
-country's id until the reveal. Flag pictures come from the flag-icons package
-(MIT), one small file per flag, fetched when its round comes up.
+country's id until the reveal. Flag pictures are the SVGs on the flags'
+Wikipedia articles, from Wikimedia Commons (the client's
+scripts/build-flags.mjs), one small file per flag, fetched when its round
+comes up.
 
 ## Cost
 
