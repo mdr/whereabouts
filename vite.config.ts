@@ -16,7 +16,7 @@ export default defineConfig({
     env: {
       builtin: true
     },
-    ignorePatterns: ["**/dist/**", "**/node_modules/**", "**/vendor/**", "result", ".direnv"],
+    ignorePatterns: ["**/dist/**", "**/node_modules/**", "**/vendor/**", "result", ".direnv", ".claude/worktrees"],
     rules: {
       "constructor-super": "error",
       "for-direction": "error",
@@ -402,6 +402,7 @@ export default defineConfig({
       "node_modules",
       "pnpm-lock.yaml",
       "flake.lock",
+      ".claude/worktrees",
       "packages/server/src/vendor",
       "packages/shared/regions.json",
       "packages/shared/flags.json",
