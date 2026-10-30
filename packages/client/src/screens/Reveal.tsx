@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { signal } from "@preact/signals"
-import {
-  PaintLayer,
-  colourCss,
-  type Fact,
-  type GameView,
-  type PaintedCountry,
-  type PlayerView,
-  type RevealView,
-  type RoundResultView
-} from "@whereabouts/shared"
+import { PaintLayer } from "@whereabouts/shared/paint"
+import { colourCss } from "@whereabouts/shared/colours"
+import type { Fact } from "@whereabouts/shared/facts"
+import type { GameView, PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
+import type { PaintedCountry } from "@whereabouts/shared/borders"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { Answer, Card, FactLine, HudBottom, HudHeader, QuestionCard, ScoreParts } from "../ui/bits"

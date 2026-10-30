@@ -26,17 +26,13 @@ import {
   type UIKitDocument
 } from "@iwsdk/core"
 import { effect, signal } from "@preact/signals"
-import {
-  describeHint,
-  type HintAxis,
-  type H3Cell,
-  type HintBand,
-  type BordersData,
-  type LandMaskData,
-  type LatLon,
-  type MapDetail,
-  type PaintLayer
-} from "@whereabouts/shared"
+import { describeHint, type HintAxis, type HintBand } from "@whereabouts/shared/hints"
+import type { H3Cell } from "@whereabouts/shared/h3"
+import type { BordersData } from "@whereabouts/shared/borders"
+import type { LandMaskData } from "@whereabouts/shared/land"
+import type { LatLon } from "@whereabouts/shared/geo"
+import type { MapDetail } from "@whereabouts/shared/protocol"
+import type { PaintLayer } from "@whereabouts/shared/paint"
 import { loadLandMask, loadWaterMask } from "../land"
 import { headsetPassthrough, soundOn } from "../settings"
 import type { PaintController } from "../paint-controller"

@@ -1,7 +1,10 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
 import { render } from "@testing-library/preact"
-import { Borders, type FlagData, flagFrom, h3Res, PaintLayer } from "@whereabouts/shared"
+import { Borders } from "@whereabouts/shared/borders"
+import { type FlagData, flagFrom } from "@whereabouts/shared/flags"
+import { h3Res } from "@whereabouts/shared/h3"
+import { PaintLayer } from "@whereabouts/shared/paint"
 import bordersJson from "@whereabouts/shared/borders.json"
 import flagsJson from "@whereabouts/shared/flags.json"
 import { mainCountry, PaintedIn } from "./FlagReveal"

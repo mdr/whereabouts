@@ -10,7 +10,7 @@ import {
   SphereGeometry,
   Vector3
 } from "three"
-import type { HintBand } from "@whereabouts/shared"
+import type { HintBand } from "@whereabouts/shared/hints"
 import { latLonToLocal } from "./sphere"
 
 const RAD = Math.PI / 180

@@ -40,7 +40,7 @@ import type {
   RoundResultView
 } from "./protocol.ts"
 
-export const DEFAULT_CONFIG: GameConfig = {
+const DEFAULT_CONFIG: GameConfig = {
   rounds: 8,
   roundMs: 60_000,
   mix: evenMix(8),
@@ -874,7 +874,7 @@ export function generateCode(rnd: () => number = Math.random, length = 4): RoomC
 }
 
 /** Which kind of question in the host's mix this was. */
-export function questionType(q: Question | RegionQuestion): QuestionType {
+function questionType(q: Question | RegionQuestion): QuestionType {
   if (q.flag) return "flags"
   if (q.topic === "state") return "states"
   if (q.topic) return "features"

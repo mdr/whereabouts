@@ -6,7 +6,9 @@
  */
 import { useEffect, useState } from "preact/hooks"
 import { Marker, type MapMouseEvent } from "maplibre-gl"
-import type { Borders, FlagQuestion, PaintCell, PaintedCountry } from "@whereabouts/shared"
+import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
+import type { FlagQuestion } from "@whereabouts/shared/flags"
+import type { PaintCell } from "@whereabouts/shared/paint"
 import type { GameMap } from "../map"
 import { SmallFlag } from "./bits"
 import { flagPins } from "../borders"

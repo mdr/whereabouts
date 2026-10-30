@@ -1,7 +1,9 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
-import { flagCode, playerColour, playerId, playerName, regionId, roomCode, type GameView } from "@whereabouts/shared"
+import { flagCode, playerId, playerName, regionId, roomCode } from "@whereabouts/shared/ids"
+import { playerColour } from "@whereabouts/shared/colours"
+import type { GameView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../net"
 import { Results } from "./Results"
 

@@ -1,5 +1,5 @@
 /** The headset's picture card, kept apart from the VR code so the page can say what it shows without loading it. */
-import type { FlagCode } from "@whereabouts/shared"
+import type { FlagCode } from "@whereabouts/shared/ids"
 
 /** What a photo's postcard back says at the reveal. */
 export interface Postcard {

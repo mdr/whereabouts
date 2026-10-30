@@ -3,7 +3,7 @@
  * a count per kind with − / +; the counts are the game's rounds. A strip of coloured cells, one per round, shows the game at a
  * glance, to the host and (in the setup summary) to guests.
  */
-import { MAX_ROUNDS, QUESTION_TYPES, mixTotal, type QuestionMix, type QuestionType } from "@whereabouts/shared"
+import { MAX_ROUNDS, QUESTION_TYPES, mixTotal, type QuestionMix, type QuestionType } from "@whereabouts/shared/protocol"
 import { Stepper } from "./Controls"
 import { mixEditorTestIds } from "./MixEditorTestIds"
 

@@ -5,7 +5,7 @@
  * after the path ("#/solo?dev") is ignored here; see dev.ts.
  */
 import { signal } from "@preact/signals"
-import { roomCode, type RoomCode } from "@whereabouts/shared"
+import { roomCode, type RoomCode } from "@whereabouts/shared/ids"
 
 export type Route =
   | { name: "home" }

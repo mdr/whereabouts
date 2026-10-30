@@ -2,7 +2,7 @@
 // keyboard and by clicking, a pair compared (pointing at one shows it
 // alone), the export, and the screen on a phone. Saves screenshots.
 // Usage, from packages/client: node browser/e2e/score-review.ts [outDir]
-import { decodeCase } from "@whereabouts/shared"
+import { decodeCase } from "@whereabouts/shared/scoring-case"
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
 
 const out = outDir()

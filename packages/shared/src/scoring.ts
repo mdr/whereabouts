@@ -80,7 +80,7 @@ export interface WeightedPoint {
  * Per-axis variance of a regular hexagon of area A: (5/24) R² with
  * R² = 2A / (3√3). A disc of the same area gives A / 4π; the two agree to 1%.
  */
-export const HEX_VARIANCE_PER_AREA = 5 / (36 * Math.sqrt(3))
+const HEX_VARIANCE_PER_AREA = 5 / (36 * Math.sqrt(3))
 
 export interface Distribution {
   points: WeightedPoint[]

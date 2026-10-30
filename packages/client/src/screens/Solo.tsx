@@ -9,35 +9,31 @@ import { useEffect, useMemo, useState } from "preact/hooks"
 import { useSignal } from "@preact/signals"
 import {
   KERNELS,
-  hintBand,
-  type HintAxis,
-  type HintBand,
-  questionPictures,
-  revealPhoto,
   KernelIdSchema,
   type KernelId,
-  SHAPE_WEIGHT,
-  QUESTIONS,
   buildDistribution,
-  encodeCase,
-  flagRound,
-  regionFit,
-  scoreAnswer,
-  type AnswerParts,
-  greatCircleDistance,
   kernelById,
   PASS_SCORE,
   scoreFromParts,
-  showsLakes,
-  shuffle,
   similarityToAnswer,
-  toXyz,
   type Distribution,
-  type Kernel,
-  type LatLon,
-  type Question,
+  type Kernel
+} from "@whereabouts/shared/scoring"
+import { hintBand, type HintAxis, type HintBand } from "@whereabouts/shared/hints"
+import { questionPictures } from "@whereabouts/shared/game"
+import { revealPhoto } from "@whereabouts/shared/photos"
+import {
+  SHAPE_WEIGHT,
+  regionFit,
+  scoreAnswer,
+  type AnswerParts,
   type RegionQuestion
-} from "@whereabouts/shared"
+} from "@whereabouts/shared/regions"
+import { QUESTIONS, shuffle, type Question } from "@whereabouts/shared/questions"
+import { encodeCase } from "@whereabouts/shared/scoring-case"
+import { flagRound } from "@whereabouts/shared/flags"
+import { greatCircleDistance, toXyz, type LatLon } from "@whereabouts/shared/geo"
+import { showsLakes } from "@whereabouts/shared/protocol"
 import type { GameMap } from "../map"
 import { MapView, usePaint } from "../ui/MapView"
 import { forTabbedControl } from "../keys"

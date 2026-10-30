@@ -7,18 +7,17 @@
  * as the scoring changes. Linked from nowhere.
  */
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
+import { QUESTIONS } from "@whereabouts/shared/questions"
 import {
-  QUESTIONS,
   REVIEW_VERSION,
-  colourCss,
   guessCase,
-  kernelById,
-  playerColour,
   reviewCases,
   scoreGuess,
   type ReviewPools,
   type ScoreVerdict
-} from "@whereabouts/shared"
+} from "@whereabouts/shared/score-review"
+import { colourCss, playerColour } from "@whereabouts/shared/colours"
+import { kernelById } from "@whereabouts/shared/scoring"
 import { MapView, usePaint } from "../ui/MapView"
 import { Answer, Card, HudBottom, HudHeader, QuestionCard } from "../ui/bits"
 import { isTyping } from "../keys"

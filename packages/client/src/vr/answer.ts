@@ -15,7 +15,7 @@ import {
   SphereGeometry,
   Vector3
 } from "three"
-import type { LatLon } from "@whereabouts/shared"
+import type { LatLon } from "@whereabouts/shared/geo"
 import type { Theme } from "../themes"
 import { latLonToLocal } from "./sphere"
 

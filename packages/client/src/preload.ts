@@ -2,7 +2,8 @@
  * Loads a question's pictures before its round starts, so the photo or flag
  * (and the reveal's photo) is already in the page's image cache when it is shown.
  */
-import { commonsImageUrl, type QuestionPictures } from "@whereabouts/shared"
+import { commonsImageUrl } from "@whereabouts/shared/questions"
+import type { QuestionPictures } from "@whereabouts/shared/protocol"
 import { flagUrl } from "./flags"
 
 /** Held so a load runs to the end, and is not started twice. */

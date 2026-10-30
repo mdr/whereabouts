@@ -1,4 +1,6 @@
-import { colourCss, type PlayerId, type PlayerView } from "@whereabouts/shared"
+import { colourCss } from "@whereabouts/shared/colours"
+import type { PlayerId } from "@whereabouts/shared/ids"
+import type { PlayerView } from "@whereabouts/shared/protocol"
 import { Icon } from "./icons"
 import { playerListTestIds } from "./PlayerListTestIds"
 

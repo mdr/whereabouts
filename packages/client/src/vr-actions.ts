@@ -4,7 +4,7 @@
  * other players, who is picked by pointing at their row of the score table.
  */
 import { signal } from "@preact/signals"
-import { MAX_PLAYERS, type GameView, type PlayerView } from "@whereabouts/shared"
+import { MAX_PLAYERS, type GameView, type PlayerView } from "@whereabouts/shared/protocol"
 import type { Connection } from "./net"
 import type { VrAction } from "./vr"
 import type { VrTable } from "./vr/scores"

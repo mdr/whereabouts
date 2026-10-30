@@ -23,7 +23,7 @@ import {
   type WebGLRenderer
 } from "three"
 
-import type { LatLon } from "@whereabouts/shared"
+import type { LatLon } from "@whereabouts/shared/geo"
 import { latLonToLocal, localToLatLon } from "./sphere"
 import { buildStand } from "./models"
 

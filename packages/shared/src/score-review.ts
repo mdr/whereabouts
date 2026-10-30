@@ -19,16 +19,16 @@ import { buildDistribution, type Kernel } from "./scoring.ts"
 
 export const POINT_GUESSES = ["bullseye", "close", "near-miss", "far-miss", "wide", "hedge", "scattered"] as const
 export const REGION_GUESSES = ["whole", "part", "spill", "centre", "neighbour", "far-miss", "wide", "hedge"] as const
-export type GuessKind = (typeof POINT_GUESSES)[number] | (typeof REGION_GUESSES)[number]
+type GuessKind = (typeof POINT_GUESSES)[number] | (typeof REGION_GUESSES)[number]
 
 /** The practice default: what the guesses would score with. */
-export const REVIEW_FLOOR = 0.05
+const REVIEW_FLOOR = 0.05
 /** Changes when the same set number would give different cases, so verdicts on the old ones stay apart. */
 export const REVIEW_VERSION = 3
 
 export type ReviewQuestion = Question | RegionQuestion
 
-export interface ReviewGuess {
+interface ReviewGuess {
   kind: GuessKind
   layer: PaintLayer
 }

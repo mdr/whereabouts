@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
-import { CLOSE_REASONS } from "@whereabouts/shared"
+import { CLOSE_REASONS } from "@whereabouts/shared/close-reason"
 import { describeDisconnect } from "./net"
 
 describe("describeDisconnect", () => {

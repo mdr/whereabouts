@@ -9,7 +9,6 @@
  */
 import { cellToLatLng, coarserRes, getResolution, h3Res, type H3Cell } from "./h3.ts"
 import { chordDistance, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
-import type { Topic } from "./questions.ts"
 import {
   coarsenDistribution,
   DEFAULT_KERNEL,
@@ -104,11 +103,6 @@ export function describePoint(e: PointExplanation, score: number, toleranceKm: n
 
 /** Shares of the paint or the country below this are not worth a mention. */
 const MENTION = 0.1
-
-/** What the edge of a painted place is called: a country's or state's border, an island's coast, a lake's or sea's shore. */
-export function edgeName(topic?: Topic): string {
-  return topic === "island" ? "coast" : topic === "lake" || topic === "sea" ? "shore" : "border"
-}
 
 /** What kept a country round's paint from matching the country, biggest first. */
 export function describeRegion(m: RegionMisfit, label: string, toleranceKm: number, edge = "border"): string {

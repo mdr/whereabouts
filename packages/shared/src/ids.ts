@@ -31,7 +31,7 @@ export type RoomCode = z.infer<typeof RoomCodeSchema>
 export const roomCode = (s: string): RoomCode => RoomCodeSchema.parse(s)
 
 /** A question in the pool, a flag round or a feature asked as a point ("taj-mahal", "flag-de"). */
-export const QuestionIdSchema = z.string().regex(SLUG).brand<"QuestionId">()
+const QuestionIdSchema = z.string().regex(SLUG).brand<"QuestionId">()
 export type QuestionId = z.infer<typeof QuestionIdSchema>
 export const questionId = (s: string): QuestionId => QuestionIdSchema.parse(s)
 

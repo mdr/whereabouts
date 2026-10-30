@@ -1,6 +1,6 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks"
-import type { PlayerName, RoomCode } from "@whereabouts/shared"
+import type { PlayerName, RoomCode } from "@whereabouts/shared/ids"
 import { Connection } from "../net"
 import {
   askedToWatch,

@@ -21,7 +21,7 @@ import { flagCode, type FlagCode } from "./ids.ts"
 import type { PaintCell } from "./paint.ts"
 import type { FillShape } from "./fill.ts"
 
-export interface BorderData {
+interface BorderData {
   /** The flag's ISO code, as in flags.json. */
   flag: string
   /** Rings of [lon, lat] steps in hundredths of a degree, the first from 0, 0. */

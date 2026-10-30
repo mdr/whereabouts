@@ -1,6 +1,9 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
-import { h3Res, playerColour, playerId, playerName, type PlayerView, type RoundResultView } from "@whereabouts/shared"
+import { h3Res } from "@whereabouts/shared/h3"
+import { playerColour } from "@whereabouts/shared/colours"
+import { playerId, playerName } from "@whereabouts/shared/ids"
+import type { PlayerView, RoundResultView } from "@whereabouts/shared/protocol"
 import { revealOrder } from "./Reveal"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]

@@ -1,4 +1,4 @@
-import { MAX_PLAYERS, type GameView } from "@whereabouts/shared"
+import { MAX_PLAYERS, type GameView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../net"
 import { Icon } from "./icons"
 

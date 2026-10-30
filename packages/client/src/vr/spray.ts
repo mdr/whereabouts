@@ -20,7 +20,7 @@ import {
   Vector3,
   type Object3D
 } from "three"
-import { greatCircleDistance, type LatLon } from "@whereabouts/shared"
+import { greatCircleDistance, type LatLon } from "@whereabouts/shared/geo"
 import type { PaintController } from "../paint-controller"
 import type { Theme } from "../themes"
 import type { Globe } from "./globe"

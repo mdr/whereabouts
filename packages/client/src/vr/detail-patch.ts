@@ -5,7 +5,9 @@
  * MapLibre draws on, so it is drawn here on demand with map.redraw().
  */
 import { BufferAttribute, BufferGeometry, CanvasTexture, Mesh, MeshBasicMaterial, SRGBColorSpace } from "three"
-import { greatCircleDistance, type HintBand, type LatLon, type MapDetail } from "@whereabouts/shared"
+import { greatCircleDistance, type LatLon } from "@whereabouts/shared/geo"
+import type { HintBand } from "@whereabouts/shared/hints"
+import type { MapDetail } from "@whereabouts/shared/protocol"
 import { GameMap } from "../map"
 import type { Theme } from "../themes"
 import { latLonToLocal } from "./sphere"

@@ -4,7 +4,7 @@
  * (land.json, ~100 KB gzipped) and the water mask for "Trim land" in a lake
  * or sea round (water.json, ~130 KB gzipped).
  */
-import { LandMask, WaterMask } from "@whereabouts/shared"
+import { LandMask, WaterMask } from "@whereabouts/shared/land"
 
 function once<T>(load: () => Promise<T>): () => Promise<T> {
   let loading: Promise<T> | undefined = undefined

@@ -1,5 +1,10 @@
 import { defineConfig } from "vite-plus"
 
+const noReexports = [
+  { selector: "ExportAllDeclaration", message: "Don't re-export; import from the defining module." },
+  { selector: "ExportNamedDeclaration[source]", message: "Don't re-export; import from the defining module." }
+]
+
 export default defineConfig({
   test: {
     include: ["packages/*/src/**/*.test.{ts,tsx}"]
@@ -91,6 +96,7 @@ export default defineConfig({
         }
       ],
       eqeqeq: ["error", "smart"],
+      "eslint-js/no-restricted-syntax": ["error", ...noReexports],
       "no-restricted-imports": [
         "error",
         {
@@ -234,7 +240,8 @@ export default defineConfig({
             "error",
             { selector: "Literal[raw='null']", message: "Use undefined, not null." },
             { selector: "TSNullKeyword", message: "Use undefined, not null." },
-            { selector: "MemberExpression[property.name='toBeNull']", message: "Use toBeUndefined, not toBeNull." }
+            { selector: "MemberExpression[property.name='toBeNull']", message: "Use toBeUndefined, not toBeNull." },
+            ...noReexports
           ],
           "no-with": "off",
           "prefer-const": "error",

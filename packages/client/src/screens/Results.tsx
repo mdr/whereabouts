@@ -1,13 +1,7 @@
-import {
-  colourCss,
-  type Award,
-  type FinalStanding,
-  type GameView,
-  type PlayedRound,
-  type PlayerView,
-  type QuestionType,
-  type RegionId
-} from "@whereabouts/shared"
+import { colourCss } from "@whereabouts/shared/colours"
+import type { Award } from "@whereabouts/shared/awards"
+import type { FinalStanding, GameView, PlayedRound, PlayerView, QuestionType } from "@whereabouts/shared/protocol"
+import type { RegionId } from "@whereabouts/shared/ids"
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { Connection } from "../net"
 import { Icon } from "../ui/icons"

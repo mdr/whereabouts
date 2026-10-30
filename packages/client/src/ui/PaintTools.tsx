@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact"
 import { useEffect, useState } from "preact/hooks"
-import type { HintBand } from "@whereabouts/shared"
+import type { HintBand } from "@whereabouts/shared/hints"
 import { usePaint } from "./MapView"
 import { Card, HudBottom, fmtKm } from "./bits"
 import type { Tool } from "../paint-controller"

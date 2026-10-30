@@ -1,5 +1,6 @@
 /** Server settings from the environment, kept pure so they can be tested. */
-import { KernelIdSchema, type GameConfig } from "@whereabouts/shared"
+import { KernelIdSchema } from "@whereabouts/shared/scoring"
+import type { GameConfig } from "@whereabouts/shared/protocol"
 
 export interface ServerConfig {
   port: number

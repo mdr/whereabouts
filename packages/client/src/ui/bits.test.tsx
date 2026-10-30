@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
 import { HudBottom, QuestionCard, SoundToggle } from "./bits"
 import { soundOn } from "../settings"
-import { flagCode, regionId } from "@whereabouts/shared"
+import { flagCode, regionId } from "@whereabouts/shared/ids"
 
 vi.mock("../flags", () => ({ flagUrl: (code: string) => Promise.resolve(`/flags/${code}.svg`) }))
 

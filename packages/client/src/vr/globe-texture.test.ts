@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellToBoundary, cellToChildren, cellToLatLng, h3Res, latLngToCell, type H3Cell } from "@whereabouts/shared"
+import { cellToBoundary, cellToChildren, cellToLatLng, h3Res, latLngToCell, type H3Cell } from "@whereabouts/shared/h3"
 import { Vector3 } from "three"
 import { cellRing, landCells } from "./globe-texture"
 import { latLonToLocal } from "./sphere"

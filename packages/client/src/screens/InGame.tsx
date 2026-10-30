@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
-import {
-  PASS_SCORE,
-  PaintLayer,
-  compactRecord,
-  colourCss,
-  type Fact,
-  type GameView,
-  type HintAxis,
-  type PaintedCountry,
-  type RegionQuestion
-} from "@whereabouts/shared"
+import { PASS_SCORE } from "@whereabouts/shared/scoring"
+import { PaintLayer, compactRecord } from "@whereabouts/shared/paint"
+import { colourCss } from "@whereabouts/shared/colours"
+import type { Fact } from "@whereabouts/shared/facts"
+import type { GameView } from "@whereabouts/shared/protocol"
+import type { HintAxis } from "@whereabouts/shared/hints"
+import type { PaintedCountry } from "@whereabouts/shared/borders"
+import type { RegionQuestion } from "@whereabouts/shared/regions"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { AnswerMode, Card, Countdown, HudHeader, QuestionCard, RegionHint, answerModeText } from "../ui/bits"

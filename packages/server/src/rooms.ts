@@ -14,36 +14,24 @@ import {
 import { type z } from "zod"
 import {
   ClientMessageSchemas,
-  Game,
-  QUESTIONS,
   SEAT_GRACE_MS,
   ServerTopics,
   decodeMessage,
-  decodePaint,
   decodeTicket,
-  type CloseReason,
   encodeMessage,
-  encodePaint,
-  featureFrom,
-  flagFrom,
-  generateCode,
-  regionFrom,
   revealMessage,
-  roomCode,
   stateMessage,
-  type FlagData,
-  type FlagQuestion,
   type GameConfig,
   type PaintSubmission,
-  type PlayerId,
-  type PlayerName,
-  type PlayerToken,
-  type Question,
-  type QuestionData,
-  type RegionData,
-  type RegionQuestion,
   type RoundReveal
-} from "@whereabouts/shared"
+} from "@whereabouts/shared/protocol"
+import { Game, generateCode } from "@whereabouts/shared/game"
+import { QUESTIONS, type Question, type QuestionData } from "@whereabouts/shared/questions"
+import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
+import type { CloseReason } from "@whereabouts/shared/close-reason"
+import { featureFrom, regionFrom, type RegionData, type RegionQuestion } from "@whereabouts/shared/regions"
+import { flagFrom, type FlagData, type FlagQuestion } from "@whereabouts/shared/flags"
+import { roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
 // The countries for "Paint the whole of …" rounds, the flag rounds, and the
 // islands, lakes, seas and US states. The client loads the same files on
 // demand; the server holds them all.

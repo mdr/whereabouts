@@ -6,43 +6,36 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
 import type { WSClient as WSClientType } from "@rivalis/browser"
+import { PAINT_CELL_BUDGET, PaintLayer, compactRecord, resolutionForTolerance } from "@whereabouts/shared/paint"
 import {
-  PAINT_CELL_BUDGET,
   PROTOCOL_VERSION,
-  PaintLayer,
-  ROUND_GRACE_MS,
   SEAT_GRACE_MS,
-  compactRecord,
-  decodePaint,
-  encodePaint,
-  GameViewSchema,
   encodeTicket,
   type Ticket,
-  flagFrom,
-  gridDisk,
-  h3Res,
-  latLngToCell,
-  playerToken,
-  questionId,
-  regionCells,
-  regionFrom,
-  playerName,
-  roomCode,
-  resolutionForTolerance,
   revealFrom,
   viewFrom,
-  type FlagData,
   type GameView,
   type PaintSubmission,
-  type PlayerName,
-  type PlayerToken,
-  type Question,
-  type RegionData,
   type RevealMessage,
-  type RoomCode,
   type RoundReveal,
   type StateMessage
-} from "@whereabouts/shared"
+} from "@whereabouts/shared/protocol"
+import { ROUND_GRACE_MS } from "@whereabouts/shared/game"
+import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
+import { GameViewSchema } from "@whereabouts/shared/view-schema"
+import { flagFrom, type FlagData } from "@whereabouts/shared/flags"
+import { gridDisk, h3Res, latLngToCell } from "@whereabouts/shared/h3"
+import {
+  playerToken,
+  questionId,
+  playerName,
+  roomCode,
+  type PlayerName,
+  type PlayerToken,
+  type RoomCode
+} from "@whereabouts/shared/ids"
+import { regionCells, regionFrom, type RegionData } from "@whereabouts/shared/regions"
+import type { Question } from "@whereabouts/shared/questions"
 import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
 import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
 import { createApp, type App } from "./app.ts"

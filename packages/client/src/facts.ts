@@ -4,7 +4,7 @@
  */
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
-import { pickFact, type Fact, type Facts } from "@whereabouts/shared"
+import { pickFact, type Fact, type Facts } from "@whereabouts/shared/facts"
 
 const facts = signal<Facts | undefined>(undefined)
 

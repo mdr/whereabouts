@@ -5,7 +5,7 @@
  * and then checked against its source and a second one.
  */
 
-export type FactKind = "fame" | "trivia" | "flag"
+type FactKind = "fame" | "trivia" | "flag"
 
 export interface Fact {
   kind: FactKind

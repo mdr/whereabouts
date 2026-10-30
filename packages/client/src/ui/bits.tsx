@@ -2,14 +2,9 @@ import type { ComponentChildren, RefObject } from "preact"
 import { createPortal } from "preact/compat"
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks"
 import { useElementRef } from "./element-ref"
-import {
-  commonsImageUrl,
-  commonsPageUrl,
-  wikipediaUrl,
-  type Fact,
-  type QuestionView,
-  type Topic
-} from "@whereabouts/shared"
+import { commonsImageUrl, commonsPageUrl, wikipediaUrl, type Topic } from "@whereabouts/shared/questions"
+import type { Fact } from "@whereabouts/shared/facts"
+import type { QuestionView } from "@whereabouts/shared/protocol"
 import { Icon } from "./icons"
 import { soundOn } from "../settings"
 import { flagUrl } from "../flags"

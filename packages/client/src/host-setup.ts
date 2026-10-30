@@ -4,7 +4,13 @@
  * and applied only to a game this tab has just created.
  */
 import { useEffect, useRef } from "preact/hooks"
-import { ConfigureSchema, MAX_ROUNDS, type ConfigurePatch, type GameView, type QuestionMix } from "@whereabouts/shared"
+import {
+  ConfigureSchema,
+  MAX_ROUNDS,
+  type ConfigurePatch,
+  type GameView,
+  type QuestionMix
+} from "@whereabouts/shared/protocol"
 import type { Connection } from "./net"
 import { hostSetup } from "./settings"
 

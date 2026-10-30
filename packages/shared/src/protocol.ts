@@ -49,28 +49,13 @@ export type Ticket = z.infer<typeof TicketSchema>
 
 // ---- client -> server ------------------------------------------------------
 
-export const ClientTopics = {
-  paint: "paint",
-  lock: "lock",
-  unlock: "unlock",
-  ready: "ready",
-  configure: "configure",
-  start: "start",
-  next: "next",
-  again: "again",
-  rename: "rename",
-  kick: "kick",
-  end: "end",
-  hint: "hint"
-} as const
-
-export const RenameSchema = z.object({ name: PlayerNameSchema })
+const RenameSchema = z.object({ name: PlayerNameSchema })
 /** Host removes a player from the game. */
 export const KickSchema = z.object({ playerId: PlayerIdSchema })
 
 /** Round lengths the host may pick, ms. */
 export const ROUND_LENGTHS_MS = [10_000, 20_000, 30_000, 45_000, 60_000, 90_000, 120_000] as const
-export const MIN_ROUNDS = 1
+const MIN_ROUNDS = 1
 export const MAX_ROUNDS = 15
 /** Players in one game, one per player colour. */
 export const MAX_PLAYERS = 16
@@ -238,7 +223,7 @@ export interface QuestionView {
   topic?: Topic
 }
 
-export interface RoundView {
+interface RoundView {
   index: number
   total: number
   question: QuestionView
@@ -387,10 +372,6 @@ export function revealFrom(message: RevealMessage): RoundReveal {
       return decoded ? { ...result, paint: decoded } : result
     })
   }
-}
-
-export interface ServerError {
-  message: string
 }
 
 export function encodeMessage(value: unknown): string {

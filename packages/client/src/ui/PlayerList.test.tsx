@@ -1,7 +1,9 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
 import { render } from "@testing-library/preact"
-import { playerColour, playerId, playerName, type PlayerView } from "@whereabouts/shared"
+import { playerColour } from "@whereabouts/shared/colours"
+import { playerId, playerName } from "@whereabouts/shared/ids"
+import type { PlayerView } from "@whereabouts/shared/protocol"
 import { HostTag, PlayerList, initial } from "./PlayerList"
 
 const player = (over: Partial<PlayerView>): PlayerView => ({

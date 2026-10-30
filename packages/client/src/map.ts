@@ -13,14 +13,11 @@ import "maplibre-gl/dist/maplibre-gl.css"
 // import.meta.url. After bundling that points into /assets where no such
 // file exists, so hand it a worker Vite has bundled and knows the URL of.
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url"
-import {
-  cellToBoundary,
-  cellsOutline,
-  type H3Cell,
-  type HintBand,
-  type LatLon,
-  type MapDetail
-} from "@whereabouts/shared"
+import { cellToBoundary, type H3Cell } from "@whereabouts/shared/h3"
+import { cellsOutline } from "@whereabouts/shared/paint"
+import type { HintBand } from "@whereabouts/shared/hints"
+import type { LatLon } from "@whereabouts/shared/geo"
+import type { MapDetail } from "@whereabouts/shared/protocol"
 import type { Theme } from "./themes"
 
 setWorkerUrl(mapWorkerUrl)

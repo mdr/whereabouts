@@ -5,23 +5,14 @@
  */
 import { Point, type LngLat, type MapMouseEvent, type MapTouchEvent } from "maplibre-gl"
 import { batch, computed, signal, type ReadonlySignal } from "@preact/signals"
-import {
-  FILL_DENSITY,
-  PaintLayer,
-  paintAmount,
-  resolutionForTolerance,
-  trimLand,
-  trimSea,
-  trimToHint,
-  h3Res,
-  type FlagCode,
-  type HintBand,
-  type H3Cell,
-  type LandMask,
-  type WaterMask,
-  type FlagQuestion,
-  type LatLon
-} from "@whereabouts/shared"
+import { FILL_DENSITY } from "@whereabouts/shared/fill"
+import { PaintLayer, resolutionForTolerance } from "@whereabouts/shared/paint"
+import { paintAmount, trimLand, trimSea, type LandMask, type WaterMask } from "@whereabouts/shared/land"
+import { trimToHint, type HintBand } from "@whereabouts/shared/hints"
+import { h3Res, type H3Cell } from "@whereabouts/shared/h3"
+import type { FlagCode } from "@whereabouts/shared/ids"
+import type { FlagQuestion } from "@whereabouts/shared/flags"
+import type { LatLon } from "@whereabouts/shared/geo"
 import type { GameMap } from "./map"
 import type { CountryFiller } from "./fill"
 import { forTabbedControl, isTyping } from "./keys"

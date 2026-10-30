@@ -20,7 +20,8 @@ import {
   Vector3,
   type Material
 } from "three"
-import type { FlagCode, LatLon } from "@whereabouts/shared"
+import type { FlagCode } from "@whereabouts/shared/ids"
+import type { LatLon } from "@whereabouts/shared/geo"
 import { FLAG_ATLAS, atlasCell } from "../flag-atlas"
 import { latLonToLocal } from "./sphere"
 

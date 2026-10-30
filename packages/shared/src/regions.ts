@@ -101,14 +101,14 @@ export const SHAPE_WEIGHT = 0.4
  * the paint: as if spread twice as densely as an even coat of the country,
  * however thinly it really is. Spreading wrong paint thinly is still wrong.
  */
-export const OFF_COUNTRY_COST = 2
+const OFF_COUNTRY_COST = 2
 
 /**
  * Gaussians 5, 10, 20 and 40 tolerances wide: one to eight country radii,
  * since a country's tolerance is a fifth of its radius. Fitted to the
  * targets in calibrate-regions.mjs.
  */
-export const NEARNESS_KERNEL: Kernel = {
+const NEARNESS_KERNEL: Kernel = {
   id: "nearness",
   label: "Nearness (5r, 10r, 20r, 40r)",
   scales: [5, 10, 20, 40],
@@ -177,7 +177,7 @@ export function roundsOverlap(a: Question | RegionQuestion, b: Question | Region
 const answers = new Map<string, RegionAnswer>()
 
 /** The kernel-scoring answer for a question, cached per kernel. */
-export function regionAnswerFor(q: RegionQuestion, k: Kernel = NEARNESS_KERNEL): RegionAnswer {
+function regionAnswerFor(q: RegionQuestion, k: Kernel = NEARNESS_KERNEL): RegionAnswer {
   const key = `${q.id}|${k.id}`
   let a = answers.get(key)
   if (!a) {

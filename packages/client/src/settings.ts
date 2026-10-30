@@ -1,18 +1,17 @@
 /** Per-browser preferences and identity, persisted where it makes sense. */
 import { effect, signal } from "@preact/signals"
 import { z } from "zod"
+import { DEFAULT_KERNEL, KernelIdSchema } from "@whereabouts/shared/scoring"
+import { MapDetailSchema } from "@whereabouts/shared/protocol"
 import {
-  DEFAULT_KERNEL,
-  KernelIdSchema,
-  MapDetailSchema,
   PlayerNameSchema,
   PlayerTokenSchema,
   RoomCodeSchema,
   playerToken,
   type PlayerName,
-  type PlayerToken,
-  type ScoreVerdict
-} from "@whereabouts/shared"
+  type PlayerToken
+} from "@whereabouts/shared/ids"
+import type { ScoreVerdict } from "@whereabouts/shared/score-review"
 
 /** A stored value that fails `schema`, such as one an older version wrote, starts from the initial value. */
 function persisted<S extends z.ZodType<string | boolean>>(

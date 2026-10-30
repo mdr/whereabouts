@@ -4,14 +4,14 @@ import {
   MAX_PLAYERS,
   MAX_SPECTATORS,
   QUESTION_TYPES,
-  MAX_HINTS,
   ROUND_LENGTHS_MS,
   MAP_DETAILS,
-  colourCss,
-  nextHostAfter,
-  type GameView,
-  type PlayerName
-} from "@whereabouts/shared"
+  type GameView
+} from "@whereabouts/shared/protocol"
+import { MAX_HINTS } from "@whereabouts/shared/hints"
+import { colourCss } from "@whereabouts/shared/colours"
+import { nextHostAfter } from "@whereabouts/shared/game"
+import type { PlayerName } from "@whereabouts/shared/ids"
 import type { Connection } from "../net"
 import { configureAsHost } from "../host-setup"
 import { askedToWatch, globeView, joinedCode, nameToJoin, savedName, soundOn, startOnPan } from "../settings"

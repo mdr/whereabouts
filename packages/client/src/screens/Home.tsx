@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks"
-import { MAP_DETAILS } from "@whereabouts/shared"
+import { MAP_DETAILS } from "@whereabouts/shared/protocol"
 import {
   nameHandoff,
   nameToJoin,

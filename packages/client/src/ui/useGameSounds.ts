@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "preact/hooks"
-import type { GameView } from "@whereabouts/shared"
+import type { GameView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../net"
 import { roundCue, sound, type RoundState } from "../sound"
 

@@ -7,15 +7,14 @@ import {
   cellToBoundary,
   cellToChildren,
   cellToLatLng,
-  decodeRing,
   getResolution,
   h3Cell,
   h3Res,
   latLngToCell,
-  type BordersData,
-  type H3Cell,
-  type LandMaskData
-} from "@whereabouts/shared"
+  type H3Cell
+} from "@whereabouts/shared/h3"
+import { decodeRing, type BordersData } from "@whereabouts/shared/borders"
+import type { LandMaskData } from "@whereabouts/shared/land"
 import { Vector3 } from "three"
 import type { Theme } from "../themes"
 import { latLonToLocal, localToLatLon } from "./sphere"

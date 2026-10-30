@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
+    "./*": "./src/*.ts",
     "./questions.json": "./questions.json",
     "./regions.json": "./regions.json",
     "./flags.json": "./flags.json",

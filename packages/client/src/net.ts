@@ -9,21 +9,20 @@ import {
   MAX_PLAYERS,
   MAX_SPECTATORS,
   PROTOCOL_VERSION,
-  decodePaint,
-  encodePaint,
   encodeTicket,
-  isCloseReason,
   revealFrom,
   type GameView,
-  type HintAxis,
   type PaintSubmission,
-  type PlayerName,
   type RevealMessage,
   type RoundReveal,
   type StateMessage,
   type Ticket,
   viewFrom
-} from "@whereabouts/shared"
+} from "@whereabouts/shared/protocol"
+import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
+import { isCloseReason } from "@whereabouts/shared/close-reason"
+import type { HintAxis } from "@whereabouts/shared/hints"
+import type { PlayerName } from "@whereabouts/shared/ids"
 import { reloadForNewBuild } from "./stale-build"
 
 export type Status = "idle" | "connecting" | "connected" | "disconnected" | "rejected"

@@ -1,4 +1,4 @@
-import type { GameView } from "@whereabouts/shared"
+import type { GameView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../net"
 import { Card } from "./bits"
 import { DevFacts } from "./DevDrawer"

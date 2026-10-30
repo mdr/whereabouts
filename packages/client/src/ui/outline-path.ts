@@ -1,4 +1,4 @@
-import type { LatLon } from "@whereabouts/shared"
+import type { LatLon } from "@whereabouts/shared/geo"
 
 /**
  * An outline (GeoJSON MultiPolygon coordinates, [lon, lat]) as an SVG path,

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { Vector3 } from "three"
-import { PaintLayer, h3Res } from "@whereabouts/shared"
+import { PaintLayer } from "@whereabouts/shared/paint"
+import { h3Res } from "@whereabouts/shared/h3"
 import { THEME } from "../themes"
 import { paintGeometry } from "./paint-mesh"
 import { localToLatLon } from "./sphere"

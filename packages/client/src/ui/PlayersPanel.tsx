@@ -4,7 +4,7 @@
  * the session.
  */
 import { signal } from "@preact/signals"
-import type { GameView, PlayerView } from "@whereabouts/shared"
+import type { GameView, PlayerView } from "@whereabouts/shared/protocol"
 import { PlayerList } from "./PlayerList"
 import { Icon } from "./icons"
 import { playersPanelTestIds } from "./PlayersPanelTestIds"

@@ -6,18 +6,13 @@
  * borders.json. Needs the borders and the countries loaded (loadBorders).
  */
 import { useEffect } from "preact/hooks"
-import {
-  countryFill,
-  type Borders,
-  type FillShape,
-  type FlagCode,
-  type H3Cell,
-  type H3Res,
-  type RegionId,
-  type FlagQuestion,
-  type LatLon,
-  type RegionQuestion
-} from "@whereabouts/shared"
+import { countryFill, type FillShape } from "@whereabouts/shared/fill"
+import type { Borders } from "@whereabouts/shared/borders"
+import type { FlagCode, RegionId } from "@whereabouts/shared/ids"
+import type { H3Cell, H3Res } from "@whereabouts/shared/h3"
+import type { FlagQuestion } from "@whereabouts/shared/flags"
+import type { LatLon } from "@whereabouts/shared/geo"
+import type { RegionQuestion } from "@whereabouts/shared/regions"
 import type { PaintController } from "./paint-controller"
 import { borders, loadBorders } from "./borders"
 import { regions } from "./regions"

@@ -3,9 +3,9 @@
 import { cellArea, cellToLatLng, polygonToCells, UNITS } from "h3-js"
 
 /** Islands this big can carry the outline on to land within CHAIN_KM of them; smaller ones only join it. */
-export const MIN_PART_KM2 = 1500
-export const CHAIN_KM = 500
-export const TOLERANCE_FRACTION = 0.2
+const MIN_PART_KM2 = 1500
+const CHAIN_KM = 500
+const TOLERANCE_FRACTION = 0.2
 export const SIMPLIFY_DEG = 0.015
 /** Countries smaller than this are asked as a point: too small to paint the shape of. */
 export const POINT_BELOW_KM2 = 10_000
@@ -16,7 +16,7 @@ export const POINT_BELOW_KM2 = 10_000
  */
 export const MIN_KEPT_SHARE = 0.75
 
-export const R = 6371
+const R = 6371
 export function km([lon1, lat1], [lon2, lat2]) {
   const r = Math.PI / 180
   const h =
@@ -26,7 +26,7 @@ export function km([lon1, lat1], [lon2, lat2]) {
 }
 
 /** Closest approach between two polygons' outer rings, by vertices. */
-export function gapKm(a, b) {
+function gapKm(a, b) {
   let best = Infinity
   for (const p of a[0]) for (const q of b[0]) best = Math.min(best, km(p, q))
   return best
@@ -48,7 +48,7 @@ export function ringAreaKm2(ring) {
 }
 
 /** Whether [lon, lat] is inside a ring (ray casting, in degrees: fine at island scale). */
-export function inRing([x, y], ring) {
+function inRing([x, y], ring) {
   let inside = false
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [xi, yi] = ring[i]
@@ -66,7 +66,7 @@ export const onLand = (pt, polygons) =>
  * then the middle of its largest island. Within LABEL_SLACK_KM of the land
  * counts as on it: the 1:50m outline of Vatican City misses its label point.
  */
-export const LABEL_SLACK_KM = 5
+const LABEL_SLACK_KM = 5
 export function islandAnswer(p, polygons) {
   const label = { lat: round4(p.LABEL_Y), lon: round4(p.LABEL_X) }
   const pt = [label.lon, label.lat]
@@ -130,7 +130,7 @@ export function crossesAntimeridian(polygons) {
   return Math.max(...lons) > 179.5 && Math.min(...lons) < -179.5
 }
 
-export const round4 = (v) => Math.round(v * 1e4) / 1e4
+const round4 = (v) => Math.round(v * 1e4) / 1e4
 
 export function centroid(cells) {
   let x = 0,
@@ -183,7 +183,7 @@ export function simplifyRing(ring, eps) {
   return dedup.length >= 4 ? dedup : null
 }
 
-export const round2 = (v) => Math.round(v * 100) / 100
+const round2 = (v) => Math.round(v * 100) / 100
 export const slug = (s) =>
   s
     .normalize("NFD")
@@ -201,9 +201,9 @@ export const slug = (s) =>
  * the country evenly scores about 890, a tight blob at its centre about 990,
  * and a neighbour's area two radii away about 640.
  */
-export const POINT_TOLERANCE_FRACTION = 0.5
-export const SPREAD_FRACTION = 0.25
-export const MIN_POINT_TOLERANCE_KM = 15
+const POINT_TOLERANCE_FRACTION = 0.5
+const SPREAD_FRACTION = 0.25
+const MIN_POINT_TOLERANCE_KM = 15
 export function pointToleranceKm(areaKm2, spreadKm, islands) {
   const t = Math.max(POINT_TOLERANCE_FRACTION * Math.sqrt(areaKm2 / Math.PI), islands ? SPREAD_FRACTION * spreadKm : 0)
   return Math.max(MIN_POINT_TOLERANCE_KM, Math.round(t / 5) * 5)

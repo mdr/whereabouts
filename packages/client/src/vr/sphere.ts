@@ -4,7 +4,7 @@
  * -Z, the north pole on +Y.
  */
 import { Vector3 } from "three"
-import type { LatLon } from "@whereabouts/shared"
+import type { LatLon } from "@whereabouts/shared/geo"
 
 const RAD = Math.PI / 180
 

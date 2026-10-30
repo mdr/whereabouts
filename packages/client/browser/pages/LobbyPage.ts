@@ -1,4 +1,4 @@
-import type { QuestionType } from "@whereabouts/shared"
+import type { QuestionType } from "@whereabouts/shared/protocol"
 import { lobbyTestIds, setupSummaryTestIds } from "../../src/screens/LobbyTestIds.ts"
 import { mixEditorTestIds } from "../../src/ui/MixEditorTestIds.ts"
 import { pillsTestIds, stepperTestIds } from "../../src/ui/ControlsTestIds.ts"

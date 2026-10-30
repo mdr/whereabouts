@@ -3,7 +3,7 @@ import { chromium, type Browser, type BrowserContextOptions } from "playwright-c
 import { Tab } from "../pages/Tab.ts"
 
 /** The Vite dev server, which proxies the game server. */
-export const DEV_URL = `http://localhost:${process.env.CLIENT_PORT ?? 5173}`
+const DEV_URL = `http://localhost:${process.env.CLIENT_PORT ?? 5173}`
 
 /** The local Chrome, headless, with WebGL in software so the map draws without a GPU. */
 export function launchChrome(extraArgs: string[] = []): Promise<Browser> {

@@ -11,18 +11,10 @@ import { fetchBuildJson } from "./stale-build"
 import regionsUrl from "@whereabouts/shared/regions.json?url"
 import flagsUrl from "@whereabouts/shared/flags.json?url"
 import featuresUrl from "@whereabouts/shared/features.json?url"
-import {
-  featureFrom,
-  flagFrom,
-  regionFrom,
-  type FlagData,
-  type FlagQuestion,
-  type Question,
-  type QuestionData,
-  type RegionData,
-  type RegionId,
-  type RegionQuestion
-} from "@whereabouts/shared"
+import { featureFrom, regionFrom, type RegionData, type RegionQuestion } from "@whereabouts/shared/regions"
+import { flagFrom, type FlagData, type FlagQuestion } from "@whereabouts/shared/flags"
+import type { Question, QuestionData } from "@whereabouts/shared/questions"
+import type { RegionId } from "@whereabouts/shared/ids"
 
 /** Every outline by id, countries and features alike, once loaded. */
 export const regions = signal<Map<RegionId, RegionQuestion> | undefined>(undefined)
