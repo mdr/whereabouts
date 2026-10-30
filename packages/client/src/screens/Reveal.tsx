@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { signal } from "@preact/signals"
-import { PaintLayer } from "@whereabouts/shared/paint"
 import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { GameView, PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
@@ -24,6 +23,7 @@ import { VrButton } from "../ui/VrButton"
 import { allFlags } from "../settings"
 import type { VrView } from "../vr"
 import { revealTestIds } from "./RevealTestIds"
+import { paintLayer, paintsOf } from "../reveal-paint"
 
 /** Selection meaning "show nobody's paint", alongside undefined (everyone) and a player id. */
 export const NONE = "none"
@@ -91,7 +91,7 @@ export function Reveal({
     const m = new Map<string, PaintedCountry | undefined>()
     if (borders)
       for (const r of reveal.results)
-        if (r.paint) m.set(r.playerId, mainCountry(borders, PaintLayer.fromRecord(r.res, r.paint.cells).toCells()))
+        if (r.paint) m.set(r.playerId, mainCountry(borders, paintLayer(r.res, r.paint).toCells()))
     return m
   }, [borders, reveal.index])
 
@@ -104,21 +104,18 @@ export function Reveal({
 
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
-  const layersOf = (shown: string | undefined) =>
-    [...shownResults(reveal.results, shown)].reverse().flatMap((r) => {
-      const p = byId.get(r.playerId)
-      return p && r.paint ? [{ layer: PaintLayer.fromRecord(r.res, r.paint.cells), colour: colourCss(p.colour) }] : []
-    })
+  const show = (shown: string | undefined) =>
+    paint.showColoured(paintsOf(shownResults(reveal.results, shown), view.players).flatMap((p) => p.features))
   useEffect(() => {
-    const fc = paint.showLayers(layersOf(selected))
+    const fc = show(selected)
     if (region) paint.gameMap.fitRegionAndPaint(reveal.answer, region.outline, fc, reveal.question.toleranceKm)
     else paint.gameMap.fitAnswerAndPaint(reveal.answer, fc, reveal.question.toleranceKm)
   }, [selected, reveal.index, region])
   // Not framed: the map would jump about as the mouse crosses the rows.
   useEffect(() => {
     if (hovered === undefined) return
-    paint.showLayers(layersOf(hovered))
-    return () => paint.showLayers(layersOf(selected))
+    show(hovered)
+    return () => show(selected)
   }, [hovered, selected, reveal.index])
   useEffect(() => setHovered(undefined), [reveal.index])
 

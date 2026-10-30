@@ -457,12 +457,15 @@ export class PaintController {
    * caller can frame it.
    */
   showLayers(entries: { layer: PaintLayer; colour: string }[]): GeoJSON.FeatureCollection {
-    const features: GeoJSON.Feature[] = []
-    for (const { layer, colour } of entries) {
-      for (const f of layer.toGeoJSON().features) {
-        features.push({ ...f, properties: { ...f.properties, colour } })
-      }
-    }
+    return this.showColoured(
+      entries.flatMap(({ layer, colour }) =>
+        layer.toGeoJSON().features.map((f) => ({ ...f, properties: { ...f.properties, colour } }))
+      )
+    )
+  }
+
+  /** As showLayers, for features that already carry their `colour`. */
+  showColoured(features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
     const fc: GeoJSON.FeatureCollection = { type: "FeatureCollection", features }
     this.gameMap.setPaintColourPerFeature()
     this.gameMap.setPaint(fc)

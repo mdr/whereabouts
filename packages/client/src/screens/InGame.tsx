@@ -37,6 +37,7 @@ import { revealOrder } from "./Reveal"
 import { inGameTestIds } from "./InGameTestIds"
 import { useFact } from "../facts"
 import { vrPicture } from "../vr-picture"
+import { paintLayer, paintsOf } from "../reveal-paint"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint()
@@ -172,7 +173,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const painted = useMemo(
     () =>
       view.reveal?.question.flag && borders.value && mine?.paint
-        ? mainCountry(borders.value, PaintLayer.fromRecord(mine.res, mine.paint.cells).toCells())
+        ? mainCountry(borders.value, paintLayer(mine.res, mine.paint).toCells())
         : undefined,
     [borders.value, view.reveal?.index, mine?.paint !== undefined]
   )
@@ -364,7 +365,6 @@ function gameVrView(
   }
   if (view.phase !== "reveal" || !reveal) return { kind: "paint", round, more }
 
-  const byId = new Map(view.players.map((p) => [p.id, p]))
   const ready = new Set(reveal.ready)
   const present = view.players.filter((p) => p.connected && !p.watching)
   const iAmReady = view.you.id !== undefined && ready.has(view.you.id)
@@ -385,11 +385,7 @@ function gameVrView(
       scoreLine: mine
         ? `${mine.paint ? "" : "Passed: "}${pts(mine.score)} this round, ${pts(me?.score ?? 0)} in all${painted ? `. ${paintedInText(painted, question.flag)}` : ""}`
         : "You sat this one out",
-      // Best on top, as the page draws them.
-      paints: [...shownResults(reveal.results, shown)].reverse().flatMap((r) => {
-        const p = byId.get(r.playerId)
-        return p && r.paint ? [{ layer: PaintLayer.fromRecord(r.res, r.paint.cells), colour: colourCss(p.colour) }] : []
-      }),
+      paints: paintsOf(shownResults(reveal.results, shown), view.players),
       table: {
         title: `Round ${reveal.index + 1} of ${reveal.total}`,
         rows: [
