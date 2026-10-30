@@ -15,7 +15,6 @@ import { type z } from "zod"
 import {
   ClientMessageSchemas,
   Game,
-  MAX_PAINT_CELLS,
   QUESTIONS,
   SEAT_GRACE_MS,
   ServerTopics,
@@ -27,6 +26,7 @@ import {
   generateCode,
   regionFrom,
   roomCode,
+  stateMessage,
   type FlagData,
   type FlagQuestion,
   type GameConfig,
@@ -36,7 +36,8 @@ import {
   type Question,
   type QuestionData,
   type RegionData,
-  type RegionQuestion
+  type RegionQuestion,
+  type RoundReveal
 } from "@whereabouts/shared"
 // The countries for "Paint the whole of …" rounds, the flag rounds, and the
 // islands, lakes, seas and US states. The client loads the same files on
@@ -106,12 +107,15 @@ export class GameRoom extends Room<ActorData> {
   declare private actorsByToken: Map<PlayerToken, Actor<ActorData>>
   declare private timer: unknown
   declare private emptyTimer: unknown
+  /** The reveal on show, encoded once, and the connections it has gone to. */
+  declare private sentReveal: { reveal: RoundReveal; text: string; to: WeakSet<Actor<ActorData>> } | undefined
 
   protected override onCreate(): void {
     this.game = new Game(roomCode(this.id), deps.pool, deps.config, Date.now(), deps.regions, deps.flags, deps.features)
     this.actorsByToken = new Map()
     this.timer = undefined
     this.emptyTimer = undefined
+    this.sentReveal = undefined
     for (const [topic, schema] of Object.entries(ClientMessageSchemas)) {
       this.bind(topic, (actor, payload) => this.handle(actor, topic, schema, payload))
     }
@@ -191,11 +195,8 @@ export class GameRoom extends Room<ActorData> {
 
   private dispatch(topic: string, token: PlayerToken, data: unknown, now: number) {
     switch (topic) {
-      case "paint": {
-        const paint = data as z.infer<typeof ClientMessageSchemas.paint>
-        if (Object.keys(paint.cells).length > MAX_PAINT_CELLS) return { ok: false as const, error: "too many cells" }
-        return this.game.setPaint(token, paint)
-      }
+      case "paint":
+        return this.game.setPaint(token, data as z.infer<typeof ClientMessageSchemas.paint>)
       case "lock":
         return this.game.lock(token, now)
       case "unlock":
@@ -248,17 +249,23 @@ export class GameRoom extends Room<ActorData> {
     actor.send(ServerTopics.error, encodeMessage({ message }))
   }
 
-  private sendState(actor: Actor<ActorData>): void {
-    const now = deps.clock.now()
-    actor.send(ServerTopics.state, encodeMessage(this.game.view(actor.data!.token, now)))
+  /** Views are per player (host flag, lock state), so each is sent on its own. */
+  private sendState(actor: Actor<ActorData>, now = deps.clock.now()): void {
+    const reveal = this.game.roundReveal
+    if (reveal) {
+      if (this.sentReveal?.reveal !== reveal)
+        this.sentReveal = { reveal, text: encodeMessage(reveal), to: new WeakSet() }
+      if (!this.sentReveal.to.has(actor)) {
+        actor.send(ServerTopics.reveal, this.sentReveal.text)
+        this.sentReveal.to.add(actor)
+      }
+    }
+    actor.send(ServerTopics.state, encodeMessage(stateMessage(this.game.view(actor.data!.token, now))))
   }
 
-  /** Views are per player (host flag, lock state), so send individually. */
   private broadcastState(): void {
     const now = deps.clock.now()
-    this.each((actor) => {
-      actor.send(ServerTopics.state, encodeMessage(this.game.view(actor.data!.token, now)))
-    })
+    this.each((actor) => this.sendState(actor, now))
     this.joinable = this.game.phase !== "results"
     this.armTimer()
   }

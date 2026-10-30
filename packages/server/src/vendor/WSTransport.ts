@@ -4,11 +4,12 @@
  *
  * The published @rivalis/node package bundles this transport together with a
  * WebRTC transport that depends on the native node-datachannel module. We
- * only need WebSockets, so the file is copied here with two changes: CloseCode
+ * only need WebSockets, so the file is copied here with three changes: CloseCode
  * is imported from @rivalis/core, which re-exports it, instead of the private
- * @rivalis/handshake package; and every accepted socket gets an 'error'
+ * @rivalis/handshake package; every accepted socket gets an 'error'
  * listener (see guardSocketErrors) so oversized frames cannot crash the
- * process.
+ * process; and a socket too far behind to take a message is dropped rather
+ * than left to miss it, so its client reconnects and catches up.
  */
 import type { IncomingMessage } from 'http'
 import { createHash } from 'node:crypto'
@@ -301,6 +302,7 @@ class WSTransport extends Transport {
                 return
             }
             if (checkBackpressure(aid, socket.bufferedAmount, this.maxBufferedBytes, this.onBackpressureDrop, (msg) => this.logger.warning(msg))) {
+                socket.terminate()
                 return
             }
             socket.send(message)

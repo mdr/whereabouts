@@ -28,6 +28,8 @@ export interface App {
 
 /** 1 MiB. A dense paint submission can exceed the 64 KiB default. */
 const MAX_PAYLOAD_BYTES = 1024 * 1024
+/** Above the largest message, a reveal at the paint budget, so only a client that has fallen behind is dropped. */
+const MAX_BUFFERED_BYTES = 8 * 1024 * 1024
 
 export function createApp(options: AppOptions): App {
   const fastify = Fastify({ logger: options.logger ?? false })
@@ -61,6 +63,7 @@ export function createApp(options: AppOptions): App {
   }
   const transport = new WSTransport({ server: fastify.server, path: "/ws" }, undefined, {
     maxPayload: MAX_PAYLOAD_BYTES,
+    maxBufferedBytes: MAX_BUFFERED_BYTES,
     ticketSource: "protocol",
     allowedOrigins: options.allowedOrigins ?? (() => true)
   })

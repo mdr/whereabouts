@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vite-plus/test"
-import { KickSchema, PaintSubmissionSchema, decodeTicket, encodeTicket, type Ticket } from "./protocol.ts"
+import {
+  KickSchema,
+  PROTOCOL_VERSION,
+  PaintSubmissionSchema,
+  decodeTicket,
+  encodeTicket,
+  type Ticket
+} from "./protocol.ts"
 import { playerName, playerToken, roomCode } from "./ids.ts"
 
 describe("ticket codec", () => {
   const ticket: Ticket = {
-    v: 1,
+    v: PROTOCOL_VERSION,
     token: playerToken("0123456789abcdef0123456789abcdef"),
     name: playerName("Zoë 🌍"),
     code: roomCode("AB12")
@@ -22,7 +29,7 @@ describe("ticket codec", () => {
   it("rejects garbage, wrong versions and bad shapes", () => {
     expect(decodeTicket("not-base64!!")).toBeUndefined()
     expect(decodeTicket(enc({}))).toBeUndefined()
-    expect(decodeTicket(enc({ ...ticket, v: 2 }))).toBeUndefined()
+    expect(decodeTicket(enc({ ...ticket, v: PROTOCOL_VERSION + 1 }))).toBeUndefined()
     expect(decodeTicket(enc({ ...ticket, token: "short" }))).toBeUndefined()
     expect(decodeTicket(enc({ ...ticket, code: "ab12" }))).toBeUndefined()
     expect(decodeTicket(enc({ ...ticket, name: "   " }))).toBeUndefined()

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { flagCode, playerId, playerToken, questionId, regionId, roomCode } from "./ids.ts"
-import { KickSchema, TicketSchema } from "./protocol.ts"
+import { KickSchema, PROTOCOL_VERSION, TicketSchema } from "./protocol.ts"
 
 describe("identifiers", () => {
   it("are made only from strings of their own format", () => {
@@ -19,7 +19,7 @@ describe("identifiers", () => {
   it("come out of the wire schemas checked", () => {
     expect(KickSchema.safeParse({ playerId: "p2" }).success).toBe(true)
     expect(KickSchema.safeParse({ playerId: "0123456789abcdef" }).success).toBe(false)
-    const ticket = { v: 1, token: "0123456789abcdef", name: "Ann" }
+    const ticket = { v: PROTOCOL_VERSION, token: "0123456789abcdef", name: "Ann" }
     expect(TicketSchema.safeParse({ ...ticket, code: "AB12" }).success).toBe(true)
     expect(TicketSchema.safeParse({ ...ticket, code: "ab12" }).success).toBe(false)
   })

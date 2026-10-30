@@ -35,7 +35,7 @@ import type {
   QuestionPictures,
   QuestionType,
   QuestionView,
-  RevealView,
+  RoundReveal,
   RoundResultView
 } from "./protocol.ts"
 
@@ -114,7 +114,7 @@ export class Game {
   private hints = new Map<PlayerToken, HintAxis>()
   /** Tokens of players who have pressed Ready on the current reveal. */
   private ready_ = new Set<PlayerToken>()
-  private reveal: RevealView | undefined = undefined
+  private reveal: RoundReveal | undefined = undefined
   private results: FinalStanding[] | undefined = undefined
   private awards: Award[] | undefined = undefined
   /** Tokens the host has removed; they may not reclaim a seat. */
@@ -708,8 +708,7 @@ export class Game {
       label: q.label,
       wiki: q.wiki,
       ...(photo ? { photo } : {}),
-      results,
-      ready: []
+      results
     }
   }
 
@@ -837,6 +836,11 @@ export class Game {
       if (p) ids.push(p.id)
     }
     return ids
+  }
+
+  /** The reveal on show, the same object for as long as it shows. */
+  get roundReveal(): RoundReveal | undefined {
+    return this.phase === "reveal" ? this.reveal : undefined
   }
 
   /** For tests and diagnostics. */

@@ -14,7 +14,10 @@ import {
   type HintAxis,
   type PaintSubmission,
   type PlayerName,
-  type Ticket
+  type RoundReveal,
+  type StateMessage,
+  type Ticket,
+  viewFrom
 } from "@whereabouts/shared"
 
 export type Status = "idle" | "connecting" | "connected" | "disconnected" | "rejected"
@@ -34,15 +37,17 @@ export class Connection {
   readonly rejection = signal<Rejection | undefined>(undefined)
   readonly code = computed(() => this.view.value?.code)
 
-  private client: WSClient<"state" | "error"> | undefined = undefined
+  private client: WSClient<"state" | "reveal" | "error"> | undefined = undefined
   private decoder = new TextDecoder()
+  private reveal: RoundReveal | undefined = undefined
 
   connect(ticket: Omit<Ticket, "v">): void {
     this.disconnect()
     this.status.value = "connecting"
     this.lastError.value = undefined
     this.rejection.value = undefined
-    const client = new WSClient<"state" | "error">(wsUrl(), {
+    this.reveal = undefined
+    const client = new WSClient<"state" | "reveal" | "error">(wsUrl(), {
       ticketSource: "protocol",
       reconnect: { baseDelayMs: 500, maxDelayMs: 5000, maxAttempts: 20 },
       getTicket: () =>
@@ -65,8 +70,13 @@ export class Connection {
     client.on("client:error", () => {
       /* surfaced via disconnect */
     })
+    client.on("reveal", (payload) => {
+      this.reveal = JSON.parse(this.decoder.decode(payload)) as RoundReveal
+    })
     client.on("state", (payload) => {
-      const view = JSON.parse(this.decoder.decode(payload)) as GameView
+      const state = JSON.parse(this.decoder.decode(payload)) as StateMessage
+      if (!state.reveal) this.reveal = undefined
+      const view = viewFrom(state, this.reveal)
       this.clockOffset.value = view.serverTime - Date.now()
       this.view.value = view
       // A fresh state means the server is happy with us; stop showing an old complaint.

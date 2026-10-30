@@ -437,7 +437,7 @@ export class PaintLayer {
   }
 }
 
-/** Cells a submission may carry after compaction; keeps frames well under the transport limit. */
+/** Cells a paint upload may carry: clients compact to it, and the server refuses more. */
 export const PAINT_CELL_BUDGET = 6000
 
 /**

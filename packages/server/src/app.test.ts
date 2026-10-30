@@ -7,6 +7,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
 import type { WSClient as WSClientType } from "@rivalis/browser"
 import {
+  PAINT_CELL_BUDGET,
+  PROTOCOL_VERSION,
   PaintLayer,
   ROUND_GRACE_MS,
   SEAT_GRACE_MS,
@@ -14,6 +16,9 @@ import {
   GameViewSchema,
   encodeTicket,
   flagFrom,
+  gridDisk,
+  h3Res,
+  latLngToCell,
   playerToken,
   questionId,
   regionCells,
@@ -21,13 +26,16 @@ import {
   playerName,
   roomCode,
   resolutionForTolerance,
+  viewFrom,
   type FlagData,
   type GameView,
   type PlayerName,
   type PlayerToken,
   type Question,
   type RegionData,
-  type RoomCode
+  type RoomCode,
+  type RoundReveal,
+  type StateMessage
 } from "@whereabouts/shared"
 import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
 import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
@@ -86,11 +94,14 @@ class FakeClock implements Clock {
   }
 }
 
-type Topics = "state" | "error"
+type Topics = "state" | "reveal" | "error"
 
 class TestPlayer {
   readonly client: WSClientType<Topics>
+  /** Views as the client puts them together from state and reveal messages. */
   readonly states: GameView[] = []
+  readonly rawStates: string[] = []
+  readonly reveals: RoundReveal[] = []
   readonly errors: string[] = []
   /** Why each state message that did not match GameViewSchema failed: checked after every test. */
   readonly invalidStates: string[] = []
@@ -101,8 +112,18 @@ class TestPlayer {
     this.token = playerToken(`${name}-token-0123456789abcdef`)
     this.client = new WSClient<Topics>(url, { ticketSource: "protocol", reconnect: false })
     const dec = new TextDecoder()
+    let reveal: RoundReveal | undefined = undefined
+    this.client.on("reveal", (p) => {
+      reveal = JSON.parse(dec.decode(p)) as RoundReveal
+      this.reveals.push(reveal)
+    })
     this.client.on("state", (p) => {
-      const view = JSON.parse(dec.decode(p)) as GameView
+      const raw = dec.decode(p)
+      const state = JSON.parse(raw) as StateMessage
+      if (!state.reveal) reveal = undefined
+      const view = viewFrom(state, reveal)
+      if (state.reveal && !view.reveal) this.invalidStates.push(`reveal ${state.reveal.index} came after its state`)
+      this.rawStates.push(raw)
       const checked = GameViewSchema.safeParse(view)
       if (!checked.success) this.invalidStates.push(checked.error.message)
       this.states.push(view)
@@ -110,7 +131,7 @@ class TestPlayer {
     this.client.on("error", (p) => this.errors.push((JSON.parse(dec.decode(p)) as { message: string }).message))
   }
   connect(ticket: { create?: boolean; code?: RoomCode; watch?: boolean }) {
-    this.client.connect(encodeTicket({ v: 1, token: this.token, name: this.name, ...ticket }))
+    this.client.connect(encodeTicket({ v: PROTOCOL_VERSION, token: this.token, name: this.name, ...ticket }))
   }
   send(topic: string, body: unknown = {}) {
     this.client.send(topic, JSON.stringify(body))
@@ -336,6 +357,11 @@ describe("game server", () => {
     expect(await pollErrors(alice)).toContain("invalid paint")
     alice.errors.length = 0
 
+    const tooMany = gridDisk(latLngToCell(0, 0, h3Res(7)), 45).slice(0, PAINT_CELL_BUDGET + 1)
+    alice.send("paint", { cells: Object.fromEntries(tooMany.map((h) => [h, 1])), floor: 0 })
+    expect(await pollErrors(alice)).toContain("invalid paint")
+    alice.errors.length = 0
+
     // Shaped like a cell but not one: scoring it would throw.
     alice.send("paint", { cells: { fffffffffffffff: 1 }, floor: 0 })
     expect(await pollErrors(alice)).toContain("invalid paint")
@@ -376,6 +402,40 @@ describe("game server", () => {
     const cara = player("Cara")
     cara.connect({ code: lobby.code })
     await cara.until((v) => v.phase === "lobby")
+  })
+
+  it("sends a round's reveal once, and again only to a player who reconnects", async () => {
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    const bob = player("Bob")
+    bob.connect({ code: lobby.code })
+    await alice.until((v) => v.players.length === 2)
+    alice.send("start")
+    const round = await bob.until((v) => v.phase === "guessing")
+    const q = questions.find((x) => x.prompt === round.round!.question.prompt)!
+    const paint = paintAt(q, q.answer.lat, q.answer.lon)
+    alice.send("paint", paint)
+    alice.send("lock")
+    bob.send("lock")
+    await alice.until((v) => v.phase === "reveal")
+
+    bob.send("rename", { name: "Bobby" })
+    const renamed = await alice.untilLatest((v) => v.players.some((p) => p.name === "Bobby"))
+    expect(renamed.reveal!.results).toHaveLength(2)
+    expect(alice.reveals).toHaveLength(1)
+    const aCell = Object.keys(paint.cells)[0]!
+    expect(alice.rawStates.at(-1)).not.toContain(aCell)
+
+    bob.client.disconnect()
+    await alice.until((v) => v.players.some((p) => p.name === "Bobby" && !p.connected))
+    const bobAgain = player("Bob")
+    bobAgain.connect({ code: lobby.code })
+    const back = await bobAgain.until((v) => v.phase === "reveal")
+    expect(back.reveal!.results).toHaveLength(2)
+    expect(bobAgain.reveals).toHaveLength(1)
+    await alice.untilLatest((v) => v.players.every((p) => p.connected))
+    expect(alice.reveals).toHaveLength(1)
   })
 
   it("a reconnecting player keeps their seat", async () => {

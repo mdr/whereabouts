@@ -9,6 +9,7 @@ import type { LatLon } from "./geo.ts"
 import type { Topic } from "./questions.ts"
 import type { PlayerColour } from "./colours.ts"
 import { H3CellSchema, type H3Res } from "./h3.ts"
+import { PAINT_CELL_BUDGET } from "./paint.ts"
 import { HintAxisSchema, MAX_HINTS, type HintAxis, type HintBand } from "./hints.ts"
 import type { KernelId } from "./scoring.ts"
 import {
@@ -23,17 +24,21 @@ import {
   type RoomCode
 } from "./ids.ts"
 
-export const PROTOCOL_VERSION = 1
+export const PROTOCOL_VERSION = 2
 
-/** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
+/**
+ * Sparse paint: H3 cell index -> intensity. Plus the uniform world floor.
+ * Clients compact to PAINT_CELL_BUDGET; more is refused before any cell is
+ * checked, since checking them all is the costly part.
+ */
 export const PaintSubmissionSchema = z.object({
-  cells: z.record(H3CellSchema, z.number().positive()),
+  cells: z
+    .record(z.string(), z.unknown())
+    .refine((cells) => Object.keys(cells).length <= PAINT_CELL_BUDGET, "too many cells")
+    .pipe(z.record(H3CellSchema, z.number().positive())),
   floor: z.number().min(0).max(1)
 })
 export type PaintSubmission = z.infer<typeof PaintSubmissionSchema>
-
-/** Hard cap on cells per submission; clients compact to PAINT_CELL_BUDGET before sending. */
-export const MAX_PAINT_CELLS = 12_000
 
 /** Ticket presented on connect, carried in the WebSocket subprotocol header. */
 export const TicketSchema = z.object({
@@ -187,6 +192,8 @@ export const ClientMessageSchemas = {
 
 export const ServerTopics = {
   state: "state",
+  /** A round's RoundReveal, once per connection, before the first state that shows it. */
+  reveal: "reveal",
   error: "error"
 } as const
 
@@ -330,6 +337,24 @@ export interface GameView {
   awards?: Award[]
   /** The next round's pictures, from the lobby on, so they are loaded before it starts. */
   upcoming?: QuestionPictures
+}
+
+/** What a reveal shows that stays the same while it shows: the bulk of it, every player's paint. */
+export type RoundReveal = Omit<RevealView, "ready">
+
+/** A view as the state topic carries it: of the reveal, only what changes while it shows. */
+export type StateMessage = Omit<GameView, "reveal"> & { reveal?: Pick<RevealView, "index" | "ready"> }
+
+export function stateMessage(view: GameView): StateMessage {
+  const { reveal, ...rest } = view
+  return reveal ? { ...rest, reveal: { index: reveal.index, ready: reveal.ready } } : rest
+}
+
+/** The view a state message stands for, given the last reveal received: no reveal unless it is that round's. */
+export function viewFrom(state: StateMessage, reveal: RoundReveal | undefined): GameView {
+  const { reveal: progress, ...rest } = state
+  if (!progress || reveal?.index !== progress.index) return rest
+  return { ...rest, reveal: { ...reveal, ready: progress.ready } }
 }
 
 export interface ServerError {
