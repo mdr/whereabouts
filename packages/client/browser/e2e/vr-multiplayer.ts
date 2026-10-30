@@ -255,6 +255,12 @@ checks.check(
   board?.rounds.length === 2,
   `a board shows the awards and every round (${board?.awards.map((a) => a.title).join(", ")}; ${board?.rounds.length} rounds)`
 )
+const zoomedOut = await until(
+  "the globe back to its starting size",
+  () => headset.globeScale(),
+  (s) => s < 1.01
+)
+checks.check(zoomedOut < 1.01, `leaving the answer zooms the globe back out (${zoomedOut.toFixed(2)})`)
 await aliceRound.pause(1500)
 await aliceRound.screenshot(`${out}/vrmp-3-standings.png`)
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks"
+import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import {
   PaintLayer,
   compactRecord,
@@ -6,6 +6,7 @@ import {
   type Fact,
   type GameView,
   type HintAxis,
+  type PaintedCountry,
   type RegionQuestion
 } from "@whereabouts/shared"
 import type { Connection } from "../net"
@@ -31,6 +32,7 @@ import { HintCard } from "../ui/Hint"
 import { sound } from "../sound"
 import { loadRegions, useRegion } from "../regions"
 import { VrButton, useVrView } from "../ui/VrButton"
+import { mainCountry, paintedInText } from "../ui/FlagReveal"
 import type { VrView } from "../vr"
 import type { PaintController } from "../paint-controller"
 import { revealOrder } from "./Reveal"
@@ -158,7 +160,15 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   // The room's code, so everyone in the game sees the same one.
   const fact = useFact(view.reveal?.wiki, view.code, view.reveal?.index ?? 0)
 
-  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, region, fact })
+  const mine = view.reveal?.results.find((r) => r.playerId === view.you.id)
+  const painted = useMemo(
+    () =>
+      view.reveal?.question.flag && borders.value && mine?.paint
+        ? mainCountry(borders.value, PaintLayer.fromRecord(mine.res, mine.paint.cells).toCells())
+        : undefined,
+    [borders.value, view.reveal?.index, mine?.paint !== undefined]
+  )
+  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, region, fact, painted })
   useVrView(vrView, `${view.phase} ${roundKey}`)
 
   if (view.phase === "reveal" && view.reveal) {
@@ -278,13 +288,15 @@ function gameVrView(
     timeUp,
     sittingOut,
     region,
-    fact
+    fact,
+    painted
   }: {
     lockIn: () => void
     timeUp: boolean
     sittingOut: boolean
     region: RegionQuestion | undefined
     fact: Fact | undefined
+    painted: PaintedCountry | undefined
   }
 ): VrView {
   const question = (view.round ?? view.reveal)!.question
@@ -363,7 +375,7 @@ function gameVrView(
       stateRound: question.topic === "state",
       fact: fact?.text,
       scoreLine: mine
-        ? `${mine.paint ? "" : "Passed: "}${pts(mine.score)} this round, ${pts(me?.score ?? 0)} in all`
+        ? `${mine.paint ? "" : "Passed: "}${pts(mine.score)} this round, ${pts(me?.score ?? 0)} in all${painted ? `. ${paintedInText(painted, question.flag)}` : ""}`
         : "You sat this one out",
       // Best on top, as the page draws them.
       paints: [...shownResults(reveal.results, shown)].reverse().flatMap((r) => {
@@ -377,7 +389,7 @@ function gameVrView(
           ...revealOrder(view.players, reveal.results).map(({ p, r }) => ({
             colour: colourCss(p.colour),
             name: `${p.name}${p.id === view.you.id ? " (you)" : ""}`,
-            detail: `${r ? (r.paint ? `+${Math.round(r.score)}` : "passed") : "sat out"}${ready.has(p.id) ? ", ready" : ""}`,
+            detail: `${r ? (r.paint ? `+${Math.round(r.score)}` : "passed") : "sat out"}${r?.hint ? ", hint" : ""}${ready.has(p.id) ? ", ready" : ""}`,
             total: Math.round(p.score).toLocaleString(),
             selected: shown === p.id,
             select: () => (revealShown.value = shown === p.id ? undefined : p.id)

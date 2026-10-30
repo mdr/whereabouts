@@ -9,11 +9,13 @@ export interface VrBoard {
   awards: { emoji: string; title: string; line: { text: string; colour?: string }[] }[]
   /** In finishing order, as the rounds' scores are. */
   players: { name: string; colour: string }[]
-  rounds: { label: string; scores: (number | undefined)[] }[]
+  /** Each round's answer, and what kind of question it was in its colour. */
+  rounds: { label: string; type: string; colour: string; scores: (number | undefined)[] }[]
 }
 
 const W = 1400
 const PAD = 64
+const ROW = 84
 const BOARD_M = 0.95
 const MAX_H_M = 0.75
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
@@ -65,7 +67,7 @@ function draw(board: VrBoard): HTMLCanvasElement {
   const height =
     PAD * 2 +
     (board.awards.length > 0 ? 90 + awardRows * 150 + 40 : 0) +
-    (board.rounds.length > 0 ? 170 + board.rounds.length * 64 : 0)
+    (board.rounds.length > 0 ? 170 + board.rounds.length * ROW : 0)
   const canvas = document.createElement("canvas")
   canvas.width = W
   canvas.height = height
@@ -127,15 +129,21 @@ function draw(board: VrBoard): HTMLCanvasElement {
     })
     y += 80
     board.rounds.forEach((r, i) => {
-      const rowY = y + i * 64 + 32
+      const rowY = y + i * ROW + ROW / 2
       if (i % 2 === 0) {
         ctx.fillStyle = "rgba(255,255,255,0.04)"
-        ctx.fillRect(PAD - 16, rowY - 32, W - PAD * 2 + 32, 64)
+        ctx.fillRect(PAD - 16, rowY - ROW / 2, W - PAD * 2 + 32, ROW)
       }
       ctx.textAlign = "left"
       ctx.fillStyle = "#cfd8e3"
       ctx.font = `36px ${FONT}`
-      ctx.fillText(`${i + 1}. ${r.label}`, PAD, rowY, labelW - 30)
+      ctx.fillText(`${i + 1}. ${r.label}`, PAD, rowY - 14, labelW - 30)
+      const typeX = PAD + ctx.measureText(`${i + 1}. `).width
+      ctx.fillStyle = r.colour
+      ctx.fillRect(typeX, rowY + 14, 18, 18)
+      ctx.fillStyle = "#94a3b8"
+      ctx.font = `28px ${FONT}`
+      ctx.fillText(r.type, typeX + 30, rowY + 24, labelW - 60)
       const best = Math.max(-1, ...r.scores.map((s) => s ?? -1))
       ctx.textAlign = "center"
       r.scores.forEach((s, j) => {

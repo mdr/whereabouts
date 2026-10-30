@@ -66,6 +66,8 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         }),
         rounds: (view.playedRounds ?? []).map((round, r) => ({
           label: round.label,
+          type: typeName(round),
+          colour: TYPE_COLOURS[round.type],
           scores: standings.map((s) => s.rounds[r]?.score)
         }))
       }
@@ -283,9 +285,24 @@ const TYPE_NAMES: Record<QuestionType, string> = {
   states: "US state"
 }
 
+/** The lobby's colour for each kind (style.css, .type-*), for the headset's board. */
+const TYPE_COLOURS: Record<QuestionType, string> = {
+  landmarks: "#ffb74d",
+  places: "#4fc3f7",
+  countries: "#81c784",
+  flags: "#f06292",
+  features: "#9575cd",
+  states: "#fff176"
+}
+
+/** An island, lake or sea round says which. */
+function typeName(round: PlayedRound): string {
+  const topic = round.type === "features" && round.topic
+  return topic ? topic[0]!.toUpperCase() + topic.slice(1) : TYPE_NAMES[round.type]
+}
+
 /** The round's picture, what it asked about, and which kind of question it was. */
 function RoundWhat({ round }: { round: PlayedRound }) {
-  const topic = round.type === "features" && round.topic
   return (
     <>
       <RoundPicture round={round} />
@@ -294,9 +311,7 @@ function RoundWhat({ round }: { round: PlayedRound }) {
           {round.label}
           {round.regionId && round.flag && <SmallFlag code={round.flag} />}
         </span>
-        <span class={`round-type type-${round.type}`}>
-          {topic ? topic[0]!.toUpperCase() + topic.slice(1) : TYPE_NAMES[round.type]}
-        </span>
+        <span class={`round-type type-${round.type}`}>{typeName(round)}</span>
       </span>
     </>
   )

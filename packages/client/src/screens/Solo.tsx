@@ -70,7 +70,7 @@ import { useFact } from "../facts"
 import { useFillTool } from "../fill"
 import { preloadPictures } from "../preload"
 import { HintCard } from "../ui/Hint"
-import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
+import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry, PaintedIn, paintedInText } from "../ui/FlagReveal"
 import { navigate } from "../router"
 import { sound } from "../sound"
 import { soloTestIds } from "./SoloTestIds"
@@ -301,6 +301,10 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     const { score, parts } = scoreQuestion(revealed.dist, q, kernel)
     return { score, parts }
   }, [revealed, kernel.id])
+  const where = useMemo(
+    () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : undefined),
+    [revealed, borders]
+  )
   const home = { label: "Home", press: () => navigate("/") }
   const vrRound: VrRound = {
     paint,
@@ -340,7 +344,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               focus: q.answer,
               stateRound,
               fact: fact?.text,
-              scoreLine: `${revealed.dist ? "" : "Passed: "}${pts(revealed.result.score)} this round, ${pts(total)} in all`,
+              scoreLine: `${revealed.dist ? "" : "Passed: "}${pts(revealed.result.score)} this round, ${pts(total)} in all${where ? `. ${paintedInText(where, q.flag)}` : ""}`,
               table: roundsTable(results),
               actions: [{ label: index + 1 >= questions.length ? "Finish" : "Next question", press: next }],
               flags: q.flag && {
@@ -352,11 +356,6 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           }
         : { kind: "paint", round: vrRound, more: [{ ...home, confirm: "Press again to leave" }] }
   useVrView(vrView, `${phase} ${index} ${questions[0]?.id} ${hint?.axis}`)
-
-  const where = useMemo(
-    () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : undefined),
-    [revealed, borders]
-  )
 
   const header = (
     <HudHeader

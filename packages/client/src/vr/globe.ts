@@ -246,6 +246,12 @@ export class Globe {
     this.rate.spin = this.rate.tilt = 0
   }
 
+  /** Back to the size it starts at, turned as it is, as the page's map goes back to the whole world. */
+  zoomOut(): void {
+    this.turning = { from: { ...this.turned }, to: { ...this.turned }, scale: this.scale, toScale: MIN_SCALE, t: 0 }
+    this.rate.spin = this.rate.tilt = 0
+  }
+
   /**
    * Where `offset` (from the centre, in the world) points, as the turns
    * that bring straight ahead round to it: the spin about the poles (undoing

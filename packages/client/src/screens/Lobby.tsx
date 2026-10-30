@@ -66,9 +66,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
       },
       note:
         connectionText(conn) ??
-        (host
-          ? `Friends join with the code ${view.code}.`
-          : `Friends join with the code ${view.code}. ${setupLine(view)}`),
+        `Friends join with the code ${view.code}. ${setupLine(view)}${host ? " Take the headset off to change it." : ""}`,
       actions: host ? [{ label: "Start game", press: () => conn.start(), enabled: players.length >= 1 }] : []
     },
     more: [

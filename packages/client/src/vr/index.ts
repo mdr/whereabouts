@@ -360,6 +360,7 @@ export class Vr {
   show(view: VrView): void {
     this.endStroke()
     this.picture.release(this.panel.object3D!)
+    const leavingAnswer = this.view?.kind === "reveal" && view.kind !== "reveal"
     this.view = view
     const round = this.round
     const picture = round?.picture
@@ -372,7 +373,7 @@ export class Vr {
     if (view.kind === "reveal" && this.placed) {
       const { at, reach } = framing(view.reveal, view.round)
       this.globe.turnToward(at, reach, this.world.player.head.getWorldPosition(new Vector3()))
-    }
+    } else if (leavingAnswer && this.placed) this.globe.zoomOut()
     this.paintDirty = true
     this.stopPaintWatch?.()
     this.stopPaintWatch = round
@@ -1022,21 +1023,36 @@ export class Vr {
  * answer and every guess's paint.
  */
 function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: number } {
-  const points = [latLonToLocal(reveal.focus)]
+  const answerPoints = [latLonToLocal(reveal.focus)]
   const { answer } = reveal
   if ("outline" in answer)
     for (const polygon of answer.outline)
-      for (const [lon, lat] of polygon[0] ?? []) points.push(latLonToLocal({ lat: lat!, lon: lon! }))
-  for (const { layer } of reveal.paints ?? [{ layer: round.paint.layer }])
-    for (const h of Object.keys(layer.toRecord()) as H3Cell[]) {
-      const [lat, lon] = layer.centre(h)
-      points.push(latLonToLocal({ lat, lon }))
-    }
-  const mid = points.reduce((sum, p) => sum.add(p), new Vector3())
+      for (const [lon, lat] of polygon[0] ?? []) answerPoints.push(latLonToLocal({ lat: lat!, lon: lon! }))
+  const groups = [answerPoints]
+  for (const { layer } of reveal.paints ?? [{ layer: round.paint.layer }]) {
+    const cells = Object.keys(layer.toRecord()) as H3Cell[]
+    if (cells.length > 0)
+      groups.push(
+        cells.map((h) => {
+          const [lat, lon] = layer.centre(h)
+          return latLonToLocal({ lat, lon })
+        })
+      )
+  }
+  // The answer and each guess count once, however many cells a guess has:
+  // else a far-off guess outweighs the answer and turns it out of view.
+  const mid = groups.reduce(
+    (sum, g) =>
+      sum.addScaledVector(
+        g.reduce((s, p) => s.add(p), new Vector3()),
+        1 / g.length
+      ),
+    new Vector3()
+  )
   // Spread round the world: show it all.
-  if (mid.length() < points.length * 0.2) return { at: reveal.focus, reach: Math.PI }
+  if (mid.length() < groups.length * 0.2) return { at: reveal.focus, reach: Math.PI }
   mid.normalize()
-  const reach = Math.max(...points.map((p) => p.angleTo(mid)))
+  const reach = Math.max(...groups.flat().map((p) => p.angleTo(mid)))
   return { at: localToLatLon(mid), reach: reach * 1.15 + 0.002 }
 }
 
