@@ -30,10 +30,10 @@ export class PaintTools {
     return tool ?? undefined
   }
 
-  /** Tab to the next control, as a keyboard player would, and press it with Space. */
-  async tabOnAndPressSpace(): Promise<void> {
+  /** Tab to the next control, as a keyboard player would, and press it with `key`. */
+  async tabOnAndPress(key: "Space" | "Enter"): Promise<void> {
     await this.#page.keyboard.press("Tab")
-    await this.#page.keyboard.press("Space")
+    await this.#page.keyboard.press(key)
   }
 
   async clear(): Promise<void> {

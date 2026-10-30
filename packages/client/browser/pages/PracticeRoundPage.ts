@@ -42,4 +42,9 @@ export class PracticeRoundPage extends Screen {
     await this.page.getByTestId(soloTestIds.submitButton).click()
     return PracticeRevealPage.whenShown(this.tab)
   }
+
+  async submitWithKeyboard(): Promise<PracticeRevealPage> {
+    await this.page.keyboard.press("Enter")
+    return PracticeRevealPage.whenShown(this.tab)
+  }
 }

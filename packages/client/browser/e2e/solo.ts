@@ -32,13 +32,22 @@ checks.check(oneBlob < twoBlobs && back === twoBlobs, `undo then redo: ${twoBlob
 // Space presses a button the player Tabbed to, but pans with a clicked
 // tool button focused.
 await practiceRoundPage.paintTools.selectTool("pan")
-await practiceRoundPage.paintTools.tabOnAndPressSpace()
+await practiceRoundPage.paintTools.tabOnAndPress("Space")
 const tabbedTo = await practiceRoundPage.paintTools.selectedTool()
 checks.check(tabbedTo === "paint", `Space presses the tool button Tabbed to (${tabbedTo})`)
 await practiceRoundPage.paintTools.selectTool("paint")
 await practiceRoundPage.map.dragHoldingSpace({ across: 0.3, down: 0.6 })
 const afterSpaceDrag = await practiceRoundPage.map.yourPaintCells()
 checks.check(afterSpaceDrag === back, `a drag holding Space paints nothing: ${back} -> ${afterSpaceDrag} cells`)
+// Enter submits the round, but not while the player has Tabbed to a button.
+await practiceRoundPage.paintTools.selectTool("pan")
+await practiceRoundPage.paintTools.tabOnAndPress("Enter")
+const enteredOn = await practiceRoundPage.paintTools.selectedTool()
+const stillPainting = await practiceRoundPage.paintTools.toolIsUsable("paint")
+checks.check(
+  enteredOn === "paint" && stillPainting,
+  `Enter presses the tool button Tabbed to, and does not submit (${enteredOn}, painting: ${stillPainting})`
+)
 
 // Trim to hint drops whatever paint is outside the band; undo brings it back.
 await practiceRoundPage.paintTools.trimToHint()
@@ -66,7 +75,8 @@ await practiceRoundPage.map.toggleGlobe()
 checks.check(!(await practiceRoundPage.map.showsGlobe()), "and the button goes back to the flat map")
 console.log("blobs:", await practiceRoundPage.devDrawer.blobs())
 
-const practiceRevealPage = await practiceRoundPage.submit()
+// The globe button, just clicked, has focus; Enter still submits.
+const practiceRevealPage = await practiceRoundPage.submitWithKeyboard()
 const score = await practiceRevealPage.score()
 checks.check(/^-?\d+$/.test(score), `a score on the reveal (${score})`)
 const fact = await practiceRevealPage.fact()

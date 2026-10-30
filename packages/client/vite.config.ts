@@ -1,17 +1,22 @@
 import { defineConfig, lazyPlugins } from "vite-plus"
 import preact from "@preact/preset-vite"
 
+// Overridable so a second pair of dev servers can run beside the first.
+const clientPort = Number(process.env.CLIENT_PORT ?? 5173)
+const gamePort = Number(process.env.PORT ?? 8787)
+
 export default defineConfig({
   plugins: lazyPlugins(() => [preact()]),
   server: {
-    port: 5173,
+    port: clientPort,
+    strictPort: true,
     open: false,
     // A Cloudflare quick tunnel, for opening the dev server on a headset (see README).
     allowedHosts: [".trycloudflare.com"],
     proxy: {
       // Game server (Fastify + Rivalis) during development.
-      "/ws": { target: "ws://localhost:8787", ws: true },
-      "/api": { target: "http://localhost:8787" }
+      "/ws": { target: `ws://localhost:${gamePort}`, ws: true },
+      "/api": { target: `http://localhost:${gamePort}` }
     }
   },
   // MapLibre ships its own web worker; pre-bundling the package breaks the

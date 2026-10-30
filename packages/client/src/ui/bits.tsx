@@ -538,6 +538,9 @@ function Lightbox({
   return createPortal(
     <div
       class="lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Picture"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}

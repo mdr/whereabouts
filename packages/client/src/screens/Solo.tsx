@@ -40,6 +40,7 @@ import {
 } from "@whereabouts/shared"
 import type { GameMap } from "../map"
 import { MapView, usePaint } from "../ui/MapView"
+import { forTabbedControl } from "../keys"
 import { LoadingOutlines } from "../ui/LoadingOutlines"
 import {
   Answer,
@@ -227,9 +228,14 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Enter") return
-      if (phase === "paint" && !paint.layer.isEmpty) submit()
-      else if (phase === "reveal") next()
+      if (e.key !== "Enter" || e.repeat || forTabbedControl(e)) return
+      // A photo or the shortcuts list open over the round has the keyboard.
+      if (document.querySelector('[role="dialog"]')) return
+      const act = phase === "paint" && !paint.layer.isEmpty ? submit : phase === "reveal" ? next : undefined
+      if (!act) return
+      // A clicked button keeps focus, and Enter would press it as well.
+      e.preventDefault()
+      act()
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)

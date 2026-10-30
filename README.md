@@ -9,6 +9,7 @@ probability distribution** on a world map instead of dropping a pin.
 nix develop        # or let direnv load the shell
 pnpm install
 pnpm dev           # client on http://localhost:5173, game server on :8787
+                   # (CLIENT_PORT and PORT move them, for a second pair)
 ```
 
 Open two browser tabs at http://localhost:5173 to play against yourself:
@@ -33,7 +34,8 @@ Other commands:
   moves to another screen returns that screen. Page objects find elements
   by the test ids each component declares in its `*TestIds.ts` module. Run them from
   `packages/client` with `node browser/e2e/<name>.ts [outDir]`
-  (`pnpm smoke` runs `solo`); screenshots go to `smoke-out/`.
+  (`pnpm smoke` runs `solo`); screenshots go to `smoke-out/`. Against
+  dev servers on other ports, give the scripts the same `CLIENT_PORT`.
   Run the game server with `ROUND_MS=12000 ROUNDS=2` for `flows`,
   `deadline`, `phone` and `sound`.
   - `solo`: practice mode: paint, undo and redo, submit.
