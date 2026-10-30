@@ -22,10 +22,10 @@ import {
   encodeCase,
   flagRound,
   regionFit,
-  scoreRegionQuestion,
+  scoreAnswer,
+  type AnswerParts,
   greatCircleDistance,
   kernelById,
-  scoreDistribution,
   PASS_SCORE,
   scoreFromParts,
   showsLakes,
@@ -82,7 +82,6 @@ type PracticeQuestion = Question | RegionQuestion
 const isRegion = (q: PracticeQuestion): q is RegionQuestion => q.kind === "region"
 
 /** What explains a score: A and B for a place, shape and nearness for a country. */
-type Parts = { A: number; B: number } | { shape: number; nearness: number }
 
 /** What the VR menu shows above the question, as the card does. */
 /** The question's picture; at the reveal, the answer's photo where it showed none, its postcard back telling of the answer. */
@@ -91,17 +90,7 @@ function questionVrPicture(q: PracticeQuestion, reveal: Postcard | undefined): V
   return vrPicture(photo || undefined, q.flag ?? (isRegion(q) ? q.countryFlag : undefined), reveal)
 }
 
-/** Places score with the chosen kernel; countries have their own rule (see regions.ts). */
-function scoreQuestion(dist: Distribution, q: PracticeQuestion, k: Kernel): { score: number; parts: Parts } {
-  if (isRegion(q)) {
-    const { score, shape, nearness } = scoreRegionQuestion(dist, q)
-    return { score, parts: { shape, nearness } }
-  }
-  const { score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, k)
-  return { score, parts: { A, B } }
-}
-
-function PartsLine({ parts }: { parts: Parts }) {
+function PartsLine({ parts }: { parts: AnswerParts }) {
   if ("A" in parts) return <ScoreParts A={parts.A} B={parts.B} />
   return (
     <div class="parts">
@@ -246,7 +235,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     const passed = paint.layer.isEmpty
     if (passed) sound.play("chicken")
     const dist = passed ? undefined : buildDistribution(paint.layer.toCells(), paint.floor.value)
-    const score = dist ? scoreQuestion(dist, q, kernel).score : PASS_SCORE.score
+    const { score } = scoreAnswer(dist, q, kernel)
     const result = { question: q, score }
     setResults((r) => [...r, result])
     setRevealed({ dist, result })
@@ -292,9 +281,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   // Re-score the revealed paint if the kernel changes on the reveal screen.
   const shownResult = useMemo(() => {
     if (!revealed) return undefined
-    if (!revealed.dist) return { score: PASS_SCORE.score, parts: { A: PASS_SCORE.A, B: PASS_SCORE.B } }
-    const { score, parts } = scoreQuestion(revealed.dist, q, kernel)
-    return { score, parts }
+    return scoreAnswer(revealed.dist, q, kernel)
   }, [revealed, kernel.id])
   const where = useMemo(
     () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : undefined),
@@ -507,7 +494,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             onClick={submit}
             title={
               paint.isEmpty.value
-                ? "No idea? Passing scores 250. Even painting a wide, vague area scores better on average."
+                ? `No idea? Passing scores ${PASS_SCORE.score}. Even painting a wide, vague area scores better on average.`
                 : undefined
             }
             data-testid={soloTestIds.submitButton}
@@ -540,7 +527,7 @@ function CopyCase({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
   }, [copied])
   const copy = async () => {
     const floor = paint.floor.value
-    const { score, parts } = scoreQuestion(buildDistribution(paint.layer.toCells(), floor), q, kernel)
+    const { score, parts } = scoreAnswer(buildDistribution(paint.layer.toCells(), floor), q, kernel)
     const text = await encodeCase({
       question: {
         kind: isRegion(q) ? "region" : q.kind,
@@ -586,7 +573,7 @@ function KernelComparison({ dist, q, active }: { dist: Distribution; q: Practice
             {k.label}
             {k.id === active ? " ◀" : ""}
           </span>
-          <span>{Math.round(scoreQuestion(dist, q, k).score)}</span>
+          <span>{Math.round(scoreAnswer(dist, q, k).score)}</span>
         </li>
       ))}
     </ul>
@@ -596,7 +583,7 @@ function KernelComparison({ dist, q, active }: { dist: Distribution; q: Practice
 function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: KernelId }) {
   const paint = usePaint()
   const dist = buildDistribution(paint.settledCells.value, paint.floor.value)
-  const { score, parts } = scoreQuestion(dist, q, kernelById(kernelId))
+  const { score, parts } = scoreAnswer(dist, q, kernelById(kernelId))
   return (
     <Card title="Live score">
       <p class="hint" style={{ margin: "0 0 6px" }}>

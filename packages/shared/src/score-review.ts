@@ -13,9 +13,9 @@ import { UNITS, cellArea, cellToLatLng } from "./h3.ts"
 import { seededUnit } from "./hints.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { shuffle, type Question } from "./questions.ts"
-import { insideRegion, regionCells, scoreRegionQuestion, type RegionQuestion } from "./regions.ts"
+import { insideRegion, regionCells, scoreAnswer, type RegionQuestion } from "./regions.ts"
 import { encodeCase, type ScoringCase } from "./scoring-case.ts"
-import { buildDistribution, scoreDistribution, type Kernel } from "./scoring.ts"
+import { buildDistribution, type Kernel } from "./scoring.ts"
 
 export const POINT_GUESSES = ["bullseye", "close", "near-miss", "far-miss", "wide", "hedge", "scattered"] as const
 export const REGION_GUESSES = ["whole", "part", "spill", "centre", "neighbour", "far-miss", "wide", "hedge"] as const
@@ -79,13 +79,7 @@ const guessesFor = (q: ReviewQuestion) => (q.kind === "region" ? REGION_GUESSES 
 
 /** A guess's score, as practice would give it. */
 export function scoreGuess(q: ReviewQuestion, layer: PaintLayer, kernel: Kernel): Pick<ScoringCase, "score" | "parts"> {
-  const dist = buildDistribution(layer.toCells(), REVIEW_FLOOR)
-  if (q.kind === "region") {
-    const { score, shape, nearness } = scoreRegionQuestion(dist, q)
-    return { score, parts: { shape, nearness } }
-  }
-  const { score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, kernel)
-  return { score, parts: { A, B } }
+  return scoreAnswer(buildDistribution(layer.toCells(), REVIEW_FLOOR), q, kernel)
 }
 
 /** A guess and its score as a scoring case's text, for the export. */

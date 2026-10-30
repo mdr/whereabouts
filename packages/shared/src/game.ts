@@ -3,10 +3,10 @@
  * and poll `nextWakeAt()` to know when to call `tick`. Every mutator returns
  * whether anything changed so the transport layer can rebroadcast views.
  */
-import { DEFAULT_KERNEL, PASS_SCORE, buildDistribution, kernelById, scoreDistribution, type Kernel } from "./scoring.ts"
+import { DEFAULT_KERNEL, buildDistribution, kernelById, type Kernel } from "./scoring.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { pickQuestions, shuffle, type Question } from "./questions.ts"
-import { regionFit, regionMisfit, scoreRegionQuestion, roundsOverlap, type RegionQuestion } from "./regions.ts"
+import { regionFit, regionMisfit, roundsOverlap, scoreAnswer, type RegionQuestion } from "./regions.ts"
 import { explainPoint, isHedge } from "./explain.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
 import { flagRound, type FlagQuestion } from "./flags.ts"
@@ -631,9 +631,6 @@ export class Game {
     for (const p of this.playing()) {
       if (p.joinedRound > this.roundIndex) continue
       const sub = this.submissions.get(p.token)
-      let score: number
-      let A: number
-      let B: number
       let region: RoundResultView["region"]
       let paint: PaintSubmission | undefined = undefined
       const roundMs = this.config.roundMs
@@ -646,18 +643,19 @@ export class Game {
         roundSeconds: roundMs / 1000,
         areaKm2: 0
       }
-      if (sub && Object.keys(sub.paint.cells).length > 0) {
-        const layer = PaintLayer.fromRecord(res, sub.paint.cells)
-        const cells = [...layer.toCells()]
-        const dist = buildDistribution(cells, sub.paint.floor)
+      const painted = sub && Object.keys(sub.paint.cells).length > 0 ? sub.paint : undefined
+      const cells = painted ? [...PaintLayer.fromRecord(res, painted.cells).toCells()] : []
+      // A pass, or a blank map at the deadline: the two score alike, so
+      // waiting out the clock never beats pressing Pass.
+      const dist = painted ? buildDistribution(cells, painted.floor) : undefined
+      const scored = scoreAnswer(dist, q, this.kernel)
+      const { score } = scored
+      const { A, B } = "A" in scored.parts ? scored.parts : { A: 0, B: 0 }
+      if (painted && dist) {
         facts.passed = false
         facts.areaKm2 = cells.reduce((a, c) => a + c.areaKm2, 0)
-        if (q.kind === "region") {
-          const s = scoreRegionQuestion(dist, q)
-          score = s.score
-          A = 0
-          B = 0
-          region = { shape: s.shape, nearness: s.nearness, ...regionFit(dist, q) }
+        if (q.kind === "region" && "shape" in scored.parts) {
+          region = { ...scored.parts, ...regionFit(dist, q) }
           const m = regionMisfit(dist, q)
           // A country's tolerance is a fifth of its equivalent radius.
           facts.region = {
@@ -665,7 +663,6 @@ export class Game {
             nextDoor: m.precision < 0.1 && m.off !== undefined && m.off.km < 5 * q.toleranceKm
           }
         } else {
-          ;({ score, A, B } = scoreDistribution(dist, q.answer, q.toleranceKm, this.kernel))
           const e = explainPoint(dist, q.answer, q.toleranceKm, A, B, this.kernel)
           const best = Math.max(e.best, score)
           facts.point = {
@@ -677,11 +674,7 @@ export class Game {
             toleranceKm: q.toleranceKm
           }
         }
-        paint = sub.paint
-      } else {
-        // A pass, or a blank map at the deadline: the two score alike, so
-        // waiting out the clock never beats pressing Pass.
-        ;({ score, A, B } = PASS_SCORE)
+        paint = painted
       }
       p.scores[this.roundIndex] = score
       p.facts[this.roundIndex] = { ...facts, score }

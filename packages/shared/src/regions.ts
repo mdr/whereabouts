@@ -39,8 +39,10 @@ import { MIN_SPREAD_KM, questionFrom, type Question, type QuestionData, type Top
 import { flagCode, regionId, type FlagCode, type RegionId } from "./ids.ts"
 import { resolutionForTolerance } from "./paint.ts"
 import {
+  PASS_SCORE,
   coarsenDistribution,
   regionAnswer,
+  scoreDistribution,
   scoreRegion,
   type Distribution,
   type Kernel,
@@ -190,6 +192,27 @@ export function scoreRegionQuestion(painted: Distribution, q: RegionQuestion): R
   const coarse = coarsenDistribution(painted, regionScoringRes(q.toleranceKm))
   const nearness = scoreRegion(coarse, regionAnswerFor(q)).score
   return { score: SHAPE_WEIGHT * shape + (1 - SHAPE_WEIGHT) * nearness, shape, nearness }
+}
+
+/** What went into an answer's score: a point's A and B, or a region's shape and nearness. */
+export type AnswerParts = { A: number; B: number } | { shape: number; nearness: number }
+
+/**
+ * A guess's score, by its question's rule; `painted` undefined is a pass.
+ * Games, practice and score review all score through here.
+ */
+export function scoreAnswer(
+  painted: Distribution | undefined,
+  q: Question | RegionQuestion,
+  kernel: Kernel
+): { score: number; parts: AnswerParts } {
+  if (!painted) return { score: PASS_SCORE.score, parts: { A: PASS_SCORE.A, B: PASS_SCORE.B } }
+  if (q.kind === "region") {
+    const { score, shape, nearness } = scoreRegionQuestion(painted, q)
+    return { score, parts: { shape, nearness } }
+  }
+  const { score, A, B } = scoreDistribution(painted, q.answer, q.toleranceKm, kernel)
+  return { score, parts: { A, B } }
 }
 
 /**

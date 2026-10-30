@@ -10,6 +10,7 @@
  * uses intensities relative to each other, so that loses nothing that matters.
  */
 import type { LatLon } from "./geo.ts"
+import type { AnswerParts } from "./regions.ts"
 
 export interface ScoringCase {
   question: {
@@ -26,7 +27,7 @@ export interface ScoringCase {
   /** The paint layer's finest resolution. */
   res: number
   score: number
-  parts: { A: number; B: number } | { shape: number; nearness: number }
+  parts: AnswerParts
   /** H3 index -> intensity. */
   cells: Record<string, number>
 }

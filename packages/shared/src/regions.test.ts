@@ -22,10 +22,18 @@ import {
   regionFrom,
   type RegionQuestion,
   regionScoringRes,
+  scoreAnswer,
   scoreRegionQuestion,
   SHAPE_WEIGHT
 } from "./regions.ts"
-import { buildDistribution, coarsenDistribution, scoreDistribution, type Distribution } from "./scoring.ts"
+import {
+  DEFAULT_KERNEL,
+  PASS_SCORE,
+  buildDistribution,
+  coarsenDistribution,
+  scoreDistribution,
+  type Distribution
+} from "./scoring.ts"
 
 const REGIONS = (regionsJson as RegionData[]).map(regionFrom)
 const byId = (id: string) => REGIONS.find((q) => q.id === id)!
@@ -297,5 +305,27 @@ describe("roundsOverlap", () => {
     const honshu = (featuresJson as RegionData[]).find((q) => q.label === "Honshu")!
     expect(roundsOverlap(regionFrom(honshu), byId("japan-region"))).toBe(true)
     expect(roundsOverlap(byId("france-region"), byId("germany-region"))).toBe(false)
+  })
+})
+
+describe("scoreAnswer", () => {
+  it("scores a region by its shape and nearness, a point by its kernel, and nothing painted as a pass", () => {
+    const germany = byId("germany-region")
+    const painted = paintRegion(germany)
+    const region = scoreRegionQuestion(painted, germany)
+    expect(scoreAnswer(painted, germany, DEFAULT_KERNEL)).toEqual({
+      score: region.score,
+      parts: { shape: region.shape, nearness: region.nearness }
+    })
+
+    const place = QUESTIONS[0]!
+    const point = scoreDistribution(painted, place.answer, place.toleranceKm, DEFAULT_KERNEL)
+    expect(scoreAnswer(painted, place, DEFAULT_KERNEL)).toEqual({
+      score: point.score,
+      parts: { A: point.A, B: point.B }
+    })
+
+    expect(scoreAnswer(undefined, place, DEFAULT_KERNEL).score).toBe(PASS_SCORE.score)
+    expect(scoreAnswer(undefined, germany, DEFAULT_KERNEL).score).toBe(PASS_SCORE.score)
   })
 })
