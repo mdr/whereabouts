@@ -217,13 +217,18 @@ function usePictureFloor(ref: RefObject<HTMLDivElement>, folded: boolean): void 
   useLayoutEffect(() => {
     const card = ref.current
     if (!card || typeof ResizeObserver === "undefined") return
-    const ro = new ResizeObserver(() => {
+    const setFloor = () => {
       const picture = card.querySelector<HTMLElement>(".thumb, .flag")
       const least = picture ? parseFloat(getComputedStyle(picture).minHeight) : NaN
       const shown = picture ? picture.getClientRects().length > 0 : false
+      // scrollHeight counts the padding, which a content-box min-height leaves out.
+      const style = getComputedStyle(card)
+      const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom)
       card.style.minHeight =
-        picture && shown && least > 0 ? `${card.scrollHeight - picture.offsetHeight + least}px` : ""
-    })
+        picture && shown && least > 0 ? `${card.scrollHeight - padding - picture.offsetHeight + least}px` : ""
+    }
+    setFloor()
+    const ro = new ResizeObserver(setFloor)
     ro.observe(card)
     return () => {
       ro.disconnect()
