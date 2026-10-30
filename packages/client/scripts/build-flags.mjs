@@ -24,6 +24,10 @@ const PIXEL_TOLERANCE = 60
 const MAX_DIFFERING = 0.001
 const EXTRA_PRECISION = 3
 
+// Where the article's image is not the flag to show: Afghanistan's tricolour,
+// which the UN still recognises, not the Taliban's flag.
+const FILES = { af: "Flag of Afghanistan (2013–2021).svg" }
+
 const cacheDir = process.argv[2]
 const flags = JSON.parse(readFileSync("../shared/flags.json", "utf8"))
 
@@ -89,8 +93,8 @@ async function fileInfo(names) {
   return info
 }
 
-async function download(code, url) {
-  const cached = cacheDir && `${cacheDir}/${code}.svg`
+async function download(file, url) {
+  const cached = cacheDir && `${cacheDir}/${file}`
   if (cached && existsSync(cached)) return readFileSync(cached, "utf8")
   await sleep(500)
   const svg = await (await get(url)).text()
@@ -170,6 +174,7 @@ async function differing(page, a, b, ratio) {
 }
 
 const images = await articleImages(flags.map((f) => f.wiki))
+for (const f of flags) if (FILES[f.flag]) images.set(f.wiki, FILES[f.flag])
 const info = await fileInfo([...new Set(images.values())].filter(Boolean))
 if (cacheDir) mkdirSync(cacheDir, { recursive: true })
 rmSync(OUT, { recursive: true, force: true })
@@ -182,7 +187,7 @@ for (const f of [...flags].sort((a, b) => a.flag.localeCompare(b.flag))) {
   const file = images.get(f.wiki)?.replaceAll(" ", "_")
   const source = file && info.get(file)
   if (!source || !file.endsWith(".svg")) throw new Error(`${f.flag}: no SVG for ${f.wiki} (${file})`)
-  const raw = await download(f.flag, source.url)
+  const raw = await download(file, source.url)
   const { svg, w, h } = normalise(raw)
   const ratio = w / h
   // Drawn against the normalised original: a raw file can lack a viewBox, and so not scale.
