@@ -5,6 +5,9 @@ import { flagCode, playerColour, playerId, playerName, regionId, roomCode, type 
 import type { Connection } from "../net"
 import { Results } from "./Results"
 
+// The outlines are a download; these tests only need where a shape goes.
+vi.mock("../regions", async (original) => ({ ...(await original<object>()), useRegion: () => undefined }))
+
 const MIX = { landmarks: 1, places: 1, countries: 0, flags: 0, features: 0, states: 0 }
 
 function view(isHost: boolean): GameView {
