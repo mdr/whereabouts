@@ -29,13 +29,15 @@ export const PROTOCOL_VERSION = 2
 /**
  * Sparse paint: H3 cell index -> intensity. Plus the uniform world floor.
  * Clients compact to PAINT_CELL_BUDGET; more is refused before any cell is
- * checked, since checking them all is the costly part.
+ * checked, since checking them all is the costly part. Intensities are
+ * bounded far beyond any real brush, so scoring's intensity x area can
+ * neither overflow nor underflow into NaN.
  */
 export const PaintSubmissionSchema = z.object({
   cells: z
     .record(z.string(), z.unknown())
     .refine((cells) => Object.keys(cells).length <= PAINT_CELL_BUDGET, "too many cells")
-    .pipe(z.record(H3CellSchema, z.number().positive())),
+    .pipe(z.record(H3CellSchema, z.number().min(1e-30).max(1e9))),
   floor: z.number().min(0).max(1)
 })
 export type PaintSubmission = z.infer<typeof PaintSubmissionSchema>

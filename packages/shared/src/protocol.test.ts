@@ -46,10 +46,13 @@ describe("paint submission schema", () => {
     const ok = PaintSubmissionSchema.safeParse({ cells: { "8428309ffffffff": 0.5 }, floor: 0.1 })
     expect(ok.success).toBe(true)
   })
-  it("rejects bad indexes, non-positive weights and floors out of range", () => {
+  it("rejects bad indexes, weights out of range and floors out of range", () => {
     expect(PaintSubmissionSchema.safeParse({ cells: { nope: 1 }, floor: 0 }).success).toBe(false)
     expect(PaintSubmissionSchema.safeParse({ cells: { "8428309ffffffff": 0 }, floor: 0 }).success).toBe(false)
     expect(PaintSubmissionSchema.safeParse({ cells: { "8428309ffffffff": Infinity }, floor: 0 }).success).toBe(false)
+    // Either would make scoring's sums overflow or underflow into a NaN score.
+    expect(PaintSubmissionSchema.safeParse({ cells: { "8428309ffffffff": 1e308 }, floor: 0 }).success).toBe(false)
+    expect(PaintSubmissionSchema.safeParse({ cells: { "8428309ffffffff": 5e-324 }, floor: 0 }).success).toBe(false)
     expect(PaintSubmissionSchema.safeParse({ cells: {}, floor: 1.5 }).success).toBe(false)
   })
 })
