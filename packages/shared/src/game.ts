@@ -91,15 +91,25 @@ const OK_CHANGED = { ok: true, changed: true } as const
 const OK_SAME: CommandResult = { ok: true, changed: false }
 const fail = (error: string): CommandResult => ({ ok: false, error })
 
+/** Everything a game picks its rounds from. */
+export interface QuestionBank {
+  /** Landmarks and place names. */
+  pool: Question[]
+  /** Countries for "Paint the whole of …" rounds; the server passes regions.json. */
+  regions: RegionQuestion[]
+  /** From flags.json; a flag painted as a country needs that country in `regions`. */
+  flags: FlagQuestion[]
+  /** Islands, lakes, seas and US states; the server passes features.json. */
+  features: (Question | RegionQuestion)[]
+}
+
 export class Game {
   readonly code: RoomCode
   config: GameConfig
   private readonly pool: Question[]
-  /** Countries for "Paint the whole of …" rounds; the server passes regions.json. */
   private readonly regions: RegionQuestion[]
   /** Flag rounds, from flags.json and the countries: each a region or a point question. */
   private readonly flagRounds: (Question | RegionQuestion)[]
-  /** Islands, lakes, seas and US states; the server passes features.json. */
   private readonly features: (Question | RegionQuestion)[]
   private readonly kernel: Kernel
 
@@ -126,12 +136,8 @@ export class Game {
 
   constructor(
     code: RoomCode,
-    pool: Question[],
-    config: Partial<GameConfig> = {},
-    seed = Date.now(),
-    regions: RegionQuestion[] = [],
-    flags: FlagQuestion[] = [],
-    features: (Question | RegionQuestion)[] = []
+    { pool, regions, flags, features }: QuestionBank,
+    { config = {}, seed = Date.now() }: { config?: Partial<GameConfig>; seed?: number } = {}
   ) {
     this.seed = seed
     this.code = code

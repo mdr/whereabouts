@@ -25,12 +25,12 @@ import {
   type PaintSubmission,
   type RoundReveal
 } from "@whereabouts/shared/protocol"
-import { Game, generateCode } from "@whereabouts/shared/game"
-import { QUESTIONS, type Question, type QuestionData } from "@whereabouts/shared/questions"
+import { Game, generateCode, type QuestionBank } from "@whereabouts/shared/game"
+import { QUESTIONS, type QuestionData } from "@whereabouts/shared/questions"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import type { CloseReason } from "@whereabouts/shared/close-reason"
-import { featureFrom, regionFrom, type RegionData, type RegionQuestion } from "@whereabouts/shared/regions"
-import { flagFrom, type FlagData, type FlagQuestion } from "@whereabouts/shared/flags"
+import { featureFrom, regionFrom, type RegionData } from "@whereabouts/shared/regions"
+import { flagFrom, type FlagData } from "@whereabouts/shared/flags"
 import { roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
 // The countries for "Paint the whole of …" rounds, the flag rounds, and the
 // islands, lakes, seas and US states. The client loads the same files on
@@ -43,9 +43,12 @@ import { TicketRefused } from "./vendor/WSTransport.ts"
 /** Close reasons are codes from the shared list, which the client words. */
 const closeReason = (reason: CloseReason): string => reason
 
-const REGIONS = (regionsJson as RegionData[]).map(regionFrom)
-const FLAGS = (flagsJson as FlagData[]).map(flagFrom)
-const FEATURES = (featuresJson as (QuestionData | RegionData)[]).map(featureFrom)
+export const BANK: QuestionBank = {
+  pool: QUESTIONS,
+  regions: (regionsJson as RegionData[]).map(regionFrom),
+  flags: (flagsJson as FlagData[]).map(flagFrom),
+  features: (featuresJson as (QuestionData | RegionData)[]).map(featureFrom)
+}
 
 export interface ActorData {
   token: PlayerToken
@@ -73,20 +76,14 @@ export const realClock: Clock = {
 
 export interface GameRoomDeps {
   clock: Clock
-  pool: Question[]
-  regions: RegionQuestion[]
-  flags: FlagQuestion[]
-  features: (Question | RegionQuestion)[]
+  bank: QuestionBank
   config: Partial<GameConfig>
 }
 
 /** Set once at startup; rooms are constructed by Rivalis so cannot take arguments. */
 let deps: GameRoomDeps = {
   clock: realClock,
-  pool: QUESTIONS,
-  regions: REGIONS,
-  flags: FLAGS,
-  features: FEATURES,
+  bank: BANK,
   config: {}
 }
 export function configureGameRooms(next: Partial<GameRoomDeps>): void {
@@ -110,7 +107,7 @@ export class GameRoom extends Room<ActorData> {
   declare private sentReveal: { reveal: RoundReveal; text: string; to: WeakSet<Actor<ActorData>> } | undefined
 
   protected override onCreate(): void {
-    this.game = new Game(roomCode(this.id), deps.pool, deps.config, Date.now(), deps.regions, deps.flags, deps.features)
+    this.game = new Game(roomCode(this.id), deps.bank, { config: deps.config })
     this.actorsByToken = new Map()
     this.timer = undefined
     this.emptyTimer = undefined

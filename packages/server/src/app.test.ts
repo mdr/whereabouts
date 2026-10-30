@@ -39,7 +39,7 @@ import type { Question } from "@whereabouts/shared/questions"
 import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
 import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
 import { createApp, type App } from "./app.ts"
-import { configureGameRooms, realClock, type Clock } from "./rooms.ts"
+import { BANK, configureGameRooms, realClock, type Clock } from "./rooms.ts"
 
 // Static imports hoist above this line, so the client is loaded dynamically.
 ;(globalThis as unknown as { window: unknown }).window = globalThis
@@ -189,7 +189,7 @@ describe("game server", () => {
 
   beforeEach(async () => {
     clock = new FakeClock()
-    configureGameRooms({ clock, pool: questions, config: { rounds: 2, roundMs: 60_000 } })
+    configureGameRooms({ clock, bank: { ...BANK, pool: questions }, config: { rounds: 2, roundMs: 60_000 } })
     app = createApp({ staticDir: undefined, logLevel: "warning" })
     const address = await app.listen(0)
     url = address.replace(/^http/, "ws") + "/ws"
@@ -637,7 +637,11 @@ describe("connections per address", () => {
   const players: TestPlayer[] = []
 
   beforeEach(async () => {
-    configureGameRooms({ clock: new FakeClock(), pool: questions, config: { rounds: 2, roundMs: 60_000 } })
+    configureGameRooms({
+      clock: new FakeClock(),
+      bank: { ...BANK, pool: questions },
+      config: { rounds: 2, roundMs: 60_000 }
+    })
     app = createApp({
       staticDir: undefined,
       logLevel: "error",
