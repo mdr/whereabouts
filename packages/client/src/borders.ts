@@ -7,6 +7,8 @@
  */
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
+import { fetchBuildJson } from "./stale-build"
+import bordersUrl from "@whereabouts/shared/borders.json?url"
 import { Borders, type FlagQuestion, type LatLon } from "@whereabouts/shared"
 import { loadRegions, flagQuestions, regions } from "./regions"
 import type { VrFlagPin } from "./vr/flag-pins"
@@ -17,8 +19,8 @@ export const borders = signal<Borders | undefined>(undefined)
 let loading: Promise<Borders> | undefined = undefined
 
 export function loadBorders(): Promise<Borders> {
-  loading ??= Promise.all([import("@whereabouts/shared/borders.json"), loadRegions()]).then(
-    ([m]) => (borders.value = new Borders(m.default, flagQuestions.value ?? [])),
+  loading ??= Promise.all([fetchBuildJson<ConstructorParameters<typeof Borders>[0]>(bordersUrl), loadRegions()]).then(
+    ([m]) => (borders.value = new Borders(m, flagQuestions.value ?? [])),
     (err: unknown) => {
       // Let the next caller try again, after a dropped connection say.
       loading = undefined

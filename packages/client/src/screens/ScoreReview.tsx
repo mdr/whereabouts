@@ -22,7 +22,8 @@ import {
 import { MapView, usePaint } from "../ui/MapView"
 import { Answer, Card, HudBottom, HudHeader, QuestionCard } from "../ui/bits"
 import { isTyping } from "../keys"
-import { featureQuestions, loadRegions, regions } from "../regions"
+import { featureQuestions, regions } from "../regions"
+import { LoadingOutlines } from "../ui/LoadingOutlines"
 import { reviewSet, scoreVerdicts, soloKernelId } from "../settings"
 import { scoreReviewTestIds } from "./ScoreReviewTestIds"
 
@@ -57,9 +58,6 @@ export function ScoreReview() {
 function ReviewLoader() {
   const byId = regions.value
   const features = featureQuestions.value
-  useEffect(() => {
-    if (!byId) loadRegions().catch((err: unknown) => console.warn("could not load outlines", err))
-  }, [byId])
   const pools = useMemo<ReviewPools | undefined>(
     () =>
       byId &&
@@ -71,14 +69,7 @@ function ReviewLoader() {
       },
     [byId, features]
   )
-  if (!pools)
-    return (
-      <div class="hud">
-        <div class="hud-center">
-          <p class="card">Loading outlines…</p>
-        </div>
-      </div>
-    )
+  if (!pools) return <LoadingOutlines />
   return <Review pools={pools} />
 }
 

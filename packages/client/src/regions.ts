@@ -7,6 +7,10 @@
  */
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
+import { fetchBuildJson } from "./stale-build"
+import regionsUrl from "@whereabouts/shared/regions.json?url"
+import flagsUrl from "@whereabouts/shared/flags.json?url"
+import featuresUrl from "@whereabouts/shared/features.json?url"
 import {
   featureFrom,
   flagFrom,
@@ -29,21 +33,25 @@ export const flagQuestions = signal<FlagQuestion[] | undefined>(undefined)
 /** The islands, lakes, seas and US states, once loaded: most painted whole, a few small states asked as a point. */
 export const featureQuestions = signal<(Question | RegionQuestion)[] | undefined>(undefined)
 
+/** The last try to load them failed: worth offering another. */
+export const regionsFailed = signal(false)
+
 let loading: Promise<Map<RegionId, RegionQuestion>> | undefined = undefined
 
 export function loadRegions(): Promise<Map<RegionId, RegionQuestion>> {
+  if (!loading) regionsFailed.value = false
   loading ??= Promise.all([
-    import("@whereabouts/shared/regions.json"),
-    import("@whereabouts/shared/flags.json"),
-    import("@whereabouts/shared/features.json")
+    fetchBuildJson<RegionData[]>(regionsUrl),
+    fetchBuildJson<FlagData[]>(flagsUrl),
+    fetchBuildJson<(QuestionData | RegionData)[]>(featuresUrl)
   ]).then(
     ([r, f, x]) => {
-      const features = (x.default as (QuestionData | RegionData)[]).map(featureFrom)
-      const countries = (r.default as RegionData[]).map(regionFrom)
+      const features = x.map(featureFrom)
+      const countries = r.map(regionFrom)
       const byId = new Map(
         [...countries, ...features.filter((q): q is RegionQuestion => q.kind === "region")].map((q) => [q.id, q])
       )
-      flagQuestions.value = (f.default as FlagData[]).map(flagFrom)
+      flagQuestions.value = f.map(flagFrom)
       featureQuestions.value = features
       regions.value = byId
       return byId
@@ -51,6 +59,7 @@ export function loadRegions(): Promise<Map<RegionId, RegionQuestion>> {
     (err: unknown) => {
       // Let the next caller try again, after a dropped connection say.
       loading = undefined
+      regionsFailed.value = true
       throw err
     }
   )

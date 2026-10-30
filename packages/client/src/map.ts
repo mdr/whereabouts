@@ -115,7 +115,14 @@ export class GameMap {
     this.map.addControl(new NavigationControl({ showCompass: false }), "bottom-left")
     this.map.keyboard.disableRotation()
     this.map.touchZoomRotate.disableRotation()
-    this.ready = new Promise((resolve) => {
+    this.ready = new Promise((resolve, reject) => {
+      // Without its style the map never loads. Other errors (a tile, the
+      // sprite) come after the style or do not hold the map back.
+      let styled = false
+      this.map.once("style.load", () => (styled = true))
+      this.map.on("error", (e) => {
+        if (!styled) reject(new Error("the map style did not load", { cause: e.error }))
+      })
       this.map.once("load", () => {
         this.collapseAttribution()
         this.indexStyleLayers()

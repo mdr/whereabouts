@@ -1,6 +1,7 @@
 import type { Page } from "playwright-core"
 import { HomePage } from "./HomePage.ts"
 import { JoinAsPage } from "./JoinAsPage.ts"
+import { LoadFailures } from "./LoadFailures.ts"
 import { PracticeRoundPage } from "./PracticeRoundPage.ts"
 import { ScoreReviewPage } from "./ScoreReviewPage.ts"
 
@@ -35,6 +36,12 @@ export class Tab {
   async openPractice(): Promise<PracticeRoundPage> {
     await this.#open("/solo")
     return PracticeRoundPage.whenShown(this)
+  }
+
+  /** A screen that is expected not to load, with its downloads blocked. */
+  async openFailing(route: "/solo" | "/score-review"): Promise<LoadFailures> {
+    await this.page.goto(`${this.#baseUrl}/#${route}`)
+    return new LoadFailures(this.page)
   }
 
   /** The link a host shares. */

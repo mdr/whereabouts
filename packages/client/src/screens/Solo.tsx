@@ -40,6 +40,7 @@ import {
 } from "@whereabouts/shared"
 import type { GameMap } from "../map"
 import { MapView, usePaint } from "../ui/MapView"
+import { LoadingOutlines } from "../ui/LoadingOutlines"
 import {
   Answer,
   AnswerMode,
@@ -64,7 +65,7 @@ import { DevDrawer } from "../ui/DevDrawer"
 import { allFlags, cheatLiveScore, soloKernelId, soloMapDetail, soloPool, startOnPan } from "../settings"
 import { devMode } from "../dev"
 import { Icon } from "../ui/icons"
-import { featureQuestions, flagQuestions, loadRegions, regions } from "../regions"
+import { featureQuestions, flagQuestions, regions } from "../regions"
 import { useBorders } from "../borders"
 import { useFact } from "../facts"
 import { useFillTool } from "../fill"
@@ -148,19 +149,7 @@ export function Solo() {
 function SoloLoader() {
   const pool = soloPool.value
   const byId = regions.value
-  const needsOutlines = pool !== "places"
-  useEffect(() => {
-    if (needsOutlines && !byId) loadRegions().catch((err: unknown) => console.warn("could not load countries", err))
-  }, [pool, byId])
-  if (needsOutlines && !byId) {
-    return (
-      <div class="hud">
-        <div class="hud-center">
-          <p class="card">Loading outlines…</p>
-        </div>
-      </div>
-    )
-  }
+  if (pool !== "places" && !byId) return <LoadingOutlines />
   const lakes = showsLakes(soloMapDetail.value)
   return (
     <SoloGame

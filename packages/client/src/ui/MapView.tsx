@@ -27,24 +27,36 @@ export function usePaint(): PaintController {
 export function MapView({ children }: { children: ComponentChildren }) {
   const el = useElementRef<HTMLDivElement>()
   const [controller, setController] = useState<PaintController | undefined>(undefined)
+  const [attempt, setAttempt] = useState(0)
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
     const gameMap = new GameMap(el.current!)
     let ctl: PaintController | undefined = undefined
-    void gameMap.ready.then(() => {
-      gameMap.applyTheme(THEME)
-      // Anything that would give the location away stays hidden.
-      gameMap.setDetail("minimal")
-      gameMap.addGlobeButton(() => (globeView.value = !globeView.value), mapViewTestIds.globeButton)
-      ctl = new PaintController(gameMap)
-      window.whereabouts = { map: gameMap.map, gameMap, paint: ctl }
-      setController(ctl)
-    })
+    let retry: ReturnType<typeof setTimeout> | undefined = undefined
+    gameMap.ready.then(
+      () => {
+        gameMap.applyTheme(THEME)
+        // Anything that would give the location away stays hidden.
+        gameMap.setDetail("minimal")
+        gameMap.addGlobeButton(() => (globeView.value = !globeView.value), mapViewTestIds.globeButton)
+        ctl = new PaintController(gameMap)
+        window.whereabouts = { map: gameMap.map, gameMap, paint: ctl }
+        setController(ctl)
+      },
+      (err: unknown) => {
+        console.warn("could not load the map", err)
+        // One quiet try before troubling the player.
+        if (attempt === 0) retry = setTimeout(() => setAttempt(1), 2000)
+        else setFailed(true)
+      }
+    )
     return () => {
+      clearTimeout(retry)
       ctl?.dispose()
       gameMap.dispose()
     }
-  }, [])
+  }, [attempt])
 
   useEffect(() => {
     if (!controller) return
@@ -95,11 +107,27 @@ export function MapView({ children }: { children: ComponentChildren }) {
         ) : (
           <div class="hud">
             <div class="hud-top">
-              <div class="card">
-                <p class="hint" data-testid={mapViewTestIds.loading}>
-                  Loading map…
-                </p>
-              </div>
+              {failed ? (
+                <div class="card" data-testid={mapViewTestIds.failed}>
+                  <p>Couldn't load the map. Check your connection.</p>
+                  <button
+                    class="primary"
+                    onClick={() => {
+                      setFailed(false)
+                      setAttempt(attempt + 1)
+                    }}
+                    data-testid={mapViewTestIds.retryButton}
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : (
+                <div class="card">
+                  <p class="hint" data-testid={mapViewTestIds.loading}>
+                    Loading map…
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}

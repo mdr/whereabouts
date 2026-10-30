@@ -621,6 +621,10 @@ describe("static serving", () => {
     expect(fallback.headers.get("content-type")).toContain("text/html")
     expect(fallback.headers.get("cache-control")).toBe("no-cache")
   })
+
+  it("answers 404 for an asset this build does not have, as for an old tab after a deploy", async () => {
+    expect((await fetch(`${base}/assets/regions-old.json`)).status).toBe(404)
+  })
 })
 
 describe("connections per address", () => {

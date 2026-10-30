@@ -152,6 +152,7 @@ class SoundEngine {
   private master: GainNode | undefined = undefined
   private buffers: Partial<Record<Clip, AudioBuffer>> = {}
   private loading = false
+  private failedAt = -Infinity
   private stroke: { loop: LoopName; voices: Voice[]; nextAt: number; last: number; timer: number } | undefined =
     undefined
   private ticking: Voice | undefined = undefined
@@ -173,15 +174,25 @@ class SoundEngine {
         // Refused without a user gesture; the next tap tries again.
       })
     }
-    if (this.loading) return
+    // Every tap calls this; after a failure, wait a while before asking again.
+    if (this.loading || Date.now() - this.failedAt < 30_000) return
     this.loading = true
     for (const [clip, url] of Object.entries(URLS) as [Clip, string][]) {
-      void this.load(url).then((b) => (this.buffers[clip] = b))
+      if (this.buffers[clip]) continue
+      this.load(url).then(
+        (b) => (this.buffers[clip] = b),
+        (err: unknown) => {
+          console.warn("could not load a sound", url, err)
+          this.failedAt = Date.now()
+          this.loading = false
+        }
+      )
     }
   }
 
   private async load(url: string): Promise<AudioBuffer> {
     const res = await fetch(url)
+    if (!res.ok) throw new Error(`${res.status}`)
     return this.ctx!.decodeAudioData(await res.arrayBuffer())
   }
 

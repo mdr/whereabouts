@@ -83,8 +83,11 @@ export function createApp(options: AppOptions): App {
         res.setHeader("Cache-Control", cacheControlFor(filePath))
       }
     })
-    // Single-page app: unknown paths fall through to index.html.
-    fastify.setNotFoundHandler((_req, reply) => reply.sendFile("index.html"))
+    // Single-page app: unknown paths fall through to index.html. Not a
+    // missing asset, though: a 404 tells an old tab a newer build is out.
+    fastify.setNotFoundHandler((req, reply) =>
+      req.url.startsWith("/assets/") ? reply.code(404).send() : reply.sendFile("index.html")
+    )
   }
 
   let rivalis: Rivalis<ActorData> | undefined = undefined
