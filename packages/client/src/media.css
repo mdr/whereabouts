@@ -1,0 +1,12 @@
+/* Named breakpoints. A stylesheet that uses them imports this file. */
+
+/* Too narrow for the HUD's two side columns: one column, toolbar at the bottom. */
+@custom-media --phone (max-width: 640px);
+/* Too narrow for side-by-side panels on the card screens. */
+@custom-media --narrow (max-width: 760px);
+/* Little height to spare: a phone on its side, a small laptop. */
+@custom-media --short (max-height: 600px);
+/* Even less: a phone on its side. */
+@custom-media --very-short (max-height: 500px);
+/* Touch only, with no keyboard to speak of. */
+@custom-media --no-hover (hover: none);

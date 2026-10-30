@@ -19,6 +19,8 @@ export default defineConfig({
       "/api": { target: `http://localhost:${gamePort}` }
     }
   },
+  // For the breakpoints' names (src/media.css).
+  css: { transformer: "lightningcss", lightningcss: { drafts: { customMedia: true } } },
   // MapLibre ships its own web worker; pre-bundling the package breaks the
   // worker URL resolution in dev, so leave it to the browser.
   optimizeDeps: { exclude: ["maplibre-gl"] },
