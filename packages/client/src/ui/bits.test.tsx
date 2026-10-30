@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
-import { HudBottom, QuestionCard, SmallFlag, SmallFlagButton, SoundToggle } from "./bits"
+import { HudBottom, QuestionCard, SmallFlag, SmallFlagButton, SmallPhoto, SoundToggle } from "./bits"
 import { soundOn } from "../settings"
 import { flagCode, regionId } from "@whereabouts/shared/ids"
 import type * as flags from "../flags"
@@ -79,6 +79,7 @@ describe("flag frames", () => {
   })
 
   const ratio = (el: unknown) => Number((el as HTMLElement).style.getPropertyValue("--flag-ratio"))
+  const enlargedRatio = (el: unknown) => Number((el as HTMLElement).style.getPropertyValue("--ratio"))
   // Nepal's is taller than wide, Switzerland's square, Qatar's the widest.
   const shapes = [
     ["np", 0.8203],
@@ -96,7 +97,7 @@ describe("flag frames", () => {
       expect(ratio(button)).toBe(shape)
       await waitFor(() => expect(button.disabled).toBe(false))
       fireEvent.click(button)
-      expect(ratio(document.body.querySelector(".lightbox img.lightbox-flag"))).toBe(shape)
+      expect(enlargedRatio(document.body.querySelector(".lightbox img.lightbox-flag"))).toBe(shape)
       // No credit while guessing: the Commons file is named for the country.
       expect(document.body.querySelectorAll(".lightbox .credit-icon")).toHaveLength(0)
       cleanup()
@@ -112,7 +113,7 @@ describe("flag frames", () => {
       const button = listed.container.querySelector<HTMLButtonElement>(".small-flag-picture")!
       await waitFor(() => expect(button.disabled).toBe(false))
       fireEvent.click(button)
-      expect(ratio(document.body.querySelector(".lightbox img.lightbox-flag"))).toBe(shape)
+      expect(enlargedRatio(document.body.querySelector(".lightbox img.lightbox-flag"))).toBe(shape)
       expect(document.body.querySelector<HTMLAnchorElement>(".lightbox .credit-icon")!.href).toContain(
         "commons.wikimedia.org"
       )
@@ -159,8 +160,6 @@ describe("QuestionCard image", () => {
     fireEvent.click(container.querySelector(".thumb img")!)
     const img = document.body.querySelector<HTMLImageElement>(".lightbox img")!
     expect(img.style.transform).toContain("scale(1)")
-    // The lightbox asks for a bigger rendition than the thumbnail.
-    expect(img.src).toContain("width=1600")
     fireEvent.click(img)
     expect(img.style.transform).toContain("scale(2.5)")
     expect(document.body.querySelector(".lightbox-frame")!.className).toContain("zoomed")
@@ -177,6 +176,27 @@ describe("QuestionCard image", () => {
     expect(img.style.transform).toContain("translate(0px, 0px)")
   })
 
+  it("enlarges at once with the photo the page has, in its shape, then swaps in a larger one, keeping the zoom", async () => {
+    let decoded = () => {}
+    vi.spyOn(HTMLImageElement.prototype, "decode").mockImplementation(
+      () => new Promise<void>((resolve) => (decoded = resolve))
+    )
+    const { container } = render(<QuestionCard q={q} />)
+    const thumb = container.querySelector<HTMLImageElement>(".thumb img")!
+    Object.defineProperty(thumb, "naturalWidth", { value: 900 })
+    Object.defineProperty(thumb, "naturalHeight", { value: 600 })
+    fireEvent.click(thumb)
+    const img = document.body.querySelector<HTMLImageElement>(".lightbox img")!
+    expect(img.src).toBe(thumb.src)
+    expect(img.className).toContain("fit")
+    expect(img.style.getPropertyValue("--ratio")).toBe("1.5")
+    fireEvent.click(img)
+    decoded()
+    await waitFor(() => expect(img.src).toContain("width=1600"))
+    expect(img.style.transform).toContain("scale(2.5)")
+    vi.restoreAllMocks()
+  })
+
   it("keeps the Commons credit behind an info icon linking to the file page, only when asked", () => {
     // While guessing there is no credit link at all: the file name is a spoiler.
     const { container: guessing } = render(<QuestionCard q={q} />)
@@ -187,6 +207,18 @@ describe("QuestionCard image", () => {
     expect(credit.href).toContain("commons.wikimedia.org")
     expect(credit.getAttribute("aria-label")).toContain("Wikimedia Commons")
     expect(container.textContent).not.toContain("Wikimedia")
+  })
+})
+
+describe("SmallPhoto", () => {
+  afterEach(() => {
+    cleanup()
+  })
+
+  it("shows the rounds' rendition of the photo, which the page already has", () => {
+    const { container } = render(<SmallPhoto image="Some_file.jpg" />)
+    const shown = render(<QuestionCard q={q} />).container.querySelector<HTMLImageElement>(".thumb img")!
+    expect(container.querySelector<HTMLImageElement>(".small-picture img")!.src).toBe(shown.src)
   })
 })
 

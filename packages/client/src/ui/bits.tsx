@@ -376,12 +376,13 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
   })
   useEscape(large, () => setLarge(false))
   const credit = showCredit ? <CommonsCredit image={image} /> : undefined
+  const thumb = useElementRef<HTMLImageElement>()
   return (
     <>
       <div class="thumb" data-testid={questionCardTestIds.photo}>
         {/* The whole photo is the button; the badge says so, on phones too, where there is no hover. */}
         <button type="button" class="thumb-button" title="Enlarge the photo" onClick={() => setLarge(true)}>
-          <img src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
+          <img ref={thumb} src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
           <span class={`enlarge-badge ${withLabel ? "with-label" : ""}`} aria-hidden="true">
             <Icon name="enlarge" size={14} />
             {withLabel && <span>Enlarge</span>}
@@ -391,7 +392,12 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
         {credit}
       </div>
       {large && (
-        <Lightbox src={commonsImageUrl(image, 1600)} kind="photo" credit={credit} onClose={() => setLarge(false)} />
+        <PhotoLightbox
+          image={image}
+          thumb={thumb.current ?? undefined}
+          credit={credit}
+          onClose={() => setLarge(false)}
+        />
       )}
     </>
   )
@@ -417,22 +423,58 @@ function CommonsCredit({ image }: { image: string }) {
 export function SmallPhoto({ image }: { image: string }) {
   const [large, setLarge] = useState(false)
   useEscape(large, () => setLarge(false))
+  const thumb = useElementRef<HTMLImageElement>()
   return (
     <>
       <button type="button" class="small-picture" title="Enlarge the photo" onClick={() => setLarge(true)}>
-        <img src={commonsImageUrl(image, 240)} alt="" referrerpolicy="no-referrer" />
+        {/* The rounds' rendition, which the page already has. */}
+        <img ref={thumb} src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
         <span class="sr-only">Enlarge photo</span>
       </button>
       {large && (
-        <Lightbox
-          src={commonsImageUrl(image, 1600)}
-          kind="photo"
+        <PhotoLightbox
+          image={image}
+          thumb={thumb.current ?? undefined}
           credit={<CommonsCredit image={image} />}
           onClose={() => setLarge(false)}
         />
       )}
     </>
   )
+}
+
+/**
+ * A photo enlarged: at once the thumbnail's rendition, which the page has,
+ * at the size the larger one will show, then that larger one once loaded.
+ */
+function PhotoLightbox({
+  image,
+  thumb,
+  credit,
+  onClose
+}: {
+  image: string
+  thumb: HTMLImageElement | undefined
+  credit: ComponentChildren
+  onClose: () => void
+}) {
+  const [src, setSrc] = useState(commonsImageUrl(image))
+  useEffect(() => {
+    const large = new Image()
+    large.referrerPolicy = "no-referrer"
+    large.src = commonsImageUrl(image, 1600)
+    let open = true
+    // Decoded first, so the swap never shows it half drawn.
+    large.decode().then(
+      () => open && setSrc(large.src),
+      () => undefined
+    )
+    return () => {
+      open = false
+    }
+  }, [image])
+  const ratio = thumb?.naturalWidth ? thumb.naturalWidth / thumb.naturalHeight : undefined
+  return <Lightbox src={src} kind="photo" ratio={ratio} credit={credit} onClose={onClose} />
 }
 
 /**
@@ -489,7 +531,7 @@ function Lightbox({
 }: {
   src: string
   kind: "photo" | "flag"
-  /** A flag's width over its height: its SVG has no size of its own. */
+  /** Width over height, to show it as large as fits: a flag's SVG has no size of its own, and a photo may start small. */
   ratio?: number
   credit: ComponentChildren
   onClose: () => void
@@ -592,13 +634,13 @@ function Lightbox({
       >
         <img
           src={src}
-          class={`lightbox-${kind}`}
+          class={`lightbox-${kind} ${ratio ? "fit" : ""}`}
           alt=""
           referrerpolicy="no-referrer"
           draggable={false}
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-            ...(ratio && { "--flag-ratio": String(ratio) })
+            ...(ratio && { "--ratio": String(ratio) })
           }}
         />
         {credit}

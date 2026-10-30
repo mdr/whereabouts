@@ -2,9 +2,7 @@
  * The question's photo or flag, on a card above the VR menu. A grip on it
  * takes it in hand, facing the player, for a closer look; letting go puts
  * it back. Turned over, a flag shows its reverse and a photo a postcard's
- * back. WebGL takes only pictures the browser may read back, and the
- * page's photo links go through redirects that don't allow it, so photos
- * come by Commons' API.
+ * back.
  */
 import {
   BoxGeometry,
@@ -16,17 +14,12 @@ import {
   Vector3,
   type Object3D
 } from "three"
-import type { Postcard, VrPicture } from "../vr-picture"
+import { VR_PHOTO_PX as MAX_PX, vrPhotoUrl, type Postcard, type VrPicture } from "../vr-picture"
 import { flagRatio, flagUrl } from "../flags"
 import type { Hand } from "./globe"
 
 const MAX_W = 0.38
 const MAX_H = 0.26
-/**
- * Sharp held a hand's width from the eyes, about 25 pixels a degree; a
- * width Commons serves (it rounds others up).
- */
-const MAX_PX = 1920
 /** How close a hand need be to take the picture without pointing at it. */
 const REACH_M = 0.08
 /** A card's thickness, so it has an edge when turned. */
@@ -227,28 +220,11 @@ function wrap(g: CanvasRenderingContext2D, text: string, width: number): string[
 }
 
 async function load(picture: VrPicture): Promise<HTMLImageElement | undefined> {
-  const src = "flag" in picture ? await flagUrl(picture.flag) : await photoUrl(picture.photo)
+  const src = "flag" in picture ? await flagUrl(picture.flag) : await vrPhotoUrl(picture.photo)
   if (!src) return undefined
   const img = new Image()
   img.crossOrigin = "anonymous"
   img.src = src
   await img.decode()
   return img
-}
-
-async function photoUrl(file: string): Promise<string | undefined> {
-  const api = new URL("https://commons.wikimedia.org/w/api.php")
-  api.search = new URLSearchParams({
-    action: "query",
-    titles: `File:${file}`,
-    prop: "imageinfo",
-    iiprop: "url",
-    iiurlwidth: String(MAX_PX),
-    format: "json",
-    origin: "*"
-  }).toString()
-  const res = (await (await fetch(api)).json()) as {
-    query?: { pages?: Record<string, { imageinfo?: { thumburl?: string }[] }> }
-  }
-  return Object.values(res.query?.pages ?? {})[0]?.imageinfo?.[0]?.thumburl
 }

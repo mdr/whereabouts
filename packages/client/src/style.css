@@ -545,10 +545,16 @@ button.icon:hover {
   user-select: none;
   -webkit-user-drag: none;
 }
-/* An SVG flag has no size of its own: as large as fits, in its own shape. */
+/* As large as fits, in its own shape. */
+.lightbox img.fit {
+  width: min(calc(100vw - 64px), calc((100vh - 64px) * var(--ratio)));
+  aspect-ratio: var(--ratio);
+}
+/* No larger than the photo's larger rendition. */
+.lightbox img.lightbox-photo.fit {
+  max-width: min(100%, 1600px);
+}
 .lightbox img.lightbox-flag {
-  width: min(calc(100vw - 64px), calc((100vh - 64px) * var(--flag-ratio)));
-  aspect-ratio: var(--flag-ratio);
   border-radius: 4px;
 }
 .lightbox-close {
