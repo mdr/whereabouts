@@ -121,6 +121,7 @@
             pnpm
             pkgs.jq
             pkgs._1password-cli
+            pkgs.go-task # `task`: the menu of what to run (Taskfile.yml)
           ] ++ deployTools;
 
           # Corepack ships inside the Node package and will happily download
