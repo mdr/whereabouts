@@ -763,21 +763,6 @@ export class GameMap {
     const side = Math.min(340, w * 0.3)
     return { top: 40, bottom: 90, left: side, right: side }
   }
-
-  /** Ease so that about eight tolerances span 40% of the viewport width. */
-  focusOn(answer: LatLon, toleranceKm: number): void {
-    const padding = this.revealPadding()
-    const widthPx = this.map.getContainer().clientWidth
-    const cos = Math.max(0.05, Math.cos((answer.lat * Math.PI) / 180))
-    const targetMpp = (toleranceKm * 8 * 1000) / (0.4 * widthPx)
-    const zoom = Math.log2((WORLD_M * cos) / (WORLD_PX_Z0 * targetMpp))
-    void this.map.easeTo({
-      center: [answer.lon, answer.lat],
-      zoom: Math.min(this.map.getMaxZoom(), Math.max(this.map.getMinZoom(), zoom)),
-      offset: offsetFor(padding),
-      duration: 900
-    })
-  }
 }
 
 /** West, south, east, north. */

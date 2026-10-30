@@ -209,9 +209,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
 
   // Framed after the reveal's cards are in place: on a phone the map frames the answer around them.
   useEffect(() => {
-    if (phase !== "reveal") return
-    if (isRegion(q)) frameReveal(paint.gameMap, question, answer, paint.layer.toGeoJSON())
-    else paint.gameMap.focusOn(q.answer, q.toleranceKm)
+    if (phase === "reveal") frameReveal(paint.gameMap, question, answer, paint.layer.toGeoJSON())
   }, [phase, index])
 
   function next() {
