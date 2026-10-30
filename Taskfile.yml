@@ -9,6 +9,48 @@ tasks:
     cmds:
       - task --list
 
+  # ----------------------------------------------------------- developing
+
+  dev:
+    desc: Run the client (http://localhost:5173) and the game server (:8787), reloading on changes
+    cmds:
+      - pnpm dev
+
+  dev:short:
+    desc: Like dev, with 12-second rounds and 2-round games, for trying the flow of a game
+    env:
+      ROUND_MS: "12000"
+      ROUNDS: "2"
+    cmds:
+      - pnpm dev
+
+  tunnel:
+    desc: Reach the dev client from a VR headset, over HTTPS (open the trycloudflare.com address it prints)
+    summary: |
+      A Cloudflare quick tunnel to http://localhost:5173, since WebXR needs
+      HTTPS. Anyone with the address can reach the dev server: stop it when
+      done. See the README, "On a VR headset".
+    cmds:
+      - nix shell nixpkgs#cloudflared -c cloudflared tunnel --url http://localhost:5173
+
+  # ------------------------------------------------------------- checking
+
+  check:
+    desc: Everything CI checks, bar the build - formatting, lint, types, unused code and the unit tests
+    cmds:
+      - pnpm check
+
+  fix:
+    desc: Format, and apply the lint fixes that can be made automatically
+    cmds:
+      - pnpm format
+      - pnpm lint:fix
+
+  test:
+    desc: The unit tests (task test -- paint for those matching a name)
+    cmds:
+      - pnpm test {{.CLI_ARGS}}
+
   e2e:
     desc: "Run the browser scripts against dev servers of their own, and sum up (task e2e -- solo host for some)"
     summary: |
@@ -19,3 +61,35 @@ tasks:
       smoke-out/e2e/<name>/. Takes about 20 minutes for all of them.
     cmds:
       - scripts/e2e.sh {{.CLI_ARGS}}
+
+  # --------------------------------------------------- the production build
+
+  build:
+    desc: Build the client bundle into packages/client/dist, as CI does
+    cmds:
+      - pnpm build
+
+  serve:prod:
+    desc: Build and serve the production package locally, on :8799, as the container runs it
+    env:
+      PORT: "8799"
+    cmds:
+      - nix run
+
+  e2e:prod:
+    desc: Check a production build loads the map - task serve:prod first, or name a site (task e2e:prod -- https://…)
+    dir: packages/client
+    cmds:
+      - node browser/e2e/prod.ts {{.CLI_ARGS}}
+
+  # ------------------------------------------------------------------- Fly
+
+  fly:status:
+    desc: The live app's machines and their state
+    cmds:
+      - scripts/fly.sh status
+
+  fly:logs:
+    desc: The live app's recent logs (task fly:logs -- --no-tail to print and stop)
+    cmds:
+      - scripts/fly.sh logs {{.CLI_ARGS}}
