@@ -11,8 +11,10 @@
  * process; a socket too far behind to take a message is dropped rather
  * than left to miss it, so its client reconnects and catches up; the
  * client's address comes from Fly's header when there is one (see
- * clientAddress); and a connection limiter with a release method is told
- * when each socket it let in closes, so it can count open connections.
+ * clientAddress); a connection limiter with a release method is told
+ * when each socket it let in closes, so it can count open connections; and
+ * a ticket refused with a TicketRefused closes with its reason, so the
+ * client can say why.
  */
 import type { IncomingMessage } from 'http'
 import { createHash } from 'node:crypto'
@@ -25,6 +27,15 @@ import type { TLayer, ConnectionContext, BackpressureDropFn } from '@rivalis/cor
 export type { BackpressureDropFn } from '@rivalis/core'
 
 type HeartbeatOptions = { intervalMs?: number; missThreshold?: number }
+
+/** Thrown by the auth middleware to refuse a ticket with a reason the client is told. */
+export class TicketRefused extends Error {
+    readonly reason: string
+    constructor(reason: string) {
+        super(reason)
+        this.reason = reason
+    }
+}
 
 export type AllowedOrigins = ReadonlyArray<string> | ((origin: string | undefined) => boolean)
 
@@ -259,6 +270,7 @@ class WSTransport extends Transport {
         } catch (error) {
             const reason = error instanceof Error ? error.message : String(error)
             this.logger.debug(`grant access failure, ticket=${ticketFingerprint}, reason=${reason}`)
+            if (error instanceof TicketRefused) return socket.close(CloseCode.INVALID_TICKET, error.reason)
             if (reason === KickReason.ROOM_FULL || reason === KickReason.ROOM_NOT_JOINABLE) {
                 return socket.close(CloseCode.ROOM_REJECTED, reason)
             }

@@ -13,6 +13,7 @@ import { flagRound, type FlagQuestion } from "./flags.ts"
 import { revealPhoto } from "./photos.ts"
 import { DEFAULT_HINTS, hintBand, seededUnit, type HintAxis, type HintBand } from "./hints.ts"
 import { playerColour, type PlayerColour } from "./colours.ts"
+import type { CloseReason } from "./close-reason.ts"
 import { playerId, roomCode, type PlayerId, type PlayerName, type PlayerToken, type RoomCode } from "./ids.ts"
 import {
   MAX_PLAYERS,
@@ -84,8 +85,9 @@ interface Submission {
 }
 
 export type CommandResult = { ok: true; changed: boolean } | { ok: false; error: string }
+export type JoinResult = { ok: true; changed: boolean } | { ok: false; reason: CloseReason }
 
-const OK_CHANGED: CommandResult = { ok: true, changed: true }
+const OK_CHANGED = { ok: true, changed: true } as const
 const OK_SAME: CommandResult = { ok: true, changed: false }
 const fail = (error: string): CommandResult => ({ ok: false, error })
 
@@ -171,7 +173,7 @@ export class Game {
    * to watch, or all MAX_PLAYERS seats are taken, in which case they watch if
    * there is room for another spectator.
    */
-  join(token: PlayerToken, name: PlayerName, now: number, watch = false): CommandResult {
+  join(token: PlayerToken, name: PlayerName, now: number, watch = false): JoinResult {
     const existing = this.players.get(token)
     if (existing) {
       existing.connected = true
@@ -179,14 +181,14 @@ export class Game {
       this.hostToken ??= token
       return OK_CHANGED
     }
-    if (this.kicked.has(token)) return fail("removed by the host")
-    if (this.phase === "results") return fail("game has finished")
+    if (this.kicked.has(token)) return { ok: false, reason: "removed" }
+    if (this.phase === "results") return { ok: false, reason: "finished" }
     const seatFree = this.playing().length < MAX_PLAYERS
     const roomToWatch = this.watcherCount() < MAX_SPECTATORS
     let watching: boolean
     if (!watch && seatFree) watching = false
     else if (roomToWatch) watching = true
-    else return fail(seatFree ? "no room to watch" : "game is full")
+    else return { ok: false, reason: seatFree ? "noRoomToWatch" : "full" }
     const player: Player = {
       id: playerId(`p${this.nextPlayerId++}`),
       token,

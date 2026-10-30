@@ -8,7 +8,7 @@ import { withRetries } from "./retry"
  */
 const KEY = "whereabouts.staleBuildReloadAt"
 
-function reloadForNewBuild(): boolean {
+export function reloadForNewBuild(): boolean {
   try {
     if (Date.now() - Number(sessionStorage.getItem(KEY) ?? 0) < 60_000) return false
     sessionStorage.setItem(KEY, String(Date.now()))

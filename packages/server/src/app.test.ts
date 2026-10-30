@@ -17,6 +17,7 @@ import {
   encodePaint,
   GameViewSchema,
   encodeTicket,
+  type Ticket,
   flagFrom,
   gridDisk,
   h3Res,
@@ -112,6 +113,8 @@ class TestPlayer {
   readonly invalidStates: string[] = []
   readonly token: PlayerToken
   readonly name: PlayerName
+  /** The reason the server gave for closing the connection, if it did. */
+  closedFor: string | undefined = undefined
   constructor(url: string, name: string) {
     this.name = playerName(name)
     this.token = playerToken(`${name}-token-0123456789abcdef`)
@@ -138,6 +141,7 @@ class TestPlayer {
       if (!checked.success) this.invalidStates.push(checked.error.message)
       this.states.push(view)
     })
+    this.client.on("client:kicked", ({ reason }) => (this.closedFor = reason))
     this.client.on("error", (p) => this.errors.push((JSON.parse(dec.decode(p)) as { message: string }).message))
   }
   connect(ticket: { create?: boolean; code?: RoomCode; watch?: boolean }) {
@@ -229,12 +233,18 @@ describe("game server", () => {
     expect(bobView.you.isHost).toBe(false)
   })
 
-  it("rejects bad codes and malformed tickets", async () => {
+  it("rejects bad codes and malformed tickets, and tells an outdated client so", async () => {
     const nobody = player("Nobody")
     nobody.connect({ code: roomCode("ZZZZ") })
     await nobody.waitClosed()
     expect(nobody.client.connected).toBe(false)
     expect(nobody.states).toHaveLength(0)
+    expect(nobody.closedFor).toBe("noSuchGame")
+
+    const old = player("Old")
+    old.client.connect(encodeTicket({ v: PROTOCOL_VERSION - 1, token: old.token, name: old.name } as unknown as Ticket))
+    await old.waitClosed()
+    expect(old.closedFor).toBe("outdated")
 
     const garbage = player("Garbage")
     garbage.client.connect("not-a-ticket")
@@ -535,6 +545,7 @@ describe("game server", () => {
     alice.send("leave")
     await alice.waitClosed()
     expect(alice.client.connected).toBe(false)
+    expect(alice.closedFor).toBe("left")
     const after = await bob.untilLatest((v) => v.players.length === 1)
     expect(after.you.isHost).toBe(true)
   })

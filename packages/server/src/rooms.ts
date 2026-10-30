@@ -21,6 +21,7 @@ import {
   decodeMessage,
   decodePaint,
   decodeTicket,
+  type CloseReason,
   encodeMessage,
   encodePaint,
   featureFrom,
@@ -49,6 +50,10 @@ import {
 import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
 import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
 import featuresJson from "@whereabouts/shared/features.json" with { type: "json" }
+import { TicketRefused } from "./vendor/WSTransport.ts"
+
+/** Close reasons are codes from the shared list, which the client words. */
+const closeReason = (reason: CloseReason): string => reason
 
 const REGIONS = (regionsJson as RegionData[]).map(regionFrom)
 const FLAGS = (flagsJson as FlagData[]).map(flagFrom)
@@ -132,14 +137,13 @@ export class GameRoom extends Room<ActorData> {
     const { token, name, watch, address } = actor.data!
     this.cancelEmptyTimer()
     const previous = this.actorsByToken.get(token)
-    if (previous && previous !== actor) previous.kick("replaced by a newer connection")
+    if (previous && previous !== actor) previous.kick(closeReason("replaced"))
     this.actorsByToken.set(token, actor)
     const back = this.game.playerTokens.includes(token)
     const result = this.game.join(token, name, deps.clock.now(), watch)
     if (!result.ok) {
-      this.logger?.info(`${actor.id} (${name}, ${address}) turned away: ${result.error}`)
-      actor.send(ServerTopics.error, encodeMessage({ message: result.error }))
-      actor.kick(result.error)
+      this.logger?.info(`${actor.id} (${name}, ${address}) turned away: ${result.reason}`)
+      actor.kick(closeReason(result.reason))
       return
     }
     this.logger?.info(`${actor.id} (${name}, ${address}) ${back ? "rejoined" : "joined"}`)
@@ -238,7 +242,7 @@ export class GameRoom extends Room<ActorData> {
   /** Give up this player's seat and close their connection; the client closes it too. */
   private leave(token: PlayerToken) {
     const result = this.game.leave(token)
-    if (result.ok) this.actorsByToken.get(token)?.kick("left the game")
+    if (result.ok) this.actorsByToken.get(token)?.kick(closeReason("left"))
     return result
   }
 
@@ -246,7 +250,7 @@ export class GameRoom extends Room<ActorData> {
   private removePlayer(token: PlayerToken, playerId: PlayerId, now: number) {
     const target = this.game.tokenOf(playerId)
     const result = this.game.kick(token, playerId, now)
-    if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick("removed by the host")
+    if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick(closeReason("removed"))
     return result
   }
 
@@ -336,14 +340,13 @@ export class GameAuth extends AuthMiddleware<ActorData> {
   }
 
   override async authenticate(ticket: string, context?: ConnectionContext) {
-    // Rivalis takes null as a refusal.
-    // oxlint-disable-next-line eslint-js/no-restricted-syntax
-    return this.route(ticket, context?.remoteId ?? "unknown") ?? null
+    return this.route(ticket, context?.remoteId ?? "unknown")
   }
 
-  private route(ticket: string, address: string): AuthResult<ActorData> | undefined {
+  private route(ticket: string, address: string): AuthResult<ActorData> {
     const parsed = decodeTicket(ticket)
-    if (!parsed) return undefined
+    if (parsed === "outdated") throw new TicketRefused(closeReason("outdated"))
+    if (!parsed) throw new TicketRefused(closeReason("noSuchGame"))
     const rooms = this.rooms()
     let roomId: string
     if (parsed.create && parsed.code) {
@@ -353,12 +356,12 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     } else if (parsed.create) {
       roomId = generateCode()
       for (let i = 0; i < 20 && rooms.get(roomId); i++) roomId = generateCode()
-      if (rooms.get(roomId)) return undefined
+      if (rooms.get(roomId)) throw new TicketRefused(closeReason("unavailable"))
       rooms.create(ROOM_TYPE, roomId)
     } else if (parsed.code && rooms.get(parsed.code)) {
       roomId = parsed.code
     } else {
-      return undefined
+      throw new TicketRefused(closeReason("noSuchGame"))
     }
     return { data: { token: parsed.token, name: parsed.name, watch: parsed.watch ?? false, address }, roomId }
   }

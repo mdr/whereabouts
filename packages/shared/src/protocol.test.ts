@@ -22,7 +22,8 @@ describe("ticket codec", () => {
   it("rejects garbage, wrong versions and bad shapes", () => {
     expect(decodeTicket("not-base64!!")).toBeUndefined()
     expect(decodeTicket(enc({}))).toBeUndefined()
-    expect(decodeTicket(enc({ ...ticket, v: PROTOCOL_VERSION + 1 }))).toBeUndefined()
+    expect(decodeTicket(enc({ v: PROTOCOL_VERSION - 1, token: "x" }))).toBe("outdated")
+    expect(decodeTicket(enc({ ...ticket, v: PROTOCOL_VERSION + 1 }))).toBe("outdated")
     expect(decodeTicket(enc({ ...ticket, token: "short" }))).toBeUndefined()
     expect(decodeTicket(enc({ ...ticket, code: "ab12" }))).toBeUndefined()
     expect(decodeTicket(enc({ ...ticket, name: "   " }))).toBeUndefined()
@@ -30,7 +31,7 @@ describe("ticket codec", () => {
   })
 
   it("trims names", () => {
-    expect(decodeTicket(enc({ ...ticket, name: "  Matt  " }))?.name).toBe("Matt")
+    expect(decodeTicket(enc({ ...ticket, name: "  Matt  " }))).toMatchObject({ name: "Matt" })
   })
 })
 

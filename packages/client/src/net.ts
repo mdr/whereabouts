@@ -12,6 +12,7 @@ import {
   decodePaint,
   encodePaint,
   encodeTicket,
+  isCloseReason,
   revealFrom,
   type GameView,
   type HintAxis,
@@ -23,6 +24,7 @@ import {
   type Ticket,
   viewFrom
 } from "@whereabouts/shared"
+import { reloadForNewBuild } from "./stale-build"
 
 export type Status = "idle" | "connecting" | "connected" | "disconnected" | "rejected"
 
@@ -84,6 +86,7 @@ export class Connection {
           }, 1000)
         return
       }
+      if (reason === "outdated" && reloadForNewBuild()) return
       this.status.value = "rejected"
       this.rejection.value = describeDisconnect(code, reason)
     })
@@ -193,44 +196,16 @@ export interface Rejection {
 }
 
 /**
- * Turn a WebSocket close code and the server's reason string into something a
- * player can act on. Reasons come from Rivalis (room lifecycle) and from our
- * own room (join rejections, superseded tabs).
+ * Turn a WebSocket close code and its reason into something a player can
+ * act on. Reasons are our CloseReason codes, or Rivalis's own for the room
+ * closing and for giving up on reconnecting.
  */
 export function describeDisconnect(code: number, reason: string | undefined): Rejection {
-  const r = (reason ?? "").toLowerCase()
+  const r = reason ?? ""
   if (r === "room_destroyed") {
     return {
       title: "That game has ended",
       detail: "Everyone left, so the room was closed. Game codes only live while someone is in the game."
-    }
-  }
-  if (r.includes("removed by the host")) {
-    return {
-      title: "You were removed from the game",
-      detail: "The host took you out of this game. You can rejoin with the code as a new player, or start your own.",
-      removed: true
-    }
-  }
-  if (r.includes("game is full")) {
-    return {
-      title: "That game is full",
-      detail: `It already has ${MAX_PLAYERS} players and ${MAX_SPECTATORS} people watching, the most a game can hold. Ask the host to remove someone, or start your own game.`
-    }
-  }
-  if (r.includes("no room to watch")) {
-    return {
-      title: "No room to watch",
-      detail: `${MAX_SPECTATORS} people are already watching that game, the most it allows. You can still join it as a player.`
-    }
-  }
-  if (r.includes("game has finished")) {
-    return { title: "That game has finished", detail: "The final results are in. Ask the host to start a new game." }
-  }
-  if (r.includes("replaced by a newer connection")) {
-    return {
-      title: "You joined from another tab",
-      detail: "This game is now open in your newer tab, so this one has been signed out."
     }
   }
   if (r === "reconnect_failed") {
@@ -239,13 +214,43 @@ export function describeDisconnect(code: number, reason: string | undefined): Re
       detail: "We could not reach the game server again. Check your network and rejoin."
     }
   }
-  if (code === 4001 || code === 1008 || r.includes("unauthor") || r.includes("not found") || r.includes("rejected")) {
-    return {
-      title: "No game with that code",
-      detail:
-        "Check the code with your host. If the game finished or everyone left, you can host a new one under the same code.",
-      missing: true
-    }
+  if (!isCloseReason(r)) return { title: "Disconnected", detail: r || `The connection closed (code ${code}).` }
+  switch (r) {
+    case "noSuchGame":
+      return {
+        title: "No game with that code",
+        detail:
+          "Check the code with your host. If the game finished or everyone left, you can host a new one under the same code.",
+        missing: true
+      }
+    case "outdated":
+      return { title: "A new version is out", detail: "Reload the page to carry on." }
+    case "unavailable":
+      return { title: "Couldn't start a game", detail: "The server had no free game code. Try again in a moment." }
+    case "removed":
+      return {
+        title: "You were removed from the game",
+        detail: "The host took you out of this game. You can rejoin with the code as a new player, or start your own.",
+        removed: true
+      }
+    case "finished":
+      return { title: "That game has finished", detail: "The final results are in. Ask the host to start a new game." }
+    case "full":
+      return {
+        title: "That game is full",
+        detail: `It already has ${MAX_PLAYERS} players and ${MAX_SPECTATORS} people watching, the most a game can hold. Ask the host to remove someone, or start your own game.`
+      }
+    case "noRoomToWatch":
+      return {
+        title: "No room to watch",
+        detail: `${MAX_SPECTATORS} people are already watching that game, the most it allows. You can still join it as a player.`
+      }
+    case "replaced":
+      return {
+        title: "You joined from another tab",
+        detail: "This game is now open in your newer tab, so this one has been signed out."
+      }
+    case "left":
+      return { title: "You left the game", detail: "Rejoin with the code, or start your own game." }
   }
-  return { title: "Disconnected", detail: reason || `The connection closed (code ${code}).` }
 }

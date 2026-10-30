@@ -398,7 +398,7 @@ describe("player cap", () => {
     const w1 = g.view(tokW1, T0)
     expect(w1.you.watching).toBe(true)
     expect(w1.players.find((p) => p.name === "W1")).toMatchObject({ watching: true, colour: undefined, rank: 0 })
-    expect(g.join(tokLate, playerName("Late"), T0)).toEqual({ ok: false, error: "game is full" })
+    expect(g.join(tokLate, playerName("Late"), T0)).toEqual({ ok: false, reason: "full" })
   })
 
   it("still lets a player who dropped out back in", () => {
@@ -632,7 +632,7 @@ describe("joining and leaving mid-game", () => {
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     g.next(tokA, T0 + 80_000)
     expect(g.phase).toBe("results")
-    expect(g.join(tokZ, playerName("Zed"), T0 + 80_001)).toEqual({ ok: false, error: "game has finished" })
+    expect(g.join(tokZ, playerName("Zed"), T0 + 80_001)).toEqual({ ok: false, reason: "finished" })
     g.disconnect(tokB, T0 + 80_002)
     expect(g.again(tokA, T0 + 81_000).ok).toBe(true)
     expect(g.phase).toBe("lobby")
@@ -797,7 +797,7 @@ describe("host removes a player", () => {
     expect(g.kick(tokA, playerId("p99"), T0)).toEqual({ ok: false, error: "unknown player" })
     expect(g.kick(tokA, bobId, T0).ok).toBe(true)
     expect(g.playerTokens).toEqual([tokA])
-    expect(g.join(tokB, playerName("Bob again"), T0)).toEqual({ ok: false, error: "removed by the host" })
+    expect(g.join(tokB, playerName("Bob again"), T0)).toEqual({ ok: false, reason: "removed" })
     expect(g.join(tokC, playerName("Carol"), T0).ok).toBe(true)
     // Bob's paint must not surface when the round ends.
     g.setPaint(tokA, paintAt(q, 0, 0))

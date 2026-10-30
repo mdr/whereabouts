@@ -25,7 +25,7 @@ import {
   type RoomCode
 } from "./ids.ts"
 
-export const PROTOCOL_VERSION = 3
+export const PROTOCOL_VERSION = 4
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -417,14 +417,17 @@ export function encodeTicket(ticket: Ticket): string {
 }
 
 /** Parses and validates a ticket; returns undefined for anything malformed. */
-export function decodeTicket(raw: string): Ticket | undefined {
+/** The ticket, or "outdated" for one from a client of another protocol version, or undefined for one not a ticket at all. */
+export function decodeTicket(raw: string): Ticket | "outdated" | undefined {
   try {
     const b64 = raw.replace(/-/g, "+").replace(/_/g, "/")
     const bin = atob(b64 + "=".repeat((4 - (b64.length % 4)) % 4))
     const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0))
     const parsed: unknown = JSON.parse(new TextDecoder().decode(bytes))
     const result = TicketSchema.safeParse(parsed)
-    return result.success ? result.data : undefined
+    if (result.success) return result.data
+    const versioned = z.object({ v: z.number() }).safeParse(parsed)
+    return versioned.success && versioned.data.v !== PROTOCOL_VERSION ? "outdated" : undefined
   } catch {
     return undefined
   }
