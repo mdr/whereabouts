@@ -30,8 +30,10 @@ import type {
   GameView,
   PaintSubmission,
   Phase,
+  PlayedRound,
   PlayerView,
   QuestionPictures,
+  QuestionType,
   QuestionView,
   RevealView,
   RoundResultView
@@ -800,9 +802,7 @@ export class Game {
       ...this.upcoming(),
       results: this.phase === "results" ? this.results : undefined,
       playedRounds:
-        this.phase === "results"
-          ? this.questions.slice(0, this.roundIndex + 1).map((q) => ({ label: q.label, ...questionPictures(q) }))
-          : undefined,
+        this.phase === "results" ? this.questions.slice(0, this.roundIndex + 1).map(playedRound) : undefined,
       awards: this.phase === "results" ? this.awards : undefined
     }
   }
@@ -867,6 +867,25 @@ export function generateCode(rnd: () => number = Math.random, length = 4): RoomC
   let out = ""
   for (let i = 0; i < length; i++) out += alphabet.charAt(Math.floor(rnd() * alphabet.length))
   return roomCode(out)
+}
+
+/** Which kind of question in the host's mix this was. */
+export function questionType(q: Question | RegionQuestion): QuestionType {
+  if (q.flag) return "flags"
+  if (q.topic === "state") return "states"
+  if (q.topic) return "features"
+  if (q.kind === "region") return "countries"
+  return q.kind === "photo" ? "landmarks" : "places"
+}
+
+function playedRound(q: Question | RegionQuestion): PlayedRound {
+  return {
+    label: q.label,
+    type: questionType(q),
+    ...(q.topic ? { topic: q.topic } : {}),
+    ...(q.kind === "region" && !q.flag ? { regionId: q.id } : {}),
+    ...questionPictures(q)
+  }
 }
 
 /** A question's photo and flag, including the flag shown beside a country's name, and the photo for its reveal. */

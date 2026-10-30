@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
-import { fireEvent, render, waitFor } from "@testing-library/preact"
+import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
 import { HudBottom, QuestionCard, SoundToggle } from "./bits"
 import { soundOn } from "../settings"
 import { flagCode, regionId } from "@whereabouts/shared"
@@ -70,6 +70,10 @@ describe("QuestionCard", () => {
 })
 
 describe("QuestionCard image", () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   // First in this file: the label shows only on the session's first photo.
   it("says it can be enlarged: a button with a badge, labelled on the first photo only", () => {
     const { container: first } = render(<QuestionCard q={q} />)
@@ -80,43 +84,43 @@ describe("QuestionCard image", () => {
     expect(later.querySelectorAll(".enlarge-badge")).not.toHaveLength(0)
     expect(later.querySelector(".enlarge-badge")!.textContent).toBe("")
     fireEvent.click(later.querySelector(".thumb-button")!)
-    expect(later.querySelectorAll(".lightbox")).not.toHaveLength(0)
+    expect(document.body.querySelectorAll(".lightbox")).not.toHaveLength(0)
   })
 
   it("enlarges on click and shrinks on Escape, the close button, or a backdrop click", () => {
     const { container } = render(<QuestionCard q={q} />)
-    expect(container.querySelectorAll(".lightbox")).toHaveLength(0)
+    expect(document.body.querySelectorAll(".lightbox")).toHaveLength(0)
     fireEvent.click(container.querySelector(".thumb img")!)
-    expect(container.querySelectorAll(".lightbox img")).not.toHaveLength(0)
+    expect(document.body.querySelectorAll(".lightbox img")).not.toHaveLength(0)
     fireEvent.keyDown(window, { key: "Escape" })
-    expect(container.querySelectorAll(".lightbox")).toHaveLength(0)
+    expect(document.body.querySelectorAll(".lightbox")).toHaveLength(0)
     fireEvent.click(container.querySelector(".thumb img")!)
-    fireEvent.click(container.querySelector(".lightbox")!)
-    expect(container.querySelectorAll(".lightbox")).toHaveLength(0)
+    fireEvent.click(document.body.querySelector(".lightbox")!)
+    expect(document.body.querySelectorAll(".lightbox")).toHaveLength(0)
     fireEvent.click(container.querySelector(".thumb img")!)
-    fireEvent.click(container.querySelector(".lightbox-close")!)
-    expect(container.querySelectorAll(".lightbox")).toHaveLength(0)
+    fireEvent.click(document.body.querySelector(".lightbox-close")!)
+    expect(document.body.querySelectorAll(".lightbox")).toHaveLength(0)
   })
 
   it("zooms the enlarged photo: click toggles a closer look, the wheel zooms in and out", () => {
     const { container } = render(<QuestionCard q={q} />)
     fireEvent.click(container.querySelector(".thumb img")!)
-    const img = container.querySelector<HTMLImageElement>(".lightbox img")!
+    const img = document.body.querySelector<HTMLImageElement>(".lightbox img")!
     expect(img.style.transform).toContain("scale(1)")
     // The lightbox asks for a bigger rendition than the thumbnail.
     expect(img.src).toContain("width=1600")
     fireEvent.click(img)
     expect(img.style.transform).toContain("scale(2.5)")
-    expect(container.querySelector(".lightbox-frame")!.className).toContain("zoomed")
+    expect(document.body.querySelector(".lightbox-frame")!.className).toContain("zoomed")
     // Clicking the picture does not close the lightbox.
-    expect(container.querySelectorAll(".lightbox")).not.toHaveLength(0)
+    expect(document.body.querySelectorAll(".lightbox")).not.toHaveLength(0)
     fireEvent.click(img)
     expect(img.style.transform).toContain("scale(1)")
-    fireEvent.wheel(container.querySelector(".lightbox-frame")!, { deltaY: -500 })
+    fireEvent.wheel(document.body.querySelector(".lightbox-frame")!, { deltaY: -500 })
     const scale = Number(/scale\(([\d.]+)\)/.exec(img.style.transform)![1])
     expect(scale).toBeGreaterThan(1)
     expect(scale).toBeLessThanOrEqual(6)
-    fireEvent.wheel(container.querySelector(".lightbox-frame")!, { deltaY: 5000 })
+    fireEvent.wheel(document.body.querySelector(".lightbox-frame")!, { deltaY: 5000 })
     expect(img.style.transform).toContain("scale(1)")
     expect(img.style.transform).toContain("translate(0px, 0px)")
   })

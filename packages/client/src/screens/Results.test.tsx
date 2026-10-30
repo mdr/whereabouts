@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
-import { playerColour, playerId, playerName, roomCode, type GameView } from "@whereabouts/shared"
+import { flagCode, playerColour, playerId, playerName, regionId, roomCode, type GameView } from "@whereabouts/shared"
 import type { Connection } from "../net"
 import { Results } from "./Results"
 
@@ -61,7 +61,10 @@ function view(isHost: boolean): GameView {
       { playerId: playerId("p1"), total: 1500, rounds: [{ score: 800 }, { score: 700 }] },
       { playerId: playerId("p2"), total: 1250, rounds: [{ score: 500 }, { score: 750 }] }
     ],
-    playedRounds: [{ label: "Taj Mahal, Agra", image: "Taj Mahal.jpeg" }, { label: "Perth, Australia" }],
+    playedRounds: [
+      { label: "Taj Mahal, Agra", type: "landmarks", image: "Taj Mahal.jpeg" },
+      { label: "Perth, Australia", type: "places" }
+    ],
     awards: [{ emoji: "🐔", title: "Chicken", playerIds: [playerId("p2")], line: "{0} passed 2 times. Brave." }]
   }
 }
@@ -78,7 +81,7 @@ describe("Results", () => {
     expect(rows[1]!.querySelector(".place")!.textContent).toBe("🥈")
     expect(rows[0]!.querySelector(".total")!.textContent).toBe("1,500")
     expect(rows[1]!.className).toContain("you")
-    expect(container.querySelectorAll("button")).toHaveLength(0)
+    expect(container.querySelectorAll("button:not(.small-picture)")).toHaveLength(0)
     expect(container.textContent).toContain("The host can start another game")
   })
 
@@ -98,7 +101,23 @@ describe("Results", () => {
     ])
     // Alice took round 1, Bob round 2.
     expect(rounds.map((r) => r.querySelector("td.best")!.textContent)).toEqual(["800", "750"])
-    expect(rounds[0]!.querySelectorAll(".round-photo")).toHaveLength(1)
+    expect(rounds[0]!.querySelectorAll(".small-picture img")).toHaveLength(1)
+    expect(rounds.map((r) => r.querySelector(".round-type")!.textContent)).toEqual(["Landmark", "Place name"])
+  })
+
+  it("tells a flag round from a country round: the flag, or the shape with the flag by its name", () => {
+    const conn = { again: vi.fn() } as unknown as Connection
+    const v = view(false)
+    v.playedRounds = [
+      { label: "Turkey", type: "flags", flag: flagCode("tr") },
+      { label: "Bangladesh", type: "countries", regionId: regionId("bangladesh-region"), flag: flagCode("bd") },
+      { label: "Black Sea", type: "features", topic: "sea", regionId: regionId("sea-black-sea") }
+    ]
+    const { container } = render(<Results conn={conn} view={v} />)
+    const rounds = [...container.querySelectorAll(".score-table tbody tr")]
+    expect(rounds.map((r) => r.querySelector(".round-type")!.textContent)).toEqual(["Flag", "Whole country", "Sea"])
+    expect(rounds.map((r) => r.querySelectorAll(".round-shape").length)).toEqual([0, 1, 1])
+    expect(rounds.map((r) => r.querySelectorAll(".round-label .small-flag").length)).toEqual([0, 1, 0])
   })
 
   it("lists each round's winner and your score where the table won't fit, with the table a click away", () => {

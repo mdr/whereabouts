@@ -11,7 +11,9 @@ import { PlayerColourSchema } from "./colours.ts"
 import { FlagCodeSchema, PlayerIdSchema, PlayerNameSchema, RegionIdSchema, RoomCodeSchema } from "./ids.ts"
 import { HintAxisSchema } from "./hints.ts"
 import { KernelIdSchema } from "./scoring.ts"
-import { MapDetailSchema, MixSchema, PaintSubmissionSchema } from "./protocol.ts"
+import { MapDetailSchema, MixSchema, PaintSubmissionSchema, QUESTION_TYPES, type QuestionType } from "./protocol.ts"
+
+const TopicSchema = z.enum(["island", "lake", "sea", "state"])
 
 const LatLonSchema = z.strictObject({ lat: z.number(), lon: z.number() })
 
@@ -21,7 +23,7 @@ const QuestionViewSchema = z.strictObject({
   toleranceKm: z.number(),
   regionId: RegionIdSchema.optional(),
   flag: FlagCodeSchema.optional(),
-  topic: z.enum(["island", "lake", "sea", "state"]).optional()
+  topic: TopicSchema.optional()
 })
 
 const QuestionPicturesSchema = z.strictObject({
@@ -109,7 +111,17 @@ export const GameViewSchema = z.strictObject({
       })
     )
     .optional(),
-  playedRounds: z.array(z.strictObject({ label: z.string(), ...QuestionPicturesSchema.shape })).optional(),
+  playedRounds: z
+    .array(
+      z.strictObject({
+        label: z.string(),
+        type: z.enum(QUESTION_TYPES.map((t) => t.id) as [QuestionType, ...QuestionType[]]),
+        topic: TopicSchema.optional(),
+        regionId: RegionIdSchema.optional(),
+        ...QuestionPicturesSchema.shape
+      })
+    )
+    .optional(),
   awards: z
     .array(
       z.strictObject({ emoji: z.string(), title: z.string(), playerIds: z.array(PlayerIdSchema), line: z.string() })

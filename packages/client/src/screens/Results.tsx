@@ -1,18 +1,21 @@
 import {
   colourCss,
-  commonsImageUrl,
   type Award,
   type FinalStanding,
   type GameView,
   type PlayedRound,
-  type PlayerView
+  type PlayerView,
+  type QuestionType,
+  type RegionId
 } from "@whereabouts/shared"
-import { useEffect, useState } from "preact/hooks"
+import { useEffect, useMemo, useState } from "preact/hooks"
 import type { Connection } from "../net"
 import { Icon } from "../ui/icons"
 import { HostTag, HostWord } from "../ui/PlayerList"
 import { Banner } from "../ui/Banner"
-import { SmallFlag } from "../ui/bits"
+import { SmallFlag, SmallFlagButton, SmallPhoto } from "../ui/bits"
+import { outlinePath } from "../ui/outline-path"
+import { useRegion } from "../regions"
 import { useElementRef } from "../ui/element-ref"
 import { VrButton, useVrView } from "../ui/VrButton"
 import { navigate } from "../router"
@@ -177,7 +180,7 @@ function RoundList({ rounds, standings, byId, you, best }: RoundsProps & { best:
   return (
     <ol class="round-list">
       <li class="round-list-head" aria-hidden="true">
-        <span class="round-label" />
+        <span class="round-text" />
         <span>Best</span>
         {mine && <span class="round-yours">You</span>}
       </li>
@@ -188,8 +191,7 @@ function RoundList({ rounds, standings, byId, you, best }: RoundsProps & { best:
         return (
           <li key={r} data-testid={resultsTestIds.playedRound}>
             <span class="round-number">{r + 1}</span>
-            <RoundPicture round={round} />
-            <span class="round-label">{round.label}</span>
+            <RoundWhat round={round} />
             {first && (
               <span class="round-winner" title={`Won by ${winners.map((p) => p?.name ?? "?").join(", ")}`}>
                 <i class="swatch" style={{ background: colourCss(first.colour) }} />
@@ -248,8 +250,7 @@ function ScoreTable({
               <th class="round-cell" scope="row">
                 <span class="round-what">
                   <span class="round-number">{r + 1}</span>
-                  <RoundPicture round={round} />
-                  <span class="round-label">{round.label}</span>
+                  <RoundWhat round={round} />
                 </span>
               </th>
               {standings.map((s) => {
@@ -273,15 +274,57 @@ function ScoreTable({
   )
 }
 
-function RoundPicture({ round }: { round: PlayedRound }) {
-  if (round.image)
-    return <img class="round-photo" src={commonsImageUrl(round.image, 120)} alt="" referrerpolicy="no-referrer" />
-  if (round.flag) return <SmallFlag code={round.flag} />
-  if (round.revealPhoto)
-    return <img class="round-photo" src={commonsImageUrl(round.revealPhoto, 120)} alt="" referrerpolicy="no-referrer" />
+const TYPE_NAMES: Record<QuestionType, string> = {
+  landmarks: "Landmark",
+  places: "Place name",
+  countries: "Whole country",
+  flags: "Flag",
+  features: "Island, lake or sea",
+  states: "US state"
+}
+
+/** The round's picture, what it asked about, and which kind of question it was. */
+function RoundWhat({ round }: { round: PlayedRound }) {
+  const topic = round.type === "features" && round.topic
   return (
-    <span class="round-pin">
-      <Icon name="pin" size={14} />
+    <>
+      <RoundPicture round={round} />
+      <span class="round-text">
+        <span class="round-label">
+          {round.label}
+          {round.regionId && round.flag && <SmallFlag code={round.flag} />}
+        </span>
+        <span class={`round-type type-${round.type}`}>
+          {topic ? topic[0]!.toUpperCase() + topic.slice(1) : TYPE_NAMES[round.type]}
+        </span>
+      </span>
+    </>
+  )
+}
+
+/** A shape round shows the shape painted; the rest, the question's photo or flag, else the reveal's photo. */
+function RoundPicture({ round }: { round: PlayedRound }) {
+  if (round.regionId) return <RoundShape id={round.regionId} type={round.type} />
+  if (round.image) return <SmallPhoto image={round.image} />
+  if (round.flag) return <SmallFlagButton code={round.flag} />
+  if (round.revealPhoto) return <SmallPhoto image={round.revealPhoto} />
+  return (
+    <span class="small-picture">
+      <Icon name="pin" size={18} />
+    </span>
+  )
+}
+
+function RoundShape({ id, type }: { id: RegionId; type: QuestionType }) {
+  const region = useRegion(id)
+  const d = useMemo(() => (region ? outlinePath(region.outline, region.answer, 56, 42) : ""), [region])
+  return (
+    <span class={`small-picture round-shape type-${type}`}>
+      {d && (
+        <svg viewBox="0 0 56 42" aria-hidden="true">
+          <path d={d} />
+        </svg>
+      )}
     </span>
   )
 }

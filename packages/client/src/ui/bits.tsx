@@ -1,4 +1,5 @@
 import type { ComponentChildren, RefObject } from "preact"
+import { createPortal } from "preact/compat"
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks"
 import { useElementRef } from "./element-ref"
 import {
@@ -360,19 +361,7 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
     return first
   })
   useEscape(large, () => setLarge(false))
-  const credit = !showCredit ? undefined : (
-    <a
-      class="credit-icon"
-      href={commonsPageUrl(image)}
-      target="_blank"
-      rel="noopener"
-      title="Image from Wikimedia Commons"
-      aria-label="Image credit: Wikimedia Commons"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <Icon name="info" size={14} />
-    </a>
-  )
+  const credit = showCredit ? <CommonsCredit image={image} /> : undefined
   return (
     <>
       <div class="thumb" data-testid={questionCardTestIds.photo}>
@@ -390,6 +379,66 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
       {large && (
         <Lightbox src={commonsImageUrl(image, 1600)} kind="photo" credit={credit} onClose={() => setLarge(false)} />
       )}
+    </>
+  )
+}
+
+function CommonsCredit({ image }: { image: string }) {
+  return (
+    <a
+      class="credit-icon"
+      href={commonsPageUrl(image)}
+      target="_blank"
+      rel="noopener"
+      title="Image from Wikimedia Commons"
+      aria-label="Image credit: Wikimedia Commons"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <Icon name="info" size={14} />
+    </a>
+  )
+}
+
+/** A photo the size of a list row; click it to enlarge. */
+export function SmallPhoto({ image }: { image: string }) {
+  const [large, setLarge] = useState(false)
+  useEscape(large, () => setLarge(false))
+  return (
+    <>
+      <button type="button" class="small-picture" title="Enlarge the photo" onClick={() => setLarge(true)}>
+        <img src={commonsImageUrl(image, 240)} alt="" referrerpolicy="no-referrer" />
+        <span class="sr-only">Enlarge photo</span>
+      </button>
+      {large && (
+        <Lightbox
+          src={commonsImageUrl(image, 1600)}
+          kind="photo"
+          credit={<CommonsCredit image={image} />}
+          onClose={() => setLarge(false)}
+        />
+      )}
+    </>
+  )
+}
+
+/** A flag the size of a list row; click it to enlarge. */
+export function SmallFlagButton({ code }: { code: string }) {
+  const src = useFlagUrl(code)
+  const [large, setLarge] = useState(false)
+  useEscape(large, () => setLarge(false))
+  return (
+    <>
+      <button
+        type="button"
+        class="small-picture"
+        title="Enlarge the flag"
+        disabled={!src}
+        onClick={() => setLarge(true)}
+      >
+        {src && <img src={src} alt="" draggable={false} />}
+        <span class="sr-only">Enlarge flag</span>
+      </button>
+      {large && src && <Lightbox src={src} kind="flag" credit={undefined} onClose={() => setLarge(false)} />}
     </>
   )
 }
@@ -485,7 +534,8 @@ function Lightbox({
     }
   }
 
-  return (
+  // Into <body>: a sticky table cell, say, would otherwise hold it under the cells below.
+  return createPortal(
     <div
       class="lightbox"
       onClick={(e) => {
@@ -516,7 +566,8 @@ function Lightbox({
         />
         {credit}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

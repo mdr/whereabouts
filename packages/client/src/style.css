@@ -1139,7 +1139,7 @@ button.big {
 .round-what {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .round-number {
   flex: none;
@@ -1148,27 +1148,76 @@ button.big {
   font-size: 12px;
   text-align: right;
 }
-.round-photo,
-.round-pin {
+/* A round's photo, flag or shape: big enough to tell apart, and a photo or flag opens full size. */
+.small-picture {
   flex: none;
-  width: 20px;
-  height: 15px;
-  border-radius: 2px;
-}
-.round-photo {
-  object-fit: cover;
-  background: #3a414b;
-}
-.round-pin {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 56px;
+  height: 42px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #3a414b;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
   color: var(--muted);
+}
+button.small-picture {
+  cursor: zoom-in;
+}
+.small-picture img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.round-shape {
+  background: #2a3038;
+}
+.round-shape svg {
+  width: 100%;
+  height: 100%;
+}
+.round-shape path {
+  fill: var(--type);
+  fill-opacity: 0.85;
+  fill-rule: evenodd;
+  stroke: var(--type);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+.round-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 .round-label {
   min-width: 0;
   white-space: normal;
   line-height: 1.25;
+}
+.round-label .small-flag {
+  width: 16px;
+  margin-left: 6px;
+  vertical-align: -1px;
+}
+.round-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.round-type::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--type);
 }
 /* Where the table won't fit: a line per round, its winner and your score. */
 .round-list {
@@ -1197,10 +1246,14 @@ button.big {
 .round-list li:last-child {
   border-bottom: none;
 }
-.round-list .round-label {
+.round-list .round-text {
   flex: 1 1 auto;
   min-width: 4.5em;
   overflow-wrap: break-word;
+}
+.round-list .small-picture {
+  width: 48px;
+  height: 36px;
 }
 /* On a narrow phone the winner's name gives way to the round's label. */
 .round-winner {

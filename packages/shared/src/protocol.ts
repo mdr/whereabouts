@@ -286,6 +286,11 @@ export interface QuestionPictures {
 /** A round of a finished game, for the final results: what it asked about. */
 export interface PlayedRound extends QuestionPictures {
   label: string
+  type: QuestionType
+  /** Which of the islands, lakes and seas, for a features round. */
+  topic?: Topic
+  /** The outline painted, where the round asked for a shape by name. */
+  regionId?: RegionId
 }
 
 export interface FinalStanding {
