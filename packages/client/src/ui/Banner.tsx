@@ -1,15 +1,17 @@
 import hero800 from "../assets/hero-800.webp"
 import hero1448 from "../assets/hero-1448.webp"
 import type { ComponentChildren } from "preact"
+import { cx } from "./cx"
+import s from "./Banner.module.css"
 
 /**
  * The title on the card screens: a strip of the front-page picture, cropped
  * to the spray, with "Whereabouts" over it. Children sit over the top left
- * (the lobby's Leave button).
+ * (the lobby's Leave button). `tall` on the lobby's wider card.
  */
-export function Banner({ children }: { children?: ComponentChildren }) {
+export function Banner({ tall, children }: { tall?: boolean; children?: ComponentChildren }) {
   return (
-    <header class="banner">
+    <header class={cx(s.banner, tall && s.tall)}>
       <img
         src={hero1448}
         srcset={`${hero800} 800w, ${hero1448} 1448w`}

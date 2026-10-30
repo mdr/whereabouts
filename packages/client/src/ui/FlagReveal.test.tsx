@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
-import { render } from "@testing-library/preact"
+import { render, screen } from "@testing-library/preact"
 import { Borders } from "@whereabouts/shared/borders"
 import { type FlagData, flagFrom } from "@whereabouts/shared/flags"
 import { h3Res } from "@whereabouts/shared/h3"
@@ -8,6 +8,8 @@ import { PaintLayer } from "@whereabouts/shared/paint"
 import bordersJson from "@whereabouts/shared/borders.json"
 import flagsJson from "@whereabouts/shared/flags.json"
 import { mainCountry, PaintedIn } from "./FlagReveal"
+import { flagRevealTestIds } from "./FlagRevealTestIds"
+import s from "./FlagReveal.module.css"
 
 const flags = (flagsJson as FlagData[]).map(flagFrom)
 const borders = new Borders(bordersJson, flags)
@@ -34,15 +36,14 @@ describe("mainCountry", () => {
 
 describe("PaintedIn", () => {
   it("shows the flag, the country and the share, marked when it is the answer", () => {
-    const { container, rerender } = render(
-      <PaintedIn where={{ country: brazil, share: 0.62 }} answer="pe" whose="Ann's" />
-    )
-    const el = container.querySelector(".painted-in")!
+    const { rerender } = render(<PaintedIn where={{ country: brazil, share: 0.62 }} answer="pe" whose="Ann's" />)
+    const el = screen.getByTestId(flagRevealTestIds.paintedIn)
     expect(el.textContent).toBe("Brazil62%")
     expect(el.getAttribute("title")).toBe("62% of Ann's paint was in Brazil")
-    expect(el.classList.contains("right")).toBe(false)
+    expect(el.classList.contains(s.right!)).toBe(false)
     rerender(<PaintedIn where={{ country: brazil, share: 0.62 }} answer="br" whose="your" />)
-    expect(container.querySelector(".painted-in.right")!.getAttribute("title")).toBe(
+    expect(screen.getByTestId(flagRevealTestIds.paintedIn).classList.contains(s.right!)).toBe(true)
+    expect(screen.getByTestId(flagRevealTestIds.paintedIn).getAttribute("title")).toBe(
       "62% of your paint was in Brazil, the answer"
     )
   })

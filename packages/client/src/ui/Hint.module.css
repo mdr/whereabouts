@@ -1,0 +1,41 @@
+.card {
+  padding: 6px 8px;
+}
+/* Tight enough for the label, a hints-left count and both buttons in the HUD's width; wraps if not. */
+.choose {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+
+  & button {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    white-space: nowrap;
+  }
+}
+.label {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--muted);
+  margin-right: auto;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.left {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--control-bg);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.band {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  margin: 0;
+  color: var(--accent-2);
+  font-weight: 600;
+}

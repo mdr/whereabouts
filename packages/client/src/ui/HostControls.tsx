@@ -5,13 +5,24 @@
 import { Icon } from "./icons"
 import { endGameRequest, useConfirm } from "./ConfirmDialog"
 import { hostControlsTestIds } from "./HostControlsTestIds"
+import { cx } from "./cx"
+import s from "./HostControls.module.css"
 
-export function EndGameButton({ onEnd, title }: { onEnd: () => void; title?: string }) {
+/** `besidePlayers`: in the HUD with the players pill, which it sits beside on a phone. */
+export function EndGameButton({
+  onEnd,
+  title,
+  besidePlayers
+}: {
+  onEnd: () => void
+  title?: string
+  besidePlayers?: boolean
+}) {
   const { dialog, ask } = useConfirm()
   return (
     <>
       <button
-        class="end-game"
+        class={cx(s.endGame, besidePlayers && s.besidePlayers)}
         data-testid={hostControlsTestIds.endGameButton}
         title={title ?? "Stop here and show the final standings"}
         onClick={() => ask(endGameRequest(onEnd))}

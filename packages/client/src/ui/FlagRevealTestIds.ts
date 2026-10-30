@@ -1,3 +1,5 @@
 export const flagRevealTestIds = {
-  allFlagsSwitch: "FlagReveal.allFlagsSwitch"
+  allFlagsSwitch: "FlagReveal.allFlagsSwitch",
+  pin: "FlagReveal.pin",
+  paintedIn: "FlagReveal.paintedIn"
 }

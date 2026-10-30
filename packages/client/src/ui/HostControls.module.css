@@ -1,0 +1,13 @@
+@import "../media.css";
+
+.endGame {
+  align-self: flex-end;
+  font-size: 12px;
+}
+/* On a phone, beside the players pill, so the pair takes one row of the map. */
+@media (--phone) {
+  .endGame.besidePlayers {
+    order: -1;
+    align-self: auto;
+  }
+}

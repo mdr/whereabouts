@@ -1,0 +1,179 @@
+@import "../media.css";
+
+.card {
+  width: min(880px, 100%);
+}
+/* The way home, over the top left of the banner. */
+.leave {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px 5px 8px;
+  font-size: 13px;
+  background: color-mix(in srgb, var(--page-bg) 72%, transparent);
+  border-color: color-mix(in srgb, var(--light) 18%, transparent);
+  backdrop-filter: blur(4px);
+}
+button.leave:hover {
+  background: color-mix(in srgb, var(--page-bg) 90%, transparent);
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  background: var(--inset-bg);
+  border-radius: 10px;
+  padding: 16px;
+
+  & h2 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  & h2:not(:first-child) {
+    margin-top: 6px;
+  }
+  & h2 .count {
+    background: var(--control-bg);
+    color: var(--panel-fg);
+    border-radius: 999px;
+    padding: 0 7px;
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+}
+.code {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-align: center;
+  padding: 10px;
+  background: var(--card-bg);
+  border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.invite {
+  display: flex;
+  gap: 8px;
+
+  & button {
+    flex: 1;
+  }
+}
+.watchingHeading {
+  margin: 14px 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.roleSwitch {
+  margin-top: 10px;
+
+  & button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+  }
+}
+.waiting {
+  margin: 0;
+  font-style: italic;
+}
+
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.settingLabel {
+  color: var(--muted);
+  font-size: 13px;
+}
+.start {
+  margin-top: auto;
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* A guest's view of the setup: the decided values as tiles. */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.tile {
+  background: var(--tile-bg);
+  border-radius: 8px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+}
+.value {
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.label {
+  color: var(--muted);
+  font-size: 12px;
+}
+.tile.changed {
+  animation: changed 1.2s ease-out;
+}
+@keyframes changed {
+  from {
+    background: var(--accent-2);
+    color: var(--on-accent-2);
+  }
+}
+.tile.questions {
+  grid-column: 1 / -1;
+  align-items: stretch;
+  gap: 6px;
+}
+.tile.mapDetail {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  text-align: left;
+  gap: 12px;
+  padding: 8px;
+}
+
+@media (--narrow) {
+  .cols {
+    grid-template-columns: 1fr;
+  }
+  /* Start stays in reach below the setup, however far it scrolls. */
+  .start {
+    position: sticky;
+    bottom: 0;
+    margin: 0 -16px -16px;
+    padding: 10px 16px 16px;
+    background: linear-gradient(transparent, var(--inset-bg) 14px);
+    border-radius: 0 0 10px 10px;
+  }
+  /* One card of panels is enough on a phone: drop the outer one. */
+  .card {
+    background: none;
+    box-shadow: none;
+    padding: 4px 0;
+  }
+}

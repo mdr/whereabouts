@@ -1,0 +1,84 @@
+/* In :where(), so a card's own class can change its padding and the like. */
+:where(.card) {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 12px;
+  /* The HUD sets this: its cards float over the map. */
+  box-shadow: var(--card-shadow, none);
+}
+.title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+/* A small flag beside a country's name. */
+:where(.smallFlag) {
+  flex: none;
+  display: inline-block;
+  height: 15px;
+  aspect-ratio: var(--flag-ratio);
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--control-bg);
+  box-shadow: var(--picture-ring);
+  vertical-align: middle;
+}
+:where(.smallFlag):has(img) {
+  background: none;
+  box-shadow: none;
+  filter: var(--flag-edge);
+}
+.smallFlag img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* A round's photo, flag or shape: big enough to tell apart, and a photo or flag opens full size. */
+.smallPicture {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  --picture-h: var(--small-picture-h, 42px);
+  width: var(--small-picture-w, 56px);
+  height: var(--picture-h);
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--picture-bg, var(--control-bg));
+  box-shadow: var(--picture-ring);
+  color: var(--muted);
+}
+button.smallPicture {
+  cursor: zoom-in;
+}
+.smallPicture img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* A flag in its own shape, as large as fits the picture's box. */
+.smallPicture.flagPicture {
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+.flagPicture .flagShape {
+  width: min(100%, var(--picture-h) * var(--flag-ratio));
+  aspect-ratio: var(--flag-ratio);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--control-bg);
+  box-shadow: var(--picture-ring);
+}
+.flagPicture .flagShape:has(img) {
+  background: none;
+  box-shadow: none;
+  filter: var(--flag-edge);
+}

@@ -193,7 +193,7 @@ export class PaintController {
       e.preventDefault() // no autoscroll
       this.endStroke()
       this.middleFrom = { x: e.clientX, y: e.clientY }
-      map.getContainer().classList.add("panning")
+      map.getContainer().dataset.panning = ""
       this.applyInteraction()
     }
     const onMiddleMove = (e: MouseEvent) => {
@@ -204,7 +204,7 @@ export class PaintController {
     const onMiddleUp = (e: MouseEvent) => {
       if (e.button !== 1 || !this.middleFrom) return
       this.middleFrom = undefined
-      map.getContainer().classList.remove("panning")
+      delete map.getContainer().dataset.panning
       this.applyInteraction()
     }
     const canvas = map.getCanvasContainer()
@@ -514,9 +514,11 @@ export class PaintController {
     if (canPaint) map.dragPan.disable()
     else map.dragPan.enable()
     const el = map.getContainer()
-    el.classList.toggle("tool-paint", canPaint && this.tool.value === "paint")
-    el.classList.toggle("tool-erase", canPaint && this.tool.value === "erase")
-    el.classList.toggle("tool-fill", this.canFill())
+    // For the cursor (MapView.module.css).
+    const brush = this.tool.value === "paint" || this.tool.value === "erase"
+    const tool = this.canFill() ? "fill" : canPaint && brush ? this.tool.value : undefined
+    if (tool) el.dataset.tool = tool
+    else delete el.dataset.tool
     this.refreshCursor()
   }
 

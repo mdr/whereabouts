@@ -46,7 +46,7 @@ const WORLD_PX_Z0 = 512
 const MAX_LAT = 85.0511
 /** The globe's starting size: its radius as a share of the map's shorter side. */
 const GLOBE_FILL = 0.4
-/** The phone layout's width, and where its reveal sheet starts, as a share of the screen's height (style.css). */
+/** The phone layout's width, and where its reveal sheet starts, as a share of the screen's height (media.css --phone, Hud.module.css). */
 const PHONE = "(max-width: 640px)"
 const SHEET_TOP = 0.5
 

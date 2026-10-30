@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
 import { DevDrawer, DevFacts } from "./DevDrawer"
 import { devMode } from "../dev"
+import { devDrawerTestIds } from "./DevDrawerTestIds"
 
 afterEach(() => {
   devMode.value = false
@@ -20,12 +21,12 @@ describe("DevDrawer", () => {
 
   it("shows its children with a badge, and can hide itself", () => {
     devMode.value = true
-    const { container, getByText } = render(
+    const { container, getByText, getByTestId } = render(
       <DevDrawer>
         <DevFacts facts={[["Status", "connected"]]} />
       </DevDrawer>
     )
-    expect(container.querySelector(".badge")!.textContent).toBe("DEV")
+    expect(getByTestId(devDrawerTestIds.badge).textContent).toBe("DEV")
     expect(container.textContent).toContain("connected")
     fireEvent.click(getByText("Hide"))
     expect(devMode.value).toBe(false)

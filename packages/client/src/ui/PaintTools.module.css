@@ -1,0 +1,129 @@
+@import "../media.css";
+
+.tools {
+  display: flex;
+  gap: 4px;
+
+  & button {
+    padding: 8px 10px;
+  }
+}
+.brush {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  border-left: 1px solid var(--control-bg);
+  border-right: 1px solid var(--control-bg);
+  padding: 0 10px;
+
+  & input {
+    width: 120px;
+  }
+}
+.history {
+  display: contents;
+}
+.iconOnly {
+  padding: 8px;
+}
+
+/* On a map narrower than the full toolbar it stays on one row: tool buttons
+   go icon-only (their titles still say what they do) so it fits. */
+@container (max-width: 1100px) {
+  .tools {
+    & .label {
+      display: none;
+    }
+    & button {
+      padding: 8px;
+    }
+    & button :global(.icon) {
+      margin: 0;
+    }
+  }
+}
+
+@media (--phone) {
+  /* Tool buttons are icon-only so the brush slider fits beside them. */
+  .tools {
+    & .label {
+      display: none;
+    }
+    & button {
+      padding: 8px;
+    }
+    & button :global(.icon) {
+      margin: 0;
+    }
+  }
+  .brush {
+    flex: 1 1 100px;
+    border: 0;
+    padding: 0 0 0 4px;
+
+    & input {
+      width: 100%;
+      min-width: 60px;
+    }
+  }
+  /* Undo and redo wrap as a pair. */
+  .history {
+    display: flex;
+    gap: 6px;
+  }
+}
+
+/* ---- the dev drawer's ------------------------------------------------------ */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+
+  & label {
+    flex: 0 0 90px;
+    color: var(--muted);
+  }
+  & input[type="range"] {
+    flex: 1;
+  }
+  & output {
+    flex: 0 0 56px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.blobs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  & li {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-variant-numeric: tabular-nums;
+  }
+  & li.muted {
+    color: var(--muted);
+  }
+}
+.bar {
+  flex: 1;
+  margin: 6px 10px;
+  height: 6px;
+  background: var(--control-bg);
+  border-radius: 3px;
+  overflow: hidden;
+
+  & i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+  }
+}
+.floor .bar i {
+  background: var(--accent-2);
+}

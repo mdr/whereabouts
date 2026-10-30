@@ -1,0 +1,60 @@
+@import "../media.css";
+
+/* The map, with the HUD over it and the dev drawer, when open, on the right. */
+.stage {
+  position: absolute;
+  inset: 0;
+  color: var(--panel-fg);
+}
+/*
+ * On the map screens a pinch should never zoom the page: one that starts on
+ * a card or the toolbar would otherwise enlarge the whole UI on a tablet.
+ * Scrolling (panels, lists) still works. :where() keeps this at zero
+ * specificity, so the map canvas and the photo lightbox keep their own
+ * touch handling. The text-heavy screens (front page, lobby, results) are
+ * outside the stage and still zoom, for anyone who needs to.
+ */
+:where(.stage, .stage *) {
+  touch-action: pan-x pan-y;
+}
+/* The HUD makes room for the drawer by this. */
+.stage.dev {
+  --drawer-w: var(--panel-w);
+}
+/* Two classes, to win over MapLibre's own position, whose stylesheet loads later. */
+.stage .map {
+  position: absolute;
+  inset: 0 var(--drawer-w, 0px) 0 0;
+}
+/* The paint controller sets these. */
+.map[data-tool="paint"] canvas,
+.map[data-tool="erase"] canvas {
+  cursor: none;
+}
+.map[data-tool="fill"] canvas {
+  cursor: pointer;
+}
+.map[data-panning] canvas {
+  cursor: grabbing;
+}
+
+/* Pinch zoom covers the +/- buttons; the globe and attribution buttons rise above the toolbar. */
+@media (--phone) {
+  .map :global(.maplibregl-ctrl-bottom-left .maplibregl-ctrl:not(.globe-ctrl)) {
+    display: none;
+  }
+  .map :global(.maplibregl-ctrl-bottom-left),
+  .map :global(.maplibregl-ctrl-bottom-right) {
+    bottom: calc(var(--toolbar-h, 0px) + 10px + env(safe-area-inset-bottom, 0px));
+  }
+  /* Above a reveal's sheet, which starts halfway down. */
+  .stage:has([data-hud="reveal"]) .map :global(.maplibregl-ctrl-bottom-left),
+  .stage:has([data-hud="reveal"]) .map :global(.maplibregl-ctrl-bottom-right) {
+    bottom: calc(50svh + 6px);
+  }
+}
+@media (--very-short) {
+  .map :global(.maplibregl-ctrl-bottom-left .maplibregl-ctrl:not(.globe-ctrl)) {
+    display: none;
+  }
+}

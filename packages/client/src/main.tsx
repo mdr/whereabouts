@@ -1,4 +1,4 @@
-import "./style.css"
+import "./global.css"
 import { render } from "preact"
 import { App } from "./app"
 import { installSound } from "./sound"

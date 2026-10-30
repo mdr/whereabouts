@@ -1,4 +1,4 @@
-import type { ComponentChildren, RefObject } from "preact"
+import type { ComponentChildren, HTMLAttributes, RefObject } from "preact"
 import { createPortal } from "preact/compat"
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks"
 import { useElementRef } from "./element-ref"
@@ -6,110 +6,38 @@ import { commonsImageUrl, commonsPageUrl, wikipediaUrl } from "@whereabouts/shar
 import type { Fact } from "@whereabouts/shared/facts"
 import type { QuestionView } from "@whereabouts/shared/protocol"
 import { Icon } from "./icons"
-import { soundOn } from "../settings"
 import { flagFile, flagRatio, flagUrl } from "../flags"
-import {
-  countdownTestIds,
-  factTestIds,
-  hudBottomTestIds,
-  hudHeaderTestIds,
-  questionCardTestIds,
-  soundToggleTestIds
-} from "./bitsTestIds"
+import { cx } from "./cx"
+import { factTestIds, questionCardTestIds } from "./bitsTestIds"
+import s from "./bits.module.css"
+import q from "./QuestionCard.module.css"
+import lb from "./Lightbox.module.css"
+import kit from "./kit.module.css"
 
 export function fmtKm(km: number): string {
   return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km).toLocaleString()} km`
 }
 
-export function Card({ title, children, class: cls }: { title?: string; children: ComponentChildren; class?: string }) {
-  return (
-    <div class={`card ${cls ?? ""}`}>
-      {title && <h2>{title}</h2>}
-      {children}
-    </div>
-  )
-}
-
-/**
- * The bar along the bottom of the map. It publishes its height as
- * `--toolbar-h` on the document so the map's own corner controls (the
- * attribution button) can sit above it on phones, where the bar spans the
- * full width.
- */
-export function HudBottom({ children }: { children: ComponentChildren }) {
-  const ref = useElementRef<HTMLDivElement>()
-  useEffect(() => {
-    const el = ref.current
-    const root = document.documentElement
-    if (!el || typeof ResizeObserver === "undefined") return
-    const publish = () => root.style.setProperty("--toolbar-h", `${el.offsetHeight}px`)
-    publish()
-    const ro = new ResizeObserver(publish)
-    ro.observe(el)
-    return () => {
-      ro.disconnect()
-      root.style.removeProperty("--toolbar-h")
-    }
-  }, [])
-  return (
-    <div class="hud-bottom toolbar" ref={ref} data-testid={hudBottomTestIds.toolbar}>
-      {children}
-    </div>
-  )
-}
-
-/** The per-device sound switch as a speaker button. */
-export function SoundToggle() {
-  const on = soundOn.value
-  return (
-    <button
-      type="button"
-      class="icon sound-toggle"
-      data-testid={soundToggleTestIds.button}
-      aria-pressed={on}
-      aria-label={on ? "Sounds on: turn off" : "Sounds off: turn on"}
-      title={on ? "Turn sounds off" : "Turn sounds on"}
-      onClick={() => (soundOn.value = !on)}
-    >
-      <Icon name={on ? "soundOn" : "soundOff"} />
-    </button>
-  )
-}
-
-/**
- * One-line strip at the top of the HUD: title (a link home where allowed),
- * round counter, the sound switch, and anything the screen wants on the
- * right (a countdown).
- */
-export function HudHeader({
-  home,
-  round,
-  total,
-  right
+/** `as` a paragraph or a section where the card is one; anything else passes on to that element. */
+export function Card({
+  title,
+  children,
+  class: cls,
+  as: Tag = "div",
+  ...rest
 }: {
-  home?: boolean
-  round: number
-  total: number | string
-  right?: ComponentChildren
-}) {
+  title?: string
+  children: ComponentChildren
+  class?: string
+  as?: "div" | "p" | "section"
+} & Omit<HTMLAttributes<HTMLDivElement>, "title" | "class" | "as">) {
+  // Typed as a div, the attributes the three share.
+  const El = Tag as "div"
   return (
-    <div class="hud-header" data-testid={hudHeaderTestIds.header}>
-      {home ? (
-        <a href="#/" class="brand">
-          Whereabouts
-        </a>
-      ) : (
-        <span class="brand">Whereabouts</span>
-      )}
-      <span class="round" data-testid={hudHeaderTestIds.round}>
-        <span class="round-word">Round </span>
-        <span class="nowrap">
-          {round} / {total}
-        </span>
-      </span>
-      <SoundToggle />
-      {right}
-    </div>
+    <El class={cx(s.card, cls)} {...rest}>
+      {title && <h2 class={s.title}>{title}</h2>}
+      {children}
+    </El>
   )
 }
 
@@ -123,8 +51,8 @@ const FACT_LABELS: Record<Fact["kind"], string> = {
 export function FactLine({ fact }: { fact: Fact | undefined }) {
   if (!fact) return undefined
   return (
-    <p class="fact" data-testid={factTestIds.fact}>
-      <span class="fact-kind">{FACT_LABELS[fact.kind]}</span> {fact.text}
+    <p class={q.fact} data-testid={factTestIds.fact}>
+      <span class={q.factKind}>{FACT_LABELS[fact.kind]}</span> {fact.text}
     </p>
   )
 }
@@ -132,9 +60,9 @@ export function FactLine({ fact }: { fact: Fact | undefined }) {
 /** The revealed answer, with a link to read about it on Wikipedia. */
 export function Answer({ label, wiki }: { label: string; wiki?: string }) {
   return (
-    <p class="answer" data-testid={questionCardTestIds.answer}>
+    <p class={q.answer} data-testid={questionCardTestIds.answer}>
       It's <b>{label}</b>{" "}
-      <a class="wiki-link" href={wikipediaUrl(wiki, label)} target="_blank" rel="noopener noreferrer">
+      <a class={q.wikiLink} href={wikipediaUrl(wiki, label)} target="_blank" rel="noopener noreferrer">
         Wikipedia <Icon name="external" size={12} />
       </a>
     </p>
@@ -142,7 +70,8 @@ export function Answer({ label, wiki }: { label: string; wiki?: string }) {
 }
 
 export function QuestionCard({
-  q,
+  q: question,
+  hud,
   children,
   credit,
   countryFlag,
@@ -151,6 +80,8 @@ export function QuestionCard({
   startFolded
 }: {
   q: QuestionView
+  /** Where it sits: while painting its picture gives way on a short screen; at a reveal it heads a phone's sheet. */
+  hud: "painting" | "reveal"
   children?: ComponentChildren
   /** Show the image credit link. Off while guessing: the Commons file name gives the answer away. */
   credit?: boolean
@@ -163,37 +94,37 @@ export function QuestionCard({
   /** Fold it at first: at the reveal, the answer line shows folded, and the map matters more. */
   startFolded?: boolean
 }) {
-  const image = q.image ?? photo
+  const image = question.image ?? photo
   const ref = useElementRef<HTMLDivElement>()
-  const question = `${q.prompt} ${q.image ?? ""} ${q.flag ?? ""}`
+  const asked = `${question.prompt} ${question.image ?? ""} ${question.flag ?? ""}`
   const [toggledQuestion, setToggledQuestion] = useState<string | undefined>(undefined)
-  const flag = q.flag ?? countryFlag
+  const flag = question.flag ?? countryFlag
   const canFold = foldable === true && Boolean(image || flag || children)
-  const toggled = toggledQuestion === question
+  const toggled = toggledQuestion === asked
   const folded = canFold && (startFolded === true) !== toggled
   usePictureFloor(ref, folded)
   usePublishedHeight(ref)
   return (
     <div
-      class={`card question ${canFold ? "foldable" : ""} ${folded ? "folded" : ""}`}
+      class={cx(s.card, q.question, q[hud], canFold && q.foldable, folded && q.folded)}
       ref={ref}
       data-testid={questionCardTestIds.card}
     >
       {canFold && (
         <button
           type="button"
-          class="icon fold-toggle"
+          class={cx("icon", q.foldToggle)}
           aria-expanded={!folded}
           aria-label={folded ? "Show the whole question" : "Fold the question away"}
           title={folded ? "Show the whole question" : "Fold the question away for more map"}
-          onClick={() => setToggledQuestion(toggled ? undefined : question)}
+          onClick={() => setToggledQuestion(toggled ? undefined : asked)}
           data-testid={questionCardTestIds.foldButton}
         >
           <Icon name={folded ? "expand" : "collapse"} size={18} />
         </button>
       )}
-      <p class="prompt" data-testid={questionCardTestIds.prompt}>
-        {q.prompt}
+      <p class={q.prompt} data-testid={questionCardTestIds.prompt}>
+        {question.prompt}
       </p>
       {image && <QuestionImage image={image} credit={credit ?? false} />}
       {flag && <FlagImage code={flag} />}
@@ -204,7 +135,7 @@ export function QuestionCard({
 
 /**
  * On a short screen the question's photo or flag shrinks to keep the cards
- * below it in view (style.css). CSS alone cannot stop the card shrinking past
+ * below it in view (QuestionCard.module.css). CSS alone cannot stop the card shrinking past
  * its text, so this sets the card's least height: everything else, plus the
  * picture at its own min-height. Below that the column of cards scrolls.
  */
@@ -214,7 +145,7 @@ function usePictureFloor(ref: RefObject<HTMLDivElement>, folded: boolean): void 
     const card = ref.current
     if (!card || typeof ResizeObserver === "undefined") return
     const setFloor = () => {
-      const picture = card.querySelector<HTMLElement>(".thumb, .flag")
+      const picture = card.querySelector<HTMLElement>("[data-picture]")
       const least = picture ? parseFloat(getComputedStyle(picture).minHeight) : NaN
       const shown = picture ? picture.getClientRects().length > 0 : false
       // scrollHeight counts the padding, which a content-box min-height leaves out.
@@ -235,7 +166,7 @@ function usePictureFloor(ref: RefObject<HTMLDivElement>, folded: boolean): void 
 
 /**
  * Publishes the question card's height as `--question-h` on the document:
- * a phone's reveal leaves the map clear below the card (style.css, map.ts).
+ * a phone's reveal leaves the map clear below the card (QuestionCard.module.css, map.ts).
  */
 function usePublishedHeight(ref: RefObject<HTMLDivElement>): void {
   useLayoutEffect(() => {
@@ -276,7 +207,8 @@ function FlagImage({ code }: { code: string }) {
     <>
       <button
         type="button"
-        class="flag"
+        class={q.flag}
+        data-picture
         title="Enlarge the flag"
         disabled={!src}
         onClick={() => setLarge(true)}
@@ -284,7 +216,7 @@ function FlagImage({ code }: { code: string }) {
         data-testid={questionCardTestIds.flag}
       >
         {src && <img src={src} alt="The flag" draggable={false} />}
-        <span class="enlarge-badge" aria-hidden="true">
+        <span class={q.badge} aria-hidden="true">
           <Icon name="enlarge" size={14} />
         </span>
         <span class="sr-only">Enlarge flag</span>
@@ -296,7 +228,7 @@ function FlagImage({ code }: { code: string }) {
   )
 }
 
-/** The flag's shape, for its frame to take before the picture loads (style.css). */
+/** The flag's shape, for its frame to take before the picture loads. */
 function flagShape(code: string): Record<string, string> {
   return { "--flag-ratio": String(flagRatio(code)) }
 }
@@ -314,10 +246,10 @@ function useEscape(open: boolean, close: () => void): void {
 }
 
 /** A small flag beside a country's name, which says the name: no alt text of its own. */
-export function SmallFlag({ code }: { code: string }) {
+export function SmallFlag({ code, class: cls }: { code: string; class?: string }) {
   const src = useFlagUrl(code)
   return (
-    <span class="small-flag" style={flagShape(code)}>
+    <span class={cx(s.smallFlag, cls)} style={flagShape(code)}>
       {src && <img src={src} alt="" draggable={false} />}
     </span>
   )
@@ -343,11 +275,11 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
   const thumb = useElementRef<HTMLImageElement>()
   return (
     <>
-      <div class="thumb" data-testid={questionCardTestIds.photo}>
+      <div class={q.thumb} data-picture data-testid={questionCardTestIds.photo}>
         {/* The whole photo is the button; the badge says so, on phones too, where there is no hover. */}
-        <button type="button" class="thumb-button" title="Enlarge the photo" onClick={() => setLarge(true)}>
+        <button type="button" class={q.thumbButton} title="Enlarge the photo" onClick={() => setLarge(true)}>
           <img ref={thumb} src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
-          <span class={`enlarge-badge ${withLabel ? "with-label" : ""}`} aria-hidden="true">
+          <span class={cx(q.badge, withLabel && q.withLabel)} aria-hidden="true">
             <Icon name="enlarge" size={14} />
             {withLabel && <span>Enlarge</span>}
           </span>
@@ -370,7 +302,7 @@ function QuestionImage({ image, credit: showCredit }: { image: string; credit: b
 function CommonsCredit({ image }: { image: string }) {
   return (
     <a
-      class="credit-icon"
+      class={q.credit}
       href={commonsPageUrl(image)}
       target="_blank"
       rel="noopener"
@@ -384,13 +316,29 @@ function CommonsCredit({ image }: { image: string }) {
 }
 
 /** A photo the size of a list row; click it to enlarge. */
+export function SmallPictureBox({
+  class: cls,
+  style,
+  children
+}: {
+  class?: string
+  style?: Record<string, string>
+  children?: ComponentChildren
+}) {
+  return (
+    <span class={cx(s.smallPicture, cls)} style={style}>
+      {children}
+    </span>
+  )
+}
+
 export function SmallPhoto({ image }: { image: string }) {
   const [large, setLarge] = useState(false)
   useEscape(large, () => setLarge(false))
   const thumb = useElementRef<HTMLImageElement>()
   return (
     <>
-      <button type="button" class="small-picture" title="Enlarge the photo" onClick={() => setLarge(true)}>
+      <button type="button" class={s.smallPicture} title="Enlarge the photo" onClick={() => setLarge(true)}>
         {/* The rounds' rendition, which the page already has. */}
         <img ref={thumb} src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
         <span class="sr-only">Enlarge photo</span>
@@ -454,12 +402,12 @@ export function SmallFlagButton({ code }: { code: string }) {
     <>
       <button
         type="button"
-        class="small-picture small-flag-picture"
+        class={cx(s.smallPicture, s.flagPicture)}
         title="Enlarge the flag"
         disabled={!src}
         onClick={() => setLarge(true)}
       >
-        <span class="flag-shape" style={flagShape(code)}>
+        <span class={s.flagShape} style={flagShape(code)}>
           {src && <img src={src} alt="" draggable={false} />}
         </span>
         <span class="sr-only">Enlarge flag</span>
@@ -574,7 +522,7 @@ function Lightbox({
   // Into <body>: a sticky table cell, say, would otherwise hold it under the cells below.
   return createPortal(
     <div
-      class="lightbox"
+      class={lb.lightbox}
       role="dialog"
       aria-modal="true"
       aria-label="Picture"
@@ -583,11 +531,11 @@ function Lightbox({
       }}
       title="Scroll or pinch to zoom, drag to pan; click the backdrop or press Escape to close"
     >
-      <button class="lightbox-close" aria-label="Close" onClick={onClose}>
+      <button class={lb.close} aria-label="Close" onClick={onClose}>
         ×
       </button>
       <div
-        class={`lightbox-frame ${zoom > 1 ? "zoomed" : ""}`}
+        class={cx(lb.frame, zoom > 1 && lb.zoomed)}
         ref={frame}
         onWheel={onWheel}
         onPointerDown={onPointerDown}
@@ -598,7 +546,7 @@ function Lightbox({
       >
         <img
           src={src}
-          class={`lightbox-${kind} ${ratio ? "fit" : ""}`}
+          class={cx(lb[kind], ratio !== undefined && lb.fit)}
           alt=""
           referrerpolicy="no-referrer"
           draggable={false}
@@ -614,29 +562,10 @@ function Lightbox({
   )
 }
 
-/** Ticks once a second; returns whole seconds remaining, never negative. */
-function useCountdown(msRemaining: () => number): number {
-  const [, force] = useState(0)
-  useEffect(() => {
-    const id = setInterval(() => force((n) => n + 1), 250)
-    return () => clearInterval(id)
-  }, [])
-  return Math.max(0, Math.ceil(msRemaining() / 1000))
-}
-
-export function Countdown({ msRemaining, warnAt = 10 }: { msRemaining: () => number; warnAt?: number }) {
-  const s = useCountdown(msRemaining)
-  return (
-    <div class={`countdown ${s <= warnAt ? "warn" : ""}`} data-testid={countdownTestIds.countdown}>
-      {s}
-    </div>
-  )
-}
-
 /** Score, A and B in the dev drawer. */
 export function ScoreParts({ A, B }: { A: number; B: number }) {
   return (
-    <div class="parts">
+    <div class={kit.parts}>
       <span>
         A <b>{A.toFixed(3)}</b>
       </span>

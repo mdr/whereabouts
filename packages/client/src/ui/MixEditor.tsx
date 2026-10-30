@@ -6,6 +6,8 @@
 import { MAX_ROUNDS, QUESTION_TYPES, mixTotal, type QuestionMix, type QuestionType } from "@whereabouts/shared/protocol"
 import { Stepper } from "./Controls"
 import { mixEditorTestIds } from "./MixEditorTestIds"
+import { cx } from "./cx"
+import s from "./MixEditor.module.css"
 
 const UNITS: Record<QuestionType, [string, string]> = {
   landmarks: ["landmark", "landmarks"],
@@ -14,6 +16,11 @@ const UNITS: Record<QuestionType, [string, string]> = {
   flags: ["flag", "flags"],
   features: ["island, lake or sea", "islands, lakes or seas"],
   states: ["US state", "US states"]
+}
+
+/** Sets `--type` to the colour of a kind of question, for what is drawn in it. */
+export function typeColour(type: QuestionType): Record<string, string> {
+  return { "--type": `var(--type-${type})` }
 }
 
 /** "4 landmarks · 1 flag": the kinds a game asks, in the host's order. */
@@ -26,14 +33,14 @@ export function describeMix(mix: QuestionMix): string {
 export function MixEditor({ mix, onChange }: { mix: QuestionMix; onChange: (mix: QuestionMix) => void }) {
   const rounds = mixTotal(mix)
   return (
-    <div class="mix-editor">
-      <ul class="mix-rows">
+    <div class={s.editor}>
+      <ul class={s.rows}>
         {QUESTION_TYPES.map((t) => {
           const others = rounds - mix[t.id]
           return (
-            <li key={t.id} class={`mix-row type-${t.id}`} data-testid={mixEditorTestIds.row} data-type={t.id}>
-              <span class="swatch" aria-hidden="true" />
-              <span class="type">
+            <li key={t.id} class={s.row} style={typeColour(t.id)} data-testid={mixEditorTestIds.row} data-type={t.id}>
+              <span class={s.swatch} aria-hidden="true" />
+              <span class={s.type}>
                 <b>{t.label}</b>
                 <small>{t.detail}</small>
               </span>
@@ -54,18 +61,23 @@ export function MixEditor({ mix, onChange }: { mix: QuestionMix; onChange: (mix:
   )
 }
 
-/** One cell per round, coloured by kind, with the total unless `total` is false. The real order is shuffled. */
-export function RoundStrip({ mix, total = true }: { mix: QuestionMix; total?: boolean }) {
+/**
+ * One cell per round, coloured by kind, with the total unless `total` is
+ * false; `centred` in a tile. The real order is shuffled.
+ */
+export function RoundStrip({ mix, total = true, centred }: { mix: QuestionMix; total?: boolean; centred?: boolean }) {
   const rounds = mixTotal(mix)
   return (
-    <div class="round-strip">
-      <div class="cells" role="img" aria-label={describeMix(mix)}>
+    <div class={cx(s.strip, centred && s.centred)} data-testid={mixEditorTestIds.strip}>
+      <div class={s.cells} role="img" aria-label={describeMix(mix)}>
         {QUESTION_TYPES.flatMap((t) =>
-          Array.from({ length: mix[t.id] }, (_, i) => <span key={`${t.id}${i}`} class={`cell type-${t.id}`} />)
+          Array.from({ length: mix[t.id] }, (_, i) => (
+            <span key={`${t.id}${i}`} class={s.cell} style={typeColour(t.id)} data-testid={mixEditorTestIds.cell} />
+          ))
         )}
       </div>
       {total && (
-        <span class="strip-text">
+        <span class={s.stripText}>
           {rounds} {rounds === 1 ? "round" : "rounds"}, in a random order
         </span>
       )}

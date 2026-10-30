@@ -4,6 +4,7 @@
  */
 import { Icon } from "./icons"
 import { pillsTestIds, stepperTestIds } from "./ControlsTestIds"
+import s from "./Controls.module.css"
 
 export function Pills<T extends string | number>({
   label,
@@ -17,14 +18,14 @@ export function Pills<T extends string | number>({
   onChange: (value: T) => void
 }) {
   return (
-    <div class="pills" role="radiogroup" aria-label={label}>
+    <div class={s.pills} role="radiogroup" aria-label={label}>
       {options.map((o) => (
         <button
           key={String(o.value)}
           type="button"
           role="radio"
           aria-checked={o.value === value}
-          class={o.value === value ? "on" : ""}
+          class={o.value === value ? s.on : undefined}
           onClick={() => onChange(o.value)}
           data-testid={pillsTestIds.option}
           data-value={o.value}
@@ -50,7 +51,7 @@ export function Stepper({
   onChange: (value: number) => void
 }) {
   return (
-    <div class="stepper" role="group" aria-label={label}>
+    <div class={s.stepper} role="group" aria-label={label}>
       <button
         type="button"
         aria-label={`Fewer ${label.toLowerCase()}`}
@@ -60,7 +61,7 @@ export function Stepper({
       >
         <Icon name="minus" />
       </button>
-      <span class="value" aria-live="polite" data-testid={stepperTestIds.value}>
+      <span class={s.value} aria-live="polite" data-testid={stepperTestIds.value}>
         {value}
       </span>
       <button

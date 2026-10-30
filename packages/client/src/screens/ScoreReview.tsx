@@ -19,7 +19,14 @@ import {
 import { colourCss, playerColour } from "@whereabouts/shared/colours"
 import { kernelById } from "@whereabouts/shared/scoring"
 import { MapView, usePaint } from "../ui/MapView"
-import { Answer, Card, HudBottom, HudHeader, QuestionCard } from "../ui/bits"
+import { Answer, Card, QuestionCard } from "../ui/bits"
+import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../ui/Hud"
+import { ScoreCard } from "../ui/Round"
+import { Swatch } from "../ui/PlayerList"
+import { cx } from "../ui/cx"
+import kit from "../ui/kit.module.css"
+import pl from "../ui/Players.module.css"
+import s from "./ScoreReview.module.css"
 import { isTyping } from "../keys"
 import { featureQuestions, regions } from "../regions"
 import { LoadingOutlines } from "../ui/LoadingOutlines"
@@ -196,50 +203,47 @@ function Review({ pools }: { pools: ReviewPools }) {
   const options = c.kind === "single" ? FAIRNESS : PREFERENCE
   const ownVerdicts = scoreVerdicts.value
   return (
-    <div class="hud reveal">
-      <div class="hud-top">
-        <HudHeader home round={index + 1} total={cases.length} right={<span class="total">Set {set}</span>} />
-        <QuestionCard q={q} credit countryFlag={q.kind === "region" ? q.countryFlag : undefined}>
+    <Hud reveal>
+      <HudTop>
+        <HudHeader home round={index + 1} total={cases.length} right={<HeaderNote nowrap>Set {set}</HeaderNote>} />
+        <QuestionCard q={q} hud="reveal" credit countryFlag={q.kind === "region" ? q.countryFlag : undefined}>
           <Answer label={q.label} wiki={q.wiki} />
         </QuestionCard>
         {c.kind === "single" && (
-          <div class="card score">
-            <div class="big" data-testid={scoreReviewTestIds.score}>
-              {Math.round(scores[0]!)}
-            </div>
-            <div class="label">
-              {q.kind === "region" ? "scored on shape and nearness" : `scored with ${kernel.label}`}
-            </div>
-          </div>
+          <ScoreCard
+            score={Math.round(scores[0]!)}
+            label={q.kind === "region" ? "scored on shape and nearness" : `scored with ${kernel.label}`}
+            testIds={{ score: scoreReviewTestIds.score }}
+          />
         )}
-      </div>
-      <div class="hud-right">
-        <Card title={c.kind === "single" ? "Is this score fair?" : "Which deserves more?"} class="score-review">
+      </HudTop>
+      <HudRight>
+        <Card title={c.kind === "single" ? "Is this score fair?" : "Which deserves more?"} class={s.review}>
           {c.kind === "pair" && (
-            <ul class="reveal-list pair" data-testid={scoreReviewTestIds.pair}>
+            <ul class={cx(pl.list, pl.pick)} data-testid={scoreReviewTestIds.pair}>
               {(["A", "B"] as const).map((name, i) => (
                 <li
-                  class={pinned === i ? "selected" : ""}
+                  class={pinned === i ? pl.selected : undefined}
                   onClick={() => setPinned(pinned === i ? undefined : (i as 0 | 1))}
                   onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(i as 0 | 1)}
                   onPointerLeave={(e) => e.pointerType === "mouse" && setHovered(undefined)}
                 >
-                  <span class="swatch" style={{ background: PAIR_COLOURS[i] }} />
-                  <span class="name">{name}</span>
-                  <span class="round-score" data-testid={scoreReviewTestIds.pairScore}>
+                  <Swatch css={PAIR_COLOURS[i]} />
+                  <span class={pl.name}>{name}</span>
+                  <span class={pl.roundScore} data-testid={scoreReviewTestIds.pairScore}>
                     {Math.round(scores[i]!)}
                   </span>
                 </li>
               ))}
             </ul>
           )}
-          <div class="verdicts" role="radiogroup">
+          <div class={s.verdicts} role="radiogroup">
             {options.map((o, i) => (
               <button
                 type="button"
                 role="radio"
                 aria-checked={choice === o.value}
-                class={choice === o.value ? "selected" : ""}
+                class={choice === o.value ? s.selected : undefined}
                 onClick={() => setChoice(o.value)}
                 data-testid={scoreReviewTestIds.verdict}
                 data-verdict={o.value}
@@ -249,7 +253,7 @@ function Review({ pools }: { pools: ReviewPools }) {
             ))}
           </div>
           {c.kind === "single" && (
-            <label class="should-be">
+            <label class={s.shouldBe}>
               It should be about
               <input
                 type="number"
@@ -268,12 +272,12 @@ function Review({ pools }: { pools: ReviewPools }) {
             onInput={(e) => setNote((e.target as HTMLTextAreaElement).value)}
             placeholder="Why? (optional)"
           />
-          <p class="hint" data-testid={scoreReviewTestIds.progress}>
+          <p class={kit.hint} data-testid={scoreReviewTestIds.progress}>
             {judged.size} of {cases.length} judged in this set
             {done ? ": all done." : "."}
             {c.kind === "pair" && " Point at A or B to see it alone; click to keep it."}
           </p>
-          <div class="review-actions">
+          <div class={s.actions}>
             <button
               type="button"
               onClick={() => exportVerdicts(ownVerdicts)}
@@ -289,7 +293,7 @@ function Review({ pools }: { pools: ReviewPools }) {
             )}
           </div>
         </Card>
-      </div>
+      </HudRight>
       <HudBottom>
         <button type="button" onClick={skip}>
           Skip
@@ -303,7 +307,7 @@ function Review({ pools }: { pools: ReviewPools }) {
           Submit <kbd>Enter</kbd>
         </button>
       </HudBottom>
-    </div>
+    </Hud>
   )
 }
 

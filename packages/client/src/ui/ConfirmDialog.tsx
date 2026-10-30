@@ -8,6 +8,7 @@ import { useElementRef } from "./element-ref"
 import type { ComponentChildren } from "preact"
 import { createPortal } from "preact/compat"
 import { confirmDialogTestIds } from "./ConfirmDialogTestIds"
+import s from "./ConfirmDialog.module.css"
 
 export interface ConfirmRequest {
   title: string
@@ -33,9 +34,9 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
   // Rendered into <body>: a transformed ancestor (the bottom toolbar is one)
   // would otherwise become the box the fixed backdrop fills.
   return createPortal(
-    <div class="modal-backdrop" onClick={onClose}>
+    <div class={s.backdrop} onClick={onClose} data-testid={confirmDialogTestIds.backdrop}>
       <div
-        class="modal"
+        class={s.modal}
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
@@ -46,7 +47,7 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
           {request.title}
         </h2>
         <p>{request.body}</p>
-        <div class="modal-actions">
+        <div class={s.actions}>
           <button ref={cancelRef} onClick={onClose} data-testid={confirmDialogTestIds.cancelButton}>
             Cancel
           </button>

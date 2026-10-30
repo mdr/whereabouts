@@ -1,8 +1,38 @@
-import { colourCss } from "@whereabouts/shared/colours"
+import { colourCss, type PlayerColour } from "@whereabouts/shared/colours"
 import type { PlayerId } from "@whereabouts/shared/ids"
 import type { PlayerView } from "@whereabouts/shared/protocol"
 import { Icon } from "./icons"
 import { playerListTestIds } from "./PlayerListTestIds"
+import { cx } from "./cx"
+import s from "./Players.module.css"
+
+/** A player's colour dot; or `everyone`'s, all their colours. */
+export function Swatch({
+  colour,
+  css,
+  everyone,
+  as: Tag = "span",
+  class: cls
+}: {
+  colour?: PlayerColour
+  /** A colour that is no player's. */
+  css?: string
+  everyone?: boolean
+  as?: "span" | "i"
+  class?: string
+}) {
+  const style = everyone ? undefined : { background: css ?? colourCss(colour) }
+  return <Tag class={cx(s.swatch, everyone && s.everyone, cls)} style={style} />
+}
+
+/** ▲ or ▼ as a player's rank moved. */
+export function RankArrow({ delta }: { delta: number }) {
+  return (
+    <span class={cx(s.arrow, delta > 0 && s.up, delta < 0 && s.down)} data-testid={playerListTestIds.arrow}>
+      {delta > 0 ? "▲" : delta < 0 ? "▼" : ""}
+    </span>
+  )
+}
 
 const graphemes = new Intl.Segmenter()
 
@@ -15,7 +45,7 @@ export function initial(name: string): string {
 /** Crown tag marking the host in a player row; the word stays for screen readers. */
 export function HostTag() {
   return (
-    <span class="tag host" title="Host" data-testid={playerListTestIds.hostTag}>
+    <span class={s.host} title="Host" data-testid={playerListTestIds.hostTag}>
       <Icon name="crown" size={12} />
       <span class="sr-only">host</span>
     </span>
@@ -25,7 +55,7 @@ export function HostTag() {
 /** "the host" in running text, with the crown. */
 export function HostWord({ capital }: { capital?: boolean }) {
   return (
-    <span class="host-word">
+    <span class={s.hostWord}>
       <Icon name="crown" size={12} />
       {capital ? "The host" : "the host"}
     </span>
@@ -60,38 +90,38 @@ export function PlayerList({
   onMakeHost?: (player: PlayerView) => void
 }) {
   return (
-    <ul class="players">
+    <ul class={s.list} data-testid={playerListTestIds.list}>
       {players.map((p) => {
         const delta = arrows && p.previousRank !== undefined ? p.previousRank - p.rank : 0
         const isYou = p.id === you
         return (
           <li
             key={p.id}
-            class={`${isYou ? "you" : ""} ${p.connected ? "" : "offline"}`}
+            class={cx(!p.connected && s.offline)}
             data-testid={playerListTestIds.player}
             data-player={p.name}
           >
             {p.watching ? (
-              <span class={avatars ? "avatar watcher" : "swatch watcher"} title="Watching" aria-hidden="true">
+              <span class={cx(avatars ? s.avatar : s.swatch, s.watcher)} title="Watching" aria-hidden="true">
                 {avatars && <Icon name="eye" size={14} />}
               </span>
             ) : avatars ? (
-              <span class="avatar" style={{ background: colourCss(p.colour) }} aria-hidden="true">
+              <span class={s.avatar} style={{ background: colourCss(p.colour) }} aria-hidden="true">
                 {initial(p.name)}
               </span>
             ) : (
-              <span class="swatch" style={{ background: colourCss(p.colour) }} />
+              <Swatch colour={p.colour} />
             )}
-            <span class="name">
-              <span class="name-text" data-testid={playerListTestIds.name}>
+            <span class={s.name}>
+              <span class={s.nameText} data-testid={playerListTestIds.name}>
                 {p.name}
               </span>
               {p.isHost ? <HostTag /> : undefined}
-              {isYou ? <span class="tag">you</span> : undefined}
-              {!p.connected ? <span class="tag">offline</span> : undefined}
-              {p.watching && !avatars ? <span class="tag">watching</span> : undefined}
+              {isYou ? <span class={s.tag}>you</span> : undefined}
+              {!p.connected ? <span class={s.tag}>offline</span> : undefined}
+              {p.watching && !avatars ? <span class={s.tag}>watching</span> : undefined}
               {showLocked && p.locked ? (
-                <span class="tag done" title="Finished guessing">
+                <span class={cx(s.tag, s.done)} title="Finished guessing">
                   <Icon name="check" size={11} /> done
                 </span>
               ) : undefined}
@@ -103,7 +133,7 @@ export function PlayerList({
             )}
             {!isYou && onMakeHost && p.connected && !p.isHost && (
               <button
-                class="icon make-host"
+                class={cx("icon", s.makeHost)}
                 title={`Make ${p.name} the host`}
                 aria-label={`Make ${p.name} the host`}
                 onClick={(e) => {
@@ -116,7 +146,7 @@ export function PlayerList({
             )}
             {!isYou && onKick && (
               <button
-                class="icon kick"
+                class={cx("icon", s.kick)}
                 data-testid={playerListTestIds.kickButton}
                 title={`Remove ${p.name} from the game`}
                 aria-label={`Remove ${p.name} from the game`}
@@ -130,12 +160,10 @@ export function PlayerList({
             )}
             {showScores && (
               <>
-                {arrows && (
-                  <span class={`arrow ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
-                    {delta > 0 ? "▲" : delta < 0 ? "▼" : ""}
-                  </span>
-                )}
-                <span class="score-num">{Math.round(p.score).toLocaleString()}</span>
+                {arrows && <RankArrow delta={delta} />}
+                <span class={s.scoreNum} data-testid={playerListTestIds.score}>
+                  {Math.round(p.score).toLocaleString()}
+                </span>
               </>
             )}
           </li>

@@ -1,0 +1,31 @@
+@import "../media.css";
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel-bg);
+  border-color: transparent;
+  box-shadow: var(--shadow-hud);
+  border-radius: 999px;
+  padding: 6px 12px;
+
+  & :global(.icon) {
+    margin: 0;
+  }
+}
+.card {
+  width: 100%;
+  box-sizing: border-box;
+}
+@media (--phone) {
+  .panel.open {
+    width: 100%;
+  }
+}

@@ -19,7 +19,7 @@ describe("HintCard", () => {
     const used = render(<HintCard band={{ axis: "latitude", from: 23, to: 37 }} left={0} onUse={() => {}} />)
     expect(used.getByTestId(hintTestIds.band).textContent).toContain("Between 23°N and 37°N")
     const none = render(<HintCard left={0} onUse={() => {}} />)
-    expect(none.container.querySelectorAll(".hint-card")).toHaveLength(0)
+    expect(none.container.childElementCount).toBe(0)
   })
 
   it("has no count in practice, where hints are unlimited", () => {

@@ -15,6 +15,11 @@ import { effect } from "@preact/signals"
 import { sound } from "../sound"
 import { globeView, soundOn } from "../settings"
 import { mapViewTestIds } from "./MapViewTestIds"
+import { Hud, HudTop } from "./Hud"
+import { Card } from "./bits"
+import { cx } from "./cx"
+import kit from "./kit.module.css"
+import s from "./MapView.module.css"
 
 const PaintContext = createContext<PaintController | undefined>(undefined)
 
@@ -78,7 +83,7 @@ export function MapView({ children }: { children: ComponentChildren }) {
     }
   }, [controller])
 
-  // Belt and braces with touch-action in style.css: Safari ignores the
+  // Belt and braces with touch-action in MapView.module.css: Safari ignores the
   // viewport's user-scalable, and cancelling its own gesture events is the
   // known way to stop it zooming the page on a pinch. Only while a map
   // screen is up; MapLibre and the photo lightbox read touch and pointer
@@ -99,16 +104,16 @@ export function MapView({ children }: { children: ComponentChildren }) {
   }, [dev, controller])
 
   return (
-    <div class={`stage ${dev ? "dev" : ""}`}>
-      <div id="map" ref={el} data-testid={mapViewTestIds.map} />
+    <div class={cx(s.stage, dev && s.dev)}>
+      <div class={s.map} ref={el} data-testid={mapViewTestIds.map} />
       <PaintContext.Provider value={controller}>
         {controller ? (
           children
         ) : (
-          <div class="hud">
-            <div class="hud-top">
+          <Hud>
+            <HudTop>
               {failed ? (
-                <div class="card" data-testid={mapViewTestIds.failed}>
+                <Card data-testid={mapViewTestIds.failed}>
                   <p>Couldn't load the map. Check your connection.</p>
                   <button
                     class="primary"
@@ -120,16 +125,16 @@ export function MapView({ children }: { children: ComponentChildren }) {
                   >
                     Try again
                   </button>
-                </div>
+                </Card>
               ) : (
-                <div class="card">
-                  <p class="hint" data-testid={mapViewTestIds.loading}>
+                <Card>
+                  <p class={kit.hint} data-testid={mapViewTestIds.loading}>
                     Loading map…
                   </p>
-                </div>
+                </Card>
               )}
-            </div>
-          </div>
+            </HudTop>
+          </Hud>
         )}
       </PaintContext.Provider>
     </div>

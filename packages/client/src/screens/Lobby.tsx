@@ -28,6 +28,9 @@ import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker"
 import { VrButton, useVrView } from "../ui/VrButton"
 import type { VrView } from "../vr"
 import { lobbyTestIds, setupSummaryTestIds } from "./LobbyTestIds"
+import { cx } from "../ui/cx"
+import kit from "../ui/kit.module.css"
+import s from "./Lobby.module.css"
 
 const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }))
 const HINTS = Array.from({ length: MAX_HINTS + 1 }, (_, n) => ({ value: n, label: String(n) }))
@@ -86,25 +89,26 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
     navigate("/")
   }
   return (
-    <div class="home">
-      <div class="home-card lobby" data-testid={lobbyTestIds.page}>
+    <div class={kit.page}>
+      <div class={cx(kit.pageCard, s.card)} data-testid={lobbyTestIds.page}>
         {dialog}
-        <Banner>
+        <Banner tall>
           <button
-            class="banner-leave"
+            class={s.leave}
+            data-testid={lobbyTestIds.leaveButton}
             onClick={() => (host ? ask(leaveRequest(nextHostAfter(view.players, view.you.id)?.name, leave)) : leave())}
           >
             <Icon name="back" size={15} /> Leave
           </button>
         </Banner>
-        <div class="lobby-cols">
-          <section class="lobby-panel">
+        <div class={s.cols}>
+          <section class={s.panel}>
             <h2>Invite</h2>
-            <p class="tagline">Share this code with your friends</p>
-            <div class="code" data-testid={lobbyTestIds.code}>
+            <p class={kit.tagline}>Share this code with your friends</p>
+            <div class={s.code} data-testid={lobbyTestIds.code}>
               {view.code}
             </div>
-            <div class="invite-actions">
+            <div class={s.invite}>
               <button
                 onClick={() => {
                   // Missing outside a secure context (a LAN address over http), whatever the DOM types say.
@@ -131,7 +135,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             <ConnectionNote conn={conn} />
             <h2>
               Players{" "}
-              <span class="count" title={`Up to ${MAX_PLAYERS} players`}>
+              <span class={s.count} title={`Up to ${MAX_PLAYERS} players`}>
                 {players.length}/{MAX_PLAYERS}
               </span>
             </h2>
@@ -139,9 +143,9 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
               list.length === 0 ? undefined : (
                 <Fragment key={i}>
                   {i === 1 && (
-                    <h3 class="watching-heading">
+                    <h3 class={s.watchingHeading} data-testid={lobbyTestIds.watchingHeading}>
                       Watching{" "}
-                      <span class="count" title={`Up to ${MAX_SPECTATORS} people can watch`}>
+                      <span class={s.count} title={`Up to ${MAX_SPECTATORS} people can watch`}>
                         {watchers.length}/{MAX_SPECTATORS}
                       </span>
                     </h3>
@@ -158,13 +162,13 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                 </Fragment>
               )
             )}
-            {view.players.length === 1 && <p class="hint waiting">Waiting for friends to join…</p>}
+            {view.players.length === 1 && <p class={cx(kit.hint, s.waiting)}>Waiting for friends to join…</p>}
             {view.you.watching && !askedToWatch.value && seatsFull && (
-              <p class="hint">
+              <p class={kit.hint}>
                 All {MAX_PLAYERS} player seats are taken, so you're watching. You can join if one frees up.
               </p>
             )}
-            <div class="role-switch">
+            <div class={s.roleSwitch} data-testid={lobbyTestIds.roleSwitch}>
               {view.you.watching ? (
                 <button
                   onClick={() => conn.setRole(false)}
@@ -197,16 +201,16 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             )}
           </section>
 
-          <section class="lobby-panel">
+          <section class={s.panel}>
             <h2>Game setup</h2>
             {host ? (
               <>
-                <div class="setting questions" data-testid={lobbyTestIds.questionsSetting}>
-                  <span class="setting-label">Questions</span>
+                <div class={s.setting} data-testid={lobbyTestIds.questionsSetting}>
+                  <span class={s.settingLabel}>Questions</span>
                   <MixEditor mix={view.config.mix} onChange={(mix) => configureAsHost(conn, { mix })} />
                 </div>
-                <div class="setting seconds" data-testid={lobbyTestIds.secondsSetting}>
-                  <span class="setting-label">Seconds per round</span>
+                <div class={s.setting} data-testid={lobbyTestIds.secondsSetting}>
+                  <span class={s.settingLabel}>Seconds per round</span>
                   <Pills
                     label="Seconds per round"
                     options={SECONDS}
@@ -214,8 +218,8 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     onChange={(roundMs) => configureAsHost(conn, { roundMs })}
                   />
                 </div>
-                <div class="setting hints" data-testid={lobbyTestIds.hintsSetting}>
-                  <span class="setting-label">Hints per player</span>
+                <div class={s.setting} data-testid={lobbyTestIds.hintsSetting}>
+                  <span class={s.settingLabel}>Hints per player</span>
                   <Pills
                     label="Hints per player"
                     options={HINTS}
@@ -223,8 +227,8 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     onChange={(hints) => configureAsHost(conn, { hints })}
                   />
                 </div>
-                <div class="setting map-detail">
-                  <span class="setting-label">Map detail</span>
+                <div class={s.setting}>
+                  <span class={s.settingLabel}>Map detail</span>
                   <MapDetailPicker
                     value={view.config.mapDetail}
                     onChange={(mapDetail) => configureAsHost(conn, { mapDetail })}
@@ -234,22 +238,23 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             ) : (
               <>
                 <SetupSummary view={view} />
-                <p class="hint">
+                <p class={kit.hint}>
                   <HostWord capital /> picks these.
                 </p>
               </>
             )}
             <h2>This device</h2>
-            <label class="check switch start-on-pan">
+            <label class={cx(kit.check, kit.switch)}>
               <input
                 type="checkbox"
                 role="switch"
+                data-testid={lobbyTestIds.startOnPanSwitch}
                 checked={startOnPan.value}
                 onChange={(e) => (startOnPan.value = (e.target as HTMLInputElement).checked)}
               />
               Start each round with the Pan tool (handy on a tablet)
             </label>
-            <label class="check switch sound-switch">
+            <label class={cx(kit.check, kit.switch)}>
               <input
                 type="checkbox"
                 role="switch"
@@ -258,7 +263,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
               />
               Sounds (spray, countdown and round cues)
             </label>
-            <label class="check switch globe-switch">
+            <label class={cx(kit.check, kit.switch)}>
               <input
                 type="checkbox"
                 role="switch"
@@ -267,7 +272,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
               />
               Paint on a globe
             </label>
-            <div class="lobby-start">
+            <div class={s.start}>
               <VrButton view={vrView} />
               {host ? (
                 <button
@@ -280,7 +285,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                   <Icon name="play" /> Start game
                 </button>
               ) : (
-                <p class="hint">
+                <p class={kit.hint}>
                   Waiting for <HostWord /> to start…
                 </p>
               )}
@@ -296,14 +301,14 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: Playe
   const [name, setName] = useState(current)
   return (
     <form
-      class="join"
+      class={kit.join}
       onSubmit={(e) => {
         e.preventDefault()
         onDone(nameToJoin(name))
       }}
     >
       <input
-        class="code-input name-input"
+        class={cx(kit.codeInput, kit.nameInput)}
         type="text"
         maxLength={20}
         value={name}
@@ -364,24 +369,28 @@ function SetupSummary({ view }: { view: GameView }) {
     }
   ]
   return (
-    <div class="setup-summary" data-testid={setupSummaryTestIds.summary}>
+    <div class={s.summary} data-testid={setupSummaryTestIds.summary}>
       {tiles.map((t) => (
-        <div key={`${t.key}:${t.value}`} class={`tile ${t.key} ${t.changed ? "changed" : ""}`} data-testid={t.testId}>
-          <span class="value" data-testid={setupSummaryTestIds.tileValue}>
+        <div key={`${t.key}:${t.value}`} class={cx(s.tile, t.changed && s.changed)} data-testid={t.testId}>
+          <span class={s.value} data-testid={setupSummaryTestIds.tileValue}>
             {t.value}
           </span>
-          <span class="label">{t.label}</span>
+          <span class={s.label}>{t.label}</span>
         </div>
       ))}
       <div
         key={`questions:${describeMix(mix)}`}
-        class={`tile questions ${mixChanged ? "changed" : ""}`}
+        class={cx(s.tile, s.questions, mixChanged && s.changed)}
         data-testid={setupSummaryTestIds.questions}
       >
-        <span class="label">{describeMix(mix)}</span>
-        <RoundStrip mix={mix} total={false} />
+        <span class={s.label}>{describeMix(mix)}</span>
+        <RoundStrip mix={mix} total={false} centred />
       </div>
-      <div key={`map:${mapDetail}`} class={`tile map-detail ${mapDetail !== before.mapDetail ? "changed" : ""}`}>
+      <div
+        key={`map:${mapDetail}`}
+        class={cx(s.tile, s.mapDetail, mapDetail !== before.mapDetail && s.changed)}
+        data-testid={setupSummaryTestIds.mapDetail}
+      >
         <MapDetailSummary value={mapDetail} />
       </div>
     </div>

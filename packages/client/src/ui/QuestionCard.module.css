@@ -1,0 +1,225 @@
+@import "../media.css";
+
+.question .prompt {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+.question .prompt:last-child {
+  margin-bottom: 0;
+}
+
+/* Folding is for small screens, where the card takes much of the map. */
+.question .foldToggle {
+  display: none;
+}
+@media (--phone), (--very-short) {
+  .question.foldable {
+    position: relative;
+  }
+  .question .foldToggle {
+    display: block;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    padding: 8px;
+  }
+  .question.foldable .prompt {
+    padding-right: 32px;
+  }
+  /* The answer, at the reveal, stays. */
+  .question.folded > :not(.prompt, .foldToggle, .answer) {
+    display: none;
+  }
+  .question.folded .prompt {
+    margin-bottom: 0;
+  }
+}
+
+/* ---- a flag round's flag ------------------------------------------------------ */
+.question .flag {
+  position: relative;
+  display: block;
+  /* The flag's own shape, as large as fits 220 × 165. */
+  width: min(100%, 220px, 165px * var(--flag-ratio));
+  aspect-ratio: var(--flag-ratio);
+  margin: 0 auto;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--control-bg);
+  box-shadow: var(--picture-ring);
+  cursor: zoom-in;
+}
+.question .flag:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* Loaded, a flag's edge follows its shape: Nepal's is not a rectangle. */
+.question .flag:has(img) {
+  background: none;
+  box-shadow: none;
+  filter: var(--flag-edge);
+}
+.question .flag img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---- the photo -------------------------------------------------------------------- */
+.question .thumb {
+  position: relative;
+}
+.question .thumbButton {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  cursor: zoom-in;
+  overflow: hidden;
+}
+.question .thumb img {
+  width: 100%;
+  border-radius: 6px;
+  display: block;
+  background: var(--shade);
+  aspect-ratio: 16/10;
+  object-fit: cover;
+  transition: filter 0.15s;
+}
+/* Always shown, so a phone (no hover) knows the photo opens up too. */
+.badge {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--shade) 60%, transparent);
+  color: var(--light);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.badge.withLabel {
+  padding: 4px 9px 4px 7px;
+}
+.question .thumbButton:hover img,
+.question .thumbButton:focus-visible img {
+  filter: brightness(1.12);
+}
+.question .thumbButton:hover .badge,
+.question .thumbButton:focus-visible .badge {
+  opacity: 1;
+}
+.question .thumbButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* The Commons credit; a lightbox makes it larger, further from the edge. */
+.credit {
+  position: absolute;
+  right: var(--credit-inset, 6px);
+  bottom: var(--credit-inset, 6px);
+  width: var(--credit-size, 22px);
+  height: var(--credit-size, 22px);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--shade) 55%, transparent);
+  color: var(--panel-fg);
+  opacity: 0.8;
+}
+.credit:hover {
+  opacity: 1;
+}
+
+/* ---- at the reveal: the answer, and a line about it ------------------------------ */
+.question .answer {
+  margin: 10px 0 0;
+  font-size: 15px;
+}
+.question .fact {
+  margin: 8px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--accent-2);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.factKind {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+.wikiLink {
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.wikiLink:hover {
+  color: var(--panel-fg);
+}
+.wikiLink svg {
+  vertical-align: -1px;
+}
+
+/*
+ * While painting, where the cards would overrun their column (a phone,
+ * upright or on its side), the photo or flag gives up height so the hints
+ * below stay on screen.
+ */
+.question.painting {
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+
+  & .thumb {
+    flex: 0 1 auto;
+    min-height: 64px;
+    aspect-ratio: 16 / 10;
+  }
+  & .thumbButton {
+    position: absolute;
+    inset: 0;
+  }
+  & .thumb img {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+  & .flag {
+    flex: 0 1 min(165px, 220px / var(--flag-ratio));
+    min-height: 56px;
+    width: auto;
+    max-width: 100%;
+  }
+}
+@media (--short) {
+  .question.painting .flag {
+    min-height: 40px;
+  }
+}
+
+@media (--phone) {
+  .question .thumb img,
+  .question.painting .thumb {
+    aspect-ratio: 2 / 1;
+  }
+  /* At the top of a phone's reveal; the gap below it leaves the sheet starting halfway down, whatever the card's height. */
+  .question.reveal {
+    order: -2;
+    margin-bottom: max(0px, calc(50svh - var(--hud-gap) - 54px - var(--question-h, 0px)));
+  }
+}

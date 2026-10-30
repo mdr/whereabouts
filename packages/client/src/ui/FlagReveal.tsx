@@ -15,6 +15,9 @@ import { flagPins } from "../borders"
 import { FLAG_ATLAS, atlasCell } from "../flag-atlas"
 import { allFlags } from "../settings"
 import { flagRevealTestIds } from "./FlagRevealTestIds"
+import { cx } from "./cx"
+import kit from "./kit.module.css"
+import s from "./FlagReveal.module.css"
 
 /** How near the pointer a small country's answer counts as under it: Tuvalu is far less than a pixel at world zoom. */
 const SMALL_PX = 12
@@ -36,7 +39,8 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
   useEffect(() => {
     const markers = flagPins(borders).map(({ f, at }) => {
       const el = document.createElement("div")
-      el.className = "flag-pin"
+      el.className = s.pin ?? ""
+      el.dataset.testid = flagRevealTestIds.pin
       const flag = document.createElement("i")
       flag.title = f.label
       const cell = atlasCell(f.flag)
@@ -63,7 +67,7 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
 /** The switch for AllFlags. */
 export function AllFlagsSwitch() {
   return (
-    <label class="check switch all-flags-switch">
+    <label class={cx(kit.check, kit.switch)}>
       <input
         type="checkbox"
         role="switch"
@@ -111,13 +115,13 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
   const left = hit.x > window.innerWidth - 220
   return (
     <div
-      class="flag-hover"
+      class={s.hover}
       style={{
         top: `${hit.y + 14}px`,
         ...(left ? { right: `${window.innerWidth - hit.x + 14}px` } : { left: `${hit.x + 14}px` })
       }}
     >
-      <SmallFlag code={hit.f.flag} />
+      <SmallFlag code={hit.f.flag} class={s.hoverFlag} />
       <span>{hit.f.label}</span>
     </div>
   )
@@ -132,12 +136,13 @@ export function PaintedIn({ where, answer, whose }: { where: PaintedCountry; ans
   const right = where.country.flag === answer
   return (
     <span
-      class={`painted-in ${right ? "right" : ""}`}
+      class={cx(s.paintedIn, right && s.right)}
+      data-testid={flagRevealTestIds.paintedIn}
       title={`${pct}% of ${whose} paint was in ${where.country.label}${right ? ", the answer" : ""}`}
     >
       <SmallFlag code={where.country.flag} />
-      <span class="country">{where.country.label}</span>
-      <span class="share">{pct}%</span>
+      <span class={s.country}>{where.country.label}</span>
+      <span class={s.share}>{pct}%</span>
     </span>
   )
 }

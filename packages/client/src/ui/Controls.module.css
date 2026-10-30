@@ -1,0 +1,40 @@
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  & button {
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  & button.on {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+    color: var(--on-accent-2);
+    font-weight: 700;
+  }
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  & button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+  }
+}
+.value {
+  min-width: 2ch;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}

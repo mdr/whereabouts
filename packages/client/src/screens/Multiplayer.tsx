@@ -25,6 +25,8 @@ import { useSavedSetup } from "../host-setup"
 import { useVrHold, useVrView } from "../ui/VrButton"
 import type { VrAction } from "../vr"
 import { joinAsTestIds, joinedTestIds } from "./MultiplayerTestIds"
+import kit from "../ui/kit.module.css"
+import s from "./Multiplayer.module.css"
 
 export function Multiplayer({ code, create }: { code: RoomCode | undefined; create: boolean }) {
   const conn = useMemo(() => new Connection(), [])
@@ -112,7 +114,7 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
       detail: conn.lastError.value ?? "The game server did not let us in."
     }
     return (
-      <div class="home" data-testid={joinedTestIds.problem}>
+      <div class={kit.page} data-testid={joinedTestIds.problem}>
         <VrNotice
           title={why.title}
           line={why.detail}
@@ -123,11 +125,11 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
             { label: "Back to start", press: () => navigate("/") }
           ]}
         />
-        <div class="home-card">
+        <div class={kit.pageCard}>
           <Banner />
           <h2 data-testid={joinedTestIds.problemTitle}>{why.title}</h2>
-          <p class="tagline">{why.detail}</p>
-          <div class="home-actions">
+          <p class={kit.tagline}>{why.detail}</p>
+          <div class={s.actions}>
             {why.missing && code ? (
               <button
                 class="primary big"
@@ -151,11 +153,11 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
   }
   if (!view) {
     return (
-      <div class="home">
+      <div class={kit.page}>
         <VrNotice title={create ? "Creating your game…" : `Joining ${code}…`} line="" actions={[]} />
-        <div class="home-card">
+        <div class={kit.pageCard}>
           <Banner />
-          <p class="hint">{create ? "Creating your game…" : `Joining ${code}…`}</p>
+          <p class={kit.hint}>{create ? "Creating your game…" : `Joining ${code}…`}</p>
         </div>
       </div>
     )
@@ -179,19 +181,19 @@ function JoinAs({ code, onJoin }: { code: RoomCode | undefined; onJoin: (name: P
   const [name, setName] = useState(savedName.value)
   const ready = nameToJoin(name)
   return (
-    <div class="home" data-testid={joinAsTestIds.page}>
+    <div class={kit.page} data-testid={joinAsTestIds.page}>
       <form
-        class="home-card"
+        class={kit.pageCard}
         onSubmit={(e) => {
           e.preventDefault()
           if (ready) onJoin(ready, false)
         }}
       >
         <Banner />
-        <p class="tagline">
+        <p class={kit.tagline}>
           Joining game <b>{code}</b>
         </p>
-        <label class="field">
+        <label class={kit.field}>
           <span>Your name</span>
           <input
             type="text"
@@ -209,7 +211,7 @@ function JoinAs({ code, onJoin }: { code: RoomCode | undefined; onJoin: (name: P
         <button class="big" type="button" disabled={!ready} onClick={() => ready && onJoin(ready, true)}>
           <Icon name="eye" /> Just watch
         </button>
-        <p class="hint">
+        <p class={kit.hint}>
           <a href="#/">Back</a>
         </p>
       </form>

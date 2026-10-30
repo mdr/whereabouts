@@ -1,0 +1,117 @@
+/* Over the map, while the VR code loads, or to ask again for the headset. */
+.launch {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--shade) 85%, transparent);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--light);
+  font-size: 22px;
+}
+/* It opens over the map, where a pinch must not zoom the page (MapView.module.css). */
+:where(.launch, .launch *) {
+  touch-action: pan-x pan-y;
+}
+.ready {
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+
+  & :global(.primary) {
+    font-size: 28px;
+    padding: 24px 48px;
+  }
+}
+
+.loading {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+
+  & p {
+    margin: 0;
+  }
+}
+.globe {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 35% 30%, var(--globe-sea), var(--globe-deep) 70%);
+  box-shadow:
+    inset -14px -10px 30px color-mix(in srgb, var(--shade) 60%, transparent),
+    0 0 40px color-mix(in srgb, var(--spray) 25%, transparent);
+}
+/* Continents as blobs on a strip twice the globe's width, slid across to turn it. */
+.land,
+.spray {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 200%;
+  animation: turn 4s linear infinite;
+}
+.land {
+  background:
+    radial-gradient(ellipse 9% 16% at 12% 38%, var(--globe-land) 95%, transparent),
+    radial-gradient(ellipse 6% 18% at 22% 66%, var(--globe-land) 95%, transparent),
+    radial-gradient(ellipse 12% 13% at 37% 34%, var(--globe-land) 95%, transparent),
+    radial-gradient(ellipse 6% 9% at 44% 70%, var(--globe-land) 95%, transparent),
+    radial-gradient(ellipse 9% 16% at 62% 38%, var(--globe-land) 95%, transparent),
+    radial-gradient(ellipse 6% 18% at 72% 66%, var(--globe-land) 95%, transparent),
+    radial-gradient(ellipse 12% 13% at 87% 34%, var(--globe-land) 95%, transparent),
+    radial-gradient(ellipse 6% 9% at 94% 70%, var(--globe-land) 95%, transparent);
+}
+.spray {
+  background:
+    radial-gradient(circle at 20% 45%, color-mix(in srgb, var(--spray) 85%, transparent), transparent 14%),
+    radial-gradient(circle at 70% 45%, color-mix(in srgb, var(--spray) 85%, transparent), transparent 14%);
+  mix-blend-mode: screen;
+  transition: opacity 0.6s;
+}
+@keyframes turn {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .land,
+  .spray {
+    animation: none;
+  }
+}
+
+.steps {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  & li {
+    width: 36px;
+    height: 6px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--light) 18%, transparent);
+    transition: background 0.4s;
+  }
+  & li.done {
+    background: var(--spray);
+  }
+  & li.now {
+    background: linear-gradient(90deg, var(--spray), color-mix(in srgb, var(--light) 18%, transparent));
+    background-size: 200% 100%;
+    animation: step 1.2s ease-in-out infinite alternate;
+  }
+}
+@keyframes step {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}

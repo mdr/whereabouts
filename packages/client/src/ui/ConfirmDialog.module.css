@@ -1,0 +1,39 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--shade) 60%, transparent);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+/* It opens over the map, where a pinch must not zoom the page (MapView.module.css). */
+:where(.backdrop, .backdrop *) {
+  touch-action: pan-x pan-y;
+}
+.modal {
+  background: var(--panel-bg);
+  color: var(--panel-fg);
+  border-radius: 12px;
+  padding: 20px 22px;
+  max-width: 420px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-raised);
+
+  & h2 {
+    margin: 0 0 8px;
+    font-size: 17px;
+  }
+  & p {
+    margin: 0 0 18px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

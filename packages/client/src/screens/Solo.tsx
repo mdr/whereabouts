@@ -36,7 +36,12 @@ import { showsLakes } from "@whereabouts/shared/protocol"
 import { MapView, usePaint } from "../ui/MapView"
 import { forTabbedControl } from "../keys"
 import { LoadingOutlines } from "../ui/LoadingOutlines"
-import { Card, HudBottom, HudHeader, ScoreParts, fmtKm } from "../ui/bits"
+import { Card, ScoreParts, fmtKm } from "../ui/bits"
+import { HeaderNote, Hud, HudBottom, HudCenter, HudHeader, HudTop } from "../ui/Hud"
+import { cx } from "../ui/cx"
+import kit from "../ui/kit.module.css"
+import sc from "../ui/Score.module.css"
+import s from "./Solo.module.css"
 import { DoneButton, RevealCards, RoundPrompt } from "../ui/Round"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
 import { VrButton, useVrHold, useVrView } from "../ui/VrButton"
@@ -75,7 +80,7 @@ function revealedAnswer(q: PracticeQuestion): RevealedAnswer {
 function PartsLine({ parts }: { parts: AnswerParts }) {
   if ("A" in parts) return <ScoreParts A={parts.A} B={parts.B} />
   return (
-    <div class="parts">
+    <div class={kit.parts}>
       <span>
         shape <b>{Math.round(parts.shape)}</b> × {SHAPE_WEIGHT}
       </span>
@@ -298,13 +303,13 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
       home
       round={Math.min(index + 1, questions.length)}
       total={questions.length}
-      right={<span class="total">{Math.round(total).toLocaleString()} pts</span>}
+      right={<HeaderNote nowrap>{Math.round(total).toLocaleString()} pts</HeaderNote>}
     />
   )
 
   const cheats = (
     <Card title="Cheats">
-      <label class="check">
+      <label class={kit.check}>
         <input
           type="checkbox"
           checked={cheatLiveScore.value}
@@ -313,9 +318,9 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
         Show live score and the real answer while painting
       </label>
       {isRegion(q) ? (
-        <p class="hint">Countries score by shape and nearness, with their own kernel: see regions.ts.</p>
+        <p class={kit.hint}>Countries score by shape and nearness, with their own kernel: see regions.ts.</p>
       ) : (
-        <label class="check">
+        <label class={kit.check}>
           Scoring kernel{" "}
           <select
             value={soloKernelId.value}
@@ -336,16 +341,16 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
 
   if (phase === "done") {
     return (
-      <div class="hud">
-        <div class="hud-center">
-          <div class="home-card">
+      <Hud>
+        <HudCenter>
+          <div class={kit.pageCard}>
             <Banner />
-            <div class="score">
-              <div class="label">Final score</div>
-              <div class="big">{Math.round(total).toLocaleString()}</div>
-              <div class="label">out of {(questions.length * 1000).toLocaleString()}</div>
+            <div class={sc.score}>
+              <div class={sc.label}>Final score</div>
+              <div class={sc.big}>{Math.round(total).toLocaleString()}</div>
+              <div class={sc.label}>out of {(questions.length * 1000).toLocaleString()}</div>
             </div>
-            <ul class="results">
+            <ul class={kit.results}>
               {results.map((r, i) => (
                 <li key={i}>
                   <span>{r.question.label}</span>
@@ -357,12 +362,12 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               <Icon name="refresh" /> Play again
             </button>
             <VrButton view={vrView} />
-            <p class="hint">
+            <p class={kit.hint}>
               <a href="#/">Leave</a>
             </p>
           </div>
-        </div>
-      </div>
+        </HudCenter>
+      </Hud>
     )
   }
 
@@ -384,8 +389,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
       <>
         {borders && <FlagHover gameMap={paint.gameMap} borders={borders} />}
         {borders && allFlags.value && <AllFlags gameMap={paint.gameMap} borders={borders} />}
-        <div class="hud reveal">
-          <div class="hud-top">
+        <Hud reveal>
+          <HudTop>
             {header}
             <RevealCards
               question={question}
@@ -397,7 +402,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               where={where}
               testIds={{ score: soloTestIds.roundScore }}
             />
-          </div>
+          </HudTop>
           <HudBottom>
             {q.flag && <AllFlagsSwitch />}
             <VrButton view={vrView} />
@@ -405,11 +410,11 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               <Icon name={last ? "flag" : "next"} /> {last ? "Finish" : "Next question"} <kbd>Enter</kbd>
             </button>
           </HudBottom>
-        </div>
+        </Hud>
         <DevDrawer>
           <Card title="Score">
             <PartsLine parts={shownResult.parts} />
-            {hoverText && <div class="hover-score">{hoverText}</div>}
+            {hoverText && <div class={s.hoverScore}>{hoverText}</div>}
             {!isRegion(q) && dist && <KernelComparison dist={dist} q={q} active={kernel.id} />}
           </Card>
           {cheats}
@@ -421,17 +426,17 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
 
   return (
     <>
-      <div class="hud">
-        <div class="hud-top">
+      <Hud>
+        <HudTop>
           {header}
           <RoundPrompt question={question} countryFlag={countryFlag} credit />
           <HintCard band={hint} onUse={useHint} />
-        </div>
+        </HudTop>
         <PaintTools practice water={isWater(q.topic)} hint={hint}>
           <VrButton view={vrView} />
           <DoneButton label="Submit" onDone={submit} testId={soloTestIds.submitButton} />
         </PaintTools>
-      </div>
+      </Hud>
       <DevDrawer>
         {cheats}
         {cheating && <LiveScore q={q} kernelId={kernel.id} />}
@@ -487,7 +492,7 @@ function CopyCase({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
         {copied ? "Copied" : "Copy test case"}
       </button>
       {fallback && (
-        <textarea class="case-text" readOnly rows={6} value={fallback} onFocus={(e) => e.currentTarget.select()} />
+        <textarea class={s.caseText} readOnly rows={6} value={fallback} onFocus={(e) => e.currentTarget.select()} />
       )}
     </>
   )
@@ -495,7 +500,7 @@ function CopyCase({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
 
 function KernelComparison({ dist, q, active }: { dist: Distribution; q: PracticeQuestion; active: string }) {
   return (
-    <ul class="results compare">
+    <ul class={cx(kit.results, kit.compare)}>
       {KERNELS.map((k) => (
         <li key={k.id}>
           <span>
@@ -515,11 +520,11 @@ function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: KernelId })
   const { score, parts } = scoreAnswer(dist, q, kernelById(kernelId))
   return (
     <Card title="Live score">
-      <p class="hint" style={{ margin: "0 0 6px" }}>
+      <p class={kit.hint} style={{ margin: "0 0 6px" }}>
         Answer: {q.label}, {isRegion(q) ? "outlined" : "marked"} on the map.
       </p>
-      <div class="score">
-        <div class="big">{Math.round(score)}</div>
+      <div class={sc.score}>
+        <div class={sc.big}>{Math.round(score)}</div>
         <PartsLine parts={parts} />
       </div>
       {isRegion(q) && paint.settledCells.value.length > 0 && <RegionFitFacts dist={dist} q={q} />}
@@ -532,7 +537,7 @@ function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: KernelId })
 function RegionFitFacts({ dist, q }: { dist: Distribution; q: RegionQuestion }) {
   const { coverage, precision } = regionFit(dist, q)
   return (
-    <dl class="facts region-fit">
+    <dl class={cx(kit.facts, s.regionFit)}>
       <div>
         <dt>Paint on {q.label}</dt>
         <dd>{pct(precision)}</dd>

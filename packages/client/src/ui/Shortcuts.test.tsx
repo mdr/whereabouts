@@ -1,9 +1,10 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from "vite-plus/test"
-import { cleanup, fireEvent, render } from "@testing-library/preact"
+import { cleanup, fireEvent, render, screen } from "@testing-library/preact"
 import { Shortcuts, ShortcutsButton, shortcutsOpen } from "./Shortcuts"
+import { shortcutsTestIds } from "./ShortcutsTestIds"
 
-const card = () => document.body.querySelector(".shortcuts") ?? undefined
+const card = () => screen.queryByTestId(shortcutsTestIds.card) ?? undefined
 const press = (key: string, target: Window | Element = window) => fireEvent.keyDown(target, { key, bubbles: true })
 
 afterEach(() => {
@@ -25,17 +26,17 @@ describe("Shortcuts", () => {
   })
 
   it("opens from the toolbar button too, and closes on a click outside the card", () => {
-    const { container } = render(
+    render(
       <>
         <ShortcutsButton />
         <Shortcuts />
       </>
     )
-    fireEvent.click(container.querySelector(".shortcuts-button")!)
+    fireEvent.click(screen.getByTestId(shortcutsTestIds.button))
     expect(card()).not.toBeUndefined()
     fireEvent.click(card()!) // inside: stays
     expect(card()).not.toBeUndefined()
-    fireEvent.click(document.body.querySelector(".shortcuts-backdrop")!)
+    fireEvent.click(screen.getByTestId(shortcutsTestIds.backdrop))
     expect(card()).toBeUndefined()
   })
 

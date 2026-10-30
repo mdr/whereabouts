@@ -9,7 +9,9 @@ import type { RegionQuestion } from "@whereabouts/shared/regions"
 import { isWater } from "@whereabouts/shared/questions"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
-import { Card, Countdown, HudHeader } from "../ui/bits"
+import { Card } from "../ui/bits"
+import { Countdown, Hud, HudHeader, HudRight, HudTop, toolbarGrow } from "../ui/Hud"
+import kit from "../ui/kit.module.css"
 import { DoneButton, RoundPrompt } from "../ui/Round"
 import { hostActions, pickable, takeSeat, vrPicked } from "../vr-actions"
 import { navigate } from "../router"
@@ -21,7 +23,7 @@ import { ConnectionDev } from "../ui/ConnectionDev"
 import { NONE, Reveal, revealedAnswer, revealOrder, revealShown, shownResults } from "./Reveal"
 import { borders, loadBorders } from "../borders"
 import { Icon } from "../ui/icons"
-import { PlayersPanel } from "../ui/PlayersPanel"
+import { PlayersPanel, playersPanelOpen } from "../ui/PlayersPanel"
 import { EndGameButton } from "../ui/HostControls"
 import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog"
 import { askedToWatch } from "../settings"
@@ -165,8 +167,8 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   return (
     <>
       {dialog}
-      <div class="hud">
-        <div class="hud-top">
+      <Hud>
+        <HudTop>
           <HudHeader
             round={round.index + 1}
             total={round.total}
@@ -179,31 +181,31 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           <ConnectionNote conn={conn} />
           {view.you.watching && (
             <Card>
-              <p class="hint">
+              <p class={kit.hint}>
                 {askedToWatch.value
                   ? "You're watching this game. You'll see each answer and everyone's guesses at the reveal."
                   : "The game was full, so you're watching. You'll see each answer and everyone's guesses at the reveal."}
               </p>
-              <TakeSeatButton conn={conn} view={view} />
+              <TakeSeatButton conn={conn} view={view} inCard />
             </Card>
           )}
           {view.you.spectating && (
             <Card>
-              <p class="hint" data-testid={inGameTestIds.sittingOutNote}>
+              <p class={kit.hint} data-testid={inGameTestIds.sittingOutNote}>
                 You joined mid-round, so you're watching this one. You'll play from the next question.
               </p>
             </Card>
           )}
           {view.you.locked && (
             <Card>
-              <p class="hint" data-testid={inGameTestIds.doneNote}>
+              <p class={kit.hint} data-testid={inGameTestIds.doneNote}>
                 You're done. The round ends when everyone is, or when the clock runs out. Changed your mind? Keep
                 editing.
               </p>
             </Card>
           )}
-        </div>
-        <div class="hud-right">
+        </HudTop>
+        <HudRight roomy={playersPanelOpen.value}>
           <PlayersPanel
             view={view}
             onKick={view.you.isHost ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
@@ -213,14 +215,15 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             <EndGameButton
               onEnd={() => conn.end()}
               title="Score this round as it stands and show the final standings"
+              besidePlayers
             />
           )}
-        </div>
+        </HudRight>
         {!sittingOut && (
           <PaintTools water={isWater(round.question.topic)} hint={view.you.hint}>
             {view.you.locked ? (
               <button
-                class="keep-editing"
+                class={toolbarGrow}
                 title="Take back Done and change your guess"
                 onClick={() => conn.unlock()}
                 data-testid={inGameTestIds.keepEditingButton}
@@ -240,7 +243,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             )}
           </PaintTools>
         )}
-      </div>
+      </Hud>
       <DevDrawer>
         <Card title="Players">
           <PlayerList players={view.players} you={view.you.id} showScores />

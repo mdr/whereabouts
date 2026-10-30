@@ -6,10 +6,15 @@ import type { PaintedCountry } from "@whereabouts/shared/borders"
 import type { QuestionView } from "@whereabouts/shared/protocol"
 import type { Topic } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "../round"
-import { Answer, FactLine, QuestionCard } from "./bits"
+import type { ComponentChildren } from "preact"
+import { Answer, Card, FactLine, QuestionCard } from "./bits"
 import { PaintedIn } from "./FlagReveal"
 import { usePaint } from "./MapView"
 import { Icon } from "./icons"
+import { cx } from "./cx"
+import kit from "./kit.module.css"
+import r from "./Round.module.css"
+import sc from "./Score.module.css"
 
 /** The question while painting, with how to answer it. */
 export function RoundPrompt({
@@ -23,7 +28,7 @@ export function RoundPrompt({
 }) {
   const area = question.regionId !== undefined
   return (
-    <QuestionCard q={question} countryFlag={countryFlag} credit={credit} foldable>
+    <QuestionCard q={question} hud="painting" countryFlag={countryFlag} credit={credit} foldable>
       {question.flag ? <AnswerMode area={area} /> : area && <RegionHint topic={question.topic} />}
     </QuestionCard>
   )
@@ -31,7 +36,7 @@ export function RoundPrompt({
 
 /** Under a "Paint the whole of …" question: what to cover. */
 function RegionHint({ topic }: { topic?: Topic }) {
-  return <p class="hint region-hint">Cover the whole {topic ?? "country"}: its shape counts.</p>
+  return <p class={cx(kit.hint, r.regionHint)}>Cover the whole {topic ?? "country"}: its shape counts.</p>
 }
 
 /**
@@ -40,7 +45,7 @@ function RegionHint({ topic }: { topic?: Topic }) {
  */
 function AnswerMode({ area }: { area: boolean }) {
   return area ? (
-    <div class="answer-mode area">
+    <div class={cx(r.answerMode, r.area)}>
       <Icon name="brush" size={18} />
       <div>
         <b>Paint the whole country</b>
@@ -48,7 +53,7 @@ function AnswerMode({ area }: { area: boolean }) {
       </div>
     </div>
   ) : (
-    <div class="answer-mode point">
+    <div class={cx(r.answerMode, r.point)}>
       <Icon name="pin" size={18} />
       <div>
         <b>Paint where it is</b>
@@ -113,21 +118,52 @@ export function RevealCards({
 }) {
   return (
     <>
-      <QuestionCard q={question} credit countryFlag={countryFlag} photo={revealed.photo} foldable startFolded>
+      <QuestionCard
+        q={question}
+        hud="reveal"
+        credit
+        countryFlag={countryFlag}
+        photo={revealed.photo}
+        foldable
+        startFolded
+      >
         <Answer label={revealed.label} wiki={revealed.wiki} />
         <FactLine fact={fact} />
       </QuestionCard>
-      <div class="card score" data-testid={testIds.scoreCard}>
-        <div class="big" data-testid={testIds.score}>
-          {you ? Math.round(you.score) : "—"}
-        </div>
-        <div class="label">{you ? (you.passed ? "you passed this round" : playedLabel) : "you sat this one out"}</div>
+      <ScoreCard
+        score={you ? Math.round(you.score) : "—"}
+        label={you ? (you.passed ? "you passed this round" : playedLabel) : "you sat this one out"}
+        testIds={testIds}
+      >
         {where && (
-          <div class="fit">
+          <div class={sc.fit}>
             Your paint: <PaintedIn where={where} answer={question.flag} whose="your" />
           </div>
         )}
-      </div>
+      </ScoreCard>
     </>
+  )
+}
+
+/** A reveal's score, under the question; on a phone, at the top of the sheet. */
+export function ScoreCard({
+  score,
+  label,
+  testIds,
+  children
+}: {
+  score: number | string
+  label: ComponentChildren
+  testIds: { scoreCard?: string; score?: string }
+  children?: ComponentChildren
+}) {
+  return (
+    <Card class={cx(sc.score, sc.reveal)} data-testid={testIds.scoreCard}>
+      <div class={sc.big} data-testid={testIds.score}>
+        {score}
+      </div>
+      <div class={sc.label}>{label}</div>
+      {children}
+    </Card>
   )
 }

@@ -26,6 +26,9 @@ const POOLS: { value: PracticePool; label: string }[] = [
 import hero800 from "../assets/hero-800.webp"
 import hero1448 from "../assets/hero-1448.webp"
 import { homeTestIds } from "./HomeTestIds"
+import { cx } from "../ui/cx"
+import kit from "../ui/kit.module.css"
+import s from "./Home.module.css"
 
 /**
  * The front door: a hero picture, your name, then three clearly separate
@@ -54,22 +57,22 @@ export function Home() {
   }
   useVrView(vrView, "home")
   return (
-    <div class="home" data-testid={homeTestIds.page}>
-      <div class="home-page">
-        <header class="hero">
+    <div class={kit.page} data-testid={homeTestIds.page}>
+      <div class={s.content}>
+        <header class={s.hero}>
           <img
             src={hero1448}
             srcset={`${hero800} 800w, ${hero1448} 1448w`}
             sizes="(max-width: 960px) 100vw, 960px"
             alt="A figure spray-painting glowing hexagons onto a globe"
           />
-          <div class="hero-text">
+          <div class={s.heroText}>
             <h1>Whereabouts</h1>
-            <p class="tagline">Paint where you think it is. Hedge when you're not sure.</p>
+            <p class={s.tagline}>Paint where you think it is. Hedge when you're not sure.</p>
           </div>
         </header>
 
-        <label class="field home-name">
+        <label class={cx(kit.field, s.name)}>
           <span>Your name</span>
           <input
             type="text"
@@ -81,8 +84,8 @@ export function Home() {
           />
         </label>
 
-        <div class="modes">
-          <section class="mode">
+        <div class={s.modes}>
+          <section class={s.mode}>
             <h2>Host a game</h2>
             <p>Start a room and share the code with friends.</p>
             <button
@@ -95,11 +98,11 @@ export function Home() {
               <Icon name="play" /> Host a game
             </button>
           </section>
-          <section class="mode">
+          <section class={s.mode}>
             <h2>Join a game</h2>
             <p>Got a code from a friend? Type it here.</p>
             <form
-              class="join"
+              class={kit.join}
               onSubmit={(e) => {
                 e.preventDefault()
                 const c = code.trim().toUpperCase()
@@ -118,7 +121,7 @@ export function Home() {
                 maxLength={6}
                 value={code}
                 onInput={(e) => setCode((e.target as HTMLInputElement).value.toUpperCase())}
-                class="code-input"
+                class={cx(kit.codeInput, s.codeInput)}
                 aria-label="Game code"
                 data-testid={homeTestIds.codeInput}
               />
@@ -134,7 +137,7 @@ export function Home() {
               <button
                 type="submit"
                 value="watch"
-                class="watch"
+                class={s.watch}
                 disabled={!ready || code.trim().length < 4}
                 title="See every round without playing"
               >
@@ -142,10 +145,10 @@ export function Home() {
               </button>
             </form>
           </section>
-          <section class="mode">
+          <section class={s.mode}>
             <h2>Practise</h2>
             <p>On your own, no clock. See how the scoring works.</p>
-            <div class="practice-pool">
+            <div class={s.pool}>
               <Pills
                 label="What to practise"
                 options={POOLS}
@@ -153,20 +156,20 @@ export function Home() {
                 onChange={(v) => (soloPool.value = v)}
               />
             </div>
-            <div class="practice-go">
+            <div class={s.go}>
               <button class="big" onClick={() => navigate("/solo")} data-testid={homeTestIds.practiseButton}>
                 <Icon name="brush" /> Practise
               </button>
               <VrButton view={vrView} />
             </div>
-            <details class="practice-detail">
+            <details class={s.detail}>
               <summary>Map detail: {MAP_DETAILS.find((d) => d.id === soloMapDetail.value)?.label ?? "Minimal"}</summary>
-              <MapDetailPicker value={soloMapDetail.value} onChange={(v) => (soloMapDetail.value = v)} />
+              <MapDetailPicker narrow value={soloMapDetail.value} onChange={(v) => (soloMapDetail.value = v)} />
             </details>
           </section>
         </div>
 
-        <section class="how">
+        <section class={s.how}>
           <h2>How to play</h2>
           <ol>
             <li>

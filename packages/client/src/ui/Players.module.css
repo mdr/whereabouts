@@ -1,0 +1,222 @@
+/*
+ * Lists of players: the lobby's and the game's, and a reveal's, whose rows
+ * (.pick) choose whose paint shows. Also the marks beside a name.
+ */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  & li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--divider);
+    font-variant-numeric: tabular-nums;
+  }
+  & li:last-child {
+    border-bottom: none;
+  }
+}
+.list li.offline {
+  opacity: 0.5;
+}
+/* The name shrinks and clips before the numbers ever move. */
+.name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  & .tag,
+  & .host {
+    flex: none;
+    margin-left: 0;
+  }
+  & .ready {
+    margin-left: 6px;
+  }
+}
+.nameText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scoreNum {
+  flex: none;
+  min-width: 52px;
+  text-align: right;
+  font-weight: 600;
+}
+.arrow {
+  width: 14px;
+  color: var(--muted);
+}
+.up {
+  color: var(--success);
+}
+.down {
+  color: var(--danger);
+}
+
+/* ---- a reveal's rows ---------------------------------------------------------- */
+.pick li {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 6px;
+}
+.pick li:hover {
+  background: var(--divider);
+}
+/* Your own row is tinted rather than labelled. */
+.pick li.you {
+  background: var(--tint);
+}
+.pick li.selected {
+  background: var(--control-bg);
+}
+.pick li.everyone {
+  border-bottom: 1px solid var(--divider);
+  margin-bottom: 2px;
+}
+.pick li.hidePaint {
+  color: var(--muted);
+  border-top: 1px solid var(--divider);
+  margin-top: 2px;
+}
+.pick li.withWhere {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+/* Tags drop below a name they would otherwise squeeze. */
+.pick .name {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+.pick button:global(.icon) {
+  padding: 2px 3px;
+  margin-right: 6px;
+}
+/* The round score is the news; the running total is context. */
+.roundScore {
+  flex: none;
+  color: var(--panel-fg);
+  font-weight: 700;
+  font-size: 15px;
+  min-width: 3.2em;
+  text-align: right;
+}
+.pick .scoreNum {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12px;
+  min-width: 2.8em;
+}
+.pick .arrow {
+  flex: none;
+}
+.swatchIcon {
+  width: 12px;
+  height: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+/* Under the name, lined up with it past the swatch. */
+.where {
+  flex-basis: 100%;
+  display: flex;
+  min-width: 0;
+  padding-left: 18px;
+  font-size: 12px;
+}
+
+/* ---- colours ------------------------------------------------------------------ */
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  display: inline-block;
+}
+.swatch.everyone {
+  background: var(--everyone);
+}
+.swatch.watcher {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--muted);
+}
+/* The lobby's: a coloured circle with the initial. */
+.avatar {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--on-accent);
+}
+/* Spectators: no colour of their own, so a neutral avatar with an eye. */
+.avatar.watcher {
+  background: var(--control-bg);
+  color: var(--muted);
+}
+
+/* ---- tags --------------------------------------------------------------------- */
+.tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  border: 1px solid var(--control-border);
+  border-radius: 4px;
+  padding: 0 4px;
+  margin-left: 6px;
+}
+.done {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.ready {
+  color: var(--success);
+  border-color: currentColor;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.hinted {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-2);
+}
+.host {
+  color: var(--host);
+  border: 1px solid var(--host);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: -3px;
+  padding: 1px 4px;
+  margin-left: 6px;
+}
+.hostWord {
+  color: var(--host);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  vertical-align: -2px;
+}
+
+/* Host only. */
+button:global(.icon).kick:hover {
+  color: var(--danger);
+}
+button:global(.icon).makeHost:hover {
+  color: var(--host);
+}

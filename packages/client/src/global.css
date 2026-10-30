@@ -1,0 +1,200 @@
+/*
+ * What every screen shares: the colour roles and other custom properties,
+ * and the base look of plain elements. Components style themselves in their
+ * own CSS modules, using these properties.
+ */
+@import "./media.css";
+
+:root {
+  /* Surfaces, darkest first. */
+  --page-bg: #0f1215;
+  /* The card screens' backdrop lightens towards the top. */
+  --page-glow: #223040;
+  --panel-bg: #1f2328;
+  /* A panel inside a card. */
+  --inset-bg: #262b32;
+  --card-bg: #2a3038;
+  /* A tile or key inside a card or panel. */
+  --tile-bg: #2e343c;
+  /* Lines between rows, and a row under the pointer. */
+  --divider: #333b45;
+
+  /* Controls: buttons, fields, switches. */
+  --control-bg: #3a424d;
+  --control-hover: #454e5a;
+  --control-border: #4a5460;
+
+  /* Text. */
+  --panel-fg: #e6e9ee;
+  --soft-fg: #c8cfd8;
+  --over-photo-fg: #d5dbe3;
+  --muted: #9aa4b2;
+  --on-accent: #1a1a1a;
+  --on-accent-2: #0a1a22;
+
+  /* Black and white, mostly mixed with transparency: shadows, scrims, tints. */
+  --shade: #000;
+  --light: #fff;
+
+  /* Accents and states. */
+  --accent: #ffa726;
+  --accent-2: #4fc3f7;
+  --danger: #ef5350;
+  --success: #66bb6a;
+  /* The host's crown. */
+  --host: #fbbf24;
+  --ring-brush: #ffffff;
+
+  /* Each kind of question; Results.tsx has them too, for the headset. */
+  --type-landmarks: #ffb74d;
+  --type-places: #4fc3f7;
+  --type-countries: #81c784;
+  --type-flags: #f06292;
+  --type-features: #9575cd;
+  --type-states: #fff176;
+
+  /* The VR loading globe. */
+  --globe-sea: #2b4a66;
+  --globe-deep: #0d1b29;
+  --globe-land: #3d5a45;
+  --spray: #67e8f9;
+
+  /* "Everyone" in the reveal's list: all the colours at once. */
+  --everyone: conic-gradient(#4fc3f7, #f06292, #aed581, #ffb74d, #ba68c8, #4fc3f7);
+
+  --shadow-hud: 0 6px 24px color-mix(in srgb, var(--shade) 45%, transparent);
+  --shadow-raised: 0 12px 40px color-mix(in srgb, var(--shade) 50%, transparent);
+  /* The edge of a photo or flag before it loads, and of a flag after. */
+  --picture-ring: 0 0 0 1px color-mix(in srgb, var(--light) 15%, transparent);
+  --flag-edge: drop-shadow(0 0 1px color-mix(in srgb, var(--light) 30%, transparent));
+  /* Lifts a row a little: your own, an award. */
+  --tint: color-mix(in srgb, var(--light) 5%, transparent);
+
+  --panel-w: 360px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--page-bg);
+}
+
+#app {
+  position: absolute;
+  inset: 0;
+}
+
+/* ---- buttons --------------------------------------------------------------
+   Variants are plain classes, shared by every component: primary, active,
+   danger (and danger solid), big, small, and icon for a bare icon button. */
+button.small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+button.icon {
+  padding: 2px 6px;
+  font-size: 13px;
+  line-height: 1;
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+button.icon:hover {
+  background: var(--control-bg);
+  color: var(--panel-fg);
+}
+button {
+  background: var(--control-bg);
+  color: var(--panel-fg);
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font: inherit;
+}
+button:hover {
+  background: var(--control-hover);
+}
+button.active {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+button.primary {
+  background: var(--accent-2);
+  color: var(--on-accent-2);
+  border-color: var(--accent-2);
+  font-weight: 600;
+}
+button.primary:hover {
+  filter: brightness(1.08);
+}
+button.danger {
+  color: var(--danger);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+button.big {
+  padding: 12px 16px;
+  font-size: 16px;
+}
+button.danger.solid {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--light);
+}
+
+/* The Icon component's class. */
+button .icon {
+  vertical-align: -3px;
+  margin-right: 2px;
+}
+button.big .icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: -4px;
+}
+
+/* ---- other elements -------------------------------------------------------- */
+kbd {
+  background: var(--control-bg);
+  border-radius: 3px;
+  padding: 0 5px;
+  font-family: inherit;
+  font-size: 11px;
+}
+button.primary kbd {
+  background: color-mix(in srgb, var(--on-accent-2) 18%, transparent);
+  color: var(--on-accent-2);
+}
+/* No keyboard to speak of on phones and touch-only tablets. */
+@media (--no-hover), (--phone) {
+  button kbd {
+    display: none;
+  }
+}
+
+select {
+  background: var(--control-bg);
+  color: var(--panel-fg);
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font: inherit;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

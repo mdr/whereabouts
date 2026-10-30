@@ -3,13 +3,14 @@ import { describeHint, type HintAxis, type HintBand } from "@whereabouts/shared/
 import { Card } from "./bits"
 import { Icon } from "./icons"
 import { hintTestIds } from "./HintTestIds"
+import s from "./Hint.module.css"
 
 /** `left` is how many the player has; undefined in practice, where they are unlimited. */
 export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number; onUse: (axis: HintAxis) => void }) {
   if (band) {
     return (
-      <Card class="hint-card">
-        <p class="hint-band" data-testid={hintTestIds.band}>
+      <Card class={s.card}>
+        <p class={s.band} data-testid={hintTestIds.band}>
           <Icon name={band.axis} size={14} /> {describeHint(band)}
         </p>
       </Card>
@@ -17,11 +18,11 @@ export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number
   }
   if (left === 0) return undefined
   return (
-    <Card class="hint-card">
-      <div class="hint-choose" data-testid={hintTestIds.card}>
-        <span class="hint-label">
+    <Card class={s.card}>
+      <div class={s.choose} data-testid={hintTestIds.card}>
+        <span class={s.label}>
           <Icon name="hint" size={14} /> Hint
-          {left !== undefined && <span class="hint-left">{left} left</span>}
+          {left !== undefined && <span class={s.left}>{left} left</span>}
         </span>
         <button
           type="button"

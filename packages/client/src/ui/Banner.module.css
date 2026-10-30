@@ -1,0 +1,42 @@
+@import "../media.css";
+
+/* A strip of the front-page picture, cropped to the spray, under the title. */
+.banner {
+  position: relative;
+  margin: 0;
+  height: 110px;
+  border-radius: 10px;
+  overflow: hidden;
+
+  & img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;
+  }
+  & h1 {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 36px 20px 12px;
+    font-size: 30px;
+    letter-spacing: 0.01em;
+    background: linear-gradient(to top, color-mix(in srgb, var(--page-bg) 90%, transparent), transparent);
+  }
+}
+.banner.tall {
+  height: 140px;
+}
+@media (--narrow) {
+  .banner,
+  .banner.tall {
+    height: 96px;
+  }
+  .banner h1 {
+    padding: 28px 14px 8px;
+    font-size: 26px;
+  }
+}

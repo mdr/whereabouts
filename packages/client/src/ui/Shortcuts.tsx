@@ -9,6 +9,9 @@ import { useEffect } from "preact/hooks"
 import { createPortal } from "preact/compat"
 import { Icon } from "./icons"
 import { isTyping } from "../keys"
+import { Card } from "./bits"
+import { shortcutsTestIds } from "./ShortcutsTestIds"
+import s from "./Shortcuts.module.css"
 
 export const shortcutsOpen = signal(false)
 
@@ -48,7 +51,8 @@ function rows(practice: boolean): Row[] {
 export function ShortcutsButton() {
   return (
     <button
-      class="icon-only shortcuts-button"
+      class={s.button}
+      data-testid={shortcutsTestIds.button}
       title="Keyboard shortcuts (?)"
       aria-label="Keyboard shortcuts"
       aria-expanded={shortcutsOpen.value}
@@ -81,12 +85,14 @@ export function Shortcuts({ practice = false }: { practice?: boolean }) {
   // Into <body>, like the confirm dialog: the toolbar's transform would
   // otherwise trap a fixed card.
   return createPortal(
-    <div class="shortcuts-backdrop" onClick={() => (shortcutsOpen.value = false)}>
-      <section
-        class="card shortcuts"
+    <div class={s.backdrop} data-testid={shortcutsTestIds.backdrop} onClick={() => (shortcutsOpen.value = false)}>
+      <Card
+        as="section"
+        class={s.card}
         role="dialog"
         aria-labelledby="shortcuts-title"
         onClick={(e) => e.stopPropagation()}
+        data-testid={shortcutsTestIds.card}
       >
         <header>
           <h2 id="shortcuts-title">Keyboard shortcuts</h2>
@@ -100,8 +106,8 @@ export function Shortcuts({ practice = false }: { practice?: boolean }) {
               <dt>{action}</dt>
               <dd>
                 {combos.map((combo, i) => (
-                  <span key={i} class="combo">
-                    {i > 0 && <span class="sep">{sep}</span>}
+                  <span key={i} class={s.combo}>
+                    {i > 0 && <span class={s.sep}>{sep}</span>}
                     {combo.map((k) => (
                       <kbd key={k}>{k}</kbd>
                     ))}
@@ -111,7 +117,7 @@ export function Shortcuts({ practice = false }: { practice?: boolean }) {
             </div>
           ))}
         </dl>
-      </section>
+      </Card>
     </div>,
     document.body
   )

@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { signal } from "@preact/signals"
-import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { GameView, PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import type { RegionQuestion } from "@whereabouts/shared/regions"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
-import { Card, HudBottom, HudHeader, ScoreParts } from "../ui/bits"
+import { Card, ScoreParts } from "../ui/bits"
+import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop, ToolbarNote } from "../ui/Hud"
+import { cx } from "../ui/cx"
+import kit from "../ui/kit.module.css"
+import pl from "../ui/Players.module.css"
 import { RevealCards } from "../ui/Round"
 import { frameReveal, showAnswer, type RevealedAnswer } from "../round"
 import { ConnectionNote } from "../ui/ConnectionNote"
@@ -15,7 +18,7 @@ import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
 import { PaintDev } from "../ui/PaintTools"
 import { Icon } from "../ui/icons"
-import { HostTag } from "../ui/PlayerList"
+import { HostTag, RankArrow, Swatch } from "../ui/PlayerList"
 import { EndGameButton } from "../ui/HostControls"
 import { TakeSeatButton } from "../ui/TakeSeat"
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog"
@@ -141,19 +144,15 @@ export function Reveal({
       {dialog}
       {borders && <FlagHover gameMap={paint.gameMap} borders={borders} />}
       {borders && allFlags.value && <AllFlags gameMap={paint.gameMap} borders={borders} />}
-      <div class="hud reveal">
-        <div class="hud-top">
+      <Hud reveal>
+        <HudTop>
           <HudHeader
             round={reveal.index + 1}
             total={reveal.total}
             right={
-              <span
-                class="ready-count"
-                title="The next round starts when everyone is ready"
-                data-testid={revealTestIds.readyCount}
-              >
+              <HeaderNote title="The next round starts when everyone is ready" testId={revealTestIds.readyCount}>
                 {readyCount} / {present.length} ready
-              </span>
+              </HeaderNote>
             }
           />
           <RevealCards
@@ -167,17 +166,17 @@ export function Reveal({
             testIds={{ scoreCard: revealTestIds.scoreCard }}
           />
           <ConnectionNote conn={conn} />
-        </div>
-        <div class="hud-right">
+        </HudTop>
+        <HudRight>
           <Card title="Scores">
-            <ul class="reveal-list" data-testid={revealTestIds.scoresList}>
+            <ul class={cx(pl.list, pl.pick)} data-testid={revealTestIds.scoresList}>
               <li
-                class={`everyone ${selected === undefined ? "selected" : ""}`}
+                class={cx(pl.everyone, selected === undefined && pl.selected)}
                 onClick={() => setSelected(undefined)}
                 data-testid={revealTestIds.everyoneRow}
               >
-                <span class="swatch multi" />
-                <span class="name">Everyone</span>
+                <Swatch everyone />
+                <span class={pl.name}>Everyone</span>
               </li>
               {rows.map(({ p, r }) => (
                 <RevealRow
@@ -199,22 +198,22 @@ export function Reveal({
                 />
               ))}
               <li
-                class={`hide-paint ${selected === NONE ? "selected" : ""}`}
+                class={cx(pl.hidePaint, selected === NONE && pl.selected)}
                 onClick={() => setSelected(selected === NONE ? undefined : NONE)}
                 data-testid={revealTestIds.hidePaintRow}
                 title="Show the map and the answer without anyone's paint"
               >
-                <span class="swatch-icon">
+                <span class={pl.swatchIcon}>
                   <Icon name="eyeOff" size={13} />
                 </span>
-                <span class="name">Hide paint</span>
+                <span class={pl.name}>Hide paint</span>
               </li>
             </ul>
-            <p class="hint">Pick a player to see just their guess.</p>
+            <p class={kit.hint}>Pick a player to see just their guess.</p>
           </Card>
           {/* Where it is while guessing too, and away from Next round below. */}
           {view.you.isHost && !last && <EndGameButton onEnd={() => conn.end()} />}
-        </div>
+        </HudRight>
         <HudBottom>
           {answerFlag && <AllFlagsSwitch />}
           <VrButton view={vrView} />
@@ -240,13 +239,13 @@ export function Reveal({
               <Icon name={last ? "flag" : "next"} /> {last ? "Show final results" : "Next round"}
             </button>
           ) : (
-            iAmReady && <span class="hint">Waiting for the others…</span>
+            iAmReady && <ToolbarNote>Waiting for the others…</ToolbarNote>
           )}
         </HudBottom>
-      </div>
+      </Hud>
       <DevDrawer>
         <Card title="Round results">
-          <ul class="results">
+          <ul class={kit.results}>
             {reveal.results.map((r) => (
               <li key={r.playerId}>
                 <span>
@@ -254,7 +253,7 @@ export function Reveal({
                   {byId.get(r.playerId)?.isHost && <HostTag />}
                 </span>
                 {r.region ? (
-                  <span class="parts">
+                  <span class={kit.parts}>
                     shape <b>{Math.round(r.region.shape)}</b> · nearness <b>{Math.round(r.region.nearness)}</b>
                   </span>
                 ) : (
@@ -300,38 +299,38 @@ function RevealRow({
   const delta = p.previousRank !== undefined ? p.previousRank - p.rank : 0
   return (
     <li
-      class={`${selected ? "selected" : ""} ${you ? "you" : ""} ${where ? "with-where" : ""}`}
+      class={cx(selected && pl.selected, you && pl.you, where && pl.withWhere)}
       onClick={onSelect}
       onPointerEnter={(e) => e.pointerType === "mouse" && onHover(true)}
       onPointerLeave={(e) => e.pointerType === "mouse" && onHover(false)}
       data-testid={revealTestIds.playerRow}
       data-player={p.name}
     >
-      <span class="swatch" style={{ background: colourCss(p.colour) }} />
-      <span class="name">
-        <span class="name-text" data-testid={revealTestIds.playerName}>
+      <Swatch colour={p.colour} />
+      <span class={pl.name}>
+        <span class={pl.nameText} data-testid={revealTestIds.playerName}>
           {p.name}
         </span>
         {p.isHost && <HostTag />}
         {r && !r.paint && (
-          <span class="tag passed" title="Made no guess this round" data-testid={revealTestIds.passedTag}>
+          <span class={pl.tag} title="Made no guess this round" data-testid={revealTestIds.passedTag}>
             passed
           </span>
         )}
         {r?.hint && (
-          <span class="tag hinted" title={`Used a ${r.hint} hint this round`} data-testid={revealTestIds.hintTag}>
+          <span class={pl.hinted} title={`Used a ${r.hint} hint this round`} data-testid={revealTestIds.hintTag}>
             <Icon name="hint" size={11} />
           </span>
         )}
         {ready && (
-          <span class="tag ready" title="Ready for the next round">
+          <span class={cx(pl.tag, pl.ready)} title="Ready for the next round">
             ✓
           </span>
         )}
       </span>
       {onKick && (
         <button
-          class="icon kick"
+          class={cx("icon", pl.kick)}
           title={`Remove ${p.name} from the game`}
           aria-label={`Remove ${p.name} from the game`}
           onClick={(e) => {
@@ -342,17 +341,15 @@ function RevealRow({
           <Icon name="kick" size={13} />
         </button>
       )}
-      <span class="round-score" title="This round" data-testid={revealTestIds.roundScore}>
+      <span class={pl.roundScore} title="This round" data-testid={revealTestIds.roundScore}>
         {r ? `+${Math.round(r.score)}` : "sat out"}
       </span>
-      <span class={`arrow ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
-        {delta > 0 ? "▲" : delta < 0 ? "▼" : ""}
-      </span>
-      <span class="score-num" title="Total so far">
+      <RankArrow delta={delta} />
+      <span class={pl.scoreNum} title="Total so far">
         {Math.round(p.score).toLocaleString()}
       </span>
       {where && (
-        <span class="where">
+        <span class={pl.where}>
           <PaintedIn where={where} answer={answerFlag} whose={you ? "your" : `${p.name}'s`} />
         </span>
       )}

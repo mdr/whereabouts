@@ -1,12 +1,13 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
-import { fireEvent, render } from "@testing-library/preact"
+import { fireEvent, render, screen } from "@testing-library/preact"
 import { ConfirmDialog, endGameRequest, kickRequest, makeHostRequest } from "./ConfirmDialog"
+import { confirmDialogTestIds } from "./ConfirmDialogTestIds"
 
 describe("ConfirmDialog", () => {
   it("renders nothing without a request", () => {
     render(<ConfirmDialog request={undefined} onClose={() => {}} />)
-    expect(document.body.querySelectorAll(".modal")).toHaveLength(0)
+    expect(screen.queryAllByTestId(confirmDialogTestIds.dialog)).toHaveLength(0)
   })
 
   it("confirms only on the confirm button; cancel, backdrop and Escape just close", () => {
@@ -21,9 +22,9 @@ describe("ConfirmDialog", () => {
     expect(closed).toBe(1)
     expect(confirmed).toBe(0)
 
-    fireEvent.click(document.body.querySelector(".modal-backdrop")!)
+    fireEvent.click(screen.getByTestId(confirmDialogTestIds.backdrop))
     expect(closed).toBe(2)
-    fireEvent.click(document.body.querySelector(".modal")!) // inside: no close
+    fireEvent.click(screen.getByTestId(confirmDialogTestIds.dialog)) // inside: no close
     expect(closed).toBe(2)
 
     fireEvent.keyDown(window, { key: "Escape" })
@@ -41,7 +42,7 @@ describe("ConfirmDialog", () => {
         <ConfirmDialog request={endGameRequest(() => {})} onClose={() => {}} />
       </div>
     )
-    const backdrop = document.body.querySelector(".modal-backdrop")!
+    const backdrop = screen.getAllByTestId(confirmDialogTestIds.backdrop).at(-1)!
     expect(backdrop.parentElement).toBe(document.body)
     expect(backdrop.closest(".hud-bottom") ?? undefined).toBeUndefined()
   })
@@ -54,8 +55,7 @@ describe("ConfirmDialog", () => {
 
   it("shows handing over as a plain confirm, and removing as a red one", () => {
     const { unmount } = render(<ConfirmDialog request={makeHostRequest("Bob", () => {})} onClose={() => {}} />)
-    const confirm = () =>
-      [...document.body.querySelectorAll<HTMLButtonElement>(".modal-actions button:last-child")].at(-1)!
+    const confirm = () => screen.getAllByTestId<HTMLButtonElement>(confirmDialogTestIds.confirmButton).at(-1)!
     expect(confirm().textContent).toBe("Make Bob host")
     expect(confirm().className).toBe("primary")
     unmount()

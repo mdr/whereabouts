@@ -5,6 +5,7 @@
 // Usage, from packages/client: node browser/e2e/vr.ts [outDir] [baseUrl]
 import { Headset } from "../pages/Headset.ts"
 import { soloTestIds } from "../../src/screens/SoloTestIds.ts"
+import { flagRevealTestIds } from "../../src/ui/FlagRevealTestIds.ts"
 import { hintTestIds } from "../../src/ui/HintTestIds.ts"
 import { questionCardTestIds } from "../../src/ui/bitsTestIds.ts"
 import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
@@ -516,7 +517,7 @@ checks.check(
   ),
   "rays from the hands show what they point at"
 )
-const pagePins = await flagTab.page.locator(".flag-pin").count()
+const pagePins = await flagTab.page.getByTestId(flagRevealTestIds.pin).count()
 checks.check(pagePins > 190, `and on the page's map (${pagePins})`)
 await flagRound.pause(1500)
 await flagRound.screenshot(`${out}/vr-11-all-flags.png`)

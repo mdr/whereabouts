@@ -2,6 +2,8 @@ import type { GameView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../net"
 import { Card } from "./bits"
 import { DevFacts } from "./DevDrawer"
+import { cx } from "./cx"
+import kit from "./kit.module.css"
 
 /** Connection and game-state diagnostics for the dev drawer. */
 export function ConnectionDev({ conn, view }: { conn: Connection; view: GameView }) {
@@ -20,7 +22,7 @@ export function ConnectionDev({ conn, view }: { conn: Connection; view: GameView
           ["You", `${you?.name ?? "?"} (${view.you.id ?? "none"})`]
         ]}
       />
-      {conn.lastError.value && <p class="hint warn">{conn.lastError.value}</p>}
+      {conn.lastError.value && <p class={cx(kit.hint, kit.warn)}>{conn.lastError.value}</p>}
     </Card>
   )
 }

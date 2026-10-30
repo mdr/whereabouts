@@ -1,10 +1,12 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
-import { render } from "@testing-library/preact"
+import { render, screen } from "@testing-library/preact"
 import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import type { PlayerView } from "@whereabouts/shared/protocol"
 import { HostTag, PlayerList, initial } from "./PlayerList"
+import { playerListTestIds } from "./PlayerListTestIds"
+import s from "./Players.module.css"
 
 const player = (over: Partial<PlayerView>): PlayerView => ({
   id: playerId("p1"),
@@ -36,14 +38,14 @@ describe("PlayerList", () => {
     expect(rows).toHaveLength(2)
     expect(rows[0]!.textContent).toContain("host")
     expect(rows[0]!.textContent).toContain("you")
-    expect(rows[1]!.className).toContain("offline")
+    expect(rows[1]!.classList.contains(s.offline!)).toBe(true)
     expect(rows[1]!.textContent).toContain("offline")
     // No scores requested.
-    expect(container.querySelectorAll(".score-num")).toHaveLength(0)
+    expect(screen.queryAllByTestId(playerListTestIds.score)).toHaveLength(0)
   })
 
   it("shows rank-change arrows only when a rank moved", () => {
-    const { container } = render(
+    render(
       <PlayerList
         players={[
           player({ id: playerId("p1"), name: playerName("Up"), rank: 1, previousRank: 2, score: 900 }),
@@ -55,9 +57,9 @@ describe("PlayerList", () => {
         arrows
       />
     )
-    const arrows = [...container.querySelectorAll(".arrow")].map((a) => a.textContent)
+    const arrows = screen.getAllByTestId(playerListTestIds.arrow).map((a) => a.textContent)
     expect(arrows).toEqual(["▲", "", "▼"])
-    expect([...container.querySelectorAll(".score-num")].map((s) => s.textContent)).toEqual(["900", "500", "100"])
+    expect(screen.getAllByTestId(playerListTestIds.score).map((s) => s.textContent)).toEqual(["900", "500", "100"])
   })
 
   it("puts a rename pencil on your own row only when asked", () => {
@@ -85,18 +87,18 @@ describe("PlayerList status", () => {
       player({ id: playerId("p2"), name: playerName("Bob"), locked: false })
     ]
     const { container: plain } = render(<PlayerList players={players} you={playerId("p2")} showScores={false} />)
-    expect(plain.querySelectorAll(".tag.done")).toHaveLength(0)
+    expect(plain.querySelectorAll(`.${s.done!}`)).toHaveLength(0)
     const { container } = render(<PlayerList players={players} you={playerId("p2")} showScores={false} showLocked />)
     const rows = container.querySelectorAll("li")
-    expect(rows[0]!.querySelectorAll(".tag.done")).not.toHaveLength(0)
-    expect(rows[1]!.querySelectorAll(".tag.done")).toHaveLength(0)
+    expect(rows[0]!.querySelectorAll(`.${s.done!}`)).not.toHaveLength(0)
+    expect(rows[1]!.querySelectorAll(`.${s.done!}`)).toHaveLength(0)
   })
 })
 
 describe("HostTag", () => {
   it("shows the crown with the word for screen readers", () => {
     const { container } = render(<HostTag />)
-    expect(container.querySelectorAll(".tag.host svg")).not.toHaveLength(0)
+    expect(container.querySelectorAll(`.${s.host!} svg`)).not.toHaveLength(0)
     expect(container.textContent).toBe("host")
   })
 })
@@ -106,11 +108,11 @@ describe("PlayerList kick", () => {
     const kicked: string[] = []
     const players = [player({ id: playerId("p1") }), player({ id: playerId("p2"), name: playerName("Bob") })]
     const { container: plain } = render(<PlayerList players={players} you={playerId("p1")} showScores={false} />)
-    expect(plain.querySelectorAll("button.kick")).toHaveLength(0)
+    expect(plain.querySelectorAll(`button.${s.kick!}`)).toHaveLength(0)
     const { container } = render(
       <PlayerList players={players} you={playerId("p1")} showScores={false} onKick={(p) => kicked.push(p.id)} />
     )
-    const buttons = container.querySelectorAll<HTMLButtonElement>("button.kick")
+    const buttons = container.querySelectorAll<HTMLButtonElement>(`button.${s.kick!}`)
     expect(buttons).toHaveLength(1)
     expect(buttons[0]!.getAttribute("aria-label")).toBe("Remove Bob from the game")
     buttons[0]!.click()
@@ -127,11 +129,11 @@ describe("PlayerList make host", () => {
       player({ id: playerId("p3"), name: playerName("Cara"), connected: false })
     ]
     const { container: plain } = render(<PlayerList players={players} you={playerId("p1")} showScores={false} />)
-    expect(plain.querySelectorAll("button.make-host")).toHaveLength(0)
+    expect(plain.querySelectorAll(`button.${s.makeHost!}`)).toHaveLength(0)
     const { container } = render(
       <PlayerList players={players} you={playerId("p1")} showScores={false} onMakeHost={(p) => picked.push(p.id)} />
     )
-    const buttons = container.querySelectorAll<HTMLButtonElement>("button.make-host")
+    const buttons = container.querySelectorAll<HTMLButtonElement>(`button.${s.makeHost!}`)
     expect(buttons).toHaveLength(1)
     expect(buttons[0]!.getAttribute("aria-label")).toBe("Make Bob the host")
     buttons[0]!.click()
@@ -148,7 +150,7 @@ describe("PlayerList spectators", () => {
       />
     )
     const row = container.querySelector("li")!
-    expect(row.querySelectorAll(".swatch.watcher")).not.toHaveLength(0)
+    expect(row.querySelectorAll(`.${s.watcher!}`)).not.toHaveLength(0)
     expect(row.textContent).toContain("watching")
   })
 })

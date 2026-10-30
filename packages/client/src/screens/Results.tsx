@@ -5,9 +5,13 @@ import type { RegionId } from "@whereabouts/shared/ids"
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { Connection } from "../net"
 import { Icon } from "../ui/icons"
-import { HostTag, HostWord } from "../ui/PlayerList"
+import { HostTag, HostWord, Swatch } from "../ui/PlayerList"
 import { Banner } from "../ui/Banner"
-import { SmallFlag, SmallFlagButton, SmallPhoto } from "../ui/bits"
+import { SmallFlag, SmallFlagButton, SmallPhoto, SmallPictureBox } from "../ui/bits"
+import { typeColour } from "../ui/MixEditor"
+import { cx } from "../ui/cx"
+import kit from "../ui/kit.module.css"
+import s from "./Results.module.css"
 import { outlinePath } from "../ui/outline-path"
 import { useRegion } from "../regions"
 import { useElementRef } from "../ui/element-ref"
@@ -70,35 +74,37 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   }
   useVrView(vrView, "results")
   return (
-    <div class="home">
-      <div class="home-card results-card" data-testid={resultsTestIds.page}>
+    <div class={kit.page}>
+      <div class={cx(kit.pageCard, s.card)} data-testid={resultsTestIds.page}>
         <Banner />
         {winner && (
-          <p class="tagline">
-            <span class="swatch" style={{ background: colourCss(winner.colour) }} /> <b>{winner.name}</b>
+          <p class={kit.tagline} data-testid={resultsTestIds.winner}>
+            <Swatch colour={winner.colour} /> <b>{winner.name}</b>
             {winner.isHost && <HostTag />} wins
           </p>
         )}
-        <ol class={`standings ${standings.length > MANY_PLAYERS ? "many" : ""}`} aria-label="Final standings">
-          {standings.map((s, i) => {
-            const p = byId.get(s.playerId)
+        <ol class={cx(s.standings, standings.length > MANY_PLAYERS && s.many)} aria-label="Final standings">
+          {standings.map((st, i) => {
+            const p = byId.get(st.playerId)
             return (
               <li
-                key={s.playerId}
-                class={`standings-row ${s.playerId === view.you.id ? "you" : ""} ${i >= MEDALS.length ? "minor" : ""}`}
+                key={st.playerId}
+                class={cx(s.row, st.playerId === view.you.id && s.you, i >= MEDALS.length && s.minor)}
                 data-testid={resultsTestIds.standingsRow}
                 data-player={p?.name}
               >
-                <span class="place">{MEDALS[i] ?? i + 1}</span>
-                <span class="dot">
-                  <i class="swatch" style={{ background: colourCss(p?.colour) }} />
+                <span class={s.place} data-testid={resultsTestIds.place}>
+                  {MEDALS[i] ?? i + 1}
                 </span>
-                <span class="name">
-                  <span class="name-text">{p?.name ?? "?"}</span>
+                <span class={s.dot}>
+                  <Swatch as="i" colour={p?.colour} />
+                </span>
+                <span class={s.name}>
+                  <span class={s.nameText}>{p?.name ?? "?"}</span>
                   {p?.isHost && <HostTag />}
                 </span>
-                <span class="total" title="Total">
-                  {Math.round(s.total).toLocaleString()}
+                <span class={s.total} title="Total" data-testid={resultsTestIds.total}>
+                  {Math.round(st.total).toLocaleString()}
                 </span>
               </li>
             )
@@ -110,13 +116,13 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             <Icon name="refresh" /> Play again
           </button>
         ) : (
-          <p class="hint">
+          <p class={kit.hint}>
             <HostWord capital /> can start another game with the same group.
           </p>
         )}
         {view.awards && view.awards.length > 0 && <Awards awards={view.awards} byId={byId} />}
         <Rounds rounds={view.playedRounds ?? []} standings={standings} byId={byId} you={view.you.id} />
-        <p class="hint">
+        <p class={kit.hint}>
           <a href="#/">Leave</a>
         </p>
       </div>
@@ -153,13 +159,13 @@ function Rounds(props: RoundsProps) {
     width === undefined ? standings.length <= 6 : width >= ROUND_COLUMN_PX + standings.length * SCORE_COLUMN_PX
   const best = rounds.map((_, r) => Math.max(-1, ...standings.map((s) => s.rounds[r]?.score ?? -1)))
   return (
-    <section class="score-table" aria-label="Scores by round" ref={ref}>
+    <section class={s.rounds} aria-label="Scores by round" ref={ref}>
       <h2>Rounds</h2>
       {fits || everyone ? <ScoreTable {...props} best={best} scrolls={!fits} /> : <RoundList {...props} best={best} />}
       {!fits && (
         <button
           type="button"
-          class="small everyone-toggle"
+          class={cx("small", s.everyoneToggle)}
           onClick={() => setEveryone(!everyone)}
           data-testid={resultsTestIds.everyoneToggle}
         >
@@ -174,11 +180,11 @@ function Rounds(props: RoundsProps) {
 function RoundList({ rounds, standings, byId, you, best }: RoundsProps & { best: number[] }) {
   const mine = standings.find((s) => s.playerId === you)
   return (
-    <ol class="round-list">
-      <li class="round-list-head" aria-hidden="true">
-        <span class="round-text" />
+    <ol class={s.list}>
+      <li class={s.head} aria-hidden="true">
+        <span class={s.text} />
         <span>Best</span>
-        {mine && <span class="round-yours">You</span>}
+        {mine && <span class={s.yours}>You</span>}
       </li>
       {rounds.map((round, r) => {
         const winners = standings.filter((s) => s.rounds[r]?.score === best[r]).map((s) => byId.get(s.playerId))
@@ -186,18 +192,26 @@ function RoundList({ rounds, standings, byId, you, best }: RoundsProps & { best:
         const yours = mine?.rounds[r]?.score
         return (
           <li key={r} data-testid={resultsTestIds.playedRound}>
-            <span class="round-number">{r + 1}</span>
+            <span class={s.number}>{r + 1}</span>
             <RoundWhat round={round} />
             {first && (
-              <span class="round-winner" title={`Won by ${winners.map((p) => p?.name ?? "?").join(", ")}`}>
-                <i class="swatch" style={{ background: colourCss(first.colour) }} />
-                <span class="winner-name">{first.name}</span>
-                {winners.length > 1 && <span class="tied">+{winners.length - 1}</span>}
+              <span
+                class={s.winner}
+                data-testid={resultsTestIds.roundWinner}
+                title={`Won by ${winners.map((p) => p?.name ?? "?").join(", ")}`}
+              >
+                <Swatch as="i" colour={first.colour} />
+                <span class={s.winnerName}>{first.name}</span>
+                {winners.length > 1 && <span class={s.tied}>+{winners.length - 1}</span>}
                 <b>{Math.round(best[r]!)}</b>
               </span>
             )}
             {mine && (
-              <span class={`round-yours ${yours !== undefined && yours === best[r] ? "best" : ""}`} title="Your score">
+              <span
+                class={cx(s.yours, yours !== undefined && yours === best[r] && s.best)}
+                title="Your score"
+                data-testid={resultsTestIds.roundYours}
+              >
                 {yours === undefined ? "–" : Math.round(yours)}
               </span>
             )}
@@ -222,19 +236,21 @@ function ScoreTable({
   scrolls
 }: RoundsProps & { best: number[]; scrolls: boolean }) {
   return (
-    <div class={`score-table-scroll ${scrolls ? "scrolls" : ""}`}>
-      <table>
+    <div class={cx(s.scroll, scrolls && s.scrolls)}>
+      <table class={s.table} data-testid={resultsTestIds.table}>
         <thead>
           <tr>
-            <th class="round-cell" scope="col">
+            <th class={s.roundCell} scope="col">
               <span class="sr-only">Round</span>
             </th>
-            {standings.map((s) => {
-              const p = byId.get(s.playerId)
+            {standings.map((st) => {
+              const p = byId.get(st.playerId)
               return (
-                <th key={s.playerId} scope="col" class={s.playerId === you ? "you" : ""} title={p?.name}>
-                  <i class="swatch" style={{ background: colourCss(p?.colour) }} />
-                  <span class="player-name">{p?.name ?? "?"}</span>
+                <th key={st.playerId} scope="col" class={st.playerId === you ? s.you : undefined} title={p?.name}>
+                  <Swatch as="i" colour={p?.colour} class={s.headSwatch} />
+                  <span class={s.playerName} data-testid={resultsTestIds.playerName}>
+                    {p?.name ?? "?"}
+                  </span>
                 </th>
               )
             })}
@@ -243,19 +259,19 @@ function ScoreTable({
         <tbody>
           {rounds.map((round, r) => (
             <tr key={r} data-testid={resultsTestIds.playedRound}>
-              <th class="round-cell" scope="row">
-                <span class="round-what">
-                  <span class="round-number">{r + 1}</span>
+              <th class={s.roundCell} scope="row">
+                <span class={s.what}>
+                  <span class={s.number}>{r + 1}</span>
                   <RoundWhat round={round} />
                 </span>
               </th>
-              {standings.map((s) => {
-                const score = s.rounds[r]?.score
+              {standings.map((st) => {
+                const score = st.rounds[r]?.score
                 const won = score !== undefined && score === best[r]
                 return (
                   <td
-                    key={s.playerId}
-                    class={`${won ? "best" : ""} ${s.playerId === you ? "you" : ""}`}
+                    key={st.playerId}
+                    class={cx(won && s.best, st.playerId === you && s.you)}
                     title={score === undefined ? "Sat out" : won ? "Won the round" : undefined}
                   >
                     {score === undefined ? "–" : Math.round(score)}
@@ -279,7 +295,7 @@ const TYPE_NAMES: Record<QuestionType, string> = {
   states: "US state"
 }
 
-/** The lobby's colour for each kind (style.css, .type-*), for the headset's board. */
+/** The lobby's colour for each kind (global.css, --type-*), for the headset's board. */
 const TYPE_COLOURS: Record<QuestionType, string> = {
   landmarks: "#ffb74d",
   places: "#4fc3f7",
@@ -300,12 +316,14 @@ function RoundWhat({ round }: { round: PlayedRound }) {
   return (
     <>
       <RoundPicture round={round} />
-      <span class="round-text">
-        <span class="round-label">
+      <span class={s.text}>
+        <span class={s.label} data-testid={resultsTestIds.roundLabel}>
           {round.label}
-          {round.regionId && round.flag && <SmallFlag code={round.flag} />}
+          {round.regionId && round.flag && <SmallFlag code={round.flag} class={s.labelFlag} />}
         </span>
-        <span class={`round-type type-${round.type}`}>{typeName(round)}</span>
+        <span class={s.type} style={typeColour(round.type)} data-testid={resultsTestIds.roundType}>
+          {typeName(round)}
+        </span>
       </span>
     </>
   )
@@ -318,9 +336,9 @@ function RoundPicture({ round }: { round: PlayedRound }) {
   if (round.flag) return <SmallFlagButton code={round.flag} />
   if (round.revealPhoto) return <SmallPhoto image={round.revealPhoto} />
   return (
-    <span class="small-picture">
+    <SmallPictureBox>
       <Icon name="pin" size={18} />
-    </span>
+    </SmallPictureBox>
   )
 }
 
@@ -328,29 +346,29 @@ function RoundShape({ id, type }: { id: RegionId; type: QuestionType }) {
   const region = useRegion(id)
   const d = useMemo(() => (region ? outlinePath(region.outline, region.answer, 56, 42) : ""), [region])
   return (
-    <span class={`small-picture round-shape type-${type}`}>
+    <SmallPictureBox class={s.shape} style={typeColour(type)}>
       {d && (
         <svg viewBox="0 0 56 42" aria-hidden="true">
           <path d={d} />
         </svg>
       )}
-    </span>
+    </SmallPictureBox>
   )
 }
 
 function Awards({ awards, byId }: { awards: Award[]; byId: Map<string, PlayerView> }) {
   return (
-    <section class="awards" aria-label="Awards">
+    <section class={s.awards} aria-label="Awards">
       <h2>Awards</h2>
       <ul>
         {awards.map((a) => (
-          <li key={a.title} class="award" data-testid={resultsTestIds.award}>
-            <span class="award-emoji" aria-hidden="true">
+          <li key={a.title} class={s.award} data-testid={resultsTestIds.award}>
+            <span class={s.emoji} aria-hidden="true">
               {a.emoji}
             </span>
-            <span class="award-body">
-              <b class="award-title">{a.title}</b>
-              <span class="award-line">
+            <span class={s.body}>
+              <b class={s.title}>{a.title}</b>
+              <span class={s.line}>
                 <AwardLine line={a.line} players={a.playerIds.map((id) => byId.get(id))} />
               </span>
             </span>
@@ -383,7 +401,7 @@ function AwardLine({ line, players }: { line: string; players: (PlayerView | und
         if (!m) return part
         const p = players[Number(m[1])]
         return (
-          <b key={i} class="award-name" style={{ color: p ? colourCss(p.colour) : undefined }}>
+          <b key={i} style={{ color: p ? colourCss(p.colour) : undefined }}>
             {p?.name ?? "Someone"}
           </b>
         )

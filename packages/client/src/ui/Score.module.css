@@ -1,0 +1,53 @@
+@import "../media.css";
+
+.score {
+  text-align: center;
+}
+.big {
+  font-size: 52px;
+  font-weight: 700;
+  line-height: 1;
+  margin: 6px 0;
+  font-variant-numeric: tabular-nums;
+}
+.label {
+  color: var(--muted);
+}
+.fit {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* A reveal's score card on a phone opens the sheet: the score beside what it was for. */
+@media (--phone) {
+  .score.reveal {
+    order: -1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-content: start;
+    align-items: center;
+    gap: 10px 12px;
+    padding: 8px 12px;
+    text-align: left;
+
+    & .big {
+      grid-row: span 3;
+      font-size: 28px;
+      margin: 0;
+    }
+    /* A long country name in "Your paint" is cut short rather than widening the card. */
+    & .fit {
+      margin-top: 2px;
+      display: flex;
+      gap: 4px;
+      white-space: nowrap;
+    }
+  }
+}
+/* Before the question, which is already known. */
+@media (--very-short) {
+  .score.reveal {
+    order: -1;
+  }
+}

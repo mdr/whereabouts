@@ -1,4 +1,6 @@
 import type { Connection } from "../net"
+import { cx } from "./cx"
+import kit from "./kit.module.css"
 
 /** Reconnecting, or the server's last complaint; undefined while all is well. */
 export function connectionText(conn: Connection): string | undefined {
@@ -9,5 +11,5 @@ export function connectionText(conn: Connection): string | undefined {
 export function ConnectionNote({ conn }: { conn: Connection }) {
   const text = connectionText(conn)
   if (text === undefined) return undefined
-  return <p class={`hint ${conn.status.value !== "connected" ? "warn" : ""}`}>{text}</p>
+  return <p class={cx(kit.hint, conn.status.value !== "connected" && kit.warn)}>{text}</p>
 }

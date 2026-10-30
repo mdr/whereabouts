@@ -1,0 +1,54 @@
+/* A flag on a pin, its foot on the point: drawn under the pointer's own flag card. */
+.pin {
+  pointer-events: none;
+  width: 18px;
+  height: 22px;
+  border-left: 1.5px solid var(--panel-fg);
+
+  & i {
+    display: block;
+    width: 16px;
+    height: 12px;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--shade) 60%, transparent);
+  }
+}
+
+.hover {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--panel-bg);
+  color: var(--panel-fg);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--shade) 40%, transparent);
+  white-space: nowrap;
+}
+.hoverFlag {
+  height: 24px;
+}
+
+.paintedIn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--panel-fg);
+}
+.country {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.share {
+  color: var(--muted);
+}
+.right .country {
+  color: var(--success);
+}

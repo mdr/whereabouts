@@ -1,0 +1,61 @@
+/* The same frame at each level, as picture choices. */
+.picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+
+  & button {
+    padding: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid transparent;
+    background: var(--tile-bg);
+  }
+  & img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+  & button.on {
+    border-color: var(--accent-2);
+  }
+}
+/* Two rows of two, so every label has room. */
+.picker.narrow {
+  grid-template-columns: repeat(2, 1fr);
+}
+.name {
+  padding: 4px 6px 5px;
+  font-size: 12px;
+  text-align: center;
+}
+.on .name {
+  background: var(--accent-2);
+  color: var(--on-accent-2);
+  font-weight: 700;
+}
+
+/* The chosen level, in a guest's setup tile. */
+.summaryPicture {
+  width: 96px;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.summaryText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.summaryValue {
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.summaryLabel {
+  color: var(--muted);
+  font-size: 12px;
+}

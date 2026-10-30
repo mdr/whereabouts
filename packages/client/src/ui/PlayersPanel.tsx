@@ -8,8 +8,12 @@ import type { GameView, PlayerView } from "@whereabouts/shared/protocol"
 import { PlayerList } from "./PlayerList"
 import { Icon } from "./icons"
 import { playersPanelTestIds } from "./PlayersPanelTestIds"
+import { Card } from "./bits"
+import { cx } from "./cx"
+import s from "./PlayersPanel.module.css"
 
-const expanded = signal(false)
+/** Open, it may take more of a phone's screen (HudRight's `roomy`). */
+export const playersPanelOpen = signal(false)
 
 export function PlayersPanel({
   view,
@@ -23,13 +27,13 @@ export function PlayersPanel({
   const players = view.players.filter((p) => !p.watching)
   const watching = view.players.length - players.length
   const online = players.filter((p) => p.connected).length
-  const open = expanded.value
+  const open = playersPanelOpen.value
   return (
-    <div class={`players-panel ${open ? "open" : ""}`}>
+    <div class={cx(s.panel, open && s.open)}>
       <button
-        class="players-toggle"
+        class={s.toggle}
         data-testid={playersPanelTestIds.toggle}
-        onClick={() => (expanded.value = !open)}
+        onClick={() => (playersPanelOpen.value = !open)}
         aria-expanded={open}
         title={open ? "Hide players" : "Show players"}
       >
@@ -42,7 +46,7 @@ export function PlayersPanel({
         <Icon name={open ? "collapse" : "expand"} size={14} />
       </button>
       {open && (
-        <div class="card players-card" data-testid={playersPanelTestIds.card}>
+        <Card class={s.card} data-testid={playersPanelTestIds.card}>
           <PlayerList
             players={players}
             you={view.you.id}
@@ -51,7 +55,7 @@ export function PlayersPanel({
             onKick={onKick}
             onMakeHost={onMakeHost}
           />
-        </div>
+        </Card>
       )}
     </div>
   )

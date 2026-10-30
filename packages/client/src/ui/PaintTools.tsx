@@ -2,7 +2,10 @@ import type { ComponentChildren } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import type { HintBand } from "@whereabouts/shared/hints"
 import { usePaint } from "./MapView"
-import { Card, HudBottom, fmtKm } from "./bits"
+import { Card, fmtKm } from "./bits"
+import { HudBottom } from "./Hud"
+import kit from "./kit.module.css"
+import s from "./PaintTools.module.css"
 import type { Tool } from "../paint-controller"
 import { Icon, type IconName } from "./icons"
 import { sound } from "../sound"
@@ -49,11 +52,11 @@ export function PaintTools({
   }
   return (
     <HudBottom>
-      <div class="tools">
+      <div class={s.tools}>
         {tools.map((t) => (
           <button
             key={t}
-            class={tool === t ? "active" : ""}
+            class={tool === t ? "active" : undefined}
             aria-pressed={tool === t}
             title={TOOL_HINT[t]}
             onClick={() => (paint.tool.value = t)}
@@ -61,7 +64,7 @@ export function PaintTools({
             data-testid={paintToolsTestIds.toolButton}
             data-tool={t}
           >
-            <Icon name={TOOL_ICON[t]} /> <span class="label">{t[0]!.toUpperCase() + t.slice(1)}</span>
+            <Icon name={TOOL_ICON[t]} /> <span class={s.label}>{t[0]!.toUpperCase() + t.slice(1)}</span>
           </button>
         ))}
         <button
@@ -70,12 +73,12 @@ export function PaintTools({
           disabled={!enabled}
           data-testid={paintToolsTestIds.clearButton}
         >
-          <Icon name="trash" /> <span class="label">Clear</span>
+          <Icon name="trash" /> <span class={s.label}>Clear</span>
         </button>
         <Trim enabled={enabled} water={water ?? false} />
         {hint && <TrimToHint enabled={enabled} band={hint} />}
       </div>
-      <label class="brush" title="Brush size ([ and ] also work)">
+      <label class={s.brush} title="Brush size ([ and ] also work)">
         <span>Brush</span>
         <input
           type="range"
@@ -87,9 +90,9 @@ export function PaintTools({
           onInput={(e) => paint.setBrushPx(Number((e.target as HTMLInputElement).value))}
         />
       </label>
-      <span class="history">
+      <span class={s.history}>
         <button
-          class="icon-only"
+          class={s.iconOnly}
           title="Undo (Ctrl+Z or ⌘Z)"
           aria-label="Undo"
           onClick={() => paint.undo()}
@@ -98,7 +101,7 @@ export function PaintTools({
           <Icon name="undo" />
         </button>
         <button
-          class="icon-only"
+          class={s.iconOnly}
           title="Redo (Ctrl+Shift+Z, ⌘⇧Z or Ctrl+Y)"
           aria-label="Redo"
           onClick={() => paint.redo()}
@@ -138,7 +141,7 @@ export function PaintDev() {
         onInput={(v) => (paint.floor.value = v)}
         format={(v) => `${Math.round(v * 100)}%`}
       />
-      <p class="hint">
+      <p class={kit.hint}>
         Tolerance {fmtKm(paint.toleranceKm.value)} · finest H3 res {stats.res} · {stats.size} cells
         {stats.size > 0 && <> ({stats.resolutionCounts.map(([r, n]) => `res ${r}: ${n}`).join(", ")})</>}
       </p>
@@ -157,7 +160,7 @@ function Slider(props: {
   format: (v: number) => string
 }) {
   return (
-    <div class="row">
+    <div class={s.row}>
       <label>{props.label}</label>
       <input
         type="range"
@@ -183,15 +186,15 @@ function Distribution() {
   const shown = blobs.slice(0, 6)
   const rest = blobs.slice(6).reduce((s, b) => s + b.fraction, 0) * painted * 100
   return (
-    <ul class="blobs" data-testid={paintDevTestIds.blobs}>
+    <ul class={s.blobs} data-testid={paintDevTestIds.blobs}>
       {shown.map((b, i) => {
         const pct = b.fraction * painted * 100
         return (
           <li key={i}>
             <span>
-              Blob {i + 1} <span class="muted">({b.cells} cells)</span>
+              Blob {i + 1} <span>({b.cells} cells)</span>
             </span>
-            <span class="bar">
+            <span class={s.bar}>
               <i style={{ width: `${pct}%` }} />
             </span>
             <span>{pct.toFixed(1)}%</span>
@@ -199,17 +202,17 @@ function Distribution() {
         )
       })}
       {blobs.length > shown.length && (
-        <li class="muted">
+        <li class={s.muted}>
           <span>{blobs.length - shown.length} more blobs</span>
-          <span class="bar">
+          <span class={s.bar}>
             <i style={{ width: `${rest}%` }} />
           </span>
           <span>{rest.toFixed(1)}%</span>
         </li>
       )}
-      <li class="floor">
+      <li class={s.floor}>
         <span>World floor</span>
-        <span class="bar">
+        <span class={s.bar}>
           <i style={{ width: `${effectiveFloor * 100}%` }} />
         </span>
         <span>{(effectiveFloor * 100).toFixed(1)}%</span>
@@ -240,7 +243,7 @@ function TrimToHint({ enabled, band }: { enabled: boolean; band: HintBand }) {
       aria-live="polite"
       data-testid={paintToolsTestIds.trimToHintButton}
     >
-      <Icon name="hint" /> <span class="label">{note ?? "Trim to hint"}</span>
+      <Icon name="hint" /> <span class={s.label}>{note ?? "Trim to hint"}</span>
     </button>
   )
 }
@@ -285,7 +288,7 @@ function Trim({ enabled, water }: { enabled: boolean; water: boolean }) {
       disabled={!enabled || busy || paint.isEmpty.value}
       aria-live="polite"
     >
-      <Icon name={water ? "land" : "sea"} /> <span class="label">{note ?? (water ? "Trim land" : "Trim sea")}</span>
+      <Icon name={water ? "land" : "sea"} /> <span class={s.label}>{note ?? (water ? "Trim land" : "Trim sea")}</span>
     </button>
   )
 }
