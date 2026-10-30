@@ -132,12 +132,15 @@ export class GameRoom extends Room<ActorData> {
     const previous = this.actorsByToken.get(token)
     if (previous && previous !== actor) previous.kick("replaced by a newer connection")
     this.actorsByToken.set(token, actor)
+    const back = this.game.playerTokens.includes(token)
     const result = this.game.join(token, name, deps.clock.now(), watch)
     if (!result.ok) {
+      this.logger?.info(`${actor.id} (${name}) turned away: ${result.error}`)
       actor.send(ServerTopics.error, encodeMessage({ message: result.error }))
       actor.kick(result.error)
       return
     }
+    this.logger?.info(`${actor.id} (${name}) ${back ? "rejoined" : "joined"}`)
     const paint = this.game.paintOf(token)
     if (paint) actor.send(ServerTopics.paint, encodePaint(paint))
     this.broadcastState()
@@ -145,6 +148,7 @@ export class GameRoom extends Room<ActorData> {
 
   protected override onLeave(actor: Actor<ActorData>): void {
     const { token } = actor.data!
+    this.logger?.info(`${actor.id} (${actor.data!.name}) left`)
     if (this.actorsByToken.get(token) !== actor) return // superseded by a reconnect
     this.actorsByToken.delete(token)
     this.game.disconnect(token, deps.clock.now())
@@ -178,6 +182,7 @@ export class GameRoom extends Room<ActorData> {
 
   private handle(actor: Actor<ActorData>, topic: string, parsed: Parsed): void {
     if (!parsed.ok) {
+      this.logger?.warning(`${actor.id} (${actor.data!.name}) sent ${topic}: ${parsed.error}`)
       this.sendError(actor, parsed.error)
       return
     }

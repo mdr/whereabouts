@@ -6,7 +6,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import Fastify, { type FastifyInstance } from "fastify"
 import fastifyStatic from "@fastify/static"
-import { Rivalis } from "@rivalis/core"
+import { Rivalis, TokenBucketRateLimiter, logging } from "@rivalis/core"
 import WSTransport from "./vendor/WSTransport.ts"
 import { GameAuth, GameRoom, ROOM_TYPE, type ActorData } from "./rooms.ts"
 
@@ -26,10 +26,39 @@ export interface App {
   close(): Promise<void>
 }
 
-/** 1 MiB. A dense paint submission can exceed the 64 KiB default. */
-const MAX_PAYLOAD_BYTES = 1024 * 1024
+/**
+ * The largest message a client may send. Paint at the cell budget is about
+ * 72 KiB; every other message is under 1 KiB. Kept close to that, since
+ * junk JSON costs the time to parse it before it can be refused.
+ */
+const MAX_PAYLOAD_BYTES = 128 * 1024
 /** Above the largest message, a reveal at the paint budget, so only a client that has fallen behind is dropped. */
 const MAX_BUFFERED_BYTES = 8 * 1024 * 1024
+
+/**
+ * Rivalis's per-connection message limit, but logged when it closes a
+ * connection, so a flood shows. A player sends paint at most every 400 ms;
+ * the burst is for a host clicking through the lobby's settings.
+ */
+class LoggedRateLimiter extends TokenBucketRateLimiter {
+  private logger = logging.getLogger("rate limit")
+  /** Logged already: messages still in flight are refused too. */
+  private closing = new Set<string>()
+
+  override check(actorId: string): boolean {
+    const ok = super.check(actorId)
+    if (!ok && !this.closing.has(actorId)) {
+      this.closing.add(actorId)
+      this.logger.warning(`closing ${actorId}: over the message limit`)
+    }
+    return ok
+  }
+
+  override release(actorId: string): void {
+    super.release(actorId)
+    this.closing.delete(actorId)
+  }
+}
 
 export function createApp(options: AppOptions): App {
   const fastify = Fastify({ logger: options.logger ?? false })
@@ -70,6 +99,7 @@ export function createApp(options: AppOptions): App {
   rivalis = new Rivalis<ActorData>({
     transports: [transport],
     authMiddleware: new GameAuth(rooms),
+    rateLimiter: new LoggedRateLimiter({ capacity: 30, refillPerSecond: 5 }),
     maxPayloadBytes: MAX_PAYLOAD_BYTES
   })
   if (options.logLevel) rivalis.logging.level = options.logLevel

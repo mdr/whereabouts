@@ -68,6 +68,14 @@ export class Connection {
       if (this.status.value !== "rejected") this.status.value = "disconnected"
     })
     client.on("client:kicked", ({ code, reason }) => {
+      // Over the server's message limit (Rivalis's KickReason.RATE_LIMITED). Not a
+      // removal, but Rivalis closes it as one, so the client will not come back by itself.
+      if (reason === "rate_limited") {
+        setTimeout(() => {
+          if (this.client === client) this.connect({ ...ticket, create: false, code: this.code.value ?? ticket.code })
+        }, 1000)
+        return
+      }
       this.status.value = "rejected"
       this.rejection.value = describeDisconnect(code, reason)
     })

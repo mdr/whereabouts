@@ -453,6 +453,20 @@ describe("game server", () => {
     expect(alice.reveals).toHaveLength(1)
   })
 
+  it("closes a connection that floods messages, and only that one", async () => {
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const lobby = await alice.until((v) => v.phase === "lobby")
+    const bob = player("Bob")
+    bob.connect({ code: lobby.code })
+    await alice.until((v) => v.players.length === 2)
+
+    for (let i = 0; i < 40; i++) bob.send("rename", { name: i % 2 ? "Bob" : "Bobby" })
+    await bob.waitClosed()
+    expect(bob.client.connected).toBe(false)
+    expect(alice.client.connected).toBe(true)
+  })
+
   it("a reconnecting player keeps their seat, and gets their paint back", async () => {
     const alice = player("Alice")
     alice.connect({ create: true })
