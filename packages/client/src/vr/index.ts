@@ -147,6 +147,23 @@ export interface VrSummary {
 }
 
 /** What the headset shows: a menu, a round to paint, its answer, or the final score. */
+/**
+ * IWSDK updates and draws its scene every frame from the start, on the page
+ * too, where nobody sees it: twice the page's drawing, on a headset's
+ * browser. Its loop calls these by name each frame, so they can wait.
+ */
+function idleOffHeadset(world: World): void {
+  const update = world.update.bind(world)
+  world.update = (delta, time) => {
+    if (world.session) update(delta, time)
+  }
+  const renderer = world.renderer
+  const render = renderer.render.bind(renderer)
+  renderer.render = (scene, camera) => {
+    if (world.session) render(scene, camera)
+  }
+}
+
 export type VrView = (
   | { kind: "paint"; round: VrRound }
   | { kind: "reveal"; round: VrRound; reveal: VrReveal }
@@ -190,6 +207,11 @@ export class Vr {
   frames = 0
   /** Menu buttons clicked, for the browser tests to know a press landed. */
   clicks = 0
+
+  /** Times the scene has been drawn, for the browser tests. */
+  get drawn(): number {
+    return this.world.renderer.info.render.frame
+  }
   private view: VrView | undefined = undefined
   private pictureKey = ""
   private paintsKey = ""
@@ -211,8 +233,12 @@ export class Vr {
   private readonly moon = new Moon()
   /** Whether the headset can show the room (immersive-ar), once asked. */
   private passthroughOffered = false
-  /** Ending one kind of session to start the other. */
-  private switching = false
+  /**
+   * Ending one kind of session to start the other: the passthrough wanted,
+   * saved only once its session opens, and whether that session has been asked for.
+   */
+  private switchingTo: boolean | undefined = undefined
+  private switchOpening = false
   /** Where the panels were placed, and from where. */
   private homes: { obj: Object3D; at: Vector3; half: number }[] = []
   private readonly eye = new Vector3()
@@ -246,6 +272,7 @@ export class Vr {
         // The moon of a globe zoomed right in is kilometres off.
         render: { far: STARS_M * 1.2 }
       })
+      idleOffHeadset(world)
       vr = new Vr(world)
       onStage("land")
       // Drawn now, while the page says it is loading, so the pause never comes in the headset.
@@ -335,15 +362,20 @@ export class Vr {
     })
     world.visibilityState.subscribe((state) => {
       const active = state !== VisibilityState.NonImmersive
-      if (!active && this.switching) {
+      if (!active && this.switchingTo !== undefined && !this.switchOpening) {
         // Still within the press's activation, which a new session needs.
-        this.switching = false
-        this.launch()
+        this.switchOpening = true
+        this.launch(this.switchingTo)
         // Refused, it leaves the player on the page.
         setTimeout(() => {
           if (this.world.visibilityState.value === VisibilityState.NonImmersive) this.ended()
         }, SWITCH_MS)
         return
+      }
+      if (active && this.switchingTo !== undefined) {
+        headsetPassthrough.value = this.switchingTo
+        this.switchingTo = undefined
+        this.switchOpening = false
       }
       if (active === this.active.value) return
       if (active) {
@@ -361,17 +393,15 @@ export class Vr {
     this.launch()
   }
 
-  private launch(): void {
-    const passthrough = headsetPassthrough.value
+  private launch(passthrough = headsetPassthrough.value): void {
     this.space.group.visible = this.moon.mesh.visible = !passthrough
     this.world.launchXR({ sessionMode: passthrough ? SessionMode.ImmersiveAR : SessionMode.ImmersiveVR })
   }
 
   /** Swaps space for the room round the player, or back: a new session of the other kind. */
   private togglePassthrough(): void {
-    if (this.switching) return
-    headsetPassthrough.value = !headsetPassthrough.value
-    this.switching = true
+    if (this.switchingTo !== undefined) return
+    this.switchingTo = !headsetPassthrough.value
     this.world.exitXR()
   }
 
@@ -380,6 +410,8 @@ export class Vr {
     this.endStroke()
     this.picture.release(this.panel.object3D!)
     const leavingAnswer = this.view?.kind === "reveal" && view.kind !== "reveal"
+    // A press waiting for its second press was for the screen it was on.
+    if (view.kind !== this.view?.kind) this.armed = undefined
     this.view = view
     const round = this.round
     const picture = round?.picture
@@ -712,6 +744,9 @@ export class Vr {
   }
 
   private ended(): void {
+    // A refused switch keeps the old setting.
+    this.switchingTo = undefined
+    this.switchOpening = false
     if (!this.active.value) return
     timerFrames(false)
     this.active.value = false
@@ -719,6 +754,7 @@ export class Vr {
   }
 
   private leave(): void {
+    this.armed = undefined
     this.endStroke()
     this.picture.release(this.panel.object3D!)
     this.stopPaintWatch?.()

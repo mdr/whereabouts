@@ -87,6 +87,8 @@ export class FlagPins {
   /** Each show() outdates the builds still loading for earlier ones. */
   private asked = 0
   private built: Built | undefined = undefined
+  /** One atlas on the GPU and one pair of materials, whatever flags show. */
+  private materials: Promise<{ flags: MeshBasicMaterial; poles: LineBasicMaterial }> | undefined = undefined
   private readonly labelCanvas = document.createElement("canvas")
   private pointed: number | undefined = undefined
   /** The pointed-at country's border, a layer of the globe's own. */
@@ -149,7 +151,11 @@ export class FlagPins {
     this.drop()
     if (pins)
       void this.build(pins).then((built) => {
-        if (asked !== this.asked) return
+        if (asked !== this.asked) {
+          built.flags.geometry.dispose()
+          built.poles.geometry.dispose()
+          return
+        }
         this.built = built
         this.group.add(built.flags, built.poles)
         this.group.visible = true
@@ -255,10 +261,21 @@ export class FlagPins {
     this.label.material.map!.needsUpdate = true
   }
 
+  private sharedMaterials(): Promise<{ flags: MeshBasicMaterial; poles: LineBasicMaterial }> {
+    this.materials ??= loadAtlas().then((img) => {
+      const texture = new Texture(img)
+      texture.colorSpace = SRGBColorSpace
+      texture.needsUpdate = true
+      return {
+        flags: this.offsetting(new MeshBasicMaterial({ map: texture })),
+        poles: this.offsetting(new LineBasicMaterial({ color: "#e5e7eb" }))
+      }
+    })
+    return this.materials
+  }
+
   private async build(pins: VrFlagPin[]): Promise<Built> {
-    const texture = new Texture(await loadAtlas())
-    texture.colorSpace = SRGBColorSpace
-    texture.needsUpdate = true
+    const materials = await this.sharedMaterials()
 
     // Each vertex: its pin's foot on the globe, and an offset from it in
     // metres, which the shader shrinks as the globe grows.
@@ -325,8 +342,8 @@ export class FlagPins {
     poles.setAttribute("position", new BufferAttribute(linePosition, 3))
     poles.setAttribute("offset", new BufferAttribute(lineOffset, 3))
     poles.setAttribute("pin", new BufferAttribute(lineIndex, 1))
-    const flagMesh = new Mesh(flags, this.offsetting(new MeshBasicMaterial({ map: texture })))
-    const poleLines = new LineSegments(poles, this.offsetting(new LineBasicMaterial({ color: "#e5e7eb" })))
+    const flagMesh = new Mesh(flags, materials.flags)
+    const poleLines = new LineSegments(poles, materials.poles)
     // Their feet are all the bounds know of; the offsets reach beyond.
     flagMesh.frustumCulled = poleLines.frustumCulled = false
     return { pins, feet, mids, flags: flagMesh, poles: poleLines }

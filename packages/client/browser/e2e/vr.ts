@@ -142,6 +142,9 @@ await headset.point(
 )
 await round.pause(1500)
 await headset.point("left", rubFrom, painted)
+// Held still before letting go: a release straight after the move would
+// fling the globe if no frame came between, and leave it spinning.
+await headset.frames(5)
 await headset.grip("left", 0)
 await round.pause(300)
 const gripped = await headset.paintMass()
@@ -208,6 +211,11 @@ checks.check(
 // then lands somewhere else.
 const first = new Set(await round.map.yourPaintCellIds())
 await round.paintTools.undoWithKeyboard()
+await until(
+  "the first spray undone",
+  () => round.map.yourPaintCells(),
+  (n) => n === 0
+)
 await headset.pointRight([centre[0] + 0.2, centre[1], centre[2] + 0.1], centre)
 await round.pause(200)
 // The globe turns between frames that both see the grip held: hold each
@@ -343,6 +351,10 @@ await until(
   (on) => !on
 )
 checks.check(true, "Leave VR leaves it")
+const drawnOnLeaving = await headset.scenesDrawn()
+await round.pause(500)
+const drawnSince = (await headset.scenesDrawn()) - drawnOnLeaving
+checks.check(drawnSince === 0, `and the VR scene is no longer drawn on the page (${drawnSince} frames in 0.5 s)`)
 
 // A flag round shows its flag over the VR menu, a 4:3 card.
 await tab.page.context().close()

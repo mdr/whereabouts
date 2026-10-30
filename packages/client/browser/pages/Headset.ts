@@ -79,6 +79,11 @@ export class Headset {
     return this.#page.evaluate(() => window.headset.activeSession !== undefined)
   }
 
+  /** Times the VR scene has been drawn, in the headset or not. */
+  async scenesDrawn(): Promise<number> {
+    return this.#page.evaluate(() => window.whereaboutsVr.drawn)
+  }
+
   /** Cells of paint drawn on the VR globe. */
   async globePaintCells(): Promise<number> {
     return this.#page.evaluate(() => window.whereaboutsVr.shownPaintCells)
