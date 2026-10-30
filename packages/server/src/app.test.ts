@@ -336,6 +336,11 @@ describe("game server", () => {
     expect(await pollErrors(alice)).toContain("invalid paint")
     alice.errors.length = 0
 
+    // Shaped like a cell but not one: scoring it would throw.
+    alice.send("paint", { cells: { fffffffffffffff: 1 }, floor: 0 })
+    expect(await pollErrors(alice)).toContain("invalid paint")
+    alice.errors.length = 0
+
     // A game-level rejection (as opposed to a schema one) also comes back as an error.
     alice.send("ready")
     expect(await pollErrors(alice)).toContain("nothing to be ready for")

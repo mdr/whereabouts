@@ -6,7 +6,8 @@ describe("H3 cells and resolutions", () => {
   it("are made only from values of their own format", () => {
     const paris = latLngToCell(48.86, 2.35, h3Res(6))
     expect(h3Cell(paris)).toBe(paris)
-    for (const bad of ["", "8628309", "8628309xffffff7", "8628309afffffff0"]) expect(() => h3Cell(bad), bad).toThrow()
+    for (const bad of ["", "8628309", "8628309xffffff7", "8628309afffffff0", "fffffffffffffff"])
+      expect(() => h3Cell(bad), bad).toThrow()
     expect(getResolution(paris)).toBe(6)
     for (const bad of [-1, 16, 2.5]) expect(() => h3Res(bad), String(bad)).toThrow()
   })

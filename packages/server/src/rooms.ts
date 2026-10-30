@@ -270,8 +270,14 @@ export class GameRoom extends Room<ActorData> {
     const delay = Math.max(0, at - deps.clock.now())
     this.timer = deps.clock.setTimeout(() => {
       this.timer = undefined
-      if (this.game.tick(deps.clock.now())) this.broadcastState()
-      else this.armTimer()
+      // Rivalis catches what message handlers throw, but nothing catches a
+      // timer: one room's bug would end the process and every game in it.
+      try {
+        if (this.game.tick(deps.clock.now())) this.broadcastState()
+        else this.armTimer()
+      } catch (error) {
+        this.logger?.error(`tick threw: ${error instanceof Error ? error.message : String(error)}`)
+      }
     }, delay)
   }
 

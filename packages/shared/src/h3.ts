@@ -14,6 +14,7 @@ import { z } from "zod"
 export const H3CellSchema = z
   .string()
   .regex(/^[0-9a-f]{15}$/)
+  .refine((s) => h3.isValidCell(s), "not an H3 cell")
   .brand<"H3Cell">()
 export type H3Cell = z.infer<typeof H3CellSchema>
 export const h3Cell = (s: string): H3Cell => H3CellSchema.parse(s)
