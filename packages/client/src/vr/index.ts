@@ -31,6 +31,8 @@ import {
   type HintAxis,
   type H3Cell,
   type HintBand,
+  type BordersData,
+  type LandMaskData,
   type LatLon,
   type MapDetail,
   type PaintLayer
@@ -54,6 +56,9 @@ import { FlagPins, type Pointer, type VrFlagPin } from "./flag-pins"
 import { AnswerMarker, type VrAnswer } from "./answer"
 import { DetailPatch } from "./detail-patch"
 import { drawBorders, drawColour, drawLand } from "./globe-texture"
+import { fetchBuildJson } from "../stale-build"
+import landUrl from "@whereabouts/shared/land.json?url"
+import bordersUrl from "@whereabouts/shared/borders.json?url"
 import { paintGeometry } from "./paint-mesh"
 import { Picture } from "./picture"
 import type { VrPicture } from "../vr-picture"
@@ -227,37 +232,51 @@ export class Vr {
     const host = document.createElement("div")
     host.style.cssText = "position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none"
     document.body.append(host)
-    const world = await World.create(host, {
-      xr: {
-        sessionMode: SessionMode.ImmersiveVR,
-        referenceSpace: ReferenceSpaceType.LocalFloor,
-        offer: "none"
-      },
-      features: { spatialUI: { preferredColorScheme: ColorSchemeType.Dark } },
-      input: { canvasPointerEvents: false },
-      // The moon of a globe zoomed right in is kilometres off.
-      render: { far: STARS_M * 1.2 }
-    })
-    const vr = new Vr(world)
-    onStage("land")
-    // Drawn now, while the page says it is loading, so the pause never comes in the headset.
-    const [land, borders] = await Promise.all([
-      import("@whereabouts/shared/land.json"),
-      import("@whereabouts/shared/borders.json")
-    ])
-    // The drawing holds the page up for a second: let it show the stage first.
-    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)))
-    const landOnly = drawLand(vr.globe.landCanvas, land.default, THEME)
-    vr.globe.landDrawn(world.renderer)
-    drawBorders(vr.globe.bordersCanvas, borders.default, THEME)
-    vr.globe.bordersDrawn(world.renderer)
-    // Not needed until the first answer, and it waits on the network.
-    drawColour(vr.globe.colourCanvas, vr.globe.landCanvas, landOnly).then(
-      () => vr.globe.colourDrawn(world.renderer),
-      (err: unknown) => console.warn("could not colour the VR globe", err)
-    )
-    window.whereaboutsVr = vr
-    return vr
+    let world: World | undefined = undefined
+    let vr: Vr | undefined = undefined
+    try {
+      world = await World.create(host, {
+        xr: {
+          sessionMode: SessionMode.ImmersiveVR,
+          referenceSpace: ReferenceSpaceType.LocalFloor,
+          offer: "none"
+        },
+        features: { spatialUI: { preferredColorScheme: ColorSchemeType.Dark } },
+        input: { canvasPointerEvents: false },
+        // The moon of a globe zoomed right in is kilometres off.
+        render: { far: STARS_M * 1.2 }
+      })
+      vr = new Vr(world)
+      onStage("land")
+      // Drawn now, while the page says it is loading, so the pause never comes in the headset.
+      const [land, borders] = await Promise.all([
+        fetchBuildJson<LandMaskData>(landUrl),
+        fetchBuildJson<BordersData>(bordersUrl)
+      ])
+      // The drawing holds the page up for a second: let it show the stage first.
+      await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)))
+      const landOnly = drawLand(vr.globe.landCanvas, land, THEME)
+      const renderer = world.renderer
+      vr.globe.landDrawn(renderer)
+      drawBorders(vr.globe.bordersCanvas, borders, THEME)
+      vr.globe.bordersDrawn(renderer)
+      // Not needed until the first answer, and it waits on the network.
+      const globe = vr.globe
+      drawColour(globe.colourCanvas, globe.landCanvas, landOnly).then(
+        () => globe.colourDrawn(renderer),
+        (err: unknown) => console.warn("could not colour the VR globe", err)
+      )
+      window.whereaboutsVr = vr
+      return vr
+    } catch (err) {
+      // A page holds only so many WebGL contexts; the next try makes its own.
+      vr?.detail.dispose()
+      world?.destroy()
+      world?.renderer.dispose()
+      world?.renderer.forceContextLoss()
+      host.remove()
+      throw err
+    }
   }
 
   private readonly world: World

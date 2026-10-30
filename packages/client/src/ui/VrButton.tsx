@@ -1,7 +1,15 @@
 import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import type { Vr, VrView } from "../vr"
-import { VR_LOAD_STAGES, loadVr, loadedVr, vrLoadStage, vrSupported, type VrLoadStage } from "../vr-support"
+import {
+  VR_LOAD_STAGES,
+  VrCodeMissing,
+  loadVr,
+  loadedVr,
+  vrLoadStage,
+  vrSupported,
+  type VrLoadStage
+} from "../vr-support"
 import { Icon } from "./icons"
 import { vrButtonTestIds } from "./VrButtonTestIds"
 
@@ -55,7 +63,7 @@ export function useVrHold(): void {
  * and loading can take longer: then a second, larger button asks again.
  */
 export function VrButton({ view }: { view: VrView }) {
-  const [stage, setStage] = useState<"loading" | "ready" | undefined>(undefined)
+  const [stage, setStage] = useState<"loading" | "ready" | "failed" | "codeMissing" | undefined>(undefined)
   const latest = useRef(view)
   latest.current = view
 
@@ -74,8 +82,8 @@ export function VrButton({ view }: { view: VrView }) {
         else setStage("ready")
       },
       (err: unknown) => {
-        setStage(undefined)
         console.warn("could not load VR", err)
+        setStage(err instanceof VrCodeMissing ? "codeMissing" : "failed")
       }
     )
   }
@@ -96,6 +104,22 @@ export function VrButton({ view }: { view: VrView }) {
           <div class="modal-backdrop vr-launch" data-testid={vrButtonTestIds.loading}>
             {stage === "loading" ? (
               <VrLoading stage={vrLoadStage.value} />
+            ) : stage === "failed" || stage === "codeMissing" ? (
+              <div class="vr-launch-ready" role="alert" data-testid={vrButtonTestIds.failed}>
+                <p>Couldn't start VR. Check your connection.</p>
+                {stage === "failed" ? (
+                  <button class="primary" onClick={press} data-testid={vrButtonTestIds.retryButton}>
+                    Try again
+                  </button>
+                ) : (
+                  <button class="primary" onClick={() => location.reload()} data-testid={vrButtonTestIds.reloadButton}>
+                    Reload the page
+                  </button>
+                )}
+                <button onClick={() => setStage(undefined)} data-testid={vrButtonTestIds.cancelButton}>
+                  Close
+                </button>
+              </div>
             ) : (
               <div class="vr-launch-ready">
                 <button class="primary" onClick={() => vr && enter(vr)} data-testid={vrButtonTestIds.enterButton}>

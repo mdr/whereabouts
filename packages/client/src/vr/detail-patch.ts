@@ -49,10 +49,13 @@ export class DetailPatch {
       fadeDuration: 0,
       canvasContextAttributes: { preserveDrawingBuffer: true }
     })
-    void this.gameMap.ready.then(() => {
-      this.gameMap.applyTheme(theme)
-      this.ready = true
-    })
+    this.gameMap.ready.then(
+      () => {
+        this.gameMap.applyTheme(theme)
+        this.ready = true
+      },
+      (err: unknown) => console.warn("no map detail on the VR globe", err)
+    )
     this.texture = new CanvasTexture(this.gameMap.map.getCanvas())
     this.texture.colorSpace = SRGBColorSpace
     this.texture.anisotropy = anisotropy
@@ -61,6 +64,14 @@ export class DetailPatch {
       new MeshBasicMaterial({ map: this.texture, vertexColors: true, transparent: true, depthWrite: false })
     )
     this.mesh.visible = false
+  }
+
+  dispose(): void {
+    this.gameMap.dispose()
+    this.gameMap.map.getContainer().remove()
+    this.texture.dispose()
+    this.mesh.geometry.dispose()
+    this.mesh.material.dispose()
   }
 
   /** As the page's map shows it: while painting at the game's detail; on the reveal with everything. */

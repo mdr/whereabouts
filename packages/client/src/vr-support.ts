@@ -20,16 +20,25 @@ navigator.xr?.isSessionSupported("immersive-vr").then(
   () => (vrSupported.value = false)
 )
 
+/**
+ * The VR code itself did not arrive. Chrome never fetches a failed import
+ * again, so only a reload can fix it.
+ */
+export class VrCodeMissing extends Error {}
+
 let loading: Promise<Vr> | undefined = undefined
 
 export function loadVr(): Promise<Vr> {
   if (!loading) vrLoadStage.value = "code"
-  return (loading ??= import("./vr").then(
-    async (m) => (loadedVr.value = await m.Vr.create((stage) => (vrLoadStage.value = stage))),
-    (err: unknown) => {
-      // Let the next press try again, after a dropped connection say.
-      loading = undefined
-      throw err
-    }
-  ))
+  loading ??= (async () => {
+    const m = await import("./vr").catch((err: unknown) => {
+      throw new VrCodeMissing("the VR code did not load", { cause: err })
+    })
+    return (loadedVr.value = await m.Vr.create((stage) => (vrLoadStage.value = stage)))
+  })().catch((err: unknown) => {
+    // Let the next press try again, after a dropped connection say.
+    loading = undefined
+    throw err
+  })
+  return loading
 }
