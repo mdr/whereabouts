@@ -4,12 +4,15 @@
  *
  * The published @rivalis/node package bundles this transport together with a
  * WebRTC transport that depends on the native node-datachannel module. We
- * only need WebSockets, so the file is copied here with three changes: CloseCode
+ * only need WebSockets, so the file is copied here with these changes: CloseCode
  * is imported from @rivalis/core, which re-exports it, instead of the private
  * @rivalis/handshake package; every accepted socket gets an 'error'
  * listener (see guardSocketErrors) so oversized frames cannot crash the
- * process; and a socket too far behind to take a message is dropped rather
- * than left to miss it, so its client reconnects and catches up.
+ * process; a socket too far behind to take a message is dropped rather
+ * than left to miss it, so its client reconnects and catches up; the
+ * client's address comes from Fly's header when there is one (see
+ * clientAddress); and a connection limiter with a release method is told
+ * when each socket it let in closes, so it can count open connections.
  */
 import type { IncomingMessage } from 'http'
 import { createHash } from 'node:crypto'
@@ -205,14 +208,16 @@ class WSTransport extends Transport {
             return socket.close(CloseCode.INVALID_TICKET)
         }
 
+        const remoteAddress = clientAddress(request)
         if (this.connectionLimiter !== null) {
-            const remoteAddress = request.socket.remoteAddress ?? 'unknown'
+            const limiter = this.connectionLimiter as ConnectionLimiter & { release?: (remoteAddress: string) => void }
             try {
-                const allowed = await this.connectionLimiter.check(remoteAddress)
+                const allowed = await limiter.check(remoteAddress)
                 if (allowed === false) {
                     this.logger.debug(`connection rate limited from ${remoteAddress}`)
                     return socket.close(CloseCode.RATE_LIMITED, KickReason.RATE_LIMITED)
                 }
+                socket.once('close', () => limiter.release?.(remoteAddress))
             } catch (error) {
                 const reason = error instanceof Error ? error.message : String(error)
                 this.logger.warning(`connectionLimiter.check threw: ${reason}`)
@@ -243,7 +248,7 @@ class WSTransport extends Transport {
 
         const connectionCtx: ConnectionContext = {
             kind: 'ws',
-            ...(request.socket.remoteAddress !== undefined ? { remoteId: request.socket.remoteAddress } : {}),
+            remoteId: remoteAddress,
             meta: { origin: request.headers.origin }
         }
 
@@ -395,6 +400,16 @@ class WSTransport extends Transport {
         })
     }
 
+}
+
+/**
+ * Behind Fly's proxy every socket comes from the proxy; Fly passes the
+ * client's own address in Fly-Client-IP. Only Fly's proxy reaches the
+ * machine, and it sets the header itself, so it can be trusted there.
+ */
+function clientAddress(request: IncomingMessage): string {
+    const fly = request.headers['fly-client-ip']
+    return (typeof fly === 'string' && fly !== '' ? fly : request.socket.remoteAddress) ?? 'unknown'
 }
 
 export default WSTransport

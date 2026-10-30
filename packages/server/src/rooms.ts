@@ -59,6 +59,8 @@ export interface ActorData {
   name: PlayerName
   /** Asked to join as a spectator. */
   watch: boolean
+  /** The client's network address, for the logs. */
+  address: string
 }
 
 export const ROOM_TYPE = "game"
@@ -127,7 +129,7 @@ export class GameRoom extends Room<ActorData> {
   }
 
   protected override onJoin(actor: Actor<ActorData>): void {
-    const { token, name, watch } = actor.data!
+    const { token, name, watch, address } = actor.data!
     this.cancelEmptyTimer()
     const previous = this.actorsByToken.get(token)
     if (previous && previous !== actor) previous.kick("replaced by a newer connection")
@@ -135,12 +137,12 @@ export class GameRoom extends Room<ActorData> {
     const back = this.game.playerTokens.includes(token)
     const result = this.game.join(token, name, deps.clock.now(), watch)
     if (!result.ok) {
-      this.logger?.info(`${actor.id} (${name}) turned away: ${result.error}`)
+      this.logger?.info(`${actor.id} (${name}, ${address}) turned away: ${result.error}`)
       actor.send(ServerTopics.error, encodeMessage({ message: result.error }))
       actor.kick(result.error)
       return
     }
-    this.logger?.info(`${actor.id} (${name}) ${back ? "rejoined" : "joined"}`)
+    this.logger?.info(`${actor.id} (${name}, ${address}) ${back ? "rejoined" : "joined"}`)
     const paint = this.game.paintOf(token)
     if (paint) actor.send(ServerTopics.paint, encodePaint(paint))
     this.broadcastState()
@@ -333,13 +335,13 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     this.rooms = rooms
   }
 
-  override async authenticate(ticket: string, _context?: ConnectionContext) {
+  override async authenticate(ticket: string, context?: ConnectionContext) {
     // Rivalis takes null as a refusal.
     // oxlint-disable-next-line eslint-js/no-restricted-syntax
-    return this.route(ticket) ?? null
+    return this.route(ticket, context?.remoteId ?? "unknown") ?? null
   }
 
-  private route(ticket: string): AuthResult<ActorData> | undefined {
+  private route(ticket: string, address: string): AuthResult<ActorData> | undefined {
     const parsed = decodeTicket(ticket)
     if (!parsed) return undefined
     const rooms = this.rooms()
@@ -358,6 +360,6 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     } else {
       return undefined
     }
-    return { data: { token: parsed.token, name: parsed.name, watch: parsed.watch ?? false }, roomId }
+    return { data: { token: parsed.token, name: parsed.name, watch: parsed.watch ?? false, address }, roomId }
   }
 }

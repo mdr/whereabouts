@@ -622,3 +622,45 @@ describe("static serving", () => {
     expect(fallback.headers.get("cache-control")).toBe("no-cache")
   })
 })
+
+describe("connections per address", () => {
+  let app: App
+  let url: string
+  const players: TestPlayer[] = []
+
+  beforeEach(async () => {
+    configureGameRooms({ clock: new FakeClock(), pool: questions, config: { rounds: 2, roundMs: 60_000 } })
+    app = createApp({
+      staticDir: undefined,
+      logLevel: "error",
+      addressLimits: { maxOpen: 2, burst: 100, perSecond: 1 }
+    })
+    url = (await app.listen(0)).replace(/^http/, "ws") + "/ws"
+  })
+
+  afterEach(async () => {
+    for (const p of players) p.client.disconnect()
+    players.length = 0
+    await app.close()
+    configureGameRooms({ clock: realClock })
+  })
+
+  it("refuses connections over the limit, and lets them in once one closes", async () => {
+    const [alice, bob, carol] = ["Alice", "Bob", "Carol"].map((n) => new TestPlayer(url, n))
+    players.push(alice!, bob!, carol!)
+    alice!.connect({ create: true })
+    const { code } = await alice!.until((v) => v.phase === "lobby")
+    bob!.connect({ code })
+    await alice!.until((v) => v.players.length === 2)
+
+    carol!.connect({ code })
+    await new Promise((r) => setTimeout(r, 300))
+    expect(carol!.states).toEqual([])
+
+    bob!.client.disconnect()
+    await bob!.waitClosed()
+    await new Promise((r) => setTimeout(r, 100))
+    carol!.connect({ code })
+    await alice!.until((v) => v.players.some((p) => p.name === "Carol"))
+  })
+})

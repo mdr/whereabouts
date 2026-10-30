@@ -52,11 +52,12 @@ export class Connection {
     this.status.value = "connecting"
     this.lastError.value = undefined
     this.rejection.value = undefined
+    // Once in a game, coming back means joining it, not hosting another.
+    const again = () => (this.code.value === undefined ? ticket : { ...ticket, create: false, code: this.code.value })
     const client = new WSClient<"state" | "reveal" | "paint" | "error">(wsUrl(), {
       ticketSource: "protocol",
       reconnect: { baseDelayMs: 500, maxDelayMs: 5000, maxAttempts: 20 },
-      getTicket: () =>
-        encodeTicket({ v: PROTOCOL_VERSION, ...ticket, create: false, code: this.code.value ?? ticket.code })
+      getTicket: () => encodeTicket({ v: PROTOCOL_VERSION, ...again() })
     })
     client.on("client:connect", () => {
       // The server sends again whatever a fresh connection needs.
@@ -67,13 +68,20 @@ export class Connection {
     client.on("client:disconnect", () => {
       if (this.status.value !== "rejected") this.status.value = "disconnected"
     })
+    // Still trying to get in for the first time: not yet a failure.
+    client.on("client:reconnecting", () => {
+      if (!this.view.value) this.status.value = "connecting"
+    })
     client.on("client:kicked", ({ code, reason }) => {
-      // Over the server's message limit (Rivalis's KickReason.RATE_LIMITED). Not a
-      // removal, but Rivalis closes it as one, so the client will not come back by itself.
+      // Rivalis's KickReason.RATE_LIMITED: too many connections from this
+      // network (refused before it got in, code 4005, which the client
+      // retries by itself), or over the message limit, which Rivalis closes
+      // like a removal, so the client would never come back.
       if (reason === "rate_limited") {
-        setTimeout(() => {
-          if (this.client === client) this.connect({ ...ticket, create: false, code: this.code.value ?? ticket.code })
-        }, 1000)
+        if (code !== 4005)
+          setTimeout(() => {
+            if (this.client === client) this.connect(again())
+          }, 1000)
         return
       }
       this.status.value = "rejected"

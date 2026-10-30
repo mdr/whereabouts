@@ -9,6 +9,7 @@ import fastifyStatic from "@fastify/static"
 import { Rivalis, TokenBucketRateLimiter, logging } from "@rivalis/core"
 import WSTransport from "./vendor/WSTransport.ts"
 import { GameAuth, GameRoom, ROOM_TYPE, type ActorData } from "./rooms.ts"
+import { AddressLimiter, type AddressLimits } from "./address-limiter.ts"
 
 export interface AppOptions {
   /** Directory of built client files to serve, or undefined for API-only (dev, behind Vite). */
@@ -17,6 +18,7 @@ export interface AppOptions {
   logger?: boolean
   /** Rivalis log level; defaults to info. */
   logLevel?: Rivalis["logging"]["level"]
+  addressLimits?: AddressLimits
 }
 
 export interface App {
@@ -93,6 +95,7 @@ export function createApp(options: AppOptions): App {
   const transport = new WSTransport({ server: fastify.server, path: "/ws" }, undefined, {
     maxPayload: MAX_PAYLOAD_BYTES,
     maxBufferedBytes: MAX_BUFFERED_BYTES,
+    connectionLimiter: new AddressLimiter(options.addressLimits),
     ticketSource: "protocol",
     allowedOrigins: options.allowedOrigins ?? (() => true)
   })
