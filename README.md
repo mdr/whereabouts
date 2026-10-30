@@ -1,7 +1,16 @@
 # Whereabouts
 
-Single-player prototype of a geography game where you answer by **painting a
-probability distribution** on a world map instead of dropping a pin.
+A geography game where you answer by **painting how sure you are** on a
+world map instead of dropping a pin: a tight spot when you know, a wider
+spread to hedge. The scoring is a proper scoring rule, so painting your
+honest belief scores best, and a confident guess a little off still earns
+partial credit.
+
+Play at https://whereabouts-game.fly.dev: host a game and share its
+four-letter code (up to 16 players and 8 spectators), or practise solo. On
+a Quest headset, practice and games can be played in VR, spraying paint
+onto a globe. Rounds mix landmark photos, place names, whole countries,
+flags, islands, lakes and seas, and US states.
 
 ## Run
 
