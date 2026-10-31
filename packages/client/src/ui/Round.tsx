@@ -17,18 +17,10 @@ import r from "./Round.module.css"
 import sc from "./Score.module.css"
 
 /** The question while painting, with how to answer it. */
-export function RoundPrompt({
-  question,
-  countryFlag,
-  credit
-}: {
-  question: QuestionView
-  countryFlag: FlagCode | undefined
-  credit?: boolean
-}) {
+export function RoundPrompt({ question, countryFlag }: { question: QuestionView; countryFlag: FlagCode | undefined }) {
   const area = question.regionId !== undefined
   return (
-    <QuestionCard q={question} hud="painting" countryFlag={countryFlag} credit={credit} foldable>
+    <QuestionCard q={question} hud="painting" countryFlag={countryFlag} foldable>
       {question.flag ? <AnswerMode area={area} /> : area && <RegionHint topic={question.topic} />}
     </QuestionCard>
   )

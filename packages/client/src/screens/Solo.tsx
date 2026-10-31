@@ -279,7 +279,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           },
           more: [home]
         }
-      : phase === "reveal" && revealed
+      : phase === "reveal" && revealed && shownResult
         ? {
             kind: "reveal",
             round,
@@ -287,7 +287,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             reveal: vrReveal(
               shown,
               answer,
-              { score: revealed.result.score, passed: !revealed.dist, total, painted: where },
+              { score: shownResult.score, passed: !revealed.dist, total, painted: where },
               borders,
               {
                 table: roundsTable(results),
@@ -398,7 +398,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
               revealed={answer}
               fact={fact}
               you={{ score: shownResult.score, passed: !dist }}
-              playedLabel="this round"
+              playedLabel="your score this round"
               where={where}
               testIds={{ score: soloTestIds.roundScore }}
             />
@@ -429,7 +429,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
       <Hud>
         <HudTop>
           {header}
-          <RoundPrompt question={question} countryFlag={countryFlag} credit />
+          <RoundPrompt question={question} countryFlag={countryFlag} />
           <HintCard band={hint} onUse={useHint} />
         </HudTop>
         <PaintTools practice water={isWater(q.topic)} hint={hint}>
