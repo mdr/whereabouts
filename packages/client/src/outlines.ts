@@ -34,11 +34,17 @@ export function loadOutlines(): Promise<Outlines> {
   return loading
 }
 
-/** An outline by id, loading them first if need be; undefined until they arrive. */
-export function useOutline(id: OutlineId | undefined): Outline | undefined {
+/** The outlines when `wanted`, loading them if need be; undefined until they arrive. */
+export function useOutlines(wanted: boolean): Outlines | undefined {
   const all = outlines.value
   useEffect(() => {
-    if (id && !all) loadOutlines().catch((err: unknown) => console.warn("could not load outlines", err))
-  }, [id, all])
+    if (wanted && !all) loadOutlines().catch((err: unknown) => console.warn("could not load outlines", err))
+  }, [wanted, all])
+  return wanted ? all : undefined
+}
+
+/** An outline by id, loading them first if need be; undefined until they arrive. */
+export function useOutline(id: OutlineId | undefined): Outline | undefined {
+  const all = useOutlines(id !== undefined)
   return id && all ? all.get(id) : undefined
 }

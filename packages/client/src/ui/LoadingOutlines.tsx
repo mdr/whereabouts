@@ -1,13 +1,11 @@
-import { useEffect } from "preact/hooks"
 import { loadOutlines, outlinesFailed } from "../outlines"
 import { loadingOutlinesTestIds } from "./LoadingOutlinesTestIds"
 import { Card } from "./Card"
 import { Hud, HudCenter } from "./Hud"
 
-/** Stands in for a screen that needs the outlines until they arrive, and offers another try if they do not. */
+/** Stands in for a screen that needs the outlines (useOutlines) until they arrive, and offers another try if they do not. */
 export function LoadingOutlines() {
   const load = () => void loadOutlines().catch((err: unknown) => console.warn("could not load outlines", err))
-  useEffect(load, [])
   return (
     <Hud>
       <HudCenter>

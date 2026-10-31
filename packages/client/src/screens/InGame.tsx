@@ -3,7 +3,7 @@ import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/facts"
 import { onWater, outlineOf, type GameView, Phase } from "@whereabouts/shared/protocol"
 import type { HintAxis } from "@whereabouts/shared/hints"
-import type { PaintedCountry } from "@whereabouts/shared/borders"
+import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
 import { QuestionType, type Outline } from "@whereabouts/shared/questions"
 import { AREA_TYPES } from "@whereabouts/shared/catalogue"
 import type { Connection } from "../net"
@@ -21,7 +21,7 @@ import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
 import { Reveal } from "./Reveal"
 import { NONE, revealedFromView, revealOrder, revealShown, shownResults } from "../reveal"
-import { borders, loadBorders } from "../borders"
+import { useBorders } from "../borders"
 import { Icon } from "../ui/icons"
 import { PlayersPanel, playersPanelOpen } from "../ui/PlayersPanel"
 import { EndGameButton } from "../ui/HostControls"
@@ -29,7 +29,7 @@ import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog"
 import { askedToWatch } from "../settings"
 import { TakeSeatButton } from "../ui/TakeSeat"
 import { HintCard } from "../ui/Hint"
-import { loadOutlines, useOutline } from "../outlines"
+import { useOutline, useOutlines } from "../outlines"
 import { VrButton, useVrView } from "../ui/VrButton"
 import { mainCountry } from "../ui/FlagReveal"
 import { HintAllowance, VrViewType, type VrView } from "../vr/view"
@@ -53,16 +53,10 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const [timeUp, setTimeUp] = useState(false)
   const { dialog, ask } = useConfirm()
 
-  // A game with outlines to show at the reveal: fetch them now.
-  const outlines = AREA_TYPES.some((t) => view.config.mix[t] > 0)
-  useEffect(() => {
-    if (outlines) loadOutlines().catch((err: unknown) => console.warn("could not load outlines", err))
-  }, [outlines])
-  // And a game with flags, the borders its reveals name countries by.
-  const flags = view.config.mix[QuestionType.FLAG] > 0
-  useEffect(() => {
-    if (flags) loadBorders().catch((err: unknown) => console.warn("could not load borders", err))
-  }, [flags])
+  // Fetched as the game starts, ready for its reveals: outlines for area rounds, and the
+  // borders that flag rounds name countries by.
+  useOutlines(AREA_TYPES.some((t) => view.config.mix[t] > 0))
+  const borders = useBorders(view.config.mix[QuestionType.FLAG] > 0)
 
   useRoundMap(paint, {
     round: roundKey,
@@ -112,12 +106,12 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const mine = view.reveal?.results.find((r) => r.playerId === view.you.id)
   const painted = useMemo(
     () =>
-      view.reveal?.question.type === QuestionType.FLAG && borders.value && mine?.paint
-        ? mainCountry(borders.value, paintLayer(mine.res, mine.paint).toCells())
+      view.reveal?.question.type === QuestionType.FLAG && borders && mine?.paint
+        ? mainCountry(borders, paintLayer(mine.res, mine.paint).toCells())
         : undefined,
-    [borders.value, view.reveal?.index, mine?.paint !== undefined]
+    [borders, view.reveal?.index, mine?.paint !== undefined]
   )
-  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, outline, fact, painted })
+  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, outline, fact, painted, borders })
   useVrView(vrView)
 
   if (view.phase === Phase.REVEAL && view.reveal) {
@@ -230,7 +224,8 @@ function gameVrView(
     sittingOut,
     outline,
     fact,
-    painted
+    painted,
+    borders
   }: {
     lockIn: () => void
     timeUp: boolean
@@ -238,6 +233,7 @@ function gameVrView(
     outline: Outline | undefined
     fact: Fact | undefined
     painted: PaintedCountry | undefined
+    borders: Borders | undefined
   }
 ): VrView {
   const question = (view.round ?? view.reveal)!.question
@@ -308,7 +304,7 @@ function gameVrView(
     type: VrViewType.REVEAL,
     round,
     more,
-    reveal: vrReveal(shown, revealedFromView(reveal, outline), you, borders.value, {
+    reveal: vrReveal(shown, revealedFromView(reveal, outline), you, borders, {
       paints: paintsOf(shownResults(reveal.results, whose), view.players),
       table: {
         title: `Round ${reveal.index + 1} of ${reveal.total}`,

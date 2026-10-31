@@ -29,7 +29,7 @@ import { DevDrawer } from "../ui/DevDrawer"
 import { allFlags, cheatLiveScore, soloKernelId, soloMapDetail, soloTypes } from "../settings"
 import { devMode } from "../dev"
 import { Icon } from "../ui/icons"
-import { outlines } from "../outlines"
+import { useOutlines } from "../outlines"
 import { useBorders } from "../borders"
 import { useFact } from "../facts"
 import { preloadPictures } from "../preload"
@@ -64,8 +64,9 @@ export function Solo() {
 /** The outlines come in their own chunk, fetched when a type painted whole is asked for. */
 function SoloLoader() {
   const types = soloTypes.value
-  const loaded = outlines.value
-  if (!loaded && types.some((t) => AREA_TYPES.includes(t))) return <LoadingOutlines />
+  const needed = types.some((t) => AREA_TYPES.includes(t))
+  const loaded = useOutlines(needed)
+  if (!loaded && needed) return <LoadingOutlines />
   return <SoloGame pool={poolOf(CATALOGUE, types, soloMapDetail.value)} outlines={loaded ?? new Map()} />
 }
 

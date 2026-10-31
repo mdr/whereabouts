@@ -31,7 +31,7 @@ import kit from "../ui/kit.module.css"
 import pl from "../ui/Players.module.css"
 import s from "./ScoreReview.module.css"
 import { isTyping } from "../keys"
-import { outlines } from "../outlines"
+import { useOutlines } from "../outlines"
 import { RevealDetail } from "../shown-detail"
 import { LoadingOutlines } from "../ui/LoadingOutlines"
 import { reviewSet, scoreVerdicts, soloKernelId } from "../settings"
@@ -66,7 +66,7 @@ export function ScoreReview() {
 }
 
 function ReviewLoader() {
-  const loaded = outlines.value
+  const loaded = useOutlines(true)
   if (!loaded) return <LoadingOutlines />
   return <Review outlines={loaded} />
 }

@@ -17,11 +17,11 @@ import { loadOutlines, outlines } from "./outlines"
 import type { VrFlagPin } from "./vr/flag-pins"
 
 /** The borders, once loaded. */
-export const borders = signal<Borders | undefined>(undefined)
+const borders = signal<Borders | undefined>(undefined)
 
 let loading: Promise<Borders> | undefined = undefined
 
-export function loadBorders(): Promise<Borders> {
+function loadBorders(): Promise<Borders> {
   loading ??= Promise.all([fetchBuildJson<ConstructorParameters<typeof Borders>[0]>(bordersUrl), loadOutlines()]).then(
     ([m]) => (borders.value = new Borders(m, CATALOGUE.filter(isFlagQuestion))),
     (err: unknown) => {

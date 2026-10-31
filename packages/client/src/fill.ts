@@ -3,7 +3,7 @@
  * highlight, and the cells that fill it (see fill.ts in shared). A country
  * scored as a shape is filled with the very outline it is scored by, so
  * filling the right one scores about 999; any other with its land from
- * borders.json. Needs the borders and the countries loaded (loadBorders).
+ * borders.json. Needs the borders and the countries loaded (useFillTool loads them).
  */
 import { useEffect } from "preact/hooks"
 import { countryFill, type FillShape } from "@whereabouts/shared/fill"
@@ -13,8 +13,8 @@ import type { H3Cell, H3Res } from "@whereabouts/shared/h3"
 import { AnswerType, answerCentre, type FlagQuestion, type Outlines } from "@whereabouts/shared/questions"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { PaintController } from "./paint-controller"
-import { borders, loadBorders } from "./borders"
-import { outlines } from "./outlines"
+import { useBorders } from "./borders"
+import { useOutlines } from "./outlines"
 import type { Px } from "@whereabouts/shared/units"
 
 export class CountryFiller {
@@ -94,11 +94,8 @@ function circle({ lat, lon }: LatLon, km: number): number[][] {
  * controller.
  */
 export function useFillTool(paint: PaintController, active: boolean): void {
-  const b = borders.value
-  const r = outlines.value
-  useEffect(() => {
-    if (active && !b) loadBorders().catch((err: unknown) => console.warn("could not load borders", err))
-  }, [active, b])
+  const b = useBorders(active)
+  const r = useOutlines(active)
   useEffect(() => {
     if (b && r) paint.useFiller(new CountryFiller(b, r))
     paint.offerFill(active)
