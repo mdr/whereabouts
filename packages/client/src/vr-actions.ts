@@ -22,7 +22,11 @@ export function pickable(view: GameView, p: PlayerView): Pick<Row, "select" | "s
 }
 
 /** Remove and Make host for the player the host picked, each confirmed by a second press. */
-export function hostActions(conn: Connection, view: GameView, playerId: string | undefined): VrAction[] {
+export function hostActions(
+  conn: Pick<Connection, "kick" | "makeHost">,
+  view: GameView,
+  playerId: string | undefined
+): VrAction[] {
   const p = view.you.isHost && playerId !== view.you.id ? view.players.find((x) => x.id === playerId) : undefined
   if (!p) return []
   return [
@@ -41,7 +45,7 @@ export function hostActions(conn: Connection, view: GameView, playerId: string |
 }
 
 /** A watcher's way in, while a seat is free. */
-export function takeSeat(conn: Connection, view: GameView, label: string): VrAction {
+export function takeSeat(conn: Pick<Connection, "setRole">, view: GameView, label: string): VrAction {
   return {
     label,
     press: () => conn.setRole(false),
