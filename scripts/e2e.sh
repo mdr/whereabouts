@@ -25,6 +25,15 @@ else
   done
 fi
 
+# Something already listening would answer the health checks in place of the
+# servers started here.
+for port in "$CLIENT_PORT" "$PORT"; do
+  if (exec 3<>"/dev/tcp/localhost/$port") 2>/dev/null; then
+    echo "port $port is already in use; stop whatever is on it, or set CLIENT_PORT and PORT"
+    exit 1
+  fi
+done
+
 # Its own process group, so stopping it stops Vite and the game server too.
 set -m
 ROUND_MS=12000 ROUNDS=2 pnpm dev >"$out/servers.log" 2>&1 &
@@ -32,14 +41,19 @@ servers=$!
 set +m
 trap 'kill -- "-$servers" 2>/dev/null || true' EXIT
 
+up=false
 for _ in $(seq 1 60); do
-  curl -sf "localhost:$PORT/api/health" >/dev/null && curl -sf "localhost:$CLIENT_PORT" >/dev/null && break
+  kill -0 "$servers" 2>/dev/null || break
+  if curl -sf "localhost:$PORT/api/health" >/dev/null && curl -sf "localhost:$CLIENT_PORT" >/dev/null; then
+    up=true
+    break
+  fi
   sleep 1
 done
-curl -sf "localhost:$PORT/api/health" >/dev/null || {
+if ! $up || ! kill -0 "$servers" 2>/dev/null; then
   echo "the dev servers did not start; see $out/servers.log"
   exit 1
-}
+fi
 
 failed=()
 for name in "${scripts[@]}"; do
