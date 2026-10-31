@@ -85,7 +85,7 @@
           name = "whereabouts-server";
           runtimeInputs = [ nodejs ];
           text = ''
-            exec node --experimental-strip-types --disable-warning=ExperimentalWarning \
+            exec node --experimental-transform-types --disable-warning=ExperimentalWarning \
               ${whereabouts}/packages/server/src/main.ts "$@"
           '';
         };
