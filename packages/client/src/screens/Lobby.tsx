@@ -44,7 +44,8 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   const url = `${location.origin}${location.pathname}#/game/${view.code}`
   const [copied, setCopied] = useState(false)
   const [renaming, setRenaming] = useState(false)
-  const { dialog, ask } = useConfirm()
+  const online = conn.online.value
+  const { dialog, ask } = useConfirm(online)
   const current = view.players.find((p) => p.id === view.you.id)?.name ?? ""
   const host = view.you.isHost
   const canShare = typeof navigator.share === "function"
@@ -70,7 +71,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
       note:
         connectionText(conn) ??
         `Friends join with the code ${view.code}. ${setupLine(view)}${host ? " Take the headset off to change it." : ""}`,
-      actions: host ? [{ label: "Start game", press: () => conn.start(), enabled: players.length >= 1 }] : []
+      actions: host ? [{ label: "Start game", press: () => conn.start(), enabled: online && players.length >= 1 }] : []
     },
     more: [
       view.you.watching
@@ -174,7 +175,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
               {view.you.watching ? (
                 <button
                   onClick={() => conn.setRole(false)}
-                  disabled={seatsFull}
+                  disabled={seatsFull || !online}
                   title={seatsFull ? `All ${MAX_PLAYERS} seats are taken` : undefined}
                 >
                   <Icon name="play" /> Play instead
@@ -182,7 +183,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
               ) : (
                 <button
                   onClick={() => conn.setRole(true)}
-                  disabled={watchers.length >= MAX_SPECTATORS}
+                  disabled={watchers.length >= MAX_SPECTATORS || !online}
                   title="See every round without playing"
                 >
                   <Icon name="eye" /> Just watch
@@ -192,6 +193,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             {renaming && (
               <RenameForm
                 current={current}
+                online={online}
                 onDone={(name) => {
                   if (name && name !== current) {
                     conn.rename(name)
@@ -206,7 +208,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
           <section class={s.panel}>
             <h2>Game setup</h2>
             {host ? (
-              <>
+              <fieldset class={s.settings} disabled={!online}>
                 <div class={s.setting} data-testid={lobbyTestIds.questionsSetting}>
                   <span class={s.settingLabel}>Questions</span>
                   <MixEditor mix={view.config.mix} onChange={(mix) => configureAsHost(conn, { mix })} />
@@ -236,7 +238,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                     onChange={(mapDetail) => configureAsHost(conn, { mapDetail })}
                   />
                 </div>
-              </>
+              </fieldset>
             ) : (
               <>
                 <SetupSummary view={view} />
@@ -281,7 +283,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                   class="primary big"
                   data-testid={lobbyTestIds.startButton}
                   onClick={() => conn.start()}
-                  disabled={players.length < 1}
+                  disabled={players.length < 1 || !online}
                   title={players.length < 1 ? "Someone needs to play: take a seat, or wait for a player" : undefined}
                 >
                   <Icon name="play" /> Start game
@@ -299,7 +301,15 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   )
 }
 
-function RenameForm({ current, onDone }: { current: string; onDone: (name: PlayerName | undefined) => void }) {
+function RenameForm({
+  current,
+  online,
+  onDone
+}: {
+  current: string
+  online: boolean
+  onDone: (name: PlayerName | undefined) => void
+}) {
   const [name, setName] = useState(current)
   return (
     <form
@@ -320,7 +330,7 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: Playe
         }}
         autoFocus
       />
-      <button type="submit" disabled={nameToJoin(name) === undefined}>
+      <button type="submit" disabled={nameToJoin(name) === undefined || !online}>
         Save
       </button>
     </form>

@@ -66,7 +66,8 @@ export function Reveal({
     },
     []
   )
-  const { dialog, ask } = useConfirm()
+  const online = conn.online.value
+  const { dialog, ask } = useConfirm(online)
 
   // An area round shows its outline, once the outlines are loaded.
   const outline = useOutline(outlineOf(reveal.question.answer))
@@ -185,7 +186,7 @@ export function Reveal({
             <p class={kit.hint}>Pick a player to see just their guess.</p>
           </Card>
           {/* Where it is while guessing too, and away from Next round below. */}
-          {canEndGame(view) && <EndGameButton onEnd={() => conn.end()} />}
+          {canEndGame(view) && <EndGameButton onEnd={() => conn.end()} online={online} />}
         </HudRight>
         <HudBottom>
           {answerFlag && <AllFlagsSwitch />}
@@ -196,7 +197,7 @@ export function Reveal({
             <button
               class={iAmReady ? "" : "primary"}
               onClick={() => conn.ready()}
-              disabled={iAmReady}
+              disabled={iAmReady || !online}
               data-testid={revealTestIds.readyButton}
             >
               <Icon name="check" /> {iAmReady ? WAITING_FOR_OTHERS : "Ready"}
@@ -206,6 +207,7 @@ export function Reveal({
             <button
               class={iAmReady || !model.ready ? "primary" : ""}
               onClick={() => conn.next()}
+              disabled={!online}
               title="Go on without waiting"
               data-testid={revealTestIds.nextButton}
             >

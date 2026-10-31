@@ -130,11 +130,11 @@ export function gameVrView(
               {
                 label: model.ready.done ? WAITING_FOR_OTHERS : "Ready",
                 press: () => conn.ready(),
-                enabled: !model.ready.done
+                enabled: !model.ready.done && conn.online.value
               }
             ]
           : []),
-        ...(model.next ? [{ label: model.next.label, press: () => conn.next() }] : [])
+        ...(model.next ? [{ label: model.next.label, press: () => conn.next(), enabled: conn.online.value }] : [])
       ]
     })
   }

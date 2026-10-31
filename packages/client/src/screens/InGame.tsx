@@ -45,7 +45,8 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const question = view.round?.question ?? view.reveal?.question
   // The countdown has reached zero: painting stops, and what is on screen is what counts.
   const [timeUp, setTimeUp] = useState(false)
-  const { dialog, ask } = useConfirm()
+  const online = conn.online.value
+  const { dialog, ask } = useConfirm(online)
 
   // Fetched as the game starts, ready for its reveals: outlines for area rounds, and the
   // borders that flag rounds name countries by.
@@ -126,7 +127,12 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           />
           <RoundPrompt question={round.question} />
           {!sittingOut && view.config.hints > 0 && (
-            <HintCard band={view.you.hint} left={view.you.hintsLeft} onUse={(axis) => conn.hint(axis)} />
+            <HintCard
+              band={view.you.hint}
+              left={view.you.hintsLeft}
+              disabled={!online}
+              onUse={(axis) => conn.hint(axis)}
+            />
           )}
           <ConnectionNote conn={conn} onMap />
           {note === RoundNote.WATCHING && (
@@ -161,6 +167,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
               onEnd={() => conn.end()}
               title="Score this round as it stands and show the final standings"
               besidePlayers
+              online={online}
             />
           )}
         </HudRight>
@@ -172,7 +179,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
                 title={
                   canUnlock(view, timeUp) ? "Take back Done and change your guess" : "Time's up: your guess stands"
                 }
-                disabled={!canUnlock(view, timeUp)}
+                disabled={!canUnlock(view, timeUp) || !online}
                 onClick={() => conn.unlock()}
                 data-testid={inGameTestIds.keepEditingButton}
               >

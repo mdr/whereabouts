@@ -69,11 +69,18 @@ describe("savedSetupPatch", () => {
 describe("configureAsHost", () => {
   it("sends the change and remembers it alongside the earlier ones", () => {
     const configure = vi.fn()
-    const conn = { configure } as unknown as Connection
+    const conn = { configure, online: { value: true } } as unknown as Connection
     configureAsHost(conn, { mix: MIX })
     configureAsHost(conn, { mapDetail: MapDetail.WATER })
     expect(configure).toHaveBeenLastCalledWith({ mapDetail: MapDetail.WATER })
     expect(hostSetup.value).toEqual({ mix: MIX, mapDetail: MapDetail.WATER })
+  })
+
+  it("neither sends nor remembers a change while reconnecting", () => {
+    const configure = vi.fn()
+    configureAsHost({ configure, online: { value: false } } as unknown as Connection, { mix: MIX })
+    expect(configure).not.toHaveBeenCalled()
+    expect(hostSetup.value).toEqual({})
   })
 })
 

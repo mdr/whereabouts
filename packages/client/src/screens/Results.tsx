@@ -7,6 +7,7 @@ import type { Connection } from "../net"
 import { Icon } from "../ui/icons"
 import { HostTag, HostWord, Swatch } from "../ui/PlayerList"
 import { Banner } from "../ui/Banner"
+import { ConnectionNote, connectionText } from "../ui/ConnectionNote"
 import { SmallFlag, SmallFlagButton, SmallPhoto, SmallPictureBox } from "../ui/Pictures"
 import { QUESTION_TYPE_LOOKS, typeColour } from "../question-types"
 import { cx } from "../ui/cx"
@@ -29,6 +30,7 @@ const ROUND_COLUMN: Px = 200
 const SCORE_COLUMN: Px = 58
 
 export function Results({ conn, view }: { conn: Connection; view: GameView }) {
+  const online = conn.online.value
   const byId = new Map(view.players.map((p) => [p.id, p]))
   const standings = view.results ?? []
   const winner = standings[0] ? byId.get(standings[0].playerId) : undefined
@@ -48,8 +50,9 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
           }
         })
       },
-      note: view.you.isHost ? undefined : "The host can start another game with the same group.",
-      actions: view.you.isHost ? [{ label: "Play again", press: () => conn.again() }] : [],
+      note:
+        connectionText(conn) ?? (view.you.isHost ? undefined : "The host can start another game with the same group."),
+      actions: view.you.isHost ? [{ label: "Play again", press: () => conn.again(), enabled: online }] : [],
       board: {
         awards: (view.awards ?? []).map((a) => ({
           emoji: a.emoji,
@@ -113,7 +116,12 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         </ol>
         <VrButton view={vrView} />
         {view.you.isHost ? (
-          <button class="primary big" onClick={() => conn.again()} data-testid={resultsTestIds.playAgainButton}>
+          <button
+            class="primary big"
+            onClick={() => conn.again()}
+            disabled={!online}
+            data-testid={resultsTestIds.playAgainButton}
+          >
             <Icon name="refresh" /> Play again
           </button>
         ) : (
@@ -121,6 +129,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
             <HostWord capital /> can start another game with the same group.
           </p>
         )}
+        <ConnectionNote conn={conn} />
         {view.awards && view.awards.length > 0 && <Awards awards={view.awards} byId={byId} />}
         <Rounds rounds={view.playedRounds ?? []} standings={standings} byId={byId} you={view.you.id} />
         <p class={kit.hint}>

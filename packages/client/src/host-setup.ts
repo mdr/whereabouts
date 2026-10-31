@@ -40,8 +40,9 @@ export function savedSetupPatch(saved: unknown): ConfigurePatch {
   return patch
 }
 
-/** Change the game's setup as host, and remember it for the next game. */
+/** Change the game's setup as host, and remember it for the next game: only once sent, so the two agree. */
 export function configureAsHost(conn: Connection, patch: ConfigurePatch): void {
+  if (!conn.online.value) return
   conn.configure(patch)
   hostSetup.value = { ...savedSetupPatch(hostSetup.value), ...patch }
 }

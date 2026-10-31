@@ -19,7 +19,16 @@ export interface ConfirmRequest {
   safe?: boolean
 }
 
-export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | undefined; onClose: () => void }) {
+export function ConfirmDialog({
+  request,
+  onClose,
+  online = true
+}: {
+  request: ConfirmRequest | undefined
+  onClose: () => void
+  /** Offline, a confirmed action would be lost, so confirming waits. */
+  online?: boolean
+}) {
   const cancelRef = useElementRef<HTMLButtonElement>()
   useEffect(() => {
     if (!request) return
@@ -54,6 +63,7 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
           <button
             class={request.safe ? "primary" : "danger solid"}
             data-testid={confirmDialogTestIds.confirmButton}
+            disabled={!online}
             onClick={() => {
               onClose()
               request.onConfirm()
@@ -69,10 +79,10 @@ export function ConfirmDialog({ request, onClose }: { request: ConfirmRequest | 
 }
 
 /** One dialog per screen: render `dialog`, call `ask` to open it. */
-export function useConfirm(): { dialog: ComponentChildren; ask: (request: ConfirmRequest) => void } {
+export function useConfirm(online = true): { dialog: ComponentChildren; ask: (request: ConfirmRequest) => void } {
   const [request, setRequest] = useState<ConfirmRequest | undefined>(undefined)
   return {
-    dialog: <ConfirmDialog request={request} onClose={() => setRequest(undefined)} />,
+    dialog: <ConfirmDialog request={request} onClose={() => setRequest(undefined)} online={online} />,
     ask: setRequest
   }
 }

@@ -12,13 +12,15 @@ import s from "./HostControls.module.css"
 export function EndGameButton({
   onEnd,
   title,
-  besidePlayers
+  besidePlayers,
+  online = true
 }: {
   onEnd: () => void
   title?: string
   besidePlayers?: boolean
+  online?: boolean
 }) {
-  const { dialog, ask } = useConfirm()
+  const { dialog, ask } = useConfirm(online)
   return (
     <>
       <button

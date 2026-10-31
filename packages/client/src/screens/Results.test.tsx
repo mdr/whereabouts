@@ -5,7 +5,8 @@ import { commonsFile, flagCode, outlineId, playerId, playerName } from "@whereab
 import { playerColour } from "@whereabouts/shared/colours"
 import { type GameView, Phase } from "@whereabouts/shared/protocol"
 import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
-import type { Connection } from "../net"
+import { signal } from "@preact/signals"
+import { type Connection, ConnectionStatus } from "../net"
 import { Results } from "./Results"
 import { resultsTestIds as ids } from "./ResultsTestIds"
 import s from "./Results.module.css"
@@ -13,6 +14,14 @@ import pictures from "../ui/Pictures.module.css"
 import { makePlayer, makeView } from "../test-view"
 
 const tid = (id: string) => `[data-testid="${id}"]`
+
+const makeConn = (status = ConnectionStatus.CONNECTED, again = vi.fn()) =>
+  ({
+    again,
+    status: signal(status),
+    online: signal(status === ConnectionStatus.CONNECTED),
+    lastError: signal(undefined)
+  }) as unknown as Connection
 
 // The outlines are a download; these tests only need where a shape goes.
 vi.mock("../outlines", async (original) => ({ ...(await original<object>()), useOutline: () => undefined }))
@@ -46,7 +55,7 @@ function view(isHost: boolean): GameView {
 
 describe("Results", () => {
   it("names the winner, lists the standings by total, and highlights you", () => {
-    const conn = { again: vi.fn() } as unknown as Connection
+    const conn = makeConn()
     const { container } = render(<Results conn={conn} view={view(false)} />)
     expect(container.querySelector(tid(ids.winner))!.textContent).toContain("Alice")
     expect(container.querySelector(tid(ids.winner))!.textContent).toContain("wins")
@@ -61,7 +70,7 @@ describe("Results", () => {
   })
 
   it("tables each round: what it asked, everyone's score in finishing order, its best picked out", () => {
-    const conn = { again: vi.fn() } as unknown as Connection
+    const conn = makeConn()
     const { container } = render(<Results conn={conn} view={view(false)} />)
     const heads = [...container.querySelectorAll(tid(ids.playerName))].map((h) => h.textContent)
     expect(heads).toEqual(["Alice", "Bob"])
@@ -81,7 +90,7 @@ describe("Results", () => {
   })
 
   it("tells a flag round from a country round: the flag, or the shape with the flag by its name", () => {
-    const conn = { again: vi.fn() } as unknown as Connection
+    const conn = makeConn()
     const v = view(false)
     v.playedRounds = [
       { label: "Turkey", type: QuestionType.FLAG, flag: flagCode("tr") },
@@ -125,7 +134,7 @@ describe("Results", () => {
       }
     )
     try {
-      const conn = { again: vi.fn() } as unknown as Connection
+      const conn = makeConn()
       const { container, getByText } = render(<Results conn={conn} view={view(false)} />)
       expect(container.querySelectorAll(tid(ids.table))).toHaveLength(0)
       const rounds = [...container.querySelectorAll(tid(ids.playedRound))]
@@ -148,9 +157,16 @@ describe("Results", () => {
 
   it("lets the host play again", () => {
     const again = vi.fn()
-    const conn = { again } as unknown as Connection
-    const { getByText } = render(<Results conn={conn} view={view(true)} />)
+    const { getByText } = render(<Results conn={makeConn(ConnectionStatus.CONNECTED, again)} view={view(true)} />)
     fireEvent.click(getByText("Play again"))
     expect(again).toHaveBeenCalledTimes(1)
+  })
+
+  it("holds Play again while reconnecting, and says so", () => {
+    const { container, getByText } = render(
+      <Results conn={makeConn(ConnectionStatus.DISCONNECTED)} view={view(true)} />
+    )
+    expect(container.querySelector<HTMLButtonElement>(tid(ids.playAgainButton))!.disabled).toBe(true)
+    getByText("Reconnecting…")
   })
 })

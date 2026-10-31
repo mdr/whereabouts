@@ -50,6 +50,7 @@ const leave = vi.fn()
 const setRole = vi.fn()
 const conn = {
   status: signal(ConnectionStatus.CONNECTED),
+  online: signal(true),
   lastError: signal(undefined),
   configure,
   start: vi.fn(),

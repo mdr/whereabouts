@@ -13,7 +13,7 @@ export function TakeSeatButton({ conn, view, inCard }: { conn: Connection; view:
     <button
       class={inCard ? s.inCard : undefined}
       onClick={() => conn.setRole(false)}
-      disabled={full}
+      disabled={full || !conn.online.value}
       title={full ? `All ${MAX_PLAYERS} player seats are taken` : "Play from the next question"}
     >
       <Icon name="play" /> Play from the next question

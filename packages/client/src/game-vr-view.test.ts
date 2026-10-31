@@ -14,6 +14,7 @@ const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: fa
 function fakeConn(status = ConnectionStatus.CONNECTED) {
   return {
     status: signal(status),
+    online: signal(status === ConnectionStatus.CONNECTED),
     lastError: signal<string | undefined>(undefined),
     ready: vi.fn(),
     next: vi.fn(),
@@ -79,10 +80,15 @@ describe("gameVrView", () => {
     const labels = (v: GameView) => reveal(show(v)).actions.map((a) => [a.label, a.enabled])
     expect(labels(revealing())).toEqual([
       ["Ready", true],
-      ["Next round", undefined]
+      ["Next round", true]
     ])
     expect(labels(revealing({ you: { isHost: false }, reveal: makeReveal({ ready: [playerId("p1")] }) }))).toEqual([
       ["Waiting for the others…", false]
     ])
+  })
+
+  it("offers nothing to press while reconnecting, since it would be lost", () => {
+    const enabled = reveal(show(revealing(), fakeConn(ConnectionStatus.CONNECTING))).actions.map((a) => a.enabled)
+    expect(enabled).toEqual([false, false])
   })
 })

@@ -90,6 +90,15 @@ button.leave:hover {
   font-style: italic;
 }
 
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
 .setting {
   display: flex;
   flex-direction: column;

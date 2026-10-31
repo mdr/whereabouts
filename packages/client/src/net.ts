@@ -83,6 +83,8 @@ export class Connection {
   /** Why the server turned us away or closed the game, in words for the player. */
   readonly rejection = signal<Rejection | undefined>(undefined)
   readonly code = computed(() => this.view.value?.code)
+  /** Whether a command sent now reaches the server: only paint and Done are resent after a drop. */
+  readonly online = computed(() => this.status.value === ConnectionStatus.CONNECTED)
 
   private client: GameClient | undefined = undefined
   /** The ticket to come back with: the game's code once in one. */

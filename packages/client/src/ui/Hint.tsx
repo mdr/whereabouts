@@ -8,7 +8,17 @@ import s from "./Hint.module.css"
 const AXIS_ICON: Record<HintAxis, IconName> = { [HintAxis.LATITUDE]: "latitude", [HintAxis.LONGITUDE]: "longitude" }
 
 /** `left` is how many the player has; undefined in practice, where they are unlimited. */
-export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number; onUse: (axis: HintAxis) => void }) {
+export function HintCard({
+  band,
+  left,
+  disabled,
+  onUse
+}: {
+  band?: HintBand
+  left?: number
+  disabled?: boolean
+  onUse: (axis: HintAxis) => void
+}) {
   if (band) {
     return (
       <Card class={s.card}>
@@ -30,6 +40,7 @@ export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number
           type="button"
           class="small"
           title="Show a band of latitude the answer lies in"
+          disabled={disabled}
           onClick={() => onUse(HintAxis.LATITUDE)}
           data-testid={hintTestIds.latitude}
         >
@@ -39,6 +50,7 @@ export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number
           type="button"
           class="small"
           title="Show a band of longitude the answer lies in"
+          disabled={disabled}
           onClick={() => onUse(HintAxis.LONGITUDE)}
           data-testid={hintTestIds.longitude}
         >
