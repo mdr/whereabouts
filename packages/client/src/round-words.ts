@@ -17,7 +17,7 @@ export function noteText(note: RoundNote, { askedToWatch, canUnlock }: { askedTo
 }
 
 /** Under the Pass button, while nothing is painted. */
-export const PASS_NOTE = `Passing scores ${PASS_SCORE.score}. Even a wide, vague guess scores more on average.`
+export const PASS_NOTE = `Passing scores ${PASS_SCORE.score}; a vague guess usually scores more.`
 
 export const readyCountText = (ready: number, present: number): string => `${ready} of ${present} ready`
 
