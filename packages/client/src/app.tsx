@@ -1,4 +1,4 @@
-import { route } from "./router"
+import { route, visit } from "./router"
 import { Home } from "./screens/Home"
 import { Solo } from "./screens/Solo"
 import { Multiplayer } from "./screens/Multiplayer"
@@ -12,7 +12,13 @@ export function App() {
     case "score-review":
       return <ScoreReview />
     case "game":
-      return <Multiplayer key={`${r.create ? "new" : "join"}:${r.code ?? ""}`} code={r.code} create={r.create} />
+      return (
+        <Multiplayer
+          key={`${visit.value}:${r.create ? "new" : "join"}:${r.code ?? ""}`}
+          code={r.code}
+          create={r.create}
+        />
+      )
     default:
       return <Home />
   }

@@ -4,7 +4,7 @@
  * "#/score-review", linked from nowhere, for playtesters. A query string
  * after the path ("#/solo?dev") is ignored here; see dev.ts.
  */
-import { signal } from "@preact/signals"
+import { batch, signal } from "@preact/signals"
 import { roomCode, type RoomCode } from "@whereabouts/shared/ids"
 
 export type Route =
@@ -28,6 +28,13 @@ export function parseRoute(hash: string): Route {
 
 export const route = signal<Route>(parseRoute(location.hash))
 
+/**
+ * Counts navigate calls, so a screen keyed on it starts afresh even when
+ * the route is unchanged: Host a new game from a game that began at
+ * #/game/new.
+ */
+export const visit = signal(0)
+
 // Back/forward and hand-edited URLs.
 window.addEventListener("hashchange", () => {
   route.value = parseRoute(location.hash)
@@ -36,5 +43,8 @@ window.addEventListener("hashchange", () => {
 /** Update the URL and the route together, so callers see the change synchronously. */
 export function navigate(to: string): void {
   if (location.hash !== `#${to}`) location.hash = to
-  route.value = parseRoute(to)
+  batch(() => {
+    route.value = parseRoute(to)
+    visit.value++
+  })
 }
