@@ -80,7 +80,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
       { label: "Leave", confirm: host ? "Press again to leave" : undefined, press: () => leave() }
     ]
   }
-  useVrView(vrView, "lobby")
+  useVrView(vrView)
   // Home, giving up the seat now; the tab forgets the game so a refresh or
   // Back does not quietly rejoin it. Leaving the screen disconnects.
   const leave = () => {

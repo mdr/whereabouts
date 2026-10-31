@@ -73,7 +73,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
     },
     more: [{ label: "Leave", press: () => navigate("/") }]
   }
-  useVrView(vrView, "results")
+  useVrView(vrView)
   return (
     <div class={kit.page}>
       <div class={cx(kit.pageCard, s.card)} data-testid={resultsTestIds.page}>

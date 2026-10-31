@@ -213,7 +213,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
             )
           }
         : { type: VrViewType.PAINT, round, more: [{ ...home, confirm: "Press again to leave" }] }
-  useVrView(vrView, `${phase} ${index} ${questions[0]?.id} ${hint?.axis}`)
+  useVrView(vrView)
 
   const header = (
     <HudHeader

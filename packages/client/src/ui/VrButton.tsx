@@ -1,7 +1,7 @@
 import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import type { Vr } from "../vr"
-import type { VrView } from "../vr/view"
+import { sceneOf, type VrView } from "../vr/view"
 import { VR_LOAD_STAGES, VrCodeMissing, loadVr, loadedVr, vrLoadStage, vrSupported, VrLoadStage } from "../vr-support"
 import { Icon } from "./icons"
 import { vrButtonTestIds } from "./VrButtonTestIds"
@@ -25,12 +25,11 @@ const HANDOVER: Ms = 500
 
 /**
  * Keep the headset showing what the screen shows: the menu, the round, its
- * answer, the final score. `key` changes when that moves on to something
- * new; between, each render passes on what changed, such as the clock or
- * who is ready. The headset comes off when the player goes where it has
- * nothing to show.
+ * answer, the final score. A new scene (sceneOf) is set up afresh; between,
+ * each render passes on what changed, such as the clock or who is ready.
+ * The headset comes off when the player goes where it has nothing to show.
  */
-export function useVrView(view: VrView, key: string): void {
+export function useVrView(view: VrView): void {
   // The headset calls back long after this render; it should reach the screen as it is then.
   const latest = useRef(view)
   latest.current = view
@@ -38,7 +37,7 @@ export function useVrView(view: VrView, key: string): void {
   const active = vr?.active.value ?? false
   useEffect(() => {
     if (vr && active) vr.show(latest.current)
-  }, [vr, active, key])
+  }, [vr, active, sceneOf(view)])
   useEffect(() => {
     if (vr && active) vr.refresh(latest.current)
   })

@@ -117,7 +117,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     [borders.value, view.reveal?.index, mine?.paint !== undefined]
   )
   const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, outline, fact, painted })
-  useVrView(vrView, `${view.phase} ${roundKey}`)
+  useVrView(vrView)
 
   if (view.phase === Phase.REVEAL && view.reveal) {
     return <Reveal conn={conn} view={view} reveal={view.reveal} vrView={vrView} fact={fact} />

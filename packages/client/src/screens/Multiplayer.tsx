@@ -174,7 +174,7 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
 
 /** The headset's view while there is no game to show: joining it, or why not. */
 function VrNotice({ title, line, actions }: { title: string; line: string; actions: VrAction[] }) {
-  useVrView({ type: VrViewType.LOBBY, summary: { title, scoreLine: line, actions } }, title)
+  useVrView({ type: VrViewType.LOBBY, summary: { title, scoreLine: line, actions } })
   return undefined
 }
 

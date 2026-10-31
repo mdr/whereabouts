@@ -45,7 +45,7 @@ export function Home() {
       ]
     }
   }
-  useVrView(vrView, "home")
+  useVrView(vrView)
   return (
     <div class={kit.page} data-testid={homeTestIds.page}>
       <div class={s.content}>

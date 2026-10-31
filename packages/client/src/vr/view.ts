@@ -129,3 +129,15 @@ interface VrLobbyView extends VrViewCommon {
 
 /** What the headset shows: a menu, a round to paint, its answer, or the final score. */
 export type VrView = VrPaintView | VrRevealView | VrDoneView | VrLobbyView
+
+/**
+ * What the headset sets up afresh when it changes (Vr.show): the kind of
+ * view and the question on it. Anything else, the clock, a hint, who is
+ * ready, is a refresh.
+ */
+export function sceneOf(view: VrView): string {
+  if (view.type !== VrViewType.PAINT && view.type !== VrViewType.REVEAL) return view.type
+  const { prompt, picture } = view.round
+  const shows = picture && ("photo" in picture ? picture.photo : picture.flag)
+  return JSON.stringify([view.type, prompt, shows])
+}
