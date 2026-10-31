@@ -4,7 +4,6 @@ import {
   setWorkerUrl,
   type IControl,
   type Point,
-  type FilterSpecification,
   type GeoJSONSource
 } from "maplibre-gl"
 import type * as maplibregl from "maplibre-gl"
@@ -19,7 +18,30 @@ import { cellsOutline } from "@whereabouts/shared/paint"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { Theme } from "./themes"
-import { HintAxis } from "@whereabouts/shared/hints"
+import {
+  addGameLayers,
+  COLOUR_LAYER,
+  CURSOR_SOURCE,
+  HINT_SOURCE,
+  PAINT_FILL,
+  PAINT_SOURCE,
+  REVEAL_SOURCE,
+  STATE_BORDERS,
+  STATE_LABELS,
+  TERRAIN_LAYER
+} from "./map-layers"
+import { overlayPaint, paintRamp, PLAYER_OPACITY, styleLayerPaint, type StyleLayer } from "./map-theme"
+import {
+  boxAround,
+  bounds,
+  drawable,
+  globeWorldZoom,
+  hintFeatures,
+  metresPerPixel,
+  offsetFor,
+  toleranceBox,
+  WORLD_PX_Z0
+} from "./map-geometry"
 import {
   RevealDetail,
   showsBorders,
@@ -28,34 +50,13 @@ import {
   showsTerrain,
   type ShownDetail
 } from "./shown-detail"
-import type { Km, Metres } from "@whereabouts/shared/units"
+import type { Km } from "@whereabouts/shared/units"
 
 setWorkerUrl(mapWorkerUrl)
 
 export const STYLE_URL = "https://tiles.openfreemap.org/styles/positron"
-const PAINT_SOURCE = "paint"
-const REVEAL_SOURCE = "reveal"
-const CURSOR_SOURCE = "cursor"
-const HINT_SOURCE = "hint"
-const TERRAIN_SOURCE = "terrain"
-const TERRAIN_LAYER = "terrain-hillshade"
-/** Natural Earth II colour relief, declared (but not drawn) by the positron style. */
-const COLOUR_SOURCE = "ne2_shaded"
-const COLOUR_LAYER = "natural-colour"
-
-/** World circumference at the equator in metres, for metres-per-pixel maths. */
-const EQUATOR: Metres = 40075016.686
 const WORLD_CENTER: [number, number] = [10, 25]
 const WORLD_ZOOM = 1.6
-/** MapLibre's world is 512 px wide at zoom 0. */
-const WORLD_PX_Z0 = 512
-/**
- * MapLibre's tiles stop this far north and south. Paint beyond it is never
- * seen on the flat map, and a globe smears it into a fan at the pole.
- */
-const MAX_LAT = 85.0511
-/** The globe's starting size: its radius as a share of the map's shorter side. */
-const GLOBE_FILL = 0.4
 /** The phone layout's width, and where its reveal sheet starts, as a share of the screen's height (media.css --phone, Hud.module.css). */
 const PHONE = "(max-width: 640px)"
 const SHEET_TOP = 0.5
@@ -69,9 +70,6 @@ const SHEET_TOP = 0.5
 const NATIONAL_BORDERS = ["boundary_2", "boundary_disputed"]
 const REVEAL_BORDER_WIDTH = ["interpolate", ["linear"], ["zoom"], 1, 0.8, 3, 1.3, 5, 1.8, 8, 2.5]
 const REVEAL_BORDER_OPACITY = ["interpolate", ["linear"], ["zoom"], 1, 0.55, 2.5, 1]
-/** US states, and other countries' provinces, for the reveal of a state round. The style draws them only from zoom 8. */
-const STATE_BORDERS = "state-borders"
-const STATE_LABELS = "state-labels"
 /** Town and city names, hidden at a state reveal so the state names stand out. */
 const PLACE_LABELS = ["label_other", "label_village", "label_town", "label_state", "label_city", "label_city_capital"]
 
@@ -96,7 +94,7 @@ export class GameMap {
   /** River lines; lakes are handled by filtering the shared water layer. */
   private waterwayLayers: string[] = []
   private waterFilter: unknown = undefined
-  private styleLayers: { id: string; type: string; sourceLayer: string }[] = []
+  private styleLayers: StyleLayer[] = []
   private theme: Theme | undefined = undefined
   /** Set once the map is removed; layer toggles become no-ops rather than throwing. */
   private disposed = false
@@ -138,7 +136,7 @@ export class GameMap {
       this.map.once("load", () => {
         this.collapseAttribution()
         this.indexStyleLayers()
-        this.addSources()
+        addGameLayers(this.map, this.labelLayers, this.theme)
         resolve()
       })
     })
@@ -181,232 +179,17 @@ export class GameMap {
     }
   }
 
-  private addSources(): void {
-    // Shaded relief for the reveal, from the public AWS terrain tiles. It
-    // starts hidden, and MapLibre fetches nothing for a hidden layer, so
-    // guessing costs no tile requests. It goes just under the water layer:
-    // the tiles carry ocean depths too, and the sea should stay flat.
-    this.map.addSource(TERRAIN_SOURCE, {
-      type: "raster-dem",
-      tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
-      encoding: "terrarium",
-      tileSize: 256,
-      maxzoom: 15,
-      attribution:
-        '<a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank">Terrain: Mapzen, AWS Open Data</a>'
-    })
-    const below = this.map.getLayer("water") ? "water" : this.labelLayers[0]
-    // Natural colour for the reveal: greens, desert sand, white ice, from
-    // Natural Earth II relief tiles on the same host as the map. Like the
-    // relief it starts hidden and sits under the water (the tiles paint
-    // the sea white). Dimmed to sit on the dark theme.
-    if (this.map.getSource(COLOUR_SOURCE)) {
-      this.map.addLayer(
-        {
-          id: COLOUR_LAYER,
-          type: "raster",
-          source: COLOUR_SOURCE,
-          layout: { visibility: "none" },
-          paint: {
-            "raster-opacity": 0.9,
-            "raster-brightness-max": 0.55,
-            "raster-saturation": 0.2
-          }
-        },
-        below
-      )
-    }
-    this.map.addLayer(
-      {
-        id: TERRAIN_LAYER,
-        type: "hillshade",
-        source: TERRAIN_SOURCE,
-        layout: { visibility: "none" },
-        paint: {
-          "hillshade-exaggeration": 0.3,
-          "hillshade-shadow-color": "rgba(0, 0, 0, 0.55)",
-          "hillshade-highlight-color": "rgba(255, 255, 255, 0.18)",
-          "hillshade-accent-color": "rgba(0, 0, 0, 0.3)"
-        }
-      },
-      below
-    )
-    if (this.map.getSource("openmaptiles")) {
-      this.map.addLayer(
-        {
-          id: STATE_BORDERS,
-          type: "line",
-          source: "openmaptiles",
-          "source-layer": "boundary",
-          filter: ["all", ["==", ["get", "admin_level"], 4], ["!=", ["get", "maritime"], 1]],
-          layout: { visibility: "none", "line-join": "round" },
-          paint: { "line-color": this.theme?.revealBorder ?? "#c4d0de", "line-width": 1, "line-opacity": 0.7 }
-        },
-        this.labelLayers[0]
-      )
-      // The style's own state names start at zoom 5, closer in than a state reveal.
-      this.map.addLayer({
-        id: STATE_LABELS,
-        type: "symbol",
-        source: "openmaptiles",
-        "source-layer": "place",
-        maxzoom: 9,
-        filter: ["==", ["get", "class"], "state"],
-        layout: {
-          visibility: "none",
-          "text-field": ["coalesce", ["get", "name_en"], ["get", "name"]],
-          "text-font": ["Noto Sans Bold"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 3, 10, 6, 15],
-          "text-transform": "uppercase",
-          "text-letter-spacing": 0.08,
-          "text-max-width": 8
-        },
-        paint: {
-          "text-color": this.theme?.labelText ?? "#cfd8e3",
-          "text-halo-color": this.theme?.labelHalo ?? "#000000",
-          "text-halo-width": 1.5
-        }
-      })
-    }
-
-    // A hint's band, under the paint so painting over it stays readable.
-    this.map.addSource(HINT_SOURCE, {
-      type: "geojson",
-      data: { type: "FeatureCollection", features: [] }
-    })
-    this.map.addLayer({
-      id: "hint-fill",
-      type: "fill",
-      source: HINT_SOURCE,
-      paint: { "fill-color": "#ffffff", "fill-opacity": 0.1 }
-    })
-    this.map.addLayer({
-      id: "hint-edge",
-      type: "line",
-      source: HINT_SOURCE,
-      paint: { "line-color": "#ffffff", "line-width": 1.5, "line-opacity": 0.8, "line-dasharray": [4, 3] }
-    })
-
-    this.map.addSource(PAINT_SOURCE, {
-      type: "geojson",
-      data: { type: "FeatureCollection", features: [] }
-    })
-    this.map.addLayer({
-      id: "paint-fill",
-      type: "fill",
-      source: PAINT_SOURCE,
-      paint: {
-        "fill-color": [
-          "interpolate",
-          ["linear"],
-          ["get", "v"],
-          0,
-          "#ffe082",
-          0.35,
-          "#ffa726",
-          0.7,
-          "#f4511e",
-          1,
-          "#b71c1c"
-        ],
-        "fill-opacity": ["interpolate", ["linear"], ["get", "v"], 0, 0.2, 1, 0.8],
-        "fill-antialias": true
-      }
-    })
-
-    this.map.addSource(REVEAL_SOURCE, {
-      type: "geojson",
-      data: { type: "FeatureCollection", features: [] }
-    })
-    // A region answer: the country filled faintly and outlined.
-    const isArea: FilterSpecification = ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]]
-    this.map.addLayer({
-      id: "reveal-region-fill",
-      type: "fill",
-      source: REVEAL_SOURCE,
-      filter: isArea,
-      paint: { "fill-color": "#fbbf24", "fill-opacity": 0.12 }
-    })
-    this.map.addLayer({
-      id: "reveal-region-line",
-      type: "line",
-      source: REVEAL_SOURCE,
-      filter: isArea,
-      paint: { "line-color": "#fbbf24", "line-width": 2 }
-    })
-    this.map.addLayer({
-      id: "reveal-answer",
-      type: "circle",
-      source: REVEAL_SOURCE,
-      filter: ["==", ["geometry-type"], "Point"],
-      paint: {
-        "circle-radius": 7,
-        "circle-color": "#1565c0",
-        "circle-stroke-color": "#ffffff",
-        "circle-stroke-width": 2.5
-      }
-    })
-
-    // Brush footprint: the exact cells the next stamp would touch.
-    this.map.addSource(CURSOR_SOURCE, {
-      type: "geojson",
-      data: { type: "FeatureCollection", features: [] }
-    })
-    this.map.addLayer({
-      id: "cursor-fill",
-      type: "fill",
-      source: CURSOR_SOURCE,
-      paint: { "fill-color": "#ffffff", "fill-opacity": 0.08 }
-    })
-    this.map.addLayer({
-      id: "cursor-outline",
-      type: "line",
-      source: CURSOR_SOURCE,
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 1.5,
-        "line-opacity": 0.9,
-        "line-dasharray": ["case", ["==", ["get", "erase"], true], ["literal", [1, 1.5]], ["literal", [1, 0]]]
-      }
-    })
-  }
-
   applyTheme(t: Theme): void {
     this.theme = t
-    const set = (id: string, prop: string, value: unknown) => {
-      if (this.map.getLayer(id)) this.map.setPaintProperty(id, prop as never, value as never)
-    }
-    for (const l of this.styleLayers) {
-      if (l.type === "background") set(l.id, "background-color", t.land)
-      else if (l.id === "water") set(l.id, "fill-color", t.water)
-      else if (l.id === "landcover_wood") set(l.id, "fill-color", t.wood)
-      else if (l.id.startsWith("landcover_")) set(l.id, "fill-color", t.ice)
-      else if (l.sourceLayer === "waterway" && l.type === "line") set(l.id, "line-color", t.waterway)
-      else if (l.type === "symbol") {
-        set(l.id, "text-color", t.labelText)
-        set(l.id, "text-halo-color", t.labelHalo)
-      } else if (["transportation", "aeroway"].includes(l.sourceLayer)) {
-        if (l.type === "line") set(l.id, "line-color", t.road)
-        else if (l.type === "fill") set(l.id, "fill-color", t.road)
-      } else if (["landuse", "park", "building"].includes(l.sourceLayer)) {
-        set(l.id, "fill-color", t.urban)
-        if (l.id === "building") set(l.id, "fill-outline-color", t.urban)
-      }
-    }
+    for (const l of this.styleLayers) for (const s of styleLayerPaint(l, t)) this.setPaintIfPresent(...s)
     this.styleBorders()
     this.applyPaintRamp(t)
-    set(STATE_BORDERS, "line-color", t.revealBorder)
-    set(STATE_LABELS, "text-color", t.labelText)
-    set(STATE_LABELS, "text-halo-color", t.labelHalo)
-    set("reveal-answer", "circle-color", t.answer)
-    set("reveal-answer", "circle-stroke-color", t.answerStroke)
-    set("reveal-region-fill", "fill-color", t.answer)
-    set("reveal-region-line", "line-color", t.answer)
-    set("hint-fill", "fill-color", t.brush)
-    set("hint-edge", "line-color", t.brush)
-    set("cursor-fill", "fill-color", t.brush)
-    set("cursor-outline", "line-color", t.brush)
+    for (const s of overlayPaint(t)) this.setPaintIfPresent(...s)
     document.documentElement.style.setProperty("--ring-brush", t.brush)
+  }
+
+  private setPaintIfPresent(id: string, prop: string, value: unknown): void {
+    if (this.map.getLayer(id)) this.map.setPaintProperty(id, prop as never, value as never)
   }
 
   /** Switch between the flat map and the globe, keeping a whole-world view whole. */
@@ -601,46 +384,27 @@ export class GameMap {
    * the theme ramp. Pass undefined to restore the ramp.
    */
   setPaintColour(colour: string | undefined): void {
-    if (!this.map.getLayer("paint-fill")) return
+    if (!this.map.getLayer(PAINT_FILL)) return
     if (colour === undefined) {
       if (this.theme) this.applyPaintRamp(this.theme)
       return
     }
-    this.map.setPaintProperty("paint-fill", "fill-color", colour)
-    this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9])
+    this.map.setPaintProperty(PAINT_FILL, "fill-color", colour)
+    this.map.setPaintProperty(PAINT_FILL, "fill-opacity", PLAYER_OPACITY as never)
   }
 
   /** Colour each feature by its own `colour` property, for several players at once. */
   setPaintColourPerFeature(): void {
-    if (!this.map.getLayer("paint-fill")) return
-    this.map.setPaintProperty("paint-fill", "fill-color", ["coalesce", ["get", "colour"], "#888888"])
-    this.map.setPaintProperty("paint-fill", "fill-opacity", ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9])
+    if (!this.map.getLayer(PAINT_FILL)) return
+    this.map.setPaintProperty(PAINT_FILL, "fill-color", ["coalesce", ["get", "colour"], "#888888"])
+    this.map.setPaintProperty(PAINT_FILL, "fill-opacity", PLAYER_OPACITY as never)
   }
 
   private applyPaintRamp(t: Theme): void {
-    if (!this.map.getLayer("paint-fill")) return
-    this.map.setPaintProperty("paint-fill", "fill-color", [
-      "interpolate",
-      ["linear"],
-      ["get", "v"],
-      0,
-      t.ramp[0],
-      1 / 3,
-      t.ramp[1],
-      2 / 3,
-      t.ramp[2],
-      1,
-      t.ramp[3]
-    ])
-    this.map.setPaintProperty("paint-fill", "fill-opacity", [
-      "interpolate",
-      ["linear"],
-      ["get", "v"],
-      0,
-      t.rampOpacity[0],
-      1,
-      t.rampOpacity[1]
-    ])
+    if (!this.map.getLayer(PAINT_FILL)) return
+    const ramp = paintRamp(t)
+    this.map.setPaintProperty(PAINT_FILL, "fill-color", ramp.color as never)
+    this.map.setPaintProperty(PAINT_FILL, "fill-opacity", ramp.opacity as never)
   }
 
   /** Marker at the answer: one clear dot. */
@@ -684,9 +448,7 @@ export class GameMap {
 
   /** At a latitude on the flat map. A globe has one scale, the flat map's at the view's centre. */
   metersPerPixel(lat: number): number {
-    const z = this.map.getZoom()
-    const at = this.globe ? this.map.getCenter().lat : lat
-    return (EQUATOR * Math.cos((at * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, z))
+    return metresPerPixel(this.globe ? this.map.getCenter().lat : lat, this.map.getZoom())
   }
 
   /** Back to the whole-world starting view, e.g. at the start of a round. */
@@ -694,21 +456,12 @@ export class GameMap {
     void this.map.easeTo({ center: WORLD_CENTER, zoom: this.worldZoom(), duration: 700 })
   }
 
-  /**
-   * The zoom of the whole-world view. On a phone the flat map fits the
-   * world's width to the screen. A globe is sized to the map: in the
-   * camera's perspective a sphere of radius R px, seen from f px away, shows
-   * a disc of radius f tan(asin(R / (f + R))).
-   */
+  /** The zoom of the whole-world view. On a phone the flat map fits the world's width to the screen. */
   private worldZoom(lat = WORLD_CENTER[1]): number {
     const el = this.map.getContainer()
     if (!this.globe) return flatWorldZoom(el.clientWidth)
-    const disc = GLOBE_FILL * Math.min(el.clientWidth, el.clientHeight)
-    const f = el.clientHeight / 2 / Math.tan((this.map.getVerticalFieldOfView() * Math.PI) / 360)
-    const sin = disc / Math.hypot(f, disc)
-    const radius = (f * sin) / (1 - sin)
-    const worldWidth = 2 * Math.PI * radius * Math.cos((lat * Math.PI) / 180)
-    return Math.max(this.map.getMinZoom(), Math.log2(worldWidth / WORLD_PX_Z0))
+    const zoom = globeWorldZoom(el.clientWidth, el.clientHeight, this.map.getVerticalFieldOfView(), lat)
+    return Math.max(this.map.getMinZoom(), zoom)
   }
 
   /**
@@ -721,11 +474,7 @@ export class GameMap {
     tolerance: Km,
     outline: GeoJSON.Feature[] = []
   ): void {
-    // Always at least two tolerances around the answer.
-    const dLat = (2 * tolerance) / 111
-    const dLon = dLat / Math.max(0.2, Math.cos((answer.lat * Math.PI) / 180))
-    const around: Box = [answer.lon - dLon, answer.lat - dLat, answer.lon + dLon, answer.lat + dLat]
-    const answerBox = boxAround(outline, around)
+    const answerBox = boxAround(outline, toleranceBox(answer, tolerance))
     const box = boxAround(paint.features, answerBox)
     const padding = this.revealPadding()
     if (box[2] - box[0] > 300) {
@@ -767,64 +516,4 @@ export class GameMap {
     const side = Math.min(340, w * 0.3)
     return { top: 40, bottom: 90, left: side, right: side }
   }
-}
-
-/** West, south, east, north. */
-type Box = [number, number, number, number]
-
-/** `box` grown to take in the polygons' outer rings. */
-function boxAround(features: GeoJSON.Feature[], box: Box): Box {
-  let [minLon, minLat, maxLon, maxLat] = box
-  for (const f of features) {
-    if (f.geometry.type !== "Polygon") continue
-    for (const [lon, lat] of f.geometry.coordinates[0] as [number, number][]) {
-      // Cells that were unwrapped past 180 are folded back for the bbox.
-      const l = lon > 180 ? lon - 360 : lon
-      if (l < minLon) minLon = l
-      if (l > maxLon) maxLon = l
-      if (lat < minLat) minLat = lat
-      if (lat > maxLat) maxLat = lat
-    }
-  }
-  return [minLon, minLat, maxLon, maxLat]
-}
-
-function bounds([w, s, e, n]: Box): maplibregl.LngLatBoundsLike {
-  return [
-    [w, Math.max(-85, s)],
-    [e, Math.min(85, n)]
-  ]
-}
-
-/** Moves the centre into the middle of the clear part of the map. Unlike easeTo's padding, it does not stay set. */
-function offsetFor(p: Required<maplibregl.PaddingOptions>): [number, number] {
-  return [(p.left - p.right) / 2, (p.top - p.bottom) / 2]
-}
-
-/** A band as polygons: a longitude band across 180° is two, one each side. */
-function drawable(lat: number): boolean {
-  return Math.abs(lat) <= MAX_LAT
-}
-
-function hintFeatures(band: HintBand): GeoJSON.Feature[] {
-  const box = (west: number, east: number, south: number, north: number): GeoJSON.Feature => ({
-    type: "Feature",
-    properties: {},
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [west, south],
-          [east, south],
-          [east, north],
-          [west, north],
-          [west, south]
-        ]
-      ]
-    }
-  })
-  const p = MAX_LAT
-  if (band.axis === HintAxis.LATITUDE) return [box(-180, 180, Math.max(band.from, -p), Math.min(band.to, p))]
-  if (band.from <= band.to) return [box(band.from, band.to, -p, p)]
-  return [box(band.from, 180, -p, p), box(-180, band.to, -p, p)]
 }

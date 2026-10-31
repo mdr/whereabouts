@@ -403,21 +403,11 @@ export default defineConfig({
       },
       // To-do: files that don't yet meet the size and complexity rules. Remove an entry once it passes.
       {
-        files: [
-          "packages/client/src/map.ts",
-          "packages/client/src/vr/index.ts",
-          "packages/shared/src/game.ts",
-          "packages/shared/src/scoring.ts"
-        ],
+        files: ["packages/client/src/vr/index.ts", "packages/shared/src/game.ts", "packages/shared/src/scoring.ts"],
         rules: { "sonarjs/cognitive-complexity": "off" }
       },
       {
-        files: [
-          "packages/client/src/map.ts",
-          "packages/client/src/vr/index.ts",
-          "packages/shared/src/game.ts",
-          "packages/shared/src/scoring.ts"
-        ],
+        files: ["packages/client/src/vr/index.ts", "packages/shared/src/game.ts", "packages/shared/src/scoring.ts"],
         rules: { "max-lines": "off" }
       },
       { files: ["packages/shared/src/scoring.ts"], rules: { "max-depth": "off" } }
