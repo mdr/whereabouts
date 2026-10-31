@@ -37,6 +37,9 @@ No I/O; the same code runs in the browser and on the server.
 | `src/screens/`                         | One component per screen: Home, Lobby, InGame, Reveal, Results, Solo (practice), ScoreReview |
 | `src/ui/`                              | Shared components; each with a `*TestIds.ts` the browser page objects use                    |
 | `src/round.ts`, `src/vr-round.ts`      | Pure round logic for the page and for VR, tested apart from the components                   |
+| `src/practice-run.ts`                  | Practice's run: shuffled pool, scoring each round, reveal and next                           |
+| `src/paint-commands.ts`                | Clear, Trim and Trim to hint, shared by the page's paint tools and the VR wrist menu         |
+| `src/shown-detail.ts`                  | What each map detail level shows, for the page map and the VR globe                          |
 | `src/question-types.ts`                | Each question type's label, units and colour                                                 |
 | `src/settings.ts`, `src/host-setup.ts` | Browser-stored settings, and the host's saved setup                                          |
 | `src/map.ts`, `src/paint-*.ts`         | The MapLibre map and painting on it                                                          |
@@ -63,9 +66,10 @@ No I/O; the same code runs in the browser and on the server.
 **Add a game setting**
 
 1. A field in `GameConfig`, `DEFAULT_CONFIG` in `game.ts`, `ConfigureSchema`, and `view-schema.ts`.
-2. `Game.configure()` compares settings field by field: add the new one, or a change to it is ignored.
-3. The lobby's control and summary (`screens/Lobby.tsx`). The host's saved setup (`host-setup.ts`) takes its fields from `ConfigureSchema`; an old stored form needs mapping there.
-4. Bump `PROTOCOL_VERSION`.
+2. The lobby's control and summary (`screens/Lobby.tsx`). The host's saved setup (`host-setup.ts`) takes its fields from `ConfigureSchema`; an old stored form needs mapping there.
+3. Bump `PROTOCOL_VERSION`.
+
+`Game.configure()` compares whole configs, and a test of it lists every setting by type, so a new one fails to compile there until it's covered.
 
 **Add a browser setting**
 
