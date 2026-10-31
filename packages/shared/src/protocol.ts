@@ -71,9 +71,13 @@ export const MAX_SPECTATORS = 8
 
 /**
  * How long a dropped player's seat is held (a refresh is the common case),
- * and how long an empty game stays open. Mid-game seats are held for good.
+ * and how long an empty lobby stays open. Mid-game seats are held for good.
  */
 export const SEAT_GRACE: Ms = 30_000
+/** How long an empty game stays open mid-game, so a dropped network can come back. */
+export const EMPTY_GAME_GRACE: Ms = 5 * 60_000
+/** How long an empty game stays open on its final results, for one more look. */
+export const EMPTY_RESULTS_GRACE: Ms = 2 * 60_000
 
 /** How many rounds of each type a game asks; the rounds are their total, in a shuffled order. */
 export type QuestionMix = Record<QuestionType, number>

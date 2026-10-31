@@ -16,6 +16,9 @@ import {
   ClientMessageSchemas,
   type ClientMessages,
   type ClientTopic,
+  EMPTY_GAME_GRACE,
+  EMPTY_RESULTS_GRACE,
+  Phase,
   SEAT_GRACE,
   ServerTopics,
   decodeMessage,
@@ -45,6 +48,18 @@ const closeReason = (reason: CloseReason): string => reason
 export function kickForRestart(rooms: RoomManager<ActorData>): void {
   for (const id of [...rooms.keys()])
     rooms.get(id)?.each((actor) => actor.kick(closeReason(CloseReason.SERVER_RESTARTED)))
+}
+
+function emptyGrace(phase: Phase): Ms {
+  switch (phase) {
+    case Phase.LOBBY:
+      return SEAT_GRACE
+    case Phase.GUESSING:
+    case Phase.REVEAL:
+      return EMPTY_GAME_GRACE
+    case Phase.RESULTS:
+      return EMPTY_RESULTS_GRACE
+  }
 }
 
 export const BANK: QuestionBank = { catalogue: CATALOGUE, outlines: outlinesFrom(outlinesJson) }
@@ -92,7 +107,7 @@ export function configureGameRooms(next: Partial<GameRoomDeps>): void {
 export class GameRoom extends Room<ActorData> {
   // Not Rivalis's destroyOnEmpty, which closes the room the moment the last
   // player drops: a lone host's refresh would lose the game. An empty room
-  // stays open for SEAT_GRACE instead (see onLeave).
+  // stays open for a while instead (see emptyGrace).
   protected override unknownTopicPolicy = "drop" as const
 
   // Rivalis runs onCreate from the base constructor, before subclass field
@@ -179,7 +194,7 @@ export class GameRoom extends Room<ActorData> {
       this.emptyTimer = deps.clock.setTimeout(() => {
         this.emptyTimer = undefined
         if (this.actorCount === 0) this.destroy()
-      }, SEAT_GRACE)
+      }, emptyGrace(this.game.phase))
     }
   }
 

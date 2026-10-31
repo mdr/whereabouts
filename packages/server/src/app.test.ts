@@ -13,6 +13,8 @@ import {
   type ClientTopic,
   MAX_PLAYERS,
   MAX_SPECTATORS,
+  EMPTY_GAME_GRACE,
+  EMPTY_RESULTS_GRACE,
   SEAT_GRACE,
   encodeTicket,
   type Ticket,
@@ -536,17 +538,29 @@ describe("game server", () => {
     expect(own.you.paint).toEqual(decodePaint(encodePaint(bobPaint)))
   })
 
-  it("frees the room once it has been empty for the grace period", async () => {
+  it.each([
+    [Phase.LOBBY, SEAT_GRACE],
+    [Phase.GUESSING, EMPTY_GAME_GRACE],
+    [Phase.REVEAL, EMPTY_GAME_GRACE],
+    [Phase.RESULTS, EMPTY_RESULTS_GRACE]
+  ])("frees a room left empty in %s once it has been empty for %i ms", async (phase, grace) => {
     const alice = player("Alice")
     alice.connect({ create: true })
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
-    expect(app.rivalis.rooms.get(lobby.code) ?? undefined).not.toBeUndefined()
-    const room = app.rivalis.rooms.get(lobby.code) as GameRoom
+    const { code } = await alice.until((v) => v.phase === Phase.LOBBY)
+    if (phase !== Phase.LOBBY) {
+      alice.send("start")
+      await alice.until((v) => v.phase === Phase.GUESSING)
+    }
+    if (phase === Phase.REVEAL) clock.advance(config.roundLength + ROUND_GRACE)
+    if (phase === Phase.RESULTS) alice.send("end")
+    await alice.until((v) => v.phase === phase)
+    const room = app.rivalis.rooms.get(code) as GameRoom
     alice.client.disconnect()
     await eventually(() => room.state.connectedCount === 0, "the server to see Alice go")
-    expect(app.rivalis.rooms.get(lobby.code) ?? undefined).not.toBeUndefined()
-    clock.advance(SEAT_GRACE)
-    expect(app.rivalis.rooms.get(lobby.code) ?? undefined).toBeUndefined()
+    clock.advance(grace - 1_000)
+    expect(app.rivalis.rooms.get(code) ?? undefined).not.toBeUndefined()
+    clock.advance(1_000)
+    expect(app.rivalis.rooms.get(code) ?? undefined).toBeUndefined()
   })
 
   it("a lone host who refreshes in the lobby gets the game, and the host role, back", async () => {

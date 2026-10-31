@@ -256,8 +256,10 @@ changes: [docs/code-map.md](docs/code-map.md)):
   reconnect (a browser refresh is the common case). In the lobby the seat is
   held for 30 seconds (`SEAT_GRACE`), then freed; mid-game it is held for
   good. The host keeps the role while away; the longest-standing connected
-  player acts as host meanwhile. An empty game stays open for the same 30
-  seconds, so a host alone in the lobby can refresh without losing it.
+  player acts as host meanwhile. An empty lobby stays open for the same 30
+  seconds, so a host alone in it can refresh without losing it; an empty
+  game stays open for 5 minutes mid-game (the round clock keeps running),
+  and for 2 minutes on the final results.
 - The host (or acting host) can hand the role over with the crown button on
   another online player's row, in the lobby or the players panel during a
   round. It is for good: the old host carries on as a player.
