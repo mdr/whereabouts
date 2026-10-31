@@ -2,21 +2,20 @@
  * Why the server closed a game connection, or would not open one. Sent as
  * the close's reason; the client puts it into words.
  */
-// The values are what clients of older builds read: an outdated one must still recognise "outdated" to offer a reload.
 export enum CloseReason {
   /** No game has the code asked for. */
-  NO_SUCH_GAME = "noSuchGame",
+  NO_SUCH_GAME = "NO_SUCH_GAME",
   /** The client speaks another protocol version than the server: a reload brings the server's build. */
-  OUTDATED = "outdated",
+  OUTDATED = "OUTDATED",
   /** No free code to host a new game under. */
-  UNAVAILABLE = "unavailable",
-  REMOVED = "removed",
-  FINISHED = "finished",
-  FULL = "full",
-  NO_ROOM_TO_WATCH = "noRoomToWatch",
+  UNAVAILABLE = "UNAVAILABLE",
+  REMOVED = "REMOVED",
+  FINISHED = "FINISHED",
+  FULL = "FULL",
+  NO_ROOM_TO_WATCH = "NO_ROOM_TO_WATCH",
   /** The same player connected again from another tab. */
-  REPLACED = "replaced",
-  LEFT = "left"
+  REPLACED = "REPLACED",
+  LEFT = "LEFT"
 }
 
 export function isCloseReason(s: string): s is CloseReason {

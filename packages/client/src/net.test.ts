@@ -33,12 +33,12 @@ describe("describeDisconnect", () => {
       title: "No game with that code",
       missing: true
     })
-    expect(describeDisconnect(1000, "full").missing).toBeUndefined()
-    expect(describeDisconnect(1000, "removed")).toMatchObject({
+    expect(describeDisconnect(1000, CloseReason.FULL).missing).toBeUndefined()
+    expect(describeDisconnect(1000, CloseReason.REMOVED)).toMatchObject({
       title: "You were removed from the game",
       removed: true
     })
-    expect(describeDisconnect(1000, "full").detail).toContain("16 players and 8 people watching")
+    expect(describeDisconnect(1000, CloseReason.FULL).detail).toContain("16 players and 8 people watching")
     expect(describeDisconnect(0, "reconnect_failed").title).toBe("Lost the connection")
   })
 
