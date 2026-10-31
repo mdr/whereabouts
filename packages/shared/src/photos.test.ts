@@ -6,18 +6,18 @@ import { QuestionType, clueImage } from "./questions.ts"
 const of = (...types: QuestionType[]) => CATALOGUE.filter((q) => types.includes(q.type))
 
 describe("the reveal photos", () => {
-  const answers = new Set<string>(CATALOGUE.filter((q) => q.type !== QuestionType.FLAG).map((q) => q.wiki))
+  const shown = new Set<string>(of(QuestionType.PLACE, QuestionType.FEATURE, QuestionType.STATE).map((q) => q.place))
 
-  it("are for answers the game asks about", () => {
-    for (const wiki of Object.keys(REVEAL_PHOTOS)) expect(answers.has(wiki), wiki).toBe(true)
+  it("are for places a round shows them for", () => {
+    expect(Object.keys(REVEAL_PHOTOS).filter((place) => !shown.has(place))).toEqual([])
   })
 
   it("are JPEG files, none of them a photo round's own photo", () => {
     const asked = new Set(CATALOGUE.map((q) => clueImage(q.clue)))
-    for (const [wiki, file] of Object.entries(REVEAL_PHOTOS)) {
-      expect(file, wiki).toMatch(/\.jpe?g$/i)
-      expect(file, wiki).not.toMatch(/^File:/)
-      expect(asked.has(file), `${wiki}: ${file}`).toBe(false)
+    for (const [place, file] of Object.entries(REVEAL_PHOTOS)) {
+      expect(file, place).toMatch(/\.jpe?g$/i)
+      expect(file, place).not.toMatch(/^File:/)
+      expect(asked.has(file), `${place}: ${file}`).toBe(false)
     }
   })
 

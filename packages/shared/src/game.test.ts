@@ -33,6 +33,7 @@ import {
 import outlinesJson from "../outlines.json" with { type: "json" }
 import {
   commonsFile,
+  placeId,
   playerId,
   playerName,
   playerToken,
@@ -51,6 +52,7 @@ import { CloseReason } from "./close-reason.ts"
 const place = (label: string, at: LatLon, tolerance = 100): PlaceQuestion => ({
   type: QuestionType.PLACE,
   id: questionId(label.toLowerCase()),
+  place: placeId(label.toLowerCase()),
   label,
   wiki: wikiTitle(label),
   clue: { type: ClueType.NAME, prompt: `Where is ${label}?` },
@@ -64,6 +66,7 @@ const pool = [petra, paris, tokyo]
 const landmark = (id: string, image: string): LandmarkQuestion => ({
   type: QuestionType.LANDMARK,
   id: questionId(id),
+  place: placeId(id),
   label: id,
   wiki: wikiTitle(id),
   clue: { type: ClueType.PHOTO, image: commonsFile(image) },
@@ -1165,7 +1168,7 @@ describe("upcoming pictures", () => {
     g.join(tokA, playerName("Alice"), T0)
     const photo = g.view(tokA, T0).upcoming?.revealPhoto
     expect(photo).toBeDefined()
-    expect(photo).toBe(REVEAL_PHOTOS[wikiTitle("Paris")])
+    expect(photo).toBe(REVEAL_PHOTOS[paris.place])
     g.start(tokA, T0)
     expect(imageOf(g, T0)).toBeUndefined()
     g.tick(T0 + 60_000 + ROUND_GRACE)

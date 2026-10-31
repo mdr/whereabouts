@@ -1,11 +1,12 @@
 /**
  * A line of interest for the reveal: what makes the answer notable, a piece
  * of trivia, or on a flag round something about the flag. facts.json holds
- * three or four for each answer, by its Wikipedia article, each researched
- * and then checked against its source and a second one.
+ * three or four about each place, and about each country's flag, by place,
+ * each researched and then checked against its source and a second one.
  */
 import { z } from "zod"
-import { SourceUrlSchema, WikiTitleSchema, type SourceUrl, type WikiTitle } from "./ids.ts"
+import { PlaceIdSchema, SourceUrlSchema, type PlaceId, type SourceUrl } from "./ids.ts"
+import { QuestionType } from "./questions.ts"
 
 export enum FactType {
   FAME = "FAME",
@@ -19,16 +20,27 @@ export interface Fact {
   source: SourceUrl
 }
 
-/** By Wikipedia article title, as questions name their answers. */
-export type Facts = Partial<Record<WikiTitle, Fact[]>>
+/** A place's facts: about it, and about its flag. */
+export interface PlaceFacts {
+  about?: Fact[]
+  flag?: Fact[]
+}
 
-/** One answer's facts, as facts.json holds them. */
-export const AnswerFactsSchema: z.ZodType<Fact[]> = z.array(
-  z.strictObject({ type: z.enum(FactType), text: z.string(), source: SourceUrlSchema })
-)
+export type Facts = Partial<Record<PlaceId, PlaceFacts>>
+
+/** One place's facts, as facts.json holds them. */
+const FactListSchema = z.array(z.strictObject({ type: z.enum(FactType), text: z.string(), source: SourceUrlSchema }))
+export const PlaceFactsSchema: z.ZodType<PlaceFacts> = z.strictObject({
+  about: FactListSchema.optional(),
+  flag: FactListSchema.optional()
+})
 
 /** facts.json as it is read. */
-export const FactsSchema: z.ZodType<Facts> = z.partialRecord(WikiTitleSchema, AnswerFactsSchema)
+export const FactsSchema: z.ZodType<Facts> = z.partialRecord(PlaceIdSchema, PlaceFactsSchema)
+
+/** The facts a round's reveal picks from: a flag round's are about the flag. */
+export const factsFor = (facts: PlaceFacts | undefined, type: QuestionType): Fact[] | undefined =>
+  type === QuestionType.FLAG ? facts?.flag : facts?.about
 
 /**
  * One of an answer's facts. The same `seed` and `round` give the same fact,

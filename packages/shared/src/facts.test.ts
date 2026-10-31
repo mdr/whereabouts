@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
-import { FactType, FactsSchema, pickFact, type Fact } from "./facts.ts"
+import { CATALOGUE } from "./catalogue.ts"
+import { FactType, FactsSchema, factsFor, pickFact, type Fact } from "./facts.ts"
 import { sourceUrl } from "./ids.ts"
 import facts from "../facts.json" with { type: "json" }
 
@@ -39,18 +40,22 @@ describe("picking a fact for the reveal", () => {
 })
 
 describe("the facts", () => {
-  const all = Object.entries(facts)
+  const all = FactsSchema.parse(facts)
+  const lists = Object.entries(all).flatMap(([place, f]) =>
+    [f?.about ?? [], f?.flag ?? []].map((list) => ({ place, list }))
+  )
 
-  it("each have a type and a source, by an article's title", () => {
-    expect(() => FactsSchema.parse(facts)).not.toThrow()
+  it("are about places the catalogue asks about", () => {
+    const asked = new Set<string>(CATALOGUE.map((q) => q.place))
+    expect(Object.keys(all).filter((place) => !asked.has(place))).toEqual([])
   })
 
   it("are short single sentences", () => {
-    for (const [wiki, list] of all)
-      for (const f of list) expect(f.text.split(/\s+/).length, `${wiki}: ${f.text}`).toBeLessThanOrEqual(25)
+    for (const { place, list } of lists)
+      for (const f of list) expect(f.text.split(/\s+/).length, `${place}: ${f.text}`).toBeLessThanOrEqual(25)
   })
 
-  it("give every answer at least one", () => {
-    for (const [wiki, list] of all) expect(list.length, wiki).toBeGreaterThan(0)
+  it("give every round at least one", () => {
+    for (const q of CATALOGUE) expect(factsFor(all[q.place], q.type)?.length, q.id).toBeGreaterThan(0)
   })
 })

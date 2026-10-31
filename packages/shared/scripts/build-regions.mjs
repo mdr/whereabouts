@@ -1,6 +1,6 @@
-// Builds the catalogue's whole-country and flag questions, with their
-// outlines, and borders.json, from Natural Earth's 1:50m countries (public
-// domain). See write-catalogue.mjs.
+// Builds the catalogue's whole-country and flag questions, with the
+// countries as places and their outlines, and borders.json, from Natural
+// Earth's 1:50m countries (public domain). See write-catalogue.mjs.
 //
 // Usage: node scripts/build-regions.mjs [path/to/ne_50m_admin_0_countries.geojson]
 // Without a path it downloads the file from the Natural Earth repository.
@@ -15,8 +15,8 @@
 // calibrated at. Outlines are simplified to about SIMPLIFY_DEG
 // (Douglas-Peucker), far finer than any tolerance, and rounded to match.
 //
-// The flag rounds are one per country: those painted whole share the
-// country's outline, the rest are asked as a point, with a tolerance from
+// The flag rounds are one per country: those painted whole paint the
+// country's area, the rest are asked as a point, with a tolerance from
 // their size (pointToleranceKm).
 //
 // borders.json holds every flag country's land, coarser (BORDER_SIMPLIFY_DEG,
@@ -169,6 +169,7 @@ const countries = ne.features.filter((f) => {
 
 const regions = []
 const flags = []
+const places = []
 const outlines = {}
 const borders = []
 const none = borderRings(
@@ -208,39 +209,43 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
               ? "far-flung" // Alaska and Hawaii; the outline below keeps the contiguous states
               : null
 
+  const place = { id: slug(label), label, wiki, flag: { code: flag, wiki: flagWiki } }
+  places.push(place)
+
   if (!why || why === "far-flung") {
     const cells = kept.flatMap((poly) => cellsOf(poly, 6))
     const keptArea = areaOf(cells)
     const tolerance = regionToleranceKm(keptArea)
     const contiguous = p.ADMIN === "United States of America"
-    const regionLabel = contiguous ? "Contiguous United States" : label
     const id = names.id ?? (contiguous ? "usa-region" : `${slug(label)}-region`)
     outlines[id] = kept
       .map((poly) => poly.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
       .filter((poly) => poly.length > 0)
+    const area = { outline: id, centre: centroid(cells), tolerance, surface: "LAND" }
+    // The contiguous states are a place of their own, not the country its flag stands for.
+    const painted = contiguous
+      ? {
+          id: "contiguous-united-states",
+          label: "Contiguous United States",
+          wiki: "Contiguous United States",
+          area,
+          flag: place.flag
+        }
+      : Object.assign(place, { area })
+    if (contiguous) places.push(painted)
     regions.push({
       id,
       type: "COUNTRY",
-      label: regionLabel,
-      wiki: contiguous ? "Contiguous United States" : wiki,
+      place: painted.id,
       clue: { type: "NAME", prompt: `Paint the whole of ${contiguous ? "the contiguous United States" : name}` },
-      answer: { type: "AREA", outline: id, centre: centroid(cells), tolerance, surface: "LAND" },
-      countryFlag: flag
+      answer: { type: "AREA" }
     })
   }
 
   if (!why) {
-    const region = regions.at(-1)
-    flags.push({
-      id: `flag-${flag}`,
-      type: "FLAG",
-      label,
-      wiki: flagWiki,
-      clue: { type: "FLAG", flag },
-      answer: region.answer
-    })
+    flags.push({ id: `flag-${flag}`, type: "FLAG", place: place.id, clue: { type: "FLAG" }, answer: { type: "AREA" } })
     console.log(
-      `${label}: painted, ${kept.length} part(s), ${Math.round(100 * keptShare)}% of its land, tolerance ${region.answer.tolerance} km`
+      `${label}: painted, ${kept.length} part(s), ${Math.round(100 * keptShare)}% of its land, tolerance ${place.area.tolerance} km`
     )
   } else {
     // Small and scattered countries are asked on land near their label
@@ -253,9 +258,8 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
     flags.push({
       id: `flag-${flag}`,
       type: "FLAG",
-      label,
-      wiki: flagWiki,
-      clue: { type: "FLAG", flag },
+      place: place.id,
+      clue: { type: "FLAG" },
       answer: { type: "POINT", at: answer, tolerance }
     })
     if (island) border.near = tolerance
@@ -265,7 +269,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
   }
 }
 
-writeQuestions(["COUNTRY", "FLAG"], [...regions, ...flags], outlines)
+writeQuestions(["COUNTRY", "FLAG"], [...regions, ...flags], places, outlines)
 const bordersJson = JSON.stringify({ countries: borders, none })
 writeFileSync(new URL("../borders.json", import.meta.url), bordersJson + "\n")
 console.log(`wrote ${borders.length} to borders.json, ${Math.round(bordersJson.length / 1024)} KB`)

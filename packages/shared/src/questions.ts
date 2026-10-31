@@ -1,21 +1,18 @@
 /**
- * The questions a round can ask. Each has a type (its slot in a game's mix
- * and practice's choice), a clue (what the player sees) and an answer (what
- * they mark, and so how it is scored). catalogue.json holds them all; the
- * outlines of area answers are in outlines.json, by id.
+ * The questions a round can ask. Each is about a place, and has a type (its
+ * slot in a game's mix and practice's choice), a clue (what the player sees)
+ * and an answer (what they mark, and so how it is scored). A Question here
+ * is as the game sees it, joined with its place (see catalogue-entry.ts).
  */
 import { z } from "zod"
 import type { LatLon } from "./geo.ts"
 import { DegreesSchema, KmSchema, type Km } from "./units.ts"
 import {
   CommonsFileSchema,
-  FlagCodeSchema,
-  OutlineIdSchema,
-  QuestionIdSchema,
-  WikiTitleSchema,
   type CommonsFile,
   type FlagCode,
   type OutlineId,
+  type PlaceId,
   type QuestionId,
   type WikiTitle
 } from "./ids.ts"
@@ -55,18 +52,19 @@ export enum Surface {
   WATER = "WATER"
 }
 
-interface PhotoClue {
+export interface PhotoClue {
   type: ClueType.PHOTO
   /** Wikimedia Commons file name (without the File: prefix). */
   image: CommonsFile
 }
 
-interface NameClue {
+export interface NameClue {
   type: ClueType.NAME
   /** The question as asked, naming the place: phrasings vary too much to build. */
   prompt: string
 }
 
+/** The place's flag. */
 interface FlagClue {
   type: ClueType.FLAG
   flag: FlagCode
@@ -80,6 +78,7 @@ export interface PointAnswer {
   tolerance: Km
 }
 
+/** The place's area. */
 export interface AreaAnswer {
   type: AnswerType.AREA
   outline: OutlineId
@@ -92,64 +91,52 @@ export interface AreaAnswer {
 
 export type Answer = PointAnswer | AreaAnswer
 
-export interface LandmarkQuestion {
-  type: QuestionType.LANDMARK
+interface QuestionBase {
   id: QuestionId
-  /** Shown after the reveal. */
+  place: PlaceId
+  /** The place's name, shown after the reveal. */
   label: string
   /** English Wikipedia article title, linked from the reveal. */
   wiki: WikiTitle
+}
+
+export interface LandmarkQuestion extends QuestionBase {
+  type: QuestionType.LANDMARK
   clue: PhotoClue
   answer: PointAnswer
 }
 
-export interface PlaceQuestion {
+export interface PlaceQuestion extends QuestionBase {
   type: QuestionType.PLACE
-  id: QuestionId
-  label: string
-  wiki: WikiTitle
   clue: NameClue
   answer: PointAnswer
 }
 
-interface CountryQuestion {
+interface CountryQuestion extends QuestionBase {
   type: QuestionType.COUNTRY
-  id: QuestionId
-  label: string
-  wiki: WikiTitle
   clue: NameClue
   answer: AreaAnswer
   /** Shown beside the country's name to help players learn it. */
   countryFlag?: FlagCode
 }
 
-/** A country found from its flag: painted whole when big enough to, else marked as a point. */
-export interface FlagQuestion {
+/** A country found from its flag: painted whole when big enough to, else marked as a point. Its wiki is the article on the flag. */
+export interface FlagQuestion extends QuestionBase {
   type: QuestionType.FLAG
-  id: QuestionId
-  label: string
-  /** The article on the flag. */
-  wiki: WikiTitle
   clue: FlagClue
   answer: PointAnswer | AreaAnswer
 }
 
-export interface FeatureQuestion {
+export interface FeatureQuestion extends QuestionBase {
   type: QuestionType.FEATURE
-  id: QuestionId
   feature: FeatureType
-  label: string
-  wiki: WikiTitle
   clue: NameClue
   answer: AreaAnswer
 }
 
 /** A US state: painted whole, or marked as a point when too small to paint. */
-interface StateQuestion {
+interface StateQuestion extends QuestionBase {
   type: QuestionType.STATE
-  id: QuestionId
-  label: string
-  wiki: WikiTitle
   clue: NameClue
   answer: PointAnswer | AreaAnswer
 }
@@ -166,42 +153,14 @@ export type Question =
 export type Outlines = ReadonlyMap<OutlineId, Outline>
 export type Outline = number[][][][]
 
-const LatLonSchema = z.object({ lat: DegreesSchema, lon: DegreesSchema })
-const PointAnswerSchema = z.object({ type: z.literal(AnswerType.POINT), at: LatLonSchema, tolerance: KmSchema })
-const AreaAnswerSchema = z.object({
-  type: z.literal(AnswerType.AREA),
-  outline: OutlineIdSchema,
-  centre: LatLonSchema,
-  tolerance: KmSchema,
-  surface: z.enum(Surface)
+export const LatLonSchema = z.object({ lat: DegreesSchema, lon: DegreesSchema })
+export const PointAnswerSchema = z.object({
+  type: z.literal(AnswerType.POINT),
+  at: LatLonSchema,
+  tolerance: KmSchema
 })
-const AnyAnswerSchema = z.discriminatedUnion("type", [PointAnswerSchema, AreaAnswerSchema])
-const PhotoClueSchema = z.object({ type: z.literal(ClueType.PHOTO), image: CommonsFileSchema })
-const NameClueSchema = z.object({ type: z.literal(ClueType.NAME), prompt: z.string() })
-const FlagClueSchema = z.object({ type: z.literal(ClueType.FLAG), flag: FlagCodeSchema })
-const common = { id: QuestionIdSchema, label: z.string(), wiki: WikiTitleSchema }
-
-/** A question as catalogue.json holds it. */
-export const QuestionSchema: z.ZodType<Question> = z.discriminatedUnion("type", [
-  z.object({ ...common, type: z.literal(QuestionType.LANDMARK), clue: PhotoClueSchema, answer: PointAnswerSchema }),
-  z.object({ ...common, type: z.literal(QuestionType.PLACE), clue: NameClueSchema, answer: PointAnswerSchema }),
-  z.object({
-    ...common,
-    type: z.literal(QuestionType.COUNTRY),
-    clue: NameClueSchema,
-    answer: AreaAnswerSchema,
-    countryFlag: FlagCodeSchema.optional()
-  }),
-  z.object({ ...common, type: z.literal(QuestionType.FLAG), clue: FlagClueSchema, answer: AnyAnswerSchema }),
-  z.object({
-    ...common,
-    type: z.literal(QuestionType.FEATURE),
-    feature: z.enum(FeatureType),
-    clue: NameClueSchema,
-    answer: AreaAnswerSchema
-  }),
-  z.object({ ...common, type: z.literal(QuestionType.STATE), clue: NameClueSchema, answer: AnyAnswerSchema })
-])
+export const PhotoClueSchema = z.object({ type: z.literal(ClueType.PHOTO), image: CommonsFileSchema })
+export const NameClueSchema = z.object({ type: z.literal(ClueType.NAME), prompt: z.string() })
 
 export const PHOTO_PROMPT = "Where is this?"
 export const FLAG_AREA_PROMPT = "Paint the whole of the country with this flag"

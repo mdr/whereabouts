@@ -1,24 +1,24 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 import { FactType } from "@whereabouts/shared/facts"
-import { wikiTitle } from "@whereabouts/shared/ids"
+import { placeId } from "@whereabouts/shared/ids"
 import { factsOf } from "./facts"
 
 const fact = { type: FactType.FAME, text: "Tall.", source: "https://example.org/tall" }
 
 describe("factsOf", () => {
-  it("reads an answer's facts", () => {
-    expect(factsOf({ Eiffel: [fact] }, wikiTitle("Eiffel"))).toEqual([fact])
+  it("reads a place's facts", () => {
+    expect(factsOf({ eiffel: { about: [fact] } }, placeId("eiffel"))).toEqual({ about: [fact] })
   })
 
-  it("has none for an answer without facts", () => {
-    expect(factsOf({}, wikiTitle("Nowhere"))).toBeUndefined()
+  it("has none for a place without facts", () => {
+    expect(factsOf({}, placeId("nowhere"))).toBeUndefined()
   })
 
   it("shows none for malformed facts, and warns once", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
-    const all = { Broken: [{ ...fact, type: "GOSSIP" }] }
-    expect(factsOf(all, wikiTitle("Broken"))).toBeUndefined()
-    expect(factsOf(all, wikiTitle("Broken"))).toBeUndefined()
+    const all = { broken: { about: [{ ...fact, type: "GOSSIP" }] } }
+    expect(factsOf(all, placeId("broken"))).toBeUndefined()
+    expect(factsOf(all, placeId("broken"))).toBeUndefined()
     expect(warn).toHaveBeenCalledOnce()
     warn.mockRestore()
   })

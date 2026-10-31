@@ -1,4 +1,4 @@
-import { flagCode, outlineId, playerId, questionId, roomCode, wikiTitle } from "@whereabouts/shared/ids"
+import { flagCode, outlineId, placeId, playerId, questionId, roomCode, wikiTitle } from "@whereabouts/shared/ids"
 import { mixOf, type GameView, type QuestionView, Phase, MapDetail } from "@whereabouts/shared/protocol"
 import { AnswerType, ClueType, QuestionType, Surface, type FlagQuestion } from "@whereabouts/shared/questions"
 import { KernelId } from "@whereabouts/shared/scoring"
@@ -44,6 +44,7 @@ export function makeFlagQuestion(flag: string, label: string, over: Partial<Flag
   return {
     type: QuestionType.FLAG,
     id: questionId(`flag-${flag}`),
+    place: placeId(flag),
     label,
     wiki: wikiTitle(`Flag of ${label}`),
     clue: { type: ClueType.FLAG, flag: flagCode(flag) },

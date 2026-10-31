@@ -24,13 +24,14 @@ import {
   type FlagCode,
   type PlayerId,
   type OutlineId,
+  type PlaceId,
   type PlayerName,
   type RoomCode,
   type WikiTitle
 } from "./ids.ts"
 import { CloseReason } from "./close-reason.ts"
 
-export const PROTOCOL_VERSION = 8
+export const PROTOCOL_VERSION = 9
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -264,6 +265,8 @@ export interface RevealView {
   total: number
   question: QuestionView
   answer: LatLon
+  /** Whose facts the reveal shows. */
+  place: PlaceId
   label: string
   /** Wikipedia article title for the answer, when known. */
   wiki?: WikiTitle

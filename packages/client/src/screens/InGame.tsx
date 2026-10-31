@@ -100,7 +100,11 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const outline = useOutline(question && outlineOf(question.answer))
 
   // The room's code, so everyone in the game sees the same one.
-  const fact = useFact(view.reveal?.wiki, view.code, view.reveal?.index ?? 0)
+  const fact = useFact(
+    view.reveal && { place: view.reveal.place, type: view.reveal.question.type },
+    view.code,
+    view.reveal?.index ?? 0
+  )
 
   const mine = view.reveal?.results.find((r) => r.playerId === view.you.id)
   const painted = useMemo(

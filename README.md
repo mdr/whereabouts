@@ -273,10 +273,13 @@ changes: [docs/code-map.md](docs/code-map.md)):
 
 - **Questions** live in `packages/shared/catalogue.json`, typed by what they
   ask about (`QuestionType` in `src/questions.ts`): landmarks, places,
-  countries, flags, features (islands, lakes, seas) and US states. Each has a
-  clue (a Wikimedia Commons photo, a name, or a flag) and an answer: a point
-  with a tolerance in km, or an area painted whole, whose outline is in
-  `outlines.json`. Landmarks are asked by photo ("Where is this?"), places by
+  countries, flags, features (islands, lakes, seas) and US states. Each is
+  about a place in `places.json`, which holds what is true of it however it
+  is asked: its name, its article, its area and its flag, so "Where is
+  Albania?", "Paint the whole of Albania" and Albania's flag share one. Each
+  question has a clue (a Wikimedia Commons photo, a name, or the place's
+  flag) and an answer: a point with a tolerance in km, or the place's area
+  painted whole, whose outline is in `outlines.json`. Landmarks are asked by photo ("Where is this?"), places by
   name ("Where is Nauru?"). The place set is capital cities, major world
   and UK cities, and small countries, with tolerances calibrated for a UK
   player: tens of km for the British Isles and near neighbours, around
@@ -294,19 +297,18 @@ changes: [docs/code-map.md](docs/code-map.md)):
   Wikipedia article, checked to exist on Commons at 800px or more and
   looked at when the file name gave any doubt. Several landmarks may share
   a city (the photo is the clue). Each question also names its English
-  Wikipedia article (`wiki`), linked from the reveal so players can read
+  Wikipedia article (the place's `wiki`), linked from the reveal so players can read
   about the place; the titles were matched by name and checked against
   the article's coordinates, and a question without one links to a
   Wikipedia search for its label instead. Under the answer the reveal adds one
-  line of interest from `facts.json`: three or four short facts per article,
-  what makes the place notable, trivia, or on a flag round the flag's own
-  story. Each was researched with its source and a quote from it, then checked
+  line of interest from `facts.json`: three or four short facts per place,
+  what makes it notable, trivia, or on a flag round the flag's own story. Each was researched with its source and a quote from it, then checked
   separately against that source and a second one; overstated ones were
   reworded and unsupported ones dropped. `pickFact` alternates notable and
   trivia by round, seeded by the room's code so everyone sees the same line.
   A place-name, island, lake, sea or US state round, which shows no photo while
   guessing, shows one at the reveal from `photos.json`: one Wikimedia
-  Commons file per article, chosen by looking at the candidates to show a
+  Commons file per place, chosen by looking at the candidates to show a
   famous landmark or a recognisable view of the place, landscape and at
   least 1,600px wide, and checked to exist.
   It is loaded with the round's other pictures, shows on the final results
@@ -370,7 +372,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
   flags. A country question ("Paint
   the whole of Germany") has an area as its answer, not a point: 37
   countries from Natural Earth's 1:50m outlines (public domain), built into
-  `packages/shared/catalogue.json` and `outlines.json` by `scripts/build-regions.mjs`, which keeps
+  `packages/shared/catalogue.json`, `places.json` and `outlines.json` by `scripts/build-regions.mjs`, which keeps
   each country's main landmass, the islands of 1,500 km² or more chained
   to it within 500 km, and every smaller island within 500 km of those (so
   Sicily and the Aegean stay; the Canaries, Svalbard and Alaska go),

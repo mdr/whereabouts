@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { outlineId, questionId, wikiTitle } from "@whereabouts/shared/ids"
+import { outlineId, placeId, questionId, wikiTitle } from "@whereabouts/shared/ids"
 import { cellArea, cellToLatLng, gridDisk, latLngToCell, UNITS } from "@whereabouts/shared/h3"
 import { resolutionForTolerance } from "@whereabouts/shared/paint"
 import { scoredAnswer } from "@whereabouts/shared/regions"
@@ -31,6 +31,7 @@ function makePlace(id: string, at: LatLon = { lat: 35, lon: 135.8 }): PlaceQuest
   return {
     type: QuestionType.PLACE,
     id: questionId(id),
+    place: placeId(id),
     label: id,
     wiki: wikiTitle(id),
     clue: { type: ClueType.NAME, prompt: `Where is ${id}?` },
@@ -162,6 +163,7 @@ describe("revealedAnswer", () => {
     const country: Question = {
       type: QuestionType.COUNTRY,
       id: questionId("square-region"),
+      place: placeId("square"),
       label: "Square",
       wiki: wikiTitle("Square"),
       clue: { type: ClueType.NAME, prompt: "Paint the whole of Square" },

@@ -157,7 +157,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
   // paint mostly was. Loaded while the flag is still being painted.
   const borders = useBorders(q.type === QuestionType.FLAG)
   // Each practice run shuffles anew, so its first question picks this run's facts.
-  const fact = useFact(q.wiki, questions[0]!.id, index)
+  const fact = useFact(q, questions[0]!.id, index)
   // Re-score the revealed paint if the kernel changes on the reveal screen.
   const shownResult = useMemo(() => {
     if (!revealed) return undefined

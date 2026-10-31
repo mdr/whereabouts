@@ -32,9 +32,9 @@ for (const polygon of await polygons("ne_10m_land")) for (const h of cells(polyg
 const before = dry.size
 const json = (file) => JSON.parse(readFileSync(new URL(`../${file}`, import.meta.url), "utf8"))
 const outlines = json("outlines.json")
-const lakeRounds = json("catalogue.json")
-  .filter((q) => q.type === "FEATURE" && q.feature === "LAKE")
-  .flatMap((q) => outlines[q.answer.outline])
+const lakeRounds = json("places.json")
+  .filter((p) => p.feature === "LAKE")
+  .flatMap((p) => outlines[p.area.outline])
 for (const polygon of [...(await polygons("ne_10m_lakes")), ...lakeRounds])
   for (const h of cells(polygon, "containmentOverlapping")) dry.delete(h)
 

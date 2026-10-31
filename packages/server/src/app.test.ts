@@ -31,6 +31,7 @@ import { GameViewSchema } from "@whereabouts/shared/view-schema"
 import { CATALOGUE } from "@whereabouts/shared/catalogue"
 import { gridDisk, h3Res, latLngToCell } from "@whereabouts/shared/h3"
 import {
+  placeId,
   playerToken,
   questionId,
   playerName,
@@ -62,6 +63,7 @@ function place(id: string, label: string, lat: number, lon: number, tolerance: n
   return {
     type: QuestionType.PLACE,
     id: questionId(id),
+    place: placeId(id),
     label,
     wiki: wikiTitle(label),
     clue: { type: ClueType.NAME, prompt: `Where is ${label}?` },

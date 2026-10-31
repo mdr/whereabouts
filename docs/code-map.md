@@ -6,21 +6,23 @@ Where things live, and the steps for the changes that touch several of them.
 
 No I/O; the same code runs in the browser and on the server.
 
-| Module                                            | What it holds                                                                                                                       |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `catalogue.json`, `src/catalogue.ts`              | Every question; `poolOf` draws from it for games, practice and the score review                                                     |
-| `outlines.json`                                   | Area answers' geometry, by `OutlineId`                                                                                              |
-| `src/questions.ts`                                | The question model: `QuestionType`, clue and answer unions, `QuestionSchema`, prompts                                               |
-| `src/ids.ts`, `src/units.ts`                      | Branded ids and strings (`QuestionId`, `WikiTitle`…), unit flavours (`Km`, `Ms`…)                                                   |
-| `src/protocol.ts`                                 | Client→server message schemas, `GameConfig`, `GameView` and its parts, `PROTOCOL_VERSION`                                           |
-| `src/view-schema.ts`                              | A zod schema of `GameView` for the tests (the client casts)                                                                         |
-| `src/game.ts`                                     | The `Game` state machine: joining, rounds, scoring each player, views                                                               |
-| `src/paint.ts`, `src/paint-wire.ts`               | The H3 paint layer, and its binary encoding                                                                                         |
-| `src/scoring.ts`, `src/regions.ts`                | The point rule, and the area rule (`scoreAnswer` picks)                                                                             |
-| `src/hints.ts`, `src/awards.ts`, `src/explain.ts` | Hint bands, end-of-game awards, a score in words                                                                                    |
-| `src/facts.ts`, `src/photos.ts`                   | Reveal facts and photos, by Wikipedia title                                                                                         |
-| `src/score-review.ts`, `src/scoring-case.ts`      | The playtesters' score review, and copied scoring cases                                                                             |
-| `scripts/`                                        | Data builds: `build-regions.mjs` and `build-features.mjs` write their types into the catalogue and outlines (`write-catalogue.mjs`) |
+| Module                                            | What it holds                                                                                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `catalogue.json`, `src/catalogue.ts`              | Every question, joined with its place; `poolOf` draws from it for games, practice and the score review                                      |
+| `places.json`, `src/places.ts`                    | What questions ask about, kept once: name, article, area, flag, feature                                                                     |
+| `src/catalogue-entry.ts`                          | A question as `catalogue.json` holds it, and `joinQuestion` with its place                                                                  |
+| `outlines.json`                                   | Areas' geometry, by `OutlineId`                                                                                                             |
+| `src/questions.ts`                                | The question model as the game sees it: `QuestionType`, clue and answer unions, prompts                                                     |
+| `src/ids.ts`, `src/units.ts`                      | Branded ids and strings (`QuestionId`, `WikiTitle`…), unit flavours (`Km`, `Ms`…)                                                           |
+| `src/protocol.ts`                                 | Client→server message schemas, `GameConfig`, `GameView` and its parts, `PROTOCOL_VERSION`                                                   |
+| `src/view-schema.ts`                              | A zod schema of `GameView` for the tests (the client casts)                                                                                 |
+| `src/game.ts`                                     | The `Game` state machine: joining, rounds, scoring each player, views                                                                       |
+| `src/paint.ts`, `src/paint-wire.ts`               | The H3 paint layer, and its binary encoding                                                                                                 |
+| `src/scoring.ts`, `src/regions.ts`                | The point rule, and the area rule (`scoreAnswer` picks)                                                                                     |
+| `src/hints.ts`, `src/awards.ts`, `src/explain.ts` | Hint bands, end-of-game awards, a score in words                                                                                            |
+| `src/facts.ts`, `src/photos.ts`                   | Reveal facts and photos, by place                                                                                                           |
+| `src/score-review.ts`, `src/scoring-case.ts`      | The playtesters' score review, and copied scoring cases                                                                                     |
+| `scripts/`                                        | Data builds: `build-regions.mjs` and `build-features.mjs` write their types into the catalogue, places and outlines (`write-catalogue.mjs`) |
 
 ## Server (`packages/server`)
 
@@ -50,8 +52,8 @@ No I/O; the same code runs in the browser and on the server.
 
 **Add a question type**
 
-1. Add it to `QuestionType` and give it a variant in `questions.ts` (interface, `Question` union, `QuestionSchema`).
-2. Build or write its questions into `catalogue.json` (a build script uses `writeQuestions`; area answers need their outlines).
+1. Add it to `QuestionType` and give it a variant in `questions.ts` (interface, `Question` union), its stored form in `catalogue-entry.ts` (`CatalogueEntry`, `CatalogueEntrySchema`, a case in `joinQuestion`).
+2. Build or write its questions into `catalogue.json` and their places into `places.json` (a build script uses `writeQuestions`; a place painted whole needs its area and outline).
 3. Give it a look in `client/src/question-types.ts`; the mix editor, practice picker and results read it from there.
 4. Check the per-type rules: `EXTRA_TYPES` and `evenMix` in `protocol.ts`, `WITH_REVEAL_PHOTO` in `photos.ts`, the score review's mix in `score-review.ts`, `areaNoun` and the Fill tool in `client/src/round.ts`.
 5. Bump `PROTOCOL_VERSION`: a game's mix gains a key.

@@ -1,0 +1,3361 @@
+[
+  { "id": "taj-mahal", "label": "Taj Mahal, Agra", "wiki": "Taj Mahal" },
+  { "id": "sydney-opera", "label": "Sydney Opera House", "wiki": "Sydney Opera House" },
+  { "id": "machu-picchu", "label": "Machu Picchu", "wiki": "Machu Picchu" },
+  { "id": "cristo", "label": "Christ the Redeemer, Rio de Janeiro", "wiki": "Christ the Redeemer (statue)" },
+  { "id": "petra", "label": "Al-Khazneh, Petra", "wiki": "Al-Khazneh" },
+  { "id": "giza", "label": "Great Pyramid of Giza", "wiki": "Great Pyramid of Giza" },
+  { "id": "golden-gate", "label": "Golden Gate Bridge, San Francisco", "wiki": "Golden Gate Bridge" },
+  { "id": "neuschwanstein", "label": "Neuschwanstein Castle, Bavaria", "wiki": "Neuschwanstein Castle" },
+  { "id": "buckingham", "label": "Buckingham Palace, London", "wiki": "Buckingham Palace" },
+  { "id": "edinburgh-castle", "label": "Edinburgh Castle", "wiki": "Edinburgh Castle" },
+  { "id": "angel-north", "label": "Angel of the North, Gateshead", "wiki": "Angel of the North" },
+  { "id": "stonehenge", "label": "Stonehenge, Wiltshire", "wiki": "Stonehenge" },
+  { "id": "clifton", "label": "Clifton Suspension Bridge, Bristol", "wiki": "Clifton Suspension Bridge" },
+  { "id": "eiffel", "label": "Eiffel Tower, Paris", "wiki": "Eiffel Tower" },
+  { "id": "colosseum", "label": "Colosseum, Rome", "wiki": "Colosseum" },
+  { "id": "sagrada", "label": "Sagrada Família, Barcelona", "wiki": "Sagrada Família" },
+  { "id": "parthenon", "label": "Parthenon, Athens", "wiki": "Parthenon" },
+  { "id": "mont-saint-michel", "label": "Mont-Saint-Michel, Normandy", "wiki": "Mont-Saint-Michel" },
+  { "id": "brandenburg", "label": "Brandenburg Gate, Berlin", "wiki": "Brandenburg Gate" },
+  { "id": "charles-bridge", "label": "Charles Bridge, Prague", "wiki": "Charles Bridge" },
+  { "id": "hagia-sophia", "label": "Hagia Sophia, Istanbul", "wiki": "Hagia Sophia" },
+  { "id": "st-basils", "label": "Saint Basil's Cathedral, Moscow", "wiki": "Saint Basil's Cathedral" },
+  { "id": "pisa", "label": "Leaning Tower of Pisa", "wiki": "Leaning Tower of Pisa" },
+  { "id": "st-marks", "label": "St Mark's Basilica, Venice", "wiki": "St Mark's Basilica" },
+  { "id": "alhambra", "label": "Alhambra, Granada", "wiki": "Alhambra" },
+  { "id": "matterhorn", "label": "Matterhorn, Swiss–Italian border", "wiki": "Matterhorn" },
+  { "id": "oia", "label": "Oia, Santorini", "wiki": "Oia, Greece" },
+  { "id": "meteora", "label": "Meteora monasteries, Greece", "wiki": "Meteora" },
+  { "id": "plitvice", "label": "Plitvice Lakes, Croatia", "wiki": "Plitvice Lakes National Park" },
+  { "id": "cliffs-moher", "label": "Cliffs of Moher, County Clare", "wiki": "Cliffs of Moher" },
+  { "id": "giants-causeway", "label": "Giant's Causeway, County Antrim", "wiki": "Giant's Causeway" },
+  { "id": "tower-bridge", "label": "Tower Bridge, London", "wiki": "Tower Bridge" },
+  { "id": "durdle-door", "label": "Durdle Door, Dorset", "wiki": "Durdle Door" },
+  { "id": "forth-bridge", "label": "Forth Bridge, Firth of Forth", "wiki": "Forth Bridge" },
+  { "id": "hallstatt", "label": "Hallstatt, Austria", "wiki": "Hallstatt" },
+  { "id": "cinque-terre", "label": "Manarola, Cinque Terre", "wiki": "Manarola" },
+  { "id": "kremlin", "label": "Moscow Kremlin", "wiki": "Kremlin" },
+  { "id": "burj-khalifa", "label": "Burj Khalifa, Dubai", "wiki": "Burj Khalifa" },
+  { "id": "angkor", "label": "Angkor Wat, Cambodia", "wiki": "Angkor Wat" },
+  { "id": "great-wall", "label": "Great Wall at Badaling, near Beijing", "wiki": "Badaling" },
+  { "id": "forbidden-city", "label": "Forbidden City, Beijing", "wiki": "Forbidden City" },
+  { "id": "fuji", "label": "Mount Fuji, Japan", "wiki": "Mount Fuji" },
+  { "id": "fushimi-inari", "label": "Fushimi Inari shrine, Kyoto", "wiki": "Fushimi Inari-taisha" },
+  { "id": "ha-long", "label": "Hạ Long Bay, Vietnam", "wiki": "Hạ Long Bay" },
+  { "id": "borobudur", "label": "Borobudur, Java", "wiki": "Borobudur" },
+  { "id": "marina-bay", "label": "Marina Bay Sands, Singapore", "wiki": "Marina Bay Sands" },
+  { "id": "everest", "label": "Mount Everest", "wiki": "Mount Everest" },
+  { "id": "statue-liberty", "label": "Statue of Liberty, New York", "wiki": "Statue of Liberty" },
+  { "id": "rushmore", "label": "Mount Rushmore, South Dakota", "wiki": "Mount Rushmore" },
+  { "id": "niagara", "label": "Niagara Falls", "wiki": "Niagara Falls" },
+  { "id": "chichen-itza", "label": "Chichen Itza, Yucatán", "wiki": "Chichen Itza" },
+  { "id": "hollywood-sign", "label": "Hollywood Sign, Los Angeles", "wiki": "Hollywood Sign" },
+  { "id": "iguazu", "label": "Iguazu Falls, Argentina–Brazil border", "wiki": "Iguazu Falls" },
+  { "id": "uyuni", "label": "Salar de Uyuni, Bolivia", "wiki": "Salar de Uyuni" },
+  { "id": "perito-moreno", "label": "Perito Moreno Glacier, Patagonia", "wiki": "Perito Moreno Glacier" },
+  { "id": "moai", "label": "Ahu Tongariki, Easter Island", "wiki": "Ahu Tongariki" },
+  { "id": "uluru", "label": "Uluru, Northern Territory", "wiki": "Uluru" },
+  { "id": "harbour-bridge", "label": "Sydney Harbour Bridge", "wiki": "Sydney Harbour Bridge" },
+  { "id": "milford-sound", "label": "Milford Sound, New Zealand", "wiki": "Milford Sound" },
+  { "id": "bora-bora", "label": "Bora Bora, French Polynesia", "wiki": "Bora Bora" },
+  { "id": "table-mountain", "label": "Table Mountain, Cape Town", "wiki": "Table Mountain" },
+  { "id": "victoria-falls", "label": "Victoria Falls, Zambia–Zimbabwe border", "wiki": "Victoria Falls" },
+  { "id": "lalibela", "label": "Church of Saint George, Lalibela", "wiki": "Church of Saint George, Lalibela" },
+  { "id": "abu-simbel", "label": "Abu Simbel, Egypt", "wiki": "Abu Simbel" },
+  { "id": "djenne", "label": "Great Mosque of Djenné, Mali", "wiki": "Great Mosque of Djenné" },
+  { "id": "dubrovnik", "label": "Walls of Dubrovnik, Croatia", "wiki": "Walls of Dubrovnik" },
+  { "id": "kilimanjaro", "label": "Mount Kilimanjaro, Tanzania", "wiki": "Mount Kilimanjaro" },
+  { "id": "grand-canyon", "label": "Grand Canyon, Arizona", "wiki": "Grand Canyon" },
+  { "id": "big-ben", "label": "Big Ben, London", "wiki": "Big Ben" },
+  { "id": "tower-of-london", "label": "Tower of London", "wiki": "Tower of London" },
+  { "id": "arc-de-triomphe", "label": "Arc de Triomphe, Paris", "wiki": "Arc de Triomphe" },
+  { "id": "notre-dame", "label": "Notre-Dame de Paris", "wiki": "Notre-Dame de Paris" },
+  { "id": "versailles", "label": "Palace of Versailles", "wiki": "Palace of Versailles" },
+  { "id": "trevi", "label": "Trevi Fountain, Rome", "wiki": "Trevi Fountain" },
+  { "id": "st-peters", "label": "St Peter's Basilica, Vatican City", "wiki": "St. Peter's Basilica" },
+  { "id": "florence-duomo", "label": "Florence Cathedral", "wiki": "Florence Cathedral" },
+  { "id": "cologne", "label": "Cologne Cathedral", "wiki": "Cologne Cathedral" },
+  { "id": "atomium", "label": "Atomium, Brussels", "wiki": "Atomium" },
+  { "id": "hungarian-parliament", "label": "Hungarian Parliament, Budapest", "wiki": "Hungarian Parliament Building" },
+  { "id": "schonbrunn", "label": "Schönbrunn Palace, Vienna", "wiki": "Schönbrunn Palace" },
+  { "id": "bran-castle", "label": "Bran Castle, Transylvania", "wiki": "Bran Castle" },
+  { "id": "pena", "label": "Pena Palace, Sintra", "wiki": "Pena Palace" },
+  { "id": "hallgrimskirkja", "label": "Hallgrímskirkja, Reykjavík", "wiki": "Hallgrímskirkja" },
+  { "id": "cappadocia", "label": "Göreme, Cappadocia", "wiki": "Göreme" },
+  { "id": "pamukkale", "label": "Pamukkale, Turkey", "wiki": "Pamukkale" },
+  { "id": "kinkakuji", "label": "Kinkaku-ji, Kyoto", "wiki": "Kinkaku-ji" },
+  { "id": "skytree", "label": "Tokyo Skytree", "wiki": "Tokyo Skytree" },
+  { "id": "shwedagon", "label": "Shwedagon Pagoda, Yangon", "wiki": "Shwedagon Pagoda" },
+  { "id": "bagan", "label": "Temples of Bagan, Myanmar", "wiki": "Bagan" },
+  { "id": "potala", "label": "Potala Palace, Lhasa", "wiki": "Potala Palace" },
+  { "id": "terracotta", "label": "Terracotta Army, Xi'an", "wiki": "Terracotta Army" },
+  { "id": "zhangjiajie", "label": "Zhangjiajie, Hunan", "wiki": "Zhangjiajie" },
+  { "id": "golden-temple", "label": "Golden Temple, Amritsar", "wiki": "Golden Temple" },
+  { "id": "sigiriya", "label": "Sigiriya, Sri Lanka", "wiki": "Sigiriya" },
+  { "id": "registan", "label": "Registan, Samarkand", "wiki": "Registan" },
+  { "id": "blue-mosque", "label": "Blue Mosque, Istanbul", "wiki": "Blue Mosque, Istanbul" },
+  { "id": "dome-rock", "label": "Dome of the Rock, Jerusalem", "wiki": "Dome of the Rock" },
+  { "id": "wadi-rum", "label": "Wadi Rum, Jordan", "wiki": "Wadi Rum" },
+  { "id": "empire-state", "label": "Empire State Building, New York", "wiki": "Empire State Building" },
+  { "id": "white-house", "label": "White House, Washington, D.C.", "wiki": "White House" },
+  { "id": "brooklyn-bridge", "label": "Brooklyn Bridge, New York", "wiki": "Brooklyn Bridge" },
+  { "id": "alcatraz", "label": "Alcatraz Island, San Francisco", "wiki": "Alcatraz Island" },
+  { "id": "space-needle", "label": "Space Needle, Seattle", "wiki": "Space Needle" },
+  { "id": "monument-valley", "label": "Monument Valley, Arizona–Utah border", "wiki": "Monument Valley" },
+  { "id": "old-faithful", "label": "Old Faithful, Yellowstone", "wiki": "Old Faithful" },
+  { "id": "teotihuacan", "label": "Teotihuacan, Mexico", "wiki": "Teotihuacan" },
+  { "id": "sugarloaf", "label": "Sugarloaf Mountain, Rio de Janeiro", "wiki": "Sugarloaf Mountain" },
+  { "id": "nazca", "label": "Nazca Lines, Peru", "wiki": "Nazca lines" },
+  { "id": "sphinx", "label": "Great Sphinx of Giza", "wiki": "Great Sphinx of Giza" },
+  { "id": "luxor-temple", "label": "Luxor Temple, Egypt", "wiki": "Luxor Temple" },
+  { "id": "deadvlei", "label": "Deadvlei, Namib Desert", "wiki": "Deadvlei" },
+  { "id": "stone-town", "label": "Stone Town, Zanzibar", "wiki": "Stone Town" },
+  { "id": "louvre", "label": "Louvre Pyramid, Paris", "wiki": "Louvre Pyramid" },
+  { "id": "kinderdijk", "label": "Kinderdijk windmills, Netherlands", "wiki": "Kinderdijk windmills" },
+  { "id": "petronas", "label": "Petronas Towers, Kuala Lumpur", "wiki": "Petronas Towers" },
+  { "id": "cn-tower", "label": "CN Tower and the Toronto skyline", "wiki": "CN Tower" },
+  { "id": "torres-paine", "label": "Torres del Paine, Chile", "wiki": "Torres del Paine National Park" },
+  { "id": "twelve-apostles", "label": "Twelve Apostles, Great Ocean Road", "wiki": "The Twelve Apostles (Victoria)" },
+  { "id": "whitehaven", "label": "Whitehaven Beach, Whitsunday Islands", "wiki": "Whitehaven Beach" },
+  { "id": "nyhavn", "label": "Nyhavn, Copenhagen", "wiki": "Nyhavn" },
+  { "id": "grand-place", "label": "Grand-Place, Brussels", "wiki": "Grand-Place" },
+  { "id": "belfry-of-bruges", "label": "Belfry of Bruges", "wiki": "Belfry of Bruges" },
+  { "id": "pompeii", "label": "Pompeii", "wiki": "Pompeii" },
+  { "id": "positano", "label": "Positano, Amalfi Coast", "wiki": "Positano" },
+  { "id": "tre-cime-di-lavaredo", "label": "Tre Cime di Lavaredo, Dolomites", "wiki": "Tre Cime di Lavaredo" },
+  { "id": "plaza-de-espana", "label": "Plaza de España, Seville", "wiki": "Plaza de España, Seville" },
+  {
+    "id": "mosque-cathedral-of-cordoba",
+    "label": "Mosque–Cathedral of Córdoba",
+    "wiki": "Mosque–Cathedral of Córdoba"
+  },
+  { "id": "guggenheim-museum", "label": "Guggenheim Museum, Bilbao", "wiki": "Guggenheim Museum Bilbao" },
+  { "id": "rock-of-gibraltar", "label": "Rock of Gibraltar", "wiki": "Rock of Gibraltar" },
+  { "id": "cite-de-carcassonne", "label": "Cité de Carcassonne", "wiki": "Carcassonne" },
+  { "id": "pont-du-gard", "label": "Pont du Gard", "wiki": "Pont du Gard" },
+  { "id": "chateau-de-chillon", "label": "Château de Chillon, Lake Geneva", "wiki": "Chillon Castle" },
+  { "id": "preikestolen", "label": "Preikestolen, Norway", "wiki": "Preikestolen" },
+  { "id": "gullfoss", "label": "Gullfoss, Iceland", "wiki": "Gullfoss" },
+  { "id": "lake-bled", "label": "Lake Bled, Slovenia", "wiki": "Lake Bled" },
+  { "id": "stari-most", "label": "Stari Most, Mostar", "wiki": "Stari Most" },
+  { "id": "bay-of-kotor", "label": "Bay of Kotor, Montenegro", "wiki": "Bay of Kotor" },
+  {
+    "id": "st-mary-s-basilica",
+    "label": "St Mary's Basilica, Kraków",
+    "wiki": "Church of the Assumption of the Blessed Virgin Mary, Kraków"
+  },
+  { "id": "library-of-celsus", "label": "Library of Celsus, Ephesus", "wiki": "Library of Celsus" },
+  { "id": "lake-como", "label": "Lake Como, Italy", "wiki": "Lake Como" },
+  { "id": "blue-lagoon", "label": "Blue Lagoon, Iceland", "wiki": "Blue Lagoon (geothermal spa)" },
+  { "id": "las-vegas-strip", "label": "Las Vegas Strip", "wiki": "Las Vegas Strip" },
+  { "id": "gateway-arch", "label": "Gateway Arch, St. Louis", "wiki": "Gateway Arch" },
+  { "id": "half-dome", "label": "Half Dome, Yosemite", "wiki": "Half Dome" },
+  { "id": "times-square", "label": "Times Square, New York", "wiki": "Times Square" },
+  { "id": "moraine-lake", "label": "Moraine Lake, Banff", "wiki": "Moraine Lake" },
+  { "id": "chateau-frontenac", "label": "Château Frontenac, Quebec City", "wiki": "Château Frontenac" },
+  { "id": "tulum", "label": "Tulum, Mexico", "wiki": "Tulum" },
+  { "id": "angel-falls", "label": "Angel Falls, Venezuela", "wiki": "Angel Falls" },
+  { "id": "chefchaouen", "label": "Chefchaouen, Morocco", "wiki": "Chefchaouen" },
+  { "id": "hiroshima-peace-memorial", "label": "Hiroshima Peace Memorial", "wiki": "Hiroshima Peace Memorial" },
+  { "id": "victoria-harbour", "label": "Victoria Harbour, Hong Kong", "wiki": "Victoria Harbour" },
+  { "id": "paro-taktsang", "label": "Paro Taktsang (Tiger's Nest), Bhutan", "wiki": "Paro Taktsang" },
+  { "id": "maya-bay", "label": "Maya Bay, Thailand", "wiki": "Ko Phi Phi Le" },
+  { "id": "gateway-of-india", "label": "Gateway of India, Mumbai", "wiki": "Gateway of India" },
+  { "id": "bondi-beach", "label": "Bondi Beach, Sydney", "wiki": "Bondi Beach" },
+  { "id": "hobbiton", "label": "Hobbiton, Matamata", "wiki": "Hobbiton Movie Set" },
+  { "id": "hadrian-s-wall", "label": "Hadrian's Wall", "wiki": "Hadrian's Wall" },
+  { "id": "blackpool-tower", "label": "Blackpool Tower", "wiki": "Blackpool Tower" },
+  { "id": "eilean-donan-castle", "label": "Eilean Donan Castle", "wiki": "Eilean Donan" },
+  { "id": "glenfinnan-viaduct", "label": "Glenfinnan Viaduct", "wiki": "Glenfinnan Viaduct" },
+  { "id": "conwy-castle", "label": "Conwy Castle", "wiki": "Conwy Castle" },
+  { "id": "radcliffe-camera", "label": "Radcliffe Camera, Oxford", "wiki": "Radcliffe Camera" },
+  { "id": "st-michael-s-mount", "label": "St Michael's Mount, Cornwall", "wiki": "St Michael's Mount" },
+  { "id": "tashkent", "label": "Tashkent, Uzbekistan", "wiki": "Tashkent" },
+  { "id": "ulaanbaatar", "label": "Ulaanbaatar, Mongolia", "wiki": "Ulaanbaatar" },
+  { "id": "timbuktu", "label": "Timbuktu, Mali", "wiki": "Timbuktu" },
+  { "id": "wellington", "label": "Wellington, New Zealand", "wiki": "Wellington" },
+  { "id": "reykjavik", "label": "Reykjavík, Iceland", "wiki": "Reykjavík" },
+  { "id": "kinshasa", "label": "Kinshasa, DR Congo", "wiki": "Kinshasa" },
+  { "id": "montevideo", "label": "Montevideo, Uruguay", "wiki": "Montevideo" },
+  { "id": "aberystwyth", "label": "Aberystwyth, Wales", "wiki": "Aberystwyth" },
+  { "id": "inverness", "label": "Inverness, Scotland", "wiki": "Inverness" },
+  { "id": "norwich", "label": "Norwich, England", "wiki": "Norwich" },
+  { "id": "edinburgh", "label": "Edinburgh", "wiki": "Edinburgh" },
+  { "id": "cardiff", "label": "Cardiff", "wiki": "Cardiff" },
+  { "id": "belfast", "label": "Belfast", "wiki": "Belfast" },
+  { "id": "douglas-iom", "label": "Douglas, Isle of Man", "wiki": "Douglas, Isle of Man" },
+  { "id": "st-helier", "label": "St Helier, Jersey", "wiki": "St Helier" },
+  { "id": "dublin", "label": "Dublin", "wiki": "Dublin" },
+  { "id": "paris", "label": "Paris", "wiki": "Paris" },
+  { "id": "brussels", "label": "Brussels", "wiki": "Brussels" },
+  { "id": "amsterdam", "label": "Amsterdam", "wiki": "Amsterdam" },
+  {
+    "id": "luxembourg",
+    "label": "Luxembourg",
+    "wiki": "Luxembourg",
+    "flag": { "code": "lu", "wiki": "Flag of Luxembourg" }
+  },
+  { "id": "berlin", "label": "Berlin", "wiki": "Berlin" },
+  { "id": "madrid", "label": "Madrid", "wiki": "Madrid" },
+  { "id": "lisbon", "label": "Lisbon", "wiki": "Lisbon" },
+  { "id": "rome", "label": "Rome", "wiki": "Rome" },
+  {
+    "id": "vatican-city",
+    "label": "Vatican City",
+    "wiki": "Vatican City",
+    "flag": { "code": "va", "wiki": "Flag of Vatican City" }
+  },
+  { "id": "monaco", "label": "Monaco", "wiki": "Monaco", "flag": { "code": "mc", "wiki": "Flag of Monaco" } },
+  {
+    "id": "san-marino",
+    "label": "San Marino",
+    "wiki": "San Marino",
+    "flag": { "code": "sm", "wiki": "Flag of San Marino" }
+  },
+  {
+    "id": "liechtenstein",
+    "label": "Liechtenstein",
+    "wiki": "Liechtenstein",
+    "flag": { "code": "li", "wiki": "Flag of Liechtenstein" }
+  },
+  { "id": "andorra", "label": "Andorra", "wiki": "Andorra", "flag": { "code": "ad", "wiki": "Flag of Andorra" } },
+  { "id": "malta", "label": "Malta", "wiki": "Malta", "flag": { "code": "mt", "wiki": "Flag of Malta" } },
+  { "id": "vienna", "label": "Vienna", "wiki": "Vienna" },
+  { "id": "prague", "label": "Prague", "wiki": "Prague" },
+  { "id": "warsaw", "label": "Warsaw", "wiki": "Warsaw" },
+  { "id": "budapest", "label": "Budapest", "wiki": "Budapest" },
+  { "id": "copenhagen", "label": "Copenhagen", "wiki": "Copenhagen" },
+  { "id": "oslo", "label": "Oslo", "wiki": "Oslo" },
+  { "id": "stockholm", "label": "Stockholm", "wiki": "Stockholm" },
+  { "id": "helsinki", "label": "Helsinki", "wiki": "Helsinki" },
+  { "id": "athens", "label": "Athens", "wiki": "Athens" },
+  { "id": "ljubljana", "label": "Ljubljana, Slovenia", "wiki": "Ljubljana" },
+  { "id": "zagreb", "label": "Zagreb, Croatia", "wiki": "Zagreb" },
+  { "id": "sarajevo", "label": "Sarajevo, Bosnia and Herzegovina", "wiki": "Sarajevo" },
+  {
+    "id": "montenegro",
+    "label": "Montenegro",
+    "wiki": "Montenegro",
+    "area": {
+      "outline": "montenegro-region",
+      "centre": { "lat": 42.7923, "lon": 19.2389 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "flag": { "code": "me", "wiki": "Flag of Montenegro" }
+  },
+  {
+    "id": "north-macedonia",
+    "label": "North Macedonia",
+    "wiki": "North Macedonia",
+    "area": {
+      "outline": "north-macedonia-region",
+      "centre": { "lat": 41.5977, "lon": 21.6812 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "mk", "wiki": "Flag of North Macedonia" }
+  },
+  {
+    "id": "albania",
+    "label": "Albania",
+    "wiki": "Albania",
+    "area": {
+      "outline": "albania-region",
+      "centre": { "lat": 41.1361, "lon": 20.052 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "al", "wiki": "Flag of Albania" }
+  },
+  { "id": "kosovo", "label": "Kosovo", "wiki": "Kosovo" },
+  {
+    "id": "moldova",
+    "label": "Moldova",
+    "wiki": "Moldova",
+    "area": {
+      "outline": "moldova-region",
+      "centre": { "lat": 47.194, "lon": 28.4625 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "md", "wiki": "Flag of Moldova" }
+  },
+  { "id": "vilnius", "label": "Vilnius, Lithuania", "wiki": "Vilnius" },
+  { "id": "riga", "label": "Riga, Latvia", "wiki": "Riga" },
+  { "id": "tallinn", "label": "Tallinn, Estonia", "wiki": "Tallinn" },
+  { "id": "bratislava", "label": "Bratislava, Slovakia", "wiki": "Bratislava" },
+  { "id": "minsk", "label": "Minsk, Belarus", "wiki": "Minsk" },
+  { "id": "kyiv", "label": "Kyiv, Ukraine", "wiki": "Kyiv" },
+  { "id": "bucharest", "label": "Bucharest, Romania", "wiki": "Bucharest" },
+  { "id": "sofia", "label": "Sofia, Bulgaria", "wiki": "Sofia" },
+  { "id": "cyprus", "label": "Cyprus", "wiki": "Cyprus", "flag": { "code": "cy", "wiki": "Flag of Cyprus" } },
+  { "id": "ottawa", "label": "Ottawa, Canada", "wiki": "Ottawa" },
+  { "id": "washington", "label": "Washington, D.C.", "wiki": "Washington, D.C." },
+  { "id": "canberra", "label": "Canberra, Australia", "wiki": "Canberra" },
+  { "id": "nairobi", "label": "Nairobi, Kenya", "wiki": "Nairobi" },
+  { "id": "brasilia", "label": "Brasília, Brazil", "wiki": "Brasília" },
+  { "id": "abuja", "label": "Abuja, Nigeria", "wiki": "Abuja" },
+  { "id": "ankara", "label": "Ankara, Turkey", "wiki": "Ankara" },
+  { "id": "astana", "label": "Astana, Kazakhstan", "wiki": "Astana" },
+  { "id": "kathmandu", "label": "Kathmandu, Nepal", "wiki": "Kathmandu" },
+  { "id": "hanoi", "label": "Hanoi, Vietnam", "wiki": "Hanoi" },
+  { "id": "addis-ababa", "label": "Addis Ababa, Ethiopia", "wiki": "Addis Ababa" },
+  { "id": "lima", "label": "Lima, Peru", "wiki": "Lima" },
+  { "id": "bogota", "label": "Bogotá, Colombia", "wiki": "Bogotá" },
+  { "id": "santiago", "label": "Santiago, Chile", "wiki": "Santiago" },
+  { "id": "pretoria", "label": "Pretoria, South Africa", "wiki": "Pretoria" },
+  { "id": "riyadh", "label": "Riyadh, Saudi Arabia", "wiki": "Riyadh" },
+  { "id": "islamabad", "label": "Islamabad, Pakistan", "wiki": "Islamabad" },
+  { "id": "dhaka", "label": "Dhaka, Bangladesh", "wiki": "Dhaka" },
+  { "id": "manila", "label": "Manila, Philippines", "wiki": "Manila" },
+  { "id": "jakarta", "label": "Jakarta, Indonesia", "wiki": "Jakarta" },
+  { "id": "seoul", "label": "Seoul, South Korea", "wiki": "Seoul" },
+  { "id": "tehran", "label": "Tehran, Iran", "wiki": "Tehran" },
+  { "id": "baghdad", "label": "Baghdad, Iraq", "wiki": "Baghdad" },
+  { "id": "kabul", "label": "Kabul, Afghanistan", "wiki": "Kabul" },
+  { "id": "havana", "label": "Havana, Cuba", "wiki": "Havana" },
+  { "id": "mexico-city", "label": "Mexico City", "wiki": "Mexico City" },
+  { "id": "buenos-aires", "label": "Buenos Aires, Argentina", "wiki": "Buenos Aires" },
+  {
+    "id": "eswatini",
+    "label": "Eswatini",
+    "wiki": "Eswatini",
+    "area": {
+      "outline": "eswatini-region",
+      "centre": { "lat": -26.5516, "lon": 31.4781 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "flag": { "code": "sz", "wiki": "Flag of Eswatini" }
+  },
+  {
+    "id": "lesotho",
+    "label": "Lesotho",
+    "wiki": "Lesotho",
+    "area": {
+      "outline": "lesotho-region",
+      "centre": { "lat": -29.5805, "lon": 28.2245 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ls", "wiki": "Flag of Lesotho" }
+  },
+  {
+    "id": "bhutan",
+    "label": "Bhutan",
+    "wiki": "Bhutan",
+    "area": {
+      "outline": "bhutan-region",
+      "centre": { "lat": 27.4111, "lon": 90.4 },
+      "tolerance": 25,
+      "surface": "LAND"
+    },
+    "flag": { "code": "bt", "wiki": "Flag of Bhutan" }
+  },
+  {
+    "id": "djibouti",
+    "label": "Djibouti",
+    "wiki": "Djibouti",
+    "area": {
+      "outline": "djibouti-region",
+      "centre": { "lat": 11.746, "lon": 42.5626 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "flag": { "code": "dj", "wiki": "Flag of Djibouti" }
+  },
+  {
+    "id": "belize",
+    "label": "Belize",
+    "wiki": "Belize",
+    "area": {
+      "outline": "belize-region",
+      "centre": { "lat": 17.1936, "lon": -88.7134 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "flag": { "code": "bz", "wiki": "Flag of Belize" }
+  },
+  { "id": "brunei", "label": "Brunei", "wiki": "Brunei", "flag": { "code": "bn", "wiki": "Flag of Brunei" } },
+  {
+    "id": "the-gambia",
+    "label": "The Gambia",
+    "wiki": "The Gambia",
+    "area": {
+      "outline": "the-gambia-region",
+      "centre": { "lat": 13.4481, "lon": -15.4169 },
+      "tolerance": 10,
+      "surface": "LAND"
+    },
+    "flag": { "code": "gm", "wiki": "Flag of the Gambia" }
+  },
+  {
+    "id": "burundi",
+    "label": "Burundi",
+    "wiki": "Burundi",
+    "area": {
+      "outline": "burundi-region",
+      "centre": { "lat": -3.3591, "lon": 29.872 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "bi", "wiki": "Flag of Burundi" }
+  },
+  {
+    "id": "rwanda",
+    "label": "Rwanda",
+    "wiki": "Rwanda",
+    "area": {
+      "outline": "rwanda-region",
+      "centre": { "lat": -1.9881, "lon": 29.9183 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "rw", "wiki": "Flag of Rwanda" }
+  },
+  {
+    "id": "qatar",
+    "label": "Qatar",
+    "wiki": "Qatar",
+    "area": {
+      "outline": "qatar-region",
+      "centre": { "lat": 25.3078, "lon": 51.1864 },
+      "tolerance": 10,
+      "surface": "LAND"
+    },
+    "flag": { "code": "qa", "wiki": "Flag of Qatar" }
+  },
+  { "id": "bahrain", "label": "Bahrain", "wiki": "Bahrain", "flag": { "code": "bh", "wiki": "Flag of Bahrain" } },
+  {
+    "id": "kuwait",
+    "label": "Kuwait",
+    "wiki": "Kuwait",
+    "area": {
+      "outline": "kuwait-region",
+      "centre": { "lat": 29.3331, "lon": 47.589 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "flag": { "code": "kw", "wiki": "Flag of Kuwait" }
+  },
+  {
+    "id": "singapore",
+    "label": "Singapore",
+    "wiki": "Singapore",
+    "flag": { "code": "sg", "wiki": "Flag of Singapore" }
+  },
+  {
+    "id": "timor-leste",
+    "label": "Timor-Leste",
+    "wiki": "Timor-Leste",
+    "area": {
+      "outline": "timor-leste-region",
+      "centre": { "lat": -8.8281, "lon": 125.8575 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "flag": { "code": "tl", "wiki": "Flag of Timor-Leste" }
+  },
+  {
+    "id": "maldives",
+    "label": "Maldives",
+    "wiki": "Maldives",
+    "flag": { "code": "mv", "wiki": "Flag of the Maldives" }
+  },
+  {
+    "id": "seychelles",
+    "label": "Seychelles",
+    "wiki": "Seychelles",
+    "flag": { "code": "sc", "wiki": "Flag of the Seychelles" }
+  },
+  { "id": "comoros", "label": "Comoros", "wiki": "Comoros", "flag": { "code": "km", "wiki": "Flag of the Comoros" } },
+  {
+    "id": "mauritius",
+    "label": "Mauritius",
+    "wiki": "Mauritius",
+    "flag": { "code": "mu", "wiki": "Flag of Mauritius" }
+  },
+  {
+    "id": "cape-verde",
+    "label": "Cape Verde",
+    "wiki": "Cape Verde",
+    "flag": { "code": "cv", "wiki": "Flag of Cape Verde" }
+  },
+  {
+    "id": "sao-tome-and-principe",
+    "label": "São Tomé and Príncipe",
+    "wiki": "São Tomé and Príncipe",
+    "flag": { "code": "st", "wiki": "Flag of São Tomé and Príncipe" }
+  },
+  { "id": "barbados", "label": "Barbados", "wiki": "Barbados", "flag": { "code": "bb", "wiki": "Flag of Barbados" } },
+  {
+    "id": "trinidad-and-tobago",
+    "label": "Trinidad and Tobago",
+    "wiki": "Trinidad and Tobago",
+    "flag": { "code": "tt", "wiki": "Flag of Trinidad and Tobago" }
+  },
+  {
+    "id": "jamaica",
+    "label": "Jamaica",
+    "wiki": "Jamaica",
+    "area": {
+      "outline": "jamaica-region",
+      "centre": { "lat": 18.1593, "lon": -77.3117 },
+      "tolerance": 10,
+      "surface": "LAND"
+    },
+    "flag": { "code": "jm", "wiki": "Flag of Jamaica" }
+  },
+  {
+    "id": "paraguay",
+    "label": "Paraguay",
+    "wiki": "Paraguay",
+    "area": {
+      "outline": "paraguay-region",
+      "centre": { "lat": -23.2079, "lon": -58.4432 },
+      "tolerance": 70,
+      "surface": "LAND"
+    },
+    "flag": { "code": "py", "wiki": "Flag of Paraguay" }
+  },
+  {
+    "id": "suriname",
+    "label": "Suriname",
+    "wiki": "Suriname",
+    "area": {
+      "outline": "suriname-region",
+      "centre": { "lat": 4.1302, "lon": -55.9151 },
+      "tolerance": 45,
+      "surface": "LAND"
+    },
+    "flag": { "code": "sr", "wiki": "Flag of Suriname" }
+  },
+  {
+    "id": "guyana",
+    "label": "Guyana",
+    "wiki": "Guyana",
+    "area": {
+      "outline": "guyana-region",
+      "centre": { "lat": 4.7894, "lon": -58.9819 },
+      "tolerance": 50,
+      "surface": "LAND"
+    },
+    "flag": { "code": "gy", "wiki": "Flag of Guyana" }
+  },
+  {
+    "id": "armenia",
+    "label": "Armenia",
+    "wiki": "Armenia",
+    "area": {
+      "outline": "armenia-region",
+      "centre": { "lat": 40.2869, "lon": 44.9385 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "am", "wiki": "Flag of Armenia" }
+  },
+  {
+    "id": "georgia",
+    "label": "Georgia",
+    "wiki": "Georgia (country)",
+    "area": {
+      "outline": "georgia-region",
+      "centre": { "lat": 42.1745, "lon": 43.5176 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ge", "wiki": "Flag of Georgia (country)" }
+  },
+  {
+    "id": "kyrgyzstan",
+    "label": "Kyrgyzstan",
+    "wiki": "Kyrgyzstan",
+    "area": {
+      "outline": "kyrgyzstan-region",
+      "centre": { "lat": 41.4747, "lon": 74.5131 },
+      "tolerance": 50,
+      "surface": "LAND"
+    },
+    "flag": { "code": "kg", "wiki": "Flag of Kyrgyzstan" }
+  },
+  {
+    "id": "laos",
+    "label": "Laos",
+    "wiki": "Laos",
+    "area": {
+      "outline": "laos-region",
+      "centre": { "lat": 18.4911, "lon": 103.7738 },
+      "tolerance": 55,
+      "surface": "LAND"
+    },
+    "flag": { "code": "la", "wiki": "Flag of Laos" }
+  },
+  {
+    "id": "cambodia",
+    "label": "Cambodia",
+    "wiki": "Cambodia",
+    "area": {
+      "outline": "cambodia-region",
+      "centre": { "lat": 12.7216, "lon": 104.9038 },
+      "tolerance": 50,
+      "surface": "LAND"
+    },
+    "flag": { "code": "kh", "wiki": "Flag of Cambodia" }
+  },
+  {
+    "id": "sri-lanka",
+    "label": "Sri Lanka",
+    "wiki": "Sri Lanka",
+    "area": {
+      "outline": "sri-lanka-region",
+      "centre": { "lat": 7.6136, "lon": 80.6982 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "flag": { "code": "lk", "wiki": "Flag of Sri Lanka" }
+  },
+  {
+    "id": "oman",
+    "label": "Oman",
+    "wiki": "Oman",
+    "area": {
+      "outline": "oman-region",
+      "centre": { "lat": 20.5868, "lon": 56.0648 },
+      "tolerance": 65,
+      "surface": "LAND"
+    },
+    "flag": { "code": "om", "wiki": "Flag of Oman" }
+  },
+  {
+    "id": "jordan",
+    "label": "Jordan",
+    "wiki": "Jordan",
+    "area": {
+      "outline": "jordan-region",
+      "centre": { "lat": 31.2389, "lon": 36.7574 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "flag": { "code": "jo", "wiki": "Flag of Jordan" }
+  },
+  {
+    "id": "lebanon",
+    "label": "Lebanon",
+    "wiki": "Lebanon",
+    "area": {
+      "outline": "lebanon-region",
+      "centre": { "lat": 33.921, "lon": 35.8747 },
+      "tolerance": 10,
+      "surface": "LAND"
+    },
+    "flag": { "code": "lb", "wiki": "Flag of Lebanon" }
+  },
+  {
+    "id": "malawi",
+    "label": "Malawi",
+    "wiki": "Malawi",
+    "area": {
+      "outline": "malawi-region",
+      "centre": { "lat": -13.2063, "lon": 34.2831 },
+      "tolerance": 40,
+      "surface": "LAND"
+    },
+    "flag": { "code": "mw", "wiki": "Flag of Malawi" }
+  },
+  {
+    "id": "togo",
+    "label": "Togo",
+    "wiki": "Togo",
+    "area": {
+      "outline": "togo-region",
+      "centre": { "lat": 8.5275, "lon": 0.9609 },
+      "tolerance": 25,
+      "surface": "LAND"
+    },
+    "flag": { "code": "tg", "wiki": "Flag of Togo" }
+  },
+  {
+    "id": "benin",
+    "label": "Benin",
+    "wiki": "Benin",
+    "area": {
+      "outline": "benin-region",
+      "centre": { "lat": 9.6369, "lon": 2.3265 },
+      "tolerance": 40,
+      "surface": "LAND"
+    },
+    "flag": { "code": "bj", "wiki": "Flag of Benin" }
+  },
+  {
+    "id": "liberia",
+    "label": "Liberia",
+    "wiki": "Liberia",
+    "area": {
+      "outline": "liberia-region",
+      "centre": { "lat": 6.4511, "lon": -9.3188 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "flag": { "code": "lr", "wiki": "Flag of Liberia" }
+  },
+  {
+    "id": "sierra-leone",
+    "label": "Sierra Leone",
+    "wiki": "Sierra Leone",
+    "area": {
+      "outline": "sierra-leone-region",
+      "centre": { "lat": 8.5604, "lon": -11.7945 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "flag": { "code": "sl", "wiki": "Flag of Sierra Leone" }
+  },
+  {
+    "id": "eritrea",
+    "label": "Eritrea",
+    "wiki": "Eritrea",
+    "area": {
+      "outline": "eritrea-region",
+      "centre": { "lat": 15.3578, "lon": 38.8615 },
+      "tolerance": 40,
+      "surface": "LAND"
+    },
+    "flag": { "code": "er", "wiki": "Flag of Eritrea" }
+  },
+  {
+    "id": "madagascar",
+    "label": "Madagascar",
+    "wiki": "Madagascar",
+    "area": {
+      "outline": "madagascar-region",
+      "centre": { "lat": -19.32, "lon": 46.7416 },
+      "tolerance": 85,
+      "surface": "LAND"
+    },
+    "flag": { "code": "mg", "wiki": "Flag of Madagascar" }
+  },
+  { "id": "nauru", "label": "Nauru", "wiki": "Nauru", "flag": { "code": "nr", "wiki": "Flag of Nauru" } },
+  { "id": "tuvalu", "label": "Tuvalu", "wiki": "Tuvalu", "flag": { "code": "tv", "wiki": "Flag of Tuvalu" } },
+  { "id": "kiribati", "label": "Kiribati", "wiki": "Kiribati", "flag": { "code": "ki", "wiki": "Flag of Kiribati" } },
+  { "id": "palau", "label": "Palau", "wiki": "Palau", "flag": { "code": "pw", "wiki": "Flag of Palau" } },
+  {
+    "id": "marshall-islands",
+    "label": "Marshall Islands",
+    "wiki": "Marshall Islands",
+    "flag": { "code": "mh", "wiki": "Flag of the Marshall Islands" }
+  },
+  {
+    "id": "federated-states-of-micronesia",
+    "label": "Federated States of Micronesia",
+    "wiki": "Federated States of Micronesia",
+    "flag": { "code": "fm", "wiki": "Flag of the Federated States of Micronesia" }
+  },
+  { "id": "tonga", "label": "Tonga", "wiki": "Tonga", "flag": { "code": "to", "wiki": "Flag of Tonga" } },
+  { "id": "samoa", "label": "Samoa", "wiki": "Samoa", "flag": { "code": "ws", "wiki": "Flag of Samoa" } },
+  {
+    "id": "vanuatu",
+    "label": "Vanuatu",
+    "wiki": "Vanuatu",
+    "area": {
+      "outline": "vanuatu-region",
+      "centre": { "lat": -16.215, "lon": 167.6776 },
+      "tolerance": 10,
+      "surface": "LAND"
+    },
+    "flag": { "code": "vu", "wiki": "Flag of Vanuatu" }
+  },
+  {
+    "id": "fiji",
+    "label": "Fiji",
+    "wiki": "Fiji",
+    "area": {
+      "outline": "fiji-region",
+      "centre": { "lat": -17.4401, "lon": 178.4743 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "flag": { "code": "fj", "wiki": "Flag of Fiji" }
+  },
+  {
+    "id": "solomon-islands",
+    "label": "Solomon Islands",
+    "wiki": "Solomon Islands",
+    "area": {
+      "outline": "solomon-islands-region",
+      "centre": { "lat": -8.9153, "lon": 159.5801 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "sb", "wiki": "Flag of the Solomon Islands" }
+  },
+  { "id": "tokyo", "label": "Tokyo, Japan", "wiki": "Tokyo" },
+  { "id": "beijing", "label": "Beijing, China", "wiki": "Beijing" },
+  { "id": "new-delhi", "label": "New Delhi, India", "wiki": "New Delhi" },
+  { "id": "bangkok", "label": "Bangkok, Thailand", "wiki": "Bangkok" },
+  { "id": "kuala-lumpur", "label": "Kuala Lumpur, Malaysia", "wiki": "Kuala Lumpur" },
+  { "id": "taipei", "label": "Taipei, Taiwan", "wiki": "Taipei" },
+  { "id": "pyongyang", "label": "Pyongyang, North Korea", "wiki": "Pyongyang" },
+  { "id": "naypyidaw", "label": "Naypyidaw, Myanmar", "wiki": "Naypyidaw" },
+  { "id": "baku", "label": "Baku, Azerbaijan", "wiki": "Baku" },
+  { "id": "mogadishu", "label": "Mogadishu, Somalia", "wiki": "Mogadishu" },
+  { "id": "tbilisi", "label": "Tbilisi, Georgia", "wiki": "Tbilisi" },
+  { "id": "dushanbe", "label": "Dushanbe, Tajikistan", "wiki": "Dushanbe" },
+  { "id": "ashgabat", "label": "Ashgabat, Turkmenistan", "wiki": "Ashgabat" },
+  { "id": "bishkek", "label": "Bishkek, Kyrgyzstan", "wiki": "Bishkek" },
+  { "id": "damascus", "label": "Damascus, Syria", "wiki": "Damascus" },
+  { "id": "beirut", "label": "Beirut, Lebanon", "wiki": "Beirut" },
+  { "id": "amman", "label": "Amman, Jordan", "wiki": "Amman" },
+  { "id": "muscat", "label": "Muscat, Oman", "wiki": "Muscat" },
+  { "id": "abu-dhabi", "label": "Abu Dhabi, United Arab Emirates", "wiki": "Abu Dhabi" },
+  { "id": "sanaa", "label": "Sanaa, Yemen", "wiki": "Sanaa" },
+  { "id": "cairo", "label": "Cairo, Egypt", "wiki": "Cairo" },
+  { "id": "algiers", "label": "Algiers, Algeria", "wiki": "Algiers" },
+  { "id": "tunis", "label": "Tunis, Tunisia", "wiki": "Tunis" },
+  { "id": "rabat", "label": "Rabat, Morocco", "wiki": "Rabat" },
+  { "id": "tripoli", "label": "Tripoli, Libya", "wiki": "Tripoli, Libya" },
+  { "id": "khartoum", "label": "Khartoum, Sudan", "wiki": "Khartoum" },
+  { "id": "dakar", "label": "Dakar, Senegal", "wiki": "Dakar" },
+  { "id": "accra", "label": "Accra, Ghana", "wiki": "Accra" },
+  { "id": "luanda", "label": "Luanda, Angola", "wiki": "Luanda" },
+  { "id": "lusaka", "label": "Lusaka, Zambia", "wiki": "Lusaka" },
+  { "id": "harare", "label": "Harare, Zimbabwe", "wiki": "Harare" },
+  { "id": "maputo", "label": "Maputo, Mozambique", "wiki": "Maputo" },
+  { "id": "kampala", "label": "Kampala, Uganda", "wiki": "Kampala" },
+  { "id": "dodoma", "label": "Dodoma, Tanzania", "wiki": "Dodoma" },
+  { "id": "windhoek", "label": "Windhoek, Namibia", "wiki": "Windhoek" },
+  { "id": "gaborone", "label": "Gaborone, Botswana", "wiki": "Gaborone" },
+  { "id": "antananarivo", "label": "Antananarivo, Madagascar", "wiki": "Antananarivo" },
+  { "id": "caracas", "label": "Caracas, Venezuela", "wiki": "Caracas" },
+  { "id": "quito", "label": "Quito, Ecuador", "wiki": "Quito" },
+  { "id": "la-paz", "label": "La Paz, Bolivia", "wiki": "La Paz" },
+  { "id": "panama-city", "label": "Panama City, Panama", "wiki": "Panama City" },
+  { "id": "san-jose-cr", "label": "San José, Costa Rica", "wiki": "San José, Costa Rica" },
+  { "id": "managua", "label": "Managua, Nicaragua", "wiki": "Managua" },
+  { "id": "tegucigalpa", "label": "Tegucigalpa, Honduras", "wiki": "Tegucigalpa" },
+  { "id": "san-salvador", "label": "San Salvador, El Salvador", "wiki": "San Salvador" },
+  { "id": "guatemala-city", "label": "Guatemala City, Guatemala", "wiki": "Guatemala City" },
+  { "id": "santo-domingo", "label": "Santo Domingo, Dominican Republic", "wiki": "Santo Domingo" },
+  { "id": "port-au-prince", "label": "Port-au-Prince, Haiti", "wiki": "Port-au-Prince" },
+  { "id": "moscow", "label": "Moscow, Russia", "wiki": "Moscow" },
+  { "id": "bern", "label": "Bern, Switzerland", "wiki": "Bern" },
+  { "id": "belgrade", "label": "Belgrade, Serbia", "wiki": "Belgrade" },
+  { "id": "new-york", "label": "New York City", "wiki": "New York City" },
+  { "id": "los-angeles", "label": "Los Angeles", "wiki": "Los Angeles" },
+  { "id": "chicago", "label": "Chicago", "wiki": "Chicago" },
+  { "id": "san-francisco", "label": "San Francisco", "wiki": "San Francisco" },
+  { "id": "houston", "label": "Houston", "wiki": "Houston" },
+  { "id": "miami", "label": "Miami", "wiki": "Miami" },
+  { "id": "seattle", "label": "Seattle", "wiki": "Seattle" },
+  { "id": "toronto", "label": "Toronto, Canada", "wiki": "Toronto" },
+  { "id": "vancouver", "label": "Vancouver, Canada", "wiki": "Vancouver" },
+  { "id": "montreal", "label": "Montreal, Canada", "wiki": "Montreal" },
+  { "id": "sao-paulo", "label": "São Paulo, Brazil", "wiki": "São Paulo" },
+  { "id": "rio-de-janeiro", "label": "Rio de Janeiro, Brazil", "wiki": "Rio de Janeiro" },
+  { "id": "shanghai", "label": "Shanghai, China", "wiki": "Shanghai" },
+  { "id": "hong-kong", "label": "Hong Kong", "wiki": "Hong Kong" },
+  { "id": "guangzhou", "label": "Guangzhou, China", "wiki": "Guangzhou" },
+  { "id": "shenzhen", "label": "Shenzhen, China", "wiki": "Shenzhen" },
+  { "id": "chongqing", "label": "Chongqing, China", "wiki": "Chongqing" },
+  { "id": "osaka", "label": "Osaka, Japan", "wiki": "Osaka" },
+  { "id": "mumbai", "label": "Mumbai, India", "wiki": "Mumbai" },
+  { "id": "kolkata", "label": "Kolkata, India", "wiki": "Kolkata" },
+  { "id": "chennai", "label": "Chennai, India", "wiki": "Chennai" },
+  { "id": "bengaluru", "label": "Bengaluru, India", "wiki": "Bengaluru" },
+  { "id": "karachi", "label": "Karachi, Pakistan", "wiki": "Karachi" },
+  { "id": "lahore", "label": "Lahore, Pakistan", "wiki": "Lahore" },
+  { "id": "ho-chi-minh-city", "label": "Ho Chi Minh City, Vietnam", "wiki": "Ho Chi Minh City" },
+  { "id": "istanbul", "label": "Istanbul, Turkey", "wiki": "Istanbul" },
+  { "id": "dubai", "label": "Dubai, United Arab Emirates", "wiki": "Dubai" },
+  { "id": "lagos", "label": "Lagos, Nigeria", "wiki": "Lagos" },
+  { "id": "johannesburg", "label": "Johannesburg, South Africa", "wiki": "Johannesburg" },
+  { "id": "cape-town", "label": "Cape Town, South Africa", "wiki": "Cape Town" },
+  { "id": "casablanca", "label": "Casablanca, Morocco", "wiki": "Casablanca" },
+  { "id": "marrakesh", "label": "Marrakesh, Morocco", "wiki": "Marrakesh" },
+  { "id": "alexandria", "label": "Alexandria, Egypt", "wiki": "Alexandria" },
+  { "id": "st-petersburg", "label": "Saint Petersburg, Russia", "wiki": "Saint Petersburg" },
+  { "id": "barcelona", "label": "Barcelona, Spain", "wiki": "Barcelona" },
+  { "id": "milan", "label": "Milan, Italy", "wiki": "Milan" },
+  { "id": "munich", "label": "Munich, Germany", "wiki": "Munich" },
+  { "id": "hamburg", "label": "Hamburg, Germany", "wiki": "Hamburg" },
+  { "id": "sydney", "label": "Sydney, Australia", "wiki": "Sydney" },
+  { "id": "melbourne", "label": "Melbourne, Australia", "wiki": "Melbourne" },
+  { "id": "auckland", "label": "Auckland, New Zealand", "wiki": "Auckland" },
+  { "id": "manchester", "label": "Manchester, England", "wiki": "Manchester" },
+  { "id": "glasgow", "label": "Glasgow, Scotland", "wiki": "Glasgow" },
+  { "id": "birmingham", "label": "Birmingham, England", "wiki": "Birmingham" },
+  { "id": "liverpool", "label": "Liverpool, England", "wiki": "Liverpool" },
+  { "id": "leeds", "label": "Leeds, England", "wiki": "Leeds" },
+  { "id": "newcastle", "label": "Newcastle upon Tyne, England", "wiki": "Newcastle upon Tyne" },
+  { "id": "aberdeen", "label": "Aberdeen, Scotland", "wiki": "Aberdeen" },
+  { "id": "plymouth", "label": "Plymouth, England", "wiki": "Plymouth" },
+  { "id": "venice", "label": "Venice, Italy", "wiki": "Venice" },
+  { "id": "florence", "label": "Florence, Italy", "wiki": "Florence" },
+  { "id": "naples", "label": "Naples, Italy", "wiki": "Naples" },
+  { "id": "marseille", "label": "Marseille, France", "wiki": "Marseille" },
+  { "id": "lyon", "label": "Lyon, France", "wiki": "Lyon" },
+  { "id": "seville", "label": "Seville, Spain", "wiki": "Seville" },
+  { "id": "malaga", "label": "Málaga, Spain", "wiki": "Málaga" },
+  { "id": "porto", "label": "Porto, Portugal", "wiki": "Porto" },
+  { "id": "palma", "label": "Palma, Mallorca", "wiki": "Palma de Mallorca" },
+  { "id": "tenerife", "label": "Tenerife", "wiki": "Tenerife" },
+  { "id": "crete", "label": "Crete", "wiki": "Crete" },
+  { "id": "krakow", "label": "Kraków, Poland", "wiki": "Kraków" },
+  { "id": "geneva", "label": "Geneva, Switzerland", "wiki": "Geneva" },
+  { "id": "salzburg", "label": "Salzburg, Austria", "wiki": "Salzburg" },
+  { "id": "las-vegas", "label": "Las Vegas, United States", "wiki": "Las Vegas" },
+  { "id": "boston", "label": "Boston, United States", "wiki": "Boston" },
+  { "id": "orlando", "label": "Orlando, United States", "wiki": "Orlando, Florida" },
+  { "id": "honolulu", "label": "Honolulu, Hawaii", "wiki": "Honolulu" },
+  { "id": "cancun", "label": "Cancún, Mexico", "wiki": "Cancún" },
+  { "id": "bali", "label": "Bali, Indonesia", "wiki": "Bali" },
+  { "id": "phuket", "label": "Phuket, Thailand", "wiki": "Phuket (city)" },
+  { "id": "kyoto", "label": "Kyoto, Japan", "wiki": "Kyoto" },
+  { "id": "perth", "label": "Perth, Australia", "wiki": "Perth" },
+  { "id": "queenstown", "label": "Queenstown, New Zealand", "wiki": "Queenstown, New Zealand" },
+  { "id": "york", "label": "York, England", "wiki": "York" },
+  { "id": "bristol", "label": "Bristol, England", "wiki": "Bristol" },
+  { "id": "cambridge", "label": "Cambridge, England", "wiki": "Cambridge" },
+  { "id": "brighton", "label": "Brighton, England", "wiki": "Brighton" },
+  { "id": "swansea", "label": "Swansea, Wales", "wiki": "Swansea" },
+  { "id": "dundee", "label": "Dundee, Scotland", "wiki": "Dundee" },
+  {
+    "id": "afghanistan",
+    "label": "Afghanistan",
+    "wiki": "Afghanistan",
+    "area": {
+      "outline": "afghanistan-region",
+      "centre": { "lat": 33.819, "lon": 65.9218 },
+      "tolerance": 90,
+      "surface": "LAND"
+    },
+    "flag": { "code": "af", "wiki": "Flag of Afghanistan" }
+  },
+  {
+    "id": "algeria",
+    "label": "Algeria",
+    "wiki": "Algeria",
+    "area": {
+      "outline": "algeria-region",
+      "centre": { "lat": 28.0567, "lon": 2.6304 },
+      "tolerance": 170,
+      "surface": "LAND"
+    },
+    "flag": { "code": "dz", "wiki": "Flag of Algeria" }
+  },
+  {
+    "id": "angola",
+    "label": "Angola",
+    "wiki": "Angola",
+    "area": {
+      "outline": "angola-region",
+      "centre": { "lat": -12.2701, "lon": 17.5324 },
+      "tolerance": 125,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ao", "wiki": "Flag of Angola" }
+  },
+  {
+    "id": "argentina",
+    "label": "Argentina",
+    "wiki": "Argentina",
+    "area": {
+      "outline": "argentina-region",
+      "centre": { "lat": -34.6838, "lon": -64.7626 },
+      "tolerance": 190,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ar", "wiki": "Flag of Argentina" }
+  },
+  {
+    "id": "australia",
+    "label": "Australia",
+    "wiki": "Australia",
+    "area": {
+      "outline": "australia-region",
+      "centre": { "lat": -25.7635, "lon": 134.3049 },
+      "tolerance": 315,
+      "surface": "LAND"
+    },
+    "flag": { "code": "au", "wiki": "Flag of Australia" }
+  },
+  {
+    "id": "austria",
+    "label": "Austria",
+    "wiki": "Austria",
+    "area": {
+      "outline": "austria-region",
+      "centre": { "lat": 47.594, "lon": 14.1215 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "flag": { "code": "at", "wiki": "Flag of Austria" }
+  },
+  {
+    "id": "azerbaijan",
+    "label": "Azerbaijan",
+    "wiki": "Azerbaijan",
+    "area": {
+      "outline": "azerbaijan-region",
+      "centre": { "lat": 40.2897, "lon": 47.5471 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "flag": { "code": "az", "wiki": "Flag of Azerbaijan" }
+  },
+  {
+    "id": "bangladesh",
+    "label": "Bangladesh",
+    "wiki": "Bangladesh",
+    "area": {
+      "outline": "bangladesh-region",
+      "centre": { "lat": 23.8609, "lon": 90.2465 },
+      "tolerance": 40,
+      "surface": "LAND"
+    },
+    "flag": { "code": "bd", "wiki": "Flag of Bangladesh" }
+  },
+  {
+    "id": "belarus",
+    "label": "Belarus",
+    "wiki": "Belarus",
+    "area": {
+      "outline": "belarus-region",
+      "centre": { "lat": 53.5205, "lon": 28.0116 },
+      "tolerance": 50,
+      "surface": "LAND"
+    },
+    "flag": { "code": "by", "wiki": "Flag of Belarus" }
+  },
+  {
+    "id": "belgium",
+    "label": "Belgium",
+    "wiki": "Belgium",
+    "area": {
+      "outline": "belgium-region",
+      "centre": { "lat": 50.6385, "lon": 4.6445 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "be", "wiki": "Flag of Belgium" }
+  },
+  {
+    "id": "bolivia",
+    "label": "Bolivia",
+    "wiki": "Bolivia",
+    "area": {
+      "outline": "bolivia-region",
+      "centre": { "lat": -16.6826, "lon": -64.7001 },
+      "tolerance": 120,
+      "surface": "LAND"
+    },
+    "flag": { "code": "bo", "wiki": "Flag of Bolivia" }
+  },
+  {
+    "id": "bosnia-and-herzegovina",
+    "label": "Bosnia and Herzegovina",
+    "wiki": "Bosnia and Herzegovina",
+    "area": {
+      "outline": "bosnia-and-herzegovina-region",
+      "centre": { "lat": 44.1732, "lon": 17.7692 },
+      "tolerance": 25,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ba", "wiki": "Flag of Bosnia and Herzegovina" }
+  },
+  {
+    "id": "botswana",
+    "label": "Botswana",
+    "wiki": "Botswana",
+    "area": {
+      "outline": "botswana-region",
+      "centre": { "lat": -22.1638, "lon": 23.8097 },
+      "tolerance": 85,
+      "surface": "LAND"
+    },
+    "flag": { "code": "bw", "wiki": "Flag of Botswana" }
+  },
+  {
+    "id": "brazil",
+    "label": "Brazil",
+    "wiki": "Brazil",
+    "area": {
+      "outline": "brazil-region",
+      "centre": { "lat": -10.6387, "lon": -53.2154 },
+      "tolerance": 330,
+      "surface": "LAND"
+    },
+    "flag": { "code": "br", "wiki": "Flag of Brazil" }
+  },
+  {
+    "id": "bulgaria",
+    "label": "Bulgaria",
+    "wiki": "Bulgaria",
+    "area": {
+      "outline": "bulgaria-region",
+      "centre": { "lat": 42.7704, "lon": 25.2048 },
+      "tolerance": 40,
+      "surface": "LAND"
+    },
+    "flag": { "code": "bg", "wiki": "Flag of Bulgaria" }
+  },
+  {
+    "id": "burkina-faso",
+    "label": "Burkina Faso",
+    "wiki": "Burkina Faso",
+    "area": {
+      "outline": "burkina-faso-region",
+      "centre": { "lat": 12.2717, "lon": -1.7594 },
+      "tolerance": 60,
+      "surface": "LAND"
+    },
+    "flag": { "code": "bf", "wiki": "Flag of Burkina Faso" }
+  },
+  {
+    "id": "cameroon",
+    "label": "Cameroon",
+    "wiki": "Cameroon",
+    "area": {
+      "outline": "cameroon-region",
+      "centre": { "lat": 5.6814, "lon": 12.7324 },
+      "tolerance": 75,
+      "surface": "LAND"
+    },
+    "flag": { "code": "cm", "wiki": "Flag of Cameroon" }
+  },
+  {
+    "id": "canada",
+    "label": "Canada",
+    "wiki": "Canada",
+    "area": {
+      "outline": "canada-region",
+      "centre": { "lat": 60.4193, "lon": -96.5461 },
+      "tolerance": 355,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ca", "wiki": "Flag of Canada" }
+  },
+  {
+    "id": "central-african-republic",
+    "label": "Central African Republic",
+    "wiki": "Central African Republic",
+    "area": {
+      "outline": "central-african-republic-region",
+      "centre": { "lat": 6.5718, "lon": 20.4622 },
+      "tolerance": 90,
+      "surface": "LAND"
+    },
+    "flag": { "code": "cf", "wiki": "Flag of the Central African Republic" }
+  },
+  {
+    "id": "chad",
+    "label": "Chad",
+    "wiki": "Chad",
+    "area": {
+      "outline": "chad-region",
+      "centre": { "lat": 15.2746, "lon": 18.6347 },
+      "tolerance": 125,
+      "surface": "LAND"
+    },
+    "flag": { "code": "td", "wiki": "Flag of Chad" }
+  },
+  {
+    "id": "chile",
+    "label": "Chile",
+    "wiki": "Chile",
+    "area": {
+      "outline": "chile-region",
+      "centre": { "lat": -36.0881, "lon": -71.0472 },
+      "tolerance": 95,
+      "surface": "LAND"
+    },
+    "flag": { "code": "cl", "wiki": "Flag of Chile" }
+  },
+  {
+    "id": "colombia",
+    "label": "Colombia",
+    "wiki": "Colombia",
+    "area": {
+      "outline": "colombia-region",
+      "centre": { "lat": 3.9024, "lon": -73.0772 },
+      "tolerance": 120,
+      "surface": "LAND"
+    },
+    "flag": { "code": "co", "wiki": "Flag of Colombia" }
+  },
+  {
+    "id": "costa-rica",
+    "label": "Costa Rica",
+    "wiki": "Costa Rica",
+    "area": {
+      "outline": "costa-rica-region",
+      "centre": { "lat": 9.9762, "lon": -84.1872 },
+      "tolerance": 25,
+      "surface": "LAND"
+    },
+    "flag": { "code": "cr", "wiki": "Flag of Costa Rica" }
+  },
+  {
+    "id": "croatia",
+    "label": "Croatia",
+    "wiki": "Croatia",
+    "area": {
+      "outline": "croatia-region",
+      "centre": { "lat": 45.0825, "lon": 16.3911 },
+      "tolerance": 25,
+      "surface": "LAND"
+    },
+    "flag": { "code": "hr", "wiki": "Flag of Croatia" }
+  },
+  {
+    "id": "cuba",
+    "label": "Cuba",
+    "wiki": "Cuba",
+    "area": {
+      "outline": "cuba-region",
+      "centre": { "lat": 21.6375, "lon": -78.9908 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "flag": { "code": "cu", "wiki": "Flag of Cuba" }
+  },
+  {
+    "id": "czech-republic",
+    "label": "Czech Republic",
+    "wiki": "Czech Republic",
+    "area": {
+      "outline": "czech-republic-region",
+      "centre": { "lat": 49.7378, "lon": 15.3248 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "flag": { "code": "cz", "wiki": "Flag of the Czech Republic" }
+  },
+  {
+    "id": "democratic-republic-of-the-congo",
+    "label": "Democratic Republic of the Congo",
+    "wiki": "Democratic Republic of the Congo",
+    "area": {
+      "outline": "drc-region",
+      "centre": { "lat": -2.8641, "lon": 23.6368 },
+      "tolerance": 170,
+      "surface": "LAND"
+    },
+    "flag": { "code": "cd", "wiki": "Flag of the Democratic Republic of the Congo" }
+  },
+  {
+    "id": "denmark",
+    "label": "Denmark",
+    "wiki": "Denmark",
+    "area": {
+      "outline": "denmark-region",
+      "centre": { "lat": 55.975, "lon": 10.0444 },
+      "tolerance": 25,
+      "surface": "LAND"
+    },
+    "flag": { "code": "dk", "wiki": "Flag of Denmark" }
+  },
+  {
+    "id": "dominican-republic",
+    "label": "Dominican Republic",
+    "wiki": "Dominican Republic",
+    "area": {
+      "outline": "dominican-republic-region",
+      "centre": { "lat": 18.8938, "lon": -70.5023 },
+      "tolerance": 25,
+      "surface": "LAND"
+    },
+    "flag": { "code": "do", "wiki": "Flag of the Dominican Republic" }
+  },
+  {
+    "id": "ecuador",
+    "label": "Ecuador",
+    "wiki": "Ecuador",
+    "area": {
+      "outline": "ecuador-region",
+      "centre": { "lat": -1.4475, "lon": -78.3951 },
+      "tolerance": 55,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ec", "wiki": "Flag of Ecuador" }
+  },
+  {
+    "id": "egypt",
+    "label": "Egypt",
+    "wiki": "Egypt",
+    "area": {
+      "outline": "egypt-region",
+      "centre": { "lat": 26.4595, "lon": 29.8782 },
+      "tolerance": 115,
+      "surface": "LAND"
+    },
+    "flag": { "code": "eg", "wiki": "Flag of Egypt" }
+  },
+  {
+    "id": "el-salvador",
+    "label": "El Salvador",
+    "wiki": "El Salvador",
+    "area": {
+      "outline": "el-salvador-region",
+      "centre": { "lat": 13.7412, "lon": -88.8707 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "flag": { "code": "sv", "wiki": "Flag of El Salvador" }
+  },
+  {
+    "id": "equatorial-guinea",
+    "label": "Equatorial Guinea",
+    "wiki": "Equatorial Guinea",
+    "area": {
+      "outline": "equatorial-guinea-region",
+      "centre": { "lat": 1.7061, "lon": 10.3412 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "gq", "wiki": "Flag of Equatorial Guinea" }
+  },
+  {
+    "id": "estonia",
+    "label": "Estonia",
+    "wiki": "Estonia",
+    "area": {
+      "outline": "estonia-region",
+      "centre": { "lat": 58.6698, "lon": 25.5494 },
+      "tolerance": 25,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ee", "wiki": "Flag of Estonia" }
+  },
+  {
+    "id": "ethiopia",
+    "label": "Ethiopia",
+    "wiki": "Ethiopia",
+    "area": {
+      "outline": "ethiopia-region",
+      "centre": { "lat": 8.6149, "lon": 39.6095 },
+      "tolerance": 120,
+      "surface": "LAND"
+    },
+    "flag": { "code": "et", "wiki": "Flag of Ethiopia" }
+  },
+  {
+    "id": "finland",
+    "label": "Finland",
+    "wiki": "Finland",
+    "area": {
+      "outline": "finland-region",
+      "centre": { "lat": 64.2567, "lon": 26.1923 },
+      "tolerance": 65,
+      "surface": "LAND"
+    },
+    "flag": { "code": "fi", "wiki": "Flag of Finland" }
+  },
+  {
+    "id": "france",
+    "label": "France",
+    "wiki": "France",
+    "area": {
+      "outline": "france-region",
+      "centre": { "lat": 46.5045, "lon": 2.5684 },
+      "tolerance": 85,
+      "surface": "LAND"
+    },
+    "flag": { "code": "fr", "wiki": "Flag of France" }
+  },
+  {
+    "id": "gabon",
+    "label": "Gabon",
+    "wiki": "Gabon",
+    "area": {
+      "outline": "gabon-region",
+      "centre": { "lat": -0.5848, "lon": 11.7898 },
+      "tolerance": 60,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ga", "wiki": "Flag of Gabon" }
+  },
+  {
+    "id": "germany",
+    "label": "Germany",
+    "wiki": "Germany",
+    "area": {
+      "outline": "germany-region",
+      "centre": { "lat": 51.0484, "lon": 10.3657 },
+      "tolerance": 65,
+      "surface": "LAND"
+    },
+    "flag": { "code": "de", "wiki": "Flag of Germany" }
+  },
+  {
+    "id": "ghana",
+    "label": "Ghana",
+    "wiki": "Ghana",
+    "area": {
+      "outline": "ghana-region",
+      "centre": { "lat": 7.949, "lon": -1.2182 },
+      "tolerance": 55,
+      "surface": "LAND"
+    },
+    "flag": { "code": "gh", "wiki": "Flag of Ghana" }
+  },
+  {
+    "id": "greece",
+    "label": "Greece",
+    "wiki": "Greece",
+    "area": {
+      "outline": "greece-region",
+      "centre": { "lat": 39.0432, "lon": 22.9575 },
+      "tolerance": 40,
+      "surface": "LAND"
+    },
+    "flag": { "code": "gr", "wiki": "Flag of Greece" }
+  },
+  {
+    "id": "guatemala",
+    "label": "Guatemala",
+    "wiki": "Guatemala",
+    "area": {
+      "outline": "guatemala-region",
+      "centre": { "lat": 15.6917, "lon": -90.3673 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "flag": { "code": "gt", "wiki": "Flag of Guatemala" }
+  },
+  {
+    "id": "guinea",
+    "label": "Guinea",
+    "wiki": "Guinea",
+    "area": {
+      "outline": "guinea-region",
+      "centre": { "lat": 10.4359, "lon": -10.9325 },
+      "tolerance": 55,
+      "surface": "LAND"
+    },
+    "flag": { "code": "gn", "wiki": "Flag of Guinea" }
+  },
+  {
+    "id": "guinea-bissau",
+    "label": "Guinea-Bissau",
+    "wiki": "Guinea-Bissau",
+    "area": {
+      "outline": "guinea-bissau-region",
+      "centre": { "lat": 12.0501, "lon": -14.9514 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "gw", "wiki": "Flag of Guinea-Bissau" }
+  },
+  {
+    "id": "haiti",
+    "label": "Haiti",
+    "wiki": "Haiti",
+    "area": {
+      "outline": "haiti-region",
+      "centre": { "lat": 18.933, "lon": -72.6842 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ht", "wiki": "Flag of Haiti" }
+  },
+  {
+    "id": "honduras",
+    "label": "Honduras",
+    "wiki": "Honduras",
+    "area": {
+      "outline": "honduras-region",
+      "centre": { "lat": 14.8285, "lon": -86.6167 },
+      "tolerance": 40,
+      "surface": "LAND"
+    },
+    "flag": { "code": "hn", "wiki": "Flag of Honduras" }
+  },
+  {
+    "id": "hungary",
+    "label": "Hungary",
+    "wiki": "Hungary",
+    "area": {
+      "outline": "hungary-region",
+      "centre": { "lat": 47.1661, "lon": 19.3822 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "flag": { "code": "hu", "wiki": "Flag of Hungary" }
+  },
+  {
+    "id": "iceland",
+    "label": "Iceland",
+    "wiki": "Iceland",
+    "area": {
+      "outline": "iceland-region",
+      "centre": { "lat": 64.9999, "lon": -18.5766 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "flag": { "code": "is", "wiki": "Flag of Iceland" }
+  },
+  {
+    "id": "indonesia",
+    "label": "Indonesia",
+    "wiki": "Indonesia",
+    "area": {
+      "outline": "indonesia-region",
+      "centre": { "lat": -2.2625, "lon": 117.1776 },
+      "tolerance": 155,
+      "surface": "LAND"
+    },
+    "flag": { "code": "id", "wiki": "Flag of Indonesia" }
+  },
+  {
+    "id": "iran",
+    "label": "Iran",
+    "wiki": "Iran",
+    "area": {
+      "outline": "iran-region",
+      "centre": { "lat": 32.528, "lon": 54.4381 },
+      "tolerance": 145,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ir", "wiki": "Flag of Iran" }
+  },
+  {
+    "id": "iraq",
+    "label": "Iraq",
+    "wiki": "Iraq",
+    "area": {
+      "outline": "iraq-region",
+      "centre": { "lat": 33.0091, "lon": 43.7692 },
+      "tolerance": 75,
+      "surface": "LAND"
+    },
+    "flag": { "code": "iq", "wiki": "Flag of Iraq" }
+  },
+  {
+    "id": "ireland",
+    "label": "Ireland",
+    "wiki": "Republic of Ireland",
+    "area": {
+      "outline": "ireland-region",
+      "centre": { "lat": 53.1599, "lon": -8.1433 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ie", "wiki": "Flag of Ireland" }
+  },
+  {
+    "id": "italy",
+    "label": "Italy",
+    "wiki": "Italy",
+    "area": {
+      "outline": "italy-region",
+      "centre": { "lat": 42.7138, "lon": 12.2068 },
+      "tolerance": 60,
+      "surface": "LAND"
+    },
+    "flag": { "code": "it", "wiki": "Flag of Italy" }
+  },
+  {
+    "id": "ivory-coast",
+    "label": "Ivory Coast",
+    "wiki": "Ivory Coast",
+    "area": {
+      "outline": "ivory-coast-region",
+      "centre": { "lat": 7.6279, "lon": -5.5682 },
+      "tolerance": 65,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ci", "wiki": "Flag of Ivory Coast" }
+  },
+  {
+    "id": "japan",
+    "label": "Japan",
+    "wiki": "Japan",
+    "area": {
+      "outline": "japan-region",
+      "centre": { "lat": 37.5203, "lon": 137.7254 },
+      "tolerance": 70,
+      "surface": "LAND"
+    },
+    "flag": { "code": "jp", "wiki": "Flag of Japan" }
+  },
+  {
+    "id": "kazakhstan",
+    "label": "Kazakhstan",
+    "wiki": "Kazakhstan",
+    "area": {
+      "outline": "kazakhstan-region",
+      "centre": { "lat": 48.3601, "lon": 67.2466 },
+      "tolerance": 185,
+      "surface": "LAND"
+    },
+    "flag": { "code": "kz", "wiki": "Flag of Kazakhstan" }
+  },
+  {
+    "id": "kenya",
+    "label": "Kenya",
+    "wiki": "Kenya",
+    "area": {
+      "outline": "kenya-region",
+      "centre": { "lat": 0.5987, "lon": 37.796 },
+      "tolerance": 85,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ke", "wiki": "Flag of Kenya" }
+  },
+  {
+    "id": "latvia",
+    "label": "Latvia",
+    "wiki": "Latvia",
+    "area": {
+      "outline": "latvia-region",
+      "centre": { "lat": 56.8593, "lon": 24.9171 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "flag": { "code": "lv", "wiki": "Flag of Latvia" }
+  },
+  {
+    "id": "libya",
+    "label": "Libya",
+    "wiki": "Libya",
+    "area": {
+      "outline": "libya-region",
+      "centre": { "lat": 27.0158, "lon": 18.0653 },
+      "tolerance": 145,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ly", "wiki": "Flag of Libya" }
+  },
+  {
+    "id": "lithuania",
+    "label": "Lithuania",
+    "wiki": "Lithuania",
+    "area": {
+      "outline": "lithuania-region",
+      "centre": { "lat": 55.3249, "lon": 23.8925 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "flag": { "code": "lt", "wiki": "Flag of Lithuania" }
+  },
+  {
+    "id": "malaysia",
+    "label": "Malaysia",
+    "wiki": "Malaysia",
+    "area": {
+      "outline": "malaysia-region",
+      "centre": { "lat": 3.8118, "lon": 109.6869 },
+      "tolerance": 65,
+      "surface": "LAND"
+    },
+    "flag": { "code": "my", "wiki": "Flag of Malaysia" }
+  },
+  {
+    "id": "mali",
+    "label": "Mali",
+    "wiki": "Mali",
+    "area": {
+      "outline": "mali-region",
+      "centre": { "lat": 17.312, "lon": -3.5925 },
+      "tolerance": 125,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ml", "wiki": "Flag of Mali" }
+  },
+  {
+    "id": "mauritania",
+    "label": "Mauritania",
+    "wiki": "Mauritania",
+    "area": {
+      "outline": "mauritania-region",
+      "centre": { "lat": 20.2242, "lon": -10.3727 },
+      "tolerance": 115,
+      "surface": "LAND"
+    },
+    "flag": { "code": "mr", "wiki": "Flag of Mauritania" }
+  },
+  {
+    "id": "mexico",
+    "label": "Mexico",
+    "wiki": "Mexico",
+    "area": {
+      "outline": "mexico-region",
+      "centre": { "lat": 23.9216, "lon": -102.1677 },
+      "tolerance": 160,
+      "surface": "LAND"
+    },
+    "flag": { "code": "mx", "wiki": "Flag of Mexico" }
+  },
+  {
+    "id": "mongolia",
+    "label": "Mongolia",
+    "wiki": "Mongolia",
+    "area": {
+      "outline": "mongolia-region",
+      "centre": { "lat": 46.9559, "lon": 103.1245 },
+      "tolerance": 140,
+      "surface": "LAND"
+    },
+    "flag": { "code": "mn", "wiki": "Flag of Mongolia" }
+  },
+  {
+    "id": "mozambique",
+    "label": "Mozambique",
+    "wiki": "Mozambique",
+    "area": {
+      "outline": "mozambique-region",
+      "centre": { "lat": -17.1949, "lon": 35.6036 },
+      "tolerance": 100,
+      "surface": "LAND"
+    },
+    "flag": { "code": "mz", "wiki": "Flag of Mozambique" }
+  },
+  {
+    "id": "myanmar",
+    "label": "Myanmar",
+    "wiki": "Myanmar",
+    "area": {
+      "outline": "myanmar-region",
+      "centre": { "lat": 21.1053, "lon": 96.496 },
+      "tolerance": 90,
+      "surface": "LAND"
+    },
+    "flag": { "code": "mm", "wiki": "Flag of Myanmar" }
+  },
+  {
+    "id": "namibia",
+    "label": "Namibia",
+    "wiki": "Namibia",
+    "area": {
+      "outline": "namibia-region",
+      "centre": { "lat": -22.0685, "lon": 17.194 },
+      "tolerance": 100,
+      "surface": "LAND"
+    },
+    "flag": { "code": "na", "wiki": "Flag of Namibia" }
+  },
+  {
+    "id": "nepal",
+    "label": "Nepal",
+    "wiki": "Nepal",
+    "area": {
+      "outline": "nepal-region",
+      "centre": { "lat": 28.2607, "lon": 83.9418 },
+      "tolerance": 45,
+      "surface": "LAND"
+    },
+    "flag": { "code": "np", "wiki": "Flag of Nepal" }
+  },
+  {
+    "id": "netherlands",
+    "label": "Netherlands",
+    "wiki": "Netherlands",
+    "area": {
+      "outline": "netherlands-region",
+      "centre": { "lat": 52.2634, "lon": 5.5852 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "flag": { "code": "nl", "wiki": "Flag of the Netherlands" }
+  },
+  {
+    "id": "new-zealand",
+    "label": "New Zealand",
+    "wiki": "New Zealand",
+    "area": {
+      "outline": "new-zealand-region",
+      "centre": { "lat": -41.6867, "lon": 172.8893 },
+      "tolerance": 60,
+      "surface": "LAND"
+    },
+    "flag": { "code": "nz", "wiki": "Flag of New Zealand" }
+  },
+  {
+    "id": "nicaragua",
+    "label": "Nicaragua",
+    "wiki": "Nicaragua",
+    "area": {
+      "outline": "nicaragua-region",
+      "centre": { "lat": 12.8449, "lon": -85.0324 },
+      "tolerance": 40,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ni", "wiki": "Flag of Nicaragua" }
+  },
+  {
+    "id": "niger",
+    "label": "Niger",
+    "wiki": "Niger",
+    "area": {
+      "outline": "niger-region",
+      "centre": { "lat": 17.4127, "lon": 9.3321 },
+      "tolerance": 125,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ne", "wiki": "Flag of Niger" }
+  },
+  {
+    "id": "nigeria",
+    "label": "Nigeria",
+    "wiki": "Nigeria",
+    "area": {
+      "outline": "nigeria-region",
+      "centre": { "lat": 9.592, "lon": 8.0793 },
+      "tolerance": 110,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ng", "wiki": "Flag of Nigeria" }
+  },
+  {
+    "id": "north-korea",
+    "label": "North Korea",
+    "wiki": "North Korea",
+    "area": {
+      "outline": "north-korea-region",
+      "centre": { "lat": 40.1441, "lon": 127.1617 },
+      "tolerance": 40,
+      "surface": "LAND"
+    },
+    "flag": { "code": "kp", "wiki": "Flag of North Korea" }
+  },
+  {
+    "id": "norway",
+    "label": "Norway",
+    "wiki": "Norway",
+    "area": {
+      "outline": "norway-region",
+      "centre": { "lat": 63.9717, "lon": 12.2888 },
+      "tolerance": 65,
+      "surface": "LAND"
+    },
+    "flag": { "code": "no", "wiki": "Flag of Norway" }
+  },
+  {
+    "id": "panama",
+    "label": "Panama",
+    "wiki": "Panama",
+    "area": {
+      "outline": "panama-region",
+      "centre": { "lat": 8.5164, "lon": -80.1252 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "flag": { "code": "pa", "wiki": "Flag of Panama" }
+  },
+  {
+    "id": "papua-new-guinea",
+    "label": "Papua New Guinea",
+    "wiki": "Papua New Guinea",
+    "area": {
+      "outline": "papua-new-guinea-region",
+      "centre": { "lat": -6.4709, "lon": 145.2031 },
+      "tolerance": 75,
+      "surface": "LAND"
+    },
+    "flag": { "code": "pg", "wiki": "Flag of Papua New Guinea" }
+  },
+  {
+    "id": "peru",
+    "label": "Peru",
+    "wiki": "Peru",
+    "area": {
+      "outline": "peru-region",
+      "centre": { "lat": -9.1083, "lon": -74.4197 },
+      "tolerance": 130,
+      "surface": "LAND"
+    },
+    "flag": { "code": "pe", "wiki": "Flag of Peru" }
+  },
+  {
+    "id": "philippines",
+    "label": "Philippines",
+    "wiki": "Philippines",
+    "area": {
+      "outline": "philippines-region",
+      "centre": { "lat": 11.7305, "lon": 122.9193 },
+      "tolerance": 60,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ph", "wiki": "Flag of the Philippines" }
+  },
+  {
+    "id": "poland",
+    "label": "Poland",
+    "wiki": "Poland",
+    "area": {
+      "outline": "poland-region",
+      "centre": { "lat": 52.1104, "lon": 19.4222 },
+      "tolerance": 65,
+      "surface": "LAND"
+    },
+    "flag": { "code": "pl", "wiki": "Flag of Poland" }
+  },
+  {
+    "id": "portugal",
+    "label": "Portugal",
+    "wiki": "Portugal",
+    "area": {
+      "outline": "portugal-region",
+      "centre": { "lat": 39.6492, "lon": -7.9823 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "flag": { "code": "pt", "wiki": "Flag of Portugal" }
+  },
+  {
+    "id": "republic-of-the-congo",
+    "label": "Republic of the Congo",
+    "wiki": "Republic of the Congo",
+    "area": {
+      "outline": "republic-of-the-congo-region",
+      "centre": { "lat": -0.8379, "lon": 15.2211 },
+      "tolerance": 65,
+      "surface": "LAND"
+    },
+    "flag": { "code": "cg", "wiki": "Flag of the Republic of the Congo" }
+  },
+  {
+    "id": "romania",
+    "label": "Romania",
+    "wiki": "Romania",
+    "area": {
+      "outline": "romania-region",
+      "centre": { "lat": 45.8497, "lon": 24.9813 },
+      "tolerance": 55,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ro", "wiki": "Flag of Romania" }
+  },
+  {
+    "id": "saudi-arabia",
+    "label": "Saudi Arabia",
+    "wiki": "Saudi Arabia",
+    "area": {
+      "outline": "saudi-arabia-region",
+      "centre": { "lat": 24.0858, "lon": 44.6636 },
+      "tolerance": 155,
+      "surface": "LAND"
+    },
+    "flag": { "code": "sa", "wiki": "Flag of Saudi Arabia" }
+  },
+  {
+    "id": "senegal",
+    "label": "Senegal",
+    "wiki": "Senegal",
+    "area": {
+      "outline": "senegal-region",
+      "centre": { "lat": 14.3664, "lon": -14.4686 },
+      "tolerance": 50,
+      "surface": "LAND"
+    },
+    "flag": { "code": "sn", "wiki": "Flag of Senegal" }
+  },
+  {
+    "id": "slovakia",
+    "label": "Slovakia",
+    "wiki": "Slovakia",
+    "area": {
+      "outline": "slovakia-region",
+      "centre": { "lat": 48.7091, "lon": 19.4723 },
+      "tolerance": 25,
+      "surface": "LAND"
+    },
+    "flag": { "code": "sk", "wiki": "Flag of Slovakia" }
+  },
+  {
+    "id": "slovenia",
+    "label": "Slovenia",
+    "wiki": "Slovenia",
+    "area": {
+      "outline": "slovenia-region",
+      "centre": { "lat": 46.1136, "lon": 14.8004 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "flag": { "code": "si", "wiki": "Flag of Slovenia" }
+  },
+  {
+    "id": "south-africa",
+    "label": "South Africa",
+    "wiki": "South Africa",
+    "area": {
+      "outline": "south-africa-region",
+      "centre": { "lat": -28.9698, "lon": 25.1931 },
+      "tolerance": 125,
+      "surface": "LAND"
+    },
+    "flag": { "code": "za", "wiki": "Flag of South Africa" }
+  },
+  {
+    "id": "south-korea",
+    "label": "South Korea",
+    "wiki": "South Korea",
+    "area": {
+      "outline": "south-korea-region",
+      "centre": { "lat": 36.3735, "lon": 127.8342 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "flag": { "code": "kr", "wiki": "Flag of South Korea" }
+  },
+  {
+    "id": "south-sudan",
+    "label": "South Sudan",
+    "wiki": "South Sudan",
+    "area": {
+      "outline": "south-sudan-region",
+      "centre": { "lat": 7.3084, "lon": 30.253 },
+      "tolerance": 90,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ss", "wiki": "Flag of South Sudan" }
+  },
+  {
+    "id": "spain",
+    "label": "Spain",
+    "wiki": "Spain",
+    "area": {
+      "outline": "spain-region",
+      "centre": { "lat": 40.3623, "lon": -3.5029 },
+      "tolerance": 80,
+      "surface": "LAND"
+    },
+    "flag": { "code": "es", "wiki": "Flag of Spain" }
+  },
+  {
+    "id": "sudan",
+    "label": "Sudan",
+    "wiki": "Sudan",
+    "area": {
+      "outline": "sudan-region",
+      "centre": { "lat": 15.9682, "lon": 29.9069 },
+      "tolerance": 155,
+      "surface": "LAND"
+    },
+    "flag": { "code": "sd", "wiki": "Flag of Sudan" }
+  },
+  {
+    "id": "sweden",
+    "label": "Sweden",
+    "wiki": "Sweden",
+    "area": {
+      "outline": "sweden-region",
+      "centre": { "lat": 62.3836, "lon": 16.267 },
+      "tolerance": 75,
+      "surface": "LAND"
+    },
+    "flag": { "code": "se", "wiki": "Flag of Sweden" }
+  },
+  {
+    "id": "switzerland",
+    "label": "Switzerland",
+    "wiki": "Switzerland",
+    "area": {
+      "outline": "switzerland-region",
+      "centre": { "lat": 46.7996, "lon": 8.2019 },
+      "tolerance": 25,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ch", "wiki": "Flag of Switzerland" }
+  },
+  {
+    "id": "syria",
+    "label": "Syria",
+    "wiki": "Syria",
+    "area": {
+      "outline": "syria-region",
+      "centre": { "lat": 35.0189, "lon": 38.4842 },
+      "tolerance": 50,
+      "surface": "LAND"
+    },
+    "flag": { "code": "sy", "wiki": "Flag of Syria" }
+  },
+  {
+    "id": "tajikistan",
+    "label": "Tajikistan",
+    "wiki": "Tajikistan",
+    "area": {
+      "outline": "tajikistan-region",
+      "centre": { "lat": 38.5379, "lon": 71.023 },
+      "tolerance": 45,
+      "surface": "LAND"
+    },
+    "flag": { "code": "tj", "wiki": "Flag of Tajikistan" }
+  },
+  {
+    "id": "thailand",
+    "label": "Thailand",
+    "wiki": "Thailand",
+    "area": {
+      "outline": "thailand-region",
+      "centre": { "lat": 15.0812, "lon": 100.9987 },
+      "tolerance": 80,
+      "surface": "LAND"
+    },
+    "flag": { "code": "th", "wiki": "Flag of Thailand" }
+  },
+  {
+    "id": "the-bahamas",
+    "label": "The Bahamas",
+    "wiki": "The Bahamas",
+    "area": {
+      "outline": "the-bahamas-region",
+      "centre": { "lat": 24.2252, "lon": -76.5431 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "flag": { "code": "bs", "wiki": "Flag of the Bahamas" }
+  },
+  {
+    "id": "tunisia",
+    "label": "Tunisia",
+    "wiki": "Tunisia",
+    "area": {
+      "outline": "tunisia-region",
+      "centre": { "lat": 34.0927, "lon": 9.5557 },
+      "tolerance": 45,
+      "surface": "LAND"
+    },
+    "flag": { "code": "tn", "wiki": "Flag of Tunisia" }
+  },
+  {
+    "id": "turkey",
+    "label": "Turkey",
+    "wiki": "Turkey",
+    "area": {
+      "outline": "turkey-region",
+      "centre": { "lat": 39.1375, "lon": 35.1711 },
+      "tolerance": 100,
+      "surface": "LAND"
+    },
+    "flag": { "code": "tr", "wiki": "Flag of Turkey" }
+  },
+  {
+    "id": "turkmenistan",
+    "label": "Turkmenistan",
+    "wiki": "Turkmenistan",
+    "area": {
+      "outline": "turkmenistan-region",
+      "centre": { "lat": 39.126, "lon": 59.442 },
+      "tolerance": 75,
+      "surface": "LAND"
+    },
+    "flag": { "code": "tm", "wiki": "Flag of Turkmenistan" }
+  },
+  {
+    "id": "uganda",
+    "label": "Uganda",
+    "wiki": "Uganda",
+    "area": {
+      "outline": "uganda-region",
+      "centre": { "lat": 1.272, "lon": 32.3685 },
+      "tolerance": 55,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ug", "wiki": "Flag of Uganda" }
+  },
+  {
+    "id": "united-arab-emirates",
+    "label": "United Arab Emirates",
+    "wiki": "United Arab Emirates",
+    "area": {
+      "outline": "united-arab-emirates-region",
+      "centre": { "lat": 23.9065, "lon": 54.292 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ae", "wiki": "Flag of the United Arab Emirates" }
+  },
+  {
+    "id": "united-kingdom",
+    "label": "United Kingdom",
+    "wiki": "United Kingdom",
+    "area": {
+      "outline": "uk-region",
+      "centre": { "lat": 54.0066, "lon": -2.7516 },
+      "tolerance": 55,
+      "surface": "LAND"
+    },
+    "flag": { "code": "gb", "wiki": "Flag of the United Kingdom" }
+  },
+  {
+    "id": "tanzania",
+    "label": "Tanzania",
+    "wiki": "Tanzania",
+    "area": {
+      "outline": "tanzania-region",
+      "centre": { "lat": -6.2678, "lon": 34.8013 },
+      "tolerance": 110,
+      "surface": "LAND"
+    },
+    "flag": { "code": "tz", "wiki": "Flag of Tanzania" }
+  },
+  {
+    "id": "contiguous-united-states",
+    "label": "Contiguous United States",
+    "wiki": "Contiguous United States",
+    "area": {
+      "outline": "usa-region",
+      "centre": { "lat": 39.8869, "lon": -98.8099 },
+      "tolerance": 320,
+      "surface": "LAND"
+    },
+    "flag": { "code": "us", "wiki": "Flag of the United States" }
+  },
+  {
+    "id": "uruguay",
+    "label": "Uruguay",
+    "wiki": "Uruguay",
+    "area": {
+      "outline": "uruguay-region",
+      "centre": { "lat": -32.7928, "lon": -56.025 },
+      "tolerance": 50,
+      "surface": "LAND"
+    },
+    "flag": { "code": "uy", "wiki": "Flag of Uruguay" }
+  },
+  {
+    "id": "uzbekistan",
+    "label": "Uzbekistan",
+    "wiki": "Uzbekistan",
+    "area": {
+      "outline": "uzbekistan-region",
+      "centre": { "lat": 41.7744, "lon": 63.3018 },
+      "tolerance": 75,
+      "surface": "LAND"
+    },
+    "flag": { "code": "uz", "wiki": "Flag of Uzbekistan" }
+  },
+  {
+    "id": "venezuela",
+    "label": "Venezuela",
+    "wiki": "Venezuela",
+    "area": {
+      "outline": "venezuela-region",
+      "centre": { "lat": 7.122, "lon": -66.1711 },
+      "tolerance": 110,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ve", "wiki": "Flag of Venezuela" }
+  },
+  {
+    "id": "vietnam",
+    "label": "Vietnam",
+    "wiki": "Vietnam",
+    "area": {
+      "outline": "vietnam-region",
+      "centre": { "lat": 16.5427, "lon": 106.3487 },
+      "tolerance": 65,
+      "surface": "LAND"
+    },
+    "flag": { "code": "vn", "wiki": "Flag of Vietnam" }
+  },
+  {
+    "id": "yemen",
+    "label": "Yemen",
+    "wiki": "Yemen",
+    "area": {
+      "outline": "yemen-region",
+      "centre": { "lat": 15.9173, "lon": 47.5697 },
+      "tolerance": 75,
+      "surface": "LAND"
+    },
+    "flag": { "code": "ye", "wiki": "Flag of Yemen" }
+  },
+  {
+    "id": "zambia",
+    "label": "Zambia",
+    "wiki": "Zambia",
+    "area": {
+      "outline": "zambia-region",
+      "centre": { "lat": -13.4536, "lon": 27.8096 },
+      "tolerance": 100,
+      "surface": "LAND"
+    },
+    "flag": { "code": "zm", "wiki": "Flag of Zambia" }
+  },
+  {
+    "id": "zimbabwe",
+    "label": "Zimbabwe",
+    "wiki": "Zimbabwe",
+    "area": {
+      "outline": "zimbabwe-region",
+      "centre": { "lat": -18.995, "lon": 29.852 },
+      "tolerance": 70,
+      "surface": "LAND"
+    },
+    "flag": { "code": "zw", "wiki": "Flag of Zimbabwe" }
+  },
+  {
+    "id": "antigua-and-barbuda",
+    "label": "Antigua and Barbuda",
+    "wiki": "Antigua and Barbuda",
+    "flag": { "code": "ag", "wiki": "Flag of Antigua and Barbuda" }
+  },
+  { "id": "china", "label": "China", "wiki": "China", "flag": { "code": "cn", "wiki": "Flag of China" } },
+  { "id": "dominica", "label": "Dominica", "wiki": "Dominica", "flag": { "code": "dm", "wiki": "Flag of Dominica" } },
+  { "id": "grenada", "label": "Grenada", "wiki": "Grenada", "flag": { "code": "gd", "wiki": "Flag of Grenada" } },
+  { "id": "india", "label": "India", "wiki": "India", "flag": { "code": "in", "wiki": "Flag of India" } },
+  { "id": "israel", "label": "Israel", "wiki": "Israel", "flag": { "code": "il", "wiki": "Flag of Israel" } },
+  { "id": "morocco", "label": "Morocco", "wiki": "Morocco", "flag": { "code": "ma", "wiki": "Flag of Morocco" } },
+  { "id": "pakistan", "label": "Pakistan", "wiki": "Pakistan", "flag": { "code": "pk", "wiki": "Flag of Pakistan" } },
+  { "id": "serbia", "label": "Serbia", "wiki": "Serbia", "flag": { "code": "rs", "wiki": "Flag of Serbia" } },
+  { "id": "russia", "label": "Russia", "wiki": "Russia", "flag": { "code": "ru", "wiki": "Flag of Russia" } },
+  {
+    "id": "saint-kitts-and-nevis",
+    "label": "Saint Kitts and Nevis",
+    "wiki": "Saint Kitts and Nevis",
+    "flag": { "code": "kn", "wiki": "Flag of Saint Kitts and Nevis" }
+  },
+  {
+    "id": "saint-lucia",
+    "label": "Saint Lucia",
+    "wiki": "Saint Lucia",
+    "flag": { "code": "lc", "wiki": "Flag of Saint Lucia" }
+  },
+  {
+    "id": "saint-vincent-and-the-grenadines",
+    "label": "Saint Vincent and the Grenadines",
+    "wiki": "Saint Vincent and the Grenadines",
+    "flag": { "code": "vc", "wiki": "Flag of Saint Vincent and the Grenadines" }
+  },
+  { "id": "somalia", "label": "Somalia", "wiki": "Somalia", "flag": { "code": "so", "wiki": "Flag of Somalia" } },
+  { "id": "ukraine", "label": "Ukraine", "wiki": "Ukraine", "flag": { "code": "ua", "wiki": "Flag of Ukraine" } },
+  {
+    "id": "united-states",
+    "label": "United States",
+    "wiki": "United States",
+    "flag": { "code": "us", "wiki": "Flag of the United States" }
+  },
+  {
+    "id": "island-greenland",
+    "label": "Greenland",
+    "wiki": "Greenland",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-greenland",
+      "centre": { "lat": 73.0863, "lon": -41.801 },
+      "tolerance": 165,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-new-guinea",
+    "label": "New Guinea",
+    "wiki": "New Guinea",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-new-guinea",
+      "centre": { "lat": -5.3415, "lon": 140.9121 },
+      "tolerance": 100,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-borneo",
+    "label": "Borneo",
+    "wiki": "Borneo",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-borneo",
+      "centre": { "lat": 0.863, "lon": 114.2056 },
+      "tolerance": 95,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-baffin-island",
+    "label": "Baffin Island",
+    "wiki": "Baffin Island",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-baffin-island",
+      "centre": { "lat": 68.313, "lon": -73.1983 },
+      "tolerance": 80,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-sumatra",
+    "label": "Sumatra",
+    "wiki": "Sumatra",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-sumatra",
+      "centre": { "lat": -0.4457, "lon": 101.5184 },
+      "tolerance": 75,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-honshu",
+    "label": "Honshu",
+    "wiki": "Honshu",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-honshu",
+      "centre": { "lat": 36.6319, "lon": 137.8859 },
+      "tolerance": 55,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-victoria-island",
+    "label": "Victoria Island",
+    "wiki": "Victoria Island (Canada)",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-victoria-island",
+      "centre": { "lat": 70.8494, "lon": -110.254 },
+      "tolerance": 55,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-ellesmere-island",
+    "label": "Ellesmere Island",
+    "wiki": "Ellesmere Island",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-ellesmere-island",
+      "centre": { "lat": 80.0085, "lon": -79.2372 },
+      "tolerance": 50,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-sulawesi",
+    "label": "Sulawesi",
+    "wiki": "Sulawesi",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-sulawesi",
+      "centre": { "lat": -1.9881, "lon": 121.118 },
+      "tolerance": 45,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-south-island",
+    "label": "South Island",
+    "wiki": "South Island",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-south-island",
+      "centre": { "lat": -43.9481, "lon": 170.6098 },
+      "tolerance": 45,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-java",
+    "label": "Java",
+    "wiki": "Java",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-java",
+      "centre": { "lat": -7.3004, "lon": 109.919 },
+      "tolerance": 40,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-north-island",
+    "label": "North Island",
+    "wiki": "North Island",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-north-island",
+      "centre": { "lat": -38.5597, "lon": 175.7192 },
+      "tolerance": 40,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-newfoundland",
+    "label": "Newfoundland",
+    "wiki": "Newfoundland (island)",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-newfoundland",
+      "centre": { "lat": 48.7121, "lon": -56.0464 },
+      "tolerance": 35,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-luzon",
+    "label": "Luzon",
+    "wiki": "Luzon",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-luzon",
+      "centre": { "lat": 15.9525, "lon": 121.4194 },
+      "tolerance": 35,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-mindanao",
+    "label": "Mindanao",
+    "wiki": "Mindanao",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-mindanao",
+      "centre": { "lat": 7.6697, "lon": 124.8441 },
+      "tolerance": 35,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-hokkaido",
+    "label": "Hokkaido",
+    "wiki": "Hokkaido",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-hokkaido",
+      "centre": { "lat": 43.3722, "lon": 142.5675 },
+      "tolerance": 30,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-sakhalin",
+    "label": "Sakhalin",
+    "wiki": "Sakhalin",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-sakhalin",
+      "centre": { "lat": 50.2463, "lon": 142.7191 },
+      "tolerance": 30,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-hispaniola",
+    "label": "Hispaniola",
+    "wiki": "Hispaniola",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-hispaniola",
+      "centre": { "lat": 18.9082, "lon": -71.2584 },
+      "tolerance": 30,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-banks-island",
+    "label": "Banks Island",
+    "wiki": "Banks Island",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-banks-island",
+      "centre": { "lat": 73.0171, "lon": -121.3743 },
+      "tolerance": 30,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "island-tasmania",
+    "label": "Tasmania",
+    "wiki": "Tasmania",
+    "feature": "ISLAND",
+    "area": {
+      "outline": "island-tasmania",
+      "centre": { "lat": -42.0139, "lon": 146.5938 },
+      "tolerance": 30,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "lake-great-bear-lake",
+    "label": "Great Bear Lake",
+    "wiki": "Great Bear Lake",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-great-bear-lake",
+      "centre": { "lat": 66.0171, "lon": -120.9252 },
+      "tolerance": 20,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-great-slave-lake",
+    "label": "Great Slave Lake",
+    "wiki": "Great Slave Lake",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-great-slave-lake",
+      "centre": { "lat": 61.7782, "lon": -113.85 },
+      "tolerance": 20,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-baikal",
+    "label": "Lake Baikal",
+    "wiki": "Lake Baikal",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-baikal",
+      "centre": { "lat": 53.4045, "lon": 107.6325 },
+      "tolerance": 20,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-balkhash",
+    "label": "Lake Balkhash",
+    "wiki": "Lake Balkhash",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-balkhash",
+      "centre": { "lat": 46.2911, "lon": 75.5935 },
+      "tolerance": 15,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-erie",
+    "label": "Lake Erie",
+    "wiki": "Lake Erie",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-erie",
+      "centre": { "lat": 42.1614, "lon": -81.253 },
+      "tolerance": 20,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-huron",
+    "label": "Lake Huron",
+    "wiki": "Lake Huron",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-huron",
+      "centre": { "lat": 44.9666, "lon": -82.2507 },
+      "tolerance": 30,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-ladoga",
+    "label": "Lake Ladoga",
+    "wiki": "Lake Ladoga",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-ladoga",
+      "centre": { "lat": 60.8552, "lon": 31.4567 },
+      "tolerance": 15,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-malawi",
+    "label": "Lake Malawi",
+    "wiki": "Lake Malawi",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-malawi",
+      "centre": { "lat": -11.9558, "lon": 34.5114 },
+      "tolerance": 20,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-michigan",
+    "label": "Lake Michigan",
+    "wiki": "Lake Michigan",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-michigan",
+      "centre": { "lat": 44.0035, "lon": -86.7786 },
+      "tolerance": 25,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-onega",
+    "label": "Lake Onega",
+    "wiki": "Lake Onega",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-onega",
+      "centre": { "lat": 61.7872, "lon": 35.3668 },
+      "tolerance": 10,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-ontario",
+    "label": "Lake Ontario",
+    "wiki": "Lake Ontario",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-ontario",
+      "centre": { "lat": 43.678, "lon": -77.7637 },
+      "tolerance": 15,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-superior",
+    "label": "Lake Superior",
+    "wiki": "Lake Superior",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-superior",
+      "centre": { "lat": 47.5494, "lon": -87.7602 },
+      "tolerance": 30,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-tanganyika",
+    "label": "Lake Tanganyika",
+    "wiki": "Lake Tanganyika",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-tanganyika",
+      "centre": { "lat": -6.2165, "lon": 29.878 },
+      "tolerance": 20,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-victoria",
+    "label": "Lake Victoria",
+    "wiki": "Lake Victoria",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-victoria",
+      "centre": { "lat": -1.0932, "lon": 32.9056 },
+      "tolerance": 30,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "lake-lake-winnipeg",
+    "label": "Lake Winnipeg",
+    "wiki": "Lake Winnipeg",
+    "feature": "LAKE",
+    "area": {
+      "outline": "lake-lake-winnipeg",
+      "centre": { "lat": 52.5723, "lon": -97.7685 },
+      "tolerance": 20,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "sea-mediterranean-sea",
+    "label": "Mediterranean Sea",
+    "wiki": "Mediterranean Sea",
+    "feature": "SEA",
+    "area": {
+      "outline": "sea-mediterranean-sea",
+      "centre": { "lat": 37.2991, "lon": 17.1654 },
+      "tolerance": 180,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "sea-black-sea",
+    "label": "Black Sea",
+    "wiki": "Black Sea",
+    "feature": "SEA",
+    "area": {
+      "outline": "sea-black-sea",
+      "centre": { "lat": 43.2872, "lon": 34.2 },
+      "tolerance": 75,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "sea-caspian-sea",
+    "label": "Caspian Sea",
+    "wiki": "Caspian Sea",
+    "feature": "SEA",
+    "area": {
+      "outline": "sea-caspian-sea",
+      "centre": { "lat": 41.6652, "lon": 50.7226 },
+      "tolerance": 70,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "sea-red-sea",
+    "label": "Red Sea",
+    "wiki": "Red Sea",
+    "feature": "SEA",
+    "area": {
+      "outline": "sea-red-sea",
+      "centre": { "lat": 20.4685, "lon": 38.7085 },
+      "tolerance": 75,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "sea-persian-gulf",
+    "label": "Persian Gulf",
+    "wiki": "Persian Gulf",
+    "feature": "SEA",
+    "area": {
+      "outline": "sea-persian-gulf",
+      "centre": { "lat": 26.8087, "lon": 52.0358 },
+      "tolerance": 55,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "sea-baltic-sea",
+    "label": "Baltic Sea",
+    "wiki": "Baltic Sea",
+    "feature": "SEA",
+    "area": {
+      "outline": "sea-baltic-sea",
+      "centre": { "lat": 58.865, "lon": 19.6596 },
+      "tolerance": 70,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "sea-hudson-bay",
+    "label": "Hudson Bay",
+    "wiki": "Hudson Bay",
+    "feature": "SEA",
+    "area": {
+      "outline": "sea-hudson-bay",
+      "centre": { "lat": 59.0152, "lon": -84.594 },
+      "tolerance": 105,
+      "surface": "WATER"
+    }
+  },
+  {
+    "id": "state-alabama",
+    "label": "Alabama",
+    "wiki": "Alabama",
+    "area": {
+      "outline": "state-alabama",
+      "centre": { "lat": 32.7755, "lon": -86.8314 },
+      "tolerance": 40,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-alaska",
+    "label": "Alaska",
+    "wiki": "Alaska",
+    "area": {
+      "outline": "state-alaska",
+      "centre": { "lat": 64.0025, "lon": -152.3705 },
+      "tolerance": 140,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-arizona",
+    "label": "Arizona",
+    "wiki": "Arizona",
+    "area": {
+      "outline": "state-arizona",
+      "centre": { "lat": 34.2721, "lon": -111.6591 },
+      "tolerance": 60,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-arkansas",
+    "label": "Arkansas",
+    "wiki": "Arkansas",
+    "area": {
+      "outline": "state-arkansas",
+      "centre": { "lat": 34.8984, "lon": -92.4473 },
+      "tolerance": 40,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-california",
+    "label": "California",
+    "wiki": "California",
+    "area": {
+      "outline": "state-california",
+      "centre": { "lat": 37.1843, "lon": -119.471 },
+      "tolerance": 70,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-colorado",
+    "label": "Colorado",
+    "wiki": "Colorado",
+    "area": {
+      "outline": "state-colorado",
+      "centre": { "lat": 38.9983, "lon": -105.5471 },
+      "tolerance": 60,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-connecticut",
+    "label": "Connecticut",
+    "wiki": "Connecticut",
+    "area": {
+      "outline": "state-connecticut",
+      "centre": { "lat": 41.6245, "lon": -72.7279 },
+      "tolerance": 15,
+      "surface": "LAND"
+    }
+  },
+  { "id": "state-delaware", "label": "Delaware", "wiki": "Delaware" },
+  {
+    "id": "state-florida",
+    "label": "Florida",
+    "wiki": "Florida",
+    "area": {
+      "outline": "state-florida",
+      "centre": { "lat": 28.6418, "lon": -82.4488 },
+      "tolerance": 45,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-georgia-us-state",
+    "label": "Georgia (US state)",
+    "wiki": "Georgia (U.S. state)",
+    "area": {
+      "outline": "state-georgia-us-state",
+      "centre": { "lat": 32.6449, "lon": -83.4438 },
+      "tolerance": 45,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-hawaii",
+    "label": "Hawaii",
+    "wiki": "Hawaii",
+    "area": {
+      "outline": "state-hawaii",
+      "centre": { "lat": 20.2371, "lon": -156.3155 },
+      "tolerance": 15,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-idaho",
+    "label": "Idaho",
+    "wiki": "Idaho",
+    "area": {
+      "outline": "state-idaho",
+      "centre": { "lat": 44.3585, "lon": -114.6099 },
+      "tolerance": 50,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-illinois",
+    "label": "Illinois",
+    "wiki": "Illinois",
+    "area": {
+      "outline": "state-illinois",
+      "centre": { "lat": 40.0454, "lon": -89.2029 },
+      "tolerance": 45,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-indiana",
+    "label": "Indiana",
+    "wiki": "Indiana",
+    "area": {
+      "outline": "state-indiana",
+      "centre": { "lat": 39.8922, "lon": -86.288 },
+      "tolerance": 35,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-iowa",
+    "label": "Iowa",
+    "wiki": "Iowa",
+    "area": {
+      "outline": "state-iowa",
+      "centre": { "lat": 42.0804, "lon": -93.4895 },
+      "tolerance": 45,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-kansas",
+    "label": "Kansas",
+    "wiki": "Kansas",
+    "area": {
+      "outline": "state-kansas",
+      "centre": { "lat": 38.4939, "lon": -98.3794 },
+      "tolerance": 50,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-kentucky",
+    "label": "Kentucky",
+    "wiki": "Kentucky",
+    "area": {
+      "outline": "state-kentucky",
+      "centre": { "lat": 37.537, "lon": -85.3028 },
+      "tolerance": 35,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-louisiana",
+    "label": "Louisiana",
+    "wiki": "Louisiana",
+    "area": {
+      "outline": "state-louisiana",
+      "centre": { "lat": 31.0754, "lon": -92.0115 },
+      "tolerance": 40,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-maine",
+    "label": "Maine",
+    "wiki": "Maine",
+    "area": {
+      "outline": "state-maine",
+      "centre": { "lat": 45.3717, "lon": -69.2427 },
+      "tolerance": 35,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-maryland",
+    "label": "Maryland",
+    "wiki": "Maryland",
+    "area": {
+      "outline": "state-maryland",
+      "centre": { "lat": 39.0599, "lon": -76.7994 },
+      "tolerance": 20,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-massachusetts",
+    "label": "Massachusetts",
+    "wiki": "Massachusetts",
+    "area": {
+      "outline": "state-massachusetts",
+      "centre": { "lat": 42.2717, "lon": -71.817 },
+      "tolerance": 15,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-michigan",
+    "label": "Michigan",
+    "wiki": "Michigan",
+    "area": {
+      "outline": "state-michigan",
+      "centre": { "lat": 44.3245, "lon": -85.3808 },
+      "tolerance": 45,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-minnesota",
+    "label": "Minnesota",
+    "wiki": "Minnesota",
+    "area": {
+      "outline": "state-minnesota",
+      "centre": { "lat": 46.2762, "lon": -94.3146 },
+      "tolerance": 55,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-mississippi",
+    "label": "Mississippi",
+    "wiki": "Mississippi",
+    "area": {
+      "outline": "state-mississippi",
+      "centre": { "lat": 32.7456, "lon": -89.6726 },
+      "tolerance": 40,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-missouri",
+    "label": "Missouri",
+    "wiki": "Missouri",
+    "area": {
+      "outline": "state-missouri",
+      "centre": { "lat": 38.3614, "lon": -92.4679 },
+      "tolerance": 50,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-montana",
+    "label": "Montana",
+    "wiki": "Montana",
+    "area": {
+      "outline": "state-montana",
+      "centre": { "lat": 47.0498, "lon": -109.6262 },
+      "tolerance": 70,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-nebraska",
+    "label": "Nebraska",
+    "wiki": "Nebraska",
+    "area": {
+      "outline": "state-nebraska",
+      "centre": { "lat": 41.5389, "lon": -99.7911 },
+      "tolerance": 50,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-nevada",
+    "label": "Nevada",
+    "wiki": "Nevada",
+    "area": {
+      "outline": "state-nevada",
+      "centre": { "lat": 39.3279, "lon": -116.6285 },
+      "tolerance": 60,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-new-hampshire",
+    "label": "New Hampshire",
+    "wiki": "New Hampshire",
+    "area": {
+      "outline": "state-new-hampshire",
+      "centre": { "lat": 43.6857, "lon": -71.5796 },
+      "tolerance": 20,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-new-jersey",
+    "label": "New Jersey",
+    "wiki": "New Jersey",
+    "area": {
+      "outline": "state-new-jersey",
+      "centre": { "lat": 40.187, "lon": -74.668 },
+      "tolerance": 15,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-new-mexico",
+    "label": "New Mexico",
+    "wiki": "New Mexico",
+    "area": {
+      "outline": "state-new-mexico",
+      "centre": { "lat": 34.4072, "lon": -106.1158 },
+      "tolerance": 65,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-new-york-state",
+    "label": "New York State",
+    "wiki": "New York (state)",
+    "area": {
+      "outline": "state-new-york-state",
+      "centre": { "lat": 42.9508, "lon": -75.5243 },
+      "tolerance": 40,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-north-carolina",
+    "label": "North Carolina",
+    "wiki": "North Carolina",
+    "area": {
+      "outline": "state-north-carolina",
+      "centre": { "lat": 35.559, "lon": -79.3857 },
+      "tolerance": 40,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-north-dakota",
+    "label": "North Dakota",
+    "wiki": "North Dakota",
+    "area": {
+      "outline": "state-north-dakota",
+      "centre": { "lat": 47.4456, "lon": -100.4674 },
+      "tolerance": 50,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-ohio",
+    "label": "Ohio",
+    "wiki": "Ohio",
+    "area": {
+      "outline": "state-ohio",
+      "centre": { "lat": 40.2898, "lon": -82.7949 },
+      "tolerance": 35,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-oklahoma",
+    "label": "Oklahoma",
+    "wiki": "Oklahoma",
+    "area": {
+      "outline": "state-oklahoma",
+      "centre": { "lat": 35.5932, "lon": -97.4957 },
+      "tolerance": 50,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-oregon",
+    "label": "Oregon",
+    "wiki": "Oregon",
+    "area": {
+      "outline": "state-oregon",
+      "centre": { "lat": 43.9367, "lon": -120.5565 },
+      "tolerance": 55,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-pennsylvania",
+    "label": "Pennsylvania",
+    "wiki": "Pennsylvania",
+    "area": {
+      "outline": "state-pennsylvania",
+      "centre": { "lat": 40.8792, "lon": -77.7954 },
+      "tolerance": 40,
+      "surface": "LAND"
+    }
+  },
+  { "id": "state-rhode-island", "label": "Rhode Island", "wiki": "Rhode Island" },
+  {
+    "id": "state-south-carolina",
+    "label": "South Carolina",
+    "wiki": "South Carolina",
+    "area": {
+      "outline": "state-south-carolina",
+      "centre": { "lat": 33.9166, "lon": -80.8946 },
+      "tolerance": 30,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-south-dakota",
+    "label": "South Dakota",
+    "wiki": "South Dakota",
+    "area": {
+      "outline": "state-south-dakota",
+      "centre": { "lat": 44.4454, "lon": -100.2319 },
+      "tolerance": 50,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-tennessee",
+    "label": "Tennessee",
+    "wiki": "Tennessee",
+    "area": {
+      "outline": "state-tennessee",
+      "centre": { "lat": 35.86, "lon": -86.3496 },
+      "tolerance": 35,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-texas",
+    "label": "Texas",
+    "wiki": "Texas",
+    "area": { "outline": "state-texas", "centre": { "lat": 31.481, "lon": -99.33 }, "tolerance": 95, "surface": "LAND" }
+  },
+  {
+    "id": "state-utah",
+    "label": "Utah",
+    "wiki": "Utah",
+    "area": {
+      "outline": "state-utah",
+      "centre": { "lat": 39.3093, "lon": -111.6662 },
+      "tolerance": 55,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-vermont",
+    "label": "Vermont",
+    "wiki": "Vermont",
+    "area": {
+      "outline": "state-vermont",
+      "centre": { "lat": 44.0618, "lon": -72.6674 },
+      "tolerance": 20,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-virginia",
+    "label": "Virginia",
+    "wiki": "Virginia",
+    "area": {
+      "outline": "state-virginia",
+      "centre": { "lat": 37.5237, "lon": -78.8557 },
+      "tolerance": 35,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-washington-state",
+    "label": "Washington State",
+    "wiki": "Washington (state)",
+    "area": {
+      "outline": "state-washington-state",
+      "centre": { "lat": 47.3816, "lon": -120.4488 },
+      "tolerance": 45,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-west-virginia",
+    "label": "West Virginia",
+    "wiki": "West Virginia",
+    "area": {
+      "outline": "state-west-virginia",
+      "centre": { "lat": 38.6425, "lon": -80.6218 },
+      "tolerance": 30,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-wisconsin",
+    "label": "Wisconsin",
+    "wiki": "Wisconsin",
+    "area": {
+      "outline": "state-wisconsin",
+      "centre": { "lat": 44.6311, "lon": -89.9935 },
+      "tolerance": 45,
+      "surface": "LAND"
+    }
+  },
+  {
+    "id": "state-wyoming",
+    "label": "Wyoming",
+    "wiki": "Wyoming",
+    "area": {
+      "outline": "state-wyoming",
+      "centre": { "lat": 42.9964, "lon": -107.5517 },
+      "tolerance": 55,
+      "surface": "LAND"
+    }
+  }
+]

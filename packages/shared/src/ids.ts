@@ -35,6 +35,11 @@ export const QuestionIdSchema = z.string().regex(SLUG).brand<"QuestionId">()
 export type QuestionId = z.infer<typeof QuestionIdSchema>
 export const questionId = (s: string): QuestionId => QuestionIdSchema.parse(s)
 
+/** A place questions ask about: a landmark, city, country, feature or state ("taj-mahal", "germany", "island-borneo"). */
+export const PlaceIdSchema = z.string().regex(SLUG).brand<"PlaceId">()
+export type PlaceId = z.infer<typeof PlaceIdSchema>
+export const placeId = (s: string): PlaceId => PlaceIdSchema.parse(s)
+
 /** An outline to paint whole: a country, island, lake, sea or state ("germany-region", "island-borneo"). */
 export const OutlineIdSchema = z.string().regex(SLUG).brand<"OutlineId">()
 export type OutlineId = z.infer<typeof OutlineIdSchema>
@@ -53,7 +58,7 @@ export const PlayerNameSchema = z.string().trim().min(1).max(20).brand<"PlayerNa
 export type PlayerName = z.infer<typeof PlayerNameSchema>
 export const playerName = (s: string): PlayerName => PlayerNameSchema.parse(s)
 
-/** An English Wikipedia article's title, with spaces ("Taj Mahal"): it keys facts and photos. */
+/** An English Wikipedia article's title, with spaces ("Taj Mahal"), linked from the reveal. */
 export const WikiTitleSchema = z
   .string()
   .regex(/^(?!\s)[^_#|[\]{}<>]+(?<!\s)$/)

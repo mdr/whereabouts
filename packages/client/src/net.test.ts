@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import type { WSClientOptions } from "@rivalis/browser"
 import { CloseReason } from "@whereabouts/shared/close-reason"
-import { playerName, playerToken, roomCode } from "@whereabouts/shared/ids"
+import { placeId, playerName, playerToken, roomCode } from "@whereabouts/shared/ids"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import {
   decodeTicket,
@@ -266,6 +266,7 @@ describe("Connection view", () => {
       total: 5,
       question: makeQuestionView(),
       answer: { lat: 35, lon: 135.8 },
+      place: placeId("kyoto"),
       label: "Kyoto",
       results: []
     }

@@ -121,6 +121,7 @@ const simplified = (polygons) =>
     .filter((p) => p.length > 0)
 
 const outlines = {}
+const places = []
 
 /** A place painted whole: an island, lake or sea (`feature`), or a state. */
 function region(topic, label, name, wiki, polygons) {
@@ -132,14 +133,19 @@ function region(topic, label, name, wiki, polygons) {
   outlines[id] = simplified(polygons)
   console.log(`${label}: ${topic}, ${polygons.length} part(s), ${Math.round(area)} km², tolerance ${tolerance} km`)
   const water = topic === "lake" || topic === "sea"
+  places.push({
+    id,
+    label,
+    wiki,
+    ...(topic === "state" ? {} : { feature: topic.toUpperCase() }),
+    area: { outline: id, centre: centroid(cells), tolerance, surface: water ? "WATER" : "LAND" }
+  })
   return {
     id,
     type: topic === "state" ? "STATE" : "FEATURE",
-    ...(topic === "state" ? {} : { feature: topic.toUpperCase() }),
-    label,
-    wiki,
+    place: id,
     clue: { type: "NAME", prompt: `Paint the whole of ${name}` },
-    answer: { type: "AREA", outline: id, centre: centroid(cells), tolerance, surface: water ? "WATER" : "LAND" }
+    answer: { type: "AREA" }
   }
 }
 
@@ -195,15 +201,16 @@ for (const f of states.sort((a, b) => a.properties.name.localeCompare(b.properti
   if (!onLand([answer.lon, answer.lat], all)) throw new Error(`${label}: its centre is not on its land`)
   const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => km([answer.lon, answer.lat], pt))))
   const tolerance = pointToleranceKm(area, spread, false)
+  const id = `state-${slug(label)}`
+  places.push({ id, label, wiki })
   out.push({
-    id: `state-${slug(label)}`,
+    id,
     type: "STATE",
-    label,
-    wiki,
+    place: id,
     clue: { type: "NAME", prompt: `Where is ${names.name ?? p.name}?` },
     answer: { type: "POINT", at: answer, tolerance }
   })
   console.log(`${label}: state, point, ${Math.round(area)} km², tolerance ${tolerance} km`)
 }
 
-writeQuestions(["FEATURE", "STATE"], out, outlines)
+writeQuestions(["FEATURE", "STATE"], out, places, outlines)

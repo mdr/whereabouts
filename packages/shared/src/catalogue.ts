@@ -1,11 +1,13 @@
 import { z } from "zod"
 import catalogueJson from "../catalogue.json" with { type: "json" }
+import placesJson from "../places.json" with { type: "json" }
+import { CatalogueEntrySchema, joinQuestion } from "./catalogue-entry.ts"
 import { outlineId } from "./ids.ts"
+import { placesFrom } from "./places.ts"
 import { showsLakes, type MapDetail } from "./protocol.ts"
 import {
   FeatureType,
   QUESTION_TYPES,
-  QuestionSchema,
   QuestionType,
   isArea,
   type FlagQuestion,
@@ -14,8 +16,14 @@ import {
   type Question
 } from "./questions.ts"
 
-/** Every question, from catalogue.json. */
-export const CATALOGUE: readonly Question[] = z.array(QuestionSchema).parse(catalogueJson)
+/** Every place, from places.json. */
+export const PLACES = placesFrom(placesJson)
+
+/** Every question, from catalogue.json, joined with its place. */
+export const CATALOGUE: readonly Question[] = z
+  .array(CatalogueEntrySchema)
+  .parse(catalogueJson)
+  .map((entry) => joinQuestion(entry, PLACES))
 
 /** The types with questions painted whole, which need the outlines. */
 export const AREA_TYPES: readonly QuestionType[] = QUESTION_TYPES.filter((t) =>

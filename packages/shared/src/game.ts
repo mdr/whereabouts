@@ -31,7 +31,15 @@ import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
 import { revealPhoto } from "./photos.ts"
 import { DEFAULT_HINTS, hintBand, seededUnit, HintAxis, type HintBand } from "./hints.ts"
 import { playerColour, type PlayerColour } from "./colours.ts"
-import { playerId, roomCode, type PlayerId, type PlayerName, type PlayerToken, type RoomCode } from "./ids.ts"
+import {
+  playerId,
+  roomCode,
+  type PlaceId,
+  type PlayerId,
+  type PlayerName,
+  type PlayerToken,
+  type RoomCode
+} from "./ids.ts"
 import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE, evenMix, MapDetail, Phase } from "./protocol.ts"
 import type {
   ConfigurePatch,
@@ -312,19 +320,19 @@ export class Game {
    */
   private pickRounds(): Question[] {
     const chosen: Question[] = []
-    const asked = new Set<string>()
+    const asked = new Set<PlaceId>()
     const answer = (q: Question) => scoredAnswer(q.answer, this.outlines)
     QUESTION_TYPES.forEach((type, i) => {
       const count = this.config.mix[type]
       if (count === 0) return
       const candidates = shuffle(poolOf(this.catalogue, [type], this.config.mapDetail), this.seed ^ SALTS[i]!).filter(
-        (q) => !asked.has(q.id) && !asked.has(q.label)
+        (q) => !asked.has(q.place)
       )
       for (let n = 0; n < count && candidates.length > 0; n++) {
         const apart = candidates.findIndex((q) => !chosen.some((c) => roundsOverlap(answer(c), answer(q))))
         const q = candidates.splice(Math.max(apart, 0), 1)[0]!
         chosen.push(q)
-        asked.add(q.id).add(q.label)
+        asked.add(q.place)
       }
     })
     return shuffle(chosen, this.seed ^ 0x5bd1e995)
@@ -676,6 +684,7 @@ export class Game {
       total: this.questions.length,
       question: questionView(q),
       answer: answerCentre(q.answer),
+      place: q.place,
       label: q.label,
       wiki: q.wiki,
       ...(photo ? { photo } : {}),

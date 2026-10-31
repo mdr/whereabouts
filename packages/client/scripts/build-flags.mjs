@@ -29,9 +29,11 @@ const EXTRA_PRECISION = 3
 const FILES = { af: "Flag of Afghanistan (2013–2021).svg" }
 
 const cacheDir = process.argv[2]
+const places = new Map(JSON.parse(readFileSync("../shared/places.json", "utf8")).map((p) => [p.id, p]))
 const flags = JSON.parse(readFileSync("../shared/catalogue.json", "utf8"))
   .filter((q) => q.type === "FLAG")
-  .map((q) => ({ flag: q.clue.flag, wiki: q.wiki }))
+  .map((q) => places.get(q.place).flag)
+  .map(({ code, wiki }) => ({ flag: code, wiki }))
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
