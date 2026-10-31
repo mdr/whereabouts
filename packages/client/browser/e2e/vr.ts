@@ -3,6 +3,7 @@
 // paint on the round, and the round still submits and scores. Saves
 // screenshots of the headset's view.
 // Usage, from packages/client: node browser/e2e/vr.ts [outDir] [baseUrl]
+import { Quaternion, Vector3 } from "three"
 import { Headset } from "../pages/Headset.ts"
 import { soloTestIds } from "../../src/screens/SoloTestIds.ts"
 import { flagRevealTestIds } from "../../src/ui/FlagRevealTestIds.ts"
@@ -425,11 +426,14 @@ const tiltedTo: [number, number, number] = [hand[0] + 0.1, home[1] - 0.5, home[2
 await flagHeadset.pointRight([hand[0] + 0.1, hand[1], hand[2]], tiltedTo)
 await flagRound.pause(800)
 const tilted = await flagHeadset.pictureHeld()
-const handTurn = angle(handDir(home), handDir(tiltedTo))
-const pictureTurn = angle(held.facing, tilted.facing)
+// The hand's own turn, as Headset.point() aims it, carries the picture's facing with it.
+const aim = (to: [number, number, number]) =>
+  new Quaternion().setFromUnitVectors(new Vector3(0, 0, -1), new Vector3(...handDir(to)).normalize())
+const expected = new Vector3(...held.facing).applyQuaternion(aim(tiltedTo).multiply(aim(home).invert()))
+const astray = angle(expected.toArray(), tilted.facing)
 checks.check(
-  Math.abs(pictureTurn - handTurn) < 0.05,
-  `and turns with the hand (${pictureTurn.toFixed(2)} rad, the hand ${handTurn.toFixed(2)})`
+  astray < 0.05,
+  `and turns with the hand (${angle(held.facing, tilted.facing).toFixed(2)} rad, ${astray.toFixed(3)} off the hand's turn)`
 )
 await flagRound.screenshot(`${out}/vr-9b-tilted.png`)
 // Turned right round, it shows its back: the flag's reverse.

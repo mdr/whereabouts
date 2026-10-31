@@ -303,7 +303,17 @@ export class Headset {
   /** Wait for `n` frames to be drawn: the emulator can stall for a second or more, so time is no measure. */
   async frames(n: number): Promise<void> {
     const start = await this.#page.evaluate(() => window.whereaboutsVr.frames)
-    await this.#page.waitForFunction((end) => window.whereaboutsVr.frames >= end, start + n)
+    await this.#page
+      .waitForFunction((end) => window.whereaboutsVr.frames >= end, start + n)
+      .catch(async (err: unknown) => {
+        const state = await this.#page.evaluate(() => ({
+          frames: window.whereaboutsVr.frames,
+          active: window.whereaboutsVr.active.value,
+          view: window.whereaboutsVr.viewKind,
+          visibility: document.visibilityState
+        }))
+        throw new Error(`No frames drawn: ${JSON.stringify({ start, ...state })}`, { cause: err })
+      })
   }
 
   /** Push the right thumbstick: up is y -1. */
