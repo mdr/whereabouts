@@ -5,19 +5,11 @@
  */
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { useSignal } from "@preact/signals"
-import { buildDistribution, kernelById, type Distribution } from "@whereabouts/shared/scoring"
+import { buildDistribution, kernelById } from "@whereabouts/shared/scoring"
 import { hintBand, type HintAxis, type HintBand } from "@whereabouts/shared/hints"
 import { questionPictures, questionView } from "@whereabouts/shared/game"
-import { revealPhoto } from "@whereabouts/shared/photos"
 import { scoreAnswer, scoredAnswer } from "@whereabouts/shared/regions"
-import {
-  AnswerType,
-  QuestionType,
-  answerCentre,
-  shuffle,
-  type Outlines,
-  type Question
-} from "@whereabouts/shared/questions"
+import { QuestionType, answerCentre, type Outlines, type Question } from "@whereabouts/shared/questions"
 import { AREA_TYPES, CATALOGUE, poolOf } from "@whereabouts/shared/catalogue"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { onWater } from "@whereabouts/shared/protocol"
@@ -31,7 +23,6 @@ import { DoneButton, RevealCards, RoundPrompt } from "../ui/Round"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
 import { VrButton, useVrHold, useVrView } from "../ui/VrButton"
 import { HintAllowance, VrViewType, type VrView } from "../vr/view"
-import type { VrTable } from "../vr/scores"
 import { pts, vrReveal, vrRound, type VrRoundShown } from "../vr-round"
 import { Banner } from "../ui/Banner"
 import { DevDrawer } from "../ui/DevDrawer"
@@ -45,40 +36,21 @@ import { preloadPictures } from "../preload"
 import { HintCard } from "../ui/Hint"
 import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry } from "../ui/FlagReveal"
 import { navigate } from "../router"
-import { announcePass, frameReveal, showAnswer, useRoundMap, type RevealedAnswer } from "../round"
+import { announcePass, frameReveal, showAnswer, useRoundMap } from "../round"
+import {
+  PracticePhase,
+  currentQuestion,
+  isLastRound,
+  nextRound,
+  revealedAnswer,
+  roundsTable,
+  runMaximum,
+  runTotal,
+  startRun,
+  submitRound
+} from "../practice-run"
 import { soloTestIds } from "./SoloTestIds"
 import { Cheats, LiveScore, RevealScore } from "./SoloDevTools"
-
-enum SoloPhase {
-  PAINT = "PAINT",
-  REVEAL = "REVEAL",
-  DONE = "DONE"
-}
-
-function revealedAnswer(q: Question, outlines: Outlines): RevealedAnswer {
-  return {
-    label: q.label,
-    wiki: q.wiki,
-    answer: answerCentre(q.answer),
-    outline: q.answer.type === AnswerType.AREA ? outlines.get(q.answer.outline) : undefined,
-    photo: revealPhoto(q)
-  }
-}
-
-interface RoundResult {
-  question: Question
-  score: number
-}
-
-/** The rounds so far, latest first, for the headset's score table. */
-function roundsTable(results: RoundResult[]): VrTable {
-  return {
-    title: "Your rounds",
-    rows: results
-      .map((r, i) => ({ name: `${i + 1}. ${r.question.label}`, total: Math.round(r.score).toLocaleString() }))
-      .reverse()
-  }
-}
 
 export function Solo() {
   useVrHold()
@@ -99,18 +71,14 @@ function SoloLoader() {
 
 function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) {
   const paint = usePaint()
-  const [questions, setQuestions] = useState(() => shuffle(pool, Date.now()))
-  const [index, setIndex] = useState(0)
-  const [phase, setPhase] = useState(SoloPhase.PAINT)
-  const [results, setResults] = useState<RoundResult[]>([])
-  // No distribution for a pass.
-  const [revealed, setRevealed] = useState<{ dist?: Distribution; result: RoundResult } | undefined>(undefined)
+  const [run, setRun] = useState(() => startRun(pool, Date.now()))
+  const { questions, index, phase, results, revealed } = run
   const hover = useSignal<LatLon | undefined>(undefined)
   // Practice hints are unlimited, still one per question.
   const [hint, setHint] = useState<HintBand | undefined>(undefined)
-  const q = questions[index]!
+  const q = currentQuestion(run)
   const kernel = kernelById(soloKernelId.value)
-  const total = results.reduce((s, r) => s + r.score, 0)
+  const total = runTotal(run)
   const cheating = devMode.value && cheatLiveScore.value
   const question = questionView(q)
   const answer = revealedAnswer(q, outlines)
@@ -119,17 +87,17 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
 
   useRoundMap(paint, {
     round: index,
-    painting: phase === SoloPhase.PAINT,
+    painting: phase === PracticePhase.PAINT,
     question,
     detail,
-    reveal: phase === SoloPhase.REVEAL,
+    reveal: phase === PracticePhase.REVEAL,
     hint,
     start: () => (paint.enabled.value = true)
   })
 
   // Cheat: show the answer while painting.
   useEffect(() => {
-    if (phase !== SoloPhase.PAINT) return
+    if (phase !== PracticePhase.PAINT) return
     if (cheating) showAnswer(paint.gameMap, question, answer)
     else paint.gameMap.clearReveal()
   }, [cheating, phase, index])
@@ -149,7 +117,11 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
       // A photo or the shortcuts list open over the round has the keyboard.
       if (document.querySelector('[role="dialog"]')) return
       const act =
-        phase === SoloPhase.PAINT && !paint.layer.isEmpty ? submit : phase === SoloPhase.REVEAL ? next : undefined
+        phase === PracticePhase.PAINT && !paint.layer.isEmpty
+          ? submit
+          : phase === PracticePhase.REVEAL
+            ? next
+            : undefined
       if (!act) return
       // A clicked button keeps focus, and Enter would press it as well.
       e.preventDefault()
@@ -163,36 +135,22 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
   function submit() {
     const passed = announcePass(paint)
     const dist = passed ? undefined : buildDistribution(paint.layer.toCells(), paint.floor.value)
-    const { score } = scoreAnswer(dist, scored, kernel)
-    const result = { question: q, score }
-    setResults((r) => [...r, result])
-    setRevealed({ dist, result })
-    setPhase(SoloPhase.REVEAL)
+    setRun(submitRound(run, dist, scored, kernel))
     paint.enabled.value = false
     showAnswer(paint.gameMap, question, answer)
   }
 
   // Framed after the reveal's cards are in place: on a phone the map frames the answer around them.
   useEffect(() => {
-    if (phase === SoloPhase.REVEAL) frameReveal(paint.gameMap, question, answer, paint.layer.toGeoJSON())
+    if (phase === PracticePhase.REVEAL) frameReveal(paint.gameMap, question, answer, paint.layer.toGeoJSON())
   }, [phase, index])
 
   function next() {
-    if (index + 1 >= questions.length) {
-      setPhase(SoloPhase.DONE)
-      paint.gameMap.clearReveal()
-      return
-    }
-    setIndex(index + 1)
-    setPhase(SoloPhase.PAINT)
+    if (isLastRound(run)) paint.gameMap.clearReveal()
+    setRun(nextRound(run))
   }
 
-  function restart() {
-    setQuestions(shuffle(pool, Date.now()))
-    setResults([])
-    setIndex(0)
-    setPhase(SoloPhase.PAINT)
-  }
+  const restart = () => setRun(startRun(pool, Date.now()))
 
   const useHint = (axis: HintAxis) => setHint(hintBand(answerCentre(q.answer), q.answer.tolerance, axis, Math.random()))
   // A flag round's reveal names the country under the pointer, and where the
@@ -212,7 +170,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
   const home = { label: "Home", press: () => navigate("/") }
   const shown: VrRoundShown = {
     question,
-    revealed: phase === SoloPhase.REVEAL ? answer : undefined,
+    revealed: phase === PracticePhase.REVEAL ? answer : undefined,
     fact
   }
   const round = vrRound(shown, {
@@ -227,18 +185,18 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     playing: true
   })
   const vrView: VrView =
-    phase === SoloPhase.DONE
+    phase === PracticePhase.DONE
       ? {
           type: VrViewType.DONE,
           summary: {
             title: "Final score",
-            scoreLine: `${pts(total)} out of ${(questions.length * 1000).toLocaleString()}`,
+            scoreLine: `${pts(total)} out of ${runMaximum(run).toLocaleString()}`,
             table: roundsTable(results),
             actions: [{ label: "Play again", press: restart }]
           },
           more: [home]
         }
-      : phase === SoloPhase.REVEAL && revealed && shownResult
+      : phase === PracticePhase.REVEAL && revealed && shownResult
         ? {
             type: VrViewType.REVEAL,
             round,
@@ -250,7 +208,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
               borders,
               {
                 table: roundsTable(results),
-                actions: [{ label: index + 1 >= questions.length ? "Finish" : "Next question", press: next }]
+                actions: [{ label: isLastRound(run) ? "Finish" : "Next question", press: next }]
               }
             )
           }
@@ -266,7 +224,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     />
   )
 
-  if (phase === SoloPhase.DONE) {
+  if (phase === PracticePhase.DONE) {
     return (
       <Hud>
         <HudCenter>
@@ -275,7 +233,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
             <div class={sc.score}>
               <div class={sc.label}>Final score</div>
               <div class={sc.big}>{Math.round(total).toLocaleString()}</div>
-              <div class={sc.label}>out of {(questions.length * 1000).toLocaleString()}</div>
+              <div class={sc.label}>out of {runMaximum(run).toLocaleString()}</div>
             </div>
             <ul class={kit.results}>
               {results.map((r, i) => (
@@ -298,9 +256,9 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     )
   }
 
-  if (phase === SoloPhase.REVEAL && revealed && shownResult) {
+  if (phase === PracticePhase.REVEAL && revealed && shownResult) {
     const dist = revealed.dist
-    const last = index + 1 >= questions.length
+    const last = isLastRound(run)
     return (
       <>
         {borders && <FlagHover gameMap={paint.gameMap} borders={borders} />}
