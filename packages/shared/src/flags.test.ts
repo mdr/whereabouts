@@ -47,6 +47,7 @@ describe("flag questions", () => {
       const { answer } = flag(code)
       if (answer.type !== AnswerType.POINT) throw new Error(`${code} is painted whole`)
       const { at, tolerance } = answer
+      const lat: number = at.lat
       const res = resolutionForTolerance(tolerance)
       const blob = (lat: number, lon: number) =>
         buildDistribution(
@@ -56,8 +57,8 @@ describe("flag questions", () => {
           }),
           0.05
         )
-      expect(scoreDistribution(blob(at.lat, at.lon), at, tolerance).score, code).toBeGreaterThan(900)
-      expect(scoreDistribution(blob(at.lat * -1, at.lon + 180), at, tolerance).score, code).toBeLessThan(320)
+      expect(scoreDistribution(blob(lat, at.lon), at, tolerance).score, code).toBeGreaterThan(900)
+      expect(scoreDistribution(blob(-lat, at.lon + 180), at, tolerance).score, code).toBeLessThan(320)
     }
   })
 })

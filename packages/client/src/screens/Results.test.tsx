@@ -1,46 +1,26 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
-import { commonsFile, flagCode, outlineId, playerId, playerName, roomCode } from "@whereabouts/shared/ids"
+import { commonsFile, flagCode, outlineId, playerId, playerName } from "@whereabouts/shared/ids"
 import { playerColour } from "@whereabouts/shared/colours"
-import { mixOf, type GameView, Phase, MapDetail } from "@whereabouts/shared/protocol"
+import { type GameView, Phase } from "@whereabouts/shared/protocol"
 import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "../net"
 import { Results } from "./Results"
 import { resultsTestIds as ids } from "./ResultsTestIds"
 import s from "./Results.module.css"
 import pictures from "../ui/Pictures.module.css"
-import { KernelId } from "@whereabouts/shared/scoring"
+import { makeView } from "../test-view"
 
 const tid = (id: string) => `[data-testid="${id}"]`
 
 // The outlines are a download; these tests only need where a shape goes.
 vi.mock("../outlines", async (original) => ({ ...(await original<object>()), useOutline: () => undefined }))
 
-const MIX = mixOf({ [QuestionType.LANDMARK]: 1, [QuestionType.PLACE]: 1 })
-
 function view(isHost: boolean): GameView {
-  return {
-    code: roomCode("AB12"),
+  return makeView({
     phase: Phase.RESULTS,
-    config: {
-      rounds: 2,
-      roundLength: 60000,
-      mix: MIX,
-      mapDetail: MapDetail.MINIMAL,
-      kernelId: KernelId.MULTI_EQUAL,
-      hints: 1
-    },
-    serverTime: 0,
-    you: {
-      id: playerId("p2"),
-      isHost,
-      spectating: false,
-      watching: false,
-      locked: false,
-      paint: undefined,
-      hintsLeft: 1
-    },
+    you: { id: playerId("p2"), isHost },
     players: [
       {
         id: playerId("p1"),
@@ -67,8 +47,6 @@ function view(isHost: boolean): GameView {
         previousRank: 2
       }
     ],
-    round: undefined,
-    reveal: undefined,
     results: [
       { playerId: playerId("p1"), total: 1500, rounds: [{ score: 800 }, { score: 700 }] },
       { playerId: playerId("p2"), total: 1250, rounds: [{ score: 500 }, { score: 750 }] }
@@ -78,7 +56,7 @@ function view(isHost: boolean): GameView {
       { label: "Perth, Australia", type: QuestionType.PLACE }
     ],
     awards: [{ emoji: "🐔", title: "Chicken", playerIds: [playerId("p2")], line: "{0} passed 2 times. Brave." }]
-  }
+  })
 }
 
 describe("Results", () => {

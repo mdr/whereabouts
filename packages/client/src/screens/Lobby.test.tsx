@@ -4,7 +4,7 @@ import { fireEvent, render, screen, within } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName, roomCode } from "@whereabouts/shared/ids"
-import { mixOf, type GameView, Phase, MapDetail } from "@whereabouts/shared/protocol"
+import { mixOf, type GameView, MapDetail } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { type Connection, ConnectionStatus } from "../net"
 import { hostSetup, joinedCode, startOnPan } from "../settings"
@@ -18,7 +18,7 @@ import { mixEditorTestIds } from "../ui/MixEditorTestIds"
 import { playerListTestIds } from "../ui/PlayerListTestIds"
 import s from "./Lobby.module.css"
 import players from "../ui/Players.module.css"
-import { KernelId } from "@whereabouts/shared/scoring"
+import { makeView } from "../test-view"
 
 /** Queries within a render's container. */
 const inside = (el: Element) => within(el as HTMLElement)
@@ -26,27 +26,10 @@ const inside = (el: Element) => within(el as HTMLElement)
 const MIX = mixOf({ [QuestionType.LANDMARK]: 3, [QuestionType.PLACE]: 2 })
 
 function view(isHost: boolean): GameView {
-  return {
-    code: roomCode("AB12"),
-    phase: Phase.LOBBY,
-    config: {
-      rounds: 5,
-      roundLength: 60000,
-      mix: MIX,
-      mapDetail: MapDetail.MINIMAL,
-      kernelId: KernelId.MULTI_EQUAL,
-      hints: 1
-    },
-    serverTime: 0,
-    you: {
-      id: playerId("p1"),
-      isHost,
-      spectating: false,
-      watching: false,
-      locked: false,
-      paint: undefined,
-      hintsLeft: 1
-    },
+  const base = makeView()
+  return makeView({
+    config: { ...base.config, rounds: 5, mix: MIX, hints: 1 },
+    you: { isHost, hintsLeft: 1 },
     players: [
       {
         id: playerId("p1"),
@@ -60,12 +43,8 @@ function view(isHost: boolean): GameView {
         rank: 1,
         previousRank: undefined
       }
-    ],
-    round: undefined,
-    reveal: undefined,
-    results: undefined,
-    awards: undefined
-  }
+    ]
+  })
 }
 
 const configure = vi.fn()
