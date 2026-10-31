@@ -34,8 +34,12 @@ export interface App {
  * junk JSON costs the time to parse it before it can be refused.
  */
 export const MAX_PAYLOAD_BYTES = 128 * 1024
-/** Above the largest message, a reveal at the paint budget, so only a client that has fallen behind is dropped. */
-const MAX_BUFFERED_BYTES = 8 * 1024 * 1024
+/**
+ * Above the largest message, a reveal at the paint budget (about 1.5 MiB), so
+ * only a client that has fallen behind is dropped; low enough that a full room
+ * of stalled sockets stays well inside the machine's 256 MB.
+ */
+const MAX_BUFFERED_BYTES = 4 * 1024 * 1024
 
 /**
  * Rivalis's per-connection message limit, but logged when it closes a
