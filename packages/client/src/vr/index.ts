@@ -10,20 +10,13 @@ import {
   Color,
   ColorSchemeType,
   DirectionalLight,
-  Group,
-  Hovered,
   InputComponent,
-  PanelDocument,
-  PanelUI,
-  RayInteractable,
   ReferenceSpaceType,
   SessionMode,
   Vector3,
   VisibilityState,
   World,
-  type Entity,
-  type Object3D,
-  type UIKitDocument
+  type Object3D
 } from "@iwsdk/core"
 import { effect, signal } from "@preact/signals"
 import { describeHint } from "@whereabouts/shared/hints"
@@ -33,7 +26,7 @@ import type { LandMaskData } from "@whereabouts/shared/land"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { PaintLayer } from "@whereabouts/shared/paint"
 import { loadLandMask, loadWaterMask } from "../land"
-import { headsetPassthrough, soundOn } from "../settings"
+import { headsetPassthrough } from "../settings"
 import { sound } from "../sound"
 import { THEME } from "../themes"
 import {
@@ -65,8 +58,8 @@ import { latLonToLocal, localToLatLon } from "./sphere"
 import { SCORES_M, ScoreBoard, type VrTable } from "./scores"
 import { ResultsBoard, type VrBoard } from "./board"
 import { WristMenu, type WristButton } from "./wrist"
-import panelUrl from "./panel.uikitml?url"
-import type { VrAction, VrReveal, VrRound, VrView } from "./view"
+import { Menu, PANEL_M, type MenuShown } from "./menu"
+import type { VrReveal, VrRound, VrView } from "./view"
 
 /**
  * IWSDK updates and draws its scene every frame from the start, on the page
@@ -86,19 +79,8 @@ function idleOffHeadset(world: World): void {
 }
 
 const HANDS = ["left", "right"] as const
-const HEADINGS: Record<VrView["kind"], string> = {
-  lobby: "WELCOME",
-  paint: "THIS ROUND",
-  reveal: "THE ANSWER",
-  done: "GAME OVER"
-}
-/** As many as the menu has buttons for, below the main actions. */
-const MORE = 4
-/** How long a press waits for its confirming second press. */
-const CONFIRM_S = 4
 /** Rebuilding the paint is the costly part of a stroke, so at most this often. */
 const PAINT_REDRAW_S = 0.1
-const PANEL_M = 0.38
 /** The gap a panel keeps from the globe, in radians as seen from the player. */
 const PANEL_CLEAR = 0.04
 const UP = new Vector3(0, 1, 0)
@@ -141,8 +123,6 @@ export class Vr {
   private readonly flagPins = new FlagPins(PIN_RADIUS, OUTLINE_RADIUS)
   private readonly space = new Space()
   private readonly moon = new Moon()
-  /** Whether the headset can show the room (immersive-ar), once asked. */
-  private passthroughOffered = false
   /**
    * Ending one kind of session to start the other: the passthrough wanted,
    * saved only once its session opens, and whether that session has been asked for.
@@ -152,15 +132,8 @@ export class Vr {
   /** Where the panels were placed, and from where. */
   private homes: { obj: Object3D; at: Vector3; half: number }[] = []
   private readonly eye = new Vector3()
-  /** What the menu last said, so it is set only when it changes. */
-  private doneText = ""
-  /** An action pressed once, waiting for its confirming press until `until`. */
-  private armed: { action: VrAction; until: number } | undefined = undefined
-  private now = 0
-  private clockText = ""
   private readonly tools: Record<Hand, HandTool>
-  private readonly panel: Entity
-  private panelDoc: UIKitDocument | undefined = undefined
+  private readonly menu: Menu
 
   static async create(onStage: (stage: "headset" | "land") => void): Promise<Vr> {
     onStage("headset")
@@ -247,10 +220,13 @@ export class Vr {
     const room = reflections(world.renderer)
     for (const o of [this.globe.stand, gripSpaces.left, gripSpaces.right]) reflect(o, room)
 
-    this.panel = world.createTransformEntity(new Group(), { persistent: true })
-    this.panel.addComponent(RayInteractable)
-    this.panel.addComponent(PanelUI, { config: panelUrl })
-    this.panel.object3D!.add(this.picture.mesh)
+    this.menu = new Menu(world, {
+      clicked: () => this.clicks++,
+      done: () => this.painting?.done(),
+      togglePassthrough: () => this.togglePassthrough(),
+      exit: () => this.exit()
+    })
+    this.menu.object3D.add(this.picture.mesh)
     this.wrist = new WristMenu(
       world,
       Object.fromEntries(
@@ -266,10 +242,7 @@ export class Vr {
     this.scores = new ScoreBoard(world, () => this.clicks++)
     world.scene.add(this.board.mesh)
 
-    void navigator.xr?.isSessionSupported(SessionMode.ImmersiveAR).then((ok) => {
-      this.passthroughOffered = ok
-      this.applyView()
-    })
+    void navigator.xr?.isSessionSupported(SessionMode.ImmersiveAR).then((ok) => this.menu.offerPassthrough(ok))
     world.visibilityState.subscribe((state) => {
       const active = state !== VisibilityState.NonImmersive
       if (!active && this.switchingTo !== undefined && !this.switchOpening) {
@@ -318,10 +291,10 @@ export class Vr {
   /** Change what the headset shows, as the screen moves from round to answer to round. */
   show(view: VrView): void {
     this.endStroke()
-    this.picture.release(this.panel.object3D!)
+    this.picture.release(this.menu.object3D)
     const leavingAnswer = this.view?.kind === "reveal" && view.kind !== "reveal"
     // A press waiting for its second press was for the screen it was on.
-    if (view.kind !== this.view?.kind) this.armed = undefined
+    this.menu.show(view)
     this.view = view
     const round = this.round
     const picture = round?.picture
@@ -373,7 +346,7 @@ export class Vr {
     this.board.show("summary" in view ? view.summary.board : undefined)
     const flags = view.kind === "reveal" ? view.reveal.flags : undefined
     this.flagPins.show(flags?.on ? flags.pins : undefined)
-    this.applyView()
+    this.menu.refresh(view)
   }
 
   /** The reveal's line of interest, for the browser tests. */
@@ -483,29 +456,8 @@ export class Vr {
   }
 
   /** What the menu offers, for the browser tests. */
-  get menuShown(): {
-    done: string
-    clock: string
-    unlock: boolean
-    actions: { label: string; enabled: boolean }[]
-    more: { label: string; enabled: boolean }[]
-    heading: string
-    mode: string | undefined
-    note: string | undefined
-  } {
-    const view = this.view
-    const round = view?.kind === "paint" ? view.round : undefined
-    const shown = (a: VrAction) => ({ label: this.label(a), enabled: a.enabled !== false })
-    return {
-      done: this.doneText,
-      clock: this.clockText,
-      unlock: round?.unlock !== undefined,
-      actions: this.actions.map(shown),
-      more: (view?.more ?? []).slice(0, MORE).map(shown),
-      heading: view ? this.heading(view) : "",
-      mode: round?.mode,
-      note: view && this.note(view)
-    }
+  get menuShown(): MenuShown {
+    return this.menu.shown
   }
 
   /** What each hand holds, for the browser tests. */
@@ -640,8 +592,7 @@ export class Vr {
 
   /** Where a button on the menu is, for the browser tests. */
   menuButtonAt(id: string): [number, number, number] {
-    const p = this.panelDoc!.requireElementById(id).getWorldPosition(new Vector3())
-    return [p.x, p.y, p.z]
+    return this.menu.buttonAt(id)
   }
 
   /** Where a row of the score table is, for the browser tests. */
@@ -664,9 +615,9 @@ export class Vr {
   }
 
   private leave(): void {
-    this.armed = undefined
+    this.menu.leave()
     this.endStroke()
-    this.picture.release(this.panel.object3D!)
+    this.picture.release(this.menu.object3D)
     this.stopPaintWatch?.()
     this.stopPaintWatch = undefined
     this.view = undefined
@@ -674,11 +625,7 @@ export class Vr {
 
   private frame(dt: number, now: number): void {
     this.frames++
-    this.now = now
-    if (this.armed && now > this.armed.until) {
-      this.armed = undefined
-      this.applyView()
-    }
+    this.menu.tick(now)
     this.showControllers(this.painting === undefined)
     if (!this.view) return
     const { player } = this.world
@@ -686,18 +633,18 @@ export class Vr {
       const head = player.head.getWorldPosition(new Vector3())
       const forward = player.head.getWorldDirection(new Vector3()).negate()
       this.globe.place(head, forward)
-      this.placePanel(head, forward)
+      this.menu.place(head, forward)
       this.scores.place(head, forward)
       this.board.place(head, forward)
       this.eye.copy(head)
       this.homes = [
-        { obj: this.panel.object3D!, at: this.panel.object3D!.position.clone(), half: PANEL_M / 2 },
+        { obj: this.menu.object3D, at: this.menu.object3D.position.clone(), half: PANEL_M / 2 },
         { obj: this.scores.object3D, at: this.scores.object3D.position.clone(), half: SCORES_M / 2 }
       ]
       this.placed = true
     }
     this.clearGlobe()
-    this.wirePanel()
+    this.menu.wirePanel()
     this.scores.update()
     this.placePicture()
 
@@ -717,7 +664,7 @@ export class Vr {
         if (this.picture.reaches(grip, origin, ray.getWorldDirection(new Vector3()).negate()))
           this.picture.grab(h, this.world.scene, player.gripSpaces[h], player.head.getWorldPosition(new Vector3()))
       }
-      if (this.picture.heldBy === h && !squeezed) this.picture.release(this.panel.object3D!)
+      if (this.picture.heldBy === h && !squeezed) this.picture.release(this.menu.object3D)
       if (squeezed && this.picture.heldBy !== h) grips[h] = grip
       const s = pad.getAxesValues(InputComponent.Thumbstick)
       stick.x += s?.x ?? 0
@@ -746,7 +693,7 @@ export class Vr {
       this.paintDirty = false
       this.lastPaintDraw = now
     }
-    this.updateLabels(round)
+    this.menu.updateLabels()
     if (!this.painting || !round) {
       for (const h of HANDS) {
         this.tools[h].hide()
@@ -768,7 +715,7 @@ export class Vr {
     }
 
     // The trigger also presses the menu's buttons; pointing at it, it sprays nothing.
-    const onMenu = this.panel.hasComponent(Hovered) || this.wrist.hovered
+    const onMenu = this.menu.hovered || this.wrist.hovered
     // The left hand is turned to show the wrist menu, not to erase.
     const triggers = HANDS.map((h) =>
       h === "left" && this.wrist.open ? 0 : (pads[h]?.getButtonValue(InputComponent.Trigger) ?? 0)
@@ -806,14 +753,13 @@ export class Vr {
 
   /** On top of the menu, which grows and shrinks with its text. */
   private placePicture(): void {
-    const size = this.panelDoc?.computedSize
+    const size = this.menu.size
     if (!size || this.picture.heldBy) return
     // The menu is scaled to fit a PANEL_M square, whatever its own units.
     const top = (size.height * Math.min(PANEL_M / size.width, PANEL_M / size.height)) / 2
     this.picture.mesh.position.set(0, top + 0.015 + this.picture.height / 2, 0)
   }
 
-  /** To the left of the globe, turned to face the player. */
   /**
    * Swings each panel round the player, from where it was placed, until it
    * clears the globe as seen from there: zooming in pushes them aside.
@@ -832,154 +778,6 @@ export class Vr {
       obj.position.copy(at).sub(eye).applyAxisAngle(UP, by).add(eye)
       obj.lookAt(eye)
     }
-  }
-
-  private placePanel(head: Vector3, forward: Vector3): void {
-    const obj = this.panel.object3D!
-    const level = new Vector3(forward.x, 0, forward.z).normalize()
-    const left = new Vector3(level.z, 0, -level.x)
-    obj.position
-      .copy(head)
-      .addScaledVector(level, 0.55)
-      .addScaledVector(left, 0.5)
-      .add(new Vector3(0, -0.1, 0))
-    obj.lookAt(head)
-  }
-
-  /** The menu loads on its own time; hook its buttons up once it has. */
-  private wirePanel(): void {
-    if (this.panelDoc || !this.panel.hasComponent(PanelDocument)) return
-    const doc = PanelDocument.data.document[this.panel.index] as UIKitDocument
-    this.panelDoc = doc
-    doc.setTargetDimensions(PANEL_M, PANEL_M)
-    const on = (id: string, f: () => void) =>
-      doc.requireElementById(id).addEventListener("click", () => {
-        this.clicks++
-        f()
-      })
-    on("done", () => this.painting?.done())
-    on("unlock", () => this.view?.kind === "paint" && this.view.round.unlock?.())
-    for (const i of [0, 1]) on(`act${i}`, () => this.press(this.actions[i]))
-    for (let i = 0; i < MORE; i++) on(`more${i}`, () => this.press(this.view?.more?.[i]))
-    on("sound", () => {
-      soundOn.value = !soundOn.value
-      this.applyView()
-    })
-    on("flags", () => this.view?.kind === "reveal" && this.view.reveal.flags?.toggle())
-    on("passthrough", () => this.togglePassthrough())
-    on("exit", () => this.exit())
-    this.applyView()
-  }
-
-  /** An action asking for confirmation waits for a second press. */
-  private press(action: VrAction | undefined): void {
-    if (!action || action.enabled === false) return
-    if (action.confirm && this.armed?.action.label !== action.label) {
-      this.armed = { action, until: this.now + CONFIRM_S }
-      this.applyView()
-      return
-    }
-    this.armed = undefined
-    action.press()
-  }
-
-  private label(action: VrAction): string {
-    return this.armed?.action.label === action.label && action.confirm ? action.confirm : action.label
-  }
-
-  private heading(view: VrView): string {
-    return (view.kind === "paint" && view.round.heading) || HEADINGS[view.kind]
-  }
-
-  private note(view: VrView): string | undefined {
-    return view.kind === "paint" ? view.round.note : view.kind === "reveal" ? view.reveal.note : view.summary.note
-  }
-
-  private get actions(): VrAction[] {
-    const view = this.view
-    return view?.kind === "reveal" ? view.reveal.actions : view && "summary" in view ? view.summary.actions : []
-  }
-
-  /** Done says Pass with nothing painted, and the clock counts down. */
-  private updateLabels(round: VrRound | undefined): void {
-    const doc = this.panelDoc
-    if (!doc || !round || this.view?.kind !== "paint") return
-    const done = round.paint.layer.isEmpty ? "Pass" : round.doneLabel
-    if (done !== this.doneText) {
-      this.doneText = done
-      doc.getElementById("doneLabel")?.setProperties({ text: done })
-    }
-    if (!round.msLeft) return
-    const s = Math.ceil(Math.max(0, round.msLeft()) / 1000)
-    const clock = s > 0 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} left` : "Time's up"
-    if (clock !== this.clockText) {
-      this.clockText = clock
-      doc.getElementById("clock")?.setProperties({ text: clock })
-    }
-  }
-
-  private applyView(): void {
-    const doc = this.panelDoc
-    const view = this.view
-    if (!doc || !view) return
-    const show = (id: string, on: boolean) => doc.getElementById(id)?.setProperties({ display: on ? "flex" : "none" })
-    const text = (id: string, t: string) => doc.getElementById(id)?.setProperties({ text: t })
-    const reveal = view.kind === "reveal" ? view.reveal : undefined
-    const summary = "summary" in view ? view.summary : undefined
-    const round = view.kind === "paint" ? view.round : undefined
-    const painting = round?.playing === true && round.unlock === undefined
-    show("hint", painting)
-    text(
-      "hint",
-      round?.paint.fillable.value
-        ? "Turn your left palm up for paint tools and hints. A or X brings out the fill pail: a pull fills the country it points at."
-        : "Turn your left palm up for paint tools and hints."
-    )
-    show("mode", round?.mode !== undefined)
-    if (round?.mode) text("mode", round.mode)
-    show("done", painting)
-    show("unlock", round?.unlock !== undefined)
-    show("clock", round?.msLeft !== undefined)
-    show("score", round === undefined)
-    const note = this.note(view)
-    show("note", note !== undefined)
-    if (note !== undefined) text("note", note)
-    const actions = this.actions
-    for (const i of [0, 1]) {
-      const action = actions[i]
-      show(`act${i}`, action !== undefined)
-      if (!action) continue
-      text(`act${i}Label`, this.label(action))
-      doc.getElementById(`act${i}`)?.setProperties({ disabled: action.enabled === false })
-    }
-    const more = view.more ?? []
-    show("more", more.length > 0)
-    for (let i = 0; i < MORE; i++) {
-      const action = more[i]
-      show(`more${i}`, action !== undefined)
-      if (!action) continue
-      text(`more${i}Label`, this.label(action))
-      doc.getElementById(`more${i}`)?.setProperties({ disabled: action.enabled === false })
-    }
-    text("soundLabel", soundOn.value ? "Sound on" : "Sound off")
-    show("passthrough", this.passthroughOffered)
-    text("heading", this.heading(view))
-    show("extras", reveal?.flags !== undefined)
-    text("passthroughLabel", headsetPassthrough.value ? "Show space" : "See your room")
-    if (reveal?.flags) text("flagsLabel", reveal.flags.on ? "Hide all flags" : "Show all flags")
-    if (round) text("prompt", round.prompt)
-    show("fact", reveal?.fact !== undefined)
-    if (reveal) {
-      text("prompt", reveal.label)
-      text("score", reveal.scoreLine)
-      if (reveal.fact !== undefined) text("fact", reveal.fact)
-    }
-    if (summary) {
-      text("prompt", summary.title)
-      text("score", summary.scoreLine)
-    }
-    // Set again from the round next frame.
-    this.doneText = this.clockText = ""
   }
 }
 
