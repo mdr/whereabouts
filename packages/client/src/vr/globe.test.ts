@@ -92,4 +92,37 @@ describe("the VR globe", () => {
     for (let i = 0; i < 30; i++) globe.update(1 / 60, {}, { x: 0, y: 0 })
     expectNoRoll(globe)
   })
+
+  it("spins and zooms with the thumbstick, not within its dead zone", () => {
+    const globe = placed()
+    const start = globe.group.quaternion.clone()
+    for (let i = 0; i < 10; i++) globe.update(0.1, {}, { x: 0.1, y: 0.1 })
+    expect(globe.group.quaternion.angleTo(start)).toBeCloseTo(0, 5)
+    expect(globe.scale).toBe(1)
+    for (let i = 0; i < 10; i++) globe.update(0.1, {}, { x: 0, y: -1 })
+    expect(globe.scale).toBeCloseTo(Math.exp(1.2), 5)
+    const zoomed = globe.group.quaternion.clone()
+    for (let i = 0; i < 10; i++) globe.update(0.1, {}, { x: 1, y: 0 })
+    expect(globe.group.quaternion.angleTo(zoomed)).toBeGreaterThan(0.1)
+    expectNoRoll(globe)
+  })
+
+  it("a grab stops a turn to a place", () => {
+    const globe = placed()
+    globe.turnToward({ lat: -51, lon: -73 }, Math.PI, eye)
+    globe.update(0.1, {}, { x: 0, y: 0 })
+    expect(globe.busy).toBe(true)
+    globe.update(0.1, { [Hand.RIGHT]: new Vector3(0, 1.6, -0.6) }, { x: 0, y: 0 })
+    expect(globe.busy).toBe(false)
+  })
+
+  it("zooms back out", () => {
+    const globe = placed()
+    globe.turnToward({ lat: 51.5, lon: -0.1 }, 0.25, eye)
+    for (let i = 0; i < 20; i++) globe.update(0.1, {}, { x: 0, y: 0 })
+    expect(globe.scale).toBeGreaterThan(1)
+    globe.zoomOut()
+    for (let i = 0; i < 20; i++) globe.update(0.1, {}, { x: 0, y: 0 })
+    expect(globe.scale).toBe(1)
+  })
 })

@@ -64,6 +64,11 @@ const w = new Vector3()
 /** An angle the short way round, in (-π, π]. */
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
 
+const stickActive = (stick: { x: number; y: number }) =>
+  Math.abs(stick.x) > STICK_DEAD || Math.abs(stick.y) > STICK_DEAD
+
+const smoothstep = (t: number) => t * t * (3 - 2 * t)
+
 /** How the globe is turned: spun about its poles, then tilted. */
 interface Turn {
   spin: number
@@ -283,57 +288,80 @@ export class Globe {
   /** `grips`: where each hand holding the grip button is. `stick`: the thumbsticks, summed. */
   update(dt: number, grips: Partial<Record<Hand, Vector3>>, stick: { x: number; y: number }): void {
     const { [Hand.LEFT]: left, [Hand.RIGHT]: right } = grips
-    if (left || right || Math.abs(stick.x) > STICK_DEAD || Math.abs(stick.y) > STICK_DEAD) this.turning = undefined
-    if (this.turning) {
-      const { from, to } = this.turning
-      const t = (this.turning.t = Math.min(1, this.turning.t + dt / TURN))
-      const eased = t * t * (3 - 2 * t)
-      this.turned.spin = from.spin + (to.spin - from.spin) * eased
-      this.turned.tilt = from.tilt + (to.tilt - from.tilt) * eased
-      this.orient()
-      // Evenly in the logarithm, as the thumbstick zooms.
-      const { scale, toScale } = this.turning
-      this.setScale(scale * Math.pow(toScale / scale, eased))
-      if (t === 1) this.turning = undefined
-    }
+    if (left || right || stickActive(stick)) this.turning = undefined
+    this.stepTurning(dt)
     if (left && right) {
-      // Two hands zoom, as a map pinches: the place between them stays between them.
-      const apart = left.distanceTo(right)
-      const mid = w.addVectors(left, right).multiplyScalar(0.5)
-      if (this.pair) {
-        this.setScale((this.pair.scale * apart) / this.pair.length)
-        const was = this.angles(v.copy(this.pair.spot).applyQuaternion(this.group.quaternion), this.turned.tilt)
-        const now = this.angles(mid.sub(this.centre), this.turned.tilt)
-        this.turnBy(wrap(now.spin - was.spin), wrap(now.tilt - was.tilt))
-      } else {
-        const spot = this.group.worldToLocal(mid.clone()).normalize()
-        this.pair = { length: apart, scale: this.group.scale.x, spot }
-      }
-      this.rate.spin = this.rate.tilt = 0
+      this.pinch(left, right)
     } else {
       this.pair = undefined
-      const hand: Hand | undefined = left ? Hand.LEFT : right ? Hand.RIGHT : undefined
-      const prev = hand && this.held[hand]
-      if (hand && prev && dt > 0) {
-        const was = this.angles(prev, this.turned.tilt)
-        const now = this.angles(v.copy(grips[hand]!).sub(this.centre), this.turned.tilt)
-        const spin = wrap(now.spin - was.spin)
-        const tilt = wrap(now.tilt - was.tilt)
-        this.turnBy(spin, tilt)
-        this.rate.spin += (spin / dt - this.rate.spin) * 0.5
-        this.rate.tilt += (tilt / dt - this.rate.tilt) * 0.5
-      } else if (!hand && Math.abs(this.rate.spin) + Math.abs(this.rate.tilt) > 1e-3) {
-        this.turnBy(this.rate.spin * dt, this.rate.tilt * dt)
-        const decay = Math.exp(-SPIN_DECAY * dt)
-        this.rate.spin *= decay
-        this.rate.tilt *= decay
-      }
+      const hand = HANDS.find((h) => grips[h])
+      if (hand) this.drag(dt, hand, grips[hand]!)
+      else this.coast(dt)
     }
+    this.rememberHeld(grips)
+    this.applyStick(dt, stick)
+  }
+
+  private stepTurning(dt: number): void {
+    const turning = this.turning
+    if (!turning) return
+    const { from, to, scale, toScale } = turning
+    const t = (turning.t = Math.min(1, turning.t + dt / TURN))
+    const eased = smoothstep(t)
+    this.turned.spin = from.spin + (to.spin - from.spin) * eased
+    this.turned.tilt = from.tilt + (to.tilt - from.tilt) * eased
+    this.orient()
+    // Evenly in the logarithm, as the thumbstick zooms.
+    this.setScale(scale * Math.pow(toScale / scale, eased))
+    if (t === 1) this.turning = undefined
+  }
+
+  private pinch(left: Vector3, right: Vector3): void {
+    // Two hands zoom, as a map pinches: the place between them stays between them.
+    const apart = left.distanceTo(right)
+    const mid = w.addVectors(left, right).multiplyScalar(0.5)
+    if (this.pair) {
+      this.setScale((this.pair.scale * apart) / this.pair.length)
+      const was = this.angles(v.copy(this.pair.spot).applyQuaternion(this.group.quaternion), this.turned.tilt)
+      const now = this.angles(mid.sub(this.centre), this.turned.tilt)
+      this.turnBy(wrap(now.spin - was.spin), wrap(now.tilt - was.tilt))
+    } else {
+      const spot = this.group.worldToLocal(mid.clone()).normalize()
+      this.pair = { length: apart, scale: this.group.scale.x, spot }
+    }
+    this.rate.spin = this.rate.tilt = 0
+  }
+
+  private drag(dt: number, hand: Hand, at: Vector3): void {
+    const prev = this.held[hand]
+    if (prev && dt > 0) {
+      const was = this.angles(prev, this.turned.tilt)
+      const now = this.angles(v.copy(at).sub(this.centre), this.turned.tilt)
+      const spin = wrap(now.spin - was.spin)
+      const tilt = wrap(now.tilt - was.tilt)
+      this.turnBy(spin, tilt)
+      this.rate.spin += (spin / dt - this.rate.spin) * 0.5
+      this.rate.tilt += (tilt / dt - this.rate.tilt) * 0.5
+    }
+  }
+
+  private coast(dt: number): void {
+    if (Math.abs(this.rate.spin) + Math.abs(this.rate.tilt) > 1e-3) {
+      this.turnBy(this.rate.spin * dt, this.rate.tilt * dt)
+      const decay = Math.exp(-SPIN_DECAY * dt)
+      this.rate.spin *= decay
+      this.rate.tilt *= decay
+    }
+  }
+
+  private rememberHeld(grips: Partial<Record<Hand, Vector3>>): void {
     for (const h of HANDS) {
       const p = grips[h]
       this.held[h] = p ? (this.held[h] ?? new Vector3()).copy(p).sub(this.centre) : undefined
     }
+  }
 
+  private applyStick(dt: number, stick: { x: number; y: number }): void {
     if (Math.abs(stick.x) > STICK_DEAD) this.turnBy(stick.x * 1.5 * dt, 0)
     if (Math.abs(stick.y) > STICK_DEAD) this.setScale(this.group.scale.x * Math.exp(-stick.y * 1.2 * dt))
   }
