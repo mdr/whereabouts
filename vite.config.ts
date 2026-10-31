@@ -407,7 +407,6 @@ export default defineConfig({
           "packages/client/src/game-vr-view.ts",
           "packages/client/src/map.ts",
           "packages/client/src/screens/Lobby.tsx",
-          "packages/client/src/ui/outline-path.ts",
           "packages/client/src/vr/globe.ts",
           "packages/client/src/vr/index.ts",
           "packages/client/src/vr/menu.ts",

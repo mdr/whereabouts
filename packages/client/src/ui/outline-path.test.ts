@@ -64,3 +64,19 @@ describe("outlinePath", () => {
     expect(outlinePath(withHole, { lat: 2, lon: 2 }, 56, 42).match(/Z/g)).toHaveLength(2)
   })
 })
+
+describe("outlinePath edge cases", () => {
+  it("is empty for no outline, or a single point", () => {
+    expect(outlinePath([], { lat: 0, lon: 0 }, 56, 42)).toBe("")
+    expect(outlinePath([[[[5, 5]]]], { lat: 0, lon: 0 }, 56, 42)).toBe("")
+  })
+
+  it("drops points closer than half a pixel to the last one kept", () => {
+    const ring = [
+      [0, 0],
+      [0.001, 0],
+      [40, 30]
+    ]
+    expect(points(outlinePath([[ring]], { lat: 0, lon: 20 }, 56, 42))).toHaveLength(2)
+  })
+})
