@@ -371,7 +371,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
   covered and how much of their paint was on it. The country's flag shows
   beside its name, guessing and at the reveal, to help players learn the
   flags. A country question ("Paint
-  the whole of Germany") has an area as its answer, not a point: 37
+  the whole of Germany") has an area as its answer, not a point: 152
   countries from Natural Earth's 1:50m outlines (public domain), built into
   `packages/shared/catalogue.json`, `places.json` and `outlines.json` by `scripts/build-regions.mjs`, which keeps
   each country's main landmass, the islands of 1,500 km² or more chained
@@ -379,38 +379,22 @@ changes: [docs/code-map.md](docs/code-map.md)):
   Sicily and the Aegean stay; the Canaries, Svalbard and Alaska go),
   simplifies the outlines to about 1.5 km and sets the tolerance to a fifth
   of the country's equivalent radius, sqrt(area / π). Countries with
-  disputed borders, or crossing the antimeridian, are left out for now.
-  The outlines load only when practice asks for countries (their own
-  ~70 KB gzipped chunk). Scoring (`scoreArea`) is
-  `max(shape, 0.55 x nearness)`:
+  disputed borders, or crossing the antimeridian, are not painted: their
+  flag round asks for a point. The outlines load on demand, in their own
+  chunk. Scoring (`scoreArea`) is `0.4 x shape + 0.6 x nearness`, a sum like
+  the point rule's mixture of kernels, so credit for covering the country and
+  for being near it add up:
   - **shape** compares the paint with the country cell by cell at the
-    painting resolution, `1000 - 500 sum (p - q)^2 / a / sum q^2 / a` with p
-    and q the paint's and the country's mass in each cell of area a. It is
-    the kernel score in the limit of a vanishing kernel width, and proper.
-    Putting a share P of the paint evenly on the country (the rest just
-    outside) scores `500 + 500 P`; covering a fraction c of it evenly scores
-    `1000 - 500 (1/c - 1)`; half on the country and half elsewhere scores
-    750, like a 50/50 point answer; uneven brushing (a bright middle fading
-    to half density at the edges) costs about 50. Before scoring, each
-    cell's paint density is capped at 1.5 times the median painted density
-    (`capDensity`): strokes overlap, and a second pass down the middle of
-    Mexico, doubling the density there, cost an otherwise near-perfect paint
-    about 90 points (892 in play). A country is uniform, so painting part of
-    it again says nothing; lighter paint, a hedge on a second guess, stays
-    under the cap. Simulated brushed paints of Mexico with a second pass now
-    score 939 to 952, against 961 for one even coat. Paint off the country
-    counts as no thinner than half the country's own even coat
-    (`OFF_COUNTRY_FLOOR`): otherwise wrong paint spread thinly earned the
-    credit the score gives vagueness, and a big faint blob in North America
-    scored 444 for Madagascar. It now scores about 274, and the whole world
-    painted evenly about 297, just above a pass; bloating the border, 50/50
-    hedges and confident misses are unaffected.
-  - **nearness** is the kernel score (`scoreRegion`) under one Gaussian 16
-    tolerances wide, run one H3 resolution coarser than painting. A paint
-    that misses the country has a shape score near 0 whether it is next door
-    or on another continent; nearness is what puts a neighbour above a far
-    country. A paint on the right country gets at least 0.55 of its
-    nearness, about 545.
+    painting resolution, `1000 - 500 (sum (p - q)^2 / a / sum q^2 / a + 2 m^2)`
+    with p and q the paint's and the country's mass in each of the country's
+    cells of area a, and m the paint's mass off the country. Off the country
+    only the amount counts, not where it is: that is nearness's business.
+  - **nearness** is the kernel score (`scoreRegion`) under Gaussians one to
+    eight country radii wide, so it sees partial coverage, spill and misses
+    by how near they are.
+
+  Paint density is not capped: how heavily each candidate is painted is how
+  a player hedges.
 
   `scoreRegion` is the point rule with the country as the answer:
   `1000 - 500 (B - 2A + Q) / Q` with `A = <p,q>`, `Q = <q,q>`, for each
@@ -420,21 +404,11 @@ changes: [docs/code-map.md](docs/code-map.md)):
   component needs its own `Q`, or a wide one, which sees the country as a
   compact blob with `Q` near 1, swamps the rest.
 
-  How it got here, from playtest feedback and calibration against synthetic
-  paints (partial, bloated, shifted, hedged, uneven) and real wrong
-  countries: a mixture of Gaussians about the tolerance wide forgave leaving
-  part of a country out (65% of Australia scored 879), and blurred the
-  country's edge so that paint spilling well outside it was nearly free
-  (South Africa with half the paint off it scored 883); a single narrow
-  Gaussian ranked Poland (11) below Japan (159) as an answer for Germany; a
-  coverage factor fixed the first but not the second. Taking the maximum of
-  two proper scores is not proper, but it only lifts misses, towards their
-  nearness. Now 80% of a country scores about 885, 65% about 757, half about
-  550, and South Africa bloated to about half on it 741; against Germany,
-  painting Germany scores 999, Poland 435, France 402 and Japan 76. The
-  reveal outlines the country and frames it with the paint, and shows how
-  much of the country was covered and how much of the paint was on it
-  (explanation only; neither feeds the score).
+  The reveal outlines the country and frames it with the paint, and shows
+  how much of the country was covered and how much of the paint was on it
+  (explanation only; neither feeds the score). The goals, calibration,
+  decisions and known limits are in
+  [docs/country-scoring.md](docs/country-scoring.md).
 
 ## Controls
 

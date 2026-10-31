@@ -1,6 +1,6 @@
-// Two players through an online game against the dev servers (Vite on 5173
-// proxying to the game server on 8787): setup, guessing, Done and Keep
-// editing, the reveal, and ready-up into round 2. Saves screenshots.
+// Two players through an online game against the dev servers: setup,
+// guessing, Done and Keep editing, the reveal, and ready-up into round 2.
+// Saves screenshots.
 // Usage, from packages/client: node browser/e2e/multiplayer.ts [outDir]
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
 import { QuestionType } from "@whereabouts/shared/questions"

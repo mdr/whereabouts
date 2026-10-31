@@ -33,7 +33,7 @@ export interface App {
  * 72 KiB; every other message is under 1 KiB. Kept close to that, since
  * junk JSON costs the time to parse it before it can be refused.
  */
-const MAX_PAYLOAD_BYTES = 128 * 1024
+export const MAX_PAYLOAD_BYTES = 128 * 1024
 /** Above the largest message, a reveal at the paint budget, so only a client that has fallen behind is dropped. */
 const MAX_BUFFERED_BYTES = 8 * 1024 * 1024
 

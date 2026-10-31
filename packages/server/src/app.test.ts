@@ -51,7 +51,7 @@ import {
   type PlaceQuestion,
   type Question
 } from "@whereabouts/shared/questions"
-import { createApp, type App } from "./app.ts"
+import { createApp, MAX_PAYLOAD_BYTES, type App } from "./app.ts"
 import { BANK, configureGameRooms, realClock, type Clock } from "./rooms.ts"
 import { CloseReason } from "@whereabouts/shared/close-reason"
 
@@ -429,8 +429,8 @@ describe("game server", () => {
     bob.connect({ code: lobby.code })
     await alice.until((v) => v.players.length === 2)
 
-    // Well over the 1 MiB transport limit. ws rejects it with close code 1009.
-    const huge = "x".repeat(2 * 1024 * 1024)
+    // Just over the limit. ws rejects it with close code 1009.
+    const huge = "x".repeat(MAX_PAYLOAD_BYTES + 1)
     bob.client.send("paint", huge)
     await bob.waitClosed()
     expect(bob.client.connected).toBe(false)
