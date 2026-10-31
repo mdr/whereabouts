@@ -81,7 +81,7 @@ export class RevealPage extends Screen {
     await this.map.waitUntilSettled()
   }
 
-  /** "1 / 2 ready" */
+  /** "1 of 2 ready" */
   async readyCount(): Promise<string> {
     return text(this.page.getByTestId(revealTestIds.readyCount))
   }

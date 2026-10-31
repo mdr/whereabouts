@@ -207,7 +207,7 @@ const ready = await until(
   async () => (await headset.menu()).actions[0],
   (a) => a?.enabled === false
 )
-checks.check(ready?.label === "Waiting for the others", "Ready in VR readies the host")
+checks.check(ready?.label === "Waiting for the others…", "Ready in VR readies the host")
 
 await press("act1")
 checks.check(

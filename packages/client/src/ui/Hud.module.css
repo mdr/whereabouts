@@ -83,12 +83,6 @@
     vertical-align: baseline;
   }
 }
-.toolbarNote {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.4;
-  margin: 0 6px;
-}
 
 /* ---- the strip along the top ------------------------------------------------- */
 .header {

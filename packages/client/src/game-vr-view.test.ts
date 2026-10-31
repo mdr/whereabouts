@@ -21,10 +21,10 @@ function fakeConn(status = ConnectionStatus.CONNECTED) {
   } as unknown as Connection
 }
 
-const show = (view: GameView, conn = fakeConn()): VrView =>
+const show = (view: GameView, conn = fakeConn(), { timeUp = false } = {}): VrView =>
   gameVrView(view, conn, {} as PaintController, {
     lockIn: vi.fn(),
-    timeUp: false,
+    timeUp,
     outline: undefined,
     fact: undefined,
     painted: undefined,
@@ -48,9 +48,10 @@ const note = (v: VrView) => (v.type === VrViewType.PAINT || v.type === VrViewTyp
 
 describe("gameVrView", () => {
   it("tells you why you are not painting, the connection first", () => {
-    expect(note(show(guessing({ you: { locked: true } })))).toBe(
-      "You're done. The round ends when everyone is, or when the clock runs out."
+    expect(note(show(guessing({ you: { locked: true } })))).toMatch(
+      /^You're done\. .* Changed your mind\? Keep editing\.$/
     )
+    expect(note(show(guessing({ you: { locked: true } }), fakeConn(), { timeUp: true }))).not.toMatch(/Keep editing/)
     expect(note(show(guessing({ you: { sittingOut: true } })))).toMatch(/^You joined mid-round/)
     expect(note(show(guessing({ you: { locked: true } }), fakeConn(ConnectionStatus.CONNECTING)))).toBe("Reconnecting…")
   })
@@ -60,7 +61,7 @@ describe("gameVrView", () => {
       reveal: makeReveal({
         results: [
           makeResult({ score: 612.4, paint: { cells: {}, floor: 0 }, hint: undefined }),
-          makeResult({ playerId: bob.id })
+          makeResult({ playerId: bob.id, score: 250 })
         ],
         ready: [bob.id]
       })
@@ -68,7 +69,7 @@ describe("gameVrView", () => {
     expect(reveal(show(view)).table?.rows.map((r) => [r.name, r.detail])).toEqual([
       ["Everyone", undefined],
       ["Alice (you)", "+612"],
-      ["Bob", "passed, ready"],
+      ["Bob", "+250 passed, ready"],
       ["Hide paint", undefined]
     ])
     expect(reveal(show(view)).note).toBe("1 of 2 ready")
@@ -81,7 +82,7 @@ describe("gameVrView", () => {
       ["Next round", undefined]
     ])
     expect(labels(revealing({ you: { isHost: false }, reveal: makeReveal({ ready: [playerId("p1")] }) }))).toEqual([
-      ["Waiting for the others", false]
+      ["Waiting for the others…", false]
     ])
   })
 })

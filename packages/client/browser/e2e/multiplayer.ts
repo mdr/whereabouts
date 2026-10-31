@@ -107,7 +107,7 @@ checks.check((await bobRevealPage.map.shownPaintCells()) === everyone, "clicking
 
 // Ready-up: Bob is ready, Alice (the host) is not, so nothing moves until she is.
 await bobRevealPage.ready()
-await aliceRevealPage.waitForReadyCount("1 / 2 ready")
+await aliceRevealPage.waitForReadyCount("1 of 2 ready")
 await aliceRevealPage.pause(800)
 checks.check(await aliceRevealPage.isStillShown(), "still on the reveal with one of two ready")
 await aliceRevealPage.screenshot(`${out}/mp-5-reveal-one-ready.png`)

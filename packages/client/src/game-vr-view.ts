@@ -11,18 +11,14 @@ import { connectionText } from "./ui/ConnectionNote"
 import { navigate } from "./router"
 import { canUnlock } from "./editing"
 import { revealedFromView, revealShown, shownResults } from "./reveal"
-import { RoundNote, ShownRowType, canEndGame, revealModel, roundNote, type ShownRow } from "./round-model"
+import { ShownRowType, canEndGame, revealModel, roundNote, type ShownRow } from "./round-model"
+import { WAITING_FOR_OTHERS, noteText, readyCountText, roundScoreText } from "./round-words"
+import { askedToWatch } from "./settings"
 import { paintsOf } from "./reveal-paint"
 import { hostActions, pickable, takeSeat, vrPicked } from "./vr-actions"
 import { vrReveal, vrRound, type VrRoundShown } from "./vr-round"
 import { HintAllowance, VrViewType, type VrView } from "./vr/view"
 import type { VrTable } from "./vr/scores"
-
-const NOTES: Record<RoundNote, string> = {
-  [RoundNote.WATCHING]: "You're watching this game: you'll see each answer and everyone's guesses at the reveal.",
-  [RoundNote.JOINED_LATE]: "You joined mid-round, so you're watching this one. You'll play from the next question.",
-  [RoundNote.DONE]: "You're done. The round ends when everyone is, or when the clock runs out."
-}
 
 const named = (view: GameView, p: { id: string; name: string }) => `${p.name}${p.id === view.you.id ? " (you)" : ""}`
 
@@ -31,7 +27,7 @@ function shownRow(view: GameView, row: ShownRow): VrTable["rows"][number] {
   if (row.type === ShownRowType.EVERYONE) return { name: "Everyone", total: "", selected: row.selected, select }
   if (row.type === ShownRowType.HIDE_PAINT) return { name: "Hide paint", total: "", selected: row.selected, select }
   const { player: p, result: r } = row
-  const played = r ? (r.paint ? `+${Math.round(r.score)}` : "passed") : "sat out"
+  const played = `${roundScoreText(r)}${r && !r.paint ? " passed" : ""}`
   return {
     colour: colourCss(p.colour),
     name: named(view, p),
@@ -107,7 +103,8 @@ export function gameVrView(
     done: lockIn,
     unlock: canUnlock(view, timeUp) ? () => conn.unlock() : undefined,
     playing: !view.you.sittingOut,
-    note: connection ?? (note && NOTES[note])
+    note:
+      connection ?? (note && noteText(note, { askedToWatch: askedToWatch.value, canUnlock: canUnlock(view, timeUp) }))
   })
   if (view.phase !== Phase.REVEAL || !reveal) return { type: VrViewType.PAINT, round, more }
 
@@ -126,12 +123,12 @@ export function gameVrView(
         rows: model.rows.map((row) => shownRow(view, row)),
         hint: "Point at a player to see just their guess."
       },
-      note: connection ?? `${model.readyCount} of ${model.presentCount} ready`,
+      note: connection ?? readyCountText(model.readyCount, model.presentCount),
       actions: [
         ...(model.ready
           ? [
               {
-                label: model.ready.done ? "Waiting for the others" : "Ready",
+                label: model.ready.done ? WAITING_FOR_OTHERS : "Ready",
                 press: () => conn.ready(),
                 enabled: !model.ready.done
               }

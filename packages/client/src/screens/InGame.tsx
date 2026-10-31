@@ -33,6 +33,7 @@ import { usePaintUpload } from "../paint-upload"
 import { canPaint, canUnlock } from "../editing"
 import { paintLayer } from "../reveal-paint"
 import { RoundNote, canEndGame, roundNote } from "../round-model"
+import { noteText } from "../round-words"
 import { gameVrView } from "../game-vr-view"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
@@ -86,6 +87,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   }, [editing])
 
   const { lockIn } = usePaintUpload(conn, paint, view, timeUp)
+  const words = { askedToWatch: askedToWatch.value, canUnlock: canUnlock(view, timeUp) }
 
   const outline = useOutline(question && outlineOf(question.answer))
 
@@ -129,26 +131,21 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           <ConnectionNote conn={conn} />
           {note === RoundNote.WATCHING && (
             <Card>
-              <p class={kit.hint}>
-                {askedToWatch.value
-                  ? "You're watching this game. You'll see each answer and everyone's guesses at the reveal."
-                  : "The game was full, so you're watching. You'll see each answer and everyone's guesses at the reveal."}
-              </p>
+              <p class={kit.hint}>{noteText(note, words)}</p>
               <TakeSeatButton conn={conn} view={view} inCard />
             </Card>
           )}
           {note === RoundNote.JOINED_LATE && (
             <Card>
               <p class={kit.hint} data-testid={inGameTestIds.sittingOutNote}>
-                You joined mid-round, so you're watching this one. You'll play from the next question.
+                {noteText(note, words)}
               </p>
             </Card>
           )}
           {note === RoundNote.DONE && (
             <Card>
               <p class={kit.hint} data-testid={inGameTestIds.doneNote}>
-                You're done. The round ends when everyone is, or when the clock runs out. Changed your mind? Keep
-                editing.
+                {noteText(note, words)}
               </p>
             </Card>
           )}

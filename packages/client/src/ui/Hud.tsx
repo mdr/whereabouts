@@ -67,11 +67,6 @@ export function HudBottom({ children }: { children: ComponentChildren }) {
 /** For a toolbar button that, like the primary one, takes the spare width of a phone's toolbar. */
 export const toolbarGrow = s.grow
 
-/** A line of text in the toolbar. */
-export function ToolbarNote({ children }: { children: ComponentChildren }) {
-  return <span class={s.toolbarNote}>{children}</span>
-}
-
 /** The per-device sound switch as a speaker button. */
 export function SoundToggle() {
   const on = soundOn.value

@@ -13,7 +13,7 @@ import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { Card } from "../ui/Card"
 import { ScoreParts } from "../ui/ScoreParts"
-import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop, ToolbarNote } from "../ui/Hud"
+import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../ui/Hud"
 import { cx } from "../ui/cx"
 import kit from "../ui/kit.module.css"
 import pl from "../ui/Players.module.css"
@@ -21,6 +21,7 @@ import { RevealCards } from "../ui/Round"
 import { frameReveal, showAnswer } from "../round"
 import { revealedFromView, revealShown, shownResults } from "../reveal"
 import { ShownRowType, canEndGame, revealModel } from "../round-model"
+import { WAITING_FOR_OTHERS, readyCountText, roundScoreText } from "../round-words"
 import { ConnectionNote } from "../ui/ConnectionNote"
 import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
@@ -117,7 +118,7 @@ export function Reveal({
             total={reveal.total}
             right={
               <HeaderNote title="The next round starts when everyone is ready" testId={revealTestIds.readyCount}>
-                {model.readyCount} / {model.presentCount} ready
+                {readyCountText(model.readyCount, model.presentCount)}
               </HeaderNote>
             }
           />
@@ -197,10 +198,10 @@ export function Reveal({
               disabled={iAmReady}
               data-testid={revealTestIds.readyButton}
             >
-              <Icon name="check" /> Ready
+              <Icon name="check" /> {iAmReady ? WAITING_FOR_OTHERS : "Ready"}
             </button>
           )}
-          {model.next ? (
+          {model.next && (
             <button
               class={iAmReady || !model.ready ? "primary" : ""}
               onClick={() => conn.next()}
@@ -209,8 +210,6 @@ export function Reveal({
             >
               <Icon name={model.last ? "flag" : "next"} /> {model.next.label}
             </button>
-          ) : (
-            iAmReady && <ToolbarNote>Waiting for the others…</ToolbarNote>
           )}
         </HudBottom>
       </Hud>
@@ -313,7 +312,7 @@ function RevealRow({
         </button>
       )}
       <span class={pl.roundScore} title="This round" data-testid={revealTestIds.roundScore}>
-        {r ? `+${Math.round(r.score)}` : "sat out"}
+        {roundScoreText(r)}
       </span>
       <RankArrow delta={delta} />
       <span class={pl.scoreNum} title="Total so far">
