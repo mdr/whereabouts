@@ -145,7 +145,8 @@ Images are x86_64 Linux, so they are built in CI rather than on a Mac.
 
 ## Layout
 
-pnpm workspace with three packages:
+pnpm workspace with three packages (module by module, and checklists for common
+changes: [docs/code-map.md](docs/code-map.md)):
 
 - `packages/shared`: geo, scoring, H3 paint model, question pool, the wire
   protocol (zod schemas + view types), and the pure `Game` state machine. No
