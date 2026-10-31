@@ -425,7 +425,8 @@ export class Game {
   lock(token: PlayerToken, now: Instant): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
-    if (this.phase !== Phase.GUESSING) return fail("not guessing")
+    // Pressed as the round ended, by this player or the clock: stale, not wrong.
+    if (this.phase !== Phase.GUESSING) return OK_SAME
     if (player.watching) return fail("you are watching")
     if (player.joinedRound > this.roundIndex) return fail("sitting this round out")
     let current = this.submissions.get(token)
@@ -447,7 +448,7 @@ export class Game {
   unlock(token: PlayerToken): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
-    if (this.phase !== Phase.GUESSING) return fail("not guessing")
+    if (this.phase !== Phase.GUESSING) return OK_SAME
     const current = this.submissions.get(token)
     if (!current?.locked) return OK_SAME
     current.locked = false
@@ -458,7 +459,8 @@ export class Game {
   ready(token: PlayerToken, now: Instant): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
-    if (this.phase !== Phase.REVEAL) return fail("nothing to be ready for")
+    // Pressed just after the last Ready moved the game on.
+    if (this.phase !== Phase.REVEAL) return OK_SAME
     if (player.watching) return fail("you are watching")
     if (this.ready_.has(token)) return OK_SAME
     this.ready_.add(token)

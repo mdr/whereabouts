@@ -423,8 +423,9 @@ describe("game server", () => {
     alice.errors.length = 0
 
     // A game-level rejection (as opposed to a schema one) also comes back as an error.
-    alice.send("ready")
-    expect(await pollErrors(alice)).toContain("nothing to be ready for")
+    alice.send("hint", { axis: HintAxis.LATITUDE })
+    alice.send("hint", { axis: HintAxis.LONGITUDE })
+    expect(await pollErrors(alice)).toContain("one hint per round")
     alice.errors.length = 0
 
     // Unknown topics are dropped silently rather than kicking (version skew tolerance).

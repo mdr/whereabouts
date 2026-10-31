@@ -287,7 +287,8 @@ describe("round loop", () => {
     expect(g.phase).toBe(Phase.REVEAL)
     const mine = g.view(tokA, T0 + 2).reveal!.results.find((r) => r.playerId === "p1")!
     expect(mine.score).toBeGreaterThan(900)
-    expect(g.unlock(tokA)).toEqual({ ok: false, error: "not guessing" })
+    expect(g.unlock(tokA)).toEqual({ ok: true, changed: false }) // too late: ignored
+    expect(g.lock(tokA, T0 + 3)).toEqual({ ok: true, changed: false })
   })
 
   it("locking with nothing painted is a pass: the pass score, no paint, and the round can end early", () => {
@@ -747,7 +748,7 @@ describe("ready-up edge cases", () => {
   it("ready is only meaningful during the reveal, and resets each round", () => {
     const g = twoPlayerGame(2)
     g.start(tokA, T0)
-    expect(g.ready(tokA, T0)).toEqual({ ok: false, error: "nothing to be ready for" })
+    expect(g.ready(tokA, T0)).toEqual({ ok: true, changed: false })
     g.tick(T0 + 60_000 + ROUND_GRACE)
     g.ready(tokA, T0 + 61_000)
     g.ready(tokB, T0 + 61_000)
