@@ -57,7 +57,8 @@ const DEFAULT_CONFIG: GameConfig = {
  */
 export const ROUND_GRACE: Ms = 1000
 
-interface Player {
+/** Who a player is and how they are connected: kept from one game to the next. */
+interface Seat {
   id: PlayerId
   token: PlayerToken
   name: PlayerName
@@ -69,6 +70,10 @@ interface Player {
   /** When the connection dropped, while it is down. */
   leftAt: Ms | undefined
   joinedAt: Ms
+}
+
+/** A player's part in one game, started afresh by freshRecord. */
+interface PlayerRecord {
   /** First round index this player may play. Later joiners sit out the current one. */
   joinedRound: number
   /** By round index; a hole for each round not played. */
@@ -77,6 +82,24 @@ interface Player {
   facts: (RoundFacts | undefined)[]
   previousRank: number | undefined
   hintsUsed: number
+}
+
+type Player = Seat & PlayerRecord
+
+const freshRecord = (joinedRound: number): PlayerRecord => ({
+  joinedRound,
+  scores: [],
+  facts: [],
+  previousRank: undefined,
+  hintsUsed: 0
+})
+
+/** Plain data (settings, a mix) compared by value. */
+function sameData(a: unknown, b: unknown): boolean {
+  if (!(a instanceof Object) || !(b instanceof Object)) return a === b
+  const x = a as Record<string, unknown>
+  const y = b as Record<string, unknown>
+  return [...new Set([...Object.keys(x), ...Object.keys(y)])].every((k) => sameData(x[k], y[k]))
 }
 
 interface Submission {
@@ -198,11 +221,7 @@ export class Game {
       connected: true,
       leftAt: undefined,
       joinedAt: now,
-      joinedRound: this.phase === Phase.LOBBY ? 0 : this.roundIndex + 1,
-      scores: [],
-      facts: [],
-      previousRank: undefined,
-      hintsUsed: 0
+      ...freshRecord(this.phase === Phase.LOBBY ? 0 : this.roundIndex + 1)
     }
     this.players.set(token, player)
     this.hostToken ??= token
@@ -274,13 +293,7 @@ export class Game {
     if (!this.isHost(token)) return fail("only the host can start")
     if (this.phase !== Phase.LOBBY) return fail("game already started")
     if (this.playing().length === 0) return fail("no players")
-    for (const p of this.players.values()) {
-      p.scores = []
-      p.facts = []
-      p.previousRank = undefined
-      p.joinedRound = 0
-      p.hintsUsed = 0
-    }
+    for (const p of this.players.values()) Object.assign(p, freshRecord(0))
     this.results = undefined
     this.beginRound(0, now)
     return OK_CHANGED
@@ -318,13 +331,7 @@ export class Game {
     if (this.phase !== Phase.LOBBY) return fail("settings are locked once the game starts")
     const mix = patch.mix ?? this.config.mix
     const next = { ...this.config, ...patch, mix, rounds: mixTotal(mix) }
-    if (
-      next.roundLength === this.config.roundLength &&
-      next.mapDetail === this.config.mapDetail &&
-      next.hints === this.config.hints &&
-      QUESTION_TYPES.every((t) => mix[t] === this.config.mix[t])
-    )
-      return OK_SAME
+    if (sameData(next, this.config)) return OK_SAME
     this.config = next
     this.questions = this.pickRounds()
     return OK_CHANGED
@@ -350,12 +357,7 @@ export class Game {
     this.ready_.clear()
     this.seed = now
     this.questions = this.pickRounds()
-    for (const p of this.players.values()) {
-      p.scores = []
-      p.previousRank = undefined
-      p.joinedRound = 0
-      p.hintsUsed = 0
-    }
+    for (const p of this.players.values()) Object.assign(p, freshRecord(0))
     for (const [tok, p] of this.players) if (!p.connected) this.players.delete(tok)
     if (this.hostToken === undefined || !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
     return OK_CHANGED
@@ -381,10 +383,7 @@ export class Game {
       if (this.playing().length >= MAX_PLAYERS) return fail("game is full")
       player.watching = false
       player.colour = this.freeColour()
-      player.joinedRound = this.phase === Phase.LOBBY ? 0 : this.roundIndex + 1
-      player.scores = []
-      player.facts = []
-      player.previousRank = undefined
+      Object.assign(player, freshRecord(this.phase === Phase.LOBBY ? 0 : this.roundIndex + 1))
     }
     return OK_CHANGED
   }

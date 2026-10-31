@@ -17,6 +17,7 @@ import { CATALOGUE, outlinesFrom } from "./catalogue.ts"
 import { REVEAL_PHOTOS } from "./photos.ts"
 import { regionCells, scoredAnswer, type Area } from "./regions.ts"
 import {
+  type ConfigurePatch,
   type GameConfig,
   MAX_PLAYERS,
   MAX_SPECTATORS,
@@ -675,6 +676,28 @@ describe("joining and leaving mid-game", () => {
     expect(g.playerTokens).toEqual([tokA])
     expect(g.view(tokA, T0 + 81_000).players[0]!.score).toBe(0)
   })
+
+  it("play again leaves each player as a new joiner would be, but for who they are", () => {
+    const seat = new Set(["id", "token", "name", "colour", "watching", "connected", "leftAt", "joinedAt"])
+    const record = (g: Game, token: PlayerToken) =>
+      Object.fromEntries(
+        Object.entries((g as unknown as { players: Map<PlayerToken, object> }).players.get(token)!).filter(
+          ([k]) => !seat.has(k)
+        )
+      )
+    const fresh = twoPlayerGame(1)
+    const g = makeGame({ config: { mix: mixOf({ [QuestionType.PLACE]: 1 }), roundLength: 60_000, hints: 1 } })
+    g.join(tokA, playerName("Alice"), T0)
+    g.join(tokB, playerName("Bob"), T0 + 1)
+    g.start(tokA, T0)
+    g.hint(tokA, HintAxis.LATITUDE)
+    g.setPaint(tokA, paintOn(currentQuestion(g, tokA, T0)))
+    g.tick(T0 + 60_000 + ROUND_GRACE)
+    g.next(tokA, T0 + 80_000)
+    g.again(tokA, T0 + 81_000)
+    expect(record(g, tokA)).toEqual(record(fresh, tokA))
+    expect(record(g, tokB)).toEqual(record(fresh, tokB))
+  })
 })
 
 describe("rename", () => {
@@ -769,6 +792,21 @@ describe("configure", () => {
       ok: false,
       error: "settings are locked once the game starts"
     })
+  })
+
+  it("sees a change to any setting the host may make, and no change when it is set to what it was", () => {
+    // Typed so that a new setting must be added here.
+    const changes: Required<ConfigurePatch> = {
+      roundLength: 30_000,
+      mix: places(3),
+      mapDetail: MapDetail.PHYSICAL,
+      hints: 3
+    }
+    for (const [key, value] of Object.entries(changes)) {
+      const g = twoPlayerGame()
+      expect(g.configure(tokA, { [key]: value }), key).toEqual({ ok: true, changed: true })
+      expect(g.configure(tokA, { [key]: value }), key).toEqual({ ok: true, changed: false })
+    }
   })
 
   it("the question mix reaches the picker", () => {
