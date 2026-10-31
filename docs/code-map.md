@@ -55,7 +55,7 @@ No I/O; the same code runs in the browser and on the server.
 | `src/settings.ts`, `src/host-setup.ts`           | Browser-stored settings, and the host's saved setup                                          |
 | `src/map.ts`, `src/paint-*.ts`                   | The MapLibre map and painting on it                                                          |
 | `src/vr/`                                        | The headset scene (three.js, IWSDK)                                                          |
-| `browser/pages/`, `browser/e2e/`                 | Playwright page objects, and the end-to-end scripts that use them                            |
+| `browser/pages/`, `browser/tests/`               | Playwright page objects, and the end-to-end tests that use them                              |
 
 ## Checklists
 
@@ -72,7 +72,7 @@ No I/O; the same code runs in the browser and on the server.
 1. A message: its schema in `ClientMessageSchemas`, a handler in `GameRoom.handlers()` (the compiler insists), a `Game` method, a `Connection` method.
 2. A view field: the type in `protocol.ts` and the same field in `view-schema.ts`; `view-schema.test.ts` fails until they match.
 3. Bump `PROTOCOL_VERSION`.
-4. A browser page object, if the e2e scripts should drive or read it.
+4. A browser page object, if the e2e tests should drive or read it.
 
 **Add a game setting**
 

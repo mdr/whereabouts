@@ -52,15 +52,17 @@ tasks:
       - pnpm test {{.CLI_ARGS}}
 
   e2e:
-    desc: "Run the browser scripts against dev servers of their own, and sum up (task e2e -- solo host for some)"
+    desc: "Run the browser tests against dev servers of their own (task e2e -- solo host for some)"
     summary: |
-      Starts Vite and the game server on spare ports (5180 and 8790), so a
-      `pnpm dev` already running is left alone, with short rounds; runs
-      every script in packages/client/browser/e2e but prod, or those named
-      after --; and prints a line for each. Output and screenshots go to
-      smoke-out/e2e/<name>/. Takes about 4½ minutes for all of them, three at a time.
+      Playwright Test starts Vite and the game server on spare ports (5180
+      and 8790), so a `pnpm dev` already running is left alone, with short
+      rounds; runs every spec in packages/client/browser/tests, or those
+      whose file names match the words after --, three at a time. Screenshots
+      go to smoke-out/e2e/, a report to smoke-out/e2e-report/.
+      Takes about 4½ minutes for all of them.
     cmds:
-      - scripts/e2e.sh {{.CLI_ARGS}}
+      # Named tests skip the dependency, which would run every other test first.
+      - pnpm --filter ./packages/client e2e {{if .CLI_ARGS}}--no-deps {{end}}{{.CLI_ARGS}}
 
   # --------------------------------------------------- the production build
 
@@ -78,9 +80,10 @@ tasks:
 
   e2e:prod:
     desc: Check a production build loads the map - task serve:prod first, or name a site (task e2e:prod -- https://…)
-    dir: packages/client
+    env:
+      PROD_URL: "{{.CLI_ARGS}}"
     cmds:
-      - node --experimental-transform-types --disable-warning=ExperimentalWarning browser/e2e/prod.ts {{.CLI_ARGS}}
+      - pnpm --filter ./packages/client e2e:prod
 
   nix:hash:
     desc: Update the Nix package's pnpm dependency hash after the lockfile changes (pnpm check says when)

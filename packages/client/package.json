@@ -8,7 +8,9 @@
     "build": "tsc --noEmit && vp build",
     "preview": "vp preview",
     "typecheck": "tsc --noEmit && tsc --noEmit -p browser",
-    "smoke": "playwright test solo"
+    "smoke": "playwright test solo",
+    "e2e": "playwright test",
+    "e2e:prod": "playwright test -c playwright.prod.config.ts"
   },
   "dependencies": {
     "@iwsdk/core": "1.0.1",

@@ -36,20 +36,15 @@ Other commands:
   server tests that drive the real server over WebSockets with the browser
   client.
 - `pnpm lint:fix` and `pnpm format` to tidy up.
-- Browser end-to-end scripts in `packages/client/browser/e2e`, which
-  drive your installed Chrome with Playwright against the running dev
-  servers. They are written against the page objects in
-  `packages/client/browser/pages`: one per screen, and each action that
-  moves to another screen returns that screen. Page objects find elements
-  by the test ids each component declares in its `*TestIds.ts` module. Run them from
-  `packages/client` with
-  `node --experimental-transform-types browser/e2e/<name>.ts [outDir]`
-  (`pnpm smoke` runs `solo`); screenshots go to `smoke-out/`. Against
-  dev servers on other ports, give the scripts the same `CLIENT_PORT`.
-  `task e2e` runs them all against dev servers of its own and sums up
-  (`task e2e -- solo host` for some); `task --list` shows what else there is.
-  Run the game server with `ROUND_MS=12000 ROUNDS=2` for `flows`,
-  `deadline`, `phone` and `sound`.
+- Browser end-to-end tests in `packages/client/browser/tests`, run by
+  Playwright Test in your installed Chrome. They are written against the
+  page objects in `packages/client/browser/pages`: one per screen, and each
+  action that moves to another screen returns that screen. Page objects find
+  elements by the test ids each component declares in its `*TestIds.ts`
+  module. `task e2e` starts dev servers of its own, with short rounds, and
+  runs them all (`task e2e -- solo host` for some); `pnpm smoke` runs
+  `solo`. Screenshots go to `smoke-out/e2e/`. `task --list` shows what
+  else there is.
   - `solo`: practice mode: paint, undo and redo, submit.
   - `multiplayer`: two players through setup, guessing, Done and Keep
     editing, the reveal and ready-up.
