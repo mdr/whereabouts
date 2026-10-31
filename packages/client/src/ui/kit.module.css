@@ -12,7 +12,7 @@
   line-height: 1.4;
 }
 :where(.warn) {
-  color: var(--danger);
+  color: var(--danger-fg);
 }
 :where(.tagline) {
   margin: 0;

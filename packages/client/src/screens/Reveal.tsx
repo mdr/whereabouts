@@ -131,7 +131,7 @@ export function Reveal({
             where={mine && where.get(mine.playerId)}
             testIds={{ scoreCard: revealTestIds.scoreCard }}
           />
-          <ConnectionNote conn={conn} />
+          <ConnectionNote conn={conn} onMap />
         </HudTop>
         <HudRight>
           <Card title="Scores">

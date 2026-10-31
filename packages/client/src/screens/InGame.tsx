@@ -128,7 +128,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           {!sittingOut && view.config.hints > 0 && (
             <HintCard band={view.you.hint} left={view.you.hintsLeft} onUse={(axis) => conn.hint(axis)} />
           )}
-          <ConnectionNote conn={conn} />
+          <ConnectionNote conn={conn} onMap />
           {note === RoundNote.WATCHING && (
             <Card>
               <p class={kit.hint}>{noteText(note, words)}</p>

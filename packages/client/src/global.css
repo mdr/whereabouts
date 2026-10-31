@@ -40,6 +40,8 @@
   --accent: #ffa726;
   --accent-2: #4fc3f7;
   --danger: #ef5350;
+  /* Lighter, for small text on a card or panel. */
+  --danger-fg: #ff7b72;
   --success: #66bb6a;
   /* The host's crown. */
   --host: #fbbf24;
