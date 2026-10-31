@@ -406,7 +406,6 @@ export default defineConfig({
         files: [
           "packages/client/src/map.ts",
           "packages/client/src/vr/index.ts",
-          "packages/client/src/vr/menu.ts",
           "packages/shared/src/game.ts",
           "packages/shared/src/scoring.ts"
         ],

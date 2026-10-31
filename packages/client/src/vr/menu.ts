@@ -15,19 +15,12 @@ import {
   type World
 } from "@iwsdk/core"
 import { headsetPassthrough, soundOn } from "../settings"
+import { MORE, actionLabel, panelContent, viewActions, viewHeading, viewNote, type PanelElement } from "./menu-panel"
 import { VrViewType, type VrAction, type VrView } from "./view"
 import panelUrl from "./panel.uikitml?url"
 import type { Metres, Seconds } from "@whereabouts/shared/units"
 
 export const PANEL_SIZE: Metres = 0.38
-const HEADINGS: Record<VrViewType, string> = {
-  [VrViewType.LOBBY]: "WELCOME",
-  [VrViewType.PAINT]: "THIS ROUND",
-  [VrViewType.REVEAL]: "THE ANSWER",
-  [VrViewType.DONE]: "GAME OVER"
-}
-/** As many as the menu has buttons for, below the main actions. */
-const MORE = 4
 /** How long a press waits for its confirming second press. */
 export const CONFIRM_WAIT: Seconds = 4
 
@@ -113,7 +106,7 @@ export class Menu {
       })
     on("done", () => this.handlers.done())
     on("unlock", () => this.view?.type === VrViewType.PAINT && this.view.round.unlock?.())
-    for (const i of [0, 1]) on(`act${i}`, () => this.press(this.actions[i]))
+    for (const i of [0, 1]) on(`act${i}`, () => this.press(viewActions(this.view)[i]))
     for (let i = 0; i < MORE; i++) on(`more${i}`, () => this.press(this.view?.more?.[i]))
     on("sound", () => {
       soundOn.value = !soundOn.value
@@ -181,16 +174,16 @@ export class Menu {
   get shown(): MenuShown {
     const view = this.view
     const round = view?.type === VrViewType.PAINT ? view.round : undefined
-    const shown = (a: VrAction) => ({ label: this.label(a), enabled: a.enabled !== false })
+    const shown = (a: VrAction) => ({ label: actionLabel(a, this.armed?.action), enabled: a.enabled !== false })
     return {
       done: this.doneText,
       clock: this.clockText,
       unlock: round?.unlock !== undefined,
-      actions: this.actions.map(shown),
+      actions: viewActions(view).map(shown),
       more: (view?.more ?? []).slice(0, MORE).map(shown),
-      heading: view ? this.heading(view) : "",
+      heading: view ? viewHeading(view) : "",
       mode: round?.mode,
-      note: view && this.note(view)
+      note: view && viewNote(view)
     }
   }
 
@@ -206,92 +199,26 @@ export class Menu {
     action.press()
   }
 
-  private label(action: VrAction): string {
-    return this.armed?.action.label === action.label && action.confirm ? action.confirm : action.label
-  }
-
-  private heading(view: VrView): string {
-    return (view.type === VrViewType.PAINT && view.round.heading) || HEADINGS[view.type]
-  }
-
-  private note(view: VrView): string | undefined {
-    return view.type === VrViewType.PAINT
-      ? view.round.note
-      : view.type === VrViewType.REVEAL
-        ? view.reveal.note
-        : view.summary.note
-  }
-
-  private get actions(): VrAction[] {
-    const view = this.view
-    return view?.type === VrViewType.REVEAL
-      ? view.reveal.actions
-      : view && "summary" in view
-        ? view.summary.actions
-        : []
-  }
-
   private applyView(): void {
     const doc = this.doc
     const view = this.view
     if (!doc || !view) return
-    const show = (id: string, on: boolean) => doc.getElementById(id)?.setProperties({ display: on ? "flex" : "none" })
-    const text = (id: string, t: string) => doc.getElementById(id)?.setProperties({ text: t })
-    const reveal = view.type === VrViewType.REVEAL ? view.reveal : undefined
-    const summary = "summary" in view ? view.summary : undefined
-    const round = view.type === VrViewType.PAINT ? view.round : undefined
-    const painting = round?.playing === true && round.unlock === undefined
-    show("hint", painting)
-    text(
-      "hint",
-      round?.paint.fillable.value
-        ? "Turn your left palm up for paint tools and hints. A or X brings out the fill pail: a pull fills the country it points at."
-        : "Turn your left palm up for paint tools and hints."
-    )
-    show("mode", round?.mode !== undefined)
-    if (round?.mode) text("mode", round.mode)
-    show("done", painting)
-    show("unlock", round?.unlock !== undefined)
-    show("clock", round?.timeLeft !== undefined)
-    show("score", round === undefined)
-    const note = this.note(view)
-    show("note", note !== undefined)
-    if (note !== undefined) text("note", note)
-    const actions = this.actions
-    for (const i of [0, 1]) {
-      const action = actions[i]
-      show(`act${i}`, action !== undefined)
-      if (!action) continue
-      text(`act${i}Label`, this.label(action))
-      doc.getElementById(`act${i}`)?.setProperties({ disabled: action.enabled === false })
-    }
-    const more = view.more ?? []
-    show("more", more.length > 0)
-    for (let i = 0; i < MORE; i++) {
-      const action = more[i]
-      show(`more${i}`, action !== undefined)
-      if (!action) continue
-      text(`more${i}Label`, this.label(action))
-      doc.getElementById(`more${i}`)?.setProperties({ disabled: action.enabled === false })
-    }
-    text("soundLabel", soundOn.value ? "Sound on" : "Sound off")
-    show("passthrough", this.passthroughOffered)
-    text("heading", this.heading(view))
-    show("extras", reveal?.flags !== undefined)
-    text("passthroughLabel", headsetPassthrough.value ? "Show space" : "See your room")
-    if (reveal?.flags) text("flagsLabel", reveal.flags.on ? "Hide all flags" : "Show all flags")
-    if (round) text("prompt", round.prompt)
-    show("fact", reveal?.fact !== undefined)
-    if (reveal) {
-      text("prompt", reveal.label)
-      text("score", reveal.scoreLine)
-      if (reveal.fact !== undefined) text("fact", reveal.fact)
-    }
-    if (summary) {
-      text("prompt", summary.title)
-      text("score", summary.scoreLine)
-    }
+    const content = panelContent(view, {
+      armed: this.armed?.action,
+      soundOn: soundOn.value,
+      passthroughOn: headsetPassthrough.value,
+      passthroughOffered: this.passthroughOffered
+    })
+    for (const [id, element] of Object.entries(content)) doc.getElementById(id)?.setProperties(uikitProperties(element))
     // Set again from the round next frame.
     this.doneText = this.clockText = ""
+  }
+}
+
+function uikitProperties({ shown, text, disabled }: PanelElement) {
+  return {
+    ...(shown !== undefined && { display: shown ? ("flex" as const) : ("none" as const) }),
+    ...(text !== undefined && { text }),
+    ...(disabled !== undefined && { disabled })
   }
 }
