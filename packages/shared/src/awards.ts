@@ -9,7 +9,7 @@ import { shuffle } from "./questions.ts"
 
 /** What one player did in one round, kept for the awards at the end. */
 export interface RoundFacts {
-  /** The answer's name. */
+  /** The place's name, for award text, e.g. "Taj Mahal, Agra". */
   label: string
   score: number
   passed: boolean
