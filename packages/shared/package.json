@@ -5,10 +5,8 @@
   "type": "module",
   "exports": {
     "./*": "./src/*.ts",
-    "./questions.json": "./questions.json",
-    "./regions.json": "./regions.json",
-    "./flags.json": "./flags.json",
-    "./features.json": "./features.json",
+    "./catalogue.json": "./catalogue.json",
+    "./outlines.json": "./outlines.json",
     "./land.json": "./land.json",
     "./water.json": "./water.json",
     "./borders.json": "./borders.json",

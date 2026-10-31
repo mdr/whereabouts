@@ -1,58 +1,56 @@
 import { describe, expect, it } from "vite-plus/test"
-import featuresJson from "../features.json" with { type: "json" }
-import regionsJson from "../regions.json" with { type: "json" }
-import { featureFrom, type RegionData, regionFrom } from "./regions.ts"
-import { type QuestionData } from "./questions.ts"
+import { CATALOGUE } from "./catalogue.ts"
+import { AnswerType, FeatureType, QuestionType, Surface, promptOf, type FeatureQuestion } from "./questions.ts"
 
-const FEATURES = (featuresJson as (QuestionData | RegionData)[]).map(featureFrom)
-const COUNTRIES = (regionsJson as RegionData[]).map(regionFrom)
-const of = (topic: string) => FEATURES.filter((q) => q.topic === topic)
+const FEATURES = CATALOGUE.filter((q): q is FeatureQuestion => q.type === QuestionType.FEATURE)
+const STATES = CATALOGUE.filter((q) => q.type === QuestionType.STATE)
+const COUNTRIES = CATALOGUE.filter((q) => q.type === QuestionType.COUNTRY)
+const of = (feature: FeatureType) => FEATURES.filter((q) => q.feature === feature)
 
 describe("islands, lakes, seas and US states", () => {
-  it("are well formed, each with its own id", () => {
-    expect(new Set(FEATURES.map((q) => q.id)).size).toBe(FEATURES.length)
-    for (const q of FEATURES) {
+  it("are well formed", () => {
+    for (const q of [...FEATURES, ...STATES]) {
       expect(q.label.length, q.id).toBeGreaterThan(0)
-      expect(q.wiki?.length, q.id).toBeGreaterThan(0)
-      expect(q.toleranceKm, q.id).toBeGreaterThanOrEqual(5)
-      if (q.kind === "region") {
-        expect(q.prompt, q.id).toMatch(/^Paint the whole of /)
-        expect(q.outline.length, q.id).toBeGreaterThan(0)
-      }
+      expect(q.wiki.length, q.id).toBeGreaterThan(0)
+      expect(q.answer.toleranceKm, q.id).toBeGreaterThanOrEqual(5)
+      if (q.answer.type === AnswerType.AREA) expect(promptOf(q), q.id).toMatch(/^Paint the whole of /)
     }
   })
 
   it("leave out islands already asked as a country", () => {
-    expect(of("island")).toHaveLength(20)
+    expect(of(FeatureType.ISLAND)).toHaveLength(20)
     const countries = new Set(COUNTRIES.map((q) => q.label))
-    for (const q of of("island")) expect(countries.has(q.label), q.label).toBe(false)
+    for (const q of of(FeatureType.ISLAND)) expect(countries.has(q.label), q.label).toBe(false)
     for (const name of ["Madagascar", "Cuba", "Iceland", "Sri Lanka", "Great Britain", "Ireland"])
       expect(
-        of("island").some((q) => q.label === name),
+        of(FeatureType.ISLAND).some((q) => q.label === name),
         name
       ).toBe(false)
   })
 
   it("have the lakes big enough to paint, and the nearly closed seas", () => {
-    expect(of("lake").map((q) => q.label)).toContain("Lake Baikal")
-    expect(of("lake")).toHaveLength(15)
-    expect(of("sea").map((q) => q.label)).toEqual(
+    expect(of(FeatureType.LAKE).map((q) => q.label)).toContain("Lake Baikal")
+    expect(of(FeatureType.LAKE)).toHaveLength(15)
+    expect(of(FeatureType.SEA).map((q) => q.label)).toEqual(
       expect.arrayContaining(["Mediterranean Sea", "Black Sea", "Caspian Sea", "Red Sea", "Baltic Sea"])
     )
-    expect(of("sea")).toHaveLength(7)
-    expect(
-      of("lake")
-        .concat(of("sea"))
-        .every((q) => q.kind === "region")
-    ).toBe(true)
+    expect(of(FeatureType.SEA)).toHaveLength(7)
+  })
+
+  it("paint lakes and seas on water, islands on land", () => {
+    for (const q of [...of(FeatureType.LAKE), ...of(FeatureType.SEA)])
+      expect(q.answer.surface, q.id).toBe(Surface.WATER)
+    for (const q of of(FeatureType.ISLAND)) expect(q.answer.surface, q.id).toBe(Surface.LAND)
   })
 
   it("have all 50 states, the two smallest asked as a point, and Georgia not mistaken for the country", () => {
-    const states = of("state")
-    expect(states).toHaveLength(50)
-    expect(states.filter((q) => q.kind !== "region").map((q) => q.label)).toEqual(["Delaware", "Rhode Island"])
-    const georgia = states.find((q) => q.label.startsWith("Georgia"))!
+    expect(STATES).toHaveLength(50)
+    expect(STATES.filter((q) => q.answer.type === AnswerType.POINT).map((q) => q.label)).toEqual([
+      "Delaware",
+      "Rhode Island"
+    ])
+    const georgia = STATES.find((q) => q.label.startsWith("Georgia"))!
     expect(COUNTRIES.some((q) => q.label === georgia.label)).toBe(false)
-    expect(georgia.prompt).toContain("US state")
+    expect(promptOf(georgia)).toContain("US state")
   })
 })

@@ -1,7 +1,7 @@
 /**
  * Which country is where, for the reveal of a flag round: the country under
  * the pointer, and the countries a player's paint fell in ("Mostly in
- * Peru"). From borders.json, built with flags.json by
+ * Peru"). From borders.json, built with the flag questions by
  * scripts/build-regions.mjs: every flag country's land, coarser than the
  * outlines scored (about 5 km, islands under 50 km² left out).
  *
@@ -16,13 +16,13 @@
  * answer wins.
  */
 import { greatCircleDistance, type LatLon } from "./geo.ts"
-import type { FlagQuestion } from "./flags.ts"
+import { answerCentre, type FlagQuestion } from "./questions.ts"
 import { flagCode, type FlagCode } from "./ids.ts"
 import type { PaintCell } from "./paint.ts"
 import type { FillShape } from "./fill.ts"
 
 interface BorderData {
-  /** The flag's ISO code, as in flags.json. */
+  /** The flag's ISO code, as flag questions show it. */
   flag: string
   /** Rings of [lon, lat] steps in hundredths of a degree, the first from 0, 0. */
   rings: number[][]
@@ -58,13 +58,13 @@ export class Borders {
 
   constructor(data: BordersData, flags: readonly FlagQuestion[]) {
     this.none = data.none.map(decodeRing)
-    const byFlag = new Map(flags.map((f) => [f.flag, f]))
+    const byFlag = new Map(flags.map((f) => [f.clue.flag, f]))
     for (const d of data.countries) {
       const f = byFlag.get(flagCode(d.flag))
       if (!f) continue
       if (d.near) this.small.push({ f, near: d.near })
       const rings = d.rings.map(decodeRing)
-      this.byFlag.set(f.flag, { rings, near: d.near })
+      this.byFlag.set(f.clue.flag, { rings, near: d.near })
       if (rings.length === 0) continue
       const box: Country["box"] = [Infinity, Infinity, -Infinity, -Infinity]
       for (const r of rings)
@@ -92,7 +92,7 @@ export class Borders {
     let best: FlagQuestion | undefined = undefined
     let bestD = Infinity
     for (const { f, near } of this.small) {
-      const d = greatCircleDistance(p, f.answer)
+      const d = greatCircleDistance(p, answerCentre(f.answer))
       if (d <= Math.max(near, px * kmPerPx) && d < bestD) [best, bestD] = [f, d]
     }
     return best
@@ -119,13 +119,13 @@ export class Borders {
 
   /** A country's land, to fill (see fill.ts): its rings, answer and `near`. */
   fillShape(f: FlagQuestion): FillShape {
-    const d = this.byFlag.get(f.flag)
+    const d = this.byFlag.get(f.clue.flag)
     const rings = (d?.rings ?? []).map((r) => {
       const out: number[][] = []
       for (let i = 0; i < r.length; i += 2) out.push([r[i]!, r[i + 1]!])
       return out
     })
-    return { rings, answer: f.answer, near: d?.near }
+    return { rings, answer: answerCentre(f.answer), near: d?.near }
   }
 
   /** A country's outline: rings of lon, lat, lon, lat, … in degrees; none if it has no shape here. */
@@ -140,11 +140,12 @@ export class Borders {
    * land drawn, keep their answer.
    */
   pins(): { f: FlagQuestion; at: LatLon }[] {
-    const out: { f: FlagQuestion; at: LatLon }[] = [...this.small.map(({ f }) => ({ f, at: f.answer }))]
+    const out: { f: FlagQuestion; at: LatLon }[] = [...this.small.map(({ f }) => ({ f, at: answerCentre(f.answer) }))]
     const small = new Set(this.small.map(({ f }) => f))
     for (const c of this.countries) {
       if (small.has(c.f)) continue
-      out.push({ f: c.f, at: this.onLand(c.f.answer) === c.f ? c.f.answer : inside(c) })
+      const at = answerCentre(c.f.answer)
+      out.push({ f: c.f, at: this.onLand(at) === c.f ? at : inside(c) })
     }
     return out
   }
@@ -183,7 +184,7 @@ function inside({ f, rings }: Country): LatLon {
   const area = (b: number[]) => (b[2]! - b[0]!) * (b[3]! - b[1]!)
   const ring = rings.reduce((a, b) => (area(box(b)) > area(box(a)) ? b : a))
   const [w, s, e, n] = box(ring)
-  let best: LatLon = f.answer
+  let best: LatLon = answerCentre(f.answer)
   let bestD = -1
   for (let i = 0; i <= GRID; i++)
     for (let j = 0; j <= GRID; j++) {

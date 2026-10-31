@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vite-plus/test"
-import { KickSchema, PROTOCOL_VERSION, decodeTicket, encodeTicket, type Ticket } from "./protocol.ts"
+import {
+  ConfigureSchema,
+  KickSchema,
+  PROTOCOL_VERSION,
+  decodeTicket,
+  encodeTicket,
+  evenMix,
+  mixOf,
+  type Ticket
+} from "./protocol.ts"
+import { QuestionType } from "./questions.ts"
 import { playerName, playerToken, roomCode } from "./ids.ts"
 
 describe("ticket codec", () => {
@@ -36,23 +46,16 @@ describe("ticket codec", () => {
 })
 
 describe("ConfigureSchema", () => {
-  it("accepts supported values and rejects the rest", async () => {
-    const { ConfigureSchema } = await import("./protocol.ts")
-    const mix = (landmarks: number, places: number, countries: number, flags: number) => ({
-      mix: { landmarks, places, countries, flags }
-    })
-    expect(ConfigureSchema.safeParse(mix(2, 2, 2, 2)).success).toBe(true)
+  const mix = (counts: Partial<Record<QuestionType, number>>) => ({ mix: mixOf(counts) })
+
+  it("accepts supported values and rejects the rest", () => {
+    expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 2, [QuestionType.PLACE]: 2 })).success).toBe(true)
     expect(ConfigureSchema.safeParse({ roundMs: 45_000 }).success).toBe(true)
-    expect(ConfigureSchema.safeParse(mix(0, 0, 0, 0)).success).toBe(false)
-    expect(ConfigureSchema.safeParse(mix(4, 4, 4, 4)).success).toBe(false)
-    expect(ConfigureSchema.safeParse(mix(-1, 2, 0, 0)).success).toBe(false)
-    expect(ConfigureSchema.safeParse(mix(1.5, 2, 0, 0)).success).toBe(false)
-    expect(ConfigureSchema.safeParse({ mix: { landmarks: 3 } }).success).toBe(false)
-    // A mix from before islands, lakes, seas and US states asks none of them.
-    expect(ConfigureSchema.parse({ mix: { landmarks: 3, places: 2, countries: 0, flags: 0 } }).mix).toMatchObject({
-      features: 0,
-      states: 0
-    })
+    expect(ConfigureSchema.safeParse(mix({})).success).toBe(false)
+    expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 8, [QuestionType.PLACE]: 8 })).success).toBe(false)
+    expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: -1, [QuestionType.PLACE]: 2 })).success).toBe(false)
+    expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 1.5 })).success).toBe(false)
+    expect(ConfigureSchema.safeParse({ mix: { [QuestionType.LANDMARK]: 3 } }).success).toBe(false)
     expect(ConfigureSchema.safeParse({ roundMs: 61_000 }).success).toBe(false)
     expect(ConfigureSchema.safeParse({ mapDetail: "political" }).success).toBe(true)
     expect(ConfigureSchema.safeParse({ mapDetail: "satellite" }).success).toBe(false)
@@ -60,12 +63,17 @@ describe("ConfigureSchema", () => {
 })
 
 describe("evenMix", () => {
-  it("splits the rounds evenly, the rest to the first kinds", async () => {
-    const { evenMix } = await import("./protocol.ts")
-    const none = { features: 0, states: 0 }
-    expect(evenMix(8)).toEqual({ landmarks: 2, places: 2, countries: 2, flags: 2, ...none })
-    expect(evenMix(6)).toEqual({ landmarks: 2, places: 2, countries: 1, flags: 1, ...none })
-    expect(evenMix(1)).toEqual({ landmarks: 1, places: 0, countries: 0, flags: 0, ...none })
+  it("splits the rounds evenly over the first four types, the rest to the first", () => {
+    const even = (landmarks: number, places: number, countries: number, flags: number) =>
+      mixOf({
+        [QuestionType.LANDMARK]: landmarks,
+        [QuestionType.PLACE]: places,
+        [QuestionType.COUNTRY]: countries,
+        [QuestionType.FLAG]: flags
+      })
+    expect(evenMix(8)).toEqual(even(2, 2, 2, 2))
+    expect(evenMix(6)).toEqual(even(2, 2, 1, 1))
+    expect(evenMix(1)).toEqual(even(1, 0, 0, 0))
   })
 })
 

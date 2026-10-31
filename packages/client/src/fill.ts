@@ -8,26 +8,25 @@
 import { useEffect } from "preact/hooks"
 import { countryFill, type FillShape } from "@whereabouts/shared/fill"
 import type { Borders } from "@whereabouts/shared/borders"
-import type { FlagCode, RegionId } from "@whereabouts/shared/ids"
+import type { FlagCode } from "@whereabouts/shared/ids"
 import type { H3Cell, H3Res } from "@whereabouts/shared/h3"
-import type { FlagQuestion } from "@whereabouts/shared/flags"
+import { AnswerType, answerCentre, type FlagQuestion, type Outlines } from "@whereabouts/shared/questions"
 import type { LatLon } from "@whereabouts/shared/geo"
-import type { RegionQuestion } from "@whereabouts/shared/regions"
 import type { PaintController } from "./paint-controller"
 import { borders, loadBorders } from "./borders"
-import { regions } from "./regions"
+import { outlines } from "./outlines"
 
 export class CountryFiller {
   private readonly shapes = new Map<FlagCode, FillShape>()
-  private readonly outlines = new Map<FlagCode, GeoJSON.MultiPolygon>()
+  private readonly cursors = new Map<FlagCode, GeoJSON.MultiPolygon>()
   private readonly fills = new Map<string, H3Cell[]>()
 
   private readonly borders: Borders
-  private readonly regions: ReadonlyMap<RegionId, RegionQuestion>
+  private readonly outlines: Outlines
 
-  constructor(borders: Borders, regions: ReadonlyMap<RegionId, RegionQuestion>) {
+  constructor(borders: Borders, outlines: Outlines) {
     this.borders = borders
-    this.regions = regions
+    this.outlines = outlines
   }
 
   /**
@@ -40,23 +39,23 @@ export class CountryFiller {
 
   /** The country's outline, for the cursor. */
   outline(f: FlagQuestion): GeoJSON.MultiPolygon {
-    let o = this.outlines.get(f.flag)
+    let o = this.cursors.get(f.clue.flag)
     if (!o) {
       const shape = this.shape(f)
       const coordinates = shape.polygons ?? (shape.rings ?? []).map((r) => [r])
       // A country too small for land of its own shows as its answer's surroundings.
       o = {
         type: "MultiPolygon",
-        coordinates: coordinates.length > 0 ? coordinates : [[circle(f.answer, shape.near ?? 5)]]
+        coordinates: coordinates.length > 0 ? coordinates : [[circle(answerCentre(f.answer), shape.near ?? 5)]]
       }
-      this.outlines.set(f.flag, o)
+      this.cursors.set(f.clue.flag, o)
     }
     return o
   }
 
   /** The cells filling the country on a layer of this finest resolution, compacted. */
   cells(f: FlagQuestion, finestRes: H3Res): H3Cell[] {
-    const key = `${f.flag}:${finestRes}`
+    const key = `${f.clue.flag}:${finestRes}`
     let cells = this.fills.get(key)
     if (!cells) {
       cells = countryFill(this.shape(f), finestRes)
@@ -66,11 +65,11 @@ export class CountryFiller {
   }
 
   private shape(f: FlagQuestion): FillShape {
-    let shape = this.shapes.get(f.flag)
+    let shape = this.shapes.get(f.clue.flag)
     if (!shape) {
-      const region = f.regionId ? this.regions.get(f.regionId) : undefined
-      shape = region ? { polygons: region.outline, answer: f.answer } : this.borders.fillShape(f)
-      this.shapes.set(f.flag, shape)
+      const polygons = f.answer.type === AnswerType.AREA ? this.outlines.get(f.answer.outline) : undefined
+      shape = polygons ? { polygons, answer: answerCentre(f.answer) } : this.borders.fillShape(f)
+      this.shapes.set(f.clue.flag, shape)
     }
     return shape
   }
@@ -95,7 +94,7 @@ function circle({ lat, lon }: LatLon, km: number): number[][] {
  */
 export function useFillTool(paint: PaintController, active: boolean): void {
   const b = borders.value
-  const r = regions.value
+  const r = outlines.value
   useEffect(() => {
     if (active && !b) loadBorders().catch((err: unknown) => console.warn("could not load borders", err))
   }, [active, b])

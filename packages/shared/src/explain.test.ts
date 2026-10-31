@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vite-plus/test"
 import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell, UNITS } from "./h3.ts"
-import regionsJson from "../regions.json" with { type: "json" }
+import outlinesJson from "../outlines.json" with { type: "json" }
 import { describePoint, describeRegion, explainPoint } from "./explain.ts"
 import { resolutionForTolerance } from "./paint.ts"
-import { regionCells, type RegionData, regionFrom, regionMisfit, scoreRegionQuestion } from "./regions.ts"
+import { regionCells, regionMisfit, scoreArea, scoredAnswer, type Area } from "./regions.ts"
+import { CATALOGUE, outlinesFrom } from "./catalogue.ts"
+import { AnswerType } from "./questions.ts"
 import { buildDistribution, scoreDistribution } from "./scoring.ts"
 
 const coat = (cells: H3Cell[]) =>
@@ -49,25 +51,30 @@ describe("explaining a place's score", () => {
 })
 
 describe("explaining a country's score", () => {
-  const regions = (regionsJson as RegionData[]).map(regionFrom)
-  const byId = (id: string) => regions.find((q) => q.id === id)!
-  const france = byId("france-region")
+  const outlines = outlinesFrom(outlinesJson)
+  const areaOf = (id: string): Area => {
+    const a = scoredAnswer(CATALOGUE.find((q) => q.id === id)!.answer, outlines)
+    if (a.type !== AnswerType.AREA) throw new Error(`${id} is not painted whole`)
+    return a
+  }
+  const france = areaOf("france-region")
+  const label = CATALOGUE.find((q) => q.id === "france-region")!.label
   const res = resolutionForTolerance(france.toleranceKm)
   const cells = regionCells(france, res)
-  const say = (cs: H3Cell[]) => describeRegion(regionMisfit(coat(cs), france), france.label, france.toleranceKm)
+  const say = (cs: H3Cell[]) => describeRegion(regionMisfit(coat(cs), france), label, france.toleranceKm)
 
   it("an exact paint is a close match", () => {
-    expect(scoreRegionQuestion(coat(cells), france).score).toBeGreaterThan(985)
+    expect(scoreArea(coat(cells), france).score).toBeGreaterThan(985)
     expect(say(cells)).toBe("A good match.")
   })
 
   it("names the side left bare", () => {
-    expect(say(cells.filter((h) => cellToLatLng(h)[1] < france.answer.lon))).toBe("You missed a lot of the east.")
+    expect(say(cells.filter((h) => cellToLatLng(h)[1] < france.centre.lon))).toBe("You missed a lot of the east.")
   })
 
   it("names the border paint spilled over, and a neighbour painted instead", () => {
-    const germany = regionCells(byId("germany-region"), res)
+    const germany = regionCells(areaOf("germany-region"), res)
     expect(say([...cells, ...germany])).toBe("A lot of your paint went over the north-east border.")
-    expect(say(germany)).toBe(`Your paint was just north-east of ${france.label}.`)
+    expect(say(germany)).toBe(`Your paint was just north-east of ${label}.`)
   })
 })

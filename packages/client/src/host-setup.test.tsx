@@ -1,12 +1,14 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { render } from "@testing-library/preact"
-import type { GameView } from "@whereabouts/shared/protocol"
+import { mixOf, type GameView } from "@whereabouts/shared/protocol"
+import { QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "./net"
 import { hostSetup } from "./settings"
 import { configureAsHost, savedSetupPatch, useSavedSetup } from "./host-setup"
 
-const MIX = { landmarks: 3, places: 3, countries: 2, flags: 2, features: 0, states: 0 }
+const { LANDMARK, PLACE, COUNTRY, FLAG } = QuestionType
+const MIX = mixOf({ [LANDMARK]: 3, [PLACE]: 3, [COUNTRY]: 2, [FLAG]: 2 })
 const SAVED = { mix: MIX, roundMs: 90_000, mapDetail: "political" }
 
 function lobby(isHost: boolean, phase: GameView["phase"] = "lobby"): GameView {
@@ -28,51 +30,30 @@ describe("savedSetupPatch", () => {
   })
 
   it("drops only the settings the game no longer offers, so the rest still apply", () => {
-    expect(savedSetupPatch({ ...SAVED, roundMs: 75_000, mix: { ...MIX, flags: 9 } })).toEqual({
+    expect(savedSetupPatch({ ...SAVED, roundMs: 75_000, mix: { ...MIX, [FLAG]: 9 } })).toEqual({
       mapDetail: "political"
     })
   })
 
   it("turns a setup saved before the question mix into one", () => {
     const old = (setup: object) => savedSetupPatch({ roundMs: 90_000, ...setup }).mix
-    expect(old({ rounds: 12, photoShare: 0 })).toEqual({
-      landmarks: 0,
-      places: 12,
-      countries: 0,
-      flags: 0,
-      features: 0,
-      states: 0
-    })
-    expect(old({ rounds: 8, photoShare: 0.75, countries: "mixed" })).toEqual({
-      landmarks: 5,
-      places: 1,
-      countries: 2,
-      flags: 0,
-      features: 0,
-      states: 0
-    })
-    expect(old({ rounds: 8, countries: "only", flags: "only" })).toEqual({
-      landmarks: 0,
-      places: 0,
-      countries: 4,
-      flags: 4,
-      features: 0,
-      states: 0
-    })
-    expect(old({ flags: "mixed" })).toEqual({
-      landmarks: 3,
-      places: 3,
-      countries: 0,
-      flags: 2,
-      features: 0,
-      states: 0
-    })
+    expect(old({ rounds: 12, photoShare: 0 })).toEqual(mixOf({ [PLACE]: 12 }))
+    expect(old({ rounds: 8, photoShare: 0.75, countries: "mixed" })).toEqual(
+      mixOf({ [LANDMARK]: 5, [PLACE]: 1, [COUNTRY]: 2 })
+    )
+    expect(old({ rounds: 8, countries: "only", flags: "only" })).toEqual(mixOf({ [COUNTRY]: 4, [FLAG]: 4 }))
+    expect(old({ flags: "mixed" })).toEqual(mixOf({ [LANDMARK]: 3, [PLACE]: 3, [FLAG]: 2 }))
     expect(savedSetupPatch({ roundMs: 90_000 })).toEqual({ roundMs: 90_000 })
   })
 
+  it("renames a mix saved under the old names of the question types", () => {
+    expect(
+      savedSetupPatch({ mix: { landmarks: 3, places: 3, countries: 2, flags: 2, features: 0, states: 0 } })
+    ).toEqual({ mix: MIX })
+  })
+
   it("keeps a mix saved before islands, lakes, seas and US states, with none of them", () => {
-    const { features: _f, states: _s, ...before } = MIX
-    expect(savedSetupPatch({ mix: before }).mix).toEqual(MIX)
+    expect(savedSetupPatch({ mix: { landmarks: 3, places: 3, countries: 2, flags: 2 } }).mix).toEqual(MIX)
   })
 
   it("ignores unknown keys and anything that is not a saved setup", () => {

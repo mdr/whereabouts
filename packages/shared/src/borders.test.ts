@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vite-plus/test"
 import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell, UNITS } from "./h3.ts"
 import bordersJson from "../borders.json" with { type: "json" }
-import flagsJson from "../flags.json" with { type: "json" }
 import { Borders } from "./borders.ts"
 import type { PaintCell } from "./paint.ts"
-import { type FlagData, flagFrom } from "./flags.ts"
+import { CATALOGUE, isFlagQuestion } from "./catalogue.ts"
+import { answerCentre } from "./questions.ts"
 
-const flags = (flagsJson as FlagData[]).map(flagFrom)
+const flags = CATALOGUE.filter(isFlagQuestion)
 const borders = new Borders(bordersJson, flags)
 const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label
 
@@ -48,7 +48,9 @@ describe("borders", () => {
     // A painted country's answer is its centre, which can be at sea (Japan,
     // the Bahamas) or in a neighbour (Vietnam's is in Laos, Croatia's in
     // Bosnia); only those miss.
-    const missed = flags.filter((f) => borders.countryAt(f.answer)?.flag !== f.flag).map((f) => f.label)
+    const missed = flags
+      .filter((f) => borders.countryAt(answerCentre(f.answer))?.clue.flag !== f.clue.flag)
+      .map((f) => f.label)
     expect(missed.sort()).toEqual(
       [
         "Croatia",
@@ -93,15 +95,15 @@ describe("flag pins", () => {
   const pins = borders.pins()
 
   it("gives each pinned country's outline round its pin", () => {
-    const france = pins.find((p) => p.f.flag === "fr")!
-    const rings = borders.rings(france.f.flag)
+    const france = pins.find((p) => p.f.clue.flag === "fr")!
+    const rings = borders.rings(france.f.clue.flag)
     expect(rings.length).toBeGreaterThan(0)
     expect(rings.every((r) => r.length >= 6 && r.length % 2 === 0)).toBe(true)
-    expect(borders.countryAt(france.at)?.flag).toBe("fr")
+    expect(borders.countryAt(france.at)?.clue.flag).toBe("fr")
   })
 
   it("pins every flag country once", () => {
-    expect(new Set(pins.map((p) => p.f.flag)).size).toBe(pins.length)
+    expect(new Set(pins.map((p) => p.f.clue.flag)).size).toBe(pins.length)
     expect(pins.length).toBeGreaterThan(190)
   })
 

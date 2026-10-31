@@ -13,8 +13,9 @@ const COLUMNS = 8
 const CELL = [128, 48]
 
 const flags = JSON.parse(readFileSync("src/assets/flags/flags.json", "utf8"))
-const codes = JSON.parse(readFileSync("../shared/flags.json", "utf8"))
-  .map((f) => f.flag)
+const codes = JSON.parse(readFileSync("../shared/catalogue.json", "utf8"))
+  .filter((q) => q.type === "FLAG")
+  .map((q) => q.clue.flag)
   .sort()
 const widths = codes.map((c) => Math.min(CELL[0], Math.round(CELL[1] * flags[c].ratio)))
 const svgs = codes.map((c) => readFileSync(`src/assets/flags/${c}.svg`, "utf8"))

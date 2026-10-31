@@ -1,24 +1,15 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
-import { flagCode, questionId, regionId } from "@whereabouts/shared/ids"
+import { flagCode } from "@whereabouts/shared/ids"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
-import type { QuestionView } from "@whereabouts/shared/protocol"
+import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "@whereabouts/shared/questions"
 import type { PaintController } from "./paint-controller"
+import { areaAnswerView, makeFlagQuestion, makeQuestionView } from "./test-view"
 import type { RevealedAnswer } from "./round"
 import { answerModeText, vrReveal, vrRound, vrScoreLine, type VrRoundShown, type VrScore } from "./vr-round"
 
 function painted(flag: string, label: string, share: number): PaintedCountry {
-  return {
-    country: {
-      id: questionId(`flag-${flag}`),
-      flag: flagCode(flag),
-      label,
-      wiki: label,
-      answer: { lat: 0, lon: 0 },
-      toleranceKm: 100
-    },
-    share
-  }
+  return { country: makeFlagQuestion(flag, label), share }
 }
 
 function score(over: Partial<VrScore> = {}): VrScore {
@@ -53,25 +44,31 @@ describe("vrScoreLine", () => {
 
 describe("answerModeText", () => {
   it("tells a whole country from a place on a flag round", () => {
-    expect(answerModeText({ flag: flagCode("pe"), regionId: regionId("peru") })).toBe(
+    expect(answerModeText({ type: QuestionType.FLAG, answer: areaAnswerView("peru") })).toBe(
       "Paint the whole country: its shape counts."
     )
-    expect(answerModeText({ flag: flagCode("tv") })).toBe("Paint where it is: a place, not a shape.")
+    expect(answerModeText({ type: QuestionType.FLAG, answer: { type: AnswerType.POINT, toleranceKm: 20 } })).toBe(
+      "Paint where it is: a place, not a shape."
+    )
   })
 
   it("names what to cover on an area round, and says nothing for a place", () => {
-    expect(answerModeText({ regionId: regionId("lake-baikal"), topic: "lake" })).toBe(
-      "Cover the whole lake: its shape counts."
-    )
-    expect(answerModeText({})).toBeUndefined()
+    expect(
+      answerModeText({
+        type: QuestionType.FEATURE,
+        feature: FeatureType.LAKE,
+        answer: areaAnswerView("lake-baikal", 100, Surface.WATER)
+      })
+    ).toBe("Cover the whole lake: its shape counts.")
+    expect(answerModeText(makeQuestionView())).toBeUndefined()
   })
 })
 
-const place: QuestionView = { prompt: "Where is Kyoto?", toleranceKm: 50 }
+const place = makeQuestionView()
 const answer: RevealedAnswer = { label: "Kyoto", answer: { lat: 35, lon: 135.8 }, photo: "Kyoto.jpg" }
 
 function shown(over: Partial<VrRoundShown> = {}): VrRoundShown {
-  return { question: place, countryFlag: undefined, revealed: undefined, fact: undefined, ...over }
+  return { question: place, revealed: undefined, fact: undefined, ...over }
 }
 
 function round(s: VrRoundShown) {
@@ -98,13 +95,19 @@ describe("vrRound", () => {
   })
 
   it("shows a country round's own flag", () => {
-    const peru = { prompt: "Paint the whole of Peru", toleranceKm: 200, regionId: regionId("peru") }
-    expect(round(shown({ question: peru, countryFlag: flagCode("pe") })).picture).toEqual({ flag: "pe" })
+    const peru = makeQuestionView({
+      type: QuestionType.COUNTRY,
+      answer: areaAnswerView("peru"),
+      countryFlag: flagCode("pe")
+    })
+    expect(round(shown({ question: peru })).picture).toEqual({ flag: "pe" })
   })
 
   it("trims land on a lake or a sea", () => {
-    expect(round(shown({ question: { ...place, topic: "sea" } })).water).toBe(true)
-    expect(round(shown({ question: { ...place, topic: "island" } })).water).toBe(false)
+    const feature = (outline: string, surface: Surface) =>
+      makeQuestionView({ type: QuestionType.FEATURE, answer: areaAnswerView(outline, 100, surface) })
+    expect(round(shown({ question: feature("sea-baltic", Surface.WATER) })).water).toBe(true)
+    expect(round(shown({ question: feature("island-borneo", Surface.LAND) })).water).toBe(false)
   })
 })
 
@@ -127,7 +130,9 @@ describe("vrReveal", () => {
   })
 
   it("offers every country's flag on a flag round only", () => {
-    const flagRound = shown({ question: { ...place, flag: flagCode("tv") } })
+    const flagRound = shown({
+      question: makeQuestionView({ type: QuestionType.FLAG, clue: { type: ClueType.FLAG, flag: flagCode("tv") } })
+    })
     expect(vrReveal(flagRound, answer, score(), undefined, own).flags).toMatchObject({ pins: undefined })
     expect(vrReveal(shown(), answer, score(), undefined, own).flags).toBeUndefined()
   })

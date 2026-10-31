@@ -80,7 +80,7 @@ tasks:
     desc: Check a production build loads the map - task serve:prod first, or name a site (task e2e:prod -- https://…)
     dir: packages/client
     cmds:
-      - node browser/e2e/prod.ts {{.CLI_ARGS}}
+      - node --experimental-transform-types --disable-warning=ExperimentalWarning browser/e2e/prod.ts {{.CLI_ARGS}}
 
   nix:hash:
     desc: Update the Nix package's pnpm dependency hash after the lockfile changes (pnpm check says when)

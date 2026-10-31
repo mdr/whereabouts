@@ -1,5 +1,4 @@
-import type { Question } from "./questions.ts"
-import type { RegionQuestion } from "./regions.ts"
+import { QuestionType, type Question } from "./questions.ts"
 import photosJson from "../photos.json" with { type: "json" }
 
 /**
@@ -9,12 +8,10 @@ import photosJson from "../photos.json" with { type: "json" }
  */
 export const REVEAL_PHOTOS: Readonly<Record<string, string>> = photosJson
 
-/**
- * The photo for a round's reveal: none on a photo round, which has its own,
- * or a country or flag round, which shows the flag.
- */
-export function revealPhoto(q: Question | RegionQuestion): string | undefined {
-  if (q.kind === "photo" || q.flag || q.wiki === undefined) return undefined
-  if (q.kind === "region" && q.topic === undefined) return undefined
-  return REVEAL_PHOTOS[q.wiki]
+/** Rounds whose reveal shows a photo: not a landmark, which has its own, nor a country or flag, which shows the flag. */
+const WITH_REVEAL_PHOTO: readonly QuestionType[] = [QuestionType.PLACE, QuestionType.FEATURE, QuestionType.STATE]
+
+/** The photo for a round's reveal. */
+export function revealPhoto(q: Question): string | undefined {
+  return WITH_REVEAL_PHOTO.includes(q.type) ? REVEAL_PHOTOS[q.wiki] : undefined
 }

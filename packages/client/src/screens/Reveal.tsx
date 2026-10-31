@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { signal } from "@preact/signals"
 import type { Fact } from "@whereabouts/shared/facts"
-import type { GameView, PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
+import {
+  outlineOf,
+  type GameView,
+  type PlayerView,
+  type RevealView,
+  type RoundResultView
+} from "@whereabouts/shared/protocol"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
-import type { RegionQuestion } from "@whereabouts/shared/regions"
+import { QuestionType, clueFlag, type Outline } from "@whereabouts/shared/questions"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { Card } from "../ui/Card"
@@ -23,7 +29,7 @@ import { HostTag, RankArrow, Swatch } from "../ui/PlayerList"
 import { EndGameButton } from "../ui/HostControls"
 import { TakeSeatButton } from "../ui/TakeSeat"
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog"
-import { useRegion } from "../regions"
+import { useOutline } from "../outlines"
 import { useBorders } from "../borders"
 import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
 import { VrButton } from "../ui/VrButton"
@@ -32,12 +38,12 @@ import type { VrView } from "../vr/view"
 import { revealTestIds } from "./RevealTestIds"
 import { paintLayer, paintsOf } from "../reveal-paint"
 
-export function revealedAnswer(reveal: RevealView, region: RegionQuestion | undefined): RevealedAnswer {
+export function revealedAnswer(reveal: RevealView, outline: Outline | undefined): RevealedAnswer {
   return {
     label: reveal.label,
     wiki: reveal.wiki,
     answer: reveal.answer,
-    outline: region?.outline,
+    outline,
     photo: reveal.photo
   }
 }
@@ -97,13 +103,13 @@ export function Reveal({
   )
   const { dialog, ask } = useConfirm()
 
-  // A country round shows the country's outline, once the outlines are loaded.
-  const region = useRegion(reveal.question.regionId)
-  const answer = revealedAnswer(reveal, region)
+  // An area round shows its outline, once the outlines are loaded.
+  const outline = useOutline(outlineOf(reveal.question.answer))
+  const answer = revealedAnswer(reveal, outline)
 
   // A flag round names the country under the pointer, and where each player's paint mostly was.
-  const answerFlag = reveal.question.flag
-  const borders = useBorders(answerFlag !== undefined)
+  const answerFlag = clueFlag(reveal.question.clue)
+  const borders = useBorders(reveal.question.type === QuestionType.FLAG)
   const where = useMemo(() => {
     const m = new Map<string, PaintedCountry | undefined>()
     if (borders)
@@ -115,7 +121,7 @@ export function Reveal({
   useEffect(() => {
     paint.enabled.value = false
     showAnswer(paint.gameMap, reveal.question, answer)
-  }, [reveal.index, region])
+  }, [reveal.index, outline])
 
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
@@ -123,7 +129,7 @@ export function Reveal({
     paint.showColoured(paintsOf(shownResults(reveal.results, shown), view.players).flatMap((p) => p.features))
   useEffect(() => {
     frameReveal(paint.gameMap, reveal.question, answer, show(selected))
-  }, [selected, reveal.index, region])
+  }, [selected, reveal.index, outline])
   // Not framed: the map would jump about as the mouse crosses the rows.
   useEffect(() => {
     if (hovered === undefined) return
@@ -158,7 +164,6 @@ export function Reveal({
           />
           <RevealCards
             question={reveal.question}
-            countryFlag={region?.countryFlag}
             revealed={answer}
             fact={fact}
             you={mine && { score: mine.score, passed: !mine.paint }}

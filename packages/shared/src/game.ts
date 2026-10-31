@@ -5,25 +5,28 @@
  */
 import { DEFAULT_KERNEL, buildDistribution, kernelById, type Kernel } from "./scoring.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
-import { pickQuestions, shuffle, type Question } from "./questions.ts"
-import { regionFit, regionMisfit, roundsOverlap, scoreAnswer, type RegionQuestion } from "./regions.ts"
+import {
+  AnswerType,
+  ClueType,
+  QUESTION_TYPES,
+  QuestionType,
+  answerCentre,
+  flagShown,
+  promptOf,
+  shuffle,
+  type Outlines,
+  type Question
+} from "./questions.ts"
+import { poolOf } from "./catalogue.ts"
+import { regionFit, regionMisfit, roundsOverlap, scoreAnswer, scoredAnswer } from "./regions.ts"
 import { explainPoint, isHedge } from "./explain.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
-import { flagRound, type FlagQuestion } from "./flags.ts"
 import { revealPhoto } from "./photos.ts"
 import { DEFAULT_HINTS, hintBand, seededUnit, type HintAxis, type HintBand } from "./hints.ts"
 import { playerColour, type PlayerColour } from "./colours.ts"
 import type { CloseReason } from "./close-reason.ts"
 import { playerId, roomCode, type PlayerId, type PlayerName, type PlayerToken, type RoomCode } from "./ids.ts"
-import {
-  MAX_PLAYERS,
-  MAX_SPECTATORS,
-  QUESTION_TYPES,
-  SEAT_GRACE_MS,
-  evenMix,
-  mixTotal,
-  showsLakes
-} from "./protocol.ts"
+import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS, evenMix, mixTotal } from "./protocol.ts"
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -34,7 +37,6 @@ import type {
   PlayedRound,
   PlayerView,
   QuestionPictures,
-  QuestionType,
   QuestionView,
   RoundReveal,
   RoundResultView
@@ -87,30 +89,25 @@ interface Submission {
 export type CommandResult = { ok: true; changed: boolean } | { ok: false; error: string }
 export type JoinResult = { ok: true; changed: boolean } | { ok: false; reason: CloseReason }
 
+/** One per question type, so each type's pool is shuffled differently. */
+const SALTS = [0x9e3779b9, 0x7f4a7c15, 0x2545f491, 0x68e31da4, 0x1b873593, 0x85ebca6b]
+
 const OK_CHANGED = { ok: true, changed: true } as const
 const OK_SAME: CommandResult = { ok: true, changed: false }
 const fail = (error: string): CommandResult => ({ ok: false, error })
 
 /** Everything a game picks its rounds from. */
 export interface QuestionBank {
-  /** Landmarks and place names. */
-  pool: Question[]
-  /** Countries for "Paint the whole of …" rounds; the server passes regions.json. */
-  regions: RegionQuestion[]
-  /** From flags.json; a flag painted as a country needs that country in `regions`. */
-  flags: FlagQuestion[]
-  /** Islands, lakes, seas and US states; the server passes features.json. */
-  features: (Question | RegionQuestion)[]
+  catalogue: readonly Question[]
+  /** Every area answer's outline. */
+  outlines: Outlines
 }
 
 export class Game {
   readonly code: RoomCode
   config: GameConfig
-  private readonly pool: Question[]
-  private readonly regions: RegionQuestion[]
-  /** Flag rounds, from flags.json and the countries: each a region or a point question. */
-  private readonly flagRounds: (Question | RegionQuestion)[]
-  private readonly features: (Question | RegionQuestion)[]
+  private readonly catalogue: readonly Question[]
+  private readonly outlines: Outlines
   private readonly kernel: Kernel
 
   phase: Phase = "lobby"
@@ -118,7 +115,7 @@ export class Game {
   private hostToken: PlayerToken | undefined = undefined
   private nextPlayerId = 1
 
-  private questions: (Question | RegionQuestion)[] = []
+  private questions: Question[] = []
   private roundIndex = -1
   private deadline = 0
   private submissions = new Map<PlayerToken, Submission>()
@@ -136,7 +133,7 @@ export class Game {
 
   constructor(
     code: RoomCode,
-    { pool, regions, flags, features }: QuestionBank,
+    { catalogue, outlines }: QuestionBank,
     { config = {}, seed = Date.now() }: { config?: Partial<GameConfig>; seed?: number } = {}
   ) {
     this.seed = seed
@@ -144,13 +141,10 @@ export class Game {
     // A mix sets the rounds; a length alone (ROUNDS on the server, tests) is an even mix of that length.
     const mix = config.mix ?? (config.rounds !== undefined ? evenMix(config.rounds) : DEFAULT_CONFIG.mix)
     this.config = { ...DEFAULT_CONFIG, ...config, mix, rounds: mixTotal(mix) }
-    this.pool = pool
-    this.regions = regions
-    const byId = new Map(regions.map((q) => [q.id, q]))
-    this.flagRounds = flags.flatMap((f) => flagRound(f, byId) ?? [])
-    this.features = features
+    this.catalogue = catalogue
+    this.outlines = outlines
     this.kernel = kernelById(this.config.kernelId)
-    if (pool.length === 0) throw new Error("question pool is empty")
+    if (catalogue.length === 0) throw new Error("question catalogue is empty")
     this.questions = this.pickRounds()
   }
 
@@ -293,53 +287,29 @@ export class Game {
   }
 
   /**
-   * The rounds' questions, as many of each kind as the mix asks while they
-   * last, in a shuffled order. Landmarks and place names come from the pool
-   * through pickQuestions (so a game of only those is exactly what it picks);
-   * the rest from their own lists, never a country already asked another way
-   * ("Where is Monaco?" and Monaco's flag, say), and where the lists allow,
-   * none overlapping a round already chosen. Lakes only on a map that shows
-   * them.
+   * The rounds' questions, as many of each type as the mix asks while they
+   * last, in a shuffled order: never a place already asked another way
+   * ("Where is Monaco?" and Monaco's flag, say), and where the pools allow,
+   * none overlapping a round already chosen.
    */
-  private pickRounds(): (Question | RegionQuestion)[] {
-    const { landmarks, places, countries, flags, features, states } = this.config.mix
-    const named = landmarks + places
-    const picked = pickQuestions(this.pool, named, this.seed, named > 0 ? landmarks / named : 0.5)
-    if (countries + flags + features + states === 0) return picked
-    const asked = new Set(picked.map((q) => q.label))
-    const fresh = (q: Question | RegionQuestion) => !asked.has(q.id) && !asked.has(q.label)
-    const chosen: (Question | RegionQuestion)[] = [...picked]
-    const take = (from: (Question | RegionQuestion)[], salt: number, count: number) => {
-      const candidates = shuffle(from, this.seed ^ salt).filter(fresh)
-      const out: (Question | RegionQuestion)[] = []
-      while (out.length < count && candidates.length > 0) {
-        const apart = candidates.findIndex((q) => !chosen.some((c) => roundsOverlap(c, q)))
+  private pickRounds(): Question[] {
+    const chosen: Question[] = []
+    const asked = new Set<string>()
+    const answer = (q: Question) => scoredAnswer(q.answer, this.outlines)
+    QUESTION_TYPES.forEach((type, i) => {
+      const count = this.config.mix[type]
+      if (count === 0) return
+      const candidates = shuffle(poolOf(this.catalogue, [type], this.config.mapDetail), this.seed ^ SALTS[i]!).filter(
+        (q) => !asked.has(q.id) && !asked.has(q.label)
+      )
+      for (let n = 0; n < count && candidates.length > 0; n++) {
+        const apart = candidates.findIndex((q) => !chosen.some((c) => roundsOverlap(answer(c), answer(q))))
         const q = candidates.splice(Math.max(apart, 0), 1)[0]!
-        out.push(q)
         chosen.push(q)
         asked.add(q.id).add(q.label)
       }
-      return out
-    }
-    const lakes = showsLakes(this.config.mapDetail)
-    return shuffle<Question | RegionQuestion>(
-      [
-        ...picked,
-        ...take(this.regions, 0x2545f491, countries),
-        ...take(this.flagRounds, 0x68e31da4, flags),
-        ...take(
-          this.features.filter((q) => q.topic !== "state" && (lakes || q.topic !== "lake")),
-          0x1b873593,
-          features
-        ),
-        ...take(
-          this.features.filter((q) => q.topic === "state"),
-          0x85ebca6b,
-          states
-        )
-      ],
-      this.seed ^ 0x5bd1e995
-    )
+    })
+    return shuffle(chosen, this.seed ^ 0x5bd1e995)
   }
 
   /** Host tunes the question mix (and so the rounds), round length and map detail while everyone is still in the lobby. */
@@ -352,7 +322,7 @@ export class Game {
       next.roundMs === this.config.roundMs &&
       next.mapDetail === this.config.mapDetail &&
       next.hints === this.config.hints &&
-      QUESTION_TYPES.every((t) => mix[t.id] === this.config.mix[t.id])
+      QUESTION_TYPES.every((t) => mix[t] === this.config.mix[t])
     )
       return OK_SAME
     this.config = next
@@ -632,7 +602,8 @@ export class Game {
 
   private finishRound(): void {
     const q = this.questions[this.roundIndex]!
-    const res = resolutionForTolerance(q.toleranceKm)
+    const answer = scoredAnswer(q.answer, this.outlines)
+    const res = resolutionForTolerance(answer.toleranceKm)
     const results: RoundResultView[] = []
     // Snapshot ranks before any score changes so arrows compare like with like.
     for (const p of this.playing()) p.previousRank = this.rankOf(p)
@@ -656,30 +627,30 @@ export class Game {
       // A pass, or a blank map at the deadline: the two score alike, so
       // waiting out the clock never beats pressing Pass.
       const dist = painted ? buildDistribution(cells, painted.floor) : undefined
-      const scored = scoreAnswer(dist, q, this.kernel)
+      const scored = scoreAnswer(dist, answer, this.kernel)
       const { score } = scored
       const { A, B } = "A" in scored.parts ? scored.parts : { A: 0, B: 0 }
       if (painted && dist) {
         facts.passed = false
         facts.areaKm2 = cells.reduce((a, c) => a + c.areaKm2, 0)
-        if (q.kind === "region" && "shape" in scored.parts) {
-          region = { ...scored.parts, ...regionFit(dist, q) }
-          const m = regionMisfit(dist, q)
+        if (answer.type === AnswerType.AREA && "shape" in scored.parts) {
+          region = { ...scored.parts, ...regionFit(dist, answer) }
+          const m = regionMisfit(dist, answer)
           // A country's tolerance is a fifth of its equivalent radius.
           facts.region = {
             precision: m.precision,
-            nextDoor: m.precision < 0.1 && m.off !== undefined && m.off.km < 5 * q.toleranceKm
+            nextDoor: m.precision < 0.1 && m.off !== undefined && m.off.km < 5 * answer.toleranceKm
           }
-        } else {
-          const e = explainPoint(dist, q.answer, q.toleranceKm, A, B, this.kernel)
+        } else if (answer.type === AnswerType.POINT) {
+          const e = explainPoint(dist, answer.at, answer.toleranceKm, A, B, this.kernel)
           const best = Math.max(e.best, score)
           facts.point = {
             spot: e.spot,
             km: e.km,
             spread: 1000 - best,
             distance: best - score,
-            hedged: isHedge(e, score, q.toleranceKm),
-            toleranceKm: q.toleranceKm
+            hedged: isHedge(e, score, answer.toleranceKm),
+            toleranceKm: answer.toleranceKm
           }
         }
         paint = painted
@@ -705,7 +676,7 @@ export class Game {
       index: this.roundIndex,
       total: this.questions.length,
       question: questionView(q),
-      answer: q.answer,
+      answer: answerCentre(q.answer),
       label: q.label,
       wiki: q.wiki,
       ...(photo ? { photo } : {}),
@@ -816,9 +787,9 @@ export class Game {
   }
 
   /** The round's band of each axis: the same for everyone who asks. */
-  private roundBand(q: Question | RegionQuestion, axis: HintAxis): HintBand {
+  private roundBand(q: Question, axis: HintAxis): HintBand {
     const u = seededUnit(this.seed, this.roundIndex, axis === "latitude" ? 1 : 2)
-    return hintBand(q.answer, q.toleranceKm, axis, u)
+    return hintBand(answerCentre(q.answer), q.answer.toleranceKm, axis, u)
   }
 
   /** The next round's pictures: round 1's in the lobby, the following round's while one is played or revealed. */
@@ -879,43 +850,44 @@ export function generateCode(rnd: () => number = Math.random, length = 4): RoomC
   return roomCode(out)
 }
 
-/** Which kind of question in the host's mix this was. */
-function questionType(q: Question | RegionQuestion): QuestionType {
-  if (q.flag) return "flags"
-  if (q.topic === "state") return "states"
-  if (q.topic) return "features"
-  if (q.kind === "region") return "countries"
-  return q.kind === "photo" ? "landmarks" : "places"
-}
-
-function playedRound(q: Question | RegionQuestion): PlayedRound {
+function playedRound(q: Question): PlayedRound {
   return {
     label: q.label,
-    type: questionType(q),
-    ...(q.topic ? { topic: q.topic } : {}),
-    ...(q.kind === "region" && !q.flag ? { regionId: q.id } : {}),
+    type: q.type,
+    ...(q.type === QuestionType.FEATURE ? { feature: q.feature } : {}),
+    ...(q.answer.type === AnswerType.AREA && q.clue.type === ClueType.NAME
+      ? { area: { outline: q.answer.outline, centre: q.answer.centre } }
+      : {}),
     ...questionPictures(q)
   }
 }
 
 /** A question's photo and flag, including the flag shown beside a country's name, and the photo for its reveal. */
-export function questionPictures(q: Question | RegionQuestion): QuestionPictures {
-  const flag = q.flag ?? (q.kind === "region" ? q.countryFlag : undefined)
+export function questionPictures(q: Question): QuestionPictures {
+  const flag = flagShown(q)
   const photo = revealPhoto(q)
   return {
-    ...(q.kind !== "region" && q.image ? { image: q.image } : {}),
+    ...(q.clue.type === ClueType.PHOTO ? { image: q.clue.image } : {}),
     ...(flag ? { flag } : {}),
     ...(photo ? { revealPhoto: photo } : {})
   }
 }
 
 /**
- * What players see of a question: never the answer. A country round sends
- * the country's id, which the prompt names anyway; a flag round sends the
- * flag's code, which the flag gives away anyway.
+ * What players see of a question: never the answer. An area round sends its
+ * outline's id, which the prompt or the flag gives away anyway.
  */
-export function questionView(q: Question | RegionQuestion): QuestionView {
-  const extra = { ...(q.flag ? { flag: q.flag } : {}), ...(q.topic ? { topic: q.topic } : {}) }
-  if (q.kind === "region") return { prompt: q.prompt, toleranceKm: q.toleranceKm, regionId: q.id, ...extra }
-  return { prompt: q.prompt, image: q.image, toleranceKm: q.toleranceKm, ...extra }
+export function questionView(q: Question): QuestionView {
+  const { answer } = q
+  return {
+    type: q.type,
+    prompt: promptOf(q),
+    clue: q.clue,
+    answer:
+      answer.type === AnswerType.AREA
+        ? { type: answer.type, toleranceKm: answer.toleranceKm, outline: answer.outline, surface: answer.surface }
+        : { type: answer.type, toleranceKm: answer.toleranceKm },
+    ...(q.type === QuestionType.FEATURE ? { feature: q.feature } : {}),
+    ...(q.type === QuestionType.COUNTRY && q.countryFlag ? { countryFlag: q.countryFlag } : {})
+  }
 }

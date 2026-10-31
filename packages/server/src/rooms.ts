@@ -28,29 +28,18 @@ import {
   type RoundReveal
 } from "@whereabouts/shared/protocol"
 import { Game, generateCode, type CommandResult, type QuestionBank } from "@whereabouts/shared/game"
-import { QUESTIONS, type QuestionData } from "@whereabouts/shared/questions"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import type { CloseReason } from "@whereabouts/shared/close-reason"
-import { featureFrom, regionFrom, type RegionData } from "@whereabouts/shared/regions"
-import { flagFrom, type FlagData } from "@whereabouts/shared/flags"
+import { CATALOGUE, outlinesFrom } from "@whereabouts/shared/catalogue"
 import { roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
-// The countries for "Paint the whole of …" rounds, the flag rounds, and the
-// islands, lakes, seas and US states. The client loads the same files on
-// demand; the server holds them all.
-import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
-import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
-import featuresJson from "@whereabouts/shared/features.json" with { type: "json" }
+// The client loads the outlines on demand; the server holds them all, to score.
+import outlinesJson from "@whereabouts/shared/outlines.json" with { type: "json" }
 import { TicketRefused } from "./vendor/WSTransport.ts"
 
 /** Close reasons are codes from the shared list, which the client words. */
 const closeReason = (reason: CloseReason): string => reason
 
-export const BANK: QuestionBank = {
-  pool: QUESTIONS,
-  regions: (regionsJson as RegionData[]).map(regionFrom),
-  flags: (flagsJson as FlagData[]).map(flagFrom),
-  features: (featuresJson as (QuestionData | RegionData)[]).map(featureFrom)
-}
+export const BANK: QuestionBank = { catalogue: CATALOGUE, outlines: outlinesFrom(outlinesJson) }
 
 export interface ActorData {
   token: PlayerToken

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { flagCode, playerId, playerToken, questionId, regionId, roomCode } from "./ids.ts"
+import { flagCode, playerId, playerToken, questionId, outlineId, roomCode } from "./ids.ts"
 import { KickSchema, PROTOCOL_VERSION, TicketSchema } from "./protocol.ts"
 
 describe("identifiers", () => {
@@ -10,8 +10,8 @@ describe("identifiers", () => {
     expect(roomCode("AB12")).toBe("AB12")
     for (const bad of ["ab12", "ABC", "ABCDEFG"]) expect(() => roomCode(bad), bad).toThrow()
     expect(questionId("flag-de")).toBe("flag-de")
-    expect(regionId("island-borneo")).toBe("island-borneo")
-    for (const bad of ["Germany", "-de", "a--b", ""]) expect(() => regionId(bad), bad).toThrow()
+    expect(outlineId("island-borneo")).toBe("island-borneo")
+    for (const bad of ["Germany", "-de", "a--b", ""]) expect(() => outlineId(bad), bad).toThrow()
     expect(flagCode("de")).toBe("de")
     for (const bad of ["DE", "deu", "d"]) expect(() => flagCode(bad), bad).toThrow()
   })

@@ -29,7 +29,9 @@ const EXTRA_PRECISION = 3
 const FILES = { af: "Flag of Afghanistan (2013–2021).svg" }
 
 const cacheDir = process.argv[2]
-const flags = JSON.parse(readFileSync("../shared/flags.json", "utf8"))
+const flags = JSON.parse(readFileSync("../shared/catalogue.json", "utf8"))
+  .filter((q) => q.type === "FLAG")
+  .map((q) => ({ flag: q.clue.flag, wiki: q.wiki }))
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 

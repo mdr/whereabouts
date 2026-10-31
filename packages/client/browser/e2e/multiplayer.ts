@@ -3,6 +3,7 @@
 // editing, the reveal, and ready-up into round 2. Saves screenshots.
 // Usage, from packages/client: node browser/e2e/multiplayer.ts [outDir]
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
+import { QuestionType } from "@whereabouts/shared/questions"
 
 const out = outDir()
 const checks = new Checks()
@@ -26,7 +27,7 @@ const bobLobbyPage = await bobHomePage.joinGame(code)
 await aliceLobbyPage.players.waitForPlayer("Bobbington-Smythe", 5_000)
 
 // The host makes it 3 photo rounds of 30 s; Bob sees the choice but can't change it.
-await aliceLobbyPage.setOnlyQuestions("landmarks", 3)
+await aliceLobbyPage.setOnlyQuestions(QuestionType.LANDMARK, 3)
 await aliceLobbyPage.chooseSecondsPerRound(30)
 await bobLobbyPage.waitForSetupSummary({ rounds: "3", seconds: "30 s", questions: "3 landmarks" })
 checks.check(true, "the host's setup reaches Bob")

@@ -2,17 +2,18 @@
  * Which country is where (borders.json, ~65 KB gzipped), for the reveal of a
  * flag round: the flag under the pointer, and where each player's paint
  * fell. Its own chunk, fetched when a game with flags starts or a flag
- * round is revealed, and kept from then on. It needs the flag rounds too,
- * so it loads the countries first.
+ * round is revealed, and kept from then on. The reveal draws a country
+ * painted whole by its outline, so it loads the outlines too.
  */
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
 import { fetchBuildJson } from "./stale-build"
 import bordersUrl from "@whereabouts/shared/borders.json?url"
 import { Borders } from "@whereabouts/shared/borders"
-import type { FlagQuestion } from "@whereabouts/shared/flags"
+import { AnswerType, type FlagQuestion } from "@whereabouts/shared/questions"
+import { CATALOGUE, isFlagQuestion } from "@whereabouts/shared/catalogue"
 import type { LatLon } from "@whereabouts/shared/geo"
-import { loadRegions, flagQuestions, regions } from "./regions"
+import { loadOutlines, outlines } from "./outlines"
 import type { VrFlagPin } from "./vr/flag-pins"
 
 /** The borders, once loaded. */
@@ -21,8 +22,8 @@ export const borders = signal<Borders | undefined>(undefined)
 let loading: Promise<Borders> | undefined = undefined
 
 export function loadBorders(): Promise<Borders> {
-  loading ??= Promise.all([fetchBuildJson<ConstructorParameters<typeof Borders>[0]>(bordersUrl), loadRegions()]).then(
-    ([m]) => (borders.value = new Borders(m, flagQuestions.value ?? [])),
+  loading ??= Promise.all([fetchBuildJson<ConstructorParameters<typeof Borders>[0]>(bordersUrl), loadOutlines()]).then(
+    ([m]) => (borders.value = new Borders(m, CATALOGUE.filter(isFlagQuestion))),
     (err: unknown) => {
       // Let the next caller try again, after a dropped connection say.
       loading = undefined
@@ -45,9 +46,9 @@ const vrPinsOf = new WeakMap<Borders, VrFlagPin[]>()
 
 /** The outline the reveal draws where the country is painted whole, finer than its borders; else those. */
 function outline(b: Borders, f: FlagQuestion): Float64Array[] {
-  const region = f.regionId === undefined ? undefined : regions.value?.get(f.regionId)
-  if (!region) return b.rings(f.flag)
-  return region.outline.flatMap((polygon) => polygon.map((ring) => Float64Array.from(ring.flat())))
+  const outline = f.answer.type === AnswerType.AREA ? outlines.value?.get(f.answer.outline) : undefined
+  if (!outline) return b.rings(f.clue.flag)
+  return outline.flatMap((polygon) => polygon.map((ring) => Float64Array.from(ring.flat())))
 }
 
 /** The same, as the headset takes them: the same array each time, so it sees no change. */
@@ -56,7 +57,7 @@ export function vrFlagPins(b: Borders): VrFlagPin[] {
   if (!pins)
     vrPinsOf.set(
       b,
-      (pins = flagPins(b).map(({ f, at }) => ({ flag: f.flag, name: f.label, at, rings: outline(b, f) })))
+      (pins = flagPins(b).map(({ f, at }) => ({ flag: f.clue.flag, name: f.label, at, rings: outline(b, f) })))
     )
   return pins
 }

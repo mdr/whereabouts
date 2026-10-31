@@ -7,7 +7,7 @@
 import { useEffect, useState } from "preact/hooks"
 import { Marker, type MapMouseEvent } from "maplibre-gl"
 import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
-import type { FlagQuestion } from "@whereabouts/shared/flags"
+import type { FlagQuestion } from "@whereabouts/shared/questions"
 import type { PaintCell } from "@whereabouts/shared/paint"
 import type { GameMap } from "../map"
 import { SmallFlag } from "./Pictures"
@@ -43,7 +43,7 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
       el.dataset.testid = flagRevealTestIds.pin
       const flag = document.createElement("i")
       flag.title = f.label
-      const cell = atlasCell(f.flag)
+      const cell = atlasCell(f.clue.flag)
       if (cell) {
         // The picture's flags are four times the size shown.
         flag.style.width = `${cell.w / 4}px`
@@ -121,7 +121,7 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
         ...(left ? { right: `${window.innerWidth - hit.x + 14}px` } : { left: `${hit.x + 14}px` })
       }}
     >
-      <SmallFlag code={hit.f.flag} class={s.hoverFlag} />
+      <SmallFlag code={hit.f.clue.flag} class={s.hoverFlag} />
       <span>{hit.f.label}</span>
     </div>
   )
@@ -133,14 +133,14 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
  */
 export function PaintedIn({ where, answer, whose }: { where: PaintedCountry; answer?: string; whose: string }) {
   const pct = Math.round(where.share * 100)
-  const right = where.country.flag === answer
+  const right = where.country.clue.flag === answer
   return (
     <span
       class={cx(s.paintedIn, right && s.right)}
       data-testid={flagRevealTestIds.paintedIn}
       title={`${pct}% of ${whose} paint was in ${where.country.label}${right ? ", the answer" : ""}`}
     >
-      <SmallFlag code={where.country.flag} />
+      <SmallFlag code={where.country.clue.flag} />
       <span class={s.country}>{where.country.label}</span>
       <span class={s.share}>{pct}%</span>
     </span>

@@ -1,9 +1,10 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
-import { flagCode, playerId, playerName, regionId, roomCode } from "@whereabouts/shared/ids"
+import { flagCode, outlineId, playerId, playerName, roomCode } from "@whereabouts/shared/ids"
 import { playerColour } from "@whereabouts/shared/colours"
-import type { GameView } from "@whereabouts/shared/protocol"
+import { mixOf, type GameView } from "@whereabouts/shared/protocol"
+import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "../net"
 import { Results } from "./Results"
 import { resultsTestIds as ids } from "./ResultsTestIds"
@@ -13,9 +14,9 @@ import pictures from "../ui/Pictures.module.css"
 const tid = (id: string) => `[data-testid="${id}"]`
 
 // The outlines are a download; these tests only need where a shape goes.
-vi.mock("../regions", async (original) => ({ ...(await original<object>()), useRegion: () => undefined }))
+vi.mock("../outlines", async (original) => ({ ...(await original<object>()), useOutline: () => undefined }))
 
-const MIX = { landmarks: 1, places: 1, countries: 0, flags: 0, features: 0, states: 0 }
+const MIX = mixOf({ [QuestionType.LANDMARK]: 1, [QuestionType.PLACE]: 1 })
 
 function view(isHost: boolean): GameView {
   return {
@@ -72,8 +73,8 @@ function view(isHost: boolean): GameView {
       { playerId: playerId("p2"), total: 1250, rounds: [{ score: 500 }, { score: 750 }] }
     ],
     playedRounds: [
-      { label: "Taj Mahal, Agra", type: "landmarks", image: "Taj Mahal.jpeg" },
-      { label: "Perth, Australia", type: "places" }
+      { label: "Taj Mahal, Agra", type: QuestionType.LANDMARK, image: "Taj Mahal.jpeg" },
+      { label: "Perth, Australia", type: QuestionType.PLACE }
     ],
     awards: [{ emoji: "🐔", title: "Chicken", playerIds: [playerId("p2")], line: "{0} passed 2 times. Brave." }]
   }
@@ -119,9 +120,19 @@ describe("Results", () => {
     const conn = { again: vi.fn() } as unknown as Connection
     const v = view(false)
     v.playedRounds = [
-      { label: "Turkey", type: "flags", flag: flagCode("tr") },
-      { label: "Bangladesh", type: "countries", regionId: regionId("bangladesh-region"), flag: flagCode("bd") },
-      { label: "Black Sea", type: "features", topic: "sea", regionId: regionId("sea-black-sea") }
+      { label: "Turkey", type: QuestionType.FLAG, flag: flagCode("tr") },
+      {
+        label: "Bangladesh",
+        type: QuestionType.COUNTRY,
+        area: { outline: outlineId("bangladesh-region"), centre: { lat: 23.8, lon: 90.3 } },
+        flag: flagCode("bd")
+      },
+      {
+        label: "Black Sea",
+        type: QuestionType.FEATURE,
+        feature: FeatureType.SEA,
+        area: { outline: outlineId("sea-black-sea"), centre: { lat: 43.4, lon: 34.3 } }
+      }
     ]
     const { container } = render(<Results conn={conn} view={v} />)
     const rounds = [...container.querySelectorAll(tid(ids.playedRound))]

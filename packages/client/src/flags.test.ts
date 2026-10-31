@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vite-plus/test"
-import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
+import { CATALOGUE, isFlagQuestion } from "@whereabouts/shared/catalogue"
 import atlas from "./flag-atlas.json"
 import { atlasCell } from "./flag-atlas"
 import { flagFile, flagRatio } from "./flags"
 
-const codes = flagsJson.map((f) => f.flag)
+const codes = CATALOGUE.filter(isFlagQuestion).map((f) => f.clue.flag)
 const SVGS = import.meta.glob<string>("./assets/flags/*.svg", { query: "?raw", import: "default", eager: true })
 
 describe("flag pictures", () => {

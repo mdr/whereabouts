@@ -42,7 +42,8 @@ Other commands:
   `packages/client/browser/pages`: one per screen, and each action that
   moves to another screen returns that screen. Page objects find elements
   by the test ids each component declares in its `*TestIds.ts` module. Run them from
-  `packages/client` with `node browser/e2e/<name>.ts [outDir]`
+  `packages/client` with
+  `node --experimental-transform-types browser/e2e/<name>.ts [outDir]`
   (`pnpm smoke` runs `solo`); screenshots go to `smoke-out/`. Against
   dev servers on other ports, give the scripts the same `CLIENT_PORT`.
   `task e2e` runs them all against dev servers of its own and sums up
@@ -269,10 +270,13 @@ pnpm workspace with three packages:
 
 ## How it works
 
-- **Questions** live in `packages/shared/questions.json`: a prompt or a
-  Wikimedia Commons photo, the answer coordinates, and a per-question
-  tolerance in km. Two kinds: `photo` ("Where is this?" plus a picture) and
-  `text` ("Where is Nauru?"). The text set is capital cities, major world
+- **Questions** live in `packages/shared/catalogue.json`, typed by what they
+  ask about (`QuestionType` in `src/questions.ts`): landmarks, places,
+  countries, flags, features (islands, lakes, seas) and US states. Each has a
+  clue (a Wikimedia Commons photo, a name, or a flag) and an answer: a point
+  with a tolerance in km, or an area painted whole, whose outline is in
+  `outlines.json`. Landmarks are asked by photo ("Where is this?"), places by
+  name ("Where is Nauru?"). The place set is capital cities, major world
   and UK cities, and small countries, with tolerances calibrated for a UK
   player: tens of km for the British Isles and near neighbours, around
   100 km for European cities and micro-states, 200 km for the most famous
@@ -307,10 +311,9 @@ pnpm workspace with three packages:
   It is loaded with the round's other pictures, shows on the final results
   in place of a pin, and in the headset its postcard back names the place
   and tells the fact. Country and flag rounds keep just their flag.
-  A game draws the host's share of photo
-  and text questions, topping up from the other kind if one runs short
-  (`pickQuestions`), in a shuffled order, preferring questions at least
-  50 km apart. The question photo
+  A game draws the host's count of each type through the pool practice
+  uses (`poolOf`, `pickRounds`), in a shuffled order, preferring questions
+  at least 50 km apart. The question photo
   enlarges on click; the enlarged view zooms with the wheel or a pinch and
   pans by dragging.
 - **Paint** is stored on sparse H3 hexagons (`src/paint.ts`) at mixed
@@ -355,9 +358,9 @@ pnpm workspace with three packages:
   In dev mode it also shows `A` and `B` and a live "score if the answer were
   here" readout on hover.
 - **Whole countries** (design notes and the decisions behind the scoring: [docs/country-scoring.md](docs/country-scoring.md)): in practice, the Practise panel on the front page
-  chooses Places or Whole countries; in a game, the host's Whole countries
-  setting mixes them in. The server holds `regions.json` and scores country
-  rounds with `scoreRegionQuestion` (16 players in 170 to 270 ms); a round
+  chooses any of the question types; in a game, the host's mix sets how many
+  rounds of each. The server holds `outlines.json` and scores country
+  rounds with `scoreArea` (16 players in 170 to 270 ms); a round
   tells clients only the country's id, and a client fetches the outlines
   when a game with countries starts, to draw the country at the reveal,
   where each player's score card also says how much of the country they
@@ -366,7 +369,7 @@ pnpm workspace with three packages:
   flags. A country question ("Paint
   the whole of Germany") has an area as its answer, not a point: 37
   countries from Natural Earth's 1:50m outlines (public domain), built into
-  `packages/shared/regions.json` by `scripts/build-regions.mjs`, which keeps
+  `packages/shared/catalogue.json` and `outlines.json` by `scripts/build-regions.mjs`, which keeps
   each country's main landmass, the islands of 1,500 km² or more chained
   to it within 500 km, and every smaller island within 500 km of those (so
   Sicily and the Aegean stay; the Canaries, Svalbard and Alaska go),
@@ -374,7 +377,7 @@ pnpm workspace with three packages:
   of the country's equivalent radius, sqrt(area / π). Countries with
   disputed borders, or crossing the antimeridian, are left out for now.
   The outlines load only when practice asks for countries (their own
-  ~70 KB gzipped chunk). Scoring (`scoreRegionQuestion`) is
+  ~70 KB gzipped chunk). Scoring (`scoreArea`) is
   `max(shape, 0.55 x nearness)`:
   - **shape** compares the paint with the country cell by cell at the
     painting resolution, `1000 - 500 sum (p - q)^2 / a / sum q^2 / a` with p

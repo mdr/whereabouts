@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vp build",
     "preview": "vp preview",
     "typecheck": "tsc --noEmit && tsc --noEmit -p browser",
-    "smoke": "node browser/e2e/solo.ts"
+    "smoke": "node --experimental-transform-types --disable-warning=ExperimentalWarning browser/e2e/solo.ts"
   },
   "dependencies": {
     "@iwsdk/core": "1.0.1",

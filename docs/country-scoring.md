@@ -328,7 +328,7 @@ Ukraine). A full radius scored the country about 950 and the neighbour about
 
 Two more kinds in the question mix, scored exactly as countries are, with the
 same limits: under 10,000 km², or too scattered, a place is asked as a point.
-`features.json`, built by `scripts/build-features.mjs`, holds:
+`scripts/build-features.mjs` writes the catalogue's features and states:
 
 - **Islands:** the 20 largest that are not already a country round
   (Madagascar, Cuba, Iceland, Sri Lanka, Great Britain and Ireland are left
@@ -349,7 +349,7 @@ The Fill tool is off for these rounds, since it fills countries.
 
 ## Data
 
-`packages/shared/regions.json` holds 150 countries from Natural Earth's 1:50m
+The catalogue holds 150 countries from Natural Earth's 1:50m
 admin-0 outlines (public domain), built by
 `packages/shared/scripts/build-regions.mjs`: every sovereign country but
 those asked only as a point in flag rounds (above), with the contiguous
@@ -357,8 +357,8 @@ United States in place of the whole. Each keeps its largest landmass and
 islands of at least 1,500 km² within 500 km of what is kept, chained (so
 Sicily and Crete stay; the Canaries, Svalbard and Alaska go; Malaysia chains
 to 800 km to keep Borneo), simplified to about 1.5 km. The tolerance and
-these limits are set in `scripts/outline.mjs`, shared with the features. `flags.json`, built alongside, has one flag round per
-country, 194 in all: the region's id, or a point and tolerance. Northern
+these limits are set in `scripts/outline.mjs`, shared with the features. The flag rounds, built alongside, have one per
+country, 194 in all: the country's outline, or a point and tolerance. Northern
 Cyprus, Somaliland, Taiwan and Kosovo are left out. `borders.json`, also
 built alongside, has every flag country's land for the reveal, coarser
 (simplified to about 5 km, islands under 50 km² left out) and delta-encoded:
@@ -366,7 +366,7 @@ about 65 KB gzipped, fetched when a game with flags starts or a flag round
 comes up in practice.
 
 The client fetches both files on demand (their own chunk); the server holds
-regions.json and scores multiplayer rounds, which tell clients only the
+outlines.json and scores multiplayer rounds, which tell clients only the
 country's id until the reveal. Flag pictures are the SVGs on the flags'
 Wikipedia articles, from Wikimedia Commons (the client's
 scripts/build-flags.mjs), one small file per flag, fetched when its round

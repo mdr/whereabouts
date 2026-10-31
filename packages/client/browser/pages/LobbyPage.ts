@@ -1,4 +1,4 @@
-import type { QuestionType } from "@whereabouts/shared/protocol"
+import { QUESTION_TYPES, type QuestionType } from "@whereabouts/shared/questions"
 import { lobbyTestIds, setupSummaryTestIds } from "../../src/screens/LobbyTestIds.ts"
 import { mixEditorTestIds } from "../../src/ui/MixEditorTestIds.ts"
 import { pillsTestIds, stepperTestIds } from "../../src/ui/ControlsTestIds.ts"
@@ -50,12 +50,10 @@ export class LobbyPage extends Screen {
     }
   }
 
-  /** Host: every round asks this kind of question. */
+  /** Host: every round asks this type of question. */
   async setOnlyQuestions(type: QuestionType, count: number): Promise<void> {
     await this.setQuestionCount(type, count)
-    for (const other of ["landmarks", "places", "countries", "flags"] as const) {
-      if (other !== type) await this.setQuestionCount(other, 0)
-    }
+    for (const other of QUESTION_TYPES) if (other !== type) await this.setQuestionCount(other, 0)
   }
 
   async chooseSecondsPerRound(seconds: number): Promise<void> {

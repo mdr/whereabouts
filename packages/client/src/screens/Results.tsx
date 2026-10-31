@@ -1,19 +1,19 @@
 import { colourCss } from "@whereabouts/shared/colours"
 import type { Award } from "@whereabouts/shared/awards"
-import type { FinalStanding, GameView, PlayedRound, PlayerView, QuestionType } from "@whereabouts/shared/protocol"
-import type { RegionId } from "@whereabouts/shared/ids"
+import type { FinalStanding, GameView, PlayedRound, PlayerView } from "@whereabouts/shared/protocol"
+import type { QuestionType } from "@whereabouts/shared/questions"
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { Connection } from "../net"
 import { Icon } from "../ui/icons"
 import { HostTag, HostWord, Swatch } from "../ui/PlayerList"
 import { Banner } from "../ui/Banner"
 import { SmallFlag, SmallFlagButton, SmallPhoto, SmallPictureBox } from "../ui/Pictures"
-import { typeColour } from "../ui/MixEditor"
+import { QUESTION_TYPE_LOOKS, typeColour } from "../question-types"
 import { cx } from "../ui/cx"
 import kit from "../ui/kit.module.css"
 import s from "./Results.module.css"
 import { outlinePath } from "../ui/outline-path"
-import { useRegion } from "../regions"
+import { useOutline } from "../outlines"
 import { useElementRef } from "../ui/element-ref"
 import { VrButton, useVrView } from "../ui/VrButton"
 import { navigate } from "../router"
@@ -65,7 +65,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         rounds: (view.playedRounds ?? []).map((round, r) => ({
           label: round.label,
           type: typeName(round),
-          colour: TYPE_COLOURS[round.type],
+          colour: QUESTION_TYPE_LOOKS[round.type].colour,
           scores: standings.map((s) => s.rounds[r]?.score)
         }))
       }
@@ -286,32 +286,13 @@ function ScoreTable({
   )
 }
 
-const TYPE_NAMES: Record<QuestionType, string> = {
-  landmarks: "Landmark",
-  places: "Place name",
-  countries: "Whole country",
-  flags: "Flag",
-  features: "Island, lake or sea",
-  states: "US state"
-}
-
-/** The lobby's colour for each kind (global.css, --type-*), for the headset's board. */
-const TYPE_COLOURS: Record<QuestionType, string> = {
-  landmarks: "#ffb74d",
-  places: "#4fc3f7",
-  countries: "#81c784",
-  flags: "#f06292",
-  features: "#9575cd",
-  states: "#fff176"
-}
-
 /** An island, lake or sea round says which. */
 function typeName(round: PlayedRound): string {
-  const topic = round.type === "features" && round.topic
-  return topic ? topic[0]!.toUpperCase() + topic.slice(1) : TYPE_NAMES[round.type]
+  const feature = round.feature?.toLowerCase()
+  return feature ? feature[0]!.toUpperCase() + feature.slice(1) : QUESTION_TYPE_LOOKS[round.type].name
 }
 
-/** The round's picture, what it asked about, and which kind of question it was. */
+/** The round's picture, what it asked about, and which type of question it was. */
 function RoundWhat({ round }: { round: PlayedRound }) {
   return (
     <>
@@ -319,7 +300,7 @@ function RoundWhat({ round }: { round: PlayedRound }) {
       <span class={s.text}>
         <span class={s.label} data-testid={resultsTestIds.roundLabel}>
           {round.label}
-          {round.regionId && round.flag && <SmallFlag code={round.flag} class={s.labelFlag} />}
+          {round.area && round.flag && <SmallFlag code={round.flag} class={s.labelFlag} />}
         </span>
         <span class={s.type} style={typeColour(round.type)} data-testid={resultsTestIds.roundType}>
           {typeName(round)}
@@ -331,7 +312,7 @@ function RoundWhat({ round }: { round: PlayedRound }) {
 
 /** A shape round shows the shape painted; the rest, the question's photo or flag, else the reveal's photo. */
 function RoundPicture({ round }: { round: PlayedRound }) {
-  if (round.regionId) return <RoundShape id={round.regionId} type={round.type} />
+  if (round.area) return <RoundShape area={round.area} type={round.type} />
   if (round.image) return <SmallPhoto image={round.image} />
   if (round.flag) return <SmallFlagButton code={round.flag} />
   if (round.revealPhoto) return <SmallPhoto image={round.revealPhoto} />
@@ -342,9 +323,9 @@ function RoundPicture({ round }: { round: PlayedRound }) {
   )
 }
 
-function RoundShape({ id, type }: { id: RegionId; type: QuestionType }) {
-  const region = useRegion(id)
-  const d = useMemo(() => (region ? outlinePath(region.outline, region.answer, 56, 42) : ""), [region])
+function RoundShape({ area, type }: { area: NonNullable<PlayedRound["area"]>; type: QuestionType }) {
+  const outline = useOutline(area.outline)
+  const d = useMemo(() => (outline ? outlinePath(outline, area.centre, 56, 42) : ""), [outline])
   return (
     <SmallPictureBox class={s.shape} style={typeColour(type)}>
       {d && (

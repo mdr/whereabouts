@@ -1,6 +1,6 @@
 import type { ComponentChildren, RefObject } from "preact"
 import { useLayoutEffect, useState } from "preact/hooks"
-import { commonsImageUrl, wikipediaUrl } from "@whereabouts/shared/questions"
+import { clueFlag, clueImage, commonsImageUrl, wikipediaUrl } from "@whereabouts/shared/questions"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { QuestionView } from "@whereabouts/shared/protocol"
 import { Icon } from "./icons"
@@ -46,7 +46,6 @@ export function QuestionCard({
   hud,
   children,
   credit,
-  countryFlag,
   photo,
   foldable,
   startFolded
@@ -57,8 +56,6 @@ export function QuestionCard({
   children?: ComponentChildren
   /** Show the image credit link. Off while guessing: the Commons file name gives the answer away. */
   credit?: boolean
-  /** A country round names the country, so its flag can show too. */
-  countryFlag?: string
   /** At the reveal, the answer's photo on a round that showed none. */
   photo?: string
   /** On a phone, offer to fold the card down to its prompt for more map, if there is more. Each new question starts unfolded. */
@@ -66,11 +63,12 @@ export function QuestionCard({
   /** Fold it at first: at the reveal, the answer line shows folded, and the map matters more. */
   startFolded?: boolean
 }) {
-  const image = question.image ?? photo
+  const image = clueImage(question.clue) ?? photo
   const ref = useElementRef<HTMLDivElement>()
-  const asked = `${question.prompt} ${question.image ?? ""} ${question.flag ?? ""}`
+  const asked = `${question.prompt} ${clueImage(question.clue) ?? ""} ${clueFlag(question.clue) ?? ""}`
   const [toggledQuestion, setToggledQuestion] = useState<string | undefined>(undefined)
-  const flag = question.flag ?? countryFlag
+  // A country round names the country, so its flag can show too.
+  const flag = clueFlag(question.clue) ?? question.countryFlag
   const canFold = foldable === true && Boolean(image || flag || children)
   const toggled = toggledQuestion === asked
   const folded = canFold && (startFolded === true) !== toggled

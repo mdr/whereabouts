@@ -8,7 +8,8 @@ import {
   trimToHint,
   type HintAxis
 } from "./hints.ts"
-import { QUESTIONS } from "./questions.ts"
+import { CATALOGUE } from "./catalogue.ts"
+import { answerCentre } from "./questions.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { cellToLatLng, h3Res, latLngToCell, type H3Cell } from "./h3.ts"
 
@@ -16,10 +17,11 @@ describe("hintBand", () => {
   const axes: HintAxis[] = ["latitude", "longitude"]
 
   it("always holds the answer, for every question and either axis, wherever in the band it falls", () => {
-    for (const q of QUESTIONS)
+    for (const { answer } of CATALOGUE) {
+      const at = answerCentre(answer)
       for (const axis of axes)
-        for (const u of [0, 0.37, 1])
-          expect(inHintBand(hintBand(q.answer, q.toleranceKm, axis, u), q.answer)).toBe(true)
+        for (const u of [0, 0.37, 1]) expect(inHintBand(hintBand(at, answer.toleranceKm, axis, u), at)).toBe(true)
+    }
   })
 
   it("is about ten tolerances wide, and never puts the answer at an edge", () => {

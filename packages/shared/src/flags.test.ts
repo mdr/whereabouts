@@ -1,49 +1,53 @@
 import { describe, expect, it } from "vite-plus/test"
 import { cellArea, cellToLatLng, gridDisk, latLngToCell, UNITS } from "./h3.ts"
-import flagsJson from "../flags.json" with { type: "json" }
-import regionsJson from "../regions.json" with { type: "json" }
-import { FLAG_AREA_PROMPT, FLAG_POINT_PROMPT, type FlagData, flagFrom, flagRound } from "./flags.ts"
+import outlinesJson from "../outlines.json" with { type: "json" }
+import { CATALOGUE, isFlagQuestion, outlinesFrom } from "./catalogue.ts"
 import { resolutionForTolerance } from "./paint.ts"
 import { buildDistribution, scoreDistribution } from "./scoring.ts"
-import { type RegionData, regionFrom } from "./regions.ts"
+import { AnswerType, FLAG_AREA_PROMPT, FLAG_POINT_PROMPT, promptOf } from "./questions.ts"
 
-const FLAGS = (flagsJson as FlagData[]).map(flagFrom)
-const REGIONS = new Map((regionsJson as RegionData[]).map(regionFrom).map((q) => [q.id, q]))
-const flag = (code: string) => FLAGS.find((f) => f.flag === code)!
+const FLAGS = CATALOGUE.filter(isFlagQuestion)
+const OUTLINES = outlinesFrom(outlinesJson)
+const flag = (code: string) => FLAGS.find((f) => f.clue.flag === code)!
 
 describe("flag questions", () => {
   it("are one per country, well formed", () => {
     expect(FLAGS.length).toBeGreaterThan(190)
-    expect(new Set(FLAGS.map((f) => f.flag)).size).toBe(FLAGS.length)
-    expect(new Set(FLAGS.map((f) => f.id)).size).toBe(FLAGS.length)
+    expect(new Set(FLAGS.map((f) => f.clue.flag)).size).toBe(FLAGS.length)
     for (const f of FLAGS) {
-      expect(f.flag).toMatch(/^[a-z]{2}$/)
       expect(f.label.length, f.id).toBeGreaterThan(0)
       expect(f.wiki.length, f.id).toBeGreaterThan(0)
-      if (f.regionId) expect(REGIONS.has(f.regionId), f.id).toBe(true)
-      else expect(f.toleranceKm, f.id).toBeGreaterThanOrEqual(15)
+      if (f.answer.type === AnswerType.AREA) expect(OUTLINES.has(f.answer.outline), f.id).toBe(true)
+      else expect(f.answer.toleranceKm, f.id).toBeGreaterThanOrEqual(15)
     }
   })
 
-  it("paints big countries whole and asks small, disputed and far-flung ones as a point", () => {
-    for (const code of ["de", "br", "ca", "au", "ie", "lb", "bs", "vu"]) expect(flag(code).regionId, code).toBeDefined()
+  it("paint big countries whole and ask small, disputed and far-flung ones as a point", () => {
+    for (const code of ["de", "br", "ca", "au", "ie", "lb", "bs", "vu"])
+      expect(flag(code).answer.type, code).toBe(AnswerType.AREA)
     for (const code of ["va", "mc", "sg", "lu", "mt", "ki", "in", "cn", "ru", "us", "ua", "cy"])
-      expect(flag(code).regionId, code).toBeUndefined()
+      expect(flag(code).answer.type, code).toBe(AnswerType.POINT)
   })
 
-  it("ask a region with the flag in place of the name, or a point", () => {
-    const de = flagRound(flag("de"), REGIONS)!
-    expect(de).toMatchObject({ kind: "region", id: "germany-region", prompt: FLAG_AREA_PROMPT, flag: "de" })
-    expect(de.prompt).not.toMatch(/Germany/)
-    const mc = flagRound(flag("mc"), REGIONS)!
-    expect(mc).toMatchObject({ kind: "text", prompt: FLAG_POINT_PROMPT, flag: "mc", label: "Monaco" })
-    expect(mc.toleranceKm).toBe(15)
+  it("paint a country with the same outline as its own round", () => {
+    const de = flag("de")
+    const germany = CATALOGUE.find((q) => q.id === "germany-region")!
+    expect(de.answer).toEqual(germany.answer)
+  })
+
+  it("ask with the flag in place of the name", () => {
+    expect(promptOf(flag("de"))).toBe(FLAG_AREA_PROMPT)
+    expect(promptOf(flag("mc"))).toBe(FLAG_POINT_PROMPT)
+    expect(flag("mc").label).toBe("Monaco")
+    expect(flag("mc").answer.toleranceKm).toBe(15)
   })
 
   it("score a tight paint on a point country's answer highly, and a far one low", () => {
     for (const code of ["lu", "sg", "va", "in"]) {
-      const f = flag(code)
-      const res = resolutionForTolerance(f.toleranceKm)
+      const { answer } = flag(code)
+      if (answer.type !== AnswerType.POINT) throw new Error(`${code} is painted whole`)
+      const { at, toleranceKm } = answer
+      const res = resolutionForTolerance(toleranceKm)
       const blob = (lat: number, lon: number) =>
         buildDistribution(
           gridDisk(latLngToCell(lat, lon, res), 2).map((h) => {
@@ -52,13 +56,8 @@ describe("flag questions", () => {
           }),
           0.05
         )
-      expect(scoreDistribution(blob(f.answer.lat, f.answer.lon), f.answer, f.toleranceKm).score, code).toBeGreaterThan(
-        900
-      )
-      expect(
-        scoreDistribution(blob(-f.answer.lat, f.answer.lon + 180), f.answer, f.toleranceKm).score,
-        code
-      ).toBeLessThan(320)
+      expect(scoreDistribution(blob(at.lat, at.lon), at, toleranceKm).score, code).toBeGreaterThan(900)
+      expect(scoreDistribution(blob(-at.lat, at.lon + 180), at, toleranceKm).score, code).toBeLessThan(320)
     }
   })
 })

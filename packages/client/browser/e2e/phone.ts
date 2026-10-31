@@ -6,6 +6,7 @@
 import { devices } from "playwright-core"
 import type { Screen } from "../pages/Screen.ts"
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
+import { QuestionType } from "@whereabouts/shared/questions"
 
 const out = outDir()
 const checks = new Checks()
@@ -30,7 +31,7 @@ const aliceHomePage = await (await newTab(browser, "Alice")).openHome()
 await aliceHomePage.enterName("Alice")
 const aliceLobbyPage = await aliceHomePage.hostGame()
 // Photos make the tallest question card.
-await aliceLobbyPage.setOnlyQuestions("landmarks", 2)
+await aliceLobbyPage.setOnlyQuestions(QuestionType.LANDMARK, 2)
 const code = await aliceLobbyPage.code()
 
 const bobHomePage = await (

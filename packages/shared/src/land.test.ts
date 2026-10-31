@@ -1,26 +1,21 @@
 import { describe, expect, it } from "vite-plus/test"
 import { cellToChildren, cellToParent, getResolution, h3Res, latLngToCell } from "./h3.ts"
 import landJson from "../land.json" with { type: "json" }
-import flagsJson from "../flags.json" with { type: "json" }
-import regionsJson from "../regions.json" with { type: "json" }
+import outlinesJson from "../outlines.json" with { type: "json" }
 import { LandMask, trimSea } from "./land.ts"
-import { QUESTIONS } from "./questions.ts"
+import { CATALOGUE, outlinesFrom } from "./catalogue.ts"
+import { AnswerType, QuestionType } from "./questions.ts"
 import { resolutionForTolerance } from "./paint.ts"
-import { regionCells, type RegionData, regionFrom, regionScoringRes } from "./regions.ts"
-import { type FlagData, flagFrom } from "./flags.ts"
+import { regionCells, regionScoringRes, scoredAnswer } from "./regions.ts"
 
 const mask = new LandMask(landJson)
 const at = (lat: number, lon: number, res: number) => latLngToCell(lat, lon, h3Res(res))
 
 describe("land mask", () => {
   it("keeps paint on every answer, at the resolution it is painted", () => {
-    const answers = [
-      ...QUESTIONS.map((q) => ({ name: q.label, ...q.answer, t: q.toleranceKm })),
-      ...(flagsJson as FlagData[])
-        .map(flagFrom)
-        .filter((f) => !f.regionId)
-        .map((f) => ({ name: f.label, ...f.answer, t: f.toleranceKm }))
-    ]
+    const answers = CATALOGUE.flatMap((q) =>
+      q.answer.type === AnswerType.POINT ? [{ name: q.label, ...q.answer.at, t: q.answer.toleranceKm }] : []
+    )
     const trimmed = answers.filter((a) => !mask.nearLand(at(a.lat, a.lon, resolutionForTolerance(a.t))))
     expect(trimmed.map((a) => a.name)).toEqual([])
   })
@@ -28,8 +23,11 @@ describe("land mask", () => {
   it("keeps a whole country painted exactly", () => {
     // Every cell whose centre is in the outline, at the scoring resolution (the
     // region's own answer point is only for framing: Indonesia's is at sea).
-    for (const q of (regionsJson as RegionData[]).map(regionFrom)) {
-      const lost = regionCells(q, regionScoringRes(q.toleranceKm)).filter((h) => !mask.nearLand(h))
+    const outlines = outlinesFrom(outlinesJson)
+    for (const q of CATALOGUE.filter((q) => q.type === QuestionType.COUNTRY)) {
+      const a = scoredAnswer(q.answer, outlines)
+      if (a.type !== AnswerType.AREA) throw new Error(`${q.id} is not painted whole`)
+      const lost = regionCells(a, regionScoringRes(a.toleranceKm)).filter((h) => !mask.nearLand(h))
       expect(lost, q.label).toEqual([])
     }
   })

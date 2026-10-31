@@ -1,8 +1,8 @@
 /**
- * Region questions: "Paint the whole of Germany". The answer is the country
- * itself, an outline from Natural Earth (see scripts/build-regions.mjs).
- * Practice only for now. The outlines live in regions.json, which the client
- * loads on demand rather than bundling.
+ * Scoring area answers: "Paint the whole of Germany". The answer is the
+ * country itself, an outline from Natural Earth (see
+ * scripts/build-regions.mjs). The outlines live in outlines.json, which the
+ * client loads on demand rather than bundling.
  *
  * The score is SHAPE_WEIGHT x shape + (1 - SHAPE_WEIGHT) x nearness, a sum
  * like the point rule's mixture of kernels, so credit for covering the
@@ -35,8 +35,17 @@ import {
   type H3Res
 } from "./h3.ts"
 import { bearing, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
-import { MIN_SPREAD_KM, questionFrom, type Question, type QuestionData, type Topic } from "./questions.ts"
-import { flagCode, regionId, type FlagCode, type RegionId } from "./ids.ts"
+import {
+  AnswerType,
+  MIN_SPREAD_KM,
+  answerCentre,
+  type Answer,
+  type AreaAnswer,
+  type Outline,
+  type Outlines,
+  type PointAnswer
+} from "./questions.ts"
+import type { OutlineId } from "./ids.ts"
 import { resolutionForTolerance } from "./paint.ts"
 import {
   PASS_SCORE,
@@ -49,48 +58,18 @@ import {
   type RegionAnswer
 } from "./scoring.ts"
 
-export interface RegionQuestion {
-  id: RegionId
-  kind: "region"
-  prompt: string
-  /** Shown after the reveal. */
-  label: string
-  /** English Wikipedia article title. */
-  wiki: string
-  /** Area-weighted centre, for framing the map. */
-  answer: LatLon
-  /** A fifth of the country's equivalent radius, sqrt(area / pi). */
-  toleranceKm: number
-  /** GeoJSON MultiPolygon coordinates: [lon, lat] rings, outer ring first. */
-  outline: number[][][][]
-  /** A flag round: the flag shown in place of the name (see flags.ts). */
-  flag?: FlagCode
-  /** A country's own flag (its ISO code), shown beside its name to help players learn it. */
-  countryFlag?: FlagCode
-  /** An island, lake, sea or US state (features.json) rather than a country. */
-  topic?: Topic
-}
+/** An area answer with its outline, as scoring needs it. */
+export type Area = AreaAnswer & { polygons: Outline }
 
-/** A region as the JSON files hold it, its ids plain strings. */
-export type RegionData = Omit<RegionQuestion, "id" | "flag" | "countryFlag"> & {
-  id: string
-  flag?: string
-  countryFlag?: string
-}
+/** What a guess is scored against: a point, or an area with its outline. */
+export type ScoredAnswer = PointAnswer | Area
 
-/** A region from regions.json or features.json, its ids parsed. */
-export function regionFrom({ id, flag, countryFlag, ...rest }: RegionData): RegionQuestion {
-  return {
-    ...rest,
-    id: regionId(id),
-    ...(flag === undefined ? {} : { flag: flagCode(flag) }),
-    ...(countryFlag === undefined ? {} : { countryFlag: flagCode(countryFlag) })
-  }
-}
-
-/** An island, lake, sea or US state from features.json: most painted whole, a few asked as a point. */
-export function featureFrom(d: QuestionData | RegionData): Question | RegionQuestion {
-  return d.kind === "region" ? regionFrom(d) : questionFrom(d)
+/** An answer ready to score, its outline looked up. */
+export function scoredAnswer(answer: Answer, outlines: Outlines): ScoredAnswer {
+  if (answer.type === AnswerType.POINT) return answer
+  const polygons = outlines.get(answer.outline)
+  if (!polygons) throw new Error(`no outline ${answer.outline}`)
+  return { ...answer, polygons }
 }
 
 /** The share of the score that is shape; the rest is nearness. */
@@ -115,7 +94,7 @@ const NEARNESS_KERNEL: Kernel = {
   weights: [1 / 6, 1 / 6, 1 / 3, 1 / 3]
 }
 
-export interface RegionQuestionScore {
+export interface AreaScore {
   score: number
   /** Cell-by-cell comparison with the country. */
   shape: number
@@ -133,26 +112,26 @@ export function regionScoringRes(toleranceKm: number): H3Res {
 }
 
 /** The region's cells at `res`: those whose centres fall inside the outline. */
-export function regionCells(q: RegionQuestion, res: H3Res): H3Cell[] {
+export function regionCells(q: Area, res: H3Res): H3Cell[] {
   const cells = new Set<H3Cell>()
-  for (const polygon of q.outline) for (const h of polygonToCells(polygon, res, true)) cells.add(h)
+  for (const polygon of q.polygons) for (const h of polygonToCells(polygon, res, true)) cells.add(h)
   return [...cells]
 }
 
-const boxes = new WeakMap<RegionQuestion, [number, number, number, number]>()
+const boxes = new Map<OutlineId, [number, number, number, number]>()
 
 /** Whether a point is inside a region's outline: inside an odd number of each polygon's rings. */
-export function insideRegion(q: RegionQuestion, { lat, lon }: LatLon): boolean {
-  let box = boxes.get(q)
+export function insideRegion(q: Area, { lat, lon }: LatLon): boolean {
+  let box = boxes.get(q.outline)
   if (!box) {
-    const points = q.outline.flatMap((polygon) => polygon[0]!)
+    const points = q.polygons.flatMap((polygon) => polygon[0]!)
     const lons = points.map(([x]) => x!)
     const lats = points.map(([, y]) => y!)
     box = [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)]
-    boxes.set(q, box)
+    boxes.set(q.outline, box)
   }
   if (lon < box[0] || lat < box[1] || lon > box[2] || lat > box[3]) return false
-  return q.outline.some((polygon) => {
+  return q.polygons.some((polygon) => {
     let odd = false
     for (const ring of polygon)
       for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
@@ -169,16 +148,20 @@ export function insideRegion(q: RegionQuestion, { lat, lon }: LatLon): boolean {
  * inside the other's outline (Gaborone and Botswana, Honshu and Japan), or
  * two places close together.
  */
-export function roundsOverlap(a: Question | RegionQuestion, b: Question | RegionQuestion): boolean {
-  if (a.kind !== "region" && b.kind !== "region") return greatCircleDistance(a.answer, b.answer) <= MIN_SPREAD_KM
-  return (a.kind === "region" && insideRegion(a, b.answer)) || (b.kind === "region" && insideRegion(b, a.answer))
+export function roundsOverlap(a: ScoredAnswer, b: ScoredAnswer): boolean {
+  if (a.type === AnswerType.POINT && b.type === AnswerType.POINT)
+    return greatCircleDistance(a.at, b.at) <= MIN_SPREAD_KM
+  return (
+    (a.type === AnswerType.AREA && insideRegion(a, answerCentre(b))) ||
+    (b.type === AnswerType.AREA && insideRegion(b, answerCentre(a)))
+  )
 }
 
 const answers = new Map<string, RegionAnswer>()
 
 /** The kernel-scoring answer for a question, cached per kernel. */
-function regionAnswerFor(q: RegionQuestion, k: Kernel = NEARNESS_KERNEL): RegionAnswer {
-  const key = `${q.id}|${k.id}`
+function regionAnswerFor(q: Area, k: Kernel = NEARNESS_KERNEL): RegionAnswer {
+  const key = `${q.outline}|${k.id}`
   let a = answers.get(key)
   if (!a) {
     a = regionAnswer(regionCells(q, regionScoringRes(q.toleranceKm)), q.toleranceKm, k)
@@ -187,7 +170,7 @@ function regionAnswerFor(q: RegionQuestion, k: Kernel = NEARNESS_KERNEL): Region
   return a
 }
 
-export function scoreRegionQuestion(painted: Distribution, q: RegionQuestion): RegionQuestionScore {
+export function scoreArea(painted: Distribution, q: Area): AreaScore {
   const shape = shapeScore(paintMass(painted, q), q)
   const coarse = coarsenDistribution(painted, regionScoringRes(q.toleranceKm))
   const nearness = scoreRegion(coarse, regionAnswerFor(q)).score
@@ -203,15 +186,15 @@ export type AnswerParts = { A: number; B: number } | { shape: number; nearness: 
  */
 export function scoreAnswer(
   painted: Distribution | undefined,
-  q: Question | RegionQuestion,
+  q: ScoredAnswer,
   kernel: Kernel
 ): { score: number; parts: AnswerParts } {
   if (!painted) return { score: PASS_SCORE.score, parts: { A: PASS_SCORE.A, B: PASS_SCORE.B } }
-  if (q.kind === "region") {
-    const { score, shape, nearness } = scoreRegionQuestion(painted, q)
+  if (q.type === AnswerType.AREA) {
+    const { score, shape, nearness } = scoreArea(painted, q)
     return { score, parts: { shape, nearness } }
   }
-  const { score, A, B } = scoreDistribution(painted, q.answer, q.toleranceKm, kernel)
+  const { score, A, B } = scoreDistribution(painted, q.at, q.toleranceKm, kernel)
   return { score, parts: { A, B } }
 }
 
@@ -224,7 +207,7 @@ export function scoreAnswer(
  * credit below; so an exact paint covers all of it, and so does a 50/50
  * hedge with another place.
  */
-export function regionFit(dist: Distribution, q: RegionQuestion): { coverage: number; precision: number } {
+export function regionFit(dist: Distribution, q: Area): { coverage: number; precision: number } {
   const painted = 1 - dist.floor
   const region = regionAt(q)
   let onMass = 0
@@ -263,7 +246,7 @@ export interface RegionMisfit {
 const LEAN = 0.4
 
 /** Facts for explaining a score in words: regionFit, and which way the misses lie. */
-export function regionMisfit(dist: Distribution, q: RegionQuestion): RegionMisfit {
+export function regionMisfit(dist: Distribution, q: Area): RegionMisfit {
   const { coverage, precision } = regionFit(dist, q)
   const region = regionAt(q)
   const mass = paintMass(dist, q)
@@ -271,11 +254,11 @@ export function regionMisfit(dist: Distribution, q: RegionQuestion): RegionMisfi
   const offCells: [H3Cell, number][] = []
   for (const [h, p] of mass) if (!region.cells.has(h)) offCells.push([h, p])
   let off: RegionMisfit["off"] = undefined
-  const offCentre = leaning(q.answer, offCells)
+  const offCentre = leaning(q.centre, offCells)
   if (offCentre && !region.cells.has(latLngToCell(offCentre.lat, offCentre.lon, region.res))) {
     let km = Infinity
     for (const h of region.cells.keys()) km = Math.min(km, greatCircleDistance(offCentre, latLng(h)))
-    off = { bearing: bearing(q.answer, offCentre), km }
+    off = { bearing: bearing(q.centre, offCentre), km }
   }
 
   // Shortfall below half the density the paint on the country would have spread evenly, as regionFit counts it.
@@ -289,8 +272,8 @@ export function regionMisfit(dist: Distribution, q: RegionQuestion): RegionMisfi
       if (s > 0) short.push([h, s])
     }
   }
-  const bareCentre = leaning(q.answer, short)
-  return { coverage, precision, off, bare: bareCentre && { bearing: bearing(q.answer, bareCentre) } }
+  const bareCentre = leaning(q.centre, short)
+  return { coverage, precision, off, bare: bareCentre && { bearing: bearing(q.centre, bareCentre) } }
 }
 
 function latLng(h: H3Cell): LatLon {
@@ -325,11 +308,11 @@ interface Region {
   ancestors: Map<H3Res, Set<H3Cell>>
 }
 
-const regions = new Map<RegionId, Region>()
+const regions = new Map<OutlineId, Region>()
 
 /** The country's cells at the painting resolution, with their areas. */
-function regionAt(q: RegionQuestion): Region {
-  let region = regions.get(q.id)
+function regionAt(q: Area): Region {
+  let region = regions.get(q.outline)
   if (!region) {
     const res = resolutionForTolerance(q.toleranceKm)
     const cells = new Map<H3Cell, number>()
@@ -340,7 +323,7 @@ function regionAt(q: RegionQuestion): Region {
       area += a
     }
     region = { res, cells, area, ancestors: new Map() }
-    regions.set(q.id, region)
+    regions.set(q.outline, region)
   }
   return region
 }
@@ -362,7 +345,7 @@ function overlaps(region: Region, h: H3Cell, r: H3Res): boolean {
  * only their total mass counts, and splitting a world painted at world zoom
  * would mean millions of cells. The world floor is left out.
  */
-function paintMass(dist: Distribution, q: RegionQuestion): Map<H3Cell, number> {
+function paintMass(dist: Distribution, q: Area): Map<H3Cell, number> {
   const res = resolutionForTolerance(q.toleranceKm)
   const region = regionAt(q)
   const mass = new Map<H3Cell, number>()
@@ -387,7 +370,7 @@ function paintMass(dist: Distribution, q: RegionQuestion): Map<H3Cell, number> {
  * the country's cells, clamped at 0. With q spread evenly by area, q = a / A
  * in each of them (A its area), so sum q^2 / a = 1 / A.
  */
-function shapeScore(mass: Map<H3Cell, number>, q: RegionQuestion): number {
+function shapeScore(mass: Map<H3Cell, number>, q: Area): number {
   const region = regionAt(q)
   let sum = 0
   for (const [h, a] of region.cells) {

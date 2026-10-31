@@ -1,20 +1,24 @@
 import { describe, expect, it } from "vite-plus/test"
 import { getResolution, h3Res, latLngToCell } from "./h3.ts"
 import waterJson from "../water.json" with { type: "json" }
-import featuresJson from "../features.json" with { type: "json" }
+import outlinesJson from "../outlines.json" with { type: "json" }
 import { WaterMask, paintAmount, trimLand } from "./land.ts"
 import { resolutionForTolerance } from "./paint.ts"
-import { featureFrom, regionCells, type RegionData, type RegionQuestion } from "./regions.ts"
-import { isWater, type QuestionData } from "./questions.ts"
+import { regionCells, scoredAnswer, type Area } from "./regions.ts"
+import { CATALOGUE, outlinesFrom } from "./catalogue.ts"
+import { AnswerType, Surface } from "./questions.ts"
 
 const mask = new WaterMask(waterJson)
 const at = (lat: number, lon: number, res: number) => latLngToCell(lat, lon, h3Res(res))
 
 describe("water mask", () => {
   it("keeps a lake or sea painted exactly", () => {
-    const water = (featuresJson as (QuestionData | RegionData)[])
-      .map(featureFrom)
-      .filter((q): q is RegionQuestion => q.kind === "region" && isWater(q.topic))
+    const outlines = outlinesFrom(outlinesJson)
+    const water = CATALOGUE.flatMap((q) =>
+      q.answer.type === AnswerType.AREA && q.answer.surface === Surface.WATER
+        ? [{ label: q.label, ...(scoredAnswer(q.answer, outlines) as Area) }]
+        : []
+    )
     expect(water).toHaveLength(22)
     for (const q of water) {
       const cells = new Map(regionCells(q, resolutionForTolerance(q.toleranceKm)).map((h) => [h, 1]))

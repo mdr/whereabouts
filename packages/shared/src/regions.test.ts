@@ -10,21 +10,20 @@ import {
   latLngToCell,
   UNITS
 } from "./h3.ts"
-import regionsJson from "../regions.json" with { type: "json" }
-import featuresJson from "../features.json" with { type: "json" }
+import outlinesJson from "../outlines.json" with { type: "json" }
 import { resolutionForTolerance } from "./paint.ts"
-import { QUESTIONS } from "./questions.ts"
+import { CATALOGUE, outlinesFrom } from "./catalogue.ts"
+import { AnswerType, QuestionType, promptOf, type PointAnswer } from "./questions.ts"
 import {
   roundsOverlap,
   regionCells,
-  type RegionData,
   regionFit,
-  regionFrom,
-  type RegionQuestion,
   regionScoringRes,
   scoreAnswer,
-  scoreRegionQuestion,
-  SHAPE_WEIGHT
+  scoreArea,
+  scoredAnswer,
+  SHAPE_WEIGHT,
+  type Area
 } from "./regions.ts"
 import {
   DEFAULT_KERNEL,
@@ -35,8 +34,22 @@ import {
   type Distribution
 } from "./scoring.ts"
 
-const REGIONS = (regionsJson as RegionData[]).map(regionFrom)
-const byId = (id: string) => REGIONS.find((q) => q.id === id)!
+const OUTLINES = outlinesFrom(outlinesJson)
+const COUNTRIES = CATALOGUE.filter((q) => q.type === QuestionType.COUNTRY)
+
+/** A question's area, its outline looked up. */
+function byId(id: string): Area {
+  const a = scoredAnswer(CATALOGUE.find((q) => q.id === id)!.answer, OUTLINES)
+  if (a.type !== AnswerType.AREA) throw new Error(`${id} is not painted whole`)
+  return a
+}
+
+/** A question's point answer. */
+function pointOf(wiki: string): PointAnswer {
+  const { answer } = CATALOGUE.find((q) => q.wiki === wiki)!
+  if (answer.type !== AnswerType.POINT) throw new Error(`${wiki} is painted whole`)
+  return answer
+}
 
 /** An even coat of paint over `cells`, with the usual 5% world floor. */
 function coat(cells: H3Cell[], floor = 0.05) {
@@ -50,27 +63,23 @@ function coat(cells: H3Cell[], floor = 0.05) {
 }
 
 /** Paint a region the way a player would: at the question's painting resolution. */
-const paintRegion = (q: RegionQuestion) => coat(regionCells(q, resolutionForTolerance(q.toleranceKm)))
+const paintRegion = (q: Area) => coat(regionCells(q, resolutionForTolerance(q.toleranceKm)))
 
 describe("region questions", () => {
-  it("are well formed, with ids of their own", () => {
-    const ids = new Set<string>(QUESTIONS.map((q) => q.id))
-    for (const q of REGIONS) {
-      expect(ids.has(q.id), `duplicate id ${q.id}`).toBe(false)
-      ids.add(q.id)
-      expect(q.kind).toBe("region")
-      expect(q.prompt).toMatch(/^Paint the whole of /)
-      expect(q.wiki.length).toBeGreaterThan(0)
+  it("are well formed", () => {
+    for (const country of COUNTRIES) {
+      const q = byId(country.id)
+      expect(promptOf(country)).toMatch(/^Paint the whole of /)
       expect(q.toleranceKm).toBeGreaterThanOrEqual(10)
       expect(q.toleranceKm).toBeLessThanOrEqual(400)
-      expect(q.outline.length).toBeGreaterThan(0)
-      for (const polygon of q.outline) {
+      expect(q.polygons.length).toBeGreaterThan(0)
+      for (const polygon of q.polygons) {
         for (const ring of polygon) {
           expect(ring.length).toBeGreaterThanOrEqual(4)
           expect(ring[0]).toEqual(ring.at(-1))
         }
       }
-      expect(regionCells(q, regionScoringRes(q.toleranceKm)).length, q.id).toBeGreaterThan(10)
+      expect(regionCells(q, regionScoringRes(q.toleranceKm)).length, country.id).toBeGreaterThan(10)
     }
   })
 
@@ -88,20 +97,21 @@ describe("region questions", () => {
       "lebanon-region",
       "solomon-islands-region",
       "new-zealand-region"
-    ].map(byId)
-    for (const q of sample) {
-      const { score } = scoreRegionQuestion(paintRegion(q), q)
-      expect(score, q.label).toBeGreaterThan(985)
+    ]
+    for (const id of sample) {
+      const q = byId(id)
+      const { score } = scoreArea(paintRegion(q), q)
+      expect(score, id).toBeGreaterThan(985)
     }
   })
 
   it("ranks the right country above a neighbour above one of its size far away", () => {
     const germany = byId("germany-region")
-    const exact = scoreRegionQuestion(paintRegion(germany), germany).score
-    const poland = scoreRegionQuestion(paintRegion(byId("poland-region")), germany).score
-    const japan = scoreRegionQuestion(paintRegion(byId("japan-region")), germany).score
+    const exact = scoreArea(paintRegion(germany), germany).score
+    const poland = scoreArea(paintRegion(byId("poland-region")), germany).score
+    const japan = scoreArea(paintRegion(byId("japan-region")), germany).score
     // A far bigger country, painted thinly: spreading wrong paint thinly is still wrong.
-    const brazil = scoreRegionQuestion(paintRegion(byId("brazil-region")), germany).score
+    const brazil = scoreArea(paintRegion(byId("brazil-region")), germany).score
     expect(exact).toBeGreaterThan(poland)
     expect(poland).toBeGreaterThan(250) // a near miss still beats a pass
     expect(poland).toBeLessThan(800)
@@ -138,7 +148,7 @@ describe("shape and nearness", () => {
   const cells = regionCells(germany, res)
   const poland = regionCells(byId("poland-region"), res)
   const area = (cs: H3Cell[]) => cs.reduce((s, h) => s + cellArea(h, UNITS.km2), 0)
-  const score = (d: Distribution) => scoreRegionQuestion(d, germany).score
+  const score = (d: Distribution) => scoreArea(d, germany).score
 
   /** Each part's share of the paint, spread evenly over its cells. */
   const shares = (parts: [H3Cell[], number][]) => {
@@ -174,7 +184,7 @@ describe("shape and nearness", () => {
   }
 
   it("adds the two up: SHAPE_WEIGHT of shape, the rest nearness", () => {
-    const s = scoreRegionQuestion(coat(poland), germany)
+    const s = scoreArea(coat(poland), germany)
     expect(s.score).toBeCloseTo(SHAPE_WEIGHT * s.shape + (1 - SHAPE_WEIGHT) * s.nearness, 9)
   })
 
@@ -185,7 +195,7 @@ describe("shape and nearness", () => {
   })
 
   it("covering half the country scores about 750", () => {
-    const s = score(coat(cells.filter((h) => cellToLatLng(h)[1] < germany.answer.lon)))
+    const s = score(coat(cells.filter((h) => cellToLatLng(h)[1] < germany.centre.lon)))
     expect(s).toBeGreaterThan(710)
     expect(s).toBeLessThan(830)
   })
@@ -267,7 +277,7 @@ describe("shape and nearness", () => {
       cells.map((h) => {
         const [lat, lon] = cellToLatLng(h)
         const km =
-          Math.hypot(lat - germany.answer.lat, (lon - germany.answer.lon) * Math.cos((lat * Math.PI) / 180)) * 111
+          Math.hypot(lat - germany.centre.lat, (lon - germany.centre.lon) * Math.cos((lat * Math.PI) / 180)) * 111
         return { lat, lon, intensity: Math.max(0.5, 1.5 - km / R), areaKm2: cellArea(h, UNITS.km2), h3: h }
       }),
       0.05
@@ -292,8 +302,8 @@ describe("coarsenDistribution", () => {
 })
 
 describe("roundsOverlap", () => {
-  const gaborone = QUESTIONS.find((q) => q.wiki === "Gaborone")!
-  const paris = QUESTIONS.find((q) => q.wiki === "Paris")!
+  const gaborone = pointOf("Gaborone")
+  const paris = pointOf("Paris")
 
   it("finds a place inside a country, and not one far away", () => {
     expect(roundsOverlap(gaborone, byId("botswana-region"))).toBe(true)
@@ -302,8 +312,8 @@ describe("roundsOverlap", () => {
   })
 
   it("finds an island inside a country, but not neighbouring countries", () => {
-    const honshu = (featuresJson as RegionData[]).find((q) => q.label === "Honshu")!
-    expect(roundsOverlap(regionFrom(honshu), byId("japan-region"))).toBe(true)
+    const honshu = byId(CATALOGUE.find((q) => q.label === "Honshu")!.id)
+    expect(roundsOverlap(honshu, byId("japan-region"))).toBe(true)
     expect(roundsOverlap(byId("france-region"), byId("germany-region"))).toBe(false)
   })
 })
@@ -312,14 +322,14 @@ describe("scoreAnswer", () => {
   it("scores a region by its shape and nearness, a point by its kernel, and nothing painted as a pass", () => {
     const germany = byId("germany-region")
     const painted = paintRegion(germany)
-    const region = scoreRegionQuestion(painted, germany)
+    const region = scoreArea(painted, germany)
     expect(scoreAnswer(painted, germany, DEFAULT_KERNEL)).toEqual({
       score: region.score,
       parts: { shape: region.shape, nearness: region.nearness }
     })
 
-    const place = QUESTIONS[0]!
-    const point = scoreDistribution(painted, place.answer, place.toleranceKm, DEFAULT_KERNEL)
+    const place = pointOf("Paris")
+    const point = scoreDistribution(painted, place.at, place.toleranceKm, DEFAULT_KERNEL)
     expect(scoreAnswer(painted, place, DEFAULT_KERNEL)).toEqual({
       score: point.score,
       parts: { A: point.A, B: point.B }

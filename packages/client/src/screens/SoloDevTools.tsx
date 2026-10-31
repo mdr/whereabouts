@@ -17,9 +17,12 @@ import {
   regionFit,
   scoreAnswer,
   type AnswerParts,
-  type RegionQuestion
+  type Area,
+  type ScoredAnswer
 } from "@whereabouts/shared/regions"
 import { encodeCase } from "@whereabouts/shared/scoring-case"
+import { caseQuestion } from "@whereabouts/shared/score-review"
+import { AnswerType, type Question } from "@whereabouts/shared/questions"
 import { greatCircleDistance, toXyz, type LatLon } from "@whereabouts/shared/geo"
 import { usePaint } from "../ui/MapView"
 import { Card } from "../ui/Card"
@@ -30,7 +33,6 @@ import kit from "../ui/kit.module.css"
 import sc from "../ui/Score.module.css"
 import s from "./SoloDevTools.module.css"
 import { cheatLiveScore, soloKernelId } from "../settings"
-import { isRegion, type PracticeQuestion } from "../practice-question"
 
 function PartsLine({ parts }: { parts: AnswerParts }) {
   if ("A" in parts) return <ScoreParts A={parts.A} B={parts.B} />
@@ -46,7 +48,7 @@ function PartsLine({ parts }: { parts: AnswerParts }) {
   )
 }
 
-export function Cheats({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
+export function Cheats({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: Kernel }) {
   return (
     <Card title="Cheats">
       <label class={kit.check}>
@@ -57,7 +59,7 @@ export function Cheats({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
         />{" "}
         Show live score and the real answer while painting
       </label>
-      {isRegion(q) ? (
+      {a.type === AnswerType.AREA ? (
         <p class={kit.hint}>Countries score by shape and nearness, with their own kernel: see regions.ts.</p>
       ) : (
         <label class={kit.check}>
@@ -75,20 +77,20 @@ export function Cheats({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
           </select>
         </label>
       )}
-      <CopyCase q={q} kernel={kernel} />
+      <CopyCase q={q} a={a} kernel={kernel} />
     </Card>
   )
 }
 
 /** The revealed score's parts, and what other answers or kernels would have scored. */
 export function RevealScore({
-  q,
+  a,
   kernel,
   parts,
   dist,
   hover
 }: {
-  q: PracticeQuestion
+  a: ScoredAnswer
   kernel: Kernel
   parts: AnswerParts
   /** Undefined for a pass. */
@@ -97,20 +99,19 @@ export function RevealScore({
 }) {
   const h = hover.value
   // "What if the answer were here" only means something for a point answer.
-  let hoverText: string | undefined = isRegion(q)
-    ? undefined
-    : "Move the mouse over the map to see the score for other answers."
-  if (h && !isRegion(q) && dist) {
-    const A = similarityToAnswer(dist, toXyz(h), q.toleranceKm, kernel)
+  let hoverText: string | undefined =
+    a.type === AnswerType.AREA ? undefined : "Move the mouse over the map to see the score for other answers."
+  if (h && a.type === AnswerType.POINT && dist) {
+    const A = similarityToAnswer(dist, toXyz(h), a.toleranceKm, kernel)
     const s = "B" in parts ? scoreFromParts(A, parts.B) : 0
-    const d = greatCircleDistance(h, q.answer)
-    hoverText = `If the answer were here: ${Math.round(s)} · ${fmtKm(d)} from the real answer (${(d / q.toleranceKm).toFixed(1)} tolerances)`
+    const d = greatCircleDistance(h, a.at)
+    hoverText = `If the answer were here: ${Math.round(s)} · ${fmtKm(d)} from the real answer (${(d / a.toleranceKm).toFixed(1)} tolerances)`
   }
   return (
     <Card title="Score">
       <PartsLine parts={parts} />
       {hoverText && <div class={s.hoverScore}>{hoverText}</div>}
-      {!isRegion(q) && dist && <KernelComparison dist={dist} q={q} active={kernel.id} />}
+      {a.type === AnswerType.POINT && dist && <KernelComparison dist={dist} a={a} active={kernel.id} />}
     </Card>
   )
 }
@@ -118,7 +119,7 @@ export function RevealScore({
 const pct = (x: number) => `${Math.round(x * 100)}%`
 
 /** Copies the paint and its score as text, to paste into a chat about the scoring (see scoring-case.ts). */
-function CopyCase({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
+function CopyCase({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: Kernel }) {
   const paint = usePaint()
   const [copied, setCopied] = useState(false)
   // Where the clipboard is out of reach (a LAN address over http), the text to copy by hand.
@@ -130,17 +131,10 @@ function CopyCase({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
   }, [copied])
   const copy = async () => {
     const floor = paint.floor.value
-    const { score, parts } = scoreAnswer(buildDistribution(paint.layer.toCells(), floor), q, kernel)
+    const { score, parts } = scoreAnswer(buildDistribution(paint.layer.toCells(), floor), a, kernel)
     const text = await encodeCase({
-      question: {
-        kind: isRegion(q) ? "region" : q.kind,
-        id: q.id,
-        label: q.label,
-        answer: q.answer,
-        toleranceKm: q.toleranceKm,
-        ...(q.flag ? { flag: q.flag } : {})
-      },
-      kernel: isRegion(q) ? "region" : kernel.id,
+      question: caseQuestion(q, a),
+      kernel: a.type === AnswerType.AREA ? "region" : kernel.id,
       floor,
       res: paint.layer.res,
       score,
@@ -167,7 +161,7 @@ function CopyCase({ q, kernel }: { q: PracticeQuestion; kernel: Kernel }) {
   )
 }
 
-function KernelComparison({ dist, q, active }: { dist: Distribution; q: PracticeQuestion; active: string }) {
+function KernelComparison({ dist, a, active }: { dist: Distribution; a: ScoredAnswer; active: string }) {
   return (
     <ul class={cx(kit.results, kit.compare)}>
       {KERNELS.map((k) => (
@@ -176,39 +170,41 @@ function KernelComparison({ dist, q, active }: { dist: Distribution; q: Practice
             {k.label}
             {k.id === active ? " ◀" : ""}
           </span>
-          <span>{Math.round(scoreAnswer(dist, q, k).score)}</span>
+          <span>{Math.round(scoreAnswer(dist, a, k).score)}</span>
         </li>
       ))}
     </ul>
   )
 }
 
-export function LiveScore({ q, kernelId }: { q: PracticeQuestion; kernelId: KernelId }) {
+export function LiveScore({ q, a, kernelId }: { q: Question; a: ScoredAnswer; kernelId: KernelId }) {
   const paint = usePaint()
   const dist = buildDistribution(paint.settledCells.value, paint.floor.value)
-  const { score, parts } = scoreAnswer(dist, q, kernelById(kernelId))
+  const { score, parts } = scoreAnswer(dist, a, kernelById(kernelId))
   return (
     <Card title="Live score">
       <p class={kit.hint} style={{ margin: "0 0 6px" }}>
-        Answer: {q.label}, {isRegion(q) ? "outlined" : "marked"} on the map.
+        Answer: {q.label}, {a.type === AnswerType.AREA ? "outlined" : "marked"} on the map.
       </p>
       <div class={sc.score}>
         <div class={sc.big}>{Math.round(score)}</div>
         <PartsLine parts={parts} />
       </div>
-      {isRegion(q) && paint.settledCells.value.length > 0 && <RegionFitFacts dist={dist} q={q} />}
-      {!isRegion(q) && <KernelComparison dist={dist} q={q} active={kernelId} />}
+      {a.type === AnswerType.AREA && paint.settledCells.value.length > 0 && (
+        <RegionFitFacts dist={dist} a={a} label={q.label} />
+      )}
+      {a.type === AnswerType.POINT && <KernelComparison dist={dist} a={a} active={kernelId} />}
     </Card>
   )
 }
 
 /** Where the paint is against the country (the world floor left out). */
-function RegionFitFacts({ dist, q }: { dist: Distribution; q: RegionQuestion }) {
-  const { coverage, precision } = regionFit(dist, q)
+function RegionFitFacts({ dist, a, label }: { dist: Distribution; a: Area; label: string }) {
+  const { coverage, precision } = regionFit(dist, a)
   return (
     <dl class={cx(kit.facts, s.regionFit)}>
       <div>
-        <dt>Paint on {q.label}</dt>
+        <dt>Paint on {label}</dt>
         <dd>{pct(precision)}</dd>
       </div>
       <div>
@@ -216,7 +212,7 @@ function RegionFitFacts({ dist, q }: { dist: Distribution; q: RegionQuestion }) 
         <dd>{pct(1 - precision)}</dd>
       </div>
       <div>
-        <dt>{q.label} covered</dt>
+        <dt>{label} covered</dt>
         <dd>{pct(coverage)}</dd>
       </div>
     </dl>

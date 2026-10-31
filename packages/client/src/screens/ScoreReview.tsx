@@ -7,15 +7,10 @@
  * as the scoring changes. Linked from nowhere.
  */
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
-import { QUESTIONS } from "@whereabouts/shared/questions"
-import {
-  REVIEW_VERSION,
-  guessCase,
-  reviewCases,
-  scoreGuess,
-  type ReviewPools,
-  type ScoreVerdict
-} from "@whereabouts/shared/score-review"
+import { AnswerType, type Outlines } from "@whereabouts/shared/questions"
+import { CATALOGUE } from "@whereabouts/shared/catalogue"
+import { questionView } from "@whereabouts/shared/game"
+import { REVIEW_VERSION, guessCase, reviewCases, scoreGuess, type ScoreVerdict } from "@whereabouts/shared/score-review"
 import { colourCss, playerColour } from "@whereabouts/shared/colours"
 import { kernelById } from "@whereabouts/shared/scoring"
 import { MapView, usePaint } from "../ui/MapView"
@@ -29,7 +24,7 @@ import kit from "../ui/kit.module.css"
 import pl from "../ui/Players.module.css"
 import s from "./ScoreReview.module.css"
 import { isTyping } from "../keys"
-import { featureQuestions, regions } from "../regions"
+import { outlines } from "../outlines"
 import { LoadingOutlines } from "../ui/LoadingOutlines"
 import { reviewSet, scoreVerdicts, soloKernelId } from "../settings"
 import { scoreReviewTestIds } from "./ScoreReviewTestIds"
@@ -63,27 +58,15 @@ export function ScoreReview() {
 }
 
 function ReviewLoader() {
-  const byId = regions.value
-  const features = featureQuestions.value
-  const pools = useMemo<ReviewPools | undefined>(
-    () =>
-      byId &&
-      features && {
-        places: QUESTIONS,
-        countries: [...byId.values()].filter((q) => q.topic === undefined),
-        features: features.filter((q) => q.topic !== "state"),
-        states: features.filter((q) => q.topic === "state")
-      },
-    [byId, features]
-  )
-  if (!pools) return <LoadingOutlines />
-  return <Review pools={pools} />
+  const loaded = outlines.value
+  if (!loaded) return <LoadingOutlines />
+  return <Review outlines={loaded} />
 }
 
-function Review({ pools }: { pools: ReviewPools }) {
+function Review({ outlines }: { outlines: Outlines }) {
   const paint = usePaint()
   const set = reviewSet.value
-  const cases = useMemo(() => reviewCases(set, pools), [set, pools])
+  const cases = useMemo(() => reviewCases(set, CATALOGUE, outlines), [set, outlines])
   const judged = new Set(
     scoreVerdicts.value.filter((v) => v.version === REVIEW_VERSION && v.set === set).map((v) => v.index)
   )
@@ -108,13 +91,14 @@ function Review({ pools }: { pools: ReviewPools }) {
   const done = judged.size >= cases.length
   const c = cases[index]!
   const q = c.question
+  const a = c.answer
   const guesses = c.kind === "single" ? [c.guess] : c.guesses
   const kernel = kernelById(soloKernelId.value)
-  const scores = useMemo(() => guesses.map((g) => scoreGuess(q, g.layer, kernel).score), [c, kernel.id])
+  const scores = useMemo(() => guesses.map((g) => scoreGuess(a, g.layer, kernel).score), [c, kernel.id])
 
   const frame = (fc: GeoJSON.FeatureCollection) => {
-    if (q.kind === "region") paint.gameMap.fitRegionAndPaint(q.answer, q.outline, fc, q.toleranceKm)
-    else paint.gameMap.fitAnswerAndPaint(q.answer, fc, q.toleranceKm)
+    if (a.type === AnswerType.AREA) paint.gameMap.fitRegionAndPaint(a.centre, a.polygons, fc, a.toleranceKm)
+    else paint.gameMap.fitAnswerAndPaint(a.at, fc, a.toleranceKm)
   }
   const showPair = (only: 0 | 1 | undefined) =>
     paint.showLayers(
@@ -124,11 +108,11 @@ function Review({ pools }: { pools: ReviewPools }) {
     )
 
   useEffect(() => {
-    paint.reset(q.toleranceKm)
+    paint.reset(a.toleranceKm)
     paint.enabled.value = false
     paint.gameMap.setDetail("reveal")
-    if (q.kind === "region") paint.gameMap.showRegionReveal(q.outline)
-    else paint.gameMap.showReveal(q.answer)
+    if (a.type === AnswerType.AREA) paint.gameMap.showRegionReveal(a.polygons)
+    else paint.gameMap.showReveal(a.at)
     if (c.kind === "single") {
       paint.restore(c.guess.layer.toRecord())
       paint.showOwn()
@@ -164,16 +148,16 @@ function Review({ pools }: { pools: ReviewPools }) {
         guess: c.guess.kind,
         verdict: choice,
         ...(shouldBe.trim() !== "" && Number.isFinite(target) ? { shouldBe: target } : {}),
-        case: await guessCase(q, c.guess.layer, kernel)
+        case: await guessCase(q, a, c.guess.layer, kernel)
       }
     } else {
-      const [a, b] = c.guesses
+      const [first, second] = c.guesses
       entry = {
         ...base,
         pair: true,
-        guesses: [a.kind, b.kind],
+        guesses: [first.kind, second.kind],
         prefer: choice,
-        cases: [await guessCase(q, a.layer, kernel), await guessCase(q, b.layer, kernel)]
+        cases: [await guessCase(q, a, first.layer, kernel), await guessCase(q, a, second.layer, kernel)]
       }
     }
     scoreVerdicts.value = [
@@ -207,13 +191,13 @@ function Review({ pools }: { pools: ReviewPools }) {
     <Hud reveal>
       <HudTop>
         <HudHeader home round={index + 1} total={cases.length} right={<HeaderNote nowrap>Set {set}</HeaderNote>} />
-        <QuestionCard q={q} hud="reveal" credit countryFlag={q.kind === "region" ? q.countryFlag : undefined}>
+        <QuestionCard q={questionView(q)} hud="reveal" credit>
           <Answer label={q.label} wiki={q.wiki} />
         </QuestionCard>
         {c.kind === "single" && (
           <ScoreCard
             score={Math.round(scores[0]!)}
-            label={q.kind === "region" ? "scored on shape and nearness" : `scored with ${kernel.label}`}
+            label={a.type === AnswerType.AREA ? "scored on shape and nearness" : `scored with ${kernel.label}`}
             testIds={{ score: scoreReviewTestIds.score }}
           />
         )}

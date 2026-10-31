@@ -3,8 +3,8 @@ import { FILL_DENSITY } from "@whereabouts/shared/fill"
 import { LandMask } from "@whereabouts/shared/land"
 import { resolutionForTolerance } from "@whereabouts/shared/paint"
 import { cellToChildren, finerRes, latLngToCell, type H3Cell } from "@whereabouts/shared/h3"
-import { flagCode, questionId } from "@whereabouts/shared/ids"
-import type { FlagQuestion } from "@whereabouts/shared/flags"
+import { AnswerType, answerCentre, type FlagQuestion } from "@whereabouts/shared/questions"
+import { makeFlagQuestion } from "./test-view"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { FILL_SMALL_PX, PaintModel, type Filler } from "./paint-model"
 
@@ -19,16 +19,8 @@ function makeModel(): PaintModel {
   return model
 }
 
-function makeCountry(overrides: Partial<FlagQuestion> = {}): FlagQuestion {
-  return {
-    id: questionId("flag-fr"),
-    flag: flagCode("fr"),
-    label: "France",
-    wiki: "Flag of France",
-    answer: PARIS,
-    toleranceKm: TOLERANCE_KM,
-    ...overrides
-  }
+function makeCountry(): FlagQuestion {
+  return makeFlagQuestion("fr", "France", { answer: { type: AnswerType.POINT, at: PARIS, toleranceKm: TOLERANCE_KM } })
 }
 
 /** A filler that finds France everywhere, filled with the cell at its answer. */
@@ -36,7 +28,10 @@ function makeFiller(overrides: Partial<Filler> = {}): Filler {
   return {
     countryAt: vi.fn(() => makeCountry()),
     outline: () => ({ type: "MultiPolygon", coordinates: [] }),
-    cells: (f, res) => [latLngToCell(f.answer.lat, f.answer.lon, res)],
+    cells: (f, res) => {
+      const at = answerCentre(f.answer)
+      return [latLngToCell(at.lat, at.lon, res)]
+    },
     ...overrides
   }
 }

@@ -7,6 +7,8 @@ import lb from "./Lightbox.module.css"
 import pictures from "./Pictures.module.css"
 import qc from "./QuestionCard.module.css"
 import type * as flags from "../flags"
+import { ClueType, QuestionType } from "@whereabouts/shared/questions"
+import { makeQuestionView } from "../test-view"
 
 vi.mock("../flags", async (original) => ({
   ...(await original<typeof flags>()),
@@ -51,7 +53,11 @@ describe("SmallPhoto", () => {
   })
 
   it("shows the rounds' rendition of the photo, which the page already has", () => {
-    const q = { prompt: "Where is this?", image: "Some_file.jpg", toleranceKm: 50 }
+    const q = makeQuestionView({
+      type: QuestionType.LANDMARK,
+      prompt: "Where is this?",
+      clue: { type: ClueType.PHOTO, image: "Some_file.jpg" }
+    })
     const { container } = render(<SmallPhoto image="Some_file.jpg" />)
     const shown = render(<QuestionCard hud="painting" q={q} />).container.querySelector<HTMLImageElement>(
       `.${qc.thumb!} img`

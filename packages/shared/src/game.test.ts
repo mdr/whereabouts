@@ -3,47 +3,48 @@ import { latLngToCell } from "./h3.ts"
 import { Game, ROUND_GRACE_MS, generateCode, nextHostAfter, type QuestionBank } from "./game.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { PASS_SCORE } from "./scoring.ts"
-import { QUESTIONS, pickQuestions, type Question, type QuestionData } from "./questions.ts"
+import {
+  AnswerType,
+  ClueType,
+  FLAG_POINT_PROMPT,
+  FeatureType,
+  QuestionType,
+  type LandmarkQuestion,
+  type PlaceQuestion,
+  type Question
+} from "./questions.ts"
+import { CATALOGUE, outlinesFrom } from "./catalogue.ts"
 import { REVEAL_PHOTOS } from "./photos.ts"
-import { featureFrom, regionCells, type RegionData, regionFrom, type RegionQuestion } from "./regions.ts"
-import { type GameConfig, MAX_PLAYERS, MAX_SPECTATORS, type QuestionView, SEAT_GRACE_MS } from "./protocol.ts"
-import regionsJson from "../regions.json" with { type: "json" }
-import flagsJson from "../flags.json" with { type: "json" }
-import featuresJson from "../features.json" with { type: "json" }
-import { FLAG_POINT_PROMPT, type FlagData, flagFrom } from "./flags.ts"
+import { regionCells, scoredAnswer, type Area } from "./regions.ts"
+import { type GameConfig, MAX_PLAYERS, MAX_SPECTATORS, type QuestionView, SEAT_GRACE_MS, mixOf } from "./protocol.ts"
+import outlinesJson from "../outlines.json" with { type: "json" }
 import { playerId, playerName, playerToken, questionId, roomCode, type PlayerToken, type RoomCode } from "./ids.ts"
+import type { LatLon } from "./geo.ts"
 import { PLAYER_COLOURS } from "./colours.ts"
 import { GameViewSchema } from "./view-schema.ts"
 import { inHintBand } from "./hints.ts"
 
-const petra: Question = {
-  id: questionId("petra"),
-  kind: "text",
-  prompt: "Where is Petra?",
-  answer: { lat: 30.3285, lon: 35.4444 },
-  toleranceKm: 200,
-  label: "Petra",
-  region: "world"
-}
-const paris: Question = {
-  id: questionId("paris"),
-  kind: "text",
-  prompt: "Where is Paris?",
-  answer: { lat: 48.8566, lon: 2.3522 },
-  toleranceKm: 100,
-  label: "Paris",
-  region: "world"
-}
-const tokyo: Question = {
-  id: questionId("tokyo"),
-  kind: "text",
-  prompt: "Where is Tokyo?",
-  answer: { lat: 35.6762, lon: 139.6503 },
-  toleranceKm: 100,
-  label: "Tokyo",
-  region: "world"
-}
+const place = (label: string, at: LatLon, toleranceKm = 100): PlaceQuestion => ({
+  type: QuestionType.PLACE,
+  id: questionId(label.toLowerCase()),
+  label,
+  wiki: label,
+  clue: { type: ClueType.NAME, prompt: `Where is ${label}?` },
+  answer: { type: AnswerType.POINT, at, toleranceKm }
+})
+const petra = place("Petra", { lat: 30.3285, lon: 35.4444 }, 200)
+const paris = place("Paris", { lat: 48.8566, lon: 2.3522 })
+const tokyo = place("Tokyo", { lat: 35.6762, lon: 139.6503 })
 const pool = [petra, paris, tokyo]
+
+const landmark = (id: string, image: string): LandmarkQuestion => ({
+  type: QuestionType.LANDMARK,
+  id: questionId(id),
+  label: id,
+  wiki: id,
+  clue: { type: ClueType.PHOTO, image },
+  answer: petra.answer
+})
 
 const T0 = 1_000_000
 const CODE = roomCode("ABCD")
@@ -63,19 +64,16 @@ const tokW1 = tok("W1")
 const tokZ = tok("Z")
 
 function paintAt(q: Question, lat: number, lon: number) {
-  const layer = new PaintLayer(resolutionForTolerance(q.toleranceKm))
-  layer.stamp({ lat, lon }, q.toleranceKm / 2, 1)
+  const layer = new PaintLayer(resolutionForTolerance(q.answer.toleranceKm))
+  layer.stamp({ lat, lon }, q.answer.toleranceKm / 2, 1)
   return { cells: layer.toRecord(), floor: 0.05 }
 }
 
-/** The three test places, and no countries, flags or features. */
-const makeBank = (bank: Partial<QuestionBank> = {}): QuestionBank => ({
-  pool,
-  regions: [],
-  flags: [],
-  features: [],
-  ...bank
-})
+/** Paint on a place's answer. */
+const paintOn = (q: PlaceQuestion) => paintAt(q, q.answer.at.lat, q.answer.at.lon)
+
+/** The three test places and no outlines. */
+const makeBank = (bank: Partial<QuestionBank> = {}): QuestionBank => ({ catalogue: pool, outlines: new Map(), ...bank })
 
 function makeGame({
   code = CODE,
@@ -88,7 +86,7 @@ function makeGame({
 
 function twoPlayerGame(rounds = 2) {
   // The test pool is place names only.
-  const mix = { landmarks: 0, places: rounds, countries: 0, flags: 0, features: 0, states: 0 }
+  const mix = mixOf({ [QuestionType.PLACE]: rounds })
   const g = makeGame({ config: { mix, roundMs: 60_000 } })
   expect(g.join(tokA, playerName("Alice"), T0).ok).toBe(true)
   expect(g.join(tokB, playerName("Bob"), T0 + 1).ok).toBe(true)
@@ -96,9 +94,9 @@ function twoPlayerGame(rounds = 2) {
 }
 
 /** The question currently being asked, read back through a view. */
-function currentQuestion(g: Game, token: PlayerToken, now: number): Question {
+function currentQuestion(g: Game, token: PlayerToken, now: number): PlaceQuestion {
   const prompt = g.view(token, now).round!.question.prompt
-  return pool.find((q) => q.prompt === prompt)!
+  return pool.find((q) => q.clue.prompt === prompt)!
 }
 
 describe("lobby", () => {
@@ -211,7 +209,7 @@ describe("round loop", () => {
     const q = currentQuestion(g, tokA, T0)
     expect(g.view(tokA, T0).round!.deadline).toBe(T0 + 60_000)
 
-    expect(g.setPaint(tokA, paintAt(q, q.answer.lat, q.answer.lon))).toEqual({ ok: true, changed: false })
+    expect(g.setPaint(tokA, paintOn(q))).toEqual({ ok: true, changed: false })
     // Bob paints nothing.
     expect(g.tick(T0 + 60_000 + ROUND_GRACE_MS - 1)).toBe(false)
     expect(g.tick(T0 + 60_000 + ROUND_GRACE_MS)).toBe(true)
@@ -263,7 +261,7 @@ describe("round loop", () => {
     expect(g.unlock(tokA)).toEqual({ ok: true, changed: true })
     expect(g.view(tokA, T0).you.locked).toBe(false)
     // The new guess replaces the old one and is what gets scored.
-    g.setPaint(tokA, paintAt(q, q.answer.lat, q.answer.lon))
+    g.setPaint(tokA, paintOn(q))
     g.lock(tokA, T0 + 1)
     g.setPaint(tokB, paintAt(q, 0, 0))
     g.lock(tokB, T0 + 2) // everyone done: the round ends
@@ -370,11 +368,11 @@ describe("round loop", () => {
     g.start(tokA, T0)
     const q = currentQuestion(g, tokA, T0)
     // Alice painted, then erased it all: the empty upload replaces her paint.
-    g.setPaint(tokA, paintAt(q, q.answer.lat, q.answer.lon))
+    g.setPaint(tokA, paintOn(q))
     g.setPaint(tokA, { cells: {}, floor: 0.05 })
     // Bob's last stroke, sent at zero, lands within the grace period.
     expect(g.tick(T0 + 60_000)).toBe(false)
-    g.setPaint(tokB, paintAt(q, q.answer.lat, q.answer.lon))
+    g.setPaint(tokB, paintOn(q))
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     const results = g.view(tokA, T0 + 61_000).reveal!.results
     const alice = results.find((r) => r.playerId === "p1")!
@@ -681,7 +679,7 @@ describe("ranks", () => {
     const g = twoPlayerGame(2)
     g.start(tokA, T0)
     const q = currentQuestion(g, tokA, T0)
-    g.setPaint(tokA, paintAt(q, q.answer.lat, q.answer.lon))
+    g.setPaint(tokA, paintOn(q))
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     const v = g.view(tokA, T0 + 60_000)
     const a = v.players.find((p) => p.id === "p1")!
@@ -732,20 +730,14 @@ describe("ready-up edge cases", () => {
 })
 
 describe("configure", () => {
-  const mix = (landmarks: number, places: number, countries = 0, flags = 0, features = 0, states = 0) => ({
-    landmarks,
-    places,
-    countries,
-    flags,
-    features,
-    states
-  })
+  const places = (n: number) => mixOf({ [QuestionType.PLACE]: n })
+  const landmarks = (n: number) => mixOf({ [QuestionType.LANDMARK]: n })
 
   it("lets the host change the mix, and so the rounds, and round length in the lobby only", () => {
     const g = twoPlayerGame()
-    expect(g.configure(tokB, { mix: mix(0, 3) })).toEqual({ ok: false, error: "only the host can change settings" })
-    expect(g.configure(tokA, { mix: mix(0, 3) })).toEqual({ ok: true, changed: true })
-    expect(g.configure(tokA, { mix: mix(0, 3) })).toEqual({ ok: true, changed: false })
+    expect(g.configure(tokB, { mix: places(3) })).toEqual({ ok: false, error: "only the host can change settings" })
+    expect(g.configure(tokA, { mix: places(3) })).toEqual({ ok: true, changed: true })
+    expect(g.configure(tokA, { mix: places(3) })).toEqual({ ok: true, changed: false })
     expect(g.configure(tokA, { roundMs: 30_000 }).ok).toBe(true)
     const v = g.view(tokB, T0)
     expect(v.config.rounds).toBe(3)
@@ -753,28 +745,24 @@ describe("configure", () => {
     g.start(tokA, T0)
     expect(g.view(tokA, T0).round!.total).toBe(3)
     expect(g.view(tokA, T0).round!.deadline).toBe(T0 + 30_000)
-    expect(g.configure(tokA, { mix: mix(0, 5) })).toEqual({
+    expect(g.configure(tokA, { mix: places(5) })).toEqual({
       ok: false,
       error: "settings are locked once the game starts"
     })
   })
 
   it("the question mix reaches the picker", () => {
-    const photo: Question = {
-      ...petra,
-      id: questionId("petra-photo"),
-      kind: "photo",
-      prompt: "Where is this?",
-      image: "Petra.jpg"
-    }
-    const g = makeGame({ bank: { pool: [...pool, photo] }, config: { mix: mix(0, 1) } })
+    const g = makeGame({
+      bank: { catalogue: [...pool, landmark("petra-photo", "Petra.jpg")] },
+      config: { mix: places(1) }
+    })
     g.join(tokA, playerName("Alice"), T0)
-    expect(g.configure(tokA, { mix: mix(1, 0) })).toEqual({ ok: true, changed: true })
-    expect(g.configure(tokA, { mix: mix(1, 0) })).toEqual({ ok: true, changed: false })
-    expect(g.view(tokA, T0).config.mix).toEqual(mix(1, 0))
+    expect(g.configure(tokA, { mix: landmarks(1) })).toEqual({ ok: true, changed: true })
+    expect(g.configure(tokA, { mix: landmarks(1) })).toEqual({ ok: true, changed: false })
+    expect(g.view(tokA, T0).config.mix).toEqual(landmarks(1))
     g.start(tokA, T0)
-    // One round, all photos: it must be the one photo question in the pool.
-    expect(g.view(tokA, T0).round!.question.image).toBe("Petra.jpg")
+    // One round, a landmark: it must be the one landmark in the catalogue.
+    expect(g.view(tokA, T0).round!.question.clue).toEqual({ type: ClueType.PHOTO, image: "Petra.jpg" })
   })
 
   it("starts on minimal map detail and lets the host change it in the lobby", () => {
@@ -805,7 +793,7 @@ describe("host removes a player", () => {
     const g = twoPlayerGame()
     g.start(tokA, T0)
     const q = currentQuestion(g, tokA, T0)
-    g.setPaint(tokB, paintAt(q, q.answer.lat, q.answer.lon))
+    g.setPaint(tokB, paintOn(q))
     const bobId = g.view(tokB, T0).you.id!
     expect(g.kick(tokB, g.view(tokA, T0).you.id!, T0)).toEqual({
       ok: false,
@@ -853,7 +841,7 @@ describe("host ends the game early", () => {
     expect(g.end(tokA)).toEqual({ ok: false, error: "nothing to end" })
     g.start(tokA, T0)
     const q = currentQuestion(g, tokA, T0)
-    g.setPaint(tokA, paintAt(q, q.answer.lat, q.answer.lon))
+    g.setPaint(tokA, paintOn(q))
     expect(g.end(tokB)).toEqual({ ok: false, error: "only the host can end the game" })
     expect(g.end(tokA).ok).toBe(true)
     expect(g.phase).toBe("results")
@@ -877,22 +865,14 @@ describe("host ends the game early", () => {
 })
 
 describe("the question mix", () => {
-  const REGIONS = (regionsJson as RegionData[]).map(regionFrom)
-  const FLAGS = (flagsJson as FlagData[]).map(flagFrom)
-  const FEATURES = (featuresJson as (QuestionData | RegionData)[]).map(featureFrom)
-  const germany = REGIONS.find((q) => q.id === "germany-region")!
-  const mix = (landmarks: number, places: number, countries = 0, flags = 0, features = 0, states = 0) => ({
-    landmarks,
-    places,
-    countries,
-    flags,
-    features,
-    states
-  })
+  const OUTLINES = outlinesFrom(outlinesJson)
+  const byId = (id: string) => CATALOGUE.find((q) => q.id === id)!
+  const areaOf = (q: Question) => scoredAnswer(q.answer, OUTLINES) as Area
+  const germany = byId("germany-region")
 
   function game(config: Partial<GameConfig>, bank: Partial<QuestionBank> = {}) {
     const g = makeGame({
-      bank: { regions: REGIONS, flags: FLAGS, features: FEATURES, ...bank },
+      bank: { catalogue: CATALOGUE, outlines: OUTLINES, ...bank },
       config: { roundMs: 60_000, ...config }
     })
     g.join(tokA, playerName("Alice"), T0)
@@ -914,47 +894,52 @@ describe("the question mix", () => {
     return seen
   }
 
-  it("defaults to 2 of each kind; a length alone is an even mix of that length", () => {
-    expect(makeGame().config.mix).toEqual(mix(2, 2, 2, 2))
+  const outlineOf = (q: QuestionView) => (q.answer.type === AnswerType.AREA ? q.answer.outline : undefined)
+
+  it("defaults to 2 of each type but the extras; a length alone is an even mix of that length", () => {
+    expect(makeGame().config.mix).toEqual(
+      mixOf({ [QuestionType.LANDMARK]: 2, [QuestionType.PLACE]: 2, [QuestionType.COUNTRY]: 2, [QuestionType.FLAG]: 2 })
+    )
     const g = makeGame({ config: { rounds: 5 } })
-    expect(g.config.mix).toEqual(mix(2, 1, 1, 1))
+    expect(g.config.mix).toEqual(
+      mixOf({ [QuestionType.LANDMARK]: 2, [QuestionType.PLACE]: 1, [QuestionType.COUNTRY]: 1, [QuestionType.FLAG]: 1 })
+    )
     expect(g.config.rounds).toBe(5)
   })
 
-  it("with only landmarks and place names, a game asks what pickQuestions picks", () => {
-    const seen = questions(game({ mix: mix(0, 3) })).map((q) => q.prompt)
-    expect(seen.sort()).toEqual(
-      pickQuestions(pool, 3, 42, 0)
-        .map((q) => q.prompt)
-        .sort()
-    )
+  it("asks only the types the mix asks for, each question once", () => {
+    const seen = questions(game({ mix: mixOf({ [QuestionType.PLACE]: 3 }) }))
+    expect(seen.map((q) => q.type)).toEqual([QuestionType.PLACE, QuestionType.PLACE, QuestionType.PLACE])
+    expect(new Set(seen.map((q) => q.prompt)).size).toBe(3)
   })
 
-  it("asks as many of each kind as the mix says, never a country twice", () => {
-    const seen = questions(game({ mix: mix(0, 3, 4, 5) }))
-    const flags = seen.filter((q) => q.flag)
-    const countries = seen.filter((q) => q.regionId && !q.flag)
-    expect(flags).toHaveLength(5)
+  it("asks as many of each type as the mix says, never a country twice", () => {
+    const mix = mixOf({ [QuestionType.PLACE]: 3, [QuestionType.COUNTRY]: 4, [QuestionType.FLAG]: 5 })
+    const seen = questions(game({ mix }))
+    const countries = seen.filter((q) => q.type === QuestionType.COUNTRY)
+    expect(seen.filter((q) => q.type === QuestionType.FLAG)).toHaveLength(5)
     expect(countries).toHaveLength(4)
     expect(countries.every((q) => q.prompt.startsWith("Paint the whole of"))).toBe(true)
     expect(seen).toHaveLength(12)
-    const regionIds = seen.flatMap((q) => (q.regionId ? [q.regionId] : []))
-    expect(new Set(regionIds).size).toBe(regionIds.length)
-    // Without the countries on hand (a test pool, say), there are only the places.
-    expect(questions(game({ mix: mix(0, 3, 3) }, { regions: [], flags: [] }))).toHaveLength(3)
+    const outlines = seen.flatMap((q) => outlineOf(q) ?? [])
+    expect(new Set(outlines).size).toBe(outlines.length)
+    // A catalogue without countries or flags has only the places to ask.
+    const places = CATALOGUE.filter((q) => q.type === QuestionType.PLACE)
+    expect(questions(game({ mix }, { catalogue: places }))).toHaveLength(3)
   })
 
   it("asks islands, lakes and seas, and US states, as many as the mix says", () => {
-    const seen = questions(game({ mix: mix(0, 0, 0, 0, 6, 7), mapDetail: "water" }))
+    const mix = mixOf({ [QuestionType.FEATURE]: 6, [QuestionType.STATE]: 7 })
+    const seen = questions(game({ mix, mapDetail: "water" }))
     expect(seen).toHaveLength(13)
-    const topics = seen.map((q) => q.topic)
-    expect(topics.filter((t) => t === "state")).toHaveLength(7)
-    expect(topics.filter((t) => t === "island" || t === "lake" || t === "sea")).toHaveLength(6)
+    expect(seen.filter((q) => q.type === QuestionType.STATE)).toHaveLength(7)
+    expect(seen.filter((q) => q.type === QuestionType.FEATURE && q.feature !== undefined)).toHaveLength(6)
     expect(new Set(seen.map((q) => q.prompt)).size).toBe(13)
   })
 
-  it("sends every player and spectator views that match GameViewSchema, through every kind of round", () => {
-    const g = game({ mix: mix(1, 1, 1, 1, 1, 1), mapDetail: "water" })
+  it("sends every player and spectator views that match GameViewSchema, through every type of round", () => {
+    const mix = mixOf(Object.fromEntries(Object.values(QuestionType).map((t) => [t, 1])))
+    const g = game({ mix, mapDetail: "water" })
     g.join(tokS, playerName("Sam"), T0 + 2, true)
     let now = T0
     const check = () => {
@@ -966,9 +951,9 @@ describe("the question mix", () => {
     check()
     g.start(tokA, now)
     while (g.phase !== "results") {
-      const q = g.view(tokA, now).round!.question
-      const layer = new PaintLayer(resolutionForTolerance(q.toleranceKm))
-      layer.stamp({ lat: 10, lon: 10 }, q.toleranceKm, 1)
+      const { toleranceKm } = g.view(tokA, now).round!.question.answer
+      const layer = new PaintLayer(resolutionForTolerance(toleranceKm))
+      layer.stamp({ lat: 10, lon: 10 }, toleranceKm, 1)
       g.setPaint(tokA, { cells: layer.toRecord(), floor: 0.05 })
       g.lock(tokB, now)
       check()
@@ -982,21 +967,29 @@ describe("the question mix", () => {
   })
 
   it("asks a lake only when the map shows lakes", () => {
-    const lake = FEATURES.find((q) => q.topic === "lake")!
-    const island = FEATURES.find((q) => q.topic === "island")!
+    const features = CATALOGUE.filter((q) => q.type === QuestionType.FEATURE)
+    const lake = features.find((q) => q.feature === FeatureType.LAKE)!
+    const island = features.find((q) => q.feature === FeatureType.ISLAND)!
     const asked = (mapDetail: GameConfig["mapDetail"]) =>
-      questions(game({ mix: mix(0, 0, 0, 0, 2), mapDetail }, { features: [lake, island] })).map((q) => q.topic)
-    expect(asked("minimal")).toEqual(["island"])
-    expect(asked("water").sort()).toEqual(["island", "lake"])
+      questions(game({ mix: mixOf({ [QuestionType.FEATURE]: 2 }), mapDetail }, { catalogue: [lake, island] })).map(
+        (q) => q.feature
+      )
+    expect(asked("minimal")).toEqual([FeatureType.ISLAND])
+    expect(asked("water").sort()).toEqual([FeatureType.ISLAND, FeatureType.LAKE])
   })
 
   it("scores an island against its outline, as a country", () => {
-    const borneo = FEATURES.find((q): q is RegionQuestion => q.id === "island-borneo")!
-    const g = game({ mix: mix(0, 0, 0, 0, 1) }, { features: [borneo] })
+    const borneo = byId("island-borneo")
+    const g = game({ mix: mixOf({ [QuestionType.FEATURE]: 1 }) }, { catalogue: [borneo] })
     g.start(tokA, T0)
     const q = g.view(tokA, T0).round!.question
-    expect(q).toMatchObject({ prompt: "Paint the whole of Borneo", regionId: "island-borneo", topic: "island" })
-    const cells = Object.fromEntries(regionCells(borneo, resolutionForTolerance(q.toleranceKm)).map((h) => [h, 1]))
+    expect(q).toMatchObject({
+      prompt: "Paint the whole of Borneo",
+      answer: { outline: "island-borneo" },
+      feature: FeatureType.ISLAND
+    })
+    const res = resolutionForTolerance(q.answer.toleranceKm)
+    const cells = Object.fromEntries(regionCells(areaOf(borneo), res).map((h) => [h, 1]))
     expect(g.setPaint(tokA, { cells, floor: 0.05 }).ok).toBe(true)
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     const reveal = g.view(tokB, T0 + 60_000).reveal!
@@ -1005,23 +998,20 @@ describe("the question mix", () => {
   })
 
   it("does not ask a place's country again as a flag", () => {
-    const monacoPlace: Question = { ...petra, id: questionId("monaco"), label: "Monaco", prompt: "Where is Monaco?" }
-    const monacoFlag = FLAGS.find((f) => f.flag === "mc")!
     const g = makeGame({
-      bank: { pool: [monacoPlace], regions: REGIONS, flags: [monacoFlag] },
-      config: { mix: mix(0, 1, 0, 1) }
+      bank: { catalogue: [place("Monaco", { lat: 43.7384, lon: 7.4246 }), byId("flag-mc")] },
+      config: { mix: mixOf({ [QuestionType.PLACE]: 1, [QuestionType.FLAG]: 1 }) }
     })
     g.join(tokA, playerName("Alice"), T0)
     expect(questions(g).map((q) => q.prompt)).toEqual(["Where is Monaco?"])
   })
 
   it("keeps a place's country out of the same game when another country will do", () => {
-    const gaborone = QUESTIONS.find((q) => q.wiki === "Gaborone")!
-    const botswana = REGIONS.find((q) => q.id === "botswana-region")!
+    const gaborone = CATALOGUE.find((q) => q.wiki === "Gaborone")!
     for (let seed = 1; seed <= 10; seed++) {
       const g = makeGame({
-        bank: { pool: [gaborone], regions: [botswana, germany] },
-        config: { mix: mix(0, 1, 1) },
+        bank: { catalogue: [gaborone, byId("botswana-region"), germany], outlines: OUTLINES },
+        config: { mix: mixOf({ [QuestionType.PLACE]: 1, [QuestionType.COUNTRY]: 1 }) },
         seed
       })
       g.join(tokA, playerName("Alice"), T0)
@@ -1029,18 +1019,18 @@ describe("the question mix", () => {
     }
   })
 
-  it("scores a country round against the outline; a pass still scores 250", () => {
-    const g = game({ mix: mix(0, 0, 1) }, { regions: [germany] })
+  it("scores a country round against the outline, which it never sends; a pass still scores 250", () => {
+    const g = game({ mix: mixOf({ [QuestionType.COUNTRY]: 1 }) }, { catalogue: [germany] })
     g.start(tokA, T0)
     const q = g.view(tokA, T0).round!.question
-    expect(q.regionId).toBe("germany-region")
-    expect(JSON.stringify(g.view(tokA, T0).round)).not.toContain("outline")
-    const res = resolutionForTolerance(q.toleranceKm)
-    const cells = Object.fromEntries(regionCells(germany, res).map((h) => [h, 1]))
+    expect(outlineOf(q)).toBe("germany-region")
+    expect(JSON.stringify(g.view(tokA, T0).round)).not.toContain("[[")
+    const res = resolutionForTolerance(q.answer.toleranceKm)
+    const cells = Object.fromEntries(regionCells(areaOf(germany), res).map((h) => [h, 1]))
     expect(g.setPaint(tokA, { cells, floor: 0.05 }).ok).toBe(true)
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     const reveal = g.view(tokB, T0 + 60_000).reveal!
-    expect(reveal.question.regionId).toBe("germany-region")
+    expect(outlineOf(reveal.question)).toBe("germany-region")
     expect(reveal.label).toBe("Germany")
     const alice = reveal.results.find((r) => r.playerId === "p1")!
     expect(alice.score).toBeGreaterThan(985)
@@ -1052,49 +1042,51 @@ describe("the question mix", () => {
   })
 
   it("flag rounds show a flag, never the name, and say whether to paint the country or a point", () => {
-    const seen = questions(game({ mix: mix(0, 0, 0, 15) }))
-    expect(seen.every((q) => q.flag)).toBe(true)
-    expect(new Set(seen.map((q) => q.flag)).size).toBe(15)
-    for (const q of seen) {
-      const f = FLAGS.find((x) => x.flag === q.flag)!
-      expect(q.regionId).toBe(f.regionId)
+    const seen = questions(game({ mix: mixOf({ [QuestionType.FLAG]: 15 }) }))
+    const flags = seen.map((q) => (q.clue.type === ClueType.FLAG ? q.clue.flag : undefined))
+    expect(flags.every((f) => f !== undefined)).toBe(true)
+    expect(new Set(flags).size).toBe(15)
+    for (const [i, q] of seen.entries()) {
+      const f = CATALOGUE.find((x) => x.type === QuestionType.FLAG && x.clue.flag === flags[i])!
+      expect(q.answer.type).toBe(f.answer.type)
       expect(q.prompt).not.toContain(f.label)
-      if (!f.regionId) expect(q.prompt).toBe(FLAG_POINT_PROMPT)
+      if (f.answer.type === AnswerType.POINT) expect(q.prompt).toBe(FLAG_POINT_PROMPT)
     }
   })
 
   it("scores a small country's flag as a point and reveals its name", () => {
-    const monaco = FLAGS.find((f) => f.flag === "mc")!
-    const g = game({ mix: mix(0, 0, 0, 1) }, { flags: [monaco] })
+    const monaco = byId("flag-mc")
+    const g = game({ mix: mixOf({ [QuestionType.FLAG]: 1 }) }, { catalogue: [monaco] })
     g.start(tokA, T0)
     const q = g.view(tokA, T0).round!.question
-    expect(q).toEqual({ prompt: FLAG_POINT_PROMPT, toleranceKm: 15, flag: "mc" })
-    const res = resolutionForTolerance(q.toleranceKm)
-    const cell = latLngToCell(monaco.answer.lat, monaco.answer.lon, res)
+    expect(q).toEqual({
+      type: QuestionType.FLAG,
+      prompt: FLAG_POINT_PROMPT,
+      clue: { type: ClueType.FLAG, flag: "mc" },
+      answer: { type: AnswerType.POINT, toleranceKm: 15 }
+    })
+    if (monaco.answer.type !== AnswerType.POINT) throw new Error("Monaco is asked as a point")
+    const { at } = monaco.answer
+    const cell = latLngToCell(at.lat, at.lon, resolutionForTolerance(q.answer.toleranceKm))
     expect(g.setPaint(tokA, { cells: { [cell]: 1 }, floor: 0.05 }).ok).toBe(true)
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     const reveal = g.view(tokB, T0 + 60_000).reveal!
     expect(reveal.label).toBe("Monaco")
-    expect(reveal.question.flag).toBe("mc")
+    expect(reveal.question.clue).toEqual({ type: ClueType.FLAG, flag: "mc" })
     expect(reveal.results.find((r) => r.playerId === "p1")!.score).toBeGreaterThan(900)
   })
 })
 
 describe("upcoming pictures", () => {
-  const photo = (id: string, image: string): Question => ({
-    ...petra,
-    id: questionId(id),
-    kind: "photo",
-    prompt: "Where is this?",
-    label: id,
-    image
-  })
-  const photos = [photo("one", "One.jpg"), photo("two", "Two.jpg"), photo("three", "Three.jpg")]
-  const mix = { landmarks: 2, places: 0, countries: 0, flags: 0, features: 0, states: 0 }
-  const imageOf = (g: Game, at: number) => g.view(tokA, at).round?.question.image
+  const photos = [landmark("one", "One.jpg"), landmark("two", "Two.jpg"), landmark("three", "Three.jpg")]
+  const mix = mixOf({ [QuestionType.LANDMARK]: 2 })
+  const imageOf = (g: Game, at: number) => {
+    const clue = g.view(tokA, at).round?.question.clue
+    return clue?.type === ClueType.PHOTO ? clue.image : undefined
+  }
 
   it("sends round 1's photo in the lobby, the next round's while one is played, and nothing after the last", () => {
-    const g = makeGame({ bank: { pool: photos }, config: { mix, roundMs: 60_000 } })
+    const g = makeGame({ bank: { catalogue: photos }, config: { mix, roundMs: 60_000 } })
     g.join(tokA, playerName("Alice"), T0)
     const first = g.view(tokA, T0).upcoming?.image
     expect(first).toBeDefined()
@@ -1111,17 +1103,17 @@ describe("upcoming pictures", () => {
   })
 
   it("sends a place-name round's reveal photo with its pictures, and shows it at the reveal", () => {
-    const paris = QUESTIONS.find((q) => q.id === "paris")!
+    const paris = CATALOGUE.find((q) => q.id === "paris")!
     const g = makeGame({
-      bank: { pool: [paris] },
-      config: { mix: { ...mix, landmarks: 0, places: 1 }, roundMs: 60_000 }
+      bank: { catalogue: [paris] },
+      config: { mix: mixOf({ [QuestionType.PLACE]: 1 }), roundMs: 60_000 }
     })
     g.join(tokA, playerName("Alice"), T0)
     const photo = g.view(tokA, T0).upcoming?.revealPhoto
     expect(photo).toBeDefined()
     expect(photo).toBe(REVEAL_PHOTOS.Paris)
     g.start(tokA, T0)
-    expect(g.view(tokA, T0).round?.question.image).toBeUndefined()
+    expect(imageOf(g, T0)).toBeUndefined()
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     const view = g.view(tokA, T0 + 61_000)
     expect(view.reveal?.photo).toBe(photo)
@@ -1130,9 +1122,9 @@ describe("upcoming pictures", () => {
   })
 
   it("picks the rounds again when the host changes the setup, so round 1's photo is still the one asked", () => {
-    const g = makeGame({ bank: { pool: photos }, config: { mix, roundMs: 60_000 } })
+    const g = makeGame({ bank: { catalogue: photos }, config: { mix, roundMs: 60_000 } })
     g.join(tokA, playerName("Alice"), T0)
-    g.configure(tokA, { mix: { ...mix, landmarks: 3 } })
+    g.configure(tokA, { mix: mixOf({ [QuestionType.LANDMARK]: 3 }) })
     const first = g.view(tokA, T0).upcoming?.image
     g.start(tokA, T0)
     expect(imageOf(g, T0)).toBe(first)
@@ -1142,7 +1134,7 @@ describe("upcoming pictures", () => {
 describe("hints", () => {
   it("gives a band holding the answer, the same one to everyone, one per round and as many as the host allows", () => {
     const g = makeGame({
-      config: { mix: { landmarks: 0, places: 3, countries: 0, flags: 0, features: 0, states: 0 }, hints: 2 }
+      config: { mix: mixOf({ [QuestionType.PLACE]: 3 }), hints: 2 }
     })
     g.join(tokA, playerName("Alice"), T0)
     g.join(tokB, playerName("Bob"), T0)
@@ -1155,7 +1147,7 @@ describe("hints", () => {
     expect(g.hint(tokB, "latitude").ok).toBe(true)
     const band = g.view(tokA, T0).you.hint!
     expect(band.axis).toBe("latitude")
-    expect(inHintBand(band, q.answer)).toBe(true)
+    expect(inHintBand(band, q.answer.at)).toBe(true)
     expect(g.view(tokB, T0).you.hint).toEqual(band)
     expect(g.view(tokA, T0).you.hintsLeft).toBe(1)
 

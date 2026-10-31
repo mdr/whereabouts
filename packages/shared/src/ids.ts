@@ -30,15 +30,15 @@ export const RoomCodeSchema = z
 export type RoomCode = z.infer<typeof RoomCodeSchema>
 export const roomCode = (s: string): RoomCode => RoomCodeSchema.parse(s)
 
-/** A question in the pool, a flag round or a feature asked as a point ("taj-mahal", "flag-de"). */
-const QuestionIdSchema = z.string().regex(SLUG).brand<"QuestionId">()
+/** A question in the catalogue ("taj-mahal", "flag-de", "germany-region"). */
+export const QuestionIdSchema = z.string().regex(SLUG).brand<"QuestionId">()
 export type QuestionId = z.infer<typeof QuestionIdSchema>
 export const questionId = (s: string): QuestionId => QuestionIdSchema.parse(s)
 
 /** An outline to paint whole: a country, island, lake, sea or state ("germany-region", "island-borneo"). */
-export const RegionIdSchema = z.string().regex(SLUG).brand<"RegionId">()
-export type RegionId = z.infer<typeof RegionIdSchema>
-export const regionId = (s: string): RegionId => RegionIdSchema.parse(s)
+export const OutlineIdSchema = z.string().regex(SLUG).brand<"OutlineId">()
+export type OutlineId = z.infer<typeof OutlineIdSchema>
+export const outlineId = (s: string): OutlineId => OutlineIdSchema.parse(s)
 
 /** A country's flag, by its ISO 3166-1 alpha-2 code in lower case ("de"). */
 export const FlagCodeSchema = z

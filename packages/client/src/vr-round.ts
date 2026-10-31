@@ -1,11 +1,11 @@
 /** The parts of the headset's round and reveal that practice and a game share. */
-import { isWater } from "@whereabouts/shared/questions"
-import type { QuestionView } from "@whereabouts/shared/protocol"
+import { QuestionType, clueFlag, clueImage } from "@whereabouts/shared/questions"
+import { onWater, outlineOf, type QuestionView } from "@whereabouts/shared/protocol"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
 import type { VrReveal, VrRound } from "./vr/view"
-import type { RevealedAnswer } from "./round"
+import { areaNoun, type RevealedAnswer } from "./round"
 import { vrPicture } from "./vr-picture"
 import { vrFlagPins } from "./borders"
 import { allFlags } from "./settings"
@@ -13,8 +13,6 @@ import { allFlags } from "./settings"
 /** A round as the headset shows it, in practice or a game. */
 export interface VrRoundShown {
   question: QuestionView
-  /** A country round's own flag, beside its name. */
-  countryFlag: FlagCode | undefined
   /** At the reveal. */
   revealed: RevealedAnswer | undefined
   fact: Fact | undefined
@@ -22,21 +20,22 @@ export interface VrRoundShown {
 
 export const pts = (n: number) => `${Math.round(n).toLocaleString()} pts`
 
-/** AnswerMode and RegionHint in a line; undefined for a place. */
-export function answerModeText(q: Pick<QuestionView, "flag" | "regionId" | "topic">): string | undefined {
-  const area = q.regionId !== undefined
-  if (q.flag) return area ? "Paint the whole country: its shape counts." : "Paint where it is: a place, not a shape."
-  return area ? `Cover the whole ${q.topic ?? "country"}: its shape counts.` : undefined
+/** AnswerMode and AreaInstruction in a line; undefined for a place. */
+export function answerModeText(q: Pick<QuestionView, "type" | "answer" | "feature">): string | undefined {
+  const area = outlineOf(q.answer) !== undefined
+  if (q.type === QuestionType.FLAG)
+    return area ? "Paint the whole country: its shape counts." : "Paint where it is: a place, not a shape."
+  return area ? `Cover the whole ${areaNoun(q)}: its shape counts.` : undefined
 }
 
 /** PaintedIn as a line of text. */
 function paintedInText(where: PaintedCountry, answer?: string): string {
-  const right = where.country.flag === answer
+  const right = where.country.clue.flag === answer
   return `Your paint: ${Math.round(where.share * 100)}% in ${where.country.label}${right ? ", the answer" : ""}`
 }
 
 export function vrRound(
-  { question, countryFlag, revealed, fact }: VrRoundShown,
+  { question, revealed, fact }: VrRoundShown,
   own: Omit<VrRound, "prompt" | "mode" | "picture" | "water">
 ): VrRound {
   return {
@@ -44,11 +43,11 @@ export function vrRound(
     prompt: question.prompt,
     mode: answerModeText(question),
     picture: vrPicture(
-      question.image ?? revealed?.photo,
-      question.flag ?? countryFlag,
+      clueImage(question.clue) ?? revealed?.photo,
+      clueFlag(question.clue) ?? question.countryFlag,
       revealed && { place: revealed.label, text: fact?.text }
     ),
-    water: isWater(question.topic)
+    water: onWater(question.answer)
   }
 }
 
@@ -79,13 +78,16 @@ export function vrReveal(
     label: revealed.label,
     answer: revealed.outline ? { outline: revealed.outline } : { point: revealed.answer },
     focus: revealed.answer,
-    stateRound: question.topic === "state",
+    stateRound: question.type === QuestionType.STATE,
     fact: fact?.text,
-    scoreLine: vrScoreLine(you, question.flag),
-    flags: question.flag && {
-      on: allFlags.value,
-      toggle: () => (allFlags.value = !allFlags.value),
-      pins: borders && vrFlagPins(borders)
-    }
+    scoreLine: vrScoreLine(you, clueFlag(question.clue)),
+    flags:
+      question.type === QuestionType.FLAG
+        ? {
+            on: allFlags.value,
+            toggle: () => (allFlags.value = !allFlags.value),
+            pins: borders && vrFlagPins(borders)
+          }
+        : undefined
   }
 }

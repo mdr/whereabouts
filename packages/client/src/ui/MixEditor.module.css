@@ -1,4 +1,4 @@
-/* Each kind of question's colour comes in as --type (typeColour). */
+/* Each type of question's colour comes in as --type (typeColour). */
 .editor {
   display: flex;
   flex-direction: column;

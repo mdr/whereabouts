@@ -20,12 +20,13 @@ import {
   type PaintSubmission,
   type RevealMessage,
   type RoundReveal,
-  type StateMessage
+  type StateMessage,
+  mixOf
 } from "@whereabouts/shared/protocol"
 import { ROUND_GRACE_MS } from "@whereabouts/shared/game"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import { GameViewSchema } from "@whereabouts/shared/view-schema"
-import { flagFrom, type FlagData } from "@whereabouts/shared/flags"
+import { CATALOGUE } from "@whereabouts/shared/catalogue"
 import { gridDisk, h3Res, latLngToCell } from "@whereabouts/shared/h3"
 import {
   playerToken,
@@ -36,10 +37,16 @@ import {
   type PlayerToken,
   type RoomCode
 } from "@whereabouts/shared/ids"
-import { regionCells, regionFrom, type RegionData } from "@whereabouts/shared/regions"
-import type { Question } from "@whereabouts/shared/questions"
-import regionsJson from "@whereabouts/shared/regions.json" with { type: "json" }
-import flagsJson from "@whereabouts/shared/flags.json" with { type: "json" }
+import { regionCells, scoredAnswer } from "@whereabouts/shared/regions"
+import {
+  AnswerType,
+  ClueType,
+  QuestionType,
+  answerCentre,
+  promptOf,
+  type PlaceQuestion,
+  type Question
+} from "@whereabouts/shared/questions"
 import { createApp, type App } from "./app.ts"
 import { BANK, configureGameRooms, realClock, type Clock } from "./rooms.ts"
 
@@ -47,26 +54,27 @@ import { BANK, configureGameRooms, realClock, type Clock } from "./rooms.ts"
 ;(globalThis as unknown as { window: unknown }).window = globalThis
 const { WSClient } = await import("@rivalis/browser")
 
-const questions: Question[] = [
-  {
-    id: questionId("petra"),
-    kind: "text",
-    prompt: "Where is Petra?",
-    answer: { lat: 30.3285, lon: 35.4444 },
-    toleranceKm: 200,
-    label: "Petra",
-    region: "world"
-  },
-  {
-    id: questionId("paris"),
-    kind: "text",
-    prompt: "Where is Paris?",
-    answer: { lat: 48.8566, lon: 2.3522 },
-    toleranceKm: 100,
-    label: "Paris",
-    region: "world"
+function place(id: string, label: string, lat: number, lon: number, toleranceKm: number): PlaceQuestion {
+  return {
+    type: QuestionType.PLACE,
+    id: questionId(id),
+    label,
+    wiki: label,
+    clue: { type: ClueType.NAME, prompt: `Where is ${label}?` },
+    answer: { type: AnswerType.POINT, at: { lat, lon }, toleranceKm }
   }
-]
+}
+
+const questions = [place("petra", "Petra", 30.3285, 35.4444, 200), place("paris", "Paris", 48.8566, 2.3522, 100)]
+/** Two known place names, and the real questions of the other types. */
+const bank = {
+  ...BANK,
+  catalogue: [...questions, ...CATALOGUE.filter((q) => q.type !== QuestionType.PLACE)]
+}
+const config = { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundMs: 60_000 }
+
+/** The place question a round asked. */
+const askedIn = (round: GameView) => questions.find((q) => promptOf(q) === round.round!.question.prompt)!
 
 /** Real timers, but time can be jumped forward so deadlines fire immediately. */
 class FakeClock implements Clock {
@@ -178,8 +186,9 @@ class TestPlayer {
 }
 
 function paintAt(q: Question, lat: number, lon: number) {
-  const layer = new PaintLayer(resolutionForTolerance(q.toleranceKm))
-  layer.stamp({ lat, lon }, q.toleranceKm / 2, 1)
+  const { toleranceKm } = q.answer
+  const layer = new PaintLayer(resolutionForTolerance(toleranceKm))
+  layer.stamp({ lat, lon }, toleranceKm / 2, 1)
   return { cells: layer.toRecord(), floor: 0.05 }
 }
 
@@ -191,7 +200,7 @@ describe("game server", () => {
 
   beforeEach(async () => {
     clock = new FakeClock()
-    configureGameRooms({ clock, bank: { ...BANK, pool: questions }, config: { rounds: 2, roundMs: 60_000 } })
+    configureGameRooms({ clock, bank, config })
     app = createApp({ staticDir: undefined, logLevel: "warning" })
     const address = await app.listen(0)
     url = address.replace(/^http/, "ws") + "/ws"
@@ -274,9 +283,10 @@ describe("game server", () => {
     alice.send("start")
     const round = await bob.until((v) => v.phase === "guessing")
     expect(round.round!.total).toBe(2)
-    const q = questions.find((x) => x.prompt === round.round!.question.prompt)!
+    const q = askedIn(round)
+    const at = answerCentre(q.answer)
 
-    alice.sendPaint(paintAt(q, q.answer.lat, q.answer.lon))
+    alice.sendPaint(paintAt(q, at.lat, at.lon))
     const bobPaint = paintAt(q, -30, -60)
     bob.sendPaint(bobPaint)
     bob.send("lock")
@@ -313,24 +323,29 @@ describe("game server", () => {
     const bob = player("Bob")
     bob.connect({ code: lobby.code })
     await alice.until((v) => v.players.length === 2)
-    alice.send("configure", { mix: { landmarks: 0, places: 0, countries: 1, flags: 0 } })
-    await bob.until((v) => v.config.mix.countries === 1 && v.config.rounds === 1)
+    alice.send("configure", { mix: mixOf({ [QuestionType.COUNTRY]: 1 }) })
+    await bob.until((v) => v.config.mix[QuestionType.COUNTRY] === 1 && v.config.rounds === 1)
 
     alice.send("start")
     const round = await bob.until((v) => v.phase === "guessing")
-    const id = round.round!.question.regionId!
+    const shown = round.round!.question.answer
+    expect(shown.type).toBe(AnswerType.AREA)
     expect(round.round!.question.prompt).toMatch(/^Paint the whole of /)
-    const country = (regionsJson as RegionData[]).map(regionFrom).find((q) => q.id === id)!
+    const country = CATALOGUE.find(
+      (q) => q.type === QuestionType.COUNTRY && shown.type === AnswerType.AREA && q.answer.outline === shown.outline
+    )!
+    const area = scoredAnswer(country.answer, BANK.outlines)
+    if (area.type !== AnswerType.AREA) throw new Error("a country is an area")
     // Paint it exactly, compacted the way the client sends paint.
-    const res = resolutionForTolerance(round.round!.question.toleranceKm)
-    const cells = compactRecord(Object.fromEntries(regionCells(country, res).map((h) => [h, 1])))
+    const res = resolutionForTolerance(shown.toleranceKm)
+    const cells = compactRecord(Object.fromEntries(regionCells(area, res).map((h) => [h, 1])))
     alice.sendPaint({ cells, floor: 0.05 })
     alice.send("lock")
     await alice.untilLatest((v) => v.you.locked)
 
     clock.advance(60_000 + ROUND_GRACE_MS)
     const reveal = await bob.until((v) => v.phase === "reveal")
-    expect(reveal.reveal!.question.regionId).toBe(id)
+    expect(reveal.reveal!.question.answer).toEqual(shown)
     expect(reveal.reveal!.label).toBe(country.label)
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
     const aliceResult = reveal.reveal!.results.find((r) => r.playerId === byName.Alice)!
@@ -344,20 +359,21 @@ describe("game server", () => {
     const alice = player("Alice")
     alice.connect({ create: true })
     await alice.until((v) => v.phase === "lobby")
-    alice.send("configure", { mix: { landmarks: 0, places: 0, countries: 0, flags: 1 } })
-    await alice.until((v) => v.config.mix.flags === 1 && v.config.rounds === 1)
+    alice.send("configure", { mix: mixOf({ [QuestionType.FLAG]: 1 }) })
+    await alice.until((v) => v.config.mix[QuestionType.FLAG] === 1 && v.config.rounds === 1)
 
     alice.send("start")
     const round = await alice.until((v) => v.phase === "guessing")
-    const q = round.round!.question
-    expect(q.flag).toMatch(/^[a-z]{2}$/)
-    const f = (flagsJson as FlagData[]).map(flagFrom).find((x) => x.flag === q.flag)!
+    const { clue } = round.round!.question
+    if (clue.type !== ClueType.FLAG) throw new Error("a flag round shows a flag")
+    expect(clue.flag).toMatch(/^[a-z]{2}$/)
+    const f = CATALOGUE.find((x) => x.clue.type === ClueType.FLAG && x.clue.flag === clue.flag)!
     expect(JSON.stringify(round)).not.toContain(f.label)
 
     clock.advance(60_000 + ROUND_GRACE_MS)
     const reveal = await alice.until((v) => v.phase === "reveal")
     expect(reveal.reveal!.label).toBe(f.label)
-    expect(reveal.reveal!.question.flag).toBe(q.flag)
+    expect(reveal.reveal!.question.clue).toEqual(clue)
   })
 
   it("answers bad messages with errors instead of dropping the player", async () => {
@@ -433,8 +449,9 @@ describe("game server", () => {
     await alice.until((v) => v.players.length === 2)
     alice.send("start")
     const round = await bob.until((v) => v.phase === "guessing")
-    const q = questions.find((x) => x.prompt === round.round!.question.prompt)!
-    const paint = paintAt(q, q.answer.lat, q.answer.lon)
+    const q = askedIn(round)
+    const at = answerCentre(q.answer)
+    const paint = paintAt(q, at.lat, at.lon)
     alice.sendPaint(paint)
     alice.send("lock")
     bob.send("lock")
@@ -481,8 +498,9 @@ describe("game server", () => {
     await alice.until((v) => v.players.length === 2)
     alice.send("start")
     const round = await bob.until((v) => v.phase === "guessing")
-    const q = questions.find((x) => x.prompt === round.round!.question.prompt)!
-    const bobPaint = paintAt(q, q.answer.lat, q.answer.lon)
+    const q = askedIn(round)
+    const at = answerCentre(q.answer)
+    const bobPaint = paintAt(q, at.lat, at.lon)
     bob.sendPaint(bobPaint)
     bob.send("lock")
     await bob.untilLatest((v) => v.you.locked)
@@ -641,8 +659,8 @@ describe("connections per address", () => {
   beforeEach(async () => {
     configureGameRooms({
       clock: new FakeClock(),
-      bank: { ...BANK, pool: questions },
-      config: { rounds: 2, roundMs: 60_000 }
+      bank,
+      config
     })
     app = createApp({
       staticDir: undefined,

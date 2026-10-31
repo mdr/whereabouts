@@ -5,6 +5,7 @@ import type { GameViewSchema } from "./view-schema.ts"
 
 describe("GameViewSchema", () => {
   it("describes exactly the GameView type", () => {
-    expectTypeOf<z.infer<typeof GameViewSchema>>().toEqualTypeOf<GameView>()
+    // Branded: the plain check tells an enum inside an object from that same enum.
+    expectTypeOf<z.infer<typeof GameViewSchema>>().branded.toEqualTypeOf<GameView>()
   })
 })

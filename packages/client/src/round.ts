@@ -6,7 +6,8 @@
 import { useEffect } from "preact/hooks"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
-import type { MapDetail, QuestionView } from "@whereabouts/shared/protocol"
+import { outlineOf, type MapDetail, type QuestionView } from "@whereabouts/shared/protocol"
+import { QuestionType } from "@whereabouts/shared/questions"
 import type { GameMap } from "./map"
 import type { PaintController } from "./paint-controller"
 import { useFillTool } from "./fill"
@@ -50,7 +51,7 @@ export function useRoundMap(
 ): void {
   useEffect(() => {
     if (!painting || !question) return
-    paint.reset(question.toleranceKm)
+    paint.reset(question.answer.toleranceKm)
     start?.()
     paint.gameMap.clearReveal()
     paint.gameMap.resetView()
@@ -61,14 +62,12 @@ export function useRoundMap(
   // reveal, so a run of country rounds keeps the tool chosen.
   useFillTool(
     paint,
-    detail === "political" &&
-      question?.topic === undefined &&
-      (question?.regionId !== undefined || question?.flag !== undefined)
+    detail === "political" && (question?.type === QuestionType.COUNTRY || question?.type === QuestionType.FLAG)
   )
 
   // The reveal shows everything, since borders, place names, rivers and
   // relief help make sense of the answer.
-  const stateRound = question?.topic === "state"
+  const stateRound = question?.type === QuestionType.STATE
   useEffect(() => {
     paint.gameMap.setDetail(reveal ? "reveal" : detail)
     paint.gameMap.setStateReveal(reveal && stateRound)
@@ -78,6 +77,12 @@ export function useRoundMap(
     paint.gameMap.setHint(hint)
     return () => paint.gameMap.setHint(undefined)
   }, [hint?.axis, hint?.from, hint?.to])
+}
+
+/** What an area round asks to cover: "country", "island", "state"… */
+export function areaNoun(q: Pick<QuestionView, "type" | "feature">): string {
+  if (q.feature) return q.feature.toLowerCase()
+  return q.type === QuestionType.STATE ? "state" : "country"
 }
 
 /** Whether Done now is a pass (nothing painted), clucking if so. */
@@ -93,8 +98,8 @@ export function showAnswer(
   a: RevealedAnswer
 ): void {
   if (a.outline) gameMap.showRegionReveal(a.outline)
-  else if (question.regionId === undefined) gameMap.showReveal(a.answer)
-  // A country's outline still loading.
+  else if (outlineOf(question.answer) === undefined) gameMap.showReveal(a.answer)
+  // An outline still loading.
   else gameMap.clearReveal()
 }
 
@@ -105,6 +110,6 @@ export function frameReveal(
   a: RevealedAnswer,
   paint: GeoJSON.FeatureCollection
 ): void {
-  if (a.outline) gameMap.fitRegionAndPaint(a.answer, a.outline, paint, question.toleranceKm)
-  else gameMap.fitAnswerAndPaint(a.answer, paint, question.toleranceKm)
+  if (a.outline) gameMap.fitRegionAndPaint(a.answer, a.outline, paint, question.answer.toleranceKm)
+  else gameMap.fitAnswerAndPaint(a.answer, paint, question.answer.toleranceKm)
 }

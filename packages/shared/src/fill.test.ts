@@ -1,34 +1,32 @@
 import { describe, expect, it } from "vite-plus/test"
 import { cellToParent, getResolution, type H3Cell, h3Res, latLngToCell } from "./h3.ts"
 import bordersJson from "../borders.json" with { type: "json" }
-import flagsJson from "../flags.json" with { type: "json" }
-import regionsJson from "../regions.json" with { type: "json" }
+import outlinesJson from "../outlines.json" with { type: "json" }
 import { Borders } from "./borders.ts"
+import { CATALOGUE, isFlagQuestion, outlinesFrom } from "./catalogue.ts"
 import { countryFill, FILL_CELL_BUDGET, FILL_DENSITY } from "./fill.ts"
-import { type FlagData, flagFrom, flagRound } from "./flags.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
-import { type RegionData, regionFrom, scoreRegionQuestion } from "./regions.ts"
-import { buildDistribution, scoreDistribution } from "./scoring.ts"
-import { regionId } from "./ids.ts"
+import { AnswerType, answerCentre } from "./questions.ts"
+import { scoreAnswer, scoredAnswer } from "./regions.ts"
+import { DEFAULT_KERNEL, buildDistribution } from "./scoring.ts"
+import { outlineId } from "./ids.ts"
 
-const flags = (flagsJson as FlagData[]).map(flagFrom)
+const flags = CATALOGUE.filter(isFlagQuestion)
 const borders = new Borders(bordersJson, flags)
-const regions = new Map((regionsJson as RegionData[]).map(regionFrom).map((r) => [r.id, r]))
-const flag = (code: string) => flags.find((f) => f.flag === code)!
+const outlines = outlinesFrom(outlinesJson)
+const flag = (code: string) => flags.find((f) => f.clue.flag === code)!
 
 /** A flag round filled with its own country, as the client does it, and scored. */
 function fillAndScore(code: string, finestRes?: number): { score: number; cells: H3Cell[] } {
   const f = flag(code)
-  const q = flagRound(f, regions)!
-  const res = finestRes ?? resolutionForTolerance(q.toleranceKm)
-  const region = f.regionId ? regions.get(f.regionId) : undefined
-  const cells = countryFill(region ? { polygons: region.outline, answer: f.answer } : borders.fillShape(f), h3Res(res))
+  const a = scoredAnswer(f.answer, outlines)
+  const res = finestRes ?? resolutionForTolerance(a.toleranceKm)
+  const shape = a.type === AnswerType.AREA ? { polygons: a.polygons, answer: a.centre } : borders.fillShape(f)
+  const cells = countryFill(shape, h3Res(res))
   const layer = new PaintLayer(h3Res(res))
   layer.addCoat(cells, FILL_DENSITY)
   const dist = buildDistribution(layer.toCells(), 0.05)
-  const score =
-    q.kind === "region" ? scoreRegionQuestion(dist, q).score : scoreDistribution(dist, q.answer, q.toleranceKm).score
-  return { score, cells }
+  return { score: scoreAnswer(dist, a, DEFAULT_KERNEL).score, cells }
 }
 
 describe("countryFill", () => {
@@ -53,9 +51,9 @@ describe("countryFill", () => {
 
   it("fills a country round at its own resolution, uncompacted, so it draws without gaps", () => {
     // Compacted, a parent hexagon is turned from its children and left gaps.
-    const bg = regions.get(regionId("bulgaria-region"))!
+    const bg = CATALOGUE.find((q) => q.id === "bulgaria-region")!.answer
     const res = resolutionForTolerance(bg.toleranceKm)
-    const cells = countryFill({ polygons: bg.outline, answer: bg.answer }, res)
+    const cells = countryFill({ polygons: outlines.get(outlineId("bulgaria-region"))!, answer: answerCentre(bg) }, res)
     expect(new Set(cells.map(getResolution))).toEqual(new Set([res]))
   })
 
@@ -63,7 +61,7 @@ describe("countryFill", () => {
     const tv = flag("tv")
     const cells = countryFill(borders.fillShape(tv), h3Res(4))
     expect(cells.length).toBeGreaterThan(0)
-    expect(cells).toContain(latLngToCell(tv.answer.lat, tv.answer.lon, h3Res(4)))
+    expect(cells).toContain(latLngToCell(answerCentre(tv.answer).lat, answerCentre(tv.answer).lon, h3Res(4)))
   })
 
   it("leaves out a hole: Lesotho is not South Africa", () => {

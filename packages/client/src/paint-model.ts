@@ -10,7 +10,7 @@ import { paintAmount, trimLand, trimSea, type LandMask, type WaterMask } from "@
 import { trimToHint, type HintBand } from "@whereabouts/shared/hints"
 import { h3Res, type H3Cell } from "@whereabouts/shared/h3"
 import type { FlagCode } from "@whereabouts/shared/ids"
-import type { FlagQuestion } from "@whereabouts/shared/flags"
+import type { FlagQuestion } from "@whereabouts/shared/questions"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { CountryFiller } from "./fill"
 
@@ -169,7 +169,7 @@ export class PaintModel {
   }
 
   isFilled(f: FlagQuestion): boolean {
-    return this.fills.has(f.flag)
+    return this.fills.has(f.clue.flag)
   }
 
   /**
@@ -188,14 +188,14 @@ export class PaintModel {
 
   private fill(f: FlagQuestion): void {
     this.pushHistory()
-    const filled = this.fills.get(f.flag)
+    const filled = this.fills.get(f.clue.flag)
     if (filled) {
       this._layer.removeCoat(filled, FILL_DENSITY)
-      this.fills.delete(f.flag)
+      this.fills.delete(f.clue.flag)
     } else {
       const cells = this.filler!.cells(f, this._layer.res)
       this._layer.addCoat(cells, FILL_DENSITY)
-      this.fills.set(f.flag, cells)
+      this.fills.set(f.clue.flag, cells)
     }
     this.changed()
   }

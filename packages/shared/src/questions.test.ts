@@ -1,7 +1,23 @@
 import { describe, expect, it } from "vite-plus/test"
-import { QUESTIONS, isWater, pickQuestions, wikipediaUrl } from "./questions.ts"
+import outlinesJson from "../outlines.json" with { type: "json" }
+import { CATALOGUE, outlinesFrom } from "./catalogue.ts"
+import {
+  AnswerType,
+  ClueType,
+  FLAG_AREA_PROMPT,
+  FLAG_POINT_PROMPT,
+  PHOTO_PROMPT,
+  QuestionType,
+  Surface,
+  answerCentre,
+  promptOf,
+  wikipediaUrl,
+  type AreaAnswer,
+  type Clue,
+  type PointAnswer
+} from "./questions.ts"
 import { greatCircleDistance } from "./geo.ts"
-import { questionId } from "./ids.ts"
+import { flagCode, outlineId } from "./ids.ts"
 
 describe("wikipediaUrl", () => {
   it("links the article, or searches for the label without one", () => {
@@ -14,140 +30,84 @@ describe("wikipediaUrl", () => {
   })
 })
 
-describe("isWater", () => {
-  it("is a lake or a sea: not an island, a state or a place", () => {
-    expect(isWater("lake")).toBe(true)
-    expect(isWater("sea")).toBe(true)
-    expect(isWater("island")).toBe(false)
-    expect(isWater("state")).toBe(false)
-    expect(isWater(undefined)).toBe(false)
+const point: PointAnswer = { type: AnswerType.POINT, at: { lat: 1, lon: 2 }, toleranceKm: 10 }
+const area: AreaAnswer = {
+  type: AnswerType.AREA,
+  outline: outlineId("somewhere"),
+  centre: { lat: 3, lon: 4 },
+  toleranceKm: 10,
+  surface: Surface.LAND
+}
+
+describe("promptOf", () => {
+  it("asks a photo where it is, a name as written, and a flag by how it is painted", () => {
+    const photo: Clue = { type: ClueType.PHOTO, image: "x.jpg" }
+    const name: Clue = { type: ClueType.NAME, prompt: "Where are the Seychelles?" }
+    const flag: Clue = { type: ClueType.FLAG, flag: flagCode("de") }
+    expect(promptOf({ clue: photo, answer: point })).toBe(PHOTO_PROMPT)
+    expect(promptOf({ clue: name, answer: point })).toBe("Where are the Seychelles?")
+    expect(promptOf({ clue: flag, answer: area })).toBe(FLAG_AREA_PROMPT)
+    expect(promptOf({ clue: flag, answer: point })).toBe(FLAG_POINT_PROMPT)
   })
 })
 
-describe("question pool", () => {
+describe("answerCentre", () => {
+  it("is a point's own place, or an area's centre", () => {
+    expect(answerCentre(point)).toEqual({ lat: 1, lon: 2 })
+    expect(answerCentre(area)).toEqual({ lat: 3, lon: 4 })
+  })
+})
+
+describe("the catalogue", () => {
+  const outlines = outlinesFrom(outlinesJson)
+
   it("has unique ids, valid coordinates and sensible tolerances", () => {
-    const ids = new Set<string>()
-    for (const q of QUESTIONS) {
-      expect(ids.has(q.id), `duplicate id ${q.id}`).toBe(false)
-      ids.add(q.id)
-      expect(Math.abs(q.answer.lat)).toBeLessThanOrEqual(90)
-      expect(Math.abs(q.answer.lon)).toBeLessThanOrEqual(180)
-      expect(q.toleranceKm).toBeGreaterThanOrEqual(1)
-      expect(q.toleranceKm).toBeLessThanOrEqual(1500)
-      expect(q.prompt.length).toBeGreaterThan(0)
-      expect(q.label.length).toBeGreaterThan(0)
-      expect(q.wiki, `${q.id} needs a Wikipedia article`).toBeTruthy()
-      if (q.kind === "photo") expect(q.image, `${q.id} needs an image`).toBeTruthy()
-      else expect(q.image).toBeUndefined()
+    expect(new Set(CATALOGUE.map((q) => q.id)).size).toBe(CATALOGUE.length)
+    for (const q of CATALOGUE) {
+      const at = answerCentre(q.answer)
+      expect(Math.abs(at.lat), q.id).toBeLessThanOrEqual(90)
+      expect(Math.abs(at.lon), q.id).toBeLessThanOrEqual(180)
+      expect(q.answer.toleranceKm, q.id).toBeGreaterThanOrEqual(1)
+      expect(q.answer.toleranceKm, q.id).toBeLessThanOrEqual(1500)
+      expect(promptOf(q).length, q.id).toBeGreaterThan(0)
+      expect(q.label.length, q.id).toBeGreaterThan(0)
+      expect(q.wiki.length, `${q.id} needs a Wikipedia article`).toBeGreaterThan(0)
     }
   })
 
-  it("text questions name the place in the prompt, photo questions do not", () => {
-    for (const q of QUESTIONS) {
-      if (q.kind === "text") expect(q.prompt).toMatch(/^Where (is|are) /)
-      else expect(q.prompt).toBe("Where is this?")
-    }
+  it("has an outline for every area answer, and none unused", () => {
+    const used = new Set<string>()
+    for (const q of CATALOGUE)
+      if (q.answer.type === AnswerType.AREA) {
+        expect(outlines.get(q.answer.outline)?.length, q.id).toBeGreaterThan(0)
+        used.add(q.answer.outline)
+      }
+    expect([...outlines.keys()].filter((id) => !used.has(id))).toEqual([])
   })
+
+  it("names the place in a place's prompt, and not in a landmark's", () => {
+    const prompts = (type: QuestionType) => CATALOGUE.filter((q) => q.type === type).map(promptOf)
+    expect(prompts(QuestionType.PLACE).filter((p) => !/^Where (is|are) /.test(p))).toEqual([])
+    expect(new Set(prompts(QuestionType.LANDMARK))).toEqual(new Set([PHOTO_PROMPT]))
+  })
+
+  const places = CATALOGUE.filter((q) => q.type === QuestionType.PLACE)
 
   it("keeps a healthy mix of scales", () => {
-    const text = QUESTIONS.filter((q) => q.kind === "text")
-    expect(text.length).toBeGreaterThanOrEqual(100)
-    const tight = text.filter((q) => q.toleranceKm <= 60).length
-    const loose = text.filter((q) => q.toleranceKm >= 700).length
-    expect(tight).toBeGreaterThanOrEqual(8)
-    expect(loose).toBeGreaterThanOrEqual(8)
+    expect(places.length).toBeGreaterThanOrEqual(100)
+    expect(places.filter((q) => q.answer.toleranceKm <= 60).length).toBeGreaterThanOrEqual(8)
+    expect(places.filter((q) => q.answer.toleranceKm >= 700).length).toBeGreaterThanOrEqual(8)
   })
 
-  it("does not place two text questions on the same spot", () => {
-    const text = QUESTIONS.filter((q) => q.kind === "text")
-    for (let i = 0; i < text.length; i++) {
-      for (let j = i + 1; j < text.length; j++) {
-        const d = greatCircleDistance(text[i]!.answer, text[j]!.answer)
+  it("does not put two places on the same spot", () => {
+    for (let i = 0; i < places.length; i++) {
+      for (let j = i + 1; j < places.length; j++) {
+        const d = greatCircleDistance(answerCentre(places[i]!.answer), answerCentre(places[j]!.answer))
         // Rome and Vatican City are the one deliberate near-pair.
-        const pair = [text[i]!.id, text[j]!.id].sort().join("+")
+        const pair = [places[i]!.id, places[j]!.id].sort().join("+")
         if (pair === "rome+vatican") continue
-        expect(d, `${text[i]!.id} and ${text[j]!.id} are ${d.toFixed(0)} km apart`).toBeGreaterThan(20)
+        expect(d, `${places[i]!.id} and ${places[j]!.id} are ${d.toFixed(0)} km apart`).toBeGreaterThan(20)
       }
     }
-  })
-})
-
-describe("pickQuestions", () => {
-  const mk = (kind: "photo" | "text", n: number) =>
-    Array.from({ length: n }, (_, i) => ({
-      id: questionId(`${kind}${i}`),
-      kind,
-      prompt: kind === "photo" ? "Where is this?" : "Where is X?",
-      answer: { lat: 0, lon: 0 },
-      toleranceKm: 100,
-      label: "x",
-      region: "world" as const
-    }))
-
-  it("balances kinds as evenly as the pool allows and is deterministic per seed", () => {
-    const pool = [...mk("photo", 20), ...mk("text", 100)]
-    const picked = pickQuestions(pool, 8, 7)
-    expect(picked).toHaveLength(8)
-    expect(picked.filter((q) => q.kind === "photo")).toHaveLength(4)
-    expect(new Set(picked.map((q) => q.id)).size).toBe(8)
-    expect(pickQuestions(pool, 8, 7).map((q) => q.id)).toEqual(picked.map((q) => q.id))
-    expect(pickQuestions(pool, 8, 8).map((q) => q.id)).not.toEqual(picked.map((q) => q.id))
-  })
-
-  it("honours the photo share, rounding to whole questions", () => {
-    const pool = [...mk("photo", 50), ...mk("text", 50)]
-    const photos = (share: number, n = 8) => pickQuestions(pool, n, 3, share).filter((q) => q.kind === "photo").length
-    expect(photos(1)).toBe(8)
-    expect(photos(0.75)).toBe(6)
-    expect(photos(0.25)).toBe(2)
-    expect(photos(0)).toBe(0)
-    expect(photos(0.75, 5)).toBe(4) // 3.75 rounds to 4
-  })
-
-  it("tops up from the other kind when one runs short, and never exceeds the pool", () => {
-    const pool = [...mk("photo", 2), ...mk("text", 100)]
-    const picked = pickQuestions(pool, 8, 1)
-    expect(picked.filter((q) => q.kind === "photo")).toHaveLength(2)
-    expect(picked).toHaveLength(8)
-    expect(pickQuestions(mk("text", 3), 8, 1)).toHaveLength(3)
-  })
-
-  it("spreads a game's questions out geographically when the pool allows", () => {
-    // Three Paris landmarks and five far-flung ones: a game of six should
-    // take at most one from Paris, whatever the seed.
-    const paris = [
-      { lat: 48.8584, lon: 2.2945 },
-      { lat: 48.8738, lon: 2.295 },
-      { lat: 48.8611, lon: 2.3358 }
-    ]
-    const far = [
-      { lat: 40.7484, lon: -73.9857 },
-      { lat: 35.3606, lon: 138.7274 },
-      { lat: -33.8523, lon: 151.2108 },
-      { lat: -22.9519, lon: -43.2105 },
-      { lat: 30.0444, lon: 31.2357 }
-    ]
-    const pool = [...paris, ...far].map((answer, i) => ({ ...mk("photo", 1)[0]!, id: questionId(`q${i}`), answer }))
-    for (let seed = 0; seed < 30; seed++) {
-      const picked = pickQuestions(pool, 6, seed)
-      expect(picked).toHaveLength(6)
-      const inParis = picked.filter((q) => q.answer.lat > 48 && q.answer.lat < 49).length
-      expect(inParis, `seed ${seed}`).toBe(1)
-    }
-    // When nothing else is left, nearby questions are still used rather than dropped.
-    expect(pickQuestions(pool, 8, 3)).toHaveLength(8)
-  })
-
-  it("does not run the kinds in a fixed order", () => {
-    const pool = [...mk("photo", 50), ...mk("text", 50)]
-    const orders = new Set<string>()
-    for (let seed = 0; seed < 20; seed++) {
-      orders.add(
-        pickQuestions(pool, 6, seed)
-          .map((q) => q.kind[0])
-          .join("")
-      )
-    }
-    expect(orders.size).toBeGreaterThan(1)
   })
 })

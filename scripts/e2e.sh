@@ -45,7 +45,7 @@ failed=()
 for name in "${scripts[@]}"; do
   mkdir -p "$out/$name"
   start=$SECONDS
-  if (cd packages/client && node "browser/e2e/$name.ts" "../../$out/$name") >"$out/$name/output.txt" 2>&1; then
+  if (cd packages/client && node --experimental-transform-types --disable-warning=ExperimentalWarning "browser/e2e/$name.ts" "../../$out/$name") >"$out/$name/output.txt" 2>&1; then
     printf 'ok    %-16s %3ss\n' "$name" $((SECONDS - start))
   else
     printf 'FAIL  %-16s %3ss  %s\n' "$name" $((SECONDS - start)) "$out/$name/output.txt"

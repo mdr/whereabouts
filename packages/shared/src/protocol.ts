@@ -7,7 +7,7 @@
 import { z } from "zod"
 import type { Award } from "./awards.ts"
 import type { LatLon } from "./geo.ts"
-import type { Topic } from "./questions.ts"
+import { QUESTION_TYPES, QuestionType, AnswerType, Surface, type Clue, type FeatureType } from "./questions.ts"
 import type { PlayerColour } from "./colours.ts"
 import type { H3Cell, H3Res } from "./h3.ts"
 import { paintFromBase64, paintToBase64 } from "./paint-wire.ts"
@@ -20,12 +20,12 @@ import {
   RoomCodeSchema,
   type FlagCode,
   type PlayerId,
+  type OutlineId,
   type PlayerName,
-  type RegionId,
   type RoomCode
 } from "./ids.ts"
 
-export const PROTOCOL_VERSION = 4
+export const PROTOCOL_VERSION = 5
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -69,52 +69,33 @@ export const MAX_SPECTATORS = 8
  */
 export const SEAT_GRACE_MS = 30_000
 
-/**
- * The kinds of question a game can ask, in the order the host sees them. An
- * even mix (the default game) leaves out those marked extra.
- */
-export const QUESTION_TYPES = [
-  { id: "landmarks", label: "Landmarks", detail: "Photos of famous places" },
-  { id: "places", label: "Place names", detail: "Cities, capitals and small countries" },
-  { id: "countries", label: "Whole countries", detail: "Paint a country's shape" },
-  { id: "flags", label: "Flags", detail: "Find the country from its flag" },
-  { id: "features", label: "Islands, lakes & seas", detail: "Paint a big island, lake or sea", extra: true },
-  { id: "states", label: "US states", detail: "Paint a state's shape", extra: true }
-] as const
-export type QuestionType = (typeof QUESTION_TYPES)[number]["id"]
-
-/** How many rounds of each kind a game asks; the rounds are their total, in a shuffled order. */
+/** How many rounds of each type a game asks; the rounds are their total, in a shuffled order. */
 export type QuestionMix = Record<QuestionType, number>
 
-export const mixTotal = (mix: QuestionMix): number => QUESTION_TYPES.reduce((s, t) => s + mix[t.id], 0)
+/** Types an even mix (the default game) leaves out. */
+const EXTRA_TYPES: readonly QuestionType[] = [QuestionType.FEATURE, QuestionType.STATE]
+
+export const mixTotal = (mix: QuestionMix): number => QUESTION_TYPES.reduce((s, t) => s + mix[t], 0)
+
+/** A mix of only these counts, the other types none. */
+export function mixOf(counts: Partial<QuestionMix>): QuestionMix {
+  return Object.fromEntries(QUESTION_TYPES.map((t) => [t, counts[t] ?? 0])) as QuestionMix
+}
 
 /**
- * An even mix of `rounds`: the same of each kind but the extras, the rest one
- * each to the first kinds. The default game is 8 rounds, 2 of each.
+ * An even mix of `rounds`: the same of each type but the extras, the rest one
+ * each to the first types. The default game is 8 rounds, 2 of each.
  */
 export function evenMix(rounds: number): QuestionMix {
-  const kinds = QUESTION_TYPES.filter((t) => !("extra" in t))
-  const each = Math.floor(rounds / kinds.length)
-  const rest = rounds % kinds.length
-  return Object.fromEntries(
-    QUESTION_TYPES.map((t) => {
-      const i = kinds.findIndex((k) => k.id === t.id)
-      return [t.id, i < 0 ? 0 : each + (i < rest ? 1 : 0)]
-    })
-  ) as QuestionMix
+  const types = QUESTION_TYPES.filter((t) => !EXTRA_TYPES.includes(t))
+  const each = Math.floor(rounds / types.length)
+  const rest = rounds % types.length
+  return mixOf(Object.fromEntries(types.map((t, i) => [t, each + (i < rest ? 1 : 0)])))
 }
 
 const roundCount = z.number().int().min(0).max(MAX_ROUNDS)
 export const MixSchema = z
-  .object({
-    landmarks: roundCount,
-    places: roundCount,
-    countries: roundCount,
-    flags: roundCount,
-    // A setup saved before these kinds existed has none of them.
-    features: roundCount.default(0),
-    states: roundCount.default(0)
-  })
+  .record(z.enum(QuestionType), roundCount)
   .refine((m) => mixTotal(m) >= MIN_ROUNDS && mixTotal(m) <= MAX_ROUNDS, "a game has 1 to 15 rounds")
 
 /**
@@ -218,16 +199,28 @@ export interface PlayerView {
   previousRank?: number
 }
 
+/** What players see of an answer while guessing: what to mark, not where. */
+export type AnswerView =
+  | { type: AnswerType.POINT; toleranceKm: number }
+  /** The outline, which the prompt or flag gives away anyway. */
+  | { type: AnswerType.AREA; toleranceKm: number; outline: OutlineId; surface: Surface }
+
+/** Painted on water: trimming drops paint on land. */
+export const onWater = (answer: AnswerView): boolean =>
+  answer.type === AnswerType.AREA && answer.surface === Surface.WATER
+
+/** The outline to paint, on an area round. */
+export const outlineOf = (answer: AnswerView): OutlineId | undefined =>
+  answer.type === AnswerType.AREA ? answer.outline : undefined
+
 export interface QuestionView {
+  type: QuestionType
   prompt: string
-  image?: string
-  toleranceKm: number
-  /** Set for a country question ("Paint the whole of Mexico"): its id in regions.json, for the outline. */
-  regionId?: RegionId
-  /** A flag round: the flag's ISO code, shown in place of a name. */
-  flag?: FlagCode
-  /** What an "Islands, lakes & seas" or "US states" round asks for. */
-  topic?: Topic
+  clue: Clue
+  answer: AnswerView
+  feature?: FeatureType
+  /** Shown beside a country's name. */
+  countryFlag?: FlagCode
 }
 
 interface RoundView {
@@ -281,10 +274,9 @@ export interface QuestionPictures {
 export interface PlayedRound extends QuestionPictures {
   label: string
   type: QuestionType
-  /** Which of the islands, lakes and seas, for a features round. */
-  topic?: Topic
-  /** The outline painted, where the round asked for a shape by name. */
-  regionId?: RegionId
+  feature?: FeatureType
+  /** The area painted, where the round asked for a shape by name. */
+  area?: { outline: OutlineId; centre: LatLon }
 }
 
 export interface FinalStanding {

@@ -8,6 +8,7 @@ import { Headset } from "../pages/Headset.ts"
 import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
 import { until } from "../pages/support.ts"
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
+import { QuestionType } from "@whereabouts/shared/questions"
 
 const out = outDir()
 const checks = new Checks()
@@ -24,7 +25,7 @@ const bobHome = await (await newTab(browser, "Bob", { baseUrl })).openHome()
 await bobHome.enterName("Bob")
 const bobLobby = await bobHome.joinGame(code)
 await aliceLobby.players.waitForPlayer("Bob", 5_000)
-await aliceLobby.setOnlyQuestions("places", 2)
+await aliceLobby.setOnlyQuestions(QuestionType.PLACE, 2)
 await aliceLobby.chooseSecondsPerRound(60)
 
 // The host goes into VR in the lobby, and starts the game from there.

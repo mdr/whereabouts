@@ -365,7 +365,7 @@ const flagTab = await newTab(browser, "vr-flag", {
   context: { viewport: { width: 1200, height: 800 } },
   baseUrl: process.argv[3],
   initScript: () => {
-    localStorage.setItem("wa.practicePool", "flags")
+    localStorage.setItem("wa.practiceTypes", "FLAG")
     // The Political map, where a country round offers the fill tool.
     localStorage.setItem("wa.mapDetail", "political")
     // As if loading outlasted the press: the browser would refuse it the headset.

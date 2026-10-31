@@ -411,9 +411,7 @@ export default defineConfig({
       "flake.lock",
       ".claude/worktrees",
       "packages/server/src/vendor",
-      "packages/shared/regions.json",
-      "packages/shared/flags.json",
-      "packages/shared/features.json",
+      "packages/shared/outlines.json",
       "packages/shared/land.json",
       "packages/shared/water.json",
       "packages/shared/borders.json"

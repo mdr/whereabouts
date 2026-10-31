@@ -4,7 +4,8 @@ import { fireEvent, render, screen, within } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName, roomCode } from "@whereabouts/shared/ids"
-import type { GameView } from "@whereabouts/shared/protocol"
+import { mixOf, type GameView } from "@whereabouts/shared/protocol"
+import { QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "../net"
 import { hostSetup, joinedCode, startOnPan } from "../settings"
 import { route } from "../router"
@@ -21,7 +22,7 @@ import players from "../ui/Players.module.css"
 /** Queries within a render's container. */
 const inside = (el: Element) => within(el as HTMLElement)
 
-const MIX = { landmarks: 3, places: 2, countries: 0, flags: 0, features: 0, states: 0 }
+const MIX = mixOf({ [QuestionType.LANDMARK]: 3, [QuestionType.PLACE]: 2 })
 
 function view(isHost: boolean): GameView {
   return {
@@ -106,9 +107,9 @@ describe("Lobby setup", () => {
   it("gives the host the controls", () => {
     const { container } = render(<Lobby conn={conn} view={view(true)} />)
     fireEvent.click(container.querySelector('[aria-label="More flags"]')!)
-    expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, flags: 1 } })
+    expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, [QuestionType.FLAG]: 1 } })
     fireEvent.click(container.querySelector('[aria-label="Fewer landmarks"]')!)
-    expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, landmarks: 2 } })
+    expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, [QuestionType.LANDMARK]: 2 } })
     expect(inside(container).getAllByTestId(mixEditorTestIds.cell)).toHaveLength(5)
     const picker = inside(container).getByTestId(mapDetailPickerTestIds.picker)
     const minimal = picker.querySelector('[aria-checked="true"]')!
@@ -117,7 +118,7 @@ describe("Lobby setup", () => {
     expect(configure).toHaveBeenCalledWith({ mapDetail: "water" })
     expect(inside(container).queryAllByTestId(setupSummaryTestIds.summary)).toHaveLength(0)
     // Remembered for the next game this browser hosts.
-    expect(hostSetup.value).toEqual({ mix: { ...MIX, landmarks: 2 }, mapDetail: "water" })
+    expect(hostSetup.value).toEqual({ mix: { ...MIX, [QuestionType.LANDMARK]: 2 }, mapDetail: "water" })
     hostSetup.value = {}
   })
 

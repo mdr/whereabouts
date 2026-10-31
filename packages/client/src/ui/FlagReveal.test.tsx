@@ -2,18 +2,17 @@
 import { describe, expect, it } from "vite-plus/test"
 import { render, screen } from "@testing-library/preact"
 import { Borders } from "@whereabouts/shared/borders"
-import { type FlagData, flagFrom } from "@whereabouts/shared/flags"
+import { CATALOGUE, isFlagQuestion } from "@whereabouts/shared/catalogue"
 import { h3Res } from "@whereabouts/shared/h3"
 import { PaintLayer } from "@whereabouts/shared/paint"
 import bordersJson from "@whereabouts/shared/borders.json"
-import flagsJson from "@whereabouts/shared/flags.json"
 import { mainCountry, PaintedIn } from "./FlagReveal"
 import { flagRevealTestIds } from "./FlagRevealTestIds"
 import s from "./FlagReveal.module.css"
 
-const flags = (flagsJson as FlagData[]).map(flagFrom)
+const flags = CATALOGUE.filter(isFlagQuestion)
 const borders = new Borders(bordersJson, flags)
-const brazil = flags.find((f) => f.flag === "br")!
+const brazil = flags.find((f) => f.clue.flag === "br")!
 
 /** A paint of these cells, one intensity each, as a reveal gets it. */
 const paint = (cells: string[]) =>

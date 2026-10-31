@@ -1,11 +1,10 @@
 /** The cards and buttons of a round that practice and a game share. */
 import { PASS_SCORE } from "@whereabouts/shared/scoring"
 import type { Fact } from "@whereabouts/shared/facts"
-import type { FlagCode } from "@whereabouts/shared/ids"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
-import type { QuestionView } from "@whereabouts/shared/protocol"
-import type { Topic } from "@whereabouts/shared/questions"
-import type { RevealedAnswer } from "../round"
+import { outlineOf, type QuestionView } from "@whereabouts/shared/protocol"
+import { QuestionType, clueFlag } from "@whereabouts/shared/questions"
+import { areaNoun, type RevealedAnswer } from "../round"
 import type { ComponentChildren } from "preact"
 import { Card } from "./Card"
 import { Answer, FactLine, QuestionCard } from "./QuestionCard"
@@ -18,18 +17,22 @@ import r from "./Round.module.css"
 import sc from "./Score.module.css"
 
 /** The question while painting, with how to answer it. */
-export function RoundPrompt({ question, countryFlag }: { question: QuestionView; countryFlag: FlagCode | undefined }) {
-  const area = question.regionId !== undefined
+export function RoundPrompt({ question }: { question: QuestionView }) {
+  const area = outlineOf(question.answer) !== undefined
   return (
-    <QuestionCard q={question} hud="painting" countryFlag={countryFlag} foldable>
-      {question.flag ? <AnswerMode area={area} /> : area && <RegionHint topic={question.topic} />}
+    <QuestionCard q={question} hud="painting" foldable>
+      {question.type === QuestionType.FLAG ? (
+        <AnswerMode area={area} />
+      ) : (
+        area && <AreaInstruction noun={areaNoun(question)} />
+      )}
     </QuestionCard>
   )
 }
 
 /** Under a "Paint the whole of …" question: what to cover. */
-function RegionHint({ topic }: { topic?: Topic }) {
-  return <p class={cx(kit.hint, r.regionHint)}>Cover the whole {topic ?? "country"}: its shape counts.</p>
+function AreaInstruction({ noun }: { noun: string }) {
+  return <p class={cx(kit.hint, r.regionHint)}>Cover the whole {noun}: its shape counts.</p>
 }
 
 /**
@@ -89,7 +92,6 @@ export function DoneButton({
 /** The reveal's question card, now with the answer, and your score. */
 export function RevealCards({
   question,
-  countryFlag,
   revealed,
   fact,
   you,
@@ -98,7 +100,6 @@ export function RevealCards({
   testIds
 }: {
   question: QuestionView
-  countryFlag: FlagCode | undefined
   revealed: RevealedAnswer
   fact: Fact | undefined
   /** Undefined when you sat the round out. */
@@ -111,15 +112,7 @@ export function RevealCards({
 }) {
   return (
     <>
-      <QuestionCard
-        q={question}
-        hud="reveal"
-        credit
-        countryFlag={countryFlag}
-        photo={revealed.photo}
-        foldable
-        startFolded
-      >
+      <QuestionCard q={question} hud="reveal" credit photo={revealed.photo} foldable startFolded>
         <Answer label={revealed.label} wiki={revealed.wiki} />
         <FactLine fact={fact} />
       </QuestionCard>
@@ -130,7 +123,7 @@ export function RevealCards({
       >
         {where && (
           <div class={sc.fit}>
-            Your paint: <PaintedIn where={where} answer={question.flag} whose="your" />
+            Your paint: <PaintedIn where={where} answer={clueFlag(question.clue)} whose="your" />
           </div>
         )}
       </ScoreCard>

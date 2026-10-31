@@ -7,10 +7,12 @@ import { useEffect, useRef } from "preact/hooks"
 import {
   ConfigureSchema,
   MAX_ROUNDS,
+  mixOf,
   type ConfigurePatch,
   type GameView,
   type QuestionMix
 } from "@whereabouts/shared/protocol"
+import { QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "./net"
 import { hostSetup } from "./settings"
 
@@ -25,7 +27,7 @@ export function savedSetupPatch(saved: unknown): ConfigurePatch {
   const patch: Record<string, unknown> = {}
   if (typeof saved !== "object" || !saved) return patch
   const setup = { ...(saved as Record<string, unknown>) }
-  setup.mix ??= mixFromOldSetup(setup)
+  setup.mix = setup.mix === undefined ? mixFromOldSetup(setup) : renamedMix(setup.mix)
   for (const field of FIELDS) {
     const value = setup[field]
     if (value === undefined) continue
@@ -53,6 +55,22 @@ export function useSavedSetup(conn: Connection, view: GameView | undefined, crea
   }, [ready])
 }
 
+/** The mix's keys before the question types were named as they are now. */
+const OLD_MIX_KEYS: Record<string, QuestionType> = {
+  landmarks: QuestionType.LANDMARK,
+  places: QuestionType.PLACE,
+  countries: QuestionType.COUNTRY,
+  flags: QuestionType.FLAG,
+  features: QuestionType.FEATURE,
+  states: QuestionType.STATE
+}
+
+/** A mix saved under the old keys, under today's; any other left as it is. */
+function renamedMix(mix: unknown): unknown {
+  if (typeof mix !== "object" || !mix || !Object.keys(mix).some((k) => k in OLD_MIX_KEYS)) return mix
+  return mixOf(Object.fromEntries(Object.entries(mix).map(([k, n]) => [OLD_MIX_KEYS[k] ?? k, n as number])))
+}
+
 const OLD_PHOTO_SHARES = [1, 0.75, 0.5, 0.25, 0]
 const OLD_SHARES: Record<string, number> = { off: 0, mixed: 0.25, only: 1 }
 
@@ -77,5 +95,10 @@ function mixFromOldSetup(setup: Record<string, unknown>): QuestionMix | undefine
   const f = Math.min(Math.round(r * flagShare), r - c)
   const named = r - c - f
   const landmarks = Math.round(named * photos)
-  return { landmarks, places: named - landmarks, countries: c, flags: f, features: 0, states: 0 }
+  return mixOf({
+    [QuestionType.LANDMARK]: landmarks,
+    [QuestionType.PLACE]: named - landmarks,
+    [QuestionType.COUNTRY]: c,
+    [QuestionType.FLAG]: f
+  })
 }

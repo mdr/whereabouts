@@ -1,28 +1,16 @@
 import { useState } from "preact/hooks"
 import { MAP_DETAILS } from "@whereabouts/shared/protocol"
-import {
-  nameHandoff,
-  nameToJoin,
-  savedName,
-  soloMapDetail,
-  soloPool,
-  watchHandoff,
-  type PracticePool
-} from "../settings"
+import { nameHandoff, nameToJoin, savedName, soloMapDetail, soloTypes, watchHandoff } from "../settings"
 import { navigate } from "../router"
 import { Icon } from "../ui/icons"
 import { MapDetailPicker } from "../ui/MapDetailPicker"
-import { Pills } from "../ui/Controls"
+import { TogglePills } from "../ui/Controls"
 import { VrButton, useVrView } from "../ui/VrButton"
 import type { VrView } from "../vr/view"
+import { QUESTION_TYPES } from "@whereabouts/shared/questions"
+import { QUESTION_TYPE_LOOKS } from "../question-types"
 
-const POOLS: { value: PracticePool; label: string }[] = [
-  { value: "places", label: "Places" },
-  { value: "countries", label: "Whole countries" },
-  { value: "flags", label: "Flags" },
-  { value: "features", label: "Islands, lakes & seas" },
-  { value: "states", label: "US states" }
-]
+const PRACTICE_OPTIONS = QUESTION_TYPES.map((t) => ({ value: t, label: QUESTION_TYPE_LOOKS[t].label }))
 import hero800 from "../assets/hero-800.webp"
 import hero1448 from "../assets/hero-1448.webp"
 import { homeTestIds } from "./HomeTestIds"
@@ -39,18 +27,20 @@ export function Home() {
   const name = nameToJoin(savedName.value)
   const ready = name !== undefined
   const needName = ready ? undefined : "Enter your name first"
-  const pool = POOLS.find((p) => p.value === soloPool.value) ?? POOLS[0]!
+  const types = soloTypes.value
   const vrView: VrView = {
     kind: "lobby",
     summary: {
       title: "Whereabouts",
-      scoreLine: `Practise: ${pool.label}`,
+      scoreLine: `Practise: ${types.map((t) => QUESTION_TYPE_LOOKS[t].label).join(", ")}`,
       note: "Take the headset off to host or join a game.",
       actions: [
         { label: "Practise", press: () => navigate("/solo") },
         {
           label: "Change topic",
-          press: () => (soloPool.value = POOLS[(POOLS.indexOf(pool) + 1) % POOLS.length]!.value)
+          // One type at a time: the next after the first chosen.
+          press: () =>
+            (soloTypes.value = [QUESTION_TYPES[(QUESTION_TYPES.indexOf(types[0]!) + 1) % QUESTION_TYPES.length]!])
         }
       ]
     }
@@ -149,11 +139,11 @@ export function Home() {
             <h2>Practise</h2>
             <p>On your own, no clock. See how the scoring works.</p>
             <div class={s.pool}>
-              <Pills
+              <TogglePills
                 label="What to practise"
-                options={POOLS}
-                value={soloPool.value}
-                onChange={(v) => (soloPool.value = v)}
+                options={PRACTICE_OPTIONS}
+                value={types}
+                onChange={(v) => (soloTypes.value = v)}
               />
             </div>
             <div class={s.go}>

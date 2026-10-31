@@ -5,7 +5,9 @@ import { QuestionCard } from "./QuestionCard"
 import lb from "./Lightbox.module.css"
 import pictures from "./Pictures.module.css"
 import qc from "./QuestionCard.module.css"
-import { flagCode, regionId } from "@whereabouts/shared/ids"
+import { flagCode } from "@whereabouts/shared/ids"
+import { ClueType, QuestionType } from "@whereabouts/shared/questions"
+import { areaAnswerView, makeQuestionView } from "../test-view"
 import type * as flags from "../flags"
 
 vi.mock("../flags", async (original) => ({
@@ -13,11 +15,22 @@ vi.mock("../flags", async (original) => ({
   flagUrl: (code: string) => Promise.resolve(`/flags/${code}.svg`)
 }))
 
-const q = { prompt: "Where is this?", image: "Some_file.jpg", toleranceKm: 50 }
+const q = makeQuestionView({
+  type: QuestionType.LANDMARK,
+  prompt: "Where is this?",
+  clue: { type: ClueType.PHOTO, image: "Some_file.jpg" }
+})
+
+const flagRoundOf = (code: string) =>
+  makeQuestionView({
+    type: QuestionType.FLAG,
+    prompt: "Paint the whole of the country with this flag",
+    clue: { type: ClueType.FLAG, flag: flagCode(code) }
+  })
 
 describe("QuestionCard", () => {
   it("shows the prompt but not the tolerance, which only drives scoring", () => {
-    const { container } = render(<QuestionCard hud="painting" q={{ prompt: "Where is Dublin?", toleranceKm: 40 }} />)
+    const { container } = render(<QuestionCard hud="painting" q={makeQuestionView({ prompt: "Where is Dublin?" })} />)
     expect(container.textContent).toBe("Where is Dublin?")
   })
 
@@ -25,24 +38,22 @@ describe("QuestionCard", () => {
     const country = render(
       <QuestionCard
         hud="painting"
-        q={{ prompt: "Paint the whole of Germany", toleranceKm: 65, regionId: regionId("germany-region") }}
-        countryFlag={flagCode("de")}
+        q={makeQuestionView({
+          type: QuestionType.COUNTRY,
+          prompt: "Paint the whole of Germany",
+          answer: areaAnswerView("germany-region", 65),
+          countryFlag: flagCode("de")
+        })}
       />
     )
     await waitFor(() =>
       expect(country.container.querySelector(`.${qc.flag!} img`)!.getAttribute("src")).toBe("/flags/de.svg")
     )
-    const flagRound = render(
-      <QuestionCard
-        hud="painting"
-        q={{ prompt: "Paint the country with this flag", toleranceKm: 65, flag: flagCode("fr") }}
-        countryFlag={flagCode("de")}
-      />
-    )
+    const flagRound = render(<QuestionCard hud="painting" q={flagRoundOf("fr")} />)
     await waitFor(() =>
       expect(flagRound.container.querySelector(`.${qc.flag!} img`)!.getAttribute("src")).toBe("/flags/fr.svg")
     )
-    const place = render(<QuestionCard hud="painting" q={{ prompt: "Where is Dublin?", toleranceKm: 40 }} />)
+    const place = render(<QuestionCard hud="painting" q={makeQuestionView()} />)
     expect(place.container.querySelectorAll(`.${qc.flag!}`)).toHaveLength(0)
   })
 })
@@ -63,12 +74,7 @@ describe("flag frames", () => {
 
   it("take each flag's own shape before its picture loads, here and enlarged", async () => {
     for (const [code, shape] of shapes) {
-      const { container } = render(
-        <QuestionCard
-          hud="painting"
-          q={{ prompt: "Paint the country with this flag", toleranceKm: 65, flag: flagCode(code) }}
-        />
-      )
+      const { container } = render(<QuestionCard hud="painting" q={flagRoundOf(code)} />)
       const button = container.querySelector<HTMLButtonElement>(`.${qc.flag!}`)!
       expect(button.querySelectorAll("img")).toHaveLength(0)
       expect(ratio(button)).toBe(shape)

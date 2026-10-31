@@ -3,6 +3,7 @@ import { effect, signal } from "@preact/signals"
 import { z } from "zod"
 import { DEFAULT_KERNEL, KernelIdSchema } from "@whereabouts/shared/scoring"
 import { MapDetailSchema } from "@whereabouts/shared/protocol"
+import { QuestionType } from "@whereabouts/shared/questions"
 import {
   PlayerNameSchema,
   PlayerTokenSchema,
@@ -14,12 +15,7 @@ import {
 import type { ScoreVerdict } from "@whereabouts/shared/score-review"
 
 /** A stored value that fails `schema`, such as one an older version wrote, starts from the initial value. */
-function persisted<S extends z.ZodType<string | boolean>>(
-  key: string,
-  schema: S,
-  initial: z.output<S>,
-  storage: Storage = localStorage
-) {
+function persisted<S extends z.ZodType>(key: string, schema: S, initial: z.output<S>, storage: Storage = localStorage) {
   let start = initial
   try {
     const parsed = schema.safeParse(storage.getItem(key))
@@ -72,10 +68,33 @@ try {
 } catch {
   /* storage unavailable */
 }
-/** What practice asks: places (points), whole countries (regions), flags (either, by size), islands, lakes and seas, or US states. */
-const PracticePoolSchema = z.enum(["places", "countries", "flags", "features", "states"])
-export type PracticePool = z.infer<typeof PracticePoolSchema>
-export const soloPool = persisted("wa.practicePool", PracticePoolSchema, "places")
+/** The types of question practice asks, stored comma-separated. */
+export const soloTypes = persisted(
+  "wa.practiceTypes",
+  z
+    .string()
+    .transform((s) => s.split(","))
+    .pipe(z.array(z.enum(QuestionType)).min(1)),
+  oldPracticeTypes() ?? [QuestionType.LANDMARK, QuestionType.PLACE]
+)
+
+/** The types practice asked when it offered one pool at a time, by that pool's old name. */
+function oldPracticeTypes(): QuestionType[] | undefined {
+  const pools: Record<string, QuestionType[]> = {
+    places: [QuestionType.LANDMARK, QuestionType.PLACE],
+    countries: [QuestionType.COUNTRY],
+    flags: [QuestionType.FLAG],
+    features: [QuestionType.FEATURE],
+    states: [QuestionType.STATE]
+  }
+  try {
+    const old = localStorage.getItem("wa.practicePool") ?? undefined
+    localStorage.removeItem("wa.practicePool")
+    return old === undefined ? undefined : pools[old]
+  } catch {
+    return undefined
+  }
+}
 /** Map detail while guessing in practice (one of MAP_DETAILS). */
 export const soloMapDetail = persisted("wa.mapDetail", MapDetailSchema, "minimal")
 /** On the reveal of a flag round, every country's flag on the map. */

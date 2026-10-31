@@ -45,14 +45,6 @@
   --host: #fbbf24;
   --ring-brush: #ffffff;
 
-  /* Each kind of question; Results.tsx has them too, for the headset. */
-  --type-landmarks: #ffb74d;
-  --type-places: #4fc3f7;
-  --type-countries: #81c784;
-  --type-flags: #f06292;
-  --type-features: #9575cd;
-  --type-states: #fff176;
-
   /* The VR loading globe. */
   --globe-sea: #2b4a66;
   --globe-deep: #0d1b29;

@@ -1,14 +1,8 @@
 import { Fragment } from "preact"
 import { useEffect, useRef, useState } from "preact/hooks"
-import {
-  MAX_PLAYERS,
-  MAX_SPECTATORS,
-  QUESTION_TYPES,
-  ROUND_LENGTHS_MS,
-  MAP_DETAILS,
-  type GameView
-} from "@whereabouts/shared/protocol"
+import { MAX_PLAYERS, MAX_SPECTATORS, ROUND_LENGTHS_MS, MAP_DETAILS, type GameView } from "@whereabouts/shared/protocol"
 import { MAX_HINTS } from "@whereabouts/shared/hints"
+import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { colourCss } from "@whereabouts/shared/colours"
 import { nextHostAfter } from "@whereabouts/shared/game"
 import type { PlayerName } from "@whereabouts/shared/ids"
@@ -344,7 +338,7 @@ function SetupSummary({ view }: { view: GameView }) {
   useEffect(() => {
     shown.current = view.config
   })
-  const mixChanged = QUESTION_TYPES.some((t) => mix[t.id] !== before.mix[t.id])
+  const mixChanged = QUESTION_TYPES.some((t) => mix[t] !== before.mix[t])
   const tiles = [
     {
       key: "rounds",

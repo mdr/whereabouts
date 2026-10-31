@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/facts"
-import type { GameView } from "@whereabouts/shared/protocol"
+import { onWater, outlineOf, type GameView } from "@whereabouts/shared/protocol"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
-import type { RegionQuestion } from "@whereabouts/shared/regions"
-import { isWater } from "@whereabouts/shared/questions"
+import { QuestionType, type Outline } from "@whereabouts/shared/questions"
+import { AREA_TYPES } from "@whereabouts/shared/catalogue"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { Card } from "../ui/Card"
@@ -28,7 +28,7 @@ import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog"
 import { askedToWatch } from "../settings"
 import { TakeSeatButton } from "../ui/TakeSeat"
 import { HintCard } from "../ui/Hint"
-import { loadRegions, useRegion } from "../regions"
+import { loadOutlines, useOutline } from "../outlines"
 import { VrButton, useVrView } from "../ui/VrButton"
 import { mainCountry } from "../ui/FlagReveal"
 import type { VrView } from "../vr/view"
@@ -52,13 +52,12 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const { dialog, ask } = useConfirm()
 
   // A game with outlines to show at the reveal: fetch them now.
-  const { countries, flags: flagRounds, features, states } = view.config.mix
-  const outlines = countries + flagRounds + features + states > 0
+  const outlines = AREA_TYPES.some((t) => view.config.mix[t] > 0)
   useEffect(() => {
-    if (outlines) loadRegions().catch((err: unknown) => console.warn("could not load countries", err))
+    if (outlines) loadOutlines().catch((err: unknown) => console.warn("could not load outlines", err))
   }, [outlines])
   // And a game with flags, the borders its reveals name countries by.
-  const flags = flagRounds > 0
+  const flags = view.config.mix[QuestionType.FLAG] > 0
   useEffect(() => {
     if (flags) loadBorders().catch((err: unknown) => console.warn("could not load borders", err))
   }, [flags])
@@ -98,8 +97,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
 
   const { lockIn } = usePaintUpload(conn, paint, view, timeUp)
 
-  // A country round shows the country's flag beside its name, once the outlines have loaded.
-  const region = useRegion(question?.regionId)
+  const outline = useOutline(question && outlineOf(question.answer))
 
   // The room's code, so everyone in the game sees the same one.
   const fact = useFact(view.reveal?.wiki, view.code, view.reveal?.index ?? 0)
@@ -107,12 +105,12 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const mine = view.reveal?.results.find((r) => r.playerId === view.you.id)
   const painted = useMemo(
     () =>
-      view.reveal?.question.flag && borders.value && mine?.paint
+      view.reveal?.question.type === QuestionType.FLAG && borders.value && mine?.paint
         ? mainCountry(borders.value, paintLayer(mine.res, mine.paint).toCells())
         : undefined,
     [borders.value, view.reveal?.index, mine?.paint !== undefined]
   )
-  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, region, fact, painted })
+  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, outline, fact, painted })
   useVrView(vrView, `${view.phase} ${roundKey}`)
 
   if (view.phase === "reveal" && view.reveal) {
@@ -130,7 +128,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             total={round.total}
             right={<Countdown msRemaining={() => conn.msUntil(round.deadline)} />}
           />
-          <RoundPrompt question={round.question} countryFlag={region?.countryFlag} />
+          <RoundPrompt question={round.question} />
           {!sittingOut && view.config.hints > 0 && (
             <HintCard band={view.you.hint} left={view.you.hintsLeft} onUse={(axis) => conn.hint(axis)} />
           )}
@@ -176,7 +174,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
         </HudRight>
         {!sittingOut && (
-          <PaintTools water={isWater(round.question.topic)} hint={view.you.hint}>
+          <PaintTools water={onWater(round.question.answer)} hint={view.you.hint}>
             {view.you.locked ? (
               <button
                 class={toolbarGrow}
@@ -220,14 +218,14 @@ function gameVrView(
     lockIn,
     timeUp,
     sittingOut,
-    region,
+    outline,
     fact,
     painted
   }: {
     lockIn: () => void
     timeUp: boolean
     sittingOut: boolean
-    region: RegionQuestion | undefined
+    outline: Outline | undefined
     fact: Fact | undefined
     painted: PaintedCountry | undefined
   }
@@ -239,8 +237,7 @@ function gameVrView(
   const reveal = view.reveal
   const shown: VrRoundShown = {
     question,
-    countryFlag: region?.countryFlag,
-    revealed: reveal && revealedAnswer(reveal, region),
+    revealed: reveal && revealedAnswer(reveal, outline),
     fact
   }
   const more = [
@@ -301,7 +298,7 @@ function gameVrView(
     kind: "reveal",
     round,
     more,
-    reveal: vrReveal(shown, revealedAnswer(reveal, region), you, borders.value, {
+    reveal: vrReveal(shown, revealedAnswer(reveal, outline), you, borders.value, {
       paints: paintsOf(shownResults(reveal.results, whose), view.players),
       table: {
         title: `Round ${reveal.index + 1} of ${reveal.total}`,

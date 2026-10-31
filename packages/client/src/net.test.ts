@@ -13,7 +13,7 @@ import {
   type Ticket
 } from "@whereabouts/shared/protocol"
 import { Connection, describeDisconnect, type GameClient } from "./net"
-import { makeView } from "./test-view"
+import { makeQuestionView, makeView } from "./test-view"
 
 describe("describeDisconnect", () => {
   it("words every reason the server can give", () => {
@@ -244,7 +244,7 @@ describe("Connection view", () => {
     const reveal: RoundReveal = {
       index: 2,
       total: 5,
-      question: { prompt: "Where is Kyoto?", toleranceKm: 50 },
+      question: makeQuestionView(),
       answer: { lat: 35, lon: 135.8 },
       label: "Kyoto",
       results: []

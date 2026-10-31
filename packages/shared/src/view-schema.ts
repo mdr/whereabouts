@@ -7,25 +7,36 @@
  */
 import { z } from "zod"
 import { PlayerColourSchema } from "./colours.ts"
-import { FlagCodeSchema, PlayerIdSchema, PlayerNameSchema, RegionIdSchema, RoomCodeSchema } from "./ids.ts"
+import { FlagCodeSchema, OutlineIdSchema, PlayerIdSchema, PlayerNameSchema, RoomCodeSchema } from "./ids.ts"
 import { HintAxisSchema } from "./hints.ts"
 import { KernelIdSchema } from "./scoring.ts"
 import { H3CellSchema, H3ResSchema } from "./h3.ts"
-import { MapDetailSchema, MixSchema, QUESTION_TYPES, type QuestionType } from "./protocol.ts"
-
-const TopicSchema = z.enum(["island", "lake", "sea", "state"])
+import { MapDetailSchema, MixSchema } from "./protocol.ts"
+import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "./questions.ts"
 
 const PaintSchema = z.strictObject({ cells: z.record(H3CellSchema, z.number()), floor: z.number() })
 
 const LatLonSchema = z.strictObject({ lat: z.number(), lon: z.number() })
 
 const QuestionViewSchema = z.strictObject({
+  type: z.enum(QuestionType),
   prompt: z.string(),
-  image: z.string().optional(),
-  toleranceKm: z.number(),
-  regionId: RegionIdSchema.optional(),
-  flag: FlagCodeSchema.optional(),
-  topic: TopicSchema.optional()
+  clue: z.discriminatedUnion("type", [
+    z.strictObject({ type: z.literal(ClueType.PHOTO), image: z.string() }),
+    z.strictObject({ type: z.literal(ClueType.NAME), prompt: z.string() }),
+    z.strictObject({ type: z.literal(ClueType.FLAG), flag: FlagCodeSchema })
+  ]),
+  answer: z.discriminatedUnion("type", [
+    z.strictObject({ type: z.literal(AnswerType.POINT), toleranceKm: z.number() }),
+    z.strictObject({
+      type: z.literal(AnswerType.AREA),
+      toleranceKm: z.number(),
+      outline: OutlineIdSchema,
+      surface: z.enum(Surface)
+    })
+  ]),
+  feature: z.enum(FeatureType).optional(),
+  countryFlag: FlagCodeSchema.optional()
 })
 
 const QuestionPicturesSchema = z.strictObject({
@@ -117,9 +128,9 @@ export const GameViewSchema = z.strictObject({
     .array(
       z.strictObject({
         label: z.string(),
-        type: z.enum(QUESTION_TYPES.map((t) => t.id) as [QuestionType, ...QuestionType[]]),
-        topic: TopicSchema.optional(),
-        regionId: RegionIdSchema.optional(),
+        type: z.enum(QuestionType),
+        feature: z.enum(FeatureType).optional(),
+        area: z.strictObject({ outline: OutlineIdSchema, centre: LatLonSchema }).optional(),
         ...QuestionPicturesSchema.shape
       })
     )

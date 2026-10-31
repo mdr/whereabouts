@@ -1,9 +1,7 @@
 /**
  * Single-player practice mode. Playtest tools live in the dev drawer. It asks
- * places (the answer is a point), whole countries (the answer is an area,
- * loaded on demand), flags (a country's flag: painted whole when it is big
- * enough, else a point), islands, lakes and seas, or US states, as chosen on
- * the front page.
+ * the types of question chosen on the front page, from the same pools as a
+ * game, in an endless shuffle.
  */
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { useSignal } from "@preact/signals"
@@ -11,11 +9,18 @@ import { buildDistribution, kernelById, type Distribution } from "@whereabouts/s
 import { hintBand, type HintAxis, type HintBand } from "@whereabouts/shared/hints"
 import { questionPictures, questionView } from "@whereabouts/shared/game"
 import { revealPhoto } from "@whereabouts/shared/photos"
-import { scoreAnswer } from "@whereabouts/shared/regions"
-import { QUESTIONS, isWater, shuffle } from "@whereabouts/shared/questions"
-import { flagRound } from "@whereabouts/shared/flags"
+import { scoreAnswer, scoredAnswer } from "@whereabouts/shared/regions"
+import {
+  AnswerType,
+  QuestionType,
+  answerCentre,
+  shuffle,
+  type Outlines,
+  type Question
+} from "@whereabouts/shared/questions"
+import { AREA_TYPES, CATALOGUE, poolOf } from "@whereabouts/shared/catalogue"
 import type { LatLon } from "@whereabouts/shared/geo"
-import { showsLakes } from "@whereabouts/shared/protocol"
+import { onWater } from "@whereabouts/shared/protocol"
 import { MapView, usePaint } from "../ui/MapView"
 import { forTabbedControl } from "../keys"
 import { LoadingOutlines } from "../ui/LoadingOutlines"
@@ -30,10 +35,10 @@ import type { VrTable } from "../vr/scores"
 import { pts, vrReveal, vrRound, type VrRoundShown } from "../vr-round"
 import { Banner } from "../ui/Banner"
 import { DevDrawer } from "../ui/DevDrawer"
-import { allFlags, cheatLiveScore, soloKernelId, soloMapDetail, soloPool } from "../settings"
+import { allFlags, cheatLiveScore, soloKernelId, soloMapDetail, soloTypes } from "../settings"
 import { devMode } from "../dev"
 import { Icon } from "../ui/icons"
-import { featureQuestions, flagQuestions, regions } from "../regions"
+import { outlines } from "../outlines"
 import { useBorders } from "../borders"
 import { useFact } from "../facts"
 import { preloadPictures } from "../preload"
@@ -41,22 +46,21 @@ import { HintCard } from "../ui/Hint"
 import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry } from "../ui/FlagReveal"
 import { navigate } from "../router"
 import { announcePass, frameReveal, showAnswer, useRoundMap, type RevealedAnswer } from "../round"
-import { isRegion, type PracticeQuestion } from "../practice-question"
 import { soloTestIds } from "./SoloTestIds"
 import { Cheats, LiveScore, RevealScore } from "./SoloDevTools"
 
-function revealedAnswer(q: PracticeQuestion): RevealedAnswer {
+function revealedAnswer(q: Question, outlines: Outlines): RevealedAnswer {
   return {
     label: q.label,
     wiki: q.wiki,
-    answer: q.answer,
-    outline: isRegion(q) ? q.outline : undefined,
+    answer: answerCentre(q.answer),
+    outline: q.answer.type === AnswerType.AREA ? outlines.get(q.answer.outline) : undefined,
     photo: revealPhoto(q)
   }
 }
 
 interface RoundResult {
-  question: PracticeQuestion
+  question: Question
   score: number
 }
 
@@ -79,30 +83,15 @@ export function Solo() {
   )
 }
 
-/** All but places come in their own chunk (the outlines), fetched when asked for. */
+/** The outlines come in their own chunk, fetched when a type painted whole is asked for. */
 function SoloLoader() {
-  const pool = soloPool.value
-  const byId = regions.value
-  if (pool !== "places" && !byId) return <LoadingOutlines />
-  const lakes = showsLakes(soloMapDetail.value)
-  return (
-    <SoloGame
-      pool={
-        pool === "countries"
-          ? [...byId!.values()].filter((q) => q.topic === undefined)
-          : pool === "flags"
-            ? flagQuestions.value!.flatMap((f) => flagRound(f, byId!) ?? [])
-            : pool === "features"
-              ? featureQuestions.value!.filter((q) => q.topic !== "state" && (lakes || q.topic !== "lake"))
-              : pool === "states"
-                ? featureQuestions.value!.filter((q) => q.topic === "state")
-                : QUESTIONS
-      }
-    />
-  )
+  const types = soloTypes.value
+  const loaded = outlines.value
+  if (!loaded && types.some((t) => AREA_TYPES.includes(t))) return <LoadingOutlines />
+  return <SoloGame pool={poolOf(CATALOGUE, types, soloMapDetail.value)} outlines={loaded ?? new Map()} />
 }
 
-function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
+function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) {
   const paint = usePaint()
   const [questions, setQuestions] = useState(() => shuffle(pool, Date.now()))
   const [index, setIndex] = useState(0)
@@ -118,8 +107,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const total = results.reduce((s, r) => s + r.score, 0)
   const cheating = devMode.value && cheatLiveScore.value
   const question = questionView(q)
-  const answer = revealedAnswer(q)
-  const countryFlag = isRegion(q) ? q.countryFlag : undefined
+  const answer = revealedAnswer(q, outlines)
+  const scored = useMemo(() => scoredAnswer(q.answer, outlines), [q])
   const detail = soloMapDetail.value
 
   useRoundMap(paint, {
@@ -167,7 +156,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   function submit() {
     const passed = announcePass(paint)
     const dist = passed ? undefined : buildDistribution(paint.layer.toCells(), paint.floor.value)
-    const { score } = scoreAnswer(dist, q, kernel)
+    const { score } = scoreAnswer(dist, scored, kernel)
     const result = { question: q, score }
     setResults((r) => [...r, result])
     setRevealed({ dist, result })
@@ -198,16 +187,17 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
     setPhase("paint")
   }
 
-  const useHint = (axis: HintAxis) => setHint(hintBand(q.answer, q.toleranceKm, axis, Math.random()))
+  const useHint = (axis: HintAxis) =>
+    setHint(hintBand(answerCentre(q.answer), q.answer.toleranceKm, axis, Math.random()))
   // A flag round's reveal names the country under the pointer, and where the
   // paint mostly was. Loaded while the flag is still being painted.
-  const borders = useBorders(q.flag !== undefined)
+  const borders = useBorders(q.type === QuestionType.FLAG)
   // Each practice run shuffles anew, so its first question picks this run's facts.
   const fact = useFact(q.wiki, questions[0]!.id, index)
   // Re-score the revealed paint if the kernel changes on the reveal screen.
   const shownResult = useMemo(() => {
     if (!revealed) return undefined
-    return scoreAnswer(revealed.dist, q, kernel)
+    return scoreAnswer(revealed.dist, scored, kernel)
   }, [revealed, kernel.id])
   const where = useMemo(
     () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : undefined),
@@ -216,7 +206,6 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
   const home = { label: "Home", press: () => navigate("/") }
   const shown: VrRoundShown = {
     question,
-    countryFlag,
     revealed: phase === "reveal" ? answer : undefined,
     fact
   }
@@ -315,7 +304,6 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             {header}
             <RevealCards
               question={question}
-              countryFlag={countryFlag}
               revealed={answer}
               fact={fact}
               you={{ score: shownResult.score, passed: !dist }}
@@ -325,7 +313,7 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
             />
           </HudTop>
           <HudBottom>
-            {q.flag && <AllFlagsSwitch />}
+            {q.type === QuestionType.FLAG && <AllFlagsSwitch />}
             <VrButton view={vrView} />
             <button class="primary" onClick={next} data-testid={soloTestIds.nextButton}>
               <Icon name={last ? "flag" : "next"} /> {last ? "Finish" : "Next question"} <kbd>Enter</kbd>
@@ -333,8 +321,8 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
           </HudBottom>
         </Hud>
         <DevDrawer>
-          <RevealScore q={q} kernel={kernel} parts={shownResult.parts} dist={dist} hover={hover} />
-          <Cheats q={q} kernel={kernel} />
+          <RevealScore a={scored} kernel={kernel} parts={shownResult.parts} dist={dist} hover={hover} />
+          <Cheats q={q} a={scored} kernel={kernel} />
           <PaintDev />
         </DevDrawer>
       </>
@@ -346,17 +334,17 @@ function SoloGame({ pool }: { pool: PracticeQuestion[] }) {
       <Hud>
         <HudTop>
           {header}
-          <RoundPrompt question={question} countryFlag={countryFlag} />
+          <RoundPrompt question={question} />
           <HintCard band={hint} onUse={useHint} />
         </HudTop>
-        <PaintTools practice water={isWater(q.topic)} hint={hint}>
+        <PaintTools practice water={onWater(question.answer)} hint={hint}>
           <VrButton view={vrView} />
           <DoneButton label="Submit" onDone={submit} testId={soloTestIds.submitButton} />
         </PaintTools>
       </Hud>
       <DevDrawer>
-        <Cheats q={q} kernel={kernel} />
-        {cheating && <LiveScore q={q} kernelId={kernel.id} />}
+        <Cheats q={q} a={scored} kernel={kernel} />
+        {cheating && <LiveScore q={q} a={scored} kernelId={kernel.id} />}
         <PaintDev />
       </DevDrawer>
     </>

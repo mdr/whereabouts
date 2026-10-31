@@ -1,11 +1,11 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
-import { regionId } from "@whereabouts/shared/ids"
-import type { QuestionView } from "@whereabouts/shared/protocol"
+import { QuestionType } from "@whereabouts/shared/questions"
 import { frameReveal, showAnswer, type RevealedAnswer } from "./round"
+import { areaAnswerView, makeQuestionView } from "./test-view"
 
-const place: QuestionView = { prompt: "Where is Kyoto?", toleranceKm: 50 }
-const country: QuestionView = { prompt: "Paint the whole of Peru", toleranceKm: 200, regionId: regionId("peru") }
+const place = makeQuestionView()
+const country = makeQuestionView({ type: QuestionType.COUNTRY, answer: areaAnswerView("peru", 200) })
 const outline = [
   [
     [
