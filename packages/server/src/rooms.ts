@@ -41,6 +41,12 @@ import { TicketRefused } from "./vendor/WSTransport.ts"
 /** Close reasons are codes from the shared list, which the client words. */
 const closeReason = (reason: CloseReason): string => reason
 
+/** Tell everyone connected that the server is going away, before Rivalis closes the rooms with its own reason. */
+export function kickForRestart(rooms: RoomManager<ActorData>): void {
+  for (const id of [...rooms.keys()])
+    rooms.get(id)?.each((actor) => actor.kick(closeReason(CloseReason.SERVER_RESTARTED)))
+}
+
 export const BANK: QuestionBank = { catalogue: CATALOGUE, outlines: outlinesFrom(outlinesJson) }
 
 export interface ActorData {

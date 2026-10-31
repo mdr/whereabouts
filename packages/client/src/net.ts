@@ -296,5 +296,10 @@ export function describeDisconnect(code: number, reason: string | undefined): Re
       }
     case CloseReason.LEFT:
       return { title: "You left the game", detail: "Rejoin with the code, or start your own game." }
+    case CloseReason.SERVER_RESTARTED:
+      return {
+        title: "The server restarted for an update",
+        detail: "That game has ended. The host can start a new one."
+      }
   }
 }

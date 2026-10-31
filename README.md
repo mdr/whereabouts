@@ -268,7 +268,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
   as it stands and everyone goes to the final standings. Both are host-only
   and ask for confirmation in a dialog first.
 - State is in memory on a single server process; a restart ends games in
-  progress.
+  progress, and players are told the server restarted.
 
 ## How it works
 

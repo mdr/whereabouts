@@ -15,7 +15,9 @@ export enum CloseReason {
   NO_ROOM_TO_WATCH = "NO_ROOM_TO_WATCH",
   /** The same player connected again from another tab. */
   REPLACED = "REPLACED",
-  LEFT = "LEFT"
+  LEFT = "LEFT",
+  /** The server is shutting down, so every game on it is over. */
+  SERVER_RESTARTED = "SERVER_RESTARTED"
 }
 
 export function isCloseReason(s: string): s is CloseReason {

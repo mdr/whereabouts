@@ -581,6 +581,15 @@ describe("game server", () => {
     expect(after.you.isHost).toBe(true)
   })
 
+  it("shutting the server down tells players it restarted", async () => {
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    await alice.until((v) => v.phase === Phase.LOBBY)
+    await app.close()
+    await alice.waitClosed()
+    expect(alice.closedFor).toBe(CloseReason.SERVER_RESTARTED)
+  })
+
   it("the last player leaving closes the game without waiting", async () => {
     const alice = player("Alice")
     alice.connect({ create: true })
