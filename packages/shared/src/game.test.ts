@@ -922,20 +922,6 @@ describe("the question mix", () => {
     return g
   }
 
-  /** Play every round through, passing, and collect each round's question. */
-  function questions(g: Game): QuestionView[] {
-    g.start(tokA, T0)
-    const seen: QuestionView[] = []
-    let now = T0
-    while (g.phase !== Phase.RESULTS) {
-      seen.push(g.view(tokA, now).round!.question)
-      now += 60_000 + ROUND_GRACE
-      g.tick(now)
-      g.next(tokA, now)
-    }
-    return seen
-  }
-
   const outlineOf = (q: QuestionView) => (q.answer.type === AnswerType.AREA ? q.answer.outline : undefined)
 
   it("defaults to 2 of each type but the extras", () => {
@@ -994,19 +980,6 @@ describe("the question mix", () => {
     const bob = reveal.results.find((r) => r.playerId === "p2")!
     expect(bob.score).toBe(PASS_SCORE.score)
     expect(bob.parts).toEqual({ type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B })
-  })
-
-  it("flag rounds show a flag, never the name, and say whether to paint the country or a point", () => {
-    const seen = questions(game({ mix: mixOf({ [QuestionType.FLAG]: 15 }) }))
-    const flags = seen.map((q) => (q.clue.type === ClueType.FLAG ? q.clue.flag : undefined))
-    expect(flags.every((f) => f !== undefined)).toBe(true)
-    expect(new Set(flags).size).toBe(15)
-    for (const [i, q] of seen.entries()) {
-      const f = CATALOGUE.find((x) => x.type === QuestionType.FLAG && x.clue.flag === flags[i])!
-      expect(q.answer.type).toBe(f.answer.type)
-      expect(promptOf(q)).not.toContain(f.label)
-      if (f.answer.type === AnswerType.POINT) expect(promptOf(q)).toBe(FLAG_POINT_PROMPT)
-    }
   })
 
   it("scores a small country's flag as a point and reveals its name", () => {

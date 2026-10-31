@@ -16,7 +16,8 @@ No I/O; the same code runs in the browser and on the server.
 | `src/ids.ts`, `src/units.ts`                      | Branded ids and strings (`QuestionId`, `WikiTitle`…), unit flavours (`Km`, `Ms`…)                                                           |
 | `src/protocol.ts`                                 | Client→server message schemas, `GameConfig`, `GameView` and its parts, `PROTOCOL_VERSION`                                                   |
 | `src/view-schema.ts`                              | A zod schema of `GameView` for the tests (the client casts)                                                                                 |
-| `src/game.ts`                                     | The `Game` state machine: joining, rounds, scoring each player, views                                                                       |
+| `src/game.ts`                                     | The `Game` state machine: who is in the room, the phases and clock, commands, and each player's view                                        |
+| `src/game-views.ts`                               | What players are sent of a question, its reveal and the rounds played                                                                       |
 | `src/round-scoring.ts`                            | `scoreRound`: one player's round scored, with its parts and the facts the awards read                                                       |
 | `src/round-picking.ts`                            | `pickRounds`: a game's questions from the catalogue, by mix, map detail and seed                                                            |
 | `src/paint.ts`, `src/paint-wire.ts`               | The H3 paint layer, and its binary encoding                                                                                                 |

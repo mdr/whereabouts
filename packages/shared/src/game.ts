@@ -5,12 +5,12 @@
  */
 import { DEFAULT_KERNEL, kernelById, type Kernel } from "./scoring.ts"
 import { resolutionForTolerance } from "./paint.ts"
-import { AnswerType, ClueType, QuestionType, answerCentre, flagShown, type Question } from "./questions.ts"
+import { answerCentre, type Question } from "./questions.ts"
+import { playedRound, questionPictures, questionView, revealOf } from "./game-views.ts"
 import { pickRounds, type QuestionBank } from "./round-picking.ts"
 import { scoredAnswer } from "./regions.ts"
 import { scoreRound, type Submission } from "./round-scoring.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
-import { revealPhoto } from "./photos.ts"
 import { DEFAULT_HINTS, hintBand, seededUnit, HintAxis, type HintBand } from "./hints.ts"
 import { playerColour, type PlayerColour } from "./colours.ts"
 import { playerId, roomCode, type PlayerId, type PlayerName, type PlayerToken, type RoomCode } from "./ids.ts"
@@ -21,10 +21,8 @@ import type {
   GameConfig,
   GameView,
   PaintSubmission,
-  PlayedRound,
   PlayerView,
   QuestionPictures,
-  QuestionView,
   RoundReveal,
   RoundResultView
 } from "./protocol.ts"
@@ -563,19 +561,8 @@ export class Game {
       results.push({ playerId: p.id, score, parts, paint, res, ...(hint ? { hint } : {}) })
     }
     results.sort((a, b) => b.score - a.score)
-    const photo = revealPhoto(q)
     this.phase = Phase.REVEAL
-    this.reveal = {
-      index: this.roundIndex,
-      total: this.questions.length,
-      question: questionView(q),
-      answer: answerCentre(q.answer),
-      place: q.place,
-      label: q.label,
-      wiki: q.wiki,
-      ...(photo ? { photo } : {}),
-      results
-    }
+    this.reveal = revealOf(q, { index: this.roundIndex, total: this.questions.length }, results)
   }
 
   private advance(now: Instant): void {
@@ -742,45 +729,4 @@ export function generateCode(rnd: () => number = Math.random, length = 4): RoomC
   let out = ""
   for (let i = 0; i < length; i++) out += alphabet.charAt(Math.floor(rnd() * alphabet.length))
   return roomCode(out)
-}
-
-function playedRound(q: Question): PlayedRound {
-  return {
-    label: q.label,
-    type: q.type,
-    ...(q.type === QuestionType.FEATURE ? { feature: q.feature } : {}),
-    ...(q.answer.type === AnswerType.AREA && q.clue.type === ClueType.NAME
-      ? { area: { outline: q.answer.outline, centre: q.answer.centre } }
-      : {}),
-    ...questionPictures(q)
-  }
-}
-
-/** A question's photo and flag, including the flag shown beside a country's name, and the photo for its reveal. */
-export function questionPictures(q: Question): QuestionPictures {
-  const flag = flagShown(q)
-  const photo = revealPhoto(q)
-  return {
-    ...(q.clue.type === ClueType.PHOTO ? { image: q.clue.image } : {}),
-    ...(flag ? { flag } : {}),
-    ...(photo ? { revealPhoto: photo } : {})
-  }
-}
-
-/**
- * What players see of a question: never the answer. An area round sends its
- * outline's id, which the prompt or the flag gives away anyway.
- */
-export function questionView(q: Question): QuestionView {
-  const { answer } = q
-  return {
-    type: q.type,
-    clue: q.clue,
-    answer:
-      answer.type === AnswerType.AREA
-        ? { type: answer.type, tolerance: answer.tolerance, outline: answer.outline, surface: answer.surface }
-        : { type: answer.type, tolerance: answer.tolerance },
-    ...(q.type === QuestionType.FEATURE ? { feature: q.feature } : {}),
-    ...(q.type === QuestionType.COUNTRY && q.countryFlag ? { countryFlag: q.countryFlag } : {})
-  }
 }

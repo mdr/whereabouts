@@ -9,7 +9,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import { AnswerType, type Outlines } from "@whereabouts/shared/questions"
 import { CATALOGUE } from "@whereabouts/shared/catalogue"
-import { questionView } from "@whereabouts/shared/game"
+import { questionView } from "@whereabouts/shared/game-views"
 import {
   REVIEW_VERSION,
   ReviewCaseType,
