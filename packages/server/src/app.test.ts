@@ -354,7 +354,7 @@ describe("game server", () => {
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
     const aliceResult = reveal.reveal!.results.find((r) => r.playerId === byName.Alice)!
     expect(aliceResult.score).toBeGreaterThan(980)
-    expect(aliceResult.region!.coverage).toBeGreaterThan(0.95)
+    expect(aliceResult.parts.type === AnswerType.AREA && aliceResult.parts.coverage).toBeGreaterThan(0.95)
     const bobResult = reveal.reveal!.results.find((r) => r.playerId === byName.Bob)!
     expect(bobResult.score).toBe(250)
   })

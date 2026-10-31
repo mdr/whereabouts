@@ -9,7 +9,7 @@ import {
   type RoundResultView
 } from "@whereabouts/shared/protocol"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
-import { QuestionType, clueFlag, type Outline } from "@whereabouts/shared/questions"
+import { AnswerType, QuestionType, clueFlag, type Outline } from "@whereabouts/shared/questions"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { Card } from "../ui/Card"
@@ -258,12 +258,12 @@ export function Reveal({
                   {byId.get(r.playerId)?.name ?? "?"}
                   {byId.get(r.playerId)?.isHost && <HostTag />}
                 </span>
-                {r.region ? (
+                {r.parts.type === AnswerType.AREA ? (
                   <span class={kit.parts}>
-                    shape <b>{Math.round(r.region.shape)}</b> · nearness <b>{Math.round(r.region.nearness)}</b>
+                    shape <b>{Math.round(r.parts.shape)}</b> · nearness <b>{Math.round(r.parts.nearness)}</b>
                   </span>
                 ) : (
-                  <ScoreParts A={r.A} B={r.B} />
+                  <ScoreParts A={r.parts.A} B={r.parts.B} />
                 )}
               </li>
             ))}

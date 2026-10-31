@@ -1,3 +1,4 @@
+import { AnswerType } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { h3Cell, h3Res } from "@whereabouts/shared/h3"
 import { colourCss, playerColour } from "@whereabouts/shared/colours"
@@ -26,8 +27,7 @@ function result(name: string, score = 500): RoundResultView {
   return {
     playerId: idOf(name),
     score,
-    A: 0,
-    B: 0,
+    parts: { type: AnswerType.POINT, A: 0, B: 0 },
     res: h3Res(5),
     paint: { cells: { [h3Cell("85283473fffffff")]: 1 }, floor: 0.05 }
   }

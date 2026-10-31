@@ -177,8 +177,25 @@ export function scoreArea(painted: Distribution, q: Area): AreaScore {
   return { score: SHAPE_WEIGHT * shape + (1 - SHAPE_WEIGHT) * nearness, shape, nearness }
 }
 
-/** What went into an answer's score: a point's A and B, or a region's shape and nearness. */
-export type AnswerParts = { A: number; B: number } | { shape: number; nearness: number }
+/** The point rule's parts. */
+export interface PointParts {
+  type: AnswerType.POINT
+  A: number
+  B: number
+}
+
+/** The area rule's parts. */
+export interface AreaParts {
+  type: AnswerType.AREA
+  shape: number
+  nearness: number
+}
+
+/**
+ * What went into an answer's score, by the rule that scored it. A pass is
+ * scored by the point rule, as an even spread, whatever the answer.
+ */
+export type AnswerParts = PointParts | AreaParts
 
 /**
  * A guess's score, by its question's rule; `painted` undefined is a pass.
@@ -189,13 +206,13 @@ export function scoreAnswer(
   q: ScoredAnswer,
   kernel: Kernel
 ): { score: number; parts: AnswerParts } {
-  if (!painted) return { score: PASS_SCORE.score, parts: { A: PASS_SCORE.A, B: PASS_SCORE.B } }
+  if (!painted) return { score: PASS_SCORE.score, parts: { type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B } }
   if (q.type === AnswerType.AREA) {
     const { score, shape, nearness } = scoreArea(painted, q)
-    return { score, parts: { shape, nearness } }
+    return { score, parts: { type: AnswerType.AREA, shape, nearness } }
   }
   const { score, A, B } = scoreDistribution(painted, q.at, q.tolerance, kernel)
-  return { score, parts: { A, B } }
+  return { score, parts: { type: AnswerType.POINT, A, B } }
 }
 
 /**

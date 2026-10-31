@@ -11,6 +11,7 @@
  */
 import type { LatLon } from "./geo.ts"
 import { flagCode, questionId, type FlagCode, type QuestionId } from "./ids.ts"
+import { AnswerType } from "./questions.ts"
 import type { AnswerParts } from "./regions.ts"
 import type { KernelId } from "./scoring.ts"
 
@@ -52,7 +53,7 @@ const LEVELS = 65535
 export async function encodeCase(c: ScoringCase): Promise<string> {
   const q = c.question
   const parts =
-    "A" in c.parts
+    c.parts.type === AnswerType.POINT
       ? `A=${round(c.parts.A, 4)} B=${round(c.parts.B, 4)}`
       : `shape=${round(c.parts.shape, 1)} nearness=${round(c.parts.nearness, 1)}`
   const entries = Object.entries(c.cells)
@@ -107,9 +108,9 @@ export async function decodeCase(text: string): Promise<ScoringCase> {
   const kernel = field("kernel").replace(/^\S+/, (w) => w.toUpperCase().replaceAll("-", "_"))
   const score = field("score")
   const paint = field("paint")
-  const parts = /\bA=/.test(score)
-    ? { A: Number(named(score, "A")), B: Number(named(score, "B")) }
-    : { shape: Number(named(score, "shape")), nearness: Number(named(score, "nearness")) }
+  const parts: AnswerParts = /\bA=/.test(score)
+    ? { type: AnswerType.POINT, A: Number(named(score, "A")), B: Number(named(score, "B")) }
+    : { type: AnswerType.AREA, shape: Number(named(score, "shape")), nearness: Number(named(score, "nearness")) }
 
   const paintAt = lines.findIndex((l, i) => i > start && l.startsWith("paint: "))
   const endAt = lines.indexOf("end", paintAt)

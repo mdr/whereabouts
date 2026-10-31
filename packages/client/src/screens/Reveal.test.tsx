@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import { AnswerType } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { h3Res } from "@whereabouts/shared/h3"
 import { playerColour } from "@whereabouts/shared/colours"
@@ -25,7 +26,13 @@ function player(name: string, rank: number): PlayerView {
 }
 const paint = { cells: { "85283473fffffff": 1 }, floor: 0.05 }
 function result(name: string, score: number, painted = true): RoundResultView {
-  return { playerId: idOf(name), score, A: 0, B: 0, res: h3Res(5), paint: painted ? paint : undefined }
+  return {
+    playerId: idOf(name),
+    score,
+    parts: { type: AnswerType.POINT, A: 0, B: 0 },
+    res: h3Res(5),
+    paint: painted ? paint : undefined
+  }
 }
 
 describe("revealOrder", () => {

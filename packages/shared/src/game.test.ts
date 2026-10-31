@@ -1087,11 +1087,12 @@ describe("the question mix", () => {
     expect(reveal.label).toBe("Germany")
     const alice = reveal.results.find((r) => r.playerId === "p1")!
     expect(alice.score).toBeGreaterThan(985)
-    expect(alice.region!.coverage).toBeGreaterThan(0.95)
-    expect(alice.region!.precision).toBeGreaterThan(0.95)
+    const fit = alice.parts.type === AnswerType.AREA ? alice.parts : { coverage: 0, precision: 0 }
+    expect(fit.coverage).toBeGreaterThan(0.95)
+    expect(fit.precision).toBeGreaterThan(0.95)
     const bob = reveal.results.find((r) => r.playerId === "p2")!
     expect(bob.score).toBe(PASS_SCORE.score)
-    expect(bob.region).toBeUndefined()
+    expect(bob.parts).toEqual({ type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B })
   })
 
   it("flag rounds show a flag, never the name, and say whether to paint the country or a point", () => {

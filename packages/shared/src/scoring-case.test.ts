@@ -1,3 +1,4 @@
+import { AnswerType } from "./questions.ts"
 import { describe, expect, it } from "vite-plus/test"
 import { PaintLayer } from "./paint.ts"
 import { CaseQuestionType, decodeCase, encodeCase, type ScoringCase } from "./scoring-case.ts"
@@ -22,7 +23,7 @@ function sample(): ScoringCase {
     floor: 0.05,
     res: layer.res,
     score: 412.3,
-    parts: { A: 0.5312, B: 0.6501 },
+    parts: { type: AnswerType.POINT, A: 0.5312, B: 0.6501 },
     cells: layer.toRecord()
   }
 }
@@ -55,7 +56,7 @@ describe("scoring cases", () => {
         tolerance: 77.3,
         flag: flagCode("de")
       },
-      parts: { shape: 640.2, nearness: 300.5 }
+      parts: { type: AnswerType.AREA, shape: 640.2, nearness: 300.5 }
     }
     const back = await decodeCase(await encodeCase(c))
     expect(back.question).toEqual(c.question)

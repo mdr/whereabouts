@@ -14,6 +14,7 @@ import type { Instant, Km, Ms } from "./units.ts"
 import { paintFromBase64, paintToBase64 } from "./paint-wire.ts"
 import { HintAxisSchema, MAX_HINTS, type HintAxis, type HintBand } from "./hints.ts"
 import type { KernelId } from "./scoring.ts"
+import type { AreaParts, PointParts } from "./regions.ts"
 import {
   PlayerIdSchema,
   PlayerNameSchema,
@@ -243,14 +244,13 @@ interface RoundView {
   deadline: Instant
 }
 
+/** What went into a round's score; a painted area answer's adds how the paint sat against the outline. */
+export type ScoreParts = PointParts | (AreaParts & { coverage: number; precision: number })
+
 export interface RoundResultView {
   playerId: PlayerId
   score: number
-  /** The point rule's parts; 0 in a country round, which reports `region` instead. */
-  A: number
-  B: number
-  /** A country round's parts (see regions.ts), for a paint that was scored. */
-  region?: { shape: number; nearness: number; coverage: number; precision: number }
+  parts: ScoreParts
   /** Absent when the player made no guess. */
   paint?: PaintSubmission
   /** H3 resolution the paint was made at, for rendering. */

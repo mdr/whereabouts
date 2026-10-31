@@ -69,11 +69,16 @@ const PlayerViewSchema = z.strictObject({
 const RoundResultViewSchema = z.strictObject({
   playerId: PlayerIdSchema,
   score: z.number(),
-  A: z.number(),
-  B: z.number(),
-  region: z
-    .strictObject({ shape: z.number(), nearness: z.number(), coverage: z.number(), precision: z.number() })
-    .optional(),
+  parts: z.discriminatedUnion("type", [
+    z.strictObject({ type: z.literal(AnswerType.POINT), A: z.number(), B: z.number() }),
+    z.strictObject({
+      type: z.literal(AnswerType.AREA),
+      shape: z.number(),
+      nearness: z.number(),
+      coverage: z.number(),
+      precision: z.number()
+    })
+  ]),
   paint: PaintSchema.optional(),
   res: H3ResSchema,
   hint: HintAxisSchema.optional()

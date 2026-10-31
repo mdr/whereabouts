@@ -3,7 +3,7 @@
  * and poll `nextWakeAt()` to know when to call `tick`. Every mutator returns
  * whether anything changed so the transport layer can rebroadcast views.
  */
-import { DEFAULT_KERNEL, buildDistribution, kernelById, type Kernel } from "./scoring.ts"
+import { DEFAULT_KERNEL, buildDistribution, kernelById, type Distribution, type Kernel } from "./scoring.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import {
   AnswerType,
@@ -17,7 +17,15 @@ import {
   type Question
 } from "./questions.ts"
 import { poolOf } from "./catalogue.ts"
-import { regionFit, regionMisfit, roundsOverlap, scoreAnswer, scoredAnswer } from "./regions.ts"
+import {
+  regionFit,
+  regionMisfit,
+  roundsOverlap,
+  scoreAnswer,
+  scoredAnswer,
+  type AnswerParts,
+  type ScoredAnswer
+} from "./regions.ts"
 import { explainPoint, isHedge } from "./explain.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
 import { revealPhoto } from "./photos.ts"
@@ -36,7 +44,8 @@ import type {
   QuestionPictures,
   QuestionView,
   RoundReveal,
-  RoundResultView
+  RoundResultView,
+  ScoreParts
 } from "./protocol.ts"
 import { CloseReason } from "./close-reason.ts"
 import type { Instant, Ms } from "./units.ts"
@@ -604,7 +613,6 @@ export class Game {
     for (const p of this.playing()) {
       if (p.joinedRound > this.roundIndex) continue
       const sub = this.submissions.get(p.token)
-      let region: RoundResultView["region"]
       let paint: PaintSubmission | undefined = undefined
       const roundLength = this.config.roundLength
       const facts: RoundFacts = {
@@ -623,20 +631,19 @@ export class Game {
       const dist = painted ? buildDistribution(cells, painted.floor) : undefined
       const scored = scoreAnswer(dist, answer, this.kernel)
       const { score } = scored
-      const { A, B } = "A" in scored.parts ? scored.parts : { A: 0, B: 0 }
+      const parts = resultParts(scored.parts, dist, answer)
       if (painted && dist) {
         facts.passed = false
         facts.area = cells.reduce((a, c) => a + c.area, 0)
-        if (answer.type === AnswerType.AREA && "shape" in scored.parts) {
-          region = { ...scored.parts, ...regionFit(dist, answer) }
+        if (answer.type === AnswerType.AREA) {
           const m = regionMisfit(dist, answer)
           // A country's tolerance is a fifth of its equivalent radius.
           facts.region = {
             precision: m.precision,
             nextDoor: m.precision < 0.1 && m.off !== undefined && m.off.distance < 5 * answer.tolerance
           }
-        } else if (answer.type === AnswerType.POINT) {
-          const e = explainPoint(dist, answer.at, answer.tolerance, A, B, this.kernel)
+        } else if (parts.type === AnswerType.POINT) {
+          const e = explainPoint(dist, answer.at, answer.tolerance, parts.A, parts.B, this.kernel)
           const best = Math.max(e.best, score)
           facts.point = {
             spot: e.spot,
@@ -655,11 +662,9 @@ export class Game {
       results.push({
         playerId: p.id,
         score,
-        A,
-        B,
+        parts,
         paint,
         res,
-        ...(region ? { region } : {}),
         ...(hint ? { hint } : {})
       })
     }
@@ -871,6 +876,13 @@ export function questionPictures(q: Question): QuestionPictures {
  * What players see of a question: never the answer. An area round sends its
  * outline's id, which the prompt or the flag gives away anyway.
  */
+/** A result's parts: a painted area answer's add how the paint sat against the outline. */
+function resultParts(parts: AnswerParts, dist: Distribution | undefined, answer: ScoredAnswer): ScoreParts {
+  if (parts.type === AnswerType.POINT) return parts
+  if (!dist || answer.type !== AnswerType.AREA) throw new Error("area parts without an area paint")
+  return { ...parts, ...regionFit(dist, answer) }
+}
+
 export function questionView(q: Question): QuestionView {
   const { answer } = q
   return {

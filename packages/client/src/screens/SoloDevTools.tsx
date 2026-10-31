@@ -35,7 +35,7 @@ import s from "./SoloDevTools.module.css"
 import { cheatLiveScore, soloKernelId } from "../settings"
 
 function PartsLine({ parts }: { parts: AnswerParts }) {
-  if ("A" in parts) return <ScoreParts A={parts.A} B={parts.B} />
+  if (parts.type === AnswerType.POINT) return <ScoreParts A={parts.A} B={parts.B} />
   return (
     <div class={kit.parts}>
       <span>
@@ -103,7 +103,7 @@ export function RevealScore({
     a.type === AnswerType.AREA ? undefined : "Move the mouse over the map to see the score for other answers."
   if (h && a.type === AnswerType.POINT && dist) {
     const A = similarityToAnswer(dist, toXyz(h), a.tolerance, kernel)
-    const s = "B" in parts ? scoreFromParts(A, parts.B) : 0
+    const s = parts.type === AnswerType.POINT ? scoreFromParts(A, parts.B) : 0
     const d = greatCircleDistance(h, a.at)
     hoverText = `If the answer were here: ${Math.round(s)} · ${formatDistance(d)} from the real answer (${(d / a.tolerance).toFixed(1)} tolerances)`
   }

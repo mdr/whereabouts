@@ -325,17 +325,18 @@ describe("scoreAnswer", () => {
     const region = scoreArea(painted, germany)
     expect(scoreAnswer(painted, germany, DEFAULT_KERNEL)).toEqual({
       score: region.score,
-      parts: { shape: region.shape, nearness: region.nearness }
+      parts: { type: AnswerType.AREA, shape: region.shape, nearness: region.nearness }
     })
 
     const place = pointOf("Paris")
     const point = scoreDistribution(painted, place.at, place.tolerance, DEFAULT_KERNEL)
     expect(scoreAnswer(painted, place, DEFAULT_KERNEL)).toEqual({
       score: point.score,
-      parts: { A: point.A, B: point.B }
+      parts: { type: AnswerType.POINT, A: point.A, B: point.B }
     })
 
-    expect(scoreAnswer(undefined, place, DEFAULT_KERNEL).score).toBe(PASS_SCORE.score)
-    expect(scoreAnswer(undefined, germany, DEFAULT_KERNEL).score).toBe(PASS_SCORE.score)
+    const pass = { score: PASS_SCORE.score, parts: { type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B } }
+    expect(scoreAnswer(undefined, place, DEFAULT_KERNEL)).toEqual(pass)
+    expect(scoreAnswer(undefined, germany, DEFAULT_KERNEL)).toEqual(pass)
   })
 })
