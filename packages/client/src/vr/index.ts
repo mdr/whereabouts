@@ -15,16 +15,13 @@ import {
   SessionMode,
   Vector3,
   VisibilityState,
-  World,
-  type Object3D
+  World
 } from "@iwsdk/core"
 import { effect, signal } from "@preact/signals"
 import { describeHint } from "@whereabouts/shared/hints"
 import type { BordersData } from "@whereabouts/shared/borders"
 import type { LandMaskData } from "@whereabouts/shared/land"
-import { loadLandMask, loadWaterMask } from "../land"
 import { headsetPassthrough } from "../settings"
-import { sound } from "../sound"
 import { THEME } from "../themes"
 import {
   ANSWER_RADIUS,
@@ -56,6 +53,8 @@ import { ResultsBoard, type VrBoard } from "./board"
 import { WristMenu, type WristButton } from "./wrist"
 import { Menu, PANEL_M, type MenuShown } from "./menu"
 import { colouredPaint, framing } from "./reveal"
+import { PanelClearance } from "./clearance"
+import { wristActions } from "./wrist-actions"
 import type { VrRound, VrView } from "./view"
 
 /**
@@ -78,9 +77,6 @@ function idleOffHeadset(world: World): void {
 const HANDS = ["left", "right"] as const
 /** Rebuilding the paint is the costly part of a stroke, so at most this often. */
 const PAINT_REDRAW_S = 0.1
-/** The gap a panel keeps from the globe, in radians as seen from the player. */
-const PANEL_CLEAR = 0.04
-const UP = new Vector3(0, 1, 0)
 /** How long a new session may take to open, when switching to or from passthrough. */
 const SWITCH_MS = 5000
 /** From this zoom on, the page's map shows over the globe. */
@@ -126,9 +122,7 @@ export class Vr {
    */
   private switchingTo: boolean | undefined = undefined
   private switchOpening = false
-  /** Where the panels were placed, and from where. */
-  private homes: { obj: Object3D; at: Vector3; half: number }[] = []
-  private readonly eye = new Vector3()
+  private readonly clearance = new PanelClearance()
   private readonly tools: Record<Hand, HandTool>
   private readonly menu: Menu
 
@@ -224,10 +218,18 @@ export class Vr {
       exit: () => this.exit()
     })
     this.menu.object3D.add(this.picture.mesh)
+    const actions = wristActions({
+      painting: () => this.painting,
+      tools: this.tools,
+      note: (text) => this.wrist.note(text),
+      repaint: () => {
+        this.paintDirty = true
+      }
+    })
     this.wrist = new WristMenu(
       world,
       Object.fromEntries(
-        Object.entries(this.wristHandlers()).map(([id, f]) => [
+        Object.entries(actions).map(([id, f]) => [
           id,
           () => {
             this.clicks++
@@ -290,7 +292,6 @@ export class Vr {
     this.endStroke()
     this.picture.release(this.menu.object3D)
     const leavingAnswer = this.view?.kind === "reveal" && view.kind !== "reveal"
-    // A press waiting for its second press was for the screen it was on.
     this.menu.show(view)
     this.view = view
     const round = this.round
@@ -378,17 +379,7 @@ export class Vr {
 
   /** The narrowest gap, in radians as the player sees it, between a panel and the globe. */
   get panelGap(): number {
-    const eye = this.eye
-    const yaw = (p: Vector3) => Math.atan2(p.x - eye.x, p.z - eye.z)
-    const flat = (p: Vector3) => Math.hypot(p.x - eye.x, p.z - eye.z)
-    const centre = this.globe.centre
-    const globeHalf = Math.asin(Math.min(1, this.globe.radius / flat(centre)))
-    return Math.min(
-      ...this.homes.map(({ obj, half }) => {
-        const d = yaw(obj.position) - yaw(centre)
-        return Math.abs(Math.atan2(Math.sin(d), Math.cos(d))) - globeHalf - Math.atan(half / flat(obj.position))
-      })
-    )
+    return this.clearance.gap(this.globe)
   }
 
   get flagPinsShown(): number {
@@ -541,46 +532,6 @@ export class Vr {
     return this.wrist.buttonAt(id)
   }
 
-  private wristHandlers(): Record<WristButton, () => void> {
-    // Each acts on the round being painted, and the globe redraws its paint.
-    const act = (f: (round: VrRound) => void) => () => {
-      const round = this.painting
-      if (!round) return
-      f(round)
-      this.paintDirty = true
-    }
-    const trimmed = (share: number, none: string) => {
-      if (share > 0) sound.play("clear")
-      this.wrist.note(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : none)
-      this.paintDirty = true
-    }
-    return {
-      undo: act((r) => r.paint.undo()),
-      swap: () => {
-        const right = this.tools.right.tool
-        this.tools.right.setTool(this.tools.left.tool)
-        this.tools.left.setTool(right)
-      },
-      latitude: act((r) => r.useHint("latitude")),
-      longitude: act((r) => r.useHint("longitude")),
-      trim: act((r) => {
-        const trim = r.water
-          ? loadWaterMask().then((mask) => trimmed(r.paint.trimLand(mask), "None on land"))
-          : loadLandMask().then((mask) => trimmed(r.paint.trimSea(mask), "None at sea"))
-        trim.catch((err: unknown) => {
-          console.warn("could not load the trim mask", err)
-          this.wrist.note("Try again")
-        })
-      }),
-      trimHint: act((r) => r.hint && trimmed(r.paint.trimToHint(r.hint), "None outside")),
-      clear: act((r) => {
-        if (!r.paint.layer.isEmpty) sound.play("clear")
-        r.paint.clear()
-      }),
-      redo: act((r) => r.paint.redo())
-    }
-  }
-
   /** Where a hand's tool would land on the globe, for the browser tests. */
   targetOf(hand: Hand): [number, number, number] | undefined {
     const p = this.tools[hand].target
@@ -633,14 +584,13 @@ export class Vr {
       this.menu.place(head, forward)
       this.scores.place(head, forward)
       this.board.place(head, forward)
-      this.eye.copy(head)
-      this.homes = [
-        { obj: this.menu.object3D, at: this.menu.object3D.position.clone(), half: PANEL_M / 2 },
-        { obj: this.scores.object3D, at: this.scores.object3D.position.clone(), half: SCORES_M / 2 }
-      ]
+      this.clearance.placed(head, [
+        { obj: this.menu.object3D, half: PANEL_M / 2 },
+        { obj: this.scores.object3D, half: SCORES_M / 2 }
+      ])
       this.placed = true
     }
-    this.clearGlobe()
+    this.clearance.update(this.globe)
     this.menu.wirePanel()
     this.scores.update()
     this.placePicture()
@@ -755,26 +705,6 @@ export class Vr {
     // The menu is scaled to fit a PANEL_M square, whatever its own units.
     const top = (size.height * Math.min(PANEL_M / size.width, PANEL_M / size.height)) / 2
     this.picture.mesh.position.set(0, top + 0.015 + this.picture.height / 2, 0)
-  }
-
-  /**
-   * Swings each panel round the player, from where it was placed, until it
-   * clears the globe as seen from there: zooming in pushes them aside.
-   */
-  private clearGlobe(): void {
-    const eye = this.eye
-    const yaw = (p: Vector3) => Math.atan2(p.x - eye.x, p.z - eye.z)
-    const flat = (p: Vector3) => Math.hypot(p.x - eye.x, p.z - eye.z)
-    const centre = this.globe.centre
-    const globeHalf = Math.asin(Math.min(1, this.globe.radius / Math.max(1e-6, flat(centre))))
-    const globeYaw = yaw(centre)
-    for (const { obj, at, half } of this.homes) {
-      const offset = Math.atan2(Math.sin(yaw(at) - globeYaw), Math.cos(yaw(at) - globeYaw))
-      const need = globeHalf + Math.atan(half / flat(at)) + PANEL_CLEAR
-      const by = Math.abs(offset) >= need ? 0 : Math.sign(offset || 1) * need - offset
-      obj.position.copy(at).sub(eye).applyAxisAngle(UP, by).add(eye)
-      obj.lookAt(eye)
-    }
   }
 }
 declare global {
