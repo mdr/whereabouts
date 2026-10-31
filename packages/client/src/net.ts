@@ -2,7 +2,7 @@
  * Connection to the game server. Wraps the Rivalis browser client and exposes
  * the latest GameView and connection status as signals.
  */
-import { WSClient } from "@rivalis/browser"
+import { WSClient, type ClientKickedEvent, type WSClientOptions } from "@rivalis/browser"
 import { computed, signal } from "@preact/signals"
 import {
   type ClientSend,
@@ -34,6 +34,26 @@ function wsUrl(): string {
   return `${proto}//${location.host}/ws`
 }
 
+type Topic = "state" | "reveal" | "paint" | "error"
+
+/** What a Connection needs of the Rivalis client, so tests can drive a fake. */
+export interface GameClient {
+  readonly connected: boolean
+  connect(ticket: string): void
+  disconnect(): void
+  send(topic: string, payload: Uint8Array | string): void
+  on(
+    event: "client:connect" | "client:disconnect" | "client:reconnecting" | "client:reconnect_failed" | "client:error",
+    listener: () => void
+  ): unknown
+  on(event: "client:kicked", listener: (info: ClientKickedEvent) => void): unknown
+  on(event: Topic, listener: (payload: Uint8Array) => void): unknown
+}
+
+export type ClientFactory = (url: string, options: WSClientOptions) => GameClient
+
+const wsClient: ClientFactory = (url, options) => new WSClient<Topic>(url, options)
+
 export class Connection {
   readonly view = signal<GameView | undefined>(undefined)
   readonly status = signal<Status>("idle")
@@ -44,11 +64,17 @@ export class Connection {
   readonly rejection = signal<Rejection | undefined>(undefined)
   readonly code = computed(() => this.view.value?.code)
 
-  private client: WSClient<"state" | "reveal" | "paint" | "error"> | undefined = undefined
+  private client: GameClient | undefined = undefined
   private decoder = new TextDecoder()
   /** What the server has sent since this connection opened, for the state messages that follow. */
   private reveal: RoundReveal | undefined = undefined
   private paint: PaintSubmission | undefined = undefined
+
+  private readonly makeClient: ClientFactory
+
+  constructor(makeClient: ClientFactory = wsClient) {
+    this.makeClient = makeClient
+  }
 
   connect(ticket: Omit<Ticket, "v">): void {
     this.disconnect()
@@ -57,7 +83,7 @@ export class Connection {
     this.rejection.value = undefined
     // Once in a game, coming back means joining it, not hosting another.
     const again = () => (this.code.value === undefined ? ticket : { ...ticket, create: false, code: this.code.value })
-    const client = new WSClient<"state" | "reveal" | "paint" | "error">(wsUrl(), {
+    const client = this.makeClient(wsUrl(), {
       ticketSource: "protocol",
       reconnect: { baseDelayMs: 500, maxDelayMs: 5000, maxAttempts: 20 },
       getTicket: () => encodeTicket({ v: PROTOCOL_VERSION, ...again() })
