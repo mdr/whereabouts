@@ -19,7 +19,7 @@ export default defineConfig({
   use: { ...CHROME, baseURL: `http://localhost:${clientPort}` },
   projects: [
     // Listed first so the longest start first and the run ends sooner.
-    { name: "long", testMatch: LONG },
+    { name: "long", testMatch: LONG, fullyParallel: true },
     { name: "main", testIgnore: [LONG, TIMED] },
     // These time the round clock, which load from the others would skew.
     { name: "timed", testMatch: TIMED, dependencies: ["long", "main"], workers: 1 }
