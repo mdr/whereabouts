@@ -8,5 +8,7 @@ export const joinedTestIds = {
   problem: "Joined.problem",
   problemTitle: "Joined.problemTitle",
   backToStartButton: "Joined.backToStartButton",
-  hostUnderCodeButton: "Joined.hostUnderCodeButton"
+  hostUnderCodeButton: "Joined.hostUnderCodeButton",
+  hostNewButton: "Joined.hostNewButton",
+  tryAgainButton: "Joined.tryAgainButton"
 }

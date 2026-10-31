@@ -44,6 +44,13 @@ function wsUrl(): string {
 
 type Topic = "state" | "reveal" | "paint" | "error"
 
+/**
+ * Tries at getting into a game before giving up (about 90 s). Once in one,
+ * it keeps trying: the seat is held, and the server refuses once the game
+ * has gone.
+ */
+const JOIN_ATTEMPTS = 20
+
 /** What a Connection needs of the Rivalis client, so tests can drive a fake. */
 export interface GameClient {
   readonly connected: boolean
@@ -51,9 +58,10 @@ export interface GameClient {
   disconnect(): void
   send(topic: string, payload: Uint8Array | string): void
   on(
-    event: "client:connect" | "client:disconnect" | "client:reconnecting" | "client:reconnect_failed" | "client:error",
+    event: "client:connect" | "client:disconnect" | "client:reconnect_failed" | "client:error",
     listener: () => void
   ): unknown
+  on(event: "client:reconnecting", listener: (attempt: Uint8Array) => void): unknown
   on(event: "client:kicked", listener: (info: ClientKickedEvent) => void): unknown
   on(event: Topic, listener: (payload: Uint8Array) => void): unknown
 }
@@ -77,6 +85,8 @@ export class Connection {
   readonly code = computed(() => this.view.value?.code)
 
   private client: GameClient | undefined = undefined
+  /** The ticket to come back with: the game's code once in one. */
+  private comeBack: (() => Omit<Ticket, "v">) | undefined = undefined
   private decoder = new TextDecoder()
   /** What the server has sent since this connection opened, for the state messages that follow. */
   private reveal: RoundReveal | undefined = undefined
@@ -96,9 +106,10 @@ export class Connection {
     this.rejection.value = undefined
     // Once in a game, coming back means joining it, not hosting another.
     const again = () => (this.code.value === undefined ? ticket : { ...ticket, create: false, code: this.code.value })
+    this.comeBack = again
     const client = this.makeClient(wsUrl(), {
       ticketSource: "protocol",
-      reconnect: { baseDelayMs: 500, maxDelayMs: 5000, maxAttempts: 20 },
+      reconnect: { baseDelayMs: 500, maxDelayMs: 5000, maxAttempts: Infinity },
       getTicket: () => encodeTicket({ v: PROTOCOL_VERSION, ...again() })
     })
     client.on("client:connect", () => {
@@ -111,10 +122,16 @@ export class Connection {
     client.on("client:disconnect", () => {
       if (this.status.value !== ConnectionStatus.REJECTED) this.status.value = ConnectionStatus.DISCONNECTED
     })
-    // Still trying to get in for the first time: not yet a failure.
-    client.on("client:reconnecting", () => {
-      if (!this.view.value && this.status.value !== ConnectionStatus.REJECTED)
-        this.status.value = ConnectionStatus.CONNECTING
+    client.on("client:reconnecting", (attempt) => {
+      if (this.view.value || this.status.value === ConnectionStatus.REJECTED) return
+      if (Number(this.decoder.decode(attempt)) > JOIN_ATTEMPTS) {
+        client.disconnect()
+        this.status.value = ConnectionStatus.REJECTED
+        this.rejection.value = describeDisconnect(0, "reconnect_failed")
+        return
+      }
+      // Still trying to get in for the first time: not yet a failure.
+      this.status.value = ConnectionStatus.CONNECTING
     })
     client.on("client:kicked", ({ code, reason }) => {
       // Rivalis's KickReason.RATE_LIMITED: too many connections from this
@@ -163,6 +180,11 @@ export class Connection {
     })
     this.client = client
     client.connect(encodeTicket({ v: PROTOCOL_VERSION, ...ticket }))
+  }
+
+  /** Try again after giving up: back into the game it was in, if any. */
+  rejoin(): void {
+    if (this.comeBack) this.connect(this.comeBack())
   }
 
   disconnect(): void {
@@ -237,6 +259,8 @@ export interface Rejection {
   removed?: boolean
   /** Set when no game has the code, so the player may host one under it. */
   missing?: boolean
+  /** Set when the server could not be reached, so trying again may work. */
+  retry?: boolean
 }
 
 /**
@@ -255,7 +279,8 @@ export function describeDisconnect(code: number, reason: string | undefined): Re
   if (r === "reconnect_failed") {
     return {
       title: "Lost the connection",
-      detail: "We could not reach the game server again. Check your network and rejoin."
+      detail: "We could not reach the game server. Check your network and try again.",
+      retry: true
     }
   }
   if (!isCloseReason(r)) return { title: "Disconnected", detail: r || `The connection closed (code ${code}).` }

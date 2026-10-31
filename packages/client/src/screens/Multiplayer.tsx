@@ -114,36 +114,30 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
       title: "Could not join that game",
       detail: conn.lastError.value ?? "The game server did not let us in."
     }
+    const primary = why.retry
+      ? { label: "Try again", press: () => conn.rejoin(), testId: joinedTestIds.tryAgainButton }
+      : why.missing && code
+        ? {
+            label: `Host game ${code}`,
+            press: () => navigate(`/game/new/${code}`),
+            testId: joinedTestIds.hostUnderCodeButton
+          }
+        : { label: "Host a new game", press: () => navigate("/game/new"), testId: joinedTestIds.hostNewButton }
     return (
       <div class={kit.page} data-testid={joinedTestIds.problem}>
         <VrNotice
           title={why.title}
           line={why.detail}
-          actions={[
-            why.missing && code
-              ? { label: `Host game ${code}`, press: () => navigate(`/game/new/${code}`) }
-              : { label: "Host a new game", press: () => navigate("/game/new") },
-            { label: "Back to start", press: () => navigate("/") }
-          ]}
+          actions={[primary, { label: "Back to start", press: () => navigate("/") }]}
         />
         <div class={kit.pageCard}>
           <Banner />
           <h2 data-testid={joinedTestIds.problemTitle}>{why.title}</h2>
           <p class={kit.tagline}>{why.detail}</p>
           <div class={s.actions}>
-            {why.missing && code ? (
-              <button
-                class="primary big"
-                onClick={() => navigate(`/game/new/${code}`)}
-                data-testid={joinedTestIds.hostUnderCodeButton}
-              >
-                Host game {code}
-              </button>
-            ) : (
-              <button class="primary big" onClick={() => navigate("/game/new")}>
-                Host a new game
-              </button>
-            )}
+            <button class="primary big" onClick={primary.press} data-testid={primary.testId}>
+              {primary.label}
+            </button>
             <button onClick={() => navigate("/")} data-testid={joinedTestIds.backToStartButton}>
               Back to start
             </button>

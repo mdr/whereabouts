@@ -142,6 +142,34 @@ describe("Connection status", () => {
     expect(conn.status.value).toBe(ConnectionStatus.DISCONNECTED)
   })
 
+  it("gives up getting in after 20 tries, offering to try again", () => {
+    const { conn, client } = connected()
+    client.emit("client:reconnecting", encoder.encode("20"))
+    expect(conn.status.value).toBe(ConnectionStatus.CONNECTING)
+    client.emit("client:reconnecting", encoder.encode("21"))
+    expect(conn.status.value).toBe(ConnectionStatus.REJECTED)
+    expect(conn.rejection.value).toMatchObject({ title: "Lost the connection", retry: true })
+  })
+
+  it("keeps trying to get back into a game for as long as it takes", () => {
+    const { conn, client } = connected()
+    client.open()
+    client.state(makeView())
+    client.close()
+    client.emit("client:reconnecting", encoder.encode("500"))
+    expect(conn.status.value).toBe(ConnectionStatus.DISCONNECTED)
+  })
+
+  it("tries again with a fresh connection, back into the game it was in", () => {
+    const { conn, client, clients } = connected()
+    client.open()
+    client.state(makeView({ code: roomCode("WXYZ") }))
+    client.emit("client:reconnect_failed")
+    conn.rejoin()
+    expect(conn.status.value).toBe(ConnectionStatus.CONNECTING)
+    expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({ create: false, code: "WXYZ", name: "Alice" })
+  })
+
   it("stays rejected, with the reason, when the close follows a rejection", () => {
     const { conn, client } = connected()
     client.open()
