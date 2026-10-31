@@ -409,7 +409,6 @@ export default defineConfig({
           "packages/client/src/vr/globe.ts",
           "packages/client/src/vr/index.ts",
           "packages/client/src/vr/menu.ts",
-          "packages/shared/scripts/write-catalogue.mjs",
           "packages/shared/src/awards.ts",
           "packages/shared/src/game.ts",
           "packages/shared/src/scoring.ts"
