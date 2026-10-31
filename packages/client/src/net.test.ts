@@ -231,6 +231,21 @@ describe("Connection view", () => {
     expect(conn.lastError.value).toBeUndefined()
   })
 
+  it("keeps the clock offset of the least delayed message, until a reconnect", () => {
+    vi.useFakeTimers({ now: 10_000 })
+    const { conn, client } = connected()
+    client.open()
+    client.state(makeView({ serverTime: 12_500 }))
+    vi.setSystemTime(20_000)
+    client.state(makeView({ serverTime: 21_500 }))
+    expect(conn.clockOffset.value).toBe(2500)
+
+    client.close()
+    client.open()
+    client.state(makeView({ serverTime: 21_500 }))
+    expect(conn.clockOffset.value).toBe(1500)
+  })
+
   it("hands back your paint while guessing, but not paint from before a reconnect", () => {
     const paint = { cells: { "85283473fffffff": 1 }, floor: 0.05 }
     const { conn, client } = connected()

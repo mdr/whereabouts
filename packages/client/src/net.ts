@@ -66,8 +66,12 @@ export class Connection {
   readonly view = signal<GameView | undefined>(undefined)
   readonly status = signal<ConnectionStatus>(ConnectionStatus.IDLE)
   readonly lastError = signal<string | undefined>(undefined)
-  /** serverTime - Date.now(), so deadlines can be shown on the local clock. */
-  readonly clockOffset = signal(0)
+  /**
+   * serverTime - Date.now(), so deadlines can be shown on the local clock. A
+   * message handled late reads low, never high, so this is the largest seen
+   * since the connection opened.
+   */
+  readonly clockOffset = signal<Ms>(0)
   /** Why the server turned us away or closed the game, in words for the player. */
   readonly rejection = signal<Rejection | undefined>(undefined)
   readonly code = computed(() => this.view.value?.code)
@@ -77,6 +81,7 @@ export class Connection {
   /** What the server has sent since this connection opened, for the state messages that follow. */
   private reveal: RoundReveal | undefined = undefined
   private paint: PaintSubmission | undefined = undefined
+  private offsetMeasured = false
 
   private readonly makeClient: ClientFactory
 
@@ -100,6 +105,7 @@ export class Connection {
       // The server sends again whatever a fresh connection needs.
       this.reveal = undefined
       this.paint = undefined
+      this.offsetMeasured = false
       this.status.value = ConnectionStatus.CONNECTED
     })
     client.on("client:disconnect", () => {
@@ -144,7 +150,9 @@ export class Connection {
       if (!state.reveal) this.reveal = undefined
       if (state.phase !== Phase.GUESSING) this.paint = undefined
       const view = viewFrom(state, this.reveal, this.paint)
-      this.clockOffset.value = view.serverTime - Date.now()
+      const offset = view.serverTime - Date.now()
+      if (!this.offsetMeasured || offset > this.clockOffset.value) this.clockOffset.value = offset
+      this.offsetMeasured = true
       this.view.value = view
       // A fresh state means the server is happy with us; stop showing an old complaint.
       this.lastError.value = undefined
