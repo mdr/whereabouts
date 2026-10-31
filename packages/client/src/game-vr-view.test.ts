@@ -45,6 +45,10 @@ const reveal = (v: VrView) => {
   if (v.type !== VrViewType.REVEAL) throw new Error(`a ${v.type} view`)
   return v.reveal
 }
+const round = (v: VrView) => {
+  if (v.type === VrViewType.REVEAL || v.type === VrViewType.PAINT) return v.round
+  throw new Error(`a ${v.type} view`)
+}
 const note = (v: VrView) => (v.type === VrViewType.PAINT || v.type === VrViewType.REVEAL ? v.round.note : undefined)
 
 describe("gameVrView", () => {
@@ -90,5 +94,32 @@ describe("gameVrView", () => {
   it("offers nothing to press while reconnecting, since it would be lost", () => {
     const enabled = reveal(show(revealing(), fakeConn(ConnectionStatus.CONNECTING))).actions.map((a) => a.enabled)
     expect(enabled).toEqual([false, false])
+  })
+
+  it("lists the players still playing, by rank, with their state", () => {
+    const view = guessing({
+      players: [
+        makePlayer({ id: playerId("p4"), name: playerName("Dee"), rank: 4, watching: true }),
+        makePlayer({ id: playerId("p3"), name: playerName("Cy"), rank: 3, connected: false }),
+        makePlayer({ locked: true, rank: 2 }),
+        { ...bob, rank: 1 }
+      ]
+    })
+    expect(round(show(view)).table?.rows.map((r) => [r.name, r.detail])).toEqual([
+      ["Bob", "guessing"],
+      ["Alice (you)", "done"],
+      ["Cy", "away"]
+    ])
+  })
+
+  it("puts Leave game last, and End game only for the host before the last reveal", () => {
+    const labels = (v: GameView) => show(v).more?.map((a) => a.label)
+    expect(labels(guessing())).toEqual(["End game", "Leave game"])
+    expect(labels(guessing({ you: { isHost: false } }))).toEqual(["Leave game"])
+    expect(labels(guessing({ you: { watching: true, isHost: false } }))).toEqual([
+      "Play from the next question",
+      "Leave game"
+    ])
+    expect(labels(revealing({ reveal: makeReveal({ index: 4 }) }))).toEqual(["Leave game"])
   })
 })

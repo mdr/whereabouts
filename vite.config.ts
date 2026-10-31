@@ -404,7 +404,6 @@ export default defineConfig({
       // To-do: files that don't yet meet the size and complexity rules. Remove an entry once it passes.
       {
         files: [
-          "packages/client/src/game-vr-view.ts",
           "packages/client/src/map.ts",
           "packages/client/src/vr/index.ts",
           "packages/client/src/vr/menu.ts",
