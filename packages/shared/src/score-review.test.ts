@@ -20,13 +20,16 @@ const OUTLINES = outlinesFrom(outlinesJson)
 const casesOf = (set: number) => reviewCases(set, CATALOGUE, OUTLINES)
 const isArea = (c: ReviewCase) => c.answer.type === AnswerType.AREA
 
+// These score many paints: about 2 s alone, several times that on a busy machine.
+const HEAVY = { timeout: 20_000 }
+
 const guesses = (c: ReviewCase) => (c.type === ReviewCaseType.SINGLE ? [c.guess] : c.guesses)
 const score = (c: ReviewCase, i = 0) => scoreGuess(c.answer, guesses(c)[i]!.layer, DEFAULT_KERNEL).score
 
 describe("score review cases", () => {
   const cases = casesOf(1)
 
-  it("are the same for a set every time, and differ between sets", () => {
+  it("are the same for a set every time, and differ between sets", HEAVY, () => {
     const record = (set: number) =>
       casesOf(set).map((c) => [c.question.id, ...guesses(c).map((g) => [g.type, g.layer.toRecord()])])
     expect(record(1)).toEqual(record(1))
@@ -55,7 +58,7 @@ describe("score review cases", () => {
     }
   })
 
-  it("score painting a whole country above painting far from it", () => {
+  it("score painting a whole country above painting far from it", HEAVY, () => {
     const all = [1, 2, 3, 4].flatMap((set) => casesOf(set))
     const mean = (type: GuessType) => {
       const s = all.flatMap((c) => guesses(c).flatMap((g, i) => (isArea(c) && g.type === type ? [score(c, i)] : [])))
