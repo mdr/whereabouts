@@ -13,6 +13,7 @@ import "maplibre-gl/dist/maplibre-gl.css"
 // import.meta.url. After bundling that points into /assets where no such
 // file exists, so hand it a worker Vite has bundled and knows the URL of.
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url"
+export { mapWorkerUrl }
 import { cellToBoundary, type H3Cell } from "@whereabouts/shared/h3"
 import { cellsOutline } from "@whereabouts/shared/paint"
 import type { HintBand } from "@whereabouts/shared/hints"
@@ -31,7 +32,7 @@ import type { Km, Metres } from "@whereabouts/shared/units"
 
 setWorkerUrl(mapWorkerUrl)
 
-const STYLE_URL = "https://tiles.openfreemap.org/styles/positron"
+export const STYLE_URL = "https://tiles.openfreemap.org/styles/positron"
 const PAINT_SOURCE = "paint"
 const REVEAL_SOURCE = "reveal"
 const CURSOR_SOURCE = "cursor"
@@ -73,6 +74,11 @@ const STATE_BORDERS = "state-borders"
 const STATE_LABELS = "state-labels"
 /** Town and city names, hidden at a state reveal so the state names stand out. */
 const PLACE_LABELS = ["label_other", "label_village", "label_town", "label_state", "label_city", "label_city_capital"]
+
+/** The flat map's zoom that shows the whole world on a map `width` px wide. */
+export function flatWorldZoom(width: number): number {
+  return matchMedia(PHONE).matches ? Math.min(WORLD_ZOOM, Math.log2(width / WORLD_PX_Z0)) : WORLD_ZOOM
+}
 
 export class GameMap {
   readonly map: MapLibreMap
@@ -696,10 +702,7 @@ export class GameMap {
    */
   private worldZoom(lat = WORLD_CENTER[1]): number {
     const el = this.map.getContainer()
-    if (!this.globe) {
-      if (!matchMedia(PHONE).matches) return WORLD_ZOOM
-      return Math.min(WORLD_ZOOM, Math.log2(el.clientWidth / WORLD_PX_Z0))
-    }
+    if (!this.globe) return flatWorldZoom(el.clientWidth)
     const disc = GLOBE_FILL * Math.min(el.clientWidth, el.clientHeight)
     const f = el.clientHeight / 2 / Math.tan((this.map.getVerticalFieldOfView() * Math.PI) / 360)
     const sin = disc / Math.hypot(f, disc)

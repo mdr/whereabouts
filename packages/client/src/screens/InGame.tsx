@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "preact/hooks"
 import { colourCss } from "@whereabouts/shared/colours"
 import { onWater, outlineOf, type GameView, Phase } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
-import { AREA_TYPES } from "@whereabouts/shared/catalogue"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
 import { Card } from "../ui/Card"
@@ -15,7 +14,6 @@ import { ConnectionNote } from "../ui/ConnectionNote"
 import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
 import { Reveal } from "./Reveal"
-import { useBorders } from "../borders"
 import { Icon } from "../ui/icons"
 import { PlayersPanel, playersPanelOpen } from "../ui/PlayersPanel"
 import { EndGameButton } from "../ui/HostControls"
@@ -23,7 +21,8 @@ import { kickRequest, makeHostRequest, useConfirm } from "../ui/ConfirmDialog"
 import { askedToWatch } from "../settings"
 import { TakeSeatButton } from "../ui/TakeSeat"
 import { HintCard } from "../ui/Hint"
-import { useOutline, useOutlines } from "../outlines"
+import { useOutline } from "../outlines"
+import { useGameData } from "../game-data"
 import { VrButton, useVrView } from "../ui/VrButton"
 import { mainCountry } from "../ui/FlagReveal"
 import { inGameTestIds } from "./InGameTestIds"
@@ -48,10 +47,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const online = conn.online.value
   const { dialog, ask } = useConfirm(online)
 
-  // Fetched as the game starts, ready for its reveals: outlines for area rounds, and the
-  // borders that flag rounds name countries by.
-  useOutlines(AREA_TYPES.some((t) => view.config.mix[t] > 0))
-  const borders = useBorders(view.config.mix[QuestionType.FLAG] > 0)
+  const borders = useGameData(view.config.mix)
 
   useRoundMap(paint, {
     round: roundKey,

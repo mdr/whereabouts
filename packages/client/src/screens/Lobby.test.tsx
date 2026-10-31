@@ -20,6 +20,8 @@ import s from "./Lobby.module.css"
 import players from "../ui/Players.module.css"
 import { makePlayer, makeView } from "../test-view"
 
+vi.mock("../map-prefetch", () => ({ prefetchMap: () => undefined, mapPrefetched: { value: false } }))
+
 /** Queries within a render's container. */
 const inside = (el: Element) => within(el as HTMLElement)
 

@@ -1,6 +1,7 @@
 /**
  * A line of interest for each answer at the reveal (facts.json): its own
- * chunk, fetched when a round starts and kept from then on.
+ * chunk, fetched from a game's lobby (or practice's first round) and kept
+ * from then on.
  */
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
@@ -14,7 +15,7 @@ const facts = signal<RawFacts | undefined>(undefined)
 
 let loading: Promise<RawFacts> | undefined = undefined
 
-function loadFacts(): Promise<RawFacts> {
+export function loadFacts(): Promise<RawFacts> {
   loading ??= import("@whereabouts/shared/facts.json").then(
     (m) => (facts.value = m.default),
     (err: unknown) => {

@@ -48,6 +48,7 @@ No I/O; the same code runs in the browser and on the server.
 | `src/game-vr-view.ts`, `src/practice-vr-view.ts` | A game's and practice's screens as the headset shows them                                    |
 | `src/practice-run.ts`                            | Practice's run: shuffled pool, scoring each round, reveal and next                           |
 | `src/outlines.ts`, `src/borders.ts`              | Lazily loaded outlines and borders; components reach them through `useOutlines`/`useBorders` |
+| `src/map-prefetch.ts`, `src/game-data.ts`        | What the lobby fetches ahead of round 1: the map's first downloads, then the game's data     |
 | `src/sound.ts`, `src/ui/round-cue.ts`            | The sound engine and recordings; which cue a change of game view calls for                   |
 | `src/paint-commands.ts`                          | Clear, Trim and Trim to hint, shared by the page's paint tools and the VR wrist menu         |
 | `src/shortcuts.ts`                               | Every keyboard shortcut: the help card lists it, the handlers match keys against it          |

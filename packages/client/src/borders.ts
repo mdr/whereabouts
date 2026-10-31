@@ -1,7 +1,7 @@
 /**
  * Which country is where (borders.json, ~65 KB gzipped), for the reveal of a
  * flag round: the flag under the pointer, and where each player's paint
- * fell. Its own chunk, fetched when a game with flags starts or a flag
+ * fell. Its own chunk, fetched once a lobby's game has flags or a flag
  * round is revealed, and kept from then on. The reveal draws a country
  * painted whole by its outline, so it loads the outlines too.
  */

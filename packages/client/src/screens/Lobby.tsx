@@ -14,6 +14,8 @@ import { colourCss } from "@whereabouts/shared/colours"
 import type { PlayerName } from "@whereabouts/shared/ids"
 import type { Connection } from "../net"
 import { configureAsHost } from "../host-setup"
+import { useGameData } from "../game-data"
+import { mapPrefetched, prefetchMap } from "../map-prefetch"
 import { askedToWatch, globeView, joinedCode, nameToJoin, savedName, soundOn, startOnPan } from "../settings"
 import { HostWord, PlayerList } from "../ui/PlayerList"
 import { ConnectionNote, connectionText } from "../ui/ConnectionNote"
@@ -46,6 +48,8 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   const [renaming, setRenaming] = useState(false)
   const online = conn.online.value
   const { dialog, ask } = useConfirm(online)
+  useEffect(prefetchMap, [])
+  useGameData(view.config.mix, mapPrefetched.value)
   const current = view.players.find((p) => p.id === view.you.id)?.name ?? ""
   const host = view.you.isHost
   const canShare = typeof navigator.share === "function"
