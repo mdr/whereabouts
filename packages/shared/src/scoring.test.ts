@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import * as h3 from "./h3.ts"
 import { type H3Cell, h3Res } from "./h3.ts"
-import { toXyz, EARTH_RADIUS_KM } from "./geo.ts"
+import { toXyz, EARTH_RADIUS } from "./geo.ts"
 import {
   DEFAULT_KERNEL,
   KERNELS,
@@ -28,7 +28,7 @@ const answer = { lat: 27.175, lon: 78.042 } // Taj Mahal
 
 /** Point `km` kilometres due north of `from` (small-distance approximation is fine here). */
 function north(from: { lat: number; lon: number }, km: number) {
-  return { lat: from.lat + (km / (Math.PI * EARTH_RADIUS_KM)) * 180, lon: from.lon }
+  return { lat: from.lat + (km / (Math.PI * EARTH_RADIUS)) * 180, lon: from.lon }
 }
 
 function pointMass(locs: { lat: number; lon: number; p: number }[]): Distribution {
@@ -108,9 +108,9 @@ describe("uniform floor", () => {
       const phi = 2 * Math.PI * rnd()
       const s = Math.sqrt(1 - z * z)
       const x: [number, number, number] = [
-        EARTH_RADIUS_KM * s * Math.cos(phi),
-        EARTH_RADIUS_KM * s * Math.sin(phi),
-        EARTH_RADIUS_KM * z
+        EARTH_RADIUS * s * Math.cos(phi),
+        EARTH_RADIUS * s * Math.sin(phi),
+        EARTH_RADIUS * z
       ]
       const dx = x[0] - y[0],
         dy = x[1] - y[1],
@@ -132,8 +132,8 @@ describe("uniform floor", () => {
   })
 
   it("10% floor is cheap insurance", () => {
-    const hit = buildDistribution([{ ...answer, intensity: 1, areaKm2: 1 }], 0.1)
-    const miss = buildDistribution([{ ...north(answer, 5000), intensity: 1, areaKm2: 1 }], 0.1)
+    const hit = buildDistribution([{ ...answer, intensity: 1, area: 1 }], 0.1)
+    const miss = buildDistribution([{ ...north(answer, 5000), intensity: 1, area: 1 }], 0.1)
     expect(Math.round(scoreDistribution(hit, answer, r).score)).toBe(995)
     expect(Math.round(scoreDistribution(miss, answer, r).score)).toBe(96)
   })
@@ -159,9 +159,9 @@ describe("pair sum", () => {
     // Two clusters plus scattered noise
     const pts = []
     for (let i = 0; i < 400; i++) {
-      pts.push({ lat: 27 + rnd() * 3, lon: 78 + rnd() * 3, intensity: rnd(), areaKm2: 1 })
-      pts.push({ lat: 28.6 + rnd() * 0.5, lon: 77.2 + rnd() * 0.5, intensity: rnd() * 2, areaKm2: 1 })
-      pts.push({ lat: rnd() * 160 - 80, lon: rnd() * 360 - 180, intensity: rnd() * 0.1, areaKm2: 1 })
+      pts.push({ lat: 27 + rnd() * 3, lon: 78 + rnd() * 3, intensity: rnd(), area: 1 })
+      pts.push({ lat: 28.6 + rnd() * 0.5, lon: 77.2 + rnd() * 0.5, intensity: rnd() * 2, area: 1 })
+      pts.push({ lat: rnd() * 160 - 80, lon: rnd() * 360 - 180, intensity: rnd() * 0.1, area: 1 })
     }
     const d = buildDistribution(pts, 0)
     // The truncation alone; aggregation for wide components is tested with the mixtures.
@@ -175,9 +175,9 @@ describe("bounds", () => {
   it("score stays within [0, 1000] for a mixed distribution", () => {
     const d = buildDistribution(
       [
-        { lat: 27.2, lon: 78.0, intensity: 3, areaKm2: 1 },
-        { lat: 51.5, lon: -0.1, intensity: 1, areaKm2: 1 },
-        { lat: -33.9, lon: 151.2, intensity: 0.5, areaKm2: 1 }
+        { lat: 27.2, lon: 78.0, intensity: 3, area: 1 },
+        { lat: 51.5, lon: -0.1, intensity: 1, area: 1 },
+        { lat: -33.9, lon: 151.2, intensity: 0.5, area: 1 }
       ],
       0.05
     )
@@ -190,7 +190,7 @@ describe("bounds", () => {
   })
 
   it("B does not depend on the answer", () => {
-    const d = buildDistribution([{ lat: 10, lon: 10, intensity: 1, areaKm2: 1 }], 0.2)
+    const d = buildDistribution([{ lat: 10, lon: 10, intensity: 1, area: 1 }], 0.2)
     expect(selfSimilarity(d, r)).toBe(selfSimilarity(d, r))
     expect(similarityToAnswer(d, toXyz({ lat: 10, lon: 10 }), r)).toBeGreaterThan(0.79)
   })
@@ -209,16 +209,16 @@ describe("mixture kernels", () => {
     }
   })
 
-  /** Uniform disc of `radiusKm` around `centre`, as a distribution. */
-  function disc(centre: { lat: number; lon: number }, radiusKm: number): Distribution {
+  /** Uniform disc of `radius` around `centre`, as a distribution. */
+  function disc(centre: { lat: number; lon: number }, radius: number): Distribution {
     const pts = []
-    const step = radiusKm / 12
-    for (let dx = -radiusKm; dx <= radiusKm; dx += step) {
-      for (let dy = -radiusKm; dy <= radiusKm; dy += step) {
-        if (dx * dx + dy * dy > radiusKm * radiusKm) continue
-        const lat = centre.lat + (dy / (Math.PI * EARTH_RADIUS_KM)) * 180
-        const lon = centre.lon + (dx / (Math.PI * EARTH_RADIUS_KM * Math.cos((centre.lat * Math.PI) / 180))) * 180
-        pts.push({ lat, lon, intensity: 1, areaKm2: 1 })
+    const step = radius / 12
+    for (let dx = -radius; dx <= radius; dx += step) {
+      for (let dy = -radius; dy <= radius; dy += step) {
+        if (dx * dx + dy * dy > radius * radius) continue
+        const lat = centre.lat + (dy / (Math.PI * EARTH_RADIUS)) * 180
+        const lon = centre.lon + (dx / (Math.PI * EARTH_RADIUS * Math.cos((centre.lat * Math.PI) / 180))) * 180
+        pts.push({ lat, lon, intensity: 1, area: 1 })
       }
     }
     return buildDistribution(pts, 0.05)
@@ -262,8 +262,8 @@ describe("mixture kernels", () => {
     }
     const pts = []
     for (let i = 0; i < 600; i++) {
-      pts.push({ lat: 30 + rnd() * 6, lon: 35 + rnd() * 6, intensity: rnd(), areaKm2: 1 })
-      pts.push({ lat: rnd() * 120 - 60, lon: rnd() * 360 - 180, intensity: rnd() * 0.2, areaKm2: 1 })
+      pts.push({ lat: 30 + rnd() * 6, lon: 35 + rnd() * 6, intensity: rnd(), area: 1 })
+      pts.push({ lat: rnd() * 120 - 60, lon: rnd() * 360 - 180, intensity: rnd() * 0.2, area: 1 })
     }
     const d = buildDistribution(pts, 0)
     for (const k of KERNELS) {
@@ -281,7 +281,7 @@ describe("patch-aware kernel", () => {
     return buildDistribution(
       cells.map((h) => {
         const [lat, lon] = h3.cellToLatLng(h)
-        return { lat, lon, intensity: 1, areaKm2: h3.cellArea(h, h3.UNITS.km2), h3: h }
+        return { lat, lon, intensity: 1, area: h3.cellArea(h, h3.UNITS.km2), h3: h }
       }),
       floor
     )
@@ -352,7 +352,7 @@ describe("region answers", () => {
   const paint = (cells: H3Cell[]) =>
     cells.map((h) => {
       const [lat, lon] = h3.cellToLatLng(h)
-      return { lat, lon, intensity: 1, areaKm2: h3.cellArea(h, h3.UNITS.km2), h3: h }
+      return { lat, lon, intensity: 1, area: h3.cellArea(h, h3.UNITS.km2), h3: h }
     })
   const dist = (cells: H3Cell[], floor = 0.05) => buildDistribution(paint(cells), floor)
 

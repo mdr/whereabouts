@@ -1,5 +1,5 @@
 /**
- * Identifiers as branded strings. Each has a schema that checks its format
+ * Identifiers and other strings with meaning, branded. Each has a schema that checks its format
  * and brands it, and a constructor that parses with that schema, so a value
  * of one kind cannot be passed where another is wanted, nor a plain string
  * where any is. Wire schemas use the schemas, so parsed messages come out
@@ -52,3 +52,27 @@ export const flagCode = (s: string): FlagCode => FlagCodeSchema.parse(s)
 export const PlayerNameSchema = z.string().trim().min(1).max(20).brand<"PlayerName">()
 export type PlayerName = z.infer<typeof PlayerNameSchema>
 export const playerName = (s: string): PlayerName => PlayerNameSchema.parse(s)
+
+/** An English Wikipedia article's title, with spaces ("Taj Mahal"): it keys facts and photos. */
+export const WikiTitleSchema = z
+  .string()
+  .regex(/^(?!\s)[^_#|[\]{}<>]+(?<!\s)$/)
+  .brand<"WikiTitle">()
+export type WikiTitle = z.infer<typeof WikiTitleSchema>
+export const wikiTitle = (s: string): WikiTitle => WikiTitleSchema.parse(s)
+
+/** A Wikimedia Commons file's name, without the File: prefix ("Taj Mahal in March 2004.jpg"). */
+export const CommonsFileSchema = z
+  .string()
+  .regex(/^(?!File:)[^#|[\]{}<>/]+\.[A-Za-z0-9]+$/)
+  .brand<"CommonsFile">()
+export type CommonsFile = z.infer<typeof CommonsFileSchema>
+export const commonsFile = (s: string): CommonsFile => CommonsFileSchema.parse(s)
+
+/** Where a fact was found. */
+export const SourceUrlSchema = z
+  .string()
+  .regex(/^https:\/\/\S+$/)
+  .brand<"SourceUrl">()
+export type SourceUrl = z.infer<typeof SourceUrlSchema>
+export const sourceUrl = (s: string): SourceUrl => SourceUrlSchema.parse(s)

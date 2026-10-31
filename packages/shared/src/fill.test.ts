@@ -20,7 +20,7 @@ const flag = (code: string) => flags.find((f) => f.clue.flag === code)!
 function fillAndScore(code: string, finestRes?: number): { score: number; cells: H3Cell[] } {
   const f = flag(code)
   const a = scoredAnswer(f.answer, outlines)
-  const res = finestRes ?? resolutionForTolerance(a.toleranceKm)
+  const res = finestRes ?? resolutionForTolerance(a.tolerance)
   const shape = a.type === AnswerType.AREA ? { polygons: a.polygons, answer: a.centre } : borders.fillShape(f)
   const cells = countryFill(shape, h3Res(res))
   const layer = new PaintLayer(h3Res(res))
@@ -52,7 +52,7 @@ describe("countryFill", () => {
   it("fills a country round at its own resolution, uncompacted, so it draws without gaps", () => {
     // Compacted, a parent hexagon is turned from its children and left gaps.
     const bg = CATALOGUE.find((q) => q.id === "bulgaria-region")!.answer
-    const res = resolutionForTolerance(bg.toleranceKm)
+    const res = resolutionForTolerance(bg.tolerance)
     const cells = countryFill({ polygons: outlines.get(outlineId("bulgaria-region"))!, answer: answerCentre(bg) }, res)
     expect(new Set(cells.map(getResolution))).toEqual(new Set([res]))
   })

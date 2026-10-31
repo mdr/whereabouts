@@ -252,7 +252,7 @@ pnpm workspace with three packages:
 - Late joiners spectate the current round and play from the next. A dropped
   player keeps their seat, score and current paint, and reclaims them on
   reconnect (a browser refresh is the common case). In the lobby the seat is
-  held for 30 seconds (`SEAT_GRACE_MS`), then freed; mid-game it is held for
+  held for 30 seconds (`SEAT_GRACE`), then freed; mid-game it is held for
   good. The host keeps the role while away; the longest-standing connected
   player acts as host meanwhile. An empty game stays open for the same 30
   seconds, so a host alone in the lobby can refresh without losing it.

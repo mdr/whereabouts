@@ -2,9 +2,10 @@
 import type { PaintLayer } from "@whereabouts/shared/paint"
 import type { GameMap } from "./map"
 import type { PaintModel } from "./paint-model"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** How long a change waits for an animation frame before `version` moves without one. */
-const VERSION_WAIT_MS = 100
+const VERSION_WAIT: Ms = 100
 
 export class PaintView {
   /** The frame that will draw our paint, while one is queued. */
@@ -30,7 +31,7 @@ export class PaintView {
     this.versionTimer ??= window.setTimeout(() => {
       this.versionTimer = undefined
       this.model.publish()
-    }, VERSION_WAIT_MS)
+    }, VERSION_WAIT)
     if (this.renderFrame !== undefined) return
     this.renderFrame = requestAnimationFrame(() => {
       this.renderFrame = undefined

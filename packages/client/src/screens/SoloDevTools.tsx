@@ -27,7 +27,7 @@ import { greatCircleDistance, toXyz, type LatLon } from "@whereabouts/shared/geo
 import { usePaint } from "../ui/MapView"
 import { Card } from "../ui/Card"
 import { ScoreParts } from "../ui/ScoreParts"
-import { fmtKm } from "../ui/format"
+import { formatDistance } from "../ui/format"
 import { cx } from "../ui/cx"
 import kit from "../ui/kit.module.css"
 import sc from "../ui/Score.module.css"
@@ -102,10 +102,10 @@ export function RevealScore({
   let hoverText: string | undefined =
     a.type === AnswerType.AREA ? undefined : "Move the mouse over the map to see the score for other answers."
   if (h && a.type === AnswerType.POINT && dist) {
-    const A = similarityToAnswer(dist, toXyz(h), a.toleranceKm, kernel)
+    const A = similarityToAnswer(dist, toXyz(h), a.tolerance, kernel)
     const s = "B" in parts ? scoreFromParts(A, parts.B) : 0
     const d = greatCircleDistance(h, a.at)
-    hoverText = `If the answer were here: ${Math.round(s)} · ${fmtKm(d)} from the real answer (${(d / a.toleranceKm).toFixed(1)} tolerances)`
+    hoverText = `If the answer were here: ${Math.round(s)} · ${formatDistance(d)} from the real answer (${(d / a.tolerance).toFixed(1)} tolerances)`
   }
   return (
     <Card title="Score">

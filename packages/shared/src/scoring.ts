@@ -24,7 +24,8 @@ import {
   type H3Res
 } from "./h3.ts"
 import { z } from "zod"
-import { EARTH_RADIUS_KM, chordDistanceSq, toXyz, type LatLon, type Xyz } from "./geo.ts"
+import { EARTH_RADIUS, chordDistanceSq, toXyz, type LatLon, type Xyz } from "./geo.ts"
+import type { Degrees, Km, SquareKm } from "./units.ts"
 
 const LN2 = Math.LN2
 
@@ -80,12 +81,12 @@ export interface WeightedPoint {
   /** Probability mass. The painted points' masses plus `floor` must sum to 1. */
   p: number
   /**
-   * Spatial variance per axis, km², of the patch this mass is spread over
+   * Spatial variance per axis of the patch this mass is spread over
    * (0 or absent for a point mass). A painted cell is a patch, not a point:
    * treating it as a Gaussian blob of matching second moment makes the score
    * independent of the resolution it was painted at. See patchGaussFromSq.
    */
-  s2?: number
+  s2?: SquareKm
   /** H3 index of the cell, when the mass is a painted cell; lets A refine it. */
   cell?: H3Cell
 }
@@ -108,12 +109,12 @@ export interface ScoreBreakdown {
   B: number
 }
 
-export function kernel(distanceKm: number, toleranceKm: number, k: Kernel = DEFAULT_KERNEL): number {
-  return kernelFromSq(distanceKm * distanceKm, toleranceKm, k)
+export function kernel(distance: Km, tolerance: Km, k: Kernel = DEFAULT_KERNEL): number {
+  return kernelFromSq(distance * distance, tolerance, k)
 }
 
-function gaussFromSq(distSqKm: number, widthKm: number): number {
-  return Math.exp((-LN2 * distSqKm) / (widthKm * widthKm))
+function gaussFromSq(distSq: SquareKm, width: Km): number {
+  return Math.exp((-LN2 * distSq) / (width * width))
 }
 
 /**
@@ -125,21 +126,21 @@ function gaussFromSq(distSqKm: number, widthKm: number): number {
  * width squared is w² + 2 ln2 s2 and the amplitude is w² / w'². Flat-plane
  * result; exact enough for cells small against the Earth's radius.
  */
-function patchWidthSq(widthKm: number, s2: number): number {
-  return widthKm * widthKm + 2 * LN2 * s2
+function patchWidthSq(width: Km, s2: SquareKm): number {
+  return width * width + 2 * LN2 * s2
 }
 
-function patchGaussFromSq(distSqKm: number, widthKm: number, s2: number): number {
-  if (s2 === 0) return gaussFromSq(distSqKm, widthKm)
-  const w2 = widthKm * widthKm
-  const eff = patchWidthSq(widthKm, s2)
-  return (w2 / eff) * Math.exp((-LN2 * distSqKm) / eff)
+function patchGaussFromSq(distSq: SquareKm, width: Km, s2: SquareKm): number {
+  if (s2 === 0) return gaussFromSq(distSq, width)
+  const w2 = width * width
+  const eff = patchWidthSq(width, s2)
+  return (w2 / eff) * Math.exp((-LN2 * distSq) / eff)
 }
 
-function kernelFromSq(distSqKm: number, toleranceKm: number, k: Kernel, s2 = 0): number {
+function kernelFromSq(distSq: SquareKm, tolerance: Km, k: Kernel, s2 = 0): number {
   let v = 0
   for (let i = 0; i < k.scales.length; i++) {
-    v += k.weights[i]! * patchGaussFromSq(distSqKm, k.scales[i]! * toleranceKm, s2)
+    v += k.weights[i]! * patchGaussFromSq(distSq, k.scales[i]! * tolerance, s2)
   }
   return v
 }
@@ -151,16 +152,16 @@ function kernelFromSq(distSqKm: number, toleranceKm: number, k: Kernel, s2 = 0):
  * With t = 1 - cos(theta) and a = 2 R^2 ln2 / r^2, k = exp(-a t) and the
  * uniform measure in t is dt/2 on [0, 2], giving (1 - e^{-2a}) / (2a).
  */
-export function uniformKernelMean(toleranceKm: number, k: Kernel = DEFAULT_KERNEL): number {
+export function uniformKernelMean(tolerance: Km, k: Kernel = DEFAULT_KERNEL): number {
   let v = 0
   for (let i = 0; i < k.scales.length; i++) {
-    v += k.weights[i]! * gaussUniformMean(k.scales[i]! * toleranceKm)
+    v += k.weights[i]! * gaussUniformMean(k.scales[i]! * tolerance)
   }
   return v
 }
 
-function gaussUniformMean(widthKm: number): number {
-  const a = (2 * EARTH_RADIUS_KM * EARTH_RADIUS_KM * LN2) / (widthKm * widthKm)
+function gaussUniformMean(width: Km): number {
+  const a = (2 * EARTH_RADIUS * EARTH_RADIUS * LN2) / (width * width)
   return (1 - Math.exp(-2 * a)) / (2 * a)
 }
 
@@ -176,17 +177,12 @@ const CUTOFF_WIDTHS = 4
  * onto a 3D grid an eighth of that width, which keeps the cost bounded when
  * the cutoff spans the globe while displacing mass by far less than the width.
  */
-export function pairSum(
-  points: WeightedPoint[],
-  toleranceKm: number,
-  exact = false,
-  k: Kernel = DEFAULT_KERNEL
-): number {
-  if (exact) return exactPairSum(points, toleranceKm, k)
+export function pairSum(points: WeightedPoint[], tolerance: Km, exact = false, k: Kernel = DEFAULT_KERNEL): number {
+  if (exact) return exactPairSum(points, tolerance, k)
   const groups = groupByPatchSize(points)
   let total = 0
   for (let c = 0; c < k.scales.length; c++) {
-    const width = k.scales[c]! * toleranceKm
+    const width = k.scales[c]! * tolerance
     const w2 = width * width
     for (let a = 0; a < groups.length; a++) {
       for (let b = a; b < groups.length; b++) {
@@ -194,7 +190,7 @@ export function pairSum(
         const gb = groups[b]!
         const eff = Math.sqrt(patchWidthSq(width, ga.s2 + gb.s2))
         // Same rule as before patches: components at least twice the tolerance wide are aggregated.
-        const coarse = eff >= 2 * toleranceKm
+        const coarse = eff >= 2 * tolerance
         const pa = coarse ? aggregate(ga.points, eff / 8) : ga.points
         const pb = a === b ? pa : coarse ? aggregate(gb.points, eff / 8) : gb.points
         const sum = gaussCrossSum(pa, pb, eff)
@@ -205,17 +201,17 @@ export function pairSum(
   return total
 }
 
-function exactPairSum(points: WeightedPoint[], toleranceKm: number, k: Kernel): number {
+function exactPairSum(points: WeightedPoint[], tolerance: Km, k: Kernel): number {
   let total = 0
   for (const pi of points) {
     for (const pj of points) {
-      total += pi.p * pj.p * kernelFromSq(chordDistanceSq(pi.xyz, pj.xyz), toleranceKm, k, (pi.s2 ?? 0) + (pj.s2 ?? 0))
+      total += pi.p * pj.p * kernelFromSq(chordDistanceSq(pi.xyz, pj.xyz), tolerance, k, (pi.s2 ?? 0) + (pj.s2 ?? 0))
     }
   }
   return total
 }
 
-function groupByPatchSize(points: WeightedPoint[]): { s2: number; points: WeightedPoint[] }[] {
+function groupByPatchSize(points: WeightedPoint[]): { s2: SquareKm; points: WeightedPoint[] }[] {
   const groups = new Map<number, WeightedPoint[]>()
   for (const pt of points) {
     // Cells of one H3 resolution differ slightly in area; bucket them together.
@@ -235,12 +231,12 @@ function groupByPatchSize(points: WeightedPoint[]): { s2: number; points: Weight
   })
 }
 
-/** Merge points into mass-weighted centroids on a 3D grid of side `gridKm`. */
-function aggregate(points: WeightedPoint[], gridKm: number): WeightedPoint[] {
+/** Merge points into mass-weighted centroids on a 3D grid of cubes `side` across. */
+function aggregate(points: WeightedPoint[], side: Km): WeightedPoint[] {
   const acc = new Map<string, { x: number; y: number; z: number; p: number }>()
   for (const pt of points) {
     const [x, y, z] = pt.xyz
-    const key = `${Math.floor(x / gridKm)},${Math.floor(y / gridKm)},${Math.floor(z / gridKm)}`
+    const key = `${Math.floor(x / side)},${Math.floor(y / side)},${Math.floor(z / side)}`
     const a = acc.get(key)
     if (a) {
       a.x += pt.p * x
@@ -265,11 +261,11 @@ function aggregate(points: WeightedPoint[], gridKm: number): WeightedPoint[] {
  * only visits its 27 neighbouring buckets. When both sides are the same
  * array this is the self pair sum.
  */
-function gaussCrossSum(left: WeightedPoint[], right: WeightedPoint[], widthKm: number): number {
+function gaussCrossSum(left: WeightedPoint[], right: WeightedPoint[], width: Km): number {
   const n = right.length
   const m = left.length
   if (n === 0 || m === 0) return 0
-  const invW2 = -LN2 / (widthKm * widthKm)
+  const invW2 = -LN2 / (width * width)
 
   // Flat typed arrays and integer bucket keys: this loop is the hot path for
   // the live score, so avoid per-pair allocation and string hashing.
@@ -285,7 +281,7 @@ function gaussCrossSum(left: WeightedPoint[], right: WeightedPoint[], widthKm: n
     ps[i] = pt.p
   }
 
-  const cutoff = CUTOFF_WIDTHS * widthKm
+  const cutoff = CUTOFF_WIDTHS * width
   const cutoffSq = cutoff * cutoff
   const inv = 1 / cutoff
   // Coordinates are within +-6371 km, so offsetting by 8192 keeps indices positive.
@@ -345,31 +341,26 @@ function gaussCrossSum(left: WeightedPoint[], right: WeightedPoint[], widthKm: n
 const REFINE_ABOVE = 0.4
 
 /** A(y) = expected similarity to the answer y. */
-export function similarityToAnswer(
-  dist: Distribution,
-  answer: Xyz,
-  toleranceKm: number,
-  k: Kernel = DEFAULT_KERNEL
-): number {
+export function similarityToAnswer(dist: Distribution, answer: Xyz, tolerance: Km, k: Kernel = DEFAULT_KERNEL): number {
   let A = 0
-  const widest = toleranceKm * Math.max(...k.scales)
+  const widest = tolerance * Math.max(...k.scales)
   for (const pt of dist.points) {
-    A += patchSimilarity(pt, answer, toleranceKm, widest, k)
+    A += patchSimilarity(pt, answer, tolerance, widest, k)
   }
-  A += dist.floor * uniformKernelMean(toleranceKm, k)
+  A += dist.floor * uniformKernelMean(tolerance, k)
   return A
 }
 
-function patchSimilarity(pt: WeightedPoint, answer: Xyz, toleranceKm: number, widestKm: number, k: Kernel): number {
+function patchSimilarity(pt: WeightedPoint, answer: Xyz, tolerance: Km, widest: Km, k: Kernel): number {
   const s2 = pt.s2 ?? 0
   const dSq = chordDistanceSq(pt.xyz, answer)
-  if (!pt.cell || s2 <= (REFINE_ABOVE * toleranceKm) ** 2) return pt.p * kernelFromSq(dSq, toleranceKm, k, s2)
+  if (!pt.cell || s2 <= (REFINE_ABOVE * tolerance) ** 2) return pt.p * kernelFromSq(dSq, tolerance, k, s2)
   // Circumradius from the variance (R² = 24 s² / 5), then the reach of the widest component.
   const R = Math.sqrt(4.8 * s2)
-  const reach = CUTOFF_WIDTHS * Math.sqrt(patchWidthSq(widestKm, s2))
-  if (Math.sqrt(dSq) - R > reach) return pt.p * kernelFromSq(dSq, toleranceKm, k, s2)
+  const reach = CUTOFF_WIDTHS * Math.sqrt(patchWidthSq(widest, s2))
+  if (Math.sqrt(dSq) - R > reach) return pt.p * kernelFromSq(dSq, tolerance, k, s2)
   const res = getResolution(pt.cell)
-  if (res >= 15) return pt.p * kernelFromSq(dSq, toleranceKm, k, s2)
+  if (res >= 15) return pt.p * kernelFromSq(dSq, tolerance, k, s2)
   const children = cellToChildren(pt.cell, finerRes(res))
   const areas = children.map((c) => cellArea(c, UNITS.km2))
   const total = areas.reduce((s, a) => s + a, 0)
@@ -382,21 +373,16 @@ function patchSimilarity(pt: WeightedPoint, answer: Xyz, toleranceKm: number, wi
       s2: HEX_VARIANCE_PER_AREA * areas[i]!,
       cell: children[i]!
     }
-    A += patchSimilarity(child, answer, toleranceKm, widestKm, k)
+    A += patchSimilarity(child, answer, tolerance, widest, k)
   }
   return A
 }
 
 /** B = expected self-similarity of the distribution. Does not depend on the answer. */
-export function selfSimilarity(
-  dist: Distribution,
-  toleranceKm: number,
-  exact = false,
-  k: Kernel = DEFAULT_KERNEL
-): number {
-  const K = uniformKernelMean(toleranceKm, k)
+export function selfSimilarity(dist: Distribution, tolerance: Km, exact = false, k: Kernel = DEFAULT_KERNEL): number {
+  const K = uniformKernelMean(tolerance, k)
   const painted = 1 - dist.floor
-  let B = pairSum(dist.points, toleranceKm, exact, k)
+  let B = pairSum(dist.points, tolerance, exact, k)
   // Cross terms between painted mass and the uniform floor, and floor with itself.
   B += 2 * dist.floor * painted * K
   B += dist.floor * dist.floor * K
@@ -419,12 +405,12 @@ export const PASS_SCORE: ScoreBreakdown = { score: 250, A: 0, B: 0.5 }
 export function scoreDistribution(
   dist: Distribution,
   answer: LatLon,
-  toleranceKm: number,
+  tolerance: Km,
   k: Kernel = DEFAULT_KERNEL,
   exact = false
 ): ScoreBreakdown {
-  const A = similarityToAnswer(dist, toXyz(answer), toleranceKm, k)
-  const B = selfSimilarity(dist, toleranceKm, exact, k)
+  const A = similarityToAnswer(dist, toXyz(answer), tolerance, k)
+  const B = selfSimilarity(dist, tolerance, exact, k)
   return { score: scoreFromParts(A, B), A, B }
 }
 
@@ -456,7 +442,7 @@ export interface RegionAnswer {
   points: WeightedPoint[]
   /** <q,q> for each component of the kernel, at the tolerance it was built for. */
   Q: number[]
-  toleranceKm: number
+  tolerance: Km
   kernel: Kernel
 }
 
@@ -471,7 +457,7 @@ function component(k: Kernel, c: number): Kernel {
 }
 
 /** Region answer from H3 cells (any mix of resolutions), weighted by area. */
-export function regionAnswer(cells: Iterable<H3Cell>, toleranceKm: number, k: Kernel = DEFAULT_KERNEL): RegionAnswer {
+export function regionAnswer(cells: Iterable<H3Cell>, tolerance: Km, k: Kernel = DEFAULT_KERNEL): RegionAnswer {
   const raw: WeightedPoint[] = []
   let total = 0
   for (const h of cells) {
@@ -481,8 +467,8 @@ export function regionAnswer(cells: Iterable<H3Cell>, toleranceKm: number, k: Ke
     total += area
   }
   const points = raw.map((pt) => ({ ...pt, p: pt.p / total }))
-  const Q = k.scales.map((_, c) => pairSum(points, toleranceKm, false, component(k, c)))
-  return { points, Q, toleranceKm, kernel: k }
+  const Q = k.scales.map((_, c) => pairSum(points, tolerance, false, component(k, c)))
+  return { points, Q, tolerance, kernel: k }
 }
 
 /**
@@ -493,7 +479,7 @@ export function regionAnswer(cells: Iterable<H3Cell>, toleranceKm: number, k: Ke
 export function crossSum(
   left: WeightedPoint[],
   right: WeightedPoint[],
-  toleranceKm: number,
+  tolerance: Km,
   exact = false,
   k: Kernel = DEFAULT_KERNEL
 ): number {
@@ -501,7 +487,7 @@ export function crossSum(
     let total = 0
     for (const a of left) {
       for (const b of right) {
-        total += a.p * b.p * kernelFromSq(chordDistanceSq(a.xyz, b.xyz), toleranceKm, k, (a.s2 ?? 0) + (b.s2 ?? 0))
+        total += a.p * b.p * kernelFromSq(chordDistanceSq(a.xyz, b.xyz), tolerance, k, (a.s2 ?? 0) + (b.s2 ?? 0))
       }
     }
     return total
@@ -510,12 +496,12 @@ export function crossSum(
   const rg = groupByPatchSize(right)
   let total = 0
   for (let c = 0; c < k.scales.length; c++) {
-    const width = k.scales[c]! * toleranceKm
+    const width = k.scales[c]! * tolerance
     const w2 = width * width
     for (const ga of lg) {
       for (const gb of rg) {
         const eff = Math.sqrt(patchWidthSq(width, ga.s2 + gb.s2))
-        const coarse = eff >= 2 * toleranceKm
+        const coarse = eff >= 2 * tolerance
         const pa = coarse ? aggregate(ga.points, eff / 8) : ga.points
         const pb = coarse ? aggregate(gb.points, eff / 8) : gb.points
         total += k.weights[c]! * (w2 / (eff * eff)) * gaussCrossSum(pa, pb, eff)
@@ -548,7 +534,7 @@ export function coarsenDistribution(dist: Distribution, res: H3Res): Distributio
 }
 
 export function scoreRegion(dist: Distribution, region: RegionAnswer, exact = false): RegionScore {
-  const { toleranceKm, kernel: k } = region
+  const { tolerance, kernel: k } = region
   let score = 0
   let A = 0
   let B = 0
@@ -558,8 +544,8 @@ export function scoreRegion(dist: Distribution, region: RegionAnswer, exact = fa
     const Qc = region.Q[c]!
     // The floor against q: the uniform kernel mean is the same from every point.
     const Ac =
-      crossSum(dist.points, region.points, toleranceKm, exact, kc) + dist.floor * uniformKernelMean(toleranceKm, kc)
-    const Bc = selfSimilarity(dist, toleranceKm, exact, kc)
+      crossSum(dist.points, region.points, tolerance, exact, kc) + dist.floor * uniformKernelMean(tolerance, kc)
+    const Bc = selfSimilarity(dist, tolerance, exact, kc)
     const w = k.weights[c]!
     score += w * Math.max(0, 1000 - (500 * (Bc - 2 * Ac + Qc)) / Qc)
     A += w * Ac
@@ -571,20 +557,20 @@ export function scoreRegion(dist: Distribution, region: RegionAnswer, exact = fa
 
 /**
  * Build a normalised Distribution from raw painted cells.
- * `intensity` is paint density; `areaKm2` is the cell's real area, so mass is
+ * `intensity` is paint density; `area` is the cell's real area, so mass is
  * proportional to intensity x area. `floor` is the requested uniform fraction.
  */
 export function buildDistribution(
-  cells: Iterable<{ lat: number; lon: number; intensity: number; areaKm2: number; h3?: H3Cell }>,
+  cells: Iterable<{ lat: Degrees; lon: Degrees; intensity: number; area: SquareKm; h3?: H3Cell }>,
   floor: number
 ): Distribution {
-  const raw: { xyz: Xyz; w: number; s2: number; cell?: H3Cell }[] = []
+  const raw: { xyz: Xyz; w: number; s2: SquareKm; cell?: H3Cell }[] = []
   let total = 0
   for (const c of cells) {
     if (c.intensity <= 0) continue
-    const w = c.intensity * c.areaKm2
+    const w = c.intensity * c.area
     total += w
-    raw.push({ xyz: toXyz(c), w, s2: HEX_VARIANCE_PER_AREA * c.areaKm2, cell: c.h3 })
+    raw.push({ xyz: toXyz(c), w, s2: HEX_VARIANCE_PER_AREA * c.area, cell: c.h3 })
   }
   if (raw.length === 0) {
     // Nothing painted: everything is floor, regardless of the slider.

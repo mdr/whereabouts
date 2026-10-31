@@ -11,10 +11,11 @@ import type { PaintModel } from "./paint-model"
 import type { PaintView } from "./paint-view"
 import { forTabbedControl, isTyping } from "./keys"
 import { Tool } from "./tool"
+import type { Km, Px } from "@whereabouts/shared/units"
 
 export class PaintInput {
   readonly tool = signal<Tool>(Tool.PAINT)
-  readonly brushPx = signal(40)
+  readonly brushSize = signal<Px>(40)
   readonly strength = signal(1)
   /** Whether painting is currently allowed (guessing phase, not locked). */
   readonly enabled = signal(false)
@@ -119,8 +120,8 @@ export class PaintInput {
       if (e.key === "2") this.tool.value = Tool.PAINT
       if (e.key === "3") this.tool.value = Tool.ERASE
       if (e.key === "4" && this.model.fillable.value) this.tool.value = Tool.FILL
-      if (e.key === "[") this.setBrushPx(this.brushPx.value / 1.25)
-      if (e.key === "]") this.setBrushPx(this.brushPx.value * 1.25)
+      if (e.key === "[") this.setBrushSize(this.brushSize.value / 1.25)
+      if (e.key === "]") this.setBrushSize(this.brushSize.value * 1.25)
     }
     // A middle-button drag pans whatever the tool, like holding Space.
     // MapLibre's own drag pan only listens to the left button.
@@ -195,7 +196,7 @@ export class PaintInput {
     })
     this.disposers.push(this.tool.subscribe(() => this.applyInteraction()))
     // [ and ] or the slider resize the brush while the mouse stays put.
-    this.disposers.push(this.brushPx.subscribe(() => this.refreshCursor()))
+    this.disposers.push(this.brushSize.subscribe(() => this.refreshCursor()))
     this.disposers.push(
       this.enabled.subscribe((on) => {
         // Painting can be switched off mid-stroke, when the round ends. Stop
@@ -225,8 +226,8 @@ export class PaintInput {
     return () => this.hoverListeners.delete(listener)
   }
 
-  setBrushPx(px: number): void {
-    this.brushPx.value = Math.min(200, Math.max(6, Math.round(px)))
+  setBrushSize(size: Px): void {
+    this.brushSize.value = Math.min(200, Math.max(6, Math.round(size)))
   }
 
   private canPaint(): boolean {
@@ -267,8 +268,8 @@ export class PaintInput {
     return this.gameMap.metersPerPixel(lat) / 1000
   }
 
-  private brushRadiusKm(lat: number): number {
-    return (this.brushPx.value * this.gameMap.metersPerPixel(lat)) / 1000
+  private brushRadius(lat: number): Km {
+    return (this.brushSize.value * this.gameMap.metersPerPixel(lat)) / 1000
   }
 
   // ---- strokes: shared by mouse and touch -----------------------------------
@@ -313,7 +314,7 @@ export class PaintInput {
       return
     }
     this.gameMap.setCursorFootprint(
-      this.model.layer.stampCells(latLon(lngLat), this.brushRadiusKm(lngLat.lat)),
+      this.model.layer.stampCells(latLon(lngLat), this.brushRadius(lngLat.lat)),
       this.tool.value === Tool.ERASE
     )
   }
@@ -331,7 +332,7 @@ export class PaintInput {
   private stampAt(lngLat: LngLat): void {
     const sign = this.tool.value === Tool.ERASE ? -1 : 1
     // Stamps overlap along a stroke, so scale each one down.
-    this.model.stamp(latLon(lngLat), this.brushRadiusKm(lngLat.lat), sign * this.strength.value * 0.3)
+    this.model.stamp(latLon(lngLat), this.brushRadius(lngLat.lat), sign * this.strength.value * 0.3)
   }
 
   private strokeTo(point: Point): void {
@@ -344,7 +345,7 @@ export class PaintInput {
     const dx = point.x - start.x
     const dy = point.y - start.y
     const dist = Math.hypot(dx, dy)
-    const step = Math.max(2, this.brushPx.value / 4)
+    const step = Math.max(2, this.brushSize.value / 4)
     if (dist < step) return
     const n = Math.floor(dist / step)
     for (let i = 1; i <= n; i++) {

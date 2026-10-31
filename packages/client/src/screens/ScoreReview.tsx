@@ -105,8 +105,8 @@ function Review({ outlines }: { outlines: Outlines }) {
   const scores = useMemo(() => guesses.map((g) => scoreGuess(a, g.layer, kernel).score), [c, kernel.id])
 
   const frame = (fc: GeoJSON.FeatureCollection) => {
-    if (a.type === AnswerType.AREA) paint.gameMap.fitRegionAndPaint(a.centre, a.polygons, fc, a.toleranceKm)
-    else paint.gameMap.fitAnswerAndPaint(a.at, fc, a.toleranceKm)
+    if (a.type === AnswerType.AREA) paint.gameMap.fitRegionAndPaint(a.centre, a.polygons, fc, a.tolerance)
+    else paint.gameMap.fitAnswerAndPaint(a.at, fc, a.tolerance)
   }
   const showPair = (only: 0 | 1 | undefined) =>
     paint.showLayers(
@@ -116,7 +116,7 @@ function Review({ outlines }: { outlines: Outlines }) {
     )
 
   useEffect(() => {
-    paint.reset(a.toleranceKm)
+    paint.reset(a.tolerance)
     paint.enabled.value = false
     paint.gameMap.setDetail(RevealDetail.REVEAL)
     if (a.type === AnswerType.AREA) paint.gameMap.showRegionReveal(a.polygons)

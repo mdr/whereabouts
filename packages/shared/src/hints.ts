@@ -7,6 +7,7 @@ import { z } from "zod"
 import type { LatLon } from "./geo.ts"
 import { cellToBoundary, cellToLatLng, type H3Cell, type H3Res } from "./h3.ts"
 import { keepCells } from "./land.ts"
+import type { Degrees, Km } from "./units.ts"
 
 export enum HintAxis {
   LATITUDE = "LATITUDE",
@@ -15,13 +16,12 @@ export enum HintAxis {
 export const HintAxisSchema = z.enum(HintAxis)
 
 /**
- * The band, in degrees. A longitude band that crosses 180° has `from`
- * greater than `to`.
+ * A longitude band that crosses 180° has `from` greater than `to`.
  */
 export interface HintBand {
   axis: HintAxis
-  from: number
-  to: number
+  from: Degrees
+  to: Degrees
 }
 
 /** Hints a host may allow per game. */
@@ -33,7 +33,7 @@ export const HINT_WIDTH_TOLERANCES = 10
 /** The answer is never in this outer share of the band at either edge. */
 const EDGE = 0.15
 /** A longitude band near a pole would otherwise span most of the world. */
-const MAX_LONGITUDE_SPAN = 120
+const MAX_LONGITUDE_SPAN: Degrees = 120
 const KM_PER_DEGREE = 111.195
 
 /**
@@ -41,8 +41,8 @@ const KM_PER_DEGREE = 111.195
  * `u` (0 to 1) away from the edges. Edges are rounded outwards to whole
  * degrees, or tenths for a narrow band, so the labels are the band.
  */
-export function hintBand(answer: LatLon, toleranceKm: number, axis: HintAxis, u: number): HintBand {
-  const km = HINT_WIDTH_TOLERANCES * toleranceKm
+export function hintBand(answer: LatLon, tolerance: Km, axis: HintAxis, u: number): HintBand {
+  const km = HINT_WIDTH_TOLERANCES * tolerance
   const at = EDGE + u * (1 - 2 * EDGE)
   if (axis === HintAxis.LATITUDE) {
     const width = Math.min(km / KM_PER_DEGREE, 180)

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test"
 import { PaintLayer } from "./paint.ts"
 import { CaseQuestionType, decodeCase, encodeCase, type ScoringCase } from "./scoring-case.ts"
 import { h3Res } from "./h3.ts"
+import { flagCode, questionId } from "./ids.ts"
 import { KernelId } from "./scoring.ts"
 
 function sample(): ScoringCase {
@@ -12,10 +13,10 @@ function sample(): ScoringCase {
   return {
     question: {
       type: CaseQuestionType.PHOTO,
-      id: "eiffel-tower",
+      id: questionId("eiffel-tower"),
       label: 'The "Iron Lady", Paris',
       answer: { lat: 48.8584, lon: 2.2945 },
-      toleranceKm: 25
+      tolerance: 25
     },
     kernel: KernelId.MULTI_EQUAL,
     floor: 0.05,
@@ -48,11 +49,11 @@ describe("scoring cases", () => {
       ...sample(),
       question: {
         type: CaseQuestionType.REGION,
-        id: "DEU",
+        id: questionId("germany-region"),
         label: "Germany",
         answer: { lat: 51.1, lon: 10.4 },
-        toleranceKm: 77.3,
-        flag: "de"
+        tolerance: 77.3,
+        flag: flagCode("de")
       },
       parts: { shape: 640.2, nearness: 300.5 }
     }

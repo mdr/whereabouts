@@ -34,30 +34,31 @@ import {
   type H3Res
 } from "./h3.ts"
 import { chordDistanceSq, toXyz, type LatLon } from "./geo.ts"
+import type { Degrees, Km, SquareKm } from "./units.ts"
 
 /** Cells across the brush radius a stamp aims for; sets the stamp resolution. */
 const TARGET_RINGS = 5
 /** Safety cap on rings per stamp; unreachable in practice now that the resolution adapts. */
 const MAX_RINGS = 40
 
-export function resolutionForTolerance(toleranceKm: number): H3Res {
-  const target = toleranceKm / 4
+export function resolutionForTolerance(tolerance: Km): H3Res {
+  const target = tolerance / 4
   for (let res = 0; res <= 10; res++) {
     if (getHexagonEdgeLengthAvg(h3Res(res), UNITS.km) <= target) return h3Res(Math.max(1, res))
   }
   return h3Res(10)
 }
 
-/** Centre-to-centre distance between neighbouring cells, km. */
-export function cellSpacingKm(res: H3Res): number {
+/** Centre-to-centre distance between neighbouring cells. */
+export function cellSpacing(res: H3Res): Km {
   return getHexagonEdgeLengthAvg(res, UNITS.km) * Math.sqrt(3)
 }
 
 export interface PaintCell {
-  lat: number
-  lon: number
+  lat: Degrees
+  lon: Degrees
   intensity: number
-  areaKm2: number
+  area: SquareKm
   /** H3 index, so scoring can refine a coarse cell where precision matters. */
   h3: H3Cell
 }
@@ -96,7 +97,7 @@ export class PaintLayer {
   readonly res: H3Res
   readonly cells = new Map<H3Cell, number>()
   private boundaryCache = new Map<H3Cell, number[][]>()
-  private areaCache = new Map<H3Cell, number>()
+  private areaCache = new Map<H3Cell, SquareKm>()
   private centreCache = new Map<H3Cell, [number, number]>()
   /** Incremented on every change; cheap dirty-check for renderers. */
   version = 0
@@ -109,9 +110,9 @@ export class PaintLayer {
    * The coarsest resolution (not finer than the layer's) that still puts
    * about TARGET_RINGS cells across the brush radius.
    */
-  stampResolution(radiusKm: number): H3Res {
+  stampResolution(radius: Km): H3Res {
     for (let r = 0; r < this.res; r++) {
-      if (cellSpacingKm(h3Res(r)) <= radiusKm / TARGET_RINGS) return h3Res(r)
+      if (cellSpacing(h3Res(r)) <= radius / TARGET_RINGS) return h3Res(r)
     }
     return this.res
   }
@@ -121,15 +122,15 @@ export class PaintLayer {
    * resolution a brush smaller than half a cell is a single cell (zero rings),
    * so zoomed right in the smallest brush paints exactly one hex.
    */
-  stampPlan(radiusKm: number): { res: H3Res; rings: number } {
-    const res = this.stampResolution(radiusKm)
-    const rings = Math.min(MAX_RINGS, Math.max(0, Math.round(radiusKm / cellSpacingKm(res))))
+  stampPlan(radius: Km): { res: H3Res; rings: number } {
+    const res = this.stampResolution(radius)
+    const rings = Math.min(MAX_RINGS, Math.max(0, Math.round(radius / cellSpacing(res))))
     return { res, rings }
   }
 
   /** The cells a stamp of this radius at `at` would touch, for previewing its footprint. */
-  stampCells(at: LatLon, radiusKm: number): H3Cell[] {
-    const { res, rings } = this.stampPlan(radiusKm)
+  stampCells(at: LatLon, radius: Km): H3Cell[] {
+    const { res, rings } = this.stampPlan(radius)
     return gridDisk(latLngToCell(at.lat, at.lon, res), rings)
   }
 
@@ -138,9 +139,9 @@ export class PaintLayer {
    * added at the centre; the edge ring receives about a tenth of that.
    * Negative strength erases (see `erase`).
    */
-  stamp(at: LatLon, radiusKm: number, strength: number): StampResult {
-    if (strength < 0) return this.erase(at, radiusKm, -strength)
-    const { res, rings } = this.stampPlan(radiusKm)
+  stamp(at: LatLon, radius: Km, strength: number): StampResult {
+    if (strength < 0) return this.erase(at, radius, -strength)
+    const { res, rings } = this.stampPlan(radius)
     const centre = latLngToCell(at.lat, at.lon, res)
     const byDistance = gridDiskDistances(centre, rings)
     const denom = (rings + 0.5) * (rings + 0.5)
@@ -164,9 +165,9 @@ export class PaintLayer {
    * time, so paint outside the brush survives. Density is conserved by the
    * split, and only cells touching the brush are ever split.
    */
-  erase(at: LatLon, radiusKm: number, strength: number): StampResult {
-    const { res: eraseRes, rings } = this.stampPlan(radiusKm)
-    const spacing = cellSpacingKm(eraseRes)
+  erase(at: LatLon, radius: Km, strength: number): StampResult {
+    const { res: eraseRes, rings } = this.stampPlan(radius)
+    const spacing = cellSpacing(eraseRes)
     const reach = (rings + 0.5) * spacing
     const denom = (rings + 0.5) * (rings + 0.5)
     const centreCell = latLngToCell(at.lat, at.lon, eraseRes)
@@ -286,7 +287,7 @@ export class PaintLayer {
     return t
   }
 
-  area(h: H3Cell): number {
+  area(h: H3Cell): SquareKm {
     let a = this.areaCache.get(h)
     if (a === undefined) {
       a = cellArea(h, UNITS.km2)
@@ -329,7 +330,7 @@ export class PaintLayer {
   *toCells(): IterableIterator<PaintCell> {
     for (const [h, intensity] of this.cells) {
       const [lat, lon] = this.centre(h)
-      yield { lat, lon, intensity, areaKm2: this.area(h), h3: h }
+      yield { lat, lon, intensity, area: this.area(h), h3: h }
     }
   }
 

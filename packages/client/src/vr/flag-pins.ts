@@ -24,6 +24,7 @@ import type { FlagCode } from "@whereabouts/shared/ids"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { FLAG_ATLAS, atlasCell } from "../flag-atlas"
 import { latLonToLocal } from "./sphere"
+import type { Metres } from "@whereabouts/shared/units"
 
 export interface VrFlagPin {
   flag: FlagCode
@@ -34,15 +35,15 @@ export interface VrFlagPin {
 }
 
 /** In metres, whatever the globe's zoom. */
-const PIN_M = 0.012
+const PIN_LENGTH: Metres = 0.012
 /** Each flag's width follows from its own shape. */
-const FLAG_H_M = 0.012
-const LABEL_W_M = 0.16
+const FLAG_HEIGHT: Metres = 0.012
+const LABEL_WIDTH: Metres = 0.16
 /** Pointed at, a flag grows this much, and its country's border shows in this colour. */
 const HIGHLIGHT = 1.8
 const BORDER = "#ff40ff"
 /** How far off a flag a ray may pass and still point at it: metres, and radians beyond. */
-const POINT_M = 0.01
+const POINT_REACH: Metres = 0.01
 const POINT_RAD = 0.015
 
 const up = new Vector3(0, 1, 0)
@@ -109,7 +110,7 @@ export class FlagPins {
     const texture = new CanvasTexture(this.labelCanvas)
     texture.colorSpace = SRGBColorSpace
     this.label = new Mesh(
-      new PlaneGeometry(LABEL_W_M, (LABEL_W_M * this.labelCanvas.height) / this.labelCanvas.width),
+      new PlaneGeometry(LABEL_WIDTH, (LABEL_WIDTH * this.labelCanvas.height) / this.labelCanvas.width),
       new MeshBasicMaterial({ map: texture, transparent: true, depthTest: false })
     )
     this.label.renderOrder = 5
@@ -184,7 +185,7 @@ export class FlagPins {
     // Above the enlarged flag, turned to the eyes.
     const mid = this.middle(pointed, v)
     const out = w.copy(mid).sub(this.group.getWorldPosition(centre)).normalize()
-    this.label.position.copy(mid).addScaledVector(out, FLAG_H_M * HIGHLIGHT + 0.025)
+    this.label.position.copy(mid).addScaledVector(out, FLAG_HEIGHT * HIGHLIGHT + 0.025)
     this.label.lookAt(head)
   }
 
@@ -217,7 +218,7 @@ export class FlagPins {
         // Ahead of the hand, and not round the back of the globe.
         if (t <= 0 || (globe !== undefined && t > globe + 0.03)) return
         const miss = w.addScaledVector(dir, -t).length()
-        const off = miss / (POINT_M + POINT_RAD * t)
+        const off = miss / (POINT_REACH + POINT_RAD * t)
         if (off < bestOff) [best, bestOff] = [i, off]
       })
     }
@@ -304,7 +305,7 @@ export class FlagPins {
     pins.forEach((p, i) => {
       // Without a flag, a blank corner of the picture.
       const cell = atlasCell(p.flag) ?? { x: width - 1, y: height - 1, w: 1, h: 1 }
-      const flagW = (FLAG_H_M * cell.w) / cell.h
+      const flagW = (FLAG_HEIGHT * cell.w) / cell.h
       const n = latLonToLocal(p.at)
       const foot = n.clone().multiplyScalar(this.base)
       feet.push(foot)
@@ -313,25 +314,25 @@ export class FlagPins {
       mids.push(
         n
           .clone()
-          .multiplyScalar(PIN_M + FLAG_H_M / 2)
+          .multiplyScalar(PIN_LENGTH + FLAG_HEIGHT / 2)
           .addScaledVector(east, flagW / 2)
       )
       for (const k of [0, 1]) foot.toArray(linePosition, (i * 2 + k) * 3)
       v.copy(n)
-        .multiplyScalar(PIN_M)
+        .multiplyScalar(PIN_LENGTH)
         .toArray(lineOffset, (i * 2 + 1) * 3)
       lineIndex.fill(i, i * 2, i * 2 + 2)
       // The flag's lower left corner at the pin's top, in the plane facing out.
       for (const [k, [x, y]] of [
         [0, 0],
         [flagW, 0],
-        [flagW, FLAG_H_M],
-        [0, FLAG_H_M]
+        [flagW, FLAG_HEIGHT],
+        [0, FLAG_HEIGHT]
       ].entries()) {
         foot.toArray(position, (i * 4 + k) * 3)
         corner
           .copy(n)
-          .multiplyScalar(PIN_M)
+          .multiplyScalar(PIN_LENGTH)
           .addScaledVector(east, x!)
           .addScaledVector(north, y!)
           .toArray(offset, (i * 4 + k) * 3)

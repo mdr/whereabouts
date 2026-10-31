@@ -10,6 +10,7 @@ import type { LatLon } from "./geo.ts"
 import { QUESTION_TYPES, QuestionType, AnswerType, Surface, type Clue, type FeatureType } from "./questions.ts"
 import type { PlayerColour } from "./colours.ts"
 import type { H3Cell, H3Res } from "./h3.ts"
+import type { Km, Ms } from "./units.ts"
 import { paintFromBase64, paintToBase64 } from "./paint-wire.ts"
 import { HintAxisSchema, MAX_HINTS, type HintAxis, type HintBand } from "./hints.ts"
 import type { KernelId } from "./scoring.ts"
@@ -18,15 +19,17 @@ import {
   PlayerNameSchema,
   PlayerTokenSchema,
   RoomCodeSchema,
+  type CommonsFile,
   type FlagCode,
   type PlayerId,
   type OutlineId,
   type PlayerName,
-  type RoomCode
+  type RoomCode,
+  type WikiTitle
 } from "./ids.ts"
 import { CloseReason } from "./close-reason.ts"
 
-export const PROTOCOL_VERSION = 6
+export const PROTOCOL_VERSION = 7
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -54,8 +57,8 @@ const RenameSchema = z.object({ name: PlayerNameSchema })
 /** Host removes a player from the game. */
 export const KickSchema = z.object({ playerId: PlayerIdSchema })
 
-/** Round lengths the host may pick, ms. */
-export const ROUND_LENGTHS_MS = [10_000, 20_000, 30_000, 45_000, 60_000, 90_000, 120_000] as const
+/** Round lengths the host may pick. */
+export const ROUND_LENGTHS: readonly Ms[] = [10_000, 20_000, 30_000, 45_000, 60_000, 90_000, 120_000]
 const MIN_ROUNDS = 1
 export const MAX_ROUNDS = 15
 /** Players in one game, one per player colour. */
@@ -66,9 +69,9 @@ export const MAX_SPECTATORS = 8
 
 /**
  * How long a dropped player's seat is held (a refresh is the common case),
- * and how long an empty game stays open, ms. Mid-game seats are held for good.
+ * and how long an empty game stays open. Mid-game seats are held for good.
  */
-export const SEAT_GRACE_MS = 30_000
+export const SEAT_GRACE: Ms = 30_000
 
 /** How many rounds of each type a game asks; the rounds are their total, in a shuffled order. */
 export type QuestionMix = Record<QuestionType, number>
@@ -123,10 +126,10 @@ export const showsLakes = (detail: MapDetail): boolean => detail !== MapDetail.M
 
 /** Host changes to the game settings while in the lobby. */
 export const ConfigureSchema = z.object({
-  roundMs: z
+  roundLength: z
     .number()
     .int()
-    .refine((v) => (ROUND_LENGTHS_MS as readonly number[]).includes(v), "unsupported round length")
+    .refine((v) => ROUND_LENGTHS.includes(v), "unsupported round length")
     .optional(),
   mix: MixSchema.optional(),
   mapDetail: MapDetailSchema.optional(),
@@ -182,7 +185,7 @@ export enum Phase {
 export interface GameConfig {
   /** The mix's total: set from it, never on its own. */
   rounds: number
-  roundMs: number
+  roundLength: Ms
   /** How many rounds of each kind of question. */
   mix: QuestionMix
   /** How much of the map shows while guessing (one of MAP_DETAILS). */
@@ -213,9 +216,9 @@ export interface PlayerView {
 
 /** What players see of an answer while guessing: what to mark, not where. */
 export type AnswerView =
-  | { type: AnswerType.POINT; toleranceKm: number }
+  | { type: AnswerType.POINT; tolerance: Km }
   /** The outline, which the prompt or flag gives away anyway. */
-  | { type: AnswerType.AREA; toleranceKm: number; outline: OutlineId; surface: Surface }
+  | { type: AnswerType.AREA; tolerance: Km; outline: OutlineId; surface: Surface }
 
 /** Painted on water: trimming drops paint on land. */
 export const onWater = (answer: AnswerView): boolean =>
@@ -239,8 +242,8 @@ interface RoundView {
   index: number
   total: number
   question: QuestionView
-  /** Server epoch ms when guessing ends. */
-  deadline: number
+  /** Server epoch time when guessing ends. */
+  deadline: Ms
 }
 
 export interface RoundResultView {
@@ -266,9 +269,9 @@ export interface RevealView {
   answer: LatLon
   label: string
   /** Wikipedia article title for the answer, when known. */
-  wiki?: string
+  wiki?: WikiTitle
   /** A photo of the answer, on a round that showed none while guessing (see photos.ts). */
-  photo?: string
+  photo?: CommonsFile
   results: RoundResultView[]
   /** Ids of players who have pressed Ready. The round advances when everyone connected has. */
   ready: PlayerId[]
@@ -276,10 +279,10 @@ export interface RevealView {
 
 /** The pictures a question shows, so a client can load the next round's before it starts. */
 export interface QuestionPictures {
-  image?: string
+  image?: CommonsFile
   flag?: FlagCode
   /** Shown at the reveal (see photos.ts). */
-  revealPhoto?: string
+  revealPhoto?: CommonsFile
 }
 
 /** A round of a finished game, for the final results: what it asked about. */
@@ -302,7 +305,7 @@ export interface GameView {
   code: RoomCode
   phase: Phase
   config: GameConfig
-  serverTime: number
+  serverTime: Ms
   you: {
     /** Absent in a view of no player. */
     id?: PlayerId

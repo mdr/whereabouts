@@ -21,13 +21,13 @@ function fail(x) {
 const [pointId, countryLabel] = process.argv.slice(2).filter((a) => a !== "--")
 const P = place(pointId ?? "paris")
 const C = country(countryLabel ?? "France")
-const res = Math.max(resolutionForTolerance(P.toleranceKm), resolutionForTolerance(C.toleranceKm))
+const res = Math.max(resolutionForTolerance(P.tolerance), resolutionForTolerance(C.tolerance))
 const area = (cells) => cells.reduce((s, h) => s + h3.cellArea(h, h3.UNITS.km2), 0)
 const spacing = h3.getHexagonEdgeLengthAvg(res, h3.UNITS.km) * Math.sqrt(3)
 const cCells = regionCells(C, res)
 const R = Math.sqrt(area(cCells) / Math.PI)
-const r = P.toleranceKm
-const rc = C.toleranceKm
+const r = P.tolerance
+const rc = C.tolerance
 
 /** Paint parts [{cells, weight}], each spread evenly by area. */
 function coat(parts) {
@@ -39,7 +39,7 @@ function coat(parts) {
   return buildDistribution(
     [...byCell].map(([h, density]) => {
       const [lat, lon] = h3.cellToLatLng(h)
-      return { lat, lon, intensity: density, areaKm2: h3.cellArea(h, h3.UNITS.km2), h3: h }
+      return { lat, lon, intensity: density, area: h3.cellArea(h, h3.UNITS.km2), h3: h }
     }),
     0.05
   )

@@ -2,6 +2,7 @@ import type { Page } from "playwright-core"
 import type { Tool } from "../../src/tool.ts"
 import { paintToolsTestIds } from "../../src/ui/PaintToolsTestIds.ts"
 import { byTestIdWith, isUsable } from "./support.ts"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** The brush bar along the bottom of the map. */
 export class PaintTools {
@@ -12,11 +13,11 @@ export class PaintTools {
   }
 
   /** Waits until the tools can be used: the round has started and you can paint. */
-  async waitUntilEnabled(timeoutMs = 15_000): Promise<void> {
+  async waitUntilEnabled(timeout: Ms = 15_000): Promise<void> {
     await this.#page
       .locator(`[data-testid="${paintToolsTestIds.toolButton}"]:not([disabled])`)
       .first()
-      .waitFor({ timeout: timeoutMs })
+      .waitFor({ timeout })
   }
 
   async selectTool(tool: Tool): Promise<void> {

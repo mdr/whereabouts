@@ -51,16 +51,13 @@ checks.check(await bobRoundPage.paintTools.toolIsUsable(Tool.PAN), "ingame: the 
 checks.check(await bobRoundPage.map.attributionIsUsable(), "ingame: the map attribution button is usable")
 checks.check(await bobRoundPage.map.attributionClearsToolbar(), "ingame: the attribution button clears the toolbar")
 checks.check(await bobRoundPage.hud.questionFoldIsUsable(), "ingame: the question's fold button is usable")
-const unfoldedPx = await bobRoundPage.hud.questionHeight()
+const unfolded = await bobRoundPage.hud.questionHeight()
 await bobRoundPage.hud.toggleQuestionFold()
-const foldedPx = await bobRoundPage.hud.questionHeight()
+const folded = await bobRoundPage.hud.questionHeight()
 await fits(bobRoundPage, "ingame-folded")
-checks.check(foldedPx < unfoldedPx, `ingame: folding shrinks the question (${unfoldedPx} to ${foldedPx} px)`)
+checks.check(folded < unfolded, `ingame: folding shrinks the question (${unfolded} to ${folded} px)`)
 await bobRoundPage.hud.toggleQuestionFold()
-checks.check(
-  (await bobRoundPage.hud.questionHeight()) === unfoldedPx,
-  "ingame: unfolding brings the whole question back"
-)
+checks.check((await bobRoundPage.hud.questionHeight()) === unfolded, "ingame: unfolding brings the whole question back")
 
 // One finger on the strip of map left clear (a photo makes the question card tall).
 await bobRoundPage.map.fingerDrag(await bobRoundPage.map.spotClearOfCards())

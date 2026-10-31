@@ -20,7 +20,7 @@ import {
   Vector3,
   type Object3D
 } from "three"
-import { greatCircleDistance, type LatLon } from "@whereabouts/shared/geo"
+import { EARTH_RADIUS, greatCircleDistance, type LatLon } from "@whereabouts/shared/geo"
 import type { PaintController } from "../paint-controller"
 import type { Theme } from "../themes"
 import type { Globe } from "./globe"
@@ -28,26 +28,26 @@ import { buildCan, buildEraser, buildPail } from "./models"
 import { SprayParticles } from "./particles"
 import { localToLatLon, raySphere } from "./sphere"
 import { Tool } from "../tool"
+import type { Km, Metres, Seconds } from "@whereabouts/shared/units"
 
 export type SprayTool = Tool.PAINT | Tool.ERASE | Tool.FILL
 
-const EARTH_KM = 6371
 /** Half the spray cone's angle: the spot's radius is this much of the can's distance. */
 const SPREAD = Math.tan((9 * Math.PI) / 180)
-const MIN_KM = 1
-const MAX_KM = 3000
+const MIN_RADIUS: Km = 1
+const MAX_RADIUS: Km = 3000
 /** Held still, the spray keeps adding paint this often. */
-const STILL_STAMP_S = 0.15
+const STILL_STAMP: Seconds = 0.15
 /** Nearer than this, paint goes on at full strength; it thins with distance beyond. */
-const FULL_STRENGTH_M = 0.3
+const FULL_STRENGTH_RANGE: Metres = 0.3
 /** The eraser's tip, from the grip, and how wide a patch it rubs. */
 const TIP = new Vector3(0, 0, -0.0625)
-const TIP_M = 0.012
+const TIP_SIZE: Metres = 0.012
 /** How near the surface counts as touching it: the rubber gives a little. */
-const TOUCH_M = 0.004
+const TOUCH_GAP: Metres = 0.004
 export const TRIGGER_DEAD = 0.05
 /** How far a pointing ray reaches when it misses the globe. */
-const BEAM_M = 1.5
+const BEAM_LENGTH: Metres = 1.5
 
 const origin = new Vector3()
 const dir = new Vector3()
@@ -182,7 +182,7 @@ export class HandTool {
   showBeam(globe: Globe | undefined): void {
     this.beam.visible = this.beamEnd.visible = globe !== undefined
     if (!globe) return
-    const d = this.aim(globe) ?? BEAM_M
+    const d = this.aim(globe) ?? BEAM_LENGTH
     this.beam.scale.set(1, 1, d)
     this.beamEnd.position.copy(origin).addScaledVector(dir, d)
   }
@@ -195,7 +195,7 @@ export class HandTool {
   touching(globe: Globe): Vector3 | undefined {
     if (this.toolNow !== Tool.ERASE || !this.holding || this.busy) return undefined
     const tip = this.grip.localToWorld(local.copy(TIP))
-    return tip.distanceTo(globe.centre) <= globe.radius + TOUCH_M ? tip : undefined
+    return tip.distanceTo(globe.centre) <= globe.radius + TOUCH_GAP ? tip : undefined
   }
 
   /**
@@ -225,17 +225,17 @@ export class HandTool {
     }
     hit.copy(origin).addScaledVector(dir, d)
     normal.copy(hit).sub(globe.centre).normalize()
-    const spotM = d * SPREAD
+    const spotSize = d * SPREAD
     this.spot.visible = true
     this.spot.position.copy(hit).addScaledVector(normal, 0.002)
     this.spot.lookAt(local.copy(hit).add(normal))
-    this.spot.scale.setScalar(spotM)
+    this.spot.scale.setScalar(spotSize)
 
     const spraying = paint.enabled.value && trigger > TRIGGER_DEAD
     if (this.toolNow === Tool.FILL) {
       if (spraying && !this.pulled) {
-        const radiusKm = Math.min(MAX_KM, Math.max(MIN_KM, (spotM / globe.radius) * EARTH_KM))
-        paint.fillOutside(localToLatLon(globe.group.worldToLocal(local.copy(hit))), radiusKm)
+        const radius = Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, (spotSize / globe.radius) * EARTH_RADIUS))
+        paint.fillOutside(localToLatLon(globe.group.worldToLocal(local.copy(hit))), radius)
         this.pulse(now, 0.6, gamepad)
       }
       this.pulled = spraying
@@ -246,11 +246,11 @@ export class HandTool {
       return false
     }
     if (this.toolNow === Tool.PAINT)
-      this.particles.spray(dt, 700 * trigger, origin, hit, spotM, this.colour ?? this.theme.ramp[2])
-    else this.particles.crumbs(dt, 90 * trigger, hit, normal, spotM)
+      this.particles.spray(dt, 700 * trigger, origin, hit, spotSize, this.colour ?? this.theme.ramp[2])
+    else this.particles.crumbs(dt, 90 * trigger, hit, normal, spotSize)
 
-    const thin = Math.min(1, FULL_STRENGTH_M / d)
-    this.stamp(now, globe, hit, spotM, (this.toolNow === Tool.ERASE ? -1 : 1) * 0.3 * trigger * thin, paint)
+    const thin = Math.min(1, FULL_STRENGTH_RANGE / d)
+    this.stamp(now, globe, hit, spotSize, (this.toolNow === Tool.ERASE ? -1 : 1) * 0.3 * trigger * thin, paint)
     this.pulse(now, 0.1 + 0.5 * trigger * thin, gamepad)
     return true
   }
@@ -269,9 +269,9 @@ export class HandTool {
     this.spot.visible = true
     this.spot.position.copy(hit).addScaledVector(normal, 0.002)
     this.spot.lookAt(local.copy(hit).add(normal))
-    this.spot.scale.setScalar(TIP_M)
-    this.particles.crumbs(dt, 90, hit, normal, TIP_M)
-    this.stamp(now, globe, hit, TIP_M, -0.3, paint)
+    this.spot.scale.setScalar(TIP_SIZE)
+    this.particles.crumbs(dt, 90, hit, normal, TIP_SIZE)
+    this.stamp(now, globe, hit, TIP_SIZE, -0.3, paint)
     this.pulse(now, 0.4, gamepad)
     return true
   }
@@ -281,15 +281,15 @@ export class HandTool {
     now: number,
     globe: Globe,
     at3: Vector3,
-    spotM: number,
+    spotSize: Metres,
     strength: number,
     paint: PaintController
   ): void {
-    const radiusKm = Math.min(MAX_KM, Math.max(MIN_KM, (spotM / globe.radius) * EARTH_KM))
+    const radius = Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, (spotSize / globe.radius) * EARTH_RADIUS))
     const at = localToLatLon(globe.group.worldToLocal(local.copy(at3)))
     const last = this.stroke
-    if (!last || greatCircleDistance(last.at, at) >= radiusKm / 4 || now - last.t >= STILL_STAMP_S) {
-      paint.stamp(at, radiusKm, strength)
+    if (!last || greatCircleDistance(last.at, at) >= radius / 4 || now - last.t >= STILL_STAMP) {
+      paint.stamp(at, radius, strength)
       this.stroke = { at, t: now }
     }
   }

@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vite-plus/test"
-import { FactType, pickFact, type Fact } from "./facts.ts"
+import { FactType, FactsSchema, pickFact, type Fact } from "./facts.ts"
+import { sourceUrl } from "./ids.ts"
 import facts from "../facts.json" with { type: "json" }
 
-const fact = (type: FactType, text: string): Fact => ({ type, text, source: "https://example.org" })
+const fact = (type: FactType, text: string): Fact => ({ type, text, source: sourceUrl("https://example.org") })
 const place = [
   fact(FactType.FAME, "big"),
   fact(FactType.FAME, "old"),
@@ -38,15 +39,15 @@ describe("picking a fact for the reveal", () => {
 })
 
 describe("the facts", () => {
-  const all = Object.entries(facts as Record<string, Fact[]>)
+  const all = Object.entries(facts)
 
-  it("are short single sentences, each with its source", () => {
+  it("each have a type and a source, by an article's title", () => {
+    expect(() => FactsSchema.parse(facts)).not.toThrow()
+  })
+
+  it("are short single sentences", () => {
     for (const [wiki, list] of all)
-      for (const f of list) {
-        expect(f.text.split(/\s+/).length, `${wiki}: ${f.text}`).toBeLessThanOrEqual(25)
-        expect(Object.values(FactType)).toContain(f.type)
-        expect(f.source).toMatch(/^https:\/\//)
-      }
+      for (const f of list) expect(f.text.split(/\s+/).length, `${wiki}: ${f.text}`).toBeLessThanOrEqual(25)
   })
 
   it("give every answer at least one", () => {

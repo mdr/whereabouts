@@ -12,7 +12,7 @@ const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label
 
 function cell(h: H3Cell, intensity = 1): PaintCell {
   const [lat, lon] = cellToLatLng(h)
-  return { lat, lon, intensity, areaKm2: cellArea(h, UNITS.km2), h3: h }
+  return { lat, lon, intensity, area: cellArea(h, UNITS.km2), h3: h }
 }
 
 describe("borders", () => {
@@ -79,7 +79,7 @@ describe("borders", () => {
     const lima = latLngToCell(-12.05, -77.04, h3Res(6))
     const sea = latLngToCell(30, -40, h3Res(6))
     // Equal areas, so the shares are the intensities': 3 of 5 in France, 1 in Peru, 1 at sea.
-    const even = (h: H3Cell, v: number) => ({ ...cell(h, v), areaKm2: 1 })
+    const even = (h: H3Cell, v: number) => ({ ...cell(h, v), area: 1 })
     const split = borders.paintedCountries([even(paris, 3), even(lima, 1), even(sea, 1)])
     expect(split.map((s) => s.country.label)).toEqual(["France", "Peru"])
     expect(split[0]!.share).toBeCloseTo(0.6, 1)

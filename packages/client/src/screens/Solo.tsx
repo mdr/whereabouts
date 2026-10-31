@@ -194,8 +194,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     setPhase(SoloPhase.PAINT)
   }
 
-  const useHint = (axis: HintAxis) =>
-    setHint(hintBand(answerCentre(q.answer), q.answer.toleranceKm, axis, Math.random()))
+  const useHint = (axis: HintAxis) => setHint(hintBand(answerCentre(q.answer), q.answer.tolerance, axis, Math.random()))
   // A flag round's reveal names the country under the pointer, and where the
   // paint mostly was. Loaded while the flag is still being painted.
   const borders = useBorders(q.type === QuestionType.FLAG)

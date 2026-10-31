@@ -9,13 +9,14 @@ import type { GameMap } from "./map"
 import { PaintModel } from "./paint-model"
 import { PaintView } from "./paint-view"
 import { PaintInput } from "./paint-input"
+import type { Km, Px } from "@whereabouts/shared/units"
 
 export class PaintController extends PaintModel {
   readonly gameMap: GameMap
   private readonly view: PaintView
   private readonly input: PaintInput
   readonly tool: PaintInput["tool"]
-  readonly brushPx: PaintInput["brushPx"]
+  readonly brushSize: PaintInput["brushSize"]
   readonly strength: PaintInput["strength"]
   readonly enabled: PaintInput["enabled"]
 
@@ -25,7 +26,7 @@ export class PaintController extends PaintModel {
     this.view = new PaintView(gameMap, this)
     this.input = new PaintInput(gameMap, this, this.view)
     this.tool = this.input.tool
-    this.brushPx = this.input.brushPx
+    this.brushSize = this.input.brushSize
     this.strength = this.input.strength
     this.enabled = this.input.enabled
   }
@@ -40,8 +41,8 @@ export class PaintController extends PaintModel {
     this.view.queue()
   }
 
-  override reset(toleranceKm: number): void {
-    super.reset(toleranceKm)
+  override reset(tolerance: Km): void {
+    super.reset(tolerance)
     this.view.draw()
   }
 
@@ -61,7 +62,7 @@ export class PaintController extends PaintModel {
     return this.input.onHover(listener)
   }
 
-  setBrushPx(px: number): void {
-    this.input.setBrushPx(px)
+  setBrushSize(size: Px): void {
+    this.input.setBrushSize(size)
   }
 }

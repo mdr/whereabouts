@@ -1,6 +1,6 @@
 import { Fragment } from "preact"
 import { useEffect, useRef, useState } from "preact/hooks"
-import { MAX_PLAYERS, MAX_SPECTATORS, ROUND_LENGTHS_MS, MAP_DETAILS, type GameView } from "@whereabouts/shared/protocol"
+import { MAX_PLAYERS, MAX_SPECTATORS, ROUND_LENGTHS, MAP_DETAILS, type GameView } from "@whereabouts/shared/protocol"
 import { MAX_HINTS } from "@whereabouts/shared/hints"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { colourCss } from "@whereabouts/shared/colours"
@@ -26,7 +26,7 @@ import { cx } from "../ui/cx"
 import kit from "../ui/kit.module.css"
 import s from "./Lobby.module.css"
 
-const SECONDS = ROUND_LENGTHS_MS.map((ms) => ({ value: ms, label: String(ms / 1000) }))
+const SECONDS = ROUND_LENGTHS.map((ms) => ({ value: ms, label: String(ms / 1000) }))
 const HINTS = Array.from({ length: MAX_HINTS + 1 }, (_, n) => ({ value: n, label: String(n) }))
 
 /**
@@ -208,8 +208,8 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
                   <Pills
                     label="Seconds per round"
                     options={SECONDS}
-                    value={view.config.roundMs}
-                    onChange={(roundMs) => configureAsHost(conn, { roundMs })}
+                    value={view.config.roundLength}
+                    onChange={(roundLength) => configureAsHost(conn, { roundLength })}
                   />
                 </div>
                 <div class={s.setting} data-testid={lobbyTestIds.hintsSetting}>
@@ -321,9 +321,9 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: Playe
 
 /** The setup in a line, for a guest in the headset. */
 function setupLine(view: GameView): string {
-  const { rounds, roundMs, mix, mapDetail, hints } = view.config
+  const { rounds, roundLength, mix, mapDetail, hints } = view.config
   const map = MAP_DETAILS.find((d) => d.id === mapDetail)?.label ?? mapDetail
-  return `${rounds} ${rounds === 1 ? "round" : "rounds"} of ${roundMs / 1000} s, ${hints} ${hints === 1 ? "hint" : "hints"} each: ${describeMix(mix)}. ${map} map.`
+  return `${rounds} ${rounds === 1 ? "round" : "rounds"} of ${roundLength / 1000} s, ${hints} ${hints === 1 ? "hint" : "hints"} each: ${describeMix(mix)}. ${map} map.`
 }
 
 /**
@@ -332,7 +332,7 @@ function setupLine(view: GameView): string {
  * that plays a short highlight; nothing flashes on first load.
  */
 function SetupSummary({ view }: { view: GameView }) {
-  const { rounds, roundMs, mix, mapDetail, hints } = view.config
+  const { rounds, roundLength, mix, mapDetail, hints } = view.config
   const shown = useRef(view.config)
   const before = shown.current
   useEffect(() => {
@@ -350,9 +350,9 @@ function SetupSummary({ view }: { view: GameView }) {
     {
       key: "seconds",
       testId: setupSummaryTestIds.seconds,
-      value: `${roundMs / 1000} s`,
+      value: `${roundLength / 1000} s`,
       label: "per round",
-      changed: roundMs !== before.roundMs
+      changed: roundLength !== before.roundLength
     },
     {
       key: "hints",

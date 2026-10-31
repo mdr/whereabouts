@@ -35,9 +35,10 @@ import {
   type H3Res
 } from "./h3.ts"
 import { bearing, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
+import type { Degrees, Km, SquareKm } from "./units.ts"
 import {
   AnswerType,
-  MIN_SPREAD_KM,
+  MIN_SPREAD,
   answerCentre,
   type Answer,
   type AreaAnswer,
@@ -107,8 +108,8 @@ export interface AreaScore {
  * to half the tolerance across: far finer than its narrowest Gaussian, and
  * much faster.
  */
-export function regionScoringRes(toleranceKm: number): H3Res {
-  return h3Res(Math.max(0, resolutionForTolerance(toleranceKm) - 1))
+export function regionScoringRes(tolerance: Km): H3Res {
+  return h3Res(Math.max(0, resolutionForTolerance(tolerance) - 1))
 }
 
 /** The region's cells at `res`: those whose centres fall inside the outline. */
@@ -149,8 +150,7 @@ export function insideRegion(q: Area, { lat, lon }: LatLon): boolean {
  * two places close together.
  */
 export function roundsOverlap(a: ScoredAnswer, b: ScoredAnswer): boolean {
-  if (a.type === AnswerType.POINT && b.type === AnswerType.POINT)
-    return greatCircleDistance(a.at, b.at) <= MIN_SPREAD_KM
+  if (a.type === AnswerType.POINT && b.type === AnswerType.POINT) return greatCircleDistance(a.at, b.at) <= MIN_SPREAD
   return (
     (a.type === AnswerType.AREA && insideRegion(a, answerCentre(b))) ||
     (b.type === AnswerType.AREA && insideRegion(b, answerCentre(a)))
@@ -164,7 +164,7 @@ function regionAnswerFor(q: Area, k: Kernel = NEARNESS_KERNEL): RegionAnswer {
   const key = `${q.outline}|${k.id}`
   let a = answers.get(key)
   if (!a) {
-    a = regionAnswer(regionCells(q, regionScoringRes(q.toleranceKm)), q.toleranceKm, k)
+    a = regionAnswer(regionCells(q, regionScoringRes(q.tolerance)), q.tolerance, k)
     answers.set(key, a)
   }
   return a
@@ -172,7 +172,7 @@ function regionAnswerFor(q: Area, k: Kernel = NEARNESS_KERNEL): RegionAnswer {
 
 export function scoreArea(painted: Distribution, q: Area): AreaScore {
   const shape = shapeScore(paintMass(painted, q), q)
-  const coarse = coarsenDistribution(painted, regionScoringRes(q.toleranceKm))
+  const coarse = coarsenDistribution(painted, regionScoringRes(q.tolerance))
   const nearness = scoreRegion(coarse, regionAnswerFor(q)).score
   return { score: SHAPE_WEIGHT * shape + (1 - SHAPE_WEIGHT) * nearness, shape, nearness }
 }
@@ -194,7 +194,7 @@ export function scoreAnswer(
     const { score, shape, nearness } = scoreArea(painted, q)
     return { score, parts: { shape, nearness } }
   }
-  const { score, A, B } = scoreDistribution(painted, q.at, q.toleranceKm, kernel)
+  const { score, A, B } = scoreDistribution(painted, q.at, q.tolerance, kernel)
   return { score, parts: { A, B } }
 }
 
@@ -233,9 +233,9 @@ export interface RegionMisfit {
    * centre and its distance from the nearest part of the country. Undefined when
    * there is none, or when it surrounds the country rather than leaning one way.
    */
-  off: { bearing: number; km: number } | undefined
+  off: { bearing: Degrees; distance: Km } | undefined
   /** Which way from the centre the bare or thin part of the country lies; undefined when it does not lean one way. */
-  bare: { bearing: number } | undefined
+  bare: { bearing: Degrees } | undefined
 }
 
 /**
@@ -256,9 +256,9 @@ export function regionMisfit(dist: Distribution, q: Area): RegionMisfit {
   let off: RegionMisfit["off"] = undefined
   const offCentre = leaning(q.centre, offCells)
   if (offCentre && !region.cells.has(latLngToCell(offCentre.lat, offCentre.lon, region.res))) {
-    let km = Infinity
-    for (const h of region.cells.keys()) km = Math.min(km, greatCircleDistance(offCentre, latLng(h)))
-    off = { bearing: bearing(q.centre, offCentre), km }
+    let distance = Infinity
+    for (const h of region.cells.keys()) distance = Math.min(distance, greatCircleDistance(offCentre, latLng(h)))
+    off = { bearing: bearing(q.centre, offCentre), distance }
   }
 
   // Shortfall below half the density the paint on the country would have spread evenly, as regionFit counts it.
@@ -284,26 +284,26 @@ function latLng(h: H3Cell): LatLon {
 /** The weighted cells' mass centre, if they lean away from `centre` rather than surround it. */
 function leaning(centre: LatLon, cells: [H3Cell, number][]): LatLon | undefined {
   let total = 0
-  let meanKm = 0
+  let meanDistance: Km = 0
   const sum = [0, 0, 0]
   for (const [h, w] of cells) {
     const p = latLng(h)
     const v = toXyz(p)
     for (let i = 0; i < 3; i++) sum[i]! += w * v[i]!
-    meanKm += w * greatCircleDistance(centre, p)
+    meanDistance += w * greatCircleDistance(centre, p)
     total += w
   }
   if (total <= 0) return undefined
   const m = fromXyz([sum[0]!, sum[1]!, sum[2]!])
-  return greatCircleDistance(centre, m) >= LEAN * (meanKm / total) ? m : undefined
+  return greatCircleDistance(centre, m) >= LEAN * (meanDistance / total) ? m : undefined
 }
 
 interface Region {
   /** The painting resolution. */
   res: H3Res
   /** The country's cells at the painting resolution, with their areas. */
-  cells: Map<H3Cell, number>
-  area: number
+  cells: Map<H3Cell, SquareKm>
+  area: SquareKm
   /** Their ancestors at each coarser resolution, filled in as needed. */
   ancestors: Map<H3Res, Set<H3Cell>>
 }
@@ -314,7 +314,7 @@ const regions = new Map<OutlineId, Region>()
 function regionAt(q: Area): Region {
   let region = regions.get(q.outline)
   if (!region) {
-    const res = resolutionForTolerance(q.toleranceKm)
+    const res = resolutionForTolerance(q.tolerance)
     const cells = new Map<H3Cell, number>()
     let area = 0
     for (const h of regionCells(q, res)) {
@@ -346,7 +346,7 @@ function overlaps(region: Region, h: H3Cell, r: H3Res): boolean {
  * would mean millions of cells. The world floor is left out.
  */
 function paintMass(dist: Distribution, q: Area): Map<H3Cell, number> {
-  const res = resolutionForTolerance(q.toleranceKm)
+  const res = resolutionForTolerance(q.tolerance)
   const region = regionAt(q)
   const mass = new Map<H3Cell, number>()
   const add = (h: H3Cell, p: number) => mass.set(h, (mass.get(h) ?? 0) + p)

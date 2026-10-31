@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { commonsImageUrl, commonsPageUrl } from "@whereabouts/shared/questions"
+import type { CommonsFile } from "@whereabouts/shared/ids"
 import { Icon } from "./icons"
 import { flagFile, flagRatio, flagUrl } from "../flags"
 import { cx } from "./cx"
@@ -37,7 +38,7 @@ export function SmallFlag({ code, class: cls }: { code: string; class?: string }
   )
 }
 
-export function CommonsCredit({ image }: { image: string }) {
+export function CommonsCredit({ image }: { image: CommonsFile }) {
   return (
     <a
       class={s.credit}
@@ -70,7 +71,7 @@ export function SmallPictureBox({
   )
 }
 
-export function SmallPhoto({ image }: { image: string }) {
+export function SmallPhoto({ image }: { image: CommonsFile }) {
   const [large, setLarge] = useState(false)
   useEscape(large, () => setLarge(false))
   const thumb = useElementRef<HTMLImageElement>()

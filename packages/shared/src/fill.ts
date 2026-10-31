@@ -28,6 +28,7 @@ import {
   type H3Res
 } from "./h3.ts"
 import type { LatLon } from "./geo.ts"
+import type { Km } from "./units.ts"
 
 /** The density of a fill: equal for every country filled. */
 export const FILL_DENSITY = 1
@@ -42,8 +43,8 @@ export interface FillShape {
   rings?: number[][][]
   /** Its answer, for a country too small to hold a cell. */
   answer: LatLon
-  /** For a small country: how far from its answer counts as the country, km. */
-  near?: number
+  /** For a small country: how far from its answer counts as the country. */
+  near?: Km
 }
 
 function cellsAt(shape: FillShape, res: H3Res): H3Cell[] {

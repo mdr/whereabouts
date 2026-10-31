@@ -5,6 +5,7 @@ import { RevealPage } from "./RevealPage.ts"
 import { RoundPage } from "./RoundPage.ts"
 import { Screen } from "./Screen.ts"
 import type { Tab } from "./Tab.ts"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** You pressed Done and wait for the others, or for the clock. */
 export class RoundDonePage extends Screen {
@@ -28,7 +29,7 @@ export class RoundDonePage extends Screen {
     return RoundPage.whenShown(this.tab, 5_000)
   }
 
-  async waitForReveal(timeoutMs = 20_000): Promise<RevealPage> {
-    return RevealPage.whenShown(this.tab, timeoutMs)
+  async waitForReveal(timeout: Ms = 20_000): Promise<RevealPage> {
+    return RevealPage.whenShown(this.tab, timeout)
   }
 }

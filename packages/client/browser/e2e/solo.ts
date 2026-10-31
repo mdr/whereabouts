@@ -20,7 +20,7 @@ checks.check(/^Between [\d.]+°[EW]? and [\d.]+°[EW]?$/.test(band), `practice g
 const shapes = await practiceRoundPage.map.shownHintShapes()
 checks.check(shapes === 1 || shapes === 2, `the band is shaded on the map (${shapes})`)
 
-await practiceRoundPage.map.drag({ across: 0.5, down: 0.45 }, { distancePx: 120, steps: 20 })
+await practiceRoundPage.map.drag({ across: 0.5, down: 0.45 }, { distance: 120, steps: 20 })
 await practiceRoundPage.map.dab({ across: 0.7, down: 0.54 })
 const twoBlobs = await practiceRoundPage.map.yourPaintCells()
 await practiceRoundPage.screenshot(`${out}/2-painted.png`)

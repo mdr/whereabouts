@@ -18,12 +18,13 @@ import { flagRevealTestIds } from "./FlagRevealTestIds"
 import { cx } from "./cx"
 import kit from "./kit.module.css"
 import s from "./FlagReveal.module.css"
+import type { Ms, Px } from "@whereabouts/shared/units"
 
 /** How near the pointer a small country's answer counts as under it: Tuvalu is far less than a pixel at world zoom. */
-const SMALL_PX = 12
+const SMALL: Px = 12
 
 /** How long after a touch a mouseout is taken for the browser's emulation, not the pointer leaving. */
-const TOUCH_MS = 1000
+const TOUCH_EMULATION: Ms = 1000
 
 /** Below this share of the paint, no one country is named for it. */
 const MIN_SHARE = 0.2
@@ -87,7 +88,7 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
     const map = gameMap.map
     const show = (e: MapMouseEvent) => {
       const p = { lat: e.lngLat.lat, lon: e.lngLat.lng }
-      const f = borders.countryAt(p) ?? borders.smallNear(p, gameMap.metersPerPixel(p.lat) / 1000, SMALL_PX)
+      const f = borders.countryAt(p) ?? borders.smallNear(p, gameMap.metersPerPixel(p.lat) / 1000, SMALL)
       setHit(f ? { f, x: e.originalEvent.clientX, y: e.originalEvent.clientY } : undefined)
     }
     const hide = () => setHit(undefined)
@@ -96,7 +97,7 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
     // mouseout among them (in Chrome), which must not hide it.
     let touchedAt = 0
     const touched = () => (touchedAt = Date.now())
-    const out = () => Date.now() - touchedAt > TOUCH_MS && hide()
+    const out = () => Date.now() - touchedAt > TOUCH_EMULATION && hide()
     map.on("mousemove", show)
     map.on("click", show)
     map.on("touchend", touched)

@@ -6,6 +6,7 @@ import { VR_LOAD_STAGES, VrCodeMissing, loadVr, loadedVr, vrLoadStage, vrSupport
 import { Icon } from "./icons"
 import { vrButtonTestIds } from "./VrButtonTestIds"
 import s from "./VrButton.module.css"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** Where a press of the VR button has got: the overlay it shows until the headset opens. */
 enum LaunchStage {
@@ -20,7 +21,7 @@ enum LaunchStage {
 /** How many screens now keep the headset on. */
 let showing = 0
 /** Long enough for the next screen's effects, which wait for a frame or 100 ms. */
-const HANDOVER_MS = 500
+const HANDOVER: Ms = 500
 
 /**
  * Keep the headset showing what the screen shows: the menu, the round, its
@@ -55,7 +56,7 @@ export function useVrHold(): void {
       showing--
       setTimeout(() => {
         if (showing === 0) loadedVr.value?.exit()
-      }, HANDOVER_MS)
+      }, HANDOVER)
     }
   }, [])
 }

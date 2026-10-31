@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vite-plus/test"
 import { pickAwards, type PlayerFacts, type RoundFacts } from "./awards.ts"
 import { playerId } from "./ids.ts"
+import type { Ms } from "./units.ts"
 
 const round = (score: number, extra: Partial<RoundFacts> = {}): RoundFacts => ({
   label: "Paris",
   score,
   passed: false,
-  lockSeconds: 30,
-  roundSeconds: 60,
-  areaKm2: 10_000,
+  lockedAfter: 30_000,
+  roundLength: 60_000,
+  area: 10_000,
   ...extra
 })
 /** Player "a" is p1, "b" p2, and so on. */
@@ -55,19 +56,19 @@ describe("pickAwards", () => {
   })
 
   it("leaves a short round's last seconds to the end of it", () => {
-    const at = (lockSeconds: number) => round(500, { lockSeconds, roundSeconds: 10 })
+    const at = (lockedAfter: Ms) => round(500, { lockedAfter, roundLength: 10_000 })
     const titles = (rounds: RoundFacts[]) =>
       SEEDS.flatMap((seed) => pickAwards([player("a", rounds), player("b", [round(500), round(500)])], seed)).map(
         (a) => a.title
       )
-    expect(titles([at(6), at(7)])).not.toContain("Last-Second Merchant")
-    expect(titles([at(9), at(9)])).toContain("Last-Second Merchant")
+    expect(titles([at(6_000), at(7_000)])).not.toContain("Last-Second Merchant")
+    expect(titles([at(9_000), at(9_000)])).toContain("Last-Second Merchant")
   })
 
   it("names a confident miss, with the distance", () => {
     const miss = round(60, {
       label: "Tokyo",
-      point: { spot: { lat: 0, lon: 0 }, km: 9_400, spread: 10, distance: 930, hedged: false, toleranceKm: 100 }
+      point: { spot: { lat: 0, lon: 0 }, miss: 9_400, spread: 10, missCost: 930, hedged: false, tolerance: 100 }
     })
     const awards = SEEDS.flatMap((seed) => pickAwards([player("a", [miss]), player("b", [round(700)])], seed))
     expect(awards.map((a) => a.line)).toContain("{0} put Tokyo 9,400 km away. Visible from space, to be fair.")

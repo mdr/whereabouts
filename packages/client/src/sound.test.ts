@@ -5,13 +5,13 @@ import { Phase } from "@whereabouts/shared/protocol"
 
 describe("countdownPlan", () => {
   it("waits until ten seconds are left, then plays from the start", () => {
-    expect(countdownPlan(60_000)).toEqual({ delayMs: 50_000, offsetS: 0 })
-    expect(countdownPlan(10_000)).toEqual({ delayMs: 0, offsetS: 0 })
+    expect(countdownPlan(60_000)).toEqual({ delay: 50_000, offset: 0 })
+    expect(countdownPlan(10_000)).toEqual({ delay: 0, offset: 0 })
   })
 
   it("joins partway when arriving with less than ten seconds left, so the alarm still lands on zero", () => {
-    expect(countdownPlan(6_000)).toEqual({ delayMs: 0, offsetS: 4 })
-    expect(countdownPlan(500)).toEqual({ delayMs: 0, offsetS: 9.5 })
+    expect(countdownPlan(6_000)).toEqual({ delay: 0, offset: 4 })
+    expect(countdownPlan(500)).toEqual({ delay: 0, offset: 9.5 })
   })
 
   it("plays nothing once time is up", () => {

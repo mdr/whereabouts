@@ -20,6 +20,7 @@ import type { LatLon } from "@whereabouts/shared/geo"
 import type { Theme } from "./themes"
 import { HintAxis } from "@whereabouts/shared/hints"
 import { DETAIL_RANK, RevealDetail, type ShownDetail } from "./shown-detail"
+import type { Km, Metres } from "@whereabouts/shared/units"
 
 setWorkerUrl(mapWorkerUrl)
 
@@ -35,7 +36,7 @@ const COLOUR_SOURCE = "ne2_shaded"
 const COLOUR_LAYER = "natural-colour"
 
 /** World circumference at the equator in metres, for metres-per-pixel maths. */
-const WORLD_M = 40075016.686
+const EQUATOR: Metres = 40075016.686
 const WORLD_CENTER: [number, number] = [10, 25]
 const WORLD_ZOOM = 1.6
 /** MapLibre's world is 512 px wide at zoom 0. */
@@ -675,7 +676,7 @@ export class GameMap {
   metersPerPixel(lat: number): number {
     const z = this.map.getZoom()
     const at = this.globe ? this.map.getCenter().lat : lat
-    return (WORLD_M * Math.cos((at * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, z))
+    return (EQUATOR * Math.cos((at * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, z))
   }
 
   /** Back to the whole-world starting view, e.g. at the start of a round. */
@@ -699,8 +700,8 @@ export class GameMap {
     const f = el.clientHeight / 2 / Math.tan((this.map.getVerticalFieldOfView() * Math.PI) / 360)
     const sin = disc / Math.hypot(f, disc)
     const radius = (f * sin) / (1 - sin)
-    const worldPx = 2 * Math.PI * radius * Math.cos((lat * Math.PI) / 180)
-    return Math.max(this.map.getMinZoom(), Math.log2(worldPx / WORLD_PX_Z0))
+    const worldWidth = 2 * Math.PI * radius * Math.cos((lat * Math.PI) / 180)
+    return Math.max(this.map.getMinZoom(), Math.log2(worldWidth / WORLD_PX_Z0))
   }
 
   /**
@@ -710,11 +711,11 @@ export class GameMap {
   fitAnswerAndPaint(
     answer: LatLon,
     paint: GeoJSON.FeatureCollection,
-    toleranceKm: number,
+    tolerance: Km,
     outline: GeoJSON.Feature[] = []
   ): void {
     // Always at least two tolerances around the answer.
-    const dLat = (2 * toleranceKm) / 111
+    const dLat = (2 * tolerance) / 111
     const dLon = dLat / Math.max(0.2, Math.cos((answer.lat * Math.PI) / 180))
     const around: Box = [answer.lon - dLon, answer.lat - dLat, answer.lon + dLon, answer.lat + dLat]
     const answerBox = boxAround(outline, around)
@@ -734,18 +735,13 @@ export class GameMap {
   }
 
   /** Frame a country's outline (GeoJSON MultiPolygon coordinates) together with paint. */
-  fitRegionAndPaint(
-    answer: LatLon,
-    outline: number[][][][],
-    paint: GeoJSON.FeatureCollection,
-    toleranceKm: number
-  ): void {
+  fitRegionAndPaint(answer: LatLon, outline: number[][][][], paint: GeoJSON.FeatureCollection, tolerance: Km): void {
     const parts = outline.map((coordinates): GeoJSON.Feature => ({
       type: "Feature",
       properties: {},
       geometry: { type: "Polygon", coordinates }
     }))
-    this.fitAnswerAndPaint(answer, paint, toleranceKm, parts)
+    this.fitAnswerAndPaint(answer, paint, tolerance, parts)
   }
 
   /**

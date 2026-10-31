@@ -5,6 +5,7 @@ import { hudBottomTestIds } from "../../src/ui/HudTestIds.ts"
 import { questionCardTestIds } from "../../src/ui/QuestionCardTestIds.ts"
 import { playersPanelTestIds } from "../../src/ui/PlayersPanelTestIds.ts"
 import { isUsable, until } from "./support.ts"
+import type { Ms, Px } from "@whereabouts/shared/units"
 
 /** A spot on the map, as fractions of its width and height from the top left. */
 export interface MapSpot {
@@ -26,9 +27,9 @@ export class MapPanel {
   }
 
   /** Waits until the map has loaded and stopped moving. */
-  async waitUntilSettled(timeoutMs = 30_000): Promise<void> {
-    await this.#page.getByTestId(mapViewTestIds.map).locator("canvas").waitFor({ timeout: timeoutMs })
-    await this.#page.getByTestId(mapViewTestIds.loading).waitFor({ state: "detached", timeout: timeoutMs })
+  async waitUntilSettled(timeout: Ms = 30_000): Promise<void> {
+    await this.#page.getByTestId(mapViewTestIds.map).locator("canvas").waitFor({ timeout })
+    await this.#page.getByTestId(mapViewTestIds.loading).waitFor({ state: "detached", timeout })
     // Still for half a second: a new round flies the view to its start.
     let stillSince = Date.now()
     await until(
@@ -42,7 +43,7 @@ export class MapPanel {
         return Date.now() - stillSince
       },
       (ms) => ms >= 500,
-      timeoutMs
+      timeout
     )
   }
 
@@ -53,14 +54,17 @@ export class MapPanel {
   }
 
   /** Drag the mouse a short way to the right from `at`, with the button held. */
-  async drag(at: MapSpot, { distancePx = 40, steps = 8, holdMs = 0 } = {}): Promise<void> {
+  async drag(
+    at: MapSpot,
+    { distance = 40, steps = 8, hold = 0 }: { distance?: Px; steps?: number; hold?: Ms } = {}
+  ): Promise<void> {
     const { x, y } = await this.#point(at)
     const mouse = this.#page.mouse
     await mouse.move(x, y)
     await mouse.down()
     for (let i = 1; i <= steps; i++) {
-      await mouse.move(x + (distancePx * i) / steps, y + Math.sin(i) * 4)
-      if (holdMs) await this.#page.waitForTimeout(holdMs / steps)
+      await mouse.move(x + (distance * i) / steps, y + Math.sin(i) * 4)
+      if (hold) await this.#page.waitForTimeout(hold / steps)
     }
     await mouse.up()
   }
@@ -68,13 +72,13 @@ export class MapPanel {
   /** Drag with Space held, which pans whatever the tool. */
   async dragHoldingSpace(at: MapSpot): Promise<void> {
     await this.#page.keyboard.down("Space")
-    await this.drag(at, { distancePx: 120, steps: 12 })
+    await this.drag(at, { distance: 120, steps: 12 })
     await this.#page.keyboard.up("Space")
   }
 
   /** A click without moving. */
   async dab(at: MapSpot): Promise<void> {
-    await this.drag(at, { distancePx: 10, steps: 1 })
+    await this.drag(at, { distance: 10, steps: 1 })
   }
 
   /** The middle of the strip of map between the cards at the top and the toolbar. */

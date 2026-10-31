@@ -21,8 +21,8 @@ export function useGameSounds(conn: Connection, view: GameView | undefined): voi
   useEffect(() => {
     if (phase === undefined) return
     const next = { phase, round }
-    const msLeft = lastDeadline.current === undefined ? 0 : conn.msUntil(lastDeadline.current)
-    const cue = roundCue(prev.current, next, msLeft)
+    const timeLeft = lastDeadline.current === undefined ? 0 : conn.timeUntil(lastDeadline.current)
+    const cue = roundCue(prev.current, next, timeLeft)
     if (cue === RoundCue.ROUND_START) sound.cue(RoundCue.ROUND_START)
     if (cue === RoundCue.FINISHED_EARLY) {
       sound.stopCountdown()
@@ -41,7 +41,7 @@ export function useGameSounds(conn: Connection, view: GameView | undefined): voi
   useEffect(() => {
     if (deadline === undefined) return
     lastDeadline.current = deadline
-    sound.scheduleCountdown(conn.msUntil(deadline))
+    sound.scheduleCountdown(conn.timeUntil(deadline))
   }, [deadline])
 
   useEffect(() => () => sound.stopAll(), [])

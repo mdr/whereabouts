@@ -4,6 +4,7 @@
  * emoji, which the panels' font lacks.
  */
 import { CanvasTexture, Mesh, MeshBasicMaterial, PlaneGeometry, SRGBColorSpace, Vector3 } from "three"
+import type { Metres } from "@whereabouts/shared/units"
 
 export interface VrBoard {
   awards: { emoji: string; title: string; line: { text: string; colour?: string }[] }[]
@@ -16,8 +17,8 @@ export interface VrBoard {
 const W = 1400
 const PAD = 64
 const ROW = 84
-const BOARD_M = 0.95
-const MAX_H_M = 0.75
+const BOARD_WIDTH: Metres = 0.95
+const MAX_HEIGHT: Metres = 0.75
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
 const EMOJI = "'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif"
 
@@ -57,7 +58,7 @@ export class ResultsBoard {
     this.mesh.material.map = texture
     this.mesh.material.needsUpdate = true
     const aspect = canvas.height / canvas.width
-    const width = Math.min(BOARD_M, MAX_H_M / aspect)
+    const width = Math.min(BOARD_WIDTH, MAX_HEIGHT / aspect)
     this.mesh.scale.set(width, width * aspect, 1)
   }
 }

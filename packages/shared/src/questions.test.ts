@@ -17,11 +17,11 @@ import {
   type PointAnswer
 } from "./questions.ts"
 import { greatCircleDistance } from "./geo.ts"
-import { flagCode, outlineId } from "./ids.ts"
+import { commonsFile, flagCode, outlineId, wikiTitle } from "./ids.ts"
 
 describe("wikipediaUrl", () => {
   it("links the article, or searches for the label without one", () => {
-    expect(wikipediaUrl("St. Peter's Basilica", "St Peter's Basilica, Vatican City")).toBe(
+    expect(wikipediaUrl(wikiTitle("St. Peter's Basilica"), "St Peter's Basilica, Vatican City")).toBe(
       "https://en.wikipedia.org/wiki/St._Peter's_Basilica"
     )
     expect(wikipediaUrl(undefined, "Oia, Santorini")).toBe(
@@ -30,18 +30,18 @@ describe("wikipediaUrl", () => {
   })
 })
 
-const point: PointAnswer = { type: AnswerType.POINT, at: { lat: 1, lon: 2 }, toleranceKm: 10 }
+const point: PointAnswer = { type: AnswerType.POINT, at: { lat: 1, lon: 2 }, tolerance: 10 }
 const area: AreaAnswer = {
   type: AnswerType.AREA,
   outline: outlineId("somewhere"),
   centre: { lat: 3, lon: 4 },
-  toleranceKm: 10,
+  tolerance: 10,
   surface: Surface.LAND
 }
 
 describe("promptOf", () => {
   it("asks a photo where it is, a name as written, and a flag by how it is painted", () => {
-    const photo: Clue = { type: ClueType.PHOTO, image: "x.jpg" }
+    const photo: Clue = { type: ClueType.PHOTO, image: commonsFile("x.jpg") }
     const name: Clue = { type: ClueType.NAME, prompt: "Where are the Seychelles?" }
     const flag: Clue = { type: ClueType.FLAG, flag: flagCode("de") }
     expect(promptOf({ clue: photo, answer: point })).toBe(PHOTO_PROMPT)
@@ -67,8 +67,8 @@ describe("the catalogue", () => {
       const at = answerCentre(q.answer)
       expect(Math.abs(at.lat), q.id).toBeLessThanOrEqual(90)
       expect(Math.abs(at.lon), q.id).toBeLessThanOrEqual(180)
-      expect(q.answer.toleranceKm, q.id).toBeGreaterThanOrEqual(1)
-      expect(q.answer.toleranceKm, q.id).toBeLessThanOrEqual(1500)
+      expect(q.answer.tolerance, q.id).toBeGreaterThanOrEqual(1)
+      expect(q.answer.tolerance, q.id).toBeLessThanOrEqual(1500)
       expect(promptOf(q).length, q.id).toBeGreaterThan(0)
       expect(q.label.length, q.id).toBeGreaterThan(0)
       expect(q.wiki.length, `${q.id} needs a Wikipedia article`).toBeGreaterThan(0)
@@ -95,8 +95,8 @@ describe("the catalogue", () => {
 
   it("keeps a healthy mix of scales", () => {
     expect(places.length).toBeGreaterThanOrEqual(100)
-    expect(places.filter((q) => q.answer.toleranceKm <= 60).length).toBeGreaterThanOrEqual(8)
-    expect(places.filter((q) => q.answer.toleranceKm >= 700).length).toBeGreaterThanOrEqual(8)
+    expect(places.filter((q) => q.answer.tolerance <= 60).length).toBeGreaterThanOrEqual(8)
+    expect(places.filter((q) => q.answer.tolerance >= 700).length).toBeGreaterThanOrEqual(8)
   })
 
   it("does not put two places on the same spot", () => {

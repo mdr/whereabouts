@@ -2,6 +2,7 @@ import type { ComponentChildren } from "preact"
 import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import { commonsImageUrl } from "@whereabouts/shared/questions"
+import type { CommonsFile } from "@whereabouts/shared/ids"
 import { useElementRef } from "./element-ref"
 import { cx } from "./cx"
 import lb from "./Lightbox.module.css"
@@ -28,7 +29,7 @@ export function PhotoLightbox({
   credit,
   onClose
 }: {
-  image: string
+  image: CommonsFile
   thumb: HTMLImageElement | undefined
   credit: ComponentChildren
   onClose: () => void

@@ -2,6 +2,7 @@ import type { ComponentChildren, RefObject } from "preact"
 import { useLayoutEffect, useState } from "preact/hooks"
 import { clueFlag, clueImage, commonsImageUrl, wikipediaUrl } from "@whereabouts/shared/questions"
 import type { Fact } from "@whereabouts/shared/facts"
+import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
 import type { QuestionView } from "@whereabouts/shared/protocol"
 import { Icon } from "./icons"
 import { flagRatio } from "../flags"
@@ -31,7 +32,7 @@ export function FactLine({ fact }: { fact: Fact | undefined }) {
 }
 
 /** The revealed answer, with a link to read about it on Wikipedia. */
-export function Answer({ label, wiki }: { label: string; wiki?: string }) {
+export function Answer({ label, wiki }: { label: string; wiki?: WikiTitle }) {
   return (
     <p class={q.answer} data-testid={questionCardTestIds.answer}>
       It's <b>{label}</b>{" "}
@@ -70,7 +71,7 @@ export function QuestionCard({
   /** Show the image credit link. Off while guessing: the Commons file name gives the answer away. */
   credit?: boolean
   /** At the reveal, the answer's photo on a round that showed none. */
-  photo?: string
+  photo?: CommonsFile
   /** On a phone, offer to fold the card down to its prompt for more map, if there is more. Each new question starts unfolded. */
   foldable?: boolean
   /** Fold it at first: at the reveal, the answer line shows folded, and the map matters more. */
@@ -211,7 +212,7 @@ let enlargeLabelShown = false
  * Escape to shrink back. The Wikimedia Commons credit sits behind a small
  * info icon linking to the file page.
  */
-function QuestionImage({ image, credit: showCredit }: { image: string; credit: boolean }) {
+function QuestionImage({ image, credit: showCredit }: { image: CommonsFile; credit: boolean }) {
   const [large, setLarge] = useState(false)
   const [withLabel] = useState(() => {
     const first = !enlargeLabelShown

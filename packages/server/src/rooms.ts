@@ -16,7 +16,7 @@ import {
   ClientMessageSchemas,
   type ClientMessages,
   type ClientTopic,
-  SEAT_GRACE_MS,
+  SEAT_GRACE,
   ServerTopics,
   decodeMessage,
   decodeTicket,
@@ -31,6 +31,7 @@ import {
 import { Game, generateCode, type CommandResult, type QuestionBank } from "@whereabouts/shared/game"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import { CloseReason } from "@whereabouts/shared/close-reason"
+import type { Ms } from "@whereabouts/shared/units"
 import { CATALOGUE, outlinesFrom } from "@whereabouts/shared/catalogue"
 import { roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
 // The client loads the outlines on demand; the server holds them all, to score.
@@ -55,8 +56,8 @@ export const ROOM_TYPE = "game"
 
 /** Injected clock so tests can drive time. */
 export interface Clock {
-  now(): number
-  setTimeout(fn: () => void, ms: number): unknown
+  now(): Ms
+  setTimeout(fn: () => void, delay: Ms): unknown
   clearTimeout(handle: unknown): void
 }
 
@@ -85,7 +86,7 @@ export function configureGameRooms(next: Partial<GameRoomDeps>): void {
 export class GameRoom extends Room<ActorData> {
   // Not Rivalis's destroyOnEmpty, which closes the room the moment the last
   // player drops: a lone host's refresh would lose the game. An empty room
-  // stays open for SEAT_GRACE_MS instead (see onLeave).
+  // stays open for SEAT_GRACE instead (see onLeave).
   protected override unknownTopicPolicy = "drop" as const
 
   // Rivalis runs onCreate from the base constructor, before subclass field
@@ -172,7 +173,7 @@ export class GameRoom extends Room<ActorData> {
       this.emptyTimer = deps.clock.setTimeout(() => {
         this.emptyTimer = undefined
         if (this.actorCount === 0) this.destroy()
-      }, SEAT_GRACE_MS)
+      }, SEAT_GRACE)
     }
   }
 
@@ -208,7 +209,7 @@ export class GameRoom extends Room<ActorData> {
   }
 
   /** Remove a player from the game and close their connection, telling them why. */
-  private removePlayer(token: PlayerToken, playerId: PlayerId, now: number): CommandResult {
+  private removePlayer(token: PlayerToken, playerId: PlayerId, now: Ms): CommandResult {
     const target = this.game.tokenOf(playerId)
     const result = this.game.kick(token, playerId, now)
     if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick(closeReason(CloseReason.REMOVED))
@@ -269,7 +270,7 @@ export class GameRoom extends Room<ActorData> {
   }
 }
 
-type Handler<T> = (token: PlayerToken, body: T, now: number) => CommandResult
+type Handler<T> = (token: PlayerToken, body: T, now: Ms) => CommandResult
 type Commands = { [K in ClientTopic]: Handler<ClientMessages[K]> }
 /** One handler per topic, paint included, each given its topic's parsed body. */
 type Handlers = Commands & { paint: Handler<PaintSubmission> }

@@ -3,7 +3,7 @@ import { useEffect, useState } from "preact/hooks"
 import type { HintBand } from "@whereabouts/shared/hints"
 import { usePaint } from "./MapView"
 import { Card } from "./Card"
-import { fmtKm } from "./format"
+import { formatDistance } from "./format"
 import { HudBottom } from "./Hud"
 import kit from "./kit.module.css"
 import s from "./PaintTools.module.css"
@@ -92,9 +92,9 @@ export function PaintTools({
           min={6}
           max={200}
           step={1}
-          value={paint.brushPx.value}
+          value={paint.brushSize.value}
           disabled={!enabled}
-          onInput={(e) => paint.setBrushPx(Number((e.target as HTMLInputElement).value))}
+          onInput={(e) => paint.setBrushSize(Number((e.target as HTMLInputElement).value))}
         />
       </label>
       <span class={s.history}>
@@ -149,7 +149,7 @@ export function PaintDev() {
         format={(v) => `${Math.round(v * 100)}%`}
       />
       <p class={kit.hint}>
-        Tolerance {fmtKm(paint.toleranceKm.value)} · finest H3 res {stats.res} · {stats.size} cells
+        Tolerance {formatDistance(paint.tolerance.value)} · finest H3 res {stats.res} · {stats.size} cells
         {stats.size > 0 && <> ({stats.resolutionCounts.map(([r, n]) => `res ${r}: ${n}`).join(", ")})</>}
       </p>
       <Distribution />

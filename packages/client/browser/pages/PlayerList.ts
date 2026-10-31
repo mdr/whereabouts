@@ -1,6 +1,7 @@
 import type { Locator } from "playwright-core"
 import { playerListTestIds } from "../../src/ui/PlayerListTestIds.ts"
 import { until } from "./support.ts"
+import type { Ms } from "@whereabouts/shared/units"
 
 export interface ListedPlayer {
   name: string
@@ -32,12 +33,12 @@ export class PlayerList {
     return (await this.players()).map((p) => p.name)
   }
 
-  async waitForPlayer(name: string, timeoutMs?: number): Promise<void> {
+  async waitForPlayer(name: string, timeout?: Ms): Promise<void> {
     await until(
       `${name} in the player list`,
       () => this.names(),
       (names) => names.includes(name),
-      timeoutMs
+      timeout
     )
   }
 }

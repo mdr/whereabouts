@@ -3,11 +3,15 @@
  * scripts/build-flags.mjs). Each is its own small chunk, fetched when its
  * round comes up, so the 194 flags cost nothing until they are shown.
  */
+import { z } from "zod"
+import { CommonsFileSchema, type CommonsFile } from "@whereabouts/shared/ids"
 import flags from "./assets/flags/flags.json"
 
 const FLAGS = import.meta.glob<string>("./assets/flags/*.svg", { query: "?url", import: "default" })
 
-const info: Record<string, { ratio: number; file: string; licence: string } | undefined> = flags
+const info = z
+  .partialRecord(z.string(), z.object({ ratio: z.number(), file: CommonsFileSchema, licence: z.string() }))
+  .parse(flags)
 
 const urls = new Map<string, Promise<string | undefined>>()
 
@@ -28,6 +32,6 @@ export function flagRatio(code: string): number {
 }
 
 /** The flag's file on Wikimedia Commons, for crediting it. */
-export function flagFile(code: string): string | undefined {
+export function flagFile(code: string): CommonsFile | undefined {
   return info[code]?.file
 }

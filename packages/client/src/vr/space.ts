@@ -14,9 +14,10 @@ import {
   PointsMaterial,
   Vector3
 } from "three"
+import type { Metres } from "@whereabouts/shared/units"
 
 /** Beyond the moon of the most zoomed globe, within the camera's far plane. */
-export const STARS_M = 5000
+export const STARS_DISTANCE: Metres = 5000
 
 /** Seeded, so the sky is the same each time. */
 function random(seed: number): () => number {
@@ -38,7 +39,7 @@ export class Space {
       [700, 0.0035, 0.8],
       [120, 0.0056, 1]
     ] as const)
-      this.group.add(stars(rand, count, size * STARS_M, brightness))
+      this.group.add(stars(rand, count, size * STARS_DISTANCE, brightness))
   }
 
   update(head: Vector3): void {
@@ -57,7 +58,7 @@ function stars(rand: () => number, count: number, size: number, brightness: numb
     const a = rand() * Math.PI * 2
     const r = Math.sqrt(1 - y * y)
     p.set(r * Math.cos(a), y, r * Math.sin(a))
-      .multiplyScalar(STARS_M)
+      .multiplyScalar(STARS_DISTANCE)
       .toArray(position, i * 3)
     // Mostly white; some blue, some amber.
     const hue = rand()

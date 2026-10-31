@@ -21,8 +21,8 @@ describe("water mask", () => {
     )
     expect(water).toHaveLength(22)
     for (const q of water) {
-      const cells = new Map(regionCells(q, resolutionForTolerance(q.toleranceKm)).map((h) => [h, 1]))
-      const kept = paintAmount(trimLand(cells, mask, resolutionForTolerance(q.toleranceKm))) / paintAmount(cells)
+      const cells = new Map(regionCells(q, resolutionForTolerance(q.tolerance)).map((h) => [h, 1]))
+      const kept = paintAmount(trimLand(cells, mask, resolutionForTolerance(q.tolerance))) / paintAmount(cells)
       expect(kept, q.label).toBe(1)
     }
   })

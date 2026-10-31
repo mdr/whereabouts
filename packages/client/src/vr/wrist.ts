@@ -18,12 +18,13 @@ import {
 import wristUrl from "./wrist.uikitml?url"
 import { HintAllowance, type HintsLeft } from "./view"
 import { WristButton } from "./wrist-button"
+import type { Metres, Seconds } from "@whereabouts/shared/units"
 
-const WRIST_M = 0.2
+const WRIST_WIDTH: Metres = 0.2
 /** How squarely the palm must face up to open the menu, and how far it may turn away before it shuts. */
 const OPEN = 0.6
 const STAY_OPEN = 0.35
-const NOTE_S = 2.5
+const NOTE_TIME: Seconds = 2.5
 
 const at = new Vector3()
 const palm = new Vector3()
@@ -99,7 +100,7 @@ export class WristMenu {
     this.noteTimer = setTimeout(() => {
       this.noteText = ""
       this.apply()
-    }, NOTE_S * 1000)
+    }, NOTE_TIME * 1000)
     this.apply()
   }
 
@@ -114,7 +115,7 @@ export class WristMenu {
     if (this.doc || !this.entity.hasComponent(PanelDocument)) return
     const doc = PanelDocument.data.document[this.entity.index] as UIKitDocument
     this.doc = doc
-    doc.setTargetDimensions(WRIST_M, WRIST_M * 1.6)
+    doc.setTargetDimensions(WRIST_WIDTH, WRIST_WIDTH * 1.6)
     for (const [id, f] of Object.entries(this.handlers)) doc.requireElementById(id).addEventListener("click", f)
     this.apply()
   }

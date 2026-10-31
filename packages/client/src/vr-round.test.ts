@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
-import { flagCode } from "@whereabouts/shared/ids"
+import { commonsFile, flagCode, sourceUrl } from "@whereabouts/shared/ids"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "@whereabouts/shared/questions"
 import type { PaintController } from "./paint-controller"
@@ -50,7 +50,7 @@ describe("answerModeText", () => {
     expect(answerModeText({ type: QuestionType.FLAG, answer: areaAnswerView("peru") })).toBe(
       "Paint the whole country: its shape counts."
     )
-    expect(answerModeText({ type: QuestionType.FLAG, answer: { type: AnswerType.POINT, toleranceKm: 20 } })).toBe(
+    expect(answerModeText({ type: QuestionType.FLAG, answer: { type: AnswerType.POINT, tolerance: 20 } })).toBe(
       "Paint where it is: a place, not a shape."
     )
   })
@@ -68,7 +68,7 @@ describe("answerModeText", () => {
 })
 
 const place = makeQuestionView()
-const answer: RevealedAnswer = { label: "Kyoto", answer: { lat: 35, lon: 135.8 }, photo: "Kyoto.jpg" }
+const answer: RevealedAnswer = { label: "Kyoto", answer: { lat: 35, lon: 135.8 }, photo: commonsFile("Kyoto.jpg") }
 
 function shown(over: Partial<VrRoundShown> = {}): VrRoundShown {
   return { question: place, revealed: undefined, fact: undefined, ...over }
@@ -90,7 +90,7 @@ function round(s: VrRoundShown) {
 describe("vrRound", () => {
   it("shows the answer's photo only at the reveal, with the fact on its back", () => {
     expect(round(shown()).picture).toBeUndefined()
-    const fact = { type: FactType.FAME, text: "Old capital", source: "Kyoto" }
+    const fact = { type: FactType.FAME, text: "Old capital", source: sourceUrl("https://en.wikipedia.org/wiki/Kyoto") }
     expect(round(shown({ revealed: answer, fact })).picture).toEqual({
       photo: "Kyoto.jpg",
       postcard: { place: "Kyoto", text: "Old capital" }

@@ -7,22 +7,23 @@ import { AnswerType, answerCentre, type FlagQuestion } from "@whereabouts/shared
 import { makeFlagQuestion } from "./test-view"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { Tool } from "./tool"
-import { FILL_SMALL_PX, PaintModel, type Filler } from "./paint-model"
+import { FILL_SMALL, PaintModel, type Filler } from "./paint-model"
 import { HintAxis } from "@whereabouts/shared/hints"
+import type { Km } from "@whereabouts/shared/units"
 
-const TOLERANCE_KM = 100
-const RES = resolutionForTolerance(TOLERANCE_KM)
+const TOLERANCE: Km = 100
+const RES = resolutionForTolerance(TOLERANCE)
 const PARIS: LatLon = { lat: 48.86, lon: 2.35 }
 const MADRID: LatLon = { lat: 40.42, lon: -3.7 }
 
 function makeModel(): PaintModel {
   const model = new PaintModel()
-  model.reset(TOLERANCE_KM)
+  model.reset(TOLERANCE)
   return model
 }
 
 function makeCountry(): FlagQuestion {
-  return makeFlagQuestion("fr", "France", { answer: { type: AnswerType.POINT, at: PARIS, toleranceKm: TOLERANCE_KM } })
+  return makeFlagQuestion("fr", "France", { answer: { type: AnswerType.POINT, at: PARIS, tolerance: TOLERANCE } })
 }
 
 /** A filler that finds France everywhere, filled with the cell at its answer. */
@@ -228,12 +229,12 @@ describe("PaintModel", () => {
       expect(model.layer.isEmpty).toBe(true)
     })
 
-    it("counts a small country within FILL_SMALL_PX pixels of the point", () => {
+    it("counts a small country within FILL_SMALL pixels of the point", () => {
       const model = makeModel()
       const filler = makeFiller()
       model.useFiller(filler)
       model.fillAt(PARIS, 2)
-      expect(filler.countryAt).toHaveBeenLastCalledWith(PARIS, 2, FILL_SMALL_PX)
+      expect(filler.countryAt).toHaveBeenLastCalledWith(PARIS, 2, FILL_SMALL)
     })
 
     it("from outside the map, counts a small country within a distance", () => {
@@ -241,7 +242,7 @@ describe("PaintModel", () => {
       const filler = makeFiller()
       model.useFiller(filler)
       model.fillOutside(PARIS, 60)
-      expect(filler.countryAt).toHaveBeenLastCalledWith(PARIS, 60 / FILL_SMALL_PX, FILL_SMALL_PX)
+      expect(filler.countryAt).toHaveBeenLastCalledWith(PARIS, 60 / FILL_SMALL, FILL_SMALL)
       expect(model.layer.isEmpty).toBe(false)
     })
   })
@@ -314,7 +315,7 @@ describe("PaintModel", () => {
       model.reset(10)
       expect(model.layer.isEmpty).toBe(true)
       expect(model.layer.res).toBe(resolutionForTolerance(10))
-      expect(model.toleranceKm.value).toBe(10)
+      expect(model.tolerance.value).toBe(10)
       expect(model.canUndo.value).toBe(false)
     })
   })
@@ -331,7 +332,7 @@ describe("PaintModel", () => {
         () => model.clear(),
         () => model.restore({ [cellAt(MADRID)]: 1 }),
         () => model.trimToHint({ axis: HintAxis.LATITUDE, from: 45, to: 55 }),
-        () => model.reset(TOLERANCE_KM)
+        () => model.reset(TOLERANCE)
       ]
       for (const change of changes) {
         const before = model.version.value

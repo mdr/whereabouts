@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
-import { flagCode, outlineId, playerId, playerName, roomCode } from "@whereabouts/shared/ids"
+import { commonsFile, flagCode, outlineId, playerId, playerName, roomCode } from "@whereabouts/shared/ids"
 import { playerColour } from "@whereabouts/shared/colours"
 import { mixOf, type GameView, Phase, MapDetail } from "@whereabouts/shared/protocol"
 import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
@@ -25,7 +25,7 @@ function view(isHost: boolean): GameView {
     phase: Phase.RESULTS,
     config: {
       rounds: 2,
-      roundMs: 60000,
+      roundLength: 60000,
       mix: MIX,
       mapDetail: MapDetail.MINIMAL,
       kernelId: KernelId.MULTI_EQUAL,
@@ -74,7 +74,7 @@ function view(isHost: boolean): GameView {
       { playerId: playerId("p2"), total: 1250, rounds: [{ score: 500 }, { score: 750 }] }
     ],
     playedRounds: [
-      { label: "Taj Mahal, Agra", type: QuestionType.LANDMARK, image: "Taj Mahal.jpeg" },
+      { label: "Taj Mahal, Agra", type: QuestionType.LANDMARK, image: commonsFile("Taj Mahal.jpeg") },
       { label: "Perth, Australia", type: QuestionType.PLACE }
     ],
     awards: [{ emoji: "🐔", title: "Chicken", playerIds: [playerId("p2")], line: "{0} passed 2 times. Brave." }]

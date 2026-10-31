@@ -52,13 +52,13 @@ describe("ConfigureSchema", () => {
 
   it("accepts supported values and rejects the rest", () => {
     expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 2, [QuestionType.PLACE]: 2 })).success).toBe(true)
-    expect(ConfigureSchema.safeParse({ roundMs: 45_000 }).success).toBe(true)
+    expect(ConfigureSchema.safeParse({ roundLength: 45_000 }).success).toBe(true)
     expect(ConfigureSchema.safeParse(mix({})).success).toBe(false)
     expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 8, [QuestionType.PLACE]: 8 })).success).toBe(false)
     expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: -1, [QuestionType.PLACE]: 2 })).success).toBe(false)
     expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 1.5 })).success).toBe(false)
     expect(ConfigureSchema.safeParse({ mix: { [QuestionType.LANDMARK]: 3 } }).success).toBe(false)
-    expect(ConfigureSchema.safeParse({ roundMs: 61_000 }).success).toBe(false)
+    expect(ConfigureSchema.safeParse({ roundLength: 61_000 }).success).toBe(false)
     expect(ConfigureSchema.safeParse({ mapDetail: MapDetail.POLITICAL }).success).toBe(true)
     expect(ConfigureSchema.safeParse({ mapDetail: "satellite" }).success).toBe(false)
   })

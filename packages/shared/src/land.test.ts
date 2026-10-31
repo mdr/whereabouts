@@ -14,7 +14,7 @@ const at = (lat: number, lon: number, res: number) => latLngToCell(lat, lon, h3R
 describe("land mask", () => {
   it("keeps paint on every answer, at the resolution it is painted", () => {
     const answers = CATALOGUE.flatMap((q) =>
-      q.answer.type === AnswerType.POINT ? [{ name: q.label, ...q.answer.at, t: q.answer.toleranceKm }] : []
+      q.answer.type === AnswerType.POINT ? [{ name: q.label, ...q.answer.at, t: q.answer.tolerance }] : []
     )
     const trimmed = answers.filter((a) => !mask.nearLand(at(a.lat, a.lon, resolutionForTolerance(a.t))))
     expect(trimmed.map((a) => a.name)).toEqual([])
@@ -27,7 +27,7 @@ describe("land mask", () => {
     for (const q of CATALOGUE.filter((q) => q.type === QuestionType.COUNTRY)) {
       const a = scoredAnswer(q.answer, outlines)
       if (a.type !== AnswerType.AREA) throw new Error(`${q.id} is not painted whole`)
-      const lost = regionCells(a, regionScoringRes(a.toleranceKm)).filter((h) => !mask.nearLand(h))
+      const lost = regionCells(a, regionScoringRes(a.tolerance)).filter((h) => !mask.nearLand(h))
       expect(lost, q.label).toEqual([])
     }
   })

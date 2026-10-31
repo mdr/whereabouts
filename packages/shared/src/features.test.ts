@@ -12,7 +12,7 @@ describe("islands, lakes, seas and US states", () => {
     for (const q of [...FEATURES, ...STATES]) {
       expect(q.label.length, q.id).toBeGreaterThan(0)
       expect(q.wiki.length, q.id).toBeGreaterThan(0)
-      expect(q.answer.toleranceKm, q.id).toBeGreaterThanOrEqual(5)
+      expect(q.answer.tolerance, q.id).toBeGreaterThanOrEqual(5)
       if (q.answer.type === AnswerType.AREA) expect(promptOf(q), q.id).toMatch(/^Paint the whole of /)
     }
   })

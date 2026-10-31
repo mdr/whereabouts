@@ -1,9 +1,11 @@
-/** Earth radius in kilometres (mean sphere). */
-export const EARTH_RADIUS_KM = 6371.0
+import type { Degrees, Km, SquareKm } from "./units.ts"
+
+/** Mean sphere. */
+export const EARTH_RADIUS: Km = 6371.0
 
 export interface LatLon {
-  lat: number
-  lon: number
+  lat: Degrees
+  lon: Degrees
 }
 
 /** Unit-free 3D position on the Earth sphere, in kilometres. */
@@ -13,28 +15,28 @@ export function toXyz({ lat, lon }: LatLon): Xyz {
   const la = (lat * Math.PI) / 180
   const lo = (lon * Math.PI) / 180
   const c = Math.cos(la)
-  return [EARTH_RADIUS_KM * c * Math.cos(lo), EARTH_RADIUS_KM * c * Math.sin(lo), EARTH_RADIUS_KM * Math.sin(la)]
+  return [EARTH_RADIUS * c * Math.cos(lo), EARTH_RADIUS * c * Math.sin(lo), EARTH_RADIUS * Math.sin(la)]
 }
 
-/** Straight-line (chord) distance between two points on the sphere, km. */
-export function chordDistance(a: Xyz, b: Xyz): number {
+/** Straight-line (chord) distance between two points on the sphere. */
+export function chordDistance(a: Xyz, b: Xyz): Km {
   const dx = a[0] - b[0]
   const dy = a[1] - b[1]
   const dz = a[2] - b[2]
   return Math.sqrt(dx * dx + dy * dy + dz * dz)
 }
 
-export function chordDistanceSq(a: Xyz, b: Xyz): number {
+export function chordDistanceSq(a: Xyz, b: Xyz): SquareKm {
   const dx = a[0] - b[0]
   const dy = a[1] - b[1]
   const dz = a[2] - b[2]
   return dx * dx + dy * dy + dz * dz
 }
 
-/** Great-circle distance, km. Used only for display. */
-export function greatCircleDistance(a: LatLon, b: LatLon): number {
+/** Used only for display. */
+export function greatCircleDistance(a: LatLon, b: LatLon): Km {
   const d = chordDistance(toXyz(a), toXyz(b))
-  return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, d / (2 * EARTH_RADIUS_KM)))
+  return 2 * EARTH_RADIUS * Math.asin(Math.min(1, d / (2 * EARTH_RADIUS)))
 }
 
 /** The point on the sphere in the direction of `v` (any length). */
@@ -43,8 +45,8 @@ export function fromXyz(v: Xyz): LatLon {
   return { lat: (Math.asin(v[2] / r) * 180) / Math.PI, lon: (Math.atan2(v[1], v[0]) * 180) / Math.PI }
 }
 
-/** Initial bearing from `a` to `b`, degrees clockwise from north. */
-export function bearing(a: LatLon, b: LatLon): number {
+/** Initial bearing from `a` to `b`, clockwise from north. */
+export function bearing(a: LatLon, b: LatLon): Degrees {
   const r = Math.PI / 180
   const dLon = (b.lon - a.lon) * r
   const y = Math.sin(dLon) * Math.cos(b.lat * r)

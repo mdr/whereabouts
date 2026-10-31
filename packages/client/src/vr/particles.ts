@@ -3,11 +3,12 @@
  * the eraser. A fixed pool of points, the dead ones fully transparent.
  */
 import { BufferAttribute, BufferGeometry, CanvasTexture, Color, Points, PointsMaterial, Vector3 } from "three"
+import type { Seconds } from "@whereabouts/shared/units"
 
 const MAX = 800
 /** How fast droplets fly, in metres a second. */
 const DROPLET_SPEED = 2.2
-const CRUMB_LIFE_S = 0.7
+const CRUMB_LIFE: Seconds = 0.7
 const GRAVITY = 0.6
 
 const v = new Vector3()
@@ -88,7 +89,7 @@ export class SprayParticles {
       v.copy(normal)
         .multiplyScalar(0.12 + Math.random() * 0.1)
         .add(inBall(new Vector3(), 0.08))
-      this.start(i, jitter, v, CRUMB_LIFE_S * (0.6 + Math.random() * 0.4), true, 0.6)
+      this.start(i, jitter, v, CRUMB_LIFE * (0.6 + Math.random() * 0.4), true, 0.6)
     })
   }
 

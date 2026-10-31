@@ -6,6 +6,7 @@
 import { useEffect } from "preact/hooks"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
+import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
 import { outlineOf, MapDetail, type QuestionView } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
 import type { GameMap } from "./map"
@@ -19,12 +20,12 @@ import { sound } from "./sound"
 /** The answer as the reveal shows it. */
 export interface RevealedAnswer {
   label: string
-  wiki?: string
+  wiki?: WikiTitle
   answer: LatLon
   /** A country's (or island's, lake's…) outline; undefined for a place, or until the outlines load. */
   outline?: number[][][][]
   /** The answer's photo, on a round that showed none while guessing. */
-  photo?: string
+  photo?: CommonsFile
 }
 
 export function useRoundMap(
@@ -53,7 +54,7 @@ export function useRoundMap(
 ): void {
   useEffect(() => {
     if (!painting || !question) return
-    paint.reset(question.answer.toleranceKm)
+    paint.reset(question.answer.tolerance)
     start?.()
     paint.gameMap.clearReveal()
     paint.gameMap.resetView()
@@ -112,6 +113,6 @@ export function frameReveal(
   a: RevealedAnswer,
   paint: GeoJSON.FeatureCollection
 ): void {
-  if (a.outline) gameMap.fitRegionAndPaint(a.answer, a.outline, paint, question.answer.toleranceKm)
-  else gameMap.fitAnswerAndPaint(a.answer, paint, question.answer.toleranceKm)
+  if (a.outline) gameMap.fitRegionAndPaint(a.answer, a.outline, paint, question.answer.tolerance)
+  else gameMap.fitAnswerAndPaint(a.answer, paint, question.answer.tolerance)
 }

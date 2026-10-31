@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { getHexagonEdgeLengthAvg, getResolution, gridDisk, h3Res, latLngToCell, UNITS } from "./h3.ts"
-import { PaintLayer, cellSpacingKm, cellsOutline, compactRecord, resolutionForTolerance } from "./paint.ts"
+import { PaintLayer, cellSpacing, cellsOutline, compactRecord, resolutionForTolerance } from "./paint.ts"
 
 describe("resolutionForTolerance", () => {
   it("picks cells with edge at most a quarter of the tolerance", () => {
@@ -25,9 +25,9 @@ describe("PaintLayer", () => {
 
   it("picks a coarser resolution for a big brush, so the cell count stays bounded at any zoom", () => {
     const layer = new PaintLayer(h3Res(9)) // ~0.2 km cells, as a 1 km tolerance would use
-    for (const radiusKm of [0.5, 5, 50, 500, 3000]) {
+    for (const radius of [0.5, 5, 50, 500, 3000]) {
       const fresh = new PaintLayer(h3Res(9))
-      const r = fresh.stamp({ lat: 51.5, lon: -0.1 }, radiusKm, 1)
+      const r = fresh.stamp({ lat: 51.5, lon: -0.1 }, radius, 1)
       expect(r.res).toBeLessThanOrEqual(9)
       // Between 5 and 13 rings depending on where the radius falls between H3 steps.
       expect(fresh.size).toBeLessThan(600)
@@ -40,7 +40,7 @@ describe("PaintLayer", () => {
 
   it("a brush smaller than half a cell at the finest resolution paints exactly one cell", () => {
     const layer = new PaintLayer(h3Res(5))
-    const spacing = cellSpacingKm(h3Res(5))
+    const spacing = cellSpacing(h3Res(5))
     const tiny = 0.3 * spacing
     expect(layer.stampPlan(tiny)).toEqual({ res: 5, rings: 0 })
     expect(layer.stampCells({ lat: 51.5, lon: -0.1 }, tiny)).toEqual([latLngToCell(51.5, -0.1, h3Res(5))])
@@ -104,7 +104,7 @@ describe("PaintLayer", () => {
 
 describe("compactRecord", () => {
   function totalMass(rec: Record<string, number>): number {
-    return [...PaintLayer.fromRecord(h3Res(15), rec).toCells()].reduce((s, c) => s + c.intensity * c.areaKm2, 0)
+    return [...PaintLayer.fromRecord(h3Res(15), rec).toCells()].reduce((s, c) => s + c.intensity * c.area, 0)
   }
 
   it("leaves small records alone", () => {
@@ -180,9 +180,9 @@ describe("mixed resolutions", () => {
 describe("cellsOutline", () => {
   it("keeps a footprint on the antimeridian compact instead of spanning the world", () => {
     const layer = new PaintLayer(h3Res(4))
-    for (const radiusKm of [50, 400, 1500]) {
+    for (const radius of [50, 400, 1500]) {
       for (const lon of [179.9, -179.9, 180]) {
-        const outline = cellsOutline(layer.stampCells({ lat: -30, lon }, radiusKm))
+        const outline = cellsOutline(layer.stampCells({ lat: -30, lon }, radius))
         for (const ring of outline.coordinates.flat()) {
           const lons = ring.map(([x]) => x ?? 0)
           expect(Math.max(...lons) - Math.min(...lons)).toBeLessThan(180)

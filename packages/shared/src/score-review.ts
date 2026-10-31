@@ -8,7 +8,7 @@
  * judge on its own; some are two at the same answer, to say which deserves
  * more. Seeded by the set number, so everyone reviewing a set sees the same.
  */
-import { EARTH_RADIUS_KM, greatCircleDistance, type LatLon } from "./geo.ts"
+import { EARTH_RADIUS, greatCircleDistance, type LatLon } from "./geo.ts"
 import { UNITS, cellArea, cellToLatLng } from "./h3.ts"
 import { seededUnit } from "./hints.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
@@ -18,6 +18,7 @@ import { insideRegion, regionCells, scoreAnswer, scoredAnswer, type ScoredAnswer
 import { CaseQuestionType, RegionKernel, encodeCase, type ScoringCase } from "./scoring-case.ts"
 import { buildDistribution, type ChoosableKernel, type Kernel } from "./scoring.ts"
 import { MapDetail } from "./protocol.ts"
+import type { Degrees, Km, SquareKm } from "./units.ts"
 
 export enum GuessType {
   BULLSEYE = "BULLSEYE",
@@ -149,14 +150,14 @@ export function caseQuestion(q: Question, a: ScoredAnswer): ScoringCase["questio
     id: q.id,
     label: q.label,
     answer: a.type === AnswerType.AREA ? a.centre : a.at,
-    toleranceKm: a.toleranceKm,
+    tolerance: a.tolerance,
     ...(q.clue.type === ClueType.FLAG ? { flag: q.clue.flag } : {})
   }
 }
 
 function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): ReviewGuess {
   const between = (lo: number, hi: number) => lo + (hi - lo) * rnd()
-  const t = q.toleranceKm
+  const t = q.tolerance
   const layer = new PaintLayer(resolutionForTolerance(t))
   /** A rough patch `radius` tolerances across, `at` tolerances from the answer in a random direction. */
   const blob = (at: number, radius: number, strength = 1) => {
@@ -165,8 +166,8 @@ function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): Review
     scribble(layer, rnd, {
       sample: () => offset(centre, r * Math.sqrt(rnd()), rnd() * 360),
       inside: (p) => greatCircleDistance(centre, p) <= r,
-      areaKm2: Math.PI * r * r,
-      brushKm: Math.max(0.3 * t, r * between(0.45, 0.7)),
+      area: Math.PI * r * r,
+      brush: Math.max(0.3 * t, r * between(0.45, 0.7)),
       strength
     })
   }
@@ -181,16 +182,16 @@ function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): Review
     const [lat, lon] = cellToLatLng(h)
     return { lat, lon }
   })
-  const cellKm2 = cells.length > 0 ? cellArea(cells[0]!, UNITS.km2) : 0
-  /** Brush strokes over the region, or the part of it `keep` allows, `acrossKm` in radius. */
-  const shape = (strength: number, keep: (p: LatLon) => boolean = () => true, acrossKm = R * t) => {
+  const oneCell: SquareKm = cells.length > 0 ? cellArea(cells[0]!, UNITS.km2) : 0
+  /** Brush strokes over the region, or the part of it `keep` allows, `across` in radius. */
+  const shape = (strength: number, keep: (p: LatLon) => boolean = () => true, across: Km = R * t) => {
     const kept = centres.filter(keep)
     const from = kept.length > 0 ? kept : [q.centre]
     scribble(layer, rnd, {
       sample: () => from[Math.floor(rnd() * from.length)]!,
       inside: (p) => keep(p) && insideRegion(q, p),
-      areaKm2: Math.max(kept.length * cellKm2, Math.PI * t * t),
-      brushKm: between(0.2, 0.32) * acrossKm,
+      area: Math.max(kept.length * oneCell, Math.PI * t * t),
+      brush: between(0.2, 0.32) * across,
       strength
     })
   }
@@ -240,8 +241,9 @@ interface Patch {
   sample: () => LatLon
   /** Whether a point is in what the hand is aiming to cover. */
   inside: (p: LatLon) => boolean
-  areaKm2: number
-  brushKm: number
+  area: SquareKm
+  /** The brush's radius. */
+  brush: Km
   strength: number
 }
 
@@ -252,13 +254,13 @@ interface Patch {
  * back, so the paint overshoots the outline in places and misses others.
  */
 function scribble(layer: PaintLayer, rnd: () => number, patch: Patch): void {
-  const step = 0.7 * patch.brushKm
-  let dabs = Math.min(MAX_DABS, Math.ceil((patch.areaKm2 / (1.5 * step * patch.brushKm)) * (1.8 + 0.8 * rnd())))
+  const step = 0.7 * patch.brush
+  let dabs = Math.min(MAX_DABS, Math.ceil((patch.area / (1.5 * step * patch.brush)) * (1.8 + 0.8 * rnd())))
   while (dabs > 0) {
     let at = patch.sample()
     let heading = rnd() * 360
     for (let k = 6 + Math.floor(rnd() * 14); k > 0 && dabs > 0; k--, dabs--) {
-      layer.stamp(at, patch.brushKm * (0.85 + 0.3 * rnd()), patch.strength * (0.75 + 0.35 * rnd()))
+      layer.stamp(at, patch.brush * (0.85 + 0.3 * rnd()), patch.strength * (0.75 + 0.35 * rnd()))
       heading += (rnd() - 0.5) * 60
       at = offset(at, step, heading)
       if (!patch.inside(at)) heading += 140 + rnd() * 80
@@ -296,10 +298,10 @@ function pointGuess(
   }
 }
 
-/** The point `km` from `from` on a bearing, in degrees clockwise from north. */
-function offset(from: LatLon, km: number, bearingDeg: number): LatLon {
-  const d = km / EARTH_RADIUS_KM
-  const b = (bearingDeg * Math.PI) / 180
+/** The point `distance` from `from` on a bearing clockwise from north. */
+function offset(from: LatLon, distance: Km, bearing: Degrees): LatLon {
+  const d = distance / EARTH_RADIUS
+  const b = (bearing * Math.PI) / 180
   const lat1 = (from.lat * Math.PI) / 180
   const lon1 = (from.lon * Math.PI) / 180
   const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(b))

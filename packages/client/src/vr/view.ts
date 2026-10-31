@@ -9,6 +9,7 @@ import type { VrAnswer } from "./answer"
 import type { VrBoard } from "./board"
 import type { VrFlagPin } from "./flag-pins"
 import type { VrTable } from "./scores"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** How many hints are left: a count in a game, or one of these. */
 export enum HintAllowance {
@@ -41,7 +42,7 @@ export interface VrRound {
   hintsLeft: HintsLeft
   useHint(axis: HintAxis): void
   /** Ms until guessing ends, in a timed round. */
-  msLeft?: () => number
+  timeLeft?: () => Ms
   /** What Done is called; with nothing painted it is a pass, and says so. */
   doneLabel: string
   done(): void

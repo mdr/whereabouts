@@ -37,7 +37,7 @@ await aliceRoundPage.map.hover({ across: 0.51, down: 0.51 })
 await aliceRoundPage.screenshot(`${out}/host-2-footprint-big.png`)
 
 // Bob paints, so he has something to lose.
-await bobRoundPage.map.drag({ across: 0.46, down: 0.47 }, { distancePx: 100 })
+await bobRoundPage.map.drag({ across: 0.46, down: 0.47 }, { distance: 100 })
 
 // The host removes Bob from the players panel, after first cancelling.
 let removal = await aliceRoundPage.playersPanel.askToRemove("Bob")

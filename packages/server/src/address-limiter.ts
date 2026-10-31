@@ -5,6 +5,7 @@
  * watching) from one network, everyone refreshing, stays well inside both.
  */
 import { ConnectionLimiter, logging } from "@rivalis/core"
+import type { Ms } from "@whereabouts/shared/units"
 
 export interface AddressLimits {
   /** Open connections from one address. */
@@ -19,7 +20,7 @@ const DEFAULT_ADDRESS_LIMITS: AddressLimits = { maxOpen: 60, burst: 60, perSecon
 interface Entry {
   open: number
   tokens: number
-  at: number
+  at: Ms
   /** Refused since last let in: logged once, not on every retry. */
   refusing: boolean
 }
@@ -27,11 +28,11 @@ interface Entry {
 export class AddressLimiter extends ConnectionLimiter {
   private entries = new Map<string, Entry>()
   private logger = logging.getLogger("connections")
-  private sweptAt = 0
+  private sweptAt: Ms = 0
   private limits: AddressLimits
-  private now: () => number
+  private now: () => Ms
 
-  constructor(limits: AddressLimits = DEFAULT_ADDRESS_LIMITS, now: () => number = Date.now) {
+  constructor(limits: AddressLimits = DEFAULT_ADDRESS_LIMITS, now: () => Ms = Date.now) {
     super()
     this.limits = limits
     this.now = now
@@ -68,7 +69,7 @@ export class AddressLimiter extends ConnectionLimiter {
   }
 
   /** Forget addresses with nothing open and a full allowance: the same as new ones. */
-  private sweep(now: number): void {
+  private sweep(now: Ms): void {
     this.sweptAt = now
     for (const [address, entry] of this.entries) {
       const tokens = entry.tokens + ((now - entry.at) / 1000) * this.limits.perSecond

@@ -12,6 +12,7 @@ import { GameMap } from "../map"
 import { RevealDetail } from "../shown-detail"
 import type { Theme } from "../themes"
 import { latLonToLocal } from "./sphere"
+import type { Km, Metres, Seconds } from "@whereabouts/shared/units"
 
 const SIZE = 1024
 const PIXEL_RATIO = 2
@@ -19,8 +20,8 @@ const GRID = 48
 /** The outer part of the patch, as a fraction of its width, fades into the globe below. */
 const FADE = 0.12
 /** How often to look for the map having finished, while it waits for tiles. */
-const POLL_S = 0.25
-const EARTH_M = 40_075_016.686
+const POLL: Seconds = 0.25
+const EQUATOR: Metres = 40_075_016.686
 const RAD = Math.PI / 180
 
 const mercY = (lat: number) => Math.log(Math.tan(Math.PI / 4 + (lat * RAD) / 2))
@@ -33,7 +34,7 @@ export class DetailPatch {
   private readonly radius: number
   private ready = false
   /** The view asked of the map, whether or not it has finished drawing it. */
-  private asked: { centre: LatLon; halfKm: number } | undefined = undefined
+  private asked: { centre: LatLon; half: Km } | undefined = undefined
   /** Whether the globe shows the map's latest picture. */
   private shown = true
   private lastPoll = 0
@@ -103,30 +104,30 @@ export class DetailPatch {
     })
   }
 
-  /** `halfKm`: how far either side of `centre` to show; undefined hides the patch. */
-  update(now: number, centre: LatLon, halfKm: number | undefined): void {
+  /** `half`: how far either side of `centre` to show; undefined hides the patch. */
+  update(now: number, centre: LatLon, half: Km | undefined): void {
     const map = this.gameMap.map
-    if (now - this.lastPoll < POLL_S) return
+    if (now - this.lastPoll < POLL) return
     this.lastPoll = now
     // Without animation frames the map would never draw the frame that finishes its loading.
     if (!this.ready) {
       map.redraw()
       return
     }
-    if (halfKm === undefined) {
+    if (half === undefined) {
       this.mesh.visible = false
       this.asked = undefined
       return
     }
     const moved =
       !this.asked ||
-      greatCircleDistance(centre, this.asked.centre) > 0.2 * this.asked.halfKm ||
-      Math.abs(Math.log(halfKm / this.asked.halfKm)) > 0.2
+      greatCircleDistance(centre, this.asked.centre) > 0.2 * this.asked.half ||
+      Math.abs(Math.log(half / this.asked.half)) > 0.2
     if (moved) {
       const lat = Math.max(-80, Math.min(80, centre.lat))
-      const zoom = Math.log2((EARTH_M * Math.cos(lat * RAD) * SIZE) / (512 * 2 * halfKm * 1000))
+      const zoom = Math.log2((EQUATOR * Math.cos(lat * RAD) * SIZE) / (512 * 2 * half * 1000))
       map.jumpTo({ center: [centre.lon, lat], zoom: Math.max(1, Math.min(15, zoom)) })
-      this.asked = { centre, halfKm }
+      this.asked = { centre, half }
       this.shown = false
     }
     if (this.shown) return

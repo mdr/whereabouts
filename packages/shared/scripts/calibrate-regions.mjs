@@ -113,7 +113,7 @@ function coat(parts, intensity = () => 1) {
   return buildDistribution(
     [...byCell].map(([h, density]) => {
       const [lat, lon] = h3.cellToLatLng(h)
-      return { lat, lon, intensity: density, areaKm2: h3.cellArea(h, h3.UNITS.km2), h3: h }
+      return { lat, lon, intensity: density, area: h3.cellArea(h, h3.UNITS.km2), h3: h }
     }),
     0.05
   )
@@ -213,7 +213,7 @@ function brushed(q, res, R, extra) {
 }
 
 function cases(q) {
-  const res = resolutionForTolerance(q.toleranceKm)
+  const res = resolutionForTolerance(q.tolerance)
   const cells = regionCells(q, res)
   const R = Math.sqrt(area(cells) / Math.PI)
   const moved = (km) => regionCells(shifted(q, km), res)
@@ -352,7 +352,7 @@ let nearWins = 0
 const nearScores = []
 for (const [ql, near, far] of NEIGHBOURS) {
   const q = byLabel(ql)
-  const res = resolutionForTolerance(q.toleranceKm)
+  const res = resolutionForTolerance(q.tolerance)
   const score = (l) => scoreArea(even(regionCells(byLabel(l), res)), q).score
   const ns = near.map((l) => [l, score(l)])
   const fs = far.map((l) => [l, score(l)])
@@ -365,7 +365,7 @@ for (const [ql, near, far] of NEIGHBOURS) {
 if (nearWins < NEIGHBOURS.length) misses++
 
 const exact = AREAS.map((q) => {
-  const res = resolutionForTolerance(q.toleranceKm)
+  const res = resolutionForTolerance(q.tolerance)
   const d = even(regionCells(q, res))
   return { label: q.label, score: scoreArea(d, q).score, fit: regionFit(d, q) }
 }).sort((a, b) => a.score - b.score)

@@ -12,6 +12,7 @@ import { soundOn } from "../settings"
 import { cx } from "./cx"
 import { countdownTestIds, hudBottomTestIds, hudHeaderTestIds, soundToggleTestIds } from "./HudTestIds"
 import s from "./Hud.module.css"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** `reveal` lays out a round's reveal; MapView reads `data-hud` to lift the map's buttons above its sheet. */
 export function Hud({ reveal, children }: { reveal?: boolean; children: ComponentChildren }) {
@@ -146,17 +147,17 @@ export function HeaderNote({
 }
 
 /** Ticks once a second; returns whole seconds remaining, never negative. */
-function useCountdown(msRemaining: () => number): number {
+function useCountdown(timeLeft: () => Ms): number {
   const [, force] = useState(0)
   useEffect(() => {
     const id = setInterval(() => force((n) => n + 1), 250)
     return () => clearInterval(id)
   }, [])
-  return Math.max(0, Math.ceil(msRemaining() / 1000))
+  return Math.max(0, Math.ceil(timeLeft() / 1000))
 }
 
-export function Countdown({ msRemaining, warnAt = 10 }: { msRemaining: () => number; warnAt?: number }) {
-  const left = useCountdown(msRemaining)
+export function Countdown({ timeLeft, warnAt = 10 }: { timeLeft: () => Ms; warnAt?: number }) {
+  const left = useCountdown(timeLeft)
   return (
     <div class={cx(s.countdown, left <= warnAt && s.warn)} data-testid={countdownTestIds.countdown}>
       {left}

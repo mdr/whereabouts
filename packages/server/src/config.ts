@@ -13,9 +13,9 @@ export interface ServerConfig {
 export function configFromEnv(env: Record<string, string | undefined>, defaultStaticDir: string): ServerConfig {
   const game: Partial<GameConfig> = {}
   const rounds = positiveInt(env.ROUNDS)
-  const roundMs = positiveInt(env.ROUND_MS)
+  const roundLength = positiveInt(env.ROUND_MS)
   if (rounds !== undefined) game.rounds = rounds
-  if (roundMs !== undefined) game.roundMs = roundMs
+  if (roundLength !== undefined) game.roundLength = roundLength
   if (env.KERNEL) game.kernelId = kernelId(env.KERNEL)
   return {
     port: positiveInt(env.PORT) ?? 8787,

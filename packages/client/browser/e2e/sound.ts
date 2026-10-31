@@ -44,13 +44,13 @@ for (const [name, notes] of [
 }
 
 // A held stroke sprays; erasing does not.
-await annRoundPage.map.drag(spot, { distancePx: 90, steps: 30, holdMs: 1500 })
+await annRoundPage.map.drag(spot, { distance: 90, steps: 30, hold: 1500 })
 let events = await takeSounds(annTab)
 sinceStart.push(...events)
 checks.check(played(events, "spray"), "a held stroke plays the spray")
 checks.check(stopped(events, "spray"), "letting go stops the spray")
 await annRoundPage.paintTools.selectTool(Tool.ERASE)
-await annRoundPage.map.drag(spot, { distancePx: 50, steps: 16, holdMs: 800 })
+await annRoundPage.map.drag(spot, { distance: 50, steps: 16, hold: 800 })
 events = await takeSounds(annTab)
 sinceStart.push(...events)
 checks.check(played(events, "eraser") && !played(events, "spray"), "erasing rubs the eraser, not the spray")
@@ -113,10 +113,10 @@ const soloTab = await newTab(browser, "solo", options)
 const practiceRoundPage = await soloTab.openPractice()
 await practiceRoundPage.hud.toggleSound()
 await takeSounds(soloTab)
-await practiceRoundPage.map.drag(spot, { distancePx: 80, steps: 10, holdMs: 600 })
+await practiceRoundPage.map.drag(spot, { distance: 80, steps: 10, hold: 600 })
 checks.check(!(await takeSounds(soloTab)).some((e) => e.kind === "buffer"), "with sounds off, painting is silent")
 await practiceRoundPage.hud.toggleSound()
-await practiceRoundPage.map.drag({ across: 0.4, down: 0.4 }, { distancePx: 60, steps: 10, holdMs: 600 })
+await practiceRoundPage.map.drag({ across: 0.4, down: 0.4 }, { distance: 60, steps: 10, hold: 600 })
 checks.check(played(await takeSounds(soloTab), "spray"), "switched back on, practice sprays")
 
 await browser.close()

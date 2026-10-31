@@ -7,6 +7,7 @@ import { RoundPage } from "./RoundPage.ts"
 import { Screen } from "./Screen.ts"
 import { byTestIdWith, isUsable, text, until } from "./support.ts"
 import type { Tab } from "./Tab.ts"
+import type { Ms } from "@whereabouts/shared/units"
 
 export interface RevealRow {
   name: string
@@ -21,9 +22,9 @@ export class RevealPage extends Screen {
   readonly hud: Hud
   readonly map: MapPanel
 
-  static async whenShown(tab: Tab, timeoutMs = 10_000): Promise<RevealPage> {
+  static async whenShown(tab: Tab, timeout: Ms = 10_000): Promise<RevealPage> {
     const reveal = new RevealPage(tab)
-    await tab.page.getByTestId(revealTestIds.scoresList).waitFor({ timeout: timeoutMs })
+    await tab.page.getByTestId(revealTestIds.scoresList).waitFor({ timeout })
     await reveal.map.waitUntilSettled()
     return reveal
   }
@@ -117,12 +118,12 @@ export class RevealPage extends Screen {
     return ResultsPage.whenShown(this.tab)
   }
 
-  async waitForNextRound(timeoutMs = 10_000): Promise<RoundPage> {
-    return RoundPage.whenShown(this.tab, timeoutMs)
+  async waitForNextRound(timeout: Ms = 10_000): Promise<RoundPage> {
+    return RoundPage.whenShown(this.tab, timeout)
   }
 
-  async waitForResults(timeoutMs = 10_000): Promise<ResultsPage> {
-    return ResultsPage.whenShown(this.tab, timeoutMs)
+  async waitForResults(timeout: Ms = 10_000): Promise<ResultsPage> {
+    return ResultsPage.whenShown(this.tab, timeout)
   }
 
   async readyButtonIsUsable(): Promise<boolean> {

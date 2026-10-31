@@ -12,7 +12,7 @@ describe("hintBand", () => {
     for (const { answer } of CATALOGUE) {
       const at = answerCentre(answer)
       for (const axis of axes)
-        for (const u of [0, 0.37, 1]) expect(inHintBand(hintBand(at, answer.toleranceKm, axis, u), at)).toBe(true)
+        for (const u of [0, 0.37, 1]) expect(inHintBand(hintBand(at, answer.tolerance, axis, u), at)).toBe(true)
     }
   })
 

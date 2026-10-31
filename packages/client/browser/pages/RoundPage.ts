@@ -12,6 +12,7 @@ import { Screen } from "./Screen.ts"
 import { TurnedAwayPage } from "./TurnedAwayPage.ts"
 import { isUsable, text } from "./support.ts"
 import type { Tab } from "./Tab.ts"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** An online round you are playing: paint, then Done (or Pass). */
 export class RoundPage extends Screen {
@@ -21,10 +22,10 @@ export class RoundPage extends Screen {
   readonly playersPanel: PlayersPanel
   readonly devDrawer: DevDrawer
 
-  static async whenShown(tab: Tab, timeoutMs = 15_000): Promise<RoundPage> {
+  static async whenShown(tab: Tab, timeout: Ms = 15_000): Promise<RoundPage> {
     const round = new RoundPage(tab)
-    await tab.page.getByTestId(inGameTestIds.doneButton).waitFor({ timeout: timeoutMs })
-    await round.paintTools.waitUntilEnabled(timeoutMs)
+    await tab.page.getByTestId(inGameTestIds.doneButton).waitFor({ timeout })
+    await round.paintTools.waitUntilEnabled(timeout)
     await round.map.waitUntilSettled()
     return round
   }
@@ -84,8 +85,8 @@ export class RoundPage extends Screen {
   }
 
   /** Until the clock runs out. */
-  async waitForReveal(timeoutMs = 20_000): Promise<RevealPage> {
-    return RevealPage.whenShown(this.tab, timeoutMs)
+  async waitForReveal(timeout: Ms = 20_000): Promise<RevealPage> {
+    return RevealPage.whenShown(this.tab, timeout)
   }
 
   /** Until the host removes you from the game. */

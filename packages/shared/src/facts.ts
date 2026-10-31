@@ -4,6 +4,8 @@
  * three or four for each answer, by its Wikipedia article, each researched
  * and then checked against its source and a second one.
  */
+import { z } from "zod"
+import { SourceUrlSchema, WikiTitleSchema, type SourceUrl, type WikiTitle } from "./ids.ts"
 
 export enum FactType {
   FAME = "FAME",
@@ -14,11 +16,17 @@ export enum FactType {
 export interface Fact {
   type: FactType
   text: string
-  source: string
+  source: SourceUrl
 }
 
 /** By Wikipedia article title, as questions name their answers. */
-export type Facts = Record<string, Fact[]>
+export type Facts = Partial<Record<WikiTitle, Fact[]>>
+
+/** facts.json as it is read. */
+export const FactsSchema: z.ZodType<Facts> = z.partialRecord(
+  WikiTitleSchema,
+  z.array(z.strictObject({ type: z.enum(FactType), text: z.string(), source: SourceUrlSchema }))
+)
 
 /**
  * One of an answer's facts. The same `seed` and `round` give the same fact,

@@ -5,6 +5,7 @@ import { ConfirmDialog } from "./ConfirmDialog.ts"
 import { ResultsPage } from "./ResultsPage.ts"
 import { isUsable, text } from "./support.ts"
 import type { Tab } from "./Tab.ts"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** What sits over the map on every game screen: the header strip, the question, the host's End game. */
 export class Hud {
@@ -15,11 +16,11 @@ export class Hud {
   }
 
   /** Waits until the round's countdown shows `seconds` or fewer. */
-  async waitForCountdown(seconds: number, timeoutMs = 60_000): Promise<void> {
+  async waitForCountdown(seconds: number, timeout: Ms = 60_000): Promise<void> {
     await this.#tab.page.waitForFunction(
       ([id, s]) => Number(document.querySelector(`[data-testid="${id}"]`)?.textContent ?? Infinity) <= s,
       [countdownTestIds.countdown, seconds] as const,
-      { timeout: timeoutMs, polling: 50 }
+      { timeout: timeout, polling: 50 }
     )
   }
 

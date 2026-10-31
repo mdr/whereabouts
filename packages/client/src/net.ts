@@ -27,6 +27,7 @@ import { CloseReason, isCloseReason } from "@whereabouts/shared/close-reason"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { PlayerId, PlayerName } from "@whereabouts/shared/ids"
 import { reloadForNewBuild } from "./stale-build"
+import type { Ms } from "@whereabouts/shared/units"
 
 export enum ConnectionStatus {
   IDLE = "IDLE",
@@ -216,8 +217,8 @@ export class Connection {
   }
 
   /** Local-clock ms until a server deadline. */
-  msUntil(serverEpochMs: number): number {
-    return serverEpochMs - (Date.now() + this.clockOffset.value)
+  timeUntil(at: Ms): Ms {
+    return at - (Date.now() + this.clockOffset.value)
   }
 }
 

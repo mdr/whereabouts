@@ -27,6 +27,7 @@ import type { LatLon } from "@whereabouts/shared/geo"
 import { latLonToLocal, localToLatLon } from "./sphere"
 import { buildStand } from "./models"
 import { HANDS, Hand } from "./hand"
+import type { Metres, Seconds } from "@whereabouts/shared/units"
 
 const RADIUS = 0.22
 /**
@@ -49,9 +50,9 @@ const SPIN_DECAY = 1.5
 const MAX_TILT = Math.PI / 2
 const STICK_DEAD = 0.15
 /** How long the globe takes to turn a place to face the player. */
-const TURN_S = 0.8
+const TURN: Seconds = 0.8
 /** How wide, in metres, a place the globe turns to show is made. */
-const FRAME_M = 0.35
+const FRAME_WIDTH: Metres = 0.35
 /** The deepest the reveal zooms to frame the guesses: deeper swings the menus far aside. */
 const MAX_FRAME_SCALE = 8
 
@@ -229,7 +230,7 @@ export class Globe {
     const toScale =
       reach >= Math.PI / 2
         ? MIN_SCALE
-        : Math.min(MAX_FRAME_SCALE, Math.max(MIN_SCALE, FRAME_M / (RADIUS * Math.sin(Math.max(reach, 1e-4)))))
+        : Math.min(MAX_FRAME_SCALE, Math.max(MIN_SCALE, FRAME_WIDTH / (RADIUS * Math.sin(Math.max(reach, 1e-4)))))
     // Spun until the place is straight ahead, then tilted to the eye, as
     // seen from where the centre will be once zoomed.
     const centre = w.copy(this.anchor).addScaledVector(this.toward, RADIUS * toScale)
@@ -285,7 +286,7 @@ export class Globe {
     if (left || right || Math.abs(stick.x) > STICK_DEAD || Math.abs(stick.y) > STICK_DEAD) this.turning = undefined
     if (this.turning) {
       const { from, to } = this.turning
-      const t = (this.turning.t = Math.min(1, this.turning.t + dt / TURN_S))
+      const t = (this.turning.t = Math.min(1, this.turning.t + dt / TURN))
       const eased = t * t * (3 - 2 * t)
       this.turned.spin = from.spin + (to.spin - from.spin) * eased
       this.turned.tilt = from.tilt + (to.tilt - from.tilt) * eased

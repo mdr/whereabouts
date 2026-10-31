@@ -6,13 +6,18 @@
  */
 import { z } from "zod"
 import type { LatLon } from "./geo.ts"
+import { DegreesSchema, KmSchema, type Km } from "./units.ts"
 import {
+  CommonsFileSchema,
   FlagCodeSchema,
   OutlineIdSchema,
   QuestionIdSchema,
+  WikiTitleSchema,
+  type CommonsFile,
   type FlagCode,
   type OutlineId,
-  type QuestionId
+  type QuestionId,
+  type WikiTitle
 } from "./ids.ts"
 
 /** In the order the host and practice list them. */
@@ -53,7 +58,7 @@ export enum Surface {
 interface PhotoClue {
   type: ClueType.PHOTO
   /** Wikimedia Commons file name (without the File: prefix). */
-  image: string
+  image: CommonsFile
 }
 
 interface NameClue {
@@ -72,7 +77,7 @@ export type Clue = PhotoClue | NameClue | FlagClue
 export interface PointAnswer {
   type: AnswerType.POINT
   at: LatLon
-  toleranceKm: number
+  tolerance: Km
 }
 
 export interface AreaAnswer {
@@ -81,7 +86,7 @@ export interface AreaAnswer {
   /** Area-weighted centre, for framing the map. */
   centre: LatLon
   /** A fifth of the area's equivalent radius, sqrt(area / pi). */
-  toleranceKm: number
+  tolerance: Km
   surface: Surface
 }
 
@@ -93,7 +98,7 @@ export interface LandmarkQuestion {
   /** Shown after the reveal. */
   label: string
   /** English Wikipedia article title, linked from the reveal. */
-  wiki: string
+  wiki: WikiTitle
   clue: PhotoClue
   answer: PointAnswer
 }
@@ -102,7 +107,7 @@ export interface PlaceQuestion {
   type: QuestionType.PLACE
   id: QuestionId
   label: string
-  wiki: string
+  wiki: WikiTitle
   clue: NameClue
   answer: PointAnswer
 }
@@ -111,7 +116,7 @@ interface CountryQuestion {
   type: QuestionType.COUNTRY
   id: QuestionId
   label: string
-  wiki: string
+  wiki: WikiTitle
   clue: NameClue
   answer: AreaAnswer
   /** Shown beside the country's name to help players learn it. */
@@ -124,7 +129,7 @@ export interface FlagQuestion {
   id: QuestionId
   label: string
   /** The article on the flag. */
-  wiki: string
+  wiki: WikiTitle
   clue: FlagClue
   answer: PointAnswer | AreaAnswer
 }
@@ -134,7 +139,7 @@ export interface FeatureQuestion {
   id: QuestionId
   feature: FeatureType
   label: string
-  wiki: string
+  wiki: WikiTitle
   clue: NameClue
   answer: AreaAnswer
 }
@@ -144,7 +149,7 @@ interface StateQuestion {
   type: QuestionType.STATE
   id: QuestionId
   label: string
-  wiki: string
+  wiki: WikiTitle
   clue: NameClue
   answer: PointAnswer | AreaAnswer
 }
@@ -161,20 +166,20 @@ export type Question =
 export type Outlines = ReadonlyMap<OutlineId, Outline>
 export type Outline = number[][][][]
 
-const LatLonSchema = z.object({ lat: z.number(), lon: z.number() })
-const PointAnswerSchema = z.object({ type: z.literal(AnswerType.POINT), at: LatLonSchema, toleranceKm: z.number() })
+const LatLonSchema = z.object({ lat: DegreesSchema, lon: DegreesSchema })
+const PointAnswerSchema = z.object({ type: z.literal(AnswerType.POINT), at: LatLonSchema, tolerance: KmSchema })
 const AreaAnswerSchema = z.object({
   type: z.literal(AnswerType.AREA),
   outline: OutlineIdSchema,
   centre: LatLonSchema,
-  toleranceKm: z.number(),
+  tolerance: KmSchema,
   surface: z.enum(Surface)
 })
 const AnyAnswerSchema = z.discriminatedUnion("type", [PointAnswerSchema, AreaAnswerSchema])
-const PhotoClueSchema = z.object({ type: z.literal(ClueType.PHOTO), image: z.string() })
+const PhotoClueSchema = z.object({ type: z.literal(ClueType.PHOTO), image: CommonsFileSchema })
 const NameClueSchema = z.object({ type: z.literal(ClueType.NAME), prompt: z.string() })
 const FlagClueSchema = z.object({ type: z.literal(ClueType.FLAG), flag: FlagCodeSchema })
-const common = { id: QuestionIdSchema, label: z.string(), wiki: z.string() }
+const common = { id: QuestionIdSchema, label: z.string(), wiki: WikiTitleSchema }
 
 /** A question as catalogue.json holds it. */
 export const QuestionSchema: z.ZodType<Question> = z.discriminatedUnion("type", [
@@ -218,7 +223,8 @@ export function promptOf({ clue, answer }: { clue: Clue; answer: { type: AnswerT
 export const clueFlag = (clue: Clue): FlagCode | undefined => (clue.type === ClueType.FLAG ? clue.flag : undefined)
 
 /** The photo a clue shows, on a landmark round. */
-export const clueImage = (clue: Clue): string | undefined => (clue.type === ClueType.PHOTO ? clue.image : undefined)
+export const clueImage = (clue: Clue): CommonsFile | undefined =>
+  clue.type === ClueType.PHOTO ? clue.image : undefined
 
 /** Where an answer is: the point, or an area's centre. */
 export function answerCentre(answer: Answer): LatLon {
@@ -235,23 +241,23 @@ export function flagShown(q: Question): FlagCode | undefined {
   return q.type === QuestionType.COUNTRY ? q.countryFlag : undefined
 }
 
-export function commonsImageUrl(file: string, width = 900): string {
+export function commonsImageUrl(file: CommonsFile, width = 900): string {
   return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${width}`
 }
 
-export function commonsPageUrl(file: string): string {
+export function commonsPageUrl(file: CommonsFile): string {
   return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, "_"))}`
 }
 
 /** The Wikipedia article for a place, or a search for its label when there is none. */
-export function wikipediaUrl(title: string | undefined, label: string): string {
+export function wikipediaUrl(title: WikiTitle | undefined, label: string): string {
   return title
     ? `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`
     : `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(label)}`
 }
 
 /** Two questions in one game should be at least this far apart when the pool allows. */
-export const MIN_SPREAD_KM = 50
+export const MIN_SPREAD: Km = 50
 
 /** Deterministic shuffle so a playtest session can be replayed. */
 export function shuffle<T>(items: T[], seed: number): T[] {

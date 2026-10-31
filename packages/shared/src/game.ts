@@ -25,7 +25,7 @@ import { revealPhoto } from "./photos.ts"
 import { DEFAULT_HINTS, hintBand, seededUnit, HintAxis, type HintBand } from "./hints.ts"
 import { playerColour, type PlayerColour } from "./colours.ts"
 import { playerId, roomCode, type PlayerId, type PlayerName, type PlayerToken, type RoomCode } from "./ids.ts"
-import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE_MS, evenMix, mixTotal, MapDetail, Phase } from "./protocol.ts"
+import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE, evenMix, mixTotal, MapDetail, Phase } from "./protocol.ts"
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -40,10 +40,11 @@ import type {
   RoundResultView
 } from "./protocol.ts"
 import { CloseReason } from "./close-reason.ts"
+import type { Ms } from "./units.ts"
 
 const DEFAULT_CONFIG: GameConfig = {
   rounds: 8,
-  roundMs: 60_000,
+  roundLength: 60_000,
   mix: evenMix(8),
   mapDetail: MapDetail.MINIMAL,
   kernelId: DEFAULT_KERNEL.id,
@@ -54,7 +55,7 @@ const DEFAULT_CONFIG: GameConfig = {
  * How long after the deadline a round is scored. Clients stop painting at
  * zero and send what they have; this lets that paint arrive.
  */
-export const ROUND_GRACE_MS = 1000
+export const ROUND_GRACE: Ms = 1000
 
 interface Player {
   id: PlayerId
@@ -66,8 +67,8 @@ interface Player {
   watching: boolean
   connected: boolean
   /** When the connection dropped, while it is down. */
-  leftAt: number | undefined
-  joinedAt: number
+  leftAt: Ms | undefined
+  joinedAt: Ms
   /** First round index this player may play. Later joiners sit out the current one. */
   joinedRound: number
   /** By round index; a hole for each round not played. */
@@ -82,7 +83,7 @@ interface Submission {
   paint: PaintSubmission
   locked: boolean
   /** When the player last locked in. */
-  lockedAt?: number
+  lockedAt?: Ms
 }
 
 export type CommandResult = { ok: true; changed: boolean } | { ok: false; error: string }
@@ -116,7 +117,7 @@ export class Game {
 
   private questions: Question[] = []
   private roundIndex = -1
-  private deadline = 0
+  private deadline: Ms = 0
   private submissions = new Map<PlayerToken, Submission>()
   /** The hint each player used on the current round. */
   private hints = new Map<PlayerToken, HintAxis>()
@@ -172,7 +173,7 @@ export class Game {
    * to watch, or all MAX_PLAYERS seats are taken, in which case they watch if
    * there is room for another spectator.
    */
-  join(token: PlayerToken, name: PlayerName, now: number, watch = false): JoinResult {
+  join(token: PlayerToken, name: PlayerName, now: Ms, watch = false): JoinResult {
     const existing = this.players.get(token)
     if (existing) {
       existing.connected = true
@@ -210,11 +211,11 @@ export class Game {
 
   /**
    * Connection dropped. The seat is held, so a refresh takes it back: in the
-   * lobby for SEAT_GRACE_MS (then tick frees it), mid-game for good. The
+   * lobby for SEAT_GRACE (then tick frees it), mid-game for good. The
    * host keeps the role while away; the longest-standing connected player
    * acts as host in the meantime.
    */
-  disconnect(token: PlayerToken, now: number): CommandResult {
+  disconnect(token: PlayerToken, now: Ms): CommandResult {
     const player = this.players.get(token)
     if (!player) return OK_SAME
     player.connected = false
@@ -269,7 +270,7 @@ export class Game {
 
   // ---- host commands -------------------------------------------------------
 
-  start(token: PlayerToken, now: number): CommandResult {
+  start(token: PlayerToken, now: Ms): CommandResult {
     if (!this.isHost(token)) return fail("only the host can start")
     if (this.phase !== Phase.LOBBY) return fail("game already started")
     if (this.playing().length === 0) return fail("no players")
@@ -318,7 +319,7 @@ export class Game {
     const mix = patch.mix ?? this.config.mix
     const next = { ...this.config, ...patch, mix, rounds: mixTotal(mix) }
     if (
-      next.roundMs === this.config.roundMs &&
+      next.roundLength === this.config.roundLength &&
       next.mapDetail === this.config.mapDetail &&
       next.hints === this.config.hints &&
       QUESTION_TYPES.every((t) => mix[t] === this.config.mix[t])
@@ -330,14 +331,14 @@ export class Game {
   }
 
   /** Host advances from the reveal without waiting for the others. */
-  next(token: PlayerToken, now: number): CommandResult {
+  next(token: PlayerToken, now: Ms): CommandResult {
     if (!this.isHost(token)) return fail("only the host can advance")
     if (this.phase !== Phase.REVEAL) return fail("nothing to advance")
     this.advance(now)
     return OK_CHANGED
   }
 
-  again(token: PlayerToken, now: number): CommandResult {
+  again(token: PlayerToken, now: Ms): CommandResult {
     if (!this.isHost(token)) return fail("only the host can restart")
     if (this.phase !== Phase.RESULTS) return fail("game is still running")
     this.phase = Phase.LOBBY
@@ -410,7 +411,7 @@ export class Game {
    * rejoin (a fresh token can, as a new player). The acting host may remove
    * an absent host, in which case the role passes on.
    */
-  kick(token: PlayerToken, playerId: PlayerId, now: number): CommandResult {
+  kick(token: PlayerToken, playerId: PlayerId, now: Ms): CommandResult {
     if (!this.isHost(token)) return fail("only the host can remove players")
     const target = this.tokenOf(playerId)
     if (target === undefined) return fail("unknown player")
@@ -478,7 +479,7 @@ export class Game {
    * that scores PASS_SCORE, so a player with no idea need not hold
    * everyone up until the clock runs out.
    */
-  lock(token: PlayerToken, now: number): CommandResult {
+  lock(token: PlayerToken, now: Ms): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (this.phase !== Phase.GUESSING) return fail("not guessing")
@@ -511,7 +512,7 @@ export class Game {
   }
 
   /** Done reading the reveal. The next round starts once every connected player is. */
-  ready(token: PlayerToken, now: number): CommandResult {
+  ready(token: PlayerToken, now: Ms): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (this.phase !== Phase.REVEAL) return fail("nothing to be ready for")
@@ -528,7 +529,7 @@ export class Game {
    * connected player is ready. Nobody present means nothing happens; the
    * deadline (or the host) still governs.
    */
-  private settleIfEveryoneDone(now: number): void {
+  private settleIfEveryoneDone(now: Ms): void {
     if (this.phase === Phase.GUESSING) {
       let active = 0
       for (const p of this.players.values()) {
@@ -551,23 +552,23 @@ export class Game {
   // ---- clock ---------------------------------------------------------------
 
   /** Advance time-driven transitions. Returns true if the state changed. */
-  tick(now: number): boolean {
+  tick(now: Ms): boolean {
     if (this.phase === Phase.LOBBY) return this.freeLapsedSeats(now)
-    if (this.phase === Phase.GUESSING && now >= this.deadline + ROUND_GRACE_MS) {
+    if (this.phase === Phase.GUESSING && now >= this.deadline + ROUND_GRACE) {
       this.finishRound()
       return true
     }
     return false
   }
 
-  /** Epoch ms of the next time-driven transition, or undefined if none is pending. */
-  nextWakeAt(): number | undefined {
-    if (this.phase === Phase.GUESSING) return this.deadline + ROUND_GRACE_MS
+  /** Epoch time of the next time-driven transition, or undefined if none is pending. */
+  nextWakeAt(): Ms | undefined {
+    if (this.phase === Phase.GUESSING) return this.deadline + ROUND_GRACE
     if (this.phase === Phase.LOBBY) {
-      let at: number | undefined = undefined
+      let at: Ms | undefined = undefined
       for (const p of this.players.values()) {
         if (p.leftAt === undefined) continue
-        const due = p.leftAt + SEAT_GRACE_MS
+        const due = p.leftAt + SEAT_GRACE
         if (at === undefined || due < at) at = due
       }
       return at
@@ -575,11 +576,11 @@ export class Game {
     return undefined
   }
 
-  /** In the lobby, free the seats of players gone longer than SEAT_GRACE_MS, and the host role with one. */
-  private freeLapsedSeats(now: number): boolean {
+  /** In the lobby, free the seats of players gone longer than SEAT_GRACE, and the host role with one. */
+  private freeLapsedSeats(now: Ms): boolean {
     let changed = false
     for (const [tok, p] of this.players) {
-      if (p.leftAt === undefined || now < p.leftAt + SEAT_GRACE_MS) continue
+      if (p.leftAt === undefined || now < p.leftAt + SEAT_GRACE) continue
       this.players.delete(tok)
       changed = true
     }
@@ -589,10 +590,10 @@ export class Game {
 
   // ---- transitions ---------------------------------------------------------
 
-  private beginRound(index: number, now: number): void {
+  private beginRound(index: number, now: Ms): void {
     this.roundIndex = index
     this.phase = Phase.GUESSING
-    this.deadline = now + this.config.roundMs
+    this.deadline = now + this.config.roundLength
     this.submissions.clear()
     this.hints.clear()
     this.ready_.clear()
@@ -602,7 +603,7 @@ export class Game {
   private finishRound(): void {
     const q = this.questions[this.roundIndex]!
     const answer = scoredAnswer(q.answer, this.outlines)
-    const res = resolutionForTolerance(answer.toleranceKm)
+    const res = resolutionForTolerance(answer.tolerance)
     const results: RoundResultView[] = []
     // Snapshot ranks before any score changes so arrows compare like with like.
     for (const p of this.playing()) p.previousRank = this.rankOf(p)
@@ -611,15 +612,15 @@ export class Game {
       const sub = this.submissions.get(p.token)
       let region: RoundResultView["region"]
       let paint: PaintSubmission | undefined = undefined
-      const roundMs = this.config.roundMs
-      const lockMs = sub?.locked && sub.lockedAt !== undefined ? sub.lockedAt - (this.deadline - roundMs) : undefined
+      const roundLength = this.config.roundLength
       const facts: RoundFacts = {
         label: q.label,
         score: 0,
         passed: true,
-        lockSeconds: lockMs === undefined ? undefined : lockMs / 1000,
-        roundSeconds: roundMs / 1000,
-        areaKm2: 0
+        lockedAfter:
+          sub?.locked && sub.lockedAt !== undefined ? sub.lockedAt - (this.deadline - roundLength) : undefined,
+        roundLength,
+        area: 0
       }
       const painted = sub && Object.keys(sub.paint.cells).length > 0 ? sub.paint : undefined
       const cells = painted ? [...PaintLayer.fromRecord(res, painted.cells).toCells()] : []
@@ -631,25 +632,25 @@ export class Game {
       const { A, B } = "A" in scored.parts ? scored.parts : { A: 0, B: 0 }
       if (painted && dist) {
         facts.passed = false
-        facts.areaKm2 = cells.reduce((a, c) => a + c.areaKm2, 0)
+        facts.area = cells.reduce((a, c) => a + c.area, 0)
         if (answer.type === AnswerType.AREA && "shape" in scored.parts) {
           region = { ...scored.parts, ...regionFit(dist, answer) }
           const m = regionMisfit(dist, answer)
           // A country's tolerance is a fifth of its equivalent radius.
           facts.region = {
             precision: m.precision,
-            nextDoor: m.precision < 0.1 && m.off !== undefined && m.off.km < 5 * answer.toleranceKm
+            nextDoor: m.precision < 0.1 && m.off !== undefined && m.off.distance < 5 * answer.tolerance
           }
         } else if (answer.type === AnswerType.POINT) {
-          const e = explainPoint(dist, answer.at, answer.toleranceKm, A, B, this.kernel)
+          const e = explainPoint(dist, answer.at, answer.tolerance, A, B, this.kernel)
           const best = Math.max(e.best, score)
           facts.point = {
             spot: e.spot,
-            km: e.km,
+            miss: e.miss,
             spread: 1000 - best,
-            distance: best - score,
-            hedged: isHedge(e, score, answer.toleranceKm),
-            toleranceKm: answer.toleranceKm
+            missCost: best - score,
+            hedged: isHedge(e, score, answer.tolerance),
+            tolerance: answer.tolerance
           }
         }
         paint = painted
@@ -683,7 +684,7 @@ export class Game {
     }
   }
 
-  private advance(now: number): void {
+  private advance(now: Ms): void {
     if (this.roundIndex + 1 < this.questions.length) {
       this.beginRound(this.roundIndex + 1, now)
       return
@@ -741,7 +742,7 @@ export class Game {
       .sort((a, b) => Number(a.watching) - Number(b.watching) || a.rank - b.rank || a.name.localeCompare(b.name))
   }
 
-  view(token: PlayerToken, now: number): GameView {
+  view(token: PlayerToken, now: Ms): GameView {
     const me = this.players.get(token)
     const q = this.phase === Phase.GUESSING ? this.questions[this.roundIndex] : undefined
     return {
@@ -788,7 +789,7 @@ export class Game {
   /** The round's band of each axis: the same for everyone who asks. */
   private roundBand(q: Question, axis: HintAxis): HintBand {
     const u = seededUnit(this.seed, this.roundIndex, axis === HintAxis.LATITUDE ? 1 : 2)
-    return hintBand(answerCentre(q.answer), q.answer.toleranceKm, axis, u)
+    return hintBand(answerCentre(q.answer), q.answer.tolerance, axis, u)
   }
 
   /** The next round's pictures: round 1's in the lobby, the following round's while one is played or revealed. */
@@ -884,8 +885,8 @@ export function questionView(q: Question): QuestionView {
     clue: q.clue,
     answer:
       answer.type === AnswerType.AREA
-        ? { type: answer.type, toleranceKm: answer.toleranceKm, outline: answer.outline, surface: answer.surface }
-        : { type: answer.type, toleranceKm: answer.toleranceKm },
+        ? { type: answer.type, tolerance: answer.tolerance, outline: answer.outline, surface: answer.surface }
+        : { type: answer.type, tolerance: answer.tolerance },
     ...(q.type === QuestionType.FEATURE ? { feature: q.feature } : {}),
     ...(q.type === QuestionType.COUNTRY && q.countryFlag ? { countryFlag: q.countryFlag } : {})
   }

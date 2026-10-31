@@ -31,7 +31,7 @@ function view(isHost: boolean): GameView {
     phase: Phase.LOBBY,
     config: {
       rounds: 5,
-      roundMs: 60000,
+      roundLength: 60000,
       mix: MIX,
       mapDetail: MapDetail.MINIMAL,
       kernelId: KernelId.MULTI_EQUAL,
@@ -144,7 +144,7 @@ describe("Lobby setup", () => {
   it("highlights only the value the host just changed", () => {
     const { container, rerender } = render(<Lobby conn={conn} view={view(false)} />)
     const next = view(false)
-    next.config = { ...next.config, roundMs: 30_000 }
+    next.config = { ...next.config, roundLength: 30_000 }
     rerender(<Lobby conn={conn} view={next} />)
     expect([...container.querySelectorAll(`.${s.changed!}`)].map((t) => t.textContent)).toEqual(["30 sper round"])
   })

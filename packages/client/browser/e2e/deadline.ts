@@ -27,7 +27,7 @@ await aliceRoundPage.paintTools.clear()
 
 // Bob starts a long stroke just before zero and keeps the button down well past it.
 await bobRoundPage.hud.waitForCountdown(2)
-const stroke = bobRoundPage.map.drag({ across: 0.6, down: 0.5 }, { distancePx: 160, steps: 40, holdMs: 4_000 })
+const stroke = bobRoundPage.map.drag({ across: 0.6, down: 0.5 }, { distance: 160, steps: 40, hold: 4_000 })
 const aliceRevealPage = await aliceRoundPage.waitForReveal()
 const bobRevealPage = await bobRoundPage.waitForReveal()
 await stroke

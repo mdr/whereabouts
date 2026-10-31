@@ -15,6 +15,7 @@ import type { LatLon } from "@whereabouts/shared/geo"
 import type { PaintController } from "./paint-controller"
 import { borders, loadBorders } from "./borders"
 import { outlines } from "./outlines"
+import type { Px } from "@whereabouts/shared/units"
 
 export class CountryFiller {
   private readonly shapes = new Map<FlagCode, FillShape>()
@@ -33,7 +34,7 @@ export class CountryFiller {
    * The country at a point, or undefined (at sea, or where no country is named);
    * failing that, a small country within `px` pixels at `kmPerPx`.
    */
-  countryAt(p: LatLon, kmPerPx: number, px: number): FlagQuestion | undefined {
+  countryAt(p: LatLon, kmPerPx: number, px: Px): FlagQuestion | undefined {
     return this.borders.countryAt(p) ?? this.borders.smallNear(p, kmPerPx, px)
   }
 

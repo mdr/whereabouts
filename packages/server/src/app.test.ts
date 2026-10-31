@@ -11,7 +11,7 @@ import {
   PROTOCOL_VERSION,
   type ClientSend,
   type ClientTopic,
-  SEAT_GRACE_MS,
+  SEAT_GRACE,
   encodeTicket,
   type Ticket,
   revealFrom,
@@ -24,7 +24,7 @@ import {
   mixOf,
   Phase
 } from "@whereabouts/shared/protocol"
-import { ROUND_GRACE_MS } from "@whereabouts/shared/game"
+import { ROUND_GRACE } from "@whereabouts/shared/game"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import { GameViewSchema } from "@whereabouts/shared/view-schema"
 import { CATALOGUE } from "@whereabouts/shared/catalogue"
@@ -34,6 +34,7 @@ import {
   questionId,
   playerName,
   roomCode,
+  wikiTitle,
   type PlayerName,
   type PlayerToken,
   type RoomCode
@@ -56,14 +57,14 @@ import { CloseReason } from "@whereabouts/shared/close-reason"
 ;(globalThis as unknown as { window: unknown }).window = globalThis
 const { WSClient } = await import("@rivalis/browser")
 
-function place(id: string, label: string, lat: number, lon: number, toleranceKm: number): PlaceQuestion {
+function place(id: string, label: string, lat: number, lon: number, tolerance: number): PlaceQuestion {
   return {
     type: QuestionType.PLACE,
     id: questionId(id),
     label,
-    wiki: label,
+    wiki: wikiTitle(label),
     clue: { type: ClueType.NAME, prompt: `Where is ${label}?` },
-    answer: { type: AnswerType.POINT, at: { lat, lon }, toleranceKm }
+    answer: { type: AnswerType.POINT, at: { lat, lon }, tolerance }
   }
 }
 
@@ -73,7 +74,7 @@ const bank = {
   ...BANK,
   catalogue: [...questions, ...CATALOGUE.filter((q) => q.type !== QuestionType.PLACE)]
 }
-const config = { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundMs: 60_000 }
+const config = { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundLength: 60_000 }
 
 /** The place question a round asked. */
 const askedIn = (round: GameView) => questions.find((q) => promptOf(q) === round.round!.question.prompt)!
@@ -188,9 +189,9 @@ class TestPlayer {
 }
 
 function paintAt(q: Question, lat: number, lon: number) {
-  const { toleranceKm } = q.answer
-  const layer = new PaintLayer(resolutionForTolerance(toleranceKm))
-  layer.stamp({ lat, lon }, toleranceKm / 2, 1)
+  const { tolerance } = q.answer
+  const layer = new PaintLayer(resolutionForTolerance(tolerance))
+  layer.stamp({ lat, lon }, tolerance / 2, 1)
   return { cells: layer.toRecord(), floor: 0.05 }
 }
 
@@ -297,7 +298,7 @@ describe("game server", () => {
     const aBobCell = Object.keys(bobPaint.cells)[0]!
     expect(JSON.stringify(alice.latest)).not.toContain(aBobCell)
 
-    clock.advance(60_000 + ROUND_GRACE_MS)
+    clock.advance(60_000 + ROUND_GRACE)
     const reveal = await alice.until((v) => v.phase === Phase.REVEAL)
     expect(reveal.reveal!.label).toBe(q.label)
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
@@ -307,7 +308,7 @@ describe("game server", () => {
 
     alice.send("next")
     await bob.until((v) => v.phase === Phase.GUESSING && v.round!.index === 1)
-    clock.advance(60_000 + ROUND_GRACE_MS)
+    clock.advance(60_000 + ROUND_GRACE)
     await bob.until((v) => v.phase === Phase.REVEAL && v.reveal!.index === 1)
     // No timer on the reveal: it advances when everyone is ready.
     bob.send("ready")
@@ -339,13 +340,13 @@ describe("game server", () => {
     const area = scoredAnswer(country.answer, BANK.outlines)
     if (area.type !== AnswerType.AREA) throw new Error("a country is an area")
     // Paint it exactly, compacted the way the client sends paint.
-    const res = resolutionForTolerance(shown.toleranceKm)
+    const res = resolutionForTolerance(shown.tolerance)
     const cells = compactRecord(Object.fromEntries(regionCells(area, res).map((h) => [h, 1])))
     alice.sendPaint({ cells, floor: 0.05 })
     alice.send("lock")
     await alice.untilLatest((v) => v.you.locked)
 
-    clock.advance(60_000 + ROUND_GRACE_MS)
+    clock.advance(60_000 + ROUND_GRACE)
     const reveal = await bob.until((v) => v.phase === Phase.REVEAL)
     expect(reveal.reveal!.question.answer).toEqual(shown)
     expect(reveal.reveal!.label).toBe(country.label)
@@ -372,7 +373,7 @@ describe("game server", () => {
     const f = CATALOGUE.find((x) => x.clue.type === ClueType.FLAG && x.clue.flag === clue.flag)!
     expect(JSON.stringify(round)).not.toContain(f.label)
 
-    clock.advance(60_000 + ROUND_GRACE_MS)
+    clock.advance(60_000 + ROUND_GRACE)
     const reveal = await alice.until((v) => v.phase === Phase.REVEAL)
     expect(reveal.reveal!.label).toBe(f.label)
     expect(reveal.reveal!.question.clue).toEqual(clue)
@@ -435,7 +436,7 @@ describe("game server", () => {
     // his lobby seat is freed once the grace period passes.
     expect(alice.client.connected).toBe(true)
     await alice.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
-    clock.advance(SEAT_GRACE_MS)
+    clock.advance(SEAT_GRACE)
     await alice.untilLatest((v) => v.players.length === 1)
     const cara = player("Cara")
     cara.connect({ code: lobby.code })
@@ -529,7 +530,7 @@ describe("game server", () => {
     alice.client.disconnect()
     await new Promise((r) => setTimeout(r, 100))
     expect(app.rivalis.rooms.get(lobby.code) ?? undefined).not.toBeUndefined()
-    clock.advance(SEAT_GRACE_MS)
+    clock.advance(SEAT_GRACE)
     expect(app.rivalis.rooms.get(lobby.code) ?? undefined).toBeUndefined()
   })
 
@@ -539,14 +540,14 @@ describe("game server", () => {
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     alice.client.disconnect()
     await alice.waitClosed()
-    clock.advance(SEAT_GRACE_MS - 1_000)
+    clock.advance(SEAT_GRACE - 1_000)
     const again = player("Alice") // same name => same token, like a refreshed tab
     again.connect({ code: lobby.code })
     const back = await again.until((v) => v.phase === Phase.LOBBY)
     expect(back.you.isHost).toBe(true)
     expect(back.players).toHaveLength(1)
     // The empty-room timer was cancelled on the way back in.
-    clock.advance(SEAT_GRACE_MS)
+    clock.advance(SEAT_GRACE)
     expect(app.rivalis.rooms.get(lobby.code) ?? undefined).not.toBeUndefined()
   })
 

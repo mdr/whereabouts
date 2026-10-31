@@ -31,6 +31,7 @@ import clearUrl from "./assets/sounds/clear.mp3"
 import applauseUrl from "./assets/sounds/applause.mp3"
 import { soundOn } from "./settings"
 import { Phase } from "@whereabouts/shared/protocol"
+import type { Ms, Seconds } from "@whereabouts/shared/units"
 
 type Slices = readonly (readonly [number, number])[]
 
@@ -39,8 +40,8 @@ interface Loop {
   slices: Slices
   volume: number
   /** How much of each later stretch's start to skip, so a long stroke sounds continuous. */
-  attackS: number
-  crossfadeS: number
+  attack: Seconds
+  crossfade: Seconds
 }
 
 const LOOPS = {
@@ -58,8 +59,8 @@ const LOOPS = {
       [23.78, 2.5]
     ],
     volume: 0.55,
-    attackS: 0.15,
-    crossfadeS: 0.12
+    attack: 0.15,
+    crossfade: 0.12
   },
   eraser: {
     slices: [
@@ -74,15 +75,15 @@ const LOOPS = {
       [3.68, 0.8]
     ],
     volume: 0.4,
-    attackS: 0,
-    crossfadeS: 0.06
+    attack: 0,
+    crossfade: 0.06
   }
 } satisfies Record<string, Loop>
 type LoopName = keyof typeof LOOPS
 
-const RELEASE_S = 0.06
+const RELEASE: Seconds = 0.06
 /** Seconds of ticking before the alarm in countdown.mp3. */
-const COUNTDOWN_S = 10
+const COUNTDOWN: Seconds = 10
 /** The countdown starts soft and reaches full volume at the alarm. */
 const COUNTDOWN_START_GAIN = 0.25
 
@@ -101,15 +102,15 @@ const URLS = {
 type Clip = keyof typeof URLS
 
 /**
- * When to start the countdown for a round with `msLeft` to go: after
- * `delayMs`, from `offsetS` into the clip. Arriving with 6 s left starts 4 s
+ * When to start the countdown for a round with `timeLeft` to go: after
+ * `delay`, from `offset` into the clip. Arriving with 6 s left starts 4 s
  * in, so the alarm still lands on zero; with no time left there is nothing.
  */
-export function countdownPlan(msLeft: number): { delayMs: number; offsetS: number } | undefined {
-  if (msLeft <= 0) return undefined
-  const leadMs = COUNTDOWN_S * 1000
-  if (msLeft >= leadMs) return { delayMs: msLeft - leadMs, offsetS: 0 }
-  return { delayMs: 0, offsetS: (leadMs - msLeft) / 1000 }
+export function countdownPlan(timeLeft: Ms): { delay: Ms; offset: Seconds } | undefined {
+  if (timeLeft <= 0) return undefined
+  const lead = COUNTDOWN * 1000
+  if (timeLeft >= lead) return { delay: timeLeft - lead, offset: 0 }
+  return { delay: 0, offset: (lead - timeLeft) / 1000 }
 }
 
 export interface RoundState {
@@ -125,7 +126,7 @@ export enum RoundCue {
 }
 
 /** More than this left when a round ends counts as finishing early rather than on time. */
-const EARLY_MS = 750
+const EARLY: Ms = 750
 
 /**
  * The cue a change of game state calls for. A round starting (from the lobby
@@ -136,12 +137,12 @@ const EARLY_MS = 750
  * the game mid-round). `prev` is undefined on the first view after loading, which
  * never cues anything: a refresh should not announce what is already there.
  */
-export function roundCue(prev: RoundState | undefined, next: RoundState, msLeftAtChange: number): RoundCue | undefined {
+export function roundCue(prev: RoundState | undefined, next: RoundState, timeLeftAtChange: Ms): RoundCue | undefined {
   if (!prev) return undefined
   if (next.phase === Phase.GUESSING && (prev.phase !== Phase.GUESSING || prev.round !== next.round))
     return RoundCue.ROUND_START
   if (prev.phase === Phase.GUESSING && next.phase === Phase.REVEAL)
-    return msLeftAtChange > EARLY_MS ? RoundCue.FINISHED_EARLY : undefined
+    return timeLeftAtChange > EARLY ? RoundCue.FINISHED_EARLY : undefined
   if (next.phase === Phase.RESULTS && prev.phase !== Phase.RESULTS) return RoundCue.RESULTS
   return undefined
 }
@@ -232,7 +233,7 @@ class SoundEngine {
       while (i === stroke.last)
       const [offset, length] = loop.slices[i]!
       const first = stroke.voices.length === 0
-      const skip = first ? 0 : Math.min(loop.attackS, length / 3)
+      const skip = first ? 0 : Math.min(loop.attack, length / 3)
       const dur = length - skip
       const at = stroke.nextAt
       const src = ctx.createBufferSource()
@@ -240,15 +241,15 @@ class SoundEngine {
       src.buffer = buffer
       src.connect(gain).connect(this.master!)
       gain.gain.setValueAtTime(0, at)
-      gain.gain.linearRampToValueAtTime(loop.volume, at + (first ? 0.015 : loop.crossfadeS))
-      gain.gain.setValueAtTime(loop.volume, at + dur - loop.crossfadeS)
+      gain.gain.linearRampToValueAtTime(loop.volume, at + (first ? 0.015 : loop.crossfade))
+      gain.gain.setValueAtTime(loop.volume, at + dur - loop.crossfade)
       gain.gain.linearRampToValueAtTime(0, at + dur)
       src.start(at, offset + skip, dur)
       stroke.voices.push({ src, gain })
       // Keep only the voices that may still be sounding.
       if (stroke.voices.length > 4) stroke.voices.splice(0, stroke.voices.length - 4)
       stroke.last = i
-      stroke.nextAt = at + dur - loop.crossfadeS
+      stroke.nextAt = at + dur - loop.crossfade
     }
     stroke.timer = window.setTimeout(() => this.scheduleStroke(), 100)
   }
@@ -258,7 +259,7 @@ class SoundEngine {
     if (!stroke) return
     this.stroke = undefined
     clearTimeout(stroke.timer)
-    for (const v of stroke.voices) this.fadeOut(v, RELEASE_S)
+    for (const v of stroke.voices) this.fadeOut(v, RELEASE)
   }
 
   private fadeOut(v: Voice, seconds: number): void {
@@ -277,18 +278,18 @@ class SoundEngine {
 
   // ---- countdown ---------------------------------------------------------------
 
-  /** Arrange the countdown for a round with `msLeft` to go, replacing any other. */
-  scheduleCountdown(msLeft: number): void {
+  /** Arrange the countdown for a round with `timeLeft` to go, replacing any other. */
+  scheduleCountdown(timeLeft: Ms): void {
     this.stopCountdown()
-    const plan = countdownPlan(msLeft)
+    const plan = countdownPlan(timeLeft)
     if (!plan) return
     this.pendingCountdown = window.setTimeout(() => {
       this.pendingCountdown = undefined
-      this.playCountdown(plan.offsetS)
-    }, plan.delayMs)
+      this.playCountdown(plan.offset)
+    }, plan.delay)
   }
 
-  private playCountdown(offsetS: number): void {
+  private playCountdown(offset: Seconds): void {
     const ctx = this.ready()
     const buffer = this.buffers.countdown
     if (!ctx || !buffer) return
@@ -297,11 +298,11 @@ class SoundEngine {
     src.buffer = buffer
     src.connect(gain).connect(this.master!)
     const t = ctx.currentTime + 0.01
-    const progress = Math.min(1, offsetS / COUNTDOWN_S)
+    const progress = Math.min(1, offset / COUNTDOWN)
     const startGain = VOLUME.countdown * (COUNTDOWN_START_GAIN + (1 - COUNTDOWN_START_GAIN) * progress)
     gain.gain.setValueAtTime(startGain, t)
-    gain.gain.linearRampToValueAtTime(VOLUME.countdown, t + Math.max(0, COUNTDOWN_S - offsetS))
-    src.start(t, offsetS)
+    gain.gain.linearRampToValueAtTime(VOLUME.countdown, t + Math.max(0, COUNTDOWN - offset))
+    src.start(t, offset)
     src.onended = () => {
       if (this.ticking?.src === src) this.ticking = undefined
     }

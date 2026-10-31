@@ -7,6 +7,7 @@ import { RoundPage } from "./RoundPage.ts"
 import { Screen } from "./Screen.ts"
 import { byTestIdWith, text, until } from "./support.ts"
 import type { Tab } from "./Tab.ts"
+import type { Ms } from "@whereabouts/shared/units"
 
 export interface SetupSummary {
   rounds: string
@@ -18,8 +19,8 @@ export interface SetupSummary {
 export class LobbyPage extends Screen {
   readonly players: PlayerList
 
-  static async whenShown(tab: Tab, timeoutMs = 15_000): Promise<LobbyPage> {
-    await tab.page.getByTestId(lobbyTestIds.page).waitFor({ timeout: timeoutMs })
+  static async whenShown(tab: Tab, timeout: Ms = 15_000): Promise<LobbyPage> {
+    await tab.page.getByTestId(lobbyTestIds.page).waitFor({ timeout })
     return new LobbyPage(tab)
   }
 

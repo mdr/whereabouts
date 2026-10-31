@@ -56,22 +56,22 @@ function coat(cells: H3Cell[], floor = 0.05) {
   return buildDistribution(
     cells.map((h) => {
       const [lat, lon] = cellToLatLng(h)
-      return { lat, lon, intensity: 1, areaKm2: cellArea(h, UNITS.km2), h3: h }
+      return { lat, lon, intensity: 1, area: cellArea(h, UNITS.km2), h3: h }
     }),
     floor
   )
 }
 
 /** Paint a region the way a player would: at the question's painting resolution. */
-const paintRegion = (q: Area) => coat(regionCells(q, resolutionForTolerance(q.toleranceKm)))
+const paintRegion = (q: Area) => coat(regionCells(q, resolutionForTolerance(q.tolerance)))
 
 describe("region questions", () => {
   it("are well formed", () => {
     for (const country of COUNTRIES) {
       const q = byId(country.id)
       expect(promptOf(country)).toMatch(/^Paint the whole of /)
-      expect(q.toleranceKm).toBeGreaterThanOrEqual(10)
-      expect(q.toleranceKm).toBeLessThanOrEqual(400)
+      expect(q.tolerance).toBeGreaterThanOrEqual(10)
+      expect(q.tolerance).toBeLessThanOrEqual(400)
       expect(q.polygons.length).toBeGreaterThan(0)
       for (const polygon of q.polygons) {
         for (const ring of polygon) {
@@ -79,7 +79,7 @@ describe("region questions", () => {
           expect(ring[0]).toEqual(ring.at(-1))
         }
       }
-      expect(regionCells(q, regionScoringRes(q.toleranceKm)).length, country.id).toBeGreaterThan(10)
+      expect(regionCells(q, regionScoringRes(q.tolerance)).length, country.id).toBeGreaterThan(10)
     }
   })
 
@@ -131,8 +131,8 @@ describe("region questions", () => {
     // Germany and Poland together: all of Germany covered, about half the paint on it.
     const both = regionFit(
       coat([
-        ...regionCells(germany, resolutionForTolerance(germany.toleranceKm)),
-        ...regionCells(byId("poland-region"), resolutionForTolerance(germany.toleranceKm))
+        ...regionCells(germany, resolutionForTolerance(germany.tolerance)),
+        ...regionCells(byId("poland-region"), resolutionForTolerance(germany.tolerance))
       ]),
       germany
     )
@@ -144,7 +144,7 @@ describe("region questions", () => {
 
 describe("shape and nearness", () => {
   const germany = byId("germany-region")
-  const res = resolutionForTolerance(germany.toleranceKm)
+  const res = resolutionForTolerance(germany.tolerance)
   const cells = regionCells(germany, res)
   const poland = regionCells(byId("poland-region"), res)
   const area = (cs: H3Cell[]) => cs.reduce((s, h) => s + cellArea(h, UNITS.km2), 0)
@@ -160,7 +160,7 @@ describe("shape and nearness", () => {
     return buildDistribution(
       [...density].map(([h, intensity]) => {
         const [lat, lon] = cellToLatLng(h)
-        return { lat, lon, intensity, areaKm2: cellArea(h, UNITS.km2), h3: h }
+        return { lat, lon, intensity, area: cellArea(h, UNITS.km2), h3: h }
       }),
       0.05
     )
@@ -278,7 +278,7 @@ describe("shape and nearness", () => {
         const [lat, lon] = cellToLatLng(h)
         const km =
           Math.hypot(lat - germany.centre.lat, (lon - germany.centre.lon) * Math.cos((lat * Math.PI) / 180)) * 111
-        return { lat, lon, intensity: Math.max(0.5, 1.5 - km / R), areaKm2: cellArea(h, UNITS.km2), h3: h }
+        return { lat, lon, intensity: Math.max(0.5, 1.5 - km / R), area: cellArea(h, UNITS.km2), h3: h }
       }),
       0.05
     )
@@ -329,7 +329,7 @@ describe("scoreAnswer", () => {
     })
 
     const place = pointOf("Paris")
-    const point = scoreDistribution(painted, place.at, place.toleranceKm, DEFAULT_KERNEL)
+    const point = scoreDistribution(painted, place.at, place.tolerance, DEFAULT_KERNEL)
     expect(scoreAnswer(painted, place, DEFAULT_KERNEL)).toEqual({
       score: point.score,
       parts: { A: point.A, B: point.B }

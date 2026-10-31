@@ -10,6 +10,7 @@ import {
   type World
 } from "@iwsdk/core"
 import scoresUrl from "./scores.uikitml?url"
+import type { Metres } from "@whereabouts/shared/units"
 
 interface VrTableRow {
   /** A player's colour, for their swatch. */
@@ -35,7 +36,7 @@ export interface VrTable {
  * an empty one has none for setProperties to change.
  */
 const TABLE_ROWS = 18
-export const SCORES_M = 0.34
+export const SCORES_WIDTH: Metres = 0.34
 
 export class ScoreBoard {
   private readonly entity: Entity
@@ -86,7 +87,7 @@ export class ScoreBoard {
   update(): void {
     if (this.doc || !this.entity.hasComponent(PanelDocument)) return
     this.doc = PanelDocument.data.document[this.entity.index] as UIKitDocument
-    this.doc.setTargetDimensions(SCORES_M, SCORES_M * 1.6)
+    this.doc.setTargetDimensions(SCORES_WIDTH, SCORES_WIDTH * 1.6)
     for (let i = 0; i < TABLE_ROWS; i++)
       this.doc.requireElementById(`row${i}`).addEventListener("click", () => {
         const select = this.table?.rows[i]?.select

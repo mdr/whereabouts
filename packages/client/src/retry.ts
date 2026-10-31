@@ -1,6 +1,7 @@
+import type { Ms } from "@whereabouts/shared/units"
 /** `load`, tried again after each delay if it fails, as on a phone between masts. */
-export async function withRetries<T>(load: () => Promise<T>, delaysMs: readonly number[] = [1000, 3000]): Promise<T> {
-  for (const delay of delaysMs) {
+export async function withRetries<T>(load: () => Promise<T>, delays: readonly Ms[] = [1000, 3000]): Promise<T> {
+  for (const delay of delays) {
     try {
       return await load()
     } catch {

@@ -211,7 +211,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
   if (!why || why === "far-flung") {
     const cells = kept.flatMap((poly) => cellsOf(poly, 6))
     const keptArea = areaOf(cells)
-    const toleranceKm = regionToleranceKm(keptArea)
+    const tolerance = regionToleranceKm(keptArea)
     const contiguous = p.ADMIN === "United States of America"
     const regionLabel = contiguous ? "Contiguous United States" : label
     const id = names.id ?? (contiguous ? "usa-region" : `${slug(label)}-region`)
@@ -224,7 +224,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
       label: regionLabel,
       wiki: contiguous ? "Contiguous United States" : wiki,
       clue: { type: "NAME", prompt: `Paint the whole of ${contiguous ? "the contiguous United States" : name}` },
-      answer: { type: "AREA", outline: id, centre: centroid(cells), toleranceKm, surface: "LAND" },
+      answer: { type: "AREA", outline: id, centre: centroid(cells), tolerance, surface: "LAND" },
       countryFlag: flag
     })
   }
@@ -240,7 +240,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
       answer: region.answer
     })
     console.log(
-      `${label}: painted, ${kept.length} part(s), ${Math.round(100 * keptShare)}% of its land, tolerance ${region.answer.toleranceKm} km`
+      `${label}: painted, ${kept.length} part(s), ${Math.round(100 * keptShare)}% of its land, tolerance ${region.answer.tolerance} km`
     )
   } else {
     // Small and scattered countries are asked on land near their label
@@ -249,18 +249,18 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
     const island = why === "small" || why === "scattered"
     const answer = island ? islandAnswer(p, all) : centroid(all.flatMap((poly) => cellsOf(poly, 4)))
     const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => km([answer.lon, answer.lat], pt))))
-    const toleranceKm = pointToleranceKm(area, spread, island)
+    const tolerance = pointToleranceKm(area, spread, island)
     flags.push({
       id: `flag-${flag}`,
       type: "FLAG",
       label,
       wiki: flagWiki,
       clue: { type: "FLAG", flag },
-      answer: { type: "POINT", at: answer, toleranceKm }
+      answer: { type: "POINT", at: answer, tolerance }
     })
-    if (island) border.near = toleranceKm
+    if (island) border.near = tolerance
     console.log(
-      `${label}: point (${why}), ${Math.round(area)} km², spread ${Math.round(spread)} km, tolerance ${toleranceKm} km`
+      `${label}: point (${why}), ${Math.round(area)} km², spread ${Math.round(spread)} km, tolerance ${tolerance} km`
     )
   }
 }

@@ -18,10 +18,11 @@ import {
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { Theme } from "../themes"
 import { latLonToLocal } from "./sphere"
+import type { Metres } from "@whereabouts/shared/units"
 
 export type VrAnswer = { point: LatLon } | { outline: number[][][][] }
 
-const PIN_M = 0.035
+const PIN_LENGTH: Metres = 0.035
 const up = new Vector3(0, 1, 0)
 
 export class AnswerMarker {
@@ -66,6 +67,6 @@ export class AnswerMarker {
 
   /** `globeScale`: the globe's zoom, which the pin undoes. */
   update(globeScale: number): void {
-    this.pin.scale.setScalar(PIN_M / globeScale)
+    this.pin.scale.setScalar(PIN_LENGTH / globeScale)
   }
 }

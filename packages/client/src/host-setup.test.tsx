@@ -9,7 +9,7 @@ import { configureAsHost, savedSetupPatch, useSavedSetup } from "./host-setup"
 
 const { LANDMARK, PLACE, COUNTRY, FLAG } = QuestionType
 const MIX = mixOf({ [LANDMARK]: 3, [PLACE]: 3, [COUNTRY]: 2, [FLAG]: 2 })
-const SAVED = { mix: MIX, roundMs: 90_000, mapDetail: MapDetail.POLITICAL }
+const SAVED = { mix: MIX, roundLength: 90_000, mapDetail: MapDetail.POLITICAL }
 
 function lobby(isHost: boolean, phase: GameView["phase"] = Phase.LOBBY): GameView {
   return { phase, you: { isHost } } as GameView
@@ -30,20 +30,20 @@ describe("savedSetupPatch", () => {
   })
 
   it("drops only the settings the game no longer offers, so the rest still apply", () => {
-    expect(savedSetupPatch({ ...SAVED, roundMs: 75_000, mix: { ...MIX, [FLAG]: 9 } })).toEqual({
+    expect(savedSetupPatch({ ...SAVED, roundLength: 75_000, mix: { ...MIX, [FLAG]: 9 } })).toEqual({
       mapDetail: MapDetail.POLITICAL
     })
   })
 
   it("turns a setup saved before the question mix into one", () => {
-    const old = (setup: object) => savedSetupPatch({ roundMs: 90_000, ...setup }).mix
+    const old = (setup: object) => savedSetupPatch({ roundLength: 90_000, ...setup }).mix
     expect(old({ rounds: 12, photoShare: 0 })).toEqual(mixOf({ [PLACE]: 12 }))
     expect(old({ rounds: 8, photoShare: 0.75, countries: "mixed" })).toEqual(
       mixOf({ [LANDMARK]: 5, [PLACE]: 1, [COUNTRY]: 2 })
     )
     expect(old({ rounds: 8, countries: "only", flags: "only" })).toEqual(mixOf({ [COUNTRY]: 4, [FLAG]: 4 }))
     expect(old({ flags: "mixed" })).toEqual(mixOf({ [LANDMARK]: 3, [PLACE]: 3, [FLAG]: 2 }))
-    expect(savedSetupPatch({ roundMs: 90_000 })).toEqual({ roundMs: 90_000 })
+    expect(savedSetupPatch({ roundLength: 90_000 })).toEqual({ roundLength: 90_000 })
   })
 
   it("renames a mix saved under the old names of the question types", () => {
@@ -61,7 +61,7 @@ describe("savedSetupPatch", () => {
   })
 
   it("ignores unknown keys and anything that is not a saved setup", () => {
-    expect(savedSetupPatch({ roundMs: 30_000, kernelId: "single", colour: "red" })).toEqual({ roundMs: 30_000 })
+    expect(savedSetupPatch({ roundLength: 30_000, kernelId: "single", colour: "red" })).toEqual({ roundLength: 30_000 })
     for (const junk of [JSON.parse("null"), undefined, "rounds", 7, []]) expect(savedSetupPatch(junk)).toEqual({})
   })
 })

@@ -128,9 +128,9 @@ function region(topic, label, name, wiki, polygons) {
   const area = areaOf(cells)
   if (area < POINT_BELOW_KM2) throw new Error(`${label} is too small to paint: ${Math.round(area)} km²`)
   const id = `${topic}-${slug(label)}`
-  const toleranceKm = regionToleranceKm(area)
+  const tolerance = regionToleranceKm(area)
   outlines[id] = simplified(polygons)
-  console.log(`${label}: ${topic}, ${polygons.length} part(s), ${Math.round(area)} km², tolerance ${toleranceKm} km`)
+  console.log(`${label}: ${topic}, ${polygons.length} part(s), ${Math.round(area)} km², tolerance ${tolerance} km`)
   const water = topic === "lake" || topic === "sea"
   return {
     id,
@@ -139,7 +139,7 @@ function region(topic, label, name, wiki, polygons) {
     label,
     wiki,
     clue: { type: "NAME", prompt: `Paint the whole of ${name}` },
-    answer: { type: "AREA", outline: id, centre: centroid(cells), toleranceKm, surface: water ? "WATER" : "LAND" }
+    answer: { type: "AREA", outline: id, centre: centroid(cells), tolerance, surface: water ? "WATER" : "LAND" }
   }
 }
 
@@ -194,16 +194,16 @@ for (const f of states.sort((a, b) => a.properties.name.localeCompare(b.properti
   const answer = centroid(all.flatMap((poly) => cellsOf(poly, 9)))
   if (!onLand([answer.lon, answer.lat], all)) throw new Error(`${label}: its centre is not on its land`)
   const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => km([answer.lon, answer.lat], pt))))
-  const toleranceKm = pointToleranceKm(area, spread, false)
+  const tolerance = pointToleranceKm(area, spread, false)
   out.push({
     id: `state-${slug(label)}`,
     type: "STATE",
     label,
     wiki,
     clue: { type: "NAME", prompt: `Where is ${names.name ?? p.name}?` },
-    answer: { type: "POINT", at: answer, toleranceKm }
+    answer: { type: "POINT", at: answer, tolerance }
   })
-  console.log(`${label}: state, point, ${Math.round(area)} km², tolerance ${toleranceKm} km`)
+  console.log(`${label}: state, point, ${Math.round(area)} km², tolerance ${tolerance} km`)
 }
 
 writeQuestions(["FEATURE", "STATE"], out, outlines)

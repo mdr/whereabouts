@@ -21,7 +21,7 @@ const dist = buildDistribution(layer.toCells(), c.floor)
 const n = (x, places = 1) => x.toFixed(places)
 
 console.log(`${q.type} ${q.id}: ${q.label}${q.flag ? ` (flag ${q.flag})` : ""}`)
-console.log(`answer ${q.answer.lat}, ${q.answer.lon}; tolerance ${q.toleranceKm} km; floor ${c.floor}`)
+console.log(`answer ${q.answer.lat}, ${q.answer.lon}; tolerance ${q.tolerance} km; floor ${c.floor}`)
 console.log(
   `paint: ${layer.size} cells, finest res ${c.res}, ${layer
     .resolutionCounts()
@@ -40,7 +40,7 @@ if (q.type === CaseQuestionType.REGION) {
   console.log(`coverage ${n(fit.coverage * 100)}%, precision ${n(fit.precision * 100)}%`)
 } else {
   for (const k of KERNELS) {
-    const s = scoreDistribution(dist, q.answer, q.toleranceKm, k)
+    const s = scoreDistribution(dist, q.answer, q.tolerance, k)
     console.log(
       `now: ${n(s.score).padStart(7)} A=${n(s.A, 4)} B=${n(s.B, 4)}  ${k.id}${k.id === c.kernel ? " (copied with)" : ""}`
     )
@@ -51,6 +51,6 @@ console.log("blobs, largest first:")
 for (const b of layer.blobs()) {
   const d = greatCircleDistance(b.centroid, q.answer)
   console.log(
-    `  ${n(b.fraction * 100).padStart(5)}% of paint, ${String(b.cells).padStart(5)} cells, centred ${n(b.centroid.lat, 3)}, ${n(b.centroid.lon, 3)}: ${n(d)} km (${n(d / q.toleranceKm, 2)} tolerances) from the answer`
+    `  ${n(b.fraction * 100).padStart(5)}% of paint, ${String(b.cells).padStart(5)} cells, centred ${n(b.centroid.lat, 3)}, ${n(b.centroid.lon, 3)}: ${n(d)} km (${n(d / q.tolerance, 2)} tolerances) from the answer`
   )
 }

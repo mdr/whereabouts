@@ -18,7 +18,7 @@ describe("flag questions", () => {
       expect(f.label.length, f.id).toBeGreaterThan(0)
       expect(f.wiki.length, f.id).toBeGreaterThan(0)
       if (f.answer.type === AnswerType.AREA) expect(OUTLINES.has(f.answer.outline), f.id).toBe(true)
-      else expect(f.answer.toleranceKm, f.id).toBeGreaterThanOrEqual(15)
+      else expect(f.answer.tolerance, f.id).toBeGreaterThanOrEqual(15)
     }
   })
 
@@ -39,25 +39,25 @@ describe("flag questions", () => {
     expect(promptOf(flag("de"))).toBe(FLAG_AREA_PROMPT)
     expect(promptOf(flag("mc"))).toBe(FLAG_POINT_PROMPT)
     expect(flag("mc").label).toBe("Monaco")
-    expect(flag("mc").answer.toleranceKm).toBe(15)
+    expect(flag("mc").answer.tolerance).toBe(15)
   })
 
   it("score a tight paint on a point country's answer highly, and a far one low", () => {
     for (const code of ["lu", "sg", "va", "in"]) {
       const { answer } = flag(code)
       if (answer.type !== AnswerType.POINT) throw new Error(`${code} is painted whole`)
-      const { at, toleranceKm } = answer
-      const res = resolutionForTolerance(toleranceKm)
+      const { at, tolerance } = answer
+      const res = resolutionForTolerance(tolerance)
       const blob = (lat: number, lon: number) =>
         buildDistribution(
           gridDisk(latLngToCell(lat, lon, res), 2).map((h) => {
             const [la, lo] = cellToLatLng(h)
-            return { lat: la, lon: lo, intensity: 1, areaKm2: cellArea(h, UNITS.km2), h3: h }
+            return { lat: la, lon: lo, intensity: 1, area: cellArea(h, UNITS.km2), h3: h }
           }),
           0.05
         )
-      expect(scoreDistribution(blob(at.lat, at.lon), at, toleranceKm).score, code).toBeGreaterThan(900)
-      expect(scoreDistribution(blob(-at.lat, at.lon + 180), at, toleranceKm).score, code).toBeLessThan(320)
+      expect(scoreDistribution(blob(at.lat, at.lon), at, tolerance).score, code).toBeGreaterThan(900)
+      expect(scoreDistribution(blob(at.lat * -1, at.lon + 180), at, tolerance).score, code).toBeLessThan(320)
     }
   })
 })

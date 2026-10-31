@@ -10,6 +10,7 @@
  * uses intensities relative to each other, so that loses nothing that matters.
  */
 import type { LatLon } from "./geo.ts"
+import { flagCode, questionId, type FlagCode, type QuestionId } from "./ids.ts"
 import type { AnswerParts } from "./regions.ts"
 import type { KernelId } from "./scoring.ts"
 
@@ -27,12 +28,12 @@ export enum RegionKernel {
 export interface ScoringCase {
   question: {
     type: CaseQuestionType
-    id: string
+    id: QuestionId
     label: string
     answer: LatLon
-    toleranceKm: number
+    tolerance: number
     /** A flag round: the flag shown. */
-    flag?: string
+    flag?: FlagCode
   }
   kernel: KernelId | RegionKernel
   floor: number
@@ -70,7 +71,7 @@ export async function encodeCase(c: ScoringCase): Promise<string> {
   return [
     MAGIC,
     `question: ${q.type} ${q.id} ${JSON.stringify(q.label)}${q.flag ? ` flag=${q.flag}` : ""}`,
-    `answer: ${round(q.answer.lat, 5)} ${round(q.answer.lon, 5)} tolerance=${round(q.toleranceKm, 3)}km`,
+    `answer: ${round(q.answer.lat, 5)} ${round(q.answer.lon, 5)} tolerance=${round(q.tolerance, 3)}km`,
     `kernel: ${c.kernel} floor=${round(c.floor, 4)}`,
     `score: ${round(c.score, 1)} ${parts}`,
     `paint: res=${c.res} cells=${entries.length} max=${max}`,
@@ -131,11 +132,11 @@ export async function decodeCase(text: string): Promise<ScoringCase> {
   return {
     question: {
       type: qm[1] as CaseQuestionType,
-      id: qm[2]!,
+      id: questionId(qm[2]!),
       label: JSON.parse(qm[3]!) as string,
       answer: { lat: Number(answer[0]), lon: Number(answer[1]) },
-      toleranceKm: parseFloat(named(field("answer"), "tolerance")),
-      ...(qm[4] ? { flag: qm[4] } : {})
+      tolerance: parseFloat(named(field("answer"), "tolerance")),
+      ...(qm[4] ? { flag: flagCode(qm[4]) } : {})
     },
     kernel: kernel.split(/\s+/)[0] as ScoringCase["kernel"],
     floor: Number(named(kernel, "floor")),

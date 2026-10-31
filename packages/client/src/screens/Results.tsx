@@ -19,13 +19,14 @@ import { VrButton, useVrView } from "../ui/VrButton"
 import { navigate } from "../router"
 import { VrViewType, type VrView } from "../vr/view"
 import { resultsTestIds } from "./ResultsTestIds"
+import type { Px } from "@whereabouts/shared/units"
 
 const MEDALS = ["🥇", "🥈", "🥉"]
 /** Past this many players the standings tighten up, the podium aside. */
 const MANY_PLAYERS = 8
 /** The room the full table needs: the round column, then one column per player. */
-const ROUND_COLUMN_PX = 200
-const SCORE_COLUMN_PX = 58
+const ROUND_COLUMN: Px = 200
+const SCORE_COLUMN: Px = 58
 
 export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   const byId = new Map(view.players.map((p) => [p.id, p]))
@@ -155,8 +156,7 @@ function Rounds(props: RoundsProps) {
     return () => ro.disconnect()
   }, [])
   if (rounds.length === 0) return undefined
-  const fits =
-    width === undefined ? standings.length <= 6 : width >= ROUND_COLUMN_PX + standings.length * SCORE_COLUMN_PX
+  const fits = width === undefined ? standings.length <= 6 : width >= ROUND_COLUMN + standings.length * SCORE_COLUMN
   const best = rounds.map((_, r) => Math.max(-1, ...standings.map((s) => s.rounds[r]?.score ?? -1)))
   return (
     <section class={s.rounds} aria-label="Scores by round" ref={ref}>

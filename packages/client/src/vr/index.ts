@@ -18,6 +18,7 @@ import {
   World
 } from "@iwsdk/core"
 import { effect, signal } from "@preact/signals"
+import { EARTH_RADIUS } from "@whereabouts/shared/geo"
 import { describeHint } from "@whereabouts/shared/hints"
 import type { BordersData } from "@whereabouts/shared/borders"
 import type { LandMaskData } from "@whereabouts/shared/land"
@@ -41,18 +42,19 @@ import { timerFrames } from "./frames"
 import { HandTool, TRIGGER_DEAD, type SprayTool } from "./spray"
 import { Tool } from "../tool"
 import { Moon } from "./moon"
-import { STARS_M, Space } from "./space"
-import { SCORES_M, ScoreBoard } from "./scores"
+import { STARS_DISTANCE, Space } from "./space"
+import { SCORES_WIDTH, ScoreBoard } from "./scores"
 import { ResultsBoard } from "./board"
 import { WristMenu } from "./wrist"
 import type { WristButton } from "./wrist-button"
-import { Menu, PANEL_M } from "./menu"
+import { Menu, PANEL_SIZE } from "./menu"
 import { colouredPaint, framing } from "./reveal"
 import { PanelClearance } from "./clearance"
 import { wristActions } from "./wrist-actions"
 import { VrProbe } from "./probe"
 import { VrViewType, type VrRound, type VrView } from "./view"
 import { MapDetail } from "@whereabouts/shared/protocol"
+import type { Metres, Ms, Seconds } from "@whereabouts/shared/units"
 
 /**
  * IWSDK updates and draws its scene every frame from the start, on the page
@@ -72,13 +74,13 @@ function idleOffHeadset(world: World): void {
 }
 
 /** Rebuilding the paint is the costly part of a stroke, so at most this often. */
-const PAINT_REDRAW_S = 0.1
+const PAINT_REDRAW: Seconds = 0.1
 /** How long a new session may take to open, when switching to or from passthrough. */
-const SWITCH_MS = 5000
+const SWITCH_TIMEOUT: Ms = 5000
 /** From this zoom on, the page's map shows over the globe. */
 const DETAIL_SCALE = 2
 /** How far either side of the near point the map covers. */
-const DETAIL_HALF_M = 0.6
+const DETAIL_HALF: Metres = 0.6
 
 export class Vr {
   readonly active = signal(false)
@@ -138,7 +140,7 @@ export class Vr {
         features: { spatialUI: { preferredColorScheme: ColorSchemeType.Dark } },
         input: { canvasPointerEvents: false },
         // The moon of a globe zoomed right in is kilometres off.
-        render: { far: STARS_M * 1.2 }
+        render: { far: STARS_DISTANCE * 1.2 }
       })
       idleOffHeadset(world)
       vr = new Vr(world)
@@ -260,7 +262,7 @@ export class Vr {
         // Refused, it leaves the player on the page.
         setTimeout(() => {
           if (this.world.visibilityState.value === VisibilityState.NonImmersive) this.ended()
-        }, SWITCH_MS)
+        }, SWITCH_TIMEOUT)
         return
       }
       if (active && this.switchingTo !== undefined) {
@@ -420,8 +422,8 @@ export class Vr {
       this.scores.place(head, forward)
       this.board.place(head, forward)
       this.clearance.placed(head, [
-        { obj: this.menu.object3D, half: PANEL_M / 2 },
-        { obj: this.scores.object3D, half: SCORES_M / 2 }
+        { obj: this.menu.object3D, half: PANEL_SIZE / 2 },
+        { obj: this.scores.object3D, half: SCORES_WIDTH / 2 }
       ])
       this.placed = true
     }
@@ -460,7 +462,11 @@ export class Vr {
     this.globe.update(dt, grips, stick)
     const head = player.head.getWorldPosition(new Vector3())
     const zoomed = this.globe.scale >= DETAIL_SCALE
-    this.detail.update(now, this.globe.nearest(head), zoomed ? (DETAIL_HALF_M * 6371) / this.globe.radius : undefined)
+    this.detail.update(
+      now,
+      this.globe.nearest(head),
+      zoomed ? (DETAIL_HALF * EARTH_RADIUS) / this.globe.radius : undefined
+    )
     this.answer.update(this.globe.scale)
     this.space.update(head)
     this.moon.update(dt, this.globe.centre, this.globe.radius)
@@ -472,7 +478,7 @@ export class Vr {
     for (const h of HANDS) this.tools[h].hold(this.painting !== undefined)
 
     const round = this.round
-    if (round && this.paintDirty && now - this.lastPaintDraw >= PAINT_REDRAW_S) {
+    if (round && this.paintDirty && now - this.lastPaintDraw >= PAINT_REDRAW) {
       const paints = this.view.type === VrViewType.REVEAL ? this.view.reveal.paints : undefined
       const paint = paints ? colouredPaint(paints) : round.paint.layer.toGeoJSON()
       this.globe.showPaint(paintGeometry(paint, THEME, PAINT_RADIUS, paints ? undefined : round.colour))
@@ -542,8 +548,8 @@ export class Vr {
   private placePicture(): void {
     const size = this.menu.size
     if (!size || this.picture.heldBy) return
-    // The menu is scaled to fit a PANEL_M square, whatever its own units.
-    const top = (size.height * Math.min(PANEL_M / size.width, PANEL_M / size.height)) / 2
+    // The menu is scaled to fit a PANEL_SIZE square, whatever its own units.
+    const top = (size.height * Math.min(PANEL_SIZE / size.width, PANEL_SIZE / size.height)) / 2
     this.picture.mesh.position.set(0, top + 0.015 + this.picture.height / 2, 0)
   }
 }

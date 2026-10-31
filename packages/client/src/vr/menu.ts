@@ -17,8 +17,9 @@ import {
 import { headsetPassthrough, soundOn } from "../settings"
 import { VrViewType, type VrAction, type VrView } from "./view"
 import panelUrl from "./panel.uikitml?url"
+import type { Metres, Seconds } from "@whereabouts/shared/units"
 
-export const PANEL_M = 0.38
+export const PANEL_SIZE: Metres = 0.38
 const HEADINGS: Record<VrViewType, string> = {
   [VrViewType.LOBBY]: "WELCOME",
   [VrViewType.PAINT]: "THIS ROUND",
@@ -28,7 +29,7 @@ const HEADINGS: Record<VrViewType, string> = {
 /** As many as the menu has buttons for, below the main actions. */
 const MORE = 4
 /** How long a press waits for its confirming second press. */
-export const CONFIRM_S = 4
+export const CONFIRM_WAIT: Seconds = 4
 
 export interface MenuHandlers {
   /** Any of its buttons clicked. */
@@ -104,7 +105,7 @@ export class Menu {
 
   wire(doc: UIKitDocument): void {
     this.doc = doc
-    doc.setTargetDimensions(PANEL_M, PANEL_M)
+    doc.setTargetDimensions(PANEL_SIZE, PANEL_SIZE)
     const on = (id: string, f: () => void) =>
       doc.requireElementById(id).addEventListener("click", () => {
         this.handlers.clicked()
@@ -163,8 +164,8 @@ export class Menu {
       this.doneText = done
       doc.getElementById("doneLabel")?.setProperties({ text: done })
     }
-    if (!round.msLeft) return
-    const s = Math.ceil(Math.max(0, round.msLeft()) / 1000)
+    if (!round.timeLeft) return
+    const s = Math.ceil(Math.max(0, round.timeLeft()) / 1000)
     const clock = s > 0 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} left` : "Time's up"
     if (clock !== this.clockText) {
       this.clockText = clock
@@ -197,7 +198,7 @@ export class Menu {
   private press(action: VrAction | undefined): void {
     if (!action || action.enabled === false) return
     if (action.confirm && this.armed?.action.label !== action.label) {
-      this.armed = { action, until: this.now + CONFIRM_S }
+      this.armed = { action, until: this.now + CONFIRM_WAIT }
       this.applyView()
       return
     }
@@ -251,7 +252,7 @@ export class Menu {
     if (round?.mode) text("mode", round.mode)
     show("done", painting)
     show("unlock", round?.unlock !== undefined)
-    show("clock", round?.msLeft !== undefined)
+    show("clock", round?.timeLeft !== undefined)
     show("score", round === undefined)
     const note = this.note(view)
     show("note", note !== undefined)

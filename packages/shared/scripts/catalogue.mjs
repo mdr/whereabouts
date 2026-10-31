@@ -16,7 +16,7 @@ export const PLACES = CATALOGUE.filter((q) => q.answer.type === AnswerType.POINT
   id: q.id,
   label: q.label,
   answer: q.answer.at,
-  toleranceKm: q.answer.toleranceKm
+  tolerance: q.answer.tolerance
 }))
 
 export const questionById = (id) => CATALOGUE.find((q) => q.id === id)

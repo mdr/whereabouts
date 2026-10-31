@@ -82,12 +82,12 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     }
   })
 
-  // The server scores a moment after the deadline (ROUND_GRACE_MS), so paint sent at zero still counts.
+  // The server scores a moment after the deadline (ROUND_GRACE), so paint sent at zero still counts.
   const deadline = view.round?.deadline
   useEffect(() => {
     setTimeUp(false)
     if (!guessing || deadline === undefined) return
-    const timer = window.setTimeout(() => setTimeUp(true), Math.max(0, conn.msUntil(deadline)))
+    const timer = window.setTimeout(() => setTimeUp(true), Math.max(0, conn.timeUntil(deadline)))
     return () => clearTimeout(timer)
   }, [roundKey, guessing, deadline])
 
@@ -126,7 +126,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           <HudHeader
             round={round.index + 1}
             total={round.total}
-            right={<Countdown msRemaining={() => conn.msUntil(round.deadline)} />}
+            right={<Countdown timeLeft={() => conn.timeUntil(round.deadline)} />}
           />
           <RoundPrompt question={round.question} />
           {!sittingOut && view.config.hints > 0 && (
@@ -270,7 +270,7 @@ function gameVrView(
     hint: view.you.hint,
     hintsLeft: view.config.hints > 0 ? view.you.hintsLeft : HintAllowance.NONE,
     useHint: (axis: HintAxis) => conn.hint(axis),
-    msLeft: view.round ? () => conn.msUntil(view.round!.deadline) : undefined,
+    timeLeft: view.round ? () => conn.timeUntil(view.round!.deadline) : undefined,
     doneLabel: "Done",
     done: lockIn,
     unlock: view.you.locked && !timeUp ? () => conn.unlock() : undefined,

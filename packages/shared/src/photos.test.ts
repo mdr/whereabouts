@@ -6,7 +6,7 @@ import { QuestionType, clueImage } from "./questions.ts"
 const of = (...types: QuestionType[]) => CATALOGUE.filter((q) => types.includes(q.type))
 
 describe("the reveal photos", () => {
-  const answers = new Set(CATALOGUE.filter((q) => q.type !== QuestionType.FLAG).map((q) => q.wiki))
+  const answers = new Set<string>(CATALOGUE.filter((q) => q.type !== QuestionType.FLAG).map((q) => q.wiki))
 
   it("are for answers the game asks about", () => {
     for (const wiki of Object.keys(REVEAL_PHOTOS)) expect(answers.has(wiki), wiki).toBe(true)

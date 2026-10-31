@@ -12,7 +12,7 @@ const coat = (cells: H3Cell[]) =>
   buildDistribution(
     cells.map((h) => {
       const [lat, lon] = cellToLatLng(h)
-      return { lat, lon, intensity: 1, areaKm2: cellArea(h, UNITS.km2), h3: h }
+      return { lat, lon, intensity: 1, area: cellArea(h, UNITS.km2), h3: h }
     }),
     0.05
   )
@@ -37,8 +37,8 @@ describe("explaining a place's score", () => {
   it("a tight miss is told it was off", () => {
     const { s, e, text } = explain(answer.lat + 2.7, answer.lon, res, 1)
     expect(e.best).toBeGreaterThan(930)
-    expect(e.km).toBeGreaterThan(250)
-    expect(e.km).toBeLessThan(350)
+    expect(e.miss).toBeGreaterThan(250)
+    expect(e.miss).toBeLessThan(350)
     expect(e.best - s.score).toBeGreaterThan(150)
     expect(text).toBe("Some way off.")
   })
@@ -59,9 +59,9 @@ describe("explaining a country's score", () => {
   }
   const france = areaOf("france-region")
   const label = CATALOGUE.find((q) => q.id === "france-region")!.label
-  const res = resolutionForTolerance(france.toleranceKm)
+  const res = resolutionForTolerance(france.tolerance)
   const cells = regionCells(france, res)
-  const say = (cs: H3Cell[]) => describeRegion(regionMisfit(coat(cs), france), label, france.toleranceKm)
+  const say = (cs: H3Cell[]) => describeRegion(regionMisfit(coat(cs), france), label, france.tolerance)
 
   it("an exact paint is a close match", () => {
     expect(scoreArea(coat(cells), france).score).toBeGreaterThan(985)

@@ -4,6 +4,7 @@
  */
 import type { PlayerId } from "./ids.ts"
 import { greatCircleDistance, type LatLon } from "./geo.ts"
+import type { Km, Ms, SquareKm } from "./units.ts"
 import { shuffle } from "./questions.ts"
 
 /** What one player did in one round, kept for the awards at the end. */
@@ -12,13 +13,16 @@ export interface RoundFacts {
   label: string
   score: number
   passed: boolean
-  /** Seconds from the round's start to locking in; undefined when the clock ran out. */
-  lockSeconds: number | undefined
-  roundSeconds: number
-  /** Painted area, km². */
-  areaKm2: number
-  /** A place: where the paint was strongest, and what spreading it and missing cost (see explain.ts). */
-  point?: { spot: LatLon; km: number; spread: number; distance: number; hedged: boolean; toleranceKm: number }
+  /** From the round's start to locking in; undefined when the clock ran out. */
+  lockedAfter: Ms | undefined
+  roundLength: Ms
+  /** Painted area. */
+  area: SquareKm
+  /**
+   * A place: where the paint was strongest, how far that is from the answer,
+   * and what spreading it and missing cost in points (see explain.ts).
+   */
+  point?: { spot: LatLon; miss: Km; spread: number; missCost: number; hedged: boolean; tolerance: Km }
   /** A country: the share of the paint on it, and whether the paint was all just over the border. */
   region?: { precision: number; nextDoor: boolean }
 }
@@ -46,7 +50,7 @@ const BOOBY = true
 const PRIZE = false
 
 /** The end of a round that counts as the last second: 5 s, less in short rounds. */
-const lastSeconds = (roundSeconds: number) => Math.min(5, roundSeconds / 6)
+const lastSecond = (roundLength: Ms): Ms => Math.min(5000, roundLength / 6)
 
 export function pickAwards(players: PlayerFacts[], seed: number): Award[] {
   const all = shuffle([...soloAwards(players), ...gameAwards(players), ...pairAwards(players)], seed)
@@ -112,7 +116,7 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
     )
 
   const mile = top(rounds, ({ r }) =>
-    r.point && r.point.km >= 1500 && r.point.distance >= 400 ? r.point.km : undefined
+    r.point && r.point.miss >= 1500 && r.point.missCost >= 400 ? r.point.miss : undefined
   )
   if (mile) {
     add(
@@ -120,12 +124,12 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
       "🛰️",
       "Off by a Mile",
       mile.item.p.playerId,
-      `{0} put ${mile.item.r.label} ${roughKm(mile.value)} away. Visible from space, to be fair.`
+      `{0} put ${mile.item.r.label} ${roughDistance(mile.value)} away. Visible from space, to be fair.`
     )
   }
 
   const sure = top(rounds, ({ r }) =>
-    r.point && r.point.spread < 100 && r.point.distance >= 600 ? r.point.distance : undefined
+    r.point && r.point.spread < 100 && r.point.missCost >= 600 ? r.point.missCost : undefined
   )
   if (sure)
     add(
@@ -186,11 +190,11 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
 
   const fast = top(players, (p) => {
     const rs = painted(p)
-    const times = rs.flatMap((r) => (r.lockSeconds === undefined ? [] : [r.lockSeconds / r.roundSeconds]))
+    const times = rs.flatMap((r) => (r.lockedAfter === undefined ? [] : [r.lockedAfter / r.roundLength]))
     return rs.length >= 3 && times.length === rs.length && mean(times) < 0.4 ? -mean(times) : undefined
   })
   if (fast) {
-    const secs = Math.round(mean(painted(fast.item).map((r) => r.lockSeconds!)))
+    const secs = Math.round(mean(painted(fast.item).map((r) => r.lockedAfter!)) / 1000)
     add(
       PRIZE,
       "⚡",
@@ -202,22 +206,22 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
 
   const slow = top(players, (p) => {
     const n = painted(p).filter(
-      (r) => r.lockSeconds === undefined || r.roundSeconds - r.lockSeconds < lastSeconds(r.roundSeconds)
+      (r) => r.lockedAfter === undefined || r.roundLength - r.lockedAfter < lastSecond(r.roundLength)
     ).length
     return n >= 2 ? n : undefined
   })
   if (slow) add(BOOBY, "⏰", "Last-Second Merchant", slow.item.playerId, `{0} made everyone wait. ${slow.value} times.`)
 
-  const areas = players.map((p) => painted(p).reduce((s, r) => s + r.areaKm2, 0))
+  const areas = players.map((p) => painted(p).reduce((s, r) => s + r.area, 0))
   const picasso = top(players, (p) => {
-    const a = painted(p).reduce((s, r) => s + r.areaKm2, 0)
+    const a = painted(p).reduce((s, r) => s + r.area, 0)
     return a > 0 && a >= 2 * median(areas) ? a : undefined
   })
   if (picasso) add(BOOBY, "🎨", "Picasso", picasso.item.playerId, "{0} used twice the paint of anyone sensible.")
 
   const dab = top(players, (p) => {
     const rs = painted(p)
-    return rs.length >= 3 ? -mean(rs.map((r) => r.areaKm2)) : undefined
+    return rs.length >= 3 ? -mean(rs.map((r) => r.area)) : undefined
   })
   if (dab && players.length >= 2) {
     add(PRIZE, "🤏", "One Careful Dab", dab.item.playerId, "{0} painted like the paint was coming out of their wages.")
@@ -341,7 +345,7 @@ function pairAwards(players: PlayerFacts[]): Candidate[] {
         const pa = a.rounds[r]?.point
         const pb = b.rounds[r]?.point
         // The same spot, and not just because both were right.
-        if (pa && pb && pa.distance >= 100 && greatCircleDistance(pa.spot, pb.spot) < pa.toleranceKm) n++
+        if (pa && pb && pa.missCost >= 100 && greatCircleDistance(pa.spot, pb.spot) < pa.tolerance) n++
       }
       if (n >= 2 && (!best || n > best.n)) best = { a, b, n }
     }
@@ -383,7 +387,7 @@ function ordinal(n: number): string {
   return `${n}${suffix}`
 }
 
-function roughKm(km: number): string {
+function roughDistance(km: Km): string {
   const step = 10 ** Math.max(0, Math.floor(Math.log10(km)) - 1)
   return `${(Math.round(km / step) * step).toLocaleString("en")} km`
 }

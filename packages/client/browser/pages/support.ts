@@ -1,13 +1,14 @@
 import type { Locator, Page } from "playwright-core"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** Poll `read` until `ok` accepts its value, or throw naming what was awaited and the last value seen. */
 export async function until<T>(
   what: string,
   read: () => Promise<T>,
   ok: (value: T) => boolean,
-  timeoutMs = 10_000
+  timeout: Ms = 10_000
 ): Promise<T> {
-  const end = Date.now() + timeoutMs
+  const end = Date.now() + timeout
   for (;;) {
     const value = await read()
     if (ok(value)) return value

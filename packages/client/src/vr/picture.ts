@@ -14,17 +14,18 @@ import {
   Vector3,
   type Object3D
 } from "three"
-import { VR_PHOTO_PX as MAX_PX, vrPhotoUrl, type Postcard, type VrPicture } from "../vr-picture"
+import { VR_PHOTO_SIZE as MAX_SIZE, vrPhotoUrl, type Postcard, type VrPicture } from "../vr-picture"
 import { flagRatio, flagUrl } from "../flags"
 import type { Hand } from "./hand"
 import { PictureBack } from "./picture-back"
+import type { Metres } from "@whereabouts/shared/units"
 
 const MAX_W = 0.38
 const MAX_H = 0.26
 /** How close a hand need be to take the picture without pointing at it. */
-const REACH_M = 0.08
+const REACH: Metres = 0.08
 /** A card's thickness, so it has an edge when turned. */
-const THICK_M = 0.003
+const THICKNESS: Metres = 0.003
 const CARD = "#efe9dd"
 /** BoxGeometry's material groups: the four edges, then front (+z) and back (−z). */
 const FRONT = 4
@@ -43,7 +44,7 @@ export class Picture {
 
   constructor() {
     const edge = new MeshBasicMaterial({ color: CARD })
-    this.mesh = new Mesh(new BoxGeometry(1, 1, THICK_M), [
+    this.mesh = new Mesh(new BoxGeometry(1, 1, THICKNESS), [
       edge,
       edge,
       edge,
@@ -78,7 +79,7 @@ export class Picture {
     raycaster.set(origin, dir)
     if (raycaster.intersectObject(this.mesh).length > 0) return true
     const size = Math.max(this.mesh.scale.x, this.mesh.scale.y) / 2
-    return this.mesh.getWorldPosition(at).distanceTo(grip) < size + REACH_M
+    return this.mesh.getWorldPosition(at).distanceTo(grip) < size + REACH
   }
 
   /**
@@ -109,7 +110,7 @@ export class Picture {
         if (asked !== this.asked || !img) return
         // A flag's SVG has no size of its own.
         const [w, h] = "flag" in picture ? [flagRatio(picture.flag), 1] : [img.naturalWidth, img.naturalHeight]
-        const fit = Math.min(MAX_PX / w, MAX_PX / h)
+        const fit = Math.min(MAX_SIZE / w, MAX_SIZE / h)
         const canvas = document.createElement("canvas")
         canvas.width = Math.round(w * fit)
         canvas.height = Math.round(h * fit)

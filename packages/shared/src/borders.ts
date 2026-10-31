@@ -20,14 +20,15 @@ import { answerCentre, type FlagQuestion } from "./questions.ts"
 import { flagCode, type FlagCode } from "./ids.ts"
 import type { PaintCell } from "./paint.ts"
 import type { FillShape } from "./fill.ts"
+import type { Km, Px } from "./units.ts"
 
 interface BorderData {
   /** The flag's ISO code, as flag questions show it. */
   flag: string
   /** Rings of [lon, lat] steps in hundredths of a degree, the first from 0, 0. */
   rings: number[][]
-  /** For a small or scattered country: how far from its answer counts as the country, km. */
-  near?: number
+  /** For a small or scattered country: how far from its answer counts as the country. */
+  near?: Km
 }
 
 export interface BordersData {
@@ -52,9 +53,9 @@ export interface PaintedCountry {
 
 export class Borders {
   private readonly countries: Country[] = []
-  private readonly small: { f: FlagQuestion; near: number }[] = []
+  private readonly small: { f: FlagQuestion; near: Km }[] = []
   private readonly none: Float64Array[]
-  private readonly byFlag = new Map<FlagCode, { rings: Float64Array[]; near?: number }>()
+  private readonly byFlag = new Map<FlagCode, { rings: Float64Array[]; near?: Km }>()
 
   constructor(data: BordersData, flags: readonly FlagQuestion[]) {
     this.none = data.none.map(decodeRing)
@@ -88,7 +89,7 @@ export class Borders {
    * it is within `px` pixels (at `kmPerPx`) or the country's own `near`. For
    * the pointer: at world zoom Tuvalu is far less than a pixel across.
    */
-  smallNear(p: LatLon, kmPerPx: number, px: number): FlagQuestion | undefined {
+  smallNear(p: LatLon, kmPerPx: number, px: Px): FlagQuestion | undefined {
     let best: FlagQuestion | undefined = undefined
     let bestD = Infinity
     for (const { f, near } of this.small) {
@@ -108,7 +109,7 @@ export class Borders {
     const mass = new Map<FlagQuestion, number>()
     let total = 0
     for (const c of cells) {
-      const m = c.intensity * c.areaKm2
+      const m = c.intensity * c.area
       if (!(m > 0)) continue
       total += m
       const f = this.countryAt(c)

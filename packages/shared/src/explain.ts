@@ -9,6 +9,7 @@
  */
 import { cellToLatLng, coarserRes, getResolution, h3Res, type H3Cell } from "./h3.ts"
 import { chordDistance, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
+import type { Degrees, Km } from "./units.ts"
 import {
   coarsenDistribution,
   DEFAULT_KERNEL,
@@ -25,7 +26,7 @@ export interface PointExplanation {
   /** Where that is. */
   spot: LatLon
   /** From there to the answer. */
-  km: number
+  miss: Km
   /** The share of the paint, the world floor left out, within NEAR tolerances of the answer. */
   nearShare: number
 }
@@ -37,7 +38,7 @@ const NEAR = 4
 export function explainPoint(
   dist: Distribution,
   answer: LatLon,
-  toleranceKm: number,
+  tolerance: Km,
   A: number,
   B: number,
   k: Kernel = DEFAULT_KERNEL
@@ -51,14 +52,14 @@ export function explainPoint(
   // Without cells, A treats each as a patch rather than refining it: fast, and close enough to rank spots.
   const patches: Distribution = { points: coarse.points.map(({ cell: _, ...pt }) => pt), floor: dist.floor }
   const ranked = coarse.points
-    .map((pt) => ({ pt, A: similarityToAnswer(patches, pt.xyz, toleranceKm, k) }))
+    .map((pt) => ({ pt, A: similarityToAnswer(patches, pt.xyz, tolerance, k) }))
     .sort((a, b) => b.A - a.A)
     .slice(0, 3)
 
   let bestA = A
   let spot = answer
   for (const { pt } of ranked) {
-    const a = similarityToAnswer(dist, pt.xyz, toleranceKm, k)
+    const a = similarityToAnswer(dist, pt.xyz, tolerance, k)
     if (a <= bestA) continue
     bestA = a
     spot = pt.cell ? latLngOf(pt.cell) : fromXyz(pt.xyz)
@@ -66,12 +67,12 @@ export function explainPoint(
 
   const y = toXyz(answer)
   let near = 0
-  for (const pt of dist.points) if (chordDistance(pt.xyz, y) <= NEAR * toleranceKm) near += pt.p
+  for (const pt of dist.points) if (chordDistance(pt.xyz, y) <= NEAR * tolerance) near += pt.p
   const painted = 1 - dist.floor
   return {
     best: scoreFromParts(bestA, B),
     spot,
-    km: greatCircleDistance(spot, answer),
+    miss: greatCircleDistance(spot, answer),
     nearShare: painted > 0 ? near / painted : 0
   }
 }
@@ -82,16 +83,16 @@ function latLngOf(h: H3Cell): LatLon {
 }
 
 /** Some paint near the answer, but most of it somewhere else, and that cost something. */
-export function isHedge(e: PointExplanation, score: number, toleranceKm: number): boolean {
-  return Math.max(e.best, score) - score >= 25 && e.nearShare >= 0.15 && e.km > NEAR * toleranceKm
+export function isHedge(e: PointExplanation, score: number, tolerance: Km): boolean {
+  return Math.max(e.best, score) - score >= 25 && e.nearShare >= 0.15 && e.miss > NEAR * tolerance
 }
 
 /** A short, plain sentence: how near the paint was, and how spread out. */
-export function describePoint(e: PointExplanation, score: number, toleranceKm: number): string {
+export function describePoint(e: PointExplanation, score: number, tolerance: Km): string {
   const best = Math.max(e.best, score)
   const distance = best - score
   const spread = 1000 - best
-  if (isHedge(e, score, toleranceKm)) {
+  if (isHedge(e, score, tolerance)) {
     return "Some of your paint was on it, but most was somewhere else."
   }
   const where =
@@ -105,12 +106,12 @@ export function describePoint(e: PointExplanation, score: number, toleranceKm: n
 const MENTION = 0.1
 
 /** What kept a country round's paint from matching the country, biggest first. */
-export function describeRegion(m: RegionMisfit, label: string, toleranceKm: number, edge = "border"): string {
+export function describeRegion(m: RegionMisfit, label: string, tolerance: Km, edge = "border"): string {
   // A country's tolerance is a fifth of its equivalent radius.
-  const radiusKm = 5 * toleranceKm
+  const radius = 5 * tolerance
   if (m.precision < MENTION) {
     if (!m.off) return `Your paint was around ${label}, but not on it.`
-    const how = m.off.km < radiusKm ? "just" : m.off.km < 4 * radiusKm ? "well" : "a long way"
+    const how = m.off.distance < radius ? "just" : m.off.distance < 4 * radius ? "well" : "a long way"
     return `Your paint was ${how} ${compass(m.off.bearing)} of ${label}.`
   }
   const offShare = 1 - m.precision
@@ -119,7 +120,7 @@ export function describeRegion(m: RegionMisfit, label: string, toleranceKm: numb
   if (offShare >= MENTION) {
     const where = !m.off
       ? `went over the ${edge} all round`
-      : m.off.km < radiusKm
+      : m.off.distance < radius
         ? `went over the ${compass(m.off.bearing)} ${edge}`
         : `was well to the ${compass(m.off.bearing)}`
     parts.push([offShare, `${amount(offShare)} your paint ${where}.`])
@@ -141,6 +142,6 @@ function amount(share: number): string {
 
 const POINTS = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"]
 
-function compass(deg: number): string {
-  return POINTS[Math.round(deg / 45) % 8]!
+function compass(bearing: Degrees): string {
+  return POINTS[Math.round(bearing / 45) % 8]!
 }

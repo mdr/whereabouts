@@ -5,7 +5,7 @@ import { CardPlace, QuestionCard } from "./QuestionCard"
 import lb from "./Lightbox.module.css"
 import pictures from "./Pictures.module.css"
 import qc from "./QuestionCard.module.css"
-import { flagCode } from "@whereabouts/shared/ids"
+import { commonsFile, flagCode } from "@whereabouts/shared/ids"
 import { ClueType, QuestionType } from "@whereabouts/shared/questions"
 import { areaAnswerView, makeQuestionView } from "../test-view"
 import type * as flags from "../flags"
@@ -18,7 +18,7 @@ vi.mock("../flags", async (original) => ({
 const q = makeQuestionView({
   type: QuestionType.LANDMARK,
   prompt: "Where is this?",
-  clue: { type: ClueType.PHOTO, image: "Some_file.jpg" }
+  clue: { type: ClueType.PHOTO, image: commonsFile("Some_file.jpg") }
 })
 
 const flagRoundOf = (code: string) =>

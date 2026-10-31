@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
 import { Group, type UIKitDocument, type World } from "@iwsdk/core"
-import { CONFIRM_S, Menu } from "./menu"
+import { CONFIRM_WAIT, Menu } from "./menu"
 import { HintAllowance, VrViewType, type VrAction, type VrRound, type VrView } from "./view"
 
 function makeMenu() {
@@ -80,7 +80,7 @@ describe("the VR menu", () => {
     click("act0")
     expect(press).not.toHaveBeenCalled()
     expect(menu.shown.actions[0]!.label).toBe("Sure? Press again")
-    menu.tick(CONFIRM_S - 0.5)
+    menu.tick(CONFIRM_WAIT - 0.5)
     click("act0")
     expect(press).toHaveBeenCalledOnce()
     expect(menu.shown.actions[0]!.label).toBe("Leave game")
@@ -91,7 +91,7 @@ describe("the VR menu", () => {
     const { action, press } = makeAction({ confirm: "Sure?" })
     shownWith(menu, makeLobby([action]))
     click("act0")
-    menu.tick(CONFIRM_S + 0.5)
+    menu.tick(CONFIRM_WAIT + 0.5)
     expect(menu.shown.actions[0]!.label).toBe("Leave game")
     click("act0")
     expect(press).not.toHaveBeenCalled()
@@ -132,10 +132,10 @@ describe("the VR menu", () => {
 
   it("calls Done Pass with nothing painted, and counts the clock down", () => {
     const { menu } = makeMenu()
-    shownWith(menu, { type: VrViewType.PAINT, round: makeRound({ msLeft: () => 65_000 }) })
+    shownWith(menu, { type: VrViewType.PAINT, round: makeRound({ timeLeft: () => 65_000 }) })
     menu.updateLabels()
     expect(menu.shown).toMatchObject({ done: "Pass", clock: "1:05 left" })
-    shownWith(menu, { type: VrViewType.PAINT, round: makeRound({ msLeft: () => 0 }) })
+    shownWith(menu, { type: VrViewType.PAINT, round: makeRound({ timeLeft: () => 0 }) })
     menu.updateLabels()
     expect(menu.shown.clock).toBe("Time's up")
   })

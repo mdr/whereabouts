@@ -15,7 +15,7 @@ describe("configFromEnv", () => {
     )
     expect(c.port).toBe(3000)
     expect(c.host).toBe("127.0.0.1")
-    expect(c.game).toEqual({ rounds: 3, roundMs: 15000, kernelId: KernelId.SINGLE })
+    expect(c.game).toEqual({ rounds: 3, roundLength: 15000, kernelId: KernelId.SINGLE })
   })
 
   it("rejects non-positive and fractional numbers", () => {

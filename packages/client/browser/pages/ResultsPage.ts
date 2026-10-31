@@ -2,11 +2,12 @@ import { resultsTestIds } from "../../src/screens/ResultsTestIds.ts"
 import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"
 import type { Tab } from "./Tab.ts"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** The final standings. */
 export class ResultsPage extends Screen {
-  static async whenShown(tab: Tab, timeoutMs = 10_000): Promise<ResultsPage> {
-    await tab.page.getByTestId(resultsTestIds.page).waitFor({ timeout: timeoutMs })
+  static async whenShown(tab: Tab, timeout: Ms = 10_000): Promise<ResultsPage> {
+    await tab.page.getByTestId(resultsTestIds.page).waitFor({ timeout })
     return new ResultsPage(tab)
   }
 

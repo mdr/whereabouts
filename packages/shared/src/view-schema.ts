@@ -7,30 +7,39 @@
  */
 import { z } from "zod"
 import { PlayerColourSchema } from "./colours.ts"
-import { FlagCodeSchema, OutlineIdSchema, PlayerIdSchema, PlayerNameSchema, RoomCodeSchema } from "./ids.ts"
+import {
+  CommonsFileSchema,
+  FlagCodeSchema,
+  OutlineIdSchema,
+  PlayerIdSchema,
+  PlayerNameSchema,
+  RoomCodeSchema,
+  WikiTitleSchema
+} from "./ids.ts"
 import { HintAxisSchema } from "./hints.ts"
 import { KernelIdSchema } from "./scoring.ts"
 import { H3CellSchema, H3ResSchema } from "./h3.ts"
 import { MapDetailSchema, MixSchema, Phase } from "./protocol.ts"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "./questions.ts"
+import { DegreesSchema, KmSchema, MsSchema } from "./units.ts"
 
 const PaintSchema = z.strictObject({ cells: z.record(H3CellSchema, z.number()), floor: z.number() })
 
-const LatLonSchema = z.strictObject({ lat: z.number(), lon: z.number() })
+const LatLonSchema = z.strictObject({ lat: DegreesSchema, lon: DegreesSchema })
 
 const QuestionViewSchema = z.strictObject({
   type: z.enum(QuestionType),
   prompt: z.string(),
   clue: z.discriminatedUnion("type", [
-    z.strictObject({ type: z.literal(ClueType.PHOTO), image: z.string() }),
+    z.strictObject({ type: z.literal(ClueType.PHOTO), image: CommonsFileSchema }),
     z.strictObject({ type: z.literal(ClueType.NAME), prompt: z.string() }),
     z.strictObject({ type: z.literal(ClueType.FLAG), flag: FlagCodeSchema })
   ]),
   answer: z.discriminatedUnion("type", [
-    z.strictObject({ type: z.literal(AnswerType.POINT), toleranceKm: z.number() }),
+    z.strictObject({ type: z.literal(AnswerType.POINT), tolerance: KmSchema }),
     z.strictObject({
       type: z.literal(AnswerType.AREA),
-      toleranceKm: z.number(),
+      tolerance: KmSchema,
       outline: OutlineIdSchema,
       surface: z.enum(Surface)
     })
@@ -40,9 +49,9 @@ const QuestionViewSchema = z.strictObject({
 })
 
 const QuestionPicturesSchema = z.strictObject({
-  image: z.string().optional(),
+  image: CommonsFileSchema.optional(),
   flag: FlagCodeSchema.optional(),
-  revealPhoto: z.string().optional()
+  revealPhoto: CommonsFileSchema.optional()
 })
 
 const PlayerViewSchema = z.strictObject({
@@ -76,13 +85,13 @@ export const GameViewSchema = z.strictObject({
   phase: z.enum(Phase),
   config: z.strictObject({
     rounds: z.number().int(),
-    roundMs: z.number().int(),
+    roundLength: MsSchema,
     mix: MixSchema,
     mapDetail: MapDetailSchema,
     kernelId: KernelIdSchema,
     hints: z.number().int()
   }),
-  serverTime: z.number(),
+  serverTime: MsSchema,
   you: z.strictObject({
     id: PlayerIdSchema.optional(),
     isHost: z.boolean(),
@@ -90,7 +99,7 @@ export const GameViewSchema = z.strictObject({
     watching: z.boolean(),
     locked: z.boolean(),
     paint: PaintSchema.optional(),
-    hint: z.strictObject({ axis: HintAxisSchema, from: z.number(), to: z.number() }).optional(),
+    hint: z.strictObject({ axis: HintAxisSchema, from: DegreesSchema, to: DegreesSchema }).optional(),
     hintsLeft: z.number().int()
   }),
   players: z.array(PlayerViewSchema),
@@ -99,7 +108,7 @@ export const GameViewSchema = z.strictObject({
       index: z.number().int(),
       total: z.number().int(),
       question: QuestionViewSchema,
-      deadline: z.number()
+      deadline: MsSchema
     })
     .optional(),
   reveal: z
@@ -109,8 +118,8 @@ export const GameViewSchema = z.strictObject({
       question: QuestionViewSchema,
       answer: LatLonSchema,
       label: z.string(),
-      wiki: z.string().optional(),
-      photo: z.string().optional(),
+      wiki: WikiTitleSchema.optional(),
+      photo: CommonsFileSchema.optional(),
       results: z.array(RoundResultViewSchema),
       ready: z.array(PlayerIdSchema)
     })
