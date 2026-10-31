@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test"
 import * as h3 from "./h3.ts"
 import { type H3Cell, h3Res } from "./h3.ts"
 import { toXyz, EARTH_RADIUS } from "./geo.ts"
+import { crossSum, pairSum } from "./kernel-sums.ts"
 import {
   DEFAULT_KERNEL,
   KERNELS,
@@ -9,11 +10,9 @@ import {
   SINGLE_KERNEL,
   kernelById,
   buildDistribution,
-  crossSum,
   regionAnswer,
   scoreRegion,
   kernel,
-  pairSum,
   scoreDistribution,
   scoreFromParts,
   selfSimilarity,
@@ -470,8 +469,8 @@ describe("region answers", () => {
 
   it("the fast cross sum matches the exact one", () => {
     const d = dist([...discCells(north(centre, 200), 7), ...discCells(north(centre, 2500), 3)])
-    const fast = crossSum(d.points, region.points, tol)
-    const exact = crossSum(d.points, region.points, tol, true)
+    const fast = crossSum(d.points, region.points, tol, false, DEFAULT_KERNEL)
+    const exact = crossSum(d.points, region.points, tol, true, DEFAULT_KERNEL)
     expect(Math.abs(fast - exact) / exact).toBeLessThan(2e-3)
   })
 })

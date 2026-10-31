@@ -23,6 +23,7 @@ import {
   type H3Cell,
   type H3Res
 } from "./h3.ts"
+import { CUTOFF_WIDTHS, crossSum, kernelFromSq, pairSum, patchWidthSq } from "./kernel-sums.ts"
 import { z } from "zod"
 import { EARTH_RADIUS, chordDistanceSq, toXyz, type LatLon, type Xyz } from "./geo.ts"
 import type { Degrees, Km, SquareKm } from "./units.ts"
@@ -113,38 +114,6 @@ export function kernel(distance: Km, tolerance: Km, k: Kernel = DEFAULT_KERNEL):
   return kernelFromSq(distance * distance, tolerance, k)
 }
 
-function gaussFromSq(distSq: SquareKm, width: Km): number {
-  return Math.exp((-LN2 * distSq) / (width * width))
-}
-
-/**
- * Gaussian kernel of width w between two Gaussian patches whose per-axis
- * variances sum to s2 (km²). k = 2^-(d/w)² is a Gaussian with variance
- * σ² = w² / (2 ln2) per axis; integrating it against the two patches gives
- * another Gaussian in the centre distance, with variance σ² + s2 and, in two
- * dimensions, amplitude σ² / (σ² + s2). In terms of the width: the effective
- * width squared is w² + 2 ln2 s2 and the amplitude is w² / w'². Flat-plane
- * result; exact enough for cells small against the Earth's radius.
- */
-function patchWidthSq(width: Km, s2: SquareKm): number {
-  return width * width + 2 * LN2 * s2
-}
-
-function patchGaussFromSq(distSq: SquareKm, width: Km, s2: SquareKm): number {
-  if (s2 === 0) return gaussFromSq(distSq, width)
-  const w2 = width * width
-  const eff = patchWidthSq(width, s2)
-  return (w2 / eff) * Math.exp((-LN2 * distSq) / eff)
-}
-
-function kernelFromSq(distSq: SquareKm, tolerance: Km, k: Kernel, s2 = 0): number {
-  let v = 0
-  for (let i = 0; i < k.scales.length; i++) {
-    v += k.weights[i]! * patchGaussFromSq(distSq, k.scales[i]! * tolerance, s2)
-  }
-  return v
-}
-
 /**
  * Mean of k(x, y) over x uniformly distributed on the sphere. Independent of y.
  * Also equals the double integral of k over two independent uniform points.
@@ -163,169 +132,6 @@ export function uniformKernelMean(tolerance: Km, k: Kernel = DEFAULT_KERNEL): nu
 function gaussUniformMean(width: Km): number {
   const a = (2 * EARTH_RADIUS * EARTH_RADIUS * LN2) / (width * width)
   return (1 - Math.exp(-2 * a)) / (2 * a)
-}
-
-/** Beyond this many widths a Gaussian is below 2^-16 and is ignored in B. */
-const CUTOFF_WIDTHS = 4
-
-/**
- * Sum over pairs p_i p_j k(x_i, x_j) among the painted points, including
- * self-pairs. Each Gaussian component is summed separately. Points are grouped
- * by patch size, since the effective kernel between two patches depends on
- * both sizes; every pair of groups is summed with its own width. For
- * effective widths wider than the tolerance the points are first aggregated
- * onto a 3D grid an eighth of that width, which keeps the cost bounded when
- * the cutoff spans the globe while displacing mass by far less than the width.
- */
-export function pairSum(points: WeightedPoint[], tolerance: Km, exact = false, k: Kernel = DEFAULT_KERNEL): number {
-  if (exact) return exactPairSum(points, tolerance, k)
-  const groups = groupByPatchSize(points)
-  let total = 0
-  for (let c = 0; c < k.scales.length; c++) {
-    const width = k.scales[c]! * tolerance
-    const w2 = width * width
-    for (let a = 0; a < groups.length; a++) {
-      for (let b = a; b < groups.length; b++) {
-        const ga = groups[a]!
-        const gb = groups[b]!
-        const eff = Math.sqrt(patchWidthSq(width, ga.s2 + gb.s2))
-        // Same rule as before patches: components at least twice the tolerance wide are aggregated.
-        const coarse = eff >= 2 * tolerance
-        const pa = coarse ? aggregate(ga.points, eff / 8) : ga.points
-        const pb = a === b ? pa : coarse ? aggregate(gb.points, eff / 8) : gb.points
-        const sum = gaussCrossSum(pa, pb, eff)
-        total += k.weights[c]! * (w2 / (eff * eff)) * (a === b ? sum : 2 * sum)
-      }
-    }
-  }
-  return total
-}
-
-function exactPairSum(points: WeightedPoint[], tolerance: Km, k: Kernel): number {
-  let total = 0
-  for (const pi of points) {
-    for (const pj of points) {
-      total += pi.p * pj.p * kernelFromSq(chordDistanceSq(pi.xyz, pj.xyz), tolerance, k, (pi.s2 ?? 0) + (pj.s2 ?? 0))
-    }
-  }
-  return total
-}
-
-function groupByPatchSize(points: WeightedPoint[]): { s2: SquareKm; points: WeightedPoint[] }[] {
-  const groups = new Map<number, WeightedPoint[]>()
-  for (const pt of points) {
-    // Cells of one H3 resolution differ slightly in area; bucket them together.
-    const key = pt.s2 ? Math.round(Math.log2(pt.s2) * 2) : -Infinity
-    const list = groups.get(key)
-    if (list) list.push(pt)
-    else groups.set(key, [pt])
-  }
-  return [...groups.values()].map((pts) => {
-    let mass = 0
-    let s2 = 0
-    for (const pt of pts) {
-      mass += pt.p
-      s2 += pt.p * (pt.s2 ?? 0)
-    }
-    return { s2: mass > 0 ? s2 / mass : 0, points: pts }
-  })
-}
-
-/** Merge points into mass-weighted centroids on a 3D grid of cubes `side` across. */
-function aggregate(points: WeightedPoint[], side: Km): WeightedPoint[] {
-  const acc = new Map<string, { x: number; y: number; z: number; p: number }>()
-  for (const pt of points) {
-    const [x, y, z] = pt.xyz
-    const key = `${Math.floor(x / side)},${Math.floor(y / side)},${Math.floor(z / side)}`
-    const a = acc.get(key)
-    if (a) {
-      a.x += pt.p * x
-      a.y += pt.p * y
-      a.z += pt.p * z
-      a.p += pt.p
-    } else {
-      acc.set(key, { x: pt.p * x, y: pt.p * y, z: pt.p * z, p: pt.p })
-    }
-  }
-  const out: WeightedPoint[] = []
-  for (const a of acc.values()) {
-    if (a.p <= 0) continue
-    out.push({ xyz: [a.x / a.p, a.y / a.p, a.z / a.p], p: a.p })
-  }
-  return out
-}
-
-/**
- * Truncated sum over i in `left`, j in `right` of p_i p_j exp(-ln2 d²/w²),
- * using a 3D grid hash of `right` with cells one cutoff wide so each point
- * only visits its 27 neighbouring buckets. When both sides are the same
- * array this is the self pair sum.
- */
-function gaussCrossSum(left: WeightedPoint[], right: WeightedPoint[], width: Km): number {
-  const n = right.length
-  const m = left.length
-  if (n === 0 || m === 0) return 0
-  const invW2 = -LN2 / (width * width)
-
-  // Flat typed arrays and integer bucket keys: this loop is the hot path for
-  // the live score, so avoid per-pair allocation and string hashing.
-  const xs = new Float64Array(n)
-  const ys = new Float64Array(n)
-  const zs = new Float64Array(n)
-  const ps = new Float64Array(n)
-  for (let i = 0; i < n; i++) {
-    const pt = right[i]!
-    xs[i] = pt.xyz[0]
-    ys[i] = pt.xyz[1]
-    zs[i] = pt.xyz[2]
-    ps[i] = pt.p
-  }
-
-  const cutoff = CUTOFF_WIDTHS * width
-  const cutoffSq = cutoff * cutoff
-  const inv = 1 / cutoff
-  // Coordinates are within +-6371 km, so offsetting by 8192 keeps indices positive.
-  const OFF = 8192
-  const SPAN = Math.ceil(2 * OFF * inv) + 2
-  const bucketOf = (x: number, y: number, z: number) =>
-    (Math.floor((x + OFF) * inv) * SPAN + Math.floor((y + OFF) * inv)) * SPAN + Math.floor((z + OFF) * inv)
-
-  const buckets = new Map<number, number[]>()
-  for (let i = 0; i < n; i++) {
-    const b = bucketOf(xs[i]!, ys[i]!, zs[i]!)
-    const list = buckets.get(b)
-    if (list) list.push(i)
-    else buckets.set(b, [i])
-  }
-
-  let total = 0
-  for (let i = 0; i < m; i++) {
-    const li = left[i]!
-    const xi = li.xyz[0],
-      yi = li.xyz[1],
-      zi = li.xyz[2],
-      pi = li.p
-    const bx = Math.floor((xi + OFF) * inv)
-    const by = Math.floor((yi + OFF) * inv)
-    const bz = Math.floor((zi + OFF) * inv)
-    for (let dx = -1; dx <= 1; dx++) {
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dz = -1; dz <= 1; dz++) {
-          const list = buckets.get(((bx + dx) * SPAN + (by + dy)) * SPAN + (bz + dz))
-          if (!list) continue
-          for (const j of list) {
-            const ddx = xi - xs[j]!,
-              ddy = yi - ys[j]!,
-              ddz = zi - zs[j]!
-            const dsq = ddx * ddx + ddy * ddy + ddz * ddz
-            if (dsq > cutoffSq) continue
-            total += pi * ps[j]! * Math.exp(invW2 * dsq)
-          }
-        }
-      }
-    }
-  }
-  return total
 }
 
 /**
@@ -469,46 +275,6 @@ export function regionAnswer(cells: Iterable<H3Cell>, tolerance: Km, k: Kernel =
   const points = raw.map((pt) => ({ ...pt, p: pt.p / total }))
   const Q = k.scales.map((_, c) => pairSum(points, tolerance, false, component(k, c)))
   return { points, Q, tolerance, kernel: k }
-}
-
-/**
- * Sum over i in `left`, j in `right` of p_i p_j k(x_i, y_j) between two sets
- * of patches, grouped by patch size and aggregated for wide components as in
- * pairSum.
- */
-export function crossSum(
-  left: WeightedPoint[],
-  right: WeightedPoint[],
-  tolerance: Km,
-  exact = false,
-  k: Kernel = DEFAULT_KERNEL
-): number {
-  if (exact) {
-    let total = 0
-    for (const a of left) {
-      for (const b of right) {
-        total += a.p * b.p * kernelFromSq(chordDistanceSq(a.xyz, b.xyz), tolerance, k, (a.s2 ?? 0) + (b.s2 ?? 0))
-      }
-    }
-    return total
-  }
-  const lg = groupByPatchSize(left)
-  const rg = groupByPatchSize(right)
-  let total = 0
-  for (let c = 0; c < k.scales.length; c++) {
-    const width = k.scales[c]! * tolerance
-    const w2 = width * width
-    for (const ga of lg) {
-      for (const gb of rg) {
-        const eff = Math.sqrt(patchWidthSq(width, ga.s2 + gb.s2))
-        const coarse = eff >= 2 * tolerance
-        const pa = coarse ? aggregate(ga.points, eff / 8) : ga.points
-        const pb = coarse ? aggregate(gb.points, eff / 8) : gb.points
-        total += k.weights[c]! * (w2 / (eff * eff)) * gaussCrossSum(pa, pb, eff)
-      }
-    }
-  }
-  return total
 }
 
 /**
