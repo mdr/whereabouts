@@ -7,10 +7,10 @@ import { useEffect } from "preact/hooks"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
-import { outlineOf, MapDetail, type QuestionView } from "@whereabouts/shared/protocol"
+import { outlineOf, type MapDetail, type QuestionView } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
 import type { GameMap } from "./map"
-import { RevealDetail } from "./shown-detail"
+import { RevealDetail, showsBorders } from "./shown-detail"
 import type { PaintController } from "./paint-controller"
 import { useFillTool } from "./fill"
 import { startOnPan } from "./settings"
@@ -61,11 +61,11 @@ export function useRoundMap(
     paint.tool.value = startOnPan.value ? Tool.PAN : Tool.PAINT
   }, [round, painting])
 
-  // The Fill tool, for a country on the Political map; on through the
-  // reveal, so a run of country rounds keeps the tool chosen.
+  // The Fill tool, for a country on a map that shows borders; on through
+  // the reveal, so a run of country rounds keeps the tool chosen.
   useFillTool(
     paint,
-    detail === MapDetail.POLITICAL && (question?.type === QuestionType.COUNTRY || question?.type === QuestionType.FLAG)
+    showsBorders(detail) && (question?.type === QuestionType.COUNTRY || question?.type === QuestionType.FLAG)
   )
 
   // The reveal shows everything, since borders, place names, rivers and

@@ -53,7 +53,7 @@ import { PanelClearance } from "./clearance"
 import { wristActions } from "./wrist-actions"
 import { VrProbe } from "./probe"
 import { VrViewType, type VrRound, type VrView } from "./view"
-import { MapDetail } from "@whereabouts/shared/protocol"
+import { RevealDetail, showsBorders, showsTerrain } from "../shown-detail"
 import type { Metres, Ms, Seconds } from "@whereabouts/shared/units"
 
 /**
@@ -339,14 +339,15 @@ export class Vr {
     this.detail.setHint(round?.hint)
     if (round) this.wrist.setState(round.water, round.hint && describeHint(round.hint), round.hintsLeft)
     for (const h of HANDS) this.tools[h].setColour(round?.colour)
-    // As the page's map: natural colour on the reveal, and while painting on the maps that show terrain.
-    this.globe.showColour(
-      view.type === VrViewType.REVEAL ||
-        (view.type === VrViewType.PAINT && [MapDetail.PHYSICAL, MapDetail.POLITICAL].includes(view.round.detail))
-    )
-    this.globe.showBorders(
-      view.type === VrViewType.REVEAL || (view.type === VrViewType.PAINT && view.round.detail === MapDetail.POLITICAL)
-    )
+    // As the page's map: everything on the reveal, while painting what the round's detail shows.
+    const shown =
+      view.type === VrViewType.REVEAL
+        ? RevealDetail.REVEAL
+        : view.type === VrViewType.PAINT
+          ? view.round.detail
+          : undefined
+    this.globe.showColour(shown !== undefined && showsTerrain(shown))
+    this.globe.showBorders(shown !== undefined && showsBorders(shown))
     this.scores.show(
       view.type === VrViewType.REVEAL ? view.reveal.table : "summary" in view ? view.summary.table : view.round.table
     )

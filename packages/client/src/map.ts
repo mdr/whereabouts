@@ -19,7 +19,14 @@ import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { Theme } from "./themes"
 import { HintAxis } from "@whereabouts/shared/hints"
-import { DETAIL_RANK, RevealDetail, type ShownDetail } from "./shown-detail"
+import {
+  RevealDetail,
+  showsBorders,
+  showsInlandWater,
+  showsPlaces,
+  showsTerrain,
+  type ShownDetail
+} from "./shown-detail"
 import type { Km, Metres } from "@whereabouts/shared/units"
 
 setWorkerUrl(mapWorkerUrl)
@@ -490,17 +497,14 @@ export class GameMap {
    * reveal uses). Place names and man-made detail show only on the reveal.
    */
   setDetail(level: ShownDetail): void {
-    // An unknown level (a stale saved setting, say) counts as minimal.
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- saved settings are not checked against the type
-    const rank = DETAIL_RANK[level] ?? 0
-    this.setInlandWater(rank >= 1)
-    this.setTerrain(rank >= 2)
-    this.setIce(rank >= 2)
-    this.setWood(rank >= 2)
-    this.setBorders(rank >= 3, rank >= 4)
+    this.setInlandWater(showsInlandWater(level))
+    this.setTerrain(showsTerrain(level))
+    this.setIce(showsTerrain(level))
+    this.setWood(showsTerrain(level))
+    this.setBorders(showsBorders(level), showsPlaces(level))
     this.setRevealBorders(level === RevealDetail.REVEAL)
-    this.setLabels(rank >= 4)
-    this.setUrban(rank >= 4)
+    this.setLabels(showsPlaces(level))
+    this.setUrban(showsPlaces(level))
     this.setRoads(false)
   }
 
