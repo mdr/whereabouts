@@ -1,15 +1,6 @@
 .backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
+  composes: overlay from "./kit.module.css";
   background: color-mix(in srgb, var(--shade) 60%, transparent);
-  display: grid;
-  place-items: center;
-  padding: 24px;
-}
-/* It opens over the map, where a pinch must not zoom the page (MapView.module.css). */
-:where(.backdrop, .backdrop *) {
-  touch-action: pan-x pan-y;
 }
 .modal {
   background: var(--panel-bg);

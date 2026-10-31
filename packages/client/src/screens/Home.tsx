@@ -170,7 +170,7 @@ export function Home() {
         </div>
 
         <section class={s.how}>
-          <h2>How to play</h2>
+          <h2 class={kit.eyebrow}>How to play</h2>
           <ol>
             <li>
               <b>Read the clue.</b> Each round names a place or shows a photo of one.

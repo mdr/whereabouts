@@ -13,13 +13,8 @@
 
 /* A card over the map, lighter than a dialog. */
 .backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
+  composes: overlay from "./kit.module.css";
   background: color-mix(in srgb, var(--shade) 35%, transparent);
-  display: grid;
-  place-items: center;
-  padding: 24px;
 }
 .card {
   width: min(380px, 100%);
@@ -36,9 +31,6 @@
   & h2 {
     margin: 0;
     font-size: 16px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
   }
   & dl {
     margin: 0;

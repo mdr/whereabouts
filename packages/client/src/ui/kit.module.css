@@ -19,6 +19,36 @@
   color: var(--muted);
 }
 
+/* A small heading over a group: a card's title, a section of a page. */
+.eyebrow,
+:where(.pageCard) h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* One line, cut short with an ellipsis. */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A full-screen layer over everything, with its content centred. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+/* It opens over the map, where a pinch must not zoom the page (MapView.module.css). */
+:where(.overlay, .overlay *) {
+  touch-action: pan-x pan-y;
+}
+
 /* ---- the card screens: front door, lobby, results ---------------------------- */
 :where(.page) {
   position: absolute;
@@ -45,10 +75,6 @@
   gap: 14px;
 
   & h2 {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
     margin: 6px 0 0;
   }
   & a {

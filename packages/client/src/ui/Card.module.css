@@ -7,9 +7,6 @@
   box-shadow: var(--card-shadow, none);
 }
 .title {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
+  composes: eyebrow from "./kit.module.css";
   margin: 0 0 6px;
 }

@@ -72,11 +72,8 @@ button.leave:hover {
   }
 }
 .watchingHeading {
+  composes: eyebrow from "../ui/kit.module.css";
   margin: 14px 0 4px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
 }
 .roleSwitch {
   margin-top: 10px;

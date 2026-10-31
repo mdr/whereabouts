@@ -53,7 +53,7 @@
   cursor: zoom-in;
 }
 .question .flag:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-2);
   outline-offset: 2px;
 }
 /* Loaded, a flag's edge follows its shape: Nepal's is not a rectangle. */
@@ -123,7 +123,7 @@
   opacity: 1;
 }
 .question .thumbButton:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-2);
   outline-offset: 2px;
 }
 

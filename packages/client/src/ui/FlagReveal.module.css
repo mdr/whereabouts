@@ -15,7 +15,7 @@
 
 .hover {
   position: fixed;
-  z-index: 20;
+  z-index: var(--z-float);
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -41,10 +41,8 @@
   color: var(--panel-fg);
 }
 .country {
+  composes: truncate from "./kit.module.css";
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .share {
   color: var(--muted);

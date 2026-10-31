@@ -12,6 +12,7 @@ import { isTyping } from "../keys"
 import { CLOSE, TOGGLE_LIST, listedShortcuts } from "../shortcuts"
 import { Card } from "./Card"
 import { shortcutsTestIds } from "./ShortcutsTestIds"
+import kit from "./kit.module.css"
 import s from "./Shortcuts.module.css"
 
 export const shortcutsOpen = signal(false)
@@ -64,7 +65,9 @@ export function Shortcuts({ practice = false }: { practice?: boolean }) {
         data-testid={shortcutsTestIds.card}
       >
         <header>
-          <h2 id="shortcuts-title">Keyboard shortcuts</h2>
+          <h2 id="shortcuts-title" class={kit.eyebrow}>
+            Keyboard shortcuts
+          </h2>
           <button class="icon" aria-label="Close" title="Close (Esc)" onClick={() => (shortcutsOpen.value = false)}>
             ×
           </button>
