@@ -108,9 +108,9 @@ export function QuestionCard({
           <Icon name={folded ? "expand" : "collapse"} size={18} />
         </button>
       )}
-      <p class={q.prompt} data-testid={questionCardTestIds.prompt}>
+      <h2 class={q.prompt} data-testid={questionCardTestIds.prompt}>
         {prompt}
-      </p>
+      </h2>
       {image && <QuestionImage image={image} credit={credit ?? false} />}
       {flag && <FlagImage code={flag} />}
       {children}

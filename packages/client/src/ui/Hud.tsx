@@ -17,9 +17,9 @@ import type { Ms } from "@whereabouts/shared/units"
 /** `reveal` lays out a round's reveal; MapView reads `data-hud` to lift the map's buttons above its sheet. */
 export function Hud({ reveal, children }: { reveal?: boolean; children: ComponentChildren }) {
   return (
-    <div class={cx(s.hud, reveal && s.reveal)} data-hud={reveal ? "reveal" : undefined}>
+    <main class={cx(s.hud, reveal && s.reveal)} data-hud={reveal ? "reveal" : undefined}>
       {children}
-    </div>
+    </main>
   )
 }
 
