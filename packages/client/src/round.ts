@@ -28,8 +28,13 @@ export interface RevealedAnswer {
   photo?: CommonsFile
 }
 
+/** What a round needs of the paint and its map. */
+export type RoundPaint = Pick<PaintController, "reset" | "tool" | "useFiller" | "offerFill"> & {
+  gameMap: Pick<GameMap, "clearReveal" | "resetView" | "setDetail" | "setStateReveal" | "setHint">
+}
+
 export function useRoundMap(
-  paint: PaintController,
+  paint: RoundPaint,
   {
     round,
     painting,

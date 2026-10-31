@@ -93,7 +93,7 @@ function circle({ lat, lon }: LatLon, km: number): number[][] {
  * Political map): load the countries if need be, and hand them to the paint
  * controller.
  */
-export function useFillTool(paint: PaintController, active: boolean): void {
+export function useFillTool(paint: Pick<PaintController, "useFiller" | "offerFill">, active: boolean): void {
   const b = useBorders(active)
   const r = useOutlines(active)
   useEffect(() => {

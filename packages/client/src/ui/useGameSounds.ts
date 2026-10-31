@@ -5,6 +5,12 @@ import { Chime, sound } from "../sound"
 import { RoundCue, roundCue, type RoundState } from "./round-cue"
 import { Phase } from "@whereabouts/shared/protocol"
 
+/** What the sounds follow in a game view. */
+type SoundView = Pick<GameView, "phase"> & {
+  round?: Pick<NonNullable<GameView["round"]>, "index" | "deadline">
+  reveal?: Pick<NonNullable<GameView["reveal"]>, "index">
+}
+
 /**
  * The online game's sounds, driven by changes of view: the rising cue when a
  * round starts, the countdown timed to each round's deadline, and the
@@ -12,7 +18,7 @@ import { Phase } from "@whereabouts/shared/protocol"
  * applause at the final results. The spray and eraser are the map's
  * business (MapView), and Pass and Clear play their own, where they happen.
  */
-export function useGameSounds(conn: Connection, view: GameView | undefined): void {
+export function useGameSounds(conn: Pick<Connection, "timeUntil">, view: SoundView | undefined): void {
   const prev = useRef<RoundState | undefined>(undefined)
   const lastDeadline = useRef<number | undefined>(undefined)
   const phase = view?.phase

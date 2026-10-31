@@ -11,6 +11,7 @@ import type { PaintModel } from "./paint-model"
 import type { PaintView } from "./paint-view"
 import { forTabbedControl, isTyping } from "./keys"
 import { PAN_HOLD, runPaintKey, type PaintKeyTarget } from "./shortcuts"
+import { strokePoints, touchMove, touchStart, TouchStep } from "./stroke"
 import { Tool } from "./tool"
 import type { Km, Px } from "@whereabouts/shared/units"
 
@@ -45,12 +46,10 @@ export class PaintInput {
       if (!this.canPaint() || e.originalEvent.button !== 0 || !gameMap.onSurface(e.point)) return
       this.beginStroke(e.point)
     }
-    // Touch: one finger uses the current tool, so it paints when painting is
-    // on; two fingers always pan and zoom, which MapLibre handles itself once
-    // the one-finger stroke is abandoned (and undone, since a pinch starts
-    // with a single touch for a moment).
+    // Two fingers pan and zoom, which MapLibre handles itself once the
+    // one-finger stroke is abandoned (stroke.ts).
     const onTouchStart = (e: MapTouchEvent) => {
-      if (e.points.length !== 1 || !this.canPaint()) {
+      if (touchStart(e.points.length, this.canPaint()) === TouchStep.ABANDON) {
         this.abandonStroke()
         return
       }
@@ -59,11 +58,9 @@ export class PaintInput {
       this.beginStroke(e.point)
     }
     const onTouchMove = (e: MapTouchEvent) => {
-      if (!this.painting) return
-      if (e.points.length !== 1) {
-        this.abandonStroke()
-        return
-      }
+      const step = touchMove(e.points.length, this.painting)
+      if (step === TouchStep.ABANDON) this.abandonStroke()
+      if (step !== TouchStep.CONTINUE) return
       e.preventDefault()
       this.strokeTo(e.point)
       this.view.queue()
@@ -328,21 +325,8 @@ export class PaintInput {
   }
 
   private strokeTo(point: Point): void {
-    if (!this.lastStampPoint) {
-      this.stampOnSurface(point)
-      this.lastStampPoint = point
-      return
-    }
-    const start = this.lastStampPoint
-    const dx = point.x - start.x
-    const dy = point.y - start.y
-    const dist = Math.hypot(dx, dy)
-    const step = Math.max(2, this.brushSize.value / 4)
-    if (dist < step) return
-    const n = Math.floor(dist / step)
-    for (let i = 1; i <= n; i++) {
-      const t = (i * step) / dist
-      const p = new Point(start.x + dx * t, start.y + dy * t)
+    for (const { x, y } of strokePoints(this.lastStampPoint, point, this.brushSize.value)) {
+      const p = new Point(x, y)
       this.stampOnSurface(p)
       this.lastStampPoint = p
     }
