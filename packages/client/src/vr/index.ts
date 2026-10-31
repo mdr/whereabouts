@@ -20,11 +20,8 @@ import {
 } from "@iwsdk/core"
 import { effect, signal } from "@preact/signals"
 import { describeHint } from "@whereabouts/shared/hints"
-import type { H3Cell } from "@whereabouts/shared/h3"
 import type { BordersData } from "@whereabouts/shared/borders"
 import type { LandMaskData } from "@whereabouts/shared/land"
-import type { LatLon } from "@whereabouts/shared/geo"
-import type { PaintLayer } from "@whereabouts/shared/paint"
 import { loadLandMask, loadWaterMask } from "../land"
 import { headsetPassthrough } from "../settings"
 import { sound } from "../sound"
@@ -54,12 +51,12 @@ import { timerFrames } from "./frames"
 import { HandTool, TRIGGER_DEAD, type SprayTool } from "./spray"
 import { Moon } from "./moon"
 import { STARS_M, Space } from "./space"
-import { latLonToLocal, localToLatLon } from "./sphere"
 import { SCORES_M, ScoreBoard, type VrTable } from "./scores"
 import { ResultsBoard, type VrBoard } from "./board"
 import { WristMenu, type WristButton } from "./wrist"
 import { Menu, PANEL_M, type MenuShown } from "./menu"
-import type { VrReveal, VrRound, VrView } from "./view"
+import { colouredPaint, framing } from "./reveal"
+import type { VrRound, VrView } from "./view"
 
 /**
  * IWSDK updates and draws its scene every frame from the start, on the page
@@ -780,57 +777,6 @@ export class Vr {
     }
   }
 }
-
-/**
- * Where the reveal turns the globe to, and how wide round it to show: the
- * answer and every guess's paint.
- */
-function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: number } {
-  const answerPoints = [latLonToLocal(reveal.focus)]
-  const { answer } = reveal
-  if ("outline" in answer)
-    for (const polygon of answer.outline)
-      for (const [lon, lat] of polygon[0] ?? []) answerPoints.push(latLonToLocal({ lat: lat!, lon: lon! }))
-  const groups = [answerPoints]
-  for (const { layer } of reveal.paints ?? [{ layer: round.paint.layer }]) {
-    const cells = Object.keys(layer.toRecord()) as H3Cell[]
-    if (cells.length > 0)
-      groups.push(
-        cells.map((h) => {
-          const [lat, lon] = layer.centre(h)
-          return latLonToLocal({ lat, lon })
-        })
-      )
-  }
-  // The answer and each guess count once, however many cells a guess has:
-  // else a far-off guess outweighs the answer and turns it out of view.
-  const mid = groups.reduce(
-    (sum, g) =>
-      sum.addScaledVector(
-        g.reduce((s, p) => s.add(p), new Vector3()),
-        1 / g.length
-      ),
-    new Vector3()
-  )
-  // Spread round the world: show it all.
-  if (mid.length() < groups.length * 0.2) return { at: reveal.focus, reach: Math.PI }
-  mid.normalize()
-  const reach = Math.max(...groups.flat().map((p) => p.angleTo(mid)))
-  return { at: localToLatLon(mid), reach: reach * 1.15 + 0.002 }
-}
-
-/** Several players' paint as one collection, each cell in its player's colour. */
-function colouredPaint(
-  paints: { layer: PaintLayer; colour: string }[]
-): GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: string }> {
-  return {
-    type: "FeatureCollection",
-    features: paints.flatMap(({ layer, colour }) =>
-      layer.toGeoJSON().features.map((f) => ({ ...f, properties: { ...f.properties, colour } }))
-    )
-  }
-}
-
 declare global {
   interface Window {
     whereaboutsVr: Vr
