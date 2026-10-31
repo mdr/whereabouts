@@ -11,6 +11,8 @@ import {
   PROTOCOL_VERSION,
   type ClientSend,
   type ClientTopic,
+  MAX_PLAYERS,
+  MAX_SPECTATORS,
   SEAT_GRACE,
   encodeTicket,
   type Ticket,
@@ -30,6 +32,7 @@ import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import { GameViewSchema } from "@whereabouts/shared/view-schema"
 import { CATALOGUE } from "@whereabouts/shared/catalogue"
 import { gridDisk, h3Res, latLngToCell } from "@whereabouts/shared/h3"
+import { HintAxis } from "@whereabouts/shared/hints"
 import {
   placeId,
   playerToken,
@@ -52,7 +55,7 @@ import {
   type Question
 } from "@whereabouts/shared/questions"
 import { createApp, MAX_PAYLOAD_BYTES, type App } from "./app.ts"
-import { BANK, configureGameRooms, realClock, type Clock } from "./rooms.ts"
+import { BANK, configureGameRooms, realClock, type Clock, type GameRoom } from "./rooms.ts"
 import { CloseReason } from "@whereabouts/shared/close-reason"
 
 // Static imports hoist above this line, so the client is loaded dynamically.
@@ -186,8 +189,16 @@ class TestPlayer {
     throw new Error(`${this.name}: latest never matched; last=${JSON.stringify(this.states.at(-1)).slice(0, 300)}`)
   }
   async waitClosed(ms = 3000): Promise<void> {
-    const start = Date.now()
-    while (this.client.connected && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 10))
+    await eventually(() => !this.client.connected, `${this.name}'s connection to close`, ms)
+  }
+}
+
+/** Wait until `done` holds, failing with what was awaited. */
+async function eventually(done: () => boolean, what: string, ms = 3000): Promise<void> {
+  const start = Date.now()
+  while (!done()) {
+    if (Date.now() - start > ms) throw new Error(`gave up waiting ${ms}ms for ${what}`)
+    await new Promise((r) => setTimeout(r, 10))
   }
 }
 
@@ -530,8 +541,9 @@ describe("game server", () => {
     alice.connect({ create: true })
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     expect(app.rivalis.rooms.get(lobby.code) ?? undefined).not.toBeUndefined()
+    const room = app.rivalis.rooms.get(lobby.code) as GameRoom
     alice.client.disconnect()
-    await new Promise((r) => setTimeout(r, 100))
+    await eventually(() => room.state.connectedCount === 0, "the server to see Alice go")
     expect(app.rivalis.rooms.get(lobby.code) ?? undefined).not.toBeUndefined()
     clock.advance(SEAT_GRACE)
     expect(app.rivalis.rooms.get(lobby.code) ?? undefined).toBeUndefined()
@@ -575,9 +587,7 @@ describe("game server", () => {
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     alice.send("leave")
     await alice.waitClosed()
-    const start = Date.now()
-    while (app.rivalis.rooms.get(lobby.code) && Date.now() - start < 2000) await new Promise((r) => setTimeout(r, 10))
-    expect(app.rivalis.rooms.get(lobby.code) ?? undefined).toBeUndefined()
+    await eventually(() => !app.rivalis.rooms.get(lobby.code), "the room to close")
   })
 
   it("a spectator joins to watch, and can take a seat in the lobby", async () => {
@@ -606,6 +616,101 @@ describe("game server", () => {
     alice.send("makeHost", { playerId: two.players.find((p) => p.name === "Bob")!.id })
     await bob.until((v) => v.you.isHost)
     await alice.untilLatest((v) => !v.you.isHost)
+  })
+
+  /** Alice hosting and Bob joined, both seen in the lobby. */
+  async function aliceAndBob() {
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const { code } = await alice.until((v) => v.phase === Phase.LOBBY)
+    const bob = player("Bob")
+    bob.connect({ code })
+    const lobby = await alice.until((v) => v.players.length === 2)
+    await bob.until((v) => v.players.length === 2)
+    const bobId = lobby.players.find((p) => p.name === "Bob")!.id
+    return { alice, bob, code, bobId }
+  }
+
+  it("the host removes a player: their connection closes as removed, and that seat cannot come back", async () => {
+    const { alice, bob, code, bobId } = await aliceAndBob()
+    alice.send("kick", { playerId: bobId })
+    await bob.waitClosed()
+    expect(bob.closedFor).toBe(CloseReason.REMOVED)
+    await alice.untilLatest((v) => v.players.length === 1)
+
+    const bobAgain = player("Bob")
+    bobAgain.connect({ code })
+    await bobAgain.waitClosed()
+    expect(bobAgain.closedFor).toBe(CloseReason.REMOVED)
+  })
+
+  it("a second tab replaces the first, whose closing then leaves the seat alone", async () => {
+    const { alice, bob, code } = await aliceAndBob()
+    const bobTab2 = player("Bob")
+    bobTab2.connect({ code })
+    await bob.waitClosed()
+    expect(bob.closedFor).toBe(CloseReason.REPLACED)
+
+    bobTab2.send("rename", { name: "Bobby" })
+    await alice.untilLatest((v) => v.players.some((p) => p.name === "Bobby" && p.connected))
+    clock.advance(SEAT_GRACE)
+    bobTab2.send("rename", { name: "Bob" })
+    const after = await alice.untilLatest((v) => v.players.some((p) => p.name === "Bob"))
+    expect(after.players).toHaveLength(2)
+    expect(after.players.every((p) => p.connected)).toBe(true)
+  })
+
+  it("while the host is away the next player acts as host, until the host is back", async () => {
+    const { alice, bob, code } = await aliceAndBob()
+    alice.client.disconnect()
+    await bob.untilLatest((v) => v.you.isHost)
+
+    const aliceAgain = player("Alice")
+    aliceAgain.connect({ code })
+    await aliceAgain.untilLatest((v) => v.you.isHost)
+    await bob.untilLatest((v) => !v.you.isHost)
+  })
+
+  it("a full game turns a newcomer away", async () => {
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    const { code } = await alice.until((v) => v.phase === Phase.LOBBY)
+    for (let i = 1; i < MAX_PLAYERS + MAX_SPECTATORS; i++) {
+      const p = player(`P${i}`)
+      p.connect({ code, watch: i >= MAX_PLAYERS })
+    }
+    await alice.until((v) => v.players.length === MAX_PLAYERS + MAX_SPECTATORS, 10_000)
+    const late = player("Late")
+    late.connect({ code })
+    await late.waitClosed()
+    expect(late.closedFor).toBe(CloseReason.FULL)
+  })
+
+  it("plays a round with a hint, unlocking, and the host ending early, then again", async () => {
+    const { alice, bob } = await aliceAndBob()
+    alice.send("start")
+    await bob.until((v) => v.phase === Phase.GUESSING)
+
+    alice.send("hint", { axis: HintAxis.LATITUDE })
+    const hinted = await alice.untilLatest((v) => v.you.hint !== undefined)
+    expect(hinted.you.hint!.axis).toBe(HintAxis.LATITUDE)
+    alice.send("hint", { axis: HintAxis.LONGITUDE })
+    expect(await pollErrors(alice)).toContain("one hint per round")
+
+    bob.send("lock")
+    await bob.untilLatest((v) => v.you.locked)
+    bob.send("unlock")
+    await bob.untilLatest((v) => !v.you.locked)
+
+    bob.send("end")
+    expect(await pollErrors(bob)).toContain("only the host can end the game")
+    alice.send("end")
+    const results = await bob.until((v) => v.phase === Phase.RESULTS)
+    expect(results.results!.every((r) => r.rounds.length === 1)).toBe(true)
+
+    alice.send("again")
+    const lobby = await bob.until((v) => v.phase === Phase.LOBBY && v.results === undefined)
+    expect(lobby.players).toHaveLength(2)
   })
 })
 
@@ -692,12 +797,11 @@ describe("connections per address", () => {
     await alice!.until((v) => v.players.length === 2)
 
     carol!.connect({ code })
-    await new Promise((r) => setTimeout(r, 300))
+    await carol!.waitClosed()
     expect(carol!.states).toEqual([])
 
     bob!.client.disconnect()
-    await bob!.waitClosed()
-    await new Promise((r) => setTimeout(r, 100))
+    await alice!.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
     carol!.connect({ code })
     await alice!.until((v) => v.players.some((p) => p.name === "Carol"))
   })
