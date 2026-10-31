@@ -15,6 +15,7 @@ import type { LatLon } from "@whereabouts/shared/geo"
 import { onWater } from "@whereabouts/shared/protocol"
 import { MapView, usePaint } from "../ui/MapView"
 import { forTabbedControl } from "../keys"
+import { SUBMIT } from "../shortcuts"
 import { LoadingOutlines } from "../ui/LoadingOutlines"
 import { HeaderNote, Hud, HudBottom, HudHeader, HudTop } from "../ui/Hud"
 import { DoneButton, RevealCards, RoundPrompt } from "../ui/Round"
@@ -109,7 +110,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Enter" || e.repeat || forTabbedControl(e)) return
+      if (!SUBMIT.matches(e) || e.repeat || forTabbedControl(e)) return
       // A photo or the shortcuts list open over the round has the keyboard.
       if (document.querySelector('[role="dialog"]')) return
       const act =

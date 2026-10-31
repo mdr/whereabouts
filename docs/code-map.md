@@ -49,6 +49,7 @@ No I/O; the same code runs in the browser and on the server.
 | `src/outlines.ts`, `src/borders.ts`              | Lazily loaded outlines and borders; components reach them through `useOutlines`/`useBorders` |
 | `src/sound.ts`, `src/ui/round-cue.ts`            | The sound engine and recordings; which cue a change of game view calls for                   |
 | `src/paint-commands.ts`                          | Clear, Trim and Trim to hint, shared by the page's paint tools and the VR wrist menu         |
+| `src/shortcuts.ts`                               | Every keyboard shortcut: the help card lists it, the handlers match keys against it          |
 | `src/shown-detail.ts`                            | What each map detail level shows, for the page map and the VR globe                          |
 | `src/question-types.ts`                          | Each question type's label, units and colour                                                 |
 | `src/settings.ts`, `src/host-setup.ts`           | Browser-stored settings, and the host's saved setup                                          |

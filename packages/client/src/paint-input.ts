@@ -10,6 +10,7 @@ import type { GameMap } from "./map"
 import type { PaintModel } from "./paint-model"
 import type { PaintView } from "./paint-view"
 import { forTabbedControl, isTyping } from "./keys"
+import { PAN_HOLD, runPaintKey, type PaintKeyTarget } from "./shortcuts"
 import { Tool } from "./tool"
 import type { Km, Px } from "@whereabouts/shared/units"
 
@@ -94,34 +95,25 @@ export class PaintInput {
       this.model.fillAt(latLon(e.lngLat), this.kmPerPx(e.lngLat.lat))
       this.refreshCursor()
     }
+    const keyTarget: PaintKeyTarget = {
+      enabled: () => this.enabled.value,
+      setTool: (tool) => (this.tool.value = tool),
+      canFill: () => this.model.fillable.value,
+      resizeBrush: (factor) => this.setBrushSize(this.brushSize.value * factor),
+      undo: () => this.model.undo(),
+      redo: () => this.model.redo()
+    }
     const onKeyDown = (e: KeyboardEvent) => {
       if (isTyping(e.target ?? undefined)) return
-      if (e.code === "Space" && forTabbedControl(e)) return
-      if (e.code === "Space" && !this.spaceHeld) {
+      if (PAN_HOLD.matches(e)) {
+        if (forTabbedControl(e) || this.spaceHeld) return
         this.spaceHeld = true
         this.endStroke()
         this.applyInteraction()
         e.preventDefault()
         return
       }
-      if (!this.enabled.value) return
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
-        if (e.shiftKey) this.model.redo()
-        else this.model.undo()
-        e.preventDefault()
-        return
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
-        this.model.redo()
-        e.preventDefault()
-        return
-      }
-      if (e.key === "1") this.tool.value = Tool.PAN
-      if (e.key === "2") this.tool.value = Tool.PAINT
-      if (e.key === "3") this.tool.value = Tool.ERASE
-      if (e.key === "4" && this.model.fillable.value) this.tool.value = Tool.FILL
-      if (e.key === "[") this.setBrushSize(this.brushSize.value / 1.25)
-      if (e.key === "]") this.setBrushSize(this.brushSize.value * 1.25)
+      if (runPaintKey(e, keyTarget)) e.preventDefault()
     }
     // A middle-button drag pans whatever the tool, like holding Space.
     // MapLibre's own drag pan only listens to the left button.
@@ -146,7 +138,7 @@ export class PaintInput {
     }
     const canvas = map.getCanvasContainer()
     const onKeyUp = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
+      if (PAN_HOLD.matches(e)) {
         this.spaceHeld = false
         this.applyInteraction()
       }

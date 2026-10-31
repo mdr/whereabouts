@@ -3,6 +3,7 @@ import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import { commonsImageUrl } from "@whereabouts/shared/questions"
 import type { CommonsFile } from "@whereabouts/shared/ids"
+import { CLOSE } from "../shortcuts"
 import { useElementRef } from "./element-ref"
 import { cx } from "./cx"
 import lb from "./Lightbox.module.css"
@@ -12,7 +13,7 @@ export function useEscape(open: boolean, close: () => void): void {
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close()
+      if (CLOSE.matches(e)) close()
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
