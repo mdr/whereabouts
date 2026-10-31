@@ -27,7 +27,7 @@
           src = self;
           filter = path: _type:
             let name = baseNameOf path;
-            in !(builtins.elem name [ ".github" "README.md" "flake.nix" "flake.lock" "fly.toml" "deploy" "scripts" "smoke-out" ]);
+            in !(builtins.elem name [ ".github" "README.md" "flake.nix" "flake.lock" "pnpm-deps.json" "fly.toml" "deploy" "scripts" "smoke-out" ]);
         };
 
         # The built app: client bundle plus the server and its production
@@ -43,7 +43,8 @@
             inherit (finalAttrs) pname version src;
             inherit pnpm;
             fetcherVersion = 4;
-            hash = "sha256-SjNY0RVD6B4GlzaXYXgUFRcX5esaksBx2qTzFk9MWvs=";
+            # `task nix:hash` updates it when the lockfile changes.
+            hash = (lib.importJSON ./pnpm-deps.json).hash;
           };
 
           # Keep corepack out of the way, as in the dev shell.

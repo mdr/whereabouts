@@ -82,6 +82,11 @@ tasks:
     cmds:
       - node browser/e2e/prod.ts {{.CLI_ARGS}}
 
+  nix:hash:
+    desc: Update the Nix package's pnpm dependency hash after the lockfile changes (pnpm check says when)
+    cmds:
+      - node --experimental-strip-types scripts/update-pnpm-deps.ts
+
   # ------------------------------------------------------------------- Fly
 
   fly:status:
