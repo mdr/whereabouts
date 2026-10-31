@@ -22,11 +22,13 @@ export interface Fact {
 /** By Wikipedia article title, as questions name their answers. */
 export type Facts = Partial<Record<WikiTitle, Fact[]>>
 
-/** facts.json as it is read. */
-export const FactsSchema: z.ZodType<Facts> = z.partialRecord(
-  WikiTitleSchema,
-  z.array(z.strictObject({ type: z.enum(FactType), text: z.string(), source: SourceUrlSchema }))
+/** One answer's facts, as facts.json holds them. */
+export const AnswerFactsSchema: z.ZodType<Fact[]> = z.array(
+  z.strictObject({ type: z.enum(FactType), text: z.string(), source: SourceUrlSchema })
 )
+
+/** facts.json as it is read. */
+export const FactsSchema: z.ZodType<Facts> = z.partialRecord(WikiTitleSchema, AnswerFactsSchema)
 
 /**
  * One of an answer's facts. The same `seed` and `round` give the same fact,
