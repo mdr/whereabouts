@@ -14,11 +14,14 @@ import {
   type GameView,
   type PlayerView,
   type QuestionView,
+  type RevealView,
+  type RoundResultView,
   Phase,
   MapDetail
 } from "@whereabouts/shared/protocol"
 import { AnswerType, ClueType, QuestionType, Surface, type FlagQuestion } from "@whereabouts/shared/questions"
 import { KernelId } from "@whereabouts/shared/scoring"
+import { h3Res } from "@whereabouts/shared/h3"
 
 type ViewOverrides = Partial<Omit<GameView, "you">> & { you?: Partial<GameView["you"]> }
 
@@ -55,6 +58,26 @@ export function makePlayer(over: Partial<PlayerView> = {}): PlayerView {
     rank: 1,
     ...over
   }
+}
+
+/** The first of five reveals, of a place, with no results yet. */
+export function makeReveal(over: Partial<RevealView> = {}): RevealView {
+  return {
+    index: 0,
+    total: 5,
+    question: makeQuestionView(),
+    answer: { lat: 35, lon: 135.8 },
+    place: placeId("kyoto"),
+    label: "Kyoto",
+    results: [],
+    ready: [],
+    ...over
+  }
+}
+
+/** Alice's point-round result, scored but unpainted unless the test says. */
+export function makeResult(over: Partial<RoundResultView> = {}): RoundResultView {
+  return { playerId: playerId("p1"), score: 500, parts: { type: AnswerType.POINT, A: 0, B: 0 }, res: h3Res(5), ...over }
 }
 
 /** A place question as players see it, with whatever a test needs changed. */

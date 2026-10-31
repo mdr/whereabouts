@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { colourCss } from "@whereabouts/shared/colours"
-import type { Fact } from "@whereabouts/shared/facts"
 import { onWater, outlineOf, type GameView, Phase } from "@whereabouts/shared/protocol"
-import type { HintAxis } from "@whereabouts/shared/hints"
-import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
-import { QuestionType, type Outline } from "@whereabouts/shared/questions"
+import { QuestionType } from "@whereabouts/shared/questions"
 import { AREA_TYPES } from "@whereabouts/shared/catalogue"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
@@ -12,15 +9,12 @@ import { Card } from "../ui/Card"
 import { Countdown, Hud, HudHeader, HudRight, HudTop, toolbarGrow } from "../ui/Hud"
 import kit from "../ui/kit.module.css"
 import { DoneButton, RoundPrompt } from "../ui/Round"
-import { hostActions, pickable, takeSeat, vrPicked } from "../vr-actions"
-import { navigate } from "../router"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
 import { PlayerList } from "../ui/PlayerList"
-import { ConnectionNote, connectionText } from "../ui/ConnectionNote"
+import { ConnectionNote } from "../ui/ConnectionNote"
 import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
 import { Reveal } from "./Reveal"
-import { NONE, revealedFromView, revealOrder, revealShown, shownResults } from "../reveal"
 import { useBorders } from "../borders"
 import { Icon } from "../ui/icons"
 import { PlayersPanel, playersPanelOpen } from "../ui/PlayersPanel"
@@ -32,20 +26,19 @@ import { HintCard } from "../ui/Hint"
 import { useOutline, useOutlines } from "../outlines"
 import { VrButton, useVrView } from "../ui/VrButton"
 import { mainCountry } from "../ui/FlagReveal"
-import { HintAllowance, VrViewType, type VrView } from "../vr/view"
-import type { PaintController } from "../paint-controller"
 import { inGameTestIds } from "./InGameTestIds"
 import { useFact } from "../facts"
-import { paintLayer, paintsOf } from "../reveal-paint"
 import { useRoundMap } from "../round"
 import { usePaintUpload } from "../paint-upload"
 import { canPaint, canUnlock } from "../editing"
-import { vrReveal, vrRound, type VrRoundShown } from "../vr-round"
+import { paintLayer } from "../reveal-paint"
+import { RoundNote, canEndGame, roundNote } from "../round-model"
+import { gameVrView } from "../game-vr-view"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint()
   const { sittingOut } = view.you
-  const joinedLate = sittingOut && !view.you.watching
+  const note = roundNote(view.you)
   const roundKey = view.round?.index ?? view.reveal?.index ?? -1
   const guessing = view.phase === Phase.GUESSING
   const question = view.round?.question ?? view.reveal?.question
@@ -111,7 +104,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
         : undefined,
     [borders, view.reveal?.index, mine?.paint !== undefined]
   )
-  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, outline, fact, painted, borders })
+  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, outline, fact, painted, borders })
   useVrView(vrView)
 
   if (view.phase === Phase.REVEAL && view.reveal) {
@@ -134,7 +127,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             <HintCard band={view.you.hint} left={view.you.hintsLeft} onUse={(axis) => conn.hint(axis)} />
           )}
           <ConnectionNote conn={conn} />
-          {view.you.watching && (
+          {note === RoundNote.WATCHING && (
             <Card>
               <p class={kit.hint}>
                 {askedToWatch.value
@@ -144,14 +137,14 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
               <TakeSeatButton conn={conn} view={view} inCard />
             </Card>
           )}
-          {joinedLate && (
+          {note === RoundNote.JOINED_LATE && (
             <Card>
               <p class={kit.hint} data-testid={inGameTestIds.sittingOutNote}>
                 You joined mid-round, so you're watching this one. You'll play from the next question.
               </p>
             </Card>
           )}
-          {view.you.locked && (
+          {note === RoundNote.DONE && (
             <Card>
               <p class={kit.hint} data-testid={inGameTestIds.doneNote}>
                 You're done. The round ends when everyone is, or when the clock runs out. Changed your mind? Keep
@@ -166,7 +159,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             onKick={view.you.isHost ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
             onMakeHost={view.you.isHost ? (p) => ask(makeHostRequest(p.name, () => conn.makeHost(p.id))) : undefined}
           />
-          {view.you.isHost && (
+          {canEndGame(view) && (
             <EndGameButton
               onEnd={() => conn.end()}
               title="Score this round as it stands and show the final standings"
@@ -211,129 +204,4 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
       </DevDrawer>
     </>
   )
-}
-
-/** The round or its reveal as the headset shows it. */
-function gameVrView(
-  view: GameView,
-  conn: Connection,
-  paint: PaintController,
-  {
-    lockIn,
-    timeUp,
-    sittingOut,
-    outline,
-    fact,
-    painted,
-    borders
-  }: {
-    lockIn: () => void
-    timeUp: boolean
-    sittingOut: boolean
-    outline: Outline | undefined
-    fact: Fact | undefined
-    painted: PaintedCountry | undefined
-    borders: Borders | undefined
-  }
-): VrView {
-  const question = (view.round ?? view.reveal)!.question
-  const me = view.players.find((p) => p.id === view.you.id)
-  const at = view.round ?? view.reveal!
-  const connection = connectionText(conn)
-  const reveal = view.reveal
-  const shown: VrRoundShown = {
-    question,
-    revealed: reveal && revealedFromView(reveal, outline),
-    fact
-  }
-  const more = [
-    ...(view.you.watching ? [takeSeat(conn, view, "Play from the next question")] : []),
-    ...hostActions(conn, view, view.phase === Phase.REVEAL ? revealShown.value : vrPicked.value),
-    ...(view.you.isHost && !(reveal && reveal.index + 1 >= reveal.total)
-      ? [{ label: "End game", confirm: "Press again to end the game", press: () => conn.end() }]
-      : []),
-    { label: "Leave game", confirm: "Press again to leave", press: () => navigate("/") }
-  ]
-  const round = vrRound(shown, {
-    paint,
-    heading: `ROUND ${at.index + 1} OF ${at.total}`,
-    table: {
-      title: "Players",
-      rows: view.players
-        .filter((p) => !p.watching)
-        .sort((a, b) => a.rank - b.rank)
-        .map((p) => ({
-          colour: colourCss(p.colour),
-          name: `${p.name}${p.id === view.you.id ? " (you)" : ""}`,
-          detail: !p.connected ? "away" : p.locked ? "done" : "guessing",
-          total: Math.round(p.score).toLocaleString(),
-          ...pickable(view, p)
-        })),
-      hint: view.you.isHost ? "Point at a player to remove them or make them host." : undefined
-    },
-    detail: view.config.mapDetail,
-    colour: me && !me.watching ? colourCss(me.colour) : undefined,
-    hint: view.you.hint,
-    hintsLeft: view.config.hints > 0 ? view.you.hintsLeft : HintAllowance.NONE,
-    useHint: (axis: HintAxis) => conn.hint(axis),
-    timeLeft: view.round ? () => conn.timeUntil(view.round!.deadline) : undefined,
-    doneLabel: "Done",
-    done: lockIn,
-    unlock: canUnlock(view, timeUp) ? () => conn.unlock() : undefined,
-    playing: !sittingOut,
-    note:
-      connection ??
-      (view.you.watching
-        ? "You're watching this game: you'll see each answer and everyone's guesses at the reveal."
-        : view.you.sittingOut
-          ? "You joined mid-round, so you're watching this one. You'll play from the next question."
-          : view.you.locked
-            ? "You're done. The round ends when everyone is, or when the clock runs out."
-            : undefined)
-  })
-  if (view.phase !== Phase.REVEAL || !reveal) return { type: VrViewType.PAINT, round, more }
-
-  const ready = new Set(reveal.ready)
-  const present = view.players.filter((p) => p.connected && !p.watching)
-  const iAmReady = view.you.id !== undefined && ready.has(view.you.id)
-  const last = reveal.index + 1 >= reveal.total
-  const mine = reveal.results.find((r) => r.playerId === view.you.id)
-  const whose = revealShown.value
-  const you = mine && { score: mine.score, passed: !mine.paint, total: me?.score ?? 0, painted }
-  return {
-    type: VrViewType.REVEAL,
-    round,
-    more,
-    reveal: vrReveal(shown, revealedFromView(reveal, outline), you, borders, {
-      paints: paintsOf(shownResults(reveal.results, whose), view.players),
-      table: {
-        title: `Round ${reveal.index + 1} of ${reveal.total}`,
-        rows: [
-          { name: "Everyone", total: "", selected: whose === undefined, select: () => (revealShown.value = undefined) },
-          ...revealOrder(view.players, reveal.results).map(({ p, r }) => ({
-            colour: colourCss(p.colour),
-            name: `${p.name}${p.id === view.you.id ? " (you)" : ""}`,
-            detail: `${r ? (r.paint ? `+${Math.round(r.score)}` : "passed") : "sat out"}${r?.hint ? ", hint" : ""}${ready.has(p.id) ? ", ready" : ""}`,
-            total: Math.round(p.score).toLocaleString(),
-            selected: whose === p.id,
-            select: () => (revealShown.value = whose === p.id ? undefined : p.id)
-          })),
-          {
-            name: "Hide paint",
-            total: "",
-            selected: whose === NONE,
-            select: () => (revealShown.value = whose === NONE ? undefined : NONE)
-          }
-        ],
-        hint: "Point at a player to see just their guess."
-      },
-      note: connection ?? `${present.filter((p) => ready.has(p.id)).length} of ${present.length} ready`,
-      actions: [
-        ...(view.you.watching
-          ? []
-          : [{ label: iAmReady ? "Waiting for the others" : "Ready", press: () => conn.ready(), enabled: !iAmReady }]),
-        ...(view.you.isHost ? [{ label: last ? "Show final results" : "Next round", press: () => conn.next() }] : [])
-      ]
-    })
-  }
 }

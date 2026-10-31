@@ -19,7 +19,8 @@ import kit from "../ui/kit.module.css"
 import pl from "../ui/Players.module.css"
 import { RevealCards } from "../ui/Round"
 import { frameReveal, showAnswer } from "../round"
-import { NONE, revealedFromView, revealOrder, revealShown, shownResults } from "../reveal"
+import { revealedFromView, revealShown, shownResults } from "../reveal"
+import { ShownRowType, canEndGame, revealModel } from "../round-model"
 import { ConnectionNote } from "../ui/ConnectionNote"
 import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
@@ -101,12 +102,8 @@ export function Reveal({
   useEffect(() => setHovered(undefined), [reveal.index])
 
   const mine = reveal.results.find((r) => r.playerId === view.you.id)
-  const last = reveal.index + 1 >= reveal.total
-  const ready = new Set(reveal.ready)
-  const present = view.players.filter((p) => p.connected && !p.watching)
-  const readyCount = present.filter((p) => ready.has(p.id)).length
-  const iAmReady = view.you.id !== undefined && ready.has(view.you.id)
-  const rows = revealOrder(view.players, reveal.results)
+  const model = revealModel(view, reveal, selected)
+  const iAmReady = model.ready?.done ?? false
 
   return (
     <>
@@ -120,7 +117,7 @@ export function Reveal({
             total={reveal.total}
             right={
               <HeaderNote title="The next round starts when everyone is ready" testId={revealTestIds.readyCount}>
-                {readyCount} / {present.length} ready
+                {model.readyCount} / {model.presentCount} ready
               </HeaderNote>
             }
           />
@@ -138,54 +135,60 @@ export function Reveal({
         <HudRight>
           <Card title="Scores">
             <ul class={cx(pl.list, pl.pick)} data-testid={revealTestIds.scoresList}>
-              <li
-                class={cx(pl.everyone, selected === undefined && pl.selected)}
-                onClick={() => setSelected(undefined)}
-                data-testid={revealTestIds.everyoneRow}
-              >
-                <Swatch everyone />
-                <span class={pl.name}>Everyone</span>
-              </li>
-              {rows.map(({ p, r }) => (
-                <RevealRow
-                  key={p.id}
-                  p={p}
-                  r={r}
-                  you={p.id === view.you.id}
-                  ready={ready.has(p.id)}
-                  selected={p.id === selected}
-                  where={where.get(p.id)}
-                  answerFlag={answerFlag}
-                  onSelect={() => setSelected(selected === p.id ? undefined : p.id)}
-                  onHover={(on) => setHovered(on && r?.paint ? p.id : undefined)}
-                  onKick={
-                    view.you.isHost && p.id !== view.you.id
-                      ? () => ask(kickRequest(p.name, () => conn.kick(p.id)))
-                      : undefined
-                  }
-                />
-              ))}
-              <li
-                class={cx(pl.hidePaint, selected === NONE && pl.selected)}
-                onClick={() => setSelected(selected === NONE ? undefined : NONE)}
-                data-testid={revealTestIds.hidePaintRow}
-                title="Show the map and the answer without anyone's paint"
-              >
-                <span class={pl.swatchIcon}>
-                  <Icon name="eyeOff" size={13} />
-                </span>
-                <span class={pl.name}>Hide paint</span>
-              </li>
+              {model.rows.map((row) =>
+                row.type === ShownRowType.EVERYONE ? (
+                  <li
+                    key="everyone"
+                    class={cx(pl.everyone, row.selected && pl.selected)}
+                    onClick={() => setSelected(row.pick)}
+                    data-testid={revealTestIds.everyoneRow}
+                  >
+                    <Swatch everyone />
+                    <span class={pl.name}>Everyone</span>
+                  </li>
+                ) : row.type === ShownRowType.HIDE_PAINT ? (
+                  <li
+                    key="hide"
+                    class={cx(pl.hidePaint, row.selected && pl.selected)}
+                    onClick={() => setSelected(row.pick)}
+                    data-testid={revealTestIds.hidePaintRow}
+                    title="Show the map and the answer without anyone's paint"
+                  >
+                    <span class={pl.swatchIcon}>
+                      <Icon name="eyeOff" size={13} />
+                    </span>
+                    <span class={pl.name}>Hide paint</span>
+                  </li>
+                ) : (
+                  <RevealRow
+                    key={row.player.id}
+                    p={row.player}
+                    r={row.result}
+                    you={row.you}
+                    ready={row.ready}
+                    selected={row.selected}
+                    where={where.get(row.player.id)}
+                    answerFlag={answerFlag}
+                    onSelect={() => setSelected(row.pick)}
+                    onHover={(on) => setHovered(on && row.result?.paint ? row.player.id : undefined)}
+                    onKick={
+                      view.you.isHost && !row.you
+                        ? () => ask(kickRequest(row.player.name, () => conn.kick(row.player.id)))
+                        : undefined
+                    }
+                  />
+                )
+              )}
             </ul>
             <p class={kit.hint}>Pick a player to see just their guess.</p>
           </Card>
           {/* Where it is while guessing too, and away from Next round below. */}
-          {view.you.isHost && !last && <EndGameButton onEnd={() => conn.end()} />}
+          {canEndGame(view) && <EndGameButton onEnd={() => conn.end()} />}
         </HudRight>
         <HudBottom>
           {answerFlag && <AllFlagsSwitch />}
           <VrButton view={vrView} />
-          {view.you.watching ? (
+          {!model.ready ? (
             <TakeSeatButton conn={conn} view={view} />
           ) : (
             <button
@@ -197,14 +200,14 @@ export function Reveal({
               <Icon name="check" /> Ready
             </button>
           )}
-          {view.you.isHost ? (
+          {model.next ? (
             <button
-              class={iAmReady || view.you.watching ? "primary" : ""}
+              class={iAmReady || !model.ready ? "primary" : ""}
               onClick={() => conn.next()}
               title="Go on without waiting"
               data-testid={revealTestIds.nextButton}
             >
-              <Icon name={last ? "flag" : "next"} /> {last ? "Show final results" : "Next round"}
+              <Icon name={model.last ? "flag" : "next"} /> {model.next.label}
             </button>
           ) : (
             iAmReady && <ToolbarNote>Waiting for the others…</ToolbarNote>
