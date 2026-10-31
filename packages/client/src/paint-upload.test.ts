@@ -90,8 +90,8 @@ describe("usePaintUpload", () => {
   })
 
   it.each([
-    ["watching the game", { watching: true }],
-    ["sitting out a round joined late", { spectating: true }],
+    ["watching the game", { watching: true, sittingOut: true }],
+    ["sitting out a round joined late", { sittingOut: true }],
     ["locked", { locked: true }]
   ])("uploads nothing while %s", (_, you) => {
     const { conn, edit, update, settle } = setup({ view: guessing(you) })
@@ -102,7 +102,7 @@ describe("usePaintUpload", () => {
   })
 
   it.each([
-    ["watching the game", { watching: true }],
+    ["watching the game", { watching: true, sittingOut: true }],
     ["locked", { locked: true }]
   ])("drops a pending upload on becoming %s", (_, you) => {
     const { conn, edit, update, settle } = setup()

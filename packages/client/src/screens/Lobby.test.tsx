@@ -156,6 +156,7 @@ describe("Lobby leave", () => {
   it("asks the host first, naming who takes over", () => {
     const v = view(true)
     v.players = [...v.players, bob]
+    v.you.nextHost = bob.id
     const { container } = render(<Lobby conn={conn} view={v} />)
     fireEvent.click(inside(container).getByTestId(lobbyTestIds.leaveButton))
     expect(leave).not.toHaveBeenCalled()

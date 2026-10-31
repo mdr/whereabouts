@@ -42,8 +42,8 @@ import { vrReveal, vrRound, type VrRoundShown } from "../vr-round"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const paint = usePaint()
-  // Not painting this round: a spectator, or a late joiner sitting one out.
-  const sittingOut = view.you.watching || view.you.spectating
+  const { sittingOut } = view.you
+  const joinedLate = sittingOut && !view.you.watching
   const roundKey = view.round?.index ?? view.reveal?.index ?? -1
   const guessing = view.phase === Phase.GUESSING
   const question = view.round?.question ?? view.reveal?.question
@@ -147,7 +147,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
               <TakeSeatButton conn={conn} view={view} inCard />
             </Card>
           )}
-          {view.you.spectating && (
+          {joinedLate && (
             <Card>
               <p class={kit.hint} data-testid={inGameTestIds.sittingOutNote}>
                 You joined mid-round, so you're watching this one. You'll play from the next question.
@@ -283,7 +283,7 @@ function gameVrView(
       connection ??
       (view.you.watching
         ? "You're watching this game: you'll see each answer and everyone's guesses at the reveal."
-        : view.you.spectating
+        : view.you.sittingOut
           ? "You joined mid-round, so you're watching this one. You'll play from the next question."
           : view.you.locked
             ? "You're done. The round ends when everyone is, or when the clock runs out."

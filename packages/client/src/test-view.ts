@@ -18,7 +18,7 @@ export function makeView({ you, ...over }: ViewOverrides = {}): GameView {
       hints: 0
     },
     serverTime: 0,
-    you: { id: playerId("p1"), isHost: true, spectating: false, watching: false, locked: false, hintsLeft: 0, ...you },
+    you: { id: playerId("p1"), isHost: true, sittingOut: false, watching: false, locked: false, hintsLeft: 0, ...you },
     players: [],
     ...over
   }

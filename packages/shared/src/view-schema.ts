@@ -99,12 +99,13 @@ export const GameViewSchema = z.strictObject({
   you: z.strictObject({
     id: PlayerIdSchema.optional(),
     isHost: z.boolean(),
-    spectating: z.boolean(),
+    sittingOut: z.boolean(),
     watching: z.boolean(),
     locked: z.boolean(),
     paint: PaintSchema.optional(),
     hint: z.strictObject({ axis: HintAxisSchema, from: DegreesSchema, to: DegreesSchema }).optional(),
-    hintsLeft: z.number().int()
+    hintsLeft: z.number().int(),
+    nextHost: PlayerIdSchema.optional()
   }),
   players: z.array(PlayerViewSchema),
   round: z

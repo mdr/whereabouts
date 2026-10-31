@@ -20,7 +20,7 @@ export function usePaintUpload(
   timeUp: boolean
 ): { lockIn: () => void } {
   const guessing = view.phase === Phase.GUESSING
-  const sittingOut = view.you.watching || view.you.spectating
+  const { sittingOut } = view.you
   const locked = view.you.locked
   const sendTimer = useRef<number | undefined>(undefined)
 

@@ -11,7 +11,6 @@ import {
 import { MAX_HINTS } from "@whereabouts/shared/hints"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { colourCss } from "@whereabouts/shared/colours"
-import { nextHostAfter } from "@whereabouts/shared/game"
 import type { PlayerName } from "@whereabouts/shared/ids"
 import type { Connection } from "../net"
 import { configureAsHost } from "../host-setup"
@@ -97,7 +96,9 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
           <button
             class={s.leave}
             data-testid={lobbyTestIds.leaveButton}
-            onClick={() => (host ? ask(leaveRequest(nextHostAfter(view.players, view.you.id)?.name, leave)) : leave())}
+            onClick={() =>
+              host ? ask(leaveRequest(view.players.find((p) => p.id === view.you.nextHost)?.name, leave)) : leave()
+            }
           >
             <Icon name="back" size={15} /> Leave
           </button>

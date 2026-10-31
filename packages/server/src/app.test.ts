@@ -521,7 +521,7 @@ describe("game server", () => {
     const back = await alice.untilLatest((v) => v.players.length === 2 && v.players.every((p) => p.connected))
     expect(back.players.filter((p) => p.name === "Bob")).toHaveLength(1)
     const own = await bobAgain.until((v) => v.phase === Phase.GUESSING)
-    expect(own.you.spectating).toBe(false)
+    expect(own.you.sittingOut).toBe(false)
     expect(own.you.paint).toEqual(decodePaint(encodePaint(bobPaint)))
   })
 

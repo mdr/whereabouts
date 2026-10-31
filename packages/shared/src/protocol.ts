@@ -31,7 +31,7 @@ import {
 } from "./ids.ts"
 import { CloseReason } from "./close-reason.ts"
 
-export const PROTOCOL_VERSION = 9
+export const PROTOCOL_VERSION = 10
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -310,8 +310,8 @@ export interface GameView {
     /** Absent in a view of no player. */
     id?: PlayerId
     isHost: boolean
-    /** True when this player joined mid-round and sits this one out. */
-    spectating: boolean
+    /** Not playing the round under way: watching, or joined mid-round and playing from the next. */
+    sittingOut: boolean
     /** True for a spectator, who watches the whole game (see PlayerView.watching). */
     watching: boolean
     locked: boolean
@@ -320,6 +320,8 @@ export interface GameView {
     /** Your hint on this round, while guessing and at its reveal. */
     hint?: HintBand
     hintsLeft: number
+    /** While you host: who would take over if you left. */
+    nextHost?: PlayerId
   }
   players: PlayerView[]
   round?: RoundView

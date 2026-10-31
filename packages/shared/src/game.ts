@@ -222,10 +222,10 @@ export class Game {
     return OK_CHANGED
   }
 
-  private pickHost(): PlayerToken | undefined {
+  private pickHost(passOver?: PlayerToken): PlayerToken | undefined {
     let best: Player | undefined = undefined
     for (const p of this.players.values()) {
-      if (!p.connected) continue
+      if (!p.connected || p.token === passOver) continue
       if (!best || p.joinedAt < best.joinedAt) best = p
     }
     return best?.token
@@ -240,6 +240,12 @@ export class Game {
 
   private isHost(token: PlayerToken): boolean {
     return this.effectiveHost() === token
+  }
+
+  private nextHostView(token: PlayerToken): { nextHost?: PlayerId } {
+    if (!this.isHost(token)) return {}
+    const next = this.pickHost(token)
+    return next ? { nextHost: this.players.get(next)!.id } : {}
   }
 
   get playerCount(): number {
@@ -401,7 +407,7 @@ export class Game {
     // Uploads are debounced on the client, so one can arrive just after the
     // round ended. It is stale rather than wrong: drop it quietly.
     if (this.phase !== Phase.GUESSING) return OK_SAME
-    if (player.joinedRound > this.roundIndex) return fail("spectating this round")
+    if (player.joinedRound > this.roundIndex) return fail("sitting this round out")
     const current = this.submissions.get(token)
     // A stroke's upload can land just after the player locked in; it changes nothing.
     if (current?.locked) return OK_SAME
@@ -421,7 +427,7 @@ export class Game {
     if (!player) return fail("unknown player")
     if (this.phase !== Phase.GUESSING) return fail("not guessing")
     if (player.watching) return fail("you are watching")
-    if (player.joinedRound > this.roundIndex) return fail("spectating this round")
+    if (player.joinedRound > this.roundIndex) return fail("sitting this round out")
     let current = this.submissions.get(token)
     if (!current) {
       current = { paint: { cells: {}, floor: 1 }, locked: false }
@@ -634,12 +640,14 @@ export class Game {
       you: {
         id: me?.id,
         isHost: me !== undefined && this.isHost(me.token),
-        spectating: me !== undefined && !me.watching && this.phase !== Phase.LOBBY && me.joinedRound > this.roundIndex,
+        sittingOut:
+          me !== undefined && (me.watching || (this.phase !== Phase.LOBBY && me.joinedRound > this.roundIndex)),
         watching: me?.watching ?? false,
         locked: this.submissions.get(token)?.locked ?? false,
         paint: this.paintOf(token),
         ...this.hintView(token),
-        hintsLeft: me && !me.watching ? Math.max(0, this.config.hints - me.hintsUsed) : 0
+        hintsLeft: me && !me.watching ? Math.max(0, this.config.hints - me.hintsUsed) : 0,
+        ...this.nextHostView(token)
       },
       players: this.playerViews(),
       round: q
@@ -711,16 +719,6 @@ function sum(xs: (number | undefined)[]): number {
   let t = 0
   for (const x of xs) t += x ?? 0
   return t
-}
-
-/**
- * Who takes over as host if this player leaves, read from a view: the
- * longest-standing online player, as the server picks. Player ids are
- * issued in join order (p1, p2, ...), so the lowest id is the earliest.
- */
-export function nextHostAfter(players: PlayerView[], leavingId: PlayerId | undefined): PlayerView | undefined {
-  const seq = (p: PlayerView) => Number(p.id.slice(1))
-  return players.filter((p) => p.id !== leavingId && p.connected).sort((a, b) => seq(a) - seq(b))[0]
 }
 
 /** Generate a join code that avoids look-alike characters. */

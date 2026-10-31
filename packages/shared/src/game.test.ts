@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { latLngToCell } from "./h3.ts"
-import { Game, ROUND_GRACE, generateCode, nextHostAfter } from "./game.ts"
+import { Game, ROUND_GRACE, generateCode } from "./game.ts"
 import type { QuestionBank } from "./round-picking.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { PASS_SCORE } from "./scoring.ts"
@@ -159,9 +159,9 @@ describe("lobby", () => {
     g.join(tokC, playerName("Cara"), T0 + 2)
     g.join(tokD, playerName("Dev"), T0 + 3)
     g.disconnect(tokB, T0 + 4) // Bob is away, so he is passed over
-    const before = g.view(tokA, T0 + 4)
-    const predicted = nextHostAfter(before.players, before.you.id)
-    expect(predicted?.name).toBe("Cara")
+    const cara = g.view(tokC, T0 + 4).you.id
+    expect(g.view(tokA, T0 + 4).you.nextHost).toBe(cara)
+    expect(g.view(tokC, T0 + 4).you.nextHost).toBeUndefined()
     expect(g.leave(tokA)).toEqual({ ok: true, changed: true })
     expect(g.playerTokens).toEqual([tokB, tokC, tokD])
     expect(g.view(tokC, T0 + 5).you.isHost).toBe(true)
@@ -172,9 +172,9 @@ describe("lobby", () => {
 
   it("the last player leaving empties the game; nobody leaves mid-game", () => {
     const g = twoPlayerGame()
-    expect(nextHostAfter(g.view(tokB, T0).players, playerId("p1"))?.name).toBe("Bob")
+    expect(g.view(tokA, T0).you.nextHost).toBe(g.view(tokB, T0).you.id)
     g.leave(tokB)
-    expect(nextHostAfter(g.view(tokA, T0).players, playerId("p1"))).toBeUndefined()
+    expect(g.view(tokA, T0).you.nextHost).toBeUndefined()
     g.leave(tokA)
     expect(g.playerCount).toBe(0)
 
@@ -309,7 +309,7 @@ describe("round loop", () => {
   it("the round ends as soon as every active connected player has locked in", () => {
     const g = twoPlayerGame(2)
     g.start(tokA, T0)
-    g.join(tokC, playerName("Cara"), T0 + 5) // spectating: must not hold the round up
+    g.join(tokC, playerName("Cara"), T0 + 5) // sitting this round out: must not hold it up
     const q = currentQuestion(g, tokA, T0)
     g.setPaint(tokA, paintAt(q, 0, 0))
     g.setPaint(tokB, paintAt(q, 1, 1))
@@ -499,9 +499,9 @@ describe("spectators", () => {
     g.start(tokA, T0)
     expect(g.setRole(tokS, false)).toEqual({ ok: true, changed: true })
     const v = g.view(tokS, T0 + 1)
-    expect(v.you).toMatchObject({ watching: false, spectating: true })
+    expect(v.you).toMatchObject({ watching: false, sittingOut: true })
     expect(sam(g).colour).toBeGreaterThanOrEqual(0)
-    expect(g.lock(tokS, T0 + 1)).toEqual({ ok: false, error: "spectating this round" })
+    expect(g.lock(tokS, T0 + 1)).toEqual({ ok: false, error: "sitting this round out" })
     // Alice and Bob finishing still ends the round without Sam.
     g.lock(tokA, T0 + 2)
     g.lock(tokB, T0 + 3)
@@ -512,7 +512,7 @@ describe("spectators", () => {
     expect(g.phase).toBe(Phase.REVEAL)
     g.ready(tokS, T0 + 6)
     expect(g.phase).toBe(Phase.GUESSING)
-    expect(g.view(tokS, T0 + 6).you.spectating).toBe(false)
+    expect(g.view(tokS, T0 + 6).you.sittingOut).toBe(false)
     g.tick(T0 + 6 + 60_000 + ROUND_GRACE)
     g.next(tokA, T0 + 6 + 60_000)
     const standing = g.view(tokS, T0 + 6 + 60_000).results!.find((r) => r.playerId === sam(g).id)!
@@ -528,7 +528,7 @@ describe("spectators", () => {
     g.ready(tokA, T0 + 60_001)
     g.ready(tokB, T0 + 60_002)
     g.ready(tokS, T0 + 60_003)
-    expect(g.view(tokS, T0 + 60_003).you.spectating).toBe(false)
+    expect(g.view(tokS, T0 + 60_003).you.sittingOut).toBe(false)
   })
 
   it("nobody switches on the final results", () => {
@@ -569,13 +569,13 @@ describe("joining and leaving mid-game", () => {
     const g = twoPlayerGame(2)
     g.start(tokA, T0)
     expect(g.join(tokC, playerName("Cara"), T0 + 5).ok).toBe(true)
-    expect(g.view(tokC, T0 + 5).you.spectating).toBe(true)
+    expect(g.view(tokC, T0 + 5).you.sittingOut).toBe(true)
     const q = currentQuestion(g, tokA, T0)
-    expect(g.setPaint(tokC, paintAt(q, 0, 0))).toEqual({ ok: false, error: "spectating this round" })
+    expect(g.setPaint(tokC, paintAt(q, 0, 0))).toEqual({ ok: false, error: "sitting this round out" })
     g.tick(T0 + 60_000 + ROUND_GRACE)
     expect(g.view(tokC, T0 + 60_000).reveal!.results.map((r) => r.playerId)).not.toContain("p3")
     g.next(tokA, T0 + 60_001)
-    expect(g.view(tokC, T0 + 60_001).you.spectating).toBe(false)
+    expect(g.view(tokC, T0 + 60_001).you.sittingOut).toBe(false)
     const q2 = currentQuestion(g, tokC, T0 + 60_001)
     expect(g.setPaint(tokC, paintAt(q2, 0, 0)).ok).toBe(true)
   })
