@@ -25,8 +25,7 @@ import {
   stateMessage,
   type GameConfig,
   type PaintSubmission,
-  type RoundReveal,
-  Phase
+  type RoundReveal
 } from "@whereabouts/shared/protocol"
 import { Game, generateCode, type CommandResult } from "@whereabouts/shared/game"
 import type { QuestionBank } from "@whereabouts/shared/round-picking"
@@ -238,7 +237,6 @@ export class GameRoom extends Room<ActorData> {
   private broadcastState(): void {
     const now = deps.clock.now()
     this.each((actor) => this.sendState(actor, now))
-    this.joinable = this.game.phase !== Phase.RESULTS
     this.armTimer()
   }
 
@@ -300,8 +298,7 @@ function readPaint(payload: Uint8Array): Parsed<PaintSubmission> {
 
 /**
  * Parses the ticket, creates the room for hosts, and routes joiners to their
- * game by code. Rivalis rejects the join itself if the room is full or not
- * joinable.
+ * game by code. Whether they may join is the game's call (Game.join).
  */
 export class GameAuth extends AuthMiddleware<ActorData> {
   private rooms: () => RoomManager<ActorData>

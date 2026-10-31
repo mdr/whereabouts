@@ -686,6 +686,25 @@ describe("game server", () => {
     expect(late.closedFor).toBe(CloseReason.FULL)
   })
 
+  it("once the game is over, a newcomer is told so, and a player who dropped can come back to the results", async () => {
+    const { alice, bob, code } = await aliceAndBob()
+    alice.send("start")
+    await bob.until((v) => v.phase === Phase.GUESSING)
+    alice.send("end")
+    await bob.until((v) => v.phase === Phase.RESULTS)
+
+    const late = player("Late")
+    late.connect({ code })
+    await late.waitClosed()
+    expect(late.closedFor).toBe(CloseReason.FINISHED)
+
+    bob.client.disconnect()
+    await alice.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
+    const bobAgain = player("Bob")
+    bobAgain.connect({ code })
+    await bobAgain.until((v) => v.phase === Phase.RESULTS)
+  })
+
   it("plays a round with a hint, unlocking, and the host ending early, then again", async () => {
     const { alice, bob } = await aliceAndBob()
     alice.send("start")
