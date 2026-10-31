@@ -101,6 +101,23 @@ button.icon:hover {
   background: var(--control-bg);
   color: var(--panel-fg);
 }
+/* Small buttons look small but take a finger-sized tap. In :where(), so a
+   component's own positioning wins. */
+@media (--no-hover) {
+  :where(button.icon, button.small) {
+    position: relative;
+  }
+  button.icon::after,
+  button.small::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 36px);
+    height: max(100%, 36px);
+    transform: translate(-50%, -50%);
+  }
+}
 button {
   background: var(--control-bg);
   color: var(--panel-fg);
