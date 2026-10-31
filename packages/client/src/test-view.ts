@@ -11,7 +11,6 @@ export function makeView({ you, ...over }: ViewOverrides = {}): GameView {
     code: roomCode("AB12"),
     phase: Phase.LOBBY,
     config: {
-      rounds: 5,
       roundLength: 60_000,
       mix: mixOf({ [QuestionType.LANDMARK]: 5 }),
       mapDetail: MapDetail.MINIMAL,

@@ -25,7 +25,7 @@ import { revealPhoto } from "./photos.ts"
 import { DEFAULT_HINTS, hintBand, seededUnit, HintAxis, type HintBand } from "./hints.ts"
 import { playerColour, type PlayerColour } from "./colours.ts"
 import { playerId, roomCode, type PlayerId, type PlayerName, type PlayerToken, type RoomCode } from "./ids.ts"
-import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE, evenMix, mixTotal, MapDetail, Phase } from "./protocol.ts"
+import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE, evenMix, MapDetail, Phase } from "./protocol.ts"
 import type {
   ConfigurePatch,
   FinalStanding,
@@ -43,7 +43,6 @@ import { CloseReason } from "./close-reason.ts"
 import type { Instant, Ms } from "./units.ts"
 
 const DEFAULT_CONFIG: GameConfig = {
-  rounds: 8,
   roundLength: 60_000,
   mix: evenMix(8),
   mapDetail: MapDetail.MINIMAL,
@@ -161,9 +160,7 @@ export class Game {
   ) {
     this.seed = seed
     this.code = code
-    // A mix sets the rounds; a length alone (ROUNDS on the server, tests) is an even mix of that length.
-    const mix = config.mix ?? (config.rounds !== undefined ? evenMix(config.rounds) : DEFAULT_CONFIG.mix)
-    this.config = { ...DEFAULT_CONFIG, ...config, mix, rounds: mixTotal(mix) }
+    this.config = { ...DEFAULT_CONFIG, ...config }
     this.catalogue = catalogue
     this.outlines = outlines
     this.kernel = kernelById(this.config.kernelId)
@@ -329,8 +326,7 @@ export class Game {
   configure(token: PlayerToken, patch: ConfigurePatch): CommandResult {
     if (!this.isHost(token)) return fail("only the host can change settings")
     if (this.phase !== Phase.LOBBY) return fail("settings are locked once the game starts")
-    const mix = patch.mix ?? this.config.mix
-    const next = { ...this.config, ...patch, mix, rounds: mixTotal(mix) }
+    const next = { ...this.config, ...patch }
     if (sameData(next, this.config)) return OK_SAME
     this.config = next
     this.questions = this.pickRounds()

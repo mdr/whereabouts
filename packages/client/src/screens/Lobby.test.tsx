@@ -28,7 +28,7 @@ const MIX = mixOf({ [QuestionType.LANDMARK]: 3, [QuestionType.PLACE]: 2 })
 function view(isHost: boolean): GameView {
   const base = makeView()
   return makeView({
-    config: { ...base.config, rounds: 5, mix: MIX, hints: 1 },
+    config: { ...base.config, mix: MIX, hints: 1 },
     you: { isHost, hintsLeft: 1 },
     players: [
       {

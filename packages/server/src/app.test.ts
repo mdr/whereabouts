@@ -22,6 +22,7 @@ import {
   type RoundReveal,
   type StateMessage,
   mixOf,
+  mixTotal,
   Phase
 } from "@whereabouts/shared/protocol"
 import { ROUND_GRACE } from "@whereabouts/shared/game"
@@ -327,7 +328,7 @@ describe("game server", () => {
     bob.connect({ code: lobby.code })
     await alice.until((v) => v.players.length === 2)
     alice.send("configure", { mix: mixOf({ [QuestionType.COUNTRY]: 1 }) })
-    await bob.until((v) => v.config.mix[QuestionType.COUNTRY] === 1 && v.config.rounds === 1)
+    await bob.until((v) => v.config.mix[QuestionType.COUNTRY] === 1 && mixTotal(v.config.mix) === 1)
 
     alice.send("start")
     const round = await bob.until((v) => v.phase === Phase.GUESSING)
@@ -363,7 +364,7 @@ describe("game server", () => {
     alice.connect({ create: true })
     await alice.until((v) => v.phase === Phase.LOBBY)
     alice.send("configure", { mix: mixOf({ [QuestionType.FLAG]: 1 }) })
-    await alice.until((v) => v.config.mix[QuestionType.FLAG] === 1 && v.config.rounds === 1)
+    await alice.until((v) => v.config.mix[QuestionType.FLAG] === 1 && mixTotal(v.config.mix) === 1)
 
     alice.send("start")
     const round = await alice.until((v) => v.phase === Phase.GUESSING)

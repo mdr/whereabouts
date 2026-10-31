@@ -1,6 +1,13 @@
 import { Fragment } from "preact"
 import { useEffect, useRef, useState } from "preact/hooks"
-import { MAX_PLAYERS, MAX_SPECTATORS, ROUND_LENGTHS, MAP_DETAILS, type GameView } from "@whereabouts/shared/protocol"
+import {
+  MAX_PLAYERS,
+  MAX_SPECTATORS,
+  ROUND_LENGTHS,
+  MAP_DETAILS,
+  mixTotal,
+  type GameView
+} from "@whereabouts/shared/protocol"
 import { MAX_HINTS } from "@whereabouts/shared/hints"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { colourCss } from "@whereabouts/shared/colours"
@@ -321,7 +328,8 @@ function RenameForm({ current, onDone }: { current: string; onDone: (name: Playe
 
 /** The setup in a line, for a guest in the headset. */
 function setupLine(view: GameView): string {
-  const { rounds, roundLength, mix, mapDetail, hints } = view.config
+  const { roundLength, mix, mapDetail, hints } = view.config
+  const rounds = mixTotal(mix)
   const map = MAP_DETAILS.find((d) => d.id === mapDetail)?.label ?? mapDetail
   return `${rounds} ${rounds === 1 ? "round" : "rounds"} of ${roundLength / 1000} s, ${hints} ${hints === 1 ? "hint" : "hints"} each: ${describeMix(mix)}. ${map} map.`
 }
@@ -332,7 +340,8 @@ function setupLine(view: GameView): string {
  * that plays a short highlight; nothing flashes on first load.
  */
 function SetupSummary({ view }: { view: GameView }) {
-  const { rounds, roundLength, mix, mapDetail, hints } = view.config
+  const { roundLength, mix, mapDetail, hints } = view.config
+  const rounds = mixTotal(mix)
   const shown = useRef(view.config)
   const before = shown.current
   useEffect(() => {
@@ -345,7 +354,7 @@ function SetupSummary({ view }: { view: GameView }) {
       testId: setupSummaryTestIds.rounds,
       value: String(rounds),
       label: rounds === 1 ? "round" : "rounds",
-      changed: rounds !== before.rounds
+      changed: rounds !== mixTotal(before.mix)
     },
     {
       key: "seconds",

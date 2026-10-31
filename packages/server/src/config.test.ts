@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { KernelId } from "@whereabouts/shared/scoring"
+import { evenMix } from "@whereabouts/shared/protocol"
 import { configFromEnv } from "./config.ts"
 
 describe("configFromEnv", () => {
@@ -15,7 +16,7 @@ describe("configFromEnv", () => {
     )
     expect(c.port).toBe(3000)
     expect(c.host).toBe("127.0.0.1")
-    expect(c.game).toEqual({ rounds: 3, roundLength: 15000, kernelId: KernelId.SINGLE })
+    expect(c.game).toEqual({ mix: evenMix(3), roundLength: 15000, kernelId: KernelId.SINGLE })
   })
 
   it("rejects non-positive and fractional numbers", () => {

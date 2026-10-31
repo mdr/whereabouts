@@ -84,7 +84,6 @@ export const GameViewSchema = z.strictObject({
   code: RoomCodeSchema,
   phase: z.enum(Phase),
   config: z.strictObject({
-    rounds: z.number().int(),
     roundLength: MsSchema,
     mix: MixSchema,
     mapDetail: MapDetailSchema,

@@ -1,6 +1,6 @@
 /** Server settings from the environment, kept pure so they can be tested. */
 import { KernelIdSchema } from "@whereabouts/shared/scoring"
-import type { GameConfig } from "@whereabouts/shared/protocol"
+import { evenMix, type GameConfig } from "@whereabouts/shared/protocol"
 
 export interface ServerConfig {
   port: number
@@ -14,7 +14,7 @@ export function configFromEnv(env: Record<string, string | undefined>, defaultSt
   const game: Partial<GameConfig> = {}
   const rounds = positiveInt(env.ROUNDS)
   const roundLength = positiveInt(env.ROUND_MS)
-  if (rounds !== undefined) game.rounds = rounds
+  if (rounds !== undefined) game.mix = evenMix(rounds)
   if (roundLength !== undefined) game.roundLength = roundLength
   if (env.KERNEL) game.kernelId = kernelId(env.KERNEL)
   return {

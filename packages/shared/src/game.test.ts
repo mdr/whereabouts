@@ -23,7 +23,9 @@ import {
   MAX_SPECTATORS,
   type QuestionView,
   SEAT_GRACE,
+  evenMix,
   mixOf,
+  mixTotal,
   MapDetail,
   Phase
 } from "./protocol.ts"
@@ -216,7 +218,7 @@ describe("lobby", () => {
   })
 
   it("caps rounds at the pool size", () => {
-    const g = makeGame({ config: { rounds: 10 } })
+    const g = makeGame({ config: { mix: evenMix(10) } })
     g.join(tokH, playerName("H"), T0)
     g.start(tokH, T0)
     expect(g.view(tokH, T0).round!.total).toBe(3)
@@ -783,7 +785,7 @@ describe("configure", () => {
     expect(g.configure(tokA, { mix: places(3) })).toEqual({ ok: true, changed: false })
     expect(g.configure(tokA, { roundLength: 30_000 }).ok).toBe(true)
     const v = g.view(tokB, T0)
-    expect(v.config.rounds).toBe(3)
+    expect(mixTotal(v.config.mix)).toBe(3)
     expect(v.config.roundLength).toBe(30_000)
     g.start(tokA, T0)
     expect(g.view(tokA, T0).round!.total).toBe(3)
@@ -954,15 +956,10 @@ describe("the question mix", () => {
 
   const outlineOf = (q: QuestionView) => (q.answer.type === AnswerType.AREA ? q.answer.outline : undefined)
 
-  it("defaults to 2 of each type but the extras; a length alone is an even mix of that length", () => {
+  it("defaults to 2 of each type but the extras", () => {
     expect(makeGame().config.mix).toEqual(
       mixOf({ [QuestionType.LANDMARK]: 2, [QuestionType.PLACE]: 2, [QuestionType.COUNTRY]: 2, [QuestionType.FLAG]: 2 })
     )
-    const g = makeGame({ config: { rounds: 5 } })
-    expect(g.config.mix).toEqual(
-      mixOf({ [QuestionType.LANDMARK]: 2, [QuestionType.PLACE]: 1, [QuestionType.COUNTRY]: 1, [QuestionType.FLAG]: 1 })
-    )
-    expect(g.config.rounds).toBe(5)
   })
 
   it("asks only the types the mix asks for, each question once", () => {

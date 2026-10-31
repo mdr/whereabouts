@@ -29,7 +29,7 @@ import {
 } from "./ids.ts"
 import { CloseReason } from "./close-reason.ts"
 
-export const PROTOCOL_VERSION = 7
+export const PROTOCOL_VERSION = 8
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -183,10 +183,8 @@ export enum Phase {
 }
 
 export interface GameConfig {
-  /** The mix's total: set from it, never on its own. */
-  rounds: number
   roundLength: Ms
-  /** How many rounds of each kind of question. */
+  /** How many rounds of each kind of question; their total (mixTotal) is the game's length. */
   mix: QuestionMix
   /** How much of the map shows while guessing (one of MAP_DETAILS). */
   mapDetail: MapDetail
