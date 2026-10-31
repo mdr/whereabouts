@@ -632,7 +632,7 @@ export class GameMap {
   }
 
   /** Marker at the answer: one clear dot. */
-  showReveal(answer: LatLon, _toleranceKm: number): void {
+  showReveal(answer: LatLon): void {
     const fc: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",
       features: [

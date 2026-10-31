@@ -93,7 +93,7 @@ export function showAnswer(
   a: RevealedAnswer
 ): void {
   if (a.outline) gameMap.showRegionReveal(a.outline)
-  else if (question.regionId === undefined) gameMap.showReveal(a.answer, question.toleranceKm)
+  else if (question.regionId === undefined) gameMap.showReveal(a.answer)
   // A country's outline still loading.
   else gameMap.clearReveal()
 }

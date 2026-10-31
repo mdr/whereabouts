@@ -128,7 +128,7 @@ function Review({ pools }: { pools: ReviewPools }) {
     paint.enabled.value = false
     paint.gameMap.setDetail("reveal")
     if (q.kind === "region") paint.gameMap.showRegionReveal(q.outline)
-    else paint.gameMap.showReveal(q.answer, q.toleranceKm)
+    else paint.gameMap.showReveal(q.answer)
     if (c.kind === "single") {
       paint.restore(c.guess.layer.toRecord())
       paint.showOwn()
