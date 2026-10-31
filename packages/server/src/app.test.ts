@@ -114,7 +114,7 @@ class FakeClock implements Clock {
   }
 }
 
-type Topics = "state" | "reveal" | "paint" | "error"
+type Topics = "state" | "reveal" | "paint" | "error" | "pong"
 
 class TestPlayer {
   readonly client: WSClientType<Topics>
@@ -433,6 +433,16 @@ describe("game server", () => {
     await new Promise((r) => setTimeout(r, 200))
     expect(alice.client.connected).toBe(true)
     expect(alice.errors).toHaveLength(0)
+  })
+
+  it("answers a ping with a pong", async () => {
+    const alice = player("Alice")
+    alice.connect({ create: true })
+    await alice.until((v) => v.phase === Phase.LOBBY)
+    let pongs = 0
+    alice.client.on("pong", () => pongs++)
+    alice.client.send("ping", "")
+    await eventually(() => pongs === 1, "a pong")
   })
 
   it("survives an oversized frame: the sender is dropped, everyone else carries on", async () => {

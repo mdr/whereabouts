@@ -15,6 +15,7 @@ import {
 } from "@whereabouts/shared/protocol"
 import { Connection, describeDisconnect, type GameClient, ConnectionStatus } from "./net"
 import { makeQuestionView, makeView } from "./test-view"
+import { PING_EVERY, PONG_WITHIN } from "./heartbeat"
 
 describe("describeDisconnect", () => {
   it("words every reason the server can give", () => {
@@ -317,5 +318,71 @@ describe("Connection view", () => {
     conn.lock()
     conn.sendPaint({ cells: {}, floor: 0 })
     expect(client.sent).toEqual(["lock", "paint"])
+  })
+})
+
+describe("Connection liveness", () => {
+  afterEach(() => vi.useRealTimers())
+
+  function inGame() {
+    vi.useFakeTimers()
+    const game = connected()
+    game.client.open()
+    game.client.state(makeView({ code: roomCode("WXYZ") }))
+    return game
+  }
+  const pings = (client: FakeClient) => client.sent.filter((t) => t === "ping").length
+
+  it("pings now and then, and carries on while the server answers", () => {
+    const { conn, client, clients } = inGame()
+    vi.advanceTimersByTime(PING_EVERY)
+    expect(pings(client)).toBe(1)
+    client.emit("pong")
+    vi.advanceTimersByTime(PING_EVERY)
+    expect(pings(client)).toBe(2)
+    expect(clients).toHaveLength(1)
+    expect(conn.status.value).toBe(ConnectionStatus.CONNECTED)
+  })
+
+  it("takes a ping with no answer for a dead connection, and reconnects to its game", () => {
+    const { conn, client, clients } = inGame()
+    vi.advanceTimersByTime(PING_EVERY + PONG_WITHIN)
+    expect(client.connected).toBe(false)
+    expect(clients).toHaveLength(2)
+    expect(conn.status.value).toBe(ConnectionStatus.CONNECTING)
+    expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({ create: false, code: "WXYZ" })
+  })
+
+  it("pings at once when the page or the network comes back", () => {
+    const { client } = inGame()
+    document.dispatchEvent(new Event("visibilitychange"))
+    expect(pings(client)).toBe(1)
+    client.emit("pong")
+    window.dispatchEvent(new Event("online"))
+    expect(pings(client)).toBe(2)
+  })
+
+  it("waits for an answer before pinging again", () => {
+    const { client } = inGame()
+    window.dispatchEvent(new Event("online"))
+    window.dispatchEvent(new Event("online"))
+    expect(pings(client)).toBe(1)
+  })
+
+  it("stops when the connection drops", () => {
+    const { client, clients } = inGame()
+    client.close()
+    vi.advanceTimersByTime(PING_EVERY + PONG_WITHIN)
+    window.dispatchEvent(new Event("online"))
+    expect(pings(client)).toBe(0)
+    expect(clients).toHaveLength(1)
+  })
+
+  it("stops when disconnected", () => {
+    const { conn, client } = inGame()
+    conn.disconnect()
+    vi.advanceTimersByTime(PING_EVERY + PONG_WITHIN)
+    window.dispatchEvent(new Event("online"))
+    expect(pings(client)).toBe(0)
   })
 })

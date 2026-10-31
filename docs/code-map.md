@@ -39,6 +39,7 @@ No I/O; the same code runs in the browser and on the server.
 | Module                                           | What it holds                                                                                |
 | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
 | `src/net.ts`                                     | `Connection`: the WebSocket, views as signals, commands, the server clock offset             |
+| `src/heartbeat.ts`                               | Pings the server so a connection that died without closing is noticed and replaced           |
 | `src/screens/`                                   | One component per screen: Home, Lobby, InGame, Reveal, Results, Solo (practice), ScoreReview |
 | `src/ui/`                                        | Shared components; each with a `*TestIds.ts` the browser page objects use                    |
 | `src/round.ts`, `src/vr-round.ts`                | Pure round logic for the page and for VR, tested apart from the components                   |

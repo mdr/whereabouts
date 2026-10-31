@@ -248,7 +248,10 @@ changes: [docs/code-map.md](docs/code-map.md)):
   presses Next.
 - Late joiners spectate the current round and play from the next. A dropped
   player keeps their seat, score and current paint, and reclaims them on
-  reconnect (a browser refresh is the common case). In the lobby the seat is
+  reconnect (a browser refresh is the common case). A connection that dies
+  without closing, as after a phone changes network, is noticed by a ping
+  with no answer within 3 seconds; the page pings every 15 seconds, and at
+  once when it is shown again or the network returns. In the lobby the seat is
   held for 30 seconds (`SEAT_GRACE`), then freed; mid-game it is held for
   good. The host keeps the role while away; the longest-standing connected
   player acts as host meanwhile. An empty lobby stays open for the same 30

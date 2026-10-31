@@ -27,6 +27,7 @@ import { CloseReason, isCloseReason } from "@whereabouts/shared/close-reason"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { PlayerId, PlayerName } from "@whereabouts/shared/ids"
 import { reloadForNewBuild } from "./stale-build"
+import { startHeartbeat, type Heartbeat } from "./heartbeat"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 
 export enum ConnectionStatus {
@@ -42,7 +43,7 @@ function wsUrl(): string {
   return `${proto}//${location.host}/ws`
 }
 
-type Topic = "state" | "reveal" | "paint" | "error"
+type Topic = "state" | "reveal" | "paint" | "error" | "pong"
 
 /**
  * Tries at getting into a game before giving up (about 90 s). Once in one,
@@ -94,6 +95,7 @@ export class Connection {
   private reveal: RoundReveal | undefined = undefined
   private paint: PaintSubmission | undefined = undefined
   private offsetMeasured = false
+  private heartbeat: Heartbeat | undefined = undefined
 
   private readonly makeClient: ClientFactory
 
@@ -120,8 +122,16 @@ export class Connection {
       this.paint = undefined
       this.offsetMeasured = false
       this.status.value = ConnectionStatus.CONNECTED
+      this.stopHeartbeat()
+      this.heartbeat = startHeartbeat(
+        () => client.send("ping", ""),
+        () => {
+          if (this.client === client) this.connect(again())
+        }
+      )
     })
     client.on("client:disconnect", () => {
+      this.stopHeartbeat()
       if (this.status.value !== ConnectionStatus.REJECTED) this.status.value = ConnectionStatus.DISCONNECTED
     })
     client.on("client:reconnecting", (attempt) => {
@@ -136,6 +146,7 @@ export class Connection {
       this.status.value = ConnectionStatus.CONNECTING
     })
     client.on("client:kicked", ({ code, reason }) => {
+      this.stopHeartbeat()
       // Rivalis's KickReason.RATE_LIMITED: too many connections from this
       // network (refused before it got in, code 4005, which the client
       // retries by itself), or over the message limit, which Rivalis closes
@@ -176,6 +187,7 @@ export class Connection {
       // A fresh state means the server is happy with us; stop showing an old complaint.
       this.lastError.value = undefined
     })
+    client.on("pong", () => this.heartbeat?.pong())
     client.on("error", (payload) => {
       const { message } = JSON.parse(this.decoder.decode(payload)) as { message: string }
       this.lastError.value = message
@@ -190,9 +202,15 @@ export class Connection {
   }
 
   disconnect(): void {
+    this.stopHeartbeat()
     this.client?.disconnect()
     this.client = undefined
     if (this.status.value !== ConnectionStatus.REJECTED) this.status.value = ConnectionStatus.IDLE
+  }
+
+  private stopHeartbeat(): void {
+    this.heartbeat?.stop()
+    this.heartbeat = undefined
   }
 
   private send<K extends ClientTopic>(...[topic, body]: ClientSend<K>): void {

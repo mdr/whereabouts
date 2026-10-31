@@ -129,6 +129,7 @@ export class GameRoom extends Room<ActorData> {
     const handlers = this.handlers()
     for (const topic of Object.keys(ClientMessageSchemas) as ClientTopic[]) this.bindTopic(topic, handlers)
     this.bind("paint", (actor, payload) => this.handle(actor, "paint", readPaint(payload), handlers.paint))
+    this.bind("ping", (actor) => actor.send(ServerTopics.pong, ""))
   }
 
   private bindTopic<K extends ClientTopic>(topic: K, handlers: Pick<Commands, K>): void {

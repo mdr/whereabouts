@@ -31,7 +31,7 @@ import {
 } from "./ids.ts"
 import { CloseReason } from "./close-reason.ts"
 
-export const PROTOCOL_VERSION = 11
+export const PROTOCOL_VERSION = 12
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -143,7 +143,7 @@ export const ConfigureSchema = z.object({
 })
 export type ConfigurePatch = z.infer<typeof ConfigureSchema>
 
-/** The JSON messages. Paint goes on the paint topic in binary (see paint-wire.ts). */
+/** The JSON messages. Paint goes on the paint topic in binary (see paint-wire.ts); pings, empty, on the ping topic. */
 export const ClientMessageSchemas = {
   lock: z.object({}),
   unlock: z.object({}),
@@ -178,7 +178,9 @@ export const ServerTopics = {
   reveal: "reveal",
   /** Your own paint, in binary, when you join mid-round: a refresh gets back what was painted. */
   paint: "paint",
-  error: "error"
+  error: "error",
+  /** The answer to a ping, so a client can tell a live connection from one that died without closing. */
+  pong: "pong"
 } as const
 
 export enum Phase {
