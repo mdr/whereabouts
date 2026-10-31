@@ -99,7 +99,7 @@ export class Connection {
     })
     // Still trying to get in for the first time: not yet a failure.
     client.on("client:reconnecting", () => {
-      if (!this.view.value) this.status.value = "connecting"
+      if (!this.view.value && this.status.value !== "rejected") this.status.value = "connecting"
     })
     client.on("client:kicked", ({ code, reason }) => {
       // Rivalis's KickReason.RATE_LIMITED: too many connections from this

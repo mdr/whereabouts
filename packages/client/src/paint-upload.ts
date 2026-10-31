@@ -39,7 +39,7 @@ export function usePaintUpload(
     return () => {
       if (sendTimer.current) clearTimeout(sendTimer.current)
     }
-  }, [version, floor, guessing])
+  }, [version, floor, guessing, sittingOut, locked, timeUp])
 
   useEffect(() => {
     if (timeUp && guessing && !sittingOut && !locked) sendNow()

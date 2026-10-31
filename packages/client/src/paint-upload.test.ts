@@ -100,6 +100,17 @@ describe("usePaintUpload", () => {
     expect(conn.sendPaint).not.toHaveBeenCalled()
   })
 
+  it.each([
+    ["watching the game", { watching: true }],
+    ["locked", { locked: true }]
+  ])("drops a pending upload on becoming %s", (_, you) => {
+    const { conn, edit, update, settle } = setup()
+    edit()
+    update({ view: guessing(you) })
+    settle()
+    expect(conn.sendPaint).not.toHaveBeenCalled()
+  })
+
   it("uploads again after a reconnect, once the server's next state arrives", () => {
     const { conn, update } = setup()
     run(() => (conn.status.value = "disconnected"))

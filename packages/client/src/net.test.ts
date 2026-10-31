@@ -146,6 +146,16 @@ describe("Connection status", () => {
     expect(conn.rejection.value?.title).toBe("That game is full")
   })
 
+  it("stays rejected if a retry follows the rejection", () => {
+    const { conn, client } = connected()
+    client.open()
+    client.emit("client:kicked", { code: 4003, reason: "full" })
+    client.close()
+    client.emit("client:reconnecting")
+    expect(conn.status.value).toBe("rejected")
+    expect(conn.rejection.value?.title).toBe("That game is full")
+  })
+
   it("is rejected when it gives up reconnecting, keeping an earlier reason", () => {
     const { conn, client } = connected()
     client.emit("client:reconnect_failed")
