@@ -151,7 +151,7 @@ describe("shape and nearness", () => {
   const score = (d: Distribution) => scoreArea(d, germany).score
 
   /** Each part's share of the paint, spread evenly over its cells. */
-  const shares = (parts: [H3Cell[], number][]) => {
+  const shares = (parts: [H3Cell[], number][], floor = 0.05) => {
     const density = new Map<H3Cell, number>()
     for (const [cs, share] of parts) {
       const d = share / area(cs)
@@ -162,7 +162,7 @@ describe("shape and nearness", () => {
         const [lat, lon] = cellToLatLng(h)
         return { lat, lon, intensity, area: cellArea(h, UNITS.km2), h3: h }
       }),
-      0.05
+      floor
     )
   }
   /** Germany grown ring by ring until it covers `times` its area. */
@@ -186,6 +186,37 @@ describe("shape and nearness", () => {
   it("adds the two up: SHAPE_WEIGHT of shape, the rest nearness", () => {
     const s = scoreArea(coat(poland), germany)
     expect(s.score).toBeCloseTo(SHAPE_WEIGHT * s.shape + (1 - SHAPE_WEIGHT) * s.nearness, 9)
+  })
+
+  // Shape is 1000 - 500 (A sum (p - q)^2 / a + 2 m^2), with q = a / A on each
+  // of the country's cells and m the paint off it: exact for even coats.
+  describe("shape, worked by hand", () => {
+    const japan = regionCells(byId("japan-region"), res)
+    const shape = (d: Distribution) => scoreArea(d, germany).shape
+
+    it("an exact coat loses only the floor's square: 1000 - 500 f^2", () => {
+      expect(shape(coat(cells, 0))).toBeCloseTo(1000, 6)
+      expect(shape(coat(cells, 0.05))).toBeCloseTo(998.75, 6)
+    })
+
+    it("paint all off the country pays for the empty country and twice its own square: 1000 - 500 (1 + 2 m^2)", () => {
+      expect(shape(coat(japan, 0.5))).toBeCloseTo(250, 6)
+      expect(shape(coat(japan, 0))).toBe(0)
+    })
+
+    it("half on and half off: 1000 - 500 (1/4 + 2/4)", () => {
+      expect(
+        shape(
+          shares(
+            [
+              [cells, 0.5],
+              [japan, 0.5]
+            ],
+            0
+          )
+        )
+      ).toBeCloseTo(625, 6)
+    })
   })
 
   it("spilling half the paint just past the border scores about 850", () => {

@@ -92,32 +92,42 @@ describe("example outcomes", () => {
 })
 
 describe("uniform floor", () => {
-  it("closed-form kernel mean matches Monte Carlo on the sphere", () => {
-    // Deterministic pseudo-random sampling
+  /** A single Gaussian's mean over the sphere, from `n` seeded random points. */
+  function monteCarloMean(width: number, n: number): number {
     let seed = 12345
     const rnd = () => {
       seed = (seed * 1664525 + 1013904223) % 4294967296
       return seed / 4294967296
     }
-    const tol = 2000 // large tolerance so Monte Carlo converges quickly
     const y = toXyz(answer)
     let sum = 0
-    const n = 200_000
     for (let i = 0; i < n; i++) {
       const z = 2 * rnd() - 1
       const phi = 2 * Math.PI * rnd()
       const s = Math.sqrt(1 - z * z)
-      const x: [number, number, number] = [
-        EARTH_RADIUS * s * Math.cos(phi),
-        EARTH_RADIUS * s * Math.sin(phi),
-        EARTH_RADIUS * z
-      ]
-      const dx = x[0] - y[0],
-        dy = x[1] - y[1],
-        dz = x[2] - y[2]
-      sum += kernel(Math.sqrt(dx * dx + dy * dy + dz * dz), tol)
+      const dx = EARTH_RADIUS * s * Math.cos(phi) - y[0]
+      const dy = EARTH_RADIUS * s * Math.sin(phi) - y[1]
+      const dz = EARTH_RADIUS * z - y[2]
+      sum += kernel(Math.sqrt(dx * dx + dy * dy + dz * dz), width, SINGLE_KERNEL)
     }
-    expect(sum / n).toBeCloseTo(uniformKernelMean(tol), 2)
+    return sum / n
+  }
+
+  it("closed-form kernel mean matches Monte Carlo on the sphere, one width at a time", () => {
+    // Each width alone, so an error in a narrow one can't hide under a wide one.
+    for (const width of [1000, 3000, 10_000]) {
+      const exact = uniformKernelMean(width, SINGLE_KERNEL)
+      expect(Math.abs(monteCarloMean(width, 200_000) / exact - 1), `${width} km`).toBeLessThan(0.05)
+    }
+  })
+
+  it("a mixture's mean is its components' means, weighted", () => {
+    const { scales, weights } = DEFAULT_KERNEL
+    const parts = scales.map((s, i) => weights[i]! * uniformKernelMean(s * r, SINGLE_KERNEL))
+    expect(uniformKernelMean(r)).toBeCloseTo(
+      parts.reduce((a, b) => a + b, 0),
+      12
+    )
   })
 
   it("a fully diffuse guess scores ~500 for small tolerance, 500 (1 + K) in general", () => {
@@ -136,6 +146,44 @@ describe("uniform floor", () => {
     const miss = buildDistribution([{ ...north(answer, 5000), intensity: 1, area: 1 }], 0.1)
     expect(Math.round(scoreDistribution(hit, answer, r).score)).toBe(995)
     expect(Math.round(scoreDistribution(miss, answer, r).score)).toBe(96)
+  })
+})
+
+describe("buildDistribution", () => {
+  const cell = (intensity: number) => ({ ...answer, intensity, area: 1 })
+
+  it("with nothing painted is all floor, whatever the floor asked, and scores like an even spread", () => {
+    for (const floor of [0, 0.3, 1]) expect(buildDistribution([], floor)).toEqual({ points: [], floor: 1 })
+    const { score } = scoreDistribution(buildDistribution([], 0), answer, r)
+    expect(Number.isFinite(score)).toBe(true)
+    expect(score).toBe(scoreDistribution({ points: [], floor: 1 }, answer, r).score)
+  })
+
+  it("skips cells with no or negative paint, so they count as nothing painted", () => {
+    expect(buildDistribution([cell(0), cell(-1)], 0.1)).toEqual({ points: [], floor: 1 })
+    const d = buildDistribution([cell(0), cell(-1), cell(2)], 0.1)
+    expect(d.points).toHaveLength(1)
+    expect(d.points[0]!.p).toBeCloseTo(0.9, 12)
+  })
+
+  it("keeps the floor within 0 and 1", () => {
+    const below = buildDistribution([cell(1)], -0.5)
+    expect(below.floor).toBe(0)
+    expect(below.points[0]!.p).toBe(1)
+    const above = buildDistribution([cell(1)], 1.5)
+    expect(above.floor).toBe(1)
+    expect(above.points[0]!.p).toBe(0)
+  })
+
+  it("shares the painted mass by intensity times area", () => {
+    const d = buildDistribution(
+      [
+        { ...answer, intensity: 1, area: 3 },
+        { ...north(answer, 500), intensity: 2, area: 1 }
+      ],
+      0
+    )
+    expect(d.points.map((p) => p.p)).toEqual([0.6, 0.4])
   })
 })
 
@@ -189,10 +237,15 @@ describe("bounds", () => {
     }
   })
 
-  it("B does not depend on the answer", () => {
+  it("B does not depend on the answer, A does", () => {
     const d = buildDistribution([{ lat: 10, lon: 10, intensity: 1, area: 1 }], 0.2)
-    expect(selfSimilarity(d, r)).toBe(selfSimilarity(d, r))
-    expect(similarityToAnswer(d, toXyz({ lat: 10, lon: 10 }), r)).toBeGreaterThan(0.79)
+    const near = scoreDistribution(d, { lat: 10, lon: 10 }, r)
+    const far = scoreDistribution(d, { lat: -40, lon: 120 }, r)
+    expect(far.B).toBe(near.B)
+    expect(near.B).toBe(selfSimilarity(d, r))
+    expect(near.A).toBeGreaterThan(0.79)
+    expect(far.A).toBeLessThan(0.01)
+    expect(similarityToAnswer(d, toXyz({ lat: 10, lon: 10 }), r)).toBe(near.A)
   })
 })
 
