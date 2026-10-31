@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vite-plus/test"
-import { getHexagonEdgeLengthAvg, getResolution, gridDisk, h3Res, latLngToCell, UNITS } from "./h3.ts"
+import {
+  cellArea,
+  cellEntries,
+  cellToLatLng,
+  cellToParent,
+  getHexagonEdgeLengthAvg,
+  getResolution,
+  gridDisk,
+  h3Res,
+  latLngToCell,
+  UNITS
+} from "./h3.ts"
+import { greatCircleDistance } from "./geo.ts"
 import { PaintLayer, cellSpacing, cellsOutline, compactRecord, resolutionForTolerance } from "./paint.ts"
 
 describe("resolutionForTolerance", () => {
@@ -57,11 +69,17 @@ describe("PaintLayer", () => {
 
   it("erasing with a small brush inside a coarse cell removes only the part under the brush", () => {
     const layer = new PaintLayer(h3Res(9))
-    layer.stamp({ lat: 51.5, lon: -0.1 }, 400, 1) // coarse cells, ~res 3
+    const brush = { lat: 51.5, lon: -0.1 }
+    layer.stamp(brush, 400, 1) // coarse cells, ~res 3
     const before = layer.mass()
     const coarseRes = Math.min(...layer.resolutionCounts().map(([r]) => r))
     expect(coarseRes).toBeLessThan(6)
-    layer.erase({ lat: 51.5, lon: -0.1 }, 5, 10) // hard erase, 5 km brush
+    const far = [...layer.cells].filter(([h]) => {
+      const [lat, lon] = cellToLatLng(h)
+      return greatCircleDistance(brush, { lat, lon }) > 100
+    })
+    expect(far.length).toBeGreaterThan(0)
+    layer.erase(brush, 5, 10) // hard erase, 5 km brush
     const after = layer.mass()
     expect(after).toBeLessThan(before)
     // Removed mass is on the order of the erase footprint, not the coarse cell.
@@ -69,8 +87,7 @@ describe("PaintLayer", () => {
     // Splitting refined only near the brush: the layer is still small.
     expect(layer.size).toBeLessThan(600)
     // Far from the brush the paint is untouched.
-    const farCell = [...layer.cells.keys()].find((h) => getResolution(h) === coarseRes)
-    expect(farCell).toBeDefined()
+    for (const [h, v] of far) expect(layer.cells.get(h), h).toBe(v)
   })
 
   it("erasing everything under a brush of the same size clears it", () => {
@@ -133,6 +150,24 @@ describe("compactRecord", () => {
     expect(rebuilt.cells.size).toBe(after)
     expect(totalMass(small)).toBeCloseTo(totalMass(rec), 6)
     for (const h of Object.keys(small)) expect(h.length).toBe(15)
+  })
+
+  it("with mixed resolutions, coarsens only the finest, keeps coarser cells and adds into a parent already there", () => {
+    const fine = fineDisc(7, 15)
+    const london = latLngToCell(51.5, -0.1, h3Res(7))
+    const parent = cellToParent(london, h3Res(6))
+    const paris = latLngToCell(48.86, 2.35, h3Res(5))
+    const rec = { ...fine, [parent]: 0.5, [paris]: 2 }
+    const small = compactRecord(rec, 500)
+    expect(Object.keys(small).length).toBeLessThanOrEqual(500)
+    expect(totalMass(small)).toBeCloseTo(totalMass(rec), 6)
+    expect(small[paris]).toBe(2)
+    expect(cellEntries(small).every(([h]) => getResolution(h) <= 6)).toBe(true)
+    // Its seven children, painted 1, merge into the 0.5 already on it.
+    const children = cellEntries(fine).filter(([h]) => cellToParent(h, h3Res(6)) === parent)
+    expect(children).toHaveLength(7)
+    const childMass = children.reduce((s, [h]) => s + cellArea(h, UNITS.km2), 0)
+    expect(small[parent]).toBeCloseTo(0.5 + childMass / cellArea(parent, UNITS.km2), 9)
   })
 
   it("scores almost identically before and after compaction", async () => {

@@ -17,6 +17,14 @@ describe("binary paint", () => {
     expect(decodePaint(encodePaint(paint({}, 1)))).toEqual(paint({}, 1))
   })
 
+  it("reads paint that starts part way into its buffer", () => {
+    const p = paint({ [paris]: 0.5 })
+    const bytes = encodePaint(p)
+    const framed = new Uint8Array(bytes.length + 3)
+    framed.set(bytes, 3)
+    expect(decodePaint(framed.subarray(3))).toEqual(p)
+  })
+
   it("takes 12 bytes a cell, after an 8-byte floor", () => {
     expect(encodePaint(paint({ [paris]: 1 })).byteLength).toBe(20)
   })
@@ -47,5 +55,12 @@ describe("binary paint", () => {
     const p = paint({ [paris]: 0.5 })
     expect(paintFromBase64(paintToBase64(p))).toEqual(p)
     expect(paintFromBase64("not base64!")).toBeUndefined()
+  })
+
+  it("travels as base64 when it is larger than one chunk", () => {
+    // About 3,000 cells: 36 KB, over the 32 KB chunk the encoder works in.
+    const cells = Object.fromEntries(gridDisk(paris, 31).map((h) => [h, 0.5]))
+    expect(encodePaint(paint(cells)).byteLength).toBeGreaterThan(0x8000)
+    expect(paintFromBase64(paintToBase64(paint(cells)))).toEqual(paint(cells))
   })
 })
