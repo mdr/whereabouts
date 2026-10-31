@@ -183,6 +183,16 @@ button.big .icon {
   vertical-align: -4px;
 }
 
+/* No blinking or turning for a player who has asked for less motion. The
+   countdown still turns red; MapLibre already shortens the map's flights. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
+  }
+}
+
 /* ---- other elements -------------------------------------------------------- */
 kbd {
   background: var(--control-bg);

@@ -68,13 +68,6 @@
     transform: translateX(-50%);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .land,
-  .spray {
-    animation: none;
-  }
-}
-
 .steps {
   display: flex;
   gap: 8px;
