@@ -31,7 +31,7 @@ import {
 import { Game, generateCode, type CommandResult, type QuestionBank } from "@whereabouts/shared/game"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import { CloseReason } from "@whereabouts/shared/close-reason"
-import type { Ms } from "@whereabouts/shared/units"
+import type { Instant, Ms } from "@whereabouts/shared/units"
 import { CATALOGUE, outlinesFrom } from "@whereabouts/shared/catalogue"
 import { roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
 // The client loads the outlines on demand; the server holds them all, to score.
@@ -56,7 +56,7 @@ export const ROOM_TYPE = "game"
 
 /** Injected clock so tests can drive time. */
 export interface Clock {
-  now(): Ms
+  now(): Instant
   setTimeout(fn: () => void, delay: Ms): unknown
   clearTimeout(handle: unknown): void
 }
@@ -209,7 +209,7 @@ export class GameRoom extends Room<ActorData> {
   }
 
   /** Remove a player from the game and close their connection, telling them why. */
-  private removePlayer(token: PlayerToken, playerId: PlayerId, now: Ms): CommandResult {
+  private removePlayer(token: PlayerToken, playerId: PlayerId, now: Instant): CommandResult {
     const target = this.game.tokenOf(playerId)
     const result = this.game.kick(token, playerId, now)
     if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick(closeReason(CloseReason.REMOVED))
@@ -270,7 +270,7 @@ export class GameRoom extends Room<ActorData> {
   }
 }
 
-type Handler<T> = (token: PlayerToken, body: T, now: Ms) => CommandResult
+type Handler<T> = (token: PlayerToken, body: T, now: Instant) => CommandResult
 type Commands = { [K in ClientTopic]: Handler<ClientMessages[K]> }
 /** One handler per topic, paint included, each given its topic's parsed body. */
 type Handlers = Commands & { paint: Handler<PaintSubmission> }

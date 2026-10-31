@@ -21,7 +21,7 @@ import { KernelIdSchema } from "./scoring.ts"
 import { H3CellSchema, H3ResSchema } from "./h3.ts"
 import { MapDetailSchema, MixSchema, Phase } from "./protocol.ts"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "./questions.ts"
-import { DegreesSchema, KmSchema, MsSchema } from "./units.ts"
+import { DegreesSchema, InstantSchema, KmSchema, MsSchema } from "./units.ts"
 
 const PaintSchema = z.strictObject({ cells: z.record(H3CellSchema, z.number()), floor: z.number() })
 
@@ -91,7 +91,7 @@ export const GameViewSchema = z.strictObject({
     kernelId: KernelIdSchema,
     hints: z.number().int()
   }),
-  serverTime: MsSchema,
+  serverTime: InstantSchema,
   you: z.strictObject({
     id: PlayerIdSchema.optional(),
     isHost: z.boolean(),
@@ -108,7 +108,7 @@ export const GameViewSchema = z.strictObject({
       index: z.number().int(),
       total: z.number().int(),
       question: QuestionViewSchema,
-      deadline: MsSchema
+      deadline: InstantSchema
     })
     .optional(),
   reveal: z

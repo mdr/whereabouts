@@ -10,7 +10,7 @@ import type { LatLon } from "./geo.ts"
 import { QUESTION_TYPES, QuestionType, AnswerType, Surface, type Clue, type FeatureType } from "./questions.ts"
 import type { PlayerColour } from "./colours.ts"
 import type { H3Cell, H3Res } from "./h3.ts"
-import type { Km, Ms } from "./units.ts"
+import type { Instant, Km, Ms } from "./units.ts"
 import { paintFromBase64, paintToBase64 } from "./paint-wire.ts"
 import { HintAxisSchema, MAX_HINTS, type HintAxis, type HintBand } from "./hints.ts"
 import type { KernelId } from "./scoring.ts"
@@ -243,7 +243,7 @@ interface RoundView {
   total: number
   question: QuestionView
   /** Server epoch time when guessing ends. */
-  deadline: Ms
+  deadline: Instant
 }
 
 export interface RoundResultView {
@@ -305,7 +305,7 @@ export interface GameView {
   code: RoomCode
   phase: Phase
   config: GameConfig
-  serverTime: Ms
+  serverTime: Instant
   you: {
     /** Absent in a view of no player. */
     id?: PlayerId

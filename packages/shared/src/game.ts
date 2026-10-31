@@ -40,7 +40,7 @@ import type {
   RoundResultView
 } from "./protocol.ts"
 import { CloseReason } from "./close-reason.ts"
-import type { Ms } from "./units.ts"
+import type { Instant, Ms } from "./units.ts"
 
 const DEFAULT_CONFIG: GameConfig = {
   rounds: 8,
@@ -68,8 +68,8 @@ interface Seat {
   watching: boolean
   connected: boolean
   /** When the connection dropped, while it is down. */
-  leftAt: Ms | undefined
-  joinedAt: Ms
+  leftAt: Instant | undefined
+  joinedAt: Instant
 }
 
 /** A player's part in one game, started afresh by freshRecord. */
@@ -106,7 +106,7 @@ interface Submission {
   paint: PaintSubmission
   locked: boolean
   /** When the player last locked in. */
-  lockedAt?: Ms
+  lockedAt?: Instant
 }
 
 export type CommandResult = { ok: true; changed: boolean } | { ok: false; error: string }
@@ -140,7 +140,7 @@ export class Game {
 
   private questions: Question[] = []
   private roundIndex = -1
-  private deadline: Ms = 0
+  private deadline: Instant = 0
   private submissions = new Map<PlayerToken, Submission>()
   /** The hint each player used on the current round. */
   private hints = new Map<PlayerToken, HintAxis>()
@@ -196,7 +196,7 @@ export class Game {
    * to watch, or all MAX_PLAYERS seats are taken, in which case they watch if
    * there is room for another spectator.
    */
-  join(token: PlayerToken, name: PlayerName, now: Ms, watch = false): JoinResult {
+  join(token: PlayerToken, name: PlayerName, now: Instant, watch = false): JoinResult {
     const existing = this.players.get(token)
     if (existing) {
       existing.connected = true
@@ -234,7 +234,7 @@ export class Game {
    * host keeps the role while away; the longest-standing connected player
    * acts as host in the meantime.
    */
-  disconnect(token: PlayerToken, now: Ms): CommandResult {
+  disconnect(token: PlayerToken, now: Instant): CommandResult {
     const player = this.players.get(token)
     if (!player) return OK_SAME
     player.connected = false
@@ -289,7 +289,7 @@ export class Game {
 
   // ---- host commands -------------------------------------------------------
 
-  start(token: PlayerToken, now: Ms): CommandResult {
+  start(token: PlayerToken, now: Instant): CommandResult {
     if (!this.isHost(token)) return fail("only the host can start")
     if (this.phase !== Phase.LOBBY) return fail("game already started")
     if (this.playing().length === 0) return fail("no players")
@@ -338,14 +338,14 @@ export class Game {
   }
 
   /** Host advances from the reveal without waiting for the others. */
-  next(token: PlayerToken, now: Ms): CommandResult {
+  next(token: PlayerToken, now: Instant): CommandResult {
     if (!this.isHost(token)) return fail("only the host can advance")
     if (this.phase !== Phase.REVEAL) return fail("nothing to advance")
     this.advance(now)
     return OK_CHANGED
   }
 
-  again(token: PlayerToken, now: Ms): CommandResult {
+  again(token: PlayerToken, now: Instant): CommandResult {
     if (!this.isHost(token)) return fail("only the host can restart")
     if (this.phase !== Phase.RESULTS) return fail("game is still running")
     this.phase = Phase.LOBBY
@@ -410,7 +410,7 @@ export class Game {
    * rejoin (a fresh token can, as a new player). The acting host may remove
    * an absent host, in which case the role passes on.
    */
-  kick(token: PlayerToken, playerId: PlayerId, now: Ms): CommandResult {
+  kick(token: PlayerToken, playerId: PlayerId, now: Instant): CommandResult {
     if (!this.isHost(token)) return fail("only the host can remove players")
     const target = this.tokenOf(playerId)
     if (target === undefined) return fail("unknown player")
@@ -478,7 +478,7 @@ export class Game {
    * that scores PASS_SCORE, so a player with no idea need not hold
    * everyone up until the clock runs out.
    */
-  lock(token: PlayerToken, now: Ms): CommandResult {
+  lock(token: PlayerToken, now: Instant): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (this.phase !== Phase.GUESSING) return fail("not guessing")
@@ -511,7 +511,7 @@ export class Game {
   }
 
   /** Done reading the reveal. The next round starts once every connected player is. */
-  ready(token: PlayerToken, now: Ms): CommandResult {
+  ready(token: PlayerToken, now: Instant): CommandResult {
     const player = this.players.get(token)
     if (!player) return fail("unknown player")
     if (this.phase !== Phase.REVEAL) return fail("nothing to be ready for")
@@ -528,7 +528,7 @@ export class Game {
    * connected player is ready. Nobody present means nothing happens; the
    * deadline (or the host) still governs.
    */
-  private settleIfEveryoneDone(now: Ms): void {
+  private settleIfEveryoneDone(now: Instant): void {
     if (this.phase === Phase.GUESSING) {
       let active = 0
       for (const p of this.players.values()) {
@@ -551,7 +551,7 @@ export class Game {
   // ---- clock ---------------------------------------------------------------
 
   /** Advance time-driven transitions. Returns true if the state changed. */
-  tick(now: Ms): boolean {
+  tick(now: Instant): boolean {
     if (this.phase === Phase.LOBBY) return this.freeLapsedSeats(now)
     if (this.phase === Phase.GUESSING && now >= this.deadline + ROUND_GRACE) {
       this.finishRound()
@@ -561,10 +561,10 @@ export class Game {
   }
 
   /** Epoch time of the next time-driven transition, or undefined if none is pending. */
-  nextWakeAt(): Ms | undefined {
+  nextWakeAt(): Instant | undefined {
     if (this.phase === Phase.GUESSING) return this.deadline + ROUND_GRACE
     if (this.phase === Phase.LOBBY) {
-      let at: Ms | undefined = undefined
+      let at: Instant | undefined = undefined
       for (const p of this.players.values()) {
         if (p.leftAt === undefined) continue
         const due = p.leftAt + SEAT_GRACE
@@ -576,7 +576,7 @@ export class Game {
   }
 
   /** In the lobby, free the seats of players gone longer than SEAT_GRACE, and the host role with one. */
-  private freeLapsedSeats(now: Ms): boolean {
+  private freeLapsedSeats(now: Instant): boolean {
     let changed = false
     for (const [tok, p] of this.players) {
       if (p.leftAt === undefined || now < p.leftAt + SEAT_GRACE) continue
@@ -589,7 +589,7 @@ export class Game {
 
   // ---- transitions ---------------------------------------------------------
 
-  private beginRound(index: number, now: Ms): void {
+  private beginRound(index: number, now: Instant): void {
     this.roundIndex = index
     this.phase = Phase.GUESSING
     this.deadline = now + this.config.roundLength
@@ -683,7 +683,7 @@ export class Game {
     }
   }
 
-  private advance(now: Ms): void {
+  private advance(now: Instant): void {
     if (this.roundIndex + 1 < this.questions.length) {
       this.beginRound(this.roundIndex + 1, now)
       return
@@ -741,7 +741,7 @@ export class Game {
       .sort((a, b) => Number(a.watching) - Number(b.watching) || a.rank - b.rank || a.name.localeCompare(b.name))
   }
 
-  view(token: PlayerToken, now: Ms): GameView {
+  view(token: PlayerToken, now: Instant): GameView {
     const me = this.players.get(token)
     const q = this.phase === Phase.GUESSING ? this.questions[this.roundIndex] : undefined
     return {
