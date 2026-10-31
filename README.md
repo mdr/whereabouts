@@ -94,7 +94,8 @@ Outside passthrough the headset shows the moon, to the globe's scale, mapped wit
 
 Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
 `KERNEL` (`SINGLE`, `MULTI_EQUAL` or `MULTI_WEIGHTED`; the server refuses to start on anything else),
-`PORT`, `STATIC_DIR`.
+`PORT`, `STATIC_DIR`, and `CONNECTIONS_PER_ADDRESS` for browser tests, which all
+reach the server from one address.
 
 ## Deploy
 

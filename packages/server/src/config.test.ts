@@ -6,7 +6,7 @@ import { configFromEnv } from "./config.ts"
 describe("configFromEnv", () => {
   it("uses defaults when nothing is set", () => {
     const c = configFromEnv({}, "/srv/client")
-    expect(c).toEqual({ port: 8787, host: "0.0.0.0", staticDir: "/srv/client", game: {} })
+    expect(c).toEqual({ port: 8787, host: "0.0.0.0", staticDir: "/srv/client", game: {}, addressLimits: undefined })
   })
 
   it("reads overrides and ignores junk", () => {
@@ -36,5 +36,13 @@ describe("configFromEnv", () => {
   it("empty STATIC_DIR disables static serving", () => {
     expect(configFromEnv({ STATIC_DIR: "" }, "/x").staticDir).toBeUndefined()
     expect(configFromEnv({ STATIC_DIR: "/custom" }, "/x").staticDir).toBe("/custom")
+  })
+
+  it("lets tests raise the connections allowed from one address", () => {
+    expect(configFromEnv({ CONNECTIONS_PER_ADDRESS: "500" }, "/x").addressLimits).toEqual({
+      maxOpen: 500,
+      burst: 500,
+      perSecond: 500
+    })
   })
 })

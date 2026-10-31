@@ -1,6 +1,7 @@
 /** Server settings from the environment, kept pure so they can be tested. */
 import { KernelIdSchema } from "@whereabouts/shared/scoring"
 import { evenMix, type GameConfig } from "@whereabouts/shared/protocol"
+import type { AddressLimits } from "./address-limiter.ts"
 
 export interface ServerConfig {
   port: number
@@ -8,6 +9,8 @@ export interface ServerConfig {
   /** Directory of built client files, or undefined to serve the API only. */
   staticDir: string | undefined
   game: Partial<GameConfig>
+  /** Undefined for the limiter's defaults. */
+  addressLimits: AddressLimits | undefined
 }
 
 export function configFromEnv(env: Record<string, string | undefined>, defaultStaticDir: string): ServerConfig {
@@ -17,11 +20,15 @@ export function configFromEnv(env: Record<string, string | undefined>, defaultSt
   if (rounds !== undefined) game.mix = evenMix(rounds)
   if (roundLength !== undefined) game.roundLength = roundLength
   if (env.KERNEL) game.kernelId = kernelId(env.KERNEL)
+  // Browser tests reach the server through Vite's proxy, all from one address.
+  const perAddress = positiveInt(env.CONNECTIONS_PER_ADDRESS)
   return {
     port: positiveInt(env.PORT) ?? 8787,
     host: env.HOST ?? "0.0.0.0",
     staticDir: env.STATIC_DIR === "" ? undefined : (env.STATIC_DIR ?? defaultStaticDir),
-    game
+    game,
+    addressLimits:
+      perAddress === undefined ? undefined : { maxOpen: perAddress, burst: perAddress, perSecond: perAddress }
   }
 }
 

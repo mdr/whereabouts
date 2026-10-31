@@ -7,7 +7,7 @@ const config = configFromEnv(process.env, defaultStaticDir())
 configureGameRooms({ config: config.game })
 
 const staticDir = config.staticDir && existsSync(config.staticDir) ? config.staticDir : undefined
-const app = createApp({ staticDir, logger: true })
+const app = createApp({ staticDir, logger: true, addressLimits: config.addressLimits })
 
 const address = await app.listen(config.port, config.host)
 app.fastify.log.info(`whereabouts server on ${address} (static: ${staticDir ?? "none"})`)

@@ -58,7 +58,7 @@ tasks:
       `pnpm dev` already running is left alone, with short rounds; runs
       every script in packages/client/browser/e2e but prod, or those named
       after --; and prints a line for each. Output and screenshots go to
-      smoke-out/e2e/<name>/. Takes about 9 minutes for all of them.
+      smoke-out/e2e/<name>/. Takes about 4½ minutes for all of them, three at a time.
     cmds:
       - scripts/e2e.sh {{.CLI_ARGS}}
 
