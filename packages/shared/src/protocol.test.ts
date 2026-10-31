@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test"
 import {
   ConfigureSchema,
   KickSchema,
+  MAX_ROUNDS,
   PROTOCOL_VERSION,
   decodeTicket,
   encodeTicket,
@@ -11,6 +12,7 @@ import {
   MapDetail
 } from "./protocol.ts"
 import { QuestionType } from "./questions.ts"
+import { MAX_HINTS } from "./hints.ts"
 import { CloseReason } from "./close-reason.ts"
 import { playerName, playerToken, roomCode } from "./ids.ts"
 
@@ -61,6 +63,18 @@ describe("ConfigureSchema", () => {
     expect(ConfigureSchema.safeParse({ roundLength: 61_000 }).success).toBe(false)
     expect(ConfigureSchema.safeParse({ mapDetail: MapDetail.POLITICAL }).success).toBe(true)
     expect(ConfigureSchema.safeParse({ mapDetail: "satellite" }).success).toBe(false)
+  })
+
+  it.each([
+    ["one round", mix({ [QuestionType.FLAG]: 1 }), true],
+    ["the most rounds", mix({ [QuestionType.LANDMARK]: 8, [QuestionType.FLAG]: MAX_ROUNDS - 8 }), true],
+    ["one round too many", mix({ [QuestionType.LANDMARK]: 8, [QuestionType.FLAG]: MAX_ROUNDS - 7 }), false],
+    ["no hints", { hints: 0 }, true],
+    ["the most hints", { hints: MAX_HINTS }, true],
+    ["one hint too many", { hints: MAX_HINTS + 1 }, false],
+    ["fewer than no hints", { hints: -1 }, false]
+  ])("at its limits: %s", (_, patch, accepted) => {
+    expect(ConfigureSchema.safeParse(patch).success).toBe(accepted)
   })
 })
 
