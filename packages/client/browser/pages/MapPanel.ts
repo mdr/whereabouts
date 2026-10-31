@@ -168,6 +168,11 @@ export class MapPanel {
     return this.#page.evaluate(() => window.whereabouts.paint.layer.size)
   }
 
+  /** How much paint you have: intensity times area, in km². */
+  async yourPaintMass(): Promise<number> {
+    return this.#page.evaluate(() => window.whereabouts.paint.layer.mass())
+  }
+
   /** Which cells your paint is in. */
   async yourPaintCellIds(): Promise<string[]> {
     return this.#page.evaluate(() => [...window.whereabouts.paint.layer.cells.keys()])

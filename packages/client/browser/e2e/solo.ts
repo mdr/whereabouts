@@ -50,14 +50,17 @@ checks.check(
 )
 
 // Trim to hint drops whatever paint is outside the band; undo brings it back.
+// Measured as paint, not cells: the trim splits a cell across the band's edge into finer ones.
+const before = await practiceRoundPage.map.yourPaintMass()
 await practiceRoundPage.paintTools.trimToHint()
-const trimmed = await practiceRoundPage.map.yourPaintCells()
+const trimmed = await practiceRoundPage.map.yourPaintMass()
 await practiceRoundPage.screenshot(`${out}/2b-trimmed-to-hint.png`)
 await practiceRoundPage.paintTools.undoWithKeyboard()
-const untrimmed = await practiceRoundPage.map.yourPaintCells()
+const untrimmed = await practiceRoundPage.map.yourPaintMass()
+const km2 = (m: number) => `${Math.round(m).toLocaleString()} km²`
 checks.check(
-  trimmed <= back && untrimmed === back,
-  `trim to hint, then undo: ${back} -> ${trimmed} -> ${untrimmed} cells`
+  trimmed <= before && untrimmed === before,
+  `trim to hint, then undo: ${km2(before)} -> ${km2(trimmed)} -> ${km2(untrimmed)}`
 )
 
 await practiceRoundPage.map.toggleGlobe()
@@ -68,8 +71,8 @@ await practiceRoundPage.map.dab({ across: 0.4, down: 0.5 })
 const afterGlobe = await practiceRoundPage.map.yourPaintCells()
 await practiceRoundPage.screenshot(`${out}/2c-globe.png`)
 checks.check(
-  afterSpace === untrimmed && afterGlobe > afterSpace,
-  `a dab beside the globe paints nothing, one on it paints: ${untrimmed} -> ${afterSpace} -> ${afterGlobe} cells`
+  afterSpace === back && afterGlobe > afterSpace,
+  `a dab beside the globe paints nothing, one on it paints: ${back} -> ${afterSpace} -> ${afterGlobe} cells`
 )
 await practiceRoundPage.map.toggleGlobe()
 checks.check(!(await practiceRoundPage.map.showsGlobe()), "and the button goes back to the flat map")
