@@ -133,6 +133,32 @@ describe("usePaintUpload", () => {
     expect(conn.sendPaint).not.toHaveBeenCalled()
   })
 
+  it("locks after a reconnect when Done was pressed while the connection was down", () => {
+    const { conn, hook, update } = setup()
+    run(() => (conn.status.value = ConnectionStatus.DISCONNECTED))
+    hook.result.current.lockIn()
+    conn.sendPaint.mockClear()
+    conn.lock.mockClear()
+    run(() => (conn.status.value = ConnectionStatus.CONNECTED))
+    update({ view: guessing() })
+    expect(conn.lock).toHaveBeenCalledTimes(1)
+    expect(conn.sendPaint.mock.invocationCallOrder[0]).toBeLessThan(conn.lock.mock.invocationCallOrder[0]!)
+    update({ view: guessing() })
+    expect(conn.lock).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not lock again after a reconnect once Done was taken back", () => {
+    const { conn, hook, update } = setup()
+    hook.result.current.lockIn()
+    update({ view: guessing({ locked: true }) })
+    update({ view: guessing() })
+    conn.lock.mockClear()
+    run(() => (conn.status.value = ConnectionStatus.DISCONNECTED))
+    run(() => (conn.status.value = ConnectionStatus.CONNECTED))
+    update({ view: guessing() })
+    expect(conn.lock).not.toHaveBeenCalled()
+  })
+
   it("uploads before locking on Done, in place of a pending upload", () => {
     const { conn, edit, hook, settle } = setup()
     edit()

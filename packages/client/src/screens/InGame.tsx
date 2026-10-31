@@ -38,6 +38,7 @@ import { useFact } from "../facts"
 import { paintLayer, paintsOf } from "../reveal-paint"
 import { useRoundMap } from "../round"
 import { usePaintUpload } from "../paint-upload"
+import { canPaint, canUnlock } from "../editing"
 import { vrReveal, vrRound, type VrRoundShown } from "../vr-round"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
@@ -91,9 +92,10 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     return () => clearTimeout(timer)
   }, [roundKey, guessing, deadline])
 
+  const editing = canPaint(view, timeUp)
   useEffect(() => {
-    paint.enabled.value = guessing && !sittingOut && !view.you.locked && !timeUp
-  }, [guessing, sittingOut, view.you.locked, timeUp])
+    paint.enabled.value = editing
+  }, [editing])
 
   const { lockIn } = usePaintUpload(conn, paint, view, timeUp)
 
@@ -182,7 +184,10 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
             {view.you.locked ? (
               <button
                 class={toolbarGrow}
-                title="Take back Done and change your guess"
+                title={
+                  canUnlock(view, timeUp) ? "Take back Done and change your guess" : "Time's up: your guess stands"
+                }
+                disabled={!canUnlock(view, timeUp)}
                 onClick={() => conn.unlock()}
                 data-testid={inGameTestIds.keepEditingButton}
               >
@@ -277,7 +282,7 @@ function gameVrView(
     timeLeft: view.round ? () => conn.timeUntil(view.round!.deadline) : undefined,
     doneLabel: "Done",
     done: lockIn,
-    unlock: view.you.locked && !timeUp ? () => conn.unlock() : undefined,
+    unlock: canUnlock(view, timeUp) ? () => conn.unlock() : undefined,
     playing: !sittingOut,
     note:
       connection ??

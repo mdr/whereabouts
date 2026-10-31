@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "preact/hooks"
 import { compactRecord } from "@whereabouts/shared/paint"
 import type { GameView } from "@whereabouts/shared/protocol"
+import { canPaint } from "./editing"
 import { type Connection, ConnectionStatus } from "./net"
 import type { PaintController } from "./paint-controller"
 import { announcePass } from "./round"
@@ -22,6 +23,8 @@ export function usePaintUpload(
   const guessing = view.phase === Phase.GUESSING
   const { sittingOut } = view.you
   const locked = view.you.locked
+  const editing = canPaint(view, timeUp)
+  const round = view.round?.index
   const sendTimer = useRef<number | undefined>(undefined)
 
   /** Upload the paint now. An empty map is sent too: it takes back paint sent earlier. */
@@ -34,17 +37,22 @@ export function usePaintUpload(
   const version = paint.version.value
   const floor = paint.floor.value
   useEffect(() => {
-    if (!guessing || sittingOut || locked || timeUp) return
+    if (!editing) return
     if (sendTimer.current) clearTimeout(sendTimer.current)
     sendTimer.current = window.setTimeout(sendNow, 400)
     return () => {
       if (sendTimer.current) clearTimeout(sendTimer.current)
     }
-  }, [version, floor, guessing, sittingOut, locked, timeUp])
+  }, [version, floor, editing])
 
   useEffect(() => {
     if (timeUp && guessing && !sittingOut && !locked) sendNow()
   }, [timeUp])
+
+  // The round Done was last pressed in, until the server has us locked: a
+  // press while the connection is down is sent again once it is back.
+  const lockWish = useRef<{ round: number | undefined } | undefined>(undefined)
+  if (locked) lockWish.current = undefined
 
   // Uploads made while the connection was down were lost. Once the server
   // has us back (its first state since), send the paint again.
@@ -56,13 +64,16 @@ export function usePaintUpload(
   useEffect(() => {
     if (!resend.current || status !== ConnectionStatus.CONNECTED) return
     resend.current = false
-    if (guessing && !sittingOut && !locked && !timeUp) sendNow()
+    if (!editing) return
+    sendNow()
+    if (lockWish.current && lockWish.current.round === round) conn.lock()
   }, [view])
 
   // Done with paint freezes it; Done with nothing painted is a pass, which
   // scores PASS_SCORE and lets the round end without waiting on you.
   function lockIn() {
     announcePass(paint)
+    lockWish.current = { round }
     sendNow()
     conn.lock()
   }
