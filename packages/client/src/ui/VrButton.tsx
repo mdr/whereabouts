@@ -1,6 +1,7 @@
 import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
-import type { Vr, VrView } from "../vr"
+import type { Vr } from "../vr"
+import type { VrView } from "../vr/view"
 import {
   VR_LOAD_STAGES,
   VrCodeMissing,

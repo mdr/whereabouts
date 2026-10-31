@@ -14,7 +14,7 @@ import { Icon } from "../ui/icons"
 import { MapDetailPicker } from "../ui/MapDetailPicker"
 import { Pills } from "../ui/Controls"
 import { VrButton, useVrView } from "../ui/VrButton"
-import type { VrView } from "../vr"
+import type { VrView } from "../vr/view"
 
 const POOLS: { value: PracticePool; label: string }[] = [
   { value: "places", label: "Places" },

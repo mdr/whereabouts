@@ -6,7 +6,7 @@
 import { signal } from "@preact/signals"
 import { MAX_PLAYERS, type GameView, type PlayerView } from "@whereabouts/shared/protocol"
 import type { Connection } from "./net"
-import type { VrAction } from "./vr"
+import type { VrAction } from "./vr/view"
 import type { VrTable } from "./vr/scores"
 
 /** The player the host last pointed at in the headset's table. */

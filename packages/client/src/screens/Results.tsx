@@ -17,7 +17,7 @@ import { useRegion } from "../regions"
 import { useElementRef } from "../ui/element-ref"
 import { VrButton, useVrView } from "../ui/VrButton"
 import { navigate } from "../router"
-import type { VrView } from "../vr"
+import type { VrView } from "../vr/view"
 import { resultsTestIds } from "./ResultsTestIds"
 
 const MEDALS = ["🥇", "🥈", "🥉"]

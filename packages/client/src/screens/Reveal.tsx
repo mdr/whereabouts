@@ -28,7 +28,7 @@ import { useBorders } from "../borders"
 import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry, PaintedIn } from "../ui/FlagReveal"
 import { VrButton } from "../ui/VrButton"
 import { allFlags } from "../settings"
-import type { VrView } from "../vr"
+import type { VrView } from "../vr/view"
 import { revealTestIds } from "./RevealTestIds"
 import { paintLayer, paintsOf } from "../reveal-paint"
 
