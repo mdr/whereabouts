@@ -303,11 +303,14 @@ export class Headset {
     }
   }
 
-  /** Wait for `n` frames to be drawn: the emulator can stall for a second or more, so time is no measure. */
+  /**
+   * Wait for `n` frames to be drawn: the emulator can stall for a second or more, so time is no measure.
+   * Polled on a timer: in a headset session the page's own animation frames, Playwright's default, can stop.
+   */
   async frames(n: number): Promise<void> {
     const start = await this.#page.evaluate(() => window.whereaboutsVr.frames)
     await this.#page
-      .waitForFunction((end) => window.whereaboutsVr.frames >= end, start + n)
+      .waitForFunction((end) => window.whereaboutsVr.frames >= end, start + n, { polling: 50 })
       .catch(async (err: unknown) => {
         const state = await this.#page.evaluate(() => ({
           frames: window.whereaboutsVr.frames,
