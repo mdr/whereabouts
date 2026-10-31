@@ -8,7 +8,7 @@ import type { Connection } from "../net"
 import { Results } from "./Results"
 import { resultsTestIds as ids } from "./ResultsTestIds"
 import s from "./Results.module.css"
-import bits from "../ui/bits.module.css"
+import pictures from "../ui/Pictures.module.css"
 
 const tid = (id: string) => `[data-testid="${id}"]`
 
@@ -91,7 +91,7 @@ describe("Results", () => {
     expect(rows[1]!.querySelector(tid(ids.place))!.textContent).toBe("🥈")
     expect(rows[0]!.querySelector(tid(ids.total))!.textContent).toBe("1,500")
     expect(rows[1]!.classList.contains(s.you!)).toBe(true)
-    expect(container.querySelectorAll(`button:not(.${bits.smallPicture!})`)).toHaveLength(0)
+    expect(container.querySelectorAll(`button:not(.${pictures.smallPicture!})`)).toHaveLength(0)
     expect(container.textContent).toContain("The host can start another game")
   })
 
@@ -111,7 +111,7 @@ describe("Results", () => {
     ])
     // Alice took round 1, Bob round 2.
     expect(rounds.map((r) => r.querySelector(`td.${s.best!}`)!.textContent)).toEqual(["800", "750"])
-    expect(rounds[0]!.querySelectorAll(`.${bits.smallPicture!} img`)).toHaveLength(1)
+    expect(rounds[0]!.querySelectorAll(`.${pictures.smallPicture!} img`)).toHaveLength(1)
     expect(rounds.map((r) => r.querySelector(tid(ids.roundType))!.textContent)).toEqual(["Landmark", "Place name"])
   })
 

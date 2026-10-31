@@ -126,23 +126,6 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-/* The Commons credit; a lightbox makes it larger, further from the edge. */
-.credit {
-  position: absolute;
-  right: var(--credit-inset, 6px);
-  bottom: var(--credit-inset, 6px);
-  width: var(--credit-size, 22px);
-  height: var(--credit-size, 22px);
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--shade) 55%, transparent);
-  color: var(--panel-fg);
-  opacity: 0.8;
-}
-.credit:hover {
-  opacity: 1;
-}
 
 /* ---- at the reveal: the answer, and a line about it ------------------------------ */
 .question .answer {

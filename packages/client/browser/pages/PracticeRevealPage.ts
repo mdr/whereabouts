@@ -1,5 +1,5 @@
 import { soloTestIds } from "../../src/screens/SoloTestIds.ts"
-import { factTestIds, questionCardTestIds } from "../../src/ui/bitsTestIds.ts"
+import { factTestIds, questionCardTestIds } from "../../src/ui/QuestionCardTestIds.ts"
 import { MapPanel } from "./MapPanel.ts"
 import { Screen } from "./Screen.ts"
 import { text } from "./support.ts"

@@ -1,19 +1,3 @@
-/* In :where(), so a card's own class can change its padding and the like. */
-:where(.card) {
-  background: var(--card-bg);
-  border-radius: 8px;
-  padding: 12px;
-  /* The HUD sets this: its cards float over the map. */
-  box-shadow: var(--card-shadow, none);
-}
-.title {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  margin: 0 0 6px;
-}
-
 /* A small flag beside a country's name. */
 :where(.smallFlag) {
   flex: none;
@@ -81,4 +65,22 @@ button.smallPicture {
   background: none;
   box-shadow: none;
   filter: var(--flag-edge);
+}
+
+/* The Commons credit; a lightbox makes it larger, further from the edge. */
+.credit {
+  position: absolute;
+  right: var(--credit-inset, 6px);
+  bottom: var(--credit-inset, 6px);
+  width: var(--credit-size, 22px);
+  height: var(--credit-size, 22px);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--shade) 55%, transparent);
+  color: var(--panel-fg);
+  opacity: 0.8;
+}
+.credit:hover {
+  opacity: 1;
 }

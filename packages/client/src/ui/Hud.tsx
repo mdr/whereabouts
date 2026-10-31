@@ -10,7 +10,7 @@ import { useElementRef } from "./element-ref"
 import { Icon } from "./icons"
 import { soundOn } from "../settings"
 import { cx } from "./cx"
-import { countdownTestIds, hudBottomTestIds, hudHeaderTestIds, soundToggleTestIds } from "./bitsTestIds"
+import { countdownTestIds, hudBottomTestIds, hudHeaderTestIds, soundToggleTestIds } from "./HudTestIds"
 import s from "./Hud.module.css"
 
 /** `reveal` lays out a round's reveal; MapView reads `data-hud` to lift the map's buttons above its sheet. */

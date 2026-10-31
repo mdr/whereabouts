@@ -1,7 +1,8 @@
 import type { CDPSession, Page } from "playwright-core"
 import type {} from "../../src/ui/MapView.tsx"
 import { mapViewTestIds } from "../../src/ui/MapViewTestIds.ts"
-import { hudBottomTestIds, questionCardTestIds } from "../../src/ui/bitsTestIds.ts"
+import { hudBottomTestIds } from "../../src/ui/HudTestIds.ts"
+import { questionCardTestIds } from "../../src/ui/QuestionCardTestIds.ts"
 import { playersPanelTestIds } from "../../src/ui/PlayersPanelTestIds.ts"
 import { isUsable, until } from "./support.ts"
 

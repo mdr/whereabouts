@@ -9,7 +9,7 @@ import { useEffect } from "preact/hooks"
 import { createPortal } from "preact/compat"
 import { Icon } from "./icons"
 import { isTyping } from "../keys"
-import { Card } from "./bits"
+import { Card } from "./Card"
 import { shortcutsTestIds } from "./ShortcutsTestIds"
 import s from "./Shortcuts.module.css"
 

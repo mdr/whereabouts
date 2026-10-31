@@ -1,9 +1,5 @@
-import {
-  countdownTestIds,
-  hudHeaderTestIds,
-  questionCardTestIds,
-  soundToggleTestIds
-} from "../../src/ui/bitsTestIds.ts"
+import { countdownTestIds, hudHeaderTestIds, soundToggleTestIds } from "../../src/ui/HudTestIds.ts"
+import { questionCardTestIds } from "../../src/ui/QuestionCardTestIds.ts"
 import { hostControlsTestIds } from "../../src/ui/HostControlsTestIds.ts"
 import { ConfirmDialog } from "./ConfirmDialog.ts"
 import { ResultsPage } from "./ResultsPage.ts"

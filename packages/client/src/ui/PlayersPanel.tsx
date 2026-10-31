@@ -8,7 +8,7 @@ import type { GameView, PlayerView } from "@whereabouts/shared/protocol"
 import { PlayerList } from "./PlayerList"
 import { Icon } from "./icons"
 import { playersPanelTestIds } from "./PlayersPanelTestIds"
-import { Card } from "./bits"
+import { Card } from "./Card"
 import { cx } from "./cx"
 import s from "./PlayersPanel.module.css"
 

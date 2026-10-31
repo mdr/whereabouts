@@ -1,6 +1,6 @@
 /** The round's hint: a band of latitude or longitude the answer lies in, shaded on the map once used. */
 import { describeHint, type HintAxis, type HintBand } from "@whereabouts/shared/hints"
-import { Card } from "./bits"
+import { Card } from "./Card"
 import { Icon } from "./icons"
 import { hintTestIds } from "./HintTestIds"
 import s from "./Hint.module.css"

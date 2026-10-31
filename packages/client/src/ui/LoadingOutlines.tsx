@@ -1,7 +1,7 @@
 import { useEffect } from "preact/hooks"
 import { loadRegions, regionsFailed } from "../regions"
 import { loadingOutlinesTestIds } from "./LoadingOutlinesTestIds"
-import { Card } from "./bits"
+import { Card } from "./Card"
 import { Hud, HudCenter } from "./Hud"
 
 /** Stands in for a screen that needs the outlines until they arrive, and offers another try if they do not. */

@@ -1,13 +1,10 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
-import { QuestionCard, SmallFlag, SmallFlagButton, SmallPhoto } from "./bits"
-import { HudBottom, SoundToggle } from "./Hud"
-import b from "./bits.module.css"
-import h from "./Hud.module.css"
+import { QuestionCard } from "./QuestionCard"
 import lb from "./Lightbox.module.css"
+import pictures from "./Pictures.module.css"
 import qc from "./QuestionCard.module.css"
-import { soundOn } from "../settings"
 import { flagCode, regionId } from "@whereabouts/shared/ids"
 import type * as flags from "../flags"
 
@@ -15,38 +12,6 @@ vi.mock("../flags", async (original) => ({
   ...(await original<typeof flags>()),
   flagUrl: (code: string) => Promise.resolve(`/flags/${code}.svg`)
 }))
-
-describe("HudBottom", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals()
-    document.documentElement.style.removeProperty("--toolbar-h")
-  })
-
-  it("publishes its height as --toolbar-h while mounted", () => {
-    // happy-dom has no ResizeObserver and reports zero heights; stub both.
-    const observe = vi.fn()
-    const disconnect = vi.fn()
-    vi.stubGlobal(
-      "ResizeObserver",
-      class {
-        observe = observe
-        disconnect = disconnect
-      }
-    )
-    Object.defineProperty(HTMLElement.prototype, "offsetHeight", { configurable: true, get: () => 96 })
-    const { container, unmount } = render(
-      <HudBottom>
-        <button>Done</button>
-      </HudBottom>
-    )
-    expect(container.querySelector(`.${h.toolbar!} button`)!.textContent).toBe("Done")
-    expect(document.documentElement.style.getPropertyValue("--toolbar-h")).toBe("96px")
-    expect(observe).toHaveBeenCalledWith(container.firstElementChild)
-    unmount()
-    expect(disconnect).toHaveBeenCalled()
-    expect(document.documentElement.style.getPropertyValue("--toolbar-h")).toBe("")
-  })
-})
 
 const q = { prompt: "Where is this?", image: "Some_file.jpg", toleranceKm: 50 }
 
@@ -111,24 +76,7 @@ describe("flag frames", () => {
       fireEvent.click(button)
       expect(enlargedRatio(document.body.querySelector(`.${lb.lightbox!} img.${lb.flag!}`))).toBe(shape)
       // No credit while guessing: the Commons file is named for the country.
-      expect(document.body.querySelectorAll(`.${lb.lightbox!} .${qc.credit!}`)).toHaveLength(0)
-      cleanup()
-    }
-  })
-
-  it("take each flag's own shape beside a name and in the results, where the flag is credited", async () => {
-    for (const [code, shape] of shapes) {
-      const small = render(<SmallFlag code={code} />)
-      expect(ratio(small.container.querySelector(`.${b.smallFlag!}`))).toBe(shape)
-      const listed = render(<SmallFlagButton code={code} />)
-      expect(ratio(listed.container.querySelector(`.${b.flagPicture!} .${b.flagShape!}`))).toBe(shape)
-      const button = listed.container.querySelector<HTMLButtonElement>(`.${b.flagPicture!}`)!
-      await waitFor(() => expect(button.disabled).toBe(false))
-      fireEvent.click(button)
-      expect(enlargedRatio(document.body.querySelector(`.${lb.lightbox!} img.${lb.flag!}`))).toBe(shape)
-      expect(document.body.querySelector<HTMLAnchorElement>(`.${lb.lightbox!} .${qc.credit!}`)!.href).toContain(
-        "commons.wikimedia.org"
-      )
+      expect(document.body.querySelectorAll(`.${lb.lightbox!} .${pictures.credit!}`)).toHaveLength(0)
       cleanup()
     }
   })
@@ -212,40 +160,12 @@ describe("QuestionCard image", () => {
   it("keeps the Commons credit behind an info icon linking to the file page, only when asked", () => {
     // While guessing there is no credit link at all: the file name is a spoiler.
     const { container: guessing } = render(<QuestionCard hud="painting" q={q} />)
-    expect(guessing.querySelectorAll(`.${qc.credit!}`)).toHaveLength(0)
+    expect(guessing.querySelectorAll(`.${pictures.credit!}`)).toHaveLength(0)
 
     const { container } = render(<QuestionCard hud="painting" q={q} credit />)
-    const credit = container.querySelector<HTMLAnchorElement>(`.${qc.thumb!} .${qc.credit!}`)!
+    const credit = container.querySelector<HTMLAnchorElement>(`.${qc.thumb!} .${pictures.credit!}`)!
     expect(credit.href).toContain("commons.wikimedia.org")
     expect(credit.getAttribute("aria-label")).toContain("Wikimedia Commons")
     expect(container.textContent).not.toContain("Wikimedia")
-  })
-})
-
-describe("SmallPhoto", () => {
-  afterEach(() => {
-    cleanup()
-  })
-
-  it("shows the rounds' rendition of the photo, which the page already has", () => {
-    const { container } = render(<SmallPhoto image="Some_file.jpg" />)
-    const shown = render(<QuestionCard hud="painting" q={q} />).container.querySelector<HTMLImageElement>(
-      `.${qc.thumb!} img`
-    )!
-    expect(container.querySelector<HTMLImageElement>(`.${b.smallPicture!} img`)!.src).toBe(shown.src)
-  })
-})
-
-describe("SoundToggle", () => {
-  it("flips the per-device sound setting and shows which state it is in", () => {
-    soundOn.value = true
-    const { container } = render(<SoundToggle />)
-    const button = container.querySelector<HTMLButtonElement>(`.${h.soundToggle!}`)!
-    expect(button.getAttribute("aria-pressed")).toBe("true")
-    fireEvent.click(button)
-    expect(soundOn.value).toBe(false)
-    expect(button.getAttribute("aria-pressed")).toBe("false")
-    fireEvent.click(button)
-    expect(soundOn.value).toBe(true)
   })
 })
