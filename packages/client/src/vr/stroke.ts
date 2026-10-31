@@ -20,7 +20,7 @@ export function strokeTool(hands: HandAtWork[], onMenu: boolean, triggerDead: nu
   return hands.find((h) => h.touching || (!h.busy && h.tool !== Tool.FILL && h.trigger > triggerDead && h.aimed))?.tool
 }
 
-type Strokes = Pick<PaintModel, "beginStroke" | "endStroke">
+export type Strokes = Pick<PaintModel, "beginStroke" | "endStroke">
 
 /** Begun by whichever hand starts, ended once neither sprays. */
 export class PairedStroke {

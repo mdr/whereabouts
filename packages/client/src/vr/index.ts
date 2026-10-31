@@ -10,24 +10,21 @@ import {
   Color,
   ColorSchemeType,
   DirectionalLight,
-  InputComponent,
   ReferenceSpaceType,
   SessionMode,
   Vector3,
-  VisibilityState,
   World
 } from "@iwsdk/core"
-import { effect, signal } from "@preact/signals"
+import { effect, type Signal } from "@preact/signals"
 import { EARTH_RADIUS } from "@whereabouts/shared/geo"
 import { describeHint } from "@whereabouts/shared/hints"
 import type { BordersData } from "@whereabouts/shared/borders"
 import type { LandMaskData } from "@whereabouts/shared/land"
-import { headsetPassthrough } from "../settings"
 import { THEME } from "../themes"
 import { ANSWER_RADIUS, DETAIL_RADIUS, Globe, HINT_RADIUS, OUTLINE_RADIUS, PAINT_RADIUS, PIN_RADIUS } from "./globe"
-import { HANDS, Hand, XR_HAND } from "./hand"
+import { Hand, XR_HAND } from "./hand"
 import { VrLoadStage } from "../vr-support"
-import { FlagPins, type Pointer } from "./flag-pins"
+import { FlagPins } from "./flag-pins"
 import { AnswerMarker } from "./answer"
 import { DetailPatch } from "./detail-patch"
 import { drawBorders, drawColour, drawLand } from "./globe-texture"
@@ -38,11 +35,9 @@ import { paintGeometry } from "./paint-mesh"
 import { Picture } from "./picture"
 import { HintMarker } from "./hint"
 import { reflect, reflections } from "./models"
-import { timerFrames } from "./frames"
-import { HandTool, TRIGGER_DEAD } from "./spray"
-import { nextTool, offeredTool } from "./spray-rules"
-import { PairedStroke, strokeTool } from "./stroke"
-import { Tool } from "../tool"
+import { Hands } from "./hands"
+import { HeadsetSession } from "./session"
+import { boardOf, flagPinsOf, globeDetail, patchDetail, paintsKey, tableOf } from "./shown"
 import { Moon } from "./moon"
 import { STARS_DISTANCE, Space } from "./space"
 import { SCORES_WIDTH, ScoreBoard } from "./scores"
@@ -55,8 +50,8 @@ import { PanelClearance } from "./clearance"
 import { wristActions } from "./wrist-actions"
 import { VrProbe } from "./probe"
 import { VrViewType, type VrRound, type VrView } from "./view"
-import { RevealDetail, showsBorders, showsTerrain } from "../shown-detail"
-import type { Metres, Ms, Seconds } from "@whereabouts/shared/units"
+import { showsBorders, showsTerrain } from "../shown-detail"
+import type { Metres, Seconds } from "@whereabouts/shared/units"
 
 /**
  * IWSDK updates and draws its scene every frame from the start, on the page
@@ -77,15 +72,13 @@ function idleOffHeadset(world: World): void {
 
 /** Rebuilding the paint is the costly part of a stroke, so at most this often. */
 const PAINT_REDRAW: Seconds = 0.1
-/** How long a new session may take to open, when switching to or from passthrough. */
-const SWITCH_TIMEOUT: Ms = 5000
 /** From this zoom on, the page's map shows over the globe. */
 const DETAIL_SCALE = 2
 /** How far either side of the near point the map covers. */
 const DETAIL_HALF: Metres = 0.6
 
 export class Vr {
-  readonly active = signal(false)
+  readonly active: Signal<boolean>
   /** Cells of paint the globe last drew, for the browser tests. */
   shownPaintCells = 0
   /** Frames drawn, for the browser tests to wait on frames rather than time. */
@@ -98,7 +91,6 @@ export class Vr {
   private view: VrView | undefined = undefined
   private pictureKey = ""
   private paintsKey = ""
-  private readonly stroke = new PairedStroke(() => this.round?.paint)
   private placed = false
   private paintDirty = true
   private lastPaintDraw = 0
@@ -114,14 +106,9 @@ export class Vr {
   private readonly flagPins = new FlagPins(PIN_RADIUS, OUTLINE_RADIUS)
   private readonly space = new Space()
   private readonly moon = new Moon()
-  /**
-   * Ending one kind of session to start the other: the passthrough wanted,
-   * saved only once its session opens, and whether that session has been asked for.
-   */
-  private switchingTo: boolean | undefined = undefined
-  private switchOpening = false
   private readonly clearance = new PanelClearance()
-  private readonly tools: Record<Hand, HandTool>
+  private readonly hands: Hands
+  private readonly session: HeadsetSession
   private readonly menu: Menu
 
   static async create(onStage: (stage: VrLoadStage) => void): Promise<Vr> {
@@ -200,23 +187,21 @@ export class Vr {
     this.globe.overlay(this.flagPins.border, OUTLINE_RADIUS)
     world.scene.add(this.flagPins.label)
 
-    const { gripSpaces, raySpaces } = world.player
-    const tool = (h: Hand) => new HandTool(gripSpaces[XR_HAND[h]], raySpaces[XR_HAND[h]], world.scene, THEME)
-    this.tools = { [Hand.LEFT]: tool(Hand.LEFT), [Hand.RIGHT]: tool(Hand.RIGHT) }
-    this.tools[Hand.LEFT].setTool(Tool.ERASE)
+    this.hands = new Hands(world, () => this.round?.paint)
+    const { gripSpaces } = world.player
     const room = reflections(world.renderer)
     for (const o of [this.globe.stand, gripSpaces.left, gripSpaces.right]) reflect(o, room)
 
     this.menu = new Menu(world, {
       clicked: () => this.clicks++,
       done: () => this.painting?.done(),
-      togglePassthrough: () => this.togglePassthrough(),
+      togglePassthrough: () => this.session.togglePassthrough(),
       exit: () => this.exit()
     })
     this.menu.object3D.add(this.picture.mesh)
     const actions = wristActions({
       painting: () => this.painting,
-      tools: this.tools,
+      tools: this.hands.tools,
       note: (text) => this.wrist.note(text),
       repaint: () => {
         this.paintDirty = true
@@ -251,33 +236,17 @@ export class Vr {
       moon: this.moon,
       menu: this.menu,
       clearance: this.clearance,
-      tools: this.tools
+      tools: this.hands.tools
     })
 
     void navigator.xr?.isSessionSupported(SessionMode.ImmersiveAR).then((ok) => this.menu.offerPassthrough(ok))
-    world.visibilityState.subscribe((state) => {
-      const active = state !== VisibilityState.NonImmersive
-      if (!active && this.switchingTo !== undefined && !this.switchOpening) {
-        // Still within the press's activation, which a new session needs.
-        this.switchOpening = true
-        this.launch(this.switchingTo)
-        // Refused, it leaves the player on the page.
-        setTimeout(() => {
-          if (this.world.visibilityState.value === VisibilityState.NonImmersive) this.ended()
-        }, SWITCH_TIMEOUT)
-        return
-      }
-      if (active && this.switchingTo !== undefined) {
-        headsetPassthrough.value = this.switchingTo
-        this.switchingTo = undefined
-        this.switchOpening = false
-      }
-      if (active === this.active.value) return
-      if (active) {
-        timerFrames(true)
-        this.active.value = true
-      } else this.ended()
+    this.session = new HeadsetSession(world, {
+      launching: (passthrough) => {
+        this.space.group.visible = this.moon.mesh.visible = !passthrough
+      },
+      ended: () => this.leave()
     })
+    this.active = this.session.active
     world.onXRFrame((_frame, delta, time) => this.frame(delta, time))
   }
 
@@ -285,24 +254,12 @@ export class Vr {
   enter(view: VrView): void {
     this.placed = false
     this.show(view)
-    this.launch()
-  }
-
-  private launch(passthrough = headsetPassthrough.value): void {
-    this.space.group.visible = this.moon.mesh.visible = !passthrough
-    this.world.launchXR({ sessionMode: passthrough ? SessionMode.ImmersiveAR : SessionMode.ImmersiveVR })
-  }
-
-  /** Swaps space for the room round the player, or back: a new session of the other kind. */
-  private togglePassthrough(): void {
-    if (this.switchingTo !== undefined) return
-    this.switchingTo = !headsetPassthrough.value
-    this.world.exitXR()
+    this.session.launch()
   }
 
   /** Change what the headset shows, as the screen moves from round to answer to round. */
   show(view: VrView): void {
-    this.stroke.end()
+    this.hands.endStroke()
     this.picture.release(this.menu.object3D)
     const leavingAnswer = this.view?.type === VrViewType.REVEAL && view.type !== VrViewType.REVEAL
     this.menu.show(view)
@@ -335,33 +292,23 @@ export class Vr {
   refresh(view: VrView): void {
     this.view = view
     const round = this.round
-    if (round)
-      this.detail.setDetail(view.type === VrViewType.REVEAL ? { stateRound: view.reveal.stateRound } : round.detail)
+    const detail = patchDetail(view)
+    if (detail) this.detail.setDetail(detail)
     this.hint.show(round?.hint)
     this.detail.setHint(round?.hint)
     if (round) this.wrist.setState(round.water, round.hint && describeHint(round.hint), round.hintsLeft)
-    for (const h of HANDS) this.tools[h].setColour(round?.colour)
-    // As the page's map: everything on the reveal, while painting what the round's detail shows.
-    const shown =
-      view.type === VrViewType.REVEAL
-        ? RevealDetail.REVEAL
-        : view.type === VrViewType.PAINT
-          ? view.round.detail
-          : undefined
+    this.hands.setColour(round?.colour)
+    const shown = globeDetail(view)
     this.globe.showColour(shown !== undefined && showsTerrain(shown))
     this.globe.showBorders(shown !== undefined && showsBorders(shown))
-    this.scores.show(
-      view.type === VrViewType.REVEAL ? view.reveal.table : "summary" in view ? view.summary.table : view.round.table
-    )
-    // Players' colours tell them apart, so they tell whose paint is shown.
-    const paintsKey = view.type === VrViewType.REVEAL ? (view.reveal.paints?.map((p) => p.colour).join() ?? "own") : ""
-    if (paintsKey !== this.paintsKey) {
-      this.paintsKey = paintsKey
+    this.scores.show(tableOf(view))
+    const key = paintsKey(view)
+    if (key !== this.paintsKey) {
+      this.paintsKey = key
       this.paintDirty = true
     }
-    this.board.show("summary" in view ? view.summary.board : undefined)
-    const flags = view.type === VrViewType.REVEAL ? view.reveal.flags : undefined
-    this.flagPins.show(flags?.on ? flags.pins : undefined)
+    this.board.show(boardOf(view))
+    this.flagPins.show(flagPinsOf(view))
     this.menu.refresh(view)
   }
 
@@ -375,36 +322,13 @@ export class Vr {
     return this.view?.type === VrViewType.PAINT && round?.playing && round.paint.enabled.value ? round : undefined
   }
 
-  /**
-   * While painting, the can and eraser stand in for the controllers. Not
-   * toggleVisual(): IWSDK sets the model itself visible again every frame,
-   * but leaves the parts inside it alone. The model loads some frames into
-   * the session.
-   */
-  private showControllers(on: boolean): void {
-    for (const h of HANDS) {
-      const model = this.world.input.xr.visualAdapters.controller[XR_HAND[h]].visual?.model
-      if (model) for (const part of model.children) part.visible = on
-    }
-  }
-
   exit(): void {
-    if (this.active.value) this.world.exitXR()
-  }
-
-  private ended(): void {
-    // A refused switch keeps the old setting.
-    this.switchingTo = undefined
-    this.switchOpening = false
-    if (!this.active.value) return
-    timerFrames(false)
-    this.active.value = false
-    this.leave()
+    this.session.exit()
   }
 
   private leave(): void {
     this.menu.leave()
-    this.stroke.end()
+    this.hands.endStroke()
     this.picture.release(this.menu.object3D)
     this.stopPaintWatch?.()
     this.stopPaintWatch = undefined
@@ -414,56 +338,50 @@ export class Vr {
   private frame(dt: number, now: number): void {
     this.frames++
     this.menu.tick(now)
-    this.showControllers(this.painting === undefined)
+    this.hands.showControllers(this.painting === undefined)
     if (!this.view) return
-    const { player } = this.world
-    if (!this.placed) {
-      const head = player.head.getWorldPosition(new Vector3())
-      const forward = player.head.getWorldDirection(new Vector3()).negate()
-      this.globe.place(head, forward)
-      this.menu.place(head, forward)
-      this.scores.place(head, forward)
-      this.board.place(head, forward)
-      this.clearance.placed(head, [
-        { obj: this.menu.object3D, half: PANEL_SIZE / 2 },
-        { obj: this.scores.object3D, half: SCORES_WIDTH / 2 }
-      ])
-      this.placed = true
-    }
+    if (!this.placed) this.placeScene()
     this.clearance.update(this.globe)
     this.menu.wirePanel()
     this.scores.update()
     this.placePicture()
-
-    const pads = this.world.input.xr.gamepads
-    const grips: Partial<Record<Hand, Vector3>> = {}
-    const stick = { x: 0, y: 0 }
-    for (const h of HANDS) {
-      const pad = pads[XR_HAND[h]]
-      this.tools[h].busy = false
-      if (!pad) continue
-      const grip = player.gripSpaces[XR_HAND[h]].getWorldPosition(new Vector3())
-      const squeezed = pad.getButtonPressed(InputComponent.Squeeze)
-      this.tools[h].busy = squeezed
-      if (pad.getButtonDown(InputComponent.Squeeze) && !this.picture.heldBy) {
-        const ray = player.raySpaces[XR_HAND[h]]
-        const origin = ray.getWorldPosition(new Vector3())
-        if (this.picture.reaches(grip, origin, ray.getWorldDirection(new Vector3()).negate()))
-          this.picture.grab(
-            h,
-            this.world.scene,
-            player.gripSpaces[XR_HAND[h]],
-            player.head.getWorldPosition(new Vector3())
-          )
-      }
-      if (this.picture.heldBy === h && !squeezed) this.picture.release(this.menu.object3D)
-      if (squeezed && this.picture.heldBy !== h) grips[h] = grip
-      const s = pad.getAxesValues(InputComponent.Thumbstick)
-      stick.x += s?.x ?? 0
-      stick.y += s?.y ?? 0
-    }
+    const { grips, stick } = this.hands.grip(this.picture, this.menu.object3D)
     this.globe.update(dt, grips, stick)
+    const head = this.world.player.head.getWorldPosition(new Vector3())
+    this.updateScenery(dt, now, head)
+    this.updatePointing(head)
+    this.wrist.update(this.painting !== undefined, this.world.player.gripSpaces[XR_HAND[Hand.LEFT]], head)
+    this.hands.hold(this.painting !== undefined)
+
+    const round = this.round
+    if (round && this.paintDirty && now - this.lastPaintDraw >= PAINT_REDRAW) this.redrawPaint(round, now)
+    this.menu.updateLabels()
+    const painting = this.painting
+    if (!painting) {
+      this.hands.rest(now)
+      return
+    }
+    // The trigger also presses the menu's buttons; pointing at it, it sprays nothing.
+    const onMenu = this.menu.hovered || this.wrist.hovered
+    if (this.hands.paint(now, this.globe, painting.paint, onMenu, this.wrist.open)) this.paintDirty = true
+  }
+
+  private placeScene(): void {
+    const { player } = this.world
     const head = player.head.getWorldPosition(new Vector3())
+    const forward = player.head.getWorldDirection(new Vector3()).negate()
+    this.globe.place(head, forward)
+    this.menu.place(head, forward)
+    this.scores.place(head, forward)
+    this.board.place(head, forward)
+    this.clearance.placed(head, [
+      { obj: this.menu.object3D, half: PANEL_SIZE / 2 },
+      { obj: this.scores.object3D, half: SCORES_WIDTH / 2 }
+    ])
+    this.placed = true
+  }
+
+  private updateScenery(dt: number, now: number, head: Vector3): void {
     const zoomed = this.globe.scale >= DETAIL_SCALE
     this.detail.update(
       now,
@@ -473,70 +391,22 @@ export class Vr {
     this.answer.update(this.globe.scale)
     this.space.update(head)
     this.moon.update(dt, this.globe.centre, this.globe.radius)
-    const pointing = this.view.type === VrViewType.REVEAL && this.flagPins.shown > 0
-    const pointers: Pointer[] = HANDS.map((h) => ({ ...this.tools[h].pointer(), globe: this.tools[h].aim(this.globe) }))
+  }
+
+  private updatePointing(head: Vector3): void {
+    const pointing = this.view?.type === VrViewType.REVEAL && this.flagPins.shown > 0
+    const pointers = this.hands.pointers(this.globe)
     this.flagPins.update(this.globe.scale, pointing ? pointers : [], head)
-    for (const h of HANDS) this.tools[h].showBeam(pointing ? this.globe : undefined)
-    this.wrist.update(this.painting !== undefined, player.gripSpaces[XR_HAND[Hand.LEFT]], head)
-    for (const h of HANDS) this.tools[h].hold(this.painting !== undefined)
+    this.hands.showBeams(pointing ? this.globe : undefined)
+  }
 
-    const round = this.round
-    if (round && this.paintDirty && now - this.lastPaintDraw >= PAINT_REDRAW) {
-      const paints = this.view.type === VrViewType.REVEAL ? this.view.reveal.paints : undefined
-      const paint = paints ? colouredPaint(paints) : round.paint.layer.toGeoJSON()
-      this.globe.showPaint(paintGeometry(paint, THEME, PAINT_RADIUS, paints ? undefined : round.colour))
-      this.shownPaintCells = paint.features.length
-      this.paintDirty = false
-      this.lastPaintDraw = now
-    }
-    this.menu.updateLabels()
-    if (!this.painting || !round) {
-      for (const h of HANDS) {
-        this.tools[h].hide()
-        this.tools[h].settle(now)
-      }
-      return
-    }
-
-    // A steps through the right hand's tools, X the left's: Fill too on a country round.
-    const fillable = round.paint.fillable.value
-    for (const [h, button] of [
-      [Hand.RIGHT, InputComponent.A_Button],
-      [Hand.LEFT, InputComponent.X_Button]
-    ] as const) {
-      const tool = this.tools[h]
-      const offered = offeredTool(tool.tool, fillable, h)
-      if (offered !== tool.tool) tool.setTool(offered)
-      if (pads[XR_HAND[h]]?.getButtonDown(button)) tool.setTool(nextTool(tool.tool, fillable))
-    }
-
-    // The trigger also presses the menu's buttons; pointing at it, it sprays nothing.
-    const onMenu = this.menu.hovered || this.wrist.hovered
-    // The left hand is turned to show the wrist menu, not to erase.
-    const triggers = HANDS.map((h) =>
-      h === Hand.LEFT && this.wrist.open ? 0 : (pads[XR_HAND[h]]?.getButtonValue(InputComponent.Trigger) ?? 0)
-    )
-    // Both hands make one undo step; the first sets the stroke's sound.
-    this.stroke.begin(
-      strokeTool(
-        HANDS.map((h, i) => ({
-          tool: this.tools[h].tool,
-          touching: this.tools[h].touching(this.globe) !== undefined,
-          busy: this.tools[h].busy,
-          trigger: triggers[i]!,
-          aimed: this.tools[h].aim(this.globe) !== undefined
-        })),
-        onMenu,
-        TRIGGER_DEAD
-      )
-    )
-    // Every hand updates, even once one has sprayed: each moves its own spot.
-    const sprayed = HANDS.map((h, i) =>
-      this.tools[h].update(now, this.globe, triggers[i]!, onMenu, round.paint, pads[XR_HAND[h]]?.gamepad)
-    )
-    // Sooner than paint.version, which waits a little for an animation frame.
-    if (sprayed.includes(true)) this.paintDirty = true
-    else this.stroke.end()
+  private redrawPaint(round: VrRound, now: number): void {
+    const paints = this.view?.type === VrViewType.REVEAL ? this.view.reveal.paints : undefined
+    const paint = paints ? colouredPaint(paints) : round.paint.layer.toGeoJSON()
+    this.globe.showPaint(paintGeometry(paint, THEME, PAINT_RADIUS, paints ? undefined : round.colour))
+    this.shownPaintCells = paint.features.length
+    this.paintDirty = false
+    this.lastPaintDraw = now
   }
 
   /** On top of the menu, which grows and shrinks with its text. */
