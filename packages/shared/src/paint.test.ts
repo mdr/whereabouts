@@ -107,6 +107,10 @@ describe("PaintLayer", () => {
     expect(Math.abs(layer.mass() - before) / before).toBeLessThan(1e-6)
   })
 
+  it("reports no blobs for an empty layer", () => {
+    expect(new PaintLayer(resolutionForTolerance(100)).blobs()).toEqual([])
+  })
+
   it("reports blobs with fractions summing to one", () => {
     const layer = new PaintLayer(resolutionForTolerance(100))
     layer.stamp({ lat: 27, lon: 78 }, 60, 1)

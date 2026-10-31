@@ -379,13 +379,27 @@ export class PaintLayer {
    * approximation otherwise. Diagnostic only.
    */
   blobs(): Blob[] {
-    const out: Blob[] = []
-    if (this.cells.size === 0) return out
+    if (this.cells.size === 0) return []
+    const groups = this.groupByCoarsestAncestor()
+    let totalMass = 0
+    for (const [h, v] of this.cells) totalMass += v * this.area(h)
+
+    return connectedKeyGroups(groups)
+      .map((keys) =>
+        this.summariseBlob(
+          keys.flatMap((key) => groups.get(key)!),
+          totalMass
+        )
+      )
+      .sort((a, b) => b.fraction - a.fraction)
+  }
+
+  /** Cells grouped under their ancestor at the coarsest resolution present. */
+  private groupByCoarsestAncestor(): Map<H3Cell, H3Cell[]> {
     let min = Infinity
     for (const h of this.cells.keys()) min = Math.min(min, getResolution(h))
     const coarsest = h3Res(min)
 
-    // Group cells under their ancestor at the coarsest resolution.
     const groups = new Map<H3Cell, H3Cell[]>()
     for (const h of this.cells.keys()) {
       const key = getResolution(h) === coarsest ? h : cellToParent(h, coarsest)
@@ -393,49 +407,54 @@ export class PaintLayer {
       if (list) list.push(h)
       else groups.set(key, [h])
     }
-
-    let totalMass = 0
-    for (const [h, v] of this.cells) totalMass += v * this.area(h)
-
-    const seen = new Set<H3Cell>()
-    for (const start of groups.keys()) {
-      if (seen.has(start)) continue
-      seen.add(start)
-      const stack = [start]
-      let mass = 0
-      let count = 0
-      let sx = 0,
-        sy = 0,
-        sz = 0
-      while (stack.length) {
-        const key = stack.pop()!
-        for (const h of groups.get(key)!) {
-          const m = this.cells.get(h)! * this.area(h)
-          mass += m
-          count++
-          const [lat, lon] = this.centre(h)
-          const la = (lat * Math.PI) / 180,
-            lo = (lon * Math.PI) / 180
-          sx += m * Math.cos(la) * Math.cos(lo)
-          sy += m * Math.cos(la) * Math.sin(lo)
-          sz += m * Math.sin(la)
-        }
-        for (const nb of gridDisk(key, 1)) {
-          if (!seen.has(nb) && groups.has(nb)) {
-            seen.add(nb)
-            stack.push(nb)
-          }
-        }
-      }
-      const centroid = {
-        lat: (Math.atan2(sz, Math.hypot(sx, sy)) * 180) / Math.PI,
-        lon: (Math.atan2(sy, sx) * 180) / Math.PI
-      }
-      out.push({ fraction: mass / totalMass, cells: count, centroid })
-    }
-    out.sort((a, b) => b.fraction - a.fraction)
-    return out
+    return groups
   }
+
+  private summariseBlob(cells: H3Cell[], totalMass: number): Blob {
+    let mass = 0
+    let sx = 0,
+      sy = 0,
+      sz = 0
+    for (const h of cells) {
+      const m = this.cells.get(h)! * this.area(h)
+      mass += m
+      const [lat, lon] = this.centre(h)
+      const la = (lat * Math.PI) / 180,
+        lo = (lon * Math.PI) / 180
+      sx += m * Math.cos(la) * Math.cos(lo)
+      sy += m * Math.cos(la) * Math.sin(lo)
+      sz += m * Math.sin(la)
+    }
+    const centroid = {
+      lat: (Math.atan2(sz, Math.hypot(sx, sy)) * 180) / Math.PI,
+      lon: (Math.atan2(sy, sx) * 180) / Math.PI
+    }
+    return { fraction: mass / totalMass, cells: cells.length, centroid }
+  }
+}
+
+/** Keys of `groups` split into runs of H3-adjacent cells, each in traversal order. */
+function connectedKeyGroups(groups: ReadonlyMap<H3Cell, unknown>): H3Cell[][] {
+  const out: H3Cell[][] = []
+  const seen = new Set<H3Cell>()
+  for (const start of groups.keys()) {
+    if (seen.has(start)) continue
+    seen.add(start)
+    const stack = [start]
+    const keys: H3Cell[] = []
+    while (stack.length) {
+      const key = stack.pop()!
+      keys.push(key)
+      for (const nb of gridDisk(key, 1)) {
+        if (!seen.has(nb) && groups.has(nb)) {
+          seen.add(nb)
+          stack.push(nb)
+        }
+      }
+    }
+    out.push(keys)
+  }
+  return out
 }
 
 /** Cells a paint upload may carry: clients compact to it, and the server refuses more. */

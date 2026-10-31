@@ -414,7 +414,6 @@ export default defineConfig({
           "packages/shared/scripts/write-catalogue.mjs",
           "packages/shared/src/awards.ts",
           "packages/shared/src/game.ts",
-          "packages/shared/src/paint.ts",
           "packages/shared/src/scoring.ts"
         ],
         rules: { "sonarjs/cognitive-complexity": "off" }
