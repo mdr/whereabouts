@@ -30,6 +30,14 @@ export const RoomCodeSchema = z
 export type RoomCode = z.infer<typeof RoomCodeSchema>
 export const roomCode = (s: string): RoomCode => RoomCodeSchema.parse(s)
 
+/** Generate a join code that avoids look-alike characters. */
+export function generateCode(rnd: () => number = Math.random, length = 4): RoomCode {
+  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+  let out = ""
+  for (let i = 0; i < length; i++) out += alphabet.charAt(Math.floor(rnd() * alphabet.length))
+  return roomCode(out)
+}
+
 /** A question in the catalogue ("taj-mahal", "flag-de", "germany-region"). */
 export const QuestionIdSchema = z.string().regex(SLUG).brand<"QuestionId">()
 export type QuestionId = z.infer<typeof QuestionIdSchema>

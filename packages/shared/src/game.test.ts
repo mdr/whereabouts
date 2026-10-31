@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { latLngToCell } from "./h3.ts"
-import { Game, ROUND_GRACE, generateCode } from "./game.ts"
+import { Game, ROUND_GRACE } from "./game.ts"
 import type { QuestionBank } from "./round-picking.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { PASS_SCORE } from "./scoring.ts"
@@ -692,7 +692,7 @@ describe("joining and leaving mid-game", () => {
     const seat = new Set(["id", "token", "name", "colour", "watching", "connected", "leftAt", "joinedAt"])
     const record = (g: Game, token: PlayerToken) =>
       Object.fromEntries(
-        Object.entries((g as unknown as { players: Map<PlayerToken, object> }).players.get(token)!).filter(
+        Object.entries((g as unknown as { seats: { get(t: PlayerToken): object } }).seats.get(token)).filter(
           ([k]) => !seat.has(k)
         )
       )
@@ -742,12 +742,6 @@ describe("ranks", () => {
     expect(b.rank).toBe(2)
     expect(a.previousRank).toBe(1)
     expect(b.previousRank).toBe(1)
-  })
-})
-
-describe("generateCode", () => {
-  it("uses the unambiguous alphabet", () => {
-    for (let i = 0; i < 50; i++) expect(generateCode()).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}$/)
   })
 })
 

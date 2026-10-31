@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { flagCode, playerId, playerToken, questionId, outlineId, roomCode } from "./ids.ts"
+import { flagCode, generateCode, playerId, playerToken, questionId, outlineId, roomCode } from "./ids.ts"
 import { KickSchema, PROTOCOL_VERSION, TicketSchema } from "./protocol.ts"
 
 describe("identifiers", () => {
@@ -22,5 +22,11 @@ describe("identifiers", () => {
     const ticket = { v: PROTOCOL_VERSION, token: "0123456789abcdef", name: "Ann" }
     expect(TicketSchema.safeParse({ ...ticket, code: "AB12" }).success).toBe(true)
     expect(TicketSchema.safeParse({ ...ticket, code: "ab12" }).success).toBe(false)
+  })
+})
+
+describe("generateCode", () => {
+  it("uses the unambiguous alphabet", () => {
+    for (let i = 0; i < 50; i++) expect(generateCode()).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}$/)
   })
 })

@@ -400,10 +400,7 @@ export default defineConfig({
           "max-lines": "off",
           "sonarjs/cognitive-complexity": "off"
         }
-      },
-      // To-do: files that don't yet meet the size and complexity rules. Remove an entry once it passes.
-      { files: ["packages/shared/src/game.ts"], rules: { "sonarjs/cognitive-complexity": "off" } },
-      { files: ["packages/shared/src/game.ts"], rules: { "max-lines": "off" } }
+      }
     ],
     jsPlugins: [
       {
