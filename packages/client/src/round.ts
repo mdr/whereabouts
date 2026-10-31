@@ -81,7 +81,7 @@ export function useRoundMap(
 }
 
 /** Whether Done now is a pass (nothing painted), clucking if so. */
-export function announcePass(paint: PaintController): boolean {
+export function announcePass(paint: Pick<PaintController, "layer">): boolean {
   const pass = paint.layer.isEmpty
   if (pass) sound.play("chicken")
   return pass

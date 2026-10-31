@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "preact/hooks"
-import { compactRecord } from "@whereabouts/shared/paint"
+import { useEffect, useMemo, useState } from "preact/hooks"
 import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { GameView } from "@whereabouts/shared/protocol"
@@ -37,7 +36,8 @@ import type { PaintController } from "../paint-controller"
 import { inGameTestIds } from "./InGameTestIds"
 import { useFact } from "../facts"
 import { paintLayer, paintsOf } from "../reveal-paint"
-import { announcePass, useRoundMap } from "../round"
+import { useRoundMap } from "../round"
+import { usePaintUpload } from "../paint-upload"
 import { vrReveal, vrRound, type VrRoundShown } from "../vr-round"
 
 export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
@@ -47,7 +47,6 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const roundKey = view.round?.index ?? view.reveal?.index ?? -1
   const guessing = view.phase === "guessing"
   const question = view.round?.question ?? view.reveal?.question
-  const sendTimer = useRef<number | undefined>(undefined)
   // The countdown has reached zero: painting stops, and what is on screen is what counts.
   const [timeUp, setTimeUp] = useState(false)
   const { dialog, ask } = useConfirm()
@@ -97,49 +96,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     paint.enabled.value = guessing && !sittingOut && !view.you.locked && !timeUp
   }, [guessing, sittingOut, view.you.locked, timeUp])
 
-  /** Upload the paint now. An empty map is sent too: it takes back paint sent earlier. */
-  function sendNow() {
-    if (sendTimer.current) clearTimeout(sendTimer.current)
-    sendTimer.current = undefined
-    conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.peek() })
-  }
-
-  // Debounced upload of the current paint while guessing.
-  const version = paint.version.value
-  const floor = paint.floor.value
-  useEffect(() => {
-    if (!guessing || sittingOut || view.you.locked || timeUp) return
-    if (sendTimer.current) clearTimeout(sendTimer.current)
-    sendTimer.current = window.setTimeout(sendNow, 400)
-    return () => {
-      if (sendTimer.current) clearTimeout(sendTimer.current)
-    }
-  }, [version, floor, guessing])
-
-  useEffect(() => {
-    if (timeUp && guessing && !sittingOut && !view.you.locked) sendNow()
-  }, [timeUp])
-
-  // Uploads made while the connection was down were lost. Once the server
-  // has us back (its first state since), send the paint again.
-  const status = conn.status.value
-  const resend = useRef(false)
-  useEffect(() => {
-    if (status !== "connected") resend.current = true
-  }, [status])
-  useEffect(() => {
-    if (!resend.current || status !== "connected") return
-    resend.current = false
-    if (guessing && !sittingOut && !view.you.locked && !timeUp) sendNow()
-  }, [view])
-
-  // Done with paint freezes it; Done with nothing painted is a pass, which
-  // scores PASS_SCORE and lets the round end without waiting on you.
-  function lockIn() {
-    announcePass(paint)
-    sendNow()
-    conn.lock()
-  }
+  const { lockIn } = usePaintUpload(conn, paint, view, timeUp)
 
   // A country round shows the country's flag beside its name, once the outlines have loaded.
   const region = useRegion(question?.regionId)
