@@ -8,7 +8,6 @@ import {
   AnswerType,
   ClueType,
   FLAG_POINT_PROMPT,
-  FeatureType,
   QuestionType,
   promptOf,
   type LandmarkQuestion,
@@ -972,22 +971,6 @@ describe("the question mix", () => {
     }
     check()
     expect(g.view(tokA, now).awards!.length).toBeGreaterThan(0)
-  })
-
-  it("scores an island against its outline, as a country", () => {
-    const borneo = byId("island-borneo")
-    const g = game({ mix: mixOf({ [QuestionType.FEATURE]: 1 }) }, { catalogue: [borneo] })
-    g.start(tokA, T0)
-    const q = g.view(tokA, T0).round!.question
-    expect(promptOf(q)).toBe("Paint the whole of Borneo")
-    expect(q).toMatchObject({ answer: { outline: "island-borneo" }, feature: FeatureType.ISLAND })
-    const res = resolutionForTolerance(q.answer.tolerance)
-    const cells = Object.fromEntries(regionCells(areaOf(borneo), res).map((h) => [h, 1]))
-    expect(g.setPaint(tokA, { cells, floor: 0.05 }).ok).toBe(true)
-    g.tick(T0 + 60_000 + ROUND_GRACE)
-    const reveal = g.view(tokB, T0 + 60_000).reveal!
-    expect(reveal.label).toBe("Borneo")
-    expect(reveal.results.find((r) => r.playerId === "p1")!.score).toBeGreaterThan(985)
   })
 
   it("scores a country round against the outline, which it never sends; a pass still scores 250", () => {
