@@ -251,8 +251,6 @@ export interface RegionMisfit {
    * there is none, or when it surrounds the country rather than leaning one way.
    */
   off: { bearing: Degrees; distance: Km } | undefined
-  /** Which way from the centre the bare or thin part of the country lies; undefined when it does not lean one way. */
-  bare: { bearing: Degrees } | undefined
 }
 
 /**
@@ -262,7 +260,7 @@ export interface RegionMisfit {
  */
 const LEAN = 0.4
 
-/** Facts for explaining a score in words: regionFit, and which way the misses lie. */
+/** regionFit, and where the paint off the country lies, for the awards. */
 export function regionMisfit(dist: Distribution, q: Area): RegionMisfit {
   const { coverage, precision } = regionFit(dist, q)
   const region = regionAt(q)
@@ -278,19 +276,7 @@ export function regionMisfit(dist: Distribution, q: Area): RegionMisfit {
     off = { bearing: bearing(q.centre, offCentre), distance }
   }
 
-  // Shortfall below half the density the paint on the country would have spread evenly, as regionFit counts it.
-  let onMass = 0
-  for (const h of region.cells.keys()) onMass += mass.get(h) ?? 0
-  const half = onMass / region.area / 2
-  const short: [H3Cell, number][] = []
-  if (half > 0) {
-    for (const [h, a] of region.cells) {
-      const s = Math.max(0, 1 - (mass.get(h) ?? 0) / a / half) * a
-      if (s > 0) short.push([h, s])
-    }
-  }
-  const bareCentre = leaning(q.centre, short)
-  return { coverage, precision, off, bare: bareCentre && { bearing: bearing(q.centre, bareCentre) } }
+  return { coverage, precision, off }
 }
 
 function latLng(h: H3Cell): LatLon {

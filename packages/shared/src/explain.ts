@@ -1,6 +1,6 @@
 /**
- * A score in words, for the reveal: what the paint risked and where it went
- * wrong, so a player can see why it scored what it did.
+ * What a place's score is made of, for the awards: what the paint risked and
+ * where it went wrong.
  *
  * A place's score is 500 (1 + 2A - B), and only A depends on where the
  * answer is. So 1000 - score splits exactly into two costs, each at least 0:
@@ -9,7 +9,7 @@
  */
 import { cellToLatLng, coarserRes, getResolution, h3Res, type H3Cell } from "./h3.ts"
 import { chordDistance, fromXyz, greatCircleDistance, toXyz, type LatLon } from "./geo.ts"
-import type { Degrees, Km } from "./units.ts"
+import type { Km } from "./units.ts"
 import {
   coarsenDistribution,
   DEFAULT_KERNEL,
@@ -18,7 +18,6 @@ import {
   type Distribution,
   type Kernel
 } from "./scoring.ts"
-import type { RegionMisfit } from "./regions.ts"
 
 export interface PointExplanation {
   /** What this paint would have scored had the answer been where it is strongest. */
@@ -85,63 +84,4 @@ function latLngOf(h: H3Cell): LatLon {
 /** Some paint near the answer, but most of it somewhere else, and that cost something. */
 export function isHedge(e: PointExplanation, score: number, tolerance: Km): boolean {
   return Math.max(e.best, score) - score >= 25 && e.nearShare >= 0.15 && e.miss > NEAR * tolerance
-}
-
-/** A short, plain sentence: how near the paint was, and how spread out. */
-export function describePoint(e: PointExplanation, score: number, tolerance: Km): string {
-  const best = Math.max(e.best, score)
-  const distance = best - score
-  const spread = 1000 - best
-  if (isHedge(e, score, tolerance)) {
-    return "Some of your paint was on it, but most was somewhere else."
-  }
-  const where =
-    distance < 25 ? "Right area" : distance < 150 ? "Close" : distance < 400 ? "Some way off" : "A long way off"
-  if (spread < 60) return distance < 25 ? "Spot on." : distance < 150 ? "Close, but slightly off." : `${where}.`
-  const how = spread < 200 ? "a bit spread out" : "very spread out"
-  return `${where}, ${distance < 150 ? "but" : "and"} ${how}.`
-}
-
-/** Shares of the paint or the country below this are not worth a mention. */
-const MENTION = 0.1
-
-/** What kept a country round's paint from matching the country, biggest first. */
-export function describeRegion(m: RegionMisfit, label: string, tolerance: Km, edge = "border"): string {
-  // A country's tolerance is a fifth of its equivalent radius.
-  const radius = 5 * tolerance
-  if (m.precision < MENTION) {
-    if (!m.off) return `Your paint was around ${label}, but not on it.`
-    const how = m.off.distance < radius ? "just" : m.off.distance < 4 * radius ? "well" : "a long way"
-    return `Your paint was ${how} ${compass(m.off.bearing)} of ${label}.`
-  }
-  const offShare = 1 - m.precision
-  const bareShare = 1 - m.coverage
-  const parts: [number, string][] = []
-  if (offShare >= MENTION) {
-    const where = !m.off
-      ? `went over the ${edge} all round`
-      : m.off.distance < radius
-        ? `went over the ${compass(m.off.bearing)} ${edge}`
-        : `was well to the ${compass(m.off.bearing)}`
-    parts.push([offShare, `${amount(offShare)} your paint ${where}.`])
-  }
-  if (bareShare >= MENTION) {
-    const what = m.bare ? `the ${compass(m.bare.bearing)}` : label
-    parts.push([bareShare, `You missed ${amount(bareShare).toLowerCase()} ${what}.`])
-  }
-  if (parts.length === 0) return "A good match."
-  return parts
-    .sort((a, b) => b[0] - a[0])
-    .map(([, s]) => s)
-    .join(" ")
-}
-
-function amount(share: number): string {
-  return share < 0.25 ? "Some of" : share < 0.6 ? "A lot of" : "Most of"
-}
-
-const POINTS = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"]
-
-function compass(bearing: Degrees): string {
-  return POINTS[Math.round(bearing / 45) % 8]!
 }
