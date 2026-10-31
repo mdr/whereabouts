@@ -28,7 +28,8 @@ import {
   type RoundReveal,
   Phase
 } from "@whereabouts/shared/protocol"
-import { Game, generateCode, type CommandResult, type QuestionBank } from "@whereabouts/shared/game"
+import { Game, generateCode, type CommandResult } from "@whereabouts/shared/game"
+import type { QuestionBank } from "@whereabouts/shared/round-picking"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
 import { CloseReason } from "@whereabouts/shared/close-reason"
 import type { Instant, Ms } from "@whereabouts/shared/units"

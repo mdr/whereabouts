@@ -5,41 +5,15 @@
  */
 import { DEFAULT_KERNEL, buildDistribution, kernelById, type Distribution, type Kernel } from "./scoring.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
-import {
-  AnswerType,
-  ClueType,
-  QUESTION_TYPES,
-  QuestionType,
-  answerCentre,
-  flagShown,
-  shuffle,
-  type Outlines,
-  type Question
-} from "./questions.ts"
-import { poolOf } from "./catalogue.ts"
-import {
-  regionFit,
-  regionMisfit,
-  roundsOverlap,
-  scoreAnswer,
-  scoredAnswer,
-  type AnswerParts,
-  type ScoredAnswer
-} from "./regions.ts"
+import { AnswerType, ClueType, QuestionType, answerCentre, flagShown, type Question } from "./questions.ts"
+import { pickRounds, type QuestionBank } from "./round-picking.ts"
+import { regionFit, regionMisfit, scoreAnswer, scoredAnswer, type AnswerParts, type ScoredAnswer } from "./regions.ts"
 import { explainPoint, isHedge } from "./explain.ts"
 import { pickAwards, type Award, type RoundFacts } from "./awards.ts"
 import { revealPhoto } from "./photos.ts"
 import { DEFAULT_HINTS, hintBand, seededUnit, HintAxis, type HintBand } from "./hints.ts"
 import { playerColour, type PlayerColour } from "./colours.ts"
-import {
-  playerId,
-  roomCode,
-  type PlaceId,
-  type PlayerId,
-  type PlayerName,
-  type PlayerToken,
-  type RoomCode
-} from "./ids.ts"
+import { playerId, roomCode, type PlayerId, type PlayerName, type PlayerToken, type RoomCode } from "./ids.ts"
 import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE, evenMix, MapDetail, Phase } from "./protocol.ts"
 import type {
   ConfigurePatch,
@@ -127,25 +101,14 @@ interface Submission {
 export type CommandResult = { ok: true; changed: boolean } | { ok: false; error: string }
 export type JoinResult = { ok: true; changed: boolean } | { ok: false; reason: CloseReason }
 
-/** One per question type, so each type's pool is shuffled differently. */
-const SALTS = [0x9e3779b9, 0x7f4a7c15, 0x2545f491, 0x68e31da4, 0x1b873593, 0x85ebca6b]
-
 const OK_CHANGED = { ok: true, changed: true } as const
 const OK_SAME: CommandResult = { ok: true, changed: false }
 const fail = (error: string): CommandResult => ({ ok: false, error })
 
-/** Everything a game picks its rounds from. */
-export interface QuestionBank {
-  catalogue: readonly Question[]
-  /** Every area answer's outline. */
-  outlines: Outlines
-}
-
 export class Game {
   readonly code: RoomCode
   config: GameConfig
-  private readonly catalogue: readonly Question[]
-  private readonly outlines: Outlines
+  private readonly bank: QuestionBank
   private readonly kernel: Kernel
 
   phase: Phase = Phase.LOBBY
@@ -171,17 +134,16 @@ export class Game {
 
   constructor(
     code: RoomCode,
-    { catalogue, outlines }: QuestionBank,
+    bank: QuestionBank,
     { config = {}, seed = Date.now() }: { config?: Partial<GameConfig>; seed?: number } = {}
   ) {
     this.seed = seed
     this.code = code
     this.config = { ...DEFAULT_CONFIG, ...config }
-    this.catalogue = catalogue
-    this.outlines = outlines
+    this.bank = bank
     this.kernel = kernelById(this.config.kernelId)
-    if (catalogue.length === 0) throw new Error("question catalogue is empty")
-    this.questions = this.pickRounds()
+    if (bank.catalogue.length === 0) throw new Error("question catalogue is empty")
+    this.questions = pickRounds(this.bank, this.config, this.seed)
   }
 
   // ---- membership ----------------------------------------------------------
@@ -312,32 +274,6 @@ export class Game {
     return OK_CHANGED
   }
 
-  /**
-   * The rounds' questions, as many of each type as the mix asks while they
-   * last, in a shuffled order: never a place already asked another way
-   * ("Where is Monaco?" and Monaco's flag, say), and where the pools allow,
-   * none overlapping a round already chosen.
-   */
-  private pickRounds(): Question[] {
-    const chosen: Question[] = []
-    const asked = new Set<PlaceId>()
-    const answer = (q: Question) => scoredAnswer(q.answer, this.outlines)
-    QUESTION_TYPES.forEach((type, i) => {
-      const count = this.config.mix[type]
-      if (count === 0) return
-      const candidates = shuffle(poolOf(this.catalogue, [type], this.config.mapDetail), this.seed ^ SALTS[i]!).filter(
-        (q) => !asked.has(q.place)
-      )
-      for (let n = 0; n < count && candidates.length > 0; n++) {
-        const apart = candidates.findIndex((q) => !chosen.some((c) => roundsOverlap(answer(c), answer(q))))
-        const q = candidates.splice(Math.max(apart, 0), 1)[0]!
-        chosen.push(q)
-        asked.add(q.place)
-      }
-    })
-    return shuffle(chosen, this.seed ^ 0x5bd1e995)
-  }
-
   /** Host tunes the question mix (and so the rounds), round length and map detail while everyone is still in the lobby. */
   configure(token: PlayerToken, patch: ConfigurePatch): CommandResult {
     if (!this.isHost(token)) return fail("only the host can change settings")
@@ -345,7 +281,7 @@ export class Game {
     const next = { ...this.config, ...patch }
     if (sameData(next, this.config)) return OK_SAME
     this.config = next
-    this.questions = this.pickRounds()
+    this.questions = pickRounds(this.bank, this.config, this.seed)
     return OK_CHANGED
   }
 
@@ -368,7 +304,7 @@ export class Game {
     this.submissions.clear()
     this.ready_.clear()
     this.seed = now
-    this.questions = this.pickRounds()
+    this.questions = pickRounds(this.bank, this.config, this.seed)
     for (const p of this.players.values()) Object.assign(p, freshRecord(0))
     for (const [tok, p] of this.players) if (!p.connected) this.players.delete(tok)
     if (this.hostToken === undefined || !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
@@ -613,7 +549,7 @@ export class Game {
 
   private finishRound(): void {
     const q = this.questions[this.roundIndex]!
-    const answer = scoredAnswer(q.answer, this.outlines)
+    const answer = scoredAnswer(q.answer, this.bank.outlines)
     const res = resolutionForTolerance(answer.tolerance)
     const results: RoundResultView[] = []
     // Snapshot ranks before any score changes so arrows compare like with like.

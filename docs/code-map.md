@@ -17,6 +17,7 @@ No I/O; the same code runs in the browser and on the server.
 | `src/protocol.ts`                                 | Client→server message schemas, `GameConfig`, `GameView` and its parts, `PROTOCOL_VERSION`                                                   |
 | `src/view-schema.ts`                              | A zod schema of `GameView` for the tests (the client casts)                                                                                 |
 | `src/game.ts`                                     | The `Game` state machine: joining, rounds, scoring each player, views                                                                       |
+| `src/round-picking.ts`                            | `pickRounds`: a game's questions from the catalogue, by mix, map detail and seed                                                            |
 | `src/paint.ts`, `src/paint-wire.ts`               | The H3 paint layer, and its binary encoding                                                                                                 |
 | `src/scoring.ts`, `src/regions.ts`                | The point rule, and the area rule (`scoreAnswer` picks)                                                                                     |
 | `src/hints.ts`, `src/awards.ts`, `src/explain.ts` | Hint bands, end-of-game awards, a score in words                                                                                            |

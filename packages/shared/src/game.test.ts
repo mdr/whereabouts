@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { latLngToCell } from "./h3.ts"
-import { Game, ROUND_GRACE, generateCode, nextHostAfter, type QuestionBank } from "./game.ts"
+import { Game, ROUND_GRACE, generateCode, nextHostAfter } from "./game.ts"
+import type { QuestionBank } from "./round-picking.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { PASS_SCORE } from "./scoring.ts"
 import {
@@ -24,7 +25,6 @@ import {
   MAX_SPECTATORS,
   type QuestionView,
   SEAT_GRACE,
-  evenMix,
   mixOf,
   mixTotal,
   MapDetail,
@@ -220,13 +220,6 @@ describe("lobby", () => {
     expect(g.start(tokA, T0).ok).toBe(true)
     expect(g.phase).toBe(Phase.GUESSING)
   })
-
-  it("caps rounds at the pool size", () => {
-    const g = makeGame({ config: { mix: evenMix(10) } })
-    g.join(tokH, playerName("H"), T0)
-    g.start(tokH, T0)
-    expect(g.view(tokH, T0).round!.total).toBe(3)
-  })
 })
 
 describe("round loop", () => {
@@ -406,20 +399,6 @@ describe("round loop", () => {
     expect(alice.score).toBe(PASS_SCORE.score)
     expect(alice.paint).toBeUndefined()
     expect(results.find((r) => r.playerId === "p2")!.score).toBeGreaterThan(900)
-  })
-
-  it("asks each question at most once per game", () => {
-    const g = twoPlayerGame(3)
-    g.start(tokA, T0)
-    const seen = new Set<string>()
-    let now = T0
-    for (let i = 0; i < 3; i++) {
-      seen.add(promptOf(g.view(tokA, now).round!.question))
-      now += 60_000 + ROUND_GRACE
-      g.tick(now)
-      g.next(tokA, now)
-    }
-    expect(seen.size).toBe(3)
   })
 })
 
@@ -966,36 +945,6 @@ describe("the question mix", () => {
     )
   })
 
-  it("asks only the types the mix asks for, each question once", () => {
-    const seen = questions(game({ mix: mixOf({ [QuestionType.PLACE]: 3 }) }))
-    expect(seen.map((q) => q.type)).toEqual([QuestionType.PLACE, QuestionType.PLACE, QuestionType.PLACE])
-    expect(new Set(seen.map(promptOf)).size).toBe(3)
-  })
-
-  it("asks as many of each type as the mix says, never a country twice", () => {
-    const mix = mixOf({ [QuestionType.PLACE]: 3, [QuestionType.COUNTRY]: 4, [QuestionType.FLAG]: 5 })
-    const seen = questions(game({ mix }))
-    const countries = seen.filter((q) => q.type === QuestionType.COUNTRY)
-    expect(seen.filter((q) => q.type === QuestionType.FLAG)).toHaveLength(5)
-    expect(countries).toHaveLength(4)
-    expect(countries.every((q) => promptOf(q).startsWith("Paint the whole of"))).toBe(true)
-    expect(seen).toHaveLength(12)
-    const outlines = seen.flatMap((q) => outlineOf(q) ?? [])
-    expect(new Set(outlines).size).toBe(outlines.length)
-    // A catalogue without countries or flags has only the places to ask.
-    const places = CATALOGUE.filter((q) => q.type === QuestionType.PLACE)
-    expect(questions(game({ mix }, { catalogue: places }))).toHaveLength(3)
-  })
-
-  it("asks islands, lakes and seas, and US states, as many as the mix says", () => {
-    const mix = mixOf({ [QuestionType.FEATURE]: 6, [QuestionType.STATE]: 7 })
-    const seen = questions(game({ mix, mapDetail: MapDetail.WATER }))
-    expect(seen).toHaveLength(13)
-    expect(seen.filter((q) => q.type === QuestionType.STATE)).toHaveLength(7)
-    expect(seen.filter((q) => q.type === QuestionType.FEATURE && q.feature !== undefined)).toHaveLength(6)
-    expect(new Set(seen.map(promptOf)).size).toBe(13)
-  })
-
   it("sends every player and spectator views that match GameViewSchema, through every type of round", () => {
     const mix = mixOf(Object.fromEntries(Object.values(QuestionType).map((t) => [t, 1])))
     const g = game({ mix, mapDetail: MapDetail.WATER })
@@ -1025,18 +974,6 @@ describe("the question mix", () => {
     expect(g.view(tokA, now).awards!.length).toBeGreaterThan(0)
   })
 
-  it("asks a lake only when the map shows lakes", () => {
-    const features = CATALOGUE.filter((q) => q.type === QuestionType.FEATURE)
-    const lake = features.find((q) => q.feature === FeatureType.LAKE)!
-    const island = features.find((q) => q.feature === FeatureType.ISLAND)!
-    const asked = (mapDetail: GameConfig["mapDetail"]) =>
-      questions(game({ mix: mixOf({ [QuestionType.FEATURE]: 2 }), mapDetail }, { catalogue: [lake, island] })).map(
-        (q) => q.feature
-      )
-    expect(asked(MapDetail.MINIMAL)).toEqual([FeatureType.ISLAND])
-    expect(asked(MapDetail.WATER).sort()).toEqual([FeatureType.ISLAND, FeatureType.LAKE])
-  })
-
   it("scores an island against its outline, as a country", () => {
     const borneo = byId("island-borneo")
     const g = game({ mix: mixOf({ [QuestionType.FEATURE]: 1 }) }, { catalogue: [borneo] })
@@ -1051,28 +988,6 @@ describe("the question mix", () => {
     const reveal = g.view(tokB, T0 + 60_000).reveal!
     expect(reveal.label).toBe("Borneo")
     expect(reveal.results.find((r) => r.playerId === "p1")!.score).toBeGreaterThan(985)
-  })
-
-  it("does not ask a place's country again as a flag", () => {
-    const g = makeGame({
-      bank: { catalogue: [place("Monaco", { lat: 43.7384, lon: 7.4246 }), byId("flag-mc")] },
-      config: { mix: mixOf({ [QuestionType.PLACE]: 1, [QuestionType.FLAG]: 1 }) }
-    })
-    g.join(tokA, playerName("Alice"), T0)
-    expect(questions(g).map(promptOf)).toEqual(["Where is Monaco?"])
-  })
-
-  it("keeps a place's country out of the same game when another country will do", () => {
-    const gaborone = CATALOGUE.find((q) => q.wiki === "Gaborone")!
-    for (let seed = 1; seed <= 10; seed++) {
-      const g = makeGame({
-        bank: { catalogue: [gaborone, byId("botswana-region"), germany], outlines: OUTLINES },
-        config: { mix: mixOf({ [QuestionType.PLACE]: 1, [QuestionType.COUNTRY]: 1 }) },
-        seed
-      })
-      g.join(tokA, playerName("Alice"), T0)
-      expect(questions(g).map(promptOf)).toContain("Paint the whole of Germany")
-    }
   })
 
   it("scores a country round against the outline, which it never sends; a pass still scores 250", () => {
