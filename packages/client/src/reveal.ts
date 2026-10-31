@@ -1,6 +1,6 @@
 /**
  * What a game's reveal shows, on the page (screens/Reveal.tsx) and in the
- * headset (InGame's gameVrView) alike.
+ * headset (game-vr-view.ts) alike.
  */
 import { signal } from "@preact/signals"
 import type { PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"

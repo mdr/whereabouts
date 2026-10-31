@@ -16,15 +16,11 @@ import { onWater } from "@whereabouts/shared/protocol"
 import { MapView, usePaint } from "../ui/MapView"
 import { forTabbedControl } from "../keys"
 import { LoadingOutlines } from "../ui/LoadingOutlines"
-import { HeaderNote, Hud, HudBottom, HudCenter, HudHeader, HudTop } from "../ui/Hud"
-import kit from "../ui/kit.module.css"
-import sc from "../ui/Score.module.css"
+import { HeaderNote, Hud, HudBottom, HudHeader, HudTop } from "../ui/Hud"
 import { DoneButton, RevealCards, RoundPrompt } from "../ui/Round"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
 import { VrButton, useVrHold, useVrView } from "../ui/VrButton"
-import { HintAllowance, VrViewType, type VrView } from "../vr/view"
-import { pts, vrReveal, vrRound, type VrRoundShown } from "../vr-round"
-import { Banner } from "../ui/Banner"
+import { practiceVrView } from "../practice-vr-view"
 import { DevDrawer } from "../ui/DevDrawer"
 import { allFlags, cheatLiveScore, soloKernelId, soloMapDetail, soloTypes } from "../settings"
 import { devMode } from "../dev"
@@ -35,22 +31,21 @@ import { useFact } from "../facts"
 import { preloadPictures } from "../preload"
 import { HintCard } from "../ui/Hint"
 import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry } from "../ui/FlagReveal"
-import { navigate } from "../router"
 import { announcePass, frameReveal, showAnswer, useRoundMap } from "../round"
 import {
   PracticePhase,
   currentQuestion,
   isLastRound,
+  nextLabel,
   nextRound,
   revealedFromQuestion,
-  roundsTable,
-  runMaximum,
   runTotal,
   startRun,
   submitRound
 } from "../practice-run"
 import { soloTestIds } from "./SoloTestIds"
 import { Cheats, LiveScore, RevealScore } from "./SoloDevTools"
+import { SoloDone } from "./SoloDone"
 
 export function Solo() {
   useVrHold()
@@ -73,7 +68,7 @@ function SoloLoader() {
 function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) {
   const paint = usePaint()
   const [run, setRun] = useState(() => startRun(pool, Date.now()))
-  const { questions, index, phase, results, revealed } = run
+  const { questions, index, phase, revealed } = run
   const hover = useSignal<LatLon | undefined>(undefined)
   // Practice hints are unlimited, still one per question.
   const [hint, setHint] = useState<HintBand | undefined>(undefined)
@@ -168,52 +163,21 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : undefined),
     [revealed, borders]
   )
-  const home = { label: "Home", press: () => navigate("/") }
-  const shown: VrRoundShown = {
-    question,
-    revealed: phase === PracticePhase.REVEAL ? answer : undefined,
-    fact
-  }
-  const round = vrRound(shown, {
+  const vrView = practiceVrView(run, {
     paint,
-    heading: `QUESTION ${index + 1} OF ${questions.length}, ${pts(total)}`,
+    question,
+    answer,
+    fact,
     detail,
     hint,
-    hintsLeft: HintAllowance.UNLIMITED,
     useHint,
-    doneLabel: "Submit",
-    done: submit,
-    playing: true
+    submit,
+    next,
+    restart,
+    shownScore: shownResult?.score,
+    where,
+    borders
   })
-  const vrView: VrView =
-    phase === PracticePhase.DONE
-      ? {
-          type: VrViewType.DONE,
-          summary: {
-            title: "Final score",
-            scoreLine: `${pts(total)} out of ${runMaximum(run).toLocaleString()}`,
-            table: roundsTable(results),
-            actions: [{ label: "Play again", press: restart }]
-          },
-          more: [home]
-        }
-      : phase === PracticePhase.REVEAL && revealed && shownResult
-        ? {
-            type: VrViewType.REVEAL,
-            round,
-            more: [{ ...home, confirm: "Press again to leave" }],
-            reveal: vrReveal(
-              shown,
-              answer,
-              { score: shownResult.score, passed: !revealed.dist, total, painted: where },
-              borders,
-              {
-                table: roundsTable(results),
-                actions: [{ label: isLastRound(run) ? "Finish" : "Next question", press: next }]
-              }
-            )
-          }
-        : { type: VrViewType.PAINT, round, more: [{ ...home, confirm: "Press again to leave" }] }
   useVrView(vrView)
 
   const header = (
@@ -225,37 +189,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     />
   )
 
-  if (phase === PracticePhase.DONE) {
-    return (
-      <Hud>
-        <HudCenter>
-          <div class={kit.pageCard}>
-            <Banner />
-            <div class={sc.score}>
-              <div class={sc.label}>Final score</div>
-              <div class={sc.big}>{Math.round(total).toLocaleString()}</div>
-              <div class={sc.label}>out of {runMaximum(run).toLocaleString()}</div>
-            </div>
-            <ul class={kit.results}>
-              {results.map((r, i) => (
-                <li key={i}>
-                  <span>{r.question.label}</span>
-                  <span>{Math.round(r.score)}</span>
-                </li>
-              ))}
-            </ul>
-            <button class="primary big" onClick={restart}>
-              <Icon name="refresh" /> Play again
-            </button>
-            <VrButton view={vrView} />
-            <p class={kit.hint}>
-              <a href="#/">Leave</a>
-            </p>
-          </div>
-        </HudCenter>
-      </Hud>
-    )
-  }
+  if (phase === PracticePhase.DONE) return <SoloDone run={run} restart={restart} vrView={vrView} />
 
   if (phase === PracticePhase.REVEAL && revealed && shownResult) {
     const dist = revealed.dist
@@ -281,7 +215,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
             {q.type === QuestionType.FLAG && <AllFlagsSwitch />}
             <VrButton view={vrView} />
             <button class="primary" onClick={next} data-testid={soloTestIds.nextButton}>
-              <Icon name={last ? "flag" : "next"} /> {last ? "Finish" : "Next question"} <kbd>Enter</kbd>
+              <Icon name={last ? "flag" : "next"} /> {nextLabel(run)} <kbd>Enter</kbd>
             </button>
           </HudBottom>
         </Hud>

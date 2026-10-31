@@ -17,6 +17,7 @@ import {
   PracticePhase,
   currentQuestion,
   isLastRound,
+  nextLabel,
   nextRound,
   revealedFromQuestion,
   roundsTable,
@@ -104,6 +105,7 @@ describe("a practice run", () => {
     let run = startRun(POOL, 7)
     for (let i = 0; i < POOL.length; i++) {
       expect(isLastRound(run)).toBe(i === POOL.length - 1)
+      expect(nextLabel(run)).toBe(i === POOL.length - 1 ? "Finish" : "Next question")
       run = play(run, i === 1)
       if (i < POOL.length - 1) run = nextRound(run)
     }

@@ -57,6 +57,9 @@ export function submitRound(
 }
 
 /** On from a reveal: the next question, or the end of the run after the last. */
+/** What moving on from the reveal is called, on the page and in the headset. */
+export const nextLabel = (run: PracticeRun): string => (isLastRound(run) ? "Finish" : "Next question")
+
 export function nextRound(run: PracticeRun): PracticeRun {
   if (isLastRound(run)) return { ...run, phase: PracticePhase.DONE }
   return { ...run, index: run.index + 1, phase: PracticePhase.PAINT }
