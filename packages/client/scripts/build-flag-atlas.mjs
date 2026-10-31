@@ -6,7 +6,7 @@
 // Usage, from packages/client: node scripts/build-flag-atlas.mjs
 import { execFileSync } from "node:child_process"
 import { readFileSync, writeFileSync } from "node:fs"
-import { chromium } from "playwright-core"
+import { chromium } from "@playwright/test"
 
 const COLUMNS = 8
 // Wide enough for the widest flag, Qatar's, at this height.

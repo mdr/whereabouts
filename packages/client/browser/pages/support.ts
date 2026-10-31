@@ -1,4 +1,4 @@
-import type { Locator, Page } from "playwright-core"
+import type { Locator, Page } from "@playwright/test"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** Poll `read` until `ok` accepts its value, or throw naming what was awaited and the last value seen. */

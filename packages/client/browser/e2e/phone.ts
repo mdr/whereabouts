@@ -3,7 +3,7 @@
 // screen, and the controls a player needs are on screen and uncovered.
 // Run the game server with ROUND_MS=12000 ROUNDS=2.
 // Usage, from packages/client: node browser/e2e/phone.ts [outDir]
-import { devices } from "playwright-core"
+import { devices } from "@playwright/test"
 import type { Screen } from "../pages/Screen.ts"
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
 import { Tool } from "../../src/tool.ts"

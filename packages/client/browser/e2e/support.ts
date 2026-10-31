@@ -1,5 +1,5 @@
 import { mkdirSync } from "node:fs"
-import { chromium, type Browser, type BrowserContextOptions } from "playwright-core"
+import { chromium, type Browser, type BrowserContextOptions } from "@playwright/test"
 import { Tab } from "../pages/Tab.ts"
 
 /** The Vite dev server, which proxies the game server. */

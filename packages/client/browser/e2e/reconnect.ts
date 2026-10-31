@@ -1,7 +1,7 @@
 // A dropped connection, against the dev servers: paint drawn while it is
 // down reaches the server once it is back.
 // Usage, from packages/client: node browser/e2e/reconnect.ts [outDir]
-import type { WebSocketRoute } from "playwright-core"
+import type { WebSocketRoute } from "@playwright/test"
 import { Checks, launchChrome, newTab } from "./support.ts"
 
 const checks = new Checks()

@@ -1,4 +1,4 @@
-import type { Page } from "playwright-core"
+import type { Page } from "@playwright/test"
 import type { Tool } from "../../src/tool.ts"
 import { paintToolsTestIds } from "../../src/ui/PaintToolsTestIds.ts"
 import { byTestIdWith, isUsable } from "./support.ts"

@@ -1,4 +1,4 @@
-import type { Page } from "playwright-core"
+import type { Page } from "@playwright/test"
 import { confirmDialogTestIds } from "../../src/ui/ConfirmDialogTestIds.ts"
 import { text } from "./support.ts"
 

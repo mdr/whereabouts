@@ -3,7 +3,7 @@
 // Captured at the size it is shown (180 x 120) at double density, so rivers and borders stay
 // a full pixel wide rather than thinning away when a larger capture is scaled down. Needs the
 // Vite dev server. Usage, from packages/client: node scripts/map-detail-previews.mjs
-import { chromium } from "playwright-core"
+import { chromium } from "@playwright/test"
 
 const LEVELS = ["minimal", "water", "physical", "political"]
 const SIZE = { width: 180, height: 120 }

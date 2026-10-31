@@ -11,7 +11,7 @@
 // With a cache dir, downloads are kept there and reused.
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { optimize } from "svgo"
-import { chromium } from "playwright-core"
+import { chromium } from "@playwright/test"
 
 const OUT = "src/assets/flags"
 const USER_AGENT = "WhereaboutsFlagBuilder/1.0 (https://github.com/mdr/whereabouts)"

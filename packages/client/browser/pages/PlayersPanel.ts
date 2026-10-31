@@ -1,4 +1,4 @@
-import type { Page } from "playwright-core"
+import type { Page } from "@playwright/test"
 import { playersPanelTestIds } from "../../src/ui/PlayersPanelTestIds.ts"
 import { playerListTestIds } from "../../src/ui/PlayerListTestIds.ts"
 import { ConfirmDialog } from "./ConfirmDialog.ts"

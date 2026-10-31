@@ -1,4 +1,4 @@
-import type { CDPSession, Page } from "playwright-core"
+import type { CDPSession, Page } from "@playwright/test"
 import type {} from "../../src/ui/MapView.tsx"
 import { mapViewTestIds } from "../../src/ui/MapViewTestIds.ts"
 import { hudBottomTestIds } from "../../src/ui/HudTestIds.ts"

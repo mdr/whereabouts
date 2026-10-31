@@ -4,7 +4,7 @@
   "ignoreBinaries": ["nix"],
   "workspaces": {
     "packages/client": {
-      "entry": ["scripts/*.mjs", "browser/e2e/*.ts"],
+      "entry": ["scripts/*.mjs", "browser/e2e/*.ts", "browser/tests/*.spec.ts"],
       "ignoreDependencies": ["iwer"]
     },
     "packages/shared": {

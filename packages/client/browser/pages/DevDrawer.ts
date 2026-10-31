@@ -1,4 +1,4 @@
-import type { Page } from "playwright-core"
+import type { Page } from "@playwright/test"
 import { paintDevTestIds } from "../../src/ui/PaintToolsTestIds.ts"
 
 /** The playtest drawer that `?dev` adds on the right. */

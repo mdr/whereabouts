@@ -1,4 +1,4 @@
-import type { Page } from "playwright-core"
+import type { Page } from "@playwright/test"
 import { mapViewTestIds } from "../../src/ui/MapViewTestIds.ts"
 import { loadingOutlinesTestIds } from "../../src/ui/LoadingOutlinesTestIds.ts"
 import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"

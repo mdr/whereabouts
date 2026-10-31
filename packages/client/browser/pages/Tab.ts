@@ -1,4 +1,4 @@
-import type { Page } from "playwright-core"
+import type { Page } from "@playwright/test"
 import { HomePage } from "./HomePage.ts"
 import { JoinAsPage } from "./JoinAsPage.ts"
 import { LoadFailures } from "./LoadFailures.ts"
