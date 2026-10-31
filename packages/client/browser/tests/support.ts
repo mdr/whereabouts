@@ -2,7 +2,7 @@ import { expect, test, type Browser, type BrowserContextOptions } from "@playwri
 import { Tab } from "../pages/Tab.ts"
 
 /** The local Chrome, headless, with WebGL in software so the map draws without a GPU. */
-const SWIFTSHADER = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"]
+export const SWIFTSHADER = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"]
 export const CHROME = { channel: "chrome", headless: true, launchOptions: { args: SWIFTSHADER } }
 
 export interface PlayerOptions {

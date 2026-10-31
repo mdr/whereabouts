@@ -4,8 +4,11 @@
   "ignoreBinaries": ["nix"],
   "workspaces": {
     "packages/client": {
-      "entry": ["scripts/*.mjs", "browser/e2e/*.ts", "browser/tests/*.spec.ts"],
-      "ignoreDependencies": ["iwer"]
+      "entry": ["scripts/*.mjs"],
+      "ignoreDependencies": ["iwer"],
+      "playwright": {
+        "config": ["playwright.config.ts", "playwright.prod.config.ts"]
+      }
     },
     "packages/shared": {
       "entry": ["scripts/*.mjs"]

@@ -280,7 +280,7 @@ export default defineConfig({
         }
       },
       {
-        files: ["packages/client/browser/e2e/**/*.ts", "packages/client/browser/tests/**/*.ts"],
+        files: ["packages/client/browser/tests/**/*.ts"],
         rules: {
           "no-console": "off"
         }
