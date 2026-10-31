@@ -1,7 +1,6 @@
 import { AnswerType } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { h3Res } from "@whereabouts/shared/h3"
-import { playerColour } from "@whereabouts/shared/colours"
 import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
 import type { PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
 import { NONE, revealedFromView, revealOrder, shownResults } from "./reveal"
