@@ -100,8 +100,8 @@ export function useFillTool(paint: PaintController, active: boolean): void {
     if (active && !b) loadBorders().catch((err: unknown) => console.warn("could not load borders", err))
   }, [active, b])
   useEffect(() => {
-    if (b && r && !paint.filler) paint.filler = new CountryFiller(b, r)
-    paint.fillable.value = active && paint.filler !== undefined
+    if (b && r) paint.useFiller(new CountryFiller(b, r))
+    paint.offerFill(active)
   }, [paint, active, b, r])
-  useEffect(() => () => void (paint.fillable.value = false), [paint])
+  useEffect(() => () => paint.offerFill(false), [paint])
 }

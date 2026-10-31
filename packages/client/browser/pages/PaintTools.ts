@@ -1,5 +1,5 @@
 import type { Page } from "playwright-core"
-import type { Tool } from "../../src/paint-controller.ts"
+import type { Tool } from "../../src/paint-input.ts"
 import { paintToolsTestIds } from "../../src/ui/PaintToolsTestIds.ts"
 import { byTestIdWith, isUsable } from "./support.ts"
 

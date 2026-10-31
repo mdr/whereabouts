@@ -129,7 +129,7 @@ function Review({ pools }: { pools: ReviewPools }) {
     if (q.kind === "region") paint.gameMap.showRegionReveal(q.outline)
     else paint.gameMap.showReveal(q.answer, q.toleranceKm)
     if (c.kind === "single") {
-      paint.layer.replaceCells(c.guess.layer.cells)
+      paint.restore(c.guess.layer.toRecord())
       paint.showOwn()
       frame(paint.layer.toGeoJSON())
     } else frame(showPair(undefined))

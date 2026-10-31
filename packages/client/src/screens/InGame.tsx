@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
-import { PaintLayer, compactRecord } from "@whereabouts/shared/paint"
+import { compactRecord } from "@whereabouts/shared/paint"
 import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { GameView } from "@whereabouts/shared/protocol"
@@ -75,9 +75,8 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
       // After a reconnect the server hands back what we had painted.
       const saved = view.you.paint
       if (saved) {
-        paint.layer = PaintLayer.fromRecord(paint.layer.res, saved.cells)
+        paint.restore(saved.cells)
         paint.floor.value = saved.floor
-        paint.version.value++
       }
       // Paint in your own colour, the same one others see at the reveal.
       const me = view.players.find((p) => p.id === view.you.id)

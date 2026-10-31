@@ -872,7 +872,7 @@ export class Vr {
     const workingTool = working && this.tools[working].tool
     if (workingTool && workingTool !== "fill" && !this.stroking) {
       // Both hands make one undo step; the first sets the stroke's sound.
-      round.paint.beginOutsideStroke(workingTool)
+      round.paint.beginStroke(workingTool)
       this.stroking = true
     }
     // Every hand updates, even once one has sprayed: each moves its own spot.
@@ -886,7 +886,7 @@ export class Vr {
 
   private endStroke(): void {
     if (!this.stroking) return
-    this.round?.paint.endOutsideStroke()
+    this.round?.paint.endStroke()
     this.stroking = false
   }
 

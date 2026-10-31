@@ -288,7 +288,7 @@ export class HandTool {
     const at = localToLatLon(globe.group.worldToLocal(local.copy(at3)))
     const last = this.stroke
     if (!last || greatCircleDistance(last.at, at) >= radiusKm / 4 || now - last.t >= STILL_STAMP_S) {
-      paint.stampOutside(at, radiusKm, strength)
+      paint.stamp(at, radiusKm, strength)
       this.stroke = { at, t: now }
     }
   }
