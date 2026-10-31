@@ -4,6 +4,7 @@
 // own shape at the left of its cell, and their order and drawn widths into
 // src/flag-atlas.json. Rerun after scripts/build-flags.mjs.
 // Usage, from packages/client: node scripts/build-flag-atlas.mjs
+import { execFileSync } from "node:child_process"
 import { readFileSync, writeFileSync } from "node:fs"
 import { chromium } from "playwright-core"
 
@@ -41,4 +42,5 @@ await browser.close()
 
 writeFileSync("src/assets/flag-atlas.webp", Buffer.from(webp.split(",")[1], "base64"))
 writeFileSync("src/flag-atlas.json", `${JSON.stringify({ columns: COLUMNS, cell: CELL, codes, widths })}\n`)
+execFileSync("pnpm", ["exec", "vp", "fmt", "src/flag-atlas.json"], { stdio: "inherit" })
 console.log(`${codes.length} flags`)
