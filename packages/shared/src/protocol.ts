@@ -24,8 +24,9 @@ import {
   type PlayerName,
   type RoomCode
 } from "./ids.ts"
+import { CloseReason } from "./close-reason.ts"
 
-export const PROTOCOL_VERSION = 5
+export const PROTOCOL_VERSION = 6
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -102,17 +103,23 @@ export const MixSchema = z
  * How much of the map shows while guessing, least first. The reveal always
  * shows everything; place names never show while guessing.
  */
-export const MAP_DETAILS = [
-  { id: "minimal", label: "Minimal", detail: "Coastlines only" },
-  { id: "water", label: "Water", detail: "Adds rivers and lakes" },
-  { id: "physical", label: "Physical", detail: "Adds mountains, forests, ice and colour" },
-  { id: "political", label: "Political", detail: "Adds country borders" }
-] as const
-export type MapDetail = (typeof MAP_DETAILS)[number]["id"]
-export const MapDetailSchema = z.enum(MAP_DETAILS.map((d) => d.id) as [MapDetail, ...MapDetail[]])
+export enum MapDetail {
+  MINIMAL = "MINIMAL",
+  WATER = "WATER",
+  PHYSICAL = "PHYSICAL",
+  POLITICAL = "POLITICAL"
+}
+
+export const MAP_DETAILS: readonly { id: MapDetail; label: string; detail: string }[] = [
+  { id: MapDetail.MINIMAL, label: "Minimal", detail: "Coastlines only" },
+  { id: MapDetail.WATER, label: "Water", detail: "Adds rivers and lakes" },
+  { id: MapDetail.PHYSICAL, label: "Physical", detail: "Adds mountains, forests, ice and colour" },
+  { id: MapDetail.POLITICAL, label: "Political", detail: "Adds country borders" }
+]
+export const MapDetailSchema = z.enum(MapDetail)
 
 /** Whether the map draws lakes while guessing: lake rounds are asked only when it does. */
-export const showsLakes = (detail: MapDetail): boolean => detail !== "minimal"
+export const showsLakes = (detail: MapDetail): boolean => detail !== MapDetail.MINIMAL
 
 /** Host changes to the game settings while in the lobby. */
 export const ConfigureSchema = z.object({
@@ -165,7 +172,12 @@ export const ServerTopics = {
   error: "error"
 } as const
 
-export type Phase = "lobby" | "guessing" | "reveal" | "results"
+export enum Phase {
+  LOBBY = "LOBBY",
+  GUESSING = "GUESSING",
+  REVEAL = "REVEAL",
+  RESULTS = "RESULTS"
+}
 
 export interface GameConfig {
   /** The mix's total: set from it, never on its own. */
@@ -346,7 +358,7 @@ export function viewFrom(
   paint: PaintSubmission | undefined
 ): GameView {
   const { reveal: progress, you, ...rest } = state
-  const view: GameView = { ...rest, you: state.phase === "guessing" && paint ? { ...you, paint } : you }
+  const view: GameView = { ...rest, you: state.phase === Phase.GUESSING && paint ? { ...you, paint } : you }
   if (progress && reveal?.index === progress.index) view.reveal = { ...reveal, ready: progress.ready }
   return view
 }
@@ -396,8 +408,8 @@ export function encodeTicket(ticket: Ticket): string {
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
 }
 
-/** The ticket, or "outdated" for one from a client of another protocol version, or undefined for one not a ticket at all. */
-export function decodeTicket(raw: string): Ticket | "outdated" | undefined {
+/** The ticket, or OUTDATED for one from a client of another protocol version, or undefined for one not a ticket at all. */
+export function decodeTicket(raw: string): Ticket | CloseReason.OUTDATED | undefined {
   try {
     const b64 = raw.replace(/-/g, "+").replace(/_/g, "/")
     const bin = atob(b64 + "=".repeat((4 - (b64.length % 4)) % 4))
@@ -406,7 +418,7 @@ export function decodeTicket(raw: string): Ticket | "outdated" | undefined {
     const result = TicketSchema.safeParse(parsed)
     if (result.success) return result.data
     const versioned = z.object({ v: z.number() }).safeParse(parsed)
-    return versioned.success && versioned.data.v !== PROTOCOL_VERSION ? "outdated" : undefined
+    return versioned.success && versioned.data.v !== PROTOCOL_VERSION ? CloseReason.OUTDATED : undefined
   } catch {
     return undefined
   }

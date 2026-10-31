@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
-import { countdownPlan, roundCue, sound } from "./sound"
+import { RoundCue, countdownPlan, roundCue, sound } from "./sound"
+import { Phase } from "@whereabouts/shared/protocol"
 
 describe("countdownPlan", () => {
   it("waits until ten seconds are left, then plays from the start", () => {
@@ -20,21 +21,21 @@ describe("countdownPlan", () => {
 })
 
 describe("roundCue", () => {
-  const lobby = { phase: "lobby", round: undefined }
-  const guessing = (round: number) => ({ phase: "guessing", round })
-  const reveal = (round: number) => ({ phase: "reveal", round })
+  const lobby = { phase: Phase.LOBBY, round: undefined }
+  const guessing = (round: number) => ({ phase: Phase.GUESSING, round })
+  const reveal = (round: number) => ({ phase: Phase.REVEAL, round })
 
   it("says nothing on the first view, so a refresh mid-round is not announced", () => {
     expect(roundCue(undefined, guessing(2), 30_000)).toBeUndefined()
   })
 
   it("cues a round starting, from the lobby or from the reveal", () => {
-    expect(roundCue(lobby, guessing(0), 60_000)).toBe("roundStart")
-    expect(roundCue(reveal(0), guessing(1), 60_000)).toBe("roundStart")
+    expect(roundCue(lobby, guessing(0), 60_000)).toBe(RoundCue.ROUND_START)
+    expect(roundCue(reveal(0), guessing(1), 60_000)).toBe(RoundCue.ROUND_START)
   })
 
   it("cues finishing early when the round ends with time on the clock", () => {
-    expect(roundCue(guessing(0), reveal(0), 20_000)).toBe("finishedEarly")
+    expect(roundCue(guessing(0), reveal(0), 20_000)).toBe(RoundCue.FINISHED_EARLY)
   })
 
   it("leaves the alarm to play when the round ends on time", () => {
@@ -43,14 +44,14 @@ describe("roundCue", () => {
   })
 
   it("applauds the final results, whether reached from the reveal or by the host ending the game mid-round", () => {
-    const results = { phase: "results", round: undefined }
-    expect(roundCue(reveal(1), results, 0)).toBe("results")
-    expect(roundCue(guessing(1), results, 30_000)).toBe("results")
+    const results = { phase: Phase.RESULTS, round: undefined }
+    expect(roundCue(reveal(1), results, 0)).toBe(RoundCue.RESULTS)
+    expect(roundCue(guessing(1), results, 30_000)).toBe(RoundCue.RESULTS)
     expect(roundCue(results, results, 0)).toBeUndefined()
   })
 
   it("does not applaud a refresh on the results screen", () => {
-    expect(roundCue(undefined, { phase: "results", round: undefined }, 0)).toBeUndefined()
+    expect(roundCue(undefined, { phase: Phase.RESULTS, round: undefined }, 0)).toBeUndefined()
   })
 
   it("stays quiet for changes within a phase", () => {

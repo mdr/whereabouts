@@ -11,7 +11,7 @@ import { FlagCodeSchema, OutlineIdSchema, PlayerIdSchema, PlayerNameSchema, Room
 import { HintAxisSchema } from "./hints.ts"
 import { KernelIdSchema } from "./scoring.ts"
 import { H3CellSchema, H3ResSchema } from "./h3.ts"
-import { MapDetailSchema, MixSchema } from "./protocol.ts"
+import { MapDetailSchema, MixSchema, Phase } from "./protocol.ts"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "./questions.ts"
 
 const PaintSchema = z.strictObject({ cells: z.record(H3CellSchema, z.number()), floor: z.number() })
@@ -73,7 +73,7 @@ const RoundResultViewSchema = z.strictObject({
 
 export const GameViewSchema = z.strictObject({
   code: RoomCodeSchema,
-  phase: z.enum(["lobby", "guessing", "reveal", "results"]),
+  phase: z.enum(Phase),
   config: z.strictObject({
     rounds: z.number().int(),
     roundMs: z.number().int(),

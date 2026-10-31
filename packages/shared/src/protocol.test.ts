@@ -7,9 +7,11 @@ import {
   encodeTicket,
   evenMix,
   mixOf,
-  type Ticket
+  type Ticket,
+  MapDetail
 } from "./protocol.ts"
 import { QuestionType } from "./questions.ts"
+import { CloseReason } from "./close-reason.ts"
 import { playerName, playerToken, roomCode } from "./ids.ts"
 
 describe("ticket codec", () => {
@@ -32,8 +34,8 @@ describe("ticket codec", () => {
   it("rejects garbage, wrong versions and bad shapes", () => {
     expect(decodeTicket("not-base64!!")).toBeUndefined()
     expect(decodeTicket(enc({}))).toBeUndefined()
-    expect(decodeTicket(enc({ v: PROTOCOL_VERSION - 1, token: "x" }))).toBe("outdated")
-    expect(decodeTicket(enc({ ...ticket, v: PROTOCOL_VERSION + 1 }))).toBe("outdated")
+    expect(decodeTicket(enc({ v: PROTOCOL_VERSION - 1, token: "x" }))).toBe(CloseReason.OUTDATED)
+    expect(decodeTicket(enc({ ...ticket, v: PROTOCOL_VERSION + 1 }))).toBe(CloseReason.OUTDATED)
     expect(decodeTicket(enc({ ...ticket, token: "short" }))).toBeUndefined()
     expect(decodeTicket(enc({ ...ticket, code: "ab12" }))).toBeUndefined()
     expect(decodeTicket(enc({ ...ticket, name: "   " }))).toBeUndefined()
@@ -57,7 +59,7 @@ describe("ConfigureSchema", () => {
     expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 1.5 })).success).toBe(false)
     expect(ConfigureSchema.safeParse({ mix: { [QuestionType.LANDMARK]: 3 } }).success).toBe(false)
     expect(ConfigureSchema.safeParse({ roundMs: 61_000 }).success).toBe(false)
-    expect(ConfigureSchema.safeParse({ mapDetail: "political" }).success).toBe(true)
+    expect(ConfigureSchema.safeParse({ mapDetail: MapDetail.POLITICAL }).success).toBe(true)
     expect(ConfigureSchema.safeParse({ mapDetail: "satellite" }).success).toBe(false)
   })
 })

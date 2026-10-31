@@ -49,11 +49,21 @@ export function PhotoLightbox({
     }
   }, [image])
   const ratio = thumb?.naturalWidth ? thumb.naturalWidth / thumb.naturalHeight : undefined
-  return <Lightbox src={src} kind="photo" ratio={ratio} credit={credit} onClose={onClose} />
+  return <Lightbox src={src} type={LightboxType.PHOTO} ratio={ratio} credit={credit} onClose={onClose} />
 }
 
 const MAX_ZOOM = 6
 const CLICK_ZOOM = 2.5
+
+export enum LightboxType {
+  PHOTO = "PHOTO",
+  FLAG = "FLAG"
+}
+
+const TYPE_CLASS: Record<LightboxType, string | undefined> = {
+  [LightboxType.PHOTO]: lb.photo,
+  [LightboxType.FLAG]: lb.flag
+}
 
 /**
  * The enlarged photo or flag. Scroll or pinch to zoom about the pointer, drag to pan
@@ -63,13 +73,13 @@ const CLICK_ZOOM = 2.5
  */
 export function Lightbox({
   src,
-  kind,
+  type,
   ratio,
   credit,
   onClose
 }: {
   src: string
-  kind: "photo" | "flag"
+  type: LightboxType
   /** Width over height, to show it as large as fits: a flag's SVG has no size of its own, and a photo may start small. */
   ratio?: number
   credit: ComponentChildren
@@ -173,7 +183,7 @@ export function Lightbox({
       >
         <img
           src={src}
-          class={cx(lb[kind], ratio !== undefined && lb.fit)}
+          class={cx(TYPE_CLASS[type], ratio !== undefined && lb.fit)}
           alt=""
           referrerpolicy="no-referrer"
           draggable={false}

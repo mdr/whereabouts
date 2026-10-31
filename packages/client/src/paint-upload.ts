@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "preact/hooks"
 import { compactRecord } from "@whereabouts/shared/paint"
 import type { GameView } from "@whereabouts/shared/protocol"
-import type { Connection } from "./net"
+import { type Connection, ConnectionStatus } from "./net"
 import type { PaintController } from "./paint-controller"
 import { announcePass } from "./round"
+import { Phase } from "@whereabouts/shared/protocol"
 
 type UploadConnection = Pick<Connection, "status" | "sendPaint" | "lock">
 type UploadPaint = Pick<PaintController, "layer" | "floor" | "version">
@@ -18,7 +19,7 @@ export function usePaintUpload(
   view: GameView,
   timeUp: boolean
 ): { lockIn: () => void } {
-  const guessing = view.phase === "guessing"
+  const guessing = view.phase === Phase.GUESSING
   const sittingOut = view.you.watching || view.you.spectating
   const locked = view.you.locked
   const sendTimer = useRef<number | undefined>(undefined)
@@ -50,10 +51,10 @@ export function usePaintUpload(
   const status = conn.status.value
   const resend = useRef(false)
   useEffect(() => {
-    if (status !== "connected") resend.current = true
+    if (status !== ConnectionStatus.CONNECTED) resend.current = true
   }, [status])
   useEffect(() => {
-    if (!resend.current || status !== "connected") return
+    if (!resend.current || status !== ConnectionStatus.CONNECTED) return
     resend.current = false
     if (guessing && !sittingOut && !locked && !timeUp) sendNow()
   }, [view])

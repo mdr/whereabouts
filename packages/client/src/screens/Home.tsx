@@ -6,7 +6,7 @@ import { Icon } from "../ui/icons"
 import { MapDetailPicker } from "../ui/MapDetailPicker"
 import { TogglePills } from "../ui/Controls"
 import { VrButton, useVrView } from "../ui/VrButton"
-import type { VrView } from "../vr/view"
+import { VrViewType, type VrView } from "../vr/view"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { QUESTION_TYPE_LOOKS } from "../question-types"
 
@@ -29,7 +29,7 @@ export function Home() {
   const needName = ready ? undefined : "Enter your name first"
   const types = soloTypes.value
   const vrView: VrView = {
-    kind: "lobby",
+    type: VrViewType.LOBBY,
     summary: {
       title: "Whereabouts",
       scoreLine: `Practise: ${types.map((t) => QUESTION_TYPE_LOOKS[t].label).join(", ")}`,

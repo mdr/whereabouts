@@ -10,7 +10,7 @@ import {
   scoreFromParts,
   similarityToAnswer,
   type Distribution,
-  type Kernel
+  type ChoosableKernel
 } from "@whereabouts/shared/scoring"
 import {
   SHAPE_WEIGHT,
@@ -20,7 +20,7 @@ import {
   type Area,
   type ScoredAnswer
 } from "@whereabouts/shared/regions"
-import { encodeCase } from "@whereabouts/shared/scoring-case"
+import { RegionKernel, encodeCase } from "@whereabouts/shared/scoring-case"
 import { caseQuestion } from "@whereabouts/shared/score-review"
 import { AnswerType, type Question } from "@whereabouts/shared/questions"
 import { greatCircleDistance, toXyz, type LatLon } from "@whereabouts/shared/geo"
@@ -48,7 +48,7 @@ function PartsLine({ parts }: { parts: AnswerParts }) {
   )
 }
 
-export function Cheats({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: Kernel }) {
+export function Cheats({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: ChoosableKernel }) {
   return (
     <Card title="Cheats">
       <label class={kit.check}>
@@ -91,7 +91,7 @@ export function RevealScore({
   hover
 }: {
   a: ScoredAnswer
-  kernel: Kernel
+  kernel: ChoosableKernel
   parts: AnswerParts
   /** Undefined for a pass. */
   dist: Distribution | undefined
@@ -119,7 +119,7 @@ export function RevealScore({
 const pct = (x: number) => `${Math.round(x * 100)}%`
 
 /** Copies the paint and its score as text, to paste into a chat about the scoring (see scoring-case.ts). */
-function CopyCase({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: Kernel }) {
+function CopyCase({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: ChoosableKernel }) {
   const paint = usePaint()
   const [copied, setCopied] = useState(false)
   // Where the clipboard is out of reach (a LAN address over http), the text to copy by hand.
@@ -134,7 +134,7 @@ function CopyCase({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: Kern
     const { score, parts } = scoreAnswer(buildDistribution(paint.layer.toCells(), floor), a, kernel)
     const text = await encodeCase({
       question: caseQuestion(q, a),
-      kernel: a.type === AnswerType.AREA ? "region" : kernel.id,
+      kernel: a.type === AnswerType.AREA ? RegionKernel.REGION : kernel.id,
       floor,
       res: paint.layer.res,
       score,
@@ -161,7 +161,7 @@ function CopyCase({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: Kern
   )
 }
 
-function KernelComparison({ dist, a, active }: { dist: Distribution; a: ScoredAnswer; active: string }) {
+function KernelComparison({ dist, a, active }: { dist: Distribution; a: ScoredAnswer; active: KernelId }) {
   return (
     <ul class={cx(kit.results, kit.compare)}>
       {KERNELS.map((k) => (

@@ -1,10 +1,13 @@
 import { createRequire } from "node:module"
-import type { WristButton } from "../../src/vr/wrist.ts"
+import type { WristButton } from "../../src/vr/wrist-button.ts"
+import type { PictureBack } from "../../src/vr/picture-back.ts"
+import type { VrViewType } from "../../src/vr/view.ts"
+import { Hand, XR_HAND } from "../../src/vr/hand.ts"
+import type { SprayTool } from "../../src/vr/spray.ts"
 import type { Page } from "playwright-core"
 import type {} from "../../src/vr/index.ts"
 
 type Vec = [number, number, number]
-type Hand = "left" | "right"
 
 declare global {
   interface Window {
@@ -219,12 +222,12 @@ export class Headset {
   }
 
   /** What the headset shows: a round to paint, its answer, or the final score. */
-  async view(): Promise<string | undefined> {
-    return this.#page.evaluate(() => window.whereaboutsVr.probe.viewKind)
+  async view(): Promise<VrViewType | undefined> {
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.viewType)
   }
 
   /** Whether a hand holds the question's picture, where it is, and which way its face points. */
-  async pictureHeld(): Promise<{ held: boolean; at: Vec; facing: Vec; back: "reverse" | "postcard" | undefined }> {
+  async pictureHeld(): Promise<{ held: boolean; at: Vec; facing: Vec; back: PictureBack | undefined }> {
     return this.#page.evaluate(() => window.whereaboutsVr.probe.pictureHeld)
   }
 
@@ -237,7 +240,7 @@ export class Headset {
 
   /** Hold the right controller at `from`, its ray pointing at `at`. */
   async pointRight(from: Vec, at: Vec): Promise<void> {
-    await this.point("right", from, at)
+    await this.point(Hand.RIGHT, from, at)
   }
 
   async point(hand: Hand, from: Vec, at: Vec): Promise<void> {
@@ -256,24 +259,24 @@ export class Headset {
         const m = Math.hypot(...q)
         c.quaternion.set(q[0]! / m, q[1]! / m, q[2]! / m, q[3]! / m)
       },
-      [hand, from, at] as const
+      [XR_HAND[hand], from, at] as const
     )
   }
 
   async rightGrip(value: number): Promise<void> {
-    await this.grip("right", value)
+    await this.grip(Hand.RIGHT, value)
   }
 
   async grip(hand: Hand, value: number): Promise<void> {
     await this.#page.evaluate(([h, v]) => window.headset.controllers[h]!.updateButtonValue("squeeze", v), [
-      hand,
+      XR_HAND[hand],
       value
     ] as const)
   }
 
   async trigger(hand: Hand, value: number): Promise<void> {
     await this.#page.evaluate(([h, v]) => window.headset.controllers[h]!.updateButtonValue("trigger", v), [
-      hand,
+      XR_HAND[hand],
       value
     ] as const)
   }
@@ -290,9 +293,9 @@ export class Headset {
     // A stall while it is held can still outlast that: then press again.
     for (let tries = 1; ; tries++) {
       const clicks = await this.#page.evaluate(() => window.whereaboutsVr.clicks)
-      await this.trigger("right", 1)
+      await this.trigger(Hand.RIGHT, 1)
       await this.frames(2)
-      await this.trigger("right", 0)
+      await this.trigger(Hand.RIGHT, 0)
       await this.frames(3)
       if ((await this.#page.evaluate(() => window.whereaboutsVr.clicks)) > clicks) return
       if (tries === 3) throw new Error("Three presses and no click")
@@ -309,7 +312,7 @@ export class Headset {
         const state = await this.#page.evaluate(() => ({
           frames: window.whereaboutsVr.frames,
           active: window.whereaboutsVr.active.value,
-          view: window.whereaboutsVr.probe.viewKind,
+          view: window.whereaboutsVr.probe.viewType,
           visibility: document.visibilityState
         }))
         throw new Error(`No frames drawn: ${JSON.stringify({ start, ...state })}`, { cause: err })
@@ -326,19 +329,25 @@ export class Headset {
 
   /** Press and let go a controller's face button: "a-button" or "x-button" steps through its hand's tools. */
   async button(hand: Hand, id: "a-button" | "x-button"): Promise<void> {
-    await this.#page.evaluate(([h, id]) => window.headset.controllers[h]!.updateButtonValue(id, 1), [hand, id] as const)
+    await this.#page.evaluate(([h, id]) => window.headset.controllers[h]!.updateButtonValue(id, 1), [
+      XR_HAND[hand],
+      id
+    ] as const)
     await this.frames(3)
-    await this.#page.evaluate(([h, id]) => window.headset.controllers[h]!.updateButtonValue(id, 0), [hand, id] as const)
+    await this.#page.evaluate(([h, id]) => window.headset.controllers[h]!.updateButtonValue(id, 0), [
+      XR_HAND[hand],
+      id
+    ] as const)
     await this.frames(3)
   }
 
   /** What each hand holds: paint, erase or fill. */
-  async toolInHand(): Promise<Record<Hand, string>> {
+  async toolInHand(): Promise<Record<Hand, SprayTool>> {
     return this.#page.evaluate(() => window.whereaboutsVr.probe.toolInHand)
   }
 
   async rightTrigger(value: number): Promise<void> {
-    await this.trigger("right", value)
+    await this.trigger(Hand.RIGHT, value)
   }
 
   /** Hold a controller at `at`, turned by the quaternion `rotation` from its rest pose. */
@@ -351,7 +360,7 @@ export class Headset {
         c.position.z = at[2]
         c.quaternion.set(r[0], r[1], r[2], r[3])
       },
-      [hand, at, rotation] as const
+      [XR_HAND[hand], at, rotation] as const
     )
   }
 

@@ -7,6 +7,7 @@
 import { Headset } from "../pages/Headset.ts"
 import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
 import { until } from "../pages/support.ts"
+import { VrViewType } from "../../src/vr/view.ts"
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
 import { QuestionType } from "@whereabouts/shared/questions"
 
@@ -39,7 +40,7 @@ await until(
 const lobby = await until(
   "the lobby in VR",
   () => headset.view(),
-  (v) => v === "lobby"
+  (v) => v === VrViewType.LOBBY
 )
 const lobbyTable = await until(
   "the players in VR",
@@ -47,7 +48,7 @@ const lobbyTable = await until(
   (t) => t?.rows.length === 2
 )
 checks.check(
-  lobby === "lobby" && lobbyTable?.rows.length === 2,
+  lobby === VrViewType.LOBBY && lobbyTable?.rows.length === 2,
   `the lobby opens VR, listing the players (${JSON.stringify(lobbyTable?.rows.map((r) => r.name))})`
 )
 const [x, y, z] = await headset.eyes()
@@ -67,9 +68,9 @@ checks.check(
   (await until(
     "round 1 in VR",
     () => headset.view(),
-    (v) => v === "paint",
+    (v) => v === VrViewType.PAINT,
     30_000
-  )) === "paint" && (await headset.inSession()),
+  )) === VrViewType.PAINT && (await headset.inSession()),
   "Start game in VR starts it, the headset still on"
 )
 const clock = await until(
@@ -161,9 +162,9 @@ const bobReveal = await bobRound.finishLast()
 const reveal = await until(
   "the answer in VR",
   () => headset.view(),
-  (v) => v === "reveal"
+  (v) => v === VrViewType.REVEAL
 )
-checks.check(reveal === "reveal", "the reveal comes to the headset")
+checks.check(reveal === VrViewType.REVEAL, "the reveal comes to the headset")
 const table = await until(
   "the round's scores",
   () => headset.scoreTable(),
@@ -213,8 +214,8 @@ checks.check(
   (await until(
     "round 2 in VR",
     () => headset.view(),
-    (v) => v === "paint"
-  )) === "paint",
+    (v) => v === VrViewType.PAINT
+  )) === VrViewType.PAINT,
   "the host's Next round brings round 2 to the headset"
 )
 await until(
@@ -228,7 +229,7 @@ await bobRound2.finishLast()
 await until(
   "round 2's answer in VR",
   () => headset.view(),
-  (v) => v === "reveal"
+  (v) => v === VrViewType.REVEAL
 )
 const last = (await headset.menu()).actions.map((a) => a.label)
 checks.check(last.includes("Show final results"), `the last round offers the final results (${last.join(", ")})`)
@@ -236,11 +237,11 @@ await press("act1")
 const final = await until(
   "the final standings in VR",
   () => headset.view(),
-  (v) => v === "done"
+  (v) => v === VrViewType.DONE
 )
 const standings = await headset.scoreTable()
 checks.check(
-  final === "done" && standings?.title === "Standings" && standings.rows.length === 2,
+  final === VrViewType.DONE && standings?.title === "Standings" && standings.rows.length === 2,
   `the final standings show in the headset (${JSON.stringify(standings?.rows.map((r) => r.name))})`
 )
 checks.check(

@@ -4,6 +4,7 @@
 // Usage, from packages/client: node browser/e2e/multiplayer.ts [outDir]
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
 import { QuestionType } from "@whereabouts/shared/questions"
+import { HintAxis } from "@whereabouts/shared/hints"
 
 const out = outDir()
 const checks = new Checks()
@@ -40,7 +41,7 @@ console.log("prompt:", await aliceRoundPage.hud.prompt())
 checks.check(await aliceRoundPage.hud.questionHasPhoto(), "a photos-only game asks a photo question")
 
 // Alice uses the game's one hint: a latitude band, shaded on her map only.
-const band = await aliceRoundPage.useHint("latitude")
+const band = await aliceRoundPage.useHint(HintAxis.LATITUDE)
 checks.check(/^Between \d+(\.\d)?°[NS]? and \d+(\.\d)?°[NS]?$/.test(band), `Alice's hint names a band: ${band}`)
 checks.check((await aliceRoundPage.map.shownHintShapes()) === 1, "the band is shaded on Alice's map")
 checks.check((await bobRoundPage.map.shownHintShapes()) === 0, "and not on Bob's")

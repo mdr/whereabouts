@@ -16,7 +16,8 @@ import {
 } from "three"
 import { VR_PHOTO_PX as MAX_PX, vrPhotoUrl, type Postcard, type VrPicture } from "../vr-picture"
 import { flagRatio, flagUrl } from "../flags"
-import type { Hand } from "./globe"
+import type { Hand } from "./hand"
+import { PictureBack } from "./picture-back"
 
 const MAX_W = 0.38
 const MAX_H = 0.26
@@ -37,7 +38,7 @@ export class Picture {
   /** Each show() outdates the pictures still loading for earlier ones. */
   private asked = 0
   private held: Hand | undefined = undefined
-  private shownBack: "reverse" | "postcard" | undefined = undefined
+  private shownBack: PictureBack | undefined = undefined
   private shownPostcard: Postcard | undefined = undefined
 
   constructor() {
@@ -54,7 +55,7 @@ export class Picture {
   }
 
   /** What its back shows, for the browser tests. */
-  get back(): "reverse" | "postcard" | undefined {
+  get back(): PictureBack | undefined {
     return this.mesh.visible ? this.shownBack : undefined
   }
 
@@ -128,7 +129,7 @@ export class Picture {
           material.map = map
           material.needsUpdate = true
         }
-        this.shownBack = "flag" in picture ? "reverse" : "postcard"
+        this.shownBack = "flag" in picture ? PictureBack.REVERSE : PictureBack.POSTCARD
         this.shownPostcard = "flag" in picture ? undefined : picture.postcard
         const size = Math.min(MAX_W / w, MAX_H / h)
         this.mesh.scale.set(w * size, h * size, 1)

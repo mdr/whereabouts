@@ -1,3 +1,4 @@
+import { HintAxis } from "@whereabouts/shared/hints"
 import { inGameTestIds } from "../../src/screens/InGameTestIds.ts"
 import { hintTestIds } from "../../src/ui/HintTestIds.ts"
 import { DevDrawer } from "./DevDrawer.ts"
@@ -38,8 +39,8 @@ export class RoundPage extends Screen {
   }
 
   /** Use a hint: a band of latitude or longitude. Returns what the band says. */
-  async useHint(axis: "latitude" | "longitude"): Promise<string> {
-    await this.page.getByTestId(hintTestIds[axis]).click()
+  async useHint(axis: HintAxis): Promise<string> {
+    await this.page.getByTestId(axis === HintAxis.LATITUDE ? hintTestIds.latitude : hintTestIds.longitude).click()
     const band = await text(this.page.getByTestId(hintTestIds.band))
     await this.map.waitUntilSettled()
     return band

@@ -8,8 +8,11 @@ import type { LatLon } from "./geo.ts"
 import { cellToBoundary, cellToLatLng, type H3Cell, type H3Res } from "./h3.ts"
 import { keepCells } from "./land.ts"
 
-export const HintAxisSchema = z.enum(["latitude", "longitude"])
-export type HintAxis = z.infer<typeof HintAxisSchema>
+export enum HintAxis {
+  LATITUDE = "LATITUDE",
+  LONGITUDE = "LONGITUDE"
+}
+export const HintAxisSchema = z.enum(HintAxis)
 
 /**
  * The band, in degrees. A longitude band that crosses 180° has `from`
@@ -41,7 +44,7 @@ const KM_PER_DEGREE = 111.195
 export function hintBand(answer: LatLon, toleranceKm: number, axis: HintAxis, u: number): HintBand {
   const km = HINT_WIDTH_TOLERANCES * toleranceKm
   const at = EDGE + u * (1 - 2 * EDGE)
-  if (axis === "latitude") {
+  if (axis === HintAxis.LATITUDE) {
     const width = Math.min(km / KM_PER_DEGREE, 180)
     let from = answer.lat - at * width
     from = Math.min(Math.max(from, -90), 90 - width)
@@ -56,7 +59,7 @@ export function hintBand(answer: LatLon, toleranceKm: number, axis: HintAxis, u:
 
 /** Whether a point lies in the band. */
 export function inHintBand(band: HintBand, p: LatLon): boolean {
-  if (band.axis === "latitude") return p.lat >= band.from && p.lat <= band.to
+  if (band.axis === HintAxis.LATITUDE) return p.lat >= band.from && p.lat <= band.to
   return band.from <= band.to ? p.lon >= band.from && p.lon <= band.to : p.lon >= band.from || p.lon <= band.to
 }
 
@@ -67,7 +70,7 @@ export function trimToHint(cells: ReadonlyMap<H3Cell, number>, band: HintBand, f
 
 function cellMeetsBand(h: H3Cell, band: HintBand): boolean {
   const corners = cellToBoundary(h)
-  if (band.axis === "latitude") {
+  if (band.axis === HintAxis.LATITUDE) {
     const lats = corners.map(([lat]) => lat)
     return Math.max(...lats) >= band.from && Math.min(...lats) <= band.to
   }
@@ -82,7 +85,7 @@ function cellMeetsBand(h: H3Cell, band: HintBand): boolean {
 
 /** "Between 23°N and 37°N", "Between 170°E and 165°W". */
 export function describeHint(band: HintBand): string {
-  const [pos, neg] = band.axis === "latitude" ? ["N", "S"] : ["E", "W"]
+  const [pos, neg] = band.axis === HintAxis.LATITUDE ? ["N", "S"] : ["E", "W"]
   const deg = (v: number) => {
     const n = Math.abs(Math.round(v * 10) / 10)
     return n === 0 || n === 180 ? `${n}°` : `${n}°${v > 0 ? pos : neg}`

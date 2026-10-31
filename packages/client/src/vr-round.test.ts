@@ -7,6 +7,9 @@ import type { PaintController } from "./paint-controller"
 import { areaAnswerView, makeFlagQuestion, makeQuestionView } from "./test-view"
 import type { RevealedAnswer } from "./round"
 import { answerModeText, vrReveal, vrRound, vrScoreLine, type VrRoundShown, type VrScore } from "./vr-round"
+import { HintAllowance } from "./vr/view"
+import { MapDetail } from "@whereabouts/shared/protocol"
+import { FactType } from "@whereabouts/shared/facts"
 
 function painted(flag: string, label: string, share: number): PaintedCountry {
   return { country: makeFlagQuestion(flag, label), share }
@@ -74,9 +77,9 @@ function shown(over: Partial<VrRoundShown> = {}): VrRoundShown {
 function round(s: VrRoundShown) {
   return vrRound(s, {
     paint: {} as PaintController,
-    detail: "political",
+    detail: MapDetail.POLITICAL,
     hint: undefined,
-    hintsLeft: "unlimited",
+    hintsLeft: HintAllowance.UNLIMITED,
     useHint: () => {},
     doneLabel: "Submit",
     done: () => {},
@@ -87,7 +90,7 @@ function round(s: VrRoundShown) {
 describe("vrRound", () => {
   it("shows the answer's photo only at the reveal, with the fact on its back", () => {
     expect(round(shown()).picture).toBeUndefined()
-    const fact = { kind: "fame" as const, text: "Old capital", source: "Kyoto" }
+    const fact = { type: FactType.FAME, text: "Old capital", source: "Kyoto" }
     expect(round(shown({ revealed: answer, fact })).picture).toEqual({
       photo: "Kyoto.jpg",
       postcard: { place: "Kyoto", text: "Old capital" }

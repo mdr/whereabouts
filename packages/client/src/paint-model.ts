@@ -12,6 +12,7 @@ import { h3Res, type H3Cell } from "@whereabouts/shared/h3"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { FlagQuestion } from "@whereabouts/shared/questions"
 import type { LatLon } from "@whereabouts/shared/geo"
+import type { StrokeTool } from "./tool"
 import type { CountryFiller } from "./fill"
 
 /** How near a point a small country's answer counts as under it, in pixels, for the Fill tool. */
@@ -65,7 +66,7 @@ export class PaintModel {
   /** Connected blobs as of `settledVersion`, largest first; none when nothing is painted. */
   readonly settledBlobs = following(this.settledVersion, () => this.layer.blobs())
   /** The tool of the stroke being held, or undefined; drives the spray and eraser sounds. */
-  readonly stroking = signal<"paint" | "erase" | undefined>(undefined)
+  readonly stroking = signal<StrokeTool | undefined>(undefined)
   /** The current question's tolerance (used by dev tooling). */
   readonly toleranceKm = signal(100)
   private readonly _fillable = signal(false)
@@ -232,7 +233,7 @@ export class PaintModel {
   // ---- strokes --------------------------------------------------------------
 
   /** One undo step for every stamp until `endStroke`. */
-  beginStroke(tool: "paint" | "erase"): void {
+  beginStroke(tool: StrokeTool): void {
     this.pushHistory()
     this.stroking.value = tool
   }

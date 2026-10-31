@@ -8,15 +8,16 @@ import { flagRatio } from "../flags"
 import { cx } from "./cx"
 import { useElementRef } from "./element-ref"
 import { CommonsCredit, flagShape, useFlagUrl } from "./Pictures"
-import { Lightbox, PhotoLightbox, useEscape } from "./Lightbox"
+import { Lightbox, LightboxType, PhotoLightbox, useEscape } from "./Lightbox"
 import { factTestIds, questionCardTestIds } from "./QuestionCardTestIds"
 import card from "./Card.module.css"
 import q from "./QuestionCard.module.css"
+import { FactType } from "@whereabouts/shared/facts"
 
-const FACT_LABELS: Record<Fact["kind"], string> = {
-  fame: "Why it's known",
-  trivia: "Did you know?",
-  flag: "About the flag"
+const FACT_LABELS: Record<FactType, string> = {
+  [FactType.FAME]: "Why it's known",
+  [FactType.TRIVIA]: "Did you know?",
+  [FactType.FLAG]: "About the flag"
 }
 
 /** A line of interest about the revealed answer. */
@@ -24,7 +25,7 @@ export function FactLine({ fact }: { fact: Fact | undefined }) {
   if (!fact) return undefined
   return (
     <p class={q.fact} data-testid={factTestIds.fact}>
-      <span class={q.factKind}>{FACT_LABELS[fact.kind]}</span> {fact.text}
+      <span class={q.factKind}>{FACT_LABELS[fact.type]}</span> {fact.text}
     </p>
   )
 }
@@ -41,6 +42,19 @@ export function Answer({ label, wiki }: { label: string; wiki?: string }) {
   )
 }
 
+/** Where a question card sits. */
+export enum CardPlace {
+  /** While painting, its picture gives way on a short screen. */
+  PAINTING = "PAINTING",
+  /** At a reveal, it heads a phone's sheet. */
+  REVEAL = "REVEAL"
+}
+
+const PLACE_CLASS: Record<CardPlace, string | undefined> = {
+  [CardPlace.PAINTING]: q.painting,
+  [CardPlace.REVEAL]: q.reveal
+}
+
 export function QuestionCard({
   q: question,
   hud,
@@ -51,8 +65,7 @@ export function QuestionCard({
   startFolded
 }: {
   q: QuestionView
-  /** Where it sits: while painting its picture gives way on a short screen; at a reveal it heads a phone's sheet. */
-  hud: "painting" | "reveal"
+  hud: CardPlace
   children?: ComponentChildren
   /** Show the image credit link. Off while guessing: the Commons file name gives the answer away. */
   credit?: boolean
@@ -76,7 +89,7 @@ export function QuestionCard({
   usePublishedHeight(ref)
   return (
     <div
-      class={cx(card.card, q.question, q[hud], canFold && q.foldable, folded && q.folded)}
+      class={cx(card.card, q.question, PLACE_CLASS[hud], canFold && q.foldable, folded && q.folded)}
       ref={ref}
       data-testid={questionCardTestIds.card}
     >
@@ -178,7 +191,13 @@ function FlagImage({ code }: { code: string }) {
         <span class="sr-only">Enlarge flag</span>
       </button>
       {large && src && (
-        <Lightbox src={src} kind="flag" ratio={flagRatio(code)} credit={undefined} onClose={() => setLarge(false)} />
+        <Lightbox
+          src={src}
+          type={LightboxType.FLAG}
+          ratio={flagRatio(code)}
+          credit={undefined}
+          onClose={() => setLarge(false)}
+        />
       )}
     </>
   )

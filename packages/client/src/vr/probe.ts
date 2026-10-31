@@ -5,18 +5,19 @@ import type { VrBoard, ResultsBoard } from "./board"
 import type { PanelClearance } from "./clearance"
 import type { DetailPatch } from "./detail-patch"
 import type { FlagPins } from "./flag-pins"
-import type { Globe, Hand } from "./globe"
+import type { Globe } from "./globe"
+import { HANDS, Hand, XR_HAND } from "./hand"
 import type { HintMarker } from "./hint"
 import type { Menu, MenuShown } from "./menu"
 import type { Moon } from "./moon"
 import type { Picture } from "./picture"
+import type { PictureBack } from "./picture-back"
 import type { ScoreBoard, VrTable } from "./scores"
 import type { Space } from "./space"
-import type { HandTool } from "./spray"
-import type { VrView } from "./view"
-import type { WristButton, WristMenu } from "./wrist"
-
-const HANDS = ["left", "right"] as const
+import type { HandTool, SprayTool } from "./spray"
+import { VrViewType, type VrView } from "./view"
+import type { WristMenu } from "./wrist"
+import type { WristButton } from "./wrist-button"
 
 export interface ProbedParts {
   world: World
@@ -51,11 +52,11 @@ export class VrProbe {
   /** The reveal's line of interest. */
   get factShown(): string | undefined {
     const view = this.vr.view()
-    return view?.kind === "reveal" ? view.reveal.fact : undefined
+    return view?.type === VrViewType.REVEAL ? view.reveal.fact : undefined
   }
 
-  get viewKind(): VrView["kind"] | undefined {
-    return this.vr.view()?.kind
+  get viewType(): VrViewType | undefined {
+    return this.vr.view()?.type
   }
 
   get tableShown(): VrTable | undefined {
@@ -64,7 +65,7 @@ export class VrProbe {
 
   /** Droplets and crumbs in the air. */
   get particlesLive(): number {
-    return this.vr.tools.left.particlesLive + this.vr.tools.right.particlesLive
+    return HANDS.reduce((n, h) => n + this.vr.tools[h].particlesLive, 0)
   }
 
   /** The narrowest gap, in radians as the player sees it, between a panel and the globe. */
@@ -108,7 +109,7 @@ export class VrProbe {
   }
 
   get toolsHeld(): boolean {
-    return this.vr.tools.left.held || this.vr.tools.right.held
+    return HANDS.some((h) => this.vr.tools[h].held)
   }
 
   get spaceShown(): boolean {
@@ -136,8 +137,8 @@ export class VrProbe {
     return this.vr.menu.shown
   }
 
-  get toolInHand(): Record<Hand, string> {
-    return { left: this.vr.tools.left.tool, right: this.vr.tools.right.tool }
+  get toolInHand(): Record<Hand, SprayTool> {
+    return { [Hand.LEFT]: this.vr.tools[Hand.LEFT].tool, [Hand.RIGHT]: this.vr.tools[Hand.RIGHT].tool }
   }
 
   /** Whether the page's map shows over the globe. */
@@ -161,7 +162,7 @@ export class VrProbe {
     held: boolean
     at: [number, number, number]
     facing: [number, number, number]
-    back: "reverse" | "postcard" | undefined
+    back: PictureBack | undefined
   } {
     const { picture } = this.vr
     const p = picture.mesh.getWorldPosition(new Vector3())
@@ -177,7 +178,7 @@ export class VrProbe {
   /** Whether the controllers themselves show, rather than the can and eraser. */
   get controllersShown(): boolean {
     return HANDS.some((h) =>
-      this.vr.world.input.xr.visualAdapters.controller[h].visual?.model.children.some((part) => part.visible)
+      this.vr.world.input.xr.visualAdapters.controller[XR_HAND[h]].visual?.model.children.some((part) => part.visible)
     )
   }
 

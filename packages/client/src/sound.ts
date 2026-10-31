@@ -30,6 +30,7 @@ import chickenUrl from "./assets/sounds/chicken.mp3"
 import clearUrl from "./assets/sounds/clear.mp3"
 import applauseUrl from "./assets/sounds/applause.mp3"
 import { soundOn } from "./settings"
+import { Phase } from "@whereabouts/shared/protocol"
 
 type Slices = readonly (readonly [number, number])[]
 
@@ -112,9 +113,15 @@ export function countdownPlan(msLeft: number): { delayMs: number; offsetS: numbe
 }
 
 export interface RoundState {
-  phase: string
+  phase: Phase
   /** Index of the round being played or revealed, if any. */
   round: number | undefined
+}
+
+export enum RoundCue {
+  ROUND_START = "ROUND_START",
+  FINISHED_EARLY = "FINISHED_EARLY",
+  RESULTS = "RESULTS"
 }
 
 /** More than this left when a round ends counts as finishing early rather than on time. */
@@ -129,16 +136,13 @@ const EARLY_MS = 750
  * the game mid-round). `prev` is undefined on the first view after loading, which
  * never cues anything: a refresh should not announce what is already there.
  */
-export function roundCue(
-  prev: RoundState | undefined,
-  next: RoundState,
-  msLeftAtChange: number
-): "roundStart" | "finishedEarly" | "results" | undefined {
+export function roundCue(prev: RoundState | undefined, next: RoundState, msLeftAtChange: number): RoundCue | undefined {
   if (!prev) return undefined
-  if (next.phase === "guessing" && (prev.phase !== "guessing" || prev.round !== next.round)) return "roundStart"
-  if (prev.phase === "guessing" && next.phase === "reveal")
-    return msLeftAtChange > EARLY_MS ? "finishedEarly" : undefined
-  if (next.phase === "results" && prev.phase !== "results") return "results"
+  if (next.phase === Phase.GUESSING && (prev.phase !== Phase.GUESSING || prev.round !== next.round))
+    return RoundCue.ROUND_START
+  if (prev.phase === Phase.GUESSING && next.phase === Phase.REVEAL)
+    return msLeftAtChange > EARLY_MS ? RoundCue.FINISHED_EARLY : undefined
+  if (next.phase === Phase.RESULTS && prev.phase !== Phase.RESULTS) return RoundCue.RESULTS
   return undefined
 }
 
@@ -328,11 +332,11 @@ class SoundEngine {
   }
 
   /** Two soft marimba notes a fifth apart: rising for a round starting, falling for finishing early. */
-  cue(kind: "roundStart" | "finishedEarly"): void {
+  cue(kind: RoundCue.ROUND_START | RoundCue.FINISHED_EARLY): void {
     const ctx = this.ready()
     if (!ctx) return
     const low = 659
-    const notes = kind === "roundStart" ? [low, low * 1.5] : [low * 1.5, low]
+    const notes = kind === RoundCue.ROUND_START ? [low, low * 1.5] : [low * 1.5, low]
     const t = ctx.currentTime + 0.01
     notes.forEach((f, i) => this.mallet(f, t + i * 0.14))
   }

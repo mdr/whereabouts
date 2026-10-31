@@ -2,8 +2,12 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { SprayTool } from "./spray"
+import { Tool } from "../tool"
 import type { VrRound } from "./view"
 import { wristActions } from "./wrist-actions"
+import { WristButton } from "./wrist-button"
+import { Hand } from "./hand"
+import { HintAxis } from "@whereabouts/shared/hints"
 
 function makeTool(tool: SprayTool) {
   return {
@@ -25,7 +29,7 @@ function makeRound(paint = makePaint(), over: Partial<VrRound> = {}): VrRound {
 function makeActions(round: VrRound | undefined) {
   const notes: string[] = []
   const repaint = vi.fn()
-  const tools = { left: makeTool("erase"), right: makeTool("paint") }
+  const tools = { [Hand.LEFT]: makeTool(Tool.ERASE), [Hand.RIGHT]: makeTool(Tool.PAINT) }
   const actions = wristActions({ painting: () => round, tools, note: (t) => notes.push(t), repaint })
   return { actions, notes, repaint, tools }
 }
@@ -33,16 +37,16 @@ function makeActions(round: VrRound | undefined) {
 describe("the wrist menu's buttons", () => {
   it("leave the paint alone while the player isn't painting", () => {
     const { actions, repaint } = makeActions(undefined)
-    actions.undo()
-    actions.clear()
+    actions[WristButton.UNDO]()
+    actions[WristButton.CLEAR]()
     expect(repaint).not.toHaveBeenCalled()
   })
 
   it("undo and redo the round's paint, and redraw it", () => {
     const paint = makePaint()
     const { actions, repaint } = makeActions(makeRound(paint))
-    actions.undo()
-    actions.redo()
+    actions[WristButton.UNDO]()
+    actions[WristButton.REDO]()
     expect(paint.undo).toHaveBeenCalledOnce()
     expect(paint.redo).toHaveBeenCalledOnce()
     expect(repaint).toHaveBeenCalledTimes(2)
@@ -51,26 +55,26 @@ describe("the wrist menu's buttons", () => {
   it("use a hint along the axis pressed", () => {
     const useHint = vi.fn()
     const { actions } = makeActions(makeRound(makePaint(), { useHint }))
-    actions.latitude()
-    expect(useHint).toHaveBeenCalledWith("latitude")
+    actions[WristButton.LATITUDE]()
+    expect(useHint).toHaveBeenCalledWith(HintAxis.LATITUDE)
   })
 
   it("swap the hands' tools, painting or not", () => {
     const { actions, tools } = makeActions(undefined)
-    actions.swap()
-    expect([tools.left.tool, tools.right.tool]).toEqual(["paint", "erase"])
+    actions[WristButton.SWAP]()
+    expect([tools[Hand.LEFT].tool, tools[Hand.RIGHT].tool]).toEqual([Tool.PAINT, Tool.ERASE])
   })
 
   it("say how much trimming to the hint took, at least 1%", () => {
     const paint = makePaint({ trimToHint: vi.fn(() => 0.001) })
     const { actions, notes } = makeActions(makeRound(paint, { hint: {} as HintBand }))
-    actions.trimHint()
+    actions[WristButton.TRIM_HINT]()
     expect(notes).toEqual(["Trimmed 1%"])
   })
 
   it("say so when there is nothing outside the hint to trim", () => {
     const { actions, notes } = makeActions(makeRound(makePaint(), { hint: {} as HintBand }))
-    actions.trimHint()
+    actions[WristButton.TRIM_HINT]()
     expect(notes).toEqual(["None outside"])
   })
 })

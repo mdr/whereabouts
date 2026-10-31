@@ -17,8 +17,9 @@ import { cellToBoundary, type H3Cell } from "@whereabouts/shared/h3"
 import { cellsOutline } from "@whereabouts/shared/paint"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
-import type { MapDetail } from "@whereabouts/shared/protocol"
 import type { Theme } from "./themes"
+import { HintAxis } from "@whereabouts/shared/hints"
+import { DETAIL_RANK, RevealDetail, type ShownDetail } from "./shown-detail"
 
 setWorkerUrl(mapWorkerUrl)
 
@@ -484,19 +485,19 @@ export class GameMap {
 
   /**
    * How much of the map shows: one of the game's guessing levels, or
-   * "reveal" for everything but roads (they clutter at the zooms the reveal
-   * uses). Place names and man-made detail show only on the reveal.
+   * RevealDetail.REVEAL for everything but roads (they clutter at the zooms the
+   * reveal uses). Place names and man-made detail show only on the reveal.
    */
-  setDetail(level: MapDetail | "reveal"): void {
+  setDetail(level: ShownDetail): void {
     // An unknown level (a stale saved setting, say) counts as minimal.
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- saved settings are not checked against the type
-    const rank = { minimal: 0, water: 1, physical: 2, political: 3, reveal: 4 }[level] ?? 0
+    const rank = DETAIL_RANK[level] ?? 0
     this.setInlandWater(rank >= 1)
     this.setTerrain(rank >= 2)
     this.setIce(rank >= 2)
     this.setWood(rank >= 2)
     this.setBorders(rank >= 3, rank >= 4)
-    this.setRevealBorders(level === "reveal")
+    this.setRevealBorders(level === RevealDetail.REVEAL)
     this.setLabels(rank >= 4)
     this.setUrban(rank >= 4)
     this.setRoads(false)
@@ -820,7 +821,7 @@ function hintFeatures(band: HintBand): GeoJSON.Feature[] {
     }
   })
   const p = MAX_LAT
-  if (band.axis === "latitude") return [box(-180, 180, Math.max(band.from, -p), Math.min(band.to, p))]
+  if (band.axis === HintAxis.LATITUDE) return [box(-180, 180, Math.max(band.from, -p), Math.min(band.to, p))]
   if (band.from <= band.to) return [box(band.from, band.to, -p, p)]
   return [box(band.from, 180, -p, p), box(-180, band.to, -p, p)]
 }

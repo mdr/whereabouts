@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 import { Group, type UIKitDocument, type World } from "@iwsdk/core"
 import { CONFIRM_S, Menu } from "./menu"
-import type { VrAction, VrRound, VrView } from "./view"
+import { HintAllowance, VrViewType, type VrAction, type VrRound, type VrView } from "./view"
 
 function makeMenu() {
   const world = {
@@ -24,7 +24,7 @@ function makeAction(over: Partial<VrAction> = {}): { action: VrAction; press: ()
 }
 
 function makeLobby(actions: VrAction[]): VrView {
-  return { kind: "lobby", summary: { title: "Whereabouts", scoreLine: "", actions } }
+  return { type: VrViewType.LOBBY, summary: { title: "Whereabouts", scoreLine: "", actions } }
 }
 
 function makeRound(over: Partial<VrRound> = {}): VrRound {
@@ -35,7 +35,7 @@ function makeRound(over: Partial<VrRound> = {}): VrRound {
     picture: undefined,
     water: false,
     hint: undefined,
-    hintsLeft: "none",
+    hintsLeft: HintAllowance.NONE,
     useHint() {},
     doneLabel: "Submit",
     done() {},
@@ -46,7 +46,7 @@ function makeRound(over: Partial<VrRound> = {}): VrRound {
 
 function makeReveal(actions: VrAction[]): VrView {
   return {
-    kind: "reveal",
+    type: VrViewType.REVEAL,
     round: makeRound(),
     reveal: {
       label: "Paris",
@@ -132,10 +132,10 @@ describe("the VR menu", () => {
 
   it("calls Done Pass with nothing painted, and counts the clock down", () => {
     const { menu } = makeMenu()
-    shownWith(menu, { kind: "paint", round: makeRound({ msLeft: () => 65_000 }) })
+    shownWith(menu, { type: VrViewType.PAINT, round: makeRound({ msLeft: () => 65_000 }) })
     menu.updateLabels()
     expect(menu.shown).toMatchObject({ done: "Pass", clock: "1:05 left" })
-    shownWith(menu, { kind: "paint", round: makeRound({ msLeft: () => 0 }) })
+    shownWith(menu, { type: VrViewType.PAINT, round: makeRound({ msLeft: () => 0 }) })
     menu.updateLabels()
     expect(menu.shown.clock).toBe("Time's up")
   })

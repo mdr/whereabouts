@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "preact/hooks"
 import type { GameView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../net"
-import { roundCue, sound, type RoundState } from "../sound"
+import { RoundCue, roundCue, sound, type RoundState } from "../sound"
+import { Phase } from "@whereabouts/shared/protocol"
 
 /**
  * The online game's sounds, driven by changes of view: the rising cue when a
@@ -15,19 +16,19 @@ export function useGameSounds(conn: Connection, view: GameView | undefined): voi
   const lastDeadline = useRef<number | undefined>(undefined)
   const phase = view?.phase
   const round = view?.round?.index ?? view?.reveal?.index
-  const deadline = view?.phase === "guessing" ? view.round?.deadline : undefined
+  const deadline = view?.phase === Phase.GUESSING ? view.round?.deadline : undefined
 
   useEffect(() => {
     if (phase === undefined) return
     const next = { phase, round }
     const msLeft = lastDeadline.current === undefined ? 0 : conn.msUntil(lastDeadline.current)
     const cue = roundCue(prev.current, next, msLeft)
-    if (cue === "roundStart") sound.cue("roundStart")
-    if (cue === "finishedEarly") {
+    if (cue === RoundCue.ROUND_START) sound.cue(RoundCue.ROUND_START)
+    if (cue === RoundCue.FINISHED_EARLY) {
       sound.stopCountdown()
-      sound.cue("finishedEarly")
+      sound.cue(RoundCue.FINISHED_EARLY)
     }
-    if (cue === "results") {
+    if (cue === RoundCue.RESULTS) {
       sound.stopCountdown()
       sound.play("applause")
     }

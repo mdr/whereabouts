@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vite-plus/test"
-import { pickFact, type Fact } from "./facts.ts"
+import { FactType, pickFact, type Fact } from "./facts.ts"
 import facts from "../facts.json" with { type: "json" }
 
-const fact = (kind: Fact["kind"], text: string): Fact => ({ kind, text, source: "https://example.org" })
-const place = [fact("fame", "big"), fact("fame", "old"), fact("trivia", "odd"), fact("trivia", "fun")]
+const fact = (type: FactType, text: string): Fact => ({ type, text, source: "https://example.org" })
+const place = [
+  fact(FactType.FAME, "big"),
+  fact(FactType.FAME, "old"),
+  fact(FactType.TRIVIA, "odd"),
+  fact(FactType.TRIVIA, "fun")
+]
 
 describe("picking a fact for the reveal", () => {
   it("gives everyone with the same seed the same fact", () => {
@@ -12,16 +17,16 @@ describe("picking a fact for the reveal", () => {
 
   it("alternates notable facts and trivia by round", () => {
     for (let round = 0; round < 8; round++)
-      expect(pickFact(place, "ABCD", round)!.kind).toBe(round % 2 === 0 ? "fame" : "trivia")
+      expect(pickFact(place, "ABCD", round)!.type).toBe(round % 2 === 0 ? FactType.FAME : FactType.TRIVIA)
   })
 
   it("tells of the flag on a flag round", () => {
-    const flag = [fact("flag", "square"), fact("flag", "dragon"), fact("fame", "high")]
-    for (let round = 0; round < 4; round++) expect(pickFact(flag, "ABCD", round)!.kind).toBe("flag")
+    const flag = [fact(FactType.FLAG, "square"), fact(FactType.FLAG, "dragon"), fact(FactType.FAME, "high")]
+    for (let round = 0; round < 4; round++) expect(pickFact(flag, "ABCD", round)!.type).toBe(FactType.FLAG)
   })
 
   it("falls back to whatever there is", () => {
-    expect(pickFact([fact("trivia", "odd")], "ABCD", 0)!.text).toBe("odd")
+    expect(pickFact([fact(FactType.TRIVIA, "odd")], "ABCD", 0)!.text).toBe("odd")
     expect(pickFact(undefined, "ABCD", 0)).toBeUndefined()
     expect(pickFact([], "ABCD", 0)).toBeUndefined()
   })
@@ -39,7 +44,7 @@ describe("the facts", () => {
     for (const [wiki, list] of all)
       for (const f of list) {
         expect(f.text.split(/\s+/).length, `${wiki}: ${f.text}`).toBeLessThanOrEqual(25)
-        expect(["fame", "trivia", "flag"]).toContain(f.kind)
+        expect(Object.values(FactType)).toContain(f.type)
         expect(f.source).toMatch(/^https:\/\//)
       }
   })

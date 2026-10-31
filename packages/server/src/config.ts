@@ -27,7 +27,8 @@ export function configFromEnv(env: Record<string, string | undefined>, defaultSt
 
 /** A typo here would otherwise score every game with the default kernel unnoticed. */
 function kernelId(v: string) {
-  const parsed = KernelIdSchema.safeParse(v)
+  // Also the old names, written in lower case with hyphens.
+  const parsed = KernelIdSchema.safeParse(v.toUpperCase().replaceAll("-", "_"))
   if (!parsed.success) throw new Error(`KERNEL must be one of ${KernelIdSchema.options.join(", ")}, not "${v}"`)
   return parsed.data
 }

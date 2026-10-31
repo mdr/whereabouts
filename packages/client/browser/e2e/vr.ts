@@ -11,6 +11,11 @@ import { hintTestIds } from "../../src/ui/HintTestIds.ts"
 import { questionCardTestIds } from "../../src/ui/QuestionCardTestIds.ts"
 import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
 import { until } from "../pages/support.ts"
+import { Tool } from "../../src/tool.ts"
+import { PictureBack } from "../../src/vr/picture-back.ts"
+import { VrViewType } from "../../src/vr/view.ts"
+import { WristButton } from "../../src/vr/wrist-button.ts"
+import { Hand } from "../../src/vr/hand.ts"
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
 
 const out = outDir()
@@ -93,12 +98,12 @@ await round.screenshot(`${out}/vr-3-sprayed.png`)
 // hand painted. Undo puts it back.
 await headset.pointRight(can, centre)
 await round.pause(300)
-const painted = (await headset.target("right"))!
-await headset.point("left", [can[0] - 0.3, can[1], can[2]], painted)
+const painted = (await headset.target(Hand.RIGHT))!
+await headset.point(Hand.LEFT, [can[0] - 0.3, can[1], can[2]], painted)
 await round.pause(300)
-await headset.trigger("left", 1)
+await headset.trigger(Hand.LEFT, 1)
 await round.pause(1500)
-await headset.trigger("left", 0)
+await headset.trigger(Hand.LEFT, 0)
 await round.pause(300)
 const erased = await round.map.yourPaintCells()
 checks.check(erased < after, `the left hand erases (${after} -> ${erased} cells)`)
@@ -117,12 +122,12 @@ const unrubbed = await headset.paintMass()
 const toward = painted.map((c, i) => c - rubFrom[i]!)
 const length = Math.hypot(...toward)
 await headset.point(
-  "left",
+  Hand.LEFT,
   painted.map((c, i) => c - (toward[i]! / length) * -0.04) as [number, number, number],
   painted
 )
 await round.pause(1500)
-await headset.point("left", rubFrom, painted)
+await headset.point(Hand.LEFT, rubFrom, painted)
 await round.pause(300)
 const rubbed = await headset.paintMass()
 checks.check(
@@ -137,18 +142,18 @@ await until(
 )
 // Gripping, to turn or zoom the globe, it rubs nothing out.
 const ungripped = await headset.paintMass()
-await headset.grip("left", 1)
+await headset.grip(Hand.LEFT, 1)
 await headset.point(
-  "left",
+  Hand.LEFT,
   painted.map((c, i) => c - (toward[i]! / length) * -0.04) as [number, number, number],
   painted
 )
 await round.pause(1500)
-await headset.point("left", rubFrom, painted)
+await headset.point(Hand.LEFT, rubFrom, painted)
 // Held still before letting go: a release straight after the move would
 // fling the globe if no frame came between, and leave it spinning.
 await headset.frames(5)
-await headset.grip("left", 0)
+await headset.grip(Hand.LEFT, 0)
 await round.pause(300)
 const gripped = await headset.paintMass()
 checks.check(
@@ -161,7 +166,7 @@ checks.check(
 const leftHand: [number, number, number] = [can[0] - 0.3, can[1], can[2]]
 checks.check(!(await headset.wristOpen()), "the wrist menu stays shut while the left hand points ahead")
 // A quarter turn about the ray brings the left palm (its grip's +X) round to face up.
-await headset.hold("left", leftHand, [0, 0, Math.SQRT1_2, Math.SQRT1_2])
+await headset.hold(Hand.LEFT, leftHand, [0, 0, Math.SQRT1_2, Math.SQRT1_2])
 checks.check(
   await until(
     "the wrist menu",
@@ -183,10 +188,10 @@ const undone = async (what: string) => {
     (n) => n === after
   )
 }
-await press("clear")
+await press(WristButton.CLEAR)
 checks.check((await round.map.yourPaintCells()) === 0, "its Clear clears the paint, and the press sprays none")
 await undone("the clear undone")
-await press("latitude")
+await press(WristButton.LATITUDE)
 checks.check(
   await until(
     "the hint band",
@@ -196,11 +201,11 @@ checks.check(
   "its Latitude button gives the hint, shaded on the globe"
 )
 checks.check(await tab.page.getByTestId(hintTestIds.band).isVisible(), "and on the page")
-await press("trimHint")
+await press(WristButton.TRIM_HINT)
 const trimmed = await round.map.yourPaintCells()
 checks.check(trimmed <= after, `Trim to hint keeps only the paint in the band (${after} -> ${trimmed} cells)`)
 if (trimmed < after) await undone("the trim undone")
-await headset.point("left", leftHand, centre)
+await headset.point(Hand.LEFT, leftHand, centre)
 checks.check(
   !(await until(
     "the wrist menu shut",
@@ -277,9 +282,9 @@ checks.check(score >= 0 && score <= 1000, `the sprayed round scores ${score}`)
 const revealed = await until(
   "the answer in VR",
   () => headset.view(),
-  (v) => v === "reveal"
+  (v) => v === VrViewType.REVEAL
 )
-checks.check((await headset.inSession()) && revealed === "reveal", "submitting shows the answer in VR")
+checks.check((await headset.inSession()) && revealed === VrViewType.REVEAL, "submitting shows the answer in VR")
 const vrFact = await until(
   "the line about the answer",
   () => headset.fact(),
@@ -324,9 +329,9 @@ await tab.page.getByTestId(soloTestIds.nextButton).dispatchEvent("click")
 const nextRound = await until(
   "the next round in VR",
   () => headset.view(),
-  (v) => v === "paint"
+  (v) => v === VrViewType.PAINT
 )
-checks.check((await headset.inSession()) && nextRound === "paint", "Next brings the next round to VR")
+checks.check((await headset.inSession()) && nextRound === VrViewType.PAINT, "Next brings the next round to VR")
 checks.check(!(await headset.globeColourShown()), "and the plain land back")
 checks.check(
   await until(
@@ -340,11 +345,11 @@ await pressDone()
 const passed = await until(
   "the passed round's answer in VR",
   () => headset.view(),
-  (v) => v === "reveal"
+  (v) => v === VrViewType.REVEAL
 )
 await scoreText.waitFor()
 const passScore = Number(await scoreText.innerText())
-checks.check(passed === "reveal" && passScore === 250, `passing in VR scores ${passScore}`)
+checks.check(passed === VrViewType.REVEAL && passScore === 250, `passing in VR scores ${passScore}`)
 checks.check((await headset.scoreTable())?.rows.length === 2, "the score table lists both rounds")
 await round.screenshot(`${out}/vr-10-passed.png`)
 await tab.page.evaluate(() => window.whereaboutsVr.exit())
@@ -367,7 +372,7 @@ const flagTab = await newTab(browser, "vr-flag", {
   initScript: () => {
     localStorage.setItem("wa.practiceTypes", "FLAG")
     // The Political map, where a country round offers the fill tool.
-    localStorage.setItem("wa.mapDetail", "political")
+    localStorage.setItem("wa.mapDetail", "POLITICAL")
     // As if loading outlasted the press: the browser would refuse it the headset.
     Object.defineProperty(UserActivation.prototype, "isActive", { get: () => false })
   }
@@ -444,7 +449,7 @@ await flagRound.pause(800)
 const turned = await flagHeadset.pictureHeld()
 const turnedBy = angle(held.facing, turned.facing)
 checks.check(
-  turned.held && turnedBy > 2.5 && turned.back === "reverse",
+  turned.held && turnedBy > 2.5 && turned.back === PictureBack.REVERSE,
   `turned round, it shows the flag's reverse (${turnedBy.toFixed(2)} rad)`
 )
 await flagRound.screenshot(`${out}/vr-9c-back.png`)
@@ -458,9 +463,9 @@ checks.check(!back.held && off < 0.01, `letting go puts it back (${off.toFixed(3
 // country it points at, and a second pull takes the fill off.
 const mode = (await flagHeadset.menu()).mode
 checks.check(mode?.startsWith("Paint ") === true, `a flag round says how to answer it (${mode})`)
-await flagHeadset.button("right", "a-button")
-await flagHeadset.button("right", "a-button")
-checks.check((await flagHeadset.toolInHand()).right === "fill", "A twice brings out the fill pail")
+await flagHeadset.button(Hand.RIGHT, "a-button")
+await flagHeadset.button(Hand.RIGHT, "a-button")
+checks.check((await flagHeadset.toolInHand())[Hand.RIGHT] === Tool.FILL, "A twice brings out the fill pail")
 const [fx, fy, fz] = await flagHeadset.eyes()
 const fillFrom: [number, number, number] = [fx + 0.15, fy - 0.25, fz - 0.15]
 // Up and right of the globe's middle, at the prime meridian and the equator: the Sahel.
@@ -490,8 +495,8 @@ checks.check(
   )) === 0,
   "and a second pull takes it off"
 )
-await flagHeadset.button("right", "a-button")
-checks.check((await flagHeadset.toolInHand()).right === "paint", "A again goes back to the spray can")
+await flagHeadset.button(Hand.RIGHT, "a-button")
+checks.check((await flagHeadset.toolInHand())[Hand.RIGHT] === Tool.PAINT, "A again goes back to the spray can")
 
 // Pass the flag round: its reveal offers every country's flag, in VR and on the page.
 const flagCan: [number, number, number] = [hand[0], hand[1], hand[2]]
@@ -503,7 +508,7 @@ await flagPress("done")
 await until(
   "the flag round's answer",
   () => flagHeadset.view(),
-  (v) => v === "reveal"
+  (v) => v === VrViewType.REVEAL
 )
 await flagPress("flags")
 const pins = await until(
@@ -592,11 +597,11 @@ const room = await until(
     on: await flagHeadset.inSession(),
     view: await flagHeadset.view()
   }),
-  (s) => !s.space && s.passthrough && s.on && s.view === "reveal",
+  (s) => !s.space && s.passthrough && s.on && s.view === VrViewType.REVEAL,
   30_000
 )
 checks.check(
-  !room.space && room.passthrough && room.on && room.view === "reveal",
+  !room.space && room.passthrough && room.on && room.view === VrViewType.REVEAL,
   "See your room swaps space for passthrough, the answer still showing"
 )
 checks.check((await flagHeadset.moon()) === undefined, "and the moon goes with space")
@@ -621,10 +626,13 @@ await until(
 const homeView = await until(
   "the menu in VR",
   () => homeHeadset.view(),
-  (v) => v === "lobby"
+  (v) => v === VrViewType.LOBBY
 )
 const offered = (await homeHeadset.menu()).actions.map((a) => a.label).join(", ")
-checks.check(homeView === "lobby" && offered === "Practise, Change topic", `the home screen opens VR (${offered})`)
+checks.check(
+  homeView === VrViewType.LOBBY && offered === "Practise, Change topic",
+  `the home screen opens VR (${offered})`
+)
 await homePage.pause(1500)
 await homePage.screenshot(`${out}/vr-12-home.png`)
 const [hx, hy, hz] = await homeHeadset.eyes()
@@ -632,11 +640,11 @@ await homeHeadset.press([hx + 0.15, hy - 0.25, hz - 0.15], await homeHeadset.men
 const practising = await until(
   "practice in VR",
   () => homeHeadset.view(),
-  (v) => v === "paint",
+  (v) => v === VrViewType.PAINT,
   30_000
 )
 checks.check(
-  practising === "paint" && (await homeHeadset.inSession()),
+  practising === VrViewType.PAINT && (await homeHeadset.inSession()),
   "Practise in VR starts practice, the headset still on"
 )
 

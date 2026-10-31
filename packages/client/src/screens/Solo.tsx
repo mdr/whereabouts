@@ -30,7 +30,7 @@ import sc from "../ui/Score.module.css"
 import { DoneButton, RevealCards, RoundPrompt } from "../ui/Round"
 import { PaintDev, PaintTools } from "../ui/PaintTools"
 import { VrButton, useVrHold, useVrView } from "../ui/VrButton"
-import type { VrView } from "../vr/view"
+import { HintAllowance, VrViewType, type VrView } from "../vr/view"
 import type { VrTable } from "../vr/scores"
 import { pts, vrReveal, vrRound, type VrRoundShown } from "../vr-round"
 import { Banner } from "../ui/Banner"
@@ -48,6 +48,12 @@ import { navigate } from "../router"
 import { announcePass, frameReveal, showAnswer, useRoundMap, type RevealedAnswer } from "../round"
 import { soloTestIds } from "./SoloTestIds"
 import { Cheats, LiveScore, RevealScore } from "./SoloDevTools"
+
+enum SoloPhase {
+  PAINT = "PAINT",
+  REVEAL = "REVEAL",
+  DONE = "DONE"
+}
 
 function revealedAnswer(q: Question, outlines: Outlines): RevealedAnswer {
   return {
@@ -95,7 +101,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
   const paint = usePaint()
   const [questions, setQuestions] = useState(() => shuffle(pool, Date.now()))
   const [index, setIndex] = useState(0)
-  const [phase, setPhase] = useState<"paint" | "reveal" | "done">("paint")
+  const [phase, setPhase] = useState(SoloPhase.PAINT)
   const [results, setResults] = useState<RoundResult[]>([])
   // No distribution for a pass.
   const [revealed, setRevealed] = useState<{ dist?: Distribution; result: RoundResult } | undefined>(undefined)
@@ -113,17 +119,17 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
 
   useRoundMap(paint, {
     round: index,
-    painting: phase === "paint",
+    painting: phase === SoloPhase.PAINT,
     question,
     detail,
-    reveal: phase === "reveal",
+    reveal: phase === SoloPhase.REVEAL,
     hint,
     start: () => (paint.enabled.value = true)
   })
 
   // Cheat: show the answer while painting.
   useEffect(() => {
-    if (phase !== "paint") return
+    if (phase !== SoloPhase.PAINT) return
     if (cheating) showAnswer(paint.gameMap, question, answer)
     else paint.gameMap.clearReveal()
   }, [cheating, phase, index])
@@ -142,7 +148,8 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
       if (e.key !== "Enter" || e.repeat || forTabbedControl(e)) return
       // A photo or the shortcuts list open over the round has the keyboard.
       if (document.querySelector('[role="dialog"]')) return
-      const act = phase === "paint" && !paint.layer.isEmpty ? submit : phase === "reveal" ? next : undefined
+      const act =
+        phase === SoloPhase.PAINT && !paint.layer.isEmpty ? submit : phase === SoloPhase.REVEAL ? next : undefined
       if (!act) return
       // A clicked button keeps focus, and Enter would press it as well.
       e.preventDefault()
@@ -160,31 +167,31 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     const result = { question: q, score }
     setResults((r) => [...r, result])
     setRevealed({ dist, result })
-    setPhase("reveal")
+    setPhase(SoloPhase.REVEAL)
     paint.enabled.value = false
     showAnswer(paint.gameMap, question, answer)
   }
 
   // Framed after the reveal's cards are in place: on a phone the map frames the answer around them.
   useEffect(() => {
-    if (phase === "reveal") frameReveal(paint.gameMap, question, answer, paint.layer.toGeoJSON())
+    if (phase === SoloPhase.REVEAL) frameReveal(paint.gameMap, question, answer, paint.layer.toGeoJSON())
   }, [phase, index])
 
   function next() {
     if (index + 1 >= questions.length) {
-      setPhase("done")
+      setPhase(SoloPhase.DONE)
       paint.gameMap.clearReveal()
       return
     }
     setIndex(index + 1)
-    setPhase("paint")
+    setPhase(SoloPhase.PAINT)
   }
 
   function restart() {
     setQuestions(shuffle(pool, Date.now()))
     setResults([])
     setIndex(0)
-    setPhase("paint")
+    setPhase(SoloPhase.PAINT)
   }
 
   const useHint = (axis: HintAxis) =>
@@ -206,7 +213,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
   const home = { label: "Home", press: () => navigate("/") }
   const shown: VrRoundShown = {
     question,
-    revealed: phase === "reveal" ? answer : undefined,
+    revealed: phase === SoloPhase.REVEAL ? answer : undefined,
     fact
   }
   const round = vrRound(shown, {
@@ -214,16 +221,16 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     heading: `QUESTION ${index + 1} OF ${questions.length}, ${pts(total)}`,
     detail,
     hint,
-    hintsLeft: "unlimited",
+    hintsLeft: HintAllowance.UNLIMITED,
     useHint,
     doneLabel: "Submit",
     done: submit,
     playing: true
   })
   const vrView: VrView =
-    phase === "done"
+    phase === SoloPhase.DONE
       ? {
-          kind: "done",
+          type: VrViewType.DONE,
           summary: {
             title: "Final score",
             scoreLine: `${pts(total)} out of ${(questions.length * 1000).toLocaleString()}`,
@@ -232,9 +239,9 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
           },
           more: [home]
         }
-      : phase === "reveal" && revealed && shownResult
+      : phase === SoloPhase.REVEAL && revealed && shownResult
         ? {
-            kind: "reveal",
+            type: VrViewType.REVEAL,
             round,
             more: [{ ...home, confirm: "Press again to leave" }],
             reveal: vrReveal(
@@ -248,7 +255,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
               }
             )
           }
-        : { kind: "paint", round, more: [{ ...home, confirm: "Press again to leave" }] }
+        : { type: VrViewType.PAINT, round, more: [{ ...home, confirm: "Press again to leave" }] }
   useVrView(vrView, `${phase} ${index} ${questions[0]?.id} ${hint?.axis}`)
 
   const header = (
@@ -260,7 +267,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     />
   )
 
-  if (phase === "done") {
+  if (phase === SoloPhase.DONE) {
     return (
       <Hud>
         <HudCenter>
@@ -292,7 +299,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     )
   }
 
-  if (phase === "reveal" && revealed && shownResult) {
+  if (phase === SoloPhase.REVEAL && revealed && shownResult) {
     const dist = revealed.dist
     const last = index + 1 >= questions.length
     return (

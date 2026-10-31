@@ -15,12 +15,49 @@ import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { AnswerType, ClueType, QuestionType, answerCentre, shuffle, type Outlines, type Question } from "./questions.ts"
 import { poolOf } from "./catalogue.ts"
 import { insideRegion, regionCells, scoreAnswer, scoredAnswer, type ScoredAnswer } from "./regions.ts"
-import { encodeCase, type ScoringCase } from "./scoring-case.ts"
-import { buildDistribution, type Kernel } from "./scoring.ts"
+import { CaseQuestionType, RegionKernel, encodeCase, type ScoringCase } from "./scoring-case.ts"
+import { buildDistribution, type ChoosableKernel, type Kernel } from "./scoring.ts"
+import { MapDetail } from "./protocol.ts"
 
-export const POINT_GUESSES = ["bullseye", "close", "near-miss", "far-miss", "wide", "hedge", "scattered"] as const
-export const REGION_GUESSES = ["whole", "part", "spill", "centre", "neighbour", "far-miss", "wide", "hedge"] as const
-type GuessKind = (typeof POINT_GUESSES)[number] | (typeof REGION_GUESSES)[number]
+export enum GuessType {
+  BULLSEYE = "BULLSEYE",
+  CLOSE = "CLOSE",
+  NEAR_MISS = "NEAR_MISS",
+  FAR_MISS = "FAR_MISS",
+  WIDE = "WIDE",
+  HEDGE = "HEDGE",
+  SCATTERED = "SCATTERED",
+  WHOLE = "WHOLE",
+  PART = "PART",
+  SPILL = "SPILL",
+  CENTRE = "CENTRE",
+  NEIGHBOUR = "NEIGHBOUR"
+}
+
+export const POINT_GUESSES: readonly GuessType[] = [
+  GuessType.BULLSEYE,
+  GuessType.CLOSE,
+  GuessType.NEAR_MISS,
+  GuessType.FAR_MISS,
+  GuessType.WIDE,
+  GuessType.HEDGE,
+  GuessType.SCATTERED
+]
+export const REGION_GUESSES: readonly GuessType[] = [
+  GuessType.WHOLE,
+  GuessType.PART,
+  GuessType.SPILL,
+  GuessType.CENTRE,
+  GuessType.NEIGHBOUR,
+  GuessType.FAR_MISS,
+  GuessType.WIDE,
+  GuessType.HEDGE
+]
+
+export enum ReviewCaseType {
+  SINGLE = "SINGLE",
+  PAIR = "PAIR"
+}
 
 /** The practice default: what the guesses would score with. */
 const REVIEW_FLOOR = 0.05
@@ -28,13 +65,25 @@ const REVIEW_FLOOR = 0.05
 export const REVIEW_VERSION = 4
 
 interface ReviewGuess {
-  kind: GuessKind
+  type: GuessType
   layer: PaintLayer
 }
 
-export type ReviewCase =
-  | { kind: "single"; question: Question; answer: ScoredAnswer; guess: ReviewGuess }
-  | { kind: "pair"; question: Question; answer: ScoredAnswer; guesses: [ReviewGuess, ReviewGuess] }
+interface SingleReviewCase {
+  type: ReviewCaseType.SINGLE
+  question: Question
+  answer: ScoredAnswer
+  guess: ReviewGuess
+}
+
+interface PairReviewCase {
+  type: ReviewCaseType.PAIR
+  question: Question
+  answer: ScoredAnswer
+  guesses: [ReviewGuess, ReviewGuess]
+}
+
+export type ReviewCase = SingleReviewCase | PairReviewCase
 
 /** Cases a set holds from each pool: single guesses, then pairs. */
 const MIX: [QuestionType[], number, number][] = [
@@ -49,19 +98,20 @@ export const REVIEW_SET_SIZE = MIX.reduce((n, [, singles, pairs]) => n + singles
 export function reviewCases(set: number, catalogue: readonly Question[], outlines: Outlines): ReviewCase[] {
   const cases: ReviewCase[] = []
   MIX.forEach(([types, singles, pairs], p) => {
-    const questions = shuffle(poolOf(catalogue, types, "political"), set * 7919 + p).slice(0, singles + pairs)
+    const questions = shuffle(poolOf(catalogue, types, MapDetail.POLITICAL), set * 7919 + p).slice(0, singles + pairs)
     questions.forEach((question, i) => {
       let n = 0
       const rnd = () => seededUnit(set, p, i, n++)
       const answer = scoredAnswer(question.answer, outlines)
-      const kinds = shuffle([...guessesFor(answer)], set * 104729 + p * 31 + i)
-      if (i < singles) cases.push({ kind: "single", question, answer, guess: paintGuess(answer, kinds[0]!, rnd) })
+      const types = shuffle([...guessesFor(answer)], set * 104729 + p * 31 + i)
+      if (i < singles)
+        cases.push({ type: ReviewCaseType.SINGLE, question, answer, guess: paintGuess(answer, types[0]!, rnd) })
       else
         cases.push({
-          kind: "pair",
+          type: ReviewCaseType.PAIR,
           question,
           answer,
-          guesses: [paintGuess(answer, kinds[0]!, rnd), paintGuess(answer, kinds[1]!, rnd)]
+          guesses: [paintGuess(answer, types[0]!, rnd), paintGuess(answer, types[1]!, rnd)]
         })
     })
   })
@@ -76,10 +126,10 @@ export function scoreGuess(a: ScoredAnswer, layer: PaintLayer, kernel: Kernel): 
 }
 
 /** A guess and its score as a scoring case's text, for the export. */
-export function guessCase(q: Question, a: ScoredAnswer, layer: PaintLayer, kernel: Kernel): Promise<string> {
+export function guessCase(q: Question, a: ScoredAnswer, layer: PaintLayer, kernel: ChoosableKernel): Promise<string> {
   return encodeCase({
     question: caseQuestion(q, a),
-    kernel: a.type === AnswerType.AREA ? "region" : kernel.id,
+    kernel: a.type === AnswerType.AREA ? RegionKernel.REGION : kernel.id,
     floor: REVIEW_FLOOR,
     res: layer.res,
     ...scoreGuess(a, layer, kernel),
@@ -90,7 +140,12 @@ export function guessCase(q: Question, a: ScoredAnswer, layer: PaintLayer, kerne
 /** A question as a scoring case names it. */
 export function caseQuestion(q: Question, a: ScoredAnswer): ScoringCase["question"] {
   return {
-    kind: a.type === AnswerType.AREA ? "region" : q.clue.type === ClueType.PHOTO ? "photo" : "text",
+    type:
+      a.type === AnswerType.AREA
+        ? CaseQuestionType.REGION
+        : q.clue.type === ClueType.PHOTO
+          ? CaseQuestionType.PHOTO
+          : CaseQuestionType.TEXT,
     id: q.id,
     label: q.label,
     answer: a.type === AnswerType.AREA ? a.centre : a.at,
@@ -99,7 +154,7 @@ export function caseQuestion(q: Question, a: ScoredAnswer): ScoringCase["questio
   }
 }
 
-function paintGuess(q: ScoredAnswer, kind: GuessKind, rnd: () => number): ReviewGuess {
+function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): ReviewGuess {
   const between = (lo: number, hi: number) => lo + (hi - lo) * rnd()
   const t = q.toleranceKm
   const layer = new PaintLayer(resolutionForTolerance(t))
@@ -116,8 +171,8 @@ function paintGuess(q: ScoredAnswer, kind: GuessKind, rnd: () => number): Review
     })
   }
   if (q.type !== AnswerType.AREA) {
-    pointGuess(kind, blob, between, rnd)
-    return { kind, layer }
+    pointGuess(type, blob, between, rnd)
+    return { type, layer }
   }
   // A region's tolerance is a fifth of its radius: R is about its radius.
   const R = 5
@@ -139,42 +194,42 @@ function paintGuess(q: ScoredAnswer, kind: GuessKind, rnd: () => number): Review
       strength
     })
   }
-  switch (kind) {
-    case "whole":
+  switch (type) {
+    case GuessType.WHOLE:
       shape(1)
       break
-    case "part": {
+    case GuessType.PART: {
       const from = centres[Math.floor(rnd() * centres.length)] ?? q.centre
       const reach = between(0.4, 0.8) * R * t
       shape(1, (p) => greatCircleDistance(from, p) <= reach, reach)
       break
     }
-    case "spill":
+    case GuessType.SPILL:
       shape(1)
       blob(between(0.8, 1.2) * R, between(0.4, 0.7) * R)
       break
-    case "centre":
+    case GuessType.CENTRE:
       blob(0, between(0.4, 0.8) * R)
       break
-    case "neighbour":
+    case GuessType.NEIGHBOUR:
       blob(between(1.5, 2.5) * R, between(0.5, 1) * R)
       break
-    case "far-miss":
+    case GuessType.FAR_MISS:
       blob(between(6, 15) * R, between(0.5, 1) * R)
       break
-    case "wide":
+    case GuessType.WIDE:
       blob(between(0, 1) * R, between(3, 5) * R)
       break
-    case "hedge": {
+    case GuessType.HEDGE: {
       const share = [0.3, 0.5, 0.7][Math.floor(rnd() * 3)]!
       shape(share)
       blob(between(4, 8) * R, 0.8 * R, 1 - share)
       break
     }
     default:
-      throw new Error(`${kind} is not a guess at a region`)
+      throw new Error(`${type} is not a guess at a region`)
   }
-  return { kind, layer }
+  return { type, layer }
 }
 
 /** Enough dabs for the biggest patch without making a set slow to paint. */
@@ -212,32 +267,32 @@ function scribble(layer: PaintLayer, rnd: () => number, patch: Patch): void {
 }
 
 function pointGuess(
-  kind: GuessKind,
+  type: GuessType,
   blob: (at: number, radius: number, strength?: number) => void,
   between: (lo: number, hi: number) => number,
   rnd: () => number
 ): void {
-  switch (kind) {
-    case "bullseye":
+  switch (type) {
+    case GuessType.BULLSEYE:
       return blob(between(0, 0.3), between(0.5, 1))
-    case "close":
+    case GuessType.CLOSE:
       return blob(between(0.5, 1.5), between(0.4, 0.8))
-    case "near-miss":
+    case GuessType.NEAR_MISS:
       return blob(between(2, 4), between(0.5, 1.5))
-    case "far-miss":
+    case GuessType.FAR_MISS:
       return blob(between(6, 20), between(0.5, 2))
-    case "wide":
+    case GuessType.WIDE:
       return blob(between(0, 3), between(4, 10))
-    case "hedge": {
+    case GuessType.HEDGE: {
       const share = [0.3, 0.5, 0.7][Math.floor(rnd() * 3)]!
       blob(between(0, 1), 1, share)
       return blob(between(4, 10), 1, 1 - share)
     }
-    case "scattered":
+    case GuessType.SCATTERED:
       for (let i = 3 + Math.floor(rnd() * 3); i > 0; i--) blob(between(0, 12), between(0.5, 1.5), between(0.5, 1))
       return
     default:
-      throw new Error(`${kind} is not a guess at a point`)
+      throw new Error(`${type} is not a guess at a point`)
   }
 }
 
@@ -270,7 +325,7 @@ interface VerdictBase {
  */
 export type ScoreVerdict =
   | (VerdictBase & {
-      guess: GuessKind
+      guess: GuessType
       /** Much too low (-2) to much too high (2). */
       verdict: -2 | -1 | 0 | 1 | 2
       /** What they think it should have scored. */
@@ -279,7 +334,7 @@ export type ScoreVerdict =
     })
   | (VerdictBase & {
       pair: true
-      guesses: [GuessKind, GuessKind]
+      guesses: [GuessType, GuessType]
       /** A clearly deserves more (-2) to B clearly does (2). */
       prefer: -2 | -1 | 0 | 1 | 2
       cases: [string, string]

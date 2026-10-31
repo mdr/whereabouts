@@ -10,11 +10,10 @@ import type { GameMap } from "./map"
 import type { PaintModel } from "./paint-model"
 import type { PaintView } from "./paint-view"
 import { forTabbedControl, isTyping } from "./keys"
-
-export type Tool = "pan" | "paint" | "erase" | "fill"
+import { Tool } from "./tool"
 
 export class PaintInput {
-  readonly tool = signal<Tool>("paint")
+  readonly tool = signal<Tool>(Tool.PAINT)
   readonly brushPx = signal(40)
   readonly strength = signal(1)
   /** Whether painting is currently allowed (guessing phase, not locked). */
@@ -116,10 +115,10 @@ export class PaintInput {
         e.preventDefault()
         return
       }
-      if (e.key === "1") this.tool.value = "pan"
-      if (e.key === "2") this.tool.value = "paint"
-      if (e.key === "3") this.tool.value = "erase"
-      if (e.key === "4" && this.model.fillable.value) this.tool.value = "fill"
+      if (e.key === "1") this.tool.value = Tool.PAN
+      if (e.key === "2") this.tool.value = Tool.PAINT
+      if (e.key === "3") this.tool.value = Tool.ERASE
+      if (e.key === "4" && this.model.fillable.value) this.tool.value = Tool.FILL
       if (e.key === "[") this.setBrushPx(this.brushPx.value / 1.25)
       if (e.key === "]") this.setBrushPx(this.brushPx.value * 1.25)
     }
@@ -211,7 +210,7 @@ export class PaintInput {
     // No Fill tool this round: back to the brush.
     this.disposers.push(
       this.model.fillable.subscribe((on) => {
-        if (!on && this.tool.value === "fill") this.tool.value = "paint"
+        if (!on && this.tool.value === Tool.FILL) this.tool.value = Tool.PAINT
         this.refreshCursor()
       })
     )
@@ -233,8 +232,8 @@ export class PaintInput {
   private canPaint(): boolean {
     return (
       this.enabled.value &&
-      this.tool.value !== "pan" &&
-      this.tool.value !== "fill" &&
+      this.tool.value !== Tool.PAN &&
+      this.tool.value !== Tool.FILL &&
       !this.spaceHeld &&
       !this.middleFrom
     )
@@ -243,7 +242,7 @@ export class PaintInput {
   private canFill(): boolean {
     return (
       this.enabled.value &&
-      this.tool.value === "fill" &&
+      this.tool.value === Tool.FILL &&
       this.model.fillable.value &&
       !this.spaceHeld &&
       !this.middleFrom
@@ -257,8 +256,8 @@ export class PaintInput {
     else map.dragPan.enable()
     const el = map.getContainer()
     // For the cursor (MapView.module.css).
-    const brush = this.tool.value === "paint" || this.tool.value === "erase"
-    const tool = this.canFill() ? "fill" : canPaint && brush ? this.tool.value : undefined
+    const brush = this.tool.value === Tool.PAINT || this.tool.value === Tool.ERASE
+    const tool = this.canFill() ? Tool.FILL : canPaint && brush ? this.tool.value : undefined
     if (tool) el.dataset.tool = tool
     else delete el.dataset.tool
     this.refreshCursor()
@@ -276,7 +275,7 @@ export class PaintInput {
 
   private beginStroke(point: Point): void {
     const tool = this.tool.value
-    if (tool !== "paint" && tool !== "erase") return
+    if (tool !== Tool.PAINT && tool !== Tool.ERASE) return
     this.model.beginStroke(tool)
     this.painting = true
     this.lastStampPoint = undefined
@@ -315,7 +314,7 @@ export class PaintInput {
     }
     this.gameMap.setCursorFootprint(
       this.model.layer.stampCells(latLon(lngLat), this.brushRadiusKm(lngLat.lat)),
-      this.tool.value === "erase"
+      this.tool.value === Tool.ERASE
     )
   }
 
@@ -330,7 +329,7 @@ export class PaintInput {
   }
 
   private stampAt(lngLat: LngLat): void {
-    const sign = this.tool.value === "erase" ? -1 : 1
+    const sign = this.tool.value === Tool.ERASE ? -1 : 1
     // Stamps overlap along a stroke, so scale each one down.
     this.model.stamp(latLon(lngLat), this.brushRadiusKm(lngLat.lat), sign * this.strength.value * 0.3)
   }

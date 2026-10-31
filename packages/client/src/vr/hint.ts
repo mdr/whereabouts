@@ -12,6 +12,7 @@ import {
 } from "three"
 import type { HintBand } from "@whereabouts/shared/hints"
 import { latLonToLocal } from "./sphere"
+import { HintAxis } from "@whereabouts/shared/hints"
 
 const RAD = Math.PI / 180
 const STEPS = 180
@@ -41,7 +42,7 @@ export class HintMarker {
     if (!band) return
     // three's sphere lays longitude 0 at phi 180°, and theta runs down from the north pole.
     const geometry =
-      band.axis === "latitude"
+      band.axis === HintAxis.LATITUDE
         ? new SphereGeometry(this.radius, 128, 16, 0, 2 * Math.PI, (90 - band.to) * RAD, (band.to - band.from) * RAD)
         : new SphereGeometry(
             this.radius,
@@ -57,7 +58,7 @@ export class HintMarker {
       for (let i = 0; i < STEPS; i++) {
         for (const k of [i, i + 1]) {
           const at =
-            band.axis === "latitude"
+            band.axis === HintAxis.LATITUDE
               ? { lat: edge, lon: -180 + (360 * k) / STEPS }
               : { lat: -90 + (180 * k) / STEPS, lon: edge }
           latLonToLocal(at, p).multiplyScalar(this.radius).toArray(points, points.length)

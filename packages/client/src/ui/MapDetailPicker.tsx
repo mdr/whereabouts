@@ -1,4 +1,4 @@
-import { MAP_DETAILS, type MapDetail } from "@whereabouts/shared/protocol"
+import { MAP_DETAILS, MapDetail } from "@whereabouts/shared/protocol"
 import minimal from "../assets/map-minimal.jpg"
 import water from "../assets/map-water.jpg"
 import physical from "../assets/map-physical.jpg"
@@ -8,7 +8,12 @@ import { mapDetailPickerTestIds } from "./MapDetailPickerTestIds"
 import s from "./MapDetailPicker.module.css"
 
 /** The same frame at each level, from scripts/map-detail-previews.mjs. */
-const MAP_PREVIEWS: Record<MapDetail, string> = { minimal, water, physical, political }
+const MAP_PREVIEWS: Record<MapDetail, string> = {
+  [MapDetail.MINIMAL]: minimal,
+  [MapDetail.WATER]: water,
+  [MapDetail.PHYSICAL]: physical,
+  [MapDetail.POLITICAL]: political
+}
 
 /** Map detail as four picture choices, least detail (hardest) first; `narrow`, as two rows of two. */
 export function MapDetailPicker({
@@ -47,7 +52,7 @@ export function MapDetailPicker({
 
 /** The chosen level as a picture with its name and what it adds. */
 export function MapDetailSummary({ value }: { value: MapDetail }) {
-  const d = MAP_DETAILS.find((m) => m.id === value) ?? MAP_DETAILS[0]
+  const d = MAP_DETAILS.find((m) => m.id === value) ?? MAP_DETAILS[0]!
   return (
     <>
       <img class={s.summaryPicture} src={MAP_PREVIEWS[d.id]} alt="" />

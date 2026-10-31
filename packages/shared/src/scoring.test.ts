@@ -19,7 +19,8 @@ import {
   selfSimilarity,
   similarityToAnswer,
   uniformKernelMean,
-  type Distribution
+  type Distribution,
+  KernelId
 } from "./scoring.ts"
 
 const r = 100
@@ -42,7 +43,7 @@ describe("kernel", () => {
   })
 
   it("games and practice score with the equal mixture of r, 4r and 16r", () => {
-    expect(DEFAULT_KERNEL).toBe(kernelById("multi-equal"))
+    expect(DEFAULT_KERNEL).toBe(kernelById(KernelId.MULTI_EQUAL))
   })
 })
 
@@ -196,7 +197,7 @@ describe("bounds", () => {
 })
 
 describe("mixture kernels", () => {
-  const multi = kernelById("multi-equal")
+  const multi = kernelById(KernelId.MULTI_EQUAL)
   const petra = { lat: 30.3285, lon: 35.4444 }
   const tol = 200
 

@@ -16,8 +16,8 @@ import {
   type World
 } from "@iwsdk/core"
 import wristUrl from "./wrist.uikitml?url"
-
-export type WristButton = "undo" | "redo" | "trim" | "trimHint" | "swap" | "clear" | "latitude" | "longitude"
+import { HintAllowance, type HintsLeft } from "./view"
+import { WristButton } from "./wrist-button"
 
 const WRIST_M = 0.2
 /** How squarely the palm must face up to open the menu, and how far it may turn away before it shuts. */
@@ -29,9 +29,9 @@ const at = new Vector3()
 const palm = new Vector3()
 const up = new Vector3(0, 1, 0)
 
-function hintOffer(left: number | "unlimited" | "none"): string {
-  if (left === "unlimited") return "A band the answer lies in, as many as you like in practice"
-  if (left === "none") return "This game has no hints"
+function hintOffer(left: HintsLeft): string {
+  if (left === HintAllowance.UNLIMITED) return "A band the answer lies in, as many as you like in practice"
+  if (left === HintAllowance.NONE) return "This game has no hints"
   if (left === 0) return "No hints left this game"
   return `A band the answer lies in. ${left} left this game`
 }
@@ -43,10 +43,10 @@ export class WristMenu {
   private shown = false
   private noteText = ""
   private noteTimer: ReturnType<typeof setTimeout> | undefined = undefined
-  private state: { water: boolean; hint: string | undefined; left: number | "unlimited" | "none" } = {
+  private state: { water: boolean; hint: string | undefined; left: HintsLeft } = {
     water: false,
     hint: undefined,
-    left: "unlimited"
+    left: HintAllowance.UNLIMITED
   }
 
   constructor(world: World, handlers: Record<WristButton, () => void>) {
@@ -85,7 +85,7 @@ export class WristMenu {
   }
 
   /** `hint`: the band used this round, in words. `left`: how many more hints there are. */
-  setState(water: boolean, hint: string | undefined, left: number | "unlimited" | "none"): void {
+  setState(water: boolean, hint: string | undefined, left: HintsLeft): void {
     const s = this.state
     if (s.water === water && s.hint === hint && s.left === left) return
     this.state = { water, hint, left }
@@ -125,8 +125,8 @@ export class WristMenu {
     const { water, hint, left } = this.state
     const show = (id: string, on: boolean) => doc.getElementById(id)?.setProperties({ display: on ? "flex" : "none" })
     const text = (id: string, t: string) => doc.getElementById(id)?.setProperties({ text: t })
-    show("hints", hint === undefined && left !== 0 && left !== "none")
-    show("trimHint", hint !== undefined)
+    show("hints", hint === undefined && left !== 0 && left !== HintAllowance.NONE)
+    show(WristButton.TRIM_HINT, hint !== undefined)
     text("trimLabel", water ? "Trim land" : "Trim sea")
     text("note", this.noteText || (hint ?? hintOffer(left)))
   }

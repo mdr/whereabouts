@@ -7,7 +7,7 @@ import { QuestionType, clueFlag } from "@whereabouts/shared/questions"
 import { areaNoun, type RevealedAnswer } from "../round"
 import type { ComponentChildren } from "preact"
 import { Card } from "./Card"
-import { Answer, FactLine, QuestionCard } from "./QuestionCard"
+import { Answer, CardPlace, FactLine, QuestionCard } from "./QuestionCard"
 import { PaintedIn } from "./FlagReveal"
 import { usePaint } from "./MapView"
 import { Icon } from "./icons"
@@ -20,7 +20,7 @@ import sc from "./Score.module.css"
 export function RoundPrompt({ question }: { question: QuestionView }) {
   const area = outlineOf(question.answer) !== undefined
   return (
-    <QuestionCard q={question} hud="painting" foldable>
+    <QuestionCard q={question} hud={CardPlace.PAINTING} foldable>
       {question.type === QuestionType.FLAG ? (
         <AnswerMode area={area} />
       ) : (
@@ -112,7 +112,7 @@ export function RevealCards({
 }) {
   return (
     <>
-      <QuestionCard q={question} hud="reveal" credit photo={revealed.photo} foldable startFolded>
+      <QuestionCard q={question} hud={CardPlace.REVEAL} credit photo={revealed.photo} foldable startFolded>
         <Answer label={revealed.label} wiki={revealed.wiki} />
         <FactLine fact={fact} />
       </QuestionCard>

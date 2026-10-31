@@ -15,15 +15,15 @@ import {
   type World
 } from "@iwsdk/core"
 import { headsetPassthrough, soundOn } from "../settings"
-import type { VrAction, VrView } from "./view"
+import { VrViewType, type VrAction, type VrView } from "./view"
 import panelUrl from "./panel.uikitml?url"
 
 export const PANEL_M = 0.38
-const HEADINGS: Record<VrView["kind"], string> = {
-  lobby: "WELCOME",
-  paint: "THIS ROUND",
-  reveal: "THE ANSWER",
-  done: "GAME OVER"
+const HEADINGS: Record<VrViewType, string> = {
+  [VrViewType.LOBBY]: "WELCOME",
+  [VrViewType.PAINT]: "THIS ROUND",
+  [VrViewType.REVEAL]: "THE ANSWER",
+  [VrViewType.DONE]: "GAME OVER"
 }
 /** As many as the menu has buttons for, below the main actions. */
 const MORE = 4
@@ -111,14 +111,14 @@ export class Menu {
         f()
       })
     on("done", () => this.handlers.done())
-    on("unlock", () => this.view?.kind === "paint" && this.view.round.unlock?.())
+    on("unlock", () => this.view?.type === VrViewType.PAINT && this.view.round.unlock?.())
     for (const i of [0, 1]) on(`act${i}`, () => this.press(this.actions[i]))
     for (let i = 0; i < MORE; i++) on(`more${i}`, () => this.press(this.view?.more?.[i]))
     on("sound", () => {
       soundOn.value = !soundOn.value
       this.applyView()
     })
-    on("flags", () => this.view?.kind === "reveal" && this.view.reveal.flags?.toggle())
+    on("flags", () => this.view?.type === VrViewType.REVEAL && this.view.reveal.flags?.toggle())
     on("passthrough", () => this.handlers.togglePassthrough())
     on("exit", () => this.handlers.exit())
     this.applyView()
@@ -126,7 +126,7 @@ export class Menu {
 
   /** A new screen; a press waiting for its second press was for the screen it was on. */
   show(view: VrView): void {
-    if (view.kind !== this.view?.kind) this.armed = undefined
+    if (view.type !== this.view?.type) this.armed = undefined
     this.view = view
   }
 
@@ -156,7 +156,7 @@ export class Menu {
   /** Done says Pass with nothing painted, and the clock counts down. */
   updateLabels(): void {
     const doc = this.doc
-    if (!doc || this.view?.kind !== "paint") return
+    if (!doc || this.view?.type !== VrViewType.PAINT) return
     const { round } = this.view
     const done = round.paint.layer.isEmpty ? "Pass" : round.doneLabel
     if (done !== this.doneText) {
@@ -179,7 +179,7 @@ export class Menu {
 
   get shown(): MenuShown {
     const view = this.view
-    const round = view?.kind === "paint" ? view.round : undefined
+    const round = view?.type === VrViewType.PAINT ? view.round : undefined
     const shown = (a: VrAction) => ({ label: this.label(a), enabled: a.enabled !== false })
     return {
       done: this.doneText,
@@ -210,16 +210,24 @@ export class Menu {
   }
 
   private heading(view: VrView): string {
-    return (view.kind === "paint" && view.round.heading) || HEADINGS[view.kind]
+    return (view.type === VrViewType.PAINT && view.round.heading) || HEADINGS[view.type]
   }
 
   private note(view: VrView): string | undefined {
-    return view.kind === "paint" ? view.round.note : view.kind === "reveal" ? view.reveal.note : view.summary.note
+    return view.type === VrViewType.PAINT
+      ? view.round.note
+      : view.type === VrViewType.REVEAL
+        ? view.reveal.note
+        : view.summary.note
   }
 
   private get actions(): VrAction[] {
     const view = this.view
-    return view?.kind === "reveal" ? view.reveal.actions : view && "summary" in view ? view.summary.actions : []
+    return view?.type === VrViewType.REVEAL
+      ? view.reveal.actions
+      : view && "summary" in view
+        ? view.summary.actions
+        : []
   }
 
   private applyView(): void {
@@ -228,9 +236,9 @@ export class Menu {
     if (!doc || !view) return
     const show = (id: string, on: boolean) => doc.getElementById(id)?.setProperties({ display: on ? "flex" : "none" })
     const text = (id: string, t: string) => doc.getElementById(id)?.setProperties({ text: t })
-    const reveal = view.kind === "reveal" ? view.reveal : undefined
+    const reveal = view.type === VrViewType.REVEAL ? view.reveal : undefined
     const summary = "summary" in view ? view.summary : undefined
-    const round = view.kind === "paint" ? view.round : undefined
+    const round = view.type === VrViewType.PAINT ? view.round : undefined
     const painting = round?.playing === true && round.unlock === undefined
     show("hint", painting)
     text(

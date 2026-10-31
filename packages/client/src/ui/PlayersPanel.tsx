@@ -11,6 +11,7 @@ import { playersPanelTestIds } from "./PlayersPanelTestIds"
 import { Card } from "./Card"
 import { cx } from "./cx"
 import s from "./PlayersPanel.module.css"
+import { Phase } from "@whereabouts/shared/protocol"
 
 /** Open, it may take more of a phone's screen (HudRight's `roomy`). */
 export const playersPanelOpen = signal(false)
@@ -51,7 +52,7 @@ export function PlayersPanel({
             players={players}
             you={view.you.id}
             showScores
-            showLocked={view.phase === "guessing"}
+            showLocked={view.phase === Phase.GUESSING}
             onKick={onKick}
             onMakeHost={onMakeHost}
           />

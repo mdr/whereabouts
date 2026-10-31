@@ -17,7 +17,7 @@ import { useOutline } from "../outlines"
 import { useElementRef } from "../ui/element-ref"
 import { VrButton, useVrView } from "../ui/VrButton"
 import { navigate } from "../router"
-import type { VrView } from "../vr/view"
+import { VrViewType, type VrView } from "../vr/view"
 import { resultsTestIds } from "./ResultsTestIds"
 
 const MEDALS = ["🥇", "🥈", "🥉"]
@@ -32,7 +32,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
   const standings = view.results ?? []
   const winner = standings[0] ? byId.get(standings[0].playerId) : undefined
   const vrView: VrView = {
-    kind: "done",
+    type: VrViewType.DONE,
     summary: {
       title: "Final standings",
       scoreLine: winner ? `${winner.name} wins` : "",

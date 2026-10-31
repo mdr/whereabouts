@@ -6,12 +6,14 @@
 import { useEffect } from "preact/hooks"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
-import { outlineOf, type MapDetail, type QuestionView } from "@whereabouts/shared/protocol"
+import { outlineOf, MapDetail, type QuestionView } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
 import type { GameMap } from "./map"
+import { RevealDetail } from "./shown-detail"
 import type { PaintController } from "./paint-controller"
 import { useFillTool } from "./fill"
 import { startOnPan } from "./settings"
+import { Tool } from "./tool"
 import { sound } from "./sound"
 
 /** The answer as the reveal shows it. */
@@ -55,21 +57,21 @@ export function useRoundMap(
     start?.()
     paint.gameMap.clearReveal()
     paint.gameMap.resetView()
-    paint.tool.value = startOnPan.value ? "pan" : "paint"
+    paint.tool.value = startOnPan.value ? Tool.PAN : Tool.PAINT
   }, [round, painting])
 
   // The Fill tool, for a country on the Political map; on through the
   // reveal, so a run of country rounds keeps the tool chosen.
   useFillTool(
     paint,
-    detail === "political" && (question?.type === QuestionType.COUNTRY || question?.type === QuestionType.FLAG)
+    detail === MapDetail.POLITICAL && (question?.type === QuestionType.COUNTRY || question?.type === QuestionType.FLAG)
   )
 
   // The reveal shows everything, since borders, place names, rivers and
   // relief help make sense of the answer.
   const stateRound = question?.type === QuestionType.STATE
   useEffect(() => {
-    paint.gameMap.setDetail(reveal ? "reveal" : detail)
+    paint.gameMap.setDetail(reveal ? RevealDetail.REVEAL : detail)
     paint.gameMap.setStateReveal(reveal && stateRound)
   }, [reveal, detail, stateRound])
 

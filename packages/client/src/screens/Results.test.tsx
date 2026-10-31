@@ -3,13 +3,14 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
 import { flagCode, outlineId, playerId, playerName, roomCode } from "@whereabouts/shared/ids"
 import { playerColour } from "@whereabouts/shared/colours"
-import { mixOf, type GameView } from "@whereabouts/shared/protocol"
+import { mixOf, type GameView, Phase, MapDetail } from "@whereabouts/shared/protocol"
 import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "../net"
 import { Results } from "./Results"
 import { resultsTestIds as ids } from "./ResultsTestIds"
 import s from "./Results.module.css"
 import pictures from "../ui/Pictures.module.css"
+import { KernelId } from "@whereabouts/shared/scoring"
 
 const tid = (id: string) => `[data-testid="${id}"]`
 
@@ -21,13 +22,13 @@ const MIX = mixOf({ [QuestionType.LANDMARK]: 1, [QuestionType.PLACE]: 1 })
 function view(isHost: boolean): GameView {
   return {
     code: roomCode("AB12"),
-    phase: "results",
+    phase: Phase.RESULTS,
     config: {
       rounds: 2,
       roundMs: 60000,
       mix: MIX,
-      mapDetail: "minimal",
-      kernelId: "multi-equal",
+      mapDetail: MapDetail.MINIMAL,
+      kernelId: KernelId.MULTI_EQUAL,
       hints: 1
     },
     serverTime: 0,

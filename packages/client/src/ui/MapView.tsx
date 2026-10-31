@@ -19,7 +19,9 @@ import { Hud, HudTop } from "./Hud"
 import { Card } from "./Card"
 import { cx } from "./cx"
 import kit from "./kit.module.css"
+import { Tool } from "../tool"
 import s from "./MapView.module.css"
+import { MapDetail } from "@whereabouts/shared/protocol"
 
 const PaintContext = createContext<PaintController | undefined>(undefined)
 
@@ -43,7 +45,7 @@ export function MapView({ children }: { children: ComponentChildren }) {
       () => {
         gameMap.applyTheme(THEME)
         // Anything that would give the location away stays hidden.
-        gameMap.setDetail("minimal")
+        gameMap.setDetail(MapDetail.MINIMAL)
         gameMap.addGlobeButton(() => (globeView.value = !globeView.value), mapViewTestIds.globeButton)
         ctl = new PaintController(gameMap)
         window.whereabouts = { map: gameMap.map, gameMap, paint: ctl }
@@ -75,7 +77,7 @@ export function MapView({ children }: { children: ComponentChildren }) {
     if (!controller) return
     const stop = effect(() => {
       const tool = controller.enabled.value && soundOn.value ? controller.stroking.value : undefined
-      sound.setStroke(tool === "paint" ? "spray" : tool === "erase" ? "eraser" : undefined)
+      sound.setStroke(tool === Tool.PAINT ? "spray" : tool === Tool.ERASE ? "eraser" : undefined)
     })
     return () => {
       stop()

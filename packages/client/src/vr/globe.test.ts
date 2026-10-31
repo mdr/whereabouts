@@ -2,6 +2,7 @@
 import { beforeAll, describe, expect, it } from "vite-plus/test"
 import { Vector3 } from "three"
 import { Globe } from "./globe"
+import { Hand } from "./hand"
 import { latLonToLocal } from "./sphere"
 
 // happy-dom draws nothing: the stand's printed textures need a 2D context that accepts every call.
@@ -63,8 +64,8 @@ describe("the VR globe", () => {
     const mid = globe.centre.clone().add(new Vector3(0.12, 0.14, 0.12))
     const across = new Vector3(1, 0, 0)
     const hands = (apart: number) => ({
-      left: mid.clone().addScaledVector(across, -apart / 2),
-      right: mid.clone().addScaledVector(across, apart / 2)
+      [Hand.LEFT]: mid.clone().addScaledVector(across, -apart / 2),
+      [Hand.RIGHT]: mid.clone().addScaledVector(across, apart / 2)
     })
     globe.update(1 / 60, hands(0.1), { x: 0, y: 0 })
     const spot = globe.group.worldToLocal(mid.clone()).normalize()
@@ -83,7 +84,7 @@ describe("the VR globe", () => {
     for (let i = 0; i < 30; i++) {
       // Diagonally, and round in a curve, as a roll would follow.
       hand.add(new Vector3(0.01, -0.006, Math.sin(i / 5) * 0.004))
-      globe.update(1 / 60, { right: hand.clone() }, { x: 0, y: 0 })
+      globe.update(1 / 60, { [Hand.RIGHT]: hand.clone() }, { x: 0, y: 0 })
     }
     expect(globe.group.quaternion.angleTo(placed().group.quaternion)).toBeGreaterThan(0.1)
     expectNoRoll(globe)

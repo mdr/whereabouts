@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
 import { SmallFlag, SmallFlagButton, SmallPhoto } from "./Pictures"
-import { QuestionCard } from "./QuestionCard"
+import { CardPlace, QuestionCard } from "./QuestionCard"
 import lb from "./Lightbox.module.css"
 import pictures from "./Pictures.module.css"
 import qc from "./QuestionCard.module.css"
@@ -59,7 +59,7 @@ describe("SmallPhoto", () => {
       clue: { type: ClueType.PHOTO, image: "Some_file.jpg" }
     })
     const { container } = render(<SmallPhoto image="Some_file.jpg" />)
-    const shown = render(<QuestionCard hud="painting" q={q} />).container.querySelector<HTMLImageElement>(
+    const shown = render(<QuestionCard hud={CardPlace.PAINTING} q={q} />).container.querySelector<HTMLImageElement>(
       `.${qc.thumb!} img`
     )!
     expect(container.querySelector<HTMLImageElement>(`.${pictures.smallPicture!} img`)!.src).toBe(shown.src)

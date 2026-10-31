@@ -1,7 +1,7 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { PlayerName, RoomCode } from "@whereabouts/shared/ids"
-import { Connection } from "../net"
+import { Connection, ConnectionStatus } from "../net"
 import {
   askedToWatch,
   joinedCode,
@@ -23,10 +23,11 @@ import { Icon } from "../ui/icons"
 import { useGameSounds } from "../ui/useGameSounds"
 import { useSavedSetup } from "../host-setup"
 import { useVrHold, useVrView } from "../ui/VrButton"
-import type { VrAction } from "../vr/view"
+import { VrViewType, type VrAction } from "../vr/view"
 import { joinAsTestIds, joinedTestIds } from "./MultiplayerTestIds"
 import kit from "../ui/kit.module.css"
 import s from "./Multiplayer.module.css"
+import { Phase } from "@whereabouts/shared/protocol"
 
 export function Multiplayer({ code, create }: { code: RoomCode | undefined; create: boolean }) {
   const conn = useMemo(() => new Connection(), [])
@@ -108,7 +109,7 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
     if (upcoming) preloadPictures(upcoming)
   }, [upcoming?.image, upcoming?.flag, upcoming?.revealPhoto])
 
-  if (status === "rejected" || (status === "disconnected" && !view)) {
+  if (status === ConnectionStatus.REJECTED || (status === ConnectionStatus.DISCONNECTED && !view)) {
     const why = conn.rejection.value ?? {
       title: "Could not join that game",
       detail: conn.lastError.value ?? "The game server did not let us in."
@@ -162,8 +163,8 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
       </div>
     )
   }
-  if (view.phase === "lobby") return <Lobby conn={conn} view={view} />
-  if (view.phase === "results") return <Results conn={conn} view={view} />
+  if (view.phase === Phase.LOBBY) return <Lobby conn={conn} view={view} />
+  if (view.phase === Phase.RESULTS) return <Results conn={conn} view={view} />
   return (
     <MapView>
       <InGame conn={conn} view={view} />
@@ -173,7 +174,7 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
 
 /** The headset's view while there is no game to show: joining it, or why not. */
 function VrNotice({ title, line, actions }: { title: string; line: string; actions: VrAction[] }) {
-  useVrView({ kind: "lobby", summary: { title, scoreLine: line, actions } }, title)
+  useVrView({ type: VrViewType.LOBBY, summary: { title, scoreLine: line, actions } }, title)
   return undefined
 }
 

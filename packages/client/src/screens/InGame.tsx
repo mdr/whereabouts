@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/facts"
-import { onWater, outlineOf, type GameView } from "@whereabouts/shared/protocol"
+import { onWater, outlineOf, type GameView, Phase } from "@whereabouts/shared/protocol"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { QuestionType, type Outline } from "@whereabouts/shared/questions"
@@ -31,7 +31,7 @@ import { HintCard } from "../ui/Hint"
 import { loadOutlines, useOutline } from "../outlines"
 import { VrButton, useVrView } from "../ui/VrButton"
 import { mainCountry } from "../ui/FlagReveal"
-import type { VrView } from "../vr/view"
+import { HintAllowance, VrViewType, type VrView } from "../vr/view"
 import type { PaintController } from "../paint-controller"
 import { inGameTestIds } from "./InGameTestIds"
 import { useFact } from "../facts"
@@ -45,7 +45,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   // Not painting this round: a spectator, or a late joiner sitting one out.
   const sittingOut = view.you.watching || view.you.spectating
   const roundKey = view.round?.index ?? view.reveal?.index ?? -1
-  const guessing = view.phase === "guessing"
+  const guessing = view.phase === Phase.GUESSING
   const question = view.round?.question ?? view.reveal?.question
   // The countdown has reached zero: painting stops, and what is on screen is what counts.
   const [timeUp, setTimeUp] = useState(false)
@@ -67,7 +67,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
     painting: guessing && view.round !== undefined,
     question,
     detail: view.config.mapDetail,
-    reveal: view.phase === "reveal",
+    reveal: view.phase === Phase.REVEAL,
     hint: view.you.hint,
     start: () => {
       // After a reconnect the server hands back what we had painted.
@@ -113,7 +113,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, sittingOut, outline, fact, painted })
   useVrView(vrView, `${view.phase} ${roundKey}`)
 
-  if (view.phase === "reveal" && view.reveal) {
+  if (view.phase === Phase.REVEAL && view.reveal) {
     return <Reveal conn={conn} view={view} reveal={view.reveal} vrView={vrView} fact={fact} />
   }
 
@@ -242,7 +242,7 @@ function gameVrView(
   }
   const more = [
     ...(view.you.watching ? [takeSeat(conn, view, "Play from the next question")] : []),
-    ...hostActions(conn, view, view.phase === "reveal" ? revealShown.value : vrPicked.value),
+    ...hostActions(conn, view, view.phase === Phase.REVEAL ? revealShown.value : vrPicked.value),
     ...(view.you.isHost && !(reveal && reveal.index + 1 >= reveal.total)
       ? [{ label: "End game", confirm: "Press again to end the game", press: () => conn.end() }]
       : []),
@@ -268,7 +268,7 @@ function gameVrView(
     detail: view.config.mapDetail,
     colour: me && !me.watching ? colourCss(me.colour) : undefined,
     hint: view.you.hint,
-    hintsLeft: view.config.hints > 0 ? view.you.hintsLeft : ("none" as const),
+    hintsLeft: view.config.hints > 0 ? view.you.hintsLeft : HintAllowance.NONE,
     useHint: (axis: HintAxis) => conn.hint(axis),
     msLeft: view.round ? () => conn.msUntil(view.round!.deadline) : undefined,
     doneLabel: "Done",
@@ -285,7 +285,7 @@ function gameVrView(
             ? "You're done. The round ends when everyone is, or when the clock runs out."
             : undefined)
   })
-  if (view.phase !== "reveal" || !reveal) return { kind: "paint", round, more }
+  if (view.phase !== Phase.REVEAL || !reveal) return { type: VrViewType.PAINT, round, more }
 
   const ready = new Set(reveal.ready)
   const present = view.players.filter((p) => p.connected && !p.watching)
@@ -295,7 +295,7 @@ function gameVrView(
   const whose = revealShown.value
   const you = mine && { score: mine.score, passed: !mine.paint, total: me?.score ?? 0, painted }
   return {
-    kind: "reveal",
+    type: VrViewType.REVEAL,
     round,
     more,
     reveal: vrReveal(shown, revealedAnswer(reveal, outline), you, borders.value, {

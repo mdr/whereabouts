@@ -7,19 +7,24 @@ import { fmtKm } from "./format"
 import { HudBottom } from "./Hud"
 import kit from "./kit.module.css"
 import s from "./PaintTools.module.css"
-import type { Tool } from "../paint-input"
+import { Tool } from "../tool"
 import { Icon, type IconName } from "./icons"
 import { sound } from "../sound"
 import { Shortcuts, ShortcutsButton } from "./Shortcuts"
 import { loadLandMask, loadWaterMask } from "../land"
 import { paintDevTestIds, paintToolsTestIds } from "./PaintToolsTestIds"
 
-const TOOL_ICON: Record<Tool, IconName> = { pan: "hand", paint: "brush", erase: "eraser", fill: "bucket" }
+const TOOL_ICON: Record<Tool, IconName> = {
+  [Tool.PAN]: "hand",
+  [Tool.PAINT]: "brush",
+  [Tool.ERASE]: "eraser",
+  [Tool.FILL]: "bucket"
+}
 const TOOL_HINT: Record<Tool, string> = {
-  pan: "Pan the map (1). Hold Space to pan while painting.",
-  paint: "Paint where you think it is (2). Paint again to weight an area more.",
-  erase: "Erase paint (3)",
-  fill: "Fill a whole country (4). Fill several if unsure; click a filled one to take it off."
+  [Tool.PAN]: "Pan the map (1). Hold Space to pan while painting.",
+  [Tool.PAINT]: "Paint where you think it is (2). Paint again to weight an area more.",
+  [Tool.ERASE]: "Erase paint (3)",
+  [Tool.FILL]: "Fill a whole country (4). Fill several if unsure; click a filled one to take it off."
 }
 
 /**
@@ -44,7 +49,9 @@ export function PaintTools({
   const tool = paint.tool.value
   const enabled = paint.enabled.value
   // Fill only in a round asking for a country, on the Political map.
-  const tools: Tool[] = paint.fillable.value ? ["pan", "paint", "erase", "fill"] : ["pan", "paint", "erase"]
+  const tools: Tool[] = paint.fillable.value
+    ? [Tool.PAN, Tool.PAINT, Tool.ERASE, Tool.FILL]
+    : [Tool.PAN, Tool.PAINT, Tool.ERASE]
   // The whoosh only when there was paint to wipe.
   const clear = () => {
     if (!paint.layer.isEmpty) sound.play("clear")

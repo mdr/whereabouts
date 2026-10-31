@@ -10,7 +10,8 @@ import {
   mixOf,
   type ConfigurePatch,
   type GameView,
-  type QuestionMix
+  type QuestionMix,
+  Phase
 } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "./net"
@@ -28,6 +29,8 @@ export function savedSetupPatch(saved: unknown): ConfigurePatch {
   if (typeof saved !== "object" || !saved) return patch
   const setup = { ...(saved as Record<string, unknown>) }
   setup.mix = setup.mix === undefined ? mixFromOldSetup(setup) : renamedMix(setup.mix)
+  // Saved in lower case before the map details were an enum.
+  if (typeof setup.mapDetail === "string") setup.mapDetail = setup.mapDetail.toUpperCase()
   for (const field of FIELDS) {
     const value = setup[field]
     if (value === undefined) continue
@@ -46,7 +49,7 @@ export function configureAsHost(conn: Connection, patch: ConfigurePatch): void {
 /** Once a game this tab created reaches its lobby, give it the remembered setup. */
 export function useSavedSetup(conn: Connection, view: GameView | undefined, created: boolean): void {
   const applied = useRef(false)
-  const ready = created && view?.phase === "lobby" && view.you.isHost
+  const ready = created && view?.phase === Phase.LOBBY && view.you.isHost
   useEffect(() => {
     if (!ready || applied.current) return
     applied.current = true

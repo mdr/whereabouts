@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
-import { QuestionCard } from "./QuestionCard"
+import { CardPlace, QuestionCard } from "./QuestionCard"
 import lb from "./Lightbox.module.css"
 import pictures from "./Pictures.module.css"
 import qc from "./QuestionCard.module.css"
@@ -30,14 +30,16 @@ const flagRoundOf = (code: string) =>
 
 describe("QuestionCard", () => {
   it("shows the prompt but not the tolerance, which only drives scoring", () => {
-    const { container } = render(<QuestionCard hud="painting" q={makeQuestionView({ prompt: "Where is Dublin?" })} />)
+    const { container } = render(
+      <QuestionCard hud={CardPlace.PAINTING} q={makeQuestionView({ prompt: "Where is Dublin?" })} />
+    )
     expect(container.textContent).toBe("Where is Dublin?")
   })
 
   it("shows a country round's flag beside the name, and a flag round's own flag", async () => {
     const country = render(
       <QuestionCard
-        hud="painting"
+        hud={CardPlace.PAINTING}
         q={makeQuestionView({
           type: QuestionType.COUNTRY,
           prompt: "Paint the whole of Germany",
@@ -49,11 +51,11 @@ describe("QuestionCard", () => {
     await waitFor(() =>
       expect(country.container.querySelector(`.${qc.flag!} img`)!.getAttribute("src")).toBe("/flags/de.svg")
     )
-    const flagRound = render(<QuestionCard hud="painting" q={flagRoundOf("fr")} />)
+    const flagRound = render(<QuestionCard hud={CardPlace.PAINTING} q={flagRoundOf("fr")} />)
     await waitFor(() =>
       expect(flagRound.container.querySelector(`.${qc.flag!} img`)!.getAttribute("src")).toBe("/flags/fr.svg")
     )
-    const place = render(<QuestionCard hud="painting" q={makeQuestionView()} />)
+    const place = render(<QuestionCard hud={CardPlace.PAINTING} q={makeQuestionView()} />)
     expect(place.container.querySelectorAll(`.${qc.flag!}`)).toHaveLength(0)
   })
 })
@@ -74,7 +76,7 @@ describe("flag frames", () => {
 
   it("take each flag's own shape before its picture loads, here and enlarged", async () => {
     for (const [code, shape] of shapes) {
-      const { container } = render(<QuestionCard hud="painting" q={flagRoundOf(code)} />)
+      const { container } = render(<QuestionCard hud={CardPlace.PAINTING} q={flagRoundOf(code)} />)
       const button = container.querySelector<HTMLButtonElement>(`.${qc.flag!}`)!
       expect(button.querySelectorAll("img")).toHaveLength(0)
       expect(ratio(button)).toBe(shape)
@@ -95,11 +97,11 @@ describe("QuestionCard image", () => {
 
   // First in this file: the label shows only on the session's first photo.
   it("says it can be enlarged: a button with a badge, labelled on the first photo only", () => {
-    const { container: first } = render(<QuestionCard hud="painting" q={q} />)
+    const { container: first } = render(<QuestionCard hud={CardPlace.PAINTING} q={q} />)
     const button = first.querySelector<HTMLButtonElement>(`.${qc.thumbButton!}`)!
     expect(button.textContent).toContain("Enlarge photo")
     expect(first.querySelector(`.${qc.badge!}`)!.textContent).toBe("Enlarge")
-    const { container: later } = render(<QuestionCard hud="painting" q={q} />)
+    const { container: later } = render(<QuestionCard hud={CardPlace.PAINTING} q={q} />)
     expect(later.querySelectorAll(`.${qc.badge!}`)).not.toHaveLength(0)
     expect(later.querySelector(`.${qc.badge!}`)!.textContent).toBe("")
     fireEvent.click(later.querySelector(`.${qc.thumbButton!}`)!)
@@ -107,7 +109,7 @@ describe("QuestionCard image", () => {
   })
 
   it("enlarges on click and shrinks on Escape, the close button, or a backdrop click", () => {
-    const { container } = render(<QuestionCard hud="painting" q={q} />)
+    const { container } = render(<QuestionCard hud={CardPlace.PAINTING} q={q} />)
     expect(document.body.querySelectorAll(`.${lb.lightbox!}`)).toHaveLength(0)
     fireEvent.click(container.querySelector(`.${qc.thumb!} img`)!)
     expect(document.body.querySelectorAll(`.${lb.lightbox!} img`)).not.toHaveLength(0)
@@ -122,7 +124,7 @@ describe("QuestionCard image", () => {
   })
 
   it("zooms the enlarged photo: click toggles a closer look, the wheel zooms in and out", () => {
-    const { container } = render(<QuestionCard hud="painting" q={q} />)
+    const { container } = render(<QuestionCard hud={CardPlace.PAINTING} q={q} />)
     fireEvent.click(container.querySelector(`.${qc.thumb!} img`)!)
     const img = document.body.querySelector<HTMLImageElement>(`.${lb.lightbox!} img`)!
     expect(img.style.transform).toContain("scale(1)")
@@ -147,7 +149,7 @@ describe("QuestionCard image", () => {
     vi.spyOn(HTMLImageElement.prototype, "decode").mockImplementation(
       () => new Promise<void>((resolve) => (decoded = resolve))
     )
-    const { container } = render(<QuestionCard hud="painting" q={q} />)
+    const { container } = render(<QuestionCard hud={CardPlace.PAINTING} q={q} />)
     const thumb = container.querySelector<HTMLImageElement>(`.${qc.thumb!} img`)!
     Object.defineProperty(thumb, "naturalWidth", { value: 900 })
     Object.defineProperty(thumb, "naturalHeight", { value: 600 })
@@ -165,10 +167,10 @@ describe("QuestionCard image", () => {
 
   it("keeps the Commons credit behind an info icon linking to the file page, only when asked", () => {
     // While guessing there is no credit link at all: the file name is a spoiler.
-    const { container: guessing } = render(<QuestionCard hud="painting" q={q} />)
+    const { container: guessing } = render(<QuestionCard hud={CardPlace.PAINTING} q={q} />)
     expect(guessing.querySelectorAll(`.${pictures.credit!}`)).toHaveLength(0)
 
-    const { container } = render(<QuestionCard hud="painting" q={q} credit />)
+    const { container } = render(<QuestionCard hud={CardPlace.PAINTING} q={q} credit />)
     const credit = container.querySelector<HTMLAnchorElement>(`.${qc.thumb!} .${pictures.credit!}`)!
     expect(credit.href).toContain("commons.wikimedia.org")
     expect(credit.getAttribute("aria-label")).toContain("Wikimedia Commons")

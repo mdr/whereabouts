@@ -5,10 +5,14 @@
  * and then checked against its source and a second one.
  */
 
-type FactKind = "fame" | "trivia" | "flag"
+export enum FactType {
+  FAME = "FAME",
+  TRIVIA = "TRIVIA",
+  FLAG = "FLAG"
+}
 
 export interface Fact {
-  kind: FactKind
+  type: FactType
   text: string
   source: string
 }
@@ -23,8 +27,12 @@ export type Facts = Record<string, Fact[]>
  */
 export function pickFact(facts: readonly Fact[] | undefined, seed: string, round: number): Fact | undefined {
   if (!facts?.length) return undefined
-  const wanted: FactKind = facts.some((f) => f.kind === "flag") ? "flag" : round % 2 === 0 ? "fame" : "trivia"
-  const choice = facts.filter((f) => f.kind === wanted)
+  const wanted = facts.some((f) => f.type === FactType.FLAG)
+    ? FactType.FLAG
+    : round % 2 === 0
+      ? FactType.FAME
+      : FactType.TRIVIA
+  const choice = facts.filter((f) => f.type === wanted)
   const from = choice.length > 0 ? choice : facts
   return from[hash(`${seed} ${round}`) % from.length]
 }

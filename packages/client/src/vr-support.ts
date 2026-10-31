@@ -11,9 +11,13 @@ export const vrSupported = signal(false)
 export const loadedVr = signal<Vr | undefined>(undefined)
 
 /** How far loading has got, in order. */
-export const VR_LOAD_STAGES = ["code", "headset", "land"] as const
-export type VrLoadStage = (typeof VR_LOAD_STAGES)[number]
-export const vrLoadStage = signal<VrLoadStage>("code")
+export enum VrLoadStage {
+  CODE = "CODE",
+  HEADSET = "HEADSET",
+  LAND = "LAND"
+}
+export const VR_LOAD_STAGES: readonly VrLoadStage[] = Object.values(VrLoadStage)
+export const vrLoadStage = signal(VrLoadStage.CODE)
 
 navigator.xr?.isSessionSupported("immersive-vr").then(
   (ok) => (vrSupported.value = ok),
@@ -29,7 +33,7 @@ export class VrCodeMissing extends Error {}
 let loading: Promise<Vr> | undefined = undefined
 
 export function loadVr(): Promise<Vr> {
-  if (!loading) vrLoadStage.value = "code"
+  if (!loading) vrLoadStage.value = VrLoadStage.CODE
   loading ??= (async () => {
     const m = await import("./vr").catch((err: unknown) => {
       throw new VrCodeMissing("the VR code did not load", { cause: err })

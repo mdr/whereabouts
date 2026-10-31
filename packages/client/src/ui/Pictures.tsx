@@ -5,7 +5,7 @@ import { Icon } from "./icons"
 import { flagFile, flagRatio, flagUrl } from "../flags"
 import { cx } from "./cx"
 import { useElementRef } from "./element-ref"
-import { Lightbox, PhotoLightbox, useEscape } from "./Lightbox"
+import { Lightbox, LightboxType, PhotoLightbox, useEscape } from "./Lightbox"
 import s from "./Pictures.module.css"
 
 /** The picture of a flag, once its chunk has loaded. */
@@ -119,7 +119,7 @@ export function SmallFlagButton({ code }: { code: string }) {
       {large && src && (
         <Lightbox
           src={src}
-          kind="flag"
+          type={LightboxType.FLAG}
           ratio={flagRatio(code)}
           credit={file && <CommonsCredit image={file} />}
           onClose={() => setLarge(false)}

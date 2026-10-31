@@ -2,7 +2,7 @@
 import { effect, signal } from "@preact/signals"
 import { z } from "zod"
 import { DEFAULT_KERNEL, KernelIdSchema } from "@whereabouts/shared/scoring"
-import { MapDetailSchema } from "@whereabouts/shared/protocol"
+import { MapDetailSchema, MapDetail } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
 import {
   PlayerNameSchema,
@@ -34,6 +34,10 @@ function persisted<S extends z.ZodType>(key: string, schema: S, initial: z.outpu
   return s
 }
 
+/** An enum value saved before the enums, in lower case with hyphens, read as its member. */
+const oldEnumValue = <S extends z.ZodType>(schema: S) =>
+  z.preprocess((v) => (typeof v === "string" ? v.toUpperCase().replaceAll("-", "_") : v), schema)
+
 /** Like persisted, for a JSON value; anything unreadable starts from the initial value. */
 function persistedJson<T>(key: string, initial: T) {
   let start = initial
@@ -62,7 +66,7 @@ export const cheatLiveScore = persisted("wa.cheat", z.stringbool(), true)
  * another. A new key: "wa.kernel" was written on every visit while practice
  * defaulted to the single Gaussian, so its value says nothing about a choice.
  */
-export const soloKernelId = persisted("wa.practiceKernel", KernelIdSchema, DEFAULT_KERNEL.id)
+export const soloKernelId = persisted("wa.practiceKernel", oldEnumValue(KernelIdSchema), DEFAULT_KERNEL.id)
 try {
   localStorage.removeItem("wa.kernel")
 } catch {
@@ -96,7 +100,7 @@ function oldPracticeTypes(): QuestionType[] | undefined {
   }
 }
 /** Map detail while guessing in practice (one of MAP_DETAILS). */
-export const soloMapDetail = persisted("wa.mapDetail", MapDetailSchema, "minimal")
+export const soloMapDetail = persisted("wa.mapDetail", oldEnumValue(MapDetailSchema), MapDetail.MINIMAL)
 /** On the reveal of a flag round, every country's flag on the map. */
 export const allFlags = persisted("wa.allFlags", z.stringbool(), false)
 /** In a headset, see the room round the globe rather than space. */

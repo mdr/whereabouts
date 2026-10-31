@@ -1,6 +1,7 @@
 import { flagCode, outlineId, playerId, questionId, roomCode } from "@whereabouts/shared/ids"
-import { mixOf, type GameView, type QuestionView } from "@whereabouts/shared/protocol"
+import { mixOf, type GameView, type QuestionView, Phase, MapDetail } from "@whereabouts/shared/protocol"
 import { AnswerType, ClueType, QuestionType, Surface, type FlagQuestion } from "@whereabouts/shared/questions"
+import { KernelId } from "@whereabouts/shared/scoring"
 
 type ViewOverrides = Partial<Omit<GameView, "you">> & { you?: Partial<GameView["you"]> }
 
@@ -8,13 +9,13 @@ type ViewOverrides = Partial<Omit<GameView, "you">> & { you?: Partial<GameView["
 export function makeView({ you, ...over }: ViewOverrides = {}): GameView {
   return {
     code: roomCode("AB12"),
-    phase: "lobby",
+    phase: Phase.LOBBY,
     config: {
       rounds: 5,
       roundMs: 60_000,
       mix: mixOf({ [QuestionType.LANDMARK]: 5 }),
-      mapDetail: "minimal",
-      kernelId: "multi-equal",
+      mapDetail: MapDetail.MINIMAL,
+      kernelId: KernelId.MULTI_EQUAL,
       hints: 0
     },
     serverTime: 0,

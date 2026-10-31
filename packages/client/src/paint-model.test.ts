@@ -6,7 +6,9 @@ import { cellToChildren, finerRes, latLngToCell, type H3Cell } from "@whereabout
 import { AnswerType, answerCentre, type FlagQuestion } from "@whereabouts/shared/questions"
 import { makeFlagQuestion } from "./test-view"
 import type { LatLon } from "@whereabouts/shared/geo"
+import { Tool } from "./tool"
 import { FILL_SMALL_PX, PaintModel, type Filler } from "./paint-model"
+import { HintAxis } from "@whereabouts/shared/hints"
 
 const TOLERANCE_KM = 100
 const RES = resolutionForTolerance(TOLERANCE_KM)
@@ -39,7 +41,7 @@ function makeFiller(overrides: Partial<Filler> = {}): Filler {
 const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RES)
 
 function paintStroke(model: PaintModel, ...at: LatLon[]): void {
-  model.beginStroke("paint")
+  model.beginStroke(Tool.PAINT)
   for (const p of at) model.stamp(p, 20, 1)
   model.endStroke()
 }
@@ -109,7 +111,7 @@ describe("PaintModel", () => {
       const model = makeModel()
       paintStroke(model, MADRID)
       const before = cells(model)
-      model.beginStroke("paint")
+      model.beginStroke(Tool.PAINT)
       model.stamp(PARIS, 20, 1)
 
       model.abandonStroke()
@@ -136,8 +138,8 @@ describe("PaintModel", () => {
   describe("strokes", () => {
     it("says which tool is stroking, until the stroke ends", () => {
       const model = makeModel()
-      model.beginStroke("erase")
-      expect(model.stroking.value).toBe("erase")
+      model.beginStroke(Tool.ERASE)
+      expect(model.stroking.value).toBe(Tool.ERASE)
       model.endStroke()
       expect(model.stroking.value).toBeUndefined()
     })
@@ -145,7 +147,7 @@ describe("PaintModel", () => {
     it("erases with a negative strength", () => {
       const model = makeModel()
       paintStroke(model, PARIS)
-      model.beginStroke("erase")
+      model.beginStroke(Tool.ERASE)
       model.stamp(PARIS, 40, -10)
       expect(model.layer.cells.has(cellAt(PARIS))).toBe(false)
     })
@@ -270,7 +272,7 @@ describe("PaintModel", () => {
     it("drops the paint outside a hint's band", () => {
       const model = makeModel()
       model.restore({ [cellAt(PARIS)]: 1, [cellAt(MADRID)]: 1 })
-      expect(model.trimToHint({ axis: "latitude", from: 45, to: 55 })).toBeGreaterThan(0)
+      expect(model.trimToHint({ axis: HintAxis.LATITUDE, from: 45, to: 55 })).toBeGreaterThan(0)
       expect([...model.layer.cells.keys()]).toEqual([cellAt(PARIS)])
     })
   })
@@ -328,7 +330,7 @@ describe("PaintModel", () => {
         () => model.fillAt(PARIS, 1),
         () => model.clear(),
         () => model.restore({ [cellAt(MADRID)]: 1 }),
-        () => model.trimToHint({ axis: "latitude", from: 45, to: 55 }),
+        () => model.trimToHint({ axis: HintAxis.LATITUDE, from: 45, to: 55 }),
         () => model.reset(TOLERANCE_KM)
       ]
       for (const change of changes) {

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vite-plus/test"
 import { PaintLayer } from "./paint.ts"
-import { decodeCase, encodeCase, type ScoringCase } from "./scoring-case.ts"
+import { CaseQuestionType, decodeCase, encodeCase, type ScoringCase } from "./scoring-case.ts"
 import { h3Res } from "./h3.ts"
+import { KernelId } from "./scoring.ts"
 
 function sample(): ScoringCase {
   const layer = new PaintLayer(h3Res(6))
@@ -10,13 +11,13 @@ function sample(): ScoringCase {
   layer.stamp({ lat: 51.5, lon: -0.12 }, 400, 0.3)
   return {
     question: {
-      kind: "photo",
+      type: CaseQuestionType.PHOTO,
       id: "eiffel-tower",
       label: 'The "Iron Lady", Paris',
       answer: { lat: 48.8584, lon: 2.2945 },
       toleranceKm: 25
     },
-    kernel: "multi-equal",
+    kernel: KernelId.MULTI_EQUAL,
     floor: 0.05,
     res: layer.res,
     score: 412.3,
@@ -46,7 +47,7 @@ describe("scoring cases", () => {
     const c: ScoringCase = {
       ...sample(),
       question: {
-        kind: "region",
+        type: CaseQuestionType.REGION,
         id: "DEU",
         label: "Germany",
         answer: { lat: 51.1, lon: 10.4 },
@@ -58,6 +59,14 @@ describe("scoring cases", () => {
     const back = await decodeCase(await encodeCase(c))
     expect(back.question).toEqual(c.question)
     expect(back.parts).toEqual(c.parts)
+  })
+
+  it("read cases copied before their words were upper case", async () => {
+    const text = (await encodeCase(sample()))
+      .replace("question: PHOTO", "question: photo")
+      .replace("kernel: MULTI_EQUAL", "kernel: multi-equal")
+    const back = await decodeCase(text)
+    expect([back.question.type, back.kernel]).toEqual([CaseQuestionType.PHOTO, KernelId.MULTI_EQUAL])
   })
 
   it("survive chat around it, indentation and rewrapping", async () => {

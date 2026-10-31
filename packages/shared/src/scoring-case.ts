@@ -11,10 +11,22 @@
  */
 import type { LatLon } from "./geo.ts"
 import type { AnswerParts } from "./regions.ts"
+import type { KernelId } from "./scoring.ts"
+
+export enum CaseQuestionType {
+  PHOTO = "PHOTO",
+  TEXT = "TEXT",
+  REGION = "REGION"
+}
+
+/** What an area answer is scored with in place of a kernel. */
+export enum RegionKernel {
+  REGION = "REGION"
+}
 
 export interface ScoringCase {
   question: {
-    kind: "photo" | "text" | "region"
+    type: CaseQuestionType
     id: string
     label: string
     answer: LatLon
@@ -22,7 +34,7 @@ export interface ScoringCase {
     /** A flag round: the flag shown. */
     flag?: string
   }
-  kernel: string
+  kernel: KernelId | RegionKernel
   floor: number
   /** The paint layer's finest resolution. */
   res: number
@@ -57,7 +69,7 @@ export async function encodeCase(c: ScoringCase): Promise<string> {
   const payload = toBase64Url(await deflate(new Uint8Array(bytes)))
   return [
     MAGIC,
-    `question: ${q.kind} ${q.id} ${JSON.stringify(q.label)}${q.flag ? ` flag=${q.flag}` : ""}`,
+    `question: ${q.type} ${q.id} ${JSON.stringify(q.label)}${q.flag ? ` flag=${q.flag}` : ""}`,
     `answer: ${round(q.answer.lat, 5)} ${round(q.answer.lon, 5)} tolerance=${round(q.toleranceKm, 3)}km`,
     `kernel: ${c.kernel} floor=${round(c.floor, 4)}`,
     `score: ${round(c.score, 1)} ${parts}`,
@@ -85,10 +97,13 @@ export async function decodeCase(text: string): Promise<ScoringCase> {
     return m[1]!
   }
 
-  const qm = /^(photo|text|region) (\S+) ("(?:[^"\\]|\\.)*")(?: flag=(\S+))?$/.exec(field("question"))
+  // Cases copied before the enums wrote these words in lower case, and kernels with hyphens.
+  const qm = /^(PHOTO|TEXT|REGION) (\S+) ("(?:[^"\\]|\\.)*")(?: flag=(\S+))?$/.exec(
+    field("question").replace(/^\S+/, (w) => w.toUpperCase())
+  )
   if (!qm) throw new Error("scoring case has a malformed question line")
   const answer = field("answer").split(/\s+/)
-  const kernel = field("kernel")
+  const kernel = field("kernel").replace(/^\S+/, (w) => w.toUpperCase().replaceAll("-", "_"))
   const score = field("score")
   const paint = field("paint")
   const parts = /\bA=/.test(score)
@@ -115,14 +130,14 @@ export async function decodeCase(text: string): Promise<ScoringCase> {
 
   return {
     question: {
-      kind: qm[1] as ScoringCase["question"]["kind"],
+      type: qm[1] as CaseQuestionType,
       id: qm[2]!,
       label: JSON.parse(qm[3]!) as string,
       answer: { lat: Number(answer[0]), lon: Number(answer[1]) },
       toleranceKm: parseFloat(named(field("answer"), "tolerance")),
       ...(qm[4] ? { flag: qm[4] } : {})
     },
-    kernel: kernel.split(/\s+/)[0]!,
+    kernel: kernel.split(/\s+/)[0] as ScoringCase["kernel"],
     floor: Number(named(kernel, "floor")),
     res: Number(named(paint, "res")),
     score: Number(score.split(/\s+/)[0]),

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { render } from "@testing-library/preact"
-import { mixOf, type GameView } from "@whereabouts/shared/protocol"
+import { mixOf, type GameView, Phase, MapDetail } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "./net"
 import { hostSetup } from "./settings"
@@ -9,9 +9,9 @@ import { configureAsHost, savedSetupPatch, useSavedSetup } from "./host-setup"
 
 const { LANDMARK, PLACE, COUNTRY, FLAG } = QuestionType
 const MIX = mixOf({ [LANDMARK]: 3, [PLACE]: 3, [COUNTRY]: 2, [FLAG]: 2 })
-const SAVED = { mix: MIX, roundMs: 90_000, mapDetail: "political" }
+const SAVED = { mix: MIX, roundMs: 90_000, mapDetail: MapDetail.POLITICAL }
 
-function lobby(isHost: boolean, phase: GameView["phase"] = "lobby"): GameView {
+function lobby(isHost: boolean, phase: GameView["phase"] = Phase.LOBBY): GameView {
   return { phase, you: { isHost } } as GameView
 }
 
@@ -31,7 +31,7 @@ describe("savedSetupPatch", () => {
 
   it("drops only the settings the game no longer offers, so the rest still apply", () => {
     expect(savedSetupPatch({ ...SAVED, roundMs: 75_000, mix: { ...MIX, [FLAG]: 9 } })).toEqual({
-      mapDetail: "political"
+      mapDetail: MapDetail.POLITICAL
     })
   })
 
@@ -52,6 +52,10 @@ describe("savedSetupPatch", () => {
     ).toEqual({ mix: MIX })
   })
 
+  it("reads a map detail saved in lower case", () => {
+    expect(savedSetupPatch({ mapDetail: "political" })).toEqual({ mapDetail: MapDetail.POLITICAL })
+  })
+
   it("keeps a mix saved before islands, lakes, seas and US states, with none of them", () => {
     expect(savedSetupPatch({ mix: { landmarks: 3, places: 3, countries: 2, flags: 2 } }).mix).toEqual(MIX)
   })
@@ -67,9 +71,9 @@ describe("configureAsHost", () => {
     const configure = vi.fn()
     const conn = { configure } as unknown as Connection
     configureAsHost(conn, { mix: MIX })
-    configureAsHost(conn, { mapDetail: "water" })
-    expect(configure).toHaveBeenLastCalledWith({ mapDetail: "water" })
-    expect(hostSetup.value).toEqual({ mix: MIX, mapDetail: "water" })
+    configureAsHost(conn, { mapDetail: MapDetail.WATER })
+    expect(configure).toHaveBeenLastCalledWith({ mapDetail: MapDetail.WATER })
+    expect(hostSetup.value).toEqual({ mix: MIX, mapDetail: MapDetail.WATER })
   })
 })
 
@@ -92,7 +96,7 @@ describe("useSavedSetup", () => {
     const conn = { configure } as unknown as Connection
     render(<Harness conn={conn} view={lobby(true)} created={false} />)
     render(<Harness conn={conn} view={lobby(false)} created />)
-    render(<Harness conn={conn} view={lobby(true, "guessing")} created />)
+    render(<Harness conn={conn} view={lobby(true, Phase.GUESSING)} created />)
     expect(configure).not.toHaveBeenCalled()
   })
 

@@ -26,8 +26,7 @@ import {
 import type { LatLon } from "@whereabouts/shared/geo"
 import { latLonToLocal, localToLatLon } from "./sphere"
 import { buildStand } from "./models"
-
-export type Hand = "left" | "right"
+import { HANDS, Hand } from "./hand"
 
 const RADIUS = 0.22
 /**
@@ -282,7 +281,7 @@ export class Globe {
 
   /** `grips`: where each hand holding the grip button is. `stick`: the thumbsticks, summed. */
   update(dt: number, grips: Partial<Record<Hand, Vector3>>, stick: { x: number; y: number }): void {
-    const { left, right } = grips
+    const { [Hand.LEFT]: left, [Hand.RIGHT]: right } = grips
     if (left || right || Math.abs(stick.x) > STICK_DEAD || Math.abs(stick.y) > STICK_DEAD) this.turning = undefined
     if (this.turning) {
       const { from, to } = this.turning
@@ -312,7 +311,7 @@ export class Globe {
       this.rate.spin = this.rate.tilt = 0
     } else {
       this.pair = undefined
-      const hand: Hand | undefined = left ? "left" : right ? "right" : undefined
+      const hand: Hand | undefined = left ? Hand.LEFT : right ? Hand.RIGHT : undefined
       const prev = hand && this.held[hand]
       if (hand && prev && dt > 0) {
         const was = this.angles(prev, this.turned.tilt)
@@ -329,7 +328,7 @@ export class Globe {
         this.rate.tilt *= decay
       }
     }
-    for (const h of ["left", "right"] as const) {
+    for (const h of HANDS) {
       const p = grips[h]
       this.held[h] = p ? (this.held[h] ?? new Vector3()).copy(p).sub(this.centre) : undefined
     }

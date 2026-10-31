@@ -16,13 +16,23 @@ import {
 import { CATALOGUE, outlinesFrom } from "./catalogue.ts"
 import { REVEAL_PHOTOS } from "./photos.ts"
 import { regionCells, scoredAnswer, type Area } from "./regions.ts"
-import { type GameConfig, MAX_PLAYERS, MAX_SPECTATORS, type QuestionView, SEAT_GRACE_MS, mixOf } from "./protocol.ts"
+import {
+  type GameConfig,
+  MAX_PLAYERS,
+  MAX_SPECTATORS,
+  type QuestionView,
+  SEAT_GRACE_MS,
+  mixOf,
+  MapDetail,
+  Phase
+} from "./protocol.ts"
 import outlinesJson from "../outlines.json" with { type: "json" }
 import { playerId, playerName, playerToken, questionId, roomCode, type PlayerToken, type RoomCode } from "./ids.ts"
 import type { LatLon } from "./geo.ts"
 import { PLAYER_COLOURS } from "./colours.ts"
 import { GameViewSchema } from "./view-schema.ts"
-import { inHintBand } from "./hints.ts"
+import { inHintBand, HintAxis } from "./hints.ts"
+import { CloseReason } from "./close-reason.ts"
 
 const place = (label: string, at: LatLon, toleranceKm = 100): PlaceQuestion => ({
   type: QuestionType.PLACE,
@@ -191,7 +201,7 @@ describe("lobby", () => {
     const g = twoPlayerGame()
     expect(g.start(tokB, T0)).toEqual({ ok: false, error: "only the host can start" })
     expect(g.start(tokA, T0).ok).toBe(true)
-    expect(g.phase).toBe("guessing")
+    expect(g.phase).toBe(Phase.GUESSING)
   })
 
   it("caps rounds at the pool size", () => {
@@ -213,7 +223,7 @@ describe("round loop", () => {
     // Bob paints nothing.
     expect(g.tick(T0 + 60_000 + ROUND_GRACE_MS - 1)).toBe(false)
     expect(g.tick(T0 + 60_000 + ROUND_GRACE_MS)).toBe(true)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
 
     const reveal = g.view(tokB, T0 + 60_000).reveal!
     expect(reveal.label).toBe(q.label)
@@ -265,7 +275,7 @@ describe("round loop", () => {
     g.lock(tokA, T0 + 1)
     g.setPaint(tokB, paintAt(q, 0, 0))
     g.lock(tokB, T0 + 2) // everyone done: the round ends
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     const mine = g.view(tokA, T0 + 2).reveal!.results.find((r) => r.playerId === "p1")!
     expect(mine.score).toBeGreaterThan(900)
     expect(g.unlock(tokA)).toEqual({ ok: false, error: "not guessing" })
@@ -281,7 +291,7 @@ describe("round loop", () => {
     expect(g.setPaint(tokA, paintAt(q, 0, 0))).toEqual({ ok: true, changed: false })
     g.setPaint(tokB, paintAt(q, 0, 0))
     g.lock(tokB, T0 + 5)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     const mine = g.view(tokA, T0 + 5).reveal!.results.find((r) => r.playerId === "p1")!
     expect(mine.paint).toBeUndefined()
     expect(mine.score).toBe(250)
@@ -295,9 +305,9 @@ describe("round loop", () => {
     g.setPaint(tokA, paintAt(q, 0, 0))
     g.setPaint(tokB, paintAt(q, 1, 1))
     g.lock(tokA, T0 + 10)
-    expect(g.phase).toBe("guessing")
+    expect(g.phase).toBe(Phase.GUESSING)
     g.lock(tokB, T0 + 20)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     expect(g.view(tokA, T0 + 20).reveal!.results).toHaveLength(2)
   })
 
@@ -307,9 +317,9 @@ describe("round loop", () => {
     const q = currentQuestion(g, tokA, T0)
     g.setPaint(tokA, paintAt(q, 0, 0))
     g.lock(tokA, T0 + 10)
-    expect(g.phase).toBe("guessing")
+    expect(g.phase).toBe(Phase.GUESSING)
     g.disconnect(tokB, T0 + 20)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     // Bob still gets scored (blank) and keeps his seat.
     expect(g.view(tokA, T0 + 20).reveal!.results).toHaveLength(2)
     expect(g.playerTokens).toContain(tokB)
@@ -323,19 +333,19 @@ describe("round loop", () => {
     expect(g.next(tokB, T0 + 61_000)).toEqual({ ok: false, error: "only the host can advance" })
     expect(g.ready(tokB, T0 + 61_000)).toEqual({ ok: true, changed: true })
     expect(g.ready(tokB, T0 + 61_000)).toEqual({ ok: true, changed: false })
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     expect(g.view(tokA, T0 + 61_000).reveal!.ready).toEqual(["p2"])
     expect(g.ready(tokA, T0 + 62_000).ok).toBe(true)
-    expect(g.phase).toBe("guessing")
+    expect(g.phase).toBe(Phase.GUESSING)
     expect(g.view(tokA, T0 + 62_000).round!.index).toBe(1)
     expect(g.nextWakeAt()).toBe(T0 + 122_000 + ROUND_GRACE_MS)
     g.tick(T0 + 122_000 + ROUND_GRACE_MS)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     expect(g.view(tokA, T0 + 122_000).reveal!.ready).toEqual([])
     expect(g.ready(tokA, T0 + 123_000)).toEqual({ ok: true, changed: true })
     // The host need not wait for Bob.
     expect(g.next(tokA, T0 + 124_000).ok).toBe(true)
-    expect(g.phase).toBe("results")
+    expect(g.phase).toBe(Phase.RESULTS)
     const results = g.view(tokA, T0 + 124_000).results!
     expect(results).toHaveLength(2)
     expect(results[0]!.total).toBeGreaterThanOrEqual(results[1]!.total)
@@ -354,7 +364,7 @@ describe("round loop", () => {
       now += 3_000
       g.next(tokA, now)
     }
-    expect(g.phase).toBe("results")
+    expect(g.phase).toBe(Phase.RESULTS)
     const awards = g.view(tokA, now).awards!
     expect(awards.length).toBeGreaterThanOrEqual(2)
     expect(awards.find((a) => a.title === "Chicken")?.playerIds).toEqual(["p1"])
@@ -414,7 +424,7 @@ describe("player cap", () => {
     const w1 = g.view(tokW1, T0)
     expect(w1.you.watching).toBe(true)
     expect(w1.players.find((p) => p.name === "W1")).toMatchObject({ watching: true, colour: undefined, rank: 0 })
-    expect(g.join(tokLate, playerName("Late"), T0)).toEqual({ ok: false, reason: "full" })
+    expect(g.join(tokLate, playerName("Late"), T0)).toEqual({ ok: false, reason: CloseReason.FULL })
   })
 
   it("still lets a player who dropped out back in", () => {
@@ -461,13 +471,13 @@ describe("spectators", () => {
     // The two players finishing ends the round; Sam is not waited on.
     g.lock(tokA, T0 + 1)
     g.lock(tokB, T0 + 2)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     const reveal = g.view(tokS, T0 + 2).reveal!
     expect(reveal.results.map((r) => r.playerId).sort()).toEqual(["p1", "p2"])
     expect(g.ready(tokS, T0 + 3)).toEqual({ ok: false, error: "you are watching" })
     g.ready(tokA, T0 + 3)
     g.ready(tokB, T0 + 4)
-    expect(g.phase).toBe("guessing")
+    expect(g.phase).toBe(Phase.GUESSING)
     g.tick(T1 + 10_000 + ROUND_GRACE_MS)
     g.next(tokA, T1 + 10_000)
     expect(
@@ -500,13 +510,13 @@ describe("spectators", () => {
     // Alice and Bob finishing still ends the round without Sam.
     g.lock(tokA, T0 + 2)
     g.lock(tokB, T0 + 3)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     // Sam is a player now, so the reveal waits for his Ready too.
     g.ready(tokA, T0 + 4)
     g.ready(tokB, T0 + 5)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     g.ready(tokS, T0 + 6)
-    expect(g.phase).toBe("guessing")
+    expect(g.phase).toBe(Phase.GUESSING)
     expect(g.view(tokS, T0 + 6).you.spectating).toBe(false)
     g.tick(T0 + 6 + 60_000 + ROUND_GRACE_MS)
     g.next(tokA, T0 + 6 + 60_000)
@@ -518,7 +528,7 @@ describe("spectators", () => {
     const g = withSpectator()
     g.start(tokA, T0)
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     g.setRole(tokS, false)
     g.ready(tokA, T0 + 60_001)
     g.ready(tokB, T0 + 60_002)
@@ -647,11 +657,11 @@ describe("joining and leaving mid-game", () => {
     g.start(tokA, T0)
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     g.next(tokA, T0 + 80_000)
-    expect(g.phase).toBe("results")
-    expect(g.join(tokZ, playerName("Zed"), T0 + 80_001)).toEqual({ ok: false, reason: "finished" })
+    expect(g.phase).toBe(Phase.RESULTS)
+    expect(g.join(tokZ, playerName("Zed"), T0 + 80_001)).toEqual({ ok: false, reason: CloseReason.FINISHED })
     g.disconnect(tokB, T0 + 80_002)
     expect(g.again(tokA, T0 + 81_000).ok).toBe(true)
-    expect(g.phase).toBe("lobby")
+    expect(g.phase).toBe(Phase.LOBBY)
     expect(g.playerTokens).toEqual([tokA])
     expect(g.view(tokA, T0 + 81_000).players[0]!.score).toBe(0)
   })
@@ -703,9 +713,9 @@ describe("ready-up edge cases", () => {
     g.start(tokA, T0)
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     g.ready(tokA, T0 + 61_000)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     g.disconnect(tokB, T0 + 62_000)
-    expect(g.phase).toBe("guessing")
+    expect(g.phase).toBe(Phase.GUESSING)
   })
 
   it("nobody left connected means nothing advances", () => {
@@ -714,7 +724,7 @@ describe("ready-up edge cases", () => {
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     g.disconnect(tokA, T0 + 61_000)
     g.disconnect(tokB, T0 + 61_001)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
   })
 
   it("ready is only meaningful during the reveal, and resets each round", () => {
@@ -767,13 +777,13 @@ describe("configure", () => {
 
   it("starts on minimal map detail and lets the host change it in the lobby", () => {
     const g = twoPlayerGame(1)
-    expect(g.view(tokB, T0).config.mapDetail).toBe("minimal")
-    expect(g.configure(tokB, { mapDetail: "water" }).ok).toBe(false)
-    expect(g.configure(tokA, { mapDetail: "physical" })).toEqual({ ok: true, changed: true })
-    expect(g.configure(tokA, { mapDetail: "physical" })).toEqual({ ok: true, changed: false })
-    expect(g.view(tokB, T0).config.mapDetail).toBe("physical")
+    expect(g.view(tokB, T0).config.mapDetail).toBe(MapDetail.MINIMAL)
+    expect(g.configure(tokB, { mapDetail: MapDetail.WATER }).ok).toBe(false)
+    expect(g.configure(tokA, { mapDetail: MapDetail.PHYSICAL })).toEqual({ ok: true, changed: true })
+    expect(g.configure(tokA, { mapDetail: MapDetail.PHYSICAL })).toEqual({ ok: true, changed: false })
+    expect(g.view(tokB, T0).config.mapDetail).toBe(MapDetail.PHYSICAL)
     g.start(tokA, T0)
-    expect(g.configure(tokA, { mapDetail: "political" }).ok).toBe(false)
+    expect(g.configure(tokA, { mapDetail: MapDetail.POLITICAL }).ok).toBe(false)
   })
 
   it("reports who has locked in", () => {
@@ -803,12 +813,12 @@ describe("host removes a player", () => {
     expect(g.kick(tokA, playerId("p99"), T0)).toEqual({ ok: false, error: "unknown player" })
     expect(g.kick(tokA, bobId, T0).ok).toBe(true)
     expect(g.playerTokens).toEqual([tokA])
-    expect(g.join(tokB, playerName("Bob again"), T0)).toEqual({ ok: false, reason: "removed" })
+    expect(g.join(tokB, playerName("Bob again"), T0)).toEqual({ ok: false, reason: CloseReason.REMOVED })
     expect(g.join(tokC, playerName("Carol"), T0).ok).toBe(true)
     // Bob's paint must not surface when the round ends.
     g.setPaint(tokA, paintAt(q, 0, 0))
     g.lock(tokA, T0)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     expect(g.view(tokA, T0).reveal!.results.map((r) => r.playerId)).not.toContain(bobId)
   })
 
@@ -818,9 +828,9 @@ describe("host removes a player", () => {
     const q = currentQuestion(g, tokA, T0)
     g.setPaint(tokA, paintAt(q, 0, 0))
     g.lock(tokA, T0)
-    expect(g.phase).toBe("guessing")
+    expect(g.phase).toBe(Phase.GUESSING)
     g.kick(tokA, g.view(tokB, T0).you.id!, T0)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
 
     const h = twoPlayerGame()
     h.start(tokA, T0)
@@ -844,7 +854,7 @@ describe("host ends the game early", () => {
     g.setPaint(tokA, paintOn(q))
     expect(g.end(tokB)).toEqual({ ok: false, error: "only the host can end the game" })
     expect(g.end(tokA).ok).toBe(true)
-    expect(g.phase).toBe("results")
+    expect(g.phase).toBe(Phase.RESULTS)
     const results = g.view(tokA, T0).results!
     expect(results[0]!.rounds).toHaveLength(1)
     expect(results[0]!.total).toBeGreaterThan(500)
@@ -858,9 +868,9 @@ describe("host ends the game early", () => {
     g.setPaint(tokB, paintAt(q, 0, 0))
     g.lock(tokA, T0)
     g.lock(tokB, T0)
-    expect(g.phase).toBe("reveal")
+    expect(g.phase).toBe(Phase.REVEAL)
     expect(g.end(tokA).ok).toBe(true)
-    expect(g.phase).toBe("results")
+    expect(g.phase).toBe(Phase.RESULTS)
   })
 })
 
@@ -885,7 +895,7 @@ describe("the question mix", () => {
     g.start(tokA, T0)
     const seen: QuestionView[] = []
     let now = T0
-    while (g.phase !== "results") {
+    while (g.phase !== Phase.RESULTS) {
       seen.push(g.view(tokA, now).round!.question)
       now += 60_000 + ROUND_GRACE_MS
       g.tick(now)
@@ -930,7 +940,7 @@ describe("the question mix", () => {
 
   it("asks islands, lakes and seas, and US states, as many as the mix says", () => {
     const mix = mixOf({ [QuestionType.FEATURE]: 6, [QuestionType.STATE]: 7 })
-    const seen = questions(game({ mix, mapDetail: "water" }))
+    const seen = questions(game({ mix, mapDetail: MapDetail.WATER }))
     expect(seen).toHaveLength(13)
     expect(seen.filter((q) => q.type === QuestionType.STATE)).toHaveLength(7)
     expect(seen.filter((q) => q.type === QuestionType.FEATURE && q.feature !== undefined)).toHaveLength(6)
@@ -939,7 +949,7 @@ describe("the question mix", () => {
 
   it("sends every player and spectator views that match GameViewSchema, through every type of round", () => {
     const mix = mixOf(Object.fromEntries(Object.values(QuestionType).map((t) => [t, 1])))
-    const g = game({ mix, mapDetail: "water" })
+    const g = game({ mix, mapDetail: MapDetail.WATER })
     g.join(tokS, playerName("Sam"), T0 + 2, true)
     let now = T0
     const check = () => {
@@ -950,7 +960,7 @@ describe("the question mix", () => {
     }
     check()
     g.start(tokA, now)
-    while (g.phase !== "results") {
+    while (g.phase !== Phase.RESULTS) {
       const { toleranceKm } = g.view(tokA, now).round!.question.answer
       const layer = new PaintLayer(resolutionForTolerance(toleranceKm))
       layer.stamp({ lat: 10, lon: 10 }, toleranceKm, 1)
@@ -974,8 +984,8 @@ describe("the question mix", () => {
       questions(game({ mix: mixOf({ [QuestionType.FEATURE]: 2 }), mapDetail }, { catalogue: [lake, island] })).map(
         (q) => q.feature
       )
-    expect(asked("minimal")).toEqual([FeatureType.ISLAND])
-    expect(asked("water").sort()).toEqual([FeatureType.ISLAND, FeatureType.LAKE])
+    expect(asked(MapDetail.MINIMAL)).toEqual([FeatureType.ISLAND])
+    expect(asked(MapDetail.WATER).sort()).toEqual([FeatureType.ISLAND, FeatureType.LAKE])
   })
 
   it("scores an island against its outline, as a country", () => {
@@ -1139,14 +1149,14 @@ describe("hints", () => {
     g.join(tokA, playerName("Alice"), T0)
     g.join(tokB, playerName("Bob"), T0)
     expect(g.view(tokA, T0).you.hintsLeft).toBe(2)
-    expect(g.hint(tokA, "latitude")).toEqual({ ok: false, error: "no round to hint" })
+    expect(g.hint(tokA, HintAxis.LATITUDE)).toEqual({ ok: false, error: "no round to hint" })
     g.start(tokA, T0)
     const q = currentQuestion(g, tokA, T0)
-    expect(g.hint(tokA, "latitude")).toEqual({ ok: true, changed: true })
-    expect(g.hint(tokA, "longitude")).toEqual({ ok: false, error: "one hint per round" })
-    expect(g.hint(tokB, "latitude").ok).toBe(true)
+    expect(g.hint(tokA, HintAxis.LATITUDE)).toEqual({ ok: true, changed: true })
+    expect(g.hint(tokA, HintAxis.LONGITUDE)).toEqual({ ok: false, error: "one hint per round" })
+    expect(g.hint(tokB, HintAxis.LATITUDE).ok).toBe(true)
     const band = g.view(tokA, T0).you.hint!
-    expect(band.axis).toBe("latitude")
+    expect(band.axis).toBe(HintAxis.LATITUDE)
     expect(inHintBand(band, q.answer.at)).toBe(true)
     expect(g.view(tokB, T0).you.hint).toEqual(band)
     expect(g.view(tokA, T0).you.hintsLeft).toBe(1)
@@ -1154,14 +1164,14 @@ describe("hints", () => {
     g.tick(T0 + 60_000 + ROUND_GRACE_MS)
     const reveal = g.view(tokA, T0 + 61_000)
     expect(reveal.you.hint).toEqual(band)
-    expect(reveal.reveal!.results.map((r) => r.hint)).toEqual(["latitude", "latitude"])
+    expect(reveal.reveal!.results.map((r) => r.hint)).toEqual([HintAxis.LATITUDE, HintAxis.LATITUDE])
 
     g.next(tokA, T0 + 62_000)
     expect(g.view(tokA, T0 + 62_000).you.hint).toBeUndefined()
-    expect(g.hint(tokA, "longitude").ok).toBe(true)
+    expect(g.hint(tokA, HintAxis.LONGITUDE).ok).toBe(true)
     g.tick(T0 + 122_000 + ROUND_GRACE_MS)
     g.next(tokA, T0 + 124_000)
-    expect(g.hint(tokA, "latitude")).toEqual({ ok: false, error: "no hints left" })
+    expect(g.hint(tokA, HintAxis.LATITUDE)).toEqual({ ok: false, error: "no hints left" })
     expect(g.view(tokA, T0 + 124_000).you.hintsLeft).toBe(0)
   })
 
@@ -1173,6 +1183,6 @@ describe("hints", () => {
     g.configure(tokA, { hints: 3 })
     expect(g.view(tokW, T0).you.hintsLeft).toBe(0)
     g.start(tokA, T0)
-    expect(g.hint(tokW, "latitude")).toEqual({ ok: false, error: "you are not playing this round" })
+    expect(g.hint(tokW, HintAxis.LATITUDE)).toEqual({ ok: false, error: "you are not playing this round" })
   })
 })

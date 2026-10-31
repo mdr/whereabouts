@@ -10,12 +10,19 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import { AnswerType, type Outlines } from "@whereabouts/shared/questions"
 import { CATALOGUE } from "@whereabouts/shared/catalogue"
 import { questionView } from "@whereabouts/shared/game"
-import { REVIEW_VERSION, guessCase, reviewCases, scoreGuess, type ScoreVerdict } from "@whereabouts/shared/score-review"
+import {
+  REVIEW_VERSION,
+  ReviewCaseType,
+  guessCase,
+  reviewCases,
+  scoreGuess,
+  type ScoreVerdict
+} from "@whereabouts/shared/score-review"
 import { colourCss, playerColour } from "@whereabouts/shared/colours"
 import { kernelById } from "@whereabouts/shared/scoring"
 import { MapView, usePaint } from "../ui/MapView"
 import { Card } from "../ui/Card"
-import { Answer, QuestionCard } from "../ui/QuestionCard"
+import { Answer, CardPlace, QuestionCard } from "../ui/QuestionCard"
 import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../ui/Hud"
 import { ScoreCard } from "../ui/Round"
 import { Swatch } from "../ui/PlayerList"
@@ -25,6 +32,7 @@ import pl from "../ui/Players.module.css"
 import s from "./ScoreReview.module.css"
 import { isTyping } from "../keys"
 import { outlines } from "../outlines"
+import { RevealDetail } from "../shown-detail"
 import { LoadingOutlines } from "../ui/LoadingOutlines"
 import { reviewSet, scoreVerdicts, soloKernelId } from "../settings"
 import { scoreReviewTestIds } from "./ScoreReviewTestIds"
@@ -92,7 +100,7 @@ function Review({ outlines }: { outlines: Outlines }) {
   const c = cases[index]!
   const q = c.question
   const a = c.answer
-  const guesses = c.kind === "single" ? [c.guess] : c.guesses
+  const guesses = c.type === ReviewCaseType.SINGLE ? [c.guess] : c.guesses
   const kernel = kernelById(soloKernelId.value)
   const scores = useMemo(() => guesses.map((g) => scoreGuess(a, g.layer, kernel).score), [c, kernel.id])
 
@@ -110,10 +118,10 @@ function Review({ outlines }: { outlines: Outlines }) {
   useEffect(() => {
     paint.reset(a.toleranceKm)
     paint.enabled.value = false
-    paint.gameMap.setDetail("reveal")
+    paint.gameMap.setDetail(RevealDetail.REVEAL)
     if (a.type === AnswerType.AREA) paint.gameMap.showRegionReveal(a.polygons)
     else paint.gameMap.showReveal(a.at)
-    if (c.kind === "single") {
+    if (c.type === ReviewCaseType.SINGLE) {
       paint.restore(c.guess.layer.toRecord())
       paint.showOwn()
       frame(paint.layer.toGeoJSON())
@@ -127,7 +135,7 @@ function Review({ outlines }: { outlines: Outlines }) {
 
   // Not reframed: the map would jump about as the mouse crosses the rows.
   useEffect(() => {
-    if (c.kind === "pair") showPair(hovered ?? pinned)
+    if (c.type === ReviewCaseType.PAIR) showPair(hovered ?? pinned)
   }, [hovered, pinned])
 
   const submit = async () => {
@@ -141,11 +149,11 @@ function Review({ outlines }: { outlines: Outlines }) {
       at: new Date().toISOString()
     }
     let entry: ScoreVerdict
-    if (c.kind === "single") {
+    if (c.type === ReviewCaseType.SINGLE) {
       const target = Number(shouldBe)
       entry = {
         ...base,
-        guess: c.guess.kind,
+        guess: c.guess.type,
         verdict: choice,
         ...(shouldBe.trim() !== "" && Number.isFinite(target) ? { shouldBe: target } : {}),
         case: await guessCase(q, a, c.guess.layer, kernel)
@@ -155,7 +163,7 @@ function Review({ outlines }: { outlines: Outlines }) {
       entry = {
         ...base,
         pair: true,
-        guesses: [first.kind, second.kind],
+        guesses: [first.type, second.type],
         prefer: choice,
         cases: [await guessCase(q, a, first.layer, kernel), await guessCase(q, a, second.layer, kernel)]
       }
@@ -185,16 +193,16 @@ function Review({ outlines }: { outlines: Outlines }) {
     return () => window.removeEventListener("keydown", onKey)
   })
 
-  const options = c.kind === "single" ? FAIRNESS : PREFERENCE
+  const options = c.type === ReviewCaseType.SINGLE ? FAIRNESS : PREFERENCE
   const ownVerdicts = scoreVerdicts.value
   return (
     <Hud reveal>
       <HudTop>
         <HudHeader home round={index + 1} total={cases.length} right={<HeaderNote nowrap>Set {set}</HeaderNote>} />
-        <QuestionCard q={questionView(q)} hud="reveal" credit>
+        <QuestionCard q={questionView(q)} hud={CardPlace.REVEAL} credit>
           <Answer label={q.label} wiki={q.wiki} />
         </QuestionCard>
-        {c.kind === "single" && (
+        {c.type === ReviewCaseType.SINGLE && (
           <ScoreCard
             score={Math.round(scores[0]!)}
             label={a.type === AnswerType.AREA ? "scored on shape and nearness" : `scored with ${kernel.label}`}
@@ -203,8 +211,11 @@ function Review({ outlines }: { outlines: Outlines }) {
         )}
       </HudTop>
       <HudRight>
-        <Card title={c.kind === "single" ? "Is this score fair?" : "Which deserves more?"} class={s.review}>
-          {c.kind === "pair" && (
+        <Card
+          title={c.type === ReviewCaseType.SINGLE ? "Is this score fair?" : "Which deserves more?"}
+          class={s.review}
+        >
+          {c.type === ReviewCaseType.PAIR && (
             <ul class={cx(pl.list, pl.pick)} data-testid={scoreReviewTestIds.pair}>
               {(["A", "B"] as const).map((name, i) => (
                 <li
@@ -237,7 +248,7 @@ function Review({ outlines }: { outlines: Outlines }) {
               </button>
             ))}
           </div>
-          {c.kind === "single" && (
+          {c.type === ReviewCaseType.SINGLE && (
             <label class={s.shouldBe}>
               It should be about
               <input
@@ -260,7 +271,7 @@ function Review({ outlines }: { outlines: Outlines }) {
           <p class={kit.hint} data-testid={scoreReviewTestIds.progress}>
             {judged.size} of {cases.length} judged in this set
             {done ? ": all done." : "."}
-            {c.kind === "pair" && " Point at A or B to see it alone; click to keep it."}
+            {c.type === ReviewCaseType.PAIR && " Point at A or B to see it alone; click to keep it."}
           </p>
           <div class={s.actions}>
             <button

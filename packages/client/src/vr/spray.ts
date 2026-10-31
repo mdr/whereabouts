@@ -27,8 +27,9 @@ import type { Globe } from "./globe"
 import { buildCan, buildEraser, buildPail } from "./models"
 import { SprayParticles } from "./particles"
 import { localToLatLon, raySphere } from "./sphere"
+import { Tool } from "../tool"
 
-export type SprayTool = "paint" | "erase" | "fill"
+export type SprayTool = Tool.PAINT | Tool.ERASE | Tool.FILL
 
 const EARTH_KM = 6371
 /** Half the spray cone's angle: the spot's radius is this much of the can's distance. */
@@ -84,7 +85,7 @@ export class HandTool {
   private readonly theme: Theme
   private stroke: { at: LatLon; t: number } | undefined = undefined
   private lastPulse = 0
-  private toolNow: SprayTool = "paint"
+  private toolNow: SprayTool = Tool.PAINT
 
   constructor(grip: Object3D, ray: Object3D, scene: Object3D, theme: Theme) {
     this.ray = ray
@@ -125,7 +126,7 @@ export class HandTool {
 
   setTool(tool: SprayTool): void {
     this.toolNow = tool
-    this.spot.material.color.set(tool === "erase" ? this.theme.answer : this.theme.brush)
+    this.spot.material.color.set(tool === Tool.ERASE ? this.theme.answer : this.theme.brush)
     this.hold(this.holding)
   }
 
@@ -136,9 +137,9 @@ export class HandTool {
   /** Puts the tool in the hand, or away. */
   hold(on: boolean): void {
     this.holding = on
-    this.can.visible = on && this.toolNow === "paint"
-    this.eraser.visible = on && this.toolNow === "erase"
-    this.pail.visible = on && this.toolNow === "fill"
+    this.can.visible = on && this.toolNow === Tool.PAINT
+    this.eraser.visible = on && this.toolNow === Tool.ERASE
+    this.pail.visible = on && this.toolNow === Tool.FILL
   }
 
   /** Moves the droplets already in the air on; returns the seconds since last time. */
@@ -192,7 +193,7 @@ export class HandTool {
 
   /** Where the eraser's tip touches the globe, if it is the tool held and it does. */
   touching(globe: Globe): Vector3 | undefined {
-    if (this.toolNow !== "erase" || !this.holding || this.busy) return undefined
+    if (this.toolNow !== Tool.ERASE || !this.holding || this.busy) return undefined
     const tip = this.grip.localToWorld(local.copy(TIP))
     return tip.distanceTo(globe.centre) <= globe.radius + TOUCH_M ? tip : undefined
   }
@@ -231,7 +232,7 @@ export class HandTool {
     this.spot.scale.setScalar(spotM)
 
     const spraying = paint.enabled.value && trigger > TRIGGER_DEAD
-    if (this.toolNow === "fill") {
+    if (this.toolNow === Tool.FILL) {
       if (spraying && !this.pulled) {
         const radiusKm = Math.min(MAX_KM, Math.max(MIN_KM, (spotM / globe.radius) * EARTH_KM))
         paint.fillOutside(localToLatLon(globe.group.worldToLocal(local.copy(hit))), radiusKm)
@@ -244,12 +245,12 @@ export class HandTool {
       this.stroke = undefined
       return false
     }
-    if (this.toolNow === "paint")
+    if (this.toolNow === Tool.PAINT)
       this.particles.spray(dt, 700 * trigger, origin, hit, spotM, this.colour ?? this.theme.ramp[2])
     else this.particles.crumbs(dt, 90 * trigger, hit, normal, spotM)
 
     const thin = Math.min(1, FULL_STRENGTH_M / d)
-    this.stamp(now, globe, hit, spotM, (this.toolNow === "erase" ? -1 : 1) * 0.3 * trigger * thin, paint)
+    this.stamp(now, globe, hit, spotM, (this.toolNow === Tool.ERASE ? -1 : 1) * 0.3 * trigger * thin, paint)
     this.pulse(now, 0.1 + 0.5 * trigger * thin, gamepad)
     return true
   }

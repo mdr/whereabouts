@@ -2,18 +2,20 @@ import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import type { Vr } from "../vr"
 import type { VrView } from "../vr/view"
-import {
-  VR_LOAD_STAGES,
-  VrCodeMissing,
-  loadVr,
-  loadedVr,
-  vrLoadStage,
-  vrSupported,
-  type VrLoadStage
-} from "../vr-support"
+import { VR_LOAD_STAGES, VrCodeMissing, loadVr, loadedVr, vrLoadStage, vrSupported, VrLoadStage } from "../vr-support"
 import { Icon } from "./icons"
 import { vrButtonTestIds } from "./VrButtonTestIds"
 import s from "./VrButton.module.css"
+
+/** Where a press of the VR button has got: the overlay it shows until the headset opens. */
+enum LaunchStage {
+  LOADING = "LOADING",
+  /** Loaded, but too late for the press: asks for another. */
+  READY = "READY",
+  FAILED = "FAILED",
+  /** Only a reload can fetch the VR code. */
+  CODE_MISSING = "CODE_MISSING"
+}
 
 /** How many screens now keep the headset on. */
 let showing = 0
@@ -65,7 +67,7 @@ export function useVrHold(): void {
  * and loading can take longer: then a second, larger button asks again.
  */
 export function VrButton({ view }: { view: VrView }) {
-  const [stage, setStage] = useState<"loading" | "ready" | "failed" | "codeMissing" | undefined>(undefined)
+  const [stage, setStage] = useState<LaunchStage | undefined>(undefined)
   const latest = useRef(view)
   latest.current = view
 
@@ -77,15 +79,15 @@ export function VrButton({ view }: { view: VrView }) {
   }
   const press = () => {
     if (vr) return enter(vr)
-    setStage("loading")
+    setStage(LaunchStage.LOADING)
     loadVr().then(
       (v) => {
         if (navigator.userActivation.isActive) enter(v)
-        else setStage("ready")
+        else setStage(LaunchStage.READY)
       },
       (err: unknown) => {
         console.warn("could not load VR", err)
-        setStage(err instanceof VrCodeMissing ? "codeMissing" : "failed")
+        setStage(err instanceof VrCodeMissing ? LaunchStage.CODE_MISSING : LaunchStage.FAILED)
       }
     )
   }
@@ -104,12 +106,12 @@ export function VrButton({ view }: { view: VrView }) {
         // Into <body>: the toolbar is transformed, and would be the box a fixed overlay fills.
         createPortal(
           <div class={s.launch} data-testid={vrButtonTestIds.loading}>
-            {stage === "loading" ? (
+            {stage === LaunchStage.LOADING ? (
               <VrLoading stage={vrLoadStage.value} />
-            ) : stage === "failed" || stage === "codeMissing" ? (
+            ) : stage === LaunchStage.FAILED || stage === LaunchStage.CODE_MISSING ? (
               <div class={s.ready} role="alert" data-testid={vrButtonTestIds.failed}>
                 <p>Couldn't start VR. Check your connection.</p>
-                {stage === "failed" ? (
+                {stage === LaunchStage.FAILED ? (
                   <button class="primary" onClick={press} data-testid={vrButtonTestIds.retryButton}>
                     Try again
                   </button>
@@ -140,9 +142,9 @@ export function VrButton({ view }: { view: VrView }) {
 }
 
 const STAGE_TEXT: Record<VrLoadStage, string> = {
-  code: "Fetching the paint and the globe",
-  headset: "Setting up the headset",
-  land: "Drawing the land"
+  [VrLoadStage.CODE]: "Fetching the paint and the globe",
+  [VrLoadStage.HEADSET]: "Setting up the headset",
+  [VrLoadStage.LAND]: "Drawing the land"
 }
 
 /** A globe turning while the VR code loads, filling with paint stage by stage. */

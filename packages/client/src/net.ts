@@ -19,15 +19,22 @@ import {
   type RoundReveal,
   type StateMessage,
   type Ticket,
-  viewFrom
+  viewFrom,
+  Phase
 } from "@whereabouts/shared/protocol"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
-import { isCloseReason } from "@whereabouts/shared/close-reason"
+import { CloseReason, isCloseReason } from "@whereabouts/shared/close-reason"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { PlayerId, PlayerName } from "@whereabouts/shared/ids"
 import { reloadForNewBuild } from "./stale-build"
 
-export type Status = "idle" | "connecting" | "connected" | "disconnected" | "rejected"
+export enum ConnectionStatus {
+  IDLE = "IDLE",
+  CONNECTING = "CONNECTING",
+  CONNECTED = "CONNECTED",
+  DISCONNECTED = "DISCONNECTED",
+  REJECTED = "REJECTED"
+}
 
 function wsUrl(): string {
   const proto = location.protocol === "https:" ? "wss:" : "ws:"
@@ -56,7 +63,7 @@ const wsClient: ClientFactory = (url, options) => new WSClient<Topic>(url, optio
 
 export class Connection {
   readonly view = signal<GameView | undefined>(undefined)
-  readonly status = signal<Status>("idle")
+  readonly status = signal<ConnectionStatus>(ConnectionStatus.IDLE)
   readonly lastError = signal<string | undefined>(undefined)
   /** serverTime - Date.now(), so deadlines can be shown on the local clock. */
   readonly clockOffset = signal(0)
@@ -78,7 +85,7 @@ export class Connection {
 
   connect(ticket: Omit<Ticket, "v">): void {
     this.disconnect()
-    this.status.value = "connecting"
+    this.status.value = ConnectionStatus.CONNECTING
     this.lastError.value = undefined
     this.rejection.value = undefined
     // Once in a game, coming back means joining it, not hosting another.
@@ -92,14 +99,15 @@ export class Connection {
       // The server sends again whatever a fresh connection needs.
       this.reveal = undefined
       this.paint = undefined
-      this.status.value = "connected"
+      this.status.value = ConnectionStatus.CONNECTED
     })
     client.on("client:disconnect", () => {
-      if (this.status.value !== "rejected") this.status.value = "disconnected"
+      if (this.status.value !== ConnectionStatus.REJECTED) this.status.value = ConnectionStatus.DISCONNECTED
     })
     // Still trying to get in for the first time: not yet a failure.
     client.on("client:reconnecting", () => {
-      if (!this.view.value && this.status.value !== "rejected") this.status.value = "connecting"
+      if (!this.view.value && this.status.value !== ConnectionStatus.REJECTED)
+        this.status.value = ConnectionStatus.CONNECTING
     })
     client.on("client:kicked", ({ code, reason }) => {
       // Rivalis's KickReason.RATE_LIMITED: too many connections from this
@@ -113,12 +121,12 @@ export class Connection {
           }, 1000)
         return
       }
-      if (reason === "outdated" && reloadForNewBuild()) return
-      this.status.value = "rejected"
+      if (isCloseReason(reason) && reason === CloseReason.OUTDATED && reloadForNewBuild()) return
+      this.status.value = ConnectionStatus.REJECTED
       this.rejection.value = describeDisconnect(code, reason)
     })
     client.on("client:reconnect_failed", () => {
-      this.status.value = "rejected"
+      this.status.value = ConnectionStatus.REJECTED
       this.rejection.value ??= describeDisconnect(0, "reconnect_failed")
     })
     client.on("client:error", () => {
@@ -133,7 +141,7 @@ export class Connection {
     client.on("state", (payload) => {
       const state = JSON.parse(this.decoder.decode(payload)) as StateMessage
       if (!state.reveal) this.reveal = undefined
-      if (state.phase !== "guessing") this.paint = undefined
+      if (state.phase !== Phase.GUESSING) this.paint = undefined
       const view = viewFrom(state, this.reveal, this.paint)
       this.clockOffset.value = view.serverTime - Date.now()
       this.view.value = view
@@ -151,7 +159,7 @@ export class Connection {
   disconnect(): void {
     this.client?.disconnect()
     this.client = undefined
-    if (this.status.value !== "rejected") this.status.value = "idle"
+    if (this.status.value !== ConnectionStatus.REJECTED) this.status.value = ConnectionStatus.IDLE
   }
 
   private send<K extends ClientTopic>(...[topic, body]: ClientSend<K>): void {
@@ -243,41 +251,41 @@ export function describeDisconnect(code: number, reason: string | undefined): Re
   }
   if (!isCloseReason(r)) return { title: "Disconnected", detail: r || `The connection closed (code ${code}).` }
   switch (r) {
-    case "noSuchGame":
+    case CloseReason.NO_SUCH_GAME:
       return {
         title: "No game with that code",
         detail:
           "Check the code with your host. If the game finished or everyone left, you can host a new one under the same code.",
         missing: true
       }
-    case "outdated":
+    case CloseReason.OUTDATED:
       return { title: "A new version is out", detail: "Reload the page to carry on." }
-    case "unavailable":
+    case CloseReason.UNAVAILABLE:
       return { title: "Couldn't start a game", detail: "The server had no free game code. Try again in a moment." }
-    case "removed":
+    case CloseReason.REMOVED:
       return {
         title: "You were removed from the game",
         detail: "The host took you out of this game. You can rejoin with the code as a new player, or start your own.",
         removed: true
       }
-    case "finished":
+    case CloseReason.FINISHED:
       return { title: "That game has finished", detail: "The final results are in. Ask the host to start a new game." }
-    case "full":
+    case CloseReason.FULL:
       return {
         title: "That game is full",
         detail: `It already has ${MAX_PLAYERS} players and ${MAX_SPECTATORS} people watching, the most a game can hold. Ask the host to remove someone, or start your own game.`
       }
-    case "noRoomToWatch":
+    case CloseReason.NO_ROOM_TO_WATCH:
       return {
         title: "No room to watch",
         detail: `${MAX_SPECTATORS} people are already watching that game, the most it allows. You can still join it as a player.`
       }
-    case "replaced":
+    case CloseReason.REPLACED:
       return {
         title: "You joined from another tab",
         detail: "This game is now open in your newer tab, so this one has been signed out."
       }
-    case "left":
+    case CloseReason.LEFT:
       return { title: "You left the game", detail: "Rejoin with the code, or start your own game." }
   }
 }

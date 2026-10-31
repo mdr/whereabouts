@@ -11,7 +11,7 @@ import { PaintLayer } from "../src/paint.ts"
 import { KERNELS, buildDistribution, scoreDistribution } from "../src/scoring.ts"
 import { regionFit, scoreArea } from "../src/regions.ts"
 import { areaOf, questionById } from "./catalogue.mjs"
-import { decodeCase } from "../src/scoring-case.ts"
+import { CaseQuestionType, decodeCase } from "../src/scoring-case.ts"
 
 const text = readFileSync(process.argv[2] ?? 0, "utf8")
 const c = await decodeCase(text)
@@ -20,7 +20,7 @@ const layer = PaintLayer.fromRecord(c.res, c.cells)
 const dist = buildDistribution(layer.toCells(), c.floor)
 const n = (x, places = 1) => x.toFixed(places)
 
-console.log(`${q.kind} ${q.id}: ${q.label}${q.flag ? ` (flag ${q.flag})` : ""}`)
+console.log(`${q.type} ${q.id}: ${q.label}${q.flag ? ` (flag ${q.flag})` : ""}`)
 console.log(`answer ${q.answer.lat}, ${q.answer.lon}; tolerance ${q.toleranceKm} km; floor ${c.floor}`)
 console.log(
   `paint: ${layer.size} cells, finest res ${c.res}, ${layer
@@ -30,7 +30,7 @@ console.log(
 )
 console.log(`copied with: ${c.score} under ${c.kernel}`, c.parts)
 
-if (q.kind === "region") {
+if (q.type === CaseQuestionType.REGION) {
   const question = questionById(q.id)
   if (!question) throw new Error(`no question with id ${q.id} in catalogue.json`)
   const region = areaOf(question)

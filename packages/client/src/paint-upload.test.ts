@@ -5,9 +5,10 @@ import { signal } from "@preact/signals"
 import { h3Res } from "@whereabouts/shared/h3"
 import { PaintLayer } from "@whereabouts/shared/paint"
 import type { GameView } from "@whereabouts/shared/protocol"
-import type { Status } from "./net"
+import { ConnectionStatus } from "./net"
 import { usePaintUpload } from "./paint-upload"
 import { makeView } from "./test-view"
+import { Phase } from "@whereabouts/shared/protocol"
 
 const CELL = "85283473fffffff"
 
@@ -21,7 +22,7 @@ function run(change: () => unknown) {
 }
 const wait = (ms: number) => run(() => vi.advanceTimersByTime(ms))
 
-const guessing = (you: Partial<GameView["you"]> = {}) => makeView({ phase: "guessing", you })
+const guessing = (you: Partial<GameView["you"]> = {}) => makeView({ phase: Phase.GUESSING, you })
 
 interface Props {
   view: GameView
@@ -32,7 +33,7 @@ function setup({
   view = guessing(),
   paint = makePaint()
 }: { view?: GameView; paint?: ReturnType<typeof makePaint> } = {}) {
-  const conn = { status: signal<Status>("connected"), sendPaint: vi.fn(), lock: vi.fn() }
+  const conn = { status: signal<ConnectionStatus>(ConnectionStatus.CONNECTED), sendPaint: vi.fn(), lock: vi.fn() }
   let props: Props = { view, timeUp: false }
   const hook = renderHook((p: Props) => usePaintUpload(conn, paint, p.view, p.timeUp), { initialProps: props })
   const update = (over: Partial<Props>) => {
@@ -113,8 +114,8 @@ describe("usePaintUpload", () => {
 
   it("uploads again after a reconnect, once the server's next state arrives", () => {
     const { conn, update } = setup()
-    run(() => (conn.status.value = "disconnected"))
-    run(() => (conn.status.value = "connected"))
+    run(() => (conn.status.value = ConnectionStatus.DISCONNECTED))
+    run(() => (conn.status.value = ConnectionStatus.CONNECTED))
     expect(conn.sendPaint).not.toHaveBeenCalled()
     update({ view: guessing() })
     expect(conn.sendPaint).toHaveBeenCalledTimes(1)
@@ -126,8 +127,8 @@ describe("usePaintUpload", () => {
     const { conn, update } = setup()
     update({ timeUp: true })
     conn.sendPaint.mockClear()
-    run(() => (conn.status.value = "disconnected"))
-    run(() => (conn.status.value = "connected"))
+    run(() => (conn.status.value = ConnectionStatus.DISCONNECTED))
+    run(() => (conn.status.value = ConnectionStatus.CONNECTED))
     update({ view: guessing() })
     expect(conn.sendPaint).not.toHaveBeenCalled()
   })

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
+import { KernelId } from "@whereabouts/shared/scoring"
 import { configFromEnv } from "./config.ts"
 
 describe("configFromEnv", () => {
@@ -9,12 +10,12 @@ describe("configFromEnv", () => {
 
   it("reads overrides and ignores junk", () => {
     const c = configFromEnv(
-      { PORT: "3000", HOST: "127.0.0.1", ROUNDS: "3", ROUND_MS: "15000", KERNEL: "single" },
+      { PORT: "3000", HOST: "127.0.0.1", ROUNDS: "3", ROUND_MS: "15000", KERNEL: KernelId.SINGLE },
       "/srv/client"
     )
     expect(c.port).toBe(3000)
     expect(c.host).toBe("127.0.0.1")
-    expect(c.game).toEqual({ rounds: 3, roundMs: 15000, kernelId: "single" })
+    expect(c.game).toEqual({ rounds: 3, roundMs: 15000, kernelId: KernelId.SINGLE })
   })
 
   it("rejects non-positive and fractional numbers", () => {
@@ -23,8 +24,12 @@ describe("configFromEnv", () => {
     expect(c.port).toBe(8787)
   })
 
+  it("takes a kernel by its old name too", () => {
+    expect(configFromEnv({ KERNEL: "multi-equal" }, "/x").game.kernelId).toBe(KernelId.MULTI_EQUAL)
+  })
+
   it("refuses an unknown kernel", () => {
-    expect(() => configFromEnv({ KERNEL: "singel" }, "/x")).toThrow(/KERNEL must be one of single/)
+    expect(() => configFromEnv({ KERNEL: "singel" }, "/x")).toThrow(/KERNEL must be one of SINGLE/)
   })
 
   it("empty STATIC_DIR disables static serving", () => {

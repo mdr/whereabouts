@@ -9,6 +9,7 @@ import { greatCircleDistance, type LatLon } from "@whereabouts/shared/geo"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { MapDetail } from "@whereabouts/shared/protocol"
 import { GameMap } from "../map"
+import { RevealDetail } from "../shown-detail"
 import type { Theme } from "../themes"
 import { latLonToLocal } from "./sphere"
 
@@ -85,7 +86,7 @@ export class DetailPatch {
       if (typeof detail === "string") {
         this.gameMap.setDetail(detail)
       } else {
-        this.gameMap.setDetail("reveal")
+        this.gameMap.setDetail(RevealDetail.REVEAL)
         this.gameMap.setStateReveal(detail.stateRound)
       }
       this.shown = false

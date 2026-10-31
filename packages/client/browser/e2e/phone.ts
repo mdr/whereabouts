@@ -6,6 +6,7 @@
 import { devices } from "playwright-core"
 import type { Screen } from "../pages/Screen.ts"
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
+import { Tool } from "../../src/tool.ts"
 import { QuestionType } from "@whereabouts/shared/questions"
 
 const out = outDir()
@@ -46,7 +47,7 @@ const aliceRoundPage = await aliceLobbyPage.startGame()
 const bobRoundPage = await bobLobbyPage.waitForGameToStart()
 await fits(bobRoundPage, "ingame")
 checks.check(await bobRoundPage.doneButtonIsUsable(), "ingame: the Done button is usable")
-checks.check(await bobRoundPage.paintTools.toolIsUsable("pan"), "ingame: the Pan tool is usable")
+checks.check(await bobRoundPage.paintTools.toolIsUsable(Tool.PAN), "ingame: the Pan tool is usable")
 checks.check(await bobRoundPage.map.attributionIsUsable(), "ingame: the map attribution button is usable")
 checks.check(await bobRoundPage.map.attributionClearsToolbar(), "ingame: the attribution button clears the toolbar")
 checks.check(await bobRoundPage.hud.questionFoldIsUsable(), "ingame: the question's fold button is usable")

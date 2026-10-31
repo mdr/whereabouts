@@ -23,16 +23,9 @@ import type { BordersData } from "@whereabouts/shared/borders"
 import type { LandMaskData } from "@whereabouts/shared/land"
 import { headsetPassthrough } from "../settings"
 import { THEME } from "../themes"
-import {
-  ANSWER_RADIUS,
-  DETAIL_RADIUS,
-  Globe,
-  HINT_RADIUS,
-  OUTLINE_RADIUS,
-  PAINT_RADIUS,
-  PIN_RADIUS,
-  type Hand
-} from "./globe"
+import { ANSWER_RADIUS, DETAIL_RADIUS, Globe, HINT_RADIUS, OUTLINE_RADIUS, PAINT_RADIUS, PIN_RADIUS } from "./globe"
+import { HANDS, Hand, XR_HAND } from "./hand"
+import { VrLoadStage } from "../vr-support"
 import { FlagPins, type Pointer } from "./flag-pins"
 import { AnswerMarker } from "./answer"
 import { DetailPatch } from "./detail-patch"
@@ -46,17 +39,20 @@ import { HintMarker } from "./hint"
 import { reflect, reflections } from "./models"
 import { timerFrames } from "./frames"
 import { HandTool, TRIGGER_DEAD, type SprayTool } from "./spray"
+import { Tool } from "../tool"
 import { Moon } from "./moon"
 import { STARS_M, Space } from "./space"
 import { SCORES_M, ScoreBoard } from "./scores"
 import { ResultsBoard } from "./board"
-import { WristMenu, type WristButton } from "./wrist"
+import { WristMenu } from "./wrist"
+import type { WristButton } from "./wrist-button"
 import { Menu, PANEL_M } from "./menu"
 import { colouredPaint, framing } from "./reveal"
 import { PanelClearance } from "./clearance"
 import { wristActions } from "./wrist-actions"
 import { VrProbe } from "./probe"
-import type { VrRound, VrView } from "./view"
+import { VrViewType, type VrRound, type VrView } from "./view"
+import { MapDetail } from "@whereabouts/shared/protocol"
 
 /**
  * IWSDK updates and draws its scene every frame from the start, on the page
@@ -75,7 +71,6 @@ function idleOffHeadset(world: World): void {
   }
 }
 
-const HANDS = ["left", "right"] as const
 /** Rebuilding the paint is the costly part of a stroke, so at most this often. */
 const PAINT_REDRAW_S = 0.1
 /** How long a new session may take to open, when switching to or from passthrough. */
@@ -125,8 +120,8 @@ export class Vr {
   private readonly tools: Record<Hand, HandTool>
   private readonly menu: Menu
 
-  static async create(onStage: (stage: "headset" | "land") => void): Promise<Vr> {
-    onStage("headset")
+  static async create(onStage: (stage: VrLoadStage) => void): Promise<Vr> {
+    onStage(VrLoadStage.HEADSET)
     // WebGL needs somewhere to put its canvas; in the headset nobody sees the page.
     const host = document.createElement("div")
     host.style.cssText = "position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none"
@@ -147,7 +142,7 @@ export class Vr {
       })
       idleOffHeadset(world)
       vr = new Vr(world)
-      onStage("land")
+      onStage(VrLoadStage.LAND)
       // Drawn now, while the page says it is loading, so the pause never comes in the headset.
       const [land, borders] = await Promise.all([
         fetchBuildJson<LandMaskData>(landUrl),
@@ -202,11 +197,9 @@ export class Vr {
     world.scene.add(this.flagPins.label)
 
     const { gripSpaces, raySpaces } = world.player
-    this.tools = {
-      left: new HandTool(gripSpaces.left, raySpaces.left, world.scene, THEME),
-      right: new HandTool(gripSpaces.right, raySpaces.right, world.scene, THEME)
-    }
-    this.tools.left.setTool("erase")
+    const tool = (h: Hand) => new HandTool(gripSpaces[XR_HAND[h]], raySpaces[XR_HAND[h]], world.scene, THEME)
+    this.tools = { [Hand.LEFT]: tool(Hand.LEFT), [Hand.RIGHT]: tool(Hand.RIGHT) }
+    this.tools[Hand.LEFT].setTool(Tool.ERASE)
     const room = reflections(world.renderer)
     for (const o of [this.globe.stand, gripSpaces.left, gripSpaces.right]) reflect(o, room)
 
@@ -307,7 +300,7 @@ export class Vr {
   show(view: VrView): void {
     this.endStroke()
     this.picture.release(this.menu.object3D)
-    const leavingAnswer = this.view?.kind === "reveal" && view.kind !== "reveal"
+    const leavingAnswer = this.view?.type === VrViewType.REVEAL && view.type !== VrViewType.REVEAL
     this.menu.show(view)
     this.view = view
     const round = this.round
@@ -317,8 +310,8 @@ export class Vr {
       this.pictureKey = key
       this.picture.show(picture)
     }
-    this.answer.show(view.kind === "reveal" ? view.reveal.answer : undefined)
-    if (view.kind === "reveal" && this.placed) {
+    this.answer.show(view.type === VrViewType.REVEAL ? view.reveal.answer : undefined)
+    if (view.type === VrViewType.REVEAL && this.placed) {
       const { at, reach } = framing(view.reveal, view.round)
       this.globe.turnToward(at, reach, this.world.player.head.getWorldPosition(new Vector3()))
     } else if (leavingAnswer && this.placed) this.globe.zoomOut()
@@ -338,27 +331,31 @@ export class Vr {
   refresh(view: VrView): void {
     this.view = view
     const round = this.round
-    if (round) this.detail.setDetail(view.kind === "reveal" ? { stateRound: view.reveal.stateRound } : round.detail)
+    if (round)
+      this.detail.setDetail(view.type === VrViewType.REVEAL ? { stateRound: view.reveal.stateRound } : round.detail)
     this.hint.show(round?.hint)
     this.detail.setHint(round?.hint)
     if (round) this.wrist.setState(round.water, round.hint && describeHint(round.hint), round.hintsLeft)
     for (const h of HANDS) this.tools[h].setColour(round?.colour)
     // As the page's map: natural colour on the reveal, and while painting on the maps that show terrain.
     this.globe.showColour(
-      view.kind === "reveal" || (view.kind === "paint" && ["physical", "political"].includes(view.round.detail))
+      view.type === VrViewType.REVEAL ||
+        (view.type === VrViewType.PAINT && [MapDetail.PHYSICAL, MapDetail.POLITICAL].includes(view.round.detail))
     )
-    this.globe.showBorders(view.kind === "reveal" || (view.kind === "paint" && view.round.detail === "political"))
+    this.globe.showBorders(
+      view.type === VrViewType.REVEAL || (view.type === VrViewType.PAINT && view.round.detail === MapDetail.POLITICAL)
+    )
     this.scores.show(
-      view.kind === "reveal" ? view.reveal.table : "summary" in view ? view.summary.table : view.round.table
+      view.type === VrViewType.REVEAL ? view.reveal.table : "summary" in view ? view.summary.table : view.round.table
     )
     // Players' colours tell them apart, so they tell whose paint is shown.
-    const paintsKey = view.kind === "reveal" ? (view.reveal.paints?.map((p) => p.colour).join() ?? "own") : ""
+    const paintsKey = view.type === VrViewType.REVEAL ? (view.reveal.paints?.map((p) => p.colour).join() ?? "own") : ""
     if (paintsKey !== this.paintsKey) {
       this.paintsKey = paintsKey
       this.paintDirty = true
     }
     this.board.show("summary" in view ? view.summary.board : undefined)
-    const flags = view.kind === "reveal" ? view.reveal.flags : undefined
+    const flags = view.type === VrViewType.REVEAL ? view.reveal.flags : undefined
     this.flagPins.show(flags?.on ? flags.pins : undefined)
     this.menu.refresh(view)
   }
@@ -370,7 +367,7 @@ export class Vr {
   /** The round, while this player may paint it. */
   private get painting(): VrRound | undefined {
     const round = this.round
-    return this.view?.kind === "paint" && round?.playing && round.paint.enabled.value ? round : undefined
+    return this.view?.type === VrViewType.PAINT && round?.playing && round.paint.enabled.value ? round : undefined
   }
 
   /**
@@ -381,7 +378,7 @@ export class Vr {
    */
   private showControllers(on: boolean): void {
     for (const h of HANDS) {
-      const model = this.world.input.xr.visualAdapters.controller[h].visual?.model
+      const model = this.world.input.xr.visualAdapters.controller[XR_HAND[h]].visual?.model
       if (model) for (const part of model.children) part.visible = on
     }
   }
@@ -437,17 +434,22 @@ export class Vr {
     const grips: Partial<Record<Hand, Vector3>> = {}
     const stick = { x: 0, y: 0 }
     for (const h of HANDS) {
-      const pad = pads[h]
+      const pad = pads[XR_HAND[h]]
       this.tools[h].busy = false
       if (!pad) continue
-      const grip = player.gripSpaces[h].getWorldPosition(new Vector3())
+      const grip = player.gripSpaces[XR_HAND[h]].getWorldPosition(new Vector3())
       const squeezed = pad.getButtonPressed(InputComponent.Squeeze)
       this.tools[h].busy = squeezed
       if (pad.getButtonDown(InputComponent.Squeeze) && !this.picture.heldBy) {
-        const ray = player.raySpaces[h]
+        const ray = player.raySpaces[XR_HAND[h]]
         const origin = ray.getWorldPosition(new Vector3())
         if (this.picture.reaches(grip, origin, ray.getWorldDirection(new Vector3()).negate()))
-          this.picture.grab(h, this.world.scene, player.gripSpaces[h], player.head.getWorldPosition(new Vector3()))
+          this.picture.grab(
+            h,
+            this.world.scene,
+            player.gripSpaces[XR_HAND[h]],
+            player.head.getWorldPosition(new Vector3())
+          )
       }
       if (this.picture.heldBy === h && !squeezed) this.picture.release(this.menu.object3D)
       if (squeezed && this.picture.heldBy !== h) grips[h] = grip
@@ -462,16 +464,16 @@ export class Vr {
     this.answer.update(this.globe.scale)
     this.space.update(head)
     this.moon.update(dt, this.globe.centre, this.globe.radius)
-    const pointing = this.view.kind === "reveal" && this.flagPins.shown > 0
+    const pointing = this.view.type === VrViewType.REVEAL && this.flagPins.shown > 0
     const pointers: Pointer[] = HANDS.map((h) => ({ ...this.tools[h].pointer(), globe: this.tools[h].aim(this.globe) }))
     this.flagPins.update(this.globe.scale, pointing ? pointers : [], head)
     for (const h of HANDS) this.tools[h].showBeam(pointing ? this.globe : undefined)
-    this.wrist.update(this.painting !== undefined, player.gripSpaces.left, head)
+    this.wrist.update(this.painting !== undefined, player.gripSpaces[XR_HAND[Hand.LEFT]], head)
     for (const h of HANDS) this.tools[h].hold(this.painting !== undefined)
 
     const round = this.round
     if (round && this.paintDirty && now - this.lastPaintDraw >= PAINT_REDRAW_S) {
-      const paints = this.view.kind === "reveal" ? this.view.reveal.paints : undefined
+      const paints = this.view.type === VrViewType.REVEAL ? this.view.reveal.paints : undefined
       const paint = paints ? colouredPaint(paints) : round.paint.layer.toGeoJSON()
       this.globe.showPaint(paintGeometry(paint, THEME, PAINT_RADIUS, paints ? undefined : round.colour))
       this.shownPaintCells = paint.features.length
@@ -489,21 +491,21 @@ export class Vr {
 
     // A steps through the right hand's tools, X the left's: Fill too on a country round.
     const fillable = round.paint.fillable.value
-    const order: SprayTool[] = fillable ? ["paint", "erase", "fill"] : ["paint", "erase"]
+    const order: SprayTool[] = fillable ? [Tool.PAINT, Tool.ERASE, Tool.FILL] : [Tool.PAINT, Tool.ERASE]
     for (const [h, button] of [
-      ["right", InputComponent.A_Button],
-      ["left", InputComponent.X_Button]
+      [Hand.RIGHT, InputComponent.A_Button],
+      [Hand.LEFT, InputComponent.X_Button]
     ] as const) {
       const tool = this.tools[h]
-      if (!fillable && tool.tool === "fill") tool.setTool(h === "left" ? "erase" : "paint")
-      if (pads[h]?.getButtonDown(button)) tool.setTool(order[(order.indexOf(tool.tool) + 1) % order.length]!)
+      if (!fillable && tool.tool === Tool.FILL) tool.setTool(h === Hand.LEFT ? Tool.ERASE : Tool.PAINT)
+      if (pads[XR_HAND[h]]?.getButtonDown(button)) tool.setTool(order[(order.indexOf(tool.tool) + 1) % order.length]!)
     }
 
     // The trigger also presses the menu's buttons; pointing at it, it sprays nothing.
     const onMenu = this.menu.hovered || this.wrist.hovered
     // The left hand is turned to show the wrist menu, not to erase.
     const triggers = HANDS.map((h) =>
-      h === "left" && this.wrist.open ? 0 : (pads[h]?.getButtonValue(InputComponent.Trigger) ?? 0)
+      h === Hand.LEFT && this.wrist.open ? 0 : (pads[XR_HAND[h]]?.getButtonValue(InputComponent.Trigger) ?? 0)
     )
     const working = onMenu
       ? undefined
@@ -511,19 +513,19 @@ export class Vr {
           (h, i) =>
             this.tools[h].touching(this.globe) !== undefined ||
             (!this.tools[h].busy &&
-              this.tools[h].tool !== "fill" &&
+              this.tools[h].tool !== Tool.FILL &&
               triggers[i]! > TRIGGER_DEAD &&
               this.tools[h].aim(this.globe) !== undefined)
         )
     const workingTool = working && this.tools[working].tool
-    if (workingTool && workingTool !== "fill" && !this.stroking) {
+    if (workingTool && workingTool !== Tool.FILL && !this.stroking) {
       // Both hands make one undo step; the first sets the stroke's sound.
       round.paint.beginStroke(workingTool)
       this.stroking = true
     }
     // Every hand updates, even once one has sprayed: each moves its own spot.
     const sprayed = HANDS.map((h, i) =>
-      this.tools[h].update(now, this.globe, triggers[i]!, onMenu, round.paint, pads[h]?.gamepad)
+      this.tools[h].update(now, this.globe, triggers[i]!, onMenu, round.paint, pads[XR_HAND[h]]?.gamepad)
     )
     // Sooner than paint.version, which waits a little for an animation frame.
     if (sprayed.includes(true)) this.paintDirty = true

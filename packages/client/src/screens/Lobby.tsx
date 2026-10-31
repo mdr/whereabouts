@@ -20,7 +20,7 @@ import { navigate } from "../router"
 import { Banner } from "../ui/Banner"
 import { MapDetailPicker, MapDetailSummary } from "../ui/MapDetailPicker"
 import { VrButton, useVrView } from "../ui/VrButton"
-import type { VrView } from "../vr/view"
+import { VrViewType, type VrView } from "../vr/view"
 import { lobbyTestIds, setupSummaryTestIds } from "./LobbyTestIds"
 import { cx } from "../ui/cx"
 import kit from "../ui/kit.module.css"
@@ -46,7 +46,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   const watchers = view.players.filter((p) => p.watching)
   const seatsFull = players.length >= MAX_PLAYERS
   const vrView: VrView = {
-    kind: "lobby",
+    type: VrViewType.LOBBY,
     summary: {
       title: `Game ${view.code}`,
       scoreLine: host ? "Start when everyone's in" : "Waiting for the host to start",

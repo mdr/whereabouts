@@ -27,11 +27,11 @@
   inset: 0 var(--drawer-w, 0px) 0 0;
 }
 /* The paint controller sets these. */
-.map[data-tool="paint"] canvas,
-.map[data-tool="erase"] canvas {
+.map[data-tool="PAINT"] canvas,
+.map[data-tool="ERASE"] canvas {
   cursor: none;
 }
-.map[data-tool="fill"] canvas {
+.map[data-tool="FILL"] canvas {
   cursor: pointer;
 }
 .map[data-panning] canvas {

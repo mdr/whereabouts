@@ -93,7 +93,7 @@ supports, including whether page elements can show inside a session.
 Outside passthrough the headset shows the moon, to the globe's scale, mapped with NASA's Lunar Reconnaissance Orbiter colour map (credit: NASA's Scientific Visualization Studio, [SVS 4720](https://svs.gsfc.nasa.gov/4720), public domain).
 
 Server environment overrides for playtesting: `ROUNDS`, `ROUND_MS`,
-`KERNEL` (`single`, `multi-equal` or `multi-weighted`; the server refuses to start on anything else),
+`KERNEL` (`SINGLE`, `MULTI_EQUAL` or `MULTI_WEIGHTED`; the server refuses to start on anything else),
 `PORT`, `STATIC_DIR`.
 
 ## Deploy

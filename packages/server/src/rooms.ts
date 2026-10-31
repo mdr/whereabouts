@@ -25,11 +25,12 @@ import {
   stateMessage,
   type GameConfig,
   type PaintSubmission,
-  type RoundReveal
+  type RoundReveal,
+  Phase
 } from "@whereabouts/shared/protocol"
 import { Game, generateCode, type CommandResult, type QuestionBank } from "@whereabouts/shared/game"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
-import type { CloseReason } from "@whereabouts/shared/close-reason"
+import { CloseReason } from "@whereabouts/shared/close-reason"
 import { CATALOGUE, outlinesFrom } from "@whereabouts/shared/catalogue"
 import { roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
 // The client loads the outlines on demand; the server holds them all, to score.
@@ -136,7 +137,7 @@ export class GameRoom extends Room<ActorData> {
     const { token, name, watch, address } = actor.data!
     this.cancelEmptyTimer()
     const previous = this.actorsByToken.get(token)
-    if (previous && previous !== actor) previous.kick(closeReason("replaced"))
+    if (previous && previous !== actor) previous.kick(closeReason(CloseReason.REPLACED))
     this.actorsByToken.set(token, actor)
     const back = this.game.playerTokens.includes(token)
     const result = this.game.join(token, name, deps.clock.now(), watch)
@@ -202,7 +203,7 @@ export class GameRoom extends Room<ActorData> {
   /** Give up this player's seat and close their connection; the client closes it too. */
   private leave(token: PlayerToken): CommandResult {
     const result = this.game.leave(token)
-    if (result.ok) this.actorsByToken.get(token)?.kick(closeReason("left"))
+    if (result.ok) this.actorsByToken.get(token)?.kick(closeReason(CloseReason.LEFT))
     return result
   }
 
@@ -210,7 +211,7 @@ export class GameRoom extends Room<ActorData> {
   private removePlayer(token: PlayerToken, playerId: PlayerId, now: number): CommandResult {
     const target = this.game.tokenOf(playerId)
     const result = this.game.kick(token, playerId, now)
-    if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick(closeReason("removed"))
+    if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick(closeReason(CloseReason.REMOVED))
     return result
   }
 
@@ -235,7 +236,7 @@ export class GameRoom extends Room<ActorData> {
   private broadcastState(): void {
     const now = deps.clock.now()
     this.each((actor) => this.sendState(actor, now))
-    this.joinable = this.game.phase !== "results"
+    this.joinable = this.game.phase !== Phase.RESULTS
     this.armTimer()
   }
 
@@ -314,8 +315,8 @@ export class GameAuth extends AuthMiddleware<ActorData> {
 
   private route(ticket: string, address: string): AuthResult<ActorData> {
     const parsed = decodeTicket(ticket)
-    if (parsed === "outdated") throw new TicketRefused(closeReason("outdated"))
-    if (!parsed) throw new TicketRefused(closeReason("noSuchGame"))
+    if (parsed === CloseReason.OUTDATED) throw new TicketRefused(closeReason(CloseReason.OUTDATED))
+    if (!parsed) throw new TicketRefused(closeReason(CloseReason.NO_SUCH_GAME))
     const rooms = this.rooms()
     let roomId: string
     if (parsed.create && parsed.code) {
@@ -325,12 +326,12 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     } else if (parsed.create) {
       roomId = generateCode()
       for (let i = 0; i < 20 && rooms.get(roomId); i++) roomId = generateCode()
-      if (rooms.get(roomId)) throw new TicketRefused(closeReason("unavailable"))
+      if (rooms.get(roomId)) throw new TicketRefused(closeReason(CloseReason.UNAVAILABLE))
       rooms.create(ROOM_TYPE, roomId)
     } else if (parsed.code && rooms.get(parsed.code)) {
       roomId = parsed.code
     } else {
-      throw new TicketRefused(closeReason("noSuchGame"))
+      throw new TicketRefused(closeReason(CloseReason.NO_SUCH_GAME))
     }
     return { data: { token: parsed.token, name: parsed.name, watch: parsed.watch ?? false, address }, roomId }
   }

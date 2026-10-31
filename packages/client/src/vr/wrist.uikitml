@@ -37,31 +37,31 @@
 <Panel class="root">
   <span class="heading">PAINT TOOLS</span>
   <div class="row">
-    <Button id="undo" variant="secondary">
+    <Button id="UNDO" variant="secondary">
       <ButtonIcon><Undo></Undo></ButtonIcon>
       Undo
     </Button>
-    <Button id="redo" class="gap" variant="secondary">
+    <Button id="REDO" class="gap" variant="secondary">
       <ButtonIcon><Redo></Redo></ButtonIcon>
       Redo
     </Button>
   </div>
   <div class="row">
-    <Button id="trim" variant="secondary">
+    <Button id="TRIM" variant="secondary">
       <ButtonIcon><Scissors></Scissors></ButtonIcon>
       <span id="trimLabel">Trim sea</span>
     </Button>
-    <Button id="trimHint" class="gap" variant="secondary">
+    <Button id="TRIM_HINT" class="gap" variant="secondary">
       <ButtonIcon><Lightbulb></Lightbulb></ButtonIcon>
       Trim to hint
     </Button>
   </div>
   <div class="row">
-    <Button id="swap" variant="secondary">
+    <Button id="SWAP" variant="secondary">
       <ButtonIcon><ArrowLeftRight></ArrowLeftRight></ButtonIcon>
       Swap hands
     </Button>
-    <Button id="clear" class="gap" variant="negative">
+    <Button id="CLEAR" class="gap" variant="negative">
       <ButtonIcon><Trash2></Trash2></ButtonIcon>
       Clear
     </Button>
@@ -69,11 +69,11 @@
   <span class="heading section">HINT</span>
   <span id="note" class="note">A band the answer lies in</span>
   <div id="hints" class="row">
-    <Button id="latitude" variant="secondary">
+    <Button id="LATITUDE" variant="secondary">
       <ButtonIcon><MoveVertical></MoveVertical></ButtonIcon>
       Latitude
     </Button>
-    <Button id="longitude" class="gap" variant="secondary">
+    <Button id="LONGITUDE" class="gap" variant="secondary">
       <ButtonIcon><MoveHorizontal></MoveHorizontal></ButtonIcon>
       Longitude
     </Button>

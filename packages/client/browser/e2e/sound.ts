@@ -7,6 +7,7 @@
 // Run the game server with ROUND_MS=12000 ROUNDS=2.
 // Usage, from packages/client: node browser/e2e/sound.ts
 import { Checks, launchChrome, newTab } from "./support.ts"
+import { Tool } from "../../src/tool.ts"
 import { cueNotes, pageTime, played, recordSounds, stopped, takeSounds } from "./sounds.ts"
 
 const checks = new Checks()
@@ -48,12 +49,12 @@ let events = await takeSounds(annTab)
 sinceStart.push(...events)
 checks.check(played(events, "spray"), "a held stroke plays the spray")
 checks.check(stopped(events, "spray"), "letting go stops the spray")
-await annRoundPage.paintTools.selectTool("erase")
+await annRoundPage.paintTools.selectTool(Tool.ERASE)
 await annRoundPage.map.drag(spot, { distancePx: 50, steps: 16, holdMs: 800 })
 events = await takeSounds(annTab)
 sinceStart.push(...events)
 checks.check(played(events, "eraser") && !played(events, "spray"), "erasing rubs the eraser, not the spray")
-await annRoundPage.paintTools.selectTool("paint")
+await annRoundPage.paintTools.selectTool(Tool.PAINT)
 
 // Clear whooshes when there is paint to wipe; Undo brings it back for Done below.
 await annRoundPage.paintTools.clear()

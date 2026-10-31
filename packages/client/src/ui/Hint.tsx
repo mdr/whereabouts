@@ -1,9 +1,11 @@
 /** The round's hint: a band of latitude or longitude the answer lies in, shaded on the map once used. */
-import { describeHint, type HintAxis, type HintBand } from "@whereabouts/shared/hints"
+import { describeHint, HintAxis, type HintBand } from "@whereabouts/shared/hints"
 import { Card } from "./Card"
-import { Icon } from "./icons"
+import { Icon, type IconName } from "./icons"
 import { hintTestIds } from "./HintTestIds"
 import s from "./Hint.module.css"
+
+const AXIS_ICON: Record<HintAxis, IconName> = { [HintAxis.LATITUDE]: "latitude", [HintAxis.LONGITUDE]: "longitude" }
 
 /** `left` is how many the player has; undefined in practice, where they are unlimited. */
 export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number; onUse: (axis: HintAxis) => void }) {
@@ -11,7 +13,7 @@ export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number
     return (
       <Card class={s.card}>
         <p class={s.band} data-testid={hintTestIds.band}>
-          <Icon name={band.axis} size={14} /> {describeHint(band)}
+          <Icon name={AXIS_ICON[band.axis]} size={14} /> {describeHint(band)}
         </p>
       </Card>
     )
@@ -28,7 +30,7 @@ export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number
           type="button"
           class="small"
           title="Show a band of latitude the answer lies in"
-          onClick={() => onUse("latitude")}
+          onClick={() => onUse(HintAxis.LATITUDE)}
           data-testid={hintTestIds.latitude}
         >
           <Icon name="latitude" /> Latitude
@@ -37,7 +39,7 @@ export function HintCard({ band, left, onUse }: { band?: HintBand; left?: number
           type="button"
           class="small"
           title="Show a band of longitude the answer lies in"
-          onClick={() => onUse("longitude")}
+          onClick={() => onUse(HintAxis.LONGITUDE)}
           data-testid={hintTestIds.longitude}
         >
           <Icon name="longitude" /> Longitude

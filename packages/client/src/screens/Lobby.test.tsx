@@ -4,9 +4,9 @@ import { fireEvent, render, screen, within } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName, roomCode } from "@whereabouts/shared/ids"
-import { mixOf, type GameView } from "@whereabouts/shared/protocol"
+import { mixOf, type GameView, Phase, MapDetail } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
-import type { Connection } from "../net"
+import { type Connection, ConnectionStatus } from "../net"
 import { hostSetup, joinedCode, startOnPan } from "../settings"
 import { route } from "../router"
 import { Lobby } from "./Lobby"
@@ -18,6 +18,7 @@ import { mixEditorTestIds } from "../ui/MixEditorTestIds"
 import { playerListTestIds } from "../ui/PlayerListTestIds"
 import s from "./Lobby.module.css"
 import players from "../ui/Players.module.css"
+import { KernelId } from "@whereabouts/shared/scoring"
 
 /** Queries within a render's container. */
 const inside = (el: Element) => within(el as HTMLElement)
@@ -27,13 +28,13 @@ const MIX = mixOf({ [QuestionType.LANDMARK]: 3, [QuestionType.PLACE]: 2 })
 function view(isHost: boolean): GameView {
   return {
     code: roomCode("AB12"),
-    phase: "lobby",
+    phase: Phase.LOBBY,
     config: {
       rounds: 5,
       roundMs: 60000,
       mix: MIX,
-      mapDetail: "minimal",
-      kernelId: "multi-equal",
+      mapDetail: MapDetail.MINIMAL,
+      kernelId: KernelId.MULTI_EQUAL,
       hints: 1
     },
     serverTime: 0,
@@ -71,7 +72,7 @@ const configure = vi.fn()
 const leave = vi.fn()
 const setRole = vi.fn()
 const conn = {
-  status: signal("connected"),
+  status: signal(ConnectionStatus.CONNECTED),
   lastError: signal(undefined),
   configure,
   start: vi.fn(),
@@ -115,10 +116,10 @@ describe("Lobby setup", () => {
     const minimal = picker.querySelector('[aria-checked="true"]')!
     expect(minimal.textContent).toBe("Minimal")
     fireEvent.click([...picker.querySelectorAll("button")].find((b) => b.textContent === "Water")!)
-    expect(configure).toHaveBeenCalledWith({ mapDetail: "water" })
+    expect(configure).toHaveBeenCalledWith({ mapDetail: MapDetail.WATER })
     expect(inside(container).queryAllByTestId(setupSummaryTestIds.summary)).toHaveLength(0)
     // Remembered for the next game this browser hosts.
-    expect(hostSetup.value).toEqual({ mix: { ...MIX, [QuestionType.LANDMARK]: 2 }, mapDetail: "water" })
+    expect(hostSetup.value).toEqual({ mix: { ...MIX, [QuestionType.LANDMARK]: 2 }, mapDetail: MapDetail.WATER })
     hostSetup.value = {}
   })
 

@@ -5,6 +5,8 @@
 // Saves screenshots.
 // Usage, from packages/client: node browser/e2e/solo.ts [outDir]
 import { Checks, launchChrome, newTab, outDir } from "./support.ts"
+import { Tool } from "../../src/tool.ts"
+import { HintAxis } from "@whereabouts/shared/hints"
 
 const out = outDir()
 const checks = new Checks()
@@ -13,7 +15,7 @@ const tab = await newTab(browser, "solo", { context: { viewport: { width: 1400, 
 
 const practiceRoundPage = await tab.openPractice()
 await practiceRoundPage.screenshot(`${out}/1-start.png`)
-const band = await practiceRoundPage.useHint("longitude")
+const band = await practiceRoundPage.useHint(HintAxis.LONGITUDE)
 checks.check(/^Between [\d.]+°[EW]? and [\d.]+°[EW]?$/.test(band), `practice gives a hint: ${band}`)
 const shapes = await practiceRoundPage.map.shownHintShapes()
 checks.check(shapes === 1 || shapes === 2, `the band is shaded on the map (${shapes})`)
@@ -31,21 +33,21 @@ checks.check(oneBlob < twoBlobs && back === twoBlobs, `undo then redo: ${twoBlob
 
 // Space presses a button the player Tabbed to, but pans with a clicked
 // tool button focused.
-await practiceRoundPage.paintTools.selectTool("pan")
+await practiceRoundPage.paintTools.selectTool(Tool.PAN)
 await practiceRoundPage.paintTools.tabOnAndPress("Space")
 const tabbedTo = await practiceRoundPage.paintTools.selectedTool()
-checks.check(tabbedTo === "paint", `Space presses the tool button Tabbed to (${tabbedTo})`)
-await practiceRoundPage.paintTools.selectTool("paint")
+checks.check(tabbedTo === Tool.PAINT, `Space presses the tool button Tabbed to (${tabbedTo})`)
+await practiceRoundPage.paintTools.selectTool(Tool.PAINT)
 await practiceRoundPage.map.dragHoldingSpace({ across: 0.3, down: 0.6 })
 const afterSpaceDrag = await practiceRoundPage.map.yourPaintCells()
 checks.check(afterSpaceDrag === back, `a drag holding Space paints nothing: ${back} -> ${afterSpaceDrag} cells`)
 // Enter submits the round, but not while the player has Tabbed to a button.
-await practiceRoundPage.paintTools.selectTool("pan")
+await practiceRoundPage.paintTools.selectTool(Tool.PAN)
 await practiceRoundPage.paintTools.tabOnAndPress("Enter")
 const enteredOn = await practiceRoundPage.paintTools.selectedTool()
-const stillPainting = await practiceRoundPage.paintTools.toolIsUsable("paint")
+const stillPainting = await practiceRoundPage.paintTools.toolIsUsable(Tool.PAINT)
 checks.check(
-  enteredOn === "paint" && stillPainting,
+  enteredOn === Tool.PAINT && stillPainting,
   `Enter presses the tool button Tabbed to, and does not submit (${enteredOn}, painting: ${stillPainting})`
 )
 

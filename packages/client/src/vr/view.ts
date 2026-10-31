@@ -10,6 +10,16 @@ import type { VrBoard } from "./board"
 import type { VrFlagPin } from "./flag-pins"
 import type { VrTable } from "./scores"
 
+/** How many hints are left: a count in a game, or one of these. */
+export enum HintAllowance {
+  /** Practice. */
+  UNLIMITED = "UNLIMITED",
+  /** A game with hints off. */
+  NONE = "NONE"
+}
+
+export type HintsLeft = number | HintAllowance
+
 export interface VrRound {
   paint: PaintController
   /** The question as the card words it. */
@@ -28,7 +38,7 @@ export interface VrRound {
   /** Your paint's colour in a game, as the others see it; the map's ramp in practice. */
   colour?: string
   hint: HintBand | undefined
-  hintsLeft: number | "unlimited" | "none"
+  hintsLeft: HintsLeft
   useHint(axis: HintAxis): void
   /** Ms until guessing ends, in a timed round. */
   msLeft?: () => number
@@ -82,14 +92,39 @@ interface VrSummary {
   board?: VrBoard
 }
 
-/** What the headset shows: a menu, a round to paint, its answer, or the final score. */
-export type VrView = (
-  | { kind: "paint"; round: VrRound }
-  | { kind: "reveal"; round: VrRound; reveal: VrReveal }
-  | { kind: "done"; summary: VrSummary }
+export enum VrViewType {
+  PAINT = "PAINT",
+  REVEAL = "REVEAL",
+  DONE = "DONE",
   /** Before a game: the home screen or a game's lobby. */
-  | { kind: "lobby"; summary: VrSummary }
-) & {
+  LOBBY = "LOBBY"
+}
+
+interface VrViewCommon {
   /** Below the main actions: leaving, taking a seat, the host's controls. */
   more?: VrAction[]
 }
+
+interface VrPaintView extends VrViewCommon {
+  type: VrViewType.PAINT
+  round: VrRound
+}
+
+interface VrRevealView extends VrViewCommon {
+  type: VrViewType.REVEAL
+  round: VrRound
+  reveal: VrReveal
+}
+
+interface VrDoneView extends VrViewCommon {
+  type: VrViewType.DONE
+  summary: VrSummary
+}
+
+interface VrLobbyView extends VrViewCommon {
+  type: VrViewType.LOBBY
+  summary: VrSummary
+}
+
+/** What the headset shows: a menu, a round to paint, its answer, or the final score. */
+export type VrView = VrPaintView | VrRevealView | VrDoneView | VrLobbyView
