@@ -648,18 +648,44 @@ describe("joining and leaving mid-game", () => {
     expect(g.view(tokB, T0 + SEAT_GRACE + 6).you.isHost).toBe(true)
   })
 
-  it("play again returns to the lobby with scores reset and dropped players pruned", () => {
+  it("play again returns to the lobby with scores reset", () => {
     const g = twoPlayerGame(1)
     g.start(tokA, T0)
     g.tick(T0 + 60_000 + ROUND_GRACE)
     g.next(tokA, T0 + 80_000)
     expect(g.phase).toBe(Phase.RESULTS)
     expect(g.join(tokZ, playerName("Zed"), T0 + 80_001)).toEqual({ ok: false, reason: CloseReason.FINISHED })
-    g.disconnect(tokB, T0 + 80_002)
     expect(g.again(tokA, T0 + 81_000).ok).toBe(true)
     expect(g.phase).toBe(Phase.LOBBY)
+    expect(g.view(tokA, T0 + 81_000).players.map((p) => p.score)).toEqual([0, 0])
+  })
+
+  it("play again keeps a player who is away their seat for the lobby's grace, from then", () => {
+    const g = twoPlayerGame(1)
+    g.start(tokA, T0)
+    g.disconnect(tokB, T0 + 1)
+    g.tick(T0 + 60_000 + ROUND_GRACE)
+    g.next(tokA, T0 + 80_000)
+    const again = T0 + 81_000
+    g.again(tokA, again)
+    g.tick(again + SEAT_GRACE - 1)
+    g.join(tokB, playerName("Bob"), again + SEAT_GRACE - 1)
+    expect(g.view(tokB, again + SEAT_GRACE).you.id).toBe("p2")
+
+    g.disconnect(tokB, again + SEAT_GRACE)
+    g.tick(again + 2 * SEAT_GRACE)
     expect(g.playerTokens).toEqual([tokA])
-    expect(g.view(tokA, T0 + 81_000).players[0]!.score).toBe(0)
+  })
+
+  it("play again keeps an absent host the host, with the presser acting for them", () => {
+    const g = twoPlayerGame(1)
+    g.start(tokA, T0)
+    g.disconnect(tokA, T0 + 1)
+    g.tick(T0 + 60_000 + ROUND_GRACE)
+    g.next(tokB, T0 + 80_000)
+    g.again(tokB, T0 + 81_000)
+    g.join(tokA, playerName("Alice"), T0 + 82_000)
+    expect(g.view(tokA, T0 + 82_000).you.isHost).toBe(true)
   })
 
   it("play again leaves each player as a new joiner would be, but for who they are", () => {

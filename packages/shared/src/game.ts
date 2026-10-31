@@ -301,9 +301,11 @@ export class Game {
     this.ready_.clear()
     this.seed = now
     this.questions = pickRounds(this.bank, this.config, this.seed)
-    for (const p of this.players.values()) Object.assign(p, freshRecord(0))
-    for (const [tok, p] of this.players) if (!p.connected) this.players.delete(tok)
-    if (this.hostToken === undefined || !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
+    for (const p of this.players.values()) {
+      Object.assign(p, freshRecord(0))
+      // Back in a lobby, anyone away has its grace to come back, from now.
+      if (!p.connected) p.leftAt = now
+    }
     return OK_CHANGED
   }
 
