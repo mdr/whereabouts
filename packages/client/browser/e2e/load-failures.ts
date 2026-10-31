@@ -24,7 +24,7 @@ checks.check(true, "Try again then loads the map")
 
 const outlinesTab = await newTab(browser, "outlines")
 let outlinesBlocked = true
-await outlinesTab.page.route(/regions\.json$/, (r) => (outlinesBlocked ? r.abort() : r.continue()))
+await outlinesTab.page.route(/outlines\.json$/, (r) => (outlinesBlocked ? r.abort() : r.continue()))
 const outlineFailures = await outlinesTab.openFailing("/score-review")
 checks.check(await outlineFailures.outlinesFailureShown(), "outlines that will not load say so")
 outlinesBlocked = false
