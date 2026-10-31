@@ -21,6 +21,7 @@
     "check": "vp check && knip && vp test run"
   },
   "devDependencies": {
+    "eslint-plugin-sonarjs": "^4.2.2",
     "knip": "^6.38.0",
     "oxlint-plugin-eslint": "1.87.0",
     "typescript": "^7.0.2",

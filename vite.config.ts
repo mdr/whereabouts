@@ -97,6 +97,9 @@ export default defineConfig({
         }
       ],
       eqeqeq: ["error", "smart"],
+      "max-lines": ["error", { max: 400, skipBlankLines: true, skipComments: true }],
+      "max-depth": ["error", 4],
+      "sonarjs/cognitive-complexity": ["error", 15],
       "eslint-js/no-restricted-syntax": ["error", ...noReexports],
       "no-restricted-imports": [
         "error",
@@ -390,14 +393,50 @@ export default defineConfig({
           "typescript/no-explicit-any": "off"
         },
         plugins: ["vitest"]
-      }
+      },
+      {
+        files: ["**/*.test.{ts,tsx}", "packages/client/browser/tests/**", "**/*.config.{js,ts}"],
+        rules: {
+          "max-lines": "off",
+          "sonarjs/cognitive-complexity": "off"
+        }
+      },
+      // To-do: files that don't yet meet the size and complexity rules. Remove an entry once it passes.
+      {
+        files: [
+          "packages/client/src/game-vr-view.ts",
+          "packages/client/src/map.ts",
+          "packages/client/src/screens/Lobby.tsx",
+          "packages/client/src/ui/outline-path.ts",
+          "packages/client/src/vr/globe.ts",
+          "packages/client/src/vr/index.ts",
+          "packages/client/src/vr/menu.ts",
+          "packages/shared/scripts/write-catalogue.mjs",
+          "packages/shared/src/awards.ts",
+          "packages/shared/src/game.ts",
+          "packages/shared/src/paint.ts",
+          "packages/shared/src/scoring.ts"
+        ],
+        rules: { "sonarjs/cognitive-complexity": "off" }
+      },
+      {
+        files: [
+          "packages/client/src/map.ts",
+          "packages/client/src/vr/index.ts",
+          "packages/shared/src/game.ts",
+          "packages/shared/src/scoring.ts"
+        ],
+        rules: { "max-lines": "off" }
+      },
+      { files: ["packages/shared/src/scoring.ts"], rules: { "max-depth": "off" } }
     ],
     jsPlugins: [
       {
         name: "vite-plus",
         specifier: "vite-plus/oxlint-plugin"
       },
-      { name: "eslint-js", specifier: "oxlint-plugin-eslint" }
+      { name: "eslint-js", specifier: "oxlint-plugin-eslint" },
+      { name: "sonarjs", specifier: "eslint-plugin-sonarjs" }
     ]
   },
   fmt: {
