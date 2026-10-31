@@ -3,13 +3,14 @@
 // every kernel, and where the paint is relative to the answer.
 //
 // Usage, from packages/shared:
-//   node scripts/score-case.mjs case.txt
-//   pbpaste | node scripts/score-case.mjs
+//   node --experimental-transform-types scripts/score-case.mjs case.txt
+//   pbpaste | node --experimental-transform-types scripts/score-case.mjs
 import { readFileSync } from "node:fs"
 import { greatCircleDistance } from "../src/geo.ts"
 import { PaintLayer } from "../src/paint.ts"
 import { KERNELS, buildDistribution, scoreDistribution } from "../src/scoring.ts"
-import { regionFit, scoreRegionQuestion } from "../src/regions.ts"
+import { regionFit, scoreArea } from "../src/regions.ts"
+import { areaOf, questionById } from "./catalogue.mjs"
 import { decodeCase } from "../src/scoring-case.ts"
 
 const text = readFileSync(process.argv[2] ?? 0, "utf8")
@@ -30,10 +31,10 @@ console.log(
 console.log(`copied with: ${c.score} under ${c.kernel}`, c.parts)
 
 if (q.kind === "region") {
-  const regions = JSON.parse(readFileSync(new URL("../regions.json", import.meta.url), "utf8"))
-  const region = regions.find((r) => r.id === q.id)
-  if (!region) throw new Error(`no country with id ${q.id} in regions.json`)
-  const s = scoreRegionQuestion(dist, region)
+  const question = questionById(q.id)
+  if (!question) throw new Error(`no question with id ${q.id} in catalogue.json`)
+  const region = areaOf(question)
+  const s = scoreArea(dist, region)
   const fit = regionFit(dist, region)
   console.log(`now: ${n(s.score)} (shape ${n(s.shape)}, nearness ${n(s.nearness)})`)
   console.log(`coverage ${n(fit.coverage * 100)}%, precision ${n(fit.precision * 100)}%`)

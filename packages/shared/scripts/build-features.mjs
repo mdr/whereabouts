@@ -1,5 +1,6 @@
-// Builds features.json: the "Islands, lakes and seas" and "US states" rounds,
-// from Natural Earth (public domain).
+// Builds the catalogue's "Islands, lakes and seas" and "US states"
+// questions, with their outlines, from Natural Earth (public domain). See
+// write-catalogue.mjs.
 //
 // Usage: node scripts/build-features.mjs [dir with the geojson files in FILES]
 // Without a directory it downloads them from the Natural Earth repository.
@@ -18,8 +19,9 @@
 // - Seas: the nearly closed ones, each the union of 1:10m marine areas, since
 //   Natural Earth splits off the Adriatic, the Gulf of Bothnia and the like.
 // - US states: 1:10m admin-1 with the Great Lakes cut out; not DC.
-import { readFileSync, writeFileSync } from "node:fs"
+import { readFileSync } from "node:fs"
 import polygonClipping from "polygon-clipping"
+import { writeQuestions } from "./write-catalogue.mjs"
 import {
   MIN_KEPT_SHARE,
   POINT_BELOW_KM2,
@@ -118,24 +120,27 @@ const simplified = (polygons) =>
     .map((poly) => poly.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
     .filter((p) => p.length > 0)
 
-/** A place painted whole. */
+const outlines = {}
+
+/** A place painted whole: an island, lake or sea (`feature`), or a state. */
 function region(topic, label, name, wiki, polygons) {
   const cells = polygons.flatMap((poly) => cellsOf(poly, 6))
   const area = areaOf(cells)
   if (area < POINT_BELOW_KM2) throw new Error(`${label} is too small to paint: ${Math.round(area)} km²`)
-  const q = {
-    id: `${topic}-${slug(label)}`,
-    kind: "region",
-    topic,
-    prompt: `Paint the whole of ${name}`,
+  const id = `${topic}-${slug(label)}`
+  const toleranceKm = regionToleranceKm(area)
+  outlines[id] = simplified(polygons)
+  console.log(`${label}: ${topic}, ${polygons.length} part(s), ${Math.round(area)} km², tolerance ${toleranceKm} km`)
+  const water = topic === "lake" || topic === "sea"
+  return {
+    id,
+    type: topic === "state" ? "STATE" : "FEATURE",
+    ...(topic === "state" ? {} : { feature: topic.toUpperCase() }),
     label,
     wiki,
-    answer: centroid(cells),
-    toleranceKm: regionToleranceKm(area),
-    outline: simplified(polygons)
+    clue: { type: "NAME", prompt: `Paint the whole of ${name}` },
+    answer: { type: "AREA", outline: id, centre: centroid(cells), toleranceKm, surface: water ? "WATER" : "LAND" }
   }
-  console.log(`${label}: ${topic}, ${polygons.length} part(s), ${Math.round(area)} km², tolerance ${q.toleranceKm} km`)
-  return q
 }
 
 const out = []
@@ -192,18 +197,13 @@ for (const f of states.sort((a, b) => a.properties.name.localeCompare(b.properti
   const toleranceKm = pointToleranceKm(area, spread, false)
   out.push({
     id: `state-${slug(label)}`,
-    kind: "text",
-    topic: "state",
-    prompt: `Where is ${names.name ?? p.name}?`,
-    answer,
-    toleranceKm,
+    type: "STATE",
     label,
     wiki,
-    region: "world"
+    clue: { type: "NAME", prompt: `Where is ${names.name ?? p.name}?` },
+    answer: { type: "POINT", at: answer, toleranceKm }
   })
   console.log(`${label}: state, point, ${Math.round(area)} km², tolerance ${toleranceKm} km`)
 }
 
-const json = JSON.stringify(out)
-writeFileSync(new URL("../features.json", import.meta.url), json + "\n")
-console.log(`wrote ${out.length} to features.json, ${Math.round(json.length / 1024)} KB`)
+writeQuestions(["FEATURE", "STATE"], out, outlines)

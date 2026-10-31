@@ -1,6 +1,6 @@
 // Calibration for "Paint the whole of …" scoring (docs/country-scoring.md).
 // Scores synthetic paints and real wrong countries with the game's own rule
-// (scoreRegionQuestion) and reports each against the target range it was
+// (scoreArea) and reports each against the target range it was
 // tuned to, so a change to a constant in src/regions.ts can be judged.
 //
 // Usage, from packages/shared:
@@ -11,15 +11,14 @@
 // Synthetic paints are built from the country's own outline at its painting
 // resolution, spread evenly unless the case says otherwise, with the usual 5%
 // world floor. Distances are in R, the country's equivalent radius.
-import { readFileSync } from "node:fs"
 import * as h3 from "h3-js"
 import { PASS_SCORE, buildDistribution } from "../src/scoring.ts"
 import { PaintLayer, resolutionForTolerance } from "../src/paint.ts"
-import { regionCells, regionFit, scoreRegionQuestion } from "../src/regions.ts"
+import { regionCells, regionFit, scoreArea } from "../src/regions.ts"
+import { COUNTRIES as AREAS } from "./catalogue.mjs"
 
-const REGIONS = JSON.parse(readFileSync(new URL("../regions.json", import.meta.url), "utf8"))
 const byLabel = (label) => {
-  const q = REGIONS.find((r) => r.label === label)
+  const q = AREAS.find((r) => r.label === label)
   if (!q) throw new Error(`no country labelled ${label}`)
   return q
 }
@@ -170,8 +169,10 @@ function shifted(q, km) {
   const east = (lat, lon) => lon + km / (111.32 * Math.cos((lat * Math.PI) / 180))
   return {
     ...q,
-    answer: { lat: q.answer.lat, lon: east(q.answer.lat, q.answer.lon) },
-    outline: q.outline.map((p) => p.map((ring) => ring.map(([lon, lat]) => [east(lat, lon), lat])))
+    // Its own id, so nothing cached for the real country is used for it.
+    outline: `${q.outline}-east-${km}`,
+    centre: { lat: q.centre.lat, lon: east(q.centre.lat, q.centre.lon) },
+    polygons: q.polygons.map((p) => p.map((ring) => ring.map(([lon, lat]) => [east(lat, lon), lat])))
   }
 }
 
@@ -246,7 +247,7 @@ function cases(q) {
     ["bloated until about half is off", even(bloatTo(cells, 0.5))],
     ["west 75% only", even(portion(cells, 0.75, (_, lon) => -lon))],
     ["west half only", even(portion(cells, 0.5, (_, lon) => -lon))],
-    ["circle a tenth of the area, centred", even(disc(q.answer, R * Math.sqrt(0.1), res))],
+    ["circle a tenth of the area, centred", even(disc(q.centre, R * Math.sqrt(0.1), res))],
     ["50/50: the country and its shape 2R away", hedge(0.5, neighbour)],
     [
       "50/50: the country and half its shape 2R away, squeezed",
@@ -274,18 +275,18 @@ function cases(q) {
     ["shape shifted 0.25R east", even(moved(0.25 * R))],
     ["shape shifted 0.5R east", even(moved(0.5 * R))],
     ["shape shifted 1R east", even(moved(R))],
-    ["circle of the same area, centred", even(disc(q.answer, R, res))],
+    ["circle of the same area, centred", even(disc(q.centre, R, res))],
     [
       "bright middle, half density at the edges",
       coat([{ cells, weight: 1 }], (h) => {
         const [lat, lon] = h3.cellToLatLng(h)
-        const km = Math.hypot(lat - q.answer.lat, (lon - q.answer.lon) * Math.cos((lat * Math.PI) / 180)) * 111
+        const km = Math.hypot(lat - q.centre.lat, (lon - q.centre.lon) * Math.cos((lat * Math.PI) / 180)) * 111
         return Math.max(0.5, 1.5 - km / R)
       })
     ],
     [
       "big faint blob far away (8x the area)",
-      even(disc(shifted(q, (Math.sqrt(8) + 1) * R + 3000).answer, Math.sqrt(8) * R, blobRes))
+      even(disc(shifted(q, (Math.sqrt(8) + 1) * R + 3000).centre, Math.sqrt(8) * R, blobRes))
     ],
     ["the whole world painted evenly", even(h3.getRes0Cells().flatMap((c) => h3.cellToChildren(c, 2)))]
   ]
@@ -300,7 +301,7 @@ for (const label of COUNTRIES) {
   const q = byLabel(label)
   for (const [name, dist] of cases(q)) {
     const t = performance.now()
-    const { score } = scoreRegionQuestion(dist, q)
+    const { score } = scoreArea(dist, q)
     const ms = performance.now() - t
     if (ms > slowest.ms) slowest = { ms, what: `${label}, ${name}` }
     if (!table.has(name)) table.set(name, new Map())
@@ -352,7 +353,7 @@ const nearScores = []
 for (const [ql, near, far] of NEIGHBOURS) {
   const q = byLabel(ql)
   const res = resolutionForTolerance(q.toleranceKm)
-  const score = (l) => scoreRegionQuestion(even(regionCells(byLabel(l), res)), q).score
+  const score = (l) => scoreArea(even(regionCells(byLabel(l), res)), q).score
   const ns = near.map((l) => [l, score(l)])
   const fs = far.map((l) => [l, score(l)])
   const win = Math.min(...ns.map(([, s]) => s)) > Math.max(...fs.map(([, s]) => s))
@@ -363,10 +364,10 @@ for (const [ql, near, far] of NEIGHBOURS) {
 }
 if (nearWins < NEIGHBOURS.length) misses++
 
-const exact = REGIONS.map((q) => {
+const exact = AREAS.map((q) => {
   const res = resolutionForTolerance(q.toleranceKm)
   const d = even(regionCells(q, res))
-  return { label: q.label, score: scoreRegionQuestion(d, q).score, fit: regionFit(d, q) }
+  return { label: q.label, score: scoreArea(d, q).score, fit: regionFit(d, q) }
 }).sort((a, b) => a.score - b.score)
 const worst = exact[0]
 console.log(

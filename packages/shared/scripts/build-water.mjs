@@ -2,7 +2,7 @@
 // round: every H3 cell at WATER_RES lying wholly on land and touching no
 // lake, compacted. Trimming drops paint in those cells, so paint within a
 // cell of any water stays. From Natural Earth's 1:10m land and lakes (public
-// domain), and the lake outlines in features.json too, since lake rounds are
+// domain), and the lake rounds' outlines too, since lake rounds are
 // scored by those: build that first. The land mask (build-land.mjs) cannot
 // serve: lakes are land in it.
 //
@@ -30,15 +30,17 @@ const cells = (polygon, mode) => polygonToCellsExperimental(polygon, WATER_RES, 
 const dry = new Set()
 for (const polygon of await polygons("ne_10m_land")) for (const h of cells(polygon, "containmentFull")) dry.add(h)
 const before = dry.size
-const lakeRounds = JSON.parse(readFileSync(new URL("../features.json", import.meta.url), "utf8"))
-  .filter((q) => q.topic === "lake")
-  .flatMap((q) => q.outline)
+const json = (file) => JSON.parse(readFileSync(new URL(`../${file}`, import.meta.url), "utf8"))
+const outlines = json("outlines.json")
+const lakeRounds = json("catalogue.json")
+  .filter((q) => q.type === "FEATURE" && q.feature === "LAKE")
+  .flatMap((q) => outlines[q.answer.outline])
 for (const polygon of [...(await polygons("ne_10m_lakes")), ...lakeRounds])
   for (const h of cells(polygon, "containmentOverlapping")) dry.delete(h)
 
 const compacted = compactCells([...dry]).sort()
-const json = JSON.stringify({ res: WATER_RES, dry: compacted })
-writeFileSync(new URL("../water.json", import.meta.url), json + "\n")
+const out = JSON.stringify({ res: WATER_RES, dry: compacted })
+writeFileSync(new URL("../water.json", import.meta.url), out + "\n")
 console.log(
-  `${before} dry cells, ${before - dry.size} of them by a lake, ${compacted.length} compacted: ${Math.round(json.length / 1024)} KB`
+  `${before} dry cells, ${before - dry.size} of them by a lake, ${compacted.length} compacted: ${Math.round(out.length / 1024)} KB`
 )

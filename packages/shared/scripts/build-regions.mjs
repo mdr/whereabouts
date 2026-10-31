@@ -1,10 +1,11 @@
-// Builds regions.json and flags.json from Natural Earth's 1:50m countries
-// (public domain).
+// Builds the catalogue's whole-country and flag questions, with their
+// outlines, and borders.json, from Natural Earth's 1:50m countries (public
+// domain). See write-catalogue.mjs.
 //
 // Usage: node scripts/build-regions.mjs [path/to/ne_50m_admin_0_countries.geojson]
 // Without a path it downloads the file from the Natural Earth repository.
 //
-// regions.json holds the answers for "Paint the whole of Germany": every
+// The countries are the answers for "Paint the whole of Germany": every
 // sovereign country of at least POINT_BELOW_KM2 whose borders are not in
 // dispute and which does not cross the antimeridian, as an outline. Each keeps
 // its largest landmass, the islands of at least MIN_PART_KM2 chained to it
@@ -14,9 +15,9 @@
 // calibrated at. Outlines are simplified to about SIMPLIFY_DEG
 // (Douglas-Peucker), far finer than any tolerance, and rounded to match.
 //
-// flags.json holds the flag rounds, one per country: those in regions.json
-// are painted whole (regionId), the rest are asked as a point, with a
-// tolerance from their size (pointToleranceKm).
+// The flag rounds are one per country: those painted whole share the
+// country's outline, the rest are asked as a point, with a tolerance from
+// their size (pointToleranceKm).
 //
 // borders.json holds every flag country's land, coarser (BORDER_SIMPLIFY_DEG,
 // islands under BORDER_MIN_KM2 left out), for the reveal of a flag round:
@@ -29,6 +30,7 @@
 // also has near: its tolerance, the distance from its answer that counts as
 // the country too, since its islands are too small to hit.
 import { readFileSync, writeFileSync } from "node:fs"
+import { writeQuestions } from "./write-catalogue.mjs"
 import {
   POINT_BELOW_KM2,
   MIN_KEPT_SHARE,
@@ -167,6 +169,7 @@ const countries = ne.features.filter((f) => {
 
 const regions = []
 const flags = []
+const outlines = {}
 const borders = []
 const none = borderRings(
   ne.features
@@ -211,18 +214,18 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
     const toleranceKm = regionToleranceKm(keptArea)
     const contiguous = p.ADMIN === "United States of America"
     const regionLabel = contiguous ? "Contiguous United States" : label
+    const id = names.id ?? (contiguous ? "usa-region" : `${slug(label)}-region`)
+    outlines[id] = kept
+      .map((poly) => poly.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
+      .filter((poly) => poly.length > 0)
     regions.push({
-      id: names.id ?? (contiguous ? "usa-region" : `${slug(label)}-region`),
-      kind: "region",
-      prompt: `Paint the whole of ${contiguous ? "the contiguous United States" : name}`,
+      id,
+      type: "COUNTRY",
       label: regionLabel,
       wiki: contiguous ? "Contiguous United States" : wiki,
-      answer: centroid(cells),
-      toleranceKm,
-      countryFlag: flag,
-      outline: kept
-        .map((poly) => poly.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
-        .filter((poly) => poly.length > 0)
+      clue: { type: "NAME", prompt: `Paint the whole of ${contiguous ? "the contiguous United States" : name}` },
+      answer: { type: "AREA", outline: id, centre: centroid(cells), toleranceKm, surface: "LAND" },
+      countryFlag: flag
     })
   }
 
@@ -230,15 +233,14 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
     const region = regions.at(-1)
     flags.push({
       id: `flag-${flag}`,
-      flag,
+      type: "FLAG",
       label,
       wiki: flagWiki,
-      answer: region.answer,
-      toleranceKm: region.toleranceKm,
-      regionId: region.id
+      clue: { type: "FLAG", flag },
+      answer: region.answer
     })
     console.log(
-      `${label}: painted, ${kept.length} part(s), ${Math.round(100 * keptShare)}% of its land, tolerance ${region.toleranceKm} km`
+      `${label}: painted, ${kept.length} part(s), ${Math.round(100 * keptShare)}% of its land, tolerance ${region.answer.toleranceKm} km`
     )
   } else {
     // Small and scattered countries are asked on land near their label
@@ -248,7 +250,14 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
     const answer = island ? islandAnswer(p, all) : centroid(all.flatMap((poly) => cellsOf(poly, 4)))
     const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => km([answer.lon, answer.lat], pt))))
     const toleranceKm = pointToleranceKm(area, spread, island)
-    flags.push({ id: `flag-${flag}`, flag, label, wiki: flagWiki, answer, toleranceKm })
+    flags.push({
+      id: `flag-${flag}`,
+      type: "FLAG",
+      label,
+      wiki: flagWiki,
+      clue: { type: "FLAG", flag },
+      answer: { type: "POINT", at: answer, toleranceKm }
+    })
     if (island) border.near = toleranceKm
     console.log(
       `${label}: point (${why}), ${Math.round(area)} km², spread ${Math.round(spread)} km, tolerance ${toleranceKm} km`
@@ -256,12 +265,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
   }
 }
 
-const write = (file, data) => {
-  writeFileSync(new URL(`../${file}`, import.meta.url), JSON.stringify(data) + "\n")
-  console.log(
-    `wrote ${data.length ?? data.countries.length} to ${file}, ${Math.round(JSON.stringify(data).length / 1024)} KB`
-  )
-}
-write("regions.json", regions)
-write("flags.json", flags)
-write("borders.json", { countries: borders, none })
+writeQuestions(["COUNTRY", "FLAG"], [...regions, ...flags], outlines)
+const bordersJson = JSON.stringify({ countries: borders, none })
+writeFileSync(new URL("../borders.json", import.meta.url), bordersJson + "\n")
+console.log(`wrote ${borders.length} to borders.json, ${Math.round(bordersJson.length / 1024)} KB`)

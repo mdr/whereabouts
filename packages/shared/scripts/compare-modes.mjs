@@ -4,18 +4,16 @@
 // tolerance. The real places in section 5 are round Paris and France.
 //
 // Usage, from packages/shared:
-//   node scripts/compare-modes.mjs                         Paris and France, Germany as the neighbour
-//   node scripts/compare-modes.mjs berlin Germany Poland   a place id, a country, a neighbour
-import { readFileSync } from "node:fs"
+//   node --experimental-transform-types scripts/compare-modes.mjs                         Paris and France, Germany as the neighbour
+//   node --experimental-transform-types scripts/compare-modes.mjs berlin Germany Poland   a place id, a country, a neighbour
 import * as h3 from "h3-js"
 import { buildDistribution, scoreDistribution } from "../src/scoring.ts"
 import { resolutionForTolerance } from "../src/paint.ts"
-import { regionCells, regionFit, scoreRegionQuestion } from "../src/regions.ts"
+import { regionCells, regionFit, scoreArea } from "../src/regions.ts"
+import { COUNTRIES, PLACES } from "./catalogue.mjs"
 
-const REGIONS = JSON.parse(readFileSync(new URL("../regions.json", import.meta.url), "utf8"))
-const QUESTIONS = JSON.parse(readFileSync(new URL("../questions.json", import.meta.url), "utf8"))
-const country = (label) => REGIONS.find((r) => r.label === label) ?? fail(label)
-const place = (id) => QUESTIONS.find((q) => q.id === id) ?? fail(id)
+const country = (label) => COUNTRIES.find((r) => r.label === label) ?? fail(label)
+const place = (id) => PLACES.find((q) => q.id === id) ?? fail(id)
 function fail(x) {
   throw new Error(`not found: ${x}`)
 }
@@ -56,7 +54,7 @@ const shiftedCountry = (q, km) =>
   regionCells(
     {
       ...q,
-      outline: q.outline.map((p) => p.map((ring) => ring.map(([lon, lat]) => [east({ lat, lon }, km).lon, lat])))
+      polygons: q.polygons.map((p) => p.map((ring) => ring.map(([lon, lat]) => [east({ lat, lon }, km).lon, lat])))
     },
     res
   )
@@ -82,7 +80,7 @@ const westPart = (cells, frac) => {
 
 const pointScore = (d) => scoreDistribution(d, P.answer, r).score
 const areaScore = (d) => {
-  const s = scoreRegionQuestion(d, C)
+  const s = scoreArea(d, C)
   return { ...s, ...regionFit(d, C) }
 }
 const fmt = (v) => String(Math.round(v)).padStart(5)
@@ -204,8 +202,8 @@ const real = [
   ],
   [`west half of ${C.label}`, even(westPart(cCells, 0.5))],
   [`${C.label}, border out 1R`, even(grow(cCells, R))],
-  [`circle of radius R at ${C.label}'s centre`, even(disc(C.answer, R))],
-  [`circle of radius R/2 at ${C.label}'s centre`, even(disc(C.answer, R / 2))],
+  [`circle of radius R at ${C.label}'s centre`, even(disc(C.centre, R))],
+  [`circle of radius R/2 at ${C.label}'s centre`, even(disc(C.centre, R / 2))],
   ["Western Europe evenly", even(EU)],
   ["the world evenly", even(h3.getRes0Cells().flatMap((c) => h3.cellToChildren(c, 2)))]
 ]
@@ -239,7 +237,7 @@ for (const [name, d] of [
 
 console.log(`\n7. Covering part of ${C.label} evenly (area): a centred circle, or the western part`)
 for (const c of [1, 0.8, 0.65, 0.5, 0.4, 1 / 3, 0.25, 0.1]) {
-  const circ = even(disc(C.answer, R * Math.sqrt(c)))
+  const circ = even(disc(C.centre, R * Math.sqrt(c)))
   const west = even(westPart(cCells, c))
   const a = areaScore(circ),
     b = areaScore(west)
