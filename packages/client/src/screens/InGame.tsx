@@ -165,7 +165,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
           )}
         </HudRight>
         {!sittingOut && (
-          <PaintTools water={onWater(round.question.answer)} hint={view.you.hint}>
+          <PaintTools water={onWater(round.question.answer)} hint={view.you.hint} canPass={!view.you.locked}>
             {view.you.locked ? (
               <button
                 class={toolbarGrow}

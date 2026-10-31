@@ -237,7 +237,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
           <RoundPrompt question={question} />
           <HintCard band={hint} onUse={useHint} />
         </HudTop>
-        <PaintTools practice water={onWater(question.answer)} hint={hint}>
+        <PaintTools practice water={onWater(question.answer)} hint={hint} canPass>
           <VrButton view={vrView} />
           <DoneButton label="Submit" onDone={submit} testId={soloTestIds.submitButton} />
         </PaintTools>

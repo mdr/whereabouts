@@ -43,6 +43,9 @@
 .name {
   width: min(360px, 100%);
 }
+.needName {
+  margin: 0;
+}
 
 .modes {
   display: grid;

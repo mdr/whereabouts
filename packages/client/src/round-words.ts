@@ -1,5 +1,6 @@
 /** What the page and the headset both say about a round and its reveal, so they say the same. */
 import type { RoundResultView } from "@whereabouts/shared/protocol"
+import { PASS_SCORE } from "@whereabouts/shared/scoring"
 import { RoundNote } from "./round-model"
 
 export function noteText(note: RoundNote, { askedToWatch, canUnlock }: { askedToWatch: boolean; canUnlock: boolean }) {
@@ -14,6 +15,9 @@ export function noteText(note: RoundNote, { askedToWatch, canUnlock }: { askedTo
       return `You're done. The round ends when everyone is, or when the clock runs out.${canUnlock ? " Changed your mind? Keep editing." : ""}`
   }
 }
+
+/** Under the Pass button, while nothing is painted. */
+export const PASS_NOTE = `Passing scores ${PASS_SCORE.score}. Even a wide, vague guess scores more on average.`
 
 export const readyCountText = (ready: number, present: number): string => `${ready} of ${present} ready`
 

@@ -8,6 +8,7 @@ import {
   type RoundResultView
 } from "@whereabouts/shared/protocol"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
+import type { HintAxis } from "@whereabouts/shared/hints"
 import { AnswerType, QuestionType, clueFlag } from "@whereabouts/shared/questions"
 import type { Connection } from "../net"
 import { usePaint } from "../ui/MapView"
@@ -240,6 +241,8 @@ export function Reveal({
   )
 }
 
+const hintedText = (axis: HintAxis) => `Used a ${axis.toLowerCase()} hint this round`
+
 function RevealRow({
   p,
   r,
@@ -288,13 +291,15 @@ function RevealRow({
           </span>
         )}
         {r?.hint && (
-          <span class={pl.hinted} title={`Used a ${r.hint} hint this round`} data-testid={revealTestIds.hintTag}>
+          <span class={pl.hinted} title={hintedText(r.hint)} data-testid={revealTestIds.hintTag}>
             <Icon name="hint" size={11} />
+            <span class="sr-only">{hintedText(r.hint)}</span>
           </span>
         )}
         {ready && (
           <span class={cx(pl.tag, pl.ready)} title="Ready for the next round">
-            ✓
+            <span aria-hidden="true">✓</span>
+            <span class="sr-only">ready</span>
           </span>
         )}
       </span>

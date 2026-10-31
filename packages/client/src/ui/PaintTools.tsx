@@ -12,6 +12,7 @@ import { Icon, type IconName } from "./icons"
 import { clearPaint, trimPaint, trimPaintToHint } from "../paint-commands"
 import { Shortcuts, ShortcutsButton } from "./Shortcuts"
 import { paintDevTestIds, paintToolsTestIds } from "./PaintToolsTestIds"
+import { PASS_NOTE } from "../round-words"
 
 const TOOL_ICON: Record<Tool, IconName> = {
   [Tool.PAN]: "hand",
@@ -32,17 +33,20 @@ const TOOL_HINT: Record<Tool, string> = {
  *
  * `water`: the answer is a lake or sea, so Trim land replaces Trim sea.
  * `hint`: the band of a hint taken this round, offered as a trim too.
+ * `canPass`: done with nothing painted is a pass, so say what that scores.
  */
 export function PaintTools({
   children,
   practice,
   water,
-  hint
+  hint,
+  canPass
 }: {
   children?: ComponentChildren
   practice?: boolean
   water?: boolean
   hint?: HintBand
+  canPass?: boolean
 }) {
   const paint = usePaint()
   const tool = paint.tool.value
@@ -52,7 +56,7 @@ export function PaintTools({
     ? [Tool.PAN, Tool.PAINT, Tool.ERASE, Tool.FILL]
     : [Tool.PAN, Tool.PAINT, Tool.ERASE]
   return (
-    <HudBottom>
+    <HudBottom note={canPass && paint.isEmpty.value ? PASS_NOTE : undefined}>
       <div class={s.tools}>
         {tools.map((t) => (
           <button

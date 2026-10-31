@@ -1,5 +1,4 @@
 /** The cards and buttons of a round that practice and a game share. */
-import { PASS_SCORE } from "@whereabouts/shared/scoring"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { outlineOf, type QuestionView } from "@whereabouts/shared/protocol"
@@ -74,16 +73,7 @@ export function DoneButton({
   const paint = usePaint()
   const empty = paint.isEmpty.value
   return (
-    <button
-      class="primary"
-      onClick={onDone}
-      title={
-        empty
-          ? `No idea? Passing scores ${PASS_SCORE.score}. Even painting a wide, vague area scores better on average.`
-          : paintedTitle
-      }
-      data-testid={testId}
-    >
+    <button class="primary" onClick={onDone} title={empty ? undefined : paintedTitle} data-testid={testId}>
       <Icon name="check" /> {empty ? "Pass" : label}
     </button>
   )

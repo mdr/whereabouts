@@ -40,9 +40,9 @@ export function HudCenter({ children }: { children: ComponentChildren }) {
  * The bar along the bottom of the map. It publishes its height as
  * `--toolbar-h` on the document so the map's own corner controls (the
  * attribution button) can sit above it on phones, where the bar spans the
- * full width.
+ * full width. `note`: a line under the buttons.
  */
-export function HudBottom({ children }: { children: ComponentChildren }) {
+export function HudBottom({ note, children }: { note?: string; children: ComponentChildren }) {
   const ref = useElementRef<HTMLDivElement>()
   useEffect(() => {
     const el = ref.current
@@ -58,8 +58,9 @@ export function HudBottom({ children }: { children: ComponentChildren }) {
     }
   }, [])
   return (
-    <div class={cx(s.bottom, s.toolbar)} ref={ref} data-testid={hudBottomTestIds.toolbar}>
-      {children}
+    <div class={s.bottom} ref={ref} data-testid={hudBottomTestIds.toolbar}>
+      <div class={s.toolbar}>{children}</div>
+      {note && <p class={s.toolbarNote}>{note}</p>}
     </div>
   )
 }
@@ -135,8 +136,9 @@ export function HeaderNote({
   children: ComponentChildren
 }) {
   return (
-    <span class={cx(s.note, nowrap && s.nowrap)} title={title} data-testid={testId}>
-      {children}
+    <span class={cx(s.note, nowrap && s.nowrap)} title={title}>
+      <span data-testid={testId}>{children}</span>
+      {title && <span class="sr-only">. {title}</span>}
     </span>
   )
 }

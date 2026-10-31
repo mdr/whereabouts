@@ -18,6 +18,8 @@ import { cx } from "../ui/cx"
 import kit from "../ui/kit.module.css"
 import s from "./Home.module.css"
 
+const NEED_NAME_ID = "need-name"
+
 /**
  * The front door: a hero picture, your name, then three clearly separate
  * ways in (host, join, practise) and a short how-to-play.
@@ -26,7 +28,8 @@ export function Home() {
   const [code, setCode] = useState("")
   const name = nameToJoin(savedName.value)
   const ready = name !== undefined
-  const needName = ready ? undefined : "Enter your name first"
+  // Says why Host and Join are disabled: a disabled button shows no tooltip.
+  const needName = ready ? undefined : NEED_NAME_ID
   const types = soloTypes.value
   const vrView: VrView = {
     type: VrViewType.LOBBY,
@@ -71,7 +74,14 @@ export function Home() {
             data-testid={homeTestIds.nameInput}
             value={savedName.value}
             onInput={(e) => (savedName.value = (e.target as HTMLInputElement).value)}
+            aria-describedby={needName}
           />
+          {!ready && (
+            // Read out through aria-describedby, not as part of the field's name.
+            <span class={cx(kit.hint, s.needName)} id={NEED_NAME_ID} aria-hidden>
+              Enter your name first
+            </span>
+          )}
         </label>
 
         <div class={s.modes}>
@@ -81,7 +91,7 @@ export function Home() {
             <button
               class="primary big"
               disabled={!ready}
-              title={needName}
+              aria-describedby={needName}
               onClick={() => navigate("/game/new")}
               data-testid={homeTestIds.hostButton}
             >
@@ -119,7 +129,7 @@ export function Home() {
                 type="submit"
                 class="big"
                 disabled={!ready || code.trim().length < 4}
-                title={needName}
+                aria-describedby={needName}
                 data-testid={homeTestIds.joinButton}
               >
                 Join
