@@ -9,15 +9,13 @@ const ORDER = ["LANDMARK", "PLACE", "COUNTRY", "FLAG", "FEATURE", "STATE"]
 const file = (name) => new URL(`../${name}`, import.meta.url)
 const read = (name) => JSON.parse(readFileSync(file(name), "utf8"))
 
-/**
- * Write `questions` as the catalogue's questions of `types`, with the places
- * they bring (over any of the same id, keeping what they leave out) and those places' outlines by id.
- */
-export function writeQuestions(types, questions, places, outlines) {
-  const kept = read("catalogue.json").filter((q) => !types.includes(q.type))
-  const catalogue = [...kept, ...questions]
+const sortedCatalogue = (types, questions) =>
+  [...read("catalogue.json").filter((q) => !types.includes(q.type)), ...questions]
     .sort((a, b) => ORDER.indexOf(a.type) - ORDER.indexOf(b.type))
     .map(({ id, type, place, clue, answer }) => ({ id, type, place, clue, answer }))
+
+/** The places the catalogue asks about, each once, with optional fields only when set. */
+function placesAsked(catalogue, places) {
   const allPlaces = new Map(read("places.json").map((p) => [p.id, p]))
   for (const p of places) allPlaces.set(p.id, { ...allPlaces.get(p.id), ...p })
   const asked = new Map()
@@ -36,6 +34,11 @@ export function writeQuestions(types, questions, places, outlines) {
       ...(flag ? { flag } : {})
     })
   }
+  return asked
+}
+
+/** The outlines of the areas the catalogue's AREA questions are about, by id. */
+function outlinesUsed(catalogue, asked, outlines) {
   const allOutlines = { ...read("outlines.json"), ...outlines }
   const used = {}
   for (const q of catalogue) {
@@ -44,6 +47,17 @@ export function writeQuestions(types, questions, places, outlines) {
     if (!allOutlines[id]) throw new Error(`${q.id}: no outline ${id}`)
     used[id] = allOutlines[id]
   }
+  return used
+}
+
+/**
+ * Write `questions` as the catalogue's questions of `types`, with the places
+ * they bring (over any of the same id, keeping what they leave out) and those places' outlines by id.
+ */
+export function writeQuestions(types, questions, places, outlines) {
+  const catalogue = sortedCatalogue(types, questions)
+  const asked = placesAsked(catalogue, places)
+  const used = outlinesUsed(catalogue, asked, outlines)
   writeFileSync(file("catalogue.json"), JSON.stringify(catalogue) + "\n")
   writeFileSync(file("places.json"), JSON.stringify([...asked.values()]) + "\n")
   execFileSync("pnpm", ["exec", "vp", "fmt", "catalogue.json", "places.json"], { cwd: file("."), stdio: "inherit" })
