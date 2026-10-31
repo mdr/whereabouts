@@ -2,28 +2,15 @@
 import { AnswerType } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { h3Res } from "@whereabouts/shared/h3"
-import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
+import { makePlayer } from "../test-view"
 import type { PlayerView, RoundResultView } from "@whereabouts/shared/protocol"
 import { revealOrder } from "./Reveal"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
 const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
 
-function player(name: string, rank: number): PlayerView {
-  return {
-    id: idOf(name),
-    name: playerName(name),
-    colour: playerColour(0),
-    watching: false,
-    connected: true,
-    isHost: false,
-    locked: false,
-    score: 0,
-    rank,
-    previousRank: undefined
-  }
-}
+const player = (name: string, rank: number): PlayerView => makePlayer({ id: idOf(name), name: playerName(name), rank })
 const paint = { cells: { "85283473fffffff": 1 }, floor: 0.05 }
 function result(name: string, score: number, painted = true): RoundResultView {
   return {

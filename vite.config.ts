@@ -7,7 +7,8 @@ const noReexports = [
 
 export default defineConfig({
   test: {
-    include: ["packages/*/src/**/*.test.{ts,tsx}", "scripts/*.test.ts"]
+    include: ["packages/*/src/**/*.test.{ts,tsx}", "scripts/*.test.ts"],
+    setupFiles: ["packages/client/src/test-setup.ts"]
   },
   lint: {
     plugins: ["oxc", "typescript", "unicorn"],

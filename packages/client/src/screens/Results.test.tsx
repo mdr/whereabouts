@@ -10,7 +10,7 @@ import { Results } from "./Results"
 import { resultsTestIds as ids } from "./ResultsTestIds"
 import s from "./Results.module.css"
 import pictures from "../ui/Pictures.module.css"
-import { makeView } from "../test-view"
+import { makePlayer, makeView } from "../test-view"
 
 const tid = (id: string) => `[data-testid="${id}"]`
 
@@ -22,30 +22,15 @@ function view(isHost: boolean): GameView {
     phase: Phase.RESULTS,
     you: { id: playerId("p2"), isHost },
     players: [
-      {
-        id: playerId("p1"),
-        name: playerName("Alice"),
-        colour: playerColour(0),
-        watching: false,
-        connected: true,
-        isHost: true,
-        locked: false,
-        score: 1500,
-        rank: 1,
-        previousRank: 1
-      },
-      {
+      makePlayer({ score: 1500 }),
+      makePlayer({
         id: playerId("p2"),
         name: playerName("Bob"),
         colour: playerColour(1),
-        watching: false,
-        connected: true,
         isHost: false,
-        locked: false,
         score: 900,
-        rank: 2,
-        previousRank: 2
-      }
+        rank: 2
+      })
     ],
     results: [
       { playerId: playerId("p1"), total: 1500, rounds: [{ score: 800 }, { score: 700 }] },

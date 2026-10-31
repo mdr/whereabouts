@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi } from "vite-plus/test"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render, screen, within } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { playerColour } from "@whereabouts/shared/colours"
@@ -18,7 +18,7 @@ import { mixEditorTestIds } from "../ui/MixEditorTestIds"
 import { playerListTestIds } from "../ui/PlayerListTestIds"
 import s from "./Lobby.module.css"
 import players from "../ui/Players.module.css"
-import { makeView } from "../test-view"
+import { makePlayer, makeView } from "../test-view"
 
 /** Queries within a render's container. */
 const inside = (el: Element) => within(el as HTMLElement)
@@ -30,22 +30,20 @@ function view(isHost: boolean): GameView {
   return makeView({
     config: { ...base.config, mix: MIX, hints: 1 },
     you: { isHost, hintsLeft: 1 },
-    players: [
-      {
-        id: playerId("p1"),
-        name: playerName("Alice"),
-        colour: playerColour(0),
-        watching: false,
-        connected: true,
-        isHost: true,
-        locked: false,
-        score: 0,
-        rank: 1,
-        previousRank: undefined
-      }
-    ]
+    players: [makePlayer()]
   })
 }
+
+/** A guest, playing or watching. */
+const person = (id: string, name: string, watching: boolean, colour = 1) =>
+  makePlayer({
+    id: playerId(id),
+    name: playerName(name),
+    colour: watching ? undefined : playerColour(colour),
+    watching,
+    isHost: false,
+    rank: watching ? 0 : 1
+  })
 
 const configure = vi.fn()
 const leave = vi.fn()
@@ -58,6 +56,11 @@ const conn = {
   leave,
   setRole
 } as unknown as Connection
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  hostSetup.value = {}
+})
 
 describe("Lobby", () => {
   afterEach(() => {
@@ -99,7 +102,6 @@ describe("Lobby setup", () => {
     expect(inside(container).queryAllByTestId(setupSummaryTestIds.summary)).toHaveLength(0)
     // Remembered for the next game this browser hosts.
     expect(hostSetup.value).toEqual({ mix: { ...MIX, [QuestionType.LANDMARK]: 2 }, mapDetail: MapDetail.WATER })
-    hostSetup.value = {}
   })
 
   it("shows guests the decided values, not controls", () => {
@@ -130,20 +132,6 @@ describe("Lobby setup", () => {
 })
 
 describe("Lobby leave", () => {
-  const bob = {
-    id: playerId("p2"),
-    name: playerName("Bob"),
-    colour: playerColour(1),
-    watching: false,
-    connected: true,
-    isHost: false,
-    locked: false,
-    score: 0,
-    rank: 1,
-    previousRank: undefined
-  }
-  afterEach(() => leave.mockClear())
-
   it("takes a guest straight home, giving up the seat and forgetting the game", () => {
     joinedCode.value = roomCode("AB12")
     const { container } = render(<Lobby conn={conn} view={view(false)} />)
@@ -155,12 +143,13 @@ describe("Lobby leave", () => {
 
   it("asks the host first, naming who takes over", () => {
     const v = view(true)
+    const bob = person("p2", "Bob", false)
     v.players = [...v.players, bob]
     v.you.nextHost = bob.id
     const { container } = render(<Lobby conn={conn} view={v} />)
     fireEvent.click(inside(container).getByTestId(lobbyTestIds.leaveButton))
     expect(leave).not.toHaveBeenCalled()
-    const modal = screen.getAllByTestId(confirmDialogTestIds.dialog)[0]!
+    const modal = screen.getByTestId(confirmDialogTestIds.dialog)
     expect(modal.textContent).toContain("Bob becomes the host.")
     fireEvent.click([...modal.querySelectorAll("button")].find((b) => b.textContent === "Leave")!)
     expect(leave).toHaveBeenCalledTimes(1)
@@ -169,25 +158,13 @@ describe("Lobby leave", () => {
   it("warns a host on their own that the game closes", () => {
     const { container } = render(<Lobby conn={conn} view={view(true)} />)
     fireEvent.click(inside(container).getByTestId(lobbyTestIds.leaveButton))
-    const modals = screen.getAllByTestId(confirmDialogTestIds.dialog)
-    expect(modals[modals.length - 1]!.textContent).toContain("It closes, since no one else is here.")
+    expect(screen.getByTestId(confirmDialogTestIds.dialog).textContent).toContain(
+      "It closes, since no one else is here."
+    )
   })
 })
-describe("Lobby spectators", () => {
-  const person = (id: string, name: string, watching: boolean, colour = 1) => ({
-    id: playerId(id),
-    name: playerName(name),
-    colour: watching ? undefined : playerColour(colour),
-    watching,
-    connected: true,
-    isHost: false,
-    locked: false,
-    score: 0,
-    rank: watching ? 0 : 1,
-    previousRank: undefined
-  })
-  afterEach(() => setRole.mockClear())
 
+describe("Lobby spectators", () => {
   it("lists spectators apart from the players, with their own count", () => {
     const v = view(true)
     v.players = [...v.players, person("p2", "Bob", false), person("p3", "Sam", true)]

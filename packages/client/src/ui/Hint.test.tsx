@@ -1,13 +1,11 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi } from "vite-plus/test"
-import { cleanup, fireEvent, render } from "@testing-library/preact"
+import { describe, expect, it, vi } from "vite-plus/test"
+import { fireEvent, render } from "@testing-library/preact"
 import { HintCard } from "./Hint"
 import { hintTestIds } from "./HintTestIds"
 import { HintAxis } from "@whereabouts/shared/hints"
 
 describe("HintCard", () => {
-  afterEach(cleanup)
-
   it("offers both bands with the count left, and says which was chosen", () => {
     const onUse = vi.fn<(axis: string) => void>()
     const { getByTestId } = render(<HintCard left={2} onUse={onUse} />)

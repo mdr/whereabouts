@@ -3,26 +3,15 @@ import { describe, expect, it } from "vite-plus/test"
 import { h3Cell, h3Res } from "@whereabouts/shared/h3"
 import { colourCss, playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
+import { makePlayer } from "./test-view"
 import type { PlayerView, RoundResultView } from "@whereabouts/shared/protocol"
 import { paintsOf } from "./reveal-paint"
 
 const NAMES = ["alice", "bob"]
 const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
 
-function player(name: string, colour = 0): PlayerView {
-  return {
-    id: idOf(name),
-    name: playerName(name),
-    colour: playerColour(colour),
-    watching: false,
-    connected: true,
-    isHost: false,
-    locked: false,
-    score: 0,
-    rank: 1,
-    previousRank: undefined
-  }
-}
+const player = (name: string, colour = 0): PlayerView =>
+  makePlayer({ id: idOf(name), name: playerName(name), colour: playerColour(colour) })
 function result(name: string, score = 500): RoundResultView {
   return {
     playerId: idOf(name),

@@ -1,5 +1,22 @@
-import { flagCode, outlineId, placeId, playerId, questionId, roomCode, wikiTitle } from "@whereabouts/shared/ids"
-import { mixOf, type GameView, type QuestionView, Phase, MapDetail } from "@whereabouts/shared/protocol"
+import { playerColour } from "@whereabouts/shared/colours"
+import {
+  flagCode,
+  outlineId,
+  placeId,
+  playerId,
+  playerName,
+  questionId,
+  roomCode,
+  wikiTitle
+} from "@whereabouts/shared/ids"
+import {
+  mixOf,
+  type GameView,
+  type PlayerView,
+  type QuestionView,
+  Phase,
+  MapDetail
+} from "@whereabouts/shared/protocol"
 import { AnswerType, ClueType, QuestionType, Surface, type FlagQuestion } from "@whereabouts/shared/questions"
 import { KernelId } from "@whereabouts/shared/scoring"
 
@@ -20,6 +37,22 @@ export function makeView({ you, ...over }: ViewOverrides = {}): GameView {
     serverTime: 0,
     you: { id: playerId("p1"), isHost: true, sittingOut: false, watching: false, locked: false, hintsLeft: 0, ...you },
     players: [],
+    ...over
+  }
+}
+
+/** Alice, the host, connected and playing, with whatever a test needs changed. */
+export function makePlayer(over: Partial<PlayerView> = {}): PlayerView {
+  return {
+    id: playerId("p1"),
+    name: playerName("Alice"),
+    colour: playerColour(0),
+    watching: false,
+    connected: true,
+    isHost: true,
+    locked: false,
+    score: 0,
+    rank: 1,
     ...over
   }
 }

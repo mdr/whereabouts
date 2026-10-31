@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from "vite-plus/test"
-import { cleanup, fireEvent, render, screen } from "@testing-library/preact"
+import { fireEvent, render, screen } from "@testing-library/preact"
 import { Shortcuts, ShortcutsButton, shortcutsOpen } from "./Shortcuts"
 import { shortcutsTestIds } from "./ShortcutsTestIds"
 
@@ -8,7 +8,6 @@ const card = () => screen.queryByTestId(shortcutsTestIds.card) ?? undefined
 const press = (key: string, target: Window | Element = window) => fireEvent.keyDown(target, { key, bubbles: true })
 
 afterEach(() => {
-  cleanup()
   shortcutsOpen.value = false
 })
 

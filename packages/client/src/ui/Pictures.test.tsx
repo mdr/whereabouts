@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi } from "vite-plus/test"
+import { describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
 import { SmallFlag, SmallFlagButton, SmallPhoto } from "./Pictures"
 import { CardPlace, QuestionCard } from "./QuestionCard"
@@ -17,10 +17,6 @@ vi.mock("../flags", async (original) => ({
 }))
 
 describe("flag frames", () => {
-  afterEach(() => {
-    cleanup()
-  })
-
   const ratio = (el: unknown) => Number((el as HTMLElement).style.getPropertyValue("--flag-ratio"))
   const enlargedRatio = (el: unknown) => Number((el as HTMLElement).style.getPropertyValue("--ratio"))
   // Nepal's is taller than wide, Switzerland's square, Qatar's the widest.
@@ -49,10 +45,6 @@ describe("flag frames", () => {
 })
 
 describe("SmallPhoto", () => {
-  afterEach(() => {
-    cleanup()
-  })
-
   it("shows the rounds' rendition of the photo, which the page already has", () => {
     const image = commonsFile("Some_file.jpg")
     const q = makeQuestionView({

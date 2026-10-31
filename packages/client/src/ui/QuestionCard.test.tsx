@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi } from "vite-plus/test"
+import { describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
 import { CardPlace, QuestionCard } from "./QuestionCard"
 import lb from "./Lightbox.module.css"
@@ -63,10 +63,6 @@ describe("QuestionCard", () => {
 })
 
 describe("flag frames", () => {
-  afterEach(() => {
-    cleanup()
-  })
-
   const ratio = (el: unknown) => Number((el as HTMLElement).style.getPropertyValue("--flag-ratio"))
   const enlargedRatio = (el: unknown) => Number((el as HTMLElement).style.getPropertyValue("--ratio"))
   // Nepal's is taller than wide, Switzerland's square, Qatar's the widest.
@@ -93,10 +89,6 @@ describe("flag frames", () => {
 })
 
 describe("QuestionCard image", () => {
-  afterEach(() => {
-    cleanup()
-  })
-
   // First in this file: the label shows only on the session's first photo.
   it("says it can be enlarged: a button with a badge, labelled on the first photo only", () => {
     const { container: first } = render(<QuestionCard hud={CardPlace.PAINTING} q={q} />)

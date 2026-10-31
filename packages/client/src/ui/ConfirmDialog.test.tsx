@@ -42,7 +42,7 @@ describe("ConfirmDialog", () => {
         <ConfirmDialog request={endGameRequest(() => {})} onClose={() => {}} />
       </div>
     )
-    const backdrop = screen.getAllByTestId(confirmDialogTestIds.backdrop).at(-1)!
+    const backdrop = screen.getByTestId(confirmDialogTestIds.backdrop)
     expect(backdrop.parentElement).toBe(document.body)
     expect(backdrop.closest(".hud-bottom") ?? undefined).toBeUndefined()
   })
@@ -55,7 +55,7 @@ describe("ConfirmDialog", () => {
 
   it("shows handing over as a plain confirm, and removing as a red one", () => {
     const { unmount } = render(<ConfirmDialog request={makeHostRequest("Bob", () => {})} onClose={() => {}} />)
-    const confirm = () => screen.getAllByTestId<HTMLButtonElement>(confirmDialogTestIds.confirmButton).at(-1)!
+    const confirm = () => screen.getByTestId<HTMLButtonElement>(confirmDialogTestIds.confirmButton)
     expect(confirm().textContent).toBe("Make Bob host")
     expect(confirm().className).toBe("primary")
     unmount()

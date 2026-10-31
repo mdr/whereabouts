@@ -3,24 +3,13 @@ import { describe, expect, it } from "vite-plus/test"
 import { render, screen } from "@testing-library/preact"
 import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
+import { makePlayer } from "../test-view"
 import type { PlayerView } from "@whereabouts/shared/protocol"
 import { HostTag, PlayerList, initial } from "./PlayerList"
 import { playerListTestIds } from "./PlayerListTestIds"
 import s from "./Players.module.css"
 
-const player = (over: Partial<PlayerView>): PlayerView => ({
-  id: playerId("p1"),
-  name: playerName("Alice"),
-  colour: playerColour(0),
-  watching: false,
-  connected: true,
-  isHost: false,
-  locked: false,
-  score: 0,
-  rank: 1,
-  previousRank: undefined,
-  ...over
-})
+const player = (over: Partial<PlayerView>): PlayerView => makePlayer({ isHost: false, ...over })
 
 describe("PlayerList", () => {
   it("tags host, you and offline players", () => {
