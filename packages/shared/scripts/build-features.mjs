@@ -202,13 +202,13 @@ for (const f of states.sort((a, b) => a.properties.name.localeCompare(b.properti
   const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => km([answer.lon, answer.lat], pt))))
   const tolerance = pointToleranceKm(area, spread, false)
   const id = `state-${slug(label)}`
-  places.push({ id, label, wiki })
+  places.push({ id, label, wiki, at: answer })
   out.push({
     id,
     type: "STATE",
     place: id,
     clue: { type: "NAME", prompt: `Where is ${names.name ?? p.name}?` },
-    answer: { type: "POINT", at: answer, tolerance }
+    answer: { type: "POINT", tolerance }
   })
   console.log(`${label}: state, point, ${Math.round(area)} km², tolerance ${tolerance} km`)
 }

@@ -11,24 +11,26 @@ const read = (name) => JSON.parse(readFileSync(file(name), "utf8"))
 
 /**
  * Write `questions` as the catalogue's questions of `types`, with the places
- * they bring (replacing any of the same id) and those places' outlines by id.
+ * they bring (over any of the same id, keeping what they leave out) and those places' outlines by id.
  */
 export function writeQuestions(types, questions, places, outlines) {
   const kept = read("catalogue.json").filter((q) => !types.includes(q.type))
   const catalogue = [...kept, ...questions]
     .sort((a, b) => ORDER.indexOf(a.type) - ORDER.indexOf(b.type))
     .map(({ id, type, place, clue, answer }) => ({ id, type, place, clue, answer }))
-  const allPlaces = new Map([...read("places.json"), ...places].map((p) => [p.id, p]))
+  const allPlaces = new Map(read("places.json").map((p) => [p.id, p]))
+  for (const p of places) allPlaces.set(p.id, { ...allPlaces.get(p.id), ...p })
   const asked = new Map()
   for (const q of catalogue) {
     const place = allPlaces.get(q.place)
     if (!place) throw new Error(`${q.id}: no place ${q.place}`)
     if (asked.has(q.place)) continue
-    const { id, label, wiki, feature, area, flag } = place
+    const { id, label, wiki, at, feature, area, flag } = place
     asked.set(id, {
       id,
       label,
       wiki,
+      ...(at ? { at } : {}),
       ...(feature ? { feature } : {}),
       ...(area ? { area } : {}),
       ...(flag ? { flag } : {})

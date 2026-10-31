@@ -15,6 +15,7 @@ import {
   type PlaceId,
   type WikiTitle
 } from "./ids.ts"
+import type { LatLon } from "./geo.ts"
 import { FeatureType, LatLonSchema, Surface, type AreaAnswer } from "./questions.ts"
 
 export interface Place {
@@ -22,6 +23,8 @@ export interface Place {
   label: string
   /** English Wikipedia article title. */
   wiki: WikiTitle
+  /** Where it is, for every round that asks for it as a point. */
+  at?: LatLon
   feature?: FeatureType
   /** Where it can be painted whole. */
   area?: Omit<AreaAnswer, "type">
@@ -33,6 +36,7 @@ const PlaceSchema: z.ZodType<Place> = z.strictObject({
   id: PlaceIdSchema,
   label: z.string(),
   wiki: WikiTitleSchema,
+  at: LatLonSchema.optional(),
   feature: z.enum(FeatureType).optional(),
   area: z
     .strictObject({ outline: OutlineIdSchema, centre: LatLonSchema, tolerance: KmSchema, surface: z.enum(Surface) })

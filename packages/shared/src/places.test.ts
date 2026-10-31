@@ -18,6 +18,11 @@ describe("the places", () => {
     expect([...PLACES.values()].filter((p) => !!p.area !== painted.has(p.id)).map((p) => p.id)).toEqual([])
   })
 
+  it("have a point where a round asks for one, and only there", () => {
+    const pointed = new Set(CATALOGUE.filter((q) => q.answer.type === AnswerType.POINT).map((q) => q.place))
+    expect([...PLACES.values()].filter((p) => !!p.at !== pointed.has(p.id)).map((p) => p.id)).toEqual([])
+  })
+
   it("are asked at most once by each type of question", () => {
     for (const type of QUESTION_TYPES) {
       const places = CATALOGUE.filter((q) => q.type === type).map((q) => q.place)

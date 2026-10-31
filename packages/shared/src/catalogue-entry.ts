@@ -1,17 +1,17 @@
 /**
  * A question as catalogue.json holds it: what is about the question alone,
- * with its place by id. An area answer, a flag clue, the label and the
+ * with its place by id. Where the answer is, a flag clue, the label and the
  * article come from the place when the catalogue is joined.
  */
 import { z } from "zod"
 import { PlaceIdSchema, QuestionIdSchema, type PlaceId, type QuestionId } from "./ids.ts"
 import type { Place } from "./places.ts"
+import { KmSchema } from "./units.ts"
 import {
   AnswerType,
   ClueType,
   NameClueSchema,
   PhotoClueSchema,
-  PointAnswerSchema,
   QuestionType,
   type AreaAnswer,
   type NameClue,
@@ -20,7 +20,8 @@ import {
   type Question
 } from "./questions.ts"
 
-type StoredAnswer = PointAnswer | { type: AnswerType.AREA }
+type StoredPoint = Omit<PointAnswer, "at">
+type StoredAnswer = StoredPoint | { type: AnswerType.AREA }
 
 interface EntryBase {
   id: QuestionId
@@ -29,21 +30,22 @@ interface EntryBase {
 
 export type CatalogueEntry = EntryBase &
   (
-    | { type: QuestionType.LANDMARK; clue: PhotoClue; answer: PointAnswer }
-    | { type: QuestionType.PLACE; clue: NameClue; answer: PointAnswer }
+    | { type: QuestionType.LANDMARK; clue: PhotoClue; answer: StoredPoint }
+    | { type: QuestionType.PLACE; clue: NameClue; answer: StoredPoint }
     | { type: QuestionType.COUNTRY; clue: NameClue; answer: { type: AnswerType.AREA } }
     | { type: QuestionType.FLAG; clue: { type: ClueType.FLAG }; answer: StoredAnswer }
     | { type: QuestionType.FEATURE; clue: NameClue; answer: { type: AnswerType.AREA } }
     | { type: QuestionType.STATE; clue: NameClue; answer: StoredAnswer }
   )
 
+const PointSchema = z.strictObject({ type: z.literal(AnswerType.POINT), tolerance: KmSchema })
 const AreaSchema = z.strictObject({ type: z.literal(AnswerType.AREA) })
-const AnyAnswerSchema = z.discriminatedUnion("type", [PointAnswerSchema, AreaSchema])
+const AnyAnswerSchema = z.discriminatedUnion("type", [PointSchema, AreaSchema])
 const base = { id: QuestionIdSchema, place: PlaceIdSchema }
 
 export const CatalogueEntrySchema: z.ZodType<CatalogueEntry> = z.discriminatedUnion("type", [
-  z.strictObject({ ...base, type: z.literal(QuestionType.LANDMARK), clue: PhotoClueSchema, answer: PointAnswerSchema }),
-  z.strictObject({ ...base, type: z.literal(QuestionType.PLACE), clue: NameClueSchema, answer: PointAnswerSchema }),
+  z.strictObject({ ...base, type: z.literal(QuestionType.LANDMARK), clue: PhotoClueSchema, answer: PointSchema }),
+  z.strictObject({ ...base, type: z.literal(QuestionType.PLACE), clue: NameClueSchema, answer: PointSchema }),
   z.strictObject({ ...base, type: z.literal(QuestionType.COUNTRY), clue: NameClueSchema, answer: AreaSchema }),
   z.strictObject({
     ...base,
@@ -63,13 +65,17 @@ export function joinQuestion(entry: CatalogueEntry, places: ReadonlyMap<PlaceId,
     if (!place.area) throw new Error(`${entry.id}: ${place.id} has no area`)
     return { type: AnswerType.AREA, ...place.area }
   }
-  const answer = (a: StoredAnswer) => (a.type === AnswerType.AREA ? area() : a)
+  const point = (a: StoredPoint): PointAnswer => {
+    if (!place.at) throw new Error(`${entry.id}: ${place.id} has no point`)
+    return { ...a, at: place.at }
+  }
+  const answer = (a: StoredAnswer) => (a.type === AnswerType.AREA ? area() : point(a))
   const common = { id: entry.id, place: place.id, label: place.label, wiki: place.wiki }
   switch (entry.type) {
     case QuestionType.LANDMARK:
-      return { ...common, type: entry.type, clue: entry.clue, answer: entry.answer }
+      return { ...common, type: entry.type, clue: entry.clue, answer: point(entry.answer) }
     case QuestionType.PLACE:
-      return { ...common, type: entry.type, clue: entry.clue, answer: entry.answer }
+      return { ...common, type: entry.type, clue: entry.clue, answer: point(entry.answer) }
     case QuestionType.COUNTRY:
       return {
         ...common,

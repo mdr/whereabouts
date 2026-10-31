@@ -9,7 +9,7 @@ No I/O; the same code runs in the browser and on the server.
 | Module                                            | What it holds                                                                                                                               |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `catalogue.json`, `src/catalogue.ts`              | Every question, joined with its place; `poolOf` draws from it for games, practice and the score review                                      |
-| `places.json`, `src/places.ts`                    | What questions ask about, kept once: name, article, area, flag, feature                                                                     |
+| `places.json`, `src/places.ts`                    | What questions ask about, kept once: name, article, point, area, flag, feature                                                              |
 | `src/catalogue-entry.ts`                          | A question as `catalogue.json` holds it, and `joinQuestion` with its place                                                                  |
 | `outlines.json`                                   | Areas' geometry, by `OutlineId`                                                                                                             |
 | `src/questions.ts`                                | The question model as the game sees it: `QuestionType`, clue and answer unions, prompts                                                     |

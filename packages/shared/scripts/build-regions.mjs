@@ -89,6 +89,8 @@ const NAMES = {
   Georgia: { wiki: "Georgia (country)", flagWiki: "Flag of Georgia (country)" },
   China: { label: "China", wiki: "China" },
   Vatican: { label: "Vatican City", wiki: "Vatican City" },
+  // Natural Earth labels it on Kiritimati, 3,300 km from the capital.
+  Kiribati: { at: { lat: 1.3291, lon: 172.979 } },
   "East Timor": { label: "Timor-Leste" },
   Czechia: { label: "Czech Republic", the: true },
   Netherlands: { the: true },
@@ -252,7 +254,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
     // point (a centroid could fall in the sea between islands); larger ones
     // at their centre.
     const island = why === "small" || why === "scattered"
-    const answer = island ? islandAnswer(p, all) : centroid(all.flatMap((poly) => cellsOf(poly, 4)))
+    const answer = names.at ?? (island ? islandAnswer(p, all) : centroid(all.flatMap((poly) => cellsOf(poly, 4))))
     const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => km([answer.lon, answer.lat], pt))))
     const tolerance = pointToleranceKm(area, spread, island)
     flags.push({
@@ -260,8 +262,9 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
       type: "FLAG",
       place: place.id,
       clue: { type: "FLAG" },
-      answer: { type: "POINT", at: answer, tolerance }
+      answer: { type: "POINT", tolerance }
     })
+    place.at = answer
     if (island) border.near = tolerance
     console.log(
       `${label}: point (${why}), ${Math.round(area)} km², spread ${Math.round(spread)} km, tolerance ${tolerance} km`

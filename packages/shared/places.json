@@ -1,242 +1,897 @@
 [
-  { "id": "taj-mahal", "label": "Taj Mahal, Agra", "wiki": "Taj Mahal" },
-  { "id": "sydney-opera", "label": "Sydney Opera House", "wiki": "Sydney Opera House" },
-  { "id": "machu-picchu", "label": "Machu Picchu", "wiki": "Machu Picchu" },
-  { "id": "cristo", "label": "Christ the Redeemer, Rio de Janeiro", "wiki": "Christ the Redeemer (statue)" },
-  { "id": "petra", "label": "Al-Khazneh, Petra", "wiki": "Al-Khazneh" },
-  { "id": "giza", "label": "Great Pyramid of Giza", "wiki": "Great Pyramid of Giza" },
-  { "id": "golden-gate", "label": "Golden Gate Bridge, San Francisco", "wiki": "Golden Gate Bridge" },
-  { "id": "neuschwanstein", "label": "Neuschwanstein Castle, Bavaria", "wiki": "Neuschwanstein Castle" },
-  { "id": "buckingham", "label": "Buckingham Palace, London", "wiki": "Buckingham Palace" },
-  { "id": "edinburgh-castle", "label": "Edinburgh Castle", "wiki": "Edinburgh Castle" },
-  { "id": "angel-north", "label": "Angel of the North, Gateshead", "wiki": "Angel of the North" },
-  { "id": "stonehenge", "label": "Stonehenge, Wiltshire", "wiki": "Stonehenge" },
-  { "id": "clifton", "label": "Clifton Suspension Bridge, Bristol", "wiki": "Clifton Suspension Bridge" },
-  { "id": "eiffel", "label": "Eiffel Tower, Paris", "wiki": "Eiffel Tower" },
-  { "id": "colosseum", "label": "Colosseum, Rome", "wiki": "Colosseum" },
-  { "id": "sagrada", "label": "Sagrada Família, Barcelona", "wiki": "Sagrada Família" },
-  { "id": "parthenon", "label": "Parthenon, Athens", "wiki": "Parthenon" },
-  { "id": "mont-saint-michel", "label": "Mont-Saint-Michel, Normandy", "wiki": "Mont-Saint-Michel" },
-  { "id": "brandenburg", "label": "Brandenburg Gate, Berlin", "wiki": "Brandenburg Gate" },
-  { "id": "charles-bridge", "label": "Charles Bridge, Prague", "wiki": "Charles Bridge" },
-  { "id": "hagia-sophia", "label": "Hagia Sophia, Istanbul", "wiki": "Hagia Sophia" },
-  { "id": "st-basils", "label": "Saint Basil's Cathedral, Moscow", "wiki": "Saint Basil's Cathedral" },
-  { "id": "pisa", "label": "Leaning Tower of Pisa", "wiki": "Leaning Tower of Pisa" },
-  { "id": "st-marks", "label": "St Mark's Basilica, Venice", "wiki": "St Mark's Basilica" },
-  { "id": "alhambra", "label": "Alhambra, Granada", "wiki": "Alhambra" },
-  { "id": "matterhorn", "label": "Matterhorn, Swiss–Italian border", "wiki": "Matterhorn" },
-  { "id": "oia", "label": "Oia, Santorini", "wiki": "Oia, Greece" },
-  { "id": "meteora", "label": "Meteora monasteries, Greece", "wiki": "Meteora" },
-  { "id": "plitvice", "label": "Plitvice Lakes, Croatia", "wiki": "Plitvice Lakes National Park" },
-  { "id": "cliffs-moher", "label": "Cliffs of Moher, County Clare", "wiki": "Cliffs of Moher" },
-  { "id": "giants-causeway", "label": "Giant's Causeway, County Antrim", "wiki": "Giant's Causeway" },
-  { "id": "tower-bridge", "label": "Tower Bridge, London", "wiki": "Tower Bridge" },
-  { "id": "durdle-door", "label": "Durdle Door, Dorset", "wiki": "Durdle Door" },
-  { "id": "forth-bridge", "label": "Forth Bridge, Firth of Forth", "wiki": "Forth Bridge" },
-  { "id": "hallstatt", "label": "Hallstatt, Austria", "wiki": "Hallstatt" },
-  { "id": "cinque-terre", "label": "Manarola, Cinque Terre", "wiki": "Manarola" },
-  { "id": "kremlin", "label": "Moscow Kremlin", "wiki": "Kremlin" },
-  { "id": "burj-khalifa", "label": "Burj Khalifa, Dubai", "wiki": "Burj Khalifa" },
-  { "id": "angkor", "label": "Angkor Wat, Cambodia", "wiki": "Angkor Wat" },
-  { "id": "great-wall", "label": "Great Wall at Badaling, near Beijing", "wiki": "Badaling" },
-  { "id": "forbidden-city", "label": "Forbidden City, Beijing", "wiki": "Forbidden City" },
-  { "id": "fuji", "label": "Mount Fuji, Japan", "wiki": "Mount Fuji" },
-  { "id": "fushimi-inari", "label": "Fushimi Inari shrine, Kyoto", "wiki": "Fushimi Inari-taisha" },
-  { "id": "ha-long", "label": "Hạ Long Bay, Vietnam", "wiki": "Hạ Long Bay" },
-  { "id": "borobudur", "label": "Borobudur, Java", "wiki": "Borobudur" },
-  { "id": "marina-bay", "label": "Marina Bay Sands, Singapore", "wiki": "Marina Bay Sands" },
-  { "id": "everest", "label": "Mount Everest", "wiki": "Mount Everest" },
-  { "id": "statue-liberty", "label": "Statue of Liberty, New York", "wiki": "Statue of Liberty" },
-  { "id": "rushmore", "label": "Mount Rushmore, South Dakota", "wiki": "Mount Rushmore" },
-  { "id": "niagara", "label": "Niagara Falls", "wiki": "Niagara Falls" },
-  { "id": "chichen-itza", "label": "Chichen Itza, Yucatán", "wiki": "Chichen Itza" },
-  { "id": "hollywood-sign", "label": "Hollywood Sign, Los Angeles", "wiki": "Hollywood Sign" },
-  { "id": "iguazu", "label": "Iguazu Falls, Argentina–Brazil border", "wiki": "Iguazu Falls" },
-  { "id": "uyuni", "label": "Salar de Uyuni, Bolivia", "wiki": "Salar de Uyuni" },
-  { "id": "perito-moreno", "label": "Perito Moreno Glacier, Patagonia", "wiki": "Perito Moreno Glacier" },
-  { "id": "moai", "label": "Ahu Tongariki, Easter Island", "wiki": "Ahu Tongariki" },
-  { "id": "uluru", "label": "Uluru, Northern Territory", "wiki": "Uluru" },
-  { "id": "harbour-bridge", "label": "Sydney Harbour Bridge", "wiki": "Sydney Harbour Bridge" },
-  { "id": "milford-sound", "label": "Milford Sound, New Zealand", "wiki": "Milford Sound" },
-  { "id": "bora-bora", "label": "Bora Bora, French Polynesia", "wiki": "Bora Bora" },
-  { "id": "table-mountain", "label": "Table Mountain, Cape Town", "wiki": "Table Mountain" },
-  { "id": "victoria-falls", "label": "Victoria Falls, Zambia–Zimbabwe border", "wiki": "Victoria Falls" },
-  { "id": "lalibela", "label": "Church of Saint George, Lalibela", "wiki": "Church of Saint George, Lalibela" },
-  { "id": "abu-simbel", "label": "Abu Simbel, Egypt", "wiki": "Abu Simbel" },
-  { "id": "djenne", "label": "Great Mosque of Djenné, Mali", "wiki": "Great Mosque of Djenné" },
-  { "id": "dubrovnik", "label": "Walls of Dubrovnik, Croatia", "wiki": "Walls of Dubrovnik" },
-  { "id": "kilimanjaro", "label": "Mount Kilimanjaro, Tanzania", "wiki": "Mount Kilimanjaro" },
-  { "id": "grand-canyon", "label": "Grand Canyon, Arizona", "wiki": "Grand Canyon" },
-  { "id": "big-ben", "label": "Big Ben, London", "wiki": "Big Ben" },
-  { "id": "tower-of-london", "label": "Tower of London", "wiki": "Tower of London" },
-  { "id": "arc-de-triomphe", "label": "Arc de Triomphe, Paris", "wiki": "Arc de Triomphe" },
-  { "id": "notre-dame", "label": "Notre-Dame de Paris", "wiki": "Notre-Dame de Paris" },
-  { "id": "versailles", "label": "Palace of Versailles", "wiki": "Palace of Versailles" },
-  { "id": "trevi", "label": "Trevi Fountain, Rome", "wiki": "Trevi Fountain" },
-  { "id": "st-peters", "label": "St Peter's Basilica, Vatican City", "wiki": "St. Peter's Basilica" },
-  { "id": "florence-duomo", "label": "Florence Cathedral", "wiki": "Florence Cathedral" },
-  { "id": "cologne", "label": "Cologne Cathedral", "wiki": "Cologne Cathedral" },
-  { "id": "atomium", "label": "Atomium, Brussels", "wiki": "Atomium" },
-  { "id": "hungarian-parliament", "label": "Hungarian Parliament, Budapest", "wiki": "Hungarian Parliament Building" },
-  { "id": "schonbrunn", "label": "Schönbrunn Palace, Vienna", "wiki": "Schönbrunn Palace" },
-  { "id": "bran-castle", "label": "Bran Castle, Transylvania", "wiki": "Bran Castle" },
-  { "id": "pena", "label": "Pena Palace, Sintra", "wiki": "Pena Palace" },
-  { "id": "hallgrimskirkja", "label": "Hallgrímskirkja, Reykjavík", "wiki": "Hallgrímskirkja" },
-  { "id": "cappadocia", "label": "Göreme, Cappadocia", "wiki": "Göreme" },
-  { "id": "pamukkale", "label": "Pamukkale, Turkey", "wiki": "Pamukkale" },
-  { "id": "kinkakuji", "label": "Kinkaku-ji, Kyoto", "wiki": "Kinkaku-ji" },
-  { "id": "skytree", "label": "Tokyo Skytree", "wiki": "Tokyo Skytree" },
-  { "id": "shwedagon", "label": "Shwedagon Pagoda, Yangon", "wiki": "Shwedagon Pagoda" },
-  { "id": "bagan", "label": "Temples of Bagan, Myanmar", "wiki": "Bagan" },
-  { "id": "potala", "label": "Potala Palace, Lhasa", "wiki": "Potala Palace" },
-  { "id": "terracotta", "label": "Terracotta Army, Xi'an", "wiki": "Terracotta Army" },
-  { "id": "zhangjiajie", "label": "Zhangjiajie, Hunan", "wiki": "Zhangjiajie" },
-  { "id": "golden-temple", "label": "Golden Temple, Amritsar", "wiki": "Golden Temple" },
-  { "id": "sigiriya", "label": "Sigiriya, Sri Lanka", "wiki": "Sigiriya" },
-  { "id": "registan", "label": "Registan, Samarkand", "wiki": "Registan" },
-  { "id": "blue-mosque", "label": "Blue Mosque, Istanbul", "wiki": "Blue Mosque, Istanbul" },
-  { "id": "dome-rock", "label": "Dome of the Rock, Jerusalem", "wiki": "Dome of the Rock" },
-  { "id": "wadi-rum", "label": "Wadi Rum, Jordan", "wiki": "Wadi Rum" },
-  { "id": "empire-state", "label": "Empire State Building, New York", "wiki": "Empire State Building" },
-  { "id": "white-house", "label": "White House, Washington, D.C.", "wiki": "White House" },
-  { "id": "brooklyn-bridge", "label": "Brooklyn Bridge, New York", "wiki": "Brooklyn Bridge" },
-  { "id": "alcatraz", "label": "Alcatraz Island, San Francisco", "wiki": "Alcatraz Island" },
-  { "id": "space-needle", "label": "Space Needle, Seattle", "wiki": "Space Needle" },
-  { "id": "monument-valley", "label": "Monument Valley, Arizona–Utah border", "wiki": "Monument Valley" },
-  { "id": "old-faithful", "label": "Old Faithful, Yellowstone", "wiki": "Old Faithful" },
-  { "id": "teotihuacan", "label": "Teotihuacan, Mexico", "wiki": "Teotihuacan" },
-  { "id": "sugarloaf", "label": "Sugarloaf Mountain, Rio de Janeiro", "wiki": "Sugarloaf Mountain" },
-  { "id": "nazca", "label": "Nazca Lines, Peru", "wiki": "Nazca lines" },
-  { "id": "sphinx", "label": "Great Sphinx of Giza", "wiki": "Great Sphinx of Giza" },
-  { "id": "luxor-temple", "label": "Luxor Temple, Egypt", "wiki": "Luxor Temple" },
-  { "id": "deadvlei", "label": "Deadvlei, Namib Desert", "wiki": "Deadvlei" },
-  { "id": "stone-town", "label": "Stone Town, Zanzibar", "wiki": "Stone Town" },
-  { "id": "louvre", "label": "Louvre Pyramid, Paris", "wiki": "Louvre Pyramid" },
-  { "id": "kinderdijk", "label": "Kinderdijk windmills, Netherlands", "wiki": "Kinderdijk windmills" },
-  { "id": "petronas", "label": "Petronas Towers, Kuala Lumpur", "wiki": "Petronas Towers" },
-  { "id": "cn-tower", "label": "CN Tower and the Toronto skyline", "wiki": "CN Tower" },
-  { "id": "torres-paine", "label": "Torres del Paine, Chile", "wiki": "Torres del Paine National Park" },
-  { "id": "twelve-apostles", "label": "Twelve Apostles, Great Ocean Road", "wiki": "The Twelve Apostles (Victoria)" },
-  { "id": "whitehaven", "label": "Whitehaven Beach, Whitsunday Islands", "wiki": "Whitehaven Beach" },
-  { "id": "nyhavn", "label": "Nyhavn, Copenhagen", "wiki": "Nyhavn" },
-  { "id": "grand-place", "label": "Grand-Place, Brussels", "wiki": "Grand-Place" },
-  { "id": "belfry-of-bruges", "label": "Belfry of Bruges", "wiki": "Belfry of Bruges" },
-  { "id": "pompeii", "label": "Pompeii", "wiki": "Pompeii" },
-  { "id": "positano", "label": "Positano, Amalfi Coast", "wiki": "Positano" },
-  { "id": "tre-cime-di-lavaredo", "label": "Tre Cime di Lavaredo, Dolomites", "wiki": "Tre Cime di Lavaredo" },
-  { "id": "plaza-de-espana", "label": "Plaza de España, Seville", "wiki": "Plaza de España, Seville" },
+  { "id": "taj-mahal", "label": "Taj Mahal, Agra", "wiki": "Taj Mahal", "at": { "lat": 27.1751, "lon": 78.0421 } },
+  {
+    "id": "sydney-opera",
+    "label": "Sydney Opera House",
+    "wiki": "Sydney Opera House",
+    "at": { "lat": -33.8568, "lon": 151.2153 }
+  },
+  { "id": "machu-picchu", "label": "Machu Picchu", "wiki": "Machu Picchu", "at": { "lat": -13.1631, "lon": -72.545 } },
+  {
+    "id": "cristo",
+    "label": "Christ the Redeemer, Rio de Janeiro",
+    "wiki": "Christ the Redeemer (statue)",
+    "at": { "lat": -22.9519, "lon": -43.2105 }
+  },
+  { "id": "petra", "label": "Al-Khazneh, Petra", "wiki": "Al-Khazneh", "at": { "lat": 30.3285, "lon": 35.4444 } },
+  {
+    "id": "giza",
+    "label": "Great Pyramid of Giza",
+    "wiki": "Great Pyramid of Giza",
+    "at": { "lat": 29.9792, "lon": 31.1342 }
+  },
+  {
+    "id": "golden-gate",
+    "label": "Golden Gate Bridge, San Francisco",
+    "wiki": "Golden Gate Bridge",
+    "at": { "lat": 37.8199, "lon": -122.4783 }
+  },
+  {
+    "id": "neuschwanstein",
+    "label": "Neuschwanstein Castle, Bavaria",
+    "wiki": "Neuschwanstein Castle",
+    "at": { "lat": 47.5576, "lon": 10.7498 }
+  },
+  {
+    "id": "buckingham",
+    "label": "Buckingham Palace, London",
+    "wiki": "Buckingham Palace",
+    "at": { "lat": 51.5014, "lon": -0.1419 }
+  },
+  {
+    "id": "edinburgh-castle",
+    "label": "Edinburgh Castle",
+    "wiki": "Edinburgh Castle",
+    "at": { "lat": 55.9486, "lon": -3.1999 }
+  },
+  {
+    "id": "angel-north",
+    "label": "Angel of the North, Gateshead",
+    "wiki": "Angel of the North",
+    "at": { "lat": 54.9141, "lon": -1.5895 }
+  },
+  {
+    "id": "stonehenge",
+    "label": "Stonehenge, Wiltshire",
+    "wiki": "Stonehenge",
+    "at": { "lat": 51.1789, "lon": -1.8262 }
+  },
+  {
+    "id": "clifton",
+    "label": "Clifton Suspension Bridge, Bristol",
+    "wiki": "Clifton Suspension Bridge",
+    "at": { "lat": 51.4549, "lon": -2.6277 }
+  },
+  { "id": "eiffel", "label": "Eiffel Tower, Paris", "wiki": "Eiffel Tower", "at": { "lat": 48.8584, "lon": 2.2945 } },
+  { "id": "colosseum", "label": "Colosseum, Rome", "wiki": "Colosseum", "at": { "lat": 41.8902, "lon": 12.4922 } },
+  {
+    "id": "sagrada",
+    "label": "Sagrada Família, Barcelona",
+    "wiki": "Sagrada Família",
+    "at": { "lat": 41.4036, "lon": 2.1744 }
+  },
+  { "id": "parthenon", "label": "Parthenon, Athens", "wiki": "Parthenon", "at": { "lat": 37.9715, "lon": 23.7267 } },
+  {
+    "id": "mont-saint-michel",
+    "label": "Mont-Saint-Michel, Normandy",
+    "wiki": "Mont-Saint-Michel",
+    "at": { "lat": 48.636, "lon": -1.5115 }
+  },
+  {
+    "id": "brandenburg",
+    "label": "Brandenburg Gate, Berlin",
+    "wiki": "Brandenburg Gate",
+    "at": { "lat": 52.5163, "lon": 13.3777 }
+  },
+  {
+    "id": "charles-bridge",
+    "label": "Charles Bridge, Prague",
+    "wiki": "Charles Bridge",
+    "at": { "lat": 50.0865, "lon": 14.4114 }
+  },
+  {
+    "id": "hagia-sophia",
+    "label": "Hagia Sophia, Istanbul",
+    "wiki": "Hagia Sophia",
+    "at": { "lat": 41.0086, "lon": 28.98 }
+  },
+  {
+    "id": "st-basils",
+    "label": "Saint Basil's Cathedral, Moscow",
+    "wiki": "Saint Basil's Cathedral",
+    "at": { "lat": 55.7525, "lon": 37.6231 }
+  },
+  {
+    "id": "pisa",
+    "label": "Leaning Tower of Pisa",
+    "wiki": "Leaning Tower of Pisa",
+    "at": { "lat": 43.723, "lon": 10.3966 }
+  },
+  {
+    "id": "st-marks",
+    "label": "St Mark's Basilica, Venice",
+    "wiki": "St Mark's Basilica",
+    "at": { "lat": 45.4345, "lon": 12.3397 }
+  },
+  { "id": "alhambra", "label": "Alhambra, Granada", "wiki": "Alhambra", "at": { "lat": 37.1761, "lon": -3.5881 } },
+  {
+    "id": "matterhorn",
+    "label": "Matterhorn, Swiss–Italian border",
+    "wiki": "Matterhorn",
+    "at": { "lat": 45.9763, "lon": 7.6586 }
+  },
+  { "id": "oia", "label": "Oia, Santorini", "wiki": "Oia, Greece", "at": { "lat": 36.4618, "lon": 25.3753 } },
+  {
+    "id": "meteora",
+    "label": "Meteora monasteries, Greece",
+    "wiki": "Meteora",
+    "at": { "lat": 39.7217, "lon": 21.6306 }
+  },
+  {
+    "id": "plitvice",
+    "label": "Plitvice Lakes, Croatia",
+    "wiki": "Plitvice Lakes National Park",
+    "at": { "lat": 44.8654, "lon": 15.582 }
+  },
+  {
+    "id": "cliffs-moher",
+    "label": "Cliffs of Moher, County Clare",
+    "wiki": "Cliffs of Moher",
+    "at": { "lat": 52.9719, "lon": -9.4265 }
+  },
+  {
+    "id": "giants-causeway",
+    "label": "Giant's Causeway, County Antrim",
+    "wiki": "Giant's Causeway",
+    "at": { "lat": 55.2408, "lon": -6.5116 }
+  },
+  {
+    "id": "tower-bridge",
+    "label": "Tower Bridge, London",
+    "wiki": "Tower Bridge",
+    "at": { "lat": 51.5055, "lon": -0.0754 }
+  },
+  {
+    "id": "durdle-door",
+    "label": "Durdle Door, Dorset",
+    "wiki": "Durdle Door",
+    "at": { "lat": 50.6212, "lon": -2.2769 }
+  },
+  {
+    "id": "forth-bridge",
+    "label": "Forth Bridge, Firth of Forth",
+    "wiki": "Forth Bridge",
+    "at": { "lat": 56.0003, "lon": -3.3884 }
+  },
+  { "id": "hallstatt", "label": "Hallstatt, Austria", "wiki": "Hallstatt", "at": { "lat": 47.5622, "lon": 13.6493 } },
+  {
+    "id": "cinque-terre",
+    "label": "Manarola, Cinque Terre",
+    "wiki": "Manarola",
+    "at": { "lat": 44.1067, "lon": 9.7275 }
+  },
+  { "id": "kremlin", "label": "Moscow Kremlin", "wiki": "Kremlin", "at": { "lat": 55.752, "lon": 37.6175 } },
+  {
+    "id": "burj-khalifa",
+    "label": "Burj Khalifa, Dubai",
+    "wiki": "Burj Khalifa",
+    "at": { "lat": 25.1972, "lon": 55.2744 }
+  },
+  { "id": "angkor", "label": "Angkor Wat, Cambodia", "wiki": "Angkor Wat", "at": { "lat": 13.4125, "lon": 103.867 } },
+  {
+    "id": "great-wall",
+    "label": "Great Wall at Badaling, near Beijing",
+    "wiki": "Badaling",
+    "at": { "lat": 40.3597, "lon": 116.02 }
+  },
+  {
+    "id": "forbidden-city",
+    "label": "Forbidden City, Beijing",
+    "wiki": "Forbidden City",
+    "at": { "lat": 39.9163, "lon": 116.3972 }
+  },
+  { "id": "fuji", "label": "Mount Fuji, Japan", "wiki": "Mount Fuji", "at": { "lat": 35.3606, "lon": 138.7274 } },
+  {
+    "id": "fushimi-inari",
+    "label": "Fushimi Inari shrine, Kyoto",
+    "wiki": "Fushimi Inari-taisha",
+    "at": { "lat": 34.9671, "lon": 135.7727 }
+  },
+  {
+    "id": "ha-long",
+    "label": "Hạ Long Bay, Vietnam",
+    "wiki": "Hạ Long Bay",
+    "at": { "lat": 20.9101, "lon": 107.1839 }
+  },
+  { "id": "borobudur", "label": "Borobudur, Java", "wiki": "Borobudur", "at": { "lat": -7.6079, "lon": 110.2038 } },
+  {
+    "id": "marina-bay",
+    "label": "Marina Bay Sands, Singapore",
+    "wiki": "Marina Bay Sands",
+    "at": { "lat": 1.2834, "lon": 103.8607 }
+  },
+  { "id": "everest", "label": "Mount Everest", "wiki": "Mount Everest", "at": { "lat": 27.9881, "lon": 86.925 } },
+  {
+    "id": "statue-liberty",
+    "label": "Statue of Liberty, New York",
+    "wiki": "Statue of Liberty",
+    "at": { "lat": 40.6892, "lon": -74.0445 }
+  },
+  {
+    "id": "rushmore",
+    "label": "Mount Rushmore, South Dakota",
+    "wiki": "Mount Rushmore",
+    "at": { "lat": 43.8791, "lon": -103.4591 }
+  },
+  { "id": "niagara", "label": "Niagara Falls", "wiki": "Niagara Falls", "at": { "lat": 43.0799, "lon": -79.0747 } },
+  {
+    "id": "chichen-itza",
+    "label": "Chichen Itza, Yucatán",
+    "wiki": "Chichen Itza",
+    "at": { "lat": 20.6843, "lon": -88.5678 }
+  },
+  {
+    "id": "hollywood-sign",
+    "label": "Hollywood Sign, Los Angeles",
+    "wiki": "Hollywood Sign",
+    "at": { "lat": 34.1341, "lon": -118.3215 }
+  },
+  {
+    "id": "iguazu",
+    "label": "Iguazu Falls, Argentina–Brazil border",
+    "wiki": "Iguazu Falls",
+    "at": { "lat": -25.6953, "lon": -54.4367 }
+  },
+  {
+    "id": "uyuni",
+    "label": "Salar de Uyuni, Bolivia",
+    "wiki": "Salar de Uyuni",
+    "at": { "lat": -20.1338, "lon": -67.4891 }
+  },
+  {
+    "id": "perito-moreno",
+    "label": "Perito Moreno Glacier, Patagonia",
+    "wiki": "Perito Moreno Glacier",
+    "at": { "lat": -50.4953, "lon": -73.1377 }
+  },
+  {
+    "id": "moai",
+    "label": "Ahu Tongariki, Easter Island",
+    "wiki": "Ahu Tongariki",
+    "at": { "lat": -27.1258, "lon": -109.2769 }
+  },
+  { "id": "uluru", "label": "Uluru, Northern Territory", "wiki": "Uluru", "at": { "lat": -25.3444, "lon": 131.0369 } },
+  {
+    "id": "harbour-bridge",
+    "label": "Sydney Harbour Bridge",
+    "wiki": "Sydney Harbour Bridge",
+    "at": { "lat": -33.8523, "lon": 151.2108 }
+  },
+  {
+    "id": "milford-sound",
+    "label": "Milford Sound, New Zealand",
+    "wiki": "Milford Sound",
+    "at": { "lat": -44.6414, "lon": 167.8974 }
+  },
+  {
+    "id": "bora-bora",
+    "label": "Bora Bora, French Polynesia",
+    "wiki": "Bora Bora",
+    "at": { "lat": -16.5004, "lon": -151.7415 }
+  },
+  {
+    "id": "table-mountain",
+    "label": "Table Mountain, Cape Town",
+    "wiki": "Table Mountain",
+    "at": { "lat": -33.9628, "lon": 18.4098 }
+  },
+  {
+    "id": "victoria-falls",
+    "label": "Victoria Falls, Zambia–Zimbabwe border",
+    "wiki": "Victoria Falls",
+    "at": { "lat": -17.9243, "lon": 25.8572 }
+  },
+  {
+    "id": "lalibela",
+    "label": "Church of Saint George, Lalibela",
+    "wiki": "Church of Saint George, Lalibela",
+    "at": { "lat": 12.0316, "lon": 39.0413 }
+  },
+  { "id": "abu-simbel", "label": "Abu Simbel, Egypt", "wiki": "Abu Simbel", "at": { "lat": 22.3372, "lon": 31.6258 } },
+  {
+    "id": "djenne",
+    "label": "Great Mosque of Djenné, Mali",
+    "wiki": "Great Mosque of Djenné",
+    "at": { "lat": 13.9053, "lon": -4.5556 }
+  },
+  {
+    "id": "dubrovnik",
+    "label": "Walls of Dubrovnik, Croatia",
+    "wiki": "Walls of Dubrovnik",
+    "at": { "lat": 42.6414, "lon": 18.108 }
+  },
+  {
+    "id": "kilimanjaro",
+    "label": "Mount Kilimanjaro, Tanzania",
+    "wiki": "Mount Kilimanjaro",
+    "at": { "lat": -3.0674, "lon": 37.3556 }
+  },
+  {
+    "id": "grand-canyon",
+    "label": "Grand Canyon, Arizona",
+    "wiki": "Grand Canyon",
+    "at": { "lat": 36.1069, "lon": -112.1129 }
+  },
+  { "id": "big-ben", "label": "Big Ben, London", "wiki": "Big Ben", "at": { "lat": 51.5007, "lon": -0.1246 } },
+  {
+    "id": "tower-of-london",
+    "label": "Tower of London",
+    "wiki": "Tower of London",
+    "at": { "lat": 51.5081, "lon": -0.0759 }
+  },
+  {
+    "id": "arc-de-triomphe",
+    "label": "Arc de Triomphe, Paris",
+    "wiki": "Arc de Triomphe",
+    "at": { "lat": 48.8738, "lon": 2.295 }
+  },
+  {
+    "id": "notre-dame",
+    "label": "Notre-Dame de Paris",
+    "wiki": "Notre-Dame de Paris",
+    "at": { "lat": 48.853, "lon": 2.3499 }
+  },
+  {
+    "id": "versailles",
+    "label": "Palace of Versailles",
+    "wiki": "Palace of Versailles",
+    "at": { "lat": 48.8049, "lon": 2.1204 }
+  },
+  {
+    "id": "trevi",
+    "label": "Trevi Fountain, Rome",
+    "wiki": "Trevi Fountain",
+    "at": { "lat": 41.9009, "lon": 12.4833 }
+  },
+  {
+    "id": "st-peters",
+    "label": "St Peter's Basilica, Vatican City",
+    "wiki": "St. Peter's Basilica",
+    "at": { "lat": 41.9022, "lon": 12.4539 }
+  },
+  {
+    "id": "florence-duomo",
+    "label": "Florence Cathedral",
+    "wiki": "Florence Cathedral",
+    "at": { "lat": 43.7731, "lon": 11.256 }
+  },
+  {
+    "id": "cologne",
+    "label": "Cologne Cathedral",
+    "wiki": "Cologne Cathedral",
+    "at": { "lat": 50.9413, "lon": 6.9583 }
+  },
+  { "id": "atomium", "label": "Atomium, Brussels", "wiki": "Atomium", "at": { "lat": 50.8949, "lon": 4.3414 } },
+  {
+    "id": "hungarian-parliament",
+    "label": "Hungarian Parliament, Budapest",
+    "wiki": "Hungarian Parliament Building",
+    "at": { "lat": 47.507, "lon": 19.0457 }
+  },
+  {
+    "id": "schonbrunn",
+    "label": "Schönbrunn Palace, Vienna",
+    "wiki": "Schönbrunn Palace",
+    "at": { "lat": 48.1847, "lon": 16.3122 }
+  },
+  {
+    "id": "bran-castle",
+    "label": "Bran Castle, Transylvania",
+    "wiki": "Bran Castle",
+    "at": { "lat": 45.515, "lon": 25.3672 }
+  },
+  { "id": "pena", "label": "Pena Palace, Sintra", "wiki": "Pena Palace", "at": { "lat": 38.7876, "lon": -9.3906 } },
+  {
+    "id": "hallgrimskirkja",
+    "label": "Hallgrímskirkja, Reykjavík",
+    "wiki": "Hallgrímskirkja",
+    "at": { "lat": 64.1417, "lon": -21.9267 }
+  },
+  { "id": "cappadocia", "label": "Göreme, Cappadocia", "wiki": "Göreme", "at": { "lat": 38.6431, "lon": 34.8289 } },
+  { "id": "pamukkale", "label": "Pamukkale, Turkey", "wiki": "Pamukkale", "at": { "lat": 37.9204, "lon": 29.1211 } },
+  { "id": "kinkakuji", "label": "Kinkaku-ji, Kyoto", "wiki": "Kinkaku-ji", "at": { "lat": 35.0394, "lon": 135.7292 } },
+  { "id": "skytree", "label": "Tokyo Skytree", "wiki": "Tokyo Skytree", "at": { "lat": 35.7101, "lon": 139.8107 } },
+  {
+    "id": "shwedagon",
+    "label": "Shwedagon Pagoda, Yangon",
+    "wiki": "Shwedagon Pagoda",
+    "at": { "lat": 16.7983, "lon": 96.1497 }
+  },
+  { "id": "bagan", "label": "Temples of Bagan, Myanmar", "wiki": "Bagan", "at": { "lat": 21.1722, "lon": 94.86 } },
+  { "id": "potala", "label": "Potala Palace, Lhasa", "wiki": "Potala Palace", "at": { "lat": 29.6578, "lon": 91.117 } },
+  {
+    "id": "terracotta",
+    "label": "Terracotta Army, Xi'an",
+    "wiki": "Terracotta Army",
+    "at": { "lat": 34.3848, "lon": 109.2785 }
+  },
+  {
+    "id": "zhangjiajie",
+    "label": "Zhangjiajie, Hunan",
+    "wiki": "Zhangjiajie",
+    "at": { "lat": 29.3167, "lon": 110.4333 }
+  },
+  {
+    "id": "golden-temple",
+    "label": "Golden Temple, Amritsar",
+    "wiki": "Golden Temple",
+    "at": { "lat": 31.62, "lon": 74.8765 }
+  },
+  { "id": "sigiriya", "label": "Sigiriya, Sri Lanka", "wiki": "Sigiriya", "at": { "lat": 7.957, "lon": 80.7603 } },
+  { "id": "registan", "label": "Registan, Samarkand", "wiki": "Registan", "at": { "lat": 39.6547, "lon": 66.9758 } },
+  {
+    "id": "blue-mosque",
+    "label": "Blue Mosque, Istanbul",
+    "wiki": "Blue Mosque, Istanbul",
+    "at": { "lat": 41.0054, "lon": 28.9768 }
+  },
+  {
+    "id": "dome-rock",
+    "label": "Dome of the Rock, Jerusalem",
+    "wiki": "Dome of the Rock",
+    "at": { "lat": 31.778, "lon": 35.2354 }
+  },
+  { "id": "wadi-rum", "label": "Wadi Rum, Jordan", "wiki": "Wadi Rum", "at": { "lat": 29.5766, "lon": 35.42 } },
+  {
+    "id": "empire-state",
+    "label": "Empire State Building, New York",
+    "wiki": "Empire State Building",
+    "at": { "lat": 40.7484, "lon": -73.9857 }
+  },
+  {
+    "id": "white-house",
+    "label": "White House, Washington, D.C.",
+    "wiki": "White House",
+    "at": { "lat": 38.8977, "lon": -77.0365 }
+  },
+  {
+    "id": "brooklyn-bridge",
+    "label": "Brooklyn Bridge, New York",
+    "wiki": "Brooklyn Bridge",
+    "at": { "lat": 40.7061, "lon": -73.9969 }
+  },
+  {
+    "id": "alcatraz",
+    "label": "Alcatraz Island, San Francisco",
+    "wiki": "Alcatraz Island",
+    "at": { "lat": 37.827, "lon": -122.423 }
+  },
+  {
+    "id": "space-needle",
+    "label": "Space Needle, Seattle",
+    "wiki": "Space Needle",
+    "at": { "lat": 47.6205, "lon": -122.3493 }
+  },
+  {
+    "id": "monument-valley",
+    "label": "Monument Valley, Arizona–Utah border",
+    "wiki": "Monument Valley",
+    "at": { "lat": 36.998, "lon": -110.0985 }
+  },
+  {
+    "id": "old-faithful",
+    "label": "Old Faithful, Yellowstone",
+    "wiki": "Old Faithful",
+    "at": { "lat": 44.4605, "lon": -110.8281 }
+  },
+  {
+    "id": "teotihuacan",
+    "label": "Teotihuacan, Mexico",
+    "wiki": "Teotihuacan",
+    "at": { "lat": 19.6925, "lon": -98.8438 }
+  },
+  {
+    "id": "sugarloaf",
+    "label": "Sugarloaf Mountain, Rio de Janeiro",
+    "wiki": "Sugarloaf Mountain",
+    "at": { "lat": -22.9492, "lon": -43.1545 }
+  },
+  { "id": "nazca", "label": "Nazca Lines, Peru", "wiki": "Nazca lines", "at": { "lat": -14.739, "lon": -75.13 } },
+  {
+    "id": "sphinx",
+    "label": "Great Sphinx of Giza",
+    "wiki": "Great Sphinx of Giza",
+    "at": { "lat": 29.9753, "lon": 31.1376 }
+  },
+  {
+    "id": "luxor-temple",
+    "label": "Luxor Temple, Egypt",
+    "wiki": "Luxor Temple",
+    "at": { "lat": 25.6995, "lon": 32.6391 }
+  },
+  {
+    "id": "deadvlei",
+    "label": "Deadvlei, Namib Desert",
+    "wiki": "Deadvlei",
+    "at": { "lat": -24.7592, "lon": 15.2923 }
+  },
+  {
+    "id": "stone-town",
+    "label": "Stone Town, Zanzibar",
+    "wiki": "Stone Town",
+    "at": { "lat": -6.1622, "lon": 39.1875 }
+  },
+  {
+    "id": "louvre",
+    "label": "Louvre Pyramid, Paris",
+    "wiki": "Louvre Pyramid",
+    "at": { "lat": 48.8611, "lon": 2.3358 }
+  },
+  {
+    "id": "kinderdijk",
+    "label": "Kinderdijk windmills, Netherlands",
+    "wiki": "Kinderdijk windmills",
+    "at": { "lat": 51.8833, "lon": 4.6333 }
+  },
+  {
+    "id": "petronas",
+    "label": "Petronas Towers, Kuala Lumpur",
+    "wiki": "Petronas Towers",
+    "at": { "lat": 3.1579, "lon": 101.7116 }
+  },
+  {
+    "id": "cn-tower",
+    "label": "CN Tower and the Toronto skyline",
+    "wiki": "CN Tower",
+    "at": { "lat": 43.6426, "lon": -79.3871 }
+  },
+  {
+    "id": "torres-paine",
+    "label": "Torres del Paine, Chile",
+    "wiki": "Torres del Paine National Park",
+    "at": { "lat": -50.9423, "lon": -73.4068 }
+  },
+  {
+    "id": "twelve-apostles",
+    "label": "Twelve Apostles, Great Ocean Road",
+    "wiki": "The Twelve Apostles (Victoria)",
+    "at": { "lat": -38.6662, "lon": 143.1044 }
+  },
+  {
+    "id": "whitehaven",
+    "label": "Whitehaven Beach, Whitsunday Islands",
+    "wiki": "Whitehaven Beach",
+    "at": { "lat": -20.2825, "lon": 149.0389 }
+  },
+  { "id": "nyhavn", "label": "Nyhavn, Copenhagen", "wiki": "Nyhavn", "at": { "lat": 55.6797, "lon": 12.5906 } },
+  {
+    "id": "grand-place",
+    "label": "Grand-Place, Brussels",
+    "wiki": "Grand-Place",
+    "at": { "lat": 50.8467, "lon": 4.3525 }
+  },
+  {
+    "id": "belfry-of-bruges",
+    "label": "Belfry of Bruges",
+    "wiki": "Belfry of Bruges",
+    "at": { "lat": 51.2083, "lon": 3.2247 }
+  },
+  { "id": "pompeii", "label": "Pompeii", "wiki": "Pompeii", "at": { "lat": 40.75, "lon": 14.4861 } },
+  { "id": "positano", "label": "Positano, Amalfi Coast", "wiki": "Positano", "at": { "lat": 40.6333, "lon": 14.4833 } },
+  {
+    "id": "tre-cime-di-lavaredo",
+    "label": "Tre Cime di Lavaredo, Dolomites",
+    "wiki": "Tre Cime di Lavaredo",
+    "at": { "lat": 46.6167, "lon": 12.3 }
+  },
+  {
+    "id": "plaza-de-espana",
+    "label": "Plaza de España, Seville",
+    "wiki": "Plaza de España, Seville",
+    "at": { "lat": 37.3769, "lon": -5.9869 }
+  },
   {
     "id": "mosque-cathedral-of-cordoba",
     "label": "Mosque–Cathedral of Córdoba",
-    "wiki": "Mosque–Cathedral of Córdoba"
+    "wiki": "Mosque–Cathedral of Córdoba",
+    "at": { "lat": 37.8792, "lon": -4.7797 }
   },
-  { "id": "guggenheim-museum", "label": "Guggenheim Museum, Bilbao", "wiki": "Guggenheim Museum Bilbao" },
-  { "id": "rock-of-gibraltar", "label": "Rock of Gibraltar", "wiki": "Rock of Gibraltar" },
-  { "id": "cite-de-carcassonne", "label": "Cité de Carcassonne", "wiki": "Carcassonne" },
-  { "id": "pont-du-gard", "label": "Pont du Gard", "wiki": "Pont du Gard" },
-  { "id": "chateau-de-chillon", "label": "Château de Chillon, Lake Geneva", "wiki": "Chillon Castle" },
-  { "id": "preikestolen", "label": "Preikestolen, Norway", "wiki": "Preikestolen" },
-  { "id": "gullfoss", "label": "Gullfoss, Iceland", "wiki": "Gullfoss" },
-  { "id": "lake-bled", "label": "Lake Bled, Slovenia", "wiki": "Lake Bled" },
-  { "id": "stari-most", "label": "Stari Most, Mostar", "wiki": "Stari Most" },
-  { "id": "bay-of-kotor", "label": "Bay of Kotor, Montenegro", "wiki": "Bay of Kotor" },
+  {
+    "id": "guggenheim-museum",
+    "label": "Guggenheim Museum, Bilbao",
+    "wiki": "Guggenheim Museum Bilbao",
+    "at": { "lat": 43.2686, "lon": -2.9339 }
+  },
+  {
+    "id": "rock-of-gibraltar",
+    "label": "Rock of Gibraltar",
+    "wiki": "Rock of Gibraltar",
+    "at": { "lat": 36.1245, "lon": -5.3431 }
+  },
+  {
+    "id": "cite-de-carcassonne",
+    "label": "Cité de Carcassonne",
+    "wiki": "Carcassonne",
+    "at": { "lat": 43.2133, "lon": 2.3508 }
+  },
+  { "id": "pont-du-gard", "label": "Pont du Gard", "wiki": "Pont du Gard", "at": { "lat": 43.9472, "lon": 4.5356 } },
+  {
+    "id": "chateau-de-chillon",
+    "label": "Château de Chillon, Lake Geneva",
+    "wiki": "Chillon Castle",
+    "at": { "lat": 46.4142, "lon": 6.9275 }
+  },
+  {
+    "id": "preikestolen",
+    "label": "Preikestolen, Norway",
+    "wiki": "Preikestolen",
+    "at": { "lat": 58.9867, "lon": 6.1875 }
+  },
+  { "id": "gullfoss", "label": "Gullfoss, Iceland", "wiki": "Gullfoss", "at": { "lat": 64.3261, "lon": -20.1211 } },
+  { "id": "lake-bled", "label": "Lake Bled, Slovenia", "wiki": "Lake Bled", "at": { "lat": 46.3644, "lon": 14.0947 } },
+  { "id": "stari-most", "label": "Stari Most, Mostar", "wiki": "Stari Most", "at": { "lat": 43.3373, "lon": 17.815 } },
+  {
+    "id": "bay-of-kotor",
+    "label": "Bay of Kotor, Montenegro",
+    "wiki": "Bay of Kotor",
+    "at": { "lat": 42.45, "lon": 18.67 }
+  },
   {
     "id": "st-mary-s-basilica",
     "label": "St Mary's Basilica, Kraków",
-    "wiki": "Church of the Assumption of the Blessed Virgin Mary, Kraków"
+    "wiki": "Church of the Assumption of the Blessed Virgin Mary, Kraków",
+    "at": { "lat": 50.0617, "lon": 19.9392 }
   },
-  { "id": "library-of-celsus", "label": "Library of Celsus, Ephesus", "wiki": "Library of Celsus" },
-  { "id": "lake-como", "label": "Lake Como, Italy", "wiki": "Lake Como" },
-  { "id": "blue-lagoon", "label": "Blue Lagoon, Iceland", "wiki": "Blue Lagoon (geothermal spa)" },
-  { "id": "las-vegas-strip", "label": "Las Vegas Strip", "wiki": "Las Vegas Strip" },
-  { "id": "gateway-arch", "label": "Gateway Arch, St. Louis", "wiki": "Gateway Arch" },
-  { "id": "half-dome", "label": "Half Dome, Yosemite", "wiki": "Half Dome" },
-  { "id": "times-square", "label": "Times Square, New York", "wiki": "Times Square" },
-  { "id": "moraine-lake", "label": "Moraine Lake, Banff", "wiki": "Moraine Lake" },
-  { "id": "chateau-frontenac", "label": "Château Frontenac, Quebec City", "wiki": "Château Frontenac" },
-  { "id": "tulum", "label": "Tulum, Mexico", "wiki": "Tulum" },
-  { "id": "angel-falls", "label": "Angel Falls, Venezuela", "wiki": "Angel Falls" },
-  { "id": "chefchaouen", "label": "Chefchaouen, Morocco", "wiki": "Chefchaouen" },
-  { "id": "hiroshima-peace-memorial", "label": "Hiroshima Peace Memorial", "wiki": "Hiroshima Peace Memorial" },
-  { "id": "victoria-harbour", "label": "Victoria Harbour, Hong Kong", "wiki": "Victoria Harbour" },
-  { "id": "paro-taktsang", "label": "Paro Taktsang (Tiger's Nest), Bhutan", "wiki": "Paro Taktsang" },
-  { "id": "maya-bay", "label": "Maya Bay, Thailand", "wiki": "Ko Phi Phi Le" },
-  { "id": "gateway-of-india", "label": "Gateway of India, Mumbai", "wiki": "Gateway of India" },
-  { "id": "bondi-beach", "label": "Bondi Beach, Sydney", "wiki": "Bondi Beach" },
-  { "id": "hobbiton", "label": "Hobbiton, Matamata", "wiki": "Hobbiton Movie Set" },
-  { "id": "hadrian-s-wall", "label": "Hadrian's Wall", "wiki": "Hadrian's Wall" },
-  { "id": "blackpool-tower", "label": "Blackpool Tower", "wiki": "Blackpool Tower" },
-  { "id": "eilean-donan-castle", "label": "Eilean Donan Castle", "wiki": "Eilean Donan" },
-  { "id": "glenfinnan-viaduct", "label": "Glenfinnan Viaduct", "wiki": "Glenfinnan Viaduct" },
-  { "id": "conwy-castle", "label": "Conwy Castle", "wiki": "Conwy Castle" },
-  { "id": "radcliffe-camera", "label": "Radcliffe Camera, Oxford", "wiki": "Radcliffe Camera" },
-  { "id": "st-michael-s-mount", "label": "St Michael's Mount, Cornwall", "wiki": "St Michael's Mount" },
-  { "id": "tashkent", "label": "Tashkent, Uzbekistan", "wiki": "Tashkent" },
-  { "id": "ulaanbaatar", "label": "Ulaanbaatar, Mongolia", "wiki": "Ulaanbaatar" },
-  { "id": "timbuktu", "label": "Timbuktu, Mali", "wiki": "Timbuktu" },
-  { "id": "wellington", "label": "Wellington, New Zealand", "wiki": "Wellington" },
-  { "id": "reykjavik", "label": "Reykjavík, Iceland", "wiki": "Reykjavík" },
-  { "id": "kinshasa", "label": "Kinshasa, DR Congo", "wiki": "Kinshasa" },
-  { "id": "montevideo", "label": "Montevideo, Uruguay", "wiki": "Montevideo" },
-  { "id": "aberystwyth", "label": "Aberystwyth, Wales", "wiki": "Aberystwyth" },
-  { "id": "inverness", "label": "Inverness, Scotland", "wiki": "Inverness" },
-  { "id": "norwich", "label": "Norwich, England", "wiki": "Norwich" },
-  { "id": "edinburgh", "label": "Edinburgh", "wiki": "Edinburgh" },
-  { "id": "cardiff", "label": "Cardiff", "wiki": "Cardiff" },
-  { "id": "belfast", "label": "Belfast", "wiki": "Belfast" },
-  { "id": "douglas-iom", "label": "Douglas, Isle of Man", "wiki": "Douglas, Isle of Man" },
-  { "id": "st-helier", "label": "St Helier, Jersey", "wiki": "St Helier" },
-  { "id": "dublin", "label": "Dublin", "wiki": "Dublin" },
-  { "id": "paris", "label": "Paris", "wiki": "Paris" },
-  { "id": "brussels", "label": "Brussels", "wiki": "Brussels" },
-  { "id": "amsterdam", "label": "Amsterdam", "wiki": "Amsterdam" },
+  {
+    "id": "library-of-celsus",
+    "label": "Library of Celsus, Ephesus",
+    "wiki": "Library of Celsus",
+    "at": { "lat": 37.9391, "lon": 27.3407 }
+  },
+  { "id": "lake-como", "label": "Lake Como, Italy", "wiki": "Lake Como", "at": { "lat": 46, "lon": 9.2667 } },
+  {
+    "id": "blue-lagoon",
+    "label": "Blue Lagoon, Iceland",
+    "wiki": "Blue Lagoon (geothermal spa)",
+    "at": { "lat": 63.8792, "lon": -22.4455 }
+  },
+  {
+    "id": "las-vegas-strip",
+    "label": "Las Vegas Strip",
+    "wiki": "Las Vegas Strip",
+    "at": { "lat": 36.12, "lon": -115.1725 }
+  },
+  {
+    "id": "gateway-arch",
+    "label": "Gateway Arch, St. Louis",
+    "wiki": "Gateway Arch",
+    "at": { "lat": 38.6246, "lon": -90.185 }
+  },
+  { "id": "half-dome", "label": "Half Dome, Yosemite", "wiki": "Half Dome", "at": { "lat": 37.746, "lon": -119.5329 } },
+  {
+    "id": "times-square",
+    "label": "Times Square, New York",
+    "wiki": "Times Square",
+    "at": { "lat": 40.7575, "lon": -73.9858 }
+  },
+  {
+    "id": "moraine-lake",
+    "label": "Moraine Lake, Banff",
+    "wiki": "Moraine Lake",
+    "at": { "lat": 51.3225, "lon": -116.1856 }
+  },
+  {
+    "id": "chateau-frontenac",
+    "label": "Château Frontenac, Quebec City",
+    "wiki": "Château Frontenac",
+    "at": { "lat": 46.8119, "lon": -71.205 }
+  },
+  { "id": "tulum", "label": "Tulum, Mexico", "wiki": "Tulum", "at": { "lat": 20.2147, "lon": -87.4289 } },
+  {
+    "id": "angel-falls",
+    "label": "Angel Falls, Venezuela",
+    "wiki": "Angel Falls",
+    "at": { "lat": 5.9675, "lon": -62.5356 }
+  },
+  {
+    "id": "chefchaouen",
+    "label": "Chefchaouen, Morocco",
+    "wiki": "Chefchaouen",
+    "at": { "lat": 35.1714, "lon": -5.2697 }
+  },
+  {
+    "id": "hiroshima-peace-memorial",
+    "label": "Hiroshima Peace Memorial",
+    "wiki": "Hiroshima Peace Memorial",
+    "at": { "lat": 34.3956, "lon": 132.4536 }
+  },
+  {
+    "id": "victoria-harbour",
+    "label": "Victoria Harbour, Hong Kong",
+    "wiki": "Victoria Harbour",
+    "at": { "lat": 22.29, "lon": 114.17 }
+  },
+  {
+    "id": "paro-taktsang",
+    "label": "Paro Taktsang (Tiger's Nest), Bhutan",
+    "wiki": "Paro Taktsang",
+    "at": { "lat": 27.4919, "lon": 89.3635 }
+  },
+  { "id": "maya-bay", "label": "Maya Bay, Thailand", "wiki": "Ko Phi Phi Le", "at": { "lat": 7.6789, "lon": 98.765 } },
+  {
+    "id": "gateway-of-india",
+    "label": "Gateway of India, Mumbai",
+    "wiki": "Gateway of India",
+    "at": { "lat": 18.922, "lon": 72.8347 }
+  },
+  {
+    "id": "bondi-beach",
+    "label": "Bondi Beach, Sydney",
+    "wiki": "Bondi Beach",
+    "at": { "lat": -33.8911, "lon": 151.2742 }
+  },
+  {
+    "id": "hobbiton",
+    "label": "Hobbiton, Matamata",
+    "wiki": "Hobbiton Movie Set",
+    "at": { "lat": -37.8575, "lon": 175.6797 }
+  },
+  {
+    "id": "hadrian-s-wall",
+    "label": "Hadrian's Wall",
+    "wiki": "Hadrian's Wall",
+    "at": { "lat": 55.0167, "lon": -2.2833 }
+  },
+  {
+    "id": "blackpool-tower",
+    "label": "Blackpool Tower",
+    "wiki": "Blackpool Tower",
+    "at": { "lat": 53.8158, "lon": -3.0553 }
+  },
+  {
+    "id": "eilean-donan-castle",
+    "label": "Eilean Donan Castle",
+    "wiki": "Eilean Donan",
+    "at": { "lat": 57.274, "lon": -5.5161 }
+  },
+  {
+    "id": "glenfinnan-viaduct",
+    "label": "Glenfinnan Viaduct",
+    "wiki": "Glenfinnan Viaduct",
+    "at": { "lat": 56.8763, "lon": -5.4319 }
+  },
+  { "id": "conwy-castle", "label": "Conwy Castle", "wiki": "Conwy Castle", "at": { "lat": 53.28, "lon": -3.8256 } },
+  {
+    "id": "radcliffe-camera",
+    "label": "Radcliffe Camera, Oxford",
+    "wiki": "Radcliffe Camera",
+    "at": { "lat": 51.7534, "lon": -1.2539 }
+  },
+  {
+    "id": "st-michael-s-mount",
+    "label": "St Michael's Mount, Cornwall",
+    "wiki": "St Michael's Mount",
+    "at": { "lat": 50.116, "lon": -5.4772 }
+  },
+  { "id": "tashkent", "label": "Tashkent, Uzbekistan", "wiki": "Tashkent", "at": { "lat": 41.2995, "lon": 69.2401 } },
+  {
+    "id": "ulaanbaatar",
+    "label": "Ulaanbaatar, Mongolia",
+    "wiki": "Ulaanbaatar",
+    "at": { "lat": 47.8864, "lon": 106.9057 }
+  },
+  { "id": "timbuktu", "label": "Timbuktu, Mali", "wiki": "Timbuktu", "at": { "lat": 16.7735, "lon": -3.0074 } },
+  {
+    "id": "wellington",
+    "label": "Wellington, New Zealand",
+    "wiki": "Wellington",
+    "at": { "lat": -41.2865, "lon": 174.7762 }
+  },
+  { "id": "reykjavik", "label": "Reykjavík, Iceland", "wiki": "Reykjavík", "at": { "lat": 64.1466, "lon": -21.9426 } },
+  { "id": "kinshasa", "label": "Kinshasa, DR Congo", "wiki": "Kinshasa", "at": { "lat": -4.3217, "lon": 15.3125 } },
+  {
+    "id": "montevideo",
+    "label": "Montevideo, Uruguay",
+    "wiki": "Montevideo",
+    "at": { "lat": -34.9011, "lon": -56.1645 }
+  },
+  {
+    "id": "aberystwyth",
+    "label": "Aberystwyth, Wales",
+    "wiki": "Aberystwyth",
+    "at": { "lat": 52.4153, "lon": -4.0829 }
+  },
+  { "id": "inverness", "label": "Inverness, Scotland", "wiki": "Inverness", "at": { "lat": 57.4778, "lon": -4.2247 } },
+  { "id": "norwich", "label": "Norwich, England", "wiki": "Norwich", "at": { "lat": 52.6309, "lon": 1.2974 } },
+  { "id": "edinburgh", "label": "Edinburgh", "wiki": "Edinburgh", "at": { "lat": 55.9533, "lon": -3.1883 } },
+  { "id": "cardiff", "label": "Cardiff", "wiki": "Cardiff", "at": { "lat": 51.4816, "lon": -3.1791 } },
+  { "id": "belfast", "label": "Belfast", "wiki": "Belfast", "at": { "lat": 54.5973, "lon": -5.9301 } },
+  {
+    "id": "douglas-iom",
+    "label": "Douglas, Isle of Man",
+    "wiki": "Douglas, Isle of Man",
+    "at": { "lat": 54.1509, "lon": -4.4815 }
+  },
+  { "id": "st-helier", "label": "St Helier, Jersey", "wiki": "St Helier", "at": { "lat": 49.1868, "lon": -2.1071 } },
+  { "id": "dublin", "label": "Dublin", "wiki": "Dublin", "at": { "lat": 53.3498, "lon": -6.2603 } },
+  { "id": "paris", "label": "Paris", "wiki": "Paris", "at": { "lat": 48.8566, "lon": 2.3522 } },
+  { "id": "brussels", "label": "Brussels", "wiki": "Brussels", "at": { "lat": 50.8503, "lon": 4.3517 } },
+  { "id": "amsterdam", "label": "Amsterdam", "wiki": "Amsterdam", "at": { "lat": 52.3676, "lon": 4.9041 } },
   {
     "id": "luxembourg",
     "label": "Luxembourg",
     "wiki": "Luxembourg",
+    "at": { "lat": 49.7337, "lon": 6.0776 },
     "flag": { "code": "lu", "wiki": "Flag of Luxembourg" }
   },
-  { "id": "berlin", "label": "Berlin", "wiki": "Berlin" },
-  { "id": "madrid", "label": "Madrid", "wiki": "Madrid" },
-  { "id": "lisbon", "label": "Lisbon", "wiki": "Lisbon" },
-  { "id": "rome", "label": "Rome", "wiki": "Rome" },
+  { "id": "berlin", "label": "Berlin", "wiki": "Berlin", "at": { "lat": 52.52, "lon": 13.405 } },
+  { "id": "madrid", "label": "Madrid", "wiki": "Madrid", "at": { "lat": 40.4168, "lon": -3.7038 } },
+  { "id": "lisbon", "label": "Lisbon", "wiki": "Lisbon", "at": { "lat": 38.7223, "lon": -9.1393 } },
+  { "id": "rome", "label": "Rome", "wiki": "Rome", "at": { "lat": 41.9028, "lon": 12.4964 } },
   {
     "id": "vatican-city",
     "label": "Vatican City",
     "wiki": "Vatican City",
+    "at": { "lat": 41.9033, "lon": 12.4534 },
     "flag": { "code": "va", "wiki": "Flag of Vatican City" }
   },
-  { "id": "monaco", "label": "Monaco", "wiki": "Monaco", "flag": { "code": "mc", "wiki": "Flag of Monaco" } },
+  {
+    "id": "monaco",
+    "label": "Monaco",
+    "wiki": "Monaco",
+    "at": { "lat": 43.7397, "lon": 7.3983 },
+    "flag": { "code": "mc", "wiki": "Flag of Monaco" }
+  },
   {
     "id": "san-marino",
     "label": "San Marino",
     "wiki": "San Marino",
+    "at": { "lat": 43.9339, "lon": 12.4412 },
     "flag": { "code": "sm", "wiki": "Flag of San Marino" }
   },
   {
     "id": "liechtenstein",
     "label": "Liechtenstein",
     "wiki": "Liechtenstein",
+    "at": { "lat": 47.1114, "lon": 9.5594 },
     "flag": { "code": "li", "wiki": "Flag of Liechtenstein" }
   },
-  { "id": "andorra", "label": "Andorra", "wiki": "Andorra", "flag": { "code": "ad", "wiki": "Flag of Andorra" } },
-  { "id": "malta", "label": "Malta", "wiki": "Malta", "flag": { "code": "mt", "wiki": "Flag of Malta" } },
-  { "id": "vienna", "label": "Vienna", "wiki": "Vienna" },
-  { "id": "prague", "label": "Prague", "wiki": "Prague" },
-  { "id": "warsaw", "label": "Warsaw", "wiki": "Warsaw" },
-  { "id": "budapest", "label": "Budapest", "wiki": "Budapest" },
-  { "id": "copenhagen", "label": "Copenhagen", "wiki": "Copenhagen" },
-  { "id": "oslo", "label": "Oslo", "wiki": "Oslo" },
-  { "id": "stockholm", "label": "Stockholm", "wiki": "Stockholm" },
-  { "id": "helsinki", "label": "Helsinki", "wiki": "Helsinki" },
-  { "id": "athens", "label": "Athens", "wiki": "Athens" },
-  { "id": "ljubljana", "label": "Ljubljana, Slovenia", "wiki": "Ljubljana" },
-  { "id": "zagreb", "label": "Zagreb, Croatia", "wiki": "Zagreb" },
-  { "id": "sarajevo", "label": "Sarajevo, Bosnia and Herzegovina", "wiki": "Sarajevo" },
+  {
+    "id": "andorra",
+    "label": "Andorra",
+    "wiki": "Andorra",
+    "at": { "lat": 42.5476, "lon": 1.5394 },
+    "flag": { "code": "ad", "wiki": "Flag of Andorra" }
+  },
+  {
+    "id": "malta",
+    "label": "Malta",
+    "wiki": "Malta",
+    "at": { "lat": 35.8929, "lon": 14.433 },
+    "flag": { "code": "mt", "wiki": "Flag of Malta" }
+  },
+  { "id": "vienna", "label": "Vienna", "wiki": "Vienna", "at": { "lat": 48.2082, "lon": 16.3738 } },
+  { "id": "prague", "label": "Prague", "wiki": "Prague", "at": { "lat": 50.0755, "lon": 14.4378 } },
+  { "id": "warsaw", "label": "Warsaw", "wiki": "Warsaw", "at": { "lat": 52.2297, "lon": 21.0122 } },
+  { "id": "budapest", "label": "Budapest", "wiki": "Budapest", "at": { "lat": 47.4979, "lon": 19.0402 } },
+  { "id": "copenhagen", "label": "Copenhagen", "wiki": "Copenhagen", "at": { "lat": 55.6761, "lon": 12.5683 } },
+  { "id": "oslo", "label": "Oslo", "wiki": "Oslo", "at": { "lat": 59.9139, "lon": 10.7522 } },
+  { "id": "stockholm", "label": "Stockholm", "wiki": "Stockholm", "at": { "lat": 59.3293, "lon": 18.0686 } },
+  { "id": "helsinki", "label": "Helsinki", "wiki": "Helsinki", "at": { "lat": 60.1699, "lon": 24.9384 } },
+  { "id": "athens", "label": "Athens", "wiki": "Athens", "at": { "lat": 37.9838, "lon": 23.7275 } },
+  { "id": "ljubljana", "label": "Ljubljana, Slovenia", "wiki": "Ljubljana", "at": { "lat": 46.0569, "lon": 14.5058 } },
+  { "id": "zagreb", "label": "Zagreb, Croatia", "wiki": "Zagreb", "at": { "lat": 45.815, "lon": 15.9819 } },
+  {
+    "id": "sarajevo",
+    "label": "Sarajevo, Bosnia and Herzegovina",
+    "wiki": "Sarajevo",
+    "at": { "lat": 43.8563, "lon": 18.4131 }
+  },
   {
     "id": "montenegro",
     "label": "Montenegro",
     "wiki": "Montenegro",
+    "at": { "lat": 42.5, "lon": 19.3 },
     "area": {
       "outline": "montenegro-region",
       "centre": { "lat": 42.7923, "lon": 19.2389 },
@@ -249,6 +904,7 @@
     "id": "north-macedonia",
     "label": "North Macedonia",
     "wiki": "North Macedonia",
+    "at": { "lat": 42, "lon": 22 },
     "area": {
       "outline": "north-macedonia-region",
       "centre": { "lat": 41.5977, "lon": 21.6812 },
@@ -261,6 +917,7 @@
     "id": "albania",
     "label": "Albania",
     "wiki": "Albania",
+    "at": { "lat": 41, "lon": 20 },
     "area": {
       "outline": "albania-region",
       "centre": { "lat": 41.1361, "lon": 20.052 },
@@ -269,11 +926,12 @@
     },
     "flag": { "code": "al", "wiki": "Flag of Albania" }
   },
-  { "id": "kosovo", "label": "Kosovo", "wiki": "Kosovo" },
+  { "id": "kosovo", "label": "Kosovo", "wiki": "Kosovo", "at": { "lat": 42.5833, "lon": 21 } },
   {
     "id": "moldova",
     "label": "Moldova",
     "wiki": "Moldova",
+    "at": { "lat": 47, "lon": 29 },
     "area": {
       "outline": "moldova-region",
       "centre": { "lat": 47.194, "lon": 28.4625 },
@@ -282,46 +940,73 @@
     },
     "flag": { "code": "md", "wiki": "Flag of Moldova" }
   },
-  { "id": "vilnius", "label": "Vilnius, Lithuania", "wiki": "Vilnius" },
-  { "id": "riga", "label": "Riga, Latvia", "wiki": "Riga" },
-  { "id": "tallinn", "label": "Tallinn, Estonia", "wiki": "Tallinn" },
-  { "id": "bratislava", "label": "Bratislava, Slovakia", "wiki": "Bratislava" },
-  { "id": "minsk", "label": "Minsk, Belarus", "wiki": "Minsk" },
-  { "id": "kyiv", "label": "Kyiv, Ukraine", "wiki": "Kyiv" },
-  { "id": "bucharest", "label": "Bucharest, Romania", "wiki": "Bucharest" },
-  { "id": "sofia", "label": "Sofia, Bulgaria", "wiki": "Sofia" },
-  { "id": "cyprus", "label": "Cyprus", "wiki": "Cyprus", "flag": { "code": "cy", "wiki": "Flag of Cyprus" } },
-  { "id": "ottawa", "label": "Ottawa, Canada", "wiki": "Ottawa" },
-  { "id": "washington", "label": "Washington, D.C.", "wiki": "Washington, D.C." },
-  { "id": "canberra", "label": "Canberra, Australia", "wiki": "Canberra" },
-  { "id": "nairobi", "label": "Nairobi, Kenya", "wiki": "Nairobi" },
-  { "id": "brasilia", "label": "Brasília, Brazil", "wiki": "Brasília" },
-  { "id": "abuja", "label": "Abuja, Nigeria", "wiki": "Abuja" },
-  { "id": "ankara", "label": "Ankara, Turkey", "wiki": "Ankara" },
-  { "id": "astana", "label": "Astana, Kazakhstan", "wiki": "Astana" },
-  { "id": "kathmandu", "label": "Kathmandu, Nepal", "wiki": "Kathmandu" },
-  { "id": "hanoi", "label": "Hanoi, Vietnam", "wiki": "Hanoi" },
-  { "id": "addis-ababa", "label": "Addis Ababa, Ethiopia", "wiki": "Addis Ababa" },
-  { "id": "lima", "label": "Lima, Peru", "wiki": "Lima" },
-  { "id": "bogota", "label": "Bogotá, Colombia", "wiki": "Bogotá" },
-  { "id": "santiago", "label": "Santiago, Chile", "wiki": "Santiago" },
-  { "id": "pretoria", "label": "Pretoria, South Africa", "wiki": "Pretoria" },
-  { "id": "riyadh", "label": "Riyadh, Saudi Arabia", "wiki": "Riyadh" },
-  { "id": "islamabad", "label": "Islamabad, Pakistan", "wiki": "Islamabad" },
-  { "id": "dhaka", "label": "Dhaka, Bangladesh", "wiki": "Dhaka" },
-  { "id": "manila", "label": "Manila, Philippines", "wiki": "Manila" },
-  { "id": "jakarta", "label": "Jakarta, Indonesia", "wiki": "Jakarta" },
-  { "id": "seoul", "label": "Seoul, South Korea", "wiki": "Seoul" },
-  { "id": "tehran", "label": "Tehran, Iran", "wiki": "Tehran" },
-  { "id": "baghdad", "label": "Baghdad, Iraq", "wiki": "Baghdad" },
-  { "id": "kabul", "label": "Kabul, Afghanistan", "wiki": "Kabul" },
-  { "id": "havana", "label": "Havana, Cuba", "wiki": "Havana" },
-  { "id": "mexico-city", "label": "Mexico City", "wiki": "Mexico City" },
-  { "id": "buenos-aires", "label": "Buenos Aires, Argentina", "wiki": "Buenos Aires" },
+  { "id": "vilnius", "label": "Vilnius, Lithuania", "wiki": "Vilnius", "at": { "lat": 54.6872, "lon": 25.2797 } },
+  { "id": "riga", "label": "Riga, Latvia", "wiki": "Riga", "at": { "lat": 56.9496, "lon": 24.1052 } },
+  { "id": "tallinn", "label": "Tallinn, Estonia", "wiki": "Tallinn", "at": { "lat": 59.437, "lon": 24.7536 } },
+  {
+    "id": "bratislava",
+    "label": "Bratislava, Slovakia",
+    "wiki": "Bratislava",
+    "at": { "lat": 48.1486, "lon": 17.1077 }
+  },
+  { "id": "minsk", "label": "Minsk, Belarus", "wiki": "Minsk", "at": { "lat": 53.9006, "lon": 27.559 } },
+  { "id": "kyiv", "label": "Kyiv, Ukraine", "wiki": "Kyiv", "at": { "lat": 50.4501, "lon": 30.5234 } },
+  { "id": "bucharest", "label": "Bucharest, Romania", "wiki": "Bucharest", "at": { "lat": 44.4268, "lon": 26.1025 } },
+  { "id": "sofia", "label": "Sofia, Bulgaria", "wiki": "Sofia", "at": { "lat": 42.6977, "lon": 23.3219 } },
+  {
+    "id": "cyprus",
+    "label": "Cyprus",
+    "wiki": "Cyprus",
+    "at": { "lat": 34.9133, "lon": 33.0842 },
+    "flag": { "code": "cy", "wiki": "Flag of Cyprus" }
+  },
+  { "id": "ottawa", "label": "Ottawa, Canada", "wiki": "Ottawa", "at": { "lat": 45.4215, "lon": -75.6972 } },
+  {
+    "id": "washington",
+    "label": "Washington, D.C.",
+    "wiki": "Washington, D.C.",
+    "at": { "lat": 38.9072, "lon": -77.0369 }
+  },
+  { "id": "canberra", "label": "Canberra, Australia", "wiki": "Canberra", "at": { "lat": -35.2809, "lon": 149.13 } },
+  { "id": "nairobi", "label": "Nairobi, Kenya", "wiki": "Nairobi", "at": { "lat": -1.2921, "lon": 36.8219 } },
+  { "id": "brasilia", "label": "Brasília, Brazil", "wiki": "Brasília", "at": { "lat": -15.7975, "lon": -47.8919 } },
+  { "id": "abuja", "label": "Abuja, Nigeria", "wiki": "Abuja", "at": { "lat": 9.0765, "lon": 7.3986 } },
+  { "id": "ankara", "label": "Ankara, Turkey", "wiki": "Ankara", "at": { "lat": 39.9334, "lon": 32.8597 } },
+  { "id": "astana", "label": "Astana, Kazakhstan", "wiki": "Astana", "at": { "lat": 51.1694, "lon": 71.4491 } },
+  { "id": "kathmandu", "label": "Kathmandu, Nepal", "wiki": "Kathmandu", "at": { "lat": 27.7172, "lon": 85.324 } },
+  { "id": "hanoi", "label": "Hanoi, Vietnam", "wiki": "Hanoi", "at": { "lat": 21.0285, "lon": 105.8542 } },
+  { "id": "addis-ababa", "label": "Addis Ababa, Ethiopia", "wiki": "Addis Ababa", "at": { "lat": 9.03, "lon": 38.74 } },
+  { "id": "lima", "label": "Lima, Peru", "wiki": "Lima", "at": { "lat": -12.0464, "lon": -77.0428 } },
+  { "id": "bogota", "label": "Bogotá, Colombia", "wiki": "Bogotá", "at": { "lat": 4.711, "lon": -74.0721 } },
+  { "id": "santiago", "label": "Santiago, Chile", "wiki": "Santiago", "at": { "lat": -33.4489, "lon": -70.6693 } },
+  {
+    "id": "pretoria",
+    "label": "Pretoria, South Africa",
+    "wiki": "Pretoria",
+    "at": { "lat": -25.7479, "lon": 28.2293 }
+  },
+  { "id": "riyadh", "label": "Riyadh, Saudi Arabia", "wiki": "Riyadh", "at": { "lat": 24.7136, "lon": 46.6753 } },
+  { "id": "islamabad", "label": "Islamabad, Pakistan", "wiki": "Islamabad", "at": { "lat": 33.6844, "lon": 73.0479 } },
+  { "id": "dhaka", "label": "Dhaka, Bangladesh", "wiki": "Dhaka", "at": { "lat": 23.8103, "lon": 90.4125 } },
+  { "id": "manila", "label": "Manila, Philippines", "wiki": "Manila", "at": { "lat": 14.5995, "lon": 120.9842 } },
+  { "id": "jakarta", "label": "Jakarta, Indonesia", "wiki": "Jakarta", "at": { "lat": -6.2088, "lon": 106.8456 } },
+  { "id": "seoul", "label": "Seoul, South Korea", "wiki": "Seoul", "at": { "lat": 37.5665, "lon": 126.978 } },
+  { "id": "tehran", "label": "Tehran, Iran", "wiki": "Tehran", "at": { "lat": 35.6892, "lon": 51.389 } },
+  { "id": "baghdad", "label": "Baghdad, Iraq", "wiki": "Baghdad", "at": { "lat": 33.3152, "lon": 44.3661 } },
+  { "id": "kabul", "label": "Kabul, Afghanistan", "wiki": "Kabul", "at": { "lat": 34.5553, "lon": 69.2075 } },
+  { "id": "havana", "label": "Havana, Cuba", "wiki": "Havana", "at": { "lat": 23.1136, "lon": -82.3666 } },
+  { "id": "mexico-city", "label": "Mexico City", "wiki": "Mexico City", "at": { "lat": 19.4326, "lon": -99.1332 } },
+  {
+    "id": "buenos-aires",
+    "label": "Buenos Aires, Argentina",
+    "wiki": "Buenos Aires",
+    "at": { "lat": -34.6037, "lon": -58.3816 }
+  },
   {
     "id": "eswatini",
     "label": "Eswatini",
     "wiki": "Eswatini",
+    "at": { "lat": -26.5, "lon": 31.5 },
     "area": {
       "outline": "eswatini-region",
       "centre": { "lat": -26.5516, "lon": 31.4781 },
@@ -334,6 +1019,7 @@
     "id": "lesotho",
     "label": "Lesotho",
     "wiki": "Lesotho",
+    "at": { "lat": -29.6, "lon": 28.3 },
     "area": {
       "outline": "lesotho-region",
       "centre": { "lat": -29.5805, "lon": 28.2245 },
@@ -346,6 +1032,7 @@
     "id": "bhutan",
     "label": "Bhutan",
     "wiki": "Bhutan",
+    "at": { "lat": 27.417, "lon": 90.435 },
     "area": {
       "outline": "bhutan-region",
       "centre": { "lat": 27.4111, "lon": 90.4 },
@@ -358,6 +1045,7 @@
     "id": "djibouti",
     "label": "Djibouti",
     "wiki": "Djibouti",
+    "at": { "lat": 11.5, "lon": 43 },
     "area": {
       "outline": "djibouti-region",
       "centre": { "lat": 11.746, "lon": 42.5626 },
@@ -370,6 +1058,7 @@
     "id": "belize",
     "label": "Belize",
     "wiki": "Belize",
+    "at": { "lat": 17.0667, "lon": -88.7 },
     "area": {
       "outline": "belize-region",
       "centre": { "lat": 17.1936, "lon": -88.7134 },
@@ -378,11 +1067,18 @@
     },
     "flag": { "code": "bz", "wiki": "Flag of Belize" }
   },
-  { "id": "brunei", "label": "Brunei", "wiki": "Brunei", "flag": { "code": "bn", "wiki": "Flag of Brunei" } },
+  {
+    "id": "brunei",
+    "label": "Brunei",
+    "wiki": "Brunei",
+    "at": { "lat": 4.4483, "lon": 114.5519 },
+    "flag": { "code": "bn", "wiki": "Flag of Brunei" }
+  },
   {
     "id": "the-gambia",
     "label": "The Gambia",
     "wiki": "The Gambia",
+    "at": { "lat": 13.45, "lon": -16.575 },
     "area": {
       "outline": "the-gambia-region",
       "centre": { "lat": 13.4481, "lon": -15.4169 },
@@ -395,6 +1091,7 @@
     "id": "burundi",
     "label": "Burundi",
     "wiki": "Burundi",
+    "at": { "lat": -3.3833, "lon": 29.8333 },
     "area": {
       "outline": "burundi-region",
       "centre": { "lat": -3.3591, "lon": 29.872 },
@@ -407,6 +1104,7 @@
     "id": "rwanda",
     "label": "Rwanda",
     "wiki": "Rwanda",
+    "at": { "lat": -2, "lon": 30 },
     "area": {
       "outline": "rwanda-region",
       "centre": { "lat": -1.9881, "lon": 29.9183 },
@@ -419,6 +1117,7 @@
     "id": "qatar",
     "label": "Qatar",
     "wiki": "Qatar",
+    "at": { "lat": 25.5, "lon": 51.25 },
     "area": {
       "outline": "qatar-region",
       "centre": { "lat": 25.3078, "lon": 51.1864 },
@@ -427,11 +1126,18 @@
     },
     "flag": { "code": "qa", "wiki": "Flag of Qatar" }
   },
-  { "id": "bahrain", "label": "Bahrain", "wiki": "Bahrain", "flag": { "code": "bh", "wiki": "Flag of Bahrain" } },
+  {
+    "id": "bahrain",
+    "label": "Bahrain",
+    "wiki": "Bahrain",
+    "at": { "lat": 26.056, "lon": 50.5548 },
+    "flag": { "code": "bh", "wiki": "Flag of Bahrain" }
+  },
   {
     "id": "kuwait",
     "label": "Kuwait",
     "wiki": "Kuwait",
+    "at": { "lat": 29.5, "lon": 47.75 },
     "area": {
       "outline": "kuwait-region",
       "centre": { "lat": 29.3331, "lon": 47.589 },
@@ -444,12 +1150,14 @@
     "id": "singapore",
     "label": "Singapore",
     "wiki": "Singapore",
+    "at": { "lat": 1.3666, "lon": 103.8169 },
     "flag": { "code": "sg", "wiki": "Flag of Singapore" }
   },
   {
     "id": "timor-leste",
     "label": "Timor-Leste",
     "wiki": "Timor-Leste",
+    "at": { "lat": -8.55, "lon": 125.56 },
     "area": {
       "outline": "timor-leste-region",
       "centre": { "lat": -8.8281, "lon": 125.8575 },
@@ -462,44 +1170,63 @@
     "id": "maldives",
     "label": "Maldives",
     "wiki": "Maldives",
+    "at": { "lat": 4.1744, "lon": 73.5076 },
     "flag": { "code": "mv", "wiki": "Flag of the Maldives" }
   },
   {
     "id": "seychelles",
     "label": "Seychelles",
     "wiki": "Seychelles",
+    "at": { "lat": -4.6767, "lon": 55.4802 },
     "flag": { "code": "sc", "wiki": "Flag of the Seychelles" }
   },
-  { "id": "comoros", "label": "Comoros", "wiki": "Comoros", "flag": { "code": "km", "wiki": "Flag of the Comoros" } },
+  {
+    "id": "comoros",
+    "label": "Comoros",
+    "wiki": "Comoros",
+    "at": { "lat": -11.7277, "lon": 43.3181 },
+    "flag": { "code": "km", "wiki": "Flag of the Comoros" }
+  },
   {
     "id": "mauritius",
     "label": "Mauritius",
     "wiki": "Mauritius",
+    "at": { "lat": -20.2995, "lon": 57.5658 },
     "flag": { "code": "mu", "wiki": "Flag of Mauritius" }
   },
   {
     "id": "cape-verde",
     "label": "Cape Verde",
     "wiki": "Cape Verde",
+    "at": { "lat": 15.0748, "lon": -23.6394 },
     "flag": { "code": "cv", "wiki": "Flag of Cape Verde" }
   },
   {
     "id": "sao-tome-and-principe",
     "label": "São Tomé and Príncipe",
     "wiki": "São Tomé and Príncipe",
+    "at": { "lat": 0.2382, "lon": 6.6066 },
     "flag": { "code": "st", "wiki": "Flag of São Tomé and Príncipe" }
   },
-  { "id": "barbados", "label": "Barbados", "wiki": "Barbados", "flag": { "code": "bb", "wiki": "Flag of Barbados" } },
+  {
+    "id": "barbados",
+    "label": "Barbados",
+    "wiki": "Barbados",
+    "at": { "lat": 13.1637, "lon": -59.569 },
+    "flag": { "code": "bb", "wiki": "Flag of Barbados" }
+  },
   {
     "id": "trinidad-and-tobago",
     "label": "Trinidad and Tobago",
     "wiki": "Trinidad and Tobago",
+    "at": { "lat": 10.4209, "lon": -61.2931 },
     "flag": { "code": "tt", "wiki": "Flag of Trinidad and Tobago" }
   },
   {
     "id": "jamaica",
     "label": "Jamaica",
     "wiki": "Jamaica",
+    "at": { "lat": 18.18, "lon": -77.4 },
     "area": {
       "outline": "jamaica-region",
       "centre": { "lat": 18.1593, "lon": -77.3117 },
@@ -512,6 +1239,7 @@
     "id": "paraguay",
     "label": "Paraguay",
     "wiki": "Paraguay",
+    "at": { "lat": -23, "lon": -58 },
     "area": {
       "outline": "paraguay-region",
       "centre": { "lat": -23.2079, "lon": -58.4432 },
@@ -524,6 +1252,7 @@
     "id": "suriname",
     "label": "Suriname",
     "wiki": "Suriname",
+    "at": { "lat": 4, "lon": -56 },
     "area": {
       "outline": "suriname-region",
       "centre": { "lat": 4.1302, "lon": -55.9151 },
@@ -536,6 +1265,7 @@
     "id": "guyana",
     "label": "Guyana",
     "wiki": "Guyana",
+    "at": { "lat": 5, "lon": -59 },
     "area": {
       "outline": "guyana-region",
       "centre": { "lat": 4.7894, "lon": -58.9819 },
@@ -548,6 +1278,7 @@
     "id": "armenia",
     "label": "Armenia",
     "wiki": "Armenia",
+    "at": { "lat": 40.1833, "lon": 44.5167 },
     "area": {
       "outline": "armenia-region",
       "centre": { "lat": 40.2869, "lon": 44.9385 },
@@ -560,6 +1291,7 @@
     "id": "georgia",
     "label": "Georgia",
     "wiki": "Georgia (country)",
+    "at": { "lat": 42, "lon": 43.5 },
     "area": {
       "outline": "georgia-region",
       "centre": { "lat": 42.1745, "lon": 43.5176 },
@@ -572,6 +1304,7 @@
     "id": "kyrgyzstan",
     "label": "Kyrgyzstan",
     "wiki": "Kyrgyzstan",
+    "at": { "lat": 41, "lon": 75 },
     "area": {
       "outline": "kyrgyzstan-region",
       "centre": { "lat": 41.4747, "lon": 74.5131 },
@@ -584,6 +1317,7 @@
     "id": "laos",
     "label": "Laos",
     "wiki": "Laos",
+    "at": { "lat": 18, "lon": 105 },
     "area": {
       "outline": "laos-region",
       "centre": { "lat": 18.4911, "lon": 103.7738 },
@@ -596,6 +1330,7 @@
     "id": "cambodia",
     "label": "Cambodia",
     "wiki": "Cambodia",
+    "at": { "lat": 12.5, "lon": 105 },
     "area": {
       "outline": "cambodia-region",
       "centre": { "lat": 12.7216, "lon": 104.9038 },
@@ -608,6 +1343,7 @@
     "id": "sri-lanka",
     "label": "Sri Lanka",
     "wiki": "Sri Lanka",
+    "at": { "lat": 7, "lon": 81 },
     "area": {
       "outline": "sri-lanka-region",
       "centre": { "lat": 7.6136, "lon": 80.6982 },
@@ -620,6 +1356,7 @@
     "id": "oman",
     "label": "Oman",
     "wiki": "Oman",
+    "at": { "lat": 21, "lon": 57 },
     "area": {
       "outline": "oman-region",
       "centre": { "lat": 20.5868, "lon": 56.0648 },
@@ -632,6 +1369,7 @@
     "id": "jordan",
     "label": "Jordan",
     "wiki": "Jordan",
+    "at": { "lat": 31, "lon": 36.5 },
     "area": {
       "outline": "jordan-region",
       "centre": { "lat": 31.2389, "lon": 36.7574 },
@@ -644,6 +1382,7 @@
     "id": "lebanon",
     "label": "Lebanon",
     "wiki": "Lebanon",
+    "at": { "lat": 33.8333, "lon": 35.8333 },
     "area": {
       "outline": "lebanon-region",
       "centre": { "lat": 33.921, "lon": 35.8747 },
@@ -656,6 +1395,7 @@
     "id": "malawi",
     "label": "Malawi",
     "wiki": "Malawi",
+    "at": { "lat": -13.5, "lon": 34 },
     "area": {
       "outline": "malawi-region",
       "centre": { "lat": -13.2063, "lon": 34.2831 },
@@ -668,6 +1408,7 @@
     "id": "togo",
     "label": "Togo",
     "wiki": "Togo",
+    "at": { "lat": 8, "lon": 1 },
     "area": {
       "outline": "togo-region",
       "centre": { "lat": 8.5275, "lon": 0.9609 },
@@ -680,6 +1421,7 @@
     "id": "benin",
     "label": "Benin",
     "wiki": "Benin",
+    "at": { "lat": 6.35, "lon": 2.4 },
     "area": {
       "outline": "benin-region",
       "centre": { "lat": 9.6369, "lon": 2.3265 },
@@ -692,6 +1434,7 @@
     "id": "liberia",
     "label": "Liberia",
     "wiki": "Liberia",
+    "at": { "lat": 6.5, "lon": -9.5 },
     "area": {
       "outline": "liberia-region",
       "centre": { "lat": 6.4511, "lon": -9.3188 },
@@ -704,6 +1447,7 @@
     "id": "sierra-leone",
     "label": "Sierra Leone",
     "wiki": "Sierra Leone",
+    "at": { "lat": 8.5, "lon": -12.1 },
     "area": {
       "outline": "sierra-leone-region",
       "centre": { "lat": 8.5604, "lon": -11.7945 },
@@ -716,6 +1460,7 @@
     "id": "eritrea",
     "label": "Eritrea",
     "wiki": "Eritrea",
+    "at": { "lat": 15, "lon": 39 },
     "area": {
       "outline": "eritrea-region",
       "centre": { "lat": 15.3578, "lon": 38.8615 },
@@ -728,6 +1473,7 @@
     "id": "madagascar",
     "label": "Madagascar",
     "wiki": "Madagascar",
+    "at": { "lat": -20, "lon": 47 },
     "area": {
       "outline": "madagascar-region",
       "centre": { "lat": -19.32, "lon": 46.7416 },
@@ -736,28 +1482,67 @@
     },
     "flag": { "code": "mg", "wiki": "Flag of Madagascar" }
   },
-  { "id": "nauru", "label": "Nauru", "wiki": "Nauru", "flag": { "code": "nr", "wiki": "Flag of Nauru" } },
-  { "id": "tuvalu", "label": "Tuvalu", "wiki": "Tuvalu", "flag": { "code": "tv", "wiki": "Flag of Tuvalu" } },
-  { "id": "kiribati", "label": "Kiribati", "wiki": "Kiribati", "flag": { "code": "ki", "wiki": "Flag of Kiribati" } },
-  { "id": "palau", "label": "Palau", "wiki": "Palau", "flag": { "code": "pw", "wiki": "Flag of Palau" } },
+  {
+    "id": "nauru",
+    "label": "Nauru",
+    "wiki": "Nauru",
+    "at": { "lat": -0.5203, "lon": 166.9326 },
+    "flag": { "code": "nr", "wiki": "Flag of Nauru" }
+  },
+  {
+    "id": "tuvalu",
+    "label": "Tuvalu",
+    "wiki": "Tuvalu",
+    "at": { "lat": -8.5137, "lon": 179.2096 },
+    "flag": { "code": "tv", "wiki": "Flag of Tuvalu" }
+  },
+  {
+    "id": "kiribati",
+    "label": "Kiribati",
+    "wiki": "Kiribati",
+    "at": { "lat": 1.3291, "lon": 172.979 },
+    "flag": { "code": "ki", "wiki": "Flag of Kiribati" }
+  },
+  {
+    "id": "palau",
+    "label": "Palau",
+    "wiki": "Palau",
+    "at": { "lat": 7.5183, "lon": 134.5802 },
+    "flag": { "code": "pw", "wiki": "Flag of Palau" }
+  },
   {
     "id": "marshall-islands",
     "label": "Marshall Islands",
     "wiki": "Marshall Islands",
+    "at": { "lat": 7.0826, "lon": 171.1936 },
     "flag": { "code": "mh", "wiki": "Flag of the Marshall Islands" }
   },
   {
     "id": "federated-states-of-micronesia",
     "label": "Federated States of Micronesia",
     "wiki": "Federated States of Micronesia",
+    "at": { "lat": 6.8876, "lon": 158.234 },
     "flag": { "code": "fm", "wiki": "Flag of the Federated States of Micronesia" }
   },
-  { "id": "tonga", "label": "Tonga", "wiki": "Tonga", "flag": { "code": "to", "wiki": "Flag of Tonga" } },
-  { "id": "samoa", "label": "Samoa", "wiki": "Samoa", "flag": { "code": "ws", "wiki": "Flag of Samoa" } },
+  {
+    "id": "tonga",
+    "label": "Tonga",
+    "wiki": "Tonga",
+    "at": { "lat": -21.21, "lon": -175.163 },
+    "flag": { "code": "to", "wiki": "Flag of Tonga" }
+  },
+  {
+    "id": "samoa",
+    "label": "Samoa",
+    "wiki": "Samoa",
+    "at": { "lat": -13.6391, "lon": -172.4382 },
+    "flag": { "code": "ws", "wiki": "Flag of Samoa" }
+  },
   {
     "id": "vanuatu",
     "label": "Vanuatu",
     "wiki": "Vanuatu",
+    "at": { "lat": -17, "lon": 168 },
     "area": {
       "outline": "vanuatu-region",
       "centre": { "lat": -16.215, "lon": 167.6776 },
@@ -770,6 +1555,7 @@
     "id": "fiji",
     "label": "Fiji",
     "wiki": "Fiji",
+    "at": { "lat": -18, "lon": 179 },
     "area": {
       "outline": "fiji-region",
       "centre": { "lat": -17.4401, "lon": 178.4743 },
@@ -782,6 +1568,7 @@
     "id": "solomon-islands",
     "label": "Solomon Islands",
     "wiki": "Solomon Islands",
+    "at": { "lat": -8, "lon": 159 },
     "area": {
       "outline": "solomon-islands-region",
       "centre": { "lat": -8.9153, "lon": 159.5801 },
@@ -790,136 +1577,261 @@
     },
     "flag": { "code": "sb", "wiki": "Flag of the Solomon Islands" }
   },
-  { "id": "tokyo", "label": "Tokyo, Japan", "wiki": "Tokyo" },
-  { "id": "beijing", "label": "Beijing, China", "wiki": "Beijing" },
-  { "id": "new-delhi", "label": "New Delhi, India", "wiki": "New Delhi" },
-  { "id": "bangkok", "label": "Bangkok, Thailand", "wiki": "Bangkok" },
-  { "id": "kuala-lumpur", "label": "Kuala Lumpur, Malaysia", "wiki": "Kuala Lumpur" },
-  { "id": "taipei", "label": "Taipei, Taiwan", "wiki": "Taipei" },
-  { "id": "pyongyang", "label": "Pyongyang, North Korea", "wiki": "Pyongyang" },
-  { "id": "naypyidaw", "label": "Naypyidaw, Myanmar", "wiki": "Naypyidaw" },
-  { "id": "baku", "label": "Baku, Azerbaijan", "wiki": "Baku" },
-  { "id": "mogadishu", "label": "Mogadishu, Somalia", "wiki": "Mogadishu" },
-  { "id": "tbilisi", "label": "Tbilisi, Georgia", "wiki": "Tbilisi" },
-  { "id": "dushanbe", "label": "Dushanbe, Tajikistan", "wiki": "Dushanbe" },
-  { "id": "ashgabat", "label": "Ashgabat, Turkmenistan", "wiki": "Ashgabat" },
-  { "id": "bishkek", "label": "Bishkek, Kyrgyzstan", "wiki": "Bishkek" },
-  { "id": "damascus", "label": "Damascus, Syria", "wiki": "Damascus" },
-  { "id": "beirut", "label": "Beirut, Lebanon", "wiki": "Beirut" },
-  { "id": "amman", "label": "Amman, Jordan", "wiki": "Amman" },
-  { "id": "muscat", "label": "Muscat, Oman", "wiki": "Muscat" },
-  { "id": "abu-dhabi", "label": "Abu Dhabi, United Arab Emirates", "wiki": "Abu Dhabi" },
-  { "id": "sanaa", "label": "Sanaa, Yemen", "wiki": "Sanaa" },
-  { "id": "cairo", "label": "Cairo, Egypt", "wiki": "Cairo" },
-  { "id": "algiers", "label": "Algiers, Algeria", "wiki": "Algiers" },
-  { "id": "tunis", "label": "Tunis, Tunisia", "wiki": "Tunis" },
-  { "id": "rabat", "label": "Rabat, Morocco", "wiki": "Rabat" },
-  { "id": "tripoli", "label": "Tripoli, Libya", "wiki": "Tripoli, Libya" },
-  { "id": "khartoum", "label": "Khartoum, Sudan", "wiki": "Khartoum" },
-  { "id": "dakar", "label": "Dakar, Senegal", "wiki": "Dakar" },
-  { "id": "accra", "label": "Accra, Ghana", "wiki": "Accra" },
-  { "id": "luanda", "label": "Luanda, Angola", "wiki": "Luanda" },
-  { "id": "lusaka", "label": "Lusaka, Zambia", "wiki": "Lusaka" },
-  { "id": "harare", "label": "Harare, Zimbabwe", "wiki": "Harare" },
-  { "id": "maputo", "label": "Maputo, Mozambique", "wiki": "Maputo" },
-  { "id": "kampala", "label": "Kampala, Uganda", "wiki": "Kampala" },
-  { "id": "dodoma", "label": "Dodoma, Tanzania", "wiki": "Dodoma" },
-  { "id": "windhoek", "label": "Windhoek, Namibia", "wiki": "Windhoek" },
-  { "id": "gaborone", "label": "Gaborone, Botswana", "wiki": "Gaborone" },
-  { "id": "antananarivo", "label": "Antananarivo, Madagascar", "wiki": "Antananarivo" },
-  { "id": "caracas", "label": "Caracas, Venezuela", "wiki": "Caracas" },
-  { "id": "quito", "label": "Quito, Ecuador", "wiki": "Quito" },
-  { "id": "la-paz", "label": "La Paz, Bolivia", "wiki": "La Paz" },
-  { "id": "panama-city", "label": "Panama City, Panama", "wiki": "Panama City" },
-  { "id": "san-jose-cr", "label": "San José, Costa Rica", "wiki": "San José, Costa Rica" },
-  { "id": "managua", "label": "Managua, Nicaragua", "wiki": "Managua" },
-  { "id": "tegucigalpa", "label": "Tegucigalpa, Honduras", "wiki": "Tegucigalpa" },
-  { "id": "san-salvador", "label": "San Salvador, El Salvador", "wiki": "San Salvador" },
-  { "id": "guatemala-city", "label": "Guatemala City, Guatemala", "wiki": "Guatemala City" },
-  { "id": "santo-domingo", "label": "Santo Domingo, Dominican Republic", "wiki": "Santo Domingo" },
-  { "id": "port-au-prince", "label": "Port-au-Prince, Haiti", "wiki": "Port-au-Prince" },
-  { "id": "moscow", "label": "Moscow, Russia", "wiki": "Moscow" },
-  { "id": "bern", "label": "Bern, Switzerland", "wiki": "Bern" },
-  { "id": "belgrade", "label": "Belgrade, Serbia", "wiki": "Belgrade" },
-  { "id": "new-york", "label": "New York City", "wiki": "New York City" },
-  { "id": "los-angeles", "label": "Los Angeles", "wiki": "Los Angeles" },
-  { "id": "chicago", "label": "Chicago", "wiki": "Chicago" },
-  { "id": "san-francisco", "label": "San Francisco", "wiki": "San Francisco" },
-  { "id": "houston", "label": "Houston", "wiki": "Houston" },
-  { "id": "miami", "label": "Miami", "wiki": "Miami" },
-  { "id": "seattle", "label": "Seattle", "wiki": "Seattle" },
-  { "id": "toronto", "label": "Toronto, Canada", "wiki": "Toronto" },
-  { "id": "vancouver", "label": "Vancouver, Canada", "wiki": "Vancouver" },
-  { "id": "montreal", "label": "Montreal, Canada", "wiki": "Montreal" },
-  { "id": "sao-paulo", "label": "São Paulo, Brazil", "wiki": "São Paulo" },
-  { "id": "rio-de-janeiro", "label": "Rio de Janeiro, Brazil", "wiki": "Rio de Janeiro" },
-  { "id": "shanghai", "label": "Shanghai, China", "wiki": "Shanghai" },
-  { "id": "hong-kong", "label": "Hong Kong", "wiki": "Hong Kong" },
-  { "id": "guangzhou", "label": "Guangzhou, China", "wiki": "Guangzhou" },
-  { "id": "shenzhen", "label": "Shenzhen, China", "wiki": "Shenzhen" },
-  { "id": "chongqing", "label": "Chongqing, China", "wiki": "Chongqing" },
-  { "id": "osaka", "label": "Osaka, Japan", "wiki": "Osaka" },
-  { "id": "mumbai", "label": "Mumbai, India", "wiki": "Mumbai" },
-  { "id": "kolkata", "label": "Kolkata, India", "wiki": "Kolkata" },
-  { "id": "chennai", "label": "Chennai, India", "wiki": "Chennai" },
-  { "id": "bengaluru", "label": "Bengaluru, India", "wiki": "Bengaluru" },
-  { "id": "karachi", "label": "Karachi, Pakistan", "wiki": "Karachi" },
-  { "id": "lahore", "label": "Lahore, Pakistan", "wiki": "Lahore" },
-  { "id": "ho-chi-minh-city", "label": "Ho Chi Minh City, Vietnam", "wiki": "Ho Chi Minh City" },
-  { "id": "istanbul", "label": "Istanbul, Turkey", "wiki": "Istanbul" },
-  { "id": "dubai", "label": "Dubai, United Arab Emirates", "wiki": "Dubai" },
-  { "id": "lagos", "label": "Lagos, Nigeria", "wiki": "Lagos" },
-  { "id": "johannesburg", "label": "Johannesburg, South Africa", "wiki": "Johannesburg" },
-  { "id": "cape-town", "label": "Cape Town, South Africa", "wiki": "Cape Town" },
-  { "id": "casablanca", "label": "Casablanca, Morocco", "wiki": "Casablanca" },
-  { "id": "marrakesh", "label": "Marrakesh, Morocco", "wiki": "Marrakesh" },
-  { "id": "alexandria", "label": "Alexandria, Egypt", "wiki": "Alexandria" },
-  { "id": "st-petersburg", "label": "Saint Petersburg, Russia", "wiki": "Saint Petersburg" },
-  { "id": "barcelona", "label": "Barcelona, Spain", "wiki": "Barcelona" },
-  { "id": "milan", "label": "Milan, Italy", "wiki": "Milan" },
-  { "id": "munich", "label": "Munich, Germany", "wiki": "Munich" },
-  { "id": "hamburg", "label": "Hamburg, Germany", "wiki": "Hamburg" },
-  { "id": "sydney", "label": "Sydney, Australia", "wiki": "Sydney" },
-  { "id": "melbourne", "label": "Melbourne, Australia", "wiki": "Melbourne" },
-  { "id": "auckland", "label": "Auckland, New Zealand", "wiki": "Auckland" },
-  { "id": "manchester", "label": "Manchester, England", "wiki": "Manchester" },
-  { "id": "glasgow", "label": "Glasgow, Scotland", "wiki": "Glasgow" },
-  { "id": "birmingham", "label": "Birmingham, England", "wiki": "Birmingham" },
-  { "id": "liverpool", "label": "Liverpool, England", "wiki": "Liverpool" },
-  { "id": "leeds", "label": "Leeds, England", "wiki": "Leeds" },
-  { "id": "newcastle", "label": "Newcastle upon Tyne, England", "wiki": "Newcastle upon Tyne" },
-  { "id": "aberdeen", "label": "Aberdeen, Scotland", "wiki": "Aberdeen" },
-  { "id": "plymouth", "label": "Plymouth, England", "wiki": "Plymouth" },
-  { "id": "venice", "label": "Venice, Italy", "wiki": "Venice" },
-  { "id": "florence", "label": "Florence, Italy", "wiki": "Florence" },
-  { "id": "naples", "label": "Naples, Italy", "wiki": "Naples" },
-  { "id": "marseille", "label": "Marseille, France", "wiki": "Marseille" },
-  { "id": "lyon", "label": "Lyon, France", "wiki": "Lyon" },
-  { "id": "seville", "label": "Seville, Spain", "wiki": "Seville" },
-  { "id": "malaga", "label": "Málaga, Spain", "wiki": "Málaga" },
-  { "id": "porto", "label": "Porto, Portugal", "wiki": "Porto" },
-  { "id": "palma", "label": "Palma, Mallorca", "wiki": "Palma de Mallorca" },
-  { "id": "tenerife", "label": "Tenerife", "wiki": "Tenerife" },
-  { "id": "crete", "label": "Crete", "wiki": "Crete" },
-  { "id": "krakow", "label": "Kraków, Poland", "wiki": "Kraków" },
-  { "id": "geneva", "label": "Geneva, Switzerland", "wiki": "Geneva" },
-  { "id": "salzburg", "label": "Salzburg, Austria", "wiki": "Salzburg" },
-  { "id": "las-vegas", "label": "Las Vegas, United States", "wiki": "Las Vegas" },
-  { "id": "boston", "label": "Boston, United States", "wiki": "Boston" },
-  { "id": "orlando", "label": "Orlando, United States", "wiki": "Orlando, Florida" },
-  { "id": "honolulu", "label": "Honolulu, Hawaii", "wiki": "Honolulu" },
-  { "id": "cancun", "label": "Cancún, Mexico", "wiki": "Cancún" },
-  { "id": "bali", "label": "Bali, Indonesia", "wiki": "Bali" },
-  { "id": "phuket", "label": "Phuket, Thailand", "wiki": "Phuket (city)" },
-  { "id": "kyoto", "label": "Kyoto, Japan", "wiki": "Kyoto" },
-  { "id": "perth", "label": "Perth, Australia", "wiki": "Perth" },
-  { "id": "queenstown", "label": "Queenstown, New Zealand", "wiki": "Queenstown, New Zealand" },
-  { "id": "york", "label": "York, England", "wiki": "York" },
-  { "id": "bristol", "label": "Bristol, England", "wiki": "Bristol" },
-  { "id": "cambridge", "label": "Cambridge, England", "wiki": "Cambridge" },
-  { "id": "brighton", "label": "Brighton, England", "wiki": "Brighton" },
-  { "id": "swansea", "label": "Swansea, Wales", "wiki": "Swansea" },
-  { "id": "dundee", "label": "Dundee, Scotland", "wiki": "Dundee" },
+  { "id": "tokyo", "label": "Tokyo, Japan", "wiki": "Tokyo", "at": { "lat": 35.6897, "lon": 139.6922 } },
+  { "id": "beijing", "label": "Beijing, China", "wiki": "Beijing", "at": { "lat": 39.9067, "lon": 116.3975 } },
+  { "id": "new-delhi", "label": "New Delhi, India", "wiki": "New Delhi", "at": { "lat": 28.6139, "lon": 77.2089 } },
+  { "id": "bangkok", "label": "Bangkok, Thailand", "wiki": "Bangkok", "at": { "lat": 13.7525, "lon": 100.4942 } },
+  {
+    "id": "kuala-lumpur",
+    "label": "Kuala Lumpur, Malaysia",
+    "wiki": "Kuala Lumpur",
+    "at": { "lat": 3.1478, "lon": 101.6953 }
+  },
+  { "id": "taipei", "label": "Taipei, Taiwan", "wiki": "Taipei", "at": { "lat": 25.0375, "lon": 121.5625 } },
+  {
+    "id": "pyongyang",
+    "label": "Pyongyang, North Korea",
+    "wiki": "Pyongyang",
+    "at": { "lat": 39.0167, "lon": 125.7475 }
+  },
+  { "id": "naypyidaw", "label": "Naypyidaw, Myanmar", "wiki": "Naypyidaw", "at": { "lat": 19.7475, "lon": 96.115 } },
+  { "id": "baku", "label": "Baku, Azerbaijan", "wiki": "Baku", "at": { "lat": 40.3756, "lon": 49.8325 } },
+  { "id": "mogadishu", "label": "Mogadishu, Somalia", "wiki": "Mogadishu", "at": { "lat": 2.0392, "lon": 45.3419 } },
+  { "id": "tbilisi", "label": "Tbilisi, Georgia", "wiki": "Tbilisi", "at": { "lat": 41.7225, "lon": 44.7925 } },
+  { "id": "dushanbe", "label": "Dushanbe, Tajikistan", "wiki": "Dushanbe", "at": { "lat": 38.5367, "lon": 68.78 } },
+  { "id": "ashgabat", "label": "Ashgabat, Turkmenistan", "wiki": "Ashgabat", "at": { "lat": 37.9375, "lon": 58.38 } },
+  { "id": "bishkek", "label": "Bishkek, Kyrgyzstan", "wiki": "Bishkek", "at": { "lat": 42.8747, "lon": 74.6122 } },
+  { "id": "damascus", "label": "Damascus, Syria", "wiki": "Damascus", "at": { "lat": 33.5131, "lon": 36.3094 } },
+  { "id": "beirut", "label": "Beirut, Lebanon", "wiki": "Beirut", "at": { "lat": 33.8981, "lon": 35.5058 } },
+  { "id": "amman", "label": "Amman, Jordan", "wiki": "Amman", "at": { "lat": 31.9497, "lon": 35.9328 } },
+  { "id": "muscat", "label": "Muscat, Oman", "wiki": "Muscat", "at": { "lat": 23.5889, "lon": 58.4083 } },
+  {
+    "id": "abu-dhabi",
+    "label": "Abu Dhabi, United Arab Emirates",
+    "wiki": "Abu Dhabi",
+    "at": { "lat": 24.4667, "lon": 54.3667 }
+  },
+  { "id": "sanaa", "label": "Sanaa, Yemen", "wiki": "Sanaa", "at": { "lat": 15.3483, "lon": 44.2064 } },
+  { "id": "cairo", "label": "Cairo, Egypt", "wiki": "Cairo", "at": { "lat": 30.0444, "lon": 31.2358 } },
+  { "id": "algiers", "label": "Algiers, Algeria", "wiki": "Algiers", "at": { "lat": 36.7325, "lon": 3.0872 } },
+  { "id": "tunis", "label": "Tunis, Tunisia", "wiki": "Tunis", "at": { "lat": 36.8064, "lon": 10.1817 } },
+  { "id": "rabat", "label": "Rabat, Morocco", "wiki": "Rabat", "at": { "lat": 34.0211, "lon": -6.8414 } },
+  { "id": "tripoli", "label": "Tripoli, Libya", "wiki": "Tripoli, Libya", "at": { "lat": 32.8875, "lon": 13.1875 } },
+  { "id": "khartoum", "label": "Khartoum, Sudan", "wiki": "Khartoum", "at": { "lat": 15.6, "lon": 32.5 } },
+  { "id": "dakar", "label": "Dakar, Senegal", "wiki": "Dakar", "at": { "lat": 14.6928, "lon": -17.4467 } },
+  { "id": "accra", "label": "Accra, Ghana", "wiki": "Accra", "at": { "lat": 5.55, "lon": -0.2 } },
+  { "id": "luanda", "label": "Luanda, Angola", "wiki": "Luanda", "at": { "lat": -8.8383, "lon": 13.2344 } },
+  { "id": "lusaka", "label": "Lusaka, Zambia", "wiki": "Lusaka", "at": { "lat": -15.4167, "lon": 28.2833 } },
+  { "id": "harare", "label": "Harare, Zimbabwe", "wiki": "Harare", "at": { "lat": -17.8292, "lon": 31.0522 } },
+  { "id": "maputo", "label": "Maputo, Mozambique", "wiki": "Maputo", "at": { "lat": -25.9689, "lon": 32.5733 } },
+  { "id": "kampala", "label": "Kampala, Uganda", "wiki": "Kampala", "at": { "lat": 0.3136, "lon": 32.5811 } },
+  { "id": "dodoma", "label": "Dodoma, Tanzania", "wiki": "Dodoma", "at": { "lat": -6.1731, "lon": 35.7419 } },
+  { "id": "windhoek", "label": "Windhoek, Namibia", "wiki": "Windhoek", "at": { "lat": -22.57, "lon": 17.0836 } },
+  { "id": "gaborone", "label": "Gaborone, Botswana", "wiki": "Gaborone", "at": { "lat": -24.6581, "lon": 25.9122 } },
+  {
+    "id": "antananarivo",
+    "label": "Antananarivo, Madagascar",
+    "wiki": "Antananarivo",
+    "at": { "lat": -18.91, "lon": 47.525 }
+  },
+  { "id": "caracas", "label": "Caracas, Venezuela", "wiki": "Caracas", "at": { "lat": 10.5061, "lon": -66.9144 } },
+  { "id": "quito", "label": "Quito, Ecuador", "wiki": "Quito", "at": { "lat": -0.22, "lon": -78.5125 } },
+  { "id": "la-paz", "label": "La Paz, Bolivia", "wiki": "La Paz", "at": { "lat": -16.4958, "lon": -68.1333 } },
+  {
+    "id": "panama-city",
+    "label": "Panama City, Panama",
+    "wiki": "Panama City",
+    "at": { "lat": 8.9711, "lon": -79.5347 }
+  },
+  {
+    "id": "san-jose-cr",
+    "label": "San José, Costa Rica",
+    "wiki": "San José, Costa Rica",
+    "at": { "lat": 9.9325, "lon": -84.08 }
+  },
+  { "id": "managua", "label": "Managua, Nicaragua", "wiki": "Managua", "at": { "lat": 12.1364, "lon": -86.2514 } },
+  {
+    "id": "tegucigalpa",
+    "label": "Tegucigalpa, Honduras",
+    "wiki": "Tegucigalpa",
+    "at": { "lat": 14.1058, "lon": -87.2047 }
+  },
+  {
+    "id": "san-salvador",
+    "label": "San Salvador, El Salvador",
+    "wiki": "San Salvador",
+    "at": { "lat": 13.6989, "lon": -89.1914 }
+  },
+  {
+    "id": "guatemala-city",
+    "label": "Guatemala City, Guatemala",
+    "wiki": "Guatemala City",
+    "at": { "lat": 14.6417, "lon": -90.5133 }
+  },
+  {
+    "id": "santo-domingo",
+    "label": "Santo Domingo, Dominican Republic",
+    "wiki": "Santo Domingo",
+    "at": { "lat": 18.4625, "lon": -69.9361 }
+  },
+  {
+    "id": "port-au-prince",
+    "label": "Port-au-Prince, Haiti",
+    "wiki": "Port-au-Prince",
+    "at": { "lat": 18.5364, "lon": -72.3464 }
+  },
+  { "id": "moscow", "label": "Moscow, Russia", "wiki": "Moscow", "at": { "lat": 55.7558, "lon": 37.6178 } },
+  { "id": "bern", "label": "Bern, Switzerland", "wiki": "Bern", "at": { "lat": 46.9481, "lon": 7.4475 } },
+  { "id": "belgrade", "label": "Belgrade, Serbia", "wiki": "Belgrade", "at": { "lat": 44.8178, "lon": 20.4569 } },
+  { "id": "new-york", "label": "New York City", "wiki": "New York City", "at": { "lat": 40.7128, "lon": -74.0061 } },
+  { "id": "los-angeles", "label": "Los Angeles", "wiki": "Los Angeles", "at": { "lat": 34.05, "lon": -118.25 } },
+  { "id": "chicago", "label": "Chicago", "wiki": "Chicago", "at": { "lat": 41.8819, "lon": -87.6278 } },
+  {
+    "id": "san-francisco",
+    "label": "San Francisco",
+    "wiki": "San Francisco",
+    "at": { "lat": 37.7775, "lon": -122.4164 }
+  },
+  { "id": "houston", "label": "Houston", "wiki": "Houston", "at": { "lat": 29.7567, "lon": -95.3653 } },
+  { "id": "miami", "label": "Miami", "wiki": "Miami", "at": { "lat": 25.7742, "lon": -80.1936 } },
+  { "id": "seattle", "label": "Seattle", "wiki": "Seattle", "at": { "lat": 47.6039, "lon": -122.33 } },
+  { "id": "toronto", "label": "Toronto, Canada", "wiki": "Toronto", "at": { "lat": 43.6525, "lon": -79.3817 } },
+  { "id": "vancouver", "label": "Vancouver, Canada", "wiki": "Vancouver", "at": { "lat": 49.2608, "lon": -123.1139 } },
+  { "id": "montreal", "label": "Montreal, Canada", "wiki": "Montreal", "at": { "lat": 45.5089, "lon": -73.5542 } },
+  { "id": "sao-paulo", "label": "São Paulo, Brazil", "wiki": "São Paulo", "at": { "lat": -23.55, "lon": -46.6333 } },
+  {
+    "id": "rio-de-janeiro",
+    "label": "Rio de Janeiro, Brazil",
+    "wiki": "Rio de Janeiro",
+    "at": { "lat": -22.9111, "lon": -43.2056 }
+  },
+  { "id": "shanghai", "label": "Shanghai, China", "wiki": "Shanghai", "at": { "lat": 31.2325, "lon": 121.4692 } },
+  { "id": "hong-kong", "label": "Hong Kong", "wiki": "Hong Kong", "at": { "lat": 22.3, "lon": 114.2 } },
+  { "id": "guangzhou", "label": "Guangzhou, China", "wiki": "Guangzhou", "at": { "lat": 23.13, "lon": 113.26 } },
+  { "id": "shenzhen", "label": "Shenzhen, China", "wiki": "Shenzhen", "at": { "lat": 22.5467, "lon": 114.0544 } },
+  { "id": "chongqing", "label": "Chongqing, China", "wiki": "Chongqing", "at": { "lat": 29.5637, "lon": 106.5504 } },
+  { "id": "osaka", "label": "Osaka, Japan", "wiki": "Osaka", "at": { "lat": 34.6939, "lon": 135.5022 } },
+  { "id": "mumbai", "label": "Mumbai, India", "wiki": "Mumbai", "at": { "lat": 19.0761, "lon": 72.8775 } },
+  { "id": "kolkata", "label": "Kolkata, India", "wiki": "Kolkata", "at": { "lat": 22.5675, "lon": 88.37 } },
+  { "id": "chennai", "label": "Chennai, India", "wiki": "Chennai", "at": { "lat": 13.0825, "lon": 80.275 } },
+  { "id": "bengaluru", "label": "Bengaluru, India", "wiki": "Bengaluru", "at": { "lat": 12.9789, "lon": 77.5917 } },
+  { "id": "karachi", "label": "Karachi, Pakistan", "wiki": "Karachi", "at": { "lat": 24.86, "lon": 67.01 } },
+  { "id": "lahore", "label": "Lahore, Pakistan", "wiki": "Lahore", "at": { "lat": 31.5497, "lon": 74.3436 } },
+  {
+    "id": "ho-chi-minh-city",
+    "label": "Ho Chi Minh City, Vietnam",
+    "wiki": "Ho Chi Minh City",
+    "at": { "lat": 10.7756, "lon": 106.7019 }
+  },
+  { "id": "istanbul", "label": "Istanbul, Turkey", "wiki": "Istanbul", "at": { "lat": 41.0136, "lon": 28.955 } },
+  { "id": "dubai", "label": "Dubai, United Arab Emirates", "wiki": "Dubai", "at": { "lat": 25.2047, "lon": 55.2708 } },
+  { "id": "lagos", "label": "Lagos, Nigeria", "wiki": "Lagos", "at": { "lat": 6.4561, "lon": 3.3936 } },
+  {
+    "id": "johannesburg",
+    "label": "Johannesburg, South Africa",
+    "wiki": "Johannesburg",
+    "at": { "lat": -26.2044, "lon": 28.0456 }
+  },
+  {
+    "id": "cape-town",
+    "label": "Cape Town, South Africa",
+    "wiki": "Cape Town",
+    "at": { "lat": -33.9253, "lon": 18.4239 }
+  },
+  {
+    "id": "casablanca",
+    "label": "Casablanca, Morocco",
+    "wiki": "Casablanca",
+    "at": { "lat": 33.5333, "lon": -7.5833 }
+  },
+  { "id": "marrakesh", "label": "Marrakesh, Morocco", "wiki": "Marrakesh", "at": { "lat": 31.63, "lon": -8.0089 } },
+  { "id": "alexandria", "label": "Alexandria, Egypt", "wiki": "Alexandria", "at": { "lat": 31.1975, "lon": 29.8925 } },
+  {
+    "id": "st-petersburg",
+    "label": "Saint Petersburg, Russia",
+    "wiki": "Saint Petersburg",
+    "at": { "lat": 59.9375, "lon": 30.3086 }
+  },
+  { "id": "barcelona", "label": "Barcelona, Spain", "wiki": "Barcelona", "at": { "lat": 41.3833, "lon": 2.1833 } },
+  { "id": "milan", "label": "Milan, Italy", "wiki": "Milan", "at": { "lat": 45.4669, "lon": 9.19 } },
+  { "id": "munich", "label": "Munich, Germany", "wiki": "Munich", "at": { "lat": 48.1375, "lon": 11.575 } },
+  { "id": "hamburg", "label": "Hamburg, Germany", "wiki": "Hamburg", "at": { "lat": 53.55, "lon": 10 } },
+  { "id": "sydney", "label": "Sydney, Australia", "wiki": "Sydney", "at": { "lat": -33.8678, "lon": 151.21 } },
+  {
+    "id": "melbourne",
+    "label": "Melbourne, Australia",
+    "wiki": "Melbourne",
+    "at": { "lat": -37.8142, "lon": 144.9631 }
+  },
+  {
+    "id": "auckland",
+    "label": "Auckland, New Zealand",
+    "wiki": "Auckland",
+    "at": { "lat": -36.8492, "lon": 174.7653 }
+  },
+  {
+    "id": "manchester",
+    "label": "Manchester, England",
+    "wiki": "Manchester",
+    "at": { "lat": 53.4794, "lon": -2.2453 }
+  },
+  { "id": "glasgow", "label": "Glasgow, Scotland", "wiki": "Glasgow", "at": { "lat": 55.8611, "lon": -4.25 } },
+  { "id": "birmingham", "label": "Birmingham, England", "wiki": "Birmingham", "at": { "lat": 52.48, "lon": -1.9025 } },
+  { "id": "liverpool", "label": "Liverpool, England", "wiki": "Liverpool", "at": { "lat": 53.4072, "lon": -2.9917 } },
+  { "id": "leeds", "label": "Leeds, England", "wiki": "Leeds", "at": { "lat": 53.7975, "lon": -1.5436 } },
+  {
+    "id": "newcastle",
+    "label": "Newcastle upon Tyne, England",
+    "wiki": "Newcastle upon Tyne",
+    "at": { "lat": 54.9738, "lon": -1.6131 }
+  },
+  { "id": "aberdeen", "label": "Aberdeen, Scotland", "wiki": "Aberdeen", "at": { "lat": 57.15, "lon": -2.11 } },
+  { "id": "plymouth", "label": "Plymouth, England", "wiki": "Plymouth", "at": { "lat": 50.3714, "lon": -4.1422 } },
+  { "id": "venice", "label": "Venice, Italy", "wiki": "Venice", "at": { "lat": 45.4375, "lon": 12.3358 } },
+  { "id": "florence", "label": "Florence, Italy", "wiki": "Florence", "at": { "lat": 43.7714, "lon": 11.2542 } },
+  { "id": "naples", "label": "Naples, Italy", "wiki": "Naples", "at": { "lat": 40.8358, "lon": 14.2486 } },
+  { "id": "marseille", "label": "Marseille, France", "wiki": "Marseille", "at": { "lat": 43.2964, "lon": 5.37 } },
+  { "id": "lyon", "label": "Lyon, France", "wiki": "Lyon", "at": { "lat": 45.7675, "lon": 4.835 } },
+  { "id": "seville", "label": "Seville, Spain", "wiki": "Seville", "at": { "lat": 37.3886, "lon": -5.995 } },
+  { "id": "malaga", "label": "Málaga, Spain", "wiki": "Málaga", "at": { "lat": 36.7194, "lon": -4.42 } },
+  { "id": "porto", "label": "Porto, Portugal", "wiki": "Porto", "at": { "lat": 41.15, "lon": -8.6108 } },
+  { "id": "palma", "label": "Palma, Mallorca", "wiki": "Palma de Mallorca", "at": { "lat": 39.5667, "lon": 2.65 } },
+  { "id": "tenerife", "label": "Tenerife", "wiki": "Tenerife", "at": { "lat": 28.2686, "lon": -16.6056 } },
+  { "id": "crete", "label": "Crete", "wiki": "Crete", "at": { "lat": 35.21, "lon": 24.91 } },
+  { "id": "krakow", "label": "Kraków, Poland", "wiki": "Kraków", "at": { "lat": 50.0614, "lon": 19.9372 } },
+  { "id": "geneva", "label": "Geneva, Switzerland", "wiki": "Geneva", "at": { "lat": 46.2017, "lon": 6.1469 } },
+  { "id": "salzburg", "label": "Salzburg, Austria", "wiki": "Salzburg", "at": { "lat": 47.8, "lon": 13.045 } },
+  {
+    "id": "las-vegas",
+    "label": "Las Vegas, United States",
+    "wiki": "Las Vegas",
+    "at": { "lat": 36.1692, "lon": -115.1406 }
+  },
+  { "id": "boston", "label": "Boston, United States", "wiki": "Boston", "at": { "lat": 42.3603, "lon": -71.0578 } },
+  {
+    "id": "orlando",
+    "label": "Orlando, United States",
+    "wiki": "Orlando, Florida",
+    "at": { "lat": 28.5422, "lon": -81.3792 }
+  },
+  { "id": "honolulu", "label": "Honolulu, Hawaii", "wiki": "Honolulu", "at": { "lat": 21.3, "lon": -157.85 } },
+  { "id": "cancun", "label": "Cancún, Mexico", "wiki": "Cancún", "at": { "lat": 21.1606, "lon": -86.8475 } },
+  { "id": "bali", "label": "Bali, Indonesia", "wiki": "Bali", "at": { "lat": -8.335, "lon": 115.0881 } },
+  { "id": "phuket", "label": "Phuket, Thailand", "wiki": "Phuket (city)", "at": { "lat": 7.8881, "lon": 98.3975 } },
+  { "id": "kyoto", "label": "Kyoto, Japan", "wiki": "Kyoto", "at": { "lat": 35.0116, "lon": 135.7681 } },
+  { "id": "perth", "label": "Perth, Australia", "wiki": "Perth", "at": { "lat": -32, "lon": 115.9 } },
+  {
+    "id": "queenstown",
+    "label": "Queenstown, New Zealand",
+    "wiki": "Queenstown, New Zealand",
+    "at": { "lat": -45.0311, "lon": 168.6625 }
+  },
+  { "id": "york", "label": "York, England", "wiki": "York", "at": { "lat": 53.96, "lon": -1.08 } },
+  { "id": "bristol", "label": "Bristol, England", "wiki": "Bristol", "at": { "lat": 51.4536, "lon": -2.5975 } },
+  { "id": "cambridge", "label": "Cambridge, England", "wiki": "Cambridge", "at": { "lat": 52.205, "lon": 0.1225 } },
+  { "id": "brighton", "label": "Brighton, England", "wiki": "Brighton", "at": { "lat": 50.8208, "lon": -0.1375 } },
+  { "id": "swansea", "label": "Swansea, Wales", "wiki": "Swansea", "at": { "lat": 51.6167, "lon": -3.95 } },
+  { "id": "dundee", "label": "Dundee, Scotland", "wiki": "Dundee", "at": { "lat": 56.4606, "lon": -2.97 } },
   {
     "id": "afghanistan",
     "label": "Afghanistan",
@@ -2292,41 +3204,112 @@
     "id": "antigua-and-barbuda",
     "label": "Antigua and Barbuda",
     "wiki": "Antigua and Barbuda",
+    "at": { "lat": 17.0778, "lon": -61.7901 },
     "flag": { "code": "ag", "wiki": "Flag of Antigua and Barbuda" }
   },
-  { "id": "china", "label": "China", "wiki": "China", "flag": { "code": "cn", "wiki": "Flag of China" } },
-  { "id": "dominica", "label": "Dominica", "wiki": "Dominica", "flag": { "code": "dm", "wiki": "Flag of Dominica" } },
-  { "id": "grenada", "label": "Grenada", "wiki": "Grenada", "flag": { "code": "gd", "wiki": "Flag of Grenada" } },
-  { "id": "india", "label": "India", "wiki": "India", "flag": { "code": "in", "wiki": "Flag of India" } },
-  { "id": "israel", "label": "Israel", "wiki": "Israel", "flag": { "code": "il", "wiki": "Flag of Israel" } },
-  { "id": "morocco", "label": "Morocco", "wiki": "Morocco", "flag": { "code": "ma", "wiki": "Flag of Morocco" } },
-  { "id": "pakistan", "label": "Pakistan", "wiki": "Pakistan", "flag": { "code": "pk", "wiki": "Flag of Pakistan" } },
-  { "id": "serbia", "label": "Serbia", "wiki": "Serbia", "flag": { "code": "rs", "wiki": "Flag of Serbia" } },
-  { "id": "russia", "label": "Russia", "wiki": "Russia", "flag": { "code": "ru", "wiki": "Flag of Russia" } },
+  {
+    "id": "china",
+    "label": "China",
+    "wiki": "China",
+    "at": { "lat": 36.6913, "lon": 103.4233 },
+    "flag": { "code": "cn", "wiki": "Flag of China" }
+  },
+  {
+    "id": "dominica",
+    "label": "Dominica",
+    "wiki": "Dominica",
+    "at": { "lat": 15.4588, "lon": -61.345 },
+    "flag": { "code": "dm", "wiki": "Flag of Dominica" }
+  },
+  {
+    "id": "grenada",
+    "label": "Grenada",
+    "wiki": "Grenada",
+    "at": { "lat": 12.1132, "lon": -61.6805 },
+    "flag": { "code": "gd", "wiki": "Flag of Grenada" }
+  },
+  {
+    "id": "india",
+    "label": "India",
+    "wiki": "India",
+    "at": { "lat": 22.7434, "lon": 79.5226 },
+    "flag": { "code": "in", "wiki": "Flag of India" }
+  },
+  {
+    "id": "israel",
+    "label": "Israel",
+    "wiki": "Israel",
+    "at": { "lat": 31.3608, "lon": 34.9657 },
+    "flag": { "code": "il", "wiki": "Flag of Israel" }
+  },
+  {
+    "id": "morocco",
+    "label": "Morocco",
+    "wiki": "Morocco",
+    "at": { "lat": 29.7942, "lon": -8.743 },
+    "flag": { "code": "ma", "wiki": "Flag of Morocco" }
+  },
+  {
+    "id": "pakistan",
+    "label": "Pakistan",
+    "wiki": "Pakistan",
+    "at": { "lat": 29.8932, "lon": 69.1921 },
+    "flag": { "code": "pk", "wiki": "Flag of Pakistan" }
+  },
+  {
+    "id": "serbia",
+    "label": "Serbia",
+    "wiki": "Serbia",
+    "at": { "lat": 44.1089, "lon": 20.8677 },
+    "flag": { "code": "rs", "wiki": "Flag of Serbia" }
+  },
+  {
+    "id": "russia",
+    "label": "Russia",
+    "wiki": "Russia",
+    "at": { "lat": 66.0151, "lon": 95.5106 },
+    "flag": { "code": "ru", "wiki": "Flag of Russia" }
+  },
   {
     "id": "saint-kitts-and-nevis",
     "label": "Saint Kitts and Nevis",
     "wiki": "Saint Kitts and Nevis",
+    "at": { "lat": 17.3366, "lon": -62.758 },
     "flag": { "code": "kn", "wiki": "Flag of Saint Kitts and Nevis" }
   },
   {
     "id": "saint-lucia",
     "label": "Saint Lucia",
     "wiki": "Saint Lucia",
+    "at": { "lat": 13.8924, "lon": -60.9801 },
     "flag": { "code": "lc", "wiki": "Flag of Saint Lucia" }
   },
   {
     "id": "saint-vincent-and-the-grenadines",
     "label": "Saint Vincent and the Grenadines",
     "wiki": "Saint Vincent and the Grenadines",
+    "at": { "lat": 13.2541, "lon": -61.1958 },
     "flag": { "code": "vc", "wiki": "Flag of Saint Vincent and the Grenadines" }
   },
-  { "id": "somalia", "label": "Somalia", "wiki": "Somalia", "flag": { "code": "so", "wiki": "Flag of Somalia" } },
-  { "id": "ukraine", "label": "Ukraine", "wiki": "Ukraine", "flag": { "code": "ua", "wiki": "Flag of Ukraine" } },
+  {
+    "id": "somalia",
+    "label": "Somalia",
+    "wiki": "Somalia",
+    "at": { "lat": 4.7354, "lon": 45.6666 },
+    "flag": { "code": "so", "wiki": "Flag of Somalia" }
+  },
+  {
+    "id": "ukraine",
+    "label": "Ukraine",
+    "wiki": "Ukraine",
+    "at": { "lat": 49.1592, "lon": 31.3225 },
+    "flag": { "code": "ua", "wiki": "Flag of Ukraine" }
+  },
   {
     "id": "united-states",
     "label": "United States",
     "wiki": "United States",
+    "at": { "lat": 44.6931, "lon": -103.6061 },
     "flag": { "code": "us", "wiki": "Flag of the United States" }
   },
   {
@@ -2910,7 +3893,7 @@
       "surface": "LAND"
     }
   },
-  { "id": "state-delaware", "label": "Delaware", "wiki": "Delaware" },
+  { "id": "state-delaware", "label": "Delaware", "wiki": "Delaware", "at": { "lat": 38.9952, "lon": -75.5052 } },
   {
     "id": "state-florida",
     "label": "Florida",
@@ -3241,7 +4224,12 @@
       "surface": "LAND"
     }
   },
-  { "id": "state-rhode-island", "label": "Rhode Island", "wiki": "Rhode Island" },
+  {
+    "id": "state-rhode-island",
+    "label": "Rhode Island",
+    "wiki": "Rhode Island",
+    "at": { "lat": 41.6763, "lon": -71.5593 }
+  },
   {
     "id": "state-south-carolina",
     "label": "South Carolina",

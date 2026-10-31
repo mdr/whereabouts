@@ -275,10 +275,10 @@ changes: [docs/code-map.md](docs/code-map.md)):
   ask about (`QuestionType` in `src/questions.ts`): landmarks, places,
   countries, flags, features (islands, lakes, seas) and US states. Each is
   about a place in `places.json`, which holds what is true of it however it
-  is asked: its name, its article, its area and its flag, so "Where is
+  is asked: its name, its article, its point, its area and its flag, so "Where is
   Albania?", "Paint the whole of Albania" and Albania's flag share one. Each
   question has a clue (a Wikimedia Commons photo, a name, or the place's
-  flag) and an answer: a point with a tolerance in km, or the place's area
+  flag) and an answer: the place's point with a tolerance in km, or its area
   painted whole, whose outline is in `outlines.json`. Landmarks are asked by photo ("Where is this?"), places by
   name ("Where is Nauru?"). The place set is capital cities, major world
   and UK cities, and small countries, with tolerances calibrated for a UK
@@ -288,9 +288,10 @@ changes: [docs/code-map.md](docs/code-map.md)):
   cities and small countries further afield, up to 1,000 km for Pacific
   micro-states. A prompt never names the country or region: a name shared by
   two well-known places is told apart some other way ("Where is Tripoli,
-  the capital city?"). A country question is placed at the point Wikipedia uses
-  for the country itself (roughly its centre, or the main island of an
-  archipelago), not at its capital. Every text answer was checked against
+  the capital city?"). A country is placed at the point Wikipedia uses for
+  the country itself (roughly its centre, or the main island of an
+  archipelago), not at its capital; a small one whose flag is asked as a
+  point takes the flag build's point, on land near Natural Earth's label. Every text answer was checked against
   the coordinates on its English Wikipedia article, and `questions.test.ts` guards ids,
   ranges and near-duplicate spots. Photo questions are famous landmarks,
   natural and built; each image is the lead picture of the landmark's

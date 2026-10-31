@@ -4,259 +4,259 @@
     "type": "LANDMARK",
     "place": "taj-mahal",
     "clue": { "type": "PHOTO", "image": "Taj Mahal (Edited).jpeg" },
-    "answer": { "type": "POINT", "at": { "lat": 27.1751, "lon": 78.0421 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "sydney-opera",
     "type": "LANDMARK",
     "place": "sydney-opera",
     "clue": { "type": "PHOTO", "image": "Sydney Opera House - Dec 2008.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -33.8568, "lon": 151.2153 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "machu-picchu",
     "type": "LANDMARK",
     "place": "machu-picchu",
     "clue": { "type": "PHOTO", "image": "Machu Picchu, Peru.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -13.1631, "lon": -72.545 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "cristo",
     "type": "LANDMARK",
     "place": "cristo",
     "clue": { "type": "PHOTO", "image": "Cristo Redentor - Rio de Janeiro, Brasil.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -22.9519, "lon": -43.2105 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "petra",
     "type": "LANDMARK",
     "place": "petra",
     "clue": { "type": "PHOTO", "image": "Al Khazneh Petra edit 2.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 30.3285, "lon": 35.4444 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "giza",
     "type": "LANDMARK",
     "place": "giza",
     "clue": { "type": "PHOTO", "image": "Kheops-Pyramid.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 29.9792, "lon": 31.1342 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "golden-gate",
     "type": "LANDMARK",
     "place": "golden-gate",
     "clue": { "type": "PHOTO", "image": "GoldenGateBridge-001.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 37.8199, "lon": -122.4783 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "neuschwanstein",
     "type": "LANDMARK",
     "place": "neuschwanstein",
     "clue": { "type": "PHOTO", "image": "Schloss Neuschwanstein 2013.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 47.5576, "lon": 10.7498 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "buckingham",
     "type": "LANDMARK",
     "place": "buckingham",
     "clue": { "type": "PHOTO", "image": "Buckingham Palace, London - April 2009.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 51.5014, "lon": -0.1419 }, "tolerance": 3 }
+    "answer": { "type": "POINT", "tolerance": 3 }
   },
   {
     "id": "edinburgh-castle",
     "type": "LANDMARK",
     "place": "edinburgh-castle",
     "clue": { "type": "PHOTO", "image": "Edinburgh Castle from the south east.JPG" },
-    "answer": { "type": "POINT", "at": { "lat": 55.9486, "lon": -3.1999 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   {
     "id": "angel-north",
     "type": "LANDMARK",
     "place": "angel-north",
     "clue": { "type": "PHOTO", "image": "Angel of the North, Gateshead.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 54.9141, "lon": -1.5895 }, "tolerance": 25 }
+    "answer": { "type": "POINT", "tolerance": 25 }
   },
   {
     "id": "stonehenge",
     "type": "LANDMARK",
     "place": "stonehenge",
     "clue": { "type": "PHOTO", "image": "Stonehenge2007 07 30.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 51.1789, "lon": -1.8262 }, "tolerance": 20 }
+    "answer": { "type": "POINT", "tolerance": 20 }
   },
   {
     "id": "clifton",
     "type": "LANDMARK",
     "place": "clifton",
     "clue": { "type": "PHOTO", "image": "Clifton.bridge.arp.750pix.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 51.4549, "lon": -2.6277 }, "tolerance": 20 }
+    "answer": { "type": "POINT", "tolerance": 20 }
   },
   {
     "id": "eiffel",
     "type": "LANDMARK",
     "place": "eiffel",
     "clue": { "type": "PHOTO", "image": "Tour Eiffel Wikimedia Commons (cropped).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 48.8584, "lon": 2.2945 }, "tolerance": 60 }
+    "answer": { "type": "POINT", "tolerance": 60 }
   },
   {
     "id": "colosseum",
     "type": "LANDMARK",
     "place": "colosseum",
     "clue": { "type": "PHOTO", "image": "Colosseo 2020.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 41.8902, "lon": 12.4922 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "sagrada",
     "type": "LANDMARK",
     "place": "sagrada",
     "clue": { "type": "PHOTO", "image": "SF maig 2 cropped.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 41.4036, "lon": 2.1744 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "parthenon",
     "type": "LANDMARK",
     "place": "parthenon",
     "clue": { "type": "PHOTO", "image": "The Parthenon in Athens.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 37.9715, "lon": 23.7267 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "mont-saint-michel",
     "type": "LANDMARK",
     "place": "mont-saint-michel",
     "clue": { "type": "PHOTO", "image": "Mont-Saint-Michel vu du ciel.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 48.636, "lon": -1.5115 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "brandenburg",
     "type": "LANDMARK",
     "place": "brandenburg",
     "clue": { "type": "PHOTO", "image": "Brandenburger Tor abends.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 52.5163, "lon": 13.3777 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "charles-bridge",
     "type": "LANDMARK",
     "place": "charles-bridge",
     "clue": { "type": "PHOTO", "image": "Prague 07-2016 view from Lesser Town Tower of Charles Bridge img3.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 50.0865, "lon": 14.4114 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "hagia-sophia",
     "type": "LANDMARK",
     "place": "hagia-sophia",
     "clue": { "type": "PHOTO", "image": "Hagia Sophia (228968325).jpeg" },
-    "answer": { "type": "POINT", "at": { "lat": 41.0086, "lon": 28.98 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "st-basils",
     "type": "LANDMARK",
     "place": "st-basils",
     "clue": { "type": "PHOTO", "image": "Saint Basil's Cathedral in Moscow.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 55.7525, "lon": 37.6231 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "pisa",
     "type": "LANDMARK",
     "place": "pisa",
     "clue": { "type": "PHOTO", "image": "Italy - Pisa - Leaning Tower.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 43.723, "lon": 10.3966 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "st-marks",
     "type": "LANDMARK",
     "place": "st-marks",
     "clue": { "type": "PHOTO", "image": "Venezia Basilica di San Marco Fassade 2.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 45.4345, "lon": 12.3397 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "alhambra",
     "type": "LANDMARK",
     "place": "alhambra",
     "clue": { "type": "PHOTO", "image": "Dawn Charles V Palace Alhambra Granada Andalusia Spain.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 37.1761, "lon": -3.5881 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "matterhorn",
     "type": "LANDMARK",
     "place": "matterhorn",
     "clue": { "type": "PHOTO", "image": "Matterhorn from Domhütte - 2.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 45.9763, "lon": 7.6586 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "oia",
     "type": "LANDMARK",
     "place": "oia",
     "clue": { "type": "PHOTO", "image": "Oia sunset - panoramio (2).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 36.4618, "lon": 25.3753 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "meteora",
     "type": "LANDMARK",
     "place": "meteora",
     "clue": { "type": "PHOTO", "image": "Meteora's monastery 2.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 39.7217, "lon": 21.6306 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "plitvice",
     "type": "LANDMARK",
     "place": "plitvice",
     "clue": { "type": "PHOTO", "image": "View in Plitvice Lakes National Park.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 44.8654, "lon": 15.582 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "cliffs-moher",
     "type": "LANDMARK",
     "place": "cliffs-moher",
     "clue": { "type": "PHOTO", "image": "Cliffs-Of-Moher-OBriens-From-South.JPG" },
-    "answer": { "type": "POINT", "at": { "lat": 52.9719, "lon": -9.4265 }, "tolerance": 60 }
+    "answer": { "type": "POINT", "tolerance": 60 }
   },
   {
     "id": "giants-causeway",
     "type": "LANDMARK",
     "place": "giants-causeway",
     "clue": { "type": "PHOTO", "image": "Causeway-code poet-4.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 55.2408, "lon": -6.5116 }, "tolerance": 40 }
+    "answer": { "type": "POINT", "tolerance": 40 }
   },
   {
     "id": "tower-bridge",
     "type": "LANDMARK",
     "place": "tower-bridge",
     "clue": { "type": "PHOTO", "image": "Tower Bridge at Dawn.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 51.5055, "lon": -0.0754 }, "tolerance": 5 }
+    "answer": { "type": "POINT", "tolerance": 5 }
   },
   {
     "id": "durdle-door",
     "type": "LANDMARK",
     "place": "durdle-door",
     "clue": { "type": "PHOTO", "image": "Durdle Door Overview.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 50.6212, "lon": -2.2769 }, "tolerance": 25 }
+    "answer": { "type": "POINT", "tolerance": 25 }
   },
   {
     "id": "forth-bridge",
     "type": "LANDMARK",
     "place": "forth-bridge",
     "clue": { "type": "PHOTO", "image": "Forth Bridge 2022.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 56.0003, "lon": -3.3884 }, "tolerance": 25 }
+    "answer": { "type": "POINT", "tolerance": 25 }
   },
   {
     "id": "hallstatt",
     "type": "LANDMARK",
     "place": "hallstatt",
     "clue": { "type": "PHOTO", "image": "Hallstatt - Zentrum .JPG" },
-    "answer": { "type": "POINT", "at": { "lat": 47.5622, "lon": 13.6493 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "cinque-terre",
     "type": "LANDMARK",
     "place": "cinque-terre",
     "clue": { "type": "PHOTO", "image": "Manarola NW Cinque Terre Sep23 A7C 07233.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 44.1067, "lon": 9.7275 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "kremlin",
     "type": "LANDMARK",
     "place": "kremlin",
     "clue": { "type": "PHOTO", "image": "Moscow Kremlin (8281675670).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 55.752, "lon": 37.6175 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "burj-khalifa",
@@ -266,217 +266,217 @@
       "type": "PHOTO",
       "image": "Burj Khalifa (worlds tallest building) and the Dubai skyline (25781049892).jpg"
     },
-    "answer": { "type": "POINT", "at": { "lat": 25.1972, "lon": 55.2744 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "angkor",
     "type": "LANDMARK",
     "place": "angkor",
     "clue": { "type": "PHOTO", "image": "Angkor Wat.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 13.4125, "lon": 103.867 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "great-wall",
     "type": "LANDMARK",
     "place": "great-wall",
     "clue": { "type": "PHOTO", "image": "Peking Grosse Mauer-20071019-RM-115708.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 40.3597, "lon": 116.02 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "forbidden-city",
     "type": "LANDMARK",
     "place": "forbidden-city",
     "clue": { "type": "PHOTO", "image": "The Forbidden City - View from Coal Hill.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 39.9163, "lon": 116.3972 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "fuji",
     "type": "LANDMARK",
     "place": "fuji",
     "clue": { "type": "PHOTO", "image": "View of Mount Fuji from Ōwakudani 20211202.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 35.3606, "lon": 138.7274 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "fushimi-inari",
     "type": "LANDMARK",
     "place": "fushimi-inari",
     "clue": { "type": "PHOTO", "image": "Torii path with lantern at Fushimi Inari Taisha Shrine, Kyoto, Japan.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 34.9671, "lon": 135.7727 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "ha-long",
     "type": "LANDMARK",
     "place": "ha-long",
     "clue": { "type": "PHOTO", "image": "Ha Long Bay in 2019.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 20.9101, "lon": 107.1839 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "borobudur",
     "type": "LANDMARK",
     "place": "borobudur",
     "clue": { "type": "PHOTO", "image": "Pradaksina.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -7.6079, "lon": 110.2038 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "marina-bay",
     "type": "LANDMARK",
     "place": "marina-bay",
     "clue": { "type": "PHOTO", "image": "Marina Bay Sands (I).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 1.2834, "lon": 103.8607 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "everest",
     "type": "LANDMARK",
     "place": "everest",
     "clue": { "type": "PHOTO", "image": "Mt. Everest from Gokyo Ri November 5, 2012.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 27.9881, "lon": 86.925 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "statue-liberty",
     "type": "LANDMARK",
     "place": "statue-liberty",
     "clue": { "type": "PHOTO", "image": "Front view of Statue of Liberty (cropped).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 40.6892, "lon": -74.0445 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "rushmore",
     "type": "LANDMARK",
     "place": "rushmore",
     "clue": { "type": "PHOTO", "image": "Mount Rushmore detail view (100MP).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 43.8791, "lon": -103.4591 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "niagara",
     "type": "LANDMARK",
     "place": "niagara",
     "clue": { "type": "PHOTO", "image": "3Falls Niagara.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 43.0799, "lon": -79.0747 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "chichen-itza",
     "type": "LANDMARK",
     "place": "chichen-itza",
     "clue": { "type": "PHOTO", "image": "Chichen Itza 3.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 20.6843, "lon": -88.5678 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "hollywood-sign",
     "type": "LANDMARK",
     "place": "hollywood-sign",
     "clue": { "type": "PHOTO", "image": "Hollywood sign (8485145044).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 34.1341, "lon": -118.3215 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "iguazu",
     "type": "LANDMARK",
     "place": "iguazu",
     "clue": { "type": "PHOTO", "image": "Aerial Foz de Iguaçu 26 Nov 2005.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -25.6953, "lon": -54.4367 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "uyuni",
     "type": "LANDMARK",
     "place": "uyuni",
     "clue": { "type": "PHOTO", "image": "Salar Uyuni au01.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -20.1338, "lon": -67.4891 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "perito-moreno",
     "type": "LANDMARK",
     "place": "perito-moreno",
     "clue": { "type": "PHOTO", "image": "Perito Moreno Glacier 2023.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -50.4953, "lon": -73.1377 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "moai",
     "type": "LANDMARK",
     "place": "moai",
     "clue": { "type": "PHOTO", "image": "Ahu-Tongariki-from-south-west-2013.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -27.1258, "lon": -109.2769 }, "tolerance": 800 }
+    "answer": { "type": "POINT", "tolerance": 800 }
   },
   {
     "id": "uluru",
     "type": "LANDMARK",
     "place": "uluru",
     "clue": { "type": "PHOTO", "image": "ULURU.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -25.3444, "lon": 131.0369 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "harbour-bridge",
     "type": "LANDMARK",
     "place": "harbour-bridge",
     "clue": { "type": "PHOTO", "image": "Sydney Harbour Bridge-16 October 2025.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -33.8523, "lon": 151.2108 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "milford-sound",
     "type": "LANDMARK",
     "place": "milford-sound",
     "clue": { "type": "PHOTO", "image": "Milford Sound (New Zealand).JPG" },
-    "answer": { "type": "POINT", "at": { "lat": -44.6414, "lon": 167.8974 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "bora-bora",
     "type": "LANDMARK",
     "place": "bora-bora",
     "clue": { "type": "PHOTO", "image": "Bora Bora ISS006.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -16.5004, "lon": -151.7415 }, "tolerance": 800 }
+    "answer": { "type": "POINT", "tolerance": 800 }
   },
   {
     "id": "table-mountain",
     "type": "LANDMARK",
     "place": "table-mountain",
     "clue": { "type": "PHOTO", "image": "Table Mountain DanieVDM.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -33.9628, "lon": 18.4098 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "victoria-falls",
     "type": "LANDMARK",
     "place": "victoria-falls",
     "clue": { "type": "PHOTO", "image": "Cataratas Victoria, Zambia-Zimbabue, 2018-07-27, DD 04.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -17.9243, "lon": 25.8572 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "lalibela",
     "type": "LANDMARK",
     "place": "lalibela",
     "clue": { "type": "PHOTO", "image": "Lalibela, san giorgio, esterno 24.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 12.0316, "lon": 39.0413 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "abu-simbel",
     "type": "LANDMARK",
     "place": "abu-simbel",
     "clue": { "type": "PHOTO", "image": "Ramsis, Aswan Governorate, Egypt - panoramio.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 22.3372, "lon": 31.6258 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "djenne",
     "type": "LANDMARK",
     "place": "djenne",
     "clue": { "type": "PHOTO", "image": "Djenne great mud mosque.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 13.9053, "lon": -4.5556 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "dubrovnik",
     "type": "LANDMARK",
     "place": "dubrovnik",
     "clue": { "type": "PHOTO", "image": "Dubrovnik s 24.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 42.6414, "lon": 18.108 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "kilimanjaro",
     "type": "LANDMARK",
     "place": "kilimanjaro",
     "clue": { "type": "PHOTO", "image": "Kilimanjaro from Amboseli.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -3.0674, "lon": 37.3556 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "grand-canyon",
     "type": "LANDMARK",
     "place": "grand-canyon",
     "clue": { "type": "PHOTO", "image": "Canyon River Tree (165872763).jpeg" },
-    "answer": { "type": "POINT", "at": { "lat": 36.1069, "lon": -112.1129 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "big-ben",
@@ -486,28 +486,28 @@
       "type": "PHOTO",
       "image": "Elizabeth Tower and the north front of the Palace of Westminster, London.jpg"
     },
-    "answer": { "type": "POINT", "at": { "lat": 51.5007, "lon": -0.1246 }, "tolerance": 5 }
+    "answer": { "type": "POINT", "tolerance": 5 }
   },
   {
     "id": "tower-of-london",
     "type": "LANDMARK",
     "place": "tower-of-london",
     "clue": { "type": "PHOTO", "image": "Tower of London from the Shard (8515883950).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 51.5081, "lon": -0.0759 }, "tolerance": 5 }
+    "answer": { "type": "POINT", "tolerance": 5 }
   },
   {
     "id": "arc-de-triomphe",
     "type": "LANDMARK",
     "place": "arc-de-triomphe",
     "clue": { "type": "PHOTO", "image": "Arc de Triomphe - Août 2026.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 48.8738, "lon": 2.295 }, "tolerance": 60 }
+    "answer": { "type": "POINT", "tolerance": 60 }
   },
   {
     "id": "notre-dame",
     "type": "LANDMARK",
     "place": "notre-dame",
     "clue": { "type": "PHOTO", "image": "Notre-Dame de Paris, 4 October 2017.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 48.853, "lon": 2.3499 }, "tolerance": 60 }
+    "answer": { "type": "POINT", "tolerance": 60 }
   },
   {
     "id": "versailles",
@@ -517,196 +517,196 @@
       "type": "PHOTO",
       "image": "Vue aérienne du domaine de Versailles par ToucanWings - Creative Commons By Sa 3.0 - 081 (cropped).jpg"
     },
-    "answer": { "type": "POINT", "at": { "lat": 48.8049, "lon": 2.1204 }, "tolerance": 60 }
+    "answer": { "type": "POINT", "tolerance": 60 }
   },
   {
     "id": "trevi",
     "type": "LANDMARK",
     "place": "trevi",
     "clue": { "type": "PHOTO", "image": "Trevi Fountain - Roma.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 41.9009, "lon": 12.4833 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "st-peters",
     "type": "LANDMARK",
     "place": "st-peters",
     "clue": { "type": "PHOTO", "image": "Basilica di San Pietro in Vaticano September 2015-1a.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 41.9022, "lon": 12.4539 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "florence-duomo",
     "type": "LANDMARK",
     "place": "florence-duomo",
     "clue": { "type": "PHOTO", "image": "Cattedrale di Santa Maria del Fiore – Il Duomo di Firenze.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 43.7731, "lon": 11.256 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "cologne",
     "type": "LANDMARK",
     "place": "cologne",
     "clue": { "type": "PHOTO", "image": "Kölner Dom - Westfassade 2022 ohne Gerüst-0968 b.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 50.9413, "lon": 6.9583 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "atomium",
     "type": "LANDMARK",
     "place": "atomium",
     "clue": { "type": "PHOTO", "image": "The Atomium during civil twilight (DSCF1135).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 50.8949, "lon": 4.3414 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "hungarian-parliament",
     "type": "LANDMARK",
     "place": "hungarian-parliament",
     "clue": { "type": "PHOTO", "image": "Hungarian Parliament Building from across the Danube, 2025-01-11.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 47.507, "lon": 19.0457 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "schonbrunn",
     "type": "LANDMARK",
     "place": "schonbrunn",
     "clue": { "type": "PHOTO", "image": "Wien - Schloss Schönbrunn.JPG" },
-    "answer": { "type": "POINT", "at": { "lat": 48.1847, "lon": 16.3122 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "bran-castle",
     "type": "LANDMARK",
     "place": "bran-castle",
     "clue": { "type": "PHOTO", "image": "Castelul Bran2.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 45.515, "lon": 25.3672 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "pena",
     "type": "LANDMARK",
     "place": "pena",
     "clue": { "type": "PHOTO", "image": "Sintra Portugal Palácio da Pena-01.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 38.7876, "lon": -9.3906 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "hallgrimskirkja",
     "type": "LANDMARK",
     "place": "hallgrimskirkja",
     "clue": { "type": "PHOTO", "image": "Hallgrimskirkja mai 2026.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 64.1417, "lon": -21.9267 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "cappadocia",
     "type": "LANDMARK",
     "place": "cappadocia",
     "clue": { "type": "PHOTO", "image": "Göreme town and valley 2015.JPG" },
-    "answer": { "type": "POINT", "at": { "lat": 38.6431, "lon": 34.8289 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "pamukkale",
     "type": "LANDMARK",
     "place": "pamukkale",
     "clue": { "type": "PHOTO", "image": "Pamukkale, Denizli 2026 68.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 37.9204, "lon": 29.1211 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "kinkakuji",
     "type": "LANDMARK",
     "place": "kinkakuji",
     "clue": { "type": "PHOTO", "image": "Golden Pavilion Kinkaku-ji water mirror 2024.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 35.0394, "lon": 135.7292 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "skytree",
     "type": "LANDMARK",
     "place": "skytree",
     "clue": { "type": "PHOTO", "image": "Tokyo Skytree 2014 Ⅲ.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 35.7101, "lon": 139.8107 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "shwedagon",
     "type": "LANDMARK",
     "place": "shwedagon",
     "clue": { "type": "PHOTO", "image": "Shwedagon Pagoda 2017.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 16.7983, "lon": 96.1497 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "bagan",
     "type": "LANDMARK",
     "place": "bagan",
     "clue": { "type": "PHOTO", "image": "Bagan, Burma.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 21.1722, "lon": 94.86 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "potala",
     "type": "LANDMARK",
     "place": "potala",
     "clue": { "type": "PHOTO", "image": "Potala Palace HQ.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 29.6578, "lon": 91.117 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "terracotta",
     "type": "LANDMARK",
     "place": "terracotta",
     "clue": { "type": "PHOTO", "image": "51714-Terracota-Army.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 34.3848, "lon": 109.2785 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "zhangjiajie",
     "type": "LANDMARK",
     "place": "zhangjiajie",
     "clue": { "type": "PHOTO", "image": "1 tianzishan wulingyuan zhangjiajie 2012.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 29.3167, "lon": 110.4333 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "golden-temple",
     "type": "LANDMARK",
     "place": "golden-temple",
     "clue": { "type": "PHOTO", "image": "The Golden Temple of Amrithsar 7.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 31.62, "lon": 74.8765 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "sigiriya",
     "type": "LANDMARK",
     "place": "sigiriya",
     "clue": { "type": "PHOTO", "image": "Sigiriya (141688197).jpeg" },
-    "answer": { "type": "POINT", "at": { "lat": 7.957, "lon": 80.7603 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "registan",
     "type": "LANDMARK",
     "place": "registan",
     "clue": { "type": "PHOTO", "image": "RegistanSquare Samarkand.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 39.6547, "lon": 66.9758 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "blue-mosque",
     "type": "LANDMARK",
     "place": "blue-mosque",
     "clue": { "type": "PHOTO", "image": "Istanbul (34223582516) (cropped).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 41.0054, "lon": 28.9768 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "dome-rock",
     "type": "LANDMARK",
     "place": "dome-rock",
     "clue": { "type": "PHOTO", "image": "Jerusalem DomeoftheRock J65 (cropped).JPG" },
-    "answer": { "type": "POINT", "at": { "lat": 31.778, "lon": 35.2354 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "wadi-rum",
     "type": "LANDMARK",
     "place": "wadi-rum",
     "clue": { "type": "PHOTO", "image": "Mountain in Wadi Rum, Jordan.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 29.5766, "lon": 35.42 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "empire-state",
     "type": "LANDMARK",
     "place": "empire-state",
     "clue": { "type": "PHOTO", "image": "Empire State Building (aerial view).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 40.7484, "lon": -73.9857 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "white-house",
     "type": "LANDMARK",
     "place": "white-house",
     "clue": { "type": "PHOTO", "image": "White House north and south sides.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 38.8977, "lon": -77.0365 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "brooklyn-bridge",
@@ -716,28 +716,28 @@
       "type": "PHOTO",
       "image": "Brooklyn Bridge and the Lower Manhattan skyline from Pebble Beach, New York.jpg"
     },
-    "answer": { "type": "POINT", "at": { "lat": 40.7061, "lon": -73.9969 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "alcatraz",
     "type": "LANDMARK",
     "place": "alcatraz",
     "clue": { "type": "PHOTO", "image": "Alcatraz 2021.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 37.827, "lon": -122.423 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "space-needle",
     "type": "LANDMARK",
     "place": "space-needle",
     "clue": { "type": "PHOTO", "image": "Space Needle 2011-07-04.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 47.6205, "lon": -122.3493 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "monument-valley",
     "type": "LANDMARK",
     "place": "monument-valley",
     "clue": { "type": "PHOTO", "image": "Monument Valley, Utah, USA (23611451292).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 36.998, "lon": -110.0985 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "old-faithful",
@@ -747,231 +747,231 @@
       "type": "PHOTO",
       "image": "Yellowstone National Park (WY, USA), Old Faithful Geyser -- 2022 -- 2599.jpg"
     },
-    "answer": { "type": "POINT", "at": { "lat": 44.4605, "lon": -110.8281 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "teotihuacan",
     "type": "LANDMARK",
     "place": "teotihuacan",
     "clue": { "type": "PHOTO", "image": "ZA77 Teotihuacán edo de mex Herberto de la rosa.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 19.6925, "lon": -98.8438 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "sugarloaf",
     "type": "LANDMARK",
     "place": "sugarloaf",
     "clue": { "type": "PHOTO", "image": "Pão de Açucar - Sugarloaf Mountain - Zuckerhut - 2022.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -22.9492, "lon": -43.1545 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "nazca",
     "type": "LANDMARK",
     "place": "nazca",
     "clue": { "type": "PHOTO", "image": "Líneas de Nazca, Nazca, Perú, 2015-07-29, DD 49.JPG" },
-    "answer": { "type": "POINT", "at": { "lat": -14.739, "lon": -75.13 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "sphinx",
     "type": "LANDMARK",
     "place": "sphinx",
     "clue": { "type": "PHOTO", "image": "Sphinx with the third pyramid.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 29.9753, "lon": 31.1376 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "luxor-temple",
     "type": "LANDMARK",
     "place": "luxor-temple",
     "clue": { "type": "PHOTO", "image": "Temple de Louxor 68.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 25.6995, "lon": 32.6391 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "deadvlei",
     "type": "LANDMARK",
     "place": "deadvlei",
     "clue": { "type": "PHOTO", "image": "Dead Vlei 4.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -24.7592, "lon": 15.2923 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "stone-town",
     "type": "LANDMARK",
     "place": "stone-town",
     "clue": { "type": "PHOTO", "image": "Zanzibar sultan palace.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -6.1622, "lon": 39.1875 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "louvre",
     "type": "LANDMARK",
     "place": "louvre",
     "clue": { "type": "PHOTO", "image": "Louvre Museum Wikimedia Commons.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 48.8611, "lon": 2.3358 }, "tolerance": 60 }
+    "answer": { "type": "POINT", "tolerance": 60 }
   },
   {
     "id": "kinderdijk",
     "type": "LANDMARK",
     "place": "kinderdijk",
     "clue": { "type": "PHOTO", "image": "KinderdijkWindmills.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 51.8833, "lon": 4.6333 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "petronas",
     "type": "LANDMARK",
     "place": "petronas",
     "clue": { "type": "PHOTO", "image": "Petronas Panorama II.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 3.1579, "lon": 101.7116 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "cn-tower",
     "type": "LANDMARK",
     "place": "cn-tower",
     "clue": { "type": "PHOTO", "image": "Toronto Skyline from Snake Island, September 11 2026 (01).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 43.6426, "lon": -79.3871 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "torres-paine",
     "type": "LANDMARK",
     "place": "torres-paine",
     "clue": { "type": "PHOTO", "image": "Torres del Paine y cuernos del Paine, montaje.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -50.9423, "lon": -73.4068 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "twelve-apostles",
     "type": "LANDMARK",
     "place": "twelve-apostles",
     "clue": { "type": "PHOTO", "image": "The twelve apostles Victoria Australia 2010.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -38.6662, "lon": 143.1044 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "whitehaven",
     "type": "LANDMARK",
     "place": "whitehaven",
     "clue": { "type": "PHOTO", "image": "Whitehaven Beach, Whitsunday Island, Queensland.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -20.2825, "lon": 149.0389 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "nyhavn",
     "type": "LANDMARK",
     "place": "nyhavn",
     "clue": { "type": "PHOTO", "image": "The Nyhavn Canal 3.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 55.6797, "lon": 12.5906 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "grand-place",
     "type": "LANDMARK",
     "place": "grand-place",
     "clue": { "type": "PHOTO", "image": "Grand-Place, Brussels - panorama, June 2018.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 50.8467, "lon": 4.3525 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "belfry-of-bruges",
     "type": "LANDMARK",
     "place": "belfry-of-bruges",
     "clue": { "type": "PHOTO", "image": "Brugge Belfort HDR.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 51.2083, "lon": 3.2247 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "pompeii",
     "type": "LANDMARK",
     "place": "pompeii",
     "clue": { "type": "PHOTO", "image": "Aerial image of Pompeii and Mount Vesuvius (view from the southeast).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 40.75, "lon": 14.4861 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "positano",
     "type": "LANDMARK",
     "place": "positano",
     "clue": { "type": "PHOTO", "image": "Positano Sunset.JPG" },
-    "answer": { "type": "POINT", "at": { "lat": 40.6333, "lon": 14.4833 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "tre-cime-di-lavaredo",
     "type": "LANDMARK",
     "place": "tre-cime-di-lavaredo",
     "clue": { "type": "PHOTO", "image": "2019 Tre Cime.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 46.6167, "lon": 12.3 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "plaza-de-espana",
     "type": "LANDMARK",
     "place": "plaza-de-espana",
     "clue": { "type": "PHOTO", "image": "Plaza de España (Sevilla) - 01.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 37.3769, "lon": -5.9869 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "mosque-cathedral-of-cordoba",
     "type": "LANDMARK",
     "place": "mosque-cathedral-of-cordoba",
     "clue": { "type": "PHOTO", "image": "Mezquita de Córdoba desde el aire (Córdoba, España).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 37.8792, "lon": -4.7797 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "guggenheim-museum",
     "type": "LANDMARK",
     "place": "guggenheim-museum",
     "clue": { "type": "PHOTO", "image": "Museo Guggenheim, Bilbao (31273245344).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 43.2686, "lon": -2.9339 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "rock-of-gibraltar",
     "type": "LANDMARK",
     "place": "rock-of-gibraltar",
     "clue": { "type": "PHOTO", "image": "Clouds covering the walls of Gibraltar Rock.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 36.1245, "lon": -5.3431 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "cite-de-carcassonne",
     "type": "LANDMARK",
     "place": "cite-de-carcassonne",
     "clue": { "type": "PHOTO", "image": "1 carcassonne aerial 2016.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 43.2133, "lon": 2.3508 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "pont-du-gard",
     "type": "LANDMARK",
     "place": "pont-du-gard",
     "clue": { "type": "PHOTO", "image": "Pont du Gard BLS.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 43.9472, "lon": 4.5356 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "chateau-de-chillon",
     "type": "LANDMARK",
     "place": "chateau-de-chillon",
     "clue": { "type": "PHOTO", "image": "001 Chateau de Chillon and Dents du Midi Photo by Giles Laurent.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 46.4142, "lon": 6.9275 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "preikestolen",
     "type": "LANDMARK",
     "place": "preikestolen",
     "clue": { "type": "PHOTO", "image": "Lyse Fjord et Preikestolen.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 58.9867, "lon": 6.1875 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "gullfoss",
     "type": "LANDMARK",
     "place": "gullfoss",
     "clue": { "type": "PHOTO", "image": "Gullfoss from the Air (cropped).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 64.3261, "lon": -20.1211 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "lake-bled",
     "type": "LANDMARK",
     "place": "lake-bled",
     "clue": { "type": "PHOTO", "image": "Lake Bled from the Mountain.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 46.3644, "lon": 14.0947 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "stari-most",
     "type": "LANDMARK",
     "place": "stari-most",
     "clue": { "type": "PHOTO", "image": "Mostar Old Town Panorama 2007.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 43.3373, "lon": 17.815 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "bay-of-kotor",
     "type": "LANDMARK",
     "place": "bay-of-kotor",
     "clue": { "type": "PHOTO", "image": "Kotor aerial 1.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 42.45, "lon": 18.67 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "st-mary-s-basilica",
@@ -981,84 +981,84 @@
       "type": "PHOTO",
       "image": "Church of Our Lady Assumed into Heaven, 5 Mariacki square, Old Town, Kraków, Poland.jpg"
     },
-    "answer": { "type": "POINT", "at": { "lat": 50.0617, "lon": 19.9392 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "library-of-celsus",
     "type": "LANDMARK",
     "place": "library-of-celsus",
     "clue": { "type": "PHOTO", "image": "Ephesus Celsus Library Façade.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 37.9391, "lon": 27.3407 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "lake-como",
     "type": "LANDMARK",
     "place": "lake-como",
     "clue": { "type": "PHOTO", "image": "Varenna Italy, waterfront at sunset.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 46, "lon": 9.2667 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "blue-lagoon",
     "type": "LANDMARK",
     "place": "blue-lagoon",
     "clue": { "type": "PHOTO", "image": "BlueLagoon Noface.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 63.8792, "lon": -22.4455 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "las-vegas-strip",
     "type": "LANDMARK",
     "place": "las-vegas-strip",
     "clue": { "type": "PHOTO", "image": "Las Vegas Strip 09 2017 4897.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 36.12, "lon": -115.1725 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "gateway-arch",
     "type": "LANDMARK",
     "place": "gateway-arch",
     "clue": { "type": "PHOTO", "image": "St Louis night expblend cropped.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 38.6246, "lon": -90.185 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "half-dome",
     "type": "LANDMARK",
     "place": "half-dome",
     "clue": { "type": "PHOTO", "image": "Half Dome with Eastern Yosemite Valley (Zuschnitt).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 37.746, "lon": -119.5329 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "times-square",
     "type": "LANDMARK",
     "place": "times-square",
     "clue": { "type": "PHOTO", "image": "New york times square-terabass.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 40.7575, "lon": -73.9858 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "moraine-lake",
     "type": "LANDMARK",
     "place": "moraine-lake",
     "clue": { "type": "PHOTO", "image": "Moraine Lake 17092005.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 51.3225, "lon": -116.1856 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "chateau-frontenac",
     "type": "LANDMARK",
     "place": "chateau-frontenac",
     "clue": { "type": "PHOTO", "image": "Château Frontenac 02.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 46.8119, "lon": -71.205 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "tulum",
     "type": "LANDMARK",
     "place": "tulum",
     "clue": { "type": "PHOTO", "image": "Tulum 2.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 20.2147, "lon": -87.4289 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "angel-falls",
     "type": "LANDMARK",
     "place": "angel-falls",
     "clue": { "type": "PHOTO", "image": "Kerepakupai Vena (Salto Angel).JPG" },
-    "answer": { "type": "POINT", "at": { "lat": 5.9675, "lon": -62.5356 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "chefchaouen",
@@ -1068,1967 +1068,1967 @@
       "type": "PHOTO",
       "image": "Chefchaouen-the-blue-city-of-morocco-with-palm-trees-and-the-mountain-view-in-the-backrgound.jpg"
     },
-    "answer": { "type": "POINT", "at": { "lat": 35.1714, "lon": -5.2697 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "hiroshima-peace-memorial",
     "type": "LANDMARK",
     "place": "hiroshima-peace-memorial",
     "clue": { "type": "PHOTO", "image": "Genbaku Dome04-r.JPG" },
-    "answer": { "type": "POINT", "at": { "lat": 34.3956, "lon": 132.4536 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "victoria-harbour",
     "type": "LANDMARK",
     "place": "victoria-harbour",
     "clue": { "type": "PHOTO", "image": "Hong Kong Skyline viewed from Victoria Peak.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 22.29, "lon": 114.17 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "paro-taktsang",
     "type": "LANDMARK",
     "place": "paro-taktsang",
     "clue": { "type": "PHOTO", "image": "Paro Taktsang, Bhutan (edited).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 27.4919, "lon": 89.3635 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "maya-bay",
     "type": "LANDMARK",
     "place": "maya-bay",
     "clue": { "type": "PHOTO", "image": "Maya Bay, Thailand by Mike Clegg Photography.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 7.6789, "lon": 98.765 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "gateway-of-india",
     "type": "LANDMARK",
     "place": "gateway-of-india",
     "clue": { "type": "PHOTO", "image": "Mumbai 03-2016 30 Gateway of India.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 18.922, "lon": 72.8347 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "bondi-beach",
     "type": "LANDMARK",
     "place": "bondi-beach",
     "clue": { "type": "PHOTO", "image": "Bondi from above.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -33.8911, "lon": 151.2742 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "hobbiton",
     "type": "LANDMARK",
     "place": "hobbiton",
     "clue": { "type": "PHOTO", "image": "Waterhouse Lake Front.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": -37.8575, "lon": 175.6797 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "hadrian-s-wall",
     "type": "LANDMARK",
     "place": "hadrian-s-wall",
     "clue": { "type": "PHOTO", "image": "Hadrians Wall from Housesteads1 crop.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 55.0167, "lon": -2.2833 }, "tolerance": 40 }
+    "answer": { "type": "POINT", "tolerance": 40 }
   },
   {
     "id": "blackpool-tower",
     "type": "LANDMARK",
     "place": "blackpool-tower",
     "clue": { "type": "PHOTO", "image": "Blackpool Tower 05082017 (cropped).jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 53.8158, "lon": -3.0553 }, "tolerance": 20 }
+    "answer": { "type": "POINT", "tolerance": 20 }
   },
   {
     "id": "eilean-donan-castle",
     "type": "LANDMARK",
     "place": "eilean-donan-castle",
     "clue": { "type": "PHOTO", "image": "Eilean Donan Castle, Scotland - Jan 2011.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 57.274, "lon": -5.5161 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "glenfinnan-viaduct",
     "type": "LANDMARK",
     "place": "glenfinnan-viaduct",
     "clue": { "type": "PHOTO", "image": "Glenfinnan Viaduct - 2022.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 56.8763, "lon": -5.4319 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "conwy-castle",
     "type": "LANDMARK",
     "place": "conwy-castle",
     "clue": { "type": "PHOTO", "image": "Conwy Castle, water view1.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 53.28, "lon": -3.8256 }, "tolerance": 20 }
+    "answer": { "type": "POINT", "tolerance": 20 }
   },
   {
     "id": "radcliffe-camera",
     "type": "LANDMARK",
     "place": "radcliffe-camera",
     "clue": { "type": "PHOTO", "image": "Radcliffe Camera, Oxford - Oct 2006.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 51.7534, "lon": -1.2539 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   {
     "id": "st-michael-s-mount",
     "type": "LANDMARK",
     "place": "st-michael-s-mount",
     "clue": { "type": "PHOTO", "image": "St Michael's Mount View.jpg" },
-    "answer": { "type": "POINT", "at": { "lat": 50.116, "lon": -5.4772 }, "tolerance": 25 }
+    "answer": { "type": "POINT", "tolerance": 25 }
   },
   {
     "id": "tashkent",
     "type": "PLACE",
     "place": "tashkent",
     "clue": { "type": "NAME", "prompt": "Where is Tashkent?" },
-    "answer": { "type": "POINT", "at": { "lat": 41.2995, "lon": 69.2401 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "ulaanbaatar",
     "type": "PLACE",
     "place": "ulaanbaatar",
     "clue": { "type": "NAME", "prompt": "Where is Ulaanbaatar?" },
-    "answer": { "type": "POINT", "at": { "lat": 47.8864, "lon": 106.9057 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "timbuktu",
     "type": "PLACE",
     "place": "timbuktu",
     "clue": { "type": "NAME", "prompt": "Where is Timbuktu?" },
-    "answer": { "type": "POINT", "at": { "lat": 16.7735, "lon": -3.0074 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "wellington",
     "type": "PLACE",
     "place": "wellington",
     "clue": { "type": "NAME", "prompt": "Where is Wellington?" },
-    "answer": { "type": "POINT", "at": { "lat": -41.2865, "lon": 174.7762 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "reykjavik",
     "type": "PLACE",
     "place": "reykjavik",
     "clue": { "type": "NAME", "prompt": "Where is Reykjavík?" },
-    "answer": { "type": "POINT", "at": { "lat": 64.1466, "lon": -21.9426 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "kinshasa",
     "type": "PLACE",
     "place": "kinshasa",
     "clue": { "type": "NAME", "prompt": "Where is Kinshasa?" },
-    "answer": { "type": "POINT", "at": { "lat": -4.3217, "lon": 15.3125 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "montevideo",
     "type": "PLACE",
     "place": "montevideo",
     "clue": { "type": "NAME", "prompt": "Where is Montevideo?" },
-    "answer": { "type": "POINT", "at": { "lat": -34.9011, "lon": -56.1645 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "aberystwyth",
     "type": "PLACE",
     "place": "aberystwyth",
     "clue": { "type": "NAME", "prompt": "Where is Aberystwyth?" },
-    "answer": { "type": "POINT", "at": { "lat": 52.4153, "lon": -4.0829 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "inverness",
     "type": "PLACE",
     "place": "inverness",
     "clue": { "type": "NAME", "prompt": "Where is Inverness?" },
-    "answer": { "type": "POINT", "at": { "lat": 57.4778, "lon": -4.2247 }, "tolerance": 40 }
+    "answer": { "type": "POINT", "tolerance": 40 }
   },
   {
     "id": "norwich",
     "type": "PLACE",
     "place": "norwich",
     "clue": { "type": "NAME", "prompt": "Where is Norwich?" },
-    "answer": { "type": "POINT", "at": { "lat": 52.6309, "lon": 1.2974 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "edinburgh",
     "type": "PLACE",
     "place": "edinburgh",
     "clue": { "type": "NAME", "prompt": "Where is Edinburgh?" },
-    "answer": { "type": "POINT", "at": { "lat": 55.9533, "lon": -3.1883 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "cardiff",
     "type": "PLACE",
     "place": "cardiff",
     "clue": { "type": "NAME", "prompt": "Where is Cardiff?" },
-    "answer": { "type": "POINT", "at": { "lat": 51.4816, "lon": -3.1791 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "belfast",
     "type": "PLACE",
     "place": "belfast",
     "clue": { "type": "NAME", "prompt": "Where is Belfast?" },
-    "answer": { "type": "POINT", "at": { "lat": 54.5973, "lon": -5.9301 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "douglas-iom",
     "type": "PLACE",
     "place": "douglas-iom",
     "clue": { "type": "NAME", "prompt": "Where is Douglas, the capital city?" },
-    "answer": { "type": "POINT", "at": { "lat": 54.1509, "lon": -4.4815 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "st-helier",
     "type": "PLACE",
     "place": "st-helier",
     "clue": { "type": "NAME", "prompt": "Where is St Helier?" },
-    "answer": { "type": "POINT", "at": { "lat": 49.1868, "lon": -2.1071 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "dublin",
     "type": "PLACE",
     "place": "dublin",
     "clue": { "type": "NAME", "prompt": "Where is Dublin?" },
-    "answer": { "type": "POINT", "at": { "lat": 53.3498, "lon": -6.2603 }, "tolerance": 40 }
+    "answer": { "type": "POINT", "tolerance": 40 }
   },
   {
     "id": "paris",
     "type": "PLACE",
     "place": "paris",
     "clue": { "type": "NAME", "prompt": "Where is Paris?" },
-    "answer": { "type": "POINT", "at": { "lat": 48.8566, "lon": 2.3522 }, "tolerance": 50 }
+    "answer": { "type": "POINT", "tolerance": 50 }
   },
   {
     "id": "brussels",
     "type": "PLACE",
     "place": "brussels",
     "clue": { "type": "NAME", "prompt": "Where is Brussels?" },
-    "answer": { "type": "POINT", "at": { "lat": 50.8503, "lon": 4.3517 }, "tolerance": 50 }
+    "answer": { "type": "POINT", "tolerance": 50 }
   },
   {
     "id": "amsterdam",
     "type": "PLACE",
     "place": "amsterdam",
     "clue": { "type": "NAME", "prompt": "Where is Amsterdam?" },
-    "answer": { "type": "POINT", "at": { "lat": 52.3676, "lon": 4.9041 }, "tolerance": 50 }
+    "answer": { "type": "POINT", "tolerance": 50 }
   },
   {
     "id": "luxembourg",
     "type": "PLACE",
     "place": "luxembourg",
     "clue": { "type": "NAME", "prompt": "Where is Luxembourg?" },
-    "answer": { "type": "POINT", "at": { "lat": 49.8167, "lon": 6.1333 }, "tolerance": 60 }
+    "answer": { "type": "POINT", "tolerance": 60 }
   },
   {
     "id": "berlin",
     "type": "PLACE",
     "place": "berlin",
     "clue": { "type": "NAME", "prompt": "Where is Berlin?" },
-    "answer": { "type": "POINT", "at": { "lat": 52.52, "lon": 13.405 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "madrid",
     "type": "PLACE",
     "place": "madrid",
     "clue": { "type": "NAME", "prompt": "Where is Madrid?" },
-    "answer": { "type": "POINT", "at": { "lat": 40.4168, "lon": -3.7038 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "lisbon",
     "type": "PLACE",
     "place": "lisbon",
     "clue": { "type": "NAME", "prompt": "Where is Lisbon?" },
-    "answer": { "type": "POINT", "at": { "lat": 38.7223, "lon": -9.1393 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "rome",
     "type": "PLACE",
     "place": "rome",
     "clue": { "type": "NAME", "prompt": "Where is Rome?" },
-    "answer": { "type": "POINT", "at": { "lat": 41.9028, "lon": 12.4964 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "vatican",
     "type": "PLACE",
     "place": "vatican-city",
     "clue": { "type": "NAME", "prompt": "Where is Vatican City?" },
-    "answer": { "type": "POINT", "at": { "lat": 41.9025, "lon": 12.4525 }, "tolerance": 60 }
+    "answer": { "type": "POINT", "tolerance": 60 }
   },
   {
     "id": "monaco",
     "type": "PLACE",
     "place": "monaco",
     "clue": { "type": "NAME", "prompt": "Where is Monaco?" },
-    "answer": { "type": "POINT", "at": { "lat": 43.7311, "lon": 7.42 }, "tolerance": 60 }
+    "answer": { "type": "POINT", "tolerance": 60 }
   },
   {
     "id": "san-marino",
     "type": "PLACE",
     "place": "san-marino",
     "clue": { "type": "NAME", "prompt": "Where is San Marino?" },
-    "answer": { "type": "POINT", "at": { "lat": 43.9333, "lon": 12.4333 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "liechtenstein",
     "type": "PLACE",
     "place": "liechtenstein",
     "clue": { "type": "NAME", "prompt": "Where is Liechtenstein?" },
-    "answer": { "type": "POINT", "at": { "lat": 47.15, "lon": 9.55 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "andorra",
     "type": "PLACE",
     "place": "andorra",
     "clue": { "type": "NAME", "prompt": "Where is Andorra?" },
-    "answer": { "type": "POINT", "at": { "lat": 42.55, "lon": 1.5833 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "malta",
     "type": "PLACE",
     "place": "malta",
     "clue": { "type": "NAME", "prompt": "Where is Malta?" },
-    "answer": { "type": "POINT", "at": { "lat": 35.9, "lon": 14.5167 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "vienna",
     "type": "PLACE",
     "place": "vienna",
     "clue": { "type": "NAME", "prompt": "Where is Vienna?" },
-    "answer": { "type": "POINT", "at": { "lat": 48.2082, "lon": 16.3738 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "prague",
     "type": "PLACE",
     "place": "prague",
     "clue": { "type": "NAME", "prompt": "Where is Prague?" },
-    "answer": { "type": "POINT", "at": { "lat": 50.0755, "lon": 14.4378 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "warsaw",
     "type": "PLACE",
     "place": "warsaw",
     "clue": { "type": "NAME", "prompt": "Where is Warsaw?" },
-    "answer": { "type": "POINT", "at": { "lat": 52.2297, "lon": 21.0122 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "budapest",
     "type": "PLACE",
     "place": "budapest",
     "clue": { "type": "NAME", "prompt": "Where is Budapest?" },
-    "answer": { "type": "POINT", "at": { "lat": 47.4979, "lon": 19.0402 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "copenhagen",
     "type": "PLACE",
     "place": "copenhagen",
     "clue": { "type": "NAME", "prompt": "Where is Copenhagen?" },
-    "answer": { "type": "POINT", "at": { "lat": 55.6761, "lon": 12.5683 }, "tolerance": 60 }
+    "answer": { "type": "POINT", "tolerance": 60 }
   },
   {
     "id": "oslo",
     "type": "PLACE",
     "place": "oslo",
     "clue": { "type": "NAME", "prompt": "Where is Oslo?" },
-    "answer": { "type": "POINT", "at": { "lat": 59.9139, "lon": 10.7522 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "stockholm",
     "type": "PLACE",
     "place": "stockholm",
     "clue": { "type": "NAME", "prompt": "Where is Stockholm?" },
-    "answer": { "type": "POINT", "at": { "lat": 59.3293, "lon": 18.0686 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "helsinki",
     "type": "PLACE",
     "place": "helsinki",
     "clue": { "type": "NAME", "prompt": "Where is Helsinki?" },
-    "answer": { "type": "POINT", "at": { "lat": 60.1699, "lon": 24.9384 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "athens",
     "type": "PLACE",
     "place": "athens",
     "clue": { "type": "NAME", "prompt": "Where is Athens?" },
-    "answer": { "type": "POINT", "at": { "lat": 37.9838, "lon": 23.7275 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "ljubljana",
     "type": "PLACE",
     "place": "ljubljana",
     "clue": { "type": "NAME", "prompt": "Where is Ljubljana?" },
-    "answer": { "type": "POINT", "at": { "lat": 46.0569, "lon": 14.5058 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "zagreb",
     "type": "PLACE",
     "place": "zagreb",
     "clue": { "type": "NAME", "prompt": "Where is Zagreb?" },
-    "answer": { "type": "POINT", "at": { "lat": 45.815, "lon": 15.9819 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "sarajevo",
     "type": "PLACE",
     "place": "sarajevo",
     "clue": { "type": "NAME", "prompt": "Where is Sarajevo?" },
-    "answer": { "type": "POINT", "at": { "lat": 43.8563, "lon": 18.4131 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "montenegro",
     "type": "PLACE",
     "place": "montenegro",
     "clue": { "type": "NAME", "prompt": "Where is Montenegro?" },
-    "answer": { "type": "POINT", "at": { "lat": 42.5, "lon": 19.3 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "north-macedonia",
     "type": "PLACE",
     "place": "north-macedonia",
     "clue": { "type": "NAME", "prompt": "Where is North Macedonia?" },
-    "answer": { "type": "POINT", "at": { "lat": 42, "lon": 22 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "albania",
     "type": "PLACE",
     "place": "albania",
     "clue": { "type": "NAME", "prompt": "Where is Albania?" },
-    "answer": { "type": "POINT", "at": { "lat": 41, "lon": 20 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "kosovo",
     "type": "PLACE",
     "place": "kosovo",
     "clue": { "type": "NAME", "prompt": "Where is Kosovo?" },
-    "answer": { "type": "POINT", "at": { "lat": 42.5833, "lon": 21 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "moldova",
     "type": "PLACE",
     "place": "moldova",
     "clue": { "type": "NAME", "prompt": "Where is Moldova?" },
-    "answer": { "type": "POINT", "at": { "lat": 47, "lon": 29 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "vilnius",
     "type": "PLACE",
     "place": "vilnius",
     "clue": { "type": "NAME", "prompt": "Where is Vilnius?" },
-    "answer": { "type": "POINT", "at": { "lat": 54.6872, "lon": 25.2797 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "riga",
     "type": "PLACE",
     "place": "riga",
     "clue": { "type": "NAME", "prompt": "Where is Riga?" },
-    "answer": { "type": "POINT", "at": { "lat": 56.9496, "lon": 24.1052 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "tallinn",
     "type": "PLACE",
     "place": "tallinn",
     "clue": { "type": "NAME", "prompt": "Where is Tallinn?" },
-    "answer": { "type": "POINT", "at": { "lat": 59.437, "lon": 24.7536 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "bratislava",
     "type": "PLACE",
     "place": "bratislava",
     "clue": { "type": "NAME", "prompt": "Where is Bratislava?" },
-    "answer": { "type": "POINT", "at": { "lat": 48.1486, "lon": 17.1077 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "minsk",
     "type": "PLACE",
     "place": "minsk",
     "clue": { "type": "NAME", "prompt": "Where is Minsk?" },
-    "answer": { "type": "POINT", "at": { "lat": 53.9006, "lon": 27.559 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "kyiv",
     "type": "PLACE",
     "place": "kyiv",
     "clue": { "type": "NAME", "prompt": "Where is Kyiv?" },
-    "answer": { "type": "POINT", "at": { "lat": 50.4501, "lon": 30.5234 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "bucharest",
     "type": "PLACE",
     "place": "bucharest",
     "clue": { "type": "NAME", "prompt": "Where is Bucharest?" },
-    "answer": { "type": "POINT", "at": { "lat": 44.4268, "lon": 26.1025 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "sofia",
     "type": "PLACE",
     "place": "sofia",
     "clue": { "type": "NAME", "prompt": "Where is Sofia?" },
-    "answer": { "type": "POINT", "at": { "lat": 42.6977, "lon": 23.3219 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "cyprus",
     "type": "PLACE",
     "place": "cyprus",
     "clue": { "type": "NAME", "prompt": "Where is Cyprus?" },
-    "answer": { "type": "POINT", "at": { "lat": 35, "lon": 33 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "ottawa",
     "type": "PLACE",
     "place": "ottawa",
     "clue": { "type": "NAME", "prompt": "Where is Ottawa?" },
-    "answer": { "type": "POINT", "at": { "lat": 45.4215, "lon": -75.6972 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "washington",
     "type": "PLACE",
     "place": "washington",
     "clue": { "type": "NAME", "prompt": "Where is Washington, D.C.?" },
-    "answer": { "type": "POINT", "at": { "lat": 38.9072, "lon": -77.0369 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "canberra",
     "type": "PLACE",
     "place": "canberra",
     "clue": { "type": "NAME", "prompt": "Where is Canberra?" },
-    "answer": { "type": "POINT", "at": { "lat": -35.2809, "lon": 149.13 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "nairobi",
     "type": "PLACE",
     "place": "nairobi",
     "clue": { "type": "NAME", "prompt": "Where is Nairobi?" },
-    "answer": { "type": "POINT", "at": { "lat": -1.2921, "lon": 36.8219 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "brasilia",
     "type": "PLACE",
     "place": "brasilia",
     "clue": { "type": "NAME", "prompt": "Where is Brasília?" },
-    "answer": { "type": "POINT", "at": { "lat": -15.7975, "lon": -47.8919 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "abuja",
     "type": "PLACE",
     "place": "abuja",
     "clue": { "type": "NAME", "prompt": "Where is Abuja?" },
-    "answer": { "type": "POINT", "at": { "lat": 9.0765, "lon": 7.3986 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "ankara",
     "type": "PLACE",
     "place": "ankara",
     "clue": { "type": "NAME", "prompt": "Where is Ankara?" },
-    "answer": { "type": "POINT", "at": { "lat": 39.9334, "lon": 32.8597 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "astana",
     "type": "PLACE",
     "place": "astana",
     "clue": { "type": "NAME", "prompt": "Where is Astana?" },
-    "answer": { "type": "POINT", "at": { "lat": 51.1694, "lon": 71.4491 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "kathmandu",
     "type": "PLACE",
     "place": "kathmandu",
     "clue": { "type": "NAME", "prompt": "Where is Kathmandu?" },
-    "answer": { "type": "POINT", "at": { "lat": 27.7172, "lon": 85.324 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "hanoi",
     "type": "PLACE",
     "place": "hanoi",
     "clue": { "type": "NAME", "prompt": "Where is Hanoi?" },
-    "answer": { "type": "POINT", "at": { "lat": 21.0285, "lon": 105.8542 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "addis-ababa",
     "type": "PLACE",
     "place": "addis-ababa",
     "clue": { "type": "NAME", "prompt": "Where is Addis Ababa?" },
-    "answer": { "type": "POINT", "at": { "lat": 9.03, "lon": 38.74 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "lima",
     "type": "PLACE",
     "place": "lima",
     "clue": { "type": "NAME", "prompt": "Where is Lima?" },
-    "answer": { "type": "POINT", "at": { "lat": -12.0464, "lon": -77.0428 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "bogota",
     "type": "PLACE",
     "place": "bogota",
     "clue": { "type": "NAME", "prompt": "Where is Bogotá?" },
-    "answer": { "type": "POINT", "at": { "lat": 4.711, "lon": -74.0721 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "santiago",
     "type": "PLACE",
     "place": "santiago",
     "clue": { "type": "NAME", "prompt": "Where is Santiago, the capital city?" },
-    "answer": { "type": "POINT", "at": { "lat": -33.4489, "lon": -70.6693 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "pretoria",
     "type": "PLACE",
     "place": "pretoria",
     "clue": { "type": "NAME", "prompt": "Where is Pretoria?" },
-    "answer": { "type": "POINT", "at": { "lat": -25.7479, "lon": 28.2293 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "riyadh",
     "type": "PLACE",
     "place": "riyadh",
     "clue": { "type": "NAME", "prompt": "Where is Riyadh?" },
-    "answer": { "type": "POINT", "at": { "lat": 24.7136, "lon": 46.6753 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "islamabad",
     "type": "PLACE",
     "place": "islamabad",
     "clue": { "type": "NAME", "prompt": "Where is Islamabad?" },
-    "answer": { "type": "POINT", "at": { "lat": 33.6844, "lon": 73.0479 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "dhaka",
     "type": "PLACE",
     "place": "dhaka",
     "clue": { "type": "NAME", "prompt": "Where is Dhaka?" },
-    "answer": { "type": "POINT", "at": { "lat": 23.8103, "lon": 90.4125 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "manila",
     "type": "PLACE",
     "place": "manila",
     "clue": { "type": "NAME", "prompt": "Where is Manila?" },
-    "answer": { "type": "POINT", "at": { "lat": 14.5995, "lon": 120.9842 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "jakarta",
     "type": "PLACE",
     "place": "jakarta",
     "clue": { "type": "NAME", "prompt": "Where is Jakarta?" },
-    "answer": { "type": "POINT", "at": { "lat": -6.2088, "lon": 106.8456 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "seoul",
     "type": "PLACE",
     "place": "seoul",
     "clue": { "type": "NAME", "prompt": "Where is Seoul?" },
-    "answer": { "type": "POINT", "at": { "lat": 37.5665, "lon": 126.978 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "tehran",
     "type": "PLACE",
     "place": "tehran",
     "clue": { "type": "NAME", "prompt": "Where is Tehran?" },
-    "answer": { "type": "POINT", "at": { "lat": 35.6892, "lon": 51.389 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "baghdad",
     "type": "PLACE",
     "place": "baghdad",
     "clue": { "type": "NAME", "prompt": "Where is Baghdad?" },
-    "answer": { "type": "POINT", "at": { "lat": 33.3152, "lon": 44.3661 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "kabul",
     "type": "PLACE",
     "place": "kabul",
     "clue": { "type": "NAME", "prompt": "Where is Kabul?" },
-    "answer": { "type": "POINT", "at": { "lat": 34.5553, "lon": 69.2075 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "havana",
     "type": "PLACE",
     "place": "havana",
     "clue": { "type": "NAME", "prompt": "Where is Havana?" },
-    "answer": { "type": "POINT", "at": { "lat": 23.1136, "lon": -82.3666 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "mexico-city",
     "type": "PLACE",
     "place": "mexico-city",
     "clue": { "type": "NAME", "prompt": "Where is Mexico City?" },
-    "answer": { "type": "POINT", "at": { "lat": 19.4326, "lon": -99.1332 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "buenos-aires",
     "type": "PLACE",
     "place": "buenos-aires",
     "clue": { "type": "NAME", "prompt": "Where is Buenos Aires?" },
-    "answer": { "type": "POINT", "at": { "lat": -34.6037, "lon": -58.3816 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "eswatini",
     "type": "PLACE",
     "place": "eswatini",
     "clue": { "type": "NAME", "prompt": "Where is Eswatini?" },
-    "answer": { "type": "POINT", "at": { "lat": -26.5, "lon": 31.5 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "lesotho",
     "type": "PLACE",
     "place": "lesotho",
     "clue": { "type": "NAME", "prompt": "Where is Lesotho?" },
-    "answer": { "type": "POINT", "at": { "lat": -29.6, "lon": 28.3 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "bhutan",
     "type": "PLACE",
     "place": "bhutan",
     "clue": { "type": "NAME", "prompt": "Where is Bhutan?" },
-    "answer": { "type": "POINT", "at": { "lat": 27.417, "lon": 90.435 }, "tolerance": 350 }
+    "answer": { "type": "POINT", "tolerance": 350 }
   },
   {
     "id": "djibouti",
     "type": "PLACE",
     "place": "djibouti",
     "clue": { "type": "NAME", "prompt": "Where is Djibouti?" },
-    "answer": { "type": "POINT", "at": { "lat": 11.5, "lon": 43 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "belize",
     "type": "PLACE",
     "place": "belize",
     "clue": { "type": "NAME", "prompt": "Where is Belize?" },
-    "answer": { "type": "POINT", "at": { "lat": 17.0667, "lon": -88.7 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "brunei",
     "type": "PLACE",
     "place": "brunei",
     "clue": { "type": "NAME", "prompt": "Where is Brunei?" },
-    "answer": { "type": "POINT", "at": { "lat": 4.5, "lon": 114.6667 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "gambia",
     "type": "PLACE",
     "place": "the-gambia",
     "clue": { "type": "NAME", "prompt": "Where is The Gambia?" },
-    "answer": { "type": "POINT", "at": { "lat": 13.45, "lon": -16.575 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "burundi",
     "type": "PLACE",
     "place": "burundi",
     "clue": { "type": "NAME", "prompt": "Where is Burundi?" },
-    "answer": { "type": "POINT", "at": { "lat": -3.3833, "lon": 29.8333 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "rwanda",
     "type": "PLACE",
     "place": "rwanda",
     "clue": { "type": "NAME", "prompt": "Where is Rwanda?" },
-    "answer": { "type": "POINT", "at": { "lat": -2, "lon": 30 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "qatar",
     "type": "PLACE",
     "place": "qatar",
     "clue": { "type": "NAME", "prompt": "Where is Qatar?" },
-    "answer": { "type": "POINT", "at": { "lat": 25.5, "lon": 51.25 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "bahrain",
     "type": "PLACE",
     "place": "bahrain",
     "clue": { "type": "NAME", "prompt": "Where is Bahrain?" },
-    "answer": { "type": "POINT", "at": { "lat": 26.0764, "lon": 50.5535 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "kuwait",
     "type": "PLACE",
     "place": "kuwait",
     "clue": { "type": "NAME", "prompt": "Where is Kuwait?" },
-    "answer": { "type": "POINT", "at": { "lat": 29.5, "lon": 47.75 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "singapore",
     "type": "PLACE",
     "place": "singapore",
     "clue": { "type": "NAME", "prompt": "Where is Singapore?" },
-    "answer": { "type": "POINT", "at": { "lat": 1.2833, "lon": 103.8333 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "timor-leste",
     "type": "PLACE",
     "place": "timor-leste",
     "clue": { "type": "NAME", "prompt": "Where is Timor-Leste (East Timor)?" },
-    "answer": { "type": "POINT", "at": { "lat": -8.55, "lon": 125.56 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "maldives",
     "type": "PLACE",
     "place": "maldives",
     "clue": { "type": "NAME", "prompt": "Where is the Maldives?" },
-    "answer": { "type": "POINT", "at": { "lat": 4.18, "lon": 73.51 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "seychelles",
     "type": "PLACE",
     "place": "seychelles",
     "clue": { "type": "NAME", "prompt": "Where are the Seychelles?" },
-    "answer": { "type": "POINT", "at": { "lat": -4.5833, "lon": 55.6667 }, "tolerance": 500 }
+    "answer": { "type": "POINT", "tolerance": 500 }
   },
   {
     "id": "comoros",
     "type": "PLACE",
     "place": "comoros",
     "clue": { "type": "NAME", "prompt": "Where are the Comoros?" },
-    "answer": { "type": "POINT", "at": { "lat": -12.3, "lon": 43.7 }, "tolerance": 500 }
+    "answer": { "type": "POINT", "tolerance": 500 }
   },
   {
     "id": "mauritius",
     "type": "PLACE",
     "place": "mauritius",
     "clue": { "type": "NAME", "prompt": "Where is Mauritius?" },
-    "answer": { "type": "POINT", "at": { "lat": -20.2, "lon": 57.5 }, "tolerance": 500 }
+    "answer": { "type": "POINT", "tolerance": 500 }
   },
   {
     "id": "cabo-verde",
     "type": "PLACE",
     "place": "cape-verde",
     "clue": { "type": "NAME", "prompt": "Where is Cape Verde?" },
-    "answer": { "type": "POINT", "at": { "lat": 15.3, "lon": -23.7 }, "tolerance": 500 }
+    "answer": { "type": "POINT", "tolerance": 500 }
   },
   {
     "id": "sao-tome",
     "type": "PLACE",
     "place": "sao-tome-and-principe",
     "clue": { "type": "NAME", "prompt": "Where is São Tomé and Príncipe?" },
-    "answer": { "type": "POINT", "at": { "lat": 0.3167, "lon": 6.6 }, "tolerance": 500 }
+    "answer": { "type": "POINT", "tolerance": 500 }
   },
   {
     "id": "barbados",
     "type": "PLACE",
     "place": "barbados",
     "clue": { "type": "NAME", "prompt": "Where is Barbados?" },
-    "answer": { "type": "POINT", "at": { "lat": 13.17, "lon": -59.5525 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "trinidad",
     "type": "PLACE",
     "place": "trinidad-and-tobago",
     "clue": { "type": "NAME", "prompt": "Where is Trinidad and Tobago?" },
-    "answer": { "type": "POINT", "at": { "lat": 10.6, "lon": -61.1 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "jamaica",
     "type": "PLACE",
     "place": "jamaica",
     "clue": { "type": "NAME", "prompt": "Where is Jamaica?" },
-    "answer": { "type": "POINT", "at": { "lat": 18.18, "lon": -77.4 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "paraguay",
     "type": "PLACE",
     "place": "paraguay",
     "clue": { "type": "NAME", "prompt": "Where is Paraguay?" },
-    "answer": { "type": "POINT", "at": { "lat": -23, "lon": -58 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "suriname",
     "type": "PLACE",
     "place": "suriname",
     "clue": { "type": "NAME", "prompt": "Where is Suriname?" },
-    "answer": { "type": "POINT", "at": { "lat": 4, "lon": -56 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "guyana",
     "type": "PLACE",
     "place": "guyana",
     "clue": { "type": "NAME", "prompt": "Where is Guyana?" },
-    "answer": { "type": "POINT", "at": { "lat": 5, "lon": -59 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "armenia",
     "type": "PLACE",
     "place": "armenia",
     "clue": { "type": "NAME", "prompt": "Where is Armenia?" },
-    "answer": { "type": "POINT", "at": { "lat": 40.1833, "lon": 44.5167 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "georgia",
     "type": "PLACE",
     "place": "georgia",
     "clue": { "type": "NAME", "prompt": "Where is Georgia, the country?" },
-    "answer": { "type": "POINT", "at": { "lat": 42, "lon": 43.5 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "kyrgyzstan",
     "type": "PLACE",
     "place": "kyrgyzstan",
     "clue": { "type": "NAME", "prompt": "Where is Kyrgyzstan?" },
-    "answer": { "type": "POINT", "at": { "lat": 41, "lon": 75 }, "tolerance": 500 }
+    "answer": { "type": "POINT", "tolerance": 500 }
   },
   {
     "id": "laos",
     "type": "PLACE",
     "place": "laos",
     "clue": { "type": "NAME", "prompt": "Where is Laos?" },
-    "answer": { "type": "POINT", "at": { "lat": 18, "lon": 105 }, "tolerance": 400 }
+    "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
     "id": "cambodia",
     "type": "PLACE",
     "place": "cambodia",
     "clue": { "type": "NAME", "prompt": "Where is Cambodia?" },
-    "answer": { "type": "POINT", "at": { "lat": 12.5, "lon": 105 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "sri-lanka",
     "type": "PLACE",
     "place": "sri-lanka",
     "clue": { "type": "NAME", "prompt": "Where is Sri Lanka?" },
-    "answer": { "type": "POINT", "at": { "lat": 7, "lon": 81 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "oman",
     "type": "PLACE",
     "place": "oman",
     "clue": { "type": "NAME", "prompt": "Where is Oman?" },
-    "answer": { "type": "POINT", "at": { "lat": 21, "lon": 57 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "jordan",
     "type": "PLACE",
     "place": "jordan",
     "clue": { "type": "NAME", "prompt": "Where is Jordan?" },
-    "answer": { "type": "POINT", "at": { "lat": 31, "lon": 36.5 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "lebanon",
     "type": "PLACE",
     "place": "lebanon",
     "clue": { "type": "NAME", "prompt": "Where is Lebanon?" },
-    "answer": { "type": "POINT", "at": { "lat": 33.8333, "lon": 35.8333 }, "tolerance": 120 }
+    "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
     "id": "malawi",
     "type": "PLACE",
     "place": "malawi",
     "clue": { "type": "NAME", "prompt": "Where is Malawi?" },
-    "answer": { "type": "POINT", "at": { "lat": -13.5, "lon": 34 }, "tolerance": 350 }
+    "answer": { "type": "POINT", "tolerance": 350 }
   },
   {
     "id": "togo",
     "type": "PLACE",
     "place": "togo",
     "clue": { "type": "NAME", "prompt": "Where is Togo?" },
-    "answer": { "type": "POINT", "at": { "lat": 8, "lon": 1 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "benin",
     "type": "PLACE",
     "place": "benin",
     "clue": { "type": "NAME", "prompt": "Where is Benin?" },
-    "answer": { "type": "POINT", "at": { "lat": 6.35, "lon": 2.4 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "liberia",
     "type": "PLACE",
     "place": "liberia",
     "clue": { "type": "NAME", "prompt": "Where is Liberia?" },
-    "answer": { "type": "POINT", "at": { "lat": 6.5, "lon": -9.5 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "sierra-leone",
     "type": "PLACE",
     "place": "sierra-leone",
     "clue": { "type": "NAME", "prompt": "Where is Sierra Leone?" },
-    "answer": { "type": "POINT", "at": { "lat": 8.5, "lon": -12.1 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "eritrea",
     "type": "PLACE",
     "place": "eritrea",
     "clue": { "type": "NAME", "prompt": "Where is Eritrea?" },
-    "answer": { "type": "POINT", "at": { "lat": 15, "lon": 39 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "madagascar",
     "type": "PLACE",
     "place": "madagascar",
     "clue": { "type": "NAME", "prompt": "Where is Madagascar?" },
-    "answer": { "type": "POINT", "at": { "lat": -20, "lon": 47 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "nauru",
     "type": "PLACE",
     "place": "nauru",
     "clue": { "type": "NAME", "prompt": "Where is Nauru?" },
-    "answer": { "type": "POINT", "at": { "lat": -0.5275, "lon": 166.935 }, "tolerance": 800 }
+    "answer": { "type": "POINT", "tolerance": 800 }
   },
   {
     "id": "tuvalu",
     "type": "PLACE",
     "place": "tuvalu",
     "clue": { "type": "NAME", "prompt": "Where is Tuvalu?" },
-    "answer": { "type": "POINT", "at": { "lat": -8.5208, "lon": 179.1986 }, "tolerance": 800 }
+    "answer": { "type": "POINT", "tolerance": 800 }
   },
   {
     "id": "kiribati",
     "type": "PLACE",
     "place": "kiribati",
     "clue": { "type": "NAME", "prompt": "Where is Kiribati?" },
-    "answer": { "type": "POINT", "at": { "lat": 1.4167, "lon": 173 }, "tolerance": 1000 }
+    "answer": { "type": "POINT", "tolerance": 1000 }
   },
   {
     "id": "palau",
     "type": "PLACE",
     "place": "palau",
     "clue": { "type": "NAME", "prompt": "Where is Palau?" },
-    "answer": { "type": "POINT", "at": { "lat": 7.5, "lon": 134.5 }, "tolerance": 800 }
+    "answer": { "type": "POINT", "tolerance": 800 }
   },
   {
     "id": "marshall-islands",
     "type": "PLACE",
     "place": "marshall-islands",
     "clue": { "type": "NAME", "prompt": "Where are the Marshall Islands?" },
-    "answer": { "type": "POINT", "at": { "lat": 9.82, "lon": 169.29 }, "tolerance": 1000 }
+    "answer": { "type": "POINT", "tolerance": 1000 }
   },
   {
     "id": "micronesia",
     "type": "PLACE",
     "place": "federated-states-of-micronesia",
     "clue": { "type": "NAME", "prompt": "Where is the Federated States of Micronesia?" },
-    "answer": { "type": "POINT", "at": { "lat": 6.9167, "lon": 158.25 }, "tolerance": 1000 }
+    "answer": { "type": "POINT", "tolerance": 1000 }
   },
   {
     "id": "tonga",
     "type": "PLACE",
     "place": "tonga",
     "clue": { "type": "NAME", "prompt": "Where is Tonga?" },
-    "answer": { "type": "POINT", "at": { "lat": -20, "lon": -175 }, "tolerance": 800 }
+    "answer": { "type": "POINT", "tolerance": 800 }
   },
   {
     "id": "samoa",
     "type": "PLACE",
     "place": "samoa",
     "clue": { "type": "NAME", "prompt": "Where is Samoa?" },
-    "answer": { "type": "POINT", "at": { "lat": -13.745, "lon": -172.2175 }, "tolerance": 800 }
+    "answer": { "type": "POINT", "tolerance": 800 }
   },
   {
     "id": "vanuatu",
     "type": "PLACE",
     "place": "vanuatu",
     "clue": { "type": "NAME", "prompt": "Where is Vanuatu?" },
-    "answer": { "type": "POINT", "at": { "lat": -17, "lon": 168 }, "tolerance": 700 }
+    "answer": { "type": "POINT", "tolerance": 700 }
   },
   {
     "id": "fiji",
     "type": "PLACE",
     "place": "fiji",
     "clue": { "type": "NAME", "prompt": "Where is Fiji?" },
-    "answer": { "type": "POINT", "at": { "lat": -18, "lon": 179 }, "tolerance": 700 }
+    "answer": { "type": "POINT", "tolerance": 700 }
   },
   {
     "id": "solomon-islands",
     "type": "PLACE",
     "place": "solomon-islands",
     "clue": { "type": "NAME", "prompt": "Where are the Solomon Islands?" },
-    "answer": { "type": "POINT", "at": { "lat": -8, "lon": 159 }, "tolerance": 800 }
+    "answer": { "type": "POINT", "tolerance": 800 }
   },
   {
     "id": "tokyo",
     "type": "PLACE",
     "place": "tokyo",
     "clue": { "type": "NAME", "prompt": "Where is Tokyo?" },
-    "answer": { "type": "POINT", "at": { "lat": 35.6897, "lon": 139.6922 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "beijing",
     "type": "PLACE",
     "place": "beijing",
     "clue": { "type": "NAME", "prompt": "Where is Beijing?" },
-    "answer": { "type": "POINT", "at": { "lat": 39.9067, "lon": 116.3975 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "new-delhi",
     "type": "PLACE",
     "place": "new-delhi",
     "clue": { "type": "NAME", "prompt": "Where is New Delhi?" },
-    "answer": { "type": "POINT", "at": { "lat": 28.6139, "lon": 77.2089 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "bangkok",
     "type": "PLACE",
     "place": "bangkok",
     "clue": { "type": "NAME", "prompt": "Where is Bangkok?" },
-    "answer": { "type": "POINT", "at": { "lat": 13.7525, "lon": 100.4942 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "kuala-lumpur",
     "type": "PLACE",
     "place": "kuala-lumpur",
     "clue": { "type": "NAME", "prompt": "Where is Kuala Lumpur?" },
-    "answer": { "type": "POINT", "at": { "lat": 3.1478, "lon": 101.6953 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "taipei",
     "type": "PLACE",
     "place": "taipei",
     "clue": { "type": "NAME", "prompt": "Where is Taipei?" },
-    "answer": { "type": "POINT", "at": { "lat": 25.0375, "lon": 121.5625 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "pyongyang",
     "type": "PLACE",
     "place": "pyongyang",
     "clue": { "type": "NAME", "prompt": "Where is Pyongyang?" },
-    "answer": { "type": "POINT", "at": { "lat": 39.0167, "lon": 125.7475 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "naypyidaw",
     "type": "PLACE",
     "place": "naypyidaw",
     "clue": { "type": "NAME", "prompt": "Where is Naypyidaw?" },
-    "answer": { "type": "POINT", "at": { "lat": 19.7475, "lon": 96.115 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "baku",
     "type": "PLACE",
     "place": "baku",
     "clue": { "type": "NAME", "prompt": "Where is Baku?" },
-    "answer": { "type": "POINT", "at": { "lat": 40.3756, "lon": 49.8325 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "mogadishu",
     "type": "PLACE",
     "place": "mogadishu",
     "clue": { "type": "NAME", "prompt": "Where is Mogadishu?" },
-    "answer": { "type": "POINT", "at": { "lat": 2.0392, "lon": 45.3419 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "tbilisi",
     "type": "PLACE",
     "place": "tbilisi",
     "clue": { "type": "NAME", "prompt": "Where is Tbilisi?" },
-    "answer": { "type": "POINT", "at": { "lat": 41.7225, "lon": 44.7925 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "dushanbe",
     "type": "PLACE",
     "place": "dushanbe",
     "clue": { "type": "NAME", "prompt": "Where is Dushanbe?" },
-    "answer": { "type": "POINT", "at": { "lat": 38.5367, "lon": 68.78 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "ashgabat",
     "type": "PLACE",
     "place": "ashgabat",
     "clue": { "type": "NAME", "prompt": "Where is Ashgabat?" },
-    "answer": { "type": "POINT", "at": { "lat": 37.9375, "lon": 58.38 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "bishkek",
     "type": "PLACE",
     "place": "bishkek",
     "clue": { "type": "NAME", "prompt": "Where is Bishkek?" },
-    "answer": { "type": "POINT", "at": { "lat": 42.8747, "lon": 74.6122 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "damascus",
     "type": "PLACE",
     "place": "damascus",
     "clue": { "type": "NAME", "prompt": "Where is Damascus?" },
-    "answer": { "type": "POINT", "at": { "lat": 33.5131, "lon": 36.3094 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "beirut",
     "type": "PLACE",
     "place": "beirut",
     "clue": { "type": "NAME", "prompt": "Where is Beirut?" },
-    "answer": { "type": "POINT", "at": { "lat": 33.8981, "lon": 35.5058 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "amman",
     "type": "PLACE",
     "place": "amman",
     "clue": { "type": "NAME", "prompt": "Where is Amman?" },
-    "answer": { "type": "POINT", "at": { "lat": 31.9497, "lon": 35.9328 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "muscat",
     "type": "PLACE",
     "place": "muscat",
     "clue": { "type": "NAME", "prompt": "Where is Muscat?" },
-    "answer": { "type": "POINT", "at": { "lat": 23.5889, "lon": 58.4083 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "abu-dhabi",
     "type": "PLACE",
     "place": "abu-dhabi",
     "clue": { "type": "NAME", "prompt": "Where is Abu Dhabi?" },
-    "answer": { "type": "POINT", "at": { "lat": 24.4667, "lon": 54.3667 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "sanaa",
     "type": "PLACE",
     "place": "sanaa",
     "clue": { "type": "NAME", "prompt": "Where is Sanaa?" },
-    "answer": { "type": "POINT", "at": { "lat": 15.3483, "lon": 44.2064 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "cairo",
     "type": "PLACE",
     "place": "cairo",
     "clue": { "type": "NAME", "prompt": "Where is Cairo?" },
-    "answer": { "type": "POINT", "at": { "lat": 30.0444, "lon": 31.2358 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "algiers",
     "type": "PLACE",
     "place": "algiers",
     "clue": { "type": "NAME", "prompt": "Where is Algiers?" },
-    "answer": { "type": "POINT", "at": { "lat": 36.7325, "lon": 3.0872 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "tunis",
     "type": "PLACE",
     "place": "tunis",
     "clue": { "type": "NAME", "prompt": "Where is Tunis?" },
-    "answer": { "type": "POINT", "at": { "lat": 36.8064, "lon": 10.1817 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "rabat",
     "type": "PLACE",
     "place": "rabat",
     "clue": { "type": "NAME", "prompt": "Where is Rabat?" },
-    "answer": { "type": "POINT", "at": { "lat": 34.0211, "lon": -6.8414 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "tripoli",
     "type": "PLACE",
     "place": "tripoli",
     "clue": { "type": "NAME", "prompt": "Where is Tripoli, the capital city?" },
-    "answer": { "type": "POINT", "at": { "lat": 32.8875, "lon": 13.1875 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "khartoum",
     "type": "PLACE",
     "place": "khartoum",
     "clue": { "type": "NAME", "prompt": "Where is Khartoum?" },
-    "answer": { "type": "POINT", "at": { "lat": 15.6, "lon": 32.5 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "dakar",
     "type": "PLACE",
     "place": "dakar",
     "clue": { "type": "NAME", "prompt": "Where is Dakar?" },
-    "answer": { "type": "POINT", "at": { "lat": 14.6928, "lon": -17.4467 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "accra",
     "type": "PLACE",
     "place": "accra",
     "clue": { "type": "NAME", "prompt": "Where is Accra?" },
-    "answer": { "type": "POINT", "at": { "lat": 5.55, "lon": -0.2 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "luanda",
     "type": "PLACE",
     "place": "luanda",
     "clue": { "type": "NAME", "prompt": "Where is Luanda?" },
-    "answer": { "type": "POINT", "at": { "lat": -8.8383, "lon": 13.2344 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "lusaka",
     "type": "PLACE",
     "place": "lusaka",
     "clue": { "type": "NAME", "prompt": "Where is Lusaka?" },
-    "answer": { "type": "POINT", "at": { "lat": -15.4167, "lon": 28.2833 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "harare",
     "type": "PLACE",
     "place": "harare",
     "clue": { "type": "NAME", "prompt": "Where is Harare?" },
-    "answer": { "type": "POINT", "at": { "lat": -17.8292, "lon": 31.0522 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "maputo",
     "type": "PLACE",
     "place": "maputo",
     "clue": { "type": "NAME", "prompt": "Where is Maputo?" },
-    "answer": { "type": "POINT", "at": { "lat": -25.9689, "lon": 32.5733 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "kampala",
     "type": "PLACE",
     "place": "kampala",
     "clue": { "type": "NAME", "prompt": "Where is Kampala?" },
-    "answer": { "type": "POINT", "at": { "lat": 0.3136, "lon": 32.5811 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "dodoma",
     "type": "PLACE",
     "place": "dodoma",
     "clue": { "type": "NAME", "prompt": "Where is Dodoma?" },
-    "answer": { "type": "POINT", "at": { "lat": -6.1731, "lon": 35.7419 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "windhoek",
     "type": "PLACE",
     "place": "windhoek",
     "clue": { "type": "NAME", "prompt": "Where is Windhoek?" },
-    "answer": { "type": "POINT", "at": { "lat": -22.57, "lon": 17.0836 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "gaborone",
     "type": "PLACE",
     "place": "gaborone",
     "clue": { "type": "NAME", "prompt": "Where is Gaborone?" },
-    "answer": { "type": "POINT", "at": { "lat": -24.6581, "lon": 25.9122 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "antananarivo",
     "type": "PLACE",
     "place": "antananarivo",
     "clue": { "type": "NAME", "prompt": "Where is Antananarivo?" },
-    "answer": { "type": "POINT", "at": { "lat": -18.91, "lon": 47.525 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "caracas",
     "type": "PLACE",
     "place": "caracas",
     "clue": { "type": "NAME", "prompt": "Where is Caracas?" },
-    "answer": { "type": "POINT", "at": { "lat": 10.5061, "lon": -66.9144 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "quito",
     "type": "PLACE",
     "place": "quito",
     "clue": { "type": "NAME", "prompt": "Where is Quito?" },
-    "answer": { "type": "POINT", "at": { "lat": -0.22, "lon": -78.5125 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "la-paz",
     "type": "PLACE",
     "place": "la-paz",
     "clue": { "type": "NAME", "prompt": "Where is La Paz?" },
-    "answer": { "type": "POINT", "at": { "lat": -16.4958, "lon": -68.1333 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "panama-city",
     "type": "PLACE",
     "place": "panama-city",
     "clue": { "type": "NAME", "prompt": "Where is Panama City?" },
-    "answer": { "type": "POINT", "at": { "lat": 8.9711, "lon": -79.5347 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "san-jose-cr",
     "type": "PLACE",
     "place": "san-jose-cr",
     "clue": { "type": "NAME", "prompt": "Where is San José, the capital city?" },
-    "answer": { "type": "POINT", "at": { "lat": 9.9325, "lon": -84.08 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "managua",
     "type": "PLACE",
     "place": "managua",
     "clue": { "type": "NAME", "prompt": "Where is Managua?" },
-    "answer": { "type": "POINT", "at": { "lat": 12.1364, "lon": -86.2514 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "tegucigalpa",
     "type": "PLACE",
     "place": "tegucigalpa",
     "clue": { "type": "NAME", "prompt": "Where is Tegucigalpa?" },
-    "answer": { "type": "POINT", "at": { "lat": 14.1058, "lon": -87.2047 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "san-salvador",
     "type": "PLACE",
     "place": "san-salvador",
     "clue": { "type": "NAME", "prompt": "Where is San Salvador?" },
-    "answer": { "type": "POINT", "at": { "lat": 13.6989, "lon": -89.1914 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "guatemala-city",
     "type": "PLACE",
     "place": "guatemala-city",
     "clue": { "type": "NAME", "prompt": "Where is Guatemala City?" },
-    "answer": { "type": "POINT", "at": { "lat": 14.6417, "lon": -90.5133 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "santo-domingo",
     "type": "PLACE",
     "place": "santo-domingo",
     "clue": { "type": "NAME", "prompt": "Where is Santo Domingo?" },
-    "answer": { "type": "POINT", "at": { "lat": 18.4625, "lon": -69.9361 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "port-au-prince",
     "type": "PLACE",
     "place": "port-au-prince",
     "clue": { "type": "NAME", "prompt": "Where is Port-au-Prince?" },
-    "answer": { "type": "POINT", "at": { "lat": 18.5364, "lon": -72.3464 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "moscow",
     "type": "PLACE",
     "place": "moscow",
     "clue": { "type": "NAME", "prompt": "Where is Moscow?" },
-    "answer": { "type": "POINT", "at": { "lat": 55.7558, "lon": 37.6178 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "bern",
     "type": "PLACE",
     "place": "bern",
     "clue": { "type": "NAME", "prompt": "Where is Bern?" },
-    "answer": { "type": "POINT", "at": { "lat": 46.9481, "lon": 7.4475 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "belgrade",
     "type": "PLACE",
     "place": "belgrade",
     "clue": { "type": "NAME", "prompt": "Where is Belgrade?" },
-    "answer": { "type": "POINT", "at": { "lat": 44.8178, "lon": 20.4569 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "new-york",
     "type": "PLACE",
     "place": "new-york",
     "clue": { "type": "NAME", "prompt": "Where is New York City?" },
-    "answer": { "type": "POINT", "at": { "lat": 40.7128, "lon": -74.0061 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "los-angeles",
     "type": "PLACE",
     "place": "los-angeles",
     "clue": { "type": "NAME", "prompt": "Where is Los Angeles?" },
-    "answer": { "type": "POINT", "at": { "lat": 34.05, "lon": -118.25 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "chicago",
     "type": "PLACE",
     "place": "chicago",
     "clue": { "type": "NAME", "prompt": "Where is Chicago?" },
-    "answer": { "type": "POINT", "at": { "lat": 41.8819, "lon": -87.6278 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "san-francisco",
     "type": "PLACE",
     "place": "san-francisco",
     "clue": { "type": "NAME", "prompt": "Where is San Francisco?" },
-    "answer": { "type": "POINT", "at": { "lat": 37.7775, "lon": -122.4164 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "houston",
     "type": "PLACE",
     "place": "houston",
     "clue": { "type": "NAME", "prompt": "Where is Houston?" },
-    "answer": { "type": "POINT", "at": { "lat": 29.7567, "lon": -95.3653 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "miami",
     "type": "PLACE",
     "place": "miami",
     "clue": { "type": "NAME", "prompt": "Where is Miami?" },
-    "answer": { "type": "POINT", "at": { "lat": 25.7742, "lon": -80.1936 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "seattle",
     "type": "PLACE",
     "place": "seattle",
     "clue": { "type": "NAME", "prompt": "Where is Seattle?" },
-    "answer": { "type": "POINT", "at": { "lat": 47.6039, "lon": -122.33 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "toronto",
     "type": "PLACE",
     "place": "toronto",
     "clue": { "type": "NAME", "prompt": "Where is Toronto?" },
-    "answer": { "type": "POINT", "at": { "lat": 43.6525, "lon": -79.3817 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "vancouver",
     "type": "PLACE",
     "place": "vancouver",
     "clue": { "type": "NAME", "prompt": "Where is Vancouver?" },
-    "answer": { "type": "POINT", "at": { "lat": 49.2608, "lon": -123.1139 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "montreal",
     "type": "PLACE",
     "place": "montreal",
     "clue": { "type": "NAME", "prompt": "Where is Montreal?" },
-    "answer": { "type": "POINT", "at": { "lat": 45.5089, "lon": -73.5542 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "sao-paulo",
     "type": "PLACE",
     "place": "sao-paulo",
     "clue": { "type": "NAME", "prompt": "Where is São Paulo?" },
-    "answer": { "type": "POINT", "at": { "lat": -23.55, "lon": -46.6333 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "rio-de-janeiro",
     "type": "PLACE",
     "place": "rio-de-janeiro",
     "clue": { "type": "NAME", "prompt": "Where is Rio de Janeiro?" },
-    "answer": { "type": "POINT", "at": { "lat": -22.9111, "lon": -43.2056 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "shanghai",
     "type": "PLACE",
     "place": "shanghai",
     "clue": { "type": "NAME", "prompt": "Where is Shanghai?" },
-    "answer": { "type": "POINT", "at": { "lat": 31.2325, "lon": 121.4692 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "hong-kong",
     "type": "PLACE",
     "place": "hong-kong",
     "clue": { "type": "NAME", "prompt": "Where is Hong Kong?" },
-    "answer": { "type": "POINT", "at": { "lat": 22.3, "lon": 114.2 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "guangzhou",
     "type": "PLACE",
     "place": "guangzhou",
     "clue": { "type": "NAME", "prompt": "Where is Guangzhou?" },
-    "answer": { "type": "POINT", "at": { "lat": 23.13, "lon": 113.26 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "shenzhen",
     "type": "PLACE",
     "place": "shenzhen",
     "clue": { "type": "NAME", "prompt": "Where is Shenzhen?" },
-    "answer": { "type": "POINT", "at": { "lat": 22.5467, "lon": 114.0544 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "chongqing",
     "type": "PLACE",
     "place": "chongqing",
     "clue": { "type": "NAME", "prompt": "Where is Chongqing?" },
-    "answer": { "type": "POINT", "at": { "lat": 29.5637, "lon": 106.5504 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "osaka",
     "type": "PLACE",
     "place": "osaka",
     "clue": { "type": "NAME", "prompt": "Where is Osaka?" },
-    "answer": { "type": "POINT", "at": { "lat": 34.6939, "lon": 135.5022 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "mumbai",
     "type": "PLACE",
     "place": "mumbai",
     "clue": { "type": "NAME", "prompt": "Where is Mumbai?" },
-    "answer": { "type": "POINT", "at": { "lat": 19.0761, "lon": 72.8775 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "kolkata",
     "type": "PLACE",
     "place": "kolkata",
     "clue": { "type": "NAME", "prompt": "Where is Kolkata?" },
-    "answer": { "type": "POINT", "at": { "lat": 22.5675, "lon": 88.37 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "chennai",
     "type": "PLACE",
     "place": "chennai",
     "clue": { "type": "NAME", "prompt": "Where is Chennai?" },
-    "answer": { "type": "POINT", "at": { "lat": 13.0825, "lon": 80.275 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "bengaluru",
     "type": "PLACE",
     "place": "bengaluru",
     "clue": { "type": "NAME", "prompt": "Where is Bengaluru?" },
-    "answer": { "type": "POINT", "at": { "lat": 12.9789, "lon": 77.5917 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "karachi",
     "type": "PLACE",
     "place": "karachi",
     "clue": { "type": "NAME", "prompt": "Where is Karachi?" },
-    "answer": { "type": "POINT", "at": { "lat": 24.86, "lon": 67.01 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "lahore",
     "type": "PLACE",
     "place": "lahore",
     "clue": { "type": "NAME", "prompt": "Where is Lahore?" },
-    "answer": { "type": "POINT", "at": { "lat": 31.5497, "lon": 74.3436 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "ho-chi-minh-city",
     "type": "PLACE",
     "place": "ho-chi-minh-city",
     "clue": { "type": "NAME", "prompt": "Where is Ho Chi Minh City?" },
-    "answer": { "type": "POINT", "at": { "lat": 10.7756, "lon": 106.7019 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "istanbul",
     "type": "PLACE",
     "place": "istanbul",
     "clue": { "type": "NAME", "prompt": "Where is Istanbul?" },
-    "answer": { "type": "POINT", "at": { "lat": 41.0136, "lon": 28.955 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "dubai",
     "type": "PLACE",
     "place": "dubai",
     "clue": { "type": "NAME", "prompt": "Where is Dubai?" },
-    "answer": { "type": "POINT", "at": { "lat": 25.2047, "lon": 55.2708 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "lagos",
     "type": "PLACE",
     "place": "lagos",
     "clue": { "type": "NAME", "prompt": "Where is Lagos?" },
-    "answer": { "type": "POINT", "at": { "lat": 6.4561, "lon": 3.3936 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "johannesburg",
     "type": "PLACE",
     "place": "johannesburg",
     "clue": { "type": "NAME", "prompt": "Where is Johannesburg?" },
-    "answer": { "type": "POINT", "at": { "lat": -26.2044, "lon": 28.0456 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "cape-town",
     "type": "PLACE",
     "place": "cape-town",
     "clue": { "type": "NAME", "prompt": "Where is Cape Town?" },
-    "answer": { "type": "POINT", "at": { "lat": -33.9253, "lon": 18.4239 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "casablanca",
     "type": "PLACE",
     "place": "casablanca",
     "clue": { "type": "NAME", "prompt": "Where is Casablanca?" },
-    "answer": { "type": "POINT", "at": { "lat": 33.5333, "lon": -7.5833 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "marrakesh",
     "type": "PLACE",
     "place": "marrakesh",
     "clue": { "type": "NAME", "prompt": "Where is Marrakesh?" },
-    "answer": { "type": "POINT", "at": { "lat": 31.63, "lon": -8.0089 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "alexandria",
     "type": "PLACE",
     "place": "alexandria",
     "clue": { "type": "NAME", "prompt": "Where is Alexandria?" },
-    "answer": { "type": "POINT", "at": { "lat": 31.1975, "lon": 29.8925 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "st-petersburg",
     "type": "PLACE",
     "place": "st-petersburg",
     "clue": { "type": "NAME", "prompt": "Where is Saint Petersburg?" },
-    "answer": { "type": "POINT", "at": { "lat": 59.9375, "lon": 30.3086 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "barcelona",
     "type": "PLACE",
     "place": "barcelona",
     "clue": { "type": "NAME", "prompt": "Where is Barcelona?" },
-    "answer": { "type": "POINT", "at": { "lat": 41.3833, "lon": 2.1833 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "milan",
     "type": "PLACE",
     "place": "milan",
     "clue": { "type": "NAME", "prompt": "Where is Milan?" },
-    "answer": { "type": "POINT", "at": { "lat": 45.4669, "lon": 9.19 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "munich",
     "type": "PLACE",
     "place": "munich",
     "clue": { "type": "NAME", "prompt": "Where is Munich?" },
-    "answer": { "type": "POINT", "at": { "lat": 48.1375, "lon": 11.575 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "hamburg",
     "type": "PLACE",
     "place": "hamburg",
     "clue": { "type": "NAME", "prompt": "Where is Hamburg?" },
-    "answer": { "type": "POINT", "at": { "lat": 53.55, "lon": 10 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "sydney",
     "type": "PLACE",
     "place": "sydney",
     "clue": { "type": "NAME", "prompt": "Where is Sydney?" },
-    "answer": { "type": "POINT", "at": { "lat": -33.8678, "lon": 151.21 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "melbourne",
     "type": "PLACE",
     "place": "melbourne",
     "clue": { "type": "NAME", "prompt": "Where is Melbourne?" },
-    "answer": { "type": "POINT", "at": { "lat": -37.8142, "lon": 144.9631 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "auckland",
     "type": "PLACE",
     "place": "auckland",
     "clue": { "type": "NAME", "prompt": "Where is Auckland?" },
-    "answer": { "type": "POINT", "at": { "lat": -36.8492, "lon": 174.7653 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "manchester",
     "type": "PLACE",
     "place": "manchester",
     "clue": { "type": "NAME", "prompt": "Where is Manchester?" },
-    "answer": { "type": "POINT", "at": { "lat": 53.4794, "lon": -2.2453 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "glasgow",
     "type": "PLACE",
     "place": "glasgow",
     "clue": { "type": "NAME", "prompt": "Where is Glasgow?" },
-    "answer": { "type": "POINT", "at": { "lat": 55.8611, "lon": -4.25 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "birmingham",
     "type": "PLACE",
     "place": "birmingham",
     "clue": { "type": "NAME", "prompt": "Where is Birmingham?" },
-    "answer": { "type": "POINT", "at": { "lat": 52.48, "lon": -1.9025 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "liverpool",
     "type": "PLACE",
     "place": "liverpool",
     "clue": { "type": "NAME", "prompt": "Where is Liverpool?" },
-    "answer": { "type": "POINT", "at": { "lat": 53.4072, "lon": -2.9917 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "leeds",
     "type": "PLACE",
     "place": "leeds",
     "clue": { "type": "NAME", "prompt": "Where is Leeds?" },
-    "answer": { "type": "POINT", "at": { "lat": 53.7975, "lon": -1.5436 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "newcastle",
     "type": "PLACE",
     "place": "newcastle",
     "clue": { "type": "NAME", "prompt": "Where is Newcastle upon Tyne?" },
-    "answer": { "type": "POINT", "at": { "lat": 54.9738, "lon": -1.6131 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "aberdeen",
     "type": "PLACE",
     "place": "aberdeen",
     "clue": { "type": "NAME", "prompt": "Where is Aberdeen?" },
-    "answer": { "type": "POINT", "at": { "lat": 57.15, "lon": -2.11 }, "tolerance": 40 }
+    "answer": { "type": "POINT", "tolerance": 40 }
   },
   {
     "id": "plymouth",
     "type": "PLACE",
     "place": "plymouth",
     "clue": { "type": "NAME", "prompt": "Where is Plymouth?" },
-    "answer": { "type": "POINT", "at": { "lat": 50.3714, "lon": -4.1422 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "venice",
     "type": "PLACE",
     "place": "venice",
     "clue": { "type": "NAME", "prompt": "Where is Venice?" },
-    "answer": { "type": "POINT", "at": { "lat": 45.4375, "lon": 12.3358 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "florence",
     "type": "PLACE",
     "place": "florence",
     "clue": { "type": "NAME", "prompt": "Where is Florence?" },
-    "answer": { "type": "POINT", "at": { "lat": 43.7714, "lon": 11.2542 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "naples",
     "type": "PLACE",
     "place": "naples",
     "clue": { "type": "NAME", "prompt": "Where is Naples?" },
-    "answer": { "type": "POINT", "at": { "lat": 40.8358, "lon": 14.2486 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "marseille",
     "type": "PLACE",
     "place": "marseille",
     "clue": { "type": "NAME", "prompt": "Where is Marseille?" },
-    "answer": { "type": "POINT", "at": { "lat": 43.2964, "lon": 5.37 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "lyon",
     "type": "PLACE",
     "place": "lyon",
     "clue": { "type": "NAME", "prompt": "Where is Lyon?" },
-    "answer": { "type": "POINT", "at": { "lat": 45.7675, "lon": 4.835 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "seville",
     "type": "PLACE",
     "place": "seville",
     "clue": { "type": "NAME", "prompt": "Where is Seville?" },
-    "answer": { "type": "POINT", "at": { "lat": 37.3886, "lon": -5.995 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "malaga",
     "type": "PLACE",
     "place": "malaga",
     "clue": { "type": "NAME", "prompt": "Where is Málaga?" },
-    "answer": { "type": "POINT", "at": { "lat": 36.7194, "lon": -4.42 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "porto",
     "type": "PLACE",
     "place": "porto",
     "clue": { "type": "NAME", "prompt": "Where is Porto?" },
-    "answer": { "type": "POINT", "at": { "lat": 41.15, "lon": -8.6108 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "palma",
     "type": "PLACE",
     "place": "palma",
     "clue": { "type": "NAME", "prompt": "Where is Palma de Mallorca?" },
-    "answer": { "type": "POINT", "at": { "lat": 39.5667, "lon": 2.65 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "tenerife",
     "type": "PLACE",
     "place": "tenerife",
     "clue": { "type": "NAME", "prompt": "Where is Tenerife?" },
-    "answer": { "type": "POINT", "at": { "lat": 28.2686, "lon": -16.6056 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "crete",
     "type": "PLACE",
     "place": "crete",
     "clue": { "type": "NAME", "prompt": "Where is Crete?" },
-    "answer": { "type": "POINT", "at": { "lat": 35.21, "lon": 24.91 }, "tolerance": 150 }
+    "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
     "id": "krakow",
     "type": "PLACE",
     "place": "krakow",
     "clue": { "type": "NAME", "prompt": "Where is Kraków?" },
-    "answer": { "type": "POINT", "at": { "lat": 50.0614, "lon": 19.9372 }, "tolerance": 100 }
+    "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
     "id": "geneva",
     "type": "PLACE",
     "place": "geneva",
     "clue": { "type": "NAME", "prompt": "Where is Geneva?" },
-    "answer": { "type": "POINT", "at": { "lat": 46.2017, "lon": 6.1469 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "salzburg",
     "type": "PLACE",
     "place": "salzburg",
     "clue": { "type": "NAME", "prompt": "Where is Salzburg?" },
-    "answer": { "type": "POINT", "at": { "lat": 47.8, "lon": 13.045 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "las-vegas",
     "type": "PLACE",
     "place": "las-vegas",
     "clue": { "type": "NAME", "prompt": "Where is Las Vegas?" },
-    "answer": { "type": "POINT", "at": { "lat": 36.1692, "lon": -115.1406 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "boston",
     "type": "PLACE",
     "place": "boston",
     "clue": { "type": "NAME", "prompt": "Where is Boston?" },
-    "answer": { "type": "POINT", "at": { "lat": 42.3603, "lon": -71.0578 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "orlando",
     "type": "PLACE",
     "place": "orlando",
     "clue": { "type": "NAME", "prompt": "Where is Orlando?" },
-    "answer": { "type": "POINT", "at": { "lat": 28.5422, "lon": -81.3792 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "honolulu",
     "type": "PLACE",
     "place": "honolulu",
     "clue": { "type": "NAME", "prompt": "Where is Honolulu?" },
-    "answer": { "type": "POINT", "at": { "lat": 21.3, "lon": -157.85 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "cancun",
     "type": "PLACE",
     "place": "cancun",
     "clue": { "type": "NAME", "prompt": "Where is Cancún?" },
-    "answer": { "type": "POINT", "at": { "lat": 21.1606, "lon": -86.8475 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "bali",
     "type": "PLACE",
     "place": "bali",
     "clue": { "type": "NAME", "prompt": "Where is Bali?" },
-    "answer": { "type": "POINT", "at": { "lat": -8.335, "lon": 115.0881 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "phuket",
     "type": "PLACE",
     "place": "phuket",
     "clue": { "type": "NAME", "prompt": "Where is Phuket?" },
-    "answer": { "type": "POINT", "at": { "lat": 7.8881, "lon": 98.3975 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "kyoto",
     "type": "PLACE",
     "place": "kyoto",
     "clue": { "type": "NAME", "prompt": "Where is Kyoto?" },
-    "answer": { "type": "POINT", "at": { "lat": 35.0116, "lon": 135.7681 }, "tolerance": 200 }
+    "answer": { "type": "POINT", "tolerance": 200 }
   },
   {
     "id": "perth",
     "type": "PLACE",
     "place": "perth",
     "clue": { "type": "NAME", "prompt": "Where is Perth, the state capital?" },
-    "answer": { "type": "POINT", "at": { "lat": -32, "lon": 115.9 }, "tolerance": 300 }
+    "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
     "id": "queenstown",
     "type": "PLACE",
     "place": "queenstown",
     "clue": { "type": "NAME", "prompt": "Where is Queenstown?" },
-    "answer": { "type": "POINT", "at": { "lat": -45.0311, "lon": 168.6625 }, "tolerance": 250 }
+    "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
     "id": "york",
     "type": "PLACE",
     "place": "york",
     "clue": { "type": "NAME", "prompt": "Where is York?" },
-    "answer": { "type": "POINT", "at": { "lat": 53.96, "lon": -1.08 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "bristol",
     "type": "PLACE",
     "place": "bristol",
     "clue": { "type": "NAME", "prompt": "Where is Bristol?" },
-    "answer": { "type": "POINT", "at": { "lat": 51.4536, "lon": -2.5975 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "cambridge",
     "type": "PLACE",
     "place": "cambridge",
     "clue": { "type": "NAME", "prompt": "Where is Cambridge?" },
-    "answer": { "type": "POINT", "at": { "lat": 52.205, "lon": 0.1225 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "brighton",
     "type": "PLACE",
     "place": "brighton",
     "clue": { "type": "NAME", "prompt": "Where is Brighton?" },
-    "answer": { "type": "POINT", "at": { "lat": 50.8208, "lon": -0.1375 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "swansea",
     "type": "PLACE",
     "place": "swansea",
     "clue": { "type": "NAME", "prompt": "Where is Swansea?" },
-    "answer": { "type": "POINT", "at": { "lat": 51.6167, "lon": -3.95 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "dundee",
     "type": "PLACE",
     "place": "dundee",
     "clue": { "type": "NAME", "prompt": "Where is Dundee?" },
-    "answer": { "type": "POINT", "at": { "lat": 56.4606, "lon": -2.97 }, "tolerance": 40 }
+    "answer": { "type": "POINT", "tolerance": 40 }
   },
   {
     "id": "afghanistan-region",
@@ -4102,7 +4102,7 @@
     "type": "FLAG",
     "place": "andorra",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 42.5476, "lon": 1.5394 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-ao", "type": "FLAG", "place": "angola", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
@@ -4110,7 +4110,7 @@
     "type": "FLAG",
     "place": "antigua-and-barbuda",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 17.0778, "lon": -61.7901 }, "tolerance": 20 }
+    "answer": { "type": "POINT", "tolerance": 20 }
   },
   { "id": "flag-ar", "type": "FLAG", "place": "argentina", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-am", "type": "FLAG", "place": "armenia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4122,7 +4122,7 @@
     "type": "FLAG",
     "place": "bahrain",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 26.056, "lon": 50.5548 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-bd", "type": "FLAG", "place": "bangladesh", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
@@ -4130,7 +4130,7 @@
     "type": "FLAG",
     "place": "barbados",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 13.1637, "lon": -59.569 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-by", "type": "FLAG", "place": "belarus", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-be", "type": "FLAG", "place": "belgium", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4152,7 +4152,7 @@
     "type": "FLAG",
     "place": "brunei",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 4.4483, "lon": 114.5519 }, "tolerance": 20 }
+    "answer": { "type": "POINT", "tolerance": 20 }
   },
   { "id": "flag-bg", "type": "FLAG", "place": "bulgaria", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
@@ -4168,7 +4168,7 @@
     "type": "FLAG",
     "place": "cape-verde",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 15.0748, "lon": -23.6394 }, "tolerance": 70 }
+    "answer": { "type": "POINT", "tolerance": 70 }
   },
   { "id": "flag-kh", "type": "FLAG", "place": "cambodia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-cm", "type": "FLAG", "place": "cameroon", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4187,7 +4187,7 @@
     "type": "FLAG",
     "place": "china",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 36.6913, "lon": 103.4233 }, "tolerance": 865 }
+    "answer": { "type": "POINT", "tolerance": 865 }
   },
   { "id": "flag-co", "type": "FLAG", "place": "colombia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
@@ -4195,7 +4195,7 @@
     "type": "FLAG",
     "place": "comoros",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": -11.7277, "lon": 43.3181 }, "tolerance": 35 }
+    "answer": { "type": "POINT", "tolerance": 35 }
   },
   { "id": "flag-cr", "type": "FLAG", "place": "costa-rica", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-hr", "type": "FLAG", "place": "croatia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4205,7 +4205,7 @@
     "type": "FLAG",
     "place": "cyprus",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 34.9133, "lon": 33.0842 }, "tolerance": 20 }
+    "answer": { "type": "POINT", "tolerance": 20 }
   },
   {
     "id": "flag-cz",
@@ -4228,7 +4228,7 @@
     "type": "FLAG",
     "place": "dominica",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 15.4588, "lon": -61.345 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   {
     "id": "flag-do",
@@ -4257,7 +4257,7 @@
     "type": "FLAG",
     "place": "federated-states-of-micronesia",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 6.8876, "lon": 158.234 }, "tolerance": 560 }
+    "answer": { "type": "POINT", "tolerance": 560 }
   },
   { "id": "flag-fj", "type": "FLAG", "place": "fiji", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-fi", "type": "FLAG", "place": "finland", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4273,7 +4273,7 @@
     "type": "FLAG",
     "place": "grenada",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 12.1132, "lon": -61.6805 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-gt", "type": "FLAG", "place": "guatemala", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-gn", "type": "FLAG", "place": "guinea", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4294,7 +4294,7 @@
     "type": "FLAG",
     "place": "india",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 22.7434, "lon": 79.5226 }, "tolerance": 500 }
+    "answer": { "type": "POINT", "tolerance": 500 }
   },
   { "id": "flag-id", "type": "FLAG", "place": "indonesia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-ir", "type": "FLAG", "place": "iran", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4305,7 +4305,7 @@
     "type": "FLAG",
     "place": "israel",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 31.3608, "lon": 34.9657 }, "tolerance": 40 }
+    "answer": { "type": "POINT", "tolerance": 40 }
   },
   { "id": "flag-it", "type": "FLAG", "place": "italy", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-ci", "type": "FLAG", "place": "ivory-coast", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4319,7 +4319,7 @@
     "type": "FLAG",
     "place": "kiribati",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 1.8204, "lon": -157.3846 }, "tolerance": 925 }
+    "answer": { "type": "POINT", "tolerance": 1035 }
   },
   { "id": "flag-kw", "type": "FLAG", "place": "kuwait", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-kg", "type": "FLAG", "place": "kyrgyzstan", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4334,7 +4334,7 @@
     "type": "FLAG",
     "place": "liechtenstein",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 47.1114, "lon": 9.5594 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-lt", "type": "FLAG", "place": "lithuania", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
@@ -4342,7 +4342,7 @@
     "type": "FLAG",
     "place": "luxembourg",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 49.7337, "lon": 6.0776 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-mg", "type": "FLAG", "place": "madagascar", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-mw", "type": "FLAG", "place": "malawi", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4352,7 +4352,7 @@
     "type": "FLAG",
     "place": "maldives",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 4.1744, "lon": 73.5076 }, "tolerance": 25 }
+    "answer": { "type": "POINT", "tolerance": 25 }
   },
   { "id": "flag-ml", "type": "FLAG", "place": "mali", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
@@ -4360,14 +4360,14 @@
     "type": "FLAG",
     "place": "malta",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 35.8929, "lon": 14.433 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   {
     "id": "flag-mh",
     "type": "FLAG",
     "place": "marshall-islands",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 7.0826, "lon": 171.1936 }, "tolerance": 165 }
+    "answer": { "type": "POINT", "tolerance": 165 }
   },
   { "id": "flag-mr", "type": "FLAG", "place": "mauritania", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
@@ -4375,7 +4375,7 @@
     "type": "FLAG",
     "place": "mauritius",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": -20.2995, "lon": 57.5658 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-mx", "type": "FLAG", "place": "mexico", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-md", "type": "FLAG", "place": "moldova", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4384,7 +4384,7 @@
     "type": "FLAG",
     "place": "monaco",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 43.7397, "lon": 7.3983 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-mn", "type": "FLAG", "place": "mongolia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-me", "type": "FLAG", "place": "montenegro", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4393,7 +4393,7 @@
     "type": "FLAG",
     "place": "morocco",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 29.7942, "lon": -8.743 }, "tolerance": 215 }
+    "answer": { "type": "POINT", "tolerance": 215 }
   },
   { "id": "flag-mz", "type": "FLAG", "place": "mozambique", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-mm", "type": "FLAG", "place": "myanmar", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4403,7 +4403,7 @@
     "type": "FLAG",
     "place": "nauru",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": -0.5203, "lon": 166.9326 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-np", "type": "FLAG", "place": "nepal", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-nl", "type": "FLAG", "place": "netherlands", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4426,14 +4426,14 @@
     "type": "FLAG",
     "place": "pakistan",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 29.8932, "lon": 69.1921 }, "tolerance": 265 }
+    "answer": { "type": "POINT", "tolerance": 265 }
   },
   {
     "id": "flag-pw",
     "type": "FLAG",
     "place": "palau",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 7.5183, "lon": 134.5802 }, "tolerance": 155 }
+    "answer": { "type": "POINT", "tolerance": 155 }
   },
   { "id": "flag-pa", "type": "FLAG", "place": "panama", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
@@ -4454,7 +4454,7 @@
     "type": "FLAG",
     "place": "serbia",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 44.1089, "lon": 20.8677 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "flag-cg",
@@ -4469,7 +4469,7 @@
     "type": "FLAG",
     "place": "russia",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 66.0151, "lon": 95.5106 }, "tolerance": 1160 }
+    "answer": { "type": "POINT", "tolerance": 1160 }
   },
   { "id": "flag-rw", "type": "FLAG", "place": "rwanda", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
@@ -4477,42 +4477,42 @@
     "type": "FLAG",
     "place": "saint-kitts-and-nevis",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 17.3366, "lon": -62.758 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   {
     "id": "flag-lc",
     "type": "FLAG",
     "place": "saint-lucia",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 13.8924, "lon": -60.9801 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   {
     "id": "flag-vc",
     "type": "FLAG",
     "place": "saint-vincent-and-the-grenadines",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 13.2541, "lon": -61.1958 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   {
     "id": "flag-ws",
     "type": "FLAG",
     "place": "samoa",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": -13.6391, "lon": -172.4382 }, "tolerance": 30 }
+    "answer": { "type": "POINT", "tolerance": 30 }
   },
   {
     "id": "flag-sm",
     "type": "FLAG",
     "place": "san-marino",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 43.9339, "lon": 12.4412 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   {
     "id": "flag-st",
     "type": "FLAG",
     "place": "sao-tome-and-principe",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 0.2382, "lon": 6.6066 }, "tolerance": 45 }
+    "answer": { "type": "POINT", "tolerance": 45 }
   },
   {
     "id": "flag-sa",
@@ -4527,7 +4527,7 @@
     "type": "FLAG",
     "place": "seychelles",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": -4.6767, "lon": 55.4802 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   {
     "id": "flag-sl",
@@ -4541,7 +4541,7 @@
     "type": "FLAG",
     "place": "singapore",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 1.3666, "lon": 103.8169 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-sk", "type": "FLAG", "place": "slovakia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-si", "type": "FLAG", "place": "slovenia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4557,7 +4557,7 @@
     "type": "FLAG",
     "place": "somalia",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 4.7354, "lon": 45.6666 }, "tolerance": 195 }
+    "answer": { "type": "POINT", "tolerance": 195 }
   },
   {
     "id": "flag-za",
@@ -4584,14 +4584,14 @@
     "type": "FLAG",
     "place": "tonga",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": -21.21, "lon": -175.163 }, "tolerance": 80 }
+    "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
     "id": "flag-tt",
     "type": "FLAG",
     "place": "trinidad-and-tobago",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 10.4209, "lon": -61.2931 }, "tolerance": 35 }
+    "answer": { "type": "POINT", "tolerance": 35 }
   },
   { "id": "flag-tn", "type": "FLAG", "place": "tunisia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-tr", "type": "FLAG", "place": "turkey", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4607,7 +4607,7 @@
     "type": "FLAG",
     "place": "tuvalu",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": -8.5137, "lon": 179.2096 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-ug", "type": "FLAG", "place": "uganda", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
@@ -4615,7 +4615,7 @@
     "type": "FLAG",
     "place": "ukraine",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 49.1592, "lon": 31.3225 }, "tolerance": 215 }
+    "answer": { "type": "POINT", "tolerance": 215 }
   },
   {
     "id": "flag-ae",
@@ -4637,7 +4637,7 @@
     "type": "FLAG",
     "place": "united-states",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 44.6931, "lon": -103.6061 }, "tolerance": 865 }
+    "answer": { "type": "POINT", "tolerance": 865 }
   },
   { "id": "flag-uy", "type": "FLAG", "place": "uruguay", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-uz", "type": "FLAG", "place": "uzbekistan", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4647,7 +4647,7 @@
     "type": "FLAG",
     "place": "vatican-city",
     "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "at": { "lat": 41.9033, "lon": 12.4534 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-ve", "type": "FLAG", "place": "venezuela", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-vn", "type": "FLAG", "place": "vietnam", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -5002,7 +5002,7 @@
     "type": "STATE",
     "place": "state-delaware",
     "clue": { "type": "NAME", "prompt": "Where is Delaware?" },
-    "answer": { "type": "POINT", "at": { "lat": 38.9952, "lon": -75.5052 }, "tolerance": 20 }
+    "answer": { "type": "POINT", "tolerance": 20 }
   },
   {
     "id": "state-florida",
@@ -5219,7 +5219,7 @@
     "type": "STATE",
     "place": "state-rhode-island",
     "clue": { "type": "NAME", "prompt": "Where is Rhode Island?" },
-    "answer": { "type": "POINT", "at": { "lat": 41.6763, "lon": -71.5593 }, "tolerance": 15 }
+    "answer": { "type": "POINT", "tolerance": 15 }
   },
   {
     "id": "state-south-carolina",

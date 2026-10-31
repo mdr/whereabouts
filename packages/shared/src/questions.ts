@@ -6,7 +6,7 @@
  */
 import { z } from "zod"
 import type { LatLon } from "./geo.ts"
-import { DegreesSchema, KmSchema, type Km } from "./units.ts"
+import { DegreesSchema, type Km } from "./units.ts"
 import {
   CommonsFileSchema,
   type CommonsFile,
@@ -154,11 +154,6 @@ export type Outlines = ReadonlyMap<OutlineId, Outline>
 export type Outline = number[][][][]
 
 export const LatLonSchema = z.object({ lat: DegreesSchema, lon: DegreesSchema })
-export const PointAnswerSchema = z.object({
-  type: z.literal(AnswerType.POINT),
-  at: LatLonSchema,
-  tolerance: KmSchema
-})
 export const PhotoClueSchema = z.object({ type: z.literal(ClueType.PHOTO), image: CommonsFileSchema })
 export const NameClueSchema = z.object({ type: z.literal(ClueType.NAME), prompt: z.string() })
 
