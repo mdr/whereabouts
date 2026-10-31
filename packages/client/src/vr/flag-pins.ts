@@ -96,8 +96,10 @@ export class FlagPins {
   readonly border = new LineSegments(new BufferGeometry(), new LineBasicMaterial({ color: BORDER }))
   private readonly borderRadius: number
 
-  /** `base`: the radius pins stand on, in the globe's frame. */
-  /** `borderRadius`: where the pointed-at country's border is drawn, likewise. */
+  /**
+   * `base`: the radius pins stand on, in the globe's frame.
+   * `borderRadius`: where the pointed-at country's border is drawn, likewise.
+   */
   constructor(base: number, borderRadius: number) {
     this.base = base
     this.borderRadius = borderRadius

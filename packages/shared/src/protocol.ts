@@ -404,7 +404,6 @@ export function encodeTicket(ticket: Ticket): string {
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
 }
 
-/** Parses and validates a ticket; returns undefined for anything malformed. */
 /** The ticket, or "outdated" for one from a client of another protocol version, or undefined for one not a ticket at all. */
 export function decodeTicket(raw: string): Ticket | "outdated" | undefined {
   try {

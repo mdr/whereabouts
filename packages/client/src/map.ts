@@ -394,11 +394,6 @@ export class GameMap {
     document.documentElement.style.setProperty("--ring-brush", t.brush)
   }
 
-  /**
-   * Tear the map down. Effects that unmount alongside the map (the reveal
-   * turning borders back off, say) may still call the toggles afterwards;
-   * MapLibre throws on a removed map, so they check `disposed` first.
-   */
   /** Switch between the flat map and the globe, keeping a whole-world view whole. */
   setGlobe(on: boolean): void {
     if (this.disposed || on === this.globe) return
@@ -447,6 +442,11 @@ export class GameMap {
     return drawable(at.lat) && Math.hypot(back.x - point.x, back.y - point.y) < 1
   }
 
+  /**
+   * Tear the map down. Effects that unmount alongside the map (the reveal
+   * turning borders back off, say) may still call the toggles afterwards;
+   * MapLibre throws on a removed map, so they check `disposed` first.
+   */
   dispose(): void {
     this.disposed = true
     this.map.remove()
@@ -631,7 +631,7 @@ export class GameMap {
     ])
   }
 
-  /** Marker at the answer. The tolerance rings were tried and dropped: one clear dot reads better. */
+  /** Marker at the answer: one clear dot. */
   showReveal(answer: LatLon, _toleranceKm: number): void {
     const fc: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",

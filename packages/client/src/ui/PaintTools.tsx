@@ -25,8 +25,7 @@ const TOOL_HINT: Record<Tool, string> = {
 /**
  * The player-facing brush bar: tool, clear, brush size, undo/redo, and
  * whatever action buttons the screen passes in (done, next).
- */
-/**
+ *
  * `water`: the answer is a lake or sea, so Trim land replaces Trim sea.
  * `hint`: the band of a hint taken this round, offered as a trim too.
  */

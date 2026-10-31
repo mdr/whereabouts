@@ -186,14 +186,14 @@ function FlagImage({ code }: { code: string }) {
   )
 }
 
+/** Whether a photo has shown its "Enlarge" label yet this session: after the first, just the icon. */
+let enlargeLabelShown = false
+
 /**
  * The question photo. Click it to enlarge over the map; click again or press
  * Escape to shrink back. The Wikimedia Commons credit sits behind a small
  * info icon linking to the file page.
  */
-/** Whether a photo has shown its "Enlarge" label yet this session: after the first, just the icon. */
-let enlargeLabelShown = false
-
 function QuestionImage({ image, credit: showCredit }: { image: string; credit: boolean }) {
   const [large, setLarge] = useState(false)
   const [withLabel] = useState(() => {
