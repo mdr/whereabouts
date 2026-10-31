@@ -1,11 +1,11 @@
-// @vitest-environment happy-dom
 import { AnswerType } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { h3Res } from "@whereabouts/shared/h3"
-import { playerId, playerName } from "@whereabouts/shared/ids"
-import { makePlayer } from "../test-view"
-import type { PlayerView, RoundResultView } from "@whereabouts/shared/protocol"
-import { revealOrder } from "./Reveal"
+import { playerColour } from "@whereabouts/shared/colours"
+import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
+import type { PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
+import { NONE, revealedFromView, revealOrder, shownResults } from "./reveal"
+import { makePlayer, makeQuestionView } from "./test-view"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
 const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
@@ -61,5 +61,56 @@ describe("revealOrder", () => {
     const players = [player("bob", 2), player("alice", 1)]
     const results = [result("alice", 500), result("bob", 500)]
     expect(revealOrder(players, results).map((row) => row.p.name)).toEqual(["alice", "bob"])
+  })
+})
+
+describe("shownResults", () => {
+  const results = [result("alice", 700), result("bob", 250, false), result("cara", 500)]
+
+  it("shows everyone who painted, leaving out passes", () => {
+    expect(shownResults(results, undefined).map((r) => r.playerId)).toEqual([idOf("alice"), idOf("cara")])
+  })
+
+  it("shows one player's paint alone", () => {
+    expect(shownResults(results, idOf("cara")).map((r) => r.playerId)).toEqual([idOf("cara")])
+  })
+
+  it("shows nobody's when paint is hidden", () => {
+    expect(shownResults(results, NONE)).toEqual([])
+  })
+})
+
+describe("revealedFromView", () => {
+  const reveal: RevealView = {
+    index: 0,
+    total: 5,
+    question: makeQuestionView(),
+    answer: { lat: 35, lon: 135.8 },
+    place: placeId("kyoto"),
+    label: "Kyoto",
+    wiki: wikiTitle("Kyoto"),
+    results: [],
+    ready: []
+  }
+
+  it("takes the answer from the reveal, with the outline once loaded", () => {
+    const outline = [
+      [
+        [
+          [0, 0],
+          [1, 0],
+          [1, 1],
+          [0, 0]
+        ]
+      ]
+    ]
+    expect(revealedFromView(reveal, outline)).toEqual({
+      label: "Kyoto",
+      wiki: "Kyoto",
+      answer: { lat: 35, lon: 135.8 },
+      outline,
+      photo: undefined
+    })
+    expect(revealedFromView(reveal, undefined).outline).toBeUndefined()
   })
 })

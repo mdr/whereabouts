@@ -62,7 +62,7 @@ export function nextRound(run: PracticeRun): PracticeRun {
   return { ...run, index: run.index + 1, phase: PracticePhase.PAINT }
 }
 
-export function revealedAnswer(q: Question, outlines: Outlines): RevealedAnswer {
+export function revealedFromQuestion(q: Question, outlines: Outlines): RevealedAnswer {
   return {
     label: q.label,
     wiki: q.wiki,

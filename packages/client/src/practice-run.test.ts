@@ -18,7 +18,7 @@ import {
   currentQuestion,
   isLastRound,
   nextRound,
-  revealedAnswer,
+  revealedFromQuestion,
   roundsTable,
   runMaximum,
   runTotal,
@@ -138,10 +138,10 @@ describe("roundsTable", () => {
   })
 })
 
-describe("revealedAnswer", () => {
+describe("revealedFromQuestion", () => {
   it("is a point question's own place, with no outline", () => {
     const kyoto = makePlace("kyoto")
-    expect(revealedAnswer(kyoto, new Map())).toMatchObject({
+    expect(revealedFromQuestion(kyoto, new Map())).toMatchObject({
       label: "kyoto",
       wiki: "kyoto",
       answer: { lat: 35, lon: 135.8 },
@@ -175,7 +175,7 @@ describe("revealedAnswer", () => {
         surface: Surface.LAND
       }
     }
-    expect(revealedAnswer(country, new Map([[outlineId("square-region"), outline]]))).toMatchObject({
+    expect(revealedFromQuestion(country, new Map([[outlineId("square-region"), outline]]))).toMatchObject({
       answer: { lat: 0.5, lon: 0.5 },
       outline
     })

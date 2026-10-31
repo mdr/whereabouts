@@ -19,7 +19,8 @@ import { PlayerList } from "../ui/PlayerList"
 import { ConnectionNote, connectionText } from "../ui/ConnectionNote"
 import { DevDrawer } from "../ui/DevDrawer"
 import { ConnectionDev } from "../ui/ConnectionDev"
-import { NONE, Reveal, revealedAnswer, revealOrder, revealShown, shownResults } from "./Reveal"
+import { Reveal } from "./Reveal"
+import { NONE, revealedFromView, revealOrder, revealShown, shownResults } from "../reveal"
 import { borders, loadBorders } from "../borders"
 import { Icon } from "../ui/icons"
 import { PlayersPanel, playersPanelOpen } from "../ui/PlayersPanel"
@@ -246,7 +247,7 @@ function gameVrView(
   const reveal = view.reveal
   const shown: VrRoundShown = {
     question,
-    revealed: reveal && revealedAnswer(reveal, outline),
+    revealed: reveal && revealedFromView(reveal, outline),
     fact
   }
   const more = [
@@ -307,7 +308,7 @@ function gameVrView(
     type: VrViewType.REVEAL,
     round,
     more,
-    reveal: vrReveal(shown, revealedAnswer(reveal, outline), you, borders.value, {
+    reveal: vrReveal(shown, revealedFromView(reveal, outline), you, borders.value, {
       paints: paintsOf(shownResults(reveal.results, whose), view.players),
       table: {
         title: `Round ${reveal.index + 1} of ${reveal.total}`,

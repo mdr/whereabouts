@@ -42,7 +42,7 @@ import {
   currentQuestion,
   isLastRound,
   nextRound,
-  revealedAnswer,
+  revealedFromQuestion,
   roundsTable,
   runMaximum,
   runTotal,
@@ -81,7 +81,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
   const total = runTotal(run)
   const cheating = devMode.value && cheatLiveScore.value
   const question = questionView(q)
-  const answer = revealedAnswer(q, outlines)
+  const answer = revealedFromQuestion(q, outlines)
   const scored = useMemo(() => scoredAnswer(q.answer, outlines), [q])
   const detail = soloMapDetail.value
 
