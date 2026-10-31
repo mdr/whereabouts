@@ -9,9 +9,8 @@ import kit from "./kit.module.css"
 import s from "./PaintTools.module.css"
 import { Tool } from "../tool"
 import { Icon, type IconName } from "./icons"
-import { sound } from "../sound"
+import { clearPaint, trimPaint, trimPaintToHint } from "../paint-commands"
 import { Shortcuts, ShortcutsButton } from "./Shortcuts"
-import { loadLandMask, loadWaterMask } from "../land"
 import { paintDevTestIds, paintToolsTestIds } from "./PaintToolsTestIds"
 
 const TOOL_ICON: Record<Tool, IconName> = {
@@ -52,11 +51,6 @@ export function PaintTools({
   const tools: Tool[] = paint.fillable.value
     ? [Tool.PAN, Tool.PAINT, Tool.ERASE, Tool.FILL]
     : [Tool.PAN, Tool.PAINT, Tool.ERASE]
-  // The whoosh only when there was paint to wipe.
-  const clear = () => {
-    if (!paint.layer.isEmpty) sound.play("clear")
-    paint.clear()
-  }
   return (
     <HudBottom>
       <div class={s.tools}>
@@ -76,7 +70,7 @@ export function PaintTools({
         ))}
         <button
           title="Clear all paint (Undo brings it back)"
-          onClick={clear}
+          onClick={() => clearPaint(paint)}
           disabled={!enabled}
           data-testid={paintToolsTestIds.clearButton}
         >
@@ -237,15 +231,10 @@ function TrimToHint({ enabled, band }: { enabled: boolean; band: HintBand }) {
     const t = setTimeout(() => setNote(undefined), 2500)
     return () => clearTimeout(t)
   }, [note])
-  const trim = () => {
-    const share = paint.trimToHint(band)
-    if (share > 0) sound.play("clear")
-    setNote(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : "None outside")
-  }
   return (
     <button
       title="Remove paint outside the hint's band (Undo brings it back)"
-      onClick={trim}
+      onClick={() => setNote(trimPaintToHint(paint, band))}
       disabled={!enabled || paint.isEmpty.value}
       aria-live="polite"
       data-testid={paintToolsTestIds.trimToHintButton}
@@ -274,12 +263,7 @@ function Trim({ enabled, water }: { enabled: boolean; water: boolean }) {
   const trim = async () => {
     setBusy(true)
     try {
-      const share = water ? paint.trimLand(await loadWaterMask()) : paint.trimSea(await loadLandMask())
-      if (share > 0) sound.play("clear")
-      setNote(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : water ? "None on land" : "None at sea")
-    } catch (err) {
-      console.warn("could not load the trim mask", err)
-      setNote("Try again")
+      setNote(await trimPaint(paint, water))
     } finally {
       setBusy(false)
     }

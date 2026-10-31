@@ -1,6 +1,5 @@
 /** What the wrist menu's buttons do. */
-import { loadLandMask, loadWaterMask } from "../land"
-import { sound } from "../sound"
+import { clearPaint, trimPaint, trimPaintToHint } from "../paint-commands"
 import { Hand } from "./hand"
 import type { SprayTool } from "./spray"
 import type { VrRound } from "./view"
@@ -24,11 +23,6 @@ export function wristActions(on: WristTargets): Record<WristButton, () => void> 
     f(round)
     on.repaint()
   }
-  const trimmed = (share: number, none: string) => {
-    if (share > 0) sound.play("clear")
-    on.note(share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : none)
-    on.repaint()
-  }
   return {
     [WristButton.UNDO]: act((r) => r.paint.undo()),
     [WristButton.SWAP]: () => {
@@ -39,19 +33,13 @@ export function wristActions(on: WristTargets): Record<WristButton, () => void> 
     [WristButton.LATITUDE]: act((r) => r.useHint(HintAxis.LATITUDE)),
     [WristButton.LONGITUDE]: act((r) => r.useHint(HintAxis.LONGITUDE)),
     [WristButton.TRIM]: act((r) => {
-      const trim = r.water
-        ? loadWaterMask().then((mask) => trimmed(r.paint.trimLand(mask), "None on land"))
-        : loadLandMask().then((mask) => trimmed(r.paint.trimSea(mask), "None at sea"))
-      trim.catch((err: unknown) => {
-        console.warn("could not load the trim mask", err)
-        on.note("Try again")
+      void trimPaint(r.paint, r.water).then((note) => {
+        on.note(note)
+        on.repaint()
       })
     }),
-    [WristButton.TRIM_HINT]: act((r) => r.hint && trimmed(r.paint.trimToHint(r.hint), "None outside")),
-    [WristButton.CLEAR]: act((r) => {
-      if (!r.paint.layer.isEmpty) sound.play("clear")
-      r.paint.clear()
-    }),
+    [WristButton.TRIM_HINT]: act((r) => r.hint && on.note(trimPaintToHint(r.paint, r.hint))),
+    [WristButton.CLEAR]: act((r) => clearPaint(r.paint)),
     [WristButton.REDO]: act((r) => r.paint.redo())
   }
 }
