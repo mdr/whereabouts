@@ -148,7 +148,7 @@ export class Headset {
     return this.#page.evaluate(() => window.whereaboutsVr.flagOutlined)
   }
 
-  /** The flag nearest the eyes, and where its middle is. */
+  /** The flag nearest the eyes with a border to outline, and where its middle is. */
   async flagFacing(): Promise<{ name: string; at: Vec } | undefined> {
     return this.#page.evaluate(() => window.whereaboutsVr.flagFacing)
   }

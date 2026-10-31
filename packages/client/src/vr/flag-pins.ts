@@ -133,11 +133,12 @@ export class FlagPins {
     return name === undefined ? undefined : { name, segments: n / 2 }
   }
 
-  /** The flag nearest `to`, and where its middle is, for the browser tests. */
+  /** The flag nearest `to` with a border to outline, and where its middle is, for the browser tests. */
   nearest(to: Vector3): { name: string; at: Vector3 } | undefined {
     const pins = this.built?.pins ?? []
     let best: { name: string; at: Vector3 } | undefined = undefined
     pins.forEach((p, i) => {
+      if (p.rings.length === 0) return
       const at = this.middle(i, new Vector3())
       if (!best || at.distanceTo(to) < best.at.distanceTo(to)) best = { name: p.name, at }
     })

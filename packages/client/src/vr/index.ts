@@ -521,7 +521,7 @@ export class Vr {
     return this.flagPins.outlined
   }
 
-  /** The flag nearest the eyes, and where, for the browser tests. */
+  /** The flag nearest the eyes with a border to outline, and where, for the browser tests. */
   get flagFacing(): { name: string; at: [number, number, number] } | undefined {
     const f = this.flagPins.nearest(this.world.player.head.getWorldPosition(new Vector3()))
     return f && { name: f.name, at: [f.at.x, f.at.y, f.at.z] }
