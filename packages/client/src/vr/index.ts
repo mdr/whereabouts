@@ -48,13 +48,14 @@ import { timerFrames } from "./frames"
 import { HandTool, TRIGGER_DEAD, type SprayTool } from "./spray"
 import { Moon } from "./moon"
 import { STARS_M, Space } from "./space"
-import { SCORES_M, ScoreBoard, type VrTable } from "./scores"
-import { ResultsBoard, type VrBoard } from "./board"
+import { SCORES_M, ScoreBoard } from "./scores"
+import { ResultsBoard } from "./board"
 import { WristMenu, type WristButton } from "./wrist"
-import { Menu, PANEL_M, type MenuShown } from "./menu"
+import { Menu, PANEL_M } from "./menu"
 import { colouredPaint, framing } from "./reveal"
 import { PanelClearance } from "./clearance"
 import { wristActions } from "./wrist-actions"
+import { VrProbe } from "./probe"
 import type { VrRound, VrView } from "./view"
 
 /**
@@ -93,10 +94,8 @@ export class Vr {
   /** Menu buttons clicked, for the browser tests to know a press landed. */
   clicks = 0
 
-  /** Times the scene has been drawn, for the browser tests. */
-  get drawn(): number {
-    return this.world.renderer.info.render.frame
-  }
+  /** What the browser tests read of the scene. */
+  readonly probe: VrProbe
   private view: VrView | undefined = undefined
   private pictureKey = ""
   private paintsKey = ""
@@ -240,6 +239,23 @@ export class Vr {
     )
     this.scores = new ScoreBoard(world, () => this.clicks++)
     world.scene.add(this.board.mesh)
+    this.probe = new VrProbe({
+      world,
+      view: () => this.view,
+      globe: this.globe,
+      detail: this.detail,
+      picture: this.picture,
+      hint: this.hint,
+      wrist: this.wrist,
+      scores: this.scores,
+      board: this.board,
+      flagPins: this.flagPins,
+      space: this.space,
+      moon: this.moon,
+      menu: this.menu,
+      clearance: this.clearance,
+      tools: this.tools
+    })
 
     void navigator.xr?.isSessionSupported(SessionMode.ImmersiveAR).then((ok) => this.menu.offerPassthrough(ok))
     world.visibilityState.subscribe((state) => {
@@ -347,16 +363,6 @@ export class Vr {
     this.menu.refresh(view)
   }
 
-  /** The reveal's line of interest, for the browser tests. */
-  get factShown(): string | undefined {
-    return this.view?.kind === "reveal" ? this.view.reveal.fact : undefined
-  }
-
-  /** What the headset shows, for the browser tests. */
-  get viewKind(): VrView["kind"] | undefined {
-    return this.view?.kind
-  }
-
   private get round(): VrRound | undefined {
     return this.view && "round" in this.view ? this.view.round : undefined
   }
@@ -365,125 +371,6 @@ export class Vr {
   private get painting(): VrRound | undefined {
     const round = this.round
     return this.view?.kind === "paint" && round?.playing && round.paint.enabled.value ? round : undefined
-  }
-
-  /** The score table, for the browser tests. */
-  get tableShown(): VrTable | undefined {
-    return this.scores.shown
-  }
-
-  /** Droplets and crumbs in the air, for the browser tests. */
-  get particlesLive(): number {
-    return this.tools.left.particlesLive + this.tools.right.particlesLive
-  }
-
-  /** The narrowest gap, in radians as the player sees it, between a panel and the globe. */
-  get panelGap(): number {
-    return this.clearance.gap(this.globe)
-  }
-
-  get flagPinsShown(): number {
-    return this.flagPins.shown
-  }
-
-  /** The country whose flag is pointed at, for the browser tests. */
-  get flagNamed(): string | undefined {
-    return this.flagPins.named
-  }
-
-  /** The country whose border is picked out, and in how many line segments, for the browser tests. */
-  get flagOutlined(): { name: string; segments: number } | undefined {
-    return this.flagPins.outlined
-  }
-
-  /** The flag nearest the eyes with a border to outline, and where, for the browser tests. */
-  get flagFacing(): { name: string; at: [number, number, number] } | undefined {
-    const f = this.flagPins.nearest(this.world.player.head.getWorldPosition(new Vector3()))
-    return f && { name: f.name, at: [f.at.x, f.at.y, f.at.z] }
-  }
-
-  /** How much paint the round has, all cells' intensities summed, for the browser tests. */
-  get paintMass(): number {
-    return this.round?.paint.layer.mass() ?? 0
-  }
-
-  /** Whether the globe is turning to show a place, for the browser tests. */
-  get globeTurning(): boolean {
-    return this.globe.busy
-  }
-
-  /** How far the globe is zoomed, for the browser tests. */
-  get globeScale(): number {
-    return this.globe.scale
-  }
-
-  /** Whether the hands hold their tools, and space shows, for the browser tests. */
-  get toolsHeld(): boolean {
-    return this.tools.left.held || this.tools.right.held
-  }
-
-  get spaceShown(): boolean {
-    return this.space.group.visible
-  }
-
-  get passthrough(): boolean {
-    return headsetPassthrough.value
-  }
-
-  get boardShown(): VrBoard | undefined {
-    return this.board.mesh.visible ? this.board.shown : undefined
-  }
-
-  /** Whether the land shows in natural colour, for the browser tests. */
-  get colourShown(): boolean {
-    return this.globe.colourShown
-  }
-
-  get bordersShown(): boolean {
-    return this.globe.bordersShown
-  }
-
-  /** What the menu offers, for the browser tests. */
-  get menuShown(): MenuShown {
-    return this.menu.shown
-  }
-
-  /** What each hand holds, for the browser tests. */
-  get toolInHand(): Record<Hand, string> {
-    return { left: this.tools.left.tool, right: this.tools.right.tool }
-  }
-
-  /** Whether the page's map shows over the globe, for the browser tests. */
-  get detailShown(): boolean {
-    return this.detail.mesh.visible
-  }
-
-  /** The question's picture over the menu, width by height in metres, for the browser tests. */
-  get pictureShown(): [number, number] | undefined {
-    const { mesh } = this.picture
-    return mesh.visible ? [mesh.scale.x, mesh.scale.y] : undefined
-  }
-
-  /** The place the picture's postcard back names at the reveal, for the browser tests. */
-  get picturePostcard(): string | undefined {
-    return this.picture.postcardPlace
-  }
-
-  /** Whether a hand holds the question's picture, and where it is, for the browser tests. */
-  get pictureHeld(): {
-    held: boolean
-    at: [number, number, number]
-    facing: [number, number, number]
-    back: "reverse" | "postcard" | undefined
-  } {
-    const p = this.picture.mesh.getWorldPosition(new Vector3())
-    const f = this.picture.mesh.getWorldDirection(new Vector3())
-    return {
-      held: this.picture.heldBy !== undefined,
-      at: [p.x, p.y, p.z],
-      facing: [f.x, f.y, f.z],
-      back: this.picture.back
-    }
   }
 
   /**
@@ -497,55 +384,6 @@ export class Vr {
       const model = this.world.input.xr.visualAdapters.controller[h].visual?.model
       if (model) for (const part of model.children) part.visible = on
     }
-  }
-
-  /** Whether the controllers themselves show, for the browser tests. */
-  get controllersShown(): boolean {
-    return HANDS.some((h) =>
-      this.world.input.xr.visualAdapters.controller[h].visual?.model.children.some((part) => part.visible)
-    )
-  }
-
-  /** Whether a ray shows from either hand, to point at flags, for the browser tests. */
-  get beamsShown(): boolean {
-    return HANDS.some((h) => this.tools[h].beamShown)
-  }
-
-  /** How far the moon is from the globe, and how big, in globe radii, for the browser tests. */
-  get moonShown(): { distance: number; radius: number } | undefined {
-    const { mesh } = this.moon
-    if (!mesh.visible) return undefined
-    const r = this.globe.radius
-    return { distance: mesh.position.distanceTo(this.globe.centre) / r, radius: mesh.scale.x / r }
-  }
-
-  get wristOpen(): boolean {
-    return this.wrist.open
-  }
-
-  get hintShown(): boolean {
-    return this.hint.band !== undefined
-  }
-
-  /** Where a button on the wrist menu is, for the browser tests. */
-  wristButtonAt(id: WristButton): [number, number, number] {
-    return this.wrist.buttonAt(id)
-  }
-
-  /** Where a hand's tool would land on the globe, for the browser tests. */
-  targetOf(hand: Hand): [number, number, number] | undefined {
-    const p = this.tools[hand].target
-    return p && [p.x, p.y, p.z]
-  }
-
-  /** Where a button on the menu is, for the browser tests. */
-  menuButtonAt(id: string): [number, number, number] {
-    return this.menu.buttonAt(id)
-  }
-
-  /** Where a row of the score table is, for the browser tests. */
-  scoreRowAt(i: number): [number, number, number] {
-    return this.scores.rowAt(i)
   }
 
   exit(): void {
@@ -707,6 +545,7 @@ export class Vr {
     this.picture.mesh.position.set(0, top + 0.015 + this.picture.height / 2, 0)
   }
 }
+
 declare global {
   interface Window {
     whereaboutsVr: Vr

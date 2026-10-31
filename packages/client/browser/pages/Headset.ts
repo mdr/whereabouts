@@ -81,7 +81,7 @@ export class Headset {
 
   /** Times the VR scene has been drawn, in the headset or not. */
   async scenesDrawn(): Promise<number> {
-    return this.#page.evaluate(() => window.whereaboutsVr.drawn)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.drawn)
   }
 
   /** Cells of paint drawn on the VR globe. */
@@ -91,17 +91,17 @@ export class Headset {
 
   /** Whether the page's map shows over the zoomed-in globe. */
   async globeDetailShown(): Promise<boolean> {
-    return this.#page.evaluate(() => window.whereaboutsVr.detailShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.detailShown)
   }
 
   /** Whether the globe's land shows in natural colour. */
   async globeColourShown(): Promise<boolean> {
-    return this.#page.evaluate(() => window.whereaboutsVr.colourShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.colourShown)
   }
 
   /** Whether national borders show on the globe. */
   async globeBordersShown(): Promise<boolean> {
-    return this.#page.evaluate(() => window.whereaboutsVr.bordersShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.bordersShown)
   }
 
   /** What the menu's Done button says: Submit, or Pass with nothing painted. */
@@ -120,112 +120,112 @@ export class Headset {
     mode: string | undefined
     note: string | undefined
   }> {
-    return this.#page.evaluate(() => window.whereaboutsVr.menuShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.menuShown)
   }
 
   /** Droplets and crumbs in the air. */
   async particles(): Promise<number> {
-    return this.#page.evaluate(() => window.whereaboutsVr.particlesLive)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.particlesLive)
   }
 
   /** The narrowest gap, in radians as the player sees it, between a panel and the globe: negative if one overlaps it. */
   async panelGap(): Promise<number> {
-    return this.#page.evaluate(() => window.whereaboutsVr.panelGap)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.panelGap)
   }
 
   /** How many countries' flags are pinned on the globe. */
   async flagPins(): Promise<number> {
-    return this.#page.evaluate(() => window.whereaboutsVr.flagPinsShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.flagPinsShown)
   }
 
   /** The country whose flag the player points at, if any. */
   async flagNamed(): Promise<string | undefined> {
-    return this.#page.evaluate(() => window.whereaboutsVr.flagNamed)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.flagNamed)
   }
 
   /** The country whose border is picked out on the globe, and in how many line segments. */
   async flagOutlined(): Promise<{ name: string; segments: number } | undefined> {
-    return this.#page.evaluate(() => window.whereaboutsVr.flagOutlined)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.flagOutlined)
   }
 
   /** The flag nearest the eyes with a border to outline, and where its middle is. */
   async flagFacing(): Promise<{ name: string; at: Vec } | undefined> {
-    return this.#page.evaluate(() => window.whereaboutsVr.flagFacing)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.flagFacing)
   }
 
   /** How much paint the round has: every cell's intensity, summed. */
   async paintMass(): Promise<number> {
-    return this.#page.evaluate(() => window.whereaboutsVr.paintMass)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.paintMass)
   }
 
   /** Whether the controllers themselves show, rather than the can and eraser. */
   async controllersShown(): Promise<boolean> {
-    return this.#page.evaluate(() => window.whereaboutsVr.controllersShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.controllersShown)
   }
 
   /** Whether a pointing ray shows from either hand. */
   async beamsShown(): Promise<boolean> {
-    return this.#page.evaluate(() => window.whereaboutsVr.beamsShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.beamsShown)
   }
 
   /** The moon's distance from the globe and its radius, in globe radii, if it shows. */
   async moon(): Promise<{ distance: number; radius: number } | undefined> {
-    return this.#page.evaluate(() => window.whereaboutsVr.moonShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.moonShown)
   }
 
   /** How many times its smallest size the globe is. */
   async globeScale(): Promise<number> {
-    return this.#page.evaluate(() => window.whereaboutsVr.globeScale)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.globeScale)
   }
 
   /** Whether either hand holds its can or eraser. */
   async toolsHeld(): Promise<boolean> {
-    return this.#page.evaluate(() => window.whereaboutsVr.toolsHeld)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.toolsHeld)
   }
 
   /** Whether space shows round the player, and whether the room should instead. */
   async surroundings(): Promise<{ space: boolean; passthrough: boolean }> {
     return this.#page.evaluate(() => ({
-      space: window.whereaboutsVr.spaceShown,
-      passthrough: window.whereaboutsVr.passthrough
+      space: window.whereaboutsVr.probe.spaceShown,
+      passthrough: window.whereaboutsVr.probe.passthrough
     }))
   }
 
   /** The awards and rounds board at the end of a game, if it shows. */
   async board(): Promise<{ awards: { title: string }[]; rounds: { label: string }[] } | undefined> {
-    return this.#page.evaluate(() => window.whereaboutsVr.boardShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.boardShown)
   }
 
   /** The score table beside the globe, if it shows. */
   async scoreTable(): Promise<
     { title: string; rows: { name: string; detail?: string; total: string; selected?: boolean }[] } | undefined
   > {
-    return this.#page.evaluate(() => window.whereaboutsVr.tableShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.tableShown)
   }
 
   /** The question's picture over the VR menu, width by height in metres. */
   async picture(): Promise<[number, number] | undefined> {
-    return this.#page.evaluate(() => window.whereaboutsVr.pictureShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.pictureShown)
   }
 
   /** The place the picture's postcard back names at the reveal. */
   async postcard(): Promise<string | undefined> {
-    return this.#page.evaluate(() => window.whereaboutsVr.picturePostcard)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.picturePostcard)
   }
 
   /** The line of interest on the headset's reveal. */
   async fact(): Promise<string | undefined> {
-    return this.#page.evaluate(() => window.whereaboutsVr.factShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.factShown)
   }
 
   /** What the headset shows: a round to paint, its answer, or the final score. */
   async view(): Promise<string | undefined> {
-    return this.#page.evaluate(() => window.whereaboutsVr.viewKind)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.viewKind)
   }
 
   /** Whether a hand holds the question's picture, where it is, and which way its face points. */
   async pictureHeld(): Promise<{ held: boolean; at: Vec; facing: Vec; back: "reverse" | "postcard" | undefined }> {
-    return this.#page.evaluate(() => window.whereaboutsVr.pictureHeld)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.pictureHeld)
   }
 
   async eyes(): Promise<Vec> {
@@ -309,7 +309,7 @@ export class Headset {
         const state = await this.#page.evaluate(() => ({
           frames: window.whereaboutsVr.frames,
           active: window.whereaboutsVr.active.value,
-          view: window.whereaboutsVr.viewKind,
+          view: window.whereaboutsVr.probe.viewKind,
           visibility: document.visibilityState
         }))
         throw new Error(`No frames drawn: ${JSON.stringify({ start, ...state })}`, { cause: err })
@@ -334,7 +334,7 @@ export class Headset {
 
   /** What each hand holds: paint, erase or fill. */
   async toolInHand(): Promise<Record<Hand, string>> {
-    return this.#page.evaluate(() => window.whereaboutsVr.toolInHand)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.toolInHand)
   }
 
   async rightTrigger(value: number): Promise<void> {
@@ -356,32 +356,32 @@ export class Headset {
   }
 
   async wristOpen(): Promise<boolean> {
-    return this.#page.evaluate(() => window.whereaboutsVr.wristOpen)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.wristOpen)
   }
 
   /** Where a button on the wrist menu is. */
   async wristButton(id: WristButton): Promise<Vec> {
-    return this.#page.evaluate((id) => window.whereaboutsVr.wristButtonAt(id), id)
+    return this.#page.evaluate((id) => window.whereaboutsVr.probe.wristButtonAt(id), id)
   }
 
   /** Whether the globe shades a hint's band. */
   async hintShown(): Promise<boolean> {
-    return this.#page.evaluate(() => window.whereaboutsVr.hintShown)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.hintShown)
   }
 
   /** Where a hand's tool would land on the globe, if it points at it. */
   async target(hand: Hand): Promise<Vec | undefined> {
-    return this.#page.evaluate((h) => window.whereaboutsVr.targetOf(h), hand)
+    return this.#page.evaluate((h) => window.whereaboutsVr.probe.targetOf(h), hand)
   }
 
   /** Where a button on the VR menu is. */
   async menuButton(id: string): Promise<Vec> {
-    return this.#settled(() => this.#page.evaluate((id) => window.whereaboutsVr.menuButtonAt(id), id))
+    return this.#settled(() => this.#page.evaluate((id) => window.whereaboutsVr.probe.menuButtonAt(id), id))
   }
 
   /** Where a row of the score table is: Everyone, the players, then Hide paint on the reveal. */
   async scoreRow(i: number): Promise<Vec> {
-    return this.#settled(() => this.#page.evaluate((i) => window.whereaboutsVr.scoreRowAt(i), i))
+    return this.#settled(() => this.#page.evaluate((i) => window.whereaboutsVr.probe.scoreRowAt(i), i))
   }
 
   /**
@@ -395,7 +395,7 @@ export class Headset {
       const at = await where()
       const { frame, turning } = await this.#page.evaluate(() => ({
         frame: window.whereaboutsVr.frames,
-        turning: window.whereaboutsVr.globeTurning
+        turning: window.whereaboutsVr.probe.globeTurning
       }))
       return { at, frame, turning }
     }
