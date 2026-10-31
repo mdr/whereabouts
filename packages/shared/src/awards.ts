@@ -212,10 +212,12 @@ function soloAwards(players: PlayerFacts[]): Candidate[] {
   })
   if (slow) add(BOOBY, "⏰", "Last-Second Merchant", slow.item.playerId, `{0} made everyone wait. ${slow.value} times.`)
 
-  const areas = players.map((p) => painted(p).reduce((s, r) => s + r.area, 0))
+  const areaOf = (p: (typeof players)[number]) => painted(p).reduce((s, r) => s + r.area, 0)
   const picasso = top(players, (p) => {
-    const a = painted(p).reduce((s, r) => s + r.area, 0)
-    return a > 0 && a >= 2 * median(areas) ? a : undefined
+    const a = areaOf(p)
+    // Against the others alone: counting your own paint, two players could never earn it.
+    const sensible = median(players.filter((o) => o !== p).map(areaOf))
+    return sensible > 0 && a >= 2 * sensible ? a : undefined
   })
   if (picasso) add(BOOBY, "🎨", "Picasso", picasso.item.playerId, "{0} used twice the paint of anyone sensible.")
 

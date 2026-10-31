@@ -151,11 +151,29 @@ describe("each award", () => {
     expect(titles([player("a", locked(25)), player("b", locked(30))])).not.toContain("Fastest Finger")
   })
 
-  it("Picasso: twice the paint of the middle player", () => {
+  describe("Picasso: twice the paint of the others' middle player", () => {
     const painting = (area: number) => [round(500, { area }), round(500, { area })]
-    const others = [player("b", painting(10_000)), player("c", painting(10_000))]
-    expect(winners("Picasso", [player("a", painting(20_000)), ...others])).toEqual([idOf("a")])
-    expect(titles([player("a", painting(19_000)), ...others])).not.toContain("Picasso")
+
+    it("among three", () => {
+      const others = [player("b", painting(10_000)), player("c", painting(10_000))]
+      expect(winners("Picasso", [player("a", painting(20_000)), ...others])).toEqual([idOf("a")])
+      expect(titles([player("a", painting(19_000)), ...others])).not.toContain("Picasso")
+    })
+
+    it("between two", () => {
+      expect(winners("Picasso", [player("a", painting(20_000)), player("b", painting(10_000))])).toEqual([idOf("a")])
+      expect(titles([player("a", painting(19_000)), player("b", painting(10_000))])).not.toContain("Picasso")
+    })
+
+    it("never alone, or against no paint", () => {
+      expect(titles([player("a", painting(20_000))])).not.toContain("Picasso")
+      expect(
+        titles([
+          player("a", painting(20_000)),
+          player("b", [round(250, { passed: true }), round(250, { passed: true })])
+        ])
+      ).not.toContain("Picasso")
+    })
   })
 
   it("One Careful Dab: the smallest paint, over three rounds or more", () => {
