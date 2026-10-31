@@ -29,7 +29,6 @@ const LatLonSchema = z.strictObject({ lat: DegreesSchema, lon: DegreesSchema })
 
 const QuestionViewSchema = z.strictObject({
   type: z.enum(QuestionType),
-  prompt: z.string(),
   clue: z.discriminatedUnion("type", [
     z.strictObject({ type: z.literal(ClueType.PHOTO), image: CommonsFileSchema }),
     z.strictObject({ type: z.literal(ClueType.NAME), prompt: z.string() }),

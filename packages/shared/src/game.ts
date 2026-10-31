@@ -12,7 +12,6 @@ import {
   QuestionType,
   answerCentre,
   flagShown,
-  promptOf,
   shuffle,
   type Outlines,
   type Question
@@ -876,7 +875,6 @@ export function questionView(q: Question): QuestionView {
   const { answer } = q
   return {
     type: q.type,
-    prompt: promptOf(q),
     clue: q.clue,
     answer:
       answer.type === AnswerType.AREA

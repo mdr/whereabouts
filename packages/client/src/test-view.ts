@@ -28,7 +28,6 @@ export function makeView({ you, ...over }: ViewOverrides = {}): GameView {
 export function makeQuestionView(over: Partial<QuestionView> = {}): QuestionView {
   return {
     type: QuestionType.PLACE,
-    prompt: "Where is Kyoto?",
     clue: { type: ClueType.NAME, prompt: "Where is Kyoto?" },
     answer: { type: AnswerType.POINT, tolerance: 50 },
     ...over

@@ -17,21 +17,23 @@ vi.mock("../flags", async (original) => ({
 
 const q = makeQuestionView({
   type: QuestionType.LANDMARK,
-  prompt: "Where is this?",
   clue: { type: ClueType.PHOTO, image: commonsFile("Some_file.jpg") }
 })
 
 const flagRoundOf = (code: string) =>
   makeQuestionView({
     type: QuestionType.FLAG,
-    prompt: "Paint the whole of the country with this flag",
-    clue: { type: ClueType.FLAG, flag: flagCode(code) }
+    clue: { type: ClueType.FLAG, flag: flagCode(code) },
+    answer: areaAnswerView(`${code}-region`, 65)
   })
 
 describe("QuestionCard", () => {
   it("shows the prompt but not the tolerance, which only drives scoring", () => {
     const { container } = render(
-      <QuestionCard hud={CardPlace.PAINTING} q={makeQuestionView({ prompt: "Where is Dublin?" })} />
+      <QuestionCard
+        hud={CardPlace.PAINTING}
+        q={makeQuestionView({ clue: { type: ClueType.NAME, prompt: "Where is Dublin?" } })}
+      />
     )
     expect(container.textContent).toBe("Where is Dublin?")
   })
@@ -42,7 +44,7 @@ describe("QuestionCard", () => {
         hud={CardPlace.PAINTING}
         q={makeQuestionView({
           type: QuestionType.COUNTRY,
-          prompt: "Paint the whole of Germany",
+          clue: { type: ClueType.NAME, prompt: "Paint the whole of Germany" },
           answer: areaAnswerView("germany-region", 65),
           countryFlag: flagCode("de")
         })}

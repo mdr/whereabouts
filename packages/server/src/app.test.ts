@@ -78,7 +78,7 @@ const bank = {
 const config = { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundLength: 60_000 }
 
 /** The place question a round asked. */
-const askedIn = (round: GameView) => questions.find((q) => promptOf(q) === round.round!.question.prompt)!
+const askedIn = (round: GameView) => questions.find((q) => promptOf(q) === promptOf(round.round!.question))!
 
 /** Real timers, but time can be jumped forward so deadlines fire immediately. */
 class FakeClock implements Clock {
@@ -334,7 +334,7 @@ describe("game server", () => {
     const round = await bob.until((v) => v.phase === Phase.GUESSING)
     const shown = round.round!.question.answer
     expect(shown.type).toBe(AnswerType.AREA)
-    expect(round.round!.question.prompt).toMatch(/^Paint the whole of /)
+    expect(promptOf(round.round!.question)).toMatch(/^Paint the whole of /)
     const country = CATALOGUE.find(
       (q) => q.type === QuestionType.COUNTRY && shown.type === AnswerType.AREA && q.answer.outline === shown.outline
     )!

@@ -1,5 +1,5 @@
 /** The parts of the headset's round and reveal that practice and a game share. */
-import { QuestionType, clueFlag, clueImage } from "@whereabouts/shared/questions"
+import { QuestionType, clueFlag, clueImage, promptOf } from "@whereabouts/shared/questions"
 import { onWater, outlineOf, type QuestionView } from "@whereabouts/shared/protocol"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { FlagCode } from "@whereabouts/shared/ids"
@@ -40,7 +40,7 @@ export function vrRound(
 ): VrRound {
   return {
     ...own,
-    prompt: question.prompt,
+    prompt: promptOf(question),
     mode: answerModeText(question),
     picture: vrPicture(
       clueImage(question.clue) ?? revealed?.photo,

@@ -1,6 +1,6 @@
 import type { ComponentChildren, RefObject } from "preact"
 import { useLayoutEffect, useState } from "preact/hooks"
-import { clueFlag, clueImage, commonsImageUrl, wikipediaUrl } from "@whereabouts/shared/questions"
+import { clueFlag, clueImage, commonsImageUrl, promptOf, wikipediaUrl } from "@whereabouts/shared/questions"
 import type { Fact } from "@whereabouts/shared/facts"
 import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
 import type { QuestionView } from "@whereabouts/shared/protocol"
@@ -79,7 +79,8 @@ export function QuestionCard({
 }) {
   const image = clueImage(question.clue) ?? photo
   const ref = useElementRef<HTMLDivElement>()
-  const asked = `${question.prompt} ${clueImage(question.clue) ?? ""} ${clueFlag(question.clue) ?? ""}`
+  const prompt = promptOf(question)
+  const asked = `${prompt}${clueImage(question.clue) ?? ""} ${clueFlag(question.clue) ?? ""}`
   const [toggledQuestion, setToggledQuestion] = useState<string | undefined>(undefined)
   // A country round names the country, so its flag can show too.
   const flag = clueFlag(question.clue) ?? question.countryFlag
@@ -108,7 +109,7 @@ export function QuestionCard({
         </button>
       )}
       <p class={q.prompt} data-testid={questionCardTestIds.prompt}>
-        {question.prompt}
+        {prompt}
       </p>
       {image && <QuestionImage image={image} credit={credit ?? false} />}
       {flag && <FlagImage code={flag} />}

@@ -57,7 +57,6 @@ describe("SmallPhoto", () => {
     const image = commonsFile("Some_file.jpg")
     const q = makeQuestionView({
       type: QuestionType.LANDMARK,
-      prompt: "Where is this?",
       clue: { type: ClueType.PHOTO, image }
     })
     const { container } = render(<SmallPhoto image={image} />)

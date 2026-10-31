@@ -228,7 +228,6 @@ export const outlineOf = (answer: AnswerView): OutlineId | undefined =>
 
 export interface QuestionView {
   type: QuestionType
-  prompt: string
   clue: Clue
   answer: AnswerView
   feature?: FeatureType

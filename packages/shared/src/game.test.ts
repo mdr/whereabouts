@@ -9,6 +9,7 @@ import {
   FLAG_POINT_PROMPT,
   FeatureType,
   QuestionType,
+  promptOf,
   type LandmarkQuestion,
   type PlaceQuestion,
   type Question
@@ -118,7 +119,7 @@ function twoPlayerGame(rounds = 2) {
 
 /** The question currently being asked, read back through a view. */
 function currentQuestion(g: Game, token: PlayerToken, now: number): PlaceQuestion {
-  const prompt = g.view(token, now).round!.question.prompt
+  const prompt = promptOf(g.view(token, now).round!.question)
   return pool.find((q) => q.clue.prompt === prompt)!
 }
 
@@ -410,7 +411,7 @@ describe("round loop", () => {
     const seen = new Set<string>()
     let now = T0
     for (let i = 0; i < 3; i++) {
-      seen.add(g.view(tokA, now).round!.question.prompt)
+      seen.add(promptOf(g.view(tokA, now).round!.question))
       now += 60_000 + ROUND_GRACE
       g.tick(now)
       g.next(tokA, now)
@@ -965,7 +966,7 @@ describe("the question mix", () => {
   it("asks only the types the mix asks for, each question once", () => {
     const seen = questions(game({ mix: mixOf({ [QuestionType.PLACE]: 3 }) }))
     expect(seen.map((q) => q.type)).toEqual([QuestionType.PLACE, QuestionType.PLACE, QuestionType.PLACE])
-    expect(new Set(seen.map((q) => q.prompt)).size).toBe(3)
+    expect(new Set(seen.map(promptOf)).size).toBe(3)
   })
 
   it("asks as many of each type as the mix says, never a country twice", () => {
@@ -974,7 +975,7 @@ describe("the question mix", () => {
     const countries = seen.filter((q) => q.type === QuestionType.COUNTRY)
     expect(seen.filter((q) => q.type === QuestionType.FLAG)).toHaveLength(5)
     expect(countries).toHaveLength(4)
-    expect(countries.every((q) => q.prompt.startsWith("Paint the whole of"))).toBe(true)
+    expect(countries.every((q) => promptOf(q).startsWith("Paint the whole of"))).toBe(true)
     expect(seen).toHaveLength(12)
     const outlines = seen.flatMap((q) => outlineOf(q) ?? [])
     expect(new Set(outlines).size).toBe(outlines.length)
@@ -989,7 +990,7 @@ describe("the question mix", () => {
     expect(seen).toHaveLength(13)
     expect(seen.filter((q) => q.type === QuestionType.STATE)).toHaveLength(7)
     expect(seen.filter((q) => q.type === QuestionType.FEATURE && q.feature !== undefined)).toHaveLength(6)
-    expect(new Set(seen.map((q) => q.prompt)).size).toBe(13)
+    expect(new Set(seen.map(promptOf)).size).toBe(13)
   })
 
   it("sends every player and spectator views that match GameViewSchema, through every type of round", () => {
@@ -1038,11 +1039,8 @@ describe("the question mix", () => {
     const g = game({ mix: mixOf({ [QuestionType.FEATURE]: 1 }) }, { catalogue: [borneo] })
     g.start(tokA, T0)
     const q = g.view(tokA, T0).round!.question
-    expect(q).toMatchObject({
-      prompt: "Paint the whole of Borneo",
-      answer: { outline: "island-borneo" },
-      feature: FeatureType.ISLAND
-    })
+    expect(promptOf(q)).toBe("Paint the whole of Borneo")
+    expect(q).toMatchObject({ answer: { outline: "island-borneo" }, feature: FeatureType.ISLAND })
     const res = resolutionForTolerance(q.answer.tolerance)
     const cells = Object.fromEntries(regionCells(areaOf(borneo), res).map((h) => [h, 1]))
     expect(g.setPaint(tokA, { cells, floor: 0.05 }).ok).toBe(true)
@@ -1058,7 +1056,7 @@ describe("the question mix", () => {
       config: { mix: mixOf({ [QuestionType.PLACE]: 1, [QuestionType.FLAG]: 1 }) }
     })
     g.join(tokA, playerName("Alice"), T0)
-    expect(questions(g).map((q) => q.prompt)).toEqual(["Where is Monaco?"])
+    expect(questions(g).map(promptOf)).toEqual(["Where is Monaco?"])
   })
 
   it("keeps a place's country out of the same game when another country will do", () => {
@@ -1070,7 +1068,7 @@ describe("the question mix", () => {
         seed
       })
       g.join(tokA, playerName("Alice"), T0)
-      expect(questions(g).map((q) => q.prompt)).toContain("Paint the whole of Germany")
+      expect(questions(g).map(promptOf)).toContain("Paint the whole of Germany")
     }
   })
 
@@ -1104,8 +1102,8 @@ describe("the question mix", () => {
     for (const [i, q] of seen.entries()) {
       const f = CATALOGUE.find((x) => x.type === QuestionType.FLAG && x.clue.flag === flags[i])!
       expect(q.answer.type).toBe(f.answer.type)
-      expect(q.prompt).not.toContain(f.label)
-      if (f.answer.type === AnswerType.POINT) expect(q.prompt).toBe(FLAG_POINT_PROMPT)
+      expect(promptOf(q)).not.toContain(f.label)
+      if (f.answer.type === AnswerType.POINT) expect(promptOf(q)).toBe(FLAG_POINT_PROMPT)
     }
   })
 
@@ -1116,10 +1114,10 @@ describe("the question mix", () => {
     const q = g.view(tokA, T0).round!.question
     expect(q).toEqual({
       type: QuestionType.FLAG,
-      prompt: FLAG_POINT_PROMPT,
       clue: { type: ClueType.FLAG, flag: "mc" },
       answer: { type: AnswerType.POINT, tolerance: 15 }
     })
+    expect(promptOf(q)).toBe(FLAG_POINT_PROMPT)
     if (monaco.answer.type !== AnswerType.POINT) throw new Error("Monaco is asked as a point")
     const { at } = monaco.answer
     const cell = latLngToCell(at.lat, at.lon, resolutionForTolerance(q.answer.tolerance))
