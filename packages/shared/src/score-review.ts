@@ -8,6 +8,7 @@
  * judge on its own; some are two at the same answer, to say which deserves
  * more. Seeded by the set number, so everyone reviewing a set sees the same.
  */
+import { z } from "zod"
 import { EARTH_RADIUS, greatCircleDistance, type LatLon } from "./geo.ts"
 import { UNITS, cellArea, cellToLatLng } from "./h3.ts"
 import { seededUnit } from "./hints.ts"
@@ -341,3 +342,25 @@ export type ScoreVerdict =
       prefer: -2 | -1 | 0 | 1 | 2
       cases: [string, string]
     })
+
+const Scale = z.union([z.literal(-2), z.literal(-1), z.literal(0), z.literal(1), z.literal(2)])
+// Verdicts given before the guesses were an enum name them in lower case.
+const Guess = z.preprocess((v) => (typeof v === "string" ? v.toUpperCase().replaceAll("-", "_") : v), z.enum(GuessType))
+const verdictBase = {
+  version: z.number().optional(),
+  set: z.number(),
+  index: z.number(),
+  note: z.string().optional(),
+  at: z.string()
+}
+
+export const ScoreVerdictSchema: z.ZodType<ScoreVerdict> = z.union([
+  z.object({ ...verdictBase, guess: Guess, verdict: Scale, shouldBe: z.number().optional(), case: z.string() }),
+  z.object({
+    ...verdictBase,
+    pair: z.literal(true),
+    guesses: z.tuple([Guess, Guess]),
+    prefer: Scale,
+    cases: z.tuple([z.string(), z.string()])
+  })
+])

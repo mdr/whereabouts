@@ -12,7 +12,7 @@ import {
   type PlayerName,
   type PlayerToken
 } from "@whereabouts/shared/ids"
-import type { ScoreVerdict } from "@whereabouts/shared/score-review"
+import { ScoreVerdictSchema } from "@whereabouts/shared/score-review"
 
 /** A stored value that fails `schema`, such as one an older version wrote, starts from the initial value. */
 function persisted<S extends z.ZodType>(key: string, schema: S, initial: z.output<S>, storage: Storage = localStorage) {
@@ -38,16 +38,17 @@ function persisted<S extends z.ZodType>(key: string, schema: S, initial: z.outpu
 const oldEnumValue = <S extends z.ZodType>(schema: S) =>
   z.preprocess((v) => (typeof v === "string" ? v.toUpperCase().replaceAll("-", "_") : v), schema)
 
-/** Like persisted, for a JSON value; anything unreadable starts from the initial value. */
-function persistedJson<T>(key: string, initial: T) {
+/** Like persisted, for a JSON value; anything unreadable or failing `schema` starts from the initial value. */
+function persistedJson<S extends z.ZodType>(key: string, schema: S, initial: z.output<S>) {
   let start = initial
   try {
     const raw = localStorage.getItem(key) ?? undefined
-    if (raw !== undefined) start = JSON.parse(raw) as T
+    const parsed = raw === undefined ? undefined : schema.safeParse(JSON.parse(raw))
+    if (parsed?.success) start = parsed.data
   } catch {
     /* storage unavailable, or not JSON */
   }
-  const s = signal<T>(start)
+  const s = signal(start)
   effect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(s.value))
@@ -72,12 +73,12 @@ try {
 } catch {
   /* storage unavailable */
 }
-/** The types of question practice asks, stored comma-separated. */
+/** The types of question practice asks, stored comma-separated; a type no longer offered is dropped. */
 export const soloTypes = persisted(
   "wa.practiceTypes",
   z
     .string()
-    .transform((s) => s.split(","))
+    .transform((s) => s.split(",").filter((t) => z.enum(QuestionType).safeParse(t).success))
     .pipe(z.array(z.enum(QuestionType)).min(1)),
   oldPracticeTypes() ?? [QuestionType.LANDMARK, QuestionType.PLACE]
 )
@@ -115,10 +116,20 @@ export const soundOn = persisted("wa.sound", z.stringbool(), true)
  * The setup this browser last chose as host (see host-setup.ts). Stored as
  * read, so each value is checked before it is used.
  */
-export const hostSetup = persistedJson<unknown>("wa.hostSetup", {})
+export const hostSetup = persistedJson("wa.hostSetup", z.unknown(), {})
 /** The score review's set of guesses (see score-review.ts), and the verdicts given on this browser. */
-export const reviewSet = persistedJson<number>("wa.reviewSet", 1)
-export const scoreVerdicts = persistedJson<ScoreVerdict[]>("wa.scoreVerdicts", [])
+export const reviewSet = persistedJson("wa.reviewSet", z.number().int().min(1), 1)
+/** One unreadable verdict is dropped rather than losing the rest. */
+export const scoreVerdicts = persistedJson(
+  "wa.scoreVerdicts",
+  z.array(z.unknown()).transform((all) =>
+    all.flatMap((v) => {
+      const parsed = ScoreVerdictSchema.safeParse(v)
+      return parsed.success ? [parsed.data] : []
+    })
+  ),
+  []
+)
 
 /**
  * Reconnect token. Session storage so two tabs in one browser are two
