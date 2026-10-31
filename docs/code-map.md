@@ -42,7 +42,10 @@ No I/O; the same code runs in the browser and on the server.
 | `src/screens/`                         | One component per screen: Home, Lobby, InGame, Reveal, Results, Solo (practice), ScoreReview |
 | `src/ui/`                              | Shared components; each with a `*TestIds.ts` the browser page objects use                    |
 | `src/round.ts`, `src/vr-round.ts`      | Pure round logic for the page and for VR, tested apart from the components                   |
+| `src/reveal.ts`                        | A game's reveal: whose paint shows, the order of the scores list, the answer to show         |
 | `src/practice-run.ts`                  | Practice's run: shuffled pool, scoring each round, reveal and next                           |
+| `src/outlines.ts`, `src/borders.ts`    | Lazily loaded outlines and borders; components reach them through `useOutlines`/`useBorders` |
+| `src/sound.ts`, `src/ui/round-cue.ts`  | The sound engine and recordings; which cue a change of game view calls for                   |
 | `src/paint-commands.ts`                | Clear, Trim and Trim to hint, shared by the page's paint tools and the VR wrist menu         |
 | `src/shown-detail.ts`                  | What each map detail level shows, for the page map and the VR globe                          |
 | `src/question-types.ts`                | Each question type's label, units and colour                                                 |

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "preact/hooks"
 import type { GameView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../net"
-import { RoundCue, roundCue, sound, type RoundState } from "../sound"
+import { Chime, sound } from "../sound"
+import { RoundCue, roundCue, type RoundState } from "./round-cue"
 import { Phase } from "@whereabouts/shared/protocol"
 
 /**
@@ -23,10 +24,10 @@ export function useGameSounds(conn: Connection, view: GameView | undefined): voi
     const next = { phase, round }
     const timeLeft = lastDeadline.current === undefined ? 0 : conn.timeUntil(lastDeadline.current)
     const cue = roundCue(prev.current, next, timeLeft)
-    if (cue === RoundCue.ROUND_START) sound.cue(RoundCue.ROUND_START)
+    if (cue === RoundCue.ROUND_START) sound.chime(Chime.RISING)
     if (cue === RoundCue.FINISHED_EARLY) {
       sound.stopCountdown()
-      sound.cue(RoundCue.FINISHED_EARLY)
+      sound.chime(Chime.FALLING)
     }
     if (cue === RoundCue.RESULTS) {
       sound.stopCountdown()

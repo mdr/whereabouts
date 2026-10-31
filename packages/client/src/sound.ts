@@ -30,7 +30,6 @@ import chickenUrl from "./assets/sounds/chicken.mp3"
 import clearUrl from "./assets/sounds/clear.mp3"
 import applauseUrl from "./assets/sounds/applause.mp3"
 import { soundOn } from "./settings"
-import { Phase } from "@whereabouts/shared/protocol"
 import type { Ms, Seconds } from "@whereabouts/shared/units"
 
 type Slices = readonly (readonly [number, number])[]
@@ -113,38 +112,10 @@ export function countdownPlan(timeLeft: Ms): { delay: Ms; offset: Seconds } | un
   return { delay: 0, offset: (lead - timeLeft) / 1000 }
 }
 
-export interface RoundState {
-  phase: Phase
-  /** Index of the round being played or revealed, if any. */
-  round: number | undefined
-}
-
-export enum RoundCue {
-  ROUND_START = "ROUND_START",
-  FINISHED_EARLY = "FINISHED_EARLY",
-  RESULTS = "RESULTS"
-}
-
-/** More than this left when a round ends counts as finishing early rather than on time. */
-const EARLY: Ms = 750
-
-/**
- * The cue a change of game state calls for. A round starting (from the lobby
- * or the reveal) gets the rising pair. A round ending with time still on the
- * clock means everyone finished early: the falling pair, and the countdown
- * stops before its alarm; ending on time lets the alarm play out. Reaching
- * the final results gets applause (and stops a countdown, if the host ended
- * the game mid-round). `prev` is undefined on the first view after loading, which
- * never cues anything: a refresh should not announce what is already there.
- */
-export function roundCue(prev: RoundState | undefined, next: RoundState, timeLeftAtChange: Ms): RoundCue | undefined {
-  if (!prev) return undefined
-  if (next.phase === Phase.GUESSING && (prev.phase !== Phase.GUESSING || prev.round !== next.round))
-    return RoundCue.ROUND_START
-  if (prev.phase === Phase.GUESSING && next.phase === Phase.REVEAL)
-    return timeLeftAtChange > EARLY ? RoundCue.FINISHED_EARLY : undefined
-  if (next.phase === Phase.RESULTS && prev.phase !== Phase.RESULTS) return RoundCue.RESULTS
-  return undefined
+/** The marimba pair: rising for a round starting, falling for finishing early. */
+export enum Chime {
+  RISING = "RISING",
+  FALLING = "FALLING"
 }
 
 interface Voice {
@@ -332,12 +303,12 @@ class SoundEngine {
     src.start(ctx.currentTime + 0.01)
   }
 
-  /** Two soft marimba notes a fifth apart: rising for a round starting, falling for finishing early. */
-  cue(kind: RoundCue.ROUND_START | RoundCue.FINISHED_EARLY): void {
+  /** Two soft marimba notes a fifth apart. */
+  chime(kind: Chime): void {
     const ctx = this.ready()
     if (!ctx) return
     const low = 659
-    const notes = kind === RoundCue.ROUND_START ? [low, low * 1.5] : [low * 1.5, low]
+    const notes = kind === Chime.RISING ? [low, low * 1.5] : [low * 1.5, low]
     const t = ctx.currentTime + 0.01
     notes.forEach((f, i) => this.mallet(f, t + i * 0.14))
   }
