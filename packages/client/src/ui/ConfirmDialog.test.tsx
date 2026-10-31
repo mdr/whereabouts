@@ -10,30 +10,38 @@ describe("ConfirmDialog", () => {
     expect(screen.queryAllByTestId(confirmDialogTestIds.dialog)).toHaveLength(0)
   })
 
-  it("confirms only on the confirm button; cancel, backdrop and Escape just close", () => {
-    let confirmed = 0
-    let closed = 0
-    const request = kickRequest("Bob", () => confirmed++)
-    render(<ConfirmDialog request={request} onClose={() => closed++} />)
+  function renderKick() {
+    const calls = { confirmed: 0, closed: 0 }
+    render(<ConfirmDialog request={kickRequest("Bob", () => calls.confirmed++)} onClose={() => calls.closed++} />)
+    return calls
+  }
+
+  it("shows the request's title and message", () => {
+    renderKick()
     expect(document.body.querySelector("h2")!.textContent).toBe("Remove Bob from the game?")
     expect(document.body.textContent).toContain("rejoin with the code")
+  })
 
-    fireEvent.click(document.body.querySelector("button:not(.danger)")!)
-    expect(closed).toBe(1)
-    expect(confirmed).toBe(0)
-
-    fireEvent.click(screen.getByTestId(confirmDialogTestIds.backdrop))
-    expect(closed).toBe(2)
-    fireEvent.click(screen.getByTestId(confirmDialogTestIds.dialog)) // inside: no close
-    expect(closed).toBe(2)
-
-    fireEvent.keyDown(window, { key: "Escape" })
-    expect(closed).toBe(3)
-    expect(confirmed).toBe(0)
-
+  it("confirms, and closes, on the confirm button", () => {
+    const calls = renderKick()
     fireEvent.click(document.body.querySelector("button.danger")!)
-    expect(confirmed).toBe(1)
-    expect(closed).toBe(4)
+    expect(calls).toEqual({ confirmed: 1, closed: 1 })
+  })
+
+  it.each([
+    ["the cancel button", () => fireEvent.click(document.body.querySelector("button:not(.danger)")!)],
+    ["the backdrop", () => fireEvent.click(screen.getByTestId(confirmDialogTestIds.backdrop))],
+    ["Escape", () => fireEvent.keyDown(window, { key: "Escape" })]
+  ])("closes without confirming on %s", (_, dismiss) => {
+    const calls = renderKick()
+    dismiss()
+    expect(calls).toEqual({ confirmed: 0, closed: 1 })
+  })
+
+  it("stays open when the dialog itself is clicked", () => {
+    const calls = renderKick()
+    fireEvent.click(screen.getByTestId(confirmDialogTestIds.dialog))
+    expect(calls).toEqual({ confirmed: 0, closed: 0 })
   })
 
   it("renders into <body>, so a transformed parent such as the toolbar cannot trap it", () => {

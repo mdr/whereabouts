@@ -222,29 +222,48 @@ describe("lobby", () => {
 })
 
 describe("round loop", () => {
-  it("scores at the deadline, exact hit beats blank, blank scores as a pass", () => {
-    const g = twoPlayerGame(1)
-    g.start(tokA, T0)
-    const q = currentQuestion(g, tokA, T0)
-    expect(g.view(tokA, T0).round!.deadline).toBe(T0 + 60_000)
+  describe("at the deadline", () => {
+    function revealedAfterDeadline() {
+      const g = twoPlayerGame(1)
+      g.start(tokA, T0)
+      const q = currentQuestion(g, tokA, T0)
+      // Alice paints on the answer; Bob paints nothing.
+      expect(g.setPaint(tokA, paintOn(q))).toEqual({ ok: true, changed: false })
+      g.tick(T0 + 60_000 + ROUND_GRACE)
+      return { g, q, reveal: g.view(tokB, T0 + 60_000).reveal! }
+    }
 
-    expect(g.setPaint(tokA, paintOn(q))).toEqual({ ok: true, changed: false })
-    // Bob paints nothing.
-    expect(g.tick(T0 + 60_000 + ROUND_GRACE - 1)).toBe(false)
-    expect(g.tick(T0 + 60_000 + ROUND_GRACE)).toBe(true)
-    expect(g.phase).toBe(Phase.REVEAL)
+    it("the round runs for its length, then a grace, and then goes to the reveal", () => {
+      const g = twoPlayerGame(1)
+      g.start(tokA, T0)
+      expect(g.view(tokA, T0).round!.deadline).toBe(T0 + 60_000)
+      expect(g.tick(T0 + 60_000 + ROUND_GRACE - 1)).toBe(false)
+      expect(g.tick(T0 + 60_000 + ROUND_GRACE)).toBe(true)
+      expect(g.phase).toBe(Phase.REVEAL)
+      expect(g.nextWakeAt()).toBeUndefined()
+    })
 
-    const reveal = g.view(tokB, T0 + 60_000).reveal!
-    expect(reveal.label).toBe(q.label)
-    expect(reveal.wiki).toBe(q.wiki)
-    expect(reveal.results).toHaveLength(2)
-    const [first, second] = reveal.results
-    expect(first!.playerId).toBe("p1")
-    expect(first!.score).toBeGreaterThan(900)
-    expect(second!.paint).toBeUndefined()
-    expect(second!.score).toBe(PASS_SCORE.score)
-    expect(reveal.ready).toEqual([])
-    expect(g.nextWakeAt()).toBeUndefined()
+    it("an exact hit scores high and is listed first", () => {
+      const { reveal } = revealedAfterDeadline()
+      const [first] = reveal.results
+      expect(first!.playerId).toBe("p1")
+      expect(first!.score).toBeGreaterThan(900)
+    })
+
+    it("a blank guess scores as a pass", () => {
+      const { reveal } = revealedAfterDeadline()
+      const second = reveal.results[1]
+      expect(second!.paint).toBeUndefined()
+      expect(second!.score).toBe(PASS_SCORE.score)
+    })
+
+    it("the reveal names the answer and lists every player, none yet ready", () => {
+      const { q, reveal } = revealedAfterDeadline()
+      expect(reveal.label).toBe(q.label)
+      expect(reveal.wiki).toBe(q.wiki)
+      expect(reveal.results).toHaveLength(2)
+      expect(reveal.ready).toEqual([])
+    })
   })
 
   it("paint is private during guessing and visible after the reveal", () => {
@@ -335,52 +354,93 @@ describe("round loop", () => {
     expect(g.playerTokens).toContain(tokB)
   })
 
-  it("the reveal advances when everyone is ready, or when the host says so; ends in results", () => {
-    const g = twoPlayerGame(2)
-    g.start(tokA, T0)
-    g.tick(T0 + 60_000 + ROUND_GRACE)
-    expect(g.nextWakeAt()).toBeUndefined()
-    expect(g.next(tokB, T0 + 61_000)).toEqual({ ok: false, error: "only the host can advance" })
-    expect(g.ready(tokB, T0 + 61_000)).toEqual({ ok: true, changed: true })
-    expect(g.ready(tokB, T0 + 61_000)).toEqual({ ok: true, changed: false })
-    expect(g.phase).toBe(Phase.REVEAL)
-    expect(g.view(tokA, T0 + 61_000).reveal!.ready).toEqual(["p2"])
-    expect(g.ready(tokA, T0 + 62_000).ok).toBe(true)
-    expect(g.phase).toBe(Phase.GUESSING)
-    expect(g.view(tokA, T0 + 62_000).round!.index).toBe(1)
-    expect(g.nextWakeAt()).toBe(T0 + 122_000 + ROUND_GRACE)
-    g.tick(T0 + 122_000 + ROUND_GRACE)
-    expect(g.phase).toBe(Phase.REVEAL)
-    expect(g.view(tokA, T0 + 122_000).reveal!.ready).toEqual([])
-    expect(g.ready(tokA, T0 + 123_000)).toEqual({ ok: true, changed: true })
-    // The host need not wait for Bob.
-    expect(g.next(tokA, T0 + 124_000).ok).toBe(true)
-    expect(g.phase).toBe(Phase.RESULTS)
-    const results = g.view(tokA, T0 + 124_000).results!
-    expect(results).toHaveLength(2)
-    expect(results[0]!.total).toBeGreaterThanOrEqual(results[1]!.total)
-    expect(results[0]!.rounds).toHaveLength(2)
+  describe("the reveal", () => {
+    function atFirstReveal() {
+      const g = twoPlayerGame(2)
+      g.start(tokA, T0)
+      g.tick(T0 + 60_000 + ROUND_GRACE)
+      return g
+    }
+
+    it("has no deadline of its own", () => {
+      expect(atFirstReveal().nextWakeAt()).toBeUndefined()
+    })
+
+    it("cannot be advanced by a player who is not the host", () => {
+      const g = atFirstReveal()
+      expect(g.next(tokB, T0 + 61_000)).toEqual({ ok: false, error: "only the host can advance" })
+    })
+
+    it("shows who is ready, and readying twice changes nothing", () => {
+      const g = atFirstReveal()
+      expect(g.ready(tokB, T0 + 61_000)).toEqual({ ok: true, changed: true })
+      expect(g.ready(tokB, T0 + 61_000)).toEqual({ ok: true, changed: false })
+      expect(g.phase).toBe(Phase.REVEAL)
+      expect(g.view(tokA, T0 + 61_000).reveal!.ready).toEqual(["p2"])
+    })
+
+    it("advances to the next round when everyone is ready", () => {
+      const g = atFirstReveal()
+      g.ready(tokB, T0 + 61_000)
+      expect(g.ready(tokA, T0 + 62_000).ok).toBe(true)
+      expect(g.phase).toBe(Phase.GUESSING)
+      expect(g.view(tokA, T0 + 62_000).round!.index).toBe(1)
+      expect(g.nextWakeAt()).toBe(T0 + 122_000 + ROUND_GRACE)
+    })
+
+    it("starts the next round's reveal with nobody ready", () => {
+      const g = atFirstReveal()
+      g.ready(tokB, T0 + 61_000)
+      g.ready(tokA, T0 + 62_000)
+      g.tick(T0 + 122_000 + ROUND_GRACE)
+      expect(g.phase).toBe(Phase.REVEAL)
+      expect(g.view(tokA, T0 + 122_000).reveal!.ready).toEqual([])
+    })
+
+    it("lets the host advance without waiting for the others; after the last round that ends in results", () => {
+      const g = atFirstReveal()
+      g.next(tokA, T0 + 62_000)
+      g.tick(T0 + 122_000 + ROUND_GRACE)
+      expect(g.ready(tokA, T0 + 123_000)).toEqual({ ok: true, changed: true })
+      expect(g.next(tokA, T0 + 124_000).ok).toBe(true)
+      expect(g.phase).toBe(Phase.RESULTS)
+      const results = g.view(tokA, T0 + 124_000).results!
+      expect(results).toHaveLength(2)
+      expect(results[0]!.total).toBeGreaterThanOrEqual(results[1]!.total)
+      expect(results[0]!.rounds).toHaveLength(2)
+    })
   })
 
-  it("hands out awards at the end, and clears them for the next game", () => {
-    const g = twoPlayerGame(3)
-    g.start(tokA, T0)
-    let now = T0
-    for (let i = 0; i < 3; i++) {
-      // Alice passes straight away; Bob paints one confident dab in the Gulf of Guinea.
-      g.lock(tokA, now + 1_000)
-      g.setPaint(tokB, paintAt(petra, 0, 0))
-      g.lock(tokB, now + 2_000)
-      now += 3_000
-      g.next(tokA, now)
+  describe("awards", () => {
+    function atResults() {
+      const g = twoPlayerGame(3)
+      g.start(tokA, T0)
+      let now = T0
+      for (let i = 0; i < 3; i++) {
+        // Alice passes straight away; Bob paints one confident dab in the Gulf of Guinea.
+        g.lock(tokA, now + 1_000)
+        g.setPaint(tokB, paintAt(petra, 0, 0))
+        g.lock(tokB, now + 2_000)
+        now += 3_000
+        g.next(tokA, now)
+      }
+      return { g, now }
     }
-    expect(g.phase).toBe(Phase.RESULTS)
-    const awards = g.view(tokA, now).awards!
-    expect(awards.length).toBeGreaterThanOrEqual(2)
-    expect(awards.find((a) => a.title === "Chicken")?.playerIds).toEqual(["p1"])
-    expect(awards.some((a) => a.playerIds.includes(playerId("p2")))).toBe(true)
-    g.again(tokA, now)
-    expect(g.view(tokA, now).awards).toBeUndefined()
+
+    it("are handed out at the end", () => {
+      const { g, now } = atResults()
+      expect(g.phase).toBe(Phase.RESULTS)
+      const awards = g.view(tokA, now).awards!
+      expect(awards.length).toBeGreaterThanOrEqual(2)
+      expect(awards.find((a) => a.title === "Chicken")?.playerIds).toEqual(["p1"])
+      expect(awards.some((a) => a.playerIds.includes(playerId("p2")))).toBe(true)
+    })
+
+    it("are cleared for the next game", () => {
+      const { g, now } = atResults()
+      g.again(tokA, now)
+      expect(g.view(tokA, now).awards).toBeUndefined()
+    })
   })
 
   it("paint arriving just after the deadline still counts, and an empty upload takes paint back", () => {
@@ -458,30 +518,61 @@ describe("spectators", () => {
     expect(sam(g)).toMatchObject({ watching: true, colour: undefined })
   })
 
-  it("does not paint, finish, get scored or hold up either waiting phase", () => {
-    const g = withSpectator()
-    g.start(tokA, T0)
-    const q = currentQuestion(g, tokA, T0)
-    expect(g.setPaint(tokS, paintAt(q, 0, 0))).toEqual({ ok: false, error: "you are watching" })
-    expect(g.lock(tokS, T0)).toEqual({ ok: false, error: "you are watching" })
-    // The two players finishing ends the round; Sam is not waited on.
-    g.lock(tokA, T0 + 1)
-    g.lock(tokB, T0 + 2)
-    expect(g.phase).toBe(Phase.REVEAL)
-    const reveal = g.view(tokS, T0 + 2).reveal!
-    expect(reveal.results.map((r) => r.playerId).sort()).toEqual(["p1", "p2"])
-    expect(g.ready(tokS, T0 + 3)).toEqual({ ok: false, error: "you are watching" })
-    g.ready(tokA, T0 + 3)
-    g.ready(tokB, T0 + 4)
-    expect(g.phase).toBe(Phase.GUESSING)
-    g.tick(T1 + 10_000 + ROUND_GRACE)
-    g.next(tokA, T1 + 10_000)
-    expect(
-      g
-        .view(tokS, T1 + 10_000)
-        .results!.map((r) => r.playerId)
-        .sort()
-    ).toEqual(["p1", "p2"])
+  describe("in a game with players", () => {
+    function inRound() {
+      const g = withSpectator()
+      g.start(tokA, T0)
+      return { g, q: currentQuestion(g, tokA, T0) }
+    }
+    function atReveal() {
+      const { g } = inRound()
+      g.lock(tokA, T0 + 1)
+      g.lock(tokB, T0 + 2)
+      return g
+    }
+
+    it("cannot paint", () => {
+      const { g, q } = inRound()
+      expect(g.setPaint(tokS, paintAt(q, 0, 0))).toEqual({ ok: false, error: "you are watching" })
+    })
+
+    it("cannot lock in", () => {
+      const { g } = inRound()
+      expect(g.lock(tokS, T0)).toEqual({ ok: false, error: "you are watching" })
+    })
+
+    it("is not waited on: the round ends when the players have locked in, and scores only them", () => {
+      const g = atReveal()
+      expect(g.phase).toBe(Phase.REVEAL)
+      const reveal = g.view(tokS, T0 + 2).reveal!
+      expect(reveal.results.map((r) => r.playerId).sort()).toEqual(["p1", "p2"])
+    })
+
+    it("cannot ready up", () => {
+      const g = atReveal()
+      expect(g.ready(tokS, T0 + 3)).toEqual({ ok: false, error: "you are watching" })
+    })
+
+    it("is not waited on at the reveal: it moves on when the players are ready", () => {
+      const g = atReveal()
+      g.ready(tokA, T0 + 3)
+      g.ready(tokB, T0 + 4)
+      expect(g.phase).toBe(Phase.GUESSING)
+    })
+
+    it("is left out of the final results", () => {
+      const g = atReveal()
+      g.ready(tokA, T0 + 3)
+      g.ready(tokB, T0 + 4)
+      g.tick(T1 + 10_000 + ROUND_GRACE)
+      g.next(tokA, T1 + 10_000)
+      expect(
+        g
+          .view(tokS, T1 + 10_000)
+          .results!.map((r) => r.playerId)
+          .sort()
+      ).toEqual(["p1", "p2"])
+    })
   })
 
   it("switches role in the lobby only, taking or giving up a colour", () => {
@@ -852,30 +943,42 @@ describe("configure", () => {
 })
 
 describe("host removes a player", () => {
-  it("drops their seat and paint, bans the token, and lets a fresh token in", () => {
-    const g = twoPlayerGame()
-    g.start(tokA, T0)
-    const q = currentQuestion(g, tokA, T0)
-    g.setPaint(tokB, paintOn(q))
-    const bobId = g.view(tokB, T0).you.id!
-    expect(g.kick(tokB, g.view(tokA, T0).you.id!, T0)).toEqual({
-      ok: false,
-      error: "only the host can remove players"
+  describe("removing a player", () => {
+    function inRound() {
+      const g = twoPlayerGame()
+      g.start(tokA, T0)
+      const q = currentQuestion(g, tokA, T0)
+      g.setPaint(tokB, paintOn(q))
+      return { g, q, aliceId: g.view(tokA, T0).you.id!, bobId: g.view(tokB, T0).you.id! }
+    }
+
+    it("is refused for a non-host, for yourself and for someone unknown", () => {
+      const { g, aliceId } = inRound()
+      expect(g.kick(tokB, aliceId, T0)).toEqual({ ok: false, error: "only the host can remove players" })
+      expect(g.kick(tokA, aliceId, T0)).toEqual({ ok: false, error: "you cannot remove yourself" })
+      expect(g.kick(tokA, playerId("p99"), T0)).toEqual({ ok: false, error: "unknown player" })
     })
-    expect(g.kick(tokA, g.view(tokA, T0).you.id!, T0)).toEqual({ ok: false, error: "you cannot remove yourself" })
-    expect(g.kick(tokA, playerId("p99"), T0)).toEqual({ ok: false, error: "unknown player" })
-    expect(g.kick(tokA, bobId, T0).ok).toBe(true)
-    expect(g.playerTokens).toEqual([tokA])
-    expect(g.join(tokB, playerName("Bob again"), T0)).toEqual({ ok: false, reason: CloseReason.REMOVED })
-    expect(g.join(tokC, playerName("Carol"), T0).ok).toBe(true)
-    // Bob's paint must not surface when the round ends.
-    g.setPaint(tokA, paintAt(q, 0, 0))
-    g.lock(tokA, T0)
-    expect(g.phase).toBe(Phase.REVEAL)
-    expect(g.view(tokA, T0).reveal!.results.map((r) => r.playerId)).not.toContain(bobId)
+
+    it("drops their seat, bans the token, and lets a fresh token in", () => {
+      const { g, bobId } = inRound()
+      expect(g.kick(tokA, bobId, T0).ok).toBe(true)
+      expect(g.playerTokens).toEqual([tokA])
+      expect(g.join(tokB, playerName("Bob again"), T0)).toEqual({ ok: false, reason: CloseReason.REMOVED })
+      expect(g.join(tokC, playerName("Carol"), T0).ok).toBe(true)
+    })
+
+    it("drops their paint: it does not surface when the round ends", () => {
+      const { g, q, bobId } = inRound()
+      g.kick(tokA, bobId, T0)
+      g.join(tokC, playerName("Carol"), T0)
+      g.setPaint(tokA, paintAt(q, 0, 0))
+      g.lock(tokA, T0)
+      expect(g.phase).toBe(Phase.REVEAL)
+      expect(g.view(tokA, T0).reveal!.results.map((r) => r.playerId)).not.toContain(bobId)
+    })
   })
 
-  it("removing the last unlocked player ends the round; removing an absent host passes the role", () => {
+  it("removing the last unlocked player ends the round", () => {
     const g = twoPlayerGame()
     g.start(tokA, T0)
     const q = currentQuestion(g, tokA, T0)
@@ -884,7 +987,9 @@ describe("host removes a player", () => {
     expect(g.phase).toBe(Phase.GUESSING)
     g.kick(tokA, g.view(tokB, T0).you.id!, T0)
     expect(g.phase).toBe(Phase.REVEAL)
+  })
 
+  it("removing an absent host passes the role", () => {
     const h = twoPlayerGame()
     h.start(tokA, T0)
     h.disconnect(tokA, T0)
@@ -1081,33 +1186,74 @@ describe("upcoming pictures", () => {
 })
 
 describe("hints", () => {
-  it("gives a band holding the answer, the same one to everyone, one per round and as many as the host allows", () => {
+  function hintGame() {
     const g = makeGame({
       config: { mix: mixOf({ [QuestionType.PLACE]: 3 }), hints: 2 }
     })
     g.join(tokA, playerName("Alice"), T0)
     g.join(tokB, playerName("Bob"), T0)
+    return g
+  }
+  function inFirstRound() {
+    const g = hintGame()
+    g.start(tokA, T0)
+    return { g, q: currentQuestion(g, tokA, T0) }
+  }
+
+  it("starts each player with the host's allowance, and gives no hint before a round", () => {
+    const g = hintGame()
     expect(g.view(tokA, T0).you.hintsLeft).toBe(2)
     expect(g.hint(tokA, HintAxis.LATITUDE)).toEqual({ ok: false, error: "no round to hint" })
-    g.start(tokA, T0)
-    const q = currentQuestion(g, tokA, T0)
+  })
+
+  it("gives a band on the asked axis that holds the answer, and uses up a hint", () => {
+    const { g, q } = inFirstRound()
     expect(g.hint(tokA, HintAxis.LATITUDE)).toEqual({ ok: true, changed: true })
-    expect(g.hint(tokA, HintAxis.LONGITUDE)).toEqual({ ok: false, error: "one hint per round" })
-    expect(g.hint(tokB, HintAxis.LATITUDE).ok).toBe(true)
     const band = g.view(tokA, T0).you.hint!
     expect(band.axis).toBe(HintAxis.LATITUDE)
     expect(inHintBand(band, q.answer.at)).toBe(true)
-    expect(g.view(tokB, T0).you.hint).toEqual(band)
     expect(g.view(tokA, T0).you.hintsLeft).toBe(1)
+  })
 
+  it("gives everyone who asks for the same axis the same band", () => {
+    const { g } = inFirstRound()
+    g.hint(tokA, HintAxis.LATITUDE)
+    expect(g.hint(tokB, HintAxis.LATITUDE).ok).toBe(true)
+    expect(g.view(tokB, T0).you.hint).toEqual(g.view(tokA, T0).you.hint)
+  })
+
+  it("allows one hint per round", () => {
+    const { g } = inFirstRound()
+    g.hint(tokA, HintAxis.LATITUDE)
+    expect(g.hint(tokA, HintAxis.LONGITUDE)).toEqual({ ok: false, error: "one hint per round" })
+  })
+
+  it("keeps the hint at the reveal, and records the axis against each result", () => {
+    const { g } = inFirstRound()
+    g.hint(tokA, HintAxis.LATITUDE)
+    g.hint(tokB, HintAxis.LATITUDE)
+    const band = g.view(tokA, T0).you.hint
     g.tick(T0 + 60_000 + ROUND_GRACE)
     const reveal = g.view(tokA, T0 + 61_000)
     expect(reveal.you.hint).toEqual(band)
     expect(reveal.reveal!.results.map((r) => r.hint)).toEqual([HintAxis.LATITUDE, HintAxis.LATITUDE])
+  })
 
+  it("starts the next round without a hint, and allows another", () => {
+    const { g } = inFirstRound()
+    g.hint(tokA, HintAxis.LATITUDE)
+    g.tick(T0 + 60_000 + ROUND_GRACE)
     g.next(tokA, T0 + 62_000)
     expect(g.view(tokA, T0 + 62_000).you.hint).toBeUndefined()
     expect(g.hint(tokA, HintAxis.LONGITUDE).ok).toBe(true)
+  })
+
+  it("refuses a hint once the host's allowance is used", () => {
+    const { g } = inFirstRound()
+    g.hint(tokA, HintAxis.LATITUDE)
+    g.tick(T0 + 60_000 + ROUND_GRACE)
+    g.next(tokA, T0 + 62_000)
+    g.hint(tokA, HintAxis.LONGITUDE)
     g.tick(T0 + 122_000 + ROUND_GRACE)
     g.next(tokA, T0 + 124_000)
     expect(g.hint(tokA, HintAxis.LATITUDE)).toEqual({ ok: false, error: "no hints left" })
