@@ -1,7 +1,7 @@
 /** What the wrist menu's buttons do. */
 import { clearPaint, trimPaint, trimPaintToHint } from "../paint-commands"
 import { Hand } from "./hand"
-import type { SprayTool } from "./spray"
+import type { SprayTool } from "./spray-rules"
 import type { VrRound } from "./view"
 import { WristButton } from "./wrist-button"
 import { HintAxis } from "@whereabouts/shared/hints"

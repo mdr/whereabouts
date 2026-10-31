@@ -3,7 +3,7 @@ import type { WristButton } from "../../src/vr/wrist-button.ts"
 import type { PictureBack } from "../../src/vr/picture-back.ts"
 import type { VrViewType } from "../../src/vr/view.ts"
 import { Hand, XR_HAND } from "../../src/vr/hand.ts"
-import type { SprayTool } from "../../src/vr/spray.ts"
+import type { SprayTool } from "../../src/vr/spray-rules.ts"
 import type { Page } from "playwright-core"
 import type {} from "../../src/vr/index.ts"
 

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
 import type { HintBand } from "@whereabouts/shared/hints"
-import type { SprayTool } from "./spray"
+import type { SprayTool } from "./spray-rules"
 import { Tool } from "../tool"
 import type { VrRound } from "./view"
 import { wristActions } from "./wrist-actions"

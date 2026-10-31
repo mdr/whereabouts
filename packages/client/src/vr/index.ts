@@ -39,7 +39,9 @@ import { Picture } from "./picture"
 import { HintMarker } from "./hint"
 import { reflect, reflections } from "./models"
 import { timerFrames } from "./frames"
-import { HandTool, TRIGGER_DEAD, type SprayTool } from "./spray"
+import { HandTool, TRIGGER_DEAD } from "./spray"
+import { nextTool, offeredTool } from "./spray-rules"
+import { PairedStroke, strokeTool } from "./stroke"
 import { Tool } from "../tool"
 import { Moon } from "./moon"
 import { STARS_DISTANCE, Space } from "./space"
@@ -96,7 +98,7 @@ export class Vr {
   private view: VrView | undefined = undefined
   private pictureKey = ""
   private paintsKey = ""
-  private stroking = false
+  private readonly stroke = new PairedStroke(() => this.round?.paint)
   private placed = false
   private paintDirty = true
   private lastPaintDraw = 0
@@ -300,7 +302,7 @@ export class Vr {
 
   /** Change what the headset shows, as the screen moves from round to answer to round. */
   show(view: VrView): void {
-    this.endStroke()
+    this.stroke.end()
     this.picture.release(this.menu.object3D)
     const leavingAnswer = this.view?.type === VrViewType.REVEAL && view.type !== VrViewType.REVEAL
     this.menu.show(view)
@@ -402,7 +404,7 @@ export class Vr {
 
   private leave(): void {
     this.menu.leave()
-    this.endStroke()
+    this.stroke.end()
     this.picture.release(this.menu.object3D)
     this.stopPaintWatch?.()
     this.stopPaintWatch = undefined
@@ -498,14 +500,14 @@ export class Vr {
 
     // A steps through the right hand's tools, X the left's: Fill too on a country round.
     const fillable = round.paint.fillable.value
-    const order: SprayTool[] = fillable ? [Tool.PAINT, Tool.ERASE, Tool.FILL] : [Tool.PAINT, Tool.ERASE]
     for (const [h, button] of [
       [Hand.RIGHT, InputComponent.A_Button],
       [Hand.LEFT, InputComponent.X_Button]
     ] as const) {
       const tool = this.tools[h]
-      if (!fillable && tool.tool === Tool.FILL) tool.setTool(h === Hand.LEFT ? Tool.ERASE : Tool.PAINT)
-      if (pads[XR_HAND[h]]?.getButtonDown(button)) tool.setTool(order[(order.indexOf(tool.tool) + 1) % order.length]!)
+      const offered = offeredTool(tool.tool, fillable, h)
+      if (offered !== tool.tool) tool.setTool(offered)
+      if (pads[XR_HAND[h]]?.getButtonDown(button)) tool.setTool(nextTool(tool.tool, fillable))
     }
 
     // The trigger also presses the menu's buttons; pointing at it, it sprays nothing.
@@ -514,35 +516,27 @@ export class Vr {
     const triggers = HANDS.map((h) =>
       h === Hand.LEFT && this.wrist.open ? 0 : (pads[XR_HAND[h]]?.getButtonValue(InputComponent.Trigger) ?? 0)
     )
-    const working = onMenu
-      ? undefined
-      : HANDS.find(
-          (h, i) =>
-            this.tools[h].touching(this.globe) !== undefined ||
-            (!this.tools[h].busy &&
-              this.tools[h].tool !== Tool.FILL &&
-              triggers[i]! > TRIGGER_DEAD &&
-              this.tools[h].aim(this.globe) !== undefined)
-        )
-    const workingTool = working && this.tools[working].tool
-    if (workingTool && workingTool !== Tool.FILL && !this.stroking) {
-      // Both hands make one undo step; the first sets the stroke's sound.
-      round.paint.beginStroke(workingTool)
-      this.stroking = true
-    }
+    // Both hands make one undo step; the first sets the stroke's sound.
+    this.stroke.begin(
+      strokeTool(
+        HANDS.map((h, i) => ({
+          tool: this.tools[h].tool,
+          touching: this.tools[h].touching(this.globe) !== undefined,
+          busy: this.tools[h].busy,
+          trigger: triggers[i]!,
+          aimed: this.tools[h].aim(this.globe) !== undefined
+        })),
+        onMenu,
+        TRIGGER_DEAD
+      )
+    )
     // Every hand updates, even once one has sprayed: each moves its own spot.
     const sprayed = HANDS.map((h, i) =>
       this.tools[h].update(now, this.globe, triggers[i]!, onMenu, round.paint, pads[XR_HAND[h]]?.gamepad)
     )
     // Sooner than paint.version, which waits a little for an animation frame.
     if (sprayed.includes(true)) this.paintDirty = true
-    else this.endStroke()
-  }
-
-  private endStroke(): void {
-    if (!this.stroking) return
-    this.round?.paint.endStroke()
-    this.stroking = false
+    else this.stroke.end()
   }
 
   /** On top of the menu, which grows and shrinks with its text. */

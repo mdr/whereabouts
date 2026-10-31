@@ -20,24 +20,22 @@ import {
   Vector3,
   type Object3D
 } from "three"
-import { EARTH_RADIUS, greatCircleDistance, type LatLon } from "@whereabouts/shared/geo"
+import type { LatLon } from "@whereabouts/shared/geo"
 import type { PaintController } from "../paint-controller"
 import type { Theme } from "../themes"
 import type { Globe } from "./globe"
 import { buildCan, buildEraser, buildPail } from "./models"
 import { SprayParticles } from "./particles"
 import { localToLatLon, raySphere } from "./sphere"
+import { groundRadius, stampDue, type SprayTool } from "./spray-rules"
 import { Tool } from "../tool"
-import type { Km, Metres, Seconds } from "@whereabouts/shared/units"
+import type { Metres } from "@whereabouts/shared/units"
 
-export type SprayTool = Tool.PAINT | Tool.ERASE | Tool.FILL
+type Paintable = Pick<PaintController, "enabled" | "stamp" | "fillOutside">
+type Target = Pick<Globe, "centre" | "radius" | "group">
 
 /** Half the spray cone's angle: the spot's radius is this much of the can's distance. */
 const SPREAD = Math.tan((9 * Math.PI) / 180)
-const MIN_RADIUS: Km = 1
-const MAX_RADIUS: Km = 3000
-/** Held still, the spray keeps adding paint this often. */
-const STILL_STAMP: Seconds = 0.15
 /** Nearer than this, paint goes on at full strength; it thins with distance beyond. */
 const FULL_STRENGTH_RANGE: Metres = 0.3
 /** The eraser's tip, from the grip, and how wide a patch it rubs. */
@@ -164,7 +162,7 @@ export class HandTool {
   }
 
   /** Where the ray meets the globe, if it does: distance from the can. */
-  aim(globe: Globe): number | undefined {
+  aim(globe: Target): number | undefined {
     this.ray.getWorldPosition(origin)
     this.ray.getWorldDirection(dir).negate()
     return raySphere(origin, dir, globe.centre, globe.radius)
@@ -192,7 +190,7 @@ export class HandTool {
   }
 
   /** Where the eraser's tip touches the globe, if it is the tool held and it does. */
-  touching(globe: Globe): Vector3 | undefined {
+  touching(globe: Target): Vector3 | undefined {
     if (this.toolNow !== Tool.ERASE || !this.holding || this.busy) return undefined
     const tip = this.grip.localToWorld(local.copy(TIP))
     return tip.distanceTo(globe.centre) <= globe.radius + TOUCH_GAP ? tip : undefined
@@ -204,10 +202,10 @@ export class HandTool {
    */
   update(
     now: number,
-    globe: Globe,
+    globe: Target,
     trigger: number,
     blocked: boolean,
-    paint: PaintController,
+    paint: Paintable,
     gamepad: Gamepad | undefined
   ): boolean {
     const dt = this.settle(now)
@@ -234,8 +232,10 @@ export class HandTool {
     const spraying = paint.enabled.value && trigger > TRIGGER_DEAD
     if (this.toolNow === Tool.FILL) {
       if (spraying && !this.pulled) {
-        const radius = Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, (spotSize / globe.radius) * EARTH_RADIUS))
-        paint.fillOutside(localToLatLon(globe.group.worldToLocal(local.copy(hit))), radius)
+        paint.fillOutside(
+          localToLatLon(globe.group.worldToLocal(local.copy(hit))),
+          groundRadius(spotSize, globe.radius)
+        )
         this.pulse(now, 0.6, gamepad)
       }
       this.pulled = spraying
@@ -258,9 +258,9 @@ export class HandTool {
   /** Rubs out under the eraser's tip, as hard as a full pull of the trigger. */
   private rub(
     now: number,
-    globe: Globe,
+    globe: Target,
     tip: Vector3,
-    paint: PaintController,
+    paint: Paintable,
     gamepad: Gamepad | undefined,
     dt: number
   ): boolean {
@@ -277,18 +277,10 @@ export class HandTool {
   }
 
   /** Stamps overlap along a stroke, so each is a fraction, as on the map. */
-  private stamp(
-    now: number,
-    globe: Globe,
-    at3: Vector3,
-    spotSize: Metres,
-    strength: number,
-    paint: PaintController
-  ): void {
-    const radius = Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, (spotSize / globe.radius) * EARTH_RADIUS))
+  private stamp(now: number, globe: Target, at3: Vector3, spotSize: Metres, strength: number, paint: Paintable): void {
+    const radius = groundRadius(spotSize, globe.radius)
     const at = localToLatLon(globe.group.worldToLocal(local.copy(at3)))
-    const last = this.stroke
-    if (!last || greatCircleDistance(last.at, at) >= radius / 4 || now - last.t >= STILL_STAMP) {
+    if (stampDue(this.stroke, at, radius, now)) {
       paint.stamp(at, radius, strength)
       this.stroke = { at, t: now }
     }
