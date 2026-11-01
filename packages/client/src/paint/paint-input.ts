@@ -3,7 +3,7 @@
  * strokes, the Fill tool's clicks, the brush footprint cursor, and the
  * shortcuts.
  */
-import { Point, type LngLat, type MapMouseEvent, type MapTouchEvent } from "maplibre-gl"
+import { Point, type LngLat, type MapEventType, type MapMouseEvent, type MapTouchEvent } from "maplibre-gl"
 import { signal } from "@preact/signals"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { GameMap } from "../map/map"
@@ -54,9 +54,9 @@ export class PaintInput {
     this.model = model
     this.view = view
     const map = gameMap.map
-    const onMap = (type: string, handler: (event: never) => void): (() => void) => {
-      map.on(type as never, handler)
-      return () => map.off(type as never, handler)
+    const onMap = <K extends keyof MapEventType>(type: K, handler: (event: MapEventType[K]) => void): (() => void) => {
+      map.on(type, handler)
+      return () => map.off(type, handler)
     }
     const onDown = (event: MapMouseEvent) => {
       if (!this.canPaint() || event.originalEvent.button !== 0 || !gameMap.onSurface(event.point)) return
