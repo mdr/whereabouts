@@ -1,4 +1,4 @@
-// Flag rounds in VR, on an emulated Quest 3 (see pages/Headset.ts).
+// Flag rounds in VR, on an emulated Quest 3 (see pages/headset/Headset.ts).
 // Saves screenshots of the headset's view.
 import { test } from "@playwright/test"
 import { Quaternion, Vector3 } from "three"
@@ -20,7 +20,7 @@ function angleBetween(a: number[], b: number[]): number {
   return Math.acos(a.reduce((sum, component, i) => sum + component * b[i]!, 0) / Math.hypot(...a) / Math.hypot(...b))
 }
 
-/** The turn a controller held at `from` gets when Headset.point() aims it at `to`. */
+/** The turn a controller held at `from` gets when Controllers.point() aims it at `to`. */
 function aim(from: Vec3, to: Vec3): Quaternion {
   const direction = to.map((component, i) => component - from[i]!) as Vec3
   return new Quaternion().setFromUnitVectors(new Vector3(0, 0, -1), new Vector3(...direction).normalize())
@@ -30,7 +30,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   browser
 }) => {
   const { tab, headset, round, centre, can, card, hand } = await vrFlagRound(browser, "vr-flag-card")
-  const flag = await headset.picture()
+  const flag = await headset.panels.picture()
   const flagRatio = Number(
     await tab.page
       .getByTestId(flagImageTestIds.flag)
@@ -46,22 +46,22 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   // Grip it, pointing at it, to take it in hand; it follows the hand, and
   // goes back over the menu when let go.
   const grip: Vec3 = [hand[0] + 0.1, hand[1], hand[2]]
-  await headset.pointRight(hand, card)
+  await headset.controllers.pointRight(hand, card)
   await round.pause(300)
-  await headset.rightGrip(1)
+  await headset.controllers.rightGrip(1)
   await round.pause(500)
-  await headset.pointRight(grip, card)
+  await headset.controllers.pointRight(grip, card)
   await round.pause(800)
-  const held = await headset.pictureHeld()
+  const held = await headset.panels.pictureHeld()
   const moved = Math.hypot(...held.at.map((component, i) => component - card[i]!))
   check(held.held && moved > 0.2, `gripping the flag takes it in hand (moved ${moved.toFixed(2)} m)`)
   await round.screenshot(shot(`vr-9-held.png`))
   // Turning the hand tilts it, as a card held up would.
   const tiltedTo: Vec3 = [grip[0], card[1] - 0.5, card[2]]
-  await headset.pointRight(grip, tiltedTo)
+  await headset.controllers.pointRight(grip, tiltedTo)
   await round.pause(800)
-  const tilted = await headset.pictureHeld()
-  // The hand's own turn, as Headset.point() aims it, carries the picture's facing with it.
+  const tilted = await headset.panels.pictureHeld()
+  // The hand's own turn, as Controllers.point() aims it, carries the picture's facing with it.
   const expected = new Vector3(...held.facing).applyQuaternion(aim(grip, tiltedTo).multiply(aim(grip, card).invert()))
   const astray = angleBetween(expected.toArray(), tilted.facing)
   check(
@@ -71,36 +71,36 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   await round.screenshot(shot(`vr-9b-tilted.png`))
   // Turned right round, it shows its back: the flag's reverse.
   const awayTo = grip.map((component, i) => 2 * component - card[i]!) as Vec3
-  await headset.pointRight(grip, awayTo)
+  await headset.controllers.pointRight(grip, awayTo)
   await round.pause(800)
-  const turned = await headset.pictureHeld()
+  const turned = await headset.panels.pictureHeld()
   const turnedBy = angleBetween(held.facing, turned.facing)
   check(
     turned.held && turnedBy > 2.5 && turned.back === PictureBack.REVERSE,
     `turned round, it shows the flag's reverse (${turnedBy.toFixed(2)} rad)`
   )
   await round.screenshot(shot(`vr-9c-back.png`))
-  await headset.rightGrip(0)
+  await headset.controllers.rightGrip(0)
   await round.pause(500)
-  const back = await headset.pictureHeld()
+  const back = await headset.panels.pictureHeld()
   const off = Math.hypot(...back.at.map((component, i) => component - card[i]!))
   check(!back.held && off < 0.01, `letting go puts it back (${off.toFixed(3)} m off)`)
 
   // It says how to answer; A brings out the fill pail, whose pull fills the
   // country it points at, and a second pull takes the fill off.
-  const mode = (await headset.menu()).mode
+  const mode = (await headset.panels.menu()).mode
   check(mode?.startsWith("Paint ") === true, `a flag round says how to answer it (${mode})`)
-  await headset.button(Hand.RIGHT, "a-button")
-  await headset.button(Hand.RIGHT, "a-button")
-  check((await headset.toolInHand())[Hand.RIGHT] === Tool.FILL, "A twice brings out the fill pail")
+  await headset.controllers.button(Hand.RIGHT, "a-button")
+  await headset.controllers.button(Hand.RIGHT, "a-button")
+  check((await headset.scene.toolInHand())[Hand.RIGHT] === Tool.FILL, "A twice brings out the fill pail")
   // Up and right of the globe's middle, at the prime meridian and the equator: the Sahel.
   const sahel: Vec3 = [centre[0] + 0.06, centre[1] + 0.05, centre[2] + 0.2]
   const pull = async () => {
-    await headset.pointRight(can, sahel)
+    await headset.controllers.pointRight(can, sahel)
     await headset.frames(3)
-    await headset.rightTrigger(1)
+    await headset.controllers.rightTrigger(1)
     await headset.frames(3)
-    await headset.rightTrigger(0)
+    await headset.controllers.rightTrigger(0)
     await headset.frames(3)
   }
   await pull()
@@ -120,8 +120,8 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
     )) === 0,
     "and a second pull takes it off"
   )
-  await headset.button(Hand.RIGHT, "a-button")
-  check((await headset.toolInHand())[Hand.RIGHT] === Tool.PAINT, "A again goes back to the spray can")
+  await headset.controllers.button(Hand.RIGHT, "a-button")
+  check((await headset.scene.toolInHand())[Hand.RIGHT] === Tool.PAINT, "A again goes back to the spray can")
 })
 
 test("on a flag round's answer, Show all flags pins every flag, pointing at one names it and outlines its border at any zoom, and Hide all flags takes them off", async ({
@@ -131,7 +131,7 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
   await pressMenu(headset, hand, "flags")
   const pins = await until(
     "the flags on the globe",
-    () => headset.flagPins(),
+    () => headset.scene.flagPins(),
     (count) => count > 190,
     30_000
   )
@@ -139,7 +139,7 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
   check(
     await until(
       "the rays",
-      () => headset.beamsShown(),
+      () => headset.scene.beamsShown(),
       (on) => on
     ),
     "rays from the hands show what they point at"
@@ -150,16 +150,16 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
   await round.screenshot(shot(`vr-11-all-flags.png`))
 
   // Pointing at a flag enlarges it and names its country.
-  const facing = (await headset.flagFacing())!
-  await headset.pointRight(hand, facing.at)
+  const facing = (await headset.scene.flagFacing())!
+  await headset.controllers.pointRight(hand, facing.at)
   // The other hand may rest on some flag already: wait for this one.
   const named = await until(
     "the flag's name",
-    () => headset.flagNamed(),
+    () => headset.scene.flagNamed(),
     (name) => name === facing.name
   )
   check(named === facing.name, `pointing at a flag names its country (${named})`)
-  const outlined = await headset.flagOutlined()
+  const outlined = await headset.scene.flagOutlined()
   check(
     outlined?.name === named && (outlined?.segments ?? 0) >= 3,
     `and picks out its border (${outlined?.segments} segments)`
@@ -168,15 +168,15 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
   await round.screenshot(shot(`vr-11b-flag-named.png`))
 
   // And with the whole globe in view.
-  await headset.rightStick(0, 1)
+  await headset.controllers.rightStick(0, 1)
   await round.pause(3000)
-  await headset.rightStick(0, 0)
-  const wide = await headset.globeScale()
-  const wideFacing = (await headset.flagFacing())!
-  await headset.pointRight(hand, wideFacing.at)
+  await headset.controllers.rightStick(0, 0)
+  const wide = await headset.scene.globeScale()
+  const wideFacing = (await headset.scene.flagFacing())!
+  await headset.controllers.pointRight(hand, wideFacing.at)
   const wideOutlined = await until(
     "the border, zoomed out",
-    () => headset.flagOutlined(),
+    () => headset.scene.flagOutlined(),
     (facing) => facing?.name === wideFacing.name
   )
   check(
@@ -187,12 +187,12 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
   await round.screenshot(shot(`vr-11b-border-zoomed-out.png`))
 
   // Zoomed right in, to a city's width, the flags still show.
-  await headset.rightStick(0, -1)
+  await headset.controllers.rightStick(0, -1)
   await round.pause(6000)
-  await headset.rightStick(0, 0)
-  const deep = await headset.globeScale()
+  await headset.controllers.rightStick(0, 0)
+  const deep = await headset.scene.globeScale()
   check(deep >= 150, `the globe zooms in to a city's width (${deep.toFixed(0)} times)`)
-  const zoomedPins = await headset.flagPins()
+  const zoomedPins = await headset.scene.flagPins()
   check(zoomedPins > 190, `with the flags still shown (${zoomedPins})`)
   await round.pause(1500)
   await round.screenshot(shot(`vr-11c-flags-zoomed.png`))
@@ -200,7 +200,7 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
   check(
     (await until(
       "the flags off the globe",
-      () => headset.flagPins(),
+      () => headset.scene.flagPins(),
       (count) => count === 0
     )) === 0,
     "Hide all flags takes them off"

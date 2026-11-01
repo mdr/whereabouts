@@ -2,7 +2,7 @@
 import type { Browser } from "@playwright/test"
 import { soloTestIds } from "../../../src/screens/solo/Solo/SoloTestIds.ts"
 import { VrViewType } from "../../../src/vr/view/view.ts"
-import type { Headset } from "../../pages/Headset.ts"
+import type { Headset } from "../../pages/headset/Headset.ts"
 import type { PracticeRoundPage } from "../../pages/PracticeRoundPage.ts"
 import { until } from "../../pages/support.ts"
 import type { Tab } from "../../pages/Tab.ts"
@@ -65,13 +65,13 @@ export async function vrPracticeAnswer(browser: Browser, label: string): Promise
   const vr = await vrPractice(browser, label)
   await until(
     "Pass on the menu",
-    () => vr.headset.doneLabel(),
+    () => vr.headset.panels.doneLabel(),
     (label) => label === "Pass"
   )
   await pressMenu(vr.headset, vr.can, "done")
   await until(
     "the passed round's answer in VR",
-    () => vr.headset.view(),
+    () => vr.headset.panels.view(),
     (viewType) => viewType === VrViewType.REVEAL
   )
   await vr.tab.page.getByTestId(soloTestIds.roundScore).waitFor()
@@ -83,11 +83,11 @@ export async function vrFlagRound(browser: Browser, label: string): Promise<VrFl
   const vr = await vrPractice(browser, label, flagRounds)
   await until(
     "the flag in VR",
-    () => vr.headset.picture(),
+    () => vr.headset.panels.picture(),
     (postcard) => postcard !== undefined,
     60_000
   )
-  const card = (await vr.headset.pictureHeld()).at
+  const card = (await vr.headset.panels.pictureHeld()).at
   return { ...vr, card, hand: [card[0] + 0.25, card[1] - 0.15, card[2] + 0.3] }
 }
 
@@ -97,7 +97,7 @@ export async function vrFlagAnswer(browser: Browser, label: string): Promise<VrF
   await pressMenu(flag.headset, flag.hand, "done")
   await until(
     "the flag round's answer",
-    () => flag.headset.view(),
+    () => flag.headset.panels.view(),
     (viewType) => viewType === VrViewType.REVEAL
   )
   return flag

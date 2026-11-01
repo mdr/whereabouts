@@ -1,4 +1,4 @@
-// Entering and leaving VR, on an emulated Quest 3 (see pages/Headset.ts).
+// Entering and leaving VR, on an emulated Quest 3 (see pages/headset/Headset.ts).
 // Saves screenshots of the headset's view.
 import { test } from "@playwright/test"
 import { vrButtonTestIds } from "../../../src/ui/VrButton/VrButtonTestIds.ts"
@@ -27,12 +27,12 @@ test("practice's VR button opens a headset session, and Leave VR ends it", async
   )
   await round.pause(1500)
   await round.screenshot(shot(`vr-1-entered.png`))
-  const startMenu = await headset.menu()
+  const startMenu = await headset.panels.menu()
   check(
     startMenu.heading.startsWith("QUESTION 1 OF") && startMenu.more.map((action) => action.label).join() === "Home",
     `the menu heads the question and offers Home (${startMenu.heading}; ${startMenu.more.map((action) => action.label).join()})`
   )
-  check(!(await headset.globeBordersShown()), "the globe shows no borders when the page's map would not")
+  check(!(await headset.scene.globeBordersShown()), "the globe shows no borders when the page's map would not")
 
   await tab.page.evaluate(() => window.whereaboutsVr.exit())
   await until(
@@ -69,17 +69,17 @@ test("VR from the home screen stays on into practice", async ({ browser }) => {
   await enterVr(tab, headset)
   const homeView = await until(
     "the menu in VR",
-    () => headset.view(),
+    () => headset.panels.view(),
     (viewType) => viewType === VrViewType.LOBBY
   )
-  const offered = (await headset.menu()).actions.map((action) => action.label).join(", ")
+  const offered = (await headset.panels.menu()).actions.map((action) => action.label).join(", ")
   check(homeView === VrViewType.LOBBY && offered === "Practise, Change topic", `the home screen opens VR (${offered})`)
   await homePage.pause(1500)
   await homePage.screenshot(shot(`vr-12-home.png`))
   await pressMenu(headset, (await poses(headset)).can, "act0")
   const practising = await until(
     "practice in VR",
-    () => headset.view(),
+    () => headset.panels.view(),
     (viewType) => viewType === VrViewType.PAINT,
     30_000
   )

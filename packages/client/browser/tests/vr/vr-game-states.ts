@@ -2,7 +2,7 @@
 import type { Browser } from "@playwright/test"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { VrViewType } from "../../../src/vr/view/view.ts"
-import type { Headset } from "../../pages/Headset.ts"
+import type { Headset } from "../../pages/headset/Headset.ts"
 import type { LobbyPage } from "../../pages/LobbyPage.ts"
 import type { RevealPage } from "../../pages/RevealPage.ts"
 import type { RoundPage } from "../../pages/RoundPage.ts"
@@ -49,12 +49,12 @@ export async function vrHostGuessing(browser: Browser): Promise<VrGuessing> {
   const { headset, aliceLobby, bobLobby, centre, can } = await vrHostInLobby(browser)
   await until(
     "the lobby in VR",
-    () => headset.view(),
+    () => headset.panels.view(),
     (viewType) => viewType === VrViewType.LOBBY
   )
   await until(
     "the players in VR",
-    () => headset.scoreTable(),
+    () => headset.panels.scoreTable(),
     (table) => table?.rows.length === 2
   )
   await pressMenu(headset, can, "act0")
@@ -62,7 +62,7 @@ export async function vrHostGuessing(browser: Browser): Promise<VrGuessing> {
   const bobRound = await bobLobby.waitForGameToStart()
   await until(
     "round 1 in VR",
-    () => headset.view(),
+    () => headset.panels.view(),
     (viewType) => viewType === VrViewType.PAINT,
     30_000
   )
@@ -75,20 +75,20 @@ export async function vrHostReveal(browser: Browser): Promise<VrGuessing & { bob
   const { headset, can, bobRound } = guessing
   await until(
     "Pass on the menu",
-    () => headset.doneLabel(),
+    () => headset.panels.doneLabel(),
     (label) => label === "Pass"
   )
   await pressMenu(headset, can, "done")
   // Bob must finish last, so the reveal follows his Done.
   await until(
     "Alice's pass locked in",
-    async () => (await headset.menu()).unlock,
+    async () => (await headset.panels.menu()).unlock,
     (on) => on
   )
   const bobReveal = await bobRound.finishLast()
   await until(
     "the answer in VR",
-    () => headset.view(),
+    () => headset.panels.view(),
     (viewType) => viewType === VrViewType.REVEAL
   )
   return { ...guessing, bobReveal }

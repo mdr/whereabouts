@@ -1,7 +1,7 @@
-// Helpers for the specs run in an emulated headset (see pages/Headset.ts).
+// Helpers for the specs run in an emulated headset (see pages/headset/Headset.ts).
 import type { Browser } from "@playwright/test"
 import { vrButtonTestIds } from "../../../src/ui/VrButton/VrButtonTestIds.ts"
-import { Headset } from "../../pages/Headset.ts"
+import { Headset } from "../../pages/headset/Headset.ts"
 import type { Screen } from "../../pages/Screen.ts"
 import { until } from "../../pages/support.ts"
 import type { Tab } from "../../pages/Tab.ts"
@@ -47,23 +47,23 @@ export async function spray(
   screenshot?: string
 ): Promise<number> {
   // The menu lays out late; a ray on it mid-stroke ends the stroke, and the spray becomes two undo steps.
-  await headset.menuButton("done")
-  await headset.pointRight(can, centre)
+  await headset.panels.menuButton("done")
+  await headset.controllers.pointRight(can, centre)
   await screen.pause(300)
-  await headset.rightTrigger(1)
+  await headset.controllers.rightTrigger(1)
   for (let i = 0; i < 10; i++) {
-    await headset.pointRight(can, [centre[0] + 0.01 * i, centre[1], centre[2]])
+    await headset.controllers.pointRight(can, [centre[0] + 0.01 * i, centre[1], centre[2]])
     await screen.pause(100)
   }
   if (screenshot) await screen.screenshot(screenshot)
-  const droplets = await headset.particles()
-  await headset.rightTrigger(0)
+  const droplets = await headset.scene.particles()
+  await headset.controllers.rightTrigger(0)
   return droplets
 }
 
 /** Points the right hand from `from` at a button of the VR menu and pulls the trigger. */
 export async function pressMenu(headset: Headset, from: Vec3, id: string): Promise<void> {
-  await headset.press(from, await headset.menuButton(id))
+  await headset.controllers.press(from, await headset.panels.menuButton(id))
 }
 
 /** Closes every tab the test opened: a headset left running slows the worker's next test. */
