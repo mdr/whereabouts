@@ -9,7 +9,7 @@
  */
 import { cellToLatLng, coarserRes, getResolution, h3Res, type H3Cell } from "../h3.ts"
 import { chordDistance, fromXyz, greatCircleDistance, toXyz, type LatLon } from "../geo.ts"
-import type { Km } from "../units.ts"
+import type { Km, Points } from "../units.ts"
 import {
   coarsenDistribution,
   DEFAULT_KERNEL,
@@ -21,7 +21,7 @@ import {
 
 export interface PointExplanation {
   /** What this paint would have scored had the answer been where it is strongest. */
-  best: number
+  best: Points
   /** Where that is. */
   spot: LatLon
   /** From there to the answer. */
@@ -82,6 +82,6 @@ function latLngOf(h: H3Cell): LatLon {
 }
 
 /** Some paint near the answer, but most of it somewhere else, and that cost something. */
-export function isHedge(e: PointExplanation, score: number, tolerance: Km): boolean {
+export function isHedge(e: PointExplanation, score: Points, tolerance: Km): boolean {
   return Math.max(e.best, score) - score >= 25 && e.nearShare >= 0.15 && e.miss > NEAR * tolerance
 }

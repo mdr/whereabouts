@@ -12,7 +12,7 @@
 import type { LatLon } from "../geo.ts"
 import { flagCode, questionId, type FlagCode, type QuestionId } from "../ids.ts"
 import { AnswerType } from "../questions.ts"
-import type { Km } from "../units.ts"
+import type { Km, Points } from "../units.ts"
 import type { AnswerParts } from "./regions.ts"
 import type { KernelId } from "./scoring.ts"
 
@@ -41,7 +41,7 @@ export interface ScoringCase {
   floor: number
   /** The paint layer's finest resolution. */
   res: number
-  score: number
+  score: Points
   parts: AnswerParts
   /** H3 index -> intensity. */
   cells: Record<string, number>

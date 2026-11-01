@@ -22,7 +22,7 @@ import { KernelIdSchema } from "./scoring/scoring.ts"
 import { H3CellSchema, H3ResSchema } from "./h3.ts"
 import { MapDetailSchema, MixSchema, Phase, RoundGuessType } from "./protocol.ts"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "./questions.ts"
-import { DegreesSchema, InstantSchema, KmSchema, MsSchema } from "./units.ts"
+import { DegreesSchema, InstantSchema, KmSchema, MsSchema, PointsSchema } from "./units.ts"
 
 const PaintSchema = z.strictObject({ cells: z.record(H3CellSchema, z.number()), floor: z.number() })
 
@@ -62,14 +62,14 @@ const PlayerViewSchema = z.strictObject({
   connected: z.boolean(),
   isHost: z.boolean(),
   locked: z.boolean(),
-  score: z.number(),
+  score: PointsSchema,
   rank: z.number().int(),
   previousRank: z.number().int().optional()
 })
 
 const RoundResultViewSchema = z.strictObject({
   playerId: PlayerIdSchema,
-  score: z.number(),
+  score: PointsSchema,
   guess: z.discriminatedUnion("type", [
     z.strictObject({ type: z.literal(RoundGuessType.PASSED) }),
     z.strictObject({
@@ -78,7 +78,7 @@ const RoundResultViewSchema = z.strictObject({
       res: H3ResSchema,
       parts: z.discriminatedUnion("type", [
         z.strictObject({ type: z.literal(AnswerType.POINT), A: z.number(), B: z.number() }),
-        z.strictObject({ type: z.literal(AnswerType.AREA), shape: z.number(), nearness: z.number() })
+        z.strictObject({ type: z.literal(AnswerType.AREA), shape: PointsSchema, nearness: PointsSchema })
       ])
     })
   ]),
@@ -132,8 +132,8 @@ const RevealViewSchema = z.strictObject({
 })
 const FinalStandingSchema = z.strictObject({
   playerId: PlayerIdSchema,
-  total: z.number(),
-  rounds: z.array(z.strictObject({ score: z.number().optional() }))
+  total: PointsSchema,
+  rounds: z.array(z.strictObject({ score: PointsSchema.optional() }))
 })
 const PlayedRoundSchema = z.strictObject({
   label: z.string(),

@@ -25,7 +25,7 @@ import {
 import { CUTOFF_WIDTHS, crossSum, kernelFromSq, pairSum, patchWidthSq } from "./kernel-sums.ts"
 import { z } from "zod"
 import { EARTH_RADIUS, chordDistanceSq, toXyz, type LatLon, type Xyz } from "../geo.ts"
-import type { Degrees, Km, SquareKm } from "../units.ts"
+import type { Degrees, Km, Points, SquareKm } from "../units.ts"
 
 const LN2 = Math.LN2
 
@@ -104,7 +104,7 @@ export interface Distribution {
 }
 
 export interface ScoreBreakdown {
-  score: number
+  score: Points
   A: number
   B: number
 }
@@ -194,7 +194,7 @@ export function selfSimilarity(dist: Distribution, tolerance: Km, exact = false,
   return B
 }
 
-export function scoreFromParts(A: number, B: number): number {
+export function scoreFromParts(A: number, B: number): Points {
   return 500 * (1 + 2 * A - B)
 }
 

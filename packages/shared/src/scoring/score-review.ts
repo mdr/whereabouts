@@ -28,7 +28,7 @@ import { insideRegion, regionCells, scoreAnswer, scoredAnswer, type Area, type S
 import { CaseQuestionType, RegionKernel, encodeCase, type ScoringCase } from "./scoring-case.ts"
 import { buildDistribution, type ChoosableKernel, type Kernel } from "./scoring.ts"
 import { MapDetail } from "../protocol.ts"
-import type { Degrees, Km, SquareKm } from "../units.ts"
+import { PointsSchema, type Degrees, type Km, type Points, type SquareKm } from "../units.ts"
 
 export enum GuessType {
   BULLSEYE = "BULLSEYE",
@@ -365,7 +365,7 @@ export type ScoreVerdict =
       /** Much too low (-2) to much too high (2). */
       verdict: -2 | -1 | 0 | 1 | 2
       /** What they think it should have scored. */
-      shouldBe?: number
+      shouldBe?: Points
       case: string
     })
   | (VerdictBase & {
@@ -388,7 +388,7 @@ const verdictBase = {
 }
 
 export const ScoreVerdictSchema: z.ZodType<ScoreVerdict> = z.union([
-  z.object({ ...verdictBase, guess: Guess, verdict: Scale, shouldBe: z.number().optional(), case: z.string() }),
+  z.object({ ...verdictBase, guess: Guess, verdict: Scale, shouldBe: PointsSchema.optional(), case: z.string() }),
   z.object({
     ...verdictBase,
     pair: z.literal(true),

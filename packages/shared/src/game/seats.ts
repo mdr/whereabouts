@@ -5,7 +5,7 @@ import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE } from "../protocol.ts"
 import { CloseReason } from "../close-reason.ts"
 import { OK_CHANGED, fail, type CommandResult, type JoinResult } from "./command-result.ts"
 import type { RoundFacts } from "../awards/awards.ts"
-import type { Instant } from "../units.ts"
+import type { Instant, Points } from "../units.ts"
 
 /** Who a player is and how they are connected: kept from one game to the next. */
 interface Seat {
@@ -27,7 +27,7 @@ interface PlayerRecord {
   /** First round index this player may play. Later joiners sit out the current one. */
   joinedRound: number
   /** By round index; a hole for each round not played. */
-  scores: (number | undefined)[]
+  scores: (Points | undefined)[]
   /** By round index, for the awards; a hole for each round not played. */
   facts: (RoundFacts | undefined)[]
   previousRank: number | undefined

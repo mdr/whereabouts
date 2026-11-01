@@ -1,6 +1,6 @@
 import type { PlayerId } from "../ids.ts"
 import { greatCircleDistance } from "../geo.ts"
-import type { Km, Ms } from "../units.ts"
+import type { Km, Ms, Points } from "../units.ts"
 import { FactsType, type Award, type AreaFacts, type PlayerFacts, type PointFacts, type RoundFacts } from "./awards.ts"
 
 export interface Candidate extends Award {
@@ -61,7 +61,7 @@ const played = (p: PlayerFacts) => p.rounds.filter((r): r is RoundFacts => r !==
 const painted = (p: PlayerFacts) => played(p).filter((r): r is PaintedFacts => r.type !== FactsType.PASSED)
 const pointRounds = (p: PlayerFacts) => played(p).filter((r): r is PointFacts => r.type === FactsType.POINT)
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length
-const total = (p: PlayerFacts) => played(p).reduce((s, r) => s + r.score, 0)
+const total = (p: PlayerFacts): Points => played(p).reduce((s, r) => s + r.score, 0)
 const paintedArea = (p: PlayerFacts) => painted(p).reduce((s, r) => s + r.area, 0)
 const byTotal = (players: PlayerFacts[]) => [...players].sort((a, b) => total(b) - total(a))
 

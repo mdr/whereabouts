@@ -21,7 +21,7 @@ import { VrButton, useVrView } from "../ui/VrButton"
 import { navigate } from "../router"
 import { VrViewType, type VrView } from "../vr/view/view"
 import { resultsTestIds } from "./ResultsTestIds"
-import type { Px } from "@whereabouts/shared/units"
+import type { Points, Px } from "@whereabouts/shared/units"
 
 const MEDALS = ["🥇", "🥈", "🥉"]
 /** Past this many players the standings tighten up, the podium aside. */
@@ -187,7 +187,7 @@ function Rounds(props: RoundsProps) {
 }
 
 /** A line per round: what it asked, who won it (and how many tied), and your score. */
-function RoundList({ rounds, standings, byId, you, best }: RoundsProps & { best: number[] }) {
+function RoundList({ rounds, standings, byId, you, best }: RoundsProps & { best: Points[] }) {
   const mine = standings.find((s) => s.playerId === you)
   return (
     <ol class={s.list}>
@@ -244,7 +244,7 @@ function ScoreTable({
   you,
   best,
   scrolls
-}: RoundsProps & { best: number[]; scrolls: boolean }) {
+}: RoundsProps & { best: Points[]; scrolls: boolean }) {
   return (
     <div class={cx(s.scroll, scrolls && s.scrolls)}>
       <table class={s.table} data-testid={resultsTestIds.table}>

@@ -1,11 +1,12 @@
 /** Totals, ranks and the player list, worked out from the players' scores. */
 import type { PlayerFacts } from "../awards/awards.ts"
 import type { PlayerToken } from "../ids.ts"
+import type { Points } from "../units.ts"
 import type { FinalStanding, PlayerView } from "../protocol.ts"
 import type { Player } from "./seats.ts"
 
 /** The sum of the scores; a round not played counts as 0. */
-function total(scores: (number | undefined)[]): number {
+function total(scores: (Points | undefined)[]): Points {
   let t = 0
   for (const x of scores) t += x ?? 0
   return t

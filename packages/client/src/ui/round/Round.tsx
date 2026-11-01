@@ -1,3 +1,4 @@
+import type { Points } from "@whereabouts/shared/units"
 /** The cards and buttons of a round that practice and a game share. */
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
@@ -93,7 +94,7 @@ export function RevealCards({
   revealed: RevealedAnswer
   fact: Fact | undefined
   /** Undefined when you sat the round out. */
-  you: { score: number; passed: boolean } | undefined
+  you: { score: Points; passed: boolean } | undefined
   /** Under a score that was not a pass. */
   playedLabel: string
   /** A flag round: the country most of your paint was in. */
@@ -128,7 +129,7 @@ export function ScoreCard({
   testIds,
   children
 }: {
-  score: number | string
+  score: Points | string
   label: ComponentChildren
   testIds: { scoreCard?: string; score?: string }
   children?: ComponentChildren

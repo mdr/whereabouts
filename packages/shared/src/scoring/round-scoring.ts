@@ -6,7 +6,7 @@ import { RoundGuessType, type PaintSubmission, type RoundGuess } from "../protoc
 import { AnswerType } from "../questions.ts"
 import { regionMisfit, scoreAnswer, type ScoredAnswer } from "./regions.ts"
 import { buildDistribution, type Kernel } from "./scoring.ts"
-import type { Instant, Ms } from "../units.ts"
+import type { Instant, Ms, Points } from "../units.ts"
 
 export enum SubmissionType {
   DRAFT = "DRAFT",
@@ -29,7 +29,7 @@ interface LockedSubmission {
 export type Submission = DraftSubmission | LockedSubmission
 
 export interface ScoredRound {
-  score: number
+  score: Points
   guess: RoundGuess
   facts: RoundFacts
 }

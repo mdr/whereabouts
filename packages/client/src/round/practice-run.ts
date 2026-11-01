@@ -1,3 +1,4 @@
+import type { Points } from "@whereabouts/shared/units"
 /**
  * A practice run: the questions in shuffled order, where the player is in
  * them, and what each round scored. Pure, so Solo.tsx is only the view over
@@ -19,7 +20,7 @@ export enum PracticePhase {
 
 export interface PracticeResult {
   question: Question
-  score: number
+  score: Points
 }
 
 interface RunBase {

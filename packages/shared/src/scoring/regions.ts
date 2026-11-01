@@ -34,7 +34,7 @@ import {
   type H3Res
 } from "../h3.ts"
 import { bearing, fromXyz, greatCircleDistance, toXyz, type Box, type LatLon } from "../geo.ts"
-import type { Degrees, Km, SquareKm } from "../units.ts"
+import type { Degrees, Km, Points, SquareKm } from "../units.ts"
 import {
   AnswerType,
   MIN_SPREAD,
@@ -95,11 +95,11 @@ const NEARNESS_KERNEL: Kernel = {
 }
 
 export interface AreaScore {
-  score: number
+  score: Points
   /** Cell-by-cell comparison with the country. */
-  shape: number
+  shape: Points
   /** Kernel score under NEARNESS_KERNEL. */
-  nearness: number
+  nearness: Points
 }
 
 /**
@@ -186,8 +186,8 @@ interface PointParts {
 /** The area rule's parts. */
 interface AreaParts {
   type: AnswerType.AREA
-  shape: number
-  nearness: number
+  shape: Points
+  nearness: Points
 }
 
 /**
@@ -204,7 +204,7 @@ export function scoreAnswer(
   painted: Distribution | undefined,
   q: ScoredAnswer,
   kernel: Kernel
-): { score: number; parts: AnswerParts } {
+): { score: Points; parts: AnswerParts } {
   if (!painted) return { score: PASS_SCORE.score, parts: { type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B } }
   if (q.type === AnswerType.AREA) {
     const { score, shape, nearness } = scoreArea(painted, q)
@@ -372,7 +372,7 @@ function paintMass(dist: Distribution, q: Area): Map<H3Cell, number> {
  * the country's cells, clamped at 0. With q spread evenly by area, q = a / A
  * in each of them (A its area), so sum q^2 / a = 1 / A.
  */
-function shapeScore(mass: Map<H3Cell, number>, q: Area): number {
+function shapeScore(mass: Map<H3Cell, number>, q: Area): Points {
   const region = regionAt(q)
   let sum = 0
   for (const [h, a] of region.cells) {

@@ -4,7 +4,7 @@
  */
 import type { PlayerId } from "../ids.ts"
 import type { LatLon } from "../geo.ts"
-import type { Km, Ms, SquareKm } from "../units.ts"
+import type { Km, Ms, Points, SquareKm } from "../units.ts"
 import { candidateAwards, type Candidate } from "./award-rules.ts"
 import { shuffle } from "../questions.ts"
 
@@ -17,7 +17,7 @@ export enum FactsType {
 interface BaseFacts {
   /** The place's name, for award text, e.g. "Taj Mahal, Agra". */
   label: string
-  score: number
+  score: Points
   /** From the round's start to locking in; undefined when the clock ran out. */
   lockedAfter: Ms | undefined
   roundLength: Ms
@@ -36,7 +36,7 @@ export interface PointFacts extends BaseFacts {
    * Where the paint was strongest, how far that is from the answer, and what
    * spreading it and missing cost in points (see explain.ts).
    */
-  point: { spot: LatLon; miss: Km; spread: number; missCost: number; hedged: boolean; tolerance: Km }
+  point: { spot: LatLon; miss: Km; spread: Points; missCost: Points; hedged: boolean; tolerance: Km }
 }
 
 /** A guess at a country. */

@@ -10,7 +10,7 @@ import type { LatLon } from "./geo.ts"
 import { QUESTION_TYPES, QuestionType, AnswerType, Surface, type Clue, type FeatureType } from "./questions.ts"
 import type { PlayerColour } from "./colours.ts"
 import type { H3Cell, H3Res } from "./h3.ts"
-import type { Instant, Km, Ms } from "./units.ts"
+import type { Instant, Km, Ms, Points } from "./units.ts"
 import { paintFromBase64, paintToBase64 } from "./paint/paint-wire.ts"
 import { HintAxisSchema, MAX_HINTS, type HintAxis, type HintBand } from "./hints.ts"
 import type { KernelId } from "./scoring/scoring.ts"
@@ -213,7 +213,7 @@ export interface PlayerView {
   /** Has frozen their guess this round. */
   locked: boolean
   /** Total so far. */
-  score: number
+  score: Points
   /** 1-based rank by score, ties share a rank. */
   rank: number
   /** Rank at the end of the previous round, for change arrows. */
@@ -274,7 +274,7 @@ export type RoundGuess = PassedGuess | PaintedGuess
 
 export interface RoundResultView {
   playerId: PlayerId
-  score: number
+  score: Points
   guess: RoundGuess
   /** The hint this player used on the round. */
   hint?: HintAxis
@@ -316,9 +316,9 @@ export interface PlayedRound extends QuestionPictures {
 
 export interface FinalStanding {
   playerId: PlayerId
-  total: number
+  total: Points
   /** Per round played; no score where the player sat out (joined late). Objects, since JSON turns undefined in an array into null. */
-  rounds: { score?: number }[]
+  rounds: { score?: Points }[]
 }
 
 /** What a view tells you about yourself, whatever the phase. */

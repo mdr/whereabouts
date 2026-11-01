@@ -1,3 +1,4 @@
+import type { Points } from "@whereabouts/shared/units"
 /** The parts of the headset's round and reveal that practice and a game share. */
 import { QuestionType, clueFlag, clueImage, promptOf } from "@whereabouts/shared/questions"
 import { onWater, outlineOf, type QuestionView } from "@whereabouts/shared/protocol"
@@ -54,9 +55,9 @@ export function vrRound(
 
 /** Your score at the reveal, or undefined when you sat the round out. */
 export interface VrScore {
-  score: number
+  score: Points
   passed: boolean
-  total: number
+  total: Points
   /** A flag round: the country most of your paint was in. */
   painted: PaintedCountry | undefined
 }
