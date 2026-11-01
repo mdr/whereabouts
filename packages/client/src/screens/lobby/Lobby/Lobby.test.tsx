@@ -127,7 +127,7 @@ describe("Lobby setup", () => {
       "Minimalmap · coastlines only"
     ])
     // Nothing is highlighted on first load.
-    expect(container.querySelectorAll(`.${setupSummary.changed!}`)).toHaveLength(0)
+    expect(container.querySelectorAll(`.${setupSummary.changed}`)).toHaveLength(0)
   })
 
   it("highlights only the value the host just changed", () => {
@@ -135,7 +135,7 @@ describe("Lobby setup", () => {
     const next = view(false)
     next.config = { ...next.config, roundLength: 30_000 }
     rerender(<Lobby conn={conn} view={next} />)
-    expect([...container.querySelectorAll(`.${setupSummary.changed!}`)].map((t) => t.textContent)).toEqual([
+    expect([...container.querySelectorAll(`.${setupSummary.changed}`)].map((t) => t.textContent)).toEqual([
       "30 sper round"
     ])
   })
@@ -183,7 +183,7 @@ describe("Lobby spectators", () => {
     expect(lists).toHaveLength(2)
     expect(lists[0]!.textContent).toContain("Bob")
     expect(lists[1]!.textContent).toContain("Sam")
-    expect(lists[1]!.querySelectorAll(`.${players.watcher!}`)).not.toHaveLength(0)
+    expect(lists[1]!.querySelectorAll(`.${players.watcher}`)).not.toHaveLength(0)
     expect(inside(container).getByTestId(rosterTestIds.watchingHeading).textContent).toContain("1/8")
   })
 

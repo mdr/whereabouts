@@ -13,7 +13,7 @@ describe("SmallPhoto", () => {
     const { container } = render(<SmallPhoto image={image} />)
     const shown = render(
       <QuestionImage image={image} credit={false} painting />
-    ).container.querySelector<HTMLImageElement>(`.${questionImage.thumb!} img`)!
-    expect(container.querySelector<HTMLImageElement>(`.${picture.smallPicture!} img`)!.src).toBe(shown.src)
+    ).container.querySelector<HTMLImageElement>(`.${questionImage.thumb} img`)!
+    expect(container.querySelector<HTMLImageElement>(`.${picture.smallPicture} img`)!.src).toBe(shown.src)
   })
 })

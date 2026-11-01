@@ -44,13 +44,13 @@ describe("QuestionCard", () => {
       />
     )
     await waitFor(() =>
-      expect(country.container.querySelector(`.${flagImage.flag!} img`)!.getAttribute("src")).toBe("/flags/de.svg")
+      expect(country.container.querySelector(`.${flagImage.flag} img`)!.getAttribute("src")).toBe("/flags/de.svg")
     )
     const flagRound = render(<QuestionCard hud={CardPlace.PAINTING} q={flagRoundOf("fr")} />)
     await waitFor(() =>
-      expect(flagRound.container.querySelector(`.${flagImage.flag!} img`)!.getAttribute("src")).toBe("/flags/fr.svg")
+      expect(flagRound.container.querySelector(`.${flagImage.flag} img`)!.getAttribute("src")).toBe("/flags/fr.svg")
     )
     const place = render(<QuestionCard hud={CardPlace.PAINTING} q={makeQuestionView()} />)
-    expect(place.container.querySelectorAll(`.${flagImage.flag!}`)).toHaveLength(0)
+    expect(place.container.querySelectorAll(`.${flagImage.flag}`)).toHaveLength(0)
   })
 })

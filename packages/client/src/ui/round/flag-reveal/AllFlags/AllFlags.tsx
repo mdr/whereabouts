@@ -16,7 +16,7 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
   useEffect(() => {
     const markers = flagPins(borders).map(({ f, at }) => {
       const el = document.createElement("div")
-      el.className = s.pin ?? ""
+      el.className = s.pin
       el.dataset.testid = allFlagsTestIds.pin
       const flag = document.createElement("i")
       flag.title = f.label

@@ -11,3 +11,6 @@ smoke-out/
 # nix build output
 result
 .vitest/
+
+# generated CSS module declarations
+*.module.css.d.ts

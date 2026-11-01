@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
-    "build": "tsc --noEmit && vp build",
+    "build": "node scripts/css-module-types.mjs && tsc --noEmit && vp build",
     "preview": "vp preview",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p browser",
+    "typecheck": "node scripts/css-module-types.mjs && tsc --noEmit && tsc --noEmit -p browser",
     "smoke": "playwright test solo",
     "e2e": "playwright test",
-    "e2e:prod": "playwright test -c playwright.prod.config.ts"
+    "e2e:prod": "playwright test -c playwright.prod.config.ts",
+    "css-types": "node scripts/css-module-types.mjs"
   },
   "dependencies": {
     "@iwsdk/core": "1.0.1",
@@ -35,6 +36,7 @@
     "@types/webxr": "0.5.24",
     "happy-dom": "^20.0.0",
     "iwer": "^2.7.0",
+    "lightningcss": "^1.33.0",
     "svgo": "^4.1.0",
     "vite": "catalog:",
     "vite-plus": "catalog:"

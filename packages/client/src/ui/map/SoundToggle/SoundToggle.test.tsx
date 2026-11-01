@@ -9,7 +9,7 @@ describe("SoundToggle", () => {
   it("flips the per-device sound setting and shows which state it is in", () => {
     soundOn.value = true
     const { container } = render(<SoundToggle />)
-    const button = container.querySelector<HTMLButtonElement>(`.${s.soundToggle!}`)!
+    const button = container.querySelector<HTMLButtonElement>(`.${s.soundToggle}`)!
     expect(button.getAttribute("aria-pressed")).toBe("true")
     fireEvent.click(button)
     expect(soundOn.value).toBe(false)

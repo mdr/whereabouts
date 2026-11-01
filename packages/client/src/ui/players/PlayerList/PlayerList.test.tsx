@@ -29,7 +29,7 @@ describe("PlayerList", () => {
     expect(rows).toHaveLength(2)
     expect(rows[0]!.textContent).toContain("host")
     expect(rows[0]!.textContent).toContain("you")
-    expect(rows[1]!.classList.contains(s.offline!)).toBe(true)
+    expect(rows[1]!.classList.contains(s.offline)).toBe(true)
     expect(rows[1]!.textContent).toContain("offline")
     // No scores requested.
     expect(screen.queryAllByTestId(playerListTestIds.score)).toHaveLength(0)
@@ -78,18 +78,18 @@ describe("PlayerList status", () => {
       player({ id: playerId("p2"), name: playerName("Bob"), locked: false })
     ]
     const { container: plain } = render(<PlayerList players={players} you={playerId("p2")} showScores={false} />)
-    expect(plain.querySelectorAll(`.${s.done!}`)).toHaveLength(0)
+    expect(plain.querySelectorAll(`.${s.done}`)).toHaveLength(0)
     const { container } = render(<PlayerList players={players} you={playerId("p2")} showScores={false} showLocked />)
     const rows = container.querySelectorAll("li")
-    expect(rows[0]!.querySelectorAll(`.${s.done!}`)).not.toHaveLength(0)
-    expect(rows[1]!.querySelectorAll(`.${s.done!}`)).toHaveLength(0)
+    expect(rows[0]!.querySelectorAll(`.${s.done}`)).not.toHaveLength(0)
+    expect(rows[1]!.querySelectorAll(`.${s.done}`)).toHaveLength(0)
   })
 })
 
 describe("HostTag", () => {
   it("shows the crown with the word for screen readers", () => {
     const { container } = render(<HostTag />)
-    expect(container.querySelectorAll(`.${s.host!} svg`)).not.toHaveLength(0)
+    expect(container.querySelectorAll(`.${s.host} svg`)).not.toHaveLength(0)
     expect(container.textContent).toBe("host")
   })
 })
@@ -99,11 +99,11 @@ describe("PlayerList kick", () => {
     const kicked: string[] = []
     const players = [player({ id: playerId("p1") }), player({ id: playerId("p2"), name: playerName("Bob") })]
     const { container: plain } = render(<PlayerList players={players} you={playerId("p1")} showScores={false} />)
-    expect(plain.querySelectorAll(`button.${s.kick!}`)).toHaveLength(0)
+    expect(plain.querySelectorAll(`button.${s.kick}`)).toHaveLength(0)
     const { container } = render(
       <PlayerList players={players} you={playerId("p1")} showScores={false} onKick={(p) => kicked.push(p.id)} />
     )
-    const buttons = container.querySelectorAll<HTMLButtonElement>(`button.${s.kick!}`)
+    const buttons = container.querySelectorAll<HTMLButtonElement>(`button.${s.kick}`)
     expect(buttons).toHaveLength(1)
     expect(buttons[0]!.getAttribute("aria-label")).toBe("Remove Bob from the game")
     buttons[0]!.click()
@@ -120,11 +120,11 @@ describe("PlayerList make host", () => {
       player({ id: playerId("p3"), name: playerName("Cara"), connected: false })
     ]
     const { container: plain } = render(<PlayerList players={players} you={playerId("p1")} showScores={false} />)
-    expect(plain.querySelectorAll(`button.${s.makeHost!}`)).toHaveLength(0)
+    expect(plain.querySelectorAll(`button.${s.makeHost}`)).toHaveLength(0)
     const { container } = render(
       <PlayerList players={players} you={playerId("p1")} showScores={false} onMakeHost={(p) => picked.push(p.id)} />
     )
-    const buttons = container.querySelectorAll<HTMLButtonElement>(`button.${s.makeHost!}`)
+    const buttons = container.querySelectorAll<HTMLButtonElement>(`button.${s.makeHost}`)
     expect(buttons).toHaveLength(1)
     expect(buttons[0]!.getAttribute("aria-label")).toBe("Make Bob the host")
     buttons[0]!.click()
@@ -141,7 +141,7 @@ describe("PlayerList spectators", () => {
       />
     )
     const row = container.querySelector("li")!
-    expect(row.querySelectorAll(`.${s.watcher!}`)).not.toHaveLength(0)
+    expect(row.querySelectorAll(`.${s.watcher}`)).not.toHaveLength(0)
     expect(row.textContent).toContain("watching")
   })
 })

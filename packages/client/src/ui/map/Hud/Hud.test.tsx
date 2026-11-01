@@ -27,7 +27,7 @@ describe("HudBottom", () => {
         <button>Done</button>
       </HudBottom>
     )
-    expect(container.querySelector(`.${h.toolbar!} button`)!.textContent).toBe("Done")
+    expect(container.querySelector(`.${h.toolbar} button`)!.textContent).toBe("Done")
     expect(document.documentElement.style.getPropertyValue("--toolbar-h")).toBe("96px")
     expect(observe).toHaveBeenCalledWith(container.firstElementChild)
     unmount()

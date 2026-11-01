@@ -21,7 +21,7 @@ describe("SmallFlag", () => {
   it("takes each flag's own shape beside a name", () => {
     for (const [code, shape] of shapes) {
       const { container } = render(<SmallFlag code={code} />)
-      const frame = container.querySelector<HTMLElement>(`.${s.smallFlag!}`)!
+      const frame = container.querySelector<HTMLElement>(`.${s.smallFlag}`)!
       expect(Number(frame.style.getPropertyValue("--flag-ratio"))).toBe(shape)
       cleanup()
     }

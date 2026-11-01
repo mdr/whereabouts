@@ -10,15 +10,16 @@
   "scripts": {
     "dev": "pnpm --parallel --filter ./packages/client --filter ./packages/server dev",
     "build": "pnpm -r build",
-    "test": "vp test run",
+    "test": "pnpm css-types && vp test run",
     "typecheck": "pnpm -r typecheck",
     "smoke": "pnpm --filter ./packages/client smoke",
-    "lint": "vp lint",
-    "lint:fix": "vp lint --fix",
+    "lint": "pnpm css-types && vp lint",
+    "lint:fix": "pnpm css-types && vp lint --fix",
     "format": "vp fmt",
     "format:check": "vp fmt --check",
-    "knip": "knip",
-    "check": "vp check && knip && vp test run"
+    "knip": "pnpm css-types && knip",
+    "check": "pnpm css-types && vp check && knip && vp test run",
+    "css-types": "pnpm --filter ./packages/client css-types"
   },
   "devDependencies": {
     "eslint-plugin-sonarjs": "^4.2.2",

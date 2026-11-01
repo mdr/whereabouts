@@ -34,7 +34,7 @@ importers:
         version: 7.0.2
       vite-plus:
         specifier: 'catalog:'
-        version: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
+        version: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
 
   packages/client:
     dependencies:
@@ -99,6 +99,9 @@ importers:
       iwer:
         specifier: ^2.7.0
         version: 2.7.0
+      lightningcss:
+        specifier: ^1.33.0
+        version: 1.33.0
       svgo:
         specifier: ^4.1.0
         version: 4.1.0
@@ -107,7 +110,7 @@ importers:
         version: '@voidzero-dev/vite-plus-core@1.1.0(@types/node@22.20.3)(esbuild@0.28.2)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1)'
       vite-plus:
         specifier: 'catalog:'
-        version: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
+        version: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
 
   packages/server:
     dependencies:
@@ -4783,7 +4786,7 @@ snapshots:
       pathe: 2.0.3
       sirv: 3.0.2
       tinyrainbow: 3.2.0
-      vitest: 5.0.3(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/browser-preview@5.0.3)(@vitest/ui@5.0.3(vitest@5.0.3))(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))(happy-dom@20.14.5)
+      vitest: 5.0.3(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/browser-preview@5.0.3)(@vitest/ui@5.0.3(vitest@5.0.3))(@voidzero-dev/vite-plus-core@1.1.0(@types/node@22.20.3)(esbuild@0.28.2)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))(happy-dom@20.14.5)
 
   '@vitest/utils@5.0.3':
     dependencies:
@@ -5954,7 +5957,7 @@ snapshots:
       '@oxc-resolver/binding-win32-arm64-msvc': 11.24.2
       '@oxc-resolver/binding-win32-x64-msvc': 11.24.2
 
-  oxfmt@0.72.0(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)):
+  oxfmt@0.72.0(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)):
     dependencies:
       tinypool: 2.2.0
     optionalDependencies:
@@ -5977,9 +5980,9 @@ snapshots:
       '@oxfmt/binding-win32-arm64-msvc': 0.72.0
       '@oxfmt/binding-win32-ia32-msvc': 0.72.0
       '@oxfmt/binding-win32-x64-msvc': 0.72.0
-      vite-plus: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
+      vite-plus: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
 
-  oxfmt@0.72.0(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)):
+  oxfmt@0.72.0(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)):
     dependencies:
       tinypool: 2.2.0
     optionalDependencies:
@@ -6002,7 +6005,7 @@ snapshots:
       '@oxfmt/binding-win32-arm64-msvc': 0.72.0
       '@oxfmt/binding-win32-ia32-msvc': 0.72.0
       '@oxfmt/binding-win32-x64-msvc': 0.72.0
-      vite-plus: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
+      vite-plus: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
 
   oxlint-plugin-eslint@1.87.0: {}
 
@@ -6015,7 +6018,7 @@ snapshots:
       '@oxlint-tsgolint/win32-arm64': 7.0.2003
       '@oxlint-tsgolint/win32-x64': 7.0.2003
 
-  oxlint@1.87.0(oxlint-tsgolint@7.0.2003)(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)):
+  oxlint@1.87.0(oxlint-tsgolint@7.0.2003)(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)):
     optionalDependencies:
       '@oxlint/binding-android-arm-eabi': 1.87.0
       '@oxlint/binding-android-arm64': 1.87.0
@@ -6037,9 +6040,9 @@ snapshots:
       '@oxlint/binding-win32-ia32-msvc': 1.87.0
       '@oxlint/binding-win32-x64-msvc': 1.87.0
       oxlint-tsgolint: 7.0.2003
-      vite-plus: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
+      vite-plus: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
 
-  oxlint@1.87.0(oxlint-tsgolint@7.0.2003)(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)):
+  oxlint@1.87.0(oxlint-tsgolint@7.0.2003)(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)):
     optionalDependencies:
       '@oxlint/binding-android-arm-eabi': 1.87.0
       '@oxlint/binding-android-arm64': 1.87.0
@@ -6061,7 +6064,7 @@ snapshots:
       '@oxlint/binding-win32-ia32-msvc': 1.87.0
       '@oxlint/binding-win32-x64-msvc': 1.87.0
       oxlint-tsgolint: 7.0.2003
-      vite-plus: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
+      vite-plus: 1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1)
 
   p-limit@3.1.0:
     dependencies:
@@ -6484,7 +6487,7 @@ snapshots:
     dependencies:
       react: 19.3.1
 
-  vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1):
+  vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1):
     dependencies:
       '@oxc-project/types': 0.153.0
       '@oxlint/plugins': 1.79.0
@@ -6495,8 +6498,8 @@ snapshots:
       '@vitest/snapshot': 5.0.3
       '@vitest/spy': 5.0.3
       '@vitest/utils': 5.0.3
-      oxfmt: 0.72.0(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1))
-      oxlint: 1.87.0(oxlint-tsgolint@7.0.2003)(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1))
+      oxfmt: 0.72.0(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1))
+      oxlint: 1.87.0(oxlint-tsgolint@7.0.2003)(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1))
       oxlint-tsgolint: 7.0.2003
       vite: '@voidzero-dev/vite-plus-core@1.1.0(@types/node@22.20.3)(esbuild@0.28.2)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1)'
       vitest: 5.0.3(@opentelemetry/api@1.10.0)(@types/node@22.20.3)(@vitest/browser-preview@5.0.3)(@vitest/ui@5.0.3(vitest@5.0.3))(@voidzero-dev/vite-plus-core@1.1.0(@types/node@22.20.3)(esbuild@0.28.2)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))(happy-dom@20.14.5)
@@ -6544,7 +6547,7 @@ snapshots:
       - vue-tsc
       - yaml
 
-  vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1):
+  vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1):
     dependencies:
       '@oxc-project/types': 0.153.0
       '@oxlint/plugins': 1.79.0
@@ -6555,8 +6558,8 @@ snapshots:
       '@vitest/snapshot': 5.0.3
       '@vitest/spy': 5.0.3
       '@vitest/utils': 5.0.3
-      oxfmt: 0.72.0(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1))
-      oxlint: 1.87.0(oxlint-tsgolint@7.0.2003)(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3(vitest@5.0.3))(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1))
+      oxfmt: 0.72.0(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1))
+      oxlint: 1.87.0(oxlint-tsgolint@7.0.2003)(vite-plus@1.1.0(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/ui@5.0.3)(esbuild@0.28.2)(happy-dom@20.14.5)(jiti@2.7.0)(playwright@1.64.1)(typescript@7.0.2)(yaml@2.9.1))
       oxlint-tsgolint: 7.0.2003
       vite: '@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1)'
       vitest: 5.0.3(@opentelemetry/api@1.10.0)(@types/node@26.4.1)(@vitest/browser-preview@5.0.3)(@vitest/ui@5.0.3(vitest@5.0.3))(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))(happy-dom@20.14.5)

@@ -14,9 +14,9 @@ describe("PaintedIn", () => {
     const el = screen.getByTestId(paintedInTestIds.paintedIn)
     expect(el.textContent).toBe("Brazil62%")
     expect(el.getAttribute("title")).toBe("62% of Ann's paint was in Brazil")
-    expect(el.classList.contains(s.right!)).toBe(false)
+    expect(el.classList.contains(s.right)).toBe(false)
     rerender(<PaintedIn where={{ country: brazil, share: 0.62 }} answer="br" whose="your" />)
-    expect(screen.getByTestId(paintedInTestIds.paintedIn).classList.contains(s.right!)).toBe(true)
+    expect(screen.getByTestId(paintedInTestIds.paintedIn).classList.contains(s.right)).toBe(true)
     expect(screen.getByTestId(paintedInTestIds.paintedIn).getAttribute("title")).toBe(
       "62% of your paint was in Brazil, the answer"
     )

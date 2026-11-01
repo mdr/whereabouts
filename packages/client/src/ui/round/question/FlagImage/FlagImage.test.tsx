@@ -25,14 +25,14 @@ describe("flag frames", () => {
   it("take each flag's own shape before its picture loads, here and enlarged", async () => {
     for (const [code, shape] of shapes) {
       const { container } = render(<FlagImage code={code} painting />)
-      const button = container.querySelector<HTMLButtonElement>(`.${flagImage.flag!}`)!
+      const button = container.querySelector<HTMLButtonElement>(`.${flagImage.flag}`)!
       expect(button.querySelectorAll("img")).toHaveLength(0)
       expect(ratio(button)).toBe(shape)
       await waitFor(() => expect(button.disabled).toBe(false))
       fireEvent.click(button)
-      expect(enlargedRatio(document.body.querySelector(`.${lb.lightbox!} img.${lb.flag!}`))).toBe(shape)
+      expect(enlargedRatio(document.body.querySelector(`.${lb.lightbox} img.${lb.flag}`))).toBe(shape)
       // No credit while guessing: the Commons file is named for the country.
-      expect(document.body.querySelectorAll(`.${lb.lightbox!} .${commonsCredit.credit!}`)).toHaveLength(0)
+      expect(document.body.querySelectorAll(`.${lb.lightbox} .${commonsCredit.credit}`)).toHaveLength(0)
       cleanup()
     }
   })

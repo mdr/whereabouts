@@ -6,15 +6,9 @@
     "packages/client": {
       "entry": ["scripts/*.mjs"],
       "ignoreDependencies": ["iwer"],
-      "playwright": {
-        "config": ["playwright.config.ts", "playwright.prod.config.ts"]
-      }
+      "playwright": { "config": ["playwright.config.ts", "playwright.prod.config.ts"] }
     },
-    "packages/shared": {
-      "entry": ["scripts/*.mjs"]
-    },
-    "packages/server": {
-      "ignore": ["src/vendor/**"]
-    }
+    "packages/shared": { "entry": ["scripts/*.mjs"] },
+    "packages/server": { "ignore": ["src/vendor/**"] }
   }
 }

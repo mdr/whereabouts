@@ -1,12 +1,26 @@
 import { defineConfig, lazyPlugins } from "vite-plus"
+import type { Plugin } from "vite-plus"
 import preact from "@preact/preset-vite"
+import { generateAll, writeDeclaration } from "./scripts/css-module-types.mjs"
 
 // Overridable so a second pair of dev servers can run beside the first.
 const clientPort = Number(process.env.CLIENT_PORT ?? 5173)
 const gamePort = Number(process.env.PORT ?? 8787)
 
+// Keeps the CSS modules' declarations (see scripts/css-module-types.mjs) current while editing.
+const cssModuleTypes: Plugin = {
+  name: "css-module-types",
+  apply: "serve",
+  buildStart: generateAll,
+  watchChange(file, { event }) {
+    if (!file.endsWith(".module.css")) return
+    if (event === "delete") generateAll()
+    else writeDeclaration(file)
+  }
+}
+
 export default defineConfig({
-  plugins: lazyPlugins(() => [preact()]),
+  plugins: lazyPlugins(() => [preact(), cssModuleTypes]),
   server: {
     port: clientPort,
     strictPort: true,

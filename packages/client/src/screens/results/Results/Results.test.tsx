@@ -72,8 +72,8 @@ describe("Results", () => {
     expect(rows[0]!.querySelector(tid(standingsTestIds.place))!.textContent).toBe("🥇")
     expect(rows[1]!.querySelector(tid(standingsTestIds.place))!.textContent).toBe("🥈")
     expect(rows[0]!.querySelector(tid(standingsTestIds.total))!.textContent).toBe("1,500")
-    expect(rows[1]!.classList.contains(standings.you!)).toBe(true)
-    expect(container.querySelectorAll(`button:not(.${pictures.smallPicture!})`)).toHaveLength(0)
+    expect(rows[1]!.classList.contains(standings.you)).toBe(true)
+    expect(container.querySelectorAll(`button:not(.${pictures.smallPicture})`)).toHaveLength(0)
     expect(container.textContent).toContain("The host can start another game")
   })
 
@@ -92,8 +92,8 @@ describe("Results", () => {
       ["700", "750"]
     ])
     // Alice took round 1, Bob round 2.
-    expect(rounds.map((r) => r.querySelector(`td.${scoreTable.best!}`)!.textContent)).toEqual(["800", "750"])
-    expect(rounds[0]!.querySelectorAll(`.${pictures.smallPicture!} img`)).toHaveLength(1)
+    expect(rounds.map((r) => r.querySelector(`td.${scoreTable.best}`)!.textContent)).toEqual(["800", "750"])
+    expect(rounds[0]!.querySelectorAll(`.${pictures.smallPicture} img`)).toHaveLength(1)
     expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundType))!.textContent)).toEqual([
       "Landmark",
       "Place name"
@@ -125,8 +125,8 @@ describe("Results", () => {
       "Whole country",
       "Sea"
     ])
-    expect(rounds.map((r) => r.querySelectorAll(`.${roundPicture.shape!}`).length)).toEqual([0, 1, 1])
-    expect(rounds.map((r) => r.querySelectorAll(`.${roundWhat.labelFlag!}`).length)).toEqual([0, 1, 0])
+    expect(rounds.map((r) => r.querySelectorAll(`.${roundPicture.shape}`).length)).toEqual([0, 1, 1])
+    expect(rounds.map((r) => r.querySelectorAll(`.${roundWhat.labelFlag}`).length)).toEqual([0, 1, 0])
   })
 
   it("lists each round's winner and your score where the table won't fit, with the table a click away", () => {
@@ -159,7 +159,7 @@ describe("Results", () => {
       ])
       // You are Bob: your score, picked out where you won.
       expect(rounds.map((r) => r.querySelector(tid(roundListTestIds.roundYours))!.textContent)).toEqual(["500", "750"])
-      expect(rounds[1]!.querySelector(tid(roundListTestIds.roundYours))!.classList.contains(roundList.best!)).toBe(true)
+      expect(rounds[1]!.querySelector(tid(roundListTestIds.roundYours))!.classList.contains(roundList.best)).toBe(true)
       fireEvent.click(getByText("Everyone's scores (2)"))
       expect(container.querySelectorAll(tid(scoreTableTestIds.table))).toHaveLength(1)
       fireEvent.click(getByText("Just the winners"))
