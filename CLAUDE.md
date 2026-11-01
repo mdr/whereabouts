@@ -29,6 +29,7 @@
 ## Browser tests
 
 - Page objects offer `expect…` methods; specs never see locators.
+- Locate by test ID. Where a test ID alone identifies a state, assert on its presence rather than text or attributes.
 - Page state: web-first assertions (`toHaveText`, `toBeVisible`…). Other state (map, VR, sound): `expect.poll`.
 - "Doesn't happen" checks hold over time, after a positive check.
 
