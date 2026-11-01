@@ -88,7 +88,7 @@ export class Headset {
 
   /** Cells of paint drawn on the VR globe. */
   async globePaintCells(): Promise<number> {
-    return this.#page.evaluate(() => window.whereaboutsVr.shownPaintCells)
+    return this.#page.evaluate(() => window.whereaboutsVr.probe.shownPaintCells)
   }
 
   /** Whether the page's map shows over the zoomed-in globe. */

@@ -10,6 +10,7 @@ import { HANDS, Hand, XR_HAND } from "./hands/hand"
 import type { HintMarker } from "./globe/hint"
 import type { Menu, MenuShown } from "./menu/menu"
 import type { Moon } from "./moon"
+import type { PaintRedraw } from "./paint-redraw"
 import type { Picture } from "./picture/picture"
 import type { PictureBack } from "./picture/picture-back"
 import type { ScoreBoard, VrTable } from "./scores/scores"
@@ -36,6 +37,7 @@ export interface ProbedParts {
   menu: Menu
   clearance: PanelClearance
   tools: Record<Hand, HandTool>
+  redraw: PaintRedraw
 }
 
 /** A position or direction in the VR world, in metres. */
@@ -52,6 +54,11 @@ export class VrProbe {
   /** Times the scene has been drawn. */
   get drawn(): number {
     return this.vr.world.renderer.info.render.frame
+  }
+
+  /** Cells of paint the globe last drew. */
+  get shownPaintCells(): number {
+    return this.vr.redraw.shownCells
   }
 
   /** The reveal's line of interest. */
