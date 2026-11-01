@@ -2,7 +2,7 @@ import { PictureType, type PlayedRound, type ShapePicture } from "@whereabouts/s
 import type { QuestionType } from "@whereabouts/shared/questions"
 import { useMemo } from "preact/hooks"
 import { useOutline } from "../../../data/outlines"
-import { typeColour } from "../../../question-types"
+import { questionTypeColourStyle } from "../../../question-types"
 import { Icon } from "../../../ui/icons"
 import { outlinePath } from "../../../ui/outline-path"
 import { SmallFlagButton } from "../../../ui/pictures/SmallFlagButton/SmallFlagButton"
@@ -33,7 +33,7 @@ const RoundShape = ({ shape, type }: { shape: ShapePicture; type: QuestionType }
   const outline = useOutline(shape.outline)
   const path = useMemo(() => (outline ? outlinePath(outline, shape.centre, 56, 42) : ""), [outline])
   return (
-    <SmallPictureBox class={styles.shape} style={typeColour(type)}>
+    <SmallPictureBox class={styles.shape} style={questionTypeColourStyle(type)}>
       {path && (
         <svg viewBox="0 0 56 42" aria-hidden="true">
           <path d={path} />

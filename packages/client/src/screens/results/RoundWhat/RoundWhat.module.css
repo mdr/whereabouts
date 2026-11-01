@@ -34,5 +34,5 @@
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background: var(--type);
+  background: var(--question-type-colour);
 }

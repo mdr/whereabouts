@@ -1,4 +1,4 @@
-/* A shape round's outline, in its kind's colour (--type). */
+/* A shape round's outline, in its question type's colour. */
 .shape {
   --picture-bg: var(--card-bg);
 
@@ -7,10 +7,10 @@
     height: 100%;
   }
   & path {
-    fill: var(--type);
+    fill: var(--question-type-colour);
     fill-opacity: 0.85;
     fill-rule: evenodd;
-    stroke: var(--type);
+    stroke: var(--question-type-colour);
     stroke-width: 0.6;
     stroke-linejoin: round;
   }

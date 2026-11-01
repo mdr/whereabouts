@@ -57,7 +57,7 @@ export const QUESTION_TYPE_LOOKS: Record<QuestionType, QuestionTypeLook> = {
   }
 }
 
-/** Sets `--type` to the colour of a type of question, for what is drawn in it. */
-export const typeColour = (type: QuestionType): Record<string, string> => ({
-  "--type": QUESTION_TYPE_LOOKS[type].colour
+/** An inline style handing a question type's colour to CSS as `var(--question-type-colour)`. */
+export const questionTypeColourStyle = (type: QuestionType): { "--question-type-colour": CssColour } => ({
+  "--question-type-colour": QUESTION_TYPE_LOOKS[type].colour
 })

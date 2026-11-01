@@ -5,7 +5,7 @@
  */
 import { MAX_ROUNDS, mixTotal, type QuestionMix } from "@whereabouts/shared/protocol/config"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
-import { QUESTION_TYPE_LOOKS, typeColour } from "../../../question-types"
+import { QUESTION_TYPE_LOOKS, questionTypeColourStyle } from "../../../question-types"
 import { Stepper } from "../Stepper/Stepper"
 import { mixEditorTestIds } from "./MixEditorTestIds"
 import { RoundStrip } from "../RoundStrip/RoundStrip"
@@ -23,7 +23,7 @@ export const MixEditor = ({ mix, onChange }: { mix: QuestionMix; onChange: (mix:
             <li
               key={type}
               class={styles.row}
-              style={typeColour(type)}
+              style={questionTypeColourStyle(type)}
               data-testid={mixEditorTestIds.row}
               data-type={type}
             >

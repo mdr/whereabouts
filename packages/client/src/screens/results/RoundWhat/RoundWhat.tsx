@@ -1,6 +1,6 @@
 import type { PlayedRound } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
-import { QUESTION_TYPE_LOOKS, typeColour } from "../../../question-types"
+import { QUESTION_TYPE_LOOKS, questionTypeColourStyle } from "../../../question-types"
 import { SmallFlag } from "../../../ui/pictures/SmallFlag/SmallFlag"
 import { cx } from "../../../ui/cx"
 import { RoundPicture } from "../RoundPicture/RoundPicture"
@@ -26,7 +26,7 @@ export const RoundWhat = ({ number, round, textClass }: { number: number; round:
           <SmallFlag code={round.countryFlag} class={styles.labelFlag} />
         )}
       </span>
-      <span class={styles.type} style={typeColour(round.type)} data-testid={roundWhatTestIds.roundType}>
+      <span class={styles.type} style={questionTypeColourStyle(round.type)} data-testid={roundWhatTestIds.roundType}>
         {typeName(round)}
       </span>
     </span>

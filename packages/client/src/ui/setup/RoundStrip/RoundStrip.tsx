@@ -1,6 +1,6 @@
 import { mixTotal, type QuestionMix } from "@whereabouts/shared/protocol/config"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
-import { typeColour } from "../../../question-types"
+import { questionTypeColourStyle } from "../../../question-types"
 import { cx } from "../../cx"
 import { describeMix } from "../describe-mix"
 import { roundStripTestIds } from "./RoundStripTestIds"
@@ -28,7 +28,7 @@ export const RoundStrip = ({
             <span
               key={`${type}${i}`}
               class={styles.cell}
-              style={typeColour(type)}
+              style={questionTypeColourStyle(type)}
               data-testid={roundStripTestIds.cell}
             />
           ))
