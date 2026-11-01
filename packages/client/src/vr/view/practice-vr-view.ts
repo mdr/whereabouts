@@ -22,7 +22,7 @@ export interface PracticeVrShown {
   next: () => void
   restart: () => void
   /** The revealed round's score under the kernel chosen now, which may differ from when it was submitted. */
-  shownScore: number | undefined
+  shownScore: number
   where: PaintedCountry | undefined
   borders: Borders | undefined
 }
@@ -30,7 +30,7 @@ export interface PracticeVrShown {
 export function practiceVrView(run: PracticeRun, s: PracticeVrShown): VrView {
   const total = runTotal(run)
   const home = { label: "Home", press: () => navigate("/") }
-  if (run.phase === PracticePhase.DONE)
+  if (run.type === PracticePhase.DONE)
     return {
       type: VrViewType.DONE,
       summary: {
@@ -44,7 +44,7 @@ export function practiceVrView(run: PracticeRun, s: PracticeVrShown): VrView {
 
   const shown: VrRoundShown = {
     question: s.question,
-    revealed: run.phase === PracticePhase.REVEAL ? s.answer : undefined,
+    revealed: run.type === PracticePhase.REVEAL ? s.answer : undefined,
     fact: s.fact
   }
   const round = vrRound(shown, {
@@ -59,8 +59,7 @@ export function practiceVrView(run: PracticeRun, s: PracticeVrShown): VrView {
     playing: true
   })
   const more = [{ ...home, confirm: "Press again to leave" }]
-  if (run.phase !== PracticePhase.REVEAL || !run.revealed || s.shownScore === undefined)
-    return { type: VrViewType.PAINT, round, more }
+  if (run.type !== PracticePhase.REVEAL) return { type: VrViewType.PAINT, round, more }
   return {
     type: VrViewType.REVEAL,
     round,

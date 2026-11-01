@@ -42,7 +42,8 @@ import {
   revealedFromQuestion,
   runTotal,
   startRun,
-  submitRound
+  submitRound,
+  type PracticeRun
 } from "../../round/practice-run"
 import { soloTestIds } from "./SoloTestIds"
 import { Cheats, LiveScore, RevealScore } from "./SoloDevTools"
@@ -68,8 +69,10 @@ function SoloLoader() {
 
 function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) {
   const paint = usePaint()
-  const [run, setRun] = useState(() => startRun(pool, Date.now()))
-  const { questions, index, phase, revealed } = run
+  const [run, setRun] = useState<PracticeRun>(() => startRun(pool, Date.now()))
+  const { questions, index } = run
+  const phase = run.type
+  const revealed = run.type === PracticePhase.REVEAL ? run.revealed : undefined
   const hover = useSignal<LatLon | undefined>(undefined)
   // Practice hints are unlimited, still one per question.
   const [hint, setHint] = useState<HintBand | undefined>(undefined)
@@ -130,6 +133,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
 
   // With nothing painted, a pass: it scores PASS_SCORE, as in a game.
   function submit() {
+    if (run.type !== PracticePhase.PAINT) return
     const passed = announcePass(paint)
     const dist = passed ? undefined : buildDistribution(paint.layer.toCells(), paint.floor.value)
     setRun(submitRound(run, dist, scored, kernel))
@@ -143,6 +147,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
   }, [phase, index])
 
   function next() {
+    if (run.type !== PracticePhase.REVEAL) return
     if (isLastRound(run)) paint.gameMap.clearReveal()
     setRun(nextRound(run))
   }
@@ -156,10 +161,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
   // Each practice run shuffles anew, so its first question picks this run's facts.
   const fact = useFact(q, questions[0]!.id, index)
   // Re-score the revealed paint if the kernel changes on the reveal screen.
-  const shownResult = useMemo(() => {
-    if (!revealed) return undefined
-    return scoreAnswer(revealed.dist, scored, kernel)
-  }, [revealed, kernel.id])
+  const shownResult = useMemo(() => scoreAnswer(revealed?.dist, scored, kernel), [revealed, kernel.id])
   const where = useMemo(
     () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : undefined),
     [revealed, borders]
@@ -175,7 +177,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     submit,
     next,
     restart,
-    shownScore: shownResult?.score,
+    shownScore: shownResult.score,
     where,
     borders
   })
@@ -192,8 +194,8 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
 
   if (phase === PracticePhase.DONE) return <SoloDone run={run} restart={restart} vrView={vrView} />
 
-  if (phase === PracticePhase.REVEAL && revealed && shownResult) {
-    const dist = revealed.dist
+  if (run.type === PracticePhase.REVEAL) {
+    const dist = run.revealed.dist
     const last = isLastRound(run)
     return (
       <>

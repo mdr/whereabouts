@@ -21,19 +21,32 @@ export interface PracticeResult {
   score: number
 }
 
-export interface PracticeRun {
+interface RunBase {
   questions: Question[]
   index: number
-  phase: PracticePhase
   /** In the order played. */
   results: PracticeResult[]
-  /** The round on show at the reveal; no distribution for a pass. */
-  revealed?: { dist?: Distribution; result: PracticeResult }
 }
 
+export interface PaintingRun extends RunBase {
+  type: PracticePhase.PAINT
+}
+
+export interface RevealingRun extends RunBase {
+  type: PracticePhase.REVEAL
+  /** The round on show; no distribution for a pass. */
+  revealed: { dist?: Distribution; result: PracticeResult }
+}
+
+export interface DoneRun extends RunBase {
+  type: PracticePhase.DONE
+}
+
+export type PracticeRun = PaintingRun | RevealingRun | DoneRun
+
 /** The whole pool, shuffled by `seed`, from its first question. */
-export function startRun(pool: readonly Question[], seed: number): PracticeRun {
-  return { questions: shuffle([...pool], seed), index: 0, phase: PracticePhase.PAINT, results: [] }
+export function startRun(pool: readonly Question[], seed: number): PaintingRun {
+  return { type: PracticePhase.PAINT, questions: shuffle([...pool], seed), index: 0, results: [] }
 }
 
 export const currentQuestion = (run: PracticeRun): Question => run.questions[run.index]!
@@ -47,22 +60,23 @@ export const runMaximum = (run: PracticeRun): number => run.questions.length * 1
 
 /** Score the paint (undefined for a pass) against the current question, and show the reveal. */
 export function submitRound(
-  run: PracticeRun,
+  run: PaintingRun,
   dist: Distribution | undefined,
   answer: ScoredAnswer,
   kernel: Kernel
-): PracticeRun {
+): RevealingRun {
   const result = { question: currentQuestion(run), score: scoreAnswer(dist, answer, kernel).score }
-  return { ...run, phase: PracticePhase.REVEAL, results: [...run.results, result], revealed: { dist, result } }
+  return { ...run, type: PracticePhase.REVEAL, results: [...run.results, result], revealed: { dist, result } }
 }
 
 /** On from a reveal: the next question, or the end of the run after the last. */
 /** What moving on from the reveal is called, on the page and in the headset. */
 export const nextLabel = (run: PracticeRun): string => (isLastRound(run) ? "Finish" : "Next question")
 
-export function nextRound(run: PracticeRun): PracticeRun {
-  if (isLastRound(run)) return { ...run, phase: PracticePhase.DONE }
-  return { ...run, index: run.index + 1, phase: PracticePhase.PAINT }
+export function nextRound(run: RevealingRun): PaintingRun | DoneRun {
+  const { questions, index, results } = run
+  if (isLastRound(run)) return { type: PracticePhase.DONE, questions, index, results }
+  return { type: PracticePhase.PAINT, questions, index: index + 1, results }
 }
 
 export function revealedFromQuestion(q: Question, outlines: Outlines): RevealedAnswer {

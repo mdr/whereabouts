@@ -26,7 +26,8 @@ import {
   runTotal,
   startRun,
   submitRound,
-  type PracticeRun
+  type PaintingRun,
+  type RevealingRun
 } from "./practice-run"
 
 function makePlace(id: string, at: LatLon = { lat: 35, lon: 135.8 }): PlaceQuestion {
@@ -56,16 +57,23 @@ function blob(at: LatLon) {
 }
 
 /** Answer the current question: on its answer, or a pass. */
-function play(run: PracticeRun, pass = false): PracticeRun {
+function play(run: PaintingRun, pass = false): RevealingRun {
   const q = currentQuestion(run)
   if (q.answer.type !== AnswerType.POINT) throw new Error("a point question")
   return submitRound(run, pass ? undefined : blob(q.answer.at), scoredAnswer(q.answer, new Map()), DEFAULT_KERNEL)
 }
 
+/** Move on from a reveal that isn't the last. */
+function onward(run: RevealingRun): PaintingRun {
+  const next = nextRound(run)
+  if (next.type !== PracticePhase.PAINT) throw new Error("not the last round")
+  return next
+}
+
 describe("a practice run", () => {
   it("starts painting the first of the whole pool, shuffled by its seed", () => {
     const run = startRun(POOL, 7)
-    expect(run.phase).toBe(PracticePhase.PAINT)
+    expect(run.type).toBe(PracticePhase.PAINT)
     expect(run.index).toBe(0)
     expect(run.results).toEqual([])
     expect([...run.questions].sort((a, b) => a.id.localeCompare(b.id))).toEqual(POOL)
@@ -81,43 +89,44 @@ describe("a practice run", () => {
 
   it("scores a submitted round and shows its reveal", () => {
     const run = play(startRun(POOL, 7))
-    expect(run.phase).toBe(PracticePhase.REVEAL)
+    expect(run.type).toBe(PracticePhase.REVEAL)
     expect(run.results).toHaveLength(1)
     expect(run.results[0]!.question).toBe(run.questions[0])
     expect(run.results[0]!.score).toBeGreaterThan(900)
-    expect(run.revealed?.result).toBe(run.results[0])
-    expect(run.revealed?.dist).toBeDefined()
+    expect(run.revealed.result).toBe(run.results[0])
+    expect(run.revealed.dist).toBeDefined()
   })
 
   it("scores a pass as a game does, with no paint to show", () => {
     const run = play(startRun(POOL, 7), true)
     expect(run.results[0]!.score).toBe(PASS_SCORE.score)
-    expect(run.revealed?.dist).toBeUndefined()
+    expect(run.revealed.dist).toBeUndefined()
   })
 
   it("goes on to the next question after a reveal", () => {
-    const run = nextRound(play(startRun(POOL, 7)))
-    expect(run.phase).toBe(PracticePhase.PAINT)
+    const run = onward(play(startRun(POOL, 7)))
+    expect(run.type).toBe(PracticePhase.PAINT)
     expect(currentQuestion(run)).toBe(run.questions[1])
     expect(run.results).toHaveLength(1)
+    expect(run).not.toHaveProperty("revealed")
   })
 
   it("ends after the last question's reveal, keeping every round", () => {
-    let run = startRun(POOL, 7)
-    for (let i = 0; i < POOL.length; i++) {
-      expect(isLastRound(run)).toBe(i === POOL.length - 1)
-      expect(nextLabel(run)).toBe(i === POOL.length - 1 ? "Finish" : "Next question")
-      run = play(run, i === 1)
-      if (i < POOL.length - 1) run = nextRound(run)
+    let revealing = play(startRun(POOL, 7))
+    for (let i = 0; i < POOL.length - 1; i++) {
+      expect(isLastRound(revealing)).toBe(false)
+      expect(nextLabel(revealing)).toBe("Next question")
+      revealing = play(onward(revealing), i === 0)
     }
-    run = nextRound(run)
-    expect(run.phase).toBe(PracticePhase.DONE)
+    expect(isLastRound(revealing)).toBe(true)
+    expect(nextLabel(revealing)).toBe("Finish")
+    const run = nextRound(revealing)
+    expect(run.type).toBe(PracticePhase.DONE)
     expect(run.results.map((r) => r.question)).toEqual(run.questions)
   })
 
   it("totals its rounds out of a thousand a question", () => {
-    let run = play(startRun(POOL, 7))
-    run = play(nextRound(run), true)
+    const run = play(onward(play(startRun(POOL, 7))), true)
     expect(runTotal(run)).toBe(run.results[0]!.score + PASS_SCORE.score)
     expect(runMaximum(run)).toBe(3000)
   })

@@ -6,7 +6,15 @@ import { scoredAnswer } from "@whereabouts/shared/scoring/regions"
 import { DEFAULT_KERNEL } from "@whereabouts/shared/scoring/scoring"
 import { AnswerType, ClueType, QuestionType, type PlaceQuestion } from "@whereabouts/shared/questions"
 import type { PaintController } from "../../paint/paint-controller"
-import { nextRound, startRun, submitRound, type PracticeRun } from "../../round/practice-run"
+import {
+  PracticePhase,
+  nextRound,
+  startRun,
+  submitRound,
+  type PaintingRun,
+  type PracticeRun,
+  type RevealingRun
+} from "../../round/practice-run"
 import { practiceVrView, type PracticeVrShown } from "./practice-vr-view"
 import { VrViewType, type VrView } from "./view"
 import { makeQuestionView } from "../../test-view"
@@ -21,8 +29,14 @@ const place = (id: string): PlaceQuestion => ({
   answer: { type: AnswerType.POINT, at: { lat: 35, lon: 135.8 }, tolerance: 50 }
 })
 
-const pass = (run: PracticeRun) =>
+const pass = (run: PaintingRun) =>
   submitRound(run, undefined, scoredAnswer(run.questions[run.index]!.answer, new Map()), DEFAULT_KERNEL)
+
+const onward = (run: RevealingRun): PaintingRun => {
+  const next = nextRound(run)
+  if (next.type !== PracticePhase.PAINT) throw new Error("not the last round")
+  return next
+}
 
 const shown = (over: Partial<PracticeVrShown> = {}): PracticeVrShown => ({
   paint: {} as PaintController,
@@ -35,7 +49,7 @@ const shown = (over: Partial<PracticeVrShown> = {}): PracticeVrShown => ({
   submit: vi.fn(),
   next: vi.fn(),
   restart: vi.fn(),
-  shownScore: undefined,
+  shownScore: 0,
   where: undefined,
   borders: undefined,
   ...over
@@ -55,11 +69,11 @@ describe("practiceVrView", () => {
       return v.type === VrViewType.REVEAL ? v.reveal.actions[0]?.label : undefined
     }
     expect(action(pass(run))).toBe("Next question")
-    expect(action(pass(nextRound(pass(run))))).toBe("Finish")
+    expect(action(pass(onward(pass(run))))).toBe("Finish")
   })
 
   it("sums the run up at the end, out of a thousand a question", () => {
-    const done = nextRound(pass(nextRound(pass(run))))
+    const done = nextRound(pass(onward(pass(run))))
     const v = practiceVrView(done, shown())
     expect(v.type === VrViewType.DONE && v.summary.scoreLine).toBe("500 pts out of 2,000")
   })
