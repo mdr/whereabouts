@@ -1,5 +1,5 @@
 import type { PlayerId } from "@whereabouts/shared/ids"
-import type { Award } from "@whereabouts/shared/awards/awards"
+import type { Award } from "@whereabouts/shared/awards/player-facts"
 import { colourCss } from "@whereabouts/shared/colours"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { awardsTestIds } from "./AwardsTestIds"

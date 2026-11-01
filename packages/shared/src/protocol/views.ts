@@ -1,4 +1,4 @@
-import type { Award } from "../awards/awards.ts"
+import type { Award } from "../awards/player-facts.ts"
 import type { LatLon } from "../geo.ts"
 import type { H3Cell, H3Res } from "../h3.ts"
 import type { HintAxis, HintBand } from "../hints.ts"

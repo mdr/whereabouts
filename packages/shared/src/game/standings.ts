@@ -1,5 +1,5 @@
 /** Totals, ranks and the player list, worked out from the players' scores. */
-import type { PlayerFacts } from "../awards/awards.ts"
+import type { PlayerFacts } from "../awards/player-facts.ts"
 import type { PlayerToken } from "../ids.ts"
 import type { Points } from "../units.ts"
 import type { FinalStanding } from "../protocol/views.ts"

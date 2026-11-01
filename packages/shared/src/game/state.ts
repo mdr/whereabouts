@@ -1,5 +1,5 @@
 /** What a game holds in each phase, and nothing it doesn't. */
-import type { Award } from "../awards/awards.ts"
+import type { Award } from "../awards/player-facts.ts"
 import type { HintAxis } from "../hints.ts"
 import type { PlayerToken } from "../ids.ts"
 import { Phase, type FinalStanding, type PlayedRound, type RoundReveal } from "../protocol/views.ts"

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
-import { FactsType, pickAwards, type AreaFacts, type PlayerFacts, type PointFacts, type RoundFacts } from "./awards.ts"
+import { pickAwards } from "./awards.ts"
+import { FactsType, type AreaFacts, type PlayerFacts, type PointFacts, type RoundFacts } from "./player-facts.ts"
 import { playerId } from "../ids.ts"
 import type { Ms } from "../units.ts"
 

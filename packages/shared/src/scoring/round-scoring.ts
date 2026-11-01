@@ -1,5 +1,5 @@
 /** Scoring one player's round: the score, its parts, and the facts the awards read. */
-import { FactsType, type RoundFacts } from "../awards/awards.ts"
+import { FactsType, type RoundFacts } from "../awards/player-facts.ts"
 import { explainPoint, isHedge } from "./explain.ts"
 import { PaintLayer, resolutionForTolerance } from "../paint/paint.ts"
 import { RoundGuessType, type PaintSubmission, type RoundGuess } from "../protocol/views.ts"

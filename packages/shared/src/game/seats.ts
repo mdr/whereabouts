@@ -5,7 +5,7 @@ import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE } from "../protocol/config.ts"
 import { CloseReason } from "../close-reason.ts"
 import { Role } from "../roles.ts"
 import { OK_CHANGED, fail, type CommandResult, type JoinResult } from "./command-result.ts"
-import type { RoundFacts } from "../awards/awards.ts"
+import type { RoundFacts } from "../awards/player-facts.ts"
 import type { Instant, Points } from "../units.ts"
 
 /** Who someone is and how they are connected: kept from one game to the next. */
