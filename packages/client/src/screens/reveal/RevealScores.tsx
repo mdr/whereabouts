@@ -68,7 +68,9 @@ export function RevealScores({
               where={where.get(row.player.id)}
               answerFlag={answerFlag}
               onSelect={() => onSelect(row.pick)}
-              onHover={(on) => onHover(on && row.result?.guess.type === RoundGuessType.PAINTED ? row.player.id : undefined)}
+              onHover={(on) =>
+                onHover(on && row.result?.guess.type === RoundGuessType.PAINTED ? row.player.id : undefined)
+              }
               onKick={onKick && !row.you ? () => onKick(row.player) : undefined}
             />
           )

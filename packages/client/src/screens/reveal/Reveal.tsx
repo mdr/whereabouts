@@ -9,7 +9,14 @@ import { usePaint } from "../../ui/map/MapView"
 import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../../ui/map/Hud"
 import { RevealCards } from "../../ui/round/RevealCards"
 import { frameReveal, showAnswer } from "../../round/round"
-import { SHOW_EVERYONE, revealedFromView, revealShown, showPlayer, shownResults, type RevealShown } from "../../round/reveal"
+import {
+  SHOW_EVERYONE,
+  revealedFromView,
+  revealShown,
+  showPlayer,
+  shownResults,
+  type RevealShown
+} from "../../round/reveal"
 import { canEndGame, revealModel } from "../../round/round-model"
 import { WAITING_FOR_OTHERS, readyCountText } from "../../round/round-words"
 import { ConnectionNote } from "../../ui/connection/ConnectionNote"
