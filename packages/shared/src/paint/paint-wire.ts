@@ -20,12 +20,12 @@ export function encodePaint(paint: PaintSubmission): Uint8Array {
   const entries = cellEntries(paint.cells)
   const view = new DataView(new ArrayBuffer(HEADER_BYTES + entries.length * CELL_BYTES))
   view.setFloat64(0, paint.floor, true)
-  entries.forEach(([h, v], i) => {
+  entries.forEach(([cell, intensity], i) => {
     const at = HEADER_BYTES + i * CELL_BYTES
-    const [lower, upper] = cellToSplitLong(h)
+    const [lower, upper] = cellToSplitLong(cell)
     view.setUint32(at, lower, true)
     view.setUint32(at + 4, upper, true)
-    view.setFloat32(at + 8, v, true)
+    view.setFloat32(at + 8, intensity, true)
   })
   return new Uint8Array(view.buffer)
 }
@@ -40,10 +40,10 @@ export function decodePaint(bytes: Uint8Array): PaintSubmission | undefined {
   const cells: Record<H3Cell, number> = {}
   for (let i = 0; i < count; i++) {
     const at = HEADER_BYTES + i * CELL_BYTES
-    const h = cellFromSplitLong(view.getUint32(at, true), view.getUint32(at + 4, true))
-    const v = view.getFloat32(at + 8, true)
-    if (h === undefined || !(v >= MIN_INTENSITY && v <= MAX_INTENSITY)) return undefined
-    cells[h] = v
+    const cell = cellFromSplitLong(view.getUint32(at, true), view.getUint32(at + 4, true))
+    const intensity = view.getFloat32(at + 8, true)
+    if (cell === undefined || !(intensity >= MIN_INTENSITY && intensity <= MAX_INTENSITY)) return undefined
+    cells[cell] = intensity
   }
   return { cells, floor }
 }
@@ -51,15 +51,15 @@ export function decodePaint(bytes: Uint8Array): PaintSubmission | undefined {
 /** Binary paint as text, to travel inside JSON (the reveal). */
 export function paintToBase64(paint: PaintSubmission): string {
   const bytes = encodePaint(paint)
-  let bin = ""
+  let binary = ""
   // In chunks: spreading a whole large paint into one call overflows the stack.
-  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
-  return btoa(bin)
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  return btoa(binary)
 }
 
 export function paintFromBase64(text: string): PaintSubmission | undefined {
   try {
-    return decodePaint(Uint8Array.from(atob(text), (c) => c.charCodeAt(0)))
+    return decodePaint(Uint8Array.from(atob(text), (char) => char.charCodeAt(0)))
   } catch {
     return undefined
   }

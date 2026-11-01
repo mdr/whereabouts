@@ -8,15 +8,19 @@ import { scoredAnswer } from "../src/scoring/regions.ts"
 
 const outlines = outlinesFrom(JSON.parse(readFileSync(new URL("../outlines.json", import.meta.url), "utf8")))
 
-export const areaOf = (q) => ({ id: q.id, label: q.label, ...scoredAnswer(q.answer, outlines) })
+export const areaOf = (question) => ({
+  id: question.id,
+  label: question.label,
+  ...scoredAnswer(question.answer, outlines)
+})
 
-export const COUNTRIES = CATALOGUE.filter((q) => q.type === QuestionType.COUNTRY).map(areaOf)
+export const COUNTRIES = CATALOGUE.filter((question) => question.type === QuestionType.COUNTRY).map(areaOf)
 
-export const PLACES = CATALOGUE.filter((q) => q.answer.type === AnswerType.POINT).map((q) => ({
-  id: q.id,
-  label: q.label,
-  answer: q.answer.at,
-  tolerance: q.answer.tolerance
+export const PLACES = CATALOGUE.filter((question) => question.answer.type === AnswerType.POINT).map((question) => ({
+  id: question.id,
+  label: question.label,
+  answer: question.answer.at,
+  tolerance: question.answer.tolerance
 }))
 
-export const questionById = (id) => CATALOGUE.find((q) => q.id === id)
+export const questionById = (id) => CATALOGUE.find((question) => question.id === id)

@@ -18,31 +18,34 @@ export const MIN_KEPT_SHARE = 0.75
 
 const EARTH_RADIUS_KM = 6371
 export function distanceKm([lon1, lat1], [lon2, lat2]) {
-  const r = Math.PI / 180
-  const h =
-    Math.sin(((lat2 - lat1) * r) / 2) ** 2 +
-    Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(((lon2 - lon1) * r) / 2) ** 2
-  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h))
+  const radiansPerDegree = Math.PI / 180
+  const haversine =
+    Math.sin(((lat2 - lat1) * radiansPerDegree) / 2) ** 2 +
+    Math.cos(lat1 * radiansPerDegree) *
+      Math.cos(lat2 * radiansPerDegree) *
+      Math.sin(((lon2 - lon1) * radiansPerDegree) / 2) ** 2
+  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(haversine))
 }
 
 /** Closest approach between two polygons' outer rings, by vertices. */
 function gapKm(a, b) {
   let best = Infinity
-  for (const p of a[0]) for (const q of b[0]) best = Math.min(best, distanceKm(p, q))
+  for (const vertex of a[0]) for (const other of b[0]) best = Math.min(best, distanceKm(vertex, other))
   return best
 }
 
 export const cellsOf = (polygon, res) => polygonToCells(polygon, res, true)
-export const areaOf = (cells) => cells.reduce((s, h) => s + cellArea(h, UNITS.km2), 0)
+export const areaOf = (cells) => cells.reduce((sum, cell) => sum + cellArea(cell, UNITS.km2), 0)
 
 /** A ring's area on the sphere, km² (the spherical excess, as in d3-geo). */
 export function ringAreaKm2(ring) {
-  const r = Math.PI / 180
+  const radiansPerDegree = Math.PI / 180
   let sum = 0
   for (let i = 0; i < ring.length - 1; i++) {
     const [lon1, lat1] = ring[i]
     const [lon2, lat2] = ring[i + 1]
-    sum += (lon2 - lon1) * r * (2 + Math.sin(lat1 * r) + Math.sin(lat2 * r))
+    sum +=
+      (lon2 - lon1) * radiansPerDegree * (2 + Math.sin(lat1 * radiansPerDegree) + Math.sin(lat2 * radiansPerDegree))
   }
   return Math.abs((sum * EARTH_RADIUS_KM * EARTH_RADIUS_KM) / 2)
 }
@@ -57,8 +60,8 @@ function inRing([x, y], ring) {
   }
   return inside
 }
-export const onLand = (pt, polygons) =>
-  polygons.some(([outer, ...holes]) => inRing(pt, outer) && !holes.some((h) => inRing(pt, h)))
+export const onLand = (point, polygons) =>
+  polygons.some(([outer, ...holes]) => inRing(point, outer) && !holes.some((hole) => inRing(point, hole)))
 
 /**
  * Where a small country is asked: its label point, unless that is out at sea
@@ -67,11 +70,11 @@ export const onLand = (pt, polygons) =>
  * counts as on it: the 1:50m outline of Vatican City misses its label point.
  */
 const LABEL_SLACK_KM = 5
-export function islandAnswer(p, polygons) {
-  const label = { lat: round4(p.LABEL_Y), lon: round4(p.LABEL_X) }
-  const pt = [label.lon, label.lat]
-  const near = polygons.some((poly) => poly[0].some((v) => distanceKm(pt, v) <= LABEL_SLACK_KM))
-  if (near || onLand(pt, polygons)) return label
+export function islandAnswer(properties, polygons) {
+  const label = { lat: round4(properties.LABEL_Y), lon: round4(properties.LABEL_X) }
+  const point = [label.lon, label.lat]
+  const near = polygons.some((polygon) => polygon[0].some((vertex) => distanceKm(point, vertex) <= LABEL_SLACK_KM))
+  if (near || onLand(point, polygons)) return label
   const largest = polygons.reduce((a, b) => (polygonAreaKm2(b) > polygonAreaKm2(a) ? b : a))
   const cells = cellsOf(largest, 9)
   const middle = cells.length > 0 ? centroid(cells) : null
@@ -81,7 +84,8 @@ export function islandAnswer(p, polygons) {
 }
 
 /** A polygon's area, km²: its outer ring less its holes. */
-export const polygonAreaKm2 = ([outer, ...holes]) => ringAreaKm2(outer) - holes.reduce((s, h) => s + ringAreaKm2(h), 0)
+export const polygonAreaKm2 = ([outer, ...holes]) =>
+  ringAreaKm2(outer) - holes.reduce((sum, hole) => sum + ringAreaKm2(hole), 0)
 
 export const polygonsOf = (geometry) => (geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates)
 
@@ -93,7 +97,7 @@ export const polygonsOf = (geometry) => (geometry.type === "Polygon" ? [geometry
  */
 export function keptParts(geometry, chainKm = CHAIN_KM) {
   const all = polygonsOf(geometry).map((polygon) => ({ polygon, area: areaOf(cellsOf(polygon, 6)) }))
-  const parts = all.filter((p) => p.area >= MIN_PART_KM2).sort((a, b) => b.area - a.area)
+  const parts = all.filter((part) => part.area >= MIN_PART_KM2).sort((a, b) => b.area - a.area)
   const largest = all.reduce((a, b) => (b.area > a.area ? b : a))
   if (parts[0] !== largest) parts.unshift(largest)
   const kept = [parts.shift()]
@@ -101,7 +105,7 @@ export function keptParts(geometry, chainKm = CHAIN_KM) {
   for (let grew = true; grew;) {
     grew = false
     for (let i = 0; i < parts.length; i++) {
-      if (kept.some((k) => gapKm(k.polygon, parts[i].polygon) <= chainKm)) {
+      if (kept.some((keptPart) => gapKm(keptPart.polygon, parts[i].polygon) <= chainKm)) {
         kept.push(...parts.splice(i, 1))
         grew = true
         i--
@@ -109,15 +113,15 @@ export function keptParts(geometry, chainKm = CHAIN_KM) {
     }
   }
   const big = [...kept]
-  const bigPolygons = big.map((k) => k.polygon)
+  const bigPolygons = big.map((part) => part.polygon)
   // Nor may they take an outline across the antimeridian (Fiji's Lau Islands), which would make it a point round.
   const mayCross = crossesAntimeridian(bigPolygons)
-  for (const p of all) {
-    if (kept.includes(p) || !big.some((k) => gapKm(k.polygon, p.polygon) <= chainKm)) continue
-    if (!mayCross && crossesAntimeridian([...bigPolygons, p.polygon])) continue
-    kept.push(p)
+  for (const part of all) {
+    if (kept.includes(part) || !big.some((keptPart) => gapKm(keptPart.polygon, part.polygon) <= chainKm)) continue
+    if (!mayCross && crossesAntimeridian([...bigPolygons, part.polygon])) continue
+    kept.push(part)
   }
-  return kept.map((p) => p.polygon)
+  return kept.map((part) => part.polygon)
 }
 
 /**
@@ -126,24 +130,24 @@ export function keptParts(geometry, chainKm = CHAIN_KM) {
  * outline and framing are not: such countries are asked as a point.
  */
 export function crossesAntimeridian(polygons) {
-  const lons = polygons.flatMap((p) => p[0].map(([lon]) => lon))
+  const lons = polygons.flatMap((polygon) => polygon[0].map(([lon]) => lon))
   return Math.max(...lons) > 179.5 && Math.min(...lons) < -179.5
 }
 
-const round4 = (v) => Math.round(v * 1e4) / 1e4
+const round4 = (value) => Math.round(value * 1e4) / 1e4
 
 export function centroid(cells) {
   let x = 0,
     y = 0,
     z = 0
-  for (const h of cells) {
-    const [lat, lon] = cellToLatLng(h)
-    const a = cellArea(h, UNITS.km2)
-    const la = (lat * Math.PI) / 180,
-      lo = (lon * Math.PI) / 180
-    x += a * Math.cos(la) * Math.cos(lo)
-    y += a * Math.cos(la) * Math.sin(lo)
-    z += a * Math.sin(la)
+  for (const cell of cells) {
+    const [lat, lon] = cellToLatLng(cell)
+    const area = cellArea(cell, UNITS.km2)
+    const latRadians = (lat * Math.PI) / 180,
+      lonRadians = (lon * Math.PI) / 180
+    x += area * Math.cos(latRadians) * Math.cos(lonRadians)
+    y += area * Math.cos(latRadians) * Math.sin(lonRadians)
+    z += area * Math.sin(latRadians)
   }
   return {
     lat: round4((Math.atan2(z, Math.hypot(x, y)) * 180) / Math.PI),
@@ -152,40 +156,41 @@ export function centroid(cells) {
 }
 
 /** Douglas-Peucker on a closed ring, in degrees (longitude scaled by cos(lat)). */
-export function simplifyRing(ring, eps) {
+export function simplifyRing(ring, epsilon) {
   const cos = Math.cos((ring[0][1] * Math.PI) / 180)
   const keep = new Uint8Array(ring.length)
   keep[0] = keep[ring.length - 1] = 1
   const stack = [[0, ring.length - 1]]
   while (stack.length) {
-    const [a, b] = stack.pop()
-    const [ax, ay] = [ring[a][0] * cos, ring[a][1]]
-    const [bx, by] = [ring[b][0] * cos, ring[b][1]]
-    const len = Math.hypot(bx - ax, by - ay)
+    const [from, to] = stack.pop()
+    const [ax, ay] = [ring[from][0] * cos, ring[from][1]]
+    const [bx, by] = [ring[to][0] * cos, ring[to][1]]
+    const length = Math.hypot(bx - ax, by - ay)
     let worst = -1,
       at = -1
-    for (let i = a + 1; i < b; i++) {
+    for (let i = from + 1; i < to; i++) {
       const [px, py] = [ring[i][0] * cos, ring[i][1]]
-      const d = len === 0 ? Math.hypot(px - ax, py - ay) : Math.abs((bx - ax) * (ay - py) - (ax - px) * (by - ay)) / len
-      if (d > worst) {
-        worst = d
+      const distance =
+        length === 0 ? Math.hypot(px - ax, py - ay) : Math.abs((bx - ax) * (ay - py) - (ax - px) * (by - ay)) / length
+      if (distance > worst) {
+        worst = distance
         at = i
       }
     }
-    if (worst > eps) {
+    if (worst > epsilon) {
       keep[at] = 1
-      stack.push([a, at], [at, b])
+      stack.push([from, at], [at, to])
     }
   }
   const out = ring.filter((_, i) => keep[i]).map(([lon, lat]) => [round2(lon), round2(lat)])
   // Rounding can repeat a point; a ring needs four positions to stay a polygon.
-  const dedup = out.filter((pt, i) => i === 0 || pt[0] !== out[i - 1][0] || pt[1] !== out[i - 1][1])
+  const dedup = out.filter((point, i) => i === 0 || point[0] !== out[i - 1][0] || point[1] !== out[i - 1][1])
   return dedup.length >= 4 ? dedup : null
 }
 
-const round2 = (v) => Math.round(v * 100) / 100
-export const slug = (s) =>
-  s
+const round2 = (value) => Math.round(value * 100) / 100
+export const slug = (text) =>
+  text
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
@@ -205,8 +210,11 @@ const POINT_TOLERANCE_FRACTION = 0.5
 const SPREAD_FRACTION = 0.25
 const MIN_POINT_TOLERANCE_KM = 15
 export function pointToleranceKm(areaKm2, spreadKm, islands) {
-  const t = Math.max(POINT_TOLERANCE_FRACTION * Math.sqrt(areaKm2 / Math.PI), islands ? SPREAD_FRACTION * spreadKm : 0)
-  return Math.max(MIN_POINT_TOLERANCE_KM, Math.round(t / 5) * 5)
+  const tolerance = Math.max(
+    POINT_TOLERANCE_FRACTION * Math.sqrt(areaKm2 / Math.PI),
+    islands ? SPREAD_FRACTION * spreadKm : 0
+  )
+  return Math.max(MIN_POINT_TOLERANCE_KM, Math.round(tolerance / 5) * 5)
 }
 
 /** A painted place's tolerance, km: TOLERANCE_FRACTION of its equivalent radius, rounded to 5 km. */

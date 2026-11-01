@@ -38,14 +38,14 @@ export function flatRing(ring: Ring): FlatRing {
 }
 
 function boxOf(ring: FlatRing): Box {
-  const b: Box = [Infinity, Infinity, -Infinity, -Infinity]
+  const box: Box = [Infinity, Infinity, -Infinity, -Infinity]
   for (let i = 0; i < ring.length; i += 2) {
-    b[0] = Math.min(b[0], ring[i]!)
-    b[1] = Math.min(b[1], ring[i + 1]!)
-    b[2] = Math.max(b[2], ring[i]!)
-    b[3] = Math.max(b[3], ring[i + 1]!)
+    box[0] = Math.min(box[0], ring[i]!)
+    box[1] = Math.min(box[1], ring[i + 1]!)
+    box[2] = Math.max(box[2], ring[i]!)
+    box[3] = Math.max(box[3], ring[i + 1]!)
   }
-  return b
+  return box
 }
 
 interface BorderData {
@@ -84,12 +84,12 @@ export class Borders {
   constructor(data: BordersData, flags: readonly FlagQuestion[]) {
     this.none = data.none.map(decodeRing)
     const byFlag = new Map(flags.map((country) => [country.clue.flag, country]))
-    for (const d of data.countries) {
-      const country = byFlag.get(flagCode(d.flag))
+    for (const entry of data.countries) {
+      const country = byFlag.get(flagCode(entry.flag))
       if (!country) continue
-      if (d.near) this.small.push({ country, near: d.near })
-      const rings = d.rings.map(decodeRing)
-      this.byFlag.set(country.clue.flag, { rings, near: d.near })
+      if (entry.near) this.small.push({ country, near: entry.near })
+      const rings = entry.rings.map(decodeRing)
+      this.byFlag.set(country.clue.flag, { rings, near: entry.near })
       if (rings.length === 0) continue
       const box = rings
         .map(boxOf)
@@ -99,8 +99,8 @@ export class Borders {
   }
 
   /** The country at this point, or undefined (at sea, or somewhere without a flag round). */
-  countryAt(p: LatLon): FlagQuestion | undefined {
-    return this.nearSmall(p) ?? this.onLand(p)
+  countryAt(point: LatLon): FlagQuestion | undefined {
+    return this.nearSmall(point) ?? this.onLand(point)
   }
 
   /**
@@ -108,12 +108,12 @@ export class Borders {
    * it is within `reach` or the country's own `near`. For the pointer: at
    * world zoom Tuvalu is far less than a pixel across.
    */
-  smallNear(p: LatLon, reach: Km): FlagQuestion | undefined {
+  smallNear(point: LatLon, reach: Km): FlagQuestion | undefined {
     let best: FlagQuestion | undefined = undefined
-    let bestD = Infinity
+    let bestDistance = Infinity
     for (const { country, near } of this.small) {
-      const d = greatCircleDistance(p, answerCentre(country.answer))
-      if (d <= Math.max(near, reach) && d < bestD) [best, bestD] = [country, d]
+      const distance = greatCircleDistance(point, answerCentre(country.answer))
+      if (distance <= Math.max(near, reach) && distance < bestDistance) [best, bestDistance] = [country, distance]
     }
     return best
   }
@@ -127,24 +127,24 @@ export class Borders {
   paintedCountries(cells: Iterable<PaintCell>): PaintedCountry[] {
     const mass = new Map<FlagQuestion, number>()
     let total = 0
-    for (const c of cells) {
-      const m = c.intensity * c.area
-      if (!(m > 0)) continue
-      total += m
-      const country = this.countryAt(c)
-      if (country) mass.set(country, (mass.get(country) ?? 0) + m)
+    for (const cell of cells) {
+      const weight = cell.intensity * cell.area
+      if (!(weight > 0)) continue
+      total += weight
+      const country = this.countryAt(cell)
+      if (country) mass.set(country, (mass.get(country) ?? 0) + weight)
     }
-    return [...mass].map(([country, m]) => ({ country, share: m / total })).sort((a, b) => b.share - a.share)
+    return [...mass].map(([country, weight]) => ({ country, share: weight / total })).sort((a, b) => b.share - a.share)
   }
 
   /** A country's land, to fill (see fill.ts): its rings, answer and `near`. */
   fillShape(country: FlagQuestion): FillShape {
-    const d = this.byFlag.get(country.clue.flag)
+    const border = this.byFlag.get(country.clue.flag)
     return {
       type: FillShapeType.RINGS,
-      rings: (d?.rings ?? []).map(ringOf),
+      rings: (border?.rings ?? []).map(ringOf),
       answer: answerCentre(country.answer),
-      near: d?.near
+      near: border?.near
     }
   }
 
@@ -164,25 +164,25 @@ export class Borders {
       ...this.small.map(({ country }) => ({ country, at: answerCentre(country.answer) }))
     ]
     const small = new Set(this.small.map(({ country }) => country))
-    for (const c of this.countries) {
-      if (small.has(c.country)) continue
-      const at = answerCentre(c.country.answer)
-      out.push({ country: c.country, at: this.onLand(at) === c.country ? at : inside(c) })
+    for (const entry of this.countries) {
+      if (small.has(entry.country)) continue
+      const at = answerCentre(entry.country.answer)
+      out.push({ country: entry.country, at: this.onLand(at) === entry.country ? at : inside(entry) })
     }
     return out
   }
 
-  private nearSmall(p: LatLon): FlagQuestion | undefined {
-    return this.smallNear(p, 0)
+  private nearSmall(point: LatLon): FlagQuestion | undefined {
+    return this.smallNear(point, 0)
   }
 
   private onLand({ lat, lon }: LatLon): FlagQuestion | undefined {
-    if (this.none.some((r) => inRing(r, lon, lat))) return undefined
+    if (this.none.some((ring) => inRing(ring, lon, lat))) return undefined
     for (const { country, rings, box } of this.countries) {
       if (lon < box[0] || lon > box[2] || lat < box[1] || lat > box[3]) continue
       // Even-odd over all the country's rings: holes (Lesotho in South Africa) cancel.
       let inside = false
-      for (const r of rings) if (inRing(r, lon, lat)) inside = !inside
+      for (const ring of rings) if (inRing(ring, lon, lat)) inside = !inside
       if (inside) return country
     }
     return undefined
@@ -193,21 +193,22 @@ const GRID = 24
 
 /** A point inside the country's largest ring, as far from its edge as a grid search finds. */
 function inside({ country, rings }: Country): LatLon {
-  const area = (b: Box) => (b[2] - b[0]) * (b[3] - b[1])
+  const area = (box: Box) => (box[2] - box[0]) * (box[3] - box[1])
   const ring = rings.reduce((a, b) => (area(boxOf(b)) > area(boxOf(a)) ? b : a))
-  const [w, s, e, n] = boxOf(ring)
+  const [west, south, east, north] = boxOf(ring)
   let best: LatLon = answerCentre(country.answer)
-  let bestD = -1
+  let bestDistance = -1
   for (let i = 0; i <= GRID; i++)
     for (let j = 0; j <= GRID; j++) {
-      const lon = w + ((e - w) * (i + 0.5)) / (GRID + 1)
-      const lat = s + ((n - s) * (j + 0.5)) / (GRID + 1)
+      const lon = west + ((east - west) * (i + 0.5)) / (GRID + 1)
+      const lat = south + ((north - south) * (j + 0.5)) / (GRID + 1)
       if (!inRing(ring, lon, lat)) continue
       // Nearest vertex, east-west distances shrunk towards the poles.
-      const k = Math.cos(toRadians(lat))
-      let d = Infinity
-      for (let v = 0; v < ring.length; v += 2) d = Math.min(d, Math.hypot((ring[v]! - lon) * k, ring[v + 1]! - lat))
-      if (d > bestD) [best, bestD] = [{ lat, lon }, d]
+      const scale = Math.cos(toRadians(lat))
+      let distance = Infinity
+      for (let vertex = 0; vertex < ring.length; vertex += 2)
+        distance = Math.min(distance, Math.hypot((ring[vertex]! - lon) * scale, ring[vertex + 1]! - lat))
+      if (distance > bestDistance) [best, bestDistance] = [{ lat, lon }, distance]
     }
   return best
 }
@@ -226,13 +227,13 @@ export function decodeRing(steps: RingSteps): FlatRing {
 }
 
 /** Ray casting in plain longitude and latitude, as Natural Earth's rings are drawn. */
-function inRing(r: FlatRing, lon: Degrees, lat: Degrees): boolean {
+function inRing(ring: FlatRing, lon: Degrees, lat: Degrees): boolean {
   let inside = false
-  for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2) {
-    const xi = r[i]!,
-      yi = r[i + 1]!,
-      xj = r[j]!,
-      yj = r[j + 1]!
+  for (let i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
+    const xi = ring[i]!,
+      yi = ring[i + 1]!,
+      xj = ring[j]!,
+      yj = ring[j + 1]!
     if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside
   }
   return inside

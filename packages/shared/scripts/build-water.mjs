@@ -20,23 +20,23 @@ async function polygons(name) {
   const text = dir
     ? readFileSync(`${dir}/${name}.geojson`, "utf8")
     : await (await fetch(`${NE}/${name}.geojson`)).text()
-  return JSON.parse(text).features.flatMap((f) =>
-    f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates
+  return JSON.parse(text).features.flatMap((feature) =>
+    feature.geometry.type === "Polygon" ? [feature.geometry.coordinates] : feature.geometry.coordinates
   )
 }
 
 const cells = (polygon, mode) => polygonToCellsExperimental(polygon, WATER_RES, POLYGON_TO_CELLS_FLAGS[mode], true)
 
 const dry = new Set()
-for (const polygon of await polygons("ne_10m_land")) for (const h of cells(polygon, "containmentFull")) dry.add(h)
+for (const polygon of await polygons("ne_10m_land")) for (const cell of cells(polygon, "containmentFull")) dry.add(cell)
 const before = dry.size
 const json = (file) => JSON.parse(readFileSync(new URL(`../${file}`, import.meta.url), "utf8"))
 const outlines = json("outlines.json")
 const lakeRounds = json("places.json")
-  .filter((p) => p.feature === "LAKE")
-  .flatMap((p) => outlines[p.area.outline])
+  .filter((place) => place.feature === "LAKE")
+  .flatMap((place) => outlines[place.area.outline])
 for (const polygon of [...(await polygons("ne_10m_lakes")), ...lakeRounds])
-  for (const h of cells(polygon, "containmentOverlapping")) dry.delete(h)
+  for (const cell of cells(polygon, "containmentOverlapping")) dry.delete(cell)
 
 const compacted = compactCells([...dry]).sort()
 const out = JSON.stringify({ res: WATER_RES, dry: compacted })

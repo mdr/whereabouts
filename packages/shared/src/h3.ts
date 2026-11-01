@@ -16,65 +16,67 @@ import type { Degrees, Km, SquareKm } from "./units.ts"
 export const H3CellSchema = z
   .string()
   .regex(/^[0-9a-f]{15}$/)
-  .refine((s) => h3.isValidCell(s), "not an H3 cell")
+  .refine((text) => h3.isValidCell(text), "not an H3 cell")
   .brand<"H3Cell">()
 export type H3Cell = z.infer<typeof H3CellSchema>
-export const h3Cell = (s: string): H3Cell => H3CellSchema.parse(s)
+export const h3Cell = (text: string): H3Cell => H3CellSchema.parse(text)
 
 export const H3ResSchema = z.number().int().min(0).max(15).brand<"H3Res">()
 export type H3Res = z.infer<typeof H3ResSchema>
-export const h3Res = (n: number): H3Res => H3ResSchema.parse(n)
+export const h3Res = (value: number): H3Res => H3ResSchema.parse(value)
 
-const RESOLUTIONS = Array.from({ length: 16 }, (_, r) => h3Res(r))
+const RESOLUTIONS = Array.from({ length: 16 }, (_, resolution) => h3Res(resolution))
 
 /** Resolutions 0 to `max`, coarsest first. */
 export const resolutionsTo = (max: number): readonly H3Res[] => RESOLUTIONS.slice(0, max + 1)
 
 /** One level finer, from a table: scoring steps down millions of times. */
-export function finerRes(r: H3Res): H3Res {
-  const finer = RESOLUTIONS[r + 1]
-  if (finer === undefined) throw new RangeError(`no resolution finer than ${r}`)
+export function finerRes(resolution: H3Res): H3Res {
+  const finer = RESOLUTIONS[resolution + 1]
+  if (finer === undefined) throw new RangeError(`no resolution finer than ${resolution}`)
   return finer
 }
 
 /** One level coarser. */
-export function coarserRes(r: H3Res): H3Res {
-  const coarser = RESOLUTIONS[r - 1]
-  if (coarser === undefined) throw new RangeError(`no resolution coarser than ${r}`)
+export function coarserRes(resolution: H3Res): H3Res {
+  const coarser = RESOLUTIONS[resolution - 1]
+  if (coarser === undefined) throw new RangeError(`no resolution coarser than ${resolution}`)
   return coarser
 }
 
-const cell = (h: string) => h as H3Cell
-const cells = (hs: string[]) => hs as H3Cell[]
+const brandCell = (value: string) => value as H3Cell
+const brandCells = (values: string[]) => values as H3Cell[]
 
 /** A record's cells and values: Object.entries would widen its keys to plain strings. */
 export const cellEntries = <V>(record: Readonly<Record<H3Cell, V>>): [H3Cell, V][] =>
   Object.entries(record) as [H3Cell, V][]
 
-export const latLngToCell = (lat: Degrees, lng: Degrees, res: H3Res): H3Cell => cell(h3.latLngToCell(lat, lng, res))
-export const cellToParent = (h: H3Cell, res: H3Res): H3Cell => cell(h3.cellToParent(h, res))
-export const cellToChildren = (h: H3Cell, res: H3Res): H3Cell[] => cells(h3.cellToChildren(h, res))
-export const getResolution = (h: H3Cell): H3Res => h3.getResolution(h) as H3Res
-export const cellToLatLng = (h: H3Cell): [lat: Degrees, lng: Degrees] => h3.cellToLatLng(h)
-export const cellBoundaryLatLng = (h: H3Cell): [lat: Degrees, lng: Degrees][] => h3.cellToBoundary(h)
+export const latLngToCell = (lat: Degrees, lng: Degrees, res: H3Res): H3Cell =>
+  brandCell(h3.latLngToCell(lat, lng, res))
+export const cellToParent = (cell: H3Cell, res: H3Res): H3Cell => brandCell(h3.cellToParent(cell, res))
+export const cellToChildren = (cell: H3Cell, res: H3Res): H3Cell[] => brandCells(h3.cellToChildren(cell, res))
+export const getResolution = (cell: H3Cell): H3Res => h3.getResolution(cell) as H3Res
+export const cellToLatLng = (cell: H3Cell): [lat: Degrees, lng: Degrees] => h3.cellToLatLng(cell)
+export const cellBoundaryLatLng = (cell: H3Cell): [lat: Degrees, lng: Degrees][] => h3.cellToBoundary(cell)
 /** GeoJSON order, as `LonLat`. */
-export const cellBoundaryLonLat = (h: H3Cell): Ring => h3.cellToBoundary(h, true)
-export const cellArea = (h: H3Cell): SquareKm => h3.cellArea(h, h3.UNITS.km2)
-export const gridDisk = (h: H3Cell, k: number): H3Cell[] => cells(h3.gridDisk(h, k))
-export const gridDiskDistances = (h: H3Cell, k: number): H3Cell[][] => h3.gridDiskDistances(h, k) as H3Cell[][]
+export const cellBoundaryLonLat = (cell: H3Cell): Ring => h3.cellToBoundary(cell, true)
+export const cellArea = (cell: H3Cell): SquareKm => h3.cellArea(cell, h3.UNITS.km2)
+export const gridDisk = (cell: H3Cell, rings: number): H3Cell[] => brandCells(h3.gridDisk(cell, rings))
+export const gridDiskDistances = (cell: H3Cell, rings: number): H3Cell[][] =>
+  h3.gridDiskDistances(cell, rings) as H3Cell[][]
 export const gridDistance = (a: H3Cell, b: H3Cell): number => h3.gridDistance(a, b)
 export const polygonToCells = (polygon: number[][] | number[][][], res: H3Res, isGeoJson?: boolean): H3Cell[] =>
-  cells(h3.polygonToCells(polygon, res, isGeoJson))
-export const cellsToMultiPolygon = (hs: H3Cell[], formatAsGeoJson?: boolean) =>
-  h3.cellsToMultiPolygon(hs, formatAsGeoJson)
+  brandCells(h3.polygonToCells(polygon, res, isGeoJson))
+export const cellsToMultiPolygon = (cells: H3Cell[], formatAsGeoJson?: boolean) =>
+  h3.cellsToMultiPolygon(cells, formatAsGeoJson)
 export const edgeLength = (res: H3Res): Km => h3.getHexagonEdgeLengthAvg(res, h3.UNITS.km)
-export const getRes0Cells = (): H3Cell[] => cells(h3.getRes0Cells())
+export const getRes0Cells = (): H3Cell[] => brandCells(h3.getRes0Cells())
 
 /** A cell's 64-bit index as its lower and upper 32 bits, for binary paint. */
-export const cellToSplitLong = (h: H3Cell): [low: number, high: number] => h3.h3IndexToSplitLong(h)
+export const cellToSplitLong = (cell: H3Cell): [low: number, high: number] => h3.h3IndexToSplitLong(cell)
 
 /** The cell with this 64-bit index, or undefined if it is not one: these come from outside. */
 export function cellFromSplitLong(lower: number, upper: number): H3Cell | undefined {
-  const h = h3.splitLongToH3Index(lower, upper)
-  return h3.isValidCell(h) ? cell(h) : undefined
+  const cell = h3.splitLongToH3Index(lower, upper)
+  return h3.isValidCell(cell) ? brandCell(cell) : undefined
 }

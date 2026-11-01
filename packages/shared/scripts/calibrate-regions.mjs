@@ -18,14 +18,14 @@ import { regionCells, regionFit, scoreArea } from "../src/scoring/regions.ts"
 import { COUNTRIES as AREAS } from "./catalogue.mjs"
 
 const byLabel = (label) => {
-  const q = AREAS.find((r) => r.label === label)
+  const q = AREAS.find((country) => country.label === label)
   if (!q) throw new Error(`no country labelled ${label}`)
   return q
 }
 
-const args = process.argv.slice(2).filter((a) => a !== "--")
+const args = process.argv.slice(2).filter((argument) => argument !== "--")
 const DETAIL = args.includes("--detail")
-const chosen = args.filter((a) => !a.startsWith("--"))
+const chosen = args.filter((argument) => !argument.startsWith("--"))
 const COUNTRIES = chosen.length
   ? chosen
   : ["Germany", "Italy", "Chile", "Egypt", "Indonesia", "United Kingdom", "Brazil", "Australia", "South Africa"]
@@ -100,20 +100,20 @@ const NEIGHBOURS = [
 
 // ---- building paints --------------------------------------------------------
 
-const area = (cells) => cells.reduce((s, h) => s + h3.cellArea(h, h3.UNITS.km2), 0)
+const area = (cells) => cells.reduce((sum, cell) => sum + h3.cellArea(cell, h3.UNITS.km2), 0)
 const spacing = (res) => h3.getHexagonEdgeLengthAvg(res, h3.UNITS.km) * Math.sqrt(3)
 
 /** Paint each part's cells evenly by area with `weight` of the painted mass; intensity(h) varies it. */
 function coat(parts, intensity = () => 1) {
   const byCell = new Map()
   for (const { cells, weight } of parts) {
-    const a = area(cells)
-    for (const h of cells) byCell.set(h, (byCell.get(h) ?? 0) + (weight * intensity(h)) / a)
+    const cellsArea = area(cells)
+    for (const cell of cells) byCell.set(cell, (byCell.get(cell) ?? 0) + (weight * intensity(cell)) / cellsArea)
   }
   return buildDistribution(
-    [...byCell].map(([h, density]) => {
-      const [lat, lon] = h3.cellToLatLng(h)
-      return { lat, lon, intensity: density, area: h3.cellArea(h, h3.UNITS.km2), h3: h }
+    [...byCell].map(([cell, density]) => {
+      const [lat, lon] = h3.cellToLatLng(cell)
+      return { lat, lon, intensity: density, area: h3.cellArea(cell, h3.UNITS.km2), h3: cell }
     }),
     0.05
   )
@@ -123,14 +123,14 @@ const even = (cells) => coat([{ cells, weight: 1 }])
 /** The cells plus every cell within `rings` rings of them. */
 function growRings(cells, rings) {
   const set = new Set(cells)
-  let frontier = cells.filter((h) => h3.gridDisk(h, 1).some((n) => !set.has(n)))
+  let frontier = cells.filter((cell) => h3.gridDisk(cell, 1).some((neighbour) => !set.has(neighbour)))
   for (let i = 0; i < rings; i++) {
     const next = []
-    for (const h of frontier)
-      for (const n of h3.gridDisk(h, 1))
-        if (!set.has(n)) {
-          set.add(n)
-          next.push(n)
+    for (const cell of frontier)
+      for (const neighbour of h3.gridDisk(cell, 1))
+        if (!set.has(neighbour)) {
+          set.add(neighbour)
+          next.push(neighbour)
         }
     frontier = next
   }
@@ -145,21 +145,21 @@ function bloatTo(cells, share) {
   return out
 }
 
-/** The share `frac` of the country's area furthest along `key`. */
-function portion(cells, frac, key) {
+/** The share `fraction` of the country's area furthest along `key`. */
+function portion(cells, fraction, key) {
   const sorted = cells
-    .map((h) => {
-      const [lat, lon] = h3.cellToLatLng(h)
-      return { h, k: key(lat, lon), a: h3.cellArea(h, h3.UNITS.km2) }
+    .map((cell) => {
+      const [lat, lon] = h3.cellToLatLng(cell)
+      return { cell, along: key(lat, lon), area: h3.cellArea(cell, h3.UNITS.km2) }
     })
-    .sort((x, y) => y.k - x.k)
-  const total = sorted.reduce((t, x) => t + x.a, 0)
+    .sort((a, b) => b.along - a.along)
+  const total = sorted.reduce((sum, entry) => sum + entry.area, 0)
   const out = []
-  let acc = 0
-  for (const x of sorted) {
-    if (acc >= frac * total) break
-    out.push(x.h)
-    acc += x.a
+  let covered = 0
+  for (const entry of sorted) {
+    if (covered >= fraction * total) break
+    out.push(entry.cell)
+    covered += entry.area
   }
   return out
 }
@@ -172,7 +172,7 @@ function shifted(q, km) {
     // Its own id, so nothing cached for the real country is used for it.
     outline: `${q.outline}-east-${km}`,
     centre: { lat: q.centre.lat, lon: east(q.centre.lat, q.centre.lon) },
-    polygons: q.polygons.map((p) => p.map((ring) => ring.map(([lon, lat]) => [east(lat, lon), lat])))
+    polygons: q.polygons.map((polygon) => polygon.map((ring) => ring.map(([lon, lat]) => [east(lat, lon), lat])))
   }
 }
 
@@ -189,15 +189,15 @@ function brushed(q, res, R, extra) {
   const inside = new Set(regionCells(q, res))
   const layer = new PaintLayer(res)
   const brush = R / 6
-  const lats = [...inside].map((h) => h3.cellToLatLng(h)[0])
-  const lons = [...inside].map((h) => h3.cellToLatLng(h)[1])
+  const lats = [...inside].map((cell) => h3.cellToLatLng(cell)[0])
+  const lons = [...inside].map((cell) => h3.cellToLatLng(cell)[1])
   const [lat0, lat1] = [Math.min(...lats), Math.max(...lats)]
   const [lon0, lon1] = [Math.min(...lons), Math.max(...lons)]
   const row = (lat) => {
     const km = (lon1 - lon0) * 111.32 * Math.cos((lat * Math.PI) / 180)
-    const n = Math.max(1, Math.round(km / (brush / 4)))
-    for (let i = 0; i <= n; i++) {
-      const lon = lon0 + ((lon1 - lon0) * i) / n
+    const count = Math.max(1, Math.round(km / (brush / 4)))
+    for (let i = 0; i <= count; i++) {
+      const lon = lon0 + ((lon1 - lon0) * i) / count
       if (inside.has(h3.latLngToCell(lat, lon, res))) layer.stamp({ lat, lon }, brush, 0.3)
     }
   }
@@ -219,24 +219,24 @@ function cases(q) {
   const moved = (km) => regionCells(shifted(q, km), res)
   const blobRes = Math.max(0, res - 1)
   const neighbour = moved(2 * R)
-  const hedge = (w, other) =>
+  const hedge = (weight, other) =>
     coat([
-      { cells, weight: w },
-      { cells: other, weight: 1 - w }
+      { cells, weight },
+      { cells: other, weight: 1 - weight }
     ])
   // Solid on the country, `x` as dense over the rest of 4x its area.
   const fourfold = bloatTo(cells, 0.25)
   const inside = new Set(cells)
-  const ring = fourfold.filter((h) => !inside.has(h))
-  const washed = (x) =>
+  const ring = fourfold.filter((cell) => !inside.has(cell))
+  const washed = (density) =>
     coat([
       { cells, weight: area(cells) },
-      { cells: ring, weight: x * area(ring) }
+      { cells: ring, weight: density * area(ring) }
     ])
   const antipode = [
     ...new Set(
-      cells.map((h) => {
-        const [lat, lon] = h3.cellToLatLng(h)
+      cells.map((cell) => {
+        const [lat, lon] = h3.cellToLatLng(cell)
         return h3.latLngToCell(-lat, lon > 0 ? lon - 180 : lon + 180, res)
       })
     )
@@ -278,8 +278,8 @@ function cases(q) {
     ["circle of the same area, centred", even(disc(q.centre, R, res))],
     [
       "bright middle, half density at the edges",
-      coat([{ cells, weight: 1 }], (h) => {
-        const [lat, lon] = h3.cellToLatLng(h)
+      coat([{ cells, weight: 1 }], (cell) => {
+        const [lat, lon] = h3.cellToLatLng(cell)
         const km = Math.hypot(lat - q.centre.lat, (lon - q.centre.lon) * Math.cos((lat * Math.PI) / 180)) * 111
         return Math.max(0.5, 1.5 - km / R)
       })
@@ -288,7 +288,7 @@ function cases(q) {
       "big faint blob far away (8x the area)",
       even(disc(shifted(q, (Math.sqrt(8) + 1) * R + 3000).centre, Math.sqrt(8) * R, blobRes))
     ],
-    ["the whole world painted evenly", even(h3.getRes0Cells().flatMap((c) => h3.cellToChildren(c, 2)))]
+    ["the whole world painted evenly", even(h3.getRes0Cells().flatMap((cell) => h3.cellToChildren(cell, 2)))]
   ]
 }
 
@@ -309,25 +309,25 @@ for (const label of COUNTRIES) {
   }
 }
 
-const pad = (s, n) => String(s).padEnd(n)
-const num = (v) => String(Math.round(v)).padStart(5)
+const pad = (text, width) => String(text).padEnd(width)
+const num = (score) => String(Math.round(score)).padStart(5)
 let misses = 0
 const means = new Map([["pass", PASS_SCORE.score]])
 console.log(`Synthetic paints: mean over ${COUNTRIES.length} countries, against the target range\n`)
-for (const [name, lo, hi, only] of TARGETS) {
-  const scores = [...table.get(name)].filter(([c]) => !only || only.includes(c)).map(([, s]) => s)
+for (const [name, low, high, only] of TARGETS) {
+  const scores = [...table.get(name)].filter(([country]) => !only || only.includes(country)).map(([, score]) => score)
   if (scores.length === 0) continue
-  const mean = scores.reduce((a, b) => a + b, 0) / scores.length
+  const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length
   means.set(name, mean)
-  const targeted = lo !== undefined && lo !== null
-  const ok = !targeted || (mean >= lo && mean <= hi)
+  const targeted = low !== undefined && low !== null
+  const ok = !targeted || (mean >= low && mean <= high)
   if (!ok) misses++
-  console.log(`${ok ? " " : "✗"} ${pad(name, 50)}${num(mean)}   ${targeted ? `[${lo}–${hi}]` : "no target yet"}`)
+  console.log(`${ok ? " " : "✗"} ${pad(name, 50)}${num(mean)}   ${targeted ? `[${low}–${high}]` : "no target yet"}`)
 }
-for (const [name] of ORDERS.flatMap(([, a, b]) => [[a], [b]])) {
+for (const [name] of ORDERS.flatMap(([, lower, higher]) => [[lower], [higher]])) {
   if (!means.has(name)) {
     const scores = [...table.get(name).values()]
-    means.set(name, scores.reduce((a, b) => a + b, 0) / scores.length)
+    means.set(name, scores.reduce((sum, score) => sum + score, 0) / scores.length)
   }
 }
 console.log("\nOrderings\n")
@@ -338,11 +338,11 @@ for (const [what, lower, higher] of ORDERS) {
 }
 
 if (DETAIL) {
-  console.log(`\n${pad("", 52)}${COUNTRIES.map((c) => c.slice(0, 9).padStart(10)).join("")}`)
+  console.log(`\n${pad("", 52)}${COUNTRIES.map((country) => country.slice(0, 9).padStart(10)).join("")}`)
   for (const [name] of TARGETS) {
     const row = table.get(name)
     console.log(
-      `  ${pad(name, 50)}${COUNTRIES.map((c) => (row.has(c) ? num(row.get(c)) : "  -").padStart(10)).join("")}`
+      `  ${pad(name, 50)}${COUNTRIES.map((country) => (row.has(country) ? num(row.get(country)) : "  -").padStart(10)).join("")}`
     )
   }
 }
@@ -350,24 +350,24 @@ if (DETAIL) {
 console.log("\nReal wrong answers: neighbours should beat far countries of similar size\n")
 let nearWins = 0
 const nearScores = []
-for (const [ql, near, far] of NEIGHBOURS) {
-  const q = byLabel(ql)
+for (const [countryLabel, near, far] of NEIGHBOURS) {
+  const q = byLabel(countryLabel)
   const res = resolutionForTolerance(q.tolerance)
-  const score = (l) => scoreArea(even(regionCells(byLabel(l), res)), q).score
-  const ns = near.map((l) => [l, score(l)])
-  const fs = far.map((l) => [l, score(l)])
-  const win = Math.min(...ns.map(([, s]) => s)) > Math.max(...fs.map(([, s]) => s))
+  const score = (name) => scoreArea(even(regionCells(byLabel(name), res)), q).score
+  const nearEntries = near.map((name) => [name, score(name)])
+  const farEntries = far.map((name) => [name, score(name)])
+  const win = Math.min(...nearEntries.map(([, value]) => value)) > Math.max(...farEntries.map(([, value]) => value))
   if (win) nearWins++
-  nearScores.push(...ns.map(([, s]) => s))
-  const list = (xs) => xs.map(([l, s]) => `${l} ${Math.round(s)}`).join(", ")
-  console.log(`${win ? " " : "✗"} ${pad(ql, 16)} near: ${list(ns)} | far: ${list(fs)}`)
+  nearScores.push(...nearEntries.map(([, value]) => value))
+  const list = (entries) => entries.map(([name, value]) => `${name} ${Math.round(value)}`).join(", ")
+  console.log(`${win ? " " : "✗"} ${pad(countryLabel, 16)} near: ${list(nearEntries)} | far: ${list(farEntries)}`)
 }
 if (nearWins < NEIGHBOURS.length) misses++
 
 const exact = AREAS.map((q) => {
   const res = resolutionForTolerance(q.tolerance)
-  const d = even(regionCells(q, res))
-  return { label: q.label, score: scoreArea(d, q).score, fit: regionFit(d, q) }
+  const painted = even(regionCells(q, res))
+  return { label: q.label, score: scoreArea(painted, q).score, fit: regionFit(painted, q) }
 }).sort((a, b) => a.score - b.score)
 const worst = exact[0]
 console.log(

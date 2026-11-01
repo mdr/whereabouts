@@ -50,6 +50,6 @@ export function placesFrom(json: unknown): ReadonlyMap<PlaceId, Place> {
     z
       .array(PlaceSchema)
       .parse(json)
-      .map((p) => [p.id, p])
+      .map((place) => [place.id, place])
   )
 }

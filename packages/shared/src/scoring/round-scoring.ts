@@ -60,25 +60,25 @@ export function scoreRound(
   if (!submittedPaint || !painted)
     return { score, guess: { type: RoundGuessType.PASSED }, facts: { type: FactsType.PASSED, ...base } }
   const guess: RoundGuess = { type: RoundGuessType.PAINTED, paint: submittedPaint, res, parts }
-  const area = cells.reduce((a, c) => a + c.area, 0)
+  const area = cells.reduce((sum, cell) => sum + cell.area, 0)
   if (answer.type === AnswerType.AREA) {
-    const m = regionMisfit(painted, answer)
+    const misfit = regionMisfit(painted, answer)
     // A country's tolerance is a fifth of its equivalent radius.
     const region = {
-      precision: m.precision,
-      nextDoor: m.precision < 0.1 && m.off !== undefined && m.off.distance < 5 * answer.tolerance
+      precision: misfit.precision,
+      nextDoor: misfit.precision < 0.1 && misfit.off !== undefined && misfit.off.distance < 5 * answer.tolerance
     }
     return { score, guess, facts: { type: FactsType.AREA, ...base, area, region } }
   }
   if (parts.type !== AnswerType.POINT) throw new Error("area parts for a point answer")
-  const e = explainPoint(painted, answer.at, answer.tolerance, parts.A, parts.B, kernel)
-  const best = Math.max(e.best, score)
+  const explanation = explainPoint(painted, answer.at, answer.tolerance, parts.A, parts.B, kernel)
+  const best = Math.max(explanation.best, score)
   const point = {
-    spot: e.spot,
-    miss: e.miss,
+    spot: explanation.spot,
+    miss: explanation.miss,
     spread: 1000 - best,
     missCost: best - score,
-    hedged: isHedge(e, score, answer.tolerance),
+    hedged: isHedge(explanation, score, answer.tolerance),
     tolerance: answer.tolerance
   }
   return { score, guess, facts: { type: FactsType.POINT, ...base, area, point } }

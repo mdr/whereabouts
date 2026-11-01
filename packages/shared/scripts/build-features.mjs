@@ -117,15 +117,15 @@ async function features(name) {
 
 const simplified = (polygons) =>
   polygons
-    .map((poly) => poly.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
-    .filter((p) => p.length > 0)
+    .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
+    .filter((polygon) => polygon.length > 0)
 
 const outlines = {}
 const places = []
 
 /** A place painted whole: an island, lake or sea (`feature`), or a state. */
 function region(topic, label, name, wiki, polygons) {
-  const cells = polygons.flatMap((poly) => cellsOf(poly, 6))
+  const cells = polygons.flatMap((polygon) => cellsOf(polygon, 6))
   const area = areaOf(cells)
   if (area < POINT_BELOW_KM2) throw new Error(`${label} is too small to paint: ${Math.round(area)} km²`)
   const id = `${topic}-${slug(label)}`
@@ -151,22 +151,22 @@ function region(topic, label, name, wiki, polygons) {
 
 const out = []
 
-const land = (await features(FILES.land)).flatMap((f) => polygonsOf(f.geometry))
+const land = (await features(FILES.land)).flatMap((feature) => polygonsOf(feature.geometry))
 for (const [label, at, names = {}] of ISLANDS) {
-  const polygon = land.find((poly) => onLand(at, [poly]))
+  const polygon = land.find((candidate) => onLand(at, [candidate]))
   if (!polygon) throw new Error(`${label}: no land at ${at}`)
   if (polygonAreaKm2(polygon) > 3e6) throw new Error(`${label}: ${at} is on a continent`)
   out.push(region("island", label, names.name ?? label, names.wiki ?? label, [polygon]))
 }
 
 const lakes = new Map()
-for (const f of await features(FILES.lakes)) {
-  const name = f.properties.name
-  if (!name || f.properties.featurecla === "Reservoir") continue
-  lakes.set(name, [...(lakes.get(name) ?? []), ...polygonsOf(f.geometry)])
+for (const feature of await features(FILES.lakes)) {
+  const name = feature.properties.name
+  if (!name || feature.properties.featurecla === "Reservoir") continue
+  lakes.set(name, [...(lakes.get(name) ?? []), ...polygonsOf(feature.geometry)])
 }
 for (const [name, polygons] of [...lakes].sort(([a], [b]) => a.localeCompare(b))) {
-  const area = polygons.reduce((s, p) => s + polygonAreaKm2(p), 0)
+  const area = polygons.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0)
   if (area < POINT_BELOW_KM2) continue
   out.push(region("lake", name, name, name, polygons))
 }
@@ -174,32 +174,34 @@ for (const [name, polygons] of [...lakes].sort(([a], [b]) => a.localeCompare(b))
 const marine = await features(FILES.seas)
 for (const [label, parts] of SEAS) {
   const polygons = parts.flatMap((part) => {
-    const f = marine.filter((m) => m.properties.name === part)
-    if (f.length === 0) throw new Error(`${label}: no marine area named ${part}`)
-    return f.flatMap((m) => polygonsOf(m.geometry))
+    const matching = marine.filter((feature) => feature.properties.name === part)
+    if (matching.length === 0) throw new Error(`${label}: no marine area named ${part}`)
+    return matching.flatMap((feature) => polygonsOf(feature.geometry))
   })
   out.push(region("sea", label, `the ${label}`, label, polygonClipping.union(...polygons)))
 }
 
 const states = (await features(FILES.states)).filter(
-  (f) => f.properties.adm0_a3 === "USA" && f.properties.name !== "District of Columbia"
+  (feature) => feature.properties.adm0_a3 === "USA" && feature.properties.name !== "District of Columbia"
 )
-for (const f of states.sort((a, b) => a.properties.name.localeCompare(b.properties.name))) {
-  const p = f.properties
-  const names = STATE_NAMES[p.name] ?? {}
-  const label = names.label ?? p.name
-  const wiki = names.wiki ?? p.name
-  const all = polygonsOf(f.geometry)
-  const area = all.reduce((s, poly) => s + polygonAreaKm2(poly), 0)
-  const kept = area >= POINT_BELOW_KM2 ? keptParts(f.geometry) : null
-  const keptShare = kept ? kept.reduce((s, poly) => s + polygonAreaKm2(poly), 0) / area : 0
+for (const feature of states.sort((a, b) => a.properties.name.localeCompare(b.properties.name))) {
+  const properties = feature.properties
+  const names = STATE_NAMES[properties.name] ?? {}
+  const label = names.label ?? properties.name
+  const wiki = names.wiki ?? properties.name
+  const all = polygonsOf(feature.geometry)
+  const area = all.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0)
+  const kept = area >= POINT_BELOW_KM2 ? keptParts(feature.geometry) : null
+  const keptShare = kept ? kept.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0) / area : 0
   if (kept && keptShare >= MIN_KEPT_SHARE && !crossesAntimeridian(kept)) {
-    out.push(region("state", label, names.name ?? p.name, wiki, kept))
+    out.push(region("state", label, names.name ?? properties.name, wiki, kept))
     continue
   }
-  const answer = centroid(all.flatMap((poly) => cellsOf(poly, 9)))
+  const answer = centroid(all.flatMap((polygon) => cellsOf(polygon, 9)))
   if (!onLand([answer.lon, answer.lat], all)) throw new Error(`${label}: its centre is not on its land`)
-  const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => distanceKm([answer.lon, answer.lat], pt))))
+  const spread = Math.max(
+    ...all.flatMap((polygon) => polygon[0].map((point) => distanceKm([answer.lon, answer.lat], point)))
+  )
   const tolerance = pointToleranceKm(area, spread, false)
   const id = `state-${slug(label)}`
   places.push({ id, label, wiki, at: answer })
@@ -207,7 +209,7 @@ for (const f of states.sort((a, b) => a.properties.name.localeCompare(b.properti
     id,
     type: "STATE",
     place: id,
-    clue: { type: "NAME", prompt: `Where is ${names.name ?? p.name}?` },
+    clue: { type: "NAME", prompt: `Where is ${names.name ?? properties.name}?` },
     answer: { type: "POINT", tolerance }
   })
   console.log(`${label}: state, point, ${Math.round(area)} km², tolerance ${tolerance} km`)

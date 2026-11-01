@@ -50,7 +50,7 @@ export type InPlayState = GuessingState | RevealState
 
 export const LOBBY_STATE: LobbyState = { phase: Phase.LOBBY }
 
-export const isLocked = (s: Submission | undefined): boolean => s?.type === SubmissionType.LOCKED
+export const isLocked = (submission: Submission | undefined): boolean => submission?.type === SubmissionType.LOCKED
 
 /** Locked in on the round under way, or on show. */
 export function lockedIn(state: GameState, token: PlayerToken): boolean {

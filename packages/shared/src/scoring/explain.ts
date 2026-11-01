@@ -43,30 +43,32 @@ export function explainPoint(
   k: Kernel = DEFAULT_KERNEL
 ): PointExplanation {
   let coarse = painted
-  let res = h3Res(Math.max(0, ...painted.points.map((pt) => (pt.cell ? getResolution(pt.cell) : 0))))
+  let res = h3Res(Math.max(0, ...painted.points.map((point) => (point.cell ? getResolution(point.cell) : 0))))
   while (coarse.points.length > SEARCH_CELLS && res > 0) {
     res = coarserRes(res)
     coarse = coarsenDistribution(painted, res)
   }
   // Without cells, A treats each as a patch rather than refining it: fast, and close enough to rank spots.
-  const patches: Distribution = { points: coarse.points.map(({ cell: _, ...pt }) => pt), floor: painted.floor }
+  const patches: Distribution = { points: coarse.points.map(({ cell: _, ...point }) => point), floor: painted.floor }
   const ranked = coarse.points
-    .map((pt) => ({ pt, A: similarityToAnswer(patches, pt.xyz, tolerance, k) }))
+    .map((point) => ({ point, A: similarityToAnswer(patches, point.xyz, tolerance, k) }))
     .sort((a, b) => b.A - a.A)
     .slice(0, 3)
 
   let bestA = A
   let spot = answer
-  for (const { pt } of ranked) {
-    const a = similarityToAnswer(painted, pt.xyz, tolerance, k)
-    if (a <= bestA) continue
-    bestA = a
-    spot = pt.cell ? latLngOf(pt.cell) : fromXyz(pt.xyz)
+  for (const { point } of ranked) {
+    const similarity = similarityToAnswer(painted, point.xyz, tolerance, k)
+    if (similarity <= bestA) continue
+    bestA = similarity
+    spot = point.cell ? latLngOf(point.cell) : fromXyz(point.xyz)
   }
 
-  const y = toXyz(answer)
+  const answerXyz = toXyz(answer)
   let near = 0
-  for (const pt of painted.points) if (chordDistance(pt.xyz, y) <= NEAR_TOLERANCES * tolerance) near += pt.p
+  for (const point of painted.points) {
+    if (chordDistance(point.xyz, answerXyz) <= NEAR_TOLERANCES * tolerance) near += point.p
+  }
   const paintedMass = 1 - painted.floor
   return {
     best: scoreFromParts(bestA, B),
@@ -76,12 +78,16 @@ export function explainPoint(
   }
 }
 
-function latLngOf(h: H3Cell): LatLon {
-  const [lat, lon] = cellToLatLng(h)
+function latLngOf(cell: H3Cell): LatLon {
+  const [lat, lon] = cellToLatLng(cell)
   return { lat, lon }
 }
 
 /** Some paint near the answer, but most of it somewhere else, and that cost something. */
-export function isHedge(e: PointExplanation, score: Points, tolerance: Km): boolean {
-  return Math.max(e.best, score) - score >= 25 && e.nearShare >= 0.15 && e.miss > NEAR_TOLERANCES * tolerance
+export function isHedge(explanation: PointExplanation, score: Points, tolerance: Km): boolean {
+  return (
+    Math.max(explanation.best, score) - score >= 25 &&
+    explanation.nearShare >= 0.15 &&
+    explanation.miss > NEAR_TOLERANCES * tolerance
+  )
 }

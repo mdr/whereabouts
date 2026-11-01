@@ -40,9 +40,9 @@ export const PlayerColourSchema = z
   .max(PLAYER_COLOURS.length - 1)
   .brand<"PlayerColour">()
 export type PlayerColour = z.infer<typeof PlayerColourSchema>
-export const playerColour = (n: number): PlayerColour => PlayerColourSchema.parse(n)
+export const playerColour = (index: number): PlayerColour => PlayerColourSchema.parse(index)
 
 /** The CSS colour to draw a player in. */
-export function colourCss(c: PlayerColour): CssColour {
-  return PLAYER_COLOURS[c]!
+export function colourCss(colour: PlayerColour): CssColour {
+  return PLAYER_COLOURS[colour]!
 }

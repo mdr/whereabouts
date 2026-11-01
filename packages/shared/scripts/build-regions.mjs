@@ -128,25 +128,25 @@ const BORDER_NONE_SOUTH_OF = { Morocco: 27 + 40 / 60 }
 function southOf(ring, lat0) {
   const out = []
   for (let i = 0; i < ring.length - 1; i++) {
-    const [a, b] = [ring[i], ring[i + 1]]
-    if (a[1] <= lat0) out.push(a)
-    if (a[1] <= lat0 !== b[1] <= lat0) {
-      const t = (lat0 - a[1]) / (b[1] - a[1])
-      out.push([a[0] + t * (b[0] - a[0]), lat0])
+    const [from, to] = [ring[i], ring[i + 1]]
+    if (from[1] <= lat0) out.push(from)
+    if (from[1] <= lat0 !== to[1] <= lat0) {
+      const fraction = (lat0 - from[1]) / (to[1] - from[1])
+      out.push([from[0] + fraction * (to[0] - from[0]), lat0])
     }
   }
   return out.length >= 3 ? [...out, out[0]] : null
 }
-const inBoxes = (admin) => (poly) =>
-  (BORDER_LEFT_OUT[admin] ?? []).some(([w, s, e, n]) =>
-    poly[0].every(([lon, lat]) => lon >= w && lon <= e && lat >= s && lat <= n)
+const inBoxes = (admin) => (polygon) =>
+  (BORDER_LEFT_OUT[admin] ?? []).some(([west, south, east, north]) =>
+    polygon[0].every(([lon, lat]) => lon >= west && lon <= east && lat >= south && lat <= north)
   )
 
 /** Polygons' rings for borders.json, delta-encoded in hundredths of a degree. */
 function borderRings(polygons) {
   return polygons
-    .filter((poly) => ringAreaKm2(poly[0]) >= BORDER_MIN_KM2)
-    .flatMap((poly) => poly.map((ring) => simplifyRing(ring, BORDER_SIMPLIFY_DEG)).filter(Boolean))
+    .filter((polygon) => ringAreaKm2(polygon[0]) >= BORDER_MIN_KM2)
+    .flatMap((polygon) => polygon.map((ring) => simplifyRing(ring, BORDER_SIMPLIFY_DEG)).filter(Boolean))
     .map((ring) => {
       let x = 0,
         y = 0
@@ -160,12 +160,12 @@ function borderRings(polygons) {
 }
 
 const ne = JSON.parse(process.argv[2] ? readFileSync(process.argv[2], "utf8") : await (await fetch(NE_URL)).text())
-const countries = ne.features.filter((f) => {
-  const p = f.properties
+const countries = ne.features.filter((feature) => {
+  const properties = feature.properties
   return (
-    ["Sovereign country", "Country", "Sovereignty", "Disputed"].includes(p.TYPE) &&
-    p.ADMIN === p.SOVEREIGNT &&
-    !LEFT_OUT.has(p.ADMIN)
+    ["Sovereign country", "Country", "Sovereignty", "Disputed"].includes(properties.TYPE) &&
+    properties.ADMIN === properties.SOVEREIGNT &&
+    !LEFT_OUT.has(properties.ADMIN)
   )
 })
 
@@ -176,38 +176,38 @@ const outlines = {}
 const borders = []
 const none = borderRings(
   ne.features
-    .filter((f) => f.properties.TYPE === "Indeterminate" && f.properties.ADMIN !== "Antarctica")
-    .flatMap((f) => polygonsOf(f.geometry))
+    .filter((feature) => feature.properties.TYPE === "Indeterminate" && feature.properties.ADMIN !== "Antarctica")
+    .flatMap((feature) => polygonsOf(feature.geometry))
 )
 for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(b.properties.ADMIN))) {
-  const p = feature.properties
-  const names = NAMES[p.ADMIN] ?? {}
-  const label = names.label ?? p.NAME_EN
+  const properties = feature.properties
+  const names = NAMES[properties.ADMIN] ?? {}
+  const label = names.label ?? properties.NAME_EN
   const name = names.name ?? (names.the ? `the ${label.replace(/^The /, "")}` : label)
   const wiki = names.wiki ?? label
   const flagWiki = names.flagWiki ?? `Flag of ${names.the ? "the " : ""}${label.replace(/^The /, "")}`
-  const flag = p.ISO_A2_EH.toLowerCase()
-  if (!/^[a-z]{2}$/.test(flag)) throw new Error(`no ISO code for ${p.ADMIN}`)
+  const flag = properties.ISO_A2_EH.toLowerCase()
+  if (!/^[a-z]{2}$/.test(flag)) throw new Error(`no ISO code for ${properties.ADMIN}`)
   const all = polygonsOf(feature.geometry)
-  const area = all.reduce((s, poly) => s + polygonAreaKm2(poly), 0)
-  none.push(...borderRings(all.filter(inBoxes(p.ADMIN))))
-  const south = BORDER_NONE_SOUTH_OF[p.ADMIN]
+  const area = all.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0)
+  none.push(...borderRings(all.filter(inBoxes(properties.ADMIN))))
+  const south = BORDER_NONE_SOUTH_OF[properties.ADMIN]
   if (south !== undefined)
-    none.push(...borderRings(all.map((poly) => [southOf(poly[0], south)]).filter(([ring]) => ring !== null)))
-  const border = { flag, rings: borderRings(all.filter((poly) => !inBoxes(p.ADMIN)(poly))) }
+    none.push(...borderRings(all.map((polygon) => [southOf(polygon[0], south)]).filter(([ring]) => ring !== null)))
+  const border = { flag, rings: borderRings(all.filter((polygon) => !inBoxes(properties.ADMIN)(polygon))) }
   borders.push(border)
-  const kept = area >= POINT_BELOW_KM2 ? keptParts(feature.geometry, CHAIN_KM_FOR[p.ADMIN]) : null
-  const keptShare = kept ? kept.reduce((s, poly) => s + polygonAreaKm2(poly), 0) / area : 0
+  const kept = area >= POINT_BELOW_KM2 ? keptParts(feature.geometry, CHAIN_KM_FOR[properties.ADMIN]) : null
+  const keptShare = kept ? kept.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0) / area : 0
   const why =
     area < POINT_BELOW_KM2
       ? "small"
-      : DISPUTED.has(p.ADMIN)
+      : DISPUTED.has(properties.ADMIN)
         ? "disputed"
         : crossesAntimeridian(kept)
           ? "antimeridian"
           : keptShare < MIN_KEPT_SHARE
             ? "scattered"
-            : p.ADMIN === "United States of America"
+            : properties.ADMIN === "United States of America"
               ? "far-flung" // Alaska and Hawaii; the outline below keeps the contiguous states
               : null
 
@@ -215,14 +215,14 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
   places.push(place)
 
   if (!why || why === "far-flung") {
-    const cells = kept.flatMap((poly) => cellsOf(poly, 6))
+    const cells = kept.flatMap((polygon) => cellsOf(polygon, 6))
     const keptArea = areaOf(cells)
     const tolerance = regionToleranceKm(keptArea)
-    const contiguous = p.ADMIN === "United States of America"
+    const contiguous = properties.ADMIN === "United States of America"
     const id = names.id ?? (contiguous ? "usa-region" : `${slug(label)}-region`)
     outlines[id] = kept
-      .map((poly) => poly.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
-      .filter((poly) => poly.length > 0)
+      .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
+      .filter((polygon) => polygon.length > 0)
     const area = { outline: id, centre: centroid(cells), tolerance, surface: "LAND" }
     // The contiguous states are a place of their own, not the country its flag stands for.
     const painted = contiguous
@@ -254,8 +254,11 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
     // point (a centroid could fall in the sea between islands); larger ones
     // at their centre.
     const island = why === "small" || why === "scattered"
-    const answer = names.at ?? (island ? islandAnswer(p, all) : centroid(all.flatMap((poly) => cellsOf(poly, 4))))
-    const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => distanceKm([answer.lon, answer.lat], pt))))
+    const answer =
+      names.at ?? (island ? islandAnswer(properties, all) : centroid(all.flatMap((polygon) => cellsOf(polygon, 4))))
+    const spread = Math.max(
+      ...all.flatMap((polygon) => polygon[0].map((point) => distanceKm([answer.lon, answer.lat], point)))
+    )
     const tolerance = pointToleranceKm(area, spread, island)
     flags.push({
       id: `flag-${flag}`,

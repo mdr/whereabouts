@@ -10,14 +10,14 @@ export const seatedRole = ({ role }: Seat): YouRole =>
   role.type === Role.PLAYER ? { type: YouRoleType.PLAYING, colour: role.colour } : SPECTATING
 
 /** Your role on the round under way or on show. */
-export function roundRole(s: InPlayState, seat: Seat, hints: number): RoundYouRole {
+export function roundRole(state: InPlayState, seat: Seat, hints: number): RoundYouRole {
   const { role } = seat
   if (role.type === Role.SPECTATOR) return SPECTATING
-  if (!playsRound(role, s.round)) return { type: YouRoleType.JOINED_LATE, colour: role.colour }
+  if (!playsRound(role, state.round)) return { type: YouRoleType.JOINED_LATE, colour: role.colour }
   return {
     type: YouRoleType.PLAYING,
     colour: role.colour,
-    locked: lockedIn(s, seat.token),
+    locked: lockedIn(state, seat.token),
     hintsLeft: Math.max(0, hints - role.record.hintsUsed)
   }
 }

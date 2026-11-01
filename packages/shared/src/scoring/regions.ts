@@ -114,7 +114,7 @@ export function regionScoringRes(tolerance: Km): H3Res {
 /** The region's cells at `res`: those whose centres fall inside the outline. */
 export function regionCells(area: Area, res: H3Res): H3Cell[] {
   const cells = new Set<H3Cell>()
-  for (const polygon of area.polygons) for (const h of polygonToCells(polygon, res, true)) cells.add(h)
+  for (const polygon of area.polygons) for (const cell of polygonToCells(polygon, res, true)) cells.add(cell)
   return [...cells]
 }
 
@@ -161,12 +161,12 @@ const answers = new Map<string, RegionAnswer>()
 /** The kernel-scoring answer for a question, cached per kernel. */
 function regionAnswerFor(area: Area, k: Kernel = NEARNESS_KERNEL): RegionAnswer {
   const key = `${area.outline}|${k.id}`
-  let a = answers.get(key)
-  if (!a) {
-    a = regionAnswer(regionCells(area, regionScoringRes(area.tolerance)), area.tolerance, k)
-    answers.set(key, a)
+  let cached = answers.get(key)
+  if (!cached) {
+    cached = regionAnswer(regionCells(area, regionScoringRes(area.tolerance)), area.tolerance, k)
+    answers.set(key, cached)
   }
-  return a
+  return cached
 }
 
 export function scoreArea(painted: Distribution, area: Area): AreaScore {
@@ -227,17 +227,17 @@ export function regionFit(painted: Distribution, area: Area): { coverage: number
   const paintedMass = 1 - painted.floor
   const region = regionAt(area)
   let onMass = 0
-  const on: { p: number; area: SquareKm }[] = []
-  for (const [h, p] of paintMass(painted, area)) {
-    const size = region.cells.get(h)
+  const on: { mass: number; area: SquareKm }[] = []
+  for (const [cell, mass] of paintMass(painted, area)) {
+    const size = region.cells.get(cell)
     if (size === undefined) continue
-    on.push({ p, area: size })
-    onMass += p
+    on.push({ mass, area: size })
+    onMass += mass
   }
   if (paintedMass <= 0 || onMass <= 0) return { coverage: 0, precision: 0 }
   const half = onMass / region.area / 2
   let covered = 0
-  for (const c of on) covered += Math.min(1, c.p / c.area / half) * c.area
+  for (const entry of on) covered += Math.min(1, entry.mass / entry.area / half) * entry.area
   return { coverage: covered / region.area, precision: onMass / paintedMass }
 }
 
@@ -266,20 +266,20 @@ export function regionMisfit(painted: Distribution, area: Area): RegionMisfit {
   const mass = paintMass(painted, area)
 
   const offCells: [H3Cell, number][] = []
-  for (const [h, p] of mass) if (!region.cells.has(h)) offCells.push([h, p])
+  for (const [cell, weight] of mass) if (!region.cells.has(cell)) offCells.push([cell, weight])
   let off: RegionMisfit["off"] = undefined
   const offCentre = leaning(area.centre, offCells)
   if (offCentre && !region.cells.has(latLngToCell(offCentre.lat, offCentre.lon, region.res))) {
     let distance = Infinity
-    for (const h of region.cells.keys()) distance = Math.min(distance, greatCircleDistance(offCentre, latLng(h)))
+    for (const cell of region.cells.keys()) distance = Math.min(distance, greatCircleDistance(offCentre, latLng(cell)))
     off = { bearing: bearing(area.centre, offCentre), distance }
   }
 
   return { coverage, precision, off }
 }
 
-function latLng(h: H3Cell): LatLon {
-  const [lat, lon] = cellToLatLng(h)
+function latLng(cell: H3Cell): LatLon {
+  const [lat, lon] = cellToLatLng(cell)
   return { lat, lon }
 }
 
@@ -288,16 +288,16 @@ function leaning(centre: LatLon, cells: [H3Cell, number][]): LatLon | undefined 
   let total = 0
   let meanDistance: Km = 0
   const sum = [0, 0, 0]
-  for (const [h, w] of cells) {
-    const p = latLng(h)
-    const v = toXyz(p)
-    for (let i = 0; i < 3; i++) sum[i]! += w * v[i]!
-    meanDistance += w * greatCircleDistance(centre, p)
-    total += w
+  for (const [cell, weight] of cells) {
+    const spot = latLng(cell)
+    const xyz = toXyz(spot)
+    for (let i = 0; i < 3; i++) sum[i]! += weight * xyz[i]!
+    meanDistance += weight * greatCircleDistance(centre, spot)
+    total += weight
   }
   if (total <= 0) return undefined
-  const m = fromXyz([sum[0]!, sum[1]!, sum[2]!])
-  return greatCircleDistance(centre, m) >= LEAN * (meanDistance / total) ? m : undefined
+  const massCentre = fromXyz([sum[0]!, sum[1]!, sum[2]!])
+  return greatCircleDistance(centre, massCentre) >= LEAN * (meanDistance / total) ? massCentre : undefined
 }
 
 interface Region {
@@ -319,10 +319,10 @@ function regionAt(area: Area): Region {
     const res = resolutionForTolerance(area.tolerance)
     const cells = new Map<H3Cell, SquareKm>()
     let totalArea = 0
-    for (const h of regionCells(area, res)) {
-      const a = cellArea(h)
-      cells.set(h, a)
-      totalArea += a
+    for (const cell of regionCells(area, res)) {
+      const size = cellArea(cell)
+      cells.set(cell, size)
+      totalArea += size
     }
     region = { res, cells, area: totalArea, ancestors: new Map() }
     regions.set(area.outline, region)
@@ -331,13 +331,13 @@ function regionAt(area: Area): Region {
 }
 
 /** Whether a cell coarser than the painting resolution overlaps the country. */
-function overlaps(region: Region, h: H3Cell, r: H3Res): boolean {
-  let set = region.ancestors.get(r)
+function overlaps(region: Region, cell: H3Cell, resolution: H3Res): boolean {
+  let set = region.ancestors.get(resolution)
   if (!set) {
-    set = new Set([...region.cells.keys()].map((c) => cellToParent(c, r)))
-    region.ancestors.set(r, set)
+    set = new Set([...region.cells.keys()].map((regionCell) => cellToParent(regionCell, resolution)))
+    region.ancestors.set(resolution, set)
   }
-  return set.has(h)
+  return set.has(cell)
 }
 
 /**
@@ -351,17 +351,17 @@ function paintMass(painted: Distribution, area: Area): Map<H3Cell, number> {
   const res = resolutionForTolerance(area.tolerance)
   const region = regionAt(area)
   const mass = new Map<H3Cell, number>()
-  const add = (h: H3Cell, p: number) => mass.set(h, (mass.get(h) ?? 0) + p)
-  for (const pt of painted.points) {
-    if (!pt.cell) continue
-    const r = getResolution(pt.cell)
-    if (r >= res) add(r === res ? pt.cell : cellToParent(pt.cell, res), pt.p)
-    else if (!overlaps(region, pt.cell, r)) add(pt.cell, pt.p)
+  const add = (cell: H3Cell, amount: number) => mass.set(cell, (mass.get(cell) ?? 0) + amount)
+  for (const point of painted.points) {
+    if (!point.cell) continue
+    const resolution = getResolution(point.cell)
+    if (resolution >= res) add(resolution === res ? point.cell : cellToParent(point.cell, res), point.p)
+    else if (!overlaps(region, point.cell, resolution)) add(point.cell, point.p)
     else {
-      const children = cellToChildren(pt.cell, res)
-      const areas = children.map((c) => cellArea(c))
+      const children = cellToChildren(point.cell, res)
+      const areas = children.map((child) => cellArea(child))
       const total = areas.reduce((a, b) => a + b, 0)
-      children.forEach((c, i) => add(c, (pt.p * areas[i]!) / total))
+      children.forEach((child, i) => add(child, (point.p * areas[i]!) / total))
     }
   }
   return mass
@@ -375,11 +375,11 @@ function paintMass(painted: Distribution, area: Area): Map<H3Cell, number> {
 function shapeScore(mass: Map<H3Cell, number>, area: Area): Points {
   const region = regionAt(area)
   let sum = 0
-  for (const [h, a] of region.cells) {
-    const diff = (mass.get(h) ?? 0) - a / region.area
-    sum += (diff * diff) / a
+  for (const [cell, area] of region.cells) {
+    const diff = (mass.get(cell) ?? 0) - area / region.area
+    sum += (diff * diff) / area
   }
   let offMass = 0
-  for (const [h, p] of mass) if (!region.cells.has(h)) offMass += p
+  for (const [cell, amount] of mass) if (!region.cells.has(cell)) offMass += amount
   return Math.max(0, 1000 - 500 * (sum * region.area + OFF_COUNTRY_COST * offMass * offMass))
 }

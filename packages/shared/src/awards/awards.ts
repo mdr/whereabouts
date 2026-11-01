@@ -68,8 +68,8 @@ export interface Award {
 
 /** Two booby prizes to every real one, while both last. */
 function interleave(candidates: Candidate[]): Candidate[] {
-  const boobies = candidates.filter((c) => c.booby)
-  const prizes = candidates.filter((c) => !c.booby)
+  const boobies = candidates.filter((candidate) => candidate.booby)
+  const prizes = candidates.filter((candidate) => !candidate.booby)
   const ordered: Candidate[] = []
   while (boobies.length + prizes.length > 0) {
     ordered.push(...boobies.splice(0, 2), ...prizes.splice(0, 1))
@@ -84,11 +84,11 @@ function spread(ordered: Candidate[], max: number): Candidate[] {
   const picked: Candidate[] = []
   const awarded = new Set<PlayerId>()
   for (const firstPass of [true, false]) {
-    for (const c of ordered) {
+    for (const candidate of ordered) {
       if (picked.length >= max) break
-      if (picked.includes(c) || (firstPass && hasAny(awarded, c.playerIds))) continue
-      picked.push(c)
-      for (const id of c.playerIds) awarded.add(id)
+      if (picked.includes(candidate) || (firstPass && hasAny(awarded, candidate.playerIds))) continue
+      picked.push(candidate)
+      for (const id of candidate.playerIds) awarded.add(id)
     }
   }
   return picked

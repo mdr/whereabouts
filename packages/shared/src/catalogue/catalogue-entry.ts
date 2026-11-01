@@ -65,11 +65,11 @@ export function joinQuestion(entry: CatalogueEntry, places: ReadonlyMap<PlaceId,
     if (!place.area) throw new Error(`${entry.id}: ${place.id} has no area`)
     return { type: AnswerType.AREA, ...place.area }
   }
-  const point = (a: StoredPoint): PointAnswer => {
+  const point = (stored: StoredPoint): PointAnswer => {
     if (!place.at) throw new Error(`${entry.id}: ${place.id} has no point`)
-    return { ...a, at: place.at }
+    return { ...stored, at: place.at }
   }
-  const answer = (a: StoredAnswer) => (a.type === AnswerType.AREA ? area() : point(a))
+  const answer = (stored: StoredAnswer) => (stored.type === AnswerType.AREA ? area() : point(stored))
   const common = { id: entry.id, place: place.id, label: place.label, wiki: place.wiki }
   switch (entry.type) {
     case QuestionType.LANDMARK:

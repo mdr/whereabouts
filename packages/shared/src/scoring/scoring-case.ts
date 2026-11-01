@@ -51,32 +51,32 @@ const MAGIC = "whereabouts-case 1"
 const LINE_WIDTH = 76
 const INTENSITY_LEVELS = 65535
 
-export async function encodeCase(c: ScoringCase): Promise<string> {
-  const q = c.question
+export async function encodeCase(scoringCase: ScoringCase): Promise<string> {
+  const question = scoringCase.question
   const parts =
-    c.parts.type === AnswerType.POINT
-      ? `A=${round(c.parts.A, 4)} B=${round(c.parts.B, 4)}`
-      : `shape=${round(c.parts.shape, 1)} nearness=${round(c.parts.nearness, 1)}`
-  const entries = Object.entries(c.cells)
-    .map(([h, v]) => [BigInt(`0x${h}`), v] as const)
+    scoringCase.parts.type === AnswerType.POINT
+      ? `A=${round(scoringCase.parts.A, 4)} B=${round(scoringCase.parts.B, 4)}`
+      : `shape=${round(scoringCase.parts.shape, 1)} nearness=${round(scoringCase.parts.nearness, 1)}`
+  const entries = Object.entries(scoringCase.cells)
+    .map(([hex, value]) => [BigInt(`0x${hex}`), value] as const)
     .sort((a, b) => (a[0] < b[0] ? -1 : 1))
-  const max = Math.max(...entries.map(([, v]) => v))
+  const max = Math.max(...entries.map(([, value]) => value))
   const bytes: number[] = []
   let previous = 0n
-  for (const [index, v] of entries) {
+  for (const [index, value] of entries) {
     writeVarint(bytes, index - previous)
     previous = index
-    const level = Math.max(1, Math.round((v / max) * INTENSITY_LEVELS))
+    const level = Math.max(1, Math.round((value / max) * INTENSITY_LEVELS))
     bytes.push(level >> 8, level & 0xff)
   }
   const payload = toBase64Url(await deflate(new Uint8Array(bytes)))
   return [
     MAGIC,
-    `question: ${q.type} ${q.id} ${JSON.stringify(q.label)}${q.flag ? ` flag=${q.flag}` : ""}`,
-    `answer: ${round(q.answer.lat, 5)} ${round(q.answer.lon, 5)} tolerance=${round(q.tolerance, 3)}km`,
-    `kernel: ${c.kernel} floor=${round(c.floor, 4)}`,
-    `score: ${round(c.score, 1)} ${parts}`,
-    `paint: res=${c.res} cells=${entries.length} max=${max}`,
+    `question: ${question.type} ${question.id} ${JSON.stringify(question.label)}${question.flag ? ` flag=${question.flag}` : ""}`,
+    `answer: ${round(question.answer.lat, 5)} ${round(question.answer.lon, 5)} tolerance=${round(question.tolerance, 3)}km`,
+    `kernel: ${scoringCase.kernel} floor=${round(scoringCase.floor, 4)}`,
+    `score: ${round(scoringCase.score, 1)} ${parts}`,
+    `paint: res=${scoringCase.res} cells=${entries.length} max=${max}`,
     ...(payload.match(new RegExp(`.{1,${LINE_WIDTH}}`, "g")) ?? []),
     "end"
   ].join("\n")
@@ -85,35 +85,35 @@ export async function encodeCase(c: ScoringCase): Promise<string> {
 export async function decodeCase(text: string): Promise<ScoringCase> {
   const lines = text
     .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
   const start = lines.indexOf(MAGIC)
   if (start < 0) throw new Error(`not a scoring case: no "${MAGIC}" line`)
   const field = (key: string) => {
-    const line = lines.slice(start).find((l) => l.startsWith(`${key}: `))
+    const line = lines.slice(start).find((candidate) => candidate.startsWith(`${key}: `))
     if (!line) throw new Error(`scoring case has no ${key} line`)
     return line.slice(key.length + 2)
   }
-  const named = (s: string, name: string) => {
-    const m = new RegExp(`(?:^|\\s)${name}=(\\S+)`).exec(s)
-    if (!m) throw new Error(`scoring case has no ${name}`)
-    return m[1]!
+  const named = (text: string, name: string) => {
+    const match = new RegExp(`(?:^|\\s)${name}=(\\S+)`).exec(text)
+    if (!match) throw new Error(`scoring case has no ${name}`)
+    return match[1]!
   }
 
   // Cases copied before the enums wrote these words in lower case, and kernels with hyphens.
-  const qm = /^(PHOTO|TEXT|REGION) (\S+) ("(?:[^"\\]|\\.)*")(?: flag=(\S+))?$/.exec(
-    field("question").replace(/^\S+/, (w) => w.toUpperCase())
+  const questionMatch = /^(PHOTO|TEXT|REGION) (\S+) ("(?:[^"\\]|\\.)*")(?: flag=(\S+))?$/.exec(
+    field("question").replace(/^\S+/, (word) => word.toUpperCase())
   )
-  if (!qm) throw new Error("scoring case has a malformed question line")
+  if (!questionMatch) throw new Error("scoring case has a malformed question line")
   const answer = field("answer").split(/\s+/)
-  const kernel = field("kernel").replace(/^\S+/, (w) => w.toUpperCase().replaceAll("-", "_"))
+  const kernel = field("kernel").replace(/^\S+/, (word) => word.toUpperCase().replaceAll("-", "_"))
   const score = field("score")
   const paint = field("paint")
   const parts: AnswerParts = /\bA=/.test(score)
     ? { type: AnswerType.POINT, A: Number(named(score, "A")), B: Number(named(score, "B")) }
     : { type: AnswerType.AREA, shape: Number(named(score, "shape")), nearness: Number(named(score, "nearness")) }
 
-  const paintAt = lines.findIndex((l, i) => i > start && l.startsWith("paint: "))
+  const paintAt = lines.findIndex((line, i) => i > start && line.startsWith("paint: "))
   const endAt = lines.indexOf("end", paintAt)
   if (endAt < 0) throw new Error('scoring case has no "end" line: was it cut off?')
   const bytes = await inflate(fromBase64Url(lines.slice(paintAt + 1, endAt).join("")))
@@ -133,12 +133,12 @@ export async function decodeCase(text: string): Promise<ScoringCase> {
 
   return {
     question: {
-      type: qm[1] as CaseQuestionType,
-      id: questionId(qm[2]!),
-      label: JSON.parse(qm[3]!) as string,
+      type: questionMatch[1] as CaseQuestionType,
+      id: questionId(questionMatch[2]!),
+      label: JSON.parse(questionMatch[3]!) as string,
       answer: { lat: Number(answer[0]), lon: Number(answer[1]) },
       tolerance: parseFloat(named(field("answer"), "tolerance")),
-      ...(qm[4] ? { flag: flagCode(qm[4]) } : {})
+      ...(questionMatch[4] ? { flag: flagCode(questionMatch[4]) } : {})
     },
     kernel: kernel.split(/\s+/)[0] as ScoringCase["kernel"],
     floor: Number(named(kernel, "floor")),
@@ -149,24 +149,24 @@ export async function decodeCase(text: string): Promise<ScoringCase> {
   }
 }
 
-const round = (x: number, places: number) => Number(x.toFixed(places))
+const round = (value: number, places: number) => Number(value.toFixed(places))
 
-function writeVarint(out: number[], n: bigint): void {
+function writeVarint(out: number[], value: bigint): void {
   do {
-    const byte = Number(n & 0x7fn)
-    n >>= 7n
-    out.push(n > 0n ? byte | 0x80 : byte)
-  } while (n > 0n)
+    const byte = Number(value & 0x7fn)
+    value >>= 7n
+    out.push(value > 0n ? byte | 0x80 : byte)
+  } while (value > 0n)
 }
 
 function readVarint(bytes: Uint8Array, at: number): [bigint, number] {
-  let n = 0n
+  let value = 0n
   let shift = 0n
   for (;;) {
     const byte = bytes[at++]
     if (byte === undefined) throw new Error("scoring case paint is truncated")
-    n |= BigInt(byte & 0x7f) << shift
-    if (byte < 0x80) return [n, at]
+    value |= BigInt(byte & 0x7f) << shift
+    if (byte < 0x80) return [value, at]
     shift += 7n
   }
 }
@@ -189,11 +189,11 @@ async function pipe(
 
 function toBase64Url(bytes: Uint8Array): string {
   let binary = ""
-  for (const b of bytes) binary += String.fromCharCode(b)
+  for (const byte of bytes) binary += String.fromCharCode(byte)
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
 }
 
 function fromBase64Url(text: string): Uint8Array<ArrayBuffer> {
-  const b64 = text.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/")
-  return Uint8Array.from(atob(b64 + "=".repeat((4 - (b64.length % 4)) % 4)), (c) => c.charCodeAt(0))
+  const base64 = text.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/")
+  return Uint8Array.from(atob(base64 + "=".repeat((4 - (base64.length % 4)) % 4)), (char) => char.charCodeAt(0))
 }

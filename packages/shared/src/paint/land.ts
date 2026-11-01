@@ -44,16 +44,17 @@ export class LandMask {
   constructor(data: LandMaskData) {
     this.res = h3Res(data.res)
     this.cells = new Set(data.cells.map(h3Cell))
-    for (const h of this.cells)
-      for (const r of resolutionsTo(getResolution(h) - 1)) this.ancestors.add(cellToParent(h, r))
+    for (const cell of this.cells)
+      for (const resolution of resolutionsTo(getResolution(cell) - 1))
+        this.ancestors.add(cellToParent(cell, resolution))
   }
 
   /** Whether any of this cell is within the mask. */
-  nearLand(h: H3Cell): boolean {
-    const r = getResolution(h)
-    for (const k of resolutionsTo(Math.min(r, this.res)))
-      if (this.cells.has(k === r ? h : cellToParent(h, k))) return true
-    return r < this.res && this.ancestors.has(h)
+  nearLand(cell: H3Cell): boolean {
+    const resolution = getResolution(cell)
+    for (const level of resolutionsTo(Math.min(resolution, this.res)))
+      if (this.cells.has(level === resolution ? cell : cellToParent(cell, level))) return true
+    return resolution < this.res && this.ancestors.has(cell)
   }
 }
 
@@ -67,7 +68,7 @@ export class LandMask {
  * cells always do.
  */
 export function trimSea(cells: ReadonlyMap<H3Cell, number>, mask: LandMask, finestRes: H3Res): Map<H3Cell, number> {
-  return keepCells(cells, (h) => mask.nearLand(h), h3Res(Math.min(mask.res, finestRes)))
+  return keepCells(cells, (cell) => mask.nearLand(cell), h3Res(Math.min(mask.res, finestRes)))
 }
 
 /**
@@ -93,17 +94,17 @@ export class WaterMask {
   }
 
   /** Whether any of this cell is outside the dry cells. Compaction puts any cell wholly dry, or an ancestor, in the set. */
-  nearWater(h: H3Cell): boolean {
-    const r = getResolution(h)
-    for (const k of resolutionsTo(Math.min(r, this.res)))
-      if (this.dry.has(k === r ? h : cellToParent(h, k))) return false
+  nearWater(cell: H3Cell): boolean {
+    const resolution = getResolution(cell)
+    for (const level of resolutionsTo(Math.min(resolution, this.res)))
+      if (this.dry.has(level === resolution ? cell : cellToParent(cell, level))) return false
     return true
   }
 }
 
 /** The paint without its cells on dry land, split as trimSea splits. */
 export function trimLand(cells: ReadonlyMap<H3Cell, number>, mask: WaterMask, finestRes: H3Res): Map<H3Cell, number> {
-  return keepCells(cells, (h) => mask.nearWater(h), h3Res(Math.min(mask.res, finestRes)))
+  return keepCells(cells, (cell) => mask.nearWater(cell), h3Res(Math.min(mask.res, finestRes)))
 }
 
 /**

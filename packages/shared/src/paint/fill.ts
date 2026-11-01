@@ -57,13 +57,14 @@ function cellsAt(shape: FillShape, res: H3Res): H3Cell[] {
   switch (shape.type) {
     case FillShapeType.OUTLINE: {
       const out = new Set<H3Cell>()
-      for (const p of shape.outline) for (const h of polygonToCells(p, res, true)) out.add(h)
+      for (const polygon of shape.outline) for (const cell of polygonToCells(polygon, res, true)) out.add(cell)
       return [...out]
     }
     case FillShapeType.RINGS: {
       const parity = new Map<H3Cell, boolean>()
-      for (const r of shape.rings) for (const h of polygonToCells([r], res, true)) parity.set(h, !parity.get(h))
-      return [...parity].filter(([, odd]) => odd).map(([h]) => h)
+      for (const ring of shape.rings)
+        for (const cell of polygonToCells([ring], res, true)) parity.set(cell, !parity.get(cell))
+      return [...parity].filter(([, odd]) => odd).map(([cell]) => cell)
     }
   }
 }

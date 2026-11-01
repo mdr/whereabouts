@@ -26,8 +26,8 @@ export const CATALOGUE: readonly Question[] = z
   .map((entry) => joinQuestion(entry, PLACES))
 
 /** The types with questions painted whole, which need the outlines. */
-export const AREA_TYPES: readonly QuestionType[] = QUESTION_TYPES.filter((t) =>
-  CATALOGUE.some((q) => q.type === t && isArea(q))
+export const AREA_TYPES: readonly QuestionType[] = QUESTION_TYPES.filter((type) =>
+  CATALOGUE.some((question) => question.type === type && isArea(question))
 )
 
 /** outlines.json as read. */
@@ -36,8 +36,8 @@ export function outlinesFrom(json: Record<string, number[][][][]>): Outlines {
 }
 
 /** Whether a question can be asked on this map: lakes only on a map that draws them. */
-function eligible(q: Question, mapDetail: MapDetail): boolean {
-  return q.type !== QuestionType.FEATURE || q.feature !== FeatureType.LAKE || showsLakes(mapDetail)
+function eligible(question: Question, mapDetail: MapDetail): boolean {
+  return question.type !== QuestionType.FEATURE || question.feature !== FeatureType.LAKE || showsLakes(mapDetail)
 }
 
 /** The questions of these types that can be asked on this map. Games, practice and score review all draw from here. */
@@ -46,7 +46,7 @@ export function poolOf(
   types: readonly QuestionType[],
   mapDetail: MapDetail
 ): Question[] {
-  return catalogue.filter((q) => types.includes(q.type) && eligible(q, mapDetail))
+  return catalogue.filter((question) => types.includes(question.type) && eligible(question, mapDetail))
 }
 
-export const isFlagQuestion = (q: Question): q is FlagQuestion => q.type === QuestionType.FLAG
+export const isFlagQuestion = (question: Question): question is FlagQuestion => question.type === QuestionType.FLAG

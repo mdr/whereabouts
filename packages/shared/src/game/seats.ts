@@ -50,7 +50,7 @@ const SPECTATOR_ROLE: SpectatorRole = { type: Role.SPECTATOR }
 
 export type PlayerSeat = Seat & { role: PlayerRole }
 
-export const isPlayer = (s: Seat): s is PlayerSeat => s.role.type === Role.PLAYER
+export const isPlayer = (seat: Seat): seat is PlayerSeat => seat.role.type === Role.PLAYER
 
 export const freshRecord = (joinedRound: number): PlayerRecord => ({
   joinedRound,
@@ -86,7 +86,7 @@ export class Seats {
 
   /** The lowest colour no current player has, so a removed player's colour is reused. */
   private freeColour(): PlayerColour {
-    const used = new Set<number | undefined>(this.playing().map((p) => p.role.colour))
+    const used = new Set<number | undefined>(this.playing().map((seat) => seat.role.colour))
     let colour = 0
     while (used.has(colour)) colour++
     return playerColour(colour)
@@ -97,9 +97,9 @@ export class Seats {
   }
 
   get connectedCount(): number {
-    let n = 0
-    for (const p of this.players.values()) if (p.connected) n++
-    return n
+    let count = 0
+    for (const seat of this.players.values()) if (seat.connected) count++
+    return count
   }
 
   get tokens(): PlayerToken[] {
@@ -108,7 +108,7 @@ export class Seats {
 
   /** The token behind a public player id. */
   tokenOf(id: PlayerId): PlayerToken | undefined {
-    for (const p of this.players.values()) if (p.id === id) return p.token
+    for (const seat of this.players.values()) if (seat.id === id) return seat.token
     return undefined
   }
 
@@ -193,9 +193,9 @@ export class Seats {
 
   private pickHost(passOver?: PlayerToken): PlayerToken | undefined {
     let best: Seat | undefined = undefined
-    for (const p of this.players.values()) {
-      if (!p.connected || p.token === passOver) continue
-      if (!best || p.joinedAt < best.joinedAt) best = p
+    for (const seat of this.players.values()) {
+      if (!seat.connected || seat.token === passOver) continue
+      if (!best || seat.joinedAt < best.joinedAt) best = seat
     }
     return best?.token
   }
@@ -221,9 +221,9 @@ export class Seats {
   /** In the lobby, free the seats of players gone longer than SEAT_GRACE, and the host role with one. */
   freeLapsed(now: Instant): boolean {
     let changed = false
-    for (const [tok, p] of this.players) {
-      if (p.leftAt === undefined || now < p.leftAt + SEAT_GRACE) continue
-      this.players.delete(tok)
+    for (const [token, seat] of this.players) {
+      if (seat.leftAt === undefined || now < seat.leftAt + SEAT_GRACE) continue
+      this.players.delete(token)
       changed = true
     }
     if (changed && this.hostToken !== undefined && !this.players.has(this.hostToken)) this.hostToken = this.pickHost()
@@ -233,9 +233,9 @@ export class Seats {
   /** When the first absent player's grace runs out, if any is absent. */
   nextLapseAt(): Instant | undefined {
     let at: Instant | undefined = undefined
-    for (const p of this.players.values()) {
-      if (p.leftAt === undefined) continue
-      const due = p.leftAt + SEAT_GRACE
+    for (const seat of this.players.values()) {
+      if (seat.leftAt === undefined) continue
+      const due = seat.leftAt + SEAT_GRACE
       if (at === undefined || due < at) at = due
     }
     return at

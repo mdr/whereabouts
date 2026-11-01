@@ -17,16 +17,16 @@ export function scorePlayers(
   const { index, question } = round
   const answer = scoredAnswer(question.answer, outlines)
   // Snapshot ranks before any score changes so arrows compare like with like.
-  for (const p of playing) p.role.record.previousRank = rankAmong(p, playing)
+  for (const seat of playing) seat.role.record.previousRank = rankAmong(seat, playing)
   const timing = { startedAt: deadline - roundLength, roundLength }
   const results: RoundResultView[] = []
-  for (const p of playing) {
-    if (!playsRound(p.role, round)) continue
-    const { score, guess, facts } = scoreRound(question.label, answer, submissions.get(p.token), kernel, timing)
-    p.role.record.scores[index] = score
-    p.role.record.facts[index] = facts
-    const hint = hints.get(p.token)
-    results.push({ playerId: p.id, score, guess, ...(hint ? { hint } : {}) })
+  for (const seat of playing) {
+    if (!playsRound(seat.role, round)) continue
+    const { score, guess, facts } = scoreRound(question.label, answer, submissions.get(seat.token), kernel, timing)
+    seat.role.record.scores[index] = score
+    seat.role.record.facts[index] = facts
+    const hint = hints.get(seat.token)
+    results.push({ playerId: seat.id, score, guess, ...(hint ? { hint } : {}) })
   }
   return results.sort((a, b) => b.score - a.score)
 }

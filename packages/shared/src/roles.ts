@@ -37,9 +37,9 @@ export interface SpectatorView extends SeatViewBase {
 export type PlayerView = PlayingPlayerView | SpectatorView
 
 /** Players, then spectators: everyone in the game. */
-export const everyone = (v: { players: PlayingPlayerView[]; spectators: SpectatorView[] }): PlayerView[] => [
-  ...v.players,
-  ...v.spectators
+export const everyone = (view: { players: PlayingPlayerView[]; spectators: SpectatorView[] }): PlayerView[] => [
+  ...view.players,
+  ...view.spectators
 ]
 
 export enum YouRoleType {

@@ -49,19 +49,19 @@ export const factsFor = (facts: PlaceFacts | undefined, type: QuestionType): Fac
  */
 export function pickFact(facts: readonly Fact[] | undefined, seed: string, round: number): Fact | undefined {
   if (!facts?.length) return undefined
-  const wanted = facts.some((f) => f.type === FactType.FLAG)
+  const wanted = facts.some((fact) => fact.type === FactType.FLAG)
     ? FactType.FLAG
     : round % 2 === 0
       ? FactType.FAME
       : FactType.TRIVIA
-  const choice = facts.filter((f) => f.type === wanted)
+  const choice = facts.filter((fact) => fact.type === wanted)
   const from = choice.length > 0 ? choice : facts
   return from[hash(`${seed} ${round}`) % from.length]
 }
 
 /** FNV-1a: a spread of picks from similar seeds. */
-function hash(s: string): number {
-  let h = 0x811c9dc5
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193)
-  return h >>> 0
+function hash(text: string): number {
+  let value = 0x811c9dc5
+  for (let i = 0; i < text.length; i++) value = Math.imul(value ^ text.charCodeAt(i), 0x01000193)
+  return value >>> 0
 }

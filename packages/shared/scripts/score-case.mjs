@@ -14,43 +14,47 @@ import { areaOf, questionById } from "./catalogue.mjs"
 import { CaseQuestionType, decodeCase } from "../src/scoring/scoring-case.ts"
 
 const text = readFileSync(process.argv[2] ?? 0, "utf8")
-const c = await decodeCase(text)
-const q = c.question
-const layer = PaintLayer.fromRecord(c.res, c.cells)
-const painted = buildDistribution(layer.toCells(), c.floor)
-const n = (x, places = 1) => x.toFixed(places)
+const scoringCase = await decodeCase(text)
+const caseQuestion = scoringCase.question
+const layer = PaintLayer.fromRecord(scoringCase.res, scoringCase.cells)
+const painted = buildDistribution(layer.toCells(), scoringCase.floor)
+const fixed = (value, places = 1) => value.toFixed(places)
 
-console.log(`${q.type} ${q.id}: ${q.label}${q.flag ? ` (flag ${q.flag})` : ""}`)
-console.log(`answer ${q.answer.lat}, ${q.answer.lon}; tolerance ${q.tolerance} km; floor ${c.floor}`)
 console.log(
-  `paint: ${layer.size} cells, finest res ${c.res}, ${layer
+  `${caseQuestion.type} ${caseQuestion.id}: ${caseQuestion.label}${caseQuestion.flag ? ` (flag ${caseQuestion.flag})` : ""}`
+)
+console.log(
+  `answer ${caseQuestion.answer.lat}, ${caseQuestion.answer.lon}; tolerance ${caseQuestion.tolerance} km; floor ${scoringCase.floor}`
+)
+console.log(
+  `paint: ${layer.size} cells, finest res ${scoringCase.res}, ${layer
     .resolutionCounts()
-    .map(([r, k]) => `res ${r}: ${k}`)
+    .map(([resolution, count]) => `res ${resolution}: ${count}`)
     .join(", ")}`
 )
-console.log(`copied with: ${c.score} under ${c.kernel}`, c.parts)
+console.log(`copied with: ${scoringCase.score} under ${scoringCase.kernel}`, scoringCase.parts)
 
-if (q.type === CaseQuestionType.REGION) {
-  const question = questionById(q.id)
-  if (!question) throw new Error(`no question with id ${q.id} in catalogue.json`)
+if (caseQuestion.type === CaseQuestionType.REGION) {
+  const question = questionById(caseQuestion.id)
+  if (!question) throw new Error(`no question with id ${caseQuestion.id} in catalogue.json`)
   const region = areaOf(question)
-  const s = scoreArea(painted, region)
+  const rescored = scoreArea(painted, region)
   const fit = regionFit(painted, region)
-  console.log(`now: ${n(s.score)} (shape ${n(s.shape)}, nearness ${n(s.nearness)})`)
-  console.log(`coverage ${n(fit.coverage * 100)}%, precision ${n(fit.precision * 100)}%`)
+  console.log(`now: ${fixed(rescored.score)} (shape ${fixed(rescored.shape)}, nearness ${fixed(rescored.nearness)})`)
+  console.log(`coverage ${fixed(fit.coverage * 100)}%, precision ${fixed(fit.precision * 100)}%`)
 } else {
-  for (const k of KERNELS) {
-    const s = scoreDistribution(painted, q.answer, q.tolerance, k)
+  for (const kernel of KERNELS) {
+    const rescored = scoreDistribution(painted, caseQuestion.answer, caseQuestion.tolerance, kernel)
     console.log(
-      `now: ${n(s.score).padStart(7)} A=${n(s.A, 4)} B=${n(s.B, 4)}  ${k.id}${k.id === c.kernel ? " (copied with)" : ""}`
+      `now: ${fixed(rescored.score).padStart(7)} A=${fixed(rescored.A, 4)} B=${fixed(rescored.B, 4)}  ${kernel.id}${kernel.id === scoringCase.kernel ? " (copied with)" : ""}`
     )
   }
 }
 
 console.log("blobs, largest first:")
-for (const b of layer.blobs()) {
-  const d = greatCircleDistance(b.centroid, q.answer)
+for (const blob of layer.blobs()) {
+  const distance = greatCircleDistance(blob.centroid, caseQuestion.answer)
   console.log(
-    `  ${n(b.fraction * 100).padStart(5)}% of paint, ${String(b.cells).padStart(5)} cells, centred ${n(b.centroid.lat, 3)}, ${n(b.centroid.lon, 3)}: ${n(d)} km (${n(d / q.tolerance, 2)} tolerances) from the answer`
+    `  ${fixed(blob.fraction * 100).padStart(5)}% of paint, ${String(blob.cells).padStart(5)} cells, centred ${fixed(blob.centroid.lat, 3)}, ${fixed(blob.centroid.lon, 3)}: ${fixed(distance)} km (${fixed(distance / caseQuestion.tolerance, 2)} tolerances) from the answer`
   )
 }

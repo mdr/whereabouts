@@ -185,14 +185,14 @@ export function answerCentre(answer: Answer): LatLon {
   return answer.type === AnswerType.POINT ? answer.at : answer.centre
 }
 
-export function isArea(q: Question): q is Question & { answer: AreaAnswer } {
-  return q.answer.type === AnswerType.AREA
+export function isArea(question: Question): question is Question & { answer: AreaAnswer } {
+  return question.answer.type === AnswerType.AREA
 }
 
 /** The flag a question shows: a flag round's, or the one beside a country's name. */
-export function flagShown(q: Question): FlagCode | undefined {
-  if (q.clue.type === ClueType.FLAG) return q.clue.flag
-  return q.type === QuestionType.COUNTRY ? q.countryFlag : undefined
+export function flagShown(question: Question): FlagCode | undefined {
+  if (question.clue.type === ClueType.FLAG) return question.clue.flag
+  return question.type === QuestionType.COUNTRY ? question.countryFlag : undefined
 }
 
 export function commonsImageUrl(file: CommonsFile, width = 900): string {
@@ -213,13 +213,13 @@ export const MIN_SPREAD: Km = 50
 /** Deterministic shuffle so a playtest session can be replayed. */
 export function shuffle<T>(items: T[], seed: number): T[] {
   const out = items.slice()
-  let s = seed >>> 0
-  const rnd = () => {
-    s = (s * 1664525 + 1013904223) >>> 0
-    return s / 4294967296
+  let state = seed >>> 0
+  const random = () => {
+    state = (state * 1664525 + 1013904223) >>> 0
+    return state / 4294967296
   }
   for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(rnd() * (i + 1))
+    const j = Math.floor(random() * (i + 1))
     ;[out[i], out[j]] = [out[j]!, out[i]!]
   }
   return out

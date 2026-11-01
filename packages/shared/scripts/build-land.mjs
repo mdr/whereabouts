@@ -29,16 +29,16 @@ async function features(name) {
 
 const land = new Set()
 for (const name of FILES) {
-  for (const f of await features(name)) {
-    const polygons = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates
+  for (const feature of await features(name)) {
+    const polygons = feature.geometry.type === "Polygon" ? [feature.geometry.coordinates] : feature.geometry.coordinates
     for (const polygon of polygons) {
-      for (const h of polygonToCellsExperimental(
+      for (const cell of polygonToCellsExperimental(
         polygon,
         LAND_RES,
         POLYGON_TO_CELLS_FLAGS.containmentOverlapping,
         true
       ))
-        land.add(h)
+        land.add(cell)
     }
   }
 }

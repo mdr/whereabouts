@@ -122,17 +122,20 @@ const MIX: [QuestionType[], number, number][] = [
   [[QuestionType.STATE], 5, 2]
 ]
 
-export const REVIEW_SET_SIZE = MIX.reduce((n, [, singles, pairs]) => n + singles + pairs, 0)
+export const REVIEW_SET_SIZE = MIX.reduce((total, [, singles, pairs]) => total + singles + pairs, 0)
 
 export function reviewCases(set: number, catalogue: readonly Question[], outlines: Outlines): ReviewCase[] {
   const cases: ReviewCase[] = []
-  MIX.forEach(([types, singles, pairs], p) => {
-    const questions = shuffle(poolOf(catalogue, types, MapDetail.POLITICAL), set * 7919 + p).slice(0, singles + pairs)
+  MIX.forEach(([types, singles, pairs], pool) => {
+    const questions = shuffle(poolOf(catalogue, types, MapDetail.POLITICAL), set * 7919 + pool).slice(
+      0,
+      singles + pairs
+    )
     questions.forEach((question, i) => {
-      let n = 0
-      const rnd = () => seededUnit(set, p, i, n++)
+      let draws = 0
+      const random = () => seededUnit(set, pool, i, draws++)
       const answer = scoredAnswer(question.answer, outlines)
-      const paint = guessPainter(answer, set * 104729 + p * 31 + i, rnd)
+      const paint = guessPainter(answer, set * 104729 + pool * 31 + i, random)
       if (i < singles) cases.push({ type: ReviewCaseType.SINGLE, question, answer, guess: paint(0) })
       else cases.push({ type: ReviewCaseType.PAIR, question, answer, guesses: [paint(0), paint(1)] })
     })
@@ -141,94 +144,103 @@ export function reviewCases(set: number, catalogue: readonly Question[], outline
 }
 
 /** Paints the nth of the answer's shuffled kinds of guess. */
-function guessPainter(answer: ScoredAnswer, seed: number, rnd: () => number): (n: number) => ReviewGuess {
+function guessPainter(answer: ScoredAnswer, seed: number, random: () => number): (index: number) => ReviewGuess {
   if (answer.type === AnswerType.AREA) {
     const types = shuffle([...REGION_GUESSES], seed)
-    return (n) => paintRegionGuess(answer, types[n]!, rnd)
+    return (index) => paintRegionGuess(answer, types[index]!, random)
   }
   const types = shuffle([...POINT_GUESSES], seed)
-  return (n) => paintPointGuess(answer, types[n]!, rnd)
+  return (index) => paintPointGuess(answer, types[index]!, random)
 }
 
 /** A guess's score, as practice would give it. */
-export function scoreGuess(a: ScoredAnswer, layer: PaintLayer, kernel: Kernel): Pick<ScoringCase, "score" | "parts"> {
-  return scoreAnswer(buildDistribution(layer.toCells(), REVIEW_FLOOR), a, kernel)
+export function scoreGuess(
+  answer: ScoredAnswer,
+  layer: PaintLayer,
+  kernel: Kernel
+): Pick<ScoringCase, "score" | "parts"> {
+  return scoreAnswer(buildDistribution(layer.toCells(), REVIEW_FLOOR), answer, kernel)
 }
 
 /** A guess and its score as a scoring case's text, for the export. */
-export function guessCase(q: Question, a: ScoredAnswer, layer: PaintLayer, kernel: ChoosableKernel): Promise<string> {
+export function guessCase(
+  question: Question,
+  answer: ScoredAnswer,
+  layer: PaintLayer,
+  kernel: ChoosableKernel
+): Promise<string> {
   return encodeCase({
-    question: caseQuestion(q, a),
-    kernel: a.type === AnswerType.AREA ? RegionKernel.REGION : kernel.id,
+    question: caseQuestion(question, answer),
+    kernel: answer.type === AnswerType.AREA ? RegionKernel.REGION : kernel.id,
     floor: REVIEW_FLOOR,
     res: layer.res,
-    ...scoreGuess(a, layer, kernel),
+    ...scoreGuess(answer, layer, kernel),
     cells: layer.toRecord()
   })
 }
 
 /** A question as a scoring case names it. */
-export function caseQuestion(q: Question, a: ScoredAnswer): ScoringCase["question"] {
+export function caseQuestion(question: Question, answer: ScoredAnswer): ScoringCase["question"] {
   return {
     type:
-      a.type === AnswerType.AREA
+      answer.type === AnswerType.AREA
         ? CaseQuestionType.REGION
-        : q.clue.type === ClueType.PHOTO
+        : question.clue.type === ClueType.PHOTO
           ? CaseQuestionType.PHOTO
           : CaseQuestionType.TEXT,
-    id: q.id,
-    label: q.label,
-    answer: a.type === AnswerType.AREA ? a.centre : a.at,
-    tolerance: a.tolerance,
-    ...(q.clue.type === ClueType.FLAG ? { flag: q.clue.flag } : {})
+    id: question.id,
+    label: question.label,
+    answer: answer.type === AnswerType.AREA ? answer.centre : answer.at,
+    tolerance: answer.tolerance,
+    ...(question.clue.type === ClueType.FLAG ? { flag: question.clue.flag } : {})
   }
 }
 
-function paintPointGuess(answer: PointAnswer, type: PointGuess, rnd: () => number): ReviewGuess {
-  const { layer, between, blob } = painting(answer, rnd)
-  pointGuess(type, blob, between, rnd)
+function paintPointGuess(answer: PointAnswer, type: PointGuess, random: () => number): ReviewGuess {
+  const { layer, between, blob } = painting(answer, random)
+  pointGuess(type, blob, between, random)
   return { type, layer }
 }
 
 /** A blank layer for the answer, with the way to paint rough patches on it. */
-function painting(answer: ScoredAnswer, rnd: () => number) {
-  const between = (lo: number, hi: number) => lo + (hi - lo) * rnd()
-  const t = answer.tolerance
-  const layer = new PaintLayer(resolutionForTolerance(t))
+function painting(answer: ScoredAnswer, random: () => number) {
+  const between = (low: number, high: number) => low + (high - low) * random()
+  const tolerance = answer.tolerance
+  const layer = new PaintLayer(resolutionForTolerance(tolerance))
   /** A rough patch `tolerancesAcross` tolerances across, `tolerancesAway` tolerances from the answer in a random direction. */
   const blob = (tolerancesAway: number, tolerancesAcross: number, strength = 1) => {
-    const centre = offset(answerCentre(answer), tolerancesAway * t, rnd() * 360)
-    const r = tolerancesAcross * t
-    scribble(layer, rnd, {
-      sample: () => offset(centre, r * Math.sqrt(rnd()), rnd() * 360),
-      inside: (p) => greatCircleDistance(centre, p) <= r,
-      area: Math.PI * r * r,
-      brush: Math.max(0.3 * t, r * between(0.45, 0.7)),
+    const centre = offset(answerCentre(answer), tolerancesAway * tolerance, random() * 360)
+    const radiusKm = tolerancesAcross * tolerance
+    scribble(layer, random, {
+      sample: () => offset(centre, radiusKm * Math.sqrt(random()), random() * 360),
+      inside: (point) => greatCircleDistance(centre, point) <= radiusKm,
+      area: Math.PI * radiusKm * radiusKm,
+      brush: Math.max(0.3 * tolerance, radiusKm * between(0.45, 0.7)),
       strength
     })
   }
   return { layer, between, blob }
 }
 
-function paintRegionGuess(area: Area, type: RegionGuess, rnd: () => number): ReviewGuess {
-  const { layer, between, blob } = painting(area, rnd)
-  const t = area.tolerance
+function paintRegionGuess(area: Area, type: RegionGuess, random: () => number): ReviewGuess {
+  const { layer, between, blob } = painting(area, random)
+  const tolerance = area.tolerance
   // A region's tolerance is a fifth of its radius: R is about its radius.
   const R = 5
   const cells = regionCells(area, layer.res)
-  const centres = cells.map((h) => {
-    const [lat, lon] = cellToLatLng(h)
+  const centres = cells.map((cell) => {
+    const [lat, lon] = cellToLatLng(cell)
     return { lat, lon }
   })
   const oneCell: SquareKm = cells.length > 0 ? cellArea(cells[0]!) : 0
   /** Brush strokes over the region, or the part of it `keep` allows, `across` in radius. */
-  const shape = (strength: number, keep: (p: LatLon) => boolean = () => true, across: Km = R * t) => {
+  const shape = (strength: number, keep: (point: LatLon) => boolean = () => true, across: Km = R * tolerance) => {
     const kept = centres.filter(keep)
     const from = kept.length > 0 ? kept : [area.centre]
-    scribble(layer, rnd, {
-      sample: () => from[Math.floor(rnd() * from.length)]!,
-      inside: (p) => keep(p) && insideRegion(area, p),
-      area: Math.max(kept.length * oneCell, Math.PI * t * t),
+    scribble(layer, random, {
+      sample: () => from[Math.floor(random() * from.length)]!,
+      inside: (point) => keep(point) && insideRegion(area, point),
+      area: Math.max(kept.length * oneCell, Math.PI * tolerance * tolerance),
       brush: between(0.2, 0.32) * across,
       strength
     })
@@ -238,9 +250,9 @@ function paintRegionGuess(area: Area, type: RegionGuess, rnd: () => number): Rev
       shape(1)
       break
     case GuessType.PART: {
-      const from = centres[Math.floor(rnd() * centres.length)] ?? area.centre
-      const reach = between(0.4, 0.8) * R * t
-      shape(1, (p) => greatCircleDistance(from, p) <= reach, reach)
+      const from = centres[Math.floor(random() * centres.length)] ?? area.centre
+      const reach = between(0.4, 0.8) * R * tolerance
+      shape(1, (point) => greatCircleDistance(from, point) <= reach, reach)
       break
     }
     case GuessType.SPILL:
@@ -260,7 +272,7 @@ function paintRegionGuess(area: Area, type: RegionGuess, rnd: () => number): Rev
       blob(between(0, 1) * R, between(3, 5) * R)
       break
     case GuessType.HEDGE: {
-      const share = [0.3, 0.5, 0.7][Math.floor(rnd() * 3)]!
+      const share = [0.3, 0.5, 0.7][Math.floor(random() * 3)]!
       shape(share)
       blob(between(4, 8) * R, 0.8 * R, 1 - share)
       break
@@ -276,7 +288,7 @@ interface Patch {
   /** A point to start a stroke from. */
   sample: () => LatLon
   /** Whether a point is in what the hand is aiming to cover. */
-  inside: (p: LatLon) => boolean
+  inside: (point: LatLon) => boolean
   area: SquareKm
   /** The brush's radius. */
   brush: Km
@@ -289,17 +301,17 @@ interface Patch {
  * few none. A stroke that runs over the edge leaves a dab there before turning
  * back, so the paint overshoots the outline in places and misses others.
  */
-function scribble(layer: PaintLayer, rnd: () => number, patch: Patch): void {
+function scribble(layer: PaintLayer, random: () => number, patch: Patch): void {
   const step = 0.7 * patch.brush
-  let dabs = Math.min(MAX_DABS, Math.ceil((patch.area / (1.5 * step * patch.brush)) * (1.8 + 0.8 * rnd())))
+  let dabs = Math.min(MAX_DABS, Math.ceil((patch.area / (1.5 * step * patch.brush)) * (1.8 + 0.8 * random())))
   while (dabs > 0) {
     let at = patch.sample()
-    let heading = rnd() * 360
-    for (let k = 6 + Math.floor(rnd() * 14); k > 0 && dabs > 0; k--, dabs--) {
-      layer.stamp(at, patch.brush * (0.85 + 0.3 * rnd()), patch.strength * (0.75 + 0.35 * rnd()))
-      heading += (rnd() - 0.5) * 60
+    let heading = random() * 360
+    for (let strokeDabs = 6 + Math.floor(random() * 14); strokeDabs > 0 && dabs > 0; strokeDabs--, dabs--) {
+      layer.stamp(at, patch.brush * (0.85 + 0.3 * random()), patch.strength * (0.75 + 0.35 * random()))
+      heading += (random() - 0.5) * 60
       at = offset(at, step, heading)
-      if (!patch.inside(at)) heading += 140 + rnd() * 80
+      if (!patch.inside(at)) heading += 140 + random() * 80
     }
   }
 }
@@ -307,8 +319,8 @@ function scribble(layer: PaintLayer, rnd: () => number, patch: Patch): void {
 function pointGuess(
   type: PointGuess,
   blob: (tolerancesAway: number, tolerancesAcross: number, strength?: number) => void,
-  between: (lo: number, hi: number) => number,
-  rnd: () => number
+  between: (low: number, high: number) => number,
+  random: () => number
 ): void {
   switch (type) {
     case GuessType.BULLSEYE:
@@ -322,25 +334,31 @@ function pointGuess(
     case GuessType.WIDE:
       return blob(between(0, 3), between(4, 10))
     case GuessType.HEDGE: {
-      const share = [0.3, 0.5, 0.7][Math.floor(rnd() * 3)]!
+      const share = [0.3, 0.5, 0.7][Math.floor(random() * 3)]!
       blob(between(0, 1), 1, share)
       return blob(between(4, 10), 1, 1 - share)
     }
     case GuessType.SCATTERED:
-      for (let i = 3 + Math.floor(rnd() * 3); i > 0; i--) blob(between(0, 12), between(0.5, 1.5), between(0.5, 1))
+      for (let i = 3 + Math.floor(random() * 3); i > 0; i--) blob(between(0, 12), between(0.5, 1.5), between(0.5, 1))
       return
   }
 }
 
 /** The point `distance` from `from` on a bearing clockwise from north. */
 function offset(from: LatLon, distance: Km, bearing: Degrees): LatLon {
-  const d = distance / EARTH_RADIUS
-  const b = toRadians(bearing)
+  const angularDistance = distance / EARTH_RADIUS
+  const bearingRadians = toRadians(bearing)
   const lat1 = toRadians(from.lat)
   const lon1 = toRadians(from.lon)
-  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(b))
+  const lat2 = Math.asin(
+    Math.sin(lat1) * Math.cos(angularDistance) + Math.cos(lat1) * Math.sin(angularDistance) * Math.cos(bearingRadians)
+  )
   const lon2 =
-    lon1 + Math.atan2(Math.sin(b) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2))
+    lon1 +
+    Math.atan2(
+      Math.sin(bearingRadians) * Math.sin(angularDistance) * Math.cos(lat1),
+      Math.cos(angularDistance) - Math.sin(lat1) * Math.sin(lat2)
+    )
   return { lat: toDegrees(lat2), lon: ((toDegrees(lon2) + 540) % 360) - 180 }
 }
 
@@ -378,7 +396,10 @@ export type ScoreVerdict =
 
 const Scale = z.union([z.literal(-2), z.literal(-1), z.literal(0), z.literal(1), z.literal(2)])
 // Verdicts given before the guesses were an enum name them in lower case.
-const Guess = z.preprocess((v) => (typeof v === "string" ? v.toUpperCase().replaceAll("-", "_") : v), z.enum(GuessType))
+const Guess = z.preprocess(
+  (value) => (typeof value === "string" ? value.toUpperCase().replaceAll("-", "_") : value),
+  z.enum(GuessType)
+)
 const verdictBase = {
   version: z.number().optional(),
   set: z.number(),

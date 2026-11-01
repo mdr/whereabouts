@@ -37,12 +37,12 @@ const MAX_LONGITUDE_SPAN: Degrees = 120
 
 /**
  * The band of `axis` around `answer`, with the answer at a point set by
- * `u` (0 to 1) away from the edges. Edges are rounded outwards to whole
+ * `unit` (0 to 1) away from the edges. Edges are rounded outwards to whole
  * degrees, or tenths for a narrow band, so the labels are the band.
  */
-export function hintBand(answer: LatLon, tolerance: Km, axis: HintAxis, u: number): HintBand {
+export function hintBand(answer: LatLon, tolerance: Km, axis: HintAxis, unit: number): HintBand {
   const span = kmToDegrees(HINT_WIDTH_TOLERANCES * tolerance)
-  const at = EDGE + u * (1 - 2 * EDGE)
+  const at = EDGE + unit * (1 - 2 * EDGE)
   if (axis === HintAxis.LATITUDE) {
     const width = Math.min(span, 180)
     let from = answer.lat - at * width
@@ -57,49 +57,51 @@ export function hintBand(answer: LatLon, tolerance: Km, axis: HintAxis, u: numbe
 }
 
 /** Whether a point lies in the band. */
-export function inHintBand(band: HintBand, p: LatLon): boolean {
-  if (band.axis === HintAxis.LATITUDE) return p.lat >= band.from && p.lat <= band.to
-  return band.from <= band.to ? p.lon >= band.from && p.lon <= band.to : p.lon >= band.from || p.lon <= band.to
+export function inHintBand(band: HintBand, point: LatLon): boolean {
+  if (band.axis === HintAxis.LATITUDE) return point.lat >= band.from && point.lat <= band.to
+  return band.from <= band.to
+    ? point.lon >= band.from && point.lon <= band.to
+    : point.lon >= band.from || point.lon <= band.to
 }
 
 /** The paint without its cells wholly outside the band, split at the band's edges down to `finestRes`. */
 export function trimToHint(cells: ReadonlyMap<H3Cell, number>, band: HintBand, finestRes: H3Res): Map<H3Cell, number> {
-  return keepCells(cells, (h) => cellMeetsBand(h, band), finestRes)
+  return keepCells(cells, (cell) => cellMeetsBand(cell, band), finestRes)
 }
 
-function cellMeetsBand(h: H3Cell, band: HintBand): boolean {
-  const corners = cellBoundaryLatLng(h)
+function cellMeetsBand(cell: H3Cell, band: HintBand): boolean {
+  const corners = cellBoundaryLatLng(cell)
   if (band.axis === HintAxis.LATITUDE) {
     const lats = corners.map(([lat]) => lat)
     return Math.max(...lats) >= band.from && Math.min(...lats) <= band.to
   }
   // Corner longitudes taken around the centre, so a cell across 180° stays one span.
-  const [, centre] = cellToLatLng(h)
+  const [, centre] = cellToLatLng(cell)
   const lons = corners.map(([, lon]) => centre + wrap(lon - centre))
-  const lo = Math.min(...lons)
-  const hi = Math.max(...lons)
+  const lowest = Math.min(...lons)
+  const highest = Math.max(...lons)
   const to = band.to < band.from ? band.to + 360 : band.to
-  return [-360, 0, 360].some((shift) => hi + shift >= band.from && lo + shift <= to)
+  return [-360, 0, 360].some((shift) => highest + shift >= band.from && lowest + shift <= to)
 }
 
 /** "Between 23°N and 37°N", "Between 170°E and 165°W". */
 export function describeHint(band: HintBand): string {
-  const [pos, neg] = band.axis === HintAxis.LATITUDE ? ["N", "S"] : ["E", "W"]
-  const deg = (v: Degrees) => {
-    const n = Math.abs(Math.round(v * 10) / 10)
-    return n === 0 || n === 180 ? `${n}°` : `${n}°${v > 0 ? pos : neg}`
+  const [positive, negative] = band.axis === HintAxis.LATITUDE ? ["N", "S"] : ["E", "W"]
+  const describe = (degrees: Degrees) => {
+    const magnitude = Math.abs(Math.round(degrees * 10) / 10)
+    return magnitude === 0 || magnitude === 180 ? `${magnitude}°` : `${magnitude}°${degrees > 0 ? positive : negative}`
   }
-  return `Between ${deg(band.from)} and ${deg(band.to)}`
+  return `Between ${describe(band.from)} and ${describe(band.to)}`
 }
 
 /** A number from 0 to 1 that depends only on its inputs (mulberry32). */
 export function seededUnit(...parts: number[]): number {
-  let t = parts.reduce((h, p) => Math.imul(h ^ p, 0x9e3779b1) >>> 0, 0x6d2b79f5)
-  t = Math.imul(t ^ (t >>> 15), t | 1)
-  t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  let state = parts.reduce((hash, part) => Math.imul(hash ^ part, 0x9e3779b1) >>> 0, 0x6d2b79f5)
+  state = Math.imul(state ^ (state >>> 15), state | 1)
+  state ^= state + Math.imul(state ^ (state >>> 7), state | 61)
+  return ((state ^ (state >>> 14)) >>> 0) / 4294967296
 }
 
-const floorTo = (v: Degrees, step: Degrees): Degrees => Math.round(Math.floor(v / step) * step * 10) / 10
-const ceilTo = (v: Degrees, step: Degrees): Degrees => Math.round(Math.ceil(v / step) * step * 10) / 10
+const floorTo = (value: Degrees, step: Degrees): Degrees => Math.round(Math.floor(value / step) * step * 10) / 10
+const ceilTo = (value: Degrees, step: Degrees): Degrees => Math.round(Math.ceil(value / step) * step * 10) / 10
 const wrap = (lon: Degrees): Degrees => ((((lon + 180) % 360) + 360) % 360) - 180

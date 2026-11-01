@@ -28,18 +28,20 @@ export function pickRounds(
 ): Question[] {
   const chosen: Question[] = []
   const asked = new Set<PlaceId>()
-  const answer = (q: Question) => scoredAnswer(q.answer, outlines)
+  const answer = (question: Question) => scoredAnswer(question.answer, outlines)
   QUESTION_TYPES.forEach((type, i) => {
     const count = mix[type]
     if (count === 0) return
     const candidates = shuffle(poolOf(catalogue, [type], mapDetail), seed ^ SALTS[i]!).filter(
-      (q) => !asked.has(q.place)
+      (question) => !asked.has(question.place)
     )
     for (let n = 0; n < count && candidates.length > 0; n++) {
-      const apart = candidates.findIndex((q) => !chosen.some((c) => roundsOverlap(answer(c), answer(q))))
-      const q = candidates.splice(Math.max(apart, 0), 1)[0]!
-      chosen.push(q)
-      asked.add(q.place)
+      const apart = candidates.findIndex(
+        (question) => !chosen.some((other) => roundsOverlap(answer(other), answer(question)))
+      )
+      const question = candidates.splice(Math.max(apart, 0), 1)[0]!
+      chosen.push(question)
+      asked.add(question.place)
     }
   })
   return shuffle(chosen, seed ^ 0x5bd1e995)

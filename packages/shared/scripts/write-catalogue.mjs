@@ -10,19 +10,19 @@ const file = (name) => new URL(`../${name}`, import.meta.url)
 const read = (name) => JSON.parse(readFileSync(file(name), "utf8"))
 
 const sortedCatalogue = (types, questions) =>
-  [...read("catalogue.json").filter((q) => !types.includes(q.type)), ...questions]
+  [...read("catalogue.json").filter((question) => !types.includes(question.type)), ...questions]
     .sort((a, b) => ORDER.indexOf(a.type) - ORDER.indexOf(b.type))
     .map(({ id, type, place, clue, answer }) => ({ id, type, place, clue, answer }))
 
 /** The places the catalogue asks about, each once, with optional fields only when set. */
 function placesAsked(catalogue, places) {
-  const allPlaces = new Map(read("places.json").map((p) => [p.id, p]))
-  for (const p of places) allPlaces.set(p.id, { ...allPlaces.get(p.id), ...p })
+  const allPlaces = new Map(read("places.json").map((place) => [place.id, place]))
+  for (const place of places) allPlaces.set(place.id, { ...allPlaces.get(place.id), ...place })
   const asked = new Map()
-  for (const q of catalogue) {
-    const place = allPlaces.get(q.place)
-    if (!place) throw new Error(`${q.id}: no place ${q.place}`)
-    if (asked.has(q.place)) continue
+  for (const question of catalogue) {
+    const place = allPlaces.get(question.place)
+    if (!place) throw new Error(`${question.id}: no place ${question.place}`)
+    if (asked.has(question.place)) continue
     const { id, label, wiki, at, feature, area, flag } = place
     asked.set(id, {
       id,
@@ -41,10 +41,10 @@ function placesAsked(catalogue, places) {
 function outlinesUsed(catalogue, asked, outlines) {
   const allOutlines = { ...read("outlines.json"), ...outlines }
   const used = {}
-  for (const q of catalogue) {
-    if (q.answer.type !== "AREA") continue
-    const id = asked.get(q.place).area?.outline
-    if (!allOutlines[id]) throw new Error(`${q.id}: no outline ${id}`)
+  for (const question of catalogue) {
+    if (question.answer.type !== "AREA") continue
+    const id = asked.get(question.place).area?.outline
+    if (!allOutlines[id]) throw new Error(`${question.id}: no outline ${id}`)
     used[id] = allOutlines[id]
   }
   return used

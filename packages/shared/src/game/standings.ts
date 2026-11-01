@@ -8,27 +8,27 @@ import { isPlayer, type PlayerSeat, type Seat } from "./seats.ts"
 
 /** The sum of the scores; a round not played counts as 0. */
 function total(scores: (Points | undefined)[]): Points {
-  let t = 0
-  for (const x of scores) t += x ?? 0
-  return t
+  let sum = 0
+  for (const score of scores) sum += score ?? 0
+  return sum
 }
 
 /** 1 plus the number of players ahead on total, so ties share a rank. */
 export function rankAmong(player: PlayerSeat, playing: readonly PlayerSeat[]): number {
   const mine = total(player.role.record.scores)
   let rank = 1
-  for (const p of playing) if (total(p.role.record.scores) > mine) rank++
+  for (const seat of playing) if (total(seat.role.record.scores) > mine) rank++
   return rank
 }
 
 /** Each player's total and per-round scores, best first; `{}` for a round not played. */
 export function finalStandings(playing: readonly PlayerSeat[], roundCount: number): FinalStanding[] {
   return playing
-    .map((p) => ({
-      playerId: p.id,
-      total: total(p.role.record.scores),
+    .map((seat) => ({
+      playerId: seat.id,
+      total: total(seat.role.record.scores),
       rounds: Array.from({ length: roundCount }, (_, i) => {
-        const score = p.role.record.scores[i]
+        const score = seat.role.record.scores[i]
         return score === undefined ? {} : { score }
       })
     }))
@@ -36,9 +36,9 @@ export function finalStandings(playing: readonly PlayerSeat[], roundCount: numbe
 }
 
 export function awardFacts(playing: readonly PlayerSeat[], roundCount: number): PlayerFacts[] {
-  return playing.map((p) => ({
-    playerId: p.id,
-    rounds: Array.from({ length: roundCount }, (_, i) => p.role.record.facts[i])
+  return playing.map((seat) => ({
+    playerId: seat.id,
+    rounds: Array.from({ length: roundCount }, (_, i) => seat.role.record.facts[i])
   }))
 }
 
@@ -49,22 +49,27 @@ export function rosterView(
   isLocked: (token: PlayerToken) => boolean
 ): { players: PlayingPlayerView[]; spectators: SpectatorView[] } {
   const playing = seats.filter(isPlayer)
-  const base = (s: Seat) => ({ id: s.id, name: s.name, connected: s.connected, isHost: s.token === host })
+  const base = (seat: Seat) => ({
+    id: seat.id,
+    name: seat.name,
+    connected: seat.connected,
+    isHost: seat.token === host
+  })
   return {
     players: playing
-      .map((p): PlayingPlayerView => ({
-        ...base(p),
+      .map((seat): PlayingPlayerView => ({
+        ...base(seat),
         type: Role.PLAYER,
-        colour: p.role.colour,
-        locked: isLocked(p.token),
-        score: total(p.role.record.scores),
-        rank: rankAmong(p, playing),
-        previousRank: p.role.record.previousRank
+        colour: seat.role.colour,
+        locked: isLocked(seat.token),
+        score: total(seat.role.record.scores),
+        rank: rankAmong(seat, playing),
+        previousRank: seat.role.record.previousRank
       }))
       .sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name)),
     spectators: seats
-      .filter((s) => s.role.type === Role.SPECTATOR)
-      .map((s): SpectatorView => ({ ...base(s), type: Role.SPECTATOR }))
+      .filter((seat) => seat.role.type === Role.SPECTATOR)
+      .map((seat): SpectatorView => ({ ...base(seat), type: Role.SPECTATOR }))
       .sort((a, b) => a.name.localeCompare(b.name))
   }
 }

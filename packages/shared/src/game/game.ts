@@ -51,7 +51,7 @@ const DEFAULT_CONFIG: GameConfig = {
 export const ROUND_GRACE: Ms = 1000
 
 /** Someone to wait on, and nobody still to wait for. */
-const everyoneDone = (waitingOn: PlayerSeat[], done: (p: PlayerSeat) => boolean): boolean =>
+const everyoneDone = (waitingOn: PlayerSeat[], done: (seat: PlayerSeat) => boolean): boolean =>
   waitingOn.length > 0 && waitingOn.every(done)
 
 export class Game {
@@ -149,7 +149,7 @@ export class Game {
     if (this.seats.playing().length === 0) return fail("no players")
     const first = this.roundAt(0)
     if (!first) return fail("no rounds to play")
-    for (const p of this.seats.playing()) p.role.record = freshRecord(0)
+    for (const seat of this.seats.playing()) seat.role.record = freshRecord(0)
     this.state = this.beginRound(first, now)
     return OK_CHANGED
   }
@@ -168,9 +168,9 @@ export class Game {
   /** Host advances from the reveal without waiting for the others. */
   next(token: PlayerToken, now: Instant): CommandResult {
     if (!this.seats.isHost(token)) return fail("only the host can advance")
-    const s = this.state
-    if (s.phase !== Phase.REVEAL) return fail("nothing to advance")
-    this.state = this.advance(s, now)
+    const state = this.state
+    if (state.phase !== Phase.REVEAL) return fail("nothing to advance")
+    this.state = this.advance(state, now)
     return OK_CHANGED
   }
 
@@ -180,9 +180,9 @@ export class Game {
     this.state = LOBBY_STATE
     this.seed = now
     this.questions = pickRounds(this.bank, this.config, this.seed)
-    for (const p of this.seats.playing()) p.role.record = freshRecord(0)
+    for (const seat of this.seats.playing()) seat.role.record = freshRecord(0)
     // Back in a lobby, anyone away has its grace to come back, from now.
-    for (const p of this.seats.all()) if (!p.connected) p.leftAt = now
+    for (const seat of this.seats.all()) if (!seat.connected) seat.leftAt = now
     return OK_CHANGED
   }
 
@@ -232,18 +232,18 @@ export class Game {
   /** Stop after the current round: score it if it is still running, then show final standings. */
   end(token: PlayerToken): CommandResult {
     if (!this.seats.isHost(token)) return fail("only the host can end the game")
-    const s = this.state
-    if (s.phase === Phase.GUESSING) this.state = this.finish(this.closeRound(s).round)
-    else if (s.phase === Phase.REVEAL) this.state = this.finish(s.round)
+    const state = this.state
+    if (state.phase === Phase.GUESSING) this.state = this.finish(this.closeRound(state).round)
+    else if (state.phase === Phase.REVEAL) this.state = this.finish(state.round)
     else return fail("nothing to end")
     return OK_CHANGED
   }
 
   /** Drop what a removed player had in the phase under way. */
   private forget(token: PlayerToken): void {
-    const s = this.state
-    if (s.phase === Phase.GUESSING) s.submissions.delete(token)
-    else if (s.phase === Phase.REVEAL) s.ready.delete(token)
+    const state = this.state
+    if (state.phase === Phase.GUESSING) state.submissions.delete(token)
+    else if (state.phase === Phase.REVEAL) state.ready.delete(token)
   }
 
   // ---- player commands -----------------------------------------------------
@@ -256,19 +256,19 @@ export class Game {
     return OK_CHANGED
   }
 
-  /** Use one of the game's hints on this round: one per round, so two bands never box the answer in. */
+  /** Use one of the game'state hints on this round: one per round, so two bands never box the answer in. */
   hint(token: PlayerToken, axis: HintAxis): CommandResult {
     const seat = this.seats.get(token)
     if (!seat) return fail("unknown player")
-    const s = this.state
-    if (s.phase !== Phase.GUESSING) return fail("no round to hint")
-    if (seat.role.type === Role.SPECTATOR || !playsRound(seat.role, s.round)) {
+    const state = this.state
+    if (state.phase !== Phase.GUESSING) return fail("no round to hint")
+    if (seat.role.type === Role.SPECTATOR || !playsRound(seat.role, state.round)) {
       return fail("you are not playing this round")
     }
     const { record } = seat.role
-    if (s.hints.has(token)) return fail("one hint per round")
+    if (state.hints.has(token)) return fail("one hint per round")
     if (record.hintsUsed >= this.config.hints) return fail("no hints left")
-    s.hints.set(token, axis)
+    state.hints.set(token, axis)
     record.hintsUsed++
     return OK_CHANGED
   }
@@ -279,18 +279,18 @@ export class Game {
     if (seat.role.type === Role.SPECTATOR) return fail("you are watching")
     // Uploads are debounced on the client, so one can arrive just after the
     // round ended. It is stale rather than wrong: drop it quietly.
-    const s = this.state
-    if (s.phase !== Phase.GUESSING) return OK_SAME
-    if (!playsRound(seat.role, s.round)) return fail("sitting this round out")
-    // A stroke's upload can land just after the player locked in; it changes nothing.
-    if (isLocked(s.submissions.get(token))) return OK_SAME
-    s.submissions.set(token, { type: SubmissionType.DRAFT, paint })
+    const state = this.state
+    if (state.phase !== Phase.GUESSING) return OK_SAME
+    if (!playsRound(seat.role, state.round)) return fail("sitting this round out")
+    // A stroke'state upload can land just after the player locked in; it changes nothing.
+    if (isLocked(state.submissions.get(token))) return OK_SAME
+    state.submissions.set(token, { type: SubmissionType.DRAFT, paint })
     // Paint is private until the reveal, so other views do not change.
     return OK_SAME
   }
 
   /**
-   * Freeze this player's guess. The round ends early once every active
+   * Freeze this player'state guess. The round ends early once every active
    * player has. With nothing painted this is a pass: an empty submission
    * that scores PASS_SCORE, so a player with no idea need not hold
    * everyone up until the clock runs out.
@@ -299,13 +299,13 @@ export class Game {
     const seat = this.seats.get(token)
     if (!seat) return fail("unknown player")
     // Pressed as the round ended, by this player or the clock: stale, not wrong.
-    const s = this.state
-    if (s.phase !== Phase.GUESSING) return OK_SAME
+    const state = this.state
+    if (state.phase !== Phase.GUESSING) return OK_SAME
     if (seat.role.type === Role.SPECTATOR) return fail("you are watching")
-    if (!playsRound(seat.role, s.round)) return fail("sitting this round out")
-    const current = s.submissions.get(token)
+    if (!playsRound(seat.role, state.round)) return fail("sitting this round out")
+    const current = state.submissions.get(token)
     if (isLocked(current)) return OK_SAME
-    s.submissions.set(token, {
+    state.submissions.set(token, {
       type: SubmissionType.LOCKED,
       paint: current?.paint ?? { cells: {}, floor: 1 },
       at: now
@@ -321,11 +321,11 @@ export class Game {
   unlock(token: PlayerToken): CommandResult {
     const player = this.seats.get(token)
     if (!player) return fail("unknown player")
-    const s = this.state
-    if (s.phase !== Phase.GUESSING) return OK_SAME
-    const current = s.submissions.get(token)
+    const state = this.state
+    if (state.phase !== Phase.GUESSING) return OK_SAME
+    const current = state.submissions.get(token)
     if (current?.type !== SubmissionType.LOCKED) return OK_SAME
-    s.submissions.set(token, { type: SubmissionType.DRAFT, paint: current.paint })
+    state.submissions.set(token, { type: SubmissionType.DRAFT, paint: current.paint })
     return OK_CHANGED
   }
 
@@ -334,11 +334,11 @@ export class Game {
     const seat = this.seats.get(token)
     if (!seat) return fail("unknown player")
     // Pressed just after the last Ready moved the game on.
-    const s = this.state
-    if (s.phase !== Phase.REVEAL) return OK_SAME
+    const state = this.state
+    if (state.phase !== Phase.REVEAL) return OK_SAME
     if (seat.role.type === Role.SPECTATOR) return fail("you are watching")
-    if (s.ready.has(token)) return OK_SAME
-    s.ready.add(token)
+    if (state.ready.has(token)) return OK_SAME
+    state.ready.add(token)
     this.settleIfEveryoneDone(now)
     return OK_CHANGED
   }
@@ -350,36 +350,36 @@ export class Game {
    * deadline (or the host) still governs.
    */
   private settleIfEveryoneDone(now: Instant): void {
-    const s = this.state
-    if (s.phase === Phase.GUESSING) {
-      if (everyoneDone(this.lockingIn(s.round), (p) => isLocked(s.submissions.get(p.token))))
-        this.state = this.closeRound(s)
-    } else if (s.phase === Phase.REVEAL) {
-      if (everyoneDone(this.present(), (p) => s.ready.has(p.token))) this.state = this.advance(s, now)
+    const state = this.state
+    if (state.phase === Phase.GUESSING) {
+      if (everyoneDone(this.lockingIn(state.round), (seat) => isLocked(state.submissions.get(seat.token))))
+        this.state = this.closeRound(state)
+    } else if (state.phase === Phase.REVEAL) {
+      if (everyoneDone(this.present(), (seat) => state.ready.has(seat.token))) this.state = this.advance(state, now)
     }
   }
 
   /** The connected players who are playing this round. */
   private lockingIn(round: Round): PlayerSeat[] {
-    return this.present().filter((p) => playsRound(p.role, round))
+    return this.present().filter((seat) => playsRound(seat.role, round))
   }
 
   /** The connected players, leaving out spectators. */
   private present(): PlayerSeat[] {
-    return this.seats.playing().filter((p) => p.connected)
+    return this.seats.playing().filter((seat) => seat.connected)
   }
 
   // ---- clock ---------------------------------------------------------------
 
   /** Advance time-driven transitions. Returns true if the state changed. */
   tick(now: Instant): boolean {
-    const s = this.state
-    switch (s.phase) {
+    const state = this.state
+    switch (state.phase) {
       case Phase.LOBBY:
         return this.seats.freeLapsed(now)
       case Phase.GUESSING:
-        if (now < s.deadline + ROUND_GRACE) return false
-        this.state = this.closeRound(s)
+        if (now < state.deadline + ROUND_GRACE) return false
+        this.state = this.closeRound(state)
         return true
       case Phase.REVEAL:
       case Phase.RESULTS:
@@ -389,10 +389,10 @@ export class Game {
 
   /** Epoch time of the next time-driven transition, or undefined if none is pending. */
   nextWakeAt(): Instant | undefined {
-    const s = this.state
-    switch (s.phase) {
+    const state = this.state
+    switch (state.phase) {
       case Phase.GUESSING:
-        return s.deadline + ROUND_GRACE
+        return state.deadline + ROUND_GRACE
       case Phase.LOBBY:
         return this.seats.nextLapseAt()
       case Phase.REVEAL:
@@ -418,9 +418,9 @@ export class Game {
     }
   }
 
-  private closeRound(s: GuessingState): RevealState {
-    const { round } = s
-    const results = scorePlayers(this.seats.playing(), s, {
+  private closeRound(state: GuessingState): RevealState {
+    const { round } = state
+    const results = scorePlayers(this.seats.playing(), state, {
       outlines: this.bank.outlines,
       kernel: this.kernel,
       roundLength: this.config.roundLength
@@ -429,15 +429,15 @@ export class Game {
       phase: Phase.REVEAL,
       round,
       reveal: revealOf(round.question, { index: round.index, total: this.questions.length }, results),
-      lockedIn: new Set([...s.submissions].filter(([, sub]) => isLocked(sub)).map(([t]) => t)),
-      hints: s.hints,
+      lockedIn: new Set([...state.submissions].flatMap(([token, submission]) => (isLocked(submission) ? [token] : []))),
+      hints: state.hints,
       ready: new Set()
     }
   }
 
-  private advance(s: RevealState, now: Instant): GuessingState | ResultsState {
-    const next = this.roundAt(s.round.index + 1)
-    return next ? this.beginRound(next, now) : this.finish(s.round)
+  private advance(state: RevealState, now: Instant): GuessingState | ResultsState {
+    const next = this.roundAt(state.round.index + 1)
+    return next ? this.beginRound(next, now) : this.finish(state.round)
   }
 
   private finish(last: Round): ResultsState {
@@ -457,15 +457,15 @@ export class Game {
   view(token: PlayerToken, now: Instant): GameView | undefined {
     const seat = this.seats.get(token)
     if (!seat) return undefined
-    const s = this.state
+    const state = this.state
     const base = {
       code: this.code,
       config: this.config,
       serverTime: now,
-      ...rosterView(this.seats.all(), this.seats.effectiveHost(), (t) => lockedIn(s, t))
+      ...rosterView(this.seats.all(), this.seats.effectiveHost(), (seatToken) => lockedIn(state, seatToken))
     }
     const you = { id: seat.id, name: seat.name, isHost: this.seats.isHost(token), ...this.nextHostView(token) }
-    switch (s.phase) {
+    switch (state.phase) {
       case Phase.LOBBY:
         return {
           ...base,
@@ -474,60 +474,60 @@ export class Game {
           ...upcomingOf(this.questions[0])
         }
       case Phase.GUESSING: {
-        const paint = s.submissions.get(token)?.paint
+        const paint = state.submissions.get(token)?.paint
         return {
           ...base,
           phase: Phase.GUESSING,
           you: {
             ...you,
-            role: roundRole(s, seat, this.config.hints),
-            ...this.hintView(s, token),
+            role: roundRole(state, seat, this.config.hints),
+            ...this.hintView(state, token),
             ...(paint ? { paint } : {})
           },
-          round: roundView(s.round.question, s.round.index, this.questions.length, s.deadline),
-          ...upcomingOf(this.questions[s.round.index + 1])
+          round: roundView(state.round.question, state.round.index, this.questions.length, state.deadline),
+          ...upcomingOf(this.questions[state.round.index + 1])
         }
       }
       case Phase.REVEAL:
         return {
           ...base,
           phase: Phase.REVEAL,
-          you: { ...you, role: roundRole(s, seat, this.config.hints), ...this.hintView(s, token) },
-          reveal: { ...s.reveal, ready: this.readyIds(s.ready) },
-          ...upcomingOf(this.questions[s.round.index + 1])
+          you: { ...you, role: roundRole(state, seat, this.config.hints), ...this.hintView(state, token) },
+          reveal: { ...state.reveal, ready: this.readyIds(state.ready) },
+          ...upcomingOf(this.questions[state.round.index + 1])
         }
       case Phase.RESULTS:
         return {
           ...base,
           phase: Phase.RESULTS,
           you: { ...you, role: seatedRole(seat) },
-          results: s.standings,
-          playedRounds: s.playedRounds,
-          awards: s.awards
+          results: state.standings,
+          playedRounds: state.playedRounds,
+          awards: state.awards
         }
     }
   }
 
-  /** This player's hint band on the round played or revealed. */
-  private hintView(s: InPlayState, token: PlayerToken): { hint?: HintBand } {
-    const axis = s.hints.get(token)
-    return axis ? { hint: roundHintBand(s.round.question, this.seed, s.round.index, axis) } : {}
+  /** This player'state hint band on the round played or revealed. */
+  private hintView(state: InPlayState, token: PlayerToken): { hint?: HintBand } {
+    const axis = state.hints.get(token)
+    return axis ? { hint: roundHintBand(state.round.question, this.seed, state.round.index, axis) } : {}
   }
 
   private readyIds(ready: ReadonlySet<PlayerToken>): PlayerId[] {
-    return [...ready].flatMap((tok) => this.seats.get(tok)?.id ?? [])
+    return [...ready].flatMap((token) => this.seats.get(token)?.id ?? [])
   }
 
-  /** This player's paint on the round being guessed, as last uploaded. */
+  /** This player'state paint on the round being guessed, as last uploaded. */
   paintOf(token: PlayerToken): PaintSubmission | undefined {
-    const s = this.state
-    return s.phase === Phase.GUESSING ? s.submissions.get(token)?.paint : undefined
+    const state = this.state
+    return state.phase === Phase.GUESSING ? state.submissions.get(token)?.paint : undefined
   }
 
   /** The reveal on show, the same object for as long as it shows. */
   get roundReveal(): RoundReveal | undefined {
-    const s = this.state
-    return s.phase === Phase.REVEAL ? s.reveal : undefined
+    const state = this.state
+    return state.phase === Phase.REVEAL ? state.reveal : undefined
   }
 
   /** For tests and diagnostics. */

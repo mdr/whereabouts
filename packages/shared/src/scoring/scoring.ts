@@ -73,7 +73,7 @@ export const KERNELS: ChoosableKernel[] = [
 export const DEFAULT_KERNEL: ChoosableKernel = KERNELS[1]!
 
 export function kernelById(id: KernelId): ChoosableKernel {
-  return KERNELS.find((k) => k.id === id)!
+  return KERNELS.find((choice) => choice.id === id)!
 }
 
 export interface WeightedPoint {
@@ -121,11 +121,11 @@ export function kernel(distance: Km, tolerance: Km, k: Kernel = DEFAULT_KERNEL):
  * uniform measure in t is dt/2 on [0, 2], giving (1 - e^{-2a}) / (2a).
  */
 export function uniformKernelMean(tolerance: Km, k: Kernel = DEFAULT_KERNEL): number {
-  let v = 0
+  let sum = 0
   for (let i = 0; i < k.scales.length; i++) {
-    v += k.weights[i]! * gaussUniformMean(k.scales[i]! * tolerance)
+    sum += k.weights[i]! * gaussUniformMean(k.scales[i]! * tolerance)
   }
-  return v
+  return sum
 }
 
 function gaussUniformMean(width: Km): number {
@@ -154,32 +154,32 @@ export function similarityToAnswer(
 ): number {
   let A = 0
   const widest = tolerance * Math.max(...k.scales)
-  for (const pt of painted.points) {
-    A += patchSimilarity(pt, answer, tolerance, widest, k)
+  for (const point of painted.points) {
+    A += patchSimilarity(point, answer, tolerance, widest, k)
   }
   A += painted.floor * uniformKernelMean(tolerance, k)
   return A
 }
 
-function patchSimilarity(pt: WeightedPoint, answer: Xyz, tolerance: Km, widest: Km, k: Kernel): number {
-  const s2 = pt.s2 ?? 0
-  const dSq = chordDistanceSq(pt.xyz, answer)
-  if (!pt.cell || s2 <= (REFINE_ABOVE * tolerance) ** 2) return pt.p * kernelFromSq(dSq, tolerance, k, s2)
+function patchSimilarity(point: WeightedPoint, answer: Xyz, tolerance: Km, widest: Km, k: Kernel): number {
+  const s2 = point.s2 ?? 0
+  const dSq = chordDistanceSq(point.xyz, answer)
+  if (!point.cell || s2 <= (REFINE_ABOVE * tolerance) ** 2) return point.p * kernelFromSq(dSq, tolerance, k, s2)
   // Circumradius from the variance (R² = 24 s² / 5), then the reach of the widest component.
   const R = Math.sqrt(4.8 * s2)
   const reach = CUTOFF_WIDTHS * Math.sqrt(patchWidthSq(widest, s2))
-  if (Math.sqrt(dSq) - R > reach) return pt.p * kernelFromSq(dSq, tolerance, k, s2)
-  const res = getResolution(pt.cell)
-  if (res >= 15) return pt.p * kernelFromSq(dSq, tolerance, k, s2)
-  const children = cellToChildren(pt.cell, finerRes(res))
-  const areas = children.map((c) => cellArea(c))
-  const total = areas.reduce((s, a) => s + a, 0)
+  if (Math.sqrt(dSq) - R > reach) return point.p * kernelFromSq(dSq, tolerance, k, s2)
+  const res = getResolution(point.cell)
+  if (res >= 15) return point.p * kernelFromSq(dSq, tolerance, k, s2)
+  const children = cellToChildren(point.cell, finerRes(res))
+  const areas = children.map((child) => cellArea(child))
+  const total = areas.reduce((sum, area) => sum + area, 0)
   let A = 0
   for (let i = 0; i < children.length; i++) {
     const [lat, lon] = cellToLatLng(children[i]!)
     const child: WeightedPoint = {
       xyz: toXyz({ lat, lon }),
-      p: (pt.p * areas[i]!) / total,
+      p: (point.p * areas[i]!) / total,
       s2: HEX_VARIANCE_PER_AREA * areas[i]!,
       cell: children[i]!
     }
@@ -267,22 +267,22 @@ export interface RegionScore extends ScoreBreakdown {
 }
 
 /** One Gaussian component of a kernel, as a kernel of its own. */
-function component(k: Kernel, c: number): Kernel {
-  return { id: `${k.id}#${c}`, label: k.label, scales: [k.scales[c]!], weights: [1] }
+function component(k: Kernel, index: number): Kernel {
+  return { id: `${k.id}#${index}`, label: k.label, scales: [k.scales[index]!], weights: [1] }
 }
 
 /** Region answer from H3 cells (any mix of resolutions), weighted by area. */
 export function regionAnswer(cells: Iterable<H3Cell>, tolerance: Km, k: Kernel = DEFAULT_KERNEL): RegionAnswer {
   const raw: WeightedPoint[] = []
   let total = 0
-  for (const h of cells) {
-    const area = cellArea(h)
-    const [lat, lon] = cellToLatLng(h)
-    raw.push({ xyz: toXyz({ lat, lon }), p: area, s2: HEX_VARIANCE_PER_AREA * area, cell: h })
+  for (const cell of cells) {
+    const area = cellArea(cell)
+    const [lat, lon] = cellToLatLng(cell)
+    raw.push({ xyz: toXyz({ lat, lon }), p: area, s2: HEX_VARIANCE_PER_AREA * area, cell })
     total += area
   }
-  const points = raw.map((pt) => ({ ...pt, p: pt.p / total }))
-  const Q = k.scales.map((_, c) => pairSum(points, tolerance, false, component(k, c)))
+  const points = raw.map((point) => ({ ...point, p: point.p / total }))
+  const Q = k.scales.map((_, index) => pairSum(points, tolerance, false, component(k, index)))
   return { points, Q, tolerance, kernel: k }
 }
 
@@ -294,16 +294,16 @@ export function regionAnswer(cells: Iterable<H3Cell>, tolerance: Km, k: Kernel =
 export function coarsenDistribution(painted: Distribution, res: H3Res): Distribution {
   const merged = new Map<H3Cell, number>()
   const points: WeightedPoint[] = []
-  for (const pt of painted.points) {
-    if (!pt.cell || getResolution(pt.cell) <= res) points.push(pt)
+  for (const point of painted.points) {
+    if (!point.cell || getResolution(point.cell) <= res) points.push(point)
     else {
-      const parent = cellToParent(pt.cell, res)
-      merged.set(parent, (merged.get(parent) ?? 0) + pt.p)
+      const parent = cellToParent(point.cell, res)
+      merged.set(parent, (merged.get(parent) ?? 0) + point.p)
     }
   }
-  for (const [h, p] of merged) {
-    const [lat, lon] = cellToLatLng(h)
-    points.push({ xyz: toXyz({ lat, lon }), p, s2: HEX_VARIANCE_PER_AREA * cellArea(h), cell: h })
+  for (const [cell, mass] of merged) {
+    const [lat, lon] = cellToLatLng(cell)
+    points.push({ xyz: toXyz({ lat, lon }), p: mass, s2: HEX_VARIANCE_PER_AREA * cellArea(cell), cell })
   }
   return { points, floor: painted.floor }
 }
@@ -314,18 +314,18 @@ export function scoreRegion(painted: Distribution, region: RegionAnswer, exact =
   let A = 0
   let B = 0
   let Q = 0
-  for (let c = 0; c < k.scales.length; c++) {
-    const kc = component(k, c)
-    const Qc = region.Q[c]!
+  for (let index = 0; index < k.scales.length; index++) {
+    const kc = component(k, index)
+    const Qc = region.Q[index]!
     // The floor against q: the uniform kernel mean is the same from every point.
     const Ac =
       crossSum(painted.points, region.points, tolerance, exact, kc) + painted.floor * uniformKernelMean(tolerance, kc)
     const Bc = selfSimilarity(painted, tolerance, exact, kc)
-    const w = k.weights[c]!
-    score += w * Math.max(0, 1000 - (500 * (Bc - 2 * Ac + Qc)) / Qc)
-    A += w * Ac
-    B += w * Bc
-    Q += w * Qc
+    const weight = k.weights[index]!
+    score += weight * Math.max(0, 1000 - (500 * (Bc - 2 * Ac + Qc)) / Qc)
+    A += weight * Ac
+    B += weight * Bc
+    Q += weight * Qc
   }
   return { score, A, B, Q }
 }
@@ -339,22 +339,27 @@ export function buildDistribution(
   cells: Iterable<{ lat: Degrees; lon: Degrees; intensity: number; area: SquareKm; h3?: H3Cell }>,
   floor: number
 ): Distribution {
-  const raw: { xyz: Xyz; w: number; s2: SquareKm; cell?: H3Cell }[] = []
+  const raw: { xyz: Xyz; weight: number; s2: SquareKm; cell?: H3Cell }[] = []
   let total = 0
-  for (const c of cells) {
-    if (c.intensity <= 0) continue
-    const w = c.intensity * c.area
-    total += w
-    raw.push({ xyz: toXyz(c), w, s2: HEX_VARIANCE_PER_AREA * c.area, cell: c.h3 })
+  for (const cell of cells) {
+    if (cell.intensity <= 0) continue
+    const weight = cell.intensity * cell.area
+    total += weight
+    raw.push({ xyz: toXyz(cell), weight, s2: HEX_VARIANCE_PER_AREA * cell.area, cell: cell.h3 })
   }
   if (raw.length === 0) {
     // Nothing painted: everything is floor, regardless of the slider.
     return { points: [], floor: 1 }
   }
-  const f = Math.min(1, Math.max(0, floor))
-  const painted = 1 - f
+  const clampedFloor = Math.min(1, Math.max(0, floor))
+  const painted = 1 - clampedFloor
   return {
-    points: raw.map((r) => ({ xyz: r.xyz, p: (painted * r.w) / total, s2: r.s2, cell: r.cell })),
-    floor: f
+    points: raw.map((entry) => ({
+      xyz: entry.xyz,
+      p: (painted * entry.weight) / total,
+      s2: entry.s2,
+      cell: entry.cell
+    })),
+    floor: clampedFloor
   }
 }
