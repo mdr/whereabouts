@@ -85,9 +85,22 @@ const RoundResultViewSchema = z.strictObject({
   hint: HintAxisSchema.optional()
 })
 
-export const GameViewSchema = z.strictObject({
+const YouShape = {
+  id: PlayerIdSchema.optional(),
+  isHost: z.boolean(),
+  sittingOut: z.boolean(),
+  watching: z.boolean(),
+  locked: z.boolean(),
+  hintsLeft: z.number().int(),
+  nextHost: PlayerIdSchema.optional()
+}
+const RoundYouShape = {
+  ...YouShape,
+  hint: z.strictObject({ axis: HintAxisSchema, from: DegreesSchema, to: DegreesSchema }).optional()
+}
+
+const ViewShape = {
   code: RoomCodeSchema,
-  phase: z.enum(Phase),
   config: z.strictObject({
     roundLength: MsSchema,
     mix: MixSchema,
@@ -96,64 +109,78 @@ export const GameViewSchema = z.strictObject({
     hints: z.number().int()
   }),
   serverTime: InstantSchema,
-  you: z.strictObject({
-    id: PlayerIdSchema.optional(),
-    isHost: z.boolean(),
-    sittingOut: z.boolean(),
-    watching: z.boolean(),
-    locked: z.boolean(),
-    paint: PaintSchema.optional(),
-    hint: z.strictObject({ axis: HintAxisSchema, from: DegreesSchema, to: DegreesSchema }).optional(),
-    hintsLeft: z.number().int(),
-    nextHost: PlayerIdSchema.optional()
-  }),
-  players: z.array(PlayerViewSchema),
-  round: z
-    .strictObject({
-      index: z.number().int(),
-      total: z.number().int(),
-      question: QuestionViewSchema,
-      deadline: InstantSchema
-    })
-    .optional(),
-  reveal: z
-    .strictObject({
-      index: z.number().int(),
-      total: z.number().int(),
-      question: QuestionViewSchema,
-      answer: LatLonSchema,
-      place: PlaceIdSchema,
-      label: z.string(),
-      wiki: WikiTitleSchema.optional(),
-      photo: CommonsFileSchema.optional(),
-      results: z.array(RoundResultViewSchema),
-      ready: z.array(PlayerIdSchema)
-    })
-    .optional(),
-  results: z
-    .array(
-      z.strictObject({
-        playerId: PlayerIdSchema,
-        total: z.number(),
-        rounds: z.array(z.strictObject({ score: z.number().optional() }))
-      })
-    )
-    .optional(),
-  playedRounds: z
-    .array(
-      z.strictObject({
-        label: z.string(),
-        type: z.enum(QuestionType),
-        feature: z.enum(FeatureType).optional(),
-        area: z.strictObject({ outline: OutlineIdSchema, centre: LatLonSchema }).optional(),
-        ...QuestionPicturesSchema.shape
-      })
-    )
-    .optional(),
-  awards: z
-    .array(
-      z.strictObject({ emoji: z.string(), title: z.string(), playerIds: z.array(PlayerIdSchema), line: z.string() })
-    )
-    .optional(),
+  players: z.array(PlayerViewSchema)
+}
+
+const RoundViewSchema = z.strictObject({
+  index: z.number().int(),
+  total: z.number().int(),
+  question: QuestionViewSchema,
+  deadline: InstantSchema
+})
+const RevealViewSchema = z.strictObject({
+  index: z.number().int(),
+  total: z.number().int(),
+  question: QuestionViewSchema,
+  answer: LatLonSchema,
+  place: PlaceIdSchema,
+  label: z.string(),
+  wiki: WikiTitleSchema.optional(),
+  photo: CommonsFileSchema.optional(),
+  results: z.array(RoundResultViewSchema),
+  ready: z.array(PlayerIdSchema)
+})
+const FinalStandingSchema = z.strictObject({
+  playerId: PlayerIdSchema,
+  total: z.number(),
+  rounds: z.array(z.strictObject({ score: z.number().optional() }))
+})
+const PlayedRoundSchema = z.strictObject({
+  label: z.string(),
+  type: z.enum(QuestionType),
+  feature: z.enum(FeatureType).optional(),
+  area: z.strictObject({ outline: OutlineIdSchema, centre: LatLonSchema }).optional(),
+  ...QuestionPicturesSchema.shape
+})
+const AwardSchema = z.strictObject({
+  emoji: z.string(),
+  title: z.string(),
+  playerIds: z.array(PlayerIdSchema),
+  line: z.string()
+})
+
+const LobbyGameViewSchema = z.strictObject({
+  ...ViewShape,
+  phase: z.literal(Phase.LOBBY),
+  you: z.strictObject(YouShape),
   upcoming: QuestionPicturesSchema.optional()
 })
+const GuessingGameViewSchema = z.strictObject({
+  ...ViewShape,
+  phase: z.literal(Phase.GUESSING),
+  you: z.strictObject({ ...RoundYouShape, paint: PaintSchema.optional() }),
+  round: RoundViewSchema,
+  upcoming: QuestionPicturesSchema.optional()
+})
+const RevealGameViewSchema = z.strictObject({
+  ...ViewShape,
+  phase: z.literal(Phase.REVEAL),
+  you: z.strictObject(RoundYouShape),
+  reveal: RevealViewSchema,
+  upcoming: QuestionPicturesSchema.optional()
+})
+const ResultsGameViewSchema = z.strictObject({
+  ...ViewShape,
+  phase: z.literal(Phase.RESULTS),
+  you: z.strictObject(YouShape),
+  results: z.array(FinalStandingSchema),
+  playedRounds: z.array(PlayedRoundSchema),
+  awards: z.array(AwardSchema)
+})
+
+export const GameViewSchema = z.discriminatedUnion("phase", [
+  LobbyGameViewSchema,
+  GuessingGameViewSchema,
+  RevealGameViewSchema,
+  ResultsGameViewSchema
+])

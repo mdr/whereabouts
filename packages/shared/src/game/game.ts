@@ -5,13 +5,13 @@
  */
 import { DEFAULT_KERNEL, kernelById, type Kernel } from "../scoring/scoring.ts"
 import { resolutionForTolerance } from "../paint/paint.ts"
-import { answerCentre, type Question } from "../questions.ts"
-import { playedRound, questionPictures, questionView, revealOf } from "./game-views.ts"
+import type { Question } from "../questions.ts"
+import { playedRound, questionPictures, revealOf, roundHintBand, roundView } from "./game-views.ts"
 import { pickRounds, type QuestionBank } from "./round-picking.ts"
 import { scoredAnswer } from "../scoring/regions.ts"
 import { scoreRound, type Submission } from "../scoring/round-scoring.ts"
 import { pickAwards, type Award } from "../awards/awards.ts"
-import { DEFAULT_HINTS, hintBand, seededUnit, HintAxis, type HintBand } from "../hints.ts"
+import { DEFAULT_HINTS, type HintAxis, type HintBand } from "../hints.ts"
 import type { PlayerId, PlayerName, PlayerToken, RoomCode } from "../ids.ts"
 import { evenMix, MapDetail, Phase } from "../protocol.ts"
 import type {
@@ -22,7 +22,8 @@ import type {
   PaintSubmission,
   QuestionPictures,
   RoundReveal,
-  RoundResultView
+  RoundResultView,
+  YouView
 } from "../protocol.ts"
 import { CloseReason } from "../close-reason.ts"
 import { OK_CHANGED, OK_SAME, fail, type CommandResult, type JoinResult } from "./command-result.ts"
@@ -451,76 +452,76 @@ export class Game {
 
   view(token: PlayerToken, now: Instant): GameView {
     const me = this.seats.get(token)
-    const q = this.phase === Phase.GUESSING ? this.questions[this.roundIndex] : undefined
-    return {
+    const base = {
       code: this.code,
-      phase: this.phase,
       config: this.config,
       serverTime: now,
-      you: {
-        id: me?.id,
-        isHost: me !== undefined && this.seats.isHost(me.token),
-        sittingOut:
-          me !== undefined && (me.watching || (this.phase !== Phase.LOBBY && me.joinedRound > this.roundIndex)),
-        watching: me?.watching ?? false,
-        locked: this.submissions.get(token)?.locked ?? false,
-        paint: this.paintOf(token),
-        ...this.hintView(token),
-        hintsLeft: me && !me.watching ? Math.max(0, this.config.hints - me.hintsUsed) : 0,
-        ...this.nextHostView(token)
-      },
       players: playerViews(
         this.seats.all(),
         this.seats.effectiveHost(),
         (t) => this.submissions.get(t)?.locked ?? false
-      ),
-      round: q
-        ? {
-            index: this.roundIndex,
-            total: this.questions.length,
-            question: questionView(q),
-            deadline: this.deadline
-          }
-        : undefined,
-      reveal: this.phase === Phase.REVEAL && this.reveal ? { ...this.reveal, ready: this.readyIds() } : undefined,
-      ...this.upcoming(),
-      results: this.phase === Phase.RESULTS ? this.results : undefined,
-      playedRounds:
-        this.phase === Phase.RESULTS ? this.questions.slice(0, this.roundIndex + 1).map(playedRound) : undefined,
-      awards: this.phase === Phase.RESULTS ? this.awards : undefined
+      )
+    }
+    const you: YouView = {
+      id: me?.id,
+      isHost: me !== undefined && this.seats.isHost(me.token),
+      sittingOut: me !== undefined && (me.watching || (this.phase !== Phase.LOBBY && me.joinedRound > this.roundIndex)),
+      watching: me?.watching ?? false,
+      locked: this.submissions.get(token)?.locked ?? false,
+      hintsLeft: me && !me.watching ? Math.max(0, this.config.hints - me.hintsUsed) : 0,
+      ...this.nextHostView(token)
+    }
+    switch (this.phase) {
+      case Phase.LOBBY:
+        return { ...base, phase: Phase.LOBBY, you, ...this.upcoming() }
+      case Phase.GUESSING: {
+        const q = this.questions[this.roundIndex]!
+        const paint = this.paintOf(token)
+        return {
+          ...base,
+          phase: Phase.GUESSING,
+          you: { ...you, ...this.hintView(token), ...(paint ? { paint } : {}) },
+          round: roundView(q, this.roundIndex, this.questions.length, this.deadline),
+          ...this.upcoming()
+        }
+      }
+      case Phase.REVEAL:
+        return {
+          ...base,
+          phase: Phase.REVEAL,
+          you: { ...you, ...this.hintView(token) },
+          reveal: { ...this.reveal!, ready: this.readyIds() },
+          ...this.upcoming()
+        }
+      case Phase.RESULTS:
+        return {
+          ...base,
+          phase: Phase.RESULTS,
+          you,
+          results: this.results!,
+          playedRounds: this.questions.slice(0, this.roundIndex + 1).map(playedRound),
+          awards: this.awards!
+        }
     }
   }
 
-  /** This player's hint band on the current round, while it is played and revealed. */
+  /** This player's hint band on the round played or revealed. */
   private hintView(token: PlayerToken): { hint?: HintBand } {
     const axis = this.hints.get(token)
     const q = this.questions[this.roundIndex]
-    if (!axis || !q || (this.phase !== Phase.GUESSING && this.phase !== Phase.REVEAL)) return {}
-    return { hint: this.roundBand(q, axis) }
-  }
-
-  /** The round's band of each axis: the same for everyone who asks. */
-  private roundBand(q: Question, axis: HintAxis): HintBand {
-    const u = seededUnit(this.seed, this.roundIndex, axis === HintAxis.LATITUDE ? 1 : 2)
-    return hintBand(answerCentre(q.answer), q.answer.tolerance, axis, u)
+    return axis && q ? { hint: roundHintBand(q, this.seed, this.roundIndex, axis) } : {}
   }
 
   /** The next round's pictures: round 1's in the lobby, the following round's while one is played or revealed. */
   private upcoming(): { upcoming?: QuestionPictures } {
-    const next = this.phase === Phase.LOBBY ? 0 : this.phase === Phase.RESULTS ? -1 : this.roundIndex + 1
-    const q = this.questions[next]
+    const q = this.questions[this.phase === Phase.LOBBY ? 0 : this.roundIndex + 1]
     if (!q) return {}
     const pictures = questionPictures(q)
     return Object.keys(pictures).length > 0 ? { upcoming: pictures } : {}
   }
 
   private readyIds(): PlayerId[] {
-    const ids: PlayerId[] = []
-    for (const tok of this.ready_) {
-      const p = this.seats.get(tok)
-      if (p) ids.push(p.id)
-    }
-    return ids
+    return [...this.ready_].flatMap((tok) => this.seats.get(tok)?.id ?? [])
   }
 
   /** This player's paint on the round being guessed, as last uploaded. */

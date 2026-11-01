@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
 import { commonsFile, flagCode, outlineId, playerId, playerName } from "@whereabouts/shared/ids"
 import { playerColour } from "@whereabouts/shared/colours"
-import { type GameView, Phase } from "@whereabouts/shared/protocol"
+import { type ResultsGameView } from "@whereabouts/shared/protocol"
 import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 import { signal } from "@preact/signals"
 import { type Connection, ConnectionStatus } from "../net/net"
@@ -11,7 +11,7 @@ import { Results } from "./Results"
 import { resultsTestIds as ids } from "./ResultsTestIds"
 import s from "./Results.module.css"
 import pictures from "../ui/pictures/Pictures.module.css"
-import { makePlayer, makeView } from "../test-view"
+import { makePlayer, makeResultsView } from "../test-view"
 
 const tid = (id: string) => `[data-testid="${id}"]`
 
@@ -26,9 +26,8 @@ const makeConn = (status = ConnectionStatus.CONNECTED, again = vi.fn()) =>
 // The outlines are a download; these tests only need where a shape goes.
 vi.mock("../data/outlines", async (original) => ({ ...(await original<object>()), useOutline: () => undefined }))
 
-function view(isHost: boolean): GameView {
-  return makeView({
-    phase: Phase.RESULTS,
+function view(isHost: boolean): ResultsGameView {
+  return makeResultsView({
     you: { id: playerId("p2"), isHost },
     players: [
       makePlayer({ score: 1500 }),

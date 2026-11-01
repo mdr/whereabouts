@@ -6,6 +6,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
 import type { WSClient as WSClientType } from "@rivalis/browser"
+import { viewIn } from "@whereabouts/shared/game/view-in"
 import { PAINT_CELL_BUDGET, PaintLayer, compactRecord, resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import {
   PROTOCOL_VERSION,
@@ -85,7 +86,8 @@ const bank = {
 const config = { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundLength: 60_000 }
 
 /** The place question a round asked. */
-const askedIn = (round: GameView) => questions.find((q) => promptOf(q) === promptOf(round.round!.question))!
+const askedIn = (round: GameView) =>
+  questions.find((q) => promptOf(q) === promptOf(viewIn(round, Phase.GUESSING).round.question))!
 
 /** Real timers, but time can be jumped forward so deadlines fire immediately. */
 class FakeClock implements Clock {
@@ -146,11 +148,14 @@ class TestPlayer {
     this.client.on("state", (p) => {
       const raw = dec.decode(p)
       const state = JSON.parse(raw) as StateMessage
-      if (!state.reveal) reveal = undefined
+      if (state.phase !== Phase.REVEAL) reveal = undefined
       if (state.phase !== Phase.GUESSING) paint = undefined
       const view = viewFrom(state, reveal, paint)
-      if (state.reveal && !view.reveal) this.invalidStates.push(`reveal ${state.reveal.index} came after its state`)
       this.rawStates.push(raw)
+      if (!view) {
+        this.invalidStates.push("a reveal state came before its reveal")
+        return
+      }
       const checked = GameViewSchema.safeParse(view)
       if (!checked.success) this.invalidStates.push(checked.error.message)
       this.states.push(view)
@@ -301,7 +306,7 @@ describe("game server", () => {
 
     alice.send("start")
     const round = await bob.until((v) => v.phase === Phase.GUESSING)
-    expect(round.round!.total).toBe(2)
+    expect(viewIn(round, Phase.GUESSING).round.total).toBe(2)
     const q = askedIn(round)
     const at = answerCentre(q.answer)
 
@@ -316,23 +321,23 @@ describe("game server", () => {
 
     clock.advance(60_000 + ROUND_GRACE)
     const reveal = await alice.until((v) => v.phase === Phase.REVEAL)
-    expect(reveal.reveal!.label).toBe(q.label)
+    expect(viewIn(reveal, Phase.REVEAL).reveal.label).toBe(q.label)
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
-    const scores = Object.fromEntries(reveal.reveal!.results.map((r) => [r.playerId, r.score]))
+    const scores = Object.fromEntries(viewIn(reveal, Phase.REVEAL).reveal.results.map((r) => [r.playerId, r.score]))
     expect(scores[byName.Alice!]).toBeGreaterThan(scores[byName.Bob!]!)
-    expect(reveal.reveal!.results.every((r) => r.paint !== undefined)).toBe(true)
+    expect(viewIn(reveal, Phase.REVEAL).reveal.results.every((r) => r.paint !== undefined)).toBe(true)
 
     alice.send("next")
-    await bob.until((v) => v.phase === Phase.GUESSING && v.round!.index === 1)
+    await bob.until((v) => v.phase === Phase.GUESSING && v.round.index === 1)
     clock.advance(60_000 + ROUND_GRACE)
-    await bob.until((v) => v.phase === Phase.REVEAL && v.reveal!.index === 1)
+    await bob.until((v) => v.phase === Phase.REVEAL && v.reveal.index === 1)
     // No timer on the reveal: it advances when everyone is ready.
     bob.send("ready")
-    await alice.until((v) => v.phase === Phase.REVEAL && v.reveal!.ready.length === 1)
+    await alice.until((v) => v.phase === Phase.REVEAL && v.reveal.ready.length === 1)
     alice.send("ready")
-    const results = await bob.until((v) => v.phase === Phase.RESULTS)
+    const results = viewIn(await bob.until((v) => v.phase === Phase.RESULTS), Phase.RESULTS)
     expect(results.results).toHaveLength(2)
-    expect(results.results![0]!.playerId).toBe(byName.Alice)
+    expect(results.results[0]!.playerId).toBe(byName.Alice)
   })
 
   it("plays a country round: scored against the outline, with coverage and precision", async () => {
@@ -347,9 +352,9 @@ describe("game server", () => {
 
     alice.send("start")
     const round = await bob.until((v) => v.phase === Phase.GUESSING)
-    const shown = round.round!.question.answer
+    const shown = viewIn(round, Phase.GUESSING).round.question.answer
     expect(shown.type).toBe(AnswerType.AREA)
-    expect(promptOf(round.round!.question)).toMatch(/^Paint the whole of /)
+    expect(promptOf(viewIn(round, Phase.GUESSING).round.question)).toMatch(/^Paint the whole of /)
     const country = CATALOGUE.find(
       (q) => q.type === QuestionType.COUNTRY && shown.type === AnswerType.AREA && q.answer.outline === shown.outline
     )!
@@ -364,13 +369,13 @@ describe("game server", () => {
 
     clock.advance(60_000 + ROUND_GRACE)
     const reveal = await bob.until((v) => v.phase === Phase.REVEAL)
-    expect(reveal.reveal!.question.answer).toEqual(shown)
-    expect(reveal.reveal!.label).toBe(country.label)
+    expect(viewIn(reveal, Phase.REVEAL).reveal.question.answer).toEqual(shown)
+    expect(viewIn(reveal, Phase.REVEAL).reveal.label).toBe(country.label)
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
-    const aliceResult = reveal.reveal!.results.find((r) => r.playerId === byName.Alice)!
+    const aliceResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((r) => r.playerId === byName.Alice)!
     expect(aliceResult.score).toBeGreaterThan(980)
     expect(aliceResult.parts.type === AnswerType.AREA && aliceResult.parts.coverage).toBeGreaterThan(0.95)
-    const bobResult = reveal.reveal!.results.find((r) => r.playerId === byName.Bob)!
+    const bobResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((r) => r.playerId === byName.Bob)!
     expect(bobResult.score).toBe(250)
   })
 
@@ -383,7 +388,7 @@ describe("game server", () => {
 
     alice.send("start")
     const round = await alice.until((v) => v.phase === Phase.GUESSING)
-    const { clue } = round.round!.question
+    const { clue } = viewIn(round, Phase.GUESSING).round.question
     if (clue.type !== ClueType.FLAG) throw new Error("a flag round shows a flag")
     expect(clue.flag).toMatch(/^[a-z]{2}$/)
     const f = CATALOGUE.find((x) => x.clue.type === ClueType.FLAG && x.clue.flag === clue.flag)!
@@ -391,8 +396,8 @@ describe("game server", () => {
 
     clock.advance(60_000 + ROUND_GRACE)
     const reveal = await alice.until((v) => v.phase === Phase.REVEAL)
-    expect(reveal.reveal!.label).toBe(f.label)
-    expect(reveal.reveal!.question.clue).toEqual(clue)
+    expect(viewIn(reveal, Phase.REVEAL).reveal.label).toBe(f.label)
+    expect(viewIn(reveal, Phase.REVEAL).reveal.question.clue).toEqual(clue)
   })
 
   it("answers bad messages with errors instead of dropping the player", async () => {
@@ -489,7 +494,7 @@ describe("game server", () => {
 
     bob.send("rename", { name: "Bobby" })
     const renamed = await alice.untilLatest((v) => v.players.some((p) => p.name === "Bobby"))
-    expect(renamed.reveal!.results).toHaveLength(2)
+    expect(viewIn(renamed, Phase.REVEAL).reveal.results).toHaveLength(2)
     expect(alice.reveals).toHaveLength(1)
     const aCell = Object.keys(paint.cells)[0]!
     expect(alice.rawStates.at(-1)).not.toContain(aCell)
@@ -499,7 +504,7 @@ describe("game server", () => {
     const bobAgain = player("Bob")
     bobAgain.connect({ code: lobby.code })
     const back = await bobAgain.until((v) => v.phase === Phase.REVEAL)
-    expect(back.reveal!.results).toHaveLength(2)
+    expect(viewIn(back, Phase.REVEAL).reveal.results).toHaveLength(2)
     expect(bobAgain.reveals).toHaveLength(1)
     await alice.untilLatest((v) => v.players.every((p) => p.connected))
     expect(alice.reveals).toHaveLength(1)
@@ -535,7 +540,7 @@ describe("game server", () => {
     bob.send("lock")
     await bob.untilLatest((v) => v.you.locked)
     // Paint goes back only to a player who rejoins, not with every state.
-    expect(bob.latest.you.paint).toBeUndefined()
+    expect(viewIn(bob.latest, Phase.GUESSING).you.paint).toBeUndefined()
 
     bob.client.disconnect()
     await alice.until((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
@@ -546,7 +551,7 @@ describe("game server", () => {
     expect(back.players.filter((p) => p.name === "Bob")).toHaveLength(1)
     const own = await bobAgain.until((v) => v.phase === Phase.GUESSING)
     expect(own.you.sittingOut).toBe(false)
-    expect(own.you.paint).toEqual(decodePaint(encodePaint(bobPaint)))
+    expect(viewIn(own, Phase.GUESSING).you.paint).toEqual(decodePaint(encodePaint(bobPaint)))
   })
 
   it.each([
@@ -745,8 +750,8 @@ describe("game server", () => {
     await bob.until((v) => v.phase === Phase.GUESSING)
 
     alice.send("hint", { axis: HintAxis.LATITUDE })
-    const hinted = await alice.untilLatest((v) => v.you.hint !== undefined)
-    expect(hinted.you.hint!.axis).toBe(HintAxis.LATITUDE)
+    const hinted = await alice.untilLatest((v) => v.phase === Phase.GUESSING && v.you.hint !== undefined)
+    expect(viewIn(hinted, Phase.GUESSING).you.hint!.axis).toBe(HintAxis.LATITUDE)
     alice.send("hint", { axis: HintAxis.LONGITUDE })
     expect(await pollErrors(alice)).toContain("one hint per round")
 
@@ -759,10 +764,10 @@ describe("game server", () => {
     expect(await pollErrors(bob)).toContain("only the host can end the game")
     alice.send("end")
     const results = await bob.until((v) => v.phase === Phase.RESULTS)
-    expect(results.results!.every((r) => r.rounds.length === 1)).toBe(true)
+    expect(viewIn(results, Phase.RESULTS).results.every((r) => r.rounds.length === 1)).toBe(true)
 
     alice.send("again")
-    const lobby = await bob.until((v) => v.phase === Phase.LOBBY && v.results === undefined)
+    const lobby = await bob.until((v) => v.phase === Phase.LOBBY)
     expect(lobby.players).toHaveLength(2)
   })
 })

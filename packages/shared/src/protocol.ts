@@ -307,71 +307,130 @@ export interface FinalStanding {
   rounds: { score?: number }[]
 }
 
-export interface GameView {
+/** What a view tells you about yourself, whatever the phase. */
+export interface YouView {
+  /** Absent in a view of no player. */
+  id?: PlayerId
+  isHost: boolean
+  /** Not playing the round under way: watching, or joined mid-round and playing from the next. */
+  sittingOut: boolean
+  /** True for a spectator, who watches the whole game (see PlayerView.watching). */
+  watching: boolean
+  locked: boolean
+  hintsLeft: number
+  /** While you host: who would take over if you left. */
+  nextHost?: PlayerId
+}
+
+/** You, while a round is played or revealed. */
+interface RoundYouView extends YouView {
+  /** Your hint on this round. */
+  hint?: HintBand
+}
+
+/** You, while guessing. */
+export interface GuessingYouView extends RoundYouView {
+  /** Your own current submission, so a reconnect can restore it. Never anyone else's. */
+  paint?: PaintSubmission
+}
+
+interface GameViewBase {
   code: RoomCode
-  phase: Phase
   config: GameConfig
   serverTime: Instant
-  you: {
-    /** Absent in a view of no player. */
-    id?: PlayerId
-    isHost: boolean
-    /** Not playing the round under way: watching, or joined mid-round and playing from the next. */
-    sittingOut: boolean
-    /** True for a spectator, who watches the whole game (see PlayerView.watching). */
-    watching: boolean
-    locked: boolean
-    /** Your own current submission while guessing, so a reconnect can restore it. Never anyone else's. */
-    paint?: PaintSubmission
-    /** Your hint on this round, while guessing and at its reveal. */
-    hint?: HintBand
-    hintsLeft: number
-    /** While you host: who would take over if you left. */
-    nextHost?: PlayerId
-  }
   players: PlayerView[]
-  round?: RoundView
-  reveal?: RevealView
-  results?: FinalStanding[]
-  /** The rounds played, in order, on the final results. */
-  playedRounds?: PlayedRound[]
-  /** Prizes and booby prizes, on the final results. */
-  awards?: Award[]
-  /** The next round's pictures, from the lobby on, so they are loaded before it starts. */
+}
+
+export interface LobbyGameView extends GameViewBase {
+  phase: Phase.LOBBY
+  you: YouView
+  /** Round 1's pictures, so they are loaded before it starts. */
   upcoming?: QuestionPictures
 }
+
+export interface GuessingGameView extends GameViewBase {
+  phase: Phase.GUESSING
+  you: GuessingYouView
+  round: RoundView
+  /** The next round's pictures, absent on the last round. */
+  upcoming?: QuestionPictures
+}
+
+export interface RevealGameView extends GameViewBase {
+  phase: Phase.REVEAL
+  you: RoundYouView
+  reveal: RevealView
+  upcoming?: QuestionPictures
+}
+
+export interface ResultsGameView extends GameViewBase {
+  phase: Phase.RESULTS
+  you: YouView
+  results: FinalStanding[]
+  /** The rounds played, in order. */
+  playedRounds: PlayedRound[]
+  /** Prizes and booby prizes. */
+  awards: Award[]
+}
+
+export type GameView = LobbyGameView | GuessingGameView | RevealGameView | ResultsGameView
+
+/** A round being played or revealed: the map screen's views. */
+export type InPlayGameView = GuessingGameView | RevealGameView
 
 /** What a reveal shows that stays the same while it shows: the bulk of it, every player's paint. */
 export type RoundReveal = Omit<RevealView, "ready">
 
-/**
- * A view as the state topic carries it: of the reveal, only what changes
- * while it shows, and none of your paint, which goes on its own topic.
- */
-export type StateMessage = Omit<GameView, "reveal" | "you"> & {
-  you: Omit<GameView["you"], "paint">
-  reveal?: Pick<RevealView, "index" | "ready">
+/** Of the reveal, what the state topic carries: only what changes while it shows. */
+type RevealProgress = Pick<RevealView, "index" | "ready">
+
+/** A guessing view as the state topic carries it: your paint goes on its own topic. */
+interface GuessingStateMessage extends Omit<GuessingGameView, "you"> {
+  you: RoundYouView
 }
 
-export function stateMessage({ reveal, you, ...rest }: GameView): StateMessage {
-  const { paint: _paint, ...yours } = you
-  return { ...rest, you: yours, ...(reveal ? { reveal: { index: reveal.index, ready: reveal.ready } } : {}) }
+/** A reveal as the state topic carries it: the bulk of it goes once, on the reveal topic. */
+interface RevealStateMessage extends Omit<RevealGameView, "reveal"> {
+  reveal: RevealProgress
+}
+
+export type StateMessage = LobbyGameView | GuessingStateMessage | RevealStateMessage | ResultsGameView
+
+export function stateMessage(view: GameView): StateMessage {
+  switch (view.phase) {
+    case Phase.GUESSING: {
+      const { paint: _paint, ...you } = view.you
+      return { ...view, you }
+    }
+    case Phase.REVEAL:
+      return { ...view, reveal: { index: view.reveal.index, ready: view.reveal.ready } }
+    case Phase.LOBBY:
+    case Phase.RESULTS:
+      return view
+  }
 }
 
 /**
  * The view a state message stands for, given the reveal and paint received
- * since connecting: no reveal unless it is that round's, and the paint only
- * while guessing.
+ * since connecting; undefined for a reveal's state that came before its
+ * reveal, which the server never sends.
  */
 export function viewFrom(
   state: StateMessage,
   reveal: RoundReveal | undefined,
   paint: PaintSubmission | undefined
-): GameView {
-  const { reveal: progress, you, ...rest } = state
-  const view: GameView = { ...rest, you: state.phase === Phase.GUESSING && paint ? { ...you, paint } : you }
-  if (progress && reveal?.index === progress.index) view.reveal = { ...reveal, ready: progress.ready }
-  return view
+): GameView | undefined {
+  switch (state.phase) {
+    case Phase.GUESSING:
+      return paint ? { ...state, you: { ...state.you, paint } } : state
+    case Phase.REVEAL:
+      return reveal?.index === state.reveal.index
+        ? { ...state, reveal: { ...reveal, ready: state.reveal.ready } }
+        : undefined
+    case Phase.LOBBY:
+    case Phase.RESULTS:
+      return state
+  }
 }
 
 /** A RoundReveal as the reveal topic carries it: JSON, with each paint as base64 binary. */

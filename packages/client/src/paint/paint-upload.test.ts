@@ -4,11 +4,10 @@ import { act, renderHook } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { h3Res } from "@whereabouts/shared/h3"
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
-import type { GameView } from "@whereabouts/shared/protocol"
+import type { GameView, GuessingYouView } from "@whereabouts/shared/protocol"
 import { ConnectionStatus } from "../net/net"
 import { usePaintUpload } from "./paint-upload"
-import { makeView } from "../test-view"
-import { Phase } from "@whereabouts/shared/protocol"
+import { makeGuessingView } from "../test-view"
 
 const CELL = "85283473fffffff"
 
@@ -22,7 +21,7 @@ function run(change: () => unknown) {
 }
 const wait = (ms: number) => run(() => vi.advanceTimersByTime(ms))
 
-const guessing = (you: Partial<GameView["you"]> = {}) => makeView({ phase: Phase.GUESSING, you })
+const guessing = (you: Partial<GuessingYouView> = {}) => makeGuessingView({ you })
 
 interface Props {
   view: GameView

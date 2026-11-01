@@ -1,16 +1,15 @@
 import { describe, expect, it } from "vite-plus/test"
 import { playerId, playerName } from "@whereabouts/shared/ids"
-import { Phase } from "@whereabouts/shared/protocol"
 import { NONE } from "./reveal"
 import { RoundNote, ShownRowType, canEndGame, revealModel, roundNote, type ShownRow } from "./round-model"
-import { makePlayer, makeResult, makeReveal, makeView } from "../test-view"
+import { makePlayer, makeResult, makeGuessingView, makeReveal, makeRevealView } from "../test-view"
 
 const alice = makePlayer()
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 const sam = makePlayer({ id: playerId("p3"), name: playerName("Sam"), isHost: false, watching: true })
 const painted = { cells: { "85283473fffffff": 1 }, floor: 0.05 }
 
-const you = (over: Parameters<typeof makeView>[0] = {}) => makeView({ phase: Phase.GUESSING, ...over }).you
+const you = (over: Parameters<typeof makeGuessingView>[0] = {}) => makeGuessingView({ ...over }).you
 
 describe("roundNote", () => {
   it("says nothing while you are painting", () => {
@@ -26,17 +25,17 @@ describe("roundNote", () => {
 
 describe("canEndGame", () => {
   it("is the host's, until the last reveal", () => {
-    expect(canEndGame(makeView({ phase: Phase.GUESSING }))).toBe(true)
-    expect(canEndGame(makeView({ phase: Phase.GUESSING, you: { isHost: false } }))).toBe(false)
-    expect(canEndGame(makeView({ phase: Phase.REVEAL, reveal: makeReveal({ index: 3, total: 5 }) }))).toBe(true)
-    expect(canEndGame(makeView({ phase: Phase.REVEAL, reveal: makeReveal({ index: 4, total: 5 }) }))).toBe(false)
+    expect(canEndGame(makeGuessingView())).toBe(true)
+    expect(canEndGame(makeGuessingView({ you: { isHost: false } }))).toBe(false)
+    expect(canEndGame(makeRevealView({ reveal: makeReveal({ index: 3, total: 5 }) }))).toBe(true)
+    expect(canEndGame(makeRevealView({ reveal: makeReveal({ index: 4, total: 5 }) }))).toBe(false)
   })
 })
 
 describe("revealModel", () => {
   const players = [alice, bob, sam]
-  const model = (over: Parameters<typeof makeView>[0] = {}, reveal = makeReveal(), shown?: string) =>
-    revealModel(makeView({ phase: Phase.REVEAL, players, ...over }), reveal, shown)
+  const model = (over: Parameters<typeof makeRevealView>[0] = {}, reveal = makeReveal(), shown?: string) =>
+    revealModel(makeRevealView({ players, ...over }), reveal, shown)
   const names = (rows: ShownRow[]) => rows.map((r) => (r.type === ShownRowType.PLAYER ? r.player.name : r.type))
 
   it("lists Everyone, the players by this round's score, then Hide paint", () => {

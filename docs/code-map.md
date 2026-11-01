@@ -72,7 +72,7 @@ No I/O; the same code runs in the browser and on the server.
 **Add a client→server message or a view field**
 
 1. A message: its schema in `ClientMessageSchemas`, a handler in `GameRoom.handlers()` (the compiler insists), a `Game` method, a `Connection` method.
-2. A view field: the type in `protocol.ts` and the same field in `view-schema.ts`; `view-schema.test.ts` fails until they match.
+2. A view field: the type in the `*GameView` variant(s) of the phases that carry it in `protocol.ts`, and the same field in the matching variant schema in `view-schema.ts`; `view-schema.test.ts` fails until they match.
 3. Bump `PROTOCOL_VERSION`.
 4. A browser page object, if the e2e tests should drive or read it.
 

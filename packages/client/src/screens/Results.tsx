@@ -1,7 +1,7 @@
 import type { CssColour } from "@whereabouts/shared/colours"
 import { colourCss } from "@whereabouts/shared/colours"
 import type { Award } from "@whereabouts/shared/awards/awards"
-import type { FinalStanding, GameView, PlayedRound, PlayerView } from "@whereabouts/shared/protocol"
+import type { FinalStanding, PlayedRound, PlayerView, ResultsGameView } from "@whereabouts/shared/protocol"
 import type { QuestionType } from "@whereabouts/shared/questions"
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { Connection } from "../net/net"
@@ -30,10 +30,10 @@ const MANY_PLAYERS = 8
 const ROUND_COLUMN: Px = 200
 const SCORE_COLUMN: Px = 58
 
-export function Results({ conn, view }: { conn: Connection; view: GameView }) {
+export function Results({ conn, view }: { conn: Connection; view: ResultsGameView }) {
   const online = conn.online.value
   const byId = new Map(view.players.map((p) => [p.id, p]))
-  const standings = view.results ?? []
+  const standings = view.results
   const winner = standings[0] ? byId.get(standings[0].playerId) : undefined
   const vrView: VrView = {
     type: VrViewType.DONE,
@@ -55,7 +55,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
         connectionText(conn) ?? (view.you.isHost ? undefined : "The host can start another game with the same group."),
       actions: view.you.isHost ? [{ label: "Play again", press: () => conn.again(), enabled: online }] : [],
       board: {
-        awards: (view.awards ?? []).map((a) => ({
+        awards: view.awards.map((a) => ({
           emoji: a.emoji,
           title: a.title,
           line: awardParts(
@@ -67,7 +67,7 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
           const p = byId.get(s.playerId)
           return { name: p?.name ?? "?", colour: colourCss(p?.colour) }
         }),
-        rounds: (view.playedRounds ?? []).map((round, r) => ({
+        rounds: view.playedRounds.map((round, r) => ({
           label: round.label,
           type: typeName(round),
           colour: QUESTION_TYPE_LOOKS[round.type].colour,
@@ -131,8 +131,8 @@ export function Results({ conn, view }: { conn: Connection; view: GameView }) {
           </p>
         )}
         <ConnectionNote conn={conn} />
-        {view.awards && view.awards.length > 0 && <Awards awards={view.awards} byId={byId} />}
-        <Rounds rounds={view.playedRounds ?? []} standings={standings} byId={byId} you={view.you.id} />
+        {view.awards.length > 0 && <Awards awards={view.awards} byId={byId} />}
+        <Rounds rounds={view.playedRounds} standings={standings} byId={byId} you={view.you.id} />
         <p class={kit.hint}>
           <a href="#/">Leave</a>
         </p>

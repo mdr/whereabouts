@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { colourCss } from "@whereabouts/shared/colours"
-import { onWater, outlineOf, type GameView, Phase } from "@whereabouts/shared/protocol"
+import { onWater, outlineOf, type InPlayGameView, Phase } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "../net/net"
 import { usePaint } from "../ui/map/MapView"
@@ -31,34 +31,35 @@ import { useRoundMap } from "../round/round"
 import { usePaintUpload } from "../paint/paint-upload"
 import { canPaint, canUnlock } from "../round/editing"
 import { paintLayer } from "../round/reveal-paint"
-import { RoundNote, canEndGame, roundNote } from "../round/round-model"
+import { RoundNote, canEndGame, roundNote, roundOf } from "../round/round-model"
 import { noteText } from "../round/round-words"
 import { gameVrView } from "../vr/view/game-vr-view"
 
-export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
+export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView }) {
   const paint = usePaint()
   const { sittingOut } = view.you
   const note = roundNote(view.you)
-  const roundKey = view.round?.index ?? view.reveal?.index ?? -1
+  const roundKey = roundOf(view).index
   const guessing = view.phase === Phase.GUESSING
-  const question = view.round?.question ?? view.reveal?.question
+  const question = roundOf(view).question
   // The countdown has reached zero: painting stops, and what is on screen is what counts.
   const [timeUp, setTimeUp] = useState(false)
   const online = conn.online.value
   const { dialog, ask } = useConfirm(online)
 
+  const reveal = view.phase === Phase.REVEAL ? view.reveal : undefined
   const borders = useGameData(view.config.mix)
 
   useRoundMap(paint, {
     round: roundKey,
-    painting: guessing && view.round !== undefined,
+    painting: guessing,
     question,
     detail: view.config.mapDetail,
     reveal: view.phase === Phase.REVEAL,
     hint: view.you.hint,
     start: () => {
       // After a reconnect the server hands back what we had painted.
-      const saved = view.you.paint
+      const saved = view.phase === Phase.GUESSING ? view.you.paint : undefined
       if (saved) {
         paint.restore(saved.cells)
         paint.floor.value = saved.floor
@@ -70,7 +71,7 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   })
 
   // The server scores a moment after the deadline (ROUND_GRACE), so paint sent at zero still counts.
-  const deadline = view.round?.deadline
+  const deadline = view.phase === Phase.GUESSING ? view.round.deadline : undefined
   useEffect(() => {
     setTimeUp(false)
     if (!guessing || deadline === undefined) return
@@ -86,31 +87,27 @@ export function InGame({ conn, view }: { conn: Connection; view: GameView }) {
   const { lockIn } = usePaintUpload(conn, paint, view, timeUp)
   const words = { askedToWatch: askedToWatch.value, canUnlock: canUnlock(view, timeUp) }
 
-  const outline = useOutline(question && outlineOf(question.answer))
+  const outline = useOutline(outlineOf(question.answer))
 
   // The room's code, so everyone in the game sees the same one.
-  const fact = useFact(
-    view.reveal && { place: view.reveal.place, type: view.reveal.question.type },
-    view.code,
-    view.reveal?.index ?? 0
-  )
+  const fact = useFact(reveal && { place: reveal.place, type: reveal.question.type }, view.code, reveal?.index ?? 0)
 
-  const mine = view.reveal?.results.find((r) => r.playerId === view.you.id)
+  const mine = reveal?.results.find((r) => r.playerId === view.you.id)
   const painted = useMemo(
     () =>
-      view.reveal?.question.type === QuestionType.FLAG && borders && mine?.paint
+      reveal?.question.type === QuestionType.FLAG && borders && mine?.paint
         ? mainCountry(borders, paintLayer(mine.res, mine.paint).toCells())
         : undefined,
-    [borders, view.reveal?.index, mine?.paint !== undefined]
+    [borders, reveal?.index, mine?.paint !== undefined]
   )
   const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, outline, fact, painted, borders })
   useVrView(vrView)
 
-  if (view.phase === Phase.REVEAL && view.reveal) {
+  if (view.phase === Phase.REVEAL) {
     return <Reveal conn={conn} view={view} reveal={view.reveal} vrView={vrView} fact={fact} />
   }
 
-  const round = view.round!
+  const { round } = view
   return (
     <>
       {dialog}

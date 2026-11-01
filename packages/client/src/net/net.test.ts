@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import type { WSClientOptions } from "@rivalis/browser"
 import { CloseReason } from "@whereabouts/shared/close-reason"
 import { placeId, playerName, playerToken, roomCode } from "@whereabouts/shared/ids"
+import { viewIn } from "@whereabouts/shared/game/view-in"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import {
   decodeTicket,
@@ -14,7 +15,7 @@ import {
   Phase
 } from "@whereabouts/shared/protocol"
 import { Connection, describeDisconnect, type GameClient, ConnectionStatus } from "./net"
-import { makeQuestionView, makeView } from "../test-view"
+import { makeGuessingView, makeLobbyView, makeQuestionView, makeRevealView } from "../test-view"
 import { PING_EVERY, PONG_WITHIN } from "./heartbeat"
 
 describe("describeDisconnect", () => {
@@ -137,7 +138,7 @@ describe("Connection status", () => {
   it("stays disconnected while it retries a game it was in", () => {
     const { conn, client } = connected()
     client.open()
-    client.state(makeView())
+    client.state(makeLobbyView())
     client.close()
     client.emit("client:reconnecting")
     expect(conn.status.value).toBe(ConnectionStatus.DISCONNECTED)
@@ -155,7 +156,7 @@ describe("Connection status", () => {
   it("keeps trying to get back into a game for as long as it takes", () => {
     const { conn, client } = connected()
     client.open()
-    client.state(makeView())
+    client.state(makeLobbyView())
     client.close()
     client.emit("client:reconnecting", encoder.encode("500"))
     expect(conn.status.value).toBe(ConnectionStatus.DISCONNECTED)
@@ -164,7 +165,7 @@ describe("Connection status", () => {
   it("tries again with a fresh connection, back into the game it was in", () => {
     const { conn, client, clients } = connected()
     client.open()
-    client.state(makeView({ code: roomCode("WXYZ") }))
+    client.state(makeLobbyView({ code: roomCode("WXYZ") }))
     client.emit("client:reconnect_failed")
     conn.rejoin()
     expect(conn.status.value).toBe(ConnectionStatus.CONNECTING)
@@ -219,7 +220,7 @@ describe("Connection status", () => {
     expect(await client.nextTicket()).toMatchObject({ create: true })
     expect(await client.nextTicket()).not.toHaveProperty("code")
     client.open()
-    client.state(makeView({ code: roomCode("WXYZ") }))
+    client.state(makeLobbyView({ code: roomCode("WXYZ") }))
     expect(await client.nextTicket()).toMatchObject({ create: false, code: "WXYZ", name: "Alice" })
   })
 
@@ -227,7 +228,7 @@ describe("Connection status", () => {
     vi.useFakeTimers()
     const { conn, client, clients } = connected()
     client.open()
-    client.state(makeView({ code: roomCode("WXYZ") }))
+    client.state(makeLobbyView({ code: roomCode("WXYZ") }))
     client.emit("client:kicked", { code: 4003, reason: "rate_limited" })
     expect(conn.status.value).not.toBe(ConnectionStatus.REJECTED)
     vi.advanceTimersByTime(1000)
@@ -254,7 +255,7 @@ describe("Connection view", () => {
     client.open()
     client.emit("error", encoder.encode(JSON.stringify({ message: "Too slow" })))
     expect(conn.lastError.value).toBe("Too slow")
-    client.state(makeView({ phase: Phase.GUESSING, serverTime: 12_500 }))
+    client.state(makeGuessingView({ serverTime: 12_500 }))
     expect(conn.view.value?.phase).toBe(Phase.GUESSING)
     expect(conn.clockOffset.value).toBe(2500)
     expect(conn.lastError.value).toBeUndefined()
@@ -264,14 +265,14 @@ describe("Connection view", () => {
     vi.useFakeTimers({ now: 10_000 })
     const { conn, client } = connected()
     client.open()
-    client.state(makeView({ serverTime: 12_500 }))
+    client.state(makeLobbyView({ serverTime: 12_500 }))
     vi.setSystemTime(20_000)
-    client.state(makeView({ serverTime: 21_500 }))
+    client.state(makeLobbyView({ serverTime: 21_500 }))
     expect(conn.clockOffset.value).toBe(2500)
 
     client.close()
     client.open()
-    client.state(makeView({ serverTime: 21_500 }))
+    client.state(makeLobbyView({ serverTime: 21_500 }))
     expect(conn.clockOffset.value).toBe(1500)
   })
 
@@ -280,16 +281,16 @@ describe("Connection view", () => {
     const { conn, client } = connected()
     client.open()
     client.emit("paint", encodePaint(paint))
-    client.state(makeView({ phase: Phase.GUESSING }))
-    expect(conn.view.value?.you.paint).toEqual(decodePaint(encodePaint(paint)))
+    client.state(makeGuessingView())
+    expect(viewIn(conn.view.value!, Phase.GUESSING).you.paint).toEqual(decodePaint(encodePaint(paint)))
 
     client.close()
     client.open()
-    client.state(makeView({ phase: Phase.GUESSING }))
-    expect(conn.view.value?.you.paint).toBeUndefined()
+    client.state(makeGuessingView())
+    expect(viewIn(conn.view.value!, Phase.GUESSING).you.paint).toBeUndefined()
   })
 
-  it("shows a reveal with the state of its round", () => {
+  it("waits for its reveal before showing a reveal's state", () => {
     const reveal: RoundReveal = {
       index: 2,
       total: 5,
@@ -299,14 +300,14 @@ describe("Connection view", () => {
       label: "Kyoto",
       results: []
     }
-    const at = (index: number) => makeView({ phase: Phase.REVEAL, reveal: { ...reveal, index, ready: [] } })
+    const at = (index: number) => makeRevealView({ reveal: { ...reveal, index, ready: [] } })
     const { conn, client } = connected()
     client.open()
     client.emit("reveal", encoder.encode(JSON.stringify(revealMessage(reveal))))
     client.state(at(1))
-    expect(conn.view.value?.reveal).toBeUndefined()
+    expect(conn.view.value).toBeUndefined()
     client.state(at(2))
-    expect(conn.view.value?.reveal?.label).toBe("Kyoto")
+    expect(viewIn(conn.view.value!, Phase.REVEAL).reveal.label).toBe("Kyoto")
   })
 
   it("sends only while connected", () => {
@@ -328,7 +329,7 @@ describe("Connection liveness", () => {
     vi.useFakeTimers()
     const game = connected()
     game.client.open()
-    game.client.state(makeView({ code: roomCode("WXYZ") }))
+    game.client.state(makeLobbyView({ code: roomCode("WXYZ") }))
     return game
   }
   const pings = (client: FakeClient) => client.sent.filter((t) => t === "ping").length

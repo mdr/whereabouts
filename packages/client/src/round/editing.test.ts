@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vite-plus/test"
-import { Phase, type GameView } from "@whereabouts/shared/protocol"
+import type { GuessingYouView } from "@whereabouts/shared/protocol"
 import { canPaint, canUnlock } from "./editing"
-import { makeView } from "../test-view"
+import { makeGuessingView, makeRevealView } from "../test-view"
 
-const guessing = (you: Partial<GameView["you"]> = {}) => makeView({ phase: Phase.GUESSING, you })
+const guessing = (you: Partial<GuessingYouView> = {}) => makeGuessingView({ you })
 
 describe("canPaint", () => {
   it("lets a player paint while guessing", () => {
@@ -15,7 +15,7 @@ describe("canPaint", () => {
     ["once time is up", guessing(), true],
     ["while watching", guessing({ watching: true, sittingOut: true }), false],
     ["while sitting out a round joined late", guessing({ sittingOut: true }), false],
-    ["at the reveal", makeView({ phase: Phase.REVEAL }), false]
+    ["at the reveal", makeRevealView(), false]
   ])("does not let you paint %s", (_, view, timeUp) => {
     expect(canPaint(view, timeUp)).toBe(false)
   })
@@ -29,7 +29,7 @@ describe("canUnlock", () => {
   it.each([
     ["once time is up", guessing({ locked: true }), true],
     ["before Done", guessing(), false],
-    ["at the reveal", makeView({ phase: Phase.REVEAL, you: { locked: true } }), false]
+    ["at the reveal", makeRevealView({ you: { locked: true } }), false]
   ])("does not let you take back Done %s", (_, view, timeUp) => {
     expect(canUnlock(view, timeUp)).toBe(false)
   })

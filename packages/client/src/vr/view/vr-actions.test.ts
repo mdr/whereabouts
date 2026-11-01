@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import { MAX_PLAYERS } from "@whereabouts/shared/protocol"
-import { makePlayer, makeView } from "../../test-view"
+import { makePlayer, makeLobbyView } from "../../test-view"
 import { hostActions, pickable, takeSeat, vrPicked } from "./vr-actions"
 
 const host = makePlayer({ id: playerId("p1"), isHost: true })
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false })
-const asHost = makeView({ players: [host, bob], you: { id: host.id, isHost: true } })
-const asGuest = makeView({ players: [host, bob], you: { id: bob.id, isHost: false } })
+const asHost = makeLobbyView({ players: [host, bob], you: { id: host.id, isHost: true } })
+const asGuest = makeLobbyView({ players: [host, bob], you: { id: bob.id, isHost: false } })
 const conn = () => ({ kick: vi.fn(), makeHost: vi.fn(), setRole: vi.fn() })
 
 afterEach(() => (vrPicked.value = undefined))
@@ -41,7 +41,7 @@ describe("the host's actions on a picked player", () => {
   })
 
   it("do not hand hosting to someone away", () => {
-    const away = makeView({ players: [host, { ...bob, connected: false }], you: { id: host.id, isHost: true } })
+    const away = makeLobbyView({ players: [host, { ...bob, connected: false }], you: { id: host.id, isHost: true } })
     expect(hostActions(conn(), away, bob.id).map((a) => a.label)).toEqual(["Remove Bob"])
   })
 
@@ -63,7 +63,7 @@ describe("a watcher's way in", () => {
   })
 
   it("is shut once every seat is taken", () => {
-    const full = makeView({
+    const full = makeLobbyView({
       players: Array.from({ length: MAX_PLAYERS }, (_, i) => makePlayer({ id: playerId(`p${i + 1}`) }))
     })
     expect(takeSeat(conn(), full, "Play").enabled).toBe(false)

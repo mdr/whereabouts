@@ -27,7 +27,7 @@ import { VrViewType, type VrAction } from "../vr/view/view"
 import { joinAsTestIds, joinedTestIds } from "./MultiplayerTestIds"
 import kit from "../ui/kit.module.css"
 import s from "./Multiplayer.module.css"
-import { Phase } from "@whereabouts/shared/protocol"
+import { Phase, type GameView } from "@whereabouts/shared/protocol"
 
 export function Multiplayer({ code, create }: { code: RoomCode | undefined; create: boolean }) {
   const conn = useMemo(() => new Connection(), [])
@@ -80,6 +80,8 @@ export function Multiplayer({ code, create }: { code: RoomCode | undefined; crea
   return <Joined conn={conn} code={code} create={create} />
 }
 
+const upcomingOf = (view: GameView | undefined) => (view && view.phase !== Phase.RESULTS ? view.upcoming : undefined)
+
 /** The game once a name is settled: its own component so its hooks always run. */
 function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | undefined; create: boolean }) {
   // Once the server assigns a code to a new game, put it in the URL for sharing.
@@ -104,7 +106,7 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
   useGameSounds(conn, view)
   useSavedSetup(conn, view, create)
   useVrHold()
-  const upcoming = view?.upcoming
+  const upcoming = upcomingOf(view)
   useEffect(() => {
     if (upcoming) preloadPictures(upcoming)
   }, [upcoming?.image, upcoming?.flag, upcoming?.revealPhoto])

@@ -3,7 +3,15 @@
  * Reveal) and the headset (game-vr-view.ts) each put it in their own words
  * and controls.
  */
-import type { GameView, PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
+import {
+  Phase,
+  type GameView,
+  type InPlayGameView,
+  type PlayerView,
+  type RevealView,
+  type RoundResultView,
+  type YouView
+} from "@whereabouts/shared/protocol"
 import { NONE, revealOrder } from "./reveal"
 
 /** Why you are not painting, or have stopped. */
@@ -13,7 +21,7 @@ export enum RoundNote {
   DONE = "DONE"
 }
 
-export function roundNote(you: GameView["you"]): RoundNote | undefined {
+export function roundNote(you: YouView): RoundNote | undefined {
   if (you.watching) return RoundNote.WATCHING
   if (you.sittingOut) return RoundNote.JOINED_LATE
   if (you.locked) return RoundNote.DONE
@@ -22,8 +30,13 @@ export function roundNote(you: GameView["you"]): RoundNote | undefined {
 
 const isLastReveal = (reveal: Pick<RevealView, "index" | "total">): boolean => reveal.index + 1 >= reveal.total
 
+/** The round under way or on show. */
+export const roundOf = (view: InPlayGameView): Pick<RevealView, "index" | "total" | "question"> =>
+  view.phase === Phase.GUESSING ? view.round : view.reveal
+
 /** At the last reveal the host shows the final results instead. */
-export const canEndGame = (view: GameView): boolean => view.you.isHost && !(view.reveal && isLastReveal(view.reveal))
+export const canEndGame = (view: GameView): boolean =>
+  view.you.isHost && !(view.phase === Phase.REVEAL && isLastReveal(view.reveal))
 
 export enum ShownRowType {
   EVERYONE = "EVERYONE",

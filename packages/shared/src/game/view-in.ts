@@ -1,0 +1,9 @@
+import type { GameView, Phase } from "../protocol.ts"
+
+/** For tests: a view of one phase, or a failure naming the phase it was in. */
+export type GameViewIn<P extends Phase> = Extract<GameView, { phase: P }>
+
+export function viewIn<P extends Phase>(view: GameView, phase: P): GameViewIn<P> {
+  if (view.phase !== phase) throw new Error(`expected a ${phase} view, got ${view.phase}`)
+  return view as GameViewIn<P>
+}

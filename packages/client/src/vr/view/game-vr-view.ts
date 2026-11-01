@@ -4,7 +4,13 @@ import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
 import type { Outline } from "@whereabouts/shared/questions"
-import { Phase, type GameView, type PlayerView, type RevealView } from "@whereabouts/shared/protocol"
+import {
+  Phase,
+  type GameView,
+  type InPlayGameView,
+  type PlayerView,
+  type RevealView
+} from "@whereabouts/shared/protocol"
 import type { Connection } from "../../net/net"
 import type { PaintController } from "../../paint/paint-controller"
 import { connectionText } from "../../ui/connection/ConnectionNote"
@@ -16,6 +22,7 @@ import {
   canEndGame,
   revealModel,
   roundNote,
+  roundOf,
   type RevealModel,
   type ShownRow
 } from "../../round/round-model"
@@ -91,16 +98,17 @@ function playersTable(view: GameView): VrTable {
 }
 
 function gameRound(
-  view: GameView,
+  view: InPlayGameView,
   conn: Connection,
   paint: PaintController,
   shown: VrRoundShown,
   connection: string | undefined,
   { lockIn, timeUp }: Pick<GameVrShown, "lockIn" | "timeUp">
 ): VrRound {
-  const at = (view.round ?? view.reveal)!
+  const at = roundOf(view)
   const me = you(view)
   const note = roundNote(view.you)
+  const deadline = view.phase === Phase.GUESSING ? view.round.deadline : undefined
   return vrRound(shown, {
     paint,
     heading: `ROUND ${at.index + 1} OF ${at.total}`,
@@ -110,7 +118,7 @@ function gameRound(
     hint: view.you.hint,
     hintsLeft: view.config.hints > 0 ? view.you.hintsLeft : HintAllowance.NONE,
     useHint: (axis: HintAxis) => conn.hint(axis),
-    timeLeft: view.round ? () => conn.timeUntil(view.round!.deadline) : undefined,
+    timeLeft: deadline === undefined ? undefined : () => conn.timeUntil(deadline),
     doneLabel: "Done",
     done: lockIn,
     unlock: canUnlock(view, timeUp) ? () => conn.unlock() : undefined,
@@ -157,16 +165,16 @@ function gameReveal(
   })
 }
 
-export function gameVrView(view: GameView, conn: Connection, paint: PaintController, s: GameVrShown): VrView {
+export function gameVrView(view: InPlayGameView, conn: Connection, paint: PaintController, s: GameVrShown): VrView {
   const connection = connectionText(conn)
-  const reveal = view.reveal
+  const reveal = view.phase === Phase.REVEAL ? view.reveal : undefined
   const shown: VrRoundShown = {
-    question: (view.round ?? view.reveal)!.question,
+    question: roundOf(view).question,
     revealed: reveal && revealedFromView(reveal, s.outline),
     fact: s.fact
   }
   const round = gameRound(view, conn, paint, shown, connection, s)
   const more = moreActions(view, conn)
-  if (view.phase !== Phase.REVEAL || !reveal) return { type: VrViewType.PAINT, round, more }
-  return { type: VrViewType.REVEAL, round, more, reveal: gameReveal(view, reveal, conn, shown, connection, s) }
+  if (view.phase !== Phase.REVEAL) return { type: VrViewType.PAINT, round, more }
+  return { type: VrViewType.REVEAL, round, more, reveal: gameReveal(view, view.reveal, conn, shown, connection, s) }
 }

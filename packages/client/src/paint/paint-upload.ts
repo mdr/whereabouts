@@ -24,7 +24,7 @@ export function usePaintUpload(
   const { sittingOut } = view.you
   const locked = view.you.locked
   const editing = canPaint(view, timeUp)
-  const round = view.round?.index
+  const round = view.phase === Phase.GUESSING ? view.round.index : undefined
   const sendTimer = useRef<number | undefined>(undefined)
 
   /** Upload the paint now. An empty map is sent too: it takes back paint sent earlier. */

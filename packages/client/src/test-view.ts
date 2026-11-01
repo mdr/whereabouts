@@ -12,6 +12,11 @@ import {
 import {
   mixOf,
   type GameView,
+  type GuessingGameView,
+  type LobbyGameView,
+  type ResultsGameView,
+  type RevealGameView,
+  type YouView,
   type PlayerView,
   type QuestionView,
   type RevealView,
@@ -23,13 +28,11 @@ import { AnswerType, ClueType, QuestionType, Surface, type FlagQuestion } from "
 import { KernelId } from "@whereabouts/shared/scoring/scoring"
 import { h3Res } from "@whereabouts/shared/h3"
 
-type ViewOverrides = Partial<Omit<GameView, "you">> & { you?: Partial<GameView["you"]> }
+type ViewOverrides<V extends GameView> = Partial<Omit<V, "you" | "phase">> & { you?: Partial<V["you"]> }
 
-/** A lobby view of one player, with whatever a test needs changed. */
-export function makeView({ you, ...over }: ViewOverrides = {}): GameView {
+function viewBase() {
   return {
     code: roomCode("AB12"),
-    phase: Phase.LOBBY,
     config: {
       roundLength: 60_000,
       mix: mixOf({ [QuestionType.LANDMARK]: 5 }),
@@ -38,9 +41,50 @@ export function makeView({ you, ...over }: ViewOverrides = {}): GameView {
       hints: 0
     },
     serverTime: 0,
-    you: { id: playerId("p1"), isHost: true, sittingOut: false, watching: false, locked: false, hintsLeft: 0, ...you },
-    players: [],
-    ...over
+    players: []
+  }
+}
+
+const makeYou = (): YouView => ({
+  id: playerId("p1"),
+  isHost: true,
+  sittingOut: false,
+  watching: false,
+  locked: false,
+  hintsLeft: 0
+})
+
+/** A lobby view of one player, with whatever a test needs changed. */
+export function makeLobbyView({ you, ...over }: ViewOverrides<LobbyGameView> = {}): LobbyGameView {
+  return { ...viewBase(), you: { ...makeYou(), ...you }, ...over, phase: Phase.LOBBY }
+}
+
+/** A view of the first of five rounds under way. */
+export function makeGuessingView({ you, ...over }: ViewOverrides<GuessingGameView> = {}): GuessingGameView {
+  return {
+    ...viewBase(),
+    you: { ...makeYou(), ...you },
+    round: { index: 0, total: 5, question: makeQuestionView(), deadline: 0 },
+    ...over,
+    phase: Phase.GUESSING
+  }
+}
+
+/** A view of the first of five rounds revealed. */
+export function makeRevealView({ you, ...over }: ViewOverrides<RevealGameView> = {}): RevealGameView {
+  return { ...viewBase(), you: { ...makeYou(), ...you }, reveal: makeReveal(), ...over, phase: Phase.REVEAL }
+}
+
+/** A view of the final results of a game nobody scored in. */
+export function makeResultsView({ you, ...over }: ViewOverrides<ResultsGameView> = {}): ResultsGameView {
+  return {
+    ...viewBase(),
+    you: { ...makeYou(), ...you },
+    results: [],
+    playedRounds: [],
+    awards: [],
+    ...over,
+    phase: Phase.RESULTS
   }
 }
 

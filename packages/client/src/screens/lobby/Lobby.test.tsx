@@ -18,7 +18,7 @@ import { mixEditorTestIds } from "../../ui/setup/MixEditorTestIds"
 import { playerListTestIds } from "../../ui/players/PlayerListTestIds"
 import s from "./Lobby.module.css"
 import players from "../../ui/players/Players.module.css"
-import { makePlayer, makeView } from "../../test-view"
+import { makePlayer, makeLobbyView } from "../../test-view"
 
 vi.mock("../../map/map-prefetch", () => ({ prefetchMap: () => undefined, mapPrefetched: { value: false } }))
 
@@ -28,8 +28,8 @@ const inside = (el: Element) => within(el as HTMLElement)
 const MIX = mixOf({ [QuestionType.LANDMARK]: 3, [QuestionType.PLACE]: 2 })
 
 function view(isHost: boolean): GameView {
-  const base = makeView()
-  return makeView({
+  const base = makeLobbyView()
+  return makeLobbyView({
     config: { ...base.config, mix: MIX, hints: 1 },
     you: { isHost, hintsLeft: 1 },
     players: [makePlayer()]

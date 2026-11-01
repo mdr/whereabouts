@@ -177,9 +177,10 @@ export class Connection {
     })
     client.on("state", (payload) => {
       const state = JSON.parse(this.decoder.decode(payload)) as StateMessage
-      if (!state.reveal) this.reveal = undefined
+      if (state.phase !== Phase.REVEAL) this.reveal = undefined
       if (state.phase !== Phase.GUESSING) this.paint = undefined
       const view = viewFrom(state, this.reveal, this.paint)
+      if (!view) return
       const offset = view.serverTime - Date.now()
       if (!this.offsetMeasured || offset > this.clockOffset.value) this.clockOffset.value = offset
       this.offsetMeasured = true

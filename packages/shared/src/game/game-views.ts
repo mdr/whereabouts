@@ -1,6 +1,14 @@
 /** What players are sent of a question: never where its answer is until the reveal. */
 import { revealPhoto } from "../catalogue/photos.ts"
-import type { PlayedRound, QuestionPictures, QuestionView, RoundResultView, RoundReveal } from "../protocol.ts"
+import { HintAxis, hintBand, seededUnit, type HintBand } from "../hints.ts"
+import type {
+  GuessingGameView,
+  PlayedRound,
+  QuestionPictures,
+  QuestionView,
+  RoundResultView,
+  RoundReveal
+} from "../protocol.ts"
 import { AnswerType, ClueType, QuestionType, answerCentre, flagShown, type Question } from "../questions.ts"
 
 /**
@@ -19,6 +27,20 @@ export function questionView(q: Question): QuestionView {
     ...(q.type === QuestionType.FEATURE ? { feature: q.feature } : {}),
     ...(q.type === QuestionType.COUNTRY && q.countryFlag ? { countryFlag: q.countryFlag } : {})
   }
+}
+
+/** A round being guessed. */
+export const roundView = (q: Question, index: number, total: number, deadline: number): GuessingGameView["round"] => ({
+  index,
+  total,
+  question: questionView(q),
+  deadline
+})
+
+/** A round's band of each axis: the same for everyone who asks. */
+export function roundHintBand(q: Question, seed: number, roundIndex: number, axis: HintAxis): HintBand {
+  const u = seededUnit(seed, roundIndex, axis === HintAxis.LATITUDE ? 1 : 2)
+  return hintBand(answerCentre(q.answer), q.answer.tolerance, axis, u)
 }
 
 /** A question's photo and flag, including the flag shown beside a country's name, and the photo for its reveal. */

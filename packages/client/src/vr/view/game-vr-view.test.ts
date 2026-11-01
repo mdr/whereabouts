@@ -2,12 +2,12 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 import { signal } from "@preact/signals"
 import { playerId, playerName } from "@whereabouts/shared/ids"
-import { Phase, type GameView } from "@whereabouts/shared/protocol"
+import type { InPlayGameView } from "@whereabouts/shared/protocol"
 import { ConnectionStatus, type Connection } from "../../net/net"
 import type { PaintController } from "../../paint/paint-controller"
 import { gameVrView } from "./game-vr-view"
 import { VrViewType, type VrView } from "./view"
-import { makePlayer, makeResult, makeReveal, makeView } from "../../test-view"
+import { makePlayer, makeResult, makeGuessingView, makeReveal, makeRevealView } from "../../test-view"
 
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 
@@ -22,7 +22,7 @@ function fakeConn(status = ConnectionStatus.CONNECTED) {
   } as unknown as Connection
 }
 
-const show = (view: GameView, conn = fakeConn(), { timeUp = false } = {}): VrView =>
+const show = (view: InPlayGameView, conn = fakeConn(), { timeUp = false } = {}): VrView =>
   gameVrView(view, conn, {} as PaintController, {
     lockIn: vi.fn(),
     timeUp,
@@ -32,14 +32,9 @@ const show = (view: GameView, conn = fakeConn(), { timeUp = false } = {}): VrVie
     borders: undefined
   })
 
-const guessing = (over: Parameters<typeof makeView>[0] = {}) =>
-  makeView({
-    phase: Phase.GUESSING,
-    round: { index: 0, total: 5, question: makeReveal().question, deadline: 0 },
-    ...over
-  })
-const revealing = (over: Parameters<typeof makeView>[0] = {}) =>
-  makeView({ phase: Phase.REVEAL, players: [makePlayer(), bob], reveal: makeReveal(), ...over })
+const guessing = (over: Parameters<typeof makeGuessingView>[0] = {}) => makeGuessingView(over)
+const revealing = (over: Parameters<typeof makeRevealView>[0] = {}) =>
+  makeRevealView({ players: [makePlayer(), bob], ...over })
 
 const reveal = (v: VrView) => {
   if (v.type !== VrViewType.REVEAL) throw new Error(`a ${v.type} view`)
@@ -81,7 +76,7 @@ describe("gameVrView", () => {
   })
 
   it("offers Ready until pressed, and the host the next round", () => {
-    const labels = (v: GameView) => reveal(show(v)).actions.map((a) => [a.label, a.enabled])
+    const labels = (v: InPlayGameView) => reveal(show(v)).actions.map((a) => [a.label, a.enabled])
     expect(labels(revealing())).toEqual([
       ["Ready", true],
       ["Next round", true]
@@ -113,7 +108,7 @@ describe("gameVrView", () => {
   })
 
   it("puts Leave game last, and End game only for the host before the last reveal", () => {
-    const labels = (v: GameView) => show(v).more?.map((a) => a.label)
+    const labels = (v: InPlayGameView) => show(v).more?.map((a) => a.label)
     expect(labels(guessing())).toEqual(["End game", "Leave game"])
     expect(labels(guessing({ you: { isHost: false } }))).toEqual(["Leave game"])
     expect(labels(guessing({ you: { watching: true, isHost: false } }))).toEqual([

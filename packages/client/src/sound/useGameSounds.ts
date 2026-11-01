@@ -1,15 +1,15 @@
 import { useEffect, useRef } from "preact/hooks"
-import type { GameView } from "@whereabouts/shared/protocol"
+import type { GuessingGameView, LobbyGameView, ResultsGameView, RevealView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../net/net"
 import { Chime, sound } from "./sound"
 import { RoundCue, roundCue, type RoundState } from "./round-cue"
 import { Phase } from "@whereabouts/shared/protocol"
 
 /** What the sounds follow in a game view. */
-type SoundView = Pick<GameView, "phase"> & {
-  round?: Pick<NonNullable<GameView["round"]>, "index" | "deadline">
-  reveal?: Pick<NonNullable<GameView["reveal"]>, "index">
-}
+type SoundView =
+  | Pick<LobbyGameView | ResultsGameView, "phase">
+  | { phase: Phase.GUESSING; round: Pick<GuessingGameView["round"], "index" | "deadline"> }
+  | { phase: Phase.REVEAL; reveal: Pick<RevealView, "index"> }
 
 /**
  * The online game's sounds, driven by changes of view: the rising cue when a
@@ -22,8 +22,9 @@ export function useGameSounds(conn: Pick<Connection, "timeUntil">, view: SoundVi
   const prev = useRef<RoundState | undefined>(undefined)
   const lastDeadline = useRef<number | undefined>(undefined)
   const phase = view?.phase
-  const round = view?.round?.index ?? view?.reveal?.index
-  const deadline = view?.phase === Phase.GUESSING ? view.round?.deadline : undefined
+  const round =
+    view?.phase === Phase.GUESSING ? view.round.index : view?.phase === Phase.REVEAL ? view.reveal.index : undefined
+  const deadline = view?.phase === Phase.GUESSING ? view.round.deadline : undefined
 
   useEffect(() => {
     if (phase === undefined) return
