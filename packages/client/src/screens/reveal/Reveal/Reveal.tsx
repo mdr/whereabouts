@@ -9,6 +9,7 @@ import { usePaint } from "../../../ui/map/MapView/MapView"
 import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../../../ui/map/Hud/Hud"
 import { RevealCards } from "../../../ui/round/RevealCards"
 import { frameReveal, showAnswer } from "../../../round/round"
+import { questionCardHeight } from "../../../ui/round/question/QuestionCard/question-card-height"
 import {
   SHOW_EVERYONE,
   revealedFromView,
@@ -98,7 +99,7 @@ export const Reveal = ({
     paint.showColoured(paintsOf(shownResults(reveal.results, shown)).flatMap((painted) => painted.features))
   useEffect(() => {
     frameReveal(paint.gameMap.camera, reveal.question, answer, show(selected))
-  }, [selected, reveal.index, outline])
+  }, [selected, reveal.index, outline, questionCardHeight.value])
   // Not framed: the map would jump about as the mouse crosses the rows.
   useEffect(() => {
     if (hovered === undefined) return

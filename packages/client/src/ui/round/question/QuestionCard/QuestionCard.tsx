@@ -11,6 +11,7 @@ import { QuestionImage } from "../QuestionImage/QuestionImage"
 import { questionCardTestIds } from "./QuestionCardTestIds"
 import card from "../../../Card/Card.module.css"
 import styles from "./QuestionCard.module.css"
+import { questionCardHeight } from "./question-card-height"
 
 /** Where a question card sits. */
 export enum CardPlace {
@@ -120,20 +121,24 @@ const usePictureFloor = (ref: RefObject<HTMLDivElement>, folded: boolean): void 
 
 /**
  * Publishes the question card's height as `--question-h` on the document:
- * a phone's reveal leaves the map clear below the card (QuestionCard.module.css, map.ts).
+ * a phone's reveal leaves the map clear below the card (QuestionCard.module.css, map-camera.ts).
  */
 const usePublishedHeight = (ref: RefObject<HTMLDivElement>): void => {
   useLayoutEffect(() => {
     const card = ref.current
     const root = document.documentElement
     if (!card || typeof ResizeObserver === "undefined") return
-    const publish = () => root.style.setProperty("--question-h", `${card.offsetHeight}px`)
+    const publish = () => {
+      root.style.setProperty("--question-h", `${card.offsetHeight}px`)
+      questionCardHeight.value = card.offsetHeight
+    }
     publish()
     const observer = new ResizeObserver(publish)
     observer.observe(card)
     return () => {
       observer.disconnect()
       root.style.removeProperty("--question-h")
+      questionCardHeight.value = 0
     }
   }, [])
 }

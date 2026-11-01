@@ -32,6 +32,7 @@ import { AllFlagsSwitch } from "../../ui/round/flag-reveal/AllFlagsSwitch/AllFla
 import { FlagHover } from "../../ui/round/flag-reveal/FlagHover/FlagHover"
 import { mainCountry } from "../../ui/round/flag-reveal/main-country"
 import { announcePass, frameReveal, showAnswer, useRoundMap } from "../../round/round"
+import { questionCardHeight } from "../../ui/round/question/QuestionCard/question-card-height"
 import {
   PracticePhase,
   currentQuestion,
@@ -125,10 +126,10 @@ export const SoloGame = ({ pool, outlines }: { pool: Question[]; outlines: Outli
     showAnswer(paint.gameMap, answer)
   }
 
-  // Framed after the reveal's cards are in place: on a phone the map frames the answer around them.
+  // Framed after the reveal's cards are in place, and again if the question card resizes: on a phone the map frames the answer around them.
   useEffect(() => {
     if (phase === PracticePhase.REVEAL) frameReveal(paint.gameMap.camera, question, answer, paint.layer.toGeoJSON())
-  }, [phase, index])
+  }, [phase, index, questionCardHeight.value])
 
   const next = () => {
     if (run.type !== PracticePhase.REVEAL) return
