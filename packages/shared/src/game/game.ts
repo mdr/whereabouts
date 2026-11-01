@@ -5,12 +5,13 @@
  */
 import { DEFAULT_KERNEL, kernelById, type Kernel } from "../scoring/scoring.ts"
 import type { Question } from "../questions.ts"
-import { playedRound, revealOf, roundHintBand, roundView, upcomingOf } from "./game-views.ts"
+import { playerView } from "./player-view.ts"
+import { playedRound, revealOf } from "./question-views.ts"
 import { pickRounds, type QuestionBank } from "./round-picking.ts"
 import { scorePlayers } from "./round-results.ts"
 import { SubmissionType } from "../scoring/round-scoring.ts"
 import { pickAwards } from "../awards/awards.ts"
-import { DEFAULT_HINTS, type HintAxis, type HintBand } from "../hints.ts"
+import { DEFAULT_HINTS, type HintAxis } from "../hints.ts"
 import type { PlayerId, PlayerName, PlayerToken, RoomCode } from "../ids.ts"
 import { evenMix, MapDetail, type ConfigurePatch, type GameConfig } from "../protocol/config.ts"
 import { Phase, type GameView, type PaintSubmission, type RoundReveal } from "../protocol/views.ts"
@@ -18,18 +19,15 @@ import { CloseReason } from "../close-reason.ts"
 import { OK_CHANGED, OK_SAME, fail, type CommandResult, type JoinResult } from "./command-result.ts"
 import { sameData } from "./same-data.ts"
 import { Seats, freshRecord, type PlayerSeat } from "./seats.ts"
-import { roundRole, seatedRole } from "./you-view.ts"
 import { Role } from "../roles.ts"
-import { awardFacts, finalStandings, rosterView } from "./standings.ts"
+import { awardFacts, finalStandings } from "./standings.ts"
 import {
   isLocked,
   joiningRound,
   LOBBY_STATE,
-  lockedIn,
   playsRound,
   type GameState,
   type GuessingState,
-  type InPlayState,
   type RevealState,
   type ResultsState,
   type Round
@@ -126,11 +124,6 @@ export class Game {
     if (this.state.phase !== Phase.LOBBY) return fail("you can only leave from the lobby")
     this.seats.remove(token)
     return OK_CHANGED
-  }
-
-  private nextHostView(token: PlayerToken): { nextHost?: PlayerId } {
-    const nextHost = this.seats.nextHost(token)
-    return nextHost ? { nextHost } : {}
   }
 
   get playerCount(): number {
@@ -455,70 +448,11 @@ export class Game {
 
   /** A view for a seated token; undefined for one with no seat (removed, left, or turned away). */
   view(token: PlayerToken, now: Instant): GameView | undefined {
-    const seat = this.seats.get(token)
-    if (!seat) return undefined
-    const state = this.state
-    const base = {
-      code: this.code,
-      config: this.config,
-      serverTime: now,
-      ...rosterView(this.seats.all(), this.seats.effectiveHost(), (seatToken) => lockedIn(state, seatToken))
-    }
-    const you = { id: seat.id, name: seat.name, isHost: this.seats.isHost(token), ...this.nextHostView(token) }
-    switch (state.phase) {
-      case Phase.LOBBY:
-        return {
-          ...base,
-          phase: Phase.LOBBY,
-          you: { ...you, role: seatedRole(seat) },
-          ...upcomingOf(this.questions[0])
-        }
-      case Phase.GUESSING: {
-        const paint = state.submissions.get(token)?.paint
-        return {
-          ...base,
-          phase: Phase.GUESSING,
-          you: {
-            ...you,
-            role: roundRole(state, seat, this.config.hints),
-            ...this.hintView(state, token),
-            ...(paint ? { paint } : {})
-          },
-          round: roundView(state.round.question, state.round.index, this.questions.length, state.deadline),
-          ...upcomingOf(this.questions[state.round.index + 1])
-        }
-      }
-      case Phase.REVEAL:
-        return {
-          ...base,
-          phase: Phase.REVEAL,
-          you: { ...you, role: roundRole(state, seat, this.config.hints), ...this.hintView(state, token) },
-          reveal: { ...state.reveal, ready: this.readyIds(state.ready) },
-          ...upcomingOf(this.questions[state.round.index + 1])
-        }
-      case Phase.RESULTS:
-        return {
-          ...base,
-          phase: Phase.RESULTS,
-          you: { ...you, role: seatedRole(seat) },
-          results: state.standings,
-          playedRounds: state.playedRounds,
-          awards: state.awards
-        }
-    }
+    const { code, config, seed, questions } = this
+    return playerView({ code, config, seed, questions }, this.seats, this.state, token, now)
   }
 
-  /** This player'state hint band on the round played or revealed. */
-  private hintView(state: InPlayState, token: PlayerToken): { hint?: HintBand } {
-    const axis = state.hints.get(token)
-    return axis ? { hint: roundHintBand(state.round.question, this.seed, state.round.index, axis) } : {}
-  }
-
-  private readyIds(ready: ReadonlySet<PlayerToken>): PlayerId[] {
-    return [...ready].flatMap((token) => this.seats.get(token)?.id ?? [])
-  }
-
-  /** This player'state paint on the round being guessed, as last uploaded. */
+  /** This player's paint on the round being guessed, as last uploaded. */
   paintOf(token: PlayerToken): PaintSubmission | undefined {
     const state = this.state
     return state.phase === Phase.GUESSING ? state.submissions.get(token)?.paint : undefined

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { CATALOGUE } from "../catalogue/catalogue.ts"
-import { playedRound, questionPictures, questionView, revealOf } from "./game-views.ts"
+import { playedRound, questionPictures, questionView, revealOf } from "./question-views.ts"
 import { h3Res } from "../h3.ts"
 import { playerId } from "../ids.ts"
 import { REVEAL_PHOTOS } from "../catalogue/photos.ts"
