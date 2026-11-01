@@ -1,6 +1,6 @@
 import { route, visit } from "./router"
 import { Home } from "./screens/Home"
-import { Solo } from "./screens/Solo"
+import { Solo } from "./screens/solo/Solo"
 import { Multiplayer } from "./screens/Multiplayer"
 import { ScoreReview } from "./screens/ScoreReview"
 

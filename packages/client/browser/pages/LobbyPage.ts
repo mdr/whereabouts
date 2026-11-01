@@ -1,5 +1,5 @@
 import { QUESTION_TYPES, type QuestionType } from "@whereabouts/shared/questions"
-import { lobbyTestIds, setupSummaryTestIds } from "../../src/screens/LobbyTestIds.ts"
+import { lobbyTestIds, setupSummaryTestIds } from "../../src/screens/lobby/LobbyTestIds.ts"
 import { mixEditorTestIds } from "../../src/ui/setup/MixEditorTestIds.ts"
 import { pillsTestIds, stepperTestIds } from "../../src/ui/setup/ControlsTestIds.ts"
 import { PlayerList } from "./PlayerList.ts"

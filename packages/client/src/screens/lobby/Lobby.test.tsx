@@ -6,21 +6,21 @@ import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName, roomCode } from "@whereabouts/shared/ids"
 import { mixOf, type GameView, MapDetail } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
-import { type Connection, ConnectionStatus } from "../net/net"
-import { hostSetup, joinedCode, startOnPan } from "../settings/settings"
-import { route } from "../router"
+import { type Connection, ConnectionStatus } from "../../net/net"
+import { hostSetup, joinedCode, startOnPan } from "../../settings/settings"
+import { route } from "../../router"
 import { Lobby } from "./Lobby"
 import { lobbyTestIds, setupSummaryTestIds } from "./LobbyTestIds"
-import { confirmDialogTestIds } from "../ui/ConfirmDialogTestIds"
-import { pillsTestIds, stepperTestIds } from "../ui/setup/ControlsTestIds"
-import { mapDetailPickerTestIds } from "../ui/setup/MapDetailPickerTestIds"
-import { mixEditorTestIds } from "../ui/setup/MixEditorTestIds"
-import { playerListTestIds } from "../ui/players/PlayerListTestIds"
+import { confirmDialogTestIds } from "../../ui/ConfirmDialogTestIds"
+import { pillsTestIds, stepperTestIds } from "../../ui/setup/ControlsTestIds"
+import { mapDetailPickerTestIds } from "../../ui/setup/MapDetailPickerTestIds"
+import { mixEditorTestIds } from "../../ui/setup/MixEditorTestIds"
+import { playerListTestIds } from "../../ui/players/PlayerListTestIds"
 import s from "./Lobby.module.css"
-import players from "../ui/players/Players.module.css"
-import { makePlayer, makeView } from "../test-view"
+import players from "../../ui/players/Players.module.css"
+import { makePlayer, makeView } from "../../test-view"
 
-vi.mock("../map/map-prefetch", () => ({ prefetchMap: () => undefined, mapPrefetched: { value: false } }))
+vi.mock("../../map/map-prefetch", () => ({ prefetchMap: () => undefined, mapPrefetched: { value: false } }))
 
 /** Queries within a render's container. */
 const inside = (el: Element) => within(el as HTMLElement)

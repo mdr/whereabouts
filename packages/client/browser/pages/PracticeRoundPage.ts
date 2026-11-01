@@ -1,5 +1,5 @@
 import { HintAxis } from "@whereabouts/shared/hints"
-import { soloTestIds } from "../../src/screens/SoloTestIds.ts"
+import { soloTestIds } from "../../src/screens/solo/SoloTestIds.ts"
 import { hintTestIds } from "../../src/ui/round/HintTestIds.ts"
 import { DevDrawer } from "./DevDrawer.ts"
 import { Hud } from "./Hud.ts"

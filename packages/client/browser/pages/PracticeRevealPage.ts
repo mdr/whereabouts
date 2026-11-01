@@ -1,4 +1,4 @@
-import { soloTestIds } from "../../src/screens/SoloTestIds.ts"
+import { soloTestIds } from "../../src/screens/solo/SoloTestIds.ts"
 import { factTestIds, questionCardTestIds } from "../../src/ui/round/QuestionCardTestIds.ts"
 import { MapPanel } from "./MapPanel.ts"
 import { Screen } from "./Screen.ts"
