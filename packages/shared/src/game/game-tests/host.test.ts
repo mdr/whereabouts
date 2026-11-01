@@ -54,6 +54,17 @@ describe("host removes a player", () => {
     expect(game.phase).toBe(Phase.REVEAL)
   })
 
+  it("is refused on the final results, which keep every finalist", () => {
+    const game = twoPlayerGame(1)
+    game.start(tokA, T0)
+    game.lock(tokA, T0)
+    game.lock(tokB, T0)
+    game.next(tokA, T0)
+    expect(game.phase).toBe(Phase.RESULTS)
+    expect(game.kick(tokA, viewOf(game, tokB, T0).you.id, T0)).toEqual({ ok: false, error: "game has finished" })
+    expect(game.playerTokens).toEqual([tokA, tokB])
+  })
+
   it("removing an absent host passes the role", () => {
     const otherGame = twoPlayerGame()
     otherGame.start(tokA, T0)

@@ -209,10 +209,13 @@ export class Game {
   /**
    * Remove a player. Their seat, score and paint go; their token may not
    * rejoin (a fresh token can, as a new player). The acting host may remove
-   * an absent host, in which case the role passes on.
+   * an absent host, in which case the role passes on. Not on the final
+   * results, which are the finished game's record: Play again opens a lobby
+   * where anyone can be removed.
    */
   kick(token: PlayerToken, playerId: PlayerId, now: Instant): CommandResult {
     if (!this.seats.isHost(token)) return fail("only the host can remove players")
+    if (this.state.phase === Phase.RESULTS) return fail("game has finished")
     const target = this.tokenOf(playerId)
     if (target === undefined) return fail("unknown player")
     if (target === token) return fail("you cannot remove yourself")
