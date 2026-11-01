@@ -12,30 +12,38 @@ import s from "./LiveScore.module.css"
 
 const pct = (x: number) => `${Math.round(x * 100)}%`
 
-export function LiveScore({ q, a, kernelId }: { q: Question; a: ScoredAnswer; kernelId: KernelId }) {
+export function LiveScore({
+  question,
+  answer,
+  kernelId
+}: {
+  question: Question
+  answer: ScoredAnswer
+  kernelId: KernelId
+}) {
   const paint = usePaint()
   const painted = buildDistribution(paint.settledCells.value, paint.floor.value)
-  const { score, parts } = scoreAnswer(painted, a, kernelById(kernelId))
+  const { score, parts } = scoreAnswer(painted, answer, kernelById(kernelId))
   return (
     <Card title="Live score">
       <p class={kit.hint} style={{ margin: "0 0 6px" }}>
-        Answer: {q.label}, {a.type === AnswerType.AREA ? "outlined" : "marked"} on the map.
+        Answer: {question.label}, {answer.type === AnswerType.AREA ? "outlined" : "marked"} on the map.
       </p>
       <div class={sc.score}>
         <div class={sc.big}>{Math.round(score)}</div>
         <PartsLine parts={parts} />
       </div>
-      {a.type === AnswerType.AREA && paint.settledCells.value.length > 0 && (
-        <RegionFitFacts painted={painted} a={a} label={q.label} />
+      {answer.type === AnswerType.AREA && paint.settledCells.value.length > 0 && (
+        <RegionFitFacts painted={painted} answer={answer} label={question.label} />
       )}
-      {a.type === AnswerType.POINT && <KernelComparison painted={painted} a={a} active={kernelId} />}
+      {answer.type === AnswerType.POINT && <KernelComparison painted={painted} answer={answer} active={kernelId} />}
     </Card>
   )
 }
 
 /** Where the paint is against the country (the world floor left out). */
-function RegionFitFacts({ painted, a, label }: { painted: Distribution; a: Area; label: string }) {
-  const { coverage, precision } = regionFit(painted, a)
+function RegionFitFacts({ painted, answer, label }: { painted: Distribution; answer: Area; label: string }) {
+  const { coverage, precision } = regionFit(painted, answer)
   return (
     <dl class={cx(kit.facts, s.regionFit)}>
       <div>

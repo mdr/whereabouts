@@ -3,7 +3,15 @@ import { scoreAnswer, type ScoredAnswer } from "@whereabouts/shared/scoring/regi
 import { cx } from "../../ui/cx"
 import kit from "../../ui/kit.module.css"
 
-export function KernelComparison({ painted, a, active }: { painted: Distribution; a: ScoredAnswer; active: KernelId }) {
+export function KernelComparison({
+  painted,
+  answer,
+  active
+}: {
+  painted: Distribution
+  answer: ScoredAnswer
+  active: KernelId
+}) {
   return (
     <ul class={cx(kit.results, kit.compare)}>
       {KERNELS.map((k) => (
@@ -12,7 +20,7 @@ export function KernelComparison({ painted, a, active }: { painted: Distribution
             {k.label}
             {k.id === active ? " ◀" : ""}
           </span>
-          <span>{Math.round(scoreAnswer(painted, a, k).score)}</span>
+          <span>{Math.round(scoreAnswer(painted, answer, k).score)}</span>
         </li>
       ))}
     </ul>

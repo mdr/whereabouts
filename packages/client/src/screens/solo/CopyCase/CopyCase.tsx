@@ -8,7 +8,15 @@ import { usePaint } from "../../../ui/map/MapView/MapView"
 import s from "./CopyCase.module.css"
 
 /** Copies the paint and its score as text, to paste into a chat about the scoring (see scoring-case.ts). */
-export function CopyCase({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: ChoosableKernel }) {
+export function CopyCase({
+  question,
+  answer,
+  kernel
+}: {
+  question: Question
+  answer: ScoredAnswer
+  kernel: ChoosableKernel
+}) {
   const paint = usePaint()
   const [copied, setCopied] = useState(false)
   // Where the clipboard is out of reach (a LAN address over http), the text to copy by hand.
@@ -20,10 +28,10 @@ export function CopyCase({ q, a, kernel }: { q: Question; a: ScoredAnswer; kerne
   }, [copied])
   const copy = async () => {
     const floor = paint.floor.value
-    const { score, parts } = scoreAnswer(buildDistribution(paint.layer.toCells(), floor), a, kernel)
+    const { score, parts } = scoreAnswer(buildDistribution(paint.layer.toCells(), floor), answer, kernel)
     const text = await encodeCase({
-      question: caseQuestion(q, a),
-      kernel: a.type === AnswerType.AREA ? RegionKernel.REGION : kernel.id,
+      question: caseQuestion(question, answer),
+      kernel: answer.type === AnswerType.AREA ? RegionKernel.REGION : kernel.id,
       floor,
       res: paint.layer.res,
       score,

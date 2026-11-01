@@ -205,8 +205,8 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
           </HudBottom>
         </Hud>
         <DevDrawer>
-          <RevealScore a={scored} kernel={kernel} parts={shownResult.parts} painted={painted} hover={hover} />
-          <Cheats q={q} a={scored} kernel={kernel} />
+          <RevealScore answer={scored} kernel={kernel} parts={shownResult.parts} painted={painted} hover={hover} />
+          <Cheats question={q} answer={scored} kernel={kernel} />
           <PaintDev />
         </DevDrawer>
       </>
@@ -227,8 +227,8 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
         </PaintTools>
       </Hud>
       <DevDrawer>
-        <Cheats q={q} a={scored} kernel={kernel} />
-        {cheating && <LiveScore q={q} a={scored} kernelId={kernel.id} />}
+        <Cheats question={q} answer={scored} kernel={kernel} />
+        {cheating && <LiveScore question={q} answer={scored} kernelId={kernel.id} />}
         <PaintDev />
       </DevDrawer>
     </>

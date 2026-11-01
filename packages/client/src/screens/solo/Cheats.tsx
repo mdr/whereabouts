@@ -6,7 +6,15 @@ import kit from "../../ui/kit.module.css"
 import { cheatLiveScore, soloKernelId } from "../../settings/settings"
 import { CopyCase } from "./CopyCase/CopyCase"
 
-export function Cheats({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: ChoosableKernel }) {
+export function Cheats({
+  question,
+  answer,
+  kernel
+}: {
+  question: Question
+  answer: ScoredAnswer
+  kernel: ChoosableKernel
+}) {
   return (
     <Card title="Cheats">
       <label class={kit.check}>
@@ -17,7 +25,7 @@ export function Cheats({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel:
         />{" "}
         Show live score and the real answer while painting
       </label>
-      {a.type === AnswerType.AREA ? (
+      {answer.type === AnswerType.AREA ? (
         <p class={kit.hint}>Countries score by shape and nearness, with their own kernel: see regions.ts.</p>
       ) : (
         <label class={kit.check}>
@@ -35,7 +43,7 @@ export function Cheats({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel:
           </select>
         </label>
       )}
-      <CopyCase q={q} a={a} kernel={kernel} />
+      <CopyCase question={question} answer={answer} kernel={kernel} />
     </Card>
   )
 }

@@ -16,13 +16,13 @@ import s from "./RevealScore.module.css"
 
 /** The revealed score's parts, and what other answers or kernels would have scored. */
 export function RevealScore({
-  a,
+  answer,
   kernel,
   parts,
   painted,
   hover
 }: {
-  a: ScoredAnswer
+  answer: ScoredAnswer
   kernel: ChoosableKernel
   parts: AnswerParts
   /** Undefined for a pass. */
@@ -32,18 +32,20 @@ export function RevealScore({
   const h = hover.value
   // "What if the answer were here" only means something for a point answer.
   let hoverText: string | undefined =
-    a.type === AnswerType.AREA ? undefined : "Move the mouse over the map to see the score for other answers."
-  if (h && a.type === AnswerType.POINT && painted) {
-    const A = similarityToAnswer(painted, toXyz(h), a.tolerance, kernel)
+    answer.type === AnswerType.AREA ? undefined : "Move the mouse over the map to see the score for other answers."
+  if (h && answer.type === AnswerType.POINT && painted) {
+    const A = similarityToAnswer(painted, toXyz(h), answer.tolerance, kernel)
     const s = parts.type === AnswerType.POINT ? scoreFromParts(A, parts.B) : 0
-    const d = greatCircleDistance(h, a.at)
-    hoverText = `If the answer were here: ${Math.round(s)} · ${formatDistance(d)} from the real answer (${(d / a.tolerance).toFixed(1)} tolerances)`
+    const d = greatCircleDistance(h, answer.at)
+    hoverText = `If the answer were here: ${Math.round(s)} · ${formatDistance(d)} from the real answer (${(d / answer.tolerance).toFixed(1)} tolerances)`
   }
   return (
     <Card title="Score">
       <PartsLine parts={parts} />
       {hoverText && <div class={s.hoverScore}>{hoverText}</div>}
-      {a.type === AnswerType.POINT && painted && <KernelComparison painted={painted} a={a} active={kernel.id} />}
+      {answer.type === AnswerType.POINT && painted && (
+        <KernelComparison painted={painted} answer={answer} active={kernel.id} />
+      )}
     </Card>
   )
 }
