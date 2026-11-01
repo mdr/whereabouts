@@ -62,14 +62,17 @@ test("score-review", async ({ browser }) => {
       .trim()
       .split("\n")
       .map((l) => JSON.parse(l) as Record<string, unknown>)
-    const single = verdicts.filter((v) => v.verdict !== undefined)
-    const pair = verdicts.find((v) => v.pair === true)
+    const single = verdicts.filter((v) => v["verdict"] !== undefined)
+    const pair = verdicts.find((v) => v["pair"] === true)
     check(
-      single.length === 2 && single[0]!.verdict === 0 && single[1]!.verdict === -1 && single[1]!.shouldBe === 650,
-      `the export holds both single verdicts, with the score it should be (${single.map((v) => String(v.verdict)).join(", ")})`
+      single.length === 2 &&
+        single[0]!["verdict"] === 0 &&
+        single[1]!["verdict"] === -1 &&
+        single[1]!["shouldBe"] === 650,
+      `the export holds both single verdicts, with the score it should be (${single.map((v) => String(v["verdict"])).join(", ")})`
     )
-    check(pair?.prefer === -2 && (pair.cases as string[]).length === 2, "and the pair's, with both its cases")
-    const c = await decodeCase(single[0]!.case as string)
+    check(pair?.["prefer"] === -2 && (pair["cases"] as string[]).length === 2, "and the pair's, with both its cases")
+    const c = await decodeCase(single[0]!["case"] as string)
     check(Math.round(c.score) === Number(firstScore), `each case carries the score shown (${Math.round(c.score)})`)
   })
 

@@ -17,7 +17,7 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
     const markers = flagPins(borders).map(({ f, at }) => {
       const el = document.createElement("div")
       el.className = s.pin
-      el.dataset.testid = allFlagsTestIds.pin
+      el.dataset["testid"] = allFlagsTestIds.pin
       const flag = document.createElement("i")
       flag.title = f.label
       const cell = atlasCell(f.clue.flag)

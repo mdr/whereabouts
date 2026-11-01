@@ -6,5 +6,5 @@ import { CHROME } from "./browser/tests/support.ts"
 export default defineConfig({
   testDir: "browser/prod",
   outputDir: "../../smoke-out/e2e-prod",
-  use: { ...CHROME, baseURL: process.env.PROD_URL || "http://localhost:8799" }
+  use: { ...CHROME, baseURL: process.env["PROD_URL"] || "http://localhost:8799" }
 })

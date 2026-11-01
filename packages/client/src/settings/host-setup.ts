@@ -28,9 +28,9 @@ export function savedSetupPatch(saved: unknown): ConfigurePatch {
   const patch: Record<string, unknown> = {}
   if (typeof saved !== "object" || !saved) return patch
   const setup = { ...(saved as Record<string, unknown>) }
-  setup.mix = setup.mix === undefined ? mixFromOldSetup(setup) : renamedMix(setup.mix)
+  setup["mix"] = setup["mix"] === undefined ? mixFromOldSetup(setup) : renamedMix(setup["mix"])
   // Saved in lower case before the map details were an enum.
-  if (typeof setup.mapDetail === "string") setup.mapDetail = setup.mapDetail.toUpperCase()
+  if (typeof setup["mapDetail"] === "string") setup["mapDetail"] = setup["mapDetail"].toUpperCase()
   for (const field of FIELDS) {
     const value = setup[field]
     if (value === undefined) continue

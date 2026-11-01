@@ -210,7 +210,7 @@ export class GameMap {
   addGlobeButton(onToggle: () => void, testId: string): void {
     const button = document.createElement("button")
     button.type = "button"
-    button.dataset.testid = testId
+    button.dataset["testid"] = testId
     button.innerHTML = '<span class="maplibregl-ctrl-icon" aria-hidden="true"></span>'
     button.addEventListener("click", onToggle)
     this.globeButton = button

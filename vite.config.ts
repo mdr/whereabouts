@@ -210,7 +210,7 @@ export default defineConfig({
       "typescript/no-inferrable-types": "error",
       "typescript/non-nullable-type-assertion-style": "error",
       "typescript/prefer-find": "error",
-      "typescript/dot-notation": "error",
+      "typescript/dot-notation": ["error", { allowIndexSignaturePropertyAccess: true }],
       "typescript/prefer-for-of": "error",
       "typescript/prefer-function-type": "error",
       "typescript/prefer-includes": "error",

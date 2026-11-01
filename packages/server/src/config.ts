@@ -15,17 +15,17 @@ export interface ServerConfig {
 
 export function configFromEnv(env: Record<string, string | undefined>, defaultStaticDir: string): ServerConfig {
   const game: Partial<GameConfig> = {}
-  const rounds = positiveInt(env.ROUNDS)
-  const roundLength = positiveInt(env.ROUND_MS)
+  const rounds = positiveInt(env["ROUNDS"])
+  const roundLength = positiveInt(env["ROUND_MS"])
   if (rounds !== undefined) game.mix = evenMix(rounds)
   if (roundLength !== undefined) game.roundLength = roundLength
-  if (env.KERNEL) game.kernelId = kernelId(env.KERNEL)
+  if (env["KERNEL"]) game.kernelId = kernelId(env["KERNEL"])
   // Browser tests reach the server through Vite's proxy, all from one address.
-  const perAddress = positiveInt(env.CONNECTIONS_PER_ADDRESS)
+  const perAddress = positiveInt(env["CONNECTIONS_PER_ADDRESS"])
   return {
-    port: positiveInt(env.PORT) ?? 8787,
-    host: env.HOST ?? "0.0.0.0",
-    staticDir: env.STATIC_DIR === "" ? undefined : (env.STATIC_DIR ?? defaultStaticDir),
+    port: positiveInt(env["PORT"]) ?? 8787,
+    host: env["HOST"] ?? "0.0.0.0",
+    staticDir: env["STATIC_DIR"] === "" ? undefined : (env["STATIC_DIR"] ?? defaultStaticDir),
     game,
     addressLimits:
       perAddress === undefined ? undefined : { maxOpen: perAddress, burst: perAddress, perSecond: perAddress }

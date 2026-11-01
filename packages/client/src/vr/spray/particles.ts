@@ -113,8 +113,8 @@ export class SprayParticles {
       const t = left / this.life[i]!
       this.colour[i * 4 + 3] = this.opacity[i]! * Math.min(1, t * 3, (1 - t) * 20)
     }
-    this.points.geometry.attributes.position!.needsUpdate = true
-    this.points.geometry.attributes.color!.needsUpdate = true
+    this.points.geometry.attributes["position"]!.needsUpdate = true
+    this.points.geometry.attributes["color"]!.needsUpdate = true
   }
 
   private emit(count: number, start: (i: number) => void): void {

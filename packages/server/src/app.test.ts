@@ -330,7 +330,7 @@ describe("game server", () => {
     expect(viewIn(reveal, Phase.REVEAL).reveal.label).toBe(q.label)
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
     const scores = Object.fromEntries(viewIn(reveal, Phase.REVEAL).reveal.results.map((r) => [r.playerId, r.score]))
-    expect(scores[byName.Alice!]).toBeGreaterThan(scores[byName.Bob!]!)
+    expect(scores[byName["Alice"]!]).toBeGreaterThan(scores[byName["Bob"]!]!)
     expect(viewIn(reveal, Phase.REVEAL).reveal.results.every((r) => r.guess.type === RoundGuessType.PAINTED)).toBe(true)
 
     alice.send("next")
@@ -343,7 +343,7 @@ describe("game server", () => {
     alice.send("ready")
     const results = viewIn(await bob.until((v) => v.phase === Phase.RESULTS), Phase.RESULTS)
     expect(results.results).toHaveLength(2)
-    expect(results.results[0]!.playerId).toBe(byName.Alice)
+    expect(results.results[0]!.playerId).toBe(byName["Alice"])
   })
 
   it("plays a country round: scored against the outline, against the area rule", async () => {
@@ -378,10 +378,10 @@ describe("game server", () => {
     expect(viewIn(reveal, Phase.REVEAL).reveal.question.answer).toEqual(shown)
     expect(viewIn(reveal, Phase.REVEAL).reveal.label).toBe(country.label)
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
-    const aliceResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((r) => r.playerId === byName.Alice)!
+    const aliceResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((r) => r.playerId === byName["Alice"])!
     expect(aliceResult.score).toBeGreaterThan(980)
     expect(aliceResult.guess).toMatchObject({ type: RoundGuessType.PAINTED, parts: { type: AnswerType.AREA } })
-    const bobResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((r) => r.playerId === byName.Bob)!
+    const bobResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((r) => r.playerId === byName["Bob"])!
     expect(bobResult.score).toBe(250)
   })
 
