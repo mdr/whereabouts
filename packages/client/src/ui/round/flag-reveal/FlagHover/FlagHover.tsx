@@ -18,13 +18,13 @@ const TOUCH_EMULATION: Ms = 1000
  * (or tapped, on a phone).
  */
 export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Borders }) {
-  const [hit, setHit] = useState<{ f: FlagQuestion; x: Px; y: Px } | undefined>(undefined)
+  const [hit, setHit] = useState<{ country: FlagQuestion; x: Px; y: Px } | undefined>(undefined)
   useEffect(() => {
     const map = gameMap.map
     const show = (e: MapMouseEvent) => {
       const p = { lat: e.lngLat.lat, lon: e.lngLat.lng }
-      const f = borders.countryAt(p) ?? borders.smallNear(p, gameMap.pixelsToKm(SMALL, p.lat))
-      setHit(f ? { f, x: e.originalEvent.clientX, y: e.originalEvent.clientY } : undefined)
+      const country = borders.countryAt(p) ?? borders.smallNear(p, gameMap.pixelsToKm(SMALL, p.lat))
+      setHit(country ? { country, x: e.originalEvent.clientX, y: e.originalEvent.clientY } : undefined)
     }
     const hide = () => setHit(undefined)
     // A mouse hovers; a finger taps (a click), and the card stays until the
@@ -57,8 +57,8 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
         ...(left ? { right: `${window.innerWidth - hit.x + 14}px` } : { left: `${hit.x + 14}px` })
       }}
     >
-      <SmallFlag code={hit.f.clue.flag} class={s.hoverFlag} />
-      <span>{hit.f.label}</span>
+      <SmallFlag code={hit.country.clue.flag} class={s.hoverFlag} />
+      <span>{hit.country.label}</span>
     </div>
   )
 }

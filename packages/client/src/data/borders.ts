@@ -33,10 +33,10 @@ function loadBorders(): Promise<Borders> {
   return loading
 }
 
-const pinsOf = new WeakMap<Borders, { f: FlagQuestion; at: LatLon }[]>()
+const pinsOf = new WeakMap<Borders, { country: FlagQuestion; at: LatLon }[]>()
 
 /** Where each country's flag goes on a map: worked out once. */
-export function flagPins(b: Borders): { f: FlagQuestion; at: LatLon }[] {
+export function flagPins(b: Borders): { country: FlagQuestion; at: LatLon }[] {
   let pins = pinsOf.get(b)
   if (!pins) pinsOf.set(b, (pins = b.pins()))
   return pins
@@ -45,9 +45,9 @@ export function flagPins(b: Borders): { f: FlagQuestion; at: LatLon }[] {
 const vrPinsOf = new WeakMap<Borders, VrFlagPin[]>()
 
 /** The outline the reveal draws where the country is painted whole, finer than its borders; else those. */
-function outline(b: Borders, f: FlagQuestion): FlatRing[] {
-  const outline = f.answer.type === AnswerType.AREA ? outlines.value?.get(f.answer.outline) : undefined
-  if (!outline) return b.rings(f.clue.flag)
+function outline(b: Borders, country: FlagQuestion): FlatRing[] {
+  const outline = country.answer.type === AnswerType.AREA ? outlines.value?.get(country.answer.outline) : undefined
+  if (!outline) return b.rings(country.clue.flag)
   return outline.flatMap((polygon) => polygon.map(flatRing))
 }
 
@@ -57,7 +57,12 @@ export function vrFlagPins(b: Borders): VrFlagPin[] {
   if (!pins)
     vrPinsOf.set(
       b,
-      (pins = flagPins(b).map(({ f, at }) => ({ flag: f.clue.flag, name: f.label, at, rings: outline(b, f) })))
+      (pins = flagPins(b).map(({ country, at }) => ({
+        flag: country.clue.flag,
+        name: country.label,
+        at,
+        rings: outline(b, country)
+      })))
     )
   return pins
 }

@@ -8,6 +8,7 @@ import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
 import { VrAnswerType, type VrAnswer, type VrReveal, type VrRound } from "./view"
 import { areaNoun, type RevealedAnswer } from "../../round/round"
 import { RevealedShapeType } from "../../round/revealed-shape"
+import { formatPoints } from "../../ui/format"
 import { vrPicture } from "../picture/vr-picture"
 import { vrFlagPins } from "../../data/borders"
 import { allFlags } from "../../settings/settings"
@@ -19,8 +20,6 @@ export interface VrRoundShown {
   revealed: RevealedAnswer | undefined
   fact: Fact | undefined
 }
-
-export const pts = (n: number) => `${Math.round(n).toLocaleString()} pts`
 
 /** AnswerMode and AreaInstruction in a line; undefined for a place. */
 export function answerModeText(q: Pick<QuestionView, "type" | "answer" | "feature">): string | undefined {
@@ -65,7 +64,7 @@ export interface VrScore {
 export function vrScoreLine(you: VrScore | undefined, flag: FlagCode | undefined): string {
   if (!you) return "You sat this one out"
   const where = you.painted ? `. ${paintedInText(you.painted, flag)}` : ""
-  return `${you.passed ? "Passed: " : ""}${pts(you.score)} this round, ${pts(you.total)} in all${where}`
+  return `${you.passed ? "Passed: " : ""}${formatPoints(you.score)} this round, ${formatPoints(you.total)} in all${where}`
 }
 
 function vrAnswer({ shape, answer }: RevealedAnswer): VrAnswer | undefined {

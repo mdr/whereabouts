@@ -7,7 +7,8 @@ import type { PaintController } from "../../paint/paint-controller"
 import { navigate } from "../../router"
 import type { RevealedAnswer } from "../../round/round"
 import { PracticePhase, nextLabel, roundsTable, runMaximum, runTotal, type PracticeRun } from "../../round/practice-run"
-import { pts, vrReveal, vrRound, type VrRoundShown } from "./vr-round"
+import { formatPoints } from "../../ui/format"
+import { vrReveal, vrRound, type VrRoundShown } from "./vr-round"
 import { HintAllowance, VrPaintsType, VrViewType, type VrView } from "./view"
 
 export interface PracticeVrShown {
@@ -35,7 +36,7 @@ export function practiceVrView(run: PracticeRun, s: PracticeVrShown): VrView {
       type: VrViewType.DONE,
       summary: {
         title: "Final score",
-        scoreLine: `${pts(total)} out of ${runMaximum(run).toLocaleString()}`,
+        scoreLine: `${formatPoints(total)} out of ${runMaximum(run).toLocaleString()}`,
         table: roundsTable(run.results),
         actions: [{ label: "Play again", press: s.restart }]
       },
@@ -49,7 +50,7 @@ export function practiceVrView(run: PracticeRun, s: PracticeVrShown): VrView {
   }
   const round = vrRound(shown, {
     paint: s.paint,
-    heading: `QUESTION ${run.index + 1} OF ${run.questions.length}, ${pts(total)}`,
+    heading: `QUESTION ${run.index + 1} OF ${run.questions.length}, ${formatPoints(total)}`,
     detail: s.detail,
     hint: s.hint,
     hintsLeft: HintAllowance.UNLIMITED,

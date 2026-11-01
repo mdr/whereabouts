@@ -14,13 +14,13 @@ const ATLAS_PX_PER_CSS_PX = 4
 /** Every country's flag, on a pin stuck in its land. */
 export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Borders }) {
   useEffect(() => {
-    const markers = flagPins(borders).map(({ f, at }) => {
+    const markers = flagPins(borders).map(({ country, at }) => {
       const el = document.createElement("div")
       el.className = s.pin
       el.dataset["testid"] = allFlagsTestIds.pin
       const flag = document.createElement("i")
-      flag.title = f.label
-      const cell = atlasCell(f.clue.flag)
+      flag.title = country.label
+      const cell = atlasCell(country.clue.flag)
       if (cell) {
         const css = (atlasPx: number): Px => atlasPx / ATLAS_PX_PER_CSS_PX
         flag.style.width = `${css(cell.w)}px`

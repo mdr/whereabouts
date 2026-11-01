@@ -49,8 +49,8 @@ describe("borders", () => {
     // the Bahamas) or in a neighbour (Vietnam's is in Laos, Croatia's in
     // Bosnia); only those miss.
     const missed = flags
-      .filter((f) => borders.countryAt(answerCentre(f.answer))?.clue.flag !== f.clue.flag)
-      .map((f) => f.label)
+      .filter((country) => borders.countryAt(answerCentre(country.answer))?.clue.flag !== country.clue.flag)
+      .map((country) => country.label)
     expect(missed.sort()).toEqual(
       [
         "Croatia",
@@ -95,20 +95,20 @@ describe("flag pins", () => {
   const pins = borders.pins()
 
   it("gives each pinned country's outline round its pin", () => {
-    const france = pins.find((p) => p.f.clue.flag === "fr")!
-    const rings = borders.rings(france.f.clue.flag)
+    const france = pins.find((p) => p.country.clue.flag === "fr")!
+    const rings = borders.rings(france.country.clue.flag)
     expect(rings.length).toBeGreaterThan(0)
     expect(rings.every((r) => r.length >= 6 && r.length % 2 === 0)).toBe(true)
     expect(borders.countryAt(france.at)?.clue.flag).toBe("fr")
   })
 
   it("pins every flag country once", () => {
-    expect(new Set(pins.map((p) => p.f.clue.flag)).size).toBe(pins.length)
+    expect(new Set(pins.map((p) => p.country.clue.flag)).size).toBe(pins.length)
     expect(pins.length).toBeGreaterThan(190)
   })
 
   it("puts each pin on its own country", () => {
-    const off = pins.filter(({ f, at }) => borders.countryAt(at) !== f).map(({ f }) => f.label)
+    const off = pins.filter(({ country, at }) => borders.countryAt(at) !== country).map(({ country }) => country.label)
     expect(off).toEqual([])
   })
 })

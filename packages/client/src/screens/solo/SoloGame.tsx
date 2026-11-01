@@ -8,6 +8,7 @@ import { QuestionType, answerCentre, type Outlines, type Question } from "@where
 import type { LatLon } from "@whereabouts/shared/geo"
 import { onWater } from "@whereabouts/shared/protocol"
 import { usePaint } from "../../ui/map/MapView/MapView"
+import { formatPoints } from "../../ui/format"
 import { forTabbedControl } from "../../keyboard/keys"
 import { SUBMIT } from "../../keyboard/shortcuts"
 import { HeaderNote, Hud, HudBottom, HudHeader, HudTop } from "../../ui/map/Hud/Hud"
@@ -170,7 +171,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
       home
       round={Math.min(index + 1, questions.length)}
       total={questions.length}
-      right={<HeaderNote nowrap>{Math.round(total).toLocaleString()} pts</HeaderNote>}
+      right={<HeaderNote nowrap>{formatPoints(total)}</HeaderNote>}
     />
   )
 
