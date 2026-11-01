@@ -3,13 +3,14 @@ import { playerId, playerName } from "@whereabouts/shared/ids"
 import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import { Role } from "@whereabouts/shared/roles"
 import { makePlayer, makeLobbyView } from "../../test-view"
+import { signal } from "@preact/signals"
 import { hostActions, pickable, takeSeat, vrPicked } from "./vr-actions"
 
 const host = makePlayer({ id: playerId("p1"), isHost: true })
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false })
 const asHost = makeLobbyView({ players: [host, bob], you: { id: host.id, isHost: true } })
 const asGuest = makeLobbyView({ players: [host, bob], you: { id: bob.id, isHost: false } })
-const conn = () => ({ kick: vi.fn(), makeHost: vi.fn(), setRole: vi.fn() })
+const conn = (online = true) => ({ kick: vi.fn(), makeHost: vi.fn(), setRole: vi.fn(), online: signal(online) })
 
 afterEach(() => (vrPicked.value = undefined))
 
@@ -68,5 +69,14 @@ describe("a watcher's way in", () => {
       players: Array.from({ length: MAX_PLAYERS }, (_, i) => makePlayer({ id: playerId(`p${i + 1}`) }))
     })
     expect(takeSeat(conn(), full, "Play").enabled).toBe(false)
+  })
+})
+
+describe("while the connection is down", () => {
+  it("removing, making host and taking a seat are off", () => {
+    const offline = conn(false)
+    const enabled = hostActions(offline, asHost, bob.id).map((action) => action.enabled)
+    expect(enabled).toEqual([false, false])
+    expect(takeSeat(offline, asGuest, "Play").enabled).toBe(false)
   })
 })

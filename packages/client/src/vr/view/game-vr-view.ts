@@ -75,7 +75,16 @@ interface GameVrShown {
 const moreActions = (view: GameView, conn: Connection): VrAction[] => [
   ...(view.you.role.type === YouRoleType.SPECTATOR ? [takeSeat(conn, view, "Play from the next question")] : []),
   ...hostActions(conn, view, view.phase === Phase.REVEAL ? shownPlayerId(revealShown.value) : vrPicked.value),
-  ...(canEndGame(view) ? [{ label: "End game", confirm: "Press again to end the game", press: () => conn.end() }] : []),
+  ...(canEndGame(view)
+    ? [
+        {
+          label: "End game",
+          confirm: "Press again to end the game",
+          press: () => conn.end(),
+          enabled: conn.online.value
+        }
+      ]
+    : []),
   { label: "Leave game", confirm: "Press again to leave", press: () => navigate("/") }
 ]
 

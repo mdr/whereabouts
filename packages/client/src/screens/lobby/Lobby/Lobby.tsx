@@ -103,7 +103,7 @@ const lobbyVrView = (conn: Connection, view: GameView, online: boolean, leave: (
         : {
             label: "Just watch",
             press: () => conn.setRole(Role.SPECTATOR),
-            enabled: spectators.length < MAX_SPECTATORS
+            enabled: online && spectators.length < MAX_SPECTATORS
           },
       ...hostActions(conn, view, vrPicked.value),
       { label: "Leave", confirm: host ? "Press again to leave" : undefined, press: leave }

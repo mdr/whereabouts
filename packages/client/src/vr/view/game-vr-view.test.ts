@@ -134,4 +134,12 @@ describe("gameVrView", () => {
     ])
     expect(labels(revealing({ reveal: makeReveal({ index: 4 }) }))).toEqual(["Leave game"])
   })
+
+  it("turns End game off while the connection is down, but not Leave game", () => {
+    const more = show(guessing(), fakeConn(ConnectionStatus.CONNECTING)).more ?? []
+    expect(more.map((action) => [action.label, action.enabled])).toEqual([
+      ["End game", false],
+      ["Leave game", undefined]
+    ])
+  })
 })

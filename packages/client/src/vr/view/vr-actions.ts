@@ -26,7 +26,7 @@ export const pickable = (view: GameView, player: PlayerView): Pick<Row, "select"
 
 /** Remove and Make host for the player the host picked, each confirmed by a second press. */
 export const hostActions = (
-  conn: Pick<Connection, "kick" | "makeHost">,
+  conn: Pick<Connection, "kick" | "makeHost" | "online">,
   view: GameView,
   playerId: PlayerId | undefined
 ): VrAction[] => {
@@ -38,6 +38,7 @@ export const hostActions = (
   return [
     {
       label: `Remove ${player.name}`,
+      enabled: conn.online.value,
       confirm: `Press again to remove ${player.name}`,
       press: () => {
         vrPicked.value = undefined
@@ -48,6 +49,7 @@ export const hostActions = (
       ? [
           {
             label: `Make ${player.name} host`,
+            enabled: conn.online.value,
             confirm: `Press again: ${player.name} hosts`,
             press: () => conn.makeHost(player.id)
           }
@@ -57,8 +59,8 @@ export const hostActions = (
 }
 
 /** A watcher's way in, while a seat is free. */
-export const takeSeat = (conn: Pick<Connection, "setRole">, view: GameView, label: string): VrAction => ({
+export const takeSeat = (conn: Pick<Connection, "setRole" | "online">, view: GameView, label: string): VrAction => ({
   label,
   press: () => conn.setRole(Role.PLAYER),
-  enabled: view.players.length < MAX_PLAYERS
+  enabled: view.players.length < MAX_PLAYERS && conn.online.value
 })
