@@ -6,7 +6,7 @@ import { App } from "./app"
 import { navigate } from "./router"
 
 const mounts = vi.hoisted(() => ({ count: 0 }))
-vi.mock("./screens/Multiplayer", () => ({
+vi.mock("./screens/multiplayer/Multiplayer", () => ({
   Multiplayer: () => {
     useEffect(() => {
       mounts.count++
