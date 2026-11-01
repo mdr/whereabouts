@@ -5,28 +5,32 @@
  */
 import { DEFAULT_KERNEL, kernelById, type Kernel } from "../scoring/scoring.ts"
 import type { Question } from "../questions.ts"
-import { playedRound, questionPictures, revealOf, roundHintBand, roundView } from "./game-views.ts"
+import { playedRound, revealOf, roundHintBand, roundView, upcomingOf } from "./game-views.ts"
 import { pickRounds, type QuestionBank } from "./round-picking.ts"
 import { scorePlayers } from "./round-results.ts"
-import { SubmissionType, type Submission } from "../scoring/round-scoring.ts"
-import { pickAwards, type Award } from "../awards/awards.ts"
+import { SubmissionType } from "../scoring/round-scoring.ts"
+import { pickAwards } from "../awards/awards.ts"
 import { DEFAULT_HINTS, type HintAxis, type HintBand } from "../hints.ts"
 import type { PlayerId, PlayerName, PlayerToken, RoomCode } from "../ids.ts"
 import { evenMix, MapDetail, Phase } from "../protocol.ts"
-import type {
-  ConfigurePatch,
-  FinalStanding,
-  GameConfig,
-  GameView,
-  PaintSubmission,
-  QuestionPictures,
-  RoundReveal,
-  YouView
-} from "../protocol.ts"
+import type { ConfigurePatch, GameConfig, GameView, PaintSubmission, RoundReveal, YouView } from "../protocol.ts"
 import { CloseReason } from "../close-reason.ts"
 import { OK_CHANGED, OK_SAME, fail, type CommandResult, type JoinResult } from "./command-result.ts"
+import { sameData } from "./same-data.ts"
 import { Seats, freshRecord, type Player } from "./seats.ts"
 import { awardFacts, finalStandings, playerViews } from "./standings.ts"
+import {
+  isLocked,
+  joiningRound,
+  LOBBY_STATE,
+  lockedIn,
+  type GameState,
+  type GuessingState,
+  type InPlayState,
+  type RevealState,
+  type ResultsState,
+  type Round
+} from "./state.ts"
 import type { Instant, Ms } from "../units.ts"
 
 const DEFAULT_CONFIG: GameConfig = {
@@ -43,17 +47,11 @@ const DEFAULT_CONFIG: GameConfig = {
  */
 export const ROUND_GRACE: Ms = 1000
 
-/** Plain data (settings, a mix) compared by value. */
-function sameData(a: unknown, b: unknown): boolean {
-  if (!(a instanceof Object) || !(b instanceof Object)) return a === b
-  const x = a as Record<string, unknown>
-  const y = b as Record<string, unknown>
-  return [...new Set([...Object.keys(x), ...Object.keys(y)])].every((k) => sameData(x[k], y[k]))
-}
-
 /** Someone to wait on, and nobody still to wait for. */
 const everyoneDone = (waitingOn: Player[], done: (p: Player) => boolean): boolean =>
   waitingOn.length > 0 && waitingOn.every(done)
+
+const playsRound = (p: Player, round: Round): boolean => p.joinedRound <= round.index
 
 export class Game {
   readonly code: RoomCode
@@ -61,20 +59,10 @@ export class Game {
   private readonly bank: QuestionBank
   private readonly kernel: Kernel
 
-  phase: Phase = Phase.LOBBY
+  private state: GameState = LOBBY_STATE
   private readonly seats = new Seats()
 
   private questions: Question[] = []
-  private roundIndex = -1
-  private deadline: Instant = 0
-  private submissions = new Map<PlayerToken, Submission>()
-  /** The hint each player used on the current round. */
-  private hints = new Map<PlayerToken, HintAxis>()
-  /** Tokens of players who have pressed Ready on the current reveal. */
-  private ready_ = new Set<PlayerToken>()
-  private reveal: RoundReveal | undefined = undefined
-  private results: FinalStanding[] | undefined = undefined
-  private awards: Award[] | undefined = undefined
 
   private seed: number
 
@@ -92,6 +80,10 @@ export class Game {
     this.questions = pickRounds(this.bank, this.config, this.seed)
   }
 
+  get phase(): Phase {
+    return this.state.phase
+  }
+
   // ---- membership ----------------------------------------------------------
 
   /**
@@ -103,13 +95,8 @@ export class Game {
   join(token: PlayerToken, name: PlayerName, now: Instant, watch = false): JoinResult {
     if (this.seats.reconnect(token)) return OK_CHANGED
     if (this.seats.isBanned(token)) return { ok: false, reason: CloseReason.REMOVED }
-    if (this.phase === Phase.RESULTS) return { ok: false, reason: CloseReason.FINISHED }
-    return this.seats.admit(token, name, now, watch, this.joiningRound())
-  }
-
-  /** The first round index a player seated now may play. */
-  private joiningRound(): number {
-    return this.phase === Phase.LOBBY ? 0 : this.roundIndex + 1
+    if (this.state.phase === Phase.RESULTS) return { ok: false, reason: CloseReason.FINISHED }
+    return this.seats.admit(token, name, now, watch, joiningRound(this.state))
   }
 
   /**
@@ -135,7 +122,7 @@ export class Game {
    */
   leave(token: PlayerToken): CommandResult {
     if (!this.seats.get(token)) return fail("unknown player")
-    if (this.phase !== Phase.LOBBY) return fail("you can only leave from the lobby")
+    if (this.state.phase !== Phase.LOBBY) return fail("you can only leave from the lobby")
     this.seats.remove(token)
     return OK_CHANGED
   }
@@ -157,18 +144,19 @@ export class Game {
 
   start(token: PlayerToken, now: Instant): CommandResult {
     if (!this.seats.isHost(token)) return fail("only the host can start")
-    if (this.phase !== Phase.LOBBY) return fail("game already started")
+    if (this.state.phase !== Phase.LOBBY) return fail("game already started")
     if (this.seats.playing().length === 0) return fail("no players")
+    const first = this.roundAt(0)
+    if (!first) return fail("no rounds to play")
     for (const p of this.seats.all()) Object.assign(p, freshRecord(0))
-    this.results = undefined
-    this.beginRound(0, now)
+    this.state = this.beginRound(first, now)
     return OK_CHANGED
   }
 
   /** Host tunes the question mix (and so the rounds), round length and map detail while everyone is still in the lobby. */
   configure(token: PlayerToken, patch: ConfigurePatch): CommandResult {
     if (!this.seats.isHost(token)) return fail("only the host can change settings")
-    if (this.phase !== Phase.LOBBY) return fail("settings are locked once the game starts")
+    if (this.state.phase !== Phase.LOBBY) return fail("settings are locked once the game starts")
     const next = { ...this.config, ...patch }
     if (sameData(next, this.config)) return OK_SAME
     this.config = next
@@ -179,21 +167,16 @@ export class Game {
   /** Host advances from the reveal without waiting for the others. */
   next(token: PlayerToken, now: Instant): CommandResult {
     if (!this.seats.isHost(token)) return fail("only the host can advance")
-    if (this.phase !== Phase.REVEAL) return fail("nothing to advance")
-    this.advance(now)
+    const s = this.state
+    if (s.phase !== Phase.REVEAL) return fail("nothing to advance")
+    this.state = this.advance(s, now)
     return OK_CHANGED
   }
 
   again(token: PlayerToken, now: Instant): CommandResult {
     if (!this.seats.isHost(token)) return fail("only the host can restart")
-    if (this.phase !== Phase.RESULTS) return fail("game is still running")
-    this.phase = Phase.LOBBY
-    this.roundIndex = -1
-    this.reveal = undefined
-    this.results = undefined
-    this.awards = undefined
-    this.submissions.clear()
-    this.ready_.clear()
+    if (this.state.phase !== Phase.RESULTS) return fail("game is still running")
+    this.state = LOBBY_STATE
     this.seed = now
     this.questions = pickRounds(this.bank, this.config, this.seed)
     for (const p of this.seats.all()) {
@@ -214,9 +197,9 @@ export class Game {
     const player = this.seats.get(token)
     if (!player) return fail("unknown player")
     if (player.watching === watch) return OK_SAME
-    if (watch && this.phase !== Phase.LOBBY) return fail("you can only switch to watching in the lobby")
-    if (this.phase === Phase.RESULTS) return fail("game has finished")
-    return this.seats.setWatching(player, watch, this.joiningRound())
+    if (watch && this.state.phase !== Phase.LOBBY) return fail("you can only switch to watching in the lobby")
+    if (this.state.phase === Phase.RESULTS) return fail("game has finished")
+    return this.seats.setWatching(player, watch, joiningRound(this.state))
   }
 
   /** Hand the host role to another connected player, for good. */
@@ -240,8 +223,7 @@ export class Game {
     if (target === undefined) return fail("unknown player")
     if (target === token) return fail("you cannot remove yourself")
     this.seats.ban(target)
-    this.submissions.delete(target)
-    this.ready_.delete(target)
+    this.forget(target)
     this.settleIfEveryoneDone(now)
     return OK_CHANGED
   }
@@ -249,10 +231,18 @@ export class Game {
   /** Stop after the current round: score it if it is still running, then show final standings. */
   end(token: PlayerToken): CommandResult {
     if (!this.seats.isHost(token)) return fail("only the host can end the game")
-    if (this.phase === Phase.GUESSING) this.finishRound()
-    else if (this.phase !== Phase.REVEAL) return fail("nothing to end")
-    this.finish()
+    const s = this.state
+    if (s.phase === Phase.GUESSING) this.state = this.finish(this.closeRound(s).round)
+    else if (s.phase === Phase.REVEAL) this.state = this.finish(s.round)
+    else return fail("nothing to end")
     return OK_CHANGED
+  }
+
+  /** Drop what a removed player had in the phase under way. */
+  private forget(token: PlayerToken): void {
+    const s = this.state
+    if (s.phase === Phase.GUESSING) s.submissions.delete(token)
+    else if (s.phase === Phase.REVEAL) s.ready.delete(token)
   }
 
   // ---- player commands -----------------------------------------------------
@@ -269,11 +259,12 @@ export class Game {
   hint(token: PlayerToken, axis: HintAxis): CommandResult {
     const player = this.seats.get(token)
     if (!player) return fail("unknown player")
-    if (this.phase !== Phase.GUESSING) return fail("no round to hint")
-    if (player.watching || player.joinedRound > this.roundIndex) return fail("you are not playing this round")
-    if (this.hints.has(token)) return fail("one hint per round")
+    const s = this.state
+    if (s.phase !== Phase.GUESSING) return fail("no round to hint")
+    if (player.watching || !playsRound(player, s.round)) return fail("you are not playing this round")
+    if (s.hints.has(token)) return fail("one hint per round")
     if (player.hintsUsed >= this.config.hints) return fail("no hints left")
-    this.hints.set(token, axis)
+    s.hints.set(token, axis)
     player.hintsUsed++
     return OK_CHANGED
   }
@@ -284,12 +275,12 @@ export class Game {
     if (player.watching) return fail("you are watching")
     // Uploads are debounced on the client, so one can arrive just after the
     // round ended. It is stale rather than wrong: drop it quietly.
-    if (this.phase !== Phase.GUESSING) return OK_SAME
-    if (player.joinedRound > this.roundIndex) return fail("sitting this round out")
-    const current = this.submissions.get(token)
+    const s = this.state
+    if (s.phase !== Phase.GUESSING) return OK_SAME
+    if (!playsRound(player, s.round)) return fail("sitting this round out")
     // A stroke's upload can land just after the player locked in; it changes nothing.
-    if (current?.type === SubmissionType.LOCKED) return OK_SAME
-    this.submissions.set(token, { type: SubmissionType.DRAFT, paint })
+    if (isLocked(s.submissions.get(token))) return OK_SAME
+    s.submissions.set(token, { type: SubmissionType.DRAFT, paint })
     // Paint is private until the reveal, so other views do not change.
     return OK_SAME
   }
@@ -304,12 +295,13 @@ export class Game {
     const player = this.seats.get(token)
     if (!player) return fail("unknown player")
     // Pressed as the round ended, by this player or the clock: stale, not wrong.
-    if (this.phase !== Phase.GUESSING) return OK_SAME
+    const s = this.state
+    if (s.phase !== Phase.GUESSING) return OK_SAME
     if (player.watching) return fail("you are watching")
-    if (player.joinedRound > this.roundIndex) return fail("sitting this round out")
-    const current = this.submissions.get(token)
-    if (current?.type === SubmissionType.LOCKED) return OK_SAME
-    this.submissions.set(token, {
+    if (!playsRound(player, s.round)) return fail("sitting this round out")
+    const current = s.submissions.get(token)
+    if (isLocked(current)) return OK_SAME
+    s.submissions.set(token, {
       type: SubmissionType.LOCKED,
       paint: current?.paint ?? { cells: {}, floor: 1 },
       at: now
@@ -325,10 +317,11 @@ export class Game {
   unlock(token: PlayerToken): CommandResult {
     const player = this.seats.get(token)
     if (!player) return fail("unknown player")
-    if (this.phase !== Phase.GUESSING) return OK_SAME
-    const current = this.submissions.get(token)
+    const s = this.state
+    if (s.phase !== Phase.GUESSING) return OK_SAME
+    const current = s.submissions.get(token)
     if (current?.type !== SubmissionType.LOCKED) return OK_SAME
-    this.submissions.set(token, { type: SubmissionType.DRAFT, paint: current.paint })
+    s.submissions.set(token, { type: SubmissionType.DRAFT, paint: current.paint })
     return OK_CHANGED
   }
 
@@ -337,10 +330,11 @@ export class Game {
     const player = this.seats.get(token)
     if (!player) return fail("unknown player")
     // Pressed just after the last Ready moved the game on.
-    if (this.phase !== Phase.REVEAL) return OK_SAME
+    const s = this.state
+    if (s.phase !== Phase.REVEAL) return OK_SAME
     if (player.watching) return fail("you are watching")
-    if (this.ready_.has(token)) return OK_SAME
-    this.ready_.add(token)
+    if (s.ready.has(token)) return OK_SAME
+    s.ready.add(token)
     this.settleIfEveryoneDone(now)
     return OK_CHANGED
   }
@@ -352,17 +346,18 @@ export class Game {
    * deadline (or the host) still governs.
    */
   private settleIfEveryoneDone(now: Instant): void {
-    if (this.phase === Phase.GUESSING) {
-      if (everyoneDone(this.lockingIn(), (p) => this.submissions.get(p.token)?.type === SubmissionType.LOCKED))
-        this.finishRound()
-    } else if (this.phase === Phase.REVEAL) {
-      if (everyoneDone(this.present(), (p) => this.ready_.has(p.token))) this.advance(now)
+    const s = this.state
+    if (s.phase === Phase.GUESSING) {
+      if (everyoneDone(this.lockingIn(s.round), (p) => isLocked(s.submissions.get(p.token))))
+        this.state = this.closeRound(s)
+    } else if (s.phase === Phase.REVEAL) {
+      if (everyoneDone(this.present(), (p) => s.ready.has(p.token))) this.state = this.advance(s, now)
     }
   }
 
   /** The connected players who are playing this round. */
-  private lockingIn(): Player[] {
-    return this.present().filter((p) => p.joinedRound <= this.roundIndex)
+  private lockingIn(round: Round): Player[] {
+    return this.present().filter((p) => playsRound(p, round))
   }
 
   /** The connected players, leaving out spectators. */
@@ -374,145 +369,160 @@ export class Game {
 
   /** Advance time-driven transitions. Returns true if the state changed. */
   tick(now: Instant): boolean {
-    if (this.phase === Phase.LOBBY) return this.seats.freeLapsed(now)
-    if (this.phase === Phase.GUESSING && now >= this.deadline + ROUND_GRACE) {
-      this.finishRound()
-      return true
+    const s = this.state
+    switch (s.phase) {
+      case Phase.LOBBY:
+        return this.seats.freeLapsed(now)
+      case Phase.GUESSING:
+        if (now < s.deadline + ROUND_GRACE) return false
+        this.state = this.closeRound(s)
+        return true
+      case Phase.REVEAL:
+      case Phase.RESULTS:
+        return false
     }
-    return false
   }
 
   /** Epoch time of the next time-driven transition, or undefined if none is pending. */
   nextWakeAt(): Instant | undefined {
-    if (this.phase === Phase.GUESSING) return this.deadline + ROUND_GRACE
-    if (this.phase === Phase.LOBBY) return this.seats.nextLapseAt()
-    return undefined
+    const s = this.state
+    switch (s.phase) {
+      case Phase.GUESSING:
+        return s.deadline + ROUND_GRACE
+      case Phase.LOBBY:
+        return this.seats.nextLapseAt()
+      case Phase.REVEAL:
+      case Phase.RESULTS:
+        return undefined
+    }
   }
 
   // ---- transitions ---------------------------------------------------------
 
-  private beginRound(index: number, now: Instant): void {
-    this.roundIndex = index
-    this.phase = Phase.GUESSING
-    this.deadline = now + this.config.roundLength
-    this.submissions.clear()
-    this.hints.clear()
-    this.ready_.clear()
-    this.reveal = undefined
+  private roundAt(index: number): Round | undefined {
+    const question = this.questions[index]
+    return question && { index, question }
   }
 
-  private finishRound(): void {
-    const index = this.roundIndex
-    const question = this.questions[index]!
-    const results = scorePlayers(
-      this.seats.playing(),
-      { index, question, deadline: this.deadline, submissions: this.submissions, hints: this.hints },
-      { outlines: this.bank.outlines, kernel: this.kernel, roundLength: this.config.roundLength }
-    )
-    this.phase = Phase.REVEAL
-    this.reveal = revealOf(question, { index, total: this.questions.length }, results)
-  }
-
-  private advance(now: Instant): void {
-    if (this.roundIndex + 1 < this.questions.length) {
-      this.beginRound(this.roundIndex + 1, now)
-      return
+  private beginRound(round: Round, now: Instant): GuessingState {
+    return {
+      phase: Phase.GUESSING,
+      round,
+      deadline: now + this.config.roundLength,
+      submissions: new Map(),
+      hints: new Map()
     }
-    this.finish()
   }
 
-  private finish(): void {
-    this.phase = Phase.RESULTS
-    this.reveal = undefined
+  private closeRound(s: GuessingState): RevealState {
+    const { round } = s
+    const results = scorePlayers(this.seats.playing(), s, {
+      outlines: this.bank.outlines,
+      kernel: this.kernel,
+      roundLength: this.config.roundLength
+    })
+    return {
+      phase: Phase.REVEAL,
+      round,
+      reveal: revealOf(round.question, { index: round.index, total: this.questions.length }, results),
+      lockedIn: new Set([...s.submissions].filter(([, sub]) => isLocked(sub)).map(([t]) => t)),
+      hints: s.hints,
+      ready: new Set()
+    }
+  }
+
+  private advance(s: RevealState, now: Instant): GuessingState | ResultsState {
+    const next = this.roundAt(s.round.index + 1)
+    return next ? this.beginRound(next, now) : this.finish(s.round)
+  }
+
+  private finish(last: Round): ResultsState {
+    const played = last.index + 1
     const playing = this.seats.playing()
-    this.results = finalStandings(playing, this.roundIndex + 1)
-    this.awards = pickAwards(awardFacts(playing, this.roundIndex + 1), this.seed)
+    return {
+      phase: Phase.RESULTS,
+      standings: finalStandings(playing, played),
+      awards: pickAwards(awardFacts(playing, played), this.seed),
+      playedRounds: this.questions.slice(0, played).map(playedRound)
+    }
   }
 
   // ---- views ---------------------------------------------------------------
 
+  private youView(s: GameState, token: PlayerToken, me: Player | undefined): YouView {
+    return {
+      id: me?.id,
+      isHost: me !== undefined && this.seats.isHost(me.token),
+      sittingOut: me !== undefined && (me.watching || (s.phase !== Phase.LOBBY && me.joinedRound >= joiningRound(s))),
+      watching: me?.watching ?? false,
+      locked: lockedIn(s, token),
+      hintsLeft: me && !me.watching ? Math.max(0, this.config.hints - me.hintsUsed) : 0,
+      ...this.nextHostView(token)
+    }
+  }
+
   view(token: PlayerToken, now: Instant): GameView {
-    const me = this.seats.get(token)
+    const s = this.state
     const base = {
       code: this.code,
       config: this.config,
       serverTime: now,
-      players: playerViews(
-        this.seats.all(),
-        this.seats.effectiveHost(),
-        (t) => this.submissions.get(t)?.type === SubmissionType.LOCKED
-      )
+      players: playerViews(this.seats.all(), this.seats.effectiveHost(), (t) => lockedIn(s, t))
     }
-    const you: YouView = {
-      id: me?.id,
-      isHost: me !== undefined && this.seats.isHost(me.token),
-      sittingOut: me !== undefined && (me.watching || (this.phase !== Phase.LOBBY && me.joinedRound > this.roundIndex)),
-      watching: me?.watching ?? false,
-      locked: this.submissions.get(token)?.type === SubmissionType.LOCKED,
-      hintsLeft: me && !me.watching ? Math.max(0, this.config.hints - me.hintsUsed) : 0,
-      ...this.nextHostView(token)
-    }
-    switch (this.phase) {
+    const you = this.youView(s, token, this.seats.get(token))
+    switch (s.phase) {
       case Phase.LOBBY:
-        return { ...base, phase: Phase.LOBBY, you, ...this.upcoming() }
+        return { ...base, phase: Phase.LOBBY, you, ...upcomingOf(this.questions[0]) }
       case Phase.GUESSING: {
-        const q = this.questions[this.roundIndex]!
-        const paint = this.paintOf(token)
+        const paint = s.submissions.get(token)?.paint
         return {
           ...base,
           phase: Phase.GUESSING,
-          you: { ...you, ...this.hintView(token), ...(paint ? { paint } : {}) },
-          round: roundView(q, this.roundIndex, this.questions.length, this.deadline),
-          ...this.upcoming()
+          you: { ...you, ...this.hintView(s, token), ...(paint ? { paint } : {}) },
+          round: roundView(s.round.question, s.round.index, this.questions.length, s.deadline),
+          ...upcomingOf(this.questions[s.round.index + 1])
         }
       }
       case Phase.REVEAL:
         return {
           ...base,
           phase: Phase.REVEAL,
-          you: { ...you, ...this.hintView(token) },
-          reveal: { ...this.reveal!, ready: this.readyIds() },
-          ...this.upcoming()
+          you: { ...you, ...this.hintView(s, token) },
+          reveal: { ...s.reveal, ready: this.readyIds(s.ready) },
+          ...upcomingOf(this.questions[s.round.index + 1])
         }
       case Phase.RESULTS:
         return {
           ...base,
           phase: Phase.RESULTS,
           you,
-          results: this.results!,
-          playedRounds: this.questions.slice(0, this.roundIndex + 1).map(playedRound),
-          awards: this.awards!
+          results: s.standings,
+          playedRounds: s.playedRounds,
+          awards: s.awards
         }
     }
   }
 
   /** This player's hint band on the round played or revealed. */
-  private hintView(token: PlayerToken): { hint?: HintBand } {
-    const axis = this.hints.get(token)
-    const q = this.questions[this.roundIndex]
-    return axis && q ? { hint: roundHintBand(q, this.seed, this.roundIndex, axis) } : {}
+  private hintView(s: InPlayState, token: PlayerToken): { hint?: HintBand } {
+    const axis = s.hints.get(token)
+    return axis ? { hint: roundHintBand(s.round.question, this.seed, s.round.index, axis) } : {}
   }
 
-  /** The next round's pictures: round 1's in the lobby, the following round's while one is played or revealed. */
-  private upcoming(): { upcoming?: QuestionPictures } {
-    const q = this.questions[this.phase === Phase.LOBBY ? 0 : this.roundIndex + 1]
-    if (!q) return {}
-    const pictures = questionPictures(q)
-    return Object.keys(pictures).length > 0 ? { upcoming: pictures } : {}
-  }
-
-  private readyIds(): PlayerId[] {
-    return [...this.ready_].flatMap((tok) => this.seats.get(tok)?.id ?? [])
+  private readyIds(ready: ReadonlySet<PlayerToken>): PlayerId[] {
+    return [...ready].flatMap((tok) => this.seats.get(tok)?.id ?? [])
   }
 
   /** This player's paint on the round being guessed, as last uploaded. */
   paintOf(token: PlayerToken): PaintSubmission | undefined {
-    return this.phase === Phase.GUESSING ? this.submissions.get(token)?.paint : undefined
+    const s = this.state
+    return s.phase === Phase.GUESSING ? s.submissions.get(token)?.paint : undefined
   }
 
   /** The reveal on show, the same object for as long as it shows. */
   get roundReveal(): RoundReveal | undefined {
-    return this.phase === Phase.REVEAL ? this.reveal : undefined
+    const s = this.state
+    return s.phase === Phase.REVEAL ? s.reveal : undefined
   }
 
   /** For tests and diagnostics. */

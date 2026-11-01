@@ -1273,3 +1273,60 @@ describe("hints", () => {
     expect(g.hint(tokW, HintAxis.LATITUDE)).toEqual({ ok: false, error: "you are not playing this round" })
   })
 })
+
+describe("what each phase holds", () => {
+  it("the reveal stays the same object while it shows, and goes when the next round starts", () => {
+    const g = twoPlayerGame()
+    g.start(tokA, T0)
+    g.tick(T0 + 60_000 + ROUND_GRACE)
+    const reveal = g.roundReveal
+    expect(reveal).toBeDefined()
+    g.ready(tokA, T0 + 62_000)
+    expect(g.roundReveal).toBe(reveal)
+    g.ready(tokB, T0 + 62_000)
+    expect(g.roundReveal).toBeUndefined()
+  })
+
+  it("who locked in still shows at the reveal, and clears when the next round starts", () => {
+    const g = twoPlayerGame()
+    g.start(tokA, T0)
+    g.lock(tokA, T0 + 1_000)
+    g.tick(T0 + 60_000 + ROUND_GRACE)
+    expect(g.view(tokA, T0 + 62_000).you.locked).toBe(true)
+    expect(g.view(tokB, T0 + 62_000).you.locked).toBe(false)
+    g.next(tokA, T0 + 62_000)
+    expect(g.view(tokA, T0 + 62_000).you.locked).toBe(false)
+  })
+
+  it("play again starts the next game's first round with no lock, hint or paint left over", () => {
+    const g = twoPlayerGame(1)
+    g.start(tokA, T0)
+    g.setPaint(tokA, paintOn(currentQuestion(g, tokA, T0)))
+    g.hint(tokA, HintAxis.LATITUDE)
+    g.lock(tokA, T0 + 1_000)
+    g.end(tokA)
+    g.again(tokA, T0 + 5_000)
+    g.start(tokA, T0 + 6_000)
+    const { you } = viewIn(g.view(tokA, T0 + 6_000), Phase.GUESSING)
+    expect(you.locked).toBe(false)
+    expect(you).not.toHaveProperty("hint")
+    expect(you).not.toHaveProperty("paint")
+  })
+
+  it("a player's own paint is theirs to restore while guessing, and gone once the round ends", () => {
+    const g = twoPlayerGame()
+    g.start(tokA, T0)
+    const paint = paintOn(currentQuestion(g, tokA, T0))
+    g.setPaint(tokA, paint)
+    expect(g.paintOf(tokA)).toEqual(paint)
+    g.tick(T0 + 60_000 + ROUND_GRACE)
+    expect(g.paintOf(tokA)).toBeUndefined()
+  })
+
+  it("refuses to start a game with no rounds to play", () => {
+    const g = makeGame({ config: { mix: mixOf({ [QuestionType.FLAG]: 1 }) } })
+    g.join(tokA, playerName("Alice"), T0)
+    expect(g.start(tokA, T0)).toEqual({ ok: false, error: "no rounds to play" })
+    expect(g.phase).toBe(Phase.LOBBY)
+  })
+})

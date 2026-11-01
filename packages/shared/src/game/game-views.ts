@@ -54,6 +54,12 @@ export function questionPictures(q: Question): QuestionPictures {
   }
 }
 
+/** The pictures to fetch ahead for a question, if it has any. */
+export function upcomingOf(q: Question | undefined): { upcoming?: QuestionPictures } {
+  const pictures = q ? questionPictures(q) : {}
+  return Object.keys(pictures).length > 0 ? { upcoming: pictures } : {}
+}
+
 /** A round's answer and everyone's results, for its reveal. */
 export function revealOf(
   q: Question,
