@@ -281,21 +281,35 @@ export class Headset {
   }
 
   /**
-   * Point the right hand from `from` at `at` and click the trigger. Timed
-   * in frames: a press only clicks if the frame seeing it released comes
-   * within 300 ms of the frame seeing it pressed (pointer-events'
-   * clickThresholdMs), and the emulator can stall for longer than that.
+   * Point the right hand from `from` at `at` and click the trigger. A click
+   * needs the frame seeing the trigger released to come within 800 ms of the
+   * frame seeing it pressed (the ray pointer's clickThresholdMs), and under
+   * load frames can be further apart than that: so the trigger is let go
+   * as soon as the frame that saw it pressed is over.
    */
   async press(from: Vec3, at: Vec3): Promise<void> {
     await this.pointRight(from, at)
     await this.frames(3)
-    // A stall while it is held can still outlast that: then press again.
+    // One frame gap can still outlast the window: then press again.
     for (let tries = 1; ; tries++) {
       const clicks = await this.#page.evaluate(() => window.whereaboutsVr.clicks)
-      await this.trigger(Hand.RIGHT, 1)
-      await this.frames(2)
-      await this.trigger(Hand.RIGHT, 0)
-      await this.frames(3)
+      await this.#page.evaluate(async (hand) => {
+        const vr = window.whereaboutsVr
+        const nextFrame = () =>
+          new Promise<void>((resolve) => {
+            const was = vr.frames
+            const timer = setInterval(() => {
+              if (vr.frames === was) return
+              clearInterval(timer)
+              resolve()
+            })
+          })
+        const trigger = window.headset.controllers[hand]!
+        trigger.updateButtonValue("trigger", 1)
+        await nextFrame()
+        trigger.updateButtonValue("trigger", 0)
+        await nextFrame()
+      }, XR_HAND[Hand.RIGHT])
       if ((await this.#page.evaluate(() => window.whereaboutsVr.clicks)) > clicks) return
       if (tries === 3) throw new Error("Three presses and no click")
       console.warn("  (no click: pressing again)")
