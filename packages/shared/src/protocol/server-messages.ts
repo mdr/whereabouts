@@ -26,6 +26,7 @@ export const ServerTopics = {
   /** The answer to a ping, so a client can tell a live connection from one that died without closing. */
   pong: "pong"
 } as const
+export type ServerTopic = (typeof ServerTopics)[keyof typeof ServerTopics]
 
 /** Of the reveal, what the state topic carries: only what changes while it shows. */
 type RevealProgress = Pick<RevealView, "index" | "ready">

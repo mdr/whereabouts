@@ -15,6 +15,7 @@ import {
   revealFrom,
   viewFrom,
   type RevealMessage,
+  type ServerTopic,
   type StateMessage
 } from "@whereabouts/shared/protocol/server-messages"
 import { type GameView, type PaintSubmission, type RoundReveal, Phase } from "@whereabouts/shared/protocol/views"
@@ -104,13 +105,11 @@ class FakeClock implements Clock {
   }
 }
 
-type Topics = "state" | "reveal" | "paint" | "error" | "pong"
-
 export const host = (code?: RoomCode): GameEntry => ({ type: GameEntryType.HOST, ...(code ? { code } : {}) })
 export const join = (code: RoomCode, role = Role.PLAYER): GameEntry => ({ type: GameEntryType.JOIN, code, role })
 
 export class TestPlayer {
-  readonly client: WSClientType<Topics>
+  readonly client: WSClientType<ServerTopic>
   /** Views as the client puts them together from state, reveal and paint messages. */
   readonly states: GameView[] = []
   readonly rawStates: string[] = []
@@ -125,7 +124,7 @@ export class TestPlayer {
   constructor(url: string, name: string) {
     this.name = playerName(name)
     this.token = playerToken(`${name}-token-0123456789abcdef`)
-    this.client = new WSClient<Topics>(url, { ticketSource: "protocol", reconnect: false })
+    this.client = new WSClient<ServerTopic>(url, { ticketSource: "protocol", reconnect: false })
     const decoder = new TextDecoder()
     let reveal: RoundReveal | undefined = undefined
     let paint: PaintSubmission | undefined = undefined

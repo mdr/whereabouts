@@ -10,6 +10,7 @@ import { GameEntryType, PROTOCOL_VERSION, encodeTicket, type Ticket } from "@whe
 import {
   revealFrom,
   type RevealMessage,
+  type ServerTopic,
   type StateMessage,
   viewFrom
 } from "@whereabouts/shared/protocol/server-messages"
@@ -49,8 +50,6 @@ const wsUrl = (): string => {
   return `${proto}//${location.host}/ws`
 }
 
-type Topic = "state" | "reveal" | "paint" | "error" | "pong"
-
 /**
  * Tries at getting into a game before giving up (about 90 s). Once in one,
  * it keeps trying: the seat is held, and the server refuses once the game
@@ -70,12 +69,12 @@ export interface GameClient {
   ): unknown
   on(event: "client:reconnecting", listener: (attempt: Uint8Array) => void): unknown
   on(event: "client:kicked", listener: (info: ClientKickedEvent) => void): unknown
-  on(event: Topic, listener: (payload: Uint8Array) => void): unknown
+  on(event: ServerTopic, listener: (payload: Uint8Array) => void): unknown
 }
 
 export type ClientFactory = (url: string, options: WSClientOptions) => GameClient
 
-const wsClient: ClientFactory = (url, options) => new WSClient<Topic>(url, options)
+const wsClient: ClientFactory = (url, options) => new WSClient<ServerTopic>(url, options)
 
 export class Connection {
   readonly view = signal<GameView | undefined>(undefined)
