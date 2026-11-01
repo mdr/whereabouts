@@ -8,3 +8,8 @@
 
 - When several files in a folder share a prefix for one area (`paint-*`, `map-*`), give them a subfolder named after it, whatever the folder's size.
 - A folder holds at most 30 entries, about one editor screen; lint enforces it.
+
+## Components
+
+- A `.tsx` file exports one component, with its own CSS module and `*TestIds.ts`. A helper component may stay in the file if it is unexported, used only there, and short (about 30 lines).
+- A screen with several sections is a folder named after it, a file per section. Only a family of tiny layout slots (`ui/map/Hud.tsx`) shares a file.
