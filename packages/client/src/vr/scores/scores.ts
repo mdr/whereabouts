@@ -11,6 +11,7 @@ import {
 } from "@iwsdk/core"
 import scoresUrl from "./scores.uikitml?url"
 import type { Metres } from "@whereabouts/shared/units"
+import type { Vec3 } from "../probe"
 
 interface VrTableRow {
   /** A player's colour, for their swatch. */
@@ -73,7 +74,7 @@ export class ScoreBoard {
     obj.lookAt(head)
   }
 
-  rowAt(i: number): [number, number, number] {
+  rowAt(i: number): Vec3 {
     const p = this.doc!.requireElementById(`row${i}`).getWorldPosition(new Vector3())
     return [p.x, p.y, p.z]
   }

@@ -1,5 +1,6 @@
-import type { LatLon } from "@whereabouts/shared/geo"
+import type { LatLon, LonLat } from "@whereabouts/shared/geo"
 import type { Outline } from "@whereabouts/shared/questions"
+import type { Px } from "@whereabouts/shared/units"
 
 /**
  * An outline (GeoJSON MultiPolygon coordinates, [lon, lat]) as an SVG path,
@@ -10,7 +11,7 @@ import type { Outline } from "@whereabouts/shared/questions"
  */
 export function outlinePath(outline: Outline, centre: LatLon, width: number, height: number, pad = 3): string {
   const k = Math.cos((centre.lat * Math.PI) / 180)
-  const project = ([lon, lat]: number[]): Point => [(((lon! - centre.lon + 540) % 360) - 180) * k, -lat!]
+  const project = ([lon, lat]: LonLat): Projected => [(((lon - centre.lon + 540) % 360) - 180) * k, -lat]
   const rings = outline.flat()
   const box = boundsOf(rings.flat().map(project))
   if (!box) return ""
@@ -18,7 +19,9 @@ export function outlinePath(outline: Outline, centre: LatLon, width: number, hei
   return rings.map((ring) => ringPath(ring.map((position) => fit(project(position))))).join("")
 }
 
-type Point = [number, number]
+/** Degree-equivalents: x is longitude from the centre times cos(latitude), y is minus latitude. */
+type Projected = [x: number, y: number]
+type SvgPoint = [x: Px, y: Px]
 interface Bounds {
   x0: number
   x1: number
@@ -27,7 +30,7 @@ interface Bounds {
 }
 
 /** Undefined for no points, or for points that are all one spot. */
-function boundsOf(points: Point[]): Bounds | undefined {
+function boundsOf(points: Projected[]): Bounds | undefined {
   const box = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity }
   for (const [x, y] of points) {
     box.x0 = Math.min(box.x0, x)
@@ -39,15 +42,20 @@ function boundsOf(points: Point[]): Bounds | undefined {
 }
 
 /** Scales and moves points so `box` is centred in the width × height box, less `pad`. */
-function fitInto({ x0, x1, y0, y1 }: Bounds, width: number, height: number, pad: number): (point: Point) => Point {
+function fitInto(
+  { x0, x1, y0, y1 }: Bounds,
+  width: number,
+  height: number,
+  pad: number
+): (point: Projected) => SvgPoint {
   const s = Math.min((width - 2 * pad) / (x1 - x0 || 1), (height - 2 * pad) / (y1 - y0 || 1))
   const ox = (width - (x1 - x0) * s) / 2
   const oy = (height - (y1 - y0) * s) / 2
   return ([x, y]) => [ox + (x - x0) * s, oy + (y - y0) * s]
 }
 
-function ringPath(points: Point[]): string {
-  let last: Point | undefined
+function ringPath(points: SvgPoint[]): string {
+  let last: SvgPoint | undefined
   let part = ""
   for (const p of points) {
     if (last && Math.hypot(p[0] - last[0], p[1] - last[1]) < 0.5) continue

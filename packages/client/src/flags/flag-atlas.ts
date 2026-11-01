@@ -5,7 +5,7 @@
 import atlas from "./flag-atlas.json"
 import url from "../assets/flag-atlas.webp"
 
-const [cellW, cellH] = atlas.cell as [number, number]
+const [cellW, cellH] = atlas.cell as [width: number, height: number]
 const rows = Math.ceil(atlas.codes.length / atlas.columns)
 
 export const FLAG_ATLAS = {

@@ -70,7 +70,7 @@ export const getHexagonEdgeLengthAvg = (res: H3Res, unit: Unit): number => h3.ge
 export const getRes0Cells = (): H3Cell[] => cells(h3.getRes0Cells())
 
 /** A cell's 64-bit index as its lower and upper 32 bits, for binary paint. */
-export const cellToSplitLong = (h: H3Cell): [number, number] => h3.h3IndexToSplitLong(h)
+export const cellToSplitLong = (h: H3Cell): [low: number, high: number] => h3.h3IndexToSplitLong(h)
 
 /** The cell with this 64-bit index, or undefined if it is not one: these come from outside. */
 export function cellFromSplitLong(lower: number, upper: number): H3Cell | undefined {

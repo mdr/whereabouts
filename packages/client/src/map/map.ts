@@ -16,7 +16,7 @@ export { mapWorkerUrl }
 import { cellToBoundary, type H3Cell } from "@whereabouts/shared/h3"
 import { cellsOutline } from "@whereabouts/shared/paint/paint"
 import type { HintBand } from "@whereabouts/shared/hints"
-import type { LatLon } from "@whereabouts/shared/geo"
+import type { LatLon, LonLat } from "@whereabouts/shared/geo"
 import type { Outline } from "@whereabouts/shared/questions"
 import type { Theme } from "./themes"
 import {
@@ -56,7 +56,7 @@ import type { Km } from "@whereabouts/shared/units"
 setWorkerUrl(mapWorkerUrl)
 
 export const STYLE_URL = "https://tiles.openfreemap.org/styles/positron"
-const WORLD_CENTER: [number, number] = [10, 25]
+const WORLD_CENTER: LonLat = [10, 25]
 const WORLD_ZOOM = 1.6
 /** The phone layout's width, and where its reveal sheet starts, as a share of the screen's height (media.css --phone, Hud.module.css). */
 const PHONE = "(max-width: 640px)"

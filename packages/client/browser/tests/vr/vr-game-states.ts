@@ -9,21 +9,20 @@ import type { RoundPage } from "../../pages/RoundPage.ts"
 import { until } from "../../pages/support.ts"
 import { newTab } from "../support.ts"
 import { enterVr, newHeadsetTab, poses, pressMenu } from "./vr-support.ts"
-
-type Vec = [number, number, number]
+import type { Vec3 } from "../../../src/vr/probe.ts"
 
 interface VrLobby {
   headset: Headset
   aliceLobby: LobbyPage
   bobLobby: LobbyPage
-  centre: Vec
-  can: Vec
+  centre: Vec3
+  can: Vec3
 }
 
 interface VrGuessing {
   headset: Headset
-  centre: Vec
-  can: Vec
+  centre: Vec3
+  can: Vec3
   aliceRound: RoundPage
   bobRound: RoundPage
 }

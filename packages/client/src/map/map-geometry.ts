@@ -1,7 +1,7 @@
 import type { LngLatBoundsLike, PaddingOptions } from "maplibre-gl"
 import { HintAxis, type HintBand } from "@whereabouts/shared/hints"
-import type { Box, LatLon } from "@whereabouts/shared/geo"
-import type { Km, Metres } from "@whereabouts/shared/units"
+import type { Box, LatLon, Ring } from "@whereabouts/shared/geo"
+import type { Km, Metres, Px } from "@whereabouts/shared/units"
 
 /** World circumference at the equator in metres, for metres-per-pixel maths. */
 const EQUATOR: Metres = 40075016.686
@@ -43,10 +43,8 @@ export function hintFeatures(band: HintBand): GeoJSON.Feature[] {
   return [box(band.from, 180, -p, p), box(-180, band.to, -p, p)]
 }
 
-function outerRingPoints(features: GeoJSON.Feature[]): [number, number][] {
-  return features.flatMap((f) =>
-    f.geometry.type === "Polygon" ? (f.geometry.coordinates[0] as [number, number][]) : []
-  )
+function outerRingPoints(features: GeoJSON.Feature[]): Ring {
+  return features.flatMap((f) => (f.geometry.type === "Polygon" ? (f.geometry.coordinates[0] as Ring) : []))
 }
 
 /** `box` grown to take in the polygons' outer rings. */
@@ -78,7 +76,7 @@ export function bounds([w, s, e, n]: Box): LngLatBoundsLike {
 }
 
 /** Moves the centre into the middle of the clear part of the map. Unlike easeTo's padding, it does not stay set. */
-export function offsetFor(p: Required<PaddingOptions>): [number, number] {
+export function offsetFor(p: Required<PaddingOptions>): [x: Px, y: Px] {
   return [(p.left - p.right) / 2, (p.top - p.bottom) / 2]
 }
 

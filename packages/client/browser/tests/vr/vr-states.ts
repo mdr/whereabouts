@@ -7,8 +7,7 @@ import type { PracticeRoundPage } from "../../pages/PracticeRoundPage.ts"
 import { until } from "../../pages/support.ts"
 import type { Tab } from "../../pages/Tab.ts"
 import { enterVr, newHeadsetTab, poses, pressMenu, spray } from "./vr-support.ts"
-
-type Vec = [number, number, number]
+import type { Vec3 } from "../../../src/vr/probe.ts"
 
 interface HeadsetPractice {
   tab: Tab
@@ -16,12 +15,12 @@ interface HeadsetPractice {
   round: PracticeRoundPage
 }
 interface VrPractice extends HeadsetPractice {
-  centre: Vec
-  can: Vec
+  centre: Vec3
+  can: Vec3
 }
 interface VrFlagRound extends VrPractice {
-  card: Vec
-  hand: Vec
+  card: Vec3
+  hand: Vec3
 }
 
 /** Flag questions, on the Political map, where a country round offers the fill tool. */

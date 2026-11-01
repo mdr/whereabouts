@@ -33,7 +33,7 @@ import {
   type H3Cell,
   type H3Res
 } from "../h3.ts"
-import { chordDistanceSq, toXyz, type LatLon } from "../geo.ts"
+import { chordDistanceSq, toXyz, type LatLon, type Ring } from "../geo.ts"
 import type { Degrees, Km, SquareKm } from "../units.ts"
 
 /** Cells across the brush radius a stamp aims for; sets the stamp resolution. */
@@ -96,9 +96,9 @@ export class PaintLayer {
   /** Finest resolution this layer may use, from the question's tolerance. */
   readonly res: H3Res
   readonly cells = new Map<H3Cell, number>()
-  private boundaryCache = new Map<H3Cell, number[][]>()
+  private boundaryCache = new Map<H3Cell, Ring>()
   private areaCache = new Map<H3Cell, SquareKm>()
-  private centreCache = new Map<H3Cell, [number, number]>()
+  private centreCache = new Map<H3Cell, LatLon>()
   /** Incremented on every change; cheap dirty-check for renderers. */
   version = 0
 
@@ -178,8 +178,7 @@ export class PaintLayer {
       const h = queue.pop()!
       const v = this.cells.get(h)
       if (v === undefined) continue
-      const [lat, lon] = this.centre(h)
-      const d = Math.sqrt(chordDistanceSq(centre, toXyz({ lat, lon })))
+      const d = Math.sqrt(chordDistanceSq(centre, toXyz(this.centre(h))))
       const rc = CIRCUMRADIUS_FACTOR * Math.sqrt(this.area(h))
       if (d - rc > reach) continue // clear of the brush
       const hRes = getResolution(h)
@@ -265,7 +264,7 @@ export class PaintLayer {
   }
 
   /** Cell counts per resolution present, coarsest first. */
-  resolutionCounts(): [number, number][] {
+  resolutionCounts(): [res: number, count: number][] {
     const counts = new Map<number, number>()
     for (const h of this.cells.keys()) {
       const r = getResolution(h)
@@ -296,11 +295,11 @@ export class PaintLayer {
     return a
   }
 
-  centre(h: H3Cell): [number, number] {
+  centre(h: H3Cell): LatLon {
     let c = this.centreCache.get(h)
     if (c === undefined) {
       const [lat, lon] = cellToLatLng(h)
-      c = [lat, lon]
+      c = { lat, lon }
       this.centreCache.set(h, c)
     }
     return c
@@ -329,7 +328,7 @@ export class PaintLayer {
 
   *toCells(): IterableIterator<PaintCell> {
     for (const [h, intensity] of this.cells) {
-      const [lat, lon] = this.centre(h)
+      const { lat, lon } = this.centre(h)
       yield { lat, lon, intensity, area: this.area(h), h3: h }
     }
   }
@@ -352,7 +351,7 @@ export class PaintLayer {
     return { type: "FeatureCollection", features: byRes.flat() }
   }
 
-  private boundary(h: H3Cell): number[][] {
+  private boundary(h: H3Cell): Ring {
     let b = this.boundaryCache.get(h)
     if (b === undefined) {
       b = cellToBoundary(h, true)
@@ -360,12 +359,12 @@ export class PaintLayer {
       // sides; unwrap so the polygon does not span the whole world.
       let minLon = Infinity
       let maxLon = -Infinity
-      for (const [lon] of b as [number, number][]) {
+      for (const [lon] of b) {
         if (lon < minLon) minLon = lon
         if (lon > maxLon) maxLon = lon
       }
       if (maxLon - minLon > 180) {
-        b = (b as [number, number][]).map(([lon, lat]) => [lon < 0 ? lon + 360 : lon, lat])
+        b = b.map(([lon, lat]) => [lon < 0 ? lon + 360 : lon, lat])
       }
       this.boundaryCache.set(h, b)
     }
@@ -418,7 +417,7 @@ export class PaintLayer {
     for (const h of cells) {
       const m = this.cells.get(h)! * this.area(h)
       mass += m
-      const [lat, lon] = this.centre(h)
+      const { lat, lon } = this.centre(h)
       const la = (lat * Math.PI) / 180,
         lo = (lon * Math.PI) / 180
       sx += m * Math.cos(la) * Math.cos(lo)

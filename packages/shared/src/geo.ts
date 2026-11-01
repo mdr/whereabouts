@@ -9,7 +9,7 @@ export interface LatLon {
 }
 
 /** [lon, lat] in degrees: GeoJSON's order, the reverse of LatLon. */
-type LonLat = [lon: number, lat: number]
+export type LonLat = [lon: number, lat: number]
 /** A closed loop of points. */
 export type Ring = LonLat[]
 /** An outer ring, then its holes. */

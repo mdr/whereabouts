@@ -22,7 +22,7 @@ export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: 
     if (cells.length > 0)
       groups.push(
         cells.map((h) => {
-          const [lat, lon] = layer.centre(h)
+          const { lat, lon } = layer.centre(h)
           return latLonToLocal({ lat, lon })
         })
       )

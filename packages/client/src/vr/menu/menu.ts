@@ -19,6 +19,7 @@ import { MORE, actionLabel, panelContent, viewActions, viewHeading, viewNote, ty
 import { VrViewType, type VrAction, type VrView } from "../view/view"
 import panelUrl from "./panel.uikitml?url"
 import type { Metres, Seconds } from "@whereabouts/shared/units"
+import type { Vec3 } from "../probe"
 
 export const PANEL_SIZE: Metres = 0.38
 /** How long a press waits for its confirming second press. */
@@ -166,7 +167,7 @@ export class Menu {
     }
   }
 
-  buttonAt(id: string): [number, number, number] {
+  buttonAt(id: string): Vec3 {
     const p = this.doc!.requireElementById(id).getWorldPosition(new Vector3())
     return [p.x, p.y, p.z]
   }

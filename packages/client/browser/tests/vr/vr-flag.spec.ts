@@ -11,8 +11,7 @@ import { until } from "../../pages/support.ts"
 import { check, shot } from "../support.ts"
 import { vrFlagAnswer, vrFlagRound } from "./vr-states.ts"
 import { closeAllTabs, pressMenu } from "./vr-support.ts"
-
-type Vec = [number, number, number]
+import type { Vec3 } from "../../../src/vr/probe.ts"
 
 test.afterEach(async ({ browser }) => closeAllTabs(browser))
 
@@ -22,8 +21,8 @@ function angleBetween(a: number[], b: number[]): number {
 }
 
 /** The turn a controller held at `from` gets when Headset.point() aims it at `to`. */
-function aim(from: Vec, to: Vec): Quaternion {
-  const direction = to.map((c, i) => c - from[i]!) as Vec
+function aim(from: Vec3, to: Vec3): Quaternion {
+  const direction = to.map((c, i) => c - from[i]!) as Vec3
   return new Quaternion().setFromUnitVectors(new Vector3(0, 0, -1), new Vector3(...direction).normalize())
 }
 
@@ -46,7 +45,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
 
   // Grip it, pointing at it, to take it in hand; it follows the hand, and
   // goes back over the menu when let go.
-  const grip: Vec = [hand[0] + 0.1, hand[1], hand[2]]
+  const grip: Vec3 = [hand[0] + 0.1, hand[1], hand[2]]
   await headset.pointRight(hand, card)
   await round.pause(300)
   await headset.rightGrip(1)
@@ -58,7 +57,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   check(held.held && moved > 0.2, `gripping the flag takes it in hand (moved ${moved.toFixed(2)} m)`)
   await round.screenshot(shot(`vr-9-held.png`))
   // Turning the hand tilts it, as a card held up would.
-  const tiltedTo: Vec = [grip[0], card[1] - 0.5, card[2]]
+  const tiltedTo: Vec3 = [grip[0], card[1] - 0.5, card[2]]
   await headset.pointRight(grip, tiltedTo)
   await round.pause(800)
   const tilted = await headset.pictureHeld()
@@ -71,7 +70,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   )
   await round.screenshot(shot(`vr-9b-tilted.png`))
   // Turned right round, it shows its back: the flag's reverse.
-  const awayTo = grip.map((c, i) => 2 * c - card[i]!) as Vec
+  const awayTo = grip.map((c, i) => 2 * c - card[i]!) as Vec3
   await headset.pointRight(grip, awayTo)
   await round.pause(800)
   const turned = await headset.pictureHeld()
@@ -95,7 +94,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   await headset.button(Hand.RIGHT, "a-button")
   check((await headset.toolInHand())[Hand.RIGHT] === Tool.FILL, "A twice brings out the fill pail")
   // Up and right of the globe's middle, at the prime meridian and the equator: the Sahel.
-  const sahel: Vec = [centre[0] + 0.06, centre[1] + 0.05, centre[2] + 0.2]
+  const sahel: Vec3 = [centre[0] + 0.06, centre[1] + 0.05, centre[2] + 0.2]
   const pull = async () => {
     await headset.pointRight(can, sahel)
     await headset.frames(3)

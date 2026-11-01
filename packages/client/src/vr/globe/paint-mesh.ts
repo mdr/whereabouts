@@ -10,7 +10,7 @@ const c = new Color()
 const p = new Vector3()
 const mid = new Vector3()
 
-function rgb(hex: string): [number, number, number] {
+function rgb(hex: string): [r: number, g: number, b: number] {
   const n = parseInt(hex.slice(1), 16)
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]
 }
@@ -21,7 +21,7 @@ function rampColour(theme: Theme, v: number, out: Color): number {
   const i = Math.min(2, Math.floor(t))
   const a = rgb(theme.ramp[i]!)
   const b = rgb(theme.ramp[i + 1]!)
-  const [r, g, bl] = a.map((x, k) => x + (b[k]! - x) * (t - i)) as [number, number, number]
+  const [r, g, bl] = a.map((x, k) => x + (b[k]! - x) * (t - i)) as [r: number, g: number, b: number]
   out.setRGB(r, g, bl, SRGBColorSpace)
   const [o0, o1] = theme.rampOpacity
   return o0 + (o1 - o0) * v

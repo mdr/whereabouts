@@ -6,8 +6,7 @@ import type { Screen } from "../../pages/Screen.ts"
 import { until } from "../../pages/support.ts"
 import type { Tab } from "../../pages/Tab.ts"
 import { newTab } from "../support.ts"
-
-type Vec = [number, number, number]
+import type { Vec3 } from "../../../src/vr/probe.ts"
 
 /** A new tab in an emulated headset. `initScript` runs in the page, so it can't use variables from outside it. */
 export async function newHeadsetTab(
@@ -35,7 +34,7 @@ export async function enterVr(tab: Tab, headset: Headset): Promise<void> {
  * Where the globe's centre starts and where the right hand holds the can. The globe starts 45 cm
  * ahead of the eyes and 30 cm below them, its near side there, 22 cm in radius.
  */
-export async function poses(headset: Headset): Promise<{ centre: Vec; can: Vec }> {
+export async function poses(headset: Headset): Promise<{ centre: Vec3; can: Vec3 }> {
   const [x, y, z] = await headset.eyes()
   return { centre: [x, y - 0.3, z - 0.67], can: [x + 0.15, y - 0.25, z - 0.15] }
 }
@@ -44,7 +43,7 @@ export async function poses(headset: Headset): Promise<{ centre: Vec; can: Vec }
 export async function spray(
   headset: Headset,
   screen: Screen,
-  { centre, can }: { centre: Vec; can: Vec },
+  { centre, can }: { centre: Vec3; can: Vec3 },
   screenshot?: string
 ): Promise<number> {
   await headset.pointRight(can, centre)
@@ -61,7 +60,7 @@ export async function spray(
 }
 
 /** Points the right hand from `from` at a button of the VR menu and pulls the trigger. */
-export async function pressMenu(headset: Headset, from: Vec, id: string): Promise<void> {
+export async function pressMenu(headset: Headset, from: Vec3, id: string): Promise<void> {
   await headset.press(from, await headset.menuButton(id))
 }
 

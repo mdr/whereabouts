@@ -19,6 +19,7 @@ import wristUrl from "./wrist.uikitml?url"
 import { HintAllowance, type HintsLeft } from "../view/view"
 import { WristButton } from "./wrist-button"
 import type { Metres, Seconds } from "@whereabouts/shared/units"
+import type { Vec3 } from "../probe"
 
 const WRIST_WIDTH: Metres = 0.2
 /** How squarely the palm must face up to open the menu, and how far it may turn away before it shuts. */
@@ -105,7 +106,7 @@ export class WristMenu {
   }
 
   /** Where a button is, for the browser tests. */
-  buttonAt(id: WristButton): [number, number, number] {
+  buttonAt(id: WristButton): Vec3 {
     const p = this.doc!.requireElementById(id).getWorldPosition(new Vector3())
     return [p.x, p.y, p.z]
   }

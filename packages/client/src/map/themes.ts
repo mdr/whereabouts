@@ -22,7 +22,7 @@ export interface Theme {
   /** Paint ramp: colours at intensity 0, 1/3, 2/3, 1 (relative to the peak). */
   ramp: [string, string, string, string]
   /** Fill opacity at intensity 0 and 1. */
-  rampOpacity: [number, number]
+  rampOpacity: [atZero: number, atPeak: number]
   /** Answer marker. */
   answer: string
   answerStroke: string

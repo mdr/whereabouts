@@ -6,8 +6,7 @@ import { Hand, XR_HAND } from "../../src/vr/hands/hand.ts"
 import type { SprayTool } from "../../src/vr/spray/spray-rules.ts"
 import type { Page } from "@playwright/test"
 import type {} from "../../src/vr/index.ts"
-
-type Vec = [number, number, number]
+import type { Quaternion, Vec3 } from "../../src/vr/probe.ts"
 
 declare global {
   interface Window {
@@ -152,7 +151,7 @@ export class Headset {
   }
 
   /** The flag nearest the eyes with a border to outline, and where its middle is. */
-  async flagFacing(): Promise<{ name: string; at: Vec } | undefined> {
+  async flagFacing(): Promise<{ name: string; at: Vec3 } | undefined> {
     return this.#page.evaluate(() => window.whereaboutsVr.probe.flagFacing)
   }
 
@@ -207,7 +206,7 @@ export class Headset {
   }
 
   /** The question's picture over the VR menu, width by height in metres. */
-  async picture(): Promise<[number, number] | undefined> {
+  async picture(): Promise<[width: number, height: number] | undefined> {
     return this.#page.evaluate(() => window.whereaboutsVr.probe.pictureShown)
   }
 
@@ -227,23 +226,23 @@ export class Headset {
   }
 
   /** Whether a hand holds the question's picture, where it is, and which way its face points. */
-  async pictureHeld(): Promise<{ held: boolean; at: Vec; facing: Vec; back: PictureBack | undefined }> {
+  async pictureHeld(): Promise<{ held: boolean; at: Vec3; facing: Vec3; back: PictureBack | undefined }> {
     return this.#page.evaluate(() => window.whereaboutsVr.probe.pictureHeld)
   }
 
-  async eyes(): Promise<Vec> {
+  async eyes(): Promise<Vec3> {
     return this.#page.evaluate(() => {
       const p = window.headset.position
-      return [p.x, p.y, p.z] as [number, number, number]
+      return [p.x, p.y, p.z] as Vec3
     })
   }
 
   /** Hold the right controller at `from`, its ray pointing at `at`. */
-  async pointRight(from: Vec, at: Vec): Promise<void> {
+  async pointRight(from: Vec3, at: Vec3): Promise<void> {
     await this.point(Hand.RIGHT, from, at)
   }
 
-  async point(hand: Hand, from: Vec, at: Vec): Promise<void> {
+  async point(hand: Hand, from: Vec3, at: Vec3): Promise<void> {
     await this.#page.evaluate(
       ([hand, from, at]) => {
         const c = window.headset.controllers[hand]!
@@ -253,7 +252,7 @@ export class Headset {
         // The rotation taking the ray's rest direction, -Z, onto the direction to `at`.
         const d = [at[0] - from[0], at[1] - from[1], at[2] - from[2]]
         const n = Math.hypot(d[0]!, d[1]!, d[2]!)
-        const [x, y, z] = d.map((v) => v / n) as [number, number, number]
+        const [x, y, z] = d.map((v) => v / n) as Vec3
         // cross((0,0,-1), d) and 1 + dot((0,0,-1), d), normalised.
         const q = [y, -x, 0, 1 - z]
         const m = Math.hypot(...q)
@@ -287,7 +286,7 @@ export class Headset {
    * within 300 ms of the frame seeing it pressed (pointer-events'
    * clickThresholdMs), and the emulator can stall for longer than that.
    */
-  async press(from: Vec, at: Vec): Promise<void> {
+  async press(from: Vec3, at: Vec3): Promise<void> {
     await this.pointRight(from, at)
     await this.frames(3)
     // A stall while it is held can still outlast that: then press again.
@@ -354,7 +353,7 @@ export class Headset {
   }
 
   /** Hold a controller at `at`, turned by the quaternion `rotation` from its rest pose. */
-  async hold(hand: Hand, at: Vec, rotation: [number, number, number, number]): Promise<void> {
+  async hold(hand: Hand, at: Vec3, rotation: Quaternion): Promise<void> {
     await this.#page.evaluate(
       ([hand, at, r]) => {
         const c = window.headset.controllers[hand]!
@@ -372,7 +371,7 @@ export class Headset {
   }
 
   /** Where a button on the wrist menu is. */
-  async wristButton(id: WristButton): Promise<Vec> {
+  async wristButton(id: WristButton): Promise<Vec3> {
     return this.#page.evaluate((id) => window.whereaboutsVr.probe.wristButtonAt(id), id)
   }
 
@@ -382,17 +381,17 @@ export class Headset {
   }
 
   /** Where a hand's tool would land on the globe, if it points at it. */
-  async target(hand: Hand): Promise<Vec | undefined> {
+  async target(hand: Hand): Promise<Vec3 | undefined> {
     return this.#page.evaluate((h) => window.whereaboutsVr.probe.targetOf(h), hand)
   }
 
   /** Where a button on the VR menu is. */
-  async menuButton(id: string): Promise<Vec> {
+  async menuButton(id: string): Promise<Vec3> {
     return this.#settled(() => this.#page.evaluate((id) => window.whereaboutsVr.probe.menuButtonAt(id), id))
   }
 
   /** Where a row of the score table is: Everyone, the players, then Hide paint on the reveal. */
-  async scoreRow(i: number): Promise<Vec> {
+  async scoreRow(i: number): Promise<Vec3> {
     return this.#settled(() => this.#page.evaluate((i) => window.whereaboutsVr.probe.scoreRowAt(i), i))
   }
 
@@ -402,7 +401,7 @@ export class Headset {
    * of a globe zooming in. Counted in frames, not time: the emulator can
    * stall for a second or more.
    */
-  async #settled(where: () => Promise<Vec>): Promise<Vec> {
+  async #settled(where: () => Promise<Vec3>): Promise<Vec3> {
     const at = async () => {
       const at = await where()
       const { frame, turning } = await this.#page.evaluate(() => ({

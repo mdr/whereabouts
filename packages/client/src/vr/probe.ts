@@ -38,6 +38,10 @@ export interface ProbedParts {
   tools: Record<Hand, HandTool>
 }
 
+/** A position or direction in the VR world, in metres. */
+export type Vec3 = [x: number, y: number, z: number]
+export type Quaternion = [x: number, y: number, z: number, w: number]
+
 export class VrProbe {
   private readonly vr: ProbedParts
 
@@ -89,7 +93,7 @@ export class VrProbe {
   }
 
   /** The flag nearest the eyes with a border to outline, and where. */
-  get flagFacing(): { name: string; at: [number, number, number] } | undefined {
+  get flagFacing(): { name: string; at: Vec3 } | undefined {
     const f = this.vr.flagPins.nearest(this.vr.world.player.head.getWorldPosition(new Vector3()))
     return f && { name: f.name, at: [f.at.x, f.at.y, f.at.z] }
   }
@@ -148,7 +152,7 @@ export class VrProbe {
   }
 
   /** The question's picture over the menu, width by height in metres. */
-  get pictureShown(): [number, number] | undefined {
+  get pictureShown(): [width: number, height: number] | undefined {
     const { mesh } = this.vr.picture
     return mesh.visible ? [mesh.scale.x, mesh.scale.y] : undefined
   }
@@ -161,8 +165,8 @@ export class VrProbe {
   /** Whether a hand holds the question's picture, and where it is. */
   get pictureHeld(): {
     held: boolean
-    at: [number, number, number]
-    facing: [number, number, number]
+    at: Vec3
+    facing: Vec3
     back: PictureBack | undefined
   } {
     const { picture } = this.vr
@@ -204,22 +208,22 @@ export class VrProbe {
     return this.vr.hint.band !== undefined
   }
 
-  wristButtonAt(id: WristButton): [number, number, number] {
+  wristButtonAt(id: WristButton): Vec3 {
     return this.vr.wrist.buttonAt(id)
   }
 
   /** Where a hand's tool would land on the globe. */
-  targetOf(hand: Hand): [number, number, number] | undefined {
+  targetOf(hand: Hand): Vec3 | undefined {
     const p = this.vr.tools[hand].target
     return p && [p.x, p.y, p.z]
   }
 
-  menuButtonAt(id: string): [number, number, number] {
+  menuButtonAt(id: string): Vec3 {
     return this.vr.menu.buttonAt(id)
   }
 
   /** Where a row of the score table is. */
-  scoreRowAt(i: number): [number, number, number] {
+  scoreRowAt(i: number): Vec3 {
     return this.vr.scores.rowAt(i)
   }
 }

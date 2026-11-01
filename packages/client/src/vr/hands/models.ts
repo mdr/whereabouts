@@ -57,7 +57,7 @@ function canvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingContext2
 }
 
 /** A lathe from (radius, height) pairs, in metres. */
-const lathe = (points: [number, number][], segments = 32) =>
+const lathe = (points: [radius: number, height: number][], segments = 32) =>
   new LatheGeometry(
     points.map(([r, y]) => new Vector2(r, y)),
     segments
@@ -266,7 +266,7 @@ export function buildStand(r: number): Group {
         [0.05, 0.47],
         [0.06, 0.5],
         [0, 0.5]
-      ] as [number, number][]
+      ] as [radius: number, height: number][]
     ).map(([x, y]) => [x * r, y * r]),
     48
   )

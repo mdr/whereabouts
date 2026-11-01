@@ -32,7 +32,7 @@ import applauseUrl from "../assets/sounds/applause.mp3"
 import { soundOn } from "../settings/settings"
 import type { Ms, Seconds } from "@whereabouts/shared/units"
 
-type Slices = readonly (readonly [number, number])[]
+type Slices = readonly (readonly [start: number, length: number])[]
 
 /** A recording of separate stretches ([start, length] in seconds) chained at random while a stroke is held. */
 interface Loop {

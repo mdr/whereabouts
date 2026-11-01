@@ -8,6 +8,7 @@ import { until } from "../../pages/support.ts"
 import { check, shot } from "../support.ts"
 import { vrPractice, vrPracticePainted } from "./vr-states.ts"
 import { closeAllTabs, spray } from "./vr-support.ts"
+import type { Vec3 } from "../../../src/vr/probe.ts"
 
 test.afterEach(async ({ browser }) => closeAllTabs(browser))
 
@@ -59,11 +60,11 @@ test("spraying paints the globe, the left hand's eraser rubs paint out, and undo
   // Rubbing the eraser on the globe rubs out too, with no trigger. The grip,
   // and so the eraser, sits behind the ray's origin and angled down from it:
   // the ray starts inside the globe for the tip to reach the surface.
-  const rubFrom: [number, number, number] = [can[0] - 0.3, can[1], can[2]]
+  const rubFrom: Vec3 = [can[0] - 0.3, can[1], can[2]]
   const unrubbed = await headset.paintMass()
   const toward = painted.map((c, i) => c - rubFrom[i]!)
   const length = Math.hypot(...toward)
-  const rubTip = painted.map((c, i) => c - (toward[i]! / length) * -0.04) as [number, number, number]
+  const rubTip = painted.map((c, i) => c - (toward[i]! / length) * -0.04) as Vec3
   await headset.point(Hand.LEFT, rubTip, painted)
   await round.pause(1500)
   await headset.point(Hand.LEFT, rubFrom, painted)
@@ -101,7 +102,7 @@ test("turning the left palm up opens the wrist menu, whose buttons clear, hint a
   const { tab, headset, round, centre, can, painted } = await vrPracticePainted(browser, "vr-wrist")
   // Turning the left palm up opens the wrist menu; the right hand's
   // ray presses its buttons.
-  const leftHand: [number, number, number] = [can[0] - 0.3, can[1], can[2]]
+  const leftHand: Vec3 = [can[0] - 0.3, can[1], can[2]]
   await headset.point(Hand.LEFT, leftHand, centre)
   check(!(await headset.wristOpen()), "the wrist menu stays shut while the left hand points ahead")
   // A quarter turn about the ray brings the left palm (its grip's +X) round to face up.
