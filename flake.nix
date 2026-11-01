@@ -21,13 +21,13 @@
         pnpm = pkgs.pnpm.override { nodejs-slim = pkgs.nodejs-slim_22; };
 
         # Just the files the build needs: pnpm resolves from the lockfile, the
-        # workspace packages hold the source. Docs, CI and scripts stay out so
+        # workspace packages hold the source. Docs, CI and the top-level scripts stay out so
         # editing them does not rebuild the image.
         src = lib.cleanSourceWith {
           src = self;
           filter = path: _type:
-            let name = baseNameOf path;
-            in !(builtins.elem name [ ".github" "README.md" "flake.nix" "flake.lock" "pnpm-deps.json" "fly.toml" "deploy" "scripts" "smoke-out" ]);
+            let relative = lib.removePrefix "${toString self}/" (toString path);
+            in !(builtins.elem relative [ ".github" "README.md" "flake.nix" "flake.lock" "pnpm-deps.json" "fly.toml" "deploy" "scripts" "smoke-out" ]);
         };
 
         # The built app: client bundle plus the server and its production
