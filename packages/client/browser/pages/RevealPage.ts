@@ -1,4 +1,6 @@
-import { revealTestIds } from "../../src/screens/RevealTestIds.ts"
+import { revealTestIds } from "../../src/screens/reveal/RevealTestIds.ts"
+import { revealRowTestIds } from "../../src/screens/reveal/RevealRowTestIds.ts"
+import { revealScoresTestIds } from "../../src/screens/reveal/RevealScoresTestIds.ts"
 import { questionCardTestIds } from "../../src/ui/round/question/QuestionCardTestIds.ts"
 import { answerTestIds } from "../../src/ui/round/question/AnswerTestIds.ts"
 import { factLineTestIds } from "../../src/ui/round/question/FactLineTestIds.ts"
@@ -26,7 +28,7 @@ export class RevealPage extends Screen {
 
   static async whenShown(tab: Tab, timeout: Ms = 10_000): Promise<RevealPage> {
     const reveal = new RevealPage(tab)
-    await tab.page.getByTestId(revealTestIds.scoresList).waitFor({ timeout })
+    await tab.page.getByTestId(revealScoresTestIds.scoresList).waitFor({ timeout })
     await reveal.map.waitUntilSettled()
     return reveal
   }
@@ -38,7 +40,7 @@ export class RevealPage extends Screen {
   }
 
   async isStillShown(): Promise<boolean> {
-    return (await this.page.getByTestId(revealTestIds.scoresList).count()) > 0
+    return (await this.page.getByTestId(revealScoresTestIds.scoresList).count()) > 0
   }
 
   /** The line of interest about the answer, once the facts have loaded. */
@@ -48,26 +50,26 @@ export class RevealPage extends Screen {
 
   /** The players' rows, in the order shown. */
   async rows(): Promise<RevealRow[]> {
-    const rows = await this.page.getByTestId(revealTestIds.playerRow).all()
+    const rows = await this.page.getByTestId(revealRowTestIds.playerRow).all()
     return Promise.all(
       rows.map(async (row) => ({
-        name: await text(row.getByTestId(revealTestIds.playerName)),
-        roundScore: await text(row.getByTestId(revealTestIds.roundScore)),
-        passed: (await row.getByTestId(revealTestIds.passedTag).count()) > 0,
-        hinted: (await row.getByTestId(revealTestIds.hintTag).count()) > 0
+        name: await text(row.getByTestId(revealRowTestIds.playerName)),
+        roundScore: await text(row.getByTestId(revealRowTestIds.roundScore)),
+        passed: (await row.getByTestId(revealRowTestIds.passedTag).count()) > 0,
+        hinted: (await row.getByTestId(revealRowTestIds.hintTag).count()) > 0
       }))
     )
   }
 
   /** Show just this player's paint. */
   async showOnly(name: string): Promise<void> {
-    await byTestIdWith(this.page, revealTestIds.playerRow, "player", name).click()
+    await byTestIdWith(this.page, revealRowTestIds.playerRow, "player", name).click()
     await this.map.waitUntilSettled()
   }
 
   /** Rest the mouse on this player's name. */
   async hoverPlayer(name: string): Promise<void> {
-    await byTestIdWith(this.page, revealTestIds.playerRow, "player", name).hover()
+    await byTestIdWith(this.page, revealRowTestIds.playerRow, "player", name).hover()
     await this.map.waitUntilSettled()
   }
 
@@ -79,7 +81,7 @@ export class RevealPage extends Screen {
 
   /** Hide everyone's paint, or bring it back if hidden. */
   async toggleHidePaint(): Promise<void> {
-    await this.page.getByTestId(revealTestIds.hidePaintRow).click()
+    await this.page.getByTestId(revealScoresTestIds.hidePaintRow).click()
     await this.map.waitUntilSettled()
   }
 
@@ -134,7 +136,7 @@ export class RevealPage extends Screen {
 
   /** On a phone the scores are further down the sheet: scrolled to first. */
   async scoresAreUsable(): Promise<boolean> {
-    const row = this.page.getByTestId(revealTestIds.everyoneRow)
+    const row = this.page.getByTestId(revealScoresTestIds.everyoneRow)
     // Not scrollIntoViewIfNeeded: a row under the sticky toolbar counts as in view.
     await row.evaluate((el) => el.scrollIntoView({ block: "center" }))
     return isUsable(row)

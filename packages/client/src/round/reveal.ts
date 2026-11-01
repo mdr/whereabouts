@@ -1,5 +1,5 @@
 /**
- * What a game's reveal shows, on the page (screens/Reveal.tsx) and in the
+ * What a game's reveal shows, on the page (screens/reveal/Reveal.tsx) and in the
  * headset (game-vr-view.ts) alike.
  */
 import { signal } from "@preact/signals"
