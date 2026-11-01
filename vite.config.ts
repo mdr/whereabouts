@@ -395,7 +395,7 @@ export default defineConfig({
         plugins: ["vitest"]
       },
       {
-        files: ["**/*.test.{ts,tsx}", "packages/client/browser/tests/**", "**/*.config.{js,ts}"],
+        files: ["**/*.test.{ts,tsx}", "**/*.config.{js,ts}"],
         rules: {
           "max-lines": "off",
           "sonarjs/cognitive-complexity": "off"
