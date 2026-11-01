@@ -22,20 +22,20 @@ export type Box = [west: Degrees, south: Degrees, east: Degrees, north: Degrees]
 /** 3D position on the Earth sphere. */
 export type Xyz = readonly [x: Km, y: Km, z: Km]
 
-export function toRadians(degrees: Degrees): Radians {
+export const toRadians = (degrees: Degrees): Radians => {
   return (degrees * Math.PI) / 180
 }
 
-export function toDegrees(radians: Radians): Degrees {
+export const toDegrees = (radians: Radians): Degrees => {
   return (radians * 180) / Math.PI
 }
 
 /** Degrees of arc along a great circle that span `km` on the ground. */
-export function kmToDegrees(km: Km): Degrees {
+export const kmToDegrees = (km: Km): Degrees => {
   return km / ((EARTH_RADIUS * Math.PI) / 180)
 }
 
-export function toXyz({ lat, lon }: LatLon): Xyz {
+export const toXyz = ({ lat, lon }: LatLon): Xyz => {
   const latRadians = toRadians(lat)
   const lonRadians = toRadians(lon)
   const cosLat = Math.cos(latRadians)
@@ -47,14 +47,14 @@ export function toXyz({ lat, lon }: LatLon): Xyz {
 }
 
 /** Straight-line (chord) distance between two points on the sphere. */
-export function chordDistance(a: Xyz, b: Xyz): Km {
+export const chordDistance = (a: Xyz, b: Xyz): Km => {
   const dx = a[0] - b[0]
   const dy = a[1] - b[1]
   const dz = a[2] - b[2]
   return Math.sqrt(dx * dx + dy * dy + dz * dz)
 }
 
-export function chordDistanceSq(a: Xyz, b: Xyz): SquareKm {
+export const chordDistanceSq = (a: Xyz, b: Xyz): SquareKm => {
   const dx = a[0] - b[0]
   const dy = a[1] - b[1]
   const dz = a[2] - b[2]
@@ -62,19 +62,19 @@ export function chordDistanceSq(a: Xyz, b: Xyz): SquareKm {
 }
 
 /** Used only for display. */
-export function greatCircleDistance(a: LatLon, b: LatLon): Km {
+export const greatCircleDistance = (a: LatLon, b: LatLon): Km => {
   const chord = chordDistance(toXyz(a), toXyz(b))
   return 2 * EARTH_RADIUS * Math.asin(Math.min(1, chord / (2 * EARTH_RADIUS)))
 }
 
 /** The point on the sphere in the direction of `xyz` (any length). */
-export function fromXyz(xyz: Xyz): LatLon {
+export const fromXyz = (xyz: Xyz): LatLon => {
   const radius = Math.hypot(xyz[0], xyz[1], xyz[2])
   return { lat: toDegrees(Math.asin(xyz[2] / radius)), lon: toDegrees(Math.atan2(xyz[1], xyz[0])) }
 }
 
 /** Initial bearing from `a` to `b`, clockwise from north. */
-export function bearing(a: LatLon, b: LatLon): Degrees {
+export const bearing = (a: LatLon, b: LatLon): Degrees => {
   const dLon = toRadians(b.lon - a.lon)
   const [latA, latB] = [toRadians(a.lat), toRadians(b.lat)]
   const y = Math.sin(dLon) * Math.cos(latB)

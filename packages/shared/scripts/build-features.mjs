@@ -107,7 +107,7 @@ const STATE_NAMES = {
   "New York": { label: "New York State", name: "New York State", wiki: "New York (state)" }
 }
 
-async function features(name) {
+const features = async (name) => {
   const dir = process.argv[2]
   const text = dir
     ? readFileSync(`${dir}/${name}.geojson`, "utf8")
@@ -124,7 +124,7 @@ const outlines = {}
 const places = []
 
 /** A place painted whole: an island, lake or sea (`feature`), or a state. */
-function region(topic, label, name, wiki, polygons) {
+const region = (topic, label, name, wiki, polygons) => {
   const cells = polygons.flatMap((polygon) => cellsOf(polygon, 6))
   const area = areaOf(cells)
   if (area < POINT_BELOW_KM2) throw new Error(`${label} is too small to paint: ${Math.round(area)} km²`)

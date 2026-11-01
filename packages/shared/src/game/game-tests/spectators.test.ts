@@ -22,7 +22,7 @@ import {
 
 describe("spectators", () => {
   const T1 = T0 + 60_000
-  function withSpectator(): Game {
+  const withSpectator = (): Game => {
     const game = twoPlayerGame(2)
     expect(game.join(tokS, playerName("Sam"), T0 + 2, Role.SPECTATOR).ok).toBe(true)
     return game
@@ -40,12 +40,12 @@ describe("spectators", () => {
   })
 
   describe("in a game with players", () => {
-    function inRound() {
+    const inRound = () => {
       const game = withSpectator()
       game.start(tokA, T0)
       return { game, question: currentQuestion(game, tokA, T0) }
     }
-    function atReveal() {
+    const atReveal = () => {
       const { game } = inRound()
       game.lock(tokA, T0 + 1)
       game.lock(tokB, T0 + 2)

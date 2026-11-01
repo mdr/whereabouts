@@ -4,7 +4,7 @@ import { compactRecord } from "./compact.ts"
 import { PaintLayer } from "./paint.ts"
 
 describe("compactRecord", () => {
-  function totalMass(record: Record<string, number>): number {
+  const totalMass = (record: Record<string, number>): number => {
     return [...PaintLayer.fromRecord(h3Resolution(15), record).toCells()].reduce(
       (sum, cell) => sum + cell.intensity * cell.area,
       0
@@ -19,7 +19,7 @@ describe("compactRecord", () => {
   })
 
   /** A disc of fine cells at one resolution, as a zoomed-in player would paint. */
-  function fineDisc(resolution: number, rings: number): Record<string, number> {
+  const fineDisc = (resolution: number, rings: number): Record<string, number> => {
     const record: Record<string, number> = {}
     for (const cell of gridDisk(latLngToCell(51.5, -0.1, h3Resolution(resolution)), rings)) record[cell] = 1
     return record

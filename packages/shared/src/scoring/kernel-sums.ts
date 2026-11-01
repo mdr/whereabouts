@@ -4,7 +4,7 @@ import type { Km, SquareKm } from "../units.ts"
 
 const LN2 = Math.LN2
 
-function gaussFromSq(distSq: SquareKm, width: Km): number {
+const gaussFromSq = (distSq: SquareKm, width: Km): number => {
   return Math.exp((-LN2 * distSq) / (width * width))
 }
 
@@ -17,18 +17,18 @@ function gaussFromSq(distSq: SquareKm, width: Km): number {
  * width squared is w² + 2 ln2 s2 and the amplitude is w² / w'². Flat-plane
  * result; exact enough for cells small against the Earth's radius.
  */
-export function patchWidthSq(width: Km, s2: SquareKm): number {
+export const patchWidthSq = (width: Km, s2: SquareKm): number => {
   return width * width + 2 * LN2 * s2
 }
 
-function patchGaussFromSq(distSq: SquareKm, width: Km, s2: SquareKm): number {
+const patchGaussFromSq = (distSq: SquareKm, width: Km, s2: SquareKm): number => {
   if (s2 === 0) return gaussFromSq(distSq, width)
   const widthSq = width * width
   const effectiveSq = patchWidthSq(width, s2)
   return (widthSq / effectiveSq) * Math.exp((-LN2 * distSq) / effectiveSq)
 }
 
-export function kernelFromSq(distSq: SquareKm, tolerance: Km, k: Kernel, s2 = 0): number {
+export const kernelFromSq = (distSq: SquareKm, tolerance: Km, k: Kernel, s2 = 0): number => {
   let sum = 0
   for (let i = 0; i < k.scales.length; i++) {
     sum += k.weights[i]! * patchGaussFromSq(distSq, k.scales[i]! * tolerance, s2)
@@ -53,7 +53,7 @@ interface PatchGroup {
  * onto a 3D grid an eighth of that width, which keeps the cost bounded when
  * the cutoff spans the globe while displacing mass by far less than the width.
  */
-export function pairSum(points: WeightedPoint[], tolerance: Km, exact: boolean, k: Kernel): number {
+export const pairSum = (points: WeightedPoint[], tolerance: Km, exact: boolean, k: Kernel): number => {
   if (exact) return exactCrossSum(points, points, tolerance, k)
   const groups = groupByPatchSize(points)
   let total = 0
@@ -74,13 +74,13 @@ export function pairSum(points: WeightedPoint[], tolerance: Km, exact: boolean, 
  * of patches, grouped by patch size and aggregated for wide components as in
  * pairSum.
  */
-export function crossSum(
+export const crossSum = (
   left: WeightedPoint[],
   right: WeightedPoint[],
   tolerance: Km,
   exact: boolean,
   k: Kernel
-): number {
+): number => {
   if (exact) return exactCrossSum(left, right, tolerance, k)
   const leftGroups = groupByPatchSize(left)
   const rightGroups = groupByPatchSize(right)
@@ -97,7 +97,7 @@ export function crossSum(
   return total
 }
 
-function exactCrossSum(left: WeightedPoint[], right: WeightedPoint[], tolerance: Km, k: Kernel): number {
+const exactCrossSum = (left: WeightedPoint[], right: WeightedPoint[], tolerance: Km, k: Kernel): number => {
   let total = 0
   for (const a of left) {
     for (const b of right) {
@@ -111,12 +111,12 @@ function exactCrossSum(left: WeightedPoint[], right: WeightedPoint[], tolerance:
  * Truncated Gaussian sum between two groups at their effective width, aggregated when that width is wide.
  * An undefined `other` pairs `group` with itself.
  */
-function groupGaussSum(
+const groupGaussSum = (
   group: PatchGroup,
   other: PatchGroup | undefined,
   width: Km,
   tolerance: Km
-): { amplitude: number; sum: number } {
+): { amplitude: number; sum: number } => {
   const effectiveWidth = Math.sqrt(patchWidthSq(width, group.s2 + (other ?? group).s2))
   // Same rule as before patches: components at least twice the tolerance wide are aggregated.
   const coarse = effectiveWidth >= 2 * tolerance
@@ -129,7 +129,7 @@ function groupGaussSum(
   }
 }
 
-function groupByPatchSize(points: WeightedPoint[]): PatchGroup[] {
+const groupByPatchSize = (points: WeightedPoint[]): PatchGroup[] => {
   const groups = new Map<number, WeightedPoint[]>()
   for (const point of points) {
     // Cells of one H3 resolution differ slightly in area; bucket them together.
@@ -150,7 +150,7 @@ function groupByPatchSize(points: WeightedPoint[]): PatchGroup[] {
 }
 
 /** Merge points into mass-weighted centroids on a 3D grid of cubes `side` across. */
-function aggregate(points: WeightedPoint[], side: Km): WeightedPoint[] {
+const aggregate = (points: WeightedPoint[], side: Km): WeightedPoint[] => {
   const sums = new Map<string, { x: number; y: number; z: number; p: number }>()
   for (const point of points) {
     const [x, y, z] = point.xyz
@@ -194,15 +194,15 @@ interface CutoffGrid {
   expScale: number
 }
 
-function cellIndex(grid: CutoffGrid, coordinate: number): number {
+const cellIndex = (grid: CutoffGrid, coordinate: number): number => {
   return Math.floor((coordinate + INDEX_OFFSET) * grid.perCutoff)
 }
 
-function bucketKey(grid: CutoffGrid, bx: number, by: number, bz: number): number {
+const bucketKey = (grid: CutoffGrid, bx: number, by: number, bz: number): number => {
   return (bx * grid.span + by) * grid.span + bz
 }
 
-function cutoffGrid(right: WeightedPoint[], width: Km): CutoffGrid {
+const cutoffGrid = (right: WeightedPoint[], width: Km): CutoffGrid => {
   const count = right.length
   const cutoff = CUTOFF_WIDTHS * width
   const perCutoff = 1 / cutoff
@@ -237,7 +237,7 @@ function cutoffGrid(right: WeightedPoint[], width: Km): CutoffGrid {
 }
 
 /** Adds `point` against every point in its own and the 26 neighbouring buckets. */
-function addNeighbours(total: number, point: WeightedPoint, grid: CutoffGrid): number {
+const addNeighbours = (total: number, point: WeightedPoint, grid: CutoffGrid): number => {
   const bx = cellIndex(grid, point.xyz[0])
   const by = cellIndex(grid, point.xyz[1])
   const bz = cellIndex(grid, point.xyz[2])
@@ -252,7 +252,7 @@ function addNeighbours(total: number, point: WeightedPoint, grid: CutoffGrid): n
   return total
 }
 
-function addBucket(total: number, list: number[], point: WeightedPoint, grid: CutoffGrid): number {
+const addBucket = (total: number, list: number[], point: WeightedPoint, grid: CutoffGrid): number => {
   const xi = point.xyz[0],
     yi = point.xyz[1],
     zi = point.xyz[2],
@@ -274,7 +274,7 @@ function addBucket(total: number, list: number[], point: WeightedPoint, grid: Cu
  * only visits its 27 neighbouring buckets. When both sides are the same
  * array this is the self pair sum.
  */
-function gaussCrossSum(left: WeightedPoint[], right: WeightedPoint[], width: Km): number {
+const gaussCrossSum = (left: WeightedPoint[], right: WeightedPoint[], width: Km): number => {
   if (right.length === 0 || left.length === 0) return 0
   const grid = cutoffGrid(right, width)
   let total = 0

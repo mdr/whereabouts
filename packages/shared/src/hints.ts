@@ -40,7 +40,7 @@ const MAX_LONGITUDE_SPAN: Degrees = 120
  * `unit` (0 to 1) away from the edges. Edges are rounded outwards to whole
  * degrees, or tenths for a narrow band, so the labels are the band.
  */
-export function hintBand(answer: LatLon, tolerance: Km, axis: HintAxis, unit: number): HintBand {
+export const hintBand = (answer: LatLon, tolerance: Km, axis: HintAxis, unit: number): HintBand => {
   const span = kmToDegrees(HINT_WIDTH_TOLERANCES * tolerance)
   const at = EDGE + unit * (1 - 2 * EDGE)
   if (axis === HintAxis.LATITUDE) {
@@ -57,7 +57,7 @@ export function hintBand(answer: LatLon, tolerance: Km, axis: HintAxis, unit: nu
 }
 
 /** Whether a point lies in the band. */
-export function inHintBand(band: HintBand, point: LatLon): boolean {
+export const inHintBand = (band: HintBand, point: LatLon): boolean => {
   if (band.axis === HintAxis.LATITUDE) return point.lat >= band.from && point.lat <= band.to
   return band.from <= band.to
     ? point.lon >= band.from && point.lon <= band.to
@@ -65,15 +65,15 @@ export function inHintBand(band: HintBand, point: LatLon): boolean {
 }
 
 /** The paint without its cells wholly outside the band, split at the band's edges down to `finestResolution`. */
-export function trimToHint(
+export const trimToHint = (
   cells: ReadonlyMap<H3Cell, number>,
   band: HintBand,
   finestResolution: H3Resolution
-): Map<H3Cell, number> {
+): Map<H3Cell, number> => {
   return keepCells(cells, (cell) => cellMeetsBand(cell, band), finestResolution)
 }
 
-function cellMeetsBand(cell: H3Cell, band: HintBand): boolean {
+const cellMeetsBand = (cell: H3Cell, band: HintBand): boolean => {
   const corners = cellBoundaryLatLng(cell)
   if (band.axis === HintAxis.LATITUDE) {
     const lats = corners.map(([lat]) => lat)
@@ -89,7 +89,7 @@ function cellMeetsBand(cell: H3Cell, band: HintBand): boolean {
 }
 
 /** "Between 23°N and 37°N", "Between 170°E and 165°W". */
-export function describeHint(band: HintBand): string {
+export const describeHint = (band: HintBand): string => {
   const [positive, negative] = band.axis === HintAxis.LATITUDE ? ["N", "S"] : ["E", "W"]
   const describe = (degrees: Degrees) => {
     const magnitude = Math.abs(Math.round(degrees * 10) / 10)
@@ -99,7 +99,7 @@ export function describeHint(band: HintBand): string {
 }
 
 /** A number from 0 to 1 that depends only on its inputs (mulberry32). */
-export function seededUnit(...parts: number[]): number {
+export const seededUnit = (...parts: number[]): number => {
   let state = parts.reduce((hash, part) => Math.imul(hash ^ part, 0x9e3779b1) >>> 0, 0x6d2b79f5)
   state = Math.imul(state ^ (state >>> 15), state | 1)
   state ^= state + Math.imul(state ^ (state >>> 7), state | 61)

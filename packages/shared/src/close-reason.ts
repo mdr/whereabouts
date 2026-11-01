@@ -20,6 +20,6 @@ export enum CloseReason {
   SERVER_RESTARTED = "SERVER_RESTARTED"
 }
 
-export function isCloseReason(text: string): text is CloseReason {
+export const isCloseReason = (text: string): text is CloseReason => {
   return (Object.values(CloseReason) as string[]).includes(text)
 }

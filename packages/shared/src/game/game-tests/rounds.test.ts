@@ -9,7 +9,7 @@ import { T0, viewOf, tokA, tokB, tokC, paintAt, paintOn, twoPlayerGame, currentQ
 
 describe("round loop", () => {
   describe("at the deadline", () => {
-    function revealedAfterDeadline() {
+    const revealedAfterDeadline = () => {
       const game = twoPlayerGame(1)
       game.start(tokA, T0)
       const question = currentQuestion(game, tokA, T0)

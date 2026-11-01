@@ -15,7 +15,7 @@ import { compactCells, polygonToCellsExperimental, POLYGON_TO_CELLS_FLAGS } from
 const WATER_RESOLUTION = 5
 const NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson"
 
-async function polygons(name) {
+const polygons = async (name) => {
   const dir = process.argv[2]
   const text = dir
     ? readFileSync(`${dir}/${name}.geojson`, "utf8")

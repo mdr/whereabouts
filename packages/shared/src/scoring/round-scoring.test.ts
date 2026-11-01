@@ -17,13 +17,13 @@ const germany = answerOf("germany-region") as Area
 const T0 = 1_000_000
 const TIMING = { startedAt: T0, roundLength: 60_000 }
 
-function paintAround(answer: ScoredAnswer, lat: number, lon: number): PaintSubmission {
+const paintAround = (answer: ScoredAnswer, lat: number, lon: number): PaintSubmission => {
   const layer = new PaintLayer(resolutionForTolerance(answer.tolerance))
   layer.stamp({ lat, lon }, answer.tolerance / 2, 1)
   return { cells: layer.toRecord(), floor: 0.05 }
 }
 
-function paintAll(area: Area): PaintSubmission {
+const paintAll = (area: Area): PaintSubmission => {
   const resolution = resolutionForTolerance(area.tolerance)
   return { cells: Object.fromEntries(regionCells(area, resolution).map((cell) => [cell, 1])), floor: 0.05 }
 }

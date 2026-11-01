@@ -58,7 +58,7 @@ const TicketSchema = z.object({
  * punctuation, so they are base64url-encoded JSON. TextEncoder and btoa are
  * available in browsers and Node 22 alike.
  */
-export function encodeTicket(ticket: Ticket): string {
+export const encodeTicket = (ticket: Ticket): string => {
   const bytes = new TextEncoder().encode(JSON.stringify(ticket))
   let bin = ""
   for (const b of bytes) bin += String.fromCharCode(b)
@@ -66,7 +66,7 @@ export function encodeTicket(ticket: Ticket): string {
 }
 
 /** The ticket, or OUTDATED for one from a client of another protocol version, or undefined for one not a ticket at all. */
-export function decodeTicket(raw: string): Ticket | CloseReason.OUTDATED | undefined {
+export const decodeTicket = (raw: string): Ticket | CloseReason.OUTDATED | undefined => {
   try {
     const b64 = raw.replace(/-/g, "+").replace(/_/g, "/")
     const bin = atob(b64 + "=".repeat((4 - (b64.length % 4)) % 4))

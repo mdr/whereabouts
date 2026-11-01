@@ -67,11 +67,11 @@ export class LandMask {
  * meets a painted cell of its own, their densities add, as overlapping
  * cells always do.
  */
-export function trimSea(
+export const trimSea = (
   cells: ReadonlyMap<H3Cell, number>,
   mask: LandMask,
   finestResolution: H3Resolution
-): Map<H3Cell, number> {
+): Map<H3Cell, number> => {
   return keepCells(cells, (cell) => mask.nearLand(cell), h3Resolution(Math.min(mask.resolution, finestResolution)))
 }
 
@@ -107,11 +107,11 @@ export class WaterMask {
 }
 
 /** The paint without its cells on dry land, split as trimSea splits. */
-export function trimLand(
+export const trimLand = (
   cells: ReadonlyMap<H3Cell, number>,
   mask: WaterMask,
   finestResolution: H3Resolution
-): Map<H3Cell, number> {
+): Map<H3Cell, number> => {
   return keepCells(cells, (cell) => mask.nearWater(cell), h3Resolution(Math.min(mask.resolution, finestResolution)))
 }
 
@@ -119,11 +119,11 @@ export function trimLand(
  * The paint in the cells `keep` accepts. A cell coarser than `target` that
  * `keep` accepts only some children of is split into those children.
  */
-export function keepCells(
+export const keepCells = (
   cells: ReadonlyMap<H3Cell, number>,
   keep: (h: H3Cell) => boolean,
   target: H3Resolution
-): Map<H3Cell, number> {
+): Map<H3Cell, number> => {
   const kept = new Map<H3Cell, number>()
   const add = (h: H3Cell, v: number) => kept.set(h, (kept.get(h) ?? 0) + v)
   for (const [h, v] of cells) {
@@ -141,7 +141,7 @@ export function keepCells(
 }
 
 /** How much paint there is, in intensity × km²: intensity is a density, so a cell holds intensity times its area. */
-export function paintAmount(cells: ReadonlyMap<H3Cell, number>): number {
+export const paintAmount = (cells: ReadonlyMap<H3Cell, number>): number => {
   let sum = 0
   for (const [h, v] of cells) sum += v * cellArea(h)
   return sum

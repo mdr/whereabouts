@@ -65,7 +65,7 @@ export type Area = AreaAnswer & { polygons: Outline }
 export type ScoredAnswer = PointAnswer | Area
 
 /** An answer ready to score, its outline looked up. */
-export function scoredAnswer(answer: Answer, outlines: Outlines): ScoredAnswer {
+export const scoredAnswer = (answer: Answer, outlines: Outlines): ScoredAnswer => {
   if (answer.type === AnswerType.POINT) return answer
   const polygons = outlines.get(answer.outline)
   if (!polygons) throw new Error(`no outline ${answer.outline}`)
@@ -107,12 +107,12 @@ export interface AreaScore {
  * to half the tolerance across: far finer than its narrowest Gaussian, and
  * much faster.
  */
-export function regionScoringResolution(tolerance: Km): H3Resolution {
+export const regionScoringResolution = (tolerance: Km): H3Resolution => {
   return h3Resolution(Math.max(0, resolutionForTolerance(tolerance) - 1))
 }
 
 /** The region's cells at `resolution`: those whose centres fall inside the outline. */
-export function regionCells(area: Area, resolution: H3Resolution): H3Cell[] {
+export const regionCells = (area: Area, resolution: H3Resolution): H3Cell[] => {
   const cells = new Set<H3Cell>()
   for (const polygon of area.polygons) for (const cell of polygonToCells(polygon, resolution, true)) cells.add(cell)
   return [...cells]
@@ -121,7 +121,7 @@ export function regionCells(area: Area, resolution: H3Resolution): H3Cell[] {
 const boxes = new Map<OutlineId, Box>()
 
 /** Whether a point is inside a region's outline: inside an odd number of each polygon's rings. */
-export function insideRegion(area: Area, { lat, lon }: LatLon): boolean {
+export const insideRegion = (area: Area, { lat, lon }: LatLon): boolean => {
   let box = boxes.get(area.outline)
   if (!box) {
     const points = area.polygons.flatMap((polygon) => polygon[0]!)
@@ -148,7 +148,7 @@ export function insideRegion(area: Area, { lat, lon }: LatLon): boolean {
  * inside the other's outline (Gaborone and Botswana, Honshu and Japan), or
  * two places close together.
  */
-export function roundsOverlap(a: ScoredAnswer, b: ScoredAnswer): boolean {
+export const roundsOverlap = (a: ScoredAnswer, b: ScoredAnswer): boolean => {
   if (a.type === AnswerType.POINT && b.type === AnswerType.POINT) return greatCircleDistance(a.at, b.at) <= MIN_SPREAD
   return (
     (a.type === AnswerType.AREA && insideRegion(a, answerCentre(b))) ||
@@ -159,7 +159,7 @@ export function roundsOverlap(a: ScoredAnswer, b: ScoredAnswer): boolean {
 const answers = new Map<string, RegionAnswer>()
 
 /** The kernel-scoring answer for a question, cached per kernel. */
-function regionAnswerFor(area: Area, k: Kernel = NEARNESS_KERNEL): RegionAnswer {
+const regionAnswerFor = (area: Area, k: Kernel = NEARNESS_KERNEL): RegionAnswer => {
   const key = `${area.outline}|${k.id}`
   let cached = answers.get(key)
   if (!cached) {
@@ -169,7 +169,7 @@ function regionAnswerFor(area: Area, k: Kernel = NEARNESS_KERNEL): RegionAnswer 
   return cached
 }
 
-export function scoreArea(painted: Distribution, area: Area): AreaScore {
+export const scoreArea = (painted: Distribution, area: Area): AreaScore => {
   const shape = shapeScore(paintMass(painted, area), area)
   const coarse = coarsenDistribution(painted, regionScoringResolution(area.tolerance))
   const nearness = scoreRegion(coarse, regionAnswerFor(area)).score
@@ -200,11 +200,11 @@ export type AnswerParts = PointParts | AreaParts
  * A guess's score, by its question's rule; `painted` undefined is a pass.
  * Games, practice and score review all score through here.
  */
-export function scoreAnswer(
+export const scoreAnswer = (
   painted: Distribution | undefined,
   answer: ScoredAnswer,
   kernel: Kernel
-): { score: Points; parts: AnswerParts } {
+): { score: Points; parts: AnswerParts } => {
   if (!painted) return { score: PASS_SCORE.score, parts: { type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B } }
   if (answer.type === AnswerType.AREA) {
     const { score, shape, nearness } = scoreArea(painted, answer)
@@ -223,7 +223,7 @@ export function scoreAnswer(
  * credit below; so an exact paint covers all of it, and so does a 50/50
  * hedge with another place.
  */
-export function regionFit(painted: Distribution, area: Area): { coverage: number; precision: number } {
+export const regionFit = (painted: Distribution, area: Area): { coverage: number; precision: number } => {
   const paintedMass = 1 - painted.floor
   const region = regionAt(area)
   let onMass = 0
@@ -260,7 +260,7 @@ export interface RegionMisfit {
 const LEAN = 0.4
 
 /** regionFit, and where the paint off the country lies, for the awards. */
-export function regionMisfit(painted: Distribution, area: Area): RegionMisfit {
+export const regionMisfit = (painted: Distribution, area: Area): RegionMisfit => {
   const { coverage, precision } = regionFit(painted, area)
   const region = regionAt(area)
   const mass = paintMass(painted, area)
@@ -278,13 +278,13 @@ export function regionMisfit(painted: Distribution, area: Area): RegionMisfit {
   return { coverage, precision, off }
 }
 
-function latLng(cell: H3Cell): LatLon {
+const latLng = (cell: H3Cell): LatLon => {
   const [lat, lon] = cellToLatLng(cell)
   return { lat, lon }
 }
 
 /** The weighted cells' mass centre, if they lean away from `centre` rather than surround it. */
-function leaning(centre: LatLon, cells: [H3Cell, number][]): LatLon | undefined {
+const leaning = (centre: LatLon, cells: [H3Cell, number][]): LatLon | undefined => {
   let total = 0
   let meanDistance: Km = 0
   const sum = [0, 0, 0]
@@ -313,7 +313,7 @@ interface Region {
 const regions = new Map<OutlineId, Region>()
 
 /** The country's cells at the painting resolution, with their areas. */
-function regionAt(area: Area): Region {
+const regionAt = (area: Area): Region => {
   let region = regions.get(area.outline)
   if (!region) {
     const resolution = resolutionForTolerance(area.tolerance)
@@ -331,7 +331,7 @@ function regionAt(area: Area): Region {
 }
 
 /** Whether a cell coarser than the painting resolution overlaps the country. */
-function overlaps(region: Region, cell: H3Cell, resolution: H3Resolution): boolean {
+const overlaps = (region: Region, cell: H3Cell, resolution: H3Resolution): boolean => {
   let set = region.ancestors.get(resolution)
   if (!set) {
     set = new Set([...region.cells.keys()].map((regionCell) => cellToParent(regionCell, resolution)))
@@ -347,7 +347,7 @@ function overlaps(region: Region, cell: H3Cell, resolution: H3Resolution): boole
  * only their total mass counts, and splitting a world painted at world zoom
  * would mean millions of cells. The world floor is left out.
  */
-function paintMass(painted: Distribution, area: Area): Map<H3Cell, number> {
+const paintMass = (painted: Distribution, area: Area): Map<H3Cell, number> => {
   const paintResolution = resolutionForTolerance(area.tolerance)
   const region = regionAt(area)
   const mass = new Map<H3Cell, number>()
@@ -373,7 +373,7 @@ function paintMass(painted: Distribution, area: Area): Map<H3Cell, number> {
  * the country's cells, clamped at 0. With q spread evenly by area, q = a / A
  * in each of them (A its area), so sum q^2 / a = 1 / A.
  */
-function shapeScore(mass: Map<H3Cell, number>, area: Area): Points {
+const shapeScore = (mass: Map<H3Cell, number>, area: Area): Points => {
   const region = regionAt(area)
   let sum = 0
   for (const [cell, area] of region.cells) {

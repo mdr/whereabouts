@@ -51,7 +51,7 @@ const MAGIC = "whereabouts-case 1"
 const LINE_WIDTH = 76
 const INTENSITY_LEVELS = 65535
 
-export async function encodeCase(scoringCase: ScoringCase): Promise<string> {
+export const encodeCase = async (scoringCase: ScoringCase): Promise<string> => {
   const question = scoringCase.question
   const parts =
     scoringCase.parts.type === AnswerType.POINT
@@ -82,7 +82,7 @@ export async function encodeCase(scoringCase: ScoringCase): Promise<string> {
   ].join("\n")
 }
 
-export async function decodeCase(text: string): Promise<ScoringCase> {
+export const decodeCase = async (text: string): Promise<ScoringCase> => {
   const lines = text
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -151,7 +151,7 @@ export async function decodeCase(text: string): Promise<ScoringCase> {
 
 const round = (value: number, places: number) => Number(value.toFixed(places))
 
-function writeVarint(out: number[], value: bigint): void {
+const writeVarint = (out: number[], value: bigint): void => {
   do {
     const byte = Number(value & 0x7fn)
     value >>= 7n
@@ -159,7 +159,7 @@ function writeVarint(out: number[], value: bigint): void {
   } while (value > 0n)
 }
 
-function readVarint(bytes: Uint8Array, at: number): [bigint, number] {
+const readVarint = (bytes: Uint8Array, at: number): [bigint, number] => {
   let value = 0n
   let shift = 0n
   for (;;) {
@@ -171,29 +171,29 @@ function readVarint(bytes: Uint8Array, at: number): [bigint, number] {
   }
 }
 
-async function deflate(bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array> {
+const deflate = async (bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array> => {
   return pipe(bytes, new CompressionStream("deflate-raw"))
 }
 
-async function inflate(bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array> {
+const inflate = async (bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array> => {
   return pipe(bytes, new DecompressionStream("deflate-raw"))
 }
 
-async function pipe(
+const pipe = async (
   bytes: Uint8Array<ArrayBuffer>,
   stream: CompressionStream | DecompressionStream
-): Promise<Uint8Array> {
+): Promise<Uint8Array> => {
   const out = new Response(new Blob([bytes]).stream().pipeThrough(stream))
   return new Uint8Array(await out.arrayBuffer())
 }
 
-function toBase64Url(bytes: Uint8Array): string {
+const toBase64Url = (bytes: Uint8Array): string => {
   let binary = ""
   for (const byte of bytes) binary += String.fromCharCode(byte)
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
 }
 
-function fromBase64Url(text: string): Uint8Array<ArrayBuffer> {
+const fromBase64Url = (text: string): Uint8Array<ArrayBuffer> => {
   const base64 = text.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/")
   return Uint8Array.from(atob(base64 + "=".repeat((4 - (base64.length % 4)) % 4)), (char) => char.charCodeAt(0))
 }

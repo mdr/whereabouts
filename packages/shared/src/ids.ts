@@ -31,7 +31,7 @@ export type RoomCode = z.infer<typeof RoomCodeSchema>
 export const roomCode = (text: string): RoomCode => RoomCodeSchema.parse(text)
 
 /** Generate a join code that avoids look-alike characters. */
-export function generateCode(random: () => number = Math.random, length = 4): RoomCode {
+export const generateCode = (random: () => number = Math.random, length = 4): RoomCode => {
   const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
   let out = ""
   for (let i = 0; i < length; i++) out += alphabet.charAt(Math.floor(random() * alphabet.length))

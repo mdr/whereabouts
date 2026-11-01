@@ -21,11 +21,11 @@ const SALTS = [0x9e3779b9, 0x7f4a7c15, 0x2545f491, 0x68e31da4, 0x1b873593, 0x85e
  * ("Where is Monaco?" and Monaco's flag, say), and where the pools allow,
  * none overlapping a round already chosen. The same for the same seed.
  */
-export function pickRounds(
+export const pickRounds = (
   { catalogue, outlines }: QuestionBank,
   { mix, mapDetail }: Pick<GameConfig, "mix" | "mapDetail">,
   seed: number
-): Question[] {
+): Question[] => {
   const chosen: Question[] = []
   const asked = new Set<PlaceId>()
   const answer = (question: Question) => scoredAnswer(question.answer, outlines)

@@ -125,7 +125,7 @@ const BORDER_LEFT_OUT = { Russia: [[32, 44, 37, 46.5]] }
 const BORDER_NONE_SOUTH_OF = { Morocco: 27 + 40 / 60 }
 
 /** A ring clipped to the part south of a parallel (Sutherland-Hodgman against one edge). */
-function southOf(ring, lat0) {
+const southOf = (ring, lat0) => {
   const out = []
   for (let i = 0; i < ring.length - 1; i++) {
     const [from, to] = [ring[i], ring[i + 1]]
@@ -143,7 +143,7 @@ const inBoxes = (admin) => (polygon) =>
   )
 
 /** Polygons' rings for borders.json, delta-encoded in hundredths of a degree. */
-function borderRings(polygons) {
+const borderRings = (polygons) => {
   return polygons
     .filter((polygon) => ringAreaKm2(polygon[0]) >= BORDER_MIN_KM2)
     .flatMap((polygon) => polygon.map((ring) => simplifyRing(ring, BORDER_SIMPLIFY_DEG)).filter(Boolean))

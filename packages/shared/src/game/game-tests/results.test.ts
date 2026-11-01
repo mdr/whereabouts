@@ -6,7 +6,7 @@ import { playerId } from "../../ids.ts"
 import { petra, T0, viewOf, tokA, tokB, paintAt, paintOn, twoPlayerGame, currentQuestion } from "./support.ts"
 
 describe("awards", () => {
-  function atResults() {
+  const atResults = () => {
     const game = twoPlayerGame(3)
     game.start(tokA, T0)
     let now = T0

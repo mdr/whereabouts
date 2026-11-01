@@ -7,7 +7,7 @@ import { T0, viewOf, tokA, tokB, tokC, paintAt, paintOn, twoPlayerGame, currentQ
 
 describe("host removes a player", () => {
   describe("removing a player", () => {
-    function inRound() {
+    const inRound = () => {
       const game = twoPlayerGame()
       game.start(tokA, T0)
       const question = currentQuestion(game, tokA, T0)

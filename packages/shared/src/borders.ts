@@ -27,17 +27,17 @@ export type RingSteps = number[]
 /** A ring as lon, lat, lon, lat, … in degrees, packed for fast point-in-ring tests. */
 export type FlatRing = Float64Array
 
-export function ringOf(flat: FlatRing): Ring {
+export const ringOf = (flat: FlatRing): Ring => {
   const out: Ring = []
   for (let i = 0; i < flat.length; i += 2) out.push([flat[i]!, flat[i + 1]!])
   return out
 }
 
-export function flatRing(ring: Ring): FlatRing {
+export const flatRing = (ring: Ring): FlatRing => {
   return Float64Array.from(ring.flat())
 }
 
-function boxOf(ring: FlatRing): Box {
+const boxOf = (ring: FlatRing): Box => {
   const box: Box = [Infinity, Infinity, -Infinity, -Infinity]
   for (let i = 0; i < ring.length; i += 2) {
     box[0] = Math.min(box[0], ring[i]!)
@@ -192,7 +192,7 @@ export class Borders {
 const GRID = 24
 
 /** A point inside the country's largest ring, as far from its edge as a grid search finds. */
-function inside({ country, rings }: Country): LatLon {
+const inside = ({ country, rings }: Country): LatLon => {
   const area = (box: Box) => (box[2] - box[0]) * (box[3] - box[1])
   const ring = rings.reduce((a, b) => (area(boxOf(b)) > area(boxOf(a)) ? b : a))
   const [west, south, east, north] = boxOf(ring)
@@ -213,7 +213,7 @@ function inside({ country, rings }: Country): LatLon {
   return best
 }
 
-export function decodeRing(steps: RingSteps): FlatRing {
+export const decodeRing = (steps: RingSteps): FlatRing => {
   const out = new Float64Array(steps.length)
   let x = 0,
     y = 0
@@ -227,7 +227,7 @@ export function decodeRing(steps: RingSteps): FlatRing {
 }
 
 /** Ray casting in plain longitude and latitude, as Natural Earth's rings are drawn. */
-function inRing(ring: FlatRing, lon: Degrees, lat: Degrees): boolean {
+const inRing = (ring: FlatRing, lon: Degrees, lat: Degrees): boolean => {
   let inside = false
   for (let i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
     const xi = ring[i]!,

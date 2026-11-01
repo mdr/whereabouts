@@ -14,7 +14,7 @@ import { COUNTRIES, PLACES } from "./catalogue.mjs"
 
 const country = (label) => COUNTRIES.find((candidate) => candidate.label === label) ?? fail(label)
 const place = (id) => PLACES.find((candidate) => candidate.id === id) ?? fail(id)
-function fail(what) {
+const fail = (what) => {
   throw new Error(`not found: ${what}`)
 }
 
@@ -30,7 +30,7 @@ const r = P.tolerance
 const rc = C.tolerance
 
 /** Paint parts [{cells, weight}], each spread evenly by area. */
-function coat(parts) {
+const coat = (parts) => {
   const byCell = new Map()
   for (const { cells, weight } of parts) {
     const cellsArea = area(cells)
@@ -60,7 +60,7 @@ const shiftedCountry = (q, km) =>
     },
     resolution
   )
-function grow(cells, km) {
+const grow = (cells, km) => {
   const set = new Set(cells)
   let frontier = cells.filter((cell) => h3.gridDisk(cell, 1).some((neighbour) => !set.has(neighbour)))
   for (let i = 0; i < Math.max(1, Math.round(km / spacing)); i++) {

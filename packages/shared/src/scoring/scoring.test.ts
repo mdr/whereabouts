@@ -26,11 +26,11 @@ const r = 100
 const answer = { lat: 27.175, lon: 78.042 } // Taj Mahal
 
 /** Point `km` kilometres due north of `from` (small-distance approximation is fine here). */
-function north(from: { lat: number; lon: number }, km: number) {
+const north = (from: { lat: number; lon: number }, km: number) => {
   return { lat: from.lat + (km / (Math.PI * EARTH_RADIUS)) * 180, lon: from.lon }
 }
 
-function pointMass(locations: { lat: number; lon: number; p: number }[]): Distribution {
+const pointMass = (locations: { lat: number; lon: number; p: number }[]): Distribution => {
   return { points: locations.map((location) => ({ xyz: toXyz(location), p: location.p })), floor: 0 }
 }
 
@@ -92,7 +92,7 @@ describe("example outcomes", () => {
 
 describe("uniform floor", () => {
   /** A single Gaussian's mean over the sphere, from `n` seeded random points. */
-  function monteCarloMean(width: number, n: number): number {
+  const monteCarloMean = (width: number, n: number): number => {
     let seed = 12345
     const random = () => {
       seed = (seed * 1664525 + 1013904223) % 4294967296
@@ -262,7 +262,7 @@ describe("mixture kernels", () => {
   })
 
   /** Uniform disc of `radius` around `centre`, as a distribution. */
-  function disc(centre: { lat: number; lon: number }, radius: number): Distribution {
+  const disc = (centre: { lat: number; lon: number }, radius: number): Distribution => {
     const points = []
     const step = radius / 12
     for (let dx = -radius; dx <= radius; dx += step) {
@@ -331,7 +331,7 @@ describe("mixture kernels", () => {
 describe("patch-aware kernel", () => {
   const { cellToChildren, latLngToCell } = h3
 
-  function cellDistribution(cells: H3Cell[], floor = 0): Distribution {
+  const cellDistribution = (cells: H3Cell[], floor = 0): Distribution => {
     return buildDistribution(
       cells.map((cell) => {
         const [lat, lon] = h3.cellToLatLng(cell)

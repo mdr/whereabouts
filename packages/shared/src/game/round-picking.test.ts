@@ -8,7 +8,7 @@ import outlinesJson from "../../outlines.json" with { type: "json" }
 const OUTLINES = outlinesFrom(outlinesJson)
 const byId = (id: string) => CATALOGUE.find((question) => question.id === id)!
 
-function pick({
+const pick = ({
   catalogue = CATALOGUE,
   mix,
   mapDetail = MapDetail.MINIMAL,
@@ -18,7 +18,7 @@ function pick({
   mix: QuestionMix
   mapDetail?: MapDetail
   seed?: number
-}): Question[] {
+}): Question[] => {
   const bank: QuestionBank = { catalogue, outlines: OUTLINES }
   return pickRounds(bank, { mix, mapDetail }, seed)
 }

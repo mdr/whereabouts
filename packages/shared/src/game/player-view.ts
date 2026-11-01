@@ -18,13 +18,13 @@ export interface ViewContext {
 }
 
 /** A view for a seated token; undefined for one with no seat (removed, left, or turned away). */
-export function playerView(
+export const playerView = (
   context: ViewContext,
   seats: Seats,
   state: GameState,
   token: PlayerToken,
   now: Instant
-): GameView | undefined {
+): GameView | undefined => {
   const { questions } = context
   const seat = seats.get(token)
   if (!seat) return undefined
@@ -78,17 +78,17 @@ export function playerView(
   }
 }
 
-function nextHostView(seats: Seats, token: PlayerToken): { nextHost?: PlayerId } {
+const nextHostView = (seats: Seats, token: PlayerToken): { nextHost?: PlayerId } => {
   const nextHost = seats.nextHost(token)
   return nextHost ? { nextHost } : {}
 }
 
 /** This player's hint band on the round played or revealed. */
-function hintView(context: ViewContext, state: InPlayState, token: PlayerToken): { hint?: HintBand } {
+const hintView = (context: ViewContext, state: InPlayState, token: PlayerToken): { hint?: HintBand } => {
   const axis = state.hints.get(token)
   return axis ? { hint: roundHintBand(state.round.question, context.seed, state.round.index, axis) } : {}
 }
 
-function readyIds(seats: Seats, ready: ReadonlySet<PlayerToken>): PlayerId[] {
+const readyIds = (seats: Seats, ready: ReadonlySet<PlayerToken>): PlayerId[] => {
   return [...ready].flatMap((token) => seats.get(token)?.id ?? [])
 }

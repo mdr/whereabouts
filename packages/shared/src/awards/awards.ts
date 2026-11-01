@@ -9,7 +9,7 @@ import type { PlayerFacts, Award } from "./player-facts.ts"
 import type { Candidate } from "./rules/rule-kit.ts"
 
 /** Two booby prizes to every real one, while both last. */
-function interleave(candidates: Candidate[]): Candidate[] {
+const interleave = (candidates: Candidate[]): Candidate[] => {
   const boobies = candidates.filter((candidate) => candidate.booby)
   const prizes = candidates.filter((candidate) => !candidate.booby)
   const ordered: Candidate[] = []
@@ -22,7 +22,7 @@ function interleave(candidates: Candidate[]): Candidate[] {
 const hasAny = (set: Set<PlayerId>, ids: PlayerId[]) => ids.some((id) => set.has(id))
 
 /** Up to `max`, one each first, then seconds if there are fewer players than awards. */
-function spread(ordered: Candidate[], max: number): Candidate[] {
+const spread = (ordered: Candidate[], max: number): Candidate[] => {
   const picked: Candidate[] = []
   const awarded = new Set<PlayerId>()
   for (const firstPass of [true, false]) {
@@ -36,7 +36,7 @@ function spread(ordered: Candidate[], max: number): Candidate[] {
   return picked
 }
 
-export function pickAwards(players: PlayerFacts[], seed: number): Award[] {
+export const pickAwards = (players: PlayerFacts[], seed: number): Award[] => {
   const ordered = interleave(shuffle(candidateAwards(players), seed))
   const max = Math.min(5, Math.max(3, players.length))
   return spread(ordered, max).map(({ booby: _, ...award }) => award)

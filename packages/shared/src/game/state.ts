@@ -53,7 +53,7 @@ export const LOBBY_STATE: LobbyState = { phase: Phase.LOBBY }
 export const isLocked = (submission: Submission | undefined): boolean => submission?.type === SubmissionType.LOCKED
 
 /** Locked in on the round under way, or on show. */
-export function lockedIn(state: GameState, token: PlayerToken): boolean {
+export const lockedIn = (state: GameState, token: PlayerToken): boolean => {
   switch (state.phase) {
     case Phase.GUESSING:
       return isLocked(state.submissions.get(token))
@@ -66,7 +66,7 @@ export function lockedIn(state: GameState, token: PlayerToken): boolean {
 }
 
 /** The first round index a player seated now may play. */
-export function joiningRound(state: GameState): number {
+export const joiningRound = (state: GameState): number => {
   switch (state.phase) {
     case Phase.LOBBY:
       return 0

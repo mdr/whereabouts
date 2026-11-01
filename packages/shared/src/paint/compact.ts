@@ -10,7 +10,7 @@ export const PAINT_CELL_BUDGET = 6000
  * mass scores almost identically. Cells end up at mixed resolutions, all at
  * or coarser than the original.
  */
-export function compactRecord(cells: Record<H3Cell, number>, budget = PAINT_CELL_BUDGET): Record<H3Cell, number> {
+export const compactRecord = (cells: Record<H3Cell, number>, budget = PAINT_CELL_BUDGET): Record<H3Cell, number> => {
   let current = cells
   let count = Object.keys(current).length
   while (count > budget) {

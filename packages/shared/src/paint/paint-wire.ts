@@ -16,7 +16,7 @@ const CELL_BYTES = 12
 const MIN_INTENSITY = 1e-30
 const MAX_INTENSITY = 1e9
 
-export function encodePaint(paint: PaintSubmission): Uint8Array {
+export const encodePaint = (paint: PaintSubmission): Uint8Array => {
   const entries = cellEntries(paint.cells)
   const view = new DataView(new ArrayBuffer(HEADER_BYTES + entries.length * CELL_BYTES))
   view.setFloat64(0, paint.floor, true)
@@ -31,7 +31,7 @@ export function encodePaint(paint: PaintSubmission): Uint8Array {
 }
 
 /** The paint in these bytes, or undefined unless every cell is real and the whole is within bounds. */
-export function decodePaint(bytes: Uint8Array): PaintSubmission | undefined {
+export const decodePaint = (bytes: Uint8Array): PaintSubmission | undefined => {
   const count = (bytes.byteLength - HEADER_BYTES) / CELL_BYTES
   if (!Number.isInteger(count) || count < 0 || count > PAINT_CELL_BUDGET) return undefined
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
@@ -49,7 +49,7 @@ export function decodePaint(bytes: Uint8Array): PaintSubmission | undefined {
 }
 
 /** Binary paint as text, to travel inside JSON (the reveal). */
-export function paintToBase64(paint: PaintSubmission): string {
+export const paintToBase64 = (paint: PaintSubmission): string => {
   const bytes = encodePaint(paint)
   let binary = ""
   // In chunks: spreading a whole large paint into one call overflows the stack.
@@ -57,7 +57,7 @@ export function paintToBase64(paint: PaintSubmission): string {
   return btoa(binary)
 }
 
-export function paintFromBase64(text: string): PaintSubmission | undefined {
+export const paintFromBase64 = (text: string): PaintSubmission | undefined => {
   try {
     return decodePaint(Uint8Array.from(atob(text), (char) => char.charCodeAt(0)))
   } catch {

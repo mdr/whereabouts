@@ -47,7 +47,7 @@ export const factsFor = (facts: PlaceFacts | undefined, type: QuestionType): Fac
  * so every player in a game sees the same one. Rounds alternate between
  * what makes a place notable and trivia; a flag round tells of its flag.
  */
-export function pickFact(facts: readonly Fact[] | undefined, seed: string, round: number): Fact | undefined {
+export const pickFact = (facts: readonly Fact[] | undefined, seed: string, round: number): Fact | undefined => {
   if (!facts?.length) return undefined
   const wanted = facts.some((fact) => fact.type === FactType.FLAG)
     ? FactType.FLAG
@@ -60,7 +60,7 @@ export function pickFact(facts: readonly Fact[] | undefined, seed: string, round
 }
 
 /** FNV-1a: a spread of picks from similar seeds. */
-function hash(text: string): number {
+const hash = (text: string): number => {
   let value = 0x811c9dc5
   for (let i = 0; i < text.length; i++) value = Math.imul(value ^ text.charCodeAt(i), 0x01000193)
   return value >>> 0

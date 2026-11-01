@@ -15,7 +15,7 @@ const sortedCatalogue = (types, questions) =>
     .map(({ id, type, place, clue, answer }) => ({ id, type, place, clue, answer }))
 
 /** The places the catalogue asks about, each once, with optional fields only when set. */
-function placesAsked(catalogue, places) {
+const placesAsked = (catalogue, places) => {
   const allPlaces = new Map(read("places.json").map((place) => [place.id, place]))
   for (const place of places) allPlaces.set(place.id, { ...allPlaces.get(place.id), ...place })
   const asked = new Map()
@@ -38,7 +38,7 @@ function placesAsked(catalogue, places) {
 }
 
 /** The outlines of the areas the catalogue's AREA questions are about, by id. */
-function outlinesUsed(catalogue, asked, outlines) {
+const outlinesUsed = (catalogue, asked, outlines) => {
   const allOutlines = { ...read("outlines.json"), ...outlines }
   const used = {}
   for (const question of catalogue) {
@@ -54,7 +54,7 @@ function outlinesUsed(catalogue, asked, outlines) {
  * Write `questions` as the catalogue's questions of `types`, with the places
  * they bring (over any of the same id, keeping what they leave out) and those places' outlines by id.
  */
-export function writeQuestions(types, questions, places, outlines) {
+export const writeQuestions = (types, questions, places, outlines) => {
   const catalogue = sortedCatalogue(types, questions)
   const asked = placesAsked(catalogue, places)
   const used = outlinesUsed(catalogue, asked, outlines)

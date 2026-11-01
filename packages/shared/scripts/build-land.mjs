@@ -19,7 +19,7 @@ const LAND_RESOLUTION = 5
 const NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson"
 const FILES = ["ne_10m_land", "ne_10m_minor_islands"]
 
-async function features(name) {
+const features = async (name) => {
   const dir = process.argv[2]
   const text = dir
     ? readFileSync(`${dir}/${name}.geojson`, "utf8")

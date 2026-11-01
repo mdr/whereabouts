@@ -72,7 +72,7 @@ export const KERNELS: ChoosableKernel[] = [
 /** The kernel games and practice score with; the others are for comparison in the dev drawer. */
 export const DEFAULT_KERNEL: ChoosableKernel = KERNELS[1]!
 
-export function kernelById(id: KernelId): ChoosableKernel {
+export const kernelById = (id: KernelId): ChoosableKernel => {
   return KERNELS.find((choice) => choice.id === id)!
 }
 
@@ -109,7 +109,7 @@ export interface ScoreBreakdown {
   B: number
 }
 
-export function kernel(distance: Km, tolerance: Km, k: Kernel = DEFAULT_KERNEL): number {
+export const kernel = (distance: Km, tolerance: Km, k: Kernel = DEFAULT_KERNEL): number => {
   return kernelFromSq(distance * distance, tolerance, k)
 }
 
@@ -120,7 +120,7 @@ export function kernel(distance: Km, tolerance: Km, k: Kernel = DEFAULT_KERNEL):
  * With t = 1 - cos(theta) and a = 2 R^2 ln2 / r^2, k = exp(-a t) and the
  * uniform measure in t is dt/2 on [0, 2], giving (1 - e^{-2a}) / (2a).
  */
-export function uniformKernelMean(tolerance: Km, k: Kernel = DEFAULT_KERNEL): number {
+export const uniformKernelMean = (tolerance: Km, k: Kernel = DEFAULT_KERNEL): number => {
   let sum = 0
   for (let i = 0; i < k.scales.length; i++) {
     sum += k.weights[i]! * gaussUniformMean(k.scales[i]! * tolerance)
@@ -128,7 +128,7 @@ export function uniformKernelMean(tolerance: Km, k: Kernel = DEFAULT_KERNEL): nu
   return sum
 }
 
-function gaussUniformMean(width: Km): number {
+const gaussUniformMean = (width: Km): number => {
   const a = (2 * EARTH_RADIUS * EARTH_RADIUS * LN2) / (width * width)
   return (1 - Math.exp(-2 * a)) / (2 * a)
 }
@@ -146,12 +146,12 @@ function gaussUniformMean(width: Km): number {
 const REFINE_ABOVE = 0.4
 
 /** A(y) = expected similarity to the answer y. */
-export function similarityToAnswer(
+export const similarityToAnswer = (
   painted: Distribution,
   answer: Xyz,
   tolerance: Km,
   k: Kernel = DEFAULT_KERNEL
-): number {
+): number => {
   let A = 0
   const widest = tolerance * Math.max(...k.scales)
   for (const point of painted.points) {
@@ -161,7 +161,7 @@ export function similarityToAnswer(
   return A
 }
 
-function patchSimilarity(point: WeightedPoint, answer: Xyz, tolerance: Km, widest: Km, k: Kernel): number {
+const patchSimilarity = (point: WeightedPoint, answer: Xyz, tolerance: Km, widest: Km, k: Kernel): number => {
   const s2 = point.s2 ?? 0
   const dSq = chordDistanceSq(point.xyz, answer)
   if (!point.cell || s2 <= (REFINE_ABOVE * tolerance) ** 2) return point.p * kernelFromSq(dSq, tolerance, k, s2)
@@ -189,12 +189,12 @@ function patchSimilarity(point: WeightedPoint, answer: Xyz, tolerance: Km, wides
 }
 
 /** B = expected self-similarity of the distribution. Does not depend on the answer. */
-export function selfSimilarity(
+export const selfSimilarity = (
   painted: Distribution,
   tolerance: Km,
   exact = false,
   k: Kernel = DEFAULT_KERNEL
-): number {
+): number => {
   const K = uniformKernelMean(tolerance, k)
   const paintedMass = 1 - painted.floor
   let B = pairSum(painted.points, tolerance, exact, k)
@@ -204,7 +204,7 @@ export function selfSimilarity(
   return B
 }
 
-export function scoreFromParts(A: number, B: number): Points {
+export const scoreFromParts = (A: number, B: number): Points => {
   return 500 * (1 + 2 * A - B)
 }
 
@@ -217,13 +217,13 @@ export function scoreFromParts(A: number, B: number): Points {
  */
 export const PASS_SCORE: ScoreBreakdown = { score: 250, A: 0, B: 0.5 }
 
-export function scoreDistribution(
+export const scoreDistribution = (
   painted: Distribution,
   answer: LatLon,
   tolerance: Km,
   k: Kernel = DEFAULT_KERNEL,
   exact = false
-): ScoreBreakdown {
+): ScoreBreakdown => {
   const A = similarityToAnswer(painted, toXyz(answer), tolerance, k)
   const B = selfSimilarity(painted, tolerance, exact, k)
   return { score: scoreFromParts(A, B), A, B }
@@ -267,12 +267,12 @@ export interface RegionScore extends ScoreBreakdown {
 }
 
 /** One Gaussian component of a kernel, as a kernel of its own. */
-function component(k: Kernel, index: number): Kernel {
+const component = (k: Kernel, index: number): Kernel => {
   return { id: `${k.id}#${index}`, label: k.label, scales: [k.scales[index]!], weights: [1] }
 }
 
 /** Region answer from H3 cells (any mix of resolutions), weighted by area. */
-export function regionAnswer(cells: Iterable<H3Cell>, tolerance: Km, k: Kernel = DEFAULT_KERNEL): RegionAnswer {
+export const regionAnswer = (cells: Iterable<H3Cell>, tolerance: Km, k: Kernel = DEFAULT_KERNEL): RegionAnswer => {
   const raw: WeightedPoint[] = []
   let total = 0
   for (const cell of cells) {
@@ -291,7 +291,7 @@ export function regionAnswer(cells: Iterable<H3Cell>, tolerance: Km, k: Kernel =
  * their mass; coarser cells are left alone. Cells are scored as patches, so
  * this changes scores only slightly while cutting the work sharply.
  */
-export function coarsenDistribution(painted: Distribution, resolution: H3Resolution): Distribution {
+export const coarsenDistribution = (painted: Distribution, resolution: H3Resolution): Distribution => {
   const merged = new Map<H3Cell, number>()
   const points: WeightedPoint[] = []
   for (const point of painted.points) {
@@ -308,7 +308,7 @@ export function coarsenDistribution(painted: Distribution, resolution: H3Resolut
   return { points, floor: painted.floor }
 }
 
-export function scoreRegion(painted: Distribution, region: RegionAnswer, exact = false): RegionScore {
+export const scoreRegion = (painted: Distribution, region: RegionAnswer, exact = false): RegionScore => {
   const { tolerance, kernel: k } = region
   let score = 0
   let A = 0
@@ -335,10 +335,10 @@ export function scoreRegion(painted: Distribution, region: RegionAnswer, exact =
  * `intensity` is paint density; `area` is the cell's real area, so mass is
  * proportional to intensity x area. `floor` is the requested uniform fraction.
  */
-export function buildDistribution(
+export const buildDistribution = (
   cells: Iterable<{ lat: Degrees; lon: Degrees; intensity: number; area: SquareKm; h3?: H3Cell }>,
   floor: number
-): Distribution {
+): Distribution => {
   const raw: { xyz: Xyz; weight: number; s2: SquareKm; cell?: H3Cell }[] = []
   let total = 0
   for (const cell of cells) {

@@ -50,7 +50,11 @@ export interface ReviewGuess {
 }
 
 /** Paints the nth of the answer's shuffled kinds of guess. */
-export function guessPainter(answer: ScoredAnswer, seed: number, random: () => number): (index: number) => ReviewGuess {
+export const guessPainter = (
+  answer: ScoredAnswer,
+  seed: number,
+  random: () => number
+): ((index: number) => ReviewGuess) => {
   if (answer.type === AnswerType.AREA) {
     const types = shuffle([...REGION_GUESSES], seed)
     return (index) => paintRegionGuess(answer, types[index]!, random)
@@ -59,14 +63,14 @@ export function guessPainter(answer: ScoredAnswer, seed: number, random: () => n
   return (index) => paintPointGuess(answer, types[index]!, random)
 }
 
-function paintPointGuess(answer: PointAnswer, type: PointGuess, random: () => number): ReviewGuess {
+const paintPointGuess = (answer: PointAnswer, type: PointGuess, random: () => number): ReviewGuess => {
   const { layer, between, blob } = painting(answer, random)
   pointGuess(type, blob, between, random)
   return { type, layer }
 }
 
 /** A blank layer for the answer, with the way to paint rough patches on it. */
-function painting(answer: ScoredAnswer, random: () => number) {
+const painting = (answer: ScoredAnswer, random: () => number) => {
   const between = (low: number, high: number) => low + (high - low) * random()
   const tolerance = answer.tolerance
   const layer = new PaintLayer(resolutionForTolerance(tolerance))
@@ -85,7 +89,7 @@ function painting(answer: ScoredAnswer, random: () => number) {
   return { layer, between, blob }
 }
 
-function paintRegionGuess(area: Area, type: RegionGuess, random: () => number): ReviewGuess {
+const paintRegionGuess = (area: Area, type: RegionGuess, random: () => number): ReviewGuess => {
   const { layer, between, blob } = painting(area, random)
   const tolerance = area.tolerance
   // A region's tolerance is a fifth of its radius: R is about its radius.
@@ -164,7 +168,7 @@ interface Patch {
  * few none. A stroke that runs over the edge leaves a dab there before turning
  * back, so the paint overshoots the outline in places and misses others.
  */
-function scribble(layer: PaintLayer, random: () => number, patch: Patch): void {
+const scribble = (layer: PaintLayer, random: () => number, patch: Patch): void => {
   const step = 0.7 * patch.brush
   let dabs = Math.min(MAX_DABS, Math.ceil((patch.area / (1.5 * step * patch.brush)) * (1.8 + 0.8 * random())))
   while (dabs > 0) {
@@ -179,12 +183,12 @@ function scribble(layer: PaintLayer, random: () => number, patch: Patch): void {
   }
 }
 
-function pointGuess(
+const pointGuess = (
   type: PointGuess,
   blob: (tolerancesAway: number, tolerancesAcross: number, strength?: number) => void,
   between: (low: number, high: number) => number,
   random: () => number
-): void {
+): void => {
   switch (type) {
     case GuessType.BULLSEYE:
       return blob(between(0, 0.3), between(0.5, 1))
@@ -208,7 +212,7 @@ function pointGuess(
 }
 
 /** The point `distance` from `from` on a bearing clockwise from north. */
-function offset(from: LatLon, distance: Km, bearing: Degrees): LatLon {
+const offset = (from: LatLon, distance: Km, bearing: Degrees): LatLon => {
   const angularDistance = distance / EARTH_RADIUS
   const bearingRadians = toRadians(bearing)
   const lat1 = toRadians(from.lat)

@@ -10,7 +10,7 @@ import { Role, YouRoleType } from "../../roles.ts"
 import { T0, viewOf, tokA, tokB, tokW, makeGame, twoPlayerGame, currentQuestion } from "./support.ts"
 
 describe("hints", () => {
-  function hintGame() {
+  const hintGame = () => {
     const game = makeGame({
       config: { mix: mixOf({ [QuestionType.PLACE]: 3 }), hints: 2 }
     })
@@ -18,7 +18,7 @@ describe("hints", () => {
     game.join(tokB, playerName("Bob"), T0)
     return game
   }
-  function inFirstRound() {
+  const inFirstRound = () => {
     const game = hintGame()
     game.start(tokA, T0)
     return { game, question: currentQuestion(game, tokA, T0) }

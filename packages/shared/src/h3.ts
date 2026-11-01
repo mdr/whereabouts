@@ -31,14 +31,14 @@ const RESOLUTIONS = Array.from({ length: 16 }, (_, resolution) => h3Resolution(r
 export const resolutionsTo = (max: number): readonly H3Resolution[] => RESOLUTIONS.slice(0, max + 1)
 
 /** One level finer, from a table: scoring steps down millions of times. */
-export function finerResolution(resolution: H3Resolution): H3Resolution {
+export const finerResolution = (resolution: H3Resolution): H3Resolution => {
   const finer = RESOLUTIONS[resolution + 1]
   if (finer === undefined) throw new RangeError(`no resolution finer than ${resolution}`)
   return finer
 }
 
 /** One level coarser. */
-export function coarserResolution(resolution: H3Resolution): H3Resolution {
+export const coarserResolution = (resolution: H3Resolution): H3Resolution => {
   const coarser = RESOLUTIONS[resolution - 1]
   if (coarser === undefined) throw new RangeError(`no resolution coarser than ${resolution}`)
   return coarser
@@ -81,7 +81,7 @@ export const getRes0Cells = (): H3Cell[] => brandCells(h3.getRes0Cells())
 export const cellToSplitLong = (cell: H3Cell): [low: number, high: number] => h3.h3IndexToSplitLong(cell)
 
 /** The cell with this 64-bit index, or undefined if it is not one: these come from outside. */
-export function cellFromSplitLong(lower: number, upper: number): H3Cell | undefined {
+export const cellFromSplitLong = (lower: number, upper: number): H3Cell | undefined => {
   const cell = h3.splitLongToH3Index(lower, upper)
   return h3.isValidCell(cell) ? brandCell(cell) : undefined
 }

@@ -53,7 +53,7 @@ const MIX: [QuestionType[], number, number][] = [
 
 export const REVIEW_SET_SIZE = MIX.reduce((total, [, singles, pairs]) => total + singles + pairs, 0)
 
-export function reviewCases(set: number, catalogue: readonly Question[], outlines: Outlines): ReviewCase[] {
+export const reviewCases = (set: number, catalogue: readonly Question[], outlines: Outlines): ReviewCase[] => {
   const cases: ReviewCase[] = []
   MIX.forEach(([types, singles, pairs], pool) => {
     const questions = shuffle(poolOf(catalogue, types, MapDetail.POLITICAL), set * 7919 + pool).slice(
@@ -73,21 +73,21 @@ export function reviewCases(set: number, catalogue: readonly Question[], outline
 }
 
 /** A guess's score, as practice would give it. */
-export function scoreGuess(
+export const scoreGuess = (
   answer: ScoredAnswer,
   layer: PaintLayer,
   kernel: Kernel
-): Pick<ScoringCase, "score" | "parts"> {
+): Pick<ScoringCase, "score" | "parts"> => {
   return scoreAnswer(buildDistribution(layer.toCells(), REVIEW_FLOOR), answer, kernel)
 }
 
 /** A guess and its score as a scoring case's text, for the export. */
-export function guessCase(
+export const guessCase = (
   question: Question,
   answer: ScoredAnswer,
   layer: PaintLayer,
   kernel: ChoosableKernel
-): Promise<string> {
+): Promise<string> => {
   return encodeCase({
     question: caseQuestion(question, answer),
     kernel: answer.type === AnswerType.AREA ? RegionKernel.REGION : kernel.id,
@@ -99,7 +99,7 @@ export function guessCase(
 }
 
 /** A question as a scoring case names it. */
-export function caseQuestion(question: Question, answer: ScoredAnswer): ScoringCase["question"] {
+export const caseQuestion = (question: Question, answer: ScoredAnswer): ScoringCase["question"] => {
   return {
     type:
       answer.type === AnswerType.AREA

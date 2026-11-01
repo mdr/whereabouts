@@ -16,7 +16,7 @@ import { AnswerType, ClueType, QuestionType, answerCentre, flagShown, type Quest
  * A question while it is asked. An area round sends its outline's id, which
  * the prompt or the flag gives away anyway.
  */
-export function questionView(question: Question): QuestionView {
+export const questionView = (question: Question): QuestionView => {
   const { answer } = question
   return {
     type: question.type,
@@ -44,13 +44,13 @@ export const roundView = (
 })
 
 /** A round's band of each axis: the same for everyone who asks. */
-export function roundHintBand(question: Question, seed: number, roundIndex: number, axis: HintAxis): HintBand {
+export const roundHintBand = (question: Question, seed: number, roundIndex: number, axis: HintAxis): HintBand => {
   const unit = seededUnit(seed, roundIndex, axis === HintAxis.LATITUDE ? 1 : 2)
   return hintBand(answerCentre(question.answer), question.answer.tolerance, axis, unit)
 }
 
 /** A question's photo and flag, including the flag shown beside a country's name, and the photo for its reveal. */
-export function questionPictures(question: Question): QuestionPictures {
+export const questionPictures = (question: Question): QuestionPictures => {
   const flag = flagShown(question)
   const photo = revealPhoto(question)
   return {
@@ -61,17 +61,17 @@ export function questionPictures(question: Question): QuestionPictures {
 }
 
 /** The pictures to fetch ahead for a question, if it has any. */
-export function upcomingOf(question: Question | undefined): { upcoming?: QuestionPictures } {
+export const upcomingOf = (question: Question | undefined): { upcoming?: QuestionPictures } => {
   const pictures = question ? questionPictures(question) : {}
   return Object.keys(pictures).length > 0 ? { upcoming: pictures } : {}
 }
 
 /** A round's answer and everyone's results, for its reveal. */
-export function revealOf(
+export const revealOf = (
   question: Question,
   { index, total }: { index: number; total: number },
   results: RoundResultView[]
-): RoundReveal {
+): RoundReveal => {
   const photo = revealPhoto(question)
   return {
     index,
@@ -87,7 +87,7 @@ export function revealOf(
 }
 
 /** A round as the final results list it. */
-export function playedRound(question: Question): PlayedRound {
+export const playedRound = (question: Question): PlayedRound => {
   return {
     label: question.label,
     type: question.type,

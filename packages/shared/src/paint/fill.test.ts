@@ -17,7 +17,7 @@ const outlines = outlinesFrom(outlinesJson)
 const flag = (code: string) => flags.find((question) => question.clue.flag === code)!
 
 /** A flag round filled with its own country, as the client does it, and scored. */
-function fillAndScore(code: string, finestResolution?: number): { score: number; cells: H3Cell[] } {
+const fillAndScore = (code: string, finestResolution?: number): { score: number; cells: H3Cell[] } => {
   const question = flag(code)
   const a = scoredAnswer(question.answer, outlines)
   const resolution = finestResolution ?? resolutionForTolerance(a.tolerance)

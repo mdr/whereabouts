@@ -62,7 +62,7 @@ interface FillBase {
   near?: Km
 }
 
-function cellsAt(shape: FillShape, resolution: H3Resolution): H3Cell[] {
+const cellsAt = (shape: FillShape, resolution: H3Resolution): H3Cell[] => {
   switch (shape.type) {
     case FillShapeType.OUTLINE: {
       const out = new Set<H3Cell>()
@@ -79,7 +79,7 @@ function cellsAt(shape: FillShape, resolution: H3Resolution): H3Cell[] {
 }
 
 /** The cells filling a country, all at one resolution, never finer than `finestResolution`. */
-export function countryFill(shape: FillShape, finestResolution: H3Resolution): H3Cell[] {
+export const countryFill = (shape: FillShape, finestResolution: H3Resolution): H3Cell[] => {
   // Step finer while the next level stays in budget. It has about 7 times
   // the cells, so a level far over is not even laid out.
   let resolution = h3Resolution(0)

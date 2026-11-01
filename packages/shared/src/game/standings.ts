@@ -7,14 +7,14 @@ import { Role, type PlayingPlayerView, type SpectatorView } from "../roles.ts"
 import { isPlayer, type PlayerSeat, type Seat } from "./seats.ts"
 
 /** The sum of the scores; a round not played counts as 0. */
-function total(scores: (Points | undefined)[]): Points {
+const total = (scores: (Points | undefined)[]): Points => {
   let sum = 0
   for (const score of scores) sum += score ?? 0
   return sum
 }
 
 /** 1 plus the number of players ahead on total, so ties share a rank. */
-export function rankAmong(player: PlayerSeat, playing: readonly PlayerSeat[]): number {
+export const rankAmong = (player: PlayerSeat, playing: readonly PlayerSeat[]): number => {
   const mine = total(player.role.record.scores)
   let rank = 1
   for (const seat of playing) if (total(seat.role.record.scores) > mine) rank++
@@ -22,7 +22,7 @@ export function rankAmong(player: PlayerSeat, playing: readonly PlayerSeat[]): n
 }
 
 /** Each player's total and per-round scores, best first; `{}` for a round not played. */
-export function finalStandings(playing: readonly PlayerSeat[], roundCount: number): FinalStanding[] {
+export const finalStandings = (playing: readonly PlayerSeat[], roundCount: number): FinalStanding[] => {
   return playing
     .map((seat) => ({
       playerId: seat.id,
@@ -35,7 +35,7 @@ export function finalStandings(playing: readonly PlayerSeat[], roundCount: numbe
     .sort((a, b) => b.total - a.total)
 }
 
-export function awardFacts(playing: readonly PlayerSeat[], roundCount: number): PlayerFacts[] {
+export const awardFacts = (playing: readonly PlayerSeat[], roundCount: number): PlayerFacts[] => {
   return playing.map((seat) => ({
     playerId: seat.id,
     rounds: Array.from({ length: roundCount }, (_, i) => seat.role.record.facts[i])
@@ -43,11 +43,11 @@ export function awardFacts(playing: readonly PlayerSeat[], roundCount: number): 
 }
 
 /** Players by rank then name, and spectators by name. */
-export function rosterView(
+export const rosterView = (
   seats: readonly Seat[],
   host: PlayerToken | undefined,
   isLocked: (token: PlayerToken) => boolean
-): { players: PlayingPlayerView[]; spectators: SpectatorView[] } {
+): { players: PlayingPlayerView[]; spectators: SpectatorView[] } => {
   const playing = seats.filter(isPlayer)
   const base = (seat: Seat) => ({
     id: seat.id,

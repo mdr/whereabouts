@@ -33,7 +33,7 @@ const EXTRA_TYPES: readonly QuestionType[] = [QuestionType.FEATURE, QuestionType
 export const mixTotal = (mix: QuestionMix): number => QUESTION_TYPES.reduce((s, t) => s + mix[t], 0)
 
 /** A mix of only these counts, the other types none. */
-export function mixOf(counts: Partial<QuestionMix>): QuestionMix {
+export const mixOf = (counts: Partial<QuestionMix>): QuestionMix => {
   return Object.fromEntries(QUESTION_TYPES.map((t) => [t, counts[t] ?? 0])) as QuestionMix
 }
 
@@ -41,7 +41,7 @@ export function mixOf(counts: Partial<QuestionMix>): QuestionMix {
  * An even mix of `rounds`: the same of each type but the extras, the rest one
  * each to the first types. The default game is 8 rounds, 2 of each.
  */
-export function evenMix(rounds: number): QuestionMix {
+export const evenMix = (rounds: number): QuestionMix => {
   const types = QUESTION_TYPES.filter((t) => !EXTRA_TYPES.includes(t))
   const each = Math.floor(rounds / types.length)
   const rest = rounds % types.length

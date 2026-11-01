@@ -16,6 +16,6 @@ export const REVEAL_PHOTOS: Readonly<Partial<Record<PlaceId, CommonsFile>>> = z
 const WITH_REVEAL_PHOTO: readonly QuestionType[] = [QuestionType.PLACE, QuestionType.FEATURE, QuestionType.STATE]
 
 /** The photo for a round's reveal. */
-export function revealPhoto(question: Question): CommonsFile | undefined {
+export const revealPhoto = (question: Question): CommonsFile | undefined => {
   return WITH_REVEAL_PHOTO.includes(question.type) ? REVEAL_PHOTOS[question.place] : undefined
 }

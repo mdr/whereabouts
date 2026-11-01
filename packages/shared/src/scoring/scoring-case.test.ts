@@ -6,7 +6,7 @@ import { h3Resolution } from "../h3.ts"
 import { flagCode, questionId } from "../ids.ts"
 import { KernelId } from "./scoring.ts"
 
-function sample(): ScoringCase {
+const sample = (): ScoringCase => {
   const layer = new PaintLayer(h3Resolution(6))
   layer.stamp({ lat: 48.86, lon: 2.35 }, 80, 1)
   layer.stamp({ lat: 48.9, lon: 2.5 }, 30, 0.6)

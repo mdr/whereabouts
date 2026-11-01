@@ -17,7 +17,7 @@ export const POINT_BELOW_KM2 = 10_000
 export const MIN_KEPT_SHARE = 0.75
 
 const EARTH_RADIUS_KM = 6371
-export function distanceKm([lon1, lat1], [lon2, lat2]) {
+export const distanceKm = ([lon1, lat1], [lon2, lat2]) => {
   const radiansPerDegree = Math.PI / 180
   const haversine =
     Math.sin(((lat2 - lat1) * radiansPerDegree) / 2) ** 2 +
@@ -28,7 +28,7 @@ export function distanceKm([lon1, lat1], [lon2, lat2]) {
 }
 
 /** Closest approach between two polygons' outer rings, by vertices. */
-function gapKm(a, b) {
+const gapKm = (a, b) => {
   let best = Infinity
   for (const vertex of a[0]) for (const other of b[0]) best = Math.min(best, distanceKm(vertex, other))
   return best
@@ -38,7 +38,7 @@ export const cellsOf = (polygon, resolution) => polygonToCells(polygon, resoluti
 export const areaOf = (cells) => cells.reduce((sum, cell) => sum + cellArea(cell, UNITS.km2), 0)
 
 /** A ring's area on the sphere, km² (the spherical excess, as in d3-geo). */
-export function ringAreaKm2(ring) {
+export const ringAreaKm2 = (ring) => {
   const radiansPerDegree = Math.PI / 180
   let sum = 0
   for (let i = 0; i < ring.length - 1; i++) {
@@ -51,7 +51,7 @@ export function ringAreaKm2(ring) {
 }
 
 /** Whether [lon, lat] is inside a ring (ray casting, in degrees: fine at island scale). */
-function inRing([x, y], ring) {
+const inRing = ([x, y], ring) => {
   let inside = false
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [xi, yi] = ring[i]
@@ -70,7 +70,7 @@ export const onLand = (point, polygons) =>
  * counts as on it: the 1:50m outline of Vatican City misses its label point.
  */
 const LABEL_SLACK_KM = 5
-export function islandAnswer(properties, polygons) {
+export const islandAnswer = (properties, polygons) => {
   const label = { lat: round4(properties.LABEL_Y), lon: round4(properties.LABEL_X) }
   const point = [label.lon, label.lat]
   const near = polygons.some((polygon) => polygon[0].some((vertex) => distanceKm(point, vertex) <= LABEL_SLACK_KM))
@@ -95,7 +95,7 @@ export const polygonsOf = (geometry) => (geometry.type === "Polygon" ? [geometry
  * islands do not extend the chain, or Bear Island would bring Svalbard into
  * Norway.
  */
-export function keptParts(geometry, chainKm = CHAIN_KM) {
+export const keptParts = (geometry, chainKm = CHAIN_KM) => {
   const all = polygonsOf(geometry).map((polygon) => ({ polygon, area: areaOf(cellsOf(polygon, 6)) }))
   const parts = all.filter((part) => part.area >= MIN_PART_KM2).sort((a, b) => b.area - a.area)
   const largest = all.reduce((a, b) => (b.area > a.area ? b : a))
@@ -129,14 +129,14 @@ export function keptParts(geometry, chainKm = CHAIN_KM) {
  * splits polygons there, so each part is fine on its own, but the country's
  * outline and framing are not: such countries are asked as a point.
  */
-export function crossesAntimeridian(polygons) {
+export const crossesAntimeridian = (polygons) => {
   const lons = polygons.flatMap((polygon) => polygon[0].map(([lon]) => lon))
   return Math.max(...lons) > 179.5 && Math.min(...lons) < -179.5
 }
 
 const round4 = (value) => Math.round(value * 1e4) / 1e4
 
-export function centroid(cells) {
+export const centroid = (cells) => {
   let x = 0,
     y = 0,
     z = 0
@@ -156,7 +156,7 @@ export function centroid(cells) {
 }
 
 /** Douglas-Peucker on a closed ring, in degrees (longitude scaled by cos(lat)). */
-export function simplifyRing(ring, epsilon) {
+export const simplifyRing = (ring, epsilon) => {
   const cos = Math.cos((ring[0][1] * Math.PI) / 180)
   const keep = new Uint8Array(ring.length)
   keep[0] = keep[ring.length - 1] = 1
@@ -209,7 +209,7 @@ export const slug = (text) =>
 const POINT_TOLERANCE_FRACTION = 0.5
 const SPREAD_FRACTION = 0.25
 const MIN_POINT_TOLERANCE_KM = 15
-export function pointToleranceKm(areaKm2, spreadKm, islands) {
+export const pointToleranceKm = (areaKm2, spreadKm, islands) => {
   const tolerance = Math.max(
     POINT_TOLERANCE_FRACTION * Math.sqrt(areaKm2 / Math.PI),
     islands ? SPREAD_FRACTION * spreadKm : 0

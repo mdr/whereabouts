@@ -34,14 +34,14 @@ export interface PointExplanation {
 const SEARCH_CELLS = 300
 const NEAR_TOLERANCES = 4
 
-export function explainPoint(
+export const explainPoint = (
   painted: Distribution,
   answer: LatLon,
   tolerance: Km,
   A: number,
   B: number,
   k: Kernel = DEFAULT_KERNEL
-): PointExplanation {
+): PointExplanation => {
   let coarse = painted
   let resolution = h3Resolution(
     Math.max(0, ...painted.points.map((point) => (point.cell ? getResolution(point.cell) : 0)))
@@ -80,13 +80,13 @@ export function explainPoint(
   }
 }
 
-function latLngOf(cell: H3Cell): LatLon {
+const latLngOf = (cell: H3Cell): LatLon => {
   const [lat, lon] = cellToLatLng(cell)
   return { lat, lon }
 }
 
 /** Some paint near the answer, but most of it somewhere else, and that cost something. */
-export function isHedge(explanation: PointExplanation, score: Points, tolerance: Km): boolean {
+export const isHedge = (explanation: PointExplanation, score: Points, tolerance: Km): boolean => {
   return (
     Math.max(explanation.best, score) - score >= 25 &&
     explanation.nearShare >= 0.15 &&

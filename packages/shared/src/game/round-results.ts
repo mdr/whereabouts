@@ -9,11 +9,11 @@ import type { PlayerSeat } from "./seats.ts"
 import { rankAmong } from "./standings.ts"
 import { playsRound, type GuessingState } from "./state.ts"
 
-export function scorePlayers(
+export const scorePlayers = (
   playing: readonly PlayerSeat[],
   { round, deadline, submissions, hints }: GuessingState,
   { outlines, kernel, roundLength }: { outlines: Outlines; kernel: Kernel; roundLength: Ms }
-): RoundResultView[] {
+): RoundResultView[] => {
   const { index, question } = round
   const answer = scoredAnswer(question.answer, outlines)
   // Snapshot ranks before any score changes so arrows compare like with like.

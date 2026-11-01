@@ -22,7 +22,7 @@ const comebackKid: Rule = ({ players, ranks, final }) => {
 }
 
 /** The last round before the final one in which the player was alone in front. */
-function lastSoleLead(id: PlayerId, ranks: Map<PlayerId, number>[]): number | undefined {
+const lastSoleLead = (id: PlayerId, ranks: Map<PlayerId, number>[]): number | undefined => {
   const before = ranks.slice(0, -1)
   for (let round = before.length - 1; round >= 0; round--)
     if (before[round]!.get(id) === 1 && soleLeader(before[round]!)) return round
@@ -77,7 +77,7 @@ const beige: Rule = ({ players }) => {
 }
 
 /** The most rounds in a row scoring 850 or more; a round sat out breaks the run. */
-function longestBigRun(player: PlayerFacts): number {
+const longestBigRun = (player: PlayerFacts): number => {
   let run = 0
   let longest = 0
   for (const round of player.rounds) {
@@ -116,7 +116,7 @@ const soNear: Rule = ({ players }) => {
 // Shared by two players.
 
 /** The rounds where both put their strongest paint in the same place, and not just because both were right. */
-function sharedWrongSpots(first: PlayerFacts, second: PlayerFacts): number {
+const sharedWrongSpots = (first: PlayerFacts, second: PlayerFacts): number => {
   let count = 0
   for (let round = 0; round < Math.min(first.rounds.length, second.rounds.length); round++) {
     const firstRound = first.rounds[round]

@@ -23,7 +23,7 @@ describe("the question mix", () => {
   const areaOf = (question: Question) => scoredAnswer(question.answer, OUTLINES) as Area
   const germany = byId("germany-region")
 
-  function gameWith(config: Partial<GameConfig>, bank: Partial<QuestionBank> = {}) {
+  const gameWith = (config: Partial<GameConfig>, bank: Partial<QuestionBank> = {}) => {
     const game = makeGame({
       bank: { catalogue: CATALOGUE, outlines: OUTLINES, ...bank },
       config: { roundLength: 60_000, ...config }

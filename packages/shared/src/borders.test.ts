@@ -10,7 +10,7 @@ const flags = CATALOGUE.filter(isFlagQuestion)
 const borders = new Borders(bordersJson, flags)
 const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label
 
-function cell(h3Cell: H3Cell, intensity = 1): PaintCell {
+const cell = (h3Cell: H3Cell, intensity = 1): PaintCell => {
   const [lat, lon] = cellToLatLng(h3Cell)
   return { lat, lon, intensity, area: cellArea(h3Cell), h3: h3Cell }
 }

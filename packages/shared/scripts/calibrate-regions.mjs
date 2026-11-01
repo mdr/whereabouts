@@ -104,7 +104,7 @@ const area = (cells) => cells.reduce((sum, cell) => sum + h3.cellArea(cell, h3.U
 const spacing = (resolution) => h3.getHexagonEdgeLengthAvg(resolution, h3.UNITS.km) * Math.sqrt(3)
 
 /** Paint each part's cells evenly by area with `weight` of the painted mass; intensity(h) varies it. */
-function coat(parts, intensity = () => 1) {
+const coat = (parts, intensity = () => 1) => {
   const byCell = new Map()
   for (const { cells, weight } of parts) {
     const cellsArea = area(cells)
@@ -121,7 +121,7 @@ function coat(parts, intensity = () => 1) {
 const even = (cells) => coat([{ cells, weight: 1 }])
 
 /** The cells plus every cell within `rings` rings of them. */
-function growRings(cells, rings) {
+const growRings = (cells, rings) => {
   const set = new Set(cells)
   let frontier = cells.filter((cell) => h3.gridDisk(cell, 1).some((neighbour) => !set.has(neighbour)))
   for (let i = 0; i < rings; i++) {
@@ -138,7 +138,7 @@ function growRings(cells, rings) {
 }
 
 /** Grow outward until the country is `share` of the painted area. */
-function bloatTo(cells, share) {
+const bloatTo = (cells, share) => {
   const target = area(cells) / share
   let out = cells
   for (let i = 1; area(out) < target && i < 200; i++) out = growRings(cells, i)
@@ -146,7 +146,7 @@ function bloatTo(cells, share) {
 }
 
 /** The share `fraction` of the country's area furthest along `key`. */
-function portion(cells, fraction, key) {
+const portion = (cells, fraction, key) => {
   const sorted = cells
     .map((cell) => {
       const [lat, lon] = h3.cellToLatLng(cell)
@@ -165,7 +165,7 @@ function portion(cells, fraction, key) {
 }
 
 /** The country moved `km` east, outline and centre together. */
-function shifted(q, km) {
+const shifted = (q, km) => {
   const east = (lat, lon) => lon + km / (111.32 * Math.cos((lat * Math.PI) / 180))
   return {
     ...q,
@@ -185,7 +185,7 @@ const disc = (centre, km, resolution) =>
  * the brush centre inside, then extra passes over a band: none, once over the
  * middle third, or twice over the northern third.
  */
-function brushed(q, resolution, R, extra) {
+const brushed = (q, resolution, R, extra) => {
   const inside = new Set(regionCells(q, resolution))
   const layer = new PaintLayer(resolution)
   const brush = R / 6
@@ -212,7 +212,7 @@ function brushed(q, resolution, R, extra) {
   return buildDistribution(layer.toCells(), 0.05)
 }
 
-function cases(q) {
+const cases = (q) => {
   const resolution = resolutionForTolerance(q.tolerance)
   const cells = regionCells(q, resolution)
   const R = Math.sqrt(area(cells) / Math.PI)

@@ -42,7 +42,7 @@ interface RevealStateMessage extends Omit<RevealGameView, "reveal"> {
 
 export type StateMessage = LobbyGameView | GuessingStateMessage | RevealStateMessage | ResultsGameView
 
-export function stateMessage(view: GameView): StateMessage {
+export const stateMessage = (view: GameView): StateMessage => {
   switch (view.phase) {
     case Phase.GUESSING: {
       const { paint: _paint, ...you } = view.you
@@ -61,11 +61,11 @@ export function stateMessage(view: GameView): StateMessage {
  * since connecting; undefined for a reveal's state that came before its
  * reveal, which the server never sends.
  */
-export function viewFrom(
+export const viewFrom = (
   state: StateMessage,
   reveal: RoundReveal | undefined,
   paint: PaintSubmission | undefined
-): GameView | undefined {
+): GameView | undefined => {
   switch (state.phase) {
     case Phase.GUESSING:
       return paint ? { ...state, you: { ...state.you, paint } } : state
@@ -86,7 +86,7 @@ export type RevealMessage = Omit<RoundReveal, "results"> & {
   })[]
 }
 
-export function revealMessage(reveal: RoundReveal): RevealMessage {
+export const revealMessage = (reveal: RoundReveal): RevealMessage => {
   return {
     ...reveal,
     results: reveal.results.map(({ guess, ...result }) => ({
@@ -96,7 +96,7 @@ export function revealMessage(reveal: RoundReveal): RevealMessage {
   }
 }
 
-export function revealFrom(message: RevealMessage): RoundReveal {
+export const revealFrom = (message: RevealMessage): RoundReveal => {
   return {
     ...message,
     results: message.results.map(({ guess, ...result }) => {
@@ -107,11 +107,11 @@ export function revealFrom(message: RevealMessage): RoundReveal {
   }
 }
 
-export function encodeMessage(value: unknown): string {
+export const encodeMessage = (value: unknown): string => {
   return JSON.stringify(value)
 }
 
-export function decodeMessage(payload: Uint8Array | string): unknown {
+export const decodeMessage = (payload: Uint8Array | string): unknown => {
   const text = typeof payload === "string" ? payload : new TextDecoder().decode(payload)
   return JSON.parse(text) as unknown
 }

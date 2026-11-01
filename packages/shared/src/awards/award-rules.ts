@@ -8,14 +8,14 @@ import { painted, type Candidate, type Context, type Rule } from "./rules/rule-k
 const RULES: Rule[] = [...ROUND_RULES, ...HABIT_RULES, ...GAME_RULES]
 
 /** Every award someone earned, prizes and booby prizes alike. */
-export function candidateAwards(players: PlayerFacts[]): Candidate[] {
+export const candidateAwards = (players: PlayerFacts[]): Candidate[] => {
   const rounds = players.flatMap((player) => painted(player).map((round) => ({ player, round })))
   const ranks = rankHistory(players, Math.max(0, ...players.map((player) => player.rounds.length)))
   const ctx: Context = { players, rounds, ranks, final: ranks.at(-1) }
   return RULES.flatMap((rule) => rule(ctx) ?? [])
 }
 
-function rankHistory(players: PlayerFacts[], rounds: number): Map<PlayerId, number>[] {
+const rankHistory = (players: PlayerFacts[], rounds: number): Map<PlayerId, number>[] => {
   const running = new Map(players.map((player) => [player.playerId, 0]))
   const out: Map<PlayerId, number>[] = []
   for (let round = 0; round < rounds; round++) {

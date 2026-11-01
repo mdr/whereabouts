@@ -5,7 +5,7 @@ import { SINGLE_KERNEL, type WeightedPoint } from "./scoring.ts"
 // Width 100 gives a cutoff of 400 km, so the grid has 400 km cubes.
 const tolerance = 100
 
-function makePoint(x: number, p = 0.5): WeightedPoint {
+const makePoint = (x: number, p = 0.5): WeightedPoint => {
   return { xyz: [x, 0, 0], p }
 }
 

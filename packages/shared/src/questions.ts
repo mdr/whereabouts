@@ -162,7 +162,7 @@ export const FLAG_AREA_PROMPT = "Paint the whole of the country with this flag"
 export const FLAG_POINT_PROMPT = "Where is the country with this flag?"
 
 /** The question as the player reads it. */
-export function promptOf({ clue, answer }: { clue: Clue; answer: { type: AnswerType } }): string {
+export const promptOf = ({ clue, answer }: { clue: Clue; answer: { type: AnswerType } }): string => {
   switch (clue.type) {
     case ClueType.PHOTO:
       return PHOTO_PROMPT
@@ -181,29 +181,29 @@ export const clueImage = (clue: Clue): CommonsFile | undefined =>
   clue.type === ClueType.PHOTO ? clue.image : undefined
 
 /** Where an answer is: the point, or an area's centre. */
-export function answerCentre(answer: Answer): LatLon {
+export const answerCentre = (answer: Answer): LatLon => {
   return answer.type === AnswerType.POINT ? answer.at : answer.centre
 }
 
-export function isArea(question: Question): question is Question & { answer: AreaAnswer } {
+export const isArea = (question: Question): question is Question & { answer: AreaAnswer } => {
   return question.answer.type === AnswerType.AREA
 }
 
 /** The flag a question shows: a flag round's, or the one beside a country's name. */
-export function flagShown(question: Question): FlagCode | undefined {
+export const flagShown = (question: Question): FlagCode | undefined => {
   if (question.clue.type === ClueType.FLAG) return question.clue.flag
   return question.type === QuestionType.COUNTRY ? question.countryFlag : undefined
 }
 
-export function commonsImageUrl(file: CommonsFile, width = 900): string {
+export const commonsImageUrl = (file: CommonsFile, width = 900): string => {
   return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${width}`
 }
 
-export function commonsPageUrl(file: CommonsFile): string {
+export const commonsPageUrl = (file: CommonsFile): string => {
   return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, "_"))}`
 }
 
-export function wikipediaUrl(title: WikiTitle): string {
+export const wikipediaUrl = (title: WikiTitle): string => {
   return `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`
 }
 
@@ -211,7 +211,7 @@ export function wikipediaUrl(title: WikiTitle): string {
 export const MIN_SPREAD: Km = 50
 
 /** Deterministic shuffle so a playtest session can be replayed. */
-export function shuffle<T>(items: T[], seed: number): T[] {
+export const shuffle = <T>(items: T[], seed: number): T[] => {
   const out = items.slice()
   let state = seed >>> 0
   const random = () => {

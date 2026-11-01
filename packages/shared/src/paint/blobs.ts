@@ -15,7 +15,7 @@ export interface Blob {
  * ancestor there), which is exact when one resolution is in use and a fair
  * approximation otherwise. Diagnostic only.
  */
-export function paintBlobs(layer: PaintLayer): Blob[] {
+export const paintBlobs = (layer: PaintLayer): Blob[] => {
   if (layer.cells.size === 0) return []
   const groups = groupByCoarsestAncestor(layer)
   let totalMass = 0
@@ -33,7 +33,7 @@ export function paintBlobs(layer: PaintLayer): Blob[] {
 }
 
 /** Cells grouped under their ancestor at the coarsest resolution present. */
-function groupByCoarsestAncestor(layer: PaintLayer): Map<H3Cell, H3Cell[]> {
+const groupByCoarsestAncestor = (layer: PaintLayer): Map<H3Cell, H3Cell[]> => {
   let min = Infinity
   for (const cell of layer.cells.keys()) min = Math.min(min, getResolution(cell))
   const coarsest = h3Resolution(min)
@@ -48,7 +48,7 @@ function groupByCoarsestAncestor(layer: PaintLayer): Map<H3Cell, H3Cell[]> {
   return groups
 }
 
-function summariseBlob(layer: PaintLayer, cells: H3Cell[], totalMass: number): Blob {
+const summariseBlob = (layer: PaintLayer, cells: H3Cell[], totalMass: number): Blob => {
   let mass = 0
   let sx = 0,
     sy = 0,
@@ -71,7 +71,7 @@ function summariseBlob(layer: PaintLayer, cells: H3Cell[], totalMass: number): B
 }
 
 /** Keys of `groups` split into runs of H3-adjacent cells, each in traversal order. */
-function connectedKeyGroups(groups: ReadonlyMap<H3Cell, unknown>): H3Cell[][] {
+const connectedKeyGroups = (groups: ReadonlyMap<H3Cell, unknown>): H3Cell[][] => {
   const out: H3Cell[][] = []
   const seen = new Set<H3Cell>()
   for (const start of groups.keys()) {

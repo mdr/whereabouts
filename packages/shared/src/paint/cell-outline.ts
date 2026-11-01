@@ -5,7 +5,7 @@ import { cellsToMultiPolygon, type H3Cell } from "../h3.ts"
  * The polygon's rings with longitudes shifted into one continuous range where
  * it straddles the antimeridian, so it does not span the whole world.
  */
-export function unwrapAntimeridian(polygon: Ring[]): Ring[] {
+export const unwrapAntimeridian = (polygon: Ring[]): Ring[] => {
   let minLon = Infinity
   let maxLon = -Infinity
   for (const ring of polygon) {
@@ -19,6 +19,6 @@ export function unwrapAntimeridian(polygon: Ring[]): Ring[] {
 }
 
 /** Outline of a set of cells as one GeoJSON MultiPolygon, e.g. a brush footprint. */
-export function cellsOutline(cells: H3Cell[]): GeoJSON.MultiPolygon {
+export const cellsOutline = (cells: H3Cell[]): GeoJSON.MultiPolygon => {
   return { type: "MultiPolygon", coordinates: cellsToMultiPolygon(cells, true).map(unwrapAntimeridian) }
 }

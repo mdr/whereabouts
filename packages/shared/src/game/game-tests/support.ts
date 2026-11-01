@@ -57,7 +57,7 @@ const CODE = roomCode("ABCD")
 /** A test player's seat token: tok("A") is tokA. */
 export const tok = (name: string) => playerToken(`tok${name}`.padEnd(16, "-"))
 /** A seated token's view. */
-export function viewOf(game: Game, token: PlayerToken, now: number): GameView {
+export const viewOf = (game: Game, token: PlayerToken, now: number): GameView => {
   const view = game.view(token, now)
   if (!view) throw new Error("expected a view, got none")
   return view
@@ -75,7 +75,7 @@ export const tokW = tok("W")
 export const tokW1 = tok("W1")
 export const tokZ = tok("Z")
 
-export function paintAt(question: Question, lat: number, lon: number) {
+export const paintAt = (question: Question, lat: number, lon: number) => {
   const layer = new PaintLayer(resolutionForTolerance(question.answer.tolerance))
   layer.stamp({ lat, lon }, question.answer.tolerance / 2, 1)
   return { cells: layer.toRecord(), floor: 0.05 }
@@ -91,16 +91,16 @@ const makeBank = (bank: Partial<QuestionBank> = {}): QuestionBank => ({
   ...bank
 })
 
-export function makeGame({
+export const makeGame = ({
   code = CODE,
   bank,
   config,
   seed = 42
-}: { code?: RoomCode; bank?: Partial<QuestionBank>; config?: Partial<GameConfig>; seed?: number } = {}): Game {
+}: { code?: RoomCode; bank?: Partial<QuestionBank>; config?: Partial<GameConfig>; seed?: number } = {}): Game => {
   return new Game(code, makeBank(bank), { config, seed })
 }
 
-export function twoPlayerGame(rounds = 2) {
+export const twoPlayerGame = (rounds = 2) => {
   // The test pool is place names only.
   const mix = mixOf({ [QuestionType.PLACE]: rounds })
   const game = makeGame({ config: { mix, roundLength: 60_000 } })
@@ -110,7 +110,7 @@ export function twoPlayerGame(rounds = 2) {
 }
 
 /** The question currently being asked, read back through a view. */
-export function currentQuestion(game: Game, token: PlayerToken, now: number): PlaceQuestion {
+export const currentQuestion = (game: Game, token: PlayerToken, now: number): PlaceQuestion => {
   const prompt = promptOf(viewIn(viewOf(game, token, now), Phase.GUESSING).round.question)
   return pool.find((question) => question.clue.prompt === prompt)!
 }

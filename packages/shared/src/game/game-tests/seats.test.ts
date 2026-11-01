@@ -105,7 +105,7 @@ describe("lobby", () => {
 })
 
 describe("player cap", () => {
-  function fullGame(): Game {
+  const fullGame = (): Game => {
     const game = twoPlayerGame(2)
     for (let i = 3; i <= MAX_PLAYERS; i++) expect(game.join(tok(`${i}`), playerName(`P${i}`), T0).ok).toBe(true)
     return game

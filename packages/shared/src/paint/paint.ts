@@ -40,7 +40,7 @@ const TARGET_RINGS = 5
 /** Safety cap on rings per stamp; unreachable in practice now that the resolution adapts. */
 const MAX_RINGS = 40
 
-export function resolutionForTolerance(tolerance: Km): H3Resolution {
+export const resolutionForTolerance = (tolerance: Km): H3Resolution => {
   const target = tolerance / 4
   for (let resolution = 0; resolution <= 10; resolution++) {
     if (edgeLength(h3Resolution(resolution)) <= target) return h3Resolution(Math.max(1, resolution))
@@ -49,7 +49,7 @@ export function resolutionForTolerance(tolerance: Km): H3Resolution {
 }
 
 /** Centre-to-centre distance between neighbouring cells. */
-export function cellSpacing(resolution: H3Resolution): Km {
+export const cellSpacing = (resolution: H3Resolution): Km => {
   return edgeLength(resolution) * Math.sqrt(3)
 }
 
@@ -73,7 +73,7 @@ export interface StampResult {
 const EPSILON = 1e-4
 
 /** Grid distance, or undefined where H3 cannot compute one (across pentagons or far apart). */
-function safeGridDistance(a: H3Cell, b: H3Cell): number | undefined {
+const safeGridDistance = (a: H3Cell, b: H3Cell): number | undefined => {
   try {
     const distance = gridDistance(a, b)
     return Number.isFinite(distance) && distance >= 0 ? distance : undefined

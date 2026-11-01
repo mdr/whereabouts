@@ -10,7 +10,7 @@ export const seatedRole = ({ role }: Seat): YouRole =>
   role.type === Role.PLAYER ? { type: YouRoleType.PLAYING, colour: role.colour } : SPECTATING
 
 /** Your role on the round under way or on show. */
-export function roundRole(state: InPlayState, seat: Seat, hints: number): RoundYouRole {
+export const roundRole = (state: InPlayState, seat: Seat, hints: number): RoundYouRole => {
   const { role } = seat
   if (role.type === Role.SPECTATOR) return SPECTATING
   if (!playsRound(role, state.round)) return { type: YouRoleType.JOINED_LATE, colour: role.colour }

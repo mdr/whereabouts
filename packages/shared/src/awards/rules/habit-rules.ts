@@ -49,7 +49,7 @@ const chicken: Rule = ({ players }) => {
 }
 
 /** How early in the round a player locked in, if they did every time. */
-function lockStats(player: PlayerFacts) {
+const lockStats = (player: PlayerFacts) => {
   const rounds = painted(player)
   if (rounds.length < 3) return undefined
   const locks = rounds.flatMap((round) =>

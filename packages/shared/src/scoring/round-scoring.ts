@@ -39,13 +39,13 @@ export interface ScoredRound {
  * pass; so is a blank map at the deadline, so waiting out the clock never
  * beats pressing Pass.
  */
-export function scoreRound(
+export const scoreRound = (
   label: string,
   answer: ScoredAnswer,
   submission: Submission | undefined,
   kernel: Kernel,
   { startedAt, roundLength }: { startedAt: Instant; roundLength: Ms }
-): ScoredRound {
+): ScoredRound => {
   const submittedPaint = submission && Object.keys(submission.paint.cells).length > 0 ? submission.paint : undefined
   const resolution = resolutionForTolerance(answer.tolerance)
   const cells = submittedPaint ? [...PaintLayer.fromRecord(resolution, submittedPaint.cells).toCells()] : []

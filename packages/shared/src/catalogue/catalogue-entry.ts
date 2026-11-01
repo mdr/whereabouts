@@ -58,7 +58,7 @@ export const CatalogueEntrySchema: z.ZodType<CatalogueEntry> = z.discriminatedUn
 ])
 
 /** The question as the game sees it, with what it takes from its place. */
-export function joinQuestion(entry: CatalogueEntry, places: ReadonlyMap<PlaceId, Place>): Question {
+export const joinQuestion = (entry: CatalogueEntry, places: ReadonlyMap<PlaceId, Place>): Question => {
   const place = places.get(entry.place)
   if (!place) throw new Error(`${entry.id}: no place ${entry.place}`)
   const area = (): AreaAnswer => {

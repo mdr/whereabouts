@@ -37,21 +37,21 @@ const OUTLINES = outlinesFrom(outlinesJson)
 const COUNTRIES = CATALOGUE.filter((question) => question.type === QuestionType.COUNTRY)
 
 /** A question's area, its outline looked up. */
-function byId(id: string): Area {
+const byId = (id: string): Area => {
   const a = scoredAnswer(CATALOGUE.find((question) => question.id === id)!.answer, OUTLINES)
   if (a.type !== AnswerType.AREA) throw new Error(`${id} is not painted whole`)
   return a
 }
 
 /** A question's point answer. */
-function pointOf(wiki: string): PointAnswer {
+const pointOf = (wiki: string): PointAnswer => {
   const { answer } = CATALOGUE.find((question) => question.wiki === wiki)!
   if (answer.type !== AnswerType.POINT) throw new Error(`${wiki} is painted whole`)
   return answer
 }
 
 /** An even coat of paint over `cells`, with the usual 5% world floor. */
-function coat(cells: H3Cell[], floor = 0.05) {
+const coat = (cells: H3Cell[], floor = 0.05) => {
   return buildDistribution(
     cells.map((cell) => {
       const [lat, lon] = cellToLatLng(cell)

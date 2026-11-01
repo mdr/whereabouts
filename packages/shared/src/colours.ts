@@ -43,6 +43,6 @@ export type PlayerColour = z.infer<typeof PlayerColourSchema>
 export const playerColour = (index: number): PlayerColour => PlayerColourSchema.parse(index)
 
 /** The CSS colour to draw a player in. */
-export function colourCss(colour: PlayerColour): CssColour {
+export const colourCss = (colour: PlayerColour): CssColour => {
   return PLAYER_COLOURS[colour]!
 }

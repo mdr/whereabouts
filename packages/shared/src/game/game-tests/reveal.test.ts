@@ -9,7 +9,7 @@ import { YouRoleType } from "../../roles.ts"
 import { T0, viewOf, tokA, tokB, paintOn, makeGame, twoPlayerGame, currentQuestion } from "./support.ts"
 
 describe("the reveal", () => {
-  function atFirstReveal() {
+  const atFirstReveal = () => {
     const game = twoPlayerGame(2)
     game.start(tokA, T0)
     game.tick(T0 + 60_000 + ROUND_GRACE)
