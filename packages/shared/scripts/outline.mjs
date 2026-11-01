@@ -16,19 +16,19 @@ export const POINT_BELOW_KM2 = 10_000
  */
 export const MIN_KEPT_SHARE = 0.75
 
-const R = 6371
-export function km([lon1, lat1], [lon2, lat2]) {
+const EARTH_RADIUS_KM = 6371
+export function distanceKm([lon1, lat1], [lon2, lat2]) {
   const r = Math.PI / 180
   const h =
     Math.sin(((lat2 - lat1) * r) / 2) ** 2 +
     Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(((lon2 - lon1) * r) / 2) ** 2
-  return 2 * R * Math.asin(Math.sqrt(h))
+  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h))
 }
 
 /** Closest approach between two polygons' outer rings, by vertices. */
 function gapKm(a, b) {
   let best = Infinity
-  for (const p of a[0]) for (const q of b[0]) best = Math.min(best, km(p, q))
+  for (const p of a[0]) for (const q of b[0]) best = Math.min(best, distanceKm(p, q))
   return best
 }
 
@@ -44,7 +44,7 @@ export function ringAreaKm2(ring) {
     const [lon2, lat2] = ring[i + 1]
     sum += (lon2 - lon1) * r * (2 + Math.sin(lat1 * r) + Math.sin(lat2 * r))
   }
-  return Math.abs((sum * R * R) / 2)
+  return Math.abs((sum * EARTH_RADIUS_KM * EARTH_RADIUS_KM) / 2)
 }
 
 /** Whether [lon, lat] is inside a ring (ray casting, in degrees: fine at island scale). */
@@ -70,7 +70,7 @@ const LABEL_SLACK_KM = 5
 export function islandAnswer(p, polygons) {
   const label = { lat: round4(p.LABEL_Y), lon: round4(p.LABEL_X) }
   const pt = [label.lon, label.lat]
-  const near = polygons.some((poly) => poly[0].some((v) => km(pt, v) <= LABEL_SLACK_KM))
+  const near = polygons.some((poly) => poly[0].some((v) => distanceKm(pt, v) <= LABEL_SLACK_KM))
   if (near || onLand(pt, polygons)) return label
   const largest = polygons.reduce((a, b) => (polygonAreaKm2(b) > polygonAreaKm2(a) ? b : a))
   const cells = cellsOf(largest, 9)

@@ -31,7 +31,7 @@ import {
   centroid,
   crossesAntimeridian,
   keptParts,
-  km,
+  distanceKm,
   onLand,
   pointToleranceKm,
   polygonAreaKm2,
@@ -199,7 +199,7 @@ for (const f of states.sort((a, b) => a.properties.name.localeCompare(b.properti
   }
   const answer = centroid(all.flatMap((poly) => cellsOf(poly, 9)))
   if (!onLand([answer.lon, answer.lat], all)) throw new Error(`${label}: its centre is not on its land`)
-  const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => km([answer.lon, answer.lat], pt))))
+  const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => distanceKm([answer.lon, answer.lat], pt))))
   const tolerance = pointToleranceKm(area, spread, false)
   const id = `state-${slug(label)}`
   places.push({ id, label, wiki, at: answer })

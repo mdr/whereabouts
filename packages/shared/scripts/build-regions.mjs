@@ -41,7 +41,7 @@ import {
   crossesAntimeridian,
   islandAnswer,
   keptParts,
-  km,
+  distanceKm,
   pointToleranceKm,
   polygonAreaKm2,
   polygonsOf,
@@ -255,7 +255,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
     // at their centre.
     const island = why === "small" || why === "scattered"
     const answer = names.at ?? (island ? islandAnswer(p, all) : centroid(all.flatMap((poly) => cellsOf(poly, 4))))
-    const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => km([answer.lon, answer.lat], pt))))
+    const spread = Math.max(...all.flatMap((poly) => poly[0].map((pt) => distanceKm([answer.lon, answer.lat], pt))))
     const tolerance = pointToleranceKm(area, spread, island)
     flags.push({
       id: `flag-${flag}`,
