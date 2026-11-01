@@ -84,10 +84,10 @@ export class DetailPatch {
     this.detailKey = key
     void this.gameMap.ready.then(() => {
       if (typeof detail === "string") {
-        this.gameMap.setDetail(detail)
+        this.gameMap.detail.setDetail(detail)
       } else {
-        this.gameMap.setDetail(RevealDetail.REVEAL)
-        this.gameMap.setStateReveal(detail.stateRound)
+        this.gameMap.detail.setDetail(RevealDetail.REVEAL)
+        this.gameMap.detail.setStateReveal(detail.stateRound)
       }
       this.shown = false
     })

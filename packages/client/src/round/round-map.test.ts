@@ -23,10 +23,9 @@ function makePaint() {
     offerFill: vi.fn(),
     gameMap: {
       clearReveal: vi.fn(),
-      resetView: vi.fn(),
-      setDetail: vi.fn(),
-      setStateReveal: vi.fn(),
-      setHint: vi.fn()
+      setHint: vi.fn(),
+      detail: { setDetail: vi.fn(), setStateReveal: vi.fn() },
+      camera: { resetView: vi.fn() }
     }
   } satisfies RoundPaint
 }
@@ -75,7 +74,7 @@ describe("useRoundMap", () => {
     expect(start).toHaveBeenCalledTimes(1)
     expect(paint.reset.mock.invocationCallOrder[0]).toBeLessThan(start.mock.invocationCallOrder[0]!)
     expect(paint.gameMap.clearReveal).toHaveBeenCalled()
-    expect(paint.gameMap.resetView).toHaveBeenCalled()
+    expect(paint.gameMap.camera.resetView).toHaveBeenCalled()
     expect(paint.tool.value).toBe(Tool.PAINT)
   })
 
@@ -112,11 +111,11 @@ describe("useRoundMap", () => {
   it("shows everything at the reveal, and a state round's states", () => {
     const state = makeQuestionView({ type: QuestionType.STATE, answer: areaAnswerView("state-texas") })
     const { paint, update } = setup({ question: state, detail: MapDetail.WATER })
-    expect(paint.gameMap.setDetail).toHaveBeenLastCalledWith(MapDetail.WATER)
-    expect(paint.gameMap.setStateReveal).toHaveBeenLastCalledWith(false)
+    expect(paint.gameMap.detail.setDetail).toHaveBeenLastCalledWith(MapDetail.WATER)
+    expect(paint.gameMap.detail.setStateReveal).toHaveBeenLastCalledWith(false)
     update({ painting: false, reveal: true })
-    expect(paint.gameMap.setDetail).toHaveBeenLastCalledWith(RevealDetail.REVEAL)
-    expect(paint.gameMap.setStateReveal).toHaveBeenLastCalledWith(true)
+    expect(paint.gameMap.detail.setDetail).toHaveBeenLastCalledWith(RevealDetail.REVEAL)
+    expect(paint.gameMap.detail.setStateReveal).toHaveBeenLastCalledWith(true)
   })
 
   it("shades the hint's band, and takes it off when the round's map goes", () => {

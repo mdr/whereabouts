@@ -10,7 +10,9 @@ import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
 import type { MapDetail } from "@whereabouts/shared/protocol/config"
 import type { QuestionView } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
+import type { DetailLayers } from "../map/detail-layers"
 import type { GameMap } from "../map/map"
+import type { MapCamera } from "../map/map-camera"
 import { RevealDetail, showsBorders } from "../map/shown-detail"
 import type { PaintController } from "../paint/paint-controller"
 import { useFillTool } from "../paint/fill"
@@ -31,7 +33,10 @@ export interface RevealedAnswer {
 
 /** What a round needs of the paint and its map. */
 export type RoundPaint = Pick<PaintController, "reset" | "tool" | "useFiller" | "offerFill"> & {
-  gameMap: Pick<GameMap, "clearReveal" | "resetView" | "setDetail" | "setStateReveal" | "setHint">
+  gameMap: Pick<GameMap, "clearReveal" | "setHint"> & {
+    detail: Pick<DetailLayers, "setDetail" | "setStateReveal">
+    camera: Pick<MapCamera, "resetView">
+  }
 }
 
 export function useRoundMap(
@@ -63,7 +68,7 @@ export function useRoundMap(
     paint.reset(question.answer.tolerance)
     start?.()
     paint.gameMap.clearReveal()
-    paint.gameMap.resetView()
+    paint.gameMap.camera.resetView()
     paint.tool.value = startOnPan.value ? Tool.PAN : Tool.PAINT
   }, [round, painting])
 
@@ -78,8 +83,8 @@ export function useRoundMap(
   // relief help make sense of the answer.
   const stateRound = question?.type === QuestionType.STATE
   useEffect(() => {
-    paint.gameMap.setDetail(reveal ? RevealDetail.REVEAL : detail)
-    paint.gameMap.setStateReveal(reveal && stateRound)
+    paint.gameMap.detail.setDetail(reveal ? RevealDetail.REVEAL : detail)
+    paint.gameMap.detail.setStateReveal(reveal && stateRound)
   }, [reveal, detail, stateRound])
 
   useEffect(() => {
@@ -112,12 +117,12 @@ export function showAnswer(
 
 /** Frame the answer and the paint shown together, wherever the paint went. */
 export function frameReveal(
-  gameMap: Pick<GameMap, "fitAnswerAndPaint" | "fitRegionAndPaint">,
+  camera: Pick<MapCamera, "fitAnswerAndPaint" | "fitRegionAndPaint">,
   question: QuestionView,
   revealed: RevealedAnswer,
   paint: GeoJSON.FeatureCollection
 ): void {
   if (revealed.shape.type === RevealedShapeType.AREA && revealed.shape.outline)
-    gameMap.fitRegionAndPaint(revealed.answer, revealed.shape.outline, paint, question.answer.tolerance)
-  else gameMap.fitAnswerAndPaint(revealed.answer, paint, question.answer.tolerance)
+    camera.fitRegionAndPaint(revealed.answer, revealed.shape.outline, paint, question.answer.tolerance)
+  else camera.fitAnswerAndPaint(revealed.answer, paint, question.answer.tolerance)
 }

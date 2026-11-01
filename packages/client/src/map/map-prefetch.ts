@@ -6,7 +6,8 @@
  */
 import { signal } from "@preact/signals"
 import type { StyleSpecification } from "maplibre-gl"
-import { STYLE_URL, flatWorldZoom, mapWorkerUrl } from "./map"
+import { STYLE_URL, mapWorkerUrl } from "./map"
+import { flatWorldZoom } from "./map-camera"
 import { styleFetches, tileUrls } from "./style-urls"
 
 /** Done, or skipped: what else the lobby fetches waits for this, so as not to slow it. */

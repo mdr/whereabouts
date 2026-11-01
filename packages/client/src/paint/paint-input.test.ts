@@ -21,7 +21,7 @@ function setup() {
   const gameMap = {
     map,
     onSurface: () => true,
-    pixelsToKm: (px: number) => px / 1000,
+    camera: { pixelsToKm: (px: number) => px / 1000 },
     setCursorFootprint: vi.fn()
   } as unknown as GameMap
   const stamp = vi.fn()

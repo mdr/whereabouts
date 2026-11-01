@@ -4,10 +4,11 @@
  * top of it, plus the developer drawer when dev mode is on.
  */
 import { createContext } from "preact"
-import { useContext, useEffect, useState } from "preact/hooks"
+import { useContext, useEffect, useRef, useState } from "preact/hooks"
 import { useElementRef } from "../../element-ref"
 import type { ComponentChildren } from "preact"
 import { GameMap } from "../../../map/map"
+import { GlobeButton } from "../../../map/globe-button"
 import { PaintController } from "../../../paint/paint-controller"
 import { THEME } from "../../../map/themes"
 import { devMode } from "../../dev/dev"
@@ -33,6 +34,7 @@ export function usePaint(): PaintController {
 
 export function MapView({ children }: { children: ComponentChildren }) {
   const mapElement = useElementRef<HTMLDivElement>()
+  const globeButton = useRef<GlobeButton | undefined>(undefined)
   const [controller, setController] = useState<PaintController | undefined>(undefined)
   const [attempt, setAttempt] = useState(0)
   const [failed, setFailed] = useState(false)
@@ -45,8 +47,9 @@ export function MapView({ children }: { children: ComponentChildren }) {
       () => {
         gameMap.applyTheme(THEME)
         // Anything that would give the location away stays hidden.
-        gameMap.setDetail(MapDetail.MINIMAL)
-        gameMap.addGlobeButton(() => (globeView.value = !globeView.value), mapViewTestIds.globeButton)
+        gameMap.detail.setDetail(MapDetail.MINIMAL)
+        globeButton.current = new GlobeButton(() => (globeView.value = !globeView.value), mapViewTestIds.globeButton)
+        gameMap.map.addControl(globeButton.current, "bottom-left")
         paintController = new PaintController(gameMap)
         window.whereabouts = { map: gameMap.map, gameMap, paint: paintController }
         setController(paintController)
@@ -67,7 +70,10 @@ export function MapView({ children }: { children: ComponentChildren }) {
 
   useEffect(() => {
     if (!controller) return
-    return effect(() => controller.gameMap.setGlobe(globeView.value))
+    return effect(() => {
+      controller.gameMap.camera.setGlobe(globeView.value)
+      globeButton.current?.show(globeView.value)
+    })
   }, [controller])
 
   // The spray (or the eraser) plays while a stroke is held and painting is

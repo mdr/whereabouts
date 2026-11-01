@@ -62,8 +62,8 @@ export function Review({ outlines }: { outlines: Outlines }) {
 
   const frame = (features: GeoJSON.FeatureCollection) => {
     if (answer.type === AnswerType.AREA)
-      paint.gameMap.fitRegionAndPaint(answer.centre, answer.polygons, features, answer.tolerance)
-    else paint.gameMap.fitAnswerAndPaint(answer.at, features, answer.tolerance)
+      paint.gameMap.camera.fitRegionAndPaint(answer.centre, answer.polygons, features, answer.tolerance)
+    else paint.gameMap.camera.fitAnswerAndPaint(answer.at, features, answer.tolerance)
   }
   const showPair = (only: 0 | 1 | undefined) =>
     paint.showLayers(
@@ -75,7 +75,7 @@ export function Review({ outlines }: { outlines: Outlines }) {
   useEffect(() => {
     paint.reset(answer.tolerance)
     paint.enabled.value = false
-    paint.gameMap.setDetail(RevealDetail.REVEAL)
+    paint.gameMap.detail.setDetail(RevealDetail.REVEAL)
     if (answer.type === AnswerType.AREA) paint.gameMap.showRegionReveal(answer.polygons)
     else paint.gameMap.showReveal(answer.at)
     if (reviewCase.type === ReviewCaseType.SINGLE) {

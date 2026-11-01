@@ -33,28 +33,30 @@ function fakeMap() {
   return {
     showReveal: vi.fn(),
     showRegionReveal: vi.fn(),
-    clearReveal: vi.fn(),
-    fitAnswerAndPaint: vi.fn(),
-    fitRegionAndPaint: vi.fn()
+    clearReveal: vi.fn()
   }
+}
+
+function fakeCamera() {
+  return { fitAnswerAndPaint: vi.fn(), fitRegionAndPaint: vi.fn() }
 }
 
 const paint: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] }
 
 describe("frameReveal", () => {
   it("frames a place's answer together with the paint", () => {
-    const map = fakeMap()
+    const camera = fakeCamera()
     const a = revealed()
-    frameReveal(map, place, a, paint)
-    expect(map.fitAnswerAndPaint).toHaveBeenCalledWith(a.answer, paint, 50)
-    expect(map.fitRegionAndPaint).not.toHaveBeenCalled()
+    frameReveal(camera, place, a, paint)
+    expect(camera.fitAnswerAndPaint).toHaveBeenCalledWith(a.answer, paint, 50)
+    expect(camera.fitRegionAndPaint).not.toHaveBeenCalled()
   })
 
   it("frames a country's outline together with the paint", () => {
-    const map = fakeMap()
+    const camera = fakeCamera()
     const a = revealed({ shape: { type: RevealedShapeType.AREA, outline } })
-    frameReveal(map, country, a, paint)
-    expect(map.fitRegionAndPaint).toHaveBeenCalledWith(a.answer, outline, paint, 200)
+    frameReveal(camera, country, a, paint)
+    expect(camera.fitRegionAndPaint).toHaveBeenCalledWith(a.answer, outline, paint, 200)
   })
 })
 

@@ -100,7 +100,7 @@ export function Reveal({
       paintsOf(shownResults(reveal.results, shown), view.players).flatMap((painted) => painted.features)
     )
   useEffect(() => {
-    frameReveal(paint.gameMap, reveal.question, answer, show(selected))
+    frameReveal(paint.gameMap.camera, reveal.question, answer, show(selected))
   }, [selected, reveal.index, outline])
   // Not framed: the map would jump about as the mouse crosses the rows.
   useEffect(() => {

@@ -126,7 +126,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
 
   // Framed after the reveal's cards are in place: on a phone the map frames the answer around them.
   useEffect(() => {
-    if (phase === PracticePhase.REVEAL) frameReveal(paint.gameMap, question, answer, paint.layer.toGeoJSON())
+    if (phase === PracticePhase.REVEAL) frameReveal(paint.gameMap.camera, question, answer, paint.layer.toGeoJSON())
   }, [phase, index])
 
   function next() {

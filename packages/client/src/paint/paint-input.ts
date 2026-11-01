@@ -262,11 +262,11 @@ export class PaintInput {
   }
 
   private fillReach(lat: Degrees): Km {
-    return this.gameMap.pixelsToKm(FILL_SMALL, lat)
+    return this.gameMap.camera.pixelsToKm(FILL_SMALL, lat)
   }
 
   private groundBrushRadius(lat: Degrees): Km {
-    return this.gameMap.pixelsToKm(this.brushRadius.value, lat)
+    return this.gameMap.camera.pixelsToKm(this.brushRadius.value, lat)
   }
 
   // ---- strokes: shared by mouse and touch -----------------------------------
