@@ -7,8 +7,8 @@ import { DEFAULT_KERNEL, kernelById, type Kernel } from "../scoring/scoring.ts"
 import type { Question } from "../questions.ts"
 import { playedRound, questionPictures, revealOf, roundHintBand, roundView } from "./game-views.ts"
 import { pickRounds, type QuestionBank } from "./round-picking.ts"
-import { scoredAnswer } from "../scoring/regions.ts"
-import { scoreRound, SubmissionType, type Submission } from "../scoring/round-scoring.ts"
+import { scorePlayers } from "./round-results.ts"
+import { SubmissionType, type Submission } from "../scoring/round-scoring.ts"
 import { pickAwards, type Award } from "../awards/awards.ts"
 import { DEFAULT_HINTS, type HintAxis, type HintBand } from "../hints.ts"
 import type { PlayerId, PlayerName, PlayerToken, RoomCode } from "../ids.ts"
@@ -21,13 +21,12 @@ import type {
   PaintSubmission,
   QuestionPictures,
   RoundReveal,
-  RoundResultView,
   YouView
 } from "../protocol.ts"
 import { CloseReason } from "../close-reason.ts"
 import { OK_CHANGED, OK_SAME, fail, type CommandResult, type JoinResult } from "./command-result.ts"
 import { Seats, freshRecord, type Player } from "./seats.ts"
-import { awardFacts, finalStandings, playerViews, rankAmong } from "./standings.ts"
+import { awardFacts, finalStandings, playerViews } from "./standings.ts"
 import type { Instant, Ms } from "../units.ts"
 
 const DEFAULT_CONFIG: GameConfig = {
@@ -403,25 +402,15 @@ export class Game {
   }
 
   private finishRound(): void {
-    const q = this.questions[this.roundIndex]!
-    const answer = scoredAnswer(q.answer, this.bank.outlines)
-    const results: RoundResultView[] = []
-    // Snapshot ranks before any score changes so arrows compare like with like.
-    const playing = this.seats.playing()
-    for (const p of playing) p.previousRank = rankAmong(p, playing)
-    const { roundLength } = this.config
-    const timing = { startedAt: this.deadline - roundLength, roundLength }
-    for (const p of playing) {
-      if (p.joinedRound > this.roundIndex) continue
-      const { score, guess, facts } = scoreRound(q.label, answer, this.submissions.get(p.token), this.kernel, timing)
-      p.scores[this.roundIndex] = score
-      p.facts[this.roundIndex] = facts
-      const hint = this.hints.get(p.token)
-      results.push({ playerId: p.id, score, guess, ...(hint ? { hint } : {}) })
-    }
-    results.sort((a, b) => b.score - a.score)
+    const index = this.roundIndex
+    const question = this.questions[index]!
+    const results = scorePlayers(
+      this.seats.playing(),
+      { index, question, deadline: this.deadline, submissions: this.submissions, hints: this.hints },
+      { outlines: this.bank.outlines, kernel: this.kernel, roundLength: this.config.roundLength }
+    )
     this.phase = Phase.REVEAL
-    this.reveal = revealOf(q, { index: this.roundIndex, total: this.questions.length }, results)
+    this.reveal = revealOf(question, { index, total: this.questions.length }, results)
   }
 
   private advance(now: Instant): void {
