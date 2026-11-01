@@ -14,6 +14,8 @@ test("flows", async ({ browser }) => {
     await bobHomePage.enterName("Bob")
     const bobLobbyPage = await bobHomePage.joinGame(code)
     await aliceLobbyPage.players.waitForPlayer("Bob")
+    // Round 1 must outlast a refresh and a late joiner arriving; Alice and Bob end it once Cara is in.
+    await aliceLobbyPage.chooseSecondsPerRound(120)
     return { code, aliceLobbyPage, bobLobbyPage }
   })
   let aliceRoundPage = await aliceLobbyPage.startGame()
@@ -40,8 +42,9 @@ test("flows", async ({ browser }) => {
     await caraHomePage.enterName("Cara")
     const caraSittingOutPage = await caraHomePage.joinGameMidRound(code)
     check(true, "a late joiner is told they're sitting this round out")
-    const aliceRevealPage = await aliceRoundPage.waitForReveal()
-    const bobRevealPage = await bobRoundPage.waitForReveal()
+    const aliceRoundDonePage = await aliceRoundPage.finish()
+    const bobRevealPage = await bobRoundPage.finishLast()
+    const aliceRevealPage = await aliceRoundDonePage.waitForReveal()
     const caraRevealPage = await caraSittingOutPage.waitForReveal()
     const round1 = await aliceRevealPage.rows()
     check(
