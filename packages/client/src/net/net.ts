@@ -4,13 +4,14 @@
  */
 import { WSClient, type ClientKickedEvent, type WSClientOptions } from "@rivalis/browser"
 import { computed, signal } from "@preact/signals"
-import { type ClientSend, type ClientTopic } from "@whereabouts/shared/protocol/client-messages"
+import { type ClientSend, ClientTopic, type JsonTopic } from "@whereabouts/shared/protocol/client-messages"
+import { SocketEvent } from "@whereabouts/shared/protocol/socket-event"
 import { type ConfigurePatch } from "@whereabouts/shared/protocol/config"
 import { GameEntryType, PROTOCOL_VERSION, encodeTicket, type Ticket } from "@whereabouts/shared/protocol/ticket"
 import {
   revealFrom,
   type RevealMessage,
-  type ServerTopic,
+  ServerTopic,
   type StateMessage,
   viewFrom
 } from "@whereabouts/shared/protocol/server-messages"
@@ -62,13 +63,13 @@ export interface GameClient {
   readonly connected: boolean
   connect(ticket: string): void
   disconnect(): void
-  send(topic: string, payload: Uint8Array | string): void
+  send(topic: ClientTopic, payload: Uint8Array | string): void
   on(
-    event: "client:connect" | "client:disconnect" | "client:reconnect_failed" | "client:error",
+    event: SocketEvent.CONNECT | SocketEvent.DISCONNECT | SocketEvent.RECONNECT_FAILED | SocketEvent.ERROR,
     listener: () => void
   ): unknown
-  on(event: "client:reconnecting", listener: (attempt: Uint8Array) => void): unknown
-  on(event: "client:kicked", listener: (info: ClientKickedEvent) => void): unknown
+  on(event: SocketEvent.RECONNECTING, listener: (attempt: Uint8Array) => void): unknown
+  on(event: SocketEvent.KICKED, listener: (info: ClientKickedEvent) => void): unknown
   on(event: ServerTopic, listener: (payload: Uint8Array) => void): unknown
 }
 
@@ -123,7 +124,7 @@ export class Connection {
       reconnect: { baseDelayMs: 500, maxDelayMs: 5000, maxAttempts: Infinity },
       getTicket: () => encodeTicket({ v: PROTOCOL_VERSION, ...again() })
     })
-    client.on("client:connect", () => {
+    client.on(SocketEvent.CONNECT, () => {
       // The server sends again whatever a fresh connection needs.
       this.reveal = undefined
       this.paint = undefined
@@ -131,17 +132,17 @@ export class Connection {
       this.status.value = { type: ConnectionStatus.CONNECTED }
       this.stopHeartbeat()
       this.heartbeat = startHeartbeat(
-        () => client.send("ping", ""),
+        () => client.send(ClientTopic.PING, ""),
         () => {
           if (this.client === client) this.connect(again())
         }
       )
     })
-    client.on("client:disconnect", () => {
+    client.on(SocketEvent.DISCONNECT, () => {
       this.stopHeartbeat()
       if (!this.rejected()) this.status.value = { type: ConnectionStatus.DISCONNECTED }
     })
-    client.on("client:reconnecting", (attempt) => {
+    client.on(SocketEvent.RECONNECTING, (attempt) => {
       if (this.view.value || this.rejected()) return
       if (Number(this.decoder.decode(attempt)) > JOIN_ATTEMPTS) {
         client.disconnect()
@@ -151,7 +152,7 @@ export class Connection {
       // Still trying to get in for the first time: not yet a failure.
       this.status.value = { type: ConnectionStatus.CONNECTING }
     })
-    client.on("client:kicked", ({ code, reason }) => {
+    client.on(SocketEvent.KICKED, ({ code, reason }) => {
       this.stopHeartbeat()
       // Rivalis's KickReason.RATE_LIMITED: too many connections from this
       // network (refused before it got in, code 4005, which the client
@@ -167,20 +168,20 @@ export class Connection {
       if (isCloseReason(reason) && reason === CloseReason.OUTDATED && reloadForNewBuild()) return
       this.reject(describeDisconnect(code, reason))
     })
-    client.on("client:reconnect_failed", () => {
+    client.on(SocketEvent.RECONNECT_FAILED, () => {
       if (!this.rejected()) this.reject(describeDisconnect(0, "reconnect_failed"))
     })
-    client.on("client:error", () => {
+    client.on(SocketEvent.ERROR, () => {
       /* surfaced via disconnect */
     })
     // Not parsed: checking every player's paint costs a slow phone 100 ms or more, and the ticket already matches protocol versions.
-    client.on("reveal", (payload) => {
+    client.on(ServerTopic.REVEAL, (payload) => {
       this.reveal = revealFrom(JSON.parse(this.decoder.decode(payload)) as RevealMessage)
     })
-    client.on("paint", (payload) => {
+    client.on(ServerTopic.PAINT, (payload) => {
       this.paint = decodePaint(payload)
     })
-    client.on("state", (payload) => {
+    client.on(ServerTopic.STATE, (payload) => {
       const state = JSON.parse(this.decoder.decode(payload)) as StateMessage
       if (state.phase !== Phase.REVEAL) this.reveal = undefined
       if (state.phase !== Phase.GUESSING) this.paint = undefined
@@ -193,8 +194,8 @@ export class Connection {
       // A fresh state means the server is happy with us; stop showing an old complaint.
       this.lastError.value = undefined
     })
-    client.on("pong", () => this.heartbeat?.pong())
-    client.on("error", (payload) => {
+    client.on(ServerTopic.PONG, () => this.heartbeat?.pong())
+    client.on(ServerTopic.ERROR, (payload) => {
       const { message } = JSON.parse(this.decoder.decode(payload)) as { message: string }
       this.lastError.value = message
     })
@@ -227,57 +228,57 @@ export class Connection {
     this.heartbeat = undefined
   }
 
-  private send<K extends ClientTopic>(...[topic, body]: ClientSend<K>): void {
+  private send<K extends JsonTopic>(...[topic, body]: ClientSend<K>): void {
     if (!this.client?.connected) return
     this.client.send(topic, JSON.stringify(body ?? {}))
   }
 
   sendPaint(paint: PaintSubmission): void {
-    if (this.client?.connected) this.client.send("paint", encodePaint(paint))
+    if (this.client?.connected) this.client.send(ClientTopic.PAINT, encodePaint(paint))
   }
   lock(): void {
-    this.send("lock")
+    this.send(ClientTopic.LOCK)
   }
   unlock(): void {
-    this.send("unlock")
+    this.send(ClientTopic.UNLOCK)
   }
   ready(): void {
-    this.send("ready")
+    this.send(ClientTopic.READY)
   }
   configure(patch: ConfigurePatch): void {
-    this.send("configure", patch)
+    this.send(ClientTopic.CONFIGURE, patch)
   }
   start(): void {
-    this.send("start")
+    this.send(ClientTopic.START)
   }
   next(): void {
-    this.send("next")
+    this.send(ClientTopic.NEXT)
   }
   again(): void {
-    this.send("again")
+    this.send(ClientTopic.AGAIN)
   }
   rename(name: PlayerName): void {
-    this.send("rename", { name })
+    this.send(ClientTopic.RENAME, { name })
   }
   hint(axis: HintAxis): void {
-    this.send("hint", { axis })
+    this.send(ClientTopic.HINT, { axis })
   }
   kick(playerId: PlayerId): void {
-    this.send("kick", { playerId })
+    this.send(ClientTopic.KICK, { playerId })
   }
   /** Give up this seat for good (the lobby's Leave); disconnect afterwards. */
   leave(): void {
-    this.send("leave")
+    this.send(ClientTopic.LEAVE)
   }
   /** In the lobby: watch instead of play, or take a free seat. */
   setRole(role: Role): void {
-    this.send("setRole", { role })
+    this.send(ClientTopic.SET_ROLE, { role })
   }
   makeHost(playerId: PlayerId): void {
-    this.send("makeHost", { playerId })
+    this.send(ClientTopic.MAKE_HOST, { playerId })
   }
   end(): void {
-    this.send("end")
+    this.send(ClientTopic.END)
   }
 
   /** Local-clock ms until a server deadline. */

@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
+import { ClientTopic } from "@whereabouts/shared/protocol/client-messages"
+import { ServerTopic } from "@whereabouts/shared/protocol/server-messages"
 import { viewIn } from "@whereabouts/shared/game/view-in"
 import { PAINT_CELL_BUDGET } from "@whereabouts/shared/paint/compact"
 import { PROTOCOL_VERSION, encodeTicket, type Ticket } from "@whereabouts/shared/protocol/ticket"
@@ -52,14 +54,14 @@ describe("connections", () => {
     const alice = server.player("Alice")
     alice.connect(host())
     await alice.until((view) => view.phase === Phase.LOBBY)
-    alice.send("start")
+    alice.send(ClientTopic.START)
     await alice.until((view) => view.phase === Phase.GUESSING)
 
-    alice.client.send("rename", "this is not json")
+    alice.client.send(ClientTopic.RENAME, "this is not json")
     expect(await pollErrors(alice)).toContain("malformed message")
     alice.errors.length = 0
 
-    alice.client.send("paint", "this is not paint")
+    alice.client.send(ClientTopic.PAINT, "this is not paint")
     expect(await pollErrors(alice)).toContain("invalid paint")
     alice.errors.length = 0
 
@@ -71,13 +73,13 @@ describe("connections", () => {
     // Not a cell: scoring it would throw.
     const notACell = encodePaint({ cells: { [latLngToCell(0, 0, h3Resolution(5))]: 1 }, floor: 0 })
     notACell.fill(0xff, 8, 16)
-    alice.client.send("paint", notACell)
+    alice.client.send(ClientTopic.PAINT, notACell)
     expect(await pollErrors(alice)).toContain("invalid paint")
     alice.errors.length = 0
 
     // A game-level rejection (as opposed to a schema one) also comes back as an error.
-    alice.send("hint", { axis: HintAxis.LATITUDE })
-    alice.send("hint", { axis: HintAxis.LONGITUDE })
+    alice.send(ClientTopic.HINT, { axis: HintAxis.LATITUDE })
+    alice.send(ClientTopic.HINT, { axis: HintAxis.LONGITUDE })
     expect(await pollErrors(alice)).toContain("one hint per round")
     alice.errors.length = 0
 
@@ -93,8 +95,8 @@ describe("connections", () => {
     alice.connect(host())
     await alice.until((view) => view.phase === Phase.LOBBY)
     let pongs = 0
-    alice.client.on("pong", () => pongs++)
-    alice.client.send("ping", "")
+    alice.client.on(ServerTopic.PONG, () => pongs++)
+    alice.client.send(ClientTopic.PING, "")
     await eventually(() => pongs === 1, "a pong")
   })
 
@@ -108,7 +110,7 @@ describe("connections", () => {
 
     // Just over the limit. ws rejects it with close code 1009.
     const huge = "x".repeat(MAX_PAYLOAD_BYTES + 1)
-    bob.client.send("paint", huge)
+    bob.client.send(ClientTopic.PAINT, huge)
     await bob.waitClosed()
     expect(bob.client.connected).toBe(false)
 
@@ -130,17 +132,17 @@ describe("connections", () => {
     const bob = server.player("Bob")
     bob.connect(join(lobby.code))
     await alice.until((view) => view.players.length === 2)
-    alice.send("start")
+    alice.send(ClientTopic.START)
     const round = await bob.until((view) => view.phase === Phase.GUESSING)
     const question = askedIn(round)
     const at = answerCentre(question.answer)
     const paint = paintAt(question, at.lat, at.lon)
     alice.sendPaint(paint)
-    alice.send("lock")
-    bob.send("lock")
+    alice.send(ClientTopic.LOCK)
+    bob.send(ClientTopic.LOCK)
     await alice.until((view) => view.phase === Phase.REVEAL)
 
-    bob.send("rename", { name: "Bobby" })
+    bob.send(ClientTopic.RENAME, { name: "Bobby" })
     const renamed = await alice.untilLatest((view) => view.players.some((player) => player.name === "Bobby"))
     expect(viewIn(renamed, Phase.REVEAL).reveal.results).toHaveLength(2)
     expect(alice.reveals).toHaveLength(1)
@@ -166,7 +168,7 @@ describe("connections", () => {
     bob.connect(join(lobby.code))
     await alice.until((view) => view.players.length === 2)
 
-    for (let i = 0; i < 40; i++) bob.send("rename", { name: i % 2 ? "Bob" : "Bobby" })
+    for (let i = 0; i < 40; i++) bob.send(ClientTopic.RENAME, { name: i % 2 ? "Bob" : "Bobby" })
     await bob.waitClosed()
     expect(bob.client.connected).toBe(false)
     expect(alice.client.connected).toBe(true)
@@ -185,7 +187,7 @@ describe("connections", () => {
     const alice = server.player("Alice")
     alice.connect(host())
     const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
-    alice.send("leave")
+    alice.send(ClientTopic.LEAVE)
     await alice.waitClosed()
     await eventually(() => !server.app.rivalis.rooms.get(lobby.code), "the room to close")
   })

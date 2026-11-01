@@ -7,11 +7,12 @@ import { type Actor, Room, type RoomManager } from "@rivalis/core"
 import {
   ClientMessageSchemas,
   type ClientMessages,
-  type ClientTopic
+  ClientTopic,
+  type JsonTopic
 } from "@whereabouts/shared/protocol/client-messages"
 import { EMPTY_GAME_GRACE, EMPTY_RESULTS_GRACE, SEAT_GRACE, type GameConfig } from "@whereabouts/shared/protocol/config"
 import { Phase, type PaintSubmission, type RoundReveal } from "@whereabouts/shared/protocol/views"
-import { ServerTopics, encodeMessage, revealMessage, stateMessage } from "@whereabouts/shared/protocol/server-messages"
+import { ServerTopic, encodeMessage, revealMessage, stateMessage } from "@whereabouts/shared/protocol/server-messages"
 import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
 import type { CommandResult } from "@whereabouts/shared/game/command-result"
 import { Game } from "@whereabouts/shared/game/game"
@@ -111,32 +112,34 @@ export class GameRoom extends Room<ActorData> {
     this.emptyTimer = undefined
     this.sentReveal = undefined
     const handlers = this.handlers()
-    for (const topic of Object.keys(ClientMessageSchemas) as ClientTopic[]) this.bindTopic(topic, handlers)
-    this.bind("paint", (actor, payload) => this.handle(actor, "paint", readPaint(payload), handlers.paint))
-    this.bind("ping", (actor) => actor.send(ServerTopics.pong, ""))
+    for (const topic of Object.keys(ClientMessageSchemas) as JsonTopic[]) this.bindTopic(topic, handlers)
+    this.bind(ClientTopic.PAINT, (actor, payload) =>
+      this.handle(actor, ClientTopic.PAINT, readPaint(payload), handlers[ClientTopic.PAINT])
+    )
+    this.bind(ClientTopic.PING, (actor) => actor.send(ServerTopic.PONG, ""))
   }
 
-  private bindTopic<K extends ClientTopic>(topic: K, handlers: Pick<Commands, K>): void {
+  private bindTopic<K extends JsonTopic>(topic: K, handlers: Pick<Commands, K>): void {
     this.bind(topic, (actor, payload) => this.handle(actor, topic, readJson(topic, payload), handlers[topic]))
   }
 
   private handlers(): Handlers {
     return {
-      paint: (token, paint) => this.game.setPaint(token, paint),
-      lock: (token, _, now) => this.game.lock(token, now),
-      unlock: (token) => this.game.unlock(token),
-      ready: (token, _, now) => this.game.ready(token, now),
-      configure: (token, patch) => this.game.configure(token, patch),
-      start: (token, _, now) => this.game.start(token, now),
-      next: (token, _, now) => this.game.next(token, now),
-      again: (token, _, now) => this.game.again(token, now),
-      rename: (token, { name }) => this.game.rename(token, name),
-      kick: (token, { playerId }, now) => this.removePlayer(token, playerId, now),
-      setRole: (token, { role }) => this.game.setRole(token, role),
-      leave: (token) => this.leave(token),
-      makeHost: (token, { playerId }) => this.game.makeHost(token, playerId),
-      end: (token) => this.game.end(token),
-      hint: (token, { axis }) => this.game.hint(token, axis)
+      [ClientTopic.PAINT]: (token, paint) => this.game.setPaint(token, paint),
+      [ClientTopic.LOCK]: (token, _, now) => this.game.lock(token, now),
+      [ClientTopic.UNLOCK]: (token) => this.game.unlock(token),
+      [ClientTopic.READY]: (token, _, now) => this.game.ready(token, now),
+      [ClientTopic.CONFIGURE]: (token, patch) => this.game.configure(token, patch),
+      [ClientTopic.START]: (token, _, now) => this.game.start(token, now),
+      [ClientTopic.NEXT]: (token, _, now) => this.game.next(token, now),
+      [ClientTopic.AGAIN]: (token, _, now) => this.game.again(token, now),
+      [ClientTopic.RENAME]: (token, { name }) => this.game.rename(token, name),
+      [ClientTopic.KICK]: (token, { playerId }, now) => this.removePlayer(token, playerId, now),
+      [ClientTopic.SET_ROLE]: (token, { role }) => this.game.setRole(token, role),
+      [ClientTopic.LEAVE]: (token) => this.leave(token),
+      [ClientTopic.MAKE_HOST]: (token, { playerId }) => this.game.makeHost(token, playerId),
+      [ClientTopic.END]: (token) => this.game.end(token),
+      [ClientTopic.HINT]: (token, { axis }) => this.game.hint(token, axis)
     }
   }
 
@@ -156,7 +159,7 @@ export class GameRoom extends Room<ActorData> {
     }
     this.logger?.info(`${actor.id} (${name}, ${address}) ${back ? "rejoined" : "joined"}`)
     const paint = this.game.paintOf(token)
-    if (paint) actor.send(ServerTopics.paint, encodePaint(paint))
+    if (paint) actor.send(ServerTopic.PAINT, encodePaint(paint))
     this.broadcastState()
   }
 
@@ -224,7 +227,7 @@ export class GameRoom extends Room<ActorData> {
   }
 
   private sendError(actor: Actor<ActorData>, message: string): void {
-    actor.send(ServerTopics.error, encodeMessage({ message }))
+    actor.send(ServerTopic.ERROR, encodeMessage({ message }))
   }
 
   /** Views are per player (host flag, lock state), so each is sent on its own. */
@@ -237,11 +240,11 @@ export class GameRoom extends Room<ActorData> {
       if (this.sentReveal?.reveal !== reveal)
         this.sentReveal = { reveal, text: encodeMessage(revealMessage(reveal)), to: new WeakSet() }
       if (!this.sentReveal.to.has(actor)) {
-        actor.send(ServerTopics.reveal, this.sentReveal.text)
+        actor.send(ServerTopic.REVEAL, this.sentReveal.text)
         this.sentReveal.to.add(actor)
       }
     }
-    actor.send(ServerTopics.state, encodeMessage(stateMessage(view)))
+    actor.send(ServerTopic.STATE, encodeMessage(stateMessage(view)))
   }
 
   private broadcastState(): void {
@@ -280,6 +283,6 @@ export class GameRoom extends Room<ActorData> {
 }
 
 type Handler<T> = (token: PlayerToken, body: T, now: Instant) => CommandResult
-type Commands = { [K in ClientTopic]: Handler<ClientMessages[K]> }
+type Commands = { [K in JsonTopic]: Handler<ClientMessages[K]> }
 /** One handler per topic, paint included, each given its topic's parsed body. */
-type Handlers = Commands & { paint: Handler<PaintSubmission> }
+type Handlers = Commands & { [ClientTopic.PAINT]: Handler<PaintSubmission> }

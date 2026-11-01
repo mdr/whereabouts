@@ -16,17 +16,16 @@ import {
   type RoundYouView
 } from "./views.ts"
 
-export const ServerTopics = {
-  state: "state",
+export enum ServerTopic {
+  STATE = "STATE",
   /** A round's RoundReveal, once per connection, before the first state that shows it. */
-  reveal: "reveal",
+  REVEAL = "REVEAL",
   /** Your own paint, in binary, when you join mid-round: a refresh gets back what was painted. */
-  paint: "paint",
-  error: "error",
+  PAINT = "PAINT",
+  ERROR = "ERROR",
   /** The answer to a ping, so a client can tell a live connection from one that died without closing. */
-  pong: "pong"
-} as const
-export type ServerTopic = (typeof ServerTopics)[keyof typeof ServerTopics]
+  PONG = "PONG"
+}
 
 /** Of the reveal, what the state topic carries: only what changes while it shows. */
 type RevealProgress = Pick<RevealView, "index" | "ready">

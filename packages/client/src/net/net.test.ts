@@ -6,7 +6,9 @@ import { placeId, playerName, playerToken, roomCode, wikiTitle } from "@whereabo
 import { viewIn } from "@whereabouts/shared/game/view-in"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import { GameEntryType, decodeTicket, type Ticket } from "@whereabouts/shared/protocol/ticket"
-import { revealMessage, stateMessage } from "@whereabouts/shared/protocol/server-messages"
+import { ClientTopic } from "@whereabouts/shared/protocol/client-messages"
+import { SocketEvent } from "@whereabouts/shared/protocol/socket-event"
+import { ServerTopic, revealMessage, stateMessage } from "@whereabouts/shared/protocol/server-messages"
 import { type GameView, type RoundReveal, Phase } from "@whereabouts/shared/protocol/views"
 import { Connection, ConnectionStatus, type GameClient } from "./net"
 import { RejectionAction, type Rejection } from "./rejection"
@@ -18,7 +20,7 @@ const encoder = new TextEncoder()
 class FakeClient implements GameClient {
   connected = false
   readonly tickets: string[] = []
-  readonly sent: string[] = []
+  readonly sent: ClientTopic[] = []
   private readonly listeners = new Map<string, (arg?: unknown) => void>()
 
   readonly options: WSClientOptions
@@ -33,7 +35,7 @@ class FakeClient implements GameClient {
   disconnect(): void {
     this.connected = false
   }
-  send(topic: string): void {
+  send(topic: ClientTopic): void {
     this.sent.push(topic)
   }
   on(event: string, listener: (payload: never) => void): this {
@@ -46,14 +48,14 @@ class FakeClient implements GameClient {
   }
   open(): void {
     this.connected = true
-    this.emit("client:connect")
+    this.emit(SocketEvent.CONNECT)
   }
   close(): void {
     this.connected = false
-    this.emit("client:disconnect")
+    this.emit(SocketEvent.DISCONNECT)
   }
   state(view: GameView): void {
-    this.emit("state", encoder.encode(JSON.stringify(stateMessage(view))))
+    this.emit(ServerTopic.STATE, encoder.encode(JSON.stringify(stateMessage(view))))
   }
   async nextTicket(): Promise<Ticket | CloseReason.OUTDATED | undefined> {
     return decodeTicket(await this.options.getTicket!())
@@ -101,7 +103,7 @@ describe("Connection status", () => {
     const { conn, client } = connected()
     client.open()
     client.close()
-    client.emit("client:reconnecting")
+    client.emit(SocketEvent.RECONNECTING)
     expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
   })
 
@@ -110,15 +112,15 @@ describe("Connection status", () => {
     client.open()
     client.state(makeLobbyView())
     client.close()
-    client.emit("client:reconnecting")
+    client.emit(SocketEvent.RECONNECTING)
     expect(conn.status.value.type).toBe(ConnectionStatus.DISCONNECTED)
   })
 
   it("gives up getting in after 20 tries, offering to try again", () => {
     const { conn, client } = connected()
-    client.emit("client:reconnecting", encoder.encode("20"))
+    client.emit(SocketEvent.RECONNECTING, encoder.encode("20"))
     expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
-    client.emit("client:reconnecting", encoder.encode("21"))
+    client.emit(SocketEvent.RECONNECTING, encoder.encode("21"))
     expect(conn.status.value.type).toBe(ConnectionStatus.REJECTED)
     expect(rejectionOf(conn)).toMatchObject({ title: "Lost the connection", action: RejectionAction.RETRY })
   })
@@ -128,7 +130,7 @@ describe("Connection status", () => {
     client.open()
     client.state(makeLobbyView())
     client.close()
-    client.emit("client:reconnecting", encoder.encode("500"))
+    client.emit(SocketEvent.RECONNECTING, encoder.encode("500"))
     expect(conn.status.value.type).toBe(ConnectionStatus.DISCONNECTED)
   })
 
@@ -136,7 +138,7 @@ describe("Connection status", () => {
     const { conn, client, clients } = connected()
     client.open()
     client.state(makeLobbyView({ code: roomCode("WXYZ") }))
-    client.emit("client:reconnect_failed")
+    client.emit(SocketEvent.RECONNECT_FAILED)
     conn.rejoin()
     expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
     expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({
@@ -148,7 +150,7 @@ describe("Connection status", () => {
   it("stays rejected, with the reason, when the close follows a rejection", () => {
     const { conn, client } = connected()
     client.open()
-    client.emit("client:kicked", { code: 4003, reason: CloseReason.FULL })
+    client.emit(SocketEvent.KICKED, { code: 4003, reason: CloseReason.FULL })
     client.close()
     expect(conn.status.value.type).toBe(ConnectionStatus.REJECTED)
     expect(rejectionOf(conn)?.title).toBe("That game is full")
@@ -157,22 +159,22 @@ describe("Connection status", () => {
   it("stays rejected if a retry follows the rejection", () => {
     const { conn, client } = connected()
     client.open()
-    client.emit("client:kicked", { code: 4003, reason: CloseReason.FULL })
+    client.emit(SocketEvent.KICKED, { code: 4003, reason: CloseReason.FULL })
     client.close()
-    client.emit("client:reconnecting")
+    client.emit(SocketEvent.RECONNECTING)
     expect(conn.status.value.type).toBe(ConnectionStatus.REJECTED)
     expect(rejectionOf(conn)?.title).toBe("That game is full")
   })
 
   it("is rejected when it gives up reconnecting, keeping an earlier reason", () => {
     const { conn, client } = connected()
-    client.emit("client:reconnect_failed")
+    client.emit(SocketEvent.RECONNECT_FAILED)
     expect(conn.status.value.type).toBe(ConnectionStatus.REJECTED)
     expect(rejectionOf(conn)?.title).toBe("Lost the connection")
 
     const other = connected()
-    other.client.emit("client:kicked", { code: 4003, reason: CloseReason.REMOVED })
-    other.client.emit("client:reconnect_failed")
+    other.client.emit(SocketEvent.KICKED, { code: 4003, reason: CloseReason.REMOVED })
+    other.client.emit(SocketEvent.RECONNECT_FAILED)
     expect(rejectionOf(other.conn)?.action).toBe(RejectionAction.FORGET_SEAT)
   })
 
@@ -183,7 +185,7 @@ describe("Connection status", () => {
     expect(conn.status.value.type).toBe(ConnectionStatus.IDLE)
 
     const other = connected()
-    other.client.emit("client:kicked", { code: 4003, reason: CloseReason.FINISHED })
+    other.client.emit(SocketEvent.KICKED, { code: 4003, reason: CloseReason.FINISHED })
     other.conn.disconnect()
     expect(other.conn.status.value.type).toBe(ConnectionStatus.REJECTED)
   })
@@ -205,7 +207,7 @@ describe("Connection status", () => {
     const { conn, client, clients } = connected()
     client.open()
     client.state(makeLobbyView({ code: roomCode("WXYZ") }))
-    client.emit("client:kicked", { code: 4003, reason: "rate_limited" })
+    client.emit(SocketEvent.KICKED, { code: 4003, reason: "rate_limited" })
     expect(conn.status.value.type).not.toBe(ConnectionStatus.REJECTED)
     vi.advanceTimersByTime(1000)
     expect(clients).toHaveLength(2)
@@ -215,7 +217,7 @@ describe("Connection status", () => {
   it("leaves a connection refused for the network's rate to the client's own retries", () => {
     vi.useFakeTimers()
     const { conn, client, clients } = connected()
-    client.emit("client:kicked", { code: 4005, reason: "rate_limited" })
+    client.emit(SocketEvent.KICKED, { code: 4005, reason: "rate_limited" })
     vi.advanceTimersByTime(5000)
     expect(clients).toHaveLength(1)
     expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
@@ -229,7 +231,7 @@ describe("Connection view", () => {
     vi.useFakeTimers({ now: 10_000 })
     const { conn, client } = connected()
     client.open()
-    client.emit("error", encoder.encode(JSON.stringify({ message: "Too slow" })))
+    client.emit(ServerTopic.ERROR, encoder.encode(JSON.stringify({ message: "Too slow" })))
     expect(conn.lastError.value).toBe("Too slow")
     client.state(makeGuessingView({ serverTime: 12_500 }))
     expect(conn.view.value?.phase).toBe(Phase.GUESSING)
@@ -256,7 +258,7 @@ describe("Connection view", () => {
     const paint = { cells: { "85283473fffffff": 1 }, floor: 0.05 }
     const { conn, client } = connected()
     client.open()
-    client.emit("paint", encodePaint(paint))
+    client.emit(ServerTopic.PAINT, encodePaint(paint))
     client.state(makeGuessingView())
     expect(viewIn(conn.view.value, Phase.GUESSING).you.paint).toEqual(decodePaint(encodePaint(paint)))
 
@@ -280,7 +282,7 @@ describe("Connection view", () => {
     const at = (index: number) => makeRevealView({ reveal: { ...reveal, index, ready: [] } })
     const { conn, client } = connected()
     client.open()
-    client.emit("reveal", encoder.encode(JSON.stringify(revealMessage(reveal))))
+    client.emit(ServerTopic.REVEAL, encoder.encode(JSON.stringify(revealMessage(reveal))))
     client.state(at(1))
     expect(conn.view.value).toBeUndefined()
     client.state(at(2))
@@ -295,7 +297,7 @@ describe("Connection view", () => {
     client.open()
     conn.lock()
     conn.sendPaint({ cells: {}, floor: 0 })
-    expect(client.sent).toEqual(["lock", "paint"])
+    expect(client.sent).toEqual([ClientTopic.LOCK, ClientTopic.PAINT])
   })
 })
 
@@ -309,13 +311,13 @@ describe("Connection liveness", () => {
     game.client.state(makeLobbyView({ code: roomCode("WXYZ") }))
     return game
   }
-  const pings = (client: FakeClient) => client.sent.filter((message) => message === "ping").length
+  const pings = (client: FakeClient) => client.sent.filter((message) => message === ClientTopic.PING).length
 
   it("pings now and then, and carries on while the server answers", () => {
     const { conn, client, clients } = inGame()
     vi.advanceTimersByTime(PING_EVERY)
     expect(pings(client)).toBe(1)
-    client.emit("pong")
+    client.emit(ServerTopic.PONG)
     vi.advanceTimersByTime(PING_EVERY)
     expect(pings(client)).toBe(2)
     expect(clients).toHaveLength(1)
@@ -335,7 +337,7 @@ describe("Connection liveness", () => {
     const { client } = inGame()
     document.dispatchEvent(new Event("visibilitychange"))
     expect(pings(client)).toBe(1)
-    client.emit("pong")
+    client.emit(ServerTopic.PONG)
     window.dispatchEvent(new Event("online"))
     expect(pings(client)).toBe(2)
   })

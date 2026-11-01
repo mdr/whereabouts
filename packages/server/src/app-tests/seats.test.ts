@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
+import { ClientTopic } from "@whereabouts/shared/protocol/client-messages"
 import { viewIn } from "@whereabouts/shared/game/view-in"
 import {
   MAX_PLAYERS,
@@ -26,13 +27,13 @@ describe("seats", () => {
     const bob = server.player("Bob")
     bob.connect(join(lobby.code))
     await alice.until((view) => view.players.length === 2)
-    alice.send("start")
+    alice.send(ClientTopic.START)
     const round = await bob.until((view) => view.phase === Phase.GUESSING)
     const question = askedIn(round)
     const at = answerCentre(question.answer)
     const bobPaint = paintAt(question, at.lat, at.lon)
     bob.sendPaint(bobPaint)
-    bob.send("lock")
+    bob.send(ClientTopic.LOCK)
     await bob.untilLatest(lockedIn)
     // Paint goes back only to a player who rejoins, not with every state.
     expect(viewIn(bob.latest, Phase.GUESSING).you.paint).toBeUndefined()
@@ -61,11 +62,11 @@ describe("seats", () => {
     alice.connect(host())
     const { code } = await alice.until((view) => view.phase === Phase.LOBBY)
     if (phase !== Phase.LOBBY) {
-      alice.send("start")
+      alice.send(ClientTopic.START)
       await alice.until((view) => view.phase === Phase.GUESSING)
     }
     if (phase === Phase.REVEAL) server.clock.advance(config.roundLength + ROUND_GRACE)
-    if (phase === Phase.RESULTS) alice.send("end")
+    if (phase === Phase.RESULTS) alice.send(ClientTopic.END)
     await alice.until((view) => view.phase === phase)
     const room = server.app.rivalis.rooms.get(code) as GameRoom
     alice.client.disconnect()
@@ -100,7 +101,7 @@ describe("seats", () => {
     const bob = server.player("Bob")
     bob.connect(join(lobby.code))
     await alice.until((view) => view.players.length === 2)
-    alice.send("leave")
+    alice.send(ClientTopic.LEAVE)
     await alice.waitClosed()
     expect(alice.client.connected).toBe(false)
     expect(alice.closedFor).toBe(CloseReason.LEFT)
@@ -119,7 +120,7 @@ describe("seats", () => {
     expect(watching.players).toHaveLength(1)
     expect(watching.spectators[0]).toMatchObject({ name: "Sam", type: Role.SPECTATOR })
     expect(watching.spectators[0]).not.toHaveProperty("colour")
-    sam.send("setRole", { role: Role.PLAYER })
+    sam.send(ClientTopic.SET_ROLE, { role: Role.PLAYER })
     const seated = await alice.untilLatest((view) => view.players.some((player) => player.name === "Sam"))
     expect(seated.players.find((player) => player.name === "Sam")!.colour).toBeGreaterThanOrEqual(0)
   })
@@ -131,14 +132,14 @@ describe("seats", () => {
     const bob = server.player("Bob")
     bob.connect(join(lobby.code))
     const two = await alice.until((view) => view.players.length === 2)
-    alice.send("makeHost", { playerId: two.players.find((player) => player.name === "Bob")!.id })
+    alice.send(ClientTopic.MAKE_HOST, { playerId: two.players.find((player) => player.name === "Bob")!.id })
     await bob.until((view) => view.you.isHost)
     await alice.untilLatest((view) => !view.you.isHost)
   })
 
   it("the host removes a player: their connection closes as removed, and that seat cannot come back", async () => {
     const { alice, bob, code, bobId } = await server.aliceAndBob()
-    alice.send("kick", { playerId: bobId })
+    alice.send(ClientTopic.KICK, { playerId: bobId })
     await bob.waitClosed()
     expect(bob.closedFor).toBe(CloseReason.REMOVED)
     await alice.untilLatest((view) => view.players.length === 1)
@@ -151,16 +152,16 @@ describe("seats", () => {
 
   it("a player removed during a reveal still has their name and colour in its results", async () => {
     const { alice, bob, bobId } = await server.aliceAndBob()
-    alice.send("start")
+    alice.send(ClientTopic.START)
     const round = await alice.until((view) => view.phase === Phase.GUESSING)
     const at = answerCentre(askedIn(round).answer)
     alice.sendPaint(paintAt(askedIn(round), at.lat, at.lon))
-    alice.send("lock")
-    bob.send("lock")
+    alice.send(ClientTopic.LOCK)
+    bob.send(ClientTopic.LOCK)
     const revealing = await alice.until((view) => view.phase === Phase.REVEAL)
     const bobSeat = revealing.players.find((player) => player.id === bobId)!
 
-    alice.send("kick", { playerId: bobId })
+    alice.send(ClientTopic.KICK, { playerId: bobId })
     const after = await alice.untilLatest((view) => view.players.length === 1)
     expect(viewIn(after, Phase.REVEAL).reveal.results).toContainEqual(
       expect.objectContaining({ playerId: bobId, name: bobSeat.name, colour: bobSeat.colour })
@@ -174,10 +175,10 @@ describe("seats", () => {
     await bob.waitClosed()
     expect(bob.closedFor).toBe(CloseReason.REPLACED)
 
-    bobTab2.send("rename", { name: "Bobby" })
+    bobTab2.send(ClientTopic.RENAME, { name: "Bobby" })
     await alice.untilLatest((view) => view.players.some((player) => player.name === "Bobby" && player.connected))
     server.clock.advance(SEAT_GRACE)
-    bobTab2.send("rename", { name: "Bob" })
+    bobTab2.send(ClientTopic.RENAME, { name: "Bob" })
     const after = await alice.untilLatest((view) => view.players.some((player) => player.name === "Bob"))
     expect(after.players).toHaveLength(2)
     expect(after.players.every((player) => player.connected)).toBe(true)
@@ -211,9 +212,9 @@ describe("seats", () => {
 
   it("once the game is over, a newcomer is told so, and a player who dropped can come back to the results", async () => {
     const { alice, bob, code } = await server.aliceAndBob()
-    alice.send("start")
+    alice.send(ClientTopic.START)
     await bob.until((view) => view.phase === Phase.GUESSING)
-    alice.send("end")
+    alice.send(ClientTopic.END)
     await bob.until((view) => view.phase === Phase.RESULTS)
 
     const late = server.player("Late")

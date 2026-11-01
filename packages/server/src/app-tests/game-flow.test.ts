@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
+import { ClientTopic } from "@whereabouts/shared/protocol/client-messages"
 import { viewIn } from "@whereabouts/shared/game/view-in"
 import { compactRecord } from "@whereabouts/shared/paint/compact"
 import { resolutionForTolerance } from "@whereabouts/shared/paint/paint"
@@ -38,10 +39,10 @@ describe("game flow", () => {
     bob.connect(join(lobby.code))
     await alice.until((view) => view.players.length === 2)
 
-    bob.send("start")
+    bob.send(ClientTopic.START)
     expect(await pollErrors(bob)).toContain("only the host can start")
 
-    alice.send("start")
+    alice.send(ClientTopic.START)
     const round = await bob.until((view) => view.phase === Phase.GUESSING)
     expect(viewIn(round, Phase.GUESSING).round.total).toBe(2)
     const question = askedIn(round)
@@ -50,7 +51,7 @@ describe("game flow", () => {
     alice.sendPaint(paintAt(question, at.lat, at.lon))
     const bobPaint = paintAt(question, -30, -60)
     bob.sendPaint(bobPaint)
-    bob.send("lock")
+    bob.send(ClientTopic.LOCK)
     await bob.untilLatest(lockedIn)
     // Nobody else learns about Bob's paint before the reveal.
     const aBobCell = Object.keys(bobPaint.cells)[0]!
@@ -68,14 +69,14 @@ describe("game flow", () => {
       viewIn(reveal, Phase.REVEAL).reveal.results.every((result) => result.guess.type === RoundGuessType.PAINTED)
     ).toBe(true)
 
-    alice.send("next")
+    alice.send(ClientTopic.NEXT)
     await bob.until((view) => view.phase === Phase.GUESSING && view.round.index === 1)
     server.clock.advance(60_000 + ROUND_GRACE)
     await bob.until((view) => view.phase === Phase.REVEAL && view.reveal.index === 1)
     // No timer on the reveal: it advances when everyone is ready.
-    bob.send("ready")
+    bob.send(ClientTopic.READY)
     await alice.until((view) => view.phase === Phase.REVEAL && view.reveal.ready.length === 1)
-    alice.send("ready")
+    alice.send(ClientTopic.READY)
     const results = viewIn(await bob.until((view) => view.phase === Phase.RESULTS), Phase.RESULTS)
     expect(results.results).toHaveLength(2)
     expect(results.results[0]!.playerId).toBe(byName["Alice"])
@@ -88,10 +89,10 @@ describe("game flow", () => {
     const bob = server.player("Bob")
     bob.connect(join(lobby.code))
     await alice.until((view) => view.players.length === 2)
-    alice.send("configure", { mix: mixOf({ [QuestionType.COUNTRY]: 1 }) })
+    alice.send(ClientTopic.CONFIGURE, { mix: mixOf({ [QuestionType.COUNTRY]: 1 }) })
     await bob.until((view) => view.config.mix[QuestionType.COUNTRY] === 1 && mixTotal(view.config.mix) === 1)
 
-    alice.send("start")
+    alice.send(ClientTopic.START)
     const round = await bob.until((view) => view.phase === Phase.GUESSING)
     const shown = viewIn(round, Phase.GUESSING).round.question.answer
     expect(shown.type).toBe(AnswerType.AREA)
@@ -108,7 +109,7 @@ describe("game flow", () => {
     const resolution = resolutionForTolerance(shown.tolerance)
     const cells = compactRecord(Object.fromEntries(regionCells(area, resolution).map((cell) => [cell, 1])))
     alice.sendPaint({ cells, floor: 0.05 })
-    alice.send("lock")
+    alice.send(ClientTopic.LOCK)
     await alice.untilLatest(lockedIn)
 
     server.clock.advance(60_000 + ROUND_GRACE)
@@ -129,10 +130,10 @@ describe("game flow", () => {
     const alice = server.player("Alice")
     alice.connect(host())
     await alice.until((view) => view.phase === Phase.LOBBY)
-    alice.send("configure", { mix: mixOf({ [QuestionType.FLAG]: 1 }) })
+    alice.send(ClientTopic.CONFIGURE, { mix: mixOf({ [QuestionType.FLAG]: 1 }) })
     await alice.until((view) => view.config.mix[QuestionType.FLAG] === 1 && mixTotal(view.config.mix) === 1)
 
-    alice.send("start")
+    alice.send(ClientTopic.START)
     const round = await alice.until((view) => view.phase === Phase.GUESSING)
     const { clue } = viewIn(round, Phase.GUESSING).round.question
     if (clue.type !== ClueType.FLAG) throw new Error("a flag round shows a flag")
@@ -150,27 +151,27 @@ describe("game flow", () => {
 
   it("plays a round with a hint, unlocking, and the host ending early, then again", async () => {
     const { alice, bob } = await server.aliceAndBob()
-    alice.send("start")
+    alice.send(ClientTopic.START)
     await bob.until((view) => view.phase === Phase.GUESSING)
 
-    alice.send("hint", { axis: HintAxis.LATITUDE })
+    alice.send(ClientTopic.HINT, { axis: HintAxis.LATITUDE })
     const hinted = await alice.untilLatest((view) => view.phase === Phase.GUESSING && view.you.hint !== undefined)
     expect(viewIn(hinted, Phase.GUESSING).you.hint!.axis).toBe(HintAxis.LATITUDE)
-    alice.send("hint", { axis: HintAxis.LONGITUDE })
+    alice.send(ClientTopic.HINT, { axis: HintAxis.LONGITUDE })
     expect(await pollErrors(alice)).toContain("one hint per round")
 
-    bob.send("lock")
+    bob.send(ClientTopic.LOCK)
     await bob.untilLatest(lockedIn)
-    bob.send("unlock")
+    bob.send(ClientTopic.UNLOCK)
     await bob.untilLatest((view) => !lockedIn(view))
 
-    bob.send("end")
+    bob.send(ClientTopic.END)
     expect(await pollErrors(bob)).toContain("only the host can end the game")
-    alice.send("end")
+    alice.send(ClientTopic.END)
     const results = await bob.until((view) => view.phase === Phase.RESULTS)
     expect(viewIn(results, Phase.RESULTS).results.every((result) => result.rounds.length === 1)).toBe(true)
 
-    alice.send("again")
+    alice.send(ClientTopic.AGAIN)
     const lobby = await bob.until((view) => view.phase === Phase.LOBBY)
     expect(lobby.players).toHaveLength(2)
   })

@@ -9,13 +9,14 @@ import type { WSClient as WSClientType } from "@rivalis/browser"
 import { viewIn } from "@whereabouts/shared/game/view-in"
 import { PaintLayer, resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { PROTOCOL_VERSION, encodeTicket, type GameEntry, GameEntryType } from "@whereabouts/shared/protocol/ticket"
-import { type ClientSend, type ClientTopic } from "@whereabouts/shared/protocol/client-messages"
+import { type ClientSend, ClientTopic, type JsonTopic } from "@whereabouts/shared/protocol/client-messages"
 import { mixOf } from "@whereabouts/shared/protocol/config"
+import { SocketEvent } from "@whereabouts/shared/protocol/socket-event"
 import {
   revealFrom,
   viewFrom,
   type RevealMessage,
-  type ServerTopic,
+  ServerTopic,
   type StateMessage
 } from "@whereabouts/shared/protocol/server-messages"
 import { type GameView, type PaintSubmission, type RoundReveal, Phase } from "@whereabouts/shared/protocol/views"
@@ -128,14 +129,14 @@ export class TestPlayer {
     const decoder = new TextDecoder()
     let reveal: RoundReveal | undefined = undefined
     let paint: PaintSubmission | undefined = undefined
-    this.client.on("reveal", (testPlayer) => {
+    this.client.on(ServerTopic.REVEAL, (testPlayer) => {
       reveal = revealFrom(JSON.parse(decoder.decode(testPlayer)) as RevealMessage)
       this.reveals.push(reveal)
     })
-    this.client.on("paint", (testPlayer) => {
+    this.client.on(ServerTopic.PAINT, (testPlayer) => {
       paint = decodePaint(testPlayer)
     })
-    this.client.on("state", (testPlayer) => {
+    this.client.on(ServerTopic.STATE, (testPlayer) => {
       const raw = decoder.decode(testPlayer)
       const state = JSON.parse(raw) as StateMessage
       if (state.phase !== Phase.REVEAL) reveal = undefined
@@ -150,19 +151,19 @@ export class TestPlayer {
       if (!checked.success) this.invalidStates.push(checked.error.message)
       this.states.push(view)
     })
-    this.client.on("client:kicked", ({ reason }) => (this.closedFor = reason))
-    this.client.on("error", (payload) =>
+    this.client.on(SocketEvent.KICKED, ({ reason }) => (this.closedFor = reason))
+    this.client.on(ServerTopic.ERROR, (payload) =>
       this.errors.push((JSON.parse(decoder.decode(payload)) as { message: string }).message)
     )
   }
   connect(entry: GameEntry) {
     this.client.connect(encodeTicket({ v: PROTOCOL_VERSION, token: this.token, name: this.name, entry }))
   }
-  send<K extends ClientTopic>(...[topic, body]: ClientSend<K>) {
+  send<K extends JsonTopic>(...[topic, body]: ClientSend<K>) {
     this.client.send(topic, JSON.stringify(body ?? {}))
   }
   sendPaint(paint: PaintSubmission) {
-    this.client.send("paint", encodePaint(paint))
+    this.client.send(ClientTopic.PAINT, encodePaint(paint))
   }
   get latest(): GameView {
     return this.states[this.states.length - 1]!
