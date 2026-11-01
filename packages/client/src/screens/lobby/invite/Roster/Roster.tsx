@@ -5,7 +5,7 @@ import type { Connection } from "../../../../net/net"
 import { PlayerList } from "../../../../ui/players/PlayerList/PlayerList"
 import { kickRequest, makeHostRequest, type ConfirmRequest } from "../../../../ui/ConfirmDialog/ConfirmDialog"
 import { rosterTestIds } from "./RosterTestIds"
-import s from "./Roster.module.css"
+import styles from "./Roster.module.css"
 
 /** Players, then (if any) the watchers under their own heading. */
 export function Roster({
@@ -37,7 +37,7 @@ export function Roster({
       {players.length > 0 && <Fragment key={0}>{list(players)}</Fragment>}
       {watchers.length > 0 && (
         <Fragment key={1}>
-          <h3 class={s.watchingHeading} data-testid={rosterTestIds.watchingHeading}>
+          <h3 class={styles.watchingHeading} data-testid={rosterTestIds.watchingHeading}>
             Watching{" "}
             <span title={`Up to ${MAX_SPECTATORS} people can watch`}>
               {watchers.length}/{MAX_SPECTATORS}

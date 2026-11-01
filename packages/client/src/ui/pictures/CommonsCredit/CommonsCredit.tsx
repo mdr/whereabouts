@@ -1,12 +1,12 @@
 import type { CommonsFile } from "@whereabouts/shared/ids"
 import { commonsPageUrl } from "@whereabouts/shared/questions"
 import { Icon } from "../../icons"
-import s from "./CommonsCredit.module.css"
+import styles from "./CommonsCredit.module.css"
 
 export function CommonsCredit({ image }: { image: CommonsFile }) {
   return (
     <a
-      class={s.credit}
+      class={styles.credit}
       href={commonsPageUrl(image)}
       target="_blank"
       rel="noopener"

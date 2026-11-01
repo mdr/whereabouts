@@ -1,6 +1,6 @@
 import { colourCss, type CssColour, type PlayerColour } from "@whereabouts/shared/colours"
 import { cx } from "../cx"
-import s from "./Players.module.css"
+import styles from "./Players.module.css"
 
 export enum SwatchType {
   PLAYER = "PLAYER",
@@ -32,5 +32,5 @@ export function Swatch(props: (PlayerSwatch | CssSwatch | EveryoneSwatch) & { as
   const style = everyone
     ? undefined
     : { background: props.type === SwatchType.CSS ? props.css : colourCss(props.colour) }
-  return <Tag class={cx(s.swatch, everyone && s.everyone, cls)} style={style} />
+  return <Tag class={cx(styles.swatch, everyone && styles.everyone, cls)} style={style} />
 }

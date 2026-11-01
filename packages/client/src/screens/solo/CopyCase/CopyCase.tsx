@@ -5,7 +5,7 @@ import { RegionKernel, encodeCase } from "@whereabouts/shared/scoring/scoring-ca
 import { caseQuestion } from "@whereabouts/shared/scoring/score-review"
 import { AnswerType, type Question } from "@whereabouts/shared/questions"
 import { usePaint } from "../../../ui/map/MapView/MapView"
-import s from "./CopyCase.module.css"
+import styles from "./CopyCase.module.css"
 
 /** Copies the paint and its score as text, to paste into a chat about the scoring (see scoring-case.ts). */
 export function CopyCase({
@@ -52,7 +52,13 @@ export function CopyCase({
         {copied ? "Copied" : "Copy test case"}
       </button>
       {fallback && (
-        <textarea class={s.caseText} readOnly rows={6} value={fallback} onFocus={(e) => e.currentTarget.select()} />
+        <textarea
+          class={styles.caseText}
+          readOnly
+          rows={6}
+          value={fallback}
+          onFocus={(e) => e.currentTarget.select()}
+        />
       )}
     </>
   )

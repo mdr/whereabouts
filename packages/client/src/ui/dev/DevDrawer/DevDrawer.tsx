@@ -7,17 +7,17 @@ import { devMode } from "../dev"
 import { devDrawerTestIds } from "./DevDrawerTestIds"
 import { cx } from "../../cx"
 import kit from "../../kit.module.css"
-import s from "./DevDrawer.module.css"
+import styles from "./DevDrawer.module.css"
 
 export function DevDrawer({ children }: { children?: ComponentChildren }) {
   if (!devMode.value) return undefined
   return (
-    <aside class={s.drawer} data-testid={devDrawerTestIds.drawer}>
-      <div class={s.head}>
-        <span class={s.badge} data-testid={devDrawerTestIds.badge}>
+    <aside class={styles.drawer} data-testid={devDrawerTestIds.drawer}>
+      <div class={styles.head}>
+        <span class={styles.badge} data-testid={devDrawerTestIds.badge}>
           DEV
         </span>
-        <span class={cx(kit.hint, s.note)}>Playtest tools. Add ?dev to the URL to get here.</span>
+        <span class={cx(kit.hint, styles.note)}>Playtest tools. Add ?dev to the URL to get here.</span>
         <button class="small" onClick={() => (devMode.value = false)}>
           Hide
         </button>

@@ -1,5 +1,5 @@
 import { pillsTestIds } from "./PillsTestIds"
-import s from "../pill-row.module.css"
+import styles from "../pill-row.module.css"
 
 /** A row of pills for a small set of choices, one on. */
 export function Pills<T extends string | number>({
@@ -14,14 +14,14 @@ export function Pills<T extends string | number>({
   onChange: (value: T) => void
 }) {
   return (
-    <div class={s.pills} role="radiogroup" aria-label={label}>
+    <div class={styles.pills} role="radiogroup" aria-label={label}>
       {options.map((o) => (
         <button
           key={String(o.value)}
           type="button"
           role="radio"
           aria-checked={o.value === value}
-          class={o.value === value ? s.on : undefined}
+          class={o.value === value ? styles.on : undefined}
           onClick={() => onChange(o.value)}
           data-testid={pillsTestIds.option}
           data-value={o.value}

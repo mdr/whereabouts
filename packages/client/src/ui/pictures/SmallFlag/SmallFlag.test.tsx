@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { flagCode } from "@whereabouts/shared/ids"
 import { cleanup, render } from "@testing-library/preact"
 import { SmallFlag } from "./SmallFlag"
-import s from "./SmallFlag.module.css"
+import styles from "./SmallFlag.module.css"
 import type * as flags from "../../../flags/flags"
 
 vi.mock("../../../flags/flags", async (original) => ({
@@ -22,7 +22,7 @@ describe("SmallFlag", () => {
   it("takes each flag's own shape beside a name", () => {
     for (const [code, shape] of shapes) {
       const { container } = render(<SmallFlag code={code} />)
-      const frame = container.querySelector<HTMLElement>(`.${s.smallFlag}`)!
+      const frame = container.querySelector<HTMLElement>(`.${styles.smallFlag}`)!
       expect(Number(frame.style.getPropertyValue("--flag-ratio"))).toBe(shape)
       cleanup()
     }

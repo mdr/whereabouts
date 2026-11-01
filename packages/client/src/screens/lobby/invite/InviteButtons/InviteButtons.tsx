@@ -1,13 +1,13 @@
 import { useState } from "preact/hooks"
 import { Icon } from "../../../../ui/icons"
-import s from "./InviteButtons.module.css"
+import styles from "./InviteButtons.module.css"
 
 export function InviteButtons({ code }: { code: string }) {
   const [copied, setCopied] = useState(false)
   const url = `${location.origin}${location.pathname}#/game/${code}`
   const canShare = typeof navigator.share === "function"
   return (
-    <div class={s.invite}>
+    <div class={styles.invite}>
       <button
         onClick={() => {
           // Missing outside a secure context (a LAN address over http), whatever the DOM types say.

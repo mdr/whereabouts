@@ -2,7 +2,7 @@ import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { SmallFlag } from "../../../pictures/SmallFlag/SmallFlag"
 import { cx } from "../../../cx"
 import { paintedInTestIds } from "./PaintedInTestIds"
-import s from "./PaintedIn.module.css"
+import styles from "./PaintedIn.module.css"
 
 /**
  * Where some paint mostly was: "[flag] Peru 62%", marked when it is the
@@ -13,13 +13,13 @@ export function PaintedIn({ where, answer, whose }: { where: PaintedCountry; ans
   const right = where.country.clue.flag === answer
   return (
     <span
-      class={cx(s.paintedIn, right && s.right)}
+      class={cx(styles.paintedIn, right && styles.right)}
       data-testid={paintedInTestIds.paintedIn}
       title={`${pct}% of ${whose} paint was in ${where.country.label}${right ? ", the answer" : ""}`}
     >
       <SmallFlag code={where.country.clue.flag} />
-      <span class={s.country}>{where.country.label}</span>
-      <span class={s.share}>{pct}%</span>
+      <span class={styles.country}>{where.country.label}</span>
+      <span class={styles.share}>{pct}%</span>
     </span>
   )
 }

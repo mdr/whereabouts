@@ -7,7 +7,7 @@ import { cx } from "../../cx"
 import { HostTag } from "../HostTag/HostTag"
 import { RankArrow } from "../RankArrow/RankArrow"
 import { Swatch, SwatchType } from "../Swatch"
-import s from "../Players.module.css"
+import styles from "../Players.module.css"
 
 const graphemes = new Intl.Segmenter()
 
@@ -44,27 +44,27 @@ export function PlayerList({
   onMakeHost?: (player: PlayerView) => void
 }) {
   return (
-    <ul class={s.list} data-testid={playerListTestIds.list}>
+    <ul class={styles.list} data-testid={playerListTestIds.list}>
       {players.map((p) => {
         const isYou = p.id === you
         return (
           <li
             key={p.id}
-            class={cx(!p.connected && s.offline)}
+            class={cx(!p.connected && styles.offline)}
             data-testid={playerListTestIds.player}
             data-player={p.name}
           >
             <Mark p={p} avatars={avatars} />
-            <span class={s.name}>
-              <span class={s.nameText} data-testid={playerListTestIds.name}>
+            <span class={styles.name}>
+              <span class={styles.nameText} data-testid={playerListTestIds.name}>
                 {p.name}
               </span>
               {p.isHost ? <HostTag /> : undefined}
-              {isYou ? <span class={s.tag}>you</span> : undefined}
-              {!p.connected ? <span class={s.tag}>offline</span> : undefined}
-              {p.type === Role.SPECTATOR && !avatars ? <span class={s.tag}>watching</span> : undefined}
+              {isYou ? <span class={styles.tag}>you</span> : undefined}
+              {!p.connected ? <span class={styles.tag}>offline</span> : undefined}
+              {p.type === Role.SPECTATOR && !avatars ? <span class={styles.tag}>watching</span> : undefined}
               {showLocked && p.type === Role.PLAYER && p.locked ? (
-                <span class={cx(s.tag, s.done)} title="Finished guessing">
+                <span class={cx(styles.tag, styles.done)} title="Finished guessing">
                   <Icon name="check" size={11} /> done
                 </span>
               ) : undefined}
@@ -76,7 +76,7 @@ export function PlayerList({
             )}
             {!isYou && onMakeHost && p.connected && !p.isHost && (
               <button
-                class={cx("icon", s.makeHost)}
+                class={cx("icon", styles.makeHost)}
                 title={`Make ${p.name} the host`}
                 aria-label={`Make ${p.name} the host`}
                 onClick={(e) => {
@@ -89,7 +89,7 @@ export function PlayerList({
             )}
             {!isYou && onKick && (
               <button
-                class={cx("icon", s.kick)}
+                class={cx("icon", styles.kick)}
                 data-testid={playerListTestIds.kickButton}
                 title={`Remove ${p.name} from the game`}
                 aria-label={`Remove ${p.name} from the game`}
@@ -113,14 +113,14 @@ export function PlayerList({
 function Mark({ p, avatars }: { p: PlayerView; avatars: boolean | undefined }) {
   if (p.type === Role.SPECTATOR) {
     return (
-      <span class={cx(avatars ? s.avatar : s.swatch, s.watcher)} title="Watching" aria-hidden="true">
+      <span class={cx(avatars ? styles.avatar : styles.swatch, styles.watcher)} title="Watching" aria-hidden="true">
         {avatars && <Icon name="eye" size={14} />}
       </span>
     )
   }
   if (!avatars) return <Swatch type={SwatchType.PLAYER} colour={p.colour} />
   return (
-    <span class={s.avatar} style={{ background: colourCss(p.colour) }} aria-hidden="true">
+    <span class={styles.avatar} style={{ background: colourCss(p.colour) }} aria-hidden="true">
       {initial(p.name)}
     </span>
   )
@@ -131,7 +131,7 @@ function Score({ p, arrows }: { p: PlayingPlayerView; arrows: boolean | undefine
   return (
     <>
       {arrows && <RankArrow delta={delta} />}
-      <span class={s.scoreNum} data-testid={playerListTestIds.score}>
+      <span class={styles.scoreNum} data-testid={playerListTestIds.score}>
         {Math.round(p.score).toLocaleString()}
       </span>
     </>

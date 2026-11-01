@@ -2,7 +2,7 @@ import type { ComponentChildren } from "preact"
 import type { HintBand } from "@whereabouts/shared/hints"
 import { usePaint } from "../../MapView/MapView"
 import { HudBottom } from "../../Hud/Hud"
-import s from "./PaintTools.module.css"
+import styles from "./PaintTools.module.css"
 import { Tool } from "../../../../paint/tool"
 import { Icon, type IconName } from "../../../icons"
 import { clearPaint } from "../../../../paint/paint-commands"
@@ -57,7 +57,7 @@ export function PaintTools({
     : [Tool.PAN, Tool.PAINT, Tool.ERASE]
   return (
     <HudBottom note={canPass && paint.isEmpty.value ? PASS_NOTE : undefined}>
-      <div class={s.tools}>
+      <div class={styles.tools}>
         {tools.map((t) => (
           <button
             key={t}
@@ -83,7 +83,7 @@ export function PaintTools({
         <Trim enabled={enabled} water={water ?? false} />
         {hint && <TrimToHint enabled={enabled} band={hint} />}
       </div>
-      <label class={s.brush} title="Brush size ([ and ] also work)">
+      <label class={styles.brush} title="Brush size ([ and ] also work)">
         <span>Brush</span>
         <input
           type="range"
@@ -95,9 +95,9 @@ export function PaintTools({
           onInput={(e) => paint.setBrushSize(Number(e.currentTarget.value))}
         />
       </label>
-      <span class={s.history}>
+      <span class={styles.history}>
         <button
-          class={s.iconOnly}
+          class={styles.iconOnly}
           title="Undo (Ctrl+Z or ⌘Z)"
           aria-label="Undo"
           onClick={() => paint.undo()}
@@ -106,7 +106,7 @@ export function PaintTools({
           <Icon name="undo" />
         </button>
         <button
-          class={s.iconOnly}
+          class={styles.iconOnly}
           title="Redo (Ctrl+Shift+Z, ⌘⇧Z or Ctrl+Y)"
           aria-label="Redo"
           onClick={() => paint.redo()}

@@ -5,7 +5,7 @@ import { useElementRef } from "../../../ui/element-ref"
 import { RoundList, type RoundListProps } from "../RoundList/RoundList"
 import { roundsTestIds } from "./RoundsTestIds"
 import { ScoreTable } from "../ScoreTable/ScoreTable"
-import s from "./Rounds.module.css"
+import styles from "./Rounds.module.css"
 
 /** The room the full table needs: the round column, then one column per player. */
 const ROUND_COLUMN: Px = 200
@@ -30,15 +30,15 @@ export function Rounds(props: Omit<RoundListProps, "best">) {
   }, [])
   if (rounds.length === 0) return undefined
   const fits = width === undefined ? standings.length <= 6 : width >= ROUND_COLUMN + standings.length * SCORE_COLUMN
-  const best = rounds.map((_, r) => Math.max(-1, ...standings.map((s) => s.rounds[r]?.score ?? -1)))
+  const best = rounds.map((_, r) => Math.max(-1, ...standings.map((standing) => standing.rounds[r]?.score ?? -1)))
   return (
-    <section class={s.rounds} aria-label="Scores by round" ref={ref}>
+    <section class={styles.rounds} aria-label="Scores by round" ref={ref}>
       <h2>Rounds</h2>
       {fits || everyone ? <ScoreTable {...props} best={best} scrolls={!fits} /> : <RoundList {...props} best={best} />}
       {!fits && (
         <button
           type="button"
-          class={cx("small", s.everyoneToggle)}
+          class={cx("small", styles.everyoneToggle)}
           onClick={() => setEveryone(!everyone)}
           data-testid={roundsTestIds.everyoneToggle}
         >

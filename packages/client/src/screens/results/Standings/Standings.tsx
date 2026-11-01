@@ -5,7 +5,7 @@ import { cx } from "../../../ui/cx"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { standingsTestIds } from "./StandingsTestIds"
-import s from "./Standings.module.css"
+import styles from "./Standings.module.css"
 
 const MEDALS = ["🥇", "🥈", "🥉"]
 /** Past this many players the standings tighten up, the podium aside. */
@@ -21,25 +21,25 @@ export function Standings({
   you: string
 }) {
   return (
-    <ol class={cx(s.standings, standings.length > MANY_PLAYERS && s.many)} aria-label="Final standings">
+    <ol class={cx(styles.standings, standings.length > MANY_PLAYERS && styles.many)} aria-label="Final standings">
       {standings.map((st, i) => {
         const p = byId.get(st.playerId)
         return (
           <li
             key={st.playerId}
-            class={cx(s.row, st.playerId === you && s.you, i >= MEDALS.length && s.minor)}
+            class={cx(styles.row, st.playerId === you && styles.you, i >= MEDALS.length && styles.minor)}
             data-testid={standingsTestIds.standingsRow}
             data-player={p?.name}
           >
-            <span class={s.place} data-testid={standingsTestIds.place}>
+            <span class={styles.place} data-testid={standingsTestIds.place}>
               {MEDALS[i] ?? i + 1}
             </span>
-            <span class={s.dot}>{p && <Swatch as="i" type={SwatchType.PLAYER} colour={p.colour} />}</span>
-            <span class={s.name}>
-              <span class={s.nameText}>{p?.name ?? "?"}</span>
+            <span class={styles.dot}>{p && <Swatch as="i" type={SwatchType.PLAYER} colour={p.colour} />}</span>
+            <span class={styles.name}>
+              <span class={styles.nameText}>{p?.name ?? "?"}</span>
               {p?.isHost && <HostTag />}
             </span>
-            <span class={s.total} title="Total" data-testid={standingsTestIds.total}>
+            <span class={styles.total} title="Total" data-testid={standingsTestIds.total}>
               {Math.round(st.total).toLocaleString()}
             </span>
           </li>

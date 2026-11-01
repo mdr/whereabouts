@@ -4,7 +4,7 @@ import { SmallFlag } from "../../../ui/pictures/SmallFlag/SmallFlag"
 import { cx } from "../../../ui/cx"
 import { RoundPicture } from "../RoundPicture/RoundPicture"
 import { roundWhatTestIds } from "./RoundWhatTestIds"
-import s from "./RoundWhat.module.css"
+import styles from "./RoundWhat.module.css"
 
 /** An island, lake or sea round says which. */
 export function typeName(round: PlayedRound): string {
@@ -16,14 +16,14 @@ export function typeName(round: PlayedRound): string {
 export function RoundWhat({ number, round, textClass }: { number: number; round: PlayedRound; textClass?: string }) {
   return (
     <>
-      <span class={s.number}>{number}</span>
+      <span class={styles.number}>{number}</span>
       <RoundPicture round={round} />
-      <span class={cx(s.text, textClass)}>
-        <span class={s.label} data-testid={roundWhatTestIds.roundLabel}>
+      <span class={cx(styles.text, textClass)}>
+        <span class={styles.label} data-testid={roundWhatTestIds.roundLabel}>
           {round.label}
-          {round.area && round.flag && <SmallFlag code={round.flag} class={s.labelFlag} />}
+          {round.area && round.flag && <SmallFlag code={round.flag} class={styles.labelFlag} />}
         </span>
-        <span class={s.type} style={typeColour(round.type)} data-testid={roundWhatTestIds.roundType}>
+        <span class={styles.type} style={typeColour(round.type)} data-testid={roundWhatTestIds.roundType}>
           {typeName(round)}
         </span>
       </span>

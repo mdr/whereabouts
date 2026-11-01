@@ -5,7 +5,7 @@ import { CardPlace, QuestionCard } from "../question/QuestionCard/QuestionCard"
 import { Icon } from "../../icons"
 import { cx } from "../../cx"
 import kit from "../../kit.module.css"
-import r from "./RoundPrompt.module.css"
+import styles from "./RoundPrompt.module.css"
 
 /** The question while painting, with how to answer it. */
 export function RoundPrompt({ question }: { question: QuestionView }) {
@@ -23,7 +23,7 @@ export function RoundPrompt({ question }: { question: QuestionView }) {
 
 /** Under a "Paint the whole of …" question: what to cover. */
 function AreaInstruction({ noun }: { noun: string }) {
-  return <p class={cx(kit.hint, r.regionHint)}>Cover the whole {noun}: its shape counts.</p>
+  return <p class={cx(kit.hint, styles.regionHint)}>Cover the whole {noun}: its shape counts.</p>
 }
 
 /**
@@ -32,7 +32,7 @@ function AreaInstruction({ noun }: { noun: string }) {
  */
 function AnswerMode({ area }: { area: boolean }) {
   return area ? (
-    <div class={cx(r.answerMode, r.area)}>
+    <div class={cx(styles.answerMode, styles.area)}>
       <Icon name="brush" size={18} />
       <div>
         <b>Paint the whole country</b>
@@ -40,7 +40,7 @@ function AnswerMode({ area }: { area: boolean }) {
       </div>
     </div>
   ) : (
-    <div class={cx(r.answerMode, r.point)}>
+    <div class={cx(styles.answerMode, styles.point)}>
       <Icon name="pin" size={18} />
       <div>
         <b>Paint where it is</b>

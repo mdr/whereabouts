@@ -6,7 +6,7 @@ import { flagShape, useFlagUrl } from "../../../pictures/flag-url"
 import { Lightbox, LightboxType, useEscape } from "../../../pictures/Lightbox/Lightbox"
 import { EnlargeBadge } from "../EnlargeBadge/EnlargeBadge"
 import { flagImageTestIds } from "./FlagImageTestIds"
-import s from "./FlagImage.module.css"
+import styles from "./FlagImage.module.css"
 
 /** A flag round's flag; click it to enlarge. No alt text naming it: that would give the answer away. */
 export function FlagImage({ code, painting }: { code: FlagCode; painting: boolean }) {
@@ -17,7 +17,7 @@ export function FlagImage({ code, painting }: { code: FlagCode; painting: boolea
     <>
       <button
         type="button"
-        class={cx(s.flag, painting && s.painting)}
+        class={cx(styles.flag, painting && styles.painting)}
         data-picture
         title="Enlarge the flag"
         disabled={!src}

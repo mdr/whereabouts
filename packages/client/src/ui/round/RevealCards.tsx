@@ -9,7 +9,7 @@ import { Answer } from "./question/Answer/Answer"
 import { FactLine } from "./question/FactLine/FactLine"
 import { PaintedIn } from "./flag-reveal/PaintedIn/PaintedIn"
 import { ScoreCard } from "./ScoreCard"
-import sc from "./Score.module.css"
+import scoreStyles from "./Score.module.css"
 
 /** The reveal's question card, now with the answer, and your score. */
 export function RevealCards({
@@ -44,7 +44,7 @@ export function RevealCards({
         testIds={testIds}
       >
         {where && (
-          <div class={sc.fit}>
+          <div class={scoreStyles.fit}>
             Your paint: <PaintedIn where={where} answer={clueFlag(question.clue)} whose="your" />
           </div>
         )}

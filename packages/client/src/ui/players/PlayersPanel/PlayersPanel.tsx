@@ -11,7 +11,7 @@ import { Icon } from "../../icons"
 import { playersPanelTestIds } from "./PlayersPanelTestIds"
 import { Card } from "../../Card/Card"
 import { cx } from "../../cx"
-import s from "./PlayersPanel.module.css"
+import styles from "./PlayersPanel.module.css"
 import { Phase } from "@whereabouts/shared/protocol"
 
 /** Open, it may take more of a phone's screen (HudRight's `roomy`). */
@@ -31,9 +31,9 @@ export function PlayersPanel({
   const online = players.filter((p) => p.connected).length
   const open = playersPanelOpen.value
   return (
-    <div class={cx(s.panel, open && s.open)}>
+    <div class={cx(styles.panel, open && styles.open)}>
       <button
-        class={s.toggle}
+        class={styles.toggle}
         data-testid={playersPanelTestIds.toggle}
         onClick={() => (playersPanelOpen.value = !open)}
         aria-expanded={open}
@@ -48,7 +48,7 @@ export function PlayersPanel({
         <Icon name={open ? "collapse" : "expand"} size={14} />
       </button>
       {open && (
-        <Card class={s.card} data-testid={playersPanelTestIds.card}>
+        <Card class={styles.card} data-testid={playersPanelTestIds.card}>
           <PlayerList
             players={players}
             you={view.you.id}

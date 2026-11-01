@@ -20,7 +20,7 @@ import { Card } from "../../Card/Card"
 import { cx } from "../../cx"
 import kit from "../../kit.module.css"
 import { Tool } from "../../../paint/tool"
-import s from "./MapView.module.css"
+import styles from "./MapView.module.css"
 import { MapDetail } from "@whereabouts/shared/protocol"
 
 const PaintContext = createContext<PaintController | undefined>(undefined)
@@ -106,8 +106,8 @@ export function MapView({ children }: { children: ComponentChildren }) {
   }, [dev, controller])
 
   return (
-    <div class={cx(s.stage, dev && s.dev)}>
-      <div class={s.map} ref={el} data-testid={mapViewTestIds.map} />
+    <div class={cx(styles.stage, dev && styles.dev)}>
+      <div class={styles.map} ref={el} data-testid={mapViewTestIds.map} />
       <PaintContext.Provider value={controller}>
         {controller ? (
           children

@@ -3,7 +3,7 @@ import { describeHint, HintAxis, type HintBand } from "@whereabouts/shared/hints
 import { Card } from "../../Card/Card"
 import { Icon, type IconName } from "../../icons"
 import { hintTestIds } from "./HintTestIds"
-import s from "./Hint.module.css"
+import styles from "./Hint.module.css"
 
 const AXIS_ICON: Record<HintAxis, IconName> = { [HintAxis.LATITUDE]: "latitude", [HintAxis.LONGITUDE]: "longitude" }
 
@@ -21,8 +21,8 @@ export function HintCard({
 }) {
   if (band) {
     return (
-      <Card class={s.card}>
-        <p class={s.band} data-testid={hintTestIds.band}>
+      <Card class={styles.card}>
+        <p class={styles.band} data-testid={hintTestIds.band}>
           <Icon name={AXIS_ICON[band.axis]} size={14} /> {describeHint(band)}
         </p>
       </Card>
@@ -30,11 +30,11 @@ export function HintCard({
   }
   if (left === 0) return undefined
   return (
-    <Card class={s.card}>
-      <div class={s.choose} data-testid={hintTestIds.card}>
-        <span class={s.label}>
+    <Card class={styles.card}>
+      <div class={styles.choose} data-testid={hintTestIds.card}>
+        <span class={styles.label}>
           <Icon name="hint" size={14} /> Hint
-          {left !== undefined && <span class={s.left}>{left} left</span>}
+          {left !== undefined && <span class={styles.left}>{left} left</span>}
         </span>
         <button
           type="button"

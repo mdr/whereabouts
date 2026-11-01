@@ -20,7 +20,7 @@ import { Rounds } from "../Rounds/Rounds"
 import { typeName } from "../RoundWhat/RoundWhat"
 import { Standings } from "../Standings/Standings"
 import { resultsTestIds } from "./ResultsTestIds"
-import s from "./Results.module.css"
+import styles from "./Results.module.css"
 
 // A player removed on the final results.
 const REMOVED_PLAYER: CssColour = "#888888"
@@ -37,12 +37,12 @@ export function Results({ conn, view }: { conn: Connection; view: ResultsGameVie
       scoreLine: winner ? `${winner.name} wins` : "",
       table: {
         title: "Standings",
-        rows: standings.map((s, i) => {
-          const p = byId.get(s.playerId)
+        rows: standings.map((standing, i) => {
+          const p = byId.get(standing.playerId)
           return {
             colour: p && colourCss(p.colour),
-            name: `${i + 1}. ${p?.name ?? "?"}${s.playerId === view.you.id ? " (you)" : ""}`,
-            total: Math.round(s.total).toLocaleString()
+            name: `${i + 1}. ${p?.name ?? "?"}${standing.playerId === view.you.id ? " (you)" : ""}`,
+            total: Math.round(standing.total).toLocaleString()
           }
         })
       },
@@ -58,15 +58,15 @@ export function Results({ conn, view }: { conn: Connection; view: ResultsGameVie
             a.playerIds.map((id) => byId.get(id))
           )
         })),
-        players: standings.map((s) => {
-          const p = byId.get(s.playerId)
+        players: standings.map((standing) => {
+          const p = byId.get(standing.playerId)
           return { name: p?.name ?? "?", colour: p ? colourCss(p.colour) : REMOVED_PLAYER }
         }),
         rounds: view.playedRounds.map((round, r) => ({
           label: round.label,
           type: typeName(round),
           colour: QUESTION_TYPE_LOOKS[round.type].colour,
-          scores: standings.map((s) => s.rounds[r]?.score)
+          scores: standings.map((standing) => standing.rounds[r]?.score)
         }))
       }
     },
@@ -75,7 +75,7 @@ export function Results({ conn, view }: { conn: Connection; view: ResultsGameVie
   useVrView(vrView)
   return (
     <div class={kit.page}>
-      <div class={cx(kit.pageCard, s.card)} data-testid={resultsTestIds.page}>
+      <div class={cx(kit.pageCard, styles.card)} data-testid={resultsTestIds.page}>
         <Banner />
         {winner && (
           <p class={kit.tagline} data-testid={resultsTestIds.winner}>

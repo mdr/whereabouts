@@ -1,10 +1,10 @@
 import { Icon } from "../icons"
-import s from "./Players.module.css"
+import styles from "./Players.module.css"
 
 /** "the host" in running text, with the crown. */
 export function HostWord({ capital }: { capital?: boolean }) {
   return (
-    <span class={s.hostWord}>
+    <span class={styles.hostWord}>
       <Icon name="crown" size={12} />
       {capital ? "The host" : "the host"}
     </span>

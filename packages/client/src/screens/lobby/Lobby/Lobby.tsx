@@ -20,7 +20,7 @@ import { setupLine } from "../setup/setup-line"
 import { lobbyTestIds } from "./LobbyTestIds"
 import { cx } from "../../../ui/cx"
 import kit from "../../../ui/kit.module.css"
-import s from "./Lobby.module.css"
+import styles from "./Lobby.module.css"
 
 /**
  * Waiting room: invite on the left (code, link, players), the game setup on
@@ -45,11 +45,11 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   useVrView(vrView)
   return (
     <div class={kit.page}>
-      <div class={cx(kit.pageCard, s.card)} data-testid={lobbyTestIds.page}>
+      <div class={cx(kit.pageCard, styles.card)} data-testid={lobbyTestIds.page}>
         {dialog}
         <Banner tall>
           <button
-            class={s.leave}
+            class={styles.leave}
             data-testid={lobbyTestIds.leaveButton}
             onClick={() =>
               host ? ask(leaveRequest(everyone(view).find((p) => p.id === view.you.nextHost)?.name, leave)) : leave()
@@ -58,7 +58,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             <Icon name="back" size={15} /> Leave
           </button>
         </Banner>
-        <div class={s.cols}>
+        <div class={styles.cols}>
           <InvitePanel conn={conn} view={view} online={online} ask={ask} />
           <SetupPanel conn={conn} view={view} online={online} vrView={vrView} playerCount={playerCount} />
         </div>

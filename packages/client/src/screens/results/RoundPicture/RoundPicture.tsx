@@ -8,7 +8,7 @@ import { outlinePath } from "../../../ui/outline-path"
 import { SmallFlagButton } from "../../../ui/pictures/SmallFlagButton/SmallFlagButton"
 import { SmallPhoto } from "../../../ui/pictures/SmallPhoto/SmallPhoto"
 import { SmallPictureBox } from "../../../ui/pictures/SmallPictureBox"
-import s from "./RoundPicture.module.css"
+import styles from "./RoundPicture.module.css"
 
 /** A shape round shows the shape painted; the rest, the question's photo or flag, else the reveal's photo. */
 export function RoundPicture({ round }: { round: PlayedRound }) {
@@ -27,7 +27,7 @@ function RoundShape({ area, type }: { area: NonNullable<PlayedRound["area"]>; ty
   const outline = useOutline(area.outline)
   const d = useMemo(() => (outline ? outlinePath(outline, area.centre, 56, 42) : ""), [outline])
   return (
-    <SmallPictureBox class={s.shape} style={typeColour(type)}>
+    <SmallPictureBox class={styles.shape} style={typeColour(type)}>
       {d && (
         <svg viewBox="0 0 56 42" aria-hidden="true">
           <path d={d} />

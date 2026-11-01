@@ -6,7 +6,7 @@ import { RoundStrip } from "../../../../ui/setup/RoundStrip/RoundStrip"
 import { describeMix } from "../../../../ui/setup/describe-mix"
 import { cx } from "../../../../ui/cx"
 import { setupSummaryTestIds } from "./SetupSummaryTestIds"
-import s from "./SetupSummary.module.css"
+import styles from "./SetupSummary.module.css"
 
 /**
  * What a guest sees of the setup: the decided values as tiles. A tile whose
@@ -46,26 +46,26 @@ export function SetupSummary({ view }: { view: GameView }) {
     }
   ]
   return (
-    <div class={s.summary} data-testid={setupSummaryTestIds.summary}>
+    <div class={styles.summary} data-testid={setupSummaryTestIds.summary}>
       {tiles.map((t) => (
-        <div key={`${t.key}:${t.value}`} class={cx(s.tile, t.changed && s.changed)} data-testid={t.testId}>
-          <span class={s.value} data-testid={setupSummaryTestIds.tileValue}>
+        <div key={`${t.key}:${t.value}`} class={cx(styles.tile, t.changed && styles.changed)} data-testid={t.testId}>
+          <span class={styles.value} data-testid={setupSummaryTestIds.tileValue}>
             {t.value}
           </span>
-          <span class={s.label}>{t.label}</span>
+          <span class={styles.label}>{t.label}</span>
         </div>
       ))}
       <div
         key={`questions:${describeMix(mix)}`}
-        class={cx(s.tile, s.questions, mixChanged && s.changed)}
+        class={cx(styles.tile, styles.questions, mixChanged && styles.changed)}
         data-testid={setupSummaryTestIds.questions}
       >
-        <span class={s.label}>{describeMix(mix)}</span>
+        <span class={styles.label}>{describeMix(mix)}</span>
         <RoundStrip mix={mix} total={false} centred />
       </div>
       <div
         key={`map:${mapDetail}`}
-        class={cx(s.tile, s.mapDetail, mapDetail !== before.mapDetail && s.changed)}
+        class={cx(styles.tile, styles.mapDetail, mapDetail !== before.mapDetail && styles.changed)}
         data-testid={setupSummaryTestIds.mapDetail}
       >
         <MapDetailSummary value={mapDetail} />

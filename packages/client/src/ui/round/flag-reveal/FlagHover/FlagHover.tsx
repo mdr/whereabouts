@@ -5,7 +5,7 @@ import type { FlagQuestion } from "@whereabouts/shared/questions"
 import type { Ms, Px } from "@whereabouts/shared/units"
 import type { GameMap } from "../../../../map/map"
 import { SmallFlag } from "../../../pictures/SmallFlag/SmallFlag"
-import s from "./FlagHover.module.css"
+import styles from "./FlagHover.module.css"
 
 /** How near the pointer a small country's answer counts as under it: Tuvalu is far less than a pixel at world zoom. */
 const SMALL: Px = 12
@@ -51,13 +51,13 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
   const left = hit.x > window.innerWidth - 220
   return (
     <div
-      class={s.hover}
+      class={styles.hover}
       style={{
         top: `${hit.y + 14}px`,
         ...(left ? { right: `${window.innerWidth - hit.x + 14}px` } : { left: `${hit.x + 14}px` })
       }}
     >
-      <SmallFlag code={hit.country.clue.flag} class={s.hoverFlag} />
+      <SmallFlag code={hit.country.clue.flag} class={styles.hoverFlag} />
       <span>{hit.country.label}</span>
     </div>
   )

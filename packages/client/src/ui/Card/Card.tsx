@@ -1,6 +1,6 @@
 import type { ComponentChildren, HTMLAttributes } from "preact"
 import { cx } from "../cx"
-import s from "./Card.module.css"
+import styles from "./Card.module.css"
 
 /** `as` a paragraph or a section where the card is one; anything else passes on to that element. */
 export function Card({
@@ -18,8 +18,8 @@ export function Card({
   // Typed as a div, the attributes the three share.
   const El = Tag as "div"
   return (
-    <El class={cx(s.card, cls)} {...rest}>
-      {title && <h2 class={s.title}>{title}</h2>}
+    <El class={cx(styles.card, cls)} {...rest}>
+      {title && <h2 class={styles.title}>{title}</h2>}
       {children}
     </El>
   )

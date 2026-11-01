@@ -6,7 +6,7 @@ import { CommonsCredit } from "../CommonsCredit/CommonsCredit"
 import { flagShape, useFlagUrl } from "../flag-url"
 import { Lightbox, LightboxType, useEscape } from "../Lightbox/Lightbox"
 import picture from "../SmallPicture.module.css"
-import s from "./SmallFlagButton.module.css"
+import styles from "./SmallFlagButton.module.css"
 
 /**
  * A flag the size of a list row; click it to enlarge. Shown once the round
@@ -21,12 +21,12 @@ export function SmallFlagButton({ code }: { code: FlagCode }) {
     <>
       <button
         type="button"
-        class={cx(picture.smallPicture, s.flagPicture)}
+        class={cx(picture.smallPicture, styles.flagPicture)}
         title="Enlarge the flag"
         disabled={!src}
         onClick={() => setLarge(true)}
       >
-        <span class={s.flagShape} style={flagShape(code)}>
+        <span class={styles.flagShape} style={flagShape(code)}>
           {src && <img src={src} alt="" draggable={false} />}
         </span>
         <span class="sr-only">Enlarge flag</span>

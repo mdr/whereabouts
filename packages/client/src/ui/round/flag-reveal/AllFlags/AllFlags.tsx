@@ -6,7 +6,7 @@ import type { GameMap } from "../../../../map/map"
 import { flagPins } from "../../../../data/borders"
 import { FLAG_ATLAS, atlasCell } from "../../../../flags/flag-atlas"
 import { allFlagsTestIds } from "./AllFlagsTestIds"
-import s from "./AllFlags.module.css"
+import styles from "./AllFlags.module.css"
 
 /** The flag atlas is drawn at this many times the size shown. */
 const ATLAS_PX_PER_CSS_PX = 4
@@ -16,7 +16,7 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
   useEffect(() => {
     const markers = flagPins(borders).map(({ country, at }) => {
       const el = document.createElement("div")
-      el.className = s.pin
+      el.className = styles.pin
       el.dataset["testid"] = allFlagsTestIds.pin
       const flag = document.createElement("i")
       flag.title = country.label

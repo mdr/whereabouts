@@ -2,7 +2,7 @@ import { useEffect, useState } from "preact/hooks"
 import type { Ms, Seconds } from "@whereabouts/shared/units"
 import { cx } from "../../cx"
 import { countdownTestIds } from "./CountdownTestIds"
-import s from "./Countdown.module.css"
+import styles from "./Countdown.module.css"
 
 /** Ticks once a second; returns whole seconds remaining, never negative. */
 function useCountdown(timeLeft: () => Ms): Seconds {
@@ -18,7 +18,7 @@ function useCountdown(timeLeft: () => Ms): Seconds {
 export function Countdown({ timeLeft, warnAt = 10 }: { timeLeft: () => Ms; warnAt?: Seconds }) {
   const left = useCountdown(timeLeft)
   return (
-    <div class={cx(s.countdown, left <= warnAt && s.warn)} data-testid={countdownTestIds.countdown}>
+    <div class={cx(styles.countdown, left <= warnAt && styles.warn)} data-testid={countdownTestIds.countdown}>
       {left}
     </div>
   )

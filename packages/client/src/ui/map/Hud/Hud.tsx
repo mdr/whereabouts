@@ -10,28 +10,28 @@ import { useElementRef } from "../../element-ref"
 import { cx } from "../../cx"
 import { hudBottomTestIds, hudHeaderTestIds } from "./HudTestIds"
 import { SoundToggle } from "../SoundToggle/SoundToggle"
-import s from "./Hud.module.css"
+import styles from "./Hud.module.css"
 
 /** `reveal` lays out a round's reveal; MapView reads `data-hud` to lift the map's buttons above its sheet. */
 export function Hud({ reveal, children }: { reveal?: boolean; children: ComponentChildren }) {
   return (
-    <main class={cx(s.hud, reveal && s.reveal)} data-hud={reveal ? "reveal" : undefined}>
+    <main class={cx(styles.hud, reveal && styles.reveal)} data-hud={reveal ? "reveal" : undefined}>
       {children}
     </main>
   )
 }
 
 export function HudTop({ children }: { children: ComponentChildren }) {
-  return <div class={s.top}>{children}</div>
+  return <div class={styles.top}>{children}</div>
 }
 
 /** `roomy`: something in it has opened up, and may take more of a phone's screen. */
 export function HudRight({ roomy, children }: { roomy?: boolean; children: ComponentChildren }) {
-  return <div class={cx(s.right, roomy && s.roomy)}>{children}</div>
+  return <div class={cx(styles.right, roomy && styles.roomy)}>{children}</div>
 }
 
 export function HudCenter({ children }: { children: ComponentChildren }) {
-  return <div class={s.center}>{children}</div>
+  return <div class={styles.center}>{children}</div>
 }
 
 /**
@@ -56,15 +56,15 @@ export function HudBottom({ note, children }: { note?: string; children: Compone
     }
   }, [])
   return (
-    <div class={s.bottom} ref={ref} data-testid={hudBottomTestIds.toolbar}>
-      <div class={s.toolbar}>{children}</div>
-      {note && <p class={s.toolbarNote}>{note}</p>}
+    <div class={styles.bottom} ref={ref} data-testid={hudBottomTestIds.toolbar}>
+      <div class={styles.toolbar}>{children}</div>
+      {note && <p class={styles.toolbarNote}>{note}</p>}
     </div>
   )
 }
 
 /** For a toolbar button that, like the primary one, takes the spare width of a phone's toolbar. */
-export const toolbarGrow = s.grow
+export const toolbarGrow = styles.grow
 
 /**
  * One-line strip at the top of the HUD: title (a link home where allowed),
@@ -83,17 +83,17 @@ export function HudHeader({
   right?: ComponentChildren
 }) {
   return (
-    <div class={s.header} data-testid={hudHeaderTestIds.header}>
+    <div class={styles.header} data-testid={hudHeaderTestIds.header}>
       {home ? (
-        <a href="#/" class={s.brand}>
+        <a href="#/" class={styles.brand}>
           Whereabouts
         </a>
       ) : (
-        <span class={s.brand}>Whereabouts</span>
+        <span class={styles.brand}>Whereabouts</span>
       )}
-      <span class={s.round} data-testid={hudHeaderTestIds.round}>
-        <span class={s.roundWord}>Round </span>
-        <span class={s.nowrap}>
+      <span class={styles.round} data-testid={hudHeaderTestIds.round}>
+        <span class={styles.roundWord}>Round </span>
+        <span class={styles.nowrap}>
           {round} / {total}
         </span>
       </span>
@@ -116,7 +116,7 @@ export function HeaderNote({
   children: ComponentChildren
 }) {
   return (
-    <span class={cx(s.note, nowrap && s.nowrap)} title={title}>
+    <span class={cx(styles.note, nowrap && styles.nowrap)} title={title}>
       <span data-testid={testId}>{children}</span>
       {title && <span class="sr-only">. {title}</span>}
     </span>

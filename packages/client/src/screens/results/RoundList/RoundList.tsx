@@ -7,7 +7,7 @@ import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { RoundWhat } from "../RoundWhat/RoundWhat"
 import { roundListTestIds } from "./RoundListTestIds"
 import { roundsTestIds } from "../Rounds/RoundsTestIds"
-import s from "./RoundList.module.css"
+import styles from "./RoundList.module.css"
 
 export interface RoundListProps {
   rounds: PlayedRound[]
@@ -19,36 +19,38 @@ export interface RoundListProps {
 
 /** A line per round: what it asked, who won it (and how many tied), and your score. */
 export function RoundList({ rounds, standings, byId, you, best }: RoundListProps) {
-  const mine = standings.find((s) => s.playerId === you)
+  const mine = standings.find((standing) => standing.playerId === you)
   return (
-    <ol class={s.list}>
-      <li class={s.head} aria-hidden="true">
-        <span class={s.text} />
+    <ol class={styles.list}>
+      <li class={styles.head} aria-hidden="true">
+        <span class={styles.text} />
         <span>Best</span>
-        {mine && <span class={s.yours}>You</span>}
+        {mine && <span class={styles.yours}>You</span>}
       </li>
       {rounds.map((round, r) => {
-        const winners = standings.filter((s) => s.rounds[r]?.score === best[r]).map((s) => byId.get(s.playerId))
+        const winners = standings
+          .filter((standing) => standing.rounds[r]?.score === best[r])
+          .map((standing) => byId.get(standing.playerId))
         const first = winners[0]
         const yours = mine?.rounds[r]?.score
         return (
           <li key={r} data-testid={roundsTestIds.playedRound}>
-            <RoundWhat number={r + 1} round={round} textClass={s.text} />
+            <RoundWhat number={r + 1} round={round} textClass={styles.text} />
             {first && (
               <span
-                class={s.winner}
+                class={styles.winner}
                 data-testid={roundListTestIds.roundWinner}
                 title={`Won by ${winners.map((p) => p?.name ?? "?").join(", ")}`}
               >
                 <Swatch as="i" type={SwatchType.PLAYER} colour={first.colour} />
-                <span class={s.winnerName}>{first.name}</span>
-                {winners.length > 1 && <span class={s.tied}>+{winners.length - 1}</span>}
+                <span class={styles.winnerName}>{first.name}</span>
+                {winners.length > 1 && <span class={styles.tied}>+{winners.length - 1}</span>}
                 <b>{Math.round(best[r]!)}</b>
               </span>
             )}
             {mine && (
               <span
-                class={cx(s.yours, yours !== undefined && yours === best[r] && s.best)}
+                class={cx(styles.yours, yours !== undefined && yours === best[r] && styles.best)}
                 title="Your score"
                 data-testid={roundListTestIds.roundYours}
               >

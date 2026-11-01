@@ -7,7 +7,7 @@ import { Card } from "../../../ui/Card/Card"
 import { cx } from "../../../ui/cx"
 import { Icon } from "../../../ui/icons"
 import kit from "../../../ui/kit.module.css"
-import pl from "../../../ui/players/Players.module.css"
+import players from "../../../ui/players/Players.module.css"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { ShownRowType, type RevealModel } from "../../../round/round-model"
 import { RevealRow } from "../RevealRow/RevealRow"
@@ -33,30 +33,30 @@ export function RevealScores({
 }) {
   return (
     <Card title="Scores">
-      <ul class={cx(pl.list, pl.pick)} data-testid={revealScoresTestIds.scoresList}>
+      <ul class={cx(players.list, players.pick)} data-testid={revealScoresTestIds.scoresList}>
         {model.rows.map((row) =>
           row.type === ShownRowType.EVERYONE ? (
             <li
               key="everyone"
-              class={cx(pl.everyone, row.selected && pl.selected)}
+              class={cx(players.everyone, row.selected && players.selected)}
               onClick={() => onSelect(row.pick)}
               data-testid={revealScoresTestIds.everyoneRow}
             >
               <Swatch type={SwatchType.EVERYONE} />
-              <span class={pl.name}>Everyone</span>
+              <span class={players.name}>Everyone</span>
             </li>
           ) : row.type === ShownRowType.HIDE_PAINT ? (
             <li
               key="hide"
-              class={cx(pl.hidePaint, row.selected && pl.selected)}
+              class={cx(players.hidePaint, row.selected && players.selected)}
               onClick={() => onSelect(row.pick)}
               data-testid={revealScoresTestIds.hidePaintRow}
               title="Show the map and the answer without anyone's paint"
             >
-              <span class={pl.swatchIcon}>
+              <span class={players.swatchIcon}>
                 <Icon name="eyeOff" size={13} />
               </span>
-              <span class={pl.name}>Hide paint</span>
+              <span class={players.name}>Hide paint</span>
             </li>
           ) : (
             <RevealRow

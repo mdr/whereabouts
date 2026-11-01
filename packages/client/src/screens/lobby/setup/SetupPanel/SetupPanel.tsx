@@ -10,7 +10,7 @@ import { DeviceSwitches } from "../DeviceSwitches/DeviceSwitches"
 import { HostSettings } from "../HostSettings/HostSettings"
 import { SetupSummary } from "../SetupSummary/SetupSummary"
 import { setupPanelTestIds } from "./SetupPanelTestIds"
-import s from "./SetupPanel.module.css"
+import styles from "./SetupPanel.module.css"
 
 /** The right panel: the game's setup, this device's switches, and the way to start. */
 export function SetupPanel({
@@ -42,7 +42,7 @@ export function SetupPanel({
       )}
       <h2>This device</h2>
       <DeviceSwitches />
-      <div class={s.start}>
+      <div class={styles.start}>
         <VrButton view={vrView} />
         {host ? (
           <button

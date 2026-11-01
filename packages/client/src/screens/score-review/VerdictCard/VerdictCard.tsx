@@ -3,11 +3,11 @@ import { Card } from "../../../ui/Card/Card"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { cx } from "../../../ui/cx"
 import kit from "../../../ui/kit.module.css"
-import pl from "../../../ui/players/Players.module.css"
+import players from "../../../ui/players/Players.module.css"
 import { reviewSet, scoreVerdicts } from "../../../settings/settings"
 import { PAIR_COLOURS } from "../pair-colours"
 import { verdictCardTestIds } from "./VerdictCardTestIds"
-import s from "./VerdictCard.module.css"
+import styles from "./VerdictCard.module.css"
 
 export type Choice = -2 | -1 | 0 | 1 | 2
 
@@ -64,32 +64,35 @@ export function VerdictCard({
   const options = c.type === ReviewCaseType.SINGLE ? FAIRNESS : PREFERENCE
   const ownVerdicts = scoreVerdicts.value
   return (
-    <Card title={c.type === ReviewCaseType.SINGLE ? "Is this score fair?" : "Which deserves more?"} class={s.review}>
+    <Card
+      title={c.type === ReviewCaseType.SINGLE ? "Is this score fair?" : "Which deserves more?"}
+      class={styles.review}
+    >
       {c.type === ReviewCaseType.PAIR && (
-        <ul class={cx(pl.list, pl.pick)} data-testid={verdictCardTestIds.pair}>
+        <ul class={cx(players.list, players.pick)} data-testid={verdictCardTestIds.pair}>
           {(["A", "B"] as const).map((name, i) => (
             <li
-              class={pinned === i ? pl.selected : undefined}
+              class={pinned === i ? players.selected : undefined}
               onClick={() => onPin(pinned === i ? undefined : (i as 0 | 1))}
               onPointerEnter={(e) => e.pointerType === "mouse" && onHover(i as 0 | 1)}
               onPointerLeave={(e) => e.pointerType === "mouse" && onHover(undefined)}
             >
               <Swatch type={SwatchType.CSS} css={PAIR_COLOURS[i]!} />
-              <span class={pl.name}>{name}</span>
-              <span class={pl.roundScore} data-testid={verdictCardTestIds.pairScore}>
+              <span class={players.name}>{name}</span>
+              <span class={players.roundScore} data-testid={verdictCardTestIds.pairScore}>
                 {Math.round(scores[i]!)}
               </span>
             </li>
           ))}
         </ul>
       )}
-      <div class={s.verdicts} role="radiogroup">
+      <div class={styles.verdicts} role="radiogroup">
         {options.map((o, i) => (
           <button
             type="button"
             role="radio"
             aria-checked={choice === o.value}
-            class={choice === o.value ? s.selected : undefined}
+            class={choice === o.value ? styles.selected : undefined}
             onClick={() => onChoose(o.value)}
             data-testid={verdictCardTestIds.verdict}
             data-verdict={o.value}
@@ -99,7 +102,7 @@ export function VerdictCard({
         ))}
       </div>
       {c.type === ReviewCaseType.SINGLE && (
-        <label class={s.shouldBe}>
+        <label class={styles.shouldBe}>
           It should be about
           <input
             type="number"
@@ -118,7 +121,7 @@ export function VerdictCard({
         {done ? ": all done." : "."}
         {c.type === ReviewCaseType.PAIR && " Point at A or B to see it alone; click to keep it."}
       </p>
-      <div class={s.actions}>
+      <div class={styles.actions}>
         <button
           type="button"
           onClick={() => exportVerdicts(ownVerdicts)}

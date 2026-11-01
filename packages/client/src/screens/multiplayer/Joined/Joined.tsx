@@ -15,7 +15,7 @@ import { useVrHold, useVrView } from "../../../ui/VrButton/VrButton"
 import { VrViewType, type VrAction } from "../../../vr/view/view"
 import { joinedTestIds } from "./JoinedTestIds"
 import kit from "../../../ui/kit.module.css"
-import s from "./Joined.module.css"
+import styles from "./Joined.module.css"
 
 const upcomingOf = (view: GameView | undefined) => (view && view.phase !== Phase.RESULTS ? view.upcoming : undefined)
 
@@ -73,7 +73,7 @@ export function Joined({ conn, entry }: { conn: Connection; entry: GameEntry }) 
           <Banner />
           <h2 data-testid={joinedTestIds.problemTitle}>{why.title}</h2>
           <p class={kit.tagline}>{why.detail}</p>
-          <div class={s.actions}>
+          <div class={styles.actions}>
             <button class="primary big" onClick={primary.press} data-testid={primary.testId}>
               {primary.label}
             </button>

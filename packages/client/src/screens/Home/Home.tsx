@@ -16,7 +16,7 @@ import hero1448 from "../../assets/hero-1448.webp"
 import { homeTestIds } from "./HomeTestIds"
 import { cx } from "../../ui/cx"
 import kit from "../../ui/kit.module.css"
-import s from "./Home.module.css"
+import styles from "./Home.module.css"
 
 const NEED_NAME_ID = "need-name"
 
@@ -51,21 +51,21 @@ export function Home() {
   useVrView(vrView)
   return (
     <div class={kit.page} data-testid={homeTestIds.page}>
-      <div class={s.content}>
-        <header class={s.hero}>
+      <div class={styles.content}>
+        <header class={styles.hero}>
           <img
             src={hero1448}
             srcset={`${hero800} 800w, ${hero1448} 1448w`}
             sizes="(max-width: 960px) 100vw, 960px"
             alt="A figure spray-painting glowing hexagons onto a globe"
           />
-          <div class={s.heroText}>
+          <div class={styles.heroText}>
             <h1>Whereabouts</h1>
-            <p class={s.tagline}>Paint where you think it is. Hedge when you're not sure.</p>
+            <p class={styles.tagline}>Paint where you think it is. Hedge when you're not sure.</p>
           </div>
         </header>
 
-        <label class={cx(kit.field, s.name)}>
+        <label class={cx(kit.field, styles.name)}>
           <span>Your name</span>
           <input
             type="text"
@@ -78,14 +78,14 @@ export function Home() {
           />
           {!ready && (
             // Read out through aria-describedby, not as part of the field's name.
-            <span class={cx(kit.hint, s.needName)} id={NEED_NAME_ID} aria-hidden>
+            <span class={cx(kit.hint, styles.needName)} id={NEED_NAME_ID} aria-hidden>
               Enter your name first
             </span>
           )}
         </label>
 
-        <div class={s.modes}>
-          <section class={s.mode}>
+        <div class={styles.modes}>
+          <section class={styles.mode}>
             <h2>Host a game</h2>
             <p>Start a room and share the code with friends.</p>
             <button
@@ -98,7 +98,7 @@ export function Home() {
               <Icon name="play" /> Host a game
             </button>
           </section>
-          <section class={s.mode}>
+          <section class={styles.mode}>
             <h2>Join a game</h2>
             <p>Got a code from a friend? Type it here.</p>
             <form
@@ -121,7 +121,7 @@ export function Home() {
                 maxLength={6}
                 value={code}
                 onInput={(e) => setCode(e.currentTarget.value.toUpperCase())}
-                class={cx(kit.codeInput, s.codeInput)}
+                class={cx(kit.codeInput, styles.codeInput)}
                 aria-label="Game code"
                 data-testid={homeTestIds.codeInput}
               />
@@ -137,7 +137,7 @@ export function Home() {
               <button
                 type="submit"
                 value="watch"
-                class={s.watch}
+                class={styles.watch}
                 disabled={!ready || code.trim().length < 4}
                 title="See every round without playing"
               >
@@ -145,10 +145,10 @@ export function Home() {
               </button>
             </form>
           </section>
-          <section class={s.mode}>
+          <section class={styles.mode}>
             <h2>Practise</h2>
             <p>On your own, no clock. See how the scoring works.</p>
-            <div class={s.pool}>
+            <div class={styles.pool}>
               <TogglePills
                 label="What to practise"
                 options={PRACTICE_OPTIONS}
@@ -156,20 +156,20 @@ export function Home() {
                 onChange={(v) => (soloTypes.value = v)}
               />
             </div>
-            <div class={s.go}>
+            <div class={styles.go}>
               <button class="big" onClick={() => navigate("/solo")} data-testid={homeTestIds.practiseButton}>
                 <Icon name="brush" /> Practise
               </button>
               <VrButton view={vrView} />
             </div>
-            <details class={s.detail}>
+            <details class={styles.detail}>
               <summary>Map detail: {MAP_DETAILS.find((d) => d.id === soloMapDetail.value)?.label ?? "Minimal"}</summary>
               <MapDetailPicker narrow value={soloMapDetail.value} onChange={(v) => (soloMapDetail.value = v)} />
             </details>
           </section>
         </div>
 
-        <section class={s.how}>
+        <section class={styles.how}>
           <h2 class={kit.eyebrow}>How to play</h2>
           <ol>
             <li>

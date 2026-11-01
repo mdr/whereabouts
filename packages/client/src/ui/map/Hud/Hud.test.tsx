@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { render } from "@testing-library/preact"
 import { HudBottom } from "./Hud"
-import h from "./Hud.module.css"
+import styles from "./Hud.module.css"
 
 describe("HudBottom", () => {
   afterEach(() => {
@@ -27,7 +27,7 @@ describe("HudBottom", () => {
         <button>Done</button>
       </HudBottom>
     )
-    expect(container.querySelector(`.${h.toolbar} button`)!.textContent).toBe("Done")
+    expect(container.querySelector(`.${styles.toolbar} button`)!.textContent).toBe("Done")
     expect(document.documentElement.style.getPropertyValue("--toolbar-h")).toBe("96px")
     expect(observe).toHaveBeenCalledWith(container.firstElementChild)
     unmount()

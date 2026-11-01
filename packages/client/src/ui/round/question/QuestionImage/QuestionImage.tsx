@@ -8,7 +8,7 @@ import { useEscape } from "../../../pictures/Lightbox/Lightbox"
 import { PhotoLightbox } from "../../../pictures/PhotoLightbox"
 import { EnlargeBadge } from "../EnlargeBadge/EnlargeBadge"
 import { questionImageTestIds } from "./QuestionImageTestIds"
-import s from "./QuestionImage.module.css"
+import styles from "./QuestionImage.module.css"
 
 /** Whether a photo has shown its "Enlarge" label yet this session: after the first, just the icon. */
 let enlargeLabelShown = false
@@ -38,9 +38,9 @@ export function QuestionImage({
   const thumb = useElementRef<HTMLImageElement>()
   return (
     <>
-      <div class={cx(s.thumb, painting && s.painting)} data-picture data-testid={questionImageTestIds.photo}>
+      <div class={cx(styles.thumb, painting && styles.painting)} data-picture data-testid={questionImageTestIds.photo}>
         {/* The whole photo is the button; the badge says so, on phones too, where there is no hover. */}
-        <button type="button" class={s.thumbButton} title="Enlarge the photo" onClick={() => setLarge(true)}>
+        <button type="button" class={styles.thumbButton} title="Enlarge the photo" onClick={() => setLarge(true)}>
           <img ref={thumb} src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
           <EnlargeBadge label={withLabel} />
           <span class="sr-only">Enlarge photo</span>

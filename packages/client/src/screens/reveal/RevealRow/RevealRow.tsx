@@ -3,7 +3,7 @@ import type { HintAxis } from "@whereabouts/shared/hints"
 import { RoundGuessType, type RoundResultView } from "@whereabouts/shared/protocol"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
-import pl from "../../../ui/players/Players.module.css"
+import players from "../../../ui/players/Players.module.css"
 import { Icon } from "../../../ui/icons"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"
 import { RankArrow } from "../../../ui/players/RankArrow/RankArrow"
@@ -43,7 +43,7 @@ export function RevealRow({
   const delta = p.previousRank !== undefined ? p.previousRank - p.rank : 0
   return (
     <li
-      class={cx(selected && pl.selected, you && pl.you, where && pl.withWhere)}
+      class={cx(selected && players.selected, you && players.you, where && players.withWhere)}
       onClick={onSelect}
       onPointerEnter={(e) => e.pointerType === "mouse" && onHover(true)}
       onPointerLeave={(e) => e.pointerType === "mouse" && onHover(false)}
@@ -51,24 +51,24 @@ export function RevealRow({
       data-player={p.name}
     >
       <Swatch type={SwatchType.PLAYER} colour={p.colour} />
-      <span class={pl.name}>
-        <span class={pl.nameText} data-testid={revealRowTestIds.playerName}>
+      <span class={players.name}>
+        <span class={players.nameText} data-testid={revealRowTestIds.playerName}>
           {p.name}
         </span>
         {p.isHost && <HostTag />}
         {r?.guess.type === RoundGuessType.PASSED && (
-          <span class={pl.tag} title="Made no guess this round" data-testid={revealRowTestIds.passedTag}>
+          <span class={players.tag} title="Made no guess this round" data-testid={revealRowTestIds.passedTag}>
             passed
           </span>
         )}
         {r?.hint && (
-          <span class={pl.hinted} title={hintedText(r.hint)} data-testid={revealRowTestIds.hintTag}>
+          <span class={players.hinted} title={hintedText(r.hint)} data-testid={revealRowTestIds.hintTag}>
             <Icon name="hint" size={11} />
             <span class="sr-only">{hintedText(r.hint)}</span>
           </span>
         )}
         {ready && (
-          <span class={cx(pl.tag, pl.ready)} title="Ready for the next round">
+          <span class={cx(players.tag, players.ready)} title="Ready for the next round">
             <span aria-hidden="true">✓</span>
             <span class="sr-only">ready</span>
           </span>
@@ -76,7 +76,7 @@ export function RevealRow({
       </span>
       {onKick && (
         <button
-          class={cx("icon", pl.kick)}
+          class={cx("icon", players.kick)}
           title={`Remove ${p.name} from the game`}
           aria-label={`Remove ${p.name} from the game`}
           onClick={(e) => {
@@ -87,15 +87,15 @@ export function RevealRow({
           <Icon name="kick" size={13} />
         </button>
       )}
-      <span class={pl.roundScore} title="This round" data-testid={revealRowTestIds.roundScore}>
+      <span class={players.roundScore} title="This round" data-testid={revealRowTestIds.roundScore}>
         {roundScoreText(r)}
       </span>
       <RankArrow delta={delta} />
-      <span class={pl.scoreNum} title="Total so far">
+      <span class={players.scoreNum} title="Total so far">
         {Math.round(p.score).toLocaleString()}
       </span>
       {where && (
-        <span class={pl.where}>
+        <span class={players.where}>
           <PaintedIn where={where} answer={answerFlag} whose={you ? "your" : `${p.name}'s`} />
         </span>
       )}

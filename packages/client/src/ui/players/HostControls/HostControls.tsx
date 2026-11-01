@@ -6,7 +6,7 @@ import { Icon } from "../../icons"
 import { endGameRequest, useConfirm } from "../../ConfirmDialog/ConfirmDialog"
 import { hostControlsTestIds } from "./HostControlsTestIds"
 import { cx } from "../../cx"
-import s from "./HostControls.module.css"
+import styles from "./HostControls.module.css"
 
 /** `besidePlayers`: in the HUD with the players pill, which it sits beside on a phone. */
 export function EndGameButton({
@@ -24,7 +24,7 @@ export function EndGameButton({
   return (
     <>
       <button
-        class={cx(s.endGame, besidePlayers && s.besidePlayers)}
+        class={cx(styles.endGame, besidePlayers && styles.besidePlayers)}
         data-testid={hostControlsTestIds.endGameButton}
         title={title ?? "Stop here and show the final standings"}
         onClick={() => ask(endGameRequest(onEnd))}

@@ -1,5 +1,5 @@
 import { togglePillsTestIds } from "./TogglePillsTestIds"
-import s from "../pill-row.module.css"
+import styles from "../pill-row.module.css"
 
 /** Like Pills, but any number of options may be on, at least one. */
 export function TogglePills<T extends string>({
@@ -14,7 +14,7 @@ export function TogglePills<T extends string>({
   onChange: (value: T[]) => void
 }) {
   return (
-    <div class={s.pills} role="group" aria-label={label}>
+    <div class={styles.pills} role="group" aria-label={label}>
       {options.map((o) => {
         const on = value.includes(o.value)
         return (
@@ -22,7 +22,7 @@ export function TogglePills<T extends string>({
             key={o.value}
             type="button"
             aria-pressed={on}
-            class={on ? s.on : undefined}
+            class={on ? styles.on : undefined}
             disabled={on && value.length === 1}
             onClick={() =>
               onChange(options.map((p) => p.value).filter((v) => (v === o.value ? !on : value.includes(v))))

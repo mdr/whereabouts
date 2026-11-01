@@ -12,7 +12,7 @@ import { Card } from "../../../ui/Card/Card"
 import { formatDistance } from "../../../ui/format"
 import { KernelComparison } from "../KernelComparison"
 import { PartsLine } from "../PartsLine"
-import s from "./RevealScore.module.css"
+import styles from "./RevealScore.module.css"
 
 /** The revealed score's parts, and what other answers or kernels would have scored. */
 export function RevealScore({
@@ -42,7 +42,7 @@ export function RevealScore({
   return (
     <Card title="Score">
       <PartsLine parts={parts} />
-      {hoverText && <div class={s.hoverScore}>{hoverText}</div>}
+      {hoverText && <div class={styles.hoverScore}>{hoverText}</div>}
       {answer.type === AnswerType.POINT && painted && (
         <KernelComparison painted={painted} answer={answer} active={kernel.id} />
       )}

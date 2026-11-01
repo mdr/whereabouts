@@ -10,7 +10,7 @@ import { FlagImage } from "../FlagImage/FlagImage"
 import { QuestionImage } from "../QuestionImage/QuestionImage"
 import { questionCardTestIds } from "./QuestionCardTestIds"
 import card from "../../../Card/Card.module.css"
-import q from "./QuestionCard.module.css"
+import styles from "./QuestionCard.module.css"
 
 /** Where a question card sits. */
 export enum CardPlace {
@@ -21,8 +21,8 @@ export enum CardPlace {
 }
 
 const PLACE_CLASS: Record<CardPlace, string | undefined> = {
-  [CardPlace.PAINTING]: q.painting,
-  [CardPlace.REVEAL]: q.reveal
+  [CardPlace.PAINTING]: styles.painting,
+  [CardPlace.REVEAL]: styles.reveal
 }
 
 export function QuestionCard({
@@ -60,14 +60,14 @@ export function QuestionCard({
   usePublishedHeight(ref)
   return (
     <div
-      class={cx(card.card, q.question, PLACE_CLASS[hud], canFold && q.foldable, folded && q.folded)}
+      class={cx(card.card, styles.question, PLACE_CLASS[hud], canFold && styles.foldable, folded && styles.folded)}
       ref={ref}
       data-testid={questionCardTestIds.card}
     >
       {canFold && (
         <button
           type="button"
-          class={cx("icon", q.foldToggle)}
+          class={cx("icon", styles.foldToggle)}
           aria-expanded={!folded}
           aria-label={folded ? "Show the whole question" : "Fold the question away"}
           title={folded ? "Show the whole question" : "Fold the question away for more map"}
@@ -77,7 +77,7 @@ export function QuestionCard({
           <Icon name={folded ? "expand" : "collapse"} size={18} />
         </button>
       )}
-      <h2 class={q.prompt} data-testid={questionCardTestIds.prompt}>
+      <h2 class={styles.prompt} data-testid={questionCardTestIds.prompt}>
         {prompt}
       </h2>
       {image && <QuestionImage image={image} credit={credit ?? false} painting={hud === CardPlace.PAINTING} />}

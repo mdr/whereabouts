@@ -13,7 +13,7 @@ import {
 } from "../../vr/vr-support"
 import { Icon } from "../icons"
 import { vrButtonTestIds } from "./VrButtonTestIds"
-import s from "./VrButton.module.css"
+import styles from "./VrButton.module.css"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** Where a press of the VR button has got: the overlay it shows until the headset opens. */
@@ -113,11 +113,11 @@ export function VrButton({ view }: { view: VrView }) {
       {stage &&
         // Into <body>: the toolbar is transformed, and would be the box a fixed overlay fills.
         createPortal(
-          <div class={s.launch} data-testid={vrButtonTestIds.loading}>
+          <div class={styles.launch} data-testid={vrButtonTestIds.loading}>
             {stage === LaunchStage.LOADING ? (
               <VrLoading stage={vrLoadStage.value} />
             ) : stage === LaunchStage.FAILED || stage === LaunchStage.CODE_MISSING ? (
-              <div class={s.ready} role="alert" data-testid={vrButtonTestIds.failed}>
+              <div class={styles.ready} role="alert" data-testid={vrButtonTestIds.failed}>
                 <p>Couldn't start VR. Check your connection.</p>
                 {stage === LaunchStage.FAILED ? (
                   <button class="primary" onClick={press} data-testid={vrButtonTestIds.retryButton}>
@@ -133,7 +133,7 @@ export function VrButton({ view }: { view: VrView }) {
                 </button>
               </div>
             ) : (
-              <div class={s.ready}>
+              <div class={styles.ready}>
                 <button class="primary" onClick={() => vr && enter(vr)} data-testid={vrButtonTestIds.enterButton}>
                   <Icon name="vr" /> Enter VR
                 </button>
@@ -159,15 +159,15 @@ const STAGE_TEXT: Record<VrLoadStage, string> = {
 function VrLoading({ stage }: { stage: VrLoadStage }) {
   const done = VR_LOAD_STAGES.indexOf(stage)
   return (
-    <div class={s.loading} role="status">
-      <div class={s.globe} aria-hidden="true">
-        <div class={s.land} />
-        <div class={s.spray} style={{ opacity: 0.25 + (0.75 * (done + 1)) / VR_LOAD_STAGES.length }} />
+    <div class={styles.loading} role="status">
+      <div class={styles.globe} aria-hidden="true">
+        <div class={styles.land} />
+        <div class={styles.spray} style={{ opacity: 0.25 + (0.75 * (done + 1)) / VR_LOAD_STAGES.length }} />
       </div>
       <p>{STAGE_TEXT[stage]}…</p>
-      <ol class={s.steps} data-testid={vrButtonTestIds.loadingStage} data-stage={stage}>
+      <ol class={styles.steps} data-testid={vrButtonTestIds.loadingStage} data-stage={stage}>
         {VR_LOAD_STAGES.map((step, i) => (
-          <li key={step} class={i < done ? s.done : i === done ? s.now : undefined} />
+          <li key={step} class={i < done ? styles.done : i === done ? styles.now : undefined} />
         ))}
       </ol>
     </div>

@@ -2,7 +2,7 @@ import { type Connection, ConnectionStatus } from "../../../net/net"
 import { Card } from "../../Card/Card"
 import { cx } from "../../cx"
 import kit from "../../kit.module.css"
-import s from "./ConnectionNote.module.css"
+import styles from "./ConnectionNote.module.css"
 
 /** Reconnecting, or the server's last complaint; undefined while all is well. */
 export function connectionText(conn: Connection): string | undefined {
@@ -16,7 +16,7 @@ export function ConnectionNote({ conn, onMap }: { conn: Connection; onMap?: bool
   if (text === undefined) return undefined
   const note = (
     <p
-      class={cx(kit.hint, conn.status.value.type !== ConnectionStatus.CONNECTED && kit.warn, onMap && s.onMap)}
+      class={cx(kit.hint, conn.status.value.type !== ConnectionStatus.CONNECTED && kit.warn, onMap && styles.onMap)}
       role="status"
     >
       {text}

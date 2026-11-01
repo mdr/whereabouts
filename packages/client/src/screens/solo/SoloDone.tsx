@@ -2,7 +2,7 @@ import { Banner } from "../../ui/Banner/Banner"
 import { Hud, HudCenter } from "../../ui/map/Hud/Hud"
 import { Icon } from "../../ui/icons"
 import kit from "../../ui/kit.module.css"
-import sc from "../../ui/round/Score.module.css"
+import scoreStyles from "../../ui/round/Score.module.css"
 import { VrButton } from "../../ui/VrButton/VrButton"
 import type { VrView } from "../../vr/view/view"
 import { runMaximum, runTotal, type PracticeRun } from "../../round/practice-run"
@@ -14,10 +14,10 @@ export function SoloDone({ run, restart, vrView }: { run: PracticeRun; restart: 
       <HudCenter>
         <div class={kit.pageCard}>
           <Banner />
-          <div class={sc.score}>
-            <div class={sc.label}>Final score</div>
-            <div class={sc.big}>{Math.round(runTotal(run)).toLocaleString()}</div>
-            <div class={sc.label}>out of {runMaximum(run).toLocaleString()}</div>
+          <div class={scoreStyles.score}>
+            <div class={scoreStyles.label}>Final score</div>
+            <div class={scoreStyles.big}>{Math.round(runTotal(run)).toLocaleString()}</div>
+            <div class={scoreStyles.label}>out of {runMaximum(run).toLocaleString()}</div>
           </div>
           <ul class={kit.results}>
             {run.results.map((r, i) => (

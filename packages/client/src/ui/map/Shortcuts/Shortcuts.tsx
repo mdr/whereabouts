@@ -12,7 +12,7 @@ import { CLOSE, TOGGLE_LIST, listedShortcuts } from "../../../keyboard/shortcuts
 import { Card } from "../../Card/Card"
 import { shortcutsTestIds } from "./ShortcutsTestIds"
 import kit from "../../kit.module.css"
-import s from "./Shortcuts.module.css"
+import styles from "./Shortcuts.module.css"
 
 /** The card itself, plus the `?` and Escape keys. Mount once per painting screen. */
 export function Shortcuts({ practice = false }: { practice?: boolean }) {
@@ -36,10 +36,10 @@ export function Shortcuts({ practice = false }: { practice?: boolean }) {
   // Into <body>, like the confirm dialog: the toolbar's transform would
   // otherwise trap a fixed card.
   return createPortal(
-    <div class={s.backdrop} data-testid={shortcutsTestIds.backdrop} onClick={() => (shortcutsOpen.value = false)}>
+    <div class={styles.backdrop} data-testid={shortcutsTestIds.backdrop} onClick={() => (shortcutsOpen.value = false)}>
       <Card
         as="section"
-        class={s.card}
+        class={styles.card}
         role="dialog"
         aria-labelledby="shortcuts-title"
         onClick={(e) => e.stopPropagation()}
@@ -59,8 +59,8 @@ export function Shortcuts({ practice = false }: { practice?: boolean }) {
               <dt>{action}</dt>
               <dd>
                 {combos.map((combo, i) => (
-                  <span key={i} class={s.combo}>
-                    {i > 0 && <span class={s.sep}>{sep}</span>}
+                  <span key={i} class={styles.combo}>
+                    {i > 0 && <span class={styles.sep}>{sep}</span>}
                     {combo.keys.map((k) => (
                       <kbd key={k}>{k}</kbd>
                     ))}

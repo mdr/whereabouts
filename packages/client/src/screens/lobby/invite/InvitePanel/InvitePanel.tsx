@@ -13,7 +13,7 @@ import { invitePanelTestIds } from "./InvitePanelTestIds"
 import { RenameForm } from "../RenameForm"
 import { RoleSwitch } from "../RoleSwitch/RoleSwitch"
 import { Roster } from "../Roster/Roster"
-import s from "./InvitePanel.module.css"
+import styles from "./InvitePanel.module.css"
 
 /** The left panel: the code and link to share, who is here, and the player/watcher choice. */
 export function InvitePanel({
@@ -35,20 +35,20 @@ export function InvitePanel({
     <LobbyPanel>
       <h2>Invite</h2>
       <p class={kit.tagline}>Share this code with your friends</p>
-      <div class={s.code} data-testid={invitePanelTestIds.code}>
+      <div class={styles.code} data-testid={invitePanelTestIds.code}>
         {view.code}
       </div>
       <InviteButtons code={view.code} />
       <ConnectionNote conn={conn} />
       <h2>
         Players{" "}
-        <span class={s.count} title={`Up to ${MAX_PLAYERS} players`}>
+        <span class={styles.count} title={`Up to ${MAX_PLAYERS} players`}>
           {players.length}/{MAX_PLAYERS}
         </span>
       </h2>
       <Roster conn={conn} view={view} ask={ask} onRename={() => setRenaming(true)} />
       {players.length + view.spectators.length === 1 && (
-        <p class={cx(kit.hint, s.waiting)}>Waiting for friends to join…</p>
+        <p class={cx(kit.hint, styles.waiting)}>Waiting for friends to join…</p>
       )}
       {view.you.role.type === YouRoleType.SPECTATOR && !askedToWatch.value && seatsFull && (
         <p class={kit.hint}>

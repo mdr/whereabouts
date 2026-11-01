@@ -3,7 +3,7 @@ import { Card } from "../../../Card/Card"
 import { formatDistance } from "../../../format"
 import kit from "../../../kit.module.css"
 import { PaintBlobs } from "../PaintBlobs/PaintBlobs"
-import s from "./PaintDev.module.css"
+import styles from "./PaintDev.module.css"
 
 /** Developer-only paint settings and diagnostics. */
 export function PaintDev() {
@@ -48,7 +48,7 @@ function Slider(props: {
   format: (v: number) => string
 }) {
   return (
-    <div class={s.row}>
+    <div class={styles.row}>
       <label>{props.label}</label>
       <input
         type="range"

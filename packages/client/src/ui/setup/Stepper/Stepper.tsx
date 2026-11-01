@@ -1,6 +1,6 @@
 import { Icon } from "../../icons"
 import { stepperTestIds } from "./StepperTestIds"
-import s from "./Stepper.module.css"
+import styles from "./Stepper.module.css"
 
 /** A − / + stepper for a count. */
 export function Stepper({
@@ -17,7 +17,7 @@ export function Stepper({
   onChange: (value: number) => void
 }) {
   return (
-    <div class={s.stepper} role="group" aria-label={label}>
+    <div class={styles.stepper} role="group" aria-label={label}>
       <button
         type="button"
         aria-label={`Fewer ${label.toLowerCase()}`}
@@ -27,7 +27,7 @@ export function Stepper({
       >
         <Icon name="minus" />
       </button>
-      <span class={s.value} aria-live="polite" data-testid={stepperTestIds.value}>
+      <span class={styles.value} aria-live="polite" data-testid={stepperTestIds.value}>
         {value}
       </span>
       <button
