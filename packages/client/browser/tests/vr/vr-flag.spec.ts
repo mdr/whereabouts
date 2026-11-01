@@ -80,8 +80,11 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   )
   await round.screenshot(shot(`vr-9c-back.png`))
   await headset.controllers.rightGrip(0)
-  await round.pause(500)
-  const back = await headset.panels.pictureHeld()
+  const back = await until(
+    "the flag let go",
+    () => headset.panels.pictureHeld(),
+    (state) => !state.held
+  )
   const off = Math.hypot(...back.at.map((component, i) => component - card[i]!))
   check(!back.held && off < 0.01, `letting go puts it back (${off.toFixed(3)} m off)`)
 
