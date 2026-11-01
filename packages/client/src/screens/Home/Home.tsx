@@ -10,7 +10,7 @@ import { VrViewType, type VrView } from "../../vr/view/view"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { QUESTION_TYPE_LOOKS } from "../../question-types"
 
-const PRACTICE_OPTIONS = QUESTION_TYPES.map((t) => ({ value: t, label: QUESTION_TYPE_LOOKS[t].label }))
+const PRACTICE_OPTIONS = QUESTION_TYPES.map((type) => ({ value: type, label: QUESTION_TYPE_LOOKS[type].label }))
 import hero800 from "../../assets/hero-800.webp"
 import hero1448 from "../../assets/hero-1448.webp"
 import { homeTestIds } from "./HomeTestIds"
@@ -35,7 +35,7 @@ export function Home() {
     type: VrViewType.LOBBY,
     summary: {
       title: "Whereabouts",
-      scoreLine: `Practise: ${types.map((t) => QUESTION_TYPE_LOOKS[t].label).join(", ")}`,
+      scoreLine: `Practise: ${types.map((type) => QUESTION_TYPE_LOOKS[type].label).join(", ")}`,
       note: "Take the headset off to host or join a game.",
       actions: [
         { label: "Practise", press: () => navigate("/solo") },
@@ -73,7 +73,7 @@ export function Home() {
             placeholder="Your name"
             data-testid={homeTestIds.nameInput}
             value={savedName.value}
-            onInput={(e) => (savedName.value = e.currentTarget.value)}
+            onInput={(event) => (savedName.value = event.currentTarget.value)}
             aria-describedby={needName}
           />
           {!ready && (
@@ -103,15 +103,15 @@ export function Home() {
             <p>Got a code from a friend? Type it here.</p>
             <form
               class={kit.join}
-              onSubmit={(e) => {
-                e.preventDefault()
-                const c = code.trim().toUpperCase()
-                if (name && c.length >= 4) {
+              onSubmit={(event) => {
+                event.preventDefault()
+                const joinCode = code.trim().toUpperCase()
+                if (name && joinCode.length >= 4) {
                   nameHandoff.value = name
                   // The "Just watch" button submits too, and says which it was.
-                  const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | undefined
+                  const submitter = (event as SubmitEvent).submitter as HTMLButtonElement | undefined
                   watchHandoff.value = submitter?.value === "watch"
-                  navigate(`/game/${c}`)
+                  navigate(`/game/${joinCode}`)
                 }
               }}
             >
@@ -120,7 +120,7 @@ export function Home() {
                 placeholder="CODE"
                 maxLength={6}
                 value={code}
-                onInput={(e) => setCode(e.currentTarget.value.toUpperCase())}
+                onInput={(event) => setCode(event.currentTarget.value.toUpperCase())}
                 class={cx(kit.codeInput, styles.codeInput)}
                 aria-label="Game code"
                 data-testid={homeTestIds.codeInput}
@@ -153,7 +153,7 @@ export function Home() {
                 label="What to practise"
                 options={PRACTICE_OPTIONS}
                 value={types}
-                onChange={(v) => (soloTypes.value = v)}
+                onChange={(selected) => (soloTypes.value = selected)}
               />
             </div>
             <div class={styles.go}>
@@ -163,8 +163,14 @@ export function Home() {
               <VrButton view={vrView} />
             </div>
             <details class={styles.detail}>
-              <summary>Map detail: {MAP_DETAILS.find((d) => d.id === soloMapDetail.value)?.label ?? "Minimal"}</summary>
-              <MapDetailPicker narrow value={soloMapDetail.value} onChange={(v) => (soloMapDetail.value = v)} />
+              <summary>
+                Map detail: {MAP_DETAILS.find((detail) => detail.id === soloMapDetail.value)?.label ?? "Minimal"}
+              </summary>
+              <MapDetailPicker
+                narrow
+                value={soloMapDetail.value}
+                onChange={(detail) => (soloMapDetail.value = detail)}
+              />
             </details>
           </section>
         </div>

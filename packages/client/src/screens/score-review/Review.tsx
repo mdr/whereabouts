@@ -28,7 +28,9 @@ export function Review({ outlines }: { outlines: Outlines }) {
   const set = reviewSet.value
   const cases = useMemo(() => reviewCases(set, CATALOGUE, outlines), [set, outlines])
   const judged = new Set(
-    scoreVerdicts.value.filter((v) => v.version === REVIEW_VERSION && v.set === set).map((v) => v.index)
+    scoreVerdicts.value
+      .filter((verdict) => verdict.version === REVIEW_VERSION && verdict.set === set)
+      .map((verdict) => verdict.index)
   )
   const firstOpen = (from: number) => {
     for (let i = 0; i < cases.length; i++) if (!judged.has((from + i) % cases.length)) return (from + i) % cases.length
@@ -39,41 +41,45 @@ export function Review({ outlines }: { outlines: Outlines }) {
   const [choice, setChoiceState] = useState<Choice | undefined>(undefined)
   // Read by submit, so Enter straight after a number key sees the new choice before a render.
   const chosen = useRef<Choice | undefined>(undefined)
-  const setChoice = (c: Choice | undefined) => {
-    chosen.current = c
-    setChoiceState(c)
+  const setChoice = (next: Choice | undefined) => {
+    chosen.current = next
+    setChoiceState(next)
   }
   const [shouldBe, setShouldBe] = useState("")
   const [note, setNote] = useState("")
   /** In a pair, the one guess shown alone: pinned by a click, or under the mouse. */
   const [pinned, setPinned] = useState<0 | 1 | undefined>(undefined)
   const [hovered, setHovered] = useState<0 | 1 | undefined>(undefined)
-  const c = cases[index]!
-  const q = c.question
-  const a = c.answer
-  const guesses = c.type === ReviewCaseType.SINGLE ? [c.guess] : c.guesses
+  const reviewCase = cases[index]!
+  const question = reviewCase.question
+  const answer = reviewCase.answer
+  const guesses = reviewCase.type === ReviewCaseType.SINGLE ? [reviewCase.guess] : reviewCase.guesses
   const kernel = kernelById(soloKernelId.value)
-  const scores = useMemo(() => guesses.map((g) => scoreGuess(a, g.layer, kernel).score), [c, kernel.id])
+  const scores = useMemo(
+    () => guesses.map((guess) => scoreGuess(answer, guess.layer, kernel).score),
+    [reviewCase, kernel.id]
+  )
 
-  const frame = (fc: GeoJSON.FeatureCollection) => {
-    if (a.type === AnswerType.AREA) paint.gameMap.fitRegionAndPaint(a.centre, a.polygons, fc, a.tolerance)
-    else paint.gameMap.fitAnswerAndPaint(a.at, fc, a.tolerance)
+  const frame = (features: GeoJSON.FeatureCollection) => {
+    if (answer.type === AnswerType.AREA)
+      paint.gameMap.fitRegionAndPaint(answer.centre, answer.polygons, features, answer.tolerance)
+    else paint.gameMap.fitAnswerAndPaint(answer.at, features, answer.tolerance)
   }
   const showPair = (only: 0 | 1 | undefined) =>
     paint.showLayers(
-      guesses.flatMap((g, i) =>
-        only === undefined || only === i ? [{ layer: g.layer, colour: PAIR_COLOURS[i]! }] : []
+      guesses.flatMap((guess, i) =>
+        only === undefined || only === i ? [{ layer: guess.layer, colour: PAIR_COLOURS[i]! }] : []
       )
     )
 
   useEffect(() => {
-    paint.reset(a.tolerance)
+    paint.reset(answer.tolerance)
     paint.enabled.value = false
     paint.gameMap.setDetail(RevealDetail.REVEAL)
-    if (a.type === AnswerType.AREA) paint.gameMap.showRegionReveal(a.polygons)
-    else paint.gameMap.showReveal(a.at)
-    if (c.type === ReviewCaseType.SINGLE) {
-      paint.restore(c.guess.layer.toRecord())
+    if (answer.type === AnswerType.AREA) paint.gameMap.showRegionReveal(answer.polygons)
+    else paint.gameMap.showReveal(answer.at)
+    if (reviewCase.type === ReviewCaseType.SINGLE) {
+      paint.restore(reviewCase.guess.layer.toRecord())
       paint.showOwn()
       frame(paint.layer.toGeoJSON())
     } else frame(showPair(undefined))
@@ -82,11 +88,11 @@ export function Review({ outlines }: { outlines: Outlines }) {
     setNote("")
     setPinned(undefined)
     setHovered(undefined)
-  }, [c])
+  }, [reviewCase])
 
   // Not reframed: the map would jump about as the mouse crosses the rows.
   useEffect(() => {
-    if (c.type === ReviewCaseType.PAIR) showPair(hovered ?? pinned)
+    if (reviewCase.type === ReviewCaseType.PAIR) showPair(hovered ?? pinned)
   }, [hovered, pinned])
 
   const submit = async () => {
@@ -100,27 +106,32 @@ export function Review({ outlines }: { outlines: Outlines }) {
       at: new Date().toISOString()
     }
     let entry: ScoreVerdict
-    if (c.type === ReviewCaseType.SINGLE) {
+    if (reviewCase.type === ReviewCaseType.SINGLE) {
       const target = Number(shouldBe)
       entry = {
         ...base,
-        guess: c.guess.type,
+        guess: reviewCase.guess.type,
         verdict: choice,
         ...(shouldBe.trim() !== "" && Number.isFinite(target) ? { shouldBe: target } : {}),
-        case: await guessCase(q, a, c.guess.layer, kernel)
+        case: await guessCase(question, answer, reviewCase.guess.layer, kernel)
       }
     } else {
-      const [first, second] = c.guesses
+      const [first, second] = reviewCase.guesses
       entry = {
         ...base,
         pair: true,
         guesses: [first.type, second.type],
         prefer: choice,
-        cases: [await guessCase(q, a, first.layer, kernel), await guessCase(q, a, second.layer, kernel)]
+        cases: [
+          await guessCase(question, answer, first.layer, kernel),
+          await guessCase(question, answer, second.layer, kernel)
+        ]
       }
     }
     scoreVerdicts.value = [
-      ...scoreVerdicts.value.filter((v) => v.version !== REVIEW_VERSION || v.set !== set || v.index !== index),
+      ...scoreVerdicts.value.filter(
+        (verdict) => verdict.version !== REVIEW_VERSION || verdict.set !== set || verdict.index !== index
+      ),
       entry
     ]
     judged.add(index)
@@ -129,16 +140,16 @@ export function Review({ outlines }: { outlines: Outlines }) {
   const skip = () => setIndex((index + 1) % cases.length)
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLTextAreaElement) return
-      if (e.key === "Enter") {
-        e.preventDefault()
+    const onKey = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLTextAreaElement) return
+      if (event.key === "Enter") {
+        event.preventDefault()
         void submit()
         return
       }
-      if (isTyping(e.target ?? undefined)) return
-      const n = Number(e.key)
-      if (n >= 1 && n <= 5) setChoice((n - 3) as Choice)
+      if (isTyping(event.target ?? undefined)) return
+      const digit = Number(event.key)
+      if (digit >= 1 && digit <= 5) setChoice((digit - 3) as Choice)
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
@@ -148,20 +159,20 @@ export function Review({ outlines }: { outlines: Outlines }) {
     <Hud reveal>
       <HudTop>
         <HudHeader home round={index + 1} total={cases.length} right={<HeaderNote nowrap>Set {set}</HeaderNote>} />
-        <QuestionCard q={questionView(q)} hud={CardPlace.REVEAL} credit>
-          <Answer label={q.label} wiki={q.wiki} />
+        <QuestionCard question={questionView(question)} hud={CardPlace.REVEAL} credit>
+          <Answer label={question.label} wiki={question.wiki} />
         </QuestionCard>
-        {c.type === ReviewCaseType.SINGLE && (
+        {reviewCase.type === ReviewCaseType.SINGLE && (
           <ScoreCard
             score={Math.round(scores[0]!)}
-            label={a.type === AnswerType.AREA ? "scored on shape and nearness" : `scored with ${kernel.label}`}
+            label={answer.type === AnswerType.AREA ? "scored on shape and nearness" : `scored with ${kernel.label}`}
             testIds={{ score: scoreReviewTestIds.score }}
           />
         )}
       </HudTop>
       <HudRight>
         <VerdictCard
-          c={c}
+          reviewCase={reviewCase}
           scores={scores}
           choice={choice}
           onChoose={setChoice}

@@ -9,17 +9,17 @@ import styles from "./PaintedIn.module.css"
  * answer. `whose` names the painter for the title: "your", "Ann's".
  */
 export function PaintedIn({ where, answer, whose }: { where: PaintedCountry; answer?: string; whose: string }) {
-  const pct = Math.round(where.share * 100)
+  const percent = Math.round(where.share * 100)
   const right = where.country.clue.flag === answer
   return (
     <span
       class={cx(styles.paintedIn, right && styles.right)}
       data-testid={paintedInTestIds.paintedIn}
-      title={`${pct}% of ${whose} paint was in ${where.country.label}${right ? ", the answer" : ""}`}
+      title={`${percent}% of ${whose} paint was in ${where.country.label}${right ? ", the answer" : ""}`}
     >
       <SmallFlag code={where.country.clue.flag} />
       <span class={styles.country}>{where.country.label}</span>
-      <span class={styles.share}>{pct}%</span>
+      <span class={styles.share}>{percent}%</span>
     </span>
   )
 }

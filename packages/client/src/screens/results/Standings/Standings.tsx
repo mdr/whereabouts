@@ -22,25 +22,27 @@ export function Standings({
 }) {
   return (
     <ol class={cx(styles.standings, standings.length > MANY_PLAYERS && styles.many)} aria-label="Final standings">
-      {standings.map((st, i) => {
-        const p = byId.get(st.playerId)
+      {standings.map((standing, i) => {
+        const player = byId.get(standing.playerId)
         return (
           <li
-            key={st.playerId}
-            class={cx(styles.row, st.playerId === you && styles.you, i >= MEDALS.length && styles.minor)}
+            key={standing.playerId}
+            class={cx(styles.row, standing.playerId === you && styles.you, i >= MEDALS.length && styles.minor)}
             data-testid={standingsTestIds.standingsRow}
-            data-player={p?.name}
+            data-player={player?.name}
           >
             <span class={styles.place} data-testid={standingsTestIds.place}>
               {MEDALS[i] ?? i + 1}
             </span>
-            <span class={styles.dot}>{p && <Swatch as="i" type={SwatchType.PLAYER} colour={p.colour} />}</span>
+            <span class={styles.dot}>
+              {player && <Swatch as="i" type={SwatchType.PLAYER} colour={player.colour} />}
+            </span>
             <span class={styles.name}>
-              <span class={styles.nameText}>{p?.name ?? "?"}</span>
-              {p?.isHost && <HostTag />}
+              <span class={styles.nameText}>{player?.name ?? "?"}</span>
+              {player?.isHost && <HostTag />}
             </span>
             <span class={styles.total} title="Total" data-testid={standingsTestIds.total}>
-              {Math.round(st.total).toLocaleString()}
+              {Math.round(standing.total).toLocaleString()}
             </span>
           </li>
         )

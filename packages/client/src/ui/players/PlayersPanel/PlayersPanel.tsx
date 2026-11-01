@@ -28,7 +28,7 @@ export function PlayersPanel({
 }) {
   const { players } = view
   const watching = view.spectators.length
-  const online = players.filter((p) => p.connected).length
+  const online = players.filter((player) => player.connected).length
   const open = playersPanelOpen.value
   return (
     <div class={cx(styles.panel, open && styles.open)}>

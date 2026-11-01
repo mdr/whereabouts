@@ -45,8 +45,8 @@ export function RevealRow({
     <li
       class={cx(selected && players.selected, you && players.you, where && players.withWhere)}
       onClick={onSelect}
-      onPointerEnter={(e) => e.pointerType === "mouse" && onHover(true)}
-      onPointerLeave={(e) => e.pointerType === "mouse" && onHover(false)}
+      onPointerEnter={(event) => event.pointerType === "mouse" && onHover(true)}
+      onPointerLeave={(event) => event.pointerType === "mouse" && onHover(false)}
       data-testid={revealRowTestIds.playerRow}
       data-player={p.name}
     >
@@ -79,8 +79,8 @@ export function RevealRow({
           class={cx("icon", players.kick)}
           title={`Remove ${p.name} from the game`}
           aria-label={`Remove ${p.name} from the game`}
-          onClick={(e) => {
-            e.stopPropagation()
+          onClick={(event) => {
+            event.stopPropagation()
             onKick()
           }}
         >

@@ -20,10 +20,10 @@ export function SoloDone({ run, restart, vrView }: { run: PracticeRun; restart: 
             <div class={scoreStyles.label}>out of {runMaximum(run).toLocaleString()}</div>
           </div>
           <ul class={kit.results}>
-            {run.results.map((r, i) => (
+            {run.results.map((result, i) => (
               <li key={i}>
-                <span>{r.question.label}</span>
-                <span>{Math.round(r.score)}</span>
+                <span>{result.question.label}</span>
+                <span>{Math.round(result.score)}</span>
               </li>
             ))}
           </ul>

@@ -45,25 +45,25 @@ export function PlayerList({
 }) {
   return (
     <ul class={styles.list} data-testid={playerListTestIds.list}>
-      {players.map((p) => {
-        const isYou = p.id === you
+      {players.map((player) => {
+        const isYou = player.id === you
         return (
           <li
-            key={p.id}
-            class={cx(!p.connected && styles.offline)}
+            key={player.id}
+            class={cx(!player.connected && styles.offline)}
             data-testid={playerListTestIds.player}
-            data-player={p.name}
+            data-player={player.name}
           >
-            <Mark p={p} avatars={avatars} />
+            <Mark player={player} avatars={avatars} />
             <span class={styles.name}>
               <span class={styles.nameText} data-testid={playerListTestIds.name}>
-                {p.name}
+                {player.name}
               </span>
-              {p.isHost ? <HostTag /> : undefined}
+              {player.isHost ? <HostTag /> : undefined}
               {isYou ? <span class={styles.tag}>you</span> : undefined}
-              {!p.connected ? <span class={styles.tag}>offline</span> : undefined}
-              {p.type === Role.SPECTATOR && !avatars ? <span class={styles.tag}>watching</span> : undefined}
-              {showLocked && p.type === Role.PLAYER && p.locked ? (
+              {!player.connected ? <span class={styles.tag}>offline</span> : undefined}
+              {player.type === Role.SPECTATOR && !avatars ? <span class={styles.tag}>watching</span> : undefined}
+              {showLocked && player.type === Role.PLAYER && player.locked ? (
                 <span class={cx(styles.tag, styles.done)} title="Finished guessing">
                   <Icon name="check" size={11} /> done
                 </span>
@@ -74,14 +74,14 @@ export function PlayerList({
                 ✎
               </button>
             )}
-            {!isYou && onMakeHost && p.connected && !p.isHost && (
+            {!isYou && onMakeHost && player.connected && !player.isHost && (
               <button
                 class={cx("icon", styles.makeHost)}
-                title={`Make ${p.name} the host`}
-                aria-label={`Make ${p.name} the host`}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onMakeHost(p)
+                title={`Make ${player.name} the host`}
+                aria-label={`Make ${player.name} the host`}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onMakeHost(player)
                 }}
               >
                 <Icon name="crown" size={13} />
@@ -91,17 +91,17 @@ export function PlayerList({
               <button
                 class={cx("icon", styles.kick)}
                 data-testid={playerListTestIds.kickButton}
-                title={`Remove ${p.name} from the game`}
-                aria-label={`Remove ${p.name} from the game`}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onKick(p)
+                title={`Remove ${player.name} from the game`}
+                aria-label={`Remove ${player.name} from the game`}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onKick(player)
                 }}
               >
                 <Icon name="kick" size={13} />
               </button>
             )}
-            {showScores && p.type === Role.PLAYER && <Score p={p} arrows={arrows} />}
+            {showScores && player.type === Role.PLAYER && <Score player={player} arrows={arrows} />}
           </li>
         )
       })}
@@ -110,29 +110,29 @@ export function PlayerList({
 }
 
 /** A spectator's eye, or a player's colour as an avatar or a dot. */
-function Mark({ p, avatars }: { p: PlayerView; avatars: boolean | undefined }) {
-  if (p.type === Role.SPECTATOR) {
+function Mark({ player, avatars }: { player: PlayerView; avatars: boolean | undefined }) {
+  if (player.type === Role.SPECTATOR) {
     return (
       <span class={cx(avatars ? styles.avatar : styles.swatch, styles.watcher)} title="Watching" aria-hidden="true">
         {avatars && <Icon name="eye" size={14} />}
       </span>
     )
   }
-  if (!avatars) return <Swatch type={SwatchType.PLAYER} colour={p.colour} />
+  if (!avatars) return <Swatch type={SwatchType.PLAYER} colour={player.colour} />
   return (
-    <span class={styles.avatar} style={{ background: colourCss(p.colour) }} aria-hidden="true">
-      {initial(p.name)}
+    <span class={styles.avatar} style={{ background: colourCss(player.colour) }} aria-hidden="true">
+      {initial(player.name)}
     </span>
   )
 }
 
-function Score({ p, arrows }: { p: PlayingPlayerView; arrows: boolean | undefined }) {
-  const delta = arrows && p.previousRank !== undefined ? p.previousRank - p.rank : 0
+function Score({ player, arrows }: { player: PlayingPlayerView; arrows: boolean | undefined }) {
+  const delta = arrows && player.previousRank !== undefined ? player.previousRank - player.rank : 0
   return (
     <>
       {arrows && <RankArrow delta={delta} />}
       <span class={styles.scoreNum} data-testid={playerListTestIds.score}>
-        {Math.round(p.score).toLocaleString()}
+        {Math.round(player.score).toLocaleString()}
       </span>
     </>
   )

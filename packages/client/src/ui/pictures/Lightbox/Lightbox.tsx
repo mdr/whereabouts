@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "preact/hooks"
 import { CLOSE } from "../../../keyboard/shortcuts"
 import { useElementRef } from "../../element-ref"
 import { cx } from "../../cx"
-import lb from "./Lightbox.module.css"
+import styles from "./Lightbox.module.css"
 import type { Px } from "@whereabouts/shared/units"
 
 interface Position {
@@ -16,8 +16,8 @@ interface Position {
 export function useEscape(open: boolean, close: () => void): void {
   useEffect(() => {
     if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (CLOSE.matches(e)) close()
+    const onKey = (event: KeyboardEvent) => {
+      if (CLOSE.matches(event)) close()
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
@@ -33,8 +33,8 @@ export enum LightboxType {
 }
 
 const TYPE_CLASS: Record<LightboxType, string | undefined> = {
-  [LightboxType.PHOTO]: lb.photo,
-  [LightboxType.FLAG]: lb.flag
+  [LightboxType.PHOTO]: styles.photo,
+  [LightboxType.FLAG]: styles.flag
 }
 
 /**
@@ -68,62 +68,66 @@ export function Lightbox({
   function zoomAt(factor: number, cx: Px, cy: Px) {
     const next = Math.min(MAX_ZOOM, Math.max(1, zoom * factor))
     if (next === zoom) return
-    const k = next / zoom
-    setPan(next === 1 ? { x: 0, y: 0 } : { x: pan.x * k + cx * (1 - k), y: pan.y * k + cy * (1 - k) })
+    const relative = next / zoom
+    setPan(
+      next === 1
+        ? { x: 0, y: 0 }
+        : { x: pan.x * relative + cx * (1 - relative), y: pan.y * relative + cy * (1 - relative) }
+    )
     setZoom(next)
   }
   /** Client coordinates to an offset from the frame centre. */
   function fromCentre(clientX: Px, clientY: Px) {
-    const r = frame.current?.getBoundingClientRect()
-    if (!r) return { cx: 0, cy: 0 }
-    return { cx: clientX - (r.left + r.width / 2), cy: clientY - (r.top + r.height / 2) }
+    const rect = frame.current?.getBoundingClientRect()
+    if (!rect) return { cx: 0, cy: 0 }
+    return { cx: clientX - (rect.left + rect.width / 2), cy: clientY - (rect.top + rect.height / 2) }
   }
 
-  const onWheel = (e: WheelEvent) => {
-    e.preventDefault()
-    const { cx, cy } = fromCentre(e.clientX, e.clientY)
-    zoomAt(Math.exp(-e.deltaY * 0.002), cx, cy)
+  const onWheel = (event: WheelEvent) => {
+    event.preventDefault()
+    const { cx, cy } = fromCentre(event.clientX, event.clientY)
+    zoomAt(Math.exp(-event.deltaY * 0.002), cx, cy)
   }
-  const onPointerDown = (e: TargetedEvent<HTMLElement, PointerEvent>) => {
+  const onPointerDown = (event: TargetedEvent<HTMLElement, PointerEvent>) => {
     // Captured, the click that follows goes to the frame, so onClick lives there; the credit link keeps its own.
-    if (!(e.target as Element).closest("a")) e.currentTarget.setPointerCapture(e.pointerId)
-    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (!(event.target as Element).closest("a")) event.currentTarget.setPointerCapture(event.pointerId)
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
     dragged.current = false
     if (pointers.current.size === 2) pinchDist.current = pinchDistance()
   }
-  const onPointerMove = (e: PointerEvent) => {
-    const prev = pointers.current.get(e.pointerId)
-    if (!prev) return
-    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  const onPointerMove = (event: PointerEvent) => {
+    const previous = pointers.current.get(event.pointerId)
+    if (!previous) return
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
     if (pointers.current.size === 2 && pinchDist.current) {
       const dist = pinchDistance()
-      const [a, b] = [...pointers.current.values()]
-      const { cx, cy } = fromCentre((a!.x + b!.x) / 2, (a!.y + b!.y) / 2)
+      const [first, second] = [...pointers.current.values()]
+      const { cx, cy } = fromCentre((first!.x + second!.x) / 2, (first!.y + second!.y) / 2)
       zoomAt(dist / pinchDist.current, cx, cy)
       pinchDist.current = dist
       dragged.current = true
     } else if (pointers.current.size === 1 && zoom > 1) {
-      const dx = e.clientX - prev.x
-      const dy = e.clientY - prev.y
+      const dx = event.clientX - previous.x
+      const dy = event.clientY - previous.y
       if (Math.abs(dx) + Math.abs(dy) > 2) dragged.current = true
       setPan({ x: pan.x + dx, y: pan.y + dy })
     }
   }
-  const onPointerUp = (e: PointerEvent) => {
-    pointers.current.delete(e.pointerId)
+  const onPointerUp = (event: PointerEvent) => {
+    pointers.current.delete(event.pointerId)
     if (pointers.current.size < 2) pinchDist.current = undefined
   }
   function pinchDistance() {
-    const [a, b] = [...pointers.current.values()]
-    return Math.hypot(a!.x - b!.x, a!.y - b!.y) || 1
+    const [first, second] = [...pointers.current.values()]
+    return Math.hypot(first!.x - second!.x, first!.y - second!.y) || 1
   }
-  const onFrameClick = (e: MouseEvent) => {
-    e.stopPropagation()
-    if ((e.target as Element).closest("a")) return
+  const onFrameClick = (event: MouseEvent) => {
+    event.stopPropagation()
+    if ((event.target as Element).closest("a")) return
     if (dragged.current) return // the end of a drag or pinch, not a click
     if (zoom > 1) zoomAt(1 / zoom, 0, 0)
     else {
-      const { cx, cy } = fromCentre(e.clientX, e.clientY)
+      const { cx, cy } = fromCentre(event.clientX, event.clientY)
       zoomAt(CLICK_ZOOM, cx, cy)
     }
   }
@@ -131,20 +135,20 @@ export function Lightbox({
   // Into <body>: a sticky table cell, say, would otherwise hold it under the cells below.
   return createPortal(
     <div
-      class={lb.lightbox}
+      class={styles.lightbox}
       role="dialog"
       aria-modal="true"
       aria-label="Picture"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose()
       }}
       title="Scroll or pinch to zoom, drag to pan; click the backdrop or press Escape to close"
     >
-      <button class={lb.close} aria-label="Close" onClick={onClose}>
+      <button class={styles.close} aria-label="Close" onClick={onClose}>
         ×
       </button>
       <div
-        class={cx(lb.frame, zoom > 1 && lb.zoomed)}
+        class={cx(styles.frame, zoom > 1 && styles.zoomed)}
         ref={frame}
         onWheel={onWheel}
         onPointerDown={onPointerDown}
@@ -155,7 +159,7 @@ export function Lightbox({
       >
         <img
           src={src}
-          class={cx(TYPE_CLASS[type], ratio !== undefined && lb.fit)}
+          class={cx(TYPE_CLASS[type], ratio !== undefined && styles.fit)}
           alt=""
           referrerpolicy="no-referrer"
           draggable={false}

@@ -5,7 +5,7 @@ import { Hud, HudCenter } from "../Hud/Hud"
 
 /** Stands in for a screen that needs the outlines (useOutlines) until they arrive, and offers another try if they do not. */
 export function LoadingOutlines() {
-  const load = () => void loadOutlines().catch((err: unknown) => console.warn("could not load outlines", err))
+  const load = () => void loadOutlines().catch((error: unknown) => console.warn("could not load outlines", error))
   return (
     <Hud>
       <HudCenter>

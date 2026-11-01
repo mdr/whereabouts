@@ -55,9 +55,9 @@ export function Reveal({
   fact: Fact | undefined
 }) {
   const paint = usePaint()
-  const byId = new Map(view.players.map((p) => [p.id, p]))
+  const byId = new Map(view.players.map((player) => [player.id, player]))
   const selected = revealShown.value
-  const setSelected = (s: RevealShown) => (revealShown.value = s)
+  const setSelected = (shown: RevealShown) => (revealShown.value = shown)
   /** A player row under the mouse: their paint alone, until the mouse moves off. */
   const [hovered, setHovered] = useState<PlayerId | undefined>(undefined)
   useEffect(
@@ -77,12 +77,15 @@ export function Reveal({
   const answerFlag = clueFlag(reveal.question.clue)
   const borders = useBorders(reveal.question.type === QuestionType.FLAG)
   const where = useMemo(() => {
-    const m = new Map<PlayerId, PaintedCountry | undefined>()
+    const countries = new Map<PlayerId, PaintedCountry | undefined>()
     if (borders)
-      for (const r of reveal.results)
-        if (r.guess.type === RoundGuessType.PAINTED)
-          m.set(r.playerId, mainCountry(borders, paintLayer(r.guess.res, r.guess.paint).toCells()))
-    return m
+      for (const result of reveal.results)
+        if (result.guess.type === RoundGuessType.PAINTED)
+          countries.set(
+            result.playerId,
+            mainCountry(borders, paintLayer(result.guess.res, result.guess.paint).toCells())
+          )
+    return countries
   }, [borders, reveal.index])
 
   useEffect(() => {
@@ -93,7 +96,9 @@ export function Reveal({
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
   const show = (shown: RevealShown) =>
-    paint.showColoured(paintsOf(shownResults(reveal.results, shown), view.players).flatMap((p) => p.features))
+    paint.showColoured(
+      paintsOf(shownResults(reveal.results, shown), view.players).flatMap((painted) => painted.features)
+    )
   useEffect(() => {
     frameReveal(paint.gameMap, reveal.question, answer, show(selected))
   }, [selected, reveal.index, outline])
@@ -105,7 +110,7 @@ export function Reveal({
   }, [hovered, selected, reveal.index])
   useEffect(() => setHovered(undefined), [reveal.index])
 
-  const mine = reveal.results.find((r) => r.playerId === view.you.id)
+  const mine = reveal.results.find((result) => result.playerId === view.you.id)
   const model = revealModel(view, reveal, selected)
   const iAmReady = model.ready?.done ?? false
 
@@ -143,7 +148,7 @@ export function Reveal({
             answerFlag={answerFlag}
             onSelect={setSelected}
             onHover={setHovered}
-            onKick={view.you.isHost ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
+            onKick={view.you.isHost ? (player) => ask(kickRequest(player.name, () => conn.kick(player.id))) : undefined}
           />
           {/* Where it is while guessing too, and away from Next round below. */}
           {canEndGame(view) && <EndGameButton onEnd={() => conn.end()} online={online} />}

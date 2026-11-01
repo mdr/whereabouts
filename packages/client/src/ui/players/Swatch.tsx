@@ -27,10 +27,10 @@ interface EveryoneSwatch {
 
 /** A colour dot: a player's, a plain CSS colour, or everyone's. */
 export function Swatch(props: (PlayerSwatch | CssSwatch | EveryoneSwatch) & { as?: "span" | "i"; class?: string }) {
-  const { as: Tag = "span", class: cls } = props
+  const { as: Tag = "span", class: className } = props
   const everyone = props.type === SwatchType.EVERYONE
   const style = everyone
     ? undefined
     : { background: props.type === SwatchType.CSS ? props.css : colourCss(props.colour) }
-  return <Tag class={cx(styles.swatch, everyone && styles.everyone, cls)} style={style} />
+  return <Tag class={cx(styles.swatch, everyone && styles.everyone, className)} style={style} />
 }

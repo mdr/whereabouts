@@ -15,22 +15,26 @@ export function TogglePills<T extends string>({
 }) {
   return (
     <div class={styles.pills} role="group" aria-label={label}>
-      {options.map((o) => {
-        const on = value.includes(o.value)
+      {options.map((option) => {
+        const on = value.includes(option.value)
         return (
           <button
-            key={o.value}
+            key={option.value}
             type="button"
             aria-pressed={on}
             class={on ? styles.on : undefined}
             disabled={on && value.length === 1}
             onClick={() =>
-              onChange(options.map((p) => p.value).filter((v) => (v === o.value ? !on : value.includes(v))))
+              onChange(
+                options
+                  .map((candidate) => candidate.value)
+                  .filter((item) => (item === option.value ? !on : value.includes(item)))
+              )
             }
             data-testid={togglePillsTestIds.option}
-            data-value={o.value}
+            data-value={option.value}
           >
-            {o.label}
+            {option.label}
           </button>
         )
       })}

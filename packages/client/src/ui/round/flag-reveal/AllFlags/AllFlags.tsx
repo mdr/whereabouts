@@ -15,9 +15,9 @@ const ATLAS_PX_PER_CSS_PX = 4
 export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Borders }) {
   useEffect(() => {
     const markers = flagPins(borders).map(({ country, at }) => {
-      const el = document.createElement("div")
-      el.className = styles.pin
-      el.dataset["testid"] = allFlagsTestIds.pin
+      const element = document.createElement("div")
+      element.className = styles.pin
+      element.dataset["testid"] = allFlagsTestIds.pin
       const flag = document.createElement("i")
       flag.title = country.label
       const cell = atlasCell(country.clue.flag)
@@ -28,14 +28,14 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
         flag.style.backgroundSize = `${css(FLAG_ATLAS.width)}px ${css(FLAG_ATLAS.height)}px`
         flag.style.backgroundPosition = `${css(-cell.x)}px ${css(-cell.y)}px`
       }
-      el.append(flag)
+      element.append(flag)
       // On the far side of the globe, hidden rather than faded.
-      return new Marker({ element: el, anchor: "bottom-left", opacityWhenCovered: "0" })
+      return new Marker({ element: element, anchor: "bottom-left", opacityWhenCovered: "0" })
         .setLngLat([at.lon, at.lat])
         .addTo(gameMap.map)
     })
     return () => {
-      for (const m of markers) m.remove()
+      for (const marker of markers) marker.remove()
     }
   }, [gameMap, borders])
   return undefined

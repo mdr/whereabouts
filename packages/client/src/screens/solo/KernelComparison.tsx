@@ -14,13 +14,13 @@ export function KernelComparison({
 }) {
   return (
     <ul class={cx(kit.results, kit.compare)}>
-      {KERNELS.map((k) => (
-        <li key={k.id}>
+      {KERNELS.map((kernel) => (
+        <li key={kernel.id}>
           <span>
-            {k.label}
-            {k.id === active ? " ◀" : ""}
+            {kernel.label}
+            {kernel.id === active ? " ◀" : ""}
           </span>
-          <span>{Math.round(scoreAnswer(painted, answer, k).score)}</span>
+          <span>{Math.round(scoreAnswer(painted, answer, kernel).score)}</span>
         </li>
       ))}
     </ul>

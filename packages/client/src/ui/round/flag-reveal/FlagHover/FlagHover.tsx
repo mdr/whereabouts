@@ -21,10 +21,10 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
   const [hit, setHit] = useState<{ country: FlagQuestion; x: Px; y: Px } | undefined>(undefined)
   useEffect(() => {
     const map = gameMap.map
-    const show = (e: MapMouseEvent) => {
-      const p = { lat: e.lngLat.lat, lon: e.lngLat.lng }
-      const country = borders.countryAt(p) ?? borders.smallNear(p, gameMap.pixelsToKm(SMALL, p.lat))
-      setHit(country ? { country, x: e.originalEvent.clientX, y: e.originalEvent.clientY } : undefined)
+    const show = (event: MapMouseEvent) => {
+      const at = { lat: event.lngLat.lat, lon: event.lngLat.lng }
+      const country = borders.countryAt(at) ?? borders.smallNear(at, gameMap.pixelsToKm(SMALL, at.lat))
+      setHit(country ? { country, x: event.originalEvent.clientX, y: event.originalEvent.clientY } : undefined)
     }
     const hide = () => setHit(undefined)
     // A mouse hovers; a finger taps (a click), and the card stays until the

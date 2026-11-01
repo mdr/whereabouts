@@ -33,8 +33,8 @@ export function ConfirmDialog({
   useEffect(() => {
     if (!request) return
     cancelRef.current?.focus()
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose()
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
@@ -50,7 +50,7 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-title"
         data-testid={confirmDialogTestIds.dialog}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
       >
         <h2 id="confirm-title" data-testid={confirmDialogTestIds.title}>
           {request.title}

@@ -21,7 +21,7 @@ export function SetupSummary({ view }: { view: GameView }) {
   useEffect(() => {
     shown.current = view.config
   })
-  const mixChanged = QUESTION_TYPES.some((t) => mix[t] !== before.mix[t])
+  const mixChanged = QUESTION_TYPES.some((type) => mix[type] !== before.mix[type])
   const tiles = [
     {
       key: "rounds",
@@ -47,12 +47,16 @@ export function SetupSummary({ view }: { view: GameView }) {
   ]
   return (
     <div class={styles.summary} data-testid={setupSummaryTestIds.summary}>
-      {tiles.map((t) => (
-        <div key={`${t.key}:${t.value}`} class={cx(styles.tile, t.changed && styles.changed)} data-testid={t.testId}>
+      {tiles.map((tile) => (
+        <div
+          key={`${tile.key}:${tile.value}`}
+          class={cx(styles.tile, tile.changed && styles.changed)}
+          data-testid={tile.testId}
+        >
           <span class={styles.value} data-testid={setupSummaryTestIds.tileValue}>
-            {t.value}
+            {tile.value}
           </span>
-          <span class={styles.label}>{t.label}</span>
+          <span class={styles.label}>{tile.label}</span>
         </div>
       ))}
       <div

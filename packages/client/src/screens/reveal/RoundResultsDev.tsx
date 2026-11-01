@@ -19,13 +19,13 @@ export function RoundResultsDev({
   return (
     <Card title="Round results">
       <ul class={kit.results}>
-        {results.map((r) => (
-          <li key={r.playerId}>
+        {results.map((result) => (
+          <li key={result.playerId}>
             <span>
-              {byId.get(r.playerId)?.name ?? "?"}
-              {byId.get(r.playerId)?.isHost && <HostTag />}
+              {byId.get(result.playerId)?.name ?? "?"}
+              {byId.get(result.playerId)?.isHost && <HostTag />}
             </span>
-            {r.guess.type === RoundGuessType.PAINTED && <PartsLine parts={r.guess.parts} />}
+            {result.guess.type === RoundGuessType.PAINTED && <PartsLine parts={result.guess.parts} />}
           </li>
         ))}
       </ul>

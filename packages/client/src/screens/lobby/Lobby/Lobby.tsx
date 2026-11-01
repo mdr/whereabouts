@@ -52,7 +52,9 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             class={styles.leave}
             data-testid={lobbyTestIds.leaveButton}
             onClick={() =>
-              host ? ask(leaveRequest(everyone(view).find((p) => p.id === view.you.nextHost)?.name, leave)) : leave()
+              host
+                ? ask(leaveRequest(everyone(view).find((player) => player.id === view.you.nextHost)?.name, leave))
+                : leave()
             }
           >
             <Icon name="back" size={15} /> Leave
@@ -78,14 +80,14 @@ function lobbyVrView(conn: Connection, view: GameView, online: boolean, leave: (
       scoreLine: host ? "Start when everyone's in" : "Waiting for the host to start",
       table: {
         title: `Players ${players.length}/${MAX_PLAYERS}`,
-        rows: everyone(view).map((p) => ({
-          colour: p.type === Role.PLAYER ? colourCss(p.colour) : undefined,
-          name: `${p.name}${p.id === view.you.id ? " (you)" : ""}`,
-          detail: [p.isHost && "host", p.type === Role.SPECTATOR && "watching", !p.connected && "away"]
+        rows: everyone(view).map((player) => ({
+          colour: player.type === Role.PLAYER ? colourCss(player.colour) : undefined,
+          name: `${player.name}${player.id === view.you.id ? " (you)" : ""}`,
+          detail: [player.isHost && "host", player.type === Role.SPECTATOR && "watching", !player.connected && "away"]
             .filter(Boolean)
             .join(", "),
           total: "",
-          ...pickable(view, p)
+          ...pickable(view, player)
         })),
         hint: host ? "Point at a player to remove them or make them host." : undefined
       },

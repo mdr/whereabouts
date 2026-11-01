@@ -43,15 +43,15 @@ export function HudCenter({ children }: { children: ComponentChildren }) {
 export function HudBottom({ note, children }: { note?: string; children: ComponentChildren }) {
   const ref = useElementRef<HTMLDivElement>()
   useEffect(() => {
-    const el = ref.current
+    const element = ref.current
     const root = document.documentElement
-    if (!el || typeof ResizeObserver === "undefined") return
-    const publish = () => root.style.setProperty("--toolbar-h", `${el.offsetHeight}px`)
+    if (!element || typeof ResizeObserver === "undefined") return
+    const publish = () => root.style.setProperty("--toolbar-h", `${element.offsetHeight}px`)
     publish()
-    const ro = new ResizeObserver(publish)
-    ro.observe(el)
+    const observer = new ResizeObserver(publish)
+    observer.observe(element)
     return () => {
-      ro.disconnect()
+      observer.disconnect()
       root.style.removeProperty("--toolbar-h")
     }
   }, [])

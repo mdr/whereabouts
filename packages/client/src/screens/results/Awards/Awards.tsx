@@ -10,15 +10,15 @@ export function Awards({ awards, byId }: { awards: Award[]; byId: ReadonlyMap<Pl
     <section class={styles.awards} aria-label="Awards">
       <h2>Awards</h2>
       <ul>
-        {awards.map((a) => (
-          <li key={a.title} class={styles.award} data-testid={awardsTestIds.award}>
+        {awards.map((award) => (
+          <li key={award.title} class={styles.award} data-testid={awardsTestIds.award}>
             <span class={styles.emoji} aria-hidden="true">
-              {a.emoji}
+              {award.emoji}
             </span>
             <span class={styles.body}>
-              <b class={styles.title}>{a.title}</b>
+              <b class={styles.title}>{award.title}</b>
               <span class={styles.line}>
-                <AwardLine line={a.line} players={a.playerIds.map((id) => byId.get(id))} />
+                <AwardLine line={award.line} players={award.playerIds.map((id) => byId.get(id))} />
               </span>
             </span>
           </li>
@@ -33,12 +33,12 @@ function AwardLine({ line, players }: { line: string; players: (PlayingPlayerVie
   return (
     <>
       {line.split(/(\{\d\})/).map((part, i) => {
-        const m = /^\{(\d)\}$/.exec(part)
-        if (!m) return part
-        const p = players[Number(m[1])]
+        const match = /^\{(\d)\}$/.exec(part)
+        if (!match) return part
+        const player = players[Number(match[1])]
         return (
-          <b key={i} style={{ color: p ? colourCss(p.colour) : undefined }}>
-            {p?.name ?? "Someone"}
+          <b key={i} style={{ color: player ? colourCss(player.colour) : undefined }}>
+            {player?.name ?? "Someone"}
           </b>
         )
       })}

@@ -17,12 +17,12 @@ import styles from "./Shortcuts.module.css"
 /** The card itself, plus the `?` and Escape keys. Mount once per painting screen. */
 export function Shortcuts({ practice = false }: { practice?: boolean }) {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (isTyping(e.target ?? undefined)) return
-      if (TOGGLE_LIST.matches(e)) {
+    const onKey = (event: KeyboardEvent) => {
+      if (isTyping(event.target ?? undefined)) return
+      if (TOGGLE_LIST.matches(event)) {
         shortcutsOpen.value = !shortcutsOpen.value
-        e.preventDefault()
-      } else if (CLOSE.matches(e) && shortcutsOpen.value) {
+        event.preventDefault()
+      } else if (CLOSE.matches(event) && shortcutsOpen.value) {
         shortcutsOpen.value = false
       }
     }
@@ -42,7 +42,7 @@ export function Shortcuts({ practice = false }: { practice?: boolean }) {
         class={styles.card}
         role="dialog"
         aria-labelledby="shortcuts-title"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
         data-testid={shortcutsTestIds.card}
       >
         <header>
@@ -61,8 +61,8 @@ export function Shortcuts({ practice = false }: { practice?: boolean }) {
                 {combos.map((combo, i) => (
                   <span key={i} class={styles.combo}>
                     {i > 0 && <span class={styles.sep}>{sep}</span>}
-                    {combo.keys.map((k) => (
-                      <kbd key={k}>{k}</kbd>
+                    {combo.keys.map((key) => (
+                      <kbd key={key}>{key}</kbd>
                     ))}
                   </span>
                 ))}

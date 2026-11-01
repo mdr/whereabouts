@@ -12,7 +12,7 @@ export function CommonsCredit({ image }: { image: CommonsFile }) {
       rel="noopener"
       title="Image from Wikimedia Commons"
       aria-label="Image credit: Wikimedia Commons"
-      onClick={(e) => e.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
     >
       <Icon name="info" size={14} />
     </a>

@@ -25,12 +25,12 @@ export function RoundPicture({ round }: { round: PlayedRound }) {
 
 function RoundShape({ area, type }: { area: NonNullable<PlayedRound["area"]>; type: QuestionType }) {
   const outline = useOutline(area.outline)
-  const d = useMemo(() => (outline ? outlinePath(outline, area.centre, 56, 42) : ""), [outline])
+  const path = useMemo(() => (outline ? outlinePath(outline, area.centre, 56, 42) : ""), [outline])
   return (
     <SmallPictureBox class={styles.shape} style={typeColour(type)}>
-      {d && (
+      {path && (
         <svg viewBox="0 0 56 42" aria-hidden="true">
-          <path d={d} />
+          <path d={path} />
         </svg>
       )}
     </SmallPictureBox>

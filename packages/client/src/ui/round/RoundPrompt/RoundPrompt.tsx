@@ -11,7 +11,7 @@ import styles from "./RoundPrompt.module.css"
 export function RoundPrompt({ question }: { question: QuestionView }) {
   const area = outlineOf(question.answer) !== undefined
   return (
-    <QuestionCard q={question} hud={CardPlace.PAINTING} foldable>
+    <QuestionCard question={question} hud={CardPlace.PAINTING} foldable>
       {question.type === QuestionType.FLAG ? (
         <AnswerMode area={area} />
       ) : (

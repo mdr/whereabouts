@@ -20,13 +20,20 @@ export function ScoreTable({ rounds, standings, byId, you, best, scrolls }: Roun
             <th class={styles.roundCell} scope="col">
               <span class="sr-only">Round</span>
             </th>
-            {standings.map((st) => {
-              const p = byId.get(st.playerId)
+            {standings.map((standing) => {
+              const player = byId.get(standing.playerId)
               return (
-                <th key={st.playerId} scope="col" class={st.playerId === you ? styles.you : undefined} title={p?.name}>
-                  {p && <Swatch as="i" type={SwatchType.PLAYER} colour={p.colour} class={styles.headSwatch} />}
+                <th
+                  key={standing.playerId}
+                  scope="col"
+                  class={standing.playerId === you ? styles.you : undefined}
+                  title={player?.name}
+                >
+                  {player && (
+                    <Swatch as="i" type={SwatchType.PLAYER} colour={player.colour} class={styles.headSwatch} />
+                  )}
                   <span class={styles.playerName} data-testid={scoreTableTestIds.playerName}>
-                    {p?.name ?? "?"}
+                    {player?.name ?? "?"}
                   </span>
                 </th>
               )
@@ -34,20 +41,20 @@ export function ScoreTable({ rounds, standings, byId, you, best, scrolls }: Roun
           </tr>
         </thead>
         <tbody>
-          {rounds.map((round, r) => (
-            <tr key={r} data-testid={roundsTestIds.playedRound}>
+          {rounds.map((round, roundIndex) => (
+            <tr key={roundIndex} data-testid={roundsTestIds.playedRound}>
               <th class={styles.roundCell} scope="row">
                 <span class={styles.what}>
-                  <RoundWhat number={r + 1} round={round} />
+                  <RoundWhat number={roundIndex + 1} round={round} />
                 </span>
               </th>
-              {standings.map((st) => {
-                const score = st.rounds[r]?.score
-                const won = score !== undefined && score === best[r]
+              {standings.map((standing) => {
+                const score = standing.rounds[roundIndex]?.score
+                const won = score !== undefined && score === best[roundIndex]
                 return (
                   <td
-                    key={st.playerId}
-                    class={cx(won && styles.best, st.playerId === you && styles.you)}
+                    key={standing.playerId}
+                    class={cx(won && styles.best, standing.playerId === you && styles.you)}
                     title={score === undefined ? "Sat out" : won ? "Won the round" : undefined}
                   >
                     {score === undefined ? "–" : Math.round(score)}

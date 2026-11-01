@@ -10,7 +10,7 @@ import { KernelComparison } from "../KernelComparison"
 import { PartsLine } from "../PartsLine"
 import styles from "./LiveScore.module.css"
 
-const pct = (x: number) => `${Math.round(x * 100)}%`
+const percent = (fraction: number) => `${Math.round(fraction * 100)}%`
 
 export function LiveScore({
   question,
@@ -48,15 +48,15 @@ function RegionFitFacts({ painted, answer, label }: { painted: Distribution; ans
     <dl class={cx(kit.facts, styles.regionFit)}>
       <div>
         <dt>Paint on {label}</dt>
-        <dd>{pct(precision)}</dd>
+        <dd>{percent(precision)}</dd>
       </div>
       <div>
         <dt>Paint off it</dt>
-        <dd>{pct(1 - precision)}</dd>
+        <dd>{percent(1 - precision)}</dd>
       </div>
       <div>
         <dt>{label} covered</dt>
-        <dd>{pct(coverage)}</dd>
+        <dd>{percent(coverage)}</dd>
       </div>
     </dl>
   )

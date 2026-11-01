@@ -6,7 +6,7 @@ import styles from "./Card.module.css"
 export function Card({
   title,
   children,
-  class: cls,
+  class: className,
   as: Tag = "div",
   ...rest
 }: {
@@ -18,7 +18,7 @@ export function Card({
   // Typed as a div, the attributes the three share.
   const El = Tag as "div"
   return (
-    <El class={cx(styles.card, cls)} {...rest}>
+    <El class={cx(styles.card, className)} {...rest}>
       {title && <h2 class={styles.title}>{title}</h2>}
       {children}
     </El>

@@ -29,7 +29,7 @@ export function RevealScores({
   /** A row under the mouse, or undefined when it moves off. */
   onHover: (playerId: PlayerId | undefined) => void
   /** Host only: remove this player. */
-  onKick: ((p: PlayingPlayerView) => void) | undefined
+  onKick: ((player: PlayingPlayerView) => void) | undefined
 }) {
   return (
     <Card title="Scores">

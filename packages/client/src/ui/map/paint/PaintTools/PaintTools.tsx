@@ -49,7 +49,7 @@ export function PaintTools({
   canPass?: boolean
 }) {
   const paint = usePaint()
-  const tool = paint.tool.value
+  const activeTool = paint.tool.value
   const enabled = paint.enabled.value
   // Fill only in a round asking for a country, on the Political map.
   const tools: Tool[] = paint.fillable.value
@@ -58,18 +58,18 @@ export function PaintTools({
   return (
     <HudBottom note={canPass && paint.isEmpty.value ? PASS_NOTE : undefined}>
       <div class={styles.tools}>
-        {tools.map((t) => (
+        {tools.map((tool) => (
           <button
-            key={t}
-            class={tool === t ? "active" : undefined}
-            aria-pressed={tool === t}
-            title={TOOL_HINT[t]}
-            onClick={() => (paint.tool.value = t)}
+            key={tool}
+            class={tool === activeTool ? "active" : undefined}
+            aria-pressed={tool === activeTool}
+            title={TOOL_HINT[tool]}
+            onClick={() => (paint.tool.value = tool)}
             disabled={!enabled}
             data-testid={paintToolsTestIds.toolButton}
-            data-tool={t}
+            data-tool={tool}
           >
-            <Icon name={TOOL_ICON[t]} /> <ToolLabel>{t[0]!.toUpperCase() + t.slice(1)}</ToolLabel>
+            <Icon name={TOOL_ICON[tool]} /> <ToolLabel>{tool[0]!.toUpperCase() + tool.slice(1)}</ToolLabel>
           </button>
         ))}
         <button
@@ -92,7 +92,7 @@ export function PaintTools({
           step={1}
           value={paint.brushRadius.value}
           disabled={!enabled}
-          onInput={(e) => paint.setBrushSize(Number(e.currentTarget.value))}
+          onInput={(event) => paint.setBrushSize(Number(event.currentTarget.value))}
         />
       </label>
       <span class={styles.history}>

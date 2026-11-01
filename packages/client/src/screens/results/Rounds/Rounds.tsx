@@ -22,11 +22,11 @@ export function Rounds(props: Omit<RoundListProps, "best">) {
   const [width, setWidth] = useState<Px | undefined>(undefined)
   const [everyone, setEveryone] = useState(false)
   useEffect(() => {
-    const el = ref.current
-    if (!el || typeof ResizeObserver === "undefined") return
-    const ro = new ResizeObserver(() => setWidth(el.clientWidth))
-    ro.observe(el)
-    return () => ro.disconnect()
+    const element = ref.current
+    if (!element || typeof ResizeObserver === "undefined") return
+    const observer = new ResizeObserver(() => setWidth(element.clientWidth))
+    observer.observe(element)
+    return () => observer.disconnect()
   }, [])
   if (rounds.length === 0) return undefined
   const fits = width === undefined ? standings.length <= 6 : width >= ROUND_COLUMN + standings.length * SCORE_COLUMN

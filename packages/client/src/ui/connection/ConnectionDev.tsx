@@ -18,7 +18,7 @@ export function ConnectionDev({ conn, view }: { conn: Connection; view: GameView
           ["Clock offset", `${Math.round(conn.clockOffset.value)} ms`],
           ["Server time", new Date(view.serverTime).toISOString().slice(11, 23)],
           ["Kernel", view.config.kernelId],
-          ["Host", view.you.isHost ? "you" : (everyone(view).find((p) => p.isHost)?.name ?? "?")],
+          ["Host", view.you.isHost ? "you" : (everyone(view).find((player) => player.isHost)?.name ?? "?")],
           ["You", `${view.you.name} (${view.you.id})`]
         ]}
       />

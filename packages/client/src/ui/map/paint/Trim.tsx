@@ -17,8 +17,8 @@ export function Trim({ enabled, water }: { enabled: boolean; water: boolean }) {
   const [busy, setBusy] = useState(false)
   useEffect(() => {
     if (!note) return
-    const t = setTimeout(() => setNote(undefined), 2500)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setNote(undefined), 2500)
+    return () => clearTimeout(timer)
   }, [note])
   const trim = async () => {
     setBusy(true)

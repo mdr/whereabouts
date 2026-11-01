@@ -17,8 +17,8 @@ export function PaintDev() {
         max={3}
         step={0.1}
         value={paint.strength.value}
-        onInput={(v) => (paint.strength.value = v)}
-        format={(v) => `${v.toFixed(1)}×`}
+        onInput={(value) => (paint.strength.value = value)}
+        format={(value) => `${value.toFixed(1)}×`}
       />
       <Slider
         label="World floor"
@@ -26,12 +26,14 @@ export function PaintDev() {
         max={0.5}
         step={0.01}
         value={paint.floor.value}
-        onInput={(v) => (paint.floor.value = v)}
-        format={(v) => `${Math.round(v * 100)}%`}
+        onInput={(value) => (paint.floor.value = value)}
+        format={(value) => `${Math.round(value * 100)}%`}
       />
       <p class={kit.hint}>
         Tolerance {formatDistance(paint.tolerance.value)} · finest H3 res {stats.res} · {stats.size} cells
-        {stats.size > 0 && <> ({stats.resolutionCounts.map(([r, n]) => `res ${r}: ${n}`).join(", ")})</>}
+        {stats.size > 0 && (
+          <> ({stats.resolutionCounts.map(([resolution, count]) => `res ${resolution}: ${count}`).join(", ")})</>
+        )}
       </p>
       <PaintBlobs />
     </Card>
@@ -44,8 +46,8 @@ function Slider(props: {
   max: number
   step: number
   value: number
-  onInput: (v: number) => void
-  format: (v: number) => string
+  onInput: (value: number) => void
+  format: (value: number) => string
 }) {
   return (
     <div class={styles.row}>
@@ -56,7 +58,7 @@ function Slider(props: {
         max={props.max}
         step={props.step}
         value={props.value}
-        onInput={(e) => props.onInput(Number(e.currentTarget.value))}
+        onInput={(event) => props.onInput(Number(event.currentTarget.value))}
       />
       <output>{props.format(props.value)}</output>
     </div>

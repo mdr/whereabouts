@@ -17,8 +17,8 @@ export function RenameForm({
   return (
     <form
       class={kit.join}
-      onSubmit={(e) => {
-        e.preventDefault()
+      onSubmit={(event) => {
+        event.preventDefault()
         onDone(nameToJoin(name))
       }}
     >
@@ -27,9 +27,9 @@ export function RenameForm({
         type="text"
         maxLength={20}
         value={name}
-        onInput={(e) => setName(e.currentTarget.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") onDone(undefined)
+        onInput={(event) => setName(event.currentTarget.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") onDone(undefined)
         }}
         autoFocus
       />

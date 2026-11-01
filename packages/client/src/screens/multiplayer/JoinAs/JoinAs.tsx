@@ -13,8 +13,8 @@ export function JoinAs({ code, onJoin }: { code: RoomCode; onJoin: (name: Player
     <div class={kit.page} data-testid={joinAsTestIds.page}>
       <form
         class={kit.pageCard}
-        onSubmit={(e) => {
-          e.preventDefault()
+        onSubmit={(event) => {
+          event.preventDefault()
           if (ready) onJoin(ready, false)
         }}
       >
@@ -29,7 +29,7 @@ export function JoinAs({ code, onJoin }: { code: RoomCode; onJoin: (name: Player
             maxLength={20}
             placeholder="Your name"
             value={name}
-            onInput={(e) => setName(e.currentTarget.value)}
+            onInput={(event) => setName(event.currentTarget.value)}
             autoFocus
             data-testid={joinAsTestIds.nameInput}
           />

@@ -4,7 +4,7 @@ import styles from "./SmallPicture.module.css"
 
 /** A photo the size of a list row; click it to enlarge. */
 export function SmallPictureBox({
-  class: cls,
+  class: className,
   style,
   children
 }: {
@@ -13,7 +13,7 @@ export function SmallPictureBox({
   children?: ComponentChildren
 }) {
   return (
-    <span class={cx(styles.smallPicture, cls)} style={style}>
+    <span class={cx(styles.smallPicture, className)} style={style}>
       {children}
     </span>
   )

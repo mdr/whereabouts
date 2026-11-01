@@ -26,20 +26,20 @@ import { MapDetail } from "@whereabouts/shared/protocol"
 const PaintContext = createContext<PaintController | undefined>(undefined)
 
 export function usePaint(): PaintController {
-  const p = useContext(PaintContext)
-  if (!p) throw new Error("usePaint outside MapView")
-  return p
+  const paint = useContext(PaintContext)
+  if (!paint) throw new Error("usePaint outside MapView")
+  return paint
 }
 
 export function MapView({ children }: { children: ComponentChildren }) {
-  const el = useElementRef<HTMLDivElement>()
+  const mapElement = useElementRef<HTMLDivElement>()
   const [controller, setController] = useState<PaintController | undefined>(undefined)
   const [attempt, setAttempt] = useState(0)
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
-    const gameMap = new GameMap(el.current!)
-    let ctl: PaintController | undefined = undefined
+    const gameMap = new GameMap(mapElement.current!)
+    let paintController: PaintController | undefined = undefined
     let retry: ReturnType<typeof setTimeout> | undefined = undefined
     gameMap.ready.then(
       () => {
@@ -47,12 +47,12 @@ export function MapView({ children }: { children: ComponentChildren }) {
         // Anything that would give the location away stays hidden.
         gameMap.setDetail(MapDetail.MINIMAL)
         gameMap.addGlobeButton(() => (globeView.value = !globeView.value), mapViewTestIds.globeButton)
-        ctl = new PaintController(gameMap)
-        window.whereabouts = { map: gameMap.map, gameMap, paint: ctl }
-        setController(ctl)
+        paintController = new PaintController(gameMap)
+        window.whereabouts = { map: gameMap.map, gameMap, paint: paintController }
+        setController(paintController)
       },
-      (err: unknown) => {
-        console.warn("could not load the map", err)
+      (error: unknown) => {
+        console.warn("could not load the map", error)
         // One quiet try before troubling the player.
         if (attempt === 0) retry = setTimeout(() => setAttempt(1), 2000)
         else setFailed(true)
@@ -60,7 +60,7 @@ export function MapView({ children }: { children: ComponentChildren }) {
     )
     return () => {
       clearTimeout(retry)
-      ctl?.dispose()
+      paintController?.dispose()
       gameMap.dispose()
     }
   }, [attempt])
@@ -91,11 +91,11 @@ export function MapView({ children }: { children: ComponentChildren }) {
   // screen is up; MapLibre and the photo lightbox read touch and pointer
   // events, which this leaves alone.
   useEffect(() => {
-    const block = (e: Event) => e.preventDefault()
+    const block = (event: Event) => event.preventDefault()
     const types = ["gesturestart", "gesturechange", "gestureend"]
-    for (const t of types) document.addEventListener(t, block, { passive: false })
+    for (const type of types) document.addEventListener(type, block, { passive: false })
     return () => {
-      for (const t of types) document.removeEventListener(t, block)
+      for (const type of types) document.removeEventListener(type, block)
     }
   }, [])
 
@@ -107,7 +107,7 @@ export function MapView({ children }: { children: ComponentChildren }) {
 
   return (
     <div class={cx(styles.stage, dev && styles.dev)}>
-      <div class={styles.map} ref={el} data-testid={mapViewTestIds.map} />
+      <div class={styles.map} ref={mapElement} data-testid={mapViewTestIds.map} />
       <PaintContext.Provider value={controller}>
         {controller ? (
           children

@@ -29,7 +29,7 @@ const PREFERENCE: { value: Choice; label: string }[] = [
 
 /** The playtester's side of the review: the verdict, a note, and the progress through the set. */
 export function VerdictCard({
-  c,
+  reviewCase,
   scores,
   choice,
   onChoose,
@@ -44,7 +44,7 @@ export function VerdictCard({
   total,
   set
 }: {
-  c: ReviewCase
+  reviewCase: ReviewCase
   scores: number[]
   choice: Choice | undefined
   onChoose: (choice: Choice) => void
@@ -61,21 +61,21 @@ export function VerdictCard({
   set: number
 }) {
   const done = judged >= total
-  const options = c.type === ReviewCaseType.SINGLE ? FAIRNESS : PREFERENCE
+  const options = reviewCase.type === ReviewCaseType.SINGLE ? FAIRNESS : PREFERENCE
   const ownVerdicts = scoreVerdicts.value
   return (
     <Card
-      title={c.type === ReviewCaseType.SINGLE ? "Is this score fair?" : "Which deserves more?"}
+      title={reviewCase.type === ReviewCaseType.SINGLE ? "Is this score fair?" : "Which deserves more?"}
       class={styles.review}
     >
-      {c.type === ReviewCaseType.PAIR && (
+      {reviewCase.type === ReviewCaseType.PAIR && (
         <ul class={cx(players.list, players.pick)} data-testid={verdictCardTestIds.pair}>
           {(["A", "B"] as const).map((name, i) => (
             <li
               class={pinned === i ? players.selected : undefined}
               onClick={() => onPin(pinned === i ? undefined : (i as 0 | 1))}
-              onPointerEnter={(e) => e.pointerType === "mouse" && onHover(i as 0 | 1)}
-              onPointerLeave={(e) => e.pointerType === "mouse" && onHover(undefined)}
+              onPointerEnter={(event) => event.pointerType === "mouse" && onHover(i as 0 | 1)}
+              onPointerLeave={(event) => event.pointerType === "mouse" && onHover(undefined)}
             >
               <Swatch type={SwatchType.CSS} css={PAIR_COLOURS[i]!} />
               <span class={players.name}>{name}</span>
@@ -87,21 +87,21 @@ export function VerdictCard({
         </ul>
       )}
       <div class={styles.verdicts} role="radiogroup">
-        {options.map((o, i) => (
+        {options.map((option, i) => (
           <button
             type="button"
             role="radio"
-            aria-checked={choice === o.value}
-            class={choice === o.value ? styles.selected : undefined}
-            onClick={() => onChoose(o.value)}
+            aria-checked={choice === option.value}
+            class={choice === option.value ? styles.selected : undefined}
+            onClick={() => onChoose(option.value)}
             data-testid={verdictCardTestIds.verdict}
-            data-verdict={o.value}
+            data-verdict={option.value}
           >
-            <kbd>{i + 1}</kbd> {o.label}
+            <kbd>{i + 1}</kbd> {option.label}
           </button>
         ))}
       </div>
-      {c.type === ReviewCaseType.SINGLE && (
+      {reviewCase.type === ReviewCaseType.SINGLE && (
         <label class={styles.shouldBe}>
           It should be about
           <input
@@ -110,16 +110,21 @@ export function VerdictCard({
             max={1000}
             step={10}
             value={shouldBe}
-            onInput={(e) => onShouldBe(e.currentTarget.value)}
+            onInput={(event) => onShouldBe(event.currentTarget.value)}
             placeholder="optional"
           />
         </label>
       )}
-      <textarea rows={2} value={note} onInput={(e) => onNote(e.currentTarget.value)} placeholder="Why? (optional)" />
+      <textarea
+        rows={2}
+        value={note}
+        onInput={(event) => onNote(event.currentTarget.value)}
+        placeholder="Why? (optional)"
+      />
       <p class={kit.hint} data-testid={verdictCardTestIds.progress}>
         {judged} of {total} judged in this set
         {done ? ": all done." : "."}
-        {c.type === ReviewCaseType.PAIR && " Point at A or B to see it alone; click to keep it."}
+        {reviewCase.type === ReviewCaseType.PAIR && " Point at A or B to see it alone; click to keep it."}
       </p>
       <div class={styles.actions}>
         <button
@@ -141,10 +146,10 @@ export function VerdictCard({
 }
 
 function exportVerdicts(verdicts: ScoreVerdict[]): void {
-  const text = verdicts.map((v) => JSON.stringify(v)).join("\n") + "\n"
-  const a = document.createElement("a")
-  a.href = URL.createObjectURL(new Blob([text], { type: "application/x-ndjson" }))
-  a.download = `score-verdicts-${new Date().toISOString().slice(0, 10)}.jsonl`
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+  const text = verdicts.map((verdict) => JSON.stringify(verdict)).join("\n") + "\n"
+  const link = document.createElement("a")
+  link.href = URL.createObjectURL(new Blob([text], { type: "application/x-ndjson" }))
+  link.download = `score-verdicts-${new Date().toISOString().slice(0, 10)}.jsonl`
+  link.click()
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000)
 }

@@ -27,7 +27,7 @@ const REMOVED_PLAYER: CssColour = "#888888"
 
 export function Results({ conn, view }: { conn: Connection; view: ResultsGameView }) {
   const online = conn.online.value
-  const byId = new Map(view.players.map((p) => [p.id, p]))
+  const byId = new Map(view.players.map((player) => [player.id, player]))
   const standings = view.results
   const winner = standings[0] ? byId.get(standings[0].playerId) : undefined
   const vrView: VrView = {
@@ -38,10 +38,10 @@ export function Results({ conn, view }: { conn: Connection; view: ResultsGameVie
       table: {
         title: "Standings",
         rows: standings.map((standing, i) => {
-          const p = byId.get(standing.playerId)
+          const player = byId.get(standing.playerId)
           return {
-            colour: p && colourCss(p.colour),
-            name: `${i + 1}. ${p?.name ?? "?"}${standing.playerId === view.you.id ? " (you)" : ""}`,
+            colour: player && colourCss(player.colour),
+            name: `${i + 1}. ${player?.name ?? "?"}${standing.playerId === view.you.id ? " (you)" : ""}`,
             total: Math.round(standing.total).toLocaleString()
           }
         })
@@ -50,23 +50,23 @@ export function Results({ conn, view }: { conn: Connection; view: ResultsGameVie
         connectionText(conn) ?? (view.you.isHost ? undefined : "The host can start another game with the same group."),
       actions: view.you.isHost ? [{ label: "Play again", press: () => conn.again(), enabled: online }] : [],
       board: {
-        awards: view.awards.map((a) => ({
-          emoji: a.emoji,
-          title: a.title,
+        awards: view.awards.map((award) => ({
+          emoji: award.emoji,
+          title: award.title,
           line: awardParts(
-            a.line,
-            a.playerIds.map((id) => byId.get(id))
+            award.line,
+            award.playerIds.map((id) => byId.get(id))
           )
         })),
         players: standings.map((standing) => {
-          const p = byId.get(standing.playerId)
-          return { name: p?.name ?? "?", colour: p ? colourCss(p.colour) : REMOVED_PLAYER }
+          const player = byId.get(standing.playerId)
+          return { name: player?.name ?? "?", colour: player ? colourCss(player.colour) : REMOVED_PLAYER }
         }),
-        rounds: view.playedRounds.map((round, r) => ({
+        rounds: view.playedRounds.map((round, roundIndex) => ({
           label: round.label,
           type: typeName(round),
           colour: QUESTION_TYPE_LOOKS[round.type].colour,
-          scores: standings.map((standing) => standing.rounds[r]?.score)
+          scores: standings.map((standing) => standing.rounds[roundIndex]?.score)
         }))
       }
     },
@@ -116,9 +116,9 @@ function awardParts(line: string, players: (PlayingPlayerView | undefined)[]): {
     .split(/(\{\d\})/)
     .filter((part) => part !== "")
     .map((part) => {
-      const m = /^\{(\d)\}$/.exec(part)
-      if (!m) return { text: part }
-      const p = players[Number(m[1])]
-      return { text: p?.name ?? "Someone", colour: p ? colourCss(p.colour) : undefined }
+      const match = /^\{(\d)\}$/.exec(part)
+      if (!match) return { text: part }
+      const player = players[Number(match[1])]
+      return { text: player?.name ?? "Someone", colour: player ? colourCss(player.colour) : undefined }
     })
 }

@@ -15,9 +15,14 @@ export function RoundStrip({ mix, total = true, centred }: { mix: QuestionMix; t
   return (
     <div class={cx(styles.strip, centred && styles.centred)} data-testid={roundStripTestIds.strip}>
       <div class={styles.cells} role="img" aria-label={describeMix(mix)}>
-        {QUESTION_TYPES.flatMap((t) =>
-          Array.from({ length: mix[t] }, (_, i) => (
-            <span key={`${t}${i}`} class={styles.cell} style={typeColour(t)} data-testid={roundStripTestIds.cell} />
+        {QUESTION_TYPES.flatMap((type) =>
+          Array.from({ length: mix[type] }, (_, i) => (
+            <span
+              key={`${type}${i}`}
+              class={styles.cell}
+              style={typeColour(type)}
+              data-testid={roundStripTestIds.cell}
+            />
           ))
         )}
       </div>

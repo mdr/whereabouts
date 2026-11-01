@@ -94,7 +94,7 @@ export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView 
   // The room's code, so everyone in the game sees the same one.
   const fact = useFact(reveal && { place: reveal.place, type: reveal.question.type }, view.code, reveal?.index ?? 0)
 
-  const mine = reveal?.results.find((r) => r.playerId === view.you.id)
+  const mine = reveal?.results.find((result) => result.playerId === view.you.id)
   const painted = useMemo(
     () =>
       reveal?.question.type === QuestionType.FLAG && borders && mine?.guess.type === RoundGuessType.PAINTED
@@ -149,8 +149,12 @@ export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView 
         <HudRight roomy={playersPanelOpen.value}>
           <PlayersPanel
             view={view}
-            onKick={view.you.isHost ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
-            onMakeHost={view.you.isHost ? (p) => ask(makeHostRequest(p.name, () => conn.makeHost(p.id))) : undefined}
+            onKick={view.you.isHost ? (player) => ask(kickRequest(player.name, () => conn.kick(player.id))) : undefined}
+            onMakeHost={
+              view.you.isHost
+                ? (player) => ask(makeHostRequest(player.name, () => conn.makeHost(player.id)))
+                : undefined
+            }
           />
           {canEndGame(view) && (
             <EndGameButton

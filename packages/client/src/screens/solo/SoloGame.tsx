@@ -85,7 +85,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
     else paint.gameMap.clearReveal()
   }, [cheating, phase, index])
 
-  useEffect(() => paint.onHover((p) => (hover.value = p)), [paint])
+  useEffect(() => paint.onHover((point) => (hover.value = point)), [paint])
 
   useEffect(() => setHint(undefined), [index, questions])
 
@@ -95,8 +95,8 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
   }, [questions, index])
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (!SUBMIT.matches(e) || e.repeat || forTabbedControl(e)) return
+    const onKey = (event: KeyboardEvent) => {
+      if (!SUBMIT.matches(event) || event.repeat || forTabbedControl(event)) return
       // A photo or the shortcuts list open over the round has the keyboard.
       if (document.querySelector('[role="dialog"]')) return
       const act =
@@ -107,7 +107,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
             : undefined
       if (!act) return
       // A clicked button keeps focus, and Enter would press it as well.
-      e.preventDefault()
+      event.preventDefault()
       act()
     }
     window.addEventListener("keydown", onKey)

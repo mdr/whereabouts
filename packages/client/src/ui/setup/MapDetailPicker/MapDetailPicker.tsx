@@ -21,18 +21,18 @@ export function MapDetailPicker({
       aria-label="Map detail"
       data-testid={mapDetailPickerTestIds.picker}
     >
-      {MAP_DETAILS.map((d) => (
+      {MAP_DETAILS.map((detail) => (
         <button
-          key={d.id}
+          key={detail.id}
           type="button"
           role="radio"
-          aria-checked={d.id === value}
-          class={d.id === value ? styles.on : undefined}
-          title={d.detail}
-          onClick={() => onChange(d.id)}
+          aria-checked={detail.id === value}
+          class={detail.id === value ? styles.on : undefined}
+          title={detail.detail}
+          onClick={() => onChange(detail.id)}
         >
-          <img src={MAP_PREVIEWS[d.id]} alt="" />
-          <span class={styles.name}>{d.label}</span>
+          <img src={MAP_PREVIEWS[detail.id]} alt="" />
+          <span class={styles.name}>{detail.label}</span>
         </button>
       ))}
     </div>

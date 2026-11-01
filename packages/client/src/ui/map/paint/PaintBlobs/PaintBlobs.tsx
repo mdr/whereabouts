@@ -11,20 +11,20 @@ export function PaintBlobs() {
   const painted = empty ? 0 : 1 - floor
   const effectiveFloor = empty ? 1 : floor
   const shown = blobs.slice(0, 6)
-  const rest = blobs.slice(6).reduce((s, b) => s + b.fraction, 0) * painted * 100
+  const rest = blobs.slice(6).reduce((sum, blob) => sum + blob.fraction, 0) * painted * 100
   return (
     <ul class={styles.blobs} data-testid={paintBlobsTestIds.blobs}>
-      {shown.map((b, i) => {
-        const pct = b.fraction * painted * 100
+      {shown.map((blob, i) => {
+        const percent = blob.fraction * painted * 100
         return (
           <li key={i}>
             <span>
-              Blob {i + 1} <span>({b.cells} cells)</span>
+              Blob {i + 1} <span>({blob.cells} cells)</span>
             </span>
             <span class={styles.bar}>
-              <i style={{ width: `${pct}%` }} />
+              <i style={{ width: `${percent}%` }} />
             </span>
-            <span>{pct.toFixed(1)}%</span>
+            <span>{percent.toFixed(1)}%</span>
           </li>
         )
       })}

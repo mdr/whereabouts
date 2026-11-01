@@ -81,21 +81,21 @@ export function VrButton({ view }: { view: VrView }) {
 
   if (!vrSupported.value) return undefined
   const vr = loadedVr.value
-  const enter = (v: Vr) => {
+  const enter = (loaded: Vr) => {
     setStage(undefined)
-    v.enter(latest.current)
+    loaded.enter(latest.current)
   }
   const press = () => {
     if (vr) return enter(vr)
     setStage(LaunchStage.LOADING)
     loadVr().then(
-      (v) => {
-        if (navigator.userActivation.isActive) enter(v)
+      (loaded) => {
+        if (navigator.userActivation.isActive) enter(loaded)
         else setStage(LaunchStage.READY)
       },
-      (err: unknown) => {
-        console.warn("could not load VR", err)
-        setStage(err instanceof VrCodeMissing ? LaunchStage.CODE_MISSING : LaunchStage.FAILED)
+      (error: unknown) => {
+        console.warn("could not load VR", error)
+        setStage(error instanceof VrCodeMissing ? LaunchStage.CODE_MISSING : LaunchStage.FAILED)
       }
     )
   }

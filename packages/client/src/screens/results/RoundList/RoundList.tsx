@@ -27,30 +27,30 @@ export function RoundList({ rounds, standings, byId, you, best }: RoundListProps
         <span>Best</span>
         {mine && <span class={styles.yours}>You</span>}
       </li>
-      {rounds.map((round, r) => {
+      {rounds.map((round, roundIndex) => {
         const winners = standings
-          .filter((standing) => standing.rounds[r]?.score === best[r])
+          .filter((standing) => standing.rounds[roundIndex]?.score === best[roundIndex])
           .map((standing) => byId.get(standing.playerId))
         const first = winners[0]
-        const yours = mine?.rounds[r]?.score
+        const yours = mine?.rounds[roundIndex]?.score
         return (
-          <li key={r} data-testid={roundsTestIds.playedRound}>
-            <RoundWhat number={r + 1} round={round} textClass={styles.text} />
+          <li key={roundIndex} data-testid={roundsTestIds.playedRound}>
+            <RoundWhat number={roundIndex + 1} round={round} textClass={styles.text} />
             {first && (
               <span
                 class={styles.winner}
                 data-testid={roundListTestIds.roundWinner}
-                title={`Won by ${winners.map((p) => p?.name ?? "?").join(", ")}`}
+                title={`Won by ${winners.map((winner) => winner?.name ?? "?").join(", ")}`}
               >
                 <Swatch as="i" type={SwatchType.PLAYER} colour={first.colour} />
                 <span class={styles.winnerName}>{first.name}</span>
                 {winners.length > 1 && <span class={styles.tied}>+{winners.length - 1}</span>}
-                <b>{Math.round(best[r]!)}</b>
+                <b>{Math.round(best[roundIndex]!)}</b>
               </span>
             )}
             {mine && (
               <span
-                class={cx(styles.yours, yours !== undefined && yours === best[r] && styles.best)}
+                class={cx(styles.yours, yours !== undefined && yours === best[roundIndex] && styles.best)}
                 title="Your score"
                 data-testid={roundListTestIds.roundYours}
               >

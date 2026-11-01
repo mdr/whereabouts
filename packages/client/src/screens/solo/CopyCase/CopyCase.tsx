@@ -23,8 +23,8 @@ export function CopyCase({
   const [fallback, setFallback] = useState<string | undefined>(undefined)
   useEffect(() => {
     if (!copied) return
-    const t = setTimeout(() => setCopied(false), 2000)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setCopied(false), 2000)
+    return () => clearTimeout(timer)
   }, [copied])
   const copy = async () => {
     const floor = paint.floor.value
@@ -57,7 +57,7 @@ export function CopyCase({
           readOnly
           rows={6}
           value={fallback}
-          onFocus={(e) => e.currentTarget.select()}
+          onFocus={(event) => event.currentTarget.select()}
         />
       )}
     </>

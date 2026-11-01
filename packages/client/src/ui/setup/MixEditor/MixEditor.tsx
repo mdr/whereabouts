@@ -16,11 +16,17 @@ export function MixEditor({ mix, onChange }: { mix: QuestionMix; onChange: (mix:
   return (
     <div class={styles.editor}>
       <ul class={styles.rows}>
-        {QUESTION_TYPES.map((t) => {
-          const others = rounds - mix[t]
-          const look = QUESTION_TYPE_LOOKS[t]
+        {QUESTION_TYPES.map((type) => {
+          const others = rounds - mix[type]
+          const look = QUESTION_TYPE_LOOKS[type]
           return (
-            <li key={t} class={styles.row} style={typeColour(t)} data-testid={mixEditorTestIds.row} data-type={t}>
+            <li
+              key={type}
+              class={styles.row}
+              style={typeColour(type)}
+              data-testid={mixEditorTestIds.row}
+              data-type={type}
+            >
               <span class={styles.swatch} aria-hidden="true" />
               <span class={styles.type}>
                 <b>{look.label}</b>
@@ -28,11 +34,11 @@ export function MixEditor({ mix, onChange }: { mix: QuestionMix; onChange: (mix:
               </span>
               <Stepper
                 label={look.label}
-                value={mix[t]}
+                value={mix[type]}
                 // A game has at least one round and at most MAX_ROUNDS.
                 min={others === 0 ? 1 : 0}
                 max={MAX_ROUNDS - others}
-                onChange={(n) => onChange({ ...mix, [t]: n })}
+                onChange={(count) => onChange({ ...mix, [type]: count })}
               />
             </li>
           )

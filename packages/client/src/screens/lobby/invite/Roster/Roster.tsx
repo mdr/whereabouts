@@ -28,8 +28,8 @@ export function Roster({
       showScores={false}
       avatars
       onRename={onRename}
-      onKick={host ? (p) => ask(kickRequest(p.name, () => conn.kick(p.id))) : undefined}
-      onMakeHost={host ? (p) => ask(makeHostRequest(p.name, () => conn.makeHost(p.id))) : undefined}
+      onKick={host ? (player) => ask(kickRequest(player.name, () => conn.kick(player.id))) : undefined}
+      onMakeHost={host ? (player) => ask(makeHostRequest(player.name, () => conn.makeHost(player.id))) : undefined}
     />
   )
   return (

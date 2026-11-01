@@ -12,8 +12,8 @@ export function TrimToHint({ enabled, band }: { enabled: boolean; band: HintBand
   const [note, setNote] = useState<string | undefined>(undefined)
   useEffect(() => {
     if (!note) return
-    const t = setTimeout(() => setNote(undefined), 2500)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setNote(undefined), 2500)
+    return () => clearTimeout(timer)
   }, [note])
   return (
     <button

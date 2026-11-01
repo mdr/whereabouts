@@ -29,15 +29,15 @@ export function RevealScore({
   painted: Distribution | undefined
   hover: ReadonlySignal<LatLon | undefined>
 }) {
-  const h = hover.value
+  const hovered = hover.value
   // "What if the answer were here" only means something for a point answer.
   let hoverText: string | undefined =
     answer.type === AnswerType.AREA ? undefined : "Move the mouse over the map to see the score for other answers."
-  if (h && answer.type === AnswerType.POINT && painted) {
-    const A = similarityToAnswer(painted, toXyz(h), answer.tolerance, kernel)
-    const s = parts.type === AnswerType.POINT ? scoreFromParts(A, parts.B) : 0
-    const d = greatCircleDistance(h, answer.at)
-    hoverText = `If the answer were here: ${Math.round(s)} · ${formatDistance(d)} from the real answer (${(d / answer.tolerance).toFixed(1)} tolerances)`
+  if (hovered && answer.type === AnswerType.POINT && painted) {
+    const A = similarityToAnswer(painted, toXyz(hovered), answer.tolerance, kernel)
+    const score = parts.type === AnswerType.POINT ? scoreFromParts(A, parts.B) : 0
+    const distance = greatCircleDistance(hovered, answer.at)
+    hoverText = `If the answer were here: ${Math.round(score)} · ${formatDistance(distance)} from the real answer (${(distance / answer.tolerance).toFixed(1)} tolerances)`
   }
   return (
     <Card title="Score">

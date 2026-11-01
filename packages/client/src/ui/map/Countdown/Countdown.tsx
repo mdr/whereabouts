@@ -8,7 +8,7 @@ import styles from "./Countdown.module.css"
 function useCountdown(timeLeft: () => Ms): Seconds {
   const [, force] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => force((n) => n + 1), 250)
+    const id = setInterval(() => force((tick) => tick + 1), 250)
     return () => clearInterval(id)
   }, [])
   return Math.max(0, Math.ceil(timeLeft() / 1000))

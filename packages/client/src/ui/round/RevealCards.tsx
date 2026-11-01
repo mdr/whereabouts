@@ -34,7 +34,7 @@ export function RevealCards({
 }) {
   return (
     <>
-      <QuestionCard q={question} hud={CardPlace.REVEAL} credit photo={revealed.photo} foldable startFolded>
+      <QuestionCard question={question} hud={CardPlace.REVEAL} credit photo={revealed.photo} foldable startFolded>
         <Answer label={revealed.label} wiki={revealed.wiki} />
         <FactLine fact={fact} />
       </QuestionCard>

@@ -26,7 +26,7 @@ const PLACE_CLASS: Record<CardPlace, string | undefined> = {
 }
 
 export function QuestionCard({
-  q: question,
+  question,
   hud,
   children,
   credit,
@@ -34,7 +34,7 @@ export function QuestionCard({
   foldable,
   startFolded
 }: {
-  q: QuestionView
+  question: QuestionView
   hud: CardPlace
   children?: ComponentChildren
   /** Show the image credit link. Off while guessing: the Commons file name gives the answer away. */
@@ -109,10 +109,10 @@ function usePictureFloor(ref: RefObject<HTMLDivElement>, folded: boolean): void 
         picture && shown && least > 0 ? `${card.scrollHeight - padding - picture.offsetHeight + least}px` : ""
     }
     setFloor()
-    const ro = new ResizeObserver(setFloor)
-    ro.observe(card)
+    const observer = new ResizeObserver(setFloor)
+    observer.observe(card)
     return () => {
-      ro.disconnect()
+      observer.disconnect()
       card.style.minHeight = ""
     }
   }, [folded])
@@ -129,10 +129,10 @@ function usePublishedHeight(ref: RefObject<HTMLDivElement>): void {
     if (!card || typeof ResizeObserver === "undefined") return
     const publish = () => root.style.setProperty("--question-h", `${card.offsetHeight}px`)
     publish()
-    const ro = new ResizeObserver(publish)
-    ro.observe(card)
+    const observer = new ResizeObserver(publish)
+    observer.observe(card)
     return () => {
-      ro.disconnect()
+      observer.disconnect()
       root.style.removeProperty("--question-h")
     }
   }, [])

@@ -11,7 +11,7 @@ export function AllFlagsSwitch() {
         type="checkbox"
         role="switch"
         checked={allFlags.value}
-        onChange={(e) => (allFlags.value = e.currentTarget.checked)}
+        onChange={(event) => (allFlags.value = event.currentTarget.checked)}
         data-testid={allFlagsSwitchTestIds.allFlagsSwitch}
       />
       Show all flags

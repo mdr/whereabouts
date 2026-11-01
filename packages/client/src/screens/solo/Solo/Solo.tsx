@@ -23,7 +23,7 @@ export function Solo() {
 /** The outlines come in their own chunk, fetched when a type painted whole is asked for. */
 function SoloLoader() {
   const types = soloTypes.value
-  const needed = types.some((t) => AREA_TYPES.includes(t))
+  const needed = types.some((type) => AREA_TYPES.includes(type))
   const loaded = useOutlines(needed)
   if (!loaded && needed) return <LoadingOutlines />
   return <SoloGame pool={poolOf(CATALOGUE, types, soloMapDetail.value)} outlines={loaded ?? new Map()} />

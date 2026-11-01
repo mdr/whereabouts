@@ -15,18 +15,18 @@ export function Pills<T extends string | number>({
 }) {
   return (
     <div class={styles.pills} role="radiogroup" aria-label={label}>
-      {options.map((o) => (
+      {options.map((option) => (
         <button
-          key={String(o.value)}
+          key={String(option.value)}
           type="button"
           role="radio"
-          aria-checked={o.value === value}
-          class={o.value === value ? styles.on : undefined}
-          onClick={() => onChange(o.value)}
+          aria-checked={option.value === value}
+          class={option.value === value ? styles.on : undefined}
+          onClick={() => onChange(option.value)}
           data-testid={pillsTestIds.option}
-          data-value={o.value}
+          data-value={option.value}
         >
-          {o.label}
+          {option.label}
         </button>
       ))}
     </div>

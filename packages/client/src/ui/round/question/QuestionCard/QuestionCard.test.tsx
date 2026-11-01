@@ -25,7 +25,7 @@ describe("QuestionCard", () => {
     const { container } = render(
       <QuestionCard
         hud={CardPlace.PAINTING}
-        q={makeQuestionView({ clue: { type: ClueType.NAME, prompt: "Where is Dublin?" } })}
+        question={makeQuestionView({ clue: { type: ClueType.NAME, prompt: "Where is Dublin?" } })}
       />
     )
     expect(container.textContent).toBe("Where is Dublin?")
@@ -35,7 +35,7 @@ describe("QuestionCard", () => {
     const country = render(
       <QuestionCard
         hud={CardPlace.PAINTING}
-        q={makeQuestionView({
+        question={makeQuestionView({
           type: QuestionType.COUNTRY,
           clue: { type: ClueType.NAME, prompt: "Paint the whole of Germany" },
           answer: areaAnswerView("germany-region", 65),
@@ -46,11 +46,11 @@ describe("QuestionCard", () => {
     await waitFor(() =>
       expect(country.container.querySelector(`.${flagImage.flag} img`)!.getAttribute("src")).toBe("/flags/de.svg")
     )
-    const flagRound = render(<QuestionCard hud={CardPlace.PAINTING} q={flagRoundOf("fr")} />)
+    const flagRound = render(<QuestionCard hud={CardPlace.PAINTING} question={flagRoundOf("fr")} />)
     await waitFor(() =>
       expect(flagRound.container.querySelector(`.${flagImage.flag} img`)!.getAttribute("src")).toBe("/flags/fr.svg")
     )
-    const place = render(<QuestionCard hud={CardPlace.PAINTING} q={makeQuestionView()} />)
+    const place = render(<QuestionCard hud={CardPlace.PAINTING} question={makeQuestionView()} />)
     expect(place.container.querySelectorAll(`.${flagImage.flag}`)).toHaveLength(0)
   })
 })

@@ -4,10 +4,10 @@ import kit from "../kit.module.css"
 export function DevFacts({ facts }: { facts: [string, string | number][] }) {
   return (
     <dl class={kit.facts}>
-      {facts.map(([k, v]) => (
-        <div key={k}>
-          <dt>{k}</dt>
-          <dd>{v}</dd>
+      {facts.map(([label, value]) => (
+        <div key={label}>
+          <dt>{label}</dt>
+          <dd>{value}</dd>
         </div>
       ))}
     </dl>
