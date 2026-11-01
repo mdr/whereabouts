@@ -11,7 +11,7 @@ import styles from "./ScoreTable.module.css"
  * asked, and a column per player in finishing order, each round's best
  * picked out. Many players scroll sideways, the rounds staying in view.
  */
-export const ScoreTable = ({ rounds, standings, byId, you, best, scrolls }: RoundListProps & { scrolls: boolean }) => {
+export const ScoreTable = ({ rounds, standings, you, best, scrolls }: RoundListProps & { scrolls: boolean }) => {
   return (
     <div class={cx(styles.scroll, scrolls && styles.scrolls)}>
       <table class={styles.table} data-testid={scoreTableTestIds.table}>
@@ -20,24 +20,19 @@ export const ScoreTable = ({ rounds, standings, byId, you, best, scrolls }: Roun
             <th class={styles.roundCell} scope="col">
               <span class="sr-only">Round</span>
             </th>
-            {standings.map((standing) => {
-              const player = byId.get(standing.playerId)
-              return (
-                <th
-                  key={standing.playerId}
-                  scope="col"
-                  class={standing.playerId === you ? styles.you : undefined}
-                  title={player?.name}
-                >
-                  {player && (
-                    <Swatch as="i" type={SwatchType.PLAYER} colour={player.colour} class={styles.headSwatch} />
-                  )}
-                  <span class={styles.playerName} data-testid={scoreTableTestIds.playerName}>
-                    {player?.name ?? "?"}
-                  </span>
-                </th>
-              )
-            })}
+            {standings.map((standing) => (
+              <th
+                key={standing.playerId}
+                scope="col"
+                class={standing.playerId === you ? styles.you : undefined}
+                title={standing.name}
+              >
+                <Swatch as="i" type={SwatchType.PLAYER} colour={standing.colour} class={styles.headSwatch} />
+                <span class={styles.playerName} data-testid={scoreTableTestIds.playerName}>
+                  {standing.name}
+                </span>
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>

@@ -26,6 +26,8 @@ export const finalStandings = (playing: readonly PlayerSeat[], roundCount: numbe
   return playing
     .map((seat) => ({
       playerId: seat.id,
+      name: seat.name,
+      colour: seat.role.colour,
       total: total(seat.role.record.scores),
       rounds: Array.from({ length: roundCount }, (_, i) => {
         const score = seat.role.record.scores[i]

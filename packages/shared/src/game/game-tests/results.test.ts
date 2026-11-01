@@ -37,6 +37,23 @@ describe("awards", () => {
   })
 })
 
+describe("final standings", () => {
+  it("carry each player's name and colour as at the finish", () => {
+    const game = twoPlayerGame(1)
+    game.start(tokA, T0)
+    game.lock(tokA, T0)
+    game.lock(tokB, T0)
+    game.next(tokA, T0)
+    const view = viewIn(viewOf(game, tokA, T0), Phase.RESULTS)
+    expect(view.results.map(({ playerId, name, colour }) => ({ playerId, name, colour }))).toEqual(
+      expect.arrayContaining(
+        view.players.map((player) => ({ playerId: player.id, name: player.name, colour: player.colour }))
+      )
+    )
+    expect(view.results).toHaveLength(view.players.length)
+  })
+})
+
 describe("ranks", () => {
   it("ranks share on ties and record the previous rank for arrows", () => {
     const game = twoPlayerGame(2)

@@ -35,9 +35,17 @@ describe("finalStandings", () => {
     const early = makePlayerSeat({ scores: [100, 200, 300] })
     const late = makePlayerSeat({ scores: [undefined, undefined, 700], joinedRound: 2 })
     const [first, second] = finalStandings([early, late], 3)
-    expect(first).toEqual({ playerId: late.id, total: 700, rounds: [{}, {}, { score: 700 }] })
+    expect(first).toEqual({
+      playerId: late.id,
+      name: late.name,
+      colour: playerColour(0),
+      total: 700,
+      rounds: [{}, {}, { score: 700 }]
+    })
     expect(second).toEqual({
       playerId: early.id,
+      name: early.name,
+      colour: playerColour(0),
       total: 600,
       rounds: [{ score: 100 }, { score: 200 }, { score: 300 }]
     })

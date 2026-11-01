@@ -1,7 +1,6 @@
 import type { PlayerId } from "@whereabouts/shared/ids"
 import type { Points } from "@whereabouts/shared/units"
 import type { FinalStanding, PlayedRound } from "@whereabouts/shared/protocol/views"
-import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { RoundWhat } from "../RoundWhat/RoundWhat"
@@ -12,13 +11,12 @@ import styles from "./RoundList.module.css"
 export interface RoundListProps {
   rounds: PlayedRound[]
   standings: FinalStanding[]
-  byId: ReadonlyMap<PlayerId, PlayingPlayerView>
-  you: string
+  you: PlayerId
   best: Points[]
 }
 
 /** A line per round: what it asked, who won it (and how many tied), and your score. */
-export const RoundList = ({ rounds, standings, byId, you, best }: RoundListProps) => {
+export const RoundList = ({ rounds, standings, you, best }: RoundListProps) => {
   const mine = standings.find((standing) => standing.playerId === you)
   return (
     <ol class={styles.list}>
@@ -28,9 +26,7 @@ export const RoundList = ({ rounds, standings, byId, you, best }: RoundListProps
         {mine && <span class={styles.yours}>You</span>}
       </li>
       {rounds.map((round, roundIndex) => {
-        const winners = standings
-          .filter((standing) => standing.rounds[roundIndex]?.score === best[roundIndex])
-          .map((standing) => byId.get(standing.playerId))
+        const winners = standings.filter((standing) => standing.rounds[roundIndex]?.score === best[roundIndex])
         const first = winners[0]
         const yours = mine?.rounds[roundIndex]?.score
         return (
@@ -40,7 +36,7 @@ export const RoundList = ({ rounds, standings, byId, you, best }: RoundListProps
               <span
                 class={styles.winner}
                 data-testid={roundListTestIds.roundWinner}
-                title={`Won by ${winners.map((winner) => winner?.name ?? "?").join(", ")}`}
+                title={`Won by ${winners.map((winner) => winner.name).join(", ")}`}
               >
                 <Swatch as="i" type={SwatchType.PLAYER} colour={first.colour} />
                 <span class={styles.winnerName}>{first.name}</span>

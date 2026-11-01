@@ -13,6 +13,7 @@ import { mixOf, MapDetail } from "@whereabouts/shared/protocol/config"
 import {
   type AnswerView,
   type AreaAnswerView,
+  type FinalStanding,
   type GameView,
   type GuessingGameView,
   type LobbyGameView,
@@ -157,6 +158,11 @@ export const makeReveal = (over: Partial<RevealView> = {}): RevealView => {
 /** Alice's result, a pass unless the test says. */
 export const makeResult = (over: Partial<RoundResultView> = {}): RoundResultView => {
   return { playerId: playerId("p1"), score: 500, guess: { type: RoundGuessType.PASSED }, ...over }
+}
+
+/** Alice's standing, with no rounds unless the test says. */
+export const makeStanding = (over: Partial<FinalStanding> = {}): FinalStanding => {
+  return { playerId: playerId("p1"), name: playerName("Alice"), colour: playerColour(0), total: 0, rounds: [], ...over }
 }
 
 /** A point-round guess with a little paint. */

@@ -1,7 +1,5 @@
-import type { CssColour } from "@whereabouts/shared/colours"
-import { colourCss } from "@whereabouts/shared/colours"
-import type { ResultsGameView } from "@whereabouts/shared/protocol/views"
-import type { PlayingPlayerView } from "@whereabouts/shared/roles"
+import { colourCss, type CssColour } from "@whereabouts/shared/colours"
+import type { FinalStanding, ResultsGameView } from "@whereabouts/shared/protocol/views"
 import type { Connection } from "../../../net/net"
 import { Icon } from "../../../ui/icons"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"
@@ -22,14 +20,12 @@ import { Standings } from "../Standings/Standings"
 import { resultsTestIds } from "./ResultsTestIds"
 import styles from "./Results.module.css"
 
-// A player removed on the final results.
-const REMOVED_PLAYER: CssColour = "#888888"
-
 export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameView }) => {
   const online = conn.online.value
-  const byId = new Map(view.players.map((player) => [player.id, player]))
   const standings = view.results
-  const winner = standings[0] ? byId.get(standings[0].playerId) : undefined
+  const standingById = new Map(standings.map((standing) => [standing.playerId, standing]))
+  const winner = standings[0]
+  const host = view.players.find((player) => player.isHost)?.id
   const vrView: VrView = {
     type: VrViewType.DONE,
     summary: {
@@ -38,10 +34,9 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
       table: {
         title: "Standings",
         rows: standings.map((standing, i) => {
-          const player = byId.get(standing.playerId)
           return {
-            colour: player && colourCss(player.colour),
-            name: `${i + 1}. ${player?.name ?? "?"}${standing.playerId === view.you.id ? " (you)" : ""}`,
+            colour: colourCss(standing.colour),
+            name: `${i + 1}. ${standing.name}${standing.playerId === view.you.id ? " (you)" : ""}`,
             total: Math.round(standing.total).toLocaleString()
           }
         })
@@ -55,13 +50,10 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
           title: award.title,
           line: awardParts(
             award.line,
-            award.playerIds.map((id) => byId.get(id))
+            award.playerIds.map((id) => standingById.get(id))
           )
         })),
-        players: standings.map((standing) => {
-          const player = byId.get(standing.playerId)
-          return { name: player?.name ?? "?", colour: player ? colourCss(player.colour) : REMOVED_PLAYER }
-        }),
+        players: standings.map((standing) => ({ name: standing.name, colour: colourCss(standing.colour) })),
         rounds: view.playedRounds.map((round, roundIndex) => ({
           label: round.label,
           type: typeName(round),
@@ -80,10 +72,10 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
         {winner && (
           <p class={kit.tagline} data-testid={resultsTestIds.winner}>
             <Swatch type={SwatchType.PLAYER} colour={winner.colour} /> <b>{winner.name}</b>
-            {winner.isHost && <HostTag />} wins
+            {winner.playerId === host && <HostTag />} wins
           </p>
         )}
-        <Standings standings={standings} byId={byId} you={view.you.id} />
+        <Standings standings={standings} host={host} you={view.you.id} />
         <VrButton view={vrView} />
         {view.you.isHost ? (
           <button
@@ -100,8 +92,8 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
           </p>
         )}
         <ConnectionNote conn={conn} />
-        {view.awards.length > 0 && <Awards awards={view.awards} byId={byId} />}
-        <Rounds rounds={view.playedRounds} standings={standings} byId={byId} you={view.you.id} />
+        {view.awards.length > 0 && <Awards awards={view.awards} byId={standingById} />}
+        <Rounds rounds={view.playedRounds} standings={standings} you={view.you.id} />
         <p class={kit.hint}>
           <a href="#/">Leave</a>
         </p>
@@ -111,17 +103,15 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
 }
 
 /** An award's line in pieces, each player's name in their colour. */
-const awardParts = (
-  line: string,
-  players: (PlayingPlayerView | undefined)[]
-): { text: string; colour?: CssColour }[] => {
+const awardParts = (line: string, standings: (FinalStanding | undefined)[]): { text: string; colour?: CssColour }[] => {
   return line
     .split(/(\{\d\})/)
     .filter((part) => part !== "")
     .map((part) => {
       const match = /^\{(\d)\}$/.exec(part)
       if (!match) return { text: part }
-      const player = players[Number(match[1])]
-      return { text: player?.name ?? "Someone", colour: player ? colourCss(player.colour) : undefined }
+      const standing = standings[Number(match[1])]
+      // Awards and standings come from the same finalists, so a standing is always found.
+      return { text: standing?.name ?? "Someone", colour: standing ? colourCss(standing.colour) : undefined }
     })
 }

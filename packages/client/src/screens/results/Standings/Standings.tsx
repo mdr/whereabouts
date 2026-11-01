@@ -1,6 +1,5 @@
 import type { PlayerId } from "@whereabouts/shared/ids"
 import type { FinalStanding } from "@whereabouts/shared/protocol/views"
-import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
@@ -13,33 +12,32 @@ const MANY_PLAYERS = 8
 
 export const Standings = ({
   standings,
-  byId,
+  host,
   you
 }: {
   standings: FinalStanding[]
-  byId: ReadonlyMap<PlayerId, PlayingPlayerView>
-  you: string
+  host: PlayerId | undefined
+  you: PlayerId
 }) => {
   return (
     <ol class={cx(styles.standings, standings.length > MANY_PLAYERS && styles.many)} aria-label="Final standings">
       {standings.map((standing, i) => {
-        const player = byId.get(standing.playerId)
         return (
           <li
             key={standing.playerId}
             class={cx(styles.row, standing.playerId === you && styles.you, i >= MEDALS.length && styles.minor)}
             data-testid={standingsTestIds.standingsRow}
-            data-player={player?.name}
+            data-player={standing.name}
           >
             <span class={styles.place} data-testid={standingsTestIds.place}>
               {MEDALS[i] ?? i + 1}
             </span>
             <span class={styles.dot}>
-              {player && <Swatch as="i" type={SwatchType.PLAYER} colour={player.colour} />}
+              <Swatch as="i" type={SwatchType.PLAYER} colour={standing.colour} />
             </span>
             <span class={styles.name}>
-              <span class={styles.nameText}>{player?.name ?? "?"}</span>
-              {player?.isHost && <HostTag />}
+              <span class={styles.nameText}>{standing.name}</span>
+              {standing.playerId === host && <HostTag />}
             </span>
             <span class={styles.total} title="Total" data-testid={standingsTestIds.total}>
               {Math.round(standing.total).toLocaleString()}

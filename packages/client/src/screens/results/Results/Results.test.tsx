@@ -20,7 +20,7 @@ import roundList from "../RoundList/RoundList.module.css"
 import roundWhat from "../RoundWhat/RoundWhat.module.css"
 import roundPicture from "../RoundPicture/RoundPicture.module.css"
 import pictures from "../../../ui/pictures/SmallPicture.module.css"
-import { makePlayer, makeResultsView } from "../../../test-view"
+import { makePlayer, makeResultsView, makeStanding } from "../../../test-view"
 
 const tid = (id: string) => `[data-testid="${id}"]`
 
@@ -50,8 +50,14 @@ const view = (isHost: boolean): ResultsGameView => {
       })
     ],
     results: [
-      { playerId: playerId("p1"), total: 1500, rounds: [{ score: 800 }, { score: 700 }] },
-      { playerId: playerId("p2"), total: 1250, rounds: [{ score: 500 }, { score: 750 }] }
+      makeStanding({ total: 1500, rounds: [{ score: 800 }, { score: 700 }] }),
+      makeStanding({
+        playerId: playerId("p2"),
+        name: playerName("Bob"),
+        colour: playerColour(1),
+        total: 1250,
+        rounds: [{ score: 500 }, { score: 750 }]
+      })
     ],
     playedRounds: [
       {
@@ -79,6 +85,19 @@ describe("Results", () => {
     expect(rows[1]!.classList.contains(standings.you)).toBe(true)
     expect(container.querySelectorAll(`button:not(.${pictures.smallPicture})`)).toHaveLength(0)
     expect(container.textContent).toContain("The host can start another game")
+  })
+
+  it("shows a finalist no longer in the room by their own name and colour", () => {
+    const gameView = view(false)
+    gameView.players = [makePlayer({ score: 1500 })]
+    const { container } = render(<Results conn={makeConn()} view={gameView} />)
+    const rows = [...container.querySelectorAll(tid(standingsTestIds.standingsRow))]
+    expect(rows.map((row) => row.getAttribute("data-player"))).toEqual(["Alice", "Bob"])
+    const heads = [...container.querySelectorAll(tid(scoreTableTestIds.playerName))].map((head) => head.textContent)
+    expect(heads).toEqual(["Alice", "Bob"])
+    expect(container.textContent).toContain("Bob passed 2 times")
+    expect(container.textContent).not.toContain("?")
+    expect(container.textContent).not.toContain("Someone")
   })
 
   it("tables each round: what it asked, everyone's score in finishing order, its best picked out", () => {

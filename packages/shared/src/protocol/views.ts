@@ -1,3 +1,4 @@
+import type { PlayerColour } from "../colours.ts"
 import type { Award } from "../awards/player-facts.ts"
 import type { LatLon } from "../geo.ts"
 import type { H3Cell, H3Resolution } from "../h3.ts"
@@ -223,6 +224,9 @@ export type PlayedRound = CountryPlayedRound | FeaturePlayedRound | OtherPlayedR
 
 export interface FinalStanding {
   playerId: PlayerId
+  /** As at the finish, so the results stand on their own. */
+  name: PlayerName
+  colour: PlayerColour
   total: Points
   /** Per round played; no score where the player sat out (joined late). Objects, since JSON turns undefined in an array into null. */
   rounds: { score?: Points }[]

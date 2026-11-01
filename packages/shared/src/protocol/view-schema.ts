@@ -176,6 +176,8 @@ const RevealViewSchema = z.strictObject({
 })
 const FinalStandingSchema = z.strictObject({
   playerId: PlayerIdSchema,
+  name: PlayerNameSchema,
+  colour: PlayerColourSchema,
   total: PointsSchema,
   rounds: z.array(z.strictObject({ score: PointsSchema.optional() }))
 })
