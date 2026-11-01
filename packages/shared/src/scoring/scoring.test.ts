@@ -406,7 +406,7 @@ describe("region answers", () => {
       const [lat, lon] = h3.cellToLatLng(h)
       return { lat, lon, intensity: 1, area: h3.cellAreaKm2(h), h3: h }
     })
-  const dist = (cells: H3Cell[], floor = 0.05) => buildDistribution(paint(cells), floor)
+  const painted = (cells: H3Cell[], floor = 0.05) => buildDistribution(paint(cells), floor)
 
   const region = regionAnswer(discCells(centre, 10), tol)
 
@@ -414,7 +414,7 @@ describe("region answers", () => {
     const point = regionAnswer([h3.latLngToCell(centre.lat, centre.lon, h3Res(10))], tol)
     for (const Q of point.Q) expect(Q).toBeCloseTo(1, 4)
     for (const offset of [0, 30, 60, 150, 400]) {
-      const d = dist(discCells(north(centre, offset), 2))
+      const d = painted(discCells(north(centre, offset), 2))
       const [lat, lon] = h3.cellToLatLng(h3.latLngToCell(centre.lat, centre.lon, h3Res(10)))
       const expected = scoreDistribution(d, { lat, lon }, tol).score
       expect(Math.abs(scoreRegion(d, point).score - expected)).toBeLessThan(1)
@@ -422,8 +422,8 @@ describe("region answers", () => {
   })
 
   it("painting the region exactly scores 1000, a little less with the world floor", () => {
-    expect(scoreRegion(dist(discCells(centre, 10), 0), region).score).toBeGreaterThan(999)
-    const withFloor = scoreRegion(dist(discCells(centre, 10)), region).score
+    expect(scoreRegion(painted(discCells(centre, 10), 0), region).score).toBeGreaterThan(999)
+    const withFloor = scoreRegion(painted(discCells(centre, 10)), region).score
     expect(withFloor).toBeGreaterThan(950)
     expect(withFloor).toBeLessThan(1000)
   })
@@ -442,16 +442,16 @@ describe("region answers", () => {
 
   it("the right shape further away scores less", () => {
     const scores = [0, 100, 250, 500, 1000, 3000].map(
-      (km) => scoreRegion(dist(discCells(north(centre, km), 10)), region).score
+      (km) => scoreRegion(painted(discCells(north(centre, km), 10)), region).score
     )
     for (let i = 1; i < scores.length; i++) expect(scores[i]!).toBeLessThan(scores[i - 1]!)
     expect(scores.at(-1)!).toBeLessThan(250) // below a pass
   })
 
   it("a tight blob in the middle scores below the whole shape, a bloated shape too", () => {
-    const shape = scoreRegion(dist(discCells(centre, 10)), region).score
-    const blob = scoreRegion(dist(discCells(centre, 2)), region).score
-    const bloated = scoreRegion(dist(discCells(centre, 16)), region).score
+    const shape = scoreRegion(painted(discCells(centre, 10)), region).score
+    const blob = scoreRegion(painted(discCells(centre, 2)), region).score
+    const bloated = scoreRegion(painted(discCells(centre, 16)), region).score
     expect(blob).toBeLessThan(shape)
     expect(bloated).toBeLessThan(shape)
   })
@@ -462,13 +462,13 @@ describe("region answers", () => {
     const rHere = regionAnswer(here, tol)
     const rThere = regionAnswer(there, tol)
     const expected = (d: Distribution) => (scoreRegion(d, rHere).score + scoreRegion(d, rThere).score) / 2
-    const both = expected(dist([...here, ...there]))
-    expect(both).toBeGreaterThan(expected(dist(here)))
-    expect(both).toBeGreaterThan(expected(dist(there)))
+    const both = expected(painted([...here, ...there]))
+    expect(both).toBeGreaterThan(expected(painted(here)))
+    expect(both).toBeGreaterThan(expected(painted(there)))
   })
 
   it("the fast cross sum matches the exact one", () => {
-    const d = dist([...discCells(north(centre, 200), 7), ...discCells(north(centre, 2500), 3)])
+    const d = painted([...discCells(north(centre, 200), 7), ...discCells(north(centre, 2500), 3)])
     const fast = crossSum(d.points, region.points, tol, false, DEFAULT_KERNEL)
     const exact = crossSum(d.points, region.points, tol, true, DEFAULT_KERNEL)
     expect(Math.abs(fast - exact) / exact).toBeLessThan(2e-3)

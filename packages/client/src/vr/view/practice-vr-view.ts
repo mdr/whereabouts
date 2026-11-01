@@ -67,7 +67,7 @@ export function practiceVrView(run: PracticeRun, s: PracticeVrShown): VrView {
     reveal: vrReveal(
       shown,
       s.answer,
-      { score: s.shownScore, passed: !run.revealed.dist, total, painted: s.where },
+      { score: s.shownScore, passed: !run.revealed.painted, total, painted: s.where },
       s.borders,
       {
         paints: { type: VrPaintsType.OWN },

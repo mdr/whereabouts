@@ -169,8 +169,8 @@ function aggregate(points: WeightedPoint[], side: Km): WeightedPoint[] {
   return out
 }
 
-// Coordinates are within +-6371 km, so offsetting by 8192 keeps indices positive.
-const OFF = 8192
+// Coordinates are within +-6371 km, so offsetting by 8192 km keeps indices positive.
+const INDEX_OFFSET: Km = 8192
 
 /**
  * `right` hashed into cubes one cutoff wide. Flat typed arrays and integer
@@ -184,14 +184,14 @@ interface CutoffGrid {
   ys: Float64Array
   zs: Float64Array
   ps: Float64Array
-  inv: number
+  perCutoff: number
   span: number
   cutoffSq: number
   expScale: number
 }
 
 function cellIndex(g: CutoffGrid, v: number): number {
-  return Math.floor((v + OFF) * g.inv)
+  return Math.floor((v + INDEX_OFFSET) * g.perCutoff)
 }
 
 function bucketKey(g: CutoffGrid, bx: number, by: number, bz: number): number {
@@ -201,15 +201,15 @@ function bucketKey(g: CutoffGrid, bx: number, by: number, bz: number): number {
 function cutoffGrid(right: WeightedPoint[], width: Km): CutoffGrid {
   const n = right.length
   const cutoff = CUTOFF_WIDTHS * width
-  const inv = 1 / cutoff
+  const perCutoff = 1 / cutoff
   const g: CutoffGrid = {
     buckets: new Map(),
     xs: new Float64Array(n),
     ys: new Float64Array(n),
     zs: new Float64Array(n),
     ps: new Float64Array(n),
-    inv,
-    span: Math.ceil(2 * OFF * inv) + 2,
+    perCutoff,
+    span: Math.ceil(2 * INDEX_OFFSET * perCutoff) + 2,
     cutoffSq: cutoff * cutoff,
     expScale: -LN2 / (width * width)
   }

@@ -17,7 +17,7 @@ const text = readFileSync(process.argv[2] ?? 0, "utf8")
 const c = await decodeCase(text)
 const q = c.question
 const layer = PaintLayer.fromRecord(c.res, c.cells)
-const dist = buildDistribution(layer.toCells(), c.floor)
+const painted = buildDistribution(layer.toCells(), c.floor)
 const n = (x, places = 1) => x.toFixed(places)
 
 console.log(`${q.type} ${q.id}: ${q.label}${q.flag ? ` (flag ${q.flag})` : ""}`)
@@ -34,13 +34,13 @@ if (q.type === CaseQuestionType.REGION) {
   const question = questionById(q.id)
   if (!question) throw new Error(`no question with id ${q.id} in catalogue.json`)
   const region = areaOf(question)
-  const s = scoreArea(dist, region)
-  const fit = regionFit(dist, region)
+  const s = scoreArea(painted, region)
+  const fit = regionFit(painted, region)
   console.log(`now: ${n(s.score)} (shape ${n(s.shape)}, nearness ${n(s.nearness)})`)
   console.log(`coverage ${n(fit.coverage * 100)}%, precision ${n(fit.precision * 100)}%`)
 } else {
   for (const k of KERNELS) {
-    const s = scoreDistribution(dist, q.answer, q.tolerance, k)
+    const s = scoreDistribution(painted, q.answer, q.tolerance, k)
     console.log(
       `now: ${n(s.score).padStart(7)} A=${n(s.A, 4)} B=${n(s.B, 4)}  ${k.id}${k.id === c.kernel ? " (copied with)" : ""}`
     )

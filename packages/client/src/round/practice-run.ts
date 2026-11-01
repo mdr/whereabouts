@@ -37,7 +37,7 @@ export interface PaintingRun extends RunBase {
 export interface RevealingRun extends RunBase {
   type: PracticePhase.REVEAL
   /** The round on show; no distribution for a pass. */
-  revealed: { dist?: Distribution; result: PracticeResult }
+  revealed: { painted?: Distribution; result: PracticeResult }
 }
 
 export interface DoneRun extends RunBase {
@@ -63,12 +63,12 @@ export const runMaximum = (run: PracticeRun): number => run.questions.length * 1
 /** Score the paint (undefined for a pass) against the current question, and show the reveal. */
 export function submitRound(
   run: PaintingRun,
-  dist: Distribution | undefined,
+  painted: Distribution | undefined,
   answer: ScoredAnswer,
   kernel: Kernel
 ): RevealingRun {
-  const result = { question: currentQuestion(run), score: scoreAnswer(dist, answer, kernel).score }
-  return { ...run, type: PracticePhase.REVEAL, results: [...run.results, result], revealed: { dist, result } }
+  const result = { question: currentQuestion(run), score: scoreAnswer(painted, answer, kernel).score }
+  return { ...run, type: PracticePhase.REVEAL, results: [...run.results, result], revealed: { painted, result } }
 }
 
 /** On from a reveal: the next question, or the end of the run after the last. */

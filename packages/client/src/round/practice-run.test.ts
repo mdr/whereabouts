@@ -95,13 +95,13 @@ describe("a practice run", () => {
     expect(run.results[0]!.question).toBe(run.questions[0])
     expect(run.results[0]!.score).toBeGreaterThan(900)
     expect(run.revealed.result).toBe(run.results[0])
-    expect(run.revealed.dist).toBeDefined()
+    expect(run.revealed.painted).toBeDefined()
   })
 
   it("scores a pass as a game does, with no paint to show", () => {
     const run = play(startRun(POOL, 7), true)
     expect(run.results[0]!.score).toBe(PASS_SCORE.score)
-    expect(run.revealed.dist).toBeUndefined()
+    expect(run.revealed.painted).toBeUndefined()
   })
 
   it("goes on to the next question after a reveal", () => {

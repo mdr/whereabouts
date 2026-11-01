@@ -14,8 +14,8 @@ const pct = (x: number) => `${Math.round(x * 100)}%`
 
 export function LiveScore({ q, a, kernelId }: { q: Question; a: ScoredAnswer; kernelId: KernelId }) {
   const paint = usePaint()
-  const dist = buildDistribution(paint.settledCells.value, paint.floor.value)
-  const { score, parts } = scoreAnswer(dist, a, kernelById(kernelId))
+  const painted = buildDistribution(paint.settledCells.value, paint.floor.value)
+  const { score, parts } = scoreAnswer(painted, a, kernelById(kernelId))
   return (
     <Card title="Live score">
       <p class={kit.hint} style={{ margin: "0 0 6px" }}>
@@ -26,16 +26,16 @@ export function LiveScore({ q, a, kernelId }: { q: Question; a: ScoredAnswer; ke
         <PartsLine parts={parts} />
       </div>
       {a.type === AnswerType.AREA && paint.settledCells.value.length > 0 && (
-        <RegionFitFacts dist={dist} a={a} label={q.label} />
+        <RegionFitFacts painted={painted} a={a} label={q.label} />
       )}
-      {a.type === AnswerType.POINT && <KernelComparison dist={dist} a={a} active={kernelId} />}
+      {a.type === AnswerType.POINT && <KernelComparison painted={painted} a={a} active={kernelId} />}
     </Card>
   )
 }
 
 /** Where the paint is against the country (the world floor left out). */
-function RegionFitFacts({ dist, a, label }: { dist: Distribution; a: Area; label: string }) {
-  const { coverage, precision } = regionFit(dist, a)
+function RegionFitFacts({ painted, a, label }: { painted: Distribution; a: Area; label: string }) {
+  const { coverage, precision } = regionFit(painted, a)
   return (
     <dl class={cx(kit.facts, s.regionFit)}>
       <div>

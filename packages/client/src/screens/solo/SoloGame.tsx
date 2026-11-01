@@ -117,8 +117,8 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
   function submit() {
     if (run.type !== PracticePhase.PAINT) return
     const passed = announcePass(paint)
-    const dist = passed ? undefined : buildDistribution(paint.layer.toCells(), paint.floor.value)
-    setRun(submitRound(run, dist, scored, kernel))
+    const painted = passed ? undefined : buildDistribution(paint.layer.toCells(), paint.floor.value)
+    setRun(submitRound(run, painted, scored, kernel))
     paint.enabled.value = false
     showAnswer(paint.gameMap, answer)
   }
@@ -143,7 +143,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
   // Each practice run shuffles anew, so its first question picks this run's facts.
   const fact = useFact(q, questions[0]!.id, index)
   // Re-score the revealed paint if the kernel changes on the reveal screen.
-  const shownResult = useMemo(() => scoreAnswer(revealed?.dist, scored, kernel), [revealed, kernel.id])
+  const shownResult = useMemo(() => scoreAnswer(revealed?.painted, scored, kernel), [revealed, kernel.id])
   const where = useMemo(
     () => (revealed && borders ? mainCountry(borders, paint.layer.toCells()) : undefined),
     [revealed, borders]
@@ -177,7 +177,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
   if (phase === PracticePhase.DONE) return <SoloDone run={run} restart={restart} vrView={vrView} />
 
   if (run.type === PracticePhase.REVEAL) {
-    const dist = run.revealed.dist
+    const painted = run.revealed.painted
     const last = isLastRound(run)
     return (
       <>
@@ -190,7 +190,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
               question={question}
               revealed={answer}
               fact={fact}
-              you={{ score: shownResult.score, passed: !dist }}
+              you={{ score: shownResult.score, passed: !painted }}
               playedLabel="your score this round"
               where={where}
               testIds={{ score: soloTestIds.roundScore }}
@@ -205,7 +205,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
           </HudBottom>
         </Hud>
         <DevDrawer>
-          <RevealScore a={scored} kernel={kernel} parts={shownResult.parts} dist={dist} hover={hover} />
+          <RevealScore a={scored} kernel={kernel} parts={shownResult.parts} painted={painted} hover={hover} />
           <Cheats q={q} a={scored} kernel={kernel} />
           <PaintDev />
         </DevDrawer>

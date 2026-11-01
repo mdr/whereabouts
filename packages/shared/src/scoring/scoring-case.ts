@@ -48,8 +48,8 @@ export interface ScoringCase {
 }
 
 const MAGIC = "whereabouts-case 1"
-const WIDTH = 76
-const LEVELS = 65535
+const LINE_WIDTH = 76
+const INTENSITY_LEVELS = 65535
 
 export async function encodeCase(c: ScoringCase): Promise<string> {
   const q = c.question
@@ -66,7 +66,7 @@ export async function encodeCase(c: ScoringCase): Promise<string> {
   for (const [index, v] of entries) {
     writeVarint(bytes, index - previous)
     previous = index
-    const level = Math.max(1, Math.round((v / max) * LEVELS))
+    const level = Math.max(1, Math.round((v / max) * INTENSITY_LEVELS))
     bytes.push(level >> 8, level & 0xff)
   }
   const payload = toBase64Url(await deflate(new Uint8Array(bytes)))
@@ -77,7 +77,7 @@ export async function encodeCase(c: ScoringCase): Promise<string> {
     `kernel: ${c.kernel} floor=${round(c.floor, 4)}`,
     `score: ${round(c.score, 1)} ${parts}`,
     `paint: res=${c.res} cells=${entries.length} max=${max}`,
-    ...(payload.match(new RegExp(`.{1,${WIDTH}}`, "g")) ?? []),
+    ...(payload.match(new RegExp(`.{1,${LINE_WIDTH}}`, "g")) ?? []),
     "end"
   ].join("\n")
 }
@@ -123,7 +123,7 @@ export async function decodeCase(text: string): Promise<ScoringCase> {
   for (let at = 0; at < bytes.length;) {
     const [gap, next] = readVarint(bytes, at)
     index += gap
-    cells[index.toString(16)] = (((bytes[next]! << 8) | bytes[next + 1]!) / LEVELS) * max
+    cells[index.toString(16)] = (((bytes[next]! << 8) | bytes[next + 1]!) / INTENSITY_LEVELS) * max
     at = next + 2
   }
   const expected = Number(named(paint, "cells"))

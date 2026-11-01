@@ -26,30 +26,30 @@ export interface PointExplanation {
   spot: LatLon
   /** From there to the answer. */
   miss: Km
-  /** The share of the paint, the world floor left out, within NEAR tolerances of the answer. */
+  /** The share of the paint, the world floor left out, within NEAR_TOLERANCES tolerances of the answer. */
   nearShare: number
 }
 
 /** Candidate spots are tried on the paint merged to about this many cells, then the best few exactly. */
 const SEARCH_CELLS = 300
-const NEAR = 4
+const NEAR_TOLERANCES = 4
 
 export function explainPoint(
-  dist: Distribution,
+  painted: Distribution,
   answer: LatLon,
   tolerance: Km,
   A: number,
   B: number,
   k: Kernel = DEFAULT_KERNEL
 ): PointExplanation {
-  let coarse = dist
-  let res = h3Res(Math.max(0, ...dist.points.map((pt) => (pt.cell ? getResolution(pt.cell) : 0))))
+  let coarse = painted
+  let res = h3Res(Math.max(0, ...painted.points.map((pt) => (pt.cell ? getResolution(pt.cell) : 0))))
   while (coarse.points.length > SEARCH_CELLS && res > 0) {
     res = coarserRes(res)
-    coarse = coarsenDistribution(dist, res)
+    coarse = coarsenDistribution(painted, res)
   }
   // Without cells, A treats each as a patch rather than refining it: fast, and close enough to rank spots.
-  const patches: Distribution = { points: coarse.points.map(({ cell: _, ...pt }) => pt), floor: dist.floor }
+  const patches: Distribution = { points: coarse.points.map(({ cell: _, ...pt }) => pt), floor: painted.floor }
   const ranked = coarse.points
     .map((pt) => ({ pt, A: similarityToAnswer(patches, pt.xyz, tolerance, k) }))
     .sort((a, b) => b.A - a.A)
@@ -58,7 +58,7 @@ export function explainPoint(
   let bestA = A
   let spot = answer
   for (const { pt } of ranked) {
-    const a = similarityToAnswer(dist, pt.xyz, tolerance, k)
+    const a = similarityToAnswer(painted, pt.xyz, tolerance, k)
     if (a <= bestA) continue
     bestA = a
     spot = pt.cell ? latLngOf(pt.cell) : fromXyz(pt.xyz)
@@ -66,13 +66,13 @@ export function explainPoint(
 
   const y = toXyz(answer)
   let near = 0
-  for (const pt of dist.points) if (chordDistance(pt.xyz, y) <= NEAR * tolerance) near += pt.p
-  const painted = 1 - dist.floor
+  for (const pt of painted.points) if (chordDistance(pt.xyz, y) <= NEAR_TOLERANCES * tolerance) near += pt.p
+  const paintedMass = 1 - painted.floor
   return {
     best: scoreFromParts(bestA, B),
     spot,
     miss: greatCircleDistance(spot, answer),
-    nearShare: painted > 0 ? near / painted : 0
+    nearShare: paintedMass > 0 ? near / paintedMass : 0
   }
 }
 
@@ -83,5 +83,5 @@ function latLngOf(h: H3Cell): LatLon {
 
 /** Some paint near the answer, but most of it somewhere else, and that cost something. */
 export function isHedge(e: PointExplanation, score: Points, tolerance: Km): boolean {
-  return Math.max(e.best, score) - score >= 25 && e.nearShare >= 0.15 && e.miss > NEAR * tolerance
+  return Math.max(e.best, score) - score >= 25 && e.nearShare >= 0.15 && e.miss > NEAR_TOLERANCES * tolerance
 }

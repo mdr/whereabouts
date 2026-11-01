@@ -46,23 +46,23 @@ export function scoreRound(
   kernel: Kernel,
   { startedAt, roundLength }: { startedAt: Instant; roundLength: Ms }
 ): ScoredRound {
-  const painted = submission && Object.keys(submission.paint.cells).length > 0 ? submission.paint : undefined
+  const submittedPaint = submission && Object.keys(submission.paint.cells).length > 0 ? submission.paint : undefined
   const res = resolutionForTolerance(answer.tolerance)
-  const cells = painted ? [...PaintLayer.fromRecord(res, painted.cells).toCells()] : []
-  const dist = painted ? buildDistribution(cells, painted.floor) : undefined
-  const { score, parts } = scoreAnswer(dist, answer, kernel)
+  const cells = submittedPaint ? [...PaintLayer.fromRecord(res, submittedPaint.cells).toCells()] : []
+  const painted = submittedPaint ? buildDistribution(cells, submittedPaint.floor) : undefined
+  const { score, parts } = scoreAnswer(painted, answer, kernel)
   const base = {
     label,
     score,
     lockedAfter: submission?.type === SubmissionType.LOCKED ? submission.at - startedAt : undefined,
     roundLength
   }
-  if (!painted || !dist)
+  if (!submittedPaint || !painted)
     return { score, guess: { type: RoundGuessType.PASSED }, facts: { type: FactsType.PASSED, ...base } }
-  const guess: RoundGuess = { type: RoundGuessType.PAINTED, paint: painted, res, parts }
+  const guess: RoundGuess = { type: RoundGuessType.PAINTED, paint: submittedPaint, res, parts }
   const area = cells.reduce((a, c) => a + c.area, 0)
   if (answer.type === AnswerType.AREA) {
-    const m = regionMisfit(dist, answer)
+    const m = regionMisfit(painted, answer)
     // A country's tolerance is a fifth of its equivalent radius.
     const region = {
       precision: m.precision,
@@ -71,7 +71,7 @@ export function scoreRound(
     return { score, guess, facts: { type: FactsType.AREA, ...base, area, region } }
   }
   if (parts.type !== AnswerType.POINT) throw new Error("area parts for a point answer")
-  const e = explainPoint(dist, answer.at, answer.tolerance, parts.A, parts.B, kernel)
+  const e = explainPoint(painted, answer.at, answer.tolerance, parts.A, parts.B, kernel)
   const best = Math.max(e.best, score)
   const point = {
     spot: e.spot,

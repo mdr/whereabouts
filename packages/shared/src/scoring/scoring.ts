@@ -146,13 +146,18 @@ function gaussUniformMean(width: Km): number {
 const REFINE_ABOVE = 0.4
 
 /** A(y) = expected similarity to the answer y. */
-export function similarityToAnswer(dist: Distribution, answer: Xyz, tolerance: Km, k: Kernel = DEFAULT_KERNEL): number {
+export function similarityToAnswer(
+  painted: Distribution,
+  answer: Xyz,
+  tolerance: Km,
+  k: Kernel = DEFAULT_KERNEL
+): number {
   let A = 0
   const widest = tolerance * Math.max(...k.scales)
-  for (const pt of dist.points) {
+  for (const pt of painted.points) {
     A += patchSimilarity(pt, answer, tolerance, widest, k)
   }
-  A += dist.floor * uniformKernelMean(tolerance, k)
+  A += painted.floor * uniformKernelMean(tolerance, k)
   return A
 }
 
@@ -184,13 +189,18 @@ function patchSimilarity(pt: WeightedPoint, answer: Xyz, tolerance: Km, widest: 
 }
 
 /** B = expected self-similarity of the distribution. Does not depend on the answer. */
-export function selfSimilarity(dist: Distribution, tolerance: Km, exact = false, k: Kernel = DEFAULT_KERNEL): number {
+export function selfSimilarity(
+  painted: Distribution,
+  tolerance: Km,
+  exact = false,
+  k: Kernel = DEFAULT_KERNEL
+): number {
   const K = uniformKernelMean(tolerance, k)
-  const painted = 1 - dist.floor
-  let B = pairSum(dist.points, tolerance, exact, k)
+  const paintedMass = 1 - painted.floor
+  let B = pairSum(painted.points, tolerance, exact, k)
   // Cross terms between painted mass and the uniform floor, and floor with itself.
-  B += 2 * dist.floor * painted * K
-  B += dist.floor * dist.floor * K
+  B += 2 * painted.floor * paintedMass * K
+  B += painted.floor * painted.floor * K
   return B
 }
 
@@ -208,14 +218,14 @@ export function scoreFromParts(A: number, B: number): Points {
 export const PASS_SCORE: ScoreBreakdown = { score: 250, A: 0, B: 0.5 }
 
 export function scoreDistribution(
-  dist: Distribution,
+  painted: Distribution,
   answer: LatLon,
   tolerance: Km,
   k: Kernel = DEFAULT_KERNEL,
   exact = false
 ): ScoreBreakdown {
-  const A = similarityToAnswer(dist, toXyz(answer), tolerance, k)
-  const B = selfSimilarity(dist, tolerance, exact, k)
+  const A = similarityToAnswer(painted, toXyz(answer), tolerance, k)
+  const B = selfSimilarity(painted, tolerance, exact, k)
   return { score: scoreFromParts(A, B), A, B }
 }
 
@@ -281,10 +291,10 @@ export function regionAnswer(cells: Iterable<H3Cell>, tolerance: Km, k: Kernel =
  * their mass; coarser cells are left alone. Cells are scored as patches, so
  * this changes scores only slightly while cutting the work sharply.
  */
-export function coarsenDistribution(dist: Distribution, res: H3Res): Distribution {
+export function coarsenDistribution(painted: Distribution, res: H3Res): Distribution {
   const merged = new Map<H3Cell, number>()
   const points: WeightedPoint[] = []
-  for (const pt of dist.points) {
+  for (const pt of painted.points) {
     if (!pt.cell || getResolution(pt.cell) <= res) points.push(pt)
     else {
       const parent = cellToParent(pt.cell, res)
@@ -295,10 +305,10 @@ export function coarsenDistribution(dist: Distribution, res: H3Res): Distributio
     const [lat, lon] = cellToLatLng(h)
     points.push({ xyz: toXyz({ lat, lon }), p, s2: HEX_VARIANCE_PER_AREA * cellAreaKm2(h), cell: h })
   }
-  return { points, floor: dist.floor }
+  return { points, floor: painted.floor }
 }
 
-export function scoreRegion(dist: Distribution, region: RegionAnswer, exact = false): RegionScore {
+export function scoreRegion(painted: Distribution, region: RegionAnswer, exact = false): RegionScore {
   const { tolerance, kernel: k } = region
   let score = 0
   let A = 0
@@ -309,8 +319,8 @@ export function scoreRegion(dist: Distribution, region: RegionAnswer, exact = fa
     const Qc = region.Q[c]!
     // The floor against q: the uniform kernel mean is the same from every point.
     const Ac =
-      crossSum(dist.points, region.points, tolerance, exact, kc) + dist.floor * uniformKernelMean(tolerance, kc)
-    const Bc = selfSimilarity(dist, tolerance, exact, kc)
+      crossSum(painted.points, region.points, tolerance, exact, kc) + painted.floor * uniformKernelMean(tolerance, kc)
+    const Bc = selfSimilarity(painted, tolerance, exact, kc)
     const w = k.weights[c]!
     score += w * Math.max(0, 1000 - (500 * (Bc - 2 * Ac + Qc)) / Qc)
     A += w * Ac

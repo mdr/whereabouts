@@ -184,21 +184,21 @@ export function caseQuestion(q: Question, a: ScoredAnswer): ScoringCase["questio
   }
 }
 
-function paintPointGuess(q: PointAnswer, type: PointGuess, rnd: () => number): ReviewGuess {
-  const { layer, between, blob } = painting(q, rnd)
+function paintPointGuess(answer: PointAnswer, type: PointGuess, rnd: () => number): ReviewGuess {
+  const { layer, between, blob } = painting(answer, rnd)
   pointGuess(type, blob, between, rnd)
   return { type, layer }
 }
 
 /** A blank layer for the answer, with the way to paint rough patches on it. */
-function painting(q: ScoredAnswer, rnd: () => number) {
+function painting(answer: ScoredAnswer, rnd: () => number) {
   const between = (lo: number, hi: number) => lo + (hi - lo) * rnd()
-  const t = q.tolerance
+  const t = answer.tolerance
   const layer = new PaintLayer(resolutionForTolerance(t))
-  /** A rough patch `radius` tolerances across, `at` tolerances from the answer in a random direction. */
-  const blob = (at: number, radius: number, strength = 1) => {
-    const centre = offset(answerCentre(q), at * t, rnd() * 360)
-    const r = radius * t
+  /** A rough patch `tolerancesAcross` tolerances across, `tolerancesAway` tolerances from the answer in a random direction. */
+  const blob = (tolerancesAway: number, tolerancesAcross: number, strength = 1) => {
+    const centre = offset(answerCentre(answer), tolerancesAway * t, rnd() * 360)
+    const r = tolerancesAcross * t
     scribble(layer, rnd, {
       sample: () => offset(centre, r * Math.sqrt(rnd()), rnd() * 360),
       inside: (p) => greatCircleDistance(centre, p) <= r,
@@ -210,12 +210,12 @@ function painting(q: ScoredAnswer, rnd: () => number) {
   return { layer, between, blob }
 }
 
-function paintRegionGuess(q: Area, type: RegionGuess, rnd: () => number): ReviewGuess {
-  const { layer, between, blob } = painting(q, rnd)
-  const t = q.tolerance
+function paintRegionGuess(area: Area, type: RegionGuess, rnd: () => number): ReviewGuess {
+  const { layer, between, blob } = painting(area, rnd)
+  const t = area.tolerance
   // A region's tolerance is a fifth of its radius: R is about its radius.
   const R = 5
-  const cells = regionCells(q, layer.res)
+  const cells = regionCells(area, layer.res)
   const centres = cells.map((h) => {
     const [lat, lon] = cellToLatLng(h)
     return { lat, lon }
@@ -224,10 +224,10 @@ function paintRegionGuess(q: Area, type: RegionGuess, rnd: () => number): Review
   /** Brush strokes over the region, or the part of it `keep` allows, `across` in radius. */
   const shape = (strength: number, keep: (p: LatLon) => boolean = () => true, across: Km = R * t) => {
     const kept = centres.filter(keep)
-    const from = kept.length > 0 ? kept : [q.centre]
+    const from = kept.length > 0 ? kept : [area.centre]
     scribble(layer, rnd, {
       sample: () => from[Math.floor(rnd() * from.length)]!,
-      inside: (p) => keep(p) && insideRegion(q, p),
+      inside: (p) => keep(p) && insideRegion(area, p),
       area: Math.max(kept.length * oneCell, Math.PI * t * t),
       brush: between(0.2, 0.32) * across,
       strength
@@ -238,7 +238,7 @@ function paintRegionGuess(q: Area, type: RegionGuess, rnd: () => number): Review
       shape(1)
       break
     case GuessType.PART: {
-      const from = centres[Math.floor(rnd() * centres.length)] ?? q.centre
+      const from = centres[Math.floor(rnd() * centres.length)] ?? area.centre
       const reach = between(0.4, 0.8) * R * t
       shape(1, (p) => greatCircleDistance(from, p) <= reach, reach)
       break
@@ -306,7 +306,7 @@ function scribble(layer: PaintLayer, rnd: () => number, patch: Patch): void {
 
 function pointGuess(
   type: PointGuess,
-  blob: (at: number, radius: number, strength?: number) => void,
+  blob: (tolerancesAway: number, tolerancesAcross: number, strength?: number) => void,
   between: (lo: number, hi: number) => number,
   rnd: () => number
 ): void {

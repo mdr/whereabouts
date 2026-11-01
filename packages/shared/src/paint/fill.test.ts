@@ -28,8 +28,8 @@ function fillAndScore(code: string, finestRes?: number): { score: number; cells:
   const cells = countryFill(shape, h3Res(res))
   const layer = new PaintLayer(h3Res(res))
   layer.addCoat(cells, FILL_DENSITY)
-  const dist = buildDistribution(layer.toCells(), 0.05)
-  return { score: scoreAnswer(dist, a, DEFAULT_KERNEL).score, cells }
+  const painted = buildDistribution(layer.toCells(), 0.05)
+  return { score: scoreAnswer(painted, a, DEFAULT_KERNEL).score, cells }
 }
 
 describe("countryFill", () => {

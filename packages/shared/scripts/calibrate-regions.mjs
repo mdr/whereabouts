@@ -299,9 +299,9 @@ const table = new Map() // case -> country -> score
 let slowest = { ms: 0, what: "" }
 for (const label of COUNTRIES) {
   const q = byLabel(label)
-  for (const [name, dist] of cases(q)) {
+  for (const [name, painted] of cases(q)) {
     const t = performance.now()
-    const { score } = scoreArea(dist, q)
+    const { score } = scoreArea(painted, q)
     const ms = performance.now() - t
     if (ms > slowest.ms) slowest = { ms, what: `${label}, ${name}` }
     if (!table.has(name)) table.set(name, new Map())
