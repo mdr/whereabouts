@@ -6,6 +6,7 @@ import { placeId, playerName, playerToken, roomCode, wikiTitle } from "@whereabo
 import { viewIn } from "@whereabouts/shared/game/view-in"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import {
+  GameEntryType,
   decodeTicket,
   revealMessage,
   stateMessage,
@@ -104,7 +105,11 @@ class FakeClient implements GameClient {
   }
 }
 
-const TICKET = { token: playerToken("t".repeat(16)), name: playerName("Alice"), create: true }
+const TICKET = {
+  token: playerToken("t".repeat(16)),
+  name: playerName("Alice"),
+  entry: { type: GameEntryType.HOST as const }
+}
 
 function connected() {
   const clients: FakeClient[] = []
@@ -179,7 +184,10 @@ describe("Connection status", () => {
     client.emit("client:reconnect_failed")
     conn.rejoin()
     expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
-    expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({ create: false, code: "WXYZ", name: "Alice" })
+    expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({
+      entry: { type: GameEntryType.JOIN, code: "WXYZ" },
+      name: "Alice"
+    })
   })
 
   it("stays rejected, with the reason, when the close follows a rejection", () => {
@@ -227,11 +235,14 @@ describe("Connection status", () => {
 
   it("comes back to the same game, never hosting another", async () => {
     const { client } = connected()
-    expect(await client.nextTicket()).toMatchObject({ create: true })
-    expect(await client.nextTicket()).not.toHaveProperty("code")
+    expect(await client.nextTicket()).toMatchObject({ entry: { type: GameEntryType.HOST } })
+    expect(await client.nextTicket()).not.toHaveProperty("entry.code")
     client.open()
     client.state(makeLobbyView({ code: roomCode("WXYZ") }))
-    expect(await client.nextTicket()).toMatchObject({ create: false, code: "WXYZ", name: "Alice" })
+    expect(await client.nextTicket()).toMatchObject({
+      entry: { type: GameEntryType.JOIN, code: "WXYZ" },
+      name: "Alice"
+    })
   })
 
   it("tries again a moment after the server sheds it for sending too much, rejoining its game", async () => {
@@ -243,7 +254,7 @@ describe("Connection status", () => {
     expect(conn.status.value.type).not.toBe(ConnectionStatus.REJECTED)
     vi.advanceTimersByTime(1000)
     expect(clients).toHaveLength(2)
-    expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({ create: false, code: "WXYZ" })
+    expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({ entry: { type: GameEntryType.JOIN, code: "WXYZ" } })
   })
 
   it("leaves a connection refused for the network's rate to the client's own retries", () => {
@@ -362,7 +373,7 @@ describe("Connection liveness", () => {
     expect(client.connected).toBe(false)
     expect(clients).toHaveLength(2)
     expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
-    expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({ create: false, code: "WXYZ" })
+    expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({ entry: { type: GameEntryType.JOIN, code: "WXYZ" } })
   })
 
   it("pings at once when the page or the network comes back", () => {

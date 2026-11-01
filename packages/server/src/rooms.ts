@@ -26,7 +26,9 @@ import {
   encodeMessage,
   revealMessage,
   stateMessage,
+  GameEntryType,
   type GameConfig,
+  type GameEntry,
   type PaintSubmission,
   type RoundReveal
 } from "@whereabouts/shared/protocol"
@@ -68,8 +70,7 @@ export const BANK: QuestionBank = { catalogue: CATALOGUE, outlines: outlinesFrom
 export interface ActorData {
   token: PlayerToken
   name: PlayerName
-  /** Asked to join as a spectator. */
-  watch: boolean
+  entry: GameEntry
   /** The client's network address, for the logs. */
   address: string
 }
@@ -158,7 +159,8 @@ export class GameRoom extends Room<ActorData> {
   }
 
   protected override onJoin(actor: Actor<ActorData>): void {
-    const { token, name, watch, address } = actor.data!
+    const { token, name, entry, address } = actor.data!
+    const watch = entry.type === GameEntryType.JOIN && entry.watch
     this.cancelEmptyTimer()
     const previous = this.actorsByToken.get(token)
     if (previous && previous !== actor) previous.kick(closeReason(CloseReason.REPLACED))
@@ -340,21 +342,21 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     if (parsed === CloseReason.OUTDATED) throw new TicketRefused(closeReason(CloseReason.OUTDATED))
     if (!parsed) throw new TicketRefused(closeReason(CloseReason.NO_SUCH_GAME))
     const rooms = this.rooms()
+    const { entry } = parsed
     let roomId: string
-    if (parsed.create && parsed.code) {
+    if (entry.type === GameEntryType.JOIN) {
+      if (!rooms.get(entry.code)) throw new TicketRefused(closeReason(CloseReason.NO_SUCH_GAME))
+      roomId = entry.code
+    } else if (entry.code) {
       // Hosting again under an old code; if someone just did, join them.
-      roomId = parsed.code
+      roomId = entry.code
       if (!rooms.get(roomId)) rooms.create(ROOM_TYPE, roomId)
-    } else if (parsed.create) {
+    } else {
       roomId = generateCode()
       for (let i = 0; i < 20 && rooms.get(roomId); i++) roomId = generateCode()
       if (rooms.get(roomId)) throw new TicketRefused(closeReason(CloseReason.UNAVAILABLE))
       rooms.create(ROOM_TYPE, roomId)
-    } else if (parsed.code && rooms.get(parsed.code)) {
-      roomId = parsed.code
-    } else {
-      throw new TicketRefused(closeReason(CloseReason.NO_SUCH_GAME))
     }
-    return { data: { token: parsed.token, name: parsed.name, watch: parsed.watch ?? false, address }, roomId }
+    return { data: { token: parsed.token, name: parsed.name, entry, address }, roomId }
   }
 }

@@ -7,6 +7,7 @@ import {
   decodeTicket,
   encodeTicket,
   evenMix,
+  GameEntryType,
   mixOf,
   type Ticket,
   MapDetail
@@ -21,7 +22,7 @@ describe("ticket codec", () => {
     v: PROTOCOL_VERSION,
     token: playerToken("0123456789abcdef0123456789abcdef"),
     name: playerName("Zoë 🌍"),
-    code: roomCode("AB12")
+    entry: { type: GameEntryType.JOIN, code: roomCode("AB12"), watch: false }
   }
 
   it("round-trips unicode names and stays header-safe", () => {
@@ -39,7 +40,8 @@ describe("ticket codec", () => {
     expect(decodeTicket(enc({ v: PROTOCOL_VERSION - 1, token: "x" }))).toBe(CloseReason.OUTDATED)
     expect(decodeTicket(enc({ ...ticket, v: PROTOCOL_VERSION + 1 }))).toBe(CloseReason.OUTDATED)
     expect(decodeTicket(enc({ ...ticket, token: "short" }))).toBeUndefined()
-    expect(decodeTicket(enc({ ...ticket, code: "ab12" }))).toBeUndefined()
+    expect(decodeTicket(enc({ ...ticket, entry: { ...ticket.entry, code: "ab12" } }))).toBeUndefined()
+    expect(decodeTicket(enc({ ...ticket, entry: { type: GameEntryType.JOIN, code: "AB12" } }))).toBeUndefined()
     expect(decodeTicket(enc({ ...ticket, name: "   " }))).toBeUndefined()
     expect(decodeTicket(enc("a string"))).toBeUndefined()
   })

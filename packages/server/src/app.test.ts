@@ -18,6 +18,8 @@ import {
   EMPTY_RESULTS_GRACE,
   SEAT_GRACE,
   encodeTicket,
+  type GameEntry,
+  GameEntryType,
   type Ticket,
   revealFrom,
   viewFrom,
@@ -119,6 +121,9 @@ class FakeClock implements Clock {
 
 type Topics = "state" | "reveal" | "paint" | "error" | "pong"
 
+const host = (code?: RoomCode): GameEntry => ({ type: GameEntryType.HOST, ...(code ? { code } : {}) })
+const join = (code: RoomCode, watch = false): GameEntry => ({ type: GameEntryType.JOIN, code, watch })
+
 class TestPlayer {
   readonly client: WSClientType<Topics>
   /** Views as the client puts them together from state, reveal and paint messages. */
@@ -164,8 +169,8 @@ class TestPlayer {
     this.client.on("client:kicked", ({ reason }) => (this.closedFor = reason))
     this.client.on("error", (p) => this.errors.push((JSON.parse(dec.decode(p)) as { message: string }).message))
   }
-  connect(ticket: { create?: boolean; code?: RoomCode; watch?: boolean }) {
-    this.client.connect(encodeTicket({ v: PROTOCOL_VERSION, token: this.token, name: this.name, ...ticket }))
+  connect(entry: GameEntry) {
+    this.client.connect(encodeTicket({ v: PROTOCOL_VERSION, token: this.token, name: this.name, entry }))
   }
   send<K extends ClientTopic>(...[topic, body]: ClientSend<K>) {
     this.client.send(topic, JSON.stringify(body ?? {}))
@@ -249,13 +254,13 @@ describe("game server", () => {
 
   it("host creates a game, a friend joins by code, both see the lobby", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     expect(lobby.code).toMatch(/^[A-Z0-9]{4}$/)
     expect(lobby.you.isHost).toBe(true)
 
     const bob = player("Bob")
-    bob.connect({ code: lobby.code })
+    bob.connect(join(lobby.code))
     const seen = await alice.until((v) => v.players.length === 2)
     expect(seen.players.map((p) => p.name).sort()).toEqual(["Alice", "Bob"])
     const bobView = await bob.until((v) => v.players.length === 2)
@@ -264,7 +269,7 @@ describe("game server", () => {
 
   it("rejects bad codes and malformed tickets, and tells an outdated client so", async () => {
     const nobody = player("Nobody")
-    nobody.connect({ code: roomCode("ZZZZ") })
+    nobody.connect(join(roomCode("ZZZZ")))
     await nobody.waitClosed()
     expect(nobody.client.connected).toBe(false)
     expect(nobody.states).toHaveLength(0)
@@ -283,23 +288,23 @@ describe("game server", () => {
 
   it("hosts a game under a code no game has, and joins it if someone just did", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true, code: roomCode("VWZR") })
+    alice.connect(host(roomCode("VWZR")))
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     expect(lobby.code).toBe("VWZR")
     expect(lobby.you.isHost).toBe(true)
 
     const bob = player("Bob")
-    bob.connect({ create: true, code: roomCode("VWZR") })
+    bob.connect(host(roomCode("VWZR")))
     const bobView = await bob.until((v) => v.players.length === 2)
     expect(bobView.you.isHost).toBe(false)
   })
 
   it("plays a full two-round game with a deadline, reveal, and results", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const bob = player("Bob")
-    bob.connect({ code: lobby.code })
+    bob.connect(join(lobby.code))
     await alice.until((v) => v.players.length === 2)
 
     bob.send("start")
@@ -343,10 +348,10 @@ describe("game server", () => {
 
   it("plays a country round: scored against the outline, against the area rule", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const bob = player("Bob")
-    bob.connect({ code: lobby.code })
+    bob.connect(join(lobby.code))
     await alice.until((v) => v.players.length === 2)
     alice.send("configure", { mix: mixOf({ [QuestionType.COUNTRY]: 1 }) })
     await bob.until((v) => v.config.mix[QuestionType.COUNTRY] === 1 && mixTotal(v.config.mix) === 1)
@@ -382,7 +387,7 @@ describe("game server", () => {
 
   it("plays a flag round: the flag is shown, the name only at the reveal", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     await alice.until((v) => v.phase === Phase.LOBBY)
     alice.send("configure", { mix: mixOf({ [QuestionType.FLAG]: 1 }) })
     await alice.until((v) => v.config.mix[QuestionType.FLAG] === 1 && mixTotal(v.config.mix) === 1)
@@ -403,7 +408,7 @@ describe("game server", () => {
 
   it("answers bad messages with errors instead of dropping the player", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     await alice.until((v) => v.phase === Phase.LOBBY)
     alice.send("start")
     await alice.until((v) => v.phase === Phase.GUESSING)
@@ -443,7 +448,7 @@ describe("game server", () => {
 
   it("answers a ping with a pong", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     await alice.until((v) => v.phase === Phase.LOBBY)
     let pongs = 0
     alice.client.on("pong", () => pongs++)
@@ -453,10 +458,10 @@ describe("game server", () => {
 
   it("survives an oversized frame: the sender is dropped, everyone else carries on", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const bob = player("Bob")
-    bob.connect({ code: lobby.code })
+    bob.connect(join(lobby.code))
     await alice.until((v) => v.players.length === 2)
 
     // Just over the limit. ws rejects it with close code 1009.
@@ -472,16 +477,16 @@ describe("game server", () => {
     clock.advance(SEAT_GRACE)
     await alice.untilLatest((v) => v.players.length === 1)
     const cara = player("Cara")
-    cara.connect({ code: lobby.code })
+    cara.connect(join(lobby.code))
     await cara.until((v) => v.phase === Phase.LOBBY)
   })
 
   it("sends a round's reveal once, and again only to a player who reconnects", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const bob = player("Bob")
-    bob.connect({ code: lobby.code })
+    bob.connect(join(lobby.code))
     await alice.until((v) => v.players.length === 2)
     alice.send("start")
     const round = await bob.until((v) => v.phase === Phase.GUESSING)
@@ -503,7 +508,7 @@ describe("game server", () => {
     bob.client.disconnect()
     await alice.until((v) => v.players.some((p) => p.name === "Bobby" && !p.connected))
     const bobAgain = player("Bob")
-    bobAgain.connect({ code: lobby.code })
+    bobAgain.connect(join(lobby.code))
     const back = await bobAgain.until((v) => v.phase === Phase.REVEAL)
     expect(viewIn(back, Phase.REVEAL).reveal.results).toHaveLength(2)
     expect(bobAgain.reveals).toHaveLength(1)
@@ -513,10 +518,10 @@ describe("game server", () => {
 
   it("closes a connection that floods messages, and only that one", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const bob = player("Bob")
-    bob.connect({ code: lobby.code })
+    bob.connect(join(lobby.code))
     await alice.until((v) => v.players.length === 2)
 
     for (let i = 0; i < 40; i++) bob.send("rename", { name: i % 2 ? "Bob" : "Bobby" })
@@ -527,10 +532,10 @@ describe("game server", () => {
 
   it("a reconnecting player keeps their seat, and gets their paint back", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const bob = player("Bob")
-    bob.connect({ code: lobby.code })
+    bob.connect(join(lobby.code))
     await alice.until((v) => v.players.length === 2)
     alice.send("start")
     const round = await bob.until((v) => v.phase === Phase.GUESSING)
@@ -547,7 +552,7 @@ describe("game server", () => {
     await alice.until((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
 
     const bobAgain = player("Bob") // same name => same deterministic token
-    bobAgain.connect({ code: lobby.code })
+    bobAgain.connect(join(lobby.code))
     const back = await alice.untilLatest((v) => v.players.length === 2 && v.players.every((p) => p.connected))
     expect(back.players.filter((p) => p.name === "Bob")).toHaveLength(1)
     const own = await bobAgain.until((v) => v.phase === Phase.GUESSING)
@@ -562,7 +567,7 @@ describe("game server", () => {
     [Phase.RESULTS, EMPTY_RESULTS_GRACE]
   ])("frees a room left empty in %s once it has been empty for %i ms", async (phase, grace) => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const { code } = await alice.until((v) => v.phase === Phase.LOBBY)
     if (phase !== Phase.LOBBY) {
       alice.send("start")
@@ -582,13 +587,13 @@ describe("game server", () => {
 
   it("a lone host who refreshes in the lobby gets the game, and the host role, back", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     alice.client.disconnect()
     await alice.waitClosed()
     clock.advance(SEAT_GRACE - 1_000)
     const again = player("Alice") // same name => same token, like a refreshed tab
-    again.connect({ code: lobby.code })
+    again.connect(join(lobby.code))
     const back = await again.until((v) => v.phase === Phase.LOBBY)
     expect(back.you.isHost).toBe(true)
     expect(back.players).toHaveLength(1)
@@ -599,10 +604,10 @@ describe("game server", () => {
 
   it("a host who leaves the lobby frees their seat at once and hands over", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const bob = player("Bob")
-    bob.connect({ code: lobby.code })
+    bob.connect(join(lobby.code))
     await alice.until((v) => v.players.length === 2)
     alice.send("leave")
     await alice.waitClosed()
@@ -614,7 +619,7 @@ describe("game server", () => {
 
   it("shutting the server down tells players it restarted", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     await alice.until((v) => v.phase === Phase.LOBBY)
     await app.close()
     await alice.waitClosed()
@@ -623,7 +628,7 @@ describe("game server", () => {
 
   it("the last player leaving closes the game without waiting", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     alice.send("leave")
     await alice.waitClosed()
@@ -632,10 +637,10 @@ describe("game server", () => {
 
   it("a spectator joins to watch, and can take a seat in the lobby", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const sam = player("Sam")
-    sam.connect({ code: lobby.code, watch: true })
+    sam.connect(join(lobby.code, true))
     const watching = await sam.until((v) => v.players.length === 2)
     expect(watching.you.watching).toBe(true)
     const samSeen = watching.players.find((p) => p.name === "Sam")
@@ -648,10 +653,10 @@ describe("game server", () => {
 
   it("the host hands over to another player", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const bob = player("Bob")
-    bob.connect({ code: lobby.code })
+    bob.connect(join(lobby.code))
     const two = await alice.until((v) => v.players.length === 2)
     alice.send("makeHost", { playerId: two.players.find((p) => p.name === "Bob")!.id })
     await bob.until((v) => v.you.isHost)
@@ -661,10 +666,10 @@ describe("game server", () => {
   /** Alice hosting and Bob joined, both seen in the lobby. */
   async function aliceAndBob() {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const { code } = await alice.until((v) => v.phase === Phase.LOBBY)
     const bob = player("Bob")
-    bob.connect({ code })
+    bob.connect(join(code))
     const lobby = await alice.until((v) => v.players.length === 2)
     await bob.until((v) => v.players.length === 2)
     const bobId = lobby.players.find((p) => p.name === "Bob")!.id
@@ -679,7 +684,7 @@ describe("game server", () => {
     await alice.untilLatest((v) => v.players.length === 1)
 
     const bobAgain = player("Bob")
-    bobAgain.connect({ code })
+    bobAgain.connect(join(code))
     await bobAgain.waitClosed()
     expect(bobAgain.closedFor).toBe(CloseReason.REMOVED)
   })
@@ -687,7 +692,7 @@ describe("game server", () => {
   it("a second tab replaces the first, whose closing then leaves the seat alone", async () => {
     const { alice, bob, code } = await aliceAndBob()
     const bobTab2 = player("Bob")
-    bobTab2.connect({ code })
+    bobTab2.connect(join(code))
     await bob.waitClosed()
     expect(bob.closedFor).toBe(CloseReason.REPLACED)
 
@@ -706,22 +711,22 @@ describe("game server", () => {
     await bob.untilLatest((v) => v.you.isHost)
 
     const aliceAgain = player("Alice")
-    aliceAgain.connect({ code })
+    aliceAgain.connect(join(code))
     await aliceAgain.untilLatest((v) => v.you.isHost)
     await bob.untilLatest((v) => !v.you.isHost)
   })
 
   it("a full game turns a newcomer away", async () => {
     const alice = player("Alice")
-    alice.connect({ create: true })
+    alice.connect(host())
     const { code } = await alice.until((v) => v.phase === Phase.LOBBY)
     for (let i = 1; i < MAX_PLAYERS + MAX_SPECTATORS; i++) {
       const p = player(`P${i}`)
-      p.connect({ code, watch: i >= MAX_PLAYERS })
+      p.connect(join(code, i >= MAX_PLAYERS))
     }
     await alice.until((v) => v.players.length === MAX_PLAYERS + MAX_SPECTATORS, 10_000)
     const late = player("Late")
-    late.connect({ code })
+    late.connect(join(code))
     await late.waitClosed()
     expect(late.closedFor).toBe(CloseReason.FULL)
   })
@@ -734,14 +739,14 @@ describe("game server", () => {
     await bob.until((v) => v.phase === Phase.RESULTS)
 
     const late = player("Late")
-    late.connect({ code })
+    late.connect(join(code))
     await late.waitClosed()
     expect(late.closedFor).toBe(CloseReason.FINISHED)
 
     bob.client.disconnect()
     await alice.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
     const bobAgain = player("Bob")
-    bobAgain.connect({ code })
+    bobAgain.connect(join(code))
     await bobAgain.until((v) => v.phase === Phase.RESULTS)
   })
 
@@ -850,18 +855,18 @@ describe("connections per address", () => {
   it("refuses connections over the limit, and lets them in once one closes", async () => {
     const [alice, bob, carol] = ["Alice", "Bob", "Carol"].map((n) => new TestPlayer(url, n))
     players.push(alice!, bob!, carol!)
-    alice!.connect({ create: true })
+    alice!.connect(host())
     const { code } = await alice!.until((v) => v.phase === Phase.LOBBY)
-    bob!.connect({ code })
+    bob!.connect(join(code))
     await alice!.until((v) => v.players.length === 2)
 
-    carol!.connect({ code })
+    carol!.connect(join(code))
     await carol!.waitClosed()
     expect(carol!.states).toEqual([])
 
     bob!.client.disconnect()
     await alice!.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
-    carol!.connect({ code })
+    carol!.connect(join(code))
     await alice!.until((v) => v.players.some((p) => p.name === "Carol"))
   })
 })

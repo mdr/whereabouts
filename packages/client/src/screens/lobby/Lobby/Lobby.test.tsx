@@ -8,7 +8,7 @@ import { mixOf, type GameView, MapDetail } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { type Connection, type ConnectionState, ConnectionStatus } from "../../../net/net"
 import { hostSetup, joinedCode, startOnPan } from "../../../settings/settings"
-import { route } from "../../../router"
+import { route, RouteType } from "../../../router"
 import { Lobby } from "./Lobby"
 import { lobbyTestIds } from "./LobbyTestIds"
 import { rosterTestIds } from "../invite/Roster/RosterTestIds"
@@ -148,7 +148,7 @@ describe("Lobby leave", () => {
     fireEvent.click(inside(container).getByTestId(lobbyTestIds.leaveButton))
     expect(leave).toHaveBeenCalledTimes(1)
     expect(joinedCode.value).toBe("")
-    expect(route.value).toEqual({ name: playerName("home") })
+    expect(route.value).toEqual({ type: RouteType.HOME })
   })
 
   it("asks the host first, naming who takes over", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { flagCode, generateCode, playerId, playerToken, questionId, outlineId, roomCode } from "./ids.ts"
-import { KickSchema, PROTOCOL_VERSION, TicketSchema } from "./protocol.ts"
+import { GameEntryType, KickSchema, PROTOCOL_VERSION, decodeTicket, encodeTicket, type Ticket } from "./protocol.ts"
 
 describe("identifiers", () => {
   it("are made only from strings of their own format", () => {
@@ -19,9 +19,15 @@ describe("identifiers", () => {
   it("come out of the wire schemas checked", () => {
     expect(KickSchema.safeParse({ playerId: "p2" }).success).toBe(true)
     expect(KickSchema.safeParse({ playerId: "0123456789abcdef" }).success).toBe(false)
-    const ticket = { v: PROTOCOL_VERSION, token: "0123456789abcdef", name: "Ann" }
-    expect(TicketSchema.safeParse({ ...ticket, code: "AB12" }).success).toBe(true)
-    expect(TicketSchema.safeParse({ ...ticket, code: "ab12" }).success).toBe(false)
+    const ticket = (code: string) =>
+      encodeTicket({
+        v: PROTOCOL_VERSION,
+        token: "0123456789abcdef",
+        name: "Ann",
+        entry: { type: GameEntryType.HOST, code }
+      } as Ticket)
+    expect(decodeTicket(ticket("AB12"))).toMatchObject({ entry: { code: "AB12" } })
+    expect(decodeTicket(ticket("ab12"))).toBeUndefined()
   })
 })
 

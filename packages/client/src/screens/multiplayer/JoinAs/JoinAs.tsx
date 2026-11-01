@@ -6,13 +6,7 @@ import { Icon } from "../../../ui/icons"
 import kit from "../../../ui/kit.module.css"
 import { joinAsTestIds } from "./JoinAsTestIds"
 
-export function JoinAs({
-  code,
-  onJoin
-}: {
-  code: RoomCode | undefined
-  onJoin: (name: PlayerName, watch: boolean) => void
-}) {
+export function JoinAs({ code, onJoin }: { code: RoomCode; onJoin: (name: PlayerName, watch: boolean) => void }) {
   const [name, setName] = useState(savedName.value)
   const ready = nameToJoin(name)
   return (

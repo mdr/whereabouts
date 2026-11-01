@@ -5,25 +5,48 @@
  * after the path ("#/solo?dev") is ignored here; see dev.ts.
  */
 import { batch, signal } from "@preact/signals"
-import { roomCode, type RoomCode } from "@whereabouts/shared/ids"
+import { roomCode } from "@whereabouts/shared/ids"
+import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol"
 
-export type Route =
-  | { name: "home" }
-  | { name: "solo" }
-  | { name: "score-review" }
-  | { name: "game"; code: RoomCode | undefined; create: true }
-  | { name: "game"; code: RoomCode; create: false }
+export enum RouteType {
+  HOME = "HOME",
+  SOLO = "SOLO",
+  SCORE_REVIEW = "SCORE_REVIEW",
+  GAME = "GAME"
+}
+
+interface HomeRoute {
+  type: RouteType.HOME
+}
+interface SoloRoute {
+  type: RouteType.SOLO
+}
+interface ScoreReviewRoute {
+  type: RouteType.SCORE_REVIEW
+}
+/** A link never asks to watch; that is chosen on the join screen. */
+interface GameRoute {
+  type: RouteType.GAME
+  entry: GameEntry
+}
+export type Route = HomeRoute | SoloRoute | ScoreReviewRoute | GameRoute
 
 export function parseRoute(hash: string): Route {
   const path = hash.replace(/^#/, "").replace(/\?.*$/, "")
-  if (path === "/solo") return { name: "solo" }
-  if (path === "/score-review") return { name: "score-review" }
-  if (path === "/game/new") return { name: "game", code: undefined, create: true }
+  if (path === "/solo") return { type: RouteType.SOLO }
+  if (path === "/score-review") return { type: RouteType.SCORE_REVIEW }
+  if (path === "/game/new") return { type: RouteType.GAME, entry: { type: GameEntryType.HOST } }
   const again = /^\/game\/new\/([A-Z0-9]{4,6})$/i.exec(path)
-  if (again) return { name: "game", code: roomCode(again[1]!.toUpperCase()), create: true }
+  if (again) {
+    const code = roomCode(again[1]!.toUpperCase())
+    return { type: RouteType.GAME, entry: { type: GameEntryType.HOST, code } }
+  }
   const m = /^\/game\/([A-Z0-9]{4,6})$/i.exec(path)
-  if (m) return { name: "game", code: roomCode(m[1]!.toUpperCase()), create: false }
-  return { name: "home" }
+  if (m) {
+    const code = roomCode(m[1]!.toUpperCase())
+    return { type: RouteType.GAME, entry: { type: GameEntryType.JOIN, code, watch: false } }
+  }
+  return { type: RouteType.HOME }
 }
 
 export const route = signal<Route>(parseRoute(location.hash))

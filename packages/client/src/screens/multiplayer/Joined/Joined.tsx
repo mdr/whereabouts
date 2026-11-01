@@ -1,6 +1,5 @@
 import { useEffect } from "preact/hooks"
-import type { RoomCode } from "@whereabouts/shared/ids"
-import { Phase, type GameView } from "@whereabouts/shared/protocol"
+import { GameEntryType, Phase, type GameEntry, type GameView } from "@whereabouts/shared/protocol"
 import { ConnectionStatus, RejectionAction, type Connection } from "../../../net/net"
 import { joinedCode, resetPlayerToken } from "../../../settings/settings"
 import { preloadPictures } from "../../../data/preload"
@@ -21,7 +20,9 @@ import s from "./Joined.module.css"
 const upcomingOf = (view: GameView | undefined) => (view && view.phase !== Phase.RESULTS ? view.upcoming : undefined)
 
 /** The game once a name is settled: its own component so its hooks always run. */
-export function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | undefined; create: boolean }) {
+export function Joined({ conn, entry }: { conn: Connection; entry: GameEntry }) {
+  const create = entry.type === GameEntryType.HOST
+  const code = entry.code
   // Once the server assigns a code to a new game, put it in the URL for sharing.
   const assigned = conn.code.value
   useEffect(() => {

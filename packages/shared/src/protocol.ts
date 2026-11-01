@@ -26,12 +26,13 @@ import {
   type OutlineId,
   type PlaceId,
   type PlayerName,
+  type PlayerToken,
   type RoomCode,
   type WikiTitle
 } from "./ids.ts"
 import { CloseReason } from "./close-reason.ts"
 
-export const PROTOCOL_VERSION = 13
+export const PROTOCOL_VERSION = 14
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -39,19 +40,44 @@ export interface PaintSubmission {
   floor: number
 }
 
-/** Ticket presented on connect, carried in the WebSocket subprotocol header. */
-export const TicketSchema = z.object({
-  v: z.literal(PROTOCOL_VERSION),
+export enum GameEntryType {
+  HOST = "HOST",
+  JOIN = "JOIN"
+}
+
+/** Host a game: under the given code if any (joining whoever already did), else a fresh one. */
+interface HostEntry {
+  type: GameEntryType.HOST
+  code?: RoomCode
+}
+interface JoinEntry {
+  type: GameEntryType.JOIN
+  code: RoomCode
+  /** A full game seats a would-be player as a spectator anyway. */
+  watch: boolean
+}
+/** How a player comes into a game. */
+export type GameEntry = HostEntry | JoinEntry
+
+const GameEntrySchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal(GameEntryType.HOST), code: RoomCodeSchema.optional() }),
+  z.object({ type: z.literal(GameEntryType.JOIN), code: RoomCodeSchema, watch: z.boolean() })
+]) satisfies z.ZodType<GameEntry>
+
+/** Presented on connect, carried in the WebSocket subprotocol header. */
+export interface Ticket {
+  v: typeof PROTOCOL_VERSION
   /** Per-player secret used to reclaim the same seat after a reconnect. */
+  token: PlayerToken
+  name: PlayerName
+  entry: GameEntry
+}
+const TicketSchema = z.object({
+  v: z.literal(PROTOCOL_VERSION),
   token: PlayerTokenSchema,
   name: PlayerNameSchema,
-  /** Join an existing game by code, or omit with `create: true` to host one; both host one under that code. */
-  code: RoomCodeSchema.optional(),
-  create: z.boolean().optional(),
-  /** Join to watch rather than play. A full game seats a would-be player as a spectator anyway. */
-  watch: z.boolean().optional()
-})
-export type Ticket = z.infer<typeof TicketSchema>
+  entry: GameEntrySchema
+}) satisfies z.ZodType<Ticket>
 
 // ---- client -> server ------------------------------------------------------
 

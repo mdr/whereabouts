@@ -10,6 +10,7 @@ import {
   type ConfigurePatch,
   MAX_PLAYERS,
   MAX_SPECTATORS,
+  GameEntryType,
   PROTOCOL_VERSION,
   encodeTicket,
   revealFrom,
@@ -118,7 +119,12 @@ export class Connection {
     this.status.value = { type: ConnectionStatus.CONNECTING }
     this.lastError.value = undefined
     // Once in a game, coming back means joining it, not hosting another.
-    const again = () => (this.code.value === undefined ? ticket : { ...ticket, create: false, code: this.code.value })
+    const again = (): Omit<Ticket, "v"> => {
+      const code = this.code.value
+      if (code === undefined) return ticket
+      const watch = ticket.entry.type === GameEntryType.JOIN && ticket.entry.watch
+      return { ...ticket, entry: { type: GameEntryType.JOIN, code, watch } }
+    }
     this.comeBack = again
     const client = this.makeClient(wsUrl(), {
       ticketSource: "protocol",

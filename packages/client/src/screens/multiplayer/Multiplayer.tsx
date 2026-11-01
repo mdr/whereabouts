@@ -1,6 +1,7 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks"
-import type { PlayerName, RoomCode } from "@whereabouts/shared/ids"
+import type { PlayerName } from "@whereabouts/shared/ids"
+import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol"
 import { Connection } from "../../net/net"
 import {
   askedToWatch,
@@ -15,7 +16,7 @@ import { navigate } from "../../router"
 import { JoinAs } from "./JoinAs/JoinAs"
 import { Joined } from "./Joined/Joined"
 
-export function Multiplayer({ code, create }: { code: RoomCode | undefined; create: boolean }) {
+export function Multiplayer({ entry }: { entry: GameEntry }) {
   const conn = useMemo(() => new Connection(), [])
   // "Just watch" from the home screen or the join screen below.
   const [watch, setWatch] = useState(() => {
@@ -27,34 +28,36 @@ export function Multiplayer({ code, create }: { code: RoomCode | undefined; crea
   // anyone arriving by link confirms or edits theirs first, so two tabs need
   // not share a name.
   const [confirmedName, setConfirmedName] = useState<PlayerName | undefined>(() => {
-    if (create) return nameToJoin(savedName.value)
+    if (entry.type === GameEntryType.HOST) return nameToJoin(savedName.value)
     const handed = nameHandoff.value
     nameHandoff.value = undefined
     if (handed) return handed
     // A refresh of a tab that already holds a seat in this game.
-    if (code && joinedCode.value === code) return nameToJoin(savedName.value)
+    if (joinedCode.value === entry.code) return nameToJoin(savedName.value)
     return undefined
   })
 
   useEffect(() => {
-    if (create && !confirmedName) {
+    if (entry.type === GameEntryType.HOST && !confirmedName) {
       navigate("/")
       return
     }
     if (!confirmedName) return
     askedToWatch.value = watch
-    conn.connect(
-      create
-        ? { token: seatToken(), name: confirmedName, create: true, ...(code ? { code } : {}) }
-        : { token: seatToken(), name: confirmedName, code: code ?? undefined, ...(watch ? { watch } : {}) }
-    )
+    conn.connect({
+      token: seatToken(),
+      name: confirmedName,
+      entry: entry.type === GameEntryType.HOST ? entry : { ...entry, watch }
+    })
     return () => conn.disconnect()
   }, [conn, confirmedName])
 
   if (!confirmedName) {
+    // A host without a name has been sent home by the effect above.
+    if (entry.type === GameEntryType.HOST) return undefined
     return (
       <JoinAs
-        code={code}
+        code={entry.code}
         onJoin={(name, asWatcher) => {
           savedName.value = name
           setWatch(asWatcher)
@@ -63,5 +66,5 @@ export function Multiplayer({ code, create }: { code: RoomCode | undefined; crea
       />
     )
   }
-  return <Joined conn={conn} code={code} create={create} />
+  return <Joined conn={conn} entry={entry} />
 }
