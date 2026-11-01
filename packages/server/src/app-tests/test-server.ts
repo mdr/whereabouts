@@ -53,7 +53,7 @@ export const lockedIn = (view: GameView) =>
   view.you.role.type === YouRoleType.PLAYING &&
   view.you.role.locked
 
-function place(id: string, label: string, lat: number, lon: number, tolerance: number): PlaceQuestion {
+const place = (id: string, label: string, lat: number, lon: number, tolerance: number): PlaceQuestion => {
   return {
     type: QuestionType.PLACE,
     id: questionId(id),
@@ -196,7 +196,7 @@ export class TestPlayer {
 }
 
 /** Wait until `done` holds, failing with what was awaited. */
-export async function eventually(done: () => boolean, what: string, ms = 3000): Promise<void> {
+export const eventually = async (done: () => boolean, what: string, ms = 3000): Promise<void> => {
   const start = Date.now()
   while (!done()) {
     if (Date.now() - start > ms) throw new Error(`gave up waiting ${ms}ms for ${what}`)
@@ -204,14 +204,14 @@ export async function eventually(done: () => boolean, what: string, ms = 3000): 
   }
 }
 
-export function paintAt(question: Question, lat: number, lon: number) {
+export const paintAt = (question: Question, lat: number, lon: number) => {
   const { tolerance } = question.answer
   const layer = new PaintLayer(resolutionForTolerance(tolerance))
   layer.stamp({ lat, lon }, tolerance / 2, 1)
   return { cells: layer.toRecord(), floor: 0.05 }
 }
 
-export async function pollErrors(testPlayer: TestPlayer, ms = 2000): Promise<string[]> {
+export const pollErrors = async (testPlayer: TestPlayer, ms = 2000): Promise<string[]> => {
   const start = Date.now()
   while (testPlayer.errors.length === 0 && Date.now() - start < ms)
     await new Promise((resolve) => setTimeout(resolve, 10))
@@ -219,7 +219,7 @@ export async function pollErrors(testPlayer: TestPlayer, ms = 2000): Promise<str
 }
 
 /** Boots the app on a random port around each test, with a fake clock; checks every state sent against GameViewSchema afterwards. */
-export function useGameServer({ addressLimits }: { addressLimits?: AddressLimits } = {}) {
+export const useGameServer = ({ addressLimits }: { addressLimits?: AddressLimits } = {}) => {
   let app: App
   let url: string
   let clock: FakeClock
@@ -243,14 +243,14 @@ export function useGameServer({ addressLimits }: { addressLimits?: AddressLimits
     configureGameRooms({ clock: realClock })
   })
 
-  function player(name: string) {
+  const player = (name: string) => {
     const testPlayer = new TestPlayer(url, name)
     players.push(testPlayer)
     return testPlayer
   }
 
   /** Alice hosting and Bob joined, both seen in the lobby. */
-  async function aliceAndBob() {
+  const aliceAndBob = async () => {
     const alice = player("Alice")
     alice.connect(host())
     const { code } = await alice.until((view) => view.phase === Phase.LOBBY)

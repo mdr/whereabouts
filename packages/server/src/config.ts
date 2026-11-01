@@ -13,7 +13,7 @@ export interface ServerConfig {
   addressLimits: AddressLimits | undefined
 }
 
-export function configFromEnv(env: Record<string, string | undefined>, defaultStaticDir: string): ServerConfig {
+export const configFromEnv = (env: Record<string, string | undefined>, defaultStaticDir: string): ServerConfig => {
   const game: Partial<GameConfig> = {}
   const rounds = positiveInt(env["ROUNDS"])
   const roundLength = positiveInt(env["ROUND_MS"])
@@ -33,14 +33,14 @@ export function configFromEnv(env: Record<string, string | undefined>, defaultSt
 }
 
 /** A typo here would otherwise score every game with the default kernel unnoticed. */
-function kernelId(name: string) {
+const kernelId = (name: string) => {
   // Also the old names, written in lower case with hyphens.
   const parsed = KernelIdSchema.safeParse(name.toUpperCase().replaceAll("-", "_"))
   if (!parsed.success) throw new Error(`KERNEL must be one of ${KernelIdSchema.options.join(", ")}, not "${name}"`)
   return parsed.data
 }
 
-function positiveInt(text: string | undefined): number | undefined {
+const positiveInt = (text: string | undefined): number | undefined => {
   if (text === undefined || text === "") return undefined
   const parsed = Number(text)
   return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined

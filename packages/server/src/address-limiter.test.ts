@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { AddressLimiter } from "./address-limiter.ts"
 
-function limiter(limits = { maxOpen: 3, burst: 5, perSecond: 1 }) {
+const limiter = (limits = { maxOpen: 3, burst: 5, perSecond: 1 }) => {
   let now = 0
   const addressLimiter = new AddressLimiter(limits, () => now)
   return { addressLimiter, advance: (ms: number) => (now += ms) }

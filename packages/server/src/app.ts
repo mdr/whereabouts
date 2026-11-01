@@ -67,7 +67,7 @@ class LoggedRateLimiter extends TokenBucketRateLimiter {
   }
 }
 
-export function createApp(options: AppOptions): App {
+export const createApp = (options: AppOptions): App => {
   const fastify = Fastify({ logger: options.logger ?? false })
 
   fastify.get("/api/health", () => ({ ok: true }))
@@ -132,11 +132,11 @@ export function createApp(options: AppOptions): App {
 }
 
 /** Hashed bundle assets are immutable; everything else must be revalidated. */
-function cacheControlFor(filePath: string): string {
+const cacheControlFor = (filePath: string): string => {
   return /[/\\]assets[/\\]/.test(filePath) ? "public, max-age=31536000, immutable" : "no-cache"
 }
 
-export function defaultStaticDir(): string {
+export const defaultStaticDir = (): string => {
   const here = path.dirname(fileURLToPath(import.meta.url))
   return path.resolve(here, "../../client/dist")
 }

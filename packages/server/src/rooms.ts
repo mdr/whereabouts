@@ -30,12 +30,12 @@ import { readJson, readPaint, type Parsed } from "./inbound.ts"
 export const closeReason = (reason: CloseReason): string => reason
 
 /** Tell everyone connected that the server is going away, before Rivalis closes the rooms with its own reason. */
-export function kickForRestart(rooms: RoomManager<ActorData>): void {
+export const kickForRestart = (rooms: RoomManager<ActorData>): void => {
   for (const id of [...rooms.keys()])
     rooms.get(id)?.each((actor) => actor.kick(closeReason(CloseReason.SERVER_RESTARTED)))
 }
 
-function emptyGrace(phase: Phase): Ms {
+const emptyGrace = (phase: Phase): Ms => {
   switch (phase) {
     case Phase.LOBBY:
       return SEAT_GRACE
@@ -84,7 +84,7 @@ let deps: GameRoomDeps = {
   bank: BANK,
   config: {}
 }
-export function configureGameRooms(next: Partial<GameRoomDeps>): void {
+export const configureGameRooms = (next: Partial<GameRoomDeps>): void => {
   deps = { ...deps, ...next }
 }
 

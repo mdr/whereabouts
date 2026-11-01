@@ -14,7 +14,7 @@ const schemas: { [K in ClientTopic]: z.ZodType<ClientMessages[K]> } = ClientMess
 
 export type Parsed<T> = { ok: true; data: T } | { ok: false; error: string }
 
-export function readJson<K extends ClientTopic>(topic: K, payload: Uint8Array): Parsed<ClientMessages[K]> {
+export const readJson = <K extends ClientTopic>(topic: K, payload: Uint8Array): Parsed<ClientMessages[K]> => {
   let body: unknown
   try {
     body = decodeMessage(payload)
@@ -25,7 +25,7 @@ export function readJson<K extends ClientTopic>(topic: K, payload: Uint8Array): 
   return parsed.success ? { ok: true, data: parsed.data } : { ok: false, error: `invalid ${topic}` }
 }
 
-export function readPaint(payload: Uint8Array): Parsed<PaintSubmission> {
+export const readPaint = (payload: Uint8Array): Parsed<PaintSubmission> => {
   const paint = decodePaint(payload)
   return paint ? { ok: true, data: paint } : { ok: false, error: "invalid paint" }
 }
