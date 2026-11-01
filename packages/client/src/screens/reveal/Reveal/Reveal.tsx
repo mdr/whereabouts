@@ -83,7 +83,7 @@ export function Reveal({
         if (result.guess.type === RoundGuessType.PAINTED)
           countries.set(
             result.playerId,
-            mainCountry(borders, paintLayer(result.guess.res, result.guess.paint).toCells())
+            mainCountry(borders, paintLayer(result.guess.resolution, result.guess.paint).toCells())
           )
     return countries
   }, [borders, reveal.index])

@@ -1,6 +1,6 @@
 import type { Award } from "../awards/player-facts.ts"
 import type { LatLon } from "../geo.ts"
-import type { H3Cell, H3Res } from "../h3.ts"
+import type { H3Cell, H3Resolution } from "../h3.ts"
 import type { HintAxis, HintBand } from "../hints.ts"
 import type { CommonsFile, FlagCode, OutlineId, PlaceId, PlayerId, PlayerName, RoomCode, WikiTitle } from "../ids.ts"
 import { AnswerType, Surface, type Clue, type FeatureType, type QuestionType } from "../questions.ts"
@@ -67,7 +67,7 @@ export interface PaintedGuess {
   type: RoundGuessType.PAINTED
   paint: PaintSubmission
   /** H3 resolution the paint was made at, for rendering. */
-  res: H3Res
+  resolution: H3Resolution
   /** What went into the score, by the rule that scored it. */
   parts: AnswerParts
 }

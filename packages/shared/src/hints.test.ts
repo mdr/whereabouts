@@ -3,7 +3,7 @@ import { HINT_WIDTH_TOLERANCES, describeHint, hintBand, inHintBand, seededUnit, 
 import { CATALOGUE } from "./catalogue/catalogue.ts"
 import { answerCentre } from "./questions.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint/paint.ts"
-import { cellToLatLng, h3Res, latLngToCell, type H3Cell } from "./h3.ts"
+import { cellToLatLng, h3Resolution, latLngToCell, type H3Cell } from "./h3.ts"
 
 describe("hintBand", () => {
   const axes: HintAxis[] = [HintAxis.LATITUDE, HintAxis.LONGITUDE]
@@ -56,7 +56,7 @@ describe("trimToHint", () => {
     const layer = new PaintLayer(resolutionForTolerance(150))
     layer.stamp({ lat: 30, lon: 10 }, 1500, 1)
     const band = { axis: HintAxis.LATITUDE, from: 28, to: 34 }
-    const kept = trimToHint(layer.cells, band, layer.res)
+    const kept = trimToHint(layer.cells, band, layer.resolution)
     expect(kept.size).toBeGreaterThan(0)
     expect(kept.size).toBeLessThan(layer.cells.size * 4)
     const lats = [...kept.keys()].map((cell) => latLon(cell).lat)
@@ -71,7 +71,7 @@ describe("trimToHint", () => {
   })
 
   it("keeps a longitude band across 180° as one band", () => {
-    const resolution = h3Res(3)
+    const resolution = h3Resolution(3)
     const cells = new Map([
       [latLngToCell(0, 179, resolution), 1],
       [latLngToCell(0, -179, resolution), 1],

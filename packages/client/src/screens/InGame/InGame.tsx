@@ -98,7 +98,7 @@ export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView 
   const painted = useMemo(
     () =>
       reveal?.question.type === QuestionType.FLAG && borders && mine?.guess.type === RoundGuessType.PAINTED
-        ? mainCountry(borders, paintLayer(mine.guess.res, mine.guess.paint).toCells())
+        ? mainCountry(borders, paintLayer(mine.guess.resolution, mine.guess.paint).toCells())
         : undefined,
     [borders, reveal?.index, mine?.guess.type]
   )

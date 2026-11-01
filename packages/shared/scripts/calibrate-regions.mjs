@@ -101,7 +101,7 @@ const NEIGHBOURS = [
 // ---- building paints --------------------------------------------------------
 
 const area = (cells) => cells.reduce((sum, cell) => sum + h3.cellArea(cell, h3.UNITS.km2), 0)
-const spacing = (res) => h3.getHexagonEdgeLengthAvg(res, h3.UNITS.km) * Math.sqrt(3)
+const spacing = (resolution) => h3.getHexagonEdgeLengthAvg(resolution, h3.UNITS.km) * Math.sqrt(3)
 
 /** Paint each part's cells evenly by area with `weight` of the painted mass; intensity(h) varies it. */
 function coat(parts, intensity = () => 1) {
@@ -176,8 +176,8 @@ function shifted(q, km) {
   }
 }
 
-const disc = (centre, km, res) =>
-  h3.gridDisk(h3.latLngToCell(centre.lat, centre.lon, res), Math.max(0, Math.round(km / spacing(res))))
+const disc = (centre, km, resolution) =>
+  h3.gridDisk(h3.latLngToCell(centre.lat, centre.lon, resolution), Math.max(0, Math.round(km / spacing(resolution))))
 
 /**
  * Brush strokes as the paint controller lays them (a stamp every quarter
@@ -185,9 +185,9 @@ const disc = (centre, km, res) =>
  * the brush centre inside, then extra passes over a band: none, once over the
  * middle third, or twice over the northern third.
  */
-function brushed(q, res, R, extra) {
-  const inside = new Set(regionCells(q, res))
-  const layer = new PaintLayer(res)
+function brushed(q, resolution, R, extra) {
+  const inside = new Set(regionCells(q, resolution))
+  const layer = new PaintLayer(resolution)
   const brush = R / 6
   const lats = [...inside].map((cell) => h3.cellToLatLng(cell)[0])
   const lons = [...inside].map((cell) => h3.cellToLatLng(cell)[1])
@@ -198,7 +198,7 @@ function brushed(q, res, R, extra) {
     const count = Math.max(1, Math.round(km / (brush / 4)))
     for (let i = 0; i <= count; i++) {
       const lon = lon0 + ((lon1 - lon0) * i) / count
-      if (inside.has(h3.latLngToCell(lat, lon, res))) layer.stamp({ lat, lon }, brush, 0.3)
+      if (inside.has(h3.latLngToCell(lat, lon, resolution))) layer.stamp({ lat, lon }, brush, 0.3)
     }
   }
   const step = brush / 111
@@ -213,11 +213,11 @@ function brushed(q, res, R, extra) {
 }
 
 function cases(q) {
-  const res = resolutionForTolerance(q.tolerance)
-  const cells = regionCells(q, res)
+  const resolution = resolutionForTolerance(q.tolerance)
+  const cells = regionCells(q, resolution)
   const R = Math.sqrt(area(cells) / Math.PI)
-  const moved = (km) => regionCells(shifted(q, km), res)
-  const blobRes = Math.max(0, res - 1)
+  const moved = (km) => regionCells(shifted(q, km), resolution)
+  const blobResolution = Math.max(0, resolution - 1)
   const neighbour = moved(2 * R)
   const hedge = (weight, other) =>
     coat([
@@ -237,7 +237,7 @@ function cases(q) {
     ...new Set(
       cells.map((cell) => {
         const [lat, lon] = h3.cellToLatLng(cell)
-        return h3.latLngToCell(-lat, lon > 0 ? lon - 180 : lon + 180, res)
+        return h3.latLngToCell(-lat, lon > 0 ? lon - 180 : lon + 180, resolution)
       })
     )
   ]
@@ -247,7 +247,7 @@ function cases(q) {
     ["bloated until about half is off", even(bloatTo(cells, 0.5))],
     ["west 75% only", even(portion(cells, 0.75, (_, lon) => -lon))],
     ["west half only", even(portion(cells, 0.5, (_, lon) => -lon))],
-    ["circle a tenth of the area, centred", even(disc(q.centre, R * Math.sqrt(0.1), res))],
+    ["circle a tenth of the area, centred", even(disc(q.centre, R * Math.sqrt(0.1), resolution))],
     ["50/50: the country and its shape 2R away", hedge(0.5, neighbour)],
     [
       "50/50: the country and half its shape 2R away, squeezed",
@@ -268,14 +268,14 @@ function cases(q) {
     ["shape shifted 6.5R east", even(moved(6.5 * R))],
     ["shape shifted 9.6R east", even(moved(9.6 * R))],
     ["shape at the antipode", even(antipode)],
-    ["brushed once", brushed(q, res, R)],
-    ["brushed, with a second pass through the middle", brushed(q, res, R, "middle")],
-    ["brushed, with two more passes over the north", brushed(q, res, R, "north")],
+    ["brushed once", brushed(q, resolution, R)],
+    ["brushed, with a second pass through the middle", brushed(q, resolution, R, "middle")],
+    ["brushed, with two more passes over the north", brushed(q, resolution, R, "north")],
     ["missing the southern third", even(portion(cells, 2 / 3, (lat) => lat))],
     ["shape shifted 0.25R east", even(moved(0.25 * R))],
     ["shape shifted 0.5R east", even(moved(0.5 * R))],
     ["shape shifted 1R east", even(moved(R))],
-    ["circle of the same area, centred", even(disc(q.centre, R, res))],
+    ["circle of the same area, centred", even(disc(q.centre, R, resolution))],
     [
       "bright middle, half density at the edges",
       coat([{ cells, weight: 1 }], (cell) => {
@@ -286,7 +286,7 @@ function cases(q) {
     ],
     [
       "big faint blob far away (8x the area)",
-      even(disc(shifted(q, (Math.sqrt(8) + 1) * R + 3000).centre, Math.sqrt(8) * R, blobRes))
+      even(disc(shifted(q, (Math.sqrt(8) + 1) * R + 3000).centre, Math.sqrt(8) * R, blobResolution))
     ],
     ["the whole world painted evenly", even(h3.getRes0Cells().flatMap((cell) => h3.cellToChildren(cell, 2)))]
   ]
@@ -352,8 +352,8 @@ let nearWins = 0
 const nearScores = []
 for (const [countryLabel, near, far] of NEIGHBOURS) {
   const q = byLabel(countryLabel)
-  const res = resolutionForTolerance(q.tolerance)
-  const score = (name) => scoreArea(even(regionCells(byLabel(name), res)), q).score
+  const resolution = resolutionForTolerance(q.tolerance)
+  const score = (name) => scoreArea(even(regionCells(byLabel(name), resolution)), q).score
   const nearEntries = near.map((name) => [name, score(name)])
   const farEntries = far.map((name) => [name, score(name)])
   const win = Math.min(...nearEntries.map(([, value]) => value)) > Math.max(...farEntries.map(([, value]) => value))
@@ -365,8 +365,8 @@ for (const [countryLabel, near, far] of NEIGHBOURS) {
 if (nearWins < NEIGHBOURS.length) misses++
 
 const exact = AREAS.map((q) => {
-  const res = resolutionForTolerance(q.tolerance)
-  const painted = even(regionCells(q, res))
+  const resolution = resolutionForTolerance(q.tolerance)
+  const painted = even(regionCells(q, resolution))
   return { label: q.label, score: scoreArea(painted, q).score, fit: regionFit(painted, q) }
 }).sort((a, b) => a.score - b.score)
 const worst = exact[0]

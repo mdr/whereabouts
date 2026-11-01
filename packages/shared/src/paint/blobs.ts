@@ -1,5 +1,5 @@
 import { toDegrees, toRadians, type LatLon } from "../geo.ts"
-import { cellToParent, getResolution, gridDisk, h3Res, type H3Cell } from "../h3.ts"
+import { cellToParent, getResolution, gridDisk, h3Resolution, type H3Cell } from "../h3.ts"
 import type { PaintLayer } from "./paint.ts"
 
 export interface Blob {
@@ -36,7 +36,7 @@ export function paintBlobs(layer: PaintLayer): Blob[] {
 function groupByCoarsestAncestor(layer: PaintLayer): Map<H3Cell, H3Cell[]> {
   let min = Infinity
   for (const cell of layer.cells.keys()) min = Math.min(min, getResolution(cell))
-  const coarsest = h3Res(min)
+  const coarsest = h3Resolution(min)
 
   const groups = new Map<H3Cell, H3Cell[]>()
   for (const cell of layer.cells.keys()) {

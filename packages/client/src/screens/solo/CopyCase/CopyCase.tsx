@@ -33,7 +33,7 @@ export function CopyCase({
       question: caseQuestion(question, answer),
       kernel: answer.type === AnswerType.AREA ? RegionKernel.REGION : kernel.id,
       floor,
-      res: paint.layer.res,
+      resolution: paint.layer.resolution,
       score,
       parts,
       cells: paint.layer.toRecord()

@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vite-plus/test"
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
-import { h3Res } from "@whereabouts/shared/h3"
+import { h3Resolution } from "@whereabouts/shared/h3"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { colouredPaint, framing } from "./reveal"
 import { latLonToLocal } from "./globe/sphere"
 import { VrAnswerType, VrPaintsType, type VrReveal, type VrRound } from "./view/view"
 
 function makeLayer(at?: LatLon, km = 50): PaintLayer {
-  const layer = new PaintLayer(h3Res(4))
+  const layer = new PaintLayer(h3Resolution(4))
   if (at) layer.stamp(at, km, 1)
   return layer
 }

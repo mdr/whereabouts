@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { FILL_DENSITY } from "@whereabouts/shared/paint/fill"
 import { LandMask } from "@whereabouts/shared/paint/land"
 import { resolutionForTolerance } from "@whereabouts/shared/paint/paint"
-import { cellToChildren, finerRes, latLngToCell, type H3Cell } from "@whereabouts/shared/h3"
+import { cellToChildren, finerResolution, latLngToCell, type H3Cell } from "@whereabouts/shared/h3"
 import { AnswerType, answerCentre, type FlagQuestion } from "@whereabouts/shared/questions"
 import { makeFlagQuestion } from "../test-view"
 import type { LatLon } from "@whereabouts/shared/geo"
@@ -12,7 +12,7 @@ import { HintAxis } from "@whereabouts/shared/hints"
 import type { Km } from "@whereabouts/shared/units"
 
 const TOLERANCE: Km = 100
-const RES = resolutionForTolerance(TOLERANCE)
+const RESOLUTION = resolutionForTolerance(TOLERANCE)
 const PARIS: LatLon = { lat: 48.86, lon: 2.35 }
 const MADRID: LatLon = { lat: 40.42, lon: -3.7 }
 
@@ -39,7 +39,7 @@ function makeFiller(overrides: Partial<Filler> = {}): Filler {
   }
 }
 
-const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RES)
+const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RESOLUTION)
 
 function paintStroke(model: PaintModel, ...at: LatLon[]): void {
   model.beginStroke(Tool.PAINT)
@@ -248,7 +248,7 @@ describe("PaintModel", () => {
   })
 
   describe("trims", () => {
-    const parisLand = () => new LandMask({ res: RES, cells: [cellAt(PARIS)] })
+    const parisLand = () => new LandMask({ resolution: RESOLUTION, cells: [cellAt(PARIS)] })
 
     it("drops the paint off the land as one step, saying how much went", () => {
       const model = makeModel()
@@ -293,7 +293,7 @@ describe("PaintModel", () => {
 
     it("drops cells finer than the layer", () => {
       const model = makeModel()
-      const [finer] = cellToChildren(cellAt(PARIS), finerRes(RES))
+      const [finer] = cellToChildren(cellAt(PARIS), finerResolution(RESOLUTION))
       model.restore({ [finer!]: 1 })
       expect(model.layer.isEmpty).toBe(true)
     })
@@ -314,7 +314,7 @@ describe("PaintModel", () => {
       paintStroke(model, PARIS)
       model.reset(10)
       expect(model.layer.isEmpty).toBe(true)
-      expect(model.layer.res).toBe(resolutionForTolerance(10))
+      expect(model.layer.resolution).toBe(resolutionForTolerance(10))
       expect(model.tolerance.value).toBe(10)
       expect(model.canUndo.value).toBe(false)
     })

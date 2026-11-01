@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vite-plus/test"
 import { Vector3 } from "three"
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
-import { h3Res } from "@whereabouts/shared/h3"
+import { h3Resolution } from "@whereabouts/shared/h3"
 import { THEME } from "../../map/themes"
 import { paintGeometry } from "./paint-mesh"
 import { localToLatLon } from "./sphere"
 
 describe("paint on the VR globe", () => {
   it("is a fan of triangles on the sphere for each cell, faint to bright as the map ramps it", () => {
-    const layer = new PaintLayer(h3Res(5))
+    const layer = new PaintLayer(h3Resolution(5))
     layer.stamp({ lat: 51.5, lon: -0.1 }, 40, 1)
     const paint = layer.toGeoJSON()
     const geometry = paintGeometry(paint, THEME, 2)
@@ -41,7 +41,7 @@ describe("paint on the VR globe", () => {
   })
 
   it("keeps cells across the antimeridian whole", () => {
-    const layer = new PaintLayer(h3Res(3))
+    const layer = new PaintLayer(h3Resolution(3))
     layer.stamp({ lat: 0, lon: 180 }, 100, 1)
     const geometry = paintGeometry(layer.toGeoJSON(), THEME, 1)
     const positions = geometry.getAttribute("position")

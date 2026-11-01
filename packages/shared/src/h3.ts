@@ -21,24 +21,24 @@ export const H3CellSchema = z
 export type H3Cell = z.infer<typeof H3CellSchema>
 export const h3Cell = (text: string): H3Cell => H3CellSchema.parse(text)
 
-export const H3ResSchema = z.number().int().min(0).max(15).brand<"H3Res">()
-export type H3Res = z.infer<typeof H3ResSchema>
-export const h3Res = (value: number): H3Res => H3ResSchema.parse(value)
+export const H3ResolutionSchema = z.number().int().min(0).max(15).brand<"H3Resolution">()
+export type H3Resolution = z.infer<typeof H3ResolutionSchema>
+export const h3Resolution = (value: number): H3Resolution => H3ResolutionSchema.parse(value)
 
-const RESOLUTIONS = Array.from({ length: 16 }, (_, resolution) => h3Res(resolution))
+const RESOLUTIONS = Array.from({ length: 16 }, (_, resolution) => h3Resolution(resolution))
 
 /** Resolutions 0 to `max`, coarsest first. */
-export const resolutionsTo = (max: number): readonly H3Res[] => RESOLUTIONS.slice(0, max + 1)
+export const resolutionsTo = (max: number): readonly H3Resolution[] => RESOLUTIONS.slice(0, max + 1)
 
 /** One level finer, from a table: scoring steps down millions of times. */
-export function finerRes(resolution: H3Res): H3Res {
+export function finerResolution(resolution: H3Resolution): H3Resolution {
   const finer = RESOLUTIONS[resolution + 1]
   if (finer === undefined) throw new RangeError(`no resolution finer than ${resolution}`)
   return finer
 }
 
 /** One level coarser. */
-export function coarserRes(resolution: H3Res): H3Res {
+export function coarserResolution(resolution: H3Resolution): H3Resolution {
   const coarser = RESOLUTIONS[resolution - 1]
   if (coarser === undefined) throw new RangeError(`no resolution coarser than ${resolution}`)
   return coarser
@@ -51,11 +51,13 @@ const brandCells = (values: string[]) => values as H3Cell[]
 export const cellEntries = <V>(record: Readonly<Record<H3Cell, V>>): [H3Cell, V][] =>
   Object.entries(record) as [H3Cell, V][]
 
-export const latLngToCell = (lat: Degrees, lng: Degrees, res: H3Res): H3Cell =>
-  brandCell(h3.latLngToCell(lat, lng, res))
-export const cellToParent = (cell: H3Cell, res: H3Res): H3Cell => brandCell(h3.cellToParent(cell, res))
-export const cellToChildren = (cell: H3Cell, res: H3Res): H3Cell[] => brandCells(h3.cellToChildren(cell, res))
-export const getResolution = (cell: H3Cell): H3Res => h3.getResolution(cell) as H3Res
+export const latLngToCell = (lat: Degrees, lng: Degrees, resolution: H3Resolution): H3Cell =>
+  brandCell(h3.latLngToCell(lat, lng, resolution))
+export const cellToParent = (cell: H3Cell, resolution: H3Resolution): H3Cell =>
+  brandCell(h3.cellToParent(cell, resolution))
+export const cellToChildren = (cell: H3Cell, resolution: H3Resolution): H3Cell[] =>
+  brandCells(h3.cellToChildren(cell, resolution))
+export const getResolution = (cell: H3Cell): H3Resolution => h3.getResolution(cell) as H3Resolution
 export const cellToLatLng = (cell: H3Cell): [lat: Degrees, lng: Degrees] => h3.cellToLatLng(cell)
 export const cellBoundaryLatLng = (cell: H3Cell): [lat: Degrees, lng: Degrees][] => h3.cellToBoundary(cell)
 /** GeoJSON order, as `LonLat`. */
@@ -65,11 +67,14 @@ export const gridDisk = (cell: H3Cell, rings: number): H3Cell[] => brandCells(h3
 export const gridDiskDistances = (cell: H3Cell, rings: number): H3Cell[][] =>
   h3.gridDiskDistances(cell, rings) as H3Cell[][]
 export const gridDistance = (a: H3Cell, b: H3Cell): number => h3.gridDistance(a, b)
-export const polygonToCells = (polygon: number[][] | number[][][], res: H3Res, isGeoJson?: boolean): H3Cell[] =>
-  brandCells(h3.polygonToCells(polygon, res, isGeoJson))
+export const polygonToCells = (
+  polygon: number[][] | number[][][],
+  resolution: H3Resolution,
+  isGeoJson?: boolean
+): H3Cell[] => brandCells(h3.polygonToCells(polygon, resolution, isGeoJson))
 export const cellsToMultiPolygon = (cells: H3Cell[], formatAsGeoJson?: boolean) =>
   h3.cellsToMultiPolygon(cells, formatAsGeoJson)
-export const edgeLength = (res: H3Res): Km => h3.getHexagonEdgeLengthAvg(res, h3.UNITS.km)
+export const edgeLength = (resolution: H3Resolution): Km => h3.getHexagonEdgeLengthAvg(resolution, h3.UNITS.km)
 export const getRes0Cells = (): H3Cell[] => brandCells(h3.getRes0Cells())
 
 /** A cell's 64-bit index as its lower and upper 32 bits, for binary paint. */

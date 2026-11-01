@@ -1,5 +1,5 @@
 // Builds water.json, the mask the "Trim land" button uses in a lake or sea
-// round: every H3 cell at WATER_RES lying wholly on land and touching no
+// round: every H3 cell at WATER_RESOLUTION lying wholly on land and touching no
 // lake, compacted. Trimming drops paint in those cells, so paint within a
 // cell of any water stays. From Natural Earth's 1:10m land and lakes (public
 // domain), and the lake rounds' outlines too, since lake rounds are
@@ -12,7 +12,7 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { compactCells, polygonToCellsExperimental, POLYGON_TO_CELLS_FLAGS } from "h3-js"
 
-const WATER_RES = 5
+const WATER_RESOLUTION = 5
 const NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson"
 
 async function polygons(name) {
@@ -25,7 +25,8 @@ async function polygons(name) {
   )
 }
 
-const cells = (polygon, mode) => polygonToCellsExperimental(polygon, WATER_RES, POLYGON_TO_CELLS_FLAGS[mode], true)
+const cells = (polygon, mode) =>
+  polygonToCellsExperimental(polygon, WATER_RESOLUTION, POLYGON_TO_CELLS_FLAGS[mode], true)
 
 const dry = new Set()
 for (const polygon of await polygons("ne_10m_land")) for (const cell of cells(polygon, "containmentFull")) dry.add(cell)
@@ -39,7 +40,7 @@ for (const polygon of [...(await polygons("ne_10m_lakes")), ...lakeRounds])
   for (const cell of cells(polygon, "containmentOverlapping")) dry.delete(cell)
 
 const compacted = compactCells([...dry]).sort()
-const out = JSON.stringify({ res: WATER_RES, dry: compacted })
+const out = JSON.stringify({ resolution: WATER_RESOLUTION, dry: compacted })
 writeFileSync(new URL("../water.json", import.meta.url), out + "\n")
 console.log(
   `${before} dry cells, ${before - dry.size} of them by a lake, ${compacted.length} compacted: ${Math.round(out.length / 1024)} KB`

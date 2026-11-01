@@ -9,7 +9,7 @@ import { paintBlobs } from "@whereabouts/shared/paint/blobs"
 import { PaintLayer, resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { paintAmount, trimLand, trimSea, type LandMask, type WaterMask } from "@whereabouts/shared/paint/land"
 import { trimToHint, type HintBand } from "@whereabouts/shared/hints"
-import { h3Res, type H3Cell } from "@whereabouts/shared/h3"
+import { h3Resolution, type H3Cell } from "@whereabouts/shared/h3"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { FlagQuestion } from "@whereabouts/shared/questions"
 import type { LatLon } from "@whereabouts/shared/geo"
@@ -57,7 +57,7 @@ export class PaintModel {
   readonly isEmpty = following(this.version, () => this.layer.isEmpty)
   /** The layer's size and resolutions, for the dev panel. */
   readonly stats = following(this.version, () => ({
-    res: this.layer.res,
+    resolution: this.layer.resolution,
     size: this.layer.size,
     resolutionCounts: this.layer.resolutionCounts()
   }))
@@ -77,7 +77,7 @@ export class PaintModel {
   private readonly _canRedo = signal(false)
   readonly canRedo: ReadonlySignal<boolean> = this._canRedo
 
-  private _layer = new PaintLayer(h3Res(4))
+  private _layer = new PaintLayer(h3Resolution(4))
   private filler: Filler | undefined = undefined
   /** The countries filled, by flag code, with the cells each was filled with. */
   private fills = new Map<FlagCode, H3Cell[]>()
@@ -132,7 +132,7 @@ export class PaintModel {
    */
   restore(cells: Record<H3Cell, number>): void {
     batch(() => {
-      this._layer = PaintLayer.fromRecord(this._layer.res, cells)
+      this._layer = PaintLayer.fromRecord(this._layer.resolution, cells)
       this.fills = new Map()
       this.version.value++
       this.clearHistory()
@@ -194,7 +194,7 @@ export class PaintModel {
       this._layer.removeCoat(filled, FILL_DENSITY)
       this.fills.delete(question.clue.flag)
     } else {
-      const cells = this.filler!.cells(question, this._layer.res)
+      const cells = this.filler!.cells(question, this._layer.resolution)
       this._layer.addCoat(cells, FILL_DENSITY)
       this.fills.set(question.clue.flag, cells)
     }
@@ -208,17 +208,17 @@ export class PaintModel {
    * the share of the paint's mass removed: 0 when there was none at sea.
    */
   trimSea(mask: LandMask): number {
-    return this.keepOnly(trimSea(this._layer.cells, mask, this._layer.res))
+    return this.keepOnly(trimSea(this._layer.cells, mask, this._layer.resolution))
   }
 
   /** Drop the paint on dry land, for a lake or sea, as trimSea drops it at sea. */
   trimLand(mask: WaterMask): number {
-    return this.keepOnly(trimLand(this._layer.cells, mask, this._layer.res))
+    return this.keepOnly(trimLand(this._layer.cells, mask, this._layer.resolution))
   }
 
   /** Drop the paint outside a hint's band, as trimSea drops it at sea. */
   trimToHint(band: HintBand): number {
-    return this.keepOnly(trimToHint(this._layer.cells, band, this._layer.res))
+    return this.keepOnly(trimToHint(this._layer.cells, band, this._layer.resolution))
   }
 
   private keepOnly(kept: Map<H3Cell, number>): number {

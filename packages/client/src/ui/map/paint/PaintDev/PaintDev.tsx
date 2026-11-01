@@ -30,9 +30,9 @@ export function PaintDev() {
         format={(value) => `${Math.round(value * 100)}%`}
       />
       <p class={kit.hint}>
-        Tolerance {formatDistance(paint.tolerance.value)} · finest H3 res {stats.res} · {stats.size} cells
+        Tolerance {formatDistance(paint.tolerance.value)} · finest H3 resolution {stats.resolution} · {stats.size} cells
         {stats.size > 0 && (
-          <> ({stats.resolutionCounts.map(([resolution, count]) => `res ${resolution}: ${count}`).join(", ")})</>
+          <> ({stats.resolutionCounts.map(([resolution, count]) => `resolution ${resolution}: ${count}`).join(", ")})</>
         )}
       </p>
       <PaintBlobs />

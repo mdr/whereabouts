@@ -47,8 +47,8 @@ export function scoreRound(
   { startedAt, roundLength }: { startedAt: Instant; roundLength: Ms }
 ): ScoredRound {
   const submittedPaint = submission && Object.keys(submission.paint.cells).length > 0 ? submission.paint : undefined
-  const res = resolutionForTolerance(answer.tolerance)
-  const cells = submittedPaint ? [...PaintLayer.fromRecord(res, submittedPaint.cells).toCells()] : []
+  const resolution = resolutionForTolerance(answer.tolerance)
+  const cells = submittedPaint ? [...PaintLayer.fromRecord(resolution, submittedPaint.cells).toCells()] : []
   const painted = submittedPaint ? buildDistribution(cells, submittedPaint.floor) : undefined
   const { score, parts } = scoreAnswer(painted, answer, kernel)
   const base = {
@@ -59,7 +59,7 @@ export function scoreRound(
   }
   if (!submittedPaint || !painted)
     return { score, guess: { type: RoundGuessType.PASSED }, facts: { type: FactsType.PASSED, ...base } }
-  const guess: RoundGuess = { type: RoundGuessType.PAINTED, paint: submittedPaint, res, parts }
+  const guess: RoundGuess = { type: RoundGuessType.PAINTED, paint: submittedPaint, resolution, parts }
   const area = cells.reduce((sum, cell) => sum + cell.area, 0)
   if (answer.type === AnswerType.AREA) {
     const misfit = regionMisfit(painted, answer)

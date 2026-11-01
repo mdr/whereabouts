@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellEntries, gridDisk, h3Res, latLngToCell, type H3Cell } from "../h3.ts"
+import { cellEntries, gridDisk, h3Resolution, latLngToCell, type H3Cell } from "../h3.ts"
 import { PAINT_CELL_BUDGET } from "./compact.ts"
 import { decodePaint, encodePaint, paintFromBase64, paintToBase64 } from "./paint-wire.ts"
 import type { PaintSubmission } from "../protocol/views.ts"
 
-const paris = latLngToCell(48.86, 2.35, h3Res(6))
+const paris = latLngToCell(48.86, 2.35, h3Resolution(6))
 const paint = (cells: Record<H3Cell, number>, floor = 0.05): PaintSubmission => ({ cells, floor })
 
 describe("binary paint", () => {

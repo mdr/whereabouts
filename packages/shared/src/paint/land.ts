@@ -1,5 +1,5 @@
 /**
- * The land mask behind the "Trim sea" button: the H3 res-5 cells (about
+ * The land mask behind the "Trim sea" button: the H3 resolution-5 cells (about
  * 17 km across) that touch land, compacted (land.json, built by
  * scripts/build-land.mjs). A painted cell of any resolution is "near land"
  * when it overlaps the mask; trimming keeps only those. Around Italy that
@@ -21,28 +21,28 @@ import {
   cellToParent,
   getResolution,
   h3Cell,
-  h3Res,
+  h3Resolution,
   resolutionsTo,
   type H3Cell,
-  type H3Res
+  type H3Resolution
 } from "../h3.ts"
 
 export interface LandMaskData {
   /** The mask's finest resolution. */
-  res: number
-  /** Compacted cells: each at res or coarser. */
+  resolution: number
+  /** Compacted cells: each at resolution or coarser. */
   cells: string[]
 }
 
 export class LandMask {
   /** The mask's finest resolution. */
-  readonly res: H3Res
+  readonly resolution: H3Resolution
   private readonly cells: Set<H3Cell>
   /** Every strict ancestor of a mask cell: a coarse cell with land somewhere inside. */
   private readonly ancestors = new Set<H3Cell>()
 
   constructor(data: LandMaskData) {
-    this.res = h3Res(data.res)
+    this.resolution = h3Resolution(data.resolution)
     this.cells = new Set(data.cells.map(h3Cell))
     for (const cell of this.cells)
       for (const resolution of resolutionsTo(getResolution(cell) - 1))
@@ -52,9 +52,9 @@ export class LandMask {
   /** Whether any of this cell is within the mask. */
   nearLand(cell: H3Cell): boolean {
     const resolution = getResolution(cell)
-    for (const level of resolutionsTo(Math.min(resolution, this.res)))
+    for (const level of resolutionsTo(Math.min(resolution, this.resolution)))
       if (this.cells.has(level === resolution ? cell : cellToParent(cell, level))) return true
-    return resolution < this.res && this.ancestors.has(cell)
+    return resolution < this.resolution && this.ancestors.has(cell)
   }
 }
 
@@ -62,49 +62,57 @@ export class LandMask {
  * The paint without its cells out at sea. A cell coarser than the mask that
  * is partly at sea (a big brush at world zoom lays cells 100 km across) is
  * split into its children that are near land, at the same density: the
- * mask's resolution, or the layer's finest (`finestRes`) if that is
+ * mask's resolution, or the layer's finest (`finestResolution`) if that is
  * coarser, since paint is never finer than its layer. Where a split child
  * meets a painted cell of its own, their densities add, as overlapping
  * cells always do.
  */
-export function trimSea(cells: ReadonlyMap<H3Cell, number>, mask: LandMask, finestRes: H3Res): Map<H3Cell, number> {
-  return keepCells(cells, (cell) => mask.nearLand(cell), h3Res(Math.min(mask.res, finestRes)))
+export function trimSea(
+  cells: ReadonlyMap<H3Cell, number>,
+  mask: LandMask,
+  finestResolution: H3Resolution
+): Map<H3Cell, number> {
+  return keepCells(cells, (cell) => mask.nearLand(cell), h3Resolution(Math.min(mask.resolution, finestResolution)))
 }
 
 /**
- * The mask behind "Trim land", in a lake or sea round: the H3 res-5 cells
+ * The mask behind "Trim land", in a lake or sea round: the H3 resolution-5 cells
  * wholly on land and touching no lake, compacted (water.json, built by
  * scripts/build-water.mjs). The land mask cannot serve, since lakes are land
  * in it. Paint within a cell of water stays, as paint within a cell of land
  * stays when trimming the sea.
  */
 export interface WaterMaskData {
-  res: number
-  /** Compacted cells: each at res or coarser. */
+  resolution: number
+  /** Compacted cells: each at resolution or coarser. */
   dry: string[]
 }
 
 export class WaterMask {
-  readonly res: H3Res
+  readonly resolution: H3Resolution
   private readonly dry: Set<H3Cell>
 
   constructor(data: WaterMaskData) {
-    this.res = h3Res(data.res)
+    this.resolution = h3Resolution(data.resolution)
     this.dry = new Set(data.dry.map(h3Cell))
   }
 
   /** Whether any of this cell is outside the dry cells. Compaction puts any cell wholly dry, or an ancestor, in the set. */
   nearWater(cell: H3Cell): boolean {
     const resolution = getResolution(cell)
-    for (const level of resolutionsTo(Math.min(resolution, this.res)))
+    for (const level of resolutionsTo(Math.min(resolution, this.resolution)))
       if (this.dry.has(level === resolution ? cell : cellToParent(cell, level))) return false
     return true
   }
 }
 
 /** The paint without its cells on dry land, split as trimSea splits. */
-export function trimLand(cells: ReadonlyMap<H3Cell, number>, mask: WaterMask, finestRes: H3Res): Map<H3Cell, number> {
-  return keepCells(cells, (cell) => mask.nearWater(cell), h3Res(Math.min(mask.res, finestRes)))
+export function trimLand(
+  cells: ReadonlyMap<H3Cell, number>,
+  mask: WaterMask,
+  finestResolution: H3Resolution
+): Map<H3Cell, number> {
+  return keepCells(cells, (cell) => mask.nearWater(cell), h3Resolution(Math.min(mask.resolution, finestResolution)))
 }
 
 /**
@@ -114,7 +122,7 @@ export function trimLand(cells: ReadonlyMap<H3Cell, number>, mask: WaterMask, fi
 export function keepCells(
   cells: ReadonlyMap<H3Cell, number>,
   keep: (h: H3Cell) => boolean,
-  target: H3Res
+  target: H3Resolution
 ): Map<H3Cell, number> {
   const kept = new Map<H3Cell, number>()
   const add = (h: H3Cell, v: number) => kept.set(h, (kept.get(h) ?? 0) + v)

@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellToChildren, cellToParent, getResolution, h3Res, latLngToCell } from "../h3.ts"
+import { cellToChildren, cellToParent, getResolution, h3Resolution, latLngToCell } from "../h3.ts"
 import landJson from "../../land.json" with { type: "json" }
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { LandMask, trimSea } from "./land.ts"
 import { CATALOGUE, outlinesFrom } from "../catalogue/catalogue.ts"
 import { AnswerType, QuestionType } from "../questions.ts"
 import { resolutionForTolerance } from "./paint.ts"
-import { regionCells, regionScoringRes, scoredAnswer } from "../scoring/regions.ts"
+import { regionCells, regionScoringResolution, scoredAnswer } from "../scoring/regions.ts"
 
 const mask = new LandMask(landJson)
-const at = (lat: number, lon: number, resolution: number) => latLngToCell(lat, lon, h3Res(resolution))
+const at = (lat: number, lon: number, resolution: number) => latLngToCell(lat, lon, h3Resolution(resolution))
 
 describe("land mask", () => {
   it("keeps paint on every answer, at the resolution it is painted", () => {
@@ -31,7 +31,7 @@ describe("land mask", () => {
     for (const question of CATALOGUE.filter((question) => question.type === QuestionType.COUNTRY)) {
       const a = scoredAnswer(question.answer, outlines)
       if (a.type !== AnswerType.AREA) throw new Error(`${question.id} is not painted whole`)
-      const lost = regionCells(a, regionScoringRes(a.tolerance)).filter((cell) => !mask.nearLand(cell))
+      const lost = regionCells(a, regionScoringResolution(a.tolerance)).filter((cell) => !mask.nearLand(cell))
       expect(lost, question.label).toEqual([])
     }
   })
@@ -54,13 +54,13 @@ describe("land mask", () => {
   })
 
   it("judges a coarse cell by whether any of it is near land", () => {
-    // A res-1 cell over the English Channel has land in it; one in the mid-Pacific has none.
+    // A resolution-1 cell over the English Channel has land in it; one in the mid-Pacific has none.
     expect(mask.nearLand(at(50, -2, 1))).toBe(true)
     expect(mask.nearLand(at(0, -140, 1))).toBe(false)
     // A fine cell inside a compacted land cell (central Africa) is near land.
     const inland = at(5, 22, 9)
     expect(mask.nearLand(inland)).toBe(true)
-    expect(mask.nearLand(cellToChildren(cellToParent(inland, h3Res(3)), h3Res(4))[0]!)).toBe(true)
+    expect(mask.nearLand(cellToChildren(cellToParent(inland, h3Resolution(3)), h3Resolution(4))[0]!)).toBe(true)
   })
 
   it("trimSea keeps the land cells with their intensity and drops the rest", () => {
@@ -72,25 +72,25 @@ describe("land mask", () => {
         [ocean, 1]
       ]),
       mask,
-      h3Res(6)
+      h3Resolution(6)
     )
     expect([...kept]).toEqual([[london, 2]])
   })
 
   it("splits a coarse cell that is partly at sea into its cells near land, at the same density", () => {
-    // A res-3 cell on the Italian coast near Naples: part land, part Tyrrhenian Sea.
+    // A resolution-3 cell on the Italian coast near Naples: part land, part Tyrrhenian Sea.
     const coast = at(40.7, 14.0, 3)
-    const kept = trimSea(new Map([[coast, 3]]), mask, h3Res(7))
+    const kept = trimSea(new Map([[coast, 3]]), mask, h3Resolution(7))
     expect(kept.has(coast)).toBe(false)
     expect(kept.size).toBeGreaterThan(0)
-    expect(kept.size).toBeLessThan(cellToChildren(coast, h3Res(5)).length)
+    expect(kept.size).toBeLessThan(cellToChildren(coast, h3Resolution(5)).length)
     for (const [cell, count] of kept) {
       expect(getResolution(cell)).toBe(5)
       expect(count).toBe(3)
       expect(mask.nearLand(cell)).toBe(true)
     }
     // Never finer than the layer: at a coarse layer it splits only that far.
-    for (const cell of trimSea(new Map([[coast, 3]]), mask, h3Res(4)).keys())
+    for (const cell of trimSea(new Map([[coast, 3]]), mask, h3Resolution(4)).keys())
       expect(getResolution(cell)).toBeLessThanOrEqual(4)
     // A split child that is also painted on its own gets both densities.
     const child = [...kept.keys()][0]!
@@ -101,11 +101,11 @@ describe("land mask", () => {
           [child, 1]
         ]),
         mask,
-        h3Res(7)
+        h3Resolution(7)
       ).get(child)
     ).toBe(4)
     // A coarse cell wholly on land stays as it is.
     const inland = at(5, 22, 3)
-    expect([...trimSea(new Map([[inland, 1]]), mask, h3Res(7))]).toEqual([[inland, 1]])
+    expect([...trimSea(new Map([[inland, 1]]), mask, h3Resolution(7))]).toEqual([[inland, 1]])
   })
 })

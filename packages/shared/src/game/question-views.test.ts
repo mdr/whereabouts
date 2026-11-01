@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { CATALOGUE } from "../catalogue/catalogue.ts"
 import { playedRound, questionPictures, questionView, revealOf } from "./question-views.ts"
-import { h3Res } from "../h3.ts"
+import { h3Resolution } from "../h3.ts"
 import { playerId } from "../ids.ts"
 import { REVEAL_PHOTOS } from "../catalogue/photos.ts"
 import { RoundGuessType, type RoundResultView } from "../protocol/views.ts"
@@ -70,7 +70,7 @@ describe("revealOf", () => {
         guess: {
           type: RoundGuessType.PAINTED,
           paint: { cells: {}, floor: 0 },
-          res: h3Res(5),
+          resolution: h3Resolution(5),
           parts: { type: AnswerType.POINT, A: 0.9, B: 0.8 }
         }
       }

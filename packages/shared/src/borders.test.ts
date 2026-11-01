@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell } from "./h3.ts"
+import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Resolution, latLngToCell } from "./h3.ts"
 import bordersJson from "../borders.json" with { type: "json" }
 import { Borders } from "./borders.ts"
 import type { PaintCell } from "./paint/paint.ts"
@@ -75,9 +75,9 @@ describe("borders", () => {
   })
 
   it("splits paint by country, by mass", () => {
-    const paris = latLngToCell(48.85, 2.35, h3Res(6))
-    const lima = latLngToCell(-12.05, -77.04, h3Res(6))
-    const sea = latLngToCell(30, -40, h3Res(6))
+    const paris = latLngToCell(48.85, 2.35, h3Resolution(6))
+    const lima = latLngToCell(-12.05, -77.04, h3Resolution(6))
+    const sea = latLngToCell(30, -40, h3Resolution(6))
     // Equal areas, so the shares are the intensities': 3 of 5 in France, 1 in Peru, 1 at sea.
     const even = (h3Cell: H3Cell, value: number) => ({ ...cell(h3Cell, value), area: 1 })
     const split = borders.paintedCountries([even(paris, 3), even(lima, 1), even(sea, 1)])
@@ -85,7 +85,7 @@ describe("borders", () => {
     expect(split[0]!.share).toBeCloseTo(0.6, 1)
     expect(split[1]!.share).toBeCloseTo(0.2, 1)
     // A blob on Peru is mostly in Peru.
-    const blob = gridDisk(latLngToCell(-10, -75, h3Res(4)), 3).map((h3Cell) => cell(h3Cell))
+    const blob = gridDisk(latLngToCell(-10, -75, h3Resolution(4)), 3).map((h3Cell) => cell(h3Cell))
     expect(borders.paintedCountries(blob)[0]!.country.label).toBe("Peru")
     expect(borders.paintedCountries([])).toEqual([])
   })

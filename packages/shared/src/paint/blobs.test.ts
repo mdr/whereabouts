@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { h3Res } from "../h3.ts"
+import { h3Resolution } from "../h3.ts"
 import { paintBlobs } from "./blobs.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 
@@ -20,7 +20,7 @@ describe("paintBlobs", () => {
   })
 
   it("blobs still sum to one when fine and coarse cells overlap", () => {
-    const layer = new PaintLayer(h3Res(8))
+    const layer = new PaintLayer(h3Resolution(8))
     layer.stamp({ lat: 27, lon: 78 }, 800, 1) // coarse
     layer.stamp({ lat: 27, lon: 78 }, 3, 1) // fine, on top
     layer.stamp({ lat: -30, lon: 140 }, 3, 1) // fine, elsewhere

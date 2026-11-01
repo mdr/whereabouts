@@ -1,6 +1,6 @@
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import { colourCss, type CssColour } from "@whereabouts/shared/colours"
-import type { H3Res } from "@whereabouts/shared/h3"
+import type { H3Resolution } from "@whereabouts/shared/h3"
 import { RoundGuessType, type PaintSubmission, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 
@@ -15,13 +15,13 @@ export interface PlayerPaint {
 const layers = new WeakMap<PaintSubmission, PaintLayer>()
 const coloured = new WeakMap<PaintSubmission, PlayerPaint>()
 
-export function paintLayer(resolution: H3Res, paint: PaintSubmission): PaintLayer {
+export function paintLayer(resolution: H3Resolution, paint: PaintSubmission): PaintLayer {
   let layer = layers.get(paint)
   if (!layer) layers.set(paint, (layer = PaintLayer.fromRecord(resolution, paint.cells)))
   return layer
 }
 
-function playerPaint(resolution: H3Res, paint: PaintSubmission, colour: CssColour): PlayerPaint {
+function playerPaint(resolution: H3Resolution, paint: PaintSubmission, colour: CssColour): PlayerPaint {
   const cached = coloured.get(paint)
   if (cached?.colour === colour) return cached
   const layer = paintLayer(resolution, paint)
@@ -38,7 +38,7 @@ export function paintsOf(results: RoundResultView[], players: PlayingPlayerView[
   return [...results].reverse().flatMap((result) => {
     const player = players.find((candidate) => candidate.id === result.playerId)
     return player && result.guess.type === RoundGuessType.PAINTED
-      ? [playerPaint(result.guess.res, result.guess.paint, colourCss(player.colour))]
+      ? [playerPaint(result.guess.resolution, result.guess.paint, colourCss(player.colour))]
       : []
   })
 }

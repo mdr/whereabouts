@@ -14,10 +14,10 @@ vi.mock("../sound/sound", () => ({ sound: { play } }))
 vi.mock("../data/land", () => ({ loadLandMask: vi.fn(), loadWaterMask: vi.fn() }))
 
 const TOLERANCE: Km = 100
-const RES = resolutionForTolerance(TOLERANCE)
+const RESOLUTION = resolutionForTolerance(TOLERANCE)
 const PARIS: LatLon = { lat: 48.86, lon: 2.35 }
 const MADRID: LatLon = { lat: 40.42, lon: -3.7 }
-const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RES)
+const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RESOLUTION)
 
 function makeModel(...at: LatLon[]): PaintModel {
   const model = new PaintModel()
@@ -44,7 +44,7 @@ describe("clearPaint", () => {
 
 describe("trimPaint", () => {
   it("trims the sea with the land mask, saying how much went", async () => {
-    vi.mocked(loadLandMask).mockResolvedValue(new LandMask({ res: RES, cells: [cellAt(PARIS)] }))
+    vi.mocked(loadLandMask).mockResolvedValue(new LandMask({ resolution: RESOLUTION, cells: [cellAt(PARIS)] }))
     const model = makeModel(PARIS, MADRID)
     expect(await trimPaint(model, false)).toMatch(/^Trimmed \d+%$/)
     expect([...model.layer.cells.keys()]).toEqual([cellAt(PARIS)])
@@ -52,13 +52,13 @@ describe("trimPaint", () => {
   })
 
   it("says so, silently, when nothing is at sea", async () => {
-    vi.mocked(loadLandMask).mockResolvedValue(new LandMask({ res: RES, cells: [cellAt(PARIS)] }))
+    vi.mocked(loadLandMask).mockResolvedValue(new LandMask({ resolution: RESOLUTION, cells: [cellAt(PARIS)] }))
     expect(await trimPaint(makeModel(PARIS), false)).toBe("None at sea")
     expect(play).not.toHaveBeenCalled()
   })
 
   it("trims the land with the water mask in a lake or sea round", async () => {
-    vi.mocked(loadWaterMask).mockResolvedValue(new WaterMask({ res: RES, dry: [] }))
+    vi.mocked(loadWaterMask).mockResolvedValue(new WaterMask({ resolution: RESOLUTION, dry: [] }))
     expect(await trimPaint(makeModel(PARIS), true)).toBe("None on land")
     expect(loadLandMask).not.toHaveBeenCalled()
   })

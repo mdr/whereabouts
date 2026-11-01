@@ -2,12 +2,12 @@ import { AnswerType } from "../questions.ts"
 import { describe, expect, it } from "vite-plus/test"
 import { PaintLayer } from "../paint/paint.ts"
 import { CaseQuestionType, decodeCase, encodeCase, type ScoringCase } from "./scoring-case.ts"
-import { h3Res } from "../h3.ts"
+import { h3Resolution } from "../h3.ts"
 import { flagCode, questionId } from "../ids.ts"
 import { KernelId } from "./scoring.ts"
 
 function sample(): ScoringCase {
-  const layer = new PaintLayer(h3Res(6))
+  const layer = new PaintLayer(h3Resolution(6))
   layer.stamp({ lat: 48.86, lon: 2.35 }, 80, 1)
   layer.stamp({ lat: 48.9, lon: 2.5 }, 30, 0.6)
   layer.stamp({ lat: 51.5, lon: -0.12 }, 400, 0.3)
@@ -21,7 +21,7 @@ function sample(): ScoringCase {
     },
     kernel: KernelId.MULTI_EQUAL,
     floor: 0.05,
-    res: layer.res,
+    resolution: layer.resolution,
     score: 412.3,
     parts: { type: AnswerType.POINT, A: 0.5312, B: 0.6501 },
     cells: layer.toRecord()
@@ -33,10 +33,10 @@ describe("scoring cases", () => {
     const scoringCase = sample()
     const back = await decodeCase(await encodeCase(scoringCase))
     expect(back.question).toEqual(scoringCase.question)
-    expect([back.kernel, back.floor, back.res, back.score, back.parts]).toEqual([
+    expect([back.kernel, back.floor, back.resolution, back.score, back.parts]).toEqual([
       scoringCase.kernel,
       scoringCase.floor,
-      scoringCase.res,
+      scoringCase.resolution,
       scoringCase.score,
       scoringCase.parts
     ])

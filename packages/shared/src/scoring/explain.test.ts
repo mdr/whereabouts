@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell } from "../h3.ts"
+import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Resolution, latLngToCell } from "../h3.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { explainPoint, isHedge, type PointExplanation } from "./explain.ts"
 import { resolutionForTolerance } from "../paint/paint.ts"
@@ -22,7 +22,7 @@ describe("explaining a place's score", () => {
   const tolerance = 150
   const resolution = resolutionForTolerance(tolerance)
   const explain = (lat: number, lon: number, cellResolution: number, rings: number) => {
-    const d = coat(gridDisk(latLngToCell(lat, lon, h3Res(cellResolution)), rings))
+    const d = coat(gridDisk(latLngToCell(lat, lon, h3Resolution(cellResolution)), rings))
     const scored = scoreDistribution(d, answer, tolerance)
     const explained = explainPoint(d, answer, tolerance, scored.A, scored.B)
     return { scored, explained }

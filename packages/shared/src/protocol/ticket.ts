@@ -10,7 +10,7 @@ import {
 } from "../ids.ts"
 import { Role } from "../roles.ts"
 
-export const PROTOCOL_VERSION = 15
+export const PROTOCOL_VERSION = 16
 
 export enum GameEntryType {
   HOST = "HOST",

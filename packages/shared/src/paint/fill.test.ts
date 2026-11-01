@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellToParent, getResolution, type H3Cell, h3Res, latLngToCell } from "../h3.ts"
+import { cellToParent, getResolution, type H3Cell, h3Resolution, latLngToCell } from "../h3.ts"
 import bordersJson from "../../borders.json" with { type: "json" }
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { Borders } from "../borders.ts"
@@ -17,16 +17,16 @@ const outlines = outlinesFrom(outlinesJson)
 const flag = (code: string) => flags.find((question) => question.clue.flag === code)!
 
 /** A flag round filled with its own country, as the client does it, and scored. */
-function fillAndScore(code: string, finestRes?: number): { score: number; cells: H3Cell[] } {
+function fillAndScore(code: string, finestResolution?: number): { score: number; cells: H3Cell[] } {
   const question = flag(code)
   const a = scoredAnswer(question.answer, outlines)
-  const resolution = finestRes ?? resolutionForTolerance(a.tolerance)
+  const resolution = finestResolution ?? resolutionForTolerance(a.tolerance)
   const shape: FillShape =
     a.type === AnswerType.AREA
       ? { type: FillShapeType.OUTLINE, outline: a.polygons, answer: a.centre }
       : borders.fillShape(question)
-  const cells = countryFill(shape, h3Res(resolution))
-  const layer = new PaintLayer(h3Res(resolution))
+  const cells = countryFill(shape, h3Resolution(resolution))
+  const layer = new PaintLayer(h3Resolution(resolution))
   layer.addCoat(cells, FILL_DENSITY)
   const painted = buildDistribution(layer.toCells(), 0.05)
   return { score: scoreAnswer(painted, a, DEFAULT_KERNEL).score, cells }
@@ -69,17 +69,19 @@ describe("countryFill", () => {
 
   it("fills a country too small for a cell around its answer", () => {
     const tuvalu = flag("tv")
-    const cells = countryFill(borders.fillShape(tuvalu), h3Res(4))
+    const cells = countryFill(borders.fillShape(tuvalu), h3Resolution(4))
     expect(cells.length).toBeGreaterThan(0)
-    expect(cells).toContain(latLngToCell(answerCentre(tuvalu.answer).lat, answerCentre(tuvalu.answer).lon, h3Res(4)))
+    expect(cells).toContain(
+      latLngToCell(answerCentre(tuvalu.answer).lat, answerCentre(tuvalu.answer).lon, h3Resolution(4))
+    )
   })
 
   it("leaves out a hole: Lesotho is not South Africa", () => {
-    const cells = new Set(countryFill(borders.fillShape(flag("za")), h3Res(5)))
-    const maseru = latLngToCell(-29.5, 28.2, h3Res(5))
-    const joburg = latLngToCell(-26.2, 28.05, h3Res(5))
+    const cells = new Set(countryFill(borders.fillShape(flag("za")), h3Resolution(5)))
+    const maseru = latLngToCell(-29.5, 28.2, h3Resolution(5))
+    const joburg = latLngToCell(-26.2, 28.05, h3Resolution(5))
     const has = (cell: H3Cell) =>
-      [3, 4, 5].some((resolution) => cells.has(resolution === 5 ? cell : cellToParent(cell, h3Res(resolution))))
+      [3, 4, 5].some((resolution) => cells.has(resolution === 5 ? cell : cellToParent(cell, h3Resolution(resolution))))
     expect(has(joburg)).toBe(true)
     expect(has(maseru)).toBe(false)
   })
@@ -87,8 +89,8 @@ describe("countryFill", () => {
 
 describe("coats", () => {
   it("takes a coat back off, leaving other paint alone", () => {
-    const layer = new PaintLayer(h3Res(6))
-    const coat = [latLngToCell(48, 2, h3Res(4))]
+    const layer = new PaintLayer(h3Resolution(6))
+    const coat = [latLngToCell(48, 2, h3Resolution(4))]
     layer.stamp({ lat: 48, lon: 2 }, 5, 0.5) // brush paint, finer, inside the coat's cell
     const before = new Map(layer.cells)
     layer.addCoat(coat, FILL_DENSITY)
@@ -99,8 +101,8 @@ describe("coats", () => {
   })
 
   it("takes a coat off the pieces of a cell the eraser split", () => {
-    const layer = new PaintLayer(h3Res(6))
-    const coat = [latLngToCell(48, 2, h3Res(3))]
+    const layer = new PaintLayer(h3Resolution(6))
+    const coat = [latLngToCell(48, 2, h3Resolution(3))]
     layer.addCoat(coat, FILL_DENSITY)
     layer.erase({ lat: 48, lon: 2 }, 5, 0.1) // a small erase splits the coarse cell
     expect(layer.cells.has(coat[0]!)).toBe(false)

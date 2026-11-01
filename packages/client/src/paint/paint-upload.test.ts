@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { act, renderHook } from "@testing-library/preact"
 import { signal } from "@preact/signals"
-import { h3Res } from "@whereabouts/shared/h3"
+import { h3Resolution } from "@whereabouts/shared/h3"
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { GuessingYouView, InPlayGameView } from "@whereabouts/shared/protocol/views"
 import { ConnectionStatus, type ConnectionState } from "../net/net"
@@ -12,7 +12,7 @@ import { JOINED_LATE, SPECTATING, makeGuessingView, makePlaying } from "../test-
 const CELL = "85283473fffffff"
 
 function makePaint(cells: Record<string, number> = { [CELL]: 1 }) {
-  return { layer: PaintLayer.fromRecord(h3Res(5), cells), floor: signal(0.05), version: signal(0) }
+  return { layer: PaintLayer.fromRecord(h3Resolution(5), cells), floor: signal(0.05), version: signal(0) }
 }
 
 /** Make a change, and run the renders and effects it causes. */

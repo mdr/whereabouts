@@ -5,7 +5,7 @@ import { PROTOCOL_VERSION, encodeTicket, type Ticket } from "@whereabouts/shared
 import { SEAT_GRACE } from "@whereabouts/shared/protocol/config"
 import { Phase } from "@whereabouts/shared/protocol/views"
 import { encodePaint } from "@whereabouts/shared/paint/paint-wire"
-import { gridDisk, h3Res, latLngToCell } from "@whereabouts/shared/h3"
+import { gridDisk, h3Resolution, latLngToCell } from "@whereabouts/shared/h3"
 import { HintAxis } from "@whereabouts/shared/hints"
 import { roomCode } from "@whereabouts/shared/ids"
 import { answerCentre } from "@whereabouts/shared/questions"
@@ -63,13 +63,13 @@ describe("connections", () => {
     expect(await pollErrors(alice)).toContain("invalid paint")
     alice.errors.length = 0
 
-    const tooMany = gridDisk(latLngToCell(0, 0, h3Res(7)), 45).slice(0, PAINT_CELL_BUDGET + 1)
+    const tooMany = gridDisk(latLngToCell(0, 0, h3Resolution(7)), 45).slice(0, PAINT_CELL_BUDGET + 1)
     alice.sendPaint({ cells: Object.fromEntries(tooMany.map((cell) => [cell, 1])), floor: 0 })
     expect(await pollErrors(alice)).toContain("invalid paint")
     alice.errors.length = 0
 
     // Not a cell: scoring it would throw.
-    const notACell = encodePaint({ cells: { [latLngToCell(0, 0, h3Res(5))]: 1 }, floor: 0 })
+    const notACell = encodePaint({ cells: { [latLngToCell(0, 0, h3Resolution(5))]: 1 }, floor: 0 })
     notACell.fill(0xff, 8, 16)
     alice.client.send("paint", notACell)
     expect(await pollErrors(alice)).toContain("invalid paint")

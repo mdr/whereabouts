@@ -24,8 +24,8 @@ function paintAround(answer: ScoredAnswer, lat: number, lon: number): PaintSubmi
 }
 
 function paintAll(area: Area): PaintSubmission {
-  const res = resolutionForTolerance(area.tolerance)
-  return { cells: Object.fromEntries(regionCells(area, res).map((cell) => [cell, 1])), floor: 0.05 }
+  const resolution = resolutionForTolerance(area.tolerance)
+  return { cells: Object.fromEntries(regionCells(area, resolution).map((cell) => [cell, 1])), floor: 0.05 }
 }
 
 const EMPTY: PaintSubmission = { cells: {}, floor: 1 }

@@ -9,7 +9,7 @@ import {
   cellToLatLng,
   getResolution,
   h3Cell,
-  h3Res,
+  h3Resolution,
   latLngToCell,
   type H3Cell
 } from "@whereabouts/shared/h3"
@@ -85,9 +85,9 @@ function alongGreatCircles(ring: Ring): Ring {
 }
 
 export function landCells(land: LandMaskData): H3Cell[] {
-  const finest = h3Res(land.res)
+  const finest = h3Resolution(land.resolution)
   const mask = new Set(land.cells.map(h3Cell))
-  const resolutions = Array.from({ length: finest + 1 }, (_, resolution) => h3Res(resolution))
+  const resolutions = Array.from({ length: finest + 1 }, (_, resolution) => h3Resolution(resolution))
   const out = [...mask]
   for (const cell of mask) {
     const resolution = getResolution(cell)

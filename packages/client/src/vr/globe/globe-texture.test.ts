@@ -3,7 +3,7 @@ import {
   cellBoundaryLonLat,
   cellToChildren,
   cellToLatLng,
-  h3Res,
+  h3Resolution,
   latLngToCell,
   type H3Cell
 } from "@whereabouts/shared/h3"
@@ -13,19 +13,19 @@ import { latLonToLocal } from "./sphere"
 
 describe("the VR globe's land", () => {
   it("covers every finest cell of a coarse one, though the coarse hexagon does not", () => {
-    const coarse = latLngToCell(34.8, 69.6, h3Res(2))
-    const drawn = new Set<H3Cell>(landCells({ res: 4, cells: [coarse] }))
+    const coarse = latLngToCell(34.8, 69.6, h3Resolution(2))
+    const drawn = new Set<H3Cell>(landCells({ resolution: 4, cells: [coarse] }))
     const under = (cell: H3Cell, resolution: number) => {
       const [lat, lon] = cellToLatLng(cell)
-      return latLngToCell(lat, lon, h3Res(resolution))
+      return latLngToCell(lat, lon, h3Resolution(resolution))
     }
-    const finest = cellToChildren(coarse, h3Res(4))
+    const finest = cellToChildren(coarse, h3Resolution(4))
     expect(finest.filter((cell) => under(cell, 2) !== coarse).length).toBeGreaterThan(0)
     expect(finest.filter((cell) => ![2, 3, 4].some((resolution) => drawn.has(under(cell, resolution))))).toEqual([])
   })
 
   it("draws a big cell's edges along the great circles, not straight across the flat picture", () => {
-    const cell = latLngToCell(65, 100, h3Res(1))
+    const cell = latLngToCell(65, 100, h3Resolution(1))
     const ring = cellRing(cell)!.map(([lon, lat]) => latLonToLocal({ lat: lat, lon: lon }))
     const corners = cellBoundaryLonLat(cell).map(([lon, lat]) => latLonToLocal({ lat, lon }))
     for (let i = 0; i < corners.length - 1; i++) {

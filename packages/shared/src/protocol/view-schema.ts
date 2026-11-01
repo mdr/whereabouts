@@ -20,7 +20,7 @@ import {
 import { HintAxisSchema } from "../hints.ts"
 import { Role, YouRoleType } from "../roles.ts"
 import { KernelIdSchema } from "../scoring/scoring.ts"
-import { H3CellSchema, H3ResSchema } from "../h3.ts"
+import { H3CellSchema, H3ResolutionSchema } from "../h3.ts"
 import { MapDetailSchema, MixSchema } from "./config.ts"
 import { Phase, RoundGuessType } from "./views.ts"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "../questions.ts"
@@ -83,7 +83,7 @@ const RoundResultViewSchema = z.strictObject({
     z.strictObject({
       type: z.literal(RoundGuessType.PAINTED),
       paint: PaintSchema,
-      res: H3ResSchema,
+      resolution: H3ResolutionSchema,
       parts: z.discriminatedUnion("type", [
         z.strictObject({ type: z.literal(AnswerType.POINT), A: z.number(), B: z.number() }),
         z.strictObject({ type: z.literal(AnswerType.AREA), shape: PointsSchema, nearness: PointsSchema })

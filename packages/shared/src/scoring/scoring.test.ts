@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import * as h3 from "../h3.ts"
-import { type H3Cell, h3Res } from "../h3.ts"
+import { type H3Cell, h3Resolution } from "../h3.ts"
 import { toXyz, EARTH_RADIUS } from "../geo.ts"
 import { crossSum, pairSum } from "./kernel-sums.ts"
 import {
@@ -342,13 +342,13 @@ describe("patch-aware kernel", () => {
   }
 
   it("scores one coarse cell like its children, at every kernel", () => {
-    // A res-3 cell (~120 km across) scored against a 30 km tolerance. As a
+    // A resolution-3 cell (~120 km across) scored against a 30 km tolerance. As a
     // point mass it would be hundreds of points off; as a patch A matches to
     // three decimals thanks to refinement near the answer, and B is within
     // about 0.03 (a Gaussian has a denser core than a flat hexagon, which
     // shows when the kernel is a few times narrower than the cell).
-    const parent = latLngToCell(48.8, 2.3, h3Res(3))
-    const children = cellToChildren(parent, h3Res(5))
+    const parent = latLngToCell(48.8, 2.3, h3Resolution(3))
+    const children = cellToChildren(parent, h3Resolution(5))
     const tolerance = 30
     for (const k of KERNELS) {
       for (const target of [
@@ -366,7 +366,7 @@ describe("patch-aware kernel", () => {
   })
 
   it("a patch is less self-similar than a point mass of the same weight", () => {
-    const parent = latLngToCell(48.8, 2.3, h3Res(3))
+    const parent = latLngToCell(48.8, 2.3, h3Resolution(3))
     const patch = cellDistribution([parent])
     const point: Distribution = { points: [{ xyz: patch.points[0]!.xyz, p: 1 }], floor: 0 }
     expect(selfSimilarity(patch, 30)).toBeLessThan(selfSimilarity(point, 30))
@@ -374,8 +374,8 @@ describe("patch-aware kernel", () => {
   })
 
   it("truncated pair sum matches the exact sum with mixed patch sizes", () => {
-    const coarse = cellToChildren(latLngToCell(30, 35, h3Res(2)), h3Res(3))
-    const fine = cellToChildren(latLngToCell(30.5, 35.5, h3Res(4)), h3Res(6))
+    const coarse = cellToChildren(latLngToCell(30, 35, h3Resolution(2)), h3Resolution(3))
+    const fine = cellToChildren(latLngToCell(30.5, 35.5, h3Resolution(4)), h3Resolution(6))
     const d = cellDistribution([...coarse, ...fine])
     for (const k of KERNELS) {
       const fast = pairSum(d.points, 40, false, k)
@@ -385,7 +385,7 @@ describe("patch-aware kernel", () => {
   })
 
   it("fine cells are barely affected by the patch correction", () => {
-    const cells = h3.gridDisk(latLngToCell(27.175, 78.042, h3Res(7)), 6) // ~1.2 km cells, 100 km tolerance
+    const cells = h3.gridDisk(latLngToCell(27.175, 78.042, h3Resolution(7)), 6) // ~1.2 km cells, 100 km tolerance
     const asPatches = cellDistribution(cells)
     const asPoints: Distribution = {
       points: asPatches.points.map((point) => ({ xyz: point.xyz, p: point.p })),
@@ -404,7 +404,7 @@ describe("region answers", () => {
 
   /** Cells within `rings` of the cell at `at`: a rough disc. */
   const discCells = (at: { lat: number; lon: number }, rings: number) =>
-    h3.gridDisk(h3.latLngToCell(at.lat, at.lon, h3Res(resolution)), rings)
+    h3.gridDisk(h3.latLngToCell(at.lat, at.lon, h3Resolution(resolution)), rings)
   /** An even coat of paint on `cells`. */
   const paint = (cells: H3Cell[]) =>
     cells.map((cell) => {
@@ -416,11 +416,11 @@ describe("region answers", () => {
   const region = regionAnswer(discCells(centre, 10), tolerance)
 
   it("a region of one tiny cell scores like the point rule", () => {
-    const point = regionAnswer([h3.latLngToCell(centre.lat, centre.lon, h3Res(10))], tolerance)
+    const point = regionAnswer([h3.latLngToCell(centre.lat, centre.lon, h3Resolution(10))], tolerance)
     for (const Q of point.Q) expect(Q).toBeCloseTo(1, 4)
     for (const offset of [0, 30, 60, 150, 400]) {
       const d = painted(discCells(north(centre, offset), 2))
-      const [lat, lon] = h3.cellToLatLng(h3.latLngToCell(centre.lat, centre.lon, h3Res(10)))
+      const [lat, lon] = h3.cellToLatLng(h3.latLngToCell(centre.lat, centre.lon, h3Resolution(10)))
       const expected = scoreDistribution(d, { lat, lon }, tolerance).score
       expect(Math.abs(scoreRegion(d, point).score - expected)).toBeLessThan(1)
     }

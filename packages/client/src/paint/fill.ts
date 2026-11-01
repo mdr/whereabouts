@@ -9,7 +9,7 @@ import { useEffect } from "preact/hooks"
 import { countryFill, FillShapeType, type FillShape } from "@whereabouts/shared/paint/fill"
 import type { Borders } from "@whereabouts/shared/borders"
 import type { FlagCode } from "@whereabouts/shared/ids"
-import type { H3Cell, H3Res } from "@whereabouts/shared/h3"
+import type { H3Cell, H3Resolution } from "@whereabouts/shared/h3"
 import { AnswerType, answerCentre, type FlagQuestion, type Outlines } from "@whereabouts/shared/questions"
 import { kmToDegrees, toRadians, type LatLon, type MultiPolygon, type Ring } from "@whereabouts/shared/geo"
 import type { PaintController } from "./paint-controller"
@@ -18,7 +18,7 @@ import { useOutlines } from "../data/outlines"
 import type { Km } from "@whereabouts/shared/units"
 
 /** A country's flag code and the finest resolution it was filled for. */
-type FillKey = `${FlagCode}:${H3Res}`
+type FillKey = `${FlagCode}:${H3Resolution}`
 
 export class CountryFiller {
   private readonly shapes = new Map<FlagCode, FillShape>()
@@ -59,11 +59,11 @@ export class CountryFiller {
   }
 
   /** The cells filling the country on a layer of this finest resolution, compacted. */
-  cells(question: FlagQuestion, finestRes: H3Res): H3Cell[] {
-    const key: FillKey = `${question.clue.flag}:${finestRes}`
+  cells(question: FlagQuestion, finestResolution: H3Resolution): H3Cell[] {
+    const key: FillKey = `${question.clue.flag}:${finestResolution}`
     let cells = this.fills.get(key)
     if (!cells) {
-      cells = countryFill(this.shape(question), finestRes)
+      cells = countryFill(this.shape(question), finestResolution)
       this.fills.set(key, cells)
     }
     return cells

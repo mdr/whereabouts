@@ -17,10 +17,10 @@ import {
   cellToChildren,
   cellToLatLng,
   cellToParent,
-  finerRes,
+  finerResolution,
   getResolution,
   type H3Cell,
-  type H3Res
+  type H3Resolution
 } from "../h3.ts"
 import { CUTOFF_WIDTHS, crossSum, kernelFromSq, pairSum, patchWidthSq } from "./kernel-sums.ts"
 import { z } from "zod"
@@ -169,9 +169,9 @@ function patchSimilarity(point: WeightedPoint, answer: Xyz, tolerance: Km, wides
   const R = Math.sqrt(4.8 * s2)
   const reach = CUTOFF_WIDTHS * Math.sqrt(patchWidthSq(widest, s2))
   if (Math.sqrt(dSq) - R > reach) return point.p * kernelFromSq(dSq, tolerance, k, s2)
-  const res = getResolution(point.cell)
-  if (res >= 15) return point.p * kernelFromSq(dSq, tolerance, k, s2)
-  const children = cellToChildren(point.cell, finerRes(res))
+  const resolution = getResolution(point.cell)
+  if (resolution >= 15) return point.p * kernelFromSq(dSq, tolerance, k, s2)
+  const children = cellToChildren(point.cell, finerResolution(resolution))
   const areas = children.map((child) => cellArea(child))
   const total = areas.reduce((sum, area) => sum + area, 0)
   let A = 0
@@ -287,17 +287,17 @@ export function regionAnswer(cells: Iterable<H3Cell>, tolerance: Km, k: Kernel =
 }
 
 /**
- * Merge painted cells finer than `res` into their parents at `res`, keeping
+ * Merge painted cells finer than `resolution` into their parents at `resolution`, keeping
  * their mass; coarser cells are left alone. Cells are scored as patches, so
  * this changes scores only slightly while cutting the work sharply.
  */
-export function coarsenDistribution(painted: Distribution, res: H3Res): Distribution {
+export function coarsenDistribution(painted: Distribution, resolution: H3Resolution): Distribution {
   const merged = new Map<H3Cell, number>()
   const points: WeightedPoint[] = []
   for (const point of painted.points) {
-    if (!point.cell || getResolution(point.cell) <= res) points.push(point)
+    if (!point.cell || getResolution(point.cell) <= resolution) points.push(point)
     else {
-      const parent = cellToParent(point.cell, res)
+      const parent = cellToParent(point.cell, resolution)
       merged.set(parent, (merged.get(parent) ?? 0) + point.p)
     }
   }

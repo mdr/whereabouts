@@ -6,7 +6,7 @@ import {
   getRes0Cells,
   gridDisk,
   type H3Cell,
-  h3Res,
+  h3Resolution,
   latLngToCell
 } from "../h3.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
@@ -17,7 +17,7 @@ import {
   roundsOverlap,
   regionCells,
   regionFit,
-  regionScoringRes,
+  regionScoringResolution,
   scoreAnswer,
   scoreArea,
   scoredAnswer,
@@ -78,7 +78,7 @@ describe("region questions", () => {
           expect(ring[0]).toEqual(ring.at(-1))
         }
       }
-      expect(regionCells(answer, regionScoringRes(answer.tolerance)).length, country.id).toBeGreaterThan(10)
+      expect(regionCells(answer, regionScoringResolution(answer.tolerance)).length, country.id).toBeGreaterThan(10)
     }
   })
 
@@ -143,9 +143,9 @@ describe("region questions", () => {
 
 describe("shape and nearness", () => {
   const germany = byId("germany-region")
-  const res = resolutionForTolerance(germany.tolerance)
-  const cells = regionCells(germany, res)
-  const poland = regionCells(byId("poland-region"), res)
+  const resolution = resolutionForTolerance(germany.tolerance)
+  const cells = regionCells(germany, resolution)
+  const poland = regionCells(byId("poland-region"), resolution)
   const area = (cells: H3Cell[]) => cells.reduce((sum, cell) => sum + cellArea(cell), 0)
   const score = (d: Distribution) => scoreArea(d, germany).score
 
@@ -190,7 +190,7 @@ describe("shape and nearness", () => {
   // Shape is 1000 - 500 (A sum (p - q)^2 / a + 2 m^2), with q = a / A on each
   // of the country's cells and m the paint off it: exact for even coats.
   describe("shape, worked by hand", () => {
-    const japan = regionCells(byId("japan-region"), res)
+    const japan = regionCells(byId("japan-region"), resolution)
     const shape = (d: Distribution) => scoreArea(d, germany).shape
 
     it("an exact coat loses only the floor's square: 1000 - 500 f^2", () => {
@@ -234,7 +234,7 @@ describe("shape and nearness", () => {
     const s = score(
       shares([
         [cells, 0.5],
-        [regionCells(byId("japan-region"), res), 0.5]
+        [regionCells(byId("japan-region"), resolution), 0.5]
       ])
     )
     expect(s).toBeGreaterThan(700)
@@ -277,11 +277,11 @@ describe("shape and nearness", () => {
 
   it("wrong paint spread thinly does not pass for vagueness", () => {
     // A faint blob eight times Germany's area, centred in North America.
-    const blob = gridDisk(latLngToCell(40, -100, h3Res(res - 1)), 22)
+    const blob = gridDisk(latLngToCell(40, -100, h3Resolution(resolution - 1)), 22)
     expect(area(blob)).toBeGreaterThan(6 * area(cells))
     expect(score(coat(blob))).toBeLessThan(250)
     // The whole world painted evenly: just above a pass.
-    const world = getRes0Cells().flatMap((cell) => cellToChildren(cell, h3Res(2)))
+    const world = getRes0Cells().flatMap((cell) => cellToChildren(cell, h3Resolution(2)))
     const w = score(coat(world))
     expect(w).toBeGreaterThan(250)
     expect(w).toBeLessThan(350)
@@ -319,8 +319,8 @@ describe("shape and nearness", () => {
 describe("coarsenDistribution", () => {
   it("keeps the mass and barely moves a point question's score", () => {
     const answer = { lat: 48.8584, lon: 2.2945 }
-    const d = coat(regionCells(byId("france-region"), h3Res(5)))
-    const coarse = coarsenDistribution(d, h3Res(4))
+    const d = coat(regionCells(byId("france-region"), h3Resolution(5)))
+    const coarse = coarsenDistribution(d, h3Resolution(4))
     const mass = (distribution: typeof d) => distribution.points.reduce((sum, p) => sum + p.p, 0) + distribution.floor
     expect(mass(coarse)).toBeCloseTo(1, 9)
     expect(coarse.points.length).toBeLessThan(d.points.length / 4)

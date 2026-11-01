@@ -17,7 +17,7 @@ import { CaseQuestionType, decodeCase } from "../src/scoring/scoring-case.ts"
 const text = readFileSync(process.argv[2] ?? 0, "utf8")
 const scoringCase = await decodeCase(text)
 const caseQuestion = scoringCase.question
-const layer = PaintLayer.fromRecord(scoringCase.res, scoringCase.cells)
+const layer = PaintLayer.fromRecord(scoringCase.resolution, scoringCase.cells)
 const painted = buildDistribution(layer.toCells(), scoringCase.floor)
 const fixed = (value, places = 1) => value.toFixed(places)
 
@@ -28,9 +28,9 @@ console.log(
   `answer ${caseQuestion.answer.lat}, ${caseQuestion.answer.lon}; tolerance ${caseQuestion.tolerance} km; floor ${scoringCase.floor}`
 )
 console.log(
-  `paint: ${layer.size} cells, finest res ${scoringCase.res}, ${layer
+  `paint: ${layer.size} cells, finest resolution ${scoringCase.resolution}, ${layer
     .resolutionCounts()
-    .map(([resolution, count]) => `res ${resolution}: ${count}`)
+    .map(([resolution, count]) => `resolution ${resolution}: ${count}`)
     .join(", ")}`
 )
 console.log(`copied with: ${scoringCase.score} under ${scoringCase.kernel}`, scoringCase.parts)

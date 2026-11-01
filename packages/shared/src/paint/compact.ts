@@ -1,4 +1,4 @@
-import { cellArea, cellEntries, cellToParent, getResolution, h3Res, type H3Cell } from "../h3.ts"
+import { cellArea, cellEntries, cellToParent, getResolution, h3Resolution, type H3Cell } from "../h3.ts"
 
 /** Cells a paint upload may carry: clients compact to it, and the server refuses more. */
 export const PAINT_CELL_BUDGET = 6000
@@ -25,7 +25,7 @@ export function compactRecord(cells: Record<H3Cell, number>, budget = PAINT_CELL
         next[cell] = (next[cell] ?? 0) + intensity
         continue
       }
-      const parent = cellToParent(cell, h3Res(finest - 1))
+      const parent = cellToParent(cell, h3Resolution(finest - 1))
       mass.set(parent, (mass.get(parent) ?? 0) + intensity * cellArea(cell))
     }
     for (const [parent, parentMass] of mass) {

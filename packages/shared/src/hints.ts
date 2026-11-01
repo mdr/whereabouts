@@ -5,7 +5,7 @@
  */
 import { z } from "zod"
 import { kmToDegrees, toRadians, type LatLon } from "./geo.ts"
-import { cellBoundaryLatLng, cellToLatLng, type H3Cell, type H3Res } from "./h3.ts"
+import { cellBoundaryLatLng, cellToLatLng, type H3Cell, type H3Resolution } from "./h3.ts"
 import { keepCells } from "./paint/land.ts"
 import type { Degrees, Km } from "./units.ts"
 
@@ -64,9 +64,13 @@ export function inHintBand(band: HintBand, point: LatLon): boolean {
     : point.lon >= band.from || point.lon <= band.to
 }
 
-/** The paint without its cells wholly outside the band, split at the band's edges down to `finestRes`. */
-export function trimToHint(cells: ReadonlyMap<H3Cell, number>, band: HintBand, finestRes: H3Res): Map<H3Cell, number> {
-  return keepCells(cells, (cell) => cellMeetsBand(cell, band), finestRes)
+/** The paint without its cells wholly outside the band, split at the band's edges down to `finestResolution`. */
+export function trimToHint(
+  cells: ReadonlyMap<H3Cell, number>,
+  band: HintBand,
+  finestResolution: H3Resolution
+): Map<H3Cell, number> {
+  return keepCells(cells, (cell) => cellMeetsBand(cell, band), finestResolution)
 }
 
 function cellMeetsBand(cell: H3Cell, band: HintBand): boolean {

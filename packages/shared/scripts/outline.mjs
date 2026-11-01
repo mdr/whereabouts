@@ -34,7 +34,7 @@ function gapKm(a, b) {
   return best
 }
 
-export const cellsOf = (polygon, res) => polygonToCells(polygon, res, true)
+export const cellsOf = (polygon, resolution) => polygonToCells(polygon, resolution, true)
 export const areaOf = (cells) => cells.reduce((sum, cell) => sum + cellArea(cell, UNITS.km2), 0)
 
 /** A ring's area on the sphere, km² (the spherical excess, as in d3-geo). */

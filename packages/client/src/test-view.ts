@@ -32,7 +32,7 @@ import {
   type YouPlaying
 } from "@whereabouts/shared/roles"
 import { KernelId } from "@whereabouts/shared/scoring/scoring"
-import { h3Cell, h3Res } from "@whereabouts/shared/h3"
+import { h3Cell, h3Resolution } from "@whereabouts/shared/h3"
 
 type ViewOverrides<V extends GameView> = Partial<Omit<V, "you" | "phase">> & { you?: Partial<V["you"]> }
 
@@ -155,7 +155,7 @@ export function makePainted(): RoundGuess {
   return {
     type: RoundGuessType.PAINTED,
     paint: { cells: { [h3Cell("85283473fffffff")]: 1 }, floor: 0.05 },
-    res: h3Res(5),
+    resolution: h3Resolution(5),
     parts: { type: AnswerType.POINT, A: 0, B: 0 }
   }
 }

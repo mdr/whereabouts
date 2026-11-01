@@ -90,7 +90,7 @@ function paintRegionGuess(area: Area, type: RegionGuess, random: () => number): 
   const tolerance = area.tolerance
   // A region's tolerance is a fifth of its radius: R is about its radius.
   const R = 5
-  const cells = regionCells(area, layer.res)
+  const cells = regionCells(area, layer.resolution)
   const centres = cells.map((cell) => {
     const [lat, lon] = cellToLatLng(cell)
     return { lat, lon }

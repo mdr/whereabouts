@@ -92,7 +92,7 @@ export function guessCase(
     question: caseQuestion(question, answer),
     kernel: answer.type === AnswerType.AREA ? RegionKernel.REGION : kernel.id,
     floor: REVIEW_FLOOR,
-    res: layer.res,
+    resolution: layer.resolution,
     ...scoreGuess(answer, layer, kernel),
     cells: layer.toRecord()
   })

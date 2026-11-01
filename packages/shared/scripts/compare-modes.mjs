@@ -21,10 +21,10 @@ function fail(what) {
 const [pointId, countryLabel] = process.argv.slice(2).filter((argument) => argument !== "--")
 const P = place(pointId ?? "paris")
 const C = country(countryLabel ?? "France")
-const res = Math.max(resolutionForTolerance(P.tolerance), resolutionForTolerance(C.tolerance))
+const resolution = Math.max(resolutionForTolerance(P.tolerance), resolutionForTolerance(C.tolerance))
 const area = (cells) => cells.reduce((sum, cell) => sum + h3.cellArea(cell, h3.UNITS.km2), 0)
-const spacing = h3.getHexagonEdgeLengthAvg(res, h3.UNITS.km) * Math.sqrt(3)
-const cCells = regionCells(C, res)
+const spacing = h3.getHexagonEdgeLengthAvg(resolution, h3.UNITS.km) * Math.sqrt(3)
+const cCells = regionCells(C, resolution)
 const R = Math.sqrt(area(cCells) / Math.PI)
 const r = P.tolerance
 const rc = C.tolerance
@@ -49,7 +49,7 @@ const mix = (...pairs) => coat(pairs.map(([cells, weight]) => ({ cells, weight }
 
 const east = (point, km) => ({ lat: point.lat, lon: point.lon + km / (111.32 * Math.cos((point.lat * Math.PI) / 180)) })
 const disc = (centre, km) =>
-  h3.gridDisk(h3.latLngToCell(centre.lat, centre.lon, res), Math.max(0, Math.round(km / spacing)))
+  h3.gridDisk(h3.latLngToCell(centre.lat, centre.lon, resolution), Math.max(0, Math.round(km / spacing)))
 const shiftedCountry = (q, km) =>
   regionCells(
     {
@@ -58,7 +58,7 @@ const shiftedCountry = (q, km) =>
         polygon.map((ring) => ring.map(([lon, lat]) => [east({ lat, lon }, km).lon, lat]))
       )
     },
-    res
+    resolution
   )
 function grow(cells, km) {
   const set = new Set(cells)
@@ -89,7 +89,7 @@ const fmt = (score) => String(Math.round(score)).padStart(5)
 const areaCols = (result) => `${fmt(result.score)}  (shape ${fmt(result.shape)}, nearness ${fmt(result.nearness)})`
 
 console.log(
-  `Point: ${P.label}, r = ${r} km.  Area: ${C.label}, r = ${rc} km, R = ${Math.round(R)} km.  Painting res ${res}.\n`
+  `Point: ${P.label}, r = ${r} km.  Area: ${C.label}, r = ${rc} km, R = ${Math.round(R)} km.  Painting resolution ${resolution}.\n`
 )
 
 console.log("1. Confident miss: a tight blob (point) / the exact shape (area), moved k tolerances east")
@@ -162,7 +162,7 @@ const CITIES = {
   Rome: city(41.9028, 12.4964),
   "New York": city(40.7128, -74.006)
 }
-const countryCells = (label) => regionCells(country(label), res)
+const countryCells = (label) => regionCells(country(label), resolution)
 const EU = [
   ...new Set(
     [
@@ -234,7 +234,7 @@ const farCopy = (cells, km) => {
   for (const cell of cells) {
     const [lat, lon] = h3.cellToLatLng(cell)
     const shifted = east({ lat, lon }, km)
-    out.add(h3.latLngToCell(shifted.lat, shifted.lon, res))
+    out.add(h3.latLngToCell(shifted.lat, shifted.lon, resolution))
   }
   return [...out]
 }

@@ -26,10 +26,10 @@ import {
   gridDistance,
   latLngToCell,
   cellEntries,
-  finerRes,
-  h3Res,
+  finerResolution,
+  h3Resolution,
   type H3Cell,
-  type H3Res
+  type H3Resolution
 } from "../h3.ts"
 import { chordDistanceSq, toXyz, type LatLon, type Ring } from "../geo.ts"
 import { unwrapAntimeridian } from "./cell-outline.ts"
@@ -40,17 +40,17 @@ const TARGET_RINGS = 5
 /** Safety cap on rings per stamp; unreachable in practice now that the resolution adapts. */
 const MAX_RINGS = 40
 
-export function resolutionForTolerance(tolerance: Km): H3Res {
+export function resolutionForTolerance(tolerance: Km): H3Resolution {
   const target = tolerance / 4
-  for (let res = 0; res <= 10; res++) {
-    if (edgeLength(h3Res(res)) <= target) return h3Res(Math.max(1, res))
+  for (let resolution = 0; resolution <= 10; resolution++) {
+    if (edgeLength(h3Resolution(resolution)) <= target) return h3Resolution(Math.max(1, resolution))
   }
-  return h3Res(10)
+  return h3Resolution(10)
 }
 
 /** Centre-to-centre distance between neighbouring cells. */
-export function cellSpacing(res: H3Res): Km {
-  return edgeLength(res) * Math.sqrt(3)
+export function cellSpacing(resolution: H3Resolution): Km {
+  return edgeLength(resolution) * Math.sqrt(3)
 }
 
 export interface PaintCell {
@@ -64,7 +64,7 @@ export interface PaintCell {
 
 export interface StampResult {
   /** Resolution the stamp was written at. */
-  res: H3Res
+  resolution: H3Resolution
   rings: number
   /** Cells touched. */
   cells: number
@@ -86,7 +86,7 @@ const CIRCUMRADIUS_FACTOR = 1.1 * Math.sqrt(2 / (3 * Math.sqrt(3)))
 
 export class PaintLayer {
   /** Finest resolution this layer may use, from the question's tolerance. */
-  readonly res: H3Res
+  readonly resolution: H3Resolution
   readonly cells = new Map<H3Cell, number>()
   private boundaryCache = new Map<H3Cell, Ring>()
   private areaCache = new Map<H3Cell, SquareKm>()
@@ -94,19 +94,19 @@ export class PaintLayer {
   /** Incremented on every change; cheap dirty-check for renderers. */
   version = 0
 
-  constructor(res: H3Res) {
-    this.res = res
+  constructor(resolution: H3Resolution) {
+    this.resolution = resolution
   }
 
   /**
    * The coarsest resolution (not finer than the layer's) that still puts
    * about TARGET_RINGS cells across the brush radius.
    */
-  stampResolution(radius: Km): H3Res {
-    for (let resolution = 0; resolution < this.res; resolution++) {
-      if (cellSpacing(h3Res(resolution)) <= radius / TARGET_RINGS) return h3Res(resolution)
+  stampResolution(radius: Km): H3Resolution {
+    for (let resolution = 0; resolution < this.resolution; resolution++) {
+      if (cellSpacing(h3Resolution(resolution)) <= radius / TARGET_RINGS) return h3Resolution(resolution)
     }
-    return this.res
+    return this.resolution
   }
 
   /**
@@ -114,16 +114,16 @@ export class PaintLayer {
    * resolution a brush smaller than half a cell is a single cell (zero rings),
    * so zoomed right in the smallest brush paints exactly one hex.
    */
-  stampPlan(radius: Km): { res: H3Res; rings: number } {
-    const res = this.stampResolution(radius)
-    const rings = Math.min(MAX_RINGS, Math.max(0, Math.round(radius / cellSpacing(res))))
-    return { res, rings }
+  stampPlan(radius: Km): { resolution: H3Resolution; rings: number } {
+    const resolution = this.stampResolution(radius)
+    const rings = Math.min(MAX_RINGS, Math.max(0, Math.round(radius / cellSpacing(resolution))))
+    return { resolution, rings }
   }
 
   /** The cells a stamp of this radius at `at` would touch, for previewing its footprint. */
   stampCells(at: LatLon, radius: Km): H3Cell[] {
-    const { res, rings } = this.stampPlan(radius)
-    return gridDisk(latLngToCell(at.lat, at.lon, res), rings)
+    const { resolution, rings } = this.stampPlan(radius)
+    return gridDisk(latLngToCell(at.lat, at.lon, resolution), rings)
   }
 
   /**
@@ -133,8 +133,8 @@ export class PaintLayer {
    */
   stamp(at: LatLon, radius: Km, strength: number): StampResult {
     if (strength < 0) return this.erase(at, radius, -strength)
-    const { res, rings } = this.stampPlan(radius)
-    const centre = latLngToCell(at.lat, at.lon, res)
+    const { resolution, rings } = this.stampPlan(radius)
+    const centre = latLngToCell(at.lat, at.lon, resolution)
     const byDistance = gridDiskDistances(centre, rings)
     const denominator = (rings + 0.5) * (rings + 0.5)
     let count = 0
@@ -146,7 +146,7 @@ export class PaintLayer {
       }
     })
     this.version++
-    return { res, rings, cells: count }
+    return { resolution, rings, cells: count }
   }
 
   /**
@@ -158,11 +158,11 @@ export class PaintLayer {
    * split, and only cells touching the brush are ever split.
    */
   erase(at: LatLon, radius: Km, strength: number): StampResult {
-    const { res: eraseRes, rings } = this.stampPlan(radius)
-    const spacing = cellSpacing(eraseRes)
+    const { resolution: eraseResolution, rings } = this.stampPlan(radius)
+    const spacing = cellSpacing(eraseResolution)
     const reach = (rings + 0.5) * spacing
     const denominator = (rings + 0.5) * (rings + 0.5)
-    const centreCell = latLngToCell(at.lat, at.lon, eraseRes)
+    const centreCell = latLngToCell(at.lat, at.lon, eraseResolution)
     const centre = toXyz(at)
     const queue = [...this.cells.keys()]
     let touched = 0
@@ -174,7 +174,7 @@ export class PaintLayer {
       const circumradius = CIRCUMRADIUS_FACTOR * Math.sqrt(this.area(cell))
       if (distance - circumradius > reach) continue // clear of the brush
       const cellResolution = getResolution(cell)
-      if (cellResolution === eraseRes) {
+      if (cellResolution === eraseResolution) {
         // Same grid as the stamp: mirror its ring weights exactly, so an
         // erase over a stamp of the same size cancels it.
         const ring = safeGridDistance(centreCell, cell)
@@ -183,7 +183,7 @@ export class PaintLayer {
         touched++
         continue
       }
-      if (cellResolution > eraseRes || distance + circumradius <= reach) {
+      if (cellResolution > eraseResolution || distance + circumradius <= reach) {
         const ring = distance / spacing
         this.add(cell, -strength * Math.exp((-Math.LN10 * ring * ring) / denominator))
         touched++
@@ -191,13 +191,13 @@ export class PaintLayer {
       }
       // Straddles the edge and is coarser than the brush: refine one level.
       this.cells.delete(cell)
-      for (const child of cellToChildren(cell, finerRes(cellResolution))) {
+      for (const child of cellToChildren(cell, finerResolution(cellResolution))) {
         this.cells.set(child, intensity)
         queue.push(child)
       }
     }
     this.version++
-    return { res: eraseRes, rings, cells: touched }
+    return { resolution: eraseResolution, rings, cells: touched }
   }
 
   /** Add an even coat of `v` over these cells (a Fill: at or coarser than the layer, disjoint). */
@@ -261,7 +261,7 @@ export class PaintLayer {
   }
 
   /** Cell counts per resolution present, coarsest first. */
-  resolutionCounts(): [res: number, count: number][] {
+  resolutionCounts(): [resolution: number, count: number][] {
     const counts = new Map<number, number>()
     for (const cell of this.cells.keys()) {
       const resolution = getResolution(cell)
@@ -310,14 +310,14 @@ export class PaintLayer {
   }
 
   /**
-   * Rebuild a layer from its wire form. Cells may be at `res` or coarser;
+   * Rebuild a layer from its wire form. Cells may be at `resolution` or coarser;
    * finer cells are dropped because they would undercut the tolerance-based
    * resolution the question was scored at.
    */
-  static fromRecord(res: H3Res, cells: Record<H3Cell, number>): PaintLayer {
-    const layer = new PaintLayer(res)
+  static fromRecord(resolution: H3Resolution, cells: Record<H3Cell, number>): PaintLayer {
+    const layer = new PaintLayer(resolution)
     for (const [cell, intensity] of cellEntries(cells)) {
-      if (intensity > 0 && getResolution(cell) <= res) layer.cells.set(cell, intensity)
+      if (intensity > 0 && getResolution(cell) <= resolution) layer.cells.set(cell, intensity)
     }
     layer.version++
     return layer
@@ -336,16 +336,16 @@ export class PaintLayer {
    */
   toGeoJSON(): GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number }> {
     const max = this.maxIntensity() || 1
-    const byRes: GeoJSON.Feature<GeoJSON.Polygon, { v: number }>[][] = []
+    const byResolution: GeoJSON.Feature<GeoJSON.Polygon, { v: number }>[][] = []
     for (const [cell, intensity] of this.cells) {
       const resolution: number = getResolution(cell)
-      ;(byRes[resolution] ??= []).push({
+      ;(byResolution[resolution] ??= []).push({
         type: "Feature",
         properties: { v: intensity / max },
         geometry: { type: "Polygon", coordinates: [this.boundary(cell)] }
       })
     }
-    return { type: "FeatureCollection", features: byRes.flat() }
+    return { type: "FeatureCollection", features: byResolution.flat() }
   }
 
   private boundary(cell: H3Cell): Ring {

@@ -29,9 +29,9 @@ import {
   getResolution,
   latLngToCell,
   polygonToCells,
-  h3Res,
+  h3Resolution,
   type H3Cell,
-  type H3Res
+  type H3Resolution
 } from "../h3.ts"
 import { bearing, fromXyz, greatCircleDistance, toXyz, type Box, type LatLon } from "../geo.ts"
 import type { Degrees, Km, Points, SquareKm } from "../units.ts"
@@ -107,14 +107,14 @@ export interface AreaScore {
  * to half the tolerance across: far finer than its narrowest Gaussian, and
  * much faster.
  */
-export function regionScoringRes(tolerance: Km): H3Res {
-  return h3Res(Math.max(0, resolutionForTolerance(tolerance) - 1))
+export function regionScoringResolution(tolerance: Km): H3Resolution {
+  return h3Resolution(Math.max(0, resolutionForTolerance(tolerance) - 1))
 }
 
-/** The region's cells at `res`: those whose centres fall inside the outline. */
-export function regionCells(area: Area, res: H3Res): H3Cell[] {
+/** The region's cells at `resolution`: those whose centres fall inside the outline. */
+export function regionCells(area: Area, resolution: H3Resolution): H3Cell[] {
   const cells = new Set<H3Cell>()
-  for (const polygon of area.polygons) for (const cell of polygonToCells(polygon, res, true)) cells.add(cell)
+  for (const polygon of area.polygons) for (const cell of polygonToCells(polygon, resolution, true)) cells.add(cell)
   return [...cells]
 }
 
@@ -163,7 +163,7 @@ function regionAnswerFor(area: Area, k: Kernel = NEARNESS_KERNEL): RegionAnswer 
   const key = `${area.outline}|${k.id}`
   let cached = answers.get(key)
   if (!cached) {
-    cached = regionAnswer(regionCells(area, regionScoringRes(area.tolerance)), area.tolerance, k)
+    cached = regionAnswer(regionCells(area, regionScoringResolution(area.tolerance)), area.tolerance, k)
     answers.set(key, cached)
   }
   return cached
@@ -171,7 +171,7 @@ function regionAnswerFor(area: Area, k: Kernel = NEARNESS_KERNEL): RegionAnswer 
 
 export function scoreArea(painted: Distribution, area: Area): AreaScore {
   const shape = shapeScore(paintMass(painted, area), area)
-  const coarse = coarsenDistribution(painted, regionScoringRes(area.tolerance))
+  const coarse = coarsenDistribution(painted, regionScoringResolution(area.tolerance))
   const nearness = scoreRegion(coarse, regionAnswerFor(area)).score
   return { score: SHAPE_WEIGHT * shape + (1 - SHAPE_WEIGHT) * nearness, shape, nearness }
 }
@@ -269,7 +269,7 @@ export function regionMisfit(painted: Distribution, area: Area): RegionMisfit {
   for (const [cell, weight] of mass) if (!region.cells.has(cell)) offCells.push([cell, weight])
   let off: RegionMisfit["off"] = undefined
   const offCentre = leaning(area.centre, offCells)
-  if (offCentre && !region.cells.has(latLngToCell(offCentre.lat, offCentre.lon, region.res))) {
+  if (offCentre && !region.cells.has(latLngToCell(offCentre.lat, offCentre.lon, region.resolution))) {
     let distance = Infinity
     for (const cell of region.cells.keys()) distance = Math.min(distance, greatCircleDistance(offCentre, latLng(cell)))
     off = { bearing: bearing(area.centre, offCentre), distance }
@@ -302,12 +302,12 @@ function leaning(centre: LatLon, cells: [H3Cell, number][]): LatLon | undefined 
 
 interface Region {
   /** The painting resolution. */
-  res: H3Res
+  resolution: H3Resolution
   /** The country's cells at the painting resolution, with their areas. */
   cells: Map<H3Cell, SquareKm>
   area: SquareKm
   /** Their ancestors at each coarser resolution, filled in as needed. */
-  ancestors: Map<H3Res, Set<H3Cell>>
+  ancestors: Map<H3Resolution, Set<H3Cell>>
 }
 
 const regions = new Map<OutlineId, Region>()
@@ -316,22 +316,22 @@ const regions = new Map<OutlineId, Region>()
 function regionAt(area: Area): Region {
   let region = regions.get(area.outline)
   if (!region) {
-    const res = resolutionForTolerance(area.tolerance)
+    const resolution = resolutionForTolerance(area.tolerance)
     const cells = new Map<H3Cell, SquareKm>()
     let totalArea = 0
-    for (const cell of regionCells(area, res)) {
+    for (const cell of regionCells(area, resolution)) {
       const size = cellArea(cell)
       cells.set(cell, size)
       totalArea += size
     }
-    region = { res, cells, area: totalArea, ancestors: new Map() }
+    region = { resolution, cells, area: totalArea, ancestors: new Map() }
     regions.set(area.outline, region)
   }
   return region
 }
 
 /** Whether a cell coarser than the painting resolution overlaps the country. */
-function overlaps(region: Region, cell: H3Cell, resolution: H3Res): boolean {
+function overlaps(region: Region, cell: H3Cell, resolution: H3Resolution): boolean {
   let set = region.ancestors.get(resolution)
   if (!set) {
     set = new Set([...region.cells.keys()].map((regionCell) => cellToParent(regionCell, resolution)))
@@ -348,17 +348,18 @@ function overlaps(region: Region, cell: H3Cell, resolution: H3Res): boolean {
  * would mean millions of cells. The world floor is left out.
  */
 function paintMass(painted: Distribution, area: Area): Map<H3Cell, number> {
-  const res = resolutionForTolerance(area.tolerance)
+  const paintResolution = resolutionForTolerance(area.tolerance)
   const region = regionAt(area)
   const mass = new Map<H3Cell, number>()
   const add = (cell: H3Cell, amount: number) => mass.set(cell, (mass.get(cell) ?? 0) + amount)
   for (const point of painted.points) {
     if (!point.cell) continue
     const resolution = getResolution(point.cell)
-    if (resolution >= res) add(resolution === res ? point.cell : cellToParent(point.cell, res), point.p)
+    if (resolution >= paintResolution)
+      add(resolution === paintResolution ? point.cell : cellToParent(point.cell, paintResolution), point.p)
     else if (!overlaps(region, point.cell, resolution)) add(point.cell, point.p)
     else {
-      const children = cellToChildren(point.cell, res)
+      const children = cellToChildren(point.cell, paintResolution)
       const areas = children.map((child) => cellArea(child))
       const total = areas.reduce((a, b) => a + b, 0)
       children.forEach((child, i) => add(child, (point.p * areas[i]!) / total))

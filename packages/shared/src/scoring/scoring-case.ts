@@ -40,7 +40,7 @@ export interface ScoringCase {
   kernel: KernelId | RegionKernel
   floor: number
   /** The paint layer's finest resolution. */
-  res: number
+  resolution: number
   score: Points
   parts: AnswerParts
   /** H3 index -> intensity. */
@@ -76,7 +76,7 @@ export async function encodeCase(scoringCase: ScoringCase): Promise<string> {
     `answer: ${round(question.answer.lat, 5)} ${round(question.answer.lon, 5)} tolerance=${round(question.tolerance, 3)}km`,
     `kernel: ${scoringCase.kernel} floor=${round(scoringCase.floor, 4)}`,
     `score: ${round(scoringCase.score, 1)} ${parts}`,
-    `paint: res=${scoringCase.res} cells=${entries.length} max=${max}`,
+    `paint: resolution=${scoringCase.resolution} cells=${entries.length} max=${max}`,
     ...(payload.match(new RegExp(`.{1,${LINE_WIDTH}}`, "g")) ?? []),
     "end"
   ].join("\n")
@@ -142,7 +142,7 @@ export async function decodeCase(text: string): Promise<ScoringCase> {
     },
     kernel: kernel.split(/\s+/)[0] as ScoringCase["kernel"],
     floor: Number(named(kernel, "floor")),
-    res: Number(named(paint, "res")),
+    resolution: Number(named(paint, "resolution")),
     score: Number(score.split(/\s+/)[0]),
     parts,
     cells
