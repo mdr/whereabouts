@@ -14,7 +14,8 @@ const noNull = [
 const noFixedWaits = [
   {
     selector: "MemberExpression[property.name='waitForTimeout']",
-    message: "Wait on a condition (until, holdUntil, stillTrueFor, Headset.settle), or pace a gesture with paceGesture."
+    message:
+      "Wait on a condition (expect.poll, an expect… method, holdUntil, stillTrueFor, Headset.settle), or pace a gesture with paceGesture."
   }
 ]
 
@@ -315,6 +316,25 @@ export default defineConfig({
             ...noReexports,
             ...noFunctionExpressionConsts,
             ...noFixedWaits
+          ],
+          "no-restricted-imports": [
+            "error",
+            {
+              paths: [
+                {
+                  name: "h3-js",
+                  message: "Import H3 from shared/src/h3.ts, which brands cells and resolutions."
+                }
+              ],
+              patterns: [
+                {
+                  group: ["**/support.ts"],
+                  importNamePattern: "^(check|until)$",
+                  message:
+                    "Assert through a page object's expect… method, which retries; a boolean check passes or fails on one read."
+                }
+              ]
+            }
           ]
         }
       },

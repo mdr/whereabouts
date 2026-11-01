@@ -1,4 +1,4 @@
-import { expect, test, type Browser, type BrowserContextOptions } from "@playwright/test"
+import { test, type Browser, type BrowserContextOptions } from "@playwright/test"
 import { Tab } from "../pages/Tab.ts"
 
 /** The local Chrome, headless, with WebGL in software so the map draws without a GPU. */
@@ -25,12 +25,6 @@ export const newTab = async (browser: Browser, label: string, options: PlayerOpt
   const baseUrl = options.baseUrl ?? test.info().project.use.baseURL
   if (!baseUrl) throw new Error("no baseURL: set one in the Playwright config")
   return new Tab(page, baseUrl, { dev: options.dev ?? false })
-}
-
-/** A named check that lets the test carry on when it fails, so one run reports every failure. */
-export const check = (ok: boolean, what: string): void => {
-  console.log(`${ok ? "ok  " : "FAIL"} ${what}`)
-  expect.soft(ok, what).toBe(true)
 }
 
 /** Where a test's screenshots go: its own folder under the output directory. */

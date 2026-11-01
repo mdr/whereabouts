@@ -6,7 +6,6 @@ import type { Headset } from "../../pages/headset/Headset.ts"
 import type { LobbyPage } from "../../pages/LobbyPage.ts"
 import type { RevealPage } from "../../pages/RevealPage.ts"
 import type { RoundPage } from "../../pages/RoundPage.ts"
-import { until } from "../../pages/support.ts"
 import { newTab } from "../support.ts"
 import { enterVr, newHeadsetTab, poses, pressMenu } from "./vr-support.ts"
 import type { Vec3 } from "../../../src/vr/probe.ts"
@@ -40,32 +39,19 @@ export const vrHostInLobby = async (browser: Browser): Promise<VrLobby> => {
   await aliceLobby.players.waitForPlayer("Bob", 5_000)
   await aliceLobby.setOnlyQuestions(QuestionType.PLACE, 2)
   await aliceLobby.chooseSecondsPerRound(60)
-  await enterVr(aliceTab, headset)
+  await enterVr(headset)
   return { headset, aliceLobby, bobLobby, ...(await poses(headset)) }
 }
 
 /** That game started from the headset: round 1, nothing painted yet. */
 export const vrHostGuessing = async (browser: Browser): Promise<VrGuessing> => {
   const { headset, aliceLobby, bobLobby, centre, can } = await vrHostInLobby(browser)
-  await until(
-    "the lobby in VR",
-    () => headset.panels.view(),
-    (viewType) => viewType === VrViewType.LOBBY
-  )
-  await until(
-    "the players in VR",
-    () => headset.panels.scoreTable(),
-    (table) => table?.rows.length === 2
-  )
+  await headset.panels.expectView(VrViewType.LOBBY)
+  await headset.panels.expectScoreTable({ rowCount: 2 })
   await pressMenu(headset, can, "act0")
   const aliceRound = await aliceLobby.waitForGameToStart()
   const bobRound = await bobLobby.waitForGameToStart()
-  await until(
-    "round 1 in VR",
-    () => headset.panels.view(),
-    (viewType) => viewType === VrViewType.PAINT,
-    30_000
-  )
+  await headset.panels.expectView(VrViewType.PAINT, { timeout: 30_000 })
   return { headset, centre, can, aliceRound, bobRound }
 }
 
@@ -73,23 +59,11 @@ export const vrHostGuessing = async (browser: Browser): Promise<VrGuessing> => {
 export const vrHostReveal = async (browser: Browser): Promise<VrGuessing & { bobReveal: RevealPage }> => {
   const guessing = await vrHostGuessing(browser)
   const { headset, can, bobRound } = guessing
-  await until(
-    "Pass on the menu",
-    () => headset.panels.doneLabel(),
-    (label) => label === "Pass"
-  )
+  await headset.panels.expectDoneLabel("Pass")
   await pressMenu(headset, can, "done")
   // Bob must finish last, so the reveal follows his Done.
-  await until(
-    "Alice's pass locked in",
-    async () => (await headset.panels.menu()).unlock,
-    (on) => on
-  )
+  await headset.panels.expectKeepEditing(true)
   const bobReveal = await bobRound.finishLast()
-  await until(
-    "the answer in VR",
-    () => headset.panels.view(),
-    (viewType) => viewType === VrViewType.REVEAL
-  )
+  await headset.panels.expectView(VrViewType.REVEAL)
   return { ...guessing, bobReveal }
 }

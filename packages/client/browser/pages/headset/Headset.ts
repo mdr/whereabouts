@@ -6,7 +6,8 @@ import { installEmulator } from "./emulator.ts"
 import { HeadsetPanels } from "./HeadsetPanels.ts"
 import { HeadsetScene } from "./HeadsetScene.ts"
 import type { Hand } from "../../../src/vr/hands/hand.ts"
-import { until } from "../support.ts"
+import { holdUntil, expectPolled, stillTrueFor } from "../support.ts"
+import { vrButtonTestIds } from "../../../src/ui/VrButton/VrButtonTestIds.ts"
 import { probe } from "./probe.ts"
 
 /**
@@ -32,17 +33,97 @@ export class Headset {
     this.panels = new HeadsetPanels(page)
   }
 
-  async inSession(): Promise<boolean> {
-    return this.#page.evaluate(() => window.headset.activeSession !== undefined)
+  /** Press the page's VR button. */
+  async pressVrButton(): Promise<void> {
+    await this.#vr(vrButtonTestIds.button).click()
   }
 
-  async expectInSession(timeout: Ms): Promise<void> {
-    await expect.poll(() => this.inSession(), { message: "the headset session opens", timeout }).toBe(true)
+  async expectVrButtonOffered(): Promise<void> {
+    await expect(this.#vr(vrButtonTestIds.button), "a headset browser offers VR").toBeVisible()
   }
 
-  /** Times the VR scene has been drawn, in the headset or not. */
-  scenesDrawn() {
-    return probe(this.#page, "drawn")
+  async expectVrButtonInVr(): Promise<void> {
+    await expect(this.#vr(vrButtonTestIds.button), "the VR button opens a headset session").toContainText("In VR")
+  }
+
+  async expectLoadingShown(): Promise<void> {
+    await expect(this.#vr(vrButtonTestIds.loading), "loading VR covers the screen").toBeVisible()
+  }
+
+  /** VR has loaded, but waits for another press to enter. */
+  async expectEnterButtonOffered(timeout: Ms): Promise<void> {
+    await expect(this.#vr(vrButtonTestIds.enterButton), "VR waits to be asked again").toBeVisible({ timeout })
+  }
+
+  async pressEnterButton(): Promise<void> {
+    await this.#vr(vrButtonTestIds.enterButton).click()
+  }
+
+  #vr(testId: string) {
+    return this.#page.getByTestId(testId)
+  }
+
+  /** Leave VR from the page, as the Leave VR button does. */
+  async leave(): Promise<void> {
+    await this.#page.evaluate(() => window.testHooks.vr!.exit())
+  }
+
+  async expectInSession(timeout: Ms = 10_000): Promise<void> {
+    await expect
+      .poll(() => this.#page.evaluate(() => window.headset.activeSession !== undefined), {
+        message: "the headset session opens",
+        timeout
+      })
+      .toBe(true)
+  }
+
+  async expectOutOfSession(timeout: Ms = 10_000): Promise<void> {
+    await expect
+      .poll(() => this.#page.evaluate(() => window.headset.activeSession === undefined), {
+        message: "Leave VR leaves it",
+        timeout
+      })
+      .toBe(true)
+  }
+
+  /** The headset stays out of a session for `duration`. */
+  async expectStaysOutOfSession(duration: Ms = 500): Promise<void> {
+    await stillTrueFor(
+      "the headset staying out of a session",
+      duration,
+      () => this.#page.evaluate(() => window.headset.activeSession === undefined),
+      (out) => out
+    )
+  }
+
+  /** The VR scene is not drawn on the page for `duration`. */
+  async expectSceneStaysUndrawn(duration: Ms = 500): Promise<void> {
+    const drawn = () => probe(this.#page, "drawn")
+    const was = await drawn()
+    await stillTrueFor("the VR scene staying undrawn", duration, drawn, (now) => now === was)
+  }
+
+  /** The headset has zoomed the globe in until the page's map shows over it. */
+  async zoomInUntilMapShows(): Promise<void> {
+    await this.#holdStick(-1, () => this.scene.expectGlobeDetail(true, { timeout: 30_000 }))
+  }
+
+  /** The globe has zoomed right out, to its smallest size. */
+  async zoomOutUntilWhole(): Promise<void> {
+    await this.#holdStick(1, () => this.scene.expectGlobeScale({ exactly: 1 }, { timeout: 30_000 }))
+  }
+
+  /** The globe has zoomed in until it is `scale` times its smallest size. */
+  async zoomInUntilScale(scale: number): Promise<void> {
+    await this.#holdStick(-1, () => this.scene.expectGlobeScale({ atLeast: scale }, { timeout: 60_000 }))
+  }
+
+  async #holdStick(y: number, expectation: () => Promise<void>): Promise<void> {
+    await holdUntil(
+      () => this.controllers.rightStick(0, y),
+      expectation,
+      () => this.controllers.rightStick(0, 0)
+    )
   }
 
   async eyes(): Promise<Vec3> {
@@ -55,12 +136,19 @@ export class Headset {
   /** Where a hand's tool lands on the globe, once the frames drawn since it was aimed have caught up with the aim. */
   async aimedAt(hand: Hand): Promise<Vec3> {
     await this.frames(3)
-    const target = await until(
-      `the ${hand} hand to point at the globe`,
-      () => this.scene.target(hand),
-      (at) => at !== undefined
+    const found: { at: Vec3 | undefined } = { at: undefined }
+    await expectPolled(
+      `the ${hand} hand points at the globe`,
+      "a point on the globe",
+      async () => {
+        found.at = await this.scene.target(hand)
+        return found.at
+      },
+      (at) => at !== undefined,
+      { timeout: 10_000 }
     )
-    return target!
+    if (!found.at) throw new Error(`The ${hand} hand pointed at the globe without a target`)
+    return found.at
   }
 
   /**
@@ -88,16 +176,17 @@ export class Headset {
         return { frames, layout, turning: probe.globeTurning }
       })
     let was = await look()
-    await until(
-      "the headset scene to settle",
+    await expectPolled(
+      "the headset scene settles",
+      "calm",
       async () => {
         const now = await look()
         const calm = !now.turning && now.layout === was.layout && now.frames - was.frames >= 5
         if (now.turning || now.layout !== was.layout) was = now
-        return calm
+        return { calm, turning: now.turning, layout: now.layout }
       },
-      (calm) => calm,
-      30_000
+      ({ calm }) => calm,
+      { timeout: 30_000 }
     )
   }
 

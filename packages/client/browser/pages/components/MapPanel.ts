@@ -188,6 +188,17 @@ export class MapPanel {
     await expectNumber("cells of your own paint", () => this.yourPaintCells(), bounds)
   }
 
+  /** Your paint now lies somewhere else: little of it is in `previousCellIds`. */
+  async expectPaintMovedFrom(previousCellIds: string[]): Promise<void> {
+    const previous = new Set(previousCellIds)
+    await expectPolled(
+      "your paint lies elsewhere than before",
+      "some paint, less than a fifth of it in the old cells",
+      () => this.yourPaintCellIds(),
+      (cells) => cells.length > 0 && cells.filter((cell) => previous.has(cell)).length < cells.length / 5
+    )
+  }
+
   /** How much paint you have: intensity times area, in km². */
   async yourPaintMass(): Promise<number> {
     return this.#page.evaluate(() => window.testHooks.map!.paint.layer.mass())

@@ -1,10 +1,9 @@
 // Starting states for the practice specs in an emulated headset.
 import type { Browser } from "@playwright/test"
-import { soloTestIds } from "../../../src/screens/solo/Solo/SoloTestIds.ts"
 import { VrViewType } from "../../../src/vr/view/view.ts"
 import type { Headset } from "../../pages/headset/Headset.ts"
+import { PracticeRevealPage } from "../../pages/PracticeRevealPage.ts"
 import type { PracticeRoundPage } from "../../pages/PracticeRoundPage.ts"
-import { until } from "../../pages/support.ts"
 import type { Tab } from "../../pages/Tab.ts"
 import { enterVr, newHeadsetTab, poses, pressMenu, spray } from "./vr-support.ts"
 import type { Vec3 } from "../../../src/vr/probe.ts"
@@ -42,7 +41,7 @@ export const headsetPractice = async (
 /** A VR practice round, painting. */
 export const vrPractice = async (browser: Browser, label: string, initScript?: () => void): Promise<VrPractice> => {
   const practice = await headsetPractice(browser, label, initScript)
-  await enterVr(practice.tab, practice.headset)
+  await enterVr(practice.headset)
   return { ...practice, ...(await poses(practice.headset)) }
 }
 
@@ -52,41 +51,25 @@ export const vrPracticePainted = async (browser: Browser, label: string): Promis
   await spray(vr.headset, vr.round, vr)
   // The stroke becomes an undo step only on a frame that sees the trigger let go.
   await vr.headset.frames(5)
-  const painted = await until(
-    "paint on the round",
-    () => vr.round.map.yourPaintCells(),
-    (count) => count > 0
-  )
+  await vr.round.map.expectYourPaintCells({ atLeast: 1 })
+  const painted = await vr.round.map.yourPaintCells()
   return { ...vr, painted }
 }
 
 /** A VR practice round passed with nothing painted, its answer showing in VR. */
 export const vrPracticeAnswer = async (browser: Browser, label: string): Promise<VrPractice> => {
   const vr = await vrPractice(browser, label)
-  await until(
-    "Pass on the menu",
-    () => vr.headset.panels.doneLabel(),
-    (label) => label === "Pass"
-  )
+  await vr.headset.panels.expectDoneLabel("Pass")
   await pressMenu(vr.headset, vr.can, "done")
-  await until(
-    "the passed round's answer in VR",
-    () => vr.headset.panels.view(),
-    (viewType) => viewType === VrViewType.REVEAL
-  )
-  await vr.tab.page.getByTestId(soloTestIds.roundScore).waitFor()
+  await vr.headset.panels.expectView(VrViewType.REVEAL)
+  await PracticeRevealPage.whenShownInHeadset(vr.tab)
   return vr
 }
 
 /** A flag practice round in VR, its flag card over the menu: `card` is where the card rests, `hand` a spot beside it to point from. */
 export const vrFlagRound = async (browser: Browser, label: string): Promise<VrFlagRound> => {
   const vr = await vrPractice(browser, label, flagRounds)
-  await until(
-    "the flag in VR",
-    () => vr.headset.panels.picture(),
-    (postcard) => postcard !== undefined,
-    60_000
-  )
+  await vr.headset.panels.expectPictureShown({ timeout: 60_000 })
   const card = (await vr.headset.panels.pictureHeld()).at
   return { ...vr, card, hand: [card[0] + 0.25, card[1] - 0.15, card[2] + 0.3] }
 }
@@ -95,10 +78,6 @@ export const vrFlagRound = async (browser: Browser, label: string): Promise<VrFl
 export const vrFlagAnswer = async (browser: Browser, label: string): Promise<VrFlagRound> => {
   const flag = await vrFlagRound(browser, label)
   await pressMenu(flag.headset, flag.hand, "done")
-  await until(
-    "the flag round's answer",
-    () => flag.headset.panels.view(),
-    (viewType) => viewType === VrViewType.REVEAL
-  )
+  await flag.headset.panels.expectView(VrViewType.REVEAL)
   return flag
 }

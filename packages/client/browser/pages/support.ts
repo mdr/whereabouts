@@ -4,23 +4,7 @@ import type { Ms } from "@whereabouts/shared/units"
 
 const POLL_INTERVAL: Ms = 100
 
-export const nextPoll = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL))
-
-/** Poll `read` until `ok` accepts its value, or throw naming what was awaited and the last value seen. */
-export const until = async <T>(
-  what: string,
-  read: () => Promise<T>,
-  ok: (value: T) => boolean,
-  timeout: Ms = 10_000
-): Promise<T> => {
-  const end = Date.now() + timeout
-  for (;;) {
-    const value = await read()
-    if (ok(value)) return value
-    if (Date.now() > end) throw new Error(`Timed out waiting for ${what}; last saw ${JSON.stringify(value)}`)
-    await nextPoll()
-  }
-}
+const nextPoll = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL))
 
 /** Check, for `duration`, that `ok` keeps accepting what `read` gives; fails as soon as it does not. */
 export const stillTrueFor = async <T>(
@@ -43,18 +27,15 @@ export const paceGesture = async (page: Page, duration: Ms): Promise<void> => {
   await page.waitForTimeout(duration)
 }
 
-/** Press, poll `read` until `ok` accepts it, then release, whether or not it did. */
-export const holdUntil = async <T>(
-  what: string,
+/** Press, wait for `expectation` to hold, then release, whether or not it did. */
+export const holdUntil = async (
   press: () => Promise<void>,
-  read: () => Promise<T>,
-  ok: (value: T) => boolean,
-  release: () => Promise<void>,
-  timeout: Ms = 10_000
-): Promise<T> => {
+  expectation: () => Promise<void>,
+  release: () => Promise<void>
+): Promise<void> => {
   await press()
   try {
-    return await until(what, read, ok, timeout)
+    await expectation()
   } finally {
     await release()
   }

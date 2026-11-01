@@ -1,11 +1,11 @@
 // Painting the globe in VR, on an emulated Quest 3 (see pages/headset/Headset.ts).
 // Saves screenshots of the headset's view.
 import { test } from "@playwright/test"
+import { HintAxis } from "@whereabouts/shared/hints"
 import { Hand } from "../../../src/vr/hands/hand.ts"
 import { WristButton } from "../../../src/vr/wrist/wrist-button.ts"
-import { hintTestIds } from "../../../src/ui/round/Hint/HintTestIds.ts"
-import { holdUntil, stillTrueFor, until } from "../../pages/support.ts"
-import { check, shot } from "../support.ts"
+import { holdUntil } from "../../pages/support.ts"
+import { shot } from "../support.ts"
 import { vrPractice, vrPracticePainted } from "./vr-states.ts"
 import { closeAllTabs, spray } from "./vr-support.ts"
 import type { Vec3 } from "../../../src/vr/probe.ts"
@@ -15,25 +15,14 @@ test.afterEach(async ({ browser }) => closeAllTabs(browser))
 test("spraying paints the globe, the left hand's eraser rubs paint out, and undo puts it back", async ({ browser }) => {
   const { headset, round, centre, can } = await vrPractice(browser, "vr-spray")
   const before = await round.map.yourPaintCells()
-  const droplets = await spray(headset, round, { centre, can }, shot(`vr-2-spraying.png`))
-  check(droplets > 20, `spraying throws droplets (${droplets} in the air)`)
+  await spray(headset, round, { centre, can }, { screenshot: shot(`vr-2-spraying.png`), expectDroplets: true })
+  await round.map.expectYourPaintCells({ greaterThan: before })
   const after = await round.map.yourPaintCells()
-  check(after > before, `spraying the globe paints the round (${before} -> ${after} cells)`)
-  const shown = await until(
-    "the globe to show the paint",
-    () => headset.scene.globePaintCells(),
-    (count) => count === after
-  )
-  check(shown === after, `the globe shows it (${shown} cells)`)
-  check(await headset.scene.toolsHeld(), "while painting, the hands hold the can and eraser")
-  const around = await headset.scene.surroundings()
-  check(around.space && !around.passthrough, "space shows round the globe")
-  const moon = await headset.scene.moon()
-  check(
-    moon !== undefined && Math.abs(moon.distance - 7.54) < 0.01 && Math.abs(moon.radius - 0.2727) < 0.001,
-    `with the moon to the globe's scale (${moon?.distance.toFixed(1)} and ${moon?.radius.toFixed(3)} of its radius)`
-  )
-  check(!(await headset.scene.controllersShown()), "while painting, the controllers themselves are hidden")
+  await headset.scene.expectGlobePaintCells({ exactly: after })
+  await headset.scene.expectToolsHeld(true)
+  await headset.scene.expectSpaceShown()
+  await headset.scene.expectMoon({ distance: 7.54, radius: 0.2727 }, { distance: 0.01, radius: 0.001 })
+  await headset.scene.expectControllersShown(false)
   await headset.settle()
   await round.screenshot(shot(`vr-3-sprayed.png`))
 
@@ -43,22 +32,15 @@ test("spraying paints the globe, the left hand's eraser rubs paint out, and undo
   const painted = await headset.aimedAt(Hand.RIGHT)
   await headset.controllers.point(Hand.LEFT, [can[0] - 0.3, can[1], can[2]], painted)
   await headset.aimedAt(Hand.LEFT)
-  const erased = await holdUntil(
-    "the eraser to rub paint out",
+  await holdUntil(
     () => headset.controllers.trigger(Hand.LEFT, 1),
-    () => round.map.yourPaintCells(),
-    (cells) => cells < after,
+    () => round.map.expectYourPaintCells({ lessThan: after }),
     () => headset.controllers.trigger(Hand.LEFT, 0)
   )
-  check(erased < after, `the left hand erases (${after} -> ${erased} cells)`)
   // A frame must see the release for the stroke to end, so that undo takes it back whole.
   await headset.frames(3)
   await round.paintTools.undoWithKeyboard()
-  await until(
-    "the erasing undone",
-    () => round.map.yourPaintCells(),
-    (count) => count === after
-  )
+  await round.map.expectYourPaintCells({ exactly: after })
 
   // Rubbing the eraser on the globe rubs out too, with no trigger. The grip,
   // and so the eraser, sits behind the ray's origin and angled down from it:
@@ -71,114 +53,64 @@ test("spraying paints the globe, the left hand's eraser rubs paint out, and undo
   await headset.controllers.point(Hand.LEFT, rubTip, painted)
   await headset.frames(5)
   await headset.controllers.point(Hand.LEFT, rubFrom, painted)
-  const rubbed = await until(
-    "the eraser to rub paint out",
-    () => headset.scene.paintMass(),
-    (mass) => mass < unrubbed * 0.995
-  )
-  check(
-    rubbed < unrubbed * 0.995,
-    `rubbing the eraser on the globe rubs paint out (${unrubbed.toFixed(1)} -> ${rubbed.toFixed(1)} in all)`
-  )
+  await headset.scene.expectPaintMass({ lessThan: unrubbed * 0.995 })
   await round.paintTools.undoWithKeyboard()
-  await until(
-    "the rubbing undone",
-    () => round.map.yourPaintCells(),
-    (count) => count === after
-  )
+  await round.map.expectYourPaintCells({ exactly: after })
   // Gripping, to turn or zoom the globe, it rubs nothing out.
   const ungripped = await headset.scene.paintMass()
   await headset.controllers.grip(Hand.LEFT, 1)
   await headset.controllers.point(Hand.LEFT, rubTip, painted)
   await headset.frames(5)
   await headset.controllers.point(Hand.LEFT, rubFrom, painted)
-  await stillTrueFor(
-    "the paint mass while gripping",
-    1_500,
-    () => headset.scene.paintMass(),
-    (mass) => mass === ungripped
-  )
+  await headset.scene.expectPaintMassStays(ungripped, 1_500)
   // Held still before letting go: a release straight after the move would
   // fling the globe if no frame came between, and leave it spinning.
   await headset.frames(5)
   await headset.controllers.grip(Hand.LEFT, 0)
   await headset.settle()
-  const gripped = await headset.scene.paintMass()
-  check(
-    gripped === ungripped,
-    `gripping the globe, the eraser rubs nothing out (${ungripped.toFixed(1)} -> ${gripped.toFixed(1)})`
-  )
+  await headset.scene.expectPaintMass({ exactly: ungripped })
 })
 
 test("turning the left palm up opens the wrist menu, whose buttons clear, hint and trim", async ({ browser }) => {
-  const { tab, headset, round, centre, can, painted } = await vrPracticePainted(browser, "vr-wrist")
+  const { headset, round, centre, can, painted } = await vrPracticePainted(browser, "vr-wrist")
   // Turning the left palm up opens the wrist menu; the right hand's
   // ray presses its buttons.
   const leftHand: Vec3 = [can[0] - 0.3, can[1], can[2]]
   await headset.controllers.point(Hand.LEFT, leftHand, centre)
-  check(!(await headset.panels.wristOpen()), "the wrist menu stays shut while the left hand points ahead")
+  await headset.aimedAt(Hand.LEFT)
+  await headset.panels.expectWristStaysShut()
   // A quarter turn about the ray brings the left palm (its grip's +X) round to face up.
   await headset.controllers.hold(Hand.LEFT, leftHand, [0, 0, Math.SQRT1_2, Math.SQRT1_2])
-  check(
-    await until(
-      "the wrist menu",
-      () => headset.panels.wristOpen(),
-      (open) => open
-    ),
-    "turning the left palm up opens the wrist menu"
-  )
+  await headset.panels.expectWristOpen(true)
   await headset.settle()
   const press = async (id: Parameters<typeof headset.panels.wristButton>[0]) => {
     await headset.controllers.press(can, await headset.panels.wristButton(id))
   }
   await round.screenshot(shot(`vr-wrist.png`))
-  const undone = async (what: string) => {
+  const undone = async () => {
     await round.paintTools.undoWithKeyboard()
-    await until(
-      what,
-      () => round.map.yourPaintCells(),
-      (count) => count === painted
-    )
+    await round.map.expectYourPaintCells({ exactly: painted })
   }
   await press(WristButton.CLEAR)
-  check((await round.map.yourPaintCells()) === 0, "its Clear clears the paint, and the press sprays none")
-  await undone("the clear undone")
+  await round.map.expectYourPaintCells({ exactly: 0 })
+  await undone()
   await press(WristButton.LATITUDE)
-  check(
-    await until(
-      "the hint band",
-      () => headset.scene.hintShown(),
-      (on) => on
-    ),
-    "its Latitude button gives the hint, shaded on the globe"
-  )
-  check(await tab.page.getByTestId(hintTestIds.band).isVisible(), "and on the page")
+  await headset.scene.expectHintShown(true)
+  await round.expectHintBand(HintAxis.LATITUDE)
   await press(WristButton.TRIM_HINT)
-  const trimmed = await round.map.yourPaintCells()
-  check(trimmed <= painted, `Trim to hint keeps only the paint in the band (${painted} -> ${trimmed} cells)`)
-  if (trimmed < painted) await undone("the trim undone")
+  await round.map.expectYourPaintCells({ atMost: painted })
+  if ((await round.map.yourPaintCells()) < painted) await undone()
   await headset.controllers.point(Hand.LEFT, leftHand, centre)
-  check(
-    !(await until(
-      "the wrist menu shut",
-      () => headset.panels.wristOpen(),
-      (open) => !open
-    )),
-    "turning the palm away shuts it"
-  )
+  await headset.panels.expectWristOpen(false)
 })
 
 test("gripping turns the globe, and the thumbstick zooms in until the map shows over it", async ({ browser }) => {
   const { headset, round, centre, can } = await vrPracticePainted(browser, "vr-globe")
   // Grab the globe by its right side and sweep the hand left: the same spray
   // then lands somewhere else.
-  const first = new Set(await round.map.yourPaintCellIds())
+  const first = await round.map.yourPaintCellIds()
   await round.paintTools.undoWithKeyboard()
-  await until(
-    "the first spray undone",
-    () => round.map.yourPaintCells(),
-    (count) => count === 0
-  )
+  await round.map.expectYourPaintCells({ exactly: 0 })
   await headset.controllers.pointRight([centre[0] + 0.2, centre[1], centre[2] + 0.1], centre)
   await headset.frames(3)
   // The globe turns between frames that both see the grip held: hold each
@@ -194,27 +126,13 @@ test("gripping turns the globe, and the thumbstick zooms in until the map shows 
   await headset.settle()
   await round.screenshot(shot(`vr-4-spun.png`))
   await spray(headset, round, { centre, can })
-  const second = await round.map.yourPaintCellIds()
-  const shared = second.filter((cell) => first.has(cell)).length
-  check(
-    second.length > 0 && shared < second.length / 5,
-    `spinning the globe moves where paint lands (${shared} of ${second.length} cells shared)`
-  )
+  await round.map.expectPaintMovedFrom(first)
 
   // Zoom in with the thumbstick: the page's map comes in over the globe for detail.
-  check(!(await headset.scene.globeDetailShown()), "the whole globe shows no map over it")
-  const detailed = await holdUntil(
-    "the map over the zoomed globe",
-    () => headset.controllers.rightStick(0, -1),
-    () => headset.scene.globeDetailShown(),
-    (on) => on,
-    () => headset.controllers.rightStick(0, 0),
-    30_000
-  )
-  check(detailed, "zooming in brings the map over the globe")
-  const gap = await headset.scene.panelGap()
-  check(gap > -0.005, `the panels stay clear of the zoomed globe (gap ${gap.toFixed(3)} rad)`)
+  await headset.scene.expectNoGlobeDetailFor()
+  await headset.zoomInUntilMapShows()
   await headset.settle()
+  await headset.scene.expectPanelGap({ greaterThan: -0.005 })
   await round.screenshot(shot(`vr-5-zoomed.png`))
   await headset.controllers.pointRight(can, centre)
   await headset.settle()
