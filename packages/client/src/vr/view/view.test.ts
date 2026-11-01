@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import type { CommonsFile, FlagCode } from "@whereabouts/shared/ids"
+import type { HintBand } from "@whereabouts/shared/hints"
 import { VrPictureType } from "../picture/vr-picture"
 import { HintAllowance, VrViewType, sceneOf, type VrReveal, type VrRound, type VrView } from "./view"
 
@@ -13,7 +14,7 @@ describe("sceneOf", () => {
   it("is the same while a round is painted, whatever changes on it", () => {
     const before = makeRound()
     const after = makeRound({
-      hint: {} as VrRound["hint"],
+      hint: {} as HintBand,
       hintsLeft: HintAllowance.NONE,
       note: "Done",
       timeLeft: () => 0

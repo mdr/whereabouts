@@ -4,7 +4,7 @@ import { renderHook } from "@testing-library/preact"
 import { Phase } from "@whereabouts/shared/protocol/views"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 import { Chime } from "./sound"
-import { useGameSounds } from "./useGameSounds"
+import { useGameSounds, type SoundView } from "./useGameSounds"
 
 const sound = vi.hoisted(() => ({
   chime: vi.fn(),
@@ -16,7 +16,7 @@ const sound = vi.hoisted(() => ({
 
 vi.mock("./sound", async (original) => ({ ...(await original<object>()), sound }))
 
-type View = Parameters<typeof useGameSounds>[1]
+type View = SoundView
 
 const DEADLINE: Instant = 60_000
 const guessing = (index = 0): View => ({ phase: Phase.GUESSING, round: { index, deadline: DEADLINE } })

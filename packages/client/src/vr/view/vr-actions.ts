@@ -10,15 +10,13 @@ import { type GameView } from "@whereabouts/shared/protocol/views"
 import { Role, everyone, type PlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import type { VrAction } from "./view"
-import type { VrTable } from "../scores/scores"
+import type { VrTableRow } from "../scores/scores"
 
 /** The player the host last pointed at in the headset's table. */
 export const vrPicked = signal<PlayerId | undefined>(undefined)
 
-type Row = VrTable["rows"][number]
-
 /** For the host, a player's row picks them for Remove and Make host; pointing again lets go. */
-export const pickable = (view: GameView, player: PlayerView): Pick<Row, "select" | "selected"> => {
+export const pickable = (view: GameView, player: PlayerView): Pick<VrTableRow, "select" | "selected"> => {
   if (!view.you.isHost || player.id === view.you.id) return {}
   const picked = vrPicked.value === player.id
   return { selected: picked, select: () => (vrPicked.value = picked ? undefined : player.id) }

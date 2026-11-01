@@ -109,7 +109,7 @@ export const flagShown = (question: QuestionView): FlagCode | undefined => {
   return question.type === QuestionType.COUNTRY ? question.countryFlag : undefined
 }
 
-interface RoundView {
+export interface RoundView {
   index: number
   total: number
   question: QuestionView

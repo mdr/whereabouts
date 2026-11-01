@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vite-plus/test"
-import { listedShortcuts, runPaintKey, type KeyPress, type PaintKeyTarget } from "./shortcuts"
+import { listedShortcuts, runPaintKey, type KeyPress } from "./shortcuts"
 import { Tool } from "../paint/tool"
 
 const press = (key: string, mods: Partial<KeyPress> = {}): KeyPress => ({
@@ -15,8 +15,8 @@ const press = (key: string, mods: Partial<KeyPress> = {}): KeyPress => ({
 const makeTarget = ({ enabled = true, canFill = true } = {}) => ({
   enabled: () => enabled,
   canFill: () => canFill,
-  setTool: vi.fn<PaintKeyTarget["setTool"]>(),
-  resizeBrush: vi.fn<PaintKeyTarget["resizeBrush"]>(),
+  setTool: vi.fn<(tool: Tool) => void>(),
+  resizeBrush: vi.fn<(factor: number) => void>(),
   undo: vi.fn(),
   redo: vi.fn()
 })

@@ -10,7 +10,7 @@ import type { Picture } from "../picture/picture"
 import { HandTool, TRIGGER_DEAD_ZONE } from "../spray/spray"
 import { nextTool, offeredTool } from "../spray/spray-rules"
 import { PairedStroke, strokeTool, type Strokes } from "../spray/stroke"
-import type { VrRound } from "../view/view"
+import type { PaintController } from "../../paint/paint-controller"
 import type { Seconds } from "@whereabouts/shared/units"
 
 export class Hands {
@@ -93,7 +93,7 @@ export class Hands {
   }
 
   /** One frame of painting; true if either hand sprayed. Ends the stroke when neither did. */
-  paint(now: Seconds, globe: Globe, paint: VrRound["paint"], onMenu: boolean, wristOpen: boolean): boolean {
+  paint(now: Seconds, globe: Globe, paint: PaintController, onMenu: boolean, wristOpen: boolean): boolean {
     const pads = this.world.input.xr.gamepads
     this.cycleTools(paint.fillable.value)
     const triggers = this.triggers(wristOpen)

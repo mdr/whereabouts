@@ -8,7 +8,7 @@ import type { PaintController } from "./paint-controller"
 import { announcePass } from "../round/round"
 
 type UploadConnection = Pick<Connection, "status" | "sendPaint" | "lock">
-type UploadPaint = Pick<PaintController, "layer" | "floor" | "version">
+export type UploadPaint = Pick<PaintController, "layer" | "floor" | "version">
 
 /**
  * Keeps the server's copy of your paint current while you can paint, and

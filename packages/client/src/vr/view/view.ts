@@ -96,7 +96,7 @@ interface VrPlayersPaint {
 }
 
 /** The paint shown at a reveal: your own, or players' in their colours as the score table picks it. */
-type VrPaints = VrOwnPaint | VrPlayersPaint
+export type VrPaints = VrOwnPaint | VrPlayersPaint
 
 /** After a round: its answer and score. */
 export interface VrReveal {

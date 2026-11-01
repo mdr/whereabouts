@@ -42,12 +42,12 @@ import {
   type VrRound,
   type VrView
 } from "./view"
-import type { VrTable } from "../scores/scores"
+import type { VrTable, VrTableRow } from "../scores/scores"
 
 const named = (view: GameView, player: { id: string; name: string }) =>
   `${player.name}${player.id === view.you.id ? " (you)" : ""}`
 
-const shownRow = (view: GameView, row: ShownRow): VrTable["rows"][number] => {
+const shownRow = (view: GameView, row: ShownRow): VrTableRow => {
   const select = () => (revealShown.value = row.pick)
   if (row.type === ShownRowType.EVERYONE) return { name: "Everyone", total: "", selected: row.selected, select }
   if (row.type === ShownRowType.HIDE_PAINT) return { name: "Hide paint", total: "", selected: row.selected, select }

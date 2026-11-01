@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { playerId, playerName } from "@whereabouts/shared/ids"
+import type { GuessingGameView, RevealGameView } from "@whereabouts/shared/protocol/views"
 import { SHOW_EVERYONE, SHOW_NOBODY, showPlayer, type RevealShown } from "./reveal"
 import { RoundNote, ShownRowType, canEndGame, revealModel, roundNote, type ShownRow } from "./round-model"
 import {
@@ -12,14 +13,15 @@ import {
   makeGuessingView,
   makeReveal,
   makeRevealView,
-  makeSpectator
+  makeSpectator,
+  type ViewOverrides
 } from "../test-view"
 
 const alice = makePlayer()
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 const sam = makeSpectator()
 
-const you = (over: Parameters<typeof makeGuessingView>[0] = {}) => makeGuessingView({ ...over }).you
+const you = (over: ViewOverrides<GuessingGameView> = {}) => makeGuessingView({ ...over }).you
 
 describe("roundNote", () => {
   it("says nothing while you are painting", () => {
@@ -44,11 +46,8 @@ describe("canEndGame", () => {
 
 describe("revealModel", () => {
   const players = [alice, bob]
-  const model = (
-    over: Parameters<typeof makeRevealView>[0] = {},
-    reveal = makeReveal(),
-    shown: RevealShown = SHOW_EVERYONE
-  ) => revealModel(makeRevealView({ players, spectators: [sam], ...over }), reveal, shown)
+  const model = (over: ViewOverrides<RevealGameView> = {}, reveal = makeReveal(), shown: RevealShown = SHOW_EVERYONE) =>
+    revealModel(makeRevealView({ players, spectators: [sam], ...over }), reveal, shown)
   const names = (rows: ShownRow[]) => rows.map((row) => (row.type === ShownRowType.PLAYER ? row.player.name : row.type))
 
   it("lists Everyone, the players by this round's score, then Hide paint", () => {

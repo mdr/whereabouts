@@ -2,8 +2,8 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 import { signal } from "@preact/signals"
 import { playerId, playerName } from "@whereabouts/shared/ids"
-import type { InPlayGameView } from "@whereabouts/shared/protocol/views"
-import { ConnectionStatus, type Connection, type ConnectionState, type PlainState } from "../../net/net"
+import type { GuessingGameView, InPlayGameView, RevealGameView } from "@whereabouts/shared/protocol/views"
+import { ConnectionStatus, type Connection, type ConnectionState, type PlainStatus } from "../../net/net"
 import type { PaintController } from "../../paint/paint-controller"
 import { gameVrView } from "./game-vr-view"
 import { VrViewType, type VrView } from "./view"
@@ -17,12 +17,13 @@ import {
   makeGuessingView,
   makeReveal,
   makeRevealView,
-  makeSpectator
+  makeSpectator,
+  type ViewOverrides
 } from "../../test-view"
 
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 
-const fakeConn = (status: PlainState["type"] = ConnectionStatus.CONNECTED) =>
+const fakeConn = (status: PlainStatus = ConnectionStatus.CONNECTED) =>
   ({
     status: signal<ConnectionState>({ type: status }),
     online: signal(status === ConnectionStatus.CONNECTED),
@@ -42,8 +43,8 @@ const show = (view: InPlayGameView, conn = fakeConn(), { timeUp = false } = {}):
     borders: undefined
   })
 
-const guessing = (over: Parameters<typeof makeGuessingView>[0] = {}) => makeGuessingView(over)
-const revealing = (over: Parameters<typeof makeRevealView>[0] = {}) =>
+const guessing = (over: ViewOverrides<GuessingGameView> = {}) => makeGuessingView(over)
+const revealing = (over: ViewOverrides<RevealGameView> = {}) =>
   makeRevealView({ players: [makePlayer(), bob], ...over })
 
 const reveal = (view: VrView) => {

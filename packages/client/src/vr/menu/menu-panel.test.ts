@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
-import { panelContent } from "./menu-panel"
+import type { PaintController } from "../../paint/paint-controller"
+import { panelContent, type PanelState } from "./menu-panel"
 import {
   HintAllowance,
   VrAnswerType,
@@ -11,7 +12,7 @@ import {
   type VrView
 } from "../view/view"
 
-const makeState = (over: Partial<Parameters<typeof panelContent>[1]> = {}) => ({
+const makeState = (over: Partial<PanelState> = {}) => ({
   armed: undefined,
   soundOn: true,
   passthroughOn: false,
@@ -76,7 +77,7 @@ describe("panelContent", () => {
   })
 
   it("mentions the fill pail when the round can fill", () => {
-    const paint = { layer: { isEmpty: true }, fillable: { value: true } } as VrRound["paint"]
+    const paint = { layer: { isEmpty: true }, fillable: { value: true } } as PaintController
     expect(panelContent(makePaint({ paint }), makeState())["hint"]?.text).toContain("fill pail")
     expect(panelContent(makePaint(), makeState())["hint"]?.text).not.toContain("fill pail")
   })

@@ -14,7 +14,7 @@ import scoresUrl from "./scores.uikitml?url"
 import type { Metres } from "@whereabouts/shared/units"
 import type { Vec3 } from "../probe"
 
-interface VrTableRow {
+export interface VrTableRow {
   /** A player's colour, for their swatch. */
   colour?: CssColour
   name: string

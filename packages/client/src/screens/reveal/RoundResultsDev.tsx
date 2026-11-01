@@ -1,6 +1,6 @@
 import type { PlayerId } from "@whereabouts/shared/ids"
 import { AnswerType } from "@whereabouts/shared/questions"
-import { RoundGuessType, type RevealView } from "@whereabouts/shared/protocol/views"
+import { RoundGuessType, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { AnswerParts } from "@whereabouts/shared/scoring/regions"
 import { Card } from "../../ui/Card/Card"
 import kit from "../../ui/kit.module.css"
@@ -8,7 +8,7 @@ import { HostTag } from "../../ui/players/HostTag/HostTag"
 import { ScoreParts } from "../../ui/round/ScoreParts"
 
 /** Developer-only: how each player's score was made up. */
-export const RoundResultsDev = ({ results, host }: { results: RevealView["results"]; host: PlayerId | undefined }) => (
+export const RoundResultsDev = ({ results, host }: { results: RoundResultView[]; host: PlayerId | undefined }) => (
   <Card title="Round results">
     <ul class={kit.results}>
       {results.map((result) => (

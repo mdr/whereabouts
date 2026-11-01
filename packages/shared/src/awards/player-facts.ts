@@ -21,16 +21,31 @@ interface PassedFacts extends BaseFacts {
   type: FactsType.PASSED
 }
 
+/**
+ * Where the paint was strongest, how far that is from the answer, and what
+ * spreading it and missing cost in points (see explain.ts).
+ */
+export interface StrongestPoint {
+  spot: LatLon
+  miss: Km
+  spread: Points
+  missCost: Points
+  hedged: boolean
+  tolerance: Km
+}
+
+/** The share of the paint on the country, and whether the paint was all just over the border. */
+export interface CountryFit {
+  precision: number
+  nextDoor: boolean
+}
+
 /** A guess at a place. */
 export interface PointFacts extends BaseFacts {
   type: FactsType.POINT
   /** Painted area. */
   area: SquareKm
-  /**
-   * Where the paint was strongest, how far that is from the answer, and what
-   * spreading it and missing cost in points (see explain.ts).
-   */
-  point: { spot: LatLon; miss: Km; spread: Points; missCost: Points; hedged: boolean; tolerance: Km }
+  point: StrongestPoint
 }
 
 /** A guess at a country. */
@@ -38,8 +53,7 @@ export interface AreaFacts extends BaseFacts {
   type: FactsType.AREA
   /** Painted area. */
   area: SquareKm
-  /** The share of the paint on the country, and whether the paint was all just over the border. */
-  region: { precision: number; nextDoor: boolean }
+  region: CountryFit
 }
 
 /** What one player did in one round, kept for the awards at the end. */

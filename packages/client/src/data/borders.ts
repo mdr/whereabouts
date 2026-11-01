@@ -9,7 +9,7 @@ import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
 import { fetchBuildJson } from "../net/stale-build"
 import bordersUrl from "@whereabouts/shared/borders.json?url"
-import { Borders, flatRing, type FlatRing } from "@whereabouts/shared/borders"
+import { Borders, flatRing, type BordersData, type FlatRing } from "@whereabouts/shared/borders"
 import { AnswerType, type FlagQuestion } from "@whereabouts/shared/questions"
 import { CATALOGUE, isFlagQuestion } from "@whereabouts/shared/catalogue/catalogue"
 import type { LatLon } from "@whereabouts/shared/geo"
@@ -22,7 +22,7 @@ const borders = signal<Borders | undefined>(undefined)
 let loading: Promise<Borders> | undefined = undefined
 
 const loadBorders = (): Promise<Borders> => {
-  loading ??= Promise.all([fetchBuildJson<ConstructorParameters<typeof Borders>[0]>(bordersUrl), loadOutlines()]).then(
+  loading ??= Promise.all([fetchBuildJson<BordersData>(bordersUrl), loadOutlines()]).then(
     ([rawBorders]) => (borders.value = new Borders(rawBorders, CATALOGUE.filter(isFlagQuestion))),
     (error: unknown) => {
       // Let the next caller try again, after a dropped connection say.

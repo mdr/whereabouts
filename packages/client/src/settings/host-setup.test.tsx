@@ -12,8 +12,7 @@ const { LANDMARK, PLACE, COUNTRY, FLAG } = QuestionType
 const MIX = mixOf({ [LANDMARK]: 3, [PLACE]: 3, [COUNTRY]: 2, [FLAG]: 2 })
 const SAVED = { mix: MIX, roundLength: 90_000, mapDetail: MapDetail.POLITICAL }
 
-const lobby = (isHost: boolean, phase: GameView["phase"] = Phase.LOBBY): GameView =>
-  ({ phase, you: { isHost } }) as GameView
+const lobby = (isHost: boolean, phase: Phase = Phase.LOBBY): GameView => ({ phase, you: { isHost } }) as GameView
 
 const Harness = ({ conn, view, created }: { conn: Connection; view: GameView | undefined; created: boolean }) => {
   useSavedSetup(conn, view, created)

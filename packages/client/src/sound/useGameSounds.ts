@@ -1,14 +1,14 @@
 import { useEffect, useRef } from "preact/hooks"
-import type { GuessingGameView, LobbyGameView, ResultsGameView, RevealView } from "@whereabouts/shared/protocol/views"
+import type { LobbyGameView, ResultsGameView, RevealView, RoundView } from "@whereabouts/shared/protocol/views"
 import type { Connection } from "../net/net"
 import { Chime, sound } from "./sound"
 import { RoundCue, roundCue, type RoundState } from "./round-cue"
 import { Phase } from "@whereabouts/shared/protocol/views"
 
 /** What the sounds follow in a game view. */
-type SoundView =
+export type SoundView =
   | Pick<LobbyGameView | ResultsGameView, "phase">
-  | { phase: Phase.GUESSING; round: Pick<GuessingGameView["round"], "index" | "deadline"> }
+  | { phase: Phase.GUESSING; round: Pick<RoundView, "index" | "deadline"> }
   | { phase: Phase.REVEAL; reveal: Pick<RevealView, "index"> }
 
 /**

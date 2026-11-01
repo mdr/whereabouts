@@ -1,4 +1,4 @@
-import type { World } from "@iwsdk/core"
+import type { WebGLRenderer } from "three"
 import type { BordersData } from "@whereabouts/shared/borders"
 import type { LandMaskData } from "@whereabouts/shared/paint/land"
 import landUrl from "@whereabouts/shared/land.json?url"
@@ -9,7 +9,7 @@ import type { Globe } from "./globe"
 import { drawBorders, drawColour, drawLand } from "./globe-texture"
 
 /** Fetch the land and borders and draw the globe's textures; the colour one finishes in the background. */
-export const drawGlobe = async (globe: Globe, renderer: World["renderer"]): Promise<void> => {
+export const drawGlobe = async (globe: Globe, renderer: WebGLRenderer): Promise<void> => {
   const [land, borders] = await Promise.all([
     fetchBuildJson<LandMaskData>(landUrl),
     fetchBuildJson<BordersData>(bordersUrl)

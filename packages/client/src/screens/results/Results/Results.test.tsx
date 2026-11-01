@@ -6,7 +6,7 @@ import { playerColour } from "@whereabouts/shared/colours"
 import { PictureType, type ResultsGameView } from "@whereabouts/shared/protocol/views"
 import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 import { signal } from "@preact/signals"
-import { type Connection, type ConnectionState, type PlainState, ConnectionStatus } from "../../../net/net"
+import { type Connection, type ConnectionState, type PlainStatus, ConnectionStatus } from "../../../net/net"
 import { Results } from "./Results"
 import { resultsTestIds } from "./ResultsTestIds"
 import { standingsTestIds } from "../Standings/StandingsTestIds"
@@ -24,7 +24,7 @@ import { makePlayer, makeResultsView, makeStanding } from "../../../test-view"
 
 const tid = (id: string) => `[data-testid="${id}"]`
 
-const makeConn = (status: PlainState["type"] = ConnectionStatus.CONNECTED, again = vi.fn()) =>
+const makeConn = (status: PlainStatus = ConnectionStatus.CONNECTED, again = vi.fn()) =>
   ({
     again,
     status: signal<ConnectionState>({ type: status }),

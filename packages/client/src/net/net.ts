@@ -34,8 +34,10 @@ export enum ConnectionStatus {
   REJECTED = "REJECTED"
 }
 
-export interface PlainState {
-  type: Exclude<ConnectionStatus, ConnectionStatus.REJECTED>
+export type PlainStatus = Exclude<ConnectionStatus, ConnectionStatus.REJECTED>
+
+interface PlainState {
+  type: PlainStatus
 }
 
 /** Turned away or closed out; `rejection` says why, in words for the player. */

@@ -27,16 +27,18 @@ export enum RegionKernel {
   REGION = "REGION"
 }
 
+export interface CaseQuestion {
+  type: CaseQuestionType
+  id: QuestionId
+  label: string
+  answer: LatLon
+  tolerance: Km
+  /** A flag round: the flag shown. */
+  flag?: FlagCode
+}
+
 export interface ScoringCase {
-  question: {
-    type: CaseQuestionType
-    id: QuestionId
-    label: string
-    answer: LatLon
-    tolerance: Km
-    /** A flag round: the flag shown. */
-    flag?: FlagCode
-  }
+  question: CaseQuestion
   kernel: KernelId | RegionKernel
   floor: number
   /** The paint layer's finest resolution. */
@@ -140,7 +142,7 @@ export const decodeCase = async (text: string): Promise<ScoringCase> => {
       tolerance: parseFloat(named(field("answer"), "tolerance")),
       ...(questionMatch[4] ? { flag: flagCode(questionMatch[4]) } : {})
     },
-    kernel: kernel.split(/\s+/)[0] as ScoringCase["kernel"],
+    kernel: kernel.split(/\s+/)[0] as KernelId | RegionKernel,
     floor: Number(named(kernel, "floor")),
     resolution: Number(named(paint, "resolution")),
     score: Number(score.split(/\s+/)[0]),

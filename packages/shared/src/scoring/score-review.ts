@@ -15,7 +15,7 @@ import { poolOf } from "../catalogue/catalogue.ts"
 import { MapDetail } from "../protocol/config.ts"
 import { guessPainter, type ReviewGuess } from "./review-painting.ts"
 import { scoreAnswer, scoredAnswer, type ScoredAnswer } from "./regions.ts"
-import { CaseQuestionType, RegionKernel, encodeCase, type ScoringCase } from "./scoring-case.ts"
+import { CaseQuestionType, RegionKernel, encodeCase, type CaseQuestion, type ScoringCase } from "./scoring-case.ts"
 import { buildDistribution, type ChoosableKernel, type Kernel } from "./scoring.ts"
 export enum ReviewCaseType {
   SINGLE = "SINGLE",
@@ -96,7 +96,7 @@ export const guessCase = (
   })
 
 /** A question as a scoring case names it. */
-export const caseQuestion = (question: Question, answer: ScoredAnswer): ScoringCase["question"] => ({
+export const caseQuestion = (question: Question, answer: ScoredAnswer): CaseQuestion => ({
   type:
     answer.type === AnswerType.AREA
       ? CaseQuestionType.REGION

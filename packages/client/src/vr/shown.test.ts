@@ -2,9 +2,10 @@ import { describe, expect, it } from "vite-plus/test"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { RevealDetail } from "../map/shown-detail"
 import type { VrFlagPin } from "./globe/flag-pins"
+import type { VrBoard } from "./scores/board"
 import type { VrTable } from "./scores/scores"
 import { boardOf, flagPinsOf, globeDetail, paintsKey, patchDetail, tableOf } from "./shown"
-import { VrPaintsType, VrViewType, type VrReveal, type VrRound, type VrView } from "./view/view"
+import { VrPaintsType, VrViewType, type VrPaints, type VrReveal, type VrRound, type VrView } from "./view/view"
 
 const makeRound = (over: Partial<VrRound> = {}): VrRound => ({ detail: MapDetail.WATER, ...over }) as VrRound
 
@@ -68,7 +69,7 @@ describe("tableOf", () => {
 
 describe("boardOf", () => {
   it("is the summary's board, and only there", () => {
-    const board = {} as NonNullable<ReturnType<typeof boardOf>>
+    const board = {} as VrBoard
     expect(boardOf(summary(VrViewType.DONE, { board }))).toBe(board)
     expect(boardOf(paint())).toBeUndefined()
   })
@@ -84,7 +85,7 @@ describe("paintsKey", () => {
   })
 
   it("joins the players' colours", () => {
-    const paints = { type: VrPaintsType.PLAYERS, paints: [{ colour: "red" }, { colour: "blue" }] } as VrReveal["paints"]
+    const paints = { type: VrPaintsType.PLAYERS, paints: [{ colour: "red" }, { colour: "blue" }] } as VrPaints
     expect(paintsKey(reveal({ paints }))).toBe("red,blue")
   })
 })

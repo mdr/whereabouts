@@ -240,6 +240,12 @@ export const regionFit = (painted: Distribution, area: Area): { coverage: number
   return { coverage: covered / region.area, precision: onMass / paintedMass }
 }
 
+/** Where paint off a country lies, from it. */
+interface PaintOffCountry {
+  bearing: Degrees
+  distance: Km
+}
+
 export interface RegionMisfit {
   coverage: number
   precision: number
@@ -248,7 +254,7 @@ export interface RegionMisfit {
    * centre and its distance from the nearest part of the country. Undefined when
    * there is none, or when it surrounds the country rather than leaning one way.
    */
-  off: { bearing: Degrees; distance: Km } | undefined
+  off: PaintOffCountry | undefined
 }
 
 /**
@@ -266,7 +272,7 @@ export const regionMisfit = (painted: Distribution, area: Area): RegionMisfit =>
 
   const offCells: [H3Cell, number][] = []
   for (const [cell, weight] of mass) if (!region.cells.has(cell)) offCells.push([cell, weight])
-  let off: RegionMisfit["off"] = undefined
+  let off: PaintOffCountry | undefined = undefined
   const offCentre = leaning(area.centre, offCells)
   if (offCentre && !region.cells.has(latLngToCell(offCentre.lat, offCentre.lon, region.resolution))) {
     let distance = Infinity

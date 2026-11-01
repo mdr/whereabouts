@@ -18,7 +18,7 @@ export interface PanelElement {
   disabled?: boolean
 }
 
-interface PanelState {
+export interface PanelState {
   armed: VrAction | undefined
   soundOn: boolean
   passthroughOn: boolean

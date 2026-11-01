@@ -83,7 +83,7 @@ test("turning the left palm up opens the wrist menu, whose buttons clear, hint a
   await headset.controllers.hold(Hand.LEFT, leftHand, [0, 0, Math.SQRT1_2, Math.SQRT1_2])
   await headset.panels.expectWristOpen(true)
   await headset.settle()
-  const press = async (id: Parameters<typeof headset.panels.wristButton>[0]) => {
+  const press = async (id: WristButton) => {
     await headset.controllers.press(can, await headset.panels.wristButton(id))
   }
   await round.screenshot(shot(`vr-wrist.png`))

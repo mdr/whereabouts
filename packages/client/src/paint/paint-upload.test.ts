@@ -6,7 +6,7 @@ import { h3Resolution } from "@whereabouts/shared/h3"
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { GuessingYouView, InPlayGameView } from "@whereabouts/shared/protocol/views"
 import { ConnectionStatus, type ConnectionState } from "../net/net"
-import { usePaintUpload } from "./paint-upload"
+import { usePaintUpload, type UploadPaint } from "./paint-upload"
 import { JOINED_LATE, SPECTATING, makeGuessingView, makePlaying } from "../test-view"
 
 const CELL = "85283473fffffff"
@@ -30,10 +30,7 @@ interface Props {
   timeUp: boolean
 }
 
-const setup = ({
-  view = guessing(),
-  paint = makePaint()
-}: { view?: InPlayGameView; paint?: ReturnType<typeof makePaint> } = {}) => {
+const setup = ({ view = guessing(), paint = makePaint() }: { view?: InPlayGameView; paint?: UploadPaint } = {}) => {
   const conn = {
     status: signal<ConnectionState>({ type: ConnectionStatus.CONNECTED }),
     sendPaint: vi.fn(),

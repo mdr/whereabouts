@@ -3,6 +3,7 @@
  * changes (PaintView) and painted there with the brush (PaintInput). Screens
  * configure it and read its signals; it never knows about game phases.
  */
+import type { Signal } from "@preact/signals"
 import type { CssColour } from "@whereabouts/shared/colours"
 import type { PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { LatLon } from "@whereabouts/shared/geo"
@@ -10,16 +11,17 @@ import type { GameMap } from "../map/map"
 import { PaintModel } from "./paint-model"
 import { PaintView } from "./paint-view"
 import { PaintInput } from "./paint-input"
+import type { Tool } from "./tool"
 import type { Km, Px } from "@whereabouts/shared/units"
 
 export class PaintController extends PaintModel {
   readonly gameMap: GameMap
   private readonly view: PaintView
   private readonly input: PaintInput
-  readonly tool: PaintInput["tool"]
-  readonly brushRadius: PaintInput["brushRadius"]
-  readonly strength: PaintInput["strength"]
-  readonly enabled: PaintInput["enabled"]
+  readonly tool: Signal<Tool>
+  readonly brushRadius: Signal<Px>
+  readonly strength: Signal<number>
+  readonly enabled: Signal<boolean>
 
   constructor(gameMap: GameMap) {
     super()

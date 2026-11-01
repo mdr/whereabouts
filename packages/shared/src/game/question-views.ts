@@ -5,7 +5,7 @@ import {
   flagShown,
   type AnswerView,
   type AreaAnswerView,
-  type GuessingGameView,
+  type RoundView,
   type PlayedRound,
   type PointAnswerView,
   type Picture,
@@ -69,12 +69,7 @@ export const questionView = (question: Question): QuestionView => {
 }
 
 /** A round being guessed. */
-export const roundView = (
-  question: Question,
-  index: number,
-  total: number,
-  deadline: Instant
-): GuessingGameView["round"] => ({
+export const roundView = (question: Question, index: number, total: number, deadline: Instant): RoundView => ({
   index,
   total,
   question: questionView(question),

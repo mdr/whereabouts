@@ -44,7 +44,7 @@ import {
 import { KernelId } from "@whereabouts/shared/scoring/scoring"
 import { h3Cell, h3Resolution } from "@whereabouts/shared/h3"
 
-type ViewOverrides<V extends GameView> = Partial<Omit<V, "you" | "phase">> & { you?: Partial<V["you"]> }
+export type ViewOverrides<V extends GameView> = Partial<Omit<V, "you" | "phase">> & { you?: Partial<V["you"]> }
 
 const viewBase = () => ({
   code: roomCode("AB12"),

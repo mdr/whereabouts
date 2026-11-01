@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vite-plus/test"
 import { pickAwards } from "./awards.ts"
-import { FactsType, type AreaFacts, type PlayerFacts, type PointFacts, type RoundFacts } from "./player-facts.ts"
+import {
+  FactsType,
+  type AreaFacts,
+  type PlayerFacts,
+  type RoundFacts,
+  type CountryFit,
+  type StrongestPoint
+} from "./player-facts.ts"
 import { playerId } from "../ids.ts"
 import type { Ms } from "../units.ts"
 
@@ -16,7 +23,7 @@ const round = (score: number, extra: Extra = {}): AreaFacts => ({
   ...extra
 })
 const pass = (score = 250): RoundFacts => ({ type: FactsType.PASSED, ...BASE, score })
-const pointRound = (score: number, point: PointFacts["point"], extra: Extra = {}): RoundFacts => ({
+const pointRound = (score: number, point: StrongestPoint, extra: Extra = {}): RoundFacts => ({
   type: FactsType.POINT,
   ...BASE,
   score,
@@ -24,7 +31,7 @@ const pointRound = (score: number, point: PointFacts["point"], extra: Extra = {}
   point,
   ...extra
 })
-const regionRound = (score: number, region: AreaFacts["region"]): RoundFacts => ({ ...round(score), region })
+const regionRound = (score: number, region: CountryFit): RoundFacts => ({ ...round(score), region })
 /** Player "a" is p1, "b" p2, and so on. */
 const idOf = (letter: string) => playerId(`p${letter.charCodeAt(0) - 96}`)
 const player = (letter: string, rounds: (RoundFacts | undefined)[]): PlayerFacts => ({ playerId: idOf(letter), rounds })
@@ -95,7 +102,7 @@ const titles = (players: PlayerFacts[]) => new Set(earned(players).map((award) =
 const winners = (title: string, players: PlayerFacts[]) =>
   earned(players).find((award) => award.title === title)?.playerIds
 const AVERAGE = [round(500), round(500)]
-const point = (extra: Partial<PointFacts["point"]>): PointFacts["point"] => ({
+const point = (extra: Partial<StrongestPoint>): StrongestPoint => ({
   spot: { lat: 0, lon: 0 },
   miss: 0,
   spread: 0,
