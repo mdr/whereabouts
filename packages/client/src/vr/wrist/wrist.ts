@@ -20,6 +20,7 @@ import { HintAllowance, type HintsLeft } from "../view/view"
 import { WristButton } from "./wrist-button"
 import type { Metres, Seconds } from "@whereabouts/shared/units"
 import type { Vec3 } from "../probe"
+import type { TimeoutHandle } from "@whereabouts/shared/timeout"
 
 const WRIST_WIDTH: Metres = 0.2
 /** How squarely the palm must face up to open the menu, and how far it may turn away before it shuts. */
@@ -44,7 +45,7 @@ export class WristMenu {
   private doc: UIKitDocument | undefined = undefined
   private shown = false
   private noteText = ""
-  private noteTimer: ReturnType<typeof setTimeout> | undefined = undefined
+  private noteTimer: TimeoutHandle | undefined = undefined
   private state: { water: boolean; hint: string | undefined; left: HintsLeft } = {
     water: false,
     hint: undefined,

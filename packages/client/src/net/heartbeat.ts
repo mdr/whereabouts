@@ -5,6 +5,7 @@
  * comes back; a ping with no pong in time means the socket is gone.
  */
 import type { Ms } from "@whereabouts/shared/units"
+import type { TimeoutHandle } from "@whereabouts/shared/timeout"
 
 export const PING_EVERY: Ms = 15_000
 export const PONG_WITHIN: Ms = 3_000
@@ -15,7 +16,7 @@ export interface Heartbeat {
 }
 
 export const startHeartbeat = (ping: () => void, dead: () => void): Heartbeat => {
-  let waiting: ReturnType<typeof setTimeout> | undefined = undefined
+  let waiting: TimeoutHandle | undefined = undefined
 
   const check = () => {
     if (waiting !== undefined) return

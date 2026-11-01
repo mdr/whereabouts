@@ -23,6 +23,7 @@ import kit from "../../kit.module.css"
 import { Tool } from "../../../paint/tool"
 import styles from "./MapView.module.css"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
+import type { TimeoutHandle } from "@whereabouts/shared/timeout"
 
 const PaintContext = createContext<PaintController | undefined>(undefined)
 
@@ -42,7 +43,7 @@ export const MapView = ({ children }: { children: ComponentChildren }) => {
   useEffect(() => {
     const gameMap = new GameMap(mapElement.current!)
     let paintController: PaintController | undefined = undefined
-    let retry: ReturnType<typeof setTimeout> | undefined = undefined
+    let retry: TimeoutHandle | undefined = undefined
     gameMap.ready.then(
       () => {
         gameMap.applyTheme(THEME)

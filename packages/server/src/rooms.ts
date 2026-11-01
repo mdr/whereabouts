@@ -26,6 +26,7 @@ import { roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whe
 // The client loads the outlines on demand; the server holds them all, to score.
 import outlinesJson from "@whereabouts/shared/outlines.json" with { type: "json" }
 import { readJson, readPaint, type Parsed } from "./inbound.ts"
+import type { TimeoutHandle } from "@whereabouts/shared/timeout"
 
 /** Close reasons are codes from the shared list, which the client words. */
 export const closeReason = (reason: CloseReason): string => reason
@@ -70,7 +71,7 @@ export interface Clock {
 export const realClock: Clock = {
   now: () => Date.now(),
   setTimeout: (callback, delay) => setTimeout(callback, delay),
-  clearTimeout: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>)
+  clearTimeout: (handle) => clearTimeout(handle as TimeoutHandle)
 }
 
 export interface GameRoomDeps {

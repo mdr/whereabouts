@@ -16,6 +16,7 @@ import type { LatLon } from "@whereabouts/shared/geo"
 import type { StrokeTool } from "./tool"
 import type { CountryFiller } from "./fill"
 import type { Km, Ms } from "@whereabouts/shared/units"
+import type { TimeoutHandle } from "@whereabouts/shared/timeout"
 
 const HISTORY_LIMIT = 50
 const SETTLE: Ms = 200
@@ -82,7 +83,7 @@ export class PaintModel {
   private fills = new Map<FlagCode, H3Cell[]>()
   private undoStack: Snapshot[] = []
   private redoStack: Snapshot[] = []
-  private settleTimer: ReturnType<typeof setTimeout> | undefined = undefined
+  private settleTimer: TimeoutHandle | undefined = undefined
   private readonly unsubscribe: () => void
 
   constructor() {
