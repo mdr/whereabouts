@@ -17,14 +17,33 @@ export interface SessionHooks {
 /** How long a new session may take to open, when switching to or from passthrough. */
 export const SWITCH_TIMEOUT: Ms = 5000
 
+enum SwitchType {
+  NONE = "NONE",
+  ENDING = "ENDING",
+  OPENING = "OPENING"
+}
+
+interface NoSwitch {
+  type: SwitchType.NONE
+}
+
+/** Ending one kind of session to start the other; `to` is the passthrough wanted, saved only once its session opens. */
+interface EndingSwitch {
+  type: SwitchType.ENDING
+  to: boolean
+}
+
+/** The new session has been asked for. */
+interface OpeningSwitch {
+  type: SwitchType.OPENING
+  to: boolean
+}
+
+type Switch = NoSwitch | EndingSwitch | OpeningSwitch
+
 export class HeadsetSession {
   readonly active = signal(false)
-  /**
-   * Ending one kind of session to start the other: the passthrough wanted,
-   * saved only once its session opens, and whether that session has been asked for.
-   */
-  private switchingTo: boolean | undefined = undefined
-  private switchOpening = false
+  private switching: Switch = { type: SwitchType.NONE }
   private readonly world: SessionWorld
   private readonly hooks: SessionHooks
 
@@ -41,8 +60,8 @@ export class HeadsetSession {
 
   /** Swaps space for the room round the player, or back: a new session of the other kind. */
   togglePassthrough(): void {
-    if (this.switchingTo !== undefined) return
-    this.switchingTo = !headsetPassthrough.value
+    if (this.switching.type !== SwitchType.NONE) return
+    this.switching = { type: SwitchType.ENDING, to: !headsetPassthrough.value }
     this.world.exitXR()
   }
 
@@ -52,14 +71,14 @@ export class HeadsetSession {
 
   private visibilityChanged(state: VisibilityState): void {
     const active = state !== VisibilityState.NonImmersive
-    if (!active && this.switchingTo !== undefined && !this.switchOpening) {
-      this.openSwitchedSession(this.switchingTo)
+    const switching = this.switching
+    if (!active && switching.type === SwitchType.ENDING) {
+      this.openSwitchedSession(switching.to)
       return
     }
-    if (active && this.switchingTo !== undefined) {
-      headsetPassthrough.value = this.switchingTo
-      this.switchingTo = undefined
-      this.switchOpening = false
+    if (active && switching.type !== SwitchType.NONE) {
+      headsetPassthrough.value = switching.to
+      this.switching = { type: SwitchType.NONE }
     }
     if (active === this.active.value) return
     if (active) {
@@ -70,7 +89,7 @@ export class HeadsetSession {
 
   private openSwitchedSession(passthrough: boolean): void {
     // Still within the press's activation, which a new session needs.
-    this.switchOpening = true
+    this.switching = { type: SwitchType.OPENING, to: passthrough }
     this.launch(passthrough)
     // Refused, it leaves the player on the page.
     setTimeout(() => {
@@ -80,8 +99,7 @@ export class HeadsetSession {
 
   private ended(): void {
     // A refused switch keeps the old setting.
-    this.switchingTo = undefined
-    this.switchOpening = false
+    this.switching = { type: SwitchType.NONE }
     if (!this.active.value) return
     timerFrames(false)
     this.active.value = false
