@@ -4,10 +4,10 @@ import { act, renderHook } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { h3Res } from "@whereabouts/shared/h3"
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
-import type { GameView, GuessingYouView } from "@whereabouts/shared/protocol"
+import type { GuessingYouView, InPlayGameView } from "@whereabouts/shared/protocol"
 import { ConnectionStatus, type ConnectionState } from "../net/net"
 import { usePaintUpload } from "./paint-upload"
-import { makeGuessingView } from "../test-view"
+import { JOINED_LATE, SPECTATING, makeGuessingView, makePlaying } from "../test-view"
 
 const CELL = "85283473fffffff"
 
@@ -24,14 +24,14 @@ const wait = (ms: number) => run(() => vi.advanceTimersByTime(ms))
 const guessing = (you: Partial<GuessingYouView> = {}) => makeGuessingView({ you })
 
 interface Props {
-  view: GameView
+  view: InPlayGameView
   timeUp: boolean
 }
 
 function setup({
   view = guessing(),
   paint = makePaint()
-}: { view?: GameView; paint?: ReturnType<typeof makePaint> } = {}) {
+}: { view?: InPlayGameView; paint?: ReturnType<typeof makePaint> } = {}) {
   const conn = {
     status: signal<ConnectionState>({ type: ConnectionStatus.CONNECTED }),
     sendPaint: vi.fn(),
@@ -93,9 +93,9 @@ describe("usePaintUpload", () => {
   })
 
   it.each([
-    ["watching the game", { watching: true, sittingOut: true }],
-    ["sitting out a round joined late", { sittingOut: true }],
-    ["locked", { locked: true }]
+    ["watching the game", { role: SPECTATING }],
+    ["sitting out a round joined late", { role: JOINED_LATE }],
+    ["locked", { role: makePlaying({ locked: true }) }]
   ])("uploads nothing while %s", (_, you) => {
     const { conn, edit, update, settle } = setup({ view: guessing(you) })
     edit()
@@ -105,8 +105,8 @@ describe("usePaintUpload", () => {
   })
 
   it.each([
-    ["watching the game", { watching: true, sittingOut: true }],
-    ["locked", { locked: true }]
+    ["watching the game", { role: SPECTATING }],
+    ["locked", { role: makePlaying({ locked: true }) }]
   ])("drops a pending upload on becoming %s", (_, you) => {
     const { conn, edit, update, settle } = setup()
     edit()
@@ -153,7 +153,7 @@ describe("usePaintUpload", () => {
   it("does not lock again after a reconnect once Done was taken back", () => {
     const { conn, hook, update } = setup()
     hook.result.current.lockIn()
-    update({ view: guessing({ locked: true }) })
+    update({ view: guessing({ role: makePlaying({ locked: true }) }) })
     update({ view: guessing() })
     conn.lock.mockClear()
     run(() => (conn.status.value = { type: ConnectionStatus.DISCONNECTED }))

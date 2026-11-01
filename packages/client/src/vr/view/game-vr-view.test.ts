@@ -8,7 +8,10 @@ import type { PaintController } from "../../paint/paint-controller"
 import { gameVrView } from "./game-vr-view"
 import { VrViewType, type VrView } from "./view"
 import {
+  JOINED_LATE,
+  SPECTATING,
   makePainted,
+  makePlaying,
   makePlayer,
   makeResult,
   makeGuessingView,
@@ -56,12 +59,16 @@ const note = (v: VrView) => (v.type === VrViewType.PAINT || v.type === VrViewTyp
 
 describe("gameVrView", () => {
   it("tells you why you are not painting, the connection first", () => {
-    expect(note(show(guessing({ you: { locked: true } })))).toMatch(
+    expect(note(show(guessing({ you: { role: makePlaying({ locked: true }) } })))).toMatch(
       /^You're done\. .* Changed your mind\? Keep editing\.$/
     )
-    expect(note(show(guessing({ you: { locked: true } }), fakeConn(), { timeUp: true }))).not.toMatch(/Keep editing/)
-    expect(note(show(guessing({ you: { sittingOut: true } })))).toMatch(/^You joined mid-round/)
-    expect(note(show(guessing({ you: { locked: true } }), fakeConn(ConnectionStatus.CONNECTING)))).toBe("Reconnecting…")
+    expect(
+      note(show(guessing({ you: { role: makePlaying({ locked: true }) } }), fakeConn(), { timeUp: true }))
+    ).not.toMatch(/Keep editing/)
+    expect(note(show(guessing({ you: { role: JOINED_LATE } })))).toMatch(/^You joined mid-round/)
+    expect(
+      note(show(guessing({ you: { role: makePlaying({ locked: true }) } }), fakeConn(ConnectionStatus.CONNECTING)))
+    ).toBe("Reconnecting…")
   })
 
   it("lists the round's players with what each did", () => {
@@ -119,7 +126,7 @@ describe("gameVrView", () => {
     const labels = (v: InPlayGameView) => show(v).more?.map((a) => a.label)
     expect(labels(guessing())).toEqual(["End game", "Leave game"])
     expect(labels(guessing({ you: { isHost: false } }))).toEqual(["Leave game"])
-    expect(labels(guessing({ you: { watching: true, isHost: false } }))).toEqual([
+    expect(labels(guessing({ you: { role: SPECTATING, isHost: false } }))).toEqual([
       "Play from the next question",
       "Leave game"
     ])

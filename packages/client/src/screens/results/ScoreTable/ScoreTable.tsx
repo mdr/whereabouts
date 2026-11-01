@@ -24,7 +24,7 @@ export function ScoreTable({ rounds, standings, byId, you, best, scrolls }: Roun
               const p = byId.get(st.playerId)
               return (
                 <th key={st.playerId} scope="col" class={st.playerId === you ? s.you : undefined} title={p?.name}>
-                  <Swatch as="i" type={SwatchType.PLAYER} colour={p?.colour} class={s.headSwatch} />
+                  {p && <Swatch as="i" type={SwatchType.PLAYER} colour={p.colour} class={s.headSwatch} />}
                   <span class={s.playerName} data-testid={scoreTableTestIds.playerName}>
                     {p?.name ?? "?"}
                   </span>

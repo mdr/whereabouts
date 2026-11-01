@@ -8,7 +8,6 @@ import kit from "../kit.module.css"
 
 /** Connection and game-state diagnostics for the dev drawer. */
 export function ConnectionDev({ conn, view }: { conn: Connection; view: GameView }) {
-  const you = everyone(view).find((p) => p.id === view.you.id)
   return (
     <Card title="Connection">
       <DevFacts
@@ -20,7 +19,7 @@ export function ConnectionDev({ conn, view }: { conn: Connection; view: GameView
           ["Server time", new Date(view.serverTime).toISOString().slice(11, 23)],
           ["Kernel", view.config.kernelId],
           ["Host", view.you.isHost ? "you" : (everyone(view).find((p) => p.isHost)?.name ?? "?")],
-          ["You", `${you?.name ?? "?"} (${view.you.id ?? "none"})`]
+          ["You", `${view.you.name} (${view.you.id})`]
         ]}
       />
       {conn.lastError.value && <p class={cx(kit.hint, kit.warn)}>{conn.lastError.value}</p>}

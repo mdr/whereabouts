@@ -17,7 +17,7 @@ export function Standings({
 }: {
   standings: FinalStanding[]
   byId: Map<string, PlayingPlayerView>
-  you: string | undefined
+  you: string
 }) {
   return (
     <ol class={cx(s.standings, standings.length > MANY_PLAYERS && s.many)} aria-label="Final standings">
@@ -33,9 +33,7 @@ export function Standings({
             <span class={s.place} data-testid={standingsTestIds.place}>
               {MEDALS[i] ?? i + 1}
             </span>
-            <span class={s.dot}>
-              <Swatch as="i" type={SwatchType.PLAYER} colour={p?.colour} />
-            </span>
+            <span class={s.dot}>{p && <Swatch as="i" type={SwatchType.PLAYER} colour={p.colour} />}</span>
             <span class={s.name}>
               <span class={s.nameText}>{p?.name ?? "?"}</span>
               {p?.isHost && <HostTag />}

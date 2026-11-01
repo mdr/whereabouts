@@ -13,11 +13,12 @@ import { pickAwards } from "../awards/awards.ts"
 import { DEFAULT_HINTS, type HintAxis, type HintBand } from "../hints.ts"
 import type { PlayerId, PlayerName, PlayerToken, RoomCode } from "../ids.ts"
 import { evenMix, MapDetail, Phase } from "../protocol.ts"
-import type { ConfigurePatch, GameConfig, GameView, PaintSubmission, RoundReveal, YouView } from "../protocol.ts"
+import type { ConfigurePatch, GameConfig, GameView, PaintSubmission, RoundReveal } from "../protocol.ts"
 import { CloseReason } from "../close-reason.ts"
 import { OK_CHANGED, OK_SAME, fail, type CommandResult, type JoinResult } from "./command-result.ts"
 import { sameData } from "./same-data.ts"
-import { Seats, freshRecord, type PlayerSeat, type Seat } from "./seats.ts"
+import { Seats, freshRecord, type PlayerSeat } from "./seats.ts"
+import { roundRole, seatedRole } from "./you-view.ts"
 import { Role } from "../roles.ts"
 import { awardFacts, finalStandings, rosterView } from "./standings.ts"
 import {
@@ -452,21 +453,10 @@ export class Game {
 
   // ---- views ---------------------------------------------------------------
 
-  private youView(s: GameState, token: PlayerToken, me: Seat | undefined): YouView {
-    const playing = me?.role.type === Role.PLAYER ? me.role : undefined
-    return {
-      id: me?.id,
-      isHost: me !== undefined && this.seats.isHost(me.token),
-      sittingOut:
-        me !== undefined && (!playing || (s.phase !== Phase.LOBBY && playing.record.joinedRound >= joiningRound(s))),
-      watching: me !== undefined && !playing,
-      locked: lockedIn(s, token),
-      hintsLeft: playing ? Math.max(0, this.config.hints - playing.record.hintsUsed) : 0,
-      ...this.nextHostView(token)
-    }
-  }
-
-  view(token: PlayerToken, now: Instant): GameView {
+  /** A view for a seated token; undefined for one with no seat (removed, left, or turned away). */
+  view(token: PlayerToken, now: Instant): GameView | undefined {
+    const seat = this.seats.get(token)
+    if (!seat) return undefined
     const s = this.state
     const base = {
       code: this.code,
@@ -474,16 +464,26 @@ export class Game {
       serverTime: now,
       ...rosterView(this.seats.all(), this.seats.effectiveHost(), (t) => lockedIn(s, t))
     }
-    const you = this.youView(s, token, this.seats.get(token))
+    const you = { id: seat.id, name: seat.name, isHost: this.seats.isHost(token), ...this.nextHostView(token) }
     switch (s.phase) {
       case Phase.LOBBY:
-        return { ...base, phase: Phase.LOBBY, you, ...upcomingOf(this.questions[0]) }
+        return {
+          ...base,
+          phase: Phase.LOBBY,
+          you: { ...you, role: seatedRole(seat) },
+          ...upcomingOf(this.questions[0])
+        }
       case Phase.GUESSING: {
         const paint = s.submissions.get(token)?.paint
         return {
           ...base,
           phase: Phase.GUESSING,
-          you: { ...you, ...this.hintView(s, token), ...(paint ? { paint } : {}) },
+          you: {
+            ...you,
+            role: roundRole(s, seat, this.config.hints),
+            ...this.hintView(s, token),
+            ...(paint ? { paint } : {})
+          },
           round: roundView(s.round.question, s.round.index, this.questions.length, s.deadline),
           ...upcomingOf(this.questions[s.round.index + 1])
         }
@@ -492,7 +492,7 @@ export class Game {
         return {
           ...base,
           phase: Phase.REVEAL,
-          you: { ...you, ...this.hintView(s, token) },
+          you: { ...you, role: roundRole(s, seat, this.config.hints), ...this.hintView(s, token) },
           reveal: { ...s.reveal, ready: this.readyIds(s.ready) },
           ...upcomingOf(this.questions[s.round.index + 1])
         }
@@ -500,7 +500,7 @@ export class Game {
         return {
           ...base,
           phase: Phase.RESULTS,
-          you,
+          you: { ...you, role: seatedRole(seat) },
           results: s.standings,
           playedRounds: s.playedRounds,
           awards: s.awards

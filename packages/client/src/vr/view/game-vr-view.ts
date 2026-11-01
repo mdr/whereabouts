@@ -11,7 +11,7 @@ import {
   type InPlayGameView,
   type RevealView
 } from "@whereabouts/shared/protocol"
-import type { PlayingPlayerView } from "@whereabouts/shared/roles"
+import { YouRoleType, type PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import type { PaintController } from "../../paint/paint-controller"
 import { connectionText } from "../../ui/connection/ConnectionNote/ConnectionNote"
@@ -21,6 +21,7 @@ import { revealedFromView, revealShown, shownPlayerId, shownResults } from "../.
 import {
   ShownRowType,
   canEndGame,
+  ownColour,
   revealModel,
   roundNote,
   roundOf,
@@ -70,11 +71,9 @@ interface GameVrShown {
   borders: Borders | undefined
 }
 
-const you = (view: GameView) => view.players.find((p) => p.id === view.you.id)
-
 function moreActions(view: GameView, conn: Connection): VrAction[] {
   return [
-    ...(view.you.watching ? [takeSeat(conn, view, "Play from the next question")] : []),
+    ...(view.you.role.type === YouRoleType.SPECTATOR ? [takeSeat(conn, view, "Play from the next question")] : []),
     ...hostActions(conn, view, view.phase === Phase.REVEAL ? shownPlayerId(revealShown.value) : vrPicked.value),
     ...(canEndGame(view)
       ? [{ label: "End game", confirm: "Press again to end the game", press: () => conn.end() }]
@@ -114,7 +113,7 @@ function gameRound(
   { lockIn, timeUp }: Pick<GameVrShown, "lockIn" | "timeUp">
 ): VrRound {
   const at = roundOf(view)
-  const me = you(view)
+  const { role } = view.you
   const note = roundNote(view.you)
   const deadline = view.phase === Phase.GUESSING ? view.round.deadline : undefined
   return vrRound(shown, {
@@ -122,15 +121,15 @@ function gameRound(
     heading: `ROUND ${at.index + 1} OF ${at.total}`,
     table: playersTable(view),
     detail: view.config.mapDetail,
-    colour: me ? colourCss(me.colour) : undefined,
+    colour: ownColour(view.you),
     hint: view.you.hint,
-    hintsLeft: view.config.hints > 0 ? view.you.hintsLeft : HintAllowance.NONE,
+    hintsLeft: view.config.hints > 0 && role.type === YouRoleType.PLAYING ? role.hintsLeft : HintAllowance.NONE,
     useHint: (axis: HintAxis) => conn.hint(axis),
     timeLeft: deadline === undefined ? undefined : () => conn.timeUntil(deadline),
     doneLabel: "Done",
     done: lockIn,
     unlock: canUnlock(view, timeUp) ? () => conn.unlock() : undefined,
-    playing: !view.you.sittingOut,
+    playing: role.type === YouRoleType.PLAYING,
     note:
       connection ?? (note && noteText(note, { askedToWatch: askedToWatch.value, canUnlock: canUnlock(view, timeUp) }))
   })
@@ -163,7 +162,7 @@ function gameReveal(
   const score = mine && {
     score: mine.score,
     passed: mine.guess.type === RoundGuessType.PASSED,
-    total: you(view)?.score ?? 0,
+    total: view.players.find((p) => p.id === view.you.id)?.score ?? 0,
     painted
   }
   return vrReveal(shown, revealedFromView(reveal, outline), score, borders, {

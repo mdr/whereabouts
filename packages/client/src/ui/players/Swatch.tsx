@@ -8,10 +8,10 @@ export enum SwatchType {
   EVERYONE = "EVERYONE"
 }
 
-/** A player's colour; undefined for a spectator. */
+/** A player's colour. */
 interface PlayerSwatch {
   type: SwatchType.PLAYER
-  colour: PlayerColour | undefined
+  colour: PlayerColour
 }
 
 /** A colour that is no player's. */

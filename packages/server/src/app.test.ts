@@ -63,7 +63,12 @@ import {
 import { createApp, MAX_PAYLOAD_BYTES, type App } from "./app.ts"
 import { BANK, configureGameRooms, realClock, type Clock, type GameRoom } from "./rooms.ts"
 import { CloseReason } from "@whereabouts/shared/close-reason"
-import { Role } from "@whereabouts/shared/roles"
+import { Role, YouRoleType } from "@whereabouts/shared/roles"
+
+const lockedIn = (v: GameView) =>
+  (v.phase === Phase.GUESSING || v.phase === Phase.REVEAL) &&
+  v.you.role.type === YouRoleType.PLAYING &&
+  v.you.role.locked
 
 // Static imports hoist above this line, so the client is loaded dynamically.
 ;(globalThis as unknown as { window: unknown }).window = globalThis
@@ -321,7 +326,7 @@ describe("game server", () => {
     const bobPaint = paintAt(q, -30, -60)
     bob.sendPaint(bobPaint)
     bob.send("lock")
-    await bob.untilLatest((v) => v.you.locked)
+    await bob.untilLatest(lockedIn)
     // Nobody else learns about Bob's paint before the reveal.
     const aBobCell = Object.keys(bobPaint.cells)[0]!
     expect(JSON.stringify(alice.latest)).not.toContain(aBobCell)
@@ -372,7 +377,7 @@ describe("game server", () => {
     const cells = compactRecord(Object.fromEntries(regionCells(area, res).map((h) => [h, 1])))
     alice.sendPaint({ cells, floor: 0.05 })
     alice.send("lock")
-    await alice.untilLatest((v) => v.you.locked)
+    await alice.untilLatest(lockedIn)
 
     clock.advance(60_000 + ROUND_GRACE)
     const reveal = await bob.until((v) => v.phase === Phase.REVEAL)
@@ -545,7 +550,7 @@ describe("game server", () => {
     const bobPaint = paintAt(q, at.lat, at.lon)
     bob.sendPaint(bobPaint)
     bob.send("lock")
-    await bob.untilLatest((v) => v.you.locked)
+    await bob.untilLatest(lockedIn)
     // Paint goes back only to a player who rejoins, not with every state.
     expect(viewIn(bob.latest, Phase.GUESSING).you.paint).toBeUndefined()
 
@@ -557,7 +562,7 @@ describe("game server", () => {
     const back = await alice.untilLatest((v) => v.players.length === 2 && v.players.every((p) => p.connected))
     expect(back.players.filter((p) => p.name === "Bob")).toHaveLength(1)
     const own = await bobAgain.until((v) => v.phase === Phase.GUESSING)
-    expect(own.you.sittingOut).toBe(false)
+    expect(own.you.role.type).toBe(YouRoleType.PLAYING)
     expect(viewIn(own, Phase.GUESSING).you.paint).toEqual(decodePaint(encodePaint(bobPaint)))
   })
 
@@ -643,7 +648,7 @@ describe("game server", () => {
     const sam = player("Sam")
     sam.connect(join(lobby.code, true))
     const watching = await sam.until((v) => v.spectators.length === 1)
-    expect(watching.you.watching).toBe(true)
+    expect(watching.you.role).toEqual({ type: YouRoleType.SPECTATOR })
     expect(watching.players).toHaveLength(1)
     expect(watching.spectators[0]).toMatchObject({ name: "Sam", type: Role.SPECTATOR })
     expect(watching.spectators[0]).not.toHaveProperty("colour")
@@ -763,9 +768,9 @@ describe("game server", () => {
     expect(await pollErrors(alice)).toContain("one hint per round")
 
     bob.send("lock")
-    await bob.untilLatest((v) => v.you.locked)
+    await bob.untilLatest(lockedIn)
     bob.send("unlock")
-    await bob.untilLatest((v) => !v.you.locked)
+    await bob.untilLatest((v) => !lockedIn(v))
 
     bob.send("end")
     expect(await pollErrors(bob)).toContain("only the host can end the game")

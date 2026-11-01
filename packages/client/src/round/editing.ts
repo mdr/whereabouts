@@ -1,13 +1,13 @@
 /** What you may do with your guess, the same on the page and in the headset. */
 import { Phase, type GameView } from "@whereabouts/shared/protocol"
+import { YouRoleType, type YouPlaying } from "@whereabouts/shared/roles"
 
-type EditView = Pick<GameView, "phase" | "you">
-
-const playing = (view: EditView, timeUp: boolean): boolean =>
-  view.phase === Phase.GUESSING && !view.you.sittingOut && !timeUp
+/** Your role as a player of a round still running, or none. */
+const playingRole = (view: GameView, timeUp: boolean): YouPlaying | undefined =>
+  view.phase === Phase.GUESSING && !timeUp && view.you.role.type === YouRoleType.PLAYING ? view.you.role : undefined
 
 /** Whether you can paint now. */
-export const canPaint = (view: EditView, timeUp: boolean): boolean => playing(view, timeUp) && !view.you.locked
+export const canPaint = (view: GameView, timeUp: boolean): boolean => playingRole(view, timeUp)?.locked === false
 
 /** Whether you can take back Done. Once time is up the guess stands. */
-export const canUnlock = (view: EditView, timeUp: boolean): boolean => playing(view, timeUp) && view.you.locked
+export const canUnlock = (view: GameView, timeUp: boolean): boolean => playingRole(view, timeUp)?.locked === true

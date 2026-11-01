@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "preact/hooks"
 import { compactRecord } from "@whereabouts/shared/paint/paint"
-import type { GameView } from "@whereabouts/shared/protocol"
+import { Phase, type InPlayGameView } from "@whereabouts/shared/protocol"
+import { YouRoleType } from "@whereabouts/shared/roles"
 import { canPaint } from "../round/editing"
 import { type Connection, ConnectionStatus } from "../net/net"
 import type { PaintController } from "./paint-controller"
 import { announcePass } from "../round/round"
-import { Phase } from "@whereabouts/shared/protocol"
 
 type UploadConnection = Pick<Connection, "status" | "sendPaint" | "lock">
 type UploadPaint = Pick<PaintController, "layer" | "floor" | "version">
@@ -17,12 +17,12 @@ type UploadPaint = Pick<PaintController, "layer" | "floor" | "version">
 export function usePaintUpload(
   conn: UploadConnection,
   paint: UploadPaint,
-  view: GameView,
+  view: InPlayGameView,
   timeUp: boolean
 ): { lockIn: () => void } {
   const guessing = view.phase === Phase.GUESSING
-  const { sittingOut } = view.you
-  const locked = view.you.locked
+  const { role } = view.you
+  const locked = role.type === YouRoleType.PLAYING && role.locked
   const editing = canPaint(view, timeUp)
   const round = view.phase === Phase.GUESSING ? view.round.index : undefined
   const sendTimer = useRef<number | undefined>(undefined)
@@ -46,7 +46,7 @@ export function usePaintUpload(
   }, [version, floor, editing])
 
   useEffect(() => {
-    if (timeUp && guessing && !sittingOut && !locked) sendNow()
+    if (timeUp && guessing && role.type === YouRoleType.PLAYING && !locked) sendNow()
   }, [timeUp])
 
   // The round Done was last pressed in, until the server has us locked: a

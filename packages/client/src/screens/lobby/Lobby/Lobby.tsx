@@ -1,7 +1,7 @@
 import { useEffect } from "preact/hooks"
 import { MAX_PLAYERS, MAX_SPECTATORS, type GameView } from "@whereabouts/shared/protocol"
 import { colourCss } from "@whereabouts/shared/colours"
-import { Role, everyone } from "@whereabouts/shared/roles"
+import { Role, YouRoleType, everyone } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../net/net"
 import { useGameData } from "../../../data/game-data"
 import { mapPrefetched, prefetchMap } from "../../../map/map-prefetch"
@@ -95,7 +95,7 @@ function lobbyVrView(conn: Connection, view: GameView, online: boolean, leave: (
       actions: host ? [{ label: "Start game", press: () => conn.start(), enabled: online && players.length >= 1 }] : []
     },
     more: [
-      view.you.watching
+      view.you.role.type === YouRoleType.SPECTATOR
         ? takeSeat(conn, view, "Play instead")
         : { label: "Just watch", press: () => conn.setRole(true), enabled: spectators.length < MAX_SPECTATORS },
       ...hostActions(conn, view, vrPicked.value),

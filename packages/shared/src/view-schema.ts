@@ -18,7 +18,7 @@ import {
   WikiTitleSchema
 } from "./ids.ts"
 import { HintAxisSchema } from "./hints.ts"
-import { Role } from "./roles.ts"
+import { Role, YouRoleType } from "./roles.ts"
 import { KernelIdSchema } from "./scoring/scoring.ts"
 import { H3CellSchema, H3ResSchema } from "./h3.ts"
 import { MapDetailSchema, MixSchema, Phase, RoundGuessType } from "./protocol.ts"
@@ -92,17 +92,32 @@ const RoundResultViewSchema = z.strictObject({
   hint: HintAxisSchema.optional()
 })
 
+const SpectatingSchema = z.strictObject({ type: z.literal(YouRoleType.SPECTATOR) })
 const YouShape = {
-  id: PlayerIdSchema.optional(),
+  id: PlayerIdSchema,
+  name: PlayerNameSchema,
   isHost: z.boolean(),
-  sittingOut: z.boolean(),
-  watching: z.boolean(),
-  locked: z.boolean(),
-  hintsLeft: z.number().int(),
   nextHost: PlayerIdSchema.optional()
+}
+const SeatedYouShape = {
+  ...YouShape,
+  role: z.discriminatedUnion("type", [
+    z.strictObject({ type: z.literal(YouRoleType.PLAYING), colour: PlayerColourSchema }),
+    SpectatingSchema
+  ])
 }
 const RoundYouShape = {
   ...YouShape,
+  role: z.discriminatedUnion("type", [
+    z.strictObject({
+      type: z.literal(YouRoleType.PLAYING),
+      colour: PlayerColourSchema,
+      locked: z.boolean(),
+      hintsLeft: z.number().int()
+    }),
+    z.strictObject({ type: z.literal(YouRoleType.JOINED_LATE), colour: PlayerColourSchema }),
+    SpectatingSchema
+  ]),
   hint: z.strictObject({ axis: HintAxisSchema, from: DegreesSchema, to: DegreesSchema }).optional()
 }
 
@@ -160,7 +175,7 @@ const AwardSchema = z.strictObject({
 const LobbyGameViewSchema = z.strictObject({
   ...ViewShape,
   phase: z.literal(Phase.LOBBY),
-  you: z.strictObject(YouShape),
+  you: z.strictObject(SeatedYouShape),
   upcoming: QuestionPicturesSchema.optional()
 })
 const GuessingGameViewSchema = z.strictObject({
@@ -180,7 +195,7 @@ const RevealGameViewSchema = z.strictObject({
 const ResultsGameViewSchema = z.strictObject({
   ...ViewShape,
   phase: z.literal(Phase.RESULTS),
-  you: z.strictObject(YouShape),
+  you: z.strictObject(SeatedYouShape),
   results: z.array(FinalStandingSchema),
   playedRounds: z.array(PlayedRoundSchema),
   awards: z.array(AwardSchema)

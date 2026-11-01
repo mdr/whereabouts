@@ -303,12 +303,12 @@ describe("Connection view", () => {
     client.open()
     client.emit("paint", encodePaint(paint))
     client.state(makeGuessingView())
-    expect(viewIn(conn.view.value!, Phase.GUESSING).you.paint).toEqual(decodePaint(encodePaint(paint)))
+    expect(viewIn(conn.view.value, Phase.GUESSING).you.paint).toEqual(decodePaint(encodePaint(paint)))
 
     client.close()
     client.open()
     client.state(makeGuessingView())
-    expect(viewIn(conn.view.value!, Phase.GUESSING).you.paint).toBeUndefined()
+    expect(viewIn(conn.view.value, Phase.GUESSING).you.paint).toBeUndefined()
   })
 
   it("waits for its reveal before showing a reveal's state", () => {
@@ -329,7 +329,7 @@ describe("Connection view", () => {
     client.state(at(1))
     expect(conn.view.value).toBeUndefined()
     client.state(at(2))
-    expect(viewIn(conn.view.value!, Phase.REVEAL).reveal.label).toBe("Kyoto")
+    expect(viewIn(conn.view.value, Phase.REVEAL).reveal.label).toBe("Kyoto")
   })
 
   it("sends only while connected", () => {

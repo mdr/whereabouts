@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
-import { colourCss } from "@whereabouts/shared/colours"
 import { onWater, outlineOf, type InPlayGameView, Phase, RoundGuessType } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
-import { everyone } from "@whereabouts/shared/roles"
+import { YouRoleType, everyone } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import { usePaint } from "../../ui/map/MapView/MapView"
 import { Card } from "../../ui/Card/Card"
@@ -35,13 +34,13 @@ import { useRoundMap } from "../../round/round"
 import { usePaintUpload } from "../../paint/paint-upload"
 import { canPaint, canUnlock } from "../../round/editing"
 import { paintLayer } from "../../round/reveal-paint"
-import { RoundNote, canEndGame, roundNote, roundOf } from "../../round/round-model"
+import { RoundNote, canEndGame, ownColour, roundNote, roundOf } from "../../round/round-model"
 import { noteText } from "../../round/round-words"
 import { gameVrView } from "../../vr/view/game-vr-view"
 
 export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView }) {
   const paint = usePaint()
-  const { sittingOut } = view.you
+  const { role } = view.you
   const note = roundNote(view.you)
   const roundKey = roundOf(view).index
   const guessing = view.phase === Phase.GUESSING
@@ -69,8 +68,7 @@ export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView 
         paint.floor.value = saved.floor
       }
       // Paint in your own colour, the same one others see at the reveal.
-      const me = view.players.find((p) => p.id === view.you.id)
-      paint.showOwn(me ? colourCss(me.colour) : undefined)
+      paint.showOwn(ownColour(view.you))
     }
   })
 
@@ -123,13 +121,8 @@ export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView 
             right={<Countdown timeLeft={() => conn.timeUntil(round.deadline)} />}
           />
           <RoundPrompt question={round.question} />
-          {!sittingOut && view.config.hints > 0 && (
-            <HintCard
-              band={view.you.hint}
-              left={view.you.hintsLeft}
-              disabled={!online}
-              onUse={(axis) => conn.hint(axis)}
-            />
+          {role.type === YouRoleType.PLAYING && view.config.hints > 0 && (
+            <HintCard band={view.you.hint} left={role.hintsLeft} disabled={!online} onUse={(axis) => conn.hint(axis)} />
           )}
           <ConnectionNote conn={conn} onMap />
           {note === RoundNote.WATCHING && (
@@ -168,9 +161,9 @@ export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView 
             />
           )}
         </HudRight>
-        {!sittingOut && (
-          <PaintTools water={onWater(round.question.answer)} hint={view.you.hint} canPass={!view.you.locked}>
-            {view.you.locked ? (
+        {role.type === YouRoleType.PLAYING && (
+          <PaintTools water={onWater(round.question.answer)} hint={view.you.hint} canPass={!role.locked}>
+            {role.locked ? (
               <button
                 class={toolbarGrow}
                 title={

@@ -22,6 +22,9 @@ import { Standings } from "../Standings/Standings"
 import { resultsTestIds } from "./ResultsTestIds"
 import s from "./Results.module.css"
 
+// A player removed on the final results.
+const REMOVED_PLAYER: CssColour = "#888888"
+
 export function Results({ conn, view }: { conn: Connection; view: ResultsGameView }) {
   const online = conn.online.value
   const byId = new Map(view.players.map((p) => [p.id, p]))
@@ -57,7 +60,7 @@ export function Results({ conn, view }: { conn: Connection; view: ResultsGameVie
         })),
         players: standings.map((s) => {
           const p = byId.get(s.playerId)
-          return { name: p?.name ?? "?", colour: colourCss(p?.colour) }
+          return { name: p?.name ?? "?", colour: p ? colourCss(p.colour) : REMOVED_PLAYER }
         }),
         rounds: view.playedRounds.map((round, r) => ({
           label: round.label,

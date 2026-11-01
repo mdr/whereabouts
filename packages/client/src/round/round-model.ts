@@ -3,15 +3,16 @@
  * Reveal) and the headset (game-vr-view.ts) each put it in their own words
  * and controls.
  */
+import { colourCss, type CssColour } from "@whereabouts/shared/colours"
 import {
   Phase,
   type GameView,
   type InPlayGameView,
   type RevealView,
   type RoundResultView,
-  type YouView
+  type RoundYouView
 } from "@whereabouts/shared/protocol"
-import type { PlayingPlayerView } from "@whereabouts/shared/roles"
+import { YouRoleType, type PlayingPlayerView } from "@whereabouts/shared/roles"
 import {
   RevealShownType,
   SHOW_EVERYONE,
@@ -29,12 +30,20 @@ export enum RoundNote {
   DONE = "DONE"
 }
 
-export function roundNote(you: YouView): RoundNote | undefined {
-  if (you.watching) return RoundNote.WATCHING
-  if (you.sittingOut) return RoundNote.JOINED_LATE
-  if (you.locked) return RoundNote.DONE
-  return undefined
+export function roundNote({ role }: RoundYouView): RoundNote | undefined {
+  switch (role.type) {
+    case YouRoleType.SPECTATOR:
+      return RoundNote.WATCHING
+    case YouRoleType.JOINED_LATE:
+      return RoundNote.JOINED_LATE
+    case YouRoleType.PLAYING:
+      return role.locked ? RoundNote.DONE : undefined
+  }
 }
+
+/** Your paint's colour, as the others see it; none while you watch. */
+export const ownColour = ({ role }: RoundYouView): CssColour | undefined =>
+  role.type === YouRoleType.SPECTATOR ? undefined : colourCss(role.colour)
 
 const isLastReveal = (reveal: Pick<RevealView, "index" | "total">): boolean => reveal.index + 1 >= reveal.total
 
@@ -86,7 +95,7 @@ export function revealModel(view: GameView, reveal: RevealView, shown: RevealSho
     last,
     readyCount: present.filter((p) => ready.has(p.id)).length,
     presentCount: present.length,
-    ready: view.you.watching ? undefined : { done: view.you.id !== undefined && ready.has(view.you.id) },
+    ready: view.you.role.type === YouRoleType.SPECTATOR ? undefined : { done: ready.has(view.you.id) },
     next: view.you.isHost ? { label: last ? "Show final results" : "Next round" } : undefined,
     rows: [
       { type: ShownRowType.EVERYONE, selected: shown.type === RevealShownType.EVERYONE, pick: SHOW_EVERYONE },

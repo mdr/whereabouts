@@ -1,4 +1,5 @@
 import { MAX_PLAYERS, MAX_SPECTATORS, type GameView } from "@whereabouts/shared/protocol"
+import { YouRoleType } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../../net/net"
 import { Icon } from "../../../../ui/icons"
 import { roleSwitchTestIds } from "./RoleSwitchTestIds"
@@ -9,7 +10,7 @@ export function RoleSwitch({ conn, view, online }: { conn: Connection; view: Gam
   const watchersFull = view.spectators.length >= MAX_SPECTATORS
   return (
     <div class={s.roleSwitch} data-testid={roleSwitchTestIds.roleSwitch}>
-      {view.you.watching ? (
+      {view.you.role.type === YouRoleType.SPECTATOR ? (
         <button
           onClick={() => conn.setRole(false)}
           disabled={seatsFull || !online}

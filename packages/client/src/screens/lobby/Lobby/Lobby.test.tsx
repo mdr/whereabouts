@@ -23,7 +23,7 @@ import { roundStripTestIds } from "../../../ui/setup/RoundStrip/RoundStripTestId
 import { playerListTestIds } from "../../../ui/players/PlayerList/PlayerListTestIds"
 import setupSummary from "../setup/SetupSummary/SetupSummary.module.css"
 import players from "../../../ui/players/Players.module.css"
-import { makePlayer, makeSpectator, makeLobbyView } from "../../../test-view"
+import { SPECTATING, makePlayer, makeSpectator, makeLobbyView } from "../../../test-view"
 
 vi.mock("../../../map/map-prefetch", () => ({ prefetchMap: () => undefined, mapPrefetched: { value: false } }))
 
@@ -36,7 +36,7 @@ function view(isHost: boolean): GameView {
   const base = makeLobbyView()
   return makeLobbyView({
     config: { ...base.config, mix: MIX, hints: 1 },
-    you: { isHost, hintsLeft: 1 },
+    you: { isHost },
     players: [makePlayer()]
   })
 }
@@ -188,7 +188,7 @@ describe("Lobby spectators", () => {
     expect(setRole).toHaveBeenLastCalledWith(true)
     unmount()
     const v = view(false)
-    v.you.watching = true
+    v.you.role = SPECTATING
     v.players = []
     v.spectators = [watcher("p1", "Alice")]
     const { container: c2 } = render(<Lobby conn={conn} view={v} />)
@@ -200,7 +200,7 @@ describe("Lobby spectators", () => {
 
   it("keeps the seat button off when all sixteen seats are taken", () => {
     const v = view(false)
-    v.you.watching = true
+    v.you.role = SPECTATING
     v.players = Array.from({ length: 16 }, (_, i) => guest(`p${i + 10}`, `P${i}`, i))
     v.spectators = [watcher("p1", "Alice")]
     const { container } = render(<Lobby conn={conn} view={v} />)

@@ -12,7 +12,7 @@ export interface RoundListProps {
   rounds: PlayedRound[]
   standings: FinalStanding[]
   byId: Map<string, PlayingPlayerView>
-  you: string | undefined
+  you: string
   best: Points[]
 }
 

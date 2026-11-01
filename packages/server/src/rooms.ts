@@ -248,6 +248,9 @@ export class GameRoom extends Room<ActorData> {
 
   /** Views are per player (host flag, lock state), so each is sent on its own. */
   private sendState(actor: Actor<ActorData>, now = deps.clock.now()): void {
+    const view = this.game.view(actor.data!.token, now)
+    // Removed, left or turned away: the connection is closing and has no seat to show.
+    if (!view) return
     const reveal = this.game.roundReveal
     if (reveal) {
       if (this.sentReveal?.reveal !== reveal)
@@ -257,7 +260,7 @@ export class GameRoom extends Room<ActorData> {
         this.sentReveal.to.add(actor)
       }
     }
-    actor.send(ServerTopics.state, encodeMessage(stateMessage(this.game.view(actor.data!.token, now))))
+    actor.send(ServerTopics.state, encodeMessage(stateMessage(view)))
   }
 
   private broadcastState(): void {

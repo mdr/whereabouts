@@ -1,6 +1,6 @@
 import { useState } from "preact/hooks"
 import { MAX_PLAYERS, type GameView } from "@whereabouts/shared/protocol"
-import { everyone } from "@whereabouts/shared/roles"
+import { YouRoleType } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../../net/net"
 import { askedToWatch, savedName } from "../../../../settings/settings"
 import { ConnectionNote } from "../../../../ui/connection/ConnectionNote/ConnectionNote"
@@ -28,7 +28,7 @@ export function InvitePanel({
   ask: (request: ConfirmRequest) => void
 }) {
   const [renaming, setRenaming] = useState(false)
-  const current = everyone(view).find((p) => p.id === view.you.id)?.name ?? ""
+  const current = view.you.name
   const { players } = view
   const seatsFull = players.length >= MAX_PLAYERS
   return (
@@ -50,7 +50,7 @@ export function InvitePanel({
       {players.length + view.spectators.length === 1 && (
         <p class={cx(kit.hint, s.waiting)}>Waiting for friends to join…</p>
       )}
-      {view.you.watching && !askedToWatch.value && seatsFull && (
+      {view.you.role.type === YouRoleType.SPECTATOR && !askedToWatch.value && seatsFull && (
         <p class={kit.hint}>
           All {MAX_PLAYERS} player seats are taken, so you're watching. You can join if one frees up.
         </p>

@@ -29,8 +29,7 @@ export function PlayerList({
   onMakeHost
 }: {
   players: PlayerView[]
-  /** Undefined in a view of no player. */
-  you: PlayerId | undefined
+  you: PlayerId
   showScores: boolean
   arrows?: boolean
   /** Mark players who have finished guessing this round. */

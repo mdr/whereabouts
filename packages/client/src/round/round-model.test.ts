@@ -3,7 +3,10 @@ import { playerId, playerName } from "@whereabouts/shared/ids"
 import { SHOW_EVERYONE, SHOW_NOBODY, showPlayer, type RevealShown } from "./reveal"
 import { RoundNote, ShownRowType, canEndGame, revealModel, roundNote, type ShownRow } from "./round-model"
 import {
+  JOINED_LATE,
+  SPECTATING,
   makePainted,
+  makePlaying,
   makePlayer,
   makeResult,
   makeGuessingView,
@@ -24,9 +27,9 @@ describe("roundNote", () => {
   })
 
   it("tells a watcher, a late joiner and someone done apart", () => {
-    expect(roundNote(you({ you: { watching: true, sittingOut: true } }))).toBe(RoundNote.WATCHING)
-    expect(roundNote(you({ you: { sittingOut: true } }))).toBe(RoundNote.JOINED_LATE)
-    expect(roundNote(you({ you: { locked: true } }))).toBe(RoundNote.DONE)
+    expect(roundNote(you({ you: { role: SPECTATING } }))).toBe(RoundNote.WATCHING)
+    expect(roundNote(you({ you: { role: JOINED_LATE } }))).toBe(RoundNote.JOINED_LATE)
+    expect(roundNote(you({ you: { role: makePlaying({ locked: true }) } }))).toBe(RoundNote.DONE)
   })
 })
 
@@ -83,7 +86,7 @@ describe("revealModel", () => {
   it("offers Ready to a player, done once pressed, and none to a watcher", () => {
     expect(model().ready).toEqual({ done: false })
     expect(model({}, makeReveal({ ready: [alice.id] })).ready).toEqual({ done: true })
-    expect(model({ you: { watching: true, sittingOut: true } }).ready).toBeUndefined()
+    expect(model({ you: { role: SPECTATING } }).ready).toBeUndefined()
   })
 
   it("gives the host the way on, ending the game at the last round", () => {

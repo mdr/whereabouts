@@ -41,3 +41,34 @@ export const everyone = (v: { players: PlayingPlayerView[]; spectators: Spectato
   ...v.players,
   ...v.spectators
 ]
+
+export enum YouRoleType {
+  PLAYING = "PLAYING",
+  JOINED_LATE = "JOINED_LATE",
+  SPECTATOR = "SPECTATOR"
+}
+
+interface YouSpectating {
+  type: YouRoleType.SPECTATOR
+}
+
+/** A player's seat, in the lobby and on the final results. */
+interface YouSeated {
+  type: YouRoleType.PLAYING
+  colour: PlayerColour
+}
+
+/** Playing the round under way or on show. */
+export interface YouPlaying extends YouSeated {
+  locked: boolean
+  hintsLeft: number
+}
+
+/** Seated mid-round: sits it out and plays from the next. */
+interface YouJoinedLate {
+  type: YouRoleType.JOINED_LATE
+  colour: PlayerColour
+}
+
+export type YouRole = YouSeated | YouSpectating
+export type RoundYouRole = YouPlaying | YouJoinedLate | YouSpectating

@@ -30,7 +30,7 @@ import {
   type WikiTitle
 } from "./ids.ts"
 import { CloseReason } from "./close-reason.ts"
-import type { PlayingPlayerView, SpectatorView } from "./roles.ts"
+import type { PlayingPlayerView, RoundYouRole, SpectatorView, YouRole } from "./roles.ts"
 
 export const PROTOCOL_VERSION = 15
 
@@ -328,23 +328,22 @@ export interface FinalStanding {
   rounds: { score?: Points }[]
 }
 
-/** What a view tells you about yourself, whatever the phase. */
-export interface YouView {
-  /** Absent in a view of no player. */
-  id?: PlayerId
+interface YouBase {
+  id: PlayerId
+  name: PlayerName
   isHost: boolean
-  /** Not playing the round under way: watching, or joined mid-round and playing from the next. */
-  sittingOut: boolean
-  /** True for a spectator, who watches the whole game (see PlayerView.watching). */
-  watching: boolean
-  locked: boolean
-  hintsLeft: number
   /** While you host: who would take over if you left. */
   nextHost?: PlayerId
 }
 
+/** You, in the lobby and on the final results. */
+interface YouView extends YouBase {
+  role: YouRole
+}
+
 /** You, while a round is played or revealed. */
-interface RoundYouView extends YouView {
+export interface RoundYouView extends YouBase {
+  role: RoundYouRole
   /** Your hint on this round. */
   hint?: HintBand
 }
