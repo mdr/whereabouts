@@ -13,3 +13,9 @@
 
 - A `.tsx` file exports one component, with its own CSS module and `*TestIds.ts`. A helper component may stay in the file if it is unexported, used only there, and short (about 30 lines).
 - A screen with several sections is a folder named after it, a file per section. Only a family of tiny layout slots (`ui/map/Hud.tsx`) shares a file.
+
+## Browser tests
+
+- Page objects offer `expect…` methods; specs never see locators.
+- Page state: web-first assertions (`toHaveText`, `toBeVisible`…). Other state (map, VR, sound): `expect.poll`.
+- "Doesn't happen" checks hold over time, after a positive check.
