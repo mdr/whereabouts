@@ -51,6 +51,8 @@ export async function vrPractice(browser: Browser, label: string, initScript?: (
 export async function vrPracticePainted(browser: Browser, label: string): Promise<VrPractice & { painted: number }> {
   const vr = await vrPractice(browser, label)
   await spray(vr.headset, vr.round, vr)
+  // The stroke becomes an undo step only on a frame that sees the trigger let go.
+  await vr.headset.frames(5)
   const painted = await until(
     "paint on the round",
     () => vr.round.map.yourPaintCells(),
