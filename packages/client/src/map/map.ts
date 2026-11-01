@@ -64,7 +64,7 @@ export const STYLE_URL = "https://tiles.openfreemap.org/styles/positron"
 const WORLD_CENTER: LonLat = [10, 25]
 const WORLD_ZOOM: Zoom = 1.6
 /** The phone layout's width, and where its reveal sheet starts, as a share of the screen's height (media.css --phone, Hud.module.css). */
-const PHONE = "(max-width: 640px)"
+const PHONE_MEDIA_QUERY = "(max-width: 640px)"
 const SHEET_TOP = 0.5
 
 /**
@@ -79,7 +79,7 @@ const PLACE_LABELS = ["label_other", "label_village", "label_town", "label_state
 
 /** The flat map's zoom that shows the whole world on a map `width` px wide. */
 export function flatWorldZoom(width: Px): Zoom {
-  return matchMedia(PHONE).matches ? Math.min(WORLD_ZOOM, zoomForWorldWidth(width)) : WORLD_ZOOM
+  return matchMedia(PHONE_MEDIA_QUERY).matches ? Math.min(WORLD_ZOOM, zoomForWorldWidth(width)) : WORLD_ZOOM
 }
 
 export class GameMap {
@@ -120,7 +120,7 @@ export class GameMap {
       ...options
     })
     // A phone is too narrow for the usual view to show the whole world.
-    if (options.zoom === undefined && matchMedia(PHONE).matches) {
+    if (options.zoom === undefined && matchMedia(PHONE_MEDIA_QUERY).matches) {
       const zoom = this.worldZoom()
       this.map.setMinZoom(Math.min(1, zoom))
       this.map.jumpTo({ zoom })
@@ -511,7 +511,7 @@ export class GameMap {
    */
   private revealPadding(): Required<maplibregl.PaddingOptions> {
     const { clientWidth: w, clientHeight: h } = this.map.getContainer()
-    if (matchMedia(PHONE).matches) {
+    if (matchMedia(PHONE_MEDIA_QUERY).matches) {
       // Below the header and the question card (--question-h, from the card).
       const card = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--question-h")) || 0
       return { top: 64 + card + 8, bottom: h * (1 - SHEET_TOP) + 16, left: 24, right: 24 }

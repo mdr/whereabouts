@@ -7,7 +7,7 @@ import type { Pointer } from "../globe/flag-pins"
 import type { Globe } from "../globe/globe"
 import { HANDS, Hand, XR_HAND } from "./hand"
 import type { Picture } from "../picture/picture"
-import { HandTool, TRIGGER_DEAD } from "../spray/spray"
+import { HandTool, TRIGGER_DEAD_ZONE } from "../spray/spray"
 import { nextTool, offeredTool } from "../spray/spray-rules"
 import { PairedStroke, strokeTool, type Strokes } from "../spray/stroke"
 import type { VrRound } from "../view/view"
@@ -108,7 +108,7 @@ export class Hands {
           aimed: this.tools[h].aim(globe) !== undefined
         })),
         onMenu,
-        TRIGGER_DEAD
+        TRIGGER_DEAD_ZONE
       )
     )
     // Every hand updates, even once one has sprayed: each moves its own spot.

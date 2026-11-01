@@ -31,9 +31,9 @@ export function reloadOnStaleBuild(): void {
  */
 export function fetchBuildJson<T>(url: string): Promise<T> {
   return withRetries(async () => {
-    const res = await fetch(url)
-    if (res.status === 404) reloadForNewBuild()
-    if (!res.ok) throw new Error(`${url}: ${res.status}`)
-    return (await res.json()) as T
+    const response = await fetch(url)
+    if (response.status === 404) reloadForNewBuild()
+    if (!response.ok) throw new Error(`${url}: ${response.status}`)
+    return (await response.json()) as T
   })
 }

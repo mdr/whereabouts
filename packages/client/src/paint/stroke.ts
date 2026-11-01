@@ -11,12 +11,12 @@ export interface ScreenPoint {
  * `to`: evenly a quarter of the brush apart (at least 2 px), so a fast drag
  * leaves no gaps and a slow one doesn't pile stamps up.
  */
-export function strokePoints(from: ScreenPoint | undefined, to: ScreenPoint, brushSize: Px): ScreenPoint[] {
+export function strokePoints(from: ScreenPoint | undefined, to: ScreenPoint, brushRadius: Px): ScreenPoint[] {
   if (!from) return [to]
   const dx = to.x - from.x
   const dy = to.y - from.y
   const dist = Math.hypot(dx, dy)
-  const step = Math.max(2, brushSize / 4)
+  const step = Math.max(2, brushRadius / 4)
   const n = Math.floor(dist / step)
   return Array.from({ length: n }, (_, i) => {
     const t = ((i + 1) * step) / dist

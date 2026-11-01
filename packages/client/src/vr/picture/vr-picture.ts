@@ -69,8 +69,8 @@ async function lookUp(file: CommonsFile): Promise<string | undefined> {
     format: "json",
     origin: "*"
   }).toString()
-  const res = (await (await fetch(api)).json()) as {
+  const response = (await (await fetch(api)).json()) as {
     query?: { pages?: Record<string, { imageinfo?: { thumburl?: string }[] }> }
   }
-  return Object.values(res.query?.pages ?? {})[0]?.imageinfo?.[0]?.thumburl
+  return Object.values(response.query?.pages ?? {})[0]?.imageinfo?.[0]?.thumburl
 }

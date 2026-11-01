@@ -14,14 +14,14 @@ import {
   Vector3,
   type Object3D
 } from "three"
-import { VR_PHOTO_SIZE as MAX_SIZE, vrPhotoUrl, type Postcard, type VrPicture, VrPictureType } from "./vr-picture"
+import { VR_PHOTO_SIZE, vrPhotoUrl, type Postcard, type VrPicture, VrPictureType } from "./vr-picture"
 import { flagRatio, flagUrl } from "../../flags/flags"
 import type { Hand } from "../hands/hand"
 import { PictureBack } from "./picture-back"
 import type { Metres } from "@whereabouts/shared/units"
 
-const MAX_W = 0.38
-const MAX_H = 0.26
+const MAX_WIDTH: Metres = 0.38
+const MAX_HEIGHT: Metres = 0.26
 /** How close a hand need be to take the picture without pointing at it. */
 const REACH: Metres = 0.08
 /** A card's thickness, so it has an edge when turned. */
@@ -111,7 +111,7 @@ export class Picture {
         // A flag's SVG has no size of its own.
         const [w, h] =
           picture.type === VrPictureType.FLAG ? [flagRatio(picture.flag), 1] : [img.naturalWidth, img.naturalHeight]
-        const fit = Math.min(MAX_SIZE / w, MAX_SIZE / h)
+        const fit = Math.min(VR_PHOTO_SIZE / w, VR_PHOTO_SIZE / h)
         const canvas = document.createElement("canvas")
         canvas.width = Math.round(w * fit)
         canvas.height = Math.round(h * fit)
@@ -136,7 +136,7 @@ export class Picture {
         }
         this.shownBack = picture.type === VrPictureType.FLAG ? PictureBack.REVERSE : PictureBack.POSTCARD
         this.shownPostcard = picture.type === VrPictureType.FLAG ? undefined : picture.postcard
-        const size = Math.min(MAX_W / w, MAX_H / h)
+        const size = Math.min(MAX_WIDTH / w, MAX_HEIGHT / h)
         this.mesh.scale.set(w * size, h * size, 1)
         this.mesh.visible = true
       },

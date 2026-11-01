@@ -44,7 +44,7 @@ const TIP = new Vector3(0, 0, -0.0625)
 const TIP_SIZE: Metres = 0.012
 /** How near the surface counts as touching it: the rubber gives a little. */
 const TOUCH_GAP: Metres = 0.004
-export const TRIGGER_DEAD = 0.05
+export const TRIGGER_DEAD_ZONE = 0.05
 /** How far a pointing ray reaches when it misses the globe. */
 const BEAM_LENGTH: Metres = 1.5
 
@@ -210,7 +210,7 @@ export class HandTool {
     gamepad: Gamepad | undefined
   ): boolean {
     const dt = this.settle(now)
-    if (trigger <= TRIGGER_DEAD) this.pulled = false
+    if (trigger <= TRIGGER_DEAD_ZONE) this.pulled = false
     if (this.busy) {
       this.hide()
       return false
@@ -230,7 +230,7 @@ export class HandTool {
     this.spot.lookAt(local.copy(hit).add(normal))
     this.spot.scale.setScalar(spotSize)
 
-    const spraying = paint.enabled.value && trigger > TRIGGER_DEAD
+    const spraying = paint.enabled.value && trigger > TRIGGER_DEAD_ZONE
     if (this.toolNow === Tool.FILL) {
       if (spraying && !this.pulled) {
         paint.fillOutside(

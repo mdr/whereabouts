@@ -8,7 +8,7 @@ import { MapDetailPicker } from "../../../../ui/setup/MapDetailPicker/MapDetailP
 import { hostSettingsTestIds } from "./HostSettingsTestIds"
 import s from "./HostSettings.module.css"
 
-const SECONDS = ROUND_LENGTHS.map((ms) => ({ value: ms, label: String(ms / 1000) }))
+const ROUND_LENGTH_OPTIONS = ROUND_LENGTHS.map((ms) => ({ value: ms, label: String(ms / 1000) }))
 const HINTS = Array.from({ length: MAX_HINTS + 1 }, (_, n) => ({ value: n, label: String(n) }))
 
 export function HostSettings({ conn, view, online }: { conn: Connection; view: GameView; online: boolean }) {
@@ -22,7 +22,7 @@ export function HostSettings({ conn, view, online }: { conn: Connection; view: G
         <span class={s.settingLabel}>Seconds per round</span>
         <Pills
           label="Seconds per round"
-          options={SECONDS}
+          options={ROUND_LENGTH_OPTIONS}
           value={view.config.roundLength}
           onChange={(roundLength) => configureAsHost(conn, { roundLength })}
         />

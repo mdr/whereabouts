@@ -22,8 +22,8 @@ import { MAX_LAT } from "../../map/map-geometry"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal, localToLatLon } from "./sphere"
 
-const x = (lon: Degrees, w: number) => ((lon + 180) / 360) * w
-const y = (lat: Degrees, h: number) => ((90 - lat) / 180) * h
+const lonToX = (lon: Degrees, w: number) => ((lon + 180) / 360) * w
+const latToY = (lat: Degrees, h: number) => ((90 - lat) / 180) * h
 
 /** Trace a ring of [lon, lat] points, and again a world to the left if it runs past 180°. */
 function traceRing(ctx: CanvasRenderingContext2D, ring: Ring, w: number, h: number): void {
@@ -33,8 +33,8 @@ function traceRing(ctx: CanvasRenderingContext2D, ring: Ring, w: number, h: numb
     for (let i = 0; i < ring.length; i++) {
       const [lon, lat] = ring[i]!
       if (lon > 180) east = true
-      if (i === 0) ctx.moveTo(x(lon + shift, w), y(lat, h))
-      else ctx.lineTo(x(lon + shift, w), y(lat, h))
+      if (i === 0) ctx.moveTo(lonToX(lon + shift, w), latToY(lat, h))
+      else ctx.lineTo(lonToX(lon + shift, w), latToY(lat, h))
     }
     ctx.closePath()
   }
@@ -129,7 +129,7 @@ export function drawLand(canvas: HTMLCanvasElement, land: LandMaskData, theme: T
   })
   fill()
   // The cells around the south pole are skipped above, and it is all ice.
-  ctx.fillRect(0, y(-86, h), w, h)
+  ctx.fillRect(0, latToY(-86, h), w, h)
 
   const out = canvas.getContext("2d")!
   out.fillStyle = theme.water

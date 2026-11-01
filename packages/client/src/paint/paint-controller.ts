@@ -17,7 +17,7 @@ export class PaintController extends PaintModel {
   private readonly view: PaintView
   private readonly input: PaintInput
   readonly tool: PaintInput["tool"]
-  readonly brushSize: PaintInput["brushSize"]
+  readonly brushRadius: PaintInput["brushRadius"]
   readonly strength: PaintInput["strength"]
   readonly enabled: PaintInput["enabled"]
 
@@ -27,7 +27,7 @@ export class PaintController extends PaintModel {
     this.view = new PaintView(gameMap, this)
     this.input = new PaintInput(gameMap, this, this.view)
     this.tool = this.input.tool
-    this.brushSize = this.input.brushSize
+    this.brushRadius = this.input.brushRadius
     this.strength = this.input.strength
     this.enabled = this.input.enabled
   }

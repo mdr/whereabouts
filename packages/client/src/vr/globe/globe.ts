@@ -49,7 +49,7 @@ const SPIN_DECAY = 1.5
 /** As far as it tilts either way: a pole faces the player. */
 const MAX_TILT: Radians = Math.PI / 2
 const MIN_TILT: Radians = 0 - MAX_TILT
-const STICK_DEAD = 0.15
+const STICK_DEAD_ZONE = 0.15
 /** How long the globe takes to turn a place to face the player. */
 const TURN: Seconds = 0.8
 /** How wide, in metres, a place the globe turns to show is made. */
@@ -66,7 +66,7 @@ const w = new Vector3()
 const wrap = (a: Radians): Radians => Math.atan2(Math.sin(a), Math.cos(a))
 
 const stickActive = (stick: { x: number; y: number }) =>
-  Math.abs(stick.x) > STICK_DEAD || Math.abs(stick.y) > STICK_DEAD
+  Math.abs(stick.x) > STICK_DEAD_ZONE || Math.abs(stick.y) > STICK_DEAD_ZONE
 
 const smoothstep = (t: number) => t * t * (3 - 2 * t)
 
@@ -363,8 +363,8 @@ export class Globe {
   }
 
   private applyStick(dt: Seconds, stick: { x: number; y: number }): void {
-    if (Math.abs(stick.x) > STICK_DEAD) this.turnBy(stick.x * 1.5 * dt, 0)
-    if (Math.abs(stick.y) > STICK_DEAD) this.setScale(this.group.scale.x * Math.exp(-stick.y * 1.2 * dt))
+    if (Math.abs(stick.x) > STICK_DEAD_ZONE) this.turnBy(stick.x * 1.5 * dt, 0)
+    if (Math.abs(stick.y) > STICK_DEAD_ZONE) this.setScale(this.group.scale.x * Math.exp(-stick.y * 1.2 * dt))
   }
 
   private setScale(s: number): void {

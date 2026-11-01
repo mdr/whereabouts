@@ -15,9 +15,9 @@ export interface VrBoard {
   rounds: { label: string; type: string; colour: CssColour; scores: (Points | undefined)[] }[]
 }
 
-const W = 1400
+const CANVAS_WIDTH = 1400
 const PAD = 64
-const ROW = 84
+const ROW_HEIGHT = 84
 const BOARD_WIDTH: Metres = 0.95
 const MAX_HEIGHT: Metres = 0.75
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
@@ -69,15 +69,15 @@ function draw(board: VrBoard): HTMLCanvasElement {
   const height =
     PAD * 2 +
     (board.awards.length > 0 ? 90 + awardRows * 150 + 40 : 0) +
-    (board.rounds.length > 0 ? 170 + board.rounds.length * ROW : 0)
+    (board.rounds.length > 0 ? 170 + board.rounds.length * ROW_HEIGHT : 0)
   const canvas = document.createElement("canvas")
-  canvas.width = W
+  canvas.width = CANVAS_WIDTH
   canvas.height = height
   const ctx = canvas.getContext("2d")
   if (!ctx) return canvas
   ctx.fillStyle = "rgba(17, 24, 33, 0.92)"
   ctx.beginPath()
-  ctx.roundRect(0, 0, W, height, 48)
+  ctx.roundRect(0, 0, CANVAS_WIDTH, height, 48)
   ctx.fill()
   ctx.textBaseline = "middle"
   let y = PAD
@@ -91,7 +91,7 @@ function draw(board: VrBoard): HTMLCanvasElement {
 
   if (board.awards.length > 0) {
     heading("AWARDS")
-    const colW = (W - PAD * 2) / 2
+    const colW = (CANVAS_WIDTH - PAD * 2) / 2
     board.awards.forEach((a, i) => {
       const x = PAD + (i % 2) * colW
       const top = y + Math.floor(i / 2) * 150
@@ -117,7 +117,7 @@ function draw(board: VrBoard): HTMLCanvasElement {
   if (board.rounds.length > 0) {
     heading("ROUNDS")
     const labelW = 560
-    const colW = Math.min(180, (W - PAD * 2 - labelW) / Math.max(1, board.players.length))
+    const colW = Math.min(180, (CANVAS_WIDTH - PAD * 2 - labelW) / Math.max(1, board.players.length))
     const colX = (j: number) => PAD + labelW + j * colW + colW / 2
     ctx.textAlign = "center"
     board.players.forEach((p, j) => {
@@ -131,10 +131,10 @@ function draw(board: VrBoard): HTMLCanvasElement {
     })
     y += 80
     board.rounds.forEach((r, i) => {
-      const rowY = y + i * ROW + ROW / 2
+      const rowY = y + i * ROW_HEIGHT + ROW_HEIGHT / 2
       if (i % 2 === 0) {
         ctx.fillStyle = "rgba(255,255,255,0.04)"
-        ctx.fillRect(PAD - 16, rowY - ROW / 2, W - PAD * 2 + 32, ROW)
+        ctx.fillRect(PAD - 16, rowY - ROW_HEIGHT / 2, CANVAS_WIDTH - PAD * 2 + 32, ROW_HEIGHT)
       }
       ctx.textAlign = "left"
       ctx.fillStyle = "#cfd8e3"

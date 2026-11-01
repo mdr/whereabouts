@@ -9,6 +9,7 @@ import type {
   RoundResultView,
   RoundReveal
 } from "../protocol.ts"
+import type { Instant } from "../units.ts"
 import { AnswerType, ClueType, QuestionType, answerCentre, flagShown, type Question } from "../questions.ts"
 
 /**
@@ -30,7 +31,7 @@ export function questionView(q: Question): QuestionView {
 }
 
 /** A round being guessed. */
-export const roundView = (q: Question, index: number, total: number, deadline: number): GuessingGameView["round"] => ({
+export const roundView = (q: Question, index: number, total: number, deadline: Instant): GuessingGameView["round"] => ({
   index,
   total,
   question: questionView(q),

@@ -90,7 +90,7 @@ export function PaintTools({
           min={6}
           max={200}
           step={1}
-          value={paint.brushSize.value}
+          value={paint.brushRadius.value}
           disabled={!enabled}
           onInput={(e) => paint.setBrushSize(Number(e.currentTarget.value))}
         />

@@ -45,7 +45,7 @@ const HIGHLIGHT = 1.8
 const BORDER = "#ff40ff"
 /** How far off a flag a ray may pass and still point at it: metres, and radians beyond. */
 const POINT_REACH: Metres = 0.01
-const POINT_RAD: Radians = 0.015
+const POINT_ANGLE: Radians = 0.015
 
 const up = new Vector3(0, 1, 0)
 const v = new Vector3()
@@ -219,7 +219,7 @@ export class FlagPins {
         // Ahead of the hand, and not round the back of the globe.
         if (t <= 0 || (globe !== undefined && t > globe + 0.03)) return
         const miss = w.addScaledVector(dir, -t).length()
-        const off = miss / (POINT_REACH + POINT_RAD * t)
+        const off = miss / (POINT_REACH + POINT_ANGLE * t)
         if (off < bestOff) [best, bestOff] = [i, off]
       })
     }

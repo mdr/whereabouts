@@ -20,7 +20,7 @@ const FILL_SMALL: Px = 12
 
 export class PaintInput {
   readonly tool = signal<Tool>(Tool.PAINT)
-  readonly brushSize = signal<Px>(40)
+  readonly brushRadius = signal<Px>(40)
   readonly strength = signal(1)
   /** Whether painting is currently allowed (guessing phase, not locked). */
   readonly enabled = signal(false)
@@ -98,7 +98,7 @@ export class PaintInput {
       enabled: () => this.enabled.value,
       setTool: (tool) => (this.tool.value = tool),
       canFill: () => this.model.fillable.value,
-      resizeBrush: (factor) => this.setBrushSize(this.brushSize.value * factor),
+      resizeBrush: (factor) => this.setBrushSize(this.brushRadius.value * factor),
       undo: () => this.model.undo(),
       redo: () => this.model.redo()
     }
@@ -192,7 +192,7 @@ export class PaintInput {
       })
     )
     // [ and ] or the slider resize the brush while the mouse stays put.
-    this.disposers.push(this.brushSize.subscribe(() => this.refreshCursor()))
+    this.disposers.push(this.brushRadius.subscribe(() => this.refreshCursor()))
     this.disposers.push(
       this.enabled.subscribe((on) => {
         // Painting can be switched off mid-stroke, when the round ends. Stop
@@ -223,7 +223,7 @@ export class PaintInput {
   }
 
   setBrushSize(size: Px): void {
-    this.brushSize.value = Math.min(200, Math.max(6, Math.round(size)))
+    this.brushRadius.value = Math.min(200, Math.max(6, Math.round(size)))
   }
 
   private canPaint(): boolean {
@@ -264,8 +264,8 @@ export class PaintInput {
     return this.gameMap.pixelsToKm(FILL_SMALL, lat)
   }
 
-  private brushRadius(lat: Degrees): Km {
-    return this.gameMap.pixelsToKm(this.brushSize.value, lat)
+  private groundBrushRadius(lat: Degrees): Km {
+    return this.gameMap.pixelsToKm(this.brushRadius.value, lat)
   }
 
   // ---- strokes: shared by mouse and touch -----------------------------------
@@ -307,7 +307,7 @@ export class PaintInput {
       return
     }
     this.gameMap.setCursorFootprint(
-      this.model.layer.stampCells(latLon(lngLat), this.brushRadius(lngLat.lat)),
+      this.model.layer.stampCells(latLon(lngLat), this.groundBrushRadius(lngLat.lat)),
       this.tool.value === Tool.ERASE
     )
   }
@@ -325,13 +325,13 @@ export class PaintInput {
   private stampAt(lngLat: LngLat, tool: StrokeTool): void {
     const sign = tool === Tool.ERASE ? -1 : 1
     // Stamps overlap along a stroke, so scale each one down.
-    this.model.stamp(latLon(lngLat), this.brushRadius(lngLat.lat), sign * this.strength.value * 0.3)
+    this.model.stamp(latLon(lngLat), this.groundBrushRadius(lngLat.lat), sign * this.strength.value * 0.3)
   }
 
   private strokeTo(point: Point): void {
     const stroke = this.stroke
     if (!stroke) return
-    for (const { x, y } of strokePoints(stroke.last, point, this.brushSize.value)) {
+    for (const { x, y } of strokePoints(stroke.last, point, this.brushRadius.value)) {
       const p = new Point(x, y)
       this.stampOnSurface(p, stroke.tool)
       stroke.last = p
