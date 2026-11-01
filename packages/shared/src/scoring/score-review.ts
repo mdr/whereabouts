@@ -20,10 +20,11 @@ import {
   answerCentre,
   shuffle,
   type Outlines,
+  type PointAnswer,
   type Question
 } from "../questions.ts"
 import { poolOf } from "../catalogue/catalogue.ts"
-import { insideRegion, regionCells, scoreAnswer, scoredAnswer, type ScoredAnswer } from "./regions.ts"
+import { insideRegion, regionCells, scoreAnswer, scoredAnswer, type Area, type ScoredAnswer } from "./regions.ts"
 import { CaseQuestionType, RegionKernel, encodeCase, type ScoringCase } from "./scoring-case.ts"
 import { buildDistribution, type ChoosableKernel, type Kernel } from "./scoring.ts"
 import { MapDetail } from "../protocol.ts"
@@ -131,22 +132,23 @@ export function reviewCases(set: number, catalogue: readonly Question[], outline
       let n = 0
       const rnd = () => seededUnit(set, p, i, n++)
       const answer = scoredAnswer(question.answer, outlines)
-      const types = shuffle([...guessesFor(answer)], set * 104729 + p * 31 + i)
-      if (i < singles)
-        cases.push({ type: ReviewCaseType.SINGLE, question, answer, guess: paintGuess(answer, types[0]!, rnd) })
-      else
-        cases.push({
-          type: ReviewCaseType.PAIR,
-          question,
-          answer,
-          guesses: [paintGuess(answer, types[0]!, rnd), paintGuess(answer, types[1]!, rnd)]
-        })
+      const paint = guessPainter(answer, set * 104729 + p * 31 + i, rnd)
+      if (i < singles) cases.push({ type: ReviewCaseType.SINGLE, question, answer, guess: paint(0) })
+      else cases.push({ type: ReviewCaseType.PAIR, question, answer, guesses: [paint(0), paint(1)] })
     })
   })
   return shuffle(cases, set * 15485863)
 }
 
-const guessesFor = (a: ScoredAnswer) => (a.type === AnswerType.AREA ? REGION_GUESSES : POINT_GUESSES)
+/** Paints the nth of the answer's shuffled kinds of guess. */
+function guessPainter(answer: ScoredAnswer, seed: number, rnd: () => number): (n: number) => ReviewGuess {
+  if (answer.type === AnswerType.AREA) {
+    const types = shuffle([...REGION_GUESSES], seed)
+    return (n) => paintRegionGuess(answer, types[n]!, rnd)
+  }
+  const types = shuffle([...POINT_GUESSES], seed)
+  return (n) => paintPointGuess(answer, types[n]!, rnd)
+}
 
 /** A guess's score, as practice would give it. */
 export function scoreGuess(a: ScoredAnswer, layer: PaintLayer, kernel: Kernel): Pick<ScoringCase, "score" | "parts"> {
@@ -182,10 +184,14 @@ export function caseQuestion(q: Question, a: ScoredAnswer): ScoringCase["questio
   }
 }
 
-const isPointGuess = (t: GuessType): t is PointGuess => POINT_GUESSES.some((g) => g === t)
-const isRegionGuess = (t: GuessType): t is RegionGuess => REGION_GUESSES.some((g) => g === t)
+function paintPointGuess(q: PointAnswer, type: PointGuess, rnd: () => number): ReviewGuess {
+  const { layer, between, blob } = painting(q, rnd)
+  pointGuess(type, blob, between, rnd)
+  return { type, layer }
+}
 
-function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): ReviewGuess {
+/** A blank layer for the answer, with the way to paint rough patches on it. */
+function painting(q: ScoredAnswer, rnd: () => number) {
   const between = (lo: number, hi: number) => lo + (hi - lo) * rnd()
   const t = q.tolerance
   const layer = new PaintLayer(resolutionForTolerance(t))
@@ -201,11 +207,12 @@ function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): Review
       strength
     })
   }
-  if (q.type !== AnswerType.AREA) {
-    if (!isPointGuess(type)) throw new Error(`${type} is not a guess at a point`)
-    pointGuess(type, blob, between, rnd)
-    return { type, layer }
-  }
+  return { layer, between, blob }
+}
+
+function paintRegionGuess(q: Area, type: RegionGuess, rnd: () => number): ReviewGuess {
+  const { layer, between, blob } = painting(q, rnd)
+  const t = q.tolerance
   // A region's tolerance is a fifth of its radius: R is about its radius.
   const R = 5
   const cells = regionCells(q, layer.res)
@@ -226,7 +233,6 @@ function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): Review
       strength
     })
   }
-  if (!isRegionGuess(type)) throw new Error(`${type} is not a guess at a region`)
   switch (type) {
     case GuessType.WHOLE:
       shape(1)
