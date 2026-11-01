@@ -27,9 +27,9 @@ export class PaintTools {
 
   async expectSelectedTool(tool: Tool): Promise<void> {
     await expect(
-      byTestIdWith(this.#page, paintToolsTestIds.toolButton, "tool", tool).getByTestId(paintToolsTestIds.selectedMark),
+      byTestIdWith(this.#page, paintToolsTestIds.toolButton, "tool", tool),
       `the ${tool} tool is the one pressed`
-    ).toBeAttached()
+    ).toHaveAttribute("aria-pressed", "true")
   }
 
   /** Tab to the next control, as a keyboard player would, and press it with `key`. */

@@ -30,6 +30,7 @@
 
 - Page objects offer `expect…` methods; specs never see locators.
 - Locate by test ID. Where a test ID alone identifies a state, assert on its presence rather than text or attributes.
+- State that ARIA already expresses (`aria-pressed`…): assert the ARIA attribute.
 - Page state: web-first assertions (`toHaveText`, `toBeVisible`…). Other state (map, VR, sound): `expect.poll`.
 - "Doesn't happen" checks hold over time, after a positive check.
 

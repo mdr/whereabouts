@@ -69,7 +69,6 @@ export const PaintTools = ({
             data-testid={paintToolsTestIds.toolButton}
             data-tool={tool}
           >
-            {tool === activeTool && <span hidden data-testid={paintToolsTestIds.selectedMark} />}
             <Icon name={TOOL_ICON[tool]} /> <ToolLabel>{tool[0]!.toUpperCase() + tool.slice(1)}</ToolLabel>
           </button>
         ))}
