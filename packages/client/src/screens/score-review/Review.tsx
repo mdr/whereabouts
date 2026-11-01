@@ -189,7 +189,7 @@ export const Review = ({ outlines }: { outlines: Outlines }) => {
         />
       </HudRight>
       <HudBottom>
-        <button type="button" onClick={skip}>
+        <button type="button" onClick={skip} data-testid={scoreReviewTestIds.skipButton}>
           Skip
         </button>
         <button

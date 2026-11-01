@@ -108,7 +108,7 @@ export const VrButton = ({ view }: { view: VrView }) => {
         title="Play in your VR headset"
         data-testid={vrButtonTestIds.button}
       >
-        <Icon name="vr" /> <span>{inVr ? "In VR" : "VR"}</span>
+        <Icon name="vr" /> <span data-testid={inVr ? vrButtonTestIds.inVr : undefined}>{inVr ? "In VR" : "VR"}</span>
       </button>
       {stage &&
         // Into <body>: the toolbar is transformed, and would be the box a fixed overlay fills.

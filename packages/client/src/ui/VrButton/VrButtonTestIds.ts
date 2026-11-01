@@ -1,5 +1,6 @@
 export const vrButtonTestIds = {
   button: "VrButton.button",
+  inVr: "VrButton.inVr",
   loading: "VrButton.loading",
   loadingStage: "VrButton.loadingStage",
   enterButton: "VrButton.enterButton",

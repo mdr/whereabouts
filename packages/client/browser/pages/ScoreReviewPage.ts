@@ -46,7 +46,7 @@ export class ScoreReviewPage extends Screen {
 
   /** Rest the mouse on guess A (0) or B (1) of a pair. */
   async hoverGuess(i: 0 | 1): Promise<void> {
-    await this.page.getByTestId(verdictCardTestIds.pair).locator("li").nth(i).hover()
+    await this.page.getByTestId(verdictCardTestIds.pairGuess).nth(i).hover()
     await this.map.waitUntilSettled()
   }
 
@@ -58,7 +58,7 @@ export class ScoreReviewPage extends Screen {
 
   /** Skip to the next case without judging this one. */
   async skip(): Promise<void> {
-    await this.page.getByRole("button", { name: "Skip" }).click()
+    await this.page.getByTestId(scoreReviewTestIds.skipButton).click()
     await this.map.waitUntilSettled()
   }
 
@@ -79,8 +79,8 @@ export class ScoreReviewPage extends Screen {
   /** Give a verdict by clicking, with what it should have scored and why. */
   async judge(verdict: number, shouldBe: number, note: string): Promise<void> {
     await this.page.locator(`[data-testid="${verdictCardTestIds.verdict}"][data-verdict="${verdict}"]`).click()
-    await this.page.getByRole("spinbutton", { name: "It should be about" }).fill(String(shouldBe))
-    await this.page.getByPlaceholder("Why? (optional)").fill(note)
+    await this.page.getByTestId(verdictCardTestIds.shouldBeInput).fill(String(shouldBe))
+    await this.page.getByTestId(verdictCardTestIds.noteInput).fill(note)
     await this.page.getByTestId(scoreReviewTestIds.submitButton).click()
     await this.map.waitUntilSettled()
   }

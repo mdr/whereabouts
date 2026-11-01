@@ -43,7 +43,7 @@ export class Headset {
   }
 
   async expectVrButtonInVr(): Promise<void> {
-    await expect(this.#vr(vrButtonTestIds.button), "the VR button opens a headset session").toContainText("In VR")
+    await expect(this.#vr(vrButtonTestIds.inVr), "the VR button opens a headset session").toBeVisible()
   }
 
   async expectLoadingShown(): Promise<void> {

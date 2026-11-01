@@ -73,6 +73,7 @@ export const VerdictCard = ({
         <ul class={cx(players.list, players.pick)} data-testid={verdictCardTestIds.pair}>
           {(["A", "B"] as const).map((name, i) => (
             <li
+              data-testid={verdictCardTestIds.pairGuess}
               class={pinned === i ? players.selected : undefined}
               onClick={() => onPin(pinned === i ? undefined : (i as 0 | 1))}
               onPointerEnter={(event) => event.pointerType === "mouse" && onHover(i as 0 | 1)}
@@ -107,6 +108,7 @@ export const VerdictCard = ({
           It should be about
           <input
             type="number"
+            data-testid={verdictCardTestIds.shouldBeInput}
             min={0}
             max={1000}
             step={10}
@@ -118,6 +120,7 @@ export const VerdictCard = ({
       )}
       <textarea
         rows={2}
+        data-testid={verdictCardTestIds.noteInput}
         value={note}
         onInput={(event) => onNote(event.currentTarget.value)}
         placeholder="Why? (optional)"
