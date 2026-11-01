@@ -6,7 +6,7 @@ import type { QuestionType } from "@whereabouts/shared/questions"
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { Connection } from "../net/net"
 import { Icon } from "../ui/icons"
-import { HostTag, HostWord, Swatch } from "../ui/players/PlayerList"
+import { HostTag, HostWord, Swatch, SwatchType } from "../ui/players/PlayerList"
 import { Banner } from "../ui/Banner"
 import { ConnectionNote, connectionText } from "../ui/connection/ConnectionNote"
 import { SmallFlag, SmallFlagButton, SmallPhoto, SmallPictureBox } from "../ui/pictures/Pictures"
@@ -84,7 +84,7 @@ export function Results({ conn, view }: { conn: Connection; view: ResultsGameVie
         <Banner />
         {winner && (
           <p class={kit.tagline} data-testid={resultsTestIds.winner}>
-            <Swatch colour={winner.colour} /> <b>{winner.name}</b>
+            <Swatch type={SwatchType.PLAYER} colour={winner.colour} /> <b>{winner.name}</b>
             {winner.isHost && <HostTag />} wins
           </p>
         )}
@@ -102,7 +102,7 @@ export function Results({ conn, view }: { conn: Connection; view: ResultsGameVie
                   {MEDALS[i] ?? i + 1}
                 </span>
                 <span class={s.dot}>
-                  <Swatch as="i" colour={p?.colour} />
+                  <Swatch as="i" type={SwatchType.PLAYER} colour={p?.colour} />
                 </span>
                 <span class={s.name}>
                   <span class={s.nameText}>{p?.name ?? "?"}</span>
@@ -210,7 +210,7 @@ function RoundList({ rounds, standings, byId, you, best }: RoundsProps & { best:
                 data-testid={resultsTestIds.roundWinner}
                 title={`Won by ${winners.map((p) => p?.name ?? "?").join(", ")}`}
               >
-                <Swatch as="i" colour={first.colour} />
+                <Swatch as="i" type={SwatchType.PLAYER} colour={first.colour} />
                 <span class={s.winnerName}>{first.name}</span>
                 {winners.length > 1 && <span class={s.tied}>+{winners.length - 1}</span>}
                 <b>{Math.round(best[r]!)}</b>
@@ -257,7 +257,7 @@ function ScoreTable({
               const p = byId.get(st.playerId)
               return (
                 <th key={st.playerId} scope="col" class={st.playerId === you ? s.you : undefined} title={p?.name}>
-                  <Swatch as="i" colour={p?.colour} class={s.headSwatch} />
+                  <Swatch as="i" type={SwatchType.PLAYER} colour={p?.colour} class={s.headSwatch} />
                   <span class={s.playerName} data-testid={resultsTestIds.playerName}>
                     {p?.name ?? "?"}
                   </span>

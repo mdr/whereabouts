@@ -38,7 +38,7 @@ import { DevDrawer } from "../ui/dev/DevDrawer"
 import { ConnectionDev } from "../ui/connection/ConnectionDev"
 import { PaintDev } from "../ui/map/PaintTools"
 import { Icon } from "../ui/icons"
-import { HostTag, RankArrow, Swatch } from "../ui/players/PlayerList"
+import { HostTag, RankArrow, Swatch, SwatchType } from "../ui/players/PlayerList"
 import { EndGameButton } from "../ui/players/HostControls"
 import { TakeSeatButton } from "../ui/players/TakeSeat"
 import { kickRequest, useConfirm } from "../ui/ConfirmDialog"
@@ -157,7 +157,7 @@ export function Reveal({
                     onClick={() => setSelected(row.pick)}
                     data-testid={revealTestIds.everyoneRow}
                   >
-                    <Swatch everyone />
+                    <Swatch type={SwatchType.EVERYONE} />
                     <span class={pl.name}>Everyone</span>
                   </li>
                 ) : row.type === ShownRowType.HIDE_PAINT ? (
@@ -297,7 +297,7 @@ function RevealRow({
       data-testid={revealTestIds.playerRow}
       data-player={p.name}
     >
-      <Swatch colour={p.colour} />
+      <Swatch type={SwatchType.PLAYER} colour={p.colour} />
       <span class={pl.name}>
         <span class={pl.nameText} data-testid={revealTestIds.playerName}>
           {p.name}

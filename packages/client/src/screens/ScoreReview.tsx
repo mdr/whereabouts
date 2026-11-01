@@ -25,7 +25,7 @@ import { Card } from "../ui/Card"
 import { Answer, CardPlace, QuestionCard } from "../ui/round/QuestionCard"
 import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../ui/map/Hud"
 import { ScoreCard } from "../ui/round/Round"
-import { Swatch } from "../ui/players/PlayerList"
+import { Swatch, SwatchType } from "../ui/players/PlayerList"
 import { cx } from "../ui/cx"
 import kit from "../ui/kit.module.css"
 import pl from "../ui/players/Players.module.css"
@@ -224,7 +224,7 @@ function Review({ outlines }: { outlines: Outlines }) {
                   onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(i as 0 | 1)}
                   onPointerLeave={(e) => e.pointerType === "mouse" && setHovered(undefined)}
                 >
-                  <Swatch css={PAIR_COLOURS[i]} />
+                  <Swatch type={SwatchType.CSS} css={PAIR_COLOURS[i]!} />
                   <span class={pl.name}>{name}</span>
                   <span class={pl.roundScore} data-testid={scoreReviewTestIds.pairScore}>
                     {Math.round(scores[i]!)}
