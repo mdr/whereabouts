@@ -4,7 +4,7 @@ import { mapViewTestIds } from "../../../src/ui/map/MapView/MapViewTestIds.ts"
 import { hudBottomTestIds } from "../../../src/ui/map/Hud/HudTestIds.ts"
 import { questionCardTestIds } from "../../../src/ui/round/question/QuestionCard/QuestionCardTestIds.ts"
 import { playersPanelTestIds } from "../../../src/ui/players/PlayersPanel/PlayersPanelTestIds.ts"
-import { isUsable, until } from "../support.ts"
+import { isUsable, paceGesture, until } from "../support.ts"
 import type { Ms, Px } from "@whereabouts/shared/units"
 
 /** A spot on the map, as fractions of its width and height from the top left. */
@@ -64,7 +64,7 @@ export class MapPanel {
     await mouse.down()
     for (let i = 1; i <= steps; i++) {
       await mouse.move(x + (distance * i) / steps, y + Math.sin(i) * 4)
-      if (hold) await this.#page.waitForTimeout(hold / steps)
+      if (hold) await paceGesture(this.#page, hold / steps)
     }
     await mouse.up()
   }
@@ -113,7 +113,7 @@ export class MapPanel {
     await this.#touch("touchStart", [{ x, y }])
     for (let i = 1; i <= 8; i++) {
       await this.#touch("touchMove", [{ x: x + i * 8, y: y + i * 4 }])
-      await this.#page.waitForTimeout(30)
+      await paceGesture(this.#page, 30)
     }
     await this.#touch("touchEnd", [])
   }
@@ -122,7 +122,7 @@ export class MapPanel {
   async pinchOut(at: MapSpot): Promise<void> {
     const { x, y } = await this.#point(at)
     await this.#touch("touchStart", [{ x: x - 50, y }])
-    await this.#page.waitForTimeout(30)
+    await paceGesture(this.#page, 30)
     await this.#touch("touchStart", [
       { x: x - 50, y },
       { x: x + 50, y }
@@ -132,7 +132,7 @@ export class MapPanel {
         { x: x - 50 - i * 8, y },
         { x: x + 50 + i * 8, y }
       ])
-      await this.#page.waitForTimeout(30)
+      await paceGesture(this.#page, 30)
     }
     await this.#touch("touchEnd", [])
   }

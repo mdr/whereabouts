@@ -32,7 +32,7 @@ test("the host starts the game from VR in the lobby, and round 1's menu shows th
     lobby === VrViewType.LOBBY && lobbyTable?.rows.length === 2,
     `the lobby opens VR, listing the players (${JSON.stringify(lobbyTable?.rows.map((row) => row.name))})`
   )
-  await aliceLobby.pause(1500)
+  await headset.settle()
   await aliceLobby.screenshot(shot(`vrmp-0-lobby.png`))
   await pressMenu(headset, can, "act0")
   await aliceLobby.waitForGameToStart()
@@ -161,14 +161,14 @@ test("painting in VR turns Pass into Done, which locks the guess in until Keep e
     return { cells, selected: row.selected === true }
   }
   const alone = await pick("Alice (you)", (count) => count > 0 && count < everyone)
-  await aliceRound.pause(500)
+  await headset.settle()
   await aliceRound.screenshot(shot(`vrmp-2a-alone.png`))
   check(alone.selected, `pointing at Alice's row shows her paint alone (${alone.cells} of ${everyone} cells)`)
   const hidden = await pick("Hide paint", (count) => count === 0)
   check(hidden.selected, "Hide paint hides all paint")
   const back = await pick("Everyone", (count) => count === everyone)
   check(back.selected, "Everyone brings it all back")
-  await aliceRound.pause(1500)
+  await headset.settle()
   await aliceRound.screenshot(shot(`vrmp-2-reveal.png`))
 })
 
@@ -241,6 +241,6 @@ test("from the reveal, the host readies and brings round 2 with Next round, then
     (scale) => scale < 1.01
   )
   check(zoomedOut < 1.01, `leaving the answer zooms the globe back out (${zoomedOut.toFixed(2)})`)
-  await aliceRound.pause(1500)
+  await headset.settle()
   await aliceRound.screenshot(shot(`vrmp-3-standings.png`))
 })

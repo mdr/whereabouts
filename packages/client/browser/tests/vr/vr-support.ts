@@ -6,6 +6,7 @@ import type { Screen } from "../../pages/Screen.ts"
 import { until } from "../../pages/support.ts"
 import type { Tab } from "../../pages/Tab.ts"
 import { newTab } from "../support.ts"
+import { Hand } from "../../../src/vr/hands/hand.ts"
 import type { Vec3 } from "../../../src/vr/probe.ts"
 
 /** A new tab in an emulated headset. `initScript` runs in the page, so it can't use variables from outside it. */
@@ -49,11 +50,11 @@ export const spray = async (
   // The menu lays out late; a ray on it mid-stroke ends the stroke, and the spray becomes two undo steps.
   await headset.panels.menuButton("done")
   await headset.controllers.pointRight(can, centre)
-  await screen.pause(300)
+  await headset.aimedAt(Hand.RIGHT)
   await headset.controllers.rightTrigger(1)
   for (let i = 0; i < 10; i++) {
     await headset.controllers.pointRight(can, [centre[0] + 0.01 * i, centre[1], centre[2]])
-    await screen.pause(100)
+    await headset.frames(2)
   }
   if (screenshot) await screen.screenshot(screenshot)
   const droplets = await headset.scene.particles()

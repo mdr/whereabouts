@@ -4,7 +4,7 @@ import { test } from "@playwright/test"
 import { Hand } from "../../../src/vr/hands/hand.ts"
 import { WristButton } from "../../../src/vr/wrist/wrist-button.ts"
 import { hintTestIds } from "../../../src/ui/round/Hint/HintTestIds.ts"
-import { until } from "../../pages/support.ts"
+import { holdUntil, stillTrueFor, until } from "../../pages/support.ts"
 import { check, shot } from "../support.ts"
 import { vrPractice, vrPracticePainted } from "./vr-states.ts"
 import { closeAllTabs, spray } from "./vr-support.ts"
@@ -34,22 +34,25 @@ test("spraying paints the globe, the left hand's eraser rubs paint out, and undo
     `with the moon to the globe's scale (${moon?.distance.toFixed(1)} and ${moon?.radius.toFixed(3)} of its radius)`
   )
   check(!(await headset.scene.controllersShown()), "while painting, the controllers themselves are hidden")
-  await round.pause(300)
+  await headset.settle()
   await round.screenshot(shot(`vr-3-sprayed.png`))
 
   // The left hand holds an eraser: its trigger rubs paint out where the right
   // hand painted. Undo puts it back.
   await headset.controllers.pointRight(can, centre)
-  await round.pause(300)
-  const painted = (await headset.scene.target(Hand.RIGHT))!
+  const painted = await headset.aimedAt(Hand.RIGHT)
   await headset.controllers.point(Hand.LEFT, [can[0] - 0.3, can[1], can[2]], painted)
-  await round.pause(300)
-  await headset.controllers.trigger(Hand.LEFT, 1)
-  await round.pause(1500)
-  await headset.controllers.trigger(Hand.LEFT, 0)
-  await round.pause(300)
-  const erased = await round.map.yourPaintCells()
+  await headset.aimedAt(Hand.LEFT)
+  const erased = await holdUntil(
+    "the eraser to rub paint out",
+    () => headset.controllers.trigger(Hand.LEFT, 1),
+    () => round.map.yourPaintCells(),
+    (cells) => cells < after,
+    () => headset.controllers.trigger(Hand.LEFT, 0)
+  )
   check(erased < after, `the left hand erases (${after} -> ${erased} cells)`)
+  // A frame must see the release for the stroke to end, so that undo takes it back whole.
+  await headset.frames(3)
   await round.paintTools.undoWithKeyboard()
   await until(
     "the erasing undone",
@@ -66,10 +69,13 @@ test("spraying paints the globe, the left hand's eraser rubs paint out, and undo
   const length = Math.hypot(...toward)
   const rubTip = painted.map((component, i) => component - (toward[i]! / length) * -0.04) as Vec3
   await headset.controllers.point(Hand.LEFT, rubTip, painted)
-  await round.pause(1500)
+  await headset.frames(5)
   await headset.controllers.point(Hand.LEFT, rubFrom, painted)
-  await round.pause(300)
-  const rubbed = await headset.scene.paintMass()
+  const rubbed = await until(
+    "the eraser to rub paint out",
+    () => headset.scene.paintMass(),
+    (mass) => mass < unrubbed * 0.995
+  )
   check(
     rubbed < unrubbed * 0.995,
     `rubbing the eraser on the globe rubs paint out (${unrubbed.toFixed(1)} -> ${rubbed.toFixed(1)} in all)`
@@ -84,13 +90,19 @@ test("spraying paints the globe, the left hand's eraser rubs paint out, and undo
   const ungripped = await headset.scene.paintMass()
   await headset.controllers.grip(Hand.LEFT, 1)
   await headset.controllers.point(Hand.LEFT, rubTip, painted)
-  await round.pause(1500)
+  await headset.frames(5)
   await headset.controllers.point(Hand.LEFT, rubFrom, painted)
+  await stillTrueFor(
+    "the paint mass while gripping",
+    1_500,
+    () => headset.scene.paintMass(),
+    (mass) => mass === ungripped
+  )
   // Held still before letting go: a release straight after the move would
   // fling the globe if no frame came between, and leave it spinning.
   await headset.frames(5)
   await headset.controllers.grip(Hand.LEFT, 0)
-  await round.pause(300)
+  await headset.settle()
   const gripped = await headset.scene.paintMass()
   check(
     gripped === ungripped,
@@ -115,7 +127,7 @@ test("turning the left palm up opens the wrist menu, whose buttons clear, hint a
     ),
     "turning the left palm up opens the wrist menu"
   )
-  await round.pause(800)
+  await headset.settle()
   const press = async (id: Parameters<typeof headset.panels.wristButton>[0]) => {
     await headset.controllers.press(can, await headset.panels.wristButton(id))
   }
@@ -168,7 +180,7 @@ test("gripping turns the globe, and the thumbstick zooms in until the map shows 
     (count) => count === 0
   )
   await headset.controllers.pointRight([centre[0] + 0.2, centre[1], centre[2] + 0.1], centre)
-  await round.pause(200)
+  await headset.frames(3)
   // The globe turns between frames that both see the grip held: hold each
   // pose for a few frames.
   await headset.controllers.rightGrip(1)
@@ -179,7 +191,7 @@ test("gripping turns the globe, and the thumbstick zooms in until the map shows 
   }
   await headset.frames(5)
   await headset.controllers.rightGrip(0)
-  await round.pause(1000)
+  await headset.settle()
   await round.screenshot(shot(`vr-4-spun.png`))
   await spray(headset, round, { centre, can })
   const second = await round.map.yourPaintCellIds()
@@ -191,21 +203,20 @@ test("gripping turns the globe, and the thumbstick zooms in until the map shows 
 
   // Zoom in with the thumbstick: the page's map comes in over the globe for detail.
   check(!(await headset.scene.globeDetailShown()), "the whole globe shows no map over it")
-  await headset.controllers.rightStick(0, -1)
-  await round.pause(1800)
-  await headset.controllers.rightStick(0, 0)
-  const detailed = await until(
+  const detailed = await holdUntil(
     "the map over the zoomed globe",
+    () => headset.controllers.rightStick(0, -1),
     () => headset.scene.globeDetailShown(),
     (on) => on,
+    () => headset.controllers.rightStick(0, 0),
     30_000
   )
   check(detailed, "zooming in brings the map over the globe")
   const gap = await headset.scene.panelGap()
   check(gap > -0.005, `the panels stay clear of the zoomed globe (gap ${gap.toFixed(3)} rad)`)
-  await round.pause(500)
+  await headset.settle()
   await round.screenshot(shot(`vr-5-zoomed.png`))
   await headset.controllers.pointRight(can, centre)
-  await round.pause(500)
+  await headset.settle()
   await round.screenshot(shot(`vr-6-zoomed-aim.png`))
 })

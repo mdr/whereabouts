@@ -3,7 +3,7 @@
 import { test } from "@playwright/test"
 import { vrButtonTestIds } from "../../../src/ui/VrButton/VrButtonTestIds.ts"
 import { VrViewType } from "../../../src/vr/view/view.ts"
-import { until } from "../../pages/support.ts"
+import { stillTrueFor, until } from "../../pages/support.ts"
 import { check, shot } from "../support.ts"
 import { headsetPractice } from "./vr-states.ts"
 import { closeAllTabs, enterVr, newHeadsetTab, poses, pressMenu } from "./vr-support.ts"
@@ -25,7 +25,7 @@ test("practice's VR button opens a headset session, and Leave VR ends it", async
     (await button.innerText()).includes("In VR"),
     `the VR button opens a headset session, loading for ${((Date.now() - pressed) / 1000).toFixed(1)} s`
   )
-  await round.pause(1500)
+  await headset.settle()
   await round.screenshot(shot(`vr-1-entered.png`))
   const startMenu = await headset.panels.menu()
   check(
@@ -42,7 +42,12 @@ test("practice's VR button opens a headset session, and Leave VR ends it", async
   )
   check(true, "Leave VR leaves it")
   const drawnOnLeaving = await headset.scenesDrawn()
-  await round.pause(500)
+  await stillTrueFor(
+    "the VR scene to stay undrawn",
+    500,
+    () => headset.scenesDrawn(),
+    (drawn) => drawn === drawnOnLeaving
+  )
   const drawnSince = (await headset.scenesDrawn()) - drawnOnLeaving
   check(drawnSince === 0, `and the VR scene is no longer drawn on the page (${drawnSince} frames in 0.5 s)`)
 })
@@ -74,7 +79,7 @@ test("VR from the home screen stays on into practice", async ({ browser }) => {
   )
   const offered = (await headset.panels.menu()).actions.map((action) => action.label).join(", ")
   check(homeView === VrViewType.LOBBY && offered === "Practise, Change topic", `the home screen opens VR (${offered})`)
-  await homePage.pause(1500)
+  await headset.settle()
   await homePage.screenshot(shot(`vr-12-home.png`))
   await pressMenu(headset, (await poses(headset)).can, "act0")
   const practising = await until(

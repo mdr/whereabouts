@@ -4,6 +4,7 @@ import { Controllers } from "./Controllers.ts"
 import { installEmulator } from "./emulator.ts"
 import { HeadsetPanels } from "./HeadsetPanels.ts"
 import { HeadsetScene } from "./HeadsetScene.ts"
+import type { Hand } from "../../../src/vr/hands/hand.ts"
 import { until } from "../support.ts"
 import { probe } from "./probe.ts"
 
@@ -46,6 +47,17 @@ export class Headset {
     })
   }
 
+  /** Where a hand's tool lands on the globe, once the frames drawn since it was aimed have caught up with the aim. */
+  async aimedAt(hand: Hand): Promise<Vec3> {
+    await this.frames(3)
+    const target = await until(
+      `the ${hand} hand to point at the globe`,
+      () => this.scene.target(hand),
+      (at) => at !== undefined
+    )
+    return target!
+  }
+
   /**
    * Until the scene has stopped changing: the globe still and its size,
    * panels and paint the same over five frames. For a screenshot that does
@@ -55,14 +67,19 @@ export class Headset {
     const look = () =>
       this.#page.evaluate(() => {
         const { frames, probe } = window.testHooks.vr!
-        const layout = JSON.stringify([
-          probe.globeScale,
-          probe.panelGap,
-          probe.menuShown,
-          probe.tableShown,
-          probe.shownPaintCells,
-          probe.viewType
-        ])
+        // Millimetres: a smoothed move never quite stops.
+        const layout = JSON.stringify(
+          [
+            probe.globeScale,
+            probe.panelGap,
+            probe.menuShown,
+            probe.tableShown,
+            probe.shownPaintCells,
+            probe.viewType,
+            probe.pictureHeld
+          ],
+          (_key, value: unknown) => (typeof value === "number" ? Math.round(value * 1000) : value)
+        )
         return { frames, layout, turning: probe.globeTurning }
       })
     let was = await look()

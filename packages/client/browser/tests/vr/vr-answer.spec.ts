@@ -65,9 +65,8 @@ test("Submit in VR shows the answer in the headset, and Next brings the next rou
     table?.rows.length === 1 && table.rows[0]!.total === String(score),
     `a score table beside the globe lists the round (${JSON.stringify(table?.rows)})`
   )
-  await round.pause(1000)
+  await headset.settle()
   await round.screenshot(shot(`vr-reveal.png`))
-  await round.pause(1500)
   await round.screenshot(shot(`vr-8-answer.png`))
   await tab.page.getByTestId(soloTestIds.nextButton).dispatchEvent("click")
   const nextRound = await until(
@@ -117,6 +116,6 @@ test("See your room swaps space for passthrough, the answer still showing", asyn
     "See your room swaps space for passthrough, the answer still showing"
   )
   check((await headset.scene.moon()) === undefined, "and the moon goes with space")
-  await round.pause(1500)
+  await headset.settle()
   await round.screenshot(shot(`vr-11d-passthrough.png`))
 })

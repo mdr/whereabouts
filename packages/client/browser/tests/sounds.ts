@@ -62,9 +62,13 @@ export const pageTime = (tab: Tab): Promise<number> => tab.page.evaluate(() => p
 /** The sounds recorded since the last call. */
 export const takeSounds = (tab: Tab): Promise<SoundEvent[]> => tab.page.evaluate(() => window.__audio.splice(0))
 
-/** The sounds recorded from now until `clip` has played, or the timeout. */
-export const takeSoundsUntilPlayed = async (tab: Tab, clip: string, timeout: Ms = 5_000): Promise<SoundEvent[]> => {
-  const events: SoundEvent[] = []
+/** Adds the sounds recorded since the last call to `events` until `clip` is among them, or the timeout. */
+export const collectUntilPlayed = async (
+  tab: Tab,
+  events: SoundEvent[],
+  clip: string,
+  timeout: Ms = 5_000
+): Promise<void> => {
   await until(
     `the ${clip} sound`,
     async () => {
@@ -74,7 +78,6 @@ export const takeSoundsUntilPlayed = async (tab: Tab, clip: string, timeout: Ms 
     (heard) => heard,
     timeout
   )
-  return events
 }
 
 export const played = (events: SoundEvent[], clip: string): boolean =>

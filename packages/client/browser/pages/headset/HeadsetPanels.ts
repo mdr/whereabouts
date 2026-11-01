@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test"
 import type { Vec3 } from "../../../src/vr/probe.ts"
 import type { WristButton } from "../../../src/vr/wrist/wrist-button.ts"
+import { nextPoll } from "../support.ts"
 import { probe } from "./probe.ts"
 
 /** What the headset's panels show, and where their buttons are: the menu, scores, board, picture and wrist. */
@@ -92,7 +93,7 @@ export class HeadsetPanels {
     }
     let was = await at()
     for (;;) {
-      await this.#page.waitForTimeout(100)
+      await nextPoll()
       const now = await at()
       if (now.turning) was = now
       else if (now.frame - was.frame >= 5) {
