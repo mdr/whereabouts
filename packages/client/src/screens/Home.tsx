@@ -4,7 +4,7 @@ import { nameHandoff, nameToJoin, savedName, soloMapDetail, soloTypes, watchHand
 import { navigate } from "../router"
 import { Icon } from "../ui/icons"
 import { MapDetailPicker } from "../ui/setup/MapDetailPicker"
-import { TogglePills } from "../ui/setup/Controls"
+import { TogglePills } from "../ui/setup/TogglePills"
 import { VrButton, useVrView } from "../ui/VrButton"
 import { VrViewType, type VrView } from "../vr/view/view"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"

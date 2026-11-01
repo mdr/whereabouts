@@ -1,5 +1,5 @@
 import { MAP_DETAILS, mixTotal, type GameView } from "@whereabouts/shared/protocol"
-import { describeMix } from "../../../ui/setup/MixEditor"
+import { describeMix } from "../../../ui/setup/describe-mix"
 
 /** The setup in a line, for a guest in the headset. */
 export function setupLine(view: GameView): string {

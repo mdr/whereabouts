@@ -6,17 +6,10 @@
 import { MAX_ROUNDS, mixTotal, type QuestionMix } from "@whereabouts/shared/protocol"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { QUESTION_TYPE_LOOKS, typeColour } from "../../question-types"
-import { Stepper } from "./Controls"
+import { Stepper } from "./Stepper"
 import { mixEditorTestIds } from "./MixEditorTestIds"
-import { cx } from "../cx"
+import { RoundStrip } from "./RoundStrip"
 import s from "./MixEditor.module.css"
-
-/** "4 landmarks · 1 flag": the types a game asks, in the host's order. */
-export function describeMix(mix: QuestionMix): string {
-  return QUESTION_TYPES.filter((t) => mix[t] > 0)
-    .map((t) => `${mix[t]} ${QUESTION_TYPE_LOOKS[t].unit[mix[t] === 1 ? 0 : 1]}`)
-    .join(" · ")
-}
 
 export function MixEditor({ mix, onChange }: { mix: QuestionMix; onChange: (mix: QuestionMix) => void }) {
   const rounds = mixTotal(mix)
@@ -46,30 +39,6 @@ export function MixEditor({ mix, onChange }: { mix: QuestionMix; onChange: (mix:
         })}
       </ul>
       <RoundStrip mix={mix} />
-    </div>
-  )
-}
-
-/**
- * One cell per round, coloured by type, with the total unless `total` is
- * false; `centred` in a tile. The real order is shuffled.
- */
-export function RoundStrip({ mix, total = true, centred }: { mix: QuestionMix; total?: boolean; centred?: boolean }) {
-  const rounds = mixTotal(mix)
-  return (
-    <div class={cx(s.strip, centred && s.centred)} data-testid={mixEditorTestIds.strip}>
-      <div class={s.cells} role="img" aria-label={describeMix(mix)}>
-        {QUESTION_TYPES.flatMap((t) =>
-          Array.from({ length: mix[t] }, (_, i) => (
-            <span key={`${t}${i}`} class={s.cell} style={typeColour(t)} data-testid={mixEditorTestIds.cell} />
-          ))
-        )}
-      </div>
-      {total && (
-        <span class={s.stripText}>
-          {rounds} {rounds === 1 ? "round" : "rounds"}, in a random order
-        </span>
-      )}
     </div>
   )
 }

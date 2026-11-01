@@ -16,9 +16,10 @@ import { roleSwitchTestIds } from "./invite/RoleSwitchTestIds"
 import { deviceSwitchesTestIds } from "./setup/DeviceSwitchesTestIds"
 import { setupSummaryTestIds } from "./setup/SetupSummaryTestIds"
 import { confirmDialogTestIds } from "../../ui/ConfirmDialogTestIds"
-import { pillsTestIds, stepperTestIds } from "../../ui/setup/ControlsTestIds"
+import { pillsTestIds } from "../../ui/setup/PillsTestIds"
+import { stepperTestIds } from "../../ui/setup/StepperTestIds"
 import { mapDetailPickerTestIds } from "../../ui/setup/MapDetailPickerTestIds"
-import { mixEditorTestIds } from "../../ui/setup/MixEditorTestIds"
+import { roundStripTestIds } from "../../ui/setup/RoundStripTestIds"
 import { playerListTestIds } from "../../ui/players/PlayerListTestIds"
 import setupSummary from "./setup/SetupSummary.module.css"
 import players from "../../ui/players/Players.module.css"
@@ -100,7 +101,7 @@ describe("Lobby setup", () => {
     expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, [QuestionType.FLAG]: 1 } })
     fireEvent.click(container.querySelector('[aria-label="Fewer landmarks"]')!)
     expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, [QuestionType.LANDMARK]: 2 } })
-    expect(inside(container).getAllByTestId(mixEditorTestIds.cell)).toHaveLength(5)
+    expect(inside(container).getAllByTestId(roundStripTestIds.cell)).toHaveLength(5)
     const picker = inside(container).getByTestId(mapDetailPickerTestIds.picker)
     const minimal = picker.querySelector('[aria-checked="true"]')!
     expect(minimal.textContent).toBe("Minimal")
@@ -116,7 +117,7 @@ describe("Lobby setup", () => {
     for (const id of [pillsTestIds.option, stepperTestIds.value, mapDetailPickerTestIds.picker])
       expect(inside(container).queryAllByTestId(id)).toHaveLength(0)
     const summary = inside(container).getByTestId(setupSummaryTestIds.summary)
-    expect(inside(summary).getAllByTestId(mixEditorTestIds.cell)).toHaveLength(5)
+    expect(inside(summary).getAllByTestId(roundStripTestIds.cell)).toHaveLength(5)
     const tiles = [...summary.children].map((t) => t.textContent)
     expect(tiles).toEqual([
       "5rounds",

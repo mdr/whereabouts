@@ -38,27 +38,3 @@
     font-size: 12px;
   }
 }
-
-.strip {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.cells {
-  display: flex;
-  gap: 3px;
-}
-.centred .cells {
-  justify-content: center;
-}
-.cell {
-  flex: 1;
-  max-width: 28px;
-  height: 14px;
-  border-radius: 3px;
-  background: var(--type);
-}
-.stripText {
-  color: var(--muted);
-  font-size: 12px;
-}
