@@ -11,7 +11,7 @@ const maxEntries = {
       Program(node) {
         const max = context.options[0] ?? 30
         const folder = dirname(context.filename)
-        const entries = readdirSync(folder).filter((e) => !e.startsWith("."))
+        const entries = readdirSync(folder).filter((e) => !e.startsWith(".") && e !== "node_modules")
         // Report once per folder, from its first code file.
         if (entries.filter((e) => CODE.test(e)).sort()[0] !== basename(context.filename)) return
         if (entries.length > max) {
