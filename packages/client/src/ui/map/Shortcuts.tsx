@@ -4,34 +4,15 @@
  * outside closes it. It lists the table in shortcuts.ts, which the keys'
  * handlers match against.
  */
-import { signal } from "@preact/signals"
+import { shortcutsOpen } from "./shortcuts-open"
 import { useEffect } from "preact/hooks"
 import { createPortal } from "preact/compat"
-import { Icon } from "../icons"
 import { isTyping } from "../../keyboard/keys"
 import { CLOSE, TOGGLE_LIST, listedShortcuts } from "../../keyboard/shortcuts"
 import { Card } from "../Card"
 import { shortcutsTestIds } from "./ShortcutsTestIds"
 import kit from "../kit.module.css"
 import s from "./Shortcuts.module.css"
-
-export const shortcutsOpen = signal(false)
-
-/** Toolbar button that opens the card; hidden where there is no keyboard (see CSS). */
-export function ShortcutsButton() {
-  return (
-    <button
-      class={s.button}
-      data-testid={shortcutsTestIds.button}
-      title="Keyboard shortcuts (?)"
-      aria-label="Keyboard shortcuts"
-      aria-expanded={shortcutsOpen.value}
-      onClick={() => (shortcutsOpen.value = !shortcutsOpen.value)}
-    >
-      <Icon name="keyboard" />
-    </button>
-  )
-}
 
 /** The card itself, plus the `?` and Escape keys. Mount once per painting screen. */
 export function Shortcuts({ practice = false }: { practice?: boolean }) {

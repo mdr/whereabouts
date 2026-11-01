@@ -1,8 +1,11 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from "vite-plus/test"
 import { fireEvent, render, screen } from "@testing-library/preact"
-import { Shortcuts, ShortcutsButton, shortcutsOpen } from "./Shortcuts"
+import { Shortcuts } from "./Shortcuts"
+import { ShortcutsButton } from "./ShortcutsButton"
+import { shortcutsOpen } from "./shortcuts-open"
 import { shortcutsTestIds } from "./ShortcutsTestIds"
+import { shortcutsButtonTestIds } from "./ShortcutsButtonTestIds"
 
 const card = () => screen.queryByTestId(shortcutsTestIds.card) ?? undefined
 const press = (key: string, target: Window | Element = window) => fireEvent.keyDown(target, { key, bubbles: true })
@@ -31,7 +34,7 @@ describe("Shortcuts", () => {
         <Shortcuts />
       </>
     )
-    fireEvent.click(screen.getByTestId(shortcutsTestIds.button))
+    fireEvent.click(screen.getByTestId(shortcutsButtonTestIds.button))
     expect(card()).not.toBeUndefined()
     fireEvent.click(card()!) // inside: stays
     expect(card()).not.toBeUndefined()

@@ -1,16 +1,3 @@
-@import "../../media.css";
-
-.button {
-  padding: 8px;
-}
-/* No keyboard to speak of on phones and touch-only tablets. */
-@media (--no-hover), (--phone) {
-  /* Doubled to outrank the toolbar's button layout. */
-  .button.button {
-    display: none;
-  }
-}
-
 /* A card over the map, lighter than a dialog. */
 .backdrop {
   composes: overlay from "../kit.module.css";
