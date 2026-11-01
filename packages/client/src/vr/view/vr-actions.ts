@@ -4,13 +4,14 @@
  * other players, who is picked by pointing at their row of the score table.
  */
 import { signal } from "@preact/signals"
+import type { PlayerId } from "@whereabouts/shared/ids"
 import { MAX_PLAYERS, type GameView, type PlayerView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../../net/net"
 import type { VrAction } from "./view"
 import type { VrTable } from "../scores/scores"
 
 /** The player the host last pointed at in the headset's table. */
-export const vrPicked = signal<string | undefined>(undefined)
+export const vrPicked = signal<PlayerId | undefined>(undefined)
 
 type Row = VrTable["rows"][number]
 
@@ -25,7 +26,7 @@ export function pickable(view: GameView, p: PlayerView): Pick<Row, "select" | "s
 export function hostActions(
   conn: Pick<Connection, "kick" | "makeHost">,
   view: GameView,
-  playerId: string | undefined
+  playerId: PlayerId | undefined
 ): VrAction[] {
   const p = view.you.isHost && playerId !== view.you.id ? view.players.find((x) => x.id === playerId) : undefined
   if (!p) return []

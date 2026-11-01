@@ -12,7 +12,15 @@ import {
   type RoundResultView,
   type YouView
 } from "@whereabouts/shared/protocol"
-import { NONE, revealOrder } from "./reveal"
+import {
+  RevealShownType,
+  SHOW_EVERYONE,
+  SHOW_NOBODY,
+  revealOrder,
+  showPlayer,
+  shownPlayerId,
+  type RevealShown
+} from "./reveal"
 
 /** Why you are not painting, or have stopped. */
 export enum RoundNote {
@@ -45,7 +53,7 @@ export enum ShownRowType {
 }
 
 /** A row of the reveal's list; picking it sets whose paint shows (revealShown) to `pick`. */
-export type ShownRow = { selected: boolean; pick: string | undefined } & (
+export type ShownRow = { selected: boolean; pick: RevealShown } & (
   | { type: ShownRowType.EVERYONE }
   | {
       type: ShownRowType.PLAYER
@@ -70,7 +78,7 @@ export interface RevealModel {
   rows: ShownRow[]
 }
 
-export function revealModel(view: GameView, reveal: RevealView, shown: string | undefined): RevealModel {
+export function revealModel(view: GameView, reveal: RevealView, shown: RevealShown): RevealModel {
   const ready = new Set(reveal.ready)
   const present = view.players.filter((p) => p.connected && !p.watching)
   const last = isLastReveal(reveal)
@@ -81,17 +89,21 @@ export function revealModel(view: GameView, reveal: RevealView, shown: string | 
     ready: view.you.watching ? undefined : { done: view.you.id !== undefined && ready.has(view.you.id) },
     next: view.you.isHost ? { label: last ? "Show final results" : "Next round" } : undefined,
     rows: [
-      { type: ShownRowType.EVERYONE, selected: shown === undefined, pick: undefined },
+      { type: ShownRowType.EVERYONE, selected: shown.type === RevealShownType.EVERYONE, pick: SHOW_EVERYONE },
       ...revealOrder(view.players, reveal.results).map(({ p, r }): ShownRow => ({
         type: ShownRowType.PLAYER,
         player: p,
         result: r,
         you: p.id === view.you.id,
         ready: ready.has(p.id),
-        selected: shown === p.id,
-        pick: shown === p.id ? undefined : p.id
+        selected: shownPlayerId(shown) === p.id,
+        pick: shownPlayerId(shown) === p.id ? SHOW_EVERYONE : showPlayer(p.id)
       })),
-      { type: ShownRowType.HIDE_PAINT, selected: shown === NONE, pick: shown === NONE ? undefined : NONE }
+      {
+        type: ShownRowType.HIDE_PAINT,
+        selected: shown.type === RevealShownType.NOBODY,
+        pick: shown.type === RevealShownType.NOBODY ? SHOW_EVERYONE : SHOW_NOBODY
+      }
     ]
   }
 }

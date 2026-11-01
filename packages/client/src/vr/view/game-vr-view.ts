@@ -16,7 +16,7 @@ import type { PaintController } from "../../paint/paint-controller"
 import { connectionText } from "../../ui/connection/ConnectionNote"
 import { navigate } from "../../router"
 import { canUnlock } from "../../round/editing"
-import { revealedFromView, revealShown, shownResults } from "../../round/reveal"
+import { revealedFromView, revealShown, shownPlayerId, shownResults } from "../../round/reveal"
 import {
   ShownRowType,
   canEndGame,
@@ -66,7 +66,7 @@ const you = (view: GameView) => view.players.find((p) => p.id === view.you.id)
 function moreActions(view: GameView, conn: Connection): VrAction[] {
   return [
     ...(view.you.watching ? [takeSeat(conn, view, "Play from the next question")] : []),
-    ...hostActions(conn, view, view.phase === Phase.REVEAL ? revealShown.value : vrPicked.value),
+    ...hostActions(conn, view, view.phase === Phase.REVEAL ? shownPlayerId(revealShown.value) : vrPicked.value),
     ...(canEndGame(view)
       ? [{ label: "End game", confirm: "Press again to end the game", press: () => conn.end() }]
       : []),

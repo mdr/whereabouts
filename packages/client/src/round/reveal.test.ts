@@ -3,7 +3,7 @@ import { describe, expect, it } from "vite-plus/test"
 import { h3Res } from "@whereabouts/shared/h3"
 import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
 import type { PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
-import { NONE, revealedFromView, revealOrder, shownResults } from "./reveal"
+import { SHOW_EVERYONE, SHOW_NOBODY, revealedFromView, revealOrder, showPlayer, shownResults } from "./reveal"
 import { makePlayer, makeQuestionView } from "../test-view"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
@@ -67,15 +67,15 @@ describe("shownResults", () => {
   const results = [result("alice", 700), result("bob", 250, false), result("cara", 500)]
 
   it("shows everyone who painted, leaving out passes", () => {
-    expect(shownResults(results, undefined).map((r) => r.playerId)).toEqual([idOf("alice"), idOf("cara")])
+    expect(shownResults(results, SHOW_EVERYONE).map((r) => r.playerId)).toEqual([idOf("alice"), idOf("cara")])
   })
 
   it("shows one player's paint alone", () => {
-    expect(shownResults(results, idOf("cara")).map((r) => r.playerId)).toEqual([idOf("cara")])
+    expect(shownResults(results, showPlayer(idOf("cara"))).map((r) => r.playerId)).toEqual([idOf("cara")])
   })
 
   it("shows nobody's when paint is hidden", () => {
-    expect(shownResults(results, NONE)).toEqual([])
+    expect(shownResults(results, SHOW_NOBODY)).toEqual([])
   })
 })
 

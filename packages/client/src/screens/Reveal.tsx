@@ -1,3 +1,4 @@
+import type { PlayerId } from "@whereabouts/shared/ids"
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import {
@@ -20,7 +21,14 @@ import kit from "../ui/kit.module.css"
 import pl from "../ui/players/Players.module.css"
 import { RevealCards } from "../ui/round/Round"
 import { frameReveal, showAnswer } from "../round/round"
-import { revealedFromView, revealShown, shownResults } from "../round/reveal"
+import {
+  SHOW_EVERYONE,
+  revealedFromView,
+  revealShown,
+  showPlayer,
+  shownResults,
+  type RevealShown
+} from "../round/reveal"
 import { ShownRowType, canEndGame, revealModel } from "../round/round-model"
 import { WAITING_FOR_OTHERS, readyCountText, roundScoreText } from "../round/round-words"
 import { ConnectionNote } from "../ui/connection/ConnectionNote"
@@ -57,12 +65,12 @@ export function Reveal({
   const paint = usePaint()
   const byId = new Map(view.players.map((p) => [p.id, p]))
   const selected = revealShown.value
-  const setSelected = (s: string | undefined) => (revealShown.value = s)
+  const setSelected = (s: RevealShown) => (revealShown.value = s)
   /** A player row under the mouse: their paint alone, until the mouse moves off. */
-  const [hovered, setHovered] = useState<string | undefined>(undefined)
+  const [hovered, setHovered] = useState<PlayerId | undefined>(undefined)
   useEffect(
     () => () => {
-      revealShown.value = undefined
+      revealShown.value = SHOW_EVERYONE
     },
     []
   )
@@ -91,7 +99,7 @@ export function Reveal({
 
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
-  const show = (shown: string | undefined) =>
+  const show = (shown: RevealShown) =>
     paint.showColoured(paintsOf(shownResults(reveal.results, shown), view.players).flatMap((p) => p.features))
   useEffect(() => {
     frameReveal(paint.gameMap, reveal.question, answer, show(selected))
@@ -99,7 +107,7 @@ export function Reveal({
   // Not framed: the map would jump about as the mouse crosses the rows.
   useEffect(() => {
     if (hovered === undefined) return
-    show(hovered)
+    show(showPlayer(hovered))
     return () => show(selected)
   }, [hovered, selected, reveal.index])
   useEffect(() => setHovered(undefined), [reveal.index])

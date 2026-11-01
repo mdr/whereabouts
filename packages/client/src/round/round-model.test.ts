@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { playerId, playerName } from "@whereabouts/shared/ids"
-import { NONE } from "./reveal"
+import { SHOW_EVERYONE, SHOW_NOBODY, showPlayer, type RevealShown } from "./reveal"
 import { RoundNote, ShownRowType, canEndGame, revealModel, roundNote, type ShownRow } from "./round-model"
 import { makePlayer, makeResult, makeGuessingView, makeReveal, makeRevealView } from "../test-view"
 
@@ -34,8 +34,11 @@ describe("canEndGame", () => {
 
 describe("revealModel", () => {
   const players = [alice, bob, sam]
-  const model = (over: Parameters<typeof makeRevealView>[0] = {}, reveal = makeReveal(), shown?: string) =>
-    revealModel(makeRevealView({ players, ...over }), reveal, shown)
+  const model = (
+    over: Parameters<typeof makeRevealView>[0] = {},
+    reveal = makeReveal(),
+    shown: RevealShown = SHOW_EVERYONE
+  ) => revealModel(makeRevealView({ players, ...over }), reveal, shown)
   const names = (rows: ShownRow[]) => rows.map((r) => (r.type === ShownRowType.PLAYER ? r.player.name : r.type))
 
   it("lists Everyone, the players by this round's score, then Hide paint", () => {
@@ -53,15 +56,15 @@ describe("revealModel", () => {
   })
 
   it("selects whose paint shows, and picking the selected row again shows everyone", () => {
-    const pick = (shown: string | undefined) => model({}, makeReveal(), shown).rows.map((r) => [r.selected, r.pick])
-    expect(pick(undefined)).toEqual([
-      [true, undefined],
-      [false, alice.id],
-      [false, bob.id],
-      [false, NONE]
+    const pick = (shown: RevealShown) => model({}, makeReveal(), shown).rows.map((r) => [r.selected, r.pick])
+    expect(pick(SHOW_EVERYONE)).toEqual([
+      [true, SHOW_EVERYONE],
+      [false, showPlayer(alice.id)],
+      [false, showPlayer(bob.id)],
+      [false, SHOW_NOBODY]
     ])
-    expect(pick(bob.id)[2]).toEqual([true, undefined])
-    expect(pick(NONE)[3]).toEqual([true, undefined])
+    expect(pick(showPlayer(bob.id))[2]).toEqual([true, SHOW_EVERYONE])
+    expect(pick(SHOW_NOBODY)[3]).toEqual([true, SHOW_EVERYONE])
   })
 
   it("counts who is ready among the players here, leaving out watchers and anyone away", () => {

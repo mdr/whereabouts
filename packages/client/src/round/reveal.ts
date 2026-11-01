@@ -3,6 +3,7 @@
  * headset (game-vr-view.ts) alike.
  */
 import { signal } from "@preact/signals"
+import type { PlayerId } from "@whereabouts/shared/ids"
 import type { PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
 import type { Outline } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"
@@ -17,15 +18,47 @@ export function revealedFromView(reveal: RevealView, outline: Outline | undefine
   }
 }
 
-/** Selection meaning "show nobody's paint", alongside undefined (everyone) and a player id. */
-export const NONE = "none"
+export enum RevealShownType {
+  EVERYONE = "EVERYONE",
+  NOBODY = "NOBODY",
+  PLAYER = "PLAYER"
+}
+
+export interface EveryoneShown {
+  type: RevealShownType.EVERYONE
+}
+
+export interface NobodyShown {
+  type: RevealShownType.NOBODY
+}
+
+export interface PlayerShown {
+  type: RevealShownType.PLAYER
+  id: PlayerId
+}
 
 /** Whose paint the reveal shows. */
-export const revealShown = signal<string | undefined>(undefined)
+export type RevealShown = EveryoneShown | NobodyShown | PlayerShown
+
+export const SHOW_EVERYONE: EveryoneShown = { type: RevealShownType.EVERYONE }
+export const SHOW_NOBODY: NobodyShown = { type: RevealShownType.NOBODY }
+export const showPlayer = (id: PlayerId): PlayerShown => ({ type: RevealShownType.PLAYER, id })
+
+export const revealShown = signal<RevealShown>(SHOW_EVERYONE)
+
+export const shownPlayerId = (shown: RevealShown): PlayerId | undefined =>
+  shown.type === RevealShownType.PLAYER ? shown.id : undefined
 
 /** The results whose paint to show, best first. */
-export function shownResults(results: RoundResultView[], shown: string | undefined): RoundResultView[] {
-  return shown === NONE ? [] : results.filter((r) => r.paint && (shown === undefined || r.playerId === shown))
+export function shownResults(results: RoundResultView[], shown: RevealShown): RoundResultView[] {
+  switch (shown.type) {
+    case RevealShownType.EVERYONE:
+      return results.filter((r) => r.paint)
+    case RevealShownType.NOBODY:
+      return []
+    case RevealShownType.PLAYER:
+      return results.filter((r) => r.paint && r.playerId === shown.id)
+  }
 }
 
 /**
