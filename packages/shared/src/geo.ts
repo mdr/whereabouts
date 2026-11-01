@@ -1,4 +1,4 @@
-import type { Degrees, Km, SquareKm } from "./units.ts"
+import type { Degrees, Km, Radians, SquareKm } from "./units.ts"
 
 /** Mean sphere. */
 export const EARTH_RADIUS: Km = 6371.0
@@ -22,14 +22,22 @@ export type Box = [west: Degrees, south: Degrees, east: Degrees, north: Degrees]
 /** 3D position on the Earth sphere. */
 export type Xyz = readonly [x: Km, y: Km, z: Km]
 
+export function toRadians(d: Degrees): Radians {
+  return (d * Math.PI) / 180
+}
+
+export function toDegrees(r: Radians): Degrees {
+  return (r * 180) / Math.PI
+}
+
 /** Degrees of arc along a great circle that span `km` on the ground. */
 export function kmToDegrees(km: Km): Degrees {
   return km / ((EARTH_RADIUS * Math.PI) / 180)
 }
 
 export function toXyz({ lat, lon }: LatLon): Xyz {
-  const la = (lat * Math.PI) / 180
-  const lo = (lon * Math.PI) / 180
+  const la = toRadians(lat)
+  const lo = toRadians(lon)
   const c = Math.cos(la)
   return [EARTH_RADIUS * c * Math.cos(lo), EARTH_RADIUS * c * Math.sin(lo), EARTH_RADIUS * Math.sin(la)]
 }
@@ -58,14 +66,14 @@ export function greatCircleDistance(a: LatLon, b: LatLon): Km {
 /** The point on the sphere in the direction of `v` (any length). */
 export function fromXyz(v: Xyz): LatLon {
   const r = Math.hypot(v[0], v[1], v[2])
-  return { lat: (Math.asin(v[2] / r) * 180) / Math.PI, lon: (Math.atan2(v[1], v[0]) * 180) / Math.PI }
+  return { lat: toDegrees(Math.asin(v[2] / r)), lon: toDegrees(Math.atan2(v[1], v[0])) }
 }
 
 /** Initial bearing from `a` to `b`, clockwise from north. */
 export function bearing(a: LatLon, b: LatLon): Degrees {
-  const r = Math.PI / 180
-  const dLon = (b.lon - a.lon) * r
-  const y = Math.sin(dLon) * Math.cos(b.lat * r)
-  const x = Math.cos(a.lat * r) * Math.sin(b.lat * r) - Math.sin(a.lat * r) * Math.cos(b.lat * r) * Math.cos(dLon)
-  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360
+  const dLon = toRadians(b.lon - a.lon)
+  const [latA, latB] = [toRadians(a.lat), toRadians(b.lat)]
+  const y = Math.sin(dLon) * Math.cos(latB)
+  const x = Math.cos(latA) * Math.sin(latB) - Math.sin(latA) * Math.cos(latB) * Math.cos(dLon)
+  return (toDegrees(Math.atan2(y, x)) + 360) % 360
 }

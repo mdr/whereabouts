@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test"
 import type { Tab } from "./Tab.ts"
-import type { Px } from "@whereabouts/shared/units"
+import type { Ms, Px } from "@whereabouts/shared/units"
 
 export interface Fit {
   viewportWidth: Px
@@ -24,7 +24,7 @@ export abstract class Screen {
   }
 
   /** Wait a while, for something that should not happen. */
-  async pause(ms: number): Promise<void> {
+  async pause(ms: Ms): Promise<void> {
     await this.page.waitForTimeout(ms)
   }
 

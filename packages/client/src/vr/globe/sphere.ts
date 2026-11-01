@@ -4,22 +4,22 @@
  * -Z, the north pole on +Y.
  */
 import { Vector3 } from "three"
-import type { LatLon } from "@whereabouts/shared/geo"
-
-const RAD = Math.PI / 180
+import { toDegrees, toRadians, type LatLon } from "@whereabouts/shared/geo"
+import type { Metres } from "@whereabouts/shared/units"
 
 export function latLonToLocal({ lat, lon }: LatLon, out = new Vector3()): Vector3 {
-  const c = Math.cos(lat * RAD)
-  return out.set(c * Math.cos(lon * RAD), Math.sin(lat * RAD), -c * Math.sin(lon * RAD))
+  const [la, lo] = [toRadians(lat), toRadians(lon)]
+  const c = Math.cos(la)
+  return out.set(c * Math.cos(lo), Math.sin(la), -c * Math.sin(lo))
 }
 
 export function localToLatLon(v: Vector3): LatLon {
   const n = v.length()
-  return { lat: Math.asin(Math.max(-1, Math.min(1, v.y / n))) / RAD, lon: Math.atan2(-v.z, v.x) / RAD }
+  return { lat: toDegrees(Math.asin(Math.max(-1, Math.min(1, v.y / n)))), lon: toDegrees(Math.atan2(-v.z, v.x)) }
 }
 
 /** Distance along a ray to where it first meets a sphere, or undefined if it misses or starts inside. */
-export function raySphere(origin: Vector3, dir: Vector3, centre: Vector3, radius: number): number | undefined {
+export function raySphere(origin: Vector3, dir: Vector3, centre: Vector3, radius: Metres): Metres | undefined {
   const ox = origin.x - centre.x
   const oy = origin.y - centre.y
   const oz = origin.z - centre.z

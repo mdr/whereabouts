@@ -10,6 +10,7 @@ import { HandTool, TRIGGER_DEAD } from "../spray/spray"
 import { nextTool, offeredTool } from "../spray/spray-rules"
 import { PairedStroke, strokeTool, type Strokes } from "../spray/stroke"
 import type { VrRound } from "../view/view"
+import type { Seconds } from "@whereabouts/shared/units"
 
 export class Hands {
   readonly tools: Record<Hand, HandTool>
@@ -83,7 +84,7 @@ export class Hands {
   }
 
   /** Not painting: tools away, droplets still settle. */
-  rest(now: number): void {
+  rest(now: Seconds): void {
     for (const h of HANDS) {
       this.tools[h].hide()
       this.tools[h].settle(now)
@@ -91,7 +92,7 @@ export class Hands {
   }
 
   /** One frame of painting; true if either hand sprayed. Ends the stroke when neither did. */
-  paint(now: number, globe: Globe, paint: VrRound["paint"], onMenu: boolean, wristOpen: boolean): boolean {
+  paint(now: Seconds, globe: Globe, paint: VrRound["paint"], onMenu: boolean, wristOpen: boolean): boolean {
     const pads = this.world.input.xr.gamepads
     this.cycleTools(paint.fillable.value)
     const triggers = this.triggers(wristOpen)

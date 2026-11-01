@@ -2,6 +2,7 @@
 import { Vector3 } from "three"
 import type { H3Cell } from "@whereabouts/shared/h3"
 import type { LatLon } from "@whereabouts/shared/geo"
+import type { Radians } from "@whereabouts/shared/units"
 import type { PaintLayer } from "@whereabouts/shared/paint/paint"
 import { latLonToLocal, localToLatLon } from "./globe/sphere"
 import type { VrReveal, VrRound } from "./view/view"
@@ -10,7 +11,7 @@ import type { VrReveal, VrRound } from "./view/view"
  * Where the reveal turns the globe to, and how wide round it to show: the
  * answer and every guess's paint.
  */
-export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: number } {
+export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: Radians } {
   const answerPoints = [latLonToLocal(reveal.focus)]
   const { answer } = reveal
   if ("outline" in answer)

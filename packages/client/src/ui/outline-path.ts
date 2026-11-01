@@ -1,4 +1,4 @@
-import type { LatLon, LonLat } from "@whereabouts/shared/geo"
+import { toRadians, type LatLon, type LonLat } from "@whereabouts/shared/geo"
 import type { Outline } from "@whereabouts/shared/questions"
 import type { Degrees, Px } from "@whereabouts/shared/units"
 
@@ -10,7 +10,7 @@ import type { Degrees, Px } from "@whereabouts/shared/units"
  * a thumbnail. Points closer than half a pixel are dropped.
  */
 export function outlinePath(outline: Outline, centre: LatLon, width: Px, height: Px, pad: Px = 3): string {
-  const k = Math.cos((centre.lat * Math.PI) / 180)
+  const k = Math.cos(toRadians(centre.lat))
   const project = ([lon, lat]: LonLat): Projected => [(((lon - centre.lon + 540) % 360) - 180) * k, 0 - lat]
   const rings = outline.flat()
   const box = boundsOf(rings.flat().map(project))

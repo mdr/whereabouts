@@ -5,6 +5,7 @@
 import { BufferAttribute, BufferGeometry, Color, SRGBColorSpace, Vector3 } from "three"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal } from "./sphere"
+import type { Metres } from "@whereabouts/shared/units"
 
 const c = new Color()
 const p = new Vector3()
@@ -34,7 +35,7 @@ function rampColour(theme: Theme, v: number, out: Color): number {
 export function paintGeometry(
   paint: GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: string }>,
   theme: Theme,
-  radius: number,
+  radius: Metres,
   colour?: string
 ): BufferGeometry {
   const rings = paint.features.map((f) => {

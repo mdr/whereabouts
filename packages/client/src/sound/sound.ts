@@ -32,9 +32,9 @@ import applauseUrl from "../assets/sounds/applause.mp3"
 import { soundOn } from "../settings/settings"
 import type { Ms, Seconds } from "@whereabouts/shared/units"
 
-type Slices = readonly (readonly [start: number, length: number])[]
+type Slices = readonly (readonly [start: Seconds, length: Seconds])[]
 
-/** A recording of separate stretches ([start, length] in seconds) chained at random while a stroke is held. */
+/** A recording of separate stretches ([start, length]) chained at random while a stroke is held. */
 interface Loop {
   slices: Slices
   volume: number
@@ -129,7 +129,7 @@ class SoundEngine {
   private buffers: Partial<Record<Clip, AudioBuffer>> = {}
   private loading = false
   private failedAt = -Infinity
-  private stroke: { loop: LoopName; voices: Voice[]; nextAt: number; last: number; timer: number } | undefined =
+  private stroke: { loop: LoopName; voices: Voice[]; nextAt: Seconds; last: number; timer: number } | undefined =
     undefined
   private ticking: Voice | undefined = undefined
   private pendingCountdown: number | undefined = undefined
@@ -233,7 +233,7 @@ class SoundEngine {
     for (const v of stroke.voices) this.fadeOut(v, RELEASE)
   }
 
-  private fadeOut(v: Voice, seconds: number): void {
+  private fadeOut(v: Voice, seconds: Seconds): void {
     const ctx = this.ctx
     if (!ctx) return
     const t = ctx.currentTime
@@ -314,7 +314,7 @@ class SoundEngine {
   }
 
   /** A mallet tone: a sine with two quickly decaying overtones. */
-  private mallet(freq: number, at: number): void {
+  private mallet(freq: number, at: Seconds): void {
     const ctx = this.ctx!
     for (const [mult, amp, decay] of [
       [1, 1, 0.9],

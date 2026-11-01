@@ -51,13 +51,13 @@ import {
   showsTerrain,
   type ShownDetail
 } from "./shown-detail"
-import type { Degrees, Km, Metres, Px } from "@whereabouts/shared/units"
+import type { Degrees, Km, Metres, Px, Zoom } from "@whereabouts/shared/units"
 
 setWorkerUrl(mapWorkerUrl)
 
 export const STYLE_URL = "https://tiles.openfreemap.org/styles/positron"
 const WORLD_CENTER: LonLat = [10, 25]
-const WORLD_ZOOM = 1.6
+const WORLD_ZOOM: Zoom = 1.6
 /** The phone layout's width, and where its reveal sheet starts, as a share of the screen's height (media.css --phone, Hud.module.css). */
 const PHONE = "(max-width: 640px)"
 const SHEET_TOP = 0.5
@@ -75,7 +75,7 @@ const REVEAL_BORDER_OPACITY = ["interpolate", ["linear"], ["zoom"], 1, 0.55, 2.5
 const PLACE_LABELS = ["label_other", "label_village", "label_town", "label_state", "label_city", "label_city_capital"]
 
 /** The flat map's zoom that shows the whole world on a map `width` px wide. */
-export function flatWorldZoom(width: Px): number {
+export function flatWorldZoom(width: Px): Zoom {
   return matchMedia(PHONE).matches ? Math.min(WORLD_ZOOM, Math.log2(width / WORLD_PX_Z0)) : WORLD_ZOOM
 }
 
@@ -458,7 +458,7 @@ export class GameMap {
   }
 
   /** The zoom of the whole-world view. On a phone the flat map fits the world's width to the screen. */
-  private worldZoom(lat = WORLD_CENTER[1]): number {
+  private worldZoom(lat: Degrees = WORLD_CENTER[1]): Zoom {
     const el = this.map.getContainer()
     if (!this.globe) return flatWorldZoom(el.clientWidth)
     const zoom = globeWorldZoom(el.clientWidth, el.clientHeight, this.map.getVerticalFieldOfView(), lat)

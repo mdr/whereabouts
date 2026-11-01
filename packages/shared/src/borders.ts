@@ -15,7 +15,7 @@
  * otherwise all be Italy's. Where two such circles overlap, the nearer
  * answer wins.
  */
-import { greatCircleDistance, type Box, type LatLon, type Ring } from "./geo.ts"
+import { greatCircleDistance, toRadians, type Box, type LatLon, type Ring } from "./geo.ts"
 import { answerCentre, type FlagQuestion } from "./questions.ts"
 import { flagCode, type FlagCode } from "./ids.ts"
 import type { PaintCell } from "./paint/paint.ts"
@@ -202,7 +202,7 @@ function inside({ f, rings }: Country): LatLon {
       const lat = s + ((n - s) * (j + 0.5)) / (GRID + 1)
       if (!inRing(ring, lon, lat)) continue
       // Nearest vertex, east-west distances shrunk towards the poles.
-      const k = Math.cos((lat * Math.PI) / 180)
+      const k = Math.cos(toRadians(lat))
       let d = Infinity
       for (let v = 0; v < ring.length; v += 2) d = Math.min(d, Math.hypot((ring[v]! - lon) * k, ring[v + 1]! - lat))
       if (d > bestD) [best, bestD] = [{ lat, lon }, d]

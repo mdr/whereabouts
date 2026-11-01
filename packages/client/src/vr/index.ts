@@ -101,7 +101,7 @@ export class Vr {
   private paintsKey = ""
   private placed = false
   private paintDirty = true
-  private lastPaintDraw = 0
+  private lastPaintDraw: Seconds = 0
   private stopPaintWatch: (() => void) | undefined = undefined
   private readonly globe: Globe
   private readonly detail: DetailPatch
@@ -343,7 +343,7 @@ export class Vr {
     this.view = undefined
   }
 
-  private frame(dt: number, now: number): void {
+  private frame(dt: Seconds, now: Seconds): void {
     this.frames++
     this.menu.tick(now)
     this.hands.showControllers(this.painting === undefined)
@@ -389,7 +389,7 @@ export class Vr {
     this.placed = true
   }
 
-  private updateScenery(dt: number, now: number, head: Vector3): void {
+  private updateScenery(dt: Seconds, now: Seconds, head: Vector3): void {
     const zoomed = this.globe.scale >= DETAIL_SCALE
     this.detail.update(
       now,
@@ -408,7 +408,7 @@ export class Vr {
     this.hands.showBeams(pointing ? this.globe : undefined)
   }
 
-  private redrawPaint(round: VrRound, now: number): void {
+  private redrawPaint(round: VrRound, now: Seconds): void {
     const paints = this.view?.type === VrViewType.REVEAL ? this.view.reveal.paints : undefined
     const paint = paints ? colouredPaint(paints) : round.paint.layer.toGeoJSON()
     this.globe.showPaint(paintGeometry(paint, THEME, PAINT_RADIUS, paints ? undefined : round.colour))

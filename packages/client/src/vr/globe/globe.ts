@@ -27,27 +27,28 @@ import type { LatLon } from "@whereabouts/shared/geo"
 import { latLonToLocal, localToLatLon } from "./sphere"
 import { buildStand } from "../hands/models"
 import { HANDS, Hand } from "../hands/hand"
-import type { Metres, Seconds } from "@whereabouts/shared/units"
+import type { Metres, Radians, Seconds } from "@whereabouts/shared/units"
 
-const RADIUS = 0.22
+const RADIUS: Metres = 0.22
 /**
  * Just above the land, so neither fights it for depth; the paint on top.
  * However far it zooms, each stays the same real height above it.
  */
-const BORDERS_RADIUS = RADIUS * 1.0005
-export const DETAIL_RADIUS = RADIUS * 1.0015
-export const HINT_RADIUS = RADIUS * 1.002
-export const PAINT_RADIUS = RADIUS * 1.003
+const BORDERS_RADIUS: Metres = RADIUS * 1.0005
+export const DETAIL_RADIUS: Metres = RADIUS * 1.0015
+export const HINT_RADIUS: Metres = RADIUS * 1.002
+export const PAINT_RADIUS: Metres = RADIUS * 1.003
 /** A pointed-at flag's country, over the paint. */
-export const OUTLINE_RADIUS = RADIUS * 1.0035
-export const ANSWER_RADIUS = RADIUS * 1.004
-export const PIN_RADIUS = RADIUS * 1.001
+export const OUTLINE_RADIUS: Metres = RADIUS * 1.0035
+export const ANSWER_RADIUS: Metres = RADIUS * 1.004
+export const PIN_RADIUS: Metres = RADIUS * 1.001
 const MIN_SCALE = 1
 const MAX_SCALE = 200
 /** How quickly a flung globe slows, per second. */
 const SPIN_DECAY = 1.5
 /** As far as it tilts either way: a pole faces the player. */
-const MAX_TILT = Math.PI / 2
+const MAX_TILT: Radians = Math.PI / 2
+const MIN_TILT: Radians = 0 - MAX_TILT
 const STICK_DEAD = 0.15
 /** How long the globe takes to turn a place to face the player. */
 const TURN: Seconds = 0.8
@@ -62,7 +63,7 @@ const v = new Vector3()
 const w = new Vector3()
 
 /** An angle the short way round, in (-π, π]. */
-const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
+const wrap = (a: Radians): Radians => Math.atan2(Math.sin(a), Math.cos(a))
 
 const stickActive = (stick: { x: number; y: number }) =>
   Math.abs(stick.x) > STICK_DEAD || Math.abs(stick.y) > STICK_DEAD
@@ -71,8 +72,8 @@ const smoothstep = (t: number) => t * t * (3 - 2 * t)
 
 /** How the globe is turned: spun about its poles, then tilted. */
 interface Turn {
-  spin: number
-  tilt: number
+  spin: Radians
+  tilt: Radians
 }
 
 export class Globe {
@@ -100,14 +101,14 @@ export class Globe {
   private readonly base = new Quaternion()
   private readonly turned: Turn = { spin: 0, tilt: 0 }
   /** Radians per second of each, while flung. */
-  private readonly rate: Turn = { spin: 0, tilt: 0 }
+  private readonly rate = { spin: 0, tilt: 0 }
   /** Each grabbing hand's last offset from the centre. */
   private readonly held: Partial<Record<Hand, Vector3>> = {}
   /** Two hands' gesture: how far apart they started, the zoom then, and the place between them. */
   private pair: { length: number; scale: number; spot: Vector3 } | undefined = undefined
   private turning: { from: Turn; to: Turn; scale: number; toScale: number; t: number } | undefined = undefined
   /** What sits just above the land, and how far above it at the smallest. */
-  private readonly overlays: { obj: Object3D; radius: number }[] = []
+  private readonly overlays: { obj: Object3D; radius: Metres }[] = []
 
   constructor(anisotropy: number) {
     this.landCanvas.width = 4096
@@ -152,7 +153,7 @@ export class Globe {
     return this.turning !== undefined
   }
 
-  get radius(): number {
+  get radius(): Metres {
     return RADIUS * this.scale
   }
 
@@ -162,7 +163,7 @@ export class Globe {
   }
 
   /** Adds `obj`, drawn at `radius` on the smallest globe, to sit that high above the land at any zoom. */
-  overlay(obj: Object3D, radius: number): void {
+  overlay(obj: Object3D, radius: Metres): void {
     this.overlays.push({ obj, radius })
     this.group.add(obj)
   }
@@ -231,7 +232,7 @@ export class Globe {
    * Turn the globe until `at` faces `eye`, zoomed so a cap of `reach`
    * radians round it fits in view. Grabbing it or the thumbstick stops the turn.
    */
-  turnToward(at: LatLon, reach: number, eye: Vector3): void {
+  turnToward(at: LatLon, reach: Radians, eye: Vector3): void {
     const toScale =
       reach >= Math.PI / 2
         ? MIN_SCALE
@@ -244,8 +245,8 @@ export class Globe {
     const placeTilt = Math.asin(latLonToLocal(at).applyQuaternion(this.base).normalize().dot(UP))
     const eyeAt = this.angles(eye.clone().sub(centre), 0)
     const to = {
-      spin: this.turned.spin + wrap(-place.spin - this.turned.spin),
-      tilt: Math.max(-MAX_TILT, Math.min(MAX_TILT, eyeAt.tilt - placeTilt))
+      spin: this.turned.spin + wrap(-(place.spin + this.turned.spin)),
+      tilt: Math.max(MIN_TILT, Math.min(MAX_TILT, eyeAt.tilt - placeTilt))
     }
     this.turning = { from: { ...this.turned }, to, scale: this.scale, toScale, t: 0 }
     this.rate.spin = this.rate.tilt = 0
@@ -262,18 +263,18 @@ export class Globe {
    * that bring straight ahead round to it: the spin about the poles (undoing
    * `tilt` first) and the tilt.
    */
-  private angles(offset: Vector3, tilt: number): Turn {
+  private angles(offset: Vector3, tilt: Radians): Turn {
     const back = this.toward.clone().negate()
     const side = new Vector3().crossVectors(back, UP)
     const tilted = Math.atan2(offset.dot(UP), offset.dot(back))
-    const flat = offset.clone().applyAxisAngle(side, -tilt)
+    const flat = offset.clone().applyAxisAngle(side, 0 - tilt)
     // A spin about up carries straight ahead (back) towards -side.
     return { spin: Math.atan2(-flat.dot(side), flat.dot(back)), tilt: tilted }
   }
 
-  private turnBy(spin: number, tilt: number): void {
+  private turnBy(spin: Radians, tilt: Radians): void {
     this.turned.spin += spin
-    this.turned.tilt = Math.max(-MAX_TILT, Math.min(MAX_TILT, this.turned.tilt + tilt))
+    this.turned.tilt = Math.max(MIN_TILT, Math.min(MAX_TILT, this.turned.tilt + tilt))
     this.orient()
   }
 
@@ -286,7 +287,7 @@ export class Globe {
   }
 
   /** `grips`: where each hand holding the grip button is. `stick`: the thumbsticks, summed. */
-  update(dt: number, grips: Partial<Record<Hand, Vector3>>, stick: { x: number; y: number }): void {
+  update(dt: Seconds, grips: Partial<Record<Hand, Vector3>>, stick: { x: number; y: number }): void {
     const { [Hand.LEFT]: left, [Hand.RIGHT]: right } = grips
     if (left || right || stickActive(stick)) this.turning = undefined
     this.stepTurning(dt)
@@ -302,7 +303,7 @@ export class Globe {
     this.applyStick(dt, stick)
   }
 
-  private stepTurning(dt: number): void {
+  private stepTurning(dt: Seconds): void {
     const turning = this.turning
     if (!turning) return
     const { from, to, scale, toScale } = turning
@@ -332,7 +333,7 @@ export class Globe {
     this.rate.spin = this.rate.tilt = 0
   }
 
-  private drag(dt: number, hand: Hand, at: Vector3): void {
+  private drag(dt: Seconds, hand: Hand, at: Vector3): void {
     const prev = this.held[hand]
     if (prev && dt > 0) {
       const was = this.angles(prev, this.turned.tilt)
@@ -345,7 +346,7 @@ export class Globe {
     }
   }
 
-  private coast(dt: number): void {
+  private coast(dt: Seconds): void {
     if (Math.abs(this.rate.spin) + Math.abs(this.rate.tilt) > 1e-3) {
       this.turnBy(this.rate.spin * dt, this.rate.tilt * dt)
       const decay = Math.exp(-SPIN_DECAY * dt)
@@ -361,7 +362,7 @@ export class Globe {
     }
   }
 
-  private applyStick(dt: number, stick: { x: number; y: number }): void {
+  private applyStick(dt: Seconds, stick: { x: number; y: number }): void {
     if (Math.abs(stick.x) > STICK_DEAD) this.turnBy(stick.x * 1.5 * dt, 0)
     if (Math.abs(stick.y) > STICK_DEAD) this.setScale(this.group.scale.x * Math.exp(-stick.y * 1.2 * dt))
   }

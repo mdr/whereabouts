@@ -32,7 +32,7 @@ import {
   type H3Cell,
   type H3Res
 } from "../h3.ts"
-import { chordDistanceSq, toXyz, type LatLon, type Ring } from "../geo.ts"
+import { chordDistanceSq, toDegrees, toRadians, toXyz, type LatLon, type Ring } from "../geo.ts"
 import type { Degrees, Km, SquareKm } from "../units.ts"
 
 /** Cells across the brush radius a stamp aims for; sets the stamp resolution. */
@@ -417,15 +417,15 @@ export class PaintLayer {
       const m = this.cells.get(h)! * this.area(h)
       mass += m
       const { lat, lon } = this.centre(h)
-      const la = (lat * Math.PI) / 180,
-        lo = (lon * Math.PI) / 180
+      const la = toRadians(lat),
+        lo = toRadians(lon)
       sx += m * Math.cos(la) * Math.cos(lo)
       sy += m * Math.cos(la) * Math.sin(lo)
       sz += m * Math.sin(la)
     }
     const centroid = {
-      lat: (Math.atan2(sz, Math.hypot(sx, sy)) * 180) / Math.PI,
-      lon: (Math.atan2(sy, sx) * 180) / Math.PI
+      lat: toDegrees(Math.atan2(sz, Math.hypot(sx, sy))),
+      lon: toDegrees(Math.atan2(sy, sx))
     }
     return { fraction: mass / totalMass, cells: cells.length, centroid }
   }

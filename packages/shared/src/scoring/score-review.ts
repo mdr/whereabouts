@@ -9,7 +9,7 @@
  * more. Seeded by the set number, so everyone reviewing a set sees the same.
  */
 import { z } from "zod"
-import { EARTH_RADIUS, greatCircleDistance, type LatLon } from "../geo.ts"
+import { EARTH_RADIUS, greatCircleDistance, toDegrees, toRadians, type LatLon } from "../geo.ts"
 import { cellAreaKm2, cellToLatLng } from "../h3.ts"
 import { seededUnit } from "../hints.ts"
 import { PaintLayer, resolutionForTolerance } from "../paint/paint.ts"
@@ -310,13 +310,13 @@ function pointGuess(
 /** The point `distance` from `from` on a bearing clockwise from north. */
 function offset(from: LatLon, distance: Km, bearing: Degrees): LatLon {
   const d = distance / EARTH_RADIUS
-  const b = (bearing * Math.PI) / 180
-  const lat1 = (from.lat * Math.PI) / 180
-  const lon1 = (from.lon * Math.PI) / 180
+  const b = toRadians(bearing)
+  const lat1 = toRadians(from.lat)
+  const lon1 = toRadians(from.lon)
   const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(b))
   const lon2 =
     lon1 + Math.atan2(Math.sin(b) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2))
-  return { lat: (lat2 * 180) / Math.PI, lon: (((lon2 * 180) / Math.PI + 540) % 360) - 180 }
+  return { lat: toDegrees(lat2), lon: ((toDegrees(lon2) + 540) % 360) - 180 }
 }
 
 interface VerdictBase {

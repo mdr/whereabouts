@@ -8,8 +8,8 @@
  */
 import { Matrix4, Mesh, ShaderMaterial, SphereGeometry, SRGBColorSpace, TextureLoader, Vector3 } from "three"
 import url from "../assets/moon.jpg"
-import { EARTH_RADIUS } from "@whereabouts/shared/geo"
-import type { Seconds } from "@whereabouts/shared/units"
+import { EARTH_RADIUS, toRadians } from "@whereabouts/shared/geo"
+import type { Metres, Radians, Seconds } from "@whereabouts/shared/units"
 
 /** NASA's Moon fact sheet: mean radius 1737.4 km, mean distance 384,400 km. */
 const RADIUS_RATIO = 1737.4 / EARTH_RADIUS
@@ -17,7 +17,7 @@ const RADIUS_RATIO = 1737.4 / EARTH_RADIUS
 const DISTANCE_RATIO = 384_400 / EARTH_RADIUS / 8
 const ORBIT: Seconds = 300
 /** About the real orbit's tilt to the Earth's equator. */
-const INCLINATION = (23 * Math.PI) / 180
+const INCLINATION: Radians = toRadians(23)
 /** Where the sunlight comes from: across the room, a little above. */
 const SUN = new Vector3(1, 0.25, -0.4).normalize()
 
@@ -31,7 +31,7 @@ const basis = new Matrix4()
 
 export class Moon {
   readonly mesh: Mesh<SphereGeometry, ShaderMaterial>
-  private angle = 0
+  private angle: Radians = 0
 
   constructor() {
     const map = new TextureLoader().load(url)
@@ -63,8 +63,8 @@ export class Moon {
     )
   }
 
-  /** Round the globe at `centre`, of radius `radius` in metres, `dt` seconds on. */
-  update(dt: number, centre: Vector3, radius: number): void {
+  /** Round the globe at `centre`, of radius `radius`, `dt` on. */
+  update(dt: Seconds, centre: Vector3, radius: Metres): void {
     this.angle = (this.angle + (dt / ORBIT) * Math.PI * 2) % (Math.PI * 2)
     at.copy(start).applyAxisAngle(normal, this.angle)
     this.mesh.position.copy(centre).addScaledVector(at, radius * DISTANCE_RATIO)

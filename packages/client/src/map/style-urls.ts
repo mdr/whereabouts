@@ -4,6 +4,7 @@
  * zoom, and the tiles of the sources those layers draw from.
  */
 import type { LayerSpecification, StyleSpecification } from "maplibre-gl"
+import type { Zoom } from "@whereabouts/shared/units"
 
 export interface StyleFetches {
   /** Fetched as they are. */
@@ -12,7 +13,7 @@ export interface StyleFetches {
   tileJsons: string[]
 }
 
-export function styleFetches(style: StyleSpecification, zoom: number, pixelRatio: number): StyleFetches {
+export function styleFetches(style: StyleSpecification, zoom: Zoom, pixelRatio: number): StyleFetches {
   // A phone's whole world is below zoom 0, but its tiles are drawn at 0.
   const z = tileZoom(zoom)
   const shown = style.layers.filter((l) => (l.minzoom ?? 0) <= z && l.layout?.visibility !== "none")
@@ -36,7 +37,7 @@ export function styleFetches(style: StyleSpecification, zoom: number, pixelRatio
 }
 
 /** Every tile at the zoom MapLibre draws `zoom` with (512 px tiles: the zoom rounded down). */
-export function tileUrls(templates: string[], zoom: number): string[] {
+export function tileUrls(templates: string[], zoom: Zoom): string[] {
   const z = tileZoom(zoom)
   const n = 2 ** z
   const template = templates[0]
@@ -48,7 +49,7 @@ export function tileUrls(templates: string[], zoom: number): string[] {
   return urls
 }
 
-const tileZoom = (zoom: number): number => Math.max(0, Math.floor(zoom))
+const tileZoom = (zoom: Zoom): Zoom => Math.max(0, Math.floor(zoom))
 
 function sourceOf(layer: LayerSpecification): string | undefined {
   return "source" in layer && typeof layer.source === "string" ? layer.source : undefined

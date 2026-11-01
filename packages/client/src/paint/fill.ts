@@ -11,7 +11,7 @@ import type { Borders } from "@whereabouts/shared/borders"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { H3Cell, H3Res } from "@whereabouts/shared/h3"
 import { AnswerType, answerCentre, type FlagQuestion, type Outlines } from "@whereabouts/shared/questions"
-import { kmToDegrees, type LatLon, type MultiPolygon, type Ring } from "@whereabouts/shared/geo"
+import { kmToDegrees, toRadians, type LatLon, type MultiPolygon, type Ring } from "@whereabouts/shared/geo"
 import type { PaintController } from "./paint-controller"
 import { useBorders } from "../data/borders"
 import { useOutlines } from "../data/outlines"
@@ -82,7 +82,7 @@ export class CountryFiller {
 /** A ring of `km` around a point, [lon, lat], for outlining a speck of a country. */
 function circle({ lat, lon }: LatLon, km: Km): Ring {
   const dLat = kmToDegrees(km)
-  const dLon = dLat / Math.max(0.01, Math.cos((lat * Math.PI) / 180))
+  const dLon = dLat / Math.max(0.01, Math.cos(toRadians(lat)))
   const ring: Ring = []
   for (let i = 0; i <= 32; i++) {
     const a = (i / 32) * 2 * Math.PI

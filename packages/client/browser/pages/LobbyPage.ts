@@ -7,7 +7,7 @@ import { RoundPage } from "./RoundPage.ts"
 import { Screen } from "./Screen.ts"
 import { byTestIdWith, text, until } from "./support.ts"
 import type { Tab } from "./Tab.ts"
-import type { Ms } from "@whereabouts/shared/units"
+import type { Ms, Seconds } from "@whereabouts/shared/units"
 
 export interface SetupSummary {
   rounds: string
@@ -57,7 +57,7 @@ export class LobbyPage extends Screen {
     for (const other of QUESTION_TYPES) if (other !== type) await this.setQuestionCount(other, 0)
   }
 
-  async chooseSecondsPerRound(seconds: number): Promise<void> {
+  async chooseSecondsPerRound(seconds: Seconds): Promise<void> {
     await byTestIdWith(
       this.page.getByTestId(lobbyTestIds.secondsSetting),
       pillsTestIds.option,

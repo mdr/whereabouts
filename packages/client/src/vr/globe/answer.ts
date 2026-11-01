@@ -30,9 +30,9 @@ export class AnswerMarker {
   readonly group = new Group()
   private readonly pin = new Group()
   private readonly outline: LineSegments
-  private readonly radius: number
+  private readonly radius: Metres
 
-  constructor(theme: Theme, radius: number) {
+  constructor(theme: Theme, radius: Metres) {
     this.radius = radius
     const material = new MeshBasicMaterial({ color: theme.answer })
     const stalk = new Mesh(new CylinderGeometry(0.06, 0.02, 1, 12).translate(0, 0.5, 0), material)

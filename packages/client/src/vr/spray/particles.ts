@@ -3,7 +3,7 @@
  * the eraser. A fixed pool of points, the dead ones fully transparent.
  */
 import { BufferAttribute, BufferGeometry, CanvasTexture, Color, Points, PointsMaterial, Vector3 } from "three"
-import type { Seconds } from "@whereabouts/shared/units"
+import type { Metres, Seconds } from "@whereabouts/shared/units"
 
 const MAX = 800
 /** How fast droplets fly, in metres a second. */
@@ -30,7 +30,7 @@ function dot(): CanvasTexture {
 }
 
 /** A point within a ball of radius `r`. */
-function inBall(out: Vector3, r: number): Vector3 {
+function inBall(out: Vector3, r: Metres): Vector3 {
   do out.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1)
   while (out.lengthSq() > 1)
   return out.multiplyScalar(r)
@@ -71,7 +71,7 @@ export class SprayParticles {
   }
 
   /** Droplets from `from` to random points of the spot of radius `spot` round `to`. */
-  spray(dt: number, rate: number, from: Vector3, to: Vector3, spot: number, colour: string): void {
+  spray(dt: Seconds, rate: number, from: Vector3, to: Vector3, spot: Metres, colour: string): void {
     this.tint.set(colour)
     const flight = from.distanceTo(to) / DROPLET_SPEED
     this.emit(dt * rate, (i) => {
@@ -82,7 +82,7 @@ export class SprayParticles {
   }
 
   /** Pale crumbs off the surface at `at`, drifting out along `normal` and falling. */
-  crumbs(dt: number, rate: number, at: Vector3, normal: Vector3, spot: number): void {
+  crumbs(dt: Seconds, rate: number, at: Vector3, normal: Vector3, spot: Metres): void {
     this.tint.set("#f6d5dc")
     this.emit(dt * rate, (i) => {
       jitter.copy(at).add(inBall(new Vector3(), spot * 0.6))
@@ -100,7 +100,7 @@ export class SprayParticles {
     return n
   }
 
-  update(dt: number): void {
+  update(dt: Seconds): void {
     const p = this.position
     const vel = this.velocity
     for (let i = 0; i < MAX; i++) {

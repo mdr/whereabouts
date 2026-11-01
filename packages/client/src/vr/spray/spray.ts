@@ -20,7 +20,7 @@ import {
   Vector3,
   type Object3D
 } from "three"
-import type { LatLon } from "@whereabouts/shared/geo"
+import { toRadians, type LatLon } from "@whereabouts/shared/geo"
 import type { PaintController } from "../../paint/paint-controller"
 import type { Theme } from "../../map/themes"
 import type { Globe } from "../globe/globe"
@@ -29,13 +29,13 @@ import { SprayParticles } from "./particles"
 import { localToLatLon, raySphere } from "../globe/sphere"
 import { groundRadius, stampDue, type SprayTool } from "./spray-rules"
 import { Tool } from "../../paint/tool"
-import type { Metres } from "@whereabouts/shared/units"
+import type { Metres, Ms, Seconds } from "@whereabouts/shared/units"
 
 type Paintable = Pick<PaintController, "enabled" | "stamp" | "fillOutside">
 type Target = Pick<Globe, "centre" | "radius" | "group">
 
 /** Half the spray cone's angle: the spot's radius is this much of the can's distance. */
-const SPREAD = Math.tan((9 * Math.PI) / 180)
+const SPREAD = Math.tan(toRadians(9))
 /** Nearer than this, paint goes on at full strength; it thins with distance beyond. */
 const FULL_STRENGTH_RANGE: Metres = 0.3
 /** The eraser's tip, from the grip, and how wide a patch it rubs. */
@@ -54,7 +54,7 @@ const normal = new Vector3()
 const local = new Vector3()
 
 interface Pulsing {
-  pulse?(intensity: number, ms: number): Promise<boolean>
+  pulse?(intensity: number, ms: Ms): Promise<boolean>
 }
 
 export class HandTool {
@@ -67,7 +67,7 @@ export class HandTool {
   private readonly particles = new SprayParticles()
   /** The paint's colour, when a player has one of their own. */
   private colour: string | undefined = undefined
-  private lastNow: number | undefined = undefined
+  private lastNow: Seconds | undefined = undefined
   private readonly ray: Object3D
   private readonly grip: Object3D
   /** Whether the hand holds its tool: only while there is a round to paint. */
@@ -81,8 +81,8 @@ export class HandTool {
   )
   private readonly beamEnd = new Mesh(new SphereGeometry(0.004, 12, 8), new MeshBasicMaterial({ color: "#ffffff" }))
   private readonly theme: Theme
-  private stroke: { at: LatLon; t: number } | undefined = undefined
-  private lastPulse = 0
+  private stroke: { at: LatLon; t: Seconds } | undefined = undefined
+  private lastPulse: Seconds = 0
   private toolNow: SprayTool = Tool.PAINT
 
   constructor(grip: Object3D, ray: Object3D, scene: Object3D, theme: Theme) {
@@ -141,8 +141,8 @@ export class HandTool {
   }
 
   /** Moves the droplets already in the air on; returns the seconds since last time. */
-  settle(now: number): number {
-    const dt = this.lastNow === undefined ? 0 : Math.min(0.1, now - this.lastNow)
+  settle(now: Seconds): Seconds {
+    const dt: Seconds = this.lastNow === undefined ? 0 : Math.min(0.1, now - this.lastNow)
     this.lastNow = now
     this.particles.update(dt)
     return dt
@@ -201,7 +201,7 @@ export class HandTool {
    * whether it sprayed, for the caller to track the stroke across both hands.
    */
   update(
-    now: number,
+    now: Seconds,
     globe: Target,
     trigger: number,
     blocked: boolean,
@@ -257,12 +257,12 @@ export class HandTool {
 
   /** Rubs out under the eraser's tip, as hard as a full pull of the trigger. */
   private rub(
-    now: number,
+    now: Seconds,
     globe: Target,
     tip: Vector3,
     paint: Paintable,
     gamepad: Gamepad | undefined,
-    dt: number
+    dt: Seconds
   ): boolean {
     normal.copy(tip).sub(globe.centre).normalize()
     hit.copy(globe.centre).addScaledVector(normal, globe.radius)
@@ -277,7 +277,7 @@ export class HandTool {
   }
 
   /** Stamps overlap along a stroke, so each is a fraction, as on the map. */
-  private stamp(now: number, globe: Target, at3: Vector3, spotSize: Metres, strength: number, paint: Paintable): void {
+  private stamp(now: Seconds, globe: Target, at3: Vector3, spotSize: Metres, strength: number, paint: Paintable): void {
     const radius = groundRadius(spotSize, globe.radius)
     const at = localToLatLon(globe.group.worldToLocal(local.copy(at3)))
     if (stampDue(this.stroke, at, radius, now)) {
@@ -286,7 +286,7 @@ export class HandTool {
     }
   }
 
-  private pulse(now: number, intensity: number, gamepad: Gamepad | undefined): void {
+  private pulse(now: Seconds, intensity: number, gamepad: Gamepad | undefined): void {
     if (now - this.lastPulse <= 0.05) return
     const actuator = gamepad?.hapticActuators[0] as Pulsing | undefined
     void actuator?.pulse?.(intensity, 80)

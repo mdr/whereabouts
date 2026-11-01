@@ -14,6 +14,10 @@ export type SquareKm = Flavour<"SquareKm">
 /** Metres: in the headset's scene, or on the ground where map maths works in them. */
 export type Metres = Flavour<"Metres">
 export type Degrees = Flavour<"Degrees">
+/** Angles in radians. */
+export type Radians = Flavour<"Radians">
+/** A MapLibre zoom level: each step doubles the scale. */
+export type Zoom = Flavour<"Zoom">
 /** A length of time in milliseconds. */
 export type Ms = Flavour<"Ms">
 /** A moment, in epoch milliseconds as `Date.now()` gives. */

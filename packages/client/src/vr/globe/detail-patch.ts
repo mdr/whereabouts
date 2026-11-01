@@ -5,14 +5,14 @@
  * MapLibre draws on, so it is drawn here on demand with map.redraw().
  */
 import { BufferAttribute, BufferGeometry, CanvasTexture, Mesh, MeshBasicMaterial, SRGBColorSpace } from "three"
-import { greatCircleDistance, type LatLon } from "@whereabouts/shared/geo"
+import { greatCircleDistance, toDegrees, toRadians, type LatLon } from "@whereabouts/shared/geo"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { MapDetail } from "@whereabouts/shared/protocol"
 import { GameMap } from "../../map/map"
 import { RevealDetail } from "../../map/shown-detail"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal } from "./sphere"
-import type { Degrees, Km, Metres, Seconds } from "@whereabouts/shared/units"
+import type { Degrees, Km, Metres, Seconds, Zoom } from "@whereabouts/shared/units"
 
 const SIZE = 1024
 const PIXEL_RATIO = 2
@@ -22,27 +22,26 @@ const FADE = 0.12
 /** How often to look for the map having finished, while it waits for tiles. */
 const POLL: Seconds = 0.25
 const EQUATOR: Metres = 40_075_016.686
-const RAD = Math.PI / 180
 
-const mercY = (lat: Degrees) => Math.log(Math.tan(Math.PI / 4 + (lat * RAD) / 2))
-const mercLat = (y: number): Degrees => (2 * Math.atan(Math.exp(y)) - Math.PI / 2) / RAD
+const mercY = (lat: Degrees) => Math.log(Math.tan(Math.PI / 4 + toRadians(lat) / 2))
+const mercLat = (y: number): Degrees => toDegrees(2 * Math.atan(Math.exp(y)) - Math.PI / 2)
 
 export class DetailPatch {
   readonly mesh: Mesh<BufferGeometry, MeshBasicMaterial>
   private readonly gameMap: GameMap
   private readonly texture: CanvasTexture
-  private readonly radius: number
+  private readonly radius: Metres
   private ready = false
   /** The view asked of the map, whether or not it has finished drawing it. */
   private asked: { centre: LatLon; half: Km } | undefined = undefined
   /** Whether the globe shows the map's latest picture. */
   private shown = true
-  private lastPoll = 0
+  private lastPoll: Seconds = 0
   /** What setDetail and setHint were last asked, so asking again redraws nothing. */
   private detailKey = ""
   private hintKey = ""
 
-  constructor(theme: Theme, radius: number, anisotropy: number) {
+  constructor(theme: Theme, radius: Metres, anisotropy: number) {
     this.radius = radius
     const host = document.createElement("div")
     host.style.cssText = `position:fixed;left:0;top:0;width:${SIZE}px;height:${SIZE}px;visibility:hidden;pointer-events:none`
@@ -105,7 +104,7 @@ export class DetailPatch {
   }
 
   /** `half`: how far either side of `centre` to show; undefined hides the patch. */
-  update(now: number, centre: LatLon, half: Km | undefined): void {
+  update(now: Seconds, centre: LatLon, half: Km | undefined): void {
     const map = this.gameMap.map
     if (now - this.lastPoll < POLL) return
     this.lastPoll = now
@@ -125,7 +124,7 @@ export class DetailPatch {
       Math.abs(Math.log(half / this.asked.half)) > 0.2
     if (moved) {
       const lat = Math.max(-80, Math.min(80, centre.lat))
-      const zoom = Math.log2((EQUATOR * Math.cos(lat * RAD) * SIZE) / (512 * 2 * half * 1000))
+      const zoom: Zoom = Math.log2((EQUATOR * Math.cos(toRadians(lat)) * SIZE) / (512 * 2 * half * 1000))
       map.jumpTo({ center: [centre.lon, lat], zoom: Math.max(1, Math.min(15, zoom)) })
       this.asked = { centre, half }
       this.shown = false

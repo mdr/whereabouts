@@ -25,7 +25,7 @@ import type { FlatRing } from "@whereabouts/shared/borders"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { FLAG_ATLAS, atlasCell } from "../../flags/flag-atlas"
 import { latLonToLocal } from "./sphere"
-import type { Metres } from "@whereabouts/shared/units"
+import type { Metres, Radians } from "@whereabouts/shared/units"
 
 export interface VrFlagPin {
   flag: FlagCode
@@ -45,7 +45,7 @@ const HIGHLIGHT = 1.8
 const BORDER = "#ff40ff"
 /** How far off a flag a ray may pass and still point at it: metres, and radians beyond. */
 const POINT_REACH: Metres = 0.01
-const POINT_RAD = 0.015
+const POINT_RAD: Radians = 0.015
 
 const up = new Vector3(0, 1, 0)
 const v = new Vector3()

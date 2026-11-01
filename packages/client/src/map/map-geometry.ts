@@ -1,7 +1,7 @@
 import type { LngLatBoundsLike, PaddingOptions } from "maplibre-gl"
 import { HintAxis, type HintBand } from "@whereabouts/shared/hints"
-import { kmToDegrees, type Box, type LatLon, type Ring } from "@whereabouts/shared/geo"
-import type { Degrees, Km, Metres, Px } from "@whereabouts/shared/units"
+import { kmToDegrees, toRadians, type Box, type LatLon, type Ring } from "@whereabouts/shared/geo"
+import type { Degrees, Km, Metres, Px, Zoom } from "@whereabouts/shared/units"
 
 /** World circumference at the equator in metres, for metres-per-pixel maths. */
 const EQUATOR: Metres = 40075016.686
@@ -64,7 +64,7 @@ export function boxAround(features: GeoJSON.Feature[], box: Box): Box {
 /** Always at least two tolerances around the answer. */
 export function toleranceBox(answer: LatLon, tolerance: Km): Box {
   const dLat = kmToDegrees(2 * tolerance)
-  const dLon = dLat / Math.max(0.2, Math.cos((answer.lat * Math.PI) / 180))
+  const dLon = dLat / Math.max(0.2, Math.cos(toRadians(answer.lat)))
   return [answer.lon - dLon, answer.lat - dLat, answer.lon + dLon, answer.lat + dLat]
 }
 
@@ -81,8 +81,8 @@ export function offsetFor(p: Required<PaddingOptions>): [x: Px, y: Px] {
 }
 
 /** The ground length of one CSS pixel. */
-export function metresPerPixel(lat: Degrees, zoom: number): Metres {
-  return (EQUATOR * Math.cos((lat * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, zoom))
+export function metresPerPixel(lat: Degrees, zoom: Zoom): Metres {
+  return (EQUATOR * Math.cos(toRadians(lat))) / (WORLD_PX_Z0 * Math.pow(2, zoom))
 }
 
 /**
@@ -90,11 +90,11 @@ export function metresPerPixel(lat: Degrees, zoom: number): Metres {
  * perspective a sphere of radius R px, seen from f px away, shows a disc of
  * radius f tan(asin(R / (f + R))).
  */
-export function globeWorldZoom(width: Px, height: Px, fovDegrees: Degrees, lat: Degrees): number {
+export function globeWorldZoom(width: Px, height: Px, fovDegrees: Degrees, lat: Degrees): Zoom {
   const disc = GLOBE_FILL * Math.min(width, height)
-  const f = height / 2 / Math.tan((fovDegrees * Math.PI) / 360)
+  const f = height / 2 / Math.tan(toRadians(fovDegrees) / 2)
   const sin = disc / Math.hypot(f, disc)
   const radius = (f * sin) / (1 - sin)
-  const worldWidth = 2 * Math.PI * radius * Math.cos((lat * Math.PI) / 180)
+  const worldWidth = 2 * Math.PI * radius * Math.cos(toRadians(lat))
   return Math.log2(worldWidth / WORLD_PX_Z0)
 }

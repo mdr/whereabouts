@@ -1,22 +1,23 @@
 /** Keeping the panels beside the globe as the player sees it, however far it is zoomed. */
 import { Vector3, type Object3D } from "three"
+import type { Metres, Radians } from "@whereabouts/shared/units"
 
 /** The gap a panel keeps from the globe, in radians as seen from the player. */
-const PANEL_CLEAR = 0.04
+const PANEL_CLEAR: Radians = 0.04
 const UP = new Vector3(0, 1, 0)
 
 interface Seen {
   centre: Vector3
-  radius: number
+  radius: Metres
 }
 
 export class PanelClearance {
   /** Where the panels were placed, and from where. */
-  private homes: { obj: Object3D; at: Vector3; half: number }[] = []
+  private homes: { obj: Object3D; at: Vector3; half: Metres }[] = []
   private readonly eye = new Vector3()
 
   /** The panels just placed, seen from `eye`; `half` is half a panel's width. */
-  placed(eye: Vector3, panels: { obj: Object3D; half: number }[]): void {
+  placed(eye: Vector3, panels: { obj: Object3D; half: Metres }[]): void {
     this.eye.copy(eye)
     this.homes = panels.map(({ obj, half }) => ({ obj, at: obj.position.clone(), half }))
   }
@@ -42,7 +43,7 @@ export class PanelClearance {
   }
 
   /** The narrowest gap, in radians as the player sees it, between a panel and the globe. */
-  gap(globe: Seen): number {
+  gap(globe: Seen): Radians {
     const eye = this.eye
     const yaw = (p: Vector3) => Math.atan2(p.x - eye.x, p.z - eye.z)
     const flat = (p: Vector3) => Math.hypot(p.x - eye.x, p.z - eye.z)

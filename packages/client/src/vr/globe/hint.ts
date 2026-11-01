@@ -13,18 +13,19 @@ import {
 import type { HintBand } from "@whereabouts/shared/hints"
 import { latLonToLocal } from "./sphere"
 import { HintAxis } from "@whereabouts/shared/hints"
+import { toRadians } from "@whereabouts/shared/geo"
+import type { Metres } from "@whereabouts/shared/units"
 
-const RAD = Math.PI / 180
 const STEPS = 180
 
 export class HintMarker {
   readonly group = new Group()
-  private readonly radius: number
+  private readonly radius: Metres
   private readonly fill = new MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.1, depthWrite: false })
   private readonly edge = new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 })
   private shown: HintBand | undefined = undefined
 
-  constructor(radius: number) {
+  constructor(radius: Metres) {
     this.radius = radius
   }
 
@@ -43,13 +44,21 @@ export class HintMarker {
     // three's sphere lays longitude 0 at phi 180°, and theta runs down from the north pole.
     const geometry =
       band.axis === HintAxis.LATITUDE
-        ? new SphereGeometry(this.radius, 128, 16, 0, 2 * Math.PI, (90 - band.to) * RAD, (band.to - band.from) * RAD)
+        ? new SphereGeometry(
+            this.radius,
+            128,
+            16,
+            0,
+            2 * Math.PI,
+            toRadians(90 - band.to),
+            toRadians(band.to - band.from)
+          )
         : new SphereGeometry(
             this.radius,
             32,
             64,
-            (band.from + 180) * RAD,
-            ((band.to - band.from + 360) % 360 || 360) * RAD
+            toRadians(band.from + 180),
+            toRadians((band.to - band.from + 360) % 360 || 360)
           )
     const fill = new Mesh(geometry, this.fill)
     const points: number[] = []

@@ -12,6 +12,7 @@
 import type { LatLon } from "../geo.ts"
 import { flagCode, questionId, type FlagCode, type QuestionId } from "../ids.ts"
 import { AnswerType } from "../questions.ts"
+import type { Km } from "../units.ts"
 import type { AnswerParts } from "./regions.ts"
 import type { KernelId } from "./scoring.ts"
 
@@ -32,7 +33,7 @@ export interface ScoringCase {
     id: QuestionId
     label: string
     answer: LatLon
-    tolerance: number
+    tolerance: Km
     /** A flag round: the flag shown. */
     flag?: FlagCode
   }

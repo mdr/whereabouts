@@ -49,8 +49,8 @@ export class Menu {
   private doc: UIKitDocument | undefined = undefined
   private view: VrView | undefined = undefined
   /** An action pressed once, waiting for its confirming press until `until`. */
-  private armed: { action: VrAction; until: number } | undefined = undefined
-  private now = 0
+  private armed: { action: VrAction; until: Seconds } | undefined = undefined
+  private now: Seconds = 0
   /** What the menu last said, so it is set only when it changes. */
   private doneText = ""
   private clockText = ""
@@ -140,7 +140,7 @@ export class Menu {
     this.applyView()
   }
 
-  tick(now: number): void {
+  tick(now: Seconds): void {
     this.now = now
     if (this.armed && now > this.armed.until) {
       this.armed = undefined

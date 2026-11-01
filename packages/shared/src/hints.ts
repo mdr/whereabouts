@@ -4,7 +4,7 @@
  * painting a whole band scores little more than a pass would.
  */
 import { z } from "zod"
-import { kmToDegrees, type LatLon } from "./geo.ts"
+import { kmToDegrees, toRadians, type LatLon } from "./geo.ts"
 import { cellBoundaryLatLng, cellToLatLng, type H3Cell, type H3Res } from "./h3.ts"
 import { keepCells } from "./paint/land.ts"
 import type { Degrees, Km } from "./units.ts"
@@ -50,7 +50,7 @@ export function hintBand(answer: LatLon, tolerance: Km, axis: HintAxis, u: numbe
     const step = width < 5 ? 0.1 : 1
     return { axis, from: Math.max(-90, floorTo(from, step)), to: Math.min(90, ceilTo(from + width, step)) }
   }
-  const width = Math.min(span / Math.cos((answer.lat * Math.PI) / 180), MAX_LONGITUDE_SPAN)
+  const width = Math.min(span / Math.cos(toRadians(answer.lat)), MAX_LONGITUDE_SPAN)
   const from = answer.lon - at * width
   const step = width < 5 ? 0.1 : 1
   return { axis, from: wrap(floorTo(from, step)), to: wrap(ceilTo(from + width, step)) }

@@ -14,8 +14,8 @@ import {
   type H3Cell
 } from "@whereabouts/shared/h3"
 import { decodeRing, ringOf, type BordersData } from "@whereabouts/shared/borders"
-import type { Ring } from "@whereabouts/shared/geo"
-import type { Degrees } from "@whereabouts/shared/units"
+import { toRadians, type Ring } from "@whereabouts/shared/geo"
+import type { Degrees, Radians } from "@whereabouts/shared/units"
 import type { LandMaskData } from "@whereabouts/shared/paint/land"
 import { Vector3 } from "three"
 import { MAX_LAT } from "../../map/map-geometry"
@@ -40,8 +40,8 @@ function traceRing(ctx: CanvasRenderingContext2D, ring: Ring, w: number, h: numb
   }
 }
 
-/** Longest step along a cell's edge, radians; about a pixel of the land picture. */
-const EDGE_STEP = (0.1 * Math.PI) / 180
+/** Longest step along a cell's edge: about a pixel of the land picture. */
+const EDGE_STEP: Radians = toRadians(0.1)
 
 /**
  * A cell's outline, unwrapped across the antimeridian; undefined for one
