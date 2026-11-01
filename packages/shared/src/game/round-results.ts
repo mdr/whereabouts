@@ -26,7 +26,14 @@ export const scorePlayers = (
     seat.role.record.scores[index] = score
     seat.role.record.facts[index] = facts
     const hint = hints.get(seat.token)
-    results.push({ playerId: seat.id, score, guess, ...(hint ? { hint } : {}) })
+    results.push({
+      playerId: seat.id,
+      name: seat.name,
+      colour: seat.role.colour,
+      score,
+      guess,
+      ...(hint ? { hint } : {})
+    })
   }
   return results.sort((a, b) => b.score - a.score)
 }

@@ -149,6 +149,24 @@ describe("seats", () => {
     expect(bobAgain.closedFor).toBe(CloseReason.REMOVED)
   })
 
+  it("a player removed during a reveal still has their name and colour in its results", async () => {
+    const { alice, bob, bobId } = await server.aliceAndBob()
+    alice.send("start")
+    const round = await alice.until((view) => view.phase === Phase.GUESSING)
+    const at = answerCentre(askedIn(round).answer)
+    alice.sendPaint(paintAt(askedIn(round), at.lat, at.lon))
+    alice.send("lock")
+    bob.send("lock")
+    const revealing = await alice.until((view) => view.phase === Phase.REVEAL)
+    const bobSeat = revealing.players.find((player) => player.id === bobId)!
+
+    alice.send("kick", { playerId: bobId })
+    const after = await alice.untilLatest((view) => view.players.length === 1)
+    expect(viewIn(after, Phase.REVEAL).reveal.results).toContainEqual(
+      expect.objectContaining({ playerId: bobId, name: bobSeat.name, colour: bobSeat.colour })
+    )
+  })
+
   it("a second tab replaces the first, whose closing then leaves the seat alone", async () => {
     const { alice, bob, code } = await server.aliceAndBob()
     const bobTab2 = server.player("Bob")

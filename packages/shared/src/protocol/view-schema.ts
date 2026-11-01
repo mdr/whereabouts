@@ -97,6 +97,8 @@ const PlayingPlayerViewSchema = z.strictObject({
 
 const RoundResultViewSchema = z.strictObject({
   playerId: PlayerIdSchema,
+  name: PlayerNameSchema,
+  colour: PlayerColourSchema,
   score: PointsSchema,
   guess: z.discriminatedUnion("type", [
     z.strictObject({ type: z.literal(RoundGuessType.PASSED) }),

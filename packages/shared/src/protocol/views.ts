@@ -140,6 +140,9 @@ export type RoundGuess = PassedGuess | PaintedGuess
 
 export interface RoundResultView {
   playerId: PlayerId
+  /** As at the reveal, so the round stands on its own if the player is removed. */
+  name: PlayerName
+  colour: PlayerColour
   score: Points
   guess: RoundGuess
   /** The hint this player used on the round. */

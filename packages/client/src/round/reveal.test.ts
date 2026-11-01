@@ -1,5 +1,6 @@
 import type { Outline } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
+import { playerColour } from "@whereabouts/shared/colours"
 import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
 import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
@@ -14,6 +15,8 @@ const player = (name: string, rank: number): PlayingPlayerView =>
   makePlayer({ id: idOf(name), name: playerName(name), rank })
 const result = (name: string, score: number, painted = true): RoundResultView => ({
   playerId: idOf(name),
+  name: playerName(name),
+  colour: playerColour(NAMES.indexOf(name)),
   score,
   guess: painted ? makePainted() : { type: RoundGuessType.PASSED }
 })

@@ -55,7 +55,6 @@ export const Reveal = ({
   fact: Fact | undefined
 }) => {
   const paint = usePaint()
-  const byId = new Map(view.players.map((player) => [player.id, player]))
   const selected = revealShown.value
   const setSelected = (shown: RevealShown) => (revealShown.value = shown)
   /** A player row under the mouse: their paint alone, until the mouse moves off. */
@@ -96,9 +95,7 @@ export const Reveal = ({
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
   const show = (shown: RevealShown) =>
-    paint.showColoured(
-      paintsOf(shownResults(reveal.results, shown), view.players).flatMap((painted) => painted.features)
-    )
+    paint.showColoured(paintsOf(shownResults(reveal.results, shown)).flatMap((painted) => painted.features))
   useEffect(() => {
     frameReveal(paint.gameMap.camera, reveal.question, answer, show(selected))
   }, [selected, reveal.index, outline])
@@ -182,7 +179,7 @@ export const Reveal = ({
         </HudBottom>
       </Hud>
       <DevDrawer>
-        <RoundResultsDev results={reveal.results} byId={byId} />
+        <RoundResultsDev results={reveal.results} host={view.players.find((player) => player.isHost)?.id} />
         <PaintDev />
         <ConnectionDev conn={conn} view={view} />
       </DevDrawer>

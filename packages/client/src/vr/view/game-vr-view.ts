@@ -170,7 +170,7 @@ const gameReveal = (
     painted
   }
   return vrReveal(shown, revealedFromView(reveal, outline), score, borders, {
-    paints: { type: VrPaintsType.PLAYERS, paints: paintsOf(shownResults(reveal.results, whose), view.players) },
+    paints: { type: VrPaintsType.PLAYERS, paints: paintsOf(shownResults(reveal.results, whose)) },
     table: {
       title: `Round ${reveal.index + 1} of ${reveal.total}`,
       rows: model.rows.map((row) => shownRow(view, row)),

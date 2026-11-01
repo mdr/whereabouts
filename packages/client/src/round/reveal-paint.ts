@@ -2,7 +2,6 @@ import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import { colourCss, type CssColour } from "@whereabouts/shared/colours"
 import type { H3Resolution } from "@whereabouts/shared/h3"
 import { RoundGuessType, type PaintSubmission, type RoundResultView } from "@whereabouts/shared/protocol/views"
-import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 
 /** A player's paint at a reveal, in their colour, ready to draw. */
 export interface PlayerPaint {
@@ -34,10 +33,11 @@ const playerPaint = (resolution: H3Resolution, paint: PaintSubmission, colour: C
 }
 
 /** These results' paint in their players' colours, best last so it draws on top. */
-export const paintsOf = (results: RoundResultView[], players: PlayingPlayerView[]): PlayerPaint[] =>
-  [...results].reverse().flatMap((result) => {
-    const player = players.find((candidate) => candidate.id === result.playerId)
-    return player && result.guess.type === RoundGuessType.PAINTED
-      ? [playerPaint(result.guess.resolution, result.guess.paint, colourCss(player.colour))]
-      : []
-  })
+export const paintsOf = (results: RoundResultView[]): PlayerPaint[] =>
+  [...results]
+    .reverse()
+    .flatMap((result) =>
+      result.guess.type === RoundGuessType.PAINTED
+        ? [playerPaint(result.guess.resolution, result.guess.paint, colourCss(result.colour))]
+        : []
+    )

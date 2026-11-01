@@ -2,7 +2,8 @@ import { describe, expect, it } from "vite-plus/test"
 import { CATALOGUE } from "../catalogue/catalogue.ts"
 import { playedRound, questionPicture, questionView, revealOf } from "./question-views.ts"
 import { h3Resolution } from "../h3.ts"
-import { playerId } from "../ids.ts"
+import { playerColour } from "../colours.ts"
+import { playerId, playerName } from "../ids.ts"
 import { REVEAL_PHOTOS, revealPhoto } from "../catalogue/photos.ts"
 import { PictureType, RoundGuessType, flagShown, type RoundResultView } from "../protocol/views.ts"
 import {
@@ -102,6 +103,8 @@ describe("revealOf", () => {
     const results: RoundResultView[] = [
       {
         playerId: playerId("p1"),
+        name: playerName("Alice"),
+        colour: playerColour(0),
         score: 900,
         guess: {
           type: RoundGuessType.PAINTED,

@@ -154,6 +154,8 @@ export const makeReveal = (over: Partial<RevealView> = {}): RevealView => ({
 /** Alice's result, a pass unless the test says. */
 export const makeResult = (over: Partial<RoundResultView> = {}): RoundResultView => ({
   playerId: playerId("p1"),
+  name: playerName("Alice"),
+  colour: playerColour(0),
   score: 500,
   guess: { type: RoundGuessType.PASSED },
   ...over
