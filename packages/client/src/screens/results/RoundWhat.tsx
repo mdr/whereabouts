@@ -1,6 +1,6 @@
 import type { PlayedRound } from "@whereabouts/shared/protocol"
 import { QUESTION_TYPE_LOOKS, typeColour } from "../../question-types"
-import { SmallFlag } from "../../ui/pictures/Pictures"
+import { SmallFlag } from "../../ui/pictures/SmallFlag"
 import { cx } from "../../ui/cx"
 import { RoundPicture } from "./RoundPicture"
 import { roundWhatTestIds } from "./RoundWhatTestIds"

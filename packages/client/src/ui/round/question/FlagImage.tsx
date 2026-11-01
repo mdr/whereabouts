@@ -1,7 +1,7 @@
 import { useState } from "preact/hooks"
 import { flagRatio } from "../../../flags/flags"
 import { cx } from "../../cx"
-import { flagShape, useFlagUrl } from "../../pictures/Pictures"
+import { flagShape, useFlagUrl } from "../../pictures/flag-url"
 import { Lightbox, LightboxType, useEscape } from "../../pictures/Lightbox"
 import { EnlargeBadge } from "./EnlargeBadge"
 import { flagImageTestIds } from "./FlagImageTestIds"

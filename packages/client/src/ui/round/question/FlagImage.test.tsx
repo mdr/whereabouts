@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
 import { FlagImage } from "./FlagImage"
 import lb from "../../pictures/Lightbox.module.css"
-import pictures from "../../pictures/Pictures.module.css"
+import commonsCredit from "../../pictures/CommonsCredit.module.css"
 import flagImage from "./FlagImage.module.css"
 import type * as flags from "../../../flags/flags"
 
@@ -32,7 +32,7 @@ describe("flag frames", () => {
       fireEvent.click(button)
       expect(enlargedRatio(document.body.querySelector(`.${lb.lightbox!} img.${lb.flag!}`))).toBe(shape)
       // No credit while guessing: the Commons file is named for the country.
-      expect(document.body.querySelectorAll(`.${lb.lightbox!} .${pictures.credit!}`)).toHaveLength(0)
+      expect(document.body.querySelectorAll(`.${lb.lightbox!} .${commonsCredit.credit!}`)).toHaveLength(0)
       cleanup()
     }
   })

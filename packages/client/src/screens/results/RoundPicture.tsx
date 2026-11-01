@@ -5,7 +5,9 @@ import { useOutline } from "../../data/outlines"
 import { typeColour } from "../../question-types"
 import { Icon } from "../../ui/icons"
 import { outlinePath } from "../../ui/outline-path"
-import { SmallFlagButton, SmallPhoto, SmallPictureBox } from "../../ui/pictures/Pictures"
+import { SmallFlagButton } from "../../ui/pictures/SmallFlagButton"
+import { SmallPhoto } from "../../ui/pictures/SmallPhoto"
+import { SmallPictureBox } from "../../ui/pictures/SmallPictureBox"
 import s from "./RoundPicture.module.css"
 
 /** A shape round shows the shape painted; the rest, the question's photo or flag, else the reveal's photo. */

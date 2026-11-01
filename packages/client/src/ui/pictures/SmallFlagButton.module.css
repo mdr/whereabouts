@@ -1,0 +1,19 @@
+/* A flag in its own shape, as large as fits the picture's box. */
+button.flagPicture {
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+.flagPicture .flagShape {
+  width: min(100%, var(--picture-h) * var(--flag-ratio));
+  aspect-ratio: var(--flag-ratio);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--control-bg);
+  box-shadow: var(--picture-ring);
+}
+.flagPicture .flagShape:has(img) {
+  background: none;
+  box-shadow: none;
+  filter: var(--flag-edge);
+}

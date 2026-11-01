@@ -19,7 +19,7 @@ import scoreTable from "./ScoreTable.module.css"
 import roundList from "./RoundList.module.css"
 import roundWhat from "./RoundWhat.module.css"
 import roundPicture from "./RoundPicture.module.css"
-import pictures from "../../ui/pictures/Pictures.module.css"
+import pictures from "../../ui/pictures/SmallPicture.module.css"
 import { makePlayer, makeResultsView } from "../../test-view"
 
 const tid = (id: string) => `[data-testid="${id}"]`

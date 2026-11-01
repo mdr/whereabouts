@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render, waitFor } from "@testing-library/preact"
 import { QuestionImage } from "./QuestionImage"
 import lb from "../../pictures/Lightbox.module.css"
-import pictures from "../../pictures/Pictures.module.css"
+import commonsCredit from "../../pictures/CommonsCredit.module.css"
 import questionImage from "./QuestionImage.module.css"
 import enlargeBadge from "./EnlargeBadge.module.css"
 import { commonsFile } from "@whereabouts/shared/ids"
@@ -84,10 +84,10 @@ describe("QuestionImage", () => {
   it("keeps the Commons credit behind an info icon linking to the file page, only when asked", () => {
     // While guessing there is no credit link at all: the file name is a spoiler.
     const { container: guessing } = render(<QuestionImage image={image} credit={false} painting />)
-    expect(guessing.querySelectorAll(`.${pictures.credit!}`)).toHaveLength(0)
+    expect(guessing.querySelectorAll(`.${commonsCredit.credit!}`)).toHaveLength(0)
 
     const { container } = render(<QuestionImage image={image} credit painting />)
-    const credit = container.querySelector<HTMLAnchorElement>(`.${questionImage.thumb!} .${pictures.credit!}`)!
+    const credit = container.querySelector<HTMLAnchorElement>(`.${questionImage.thumb!} .${commonsCredit.credit!}`)!
     expect(credit.href).toContain("commons.wikimedia.org")
     expect(credit.getAttribute("aria-label")).toContain("Wikimedia Commons")
     expect(container.textContent).not.toContain("Wikimedia")

@@ -1,0 +1,21 @@
+:where(.smallFlag) {
+  flex: none;
+  display: inline-block;
+  height: 15px;
+  aspect-ratio: var(--flag-ratio);
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--control-bg);
+  box-shadow: var(--picture-ring);
+  vertical-align: middle;
+}
+:where(.smallFlag):has(img) {
+  background: none;
+  box-shadow: none;
+  filter: var(--flag-edge);
+}
+.smallFlag img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
