@@ -59,13 +59,13 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
   const hover = useSignal<LatLon | undefined>(undefined)
   // Practice hints are unlimited, still one per question.
   const [hint, setHint] = useState<HintBand | undefined>(undefined)
-  const q = currentQuestion(run)
+  const fullQuestion = currentQuestion(run)
   const kernel = kernelById(soloKernelId.value)
   const total = runTotal(run)
   const cheating = devMode.value && cheatLiveScore.value
-  const question = questionView(q)
-  const answer = revealedFromQuestion(q, outlines)
-  const scored = useMemo(() => scoredAnswer(q.answer, outlines), [q])
+  const question = questionView(fullQuestion)
+  const answer = revealedFromQuestion(fullQuestion, outlines)
+  const scored = useMemo(() => scoredAnswer(fullQuestion.answer, outlines), [fullQuestion])
   const detail = soloMapDetail.value
 
   useRoundMap(paint, {
@@ -137,12 +137,13 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
 
   const restart = () => setRun(startRun(pool, Date.now()))
 
-  const useHint = (axis: HintAxis) => setHint(hintBand(answerCentre(q.answer), q.answer.tolerance, axis, Math.random()))
+  const useHint = (axis: HintAxis) =>
+    setHint(hintBand(answerCentre(fullQuestion.answer), fullQuestion.answer.tolerance, axis, Math.random()))
   // A flag round's reveal names the country under the pointer, and where the
   // paint mostly was. Loaded while the flag is still being painted.
-  const borders = useBorders(q.type === QuestionType.FLAG)
+  const borders = useBorders(fullQuestion.type === QuestionType.FLAG)
   // Each practice run shuffles anew, so its first question picks this run's facts.
-  const fact = useFact(q, questions[0]!.id, index)
+  const fact = useFact(fullQuestion, questions[0]!.id, index)
   // Re-score the revealed paint if the kernel changes on the reveal screen.
   const shownResult = useMemo(() => scoreAnswer(revealed?.painted, scored, kernel), [revealed, kernel.id])
   const where = useMemo(
@@ -198,7 +199,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
             />
           </HudTop>
           <HudBottom>
-            {q.type === QuestionType.FLAG && <AllFlagsSwitch />}
+            {fullQuestion.type === QuestionType.FLAG && <AllFlagsSwitch />}
             <VrButton view={vrView} />
             <button class="primary" onClick={next} data-testid={soloTestIds.nextButton}>
               <Icon name={last ? "flag" : "next"} /> {nextLabel(run)} <kbd>Enter</kbd>
@@ -207,7 +208,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
         </Hud>
         <DevDrawer>
           <RevealScore answer={scored} kernel={kernel} parts={shownResult.parts} painted={painted} hover={hover} />
-          <Cheats question={q} answer={scored} kernel={kernel} />
+          <Cheats question={fullQuestion} answer={scored} kernel={kernel} />
           <PaintDev />
         </DevDrawer>
       </>
@@ -228,8 +229,8 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
         </PaintTools>
       </Hud>
       <DevDrawer>
-        <Cheats question={q} answer={scored} kernel={kernel} />
-        {cheating && <LiveScore question={q} answer={scored} kernelId={kernel.id} />}
+        <Cheats question={fullQuestion} answer={scored} kernel={kernel} />
+        {cheating && <LiveScore question={fullQuestion} answer={scored} kernelId={kernel.id} />}
         <PaintDev />
       </DevDrawer>
     </>
