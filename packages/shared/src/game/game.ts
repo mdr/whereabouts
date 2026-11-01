@@ -17,13 +17,15 @@ import type { ConfigurePatch, GameConfig, GameView, PaintSubmission, RoundReveal
 import { CloseReason } from "../close-reason.ts"
 import { OK_CHANGED, OK_SAME, fail, type CommandResult, type JoinResult } from "./command-result.ts"
 import { sameData } from "./same-data.ts"
-import { Seats, freshRecord, type Player } from "./seats.ts"
+import { Seats, freshRecord, type PlayerSeat, type Seat } from "./seats.ts"
+import { Role } from "../roles.ts"
 import { awardFacts, finalStandings, playerViews } from "./standings.ts"
 import {
   isLocked,
   joiningRound,
   LOBBY_STATE,
   lockedIn,
+  playsRound,
   type GameState,
   type GuessingState,
   type InPlayState,
@@ -48,10 +50,8 @@ const DEFAULT_CONFIG: GameConfig = {
 export const ROUND_GRACE: Ms = 1000
 
 /** Someone to wait on, and nobody still to wait for. */
-const everyoneDone = (waitingOn: Player[], done: (p: Player) => boolean): boolean =>
+const everyoneDone = (waitingOn: PlayerSeat[], done: (p: PlayerSeat) => boolean): boolean =>
   waitingOn.length > 0 && waitingOn.every(done)
-
-const playsRound = (p: Player, round: Round): boolean => p.joinedRound <= round.index
 
 export class Game {
   readonly code: RoomCode
@@ -92,11 +92,11 @@ export class Game {
    * to watch, or all MAX_PLAYERS seats are taken, in which case they watch if
    * there is room for another spectator.
    */
-  join(token: PlayerToken, name: PlayerName, now: Instant, watch = false): JoinResult {
+  join(token: PlayerToken, name: PlayerName, now: Instant, role: Role = Role.PLAYER): JoinResult {
     if (this.seats.reconnect(token)) return OK_CHANGED
     if (this.seats.isBanned(token)) return { ok: false, reason: CloseReason.REMOVED }
     if (this.state.phase === Phase.RESULTS) return { ok: false, reason: CloseReason.FINISHED }
-    return this.seats.admit(token, name, now, watch, joiningRound(this.state))
+    return this.seats.admit(token, name, now, role, joiningRound(this.state))
   }
 
   /**
@@ -148,7 +148,7 @@ export class Game {
     if (this.seats.playing().length === 0) return fail("no players")
     const first = this.roundAt(0)
     if (!first) return fail("no rounds to play")
-    for (const p of this.seats.all()) Object.assign(p, freshRecord(0))
+    for (const p of this.seats.playing()) p.role.record = freshRecord(0)
     this.state = this.beginRound(first, now)
     return OK_CHANGED
   }
@@ -179,11 +179,9 @@ export class Game {
     this.state = LOBBY_STATE
     this.seed = now
     this.questions = pickRounds(this.bank, this.config, this.seed)
-    for (const p of this.seats.all()) {
-      Object.assign(p, freshRecord(0))
-      // Back in a lobby, anyone away has its grace to come back, from now.
-      if (!p.connected) p.leftAt = now
-    }
+    for (const p of this.seats.playing()) p.role.record = freshRecord(0)
+    // Back in a lobby, anyone away has its grace to come back, from now.
+    for (const p of this.seats.all()) if (!p.connected) p.leftAt = now
     return OK_CHANGED
   }
 
@@ -193,13 +191,15 @@ export class Game {
    * mid-game like a late joiner, sitting out the round under way and playing
    * from the next. Not on the final results; Play again starts a new lobby.
    */
-  setRole(token: PlayerToken, watch: boolean): CommandResult {
-    const player = this.seats.get(token)
-    if (!player) return fail("unknown player")
-    if (player.watching === watch) return OK_SAME
-    if (watch && this.state.phase !== Phase.LOBBY) return fail("you can only switch to watching in the lobby")
+  setRole(token: PlayerToken, role: Role): CommandResult {
+    const seat = this.seats.get(token)
+    if (!seat) return fail("unknown player")
+    if (seat.role.type === role) return OK_SAME
+    if (role === Role.SPECTATOR && this.state.phase !== Phase.LOBBY) {
+      return fail("you can only switch to watching in the lobby")
+    }
     if (this.state.phase === Phase.RESULTS) return fail("game has finished")
-    return this.seats.setWatching(player, watch, joiningRound(this.state))
+    return this.seats.setRole(seat, role, joiningRound(this.state))
   }
 
   /** Hand the host role to another connected player, for good. */
@@ -257,27 +257,30 @@ export class Game {
 
   /** Use one of the game's hints on this round: one per round, so two bands never box the answer in. */
   hint(token: PlayerToken, axis: HintAxis): CommandResult {
-    const player = this.seats.get(token)
-    if (!player) return fail("unknown player")
+    const seat = this.seats.get(token)
+    if (!seat) return fail("unknown player")
     const s = this.state
     if (s.phase !== Phase.GUESSING) return fail("no round to hint")
-    if (player.watching || !playsRound(player, s.round)) return fail("you are not playing this round")
+    if (seat.role.type === Role.SPECTATOR || !playsRound(seat.role, s.round)) {
+      return fail("you are not playing this round")
+    }
+    const { record } = seat.role
     if (s.hints.has(token)) return fail("one hint per round")
-    if (player.hintsUsed >= this.config.hints) return fail("no hints left")
+    if (record.hintsUsed >= this.config.hints) return fail("no hints left")
     s.hints.set(token, axis)
-    player.hintsUsed++
+    record.hintsUsed++
     return OK_CHANGED
   }
 
   setPaint(token: PlayerToken, paint: PaintSubmission): CommandResult {
-    const player = this.seats.get(token)
-    if (!player) return fail("unknown player")
-    if (player.watching) return fail("you are watching")
+    const seat = this.seats.get(token)
+    if (!seat) return fail("unknown player")
+    if (seat.role.type === Role.SPECTATOR) return fail("you are watching")
     // Uploads are debounced on the client, so one can arrive just after the
     // round ended. It is stale rather than wrong: drop it quietly.
     const s = this.state
     if (s.phase !== Phase.GUESSING) return OK_SAME
-    if (!playsRound(player, s.round)) return fail("sitting this round out")
+    if (!playsRound(seat.role, s.round)) return fail("sitting this round out")
     // A stroke's upload can land just after the player locked in; it changes nothing.
     if (isLocked(s.submissions.get(token))) return OK_SAME
     s.submissions.set(token, { type: SubmissionType.DRAFT, paint })
@@ -292,13 +295,13 @@ export class Game {
    * everyone up until the clock runs out.
    */
   lock(token: PlayerToken, now: Instant): CommandResult {
-    const player = this.seats.get(token)
-    if (!player) return fail("unknown player")
+    const seat = this.seats.get(token)
+    if (!seat) return fail("unknown player")
     // Pressed as the round ended, by this player or the clock: stale, not wrong.
     const s = this.state
     if (s.phase !== Phase.GUESSING) return OK_SAME
-    if (player.watching) return fail("you are watching")
-    if (!playsRound(player, s.round)) return fail("sitting this round out")
+    if (seat.role.type === Role.SPECTATOR) return fail("you are watching")
+    if (!playsRound(seat.role, s.round)) return fail("sitting this round out")
     const current = s.submissions.get(token)
     if (isLocked(current)) return OK_SAME
     s.submissions.set(token, {
@@ -327,12 +330,12 @@ export class Game {
 
   /** Done reading the reveal. The next round starts once every connected player is. */
   ready(token: PlayerToken, now: Instant): CommandResult {
-    const player = this.seats.get(token)
-    if (!player) return fail("unknown player")
+    const seat = this.seats.get(token)
+    if (!seat) return fail("unknown player")
     // Pressed just after the last Ready moved the game on.
     const s = this.state
     if (s.phase !== Phase.REVEAL) return OK_SAME
-    if (player.watching) return fail("you are watching")
+    if (seat.role.type === Role.SPECTATOR) return fail("you are watching")
     if (s.ready.has(token)) return OK_SAME
     s.ready.add(token)
     this.settleIfEveryoneDone(now)
@@ -356,12 +359,12 @@ export class Game {
   }
 
   /** The connected players who are playing this round. */
-  private lockingIn(round: Round): Player[] {
-    return this.present().filter((p) => playsRound(p, round))
+  private lockingIn(round: Round): PlayerSeat[] {
+    return this.present().filter((p) => playsRound(p.role, round))
   }
 
   /** The connected players, leaving out spectators. */
-  private present(): Player[] {
+  private present(): PlayerSeat[] {
     return this.seats.playing().filter((p) => p.connected)
   }
 
@@ -449,14 +452,16 @@ export class Game {
 
   // ---- views ---------------------------------------------------------------
 
-  private youView(s: GameState, token: PlayerToken, me: Player | undefined): YouView {
+  private youView(s: GameState, token: PlayerToken, me: Seat | undefined): YouView {
+    const playing = me?.role.type === Role.PLAYER ? me.role : undefined
     return {
       id: me?.id,
       isHost: me !== undefined && this.seats.isHost(me.token),
-      sittingOut: me !== undefined && (me.watching || (s.phase !== Phase.LOBBY && me.joinedRound >= joiningRound(s))),
-      watching: me?.watching ?? false,
+      sittingOut:
+        me !== undefined && (!playing || (s.phase !== Phase.LOBBY && playing.record.joinedRound >= joiningRound(s))),
+      watching: me !== undefined && !playing,
       locked: lockedIn(s, token),
-      hintsLeft: me && !me.watching ? Math.max(0, this.config.hints - me.hintsUsed) : 0,
+      hintsLeft: playing ? Math.max(0, this.config.hints - playing.record.hintsUsed) : 0,
       ...this.nextHostView(token)
     }
   }

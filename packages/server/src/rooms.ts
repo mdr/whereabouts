@@ -37,6 +37,7 @@ import { Game } from "@whereabouts/shared/game/game"
 import type { QuestionBank } from "@whereabouts/shared/game/round-picking"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import { CloseReason } from "@whereabouts/shared/close-reason"
+import { Role } from "@whereabouts/shared/roles"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 import { CATALOGUE, outlinesFrom } from "@whereabouts/shared/catalogue/catalogue"
 import { generateCode, roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
@@ -150,7 +151,7 @@ export class GameRoom extends Room<ActorData> {
       again: (token, _, now) => this.game.again(token, now),
       rename: (token, { name }) => this.game.rename(token, name),
       kick: (token, { playerId }, now) => this.removePlayer(token, playerId, now),
-      setRole: (token, { watch }) => this.game.setRole(token, watch),
+      setRole: (token, { watch }) => this.game.setRole(token, watch ? Role.SPECTATOR : Role.PLAYER),
       leave: (token) => this.leave(token),
       makeHost: (token, { playerId }) => this.game.makeHost(token, playerId),
       end: (token) => this.game.end(token),
@@ -160,13 +161,13 @@ export class GameRoom extends Room<ActorData> {
 
   protected override onJoin(actor: Actor<ActorData>): void {
     const { token, name, entry, address } = actor.data!
-    const watch = entry.type === GameEntryType.JOIN && entry.watch
+    const role = entry.type === GameEntryType.JOIN && entry.watch ? Role.SPECTATOR : Role.PLAYER
     this.cancelEmptyTimer()
     const previous = this.actorsByToken.get(token)
     if (previous && previous !== actor) previous.kick(closeReason(CloseReason.REPLACED))
     this.actorsByToken.set(token, actor)
     const back = this.game.playerTokens.includes(token)
-    const result = this.game.join(token, name, deps.clock.now(), watch)
+    const result = this.game.join(token, name, deps.clock.now(), role)
     if (!result.ok) {
       this.logger?.info(`${actor.id} (${name}, ${address}) turned away: ${result.reason}`)
       actor.kick(closeReason(result.reason))

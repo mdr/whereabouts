@@ -3,19 +3,17 @@ import { playerColour, type PlayerColour } from "../colours.ts"
 import { playerId, type PlayerId, type PlayerName, type PlayerToken } from "../ids.ts"
 import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE } from "../protocol.ts"
 import { CloseReason } from "../close-reason.ts"
+import { Role } from "../roles.ts"
 import { OK_CHANGED, fail, type CommandResult, type JoinResult } from "./command-result.ts"
 import type { RoundFacts } from "../awards/awards.ts"
 import type { Instant, Points } from "../units.ts"
 
-/** Who a player is and how they are connected: kept from one game to the next. */
-interface Seat {
+/** Who someone is and how they are connected: kept from one game to the next. */
+export interface Seat {
   id: PlayerId
   token: PlayerToken
   name: PlayerName
-  /** Unset while watching. */
-  colour: PlayerColour | undefined
-  /** A spectator: sees every round, plays none, and is never waited on. */
-  watching: boolean
+  role: SeatRole
   connected: boolean
   /** When the connection dropped, while it is down. */
   leftAt: Instant | undefined
@@ -23,7 +21,7 @@ interface Seat {
 }
 
 /** A player's part in one game, started afresh by freshRecord. */
-interface PlayerRecord {
+export interface PlayerRecord {
   /** First round index this player may play. Later joiners sit out the current one. */
   joinedRound: number
   /** By round index; a hole for each round not played. */
@@ -34,7 +32,25 @@ interface PlayerRecord {
   hintsUsed: number
 }
 
-export type Player = Seat & PlayerRecord
+/** Plays: has a colour and a record of the game. */
+export interface PlayerRole {
+  type: Role.PLAYER
+  colour: PlayerColour
+  record: PlayerRecord
+}
+
+/** Sees every round, plays none, and is never waited on. */
+interface SpectatorRole {
+  type: Role.SPECTATOR
+}
+
+type SeatRole = PlayerRole | SpectatorRole
+
+const SPECTATOR_ROLE: SpectatorRole = { type: Role.SPECTATOR }
+
+export type PlayerSeat = Seat & { role: PlayerRole }
+
+export const isPlayer = (s: Seat): s is PlayerSeat => s.role.type === Role.PLAYER
 
 export const freshRecord = (joinedRound: number): PlayerRecord => ({
   joinedRound,
@@ -45,32 +61,32 @@ export const freshRecord = (joinedRound: number): PlayerRecord => ({
 })
 
 export class Seats {
-  private readonly players = new Map<PlayerToken, Player>()
+  private readonly players = new Map<PlayerToken, Seat>()
   private hostToken: PlayerToken | undefined = undefined
   private nextPlayerId = 1
   /** Tokens the host has removed; they may not reclaim a seat. */
   private readonly kicked = new Set<PlayerToken>()
 
-  get(token: PlayerToken): Player | undefined {
+  get(token: PlayerToken): Seat | undefined {
     return this.players.get(token)
   }
 
-  all(): Player[] {
+  all(): Seat[] {
     return [...this.players.values()]
   }
 
   /** The players, leaving out spectators. */
-  playing(): Player[] {
-    return this.all().filter((p) => !p.watching)
+  playing(): PlayerSeat[] {
+    return this.all().filter(isPlayer)
   }
 
-  private watcherCount(): number {
+  private spectatorCount(): number {
     return this.players.size - this.playing().length
   }
 
   /** The lowest colour no current player has, so a removed player's colour is reused. */
   private freeColour(): PlayerColour {
-    const used = new Set<number | undefined>(this.playing().map((p) => p.colour))
+    const used = new Set<number | undefined>(this.playing().map((p) => p.role.colour))
     let colour = 0
     while (used.has(colour)) colour++
     return playerColour(colour)
@@ -110,30 +126,32 @@ export class Seats {
     return true
   }
 
+  private playerRole(joinedRound: number): PlayerRole {
+    return { type: Role.PLAYER, colour: this.freeColour(), record: freshRecord(joinedRound) }
+  }
+
   /**
    * Seat a newcomer. They play unless they asked to watch, or all MAX_PLAYERS
    * seats are taken, in which case they watch if there is room for another
    * spectator.
    */
-  admit(token: PlayerToken, name: PlayerName, now: Instant, watch: boolean, joinedRound: number): JoinResult {
+  admit(token: PlayerToken, name: PlayerName, now: Instant, role: Role, joinedRound: number): JoinResult {
     const seatFree = this.playing().length < MAX_PLAYERS
-    const roomToWatch = this.watcherCount() < MAX_SPECTATORS
-    let watching: boolean
-    if (!watch && seatFree) watching = false
-    else if (roomToWatch) watching = true
+    const roomToWatch = this.spectatorCount() < MAX_SPECTATORS
+    let seatRole: SeatRole
+    if (role === Role.PLAYER && seatFree) seatRole = this.playerRole(joinedRound)
+    else if (roomToWatch) seatRole = SPECTATOR_ROLE
     else return { ok: false, reason: seatFree ? CloseReason.NO_ROOM_TO_WATCH : CloseReason.FULL }
-    const player: Player = {
+    const seat: Seat = {
       id: playerId(`p${this.nextPlayerId++}`),
       token,
       name,
-      colour: watching ? undefined : this.freeColour(),
-      watching,
+      role: seatRole,
       connected: true,
       leftAt: undefined,
-      joinedAt: now,
-      ...freshRecord(joinedRound)
+      joinedAt: now
     }
-    this.players.set(token, player)
+    this.players.set(token, seat)
     this.hostToken ??= token
     return OK_CHANGED
   }
@@ -151,16 +169,13 @@ export class Seats {
   }
 
   /** Switch between watching (the colour is given up) and playing a free seat, as capacity allows. */
-  setWatching(player: Player, watch: boolean, joinedRound: number): CommandResult {
-    if (watch) {
-      if (this.watcherCount() >= MAX_SPECTATORS) return fail("no room to watch")
-      player.watching = true
-      player.colour = undefined
+  setRole(seat: Seat, role: Role, joinedRound: number): CommandResult {
+    if (role === Role.SPECTATOR) {
+      if (this.spectatorCount() >= MAX_SPECTATORS) return fail("no room to watch")
+      seat.role = SPECTATOR_ROLE
     } else {
       if (this.playing().length >= MAX_PLAYERS) return fail("game is full")
-      player.watching = false
-      player.colour = this.freeColour()
-      Object.assign(player, freshRecord(joinedRound))
+      seat.role = this.playerRole(joinedRound)
     }
     return OK_CHANGED
   }
@@ -177,7 +192,7 @@ export class Seats {
   }
 
   private pickHost(passOver?: PlayerToken): PlayerToken | undefined {
-    let best: Player | undefined = undefined
+    let best: Seat | undefined = undefined
     for (const p of this.players.values()) {
       if (!p.connected || p.token === passOver) continue
       if (!best || p.joinedAt < best.joinedAt) best = p

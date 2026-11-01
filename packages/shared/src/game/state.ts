@@ -6,6 +6,7 @@ import { Phase, type FinalStanding, type PlayedRound, type RoundReveal } from ".
 import type { Question } from "../questions.ts"
 import { SubmissionType, type Submission } from "../scoring/round-scoring.ts"
 import type { Instant } from "../units.ts"
+import type { PlayerRole } from "./seats.ts"
 
 /** One of the game's rounds: where it falls and what it asks. */
 export interface Round {
@@ -76,3 +77,6 @@ export function joiningRound(state: GameState): number {
       return state.playedRounds.length
   }
 }
+
+/** Whether a player plays this round, rather than sitting it out. */
+export const playsRound = (role: PlayerRole, round: Round): boolean => role.record.joinedRound <= round.index

@@ -49,6 +49,8 @@ import { PLAYER_COLOURS } from "../colours.ts"
 import { GameViewSchema } from "../view-schema.ts"
 import { inHintBand, HintAxis } from "../hints.ts"
 import { CloseReason } from "../close-reason.ts"
+import { Role } from "../roles.ts"
+import type { Seat } from "./seats.ts"
 
 const place = (label: string, at: LatLon, tolerance = 100): PlaceQuestion => ({
   type: QuestionType.PLACE,
@@ -507,7 +509,7 @@ describe("spectators", () => {
   const T1 = T0 + 60_000
   function withSpectator(): Game {
     const g = twoPlayerGame(2)
-    expect(g.join(tokS, playerName("Sam"), T0 + 2, true).ok).toBe(true)
+    expect(g.join(tokS, playerName("Sam"), T0 + 2, Role.SPECTATOR).ok).toBe(true)
     return g
   }
   const sam = (g: Game) => g.view(tokA, T0).players.find((p) => p.name === "Sam")!
@@ -578,19 +580,22 @@ describe("spectators", () => {
 
   it("switches role in the lobby only, taking or giving up a colour", () => {
     const g = withSpectator()
-    expect(g.setRole(tokS, false)).toEqual({ ok: true, changed: true })
+    expect(g.setRole(tokS, Role.PLAYER)).toEqual({ ok: true, changed: true })
     expect(sam(g)).toMatchObject({ watching: false, colour: 2 })
-    expect(g.setRole(tokB, true)).toEqual({ ok: true, changed: true })
+    expect(g.setRole(tokB, Role.SPECTATOR)).toEqual({ ok: true, changed: true })
     expect(g.view(tokB, T0).players.find((p) => p.name === "Bob")).toMatchObject({ watching: true, colour: undefined })
-    expect(g.setRole(tokB, true)).toEqual({ ok: true, changed: false })
+    expect(g.setRole(tokB, Role.SPECTATOR)).toEqual({ ok: true, changed: false })
     g.start(tokA, T0)
-    expect(g.setRole(tokA, true)).toEqual({ ok: false, error: "you can only switch to watching in the lobby" })
+    expect(g.setRole(tokA, Role.SPECTATOR)).toEqual({
+      ok: false,
+      error: "you can only switch to watching in the lobby"
+    })
   })
 
   it("a spectator can take a free seat mid-round, sitting that round out and playing from the next", () => {
     const g = withSpectator()
     g.start(tokA, T0)
-    expect(g.setRole(tokS, false)).toEqual({ ok: true, changed: true })
+    expect(g.setRole(tokS, Role.PLAYER)).toEqual({ ok: true, changed: true })
     const v = g.view(tokS, T0 + 1)
     expect(v.you).toMatchObject({ watching: false, sittingOut: true })
     expect(sam(g).colour).toBeGreaterThanOrEqual(0)
@@ -617,7 +622,7 @@ describe("spectators", () => {
     g.start(tokA, T0)
     g.tick(T0 + 60_000 + ROUND_GRACE)
     expect(g.phase).toBe(Phase.REVEAL)
-    g.setRole(tokS, false)
+    g.setRole(tokS, Role.PLAYER)
     g.ready(tokA, T0 + 60_001)
     g.ready(tokB, T0 + 60_002)
     g.ready(tokS, T0 + 60_003)
@@ -628,24 +633,24 @@ describe("spectators", () => {
     const g = withSpectator()
     g.start(tokA, T0)
     g.end(tokA)
-    expect(g.setRole(tokS, false)).toEqual({ ok: false, error: "game has finished" })
+    expect(g.setRole(tokS, Role.PLAYER)).toEqual({ ok: false, error: "game has finished" })
   })
 
   it("cannot take a seat when all the player seats are taken", () => {
     const g = twoPlayerGame(2)
     for (let i = 3; i <= MAX_PLAYERS; i++) g.join(tok(`${i}`), playerName(`P${i}`), T0)
-    g.join(tokS, playerName("Sam"), T0, true)
-    expect(g.setRole(tokS, false)).toEqual({ ok: false, error: "game is full" })
-    expect(g.join(tokW, playerName("Wes"), T0, true).ok).toBe(true)
+    g.join(tokS, playerName("Sam"), T0, Role.SPECTATOR)
+    expect(g.setRole(tokS, Role.PLAYER)).toEqual({ ok: false, error: "game is full" })
+    expect(g.join(tokW, playerName("Wes"), T0, Role.SPECTATOR).ok).toBe(true)
   })
 
   it("a host can watch and still run the game, but a game needs a player to start", () => {
     const g = twoPlayerGame(1)
-    g.setRole(tokA, true)
+    g.setRole(tokA, Role.SPECTATOR)
     expect(g.view(tokA, T0).you.isHost).toBe(true)
     expect(g.start(tokA, T0).ok).toBe(true)
     const h = makeGame({ code: roomCode("WXYZ") })
-    h.join(tokH, playerName("Hana"), T0, true)
+    h.join(tokH, playerName("Hana"), T0, Role.SPECTATOR)
     expect(h.start(tokH, T0)).toEqual({ ok: false, error: "no players" })
   })
 
@@ -781,13 +786,8 @@ describe("joining and leaving mid-game", () => {
   })
 
   it("play again leaves each player as a new joiner would be, but for who they are", () => {
-    const seat = new Set(["id", "token", "name", "colour", "watching", "connected", "leftAt", "joinedAt"])
     const record = (g: Game, token: PlayerToken) =>
-      Object.fromEntries(
-        Object.entries((g as unknown as { seats: { get(t: PlayerToken): object } }).seats.get(token)).filter(
-          ([k]) => !seat.has(k)
-        )
-      )
+      (g as unknown as { seats: { get(t: PlayerToken): Seat } }).seats.get(token).role
     const fresh = twoPlayerGame(1)
     const g = makeGame({ config: { mix: mixOf({ [QuestionType.PLACE]: 1 }), roundLength: 60_000, hints: 1 } })
     g.join(tokA, playerName("Alice"), T0)
@@ -1063,7 +1063,7 @@ describe("the question mix", () => {
   it("sends every player and spectator views that match GameViewSchema, through every type of round", () => {
     const mix = mixOf(Object.fromEntries(Object.values(QuestionType).map((t) => [t, 1])))
     const g = game({ mix, mapDetail: MapDetail.WATER })
-    g.join(tokS, playerName("Sam"), T0 + 2, true)
+    g.join(tokS, playerName("Sam"), T0 + 2, Role.SPECTATOR)
     let now = T0
     const check = () => {
       for (const token of [tokA, tokB, tokS]) {
@@ -1266,7 +1266,7 @@ describe("hints", () => {
     const g = twoPlayerGame()
     expect(g.configure(tokA, { hints: 0 })).toEqual({ ok: true, changed: true })
     expect(g.view(tokA, T0).you.hintsLeft).toBe(0)
-    g.join(tokW, playerName("Wes"), T0, true)
+    g.join(tokW, playerName("Wes"), T0, Role.SPECTATOR)
     g.configure(tokA, { hints: 3 })
     expect(g.view(tokW, T0).you.hintsLeft).toBe(0)
     g.start(tokA, T0)
