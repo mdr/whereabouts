@@ -7,7 +7,7 @@ import { HostWord } from "../../../ui/players/HostWord"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { Banner } from "../../../ui/Banner/Banner"
 import { ConnectionNote, connectionText } from "../../../ui/connection/ConnectionNote/ConnectionNote"
-import { QUESTION_TYPE_LOOKS } from "../../../question-types"
+import { QUESTION_TYPE_DISPLAY_INFO } from "../../../question-types"
 import { cx } from "../../../ui/cx"
 import kit from "../../../ui/kit.module.css"
 import { VrButton, useVrView } from "../../../ui/VrButton/VrButton"
@@ -55,7 +55,7 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
         rounds: view.playedRounds.map((round, roundIndex) => ({
           label: round.label,
           type: typeName(round),
-          colour: QUESTION_TYPE_LOOKS[round.type].colour,
+          colour: QUESTION_TYPE_DISPLAY_INFO[round.type].colour,
           scores: standings.map((standing) => standing.rounds[roundIndex]?.score)
         }))
       }

@@ -5,7 +5,7 @@
  */
 import { MAX_ROUNDS, mixTotal, type QuestionMix } from "@whereabouts/shared/protocol/config"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
-import { QUESTION_TYPE_LOOKS, questionTypeColourStyle } from "../../../question-types"
+import { QUESTION_TYPE_DISPLAY_INFO, questionTypeColourStyle } from "../../../question-types"
 import { Stepper } from "../Stepper/Stepper"
 import { mixEditorTestIds } from "./MixEditorTestIds"
 import { RoundStrip } from "../RoundStrip/RoundStrip"
@@ -18,7 +18,7 @@ export const MixEditor = ({ mix, onChange }: { mix: QuestionMix; onChange: (mix:
       <ul class={styles.rows}>
         {QUESTION_TYPES.map((type) => {
           const others = rounds - mix[type]
-          const look = QUESTION_TYPE_LOOKS[type]
+          const displayInfo = QUESTION_TYPE_DISPLAY_INFO[type]
           return (
             <li
               key={type}
@@ -29,11 +29,11 @@ export const MixEditor = ({ mix, onChange }: { mix: QuestionMix; onChange: (mix:
             >
               <span class={styles.swatch} aria-hidden="true" />
               <span class={styles.type}>
-                <b>{look.label}</b>
-                <small>{look.detail}</small>
+                <b>{displayInfo.heading}</b>
+                <small>{displayInfo.description}</small>
               </span>
               <Stepper
-                label={look.label}
+                label={displayInfo.heading}
                 value={mix[type]}
                 // A game has at least one round and at most MAX_ROUNDS.
                 min={others === 0 ? 1 : 0}

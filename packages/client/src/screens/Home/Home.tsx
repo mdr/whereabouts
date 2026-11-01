@@ -8,9 +8,12 @@ import { TogglePills } from "../../ui/setup/TogglePills/TogglePills"
 import { VrButton, useVrView } from "../../ui/VrButton/VrButton"
 import { VrViewType, type VrView } from "../../vr/view/view"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
-import { QUESTION_TYPE_LOOKS } from "../../question-types"
+import { QUESTION_TYPE_DISPLAY_INFO } from "../../question-types"
 
-const PRACTICE_OPTIONS = QUESTION_TYPES.map((type) => ({ value: type, label: QUESTION_TYPE_LOOKS[type].label }))
+const PRACTICE_OPTIONS = QUESTION_TYPES.map((type) => ({
+  value: type,
+  label: QUESTION_TYPE_DISPLAY_INFO[type].heading
+}))
 import hero800 from "../../assets/hero-800.webp"
 import hero1448 from "../../assets/hero-1448.webp"
 import { homeTestIds } from "./HomeTestIds"
@@ -35,7 +38,7 @@ export const Home = () => {
     type: VrViewType.LOBBY,
     summary: {
       title: "Whereabouts",
-      scoreLine: `Practise: ${types.map((type) => QUESTION_TYPE_LOOKS[type].label).join(", ")}`,
+      scoreLine: `Practise: ${types.map((type) => QUESTION_TYPE_DISPLAY_INFO[type].heading).join(", ")}`,
       note: "Take the headset off to host or join a game.",
       actions: [
         { label: "Practise", press: () => navigate("/solo") },
