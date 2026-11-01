@@ -173,6 +173,7 @@ export class Connection {
     client.on("client:error", () => {
       /* surfaced via disconnect */
     })
+    // Not parsed: checking every player's paint costs a slow phone 100 ms or more, and the ticket already matches protocol versions.
     client.on("reveal", (payload) => {
       this.reveal = revealFrom(JSON.parse(this.decoder.decode(payload)) as RevealMessage)
     })
