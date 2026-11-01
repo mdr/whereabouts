@@ -1,9 +1,9 @@
 import "./global.css"
 import { render } from "preact"
 import { App } from "./app"
-import { installSound } from "./sound"
-import { reloadOnStaleBuild } from "./stale-build"
-import { trackKeyboardFocus } from "./keys"
+import { installSound } from "./sound/sound"
+import { reloadOnStaleBuild } from "./net/stale-build"
+import { trackKeyboardFocus } from "./keyboard/keys"
 
 reloadOnStaleBuild()
 trackKeyboardFocus()

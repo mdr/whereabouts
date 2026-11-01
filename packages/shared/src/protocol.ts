@@ -5,16 +5,16 @@
  * client.
  */
 import { z } from "zod"
-import type { Award } from "./awards.ts"
+import type { Award } from "./awards/awards.ts"
 import type { LatLon } from "./geo.ts"
 import { QUESTION_TYPES, QuestionType, AnswerType, Surface, type Clue, type FeatureType } from "./questions.ts"
 import type { PlayerColour } from "./colours.ts"
 import type { H3Cell, H3Res } from "./h3.ts"
 import type { Instant, Km, Ms } from "./units.ts"
-import { paintFromBase64, paintToBase64 } from "./paint-wire.ts"
+import { paintFromBase64, paintToBase64 } from "./paint/paint-wire.ts"
 import { HintAxisSchema, MAX_HINTS, type HintAxis, type HintBand } from "./hints.ts"
-import type { KernelId } from "./scoring.ts"
-import type { AreaParts, PointParts } from "./regions.ts"
+import type { KernelId } from "./scoring/scoring.ts"
+import type { AreaParts, PointParts } from "./scoring/regions.ts"
 import {
   PlayerIdSchema,
   PlayerNameSchema,

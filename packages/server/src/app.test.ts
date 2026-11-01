@@ -6,7 +6,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
 import type { WSClient as WSClientType } from "@rivalis/browser"
-import { PAINT_CELL_BUDGET, PaintLayer, compactRecord, resolutionForTolerance } from "@whereabouts/shared/paint"
+import { PAINT_CELL_BUDGET, PaintLayer, compactRecord, resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import {
   PROTOCOL_VERSION,
   type ClientSend,
@@ -29,10 +29,10 @@ import {
   mixTotal,
   Phase
 } from "@whereabouts/shared/protocol"
-import { ROUND_GRACE } from "@whereabouts/shared/game"
-import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
+import { ROUND_GRACE } from "@whereabouts/shared/game/game"
+import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import { GameViewSchema } from "@whereabouts/shared/view-schema"
-import { CATALOGUE } from "@whereabouts/shared/catalogue"
+import { CATALOGUE } from "@whereabouts/shared/catalogue/catalogue"
 import { gridDisk, h3Res, latLngToCell } from "@whereabouts/shared/h3"
 import { HintAxis } from "@whereabouts/shared/hints"
 import {
@@ -46,7 +46,7 @@ import {
   type PlayerToken,
   type RoomCode
 } from "@whereabouts/shared/ids"
-import { regionCells, scoredAnswer } from "@whereabouts/shared/regions"
+import { regionCells, scoredAnswer } from "@whereabouts/shared/scoring/regions"
 import {
   AnswerType,
   ClueType,

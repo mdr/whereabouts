@@ -1,7 +1,7 @@
 // Calibration for "Paint the whole of …" scoring (docs/country-scoring.md).
 // Scores synthetic paints and real wrong countries with the game's own rule
 // (scoreArea) and reports each against the target range it was
-// tuned to, so a change to a constant in src/regions.ts can be judged.
+// tuned to, so a change to a constant in src/scoring/regions.ts can be judged.
 //
 // Usage, from packages/shared:
 //   pnpm calibrate                      the summary over nine countries
@@ -12,9 +12,9 @@
 // resolution, spread evenly unless the case says otherwise, with the usual 5%
 // world floor. Distances are in R, the country's equivalent radius.
 import * as h3 from "h3-js"
-import { PASS_SCORE, buildDistribution } from "../src/scoring.ts"
-import { PaintLayer, resolutionForTolerance } from "../src/paint.ts"
-import { regionCells, regionFit, scoreArea } from "../src/regions.ts"
+import { PASS_SCORE, buildDistribution } from "../src/scoring/scoring.ts"
+import { PaintLayer, resolutionForTolerance } from "../src/paint/paint.ts"
+import { regionCells, regionFit, scoreArea } from "../src/scoring/regions.ts"
 import { COUNTRIES as AREAS } from "./catalogue.mjs"
 
 const byLabel = (label) => {

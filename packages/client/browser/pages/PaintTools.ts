@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test"
-import type { Tool } from "../../src/tool.ts"
-import { paintToolsTestIds } from "../../src/ui/PaintToolsTestIds.ts"
+import type { Tool } from "../../src/paint/tool.ts"
+import { paintToolsTestIds } from "../../src/ui/map/PaintToolsTestIds.ts"
 import { byTestIdWith, isUsable } from "./support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 

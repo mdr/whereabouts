@@ -4,7 +4,7 @@
 import { test } from "@playwright/test"
 import { devices } from "@playwright/test"
 import type { Screen } from "../pages/Screen.ts"
-import { Tool } from "../../src/tool.ts"
+import { Tool } from "../../src/paint/tool.ts"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { check, newTab, shot } from "./support.ts"
 

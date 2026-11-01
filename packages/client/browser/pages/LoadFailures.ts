@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test"
-import { mapViewTestIds } from "../../src/ui/MapViewTestIds.ts"
-import { loadingOutlinesTestIds } from "../../src/ui/LoadingOutlinesTestIds.ts"
+import { mapViewTestIds } from "../../src/ui/map/MapViewTestIds.ts"
+import { loadingOutlinesTestIds } from "../../src/ui/map/LoadingOutlinesTestIds.ts"
 import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
 import type { Ms } from "@whereabouts/shared/units"
 

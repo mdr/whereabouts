@@ -2,7 +2,7 @@
 import { SessionMode, VisibilityState, type World } from "@iwsdk/core"
 import { signal } from "@preact/signals"
 import type { Ms } from "@whereabouts/shared/units"
-import { headsetPassthrough } from "../settings"
+import { headsetPassthrough } from "../settings/settings"
 import { timerFrames } from "./frames"
 
 type SessionWorld = Pick<World, "visibilityState" | "launchXR" | "exitXR">

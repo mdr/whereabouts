@@ -6,26 +6,26 @@ Where things live, and the steps for the changes that touch several of them.
 
 No I/O; the same code runs in the browser and on the server.
 
-| Module                                            | What it holds                                                                                                                               |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `catalogue.json`, `src/catalogue.ts`              | Every question, joined with its place; `poolOf` draws from it for games, practice and the score review                                      |
-| `places.json`, `src/places.ts`                    | What questions ask about, kept once: name, article, point, area, flag, feature                                                              |
-| `src/catalogue-entry.ts`                          | A question as `catalogue.json` holds it, and `joinQuestion` with its place                                                                  |
-| `outlines.json`                                   | Areas' geometry, by `OutlineId`                                                                                                             |
-| `src/questions.ts`                                | The question model as the game sees it: `QuestionType`, clue and answer unions, prompts                                                     |
-| `src/ids.ts`, `src/units.ts`                      | Branded ids and strings (`QuestionId`, `WikiTitle`…), unit flavours (`Km`, `Ms`…)                                                           |
-| `src/protocol.ts`                                 | Client→server message schemas, `GameConfig`, `GameView` and its parts, `PROTOCOL_VERSION`                                                   |
-| `src/view-schema.ts`                              | A zod schema of `GameView` for the tests (the client casts)                                                                                 |
-| `src/game.ts`                                     | The `Game` state machine: who is in the room, the phases and clock, commands, and each player's view                                        |
-| `src/game-views.ts`                               | What players are sent of a question, its reveal and the rounds played                                                                       |
-| `src/round-scoring.ts`                            | `scoreRound`: one player's round scored, with its parts and the facts the awards read                                                       |
-| `src/round-picking.ts`                            | `pickRounds`: a game's questions from the catalogue, by mix, map detail and seed                                                            |
-| `src/paint.ts`, `src/paint-wire.ts`               | The H3 paint layer, and its binary encoding                                                                                                 |
-| `src/scoring.ts`, `src/regions.ts`                | The point rule, and the area rule (`scoreAnswer` picks)                                                                                     |
-| `src/hints.ts`, `src/awards.ts`, `src/explain.ts` | Hint bands, end-of-game awards, a score in words                                                                                            |
-| `src/facts.ts`, `src/photos.ts`                   | Reveal facts and photos, by place                                                                                                           |
-| `src/score-review.ts`, `src/scoring-case.ts`      | The playtesters' score review, and copied scoring cases                                                                                     |
-| `scripts/`                                        | Data builds: `build-regions.mjs` and `build-features.mjs` write their types into the catalogue, places and outlines (`write-catalogue.mjs`) |
+| Module                                                           | What it holds                                                                                                                               |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `catalogue.json`, `src/catalogue/catalogue.ts`                   | Every question, joined with its place; `poolOf` draws from it for games, practice and the score review                                      |
+| `places.json`, `src/catalogue/places.ts`                         | What questions ask about, kept once: name, article, point, area, flag, feature                                                              |
+| `src/catalogue/catalogue-entry.ts`                               | A question as `catalogue.json` holds it, and `joinQuestion` with its place                                                                  |
+| `outlines.json`                                                  | Areas' geometry, by `OutlineId`                                                                                                             |
+| `src/questions.ts`                                               | The question model as the game sees it: `QuestionType`, clue and answer unions, prompts                                                     |
+| `src/ids.ts`, `src/units.ts`                                     | Branded ids and strings (`QuestionId`, `WikiTitle`…), unit flavours (`Km`, `Ms`…)                                                           |
+| `src/protocol.ts`                                                | Client→server message schemas, `GameConfig`, `GameView` and its parts, `PROTOCOL_VERSION`                                                   |
+| `src/view-schema.ts`                                             | A zod schema of `GameView` for the tests (the client casts)                                                                                 |
+| `src/game/game.ts`                                               | The `Game` state machine: who is in the room, the phases and clock, commands, and each player's view                                        |
+| `src/game/game-views.ts`                                         | What players are sent of a question, its reveal and the rounds played                                                                       |
+| `src/scoring/round-scoring.ts`                                   | `scoreRound`: one player's round scored, with its parts and the facts the awards read                                                       |
+| `src/game/round-picking.ts`                                      | `pickRounds`: a game's questions from the catalogue, by mix, map detail and seed                                                            |
+| `src/paint/paint.ts`, `src/paint/paint-wire.ts`                  | The H3 paint layer, and its binary encoding                                                                                                 |
+| `src/scoring/scoring.ts`, `src/scoring/regions.ts`               | The point rule, and the area rule (`scoreAnswer` picks)                                                                                     |
+| `src/hints.ts`, `src/awards/awards.ts`, `src/scoring/explain.ts` | Hint bands, end-of-game awards, a score in words                                                                                            |
+| `src/catalogue/facts.ts`, `src/catalogue/photos.ts`              | Reveal facts and photos, by place                                                                                                           |
+| `src/scoring/score-review.ts`, `src/scoring/scoring-case.ts`     | The playtesters' score review, and copied scoring cases                                                                                     |
+| `scripts/`                                                       | Data builds: `build-regions.mjs` and `build-features.mjs` write their types into the catalogue, places and outlines (`write-catalogue.mjs`) |
 
 ## Server (`packages/server`)
 
@@ -36,28 +36,28 @@ No I/O; the same code runs in the browser and on the server.
 
 ## Client (`packages/client`)
 
-| Module                                           | What it holds                                                                                |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `src/net.ts`                                     | `Connection`: the WebSocket, views as signals, commands, the server clock offset             |
-| `src/heartbeat.ts`                               | Pings the server so a connection that died without closing is noticed and replaced           |
-| `src/screens/`                                   | One component per screen: Home, Lobby, InGame, Reveal, Results, Solo (practice), ScoreReview |
-| `src/ui/`                                        | Shared components; each with a `*TestIds.ts` the browser page objects use                    |
-| `src/round.ts`, `src/vr-round.ts`                | Pure round logic for the page and for VR, tested apart from the components                   |
-| `src/reveal.ts`                                  | A game's reveal: whose paint shows, the order of the scores list, the answer to show         |
-| `src/round-model.ts`                             | What a game's round and reveal tell you, as data the page and the headset each render        |
-| `src/game-vr-view.ts`, `src/practice-vr-view.ts` | A game's and practice's screens as the headset shows them                                    |
-| `src/practice-run.ts`                            | Practice's run: shuffled pool, scoring each round, reveal and next                           |
-| `src/outlines.ts`, `src/borders.ts`              | Lazily loaded outlines and borders; components reach them through `useOutlines`/`useBorders` |
-| `src/map-prefetch.ts`, `src/game-data.ts`        | What the lobby fetches ahead of round 1: the map's first downloads, then the game's data     |
-| `src/sound.ts`, `src/ui/round-cue.ts`            | The sound engine and recordings; which cue a change of game view calls for                   |
-| `src/paint-commands.ts`                          | Clear, Trim and Trim to hint, shared by the page's paint tools and the VR wrist menu         |
-| `src/shortcuts.ts`                               | Every keyboard shortcut: the help card lists it, the handlers match keys against it          |
-| `src/shown-detail.ts`                            | What each map detail level shows, for the page map and the VR globe                          |
-| `src/question-types.ts`                          | Each question type's label, units and colour                                                 |
-| `src/settings.ts`, `src/host-setup.ts`           | Browser-stored settings, and the host's saved setup                                          |
-| `src/map.ts`, `src/paint-*.ts`                   | The MapLibre map and painting on it                                                          |
-| `src/vr/`                                        | The headset scene (three.js, IWSDK)                                                          |
-| `browser/pages/`, `browser/tests/`               | Playwright page objects, and the end-to-end tests that use them                              |
+| Module                                                           | What it holds                                                                                |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `src/net/net.ts`                                                 | `Connection`: the WebSocket, views as signals, commands, the server clock offset             |
+| `src/net/heartbeat.ts`                                           | Pings the server so a connection that died without closing is noticed and replaced           |
+| `src/screens/`                                                   | One component per screen: Home, Lobby, InGame, Reveal, Results, Solo (practice), ScoreReview |
+| `src/ui/`                                                        | Shared components; each with a `*TestIds.ts` the browser page objects use                    |
+| `src/round/round.ts`, `src/vr/view/vr-round.ts`                  | Pure round logic for the page and for VR, tested apart from the components                   |
+| `src/round/reveal.ts`                                            | A game's reveal: whose paint shows, the order of the scores list, the answer to show         |
+| `src/round/round-model.ts`                                       | What a game's round and reveal tell you, as data the page and the headset each render        |
+| `src/vr/view/game-vr-view.ts`, `src/vr/view/practice-vr-view.ts` | A game's and practice's screens as the headset shows them                                    |
+| `src/round/practice-run.ts`                                      | Practice's run: shuffled pool, scoring each round, reveal and next                           |
+| `src/data/outlines.ts`, `src/data/borders.ts`                    | Lazily loaded outlines and borders; components reach them through `useOutlines`/`useBorders` |
+| `src/map/map-prefetch.ts`, `src/data/game-data.ts`               | What the lobby fetches ahead of round 1: the map's first downloads, then the game's data     |
+| `src/sound/sound.ts`, `src/sound/round-cue.ts`                   | The sound engine and recordings; which cue a change of game view calls for                   |
+| `src/paint/paint-commands.ts`                                    | Clear, Trim and Trim to hint, shared by the page's paint tools and the VR wrist menu         |
+| `src/keyboard/shortcuts.ts`                                      | Every keyboard shortcut: the help card lists it, the handlers match keys against it          |
+| `src/map/shown-detail.ts`                                        | What each map detail level shows, for the page map and the VR globe                          |
+| `src/question-types.ts`                                          | Each question type's label, units and colour                                                 |
+| `src/settings/settings.ts`, `src/settings/host-setup.ts`         | Browser-stored settings, and the host's saved setup                                          |
+| `src/map/map.ts`, `src/paint/paint-*.ts`                         | The MapLibre map and painting on it                                                          |
+| `src/vr/`                                                        | The headset scene (three.js, IWSDK)                                                          |
+| `browser/pages/`, `browser/tests/`                               | Playwright page objects, and the end-to-end tests that use them                              |
 
 ## Checklists
 
@@ -66,7 +66,7 @@ No I/O; the same code runs in the browser and on the server.
 1. Add it to `QuestionType` and give it a variant in `questions.ts` (interface, `Question` union), its stored form in `catalogue-entry.ts` (`CatalogueEntry`, `CatalogueEntrySchema`, a case in `joinQuestion`).
 2. Build or write its questions into `catalogue.json` and their places into `places.json` (a build script uses `writeQuestions`; a place painted whole needs its area and outline).
 3. Give it a look in `client/src/question-types.ts`; the mix editor, practice picker and results read it from there.
-4. Check the per-type rules: `EXTRA_TYPES` and `evenMix` in `protocol.ts`, `WITH_REVEAL_PHOTO` in `photos.ts`, the score review's mix in `score-review.ts`, `areaNoun` and the Fill tool in `client/src/round.ts`.
+4. Check the per-type rules: `EXTRA_TYPES` and `evenMix` in `protocol.ts`, `WITH_REVEAL_PHOTO` in `photos.ts`, the score review's mix in `score-review.ts`, `areaNoun` and the Fill tool in `client/src/round/round.ts`.
 5. Bump `PROTOCOL_VERSION`: a game's mix gains a key.
 
 **Add a client→server message or a view field**

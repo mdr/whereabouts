@@ -1,10 +1,10 @@
 /** What each part of the headset shows of a view. */
 import type { MapDetail } from "@whereabouts/shared/protocol"
-import { RevealDetail, type ShownDetail } from "../shown-detail"
-import type { VrBoard } from "./board"
-import type { VrFlagPin } from "./flag-pins"
-import type { VrTable } from "./scores"
-import { VrViewType, type VrView } from "./view"
+import { RevealDetail, type ShownDetail } from "../map/shown-detail"
+import type { VrBoard } from "./scores/board"
+import type { VrFlagPin } from "./globe/flag-pins"
+import type { VrTable } from "./scores/scores"
+import { VrViewType, type VrView } from "./view/view"
 
 /** What the map patch over the globe draws: the reveal's state lines, or the round's detail. */
 export function patchDetail(view: VrView): MapDetail | { stateRound: boolean } | undefined {

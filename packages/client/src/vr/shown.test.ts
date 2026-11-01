@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vite-plus/test"
 import { MapDetail } from "@whereabouts/shared/protocol"
-import { RevealDetail } from "../shown-detail"
-import type { VrFlagPin } from "./flag-pins"
-import type { VrTable } from "./scores"
+import { RevealDetail } from "../map/shown-detail"
+import type { VrFlagPin } from "./globe/flag-pins"
+import type { VrTable } from "./scores/scores"
 import { boardOf, flagPinsOf, globeDetail, paintsKey, patchDetail, tableOf } from "./shown"
-import { VrViewType, type VrReveal, type VrRound, type VrView } from "./view"
+import { VrViewType, type VrReveal, type VrRound, type VrView } from "./view/view"
 
 function makeRound(over: Partial<VrRound> = {}): VrRound {
   return { detail: MapDetail.WATER, ...over } as VrRound

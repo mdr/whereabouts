@@ -11,7 +11,7 @@ import {
   similarityToAnswer,
   type Distribution,
   type ChoosableKernel
-} from "@whereabouts/shared/scoring"
+} from "@whereabouts/shared/scoring/scoring"
 import {
   SHAPE_WEIGHT,
   regionFit,
@@ -19,20 +19,20 @@ import {
   type AnswerParts,
   type Area,
   type ScoredAnswer
-} from "@whereabouts/shared/regions"
-import { RegionKernel, encodeCase } from "@whereabouts/shared/scoring-case"
-import { caseQuestion } from "@whereabouts/shared/score-review"
+} from "@whereabouts/shared/scoring/regions"
+import { RegionKernel, encodeCase } from "@whereabouts/shared/scoring/scoring-case"
+import { caseQuestion } from "@whereabouts/shared/scoring/score-review"
 import { AnswerType, type Question } from "@whereabouts/shared/questions"
 import { greatCircleDistance, toXyz, type LatLon } from "@whereabouts/shared/geo"
-import { usePaint } from "../ui/MapView"
+import { usePaint } from "../ui/map/MapView"
 import { Card } from "../ui/Card"
-import { ScoreParts } from "../ui/ScoreParts"
+import { ScoreParts } from "../ui/round/ScoreParts"
 import { formatDistance } from "../ui/format"
 import { cx } from "../ui/cx"
 import kit from "../ui/kit.module.css"
-import sc from "../ui/Score.module.css"
+import sc from "../ui/round/Score.module.css"
 import s from "./SoloDevTools.module.css"
-import { cheatLiveScore, soloKernelId } from "../settings"
+import { cheatLiveScore, soloKernelId } from "../settings/settings"
 
 function PartsLine({ parts }: { parts: AnswerParts }) {
   if (parts.type === AnswerType.POINT) return <ScoreParts A={parts.A} B={parts.B} />

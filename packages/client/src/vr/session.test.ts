@@ -2,7 +2,7 @@
 import { SessionMode, VisibilityState } from "@iwsdk/core"
 import { signal } from "@preact/signals"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
-import { headsetPassthrough } from "../settings"
+import { headsetPassthrough } from "../settings/settings"
 import { HeadsetSession, SWITCH_TIMEOUT } from "./session"
 
 function makeSession() {

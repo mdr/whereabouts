@@ -1,5 +1,5 @@
 // Builds land.json, the land mask the "Trim sea" button uses: every H3 cell
-// at LAND_RES (see src/land.ts) that touches land, compacted. From Natural Earth's 1:10m land and minor islands (public
+// at LAND_RES (see src/paint/land.ts) that touches land, compacted. From Natural Earth's 1:10m land and minor islands (public
 // domain): the 1:50m land misses atolls such as the Marshall Islands and
 // Tonga, which have questions of their own.
 //

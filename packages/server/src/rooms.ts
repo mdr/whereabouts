@@ -30,13 +30,13 @@ import {
   type PaintSubmission,
   type RoundReveal
 } from "@whereabouts/shared/protocol"
-import type { CommandResult } from "@whereabouts/shared/command-result"
-import { Game } from "@whereabouts/shared/game"
-import type { QuestionBank } from "@whereabouts/shared/round-picking"
-import { decodePaint, encodePaint } from "@whereabouts/shared/paint-wire"
+import type { CommandResult } from "@whereabouts/shared/game/command-result"
+import { Game } from "@whereabouts/shared/game/game"
+import type { QuestionBank } from "@whereabouts/shared/game/round-picking"
+import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import { CloseReason } from "@whereabouts/shared/close-reason"
 import type { Instant, Ms } from "@whereabouts/shared/units"
-import { CATALOGUE, outlinesFrom } from "@whereabouts/shared/catalogue"
+import { CATALOGUE, outlinesFrom } from "@whereabouts/shared/catalogue/catalogue"
 import { generateCode, roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
 // The client loads the outlines on demand; the server holds them all, to score.
 import outlinesJson from "@whereabouts/shared/outlines.json" with { type: "json" }

@@ -1,5 +1,5 @@
 // Re-scores a scoring case copied from the practice dev drawer (see
-// src/scoring-case.ts): the score it was copied with beside today's, under
+// src/scoring/scoring-case.ts): the score it was copied with beside today's, under
 // every kernel, and where the paint is relative to the answer.
 //
 // Usage, from packages/shared:
@@ -7,11 +7,11 @@
 //   pbpaste | node --experimental-transform-types scripts/score-case.mjs
 import { readFileSync } from "node:fs"
 import { greatCircleDistance } from "../src/geo.ts"
-import { PaintLayer } from "../src/paint.ts"
-import { KERNELS, buildDistribution, scoreDistribution } from "../src/scoring.ts"
-import { regionFit, scoreArea } from "../src/regions.ts"
+import { PaintLayer } from "../src/paint/paint.ts"
+import { KERNELS, buildDistribution, scoreDistribution } from "../src/scoring/scoring.ts"
+import { regionFit, scoreArea } from "../src/scoring/regions.ts"
 import { areaOf, questionById } from "./catalogue.mjs"
-import { CaseQuestionType, decodeCase } from "../src/scoring-case.ts"
+import { CaseQuestionType, decodeCase } from "../src/scoring/scoring-case.ts"
 
 const text = readFileSync(process.argv[2] ?? 0, "utf8")
 const c = await decodeCase(text)

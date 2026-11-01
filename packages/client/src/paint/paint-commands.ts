@@ -1,0 +1,34 @@
+/**
+ * Clear and the trims, as the page's brush bar and the VR wrist menu both
+ * offer them. A trim is one undoable step and returns a short note saying
+ * what it did; the whoosh plays only when paint went.
+ */
+import type { HintBand } from "@whereabouts/shared/hints"
+import { loadLandMask, loadWaterMask } from "../data/land"
+import type { PaintModel } from "./paint-model"
+import { sound } from "../sound/sound"
+
+export function clearPaint(paint: Pick<PaintModel, "layer" | "clear">): void {
+  if (!paint.layer.isEmpty) sound.play("clear")
+  paint.clear()
+}
+
+/** Trim sea, or in a lake or sea round Trim land. Its mask loads on first use. */
+export async function trimPaint(paint: Pick<PaintModel, "trimSea" | "trimLand">, water: boolean): Promise<string> {
+  try {
+    const share = water ? paint.trimLand(await loadWaterMask()) : paint.trimSea(await loadLandMask())
+    return trimmed(share, water ? "None on land" : "None at sea")
+  } catch (err) {
+    console.warn("could not load the trim mask", err)
+    return "Try again"
+  }
+}
+
+export function trimPaintToHint(paint: Pick<PaintModel, "trimToHint">, band: HintBand): string {
+  return trimmed(paint.trimToHint(band), "None outside")
+}
+
+function trimmed(share: number, none: string): string {
+  if (share > 0) sound.play("clear")
+  return share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : none
+}

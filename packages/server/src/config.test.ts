@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { KernelId } from "@whereabouts/shared/scoring"
+import { KernelId } from "@whereabouts/shared/scoring/scoring"
 import { evenMix } from "@whereabouts/shared/protocol"
 import { configFromEnv } from "./config.ts"
 

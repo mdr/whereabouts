@@ -1,0 +1,115 @@
+/**
+ * Host settings controls that read at a glance: a row of pills for a small
+ * set of choices, and a − / + stepper for a count.
+ */
+import { Icon } from "../icons"
+import { pillsTestIds, stepperTestIds } from "./ControlsTestIds"
+import s from "./Controls.module.css"
+
+export function Pills<T extends string | number>({
+  label,
+  options,
+  value,
+  onChange
+}: {
+  label: string
+  options: readonly { value: T; label: string }[]
+  value: T
+  onChange: (value: T) => void
+}) {
+  return (
+    <div class={s.pills} role="radiogroup" aria-label={label}>
+      {options.map((o) => (
+        <button
+          key={String(o.value)}
+          type="button"
+          role="radio"
+          aria-checked={o.value === value}
+          class={o.value === value ? s.on : undefined}
+          onClick={() => onChange(o.value)}
+          data-testid={pillsTestIds.option}
+          data-value={o.value}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Like Pills, but any number of options may be on, at least one. */
+export function TogglePills<T extends string>({
+  label,
+  options,
+  value,
+  onChange
+}: {
+  label: string
+  options: readonly { value: T; label: string }[]
+  value: readonly T[]
+  onChange: (value: T[]) => void
+}) {
+  return (
+    <div class={s.pills} role="group" aria-label={label}>
+      {options.map((o) => {
+        const on = value.includes(o.value)
+        return (
+          <button
+            key={o.value}
+            type="button"
+            aria-pressed={on}
+            class={on ? s.on : undefined}
+            disabled={on && value.length === 1}
+            onClick={() =>
+              onChange(options.map((p) => p.value).filter((v) => (v === o.value ? !on : value.includes(v))))
+            }
+            data-testid={pillsTestIds.option}
+            data-value={o.value}
+          >
+            {o.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+export function Stepper({
+  label,
+  value,
+  min,
+  max,
+  onChange
+}: {
+  label: string
+  value: number
+  min: number
+  max: number
+  onChange: (value: number) => void
+}) {
+  return (
+    <div class={s.stepper} role="group" aria-label={label}>
+      <button
+        type="button"
+        aria-label={`Fewer ${label.toLowerCase()}`}
+        data-testid={stepperTestIds.fewerButton}
+        disabled={value <= min}
+        onClick={() => onChange(value - 1)}
+      >
+        <Icon name="minus" />
+      </button>
+      <span class={s.value} aria-live="polite" data-testid={stepperTestIds.value}>
+        {value}
+      </span>
+      <button
+        type="button"
+        aria-label={`More ${label.toLowerCase()}`}
+        data-testid={stepperTestIds.moreButton}
+        disabled={value >= max}
+        onClick={() => onChange(value + 1)}
+      >
+        <Icon name="plus" />
+      </button>
+    </div>
+  )
+}

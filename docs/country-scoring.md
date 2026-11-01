@@ -2,9 +2,9 @@
 
 "Paint the whole of Germany" asks for an area, not a point. This note records
 how those answers are scored, why, and what was tried and dropped on the way.
-The code is `packages/shared/src/regions.ts`; the numbers below come from the
+The code is `packages/shared/src/scoring/regions.ts`; the numbers below come from the
 calibration runs and playtests described, and the tests in
-`packages/shared/src/regions.test.ts` pin the main ones.
+`packages/shared/src/scoring/regions.test.ts` pin the main ones.
 
 ## What a good rule has to do
 

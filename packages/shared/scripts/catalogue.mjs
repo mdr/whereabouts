@@ -2,9 +2,9 @@
 // its scored area (outline polygons, centre, tolerance) with its id and
 // label; a place as its point.
 import { readFileSync } from "node:fs"
-import { CATALOGUE, outlinesFrom } from "../src/catalogue.ts"
+import { CATALOGUE, outlinesFrom } from "../src/catalogue/catalogue.ts"
 import { AnswerType, QuestionType } from "../src/questions.ts"
-import { scoredAnswer } from "../src/regions.ts"
+import { scoredAnswer } from "../src/scoring/regions.ts"
 
 const outlines = outlinesFrom(JSON.parse(readFileSync(new URL("../outlines.json", import.meta.url), "utf8")))
 

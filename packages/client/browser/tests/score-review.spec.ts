@@ -2,7 +2,7 @@
 // keyboard and by clicking, a pair compared (pointing at one shows it
 // alone), the export, and the screen on a phone. Saves screenshots.
 import { test } from "@playwright/test"
-import { decodeCase } from "@whereabouts/shared/scoring-case"
+import { decodeCase } from "@whereabouts/shared/scoring/scoring-case"
 import { check, newTab, shot } from "./support.ts"
 
 test("score-review", async ({ browser }) => {

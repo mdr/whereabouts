@@ -1,7 +1,7 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { PlayerName, RoomCode } from "@whereabouts/shared/ids"
-import { Connection, ConnectionStatus } from "../net"
+import { Connection, ConnectionStatus } from "../net/net"
 import {
   askedToWatch,
   joinedCode,
@@ -11,19 +11,19 @@ import {
   seatToken,
   resetPlayerToken,
   watchHandoff
-} from "../settings"
-import { preloadPictures } from "../preload"
+} from "../settings/settings"
+import { preloadPictures } from "../data/preload"
 import { navigate } from "../router"
-import { MapView } from "../ui/MapView"
+import { MapView } from "../ui/map/MapView"
 import { Lobby } from "./Lobby"
 import { InGame } from "./InGame"
 import { Results } from "./Results"
 import { Banner } from "../ui/Banner"
 import { Icon } from "../ui/icons"
-import { useGameSounds } from "../ui/useGameSounds"
-import { useSavedSetup } from "../host-setup"
+import { useGameSounds } from "../sound/useGameSounds"
+import { useSavedSetup } from "../settings/host-setup"
 import { useVrHold, useVrView } from "../ui/VrButton"
-import { VrViewType, type VrAction } from "../vr/view"
+import { VrViewType, type VrAction } from "../vr/view/view"
 import { joinAsTestIds, joinedTestIds } from "./MultiplayerTestIds"
 import kit from "../ui/kit.module.css"
 import s from "./Multiplayer.module.css"

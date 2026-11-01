@@ -7,9 +7,9 @@
 //   node --experimental-transform-types scripts/compare-modes.mjs                         Paris and France, Germany as the neighbour
 //   node --experimental-transform-types scripts/compare-modes.mjs berlin Germany Poland   a place id, a country, a neighbour
 import * as h3 from "h3-js"
-import { buildDistribution, scoreDistribution } from "../src/scoring.ts"
-import { resolutionForTolerance } from "../src/paint.ts"
-import { regionCells, regionFit, scoreArea } from "../src/regions.ts"
+import { buildDistribution, scoreDistribution } from "../src/scoring/scoring.ts"
+import { resolutionForTolerance } from "../src/paint/paint.ts"
+import { regionCells, regionFit, scoreArea } from "../src/scoring/regions.ts"
 import { COUNTRIES, PLACES } from "./catalogue.mjs"
 
 const country = (label) => COUNTRIES.find((r) => r.label === label) ?? fail(label)

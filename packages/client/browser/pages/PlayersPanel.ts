@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test"
-import { playersPanelTestIds } from "../../src/ui/PlayersPanelTestIds.ts"
-import { playerListTestIds } from "../../src/ui/PlayerListTestIds.ts"
+import { playersPanelTestIds } from "../../src/ui/players/PlayersPanelTestIds.ts"
+import { playerListTestIds } from "../../src/ui/players/PlayerListTestIds.ts"
 import { ConfirmDialog } from "./ConfirmDialog.ts"
 import { PlayerList } from "./PlayerList.ts"
 import { byTestIdWith } from "./support.ts"

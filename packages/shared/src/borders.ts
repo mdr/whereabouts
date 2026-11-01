@@ -18,8 +18,8 @@
 import { greatCircleDistance, type LatLon } from "./geo.ts"
 import { answerCentre, type FlagQuestion } from "./questions.ts"
 import { flagCode, type FlagCode } from "./ids.ts"
-import type { PaintCell } from "./paint.ts"
-import type { FillShape } from "./fill.ts"
+import type { PaintCell } from "./paint/paint.ts"
+import type { FillShape } from "./paint/fill.ts"
 import type { Km, Px } from "./units.ts"
 
 interface BorderData {

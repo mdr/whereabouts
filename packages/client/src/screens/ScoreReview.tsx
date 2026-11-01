@@ -8,8 +8,8 @@
  */
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import { AnswerType, type Outlines } from "@whereabouts/shared/questions"
-import { CATALOGUE } from "@whereabouts/shared/catalogue"
-import { questionView } from "@whereabouts/shared/game-views"
+import { CATALOGUE } from "@whereabouts/shared/catalogue/catalogue"
+import { questionView } from "@whereabouts/shared/game/game-views"
 import {
   REVIEW_VERSION,
   ReviewCaseType,
@@ -17,24 +17,24 @@ import {
   reviewCases,
   scoreGuess,
   type ScoreVerdict
-} from "@whereabouts/shared/score-review"
+} from "@whereabouts/shared/scoring/score-review"
 import { colourCss, playerColour } from "@whereabouts/shared/colours"
-import { kernelById } from "@whereabouts/shared/scoring"
-import { MapView, usePaint } from "../ui/MapView"
+import { kernelById } from "@whereabouts/shared/scoring/scoring"
+import { MapView, usePaint } from "../ui/map/MapView"
 import { Card } from "../ui/Card"
-import { Answer, CardPlace, QuestionCard } from "../ui/QuestionCard"
-import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../ui/Hud"
-import { ScoreCard } from "../ui/Round"
-import { Swatch } from "../ui/PlayerList"
+import { Answer, CardPlace, QuestionCard } from "../ui/round/QuestionCard"
+import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../ui/map/Hud"
+import { ScoreCard } from "../ui/round/Round"
+import { Swatch } from "../ui/players/PlayerList"
 import { cx } from "../ui/cx"
 import kit from "../ui/kit.module.css"
-import pl from "../ui/Players.module.css"
+import pl from "../ui/players/Players.module.css"
 import s from "./ScoreReview.module.css"
-import { isTyping } from "../keys"
-import { useOutlines } from "../outlines"
-import { RevealDetail } from "../shown-detail"
-import { LoadingOutlines } from "../ui/LoadingOutlines"
-import { reviewSet, scoreVerdicts, soloKernelId } from "../settings"
+import { isTyping } from "../keyboard/keys"
+import { useOutlines } from "../data/outlines"
+import { RevealDetail } from "../map/shown-detail"
+import { LoadingOutlines } from "../ui/map/LoadingOutlines"
+import { reviewSet, scoreVerdicts, soloKernelId } from "../settings/settings"
 import { scoreReviewTestIds } from "./ScoreReviewTestIds"
 
 type Choice = -2 | -1 | 0 | 1 | 2

@@ -234,7 +234,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
   (which stops the countdown before its alarm); applause for everyone at
   the final results. The recordings are CC0 from Freesound, cut and
   volume-matched into `packages/client/src/assets/sounds` (the sources are
-  listed at the top of `packages/client/src/sound.ts`); the marimba is
+  listed at the top of `packages/client/src/sound/sound.ts`); the marimba is
   synthesised. Audio starts on the first tap or key press, as browsers
   require, and on iPhone and iPad the silent switch mutes it.
 - Paint is private until the round ends. The reveal shows the answer, every
@@ -321,7 +321,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
   at least 50 km apart. The question photo
   enlarges on click; the enlarged view zooms with the wheel or a pinch and
   pans by dragging.
-- **Paint** is stored on sparse H3 hexagons (`src/paint.ts`) at mixed
+- **Paint** is stored on sparse H3 hexagons (`src/paint/paint.ts`) at mixed
   resolutions. The finest resolution is chosen per question so a cell edge is
   at most a quarter of the tolerance; each brush stroke then uses the coarsest
   resolution that still fits about five cells across the brush, so painting a
@@ -331,7 +331,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
   edge into its children first, so only the part under the brush goes.
 - **World floor** spreads a chosen share of the mass evenly over the whole
   planet. Its kernel integrals have a closed form, so it costs no cells.
-- **Scoring** (`src/scoring.ts`) is the Gaussian-kernel proper scoring rule
+- **Scoring** (`src/scoring/scoring.ts`) is the Gaussian-kernel proper scoring rule
   from the design note: `score = 500 (1 + 2A - B)` with
   `k(a,b) = 2^-(d/r)^2` and `d` the chord distance on the Earth sphere.
   Games and practice both use a mixture of that Gaussian at `r`, `4r` and
@@ -350,7 +350,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
 - **Colour theme**: "dark ops", a near-black ocean and slate land with paint
   glowing from teal to white and an amber answer marker. The theme recolours
   the basemap layers in place; two playtested alternatives (viridis, paper
-  map) remain in `src/themes.ts` for reference.
+  map) remain in `src/map/themes.ts` for reference.
 - **Kernel options** (Cheats card of the developer drawer): practice can
   switch from the game's kernel to the single Gaussian of the design note or
   the 0.5/0.3/0.2 mixture, for comparison. A positive mixture of Gaussians is still a valid
@@ -451,7 +451,7 @@ the map still drags. A country scored as a shape is filled with the outline
 it is scored by, so filling the right one scores about 999; any other is
 filled with its land from `borders.json`, and a flag round asked as a point
 scores like an even coat of the country (Russia about 880, Malta about 980).
-See `packages/shared/src/fill.ts`.
+See `packages/shared/src/paint/fill.ts`.
 
 The outline under the pointer is the brush footprint: the exact hex cells the next stamp will touch, at the
 resolution the layer picks for that brush size, so at world zoom you see the

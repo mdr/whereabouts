@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { coarserRes, finerRes, getResolution, h3Cell, h3Res, latLngToCell, resolutionsTo } from "./h3.ts"
-import { decodePaint, encodePaint } from "./paint-wire.ts"
+import { decodePaint, encodePaint } from "./paint/paint-wire.ts"
 
 describe("H3 cells and resolutions", () => {
   it("are made only from values of their own format", () => {

@@ -18,7 +18,7 @@ import {
   WikiTitleSchema
 } from "./ids.ts"
 import { HintAxisSchema } from "./hints.ts"
-import { KernelIdSchema } from "./scoring.ts"
+import { KernelIdSchema } from "./scoring/scoring.ts"
 import { H3CellSchema, H3ResSchema } from "./h3.ts"
 import { MapDetailSchema, MixSchema, Phase } from "./protocol.ts"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "./questions.ts"

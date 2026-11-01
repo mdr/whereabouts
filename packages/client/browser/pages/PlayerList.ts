@@ -1,5 +1,5 @@
 import type { Locator } from "@playwright/test"
-import { playerListTestIds } from "../../src/ui/PlayerListTestIds.ts"
+import { playerListTestIds } from "../../src/ui/players/PlayerListTestIds.ts"
 import { until } from "./support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 

@@ -1,5 +1,5 @@
 /** Server settings from the environment, kept pure so they can be tested. */
-import { KernelIdSchema } from "@whereabouts/shared/scoring"
+import { KernelIdSchema } from "@whereabouts/shared/scoring/scoring"
 import { evenMix, type GameConfig } from "@whereabouts/shared/protocol"
 import type { AddressLimits } from "./address-limiter.ts"
 

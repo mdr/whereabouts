@@ -2,7 +2,7 @@
 // Saves screenshots of the headset's view.
 import { test } from "@playwright/test"
 import { soloTestIds } from "../../src/screens/SoloTestIds.ts"
-import { VrViewType } from "../../src/vr/view.ts"
+import { VrViewType } from "../../src/vr/view/view.ts"
 import { until } from "../pages/support.ts"
 import { check, shot } from "./support.ts"
 import { vrPracticeAnswer, vrPracticePainted } from "./vr-states.ts"

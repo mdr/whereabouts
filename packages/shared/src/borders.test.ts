@@ -2,8 +2,8 @@ import { describe, expect, it } from "vite-plus/test"
 import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell, UNITS } from "./h3.ts"
 import bordersJson from "../borders.json" with { type: "json" }
 import { Borders } from "./borders.ts"
-import type { PaintCell } from "./paint.ts"
-import { CATALOGUE, isFlagQuestion } from "./catalogue.ts"
+import type { PaintCell } from "./paint/paint.ts"
+import { CATALOGUE, isFlagQuestion } from "./catalogue/catalogue.ts"
 import { answerCentre } from "./questions.ts"
 
 const flags = CATALOGUE.filter(isFlagQuestion)

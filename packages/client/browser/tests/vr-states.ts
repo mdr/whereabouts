@@ -1,7 +1,7 @@
 // Starting states for the practice specs in an emulated headset.
 import type { Browser } from "@playwright/test"
 import { soloTestIds } from "../../src/screens/SoloTestIds.ts"
-import { VrViewType } from "../../src/vr/view.ts"
+import { VrViewType } from "../../src/vr/view/view.ts"
 import type { Headset } from "../pages/Headset.ts"
 import type { PracticeRoundPage } from "../pages/PracticeRoundPage.ts"
 import { until } from "../pages/support.ts"

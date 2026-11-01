@@ -20,7 +20,7 @@ import {
   MapDetail
 } from "@whereabouts/shared/protocol"
 import { AnswerType, ClueType, QuestionType, Surface, type FlagQuestion } from "@whereabouts/shared/questions"
-import { KernelId } from "@whereabouts/shared/scoring"
+import { KernelId } from "@whereabouts/shared/scoring/scoring"
 import { h3Res } from "@whereabouts/shared/h3"
 
 type ViewOverrides = Partial<Omit<GameView, "you">> & { you?: Partial<GameView["you"]> }

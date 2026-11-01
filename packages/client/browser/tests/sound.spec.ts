@@ -5,7 +5,7 @@
 // finishes early, the alarm when time runs out, applause at the final
 // results, and silence with the switch off.
 import { test } from "@playwright/test"
-import { Tool } from "../../src/tool.ts"
+import { Tool } from "../../src/paint/tool.ts"
 import { cueNotes, pageTime, played, recordSounds, stopped, takeSounds } from "./sounds.ts"
 import { check, newTab, SWIFTSHADER } from "./support.ts"
 

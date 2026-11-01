@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vite-plus/test"
 import { HINT_WIDTH_TOLERANCES, describeHint, hintBand, inHintBand, seededUnit, trimToHint, HintAxis } from "./hints.ts"
-import { CATALOGUE } from "./catalogue.ts"
+import { CATALOGUE } from "./catalogue/catalogue.ts"
 import { answerCentre } from "./questions.ts"
-import { PaintLayer, resolutionForTolerance } from "./paint.ts"
+import { PaintLayer, resolutionForTolerance } from "./paint/paint.ts"
 import { cellToLatLng, h3Res, latLngToCell, type H3Cell } from "./h3.ts"
 
 describe("hintBand", () => {

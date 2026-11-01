@@ -1,11 +1,11 @@
 import { Banner } from "../ui/Banner"
-import { Hud, HudCenter } from "../ui/Hud"
+import { Hud, HudCenter } from "../ui/map/Hud"
 import { Icon } from "../ui/icons"
 import kit from "../ui/kit.module.css"
-import sc from "../ui/Score.module.css"
+import sc from "../ui/round/Score.module.css"
 import { VrButton } from "../ui/VrButton"
-import type { VrView } from "../vr/view"
-import { runMaximum, runTotal, type PracticeRun } from "../practice-run"
+import type { VrView } from "../vr/view/view"
+import { runMaximum, runTotal, type PracticeRun } from "../round/practice-run"
 
 /** Practice's final score and its rounds, with a fresh run to start. */
 export function SoloDone({ run, restart, vrView }: { run: PracticeRun; restart: () => void; vrView: VrView }) {

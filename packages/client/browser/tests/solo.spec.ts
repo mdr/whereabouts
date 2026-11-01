@@ -4,7 +4,7 @@
 // paint on the globe but not the space around it, submit, and see a score.
 // Saves screenshots.
 import { test } from "@playwright/test"
-import { Tool } from "../../src/tool.ts"
+import { Tool } from "../../src/paint/tool.ts"
 import { HintAxis } from "@whereabouts/shared/hints"
 import { check, newTab, shot } from "./support.ts"
 

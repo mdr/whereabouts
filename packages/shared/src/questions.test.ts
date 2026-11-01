@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import outlinesJson from "../outlines.json" with { type: "json" }
-import { CATALOGUE, outlinesFrom } from "./catalogue.ts"
+import { CATALOGUE, outlinesFrom } from "./catalogue/catalogue.ts"
 import {
   AnswerType,
   ClueType,

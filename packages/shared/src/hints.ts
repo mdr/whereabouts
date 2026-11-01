@@ -6,7 +6,7 @@
 import { z } from "zod"
 import type { LatLon } from "./geo.ts"
 import { cellToBoundary, cellToLatLng, type H3Cell, type H3Res } from "./h3.ts"
-import { keepCells } from "./land.ts"
+import { keepCells } from "./paint/land.ts"
 import type { Degrees, Km } from "./units.ts"
 
 export enum HintAxis {

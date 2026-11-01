@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vite-plus/test"
-import { PaintLayer } from "@whereabouts/shared/paint"
+import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import { h3Res } from "@whereabouts/shared/h3"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { colouredPaint, framing } from "./reveal"
-import { latLonToLocal } from "./sphere"
-import type { VrReveal, VrRound } from "./view"
+import { latLonToLocal } from "./globe/sphere"
+import type { VrReveal, VrRound } from "./view/view"
 
 function makeLayer(at?: LatLon, km = 50): PaintLayer {
   const layer = new PaintLayer(h3Res(4))

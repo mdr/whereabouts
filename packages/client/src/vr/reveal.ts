@@ -2,9 +2,9 @@
 import { Vector3 } from "three"
 import type { H3Cell } from "@whereabouts/shared/h3"
 import type { LatLon } from "@whereabouts/shared/geo"
-import type { PaintLayer } from "@whereabouts/shared/paint"
-import { latLonToLocal, localToLatLon } from "./sphere"
-import type { VrReveal, VrRound } from "./view"
+import type { PaintLayer } from "@whereabouts/shared/paint/paint"
+import { latLonToLocal, localToLatLon } from "./globe/sphere"
+import type { VrReveal, VrRound } from "./view/view"
 
 /**
  * Where the reveal turns the globe to, and how wide round it to show: the
