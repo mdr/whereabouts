@@ -8,7 +8,8 @@ import Fastify, { type FastifyInstance } from "fastify"
 import fastifyStatic from "@fastify/static"
 import { Rivalis, TokenBucketRateLimiter, logging } from "@rivalis/core"
 import WSTransport from "./vendor/WSTransport.ts"
-import { GameAuth, GameRoom, ROOM_TYPE, kickForRestart, type ActorData } from "./rooms.ts"
+import { GameAuth } from "./game-auth.ts"
+import { GameRoom, ROOM_TYPE, kickForRestart, type ActorData } from "./rooms.ts"
 import { AddressLimiter, type AddressLimits } from "./address-limiter.ts"
 
 export interface AppOptions {

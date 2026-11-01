@@ -3,15 +3,7 @@
  * This is the only module that knows about Rivalis rooms and actors; the
  * Game itself is I/O free and tested on its own.
  */
-import {
-  type Actor,
-  AuthMiddleware,
-  Room,
-  type AuthResult,
-  type ConnectionContext,
-  type RoomManager
-} from "@rivalis/core"
-import { type z } from "zod"
+import { type Actor, Room, type RoomManager } from "@rivalis/core"
 import {
   ClientMessageSchemas,
   type ClientMessages,
@@ -19,29 +11,23 @@ import {
 } from "@whereabouts/shared/protocol/client-messages"
 import { EMPTY_GAME_GRACE, EMPTY_RESULTS_GRACE, SEAT_GRACE, type GameConfig } from "@whereabouts/shared/protocol/config"
 import { Phase, type PaintSubmission, type RoundReveal } from "@whereabouts/shared/protocol/views"
-import {
-  ServerTopics,
-  decodeMessage,
-  encodeMessage,
-  revealMessage,
-  stateMessage
-} from "@whereabouts/shared/protocol/server-messages"
-import { decodeTicket, GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
+import { ServerTopics, encodeMessage, revealMessage, stateMessage } from "@whereabouts/shared/protocol/server-messages"
+import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
 import type { CommandResult } from "@whereabouts/shared/game/command-result"
 import { Game } from "@whereabouts/shared/game/game"
 import type { QuestionBank } from "@whereabouts/shared/game/round-picking"
-import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
+import { encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import { CloseReason } from "@whereabouts/shared/close-reason"
 import { Role } from "@whereabouts/shared/roles"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 import { CATALOGUE, outlinesFrom } from "@whereabouts/shared/catalogue/catalogue"
-import { generateCode, roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
+import { roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
 // The client loads the outlines on demand; the server holds them all, to score.
 import outlinesJson from "@whereabouts/shared/outlines.json" with { type: "json" }
-import { TicketRefused } from "./vendor/WSTransport.ts"
+import { readJson, readPaint, type Parsed } from "./inbound.ts"
 
 /** Close reasons are codes from the shared list, which the client words. */
-const closeReason = (reason: CloseReason): string => reason
+export const closeReason = (reason: CloseReason): string => reason
 
 /** Tell everyone connected that the server is going away, before Rivalis closes the rooms with its own reason. */
 export function kickForRestart(rooms: RoomManager<ActorData>): void {
@@ -297,65 +283,3 @@ type Handler<T> = (token: PlayerToken, body: T, now: Instant) => CommandResult
 type Commands = { [K in ClientTopic]: Handler<ClientMessages[K]> }
 /** One handler per topic, paint included, each given its topic's parsed body. */
 type Handlers = Commands & { paint: Handler<PaintSubmission> }
-
-// The schemas seen as a mapped type, so indexing with a generic topic gives
-// that topic's body rather than a union of all of them.
-const schemas: { [K in ClientTopic]: z.ZodType<ClientMessages[K]> } = ClientMessageSchemas
-
-type Parsed<T> = { ok: true; data: T } | { ok: false; error: string }
-
-function readJson<K extends ClientTopic>(topic: K, payload: Uint8Array): Parsed<ClientMessages[K]> {
-  let body: unknown
-  try {
-    body = decodeMessage(payload)
-  } catch {
-    return { ok: false, error: "malformed message" }
-  }
-  const parsed = schemas[topic].safeParse(body)
-  return parsed.success ? { ok: true, data: parsed.data } : { ok: false, error: `invalid ${topic}` }
-}
-
-function readPaint(payload: Uint8Array): Parsed<PaintSubmission> {
-  const paint = decodePaint(payload)
-  return paint ? { ok: true, data: paint } : { ok: false, error: "invalid paint" }
-}
-
-/**
- * Parses the ticket, creates the room for hosts, and routes joiners to their
- * game by code. Whether they may join is the game's call (Game.join).
- */
-export class GameAuth extends AuthMiddleware<ActorData> {
-  private rooms: () => RoomManager<ActorData>
-
-  constructor(rooms: () => RoomManager<ActorData>) {
-    super()
-    this.rooms = rooms
-  }
-
-  override async authenticate(ticket: string, context?: ConnectionContext) {
-    return this.route(ticket, context?.remoteId ?? "unknown")
-  }
-
-  private route(ticket: string, address: string): AuthResult<ActorData> {
-    const parsed = decodeTicket(ticket)
-    if (parsed === CloseReason.OUTDATED) throw new TicketRefused(closeReason(CloseReason.OUTDATED))
-    if (!parsed) throw new TicketRefused(closeReason(CloseReason.NO_SUCH_GAME))
-    const rooms = this.rooms()
-    const { entry } = parsed
-    let roomId: string
-    if (entry.type === GameEntryType.JOIN) {
-      if (!rooms.get(entry.code)) throw new TicketRefused(closeReason(CloseReason.NO_SUCH_GAME))
-      roomId = entry.code
-    } else if (entry.code) {
-      // Hosting again under an old code; if someone just did, join them.
-      roomId = entry.code
-      if (!rooms.get(roomId)) rooms.create(ROOM_TYPE, roomId)
-    } else {
-      roomId = generateCode()
-      for (let i = 0; i < 20 && rooms.get(roomId); i++) roomId = generateCode()
-      if (rooms.get(roomId)) throw new TicketRefused(closeReason(CloseReason.UNAVAILABLE))
-      rooms.create(ROOM_TYPE, roomId)
-    }
-    return { data: { token: parsed.token, name: parsed.name, entry, address }, roomId }
-  }
-}
