@@ -5,8 +5,10 @@ import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import { makePlayer } from "../../test-view"
 import type { PlayerView } from "@whereabouts/shared/protocol"
-import { HostTag, PlayerList, initial } from "./PlayerList"
+import { PlayerList, initial } from "./PlayerList"
+import { HostTag } from "./HostTag"
 import { playerListTestIds } from "./PlayerListTestIds"
+import { rankArrowTestIds } from "./RankArrowTestIds"
 import s from "./Players.module.css"
 
 const player = (over: Partial<PlayerView>): PlayerView => makePlayer({ isHost: false, ...over })
@@ -46,7 +48,7 @@ describe("PlayerList", () => {
         arrows
       />
     )
-    const arrows = screen.getAllByTestId(playerListTestIds.arrow).map((a) => a.textContent)
+    const arrows = screen.getAllByTestId(rankArrowTestIds.arrow).map((a) => a.textContent)
     expect(arrows).toEqual(["▲", "", "▼"])
     expect(screen.getAllByTestId(playerListTestIds.score).map((s) => s.textContent)).toEqual(["900", "500", "100"])
   })

@@ -1,7 +1,7 @@
 import type { Points } from "@whereabouts/shared/units"
 import type { FinalStanding, PlayedRound, PlayerView } from "@whereabouts/shared/protocol"
 import { cx } from "../../ui/cx"
-import { Swatch, SwatchType } from "../../ui/players/PlayerList"
+import { Swatch, SwatchType } from "../../ui/players/Swatch"
 import { RoundWhat } from "./RoundWhat"
 import { roundListTestIds } from "./RoundListTestIds"
 import { roundsTestIds } from "./RoundsTestIds"

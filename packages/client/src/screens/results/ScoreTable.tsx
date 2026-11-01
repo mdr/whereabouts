@@ -1,5 +1,5 @@
 import { cx } from "../../ui/cx"
-import { Swatch, SwatchType } from "../../ui/players/PlayerList"
+import { Swatch, SwatchType } from "../../ui/players/Swatch"
 import { RoundWhat } from "./RoundWhat"
 import type { RoundListProps } from "./RoundList"
 import { roundsTestIds } from "./RoundsTestIds"

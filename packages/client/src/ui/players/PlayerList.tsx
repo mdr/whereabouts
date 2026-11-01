@@ -1,52 +1,13 @@
-import { colourCss, type CssColour, type PlayerColour } from "@whereabouts/shared/colours"
+import { colourCss } from "@whereabouts/shared/colours"
 import type { PlayerId } from "@whereabouts/shared/ids"
 import type { PlayerView } from "@whereabouts/shared/protocol"
 import { Icon } from "../icons"
 import { playerListTestIds } from "./PlayerListTestIds"
 import { cx } from "../cx"
+import { HostTag } from "./HostTag"
+import { RankArrow } from "./RankArrow"
+import { Swatch, SwatchType } from "./Swatch"
 import s from "./Players.module.css"
-
-export enum SwatchType {
-  PLAYER = "PLAYER",
-  CSS = "CSS",
-  EVERYONE = "EVERYONE"
-}
-
-/** A player's colour; undefined for a spectator. */
-interface PlayerSwatch {
-  type: SwatchType.PLAYER
-  colour: PlayerColour | undefined
-}
-
-/** A colour that is no player's. */
-interface CssSwatch {
-  type: SwatchType.CSS
-  css: CssColour
-}
-
-/** All the players' colours. */
-interface EveryoneSwatch {
-  type: SwatchType.EVERYONE
-}
-
-/** A colour dot: a player's, a plain CSS colour, or everyone's. */
-export function Swatch(props: (PlayerSwatch | CssSwatch | EveryoneSwatch) & { as?: "span" | "i"; class?: string }) {
-  const { as: Tag = "span", class: cls } = props
-  const everyone = props.type === SwatchType.EVERYONE
-  const style = everyone
-    ? undefined
-    : { background: props.type === SwatchType.CSS ? props.css : colourCss(props.colour) }
-  return <Tag class={cx(s.swatch, everyone && s.everyone, cls)} style={style} />
-}
-
-/** ▲ or ▼ as a player's rank moved. */
-export function RankArrow({ delta }: { delta: number }) {
-  return (
-    <span class={cx(s.arrow, delta > 0 && s.up, delta < 0 && s.down)} data-testid={playerListTestIds.arrow}>
-      {delta > 0 ? "▲" : delta < 0 ? "▼" : ""}
-    </span>
-  )
-}
 
 const graphemes = new Intl.Segmenter()
 
@@ -54,26 +15,6 @@ const graphemes = new Intl.Segmenter()
 export function initial(name: string): string {
   const first = graphemes.segment(name.trim())[Symbol.iterator]().next()
   return first.done ? "?" : first.value.segment.toUpperCase()
-}
-
-/** Crown tag marking the host in a player row; the word stays for screen readers. */
-export function HostTag() {
-  return (
-    <span class={s.host} title="Host" data-testid={playerListTestIds.hostTag}>
-      <Icon name="crown" size={12} />
-      <span class="sr-only">host</span>
-    </span>
-  )
-}
-
-/** "the host" in running text, with the crown. */
-export function HostWord({ capital }: { capital?: boolean }) {
-  return (
-    <span class={s.hostWord}>
-      <Icon name="crown" size={12} />
-      {capital ? "The host" : "the host"}
-    </span>
-  )
 }
 
 export function PlayerList({

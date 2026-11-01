@@ -1,5 +1,6 @@
 import type { Locator } from "@playwright/test"
 import { playerListTestIds } from "../../../src/ui/players/PlayerListTestIds.ts"
+import { hostTagTestIds } from "../../../src/ui/players/HostTagTestIds.ts"
 import { until } from "../support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
@@ -23,7 +24,7 @@ export class PlayerList {
     return Promise.all(
       rows.map(async (row) => ({
         name: (await row.getByTestId(playerListTestIds.name).textContent())?.trim() ?? "",
-        isHost: (await row.getByTestId(playerListTestIds.hostTag).count()) > 0,
+        isHost: (await row.getByTestId(hostTagTestIds.hostTag).count()) > 0,
         removable: (await row.getByTestId(playerListTestIds.kickButton).count()) > 0
       }))
     )

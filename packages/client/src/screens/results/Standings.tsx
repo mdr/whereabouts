@@ -1,6 +1,7 @@
 import type { FinalStanding, PlayerView } from "@whereabouts/shared/protocol"
 import { cx } from "../../ui/cx"
-import { HostTag, Swatch, SwatchType } from "../../ui/players/PlayerList"
+import { HostTag } from "../../ui/players/HostTag"
+import { Swatch, SwatchType } from "../../ui/players/Swatch"
 import { standingsTestIds } from "./StandingsTestIds"
 import s from "./Standings.module.css"
 

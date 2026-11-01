@@ -1,6 +1,6 @@
 import { ReviewCaseType, type ReviewCase, type ScoreVerdict } from "@whereabouts/shared/scoring/score-review"
 import { Card } from "../../ui/Card"
-import { Swatch, SwatchType } from "../../ui/players/PlayerList"
+import { Swatch, SwatchType } from "../../ui/players/Swatch"
 import { cx } from "../../ui/cx"
 import kit from "../../ui/kit.module.css"
 import pl from "../../ui/players/Players.module.css"

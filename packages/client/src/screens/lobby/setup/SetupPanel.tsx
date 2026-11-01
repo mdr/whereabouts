@@ -1,6 +1,6 @@
 import type { GameView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../../../net/net"
-import { HostWord } from "../../../ui/players/PlayerList"
+import { HostWord } from "../../../ui/players/HostWord"
 import { Icon } from "../../../ui/icons"
 import { VrButton } from "../../../ui/VrButton"
 import type { VrView } from "../../../vr/view/view"
