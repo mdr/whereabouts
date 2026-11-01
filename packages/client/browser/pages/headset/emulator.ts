@@ -27,7 +27,7 @@ interface EmulatedController {
 }
 
 /** Put an emulated Meta Quest 3 (Meta's IWER) in place of WebXR. Install before the page loads. */
-export async function installEmulator(page: Page): Promise<void> {
+export const installEmulator = async (page: Page): Promise<void> => {
   const iwer = createRequire(import.meta.url).resolve("iwer/build/iwer.min.js")
   await page.context().addInitScript({ path: iwer })
   await page.context().addInitScript(() => {

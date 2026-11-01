@@ -14,7 +14,7 @@ export interface PlayerOptions {
 }
 
 /** A new browser context and tab, with its page errors logged under `label`. */
-export async function newTab(browser: Browser, label: string, options: PlayerOptions = {}): Promise<Tab> {
+export const newTab = async (browser: Browser, label: string, options: PlayerOptions = {}): Promise<Tab> => {
   const context = await browser.newContext(options.context ?? { viewport: { width: 1300, height: 900 } })
   if (options.initScript) await context.addInitScript(options.initScript)
   const page = await context.newPage()
@@ -28,7 +28,7 @@ export async function newTab(browser: Browser, label: string, options: PlayerOpt
 }
 
 /** A named check that lets the test carry on when it fails, so one run reports every failure. */
-export function check(ok: boolean, what: string): void {
+export const check = (ok: boolean, what: string): void => {
   console.log(`${ok ? "ok  " : "FAIL"} ${what}`)
   expect.soft(ok, what).toBe(true)
 }

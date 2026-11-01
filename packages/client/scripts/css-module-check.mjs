@@ -1,7 +1,7 @@
 // Checks that every class a CSS module composes exists, which lightningcss does not.
 import { composesDeclarations } from "./css-module-source.mjs"
 
-function distance(a, b) {
+const distance = (a, b) => {
   let row = Array.from({ length: b.length + 1 }, (_, i) => i)
   for (let i = 1; i <= a.length; i++) {
     const next = [i]
@@ -13,7 +13,7 @@ function distance(a, b) {
   return row[b.length]
 }
 
-function didYouMean(name, candidates) {
+const didYouMean = (name, candidates) => {
   const [best] = [...candidates].map((c) => [c, distance(name, c)]).sort((a, b) => a[1] - b[1])
   return best && best[1] <= Math.max(2, name.length / 3) ? ` Did you mean "${best[0]}"?` : ""
 }
@@ -23,7 +23,7 @@ function didYouMean(name, candidates) {
  * `exports` is lightningcss's result for the module; `lookup(specifier)` gives
  * the class names another module exports, or undefined if it doesn't exist.
  */
-export function composesErrors({ file, css, exports, lookup }) {
+export const composesErrors = ({ file, css, exports, lookup }) => {
   const declarations = composesDeclarations(css)
   const lineOf = (name, from) => (declarations.find((d) => d.names.includes(name) && d.from === from)?.line ?? 0) + 1
   const own = Object.keys(exports)

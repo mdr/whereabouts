@@ -10,16 +10,16 @@ export interface PnpmDeps {
   hash: string
 }
 
-export function lockfileFingerprint(): string {
+export const lockfileFingerprint = (): string => {
   const hash = createHash("sha256")
   for (const name of ["pnpm-lock.yaml", "pnpm-workspace.yaml"]) hash.update(readFileSync(new URL(name, root)))
   return hash.digest("hex")
 }
 
-export function readPnpmDeps(): PnpmDeps {
+export const readPnpmDeps = (): PnpmDeps => {
   return JSON.parse(readFileSync(file, "utf8")) as PnpmDeps
 }
 
-export function writePnpmDeps(deps: PnpmDeps): void {
+export const writePnpmDeps = (deps: PnpmDeps): void => {
   writeFileSync(file, JSON.stringify(deps, undefined, 2) + "\n")
 }

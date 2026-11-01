@@ -16,12 +16,12 @@ import type { Vec3 } from "../../../src/vr/probe.ts"
 test.afterEach(async ({ browser }) => closeAllTabs(browser))
 
 /** The angle between two directions, in radians. */
-function angleBetween(a: number[], b: number[]): number {
+const angleBetween = (a: number[], b: number[]): number => {
   return Math.acos(a.reduce((sum, component, i) => sum + component * b[i]!, 0) / Math.hypot(...a) / Math.hypot(...b))
 }
 
 /** The turn a controller held at `from` gets when Controllers.point() aims it at `to`. */
-function aim(from: Vec3, to: Vec3): Quaternion {
+const aim = (from: Vec3, to: Vec3): Quaternion => {
   const direction = to.map((component, i) => component - from[i]!) as Vec3
   return new Quaternion().setFromUnitVectors(new Vector3(0, 0, -1), new Vector3(...direction).normalize())
 }

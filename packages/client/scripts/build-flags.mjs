@@ -37,7 +37,7 @@ const flags = JSON.parse(readFileSync("../shared/catalogue.json", "utf8"))
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-async function get(url) {
+const get = async (url) => {
   for (let attempt = 1; ; attempt++) {
     const response = await fetch(url, { headers: { "User-Agent": USER_AGENT } })
     if (response.ok) return response
@@ -46,13 +46,13 @@ async function get(url) {
   }
 }
 
-async function api(host, params) {
+const api = async (host, params) => {
   const query = new URLSearchParams({ ...params, format: "json", formatversion: "2" })
   return (await get(`https://${host}/w/api.php?${query}`)).json()
 }
 
 /** Each article's main image, by article title. */
-async function articleImages(titles) {
+const articleImages = async (titles) => {
   const images = new Map()
   for (let i = 0; i < titles.length; i += 50) {
     const batch = titles.slice(i, i + 50)
@@ -73,7 +73,7 @@ async function articleImages(titles) {
 }
 
 /** Each Commons file's URL and licence, by file name. */
-async function fileInfo(names) {
+const fileInfo = async (names) => {
   const info = new Map()
   for (let i = 0; i < names.length; i += 50) {
     const { query } = await api("commons.wikimedia.org", {
@@ -97,7 +97,7 @@ async function fileInfo(names) {
   return info
 }
 
-async function download(file, url) {
+const download = async (file, url) => {
   const cached = cacheDir && `${cacheDir}/${file}`
   if (cached && existsSync(cached)) return readFileSync(cached, "utf8")
   await sleep(500)
@@ -110,7 +110,7 @@ async function download(file, url) {
  * The SVG with a viewBox the flag's own shape and no fixed size, so it fills
  * whatever box it is drawn in; and that shape's width and height.
  */
-function normalise(svg) {
+const normalise = (svg) => {
   const root = svg.match(/<svg\b[^>]*>/)[0]
   const attr = (name) => root.match(new RegExp(`\\s${name}\\s*=\\s*["']([^"']*)["']`))?.[1]
   const viewBox = attr("viewBox")
@@ -137,7 +137,7 @@ function normalise(svg) {
 // A flag's title or description would name the country.
 const UNNAMED = ["removeTitle", { name: "removeDesc", params: { removeAny: true } }, "removeMetadata"]
 
-function shrink(svg, precision) {
+const shrink = (svg, precision) => {
   return optimize(svg, {
     multipass: true,
     floatPrecision: precision,
@@ -150,7 +150,7 @@ function shrink(svg, precision) {
  * at a quarter of the size drawn: a fine line shifted by part of a pixel
  * averages out, a shape that moved does not.
  */
-async function differing(page, a, b, ratio) {
+const differing = async (page, a, b, ratio) => {
   return page.evaluate(
     async ({ a, b, w, h, tolerance }) => {
       const [sw, sh] = [Math.round(w / 4), Math.round(h / 4)]

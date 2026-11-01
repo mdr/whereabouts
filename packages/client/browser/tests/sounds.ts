@@ -20,7 +20,7 @@ declare global {
  * stopped. It can tell which sound played, not how it sounded.
  */
 /* oxlint-disable typescript/unbound-method -- each original is applied with the node as this */
-export function recordSounds(): void {
+export const recordSounds = (): void => {
   window.__audio = []
   const log = (event: Omit<SoundEvent, "at">) => window.__audio.push({ ...event, at: performance.now() })
   // Decoded lengths can differ by a frame or two.
@@ -55,12 +55,12 @@ export function recordSounds(): void {
 /* oxlint-enable typescript/unbound-method */
 
 /** The page clock, to time sounds against. */
-export function pageTime(tab: Tab): Promise<number> {
+export const pageTime = (tab: Tab): Promise<number> => {
   return tab.page.evaluate(() => performance.now())
 }
 
 /** The sounds recorded since the last call. */
-export function takeSounds(tab: Tab): Promise<SoundEvent[]> {
+export const takeSounds = (tab: Tab): Promise<SoundEvent[]> => {
   return tab.page.evaluate(() => window.__audio.splice(0))
 }
 

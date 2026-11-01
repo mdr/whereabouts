@@ -11,7 +11,7 @@ import { check, newTab, shot } from "./support.ts"
 test("phone", async ({ browser }) => {
   const phone = devices["iPhone 13"]
 
-  async function fits(screen: Screen, label: string): Promise<void> {
+  const fits = async (screen: Screen, label: string): Promise<void> => {
     const fit = await screen.fit()
     await screen.screenshot(shot(`phone-${label}.png`))
     check(

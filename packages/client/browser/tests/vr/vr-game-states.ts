@@ -28,7 +28,7 @@ interface VrGuessing {
 }
 
 /** Alice hosting in VR, still in the lobby; Bob has joined, and two 60 s place rounds are set. */
-export async function vrHostInLobby(browser: Browser): Promise<VrLobby> {
+export const vrHostInLobby = async (browser: Browser): Promise<VrLobby> => {
   const { tab: aliceTab, headset } = await newHeadsetTab(browser, "Alice")
   const aliceHome = await aliceTab.openHome()
   await aliceHome.enterName("Alice")
@@ -45,7 +45,7 @@ export async function vrHostInLobby(browser: Browser): Promise<VrLobby> {
 }
 
 /** That game started from the headset: round 1, nothing painted yet. */
-export async function vrHostGuessing(browser: Browser): Promise<VrGuessing> {
+export const vrHostGuessing = async (browser: Browser): Promise<VrGuessing> => {
   const { headset, aliceLobby, bobLobby, centre, can } = await vrHostInLobby(browser)
   await until(
     "the lobby in VR",
@@ -70,7 +70,7 @@ export async function vrHostGuessing(browser: Browser): Promise<VrGuessing> {
 }
 
 /** Round 1's answer in VR, both players having passed. */
-export async function vrHostReveal(browser: Browser): Promise<VrGuessing & { bobReveal: RevealPage }> {
+export const vrHostReveal = async (browser: Browser): Promise<VrGuessing & { bobReveal: RevealPage }> => {
   const guessing = await vrHostGuessing(browser)
   const { headset, can, bobRound } = guessing
   await until(

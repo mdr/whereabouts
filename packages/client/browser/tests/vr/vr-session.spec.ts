@@ -11,7 +11,7 @@ import { closeAllTabs, enterVr, newHeadsetTab, poses, pressMenu } from "./vr-sup
 test.afterEach(async ({ browser }) => closeAllTabs(browser))
 
 /** As if loading outlasted the press: the browser would refuse it the headset. */
-function staleClick(): void {
+const staleClick = (): void => {
   Object.defineProperty(UserActivation.prototype, "isActive", { get: () => false })
 }
 

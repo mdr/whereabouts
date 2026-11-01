@@ -24,30 +24,30 @@ interface VrFlagRound extends VrPractice {
 }
 
 /** Flag questions, on the Political map, where a country round offers the fill tool. */
-function flagRounds(): void {
+const flagRounds = (): void => {
   localStorage.setItem("wa.practiceTypes", "FLAG")
   localStorage.setItem("wa.mapDetail", "POLITICAL")
 }
 
 /** Practice open in a headset's browser, not yet in VR. */
-export async function headsetPractice(
+export const headsetPractice = async (
   browser: Browser,
   label: string,
   initScript?: () => void
-): Promise<HeadsetPractice> {
+): Promise<HeadsetPractice> => {
   const { tab, headset } = await newHeadsetTab(browser, label, initScript)
   return { tab, headset, round: await tab.openPractice() }
 }
 
 /** A VR practice round, painting. */
-export async function vrPractice(browser: Browser, label: string, initScript?: () => void): Promise<VrPractice> {
+export const vrPractice = async (browser: Browser, label: string, initScript?: () => void): Promise<VrPractice> => {
   const practice = await headsetPractice(browser, label, initScript)
   await enterVr(practice.tab, practice.headset)
   return { ...practice, ...(await poses(practice.headset)) }
 }
 
 /** A VR practice round with one stroke sprayed across the globe; `painted` is how many cells it covers. */
-export async function vrPracticePainted(browser: Browser, label: string): Promise<VrPractice & { painted: number }> {
+export const vrPracticePainted = async (browser: Browser, label: string): Promise<VrPractice & { painted: number }> => {
   const vr = await vrPractice(browser, label)
   await spray(vr.headset, vr.round, vr)
   // The stroke becomes an undo step only on a frame that sees the trigger let go.
@@ -61,7 +61,7 @@ export async function vrPracticePainted(browser: Browser, label: string): Promis
 }
 
 /** A VR practice round passed with nothing painted, its answer showing in VR. */
-export async function vrPracticeAnswer(browser: Browser, label: string): Promise<VrPractice> {
+export const vrPracticeAnswer = async (browser: Browser, label: string): Promise<VrPractice> => {
   const vr = await vrPractice(browser, label)
   await until(
     "Pass on the menu",
@@ -79,7 +79,7 @@ export async function vrPracticeAnswer(browser: Browser, label: string): Promise
 }
 
 /** A flag practice round in VR, its flag card over the menu: `card` is where the card rests, `hand` a spot beside it to point from. */
-export async function vrFlagRound(browser: Browser, label: string): Promise<VrFlagRound> {
+export const vrFlagRound = async (browser: Browser, label: string): Promise<VrFlagRound> => {
   const vr = await vrPractice(browser, label, flagRounds)
   await until(
     "the flag in VR",
@@ -92,7 +92,7 @@ export async function vrFlagRound(browser: Browser, label: string): Promise<VrFl
 }
 
 /** A flag practice round passed in VR, its answer showing. */
-export async function vrFlagAnswer(browser: Browser, label: string): Promise<VrFlagRound> {
+export const vrFlagAnswer = async (browser: Browser, label: string): Promise<VrFlagRound> => {
   const flag = await vrFlagRound(browser, label)
   await pressMenu(flag.headset, flag.hand, "done")
   await until(
