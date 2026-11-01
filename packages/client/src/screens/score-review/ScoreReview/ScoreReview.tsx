@@ -11,13 +11,11 @@ import { useOutlines } from "../../../data/outlines"
 import { LoadingOutlines } from "../../../ui/map/LoadingOutlines/LoadingOutlines"
 import { Review } from "../Review"
 
-export const ScoreReview = () => {
-  return (
-    <MapView>
-      <ReviewLoader />
-    </MapView>
-  )
-}
+export const ScoreReview = () => (
+  <MapView>
+    <ReviewLoader />
+  </MapView>
+)
 
 const ReviewLoader = () => {
   const loaded = useOutlines(true)

@@ -50,11 +50,9 @@ export const framing = (reveal: VrReveal, round: VrRound): { at: LatLon; reach: 
 /** Several players' paint as one collection, each cell in its player's colour. */
 export const colouredPaint = (
   paints: { layer: PaintLayer; colour: CssColour }[]
-): GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: CssColour }> => {
-  return {
-    type: "FeatureCollection",
-    features: paints.flatMap(({ layer, colour }) =>
-      layer.toGeoJSON().features.map((feature) => ({ ...feature, properties: { ...feature.properties, colour } }))
-    )
-  }
-}
+): GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: CssColour }> => ({
+  type: "FeatureCollection",
+  features: paints.flatMap(({ layer, colour }) =>
+    layer.toGeoJSON().features.map((feature) => ({ ...feature, properties: { ...feature.properties, colour } }))
+  )
+})

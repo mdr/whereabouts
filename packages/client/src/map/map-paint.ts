@@ -27,9 +27,7 @@ export const paintSetting = <K extends LayerKind, P extends PaintProperty<K>>(
   layer: LayerId<K>,
   property: P,
   value: PaintValue<K, P>
-): PaintSetting => {
-  return { layer, property: String(property), value }
-}
+): PaintSetting => ({ layer, property: String(property), value })
 
 /** MapLibre's setPaintProperty takes the union of every layer's properties; a PaintSetting was checked against its layer's kind. */
 export const applyPaint = (map: MapLibreMap, { layer, property, value }: PaintSetting): void => {
@@ -49,6 +47,4 @@ export const setPaint = <K extends LayerKind, P extends PaintProperty<K>>(
 export const idOfKind = <K extends LayerKind>(
   layer: { id: string; type: LayerKind },
   wanted: K
-): LayerId<K> | undefined => {
-  return layer.type === wanted ? layer.id : undefined
-}
+): LayerId<K> | undefined => (layer.type === wanted ? layer.id : undefined)

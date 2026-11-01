@@ -58,6 +58,6 @@ export const QUESTION_TYPE_LOOKS: Record<QuestionType, QuestionTypeLook> = {
 }
 
 /** Sets `--type` to the colour of a type of question, for what is drawn in it. */
-export const typeColour = (type: QuestionType): Record<string, string> => {
-  return { "--type": QUESTION_TYPE_LOOKS[type].colour }
-}
+export const typeColour = (type: QuestionType): Record<string, string> => ({
+  "--type": QUESTION_TYPE_LOOKS[type].colour
+})

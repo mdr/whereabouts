@@ -171,13 +171,11 @@ const readVarint = (bytes: Uint8Array, at: number): [bigint, number] => {
   }
 }
 
-const deflate = async (bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array> => {
-  return pipe(bytes, new CompressionStream("deflate-raw"))
-}
+const deflate = async (bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array> =>
+  pipe(bytes, new CompressionStream("deflate-raw"))
 
-const inflate = async (bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array> => {
-  return pipe(bytes, new DecompressionStream("deflate-raw"))
-}
+const inflate = async (bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array> =>
+  pipe(bytes, new DecompressionStream("deflate-raw"))
 
 const pipe = async (
   bytes: Uint8Array<ArrayBuffer>,

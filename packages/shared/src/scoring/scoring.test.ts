@@ -26,13 +26,15 @@ const r = 100
 const answer = { lat: 27.175, lon: 78.042 } // Taj Mahal
 
 /** Point `km` kilometres due north of `from` (small-distance approximation is fine here). */
-const north = (from: { lat: number; lon: number }, km: number) => {
-  return { lat: from.lat + (km / (Math.PI * EARTH_RADIUS)) * 180, lon: from.lon }
-}
+const north = (from: { lat: number; lon: number }, km: number) => ({
+  lat: from.lat + (km / (Math.PI * EARTH_RADIUS)) * 180,
+  lon: from.lon
+})
 
-const pointMass = (locations: { lat: number; lon: number; p: number }[]): Distribution => {
-  return { points: locations.map((location) => ({ xyz: toXyz(location), p: location.p })), floor: 0 }
-}
+const pointMass = (locations: { lat: number; lon: number; p: number }[]): Distribution => ({
+  points: locations.map((location) => ({ xyz: toXyz(location), p: location.p })),
+  floor: 0
+})
 
 describe("kernel", () => {
   it("is 1 at zero distance, 0.5 at r, 0.0625 at 2r", () => {
@@ -331,15 +333,14 @@ describe("mixture kernels", () => {
 describe("patch-aware kernel", () => {
   const { cellToChildren, latLngToCell } = h3
 
-  const cellDistribution = (cells: H3Cell[], floor = 0): Distribution => {
-    return buildDistribution(
+  const cellDistribution = (cells: H3Cell[], floor = 0): Distribution =>
+    buildDistribution(
       cells.map((cell) => {
         const [lat, lon] = h3.cellToLatLng(cell)
         return { lat, lon, intensity: 1, area: h3.cellArea(cell), h3: cell }
       }),
       floor
     )
-  }
 
   it("scores one coarse cell like its children, at every kernel", () => {
     // A resolution-3 cell (~120 km across) scored against a 30 km tolerance. As a

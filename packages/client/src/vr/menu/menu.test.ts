@@ -33,12 +33,13 @@ const makeAction = (over: Partial<VrAction> = {}): { action: VrAction; press: ()
   return { action: { label: "Leave game", press, ...over }, press }
 }
 
-const makeLobby = (actions: VrAction[]): VrView => {
-  return { type: VrViewType.LOBBY, summary: { title: "Whereabouts", scoreLine: "", actions } }
-}
+const makeLobby = (actions: VrAction[]): VrView => ({
+  type: VrViewType.LOBBY,
+  summary: { title: "Whereabouts", scoreLine: "", actions }
+})
 
-const makeRound = (over: Partial<VrRound> = {}): VrRound => {
-  return {
+const makeRound = (over: Partial<VrRound> = {}): VrRound =>
+  ({
     paint: { layer: { isEmpty: true }, fillable: { value: false } },
     prompt: "Where is Paris?",
     detail: "plain",
@@ -51,24 +52,21 @@ const makeRound = (over: Partial<VrRound> = {}): VrRound => {
     done() {},
     playing: true,
     ...over
-  } as VrRound
-}
+  }) as VrRound
 
-const makeReveal = (actions: VrAction[]): VrView => {
-  return {
-    type: VrViewType.REVEAL,
-    round: makeRound(),
-    reveal: {
-      label: "Paris",
-      answer: { type: VrAnswerType.POINT, point: { lat: 48.9, lon: 2.4 } },
-      focus: { lat: 48.9, lon: 2.4 },
-      stateRound: false,
-      scoreLine: "",
-      paints: { type: VrPaintsType.OWN },
-      actions
-    }
+const makeReveal = (actions: VrAction[]): VrView => ({
+  type: VrViewType.REVEAL,
+  round: makeRound(),
+  reveal: {
+    label: "Paris",
+    answer: { type: VrAnswerType.POINT, point: { lat: 48.9, lon: 2.4 } },
+    focus: { lat: 48.9, lon: 2.4 },
+    stateRound: false,
+    scoreLine: "",
+    paints: { type: VrPaintsType.OWN },
+    actions
   }
-}
+})
 
 const shownWith = (menu: Menu, view: VrView) => {
   menu.show(view)

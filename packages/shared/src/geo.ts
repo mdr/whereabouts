@@ -22,18 +22,12 @@ export type Box = [west: Degrees, south: Degrees, east: Degrees, north: Degrees]
 /** 3D position on the Earth sphere. */
 export type Xyz = readonly [x: Km, y: Km, z: Km]
 
-export const toRadians = (degrees: Degrees): Radians => {
-  return (degrees * Math.PI) / 180
-}
+export const toRadians = (degrees: Degrees): Radians => (degrees * Math.PI) / 180
 
-export const toDegrees = (radians: Radians): Degrees => {
-  return (radians * 180) / Math.PI
-}
+export const toDegrees = (radians: Radians): Degrees => (radians * 180) / Math.PI
 
 /** Degrees of arc along a great circle that span `km` on the ground. */
-export const kmToDegrees = (km: Km): Degrees => {
-  return km / ((EARTH_RADIUS * Math.PI) / 180)
-}
+export const kmToDegrees = (km: Km): Degrees => km / ((EARTH_RADIUS * Math.PI) / 180)
 
 export const toXyz = ({ lat, lon }: LatLon): Xyz => {
   const latRadians = toRadians(lat)

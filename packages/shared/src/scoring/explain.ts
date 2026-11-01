@@ -86,10 +86,7 @@ const latLngOf = (cell: H3Cell): LatLon => {
 }
 
 /** Some paint near the answer, but most of it somewhere else, and that cost something. */
-export const isHedge = (explanation: PointExplanation, score: Points, tolerance: Km): boolean => {
-  return (
-    Math.max(explanation.best, score) - score >= 25 &&
-    explanation.nearShare >= 0.15 &&
-    explanation.miss > NEAR_TOLERANCES * tolerance
-  )
-}
+export const isHedge = (explanation: PointExplanation, score: Points, tolerance: Km): boolean =>
+  Math.max(explanation.best, score) - score >= 25 &&
+  explanation.nearShare >= 0.15 &&
+  explanation.miss > NEAR_TOLERANCES * tolerance

@@ -77,9 +77,7 @@ export const scoreGuess = (
   answer: ScoredAnswer,
   layer: PaintLayer,
   kernel: Kernel
-): Pick<ScoringCase, "score" | "parts"> => {
-  return scoreAnswer(buildDistribution(layer.toCells(), REVIEW_FLOOR), answer, kernel)
-}
+): Pick<ScoringCase, "score" | "parts"> => scoreAnswer(buildDistribution(layer.toCells(), REVIEW_FLOOR), answer, kernel)
 
 /** A guess and its score as a scoring case's text, for the export. */
 export const guessCase = (
@@ -87,8 +85,8 @@ export const guessCase = (
   answer: ScoredAnswer,
   layer: PaintLayer,
   kernel: ChoosableKernel
-): Promise<string> => {
-  return encodeCase({
+): Promise<string> =>
+  encodeCase({
     question: caseQuestion(question, answer),
     kernel: answer.type === AnswerType.AREA ? RegionKernel.REGION : kernel.id,
     floor: REVIEW_FLOOR,
@@ -96,21 +94,18 @@ export const guessCase = (
     ...scoreGuess(answer, layer, kernel),
     cells: layer.toRecord()
   })
-}
 
 /** A question as a scoring case names it. */
-export const caseQuestion = (question: Question, answer: ScoredAnswer): ScoringCase["question"] => {
-  return {
-    type:
-      answer.type === AnswerType.AREA
-        ? CaseQuestionType.REGION
-        : question.clue.type === ClueType.PHOTO
-          ? CaseQuestionType.PHOTO
-          : CaseQuestionType.TEXT,
-    id: question.id,
-    label: question.label,
-    answer: answer.type === AnswerType.AREA ? answer.centre : answer.at,
-    tolerance: answer.tolerance,
-    ...(question.clue.type === ClueType.FLAG ? { flag: question.clue.flag } : {})
-  }
-}
+export const caseQuestion = (question: Question, answer: ScoredAnswer): ScoringCase["question"] => ({
+  type:
+    answer.type === AnswerType.AREA
+      ? CaseQuestionType.REGION
+      : question.clue.type === ClueType.PHOTO
+        ? CaseQuestionType.PHOTO
+        : CaseQuestionType.TEXT,
+  id: question.id,
+  label: question.label,
+  answer: answer.type === AnswerType.AREA ? answer.centre : answer.at,
+  tolerance: answer.tolerance,
+  ...(question.clue.type === ClueType.FLAG ? { flag: question.clue.flag } : {})
+})

@@ -47,9 +47,12 @@ export interface DoneRun extends RunBase {
 export type PracticeRun = PaintingRun | RevealingRun | DoneRun
 
 /** The whole pool, shuffled by `seed`, from its first question. */
-export const startRun = (pool: readonly Question[], seed: number): PaintingRun => {
-  return { type: PracticePhase.PAINT, questions: shuffle([...pool], seed), index: 0, results: [] }
-}
+export const startRun = (pool: readonly Question[], seed: number): PaintingRun => ({
+  type: PracticePhase.PAINT,
+  questions: shuffle([...pool], seed),
+  index: 0,
+  results: []
+})
 
 export const currentQuestion = (run: PracticeRun): Question => run.questions[run.index]!
 
@@ -81,28 +84,24 @@ export const nextRound = (run: RevealingRun): PaintingRun | DoneRun => {
   return { type: PracticePhase.PAINT, questions, index: index + 1, results }
 }
 
-export const revealedFromQuestion = (question: Question, outlines: Outlines): RevealedAnswer => {
-  return {
-    label: question.label,
-    wiki: question.wiki,
-    answer: answerCentre(question.answer),
-    shape: revealedShape(
-      question.answer,
-      question.answer.type === AnswerType.AREA ? outlines.get(question.answer.outline) : undefined
-    ),
-    photo: revealPhoto(question)
-  }
-}
+export const revealedFromQuestion = (question: Question, outlines: Outlines): RevealedAnswer => ({
+  label: question.label,
+  wiki: question.wiki,
+  answer: answerCentre(question.answer),
+  shape: revealedShape(
+    question.answer,
+    question.answer.type === AnswerType.AREA ? outlines.get(question.answer.outline) : undefined
+  ),
+  photo: revealPhoto(question)
+})
 
 /** The rounds so far, latest first, for the headset's score table. */
-export const roundsTable = (results: readonly PracticeResult[]): VrTable => {
-  return {
-    title: "Your rounds",
-    rows: results
-      .map((result, i) => ({
-        name: `${i + 1}. ${result.question.label}`,
-        total: Math.round(result.score).toLocaleString()
-      }))
-      .reverse()
-  }
-}
+export const roundsTable = (results: readonly PracticeResult[]): VrTable => ({
+  title: "Your rounds",
+  rows: results
+    .map((result, i) => ({
+      name: `${i + 1}. ${result.question.label}`,
+      total: Math.round(result.score).toLocaleString()
+    }))
+    .reverse()
+})

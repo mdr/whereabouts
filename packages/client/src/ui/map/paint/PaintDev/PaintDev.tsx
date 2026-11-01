@@ -48,19 +48,17 @@ const Slider = (props: {
   value: number
   onInput: (value: number) => void
   format: (value: number) => string
-}) => {
-  return (
-    <div class={styles.row}>
-      <label>{props.label}</label>
-      <input
-        type="range"
-        min={props.min}
-        max={props.max}
-        step={props.step}
-        value={props.value}
-        onInput={(event) => props.onInput(Number(event.currentTarget.value))}
-      />
-      <output>{props.format(props.value)}</output>
-    </div>
-  )
-}
+}) => (
+  <div class={styles.row}>
+    <label>{props.label}</label>
+    <input
+      type="range"
+      min={props.min}
+      max={props.max}
+      step={props.step}
+      value={props.value}
+      onInput={(event) => props.onInput(Number(event.currentTarget.value))}
+    />
+    <output>{props.format(props.value)}</output>
+  </div>
+)

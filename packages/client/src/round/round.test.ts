@@ -19,27 +19,21 @@ const outline: Outline = [
   ]
 ]
 
-const revealed = (over: Partial<RevealedAnswer> = {}): RevealedAnswer => {
-  return {
-    label: "Somewhere",
-    wiki: wikiTitle("Somewhere"),
-    answer: { lat: 35, lon: 135.8 },
-    shape: { type: RevealedShapeType.POINT },
-    ...over
-  }
-}
+const revealed = (over: Partial<RevealedAnswer> = {}): RevealedAnswer => ({
+  label: "Somewhere",
+  wiki: wikiTitle("Somewhere"),
+  answer: { lat: 35, lon: 135.8 },
+  shape: { type: RevealedShapeType.POINT },
+  ...over
+})
 
-const fakeMap = () => {
-  return {
-    showReveal: vi.fn(),
-    showRegionReveal: vi.fn(),
-    clearReveal: vi.fn()
-  }
-}
+const fakeMap = () => ({
+  showReveal: vi.fn(),
+  showRegionReveal: vi.fn(),
+  clearReveal: vi.fn()
+})
 
-const fakeCamera = () => {
-  return { fitAnswerAndPaint: vi.fn(), fitRegionAndPaint: vi.fn() }
-}
+const fakeCamera = () => ({ fitAnswerAndPaint: vi.fn(), fitRegionAndPaint: vi.fn() })
 
 const paint: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] }
 

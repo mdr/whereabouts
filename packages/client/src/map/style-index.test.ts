@@ -14,13 +14,12 @@ const layers: IndexedLayer[] = [
   { id: "label_city", type: "symbol", "source-layer": "place" }
 ]
 
-const index = () => {
-  return indexStyle(
+const index = () =>
+  indexStyle(
     layers,
     (id) => ({ width: id.length, opacity: 0.5 }),
     (id) => ["==", "id", id]
   )
-}
 
 describe("indexStyle", () => {
   it("sorts layers by what the detail toggles", () => {

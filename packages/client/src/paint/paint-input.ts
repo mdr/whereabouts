@@ -345,6 +345,4 @@ export class PaintInput {
   }
 }
 
-const latLon = (lngLat: LngLat): LatLon => {
-  return { lat: lngLat.lat, lon: lngLat.lng }
-}
+const latLon = (lngLat: LngLat): LatLon => ({ lat: lngLat.lat, lon: lngLat.lng })

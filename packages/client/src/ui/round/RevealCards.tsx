@@ -31,24 +31,22 @@ export const RevealCards = ({
   /** A flag round: the country most of your paint was in. */
   where: PaintedCountry | undefined
   testIds: { scoreCard?: string; score?: string }
-}) => {
-  return (
-    <>
-      <QuestionCard question={question} hud={CardPlace.REVEAL} credit photo={revealed.photo} foldable startFolded>
-        <Answer label={revealed.label} wiki={revealed.wiki} />
-        <FactLine fact={fact} />
-      </QuestionCard>
-      <ScoreCard
-        score={you ? Math.round(you.score) : "—"}
-        label={you ? (you.passed ? "you passed this round" : playedLabel) : "you sat this one out"}
-        testIds={testIds}
-      >
-        {where && (
-          <div class={scoreStyles.fit}>
-            Your paint: <PaintedIn where={where} answer={clueFlag(question.clue)} whose="your" />
-          </div>
-        )}
-      </ScoreCard>
-    </>
-  )
-}
+}) => (
+  <>
+    <QuestionCard question={question} hud={CardPlace.REVEAL} credit photo={revealed.photo} foldable startFolded>
+      <Answer label={revealed.label} wiki={revealed.wiki} />
+      <FactLine fact={fact} />
+    </QuestionCard>
+    <ScoreCard
+      score={you ? Math.round(you.score) : "—"}
+      label={you ? (you.passed ? "you passed this round" : playedLabel) : "you sat this one out"}
+      testIds={testIds}
+    >
+      {where && (
+        <div class={scoreStyles.fit}>
+          Your paint: <PaintedIn where={where} answer={clueFlag(question.clue)} whose="your" />
+        </div>
+      )}
+    </ScoreCard>
+  </>
+)

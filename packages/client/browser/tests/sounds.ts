@@ -55,14 +55,10 @@ export const recordSounds = (): void => {
 /* oxlint-enable typescript/unbound-method */
 
 /** The page clock, to time sounds against. */
-export const pageTime = (tab: Tab): Promise<number> => {
-  return tab.page.evaluate(() => performance.now())
-}
+export const pageTime = (tab: Tab): Promise<number> => tab.page.evaluate(() => performance.now())
 
 /** The sounds recorded since the last call. */
-export const takeSounds = (tab: Tab): Promise<SoundEvent[]> => {
-  return tab.page.evaluate(() => window.__audio.splice(0))
-}
+export const takeSounds = (tab: Tab): Promise<SoundEvent[]> => tab.page.evaluate(() => window.__audio.splice(0))
 
 export const played = (events: SoundEvent[], clip: string): boolean =>
   events.some((event) => event.kind === "buffer" && event.clip === clip)

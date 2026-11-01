@@ -13,26 +13,20 @@ import { SoundToggle } from "../SoundToggle/SoundToggle"
 import styles from "./Hud.module.css"
 
 /** `reveal` lays out a round's reveal; MapView reads `data-hud` to lift the map's buttons above its sheet. */
-export const Hud = ({ reveal, children }: { reveal?: boolean; children: ComponentChildren }) => {
-  return (
-    <main class={cx(styles.hud, reveal && styles.reveal)} data-hud={reveal ? "reveal" : undefined}>
-      {children}
-    </main>
-  )
-}
+export const Hud = ({ reveal, children }: { reveal?: boolean; children: ComponentChildren }) => (
+  <main class={cx(styles.hud, reveal && styles.reveal)} data-hud={reveal ? "reveal" : undefined}>
+    {children}
+  </main>
+)
 
-export const HudTop = ({ children }: { children: ComponentChildren }) => {
-  return <div class={styles.top}>{children}</div>
-}
+export const HudTop = ({ children }: { children: ComponentChildren }) => <div class={styles.top}>{children}</div>
 
 /** `roomy`: something in it has opened up, and may take more of a phone's screen. */
-export const HudRight = ({ roomy, children }: { roomy?: boolean; children: ComponentChildren }) => {
-  return <div class={cx(styles.right, roomy && styles.roomy)}>{children}</div>
-}
+export const HudRight = ({ roomy, children }: { roomy?: boolean; children: ComponentChildren }) => (
+  <div class={cx(styles.right, roomy && styles.roomy)}>{children}</div>
+)
 
-export const HudCenter = ({ children }: { children: ComponentChildren }) => {
-  return <div class={styles.center}>{children}</div>
-}
+export const HudCenter = ({ children }: { children: ComponentChildren }) => <div class={styles.center}>{children}</div>
 
 /**
  * The bar along the bottom of the map. It publishes its height as
@@ -81,27 +75,25 @@ export const HudHeader = ({
   round: number
   total: number | string
   right?: ComponentChildren
-}) => {
-  return (
-    <div class={styles.header} data-testid={hudHeaderTestIds.header}>
-      {home ? (
-        <a href="#/" class={styles.brand}>
-          Whereabouts
-        </a>
-      ) : (
-        <span class={styles.brand}>Whereabouts</span>
-      )}
-      <span class={styles.round} data-testid={hudHeaderTestIds.round}>
-        <span class={styles.roundWord}>Round </span>
-        <span class={styles.nowrap}>
-          {round} / {total}
-        </span>
+}) => (
+  <div class={styles.header} data-testid={hudHeaderTestIds.header}>
+    {home ? (
+      <a href="#/" class={styles.brand}>
+        Whereabouts
+      </a>
+    ) : (
+      <span class={styles.brand}>Whereabouts</span>
+    )}
+    <span class={styles.round} data-testid={hudHeaderTestIds.round}>
+      <span class={styles.roundWord}>Round </span>
+      <span class={styles.nowrap}>
+        {round} / {total}
       </span>
-      <SoundToggle />
-      {right}
-    </div>
-  )
-}
+    </span>
+    <SoundToggle />
+    {right}
+  </div>
+)
 
 /** Small print on the right of the header: a running total (kept to one line), or who is ready. */
 export const HeaderNote = ({
@@ -114,11 +106,9 @@ export const HeaderNote = ({
   title?: string
   testId?: string
   children: ComponentChildren
-}) => {
-  return (
-    <span class={cx(styles.note, nowrap && styles.nowrap)} title={title}>
-      <span data-testid={testId}>{children}</span>
-      {title && <span class="sr-only">. {title}</span>}
-    </span>
-  )
-}
+}) => (
+  <span class={cx(styles.note, nowrap && styles.nowrap)} title={title}>
+    <span data-testid={testId}>{children}</span>
+    {title && <span class="sr-only">. {title}</span>}
+  </span>
+)

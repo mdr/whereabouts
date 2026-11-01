@@ -18,6 +18,5 @@ interface AreaShape {
 
 export type RevealedShape = PointShape | AreaShape
 
-export const revealedShape = (answer: { type: AnswerType }, outline: Outline | undefined): RevealedShape => {
-  return answer.type === AnswerType.AREA ? { type: RevealedShapeType.AREA, outline } : { type: RevealedShapeType.POINT }
-}
+export const revealedShape = (answer: { type: AnswerType }, outline: Outline | undefined): RevealedShape =>
+  answer.type === AnswerType.AREA ? { type: RevealedShapeType.AREA, outline } : { type: RevealedShapeType.POINT }

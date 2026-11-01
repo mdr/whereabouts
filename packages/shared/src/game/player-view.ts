@@ -89,6 +89,5 @@ const hintView = (context: ViewContext, state: InPlayState, token: PlayerToken):
   return axis ? { hint: roundHintBand(state.round.question, context.seed, state.round.index, axis) } : {}
 }
 
-const readyIds = (seats: Seats, ready: ReadonlySet<PlayerToken>): PlayerId[] => {
-  return [...ready].flatMap((token) => seats.get(token)?.id ?? [])
-}
+const readyIds = (seats: Seats, ready: ReadonlySet<PlayerToken>): PlayerId[] =>
+  [...ready].flatMap((token) => seats.get(token)?.id ?? [])

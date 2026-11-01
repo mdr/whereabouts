@@ -17,6 +17,4 @@ export const useFlagUrl = (code: FlagCode): string | undefined => {
 }
 
 /** The flag's shape, for its frame to take before the picture loads. */
-export const flagShape = (code: FlagCode): Record<string, string> => {
-  return { "--flag-ratio": String(flagRatio(code)) }
-}
+export const flagShape = (code: FlagCode): Record<string, string> => ({ "--flag-ratio": String(flagRatio(code)) })

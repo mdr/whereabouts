@@ -36,6 +36,5 @@ export const isUsable = async (locator: Locator): Promise<boolean> => {
 }
 
 /** Text with runs of whitespace collapsed. */
-export const text = async (locator: Locator): Promise<string> => {
-  return ((await locator.textContent()) ?? "").replace(/\s+/g, " ").trim()
-}
+export const text = async (locator: Locator): Promise<string> =>
+  ((await locator.textContent()) ?? "").replace(/\s+/g, " ").trim()

@@ -4,12 +4,11 @@ import { compactRecord } from "./compact.ts"
 import { PaintLayer } from "./paint.ts"
 
 describe("compactRecord", () => {
-  const totalMass = (record: Record<string, number>): number => {
-    return [...PaintLayer.fromRecord(h3Resolution(15), record).toCells()].reduce(
+  const totalMass = (record: Record<string, number>): number =>
+    [...PaintLayer.fromRecord(h3Resolution(15), record).toCells()].reduce(
       (sum, cell) => sum + cell.intensity * cell.area,
       0
     )
-  }
 
   it("leaves small records alone", () => {
     const layer = new PaintLayer(h3Resolution(4))

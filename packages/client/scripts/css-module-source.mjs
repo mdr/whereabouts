@@ -4,9 +4,7 @@ const COMMENTS = /\/\*[\s\S]*?\*\//g
 const COMMENTS_STRINGS_URLS = /\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|url\([^)]*\)/g
 
 /** The source with comments (and optionally strings and urls) blanked, keeping every offset and line. */
-const blank = (css, pattern) => {
-  return css.replace(pattern, (m) => m.replace(/[^\n]/g, " "))
-}
+const blank = (css, pattern) => css.replace(pattern, (m) => m.replace(/[^\n]/g, " "))
 
 const positionAt = (css, offset) => {
   const before = css.slice(0, offset)
@@ -23,8 +21,8 @@ export const classPositions = (css) => {
 }
 
 /** Each `composes:` declaration: its names, the specifier after `from` (if any), and zero-based line. */
-export const composesDeclarations = (css) => {
-  return [...blank(css, COMMENTS).matchAll(/composes\s*:\s*([^;}]*)/g)].map((match) => {
+export const composesDeclarations = (css) =>
+  [...blank(css, COMMENTS).matchAll(/composes\s*:\s*([^;}]*)/g)].map((match) => {
     const from = /^([\s\S]*?)\s+from\s+(?:"([^"]*)"|'([^']*)'|(global))\s*$/.exec(match[1])
     return {
       names: (from ? from[1] : match[1]).split(/\s+/).filter(Boolean),
@@ -32,4 +30,3 @@ export const composesDeclarations = (css) => {
       line: positionAt(css, match.index).line
     }
   })
-}

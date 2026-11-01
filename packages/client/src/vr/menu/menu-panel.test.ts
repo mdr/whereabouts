@@ -11,16 +11,18 @@ import {
   type VrView
 } from "../view/view"
 
-const makeState = (over: Partial<Parameters<typeof panelContent>[1]> = {}) => {
-  return { armed: undefined, soundOn: true, passthroughOn: false, passthroughOffered: false, ...over }
-}
+const makeState = (over: Partial<Parameters<typeof panelContent>[1]> = {}) => ({
+  armed: undefined,
+  soundOn: true,
+  passthroughOn: false,
+  passthroughOffered: false,
+  ...over
+})
 
-const makeAction = (over: Partial<VrAction> = {}): VrAction => {
-  return { label: "Next", press() {}, ...over }
-}
+const makeAction = (over: Partial<VrAction> = {}): VrAction => ({ label: "Next", press() {}, ...over })
 
-const makeRound = (over: Partial<VrRound> = {}): VrRound => {
-  return {
+const makeRound = (over: Partial<VrRound> = {}): VrRound =>
+  ({
     paint: { layer: { isEmpty: true }, fillable: { value: false } },
     prompt: "Where is Paris?",
     detail: "plain",
@@ -33,34 +35,35 @@ const makeRound = (over: Partial<VrRound> = {}): VrRound => {
     done() {},
     playing: true,
     ...over
-  } as VrRound
-}
+  }) as VrRound
 
-const makePaint = (round: Partial<VrRound> = {}, more?: VrAction[]): VrView => {
-  return { type: VrViewType.PAINT, round: makeRound(round), more }
-}
+const makePaint = (round: Partial<VrRound> = {}, more?: VrAction[]): VrView => ({
+  type: VrViewType.PAINT,
+  round: makeRound(round),
+  more
+})
 
-const makeReveal = (reveal: Partial<VrReveal> = {}, more?: VrAction[]): VrView => {
-  return {
-    type: VrViewType.REVEAL,
-    round: makeRound(),
-    reveal: {
-      label: "Paris",
-      answer: { type: VrAnswerType.POINT, point: { lat: 48.9, lon: 2.4 } },
-      focus: { lat: 48.9, lon: 2.4 },
-      stateRound: false,
-      scoreLine: "90 points",
-      paints: { type: VrPaintsType.OWN },
-      actions: [],
-      ...reveal
-    },
-    more
-  }
-}
+const makeReveal = (reveal: Partial<VrReveal> = {}, more?: VrAction[]): VrView => ({
+  type: VrViewType.REVEAL,
+  round: makeRound(),
+  reveal: {
+    label: "Paris",
+    answer: { type: VrAnswerType.POINT, point: { lat: 48.9, lon: 2.4 } },
+    focus: { lat: 48.9, lon: 2.4 },
+    stateRound: false,
+    scoreLine: "90 points",
+    paints: { type: VrPaintsType.OWN },
+    actions: [],
+    ...reveal
+  },
+  more
+})
 
-const makeLobby = (actions: VrAction[] = [], more?: VrAction[]): VrView => {
-  return { type: VrViewType.LOBBY, summary: { title: "Whereabouts", scoreLine: "3 players", actions }, more }
-}
+const makeLobby = (actions: VrAction[] = [], more?: VrAction[]): VrView => ({
+  type: VrViewType.LOBBY,
+  summary: { title: "Whereabouts", scoreLine: "3 players", actions },
+  more
+})
 
 describe("panelContent", () => {
   it("shows the hint and Done while painting, and the question", () => {

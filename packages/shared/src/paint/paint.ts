@@ -49,9 +49,7 @@ export const resolutionForTolerance = (tolerance: Km): H3Resolution => {
 }
 
 /** Centre-to-centre distance between neighbouring cells. */
-export const cellSpacing = (resolution: H3Resolution): Km => {
-  return edgeLength(resolution) * Math.sqrt(3)
-}
+export const cellSpacing = (resolution: H3Resolution): Km => edgeLength(resolution) * Math.sqrt(3)
 
 export interface PaintCell {
   lat: Degrees

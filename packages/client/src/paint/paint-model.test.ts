@@ -22,22 +22,19 @@ const makeModel = (): PaintModel => {
   return model
 }
 
-const makeCountry = (): FlagQuestion => {
-  return makeFlagQuestion("fr", "France", { answer: { type: AnswerType.POINT, at: PARIS, tolerance: TOLERANCE } })
-}
+const makeCountry = (): FlagQuestion =>
+  makeFlagQuestion("fr", "France", { answer: { type: AnswerType.POINT, at: PARIS, tolerance: TOLERANCE } })
 
 /** A filler that finds France everywhere, filled with the cell at its answer. */
-const makeFiller = (overrides: Partial<Filler> = {}): Filler => {
-  return {
-    countryAt: vi.fn(() => makeCountry()),
-    outline: () => ({ type: "MultiPolygon", coordinates: [] }),
-    cells: (flag, resolution) => {
-      const at = answerCentre(flag.answer)
-      return [latLngToCell(at.lat, at.lon, resolution)]
-    },
-    ...overrides
-  }
-}
+const makeFiller = (overrides: Partial<Filler> = {}): Filler => ({
+  countryAt: vi.fn(() => makeCountry()),
+  outline: () => ({ type: "MultiPolygon", coordinates: [] }),
+  cells: (flag, resolution) => {
+    const at = answerCentre(flag.answer)
+    return [latLngToCell(at.lat, at.lon, resolution)]
+  },
+  ...overrides
+})
 
 const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RESOLUTION)
 
@@ -47,9 +44,7 @@ const paintStroke = (model: PaintModel, ...at: LatLon[]): void => {
   model.endStroke()
 }
 
-const cells = (model: PaintModel): Map<H3Cell, number> => {
-  return new Map(model.layer.cells)
-}
+const cells = (model: PaintModel): Map<H3Cell, number> => new Map(model.layer.cells)
 
 describe("PaintModel", () => {
   afterEach(() => void vi.useRealTimers())

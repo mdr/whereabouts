@@ -35,8 +35,8 @@ const makeConn = (status: PlainState["type"] = ConnectionStatus.CONNECTED, again
 // The outlines are a download; these tests only need where a shape goes.
 vi.mock("../../../data/outlines", async (original) => ({ ...(await original<object>()), useOutline: () => undefined }))
 
-const view = (isHost: boolean): ResultsGameView => {
-  return makeResultsView({
+const view = (isHost: boolean): ResultsGameView =>
+  makeResultsView({
     you: { id: playerId("p2"), isHost },
     players: [
       makePlayer({ score: 1500 }),
@@ -69,7 +69,6 @@ const view = (isHost: boolean): ResultsGameView => {
     ],
     awards: [{ emoji: "🐔", title: "Chicken", playerIds: [playerId("p2")], line: "{0} passed 2 times. Brave." }]
   })
-}
 
 describe("Results", () => {
   it("names the winner, lists the standings by total, and highlights you", () => {

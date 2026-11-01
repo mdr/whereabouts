@@ -143,8 +143,8 @@ const inBoxes = (admin) => (polygon) =>
   )
 
 /** Polygons' rings for borders.json, delta-encoded in hundredths of a degree. */
-const borderRings = (polygons) => {
-  return polygons
+const borderRings = (polygons) =>
+  polygons
     .filter((polygon) => ringAreaKm2(polygon[0]) >= BORDER_MIN_KM2)
     .flatMap((polygon) => polygon.map((ring) => simplifyRing(ring, BORDER_SIMPLIFY_DEG)).filter(Boolean))
     .map((ring) => {
@@ -157,7 +157,6 @@ const borderRings = (polygons) => {
         return step
       })
     })
-}
 
 const ne = JSON.parse(process.argv[2] ? readFileSync(process.argv[2], "utf8") : await (await fetch(NE_URL)).text())
 const countries = ne.features.filter((feature) => {

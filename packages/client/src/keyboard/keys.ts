@@ -34,6 +34,4 @@ export const trackKeyboardFocus = (): void => {
  * click shows no focus ring, and the map is no control: there the key is
  * the shortcut's.
  */
-export const forTabbedControl = (event: KeyboardEvent): boolean => {
-  return tabbedTo !== undefined && event.target === tabbedTo
-}
+export const forTabbedControl = (event: KeyboardEvent): boolean => tabbedTo !== undefined && event.target === tabbedTo

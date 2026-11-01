@@ -31,22 +31,18 @@ export const AREA_TYPES: readonly QuestionType[] = QUESTION_TYPES.filter((type) 
 )
 
 /** outlines.json as read. */
-export const outlinesFrom = (json: Record<string, number[][][][]>): Outlines => {
-  return new Map(Object.entries(json).map(([id, outline]) => [outlineId(id), outline as Outline]))
-}
+export const outlinesFrom = (json: Record<string, number[][][][]>): Outlines =>
+  new Map(Object.entries(json).map(([id, outline]) => [outlineId(id), outline as Outline]))
 
 /** Whether a question can be asked on this map: lakes only on a map that draws them. */
-const eligible = (question: Question, mapDetail: MapDetail): boolean => {
-  return question.type !== QuestionType.FEATURE || question.feature !== FeatureType.LAKE || showsLakes(mapDetail)
-}
+const eligible = (question: Question, mapDetail: MapDetail): boolean =>
+  question.type !== QuestionType.FEATURE || question.feature !== FeatureType.LAKE || showsLakes(mapDetail)
 
 /** The questions of these types that can be asked on this map. Games, practice and score review all draw from here. */
 export const poolOf = (
   catalogue: readonly Question[],
   types: readonly QuestionType[],
   mapDetail: MapDetail
-): Question[] => {
-  return catalogue.filter((question) => types.includes(question.type) && eligible(question, mapDetail))
-}
+): Question[] => catalogue.filter((question) => types.includes(question.type) && eligible(question, mapDetail))
 
 export const isFlagQuestion = (question: Question): question is FlagQuestion => question.type === QuestionType.FLAG

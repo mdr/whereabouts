@@ -33,9 +33,7 @@ export const ringOf = (flat: FlatRing): Ring => {
   return out
 }
 
-export const flatRing = (ring: Ring): FlatRing => {
-  return Float64Array.from(ring.flat())
-}
+export const flatRing = (ring: Ring): FlatRing => Float64Array.from(ring.flat())
 
 const boxOf = (ring: FlatRing): Box => {
   const box: Box = [Infinity, Infinity, -Infinity, -Infinity]

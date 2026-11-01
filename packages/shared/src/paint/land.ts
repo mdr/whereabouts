@@ -71,9 +71,8 @@ export const trimSea = (
   cells: ReadonlyMap<H3Cell, number>,
   mask: LandMask,
   finestResolution: H3Resolution
-): Map<H3Cell, number> => {
-  return keepCells(cells, (cell) => mask.nearLand(cell), h3Resolution(Math.min(mask.resolution, finestResolution)))
-}
+): Map<H3Cell, number> =>
+  keepCells(cells, (cell) => mask.nearLand(cell), h3Resolution(Math.min(mask.resolution, finestResolution)))
 
 /**
  * The mask behind "Trim land", in a lake or sea round: the H3 resolution-5 cells
@@ -111,9 +110,8 @@ export const trimLand = (
   cells: ReadonlyMap<H3Cell, number>,
   mask: WaterMask,
   finestResolution: H3Resolution
-): Map<H3Cell, number> => {
-  return keepCells(cells, (cell) => mask.nearWater(cell), h3Resolution(Math.min(mask.resolution, finestResolution)))
-}
+): Map<H3Cell, number> =>
+  keepCells(cells, (cell) => mask.nearWater(cell), h3Resolution(Math.min(mask.resolution, finestResolution)))
 
 /**
  * The paint in the cells `keep` accepts. A cell coarser than `target` that

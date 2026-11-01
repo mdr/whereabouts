@@ -4,17 +4,15 @@ import { shortcutsButtonTestIds } from "./ShortcutsButtonTestIds"
 import styles from "./ShortcutsButton.module.css"
 
 /** Toolbar button that opens the card; hidden where there is no keyboard (see CSS). */
-export const ShortcutsButton = () => {
-  return (
-    <button
-      class={styles.button}
-      data-testid={shortcutsButtonTestIds.button}
-      title="Keyboard shortcuts (?)"
-      aria-label="Keyboard shortcuts"
-      aria-expanded={shortcutsOpen.value}
-      onClick={() => (shortcutsOpen.value = !shortcutsOpen.value)}
-    >
-      <Icon name="keyboard" />
-    </button>
-  )
-}
+export const ShortcutsButton = () => (
+  <button
+    class={styles.button}
+    data-testid={shortcutsButtonTestIds.button}
+    title="Keyboard shortcuts (?)"
+    aria-label="Keyboard shortcuts"
+    aria-expanded={shortcutsOpen.value}
+    onClick={() => (shortcutsOpen.value = !shortcutsOpen.value)}
+  >
+    <Icon name="keyboard" />
+  </button>
+)

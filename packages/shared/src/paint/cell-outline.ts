@@ -19,6 +19,7 @@ export const unwrapAntimeridian = (polygon: Ring[]): Ring[] => {
 }
 
 /** Outline of a set of cells as one GeoJSON MultiPolygon, e.g. a brush footprint. */
-export const cellsOutline = (cells: H3Cell[]): GeoJSON.MultiPolygon => {
-  return { type: "MultiPolygon", coordinates: cellsToMultiPolygon(cells, true).map(unwrapAntimeridian) }
-}
+export const cellsOutline = (cells: H3Cell[]): GeoJSON.MultiPolygon => ({
+  type: "MultiPolygon",
+  coordinates: cellsToMultiPolygon(cells, true).map(unwrapAntimeridian)
+})

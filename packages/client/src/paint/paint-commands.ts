@@ -24,9 +24,8 @@ export const trimPaint = async (paint: Pick<PaintModel, "trimSea" | "trimLand">,
   }
 }
 
-export const trimPaintToHint = (paint: Pick<PaintModel, "trimToHint">, band: HintBand): string => {
-  return trimmed(paint.trimToHint(band), "None outside")
-}
+export const trimPaintToHint = (paint: Pick<PaintModel, "trimToHint">, band: HintBand): string =>
+  trimmed(paint.trimToHint(band), "None outside")
 
 const trimmed = (share: number, none: string): string => {
   if (share > 0) sound.play("clear")

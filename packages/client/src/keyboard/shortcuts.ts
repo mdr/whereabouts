@@ -45,9 +45,11 @@ const MOD = isMac ? "⌘" : "Ctrl"
 const withMod = (event: KeyPress) => event.metaKey || event.ctrlKey
 const plain = (key: string) => (event: KeyPress) => event.key === key
 
-const paintKey = (key: string, run: (target: PaintKeyTarget) => void): Combo => {
-  return { keys: [key], matches: plain(key), run }
-}
+const paintKey = (key: string, run: (target: PaintKeyTarget) => void): Combo => ({
+  keys: [key],
+  matches: plain(key),
+  run
+})
 
 const BRUSH_STEP = 1.25
 
@@ -114,12 +116,11 @@ const SHORTCUTS: Shortcut[] = [
 ]
 
 /** The card's rows: in practice, or in a game. */
-export const listedShortcuts = (practice: boolean): Shortcut[] => {
-  return SHORTCUTS.filter((shortcut) => practice || !shortcut.practiceOnly).map((shortcut) => ({
+export const listedShortcuts = (practice: boolean): Shortcut[] =>
+  SHORTCUTS.filter((shortcut) => practice || !shortcut.practiceOnly).map((shortcut) => ({
     ...shortcut,
     combos: shortcut.combos.filter((combo) => !combo.unlisted)
   }))
-}
 
 /** Run the paint key `e` presses, if painting is on; whether it was one. */
 export const runPaintKey = (event: KeyPress, target: PaintKeyTarget): boolean => {

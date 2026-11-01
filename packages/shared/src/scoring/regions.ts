@@ -107,9 +107,8 @@ export interface AreaScore {
  * to half the tolerance across: far finer than its narrowest Gaussian, and
  * much faster.
  */
-export const regionScoringResolution = (tolerance: Km): H3Resolution => {
-  return h3Resolution(Math.max(0, resolutionForTolerance(tolerance) - 1))
-}
+export const regionScoringResolution = (tolerance: Km): H3Resolution =>
+  h3Resolution(Math.max(0, resolutionForTolerance(tolerance) - 1))
 
 /** The region's cells at `resolution`: those whose centres fall inside the outline. */
 export const regionCells = (area: Area, resolution: H3Resolution): H3Cell[] => {

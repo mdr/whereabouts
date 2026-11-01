@@ -12,32 +12,30 @@ export const TogglePills = <T extends string>({
   options: readonly { value: T; label: string }[]
   value: readonly T[]
   onChange: (value: T[]) => void
-}) => {
-  return (
-    <div class={styles.pills} role="group" aria-label={label}>
-      {options.map((option) => {
-        const on = value.includes(option.value)
-        return (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={on}
-            class={on ? styles.on : undefined}
-            disabled={on && value.length === 1}
-            onClick={() =>
-              onChange(
-                options
-                  .map((candidate) => candidate.value)
-                  .filter((item) => (item === option.value ? !on : value.includes(item)))
-              )
-            }
-            data-testid={togglePillsTestIds.option}
-            data-value={option.value}
-          >
-            {option.label}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
+}) => (
+  <div class={styles.pills} role="group" aria-label={label}>
+    {options.map((option) => {
+      const on = value.includes(option.value)
+      return (
+        <button
+          key={option.value}
+          type="button"
+          aria-pressed={on}
+          class={on ? styles.on : undefined}
+          disabled={on && value.length === 1}
+          onClick={() =>
+            onChange(
+              options
+                .map((candidate) => candidate.value)
+                .filter((item) => (item === option.value ? !on : value.includes(item)))
+            )
+          }
+          data-testid={togglePillsTestIds.option}
+          data-value={option.value}
+        >
+          {option.label}
+        </button>
+      )
+    })}
+  </div>
+)

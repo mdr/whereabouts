@@ -53,9 +53,7 @@ export const REVEAL_ANSWER: LayerId<"circle"> = "reveal-answer"
 export const CURSOR_FILL: LayerId<"fill"> = "cursor-fill"
 export const CURSOR_OUTLINE: LayerId<"line"> = "cursor-outline"
 
-const emptyCollection = (): GeoJSON.FeatureCollection => {
-  return { type: "FeatureCollection", features: [] }
-}
+const emptyCollection = (): GeoJSON.FeatureCollection => ({ type: "FeatureCollection", features: [] })
 
 /** Adds the game's own sources and layers above the style's. Layers are added in stacking order. */
 export const addGameLayers = (map: MapLibreMap, labelLayers: string[], theme: Theme | undefined): void => {

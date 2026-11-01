@@ -12,13 +12,11 @@ const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
 
 const player = (name: string, rank: number): PlayingPlayerView =>
   makePlayer({ id: idOf(name), name: playerName(name), rank })
-const result = (name: string, score: number, painted = true): RoundResultView => {
-  return {
-    playerId: idOf(name),
-    score,
-    guess: painted ? makePainted() : { type: RoundGuessType.PASSED }
-  }
-}
+const result = (name: string, score: number, painted = true): RoundResultView => ({
+  playerId: idOf(name),
+  score,
+  guess: painted ? makePainted() : { type: RoundGuessType.PASSED }
+})
 
 describe("revealOrder", () => {
   it("puts this round's winner first, passes in score order, then anyone who sat out", () => {

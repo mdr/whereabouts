@@ -22,16 +22,15 @@ import {
 
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 
-const fakeConn = (status: PlainState["type"] = ConnectionStatus.CONNECTED) => {
-  return {
+const fakeConn = (status: PlainState["type"] = ConnectionStatus.CONNECTED) =>
+  ({
     status: signal<ConnectionState>({ type: status }),
     online: signal(status === ConnectionStatus.CONNECTED),
     lastError: signal<string | undefined>(undefined),
     ready: vi.fn(),
     next: vi.fn(),
     timeUntil: () => 10_000
-  } as unknown as Connection
-}
+  }) as unknown as Connection
 
 const show = (view: InPlayGameView, conn = fakeConn(), { timeUp = false } = {}): VrView =>
   gameVrView(view, conn, {} as PaintController, {

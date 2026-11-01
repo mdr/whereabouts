@@ -14,8 +14,8 @@ import { Tool } from "../paint/tool"
 
 vi.mock("../paint/fill", () => ({ useFillTool: vi.fn() }))
 
-const makePaint = () => {
-  return {
+const makePaint = () =>
+  ({
     reset: vi.fn(),
     tool: signal(Tool.PAN),
     useFiller: vi.fn(),
@@ -26,8 +26,7 @@ const makePaint = () => {
       detail: { setDetail: vi.fn(), setStateReveal: vi.fn() },
       camera: { resetView: vi.fn() }
     }
-  } satisfies RoundPaint
-}
+  }) satisfies RoundPaint
 
 interface Props {
   round: number

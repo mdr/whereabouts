@@ -69,9 +69,7 @@ export const trimToHint = (
   cells: ReadonlyMap<H3Cell, number>,
   band: HintBand,
   finestResolution: H3Resolution
-): Map<H3Cell, number> => {
-  return keepCells(cells, (cell) => cellMeetsBand(cell, band), finestResolution)
-}
+): Map<H3Cell, number> => keepCells(cells, (cell) => cellMeetsBand(cell, band), finestResolution)
 
 const cellMeetsBand = (cell: H3Cell, band: HintBand): boolean => {
   const corners = cellBoundaryLatLng(cell)

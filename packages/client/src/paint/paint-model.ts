@@ -35,13 +35,12 @@ interface Snapshot {
  * a version counter, and this is the one place that reads a counter only to
  * depend on it.
  */
-const following = <T>(version: ReadonlySignal<number>, read: () => T): ReadonlySignal<T> => {
-  return computed(() => {
+const following = <T>(version: ReadonlySignal<number>, read: () => T): ReadonlySignal<T> =>
+  computed(() => {
     // oxlint-disable-next-line typescript/no-unused-expressions -- the read is the dependency
     version.value
     return read()
   })
-}
 
 export class PaintModel {
   readonly floor = signal(0.05)

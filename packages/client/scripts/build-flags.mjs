@@ -137,21 +137,20 @@ const normalise = (svg) => {
 // A flag's title or description would name the country.
 const UNNAMED = ["removeTitle", { name: "removeDesc", params: { removeAny: true } }, "removeMetadata"]
 
-const shrink = (svg, precision) => {
-  return optimize(svg, {
+const shrink = (svg, precision) =>
+  optimize(svg, {
     multipass: true,
     floatPrecision: precision,
     plugins: ["preset-default", "removeDimensions", ...UNNAMED]
   }).data
-}
 
 /**
  * The share of pixels that differ between two drawings of a flag, compared
  * at a quarter of the size drawn: a fine line shifted by part of a pixel
  * averages out, a shape that moved does not.
  */
-const differing = async (page, a, b, ratio) => {
-  return page.evaluate(
+const differing = async (page, a, b, ratio) =>
+  page.evaluate(
     async ({ a, b, w, h, tolerance }) => {
       const [sw, sh] = [Math.round(w / 4), Math.round(h / 4)]
       const draw = async (svg) => {
@@ -175,7 +174,6 @@ const differing = async (page, a, b, ratio) => {
     },
     { a, b, w: CHECK_WIDTH, h: Math.round(CHECK_WIDTH / ratio), tolerance: PIXEL_TOLERANCE }
   )
-}
 
 const images = await articleImages(flags.map((f) => f.wiki))
 for (const f of flags) if (FILES[f.flag]) images.set(f.wiki, FILES[f.flag])

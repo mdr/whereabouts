@@ -33,9 +33,8 @@ const EXTRA_TYPES: readonly QuestionType[] = [QuestionType.FEATURE, QuestionType
 export const mixTotal = (mix: QuestionMix): number => QUESTION_TYPES.reduce((s, t) => s + mix[t], 0)
 
 /** A mix of only these counts, the other types none. */
-export const mixOf = (counts: Partial<QuestionMix>): QuestionMix => {
-  return Object.fromEntries(QUESTION_TYPES.map((t) => [t, counts[t] ?? 0])) as QuestionMix
-}
+export const mixOf = (counts: Partial<QuestionMix>): QuestionMix =>
+  Object.fromEntries(QUESTION_TYPES.map((t) => [t, counts[t] ?? 0])) as QuestionMix
 
 /**
  * An even mix of `rounds`: the same of each type but the extras, the rest one

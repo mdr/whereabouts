@@ -38,19 +38,17 @@ const paintedInText = (where: PaintedCountry, answer?: string): string => {
 export const vrRound = (
   { question, revealed, fact }: VrRoundShown,
   own: Omit<VrRound, "prompt" | "mode" | "picture" | "water">
-): VrRound => {
-  return {
-    ...own,
-    prompt: promptOf(question),
-    mode: answerModeText(question),
-    picture: vrPicture(
-      clueImage(question.clue) ?? revealed?.photo,
-      flagShown(question),
-      revealed && { place: revealed.label, text: fact?.text }
-    ),
-    water: onWater(question.answer)
-  }
-}
+): VrRound => ({
+  ...own,
+  prompt: promptOf(question),
+  mode: answerModeText(question),
+  picture: vrPicture(
+    clueImage(question.clue) ?? revealed?.photo,
+    flagShown(question),
+    revealed && { place: revealed.label, text: fact?.text }
+  ),
+  water: onWater(question.answer)
+})
 
 /** Your score at the reveal, or undefined when you sat the round out. */
 export interface VrScore {
@@ -78,22 +76,20 @@ export const vrReveal = (
   you: VrScore | undefined,
   borders: Borders | undefined,
   own: Pick<VrReveal, "actions" | "table" | "note" | "paints">
-): VrReveal => {
-  return {
-    ...own,
-    label: revealed.label,
-    answer: vrAnswer(revealed),
-    focus: revealed.answer,
-    stateRound: question.type === QuestionType.STATE,
-    fact: fact?.text,
-    scoreLine: vrScoreLine(you, clueFlag(question.clue)),
-    flags:
-      question.type === QuestionType.FLAG
-        ? {
-            on: allFlags.value,
-            toggle: () => (allFlags.value = !allFlags.value),
-            pins: borders && vrFlagPins(borders)
-          }
-        : undefined
-  }
-}
+): VrReveal => ({
+  ...own,
+  label: revealed.label,
+  answer: vrAnswer(revealed),
+  focus: revealed.answer,
+  stateRound: question.type === QuestionType.STATE,
+  fact: fact?.text,
+  scoreLine: vrScoreLine(you, clueFlag(question.clue)),
+  flags:
+    question.type === QuestionType.FLAG
+      ? {
+          on: allFlags.value,
+          toggle: () => (allFlags.value = !allFlags.value),
+          pins: borders && vrFlagPins(borders)
+        }
+      : undefined
+})

@@ -11,18 +11,16 @@ export const KernelComparison = ({
   painted: Distribution
   answer: ScoredAnswer
   active: KernelId
-}) => {
-  return (
-    <ul class={cx(kit.results, kit.compare)}>
-      {KERNELS.map((kernel) => (
-        <li key={kernel.id}>
-          <span>
-            {kernel.label}
-            {kernel.id === active ? " ◀" : ""}
-          </span>
-          <span>{Math.round(scoreAnswer(painted, answer, kernel).score)}</span>
-        </li>
-      ))}
-    </ul>
-  )
-}
+}) => (
+  <ul class={cx(kit.results, kit.compare)}>
+    {KERNELS.map((kernel) => (
+      <li key={kernel.id}>
+        <span>
+          {kernel.label}
+          {kernel.id === active ? " ◀" : ""}
+        </span>
+        <span>{Math.round(scoreAnswer(painted, answer, kernel).score)}</span>
+      </li>
+    ))}
+  </ul>
+)

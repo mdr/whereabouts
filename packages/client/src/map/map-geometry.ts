@@ -8,14 +8,11 @@ export const EQUATORIAL_CIRCUMFERENCE: Metres = 40075016.686
 const WORLD_WIDTH_AT_ZOOM_0: Px = 512
 
 /** How wide MapLibre draws the whole world at a zoom. */
-const worldWidth = (zoom: Zoom): Px => {
-  return WORLD_WIDTH_AT_ZOOM_0 * Math.pow(2, zoom)
-}
+const worldWidth = (zoom: Zoom): Px => WORLD_WIDTH_AT_ZOOM_0 * Math.pow(2, zoom)
 
 /** The zoom at which the world is `width` px wide. */
-export const zoomForWorldWidth = (width: Px): Zoom => {
-  return Math.log2(width / WORLD_WIDTH_AT_ZOOM_0)
-}
+export const zoomForWorldWidth = (width: Px): Zoom => Math.log2(width / WORLD_WIDTH_AT_ZOOM_0)
+
 /**
  * MapLibre's tiles stop this far north and south. Paint beyond it is never
  * seen on the flat map, and a globe smears it into a fan at the pole.
@@ -25,9 +22,7 @@ export const MIN_LAT: Degrees = 0 - MAX_LAT
 /** The globe's starting size: its radius as a share of the map's shorter side. */
 const GLOBE_FILL = 0.4
 
-export const drawable = (lat: Degrees): boolean => {
-  return Math.abs(lat) <= MAX_LAT
-}
+export const drawable = (lat: Degrees): boolean => Math.abs(lat) <= MAX_LAT
 
 /** A band as polygons: a longitude band across 180° is two, one each side. */
 export const hintFeatures = (band: HintBand): GeoJSON.Feature[] => {
@@ -52,11 +47,8 @@ export const hintFeatures = (band: HintBand): GeoJSON.Feature[] => {
   return [box(band.from, 180, MIN_LAT, MAX_LAT), box(-180, band.to, MIN_LAT, MAX_LAT)]
 }
 
-const outerRingPoints = (features: GeoJSON.Feature[]): Ring => {
-  return features.flatMap((feature) =>
-    feature.geometry.type === "Polygon" ? (feature.geometry.coordinates[0] as Ring) : []
-  )
-}
+const outerRingPoints = (features: GeoJSON.Feature[]): Ring =>
+  features.flatMap((feature) => (feature.geometry.type === "Polygon" ? (feature.geometry.coordinates[0] as Ring) : []))
 
 /** `box` grown to take in the polygons' outer rings. */
 export const boxAround = (features: GeoJSON.Feature[], box: Box): Box => {
@@ -79,22 +71,20 @@ export const toleranceBox = (answer: LatLon, tolerance: Km): Box => {
   return [answer.lon - dLon, answer.lat - dLat, answer.lon + dLon, answer.lat + dLat]
 }
 
-export const bounds = ([w, s, e, n]: Box): LngLatBoundsLike => {
-  return [
-    [w, Math.max(-85, s)],
-    [e, Math.min(85, n)]
-  ]
-}
+export const bounds = ([w, s, e, n]: Box): LngLatBoundsLike => [
+  [w, Math.max(-85, s)],
+  [e, Math.min(85, n)]
+]
 
 /** Moves the centre into the middle of the clear part of the map. Unlike easeTo's padding, it does not stay set. */
-export const offsetFor = (padding: Required<PaddingOptions>): [x: Px, y: Px] => {
-  return [(padding.left - padding.right) / 2, (padding.top - padding.bottom) / 2]
-}
+export const offsetFor = (padding: Required<PaddingOptions>): [x: Px, y: Px] => [
+  (padding.left - padding.right) / 2,
+  (padding.top - padding.bottom) / 2
+]
 
 /** The ground length of one CSS pixel. */
-export const metresPerPixel = (lat: Degrees, zoom: Zoom): Metres => {
-  return (EQUATORIAL_CIRCUMFERENCE * Math.cos(toRadians(lat))) / worldWidth(zoom)
-}
+export const metresPerPixel = (lat: Degrees, zoom: Zoom): Metres =>
+  (EQUATORIAL_CIRCUMFERENCE * Math.cos(toRadians(lat))) / worldWidth(zoom)
 
 /**
  * The zoom that shows a whole globe sized to the map. In the camera's

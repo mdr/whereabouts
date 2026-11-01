@@ -14,36 +14,34 @@ export const Cheats = ({
   question: Question
   answer: ScoredAnswer
   kernel: ChoosableKernel
-}) => {
-  return (
-    <Card title="Cheats">
+}) => (
+  <Card title="Cheats">
+    <label class={kit.check}>
+      <input
+        type="checkbox"
+        checked={cheatLiveScore.value}
+        onChange={(event) => (cheatLiveScore.value = event.currentTarget.checked)}
+      />{" "}
+      Show live score and the real answer while painting
+    </label>
+    {answer.type === AnswerType.AREA ? (
+      <p class={kit.hint}>Countries score by shape and nearness, with their own kernel: see regions.ts.</p>
+    ) : (
       <label class={kit.check}>
-        <input
-          type="checkbox"
-          checked={cheatLiveScore.value}
-          onChange={(event) => (cheatLiveScore.value = event.currentTarget.checked)}
-        />{" "}
-        Show live score and the real answer while painting
+        Scoring kernel{" "}
+        <select
+          value={soloKernelId.value}
+          onChange={(event) => (soloKernelId.value = KernelIdSchema.parse(event.currentTarget.value))}
+          style={{ flex: 1 }}
+        >
+          {KERNELS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </label>
-      {answer.type === AnswerType.AREA ? (
-        <p class={kit.hint}>Countries score by shape and nearness, with their own kernel: see regions.ts.</p>
-      ) : (
-        <label class={kit.check}>
-          Scoring kernel{" "}
-          <select
-            value={soloKernelId.value}
-            onChange={(event) => (soloKernelId.value = KernelIdSchema.parse(event.currentTarget.value))}
-            style={{ flex: 1 }}
-          >
-            {KERNELS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      <CopyCase question={question} answer={answer} kernel={kernel} />
-    </Card>
-  )
-}
+    )}
+    <CopyCase question={question} answer={answer} kernel={kernel} />
+  </Card>
+)

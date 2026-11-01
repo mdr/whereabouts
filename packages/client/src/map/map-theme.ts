@@ -69,21 +69,19 @@ export const styleLayerPaint = (layer: StyleLayer, theme: Theme): PaintSetting[]
 }
 
 /** The theme colours for the game's own overlay layers. */
-export const overlayPaint = (theme: Theme): PaintSetting[] => {
-  return [
-    paintSetting(STATE_BORDERS, "line-color", theme.revealBorder),
-    paintSetting(STATE_LABELS, "text-color", theme.labelText),
-    paintSetting(STATE_LABELS, "text-halo-color", theme.labelHalo),
-    paintSetting(REVEAL_ANSWER, "circle-color", theme.answer),
-    paintSetting(REVEAL_ANSWER, "circle-stroke-color", theme.answerStroke),
-    paintSetting(REVEAL_REGION_FILL, "fill-color", theme.answer),
-    paintSetting(REVEAL_REGION_LINE, "line-color", theme.answer),
-    paintSetting(HINT_FILL, "fill-color", theme.brush),
-    paintSetting(HINT_EDGE, "line-color", theme.brush),
-    paintSetting(CURSOR_FILL, "fill-color", theme.brush),
-    paintSetting(CURSOR_OUTLINE, "line-color", theme.brush)
-  ]
-}
+export const overlayPaint = (theme: Theme): PaintSetting[] => [
+  paintSetting(STATE_BORDERS, "line-color", theme.revealBorder),
+  paintSetting(STATE_LABELS, "text-color", theme.labelText),
+  paintSetting(STATE_LABELS, "text-halo-color", theme.labelHalo),
+  paintSetting(REVEAL_ANSWER, "circle-color", theme.answer),
+  paintSetting(REVEAL_ANSWER, "circle-stroke-color", theme.answerStroke),
+  paintSetting(REVEAL_REGION_FILL, "fill-color", theme.answer),
+  paintSetting(REVEAL_REGION_LINE, "line-color", theme.answer),
+  paintSetting(HINT_FILL, "fill-color", theme.brush),
+  paintSetting(HINT_EDGE, "line-color", theme.brush),
+  paintSetting(CURSOR_FILL, "fill-color", theme.brush),
+  paintSetting(CURSOR_OUTLINE, "line-color", theme.brush)
+]
 
 /** The paint layer's colour and opacity expressions, from the theme's ramp. */
 export const paintRamp = (
@@ -91,21 +89,19 @@ export const paintRamp = (
 ): {
   color: PaintValue<"fill", "fill-color">
   opacity: PaintValue<"fill", "fill-opacity">
-} => {
-  return {
-    color: [
-      "interpolate",
-      ["linear"],
-      ["get", "v"],
-      0,
-      theme.ramp[0],
-      1 / 3,
-      theme.ramp[1],
-      2 / 3,
-      theme.ramp[2],
-      1,
-      theme.ramp[3]
-    ],
-    opacity: ["interpolate", ["linear"], ["get", "v"], 0, theme.rampOpacity[0], 1, theme.rampOpacity[1]]
-  }
-}
+} => ({
+  color: [
+    "interpolate",
+    ["linear"],
+    ["get", "v"],
+    0,
+    theme.ramp[0],
+    1 / 3,
+    theme.ramp[1],
+    2 / 3,
+    theme.ramp[2],
+    1,
+    theme.ramp[3]
+  ],
+  opacity: ["interpolate", ["linear"], ["get", "v"], 0, theme.rampOpacity[0], 1, theme.rampOpacity[1]]
+})

@@ -12,23 +12,21 @@ export const Pills = <T extends string | number>({
   options: readonly { value: T; label: string }[]
   value: T
   onChange: (value: T) => void
-}) => {
-  return (
-    <div class={styles.pills} role="radiogroup" aria-label={label}>
-      {options.map((option) => (
-        <button
-          key={String(option.value)}
-          type="button"
-          role="radio"
-          aria-checked={option.value === value}
-          class={option.value === value ? styles.on : undefined}
-          onClick={() => onChange(option.value)}
-          data-testid={pillsTestIds.option}
-          data-value={option.value}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
-  )
-}
+}) => (
+  <div class={styles.pills} role="radiogroup" aria-label={label}>
+    {options.map((option) => (
+      <button
+        key={String(option.value)}
+        type="button"
+        role="radio"
+        aria-checked={option.value === value}
+        class={option.value === value ? styles.on : undefined}
+        onClick={() => onChange(option.value)}
+        data-testid={pillsTestIds.option}
+        data-value={option.value}
+      >
+        {option.label}
+      </button>
+    ))}
+  </div>
+)

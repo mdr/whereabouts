@@ -34,11 +34,10 @@ const playerPaint = (resolution: H3Resolution, paint: PaintSubmission, colour: C
 }
 
 /** These results' paint in their players' colours, best last so it draws on top. */
-export const paintsOf = (results: RoundResultView[], players: PlayingPlayerView[]): PlayerPaint[] => {
-  return [...results].reverse().flatMap((result) => {
+export const paintsOf = (results: RoundResultView[], players: PlayingPlayerView[]): PlayerPaint[] =>
+  [...results].reverse().flatMap((result) => {
     const player = players.find((candidate) => candidate.id === result.playerId)
     return player && result.guess.type === RoundGuessType.PAINTED
       ? [playerPaint(result.guess.resolution, result.guess.paint, colourCss(player.colour))]
       : []
   })
-}

@@ -22,8 +22,8 @@ export const rankAmong = (player: PlayerSeat, playing: readonly PlayerSeat[]): n
 }
 
 /** Each player's total and per-round scores, best first; `{}` for a round not played. */
-export const finalStandings = (playing: readonly PlayerSeat[], roundCount: number): FinalStanding[] => {
-  return playing
+export const finalStandings = (playing: readonly PlayerSeat[], roundCount: number): FinalStanding[] =>
+  playing
     .map((seat) => ({
       playerId: seat.id,
       name: seat.name,
@@ -35,14 +35,12 @@ export const finalStandings = (playing: readonly PlayerSeat[], roundCount: numbe
       })
     }))
     .sort((a, b) => b.total - a.total)
-}
 
-export const awardFacts = (playing: readonly PlayerSeat[], roundCount: number): PlayerFacts[] => {
-  return playing.map((seat) => ({
+export const awardFacts = (playing: readonly PlayerSeat[], roundCount: number): PlayerFacts[] =>
+  playing.map((seat) => ({
     playerId: seat.id,
     rounds: Array.from({ length: roundCount }, (_, i) => seat.role.record.facts[i])
   }))
-}
 
 /** Players by rank then name, and spectators by name. */
 export const rosterView = (

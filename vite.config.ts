@@ -116,6 +116,7 @@ export default defineConfig({
       "eslint-js/no-restricted-syntax": ["error", ...noReexports, ...noFunctionExpressionConsts],
       "func-style": ["error", "expression"],
       "prefer-arrow-callback": "error",
+      "arrow-body-style": ["error", "as-needed"],
       "no-restricted-imports": [
         "error",
         {

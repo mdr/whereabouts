@@ -29,11 +29,10 @@ export const reloadOnStaleBuild = (): void => {
  * A JSON file from this build, fetched rather than imported: Chrome never
  * fetches a failed module import again, so it could not be retried.
  */
-export const fetchBuildJson = <T>(url: string): Promise<T> => {
-  return withRetries(async () => {
+export const fetchBuildJson = <T>(url: string): Promise<T> =>
+  withRetries(async () => {
     const response = await fetch(url)
     if (response.status === 404) reloadForNewBuild()
     if (!response.ok) throw new Error(`${url}: ${response.status}`)
     return (await response.json()) as T
   })
-}

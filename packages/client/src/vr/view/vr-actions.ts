@@ -57,10 +57,8 @@ export const hostActions = (
 }
 
 /** A watcher's way in, while a seat is free. */
-export const takeSeat = (conn: Pick<Connection, "setRole">, view: GameView, label: string): VrAction => {
-  return {
-    label,
-    press: () => conn.setRole(Role.PLAYER),
-    enabled: view.players.length < MAX_PLAYERS
-  }
-}
+export const takeSeat = (conn: Pick<Connection, "setRole">, view: GameView, label: string): VrAction => ({
+  label,
+  press: () => conn.setRole(Role.PLAYER),
+  enabled: view.players.length < MAX_PLAYERS
+})

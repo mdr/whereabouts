@@ -53,9 +53,8 @@ export const tileUrls = (templates: string[], zoom: Zoom): string[] => {
 
 const tileZoom = (zoom: Zoom): Zoom => Math.max(0, Math.floor(zoom))
 
-const sourceOf = (layer: LayerSpecification): string | undefined => {
-  return "source" in layer && typeof layer.source === "string" ? layer.source : undefined
-}
+const sourceOf = (layer: LayerSpecification): string | undefined =>
+  "source" in layer && typeof layer.source === "string" ? layer.source : undefined
 
 /** A symbol layer's font stack, as MapLibre names it in glyph URLs; undefined when it is an expression. */
 const fontOf = (layer: LayerSpecification): string | undefined => {

@@ -148,9 +148,7 @@ const randomToken = (): PlayerToken => {
  */
 const storedToken = persisted("wa.token", PlayerTokenSchema, randomToken(), sessionStorage)
 
-export const seatToken = (): PlayerToken => {
-  return storedToken.value
-}
+export const seatToken = (): PlayerToken => storedToken.value
 
 /** Forget this tab's seat, e.g. after the host removed us; the next join is as a new player. */
 export const resetPlayerToken = (): void => {

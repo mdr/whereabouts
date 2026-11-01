@@ -15,14 +15,12 @@ export const ScoreCard = ({
   label: ComponentChildren
   testIds: { scoreCard?: string; score?: string }
   children?: ComponentChildren
-}) => {
-  return (
-    <Card class={cx(scoreStyles.score, scoreStyles.reveal)} data-testid={testIds.scoreCard}>
-      <div class={scoreStyles.big} data-testid={testIds.score}>
-        {score}
-      </div>
-      <div class={scoreStyles.label}>{label}</div>
-      {children}
-    </Card>
-  )
-}
+}) => (
+  <Card class={cx(scoreStyles.score, scoreStyles.reveal)} data-testid={testIds.scoreCard}>
+    <div class={scoreStyles.big} data-testid={testIds.score}>
+      {score}
+    </div>
+    <div class={scoreStyles.label}>{label}</div>
+    {children}
+  </Card>
+)

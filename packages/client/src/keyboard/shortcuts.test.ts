@@ -12,16 +12,14 @@ const press = (key: string, mods: Partial<KeyPress> = {}): KeyPress => ({
   ...mods
 })
 
-const makeTarget = ({ enabled = true, canFill = true } = {}) => {
-  return {
-    enabled: () => enabled,
-    canFill: () => canFill,
-    setTool: vi.fn<PaintKeyTarget["setTool"]>(),
-    resizeBrush: vi.fn<PaintKeyTarget["resizeBrush"]>(),
-    undo: vi.fn(),
-    redo: vi.fn()
-  }
-}
+const makeTarget = ({ enabled = true, canFill = true } = {}) => ({
+  enabled: () => enabled,
+  canFill: () => canFill,
+  setTool: vi.fn<PaintKeyTarget["setTool"]>(),
+  resizeBrush: vi.fn<PaintKeyTarget["resizeBrush"]>(),
+  undo: vi.fn(),
+  redo: vi.fn()
+})
 
 describe("the paint keys", () => {
   it("undo with Ctrl+Z, and redo with Ctrl+Shift+Z or Ctrl+Y", () => {

@@ -10,15 +10,13 @@ import type { Outline } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"
 import { revealedShape } from "./revealed-shape"
 
-export const revealedFromView = (reveal: RevealView, outline: Outline | undefined): RevealedAnswer => {
-  return {
-    label: reveal.label,
-    wiki: reveal.wiki,
-    answer: reveal.answer,
-    shape: revealedShape(reveal.question.answer, outline),
-    photo: reveal.photo
-  }
-}
+export const revealedFromView = (reveal: RevealView, outline: Outline | undefined): RevealedAnswer => ({
+  label: reveal.label,
+  wiki: reveal.wiki,
+  answer: reveal.answer,
+  shape: revealedShape(reveal.question.answer, outline),
+  photo: reveal.photo
+})
 
 export enum RevealShownType {
   EVERYONE = "EVERYONE",

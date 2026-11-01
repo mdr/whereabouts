@@ -4,13 +4,13 @@ import { bounds, boxAround, hintFeatures, MAX_LAT, MIN_LAT, toleranceBox } from 
 import type { Box, Ring } from "@whereabouts/shared/geo"
 import type { Km } from "@whereabouts/shared/units"
 
-const polygon = (ring: Ring, ...holes: Ring[]): GeoJSON.Feature => {
-  return { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [ring, ...holes] } }
-}
+const polygon = (ring: Ring, ...holes: Ring[]): GeoJSON.Feature => ({
+  type: "Feature",
+  properties: {},
+  geometry: { type: "Polygon", coordinates: [ring, ...holes] }
+})
 
-const ringOf = (feature: GeoJSON.Feature): number[][] => {
-  return (feature.geometry as GeoJSON.Polygon).coordinates[0]!
-}
+const ringOf = (feature: GeoJSON.Feature): number[][] => (feature.geometry as GeoJSON.Polygon).coordinates[0]!
 
 const START: Box = [0, 0, 10, 10]
 

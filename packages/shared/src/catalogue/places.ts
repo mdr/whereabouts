@@ -45,11 +45,10 @@ const PlaceSchema: z.ZodType<Place> = z.strictObject({
 })
 
 /** places.json as read, by id. */
-export const placesFrom = (json: unknown): ReadonlyMap<PlaceId, Place> => {
-  return new Map(
+export const placesFrom = (json: unknown): ReadonlyMap<PlaceId, Place> =>
+  new Map(
     z
       .array(PlaceSchema)
       .parse(json)
       .map((place) => [place.id, place])
   )
-}

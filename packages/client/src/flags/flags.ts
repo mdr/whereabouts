@@ -27,11 +27,7 @@ export const flagUrl = (code: FlagCode): Promise<string | undefined> => {
 }
 
 /** The flag's width over its height, known before its picture loads. */
-export const flagRatio = (code: FlagCode): number => {
-  return info[code]?.ratio ?? 3 / 2
-}
+export const flagRatio = (code: FlagCode): number => info[code]?.ratio ?? 3 / 2
 
 /** The flag's file on Wikimedia Commons, for crediting it. */
-export const flagFile = (code: FlagCode): CommonsFile | undefined => {
-  return info[code]?.file
-}
+export const flagFile = (code: FlagCode): CommonsFile | undefined => info[code]?.file

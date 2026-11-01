@@ -11,10 +11,8 @@ export const SmallPictureBox = ({
   class?: string
   style?: Record<string, string>
   children?: ComponentChildren
-}) => {
-  return (
-    <span class={cx(styles.smallPicture, className)} style={style}>
-      {children}
-    </span>
-  )
-}
+}) => (
+  <span class={cx(styles.smallPicture, className)} style={style}>
+    {children}
+  </span>
+)

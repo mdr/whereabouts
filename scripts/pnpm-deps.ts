@@ -16,9 +16,7 @@ export const lockfileFingerprint = (): string => {
   return hash.digest("hex")
 }
 
-export const readPnpmDeps = (): PnpmDeps => {
-  return JSON.parse(readFileSync(file, "utf8")) as PnpmDeps
-}
+export const readPnpmDeps = (): PnpmDeps => JSON.parse(readFileSync(file, "utf8")) as PnpmDeps
 
 export const writePnpmDeps = (deps: PnpmDeps): void => {
   writeFileSync(file, JSON.stringify(deps, undefined, 2) + "\n")

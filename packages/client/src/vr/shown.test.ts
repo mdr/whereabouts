@@ -6,13 +6,10 @@ import type { VrTable } from "./scores/scores"
 import { boardOf, flagPinsOf, globeDetail, paintsKey, patchDetail, tableOf } from "./shown"
 import { VrPaintsType, VrViewType, type VrReveal, type VrRound, type VrView } from "./view/view"
 
-const makeRound = (over: Partial<VrRound> = {}): VrRound => {
-  return { detail: MapDetail.WATER, ...over } as VrRound
-}
+const makeRound = (over: Partial<VrRound> = {}): VrRound => ({ detail: MapDetail.WATER, ...over }) as VrRound
 
-const makeReveal = (over: Partial<VrReveal> = {}): VrReveal => {
-  return { stateRound: false, paints: { type: VrPaintsType.OWN }, ...over } as VrReveal
-}
+const makeReveal = (over: Partial<VrReveal> = {}): VrReveal =>
+  ({ stateRound: false, paints: { type: VrPaintsType.OWN }, ...over }) as VrReveal
 
 const paint = (round = makeRound()): VrView => ({ type: VrViewType.PAINT, round })
 const reveal = (over: Partial<VrReveal> = {}, round = makeRound()): VrView => ({

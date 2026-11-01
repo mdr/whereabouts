@@ -22,16 +22,16 @@ export const RoundPrompt = ({ question }: { question: QuestionView }) => {
 }
 
 /** Under a "Paint the whole of …" question: what to cover. */
-const AreaInstruction = ({ noun }: { noun: string }) => {
-  return <p class={cx(kit.hint, styles.regionHint)}>Cover the whole {noun}: its shape counts.</p>
-}
+const AreaInstruction = ({ noun }: { noun: string }) => (
+  <p class={cx(kit.hint, styles.regionHint)}>Cover the whole {noun}: its shape counts.</p>
+)
 
 /**
  * How to answer a flag round, big and plain, since the two are painted so
  * differently: cover the whole country, or mark where a small one is.
  */
-const AnswerMode = ({ area }: { area: boolean }) => {
-  return area ? (
+const AnswerMode = ({ area }: { area: boolean }) =>
+  area ? (
     <div class={cx(styles.answerMode, styles.area)}>
       <Icon name="brush" size={18} />
       <div>
@@ -48,4 +48,3 @@ const AnswerMode = ({ area }: { area: boolean }) => {
       </div>
     </div>
   )
-}

@@ -19,9 +19,8 @@ const PHONE_MEDIA_QUERY = "(max-width: 640px)"
 const SHEET_TOP = 0.5
 
 /** The flat map's zoom that shows the whole world on a map `width` px wide. */
-export const flatWorldZoom = (width: Px): Zoom => {
-  return matchMedia(PHONE_MEDIA_QUERY).matches ? Math.min(WORLD_ZOOM, zoomForWorldWidth(width)) : WORLD_ZOOM
-}
+export const flatWorldZoom = (width: Px): Zoom =>
+  matchMedia(PHONE_MEDIA_QUERY).matches ? Math.min(WORLD_ZOOM, zoomForWorldWidth(width)) : WORLD_ZOOM
 
 /**
  * Where the reveal's cards leave the map clear: between the cards on the

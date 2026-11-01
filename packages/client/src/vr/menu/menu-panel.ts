@@ -27,26 +27,22 @@ interface PanelState {
 
 type PanelContent = Record<string, PanelElement>
 
-export const viewHeading = (view: VrView): string => {
-  return (view.type === VrViewType.PAINT && view.round.heading) || HEADINGS[view.type]
-}
+export const viewHeading = (view: VrView): string =>
+  (view.type === VrViewType.PAINT && view.round.heading) || HEADINGS[view.type]
 
-export const viewNote = (view: VrView): string | undefined => {
-  return view.type === VrViewType.PAINT
+export const viewNote = (view: VrView): string | undefined =>
+  view.type === VrViewType.PAINT
     ? view.round.note
     : view.type === VrViewType.REVEAL
       ? view.reveal.note
       : view.summary.note
-}
 
-export const viewActions = (view: VrView | undefined): VrAction[] => {
-  return view?.type === VrViewType.REVEAL ? view.reveal.actions : view && "summary" in view ? view.summary.actions : []
-}
+export const viewActions = (view: VrView | undefined): VrAction[] =>
+  view?.type === VrViewType.REVEAL ? view.reveal.actions : view && "summary" in view ? view.summary.actions : []
 
 /** An action asking for confirmation says so once pressed. */
-export const actionLabel = (action: VrAction, armed: VrAction | undefined): string => {
-  return armed?.label === action.label && action.confirm ? action.confirm : action.label
-}
+export const actionLabel = (action: VrAction, armed: VrAction | undefined): string =>
+  armed?.label === action.label && action.confirm ? action.confirm : action.label
 
 export const panelContent = (view: VrView, state: PanelState): PanelContent => {
   const round = view.type === VrViewType.PAINT ? view.round : undefined
@@ -115,12 +111,10 @@ const buttonRow = (prefix: string, actions: VrAction[], count: number, armed: Vr
   return row
 }
 
-const toggleElements = (state: PanelState, reveal: VrReveal | undefined): PanelContent => {
-  return {
-    soundLabel: { text: state.soundOn ? "Sound on" : "Sound off" },
-    passthrough: { shown: state.passthroughOffered },
-    passthroughLabel: { text: state.passthroughOn ? "Show space" : "See your room" },
-    extras: { shown: reveal?.flags !== undefined },
-    ...(reveal?.flags && { flagsLabel: { text: reveal.flags.on ? "Hide all flags" : "Show all flags" } })
-  }
-}
+const toggleElements = (state: PanelState, reveal: VrReveal | undefined): PanelContent => ({
+  soundLabel: { text: state.soundOn ? "Sound on" : "Sound off" },
+  passthrough: { shown: state.passthroughOffered },
+  passthroughLabel: { text: state.passthroughOn ? "Show space" : "See your room" },
+  extras: { shown: reveal?.flags !== undefined },
+  ...(reveal?.flags && { flagsLabel: { text: reveal.flags.on ? "Hide all flags" : "Show all flags" } })
+})

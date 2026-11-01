@@ -46,20 +46,18 @@ export interface StyleIndex {
   styleLayers: StyleLayer[]
 }
 
-export const emptyStyleIndex = (): StyleIndex => {
-  return {
-    labels: [],
-    borders: [],
-    nationalBorderPaint: new Map(),
-    roads: [],
-    urban: [],
-    ice: [],
-    wood: [],
-    waterways: [],
-    waterFilter: undefined,
-    styleLayers: []
-  }
-}
+export const emptyStyleIndex = (): StyleIndex => ({
+  labels: [],
+  borders: [],
+  nationalBorderPaint: new Map(),
+  roads: [],
+  urban: [],
+  ice: [],
+  wood: [],
+  waterways: [],
+  waterFilter: undefined,
+  styleLayers: []
+})
 
 export const indexStyle = (
   layers: readonly IndexedLayer[],

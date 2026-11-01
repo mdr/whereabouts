@@ -37,9 +37,8 @@ export enum TouchStep {
  * with a single touch for a moment, so a second finger abandons the stroke
  * the first began.
  */
-export const touchStart = (fingers: number, canPaint: boolean): TouchStep => {
-  return fingers === 1 && canPaint ? TouchStep.BEGIN : TouchStep.ABANDON
-}
+export const touchStart = (fingers: number, canPaint: boolean): TouchStep =>
+  fingers === 1 && canPaint ? TouchStep.BEGIN : TouchStep.ABANDON
 
 export const touchMove = (fingers: number, painting: boolean): TouchStep => {
   if (!painting) return TouchStep.IGNORE

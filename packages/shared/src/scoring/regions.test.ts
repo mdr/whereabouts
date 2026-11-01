@@ -51,15 +51,14 @@ const pointOf = (wiki: string): PointAnswer => {
 }
 
 /** An even coat of paint over `cells`, with the usual 5% world floor. */
-const coat = (cells: H3Cell[], floor = 0.05) => {
-  return buildDistribution(
+const coat = (cells: H3Cell[], floor = 0.05) =>
+  buildDistribution(
     cells.map((cell) => {
       const [lat, lon] = cellToLatLng(cell)
       return { lat, lon, intensity: 1, area: cellArea(cell), h3: cell }
     }),
     floor
   )
-}
 
 /** Paint a region the way a player would: at the question's painting resolution. */
 const paintRegion = (area: Area) => coat(regionCells(area, resolutionForTolerance(area.tolerance)))

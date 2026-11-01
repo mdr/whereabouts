@@ -72,9 +72,7 @@ export const KERNELS: ChoosableKernel[] = [
 /** The kernel games and practice score with; the others are for comparison in the dev drawer. */
 export const DEFAULT_KERNEL: ChoosableKernel = KERNELS[1]!
 
-export const kernelById = (id: KernelId): ChoosableKernel => {
-  return KERNELS.find((choice) => choice.id === id)!
-}
+export const kernelById = (id: KernelId): ChoosableKernel => KERNELS.find((choice) => choice.id === id)!
 
 export interface WeightedPoint {
   xyz: Xyz
@@ -109,9 +107,8 @@ export interface ScoreBreakdown {
   B: number
 }
 
-export const kernel = (distance: Km, tolerance: Km, k: Kernel = DEFAULT_KERNEL): number => {
-  return kernelFromSq(distance * distance, tolerance, k)
-}
+export const kernel = (distance: Km, tolerance: Km, k: Kernel = DEFAULT_KERNEL): number =>
+  kernelFromSq(distance * distance, tolerance, k)
 
 /**
  * Mean of k(x, y) over x uniformly distributed on the sphere. Independent of y.
@@ -204,9 +201,7 @@ export const selfSimilarity = (
   return B
 }
 
-export const scoreFromParts = (A: number, B: number): Points => {
-  return 500 * (1 + 2 * A - B)
-}
+export const scoreFromParts = (A: number, B: number): Points => 500 * (1 + 2 * A - B)
 
 /**
  * What a pass scores: Done with nothing painted, or a blank map when the clock
@@ -267,9 +262,12 @@ export interface RegionScore extends ScoreBreakdown {
 }
 
 /** One Gaussian component of a kernel, as a kernel of its own. */
-const component = (k: Kernel, index: number): Kernel => {
-  return { id: `${k.id}#${index}`, label: k.label, scales: [k.scales[index]!], weights: [1] }
-}
+const component = (k: Kernel, index: number): Kernel => ({
+  id: `${k.id}#${index}`,
+  label: k.label,
+  scales: [k.scales[index]!],
+  weights: [1]
+})
 
 /** Region answer from H3 cells (any mix of resolutions), weighted by area. */
 export const regionAnswer = (cells: Iterable<H3Cell>, tolerance: Km, k: Kernel = DEFAULT_KERNEL): RegionAnswer => {

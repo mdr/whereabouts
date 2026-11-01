@@ -72,16 +72,12 @@ interface GameVrShown {
   borders: Borders | undefined
 }
 
-const moreActions = (view: GameView, conn: Connection): VrAction[] => {
-  return [
-    ...(view.you.role.type === YouRoleType.SPECTATOR ? [takeSeat(conn, view, "Play from the next question")] : []),
-    ...hostActions(conn, view, view.phase === Phase.REVEAL ? shownPlayerId(revealShown.value) : vrPicked.value),
-    ...(canEndGame(view)
-      ? [{ label: "End game", confirm: "Press again to end the game", press: () => conn.end() }]
-      : []),
-    { label: "Leave game", confirm: "Press again to leave", press: () => navigate("/") }
-  ]
-}
+const moreActions = (view: GameView, conn: Connection): VrAction[] => [
+  ...(view.you.role.type === YouRoleType.SPECTATOR ? [takeSeat(conn, view, "Play from the next question")] : []),
+  ...hostActions(conn, view, view.phase === Phase.REVEAL ? shownPlayerId(revealShown.value) : vrPicked.value),
+  ...(canEndGame(view) ? [{ label: "End game", confirm: "Press again to end the game", press: () => conn.end() }] : []),
+  { label: "Leave game", confirm: "Press again to leave", press: () => navigate("/") }
+]
 
 const playerState = (player: PlayingPlayerView): string => {
   if (!player.connected) return "away"
@@ -89,21 +85,19 @@ const playerState = (player: PlayingPlayerView): string => {
   return "guessing"
 }
 
-const playersTable = (view: GameView): VrTable => {
-  return {
-    title: "Players",
-    rows: [...view.players]
-      .sort((a, b) => a.rank - b.rank)
-      .map((player) => ({
-        colour: colourCss(player.colour),
-        name: named(view, player),
-        detail: playerState(player),
-        total: Math.round(player.score).toLocaleString(),
-        ...pickable(view, player)
-      })),
-    hint: view.you.isHost ? "Point at a player to remove them or make them host." : undefined
-  }
-}
+const playersTable = (view: GameView): VrTable => ({
+  title: "Players",
+  rows: [...view.players]
+    .sort((a, b) => a.rank - b.rank)
+    .map((player) => ({
+      colour: colourCss(player.colour),
+      name: named(view, player),
+      detail: playerState(player),
+      total: Math.round(player.score).toLocaleString(),
+      ...pickable(view, player)
+    })),
+  hint: view.you.isHost ? "Point at a player to remove them or make them host." : undefined
+})
 
 const gameRound = (
   view: InPlayGameView,

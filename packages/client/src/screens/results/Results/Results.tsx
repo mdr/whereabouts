@@ -33,13 +33,11 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
       scoreLine: winner ? `${winner.name} wins` : "",
       table: {
         title: "Standings",
-        rows: standings.map((standing, i) => {
-          return {
-            colour: colourCss(standing.colour),
-            name: `${i + 1}. ${standing.name}${standing.playerId === view.you.id ? " (you)" : ""}`,
-            total: Math.round(standing.total).toLocaleString()
-          }
-        })
+        rows: standings.map((standing, i) => ({
+          colour: colourCss(standing.colour),
+          name: `${i + 1}. ${standing.name}${standing.playerId === view.you.id ? " (you)" : ""}`,
+          total: Math.round(standing.total).toLocaleString()
+        }))
       },
       note:
         connectionText(conn) ?? (view.you.isHost ? undefined : "The host can start another game with the same group."),
@@ -103,8 +101,8 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
 }
 
 /** An award's line in pieces, each player's name in their colour. */
-const awardParts = (line: string, standings: (FinalStanding | undefined)[]): { text: string; colour?: CssColour }[] => {
-  return line
+const awardParts = (line: string, standings: (FinalStanding | undefined)[]): { text: string; colour?: CssColour }[] =>
+  line
     .split(/(\{\d\})/)
     .filter((part) => part !== "")
     .map((part) => {
@@ -114,4 +112,3 @@ const awardParts = (line: string, standings: (FinalStanding | undefined)[]): { t
       // Awards and standings come from the same finalists, so a standing is always found.
       return { text: standing?.name ?? "Someone", colour: standing ? colourCss(standing.colour) : undefined }
     })
-}

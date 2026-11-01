@@ -19,13 +19,15 @@ const makeTool = (tool: SprayTool) => {
   return made
 }
 
-const makePaint = (over: Record<string, unknown> = {}) => {
-  return { undo: vi.fn(), redo: vi.fn(), trimToHint: vi.fn(() => 0), ...over }
-}
+const makePaint = (over: Record<string, unknown> = {}) => ({
+  undo: vi.fn(),
+  redo: vi.fn(),
+  trimToHint: vi.fn(() => 0),
+  ...over
+})
 
-const makeRound = (paint = makePaint(), over: Partial<VrRound> = {}): VrRound => {
-  return { paint, useHint: () => {}, hint: undefined, ...over } as unknown as VrRound
-}
+const makeRound = (paint = makePaint(), over: Partial<VrRound> = {}): VrRound =>
+  ({ paint, useHint: () => {}, hint: undefined, ...over }) as unknown as VrRound
 
 const makeActions = (round: VrRound | undefined) => {
   const notes: string[] = []

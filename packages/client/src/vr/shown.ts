@@ -23,9 +23,7 @@ export const tableOf = (view: VrView): VrTable | undefined => {
   return "summary" in view ? view.summary.table : view.round.table
 }
 
-export const boardOf = (view: VrView): VrBoard | undefined => {
-  return "summary" in view ? view.summary.board : undefined
-}
+export const boardOf = (view: VrView): VrBoard | undefined => ("summary" in view ? view.summary.board : undefined)
 
 /** Pins only while flags are on. */
 export const flagPinsOf = (view: VrView): VrFlagPin[] | undefined => {

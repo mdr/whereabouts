@@ -31,17 +31,15 @@ import {
   type RevealingRun
 } from "./practice-run"
 
-const makePlace = (id: string, at: LatLon = { lat: 35, lon: 135.8 }): PlaceQuestion => {
-  return {
-    type: QuestionType.PLACE,
-    id: questionId(id),
-    place: placeId(id),
-    label: id,
-    wiki: wikiTitle(id),
-    clue: { type: ClueType.NAME, prompt: `Where is ${id}?` },
-    answer: { type: AnswerType.POINT, at, tolerance: 50 }
-  }
-}
+const makePlace = (id: string, at: LatLon = { lat: 35, lon: 135.8 }): PlaceQuestion => ({
+  type: QuestionType.PLACE,
+  id: questionId(id),
+  place: placeId(id),
+  label: id,
+  wiki: wikiTitle(id),
+  clue: { type: ClueType.NAME, prompt: `Where is ${id}?` },
+  answer: { type: AnswerType.POINT, at, tolerance: 50 }
+})
 
 const POOL = ["kyoto", "lima", "oslo"].map((id) => makePlace(id))
 

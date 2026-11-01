@@ -54,6 +54,7 @@ export const preloadPicture = (picture: Picture): void => {
 }
 
 /** What is held, oldest first, for the tests. */
-export const heldPictures = (): { page: string[]; headset: string[] } => {
-  return { page: [...held.page.keys()], headset: [...held.headset.keys()] }
-}
+export const heldPictures = (): { page: string[]; headset: string[] } => ({
+  page: [...held.page.keys()],
+  headset: [...held.headset.keys()]
+})

@@ -12,9 +12,7 @@ const makeLayer = (at?: LatLon, km = 50): PaintLayer => {
   return layer
 }
 
-const makeRound = (layer = makeLayer()): VrRound => {
-  return { paint: { layer } } as VrRound
-}
+const makeRound = (layer = makeLayer()): VrRound => ({ paint: { layer } }) as VrRound
 
 const makeReveal = (over: Partial<VrReveal> = {}): VrReveal => {
   const focus = over.focus ?? { lat: 0, lon: 0 }

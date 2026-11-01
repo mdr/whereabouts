@@ -12,9 +12,8 @@ const MAX_RADIUS: Km = 3000
 export const STILL_STAMP: Seconds = 0.15
 
 /** The ground a spot this wide covers on a globe this big: less as the globe is zoomed in. */
-export const groundRadius = (spot: Metres, globeRadius: Metres): Km => {
-  return Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, (spot / globeRadius) * EARTH_RADIUS))
-}
+export const groundRadius = (spot: Metres, globeRadius: Metres): Km =>
+  Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, (spot / globeRadius) * EARTH_RADIUS))
 
 /** Whether a stroke has moved a quarter of its radius, or been held long enough, for another stamp. */
 export const stampDue = (
@@ -22,9 +21,7 @@ export const stampDue = (
   at: LatLon,
   radius: Km,
   now: Seconds
-): boolean => {
-  return !last || greatCircleDistance(last.at, at) >= radius / 4 || now - last.time >= STILL_STAMP
-}
+): boolean => !last || greatCircleDistance(last.at, at) >= radius / 4 || now - last.time >= STILL_STAMP
 
 /** The tool after this one: spray can, eraser, and the pail too when the round can be filled. */
 export const nextTool = (tool: SprayTool, fillable: boolean): SprayTool => {

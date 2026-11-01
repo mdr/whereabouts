@@ -132,9 +132,8 @@ export const createApp = (options: AppOptions): App => {
 }
 
 /** Hashed bundle assets are immutable; everything else must be revalidated. */
-const cacheControlFor = (filePath: string): string => {
-  return /[/\\]assets[/\\]/.test(filePath) ? "public, max-age=31536000, immutable" : "no-cache"
-}
+const cacheControlFor = (filePath: string): string =>
+  /[/\\]assets[/\\]/.test(filePath) ? "public, max-age=31536000, immutable" : "no-cache"
 
 export const defaultStaticDir = (): string => {
   const here = path.dirname(fileURLToPath(import.meta.url))

@@ -181,25 +181,19 @@ export const clueImage = (clue: Clue): CommonsFile | undefined =>
   clue.type === ClueType.PHOTO ? clue.image : undefined
 
 /** Where an answer is: the point, or an area's centre. */
-export const answerCentre = (answer: Answer): LatLon => {
-  return answer.type === AnswerType.POINT ? answer.at : answer.centre
-}
+export const answerCentre = (answer: Answer): LatLon => (answer.type === AnswerType.POINT ? answer.at : answer.centre)
 
-export const isArea = (question: Question): question is Question & { answer: AreaAnswer } => {
-  return question.answer.type === AnswerType.AREA
-}
+export const isArea = (question: Question): question is Question & { answer: AreaAnswer } =>
+  question.answer.type === AnswerType.AREA
 
-export const commonsImageUrl = (file: CommonsFile, width = 900): string => {
-  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${width}`
-}
+export const commonsImageUrl = (file: CommonsFile, width = 900): string =>
+  `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${width}`
 
-export const commonsPageUrl = (file: CommonsFile): string => {
-  return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, "_"))}`
-}
+export const commonsPageUrl = (file: CommonsFile): string =>
+  `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, "_"))}`
 
-export const wikipediaUrl = (title: WikiTitle): string => {
-  return `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`
-}
+export const wikipediaUrl = (title: WikiTitle): string =>
+  `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`
 
 /** Two questions in one game should be at least this far apart when the pool allows. */
 export const MIN_SPREAD: Km = 50

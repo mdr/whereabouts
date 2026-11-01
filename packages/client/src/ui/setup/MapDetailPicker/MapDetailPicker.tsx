@@ -13,28 +13,26 @@ export const MapDetailPicker = ({
   value: MapDetail
   onChange: (value: MapDetail) => void
   narrow?: boolean
-}) => {
-  return (
-    <div
-      class={cx(styles.picker, narrow && styles.narrow)}
-      role="radiogroup"
-      aria-label="Map detail"
-      data-testid={mapDetailPickerTestIds.picker}
-    >
-      {MAP_DETAILS.map((detail) => (
-        <button
-          key={detail.id}
-          type="button"
-          role="radio"
-          aria-checked={detail.id === value}
-          class={detail.id === value ? styles.on : undefined}
-          title={detail.detail}
-          onClick={() => onChange(detail.id)}
-        >
-          <img src={MAP_PREVIEWS[detail.id]} alt="" />
-          <span class={styles.name}>{detail.label}</span>
-        </button>
-      ))}
-    </div>
-  )
-}
+}) => (
+  <div
+    class={cx(styles.picker, narrow && styles.narrow)}
+    role="radiogroup"
+    aria-label="Map detail"
+    data-testid={mapDetailPickerTestIds.picker}
+  >
+    {MAP_DETAILS.map((detail) => (
+      <button
+        key={detail.id}
+        type="button"
+        role="radio"
+        aria-checked={detail.id === value}
+        class={detail.id === value ? styles.on : undefined}
+        title={detail.detail}
+        onClick={() => onChange(detail.id)}
+      >
+        <img src={MAP_PREVIEWS[detail.id]} alt="" />
+        <span class={styles.name}>{detail.label}</span>
+      </button>
+    ))}
+  </div>
+)

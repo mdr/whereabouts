@@ -11,13 +11,11 @@ const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
 
 const player = (name: string, colour = 0): PlayingPlayerView =>
   makePlayer({ id: idOf(name), name: playerName(name), colour: playerColour(colour) })
-const result = (name: string, score = 500): RoundResultView => {
-  return {
-    playerId: idOf(name),
-    score,
-    guess: makePainted()
-  }
-}
+const result = (name: string, score = 500): RoundResultView => ({
+  playerId: idOf(name),
+  score,
+  guess: makePainted()
+})
 
 describe("paintsOf", () => {
   const alice = player("alice", 0)

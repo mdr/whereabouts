@@ -15,23 +15,21 @@ export const RoundResultsDev = ({
 }: {
   results: RevealView["results"]
   byId: ReadonlyMap<PlayerId, PlayingPlayerView>
-}) => {
-  return (
-    <Card title="Round results">
-      <ul class={kit.results}>
-        {results.map((result) => (
-          <li key={result.playerId}>
-            <span>
-              {byId.get(result.playerId)?.name ?? "?"}
-              {byId.get(result.playerId)?.isHost && <HostTag />}
-            </span>
-            {result.guess.type === RoundGuessType.PAINTED && <PartsLine parts={result.guess.parts} />}
-          </li>
-        ))}
-      </ul>
-    </Card>
-  )
-}
+}) => (
+  <Card title="Round results">
+    <ul class={kit.results}>
+      {results.map((result) => (
+        <li key={result.playerId}>
+          <span>
+            {byId.get(result.playerId)?.name ?? "?"}
+            {byId.get(result.playerId)?.isHost && <HostTag />}
+          </span>
+          {result.guess.type === RoundGuessType.PAINTED && <PartsLine parts={result.guess.parts} />}
+        </li>
+      ))}
+    </ul>
+  </Card>
+)
 
 const PartsLine = ({ parts }: { parts: AnswerParts }) => {
   if (parts.type === AnswerType.POINT) return <ScoreParts A={parts.A} B={parts.B} />

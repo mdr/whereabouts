@@ -53,17 +53,15 @@ export const lockedIn = (view: GameView) =>
   view.you.role.type === YouRoleType.PLAYING &&
   view.you.role.locked
 
-const place = (id: string, label: string, lat: number, lon: number, tolerance: number): PlaceQuestion => {
-  return {
-    type: QuestionType.PLACE,
-    id: questionId(id),
-    place: placeId(id),
-    label,
-    wiki: wikiTitle(label),
-    clue: { type: ClueType.NAME, prompt: `Where is ${label}?` },
-    answer: { type: AnswerType.POINT, at: { lat, lon }, tolerance }
-  }
-}
+const place = (id: string, label: string, lat: number, lon: number, tolerance: number): PlaceQuestion => ({
+  type: QuestionType.PLACE,
+  id: questionId(id),
+  place: placeId(id),
+  label,
+  wiki: wikiTitle(label),
+  clue: { type: ClueType.NAME, prompt: `Where is ${label}?` },
+  answer: { type: AnswerType.POINT, at: { lat, lon }, tolerance }
+})
 
 const questions = [place("petra", "Petra", 30.3285, 35.4444, 200), place("paris", "Paris", 48.8566, 2.3522, 100)]
 /** Two known place names, and the real questions of the other types. */

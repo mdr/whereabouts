@@ -42,72 +42,70 @@ export const PlayerList = ({
   onKick?: (player: PlayerView) => void
   /** Host only: when given, other connected players' rows get a crown button that calls this. */
   onMakeHost?: (player: PlayerView) => void
-}) => {
-  return (
-    <ul class={styles.list} data-testid={playerListTestIds.list}>
-      {players.map((player) => {
-        const isYou = player.id === you
-        return (
-          <li
-            key={player.id}
-            class={cx(!player.connected && styles.offline)}
-            data-testid={playerListTestIds.player}
-            data-player={player.name}
-          >
-            <Mark player={player} avatars={avatars} />
-            <span class={styles.name}>
-              <span class={styles.nameText} data-testid={playerListTestIds.name}>
-                {player.name}
-              </span>
-              {player.isHost ? <HostTag /> : undefined}
-              {isYou ? <span class={styles.tag}>you</span> : undefined}
-              {!player.connected ? <span class={styles.tag}>offline</span> : undefined}
-              {player.type === Role.SPECTATOR && !avatars ? <span class={styles.tag}>watching</span> : undefined}
-              {showLocked && player.type === Role.PLAYER && player.locked ? (
-                <span class={cx(styles.tag, styles.done)} title="Finished guessing">
-                  <Icon name="check" size={11} /> done
-                </span>
-              ) : undefined}
+}) => (
+  <ul class={styles.list} data-testid={playerListTestIds.list}>
+    {players.map((player) => {
+      const isYou = player.id === you
+      return (
+        <li
+          key={player.id}
+          class={cx(!player.connected && styles.offline)}
+          data-testid={playerListTestIds.player}
+          data-player={player.name}
+        >
+          <Mark player={player} avatars={avatars} />
+          <span class={styles.name}>
+            <span class={styles.nameText} data-testid={playerListTestIds.name}>
+              {player.name}
             </span>
-            {isYou && onRename && (
-              <button class="icon" title="Change your name" aria-label="Change your name" onClick={onRename}>
-                ✎
-              </button>
-            )}
-            {!isYou && onMakeHost && player.connected && !player.isHost && (
-              <button
-                class={cx("icon", styles.makeHost)}
-                title={`Make ${player.name} the host`}
-                aria-label={`Make ${player.name} the host`}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onMakeHost(player)
-                }}
-              >
-                <Icon name="crown" size={13} />
-              </button>
-            )}
-            {!isYou && onKick && (
-              <button
-                class={cx("icon", styles.kick)}
-                data-testid={playerListTestIds.kickButton}
-                title={`Remove ${player.name} from the game`}
-                aria-label={`Remove ${player.name} from the game`}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onKick(player)
-                }}
-              >
-                <Icon name="kick" size={13} />
-              </button>
-            )}
-            {showScores && player.type === Role.PLAYER && <Score player={player} arrows={arrows} />}
-          </li>
-        )
-      })}
-    </ul>
-  )
-}
+            {player.isHost ? <HostTag /> : undefined}
+            {isYou ? <span class={styles.tag}>you</span> : undefined}
+            {!player.connected ? <span class={styles.tag}>offline</span> : undefined}
+            {player.type === Role.SPECTATOR && !avatars ? <span class={styles.tag}>watching</span> : undefined}
+            {showLocked && player.type === Role.PLAYER && player.locked ? (
+              <span class={cx(styles.tag, styles.done)} title="Finished guessing">
+                <Icon name="check" size={11} /> done
+              </span>
+            ) : undefined}
+          </span>
+          {isYou && onRename && (
+            <button class="icon" title="Change your name" aria-label="Change your name" onClick={onRename}>
+              ✎
+            </button>
+          )}
+          {!isYou && onMakeHost && player.connected && !player.isHost && (
+            <button
+              class={cx("icon", styles.makeHost)}
+              title={`Make ${player.name} the host`}
+              aria-label={`Make ${player.name} the host`}
+              onClick={(event) => {
+                event.stopPropagation()
+                onMakeHost(player)
+              }}
+            >
+              <Icon name="crown" size={13} />
+            </button>
+          )}
+          {!isYou && onKick && (
+            <button
+              class={cx("icon", styles.kick)}
+              data-testid={playerListTestIds.kickButton}
+              title={`Remove ${player.name} from the game`}
+              aria-label={`Remove ${player.name} from the game`}
+              onClick={(event) => {
+                event.stopPropagation()
+                onKick(player)
+              }}
+            >
+              <Icon name="kick" size={13} />
+            </button>
+          )}
+          {showScores && player.type === Role.PLAYER && <Score player={player} arrows={arrows} />}
+        </li>
+      )
+    })}
+  </ul>
+)
 
 /** A spectator's eye, or a player's colour as an avatar or a dot. */
 const Mark = ({ player, avatars }: { player: PlayerView; avatars: boolean | undefined }) => {

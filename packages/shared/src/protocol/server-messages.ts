@@ -86,30 +86,24 @@ export type RevealMessage = Omit<RoundReveal, "results"> & {
   })[]
 }
 
-export const revealMessage = (reveal: RoundReveal): RevealMessage => {
-  return {
-    ...reveal,
-    results: reveal.results.map(({ guess, ...result }) => ({
-      ...result,
-      guess: guess.type === RoundGuessType.PAINTED ? { ...guess, paint: paintToBase64(guess.paint) } : guess
-    }))
-  }
-}
+export const revealMessage = (reveal: RoundReveal): RevealMessage => ({
+  ...reveal,
+  results: reveal.results.map(({ guess, ...result }) => ({
+    ...result,
+    guess: guess.type === RoundGuessType.PAINTED ? { ...guess, paint: paintToBase64(guess.paint) } : guess
+  }))
+})
 
-export const revealFrom = (message: RevealMessage): RoundReveal => {
-  return {
-    ...message,
-    results: message.results.map(({ guess, ...result }) => {
-      if (guess.type === RoundGuessType.PASSED) return { ...result, guess }
-      const paint = paintFromBase64(guess.paint)
-      return { ...result, guess: paint ? { ...guess, paint } : { type: RoundGuessType.PASSED } }
-    })
-  }
-}
+export const revealFrom = (message: RevealMessage): RoundReveal => ({
+  ...message,
+  results: message.results.map(({ guess, ...result }) => {
+    if (guess.type === RoundGuessType.PASSED) return { ...result, guess }
+    const paint = paintFromBase64(guess.paint)
+    return { ...result, guess: paint ? { ...guess, paint } : { type: RoundGuessType.PASSED } }
+  })
+})
 
-export const encodeMessage = (value: unknown): string => {
-  return JSON.stringify(value)
-}
+export const encodeMessage = (value: unknown): string => JSON.stringify(value)
 
 export const decodeMessage = (payload: Uint8Array | string): unknown => {
   const text = typeof payload === "string" ? payload : new TextDecoder().decode(payload)

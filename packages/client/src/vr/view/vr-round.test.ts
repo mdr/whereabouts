@@ -20,13 +20,18 @@ import { HintAllowance, VrAnswerType, VrPaintsType } from "./view"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { FactType } from "@whereabouts/shared/catalogue/facts"
 
-const painted = (flag: string, label: string, share: number): PaintedCountry => {
-  return { country: makeFlagQuestion(flag, label), share }
-}
+const painted = (flag: string, label: string, share: number): PaintedCountry => ({
+  country: makeFlagQuestion(flag, label),
+  share
+})
 
-const score = (over: Partial<VrScore> = {}): VrScore => {
-  return { score: 640, passed: false, total: 1500, painted: undefined, ...over }
-}
+const score = (over: Partial<VrScore> = {}): VrScore => ({
+  score: 640,
+  passed: false,
+  total: 1500,
+  painted: undefined,
+  ...over
+})
 
 describe("vrScoreLine", () => {
   it("gives this round's score and the total", () => {
@@ -79,12 +84,15 @@ const answer: RevealedAnswer = {
   photo: commonsFile("Kyoto.jpg")
 }
 
-const shown = (over: Partial<VrRoundShown> = {}): VrRoundShown => {
-  return { question: place, revealed: undefined, fact: undefined, ...over }
-}
+const shown = (over: Partial<VrRoundShown> = {}): VrRoundShown => ({
+  question: place,
+  revealed: undefined,
+  fact: undefined,
+  ...over
+})
 
-const round = (shown: VrRoundShown) => {
-  return vrRound(shown, {
+const round = (shown: VrRoundShown) =>
+  vrRound(shown, {
     paint: {} as PaintController,
     detail: MapDetail.POLITICAL,
     hint: undefined,
@@ -94,7 +102,6 @@ const round = (shown: VrRoundShown) => {
     done: () => {},
     playing: true
   })
-}
 
 describe("vrRound", () => {
   it("shows the answer's photo only at the reveal, with the fact on its back", () => {

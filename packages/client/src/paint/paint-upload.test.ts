@@ -11,9 +11,11 @@ import { JOINED_LATE, SPECTATING, makeGuessingView, makePlaying } from "../test-
 
 const CELL = "85283473fffffff"
 
-const makePaint = (cells: Record<string, number> = { [CELL]: 1 }) => {
-  return { layer: PaintLayer.fromRecord(h3Resolution(5), cells), floor: signal(0.05), version: signal(0) }
-}
+const makePaint = (cells: Record<string, number> = { [CELL]: 1 }) => ({
+  layer: PaintLayer.fromRecord(h3Resolution(5), cells),
+  floor: signal(0.05),
+  version: signal(0)
+})
 
 /** Make a change, and run the renders and effects it causes. */
 const run = (change: () => unknown) => {

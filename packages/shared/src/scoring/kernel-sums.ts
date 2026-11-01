@@ -4,9 +4,7 @@ import type { Km, SquareKm } from "../units.ts"
 
 const LN2 = Math.LN2
 
-const gaussFromSq = (distSq: SquareKm, width: Km): number => {
-  return Math.exp((-LN2 * distSq) / (width * width))
-}
+const gaussFromSq = (distSq: SquareKm, width: Km): number => Math.exp((-LN2 * distSq) / (width * width))
 
 /**
  * Gaussian kernel of width w between two Gaussian patches whose per-axis
@@ -17,9 +15,7 @@ const gaussFromSq = (distSq: SquareKm, width: Km): number => {
  * width squared is w² + 2 ln2 s2 and the amplitude is w² / w'². Flat-plane
  * result; exact enough for cells small against the Earth's radius.
  */
-export const patchWidthSq = (width: Km, s2: SquareKm): number => {
-  return width * width + 2 * LN2 * s2
-}
+export const patchWidthSq = (width: Km, s2: SquareKm): number => width * width + 2 * LN2 * s2
 
 const patchGaussFromSq = (distSq: SquareKm, width: Km, s2: SquareKm): number => {
   if (s2 === 0) return gaussFromSq(distSq, width)
@@ -194,13 +190,11 @@ interface CutoffGrid {
   expScale: number
 }
 
-const cellIndex = (grid: CutoffGrid, coordinate: number): number => {
-  return Math.floor((coordinate + INDEX_OFFSET) * grid.perCutoff)
-}
+const cellIndex = (grid: CutoffGrid, coordinate: number): number =>
+  Math.floor((coordinate + INDEX_OFFSET) * grid.perCutoff)
 
-const bucketKey = (grid: CutoffGrid, bx: number, by: number, bz: number): number => {
-  return (bx * grid.span + by) * grid.span + bz
-}
+const bucketKey = (grid: CutoffGrid, bx: number, by: number, bz: number): number =>
+  (bx * grid.span + by) * grid.span + bz
 
 const cutoffGrid = (right: WeightedPoint[], width: Km): CutoffGrid => {
   const count = right.length

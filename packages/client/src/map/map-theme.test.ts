@@ -2,9 +2,12 @@ import { describe, expect, it } from "vite-plus/test"
 import { styleLayerPaint, type StyleLayer } from "./map-theme"
 import { THEME } from "./themes"
 
-const makeLayer = (overrides: Partial<StyleLayer> = {}): StyleLayer => {
-  return { id: "x", type: "fill", sourceLayer: "", ...overrides }
-}
+const makeLayer = (overrides: Partial<StyleLayer> = {}): StyleLayer => ({
+  id: "x",
+  type: "fill",
+  sourceLayer: "",
+  ...overrides
+})
 
 describe("styleLayerPaint", () => {
   it("colours the background with the land", () => {
