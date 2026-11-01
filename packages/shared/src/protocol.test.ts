@@ -15,6 +15,7 @@ import {
 import { QuestionType } from "./questions.ts"
 import { MAX_HINTS } from "./hints.ts"
 import { CloseReason } from "./close-reason.ts"
+import { Role } from "./roles.ts"
 import { playerName, playerToken, roomCode } from "./ids.ts"
 
 describe("ticket codec", () => {
@@ -22,7 +23,7 @@ describe("ticket codec", () => {
     v: PROTOCOL_VERSION,
     token: playerToken("0123456789abcdef0123456789abcdef"),
     name: playerName("Zoë 🌍"),
-    entry: { type: GameEntryType.JOIN, code: roomCode("AB12"), watch: false }
+    entry: { type: GameEntryType.JOIN, code: roomCode("AB12"), role: Role.PLAYER }
   }
 
   it("round-trips unicode names and stays header-safe", () => {

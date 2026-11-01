@@ -1,4 +1,5 @@
 import { MAX_PLAYERS, type GameView } from "@whereabouts/shared/protocol"
+import { Role } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../net/net"
 import { Icon } from "../../icons"
 import s from "./TakeSeat.module.css"
@@ -12,7 +13,7 @@ export function TakeSeatButton({ conn, view, inCard }: { conn: Connection; view:
   return (
     <button
       class={inCard ? s.inCard : undefined}
-      onClick={() => conn.setRole(false)}
+      onClick={() => conn.setRole(Role.PLAYER)}
       disabled={full || !conn.online.value}
       title={full ? `All ${MAX_PLAYERS} player seats are taken` : "Play from the next question"}
     >

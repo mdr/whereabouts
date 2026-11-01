@@ -151,7 +151,7 @@ export class GameRoom extends Room<ActorData> {
       again: (token, _, now) => this.game.again(token, now),
       rename: (token, { name }) => this.game.rename(token, name),
       kick: (token, { playerId }, now) => this.removePlayer(token, playerId, now),
-      setRole: (token, { watch }) => this.game.setRole(token, watch ? Role.SPECTATOR : Role.PLAYER),
+      setRole: (token, { role }) => this.game.setRole(token, role),
       leave: (token) => this.leave(token),
       makeHost: (token, { playerId }) => this.game.makeHost(token, playerId),
       end: (token) => this.game.end(token),
@@ -161,7 +161,7 @@ export class GameRoom extends Room<ActorData> {
 
   protected override onJoin(actor: Actor<ActorData>): void {
     const { token, name, entry, address } = actor.data!
-    const role = entry.type === GameEntryType.JOIN && entry.watch ? Role.SPECTATOR : Role.PLAYER
+    const role = entry.type === GameEntryType.JOIN ? entry.role : Role.PLAYER
     this.cancelEmptyTimer()
     const previous = this.actorsByToken.get(token)
     if (previous && previous !== actor) previous.kick(closeReason(CloseReason.REPLACED))

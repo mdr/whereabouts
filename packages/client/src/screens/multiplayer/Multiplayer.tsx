@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { PlayerName } from "@whereabouts/shared/ids"
 import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol"
+import { Role } from "@whereabouts/shared/roles"
 import { Connection } from "../../net/net"
 import {
   askedToWatch,
@@ -47,7 +48,7 @@ export function Multiplayer({ entry }: { entry: GameEntry }) {
     conn.connect({
       token: seatToken(),
       name: confirmedName,
-      entry: entry.type === GameEntryType.HOST ? entry : { ...entry, watch }
+      entry: entry.type === GameEntryType.HOST ? entry : { ...entry, role: watch ? Role.SPECTATOR : Role.PLAYER }
     })
     return () => conn.disconnect()
   }, [conn, confirmedName])

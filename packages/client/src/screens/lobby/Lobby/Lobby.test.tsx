@@ -6,6 +6,7 @@ import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName, roomCode } from "@whereabouts/shared/ids"
 import { mixOf, type GameView, MapDetail } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
+import { Role } from "@whereabouts/shared/roles"
 import { type Connection, type ConnectionState, ConnectionStatus } from "../../../net/net"
 import { hostSetup, joinedCode, startOnPan } from "../../../settings/settings"
 import { route, RouteType } from "../../../router"
@@ -185,7 +186,7 @@ describe("Lobby spectators", () => {
   it("lets a player step back to watch, and a spectator take a seat", () => {
     const { container, unmount } = render(<Lobby conn={conn} view={view(false)} />)
     fireEvent.click(inside(container).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!)
-    expect(setRole).toHaveBeenLastCalledWith(true)
+    expect(setRole).toHaveBeenLastCalledWith(Role.SPECTATOR)
     unmount()
     const v = view(false)
     v.you.role = SPECTATING
@@ -195,7 +196,7 @@ describe("Lobby spectators", () => {
     const play = inside(c2).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!
     expect(play.textContent).toContain("Play instead")
     fireEvent.click(play)
-    expect(setRole).toHaveBeenLastCalledWith(false)
+    expect(setRole).toHaveBeenLastCalledWith(Role.PLAYER)
   })
 
   it("keeps the seat button off when all sixteen seats are taken", () => {

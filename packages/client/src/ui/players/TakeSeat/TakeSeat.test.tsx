@@ -5,6 +5,7 @@ import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import { makePlayer, makeSpectator } from "../../../test-view"
 import type { GameView } from "@whereabouts/shared/protocol"
+import { Role } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../net/net"
 import { TakeSeatButton } from "./TakeSeat"
 
@@ -23,7 +24,7 @@ describe("TakeSeatButton", () => {
     const setRole = vi.fn()
     const { container } = render(<TakeSeatButton conn={makeConn({ setRole })} view={viewWith(3)} />)
     fireEvent.click(container.querySelector("button")!)
-    expect(setRole).toHaveBeenCalledWith(false)
+    expect(setRole).toHaveBeenCalledWith(Role.PLAYER)
   })
 
   it("is off while all sixteen seats are taken", () => {

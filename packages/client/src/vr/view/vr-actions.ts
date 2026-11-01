@@ -6,7 +6,7 @@
 import { signal } from "@preact/signals"
 import type { PlayerId } from "@whereabouts/shared/ids"
 import { MAX_PLAYERS, type GameView } from "@whereabouts/shared/protocol"
-import { everyone, type PlayerView } from "@whereabouts/shared/roles"
+import { Role, everyone, type PlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import type { VrAction } from "./view"
 import type { VrTable } from "../scores/scores"
@@ -50,7 +50,7 @@ export function hostActions(
 export function takeSeat(conn: Pick<Connection, "setRole">, view: GameView, label: string): VrAction {
   return {
     label,
-    press: () => conn.setRole(false),
+    press: () => conn.setRole(Role.PLAYER),
     enabled: view.players.length < MAX_PLAYERS
   }
 }

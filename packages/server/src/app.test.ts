@@ -128,7 +128,7 @@ class FakeClock implements Clock {
 type Topics = "state" | "reveal" | "paint" | "error" | "pong"
 
 const host = (code?: RoomCode): GameEntry => ({ type: GameEntryType.HOST, ...(code ? { code } : {}) })
-const join = (code: RoomCode, watch = false): GameEntry => ({ type: GameEntryType.JOIN, code, watch })
+const join = (code: RoomCode, role = Role.PLAYER): GameEntry => ({ type: GameEntryType.JOIN, code, role })
 
 class TestPlayer {
   readonly client: WSClientType<Topics>
@@ -646,13 +646,13 @@ describe("game server", () => {
     alice.connect(host())
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const sam = player("Sam")
-    sam.connect(join(lobby.code, true))
+    sam.connect(join(lobby.code, Role.SPECTATOR))
     const watching = await sam.until((v) => v.spectators.length === 1)
     expect(watching.you.role).toEqual({ type: YouRoleType.SPECTATOR })
     expect(watching.players).toHaveLength(1)
     expect(watching.spectators[0]).toMatchObject({ name: "Sam", type: Role.SPECTATOR })
     expect(watching.spectators[0]).not.toHaveProperty("colour")
-    sam.send("setRole", { watch: false })
+    sam.send("setRole", { role: Role.PLAYER })
     const seated = await alice.untilLatest((v) => v.players.some((p) => p.name === "Sam"))
     expect(seated.players.find((p) => p.name === "Sam")!.colour).toBeGreaterThanOrEqual(0)
   })
@@ -728,7 +728,7 @@ describe("game server", () => {
     const { code } = await alice.until((v) => v.phase === Phase.LOBBY)
     for (let i = 1; i < MAX_PLAYERS + MAX_SPECTATORS; i++) {
       const p = player(`P${i}`)
-      p.connect(join(code, i >= MAX_PLAYERS))
+      p.connect(join(code, i >= MAX_PLAYERS ? Role.SPECTATOR : Role.PLAYER))
     }
     await alice.until((v) => v.players.length + v.spectators.length === MAX_PLAYERS + MAX_SPECTATORS, 10_000)
     const late = player("Late")

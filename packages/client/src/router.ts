@@ -7,6 +7,7 @@
 import { batch, signal } from "@preact/signals"
 import { roomCode } from "@whereabouts/shared/ids"
 import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol"
+import { Role } from "@whereabouts/shared/roles"
 
 export enum RouteType {
   HOME = "HOME",
@@ -44,7 +45,7 @@ export function parseRoute(hash: string): Route {
   const m = /^\/game\/([A-Z0-9]{4,6})$/i.exec(path)
   if (m) {
     const code = roomCode(m[1]!.toUpperCase())
-    return { type: RouteType.GAME, entry: { type: GameEntryType.JOIN, code, watch: false } }
+    return { type: RouteType.GAME, entry: { type: GameEntryType.JOIN, code, role: Role.PLAYER } }
   }
   return { type: RouteType.HOME }
 }

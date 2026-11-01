@@ -2,10 +2,11 @@
 import { describe, expect, it } from "vite-plus/test"
 import { roomCode } from "@whereabouts/shared/ids"
 import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol"
+import { Role } from "@whereabouts/shared/roles"
 import { navigate, parseRoute, route, RouteType } from "./router"
 
 const gameAt = (entry: GameEntry) => ({ type: RouteType.GAME, entry })
-const join = (code: string): GameEntry => ({ type: GameEntryType.JOIN, code: roomCode(code), watch: false })
+const join = (code: string): GameEntry => ({ type: GameEntryType.JOIN, code: roomCode(code), role: Role.PLAYER })
 const host = (code?: string): GameEntry => ({ type: GameEntryType.HOST, ...(code ? { code: roomCode(code) } : {}) })
 
 describe("parseRoute", () => {

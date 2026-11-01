@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import { MAX_PLAYERS } from "@whereabouts/shared/protocol"
+import { Role } from "@whereabouts/shared/roles"
 import { makePlayer, makeLobbyView } from "../../test-view"
 import { hostActions, pickable, takeSeat, vrPicked } from "./vr-actions"
 
@@ -58,7 +59,7 @@ describe("a watcher's way in", () => {
     const c = conn()
     const seat = takeSeat(c, asGuest, "Play")
     seat.press()
-    expect(c.setRole).toHaveBeenCalledWith(false)
+    expect(c.setRole).toHaveBeenCalledWith(Role.PLAYER)
     expect(seat.enabled).toBe(true)
   })
 

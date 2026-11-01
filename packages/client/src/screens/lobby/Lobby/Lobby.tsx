@@ -97,7 +97,11 @@ function lobbyVrView(conn: Connection, view: GameView, online: boolean, leave: (
     more: [
       view.you.role.type === YouRoleType.SPECTATOR
         ? takeSeat(conn, view, "Play instead")
-        : { label: "Just watch", press: () => conn.setRole(true), enabled: spectators.length < MAX_SPECTATORS },
+        : {
+            label: "Just watch",
+            press: () => conn.setRole(Role.SPECTATOR),
+            enabled: spectators.length < MAX_SPECTATORS
+          },
       ...hostActions(conn, view, vrPicked.value),
       { label: "Leave", confirm: host ? "Press again to leave" : undefined, press: leave }
     ]

@@ -23,6 +23,7 @@ import {
   viewFrom,
   Phase
 } from "@whereabouts/shared/protocol"
+import { Role } from "@whereabouts/shared/roles"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import { CloseReason, isCloseReason } from "@whereabouts/shared/close-reason"
 import type { HintAxis } from "@whereabouts/shared/hints"
@@ -122,8 +123,8 @@ export class Connection {
     const again = (): Omit<Ticket, "v"> => {
       const code = this.code.value
       if (code === undefined) return ticket
-      const watch = ticket.entry.type === GameEntryType.JOIN && ticket.entry.watch
-      return { ...ticket, entry: { type: GameEntryType.JOIN, code, watch } }
+      const role = ticket.entry.type === GameEntryType.JOIN ? ticket.entry.role : Role.PLAYER
+      return { ...ticket, entry: { type: GameEntryType.JOIN, code, role } }
     }
     this.comeBack = again
     const client = this.makeClient(wsUrl(), {
@@ -277,8 +278,8 @@ export class Connection {
     this.send("leave")
   }
   /** In the lobby: watch instead of play, or take a free seat. */
-  setRole(watch: boolean): void {
-    this.send("setRole", { watch })
+  setRole(role: Role): void {
+    this.send("setRole", { role })
   }
   makeHost(playerId: PlayerId): void {
     this.send("makeHost", { playerId })

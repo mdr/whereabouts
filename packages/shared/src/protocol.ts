@@ -30,7 +30,7 @@ import {
   type WikiTitle
 } from "./ids.ts"
 import { CloseReason } from "./close-reason.ts"
-import type { PlayingPlayerView, RoundYouRole, SpectatorView, YouRole } from "./roles.ts"
+import { Role, type PlayingPlayerView, type RoundYouRole, type SpectatorView, type YouRole } from "./roles.ts"
 
 export const PROTOCOL_VERSION = 15
 
@@ -54,14 +54,14 @@ interface JoinEntry {
   type: GameEntryType.JOIN
   code: RoomCode
   /** A full game seats a would-be player as a spectator anyway. */
-  watch: boolean
+  role: Role
 }
 /** How a player comes into a game. */
 export type GameEntry = HostEntry | JoinEntry
 
 const GameEntrySchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal(GameEntryType.HOST), code: RoomCodeSchema.optional() }),
-  z.object({ type: z.literal(GameEntryType.JOIN), code: RoomCodeSchema, watch: z.boolean() })
+  z.object({ type: z.literal(GameEntryType.JOIN), code: RoomCodeSchema, role: z.enum(Role) })
 ]) satisfies z.ZodType<GameEntry>
 
 /** Presented on connect, carried in the WebSocket subprotocol header. */
@@ -182,8 +182,8 @@ export const ClientMessageSchemas = {
   kick: KickSchema,
   makeHost: KickSchema,
   leave: z.object({}),
-  /** In the lobby: watch instead of play, or take a player's seat. */
-  setRole: z.object({ watch: z.boolean() }),
+  /** Watch instead of play (lobby only), or take a free seat. */
+  setRole: z.object({ role: z.enum(Role) }),
   end: z.object({}),
   /** Use one of the game's hints on this round. */
   hint: z.object({ axis: HintAxisSchema })
