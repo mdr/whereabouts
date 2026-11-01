@@ -8,7 +8,7 @@ import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
 import { outlineOf, type MapDetail, type QuestionView } from "@whereabouts/shared/protocol"
-import { QuestionType } from "@whereabouts/shared/questions"
+import { QuestionType, type Outline } from "@whereabouts/shared/questions"
 import type { GameMap } from "../map/map"
 import { RevealDetail, showsBorders } from "../map/shown-detail"
 import type { PaintController } from "../paint/paint-controller"
@@ -23,7 +23,7 @@ export interface RevealedAnswer {
   wiki?: WikiTitle
   answer: LatLon
   /** A country's (or island's, lake's…) outline; undefined for a place, or until the outlines load. */
-  outline?: number[][][][]
+  outline?: Outline
   /** The answer's photo, on a round that showed none while guessing. */
   photo?: CommonsFile
 }

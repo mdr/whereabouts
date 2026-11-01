@@ -1,6 +1,6 @@
 import type { LngLatBoundsLike, PaddingOptions } from "maplibre-gl"
 import { HintAxis, type HintBand } from "@whereabouts/shared/hints"
-import type { LatLon } from "@whereabouts/shared/geo"
+import type { Box, LatLon } from "@whereabouts/shared/geo"
 import type { Km, Metres } from "@whereabouts/shared/units"
 
 /** World circumference at the equator in metres, for metres-per-pixel maths. */
@@ -14,9 +14,6 @@ export const WORLD_PX_Z0 = 512
 export const MAX_LAT = 85.0511
 /** The globe's starting size: its radius as a share of the map's shorter side. */
 const GLOBE_FILL = 0.4
-
-/** West, south, east, north. */
-export type Box = [number, number, number, number]
 
 export function drawable(lat: number): boolean {
   return Math.abs(lat) <= MAX_LAT

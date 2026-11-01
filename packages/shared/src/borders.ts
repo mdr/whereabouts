@@ -15,34 +15,58 @@
  * otherwise all be Italy's. Where two such circles overlap, the nearer
  * answer wins.
  */
-import { greatCircleDistance, type LatLon } from "./geo.ts"
+import { greatCircleDistance, type Box, type LatLon, type Ring } from "./geo.ts"
 import { answerCentre, type FlagQuestion } from "./questions.ts"
 import { flagCode, type FlagCode } from "./ids.ts"
 import type { PaintCell } from "./paint/paint.ts"
-import type { FillShape } from "./paint/fill.ts"
+import { FillShapeType, type FillShape } from "./paint/fill.ts"
 import type { Km, Px } from "./units.ts"
+
+/** A ring as borders.json stores it: [lon, lat] steps in hundredths of a degree, the first from 0, 0. */
+export type RingSteps = number[]
+/** A ring as lon, lat, lon, lat, … in degrees, packed for fast point-in-ring tests. */
+export type FlatRing = Float64Array
+
+export function ringOf(flat: FlatRing): Ring {
+  const out: Ring = []
+  for (let i = 0; i < flat.length; i += 2) out.push([flat[i]!, flat[i + 1]!])
+  return out
+}
+
+export function flatRing(ring: Ring): FlatRing {
+  return Float64Array.from(ring.flat())
+}
+
+function boxOf(ring: FlatRing): Box {
+  const b: Box = [Infinity, Infinity, -Infinity, -Infinity]
+  for (let i = 0; i < ring.length; i += 2) {
+    b[0] = Math.min(b[0], ring[i]!)
+    b[1] = Math.min(b[1], ring[i + 1]!)
+    b[2] = Math.max(b[2], ring[i]!)
+    b[3] = Math.max(b[3], ring[i + 1]!)
+  }
+  return b
+}
 
 interface BorderData {
   /** The flag's ISO code, as flag questions show it. */
   flag: string
-  /** Rings of [lon, lat] steps in hundredths of a degree, the first from 0, 0. */
-  rings: number[][]
+  rings: RingSteps[]
   /** For a small or scattered country: how far from its answer counts as the country. */
   near?: Km
 }
 
 export interface BordersData {
   countries: BorderData[]
-  /** Rings, encoded the same way, where no country is named. */
-  none: number[][]
+  /** Where no country is named. */
+  none: RingSteps[]
 }
 
 interface Country {
   f: FlagQuestion
-  /** Decoded rings: lon, lat, lon, lat, … in degrees. */
-  rings: Float64Array[]
-  /** West, south, east, north of all its rings. */
-  box: [number, number, number, number]
+  rings: FlatRing[]
+  /** Of all its rings. */
+  box: Box
 }
 
 export interface PaintedCountry {
@@ -54,8 +78,8 @@ export interface PaintedCountry {
 export class Borders {
   private readonly countries: Country[] = []
   private readonly small: { f: FlagQuestion; near: Km }[] = []
-  private readonly none: Float64Array[]
-  private readonly byFlag = new Map<FlagCode, { rings: Float64Array[]; near?: Km }>()
+  private readonly none: FlatRing[]
+  private readonly byFlag = new Map<FlagCode, { rings: FlatRing[]; near?: Km }>()
 
   constructor(data: BordersData, flags: readonly FlagQuestion[]) {
     this.none = data.none.map(decodeRing)
@@ -67,14 +91,9 @@ export class Borders {
       const rings = d.rings.map(decodeRing)
       this.byFlag.set(f.clue.flag, { rings, near: d.near })
       if (rings.length === 0) continue
-      const box: Country["box"] = [Infinity, Infinity, -Infinity, -Infinity]
-      for (const r of rings)
-        for (let i = 0; i < r.length; i += 2) {
-          box[0] = Math.min(box[0], r[i]!)
-          box[1] = Math.min(box[1], r[i + 1]!)
-          box[2] = Math.max(box[2], r[i]!)
-          box[3] = Math.max(box[3], r[i + 1]!)
-        }
+      const box = rings
+        .map(boxOf)
+        .reduce((a, b): Box => [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])])
       this.countries.push({ f, rings, box })
     }
   }
@@ -121,16 +140,16 @@ export class Borders {
   /** A country's land, to fill (see fill.ts): its rings, answer and `near`. */
   fillShape(f: FlagQuestion): FillShape {
     const d = this.byFlag.get(f.clue.flag)
-    const rings = (d?.rings ?? []).map((r) => {
-      const out: number[][] = []
-      for (let i = 0; i < r.length; i += 2) out.push([r[i]!, r[i + 1]!])
-      return out
-    })
-    return { rings, answer: answerCentre(f.answer), near: d?.near }
+    return {
+      type: FillShapeType.RINGS,
+      rings: (d?.rings ?? []).map(ringOf),
+      answer: answerCentre(f.answer),
+      near: d?.near
+    }
   }
 
-  /** A country's outline: rings of lon, lat, lon, lat, … in degrees; none if it has no shape here. */
-  rings(flag: FlagCode): Float64Array[] {
+  /** A country's outline; none if it has no shape here. */
+  rings(flag: FlagCode): FlatRing[] {
     return this.byFlag.get(flag)?.rings ?? []
   }
 
@@ -172,19 +191,9 @@ const GRID = 24
 
 /** A point inside the country's largest ring, as far from its edge as a grid search finds. */
 function inside({ f, rings }: Country): LatLon {
-  const box = (r: Float64Array): [number, number, number, number] => {
-    const b: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity]
-    for (let i = 0; i < r.length; i += 2) {
-      b[0] = Math.min(b[0], r[i]!)
-      b[1] = Math.min(b[1], r[i + 1]!)
-      b[2] = Math.max(b[2], r[i]!)
-      b[3] = Math.max(b[3], r[i + 1]!)
-    }
-    return b
-  }
-  const area = (b: number[]) => (b[2]! - b[0]!) * (b[3]! - b[1]!)
-  const ring = rings.reduce((a, b) => (area(box(b)) > area(box(a)) ? b : a))
-  const [w, s, e, n] = box(ring)
+  const area = (b: Box) => (b[2] - b[0]) * (b[3] - b[1])
+  const ring = rings.reduce((a, b) => (area(boxOf(b)) > area(boxOf(a)) ? b : a))
+  const [w, s, e, n] = boxOf(ring)
   let best: LatLon = answerCentre(f.answer)
   let bestD = -1
   for (let i = 0; i <= GRID; i++)
@@ -201,8 +210,7 @@ function inside({ f, rings }: Country): LatLon {
   return best
 }
 
-/** A ring of borders.json as lon, lat, lon, lat, … in degrees. */
-export function decodeRing(steps: number[]): Float64Array {
+export function decodeRing(steps: RingSteps): FlatRing {
   const out = new Float64Array(steps.length)
   let x = 0,
     y = 0
@@ -216,7 +224,7 @@ export function decodeRing(steps: number[]): Float64Array {
 }
 
 /** Ray casting in plain longitude and latitude, as Natural Earth's rings are drawn. */
-function inRing(r: Float64Array, x: number, y: number): boolean {
+function inRing(r: FlatRing, x: number, y: number): boolean {
   let inside = false
   for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2) {
     const xi = r[i]!,

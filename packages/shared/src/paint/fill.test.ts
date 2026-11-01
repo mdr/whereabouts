@@ -4,7 +4,7 @@ import bordersJson from "../../borders.json" with { type: "json" }
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { Borders } from "../borders.ts"
 import { CATALOGUE, isFlagQuestion, outlinesFrom } from "../catalogue/catalogue.ts"
-import { countryFill, FILL_CELL_BUDGET, FILL_DENSITY } from "./fill.ts"
+import { countryFill, FILL_CELL_BUDGET, FILL_DENSITY, FillShapeType, type FillShape } from "./fill.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
 import { AnswerType, answerCentre } from "../questions.ts"
 import { scoreAnswer, scoredAnswer } from "../scoring/regions.ts"
@@ -21,7 +21,10 @@ function fillAndScore(code: string, finestRes?: number): { score: number; cells:
   const f = flag(code)
   const a = scoredAnswer(f.answer, outlines)
   const res = finestRes ?? resolutionForTolerance(a.tolerance)
-  const shape = a.type === AnswerType.AREA ? { polygons: a.polygons, answer: a.centre } : borders.fillShape(f)
+  const shape: FillShape =
+    a.type === AnswerType.AREA
+      ? { type: FillShapeType.OUTLINE, outline: a.polygons, answer: a.centre }
+      : borders.fillShape(f)
   const cells = countryFill(shape, h3Res(res))
   const layer = new PaintLayer(h3Res(res))
   layer.addCoat(cells, FILL_DENSITY)
@@ -53,7 +56,10 @@ describe("countryFill", () => {
     // Compacted, a parent hexagon is turned from its children and left gaps.
     const bg = CATALOGUE.find((q) => q.id === "bulgaria-region")!.answer
     const res = resolutionForTolerance(bg.tolerance)
-    const cells = countryFill({ polygons: outlines.get(outlineId("bulgaria-region"))!, answer: answerCentre(bg) }, res)
+    const cells = countryFill(
+      { type: FillShapeType.OUTLINE, outline: outlines.get(outlineId("bulgaria-region"))!, answer: answerCentre(bg) },
+      res
+    )
     expect(new Set(cells.map(getResolution))).toEqual(new Set([res]))
   })
 

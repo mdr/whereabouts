@@ -31,8 +31,8 @@ export const AREA_TYPES: readonly QuestionType[] = QUESTION_TYPES.filter((t) =>
 )
 
 /** outlines.json as read. */
-export function outlinesFrom(json: Record<string, Outline>): Outlines {
-  return new Map(Object.entries(json).map(([id, outline]) => [outlineId(id), outline]))
+export function outlinesFrom(json: Record<string, number[][][][]>): Outlines {
+  return new Map(Object.entries(json).map(([id, outline]) => [outlineId(id), outline as Outline]))
 }
 
 /** Whether a question can be asked on this map: lakes only on a map that draws them. */

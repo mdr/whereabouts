@@ -21,6 +21,7 @@ import {
   type Material
 } from "three"
 import type { FlagCode } from "@whereabouts/shared/ids"
+import type { FlatRing } from "@whereabouts/shared/borders"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { FLAG_ATLAS, atlasCell } from "../../flags/flag-atlas"
 import { latLonToLocal } from "./sphere"
@@ -30,8 +31,8 @@ export interface VrFlagPin {
   flag: FlagCode
   name: string
   at: LatLon
-  /** The country's outline: rings of lon, lat, lon, lat, … in degrees. */
-  rings: Float64Array[]
+  /** The country's outline. */
+  rings: FlatRing[]
 }
 
 /** In metres, whatever the globe's zoom. */

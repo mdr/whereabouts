@@ -1,4 +1,4 @@
-import { AnswerType } from "@whereabouts/shared/questions"
+import { AnswerType, type Outline } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { h3Res } from "@whereabouts/shared/h3"
 import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
@@ -93,7 +93,7 @@ describe("revealedFromView", () => {
   }
 
   it("takes the answer from the reveal, with the outline once loaded", () => {
-    const outline = [
+    const outline: Outline = [
       [
         [
           [0, 0],

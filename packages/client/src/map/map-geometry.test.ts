@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { HintAxis } from "@whereabouts/shared/hints"
-import { bounds, boxAround, hintFeatures, MAX_LAT, toleranceBox, type Box } from "./map-geometry"
+import { bounds, boxAround, hintFeatures, MAX_LAT, toleranceBox } from "./map-geometry"
+import type { Box } from "@whereabouts/shared/geo"
 
 function polygon(ring: [number, number][], ...holes: [number, number][][]): GeoJSON.Feature {
   return { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [ring, ...holes] } }

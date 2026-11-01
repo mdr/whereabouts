@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
+import type { Ring } from "@whereabouts/shared/geo"
+import type { Outline } from "@whereabouts/shared/questions"
 import { outlinePath } from "./outline-path"
 
 const points = (d: string) =>
@@ -6,7 +8,7 @@ const points = (d: string) =>
 
 describe("outlinePath", () => {
   it("fits a shape in the box, centred", () => {
-    const square = [
+    const square: Outline = [
       [
         [
           [10, 10],
@@ -26,7 +28,7 @@ describe("outlinePath", () => {
   })
 
   it("keeps a shape across the antimeridian whole", () => {
-    const across = [
+    const across: Outline = [
       [
         [
           [179, 0],
@@ -43,7 +45,7 @@ describe("outlinePath", () => {
   })
 
   it("draws each ring, holes too", () => {
-    const withHole = [
+    const withHole: Outline = [
       [
         [
           [0, 0],
@@ -72,7 +74,7 @@ describe("outlinePath edge cases", () => {
   })
 
   it("drops points closer than half a pixel to the last one kept", () => {
-    const ring = [
+    const ring: Ring = [
       [0, 0],
       [0.001, 0],
       [40, 30]

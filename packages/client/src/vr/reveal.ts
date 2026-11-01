@@ -15,7 +15,7 @@ export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: 
   const { answer } = reveal
   if ("outline" in answer)
     for (const polygon of answer.outline)
-      for (const [lon, lat] of polygon[0] ?? []) answerPoints.push(latLonToLocal({ lat: lat!, lon: lon! }))
+      for (const [lon, lat] of polygon[0] ?? []) answerPoints.push(latLonToLocal({ lat: lat, lon: lon }))
   const groups = [answerPoints]
   for (const { layer } of reveal.paints ?? [{ layer: round.paint.layer }]) {
     const cells = Object.keys(layer.toRecord()) as H3Cell[]

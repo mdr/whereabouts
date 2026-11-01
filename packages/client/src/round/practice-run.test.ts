@@ -9,6 +9,7 @@ import {
   ClueType,
   QuestionType,
   Surface,
+  type Outline,
   type PlaceQuestion,
   type Question
 } from "@whereabouts/shared/questions"
@@ -152,7 +153,7 @@ describe("revealedFromQuestion", () => {
   })
 
   it("is an area's centre, with its outline", () => {
-    const outline = [
+    const outline: Outline = [
       [
         [
           [0, 0],

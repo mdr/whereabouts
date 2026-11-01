@@ -9,7 +9,7 @@ import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
 import { fetchBuildJson } from "../net/stale-build"
 import bordersUrl from "@whereabouts/shared/borders.json?url"
-import { Borders } from "@whereabouts/shared/borders"
+import { Borders, flatRing, type FlatRing } from "@whereabouts/shared/borders"
 import { AnswerType, type FlagQuestion } from "@whereabouts/shared/questions"
 import { CATALOGUE, isFlagQuestion } from "@whereabouts/shared/catalogue/catalogue"
 import type { LatLon } from "@whereabouts/shared/geo"
@@ -45,10 +45,10 @@ export function flagPins(b: Borders): { f: FlagQuestion; at: LatLon }[] {
 const vrPinsOf = new WeakMap<Borders, VrFlagPin[]>()
 
 /** The outline the reveal draws where the country is painted whole, finer than its borders; else those. */
-function outline(b: Borders, f: FlagQuestion): Float64Array[] {
+function outline(b: Borders, f: FlagQuestion): FlatRing[] {
   const outline = f.answer.type === AnswerType.AREA ? outlines.value?.get(f.answer.outline) : undefined
   if (!outline) return b.rings(f.clue.flag)
-  return outline.flatMap((polygon) => polygon.map((ring) => Float64Array.from(ring.flat())))
+  return outline.flatMap((polygon) => polygon.map(flatRing))
 }
 
 /** The same, as the headset takes them: the same array each time, so it sees no change. */

@@ -1,4 +1,5 @@
 import type { LatLon } from "@whereabouts/shared/geo"
+import type { Outline } from "@whereabouts/shared/questions"
 
 /**
  * An outline (GeoJSON MultiPolygon coordinates, [lon, lat]) as an SVG path,
@@ -7,7 +8,7 @@ import type { LatLon } from "@whereabouts/shared/geo"
  * narrowed by the cosine of its latitude, near enough to the map's shape for
  * a thumbnail. Points closer than half a pixel are dropped.
  */
-export function outlinePath(outline: number[][][][], centre: LatLon, width: number, height: number, pad = 3): string {
+export function outlinePath(outline: Outline, centre: LatLon, width: number, height: number, pad = 3): string {
   const k = Math.cos((centre.lat * Math.PI) / 180)
   const project = ([lon, lat]: number[]): Point => [(((lon! - centre.lon + 540) % 360) - 180) * k, -lat!]
   const rings = outline.flat()

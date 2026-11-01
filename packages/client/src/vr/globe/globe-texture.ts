@@ -13,14 +13,12 @@ import {
   latLngToCell,
   type H3Cell
 } from "@whereabouts/shared/h3"
-import { decodeRing, type BordersData } from "@whereabouts/shared/borders"
+import { decodeRing, ringOf, type BordersData } from "@whereabouts/shared/borders"
+import type { Ring } from "@whereabouts/shared/geo"
 import type { LandMaskData } from "@whereabouts/shared/paint/land"
 import { Vector3 } from "three"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal, localToLatLon } from "./sphere"
-
-/** [lon, lat] points, as GeoJSON has them; longitudes past 180 wrap. */
-type Ring = readonly (readonly number[])[]
 
 const x = (lon: number, w: number) => ((lon + 180) / 360) * w
 const y = (lat: number, h: number) => ((90 - lat) / 180) * h
@@ -32,9 +30,9 @@ function traceRing(ctx: CanvasRenderingContext2D, ring: Ring, w: number, h: numb
     if (shift && !east) return
     for (let i = 0; i < ring.length; i++) {
       const [lon, lat] = ring[i]!
-      if (lon! > 180) east = true
-      if (i === 0) ctx.moveTo(x(lon! + shift, w), y(lat!, h))
-      else ctx.lineTo(x(lon! + shift, w), y(lat!, h))
+      if (lon > 180) east = true
+      if (i === 0) ctx.moveTo(x(lon + shift, w), y(lat, h))
+      else ctx.lineTo(x(lon + shift, w), y(lat, h))
     }
     ctx.closePath()
   }
@@ -49,7 +47,7 @@ const EDGE_STEP = (0.1 * Math.PI) / 180
  * flat picture would miss the small cells beside them, far from the equator
  * by many pixels, so long ones go in short steps.
  */
-export function cellRing(cell: H3Cell): number[][] | undefined {
+export function cellRing(cell: H3Cell): Ring | undefined {
   let b = alongGreatCircles(cellToBoundary(cell, true))
   const lons = b.map(([lon]) => lon)
   if (Math.max(...lons) - Math.min(...lons) <= 180) return b
@@ -63,17 +61,17 @@ export function cellRing(cell: H3Cell): number[][] | undefined {
  * cell's hexagon covers: an H3 parent's outline only roughly follows its
  * children, so filling the mask alone leaves slivers of land undrawn.
  */
-function alongGreatCircles(ring: number[][]): [number, number][] {
-  const out: [number, number][] = []
+function alongGreatCircles(ring: Ring): Ring {
+  const out: Ring = []
   const a = new Vector3()
   const b = new Vector3()
   const p = new Vector3()
   for (let i = 0; i < ring.length - 1; i++) {
     const [lon0, lat0] = ring[i]!
     const [lon1, lat1] = ring[i + 1]!
-    out.push([lon0!, lat0!])
-    latLonToLocal({ lat: lat0!, lon: lon0! }, a)
-    latLonToLocal({ lat: lat1!, lon: lon1! }, b)
+    out.push([lon0, lat0])
+    latLonToLocal({ lat: lat0, lon: lon0 }, a)
+    latLonToLocal({ lat: lat1, lon: lon1 }, b)
     const steps = Math.ceil(a.angleTo(b) / EDGE_STEP)
     for (let k = 1; k < steps; k++) {
       const { lat, lon } = localToLatLon(p.copy(a).lerp(b, k / steps))
@@ -204,10 +202,7 @@ export function drawBorders(canvas: HTMLCanvasElement, borders: BordersData, the
   ctx.lineWidth = Math.max(1, w / 4096)
   ctx.beginPath()
   for (const steps of [...borders.countries.flatMap((c) => c.rings), ...borders.none]) {
-    const flat = decodeRing(steps)
-    const ring: number[][] = []
-    for (let i = 0; i < flat.length; i += 2) ring.push([flat[i]!, flat[i + 1]!])
-    traceRing(ctx, ring, w, h)
+    traceRing(ctx, ringOf(decodeRing(steps)), w, h)
   }
   ctx.stroke()
 }

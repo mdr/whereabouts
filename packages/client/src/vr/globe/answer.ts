@@ -16,11 +16,12 @@ import {
   Vector3
 } from "three"
 import type { LatLon } from "@whereabouts/shared/geo"
+import type { Outline } from "@whereabouts/shared/questions"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal } from "./sphere"
 import type { Metres } from "@whereabouts/shared/units"
 
-export type VrAnswer = { point: LatLon } | { outline: number[][][][] }
+export type VrAnswer = { point: LatLon } | { outline: Outline }
 
 const PIN_LENGTH: Metres = 0.035
 const up = new Vector3(0, 1, 0)
@@ -60,7 +61,7 @@ export class AnswerMarker {
       for (const ring of polygon)
         for (let i = 0; i < ring.length - 1; i++)
           for (const [lon, lat] of [ring[i]!, ring[i + 1]!])
-            latLonToLocal({ lat: lat!, lon: lon! }, p).multiplyScalar(this.radius).toArray(points, points.length)
+            latLonToLocal({ lat: lat, lon: lon }, p).multiplyScalar(this.radius).toArray(points, points.length)
     this.outline.geometry.dispose()
     this.outline.geometry = new BufferGeometry().setAttribute("position", new Float32BufferAttribute(points, 3))
   }

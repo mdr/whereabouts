@@ -19,7 +19,7 @@ describe("the VR globe's land", () => {
 
   it("draws a big cell's edges along the great circles, not straight across the flat picture", () => {
     const cell = latLngToCell(65, 100, h3Res(1))
-    const ring = cellRing(cell)!.map(([lon, lat]) => latLonToLocal({ lat: lat!, lon: lon! }))
+    const ring = cellRing(cell)!.map(([lon, lat]) => latLonToLocal({ lat: lat, lon: lon }))
     const corners = cellToBoundary(cell, true).map(([lon, lat]) => latLonToLocal({ lat, lon }))
     for (let i = 0; i < corners.length - 1; i++) {
       const middle = new Vector3().addVectors(corners[i]!, corners[i + 1]!).normalize()

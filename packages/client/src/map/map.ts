@@ -17,6 +17,7 @@ import { cellToBoundary, type H3Cell } from "@whereabouts/shared/h3"
 import { cellsOutline } from "@whereabouts/shared/paint/paint"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
+import type { Outline } from "@whereabouts/shared/questions"
 import type { Theme } from "./themes"
 import {
   addGameLayers,
@@ -423,7 +424,7 @@ export class GameMap {
   }
 
   /** A region answer: the outline (GeoJSON MultiPolygon coordinates), filled faintly. */
-  showRegionReveal(outline: number[][][][]): void {
+  showRegionReveal(outline: Outline): void {
     void this.source(REVEAL_SOURCE)?.setData({
       type: "FeatureCollection",
       features: [{ type: "Feature", properties: {}, geometry: { type: "MultiPolygon", coordinates: outline } }]
@@ -491,7 +492,7 @@ export class GameMap {
   }
 
   /** Frame a country's outline (GeoJSON MultiPolygon coordinates) together with paint. */
-  fitRegionAndPaint(answer: LatLon, outline: number[][][][], paint: GeoJSON.FeatureCollection, tolerance: Km): void {
+  fitRegionAndPaint(answer: LatLon, outline: Outline, paint: GeoJSON.FeatureCollection, tolerance: Km): void {
     const parts = outline.map((coordinates): GeoJSON.Feature => ({
       type: "Feature",
       properties: {},

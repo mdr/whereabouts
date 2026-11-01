@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { commonsFile, flagCode, sourceUrl } from "@whereabouts/shared/ids"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
-import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "@whereabouts/shared/questions"
+import { AnswerType, ClueType, FeatureType, QuestionType, Surface, type Outline } from "@whereabouts/shared/questions"
 import type { PaintController } from "../../paint/paint-controller"
 import { areaAnswerView, makeFlagQuestion, makeQuestionView } from "../../test-view"
 import type { RevealedAnswer } from "../../round/round"
@@ -118,7 +118,7 @@ describe("vrReveal", () => {
   const own = { actions: [] }
 
   it("outlines an answer with an outline, and marks one without", () => {
-    const outline = [
+    const outline: Outline = [
       [
         [
           [-75, -10],

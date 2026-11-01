@@ -8,6 +8,17 @@ export interface LatLon {
   lon: Degrees
 }
 
+/** [lon, lat] in degrees: GeoJSON's order, the reverse of LatLon. */
+type LonLat = [lon: number, lat: number]
+/** A closed loop of points. */
+export type Ring = LonLat[]
+/** An outer ring, then its holes. */
+type Polygon = Ring[]
+/** One polygon per separate piece of land. */
+export type MultiPolygon = Polygon[]
+/** West, south, east, north, in degrees. */
+export type Box = [west: number, south: number, east: number, north: number]
+
 /** Unit-free 3D position on the Earth sphere, in kilometres. */
 export type Xyz = readonly [number, number, number]
 

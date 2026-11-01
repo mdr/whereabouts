@@ -5,7 +5,7 @@
  * is as the game sees it, joined with its place (see catalogue-entry.ts).
  */
 import { z } from "zod"
-import type { LatLon } from "./geo.ts"
+import type { LatLon, MultiPolygon } from "./geo.ts"
 import { DegreesSchema, type Km } from "./units.ts"
 import {
   CommonsFileSchema,
@@ -149,9 +149,9 @@ export type Question =
   | FeatureQuestion
   | StateQuestion
 
-/** Outlines by id: GeoJSON MultiPolygon coordinates, [lon, lat] rings, outer ring first. */
+/** A place's land. */
+export type Outline = MultiPolygon
 export type Outlines = ReadonlyMap<OutlineId, Outline>
-export type Outline = number[][][][]
 
 export const LatLonSchema = z.object({ lat: DegreesSchema, lon: DegreesSchema })
 export const PhotoClueSchema = z.object({ type: z.literal(ClueType.PHOTO), image: CommonsFileSchema })

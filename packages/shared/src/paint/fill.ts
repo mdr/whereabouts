@@ -27,7 +27,8 @@ import {
   type H3Cell,
   type H3Res
 } from "../h3.ts"
-import type { LatLon } from "../geo.ts"
+import type { LatLon, Ring } from "../geo.ts"
+import type { Outline } from "../questions.ts"
 import type { Km } from "../units.ts"
 
 /** The density of a fill: equal for every country filled. */
@@ -36,11 +37,26 @@ export const FILL_DENSITY = 1
 /** The most cells one country's fill is painted with: two thirds of the paint budget. */
 export const FILL_CELL_BUDGET = 4000
 
-/** What a country is filled with. */
-export interface FillShape {
-  /** GeoJSON MultiPolygon coordinates ([lon, lat] rings, outer first), or plain rings taken even-odd. */
-  polygons?: number[][][][]
-  rings?: number[][][]
+export enum FillShapeType {
+  OUTLINE = "OUTLINE",
+  RINGS = "RINGS"
+}
+
+/** A country's shape: its outline, or only bare rings, taken even-odd. */
+export type FillShape = OutlineFill | RingsFill
+
+interface OutlineFill extends FillBase {
+  type: FillShapeType.OUTLINE
+  outline: Outline
+}
+
+/** Rings with no outer/hole structure: a cell is in the country when its centre is in an odd number of them. */
+interface RingsFill extends FillBase {
+  type: FillShapeType.RINGS
+  rings: Ring[]
+}
+
+interface FillBase {
   /** Its answer, for a country too small to hold a cell. */
   answer: LatLon
   /** For a small country: how far from its answer counts as the country. */
@@ -48,15 +64,18 @@ export interface FillShape {
 }
 
 function cellsAt(shape: FillShape, res: H3Res): H3Cell[] {
-  if (shape.polygons) {
-    const out = new Set<H3Cell>()
-    for (const p of shape.polygons) for (const h of polygonToCells(p, res, true)) out.add(h)
-    return [...out]
+  switch (shape.type) {
+    case FillShapeType.OUTLINE: {
+      const out = new Set<H3Cell>()
+      for (const p of shape.outline) for (const h of polygonToCells(p, res, true)) out.add(h)
+      return [...out]
+    }
+    case FillShapeType.RINGS: {
+      const parity = new Map<H3Cell, boolean>()
+      for (const r of shape.rings) for (const h of polygonToCells([r], res, true)) parity.set(h, !parity.get(h))
+      return [...parity].filter(([, odd]) => odd).map(([h]) => h)
+    }
   }
-  // Plain rings: a cell is in the country when its centre is in an odd number of them.
-  const parity = new Map<H3Cell, boolean>()
-  for (const r of shape.rings ?? []) for (const h of polygonToCells([r], res, true)) parity.set(h, !parity.get(h))
-  return [...parity].filter(([, odd]) => odd).map(([h]) => h)
 }
 
 /** The cells filling a country, all at one resolution, never finer than `finestRes`. */

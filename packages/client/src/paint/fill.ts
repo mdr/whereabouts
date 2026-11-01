@@ -6,12 +6,12 @@
  * borders.json. Needs the borders and the countries loaded (useFillTool loads them).
  */
 import { useEffect } from "preact/hooks"
-import { countryFill, type FillShape } from "@whereabouts/shared/paint/fill"
+import { countryFill, FillShapeType, type FillShape } from "@whereabouts/shared/paint/fill"
 import type { Borders } from "@whereabouts/shared/borders"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { H3Cell, H3Res } from "@whereabouts/shared/h3"
 import { AnswerType, answerCentre, type FlagQuestion, type Outlines } from "@whereabouts/shared/questions"
-import type { LatLon } from "@whereabouts/shared/geo"
+import type { LatLon, MultiPolygon, Ring } from "@whereabouts/shared/geo"
 import type { PaintController } from "./paint-controller"
 import { useBorders } from "../data/borders"
 import { useOutlines } from "../data/outlines"
@@ -43,7 +43,8 @@ export class CountryFiller {
     let o = this.cursors.get(f.clue.flag)
     if (!o) {
       const shape = this.shape(f)
-      const coordinates = shape.polygons ?? (shape.rings ?? []).map((r) => [r])
+      const coordinates: MultiPolygon =
+        shape.type === FillShapeType.OUTLINE ? shape.outline : shape.rings.map((r) => [r])
       // A country too small for land of its own shows as its answer's surroundings.
       o = {
         type: "MultiPolygon",
@@ -68,8 +69,10 @@ export class CountryFiller {
   private shape(f: FlagQuestion): FillShape {
     let shape = this.shapes.get(f.clue.flag)
     if (!shape) {
-      const polygons = f.answer.type === AnswerType.AREA ? this.outlines.get(f.answer.outline) : undefined
-      shape = polygons ? { polygons, answer: answerCentre(f.answer) } : this.borders.fillShape(f)
+      const outline = f.answer.type === AnswerType.AREA ? this.outlines.get(f.answer.outline) : undefined
+      shape = outline
+        ? { type: FillShapeType.OUTLINE, outline, answer: answerCentre(f.answer) }
+        : this.borders.fillShape(f)
       this.shapes.set(f.clue.flag, shape)
     }
     return shape
@@ -77,10 +80,10 @@ export class CountryFiller {
 }
 
 /** A ring of `km` around a point, [lon, lat], for outlining a speck of a country. */
-function circle({ lat, lon }: LatLon, km: number): number[][] {
+function circle({ lat, lon }: LatLon, km: number): Ring {
   const dLat = km / 111.32
   const dLon = dLat / Math.max(0.01, Math.cos((lat * Math.PI) / 180))
-  const ring: number[][] = []
+  const ring: Ring = []
   for (let i = 0; i <= 32; i++) {
     const a = (i / 32) * 2 * Math.PI
     ring.push([lon + dLon * Math.cos(a), lat + dLat * Math.sin(a)])
