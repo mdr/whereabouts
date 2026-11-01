@@ -14,7 +14,14 @@ import {
   type Ticket,
   Phase
 } from "@whereabouts/shared/protocol"
-import { Connection, describeDisconnect, type GameClient, ConnectionStatus } from "./net"
+import {
+  Connection,
+  ConnectionStatus,
+  RejectionAction,
+  describeDisconnect,
+  type GameClient,
+  type Rejection
+} from "./net"
 import { makeGuessingView, makeLobbyView, makeQuestionView, makeRevealView } from "../test-view"
 import { PING_EVERY, PONG_WITHIN } from "./heartbeat"
 
@@ -33,12 +40,12 @@ describe("describeDisconnect", () => {
   it("offers hosting under a missing code, and forgets the seat of a removed player", () => {
     expect(describeDisconnect(4001, CloseReason.NO_SUCH_GAME)).toMatchObject({
       title: "No game with that code",
-      missing: true
+      action: RejectionAction.HOST_UNDER_CODE
     })
-    expect(describeDisconnect(1000, CloseReason.FULL).missing).toBeUndefined()
+    expect(describeDisconnect(1000, CloseReason.FULL).action).toBe(RejectionAction.NONE)
     expect(describeDisconnect(1000, CloseReason.REMOVED)).toMatchObject({
       title: "You were removed from the game",
-      removed: true
+      action: RejectionAction.FORGET_SEAT
     })
     expect(describeDisconnect(1000, CloseReason.FULL).detail).toContain("16 players and 8 people watching")
     expect(describeDisconnect(0, "reconnect_failed").title).toBe("Lost the connection")
@@ -110,21 +117,24 @@ function connected() {
   return { conn, client: clients[0]!, clients }
 }
 
+const rejectionOf = (conn: Connection): Rejection | undefined =>
+  conn.status.value.type === ConnectionStatus.REJECTED ? conn.status.value.rejection : undefined
+
 describe("Connection status", () => {
   afterEach(() => vi.useRealTimers())
 
   it("is connecting while it dials, and connected once in", () => {
     const { conn, client } = connected()
-    expect(conn.status.value).toBe(ConnectionStatus.CONNECTING)
+    expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
     client.open()
-    expect(conn.status.value).toBe(ConnectionStatus.CONNECTED)
+    expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTED)
   })
 
   it("is disconnected when a connection drops", () => {
     const { conn, client } = connected()
     client.open()
     client.close()
-    expect(conn.status.value).toBe(ConnectionStatus.DISCONNECTED)
+    expect(conn.status.value.type).toBe(ConnectionStatus.DISCONNECTED)
   })
 
   it("is still connecting while it retries before the first state arrives", () => {
@@ -132,7 +142,7 @@ describe("Connection status", () => {
     client.open()
     client.close()
     client.emit("client:reconnecting")
-    expect(conn.status.value).toBe(ConnectionStatus.CONNECTING)
+    expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
   })
 
   it("stays disconnected while it retries a game it was in", () => {
@@ -141,16 +151,16 @@ describe("Connection status", () => {
     client.state(makeLobbyView())
     client.close()
     client.emit("client:reconnecting")
-    expect(conn.status.value).toBe(ConnectionStatus.DISCONNECTED)
+    expect(conn.status.value.type).toBe(ConnectionStatus.DISCONNECTED)
   })
 
   it("gives up getting in after 20 tries, offering to try again", () => {
     const { conn, client } = connected()
     client.emit("client:reconnecting", encoder.encode("20"))
-    expect(conn.status.value).toBe(ConnectionStatus.CONNECTING)
+    expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
     client.emit("client:reconnecting", encoder.encode("21"))
-    expect(conn.status.value).toBe(ConnectionStatus.REJECTED)
-    expect(conn.rejection.value).toMatchObject({ title: "Lost the connection", retry: true })
+    expect(conn.status.value.type).toBe(ConnectionStatus.REJECTED)
+    expect(rejectionOf(conn)).toMatchObject({ title: "Lost the connection", action: RejectionAction.RETRY })
   })
 
   it("keeps trying to get back into a game for as long as it takes", () => {
@@ -159,7 +169,7 @@ describe("Connection status", () => {
     client.state(makeLobbyView())
     client.close()
     client.emit("client:reconnecting", encoder.encode("500"))
-    expect(conn.status.value).toBe(ConnectionStatus.DISCONNECTED)
+    expect(conn.status.value.type).toBe(ConnectionStatus.DISCONNECTED)
   })
 
   it("tries again with a fresh connection, back into the game it was in", () => {
@@ -168,7 +178,7 @@ describe("Connection status", () => {
     client.state(makeLobbyView({ code: roomCode("WXYZ") }))
     client.emit("client:reconnect_failed")
     conn.rejoin()
-    expect(conn.status.value).toBe(ConnectionStatus.CONNECTING)
+    expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
     expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({ create: false, code: "WXYZ", name: "Alice" })
   })
 
@@ -177,8 +187,8 @@ describe("Connection status", () => {
     client.open()
     client.emit("client:kicked", { code: 4003, reason: CloseReason.FULL })
     client.close()
-    expect(conn.status.value).toBe(ConnectionStatus.REJECTED)
-    expect(conn.rejection.value?.title).toBe("That game is full")
+    expect(conn.status.value.type).toBe(ConnectionStatus.REJECTED)
+    expect(rejectionOf(conn)?.title).toBe("That game is full")
   })
 
   it("stays rejected if a retry follows the rejection", () => {
@@ -187,32 +197,32 @@ describe("Connection status", () => {
     client.emit("client:kicked", { code: 4003, reason: CloseReason.FULL })
     client.close()
     client.emit("client:reconnecting")
-    expect(conn.status.value).toBe(ConnectionStatus.REJECTED)
-    expect(conn.rejection.value?.title).toBe("That game is full")
+    expect(conn.status.value.type).toBe(ConnectionStatus.REJECTED)
+    expect(rejectionOf(conn)?.title).toBe("That game is full")
   })
 
   it("is rejected when it gives up reconnecting, keeping an earlier reason", () => {
     const { conn, client } = connected()
     client.emit("client:reconnect_failed")
-    expect(conn.status.value).toBe(ConnectionStatus.REJECTED)
-    expect(conn.rejection.value?.title).toBe("Lost the connection")
+    expect(conn.status.value.type).toBe(ConnectionStatus.REJECTED)
+    expect(rejectionOf(conn)?.title).toBe("Lost the connection")
 
     const other = connected()
     other.client.emit("client:kicked", { code: 4003, reason: CloseReason.REMOVED })
     other.client.emit("client:reconnect_failed")
-    expect(other.conn.rejection.value?.removed).toBe(true)
+    expect(rejectionOf(other.conn)?.action).toBe(RejectionAction.FORGET_SEAT)
   })
 
   it("is idle after disconnecting, unless it was rejected", () => {
     const { conn, client } = connected()
     client.open()
     conn.disconnect()
-    expect(conn.status.value).toBe(ConnectionStatus.IDLE)
+    expect(conn.status.value.type).toBe(ConnectionStatus.IDLE)
 
     const other = connected()
     other.client.emit("client:kicked", { code: 4003, reason: CloseReason.FINISHED })
     other.conn.disconnect()
-    expect(other.conn.status.value).toBe(ConnectionStatus.REJECTED)
+    expect(other.conn.status.value.type).toBe(ConnectionStatus.REJECTED)
   })
 
   it("comes back to the same game, never hosting another", async () => {
@@ -230,7 +240,7 @@ describe("Connection status", () => {
     client.open()
     client.state(makeLobbyView({ code: roomCode("WXYZ") }))
     client.emit("client:kicked", { code: 4003, reason: "rate_limited" })
-    expect(conn.status.value).not.toBe(ConnectionStatus.REJECTED)
+    expect(conn.status.value.type).not.toBe(ConnectionStatus.REJECTED)
     vi.advanceTimersByTime(1000)
     expect(clients).toHaveLength(2)
     expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({ create: false, code: "WXYZ" })
@@ -242,7 +252,7 @@ describe("Connection status", () => {
     client.emit("client:kicked", { code: 4005, reason: "rate_limited" })
     vi.advanceTimersByTime(5000)
     expect(clients).toHaveLength(1)
-    expect(conn.status.value).toBe(ConnectionStatus.CONNECTING)
+    expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
   })
 })
 
@@ -342,7 +352,7 @@ describe("Connection liveness", () => {
     vi.advanceTimersByTime(PING_EVERY)
     expect(pings(client)).toBe(2)
     expect(clients).toHaveLength(1)
-    expect(conn.status.value).toBe(ConnectionStatus.CONNECTED)
+    expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTED)
   })
 
   it("takes a ping with no answer for a dead connection, and reconnects to its game", () => {
@@ -350,7 +360,7 @@ describe("Connection liveness", () => {
     vi.advanceTimersByTime(PING_EVERY + PONG_WITHIN)
     expect(client.connected).toBe(false)
     expect(clients).toHaveLength(2)
-    expect(conn.status.value).toBe(ConnectionStatus.CONNECTING)
+    expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
     expect(decodeTicket(clients[1]!.tickets[0]!)).toMatchObject({ create: false, code: "WXYZ" })
   })
 

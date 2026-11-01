@@ -6,7 +6,7 @@ import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName, roomCode } from "@whereabouts/shared/ids"
 import { mixOf, type GameView, MapDetail } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
-import { type Connection, ConnectionStatus } from "../../net/net"
+import { type Connection, type ConnectionState, ConnectionStatus } from "../../net/net"
 import { hostSetup, joinedCode, startOnPan } from "../../settings/settings"
 import { route } from "../../router"
 import { Lobby } from "./Lobby"
@@ -51,7 +51,7 @@ const configure = vi.fn()
 const leave = vi.fn()
 const setRole = vi.fn()
 const conn = {
-  status: signal(ConnectionStatus.CONNECTED),
+  status: signal<ConnectionState>({ type: ConnectionStatus.CONNECTED }),
   online: signal(true),
   lastError: signal(undefined),
   configure,

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { signal } from "@preact/signals"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import type { InPlayGameView } from "@whereabouts/shared/protocol"
-import { ConnectionStatus, type Connection } from "../../net/net"
+import { ConnectionStatus, type Connection, type ConnectionState, type PlainState } from "../../net/net"
 import type { PaintController } from "../../paint/paint-controller"
 import { gameVrView } from "./game-vr-view"
 import { VrViewType, type VrView } from "./view"
@@ -11,9 +11,9 @@ import { makePlayer, makeResult, makeGuessingView, makeReveal, makeRevealView } 
 
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 
-function fakeConn(status = ConnectionStatus.CONNECTED) {
+function fakeConn(status: PlainState["type"] = ConnectionStatus.CONNECTED) {
   return {
-    status: signal(status),
+    status: signal<ConnectionState>({ type: status }),
     online: signal(status === ConnectionStatus.CONNECTED),
     lastError: signal<string | undefined>(undefined),
     ready: vi.fn(),

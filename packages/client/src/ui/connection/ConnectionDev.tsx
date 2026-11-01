@@ -12,7 +12,7 @@ export function ConnectionDev({ conn, view }: { conn: Connection; view: GameView
     <Card title="Connection">
       <DevFacts
         facts={[
-          ["Status", conn.status.value],
+          ["Status", conn.status.value.type],
           ["Code", view.code],
           ["Phase", view.phase],
           ["Clock offset", `${Math.round(conn.clockOffset.value)} ms`],

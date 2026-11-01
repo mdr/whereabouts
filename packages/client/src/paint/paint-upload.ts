@@ -56,7 +56,7 @@ export function usePaintUpload(
 
   // Uploads made while the connection was down were lost. Once the server
   // has us back (its first state since), send the paint again.
-  const status = conn.status.value
+  const status = conn.status.value.type
   const resend = useRef(false)
   useEffect(() => {
     if (status !== ConnectionStatus.CONNECTED) resend.current = true

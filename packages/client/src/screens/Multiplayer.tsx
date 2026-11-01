@@ -1,7 +1,7 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { PlayerName, RoomCode } from "@whereabouts/shared/ids"
-import { Connection, ConnectionStatus } from "../net/net"
+import { Connection, ConnectionStatus, RejectionAction } from "../net/net"
 import {
   askedToWatch,
   joinedCode,
@@ -94,14 +94,14 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
 
   // Removed by the host: this tab's token is banned from that game, so drop
   // it (and the remembered code) and rejoin, if at all, as a new player.
-  const removed = conn.rejection.value?.removed ?? false
+  const state = conn.status.value
+  const removed = state.type === ConnectionStatus.REJECTED && state.rejection.action === RejectionAction.FORGET_SEAT
   useEffect(() => {
     if (!removed) return
     resetPlayerToken()
     joinedCode.value = ""
   }, [removed])
 
-  const status = conn.status.value
   const view = conn.view.value
   useGameSounds(conn, view)
   useSavedSetup(conn, view, create)
@@ -111,20 +111,18 @@ function Joined({ conn, code, create }: { conn: Connection; code: RoomCode | und
     if (upcoming) preloadPictures(upcoming)
   }, [upcoming?.image, upcoming?.flag, upcoming?.revealPhoto])
 
-  if (status === ConnectionStatus.REJECTED || (status === ConnectionStatus.DISCONNECTED && !view)) {
-    const why = conn.rejection.value ?? {
-      title: "Could not join that game",
-      detail: conn.lastError.value ?? "The game server did not let us in."
-    }
-    const primary = why.retry
-      ? { label: "Try again", press: () => conn.rejoin(), testId: joinedTestIds.tryAgainButton }
-      : why.missing && code
-        ? {
-            label: `Host game ${code}`,
-            press: () => navigate(`/game/new/${code}`),
-            testId: joinedTestIds.hostUnderCodeButton
-          }
-        : { label: "Host a new game", press: () => navigate("/game/new"), testId: joinedTestIds.hostNewButton }
+  if (state.type === ConnectionStatus.REJECTED) {
+    const why = state.rejection
+    const primary =
+      why.action === RejectionAction.RETRY
+        ? { label: "Try again", press: () => conn.rejoin(), testId: joinedTestIds.tryAgainButton }
+        : why.action === RejectionAction.HOST_UNDER_CODE && code
+          ? {
+              label: `Host game ${code}`,
+              press: () => navigate(`/game/new/${code}`),
+              testId: joinedTestIds.hostUnderCodeButton
+            }
+          : { label: "Host a new game", press: () => navigate("/game/new"), testId: joinedTestIds.hostNewButton }
     return (
       <div class={kit.page} data-testid={joinedTestIds.problem}>
         <VrNotice

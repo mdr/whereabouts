@@ -38,6 +38,18 @@ export enum ConnectionStatus {
   REJECTED = "REJECTED"
 }
 
+export interface PlainState {
+  type: Exclude<ConnectionStatus, ConnectionStatus.REJECTED>
+}
+
+/** Turned away or closed out; `rejection` says why, in words for the player. */
+interface RejectedState {
+  type: ConnectionStatus.REJECTED
+  rejection: Rejection
+}
+
+export type ConnectionState = PlainState | RejectedState
+
 function wsUrl(): string {
   const proto = location.protocol === "https:" ? "wss:" : "ws:"
   return `${proto}//${location.host}/ws`
@@ -73,7 +85,7 @@ const wsClient: ClientFactory = (url, options) => new WSClient<Topic>(url, optio
 
 export class Connection {
   readonly view = signal<GameView | undefined>(undefined)
-  readonly status = signal<ConnectionStatus>(ConnectionStatus.IDLE)
+  readonly status = signal<ConnectionState>({ type: ConnectionStatus.IDLE })
   readonly lastError = signal<string | undefined>(undefined)
   /**
    * serverTime - Date.now(), so deadlines can be shown on the local clock. A
@@ -81,11 +93,9 @@ export class Connection {
    * since the connection opened.
    */
   readonly clockOffset = signal<Ms>(0)
-  /** Why the server turned us away or closed the game, in words for the player. */
-  readonly rejection = signal<Rejection | undefined>(undefined)
   readonly code = computed(() => this.view.value?.code)
   /** Whether a command sent now reaches the server: only paint and Done are resent after a drop. */
-  readonly online = computed(() => this.status.value === ConnectionStatus.CONNECTED)
+  readonly online = computed(() => this.status.value.type === ConnectionStatus.CONNECTED)
 
   private client: GameClient | undefined = undefined
   /** The ticket to come back with: the game's code once in one. */
@@ -105,9 +115,8 @@ export class Connection {
 
   connect(ticket: Omit<Ticket, "v">): void {
     this.disconnect()
-    this.status.value = ConnectionStatus.CONNECTING
+    this.status.value = { type: ConnectionStatus.CONNECTING }
     this.lastError.value = undefined
-    this.rejection.value = undefined
     // Once in a game, coming back means joining it, not hosting another.
     const again = () => (this.code.value === undefined ? ticket : { ...ticket, create: false, code: this.code.value })
     this.comeBack = again
@@ -121,7 +130,7 @@ export class Connection {
       this.reveal = undefined
       this.paint = undefined
       this.offsetMeasured = false
-      this.status.value = ConnectionStatus.CONNECTED
+      this.status.value = { type: ConnectionStatus.CONNECTED }
       this.stopHeartbeat()
       this.heartbeat = startHeartbeat(
         () => client.send("ping", ""),
@@ -132,18 +141,17 @@ export class Connection {
     })
     client.on("client:disconnect", () => {
       this.stopHeartbeat()
-      if (this.status.value !== ConnectionStatus.REJECTED) this.status.value = ConnectionStatus.DISCONNECTED
+      if (!this.rejected()) this.status.value = { type: ConnectionStatus.DISCONNECTED }
     })
     client.on("client:reconnecting", (attempt) => {
-      if (this.view.value || this.status.value === ConnectionStatus.REJECTED) return
+      if (this.view.value || this.rejected()) return
       if (Number(this.decoder.decode(attempt)) > JOIN_ATTEMPTS) {
         client.disconnect()
-        this.status.value = ConnectionStatus.REJECTED
-        this.rejection.value = describeDisconnect(0, "reconnect_failed")
+        this.reject(describeDisconnect(0, "reconnect_failed"))
         return
       }
       // Still trying to get in for the first time: not yet a failure.
-      this.status.value = ConnectionStatus.CONNECTING
+      this.status.value = { type: ConnectionStatus.CONNECTING }
     })
     client.on("client:kicked", ({ code, reason }) => {
       this.stopHeartbeat()
@@ -159,12 +167,10 @@ export class Connection {
         return
       }
       if (isCloseReason(reason) && reason === CloseReason.OUTDATED && reloadForNewBuild()) return
-      this.status.value = ConnectionStatus.REJECTED
-      this.rejection.value = describeDisconnect(code, reason)
+      this.reject(describeDisconnect(code, reason))
     })
     client.on("client:reconnect_failed", () => {
-      this.status.value = ConnectionStatus.REJECTED
-      this.rejection.value ??= describeDisconnect(0, "reconnect_failed")
+      if (!this.rejected()) this.reject(describeDisconnect(0, "reconnect_failed"))
     })
     client.on("client:error", () => {
       /* surfaced via disconnect */
@@ -206,7 +212,15 @@ export class Connection {
     this.stopHeartbeat()
     this.client?.disconnect()
     this.client = undefined
-    if (this.status.value !== ConnectionStatus.REJECTED) this.status.value = ConnectionStatus.IDLE
+    if (!this.rejected()) this.status.value = { type: ConnectionStatus.IDLE }
+  }
+
+  private rejected(): boolean {
+    return this.status.value.type === ConnectionStatus.REJECTED
+  }
+
+  private reject(rejection: Rejection): void {
+    this.status.value = { type: ConnectionStatus.REJECTED, rejection }
   }
 
   private stopHeartbeat(): void {
@@ -273,15 +287,21 @@ export class Connection {
   }
 }
 
+/** What the page offers after a rejection. */
+export enum RejectionAction {
+  /** The server could not be reached, so trying again may work. */
+  RETRY = "RETRY",
+  /** No game has the code, so the player may host one under it. */
+  HOST_UNDER_CODE = "HOST_UNDER_CODE",
+  /** The host removed this player; the client forgets its seat token. */
+  FORGET_SEAT = "FORGET_SEAT",
+  NONE = "NONE"
+}
+
 export interface Rejection {
   title: string
   detail: string
-  /** Set when the host removed this player; the client then forgets its seat token. */
-  removed?: boolean
-  /** Set when no game has the code, so the player may host one under it. */
-  missing?: boolean
-  /** Set when the server could not be reached, so trying again may work. */
-  retry?: boolean
+  action: RejectionAction
 }
 
 /**
@@ -294,58 +314,76 @@ export function describeDisconnect(code: number, reason: string | undefined): Re
   if (r === "room_destroyed") {
     return {
       title: "That game has ended",
-      detail: "Everyone left, so the room was closed. Game codes only live while someone is in the game."
+      detail: "Everyone left, so the room was closed. Game codes only live while someone is in the game.",
+      action: RejectionAction.NONE
     }
   }
   if (r === "reconnect_failed") {
     return {
       title: "Lost the connection",
       detail: "We could not reach the game server. Check your network and try again.",
-      retry: true
+      action: RejectionAction.RETRY
     }
   }
-  if (!isCloseReason(r)) return { title: "Disconnected", detail: r || `The connection closed (code ${code}).` }
+  if (!isCloseReason(r))
+    return { title: "Disconnected", detail: r || `The connection closed (code ${code}).`, action: RejectionAction.NONE }
   switch (r) {
     case CloseReason.NO_SUCH_GAME:
       return {
         title: "No game with that code",
         detail:
           "Check the code with your host. If the game finished or everyone left, you can host a new one under the same code.",
-        missing: true
+        action: RejectionAction.HOST_UNDER_CODE
       }
     case CloseReason.OUTDATED:
-      return { title: "A new version is out", detail: "Reload the page to carry on." }
+      return { title: "A new version is out", detail: "Reload the page to carry on.", action: RejectionAction.NONE }
     case CloseReason.UNAVAILABLE:
-      return { title: "Couldn't start a game", detail: "The server had no free game code. Try again in a moment." }
+      return {
+        title: "Couldn't start a game",
+        detail: "The server had no free game code. Try again in a moment.",
+        action: RejectionAction.NONE
+      }
     case CloseReason.REMOVED:
       return {
         title: "You were removed from the game",
         detail: "The host took you out of this game. You can rejoin with the code as a new player, or start your own.",
-        removed: true
+        action: RejectionAction.FORGET_SEAT
       }
     case CloseReason.FINISHED:
-      return { title: "That game has finished", detail: "The final results are in. Ask the host to start a new game." }
+      return {
+        title: "That game has finished",
+        detail: "The final results are in. Ask the host to start a new game.",
+        action: RejectionAction.NONE
+      }
     case CloseReason.FULL:
       return {
         title: "That game is full",
-        detail: `It already has ${MAX_PLAYERS} players and ${MAX_SPECTATORS} people watching, the most a game can hold. Ask the host to remove someone, or start your own game.`
+        detail: `It already has ${MAX_PLAYERS} players and ${MAX_SPECTATORS} people watching, the most a game can hold. Ask the host to remove someone, or start your own game.`,
+        action: RejectionAction.NONE
       }
     case CloseReason.NO_ROOM_TO_WATCH:
       return {
         title: "No room to watch",
-        detail: `${MAX_SPECTATORS} people are already watching that game, the most it allows. You can still join it as a player.`
+        detail: `${MAX_SPECTATORS} people are already watching that game, the most it allows. You can still join it as a player.`,
+        action: RejectionAction.NONE
       }
     case CloseReason.REPLACED:
       return {
         title: "You joined from another tab",
-        detail: "This game is now open in your newer tab, so this one has been signed out."
+        detail: "This game is now open in your newer tab, so this one has been signed out.",
+        action: RejectionAction.NONE
       }
     case CloseReason.LEFT:
-      return { title: "You left the game", detail: "Rejoin with the code, or start your own game." }
+      return {
+        title: "You left the game",
+        detail: "Rejoin with the code, or start your own game.",
+        action: RejectionAction.NONE
+      }
     case CloseReason.SERVER_RESTARTED:
       return {
         title: "The server restarted for an update",
-        detail: "That game has ended. The host can start a new one."
+        detail: "That game has ended. The host can start a new one.",
+        action: RejectionAction.NONE
       }
   }
 }

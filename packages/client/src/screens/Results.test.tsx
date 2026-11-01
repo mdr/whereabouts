@@ -6,7 +6,7 @@ import { playerColour } from "@whereabouts/shared/colours"
 import { type ResultsGameView } from "@whereabouts/shared/protocol"
 import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 import { signal } from "@preact/signals"
-import { type Connection, ConnectionStatus } from "../net/net"
+import { type Connection, type ConnectionState, type PlainState, ConnectionStatus } from "../net/net"
 import { Results } from "./Results"
 import { resultsTestIds as ids } from "./ResultsTestIds"
 import s from "./Results.module.css"
@@ -15,10 +15,10 @@ import { makePlayer, makeResultsView } from "../test-view"
 
 const tid = (id: string) => `[data-testid="${id}"]`
 
-const makeConn = (status = ConnectionStatus.CONNECTED, again = vi.fn()) =>
+const makeConn = (status: PlainState["type"] = ConnectionStatus.CONNECTED, again = vi.fn()) =>
   ({
     again,
-    status: signal(status),
+    status: signal<ConnectionState>({ type: status }),
     online: signal(status === ConnectionStatus.CONNECTED),
     lastError: signal(undefined)
   }) as unknown as Connection

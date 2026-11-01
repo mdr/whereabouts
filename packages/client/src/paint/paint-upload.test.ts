@@ -5,7 +5,7 @@ import { signal } from "@preact/signals"
 import { h3Res } from "@whereabouts/shared/h3"
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { GameView, GuessingYouView } from "@whereabouts/shared/protocol"
-import { ConnectionStatus } from "../net/net"
+import { ConnectionStatus, type ConnectionState } from "../net/net"
 import { usePaintUpload } from "./paint-upload"
 import { makeGuessingView } from "../test-view"
 
@@ -32,7 +32,11 @@ function setup({
   view = guessing(),
   paint = makePaint()
 }: { view?: GameView; paint?: ReturnType<typeof makePaint> } = {}) {
-  const conn = { status: signal<ConnectionStatus>(ConnectionStatus.CONNECTED), sendPaint: vi.fn(), lock: vi.fn() }
+  const conn = {
+    status: signal<ConnectionState>({ type: ConnectionStatus.CONNECTED }),
+    sendPaint: vi.fn(),
+    lock: vi.fn()
+  }
   let props: Props = { view, timeUp: false }
   const hook = renderHook((p: Props) => usePaintUpload(conn, paint, p.view, p.timeUp), { initialProps: props })
   const update = (over: Partial<Props>) => {
@@ -113,8 +117,8 @@ describe("usePaintUpload", () => {
 
   it("uploads again after a reconnect, once the server's next state arrives", () => {
     const { conn, update } = setup()
-    run(() => (conn.status.value = ConnectionStatus.DISCONNECTED))
-    run(() => (conn.status.value = ConnectionStatus.CONNECTED))
+    run(() => (conn.status.value = { type: ConnectionStatus.DISCONNECTED }))
+    run(() => (conn.status.value = { type: ConnectionStatus.CONNECTED }))
     expect(conn.sendPaint).not.toHaveBeenCalled()
     update({ view: guessing() })
     expect(conn.sendPaint).toHaveBeenCalledTimes(1)
@@ -126,19 +130,19 @@ describe("usePaintUpload", () => {
     const { conn, update } = setup()
     update({ timeUp: true })
     conn.sendPaint.mockClear()
-    run(() => (conn.status.value = ConnectionStatus.DISCONNECTED))
-    run(() => (conn.status.value = ConnectionStatus.CONNECTED))
+    run(() => (conn.status.value = { type: ConnectionStatus.DISCONNECTED }))
+    run(() => (conn.status.value = { type: ConnectionStatus.CONNECTED }))
     update({ view: guessing() })
     expect(conn.sendPaint).not.toHaveBeenCalled()
   })
 
   it("locks after a reconnect when Done was pressed while the connection was down", () => {
     const { conn, hook, update } = setup()
-    run(() => (conn.status.value = ConnectionStatus.DISCONNECTED))
+    run(() => (conn.status.value = { type: ConnectionStatus.DISCONNECTED }))
     hook.result.current.lockIn()
     conn.sendPaint.mockClear()
     conn.lock.mockClear()
-    run(() => (conn.status.value = ConnectionStatus.CONNECTED))
+    run(() => (conn.status.value = { type: ConnectionStatus.CONNECTED }))
     update({ view: guessing() })
     expect(conn.lock).toHaveBeenCalledTimes(1)
     expect(conn.sendPaint.mock.invocationCallOrder[0]).toBeLessThan(conn.lock.mock.invocationCallOrder[0]!)
@@ -152,8 +156,8 @@ describe("usePaintUpload", () => {
     update({ view: guessing({ locked: true }) })
     update({ view: guessing() })
     conn.lock.mockClear()
-    run(() => (conn.status.value = ConnectionStatus.DISCONNECTED))
-    run(() => (conn.status.value = ConnectionStatus.CONNECTED))
+    run(() => (conn.status.value = { type: ConnectionStatus.DISCONNECTED }))
+    run(() => (conn.status.value = { type: ConnectionStatus.CONNECTED }))
     update({ view: guessing() })
     expect(conn.lock).not.toHaveBeenCalled()
   })

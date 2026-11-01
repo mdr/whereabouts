@@ -6,7 +6,7 @@ import s from "./ConnectionNote.module.css"
 
 /** Reconnecting, or the server's last complaint; undefined while all is well. */
 export function connectionText(conn: Connection): string | undefined {
-  if (conn.status.value !== ConnectionStatus.CONNECTED) return "Reconnecting…"
+  if (conn.status.value.type !== ConnectionStatus.CONNECTED) return "Reconnecting…"
   return conn.lastError.value
 }
 
@@ -16,7 +16,7 @@ export function ConnectionNote({ conn, onMap }: { conn: Connection; onMap?: bool
   if (text === undefined) return undefined
   const note = (
     <p
-      class={cx(kit.hint, conn.status.value !== ConnectionStatus.CONNECTED && kit.warn, onMap && s.onMap)}
+      class={cx(kit.hint, conn.status.value.type !== ConnectionStatus.CONNECTED && kit.warn, onMap && s.onMap)}
       role="status"
     >
       {text}
