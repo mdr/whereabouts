@@ -1,5 +1,6 @@
 import { soloTestIds } from "../../src/screens/solo/SoloTestIds.ts"
-import { factTestIds, questionCardTestIds } from "../../src/ui/round/QuestionCardTestIds.ts"
+import { questionImageTestIds } from "../../src/ui/round/question/QuestionImageTestIds.ts"
+import { factLineTestIds } from "../../src/ui/round/question/FactLineTestIds.ts"
 import { MapPanel } from "./components/MapPanel.ts"
 import { Screen } from "./Screen.ts"
 import { text } from "./support.ts"
@@ -26,11 +27,11 @@ export class PracticeRevealPage extends Screen {
   }
 
   async hasPhoto(): Promise<boolean> {
-    return (await this.page.getByTestId(questionCardTestIds.photo).count()) > 0
+    return (await this.page.getByTestId(questionImageTestIds.photo).count()) > 0
   }
 
   /** The line of interest about the answer, once the facts have loaded. */
   async fact(): Promise<string> {
-    return text(this.page.getByTestId(factTestIds.fact))
+    return text(this.page.getByTestId(factLineTestIds.fact))
   }
 }

@@ -2,14 +2,12 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
 import { SmallFlag, SmallFlagButton, SmallPhoto } from "./Pictures"
-import { CardPlace, QuestionCard } from "../round/QuestionCard"
+import { QuestionImage } from "../round/question/QuestionImage"
 import lb from "./Lightbox.module.css"
 import pictures from "./Pictures.module.css"
-import qc from "../round/QuestionCard.module.css"
+import questionImage from "../round/question/QuestionImage.module.css"
 import type * as flags from "../../flags/flags"
-import { ClueType, QuestionType } from "@whereabouts/shared/questions"
 import { commonsFile } from "@whereabouts/shared/ids"
-import { makeQuestionView } from "../../test-view"
 
 vi.mock("../../flags/flags", async (original) => ({
   ...(await original<typeof flags>()),
@@ -47,14 +45,10 @@ describe("flag frames", () => {
 describe("SmallPhoto", () => {
   it("shows the rounds' rendition of the photo, which the page already has", () => {
     const image = commonsFile("Some_file.jpg")
-    const q = makeQuestionView({
-      type: QuestionType.LANDMARK,
-      clue: { type: ClueType.PHOTO, image }
-    })
     const { container } = render(<SmallPhoto image={image} />)
-    const shown = render(<QuestionCard hud={CardPlace.PAINTING} q={q} />).container.querySelector<HTMLImageElement>(
-      `.${qc.thumb!} img`
-    )!
+    const shown = render(
+      <QuestionImage image={image} credit={false} painting />
+    ).container.querySelector<HTMLImageElement>(`.${questionImage.thumb!} img`)!
     expect(container.querySelector<HTMLImageElement>(`.${pictures.smallPicture!} img`)!.src).toBe(shown.src)
   })
 })

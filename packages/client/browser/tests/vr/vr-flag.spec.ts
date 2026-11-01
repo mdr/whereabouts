@@ -4,7 +4,7 @@ import { test } from "@playwright/test"
 import { Quaternion, Vector3 } from "three"
 import { Tool } from "../../../src/paint/tool.ts"
 import { flagRevealTestIds } from "../../../src/ui/round/FlagRevealTestIds.ts"
-import { questionCardTestIds } from "../../../src/ui/round/QuestionCardTestIds.ts"
+import { flagImageTestIds } from "../../../src/ui/round/question/FlagImageTestIds.ts"
 import { Hand } from "../../../src/vr/hands/hand.ts"
 import { PictureBack } from "../../../src/vr/picture/picture-back.ts"
 import { until } from "../../pages/support.ts"
@@ -33,7 +33,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   const flag = await headset.picture()
   const flagRatio = Number(
     await tab.page
-      .getByTestId(questionCardTestIds.flag)
+      .getByTestId(flagImageTestIds.flag)
       .evaluate((el) => (el as HTMLElement).style.getPropertyValue("--flag-ratio"))
   )
   check(

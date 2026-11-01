@@ -1,0 +1,15 @@
+.answer {
+  margin: 10px 0 0;
+  font-size: 15px;
+}
+.wikiLink {
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.wikiLink:hover {
+  color: var(--panel-fg);
+}
+.wikiLink svg {
+  vertical-align: -1px;
+}

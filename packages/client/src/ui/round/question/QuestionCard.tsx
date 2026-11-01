@@ -1,47 +1,16 @@
 import type { ComponentChildren, RefObject } from "preact"
 import { useLayoutEffect, useState } from "preact/hooks"
-import { clueFlag, clueImage, commonsImageUrl, promptOf, wikipediaUrl } from "@whereabouts/shared/questions"
-import type { Fact } from "@whereabouts/shared/catalogue/facts"
-import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
+import { clueFlag, clueImage, promptOf } from "@whereabouts/shared/questions"
+import type { CommonsFile } from "@whereabouts/shared/ids"
 import type { QuestionView } from "@whereabouts/shared/protocol"
-import { Icon } from "../icons"
-import { flagRatio } from "../../flags/flags"
-import { cx } from "../cx"
-import { useElementRef } from "../element-ref"
-import { CommonsCredit, flagShape, useFlagUrl } from "../pictures/Pictures"
-import { Lightbox, LightboxType, PhotoLightbox, useEscape } from "../pictures/Lightbox"
-import { factTestIds, questionCardTestIds } from "./QuestionCardTestIds"
-import card from "../Card.module.css"
+import { Icon } from "../../icons"
+import { cx } from "../../cx"
+import { useElementRef } from "../../element-ref"
+import { FlagImage } from "./FlagImage"
+import { QuestionImage } from "./QuestionImage"
+import { questionCardTestIds } from "./QuestionCardTestIds"
+import card from "../../Card.module.css"
 import q from "./QuestionCard.module.css"
-import { FactType } from "@whereabouts/shared/catalogue/facts"
-
-const FACT_LABELS: Record<FactType, string> = {
-  [FactType.FAME]: "Why it's known",
-  [FactType.TRIVIA]: "Did you know?",
-  [FactType.FLAG]: "About the flag"
-}
-
-/** A line of interest about the revealed answer. */
-export function FactLine({ fact }: { fact: Fact | undefined }) {
-  if (!fact) return undefined
-  return (
-    <p class={q.fact} data-testid={factTestIds.fact}>
-      <span class={q.factKind}>{FACT_LABELS[fact.type]}</span> {fact.text}
-    </p>
-  )
-}
-
-/** The revealed answer, with a link to read about it on Wikipedia. */
-export function Answer({ label, wiki }: { label: string; wiki: WikiTitle }) {
-  return (
-    <p class={q.answer} data-testid={questionCardTestIds.answer}>
-      It's <b>{label}</b>{" "}
-      <a class={q.wikiLink} href={wikipediaUrl(wiki)} target="_blank" rel="noopener noreferrer">
-        Wikipedia <Icon name="external" size={12} />
-      </a>
-    </p>
-  )
-}
 
 /** Where a question card sits. */
 export enum CardPlace {
@@ -111,8 +80,8 @@ export function QuestionCard({
       <h2 class={q.prompt} data-testid={questionCardTestIds.prompt}>
         {prompt}
       </h2>
-      {image && <QuestionImage image={image} credit={credit ?? false} />}
-      {flag && <FlagImage code={flag} />}
+      {image && <QuestionImage image={image} credit={credit ?? false} painting={hud === CardPlace.PAINTING} />}
+      {flag && <FlagImage code={flag} painting={hud === CardPlace.PAINTING} />}
       {children}
     </div>
   )
@@ -167,84 +136,4 @@ function usePublishedHeight(ref: RefObject<HTMLDivElement>): void {
       root.style.removeProperty("--question-h")
     }
   }, [])
-}
-
-/** A flag round's flag; click it to enlarge. No alt text naming it: that would give the answer away. */
-function FlagImage({ code }: { code: string }) {
-  const src = useFlagUrl(code)
-  const [large, setLarge] = useState(false)
-  useEscape(large, () => setLarge(false))
-  return (
-    <>
-      <button
-        type="button"
-        class={q.flag}
-        data-picture
-        title="Enlarge the flag"
-        disabled={!src}
-        onClick={() => setLarge(true)}
-        style={flagShape(code)}
-        data-testid={questionCardTestIds.flag}
-      >
-        {src && <img src={src} alt="The flag" draggable={false} />}
-        <span class={q.badge} aria-hidden="true">
-          <Icon name="enlarge" size={14} />
-        </span>
-        <span class="sr-only">Enlarge flag</span>
-      </button>
-      {large && src && (
-        <Lightbox
-          src={src}
-          type={LightboxType.FLAG}
-          ratio={flagRatio(code)}
-          credit={undefined}
-          onClose={() => setLarge(false)}
-        />
-      )}
-    </>
-  )
-}
-
-/** Whether a photo has shown its "Enlarge" label yet this session: after the first, just the icon. */
-let enlargeLabelShown = false
-
-/**
- * The question photo. Click it to enlarge over the map; click again or press
- * Escape to shrink back. The Wikimedia Commons credit sits behind a small
- * info icon linking to the file page.
- */
-function QuestionImage({ image, credit: showCredit }: { image: CommonsFile; credit: boolean }) {
-  const [large, setLarge] = useState(false)
-  const [withLabel] = useState(() => {
-    const first = !enlargeLabelShown
-    enlargeLabelShown = true
-    return first
-  })
-  useEscape(large, () => setLarge(false))
-  const credit = showCredit ? <CommonsCredit image={image} /> : undefined
-  const thumb = useElementRef<HTMLImageElement>()
-  return (
-    <>
-      <div class={q.thumb} data-picture data-testid={questionCardTestIds.photo}>
-        {/* The whole photo is the button; the badge says so, on phones too, where there is no hover. */}
-        <button type="button" class={q.thumbButton} title="Enlarge the photo" onClick={() => setLarge(true)}>
-          <img ref={thumb} src={commonsImageUrl(image)} alt="" referrerpolicy="no-referrer" />
-          <span class={cx(q.badge, withLabel && q.withLabel)} aria-hidden="true">
-            <Icon name="enlarge" size={14} />
-            {withLabel && <span>Enlarge</span>}
-          </span>
-          <span class="sr-only">Enlarge photo</span>
-        </button>
-        {credit}
-      </div>
-      {large && (
-        <PhotoLightbox
-          image={image}
-          thumb={thumb.current ?? undefined}
-          credit={credit}
-          onClose={() => setLarge(false)}
-        />
-      )}
-    </>
-  )
 }

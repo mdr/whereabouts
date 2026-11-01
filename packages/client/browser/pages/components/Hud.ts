@@ -1,5 +1,6 @@
 import { countdownTestIds, hudHeaderTestIds, soundToggleTestIds } from "../../../src/ui/map/HudTestIds.ts"
-import { questionCardTestIds } from "../../../src/ui/round/QuestionCardTestIds.ts"
+import { questionCardTestIds } from "../../../src/ui/round/question/QuestionCardTestIds.ts"
+import { questionImageTestIds } from "../../../src/ui/round/question/QuestionImageTestIds.ts"
 import { hostControlsTestIds } from "../../../src/ui/players/HostControlsTestIds.ts"
 import { ConfirmDialog } from "./ConfirmDialog.ts"
 import { ResultsPage } from "../ResultsPage.ts"
@@ -38,7 +39,7 @@ export class Hud {
   }
 
   async questionHasPhoto(): Promise<boolean> {
-    return (await this.#tab.page.getByTestId(questionCardTestIds.photo).count()) > 0
+    return (await this.#tab.page.getByTestId(questionImageTestIds.photo).count()) > 0
   }
 
   /** Phones only: fold the question card down to its prompt, or open it out again. */

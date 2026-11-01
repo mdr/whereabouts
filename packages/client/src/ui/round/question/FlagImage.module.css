@@ -1,0 +1,45 @@
+@import "../../../media.css";
+
+button.flag {
+  position: relative;
+  display: block;
+  /* The flag's own shape, as large as fits 220 × 165. */
+  width: min(100%, 220px, 165px * var(--flag-ratio));
+  aspect-ratio: var(--flag-ratio);
+  margin: 0 auto;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--control-bg);
+  box-shadow: var(--picture-ring);
+  cursor: zoom-in;
+}
+button.flag:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+/* Loaded, a flag's edge follows its shape: Nepal's is not a rectangle. */
+button.flag:has(img) {
+  background: none;
+  box-shadow: none;
+  filter: var(--flag-edge);
+}
+.flag img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* While painting, where the cards would overrun their column, the flag gives up height so the hints below stay on screen. */
+button.flag.painting {
+  flex: 0 1 min(165px, 220px / var(--flag-ratio));
+  min-height: 56px;
+  width: auto;
+  max-width: 100%;
+}
+@media (--short) {
+  button.flag.painting {
+    min-height: 40px;
+  }
+}

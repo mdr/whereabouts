@@ -1,0 +1,21 @@
+/* Its picture's button sets --badge-opacity while hovered or focused. */
+.badge {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--shade) 60%, transparent);
+  color: var(--light);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: var(--badge-opacity, 0.85);
+  transition: opacity 0.15s;
+}
+.badge.withLabel {
+  padding: 4px 9px 4px 7px;
+}

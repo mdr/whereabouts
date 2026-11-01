@@ -1,5 +1,7 @@
 import { revealTestIds } from "../../src/screens/RevealTestIds.ts"
-import { factTestIds, questionCardTestIds } from "../../src/ui/round/QuestionCardTestIds.ts"
+import { questionCardTestIds } from "../../src/ui/round/question/QuestionCardTestIds.ts"
+import { answerTestIds } from "../../src/ui/round/question/AnswerTestIds.ts"
+import { factLineTestIds } from "../../src/ui/round/question/FactLineTestIds.ts"
 import { Hud } from "./components/Hud.ts"
 import { MapPanel } from "./components/MapPanel.ts"
 import { ResultsPage } from "./ResultsPage.ts"
@@ -41,7 +43,7 @@ export class RevealPage extends Screen {
 
   /** The line of interest about the answer, once the facts have loaded. */
   async fact(): Promise<string> {
-    return text(this.page.getByTestId(factTestIds.fact))
+    return text(this.page.getByTestId(factLineTestIds.fact))
   }
 
   /** The players' rows, in the order shown. */
@@ -152,6 +154,6 @@ export class RevealPage extends Screen {
 
   /** The question card's line naming the answer, on screen and uncovered. */
   async answerLineIsUsable(): Promise<boolean> {
-    return isUsable(this.page.getByTestId(questionCardTestIds.answer))
+    return isUsable(this.page.getByTestId(answerTestIds.answer))
   }
 }
