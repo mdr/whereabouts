@@ -167,9 +167,9 @@ class SoundEngine {
   }
 
   private async load(url: string): Promise<AudioBuffer> {
-    const res = await fetch(url)
-    if (!res.ok) throw new Error(`${res.status}`)
-    return this.ctx!.decodeAudioData(await res.arrayBuffer())
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`${response.status}`)
+    return this.ctx!.decodeAudioData(await response.arrayBuffer())
   }
 
   private ready(): AudioContext | undefined {

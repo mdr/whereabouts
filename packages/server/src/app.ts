@@ -84,8 +84,8 @@ export function createApp(options: AppOptions): App {
       etag: false,
       lastModified: false,
       cacheControl: false,
-      setHeaders(res, filePath) {
-        res.setHeader("Cache-Control", cacheControlFor(filePath))
+      setHeaders(response, filePath) {
+        response.setHeader("Cache-Control", cacheControlFor(filePath))
       }
     })
     // Single-page app: unknown paths fall through to index.html. Not a

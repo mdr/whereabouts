@@ -39,10 +39,10 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 async function get(url) {
   for (let attempt = 1; ; attempt++) {
-    const res = await fetch(url, { headers: { "User-Agent": USER_AGENT } })
-    if (res.ok) return res
-    if (attempt === 4) throw new Error(`${res.status} for ${url}`)
-    await sleep(Number(res.headers.get("retry-after")) * 1000 || 2000 * attempt)
+    const response = await fetch(url, { headers: { "User-Agent": USER_AGENT } })
+    if (response.ok) return response
+    if (attempt === 4) throw new Error(`${response.status} for ${url}`)
+    await sleep(Number(response.headers.get("retry-after")) * 1000 || 2000 * attempt)
   }
 }
 
