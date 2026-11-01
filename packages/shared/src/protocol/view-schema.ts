@@ -203,7 +203,7 @@ const PlayedRoundSchema = z.discriminatedUnion("type", [
 const AwardSchema = z.strictObject({
   emoji: z.string(),
   title: z.string(),
-  playerIds: z.array(PlayerIdSchema),
+  playerIds: z.union([z.tuple([PlayerIdSchema]), z.tuple([PlayerIdSchema, PlayerIdSchema])]),
   line: z.string()
 })
 

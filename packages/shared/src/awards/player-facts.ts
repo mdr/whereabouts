@@ -54,8 +54,8 @@ export interface PlayerFacts {
 export interface Award {
   emoji: string
   title: string
-  /** Usually one; two for an award shared by a pair. */
-  playerIds: PlayerId[]
+  /** One player, or two for an award shared by a pair. */
+  playerIds: [PlayerId] | [PlayerId, PlayerId]
   /** The joke, with {0} and {1} where the players' names go. */
   line: string
 }
