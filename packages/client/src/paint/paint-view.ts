@@ -38,7 +38,7 @@ export class PaintView {
       this.renderFrame = undefined
       window.clearTimeout(this.versionTimer)
       this.versionTimer = undefined
-      this.gameMap.setPaint(this.model.layer.toGeoJSON())
+      this.gameMap.showPaint(this.model.layer.toGeoJSON())
       this.model.publish()
     })
   }
@@ -70,18 +70,18 @@ export class PaintView {
   showColoured(features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
     const fc: GeoJSON.FeatureCollection = { type: "FeatureCollection", features }
     this.gameMap.setPaintColourPerFeature()
-    this.gameMap.setPaint(fc)
+    this.gameMap.showPaint(fc)
     return fc
   }
 
   /** Put our own paint back on the map, in a player colour or the theme ramp. */
   showOwn(colour?: CssColour): void {
     this.gameMap.setPaintColour(colour)
-    this.gameMap.setPaint(this.model.layer.toGeoJSON())
+    this.gameMap.showPaint(this.model.layer.toGeoJSON())
   }
 
   /** Draw our paint now. */
   draw(): void {
-    this.gameMap.setPaint(this.model.layer.toGeoJSON())
+    this.gameMap.showPaint(this.model.layer.toGeoJSON())
   }
 }

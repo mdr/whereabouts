@@ -23,7 +23,7 @@ export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Bor
     const map = gameMap.map
     const show = (e: MapMouseEvent) => {
       const p = { lat: e.lngLat.lat, lon: e.lngLat.lng }
-      const f = borders.countryAt(p) ?? borders.smallNear(p, (SMALL * gameMap.metresPerPixel(p.lat)) / 1000)
+      const f = borders.countryAt(p) ?? borders.smallNear(p, gameMap.pixelsToKm(SMALL, p.lat))
       setHit(f ? { f, x: e.originalEvent.clientX, y: e.originalEvent.clientY } : undefined)
     }
     const hide = () => setHit(undefined)

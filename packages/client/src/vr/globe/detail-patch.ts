@@ -9,6 +9,7 @@ import { greatCircleDistance, toDegrees, toRadians, type LatLon } from "@whereab
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { MapDetail } from "@whereabouts/shared/protocol"
 import { GameMap } from "../../map/map"
+import { EQUATORIAL_CIRCUMFERENCE, zoomForWorldWidth } from "../../map/map-geometry"
 import { RevealDetail } from "../../map/shown-detail"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal } from "./sphere"
@@ -21,7 +22,6 @@ const GRID = 48
 const FADE = 0.12
 /** How often to look for the map having finished, while it waits for tiles. */
 const POLL: Seconds = 0.25
-const EQUATOR: Metres = 40_075_016.686
 
 const mercY = (lat: Degrees) => Math.log(Math.tan(Math.PI / 4 + toRadians(lat) / 2))
 const mercLat = (y: number): Degrees => toDegrees(2 * Math.atan(Math.exp(y)) - Math.PI / 2)
@@ -124,7 +124,9 @@ export class DetailPatch {
       Math.abs(Math.log(half / this.asked.half)) > 0.2
     if (moved) {
       const lat = Math.max(-80, Math.min(80, centre.lat))
-      const zoom: Zoom = Math.log2((EQUATOR * Math.cos(toRadians(lat)) * SIZE) / (512 * 2 * half * 1000))
+      const zoom: Zoom = zoomForWorldWidth(
+        (EQUATORIAL_CIRCUMFERENCE * Math.cos(toRadians(lat)) * SIZE) / (2 * half * 1000)
+      )
       map.jumpTo({ center: [centre.lon, lat], zoom: Math.max(1, Math.min(15, zoom)) })
       this.asked = { centre, half }
       this.shown = false

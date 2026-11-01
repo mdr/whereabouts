@@ -44,9 +44,9 @@ import {
   globeWorldZoom,
   hintFeatures,
   metresPerPixel,
+  zoomForWorldWidth,
   offsetFor,
-  toleranceBox,
-  WORLD_PX_Z0
+  toleranceBox
 } from "./map-geometry"
 import {
   RevealDetail,
@@ -56,7 +56,7 @@ import {
   showsTerrain,
   type ShownDetail
 } from "./shown-detail"
-import type { Degrees, Km, Metres, Px, Zoom } from "@whereabouts/shared/units"
+import type { Degrees, Km, Px, Zoom } from "@whereabouts/shared/units"
 
 setWorkerUrl(mapWorkerUrl)
 
@@ -79,7 +79,7 @@ const PLACE_LABELS = ["label_other", "label_village", "label_town", "label_state
 
 /** The flat map's zoom that shows the whole world on a map `width` px wide. */
 export function flatWorldZoom(width: Px): Zoom {
-  return matchMedia(PHONE).matches ? Math.min(WORLD_ZOOM, Math.log2(width / WORLD_PX_Z0)) : WORLD_ZOOM
+  return matchMedia(PHONE).matches ? Math.min(WORLD_ZOOM, zoomForWorldWidth(width)) : WORLD_ZOOM
 }
 
 export class GameMap {
@@ -360,7 +360,7 @@ export class GameMap {
     return this.map.getSource(id)
   }
 
-  setPaint(data: GeoJSON.FeatureCollection): void {
+  showPaint(data: GeoJSON.FeatureCollection): void {
     const features = data.features.filter(
       (f) =>
         f.geometry.type !== "Polygon" || f.geometry.coordinates.every((ring) => ring.every(([, lat]) => drawable(lat!)))
@@ -451,8 +451,8 @@ export class GameMap {
   }
 
   /** At a latitude on the flat map. A globe has one scale, the flat map's at the view's centre. */
-  metresPerPixel(lat: Degrees): Metres {
-    return metresPerPixel(this.globe ? this.map.getCenter().lat : lat, this.map.getZoom())
+  pixelsToKm(px: Px, lat: Degrees): Km {
+    return (px * metresPerPixel(this.globe ? this.map.getCenter().lat : lat, this.map.getZoom())) / 1000
   }
 
   /** Back to the whole-world starting view, e.g. at the start of a round. */
