@@ -1,27 +1,57 @@
 import type { FilterSpecification, Map as MapLibreMap } from "maplibre-gl"
+import type { LayerId, PaintValue } from "./map-paint"
 import type { Theme } from "./themes"
+
+/** The style's own width and opacity for a border layer. */
+export interface BorderPaint {
+  width: PaintValue<"line", "line-width">
+  opacity: PaintValue<"line", "line-opacity">
+}
+
+export const REVEAL_BORDER_WIDTH: PaintValue<"line", "line-width"> = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  1,
+  0.8,
+  3,
+  1.3,
+  5,
+  1.8,
+  8,
+  2.5
+]
+export const REVEAL_BORDER_OPACITY: PaintValue<"line", "line-opacity"> = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  1,
+  0.55,
+  2.5,
+  1
+]
 
 export const PAINT_SOURCE = "paint"
 export const REVEAL_SOURCE = "reveal"
 export const CURSOR_SOURCE = "cursor"
 export const HINT_SOURCE = "hint"
 const TERRAIN_SOURCE = "terrain"
-export const TERRAIN_LAYER = "terrain-hillshade"
+export const TERRAIN_LAYER: LayerId<"hillshade"> = "terrain-hillshade"
 /** Natural Earth II colour relief, declared (but not drawn) by the positron style. */
 const COLOUR_SOURCE = "ne2_shaded"
-export const COLOUR_LAYER = "natural-colour"
+export const COLOUR_LAYER: LayerId<"raster"> = "natural-colour"
 /** US states, and other countries' provinces, for the reveal of a state round. The style draws them only from zoom 8. */
-export const STATE_BORDERS = "state-borders"
-export const STATE_LABELS = "state-labels"
+export const STATE_BORDERS: LayerId<"line"> = "state-borders"
+export const STATE_LABELS: LayerId<"symbol"> = "state-labels"
 
-export const PAINT_FILL = "paint-fill"
-export const HINT_FILL = "hint-fill"
-export const HINT_EDGE = "hint-edge"
-export const REVEAL_REGION_FILL = "reveal-region-fill"
-export const REVEAL_REGION_LINE = "reveal-region-line"
-export const REVEAL_ANSWER = "reveal-answer"
-export const CURSOR_FILL = "cursor-fill"
-export const CURSOR_OUTLINE = "cursor-outline"
+export const PAINT_FILL: LayerId<"fill"> = "paint-fill"
+export const HINT_FILL: LayerId<"fill"> = "hint-fill"
+export const HINT_EDGE: LayerId<"line"> = "hint-edge"
+export const REVEAL_REGION_FILL: LayerId<"fill"> = "reveal-region-fill"
+export const REVEAL_REGION_LINE: LayerId<"line"> = "reveal-region-line"
+export const REVEAL_ANSWER: LayerId<"circle"> = "reveal-answer"
+export const CURSOR_FILL: LayerId<"fill"> = "cursor-fill"
+export const CURSOR_OUTLINE: LayerId<"line"> = "cursor-outline"
 
 function emptyCollection(): GeoJSON.FeatureCollection {
   return { type: "FeatureCollection", features: [] }

@@ -22,16 +22,20 @@ import type { Outline } from "@whereabouts/shared/questions"
 import type { Theme } from "./themes"
 import {
   addGameLayers,
+  type BorderPaint,
   COLOUR_LAYER,
   CURSOR_SOURCE,
   HINT_SOURCE,
   PAINT_FILL,
   PAINT_SOURCE,
+  REVEAL_BORDER_OPACITY,
+  REVEAL_BORDER_WIDTH,
   REVEAL_SOURCE,
   STATE_BORDERS,
   STATE_LABELS,
   TERRAIN_LAYER
 } from "./map-layers"
+import { applyPaint, setPaint, type LayerId, type PaintSetting } from "./map-paint"
 import { overlayPaint, paintRamp, PLAYER_OPACITY, styleLayerPaint, type StyleLayer } from "./map-theme"
 import {
   boxAround,
@@ -70,8 +74,6 @@ const SHEET_TOP = 0.5
  * faint look, so the Political map detail stays a light hint.
  */
 const NATIONAL_BORDERS = ["boundary_2", "boundary_disputed"]
-const REVEAL_BORDER_WIDTH = ["interpolate", ["linear"], ["zoom"], 1, 0.8, 3, 1.3, 5, 1.8, 8, 2.5]
-const REVEAL_BORDER_OPACITY = ["interpolate", ["linear"], ["zoom"], 1, 0.55, 2.5, 1]
 /** Town and city names, hidden at a state reveal so the state names stand out. */
 const PLACE_LABELS = ["label_other", "label_village", "label_town", "label_state", "label_city", "label_city_capital"]
 
@@ -84,9 +86,9 @@ export class GameMap {
   readonly map: MapLibreMap
   readonly ready: Promise<void>
   private labelLayers: string[] = []
-  private borderLayers: string[] = []
+  private borderLayers: LayerId<"line">[] = []
   /** The style's own width and opacity for the national borders, restored after the reveal. */
-  private borderPaint = new Map<string, { width: unknown; opacity: unknown }>()
+  private borderPaint = new Map<string, BorderPaint>()
   private revealBorders = false
   /** Roads, railways, buildings, airports, urban land use: man-made hints. */
   private roadLayers: string[] = []
@@ -183,20 +185,15 @@ export class GameMap {
 
   applyTheme(t: Theme): void {
     this.theme = t
-    for (const l of this.styleLayers) for (const s of styleLayerPaint(l, t)) this.setPaintIfPresent(...s)
+    for (const l of this.styleLayers) for (const s of styleLayerPaint(l, t)) this.setPaintIfPresent(s)
     this.styleBorders()
     this.applyPaintRamp(t)
-    for (const s of overlayPaint(t)) this.setPaintIfPresent(...s)
+    for (const s of overlayPaint(t)) this.setPaintIfPresent(s)
     document.documentElement.style.setProperty("--ring-brush", t.brush)
   }
 
-  private setPaintIfPresent(id: string, prop: string, value: unknown): void {
-    if (this.map.getLayer(id)) this.paintProperty(id, prop, value)
-  }
-
-  /** MapLibre types each paint property separately; ours come from tables and expressions. */
-  private paintProperty(id: string, prop: string, value: unknown): void {
-    this.map.setPaintProperty(id, prop as never, value as never)
+  private setPaintIfPresent(setting: PaintSetting): void {
+    if (this.map.getLayer(setting.layer)) applyPaint(this.map, setting)
   }
 
   /** Switch between the flat map and the globe, keeping a whole-world view whole. */
@@ -352,10 +349,10 @@ export class GameMap {
       if (!this.map.getLayer(id)) continue
       const own = this.borderPaint.get(id)
       const bold = this.revealBorders && own !== undefined
-      this.paintProperty(id, "line-color", bold ? this.theme.revealBorder : this.theme.border)
+      setPaint(this.map, id, "line-color", bold ? this.theme.revealBorder : this.theme.border)
       if (!own) continue
-      this.paintProperty(id, "line-width", bold ? REVEAL_BORDER_WIDTH : own.width)
-      this.paintProperty(id, "line-opacity", bold ? REVEAL_BORDER_OPACITY : own.opacity)
+      setPaint(this.map, id, "line-width", bold ? REVEAL_BORDER_WIDTH : own.width)
+      setPaint(this.map, id, "line-opacity", bold ? REVEAL_BORDER_OPACITY : own.opacity)
     }
   }
 
@@ -396,22 +393,22 @@ export class GameMap {
       if (this.theme) this.applyPaintRamp(this.theme)
       return
     }
-    this.paintProperty(PAINT_FILL, "fill-color", colour)
-    this.paintProperty(PAINT_FILL, "fill-opacity", PLAYER_OPACITY)
+    setPaint(this.map, PAINT_FILL, "fill-color", colour)
+    setPaint(this.map, PAINT_FILL, "fill-opacity", PLAYER_OPACITY)
   }
 
   /** Colour each feature by its own `colour` property, for several players at once. */
   setPaintColourPerFeature(): void {
     if (!this.map.getLayer(PAINT_FILL)) return
-    this.paintProperty(PAINT_FILL, "fill-color", ["coalesce", ["get", "colour"], "#888888"])
-    this.paintProperty(PAINT_FILL, "fill-opacity", PLAYER_OPACITY)
+    setPaint(this.map, PAINT_FILL, "fill-color", ["coalesce", ["get", "colour"], "#888888"])
+    setPaint(this.map, PAINT_FILL, "fill-opacity", PLAYER_OPACITY)
   }
 
   private applyPaintRamp(t: Theme): void {
     if (!this.map.getLayer(PAINT_FILL)) return
     const ramp = paintRamp(t)
-    this.paintProperty(PAINT_FILL, "fill-color", ramp.color)
-    this.paintProperty(PAINT_FILL, "fill-opacity", ramp.opacity)
+    setPaint(this.map, PAINT_FILL, "fill-color", ramp.color)
+    setPaint(this.map, PAINT_FILL, "fill-opacity", ramp.opacity)
   }
 
   /** Marker at the answer: one clear dot. */
