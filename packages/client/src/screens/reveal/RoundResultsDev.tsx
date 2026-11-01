@@ -1,3 +1,4 @@
+import type { PlayerId } from "@whereabouts/shared/ids"
 import { AnswerType } from "@whereabouts/shared/questions"
 import { RoundGuessType, type RevealView } from "@whereabouts/shared/protocol"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
@@ -13,7 +14,7 @@ export function RoundResultsDev({
   byId
 }: {
   results: RevealView["results"]
-  byId: Map<string, PlayingPlayerView>
+  byId: ReadonlyMap<PlayerId, PlayingPlayerView>
 }) {
   return (
     <Card title="Round results">

@@ -1,3 +1,4 @@
+import type { FlagCode } from "@whereabouts/shared/ids"
 import { useState } from "preact/hooks"
 import { flagRatio } from "../../../../flags/flags"
 import { cx } from "../../../cx"
@@ -8,7 +9,7 @@ import { flagImageTestIds } from "./FlagImageTestIds"
 import s from "./FlagImage.module.css"
 
 /** A flag round's flag; click it to enlarge. No alt text naming it: that would give the answer away. */
-export function FlagImage({ code, painting }: { code: string; painting: boolean }) {
+export function FlagImage({ code, painting }: { code: FlagCode; painting: boolean }) {
   const src = useFlagUrl(code)
   const [large, setLarge] = useState(false)
   useEscape(large, () => setLarge(false))

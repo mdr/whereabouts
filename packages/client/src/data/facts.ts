@@ -27,7 +27,7 @@ export function loadFacts(): Promise<RawFacts> {
   return loading
 }
 
-const checked = new Map<string, PlaceFacts | undefined>()
+const checked = new Map<PlaceId, PlaceFacts | undefined>()
 
 /**
  * The facts for `place`, checked on first use. Only these few are parsed:

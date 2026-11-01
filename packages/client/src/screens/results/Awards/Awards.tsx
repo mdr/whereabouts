@@ -1,10 +1,11 @@
+import type { PlayerId } from "@whereabouts/shared/ids"
 import type { Award } from "@whereabouts/shared/awards/awards"
 import { colourCss } from "@whereabouts/shared/colours"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { awardsTestIds } from "./AwardsTestIds"
 import s from "./Awards.module.css"
 
-export function Awards({ awards, byId }: { awards: Award[]; byId: Map<string, PlayingPlayerView> }) {
+export function Awards({ awards, byId }: { awards: Award[]; byId: ReadonlyMap<PlayerId, PlayingPlayerView> }) {
   return (
     <section class={s.awards} aria-label="Awards">
       <h2>Awards</h2>

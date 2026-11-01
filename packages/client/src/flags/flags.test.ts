@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { CATALOGUE, isFlagQuestion } from "@whereabouts/shared/catalogue/catalogue"
 import atlas from "./flag-atlas.json"
+import { flagCode } from "@whereabouts/shared/ids"
 import { atlasCell } from "./flag-atlas"
 import { flagFile, flagRatio } from "./flags"
 
@@ -28,10 +29,10 @@ describe("flag pictures", () => {
       expect(flagRatio(code), code).toBeGreaterThanOrEqual(0.8)
       expect(flagRatio(code), code).toBeLessThanOrEqual(2.6)
     }
-    expect(flagRatio("np")).toBeLessThan(1)
-    expect(flagRatio("ch")).toBe(1)
-    expect(flagRatio("qa")).toBeCloseTo(28 / 11, 3)
-    expect(flagRatio("fr")).toBe(1.5)
+    expect(flagRatio(flagCode("np"))).toBeLessThan(1)
+    expect(flagRatio(flagCode("ch"))).toBe(1)
+    expect(flagRatio(flagCode("qa"))).toBeCloseTo(28 / 11, 3)
+    expect(flagRatio(flagCode("fr"))).toBe(1.5)
   })
 
   it("are all in the atlas, each in its own shape and inside its cell", () => {

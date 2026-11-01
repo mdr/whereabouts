@@ -23,7 +23,7 @@ export function RevealScores({
   onKick
 }: {
   model: RevealModel
-  where: Map<string, PaintedCountry | undefined>
+  where: ReadonlyMap<PlayerId, PaintedCountry | undefined>
   answerFlag: string | undefined
   onSelect: (pick: RevealShown) => void
   /** A row under the mouse, or undefined when it moves off. */

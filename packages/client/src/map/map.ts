@@ -88,7 +88,7 @@ export class GameMap {
   private labelLayers: string[] = []
   private borderLayers: LayerId<"line">[] = []
   /** The style's own width and opacity for the national borders, restored after the reveal. */
-  private borderPaint = new Map<string, BorderPaint>()
+  private borderPaint = new Map<LayerId<"line">, BorderPaint>()
   private revealBorders = false
   /** Roads, railways, buildings, airports, urban land use: man-made hints. */
   private roadLayers: string[] = []

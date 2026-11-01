@@ -77,7 +77,7 @@ export function Reveal({
   const answerFlag = clueFlag(reveal.question.clue)
   const borders = useBorders(reveal.question.type === QuestionType.FLAG)
   const where = useMemo(() => {
-    const m = new Map<string, PaintedCountry | undefined>()
+    const m = new Map<PlayerId, PaintedCountry | undefined>()
     if (borders)
       for (const r of reveal.results)
         if (r.guess.type === RoundGuessType.PAINTED)

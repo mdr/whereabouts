@@ -19,9 +19,9 @@ interface Context {
   players: PlayerFacts[]
   rounds: PaintedRound[]
   /** Each player's rank after each round. */
-  ranks: Map<string, number>[]
+  ranks: Map<PlayerId, number>[]
   /** The ranks after the last round. */
-  final: Map<string, number> | undefined
+  final: Map<PlayerId, number> | undefined
 }
 
 type Rule = (ctx: Context) => Candidate | undefined
@@ -242,7 +242,7 @@ const comebackKid: Rule = ({ players, ranks, final }) => {
 }
 
 /** The last round before the final one in which the player was alone in front. */
-function lastSoleLead(id: PlayerId, ranks: Map<string, number>[]): number | undefined {
+function lastSoleLead(id: PlayerId, ranks: Map<PlayerId, number>[]): number | undefined {
   const before = ranks.slice(0, -1)
   for (let r = before.length - 1; r >= 0; r--) if (before[r]!.get(id) === 1 && soleLeader(before[r]!)) return r
   return undefined
@@ -401,19 +401,19 @@ export function candidateAwards(players: PlayerFacts[]): Candidate[] {
   return RULES.flatMap((rule) => rule(ctx) ?? [])
 }
 
-function rankHistory(players: PlayerFacts[], rounds: number): Map<string, number>[] {
+function rankHistory(players: PlayerFacts[], rounds: number): Map<PlayerId, number>[] {
   const running = new Map(players.map((p) => [p.playerId, 0]))
-  const out: Map<string, number>[] = []
+  const out: Map<PlayerId, number>[] = []
   for (let r = 0; r < rounds; r++) {
     for (const p of players) running.set(p.playerId, running.get(p.playerId)! + (p.rounds[r]?.score ?? 0))
-    const ranks = new Map<string, number>()
+    const ranks = new Map<PlayerId, number>()
     for (const [id, s] of running) ranks.set(id, 1 + [...running.values()].filter((x) => x > s).length)
     out.push(ranks)
   }
   return out
 }
 
-const soleLeader = (ranks: Map<string, number>) => [...ranks.values()].filter((r) => r === 1).length === 1
+const soleLeader = (ranks: Map<PlayerId, number>) => [...ranks.values()].filter((r) => r === 1).length === 1
 
 function median(xs: number[]): number {
   const s = [...xs].sort((a, b) => a - b)

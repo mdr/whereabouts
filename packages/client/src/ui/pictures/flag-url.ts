@@ -1,8 +1,9 @@
 import { useEffect, useState } from "preact/hooks"
+import type { FlagCode } from "@whereabouts/shared/ids"
 import { flagRatio, flagUrl } from "../../flags/flags"
 
 /** The picture of a flag, once its chunk has loaded. */
-export function useFlagUrl(code: string): string | undefined {
+export function useFlagUrl(code: FlagCode): string | undefined {
   const [src, setSrc] = useState<string | undefined>(undefined)
   useEffect(() => {
     let live = true
@@ -16,6 +17,6 @@ export function useFlagUrl(code: string): string | undefined {
 }
 
 /** The flag's shape, for its frame to take before the picture loads. */
-export function flagShape(code: string): Record<string, string> {
+export function flagShape(code: FlagCode): Record<string, string> {
   return { "--flag-ratio": String(flagRatio(code)) }
 }

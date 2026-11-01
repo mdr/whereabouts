@@ -17,10 +17,13 @@ import { useBorders } from "../data/borders"
 import { useOutlines } from "../data/outlines"
 import type { Km } from "@whereabouts/shared/units"
 
+/** A country's flag code and the finest resolution it was filled for. */
+type FillKey = `${FlagCode}:${H3Res}`
+
 export class CountryFiller {
   private readonly shapes = new Map<FlagCode, FillShape>()
   private readonly cursors = new Map<FlagCode, GeoJSON.MultiPolygon>()
-  private readonly fills = new Map<string, H3Cell[]>()
+  private readonly fills = new Map<FillKey, H3Cell[]>()
 
   private readonly borders: Borders
   private readonly outlines: Outlines
@@ -57,7 +60,7 @@ export class CountryFiller {
 
   /** The cells filling the country on a layer of this finest resolution, compacted. */
   cells(f: FlagQuestion, finestRes: H3Res): H3Cell[] {
-    const key = `${f.clue.flag}:${finestRes}`
+    const key: FillKey = `${f.clue.flag}:${finestRes}`
     let cells = this.fills.get(key)
     if (!cells) {
       cells = countryFill(this.shape(f), finestRes)

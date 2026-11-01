@@ -1,3 +1,4 @@
+import type { FlagCode } from "@whereabouts/shared/ids"
 import { useState } from "preact/hooks"
 import { flagFile, flagRatio } from "../../../flags/flags"
 import { cx } from "../../cx"
@@ -11,7 +12,7 @@ import s from "./SmallFlagButton.module.css"
  * A flag the size of a list row; click it to enlarge. Shown once the round
  * is over, so its Commons credit (which names the country) can show too.
  */
-export function SmallFlagButton({ code }: { code: string }) {
+export function SmallFlagButton({ code }: { code: FlagCode }) {
   const src = useFlagUrl(code)
   const file = flagFile(code)
   const [large, setLarge] = useState(false)

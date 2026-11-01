@@ -1,3 +1,4 @@
+import type { PlayerId } from "@whereabouts/shared/ids"
 import type { FinalStanding } from "@whereabouts/shared/protocol"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
@@ -16,7 +17,7 @@ export function Standings({
   you
 }: {
   standings: FinalStanding[]
-  byId: Map<string, PlayingPlayerView>
+  byId: ReadonlyMap<PlayerId, PlayingPlayerView>
   you: string
 }) {
   return (

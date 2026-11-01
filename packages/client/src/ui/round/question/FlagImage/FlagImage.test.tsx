@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
+import { flagCode } from "@whereabouts/shared/ids"
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/preact"
 import { FlagImage } from "./FlagImage"
 import lb from "../../../pictures/Lightbox/Lightbox.module.css"
@@ -17,9 +18,9 @@ describe("flag frames", () => {
   const enlargedRatio = (el: unknown) => Number((el as HTMLElement).style.getPropertyValue("--ratio"))
   // Nepal's is taller than wide, Switzerland's square, Qatar's the widest.
   const shapes = [
-    ["np", 0.8203],
-    ["ch", 1],
-    ["qa", 2.5455]
+    [flagCode("np"), 0.8203],
+    [flagCode("ch"), 1],
+    [flagCode("qa"), 2.5455]
   ] as const
 
   it("take each flag's own shape before its picture loads, here and enlarged", async () => {

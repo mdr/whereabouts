@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
+import { flagCode } from "@whereabouts/shared/ids"
 import { cleanup, render } from "@testing-library/preact"
 import { SmallFlag } from "./SmallFlag"
 import s from "./SmallFlag.module.css"
@@ -13,9 +14,9 @@ vi.mock("../../../flags/flags", async (original) => ({
 describe("SmallFlag", () => {
   // Nepal's is taller than wide, Switzerland's square, Qatar's the widest.
   const shapes = [
-    ["np", 0.8203],
-    ["ch", 1],
-    ["qa", 2.5455]
+    [flagCode("np"), 0.8203],
+    [flagCode("ch"), 1],
+    [flagCode("qa"), 2.5455]
   ] as const
 
   it("takes each flag's own shape beside a name", () => {
