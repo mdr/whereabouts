@@ -21,7 +21,6 @@ import {
   cellToParent,
   edgeLength,
   getResolution,
-  cellsToMultiPolygon,
   gridDisk,
   gridDiskDistances,
   gridDistance,
@@ -32,7 +31,8 @@ import {
   type H3Cell,
   type H3Res
 } from "../h3.ts"
-import { chordDistanceSq, toDegrees, toRadians, toXyz, type LatLon, type Ring } from "../geo.ts"
+import { chordDistanceSq, toXyz, type LatLon, type Ring } from "../geo.ts"
+import { unwrapAntimeridian } from "./cell-outline.ts"
 import type { Degrees, Km, SquareKm } from "../units.ts"
 
 /** Cells across the brush radius a stamp aims for; sets the stamp resolution. */
@@ -60,13 +60,6 @@ export interface PaintCell {
   area: SquareKm
   /** H3 index, so scoring can refine a coarse cell where precision matters. */
   h3: H3Cell
-}
-
-export interface Blob {
-  /** Fraction of painted mass (excludes the floor). */
-  fraction: number
-  cells: number
-  centroid: LatLon
 }
 
 export interface StampResult {
@@ -358,153 +351,9 @@ export class PaintLayer {
   private boundary(cell: H3Cell): Ring {
     let boundary = this.boundaryCache.get(cell)
     if (boundary === undefined) {
-      boundary = cellBoundaryLonLat(cell)
-      // Cells straddling the antimeridian come back with longitudes on both
-      // sides; unwrap so the polygon does not span the whole world.
-      let minLon = Infinity
-      let maxLon = -Infinity
-      for (const [lon] of boundary) {
-        if (lon < minLon) minLon = lon
-        if (lon > maxLon) maxLon = lon
-      }
-      if (maxLon - minLon > 180) {
-        boundary = boundary.map(([lon, lat]) => [lon < 0 ? lon + 360 : lon, lat])
-      }
+      boundary = unwrapAntimeridian([cellBoundaryLonLat(cell)])[0]!
       this.boundaryCache.set(cell, boundary)
     }
     return boundary
   }
-
-  /**
-   * Connected components of painted cells, largest mass first. Adjacency is
-   * judged at the coarsest resolution present (every cell is mapped to its
-   * ancestor there), which is exact when one resolution is in use and a fair
-   * approximation otherwise. Diagnostic only.
-   */
-  blobs(): Blob[] {
-    if (this.cells.size === 0) return []
-    const groups = this.groupByCoarsestAncestor()
-    let totalMass = 0
-    for (const [cell, intensity] of this.cells) totalMass += intensity * this.area(cell)
-
-    return connectedKeyGroups(groups)
-      .map((keys) =>
-        this.summariseBlob(
-          keys.flatMap((key) => groups.get(key)!),
-          totalMass
-        )
-      )
-      .sort((a, b) => b.fraction - a.fraction)
-  }
-
-  /** Cells grouped under their ancestor at the coarsest resolution present. */
-  private groupByCoarsestAncestor(): Map<H3Cell, H3Cell[]> {
-    let min = Infinity
-    for (const cell of this.cells.keys()) min = Math.min(min, getResolution(cell))
-    const coarsest = h3Res(min)
-
-    const groups = new Map<H3Cell, H3Cell[]>()
-    for (const cell of this.cells.keys()) {
-      const key = getResolution(cell) === coarsest ? cell : cellToParent(cell, coarsest)
-      const list = groups.get(key)
-      if (list) list.push(cell)
-      else groups.set(key, [cell])
-    }
-    return groups
-  }
-
-  private summariseBlob(cells: H3Cell[], totalMass: number): Blob {
-    let mass = 0
-    let sx = 0,
-      sy = 0,
-      sz = 0
-    for (const cell of cells) {
-      const weight = this.cells.get(cell)! * this.area(cell)
-      mass += weight
-      const { lat, lon } = this.centre(cell)
-      const latRadians = toRadians(lat),
-        lonRadians = toRadians(lon)
-      sx += weight * Math.cos(latRadians) * Math.cos(lonRadians)
-      sy += weight * Math.cos(latRadians) * Math.sin(lonRadians)
-      sz += weight * Math.sin(latRadians)
-    }
-    const centroid = {
-      lat: toDegrees(Math.atan2(sz, Math.hypot(sx, sy))),
-      lon: toDegrees(Math.atan2(sy, sx))
-    }
-    return { fraction: mass / totalMass, cells: cells.length, centroid }
-  }
-}
-
-/** Keys of `groups` split into runs of H3-adjacent cells, each in traversal order. */
-function connectedKeyGroups(groups: ReadonlyMap<H3Cell, unknown>): H3Cell[][] {
-  const out: H3Cell[][] = []
-  const seen = new Set<H3Cell>()
-  for (const start of groups.keys()) {
-    if (seen.has(start)) continue
-    seen.add(start)
-    const stack = [start]
-    const keys: H3Cell[] = []
-    while (stack.length) {
-      const key = stack.pop()!
-      keys.push(key)
-      for (const neighbour of gridDisk(key, 1)) {
-        if (!seen.has(neighbour) && groups.has(neighbour)) {
-          seen.add(neighbour)
-          stack.push(neighbour)
-        }
-      }
-    }
-    out.push(keys)
-  }
-  return out
-}
-
-/** Cells a paint upload may carry: clients compact to it, and the server refuses more. */
-export const PAINT_CELL_BUDGET = 6000
-
-/**
- * Coarsen a sparse paint record until it fits the cell budget, merging
- * children into their H3 parent while conserving mass (intensity x area).
- * Scoring treats cells as patches, so a coarser representation of the same
- * mass scores almost identically. Cells end up at mixed resolutions, all at
- * or coarser than the original.
- */
-export function compactRecord(cells: Record<H3Cell, number>, budget = PAINT_CELL_BUDGET): Record<H3Cell, number> {
-  let current = cells
-  let count = Object.keys(current).length
-  while (count > budget) {
-    // Coarsen only the finest resolution present, one level at a time.
-    let finest = -1
-    for (const [cell] of cellEntries(current)) finest = Math.max(finest, getResolution(cell))
-    if (finest <= 0) break
-    const next: Record<H3Cell, number> = {}
-    const mass = new Map<H3Cell, number>()
-    for (const [cell, intensity] of cellEntries(current)) {
-      if (getResolution(cell) !== finest) {
-        next[cell] = (next[cell] ?? 0) + intensity
-        continue
-      }
-      const parent = cellToParent(cell, h3Res(finest - 1))
-      mass.set(parent, (mass.get(parent) ?? 0) + intensity * cellArea(cell))
-    }
-    for (const [parent, parentMass] of mass) {
-      next[parent] = (next[parent] ?? 0) + parentMass / cellArea(parent)
-    }
-    current = next
-    count = Object.keys(current).length
-  }
-  return current
-}
-
-/** Outline of a set of cells as one GeoJSON MultiPolygon, e.g. a brush footprint. */
-export function cellsOutline(cells: H3Cell[]): GeoJSON.MultiPolygon {
-  // As in PaintLayer.boundary: a polygon straddling the antimeridian comes
-  // back with longitudes on both sides; unwrap it so it does not span the world.
-  const coordinates = cellsToMultiPolygon(cells, true).map((polygon) => {
-    const lons = polygon.flat().map(([lon]) => lon)
-    if (Math.max(...lons) - Math.min(...lons) <= 180) return polygon
-    return polygon.map((ring) => ring.map(([lon, lat]) => [lon < 0 ? lon + 360 : lon, lat]))
-  })
-  return { type: "MultiPolygon", coordinates }
 }

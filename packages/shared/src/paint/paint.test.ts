@@ -1,17 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
-import {
-  cellArea,
-  cellEntries,
-  cellToLatLng,
-  cellToParent,
-  edgeLength,
-  getResolution,
-  gridDisk,
-  h3Res,
-  latLngToCell
-} from "../h3.ts"
+import { cellToLatLng, edgeLength, h3Res, latLngToCell } from "../h3.ts"
 import { greatCircleDistance } from "../geo.ts"
-import { PaintLayer, cellSpacing, cellsOutline, compactRecord, resolutionForTolerance } from "./paint.ts"
+import { PaintLayer, cellSpacing, resolutionForTolerance } from "./paint.ts"
 
 describe("resolutionForTolerance", () => {
   it("picks cells with edge at most a quarter of the tolerance", () => {
@@ -105,100 +95,9 @@ describe("PaintLayer", () => {
     // H3 children areas sum to the parent's to within geodesic rounding.
     expect(Math.abs(layer.mass() - before) / before).toBeLessThan(1e-6)
   })
-
-  it("reports no blobs for an empty layer", () => {
-    expect(new PaintLayer(resolutionForTolerance(100)).blobs()).toEqual([])
-  })
-
-  it("reports blobs with fractions summing to one", () => {
-    const layer = new PaintLayer(resolutionForTolerance(100))
-    layer.stamp({ lat: 27, lon: 78 }, 60, 1)
-    layer.stamp({ lat: 51.5, lon: -0.1 }, 60, 0.5)
-    const blobs = layer.blobs()
-    expect(blobs.length).toBe(2)
-    expect(blobs[0]!.fraction + blobs[1]!.fraction).toBeCloseTo(1, 9)
-    expect(blobs[0]!.fraction).toBeGreaterThan(blobs[1]!.fraction)
-    expect(blobs[0]!.centroid.lat).toBeCloseTo(27, 0)
-  })
-})
-
-describe("compactRecord", () => {
-  function totalMass(record: Record<string, number>): number {
-    return [...PaintLayer.fromRecord(h3Res(15), record).toCells()].reduce(
-      (sum, cell) => sum + cell.intensity * cell.area,
-      0
-    )
-  }
-
-  it("leaves small records alone", () => {
-    const layer = new PaintLayer(h3Res(4))
-    layer.stamp({ lat: 20, lon: 10 }, 300, 1)
-    const record = layer.toRecord()
-    expect(compactRecord(record, 6000)).toBe(record)
-  })
-
-  /** A disc of fine cells at one resolution, as a zoomed-in player would paint. */
-  function fineDisc(resolution: number, rings: number): Record<string, number> {
-    const record: Record<string, number> = {}
-    for (const cell of gridDisk(latLngToCell(51.5, -0.1, h3Res(resolution)), rings)) record[cell] = 1
-    return record
-  }
-
-  it("coarsens to fit the budget while conserving mass and staying at or coarser than the origin", () => {
-    const record = fineDisc(7, 15) // fine cells, as a 3 km tolerance would use
-    const before = Object.keys(record).length
-    expect(before).toBeGreaterThan(500)
-    const small = compactRecord(record, 500)
-    const after = Object.keys(small).length
-    expect(after).toBeLessThanOrEqual(500)
-    expect(after).toBeGreaterThan(0)
-    const rebuilt = PaintLayer.fromRecord(h3Res(7), small)
-    expect(rebuilt.cells.size).toBe(after)
-    expect(totalMass(small)).toBeCloseTo(totalMass(record), 6)
-    for (const cell of Object.keys(small)) expect(cell.length).toBe(15)
-  })
-
-  it("with mixed resolutions, coarsens only the finest, keeps coarser cells and adds into a parent already there", () => {
-    const fine = fineDisc(7, 15)
-    const london = latLngToCell(51.5, -0.1, h3Res(7))
-    const parent = cellToParent(london, h3Res(6))
-    const paris = latLngToCell(48.86, 2.35, h3Res(5))
-    const record = { ...fine, [parent]: 0.5, [paris]: 2 }
-    const small = compactRecord(record, 500)
-    expect(Object.keys(small).length).toBeLessThanOrEqual(500)
-    expect(totalMass(small)).toBeCloseTo(totalMass(record), 6)
-    expect(small[paris]).toBe(2)
-    expect(cellEntries(small).every(([cell]) => getResolution(cell) <= 6)).toBe(true)
-    // Its seven children, painted 1, merge into the 0.5 already on it.
-    const children = cellEntries(fine).filter(([cell]) => cellToParent(cell, h3Res(6)) === parent)
-    expect(children).toHaveLength(7)
-    const childMass = children.reduce((sum, [cell]) => sum + cellArea(cell), 0)
-    expect(small[parent]).toBeCloseTo(0.5 + childMass / cellArea(parent), 9)
-  })
-
-  it("scores almost identically before and after compaction", async () => {
-    const { buildDistribution, scoreDistribution } = await import("../scoring/scoring.ts")
-    const layer = PaintLayer.fromRecord(h3Res(7), fineDisc(7, 15))
-    const answer = { lat: 51.6, lon: 0.2 }
-    const full = scoreDistribution(buildDistribution(layer.toCells(), 0.05), answer, 3)
-    const compact = PaintLayer.fromRecord(h3Res(7), compactRecord(layer.toRecord(), 500))
-    const small = scoreDistribution(buildDistribution(compact.toCells(), 0.05), answer, 3)
-    expect(Math.abs(full.score - small.score)).toBeLessThan(15)
-  })
 })
 
 describe("mixed resolutions", () => {
-  it("blobs still sum to one when fine and coarse cells overlap", () => {
-    const layer = new PaintLayer(h3Res(8))
-    layer.stamp({ lat: 27, lon: 78 }, 800, 1) // coarse
-    layer.stamp({ lat: 27, lon: 78 }, 3, 1) // fine, on top
-    layer.stamp({ lat: -30, lon: 140 }, 3, 1) // fine, elsewhere
-    const blobs = layer.blobs()
-    expect(blobs.reduce((sum, blob) => sum + blob.fraction, 0)).toBeCloseTo(1, 9)
-    expect(blobs.length).toBe(2)
-    expect(layer.resolutionCounts().length).toBe(2)
-  })
-
   it("draws coarse cells before fine ones", () => {
     const layer = new PaintLayer(h3Res(8))
     layer.stamp({ lat: 27, lon: 78 }, 3, 1)
@@ -215,20 +114,5 @@ describe("mixed resolutions", () => {
       if (decreased) expect(sizes[i]!).toBeLessThan(sizes[0]! * 0.5)
     }
     expect(decreased).toBe(true)
-  })
-})
-
-describe("cellsOutline", () => {
-  it("keeps a footprint on the antimeridian compact instead of spanning the world", () => {
-    const layer = new PaintLayer(h3Res(4))
-    for (const radius of [50, 400, 1500]) {
-      for (const lon of [179.9, -179.9, 180]) {
-        const outline = cellsOutline(layer.stampCells({ lat: -30, lon }, radius))
-        for (const ring of outline.coordinates.flat()) {
-          const lons = ring.map(([x]) => x ?? 0)
-          expect(Math.max(...lons) - Math.min(...lons)).toBeLessThan(180)
-        }
-      }
-    }
   })
 })

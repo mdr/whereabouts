@@ -6,7 +6,7 @@
  * before any of it is read.
  */
 import { cellEntries, cellFromSplitLong, cellToSplitLong, type H3Cell } from "../h3.ts"
-import { PAINT_CELL_BUDGET } from "./paint.ts"
+import { PAINT_CELL_BUDGET } from "./compact.ts"
 import type { PaintSubmission } from "../protocol/views.ts"
 
 const HEADER_BYTES = 8

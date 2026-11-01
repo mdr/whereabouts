@@ -5,6 +5,7 @@
  */
 import { batch, computed, signal, type ReadonlySignal } from "@preact/signals"
 import { FILL_DENSITY } from "@whereabouts/shared/paint/fill"
+import { paintBlobs } from "@whereabouts/shared/paint/blobs"
 import { PaintLayer, resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { paintAmount, trimLand, trimSea, type LandMask, type WaterMask } from "@whereabouts/shared/paint/land"
 import { trimToHint, type HintBand } from "@whereabouts/shared/hints"
@@ -63,7 +64,7 @@ export class PaintModel {
   /** The painted cells as of `settledVersion`, for live scoring. */
   readonly settledCells = following(this.settledVersion, () => [...this.layer.toCells()])
   /** Connected blobs as of `settledVersion`, largest first; none when nothing is painted. */
-  readonly settledBlobs = following(this.settledVersion, () => this.layer.blobs())
+  readonly settledBlobs = following(this.settledVersion, () => paintBlobs(this.layer))
   /** The tool of the stroke being held, or undefined; drives the spray and eraser sounds. */
   readonly stroking = signal<StrokeTool | undefined>(undefined)
   /** The current question's tolerance (used by dev tooling). */

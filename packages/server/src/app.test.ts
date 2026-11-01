@@ -7,7 +7,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
 import type { WSClient as WSClientType } from "@rivalis/browser"
 import { viewIn } from "@whereabouts/shared/game/view-in"
-import { PAINT_CELL_BUDGET, PaintLayer, compactRecord, resolutionForTolerance } from "@whereabouts/shared/paint/paint"
+import { PAINT_CELL_BUDGET, compactRecord } from "@whereabouts/shared/paint/compact"
+import { PaintLayer, resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import {
   PROTOCOL_VERSION,
   encodeTicket,

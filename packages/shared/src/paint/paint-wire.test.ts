@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { cellEntries, gridDisk, h3Res, latLngToCell, type H3Cell } from "../h3.ts"
-import { PAINT_CELL_BUDGET } from "./paint.ts"
+import { PAINT_CELL_BUDGET } from "./compact.ts"
 import { decodePaint, encodePaint, paintFromBase64, paintToBase64 } from "./paint-wire.ts"
 import type { PaintSubmission } from "../protocol/views.ts"
 

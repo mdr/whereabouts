@@ -7,6 +7,7 @@
 //   pbpaste | node --experimental-transform-types scripts/score-case.mjs
 import { readFileSync } from "node:fs"
 import { greatCircleDistance } from "../src/geo.ts"
+import { paintBlobs } from "../src/paint/blobs.ts"
 import { PaintLayer } from "../src/paint/paint.ts"
 import { KERNELS, buildDistribution, scoreDistribution } from "../src/scoring/scoring.ts"
 import { regionFit, scoreArea } from "../src/scoring/regions.ts"
@@ -52,7 +53,7 @@ if (caseQuestion.type === CaseQuestionType.REGION) {
 }
 
 console.log("blobs, largest first:")
-for (const blob of layer.blobs()) {
+for (const blob of paintBlobs(layer)) {
   const distance = greatCircleDistance(blob.centroid, caseQuestion.answer)
   console.log(
     `  ${fixed(blob.fraction * 100).padStart(5)}% of paint, ${String(blob.cells).padStart(5)} cells, centred ${fixed(blob.centroid.lat, 3)}, ${fixed(blob.centroid.lon, 3)}: ${fixed(distance)} km (${fixed(distance / caseQuestion.tolerance, 2)} tolerances) from the answer`

@@ -15,7 +15,7 @@ import "maplibre-gl/dist/maplibre-gl.css"
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url"
 export { mapWorkerUrl }
 import { cellBoundaryLatLng, type H3Cell } from "@whereabouts/shared/h3"
-import { cellsOutline } from "@whereabouts/shared/paint/paint"
+import { cellsOutline } from "@whereabouts/shared/paint/cell-outline"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon, LonLat } from "@whereabouts/shared/geo"
 import type { Outline } from "@whereabouts/shared/questions"
