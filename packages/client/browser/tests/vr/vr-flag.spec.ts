@@ -3,7 +3,7 @@
 import { test } from "@playwright/test"
 import { Quaternion, Vector3 } from "three"
 import { Tool } from "../../../src/paint/tool.ts"
-import { flagRevealTestIds } from "../../../src/ui/round/FlagRevealTestIds.ts"
+import { allFlagsTestIds } from "../../../src/ui/round/flag-reveal/AllFlagsTestIds.ts"
 import { flagImageTestIds } from "../../../src/ui/round/question/FlagImageTestIds.ts"
 import { Hand } from "../../../src/vr/hands/hand.ts"
 import { PictureBack } from "../../../src/vr/picture/picture-back.ts"
@@ -144,7 +144,7 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
     ),
     "rays from the hands show what they point at"
   )
-  const pagePins = await tab.page.getByTestId(flagRevealTestIds.pin).count()
+  const pagePins = await tab.page.getByTestId(allFlagsTestIds.pin).count()
   check(pagePins > 190, `and on the page's map (${pagePins})`)
   await round.pause(1500)
   await round.screenshot(shot(`vr-11-all-flags.png`))

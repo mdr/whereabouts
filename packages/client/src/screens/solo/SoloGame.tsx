@@ -27,7 +27,10 @@ import { useBorders } from "../../data/borders"
 import { useFact } from "../../data/facts"
 import { preloadPictures } from "../../data/preload"
 import { HintCard } from "../../ui/round/Hint"
-import { AllFlags, AllFlagsSwitch, FlagHover, mainCountry } from "../../ui/round/FlagReveal"
+import { AllFlags } from "../../ui/round/flag-reveal/AllFlags"
+import { AllFlagsSwitch } from "../../ui/round/flag-reveal/AllFlagsSwitch"
+import { FlagHover } from "../../ui/round/flag-reveal/FlagHover"
+import { mainCountry } from "../../ui/round/flag-reveal/main-country"
 import { announcePass, frameReveal, showAnswer, useRoundMap } from "../../round/round"
 import {
   PracticePhase,

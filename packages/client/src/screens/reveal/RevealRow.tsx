@@ -7,7 +7,7 @@ import { Icon } from "../../ui/icons"
 import { HostTag } from "../../ui/players/HostTag"
 import { RankArrow } from "../../ui/players/RankArrow"
 import { Swatch, SwatchType } from "../../ui/players/Swatch"
-import { PaintedIn } from "../../ui/round/FlagReveal"
+import { PaintedIn } from "../../ui/round/flag-reveal/PaintedIn"
 import { roundScoreText } from "../../round/round-words"
 import { revealRowTestIds } from "./RevealRowTestIds"
 

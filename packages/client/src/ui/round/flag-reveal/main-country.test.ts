@@ -1,18 +1,12 @@
-// @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
-import { render, screen } from "@testing-library/preact"
 import { Borders } from "@whereabouts/shared/borders"
 import { CATALOGUE, isFlagQuestion } from "@whereabouts/shared/catalogue/catalogue"
 import { h3Res } from "@whereabouts/shared/h3"
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import bordersJson from "@whereabouts/shared/borders.json"
-import { mainCountry, PaintedIn } from "./FlagReveal"
-import { flagRevealTestIds } from "./FlagRevealTestIds"
-import s from "./FlagReveal.module.css"
+import { mainCountry } from "./main-country"
 
-const flags = CATALOGUE.filter(isFlagQuestion)
-const borders = new Borders(bordersJson, flags)
-const brazil = flags.find((f) => f.clue.flag === "br")!
+const borders = new Borders(bordersJson, CATALOGUE.filter(isFlagQuestion))
 
 /** A paint of these cells, one intensity each, as a reveal gets it. */
 const paint = (cells: string[]) =>
@@ -30,20 +24,5 @@ describe("mainCountry", () => {
     // Five cells in the mid-Atlantic and one in Brasília: a sixth is under the bar.
     const sea = ["853a6507fffffff", "853a6597fffffff", "853b4b33fffffff", "853b4b87fffffff", "853b4823fffffff"]
     expect(mainCountry(borders, paint([...sea, "85a8c24bfffffff"]))).toBeUndefined()
-  })
-})
-
-describe("PaintedIn", () => {
-  it("shows the flag, the country and the share, marked when it is the answer", () => {
-    const { rerender } = render(<PaintedIn where={{ country: brazil, share: 0.62 }} answer="pe" whose="Ann's" />)
-    const el = screen.getByTestId(flagRevealTestIds.paintedIn)
-    expect(el.textContent).toBe("Brazil62%")
-    expect(el.getAttribute("title")).toBe("62% of Ann's paint was in Brazil")
-    expect(el.classList.contains(s.right!)).toBe(false)
-    rerender(<PaintedIn where={{ country: brazil, share: 0.62 }} answer="br" whose="your" />)
-    expect(screen.getByTestId(flagRevealTestIds.paintedIn).classList.contains(s.right!)).toBe(true)
-    expect(screen.getByTestId(flagRevealTestIds.paintedIn).getAttribute("title")).toBe(
-      "62% of your paint was in Brazil, the answer"
-    )
   })
 })

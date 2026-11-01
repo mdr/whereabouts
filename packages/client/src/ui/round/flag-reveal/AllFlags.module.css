@@ -1,0 +1,14 @@
+/* A flag on a pin, its foot on the point: drawn under the pointer's own flag card. */
+.pin {
+  pointer-events: none;
+  width: 18px;
+  height: 22px;
+  border-left: 1.5px solid var(--panel-fg);
+
+  & i {
+    display: block;
+    width: 16px;
+    height: 12px;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--shade) 60%, transparent);
+  }
+}
