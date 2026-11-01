@@ -1,5 +1,6 @@
 import { Fragment } from "preact"
-import { MAX_SPECTATORS, type GameView, type PlayerView } from "@whereabouts/shared/protocol"
+import { MAX_SPECTATORS, type GameView } from "@whereabouts/shared/protocol"
+import type { PlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../../net/net"
 import { PlayerList } from "../../../../ui/players/PlayerList/PlayerList"
 import { kickRequest, makeHostRequest, type ConfirmRequest } from "../../../../ui/ConfirmDialog/ConfirmDialog"
@@ -19,8 +20,7 @@ export function Roster({
   onRename: () => void
 }) {
   const host = view.you.isHost
-  const players = view.players.filter((p) => !p.watching)
-  const watchers = view.players.filter((p) => p.watching)
+  const { players, spectators: watchers } = view
   const list = (people: PlayerView[]) => (
     <PlayerList
       players={people}

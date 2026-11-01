@@ -4,7 +4,8 @@
  * the session.
  */
 import { signal } from "@preact/signals"
-import type { GameView, PlayerView } from "@whereabouts/shared/protocol"
+import type { GameView } from "@whereabouts/shared/protocol"
+import type { PlayerView } from "@whereabouts/shared/roles"
 import { PlayerList } from "../PlayerList/PlayerList"
 import { Icon } from "../../icons"
 import { playersPanelTestIds } from "./PlayersPanelTestIds"
@@ -25,8 +26,8 @@ export function PlayersPanel({
   onKick?: (player: PlayerView) => void
   onMakeHost?: (player: PlayerView) => void
 }) {
-  const players = view.players.filter((p) => !p.watching)
-  const watching = view.players.length - players.length
+  const { players } = view
+  const watching = view.spectators.length
   const online = players.filter((p) => p.connected).length
   const open = playersPanelOpen.value
   return (

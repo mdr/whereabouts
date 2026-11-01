@@ -49,7 +49,7 @@ import { PLAYER_COLOURS } from "../colours.ts"
 import { GameViewSchema } from "../view-schema.ts"
 import { inHintBand, HintAxis } from "../hints.ts"
 import { CloseReason } from "../close-reason.ts"
-import { Role } from "../roles.ts"
+import { Role, everyone } from "../roles.ts"
 import type { Seat } from "./seats.ts"
 
 const place = (label: string, at: LatLon, tolerance = 100): PlaceQuestion => ({
@@ -483,7 +483,8 @@ describe("player cap", () => {
     for (let i = 1; i <= MAX_SPECTATORS; i++) expect(g.join(tok(`W${i}`), playerName(`W${i}`), T0).ok).toBe(true)
     const w1 = g.view(tokW1, T0)
     expect(w1.you.watching).toBe(true)
-    expect(w1.players.find((p) => p.name === "W1")).toMatchObject({ watching: true, colour: undefined, rank: 0 })
+    expect(w1.spectators.find((p) => p.name === "W1")).toMatchObject({ type: Role.SPECTATOR })
+    expect(w1.spectators.find((p) => p.name === "W1")).not.toHaveProperty("colour")
     expect(g.join(tokLate, playerName("Late"), T0)).toEqual({ ok: false, reason: CloseReason.FULL })
   })
 
@@ -512,14 +513,14 @@ describe("spectators", () => {
     expect(g.join(tokS, playerName("Sam"), T0 + 2, Role.SPECTATOR).ok).toBe(true)
     return g
   }
-  const sam = (g: Game) => g.view(tokA, T0).players.find((p) => p.name === "Sam")!
+  const sam = (g: Game) => everyone(g.view(tokA, T0)).find((p) => p.name === "Sam")!
 
-  it("joins to watch when asked, with no colour, listed after the players", () => {
+  it("joins to watch when asked, listed apart from the players, with no colour, score or rank", () => {
     const g = withSpectator()
     const v = g.view(tokS, T0)
     expect(v.you.watching).toBe(true)
-    expect(v.players.map((p) => p.name)).toEqual(["Alice", "Bob", "Sam"])
-    expect(sam(g)).toMatchObject({ watching: true, colour: undefined })
+    expect(v.players.map((p) => p.name)).toEqual(["Alice", "Bob"])
+    expect(v.spectators).toEqual([{ id: sam(g).id, name: "Sam", type: Role.SPECTATOR, connected: true, isHost: false }])
   })
 
   describe("in a game with players", () => {
@@ -581,9 +582,9 @@ describe("spectators", () => {
   it("switches role in the lobby only, taking or giving up a colour", () => {
     const g = withSpectator()
     expect(g.setRole(tokS, Role.PLAYER)).toEqual({ ok: true, changed: true })
-    expect(sam(g)).toMatchObject({ watching: false, colour: 2 })
+    expect(sam(g)).toMatchObject({ type: Role.PLAYER, colour: 2 })
     expect(g.setRole(tokB, Role.SPECTATOR)).toEqual({ ok: true, changed: true })
-    expect(g.view(tokB, T0).players.find((p) => p.name === "Bob")).toMatchObject({ watching: true, colour: undefined })
+    expect(g.view(tokB, T0).spectators.map((p) => p.name)).toEqual(["Bob"])
     expect(g.setRole(tokB, Role.SPECTATOR)).toEqual({ ok: true, changed: false })
     g.start(tokA, T0)
     expect(g.setRole(tokA, Role.SPECTATOR)).toEqual({
@@ -598,7 +599,7 @@ describe("spectators", () => {
     expect(g.setRole(tokS, Role.PLAYER)).toEqual({ ok: true, changed: true })
     const v = g.view(tokS, T0 + 1)
     expect(v.you).toMatchObject({ watching: false, sittingOut: true })
-    expect(sam(g).colour).toBeGreaterThanOrEqual(0)
+    expect(g.view(tokA, T0 + 1).players.find((p) => p.name === "Sam")!.colour).toBeGreaterThanOrEqual(0)
     expect(g.lock(tokS, T0 + 1)).toEqual({ ok: false, error: "sitting this round out" })
     // Alice and Bob finishing still ends the round without Sam.
     g.lock(tokA, T0 + 2)

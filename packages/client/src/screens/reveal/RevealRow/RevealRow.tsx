@@ -1,6 +1,7 @@
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import type { HintAxis } from "@whereabouts/shared/hints"
-import { RoundGuessType, type PlayerView, type RoundResultView } from "@whereabouts/shared/protocol"
+import { RoundGuessType, type RoundResultView } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
 import pl from "../../../ui/players/Players.module.css"
 import { Icon } from "../../../ui/icons"
@@ -25,7 +26,7 @@ export function RevealRow({
   onHover,
   onKick
 }: {
-  p: PlayerView
+  p: PlayingPlayerView
   r?: RoundResultView
   you: boolean
   ready: boolean

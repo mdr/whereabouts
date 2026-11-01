@@ -7,11 +7,11 @@ import {
   Phase,
   type GameView,
   type InPlayGameView,
-  type PlayerView,
   type RevealView,
   type RoundResultView,
   type YouView
 } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import {
   RevealShownType,
   SHOW_EVERYONE,
@@ -57,7 +57,7 @@ export type ShownRow = { selected: boolean; pick: RevealShown } & (
   | { type: ShownRowType.EVERYONE }
   | {
       type: ShownRowType.PLAYER
-      player: PlayerView
+      player: PlayingPlayerView
       /** Undefined when they sat the round out. */
       result: RoundResultView | undefined
       you: boolean
@@ -80,7 +80,7 @@ export interface RevealModel {
 
 export function revealModel(view: GameView, reveal: RevealView, shown: RevealShown): RevealModel {
   const ready = new Set(reveal.ready)
-  const present = view.players.filter((p) => p.connected && !p.watching)
+  const present = view.players.filter((p) => p.connected)
   const last = isLastReveal(reveal)
   return {
     last,

@@ -1,5 +1,6 @@
 import type { Points } from "@whereabouts/shared/units"
-import type { FinalStanding, PlayedRound, PlayerView } from "@whereabouts/shared/protocol"
+import type { FinalStanding, PlayedRound } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { RoundWhat } from "../RoundWhat/RoundWhat"
@@ -10,7 +11,7 @@ import s from "./RoundList.module.css"
 export interface RoundListProps {
   rounds: PlayedRound[]
   standings: FinalStanding[]
-  byId: Map<string, PlayerView>
+  byId: Map<string, PlayingPlayerView>
   you: string | undefined
   best: Points[]
 }

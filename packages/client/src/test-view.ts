@@ -17,7 +17,6 @@ import {
   type ResultsGameView,
   type RevealGameView,
   type YouView,
-  type PlayerView,
   type QuestionView,
   type RevealView,
   RoundGuessType,
@@ -27,6 +26,7 @@ import {
   MapDetail
 } from "@whereabouts/shared/protocol"
 import { AnswerType, ClueType, QuestionType, Surface, type FlagQuestion } from "@whereabouts/shared/questions"
+import { Role, type PlayingPlayerView, type SpectatorView } from "@whereabouts/shared/roles"
 import { KernelId } from "@whereabouts/shared/scoring/scoring"
 import { h3Cell, h3Res } from "@whereabouts/shared/h3"
 
@@ -43,7 +43,8 @@ function viewBase() {
       hints: 0
     },
     serverTime: 0,
-    players: []
+    players: [],
+    spectators: []
   }
 }
 
@@ -91,12 +92,12 @@ export function makeResultsView({ you, ...over }: ViewOverrides<ResultsGameView>
 }
 
 /** Alice, the host, connected and playing, with whatever a test needs changed. */
-export function makePlayer(over: Partial<PlayerView> = {}): PlayerView {
+export function makePlayer(over: Partial<PlayingPlayerView> = {}): PlayingPlayerView {
   return {
+    type: Role.PLAYER,
     id: playerId("p1"),
     name: playerName("Alice"),
     colour: playerColour(0),
-    watching: false,
     connected: true,
     isHost: true,
     locked: false,
@@ -104,6 +105,11 @@ export function makePlayer(over: Partial<PlayerView> = {}): PlayerView {
     rank: 1,
     ...over
   }
+}
+
+/** Sam, connected and watching, with whatever a test needs changed. */
+export function makeSpectator(over: Partial<SpectatorView> = {}): SpectatorView {
+  return { type: Role.SPECTATOR, id: playerId("p9"), name: playerName("Sam"), connected: true, isHost: false, ...over }
 }
 
 /** The first of five reveals, of a place, with no results yet. */

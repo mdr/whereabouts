@@ -1,6 +1,6 @@
 import { colourCss } from "@whereabouts/shared/colours"
 import type { PlayerId } from "@whereabouts/shared/ids"
-import type { PlayerView } from "@whereabouts/shared/protocol"
+import { Role, type PlayerView, type PlayingPlayerView } from "@whereabouts/shared/roles"
 import { Icon } from "../../icons"
 import { playerListTestIds } from "./PlayerListTestIds"
 import { cx } from "../../cx"
@@ -47,7 +47,6 @@ export function PlayerList({
   return (
     <ul class={s.list} data-testid={playerListTestIds.list}>
       {players.map((p) => {
-        const delta = arrows && p.previousRank !== undefined ? p.previousRank - p.rank : 0
         const isYou = p.id === you
         return (
           <li
@@ -56,17 +55,7 @@ export function PlayerList({
             data-testid={playerListTestIds.player}
             data-player={p.name}
           >
-            {p.watching ? (
-              <span class={cx(avatars ? s.avatar : s.swatch, s.watcher)} title="Watching" aria-hidden="true">
-                {avatars && <Icon name="eye" size={14} />}
-              </span>
-            ) : avatars ? (
-              <span class={s.avatar} style={{ background: colourCss(p.colour) }} aria-hidden="true">
-                {initial(p.name)}
-              </span>
-            ) : (
-              <Swatch type={SwatchType.PLAYER} colour={p.colour} />
-            )}
+            <Mark p={p} avatars={avatars} />
             <span class={s.name}>
               <span class={s.nameText} data-testid={playerListTestIds.name}>
                 {p.name}
@@ -74,8 +63,8 @@ export function PlayerList({
               {p.isHost ? <HostTag /> : undefined}
               {isYou ? <span class={s.tag}>you</span> : undefined}
               {!p.connected ? <span class={s.tag}>offline</span> : undefined}
-              {p.watching && !avatars ? <span class={s.tag}>watching</span> : undefined}
-              {showLocked && p.locked ? (
+              {p.type === Role.SPECTATOR && !avatars ? <span class={s.tag}>watching</span> : undefined}
+              {showLocked && p.type === Role.PLAYER && p.locked ? (
                 <span class={cx(s.tag, s.done)} title="Finished guessing">
                   <Icon name="check" size={11} /> done
                 </span>
@@ -113,17 +102,39 @@ export function PlayerList({
                 <Icon name="kick" size={13} />
               </button>
             )}
-            {showScores && (
-              <>
-                {arrows && <RankArrow delta={delta} />}
-                <span class={s.scoreNum} data-testid={playerListTestIds.score}>
-                  {Math.round(p.score).toLocaleString()}
-                </span>
-              </>
-            )}
+            {showScores && p.type === Role.PLAYER && <Score p={p} arrows={arrows} />}
           </li>
         )
       })}
     </ul>
+  )
+}
+
+/** A spectator's eye, or a player's colour as an avatar or a dot. */
+function Mark({ p, avatars }: { p: PlayerView; avatars: boolean | undefined }) {
+  if (p.type === Role.SPECTATOR) {
+    return (
+      <span class={cx(avatars ? s.avatar : s.swatch, s.watcher)} title="Watching" aria-hidden="true">
+        {avatars && <Icon name="eye" size={14} />}
+      </span>
+    )
+  }
+  if (!avatars) return <Swatch type={SwatchType.PLAYER} colour={p.colour} />
+  return (
+    <span class={s.avatar} style={{ background: colourCss(p.colour) }} aria-hidden="true">
+      {initial(p.name)}
+    </span>
+  )
+}
+
+function Score({ p, arrows }: { p: PlayingPlayerView; arrows: boolean | undefined }) {
+  const delta = arrows && p.previousRank !== undefined ? p.previousRank - p.rank : 0
+  return (
+    <>
+      {arrows && <RankArrow delta={delta} />}
+      <span class={s.scoreNum} data-testid={playerListTestIds.score}>
+        {Math.round(p.score).toLocaleString()}
+      </span>
+    </>
   )
 }

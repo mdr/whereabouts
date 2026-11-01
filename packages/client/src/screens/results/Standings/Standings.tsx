@@ -1,4 +1,5 @@
-import type { FinalStanding, PlayerView } from "@whereabouts/shared/protocol"
+import type { FinalStanding } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
@@ -15,7 +16,7 @@ export function Standings({
   you
 }: {
   standings: FinalStanding[]
-  byId: Map<string, PlayerView>
+  byId: Map<string, PlayingPlayerView>
   you: string | undefined
 }) {
   return (

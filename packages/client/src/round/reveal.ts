@@ -4,7 +4,8 @@
  */
 import { signal } from "@preact/signals"
 import type { PlayerId } from "@whereabouts/shared/ids"
-import { RoundGuessType, type PlayerView, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol"
+import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { Outline } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"
 import { revealedShape } from "./revealed-shape"
@@ -69,12 +70,11 @@ export function shownResults(results: RoundResultView[], shown: RevealShown): Ro
  * ties keep the standings order. Spectators are not listed: they never play.
  */
 export function revealOrder(
-  players: PlayerView[],
+  players: PlayingPlayerView[],
   results: RoundResultView[]
-): { p: PlayerView; r?: RoundResultView }[] {
+): { p: PlayingPlayerView; r?: RoundResultView }[] {
   const group = (r?: RoundResultView) => (r ? 0 : 1)
-  return players
-    .filter((p) => !p.watching)
+  return [...players]
     .sort((a, b) => a.rank - b.rank)
     .map((p) => ({ p, r: results.find((x) => x.playerId === p.id) }))
     .sort((a, b) => group(a.r) - group(b.r) || (b.r?.score ?? 0) - (a.r?.score ?? 0))

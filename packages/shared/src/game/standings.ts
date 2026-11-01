@@ -2,7 +2,8 @@
 import type { PlayerFacts } from "../awards/awards.ts"
 import type { PlayerToken } from "../ids.ts"
 import type { Points } from "../units.ts"
-import type { FinalStanding, PlayerView } from "../protocol.ts"
+import type { FinalStanding } from "../protocol.ts"
+import { Role, type PlayingPlayerView, type SpectatorView } from "../roles.ts"
 import { isPlayer, type PlayerSeat, type Seat } from "./seats.ts"
 
 /** The sum of the scores; a round not played counts as 0. */
@@ -41,34 +42,29 @@ export function awardFacts(playing: readonly PlayerSeat[], roundCount: number): 
   }))
 }
 
-/** Players ranked first, then spectators, by name within a rank. */
-export function playerViews(
+/** Players by rank then name, and spectators by name. */
+export function rosterView(
   seats: readonly Seat[],
   host: PlayerToken | undefined,
   isLocked: (token: PlayerToken) => boolean
-): PlayerView[] {
+): { players: PlayingPlayerView[]; spectators: SpectatorView[] } {
   const playing = seats.filter(isPlayer)
-  return seats
-    .map((s): PlayerView => {
-      const base = {
-        id: s.id,
-        name: s.name,
-        connected: s.connected,
-        isHost: s.token === host,
-        locked: isLocked(s.token)
-      }
-      // Spectators are unranked (0) and listed after the players.
-      if (!isPlayer(s))
-        return { ...base, colour: undefined, watching: true, score: 0, rank: 0, previousRank: undefined }
-      const { record } = s.role
-      return {
-        ...base,
-        colour: s.role.colour,
-        watching: false,
-        score: total(record.scores),
-        rank: rankAmong(s, playing),
-        previousRank: record.previousRank
-      }
-    })
-    .sort((a, b) => Number(a.watching) - Number(b.watching) || a.rank - b.rank || a.name.localeCompare(b.name))
+  const base = (s: Seat) => ({ id: s.id, name: s.name, connected: s.connected, isHost: s.token === host })
+  return {
+    players: playing
+      .map((p): PlayingPlayerView => ({
+        ...base(p),
+        type: Role.PLAYER,
+        colour: p.role.colour,
+        locked: isLocked(p.token),
+        score: total(p.role.record.scores),
+        rank: rankAmong(p, playing),
+        previousRank: p.role.record.previousRank
+      }))
+      .sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name)),
+    spectators: seats
+      .filter((s) => s.role.type === Role.SPECTATOR)
+      .map((s): SpectatorView => ({ ...base(s), type: Role.SPECTATOR }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }
 }

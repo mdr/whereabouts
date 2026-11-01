@@ -63,6 +63,7 @@ import {
 import { createApp, MAX_PAYLOAD_BYTES, type App } from "./app.ts"
 import { BANK, configureGameRooms, realClock, type Clock, type GameRoom } from "./rooms.ts"
 import { CloseReason } from "@whereabouts/shared/close-reason"
+import { Role } from "@whereabouts/shared/roles"
 
 // Static imports hoist above this line, so the client is loaded dynamically.
 ;(globalThis as unknown as { window: unknown }).window = globalThis
@@ -641,13 +642,13 @@ describe("game server", () => {
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
     const sam = player("Sam")
     sam.connect(join(lobby.code, true))
-    const watching = await sam.until((v) => v.players.length === 2)
+    const watching = await sam.until((v) => v.spectators.length === 1)
     expect(watching.you.watching).toBe(true)
-    const samSeen = watching.players.find((p) => p.name === "Sam")
-    expect(samSeen).toMatchObject({ watching: true })
-    expect(samSeen).not.toHaveProperty("colour")
+    expect(watching.players).toHaveLength(1)
+    expect(watching.spectators[0]).toMatchObject({ name: "Sam", type: Role.SPECTATOR })
+    expect(watching.spectators[0]).not.toHaveProperty("colour")
     sam.send("setRole", { watch: false })
-    const seated = await alice.untilLatest((v) => v.players.some((p) => p.name === "Sam" && !p.watching))
+    const seated = await alice.untilLatest((v) => v.players.some((p) => p.name === "Sam"))
     expect(seated.players.find((p) => p.name === "Sam")!.colour).toBeGreaterThanOrEqual(0)
   })
 
@@ -724,7 +725,7 @@ describe("game server", () => {
       const p = player(`P${i}`)
       p.connect(join(code, i >= MAX_PLAYERS))
     }
-    await alice.until((v) => v.players.length === MAX_PLAYERS + MAX_SPECTATORS, 10_000)
+    await alice.until((v) => v.players.length + v.spectators.length === MAX_PLAYERS + MAX_SPECTATORS, 10_000)
     const late = player("Late")
     late.connect(join(code))
     await late.waitClosed()

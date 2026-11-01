@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "preact/hooks"
 import { colourCss } from "@whereabouts/shared/colours"
 import { onWater, outlineOf, type InPlayGameView, Phase, RoundGuessType } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
+import { everyone } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import { usePaint } from "../../ui/map/MapView/MapView"
 import { Card } from "../../ui/Card/Card"
@@ -69,7 +70,7 @@ export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView 
       }
       // Paint in your own colour, the same one others see at the reveal.
       const me = view.players.find((p) => p.id === view.you.id)
-      paint.showOwn(me && !me.watching ? colourCss(me.colour) : undefined)
+      paint.showOwn(me ? colourCss(me.colour) : undefined)
     }
   })
 
@@ -197,7 +198,7 @@ export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView 
       </Hud>
       <DevDrawer>
         <Card title="Players">
-          <PlayerList players={view.players} you={view.you.id} showScores />
+          <PlayerList players={everyone(view)} you={view.you.id} showScores />
         </Card>
         <PaintDev />
         <ConnectionDev conn={conn} view={view} />

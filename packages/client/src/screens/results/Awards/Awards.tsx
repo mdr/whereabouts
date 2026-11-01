@@ -1,10 +1,10 @@
 import type { Award } from "@whereabouts/shared/awards/awards"
 import { colourCss } from "@whereabouts/shared/colours"
-import type { PlayerView } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { awardsTestIds } from "./AwardsTestIds"
 import s from "./Awards.module.css"
 
-export function Awards({ awards, byId }: { awards: Award[]; byId: Map<string, PlayerView> }) {
+export function Awards({ awards, byId }: { awards: Award[]; byId: Map<string, PlayingPlayerView> }) {
   return (
     <section class={s.awards} aria-label="Awards">
       <h2>Awards</h2>
@@ -28,7 +28,7 @@ export function Awards({ awards, byId }: { awards: Award[]; byId: Map<string, Pl
 }
 
 /** The line with each {n} replaced by that player's name, in their colour. */
-function AwardLine({ line, players }: { line: string; players: (PlayerView | undefined)[] }) {
+function AwardLine({ line, players }: { line: string; players: (PlayingPlayerView | undefined)[] }) {
   return (
     <>
       {line.split(/(\{\d\})/).map((part, i) => {

@@ -3,7 +3,7 @@ import { playerColour } from "../colours.ts"
 import { playerId, playerToken, type PlayerName } from "../ids.ts"
 import { Role } from "../roles.ts"
 import { freshRecord, type PlayerRecord, type PlayerSeat, type Seat } from "./seats.ts"
-import { finalStandings, playerViews, rankAmong } from "./standings.ts"
+import { finalStandings, rankAmong, rosterView } from "./standings.ts"
 
 let made = 0
 const makeSeat = (): Omit<Seat, "role"> => {
@@ -54,26 +54,27 @@ describe("rankAmong", () => {
   })
 })
 
-describe("playerViews", () => {
-  it("lists players by rank then name, spectators last and unranked", () => {
+describe("rosterView", () => {
+  it("lists players by rank then name, and spectators apart by name", () => {
     const zed = makePlayerSeat({ scores: [10] }, { name: "Zed" as PlayerName })
     const amy = makePlayerSeat({ scores: [10] }, { name: "Amy" as PlayerName })
     const top = makePlayerSeat({ scores: [90] }, { name: "Top" as PlayerName })
-    const watcher = makeSpectatorSeat({ name: "Aaa" as PlayerName })
-    const views = playerViews([zed, watcher, amy, top], undefined, () => false)
-    expect(views.map((v) => [v.name, v.rank])).toEqual([
+    const wes = makeSpectatorSeat({ name: "Wes" as PlayerName })
+    const aaa = makeSpectatorSeat({ name: "Aaa" as PlayerName })
+    const { players, spectators } = rosterView([zed, wes, amy, aaa, top], undefined, () => false)
+    expect(players.map((v) => [v.name, v.rank])).toEqual([
       ["Top", 1],
       ["Amy", 2],
-      ["Zed", 2],
-      ["Aaa", 0]
+      ["Zed", 2]
     ])
+    expect(spectators.map((v) => v.name)).toEqual(["Aaa", "Wes"])
   })
 
   it("marks the host and who has locked in", () => {
     const host = makePlayerSeat()
     const other = makePlayerSeat()
-    const views = playerViews([host, other], host.token, (t) => t === other.token)
-    expect(views.find((v) => v.id === host.id)).toMatchObject({ isHost: true, locked: false })
-    expect(views.find((v) => v.id === other.id)).toMatchObject({ isHost: false, locked: true })
+    const { players } = rosterView([host, other], host.token, (t) => t === other.token)
+    expect(players.find((v) => v.id === host.id)).toMatchObject({ isHost: true, locked: false })
+    expect(players.find((v) => v.id === other.id)).toMatchObject({ isHost: false, locked: true })
   })
 })

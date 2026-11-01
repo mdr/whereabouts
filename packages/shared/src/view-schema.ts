@@ -18,6 +18,7 @@ import {
   WikiTitleSchema
 } from "./ids.ts"
 import { HintAxisSchema } from "./hints.ts"
+import { Role } from "./roles.ts"
 import { KernelIdSchema } from "./scoring/scoring.ts"
 import { H3CellSchema, H3ResSchema } from "./h3.ts"
 import { MapDetailSchema, MixSchema, Phase, RoundGuessType } from "./protocol.ts"
@@ -54,13 +55,19 @@ const QuestionPicturesSchema = z.strictObject({
   revealPhoto: CommonsFileSchema.optional()
 })
 
-const PlayerViewSchema = z.strictObject({
+const SeatViewShape = {
   id: PlayerIdSchema,
   name: PlayerNameSchema,
-  colour: PlayerColourSchema.optional(),
-  watching: z.boolean(),
   connected: z.boolean(),
-  isHost: z.boolean(),
+  isHost: z.boolean()
+}
+
+const SpectatorViewSchema = z.strictObject({ ...SeatViewShape, type: z.literal(Role.SPECTATOR) })
+
+const PlayingPlayerViewSchema = z.strictObject({
+  ...SeatViewShape,
+  type: z.literal(Role.PLAYER),
+  colour: PlayerColourSchema,
   locked: z.boolean(),
   score: PointsSchema,
   rank: z.number().int(),
@@ -109,7 +116,8 @@ const ViewShape = {
     hints: z.number().int()
   }),
   serverTime: InstantSchema,
-  players: z.array(PlayerViewSchema)
+  players: z.array(PlayingPlayerViewSchema),
+  spectators: z.array(SpectatorViewSchema)
 }
 
 const RoundViewSchema = z.strictObject({

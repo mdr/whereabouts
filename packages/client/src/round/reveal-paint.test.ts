@@ -2,13 +2,14 @@ import { describe, expect, it } from "vite-plus/test"
 import { colourCss, playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import { makePainted, makePlayer } from "../test-view"
-import type { PlayerView, RoundResultView } from "@whereabouts/shared/protocol"
+import type { RoundResultView } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { paintsOf } from "./reveal-paint"
 
 const NAMES = ["alice", "bob"]
 const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
 
-const player = (name: string, colour = 0): PlayerView =>
+const player = (name: string, colour = 0): PlayingPlayerView =>
   makePlayer({ id: idOf(name), name: playerName(name), colour: playerColour(colour) })
 function result(name: string, score = 500): RoundResultView {
   return {

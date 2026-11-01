@@ -1,4 +1,5 @@
 import type { GameView } from "@whereabouts/shared/protocol"
+import { everyone } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import { Card } from "../Card/Card"
 import { DevFacts } from "../dev/DevFacts"
@@ -7,7 +8,7 @@ import kit from "../kit.module.css"
 
 /** Connection and game-state diagnostics for the dev drawer. */
 export function ConnectionDev({ conn, view }: { conn: Connection; view: GameView }) {
-  const you = view.players.find((p) => p.id === view.you.id)
+  const you = everyone(view).find((p) => p.id === view.you.id)
   return (
     <Card title="Connection">
       <DevFacts
@@ -18,7 +19,7 @@ export function ConnectionDev({ conn, view }: { conn: Connection; view: GameView
           ["Clock offset", `${Math.round(conn.clockOffset.value)} ms`],
           ["Server time", new Date(view.serverTime).toISOString().slice(11, 23)],
           ["Kernel", view.config.kernelId],
-          ["Host", view.you.isHost ? "you" : (view.players.find((p) => p.isHost)?.name ?? "?")],
+          ["Host", view.you.isHost ? "you" : (everyone(view).find((p) => p.isHost)?.name ?? "?")],
           ["You", `${you?.name ?? "?"} (${view.you.id ?? "none"})`]
         ]}
       />

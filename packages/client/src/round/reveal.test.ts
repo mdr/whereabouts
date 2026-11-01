@@ -1,7 +1,8 @@
 import type { Outline } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
-import { RoundGuessType, type PlayerView, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol"
+import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { SHOW_EVERYONE, SHOW_NOBODY, revealedFromView, revealOrder, showPlayer, shownResults } from "./reveal"
 import { areaAnswerView, makePainted, makePlayer, makeQuestionView } from "../test-view"
 import { RevealedShapeType } from "./revealed-shape"
@@ -9,7 +10,8 @@ import { RevealedShapeType } from "./revealed-shape"
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
 const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
 
-const player = (name: string, rank: number): PlayerView => makePlayer({ id: idOf(name), name: playerName(name), rank })
+const player = (name: string, rank: number): PlayingPlayerView =>
+  makePlayer({ id: idOf(name), name: playerName(name), rank })
 function result(name: string, score: number, painted = true): RoundResultView {
   return {
     playerId: idOf(name),
@@ -19,12 +21,6 @@ function result(name: string, score: number, painted = true): RoundResultView {
 }
 
 describe("revealOrder", () => {
-  it("leaves spectators out", () => {
-    const sam = { ...player("sam", 0), watching: true, colour: undefined }
-    const rows = revealOrder([player("alice", 1), sam], [result("alice", 500)])
-    expect(rows.map((x) => x.p.name)).toEqual(["alice"])
-  })
-
   it("puts this round's winner first, passes in score order, then anyone who sat out", () => {
     // Standings say Alice leads overall, but Cara won this round.
     const players = [

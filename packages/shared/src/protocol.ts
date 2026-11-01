@@ -8,7 +8,6 @@ import { z } from "zod"
 import type { Award } from "./awards/awards.ts"
 import type { LatLon } from "./geo.ts"
 import { QUESTION_TYPES, QuestionType, AnswerType, Surface, type Clue, type FeatureType } from "./questions.ts"
-import type { PlayerColour } from "./colours.ts"
 import type { H3Cell, H3Res } from "./h3.ts"
 import type { Instant, Km, Ms, Points } from "./units.ts"
 import { paintFromBase64, paintToBase64 } from "./paint/paint-wire.ts"
@@ -31,8 +30,9 @@ import {
   type WikiTitle
 } from "./ids.ts"
 import { CloseReason } from "./close-reason.ts"
+import type { PlayingPlayerView, SpectatorView } from "./roles.ts"
 
-export const PROTOCOL_VERSION = 14
+export const PROTOCOL_VERSION = 15
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -227,25 +227,6 @@ export interface GameConfig {
   hints: number
 }
 
-export interface PlayerView {
-  id: PlayerId
-  name: PlayerName
-  /** Absent for a spectator, who has no colour. */
-  colour?: PlayerColour
-  /** Watching rather than playing: no paint, no score, and never waited on. */
-  watching: boolean
-  connected: boolean
-  isHost: boolean
-  /** Has frozen their guess this round. */
-  locked: boolean
-  /** Total so far. */
-  score: Points
-  /** 1-based rank by score, ties share a rank. */
-  rank: number
-  /** Rank at the end of the previous round, for change arrows. */
-  previousRank?: number
-}
-
 /** What players see of an answer while guessing: what to mark, not where. */
 export type AnswerView =
   | { type: AnswerType.POINT; tolerance: Km }
@@ -378,7 +359,8 @@ interface GameViewBase {
   code: RoomCode
   config: GameConfig
   serverTime: Instant
-  players: PlayerView[]
+  players: PlayingPlayerView[]
+  spectators: SpectatorView[]
 }
 
 export interface LobbyGameView extends GameViewBase {

@@ -3,21 +3,18 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
 import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
-import { makePlayer } from "../../../test-view"
-import type { GameView, PlayerView } from "@whereabouts/shared/protocol"
+import { makePlayer, makeSpectator } from "../../../test-view"
+import type { GameView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../../../net/net"
 import { TakeSeatButton } from "./TakeSeat"
 
-const person = (i: number, watching = false): PlayerView =>
-  makePlayer({
-    id: playerId(`p${i + 1}`),
-    name: playerName(`P${i}`),
-    colour: watching ? undefined : playerColour(i),
-    watching,
-    rank: watching ? 0 : 1
-  })
+const person = (i: number) =>
+  makePlayer({ id: playerId(`p${i + 1}`), name: playerName(`P${i}`), colour: playerColour(i) })
 const viewWith = (players: number) =>
-  ({ players: [...Array.from({ length: players }, (_, i) => person(i)), person(99, true)] }) as GameView
+  ({
+    players: Array.from({ length: players }, (_, i) => person(i)),
+    spectators: [makeSpectator()]
+  }) as GameView
 const makeConn = (overrides: { setRole?: () => void; online?: boolean } = {}) =>
   ({ setRole: overrides.setRole ?? vi.fn(), online: { value: overrides.online ?? true } }) as unknown as Connection
 

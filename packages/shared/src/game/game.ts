@@ -19,7 +19,7 @@ import { OK_CHANGED, OK_SAME, fail, type CommandResult, type JoinResult } from "
 import { sameData } from "./same-data.ts"
 import { Seats, freshRecord, type PlayerSeat, type Seat } from "./seats.ts"
 import { Role } from "../roles.ts"
-import { awardFacts, finalStandings, playerViews } from "./standings.ts"
+import { awardFacts, finalStandings, rosterView } from "./standings.ts"
 import {
   isLocked,
   joiningRound,
@@ -472,7 +472,7 @@ export class Game {
       code: this.code,
       config: this.config,
       serverTime: now,
-      players: playerViews(this.seats.all(), this.seats.effectiveHost(), (t) => lockedIn(s, t))
+      ...rosterView(this.seats.all(), this.seats.effectiveHost(), (t) => lockedIn(s, t))
     }
     const you = this.youView(s, token, this.seats.get(token))
     switch (s.phase) {

@@ -9,9 +9,9 @@ import {
   RoundGuessType,
   type GameView,
   type InPlayGameView,
-  type PlayerView,
   type RevealView
 } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import type { PaintController } from "../../paint/paint-controller"
 import { connectionText } from "../../ui/connection/ConnectionNote/ConnectionNote"
@@ -83,7 +83,7 @@ function moreActions(view: GameView, conn: Connection): VrAction[] {
   ]
 }
 
-function playerState(p: PlayerView): string {
+function playerState(p: PlayingPlayerView): string {
   if (!p.connected) return "away"
   if (p.locked) return "done"
   return "guessing"
@@ -92,8 +92,7 @@ function playerState(p: PlayerView): string {
 function playersTable(view: GameView): VrTable {
   return {
     title: "Players",
-    rows: view.players
-      .filter((p) => !p.watching)
+    rows: [...view.players]
       .sort((a, b) => a.rank - b.rank)
       .map((p) => ({
         colour: colourCss(p.colour),
@@ -123,7 +122,7 @@ function gameRound(
     heading: `ROUND ${at.index + 1} OF ${at.total}`,
     table: playersTable(view),
     detail: view.config.mapDetail,
-    colour: me && !me.watching ? colourCss(me.colour) : undefined,
+    colour: me ? colourCss(me.colour) : undefined,
     hint: view.you.hint,
     hintsLeft: view.config.hints > 0 ? view.you.hintsLeft : HintAllowance.NONE,
     useHint: (axis: HintAxis) => conn.hint(axis),

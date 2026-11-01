@@ -23,7 +23,7 @@ import { roundStripTestIds } from "../../../ui/setup/RoundStrip/RoundStripTestId
 import { playerListTestIds } from "../../../ui/players/PlayerList/PlayerListTestIds"
 import setupSummary from "../setup/SetupSummary/SetupSummary.module.css"
 import players from "../../../ui/players/Players.module.css"
-import { makePlayer, makeLobbyView } from "../../../test-view"
+import { makePlayer, makeSpectator, makeLobbyView } from "../../../test-view"
 
 vi.mock("../../../map/map-prefetch", () => ({ prefetchMap: () => undefined, mapPrefetched: { value: false } }))
 
@@ -41,16 +41,10 @@ function view(isHost: boolean): GameView {
   })
 }
 
-/** A guest, playing or watching. */
-const person = (id: string, name: string, watching: boolean, colour = 1) =>
-  makePlayer({
-    id: playerId(id),
-    name: playerName(name),
-    colour: watching ? undefined : playerColour(colour),
-    watching,
-    isHost: false,
-    rank: watching ? 0 : 1
-  })
+const guest = (id: string, name: string, colour = 1) =>
+  makePlayer({ id: playerId(id), name: playerName(name), colour: playerColour(colour), isHost: false })
+
+const watcher = (id: string, name: string) => makeSpectator({ id: playerId(id), name: playerName(name) })
 
 const configure = vi.fn()
 const leave = vi.fn()
@@ -153,7 +147,7 @@ describe("Lobby leave", () => {
 
   it("asks the host first, naming who takes over", () => {
     const v = view(true)
-    const bob = person("p2", "Bob", false)
+    const bob = guest("p2", "Bob")
     v.players = [...v.players, bob]
     v.you.nextHost = bob.id
     const { container } = render(<Lobby conn={conn} view={v} />)
@@ -177,7 +171,8 @@ describe("Lobby leave", () => {
 describe("Lobby spectators", () => {
   it("lists spectators apart from the players, with their own count", () => {
     const v = view(true)
-    v.players = [...v.players, person("p2", "Bob", false), person("p3", "Sam", true)]
+    v.players = [...v.players, guest("p2", "Bob")]
+    v.spectators = [watcher("p3", "Sam")]
     const { container } = render(<Lobby conn={conn} view={v} />)
     const lists = inside(container).getAllByTestId(playerListTestIds.list)
     expect(lists).toHaveLength(2)
@@ -194,7 +189,8 @@ describe("Lobby spectators", () => {
     unmount()
     const v = view(false)
     v.you.watching = true
-    v.players = [person("p1", "Alice", true)]
+    v.players = []
+    v.spectators = [watcher("p1", "Alice")]
     const { container: c2 } = render(<Lobby conn={conn} view={v} />)
     const play = inside(c2).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!
     expect(play.textContent).toContain("Play instead")
@@ -205,10 +201,8 @@ describe("Lobby spectators", () => {
   it("keeps the seat button off when all sixteen seats are taken", () => {
     const v = view(false)
     v.you.watching = true
-    v.players = [
-      ...Array.from({ length: 16 }, (_, i) => person(`p${i + 10}`, `P${i}`, false, i)),
-      person("p1", "Alice", true)
-    ]
+    v.players = Array.from({ length: 16 }, (_, i) => guest(`p${i + 10}`, `P${i}`, i))
+    v.spectators = [watcher("p1", "Alice")]
     const { container } = render(<Lobby conn={conn} view={v} />)
     expect(inside(container).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!.disabled).toBe(true)
     expect(container.textContent).toContain("All 16 player seats are taken")

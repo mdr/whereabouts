@@ -1,6 +1,7 @@
 import { useEffect } from "preact/hooks"
 import { MAX_PLAYERS, MAX_SPECTATORS, type GameView } from "@whereabouts/shared/protocol"
 import { colourCss } from "@whereabouts/shared/colours"
+import { Role, everyone } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../net/net"
 import { useGameData } from "../../../data/game-data"
 import { mapPrefetched, prefetchMap } from "../../../map/map-prefetch"
@@ -32,7 +33,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
   useEffect(prefetchMap, [])
   useGameData(view.config.mix, mapPrefetched.value)
   const host = view.you.isHost
-  const playerCount = view.players.filter((p) => !p.watching).length
+  const playerCount = view.players.length
   // Home, giving up the seat now; the tab forgets the game so a refresh or
   // Back does not quietly rejoin it. Leaving the screen disconnects.
   const leave = () => {
@@ -51,7 +52,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
             class={s.leave}
             data-testid={lobbyTestIds.leaveButton}
             onClick={() =>
-              host ? ask(leaveRequest(view.players.find((p) => p.id === view.you.nextHost)?.name, leave)) : leave()
+              host ? ask(leaveRequest(everyone(view).find((p) => p.id === view.you.nextHost)?.name, leave)) : leave()
             }
           >
             <Icon name="back" size={15} /> Leave
@@ -69,8 +70,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
 /** What the lobby shows in the headset: the players, and the host's or guest's actions. */
 function lobbyVrView(conn: Connection, view: GameView, online: boolean, leave: () => void): VrView {
   const host = view.you.isHost
-  const players = view.players.filter((p) => !p.watching)
-  const watchers = view.players.filter((p) => p.watching)
+  const { players, spectators } = view
   return {
     type: VrViewType.LOBBY,
     summary: {
@@ -78,10 +78,12 @@ function lobbyVrView(conn: Connection, view: GameView, online: boolean, leave: (
       scoreLine: host ? "Start when everyone's in" : "Waiting for the host to start",
       table: {
         title: `Players ${players.length}/${MAX_PLAYERS}`,
-        rows: view.players.map((p) => ({
-          colour: colourCss(p.colour),
+        rows: everyone(view).map((p) => ({
+          colour: p.type === Role.PLAYER ? colourCss(p.colour) : undefined,
           name: `${p.name}${p.id === view.you.id ? " (you)" : ""}`,
-          detail: [p.isHost && "host", p.watching && "watching", !p.connected && "away"].filter(Boolean).join(", "),
+          detail: [p.isHost && "host", p.type === Role.SPECTATOR && "watching", !p.connected && "away"]
+            .filter(Boolean)
+            .join(", "),
           total: "",
           ...pickable(view, p)
         })),
@@ -95,7 +97,7 @@ function lobbyVrView(conn: Connection, view: GameView, online: boolean, leave: (
     more: [
       view.you.watching
         ? takeSeat(conn, view, "Play instead")
-        : { label: "Just watch", press: () => conn.setRole(true), enabled: watchers.length < MAX_SPECTATORS },
+        : { label: "Just watch", press: () => conn.setRole(true), enabled: spectators.length < MAX_SPECTATORS },
       ...hostActions(conn, view, vrPicked.value),
       { label: "Leave", confirm: host ? "Press again to leave" : undefined, press: leave }
     ]

@@ -5,7 +5,8 @@
  */
 import { signal } from "@preact/signals"
 import type { PlayerId } from "@whereabouts/shared/ids"
-import { MAX_PLAYERS, type GameView, type PlayerView } from "@whereabouts/shared/protocol"
+import { MAX_PLAYERS, type GameView } from "@whereabouts/shared/protocol"
+import { everyone, type PlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import type { VrAction } from "./view"
 import type { VrTable } from "../scores/scores"
@@ -28,7 +29,7 @@ export function hostActions(
   view: GameView,
   playerId: PlayerId | undefined
 ): VrAction[] {
-  const p = view.you.isHost && playerId !== view.you.id ? view.players.find((x) => x.id === playerId) : undefined
+  const p = view.you.isHost && playerId !== view.you.id ? everyone(view).find((x) => x.id === playerId) : undefined
   if (!p) return []
   return [
     {
@@ -50,6 +51,6 @@ export function takeSeat(conn: Pick<Connection, "setRole">, view: GameView, labe
   return {
     label,
     press: () => conn.setRole(false),
-    enabled: view.players.filter((p) => !p.watching).length < MAX_PLAYERS
+    enabled: view.players.length < MAX_PLAYERS
   }
 }

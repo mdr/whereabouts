@@ -8,7 +8,7 @@ import s from "./TakeSeat.module.css"
  * way and playing from the next question. Off while every seat is taken.
  */
 export function TakeSeatButton({ conn, view, inCard }: { conn: Connection; view: GameView; inCard?: boolean }) {
-  const full = view.players.filter((p) => !p.watching).length >= MAX_PLAYERS
+  const full = view.players.length >= MAX_PLAYERS
   return (
     <button
       class={inCard ? s.inCard : undefined}

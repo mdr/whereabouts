@@ -7,7 +7,15 @@ import { ConnectionStatus, type Connection, type ConnectionState, type PlainStat
 import type { PaintController } from "../../paint/paint-controller"
 import { gameVrView } from "./game-vr-view"
 import { VrViewType, type VrView } from "./view"
-import { makePainted, makePlayer, makeResult, makeGuessingView, makeReveal, makeRevealView } from "../../test-view"
+import {
+  makePainted,
+  makePlayer,
+  makeResult,
+  makeGuessingView,
+  makeReveal,
+  makeRevealView,
+  makeSpectator
+} from "../../test-view"
 
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 
@@ -94,11 +102,11 @@ describe("gameVrView", () => {
   it("lists the players still playing, by rank, with their state", () => {
     const view = guessing({
       players: [
-        makePlayer({ id: playerId("p4"), name: playerName("Dee"), rank: 4, watching: true }),
         makePlayer({ id: playerId("p3"), name: playerName("Cy"), rank: 3, connected: false }),
         makePlayer({ locked: true, rank: 2 }),
         { ...bob, rank: 1 }
-      ]
+      ],
+      spectators: [makeSpectator({ id: playerId("p4"), name: playerName("Dee") })]
     })
     expect(round(show(view)).table?.rows.map((r) => [r.name, r.detail])).toEqual([
       ["Bob", "guessing"],

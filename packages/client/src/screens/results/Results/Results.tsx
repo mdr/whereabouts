@@ -1,6 +1,7 @@
 import type { CssColour } from "@whereabouts/shared/colours"
 import { colourCss } from "@whereabouts/shared/colours"
-import type { PlayerView, ResultsGameView } from "@whereabouts/shared/protocol"
+import type { ResultsGameView } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../net/net"
 import { Icon } from "../../../ui/icons"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"
@@ -107,7 +108,7 @@ export function Results({ conn, view }: { conn: Connection; view: ResultsGameVie
 }
 
 /** An award's line in pieces, each player's name in their colour. */
-function awardParts(line: string, players: (PlayerView | undefined)[]): { text: string; colour?: CssColour }[] {
+function awardParts(line: string, players: (PlayingPlayerView | undefined)[]): { text: string; colour?: CssColour }[] {
   return line
     .split(/(\{\d\})/)
     .filter((part) => part !== "")

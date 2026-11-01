@@ -1,6 +1,7 @@
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import type { PlayerId } from "@whereabouts/shared/ids"
-import { RoundGuessType, type PlayerView } from "@whereabouts/shared/protocol"
+import { RoundGuessType } from "@whereabouts/shared/protocol"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { RevealShown } from "../../../round/reveal"
 import { Card } from "../../../ui/Card/Card"
 import { cx } from "../../../ui/cx"
@@ -28,7 +29,7 @@ export function RevealScores({
   /** A row under the mouse, or undefined when it moves off. */
   onHover: (playerId: PlayerId | undefined) => void
   /** Host only: remove this player. */
-  onKick: ((p: PlayerView) => void) | undefined
+  onKick: ((p: PlayingPlayerView) => void) | undefined
 }) {
   return (
     <Card title="Scores">

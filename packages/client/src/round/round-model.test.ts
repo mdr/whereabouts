@@ -2,11 +2,19 @@ import { describe, expect, it } from "vite-plus/test"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import { SHOW_EVERYONE, SHOW_NOBODY, showPlayer, type RevealShown } from "./reveal"
 import { RoundNote, ShownRowType, canEndGame, revealModel, roundNote, type ShownRow } from "./round-model"
-import { makePainted, makePlayer, makeResult, makeGuessingView, makeReveal, makeRevealView } from "../test-view"
+import {
+  makePainted,
+  makePlayer,
+  makeResult,
+  makeGuessingView,
+  makeReveal,
+  makeRevealView,
+  makeSpectator
+} from "../test-view"
 
 const alice = makePlayer()
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
-const sam = makePlayer({ id: playerId("p3"), name: playerName("Sam"), isHost: false, watching: true })
+const sam = makeSpectator()
 
 const you = (over: Parameters<typeof makeGuessingView>[0] = {}) => makeGuessingView({ ...over }).you
 
@@ -32,12 +40,12 @@ describe("canEndGame", () => {
 })
 
 describe("revealModel", () => {
-  const players = [alice, bob, sam]
+  const players = [alice, bob]
   const model = (
     over: Parameters<typeof makeRevealView>[0] = {},
     reveal = makeReveal(),
     shown: RevealShown = SHOW_EVERYONE
-  ) => revealModel(makeRevealView({ players, ...over }), reveal, shown)
+  ) => revealModel(makeRevealView({ players, spectators: [sam], ...over }), reveal, shown)
   const names = (rows: ShownRow[]) => rows.map((r) => (r.type === ShownRowType.PLAYER ? r.player.name : r.type))
 
   it("lists Everyone, the players by this round's score, then Hide paint", () => {
@@ -69,7 +77,7 @@ describe("revealModel", () => {
   it("counts who is ready among the players here, leaving out watchers and anyone away", () => {
     const away = { ...bob, connected: false }
     const reveal = makeReveal({ ready: [alice.id, bob.id, sam.id] })
-    expect(model({ players: [alice, away, sam] }, reveal)).toMatchObject({ readyCount: 1, presentCount: 1 })
+    expect(model({ players: [alice, away] }, reveal)).toMatchObject({ readyCount: 1, presentCount: 1 })
   })
 
   it("offers Ready to a player, done once pressed, and none to a watcher", () => {

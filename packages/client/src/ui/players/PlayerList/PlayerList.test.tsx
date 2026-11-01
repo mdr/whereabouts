@@ -3,15 +3,15 @@ import { describe, expect, it } from "vite-plus/test"
 import { render, screen } from "@testing-library/preact"
 import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
-import { makePlayer } from "../../../test-view"
-import type { PlayerView } from "@whereabouts/shared/protocol"
+import { makePlayer, makeSpectator } from "../../../test-view"
+import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { PlayerList, initial } from "./PlayerList"
 import { HostTag } from "../HostTag/HostTag"
 import { playerListTestIds } from "./PlayerListTestIds"
 import { rankArrowTestIds } from "../RankArrow/RankArrowTestIds"
 import s from "../Players.module.css"
 
-const player = (over: Partial<PlayerView>): PlayerView => makePlayer({ isHost: false, ...over })
+const player = (over: Partial<PlayingPlayerView>): PlayingPlayerView => makePlayer({ isHost: false, ...over })
 
 describe("PlayerList", () => {
   it("tags host, you and offline players", () => {
@@ -133,13 +133,7 @@ describe("PlayerList make host", () => {
 })
 describe("PlayerList spectators", () => {
   it("shows a spectator without a colour, tagged as watching", () => {
-    const { container } = render(
-      <PlayerList
-        players={[player({ id: playerId("p2"), name: playerName("Sam"), watching: true, colour: undefined })]}
-        you={playerId("p1")}
-        showScores={false}
-      />
-    )
+    const { container } = render(<PlayerList players={[makeSpectator()]} you={playerId("p1")} showScores={false} />)
     const row = container.querySelector("li")!
     expect(row.querySelectorAll(`.${s.watcher}`)).not.toHaveLength(0)
     expect(row.textContent).toContain("watching")
