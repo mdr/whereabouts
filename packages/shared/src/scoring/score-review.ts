@@ -10,7 +10,7 @@
  */
 import { z } from "zod"
 import { EARTH_RADIUS, greatCircleDistance, toDegrees, toRadians, type LatLon } from "../geo.ts"
-import { cellAreaKm2, cellToLatLng } from "../h3.ts"
+import { cellArea, cellToLatLng } from "../h3.ts"
 import { seededUnit } from "../hints.ts"
 import { PaintLayer, resolutionForTolerance } from "../paint/paint.ts"
 import {
@@ -220,7 +220,7 @@ function paintRegionGuess(area: Area, type: RegionGuess, rnd: () => number): Rev
     const [lat, lon] = cellToLatLng(h)
     return { lat, lon }
   })
-  const oneCell: SquareKm = cells.length > 0 ? cellAreaKm2(cells[0]!) : 0
+  const oneCell: SquareKm = cells.length > 0 ? cellArea(cells[0]!) : 0
   /** Brush strokes over the region, or the part of it `keep` allows, `across` in radius. */
   const shape = (strength: number, keep: (p: LatLon) => boolean = () => true, across: Km = R * t) => {
     const kept = centres.filter(keep)

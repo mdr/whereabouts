@@ -16,16 +16,7 @@
  * centre (Tuvalu, on a coarse grid) is filled around its answer instead, out
  * to its `near` distance, or just the cell its answer is in.
  */
-import {
-  edgeLengthKm,
-  gridDisk,
-  latLngToCell,
-  polygonToCells,
-  finerRes,
-  h3Res,
-  type H3Cell,
-  type H3Res
-} from "../h3.ts"
+import { edgeLength, gridDisk, latLngToCell, polygonToCells, finerRes, h3Res, type H3Cell, type H3Res } from "../h3.ts"
 import type { LatLon, Ring } from "../geo.ts"
 import type { Outline } from "../questions.ts"
 import type { Km } from "../units.ts"
@@ -91,7 +82,7 @@ export function countryFill(shape: FillShape, finestRes: H3Res): H3Cell[] {
   }
   if (cells.length === 0) {
     const centre = latLngToCell(shape.answer.lat, shape.answer.lon, res)
-    const spacing = edgeLengthKm(res) * Math.sqrt(3)
+    const spacing = edgeLength(res) * Math.sqrt(3)
     cells = gridDisk(centre, shape.near ? Math.round(shape.near / spacing) : 0)
   }
   return cells

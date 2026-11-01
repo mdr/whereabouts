@@ -14,12 +14,12 @@
  * first, so only the part under the brush is removed.
  */
 import {
-  cellAreaKm2,
+  cellArea,
   cellBoundaryLonLat,
   cellToChildren,
   cellToLatLng,
   cellToParent,
-  edgeLengthKm,
+  edgeLength,
   getResolution,
   cellsToMultiPolygon,
   gridDisk,
@@ -43,14 +43,14 @@ const MAX_RINGS = 40
 export function resolutionForTolerance(tolerance: Km): H3Res {
   const target = tolerance / 4
   for (let res = 0; res <= 10; res++) {
-    if (edgeLengthKm(h3Res(res)) <= target) return h3Res(Math.max(1, res))
+    if (edgeLength(h3Res(res)) <= target) return h3Res(Math.max(1, res))
   }
   return h3Res(10)
 }
 
 /** Centre-to-centre distance between neighbouring cells. */
 export function cellSpacing(res: H3Res): Km {
-  return edgeLengthKm(res) * Math.sqrt(3)
+  return edgeLength(res) * Math.sqrt(3)
 }
 
 export interface PaintCell {
@@ -288,7 +288,7 @@ export class PaintLayer {
   area(h: H3Cell): SquareKm {
     let a = this.areaCache.get(h)
     if (a === undefined) {
-      a = cellAreaKm2(h)
+      a = cellArea(h)
       this.areaCache.set(h, a)
     }
     return a
@@ -481,10 +481,10 @@ export function compactRecord(cells: Record<H3Cell, number>, budget = PAINT_CELL
         continue
       }
       const parent = cellToParent(h, h3Res(finest - 1))
-      mass.set(parent, (mass.get(parent) ?? 0) + v * cellAreaKm2(h))
+      mass.set(parent, (mass.get(parent) ?? 0) + v * cellArea(h))
     }
     for (const [parent, m] of mass) {
-      next[parent] = (next[parent] ?? 0) + m / cellAreaKm2(parent)
+      next[parent] = (next[parent] ?? 0) + m / cellArea(parent)
     }
     current = next
     count = Object.keys(current).length

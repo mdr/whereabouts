@@ -333,7 +333,7 @@ describe("patch-aware kernel", () => {
     return buildDistribution(
       cells.map((h) => {
         const [lat, lon] = h3.cellToLatLng(h)
-        return { lat, lon, intensity: 1, area: h3.cellAreaKm2(h), h3: h }
+        return { lat, lon, intensity: 1, area: h3.cellArea(h), h3: h }
       }),
       floor
     )
@@ -404,7 +404,7 @@ describe("region answers", () => {
   const paint = (cells: H3Cell[]) =>
     cells.map((h) => {
       const [lat, lon] = h3.cellToLatLng(h)
-      return { lat, lon, intensity: 1, area: h3.cellAreaKm2(h), h3: h }
+      return { lat, lon, intensity: 1, area: h3.cellArea(h), h3: h }
     })
   const painted = (cells: H3Cell[], floor = 0.05) => buildDistribution(paint(cells), floor)
 

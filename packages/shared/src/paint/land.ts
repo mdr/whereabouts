@@ -16,7 +16,7 @@
  * always gain.
  */
 import {
-  cellAreaKm2,
+  cellArea,
   cellToChildren,
   cellToParent,
   getResolution,
@@ -134,6 +134,6 @@ export function keepCells(
 /** How much paint there is, in intensity × km²: intensity is a density, so a cell holds intensity times its area. */
 export function paintAmount(cells: ReadonlyMap<H3Cell, number>): number {
   let sum = 0
-  for (const [h, v] of cells) sum += v * cellAreaKm2(h)
+  for (const [h, v] of cells) sum += v * cellArea(h)
   return sum
 }

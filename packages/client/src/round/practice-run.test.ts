@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { outlineId, placeId, questionId, wikiTitle } from "@whereabouts/shared/ids"
-import { cellAreaKm2, cellToLatLng, gridDisk, latLngToCell } from "@whereabouts/shared/h3"
+import { cellArea, cellToLatLng, gridDisk, latLngToCell } from "@whereabouts/shared/h3"
 import { resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { scoredAnswer } from "@whereabouts/shared/scoring/regions"
 import { DEFAULT_KERNEL, PASS_SCORE, buildDistribution } from "@whereabouts/shared/scoring/scoring"
@@ -51,7 +51,7 @@ function blob(at: LatLon) {
   return buildDistribution(
     gridDisk(h3, 2).map((h) => {
       const [lat, lon] = cellToLatLng(h)
-      return { lat, lon, intensity: 1, area: cellAreaKm2(h), h3: h }
+      return { lat, lon, intensity: 1, area: cellArea(h), h3: h }
     }),
     0.05
   )

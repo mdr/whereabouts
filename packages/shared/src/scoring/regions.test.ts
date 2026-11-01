@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import {
-  cellAreaKm2,
+  cellArea,
   cellToChildren,
   cellToLatLng,
   getRes0Cells,
@@ -55,7 +55,7 @@ function coat(cells: H3Cell[], floor = 0.05) {
   return buildDistribution(
     cells.map((h) => {
       const [lat, lon] = cellToLatLng(h)
-      return { lat, lon, intensity: 1, area: cellAreaKm2(h), h3: h }
+      return { lat, lon, intensity: 1, area: cellArea(h), h3: h }
     }),
     floor
   )
@@ -146,7 +146,7 @@ describe("shape and nearness", () => {
   const res = resolutionForTolerance(germany.tolerance)
   const cells = regionCells(germany, res)
   const poland = regionCells(byId("poland-region"), res)
-  const area = (cs: H3Cell[]) => cs.reduce((s, h) => s + cellAreaKm2(h), 0)
+  const area = (cs: H3Cell[]) => cs.reduce((s, h) => s + cellArea(h), 0)
   const score = (d: Distribution) => scoreArea(d, germany).score
 
   /** Each part's share of the paint, spread evenly over its cells. */
@@ -159,7 +159,7 @@ describe("shape and nearness", () => {
     return buildDistribution(
       [...density].map(([h, intensity]) => {
         const [lat, lon] = cellToLatLng(h)
-        return { lat, lon, intensity, area: cellAreaKm2(h), h3: h }
+        return { lat, lon, intensity, area: cellArea(h), h3: h }
       }),
       floor
     )
@@ -308,7 +308,7 @@ describe("shape and nearness", () => {
         const [lat, lon] = cellToLatLng(h)
         const km =
           Math.hypot(lat - germany.centre.lat, (lon - germany.centre.lon) * Math.cos((lat * Math.PI) / 180)) * 111
-        return { lat, lon, intensity: Math.max(0.5, 1.5 - km / R), area: cellAreaKm2(h), h3: h }
+        return { lat, lon, intensity: Math.max(0.5, 1.5 - km / R), area: cellArea(h), h3: h }
       }),
       0.05
     )

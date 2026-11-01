@@ -22,7 +22,7 @@
  * a player hedges.
  */
 import {
-  cellAreaKm2,
+  cellArea,
   cellToChildren,
   cellToLatLng,
   cellToParent,
@@ -229,9 +229,9 @@ export function regionFit(painted: Distribution, area: Area): { coverage: number
   let onMass = 0
   const on: { p: number; area: SquareKm }[] = []
   for (const [h, p] of paintMass(painted, area)) {
-    const cellArea = region.cells.get(h)
-    if (cellArea === undefined) continue
-    on.push({ p, area: cellArea })
+    const size = region.cells.get(h)
+    if (size === undefined) continue
+    on.push({ p, area: size })
     onMass += p
   }
   if (paintedMass <= 0 || onMass <= 0) return { coverage: 0, precision: 0 }
@@ -320,7 +320,7 @@ function regionAt(area: Area): Region {
     const cells = new Map<H3Cell, SquareKm>()
     let totalArea = 0
     for (const h of regionCells(area, res)) {
-      const a = cellAreaKm2(h)
+      const a = cellArea(h)
       cells.set(h, a)
       totalArea += a
     }
@@ -359,7 +359,7 @@ function paintMass(painted: Distribution, area: Area): Map<H3Cell, number> {
     else if (!overlaps(region, pt.cell, r)) add(pt.cell, pt.p)
     else {
       const children = cellToChildren(pt.cell, res)
-      const areas = children.map((c) => cellAreaKm2(c))
+      const areas = children.map((c) => cellArea(c))
       const total = areas.reduce((a, b) => a + b, 0)
       children.forEach((c, i) => add(c, (pt.p * areas[i]!) / total))
     }

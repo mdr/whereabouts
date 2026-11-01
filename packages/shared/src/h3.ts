@@ -59,7 +59,7 @@ export const cellToLatLng = (h: H3Cell): [lat: Degrees, lng: Degrees] => h3.cell
 export const cellBoundaryLatLng = (h: H3Cell): [lat: Degrees, lng: Degrees][] => h3.cellToBoundary(h)
 /** GeoJSON order, as `LonLat`. */
 export const cellBoundaryLonLat = (h: H3Cell): Ring => h3.cellToBoundary(h, true)
-export const cellAreaKm2 = (h: H3Cell): SquareKm => h3.cellArea(h, h3.UNITS.km2)
+export const cellArea = (h: H3Cell): SquareKm => h3.cellArea(h, h3.UNITS.km2)
 export const gridDisk = (h: H3Cell, k: number): H3Cell[] => cells(h3.gridDisk(h, k))
 export const gridDiskDistances = (h: H3Cell, k: number): H3Cell[][] => h3.gridDiskDistances(h, k) as H3Cell[][]
 export const gridDistance = (a: H3Cell, b: H3Cell): number => h3.gridDistance(a, b)
@@ -67,7 +67,7 @@ export const polygonToCells = (polygon: number[][] | number[][][], res: H3Res, i
   cells(h3.polygonToCells(polygon, res, isGeoJson))
 export const cellsToMultiPolygon = (hs: H3Cell[], formatAsGeoJson?: boolean) =>
   h3.cellsToMultiPolygon(hs, formatAsGeoJson)
-export const edgeLengthKm = (res: H3Res): Km => h3.getHexagonEdgeLengthAvg(res, h3.UNITS.km)
+export const edgeLength = (res: H3Res): Km => h3.getHexagonEdgeLengthAvg(res, h3.UNITS.km)
 export const getRes0Cells = (): H3Cell[] => cells(h3.getRes0Cells())
 
 /** A cell's 64-bit index as its lower and upper 32 bits, for binary paint. */

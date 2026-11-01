@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellAreaKm2, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell } from "./h3.ts"
+import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell } from "./h3.ts"
 import bordersJson from "../borders.json" with { type: "json" }
 import { Borders } from "./borders.ts"
 import type { PaintCell } from "./paint/paint.ts"
@@ -12,7 +12,7 @@ const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label
 
 function cell(h: H3Cell, intensity = 1): PaintCell {
   const [lat, lon] = cellToLatLng(h)
-  return { lat, lon, intensity, area: cellAreaKm2(h), h3: h }
+  return { lat, lon, intensity, area: cellArea(h), h3: h }
 }
 
 describe("borders", () => {
