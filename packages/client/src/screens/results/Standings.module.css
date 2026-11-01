@@ -1,0 +1,62 @@
+/* ---- final standings: one row per player, total as the headline ---------------- */
+.standings {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  text-align: left;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  border-top: 1px solid var(--divider);
+  border-radius: 8px;
+}
+.row.you {
+  background: var(--card-bg);
+  border-top-color: transparent;
+}
+.place {
+  width: 28px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 20px;
+  flex: none;
+}
+.dot {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+.name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+}
+.nameText {
+  composes: truncate from "../../ui/kit.module.css";
+  min-width: 0;
+}
+.total {
+  font-weight: 700;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+/* A big game's: the podium as usual, everyone else on tighter rows. */
+.many .minor {
+  padding: 4px 8px;
+
+  & .place,
+  & .name {
+    font-size: 14px;
+  }
+  & .total {
+    font-size: 15px;
+  }
+}

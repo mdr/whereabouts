@@ -1,0 +1,15 @@
+.rounds {
+  margin: 20px 0 8px;
+  text-align: left;
+  /* Its width comes from the card, never the table, so many players scroll inside it. */
+  contain: inline-size;
+
+  & h2 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+.everyoneToggle {
+  margin-top: 10px;
+}

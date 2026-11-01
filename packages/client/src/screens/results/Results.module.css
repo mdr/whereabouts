@@ -1,0 +1,4 @@
+/* The standings want room: a wider card on desktop, full width on phones. */
+.card {
+  width: min(720px, 100%);
+}

@@ -1,0 +1,71 @@
+.scroll {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+
+  & th,
+  & td {
+    padding: 5px 6px;
+    border-bottom: 1px solid var(--divider);
+    white-space: nowrap;
+  }
+  & tbody tr:last-child > * {
+    border-bottom: none;
+  }
+  & thead th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-align: right;
+  }
+  & td {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: right;
+    min-width: 3em;
+  }
+  & td.best {
+    color: var(--panel-fg);
+    font-weight: 700;
+  }
+  & .you {
+    background: var(--tint);
+  }
+}
+.headSwatch {
+  margin-right: 4px;
+}
+.playerName {
+  display: inline-block;
+  max-width: 5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+/* The round column keeps its place while many players scroll sideways. */
+.table .roundCell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--panel-bg);
+  text-align: left;
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--panel-fg);
+  /* Takes the width the score columns leave; a long answer wraps. */
+  width: 100%;
+  max-width: 0;
+  min-width: 9em;
+}
+/* Scrolling sideways anyway, so the answers get room to read. */
+.scrolls .table .roundCell {
+  min-width: 13em;
+}
+.what {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

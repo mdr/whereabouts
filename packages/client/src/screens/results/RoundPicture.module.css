@@ -1,0 +1,17 @@
+/* A shape round's outline, in its kind's colour (--type). */
+.shape {
+  --picture-bg: var(--card-bg);
+
+  & svg {
+    width: 100%;
+    height: 100%;
+  }
+  & path {
+    fill: var(--type);
+    fill-opacity: 0.85;
+    fill-rule: evenodd;
+    stroke: var(--type);
+    stroke-width: 0.6;
+    stroke-linejoin: round;
+  }
+}

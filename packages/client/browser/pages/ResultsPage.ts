@@ -1,4 +1,5 @@
-import { resultsTestIds } from "../../src/screens/ResultsTestIds.ts"
+import { resultsTestIds } from "../../src/screens/results/ResultsTestIds.ts"
+import { standingsTestIds } from "../../src/screens/results/StandingsTestIds.ts"
 import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"
 import type { Tab } from "./Tab.ts"
@@ -13,7 +14,7 @@ export class ResultsPage extends Screen {
 
   /** Player names, winner first. */
   async standings(): Promise<string[]> {
-    const rows = await this.page.getByTestId(resultsTestIds.standingsRow).all()
+    const rows = await this.page.getByTestId(standingsTestIds.standingsRow).all()
     return Promise.all(rows.map(async (row) => (await row.getAttribute("data-player")) ?? ""))
   }
 

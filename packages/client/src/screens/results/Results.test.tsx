@@ -6,12 +6,21 @@ import { playerColour } from "@whereabouts/shared/colours"
 import { type ResultsGameView } from "@whereabouts/shared/protocol"
 import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 import { signal } from "@preact/signals"
-import { type Connection, type ConnectionState, type PlainState, ConnectionStatus } from "../net/net"
+import { type Connection, type ConnectionState, type PlainState, ConnectionStatus } from "../../net/net"
 import { Results } from "./Results"
-import { resultsTestIds as ids } from "./ResultsTestIds"
-import s from "./Results.module.css"
-import pictures from "../ui/pictures/Pictures.module.css"
-import { makePlayer, makeResultsView } from "../test-view"
+import { resultsTestIds } from "./ResultsTestIds"
+import { standingsTestIds } from "./StandingsTestIds"
+import { roundsTestIds } from "./RoundsTestIds"
+import { roundListTestIds } from "./RoundListTestIds"
+import { scoreTableTestIds } from "./ScoreTableTestIds"
+import { roundWhatTestIds } from "./RoundWhatTestIds"
+import standings from "./Standings.module.css"
+import scoreTable from "./ScoreTable.module.css"
+import roundList from "./RoundList.module.css"
+import roundWhat from "./RoundWhat.module.css"
+import roundPicture from "./RoundPicture.module.css"
+import pictures from "../../ui/pictures/Pictures.module.css"
+import { makePlayer, makeResultsView } from "../../test-view"
 
 const tid = (id: string) => `[data-testid="${id}"]`
 
@@ -24,7 +33,7 @@ const makeConn = (status: PlainState["type"] = ConnectionStatus.CONNECTED, again
   }) as unknown as Connection
 
 // The outlines are a download; these tests only need where a shape goes.
-vi.mock("../data/outlines", async (original) => ({ ...(await original<object>()), useOutline: () => undefined }))
+vi.mock("../../data/outlines", async (original) => ({ ...(await original<object>()), useOutline: () => undefined }))
 
 function view(isHost: boolean): ResultsGameView {
   return makeResultsView({
@@ -56,14 +65,14 @@ describe("Results", () => {
   it("names the winner, lists the standings by total, and highlights you", () => {
     const conn = makeConn()
     const { container } = render(<Results conn={conn} view={view(false)} />)
-    expect(container.querySelector(tid(ids.winner))!.textContent).toContain("Alice")
-    expect(container.querySelector(tid(ids.winner))!.textContent).toContain("wins")
-    const rows = container.querySelectorAll(tid(ids.standingsRow))
+    expect(container.querySelector(tid(resultsTestIds.winner))!.textContent).toContain("Alice")
+    expect(container.querySelector(tid(resultsTestIds.winner))!.textContent).toContain("wins")
+    const rows = container.querySelectorAll(tid(standingsTestIds.standingsRow))
     expect(rows).toHaveLength(2)
-    expect(rows[0]!.querySelector(tid(ids.place))!.textContent).toBe("🥇")
-    expect(rows[1]!.querySelector(tid(ids.place))!.textContent).toBe("🥈")
-    expect(rows[0]!.querySelector(tid(ids.total))!.textContent).toBe("1,500")
-    expect(rows[1]!.classList.contains(s.you!)).toBe(true)
+    expect(rows[0]!.querySelector(tid(standingsTestIds.place))!.textContent).toBe("🥇")
+    expect(rows[1]!.querySelector(tid(standingsTestIds.place))!.textContent).toBe("🥈")
+    expect(rows[0]!.querySelector(tid(standingsTestIds.total))!.textContent).toBe("1,500")
+    expect(rows[1]!.classList.contains(standings.you!)).toBe(true)
     expect(container.querySelectorAll(`button:not(.${pictures.smallPicture!})`)).toHaveLength(0)
     expect(container.textContent).toContain("The host can start another game")
   })
@@ -71,10 +80,10 @@ describe("Results", () => {
   it("tables each round: what it asked, everyone's score in finishing order, its best picked out", () => {
     const conn = makeConn()
     const { container } = render(<Results conn={conn} view={view(false)} />)
-    const heads = [...container.querySelectorAll(tid(ids.playerName))].map((h) => h.textContent)
+    const heads = [...container.querySelectorAll(tid(scoreTableTestIds.playerName))].map((h) => h.textContent)
     expect(heads).toEqual(["Alice", "Bob"])
-    const rounds = [...container.querySelectorAll(tid(ids.playedRound))]
-    expect(rounds.map((r) => r.querySelector(tid(ids.roundLabel))!.textContent)).toEqual([
+    const rounds = [...container.querySelectorAll(tid(roundsTestIds.playedRound))]
+    expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundLabel))!.textContent)).toEqual([
       "Taj Mahal, Agra",
       "Perth, Australia"
     ])
@@ -83,9 +92,9 @@ describe("Results", () => {
       ["700", "750"]
     ])
     // Alice took round 1, Bob round 2.
-    expect(rounds.map((r) => r.querySelector(`td.${s.best!}`)!.textContent)).toEqual(["800", "750"])
+    expect(rounds.map((r) => r.querySelector(`td.${scoreTable.best!}`)!.textContent)).toEqual(["800", "750"])
     expect(rounds[0]!.querySelectorAll(`.${pictures.smallPicture!} img`)).toHaveLength(1)
-    expect(rounds.map((r) => r.querySelector(tid(ids.roundType))!.textContent)).toEqual(["Landmark", "Place name"])
+    expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundType))!.textContent)).toEqual(["Landmark", "Place name"])
   })
 
   it("tells a flag round from a country round: the flag, or the shape with the flag by its name", () => {
@@ -107,14 +116,14 @@ describe("Results", () => {
       }
     ]
     const { container } = render(<Results conn={conn} view={v} />)
-    const rounds = [...container.querySelectorAll(tid(ids.playedRound))]
-    expect(rounds.map((r) => r.querySelector(tid(ids.roundType))!.textContent)).toEqual([
+    const rounds = [...container.querySelectorAll(tid(roundsTestIds.playedRound))]
+    expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundType))!.textContent)).toEqual([
       "Flag",
       "Whole country",
       "Sea"
     ])
-    expect(rounds.map((r) => r.querySelectorAll(`.${s.shape!}`).length)).toEqual([0, 1, 1])
-    expect(rounds.map((r) => r.querySelectorAll(`.${s.labelFlag!}`).length)).toEqual([0, 1, 0])
+    expect(rounds.map((r) => r.querySelectorAll(`.${roundPicture.shape!}`).length)).toEqual([0, 1, 1])
+    expect(rounds.map((r) => r.querySelectorAll(`.${roundWhat.labelFlag!}`).length)).toEqual([0, 1, 0])
   })
 
   it("lists each round's winner and your score where the table won't fit, with the table a click away", () => {
@@ -135,20 +144,20 @@ describe("Results", () => {
     try {
       const conn = makeConn()
       const { container, getByText } = render(<Results conn={conn} view={view(false)} />)
-      expect(container.querySelectorAll(tid(ids.table))).toHaveLength(0)
-      const rounds = [...container.querySelectorAll(tid(ids.playedRound))]
-      expect(rounds.map((r) => r.querySelector(tid(ids.roundLabel))!.textContent)).toEqual([
+      expect(container.querySelectorAll(tid(scoreTableTestIds.table))).toHaveLength(0)
+      const rounds = [...container.querySelectorAll(tid(roundsTestIds.playedRound))]
+      expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundLabel))!.textContent)).toEqual([
         "Taj Mahal, Agra",
         "Perth, Australia"
       ])
-      expect(rounds.map((r) => r.querySelector(tid(ids.roundWinner))!.textContent)).toEqual(["Alice800", "Bob750"])
+      expect(rounds.map((r) => r.querySelector(tid(roundListTestIds.roundWinner))!.textContent)).toEqual(["Alice800", "Bob750"])
       // You are Bob: your score, picked out where you won.
-      expect(rounds.map((r) => r.querySelector(tid(ids.roundYours))!.textContent)).toEqual(["500", "750"])
-      expect(rounds[1]!.querySelector(tid(ids.roundYours))!.classList.contains(s.best!)).toBe(true)
+      expect(rounds.map((r) => r.querySelector(tid(roundListTestIds.roundYours))!.textContent)).toEqual(["500", "750"])
+      expect(rounds[1]!.querySelector(tid(roundListTestIds.roundYours))!.classList.contains(roundList.best!)).toBe(true)
       fireEvent.click(getByText("Everyone's scores (2)"))
-      expect(container.querySelectorAll(tid(ids.table))).toHaveLength(1)
+      expect(container.querySelectorAll(tid(scoreTableTestIds.table))).toHaveLength(1)
       fireEvent.click(getByText("Just the winners"))
-      expect(container.querySelectorAll(tid(ids.table))).toHaveLength(0)
+      expect(container.querySelectorAll(tid(scoreTableTestIds.table))).toHaveLength(0)
     } finally {
       vi.unstubAllGlobals()
     }
@@ -165,7 +174,7 @@ describe("Results", () => {
     const { container, getByText } = render(
       <Results conn={makeConn(ConnectionStatus.DISCONNECTED)} view={view(true)} />
     )
-    expect(container.querySelector<HTMLButtonElement>(tid(ids.playAgainButton))!.disabled).toBe(true)
+    expect(container.querySelector<HTMLButtonElement>(tid(resultsTestIds.playAgainButton))!.disabled).toBe(true)
     getByText("Reconnecting…")
   })
 })

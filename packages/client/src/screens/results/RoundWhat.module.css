@@ -1,0 +1,38 @@
+.number {
+  flex: none;
+  width: 1.4em;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.label {
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.25;
+}
+.labelFlag {
+  height: 12px;
+  margin-left: 6px;
+  vertical-align: -1px;
+}
+.type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.type::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--type);
+}
