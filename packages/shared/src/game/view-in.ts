@@ -1,4 +1,4 @@
-import type { GameView, Phase } from "../protocol.ts"
+import type { GameView, Phase } from "../protocol/views.ts"
 
 /** For tests: a view of one phase, or a failure naming the phase it was in. */
 export type GameViewIn<P extends Phase> = Extract<GameView, { phase: P }>

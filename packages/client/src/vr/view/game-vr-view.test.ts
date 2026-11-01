@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 import { signal } from "@preact/signals"
 import { playerId, playerName } from "@whereabouts/shared/ids"
-import type { InPlayGameView } from "@whereabouts/shared/protocol"
+import type { InPlayGameView } from "@whereabouts/shared/protocol/views"
 import { ConnectionStatus, type Connection, type ConnectionState, type PlainState } from "../../net/net"
 import type { PaintController } from "../../paint/paint-controller"
 import { gameVrView } from "./game-vr-view"

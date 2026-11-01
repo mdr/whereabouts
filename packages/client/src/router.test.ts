@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
 import { roomCode } from "@whereabouts/shared/ids"
-import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol"
+import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
 import { Role } from "@whereabouts/shared/roles"
 import { navigate, parseRoute, route, RouteType } from "./router"
 

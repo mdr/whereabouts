@@ -1,7 +1,7 @@
 import type { PlayerId } from "@whereabouts/shared/ids"
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
-import { outlineOf, RoundGuessType, type GameView, type RevealView } from "@whereabouts/shared/protocol"
+import { outlineOf, RoundGuessType, type GameView, type RevealView } from "@whereabouts/shared/protocol/views"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { QuestionType, clueFlag } from "@whereabouts/shared/questions"
 import type { Connection } from "../../../net/net"

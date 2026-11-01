@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { CATALOGUE, outlinesFrom } from "../catalogue/catalogue.ts"
-import { evenMix, mixOf, MapDetail, type QuestionMix } from "../protocol.ts"
+import { evenMix, mixOf, MapDetail, type QuestionMix } from "../protocol/config.ts"
 import { FeatureType, QuestionType, type Question } from "../questions.ts"
 import { pickRounds, type QuestionBank } from "./round-picking.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }

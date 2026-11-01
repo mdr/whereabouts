@@ -2,7 +2,7 @@
 import type { PlayerFacts } from "../awards/awards.ts"
 import type { PlayerToken } from "../ids.ts"
 import type { Points } from "../units.ts"
-import type { FinalStanding } from "../protocol.ts"
+import type { FinalStanding } from "../protocol/views.ts"
 import { Role, type PlayingPlayerView, type SpectatorView } from "../roles.ts"
 import { isPlayer, type PlayerSeat, type Seat } from "./seats.ts"
 

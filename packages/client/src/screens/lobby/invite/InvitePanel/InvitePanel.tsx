@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks"
-import { MAX_PLAYERS, type GameView } from "@whereabouts/shared/protocol"
+import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
+import { type GameView } from "@whereabouts/shared/protocol/views"
 import { YouRoleType } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../../net/net"
 import { askedToWatch, savedName } from "../../../../settings/settings"

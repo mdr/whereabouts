@@ -1,4 +1,5 @@
-import { MAP_DETAILS, mixTotal, type GameView } from "@whereabouts/shared/protocol"
+import { MAP_DETAILS, mixTotal } from "@whereabouts/shared/protocol/config"
+import { type GameView } from "@whereabouts/shared/protocol/views"
 import { describeMix } from "../../../ui/setup/describe-mix"
 
 /** The setup in a line, for a guest in the headset. */

@@ -6,7 +6,7 @@ import { questionPictures, questionView } from "@whereabouts/shared/game/game-vi
 import { scoreAnswer, scoredAnswer } from "@whereabouts/shared/scoring/regions"
 import { QuestionType, answerCentre, type Outlines, type Question } from "@whereabouts/shared/questions"
 import type { LatLon } from "@whereabouts/shared/geo"
-import { onWater } from "@whereabouts/shared/protocol"
+import { onWater } from "@whereabouts/shared/protocol/views"
 import { usePaint } from "../../ui/map/MapView/MapView"
 import { formatPoints } from "../../ui/format"
 import { forTabbedControl } from "../../keyboard/keys"

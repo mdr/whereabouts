@@ -9,8 +9,8 @@ import {
   roomCode,
   wikiTitle
 } from "@whereabouts/shared/ids"
+import { mixOf, MapDetail } from "@whereabouts/shared/protocol/config"
 import {
-  mixOf,
   type GameView,
   type GuessingGameView,
   type LobbyGameView,
@@ -21,9 +21,8 @@ import {
   RoundGuessType,
   type RoundGuess,
   type RoundResultView,
-  Phase,
-  MapDetail
-} from "@whereabouts/shared/protocol"
+  Phase
+} from "@whereabouts/shared/protocol/views"
 import { AnswerType, ClueType, QuestionType, Surface, type FlagQuestion } from "@whereabouts/shared/questions"
 import {
   Role,

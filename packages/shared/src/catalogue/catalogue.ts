@@ -4,7 +4,7 @@ import placesJson from "../../places.json" with { type: "json" }
 import { CatalogueEntrySchema, joinQuestion } from "./catalogue-entry.ts"
 import { outlineId } from "../ids.ts"
 import { placesFrom } from "./places.ts"
-import { showsLakes, type MapDetail } from "../protocol.ts"
+import { showsLakes, type MapDetail } from "../protocol/config.ts"
 import {
   FeatureType,
   QUESTION_TYPES,

@@ -1,5 +1,6 @@
 import { Fragment } from "preact"
-import { MAX_SPECTATORS, type GameView } from "@whereabouts/shared/protocol"
+import { MAX_SPECTATORS } from "@whereabouts/shared/protocol/config"
+import { type GameView } from "@whereabouts/shared/protocol/views"
 import type { PlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../../net/net"
 import { PlayerList } from "../../../../ui/players/PlayerList/PlayerList"

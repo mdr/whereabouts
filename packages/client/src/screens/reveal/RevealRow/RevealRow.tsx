@@ -1,6 +1,6 @@
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import type { HintAxis } from "@whereabouts/shared/hints"
-import { RoundGuessType, type RoundResultView } from "@whereabouts/shared/protocol"
+import { RoundGuessType, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
 import players from "../../../ui/players/Players.module.css"

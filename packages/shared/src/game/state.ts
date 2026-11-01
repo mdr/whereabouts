@@ -2,7 +2,7 @@
 import type { Award } from "../awards/awards.ts"
 import type { HintAxis } from "../hints.ts"
 import type { PlayerToken } from "../ids.ts"
-import { Phase, type FinalStanding, type PlayedRound, type RoundReveal } from "../protocol.ts"
+import { Phase, type FinalStanding, type PlayedRound, type RoundReveal } from "../protocol/views.ts"
 import type { Question } from "../questions.ts"
 import { SubmissionType, type Submission } from "../scoring/round-scoring.ts"
 import type { Instant } from "../units.ts"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { MapDetail } from "@whereabouts/shared/protocol"
+import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { RevealDetail } from "../map/shown-detail"
 import type { VrFlagPin } from "./globe/flag-pins"
 import type { VrTable } from "./scores/scores"

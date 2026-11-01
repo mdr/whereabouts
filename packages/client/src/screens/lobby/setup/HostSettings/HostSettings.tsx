@@ -1,4 +1,5 @@
-import { ROUND_LENGTHS, type GameView } from "@whereabouts/shared/protocol"
+import { ROUND_LENGTHS } from "@whereabouts/shared/protocol/config"
+import { type GameView } from "@whereabouts/shared/protocol/views"
 import { MAX_HINTS } from "@whereabouts/shared/hints"
 import type { Connection } from "../../../../net/net"
 import { configureAsHost } from "../../../../settings/host-setup"

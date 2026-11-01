@@ -1,4 +1,4 @@
-import { outlineOf, type QuestionView } from "@whereabouts/shared/protocol"
+import { outlineOf, type QuestionView } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { areaNoun } from "../../../round/round"
 import { CardPlace, QuestionCard } from "../question/QuestionCard/QuestionCard"

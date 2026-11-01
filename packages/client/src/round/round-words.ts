@@ -1,5 +1,5 @@
 /** What the page and the headset both say about a round and its reveal, so they say the same. */
-import type { RoundResultView } from "@whereabouts/shared/protocol"
+import type { RoundResultView } from "@whereabouts/shared/protocol/views"
 import { PASS_SCORE } from "@whereabouts/shared/scoring/scoring"
 import { RoundNote } from "./round-model"
 

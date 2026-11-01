@@ -1,4 +1,4 @@
-import { GameEntryType } from "@whereabouts/shared/protocol"
+import { GameEntryType } from "@whereabouts/shared/protocol/ticket"
 import { route, RouteType, visit } from "./router"
 import { Home } from "./screens/Home/Home"
 import { Solo } from "./screens/solo/Solo/Solo"

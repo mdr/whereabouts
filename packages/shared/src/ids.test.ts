@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { flagCode, generateCode, playerId, playerToken, questionId, outlineId, roomCode } from "./ids.ts"
-import { GameEntryType, KickSchema, PROTOCOL_VERSION, decodeTicket, encodeTicket, type Ticket } from "./protocol.ts"
+import { GameEntryType, PROTOCOL_VERSION, decodeTicket, encodeTicket, type Ticket } from "./protocol/ticket.ts"
+import { KickSchema } from "./protocol/client-messages.ts"
 
 describe("identifiers", () => {
   it("are made only from strings of their own format", () => {

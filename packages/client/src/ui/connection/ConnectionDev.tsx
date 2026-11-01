@@ -1,4 +1,4 @@
-import type { GameView } from "@whereabouts/shared/protocol"
+import type { GameView } from "@whereabouts/shared/protocol/views"
 import { everyone } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import { Card } from "../Card/Card"

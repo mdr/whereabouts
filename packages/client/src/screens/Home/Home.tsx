@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks"
-import { MAP_DETAILS } from "@whereabouts/shared/protocol"
+import { MAP_DETAILS } from "@whereabouts/shared/protocol/config"
 import { nameHandoff, nameToJoin, savedName, soloMapDetail, soloTypes, watchHandoff } from "../../settings/settings"
 import { navigate } from "../../router"
 import { Icon } from "../../ui/icons"

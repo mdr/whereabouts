@@ -11,7 +11,7 @@ import {
   type RevealView,
   type RoundResultView,
   type RoundYouView
-} from "@whereabouts/shared/protocol"
+} from "@whereabouts/shared/protocol/views"
 import { YouRoleType, type PlayingPlayerView } from "@whereabouts/shared/roles"
 import {
   RevealShownType,

@@ -1,6 +1,6 @@
 import type { CssColour } from "@whereabouts/shared/colours"
 import { colourCss } from "@whereabouts/shared/colours"
-import type { ResultsGameView } from "@whereabouts/shared/protocol"
+import type { ResultsGameView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../net/net"
 import { Icon } from "../../../ui/icons"

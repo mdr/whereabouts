@@ -1,5 +1,5 @@
 /** What you may do with your guess, the same on the page and in the headset. */
-import { Phase, type GameView } from "@whereabouts/shared/protocol"
+import { Phase, type GameView } from "@whereabouts/shared/protocol/views"
 import { YouRoleType, type YouPlaying } from "@whereabouts/shared/roles"
 
 /** Your role as a player of a round still running, or none. */

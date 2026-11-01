@@ -2,7 +2,7 @@
  * What the map shows at each level of detail, for the page's map and the
  * headset's globe alike. Each level adds to the one before it.
  */
-import { MapDetail } from "@whereabouts/shared/protocol"
+import { MapDetail } from "@whereabouts/shared/protocol/config"
 
 /** The reveal's detail: everything but roads, beyond the guessing levels. */
 export enum RevealDetail {

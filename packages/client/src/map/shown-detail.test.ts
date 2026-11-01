@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { MapDetail, showsLakes } from "@whereabouts/shared/protocol"
+import { MapDetail, showsLakes } from "@whereabouts/shared/protocol/config"
 import {
   RevealDetail,
   showsBorders,

@@ -4,25 +4,16 @@
  */
 import { WSClient, type ClientKickedEvent, type WSClientOptions } from "@rivalis/browser"
 import { computed, signal } from "@preact/signals"
+import { type ClientSend, type ClientTopic } from "@whereabouts/shared/protocol/client-messages"
+import { type ConfigurePatch, MAX_PLAYERS, MAX_SPECTATORS } from "@whereabouts/shared/protocol/config"
+import { GameEntryType, PROTOCOL_VERSION, encodeTicket, type Ticket } from "@whereabouts/shared/protocol/ticket"
 import {
-  type ClientSend,
-  type ClientTopic,
-  type ConfigurePatch,
-  MAX_PLAYERS,
-  MAX_SPECTATORS,
-  GameEntryType,
-  PROTOCOL_VERSION,
-  encodeTicket,
   revealFrom,
-  type GameView,
-  type PaintSubmission,
   type RevealMessage,
-  type RoundReveal,
   type StateMessage,
-  type Ticket,
-  viewFrom,
-  Phase
-} from "@whereabouts/shared/protocol"
+  viewFrom
+} from "@whereabouts/shared/protocol/server-messages"
+import { type GameView, type PaintSubmission, type RoundReveal, Phase } from "@whereabouts/shared/protocol/views"
 import { Role } from "@whereabouts/shared/roles"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import { CloseReason, isCloseReason } from "@whereabouts/shared/close-reason"

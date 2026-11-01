@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
 import { placeId, questionId, wikiTitle } from "@whereabouts/shared/ids"
-import { MapDetail } from "@whereabouts/shared/protocol"
+import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { scoredAnswer } from "@whereabouts/shared/scoring/regions"
 import { DEFAULT_KERNEL } from "@whereabouts/shared/scoring/scoring"
 import { AnswerType, ClueType, QuestionType, type PlaceQuestion } from "@whereabouts/shared/questions"

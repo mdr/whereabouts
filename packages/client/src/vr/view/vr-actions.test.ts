@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { playerId, playerName } from "@whereabouts/shared/ids"
-import { MAX_PLAYERS } from "@whereabouts/shared/protocol"
+import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import { Role } from "@whereabouts/shared/roles"
 import { makePlayer, makeLobbyView } from "../../test-view"
 import { hostActions, pickable, takeSeat, vrPicked } from "./vr-actions"

@@ -3,7 +3,7 @@
  * a count per type with − / +; the counts are the game's rounds. A strip of coloured cells, one per round, shows the game at a
  * glance, to the host and (in the setup summary) to guests.
  */
-import { MAX_ROUNDS, mixTotal, type QuestionMix } from "@whereabouts/shared/protocol"
+import { MAX_ROUNDS, mixTotal, type QuestionMix } from "@whereabouts/shared/protocol/config"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { QUESTION_TYPE_LOOKS, typeColour } from "../../../question-types"
 import { Stepper } from "../Stepper/Stepper"

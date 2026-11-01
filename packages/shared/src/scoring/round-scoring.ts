@@ -2,7 +2,7 @@
 import { FactsType, type RoundFacts } from "../awards/awards.ts"
 import { explainPoint, isHedge } from "./explain.ts"
 import { PaintLayer, resolutionForTolerance } from "../paint/paint.ts"
-import { RoundGuessType, type PaintSubmission, type RoundGuess } from "../protocol.ts"
+import { RoundGuessType, type PaintSubmission, type RoundGuess } from "../protocol/views.ts"
 import { AnswerType } from "../questions.ts"
 import { regionMisfit, scoreAnswer, type ScoredAnswer } from "./regions.ts"
 import { buildDistribution, type Kernel } from "./scoring.ts"

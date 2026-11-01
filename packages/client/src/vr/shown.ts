@@ -1,5 +1,5 @@
 /** What each part of the headset shows of a view. */
-import type { MapDetail } from "@whereabouts/shared/protocol"
+import type { MapDetail } from "@whereabouts/shared/protocol/config"
 import { RevealDetail, type ShownDetail } from "../map/shown-detail"
 import type { VrBoard } from "./scores/board"
 import type { VrFlagPin } from "./globe/flag-pins"

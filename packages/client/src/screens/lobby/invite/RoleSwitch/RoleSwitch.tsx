@@ -1,4 +1,5 @@
-import { MAX_PLAYERS, MAX_SPECTATORS, type GameView } from "@whereabouts/shared/protocol"
+import { MAX_PLAYERS, MAX_SPECTATORS } from "@whereabouts/shared/protocol/config"
+import { type GameView } from "@whereabouts/shared/protocol/views"
 import { Role, YouRoleType } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../../net/net"
 import { Icon } from "../../../../ui/icons"

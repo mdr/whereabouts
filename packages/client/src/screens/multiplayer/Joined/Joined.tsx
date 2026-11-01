@@ -1,5 +1,6 @@
 import { useEffect } from "preact/hooks"
-import { GameEntryType, Phase, type GameEntry, type GameView } from "@whereabouts/shared/protocol"
+import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
+import { Phase, type GameView } from "@whereabouts/shared/protocol/views"
 import { ConnectionStatus, RejectionAction, type Connection } from "../../../net/net"
 import { joinedCode, resetPlayerToken } from "../../../settings/settings"
 import { preloadPictures } from "../../../data/preload"

@@ -7,7 +7,7 @@
 import { BufferAttribute, BufferGeometry, CanvasTexture, Mesh, MeshBasicMaterial, SRGBColorSpace } from "three"
 import { greatCircleDistance, toDegrees, toRadians, type LatLon } from "@whereabouts/shared/geo"
 import type { HintBand } from "@whereabouts/shared/hints"
-import type { MapDetail } from "@whereabouts/shared/protocol"
+import type { MapDetail } from "@whereabouts/shared/protocol/config"
 import { GameMap } from "../../map/map"
 import { EQUATORIAL_CIRCUMFERENCE, zoomForWorldWidth } from "../../map/map-geometry"
 import { RevealDetail } from "../../map/shown-detail"

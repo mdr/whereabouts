@@ -4,7 +4,7 @@ import { playedRound, questionPictures, questionView, revealOf } from "./game-vi
 import { h3Res } from "../h3.ts"
 import { playerId } from "../ids.ts"
 import { REVEAL_PHOTOS } from "../catalogue/photos.ts"
-import { RoundGuessType, type RoundResultView } from "../protocol.ts"
+import { RoundGuessType, type RoundResultView } from "../protocol/views.ts"
 import { AnswerType, ClueType, FLAG_POINT_PROMPT, QuestionType, answerCentre, promptOf } from "../questions.ts"
 
 const byId = (id: string) => CATALOGUE.find((question) => question.id === id)!

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import type { GuessingYouView } from "@whereabouts/shared/protocol"
+import type { GuessingYouView } from "@whereabouts/shared/protocol/views"
 import { canPaint, canUnlock } from "./editing"
 import { JOINED_LATE, SPECTATING, makeGuessingView, makePlaying, makeRevealView } from "../test-view"
 

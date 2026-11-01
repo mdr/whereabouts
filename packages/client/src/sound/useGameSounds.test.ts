@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { renderHook } from "@testing-library/preact"
-import { Phase } from "@whereabouts/shared/protocol"
+import { Phase } from "@whereabouts/shared/protocol/views"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 import { Chime } from "./sound"
 import { useGameSounds } from "./useGameSounds"

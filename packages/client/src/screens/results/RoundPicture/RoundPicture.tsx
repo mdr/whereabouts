@@ -1,4 +1,4 @@
-import type { PlayedRound } from "@whereabouts/shared/protocol"
+import type { PlayedRound } from "@whereabouts/shared/protocol/views"
 import type { QuestionType } from "@whereabouts/shared/questions"
 import { useMemo } from "preact/hooks"
 import { useOutline } from "../../../data/outlines"

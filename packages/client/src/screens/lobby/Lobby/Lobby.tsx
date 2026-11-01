@@ -1,5 +1,6 @@
 import { useEffect } from "preact/hooks"
-import { MAX_PLAYERS, MAX_SPECTATORS, type GameView } from "@whereabouts/shared/protocol"
+import { MAX_PLAYERS, MAX_SPECTATORS } from "@whereabouts/shared/protocol/config"
+import { type GameView } from "@whereabouts/shared/protocol/views"
 import { colourCss } from "@whereabouts/shared/colours"
 import { Role, YouRoleType, everyone } from "@whereabouts/shared/roles"
 import type { Connection } from "../../../net/net"

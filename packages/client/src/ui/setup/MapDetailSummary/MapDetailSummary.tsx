@@ -1,4 +1,4 @@
-import { MAP_DETAILS, type MapDetail } from "@whereabouts/shared/protocol"
+import { MAP_DETAILS, type MapDetail } from "@whereabouts/shared/protocol/config"
 import { MAP_PREVIEWS } from "../map-previews"
 import styles from "./MapDetailSummary.module.css"
 

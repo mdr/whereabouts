@@ -1,4 +1,4 @@
-import { mixTotal, type QuestionMix } from "@whereabouts/shared/protocol"
+import { mixTotal, type QuestionMix } from "@whereabouts/shared/protocol/config"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { typeColour } from "../../../question-types"
 import { cx } from "../../cx"

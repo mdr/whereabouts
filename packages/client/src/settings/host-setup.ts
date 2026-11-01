@@ -9,10 +9,9 @@ import {
   MAX_ROUNDS,
   mixOf,
   type ConfigurePatch,
-  type GameView,
-  type QuestionMix,
-  Phase
-} from "@whereabouts/shared/protocol"
+  type QuestionMix
+} from "@whereabouts/shared/protocol/config"
+import { type GameView, Phase } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "../net/net"
 import { hostSetup } from "./settings"

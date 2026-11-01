@@ -2,7 +2,7 @@
 import { effect, signal } from "@preact/signals"
 import { z } from "zod"
 import { DEFAULT_KERNEL, KernelIdSchema } from "@whereabouts/shared/scoring/scoring"
-import { MapDetailSchema, MapDetail } from "@whereabouts/shared/protocol"
+import { MapDetailSchema, MapDetail } from "@whereabouts/shared/protocol/config"
 import { QuestionType } from "@whereabouts/shared/questions"
 import {
   PlayerNameSchema,

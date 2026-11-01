@@ -1,7 +1,7 @@
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import { colourCss, type CssColour } from "@whereabouts/shared/colours"
 import type { H3Res } from "@whereabouts/shared/h3"
-import { RoundGuessType, type PaintSubmission, type RoundResultView } from "@whereabouts/shared/protocol"
+import { RoundGuessType, type PaintSubmission, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 
 /** A player's paint at a reveal, in their colour, ready to draw. */

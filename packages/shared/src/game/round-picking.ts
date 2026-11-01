@@ -1,7 +1,7 @@
 /** Picking a game's rounds from the catalogue. */
 import { poolOf } from "../catalogue/catalogue.ts"
 import type { PlaceId } from "../ids.ts"
-import type { GameConfig } from "../protocol.ts"
+import type { GameConfig } from "../protocol/config.ts"
 import { QUESTION_TYPES, shuffle, type Outlines, type Question } from "../questions.ts"
 import { roundsOverlap, scoredAnswer } from "../scoring/regions.ts"
 

@@ -1,4 +1,4 @@
-import type { GameView } from "@whereabouts/shared/protocol"
+import type { GameView } from "@whereabouts/shared/protocol/views"
 import type { Connection } from "../../../../net/net"
 import { HostWord } from "../../../../ui/players/HostWord"
 import { Icon } from "../../../../ui/icons"

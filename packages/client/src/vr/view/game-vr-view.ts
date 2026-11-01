@@ -10,7 +10,7 @@ import {
   type GameView,
   type InPlayGameView,
   type RevealView
-} from "@whereabouts/shared/protocol"
+} from "@whereabouts/shared/protocol/views"
 import { YouRoleType, type PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import type { PaintController } from "../../paint/paint-controller"

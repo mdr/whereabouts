@@ -1,5 +1,5 @@
 import type { PlayerId } from "@whereabouts/shared/ids"
-import type { FinalStanding } from "@whereabouts/shared/protocol"
+import type { FinalStanding } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"

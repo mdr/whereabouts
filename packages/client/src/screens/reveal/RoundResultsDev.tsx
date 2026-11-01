@@ -1,6 +1,6 @@
 import type { PlayerId } from "@whereabouts/shared/ids"
 import { AnswerType } from "@whereabouts/shared/questions"
-import { RoundGuessType, type RevealView } from "@whereabouts/shared/protocol"
+import { RoundGuessType, type RevealView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { AnswerParts } from "@whereabouts/shared/scoring/regions"
 import { Card } from "../../ui/Card/Card"

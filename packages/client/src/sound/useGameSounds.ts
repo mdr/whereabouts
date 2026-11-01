@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "preact/hooks"
-import type { GuessingGameView, LobbyGameView, ResultsGameView, RevealView } from "@whereabouts/shared/protocol"
+import type { GuessingGameView, LobbyGameView, ResultsGameView, RevealView } from "@whereabouts/shared/protocol/views"
 import type { Connection } from "../net/net"
 import { Chime, sound } from "./sound"
 import { RoundCue, roundCue, type RoundState } from "./round-cue"
-import { Phase } from "@whereabouts/shared/protocol"
+import { Phase } from "@whereabouts/shared/protocol/views"
 
 /** What the sounds follow in a game view. */
 type SoundView =

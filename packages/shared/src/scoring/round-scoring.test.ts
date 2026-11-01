@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { CATALOGUE, outlinesFrom } from "../catalogue/catalogue.ts"
 import { PaintLayer, resolutionForTolerance } from "../paint/paint.ts"
-import { RoundGuessType, type PaintSubmission } from "../protocol.ts"
+import { RoundGuessType, type PaintSubmission } from "../protocol/views.ts"
 import { FactsType } from "../awards/awards.ts"
 import { AnswerType } from "../questions.ts"
 import { regionCells, scoredAnswer, type Area, type ScoredAnswer } from "./regions.ts"

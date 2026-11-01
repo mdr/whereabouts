@@ -1,7 +1,7 @@
 /** Who is in the room: seats, colours, capacity, the grace for absent players, bans, and the host role. */
 import { playerColour, type PlayerColour } from "../colours.ts"
 import { playerId, type PlayerId, type PlayerName, type PlayerToken } from "../ids.ts"
-import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE } from "../protocol.ts"
+import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE } from "../protocol/config.ts"
 import { CloseReason } from "../close-reason.ts"
 import { Role } from "../roles.ts"
 import { OK_CHANGED, fail, type CommandResult, type JoinResult } from "./command-result.ts"

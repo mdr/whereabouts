@@ -21,17 +21,14 @@ import { regionCells, scoredAnswer, type Area } from "../scoring/regions.ts"
 import {
   type ConfigurePatch,
   type GameConfig,
-  type GameView,
   MAX_PLAYERS,
   MAX_SPECTATORS,
-  type QuestionView,
   SEAT_GRACE,
   mixOf,
   mixTotal,
-  MapDetail,
-  Phase,
-  RoundGuessType
-} from "../protocol.ts"
+  MapDetail
+} from "../protocol/config.ts"
+import { type GameView, type QuestionView, Phase, RoundGuessType } from "../protocol/views.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import {
   commonsFile,
@@ -47,7 +44,7 @@ import {
 } from "../ids.ts"
 import type { LatLon } from "../geo.ts"
 import { PLAYER_COLOURS } from "../colours.ts"
-import { GameViewSchema } from "../view-schema.ts"
+import { GameViewSchema } from "../protocol/view-schema.ts"
 import { inHintBand, HintAxis } from "../hints.ts"
 import { CloseReason } from "../close-reason.ts"
 import { Role, YouRoleType, everyone } from "../roles.ts"

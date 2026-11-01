@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "preact/hooks"
 import { compactRecord } from "@whereabouts/shared/paint/paint"
-import { Phase, type InPlayGameView } from "@whereabouts/shared/protocol"
+import { Phase, type InPlayGameView } from "@whereabouts/shared/protocol/views"
 import { YouRoleType } from "@whereabouts/shared/roles"
 import { canPaint } from "../round/editing"
 import { type Connection, ConnectionStatus } from "../net/net"

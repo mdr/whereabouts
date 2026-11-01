@@ -10,32 +10,37 @@ import { viewIn } from "@whereabouts/shared/game/view-in"
 import { PAINT_CELL_BUDGET, PaintLayer, compactRecord, resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import {
   PROTOCOL_VERSION,
-  type ClientSend,
-  type ClientTopic,
+  encodeTicket,
+  type GameEntry,
+  GameEntryType,
+  type Ticket
+} from "@whereabouts/shared/protocol/ticket"
+import { type ClientSend, type ClientTopic } from "@whereabouts/shared/protocol/client-messages"
+import {
   MAX_PLAYERS,
   MAX_SPECTATORS,
   EMPTY_GAME_GRACE,
   EMPTY_RESULTS_GRACE,
   SEAT_GRACE,
-  encodeTicket,
-  type GameEntry,
-  GameEntryType,
-  type Ticket,
+  mixOf,
+  mixTotal
+} from "@whereabouts/shared/protocol/config"
+import {
   revealFrom,
   viewFrom,
+  type RevealMessage,
+  type StateMessage
+} from "@whereabouts/shared/protocol/server-messages"
+import {
   type GameView,
   type PaintSubmission,
-  type RevealMessage,
   type RoundReveal,
-  type StateMessage,
-  mixOf,
-  mixTotal,
   Phase,
   RoundGuessType
-} from "@whereabouts/shared/protocol"
+} from "@whereabouts/shared/protocol/views"
 import { ROUND_GRACE } from "@whereabouts/shared/game/game"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
-import { GameViewSchema } from "@whereabouts/shared/view-schema"
+import { GameViewSchema } from "@whereabouts/shared/protocol/view-schema"
 import { CATALOGUE } from "@whereabouts/shared/catalogue/catalogue"
 import { gridDisk, h3Res, latLngToCell } from "@whereabouts/shared/h3"
 import { HintAxis } from "@whereabouts/shared/hints"

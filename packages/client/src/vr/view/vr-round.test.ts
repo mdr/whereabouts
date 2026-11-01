@@ -10,7 +10,7 @@ import type { RevealedAnswer } from "../../round/round"
 import { answerModeText, vrReveal, vrRound, vrScoreLine, type VrRoundShown, type VrScore } from "./vr-round"
 import { VrPictureType } from "../picture/vr-picture"
 import { HintAllowance, VrAnswerType, VrPaintsType } from "./view"
-import { MapDetail } from "@whereabouts/shared/protocol"
+import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { FactType } from "@whereabouts/shared/catalogue/facts"
 
 function painted(flag: string, label: string, share: number): PaintedCountry {

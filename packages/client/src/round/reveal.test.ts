@@ -1,7 +1,7 @@
 import type { Outline } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
-import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol"
+import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { SHOW_EVERYONE, SHOW_NOBODY, revealedFromView, revealOrder, showPlayer, shownResults } from "./reveal"
 import { areaAnswerView, makePainted, makePlayer, makeQuestionView } from "../test-view"

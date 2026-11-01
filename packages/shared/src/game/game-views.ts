@@ -8,7 +8,7 @@ import type {
   QuestionView,
   RoundResultView,
   RoundReveal
-} from "../protocol.ts"
+} from "../protocol/views.ts"
 import type { Instant } from "../units.ts"
 import { AnswerType, ClueType, QuestionType, answerCentre, flagShown, type Question } from "../questions.ts"
 

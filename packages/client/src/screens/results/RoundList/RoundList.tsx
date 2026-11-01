@@ -1,6 +1,6 @@
 import type { PlayerId } from "@whereabouts/shared/ids"
 import type { Points } from "@whereabouts/shared/units"
-import type { FinalStanding, PlayedRound } from "@whereabouts/shared/protocol"
+import type { FinalStanding, PlayedRound } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"

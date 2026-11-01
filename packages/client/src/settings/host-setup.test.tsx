@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { render } from "@testing-library/preact"
-import { mixOf, type GameView, Phase, MapDetail } from "@whereabouts/shared/protocol"
+import { mixOf, MapDetail } from "@whereabouts/shared/protocol/config"
+import { type GameView, Phase } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "../net/net"
 import { hostSetup } from "./settings"

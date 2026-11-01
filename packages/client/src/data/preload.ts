@@ -3,7 +3,8 @@
  * (and the reveal's photo) is already in the page's image cache when it is shown.
  */
 import { commonsImageUrl } from "@whereabouts/shared/questions"
-import { MAX_ROUNDS, type QuestionPictures } from "@whereabouts/shared/protocol"
+import { MAX_ROUNDS } from "@whereabouts/shared/protocol/config"
+import { type QuestionPictures } from "@whereabouts/shared/protocol/views"
 import { flagUrl } from "../flags/flags"
 import { vrPhotoUrl } from "../vr/picture/vr-picture"
 import { loadedVr } from "../vr/vr-support"

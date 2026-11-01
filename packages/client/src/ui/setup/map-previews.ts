@@ -1,4 +1,4 @@
-import { MapDetail } from "@whereabouts/shared/protocol"
+import { MapDetail } from "@whereabouts/shared/protocol/config"
 import minimal from "../../assets/map-minimal.jpg"
 import water from "../../assets/map-water.jpg"
 import physical from "../../assets/map-physical.jpg"

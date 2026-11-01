@@ -5,7 +5,8 @@
  */
 import { signal } from "@preact/signals"
 import type { PlayerId } from "@whereabouts/shared/ids"
-import { MAX_PLAYERS, type GameView } from "@whereabouts/shared/protocol"
+import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
+import { type GameView } from "@whereabouts/shared/protocol/views"
 import { Role, everyone, type PlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
 import type { VrAction } from "./view"

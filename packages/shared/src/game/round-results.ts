@@ -1,5 +1,5 @@
 /** Scoring a finished round for everyone who played it. */
-import type { RoundResultView } from "../protocol.ts"
+import type { RoundResultView } from "../protocol/views.ts"
 import type { Outlines } from "../questions.ts"
 import { scoredAnswer } from "../scoring/regions.ts"
 import { scoreRound } from "../scoring/round-scoring.ts"

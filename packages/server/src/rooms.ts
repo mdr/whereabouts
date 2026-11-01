@@ -15,23 +15,18 @@ import { type z } from "zod"
 import {
   ClientMessageSchemas,
   type ClientMessages,
-  type ClientTopic,
-  EMPTY_GAME_GRACE,
-  EMPTY_RESULTS_GRACE,
-  Phase,
-  SEAT_GRACE,
+  type ClientTopic
+} from "@whereabouts/shared/protocol/client-messages"
+import { EMPTY_GAME_GRACE, EMPTY_RESULTS_GRACE, SEAT_GRACE, type GameConfig } from "@whereabouts/shared/protocol/config"
+import { Phase, type PaintSubmission, type RoundReveal } from "@whereabouts/shared/protocol/views"
+import {
   ServerTopics,
   decodeMessage,
-  decodeTicket,
   encodeMessage,
   revealMessage,
-  stateMessage,
-  GameEntryType,
-  type GameConfig,
-  type GameEntry,
-  type PaintSubmission,
-  type RoundReveal
-} from "@whereabouts/shared/protocol"
+  stateMessage
+} from "@whereabouts/shared/protocol/server-messages"
+import { decodeTicket, GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
 import type { CommandResult } from "@whereabouts/shared/game/command-result"
 import { Game } from "@whereabouts/shared/game/game"
 import type { QuestionBank } from "@whereabouts/shared/game/round-picking"

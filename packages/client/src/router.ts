@@ -6,7 +6,7 @@
  */
 import { batch, signal } from "@preact/signals"
 import { roomCode } from "@whereabouts/shared/ids"
-import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol"
+import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
 import { Role } from "@whereabouts/shared/roles"
 
 export enum RouteType {

@@ -6,7 +6,7 @@
  */
 import { useEffect } from "preact/hooks"
 import { AREA_TYPES } from "@whereabouts/shared/catalogue/catalogue"
-import type { QuestionMix } from "@whereabouts/shared/protocol"
+import type { QuestionMix } from "@whereabouts/shared/protocol/config"
 import { QuestionType } from "@whereabouts/shared/questions"
 import type { Borders } from "@whereabouts/shared/borders"
 import { useBorders } from "./borders"

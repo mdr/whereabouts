@@ -1,4 +1,4 @@
-import type { PlayedRound } from "@whereabouts/shared/protocol"
+import type { PlayedRound } from "@whereabouts/shared/protocol/views"
 import { QUESTION_TYPE_LOOKS, typeColour } from "../../../question-types"
 import { SmallFlag } from "../../../ui/pictures/SmallFlag/SmallFlag"
 import { cx } from "../../../ui/cx"

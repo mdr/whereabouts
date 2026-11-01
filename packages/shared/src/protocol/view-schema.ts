@@ -6,7 +6,7 @@
  * same as GameView. Strict objects, so a field the type lacks fails too.
  */
 import { z } from "zod"
-import { PlayerColourSchema } from "./colours.ts"
+import { PlayerColourSchema } from "../colours.ts"
 import {
   CommonsFileSchema,
   FlagCodeSchema,
@@ -16,14 +16,15 @@ import {
   PlayerNameSchema,
   RoomCodeSchema,
   WikiTitleSchema
-} from "./ids.ts"
-import { HintAxisSchema } from "./hints.ts"
-import { Role, YouRoleType } from "./roles.ts"
-import { KernelIdSchema } from "./scoring/scoring.ts"
-import { H3CellSchema, H3ResSchema } from "./h3.ts"
-import { MapDetailSchema, MixSchema, Phase, RoundGuessType } from "./protocol.ts"
-import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "./questions.ts"
-import { DegreesSchema, InstantSchema, KmSchema, MsSchema, PointsSchema } from "./units.ts"
+} from "../ids.ts"
+import { HintAxisSchema } from "../hints.ts"
+import { Role, YouRoleType } from "../roles.ts"
+import { KernelIdSchema } from "../scoring/scoring.ts"
+import { H3CellSchema, H3ResSchema } from "../h3.ts"
+import { MapDetailSchema, MixSchema } from "./config.ts"
+import { Phase, RoundGuessType } from "./views.ts"
+import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "../questions.ts"
+import { DegreesSchema, InstantSchema, KmSchema, MsSchema, PointsSchema } from "../units.ts"
 
 const PaintSchema = z.strictObject({ cells: z.record(H3CellSchema, z.number()), floor: z.number() })
 

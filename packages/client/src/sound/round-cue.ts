@@ -1,5 +1,5 @@
 /** Which of the game's cues a change of view calls for (see useGameSounds). */
-import { Phase } from "@whereabouts/shared/protocol"
+import { Phase } from "@whereabouts/shared/protocol/views"
 import type { Ms } from "@whereabouts/shared/units"
 
 export interface RoundState {

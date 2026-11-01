@@ -27,7 +27,7 @@ import { poolOf } from "../catalogue/catalogue.ts"
 import { insideRegion, regionCells, scoreAnswer, scoredAnswer, type Area, type ScoredAnswer } from "./regions.ts"
 import { CaseQuestionType, RegionKernel, encodeCase, type ScoringCase } from "./scoring-case.ts"
 import { buildDistribution, type ChoosableKernel, type Kernel } from "./scoring.ts"
-import { MapDetail } from "../protocol.ts"
+import { MapDetail } from "../protocol/config.ts"
 import { PointsSchema, type Degrees, type Km, type Points, type SquareKm } from "../units.ts"
 
 export enum GuessType {

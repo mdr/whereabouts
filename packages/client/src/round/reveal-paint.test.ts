@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test"
 import { colourCss, playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import { makePainted, makePlayer } from "../test-view"
-import type { RoundResultView } from "@whereabouts/shared/protocol"
+import type { RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { paintsOf } from "./reveal-paint"
 

@@ -1,7 +1,7 @@
 /** Online game: lobby, timed guessing, reveal, results. One Connection per mount. */
 import { useEffect, useMemo, useState } from "preact/hooks"
 import type { PlayerName } from "@whereabouts/shared/ids"
-import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol"
+import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
 import { Role } from "@whereabouts/shared/roles"
 import { Connection } from "../../net/net"
 import {

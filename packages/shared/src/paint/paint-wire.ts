@@ -7,7 +7,7 @@
  */
 import { cellEntries, cellFromSplitLong, cellToSplitLong, type H3Cell } from "../h3.ts"
 import { PAINT_CELL_BUDGET } from "./paint.ts"
-import type { PaintSubmission } from "../protocol.ts"
+import type { PaintSubmission } from "../protocol/views.ts"
 
 const HEADER_BYTES = 8
 const CELL_BYTES = 12

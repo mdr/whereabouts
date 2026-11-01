@@ -4,7 +4,7 @@
  * the session.
  */
 import { signal } from "@preact/signals"
-import type { GameView } from "@whereabouts/shared/protocol"
+import type { GameView } from "@whereabouts/shared/protocol/views"
 import type { PlayerView } from "@whereabouts/shared/roles"
 import { PlayerList } from "../PlayerList/PlayerList"
 import { Icon } from "../../icons"
@@ -12,7 +12,7 @@ import { playersPanelTestIds } from "./PlayersPanelTestIds"
 import { Card } from "../../Card/Card"
 import { cx } from "../../cx"
 import styles from "./PlayersPanel.module.css"
-import { Phase } from "@whereabouts/shared/protocol"
+import { Phase } from "@whereabouts/shared/protocol/views"
 
 /** Open, it may take more of a phone's screen (HudRight's `roomy`). */
 export const playersPanelOpen = signal(false)

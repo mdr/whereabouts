@@ -4,7 +4,7 @@
  */
 import { signal } from "@preact/signals"
 import type { PlayerId } from "@whereabouts/shared/ids"
-import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol"
+import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { Outline } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"

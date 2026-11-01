@@ -1,4 +1,4 @@
-import type { QuestionMix } from "@whereabouts/shared/protocol"
+import type { QuestionMix } from "@whereabouts/shared/protocol/config"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { QUESTION_TYPE_LOOKS } from "../../question-types"
 

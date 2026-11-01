@@ -1,7 +1,7 @@
 import type { Points } from "@whereabouts/shared/units"
 /** The parts of the headset's round and reveal that practice and a game share. */
 import { QuestionType, clueFlag, clueImage, promptOf } from "@whereabouts/shared/questions"
-import { onWater, outlineOf, type QuestionView } from "@whereabouts/shared/protocol"
+import { onWater, outlineOf, type QuestionView } from "@whereabouts/shared/protocol/views"
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"

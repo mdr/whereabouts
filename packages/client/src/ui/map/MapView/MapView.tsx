@@ -21,7 +21,7 @@ import { cx } from "../../cx"
 import kit from "../../kit.module.css"
 import { Tool } from "../../../paint/tool"
 import styles from "./MapView.module.css"
-import { MapDetail } from "@whereabouts/shared/protocol"
+import { MapDetail } from "@whereabouts/shared/protocol/config"
 
 const PaintContext = createContext<PaintController | undefined>(undefined)
 

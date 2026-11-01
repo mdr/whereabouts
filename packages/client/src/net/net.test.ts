@@ -5,16 +5,9 @@ import { CloseReason } from "@whereabouts/shared/close-reason"
 import { placeId, playerName, playerToken, roomCode, wikiTitle } from "@whereabouts/shared/ids"
 import { viewIn } from "@whereabouts/shared/game/view-in"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
-import {
-  GameEntryType,
-  decodeTicket,
-  revealMessage,
-  stateMessage,
-  type GameView,
-  type RoundReveal,
-  type Ticket,
-  Phase
-} from "@whereabouts/shared/protocol"
+import { GameEntryType, decodeTicket, type Ticket } from "@whereabouts/shared/protocol/ticket"
+import { revealMessage, stateMessage } from "@whereabouts/shared/protocol/server-messages"
+import { type GameView, type RoundReveal, Phase } from "@whereabouts/shared/protocol/views"
 import {
   Connection,
   ConnectionStatus,

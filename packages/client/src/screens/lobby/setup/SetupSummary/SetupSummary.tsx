@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "preact/hooks"
-import { mixTotal, type GameView } from "@whereabouts/shared/protocol"
+import { mixTotal } from "@whereabouts/shared/protocol/config"
+import { type GameView } from "@whereabouts/shared/protocol/views"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { MapDetailSummary } from "../../../../ui/setup/MapDetailSummary/MapDetailSummary"
 import { RoundStrip } from "../../../../ui/setup/RoundStrip/RoundStrip"

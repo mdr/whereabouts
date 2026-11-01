@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { Phase } from "@whereabouts/shared/protocol"
+import { Phase } from "@whereabouts/shared/protocol/views"
 import { RoundCue, roundCue } from "./round-cue"
 
 describe("roundCue", () => {

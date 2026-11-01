@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
-import { onWater, outlineOf, type InPlayGameView, Phase, RoundGuessType } from "@whereabouts/shared/protocol"
+import { onWater, outlineOf, type InPlayGameView, Phase, RoundGuessType } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { YouRoleType, everyone } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"

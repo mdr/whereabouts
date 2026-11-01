@@ -1,6 +1,6 @@
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import type { PlayerId } from "@whereabouts/shared/ids"
-import { RoundGuessType } from "@whereabouts/shared/protocol"
+import { RoundGuessType } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { RevealShown } from "../../../round/reveal"
 import { Card } from "../../../ui/Card/Card"

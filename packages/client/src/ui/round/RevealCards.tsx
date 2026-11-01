@@ -1,7 +1,7 @@
 import type { Points } from "@whereabouts/shared/units"
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
-import type { QuestionView } from "@whereabouts/shared/protocol"
+import type { QuestionView } from "@whereabouts/shared/protocol/views"
 import { clueFlag } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "../../round/round"
 import { CardPlace, QuestionCard } from "./question/QuestionCard/QuestionCard"
