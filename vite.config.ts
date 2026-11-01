@@ -5,6 +5,10 @@ const noReexports = [
   { selector: "ExportNamedDeclaration[source]", message: "Don't re-export; import from the defining module." }
 ]
 
+const noFunctionExpressionConsts = [
+  { selector: "VariableDeclarator > FunctionExpression", message: "Use an arrow function: const f = () => {}." }
+]
+
 export default defineConfig({
   test: {
     include: ["packages/*/src/**/*.test.{ts,tsx}", "scripts/*.test.ts", "packages/*/scripts/*.test.ts"],
@@ -109,7 +113,9 @@ export default defineConfig({
       "max-depth": ["error", 4],
       "sonarjs/cognitive-complexity": ["error", 15],
       "folders/max-entries": ["error", 30],
-      "eslint-js/no-restricted-syntax": ["error", ...noReexports],
+      "eslint-js/no-restricted-syntax": ["error", ...noReexports, ...noFunctionExpressionConsts],
+      "func-style": ["error", "expression"],
+      "prefer-arrow-callback": "error",
       "no-restricted-imports": [
         "error",
         {
@@ -255,7 +261,8 @@ export default defineConfig({
             { selector: "Literal[raw='null']", message: "Use undefined, not null." },
             { selector: "TSNullKeyword", message: "Use undefined, not null." },
             { selector: "MemberExpression[property.name='toBeNull']", message: "Use toBeUndefined, not toBeNull." },
-            ...noReexports
+            ...noReexports,
+            ...noFunctionExpressionConsts
           ],
           "no-with": "off",
           "prefer-const": "error",
