@@ -6,33 +6,33 @@ Where things live, and the steps for the changes that touch several of them.
 
 No I/O; the same code runs in the browser and on the server.
 
-| Module                                                           | What it holds                                                                                                                               |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `catalogue.json`, `src/catalogue/catalogue.ts`                   | Every question, joined with its place; `poolOf` draws from it for games, practice and the score review                                      |
-| `places.json`, `src/catalogue/places.ts`                         | What questions ask about, kept once: name, article, point, area, flag, feature                                                              |
-| `src/catalogue/catalogue-entry.ts`                               | A question as `catalogue.json` holds it, and `joinQuestion` with its place                                                                  |
-| `outlines.json`                                                  | Areas' geometry, by `OutlineId`                                                                                                             |
-| `src/questions.ts`                                               | The question model as the game sees it: `QuestionType`, clue and answer unions, prompts                                                     |
-| `src/ids.ts`, `src/units.ts`                                     | Branded ids and strings (`QuestionId`, `WikiTitle`…), unit flavours (`Km`, `Ms`…)                                                           |
-| `src/protocol.ts`                                                | Client→server message schemas, `GameConfig`, `GameView` and its parts, `PROTOCOL_VERSION`                                                   |
-| `src/view-schema.ts`                                             | A zod schema of `GameView` for the tests (the client casts)                                                                                 |
-| `src/game/game.ts`                                               | The `Game` state machine: who is in the room, the phases and clock, commands, and each player's view                                        |
-| `src/game/game-views.ts`                                         | What players are sent of a question, its reveal and the rounds played                                                                       |
-| `src/scoring/round-scoring.ts`                                   | `scoreRound`: one player's round scored, with its parts and the facts the awards read                                                       |
-| `src/game/round-picking.ts`                                      | `pickRounds`: a game's questions from the catalogue, by mix, map detail and seed                                                            |
-| `src/paint/paint.ts`, `src/paint/paint-wire.ts`                  | The H3 paint layer, and its binary encoding                                                                                                 |
-| `src/scoring/scoring.ts`, `src/scoring/regions.ts`               | The point rule, and the area rule (`scoreAnswer` picks)                                                                                     |
-| `src/hints.ts`, `src/awards/awards.ts`, `src/scoring/explain.ts` | Hint bands, end-of-game awards, a score in words                                                                                            |
-| `src/catalogue/facts.ts`, `src/catalogue/photos.ts`              | Reveal facts and photos, by place                                                                                                           |
-| `src/scoring/score-review.ts`, `src/scoring/scoring-case.ts`     | The playtesters' score review, and copied scoring cases                                                                                     |
-| `scripts/`                                                       | Data builds: `build-regions.mjs` and `build-features.mjs` write their types into the catalogue, places and outlines (`write-catalogue.mjs`) |
+| Module                                                                                     | What it holds                                                                                                                               |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `catalogue.json`, `src/catalogue/catalogue.ts`                                             | Every question, joined with its place; `poolOf` draws from it for games, practice and the score review                                      |
+| `places.json`, `src/catalogue/places.ts`                                                   | What questions ask about, kept once: name, article, point, area, flag, feature                                                              |
+| `src/catalogue/catalogue-entry.ts`                                                         | A question as `catalogue.json` holds it, and `joinQuestion` with its place                                                                  |
+| `outlines.json`                                                                            | Areas' geometry, by `OutlineId`                                                                                                             |
+| `src/questions.ts`                                                                         | The question model as the game sees it: `QuestionType`, clue and answer unions, prompts                                                     |
+| `src/ids.ts`, `src/units.ts`                                                               | Branded ids and strings (`QuestionId`, `WikiTitle`…), unit flavours (`Km`, `Ms`…)                                                           |
+| `src/protocol/*.ts`                                                                        | Ticket and `PROTOCOL_VERSION`, `GameConfig`, client message schemas, `GameView` and its parts, server message transforms                    |
+| `src/protocol/view-schema.ts`                                                              | A zod schema of `GameView` for the tests (the client casts)                                                                                 |
+| `src/game/game.ts`                                                                         | The `Game` state machine: who is in the room, the phases and clock, commands, and each player's view                                        |
+| `src/game/question-views.ts`, `src/game/player-view.ts`                                    | What players are sent of a question, its reveal and the rounds played; a player's whole view                                                |
+| `src/scoring/round-scoring.ts`                                                             | `scoreRound`: one player's round scored, with its parts and the facts the awards read                                                       |
+| `src/game/round-picking.ts`                                                                | `pickRounds`: a game's questions from the catalogue, by mix, map detail and seed                                                            |
+| `src/paint/paint.ts`, `src/paint/paint-wire.ts`                                            | The H3 paint layer, and its binary encoding                                                                                                 |
+| `src/scoring/scoring.ts`, `src/scoring/regions.ts`                                         | The point rule, and the area rule (`scoreAnswer` picks)                                                                                     |
+| `src/hints.ts`, `src/awards/awards.ts`, `src/scoring/explain.ts`                           | Hint bands, end-of-game awards, a score in words                                                                                            |
+| `src/catalogue/facts.ts`, `src/catalogue/photos.ts`                                        | Reveal facts and photos, by place                                                                                                           |
+| `src/scoring/score-review.ts`, `review-painting.ts`, `score-verdict.ts`, `scoring-case.ts` | The playtesters' score review, and copied scoring cases                                                                                     |
+| `scripts/`                                                                                 | Data builds: `build-regions.mjs` and `build-features.mjs` write their types into the catalogue, places and outlines (`write-catalogue.mjs`) |
 
 ## Server (`packages/server`)
 
-| Module                        | What it holds                                                                                                                      |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `src/rooms.ts`                | `GameRoom`: one Rivalis room per `Game`; binds each `ClientMessageSchemas` topic to a handler; `GameAuth` turns tickets into rooms |
-| `src/app.ts`, `src/config.ts` | Fastify, static client, environment settings (`ROUND_MS`, `KERNEL`…)                                                               |
+| Module                        | What it holds                                                                                                                                                        |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/rooms.ts`                | `GameRoom`: one Rivalis room per `Game`; binds each `ClientMessageSchemas` topic to a handler; `game-auth.ts` turns tickets into rooms, `inbound.ts` parses messages |
+| `src/app.ts`, `src/config.ts` | Fastify, static client, environment settings (`ROUND_MS`, `KERNEL`…)                                                                                                 |
 
 ## Client (`packages/client`)
 
@@ -66,19 +66,19 @@ No I/O; the same code runs in the browser and on the server.
 1. Add it to `QuestionType` and give it a variant in `questions.ts` (interface, `Question` union), its stored form in `catalogue-entry.ts` (`CatalogueEntry`, `CatalogueEntrySchema`, a case in `joinQuestion`).
 2. Build or write its questions into `catalogue.json` and their places into `places.json` (a build script uses `writeQuestions`; a place painted whole needs its area and outline).
 3. Give it a look in `client/src/question-types.ts`; the mix editor, practice picker and results read it from there.
-4. Check the per-type rules: `EXTRA_TYPES` and `evenMix` in `protocol.ts`, `WITH_REVEAL_PHOTO` in `photos.ts`, the score review's mix in `score-review.ts`, `areaNoun` and the Fill tool in `client/src/round/round.ts`.
+4. Check the per-type rules: `EXTRA_TYPES` and `evenMix` in `protocol/config.ts`, `WITH_REVEAL_PHOTO` in `photos.ts`, the score review's mix in `score-review.ts`, `areaNoun` and the Fill tool in `client/src/round/round.ts`.
 5. Bump `PROTOCOL_VERSION`: a game's mix gains a key.
 
 **Add a client→server message or a view field**
 
 1. A message: its schema in `ClientMessageSchemas`, a handler in `GameRoom.handlers()` (the compiler insists), a `Game` method, a `Connection` method.
-2. A view field: the type in the `*GameView` variant(s) of the phases that carry it in `protocol.ts`, and the same field in the matching variant schema in `view-schema.ts`; `view-schema.test.ts` fails until they match.
+2. A view field: the type in the `*GameView` variant(s) of the phases that carry it in `protocol/views.ts`, and the same field in the matching variant schema in `protocol/view-schema.ts`; `view-schema.test.ts` fails until they match.
 3. Bump `PROTOCOL_VERSION`.
 4. A browser page object, if the e2e tests should drive or read it.
 
 **Add a game setting**
 
-1. A field in `GameConfig`, `DEFAULT_CONFIG` in `game.ts`, `ConfigureSchema`, and `view-schema.ts`.
+1. A field in `GameConfig`, `DEFAULT_CONFIG` in `game.ts`, `ConfigureSchema` (all in `protocol/config.ts` but `DEFAULT_CONFIG`), and `protocol/view-schema.ts`.
 2. The lobby's control and summary (`screens/Lobby.tsx`). The host's saved setup (`host-setup.ts`) takes its fields from `ConfigureSchema`; an old stored form needs mapping there.
 3. Bump `PROTOCOL_VERSION`.
 
