@@ -5,6 +5,19 @@ const noReexports = [
   { selector: "ExportNamedDeclaration[source]", message: "Don't re-export; import from the defining module." }
 ]
 
+const noNull = [
+  { selector: "Literal[raw='null']", message: "Use undefined, not null." },
+  { selector: "TSNullKeyword", message: "Use undefined, not null." },
+  { selector: "MemberExpression[property.name='toBeNull']", message: "Use toBeUndefined, not toBeNull." }
+]
+
+const noFixedWaits = [
+  {
+    selector: "MemberExpression[property.name='waitForTimeout']",
+    message: "Wait on a condition (until, holdUntil, stillTrueFor, Headset.settle), or pace a gesture with paceGesture."
+  }
+]
+
 const noFunctionExpressionConsts = [
   { selector: "VariableDeclarator > FunctionExpression", message: "Use an arrow function: const f = () => {}." }
 ]
@@ -257,14 +270,7 @@ export default defineConfig({
           "no-var": "error",
           // One absence value: undefined, which the language produces anyway. Where an
           // outside API hands back null, convert it on the spot (`?? undefined`).
-          "eslint-js/no-restricted-syntax": [
-            "error",
-            { selector: "Literal[raw='null']", message: "Use undefined, not null." },
-            { selector: "TSNullKeyword", message: "Use undefined, not null." },
-            { selector: "MemberExpression[property.name='toBeNull']", message: "Use toBeUndefined, not toBeNull." },
-            ...noReexports,
-            ...noFunctionExpressionConsts
-          ],
+          "eslint-js/no-restricted-syntax": ["error", ...noNull, ...noReexports, ...noFunctionExpressionConsts],
           "no-with": "off",
           "prefer-const": "error",
           "prefer-rest-params": "error",
@@ -298,6 +304,18 @@ export default defineConfig({
         env: {
           browser: true,
           node: true
+        }
+      },
+      {
+        files: ["packages/client/browser/**/*.ts"],
+        rules: {
+          "eslint-js/no-restricted-syntax": [
+            "error",
+            ...noNull,
+            ...noReexports,
+            ...noFunctionExpressionConsts,
+            ...noFixedWaits
+          ]
         }
       },
       {

@@ -4,6 +4,7 @@
 import { test } from "@playwright/test"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { HintAxis } from "@whereabouts/shared/hints"
+import { stillTrueFor } from "../pages/support.ts"
 import { check, newTab, shot } from "./support.ts"
 
 test("multiplayer", async ({ browser }) => {
@@ -69,8 +70,13 @@ test("multiplayer", async ({ browser }) => {
     const bobEditingPage = await (await bobRoundPage.finish()).keepEditing()
     check(true, "Keep editing gives Bob his paint tools back")
     const bobRoundDonePage = await bobEditingPage.finish()
-    await aliceRoundPage.pause(1000)
-    check(await aliceRoundPage.isStillShown(), "the round stays open while Alice is still guessing")
+    await stillTrueFor(
+      "the round staying open while Alice is still guessing",
+      1_000,
+      () => aliceRoundPage.isStillShown(),
+      (shown) => shown
+    )
+    check(true, "the round stays open while Alice is still guessing")
     return bobRoundDonePage
   })
 
@@ -125,8 +131,13 @@ test("multiplayer", async ({ browser }) => {
   await test.step("round 2 starts once everyone is ready", async () => {
     await bobRevealPage.ready()
     await aliceRevealPage.waitForReadyCount("1 of 2 ready")
-    await aliceRevealPage.pause(800)
-    check(await aliceRevealPage.isStillShown(), "still on the reveal with one of two ready")
+    await stillTrueFor(
+      "still being on the reveal with one of two ready",
+      800,
+      () => aliceRevealPage.isStillShown(),
+      (shown) => shown
+    )
+    check(true, "still on the reveal with one of two ready")
     await aliceRevealPage.screenshot(shot(`mp-5-reveal-one-ready.png`))
     const aliceRound2Page = await aliceRevealPage.readyLast()
     check((await aliceRound2Page.hud.round()) === "Round 2 / 3", "round 2 starts once everyone is ready")

@@ -24,11 +24,6 @@ export abstract class Screen {
     await this.page.screenshot({ path })
   }
 
-  /** Wait a while, for something that should not happen. */
-  async pause(ms: Ms): Promise<void> {
-    await this.page.waitForTimeout(ms)
-  }
-
   /** Until nothing with a test id has moved or changed size for a third of a second. */
   async waitForLayoutToSettle(timeout: Ms = 10_000): Promise<void> {
     let previous = ""
