@@ -7,6 +7,7 @@
 ## Code
 
 - String enums with ALL_CAPS names and values; reference members, not raw strings.
+- Except values whose literal types an outside library owns: an `as const` object, so its types apply.
 - Discriminators are called `type`. Variants are unions of named types, not a base interface plus intersections.
 - Full-word names. `undefined`, not `null`.
 - Small modules, one job each; pull pure logic out so it can be unit-tested.

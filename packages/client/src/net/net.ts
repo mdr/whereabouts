@@ -65,11 +65,15 @@ export interface GameClient {
   disconnect(): void
   send(topic: ClientTopic, payload: Uint8Array | string): void
   on(
-    event: SocketEvent.CONNECT | SocketEvent.DISCONNECT | SocketEvent.RECONNECT_FAILED | SocketEvent.ERROR,
+    event:
+      | typeof SocketEvent.CONNECT
+      | typeof SocketEvent.DISCONNECT
+      | typeof SocketEvent.RECONNECT_FAILED
+      | typeof SocketEvent.ERROR,
     listener: () => void
   ): unknown
-  on(event: SocketEvent.RECONNECTING, listener: (attempt: Uint8Array) => void): unknown
-  on(event: SocketEvent.KICKED, listener: (info: ClientKickedEvent) => void): unknown
+  on(event: typeof SocketEvent.RECONNECTING, listener: (attempt: Uint8Array) => void): unknown
+  on(event: typeof SocketEvent.KICKED, listener: (info: ClientKickedEvent) => void): unknown
   on(event: ServerTopic, listener: (payload: Uint8Array) => void): unknown
 }
 
