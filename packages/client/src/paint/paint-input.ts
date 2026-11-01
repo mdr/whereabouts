@@ -12,7 +12,7 @@ import type { PaintView } from "./paint-view"
 import { forTabbedControl, isTyping } from "../keyboard/keys"
 import { PAN_HOLD, runPaintKey, type PaintKeyTarget } from "../keyboard/shortcuts"
 import { strokePoints, touchMove, touchStart, TouchStep, type ScreenPoint } from "./stroke"
-import { Tool } from "./tool"
+import { Tool, type StrokeTool } from "./tool"
 import type { Degrees, Km, Px } from "@whereabouts/shared/units"
 
 /** How near a point a small country's answer counts as under it, for the Fill tool. */
@@ -28,8 +28,7 @@ export class PaintInput {
   private spaceHeld = false
   /** Where a middle-button drag last was, while one pans the map. */
   private middleFrom: ScreenPoint | undefined = undefined
-  private painting = false
-  private lastStampPoint: Point | undefined = undefined
+  private stroke: { tool: StrokeTool; last: Point | undefined } | undefined = undefined
   private hoverListeners = new Set<(pos: LatLon) => void>()
   /** Where the mouse is over the map, so the footprint can be redrawn without it moving. */
   private pointerAt: LngLat | undefined = undefined
@@ -61,7 +60,7 @@ export class PaintInput {
       this.beginStroke(e.point)
     }
     const onTouchMove = (e: MapTouchEvent) => {
-      const step = touchMove(e.points.length, this.painting)
+      const step = touchMove(e.points.length, this.stroke !== undefined)
       if (step === TouchStep.ABANDON) this.abandonStroke()
       if (step !== TouchStep.CONTINUE) return
       e.preventDefault()
@@ -76,7 +75,7 @@ export class PaintInput {
         this.pointerAt = onEarth ? e.lngLat : undefined
         this.refreshCursor()
       }
-      if (this.painting) {
+      if (this.stroke) {
         this.strokeTo(e.point)
         this.view.queue()
       }
@@ -186,7 +185,12 @@ export class PaintInput {
       window.removeEventListener("keydown", onKeyDown)
       window.removeEventListener("keyup", onKeyUp)
     })
-    this.disposers.push(this.tool.subscribe(() => this.applyInteraction()))
+    this.disposers.push(
+      this.tool.subscribe(() => {
+        if (this.stroke) this.endStroke()
+        this.applyInteraction()
+      })
+    )
     // [ and ] or the slider resize the brush while the mouse stays put.
     this.disposers.push(this.brushSize.subscribe(() => this.refreshCursor()))
     this.disposers.push(
@@ -270,23 +274,20 @@ export class PaintInput {
     const tool = this.tool.value
     if (tool !== Tool.PAINT && tool !== Tool.ERASE) return
     this.model.beginStroke(tool)
-    this.painting = true
-    this.lastStampPoint = undefined
+    this.stroke = { tool, last: undefined }
     this.strokeTo(point)
     this.view.queue()
   }
 
   private endStroke(): void {
-    this.painting = false
-    this.lastStampPoint = undefined
+    this.stroke = undefined
     this.model.endStroke()
   }
 
   /** A stroke that turned out to be the start of a pinch: end it and take its paint back. */
   private abandonStroke(): void {
-    if (!this.painting) return
-    this.painting = false
-    this.lastStampPoint = undefined
+    if (!this.stroke) return
+    this.stroke = undefined
     this.model.abandonStroke()
   }
 
@@ -321,23 +322,25 @@ export class PaintInput {
     this.gameMap.setCursorFootprint(undefined)
   }
 
-  private stampAt(lngLat: LngLat): void {
-    const sign = this.tool.value === Tool.ERASE ? -1 : 1
+  private stampAt(lngLat: LngLat, tool: StrokeTool): void {
+    const sign = tool === Tool.ERASE ? -1 : 1
     // Stamps overlap along a stroke, so scale each one down.
     this.model.stamp(latLon(lngLat), this.brushRadius(lngLat.lat), sign * this.strength.value * 0.3)
   }
 
   private strokeTo(point: Point): void {
-    for (const { x, y } of strokePoints(this.lastStampPoint, point, this.brushSize.value)) {
+    const stroke = this.stroke
+    if (!stroke) return
+    for (const { x, y } of strokePoints(stroke.last, point, this.brushSize.value)) {
       const p = new Point(x, y)
-      this.stampOnSurface(p)
-      this.lastStampPoint = p
+      this.stampOnSurface(p, stroke.tool)
+      stroke.last = p
     }
   }
 
   /** A stroke carries on across the space around a globe, painting only where it crosses the Earth. */
-  private stampOnSurface(point: Point): void {
-    if (this.gameMap.onSurface(point)) this.stampAt(this.gameMap.map.unproject(point))
+  private stampOnSurface(point: Point, tool: StrokeTool): void {
+    if (this.gameMap.onSurface(point)) this.stampAt(this.gameMap.map.unproject(point), tool)
   }
 }
 
