@@ -1,4 +1,4 @@
-import { colourCss, type PlayerColour } from "@whereabouts/shared/colours"
+import { colourCss, type CssColour, type PlayerColour } from "@whereabouts/shared/colours"
 import type { PlayerId } from "@whereabouts/shared/ids"
 import type { PlayerView } from "@whereabouts/shared/protocol"
 import { Icon } from "../icons"
@@ -16,7 +16,7 @@ export function Swatch({
 }: {
   colour?: PlayerColour
   /** A colour that is no player's. */
-  css?: string
+  css?: CssColour
   everyone?: boolean
   as?: "span" | "i"
   class?: string
