@@ -8,15 +8,15 @@ import type { PaintView } from "./paint-view"
 import { Tool } from "./tool"
 
 function setup() {
-  const handlers = new Map<string, (e: unknown) => void>()
+  const handlers = new Map<string, (event: unknown) => void>()
   const container = document.createElement("div")
   const map = {
-    on: (name: string, fn: (e: unknown) => void) => handlers.set(name, fn),
+    on: (name: string, fn: (event: unknown) => void) => handlers.set(name, fn),
     off: vi.fn(),
     getContainer: () => container,
     getCanvasContainer: () => container,
     dragPan: { enable: vi.fn(), disable: vi.fn() },
-    unproject: (p: Point) => ({ lat: p.y, lng: p.x }) as LngLat
+    unproject: (point: Point) => ({ lat: point.y, lng: point.x }) as LngLat
   }
   const gameMap = {
     map,

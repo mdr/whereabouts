@@ -41,21 +41,22 @@ describe("picking a fact for the reveal", () => {
 
 describe("the facts", () => {
   const all = FactsSchema.parse(facts)
-  const lists = Object.entries(all).flatMap(([place, f]) =>
-    [f?.about ?? [], f?.flag ?? []].map((list) => ({ place, list }))
+  const lists = Object.entries(all).flatMap(([place, fact]) =>
+    [fact?.about ?? [], fact?.flag ?? []].map((list) => ({ place, list }))
   )
 
   it("are about places the catalogue asks about", () => {
-    const asked = new Set<string>(CATALOGUE.map((q) => q.place))
+    const asked = new Set<string>(CATALOGUE.map((question) => question.place))
     expect(Object.keys(all).filter((place) => !asked.has(place))).toEqual([])
   })
 
   it("are short single sentences", () => {
     for (const { place, list } of lists)
-      for (const f of list) expect(f.text.split(/\s+/).length, `${place}: ${f.text}`).toBeLessThanOrEqual(25)
+      for (const fact of list) expect(fact.text.split(/\s+/).length, `${place}: ${fact.text}`).toBeLessThanOrEqual(25)
   })
 
   it("give every round at least one", () => {
-    for (const q of CATALOGUE) expect(factsFor(all[q.place], q.type)?.length, q.id).toBeGreaterThan(0)
+    for (const question of CATALOGUE)
+      expect(factsFor(all[question.place], question.type)?.length, question.id).toBeGreaterThan(0)
   })
 })

@@ -12,7 +12,7 @@ import { check, newTab } from "./support.ts"
 test("load-failures", async ({ browser }) => {
   const mapTab = await newTab(browser, "map")
   let styleBlocked = true
-  await mapTab.page.route(/openfreemap\.org\/styles\//, (r) => (styleBlocked ? r.abort() : r.continue()))
+  await mapTab.page.route(/openfreemap\.org\/styles\//, (route) => (styleBlocked ? route.abort() : route.continue()))
   const mapFailures = await mapTab.openFailing("/solo")
   check(await mapFailures.mapFailureShown(), "a map style that will not load says so")
   styleBlocked = false
@@ -22,7 +22,7 @@ test("load-failures", async ({ browser }) => {
 
   const outlinesTab = await newTab(browser, "outlines")
   let outlinesBlocked = true
-  await outlinesTab.page.route(/outlines\.json$/, (r) => (outlinesBlocked ? r.abort() : r.continue()))
+  await outlinesTab.page.route(/outlines\.json$/, (route) => (outlinesBlocked ? route.abort() : route.continue()))
   const outlineFailures = await outlinesTab.openFailing("/score-review")
   check(await outlineFailures.outlinesFailureShown(), "outlines that will not load say so")
   outlinesBlocked = false
@@ -33,7 +33,7 @@ test("load-failures", async ({ browser }) => {
   const vrTab = await newTab(browser, "vr")
   const headset = await Headset.install(vrTab.page)
   let landBlocked = true
-  await vrTab.page.route(/land\.json$/, (r) => (landBlocked ? r.abort() : r.continue()))
+  await vrTab.page.route(/land\.json$/, (route) => (landBlocked ? route.abort() : route.continue()))
   await vrTab.openPractice()
   const vrFailures = new LoadFailures(vrTab.page)
   const canvases = await vrFailures.canvases()
@@ -53,7 +53,7 @@ test("load-failures", async ({ browser }) => {
 
   const vrCodeTab = await newTab(browser, "vr code")
   await Headset.install(vrCodeTab.page)
-  await vrCodeTab.page.route(/\/src\/vr\/index\.ts/, (r) => r.abort())
+  await vrCodeTab.page.route(/\/src\/vr\/index\.ts/, (route) => route.abort())
   await vrCodeTab.openPractice()
   const vrCodeFailures = new LoadFailures(vrCodeTab.page)
   await vrCodeFailures.pressVr()

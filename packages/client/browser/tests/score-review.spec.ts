@@ -27,7 +27,7 @@ test("score-review", async ({ browser }) => {
         }
         const scores = await review.pairScores()
         check(
-          scores.length === 2 && scores.every((s) => /^\d+$/.test(s)),
+          scores.length === 2 && scores.every((score) => /^\d+$/.test(score)),
           `a pair shows both scores (${scores.join(", ")})`
         )
         const both = await review.map.shownPaintCells()
@@ -61,15 +61,15 @@ test("score-review", async ({ browser }) => {
     const verdicts = (await review.export())
       .trim()
       .split("\n")
-      .map((l) => JSON.parse(l) as Record<string, unknown>)
-    const single = verdicts.filter((v) => v["verdict"] !== undefined)
-    const pair = verdicts.find((v) => v["pair"] === true)
+      .map((line) => JSON.parse(line) as Record<string, unknown>)
+    const single = verdicts.filter((verdict) => verdict["verdict"] !== undefined)
+    const pair = verdicts.find((verdict) => verdict["pair"] === true)
     check(
       single.length === 2 &&
         single[0]!["verdict"] === 0 &&
         single[1]!["verdict"] === -1 &&
         single[1]!["shouldBe"] === 650,
-      `the export holds both single verdicts, with the score it should be (${single.map((v) => String(v["verdict"])).join(", ")})`
+      `the export holds both single verdicts, with the score it should be (${single.map((verdict) => String(verdict["verdict"])).join(", ")})`
     )
     check(pair?.["prefer"] === -2 && (pair["cases"] as string[]).length === 2, "and the pair's, with both its cases")
     const c = await decodeCase(single[0]!["case"] as string)

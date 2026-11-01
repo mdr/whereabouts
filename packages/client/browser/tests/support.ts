@@ -18,9 +18,9 @@ export async function newTab(browser: Browser, label: string, options: PlayerOpt
   const context = await browser.newContext(options.context ?? { viewport: { width: 1300, height: 900 } })
   if (options.initScript) await context.addInitScript(options.initScript)
   const page = await context.newPage()
-  page.on("pageerror", (e) => console.log(`[${label} pageerror]`, e.message))
-  page.on("console", (m) => {
-    if (m.type() === "error") console.log(`[${label} console.error]`, m.text().slice(0, 200))
+  page.on("pageerror", (error) => console.log(`[${label} pageerror]`, error.message))
+  page.on("console", (message) => {
+    if (message.type() === "error") console.log(`[${label} console.error]`, message.text().slice(0, 200))
   })
   const baseUrl = options.baseUrl ?? test.info().project.use.baseURL
   if (!baseUrl) throw new Error("no baseURL: set one in the Playwright config")

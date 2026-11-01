@@ -31,11 +31,11 @@ test("deadline", async ({ browser }) => {
 
   const rows = await aliceRevealPage.rows()
   check(
-    rows.some((r) => r.name === "Alice" && r.passed && r.roundScore === "+250"),
+    rows.some((row) => row.name === "Alice" && row.passed && row.roundScore === "+250"),
     `paint cleared before the deadline scores as a pass: ${JSON.stringify(rows)}`
   )
   check(
-    rows.some((r) => r.name === "Bob" && !r.passed),
+    rows.some((row) => row.name === "Bob" && !row.passed),
     `a stroke still going at zero counts: ${JSON.stringify(rows)}`
   )
   const aliceSees = await aliceRevealPage.map.shownPaintCells()

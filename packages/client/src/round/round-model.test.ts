@@ -49,7 +49,7 @@ describe("revealModel", () => {
     reveal = makeReveal(),
     shown: RevealShown = SHOW_EVERYONE
   ) => revealModel(makeRevealView({ players, spectators: [sam], ...over }), reveal, shown)
-  const names = (rows: ShownRow[]) => rows.map((r) => (r.type === ShownRowType.PLAYER ? r.player.name : r.type))
+  const names = (rows: ShownRow[]) => rows.map((row) => (row.type === ShownRowType.PLAYER ? row.player.name : row.type))
 
   it("lists Everyone, the players by this round's score, then Hide paint", () => {
     const reveal = makeReveal({ results: [makeResult({ score: 300 }), makeResult({ playerId: bob.id, score: 700 })] })
@@ -58,15 +58,15 @@ describe("revealModel", () => {
 
   it("marks you, who is ready, and who sat the round out", () => {
     const reveal = makeReveal({ results: [makeResult({ playerId: bob.id, guess: makePainted() })], ready: [bob.id] })
-    const rows = model({}, reveal).rows.filter((r) => r.type === ShownRowType.PLAYER)
-    expect(rows.map((r) => [r.player.name, r.you, r.ready, r.result?.score])).toEqual([
+    const rows = model({}, reveal).rows.filter((row) => row.type === ShownRowType.PLAYER)
+    expect(rows.map((row) => [row.player.name, row.you, row.ready, row.result?.score])).toEqual([
       ["Bob", false, true, 500],
       ["Alice", true, false, undefined]
     ])
   })
 
   it("selects whose paint shows, and picking the selected row again shows everyone", () => {
-    const pick = (shown: RevealShown) => model({}, makeReveal(), shown).rows.map((r) => [r.selected, r.pick])
+    const pick = (shown: RevealShown) => model({}, makeReveal(), shown).rows.map((row) => [row.selected, row.pick])
     expect(pick(SHOW_EVERYONE)).toEqual([
       [true, SHOW_EVERYONE],
       [false, showPlayer(alice.id)],

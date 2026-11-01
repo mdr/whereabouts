@@ -47,15 +47,16 @@ const guessing = (over: Parameters<typeof makeGuessingView>[0] = {}) => makeGues
 const revealing = (over: Parameters<typeof makeRevealView>[0] = {}) =>
   makeRevealView({ players: [makePlayer(), bob], ...over })
 
-const reveal = (v: VrView) => {
-  if (v.type !== VrViewType.REVEAL) throw new Error(`a ${v.type} view`)
-  return v.reveal
+const reveal = (view: VrView) => {
+  if (view.type !== VrViewType.REVEAL) throw new Error(`a ${view.type} view`)
+  return view.reveal
 }
-const round = (v: VrView) => {
-  if (v.type === VrViewType.REVEAL || v.type === VrViewType.PAINT) return v.round
-  throw new Error(`a ${v.type} view`)
+const round = (view: VrView) => {
+  if (view.type === VrViewType.REVEAL || view.type === VrViewType.PAINT) return view.round
+  throw new Error(`a ${view.type} view`)
 }
-const note = (v: VrView) => (v.type === VrViewType.PAINT || v.type === VrViewType.REVEAL ? v.round.note : undefined)
+const note = (view: VrView) =>
+  view.type === VrViewType.PAINT || view.type === VrViewType.REVEAL ? view.round.note : undefined
 
 describe("gameVrView", () => {
   it("tells you why you are not painting, the connection first", () => {
@@ -81,7 +82,7 @@ describe("gameVrView", () => {
         ready: [bob.id]
       })
     })
-    expect(reveal(show(view)).table?.rows.map((r) => [r.name, r.detail])).toEqual([
+    expect(reveal(show(view)).table?.rows.map((row) => [row.name, row.detail])).toEqual([
       ["Everyone", undefined],
       ["Alice (you)", "+612"],
       ["Bob", "+250 passed, ready"],
@@ -91,7 +92,7 @@ describe("gameVrView", () => {
   })
 
   it("offers Ready until pressed, and the host the next round", () => {
-    const labels = (v: InPlayGameView) => reveal(show(v)).actions.map((a) => [a.label, a.enabled])
+    const labels = (view: InPlayGameView) => reveal(show(view)).actions.map((action) => [action.label, action.enabled])
     expect(labels(revealing())).toEqual([
       ["Ready", true],
       ["Next round", true]
@@ -102,7 +103,9 @@ describe("gameVrView", () => {
   })
 
   it("offers nothing to press while reconnecting, since it would be lost", () => {
-    const enabled = reveal(show(revealing(), fakeConn(ConnectionStatus.CONNECTING))).actions.map((a) => a.enabled)
+    const enabled = reveal(show(revealing(), fakeConn(ConnectionStatus.CONNECTING))).actions.map(
+      (action) => action.enabled
+    )
     expect(enabled).toEqual([false, false])
   })
 
@@ -115,7 +118,7 @@ describe("gameVrView", () => {
       ],
       spectators: [makeSpectator({ id: playerId("p4"), name: playerName("Dee") })]
     })
-    expect(round(show(view)).table?.rows.map((r) => [r.name, r.detail])).toEqual([
+    expect(round(show(view)).table?.rows.map((row) => [row.name, row.detail])).toEqual([
       ["Bob", "guessing"],
       ["Alice (you)", "done"],
       ["Cy", "away"]
@@ -123,7 +126,7 @@ describe("gameVrView", () => {
   })
 
   it("puts Leave game last, and End game only for the host before the last reveal", () => {
-    const labels = (v: InPlayGameView) => show(v).more?.map((a) => a.label)
+    const labels = (view: InPlayGameView) => show(view).more?.map((action) => action.label)
     expect(labels(guessing())).toEqual(["End game", "Leave game"])
     expect(labels(guessing({ you: { isHost: false } }))).toEqual(["Leave game"])
     expect(labels(guessing({ you: { role: SPECTATING, isHost: false } }))).toEqual([

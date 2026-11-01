@@ -8,17 +8,18 @@ import { AnswerType, FLAG_AREA_PROMPT, FLAG_POINT_PROMPT, promptOf } from "../qu
 
 const FLAGS = CATALOGUE.filter(isFlagQuestion)
 const OUTLINES = outlinesFrom(outlinesJson)
-const flag = (code: string) => FLAGS.find((f) => f.clue.flag === code)!
+const flag = (code: string) => FLAGS.find((question) => question.clue.flag === code)!
 
 describe("flag questions", () => {
   it("are one per country, well formed", () => {
     expect(FLAGS.length).toBeGreaterThan(190)
-    expect(new Set(FLAGS.map((f) => f.clue.flag)).size).toBe(FLAGS.length)
-    for (const f of FLAGS) {
-      expect(f.label.length, f.id).toBeGreaterThan(0)
-      expect(f.wiki.length, f.id).toBeGreaterThan(0)
-      if (f.answer.type === AnswerType.AREA) expect(OUTLINES.has(f.answer.outline), f.id).toBe(true)
-      else expect(f.answer.tolerance, f.id).toBeGreaterThanOrEqual(15)
+    expect(new Set(FLAGS.map((question) => question.clue.flag)).size).toBe(FLAGS.length)
+    for (const question of FLAGS) {
+      expect(question.label.length, question.id).toBeGreaterThan(0)
+      expect(question.wiki.length, question.id).toBeGreaterThan(0)
+      if (question.answer.type === AnswerType.AREA)
+        expect(OUTLINES.has(question.answer.outline), question.id).toBe(true)
+      else expect(question.answer.tolerance, question.id).toBeGreaterThanOrEqual(15)
     }
   })
 
@@ -31,7 +32,7 @@ describe("flag questions", () => {
 
   it("paint a country with the same outline as its own round", () => {
     const de = flag("de")
-    const germany = CATALOGUE.find((q) => q.id === "germany-region")!
+    const germany = CATALOGUE.find((question) => question.id === "germany-region")!
     expect(de.answer).toEqual(germany.answer)
   })
 
@@ -51,9 +52,9 @@ describe("flag questions", () => {
       const res = resolutionForTolerance(tolerance)
       const blob = (lat: number, lon: number) =>
         buildDistribution(
-          gridDisk(latLngToCell(lat, lon, res), 2).map((h) => {
-            const [la, lo] = cellToLatLng(h)
-            return { lat: la, lon: lo, intensity: 1, area: cellArea(h), h3: h }
+          gridDisk(latLngToCell(lat, lon, res), 2).map((cell) => {
+            const [cellLat, cellLon] = cellToLatLng(cell)
+            return { lat: cellLat, lon: cellLon, intensity: 1, area: cellArea(cell), h3: cell }
           }),
           0.05
         )

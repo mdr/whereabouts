@@ -48,7 +48,7 @@ describe("PlayerList", () => {
         arrows
       />
     )
-    const arrows = screen.getAllByTestId(rankArrowTestIds.arrow).map((a) => a.textContent)
+    const arrows = screen.getAllByTestId(rankArrowTestIds.arrow).map((arrow) => arrow.textContent)
     expect(arrows).toEqual(["▲", "", "▼"])
     expect(screen.getAllByTestId(playerListTestIds.score).map((element) => element.textContent)).toEqual([
       "900",
@@ -105,7 +105,12 @@ describe("PlayerList kick", () => {
     const { container: plain } = render(<PlayerList players={players} you={playerId("p1")} showScores={false} />)
     expect(plain.querySelectorAll(`button.${styles.kick}`)).toHaveLength(0)
     const { container } = render(
-      <PlayerList players={players} you={playerId("p1")} showScores={false} onKick={(p) => kicked.push(p.id)} />
+      <PlayerList
+        players={players}
+        you={playerId("p1")}
+        showScores={false}
+        onKick={(player) => kicked.push(player.id)}
+      />
     )
     const buttons = container.querySelectorAll<HTMLButtonElement>(`button.${styles.kick}`)
     expect(buttons).toHaveLength(1)
@@ -126,7 +131,12 @@ describe("PlayerList make host", () => {
     const { container: plain } = render(<PlayerList players={players} you={playerId("p1")} showScores={false} />)
     expect(plain.querySelectorAll(`button.${styles.makeHost}`)).toHaveLength(0)
     const { container } = render(
-      <PlayerList players={players} you={playerId("p1")} showScores={false} onMakeHost={(p) => picked.push(p.id)} />
+      <PlayerList
+        players={players}
+        you={playerId("p1")}
+        showScores={false}
+        onMakeHost={(player) => picked.push(player.id)}
+      />
     )
     const buttons = container.querySelectorAll<HTMLButtonElement>(`button.${styles.makeHost}`)
     expect(buttons).toHaveLength(1)

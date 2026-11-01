@@ -17,12 +17,12 @@ test.afterEach(async ({ browser }) => closeAllTabs(browser))
 
 /** The angle between two directions, in radians. */
 function angleBetween(a: number[], b: number[]): number {
-  return Math.acos(a.reduce((s, x, i) => s + x * b[i]!, 0) / Math.hypot(...a) / Math.hypot(...b))
+  return Math.acos(a.reduce((sum, component, i) => sum + component * b[i]!, 0) / Math.hypot(...a) / Math.hypot(...b))
 }
 
 /** The turn a controller held at `from` gets when Headset.point() aims it at `to`. */
 function aim(from: Vec3, to: Vec3): Quaternion {
-  const direction = to.map((c, i) => c - from[i]!) as Vec3
+  const direction = to.map((component, i) => component - from[i]!) as Vec3
   return new Quaternion().setFromUnitVectors(new Vector3(0, 0, -1), new Vector3(...direction).normalize())
 }
 
@@ -34,11 +34,11 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   const flagRatio = Number(
     await tab.page
       .getByTestId(flagImageTestIds.flag)
-      .evaluate((el) => (el as HTMLElement).style.getPropertyValue("--flag-ratio"))
+      .evaluate((element) => (element as HTMLElement).style.getPropertyValue("--flag-ratio"))
   )
   check(
     flag !== undefined && Math.abs(flag[0] / flag[1] / flagRatio - 1) < 0.01,
-    `a flag round shows the flag in VR in its own shape (${flag?.map((m) => m.toFixed(2)).join(" × ")} m, ratio ${flagRatio})`
+    `a flag round shows the flag in VR in its own shape (${flag?.map((metres) => metres.toFixed(2)).join(" × ")} m, ratio ${flagRatio})`
   )
   await round.pause(1500)
   await round.screenshot(shot(`vr-7-flag.png`))
@@ -53,7 +53,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   await headset.pointRight(grip, card)
   await round.pause(800)
   const held = await headset.pictureHeld()
-  const moved = Math.hypot(...held.at.map((c, i) => c - card[i]!))
+  const moved = Math.hypot(...held.at.map((component, i) => component - card[i]!))
   check(held.held && moved > 0.2, `gripping the flag takes it in hand (moved ${moved.toFixed(2)} m)`)
   await round.screenshot(shot(`vr-9-held.png`))
   // Turning the hand tilts it, as a card held up would.
@@ -70,7 +70,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   )
   await round.screenshot(shot(`vr-9b-tilted.png`))
   // Turned right round, it shows its back: the flag's reverse.
-  const awayTo = grip.map((c, i) => 2 * c - card[i]!) as Vec3
+  const awayTo = grip.map((component, i) => 2 * component - card[i]!) as Vec3
   await headset.pointRight(grip, awayTo)
   await round.pause(800)
   const turned = await headset.pictureHeld()
@@ -83,7 +83,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   await headset.rightGrip(0)
   await round.pause(500)
   const back = await headset.pictureHeld()
-  const off = Math.hypot(...back.at.map((c, i) => c - card[i]!))
+  const off = Math.hypot(...back.at.map((component, i) => component - card[i]!))
   check(!back.held && off < 0.01, `letting go puts it back (${off.toFixed(3)} m off)`)
 
   // It says how to answer; A brings out the fill pail, whose pull fills the
@@ -107,7 +107,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   const filled = await until(
     "the filled country",
     () => round.map.yourPaintCells(),
-    (n) => n > 0
+    (count) => count > 0
   )
   check(filled > 0, `a pull fills the country it points at (${filled} cells)`)
   await round.screenshot(shot(`vr-9d-filled.png`))
@@ -116,7 +116,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
     (await until(
       "the fill taken off",
       () => round.map.yourPaintCells(),
-      (n) => n === 0
+      (count) => count === 0
     )) === 0,
     "and a second pull takes it off"
   )
@@ -132,7 +132,7 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
   const pins = await until(
     "the flags on the globe",
     () => headset.flagPins(),
-    (n) => n > 190,
+    (count) => count > 190,
     30_000
   )
   check(pins > 190, `Show all flags pins every country's flag on the globe (${pins})`)
@@ -156,7 +156,7 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
   const named = await until(
     "the flag's name",
     () => headset.flagNamed(),
-    (n) => n === facing.name
+    (name) => name === facing.name
   )
   check(named === facing.name, `pointing at a flag names its country (${named})`)
   const outlined = await headset.flagOutlined()
@@ -177,7 +177,7 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
   const wideOutlined = await until(
     "the border, zoomed out",
     () => headset.flagOutlined(),
-    (o) => o?.name === wideFacing.name
+    (facing) => facing?.name === wideFacing.name
   )
   check(
     wide === 1 && (wideOutlined?.segments ?? 0) >= 3,
@@ -201,7 +201,7 @@ test("on a flag round's answer, Show all flags pins every flag, pointing at one 
     (await until(
       "the flags off the globe",
       () => headset.flagPins(),
-      (n) => n === 0
+      (count) => count === 0
     )) === 0,
     "Hide all flags takes them off"
   )

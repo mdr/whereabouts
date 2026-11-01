@@ -18,51 +18,61 @@ import { decodeCase } from "./scoring-case.ts"
 
 const OUTLINES = outlinesFrom(outlinesJson)
 const casesOf = (set: number) => reviewCases(set, CATALOGUE, OUTLINES)
-const isArea = (c: ReviewCase) => c.answer.type === AnswerType.AREA
+const isArea = (reviewCase: ReviewCase) => reviewCase.answer.type === AnswerType.AREA
 
 // These score many paints: about 2 s alone, several times that on a busy machine.
 const HEAVY = { timeout: 20_000 }
 
-const guesses = (c: ReviewCase) => (c.type === ReviewCaseType.SINGLE ? [c.guess] : c.guesses)
-const score = (c: ReviewCase, i = 0) => scoreGuess(c.answer, guesses(c)[i]!.layer, DEFAULT_KERNEL).score
+const guesses = (reviewCase: ReviewCase) =>
+  reviewCase.type === ReviewCaseType.SINGLE ? [reviewCase.guess] : reviewCase.guesses
+const score = (reviewCase: ReviewCase, i = 0) =>
+  scoreGuess(reviewCase.answer, guesses(reviewCase)[i]!.layer, DEFAULT_KERNEL).score
 
 describe("score review cases", () => {
   const cases = casesOf(1)
 
   it("are the same for a set every time, and differ between sets", HEAVY, () => {
     const record = (set: number) =>
-      casesOf(set).map((c) => [c.question.id, ...guesses(c).map((g) => [g.type, g.layer.toRecord()])])
+      casesOf(set).map((reviewCase) => [
+        reviewCase.question.id,
+        ...guesses(reviewCase).map((guess) => [guess.type, guess.layer.toRecord()])
+      ])
     expect(record(1)).toEqual(record(1))
     expect(record(2)).not.toEqual(record(1))
   })
 
   it("ask about places, countries, features and states, some as pairs", () => {
     expect(cases).toHaveLength(REVIEW_SET_SIZE)
-    expect(new Set(cases.map((c) => c.question.id)).size).toBe(REVIEW_SET_SIZE)
-    expect(cases.filter((c) => c.type === ReviewCaseType.PAIR)).toHaveLength(8)
+    expect(new Set(cases.map((reviewCase) => reviewCase.question.id)).size).toBe(REVIEW_SET_SIZE)
+    expect(cases.filter((reviewCase) => reviewCase.type === ReviewCaseType.PAIR)).toHaveLength(8)
     for (const type of [QuestionType.COUNTRY, QuestionType.FEATURE, QuestionType.STATE])
       expect(
-        cases.some((c) => c.question.type === type),
+        cases.some((reviewCase) => reviewCase.question.type === type),
         type
       ).toBe(true)
   })
 
   it("paint guesses that suit the question, two different ones in a pair", () => {
-    for (const c of cases) {
-      const types = isArea(c) ? REGION_GUESSES : POINT_GUESSES
-      for (const g of guesses(c)) {
-        expect(types, c.question.id).toContain(g.type)
-        expect(g.layer.size, `${c.question.id} ${g.type}`).toBeGreaterThan(0)
+    for (const reviewCase of cases) {
+      const types = isArea(reviewCase) ? REGION_GUESSES : POINT_GUESSES
+      for (const guess of guesses(reviewCase)) {
+        expect(types, reviewCase.question.id).toContain(guess.type)
+        expect(guess.layer.size, `${reviewCase.question.id} ${guess.type}`).toBeGreaterThan(0)
       }
-      if (c.type === ReviewCaseType.PAIR) expect(c.guesses[0].type).not.toBe(c.guesses[1].type)
+      if (reviewCase.type === ReviewCaseType.PAIR)
+        expect(reviewCase.guesses[0].type).not.toBe(reviewCase.guesses[1].type)
     }
   })
 
   it("score painting a whole country above painting far from it", HEAVY, () => {
     const all = [1, 2, 3, 4].flatMap((set) => casesOf(set))
     const mean = (type: GuessType) => {
-      const s = all.flatMap((c) => guesses(c).flatMap((g, i) => (isArea(c) && g.type === type ? [score(c, i)] : [])))
-      return s.reduce((a, b) => a + b, 0) / s.length
+      const scores = all.flatMap((reviewCase) =>
+        guesses(reviewCase).flatMap((guess, i) =>
+          isArea(reviewCase) && guess.type === type ? [score(reviewCase, i)] : []
+        )
+      )
+      return scores.reduce((a, b) => a + b, 0) / scores.length
     }
     expect(mean(GuessType.WHOLE)).toBeGreaterThan(mean(GuessType.NEIGHBOUR))
     expect(mean(GuessType.NEIGHBOUR)).toBeGreaterThan(mean(GuessType.FAR_MISS))

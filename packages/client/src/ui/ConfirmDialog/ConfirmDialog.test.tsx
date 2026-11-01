@@ -56,9 +56,9 @@ describe("ConfirmDialog", () => {
   })
 
   it("words the end-game request as a destructive action", () => {
-    const r = endGameRequest(() => {})
-    expect(r.title).toBe("End the game now?")
-    expect(r.confirmLabel).toBe("End game")
+    const request = endGameRequest(() => {})
+    expect(request.title).toBe("End the game now?")
+    expect(request.confirmLabel).toBe("End game")
   })
 
   it("shows handing over as a plain confirm, and removing as a red one", () => {

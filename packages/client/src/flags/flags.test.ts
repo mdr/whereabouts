@@ -5,7 +5,7 @@ import { flagCode } from "@whereabouts/shared/ids"
 import { atlasCell } from "./flag-atlas"
 import { flagFile, flagRatio } from "./flags"
 
-const codes = CATALOGUE.filter(isFlagQuestion).map((f) => f.clue.flag)
+const codes = CATALOGUE.filter(isFlagQuestion).map((question) => question.clue.flag)
 const SVGS = import.meta.glob<string>("../assets/flags/*.svg", { query: "?raw", import: "default", eager: true })
 
 describe("flag pictures", () => {
@@ -15,11 +15,11 @@ describe("flag pictures", () => {
       expect(svg, code).toBeDefined()
       const root = /<svg\b[^>]*>/.exec(svg!)![0]
       expect(root, code).not.toMatch(/\s(width|height)=/)
-      const [, , w, h] = /viewBox="([^"]+)"/
+      const [, , width, height] = /viewBox="([^"]+)"/
         .exec(root)![1]!
         .split(/[\s,]+/)
         .map(Number)
-      expect(w! / h!, code).toBeCloseTo(flagRatio(code), 3)
+      expect(width! / height!, code).toBeCloseTo(flagRatio(code), 3)
       expect(flagFile(code), code).toMatch(/\.svg$/)
     }
   })

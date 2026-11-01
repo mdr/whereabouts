@@ -29,7 +29,7 @@ import { SPECTATING, makePlayer, makeSpectator, makeLobbyView } from "../../../t
 vi.mock("../../../map/map-prefetch", () => ({ prefetchMap: () => undefined, mapPrefetched: { value: false } }))
 
 /** Queries within a render's container. */
-const inside = (el: Element) => within(el as HTMLElement)
+const inside = (element: Element) => within(element as HTMLElement)
 
 const MIX = mixOf({ [QuestionType.LANDMARK]: 3, [QuestionType.PLACE]: 2 })
 
@@ -100,7 +100,7 @@ describe("Lobby setup", () => {
     const picker = inside(container).getByTestId(mapDetailPickerTestIds.picker)
     const minimal = picker.querySelector('[aria-checked="true"]')!
     expect(minimal.textContent).toBe("Minimal")
-    fireEvent.click([...picker.querySelectorAll("button")].find((b) => b.textContent === "Water")!)
+    fireEvent.click([...picker.querySelectorAll("button")].find((button) => button.textContent === "Water")!)
     expect(configure).toHaveBeenCalledWith({ mapDetail: MapDetail.WATER })
     expect(inside(container).queryAllByTestId(setupSummaryTestIds.summary)).toHaveLength(0)
     // Remembered for the next game this browser hosts.
@@ -113,7 +113,7 @@ describe("Lobby setup", () => {
       expect(inside(container).queryAllByTestId(id)).toHaveLength(0)
     const summary = inside(container).getByTestId(setupSummaryTestIds.summary)
     expect(inside(summary).getAllByTestId(roundStripTestIds.cell)).toHaveLength(5)
-    const tiles = [...summary.children].map((t) => t.textContent)
+    const tiles = [...summary.children].map((tile) => tile.textContent)
     expect(tiles).toEqual([
       "5rounds",
       "60 sper round",
@@ -130,7 +130,7 @@ describe("Lobby setup", () => {
     const next = view(false)
     next.config = { ...next.config, roundLength: 30_000 }
     rerender(<Lobby conn={conn} view={next} />)
-    expect([...container.querySelectorAll(`.${setupSummary.changed}`)].map((t) => t.textContent)).toEqual([
+    expect([...container.querySelectorAll(`.${setupSummary.changed}`)].map((tile) => tile.textContent)).toEqual([
       "30 sper round"
     ])
   })
@@ -147,16 +147,16 @@ describe("Lobby leave", () => {
   })
 
   it("asks the host first, naming who takes over", () => {
-    const v = view(true)
+    const gameView = view(true)
     const bob = guest("p2", "Bob")
-    v.players = [...v.players, bob]
-    v.you.nextHost = bob.id
-    const { container } = render(<Lobby conn={conn} view={v} />)
+    gameView.players = [...gameView.players, bob]
+    gameView.you.nextHost = bob.id
+    const { container } = render(<Lobby conn={conn} view={gameView} />)
     fireEvent.click(inside(container).getByTestId(lobbyTestIds.leaveButton))
     expect(leave).not.toHaveBeenCalled()
     const modal = screen.getByTestId(confirmDialogTestIds.dialog)
     expect(modal.textContent).toContain("Bob becomes the host.")
-    fireEvent.click([...modal.querySelectorAll("button")].find((b) => b.textContent === "Leave")!)
+    fireEvent.click([...modal.querySelectorAll("button")].find((button) => button.textContent === "Leave")!)
     expect(leave).toHaveBeenCalledTimes(1)
   })
 
@@ -171,10 +171,10 @@ describe("Lobby leave", () => {
 
 describe("Lobby spectators", () => {
   it("lists spectators apart from the players, with their own count", () => {
-    const v = view(true)
-    v.players = [...v.players, guest("p2", "Bob")]
-    v.spectators = [watcher("p3", "Sam")]
-    const { container } = render(<Lobby conn={conn} view={v} />)
+    const gameView = view(true)
+    gameView.players = [...gameView.players, guest("p2", "Bob")]
+    gameView.spectators = [watcher("p3", "Sam")]
+    const { container } = render(<Lobby conn={conn} view={gameView} />)
     const lists = inside(container).getAllByTestId(playerListTestIds.list)
     expect(lists).toHaveLength(2)
     expect(lists[0]!.textContent).toContain("Bob")
@@ -188,11 +188,11 @@ describe("Lobby spectators", () => {
     fireEvent.click(inside(container).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!)
     expect(setRole).toHaveBeenLastCalledWith(Role.SPECTATOR)
     unmount()
-    const v = view(false)
-    v.you.role = SPECTATING
-    v.players = []
-    v.spectators = [watcher("p1", "Alice")]
-    const { container: c2 } = render(<Lobby conn={conn} view={v} />)
+    const gameView = view(false)
+    gameView.you.role = SPECTATING
+    gameView.players = []
+    gameView.spectators = [watcher("p1", "Alice")]
+    const { container: c2 } = render(<Lobby conn={conn} view={gameView} />)
     const play = inside(c2).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!
     expect(play.textContent).toContain("Play instead")
     fireEvent.click(play)
@@ -200,11 +200,11 @@ describe("Lobby spectators", () => {
   })
 
   it("keeps the seat button off when all sixteen seats are taken", () => {
-    const v = view(false)
-    v.you.role = SPECTATING
-    v.players = Array.from({ length: 16 }, (_, i) => guest(`p${i + 10}`, `P${i}`, i))
-    v.spectators = [watcher("p1", "Alice")]
-    const { container } = render(<Lobby conn={conn} view={v} />)
+    const gameView = view(false)
+    gameView.you.role = SPECTATING
+    gameView.players = Array.from({ length: 16 }, (_, i) => guest(`p${i + 10}`, `P${i}`, i))
+    gameView.spectators = [watcher("p1", "Alice")]
+    const { container } = render(<Lobby conn={conn} view={gameView} />)
     expect(inside(container).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!.disabled).toBe(true)
     expect(container.textContent).toContain("All 16 player seats are taken")
   })

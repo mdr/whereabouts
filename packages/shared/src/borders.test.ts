@@ -10,9 +10,9 @@ const flags = CATALOGUE.filter(isFlagQuestion)
 const borders = new Borders(bordersJson, flags)
 const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label
 
-function cell(h: H3Cell, intensity = 1): PaintCell {
-  const [lat, lon] = cellToLatLng(h)
-  return { lat, lon, intensity, area: cellArea(h), h3: h }
+function cell(h3Cell: H3Cell, intensity = 1): PaintCell {
+  const [lat, lon] = cellToLatLng(h3Cell)
+  return { lat, lon, intensity, area: cellArea(h3Cell), h3: h3Cell }
 }
 
 describe("borders", () => {
@@ -79,13 +79,13 @@ describe("borders", () => {
     const lima = latLngToCell(-12.05, -77.04, h3Res(6))
     const sea = latLngToCell(30, -40, h3Res(6))
     // Equal areas, so the shares are the intensities': 3 of 5 in France, 1 in Peru, 1 at sea.
-    const even = (h: H3Cell, v: number) => ({ ...cell(h, v), area: 1 })
+    const even = (h3Cell: H3Cell, value: number) => ({ ...cell(h3Cell, value), area: 1 })
     const split = borders.paintedCountries([even(paris, 3), even(lima, 1), even(sea, 1)])
-    expect(split.map((s) => s.country.label)).toEqual(["France", "Peru"])
+    expect(split.map((part) => part.country.label)).toEqual(["France", "Peru"])
     expect(split[0]!.share).toBeCloseTo(0.6, 1)
     expect(split[1]!.share).toBeCloseTo(0.2, 1)
     // A blob on Peru is mostly in Peru.
-    const blob = gridDisk(latLngToCell(-10, -75, h3Res(4)), 3).map((h) => cell(h))
+    const blob = gridDisk(latLngToCell(-10, -75, h3Res(4)), 3).map((h3Cell) => cell(h3Cell))
     expect(borders.paintedCountries(blob)[0]!.country.label).toBe("Peru")
     expect(borders.paintedCountries([])).toEqual([])
   })
@@ -95,15 +95,15 @@ describe("flag pins", () => {
   const pins = borders.pins()
 
   it("gives each pinned country's outline round its pin", () => {
-    const france = pins.find((p) => p.country.clue.flag === "fr")!
+    const france = pins.find((pin) => pin.country.clue.flag === "fr")!
     const rings = borders.rings(france.country.clue.flag)
     expect(rings.length).toBeGreaterThan(0)
-    expect(rings.every((r) => r.length >= 6 && r.length % 2 === 0)).toBe(true)
+    expect(rings.every((ring) => ring.length >= 6 && ring.length % 2 === 0)).toBe(true)
     expect(borders.countryAt(france.at)?.clue.flag).toBe("fr")
   })
 
   it("pins every flag country once", () => {
-    expect(new Set(pins.map((p) => p.country.clue.flag)).size).toBe(pins.length)
+    expect(new Set(pins.map((pin) => pin.country.clue.flag)).size).toBe(pins.length)
     expect(pins.length).toBeGreaterThan(190)
   })
 

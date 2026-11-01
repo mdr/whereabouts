@@ -3,8 +3,8 @@ import type { Ring } from "@whereabouts/shared/geo"
 import type { Outline } from "@whereabouts/shared/questions"
 import { outlinePath } from "./outline-path"
 
-const points = (d: string) =>
-  [...d.matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)].map((m) => [Number(m[1]), Number(m[2])] as const)
+const points = (path: string) =>
+  [...path.matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)].map((match) => [Number(match[1]), Number(match[2])] as const)
 
 describe("outlinePath", () => {
   it("fits a shape in the box, centred", () => {
@@ -19,9 +19,9 @@ describe("outlinePath", () => {
         ]
       ]
     ]
-    const d = outlinePath(square, { lat: 0, lon: 11 }, 56, 42, 3)
-    const xs = points(d).map((p) => p[0])
-    const ys = points(d).map((p) => p[1])
+    const path = outlinePath(square, { lat: 0, lon: 11 }, 56, 42, 3)
+    const xs = points(path).map((point) => point[0])
+    const ys = points(path).map((point) => point[1])
     expect(Math.min(...ys)).toBeCloseTo(3)
     expect(Math.max(...ys)).toBeCloseTo(39)
     expect((Math.min(...xs) + Math.max(...xs)) / 2).toBeCloseTo(28)
@@ -39,7 +39,7 @@ describe("outlinePath", () => {
         ]
       ]
     ]
-    const xs = points(outlinePath(across, { lat: 0.5, lon: 180 }, 56, 42, 3)).map((p) => p[0])
+    const xs = points(outlinePath(across, { lat: 0.5, lon: 180 }, 56, 42, 3)).map((point) => point[0])
     expect(Math.max(...xs) - Math.min(...xs)).toBeLessThanOrEqual(50)
     expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(30)
   })

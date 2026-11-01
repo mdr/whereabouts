@@ -65,14 +65,14 @@ const run = startRun(["kyoto", "lima"].map(place), 1)
 
 describe("practiceVrView", () => {
   it("heads the round with where you are in the run and your points", () => {
-    const v = practiceVrView(run, shown())
-    expect(v.type === VrViewType.PAINT && v.round.heading).toBe("QUESTION 1 OF 2, 0 pts")
+    const view = practiceVrView(run, shown())
+    expect(view.type === VrViewType.PAINT && view.round.heading).toBe("QUESTION 1 OF 2, 0 pts")
   })
 
   it("moves on from a reveal, finishing at the last", () => {
-    const action = (r: PracticeRun): string | undefined => {
-      const v: VrView = practiceVrView(r, shown({ shownScore: 250 }))
-      return v.type === VrViewType.REVEAL ? v.reveal.actions[0]?.label : undefined
+    const action = (run: PracticeRun): string | undefined => {
+      const view: VrView = practiceVrView(run, shown({ shownScore: 250 }))
+      return view.type === VrViewType.REVEAL ? view.reveal.actions[0]?.label : undefined
     }
     expect(action(pass(run))).toBe("Next question")
     expect(action(pass(onward(pass(run))))).toBe("Finish")
@@ -80,7 +80,7 @@ describe("practiceVrView", () => {
 
   it("sums the run up at the end, out of a thousand a question", () => {
     const done = nextRound(pass(onward(pass(run))))
-    const v = practiceVrView(done, shown())
-    expect(v.type === VrViewType.DONE && v.summary.scoreLine).toBe("500 pts out of 2,000")
+    const view = practiceVrView(done, shown())
+    expect(view.type === VrViewType.DONE && view.summary.scoreLine).toBe("500 pts out of 2,000")
   })
 })

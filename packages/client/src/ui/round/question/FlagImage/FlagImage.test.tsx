@@ -14,8 +14,8 @@ vi.mock("../../../../flags/flags", async (original) => ({
 }))
 
 describe("flag frames", () => {
-  const ratio = (el: unknown) => Number((el as HTMLElement).style.getPropertyValue("--flag-ratio"))
-  const enlargedRatio = (el: unknown) => Number((el as HTMLElement).style.getPropertyValue("--ratio"))
+  const ratio = (element: unknown) => Number((element as HTMLElement).style.getPropertyValue("--flag-ratio"))
+  const enlargedRatio = (element: unknown) => Number((element as HTMLElement).style.getPropertyValue("--ratio"))
   // Nepal's is taller than wide, Switzerland's square, Qatar's the widest.
   const shapes = [
     [flagCode("np"), 0.8203],

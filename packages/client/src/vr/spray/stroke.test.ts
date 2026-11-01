@@ -16,13 +16,13 @@ describe("which hand starts a stroke", () => {
   })
 
   it("none pulling the trigger at nothing, while gripping, or with the pail", () => {
-    for (const h of [
+    for (const controller of [
       hand({ trigger: 1, aimed: false }),
       hand({ trigger: 1, busy: true }),
       hand({ trigger: DEAD }),
       hand({ trigger: 1, tool: Tool.FILL })
     ])
-      expect(strokeTool([h], false, DEAD)).toBeUndefined()
+      expect(strokeTool([controller], false, DEAD)).toBeUndefined()
   })
 
   it("none while pointing at a menu", () => {

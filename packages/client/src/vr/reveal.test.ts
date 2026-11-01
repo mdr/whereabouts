@@ -78,7 +78,7 @@ describe("players' paint in colour", () => {
       { layer: red, colour: "red" },
       { layer: blue, colour: "blue" }
     ])
-    const count = (colour: string) => paint.features.filter((f) => f.properties.colour === colour).length
+    const count = (colour: string) => paint.features.filter((feature) => feature.properties.colour === colour).length
     expect(count("red")).toBe(red.toGeoJSON().features.length)
     expect(count("blue")).toBe(blue.toGeoJSON().features.length)
     expect(paint.features).toHaveLength(count("red") + count("blue"))

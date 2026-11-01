@@ -10,7 +10,7 @@ import { DEFAULT_KERNEL, PASS_SCORE } from "./scoring.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 
 const OUTLINES = outlinesFrom(outlinesJson)
-const answerOf = (id: string) => scoredAnswer(CATALOGUE.find((q) => q.id === id)!.answer, OUTLINES)
+const answerOf = (id: string) => scoredAnswer(CATALOGUE.find((question) => question.id === id)!.answer, OUTLINES)
 const paris = answerOf("paris")
 const germany = answerOf("germany-region") as Area
 
@@ -25,7 +25,7 @@ function paintAround(answer: ScoredAnswer, lat: number, lon: number): PaintSubmi
 
 function paintAll(area: Area): PaintSubmission {
   const res = resolutionForTolerance(area.tolerance)
-  return { cells: Object.fromEntries(regionCells(area, res).map((h) => [h, 1])), floor: 0.05 }
+  return { cells: Object.fromEntries(regionCells(area, res).map((cell) => [cell, 1])), floor: 0.05 }
 }
 
 const EMPTY: PaintSubmission = { cells: {}, floor: 1 }

@@ -75,8 +75,8 @@ test("sound", async ({ browser }) => {
   await test.step("the countdown starts at ten seconds left", async () => {
     await annRoundPage.pause(1000)
     sinceStart.push(...(await takeSounds(annTab)))
-    const ticks = sinceStart.filter((e) => e.kind === "buffer" && e.clip === "countdown")
-    const tickAt = ticks.map((e) => `${((e.at - startedAt) / 1000).toFixed(1)} s`)
+    const ticks = sinceStart.filter((event) => event.kind === "buffer" && event.clip === "countdown")
+    const tickAt = ticks.map((event) => `${((event.at - startedAt) / 1000).toFixed(1)} s`)
     check(
       ticks.length === 1 && Math.abs((ticks[0]!.at - startedAt) / 1000 - 2) < 1,
       `the countdown starts at ten seconds left (${tickAt.join(", ") || "never"} after Start)`
@@ -130,7 +130,7 @@ test("sound", async ({ browser }) => {
     await practiceRoundPage.hud.toggleSound()
     await takeSounds(soloTab)
     await practiceRoundPage.map.drag(spot, { distance: 80, steps: 10, hold: 600 })
-    check(!(await takeSounds(soloTab)).some((e) => e.kind === "buffer"), "with sounds off, painting is silent")
+    check(!(await takeSounds(soloTab)).some((event) => event.kind === "buffer"), "with sounds off, painting is silent")
     await practiceRoundPage.hud.toggleSound()
     await practiceRoundPage.map.drag({ across: 0.4, down: 0.4 }, { distance: 60, steps: 10, hold: 600 })
     check(played(await takeSounds(soloTab), "spray"), "switched back on, practice sprays")

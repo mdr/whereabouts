@@ -50,12 +50,12 @@ export async function vrHostGuessing(browser: Browser): Promise<VrGuessing> {
   await until(
     "the lobby in VR",
     () => headset.view(),
-    (v) => v === VrViewType.LOBBY
+    (viewType) => viewType === VrViewType.LOBBY
   )
   await until(
     "the players in VR",
     () => headset.scoreTable(),
-    (t) => t?.rows.length === 2
+    (table) => table?.rows.length === 2
   )
   await pressMenu(headset, can, "act0")
   const aliceRound = await aliceLobby.waitForGameToStart()
@@ -63,7 +63,7 @@ export async function vrHostGuessing(browser: Browser): Promise<VrGuessing> {
   await until(
     "round 1 in VR",
     () => headset.view(),
-    (v) => v === VrViewType.PAINT,
+    (viewType) => viewType === VrViewType.PAINT,
     30_000
   )
   return { headset, centre, can, aliceRound, bobRound }
@@ -76,7 +76,7 @@ export async function vrHostReveal(browser: Browser): Promise<VrGuessing & { bob
   await until(
     "Pass on the menu",
     () => headset.doneLabel(),
-    (l) => l === "Pass"
+    (label) => label === "Pass"
   )
   await pressMenu(headset, can, "done")
   // Bob must finish last, so the reveal follows his Done.
@@ -89,7 +89,7 @@ export async function vrHostReveal(browser: Browser): Promise<VrGuessing & { bob
   await until(
     "the answer in VR",
     () => headset.view(),
-    (v) => v === VrViewType.REVEAL
+    (viewType) => viewType === VrViewType.REVEAL
   )
   return { ...guessing, bobReveal }
 }

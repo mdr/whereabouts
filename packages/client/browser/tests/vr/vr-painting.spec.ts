@@ -22,7 +22,7 @@ test("spraying paints the globe, the left hand's eraser rubs paint out, and undo
   const shown = await until(
     "the globe to show the paint",
     () => headset.globePaintCells(),
-    (n) => n === after
+    (count) => count === after
   )
   check(shown === after, `the globe shows it (${shown} cells)`)
   check(await headset.toolsHeld(), "while painting, the hands hold the can and eraser")
@@ -54,7 +54,7 @@ test("spraying paints the globe, the left hand's eraser rubs paint out, and undo
   await until(
     "the erasing undone",
     () => round.map.yourPaintCells(),
-    (n) => n === after
+    (count) => count === after
   )
 
   // Rubbing the eraser on the globe rubs out too, with no trigger. The grip,
@@ -62,9 +62,9 @@ test("spraying paints the globe, the left hand's eraser rubs paint out, and undo
   // the ray starts inside the globe for the tip to reach the surface.
   const rubFrom: Vec3 = [can[0] - 0.3, can[1], can[2]]
   const unrubbed = await headset.paintMass()
-  const toward = painted.map((c, i) => c - rubFrom[i]!)
+  const toward = painted.map((component, i) => component - rubFrom[i]!)
   const length = Math.hypot(...toward)
-  const rubTip = painted.map((c, i) => c - (toward[i]! / length) * -0.04) as Vec3
+  const rubTip = painted.map((component, i) => component - (toward[i]! / length) * -0.04) as Vec3
   await headset.point(Hand.LEFT, rubTip, painted)
   await round.pause(1500)
   await headset.point(Hand.LEFT, rubFrom, painted)
@@ -78,7 +78,7 @@ test("spraying paints the globe, the left hand's eraser rubs paint out, and undo
   await until(
     "the rubbing undone",
     () => round.map.yourPaintCells(),
-    (n) => n === after
+    (count) => count === after
   )
   // Gripping, to turn or zoom the globe, it rubs nothing out.
   const ungripped = await headset.paintMass()
@@ -125,7 +125,7 @@ test("turning the left palm up opens the wrist menu, whose buttons clear, hint a
     await until(
       what,
       () => round.map.yourPaintCells(),
-      (n) => n === painted
+      (count) => count === painted
     )
   }
   await press(WristButton.CLEAR)
@@ -165,7 +165,7 @@ test("gripping turns the globe, and the thumbstick zooms in until the map shows 
   await until(
     "the first spray undone",
     () => round.map.yourPaintCells(),
-    (n) => n === 0
+    (count) => count === 0
   )
   await headset.pointRight([centre[0] + 0.2, centre[1], centre[2] + 0.1], centre)
   await round.pause(200)
@@ -183,7 +183,7 @@ test("gripping turns the globe, and the thumbstick zooms in until the map shows 
   await round.screenshot(shot(`vr-4-spun.png`))
   await spray(headset, round, { centre, can })
   const second = await round.map.yourPaintCellIds()
-  const shared = second.filter((c) => first.has(c)).length
+  const shared = second.filter((cell) => first.has(cell)).length
   check(
     second.length > 0 && shared < second.length / 5,
     `spinning the globe moves where paint lands (${shared} of ${second.length} cells shared)`

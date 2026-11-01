@@ -20,7 +20,9 @@ function makeMenu() {
   const clicks = new Map<string, () => void>()
   menu.wire({
     setTargetDimensions() {},
-    requireElementById: (id: string) => ({ addEventListener: (_: string, f: () => void) => clicks.set(id, f) }),
+    requireElementById: (id: string) => ({
+      addEventListener: (_: string, listener: () => void) => clicks.set(id, listener)
+    }),
     getElementById: () => ({ setProperties() {} })
   } as unknown as UIKitDocument)
   return { menu, click: (id: string) => clicks.get(id)!() }

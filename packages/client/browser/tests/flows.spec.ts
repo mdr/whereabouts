@@ -30,7 +30,7 @@ test("flows", async ({ browser }) => {
     await aliceRoundPage.playersPanel.open()
     const players = await aliceRoundPage.playersPanel.players.players()
     check(
-      players.length === 2 && players.some((p) => p.name === "Alice" && p.isHost),
+      players.length === 2 && players.some((player) => player.name === "Alice" && player.isHost),
       `still two players, Alice still host: ${JSON.stringify(players)}`
     )
   })
@@ -45,7 +45,7 @@ test("flows", async ({ browser }) => {
     const caraRevealPage = await caraSittingOutPage.waitForReveal()
     const round1 = await aliceRevealPage.rows()
     check(
-      round1.some((r) => r.name === "Cara" && r.roundScore === "sat out"),
+      round1.some((row) => row.name === "Cara" && row.roundScore === "sat out"),
       `Cara shown as sitting out round 1: ${JSON.stringify(round1)}`
     )
     aliceRoundPage = await aliceRevealPage.nextRound()
@@ -68,7 +68,7 @@ test("flows", async ({ browser }) => {
     const aliceRevealPage = await aliceRoundDonePage.waitForReveal()
     const round2 = await aliceRevealPage.rows()
     check(
-      round2.some((r) => r.name === "Cara" && r.passed && r.roundScore === "+250"),
+      round2.some((row) => row.name === "Cara" && row.passed && row.roundScore === "+250"),
       `a pass shows as +250, tagged passed: ${JSON.stringify(round2)}`
     )
     return { aliceRevealPage, bobRevealPage }

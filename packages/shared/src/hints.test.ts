@@ -12,14 +12,14 @@ describe("hintBand", () => {
     for (const { answer } of CATALOGUE) {
       const at = answerCentre(answer)
       for (const axis of axes)
-        for (const u of [0, 0.37, 1]) expect(inHintBand(hintBand(at, answer.tolerance, axis, u), at)).toBe(true)
+        for (const along of [0, 0.37, 1]) expect(inHintBand(hintBand(at, answer.tolerance, axis, along), at)).toBe(true)
     }
   })
 
   it("is about ten tolerances wide, and never puts the answer at an edge", () => {
     const answer = { lat: 27.1751, lon: 78.0421 }
-    for (const u of [0, 1]) {
-      const band = hintBand(answer, 150, HintAxis.LATITUDE, u)
+    for (const along of [0, 1]) {
+      const band = hintBand(answer, 150, HintAxis.LATITUDE, along)
       const km = (band.to - band.from) * 111.195
       expect(km).toBeGreaterThanOrEqual(HINT_WIDTH_TOLERANCES * 150)
       expect(km).toBeLessThan(HINT_WIDTH_TOLERANCES * 150 + 2 * 111.195)
@@ -47,8 +47,8 @@ describe("hintBand", () => {
 })
 
 describe("trimToHint", () => {
-  const latLon = (h: H3Cell) => {
-    const [lat, lon] = cellToLatLng(h)
+  const latLon = (cell: H3Cell) => {
+    const [lat, lon] = cellToLatLng(cell)
     return { lat, lon }
   }
 
@@ -59,24 +59,26 @@ describe("trimToHint", () => {
     const kept = trimToHint(layer.cells, band, layer.res)
     expect(kept.size).toBeGreaterThan(0)
     expect(kept.size).toBeLessThan(layer.cells.size * 4)
-    const lats = [...kept.keys()].map((h) => latLon(h).lat)
+    const lats = [...kept.keys()].map((cell) => latLon(cell).lat)
     expect(Math.min(...lats)).toBeGreaterThan(27)
     expect(Math.max(...lats)).toBeLessThan(35)
     // The paint in the band is all still there.
     expect(
-      [...layer.cells.keys()].filter((h) => latLon(h).lat > 29 && latLon(h).lat < 33).every((h) => kept.has(h))
+      [...layer.cells.keys()]
+        .filter((cell) => latLon(cell).lat > 29 && latLon(cell).lat < 33)
+        .every((cell) => kept.has(cell))
     ).toBe(true)
   })
 
   it("keeps a longitude band across 180° as one band", () => {
-    const res = h3Res(3)
+    const resolution = h3Res(3)
     const cells = new Map([
-      [latLngToCell(0, 179, res), 1],
-      [latLngToCell(0, -179, res), 1],
-      [latLngToCell(0, 0, res), 1]
+      [latLngToCell(0, 179, resolution), 1],
+      [latLngToCell(0, -179, resolution), 1],
+      [latLngToCell(0, 0, resolution), 1]
     ])
-    const kept = trimToHint(cells, { axis: HintAxis.LONGITUDE, from: 175, to: -175 }, res)
-    expect([...kept.keys()].map((h) => Math.round(latLon(h).lon)).sort()).toEqual([-179, 179])
+    const kept = trimToHint(cells, { axis: HintAxis.LONGITUDE, from: 175, to: -175 }, resolution)
+    expect([...kept.keys()].map((cell) => Math.round(latLon(cell).lon)).sort()).toEqual([-179, 179])
   })
 })
 
@@ -94,6 +96,6 @@ describe("seededUnit", () => {
     const values = Array.from({ length: 200 }, (_, i) => seededUnit(42, i, 1))
     expect(Math.min(...values)).toBeLessThan(0.1)
     expect(Math.max(...values)).toBeGreaterThan(0.9)
-    for (const v of values) expect(v >= 0 && v < 1).toBe(true)
+    for (const value of values) expect(value >= 0 && value < 1).toBe(true)
   })
 })

@@ -37,7 +37,7 @@ describe("pickAwards", () => {
     for (const seed of SEEDS) {
       const awards = pickAwards(players, seed)
       // Four were earned, two each by the passer and the last-placed player: all are handed out.
-      expect(awards.map((a) => `${a.title}:${a.playerIds.join()}`).sort()).toEqual([
+      expect(awards.map((award) => `${award.title}:${award.playerIds.join()}`).sort()).toEqual([
         "Chicken:p1",
         "Comeback Kid:p1",
         "Rollercoaster:p6",
@@ -53,12 +53,12 @@ describe("pickAwards", () => {
       player("c", [round(400), round(900), round(950)])
     ]
     const awards = SEEDS.flatMap((seed) => pickAwards(players, seed))
-    const all = new Set(awards.map((a) => a.title))
+    const all = new Set(awards.map((award) => award.title))
     expect(all).toContain("Chicken")
     expect(all).toContain("Bottled It")
     expect(all).toContain("Wooden Spoon")
-    expect(awards.find((a) => a.title === "Chicken")!.playerIds).toEqual([idOf("a")])
-    expect(awards.find((a) => a.title === "Bottled It")!.playerIds).toEqual([idOf("b")])
+    expect(awards.find((award) => award.title === "Chicken")!.playerIds).toEqual([idOf("a")])
+    expect(awards.find((award) => award.title === "Bottled It")!.playerIds).toEqual([idOf("b")])
   })
 
   it("only awards what someone earned", () => {
@@ -71,7 +71,7 @@ describe("pickAwards", () => {
     const at = (lockedAfter: Ms) => round(500, { lockedAfter, roundLength: 10_000 })
     const titles = (rounds: RoundFacts[]) =>
       SEEDS.flatMap((seed) => pickAwards([player("a", rounds), player("b", [round(500), round(500)])], seed)).map(
-        (a) => a.title
+        (award) => award.title
       )
     expect(titles([at(6_000), at(7_000)])).not.toContain("Last-Second Merchant")
     expect(titles([at(9_000), at(9_000)])).toContain("Last-Second Merchant")
@@ -84,14 +84,15 @@ describe("pickAwards", () => {
       { label: "Tokyo" }
     )
     const awards = SEEDS.flatMap((seed) => pickAwards([player("a", [miss]), player("b", [round(700)])], seed))
-    expect(awards.map((a) => a.line)).toContain("{0} put Tokyo 9,400 km away. Visible from space, to be fair.")
+    expect(awards.map((award) => award.line)).toContain("{0} put Tokyo 9,400 km away. Visible from space, to be fair.")
   })
 })
 
 /** Every award these players earned, over enough seeds that the cap hides none. */
 const earned = (players: PlayerFacts[]) => SEEDS.flatMap((seed) => pickAwards(players, seed))
-const titles = (players: PlayerFacts[]) => new Set(earned(players).map((a) => a.title))
-const winners = (title: string, players: PlayerFacts[]) => earned(players).find((a) => a.title === title)?.playerIds
+const titles = (players: PlayerFacts[]) => new Set(earned(players).map((award) => award.title))
+const winners = (title: string, players: PlayerFacts[]) =>
+  earned(players).find((award) => award.title === title)?.playerIds
 const AVERAGE = [round(500), round(500)]
 const point = (extra: Partial<PointFacts["point"]>): PointFacts["point"] => ({
   spot: { lat: 0, lon: 0 },
@@ -154,7 +155,7 @@ describe("each award", () => {
   it("Fastest Finger: the quickest to lock in, under 40% of the round on average", () => {
     const locked = (seconds: number) => Array.from({ length: 3 }, () => round(500, { lockedAfter: seconds * 1000 }))
     const fast = [player("a", locked(10)), player("b", locked(20))]
-    expect(earned(fast).find((a) => a.title === "Fastest Finger")).toMatchObject({
+    expect(earned(fast).find((award) => award.title === "Fastest Finger")).toMatchObject({
       playerIds: [idOf("a")],
       line: "{0} locked in after 10 seconds on average. Thinking is overrated."
     })
@@ -193,7 +194,7 @@ describe("each award", () => {
       player("c", [round(400), round(400), round(400), round(400)])
     ]
     const kid = [player("a", [round(100), round(100), round(1000), round(1000)]), ...others]
-    expect(earned(kid).find((a) => a.title === "Comeback Kid")).toMatchObject({
+    expect(earned(kid).find((award) => award.title === "Comeback Kid")).toMatchObject({
       playerIds: [idOf("a")],
       line: "{0} was 3rd after round 1 and finished 1st. Sickening."
     })
@@ -265,7 +266,9 @@ describe("handing out the awards", () => {
     for (const seed of SEEDS) {
       const awards = pickAwards([showOff], seed)
       expect(awards).toHaveLength(3)
-      expect(awards.filter((a) => a.title === "Chicken" || a.title === "Hedge Fund Manager")).toHaveLength(2)
+      expect(awards.filter((award) => award.title === "Chicken" || award.title === "Hedge Fund Manager")).toHaveLength(
+        2
+      )
     }
   })
 
@@ -276,18 +279,20 @@ describe("handing out the awards", () => {
       player("c", [round(300), round(300), round(300)])
     ]
     for (const seed of SEEDS)
-      expect(new Set(pickAwards(players, seed).flatMap((a) => a.playerIds))).toEqual(new Set(["a", "b", "c"].map(idOf)))
+      expect(new Set(pickAwards(players, seed).flatMap((award) => award.playerIds))).toEqual(
+        new Set(["a", "b", "c"].map(idOf))
+      )
   })
 
   it("hands out three to five, more with more players", () => {
     // The show-off's five, and a wooden spoon once there are three players: more than the cap each time.
-    const crowd = (n: number) => [showOff, ...["b", "c", "d", "e", "f", "g", "h"].slice(0, n - 1).map(plain)]
-    for (const [n, count] of [
+    const crowd = (size: number) => [showOff, ...["b", "c", "d", "e", "f", "g", "h"].slice(0, size - 1).map(plain)]
+    for (const [size, count] of [
       [1, 3],
       [2, 3],
       [4, 4],
       [8, 5]
     ] as const)
-      expect(pickAwards(crowd(n), 1), `${n} players`).toHaveLength(count)
+      expect(pickAwards(crowd(size), 1), `${size} players`).toHaveLength(count)
   })
 })

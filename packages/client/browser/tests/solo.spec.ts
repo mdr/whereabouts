@@ -66,7 +66,7 @@ test("solo", async ({ browser }) => {
     await practiceRoundPage.screenshot(shot(`2b-trimmed-to-hint.png`))
     await practiceRoundPage.paintTools.undoWithKeyboard()
     const untrimmed = await practiceRoundPage.map.yourPaintMass()
-    const km2 = (m: number) => `${Math.round(m).toLocaleString()} km²`
+    const km2 = (squareKm: number) => `${Math.round(squareKm).toLocaleString()} km²`
     check(
       trimmed <= before && untrimmed === before,
       `trim to hint, then undo: ${km2(before)} -> ${km2(trimmed)} -> ${km2(untrimmed)}`

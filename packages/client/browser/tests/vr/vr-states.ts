@@ -55,7 +55,7 @@ export async function vrPracticePainted(browser: Browser, label: string): Promis
   const painted = await until(
     "paint on the round",
     () => vr.round.map.yourPaintCells(),
-    (n) => n > 0
+    (count) => count > 0
   )
   return { ...vr, painted }
 }
@@ -66,13 +66,13 @@ export async function vrPracticeAnswer(browser: Browser, label: string): Promise
   await until(
     "Pass on the menu",
     () => vr.headset.doneLabel(),
-    (l) => l === "Pass"
+    (label) => label === "Pass"
   )
   await pressMenu(vr.headset, vr.can, "done")
   await until(
     "the passed round's answer in VR",
     () => vr.headset.view(),
-    (v) => v === VrViewType.REVEAL
+    (viewType) => viewType === VrViewType.REVEAL
   )
   await vr.tab.page.getByTestId(soloTestIds.roundScore).waitFor()
   return vr
@@ -84,7 +84,7 @@ export async function vrFlagRound(browser: Browser, label: string): Promise<VrFl
   await until(
     "the flag in VR",
     () => vr.headset.picture(),
-    (p) => p !== undefined,
+    (postcard) => postcard !== undefined,
     60_000
   )
   const card = (await vr.headset.pictureHeld()).at
@@ -98,7 +98,7 @@ export async function vrFlagAnswer(browser: Browser, label: string): Promise<VrF
   await until(
     "the flag round's answer",
     () => flag.headset.view(),
-    (v) => v === VrViewType.REVEAL
+    (viewType) => viewType === VrViewType.REVEAL
   )
   return flag
 }

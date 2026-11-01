@@ -80,21 +80,23 @@ describe("Results", () => {
   it("tables each round: what it asked, everyone's score in finishing order, its best picked out", () => {
     const conn = makeConn()
     const { container } = render(<Results conn={conn} view={view(false)} />)
-    const heads = [...container.querySelectorAll(tid(scoreTableTestIds.playerName))].map((h) => h.textContent)
+    const heads = [...container.querySelectorAll(tid(scoreTableTestIds.playerName))].map(
+      (heading) => heading.textContent
+    )
     expect(heads).toEqual(["Alice", "Bob"])
     const rounds = [...container.querySelectorAll(tid(roundsTestIds.playedRound))]
-    expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundLabel))!.textContent)).toEqual([
+    expect(rounds.map((round) => round.querySelector(tid(roundWhatTestIds.roundLabel))!.textContent)).toEqual([
       "Taj Mahal, Agra",
       "Perth, Australia"
     ])
-    expect(rounds.map((r) => [...r.querySelectorAll("td")].map((c) => c.textContent))).toEqual([
+    expect(rounds.map((round) => [...round.querySelectorAll("td")].map((cell) => cell.textContent))).toEqual([
       ["800", "500"],
       ["700", "750"]
     ])
     // Alice took round 1, Bob round 2.
-    expect(rounds.map((r) => r.querySelector(`td.${scoreTable.best}`)!.textContent)).toEqual(["800", "750"])
+    expect(rounds.map((round) => round.querySelector(`td.${scoreTable.best}`)!.textContent)).toEqual(["800", "750"])
     expect(rounds[0]!.querySelectorAll(`.${pictures.smallPicture} img`)).toHaveLength(1)
-    expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundType))!.textContent)).toEqual([
+    expect(rounds.map((round) => round.querySelector(tid(roundWhatTestIds.roundType))!.textContent)).toEqual([
       "Landmark",
       "Place name"
     ])
@@ -102,8 +104,8 @@ describe("Results", () => {
 
   it("tells a flag round from a country round: the flag, or the shape with the flag by its name", () => {
     const conn = makeConn()
-    const v = view(false)
-    v.playedRounds = [
+    const gameView = view(false)
+    gameView.playedRounds = [
       { label: "Turkey", type: QuestionType.FLAG, flag: flagCode("tr") },
       {
         label: "Bangladesh",
@@ -118,15 +120,15 @@ describe("Results", () => {
         area: { outline: outlineId("sea-black-sea"), centre: { lat: 43.4, lon: 34.3 } }
       }
     ]
-    const { container } = render(<Results conn={conn} view={v} />)
+    const { container } = render(<Results conn={conn} view={gameView} />)
     const rounds = [...container.querySelectorAll(tid(roundsTestIds.playedRound))]
-    expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundType))!.textContent)).toEqual([
+    expect(rounds.map((round) => round.querySelector(tid(roundWhatTestIds.roundType))!.textContent)).toEqual([
       "Flag",
       "Whole country",
       "Sea"
     ])
-    expect(rounds.map((r) => r.querySelectorAll(`.${roundPicture.shape}`).length)).toEqual([0, 1, 1])
-    expect(rounds.map((r) => r.querySelectorAll(`.${roundWhat.labelFlag}`).length)).toEqual([0, 1, 0])
+    expect(rounds.map((round) => round.querySelectorAll(`.${roundPicture.shape}`).length)).toEqual([0, 1, 1])
+    expect(rounds.map((round) => round.querySelectorAll(`.${roundWhat.labelFlag}`).length)).toEqual([0, 1, 0])
   })
 
   it("lists each round's winner and your score where the table won't fit, with the table a click away", () => {
@@ -149,16 +151,19 @@ describe("Results", () => {
       const { container, getByText } = render(<Results conn={conn} view={view(false)} />)
       expect(container.querySelectorAll(tid(scoreTableTestIds.table))).toHaveLength(0)
       const rounds = [...container.querySelectorAll(tid(roundsTestIds.playedRound))]
-      expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundLabel))!.textContent)).toEqual([
+      expect(rounds.map((round) => round.querySelector(tid(roundWhatTestIds.roundLabel))!.textContent)).toEqual([
         "Taj Mahal, Agra",
         "Perth, Australia"
       ])
-      expect(rounds.map((r) => r.querySelector(tid(roundListTestIds.roundWinner))!.textContent)).toEqual([
+      expect(rounds.map((round) => round.querySelector(tid(roundListTestIds.roundWinner))!.textContent)).toEqual([
         "Alice800",
         "Bob750"
       ])
       // You are Bob: your score, picked out where you won.
-      expect(rounds.map((r) => r.querySelector(tid(roundListTestIds.roundYours))!.textContent)).toEqual(["500", "750"])
+      expect(rounds.map((round) => round.querySelector(tid(roundListTestIds.roundYours))!.textContent)).toEqual([
+        "500",
+        "750"
+      ])
       expect(rounds[1]!.querySelector(tid(roundListTestIds.roundYours))!.classList.contains(roundList.best)).toBe(true)
       fireEvent.click(getByText("Everyone's scores (2)"))
       expect(container.querySelectorAll(tid(scoreTableTestIds.table))).toHaveLength(1)

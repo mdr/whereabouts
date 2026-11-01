@@ -23,7 +23,7 @@ describe("App", () => {
     // The server's code goes into the URL without changing the route.
     history.replaceState(undefined, "", "#/game/WXYZ")
     navigate("/game/new")
-    await new Promise((r) => setTimeout(r))
+    await new Promise((resolve) => setTimeout(resolve))
     expect(mounts.count).toBe(2)
   })
 })

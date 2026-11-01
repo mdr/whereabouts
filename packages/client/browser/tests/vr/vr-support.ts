@@ -66,5 +66,5 @@ export async function pressMenu(headset: Headset, from: Vec3, id: string): Promi
 
 /** Closes every tab the test opened: a headset left running slows the worker's next test. */
 export async function closeAllTabs(browser: Browser): Promise<void> {
-  await Promise.all(browser.contexts().map((c) => c.close()))
+  await Promise.all(browser.contexts().map((context) => context.close()))
 }

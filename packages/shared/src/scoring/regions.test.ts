@@ -34,18 +34,18 @@ import {
 } from "./scoring.ts"
 
 const OUTLINES = outlinesFrom(outlinesJson)
-const COUNTRIES = CATALOGUE.filter((q) => q.type === QuestionType.COUNTRY)
+const COUNTRIES = CATALOGUE.filter((question) => question.type === QuestionType.COUNTRY)
 
 /** A question's area, its outline looked up. */
 function byId(id: string): Area {
-  const a = scoredAnswer(CATALOGUE.find((q) => q.id === id)!.answer, OUTLINES)
+  const a = scoredAnswer(CATALOGUE.find((question) => question.id === id)!.answer, OUTLINES)
   if (a.type !== AnswerType.AREA) throw new Error(`${id} is not painted whole`)
   return a
 }
 
 /** A question's point answer. */
 function pointOf(wiki: string): PointAnswer {
-  const { answer } = CATALOGUE.find((q) => q.wiki === wiki)!
+  const { answer } = CATALOGUE.find((question) => question.wiki === wiki)!
   if (answer.type !== AnswerType.POINT) throw new Error(`${wiki} is painted whole`)
   return answer
 }
@@ -53,32 +53,32 @@ function pointOf(wiki: string): PointAnswer {
 /** An even coat of paint over `cells`, with the usual 5% world floor. */
 function coat(cells: H3Cell[], floor = 0.05) {
   return buildDistribution(
-    cells.map((h) => {
-      const [lat, lon] = cellToLatLng(h)
-      return { lat, lon, intensity: 1, area: cellArea(h), h3: h }
+    cells.map((cell) => {
+      const [lat, lon] = cellToLatLng(cell)
+      return { lat, lon, intensity: 1, area: cellArea(cell), h3: cell }
     }),
     floor
   )
 }
 
 /** Paint a region the way a player would: at the question's painting resolution. */
-const paintRegion = (q: Area) => coat(regionCells(q, resolutionForTolerance(q.tolerance)))
+const paintRegion = (area: Area) => coat(regionCells(area, resolutionForTolerance(area.tolerance)))
 
 describe("region questions", () => {
   it("are well formed", () => {
     for (const country of COUNTRIES) {
-      const q = byId(country.id)
+      const answer = byId(country.id)
       expect(promptOf(country)).toMatch(/^Paint the whole of /)
-      expect(q.tolerance).toBeGreaterThanOrEqual(10)
-      expect(q.tolerance).toBeLessThanOrEqual(400)
-      expect(q.polygons.length).toBeGreaterThan(0)
-      for (const polygon of q.polygons) {
+      expect(answer.tolerance).toBeGreaterThanOrEqual(10)
+      expect(answer.tolerance).toBeLessThanOrEqual(400)
+      expect(answer.polygons.length).toBeGreaterThan(0)
+      for (const polygon of answer.polygons) {
         for (const ring of polygon) {
           expect(ring.length).toBeGreaterThanOrEqual(4)
           expect(ring[0]).toEqual(ring.at(-1))
         }
       }
-      expect(regionCells(q, regionScoringRes(q.tolerance)).length, country.id).toBeGreaterThan(10)
+      expect(regionCells(answer, regionScoringRes(answer.tolerance)).length, country.id).toBeGreaterThan(10)
     }
   })
 
@@ -146,20 +146,20 @@ describe("shape and nearness", () => {
   const res = resolutionForTolerance(germany.tolerance)
   const cells = regionCells(germany, res)
   const poland = regionCells(byId("poland-region"), res)
-  const area = (cs: H3Cell[]) => cs.reduce((s, h) => s + cellArea(h), 0)
+  const area = (cells: H3Cell[]) => cells.reduce((sum, cell) => sum + cellArea(cell), 0)
   const score = (d: Distribution) => scoreArea(d, germany).score
 
   /** Each part's share of the paint, spread evenly over its cells. */
   const shares = (parts: [H3Cell[], number][], floor = 0.05) => {
     const density = new Map<H3Cell, number>()
-    for (const [cs, share] of parts) {
-      const d = share / area(cs)
-      for (const h of cs) density.set(h, (density.get(h) ?? 0) + d)
+    for (const [cells, share] of parts) {
+      const d = share / area(cells)
+      for (const cell of cells) density.set(cell, (density.get(cell) ?? 0) + d)
     }
     return buildDistribution(
-      [...density].map(([h, intensity]) => {
-        const [lat, lon] = cellToLatLng(h)
-        return { lat, lon, intensity, area: cellArea(h), h3: h }
+      [...density].map(([cell, intensity]) => {
+        const [lat, lon] = cellToLatLng(cell)
+        return { lat, lon, intensity, area: cellArea(cell), h3: cell }
       }),
       floor
     )
@@ -170,11 +170,11 @@ describe("shape and nearness", () => {
     let frontier = cells
     while (area([...set]) < times * area(cells)) {
       const next: H3Cell[] = []
-      for (const h of frontier) {
-        for (const n of gridDisk(h, 1)) {
-          if (set.has(n)) continue
-          next.push(n)
-          set.add(n)
+      for (const cell of frontier) {
+        for (const neighbour of gridDisk(cell, 1)) {
+          if (set.has(neighbour)) continue
+          next.push(neighbour)
+          set.add(neighbour)
         }
       }
       frontier = next
@@ -225,7 +225,7 @@ describe("shape and nearness", () => {
   })
 
   it("covering half the country scores about 750", () => {
-    const s = score(coat(cells.filter((h) => cellToLatLng(h)[1] < germany.centre.lon)))
+    const s = score(coat(cells.filter((cell) => cellToLatLng(cell)[1] < germany.centre.lon)))
     expect(s).toBeGreaterThan(710)
     expect(s).toBeLessThan(830)
   })
@@ -245,11 +245,11 @@ describe("shape and nearness", () => {
     const only = score(coat(poland))
     expect(only).toBeGreaterThan(400)
     expect(only).toBeLessThan(550)
-    const hedges = [0.2, 0.5, 0.8].map((w) =>
+    const hedges = [0.2, 0.5, 0.8].map((weight) =>
       score(
         shares([
-          [cells, w],
-          [poland, 1 - w]
+          [cells, weight],
+          [poland, 1 - weight]
         ])
       )
     )
@@ -262,7 +262,7 @@ describe("shape and nearness", () => {
 
   it("a faint wash around the country costs more the heavier it is", () => {
     const inside = new Set(cells)
-    const ring = grown(4).filter((h) => !inside.has(h))
+    const ring = grown(4).filter((cell) => !inside.has(cell))
     const washed = (x: number) =>
       score(
         shares([
@@ -281,7 +281,7 @@ describe("shape and nearness", () => {
     expect(area(blob)).toBeGreaterThan(6 * area(cells))
     expect(score(coat(blob))).toBeLessThan(250)
     // The whole world painted evenly: just above a pass.
-    const world = getRes0Cells().flatMap((c) => cellToChildren(c, h3Res(2)))
+    const world = getRes0Cells().flatMap((cell) => cellToChildren(cell, h3Res(2)))
     const w = score(coat(world))
     expect(w).toBeGreaterThan(250)
     expect(w).toBeLessThan(350)
@@ -289,10 +289,10 @@ describe("shape and nearness", () => {
 
   it("uneven brushing costs little", () => {
     // A band through the middle third, painted twice.
-    const lats = cells.map((h) => cellToLatLng(h)[0]).sort((a, b) => a - b)
-    const lo = lats[Math.floor(lats.length / 3)]!
-    const hi = lats[Math.floor((2 * lats.length) / 3)]!
-    const band = cells.filter((h) => cellToLatLng(h)[0] >= lo && cellToLatLng(h)[0] < hi)
+    const lats = cells.map((cell) => cellToLatLng(cell)[0]).sort((a, b) => a - b)
+    const low = lats[Math.floor(lats.length / 3)]!
+    const high = lats[Math.floor((2 * lats.length) / 3)]!
+    const band = cells.filter((cell) => cellToLatLng(cell)[0] >= low && cellToLatLng(cell)[0] < high)
     expect(
       score(
         shares([
@@ -304,11 +304,11 @@ describe("shape and nearness", () => {
     // A bright middle fading to half density at the edges.
     const R = Math.sqrt(area(cells) / Math.PI)
     const uneven = buildDistribution(
-      cells.map((h) => {
-        const [lat, lon] = cellToLatLng(h)
+      cells.map((cell) => {
+        const [lat, lon] = cellToLatLng(cell)
         const km =
           Math.hypot(lat - germany.centre.lat, (lon - germany.centre.lon) * Math.cos((lat * Math.PI) / 180)) * 111
-        return { lat, lon, intensity: Math.max(0.5, 1.5 - km / R), area: cellArea(h), h3: h }
+        return { lat, lon, intensity: Math.max(0.5, 1.5 - km / R), area: cellArea(cell), h3: cell }
       }),
       0.05
     )
@@ -321,11 +321,13 @@ describe("coarsenDistribution", () => {
     const answer = { lat: 48.8584, lon: 2.2945 }
     const d = coat(regionCells(byId("france-region"), h3Res(5)))
     const coarse = coarsenDistribution(d, h3Res(4))
-    const mass = (x: typeof d) => x.points.reduce((s, p) => s + p.p, 0) + x.floor
+    const mass = (distribution: typeof d) => distribution.points.reduce((sum, p) => sum + p.p, 0) + distribution.floor
     expect(mass(coarse)).toBeCloseTo(1, 9)
     expect(coarse.points.length).toBeLessThan(d.points.length / 4)
-    for (const tol of [60, 150]) {
-      const diff = Math.abs(scoreDistribution(coarse, answer, tol).score - scoreDistribution(d, answer, tol).score)
+    for (const tolerance of [60, 150]) {
+      const diff = Math.abs(
+        scoreDistribution(coarse, answer, tolerance).score - scoreDistribution(d, answer, tolerance).score
+      )
       expect(diff).toBeLessThan(5)
     }
   })
@@ -342,7 +344,7 @@ describe("roundsOverlap", () => {
   })
 
   it("finds an island inside a country, but not neighbouring countries", () => {
-    const honshu = byId(CATALOGUE.find((q) => q.label === "Honshu")!.id)
+    const honshu = byId(CATALOGUE.find((question) => question.label === "Honshu")!.id)
     expect(roundsOverlap(honshu, byId("japan-region"))).toBe(true)
     expect(roundsOverlap(byId("france-region"), byId("germany-region"))).toBe(false)
   })

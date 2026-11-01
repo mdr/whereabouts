@@ -22,7 +22,7 @@ const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RES)
 function makeModel(...at: LatLon[]): PaintModel {
   const model = new PaintModel()
   model.reset(TOLERANCE)
-  model.restore(Object.fromEntries(at.map((p) => [cellAt(p), 1])))
+  model.restore(Object.fromEntries(at.map((point) => [cellAt(point), 1])))
   return model
 }
 

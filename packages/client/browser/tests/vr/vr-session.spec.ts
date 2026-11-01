@@ -29,8 +29,8 @@ test("practice's VR button opens a headset session, and Leave VR ends it", async
   await round.screenshot(shot(`vr-1-entered.png`))
   const startMenu = await headset.menu()
   check(
-    startMenu.heading.startsWith("QUESTION 1 OF") && startMenu.more.map((m) => m.label).join() === "Home",
-    `the menu heads the question and offers Home (${startMenu.heading}; ${startMenu.more.map((m) => m.label).join()})`
+    startMenu.heading.startsWith("QUESTION 1 OF") && startMenu.more.map((action) => action.label).join() === "Home",
+    `the menu heads the question and offers Home (${startMenu.heading}; ${startMenu.more.map((action) => action.label).join()})`
   )
   check(!(await headset.globeBordersShown()), "the globe shows no borders when the page's map would not")
 
@@ -70,9 +70,9 @@ test("VR from the home screen stays on into practice", async ({ browser }) => {
   const homeView = await until(
     "the menu in VR",
     () => headset.view(),
-    (v) => v === VrViewType.LOBBY
+    (viewType) => viewType === VrViewType.LOBBY
   )
-  const offered = (await headset.menu()).actions.map((a) => a.label).join(", ")
+  const offered = (await headset.menu()).actions.map((action) => action.label).join(", ")
   check(homeView === VrViewType.LOBBY && offered === "Practise, Change topic", `the home screen opens VR (${offered})`)
   await homePage.pause(1500)
   await homePage.screenshot(shot(`vr-12-home.png`))
@@ -80,7 +80,7 @@ test("VR from the home screen stays on into practice", async ({ browser }) => {
   const practising = await until(
     "practice in VR",
     () => headset.view(),
-    (v) => v === VrViewType.PAINT,
+    (viewType) => viewType === VrViewType.PAINT,
     30_000
   )
   check(

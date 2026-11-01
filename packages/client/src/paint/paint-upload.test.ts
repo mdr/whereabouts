@@ -38,7 +38,9 @@ function setup({
     lock: vi.fn()
   }
   let props: Props = { view, timeUp: false }
-  const hook = renderHook((p: Props) => usePaintUpload(conn, paint, p.view, p.timeUp), { initialProps: props })
+  const hook = renderHook((hookProps: Props) => usePaintUpload(conn, paint, hookProps.view, hookProps.timeUp), {
+    initialProps: props
+  })
   const update = (over: Partial<Props>) => {
     props = { ...props, ...over }
     hook.rerender(props)

@@ -87,11 +87,12 @@ test("multiplayer", async ({ browser }) => {
     const rows = await aliceRevealPage.rows()
     console.log("reveal rows:", JSON.stringify(rows))
     check(
-      rows.every((r) => !r.name.includes("(you)")),
+      rows.every((row) => !row.name.includes("(you)")),
       "nobody is labelled (you)"
     )
     check(
-      rows.find((r) => r.name === "Alice")?.hinted === true && rows.find((r) => r.name !== "Alice")?.hinted === false,
+      rows.find((row) => row.name === "Alice")?.hinted === true &&
+        rows.find((row) => row.name !== "Alice")?.hinted === false,
       "the reveal marks who used a hint"
     )
     return { aliceRevealPage, bobRevealPage }

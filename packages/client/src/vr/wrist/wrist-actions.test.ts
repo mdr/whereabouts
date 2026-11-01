@@ -12,8 +12,8 @@ import { HintAxis } from "@whereabouts/shared/hints"
 function makeTool(tool: SprayTool) {
   return {
     tool,
-    setTool(t: SprayTool) {
-      this.tool = t
+    setTool(tool: SprayTool) {
+      this.tool = tool
     }
   }
 }
@@ -30,7 +30,7 @@ function makeActions(round: VrRound | undefined) {
   const notes: string[] = []
   const repaint = vi.fn()
   const tools = { [Hand.LEFT]: makeTool(Tool.ERASE), [Hand.RIGHT]: makeTool(Tool.PAINT) }
-  const actions = wristActions({ painting: () => round, tools, note: (t) => notes.push(t), repaint })
+  const actions = wristActions({ painting: () => round, tools, note: (text) => notes.push(text), repaint })
   return { actions, notes, repaint, tools }
 }
 

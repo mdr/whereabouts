@@ -94,7 +94,7 @@ export class RevealPage extends Screen {
     await until(
       `ready count "${expected}"`,
       () => this.readyCount(),
-      (c) => c === expected,
+      (count) => count === expected,
       5_000
     )
   }
@@ -138,7 +138,7 @@ export class RevealPage extends Screen {
   async scoresAreUsable(): Promise<boolean> {
     const row = this.page.getByTestId(revealScoresTestIds.everyoneRow)
     // Not scrollIntoViewIfNeeded: a row under the sticky toolbar counts as in view.
-    await row.evaluate((el) => el.scrollIntoView({ block: "center" }))
+    await row.evaluate((element) => element.scrollIntoView({ block: "center" }))
     return isUsable(row)
   }
 

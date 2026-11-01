@@ -4,28 +4,28 @@ import { latLonToLocal, localToLatLon, raySphere } from "./sphere"
 
 describe("globe coordinates", () => {
   it("put each place where SphereGeometry draws its pixel of an equirectangular texture", () => {
-    const g = new SphereGeometry(1, 36, 18)
-    const pos = g.getAttribute("position")
-    const uv = g.getAttribute("uv")
-    const v = new Vector3()
-    for (let i = 0; i < pos.count; i++) {
-      const lat = (uv.getY(i) - 0.5) * 180
+    const geometry = new SphereGeometry(1, 36, 18)
+    const positions = geometry.getAttribute("position")
+    const uvs = geometry.getAttribute("uv")
+    const vertex = new Vector3()
+    for (let i = 0; i < positions.count; i++) {
+      const lat = (uvs.getY(i) - 0.5) * 180
       if (Math.abs(lat) > 89) continue
-      const lon = uv.getX(i) * 360 - 180
-      latLonToLocal({ lat, lon }, v)
-      expect(v.distanceTo(new Vector3().fromBufferAttribute(pos, i))).toBeLessThan(1e-6)
+      const lon = uvs.getX(i) * 360 - 180
+      latLonToLocal({ lat, lon }, vertex)
+      expect(vertex.distanceTo(new Vector3().fromBufferAttribute(positions, i))).toBeLessThan(1e-6)
     }
   })
 
   it("read a point back as the same place", () => {
-    for (const p of [
+    for (const point of [
       { lat: 51.5, lon: -0.1 },
       { lat: -33.9, lon: 151.2 },
       { lat: 64.1, lon: -179.9 }
     ]) {
-      const back = localToLatLon(latLonToLocal(p).multiplyScalar(0.3))
-      expect(back.lat).toBeCloseTo(p.lat, 9)
-      expect(back.lon).toBeCloseTo(p.lon, 9)
+      const back = localToLatLon(latLonToLocal(point).multiplyScalar(0.3))
+      expect(back.lat).toBeCloseTo(point.lat, 9)
+      expect(back.lon).toBeCloseTo(point.lon, 9)
     }
   })
 })

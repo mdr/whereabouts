@@ -7,26 +7,26 @@ import { REVEAL_PHOTOS } from "../catalogue/photos.ts"
 import { RoundGuessType, type RoundResultView } from "../protocol.ts"
 import { AnswerType, ClueType, FLAG_POINT_PROMPT, QuestionType, answerCentre, promptOf } from "../questions.ts"
 
-const byId = (id: string) => CATALOGUE.find((q) => q.id === id)!
-const ofType = (type: QuestionType) => CATALOGUE.filter((q) => q.type === type)
+const byId = (id: string) => CATALOGUE.find((question) => question.id === id)!
+const ofType = (type: QuestionType) => CATALOGUE.filter((question) => question.type === type)
 
 describe("questionView", () => {
   it("never says where the answer is, or what it is called", () => {
-    for (const q of CATALOGUE) {
-      const view = questionView(q)
-      expect(Object.keys(view.answer).sort(), q.id).toEqual(
-        q.answer.type === AnswerType.AREA ? ["outline", "surface", "tolerance", "type"] : ["tolerance", "type"]
+    for (const question of CATALOGUE) {
+      const view = questionView(question)
+      expect(Object.keys(view.answer).sort(), question.id).toEqual(
+        question.answer.type === AnswerType.AREA ? ["outline", "surface", "tolerance", "type"] : ["tolerance", "type"]
       )
-      expect(JSON.stringify(view), q.id).not.toContain(`"${q.label}"`)
+      expect(JSON.stringify(view), question.id).not.toContain(`"${question.label}"`)
     }
   })
 
   it("shows a flag round's flag, never the name, and says whether to paint the country or a point", () => {
-    for (const q of ofType(QuestionType.FLAG)) {
-      const view = questionView(q)
-      expect(view.clue.type, q.id).toBe(ClueType.FLAG)
-      expect(promptOf(view), q.id).not.toContain(q.label)
-      if (q.answer.type === AnswerType.POINT) expect(promptOf(view), q.id).toBe(FLAG_POINT_PROMPT)
+    for (const question of ofType(QuestionType.FLAG)) {
+      const view = questionView(question)
+      expect(view.clue.type, question.id).toBe(ClueType.FLAG)
+      expect(promptOf(view), question.id).not.toContain(question.label)
+      if (question.answer.type === AnswerType.POINT) expect(promptOf(view), question.id).toBe(FLAG_POINT_PROMPT)
     }
   })
 
@@ -55,7 +55,7 @@ describe("playedRound", () => {
       label: "Germany",
       area: { outline: germany.answer.outline, centre: germany.answer.centre }
     })
-    const flag = ofType(QuestionType.FLAG).find((q) => q.answer.type === AnswerType.AREA)!
+    const flag = ofType(QuestionType.FLAG).find((question) => question.answer.type === AnswerType.AREA)!
     expect(playedRound(flag).area).toBeUndefined()
   })
 })

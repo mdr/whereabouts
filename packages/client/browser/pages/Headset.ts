@@ -245,18 +245,18 @@ export class Headset {
   async point(hand: Hand, from: Vec3, at: Vec3): Promise<void> {
     await this.#page.evaluate(
       ([hand, from, at]) => {
-        const c = window.headset.controllers[hand]!
-        c.position.x = from[0]
-        c.position.y = from[1]
-        c.position.z = from[2]
+        const controller = window.headset.controllers[hand]!
+        controller.position.x = from[0]
+        controller.position.y = from[1]
+        controller.position.z = from[2]
         // The rotation taking the ray's rest direction, -Z, onto the direction to `at`.
         const d = [at[0] - from[0], at[1] - from[1], at[2] - from[2]]
         const n = Math.hypot(d[0]!, d[1]!, d[2]!)
-        const [x, y, z] = d.map((v) => v / n) as Vec3
+        const [x, y, z] = d.map((component) => component / n) as Vec3
         // cross((0,0,-1), d) and 1 + dot((0,0,-1), d), normalised.
         const q = [y, -x, 0, 1 - z]
         const m = Math.hypot(...q)
-        c.quaternion.set(q[0]! / m, q[1]! / m, q[2]! / m, q[3]! / m)
+        controller.quaternion.set(q[0]! / m, q[1]! / m, q[2]! / m, q[3]! / m)
       },
       [XR_HAND[hand], from, at] as const
     )
@@ -382,7 +382,7 @@ export class Headset {
 
   /** Where a hand's tool would land on the globe, if it points at it. */
   async target(hand: Hand): Promise<Vec3 | undefined> {
-    return this.#page.evaluate((h) => window.whereaboutsVr.probe.targetOf(h), hand)
+    return this.#page.evaluate((side) => window.whereaboutsVr.probe.targetOf(side), hand)
   }
 
   /** Where a button on the VR menu is. */
@@ -416,7 +416,7 @@ export class Headset {
       const now = await at()
       if (now.turning) was = now
       else if (now.frame - was.frame >= 5) {
-        if (Math.hypot(...now.at.map((c, i) => c - was.at[i]!)) < 0.001) return now.at
+        if (Math.hypot(...now.at.map((coordinate, i) => coordinate - was.at[i]!)) < 0.001) return now.at
         was = now
       }
     }

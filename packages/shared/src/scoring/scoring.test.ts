@@ -30,8 +30,8 @@ function north(from: { lat: number; lon: number }, km: number) {
   return { lat: from.lat + (km / (Math.PI * EARTH_RADIUS)) * 180, lon: from.lon }
 }
 
-function pointMass(locs: { lat: number; lon: number; p: number }[]): Distribution {
-  return { points: locs.map((l) => ({ xyz: toXyz(l), p: l.p })), floor: 0 }
+function pointMass(locations: { lat: number; lon: number; p: number }[]): Distribution {
+  return { points: locations.map((location) => ({ xyz: toXyz(location), p: location.p })), floor: 0 }
 }
 
 describe("kernel", () => {
@@ -58,9 +58,9 @@ describe("example outcomes", () => {
     ["eight tolerances away", 8, 0, 301],
     ["far away", 60, 0, 0]
   ]
-  for (const [name, tol, single, game] of cases) {
+  for (const [name, tolerance, single, game] of cases) {
     it(`100% ${name} scores ~${single} (single Gaussian), ~${game} (game kernel)`, () => {
-      const d = pointMass([{ ...north(answer, tol * r), p: 1 }])
+      const d = pointMass([{ ...north(answer, tolerance * r), p: 1 }])
       expect(Math.round(scoreDistribution(d, answer, r, SINGLE_KERNEL).score)).toBe(single)
       expect(Math.round(scoreDistribution(d, answer, r).score)).toBe(game)
     })
@@ -94,15 +94,15 @@ describe("uniform floor", () => {
   /** A single Gaussian's mean over the sphere, from `n` seeded random points. */
   function monteCarloMean(width: number, n: number): number {
     let seed = 12345
-    const rnd = () => {
+    const random = () => {
       seed = (seed * 1664525 + 1013904223) % 4294967296
       return seed / 4294967296
     }
     const y = toXyz(answer)
     let sum = 0
     for (let i = 0; i < n; i++) {
-      const z = 2 * rnd() - 1
-      const phi = 2 * Math.PI * rnd()
+      const z = 2 * random() - 1
+      const phi = 2 * Math.PI * random()
       const s = Math.sqrt(1 - z * z)
       const dx = EARTH_RADIUS * s * Math.cos(phi) - y[0]
       const dy = EARTH_RADIUS * s * Math.sin(phi) - y[1]
@@ -122,7 +122,7 @@ describe("uniform floor", () => {
 
   it("a mixture's mean is its components' means, weighted", () => {
     const { scales, weights } = DEFAULT_KERNEL
-    const parts = scales.map((s, i) => weights[i]! * uniformKernelMean(s * r, SINGLE_KERNEL))
+    const parts = scales.map((scale, i) => weights[i]! * uniformKernelMean(scale * r, SINGLE_KERNEL))
     expect(uniformKernelMean(r)).toBeCloseTo(
       parts.reduce((a, b) => a + b, 0),
       12
@@ -182,7 +182,7 @@ describe("buildDistribution", () => {
       ],
       0
     )
-    expect(d.points.map((p) => p.p)).toEqual([0.6, 0.4])
+    expect(d.points.map((point) => point.p)).toEqual([0.6, 0.4])
   })
 })
 
@@ -199,18 +199,18 @@ describe("pass", () => {
 describe("pair sum", () => {
   it("truncated grid-hash sum matches the exact O(n^2) sum", () => {
     let seed = 7
-    const rnd = () => {
+    const random = () => {
       seed = (seed * 1664525 + 1013904223) % 4294967296
       return seed / 4294967296
     }
     // Two clusters plus scattered noise
-    const pts = []
+    const points = []
     for (let i = 0; i < 400; i++) {
-      pts.push({ lat: 27 + rnd() * 3, lon: 78 + rnd() * 3, intensity: rnd(), area: 1 })
-      pts.push({ lat: 28.6 + rnd() * 0.5, lon: 77.2 + rnd() * 0.5, intensity: rnd() * 2, area: 1 })
-      pts.push({ lat: rnd() * 160 - 80, lon: rnd() * 360 - 180, intensity: rnd() * 0.1, area: 1 })
+      points.push({ lat: 27 + random() * 3, lon: 78 + random() * 3, intensity: random(), area: 1 })
+      points.push({ lat: 28.6 + random() * 0.5, lon: 77.2 + random() * 0.5, intensity: random() * 2, area: 1 })
+      points.push({ lat: random() * 160 - 80, lon: random() * 360 - 180, intensity: random() * 0.1, area: 1 })
     }
-    const d = buildDistribution(pts, 0)
+    const d = buildDistribution(points, 0)
     // The truncation alone; aggregation for wide components is tested with the mixtures.
     const fast = pairSum(d.points, r, false, SINGLE_KERNEL)
     const exact = pairSum(d.points, r, true, SINGLE_KERNEL)
@@ -251,35 +251,35 @@ describe("bounds", () => {
 describe("mixture kernels", () => {
   const multi = kernelById(KernelId.MULTI_EQUAL)
   const petra = { lat: 30.3285, lon: 35.4444 }
-  const tol = 200
+  const tolerance = 200
 
   it("weights sum to one and an exact hit still scores 1000", () => {
     for (const k of KERNELS) {
       expect(k.weights.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 12)
       const d = pointMass([{ ...petra, p: 1 }])
-      expect(scoreDistribution(d, petra, tol, k).score).toBeCloseTo(1000, 6)
+      expect(scoreDistribution(d, petra, tolerance, k).score).toBeCloseTo(1000, 6)
     }
   })
 
   /** Uniform disc of `radius` around `centre`, as a distribution. */
   function disc(centre: { lat: number; lon: number }, radius: number): Distribution {
-    const pts = []
+    const points = []
     const step = radius / 12
     for (let dx = -radius; dx <= radius; dx += step) {
       for (let dy = -radius; dy <= radius; dy += step) {
         if (dx * dx + dy * dy > radius * radius) continue
         const lat = centre.lat + (dy / (Math.PI * EARTH_RADIUS)) * 180
         const lon = centre.lon + (dx / (Math.PI * EARTH_RADIUS * Math.cos((centre.lat * Math.PI) / 180))) * 180
-        pts.push({ lat, lon, intensity: 1, area: 1 })
+        points.push({ lat, lon, intensity: 1, area: 1 })
       }
     }
-    return buildDistribution(pts, 0.05)
+    return buildDistribution(points, 0.05)
   }
 
   it("a broad regional blob four tolerances off: ~0 under single, partial credit under the mixture", () => {
     const blob = disc(north(petra, 800), 500)
-    const single = scoreDistribution(blob, petra, tol, SINGLE_KERNEL).score
-    const mixed = scoreDistribution(blob, petra, tol, multi).score
+    const single = scoreDistribution(blob, petra, tolerance, SINGLE_KERNEL).score
+    const mixed = scoreDistribution(blob, petra, tolerance, multi).score
     expect(single).toBeLessThan(520)
     expect(mixed).toBeGreaterThan(600)
     expect(mixed).toBeLessThan(800)
@@ -289,7 +289,9 @@ describe("mixture kernels", () => {
     const d = pointMass([{ ...north(petra, 800), p: 1 }])
     const diffuse: Distribution = { points: [], floor: 1 }
     for (const k of KERNELS) {
-      expect(scoreDistribution(d, petra, tol, k).score).toBeLessThan(scoreDistribution(diffuse, petra, tol, k).score)
+      expect(scoreDistribution(d, petra, tolerance, k).score).toBeLessThan(
+        scoreDistribution(diffuse, petra, tolerance, k).score
+      )
     }
   })
 
@@ -297,9 +299,9 @@ describe("mixture kernels", () => {
     const regional = disc(north(petra, 800), 500)
     const peru = disc({ lat: -13, lon: -72 }, 500)
     const diffuse: Distribution = { points: [], floor: 1 }
-    const sR = scoreDistribution(regional, petra, tol, multi).score
-    const sP = scoreDistribution(peru, petra, tol, multi).score
-    const sD = scoreDistribution(diffuse, petra, tol, multi).score
+    const sR = scoreDistribution(regional, petra, tolerance, multi).score
+    const sP = scoreDistribution(peru, petra, tolerance, multi).score
+    const sD = scoreDistribution(diffuse, petra, tolerance, multi).score
     expect(sR).toBeGreaterThan(sD)
     expect(sD).toBeGreaterThan(sP)
     expect(sD).toBeGreaterThan(495)
@@ -308,19 +310,19 @@ describe("mixture kernels", () => {
 
   it("aggregated pair sum matches the exact sum for coarse components", () => {
     let seed = 99
-    const rnd = () => {
+    const random = () => {
       seed = (seed * 1664525 + 1013904223) % 4294967296
       return seed / 4294967296
     }
-    const pts = []
+    const points = []
     for (let i = 0; i < 600; i++) {
-      pts.push({ lat: 30 + rnd() * 6, lon: 35 + rnd() * 6, intensity: rnd(), area: 1 })
-      pts.push({ lat: rnd() * 120 - 60, lon: rnd() * 360 - 180, intensity: rnd() * 0.2, area: 1 })
+      points.push({ lat: 30 + random() * 6, lon: 35 + random() * 6, intensity: random(), area: 1 })
+      points.push({ lat: random() * 120 - 60, lon: random() * 360 - 180, intensity: random() * 0.2, area: 1 })
     }
-    const d = buildDistribution(pts, 0)
+    const d = buildDistribution(points, 0)
     for (const k of KERNELS) {
-      const fast = pairSum(d.points, tol, false, k)
-      const exact = pairSum(d.points, tol, true, k)
+      const fast = pairSum(d.points, tolerance, false, k)
+      const exact = pairSum(d.points, tolerance, true, k)
       expect(Math.abs(fast - exact)).toBeLessThan(2e-3)
     }
   })
@@ -331,9 +333,9 @@ describe("patch-aware kernel", () => {
 
   function cellDistribution(cells: H3Cell[], floor = 0): Distribution {
     return buildDistribution(
-      cells.map((h) => {
-        const [lat, lon] = h3.cellToLatLng(h)
-        return { lat, lon, intensity: 1, area: h3.cellArea(h), h3: h }
+      cells.map((cell) => {
+        const [lat, lon] = h3.cellToLatLng(cell)
+        return { lat, lon, intensity: 1, area: h3.cellArea(cell), h3: cell }
       }),
       floor
     )
@@ -347,15 +349,15 @@ describe("patch-aware kernel", () => {
     // shows when the kernel is a few times narrower than the cell).
     const parent = latLngToCell(48.8, 2.3, h3Res(3))
     const children = cellToChildren(parent, h3Res(5))
-    const tol = 30
+    const tolerance = 30
     for (const k of KERNELS) {
-      for (const ans of [
+      for (const target of [
         { lat: 48.8, lon: 2.3 },
         { lat: 49.3, lon: 2.9 },
         { lat: 47.5, lon: 1.0 }
       ]) {
-        const coarse = scoreDistribution(cellDistribution([parent]), ans, tol, k)
-        const fine = scoreDistribution(cellDistribution(children), ans, tol, k)
+        const coarse = scoreDistribution(cellDistribution([parent]), target, tolerance, k)
+        const fine = scoreDistribution(cellDistribution(children), target, tolerance, k)
         expect(Math.abs(coarse.A - fine.A)).toBeLessThan(0.002)
         expect(Math.abs(coarse.B - fine.B)).toBeLessThan(0.035)
         expect(Math.abs(coarse.score - fine.score)).toBeLessThan(20)
@@ -385,7 +387,10 @@ describe("patch-aware kernel", () => {
   it("fine cells are barely affected by the patch correction", () => {
     const cells = h3.gridDisk(latLngToCell(27.175, 78.042, h3Res(7)), 6) // ~1.2 km cells, 100 km tolerance
     const asPatches = cellDistribution(cells)
-    const asPoints: Distribution = { points: asPatches.points.map((p) => ({ xyz: p.xyz, p: p.p })), floor: 0 }
+    const asPoints: Distribution = {
+      points: asPatches.points.map((point) => ({ xyz: point.xyz, p: point.p })),
+      floor: 0
+    }
     const a = scoreDistribution(asPatches, answer, r)
     const b = scoreDistribution(asPoints, answer, r)
     expect(Math.abs(a.score - b.score)).toBeLessThan(1)
@@ -394,29 +399,29 @@ describe("patch-aware kernel", () => {
 
 describe("region answers", () => {
   const centre = { lat: 50.5, lon: 10.5 } // central Germany
-  const tol = 60
-  const res = 4
+  const tolerance = 60
+  const resolution = 4
 
   /** Cells within `rings` of the cell at `at`: a rough disc. */
   const discCells = (at: { lat: number; lon: number }, rings: number) =>
-    h3.gridDisk(h3.latLngToCell(at.lat, at.lon, h3Res(res)), rings)
+    h3.gridDisk(h3.latLngToCell(at.lat, at.lon, h3Res(resolution)), rings)
   /** An even coat of paint on `cells`. */
   const paint = (cells: H3Cell[]) =>
-    cells.map((h) => {
-      const [lat, lon] = h3.cellToLatLng(h)
-      return { lat, lon, intensity: 1, area: h3.cellArea(h), h3: h }
+    cells.map((cell) => {
+      const [lat, lon] = h3.cellToLatLng(cell)
+      return { lat, lon, intensity: 1, area: h3.cellArea(cell), h3: cell }
     })
   const painted = (cells: H3Cell[], floor = 0.05) => buildDistribution(paint(cells), floor)
 
-  const region = regionAnswer(discCells(centre, 10), tol)
+  const region = regionAnswer(discCells(centre, 10), tolerance)
 
   it("a region of one tiny cell scores like the point rule", () => {
-    const point = regionAnswer([h3.latLngToCell(centre.lat, centre.lon, h3Res(10))], tol)
+    const point = regionAnswer([h3.latLngToCell(centre.lat, centre.lon, h3Res(10))], tolerance)
     for (const Q of point.Q) expect(Q).toBeCloseTo(1, 4)
     for (const offset of [0, 30, 60, 150, 400]) {
       const d = painted(discCells(north(centre, offset), 2))
       const [lat, lon] = h3.cellToLatLng(h3.latLngToCell(centre.lat, centre.lon, h3Res(10)))
-      const expected = scoreDistribution(d, { lat, lon }, tol).score
+      const expected = scoreDistribution(d, { lat, lon }, tolerance).score
       expect(Math.abs(scoreRegion(d, point).score - expected)).toBeLessThan(1)
     }
   })
@@ -432,7 +437,7 @@ describe("region answers", () => {
     const { score } = scoreRegion({ points: [], floor: 1 }, region)
     const k = region.kernel
     const expected = k.scales.reduce((sum, scale, c) => {
-      const K = uniformKernelMean(tol, { ...k, scales: [scale], weights: [1] })
+      const K = uniformKernelMean(tolerance, { ...k, scales: [scale], weights: [1] })
       return sum + k.weights[c]! * 500 * (1 + K / region.Q[c]!)
     }, 0)
     expect(score).toBeCloseTo(expected, 6)
@@ -459,8 +464,8 @@ describe("region answers", () => {
   it("honest hedging pays: with a 50/50 belief, painting both beats betting on one", () => {
     const here = discCells(centre, 6)
     const there = discCells(north(centre, 1500), 6)
-    const rHere = regionAnswer(here, tol)
-    const rThere = regionAnswer(there, tol)
+    const rHere = regionAnswer(here, tolerance)
+    const rThere = regionAnswer(there, tolerance)
     const expected = (d: Distribution) => (scoreRegion(d, rHere).score + scoreRegion(d, rThere).score) / 2
     const both = expected(painted([...here, ...there]))
     expect(both).toBeGreaterThan(expected(painted(here)))
@@ -469,8 +474,8 @@ describe("region answers", () => {
 
   it("the fast cross sum matches the exact one", () => {
     const d = painted([...discCells(north(centre, 200), 7), ...discCells(north(centre, 2500), 3)])
-    const fast = crossSum(d.points, region.points, tol, false, DEFAULT_KERNEL)
-    const exact = crossSum(d.points, region.points, tol, true, DEFAULT_KERNEL)
+    const fast = crossSum(d.points, region.points, tolerance, false, DEFAULT_KERNEL)
+    const exact = crossSum(d.points, region.points, tolerance, true, DEFAULT_KERNEL)
     expect(Math.abs(fast - exact) / exact).toBeLessThan(2e-3)
   })
 })

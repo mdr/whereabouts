@@ -52,10 +52,10 @@ export class Tab {
 
   /** Starts counting requests for terrain tiles (the shaded relief, which gives mountains away). */
   countTerrainTileRequests(): { count: () => number } {
-    let n = 0
-    this.page.on("request", (r) => {
-      if (r.url().includes("elevation-tiles-prod")) n++
+    let requests = 0
+    this.page.on("request", (request) => {
+      if (request.url().includes("elevation-tiles-prod")) requests++
     })
-    return { count: () => n }
+    return { count: () => requests }
   }
 }

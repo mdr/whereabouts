@@ -10,7 +10,7 @@ const borders = new Borders(bordersJson, CATALOGUE.filter(isFlagQuestion))
 
 /** A paint of these cells, one intensity each, as a reveal gets it. */
 const paint = (cells: string[]) =>
-  PaintLayer.fromRecord(h3Res(5), Object.fromEntries(cells.map((h) => [h, 1]))).toCells()
+  PaintLayer.fromRecord(h3Res(5), Object.fromEntries(cells.map((cell) => [cell, 1]))).toCells()
 
 describe("mainCountry", () => {
   it("names the country with most of the paint", () => {

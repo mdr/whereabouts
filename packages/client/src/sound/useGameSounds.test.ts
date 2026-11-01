@@ -26,7 +26,7 @@ const results: View = { phase: Phase.RESULTS }
 function setup(first: View) {
   let now: Instant = 0
   const conn = { timeUntil: (at: Instant): Ms => at - now }
-  const hook = renderHook((v: View) => useGameSounds(conn, v), { initialProps: first })
+  const hook = renderHook((view: View) => useGameSounds(conn, view), { initialProps: first })
   const at = (time: Instant, view: View) => {
     now = time
     hook.rerender(view)

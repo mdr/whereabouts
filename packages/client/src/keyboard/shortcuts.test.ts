@@ -25,52 +25,52 @@ function makeTarget({ enabled = true, canFill = true } = {}) {
 
 describe("the paint keys", () => {
   it("undo with Ctrl+Z, and redo with Ctrl+Shift+Z or Ctrl+Y", () => {
-    const t = makeTarget()
-    runPaintKey(press("z", { ctrlKey: true }), t)
-    expect(t.undo).toHaveBeenCalledTimes(1)
-    expect(t.redo).not.toHaveBeenCalled()
-    runPaintKey(press("Z", { ctrlKey: true, shiftKey: true }), t)
-    runPaintKey(press("y", { metaKey: true }), t)
-    expect(t.redo).toHaveBeenCalledTimes(2)
-    expect(t.undo).toHaveBeenCalledTimes(1)
+    const target = makeTarget()
+    runPaintKey(press("z", { ctrlKey: true }), target)
+    expect(target.undo).toHaveBeenCalledTimes(1)
+    expect(target.redo).not.toHaveBeenCalled()
+    runPaintKey(press("Z", { ctrlKey: true, shiftKey: true }), target)
+    runPaintKey(press("y", { metaKey: true }), target)
+    expect(target.redo).toHaveBeenCalledTimes(2)
+    expect(target.undo).toHaveBeenCalledTimes(1)
   })
 
   it("pick tools with 1 to 4, Fill only when there is one", () => {
-    const t = makeTarget()
-    for (const key of ["1", "2", "3", "4"]) runPaintKey(press(key), t)
-    expect(t.setTool.mock.calls.map(([tool]) => tool)).toEqual([Tool.PAN, Tool.PAINT, Tool.ERASE, Tool.FILL])
+    const target = makeTarget()
+    for (const key of ["1", "2", "3", "4"]) runPaintKey(press(key), target)
+    expect(target.setTool.mock.calls.map(([tool]) => tool)).toEqual([Tool.PAN, Tool.PAINT, Tool.ERASE, Tool.FILL])
     const noFill = makeTarget({ canFill: false })
     runPaintKey(press("4"), noFill)
     expect(noFill.setTool).not.toHaveBeenCalled()
   })
 
   it("shrink the brush with [ and grow it with ]", () => {
-    const t = makeTarget()
-    runPaintKey(press("["), t)
-    runPaintKey(press("]"), t)
-    const [smaller, larger] = t.resizeBrush.mock.calls.map(([factor]) => factor)
+    const target = makeTarget()
+    runPaintKey(press("["), target)
+    runPaintKey(press("]"), target)
+    const [smaller, larger] = target.resizeBrush.mock.calls.map(([factor]) => factor)
     expect(smaller).toBeLessThan(1)
     expect(larger).toBeGreaterThan(1)
   })
 
   it("do nothing while painting is off", () => {
-    const t = makeTarget({ enabled: false })
-    expect(runPaintKey(press("z", { ctrlKey: true }), t)).toBe(false)
-    expect(runPaintKey(press("2"), t)).toBe(false)
-    expect(t.undo).not.toHaveBeenCalled()
-    expect(t.setTool).not.toHaveBeenCalled()
+    const target = makeTarget({ enabled: false })
+    expect(runPaintKey(press("z", { ctrlKey: true }), target)).toBe(false)
+    expect(runPaintKey(press("2"), target)).toBe(false)
+    expect(target.undo).not.toHaveBeenCalled()
+    expect(target.setTool).not.toHaveBeenCalled()
   })
 
   it("leave other keys alone", () => {
-    const t = makeTarget()
-    expect(runPaintKey(press("z"), t)).toBe(false)
-    expect(runPaintKey(press("Enter"), t)).toBe(false)
-    expect(runPaintKey(press("?"), t)).toBe(false)
+    const target = makeTarget()
+    expect(runPaintKey(press("z"), target)).toBe(false)
+    expect(runPaintKey(press("Enter"), target)).toBe(false)
+    expect(runPaintKey(press("?"), target)).toBe(false)
   })
 })
 
 describe("the listed shortcuts", () => {
-  const actions = (practice: boolean) => listedShortcuts(practice).map((s) => s.action)
+  const actions = (practice: boolean) => listedShortcuts(practice).map((shortcut) => shortcut.action)
 
   it("list Enter only in practice", () => {
     expect(actions(true)).toContain("Submit / next question")
@@ -78,7 +78,7 @@ describe("the listed shortcuts", () => {
   })
 
   it("list every paint key that works", () => {
-    const listed = listedShortcuts(false).flatMap((s) => s.combos.map((c) => c.keys.join("+")))
+    const listed = listedShortcuts(false).flatMap((shortcut) => shortcut.combos.map((combo) => combo.keys.join("+")))
     expect(listed).toEqual(expect.arrayContaining(["1", "2", "3", "4", "[", "]", "Ctrl+Z", "Ctrl+Shift+Z", "Ctrl+Y"]))
   })
 })

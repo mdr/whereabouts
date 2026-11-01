@@ -33,22 +33,22 @@ describe("ticket codec", () => {
   })
 
   /** Encode an arbitrary object the same way a hostile client might. */
-  const enc = (value: unknown) => encodeTicket(value as Ticket)
+  const encode = (value: unknown) => encodeTicket(value as Ticket)
 
   it("rejects garbage, wrong versions and bad shapes", () => {
     expect(decodeTicket("not-base64!!")).toBeUndefined()
-    expect(decodeTicket(enc({}))).toBeUndefined()
-    expect(decodeTicket(enc({ v: PROTOCOL_VERSION - 1, token: "x" }))).toBe(CloseReason.OUTDATED)
-    expect(decodeTicket(enc({ ...ticket, v: PROTOCOL_VERSION + 1 }))).toBe(CloseReason.OUTDATED)
-    expect(decodeTicket(enc({ ...ticket, token: "short" }))).toBeUndefined()
-    expect(decodeTicket(enc({ ...ticket, entry: { ...ticket.entry, code: "ab12" } }))).toBeUndefined()
-    expect(decodeTicket(enc({ ...ticket, entry: { type: GameEntryType.JOIN, code: "AB12" } }))).toBeUndefined()
-    expect(decodeTicket(enc({ ...ticket, name: "   " }))).toBeUndefined()
-    expect(decodeTicket(enc("a string"))).toBeUndefined()
+    expect(decodeTicket(encode({}))).toBeUndefined()
+    expect(decodeTicket(encode({ v: PROTOCOL_VERSION - 1, token: "x" }))).toBe(CloseReason.OUTDATED)
+    expect(decodeTicket(encode({ ...ticket, v: PROTOCOL_VERSION + 1 }))).toBe(CloseReason.OUTDATED)
+    expect(decodeTicket(encode({ ...ticket, token: "short" }))).toBeUndefined()
+    expect(decodeTicket(encode({ ...ticket, entry: { ...ticket.entry, code: "ab12" } }))).toBeUndefined()
+    expect(decodeTicket(encode({ ...ticket, entry: { type: GameEntryType.JOIN, code: "AB12" } }))).toBeUndefined()
+    expect(decodeTicket(encode({ ...ticket, name: "   " }))).toBeUndefined()
+    expect(decodeTicket(encode("a string"))).toBeUndefined()
   })
 
   it("trims names", () => {
-    expect(decodeTicket(enc({ ...ticket, name: "  Matt  " }))).toMatchObject({ name: "Matt" })
+    expect(decodeTicket(encode({ ...ticket, name: "  Matt  " }))).toMatchObject({ name: "Matt" })
   })
 })
 

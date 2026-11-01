@@ -10,42 +10,42 @@ import { buildDistribution, scoreDistribution } from "./scoring.ts"
 
 const coat = (cells: H3Cell[]) =>
   buildDistribution(
-    cells.map((h) => {
-      const [lat, lon] = cellToLatLng(h)
-      return { lat, lon, intensity: 1, area: cellArea(h), h3: h }
+    cells.map((cell) => {
+      const [lat, lon] = cellToLatLng(cell)
+      return { lat, lon, intensity: 1, area: cellArea(cell), h3: cell }
     }),
     0.05
   )
 
 describe("explaining a place's score", () => {
   const answer = { lat: 48.8584, lon: 2.2945 }
-  const tol = 150
-  const res = resolutionForTolerance(tol)
-  const explain = (lat: number, lon: number, r: number, k: number) => {
-    const d = coat(gridDisk(latLngToCell(lat, lon, h3Res(r)), k))
-    const s = scoreDistribution(d, answer, tol)
-    const e = explainPoint(d, answer, tol, s.A, s.B)
-    return { s, e }
+  const tolerance = 150
+  const resolution = resolutionForTolerance(tolerance)
+  const explain = (lat: number, lon: number, cellResolution: number, rings: number) => {
+    const d = coat(gridDisk(latLngToCell(lat, lon, h3Res(cellResolution)), rings))
+    const scored = scoreDistribution(d, answer, tolerance)
+    const explained = explainPoint(d, answer, tolerance, scored.A, scored.B)
+    return { scored, explained }
   }
 
   it("a tight guess on the answer is tight and right on it", () => {
-    const { s, e } = explain(answer.lat, answer.lon, res, 1)
-    expect(e.best - s.score).toBeLessThan(25)
-    expect(e.best).toBeGreaterThan(940)
+    const { scored, explained } = explain(answer.lat, answer.lon, resolution, 1)
+    expect(explained.best - scored.score).toBeLessThan(25)
+    expect(explained.best).toBeGreaterThan(940)
   })
 
   it("a tight miss is tight but off", () => {
-    const { s, e } = explain(answer.lat + 2.7, answer.lon, res, 1)
-    expect(e.best).toBeGreaterThan(930)
-    expect(e.miss).toBeGreaterThan(250)
-    expect(e.miss).toBeLessThan(350)
-    expect(e.best - s.score).toBeGreaterThan(150)
+    const { scored, explained } = explain(answer.lat + 2.7, answer.lon, resolution, 1)
+    expect(explained.best).toBeGreaterThan(930)
+    expect(explained.miss).toBeGreaterThan(250)
+    expect(explained.miss).toBeLessThan(350)
+    expect(explained.best - scored.score).toBeGreaterThan(150)
   })
 
   it("a broad guess on the answer is spread", () => {
-    const { s, e } = explain(answer.lat, answer.lon, res - 2, 6)
-    expect(e.best).toBeLessThan(780)
-    expect(e.best - s.score).toBeLessThan(25)
+    const { scored, explained } = explain(answer.lat, answer.lon, resolution - 2, 6)
+    expect(explained.best).toBeLessThan(780)
+    expect(explained.best - scored.score).toBeLessThan(25)
   })
 })
 
@@ -73,24 +73,24 @@ describe("a hedge", () => {
 describe("explaining a country's score", () => {
   const outlines = outlinesFrom(outlinesJson)
   const areaOf = (id: string): Area => {
-    const a = scoredAnswer(CATALOGUE.find((q) => q.id === id)!.answer, outlines)
+    const a = scoredAnswer(CATALOGUE.find((question) => question.id === id)!.answer, outlines)
     if (a.type !== AnswerType.AREA) throw new Error(`${id} is not painted whole`)
     return a
   }
   const france = areaOf("france-region")
-  const res = resolutionForTolerance(france.tolerance)
-  const cells = regionCells(france, res)
-  const misfit = (cs: H3Cell[]) => regionMisfit(coat(cs), france)
+  const resolution = resolutionForTolerance(france.tolerance)
+  const cells = regionCells(france, resolution)
+  const misfit = (cells: H3Cell[]) => regionMisfit(coat(cells), france)
 
   it("an exact paint is on the country, with nothing off it", () => {
     expect(scoreArea(coat(cells), france).score).toBeGreaterThan(985)
-    const m = misfit(cells)
-    expect(m.precision).toBeCloseTo(1)
-    expect(m.off).toBeUndefined()
+    const fit = misfit(cells)
+    expect(fit.precision).toBeCloseTo(1)
+    expect(fit.off).toBeUndefined()
   })
 
   it("finds paint spilled over a border, and a neighbour painted instead, to the north-east", () => {
-    const germany = regionCells(areaOf("germany-region"), res)
+    const germany = regionCells(areaOf("germany-region"), resolution)
     const spilled = misfit([...cells, ...germany])
     expect(spilled.precision).toBeLessThan(0.75)
     expect(spilled.off?.bearing).toBeGreaterThan(22.5)

@@ -156,7 +156,7 @@ export class MapPanel {
         }
         const inside = points
           .map(([lon, lat]) => map.project([lon!, lat!]))
-          .filter((p) => p.x >= 0 && p.x <= innerWidth && p.y >= top - 2 && p.y <= bottom + 2)
+          .filter((point) => point.x >= 0 && point.x <= innerWidth && point.y >= top - 2 && point.y <= bottom + 2)
         return points.length === 0 ? 0 : inside.length / points.length
       },
       { top, bottom }

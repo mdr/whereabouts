@@ -30,23 +30,24 @@ function sample(): ScoringCase {
 
 describe("scoring cases", () => {
   it("round-trip the question, scoring and paint", async () => {
-    const c = sample()
-    const back = await decodeCase(await encodeCase(c))
-    expect(back.question).toEqual(c.question)
+    const scoringCase = sample()
+    const back = await decodeCase(await encodeCase(scoringCase))
+    expect(back.question).toEqual(scoringCase.question)
     expect([back.kernel, back.floor, back.res, back.score, back.parts]).toEqual([
-      c.kernel,
-      c.floor,
-      c.res,
-      c.score,
-      c.parts
+      scoringCase.kernel,
+      scoringCase.floor,
+      scoringCase.res,
+      scoringCase.score,
+      scoringCase.parts
     ])
-    expect(Object.keys(back.cells).sort()).toEqual(Object.keys(c.cells).sort())
-    const max = Math.max(...Object.values(c.cells))
-    for (const [h, v] of Object.entries(c.cells)) expect(Math.abs(back.cells[h]! - v)).toBeLessThan(max * 1e-4)
+    expect(Object.keys(back.cells).sort()).toEqual(Object.keys(scoringCase.cells).sort())
+    const max = Math.max(...Object.values(scoringCase.cells))
+    for (const [cell, value] of Object.entries(scoringCase.cells))
+      expect(Math.abs(back.cells[cell]! - value)).toBeLessThan(max * 1e-4)
   })
 
   it("keep a country round's parts and flag", async () => {
-    const c: ScoringCase = {
+    const scoringCase: ScoringCase = {
       ...sample(),
       question: {
         type: CaseQuestionType.REGION,
@@ -58,9 +59,9 @@ describe("scoring cases", () => {
       },
       parts: { type: AnswerType.AREA, shape: 640.2, nearness: 300.5 }
     }
-    const back = await decodeCase(await encodeCase(c))
-    expect(back.question).toEqual(c.question)
-    expect(back.parts).toEqual(c.parts)
+    const back = await decodeCase(await encodeCase(scoringCase))
+    expect(back.question).toEqual(scoringCase.question)
+    expect(back.parts).toEqual(scoringCase.parts)
   })
 
   it("read cases copied before their words were upper case", async () => {
@@ -77,8 +78,8 @@ describe("scoring cases", () => {
     const mangled = [
       "Here's one where the wide blob scores oddly:",
       "",
-      ...header.map((l) => `  ${l}  `),
-      ...(payload.match(/.{1,31}/g) ?? []).map((l) => `    ${l}`),
+      ...header.map((line) => `  ${line}  `),
+      ...(payload.match(/.{1,31}/g) ?? []).map((line) => `    ${line}`),
       "",
       "  end",
       "What do you think?"

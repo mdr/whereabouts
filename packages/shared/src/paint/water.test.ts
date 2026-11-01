@@ -9,21 +9,21 @@ import { CATALOGUE, outlinesFrom } from "../catalogue/catalogue.ts"
 import { AnswerType, Surface } from "../questions.ts"
 
 const mask = new WaterMask(waterJson)
-const at = (lat: number, lon: number, res: number) => latLngToCell(lat, lon, h3Res(res))
+const at = (lat: number, lon: number, resolution: number) => latLngToCell(lat, lon, h3Res(resolution))
 
 describe("water mask", () => {
   it("keeps a lake or sea painted exactly", () => {
     const outlines = outlinesFrom(outlinesJson)
-    const water = CATALOGUE.flatMap((q) =>
-      q.answer.type === AnswerType.AREA && q.answer.surface === Surface.WATER
-        ? [{ label: q.label, ...(scoredAnswer(q.answer, outlines) as Area) }]
+    const water = CATALOGUE.flatMap((question) =>
+      question.answer.type === AnswerType.AREA && question.answer.surface === Surface.WATER
+        ? [{ label: question.label, ...(scoredAnswer(question.answer, outlines) as Area) }]
         : []
     )
     expect(water).toHaveLength(22)
-    for (const q of water) {
-      const cells = new Map(regionCells(q, resolutionForTolerance(q.tolerance)).map((h) => [h, 1]))
-      const kept = paintAmount(trimLand(cells, mask, resolutionForTolerance(q.tolerance))) / paintAmount(cells)
-      expect(kept, q.label).toBe(1)
+    for (const question of water) {
+      const cells = new Map(regionCells(question, resolutionForTolerance(question.tolerance)).map((cell) => [cell, 1]))
+      const kept = paintAmount(trimLand(cells, mask, resolutionForTolerance(question.tolerance))) / paintAmount(cells)
+      expect(kept, question.label).toBe(1)
     }
   })
 
@@ -50,10 +50,10 @@ describe("water mask", () => {
     const kept = trimLand(new Map([[coast, 2]]), mask, h3Res(7))
     expect(kept.has(coast)).toBe(false)
     expect(kept.size).toBeGreaterThan(0)
-    for (const [h, v] of kept) {
-      expect(getResolution(h)).toBe(5)
-      expect(v).toBe(2)
-      expect(mask.nearWater(h)).toBe(true)
+    for (const [cell, count] of kept) {
+      expect(getResolution(cell)).toBe(5)
+      expect(count).toBe(2)
+      expect(mask.nearWater(cell)).toBe(true)
     }
     expect([...trimLand(new Map([[at(30, -40, 3), 1]]), mask, h3Res(7)).keys()]).toEqual([at(30, -40, 3)])
   })

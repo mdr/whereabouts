@@ -72,7 +72,7 @@ describe("hintFeatures", () => {
 
   it("makes a longitude band one box when it does not cross 180", () => {
     const features = hintFeatures({ axis: HintAxis.LONGITUDE, from: 10, to: 30 })
-    expect(features.map((f) => ringOf(f).slice(0, 3))).toEqual([
+    expect(features.map((feature) => ringOf(feature).slice(0, 3))).toEqual([
       [
         [10, MIN_LAT],
         [30, MIN_LAT],
@@ -83,7 +83,7 @@ describe("hintFeatures", () => {
 
   it("makes a longitude band across 180 two boxes, one each side", () => {
     const features = hintFeatures({ axis: HintAxis.LONGITUDE, from: 170, to: -170 })
-    expect(features.map((f) => [ringOf(f)[0]![0], ringOf(f)[1]![0]])).toEqual([
+    expect(features.map((feature) => [ringOf(feature)[0]![0], ringOf(feature)[1]![0]])).toEqual([
       [170, 180],
       [-180, -170]
     ])
@@ -95,15 +95,15 @@ const KM_PER_DEGREE: Km = 111.195
 
 describe("toleranceBox", () => {
   it("is two tolerances tall, and as wide, at the equator", () => {
-    const [w, s, e, n] = toleranceBox({ lat: 0, lon: 0 }, KM_PER_DEGREE)
-    expect(n - s).toBeCloseTo(4)
-    expect(e - w).toBeCloseTo(4)
+    const [west, south, east, north] = toleranceBox({ lat: 0, lon: 0 }, KM_PER_DEGREE)
+    expect(north - south).toBeCloseTo(4)
+    expect(east - west).toBeCloseTo(4)
   })
 
   it("caps the width near a pole", () => {
-    const [w, s, e, n] = toleranceBox({ lat: 89, lon: 0 }, KM_PER_DEGREE)
-    expect((n - s) / 2).toBeCloseTo(2)
-    expect((e - w) / 2).toBeCloseTo(2 / 0.2)
+    const [west, south, east, north] = toleranceBox({ lat: 89, lon: 0 }, KM_PER_DEGREE)
+    expect((north - south) / 2).toBeCloseTo(2)
+    expect((east - west) / 2).toBeCloseTo(2 / 0.2)
   })
 })
 

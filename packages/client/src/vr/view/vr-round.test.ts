@@ -82,8 +82,8 @@ function shown(over: Partial<VrRoundShown> = {}): VrRoundShown {
   return { question: place, revealed: undefined, fact: undefined, ...over }
 }
 
-function round(s: VrRoundShown) {
-  return vrRound(s, {
+function round(shown: VrRoundShown) {
+  return vrRound(shown, {
     paint: {} as PaintController,
     detail: MapDetail.POLITICAL,
     hint: undefined,

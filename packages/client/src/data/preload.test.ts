@@ -15,7 +15,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve))
 
 describe("preloadPictures", () => {
   it("holds a whole game's photos and no more, those asked for again counting as new", () => {
-    const photo = (n: number) => commonsFile(`${n}.jpg`)
+    const photo = (index: number) => commonsFile(`${index}.jpg`)
     for (let i = 0; i < 40; i++) preloadPictures({ image: photo(i) })
     preloadPictures({ image: photo(20) })
     const { page } = heldPictures()

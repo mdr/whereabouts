@@ -60,11 +60,11 @@ describe("shownResults", () => {
   const results = [result("alice", 700), result("bob", 250, false), result("cara", 500)]
 
   it("shows everyone who painted, leaving out passes", () => {
-    expect(shownResults(results, SHOW_EVERYONE).map((r) => r.playerId)).toEqual([idOf("alice"), idOf("cara")])
+    expect(shownResults(results, SHOW_EVERYONE).map((result) => result.playerId)).toEqual([idOf("alice"), idOf("cara")])
   })
 
   it("shows one player's paint alone", () => {
-    expect(shownResults(results, showPlayer(idOf("cara"))).map((r) => r.playerId)).toEqual([idOf("cara")])
+    expect(shownResults(results, showPlayer(idOf("cara"))).map((result) => result.playerId)).toEqual([idOf("cara")])
   })
 
   it("shows nobody's when paint is hidden", () => {

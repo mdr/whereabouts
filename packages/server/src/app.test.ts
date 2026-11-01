@@ -65,10 +65,10 @@ import { BANK, configureGameRooms, realClock, type Clock, type GameRoom } from "
 import { CloseReason } from "@whereabouts/shared/close-reason"
 import { Role, YouRoleType } from "@whereabouts/shared/roles"
 
-const lockedIn = (v: GameView) =>
-  (v.phase === Phase.GUESSING || v.phase === Phase.REVEAL) &&
-  v.you.role.type === YouRoleType.PLAYING &&
-  v.you.role.locked
+const lockedIn = (view: GameView) =>
+  (view.phase === Phase.GUESSING || view.phase === Phase.REVEAL) &&
+  view.you.role.type === YouRoleType.PLAYING &&
+  view.you.role.locked
 
 // Static imports hoist above this line, so the client is loaded dynamically.
 ;(globalThis as unknown as { window: unknown }).window = globalThis
@@ -90,13 +90,13 @@ const questions = [place("petra", "Petra", 30.3285, 35.4444, 200), place("paris"
 /** Two known place names, and the real questions of the other types. */
 const bank = {
   ...BANK,
-  catalogue: [...questions, ...CATALOGUE.filter((q) => q.type !== QuestionType.PLACE)]
+  catalogue: [...questions, ...CATALOGUE.filter((question) => question.type !== QuestionType.PLACE)]
 }
 const config = { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundLength: 60_000 }
 
 /** The place question a round asked. */
 const askedIn = (round: GameView) =>
-  questions.find((q) => promptOf(q) === promptOf(viewIn(round, Phase.GUESSING).round.question))!
+  questions.find((question) => promptOf(question) === promptOf(viewIn(round, Phase.GUESSING).round.question))!
 
 /** Real timers, but time can be jumped forward so deadlines fire immediately. */
 class FakeClock implements Clock {
@@ -117,10 +117,12 @@ class FakeClock implements Clock {
   /** Jump forward and fire everything now due, in order. */
   advance(ms: number) {
     this.offset += ms
-    const due = [...this.pending.entries()].filter(([, t]) => t.at <= this.now()).sort((a, b) => a[1].at - b[1].at)
-    for (const [id, t] of due) {
+    const due = [...this.pending.entries()]
+      .filter(([, timer]) => timer.at <= this.now())
+      .sort((a, b) => a[1].at - b[1].at)
+    for (const [id, timer] of due) {
       this.pending.delete(id)
-      t.fn()
+      timer.fn()
     }
   }
 }
@@ -147,18 +149,18 @@ class TestPlayer {
     this.name = playerName(name)
     this.token = playerToken(`${name}-token-0123456789abcdef`)
     this.client = new WSClient<Topics>(url, { ticketSource: "protocol", reconnect: false })
-    const dec = new TextDecoder()
+    const decoder = new TextDecoder()
     let reveal: RoundReveal | undefined = undefined
     let paint: PaintSubmission | undefined = undefined
-    this.client.on("reveal", (p) => {
-      reveal = revealFrom(JSON.parse(dec.decode(p)) as RevealMessage)
+    this.client.on("reveal", (testPlayer) => {
+      reveal = revealFrom(JSON.parse(decoder.decode(testPlayer)) as RevealMessage)
       this.reveals.push(reveal)
     })
-    this.client.on("paint", (p) => {
-      paint = decodePaint(p)
+    this.client.on("paint", (testPlayer) => {
+      paint = decodePaint(testPlayer)
     })
-    this.client.on("state", (p) => {
-      const raw = dec.decode(p)
+    this.client.on("state", (testPlayer) => {
+      const raw = decoder.decode(testPlayer)
       const state = JSON.parse(raw) as StateMessage
       if (state.phase !== Phase.REVEAL) reveal = undefined
       if (state.phase !== Phase.GUESSING) paint = undefined
@@ -173,7 +175,9 @@ class TestPlayer {
       this.states.push(view)
     })
     this.client.on("client:kicked", ({ reason }) => (this.closedFor = reason))
-    this.client.on("error", (p) => this.errors.push((JSON.parse(dec.decode(p)) as { message: string }).message))
+    this.client.on("error", (payload) =>
+      this.errors.push((JSON.parse(decoder.decode(payload)) as { message: string }).message)
+    )
   }
   connect(entry: GameEntry) {
     this.client.connect(encodeTicket({ v: PROTOCOL_VERSION, token: this.token, name: this.name, entry }))
@@ -188,22 +192,22 @@ class TestPlayer {
     return this.states[this.states.length - 1]!
   }
   /** Wait until a state arrives that satisfies the predicate. */
-  async until(pred: (v: GameView) => boolean, ms = 3000): Promise<GameView> {
+  async until(pred: (view: GameView) => boolean, ms = 3000): Promise<GameView> {
     const start = Date.now()
     while (Date.now() - start < ms) {
       const hit = this.states.find(pred)
       if (hit) return hit
-      await new Promise((r) => setTimeout(r, 10))
+      await new Promise((resolve) => setTimeout(resolve, 10))
     }
     throw new Error(
       `${this.name}: no state matched within ${ms}ms; last=${JSON.stringify(this.states.at(-1)).slice(0, 300)}`
     )
   }
-  async untilLatest(pred: (v: GameView) => boolean, ms = 3000): Promise<GameView> {
+  async untilLatest(pred: (view: GameView) => boolean, ms = 3000): Promise<GameView> {
     const start = Date.now()
     while (Date.now() - start < ms) {
       if (this.states.length && pred(this.latest)) return this.latest
-      await new Promise((r) => setTimeout(r, 10))
+      await new Promise((resolve) => setTimeout(resolve, 10))
     }
     throw new Error(`${this.name}: latest never matched; last=${JSON.stringify(this.states.at(-1)).slice(0, 300)}`)
   }
@@ -217,12 +221,12 @@ async function eventually(done: () => boolean, what: string, ms = 3000): Promise
   const start = Date.now()
   while (!done()) {
     if (Date.now() - start > ms) throw new Error(`gave up waiting ${ms}ms for ${what}`)
-    await new Promise((r) => setTimeout(r, 10))
+    await new Promise((resolve) => setTimeout(resolve, 10))
   }
 }
 
-function paintAt(q: Question, lat: number, lon: number) {
-  const { tolerance } = q.answer
+function paintAt(question: Question, lat: number, lon: number) {
+  const { tolerance } = question.answer
   const layer = new PaintLayer(resolutionForTolerance(tolerance))
   layer.stamp({ lat, lon }, tolerance / 2, 1)
   return { cells: layer.toRecord(), floor: 0.05 }
@@ -244,32 +248,32 @@ describe("game server", () => {
 
   afterEach(async () => {
     // Every state the server sent matched the schema the client's cast trusts.
-    const invalid = players.flatMap((p) => p.invalidStates.map((why) => `${p.name}: ${why}`))
+    const invalid = players.flatMap((player) => player.invalidStates.map((why) => `${player.name}: ${why}`))
     if (invalid.length > 0) throw new Error(`state did not match GameViewSchema:\n${invalid.join("\n")}`)
-    for (const p of players) p.client.disconnect()
+    for (const testPlayer of players) testPlayer.client.disconnect()
     players.length = 0
     await app.close()
     configureGameRooms({ clock: realClock })
   })
 
   function player(name: string) {
-    const p = new TestPlayer(url, name)
-    players.push(p)
-    return p
+    const testPlayer = new TestPlayer(url, name)
+    players.push(testPlayer)
+    return testPlayer
   }
 
   it("host creates a game, a friend joins by code, both see the lobby", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     expect(lobby.code).toMatch(/^[A-Z0-9]{4}$/)
     expect(lobby.you.isHost).toBe(true)
 
     const bob = player("Bob")
     bob.connect(join(lobby.code))
-    const seen = await alice.until((v) => v.players.length === 2)
-    expect(seen.players.map((p) => p.name).sort()).toEqual(["Alice", "Bob"])
-    const bobView = await bob.until((v) => v.players.length === 2)
+    const seen = await alice.until((view) => view.players.length === 2)
+    expect(seen.players.map((player) => player.name).sort()).toEqual(["Alice", "Bob"])
+    const bobView = await bob.until((view) => view.players.length === 2)
     expect(bobView.you.isHost).toBe(false)
   })
 
@@ -295,35 +299,35 @@ describe("game server", () => {
   it("hosts a game under a code no game has, and joins it if someone just did", async () => {
     const alice = player("Alice")
     alice.connect(host(roomCode("VWZR")))
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     expect(lobby.code).toBe("VWZR")
     expect(lobby.you.isHost).toBe(true)
 
     const bob = player("Bob")
     bob.connect(host(roomCode("VWZR")))
-    const bobView = await bob.until((v) => v.players.length === 2)
+    const bobView = await bob.until((view) => view.players.length === 2)
     expect(bobView.you.isHost).toBe(false)
   })
 
   it("plays a full two-round game with a deadline, reveal, and results", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     const bob = player("Bob")
     bob.connect(join(lobby.code))
-    await alice.until((v) => v.players.length === 2)
+    await alice.until((view) => view.players.length === 2)
 
     bob.send("start")
     expect(await pollErrors(bob)).toContain("only the host can start")
 
     alice.send("start")
-    const round = await bob.until((v) => v.phase === Phase.GUESSING)
+    const round = await bob.until((view) => view.phase === Phase.GUESSING)
     expect(viewIn(round, Phase.GUESSING).round.total).toBe(2)
-    const q = askedIn(round)
-    const at = answerCentre(q.answer)
+    const question = askedIn(round)
+    const at = answerCentre(question.answer)
 
-    alice.sendPaint(paintAt(q, at.lat, at.lon))
-    const bobPaint = paintAt(q, -30, -60)
+    alice.sendPaint(paintAt(question, at.lat, at.lon))
+    const bobPaint = paintAt(question, -30, -60)
     bob.sendPaint(bobPaint)
     bob.send("lock")
     await bob.untilLatest(lockedIn)
@@ -332,22 +336,26 @@ describe("game server", () => {
     expect(JSON.stringify(alice.latest)).not.toContain(aBobCell)
 
     clock.advance(60_000 + ROUND_GRACE)
-    const reveal = await alice.until((v) => v.phase === Phase.REVEAL)
-    expect(viewIn(reveal, Phase.REVEAL).reveal.label).toBe(q.label)
-    const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
-    const scores = Object.fromEntries(viewIn(reveal, Phase.REVEAL).reveal.results.map((r) => [r.playerId, r.score]))
+    const reveal = await alice.until((view) => view.phase === Phase.REVEAL)
+    expect(viewIn(reveal, Phase.REVEAL).reveal.label).toBe(question.label)
+    const byName = Object.fromEntries(reveal.players.map((player) => [player.name, player.id]))
+    const scores = Object.fromEntries(
+      viewIn(reveal, Phase.REVEAL).reveal.results.map((result) => [result.playerId, result.score])
+    )
     expect(scores[byName["Alice"]!]).toBeGreaterThan(scores[byName["Bob"]!]!)
-    expect(viewIn(reveal, Phase.REVEAL).reveal.results.every((r) => r.guess.type === RoundGuessType.PAINTED)).toBe(true)
+    expect(
+      viewIn(reveal, Phase.REVEAL).reveal.results.every((result) => result.guess.type === RoundGuessType.PAINTED)
+    ).toBe(true)
 
     alice.send("next")
-    await bob.until((v) => v.phase === Phase.GUESSING && v.round.index === 1)
+    await bob.until((view) => view.phase === Phase.GUESSING && view.round.index === 1)
     clock.advance(60_000 + ROUND_GRACE)
-    await bob.until((v) => v.phase === Phase.REVEAL && v.reveal.index === 1)
+    await bob.until((view) => view.phase === Phase.REVEAL && view.reveal.index === 1)
     // No timer on the reveal: it advances when everyone is ready.
     bob.send("ready")
-    await alice.until((v) => v.phase === Phase.REVEAL && v.reveal.ready.length === 1)
+    await alice.until((view) => view.phase === Phase.REVEAL && view.reveal.ready.length === 1)
     alice.send("ready")
-    const results = viewIn(await bob.until((v) => v.phase === Phase.RESULTS), Phase.RESULTS)
+    const results = viewIn(await bob.until((view) => view.phase === Phase.RESULTS), Phase.RESULTS)
     expect(results.results).toHaveLength(2)
     expect(results.results[0]!.playerId).toBe(byName["Alice"])
   })
@@ -355,69 +363,76 @@ describe("game server", () => {
   it("plays a country round: scored against the outline, against the area rule", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     const bob = player("Bob")
     bob.connect(join(lobby.code))
-    await alice.until((v) => v.players.length === 2)
+    await alice.until((view) => view.players.length === 2)
     alice.send("configure", { mix: mixOf({ [QuestionType.COUNTRY]: 1 }) })
-    await bob.until((v) => v.config.mix[QuestionType.COUNTRY] === 1 && mixTotal(v.config.mix) === 1)
+    await bob.until((view) => view.config.mix[QuestionType.COUNTRY] === 1 && mixTotal(view.config.mix) === 1)
 
     alice.send("start")
-    const round = await bob.until((v) => v.phase === Phase.GUESSING)
+    const round = await bob.until((view) => view.phase === Phase.GUESSING)
     const shown = viewIn(round, Phase.GUESSING).round.question.answer
     expect(shown.type).toBe(AnswerType.AREA)
     expect(promptOf(viewIn(round, Phase.GUESSING).round.question)).toMatch(/^Paint the whole of /)
     const country = CATALOGUE.find(
-      (q) => q.type === QuestionType.COUNTRY && shown.type === AnswerType.AREA && q.answer.outline === shown.outline
+      (question) =>
+        question.type === QuestionType.COUNTRY &&
+        shown.type === AnswerType.AREA &&
+        question.answer.outline === shown.outline
     )!
     const area = scoredAnswer(country.answer, BANK.outlines)
     if (area.type !== AnswerType.AREA) throw new Error("a country is an area")
     // Paint it exactly, compacted the way the client sends paint.
-    const res = resolutionForTolerance(shown.tolerance)
-    const cells = compactRecord(Object.fromEntries(regionCells(area, res).map((h) => [h, 1])))
+    const resolution = resolutionForTolerance(shown.tolerance)
+    const cells = compactRecord(Object.fromEntries(regionCells(area, resolution).map((cell) => [cell, 1])))
     alice.sendPaint({ cells, floor: 0.05 })
     alice.send("lock")
     await alice.untilLatest(lockedIn)
 
     clock.advance(60_000 + ROUND_GRACE)
-    const reveal = await bob.until((v) => v.phase === Phase.REVEAL)
+    const reveal = await bob.until((view) => view.phase === Phase.REVEAL)
     expect(viewIn(reveal, Phase.REVEAL).reveal.question.answer).toEqual(shown)
     expect(viewIn(reveal, Phase.REVEAL).reveal.label).toBe(country.label)
-    const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
-    const aliceResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((r) => r.playerId === byName["Alice"])!
+    const byName = Object.fromEntries(reveal.players.map((player) => [player.name, player.id]))
+    const aliceResult = viewIn(reveal, Phase.REVEAL).reveal.results.find(
+      (result) => result.playerId === byName["Alice"]
+    )!
     expect(aliceResult.score).toBeGreaterThan(980)
     expect(aliceResult.guess).toMatchObject({ type: RoundGuessType.PAINTED, parts: { type: AnswerType.AREA } })
-    const bobResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((r) => r.playerId === byName["Bob"])!
+    const bobResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((result) => result.playerId === byName["Bob"])!
     expect(bobResult.score).toBe(250)
   })
 
   it("plays a flag round: the flag is shown, the name only at the reveal", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    await alice.until((v) => v.phase === Phase.LOBBY)
+    await alice.until((view) => view.phase === Phase.LOBBY)
     alice.send("configure", { mix: mixOf({ [QuestionType.FLAG]: 1 }) })
-    await alice.until((v) => v.config.mix[QuestionType.FLAG] === 1 && mixTotal(v.config.mix) === 1)
+    await alice.until((view) => view.config.mix[QuestionType.FLAG] === 1 && mixTotal(view.config.mix) === 1)
 
     alice.send("start")
-    const round = await alice.until((v) => v.phase === Phase.GUESSING)
+    const round = await alice.until((view) => view.phase === Phase.GUESSING)
     const { clue } = viewIn(round, Phase.GUESSING).round.question
     if (clue.type !== ClueType.FLAG) throw new Error("a flag round shows a flag")
     expect(clue.flag).toMatch(/^[a-z]{2}$/)
-    const f = CATALOGUE.find((x) => x.clue.type === ClueType.FLAG && x.clue.flag === clue.flag)!
-    expect(JSON.stringify(round)).not.toContain(f.label)
+    const flagQuestion = CATALOGUE.find(
+      (question) => question.clue.type === ClueType.FLAG && question.clue.flag === clue.flag
+    )!
+    expect(JSON.stringify(round)).not.toContain(flagQuestion.label)
 
     clock.advance(60_000 + ROUND_GRACE)
-    const reveal = await alice.until((v) => v.phase === Phase.REVEAL)
-    expect(viewIn(reveal, Phase.REVEAL).reveal.label).toBe(f.label)
+    const reveal = await alice.until((view) => view.phase === Phase.REVEAL)
+    expect(viewIn(reveal, Phase.REVEAL).reveal.label).toBe(flagQuestion.label)
     expect(viewIn(reveal, Phase.REVEAL).reveal.question.clue).toEqual(clue)
   })
 
   it("answers bad messages with errors instead of dropping the player", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    await alice.until((v) => v.phase === Phase.LOBBY)
+    await alice.until((view) => view.phase === Phase.LOBBY)
     alice.send("start")
-    await alice.until((v) => v.phase === Phase.GUESSING)
+    await alice.until((view) => view.phase === Phase.GUESSING)
 
     alice.client.send("rename", "this is not json")
     expect(await pollErrors(alice)).toContain("malformed message")
@@ -428,7 +443,7 @@ describe("game server", () => {
     alice.errors.length = 0
 
     const tooMany = gridDisk(latLngToCell(0, 0, h3Res(7)), 45).slice(0, PAINT_CELL_BUDGET + 1)
-    alice.sendPaint({ cells: Object.fromEntries(tooMany.map((h) => [h, 1])), floor: 0 })
+    alice.sendPaint({ cells: Object.fromEntries(tooMany.map((cell) => [cell, 1])), floor: 0 })
     expect(await pollErrors(alice)).toContain("invalid paint")
     alice.errors.length = 0
 
@@ -447,7 +462,7 @@ describe("game server", () => {
 
     // Unknown topics are dropped silently rather than kicking (version skew tolerance).
     alice.client.send("no-such-topic", "{}")
-    await new Promise((r) => setTimeout(r, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
     expect(alice.client.connected).toBe(true)
     expect(alice.errors).toHaveLength(0)
   })
@@ -455,7 +470,7 @@ describe("game server", () => {
   it("answers a ping with a pong", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    await alice.until((v) => v.phase === Phase.LOBBY)
+    await alice.until((view) => view.phase === Phase.LOBBY)
     let pongs = 0
     alice.client.on("pong", () => pongs++)
     alice.client.send("ping", "")
@@ -465,10 +480,10 @@ describe("game server", () => {
   it("survives an oversized frame: the sender is dropped, everyone else carries on", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     const bob = player("Bob")
     bob.connect(join(lobby.code))
-    await alice.until((v) => v.players.length === 2)
+    await alice.until((view) => view.players.length === 2)
 
     // Just over the limit. ws rejects it with close code 1009.
     const huge = "x".repeat(MAX_PAYLOAD_BYTES + 1)
@@ -479,56 +494,56 @@ describe("game server", () => {
     // The process is alive and the room still works. Bob shows offline, and
     // his lobby seat is freed once the grace period passes.
     expect(alice.client.connected).toBe(true)
-    await alice.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
+    await alice.untilLatest((view) => view.players.some((player) => player.name === "Bob" && !player.connected))
     clock.advance(SEAT_GRACE)
-    await alice.untilLatest((v) => v.players.length === 1)
+    await alice.untilLatest((view) => view.players.length === 1)
     const cara = player("Cara")
     cara.connect(join(lobby.code))
-    await cara.until((v) => v.phase === Phase.LOBBY)
+    await cara.until((view) => view.phase === Phase.LOBBY)
   })
 
   it("sends a round's reveal once, and again only to a player who reconnects", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     const bob = player("Bob")
     bob.connect(join(lobby.code))
-    await alice.until((v) => v.players.length === 2)
+    await alice.until((view) => view.players.length === 2)
     alice.send("start")
-    const round = await bob.until((v) => v.phase === Phase.GUESSING)
-    const q = askedIn(round)
-    const at = answerCentre(q.answer)
-    const paint = paintAt(q, at.lat, at.lon)
+    const round = await bob.until((view) => view.phase === Phase.GUESSING)
+    const question = askedIn(round)
+    const at = answerCentre(question.answer)
+    const paint = paintAt(question, at.lat, at.lon)
     alice.sendPaint(paint)
     alice.send("lock")
     bob.send("lock")
-    await alice.until((v) => v.phase === Phase.REVEAL)
+    await alice.until((view) => view.phase === Phase.REVEAL)
 
     bob.send("rename", { name: "Bobby" })
-    const renamed = await alice.untilLatest((v) => v.players.some((p) => p.name === "Bobby"))
+    const renamed = await alice.untilLatest((view) => view.players.some((player) => player.name === "Bobby"))
     expect(viewIn(renamed, Phase.REVEAL).reveal.results).toHaveLength(2)
     expect(alice.reveals).toHaveLength(1)
     const aCell = Object.keys(paint.cells)[0]!
     expect(alice.rawStates.at(-1)).not.toContain(aCell)
 
     bob.client.disconnect()
-    await alice.until((v) => v.players.some((p) => p.name === "Bobby" && !p.connected))
+    await alice.until((view) => view.players.some((player) => player.name === "Bobby" && !player.connected))
     const bobAgain = player("Bob")
     bobAgain.connect(join(lobby.code))
-    const back = await bobAgain.until((v) => v.phase === Phase.REVEAL)
+    const back = await bobAgain.until((view) => view.phase === Phase.REVEAL)
     expect(viewIn(back, Phase.REVEAL).reveal.results).toHaveLength(2)
     expect(bobAgain.reveals).toHaveLength(1)
-    await alice.untilLatest((v) => v.players.every((p) => p.connected))
+    await alice.untilLatest((view) => view.players.every((player) => player.connected))
     expect(alice.reveals).toHaveLength(1)
   })
 
   it("closes a connection that floods messages, and only that one", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     const bob = player("Bob")
     bob.connect(join(lobby.code))
-    await alice.until((v) => v.players.length === 2)
+    await alice.until((view) => view.players.length === 2)
 
     for (let i = 0; i < 40; i++) bob.send("rename", { name: i % 2 ? "Bob" : "Bobby" })
     await bob.waitClosed()
@@ -539,15 +554,15 @@ describe("game server", () => {
   it("a reconnecting player keeps their seat, and gets their paint back", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     const bob = player("Bob")
     bob.connect(join(lobby.code))
-    await alice.until((v) => v.players.length === 2)
+    await alice.until((view) => view.players.length === 2)
     alice.send("start")
-    const round = await bob.until((v) => v.phase === Phase.GUESSING)
-    const q = askedIn(round)
-    const at = answerCentre(q.answer)
-    const bobPaint = paintAt(q, at.lat, at.lon)
+    const round = await bob.until((view) => view.phase === Phase.GUESSING)
+    const question = askedIn(round)
+    const at = answerCentre(question.answer)
+    const bobPaint = paintAt(question, at.lat, at.lon)
     bob.sendPaint(bobPaint)
     bob.send("lock")
     await bob.untilLatest(lockedIn)
@@ -555,13 +570,15 @@ describe("game server", () => {
     expect(viewIn(bob.latest, Phase.GUESSING).you.paint).toBeUndefined()
 
     bob.client.disconnect()
-    await alice.until((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
+    await alice.until((view) => view.players.some((player) => player.name === "Bob" && !player.connected))
 
     const bobAgain = player("Bob") // same name => same deterministic token
     bobAgain.connect(join(lobby.code))
-    const back = await alice.untilLatest((v) => v.players.length === 2 && v.players.every((p) => p.connected))
-    expect(back.players.filter((p) => p.name === "Bob")).toHaveLength(1)
-    const own = await bobAgain.until((v) => v.phase === Phase.GUESSING)
+    const back = await alice.untilLatest(
+      (view) => view.players.length === 2 && view.players.every((player) => player.connected)
+    )
+    expect(back.players.filter((player) => player.name === "Bob")).toHaveLength(1)
+    const own = await bobAgain.until((view) => view.phase === Phase.GUESSING)
     expect(own.you.role.type).toBe(YouRoleType.PLAYING)
     expect(viewIn(own, Phase.GUESSING).you.paint).toEqual(decodePaint(encodePaint(bobPaint)))
   })
@@ -574,14 +591,14 @@ describe("game server", () => {
   ])("frees a room left empty in %s once it has been empty for %i ms", async (phase, grace) => {
     const alice = player("Alice")
     alice.connect(host())
-    const { code } = await alice.until((v) => v.phase === Phase.LOBBY)
+    const { code } = await alice.until((view) => view.phase === Phase.LOBBY)
     if (phase !== Phase.LOBBY) {
       alice.send("start")
-      await alice.until((v) => v.phase === Phase.GUESSING)
+      await alice.until((view) => view.phase === Phase.GUESSING)
     }
     if (phase === Phase.REVEAL) clock.advance(config.roundLength + ROUND_GRACE)
     if (phase === Phase.RESULTS) alice.send("end")
-    await alice.until((v) => v.phase === phase)
+    await alice.until((view) => view.phase === phase)
     const room = app.rivalis.rooms.get(code) as GameRoom
     alice.client.disconnect()
     await eventually(() => room.state.connectedCount === 0, "the server to see Alice go")
@@ -594,13 +611,13 @@ describe("game server", () => {
   it("a lone host who refreshes in the lobby gets the game, and the host role, back", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     alice.client.disconnect()
     await alice.waitClosed()
     clock.advance(SEAT_GRACE - 1_000)
     const again = player("Alice") // same name => same token, like a refreshed tab
     again.connect(join(lobby.code))
-    const back = await again.until((v) => v.phase === Phase.LOBBY)
+    const back = await again.until((view) => view.phase === Phase.LOBBY)
     expect(back.you.isHost).toBe(true)
     expect(back.players).toHaveLength(1)
     // The empty-room timer was cancelled on the way back in.
@@ -611,22 +628,22 @@ describe("game server", () => {
   it("a host who leaves the lobby frees their seat at once and hands over", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     const bob = player("Bob")
     bob.connect(join(lobby.code))
-    await alice.until((v) => v.players.length === 2)
+    await alice.until((view) => view.players.length === 2)
     alice.send("leave")
     await alice.waitClosed()
     expect(alice.client.connected).toBe(false)
     expect(alice.closedFor).toBe(CloseReason.LEFT)
-    const after = await bob.untilLatest((v) => v.players.length === 1)
+    const after = await bob.untilLatest((view) => view.players.length === 1)
     expect(after.you.isHost).toBe(true)
   })
 
   it("shutting the server down tells players it restarted", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    await alice.until((v) => v.phase === Phase.LOBBY)
+    await alice.until((view) => view.phase === Phase.LOBBY)
     await app.close()
     await alice.waitClosed()
     expect(alice.closedFor).toBe(CloseReason.SERVER_RESTARTED)
@@ -635,7 +652,7 @@ describe("game server", () => {
   it("the last player leaving closes the game without waiting", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     alice.send("leave")
     await alice.waitClosed()
     await eventually(() => !app.rivalis.rooms.get(lobby.code), "the room to close")
@@ -644,41 +661,41 @@ describe("game server", () => {
   it("a spectator joins to watch, and can take a seat in the lobby", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     const sam = player("Sam")
     sam.connect(join(lobby.code, Role.SPECTATOR))
-    const watching = await sam.until((v) => v.spectators.length === 1)
+    const watching = await sam.until((view) => view.spectators.length === 1)
     expect(watching.you.role).toEqual({ type: YouRoleType.SPECTATOR })
     expect(watching.players).toHaveLength(1)
     expect(watching.spectators[0]).toMatchObject({ name: "Sam", type: Role.SPECTATOR })
     expect(watching.spectators[0]).not.toHaveProperty("colour")
     sam.send("setRole", { role: Role.PLAYER })
-    const seated = await alice.untilLatest((v) => v.players.some((p) => p.name === "Sam"))
-    expect(seated.players.find((p) => p.name === "Sam")!.colour).toBeGreaterThanOrEqual(0)
+    const seated = await alice.untilLatest((view) => view.players.some((player) => player.name === "Sam"))
+    expect(seated.players.find((player) => player.name === "Sam")!.colour).toBeGreaterThanOrEqual(0)
   })
 
   it("the host hands over to another player", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await alice.until((view) => view.phase === Phase.LOBBY)
     const bob = player("Bob")
     bob.connect(join(lobby.code))
-    const two = await alice.until((v) => v.players.length === 2)
-    alice.send("makeHost", { playerId: two.players.find((p) => p.name === "Bob")!.id })
-    await bob.until((v) => v.you.isHost)
-    await alice.untilLatest((v) => !v.you.isHost)
+    const two = await alice.until((view) => view.players.length === 2)
+    alice.send("makeHost", { playerId: two.players.find((player) => player.name === "Bob")!.id })
+    await bob.until((view) => view.you.isHost)
+    await alice.untilLatest((view) => !view.you.isHost)
   })
 
   /** Alice hosting and Bob joined, both seen in the lobby. */
   async function aliceAndBob() {
     const alice = player("Alice")
     alice.connect(host())
-    const { code } = await alice.until((v) => v.phase === Phase.LOBBY)
+    const { code } = await alice.until((view) => view.phase === Phase.LOBBY)
     const bob = player("Bob")
     bob.connect(join(code))
-    const lobby = await alice.until((v) => v.players.length === 2)
-    await bob.until((v) => v.players.length === 2)
-    const bobId = lobby.players.find((p) => p.name === "Bob")!.id
+    const lobby = await alice.until((view) => view.players.length === 2)
+    await bob.until((view) => view.players.length === 2)
+    const bobId = lobby.players.find((player) => player.name === "Bob")!.id
     return { alice, bob, code, bobId }
   }
 
@@ -687,7 +704,7 @@ describe("game server", () => {
     alice.send("kick", { playerId: bobId })
     await bob.waitClosed()
     expect(bob.closedFor).toBe(CloseReason.REMOVED)
-    await alice.untilLatest((v) => v.players.length === 1)
+    await alice.untilLatest((view) => view.players.length === 1)
 
     const bobAgain = player("Bob")
     bobAgain.connect(join(code))
@@ -703,34 +720,34 @@ describe("game server", () => {
     expect(bob.closedFor).toBe(CloseReason.REPLACED)
 
     bobTab2.send("rename", { name: "Bobby" })
-    await alice.untilLatest((v) => v.players.some((p) => p.name === "Bobby" && p.connected))
+    await alice.untilLatest((view) => view.players.some((player) => player.name === "Bobby" && player.connected))
     clock.advance(SEAT_GRACE)
     bobTab2.send("rename", { name: "Bob" })
-    const after = await alice.untilLatest((v) => v.players.some((p) => p.name === "Bob"))
+    const after = await alice.untilLatest((view) => view.players.some((player) => player.name === "Bob"))
     expect(after.players).toHaveLength(2)
-    expect(after.players.every((p) => p.connected)).toBe(true)
+    expect(after.players.every((player) => player.connected)).toBe(true)
   })
 
   it("while the host is away the next player acts as host, until the host is back", async () => {
     const { alice, bob, code } = await aliceAndBob()
     alice.client.disconnect()
-    await bob.untilLatest((v) => v.you.isHost)
+    await bob.untilLatest((view) => view.you.isHost)
 
     const aliceAgain = player("Alice")
     aliceAgain.connect(join(code))
-    await aliceAgain.untilLatest((v) => v.you.isHost)
-    await bob.untilLatest((v) => !v.you.isHost)
+    await aliceAgain.untilLatest((view) => view.you.isHost)
+    await bob.untilLatest((view) => !view.you.isHost)
   })
 
   it("a full game turns a newcomer away", async () => {
     const alice = player("Alice")
     alice.connect(host())
-    const { code } = await alice.until((v) => v.phase === Phase.LOBBY)
+    const { code } = await alice.until((view) => view.phase === Phase.LOBBY)
     for (let i = 1; i < MAX_PLAYERS + MAX_SPECTATORS; i++) {
-      const p = player(`P${i}`)
-      p.connect(join(code, i >= MAX_PLAYERS ? Role.SPECTATOR : Role.PLAYER))
+      const testPlayer = player(`P${i}`)
+      testPlayer.connect(join(code, i >= MAX_PLAYERS ? Role.SPECTATOR : Role.PLAYER))
     }
-    await alice.until((v) => v.players.length + v.spectators.length === MAX_PLAYERS + MAX_SPECTATORS, 10_000)
+    await alice.until((view) => view.players.length + view.spectators.length === MAX_PLAYERS + MAX_SPECTATORS, 10_000)
     const late = player("Late")
     late.connect(join(code))
     await late.waitClosed()
@@ -740,9 +757,9 @@ describe("game server", () => {
   it("once the game is over, a newcomer is told so, and a player who dropped can come back to the results", async () => {
     const { alice, bob, code } = await aliceAndBob()
     alice.send("start")
-    await bob.until((v) => v.phase === Phase.GUESSING)
+    await bob.until((view) => view.phase === Phase.GUESSING)
     alice.send("end")
-    await bob.until((v) => v.phase === Phase.RESULTS)
+    await bob.until((view) => view.phase === Phase.RESULTS)
 
     const late = player("Late")
     late.connect(join(code))
@@ -750,19 +767,19 @@ describe("game server", () => {
     expect(late.closedFor).toBe(CloseReason.FINISHED)
 
     bob.client.disconnect()
-    await alice.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
+    await alice.untilLatest((view) => view.players.some((player) => player.name === "Bob" && !player.connected))
     const bobAgain = player("Bob")
     bobAgain.connect(join(code))
-    await bobAgain.until((v) => v.phase === Phase.RESULTS)
+    await bobAgain.until((view) => view.phase === Phase.RESULTS)
   })
 
   it("plays a round with a hint, unlocking, and the host ending early, then again", async () => {
     const { alice, bob } = await aliceAndBob()
     alice.send("start")
-    await bob.until((v) => v.phase === Phase.GUESSING)
+    await bob.until((view) => view.phase === Phase.GUESSING)
 
     alice.send("hint", { axis: HintAxis.LATITUDE })
-    const hinted = await alice.untilLatest((v) => v.phase === Phase.GUESSING && v.you.hint !== undefined)
+    const hinted = await alice.untilLatest((view) => view.phase === Phase.GUESSING && view.you.hint !== undefined)
     expect(viewIn(hinted, Phase.GUESSING).you.hint!.axis).toBe(HintAxis.LATITUDE)
     alice.send("hint", { axis: HintAxis.LONGITUDE })
     expect(await pollErrors(alice)).toContain("one hint per round")
@@ -770,40 +787,41 @@ describe("game server", () => {
     bob.send("lock")
     await bob.untilLatest(lockedIn)
     bob.send("unlock")
-    await bob.untilLatest((v) => !lockedIn(v))
+    await bob.untilLatest((view) => !lockedIn(view))
 
     bob.send("end")
     expect(await pollErrors(bob)).toContain("only the host can end the game")
     alice.send("end")
-    const results = await bob.until((v) => v.phase === Phase.RESULTS)
-    expect(viewIn(results, Phase.RESULTS).results.every((r) => r.rounds.length === 1)).toBe(true)
+    const results = await bob.until((view) => view.phase === Phase.RESULTS)
+    expect(viewIn(results, Phase.RESULTS).results.every((result) => result.rounds.length === 1)).toBe(true)
 
     alice.send("again")
-    const lobby = await bob.until((v) => v.phase === Phase.LOBBY)
+    const lobby = await bob.until((view) => view.phase === Phase.LOBBY)
     expect(lobby.players).toHaveLength(2)
   })
 })
 
-async function pollErrors(p: TestPlayer, ms = 2000): Promise<string[]> {
+async function pollErrors(testPlayer: TestPlayer, ms = 2000): Promise<string[]> {
   const start = Date.now()
-  while (p.errors.length === 0 && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 10))
-  return p.errors
+  while (testPlayer.errors.length === 0 && Date.now() - start < ms)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  return testPlayer.errors
 }
 
 describe("static serving", () => {
   let app: App
   let base: string
-  let dir: string
+  let directory: string
 
   beforeEach(async () => {
     const { mkdtempSync, mkdirSync, writeFileSync } = await import("node:fs")
     const { tmpdir } = await import("node:os")
     const path = await import("node:path")
-    dir = mkdtempSync(path.join(tmpdir(), "wa-static-"))
-    mkdirSync(path.join(dir, "assets"))
-    writeFileSync(path.join(dir, "index.html"), "<!doctype html><title>t</title>")
-    writeFileSync(path.join(dir, "assets", "index-abc123.js"), "export {};")
-    app = createApp({ staticDir: dir, logLevel: "warning" })
+    directory = mkdtempSync(path.join(tmpdir(), "wa-static-"))
+    mkdirSync(path.join(directory, "assets"))
+    writeFileSync(path.join(directory, "index.html"), "<!doctype html><title>t</title>")
+    writeFileSync(path.join(directory, "assets", "index-abc123.js"), "export {};")
+    app = createApp({ staticDir: directory, logLevel: "warning" })
     base = await app.listen(0)
   })
   afterEach(async () => {
@@ -852,27 +870,27 @@ describe("connections per address", () => {
   })
 
   afterEach(async () => {
-    for (const p of players) p.client.disconnect()
+    for (const testPlayer of players) testPlayer.client.disconnect()
     players.length = 0
     await app.close()
     configureGameRooms({ clock: realClock })
   })
 
   it("refuses connections over the limit, and lets them in once one closes", async () => {
-    const [alice, bob, carol] = ["Alice", "Bob", "Carol"].map((n) => new TestPlayer(url, n))
+    const [alice, bob, carol] = ["Alice", "Bob", "Carol"].map((name) => new TestPlayer(url, name))
     players.push(alice!, bob!, carol!)
     alice!.connect(host())
-    const { code } = await alice!.until((v) => v.phase === Phase.LOBBY)
+    const { code } = await alice!.until((view) => view.phase === Phase.LOBBY)
     bob!.connect(join(code))
-    await alice!.until((v) => v.players.length === 2)
+    await alice!.until((view) => view.players.length === 2)
 
     carol!.connect(join(code))
     await carol!.waitClosed()
     expect(carol!.states).toEqual([])
 
     bob!.client.disconnect()
-    await alice!.untilLatest((v) => v.players.some((p) => p.name === "Bob" && !p.connected))
+    await alice!.untilLatest((view) => view.players.some((player) => player.name === "Bob" && !player.connected))
     carol!.connect(join(code))
-    await alice!.until((v) => v.players.some((p) => p.name === "Carol"))
+    await alice!.until((view) => view.players.some((player) => player.name === "Carol"))
   })
 })

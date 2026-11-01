@@ -11,27 +11,31 @@ describe("paint on the VR globe", () => {
     const layer = new PaintLayer(h3Res(5))
     layer.stamp({ lat: 51.5, lon: -0.1 }, 40, 1)
     const paint = layer.toGeoJSON()
-    const g = paintGeometry(paint, THEME, 2)
-    const pos = g.getAttribute("position")
-    const colour = g.getAttribute("color")
-    const v = new Vector3()
-    for (let i = 0; i < pos.count; i++) expect(v.fromBufferAttribute(pos, i).length()).toBeCloseTo(2, 6)
-    expect(g.getIndex()!.count).toBe(
-      paint.features.reduce((n, f) => n + 3 * (f.geometry.coordinates[0]!.length - 1), 0)
+    const geometry = paintGeometry(paint, THEME, 2)
+    const positions = geometry.getAttribute("position")
+    const colour = geometry.getAttribute("color")
+    const vertex = new Vector3()
+    for (let i = 0; i < positions.count; i++)
+      expect(vertex.fromBufferAttribute(positions, i).length()).toBeCloseTo(2, 6)
+    expect(geometry.getIndex()!.count).toBe(
+      paint.features.reduce((count, feature) => count + 3 * (feature.geometry.coordinates[0]!.length - 1), 0)
     )
 
     // Each cell's first vertex is its middle.
     let first = 0
-    const alphas = paint.features.map((f) => {
-      const at = localToLatLon(v.fromBufferAttribute(pos, first))
-      const ring = f.geometry.coordinates[0]!.slice(0, -1)
-      const lat = ring.reduce((s, [, la]) => s + la!, 0) / ring.length
+    const alphas = paint.features.map((feature) => {
+      const at = localToLatLon(vertex.fromBufferAttribute(positions, first))
+      const ring = feature.geometry.coordinates[0]!.slice(0, -1)
+      const lat = ring.reduce((sum, [, latitude]) => sum + latitude!, 0) / ring.length
       expect(at.lat).toBeCloseTo(lat, 1)
       const a = colour.getW(first)
       first += ring.length + 1
-      return [f.properties.v, a] as const
+      return [feature.properties.v, a] as const
     })
-    const [low, high] = [alphas.reduce((m, x) => (x[0] < m[0] ? x : m)), alphas.reduce((m, x) => (x[0] > m[0] ? x : m))]
+    const [low, high] = [
+      alphas.reduce((lowest, entry) => (entry[0] < lowest[0] ? entry : lowest)),
+      alphas.reduce((highest, entry) => (entry[0] > highest[0] ? entry : highest))
+    ]
     expect(high[1]).toBeCloseTo(THEME.rampOpacity[1], 5)
     expect(low[1]).toBeLessThan(high[1])
   })
@@ -39,10 +43,10 @@ describe("paint on the VR globe", () => {
   it("keeps cells across the antimeridian whole", () => {
     const layer = new PaintLayer(h3Res(3))
     layer.stamp({ lat: 0, lon: 180 }, 100, 1)
-    const g = paintGeometry(layer.toGeoJSON(), THEME, 1)
-    const pos = g.getAttribute("position")
-    const v = new Vector3()
-    for (let i = 0; i < pos.count; i++)
-      expect(Math.abs(localToLatLon(v.fromBufferAttribute(pos, i)).lon)).toBeGreaterThan(170)
+    const geometry = paintGeometry(layer.toGeoJSON(), THEME, 1)
+    const positions = geometry.getAttribute("position")
+    const vertex = new Vector3()
+    for (let i = 0; i < positions.count; i++)
+      expect(Math.abs(localToLatLon(vertex.fromBufferAttribute(positions, i)).lon)).toBeGreaterThan(170)
   })
 })

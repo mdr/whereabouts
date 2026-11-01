@@ -50,7 +50,9 @@ function setup(over: Partial<Props> = {}) {
     reveal: false,
     ...over
   }
-  const hook = renderHook((p: Props) => useRoundMap(paint, { ...p, hint: p.hint, start }), { initialProps: props })
+  const hook = renderHook((hookProps: Props) => useRoundMap(paint, { ...hookProps, hint: hookProps.hint, start }), {
+    initialProps: props
+  })
   const update = (change: Partial<Props>) => {
     props = { ...props, ...change }
     hook.rerender(props)

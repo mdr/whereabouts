@@ -14,19 +14,19 @@ import { outlineId } from "../ids.ts"
 const flags = CATALOGUE.filter(isFlagQuestion)
 const borders = new Borders(bordersJson, flags)
 const outlines = outlinesFrom(outlinesJson)
-const flag = (code: string) => flags.find((f) => f.clue.flag === code)!
+const flag = (code: string) => flags.find((question) => question.clue.flag === code)!
 
 /** A flag round filled with its own country, as the client does it, and scored. */
 function fillAndScore(code: string, finestRes?: number): { score: number; cells: H3Cell[] } {
-  const f = flag(code)
-  const a = scoredAnswer(f.answer, outlines)
-  const res = finestRes ?? resolutionForTolerance(a.tolerance)
+  const question = flag(code)
+  const a = scoredAnswer(question.answer, outlines)
+  const resolution = finestRes ?? resolutionForTolerance(a.tolerance)
   const shape: FillShape =
     a.type === AnswerType.AREA
       ? { type: FillShapeType.OUTLINE, outline: a.polygons, answer: a.centre }
-      : borders.fillShape(f)
-  const cells = countryFill(shape, h3Res(res))
-  const layer = new PaintLayer(h3Res(res))
+      : borders.fillShape(question)
+  const cells = countryFill(shape, h3Res(resolution))
+  const layer = new PaintLayer(h3Res(resolution))
   layer.addCoat(cells, FILL_DENSITY)
   const painted = buildDistribution(layer.toCells(), 0.05)
   return { score: scoreAnswer(painted, a, DEFAULT_KERNEL).score, cells }
@@ -54,27 +54,32 @@ describe("countryFill", () => {
 
   it("fills a country round at its own resolution, uncompacted, so it draws without gaps", () => {
     // Compacted, a parent hexagon is turned from its children and left gaps.
-    const bg = CATALOGUE.find((q) => q.id === "bulgaria-region")!.answer
-    const res = resolutionForTolerance(bg.tolerance)
+    const bulgaria = CATALOGUE.find((question) => question.id === "bulgaria-region")!.answer
+    const resolution = resolutionForTolerance(bulgaria.tolerance)
     const cells = countryFill(
-      { type: FillShapeType.OUTLINE, outline: outlines.get(outlineId("bulgaria-region"))!, answer: answerCentre(bg) },
-      res
+      {
+        type: FillShapeType.OUTLINE,
+        outline: outlines.get(outlineId("bulgaria-region"))!,
+        answer: answerCentre(bulgaria)
+      },
+      resolution
     )
-    expect(new Set(cells.map(getResolution))).toEqual(new Set([res]))
+    expect(new Set(cells.map(getResolution))).toEqual(new Set([resolution]))
   })
 
   it("fills a country too small for a cell around its answer", () => {
-    const tv = flag("tv")
-    const cells = countryFill(borders.fillShape(tv), h3Res(4))
+    const tuvalu = flag("tv")
+    const cells = countryFill(borders.fillShape(tuvalu), h3Res(4))
     expect(cells.length).toBeGreaterThan(0)
-    expect(cells).toContain(latLngToCell(answerCentre(tv.answer).lat, answerCentre(tv.answer).lon, h3Res(4)))
+    expect(cells).toContain(latLngToCell(answerCentre(tuvalu.answer).lat, answerCentre(tuvalu.answer).lon, h3Res(4)))
   })
 
   it("leaves out a hole: Lesotho is not South Africa", () => {
     const cells = new Set(countryFill(borders.fillShape(flag("za")), h3Res(5)))
     const maseru = latLngToCell(-29.5, 28.2, h3Res(5))
     const joburg = latLngToCell(-26.2, 28.05, h3Res(5))
-    const has = (h: H3Cell) => [3, 4, 5].some((r) => cells.has(r === 5 ? h : cellToParent(h, h3Res(r))))
+    const has = (cell: H3Cell) =>
+      [3, 4, 5].some((resolution) => cells.has(resolution === 5 ? cell : cellToParent(cell, h3Res(resolution))))
     expect(has(joburg)).toBe(true)
     expect(has(maseru)).toBe(false)
   })

@@ -9,10 +9,10 @@ test("reconnect", async ({ browser }) => {
   const aliceTab = await newTab(browser, "Alice")
   let offline = false
   let live: WebSocketRoute | undefined = undefined
-  await aliceTab.page.routeWebSocket(/\/ws/, (ws) => {
-    if (offline) return void ws.close()
-    ws.connectToServer()
-    live = ws
+  await aliceTab.page.routeWebSocket(/\/ws/, (socket) => {
+    if (offline) return void socket.close()
+    socket.connectToServer()
+    live = socket
   })
   const aliceHomePage = await aliceTab.openHome()
   await aliceHomePage.enterName("Alice")

@@ -78,14 +78,14 @@ describe("the pail", () => {
     const paint = makePaint()
     const hand = handAimedAt(globe)
     hand.setTool(Tool.FILL)
-    for (const [t, trigger] of [
+    for (const [time, trigger] of [
       [1, 1],
       [1.1, 1],
       [1.2, 0.6],
       [1.3, 0],
       [1.4, 1]
     ] as const)
-      hand.update(t, globe, trigger, false, paint, undefined)
+      hand.update(time, globe, trigger, false, paint, undefined)
     expect(paint.fillOutside).toHaveBeenCalledTimes(2)
     expect(paint.stamp).not.toHaveBeenCalled()
   })

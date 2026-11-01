@@ -9,26 +9,30 @@ import { resolutionForTolerance } from "./paint.ts"
 import { regionCells, regionScoringRes, scoredAnswer } from "../scoring/regions.ts"
 
 const mask = new LandMask(landJson)
-const at = (lat: number, lon: number, res: number) => latLngToCell(lat, lon, h3Res(res))
+const at = (lat: number, lon: number, resolution: number) => latLngToCell(lat, lon, h3Res(resolution))
 
 describe("land mask", () => {
   it("keeps paint on every answer, at the resolution it is painted", () => {
-    const answers = CATALOGUE.flatMap((q) =>
-      q.answer.type === AnswerType.POINT ? [{ name: q.label, ...q.answer.at, t: q.answer.tolerance }] : []
+    const answers = CATALOGUE.flatMap((question) =>
+      question.answer.type === AnswerType.POINT
+        ? [{ name: question.label, ...question.answer.at, t: question.answer.tolerance }]
+        : []
     )
-    const trimmed = answers.filter((a) => !mask.nearLand(at(a.lat, a.lon, resolutionForTolerance(a.t))))
-    expect(trimmed.map((a) => a.name)).toEqual([])
+    const trimmed = answers.filter(
+      (answer) => !mask.nearLand(at(answer.lat, answer.lon, resolutionForTolerance(answer.t)))
+    )
+    expect(trimmed.map((answer) => answer.name)).toEqual([])
   })
 
   it("keeps a whole country painted exactly", () => {
     // Every cell whose centre is in the outline, at the scoring resolution (the
     // region's own answer point is only for framing: Indonesia's is at sea).
     const outlines = outlinesFrom(outlinesJson)
-    for (const q of CATALOGUE.filter((q) => q.type === QuestionType.COUNTRY)) {
-      const a = scoredAnswer(q.answer, outlines)
-      if (a.type !== AnswerType.AREA) throw new Error(`${q.id} is not painted whole`)
-      const lost = regionCells(a, regionScoringRes(a.tolerance)).filter((h) => !mask.nearLand(h))
-      expect(lost, q.label).toEqual([])
+    for (const question of CATALOGUE.filter((question) => question.type === QuestionType.COUNTRY)) {
+      const a = scoredAnswer(question.answer, outlines)
+      if (a.type !== AnswerType.AREA) throw new Error(`${question.id} is not painted whole`)
+      const lost = regionCells(a, regionScoringRes(a.tolerance)).filter((cell) => !mask.nearLand(cell))
+      expect(lost, question.label).toEqual([])
     }
   })
 
@@ -80,14 +84,14 @@ describe("land mask", () => {
     expect(kept.has(coast)).toBe(false)
     expect(kept.size).toBeGreaterThan(0)
     expect(kept.size).toBeLessThan(cellToChildren(coast, h3Res(5)).length)
-    for (const [h, v] of kept) {
-      expect(getResolution(h)).toBe(5)
-      expect(v).toBe(3)
-      expect(mask.nearLand(h)).toBe(true)
+    for (const [cell, count] of kept) {
+      expect(getResolution(cell)).toBe(5)
+      expect(count).toBe(3)
+      expect(mask.nearLand(cell)).toBe(true)
     }
     // Never finer than the layer: at a coarse layer it splits only that far.
-    for (const h of trimSea(new Map([[coast, 3]]), mask, h3Res(4)).keys())
-      expect(getResolution(h)).toBeLessThanOrEqual(4)
+    for (const cell of trimSea(new Map([[coast, 3]]), mask, h3Res(4)).keys())
+      expect(getResolution(cell)).toBeLessThanOrEqual(4)
     // A split child that is also painted on its own gets both densities.
     const child = [...kept.keys()][0]!
     expect(

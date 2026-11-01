@@ -34,10 +34,10 @@ describe("the VR globe", () => {
     const at = { lat: -51, lon: -73 }
     globe.turnToward(at, Math.PI, eye)
     for (let i = 0; i < 20; i++) globe.update(0.1, {}, { x: 0, y: 0 })
-    const q = globe.group.quaternion
+    const quaternion = globe.group.quaternion
     const toEye = eye.clone().sub(globe.centre).normalize()
-    expect(latLonToLocal(at).applyQuaternion(q).dot(toEye)).toBeCloseTo(1, 5)
-    expect(new Vector3(0, 1, 0).applyQuaternion(q).y).toBeGreaterThan(0)
+    expect(latLonToLocal(at).applyQuaternion(quaternion).dot(toEye)).toBeCloseTo(1, 5)
+    expect(new Vector3(0, 1, 0).applyQuaternion(quaternion).y).toBeGreaterThan(0)
     expectNoRoll(globe)
     expect(globe.scale).toBe(1)
   })

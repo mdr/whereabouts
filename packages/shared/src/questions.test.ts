@@ -57,51 +57,53 @@ describe("the catalogue", () => {
   const outlines = outlinesFrom(outlinesJson)
 
   it("has unique ids, valid coordinates and sensible tolerances", () => {
-    expect(new Set(CATALOGUE.map((q) => q.id)).size).toBe(CATALOGUE.length)
-    for (const q of CATALOGUE) {
-      const at = answerCentre(q.answer)
-      expect(Math.abs(at.lat), q.id).toBeLessThanOrEqual(90)
-      expect(Math.abs(at.lon), q.id).toBeLessThanOrEqual(180)
-      expect(q.answer.tolerance, q.id).toBeGreaterThanOrEqual(1)
-      expect(q.answer.tolerance, q.id).toBeLessThanOrEqual(1500)
-      expect(promptOf(q).length, q.id).toBeGreaterThan(0)
-      expect(q.label.length, q.id).toBeGreaterThan(0)
-      expect(q.wiki.length, `${q.id} needs a Wikipedia article`).toBeGreaterThan(0)
+    expect(new Set(CATALOGUE.map((question) => question.id)).size).toBe(CATALOGUE.length)
+    for (const question of CATALOGUE) {
+      const at = answerCentre(question.answer)
+      expect(Math.abs(at.lat), question.id).toBeLessThanOrEqual(90)
+      expect(Math.abs(at.lon), question.id).toBeLessThanOrEqual(180)
+      expect(question.answer.tolerance, question.id).toBeGreaterThanOrEqual(1)
+      expect(question.answer.tolerance, question.id).toBeLessThanOrEqual(1500)
+      expect(promptOf(question).length, question.id).toBeGreaterThan(0)
+      expect(question.label.length, question.id).toBeGreaterThan(0)
+      expect(question.wiki.length, `${question.id} needs a Wikipedia article`).toBeGreaterThan(0)
     }
   })
 
   it("has an outline for every area answer, and none unused", () => {
     const used = new Set<string>()
-    for (const q of CATALOGUE)
-      if (q.answer.type === AnswerType.AREA) {
-        expect(outlines.get(q.answer.outline)?.length, q.id).toBeGreaterThan(0)
-        used.add(q.answer.outline)
+    for (const question of CATALOGUE)
+      if (question.answer.type === AnswerType.AREA) {
+        expect(outlines.get(question.answer.outline)?.length, question.id).toBeGreaterThan(0)
+        used.add(question.answer.outline)
       }
     expect([...outlines.keys()].filter((id) => !used.has(id))).toEqual([])
   })
 
   it("names the place in a place's prompt, and not in a landmark's", () => {
-    const prompts = (type: QuestionType) => CATALOGUE.filter((q) => q.type === type).map(promptOf)
-    expect(prompts(QuestionType.PLACE).filter((p) => !/^Where (is|are) /.test(p))).toEqual([])
+    const prompts = (type: QuestionType) => CATALOGUE.filter((question) => question.type === type).map(promptOf)
+    expect(prompts(QuestionType.PLACE).filter((prompt) => !/^Where (is|are) /.test(prompt))).toEqual([])
     expect(new Set(prompts(QuestionType.LANDMARK))).toEqual(new Set([PHOTO_PROMPT]))
   })
 
-  const places = CATALOGUE.filter((q) => q.type === QuestionType.PLACE)
+  const places = CATALOGUE.filter((question) => question.type === QuestionType.PLACE)
 
   it("keeps a healthy mix of scales", () => {
     expect(places.length).toBeGreaterThanOrEqual(100)
-    expect(places.filter((q) => q.answer.tolerance <= 60).length).toBeGreaterThanOrEqual(8)
-    expect(places.filter((q) => q.answer.tolerance >= 700).length).toBeGreaterThanOrEqual(8)
+    expect(places.filter((question) => question.answer.tolerance <= 60).length).toBeGreaterThanOrEqual(8)
+    expect(places.filter((question) => question.answer.tolerance >= 700).length).toBeGreaterThanOrEqual(8)
   })
 
   it("does not put two places on the same spot", () => {
     for (let i = 0; i < places.length; i++) {
       for (let j = i + 1; j < places.length; j++) {
-        const d = greatCircleDistance(answerCentre(places[i]!.answer), answerCentre(places[j]!.answer))
+        const distance = greatCircleDistance(answerCentre(places[i]!.answer), answerCentre(places[j]!.answer))
         // Rome and Vatican City are the one deliberate near-pair.
         const pair = [places[i]!.id, places[j]!.id].sort().join("+")
         if (pair === "rome+vatican") continue
-        expect(d, `${places[i]!.id} and ${places[j]!.id} are ${d.toFixed(0)} km apart`).toBeGreaterThan(20)
+        expect(distance, `${places[i]!.id} and ${places[j]!.id} are ${distance.toFixed(0)} km apart`).toBeGreaterThan(
+          20
+        )
       }
     }
   })

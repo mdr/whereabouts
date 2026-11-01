@@ -26,19 +26,19 @@ test("Submit in VR shows the answer in the headset, and Next brings the next rou
   const revealed = await until(
     "the answer in VR",
     () => headset.view(),
-    (v) => v === VrViewType.REVEAL
+    (viewType) => viewType === VrViewType.REVEAL
   )
   check((await headset.inSession()) && revealed === VrViewType.REVEAL, "submitting shows the answer in VR")
   const vrFact = await until(
     "the line about the answer",
     () => headset.fact(),
-    (f) => f !== undefined
+    (fact) => fact !== undefined
   )
   check((vrFact ?? "").length > 20, `with a line about it (${vrFact})`)
   const postcard = await until(
     "the answer's photo",
     () => headset.postcard(),
-    (p) => p !== undefined
+    (postcard) => postcard !== undefined
   )
   check(postcard !== undefined, `the answer's photo shows, its postcard back from ${postcard}`)
   check(!(await headset.toolsHeld()), "the hands put the can and eraser away for the answer")
@@ -73,7 +73,7 @@ test("Submit in VR shows the answer in the headset, and Next brings the next rou
   const nextRound = await until(
     "the next round in VR",
     () => headset.view(),
-    (v) => v === VrViewType.PAINT
+    (viewType) => viewType === VrViewType.PAINT
   )
   check((await headset.inSession()) && nextRound === VrViewType.PAINT, "Next brings the next round to VR")
   check(!(await headset.globeColourShown()), "and the plain land back")
@@ -81,15 +81,15 @@ test("Submit in VR shows the answer in the headset, and Next brings the next rou
     await until(
       "Pass on the menu",
       () => headset.doneLabel(),
-      (l) => l === "Pass"
-    ).then((l) => l === "Pass"),
+      (label) => label === "Pass"
+    ).then((label) => label === "Pass"),
     "with nothing painted, the menu offers Pass"
   )
   await pressMenu(headset, can, "done")
   const passed = await until(
     "the passed round's answer in VR",
     () => headset.view(),
-    (v) => v === VrViewType.REVEAL
+    (viewType) => viewType === VrViewType.REVEAL
   )
   await scoreText.waitFor()
   const passScore = Number(await scoreText.innerText())
@@ -109,7 +109,7 @@ test("See your room swaps space for passthrough, the answer still showing", asyn
       on: await headset.inSession(),
       view: await headset.view()
     }),
-    (s) => !s.space && s.passthrough && s.on && s.view === VrViewType.REVEAL,
+    (state) => !state.space && state.passthrough && state.on && state.view === VrViewType.REVEAL,
     30_000
   )
   check(

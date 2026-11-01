@@ -42,22 +42,22 @@ describe("QuestionImage", () => {
   it("zooms the enlarged photo: click toggles a closer look, the wheel zooms in and out", () => {
     const { container } = render(<QuestionImage image={image} credit={false} painting />)
     fireEvent.click(container.querySelector(`.${questionImage.thumb} img`)!)
-    const img = document.body.querySelector<HTMLImageElement>(`.${lb.lightbox} img`)!
-    expect(img.style.transform).toContain("scale(1)")
-    fireEvent.click(img)
-    expect(img.style.transform).toContain("scale(2.5)")
+    const lightboxImage = document.body.querySelector<HTMLImageElement>(`.${lb.lightbox} img`)!
+    expect(lightboxImage.style.transform).toContain("scale(1)")
+    fireEvent.click(lightboxImage)
+    expect(lightboxImage.style.transform).toContain("scale(2.5)")
     expect(document.body.querySelector(`.${lb.frame}`)!.classList.contains(lb.zoomed)).toBe(true)
     // Clicking the picture does not close the lightbox.
     expect(document.body.querySelectorAll(`.${lb.lightbox}`)).not.toHaveLength(0)
-    fireEvent.click(img)
-    expect(img.style.transform).toContain("scale(1)")
+    fireEvent.click(lightboxImage)
+    expect(lightboxImage.style.transform).toContain("scale(1)")
     fireEvent.wheel(document.body.querySelector(`.${lb.frame}`)!, { deltaY: -500 })
-    const scale = Number(/scale\(([\d.]+)\)/.exec(img.style.transform)![1])
+    const scale = Number(/scale\(([\d.]+)\)/.exec(lightboxImage.style.transform)![1])
     expect(scale).toBeGreaterThan(1)
     expect(scale).toBeLessThanOrEqual(6)
     fireEvent.wheel(document.body.querySelector(`.${lb.frame}`)!, { deltaY: 5000 })
-    expect(img.style.transform).toContain("scale(1)")
-    expect(img.style.transform).toContain("translate(0px, 0px)")
+    expect(lightboxImage.style.transform).toContain("scale(1)")
+    expect(lightboxImage.style.transform).toContain("translate(0px, 0px)")
   })
 
   it("enlarges at once with the photo the page has, in its shape, then swaps in a larger one, keeping the zoom", async () => {
@@ -70,14 +70,14 @@ describe("QuestionImage", () => {
     Object.defineProperty(thumb, "naturalWidth", { value: 900 })
     Object.defineProperty(thumb, "naturalHeight", { value: 600 })
     fireEvent.click(thumb)
-    const img = document.body.querySelector<HTMLImageElement>(`.${lb.lightbox} img`)!
-    expect(img.src).toBe(thumb.src)
-    expect(img.classList.contains(lb.fit)).toBe(true)
-    expect(img.style.getPropertyValue("--ratio")).toBe("1.5")
-    fireEvent.click(img)
+    const lightboxImage = document.body.querySelector<HTMLImageElement>(`.${lb.lightbox} img`)!
+    expect(lightboxImage.src).toBe(thumb.src)
+    expect(lightboxImage.classList.contains(lb.fit)).toBe(true)
+    expect(lightboxImage.style.getPropertyValue("--ratio")).toBe("1.5")
+    fireEvent.click(lightboxImage)
     decoded()
-    await waitFor(() => expect(img.src).toContain("width=1600"))
-    expect(img.style.transform).toContain("scale(2.5)")
+    await waitFor(() => expect(lightboxImage.src).toContain("width=1600"))
+    expect(lightboxImage.style.transform).toContain("scale(2.5)")
     vi.restoreAllMocks()
   })
 

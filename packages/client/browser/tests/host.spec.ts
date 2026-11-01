@@ -25,7 +25,9 @@ test("host", async ({ browser }) => {
   // In the lobby the host can remove Bob, but not herself.
   const { aliceRoundPage, bobRoundPage } =
     await test.step("the host can remove Bob in the lobby, then starts", async () => {
-      const removable = (await aliceLobbyPage.players.players()).filter((p) => p.removable).map((p) => p.name)
+      const removable = (await aliceLobbyPage.players.players())
+        .filter((player) => player.removable)
+        .map((player) => player.name)
       check(JSON.stringify(removable) === '["Bob"]', `the host can remove ${JSON.stringify(removable)}`)
 
       await aliceLobbyPage.chooseSecondsPerRound(30)

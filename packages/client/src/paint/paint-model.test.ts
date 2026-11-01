@@ -31,9 +31,9 @@ function makeFiller(overrides: Partial<Filler> = {}): Filler {
   return {
     countryAt: vi.fn(() => makeCountry()),
     outline: () => ({ type: "MultiPolygon", coordinates: [] }),
-    cells: (f, res) => {
-      const at = answerCentre(f.answer)
-      return [latLngToCell(at.lat, at.lon, res)]
+    cells: (flag, resolution) => {
+      const at = answerCentre(flag.answer)
+      return [latLngToCell(at.lat, at.lon, resolution)]
     },
     ...overrides
   }
@@ -43,7 +43,7 @@ const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RES)
 
 function paintStroke(model: PaintModel, ...at: LatLon[]): void {
   model.beginStroke(Tool.PAINT)
-  for (const p of at) model.stamp(p, 20, 1)
+  for (const point of at) model.stamp(point, 20, 1)
   model.endStroke()
 }
 

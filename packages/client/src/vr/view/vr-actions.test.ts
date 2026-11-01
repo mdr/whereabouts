@@ -31,35 +31,35 @@ describe("the host's pick in the headset's table", () => {
 
 describe("the host's actions on a picked player", () => {
   it("remove them, letting go of the pick, or make them host", () => {
-    const c = conn()
+    const connection = conn()
     vrPicked.value = bob.id
-    const [remove, makeHost] = hostActions(c, asHost, bob.id)
+    const [remove, makeHost] = hostActions(connection, asHost, bob.id)
     remove!.press()
     makeHost!.press()
-    expect(c.kick).toHaveBeenCalledWith(bob.id)
-    expect(c.makeHost).toHaveBeenCalledWith(bob.id)
+    expect(connection.kick).toHaveBeenCalledWith(bob.id)
+    expect(connection.makeHost).toHaveBeenCalledWith(bob.id)
     expect(vrPicked.value).toBeUndefined()
   })
 
   it("do not hand hosting to someone away", () => {
     const away = makeLobbyView({ players: [host, { ...bob, connected: false }], you: { id: host.id, isHost: true } })
-    expect(hostActions(conn(), away, bob.id).map((a) => a.label)).toEqual(["Remove Bob"])
+    expect(hostActions(conn(), away, bob.id).map((action) => action.label)).toEqual(["Remove Bob"])
   })
 
   it("are none for a guest, for the host themself, or with no one picked", () => {
-    const c = conn()
-    expect(hostActions(c, asGuest, host.id)).toEqual([])
-    expect(hostActions(c, asHost, host.id)).toEqual([])
-    expect(hostActions(c, asHost, undefined)).toEqual([])
+    const connection = conn()
+    expect(hostActions(connection, asGuest, host.id)).toEqual([])
+    expect(hostActions(connection, asHost, host.id)).toEqual([])
+    expect(hostActions(connection, asHost, undefined)).toEqual([])
   })
 })
 
 describe("a watcher's way in", () => {
   it("takes a seat while one is free", () => {
-    const c = conn()
-    const seat = takeSeat(c, asGuest, "Play")
+    const connection = conn()
+    const seat = takeSeat(connection, asGuest, "Play")
     seat.press()
-    expect(c.setRole).toHaveBeenCalledWith(Role.PLAYER)
+    expect(connection.setRole).toHaveBeenCalledWith(Role.PLAYER)
     expect(seat.enabled).toBe(true)
   })
 

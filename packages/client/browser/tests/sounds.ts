@@ -22,7 +22,7 @@ declare global {
 /* oxlint-disable typescript/unbound-method -- each original is applied with the node as this */
 export function recordSounds(): void {
   window.__audio = []
-  const log = (e: Omit<SoundEvent, "at">) => window.__audio.push({ ...e, at: performance.now() })
+  const log = (event: Omit<SoundEvent, "at">) => window.__audio.push({ ...event, at: performance.now() })
   // Decoded lengths can differ by a frame or two.
   const LENGTHS: Record<string, number> = {
     spray: 26.38,
@@ -32,8 +32,10 @@ export function recordSounds(): void {
     clear: 0.45,
     applause: 2.89
   }
-  const clipOf = (b: AudioBuffer | undefined) =>
-    !b ? undefined : (Object.entries(LENGTHS).find(([, len]) => Math.abs(b.duration - len) < 0.06)?.[0] ?? "other")
+  const clipOf = (buffer: AudioBuffer | undefined) =>
+    !buffer
+      ? undefined
+      : (Object.entries(LENGTHS).find(([, length]) => Math.abs(buffer.duration - length) < 0.06)?.[0] ?? "other")
   const bufferStart = AudioBufferSourceNode.prototype.start
   AudioBufferSourceNode.prototype.start = function (this: AudioBufferSourceNode, ...args) {
     log({ kind: "buffer", clip: clipOf(this.buffer ?? undefined) })
@@ -63,11 +65,11 @@ export function takeSounds(tab: Tab): Promise<SoundEvent[]> {
 }
 
 export const played = (events: SoundEvent[], clip: string): boolean =>
-  events.some((e) => e.kind === "buffer" && e.clip === clip)
+  events.some((event) => event.kind === "buffer" && event.clip === clip)
 
 export const stopped = (events: SoundEvent[], clip: string): boolean =>
-  events.some((e) => e.kind === "stop" && e.clip === clip)
+  events.some((event) => event.kind === "stop" && event.clip === clip)
 
 /** The notes of the round cues (the countdown's own beeps are higher). */
 export const cueNotes = (events: SoundEvent[]): number[] =>
-  events.filter((e) => e.kind === "osc" && (e.freq ?? 0) < 1500).map((e) => e.freq ?? 0)
+  events.filter((event) => event.kind === "osc" && (event.freq ?? 0) < 1500).map((event) => event.freq ?? 0)

@@ -6,7 +6,7 @@ import { pickRounds, type QuestionBank } from "./round-picking.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 
 const OUTLINES = outlinesFrom(outlinesJson)
-const byId = (id: string) => CATALOGUE.find((q) => q.id === id)!
+const byId = (id: string) => CATALOGUE.find((question) => question.id === id)!
 
 function pick({
   catalogue = CATALOGUE,
@@ -23,19 +23,25 @@ function pick({
   return pickRounds(bank, { mix, mapDetail }, seed)
 }
 
-const ofType = (qs: Question[], type: QuestionType) => qs.filter((q) => q.type === type)
+const ofType = (qs: Question[], type: QuestionType) => qs.filter((question) => question.type === type)
 
 describe("pickRounds", () => {
   it("picks the same rounds for the same seed, and others for another", () => {
     const mix = evenMix(8)
-    expect(pick({ mix }).map((q) => q.id)).toEqual(pick({ mix }).map((q) => q.id))
-    expect(pick({ mix, seed: 43 }).map((q) => q.id)).not.toEqual(pick({ mix }).map((q) => q.id))
+    expect(pick({ mix }).map((question) => question.id)).toEqual(pick({ mix }).map((question) => question.id))
+    expect(pick({ mix, seed: 43 }).map((question) => question.id)).not.toEqual(
+      pick({ mix }).map((question) => question.id)
+    )
   })
 
   it("asks only the types the mix asks for, each question once", () => {
     const picked = pick({ mix: mixOf({ [QuestionType.PLACE]: 3 }) })
-    expect(picked.map((q) => q.type)).toEqual([QuestionType.PLACE, QuestionType.PLACE, QuestionType.PLACE])
-    expect(new Set(picked.map((q) => q.id)).size).toBe(3)
+    expect(picked.map((question) => question.type)).toEqual([
+      QuestionType.PLACE,
+      QuestionType.PLACE,
+      QuestionType.PLACE
+    ])
+    expect(new Set(picked.map((question) => question.id)).size).toBe(3)
   })
 
   it("asks as many of each type as the mix says, never a country twice", () => {
@@ -44,12 +50,12 @@ describe("pickRounds", () => {
     expect(ofType(picked, QuestionType.PLACE)).toHaveLength(3)
     expect(ofType(picked, QuestionType.COUNTRY)).toHaveLength(4)
     expect(ofType(picked, QuestionType.FLAG)).toHaveLength(5)
-    const places = picked.map((q) => q.place)
+    const places = picked.map((question) => question.place)
     expect(new Set(places).size).toBe(places.length)
   })
 
   it("asks as many as the pools hold when the mix asks for more", () => {
-    const places = CATALOGUE.filter((q) => q.type === QuestionType.PLACE).slice(0, 3)
+    const places = CATALOGUE.filter((question) => question.type === QuestionType.PLACE).slice(0, 3)
     expect(pick({ catalogue: places, mix: evenMix(10) })).toHaveLength(3)
     const mix = mixOf({ [QuestionType.PLACE]: 3, [QuestionType.COUNTRY]: 4 })
     expect(pick({ catalogue: places, mix })).toHaveLength(3)
@@ -65,26 +71,30 @@ describe("pickRounds", () => {
   })
 
   it("asks a lake only when the map shows lakes", () => {
-    const features = CATALOGUE.filter((q) => q.type === QuestionType.FEATURE)
-    const lake = features.find((q) => q.feature === FeatureType.LAKE)!
-    const island = features.find((q) => q.feature === FeatureType.ISLAND)!
+    const features = CATALOGUE.filter((question) => question.type === QuestionType.FEATURE)
+    const lake = features.find((question) => question.feature === FeatureType.LAKE)!
+    const island = features.find((question) => question.feature === FeatureType.ISLAND)!
     const asked = (mapDetail: MapDetail) =>
-      pick({ catalogue: [lake, island], mix: mixOf({ [QuestionType.FEATURE]: 2 }), mapDetail }).map((q) => q.id)
+      pick({ catalogue: [lake, island], mix: mixOf({ [QuestionType.FEATURE]: 2 }), mapDetail }).map(
+        (question) => question.id
+      )
     expect(asked(MapDetail.MINIMAL)).toEqual([island.id])
     expect(asked(MapDetail.WATER).sort()).toEqual([island.id, lake.id].sort())
   })
 
   it("does not ask a place again another way", () => {
-    const monaco = CATALOGUE.find((q) => q.type === QuestionType.PLACE && q.place === byId("flag-mc").place)!
+    const monaco = CATALOGUE.find(
+      (question) => question.type === QuestionType.PLACE && question.place === byId("flag-mc").place
+    )!
     const mix = mixOf({ [QuestionType.PLACE]: 1, [QuestionType.FLAG]: 1 })
-    expect(pick({ catalogue: [monaco, byId("flag-mc")], mix }).map((q) => q.id)).toEqual([monaco.id])
+    expect(pick({ catalogue: [monaco, byId("flag-mc")], mix }).map((question) => question.id)).toEqual([monaco.id])
   })
 
   it("keeps a place's country out of the same game when another country will do", () => {
-    const gaborone = CATALOGUE.find((q) => q.wiki === "Gaborone")!
+    const gaborone = CATALOGUE.find((question) => question.wiki === "Gaborone")!
     const catalogue = [gaborone, byId("botswana-region"), byId("germany-region")]
     const mix = mixOf({ [QuestionType.PLACE]: 1, [QuestionType.COUNTRY]: 1 })
     for (let seed = 1; seed <= 10; seed++)
-      expect(pick({ catalogue, mix, seed }).map((q) => q.id)).toContain("germany-region")
+      expect(pick({ catalogue, mix, seed }).map((question) => question.id)).toContain("germany-region")
   })
 })

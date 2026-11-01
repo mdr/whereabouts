@@ -31,7 +31,7 @@ export class PlayerList {
   }
 
   async names(): Promise<string[]> {
-    return (await this.players()).map((p) => p.name)
+    return (await this.players()).map((player) => player.name)
   }
 
   async waitForPlayer(name: string, timeout?: Ms): Promise<void> {

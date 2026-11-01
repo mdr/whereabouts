@@ -51,7 +51,7 @@ export class LobbyPage extends Screen {
       await until(
         `${type} count ${next}`,
         () => text(value),
-        (v) => v === next
+        (count) => count === next
       )
     }
   }
@@ -93,7 +93,10 @@ export class LobbyPage extends Screen {
     await until(
       `setup summary ${JSON.stringify(expected)}`,
       () => this.setupSummary(),
-      (s) => s.rounds === expected.rounds && s.seconds === expected.seconds && s.questions === expected.questions
+      (summary) =>
+        summary.rounds === expected.rounds &&
+        summary.seconds === expected.seconds &&
+        summary.questions === expected.questions
     )
   }
 

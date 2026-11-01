@@ -42,7 +42,7 @@ describe("paintsOf", () => {
 
   it("puts the best last, to draw on top, each in its player's colour", () => {
     const paints = paintsOf([result("alice", 800), result("bob", 300)], players)
-    expect(paints.map((p) => p.colour)).toEqual([colourCss(bob.colour), colourCss(alice.colour)])
+    expect(paints.map((paint) => paint.colour)).toEqual([colourCss(bob.colour), colourCss(alice.colour)])
     expect(paints[1]!.features[0]!.properties).toMatchObject({ colour: colourCss(alice.colour) })
   })
 })

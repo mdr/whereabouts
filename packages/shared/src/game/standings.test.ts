@@ -46,11 +46,11 @@ describe("finalStandings", () => {
 
 describe("rankAmong", () => {
   it("gives tied totals one rank and skips the next", () => {
-    const a = makePlayerSeat({ scores: [50] })
-    const b = makePlayerSeat({ scores: [50] })
-    const c = makePlayerSeat({ scores: [10] })
-    const all = [a, b, c]
-    expect(all.map((p) => rankAmong(p, all))).toEqual([1, 1, 3])
+    const first = makePlayerSeat({ scores: [50] })
+    const second = makePlayerSeat({ scores: [50] })
+    const third = makePlayerSeat({ scores: [10] })
+    const all = [first, second, third]
+    expect(all.map((player) => rankAmong(player, all))).toEqual([1, 1, 3])
   })
 })
 
@@ -62,19 +62,19 @@ describe("rosterView", () => {
     const wes = makeSpectatorSeat({ name: "Wes" as PlayerName })
     const aaa = makeSpectatorSeat({ name: "Aaa" as PlayerName })
     const { players, spectators } = rosterView([zed, wes, amy, aaa, top], undefined, () => false)
-    expect(players.map((v) => [v.name, v.rank])).toEqual([
+    expect(players.map((view) => [view.name, view.rank])).toEqual([
       ["Top", 1],
       ["Amy", 2],
       ["Zed", 2]
     ])
-    expect(spectators.map((v) => v.name)).toEqual(["Aaa", "Wes"])
+    expect(spectators.map((view) => view.name)).toEqual(["Aaa", "Wes"])
   })
 
   it("marks the host and who has locked in", () => {
     const host = makePlayerSeat()
     const other = makePlayerSeat()
-    const { players } = rosterView([host, other], host.token, (t) => t === other.token)
-    expect(players.find((v) => v.id === host.id)).toMatchObject({ isHost: true, locked: false })
-    expect(players.find((v) => v.id === other.id)).toMatchObject({ isHost: false, locked: true })
+    const { players } = rosterView([host, other], host.token, (token) => token === other.token)
+    expect(players.find((view) => view.id === host.id)).toMatchObject({ isHost: true, locked: false })
+    expect(players.find((view) => view.id === other.id)).toMatchObject({ isHost: false, locked: true })
   })
 })

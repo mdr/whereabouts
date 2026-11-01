@@ -49,9 +49,9 @@ const POOL = ["kyoto", "lima", "oslo"].map((id) => makePlace(id))
 function blob(at: LatLon) {
   const h3 = latLngToCell(at.lat, at.lon, resolutionForTolerance(50))
   return buildDistribution(
-    gridDisk(h3, 2).map((h) => {
-      const [lat, lon] = cellToLatLng(h)
-      return { lat, lon, intensity: 1, area: cellArea(h), h3: h }
+    gridDisk(h3, 2).map((cell) => {
+      const [lat, lon] = cellToLatLng(cell)
+      return { lat, lon, intensity: 1, area: cellArea(cell), h3: cell }
     }),
     0.05
   )
@@ -59,9 +59,14 @@ function blob(at: LatLon) {
 
 /** Answer the current question: on its answer, or a pass. */
 function play(run: PaintingRun, pass = false): RevealingRun {
-  const q = currentQuestion(run)
-  if (q.answer.type !== AnswerType.POINT) throw new Error("a point question")
-  return submitRound(run, pass ? undefined : blob(q.answer.at), scoredAnswer(q.answer, new Map()), DEFAULT_KERNEL)
+  const question = currentQuestion(run)
+  if (question.answer.type !== AnswerType.POINT) throw new Error("a point question")
+  return submitRound(
+    run,
+    pass ? undefined : blob(question.answer.at),
+    scoredAnswer(question.answer, new Map()),
+    DEFAULT_KERNEL
+  )
 }
 
 /** Move on from a reveal that isn't the last. */
@@ -123,7 +128,7 @@ describe("a practice run", () => {
     expect(nextLabel(revealing)).toBe("Finish")
     const run = nextRound(revealing)
     expect(run.type).toBe(PracticePhase.DONE)
-    expect(run.results.map((r) => r.question)).toEqual(run.questions)
+    expect(run.results.map((result) => result.question)).toEqual(run.questions)
   })
 
   it("totals its rounds out of a thousand a question", () => {

@@ -33,9 +33,9 @@ describe("describeDisconnect", () => {
   })
 
   it("explains a destroyed room in player terms", () => {
-    const r = describeDisconnect(1000, "room_destroyed")
-    expect(r.title).toBe("That game has ended")
-    expect(r.detail).toContain("Everyone left")
+    const description = describeDisconnect(1000, "room_destroyed")
+    expect(description.title).toBe("That game has ended")
+    expect(description.detail).toContain("Everyone left")
   })
 
   it("offers hosting under a missing code, and forgets the seat of a removed player", () => {
@@ -81,13 +81,13 @@ class FakeClient implements GameClient {
   send(topic: string): void {
     this.sent.push(topic)
   }
-  on(event: string, listener: (arg: never) => void): this {
-    this.listeners.set(event, listener as (arg?: unknown) => void)
+  on(event: string, listener: (payload: never) => void): this {
+    this.listeners.set(event, listener as (payload?: unknown) => void)
     return this
   }
 
-  emit(event: string, arg?: unknown): void {
-    this.listeners.get(event)?.(arg)
+  emit(event: string, payload?: unknown): void {
+    this.listeners.get(event)?.(payload)
   }
   open(): void {
     this.connected = true
@@ -354,7 +354,7 @@ describe("Connection liveness", () => {
     game.client.state(makeLobbyView({ code: roomCode("WXYZ") }))
     return game
   }
-  const pings = (client: FakeClient) => client.sent.filter((t) => t === "ping").length
+  const pings = (client: FakeClient) => client.sent.filter((message) => message === "ping").length
 
   it("pings now and then, and carries on while the server answers", () => {
     const { conn, client, clients } = inGame()
