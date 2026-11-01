@@ -405,7 +405,14 @@ export default defineConfig({
         plugins: ["vitest"]
       },
       {
-        files: ["**/*.test.{ts,tsx}", "**/*.config.{js,ts}"],
+        files: ["**/*.test.{ts,tsx}", "packages/client/browser/**/*.spec.ts"],
+        rules: {
+          "max-lines": ["error", { max: 600, skipBlankLines: true, skipComments: true }],
+          "sonarjs/cognitive-complexity": "off"
+        }
+      },
+      {
+        files: ["**/*.config.{js,ts}"],
         rules: {
           "max-lines": "off",
           "sonarjs/cognitive-complexity": "off"
