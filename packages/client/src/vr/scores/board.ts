@@ -3,15 +3,16 @@
  * round's scores. Drawn on a canvas rather than a panel, for the awards'
  * emoji, which the panels' font lacks.
  */
+import type { CssColour } from "@whereabouts/shared/colours"
 import { CanvasTexture, Mesh, MeshBasicMaterial, PlaneGeometry, SRGBColorSpace, Vector3 } from "three"
 import type { Metres } from "@whereabouts/shared/units"
 
 export interface VrBoard {
-  awards: { emoji: string; title: string; line: { text: string; colour?: string }[] }[]
+  awards: { emoji: string; title: string; line: { text: string; colour?: CssColour }[] }[]
   /** In finishing order, as the rounds' scores are. */
-  players: { name: string; colour: string }[]
+  players: { name: string; colour: CssColour }[]
   /** Each round's answer, and what kind of question it was in its colour. */
-  rounds: { label: string; type: string; colour: string; scores: (number | undefined)[] }[]
+  rounds: { label: string; type: string; colour: CssColour; scores: (number | undefined)[] }[]
 }
 
 const W = 1400

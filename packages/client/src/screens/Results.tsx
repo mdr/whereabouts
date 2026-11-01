@@ -1,3 +1,4 @@
+import type { CssColour } from "@whereabouts/shared/colours"
 import { colourCss } from "@whereabouts/shared/colours"
 import type { Award } from "@whereabouts/shared/awards/awards"
 import type { FinalStanding, GameView, PlayedRound, PlayerView } from "@whereabouts/shared/protocol"
@@ -370,7 +371,7 @@ function Awards({ awards, byId }: { awards: Award[]; byId: Map<string, PlayerVie
 }
 
 /** An award's line in pieces, each player's name in their colour. */
-function awardParts(line: string, players: (PlayerView | undefined)[]): { text: string; colour?: string }[] {
+function awardParts(line: string, players: (PlayerView | undefined)[]): { text: string; colour?: CssColour }[] {
   return line
     .split(/(\{\d\})/)
     .filter((part) => part !== "")

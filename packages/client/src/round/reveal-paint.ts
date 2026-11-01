@@ -1,12 +1,12 @@
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
-import { colourCss } from "@whereabouts/shared/colours"
+import { colourCss, type CssColour } from "@whereabouts/shared/colours"
 import type { H3Res } from "@whereabouts/shared/h3"
 import type { PaintSubmission, PlayerView, RoundResultView } from "@whereabouts/shared/protocol"
 
 /** A player's paint at a reveal, in their colour, ready to draw. */
 export interface PlayerPaint {
   layer: PaintLayer
-  colour: string
+  colour: CssColour
   features: GeoJSON.Feature[]
 }
 
@@ -20,7 +20,7 @@ export function paintLayer(res: H3Res, paint: PaintSubmission): PaintLayer {
   return layer
 }
 
-function playerPaint(res: H3Res, paint: PaintSubmission, colour: string): PlayerPaint {
+function playerPaint(res: H3Res, paint: PaintSubmission, colour: CssColour): PlayerPaint {
   const cached = coloured.get(paint)
   if (cached?.colour === colour) return cached
   const layer = paintLayer(res, paint)

@@ -1,4 +1,5 @@
 /** What the screens hand the headset to show. */
+import type { CssColour } from "@whereabouts/shared/colours"
 import type { HintAxis, HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { MapDetail } from "@whereabouts/shared/protocol"
@@ -37,7 +38,7 @@ export interface VrRound {
   /** A lake or sea round: trimming drops paint on land, not at sea. */
   water: boolean
   /** Your paint's colour in a game, as the others see it; the map's ramp in practice. */
-  colour?: string
+  colour?: CssColour
   hint: HintBand | undefined
   hintsLeft: HintsLeft
   useHint(axis: HintAxis): void
@@ -75,7 +76,7 @@ export interface VrReveal {
   fact?: string
   scoreLine: string
   /** The paint shown in players' colours, as the score table picks it; your own paint when absent. */
-  paints?: { layer: PaintLayer; colour: string }[]
+  paints?: { layer: PaintLayer; colour: CssColour }[]
   table?: VrTable
   note?: string
   actions: VrAction[]

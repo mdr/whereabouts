@@ -1,4 +1,5 @@
 /** How each type of question is named and coloured, wherever the client shows one. */
+import type { CssColour } from "@whereabouts/shared/colours"
 import { QuestionType } from "@whereabouts/shared/questions"
 
 interface QuestionTypeLook {
@@ -8,7 +9,7 @@ interface QuestionTypeLook {
   /** One round's worth, as a results row names it. */
   name: string
   unit: [one: string, many: string]
-  colour: string
+  colour: CssColour
 }
 
 export const QUESTION_TYPE_LOOKS: Record<QuestionType, QuestionTypeLook> = {

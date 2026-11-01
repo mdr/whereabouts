@@ -2,6 +2,7 @@
  * Droplets from the spray can, across the spot it paints, and crumbs off
  * the eraser. A fixed pool of points, the dead ones fully transparent.
  */
+import type { CssColour } from "@whereabouts/shared/colours"
 import { BufferAttribute, BufferGeometry, CanvasTexture, Color, Points, PointsMaterial, Vector3 } from "three"
 import type { Metres, Seconds } from "@whereabouts/shared/units"
 
@@ -71,7 +72,7 @@ export class SprayParticles {
   }
 
   /** Droplets from `from` to random points of the spot of radius `spot` round `to`. */
-  spray(dt: Seconds, rate: number, from: Vector3, to: Vector3, spot: Metres, colour: string): void {
+  spray(dt: Seconds, rate: number, from: Vector3, to: Vector3, spot: Metres, colour: CssColour): void {
     this.tint.set(colour)
     const flight = from.distanceTo(to) / DROPLET_SPEED
     this.emit(dt * rate, (i) => {

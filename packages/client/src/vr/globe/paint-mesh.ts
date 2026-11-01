@@ -2,6 +2,7 @@
  * The paint on the VR globe as geometry, one coloured fan per cell, so it
  * stays as sharp as the cells themselves at any zoom.
  */
+import type { CssColour } from "@whereabouts/shared/colours"
 import { BufferAttribute, BufferGeometry, Color, SRGBColorSpace, Vector3 } from "three"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal } from "./sphere"
@@ -11,7 +12,7 @@ const c = new Color()
 const p = new Vector3()
 const mid = new Vector3()
 
-function rgb(hex: string): [r: number, g: number, b: number] {
+function rgb(hex: CssColour): [r: number, g: number, b: number] {
   const n = parseInt(hex.slice(1), 16)
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]
 }
@@ -33,10 +34,10 @@ function rampColour(theme: Theme, v: number, out: Color): number {
  * map shows one (GameMap.setPaintColour): more opaque the heavier it is.
  */
 export function paintGeometry(
-  paint: GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: string }>,
+  paint: GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: CssColour }>,
   theme: Theme,
   radius: Metres,
-  colour?: string
+  colour?: CssColour
 ): BufferGeometry {
   const rings = paint.features.map((f) => {
     const ring = f.geometry.coordinates[0]!

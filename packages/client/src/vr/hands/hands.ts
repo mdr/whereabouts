@@ -1,4 +1,5 @@
 /** The two controllers: gripping, choosing tools, and spraying. */
+import type { CssColour } from "@whereabouts/shared/colours"
 import { InputComponent, Vector3, type Object3D, type World } from "@iwsdk/core"
 import { THEME } from "../../map/themes"
 import { Tool } from "../../paint/tool"
@@ -30,7 +31,7 @@ export class Hands {
     this.stroke.end()
   }
 
-  setColour(colour: string | undefined): void {
+  setColour(colour: CssColour | undefined): void {
     for (const h of HANDS) this.tools[h].setColour(colour)
   }
 

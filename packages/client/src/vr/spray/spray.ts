@@ -6,6 +6,7 @@
  * the globe shows where the spot would land before anything happens. The
  * eraser also rubs out wherever its tip touches the globe.
  */
+import type { CssColour } from "@whereabouts/shared/colours"
 import {
   BufferGeometry,
   DoubleSide,
@@ -66,7 +67,7 @@ export class HandTool {
   private readonly spot: Mesh<RingGeometry, MeshBasicMaterial>
   private readonly particles = new SprayParticles()
   /** The paint's colour, when a player has one of their own. */
-  private colour: string | undefined = undefined
+  private colour: CssColour | undefined = undefined
   private lastNow: Seconds | undefined = undefined
   private readonly ray: Object3D
   private readonly grip: Object3D
@@ -152,7 +153,7 @@ export class HandTool {
     return this.particles.live
   }
 
-  setColour(colour: string | undefined): void {
+  setColour(colour: CssColour | undefined): void {
     this.colour = colour
   }
 

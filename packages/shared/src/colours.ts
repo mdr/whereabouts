@@ -9,6 +9,10 @@
  */
 import { z } from "zod"
 
+declare const css: unique symbol
+/** A CSS colour such as "#4fc3f7": a plain string is accepted where one is wanted. */
+export type CssColour = string & { readonly [css]?: "CssColour" }
+
 export const PLAYER_COLOURS = [
   "#4fc3f7", // sky
   "#f06292", // pink
@@ -39,6 +43,6 @@ export type PlayerColour = z.infer<typeof PlayerColourSchema>
 export const playerColour = (n: number): PlayerColour => PlayerColourSchema.parse(n)
 
 /** The CSS colour to draw a player in; grey for a spectator. */
-export function colourCss(c: PlayerColour | undefined): string {
+export function colourCss(c: PlayerColour | undefined): CssColour {
   return c === undefined ? "#888888" : PLAYER_COLOURS[c]!
 }

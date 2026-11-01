@@ -3,31 +3,33 @@
  * ramp for the painted distribution, and picks a contrasting colour for the
  * answer marker, tolerance rings, and cursor.
  */
+import type { CssColour } from "@whereabouts/shared/colours"
+
 export interface Theme {
   id: string
   label: string
   /** Basemap */
-  land: string
-  water: string
-  wood: string
-  ice: string
-  waterway: string
-  border: string
+  land: CssColour
+  water: CssColour
+  wood: CssColour
+  ice: CssColour
+  waterway: CssColour
+  border: CssColour
   /** National borders on the reveal, drawn bolder than while guessing. */
-  revealBorder: string
-  road: string
-  urban: string
-  labelText: string
-  labelHalo: string
+  revealBorder: CssColour
+  road: CssColour
+  urban: CssColour
+  labelText: CssColour
+  labelHalo: CssColour
   /** Paint ramp: colours at intensity 0, 1/3, 2/3, 1 (relative to the peak). */
-  ramp: [string, string, string, string]
+  ramp: [CssColour, CssColour, CssColour, CssColour]
   /** Fill opacity at intensity 0 and 1. */
   rampOpacity: [atZero: number, atPeak: number]
   /** Answer marker. */
-  answer: string
-  answerStroke: string
+  answer: CssColour
+  answerStroke: CssColour
   /** Cursor brush ring. */
-  brush: string
+  brush: CssColour
 }
 
 /** The chosen theme. The alternatives below were playtested and passed over. */

@@ -1,4 +1,5 @@
 /** The score table, to the right of the globe: a round's scores, or the final standings. */
+import type { CssColour } from "@whereabouts/shared/colours"
 import {
   Group,
   PanelDocument,
@@ -15,7 +16,7 @@ import type { Vec3 } from "../probe"
 
 interface VrTableRow {
   /** A player's colour, for their swatch. */
-  colour?: string
+  colour?: CssColour
   name: string
   /** What happened this round: "+455", "passed". */
   detail?: string

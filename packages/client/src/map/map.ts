@@ -1,3 +1,4 @@
+import type { CssColour } from "@whereabouts/shared/colours"
 import {
   Map as MapLibreMap,
   NavigationControl,
@@ -389,7 +390,7 @@ export class GameMap {
    * Colour the paint layer with a single hue (a player's colour) instead of
    * the theme ramp. Pass undefined to restore the ramp.
    */
-  setPaintColour(colour: string | undefined): void {
+  setPaintColour(colour: CssColour | undefined): void {
     if (!this.map.getLayer(PAINT_FILL)) return
     if (colour === undefined) {
       if (this.theme) this.applyPaintRamp(this.theme)

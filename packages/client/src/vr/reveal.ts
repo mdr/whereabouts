@@ -1,4 +1,5 @@
 /** How the headset shows a round's answer: where it turns the globe, and whose paint it shows. */
+import type { CssColour } from "@whereabouts/shared/colours"
 import { Vector3 } from "three"
 import type { H3Cell } from "@whereabouts/shared/h3"
 import type { LatLon } from "@whereabouts/shared/geo"
@@ -47,8 +48,8 @@ export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: 
 
 /** Several players' paint as one collection, each cell in its player's colour. */
 export function colouredPaint(
-  paints: { layer: PaintLayer; colour: string }[]
-): GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: string }> {
+  paints: { layer: PaintLayer; colour: CssColour }[]
+): GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: CssColour }> {
   return {
     type: "FeatureCollection",
     features: paints.flatMap(({ layer, colour }) =>

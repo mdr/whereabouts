@@ -3,6 +3,7 @@
  * changes (PaintView) and painted there with the brush (PaintInput). Screens
  * configure it and read its signals; it never knows about game phases.
  */
+import type { CssColour } from "@whereabouts/shared/colours"
 import type { PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { GameMap } from "../map/map"
@@ -46,7 +47,7 @@ export class PaintController extends PaintModel {
     this.view.draw()
   }
 
-  showLayers(entries: { layer: PaintLayer; colour: string }[]): GeoJSON.FeatureCollection {
+  showLayers(entries: { layer: PaintLayer; colour: CssColour }[]): GeoJSON.FeatureCollection {
     return this.view.showLayers(entries)
   }
 
@@ -54,7 +55,7 @@ export class PaintController extends PaintModel {
     return this.view.showColoured(features)
   }
 
-  showOwn(colour?: string): void {
+  showOwn(colour?: CssColour): void {
     this.view.showOwn(colour)
   }
 

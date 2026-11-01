@@ -1,4 +1,5 @@
 /** Drawing paint on the map: our own as it changes, or other players'. */
+import type { CssColour } from "@whereabouts/shared/colours"
 import type { PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { GameMap } from "../map/map"
 import type { PaintModel } from "./paint-model"
@@ -57,7 +58,7 @@ export class PaintView {
    * entries draw underneath later ones. Returns the combined GeoJSON so the
    * caller can frame it.
    */
-  showLayers(entries: { layer: PaintLayer; colour: string }[]): GeoJSON.FeatureCollection {
+  showLayers(entries: { layer: PaintLayer; colour: CssColour }[]): GeoJSON.FeatureCollection {
     return this.showColoured(
       entries.flatMap(({ layer, colour }) =>
         layer.toGeoJSON().features.map((f) => ({ ...f, properties: { ...f.properties, colour } }))
@@ -74,7 +75,7 @@ export class PaintView {
   }
 
   /** Put our own paint back on the map, in a player colour or the theme ramp. */
-  showOwn(colour?: string): void {
+  showOwn(colour?: CssColour): void {
     this.gameMap.setPaintColour(colour)
     this.gameMap.setPaint(this.model.layer.toGeoJSON())
   }
