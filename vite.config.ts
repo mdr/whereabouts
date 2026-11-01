@@ -100,6 +100,7 @@ export default defineConfig({
       "max-lines": ["error", { max: 400, skipBlankLines: true, skipComments: true }],
       "max-depth": ["error", 4],
       "sonarjs/cognitive-complexity": ["error", 15],
+      "folders/max-entries": ["error", 30],
       "eslint-js/no-restricted-syntax": ["error", ...noReexports],
       "no-restricted-imports": [
         "error",
@@ -408,7 +409,8 @@ export default defineConfig({
         specifier: "vite-plus/oxlint-plugin"
       },
       { name: "eslint-js", specifier: "oxlint-plugin-eslint" },
-      { name: "sonarjs", specifier: "eslint-plugin-sonarjs" }
+      { name: "sonarjs", specifier: "eslint-plugin-sonarjs" },
+      { name: "folders", specifier: "./lint/folder-size.mjs" }
     ]
   },
   fmt: {
