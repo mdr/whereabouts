@@ -1,0 +1,19 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  background: var(--inset-bg);
+  border-radius: 10px;
+  padding: 16px;
+
+  & h2 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  & h2:not(:first-child) {
+    margin-top: 6px;
+  }
+}

@@ -1,5 +1,9 @@
 import { QUESTION_TYPES, type QuestionType } from "@whereabouts/shared/questions"
-import { lobbyTestIds, setupSummaryTestIds } from "../../src/screens/lobby/LobbyTestIds.ts"
+import { lobbyTestIds } from "../../src/screens/lobby/LobbyTestIds.ts"
+import { invitePanelTestIds } from "../../src/screens/lobby/invite/InvitePanelTestIds.ts"
+import { hostSettingsTestIds } from "../../src/screens/lobby/setup/HostSettingsTestIds.ts"
+import { setupPanelTestIds } from "../../src/screens/lobby/setup/SetupPanelTestIds.ts"
+import { setupSummaryTestIds } from "../../src/screens/lobby/setup/SetupSummaryTestIds.ts"
 import { mixEditorTestIds } from "../../src/ui/setup/MixEditorTestIds.ts"
 import { pillsTestIds, stepperTestIds } from "../../src/ui/setup/ControlsTestIds.ts"
 import { PlayerList } from "./components/PlayerList.ts"
@@ -30,7 +34,7 @@ export class LobbyPage extends Screen {
   }
 
   async code(): Promise<string> {
-    return text(this.page.getByTestId(lobbyTestIds.code))
+    return text(this.page.getByTestId(invitePanelTestIds.code))
   }
 
   /** Host: set how many rounds ask this kind of question, one step at a time. */
@@ -59,7 +63,7 @@ export class LobbyPage extends Screen {
 
   async chooseSecondsPerRound(seconds: Seconds): Promise<void> {
     await byTestIdWith(
-      this.page.getByTestId(lobbyTestIds.secondsSetting),
+      this.page.getByTestId(hostSettingsTestIds.secondsSetting),
       pillsTestIds.option,
       "value",
       String(seconds * 1000)
@@ -69,8 +73,8 @@ export class LobbyPage extends Screen {
   /** Whether this player has the host's setup controls. */
   async canChangeSetup(): Promise<boolean> {
     const controls =
-      (await this.page.getByTestId(lobbyTestIds.questionsSetting).count()) +
-      (await this.page.getByTestId(lobbyTestIds.secondsSetting).count())
+      (await this.page.getByTestId(hostSettingsTestIds.questionsSetting).count()) +
+      (await this.page.getByTestId(hostSettingsTestIds.secondsSetting).count())
     return controls > 0
   }
 
@@ -94,7 +98,7 @@ export class LobbyPage extends Screen {
 
   /** Host only. */
   async startGame(): Promise<RoundPage> {
-    await this.page.getByTestId(lobbyTestIds.startButton).click()
+    await this.page.getByTestId(setupPanelTestIds.startButton).click()
     return RoundPage.whenShown(this.tab)
   }
 

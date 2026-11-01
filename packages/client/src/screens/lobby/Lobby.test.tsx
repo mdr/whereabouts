@@ -10,13 +10,17 @@ import { type Connection, type ConnectionState, ConnectionStatus } from "../../n
 import { hostSetup, joinedCode, startOnPan } from "../../settings/settings"
 import { route } from "../../router"
 import { Lobby } from "./Lobby"
-import { lobbyTestIds, setupSummaryTestIds } from "./LobbyTestIds"
+import { lobbyTestIds } from "./LobbyTestIds"
+import { rosterTestIds } from "./invite/RosterTestIds"
+import { roleSwitchTestIds } from "./invite/RoleSwitchTestIds"
+import { deviceSwitchesTestIds } from "./setup/DeviceSwitchesTestIds"
+import { setupSummaryTestIds } from "./setup/SetupSummaryTestIds"
 import { confirmDialogTestIds } from "../../ui/ConfirmDialogTestIds"
 import { pillsTestIds, stepperTestIds } from "../../ui/setup/ControlsTestIds"
 import { mapDetailPickerTestIds } from "../../ui/setup/MapDetailPickerTestIds"
 import { mixEditorTestIds } from "../../ui/setup/MixEditorTestIds"
 import { playerListTestIds } from "../../ui/players/PlayerListTestIds"
-import s from "./Lobby.module.css"
+import setupSummary from "./setup/SetupSummary.module.css"
 import players from "../../ui/players/Players.module.css"
 import { makePlayer, makeLobbyView } from "../../test-view"
 
@@ -73,7 +77,7 @@ describe("Lobby", () => {
   it("offers a per-device choice to start rounds on the Pan tool, to hosts and guests alike", () => {
     for (const isHost of [true, false]) {
       const { container, unmount } = render(<Lobby conn={conn} view={view(isHost)} />)
-      const box = inside(container).getByTestId<HTMLInputElement>(lobbyTestIds.startOnPanSwitch)
+      const box = inside(container).getByTestId<HTMLInputElement>(deviceSwitchesTestIds.startOnPanSwitch)
       expect(box.checked).toBe(false)
       fireEvent.click(box)
       expect(startOnPan.value).toBe(true)
@@ -85,7 +89,7 @@ describe("Lobby", () => {
   it("shows the saved choice", () => {
     startOnPan.value = true
     const { container } = render(<Lobby conn={conn} view={view(false)} />)
-    expect(inside(container).getByTestId<HTMLInputElement>(lobbyTestIds.startOnPanSwitch).checked).toBe(true)
+    expect(inside(container).getByTestId<HTMLInputElement>(deviceSwitchesTestIds.startOnPanSwitch).checked).toBe(true)
   })
 })
 
@@ -122,7 +126,7 @@ describe("Lobby setup", () => {
       "Minimalmap · coastlines only"
     ])
     // Nothing is highlighted on first load.
-    expect(container.querySelectorAll(`.${s.changed!}`)).toHaveLength(0)
+    expect(container.querySelectorAll(`.${setupSummary.changed!}`)).toHaveLength(0)
   })
 
   it("highlights only the value the host just changed", () => {
@@ -130,7 +134,9 @@ describe("Lobby setup", () => {
     const next = view(false)
     next.config = { ...next.config, roundLength: 30_000 }
     rerender(<Lobby conn={conn} view={next} />)
-    expect([...container.querySelectorAll(`.${s.changed!}`)].map((t) => t.textContent)).toEqual(["30 sper round"])
+    expect([...container.querySelectorAll(`.${setupSummary.changed!}`)].map((t) => t.textContent)).toEqual([
+      "30 sper round"
+    ])
   })
 })
 
@@ -177,19 +183,19 @@ describe("Lobby spectators", () => {
     expect(lists[0]!.textContent).toContain("Bob")
     expect(lists[1]!.textContent).toContain("Sam")
     expect(lists[1]!.querySelectorAll(`.${players.watcher!}`)).not.toHaveLength(0)
-    expect(inside(container).getByTestId(lobbyTestIds.watchingHeading).textContent).toContain("1/8")
+    expect(inside(container).getByTestId(rosterTestIds.watchingHeading).textContent).toContain("1/8")
   })
 
   it("lets a player step back to watch, and a spectator take a seat", () => {
     const { container, unmount } = render(<Lobby conn={conn} view={view(false)} />)
-    fireEvent.click(inside(container).getByTestId(lobbyTestIds.roleSwitch).querySelector("button")!)
+    fireEvent.click(inside(container).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!)
     expect(setRole).toHaveBeenLastCalledWith(true)
     unmount()
     const v = view(false)
     v.you.watching = true
     v.players = [person("p1", "Alice", true)]
     const { container: c2 } = render(<Lobby conn={conn} view={v} />)
-    const play = inside(c2).getByTestId(lobbyTestIds.roleSwitch).querySelector("button")!
+    const play = inside(c2).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!
     expect(play.textContent).toContain("Play instead")
     fireEvent.click(play)
     expect(setRole).toHaveBeenLastCalledWith(false)
@@ -203,7 +209,7 @@ describe("Lobby spectators", () => {
       person("p1", "Alice", true)
     ]
     const { container } = render(<Lobby conn={conn} view={v} />)
-    expect(inside(container).getByTestId(lobbyTestIds.roleSwitch).querySelector("button")!.disabled).toBe(true)
+    expect(inside(container).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!.disabled).toBe(true)
     expect(container.textContent).toContain("All 16 player seats are taken")
   })
 })

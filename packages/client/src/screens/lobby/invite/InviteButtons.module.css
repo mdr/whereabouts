@@ -1,0 +1,8 @@
+.invite {
+  display: flex;
+  gap: 8px;
+
+  & button {
+    flex: 1;
+  }
+}
