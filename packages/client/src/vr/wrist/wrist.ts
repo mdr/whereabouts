@@ -31,7 +31,7 @@ const at = new Vector3()
 const palm = new Vector3()
 const up = new Vector3(0, 1, 0)
 
-function hintOffer(left: HintsLeft): string {
+const hintOffer = (left: HintsLeft): string => {
   if (left === HintAllowance.UNLIMITED) return "A band the answer lies in, as many as you like in practice"
   if (left === HintAllowance.NONE) return "This game has no hints"
   if (left === 0) return "No hints left this game"

@@ -5,7 +5,7 @@ import { cx } from "../cx"
 import scoreStyles from "./Score.module.css"
 
 /** A reveal's score, under the question; on a phone, at the top of the sheet. */
-export function ScoreCard({
+export const ScoreCard = ({
   score,
   label,
   testIds,
@@ -15,7 +15,7 @@ export function ScoreCard({
   label: ComponentChildren
   testIds: { scoreCard?: string; score?: string }
   children?: ComponentChildren
-}) {
+}) => {
   return (
     <Card class={cx(scoreStyles.score, scoreStyles.reveal)} data-testid={testIds.scoreCard}>
       <div class={scoreStyles.big} data-testid={testIds.score}>

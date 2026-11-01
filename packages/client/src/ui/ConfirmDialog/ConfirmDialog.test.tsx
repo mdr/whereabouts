@@ -10,7 +10,7 @@ describe("ConfirmDialog", () => {
     expect(screen.queryAllByTestId(confirmDialogTestIds.dialog)).toHaveLength(0)
   })
 
-  function renderKick() {
+  const renderKick = () => {
     const calls = { confirmed: 0, closed: 0 }
     render(<ConfirmDialog request={kickRequest("Bob", () => calls.confirmed++)} onClose={() => calls.closed++} />)
     return calls

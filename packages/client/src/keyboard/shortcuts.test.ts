@@ -12,7 +12,7 @@ const press = (key: string, mods: Partial<KeyPress> = {}): KeyPress => ({
   ...mods
 })
 
-function makeTarget({ enabled = true, canFill = true } = {}) {
+const makeTarget = ({ enabled = true, canFill = true } = {}) => {
   return {
     enabled: () => enabled,
     canFill: () => canFill,

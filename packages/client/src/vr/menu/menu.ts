@@ -220,7 +220,7 @@ export class Menu {
   }
 }
 
-function uikitProperties({ shown, text, disabled }: PanelElement) {
+const uikitProperties = ({ shown, text, disabled }: PanelElement) => {
   return {
     ...(shown !== undefined && { display: shown ? ("flex" as const) : ("none" as const) }),
     ...(text !== undefined && { text }),

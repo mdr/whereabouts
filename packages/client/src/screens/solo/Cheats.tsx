@@ -6,7 +6,7 @@ import kit from "../../ui/kit.module.css"
 import { cheatLiveScore, soloKernelId } from "../../settings/settings"
 import { CopyCase } from "./CopyCase/CopyCase"
 
-export function Cheats({
+export const Cheats = ({
   question,
   answer,
   kernel
@@ -14,7 +14,7 @@ export function Cheats({
   question: Question
   answer: ScoredAnswer
   kernel: ChoosableKernel
-}) {
+}) => {
   return (
     <Card title="Cheats">
       <label class={kit.check}>

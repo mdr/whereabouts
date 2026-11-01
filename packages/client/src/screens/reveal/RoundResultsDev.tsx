@@ -9,13 +9,13 @@ import { HostTag } from "../../ui/players/HostTag/HostTag"
 import { ScoreParts } from "../../ui/round/ScoreParts"
 
 /** Developer-only: how each player's score was made up. */
-export function RoundResultsDev({
+export const RoundResultsDev = ({
   results,
   byId
 }: {
   results: RevealView["results"]
   byId: ReadonlyMap<PlayerId, PlayingPlayerView>
-}) {
+}) => {
   return (
     <Card title="Round results">
       <ul class={kit.results}>
@@ -33,7 +33,7 @@ export function RoundResultsDev({
   )
 }
 
-function PartsLine({ parts }: { parts: AnswerParts }) {
+const PartsLine = ({ parts }: { parts: AnswerParts }) => {
   if (parts.type === AnswerType.POINT) return <ScoreParts A={parts.A} B={parts.B} />
   return (
     <span class={kit.parts}>

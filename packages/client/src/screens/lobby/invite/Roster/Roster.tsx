@@ -9,7 +9,7 @@ import { rosterTestIds } from "./RosterTestIds"
 import styles from "./Roster.module.css"
 
 /** Players, then (if any) the watchers under their own heading. */
-export function Roster({
+export const Roster = ({
   conn,
   view,
   ask,
@@ -19,7 +19,7 @@ export function Roster({
   view: GameView
   ask: (request: ConfirmRequest) => void
   onRename: () => void
-}) {
+}) => {
   const host = view.you.isHost
   const { players, spectators: watchers } = view
   const list = (people: PlayerView[]) => (

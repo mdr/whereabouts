@@ -50,7 +50,7 @@ import { LiveScore } from "./LiveScore/LiveScore"
 import { RevealScore } from "./RevealScore/RevealScore"
 import { SoloDone } from "./SoloDone"
 
-export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) {
+export const SoloGame = ({ pool, outlines }: { pool: Question[]; outlines: Outlines }) => {
   const paint = usePaint()
   const [run, setRun] = useState<PracticeRun>(() => startRun(pool, Date.now()))
   const { questions, index } = run
@@ -115,7 +115,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
   })
 
   // With nothing painted, a pass: it scores PASS_SCORE, as in a game.
-  function submit() {
+  const submit = () => {
     if (run.type !== PracticePhase.PAINT) return
     const passed = announcePass(paint)
     const painted = passed ? undefined : buildDistribution(paint.layer.toCells(), paint.floor.value)
@@ -129,7 +129,7 @@ export function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outli
     if (phase === PracticePhase.REVEAL) frameReveal(paint.gameMap.camera, question, answer, paint.layer.toGeoJSON())
   }, [phase, index])
 
-  function next() {
+  const next = () => {
     if (run.type !== PracticePhase.REVEAL) return
     if (isLastRound(run)) paint.gameMap.clearReveal()
     setRun(nextRound(run))

@@ -9,7 +9,7 @@ const FACT_LABELS: Record<FactType, string> = {
 }
 
 /** A line of interest about the revealed answer. */
-export function FactLine({ fact }: { fact: Fact | undefined }) {
+export const FactLine = ({ fact }: { fact: Fact | undefined }) => {
   if (!fact) return undefined
   return (
     <p class={styles.fact} data-testid={factLineTestIds.fact}>

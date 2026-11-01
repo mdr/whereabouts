@@ -4,7 +4,7 @@ import { nameToJoin } from "../../../settings/settings"
 import { cx } from "../../../ui/cx"
 import kit from "../../../ui/kit.module.css"
 
-export function RenameForm({
+export const RenameForm = ({
   current,
   online,
   onDone
@@ -12,7 +12,7 @@ export function RenameForm({
   current: string
   online: boolean
   onDone: (name: PlayerName | undefined) => void
-}) {
+}) => {
   const [name, setName] = useState(current)
   return (
     <form

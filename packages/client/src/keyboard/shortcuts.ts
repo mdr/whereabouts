@@ -45,7 +45,7 @@ const MOD = isMac ? "⌘" : "Ctrl"
 const withMod = (event: KeyPress) => event.metaKey || event.ctrlKey
 const plain = (key: string) => (event: KeyPress) => event.key === key
 
-function paintKey(key: string, run: (target: PaintKeyTarget) => void): Combo {
+const paintKey = (key: string, run: (target: PaintKeyTarget) => void): Combo => {
   return { keys: [key], matches: plain(key), run }
 }
 
@@ -114,7 +114,7 @@ const SHORTCUTS: Shortcut[] = [
 ]
 
 /** The card's rows: in practice, or in a game. */
-export function listedShortcuts(practice: boolean): Shortcut[] {
+export const listedShortcuts = (practice: boolean): Shortcut[] => {
   return SHORTCUTS.filter((shortcut) => practice || !shortcut.practiceOnly).map((shortcut) => ({
     ...shortcut,
     combos: shortcut.combos.filter((combo) => !combo.unlisted)
@@ -122,7 +122,7 @@ export function listedShortcuts(practice: boolean): Shortcut[] {
 }
 
 /** Run the paint key `e` presses, if painting is on; whether it was one. */
-export function runPaintKey(event: KeyPress, target: PaintKeyTarget): boolean {
+export const runPaintKey = (event: KeyPress, target: PaintKeyTarget): boolean => {
   if (!target.enabled()) return false
   for (const shortcut of SHORTCUTS)
     for (const combo of shortcut.combos)

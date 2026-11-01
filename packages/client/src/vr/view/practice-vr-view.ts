@@ -29,7 +29,7 @@ export interface PracticeVrShown {
   borders: Borders | undefined
 }
 
-export function practiceVrView(run: PracticeRun, pageShown: PracticeVrShown): VrView {
+export const practiceVrView = (run: PracticeRun, pageShown: PracticeVrShown): VrView => {
   const total = runTotal(run)
   const home = { label: "Home", press: () => navigate("/") }
   if (run.type === PracticePhase.DONE)

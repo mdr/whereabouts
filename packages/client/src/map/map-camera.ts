@@ -19,7 +19,7 @@ const PHONE_MEDIA_QUERY = "(max-width: 640px)"
 const SHEET_TOP = 0.5
 
 /** The flat map's zoom that shows the whole world on a map `width` px wide. */
-export function flatWorldZoom(width: Px): Zoom {
+export const flatWorldZoom = (width: Px): Zoom => {
   return matchMedia(PHONE_MEDIA_QUERY).matches ? Math.min(WORLD_ZOOM, zoomForWorldWidth(width)) : WORLD_ZOOM
 }
 
@@ -28,7 +28,7 @@ export function flatWorldZoom(width: Px): Zoom {
  * left and right and above the toolbar, or on a phone, between the
  * question card and the sheet.
  */
-export function revealPadding({
+export const revealPadding = ({
   width,
   height,
   phone,
@@ -38,7 +38,7 @@ export function revealPadding({
   height: Px
   phone: boolean
   questionCardHeight: Px
-}): Required<PaddingOptions> {
+}): Required<PaddingOptions> => {
   if (phone) {
     // Below the header and the question card.
     return { top: 64 + questionCardHeight + 8, bottom: height * (1 - SHEET_TOP) + 16, left: 24, right: 24 }

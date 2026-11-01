@@ -14,7 +14,7 @@ export interface Heartbeat {
   stop(): void
 }
 
-export function startHeartbeat(ping: () => void, dead: () => void): Heartbeat {
+export const startHeartbeat = (ping: () => void, dead: () => void): Heartbeat => {
   let waiting: ReturnType<typeof setTimeout> | undefined = undefined
 
   const check = () => {
@@ -39,7 +39,7 @@ export function startHeartbeat(ping: () => void, dead: () => void): Heartbeat {
   window.addEventListener("online", check)
   window.addEventListener("pageshow", onPageShow)
 
-  function stop() {
+  const stop = () => {
     clearInterval(every)
     clearTimeout(waiting)
     waiting = undefined

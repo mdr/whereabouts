@@ -6,7 +6,7 @@ import { KernelId } from "@whereabouts/shared/scoring/scoring"
 import { GuessType } from "@whereabouts/shared/scoring/score-verdict"
 
 /** The settings as a page loading with these values stored would read them. */
-async function settingsWith(stored: Record<string, string>) {
+const settingsWith = async (stored: Record<string, string>) => {
   for (const [key, value] of Object.entries(stored)) localStorage.setItem(key, value)
   vi.resetModules()
   return import("./settings")

@@ -26,13 +26,13 @@ import { MapDetail } from "@whereabouts/shared/protocol/config"
 
 const PaintContext = createContext<PaintController | undefined>(undefined)
 
-export function usePaint(): PaintController {
+export const usePaint = (): PaintController => {
   const paint = useContext(PaintContext)
   if (!paint) throw new Error("usePaint outside MapView")
   return paint
 }
 
-export function MapView({ children }: { children: ComponentChildren }) {
+export const MapView = ({ children }: { children: ComponentChildren }) => {
   const mapElement = useElementRef<HTMLDivElement>()
   const globeButton = useRef<GlobeButton | undefined>(undefined)
   const [controller, setController] = useState<PaintController | undefined>(undefined)

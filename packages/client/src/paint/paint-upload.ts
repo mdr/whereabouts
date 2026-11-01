@@ -14,12 +14,12 @@ type UploadPaint = Pick<PaintController, "layer" | "floor" | "version">
  * Keeps the server's copy of your paint current while you can paint, and
  * gives Done (`lockIn`), which uploads before locking.
  */
-export function usePaintUpload(
+export const usePaintUpload = (
   conn: UploadConnection,
   paint: UploadPaint,
   view: InPlayGameView,
   timeUp: boolean
-): { lockIn: () => void } {
+): { lockIn: () => void } => {
   const guessing = view.phase === Phase.GUESSING
   const { role } = view.you
   const locked = role.type === YouRoleType.PLAYING && role.locked
@@ -28,7 +28,7 @@ export function usePaintUpload(
   const sendTimer = useRef<number | undefined>(undefined)
 
   /** Upload the paint now. An empty map is sent too: it takes back paint sent earlier. */
-  function sendNow() {
+  const sendNow = () => {
     if (sendTimer.current) clearTimeout(sendTimer.current)
     sendTimer.current = undefined
     conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.peek() })
@@ -71,7 +71,7 @@ export function usePaintUpload(
 
   // Done with paint freezes it; Done with nothing painted is a pass, which
   // scores PASS_SCORE and lets the round end without waiting on you.
-  function lockIn() {
+  const lockIn = () => {
     announcePass(paint)
     lockWish.current = { round }
     sendNow()

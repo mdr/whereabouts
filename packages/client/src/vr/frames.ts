@@ -10,7 +10,7 @@ const FRAME_INTERVAL: Ms = 50
 
 let native: { request: typeof requestAnimationFrame; cancel: typeof cancelAnimationFrame } | undefined = undefined
 
-export function timerFrames(on: boolean): void {
+export const timerFrames = (on: boolean): void => {
   if (on && !native) {
     native = { request: window.requestAnimationFrame, cancel: window.cancelAnimationFrame }
     window.requestAnimationFrame = (callback) => window.setTimeout(() => callback(performance.now()), FRAME_INTERVAL)

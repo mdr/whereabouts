@@ -18,7 +18,7 @@ let enlargeLabelShown = false
  * Escape to shrink back. The Wikimedia Commons credit sits behind a small
  * info icon linking to the file page.
  */
-export function QuestionImage({
+export const QuestionImage = ({
   image,
   credit: showCredit,
   painting
@@ -26,7 +26,7 @@ export function QuestionImage({
   image: CommonsFile
   credit: boolean
   painting: boolean
-}) {
+}) => {
   const [large, setLarge] = useState(false)
   const [withLabel] = useState(() => {
     const first = !enlargeLabelShown

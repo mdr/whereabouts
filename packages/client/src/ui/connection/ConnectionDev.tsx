@@ -7,7 +7,7 @@ import { cx } from "../cx"
 import kit from "../kit.module.css"
 
 /** Connection and game-state diagnostics for the dev drawer. */
-export function ConnectionDev({ conn, view }: { conn: Connection; view: GameView }) {
+export const ConnectionDev = ({ conn, view }: { conn: Connection; view: GameView }) => {
   return (
     <Card title="Connection">
       <DevFacts

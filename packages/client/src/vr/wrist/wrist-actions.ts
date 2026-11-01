@@ -15,7 +15,7 @@ export interface WristTargets {
   repaint(): void
 }
 
-export function wristActions(on: WristTargets): Record<WristButton, () => void> {
+export const wristActions = (on: WristTargets): Record<WristButton, () => void> => {
   // Each acts on the round being painted, and the globe redraws its paint.
   const act = (use: (round: VrRound) => void) => () => {
     const round = on.painting()

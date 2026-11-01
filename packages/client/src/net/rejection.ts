@@ -23,7 +23,7 @@ export interface Rejection {
  * act on. Reasons are our CloseReason codes, or Rivalis's own for the room
  * closing and for giving up on reconnecting.
  */
-export function describeDisconnect(code: number, reason: string | undefined): Rejection {
+export const describeDisconnect = (code: number, reason: string | undefined): Rejection => {
   const reasonText = reason ?? ""
   if (reasonText === "room_destroyed") {
     return {

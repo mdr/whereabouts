@@ -31,7 +31,7 @@ import {
   type RevealingRun
 } from "./practice-run"
 
-function makePlace(id: string, at: LatLon = { lat: 35, lon: 135.8 }): PlaceQuestion {
+const makePlace = (id: string, at: LatLon = { lat: 35, lon: 135.8 }): PlaceQuestion => {
   return {
     type: QuestionType.PLACE,
     id: questionId(id),
@@ -46,7 +46,7 @@ function makePlace(id: string, at: LatLon = { lat: 35, lon: 135.8 }): PlaceQuest
 const POOL = ["kyoto", "lima", "oslo"].map((id) => makePlace(id))
 
 /** Paint packed round `at`, at the question's painting resolution. */
-function blob(at: LatLon) {
+const blob = (at: LatLon) => {
   const h3 = latLngToCell(at.lat, at.lon, resolutionForTolerance(50))
   return buildDistribution(
     gridDisk(h3, 2).map((cell) => {
@@ -58,7 +58,7 @@ function blob(at: LatLon) {
 }
 
 /** Answer the current question: on its answer, or a pass. */
-function play(run: PaintingRun, pass = false): RevealingRun {
+const play = (run: PaintingRun, pass = false): RevealingRun => {
   const question = currentQuestion(run)
   if (question.answer.type !== AnswerType.POINT) throw new Error("a point question")
   return submitRound(
@@ -70,7 +70,7 @@ function play(run: PaintingRun, pass = false): RevealingRun {
 }
 
 /** Move on from a reveal that isn't the last. */
-function onward(run: RevealingRun): PaintingRun {
+const onward = (run: RevealingRun): PaintingRun => {
   const next = nextRound(run)
   if (next.type !== PracticePhase.PAINT) throw new Error("not the last round")
   return next

@@ -7,13 +7,13 @@ import { roundWhatTestIds } from "./RoundWhatTestIds"
 import styles from "./RoundWhat.module.css"
 
 /** An island, lake or sea round says which. */
-export function typeName(round: PlayedRound): string {
+export const typeName = (round: PlayedRound): string => {
   const feature = round.feature?.toLowerCase()
   return feature ? feature[0]!.toUpperCase() + feature.slice(1) : QUESTION_TYPE_LOOKS[round.type].name
 }
 
 /** The round's number, picture, what it asked about, and which type of question it was. */
-export function RoundWhat({ number, round, textClass }: { number: number; round: PlayedRound; textClass?: string }) {
+export const RoundWhat = ({ number, round, textClass }: { number: number; round: PlayedRound; textClass?: string }) => {
   return (
     <>
       <span class={styles.number}>{number}</span>

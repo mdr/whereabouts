@@ -34,7 +34,7 @@ const inside = (element: Element) => within(element as HTMLElement)
 
 const MIX = mixOf({ [QuestionType.LANDMARK]: 3, [QuestionType.PLACE]: 2 })
 
-function view(isHost: boolean): GameView {
+const view = (isHost: boolean): GameView => {
   const base = makeLobbyView()
   return makeLobbyView({
     config: { ...base.config, mix: MIX, hints: 1 },

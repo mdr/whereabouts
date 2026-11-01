@@ -9,7 +9,7 @@ import { cx } from "../../cx"
 import styles from "./HostControls.module.css"
 
 /** `besidePlayers`: in the HUD with the players pill, which it sits beside on a phone. */
-export function EndGameButton({
+export const EndGameButton = ({
   onEnd,
   title,
   besidePlayers,
@@ -19,7 +19,7 @@ export function EndGameButton({
   title?: string
   besidePlayers?: boolean
   online?: boolean
-}) {
+}) => {
   const { dialog, ask } = useConfirm(online)
   return (
     <>

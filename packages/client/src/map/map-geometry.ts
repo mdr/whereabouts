@@ -8,12 +8,12 @@ export const EQUATORIAL_CIRCUMFERENCE: Metres = 40075016.686
 const WORLD_WIDTH_AT_ZOOM_0: Px = 512
 
 /** How wide MapLibre draws the whole world at a zoom. */
-function worldWidth(zoom: Zoom): Px {
+const worldWidth = (zoom: Zoom): Px => {
   return WORLD_WIDTH_AT_ZOOM_0 * Math.pow(2, zoom)
 }
 
 /** The zoom at which the world is `width` px wide. */
-export function zoomForWorldWidth(width: Px): Zoom {
+export const zoomForWorldWidth = (width: Px): Zoom => {
   return Math.log2(width / WORLD_WIDTH_AT_ZOOM_0)
 }
 /**
@@ -25,12 +25,12 @@ export const MIN_LAT: Degrees = 0 - MAX_LAT
 /** The globe's starting size: its radius as a share of the map's shorter side. */
 const GLOBE_FILL = 0.4
 
-export function drawable(lat: Degrees): boolean {
+export const drawable = (lat: Degrees): boolean => {
   return Math.abs(lat) <= MAX_LAT
 }
 
 /** A band as polygons: a longitude band across 180° is two, one each side. */
-export function hintFeatures(band: HintBand): GeoJSON.Feature[] {
+export const hintFeatures = (band: HintBand): GeoJSON.Feature[] => {
   const box = (west: Degrees, east: Degrees, south: Degrees, north: Degrees): GeoJSON.Feature => ({
     type: "Feature",
     properties: {},
@@ -52,14 +52,14 @@ export function hintFeatures(band: HintBand): GeoJSON.Feature[] {
   return [box(band.from, 180, MIN_LAT, MAX_LAT), box(-180, band.to, MIN_LAT, MAX_LAT)]
 }
 
-function outerRingPoints(features: GeoJSON.Feature[]): Ring {
+const outerRingPoints = (features: GeoJSON.Feature[]): Ring => {
   return features.flatMap((feature) =>
     feature.geometry.type === "Polygon" ? (feature.geometry.coordinates[0] as Ring) : []
   )
 }
 
 /** `box` grown to take in the polygons' outer rings. */
-export function boxAround(features: GeoJSON.Feature[], box: Box): Box {
+export const boxAround = (features: GeoJSON.Feature[], box: Box): Box => {
   let [minLon, minLat, maxLon, maxLat] = box
   for (const [lon, lat] of outerRingPoints(features)) {
     // Cells that were unwrapped past 180 are folded back for the bbox.
@@ -73,13 +73,13 @@ export function boxAround(features: GeoJSON.Feature[], box: Box): Box {
 }
 
 /** Always at least two tolerances around the answer. */
-export function toleranceBox(answer: LatLon, tolerance: Km): Box {
+export const toleranceBox = (answer: LatLon, tolerance: Km): Box => {
   const dLat = kmToDegrees(2 * tolerance)
   const dLon = dLat / Math.max(0.2, Math.cos(toRadians(answer.lat)))
   return [answer.lon - dLon, answer.lat - dLat, answer.lon + dLon, answer.lat + dLat]
 }
 
-export function bounds([w, s, e, n]: Box): LngLatBoundsLike {
+export const bounds = ([w, s, e, n]: Box): LngLatBoundsLike => {
   return [
     [w, Math.max(-85, s)],
     [e, Math.min(85, n)]
@@ -87,12 +87,12 @@ export function bounds([w, s, e, n]: Box): LngLatBoundsLike {
 }
 
 /** Moves the centre into the middle of the clear part of the map. Unlike easeTo's padding, it does not stay set. */
-export function offsetFor(padding: Required<PaddingOptions>): [x: Px, y: Px] {
+export const offsetFor = (padding: Required<PaddingOptions>): [x: Px, y: Px] => {
   return [(padding.left - padding.right) / 2, (padding.top - padding.bottom) / 2]
 }
 
 /** The ground length of one CSS pixel. */
-export function metresPerPixel(lat: Degrees, zoom: Zoom): Metres {
+export const metresPerPixel = (lat: Degrees, zoom: Zoom): Metres => {
   return (EQUATORIAL_CIRCUMFERENCE * Math.cos(toRadians(lat))) / worldWidth(zoom)
 }
 
@@ -101,7 +101,7 @@ export function metresPerPixel(lat: Degrees, zoom: Zoom): Metres {
  * perspective a sphere of radius R px, seen from f px away, shows a disc of
  * radius f tan(asin(R / (f + R))).
  */
-export function globeWorldZoom(width: Px, height: Px, fov: Degrees, lat: Degrees): Zoom {
+export const globeWorldZoom = (width: Px, height: Px, fov: Degrees, lat: Degrees): Zoom => {
   const disc = GLOBE_FILL * Math.min(width, height)
   const focalLength = height / 2 / Math.tan(toRadians(fov) / 2)
   const sin = disc / Math.hypot(focalLength, disc)

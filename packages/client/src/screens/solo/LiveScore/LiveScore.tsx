@@ -12,7 +12,7 @@ import styles from "./LiveScore.module.css"
 
 const percent = (fraction: number) => `${Math.round(fraction * 100)}%`
 
-export function LiveScore({
+export const LiveScore = ({
   question,
   answer,
   kernelId
@@ -20,7 +20,7 @@ export function LiveScore({
   question: Question
   answer: ScoredAnswer
   kernelId: KernelId
-}) {
+}) => {
   const paint = usePaint()
   const painted = buildDistribution(paint.settledCells.value, paint.floor.value)
   const { score, parts } = scoreAnswer(painted, answer, kernelById(kernelId))
@@ -42,7 +42,7 @@ export function LiveScore({
 }
 
 /** Where the paint is against the country (the world floor left out). */
-function RegionFitFacts({ painted, answer, label }: { painted: Distribution; answer: Area; label: string }) {
+const RegionFitFacts = ({ painted, answer, label }: { painted: Distribution; answer: Area; label: string }) => {
   const { coverage, precision } = regionFit(painted, answer)
   return (
     <dl class={cx(kit.facts, styles.regionFit)}>

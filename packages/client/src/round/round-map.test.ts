@@ -15,7 +15,7 @@ import { Tool } from "../paint/tool"
 
 vi.mock("../paint/fill", () => ({ useFillTool: vi.fn() }))
 
-function makePaint() {
+const makePaint = () => {
   return {
     reset: vi.fn(),
     tool: signal(Tool.PAN),
@@ -39,7 +39,7 @@ interface Props {
   hint?: HintBand
 }
 
-function setup(over: Partial<Props> = {}) {
+const setup = (over: Partial<Props> = {}) => {
   const paint = makePaint()
   const start = vi.fn()
   let props: Props = {

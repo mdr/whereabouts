@@ -66,7 +66,7 @@ const TICKET = {
   entry: { type: GameEntryType.HOST as const }
 }
 
-function connected() {
+const connected = () => {
   const clients: FakeClient[] = []
   const conn = new Connection((_url, options) => {
     const c = new FakeClient(options)
@@ -302,7 +302,7 @@ describe("Connection view", () => {
 describe("Connection liveness", () => {
   afterEach(() => vi.useRealTimers())
 
-  function inGame() {
+  const inGame = () => {
     vi.useFakeTimers()
     const game = connected()
     game.client.open()

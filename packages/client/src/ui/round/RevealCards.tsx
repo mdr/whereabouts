@@ -12,7 +12,7 @@ import { ScoreCard } from "./ScoreCard"
 import scoreStyles from "./Score.module.css"
 
 /** The reveal's question card, now with the answer, and your score. */
-export function RevealCards({
+export const RevealCards = ({
   question,
   revealed,
   fact,
@@ -31,7 +31,7 @@ export function RevealCards({
   /** A flag round: the country most of your paint was in. */
   where: PaintedCountry | undefined
   testIds: { scoreCard?: string; score?: string }
-}) {
+}) => {
   return (
     <>
       <QuestionCard question={question} hud={CardPlace.REVEAL} credit photo={revealed.photo} foldable startFolded>

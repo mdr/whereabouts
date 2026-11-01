@@ -3,7 +3,7 @@ import { cx } from "../cx"
 import styles from "./Card.module.css"
 
 /** `as` a paragraph or a section where the card is one; anything else passes on to that element. */
-export function Card({
+export const Card = ({
   title,
   children,
   class: className,
@@ -14,7 +14,7 @@ export function Card({
   children: ComponentChildren
   class?: string
   as?: "div" | "p" | "section"
-} & Omit<HTMLAttributes<HTMLDivElement>, "title" | "class" | "as">) {
+} & Omit<HTMLAttributes<HTMLDivElement>, "title" | "class" | "as">) => {
   // Typed as a div, the attributes the three share.
   const El = Tag as "div"
   return (

@@ -11,12 +11,12 @@ import { JOINED_LATE, SPECTATING, makeGuessingView, makePlaying } from "../test-
 
 const CELL = "85283473fffffff"
 
-function makePaint(cells: Record<string, number> = { [CELL]: 1 }) {
+const makePaint = (cells: Record<string, number> = { [CELL]: 1 }) => {
   return { layer: PaintLayer.fromRecord(h3Resolution(5), cells), floor: signal(0.05), version: signal(0) }
 }
 
 /** Make a change, and run the renders and effects it causes. */
-function run(change: () => unknown) {
+const run = (change: () => unknown) => {
   void act(() => void change())
 }
 const wait = (ms: number) => run(() => vi.advanceTimersByTime(ms))
@@ -28,10 +28,10 @@ interface Props {
   timeUp: boolean
 }
 
-function setup({
+const setup = ({
   view = guessing(),
   paint = makePaint()
-}: { view?: InPlayGameView; paint?: ReturnType<typeof makePaint> } = {}) {
+}: { view?: InPlayGameView; paint?: ReturnType<typeof makePaint> } = {}) => {
   const conn = {
     status: signal<ConnectionState>({ type: ConnectionStatus.CONNECTED }),
     sendPaint: vi.fn(),

@@ -8,7 +8,7 @@ import type { VrView } from "../../vr/view/view"
 import { runMaximum, runTotal, type PracticeRun } from "../../round/practice-run"
 
 /** Practice's final score and its rounds, with a fresh run to start. */
-export function SoloDone({ run, restart, vrView }: { run: PracticeRun; restart: () => void; vrView: VrView }) {
+export const SoloDone = ({ run, restart, vrView }: { run: PracticeRun; restart: () => void; vrView: VrView }) => {
   return (
     <Hud>
       <HudCenter>

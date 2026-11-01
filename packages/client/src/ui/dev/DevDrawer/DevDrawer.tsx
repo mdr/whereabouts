@@ -9,7 +9,7 @@ import { cx } from "../../cx"
 import kit from "../../kit.module.css"
 import styles from "./DevDrawer.module.css"
 
-export function DevDrawer({ children }: { children?: ComponentChildren }) {
+export const DevDrawer = ({ children }: { children?: ComponentChildren }) => {
   if (!devMode.value) return undefined
   return (
     <aside class={styles.drawer} data-testid={devDrawerTestIds.drawer}>

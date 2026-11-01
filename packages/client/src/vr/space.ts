@@ -20,7 +20,7 @@ import type { Metres } from "@whereabouts/shared/units"
 export const STARS_DISTANCE: Metres = 5000
 
 /** Seeded, so the sky is the same each time. */
-function random(seed: number): () => number {
+const random = (seed: number): (() => number) => {
   let state = seed
   return () => {
     state = (state * 1664525 + 1013904223) >>> 0
@@ -47,7 +47,7 @@ export class Space {
   }
 }
 
-function stars(rand: () => number, count: number, size: number, brightness: number): Points {
+const stars = (rand: () => number, count: number, size: number, brightness: number): Points => {
   const position = new Float32Array(count * 3)
   const colour = new Float32Array(count * 3)
   const p = new Vector3()
@@ -86,7 +86,7 @@ function stars(rand: () => number, count: number, size: number, brightness: numb
   return points
 }
 
-function dot(): CanvasTexture {
+const dot = (): CanvasTexture => {
   const canvas = document.createElement("canvas")
   canvas.width = canvas.height = 32
   const ctx = canvas.getContext("2d")

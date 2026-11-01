@@ -13,7 +13,7 @@ beforeAll(() => {
 
 const eye = new Vector3(0, 1.6, 0)
 
-function placed(): Globe {
+const placed = (): Globe => {
   const globe = new Globe(1)
   globe.place(eye, new Vector3(0, 0, -1))
   globe.update(0.1, {}, { x: 0, y: 0 })
@@ -21,7 +21,7 @@ function placed(): Globe {
 }
 
 /** North stays in the upright plane through the eye: the globe never rolls. */
-function expectNoRoll(globe: Globe) {
+const expectNoRoll = (globe: Globe) => {
   const north = new Vector3(0, 1, 0).applyQuaternion(globe.group.quaternion)
   const toEye = eye.clone().sub(globe.centre).normalize()
   const side = new Vector3().crossVectors(toEye, new Vector3(0, 1, 0)).normalize()

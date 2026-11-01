@@ -9,7 +9,7 @@ import type { Degrees, Px } from "@whereabouts/shared/units"
  * narrowed by the cosine of its latitude, near enough to the map's shape for
  * a thumbnail. Points closer than half a pixel are dropped.
  */
-export function outlinePath(outline: Outline, centre: LatLon, width: Px, height: Px, padding: Px = 3): string {
+export const outlinePath = (outline: Outline, centre: LatLon, width: Px, height: Px, padding: Px = 3): string => {
   const lonScale = Math.cos(toRadians(centre.lat))
   const project = ([lon, lat]: LonLat): Projected => [(((lon - centre.lon + 540) % 360) - 180) * lonScale, 0 - lat]
   const rings = outline.flat()
@@ -31,7 +31,7 @@ interface Bounds {
 }
 
 /** Undefined for no points, or for points that are all one spot. */
-function boundsOf(points: Projected[]): Bounds | undefined {
+const boundsOf = (points: Projected[]): Bounds | undefined => {
   const box = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity }
   for (const [x, y] of points) {
     box.x0 = Math.min(box.x0, x)
@@ -43,14 +43,14 @@ function boundsOf(points: Projected[]): Bounds | undefined {
 }
 
 /** Scales and moves points so `box` is centred in the width × height box, less `padding`. */
-function fitInto({ x0, x1, y0, y1 }: Bounds, width: Px, height: Px, padding: Px): (point: Projected) => SvgPoint {
+const fitInto = ({ x0, x1, y0, y1 }: Bounds, width: Px, height: Px, padding: Px): ((point: Projected) => SvgPoint) => {
   const scale = Math.min((width - 2 * padding) / (x1 - x0 || 1), (height - 2 * padding) / (y1 - y0 || 1))
   const offsetX = (width - (x1 - x0) * scale) / 2
   const offsetY = (height - (y1 - y0) * scale) / 2
   return ([x, y]) => [offsetX + (x - x0) * scale, offsetY + (y - y0) * scale]
 }
 
-function ringPath(points: SvgPoint[]): string {
+const ringPath = (points: SvgPoint[]): string => {
   let last: SvgPoint | undefined
   let part = ""
   for (const point of points) {

@@ -3,7 +3,7 @@ import { paintBlobsTestIds } from "./PaintBlobsTestIds"
 import styles from "./PaintBlobs.module.css"
 
 /** Mass per connected blob plus the floor. Re-renders on paint changes. */
-export function PaintBlobs() {
+export const PaintBlobs = () => {
   const paint = usePaint()
   const floor = paint.floor.value
   const blobs = paint.settledBlobs.value

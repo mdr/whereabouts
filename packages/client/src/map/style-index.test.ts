@@ -14,7 +14,7 @@ const layers: IndexedLayer[] = [
   { id: "label_city", type: "symbol", "source-layer": "place" }
 ]
 
-function index() {
+const index = () => {
   return indexStyle(
     layers,
     (id) => ({ width: id.length, opacity: 0.5 }),

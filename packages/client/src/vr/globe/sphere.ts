@@ -7,13 +7,13 @@ import { Vector3 } from "three"
 import { toDegrees, toRadians, type LatLon } from "@whereabouts/shared/geo"
 import type { Metres } from "@whereabouts/shared/units"
 
-export function latLonToLocal({ lat, lon }: LatLon, out = new Vector3()): Vector3 {
+export const latLonToLocal = ({ lat, lon }: LatLon, out = new Vector3()): Vector3 => {
   const [latRadians, lonRadians] = [toRadians(lat), toRadians(lon)]
   const cosLat = Math.cos(latRadians)
   return out.set(cosLat * Math.cos(lonRadians), Math.sin(latRadians), -cosLat * Math.sin(lonRadians))
 }
 
-export function localToLatLon(local: Vector3): LatLon {
+export const localToLatLon = (local: Vector3): LatLon => {
   const length = local.length()
   return {
     lat: toDegrees(Math.asin(Math.max(-1, Math.min(1, local.y / length)))),
@@ -22,7 +22,7 @@ export function localToLatLon(local: Vector3): LatLon {
 }
 
 /** Distance along a ray to where it first meets a sphere, or undefined if it misses or starts inside. */
-export function raySphere(origin: Vector3, direction: Vector3, centre: Vector3, radius: Metres): Metres | undefined {
+export const raySphere = (origin: Vector3, direction: Vector3, centre: Vector3, radius: Metres): Metres | undefined => {
   const ox = origin.x - centre.x
   const oy = origin.y - centre.y
   const oz = origin.z - centre.z

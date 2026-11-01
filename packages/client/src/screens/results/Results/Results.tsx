@@ -25,7 +25,7 @@ import styles from "./Results.module.css"
 // A player removed on the final results.
 const REMOVED_PLAYER: CssColour = "#888888"
 
-export function Results({ conn, view }: { conn: Connection; view: ResultsGameView }) {
+export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameView }) => {
   const online = conn.online.value
   const byId = new Map(view.players.map((player) => [player.id, player]))
   const standings = view.results
@@ -111,7 +111,10 @@ export function Results({ conn, view }: { conn: Connection; view: ResultsGameVie
 }
 
 /** An award's line in pieces, each player's name in their colour. */
-function awardParts(line: string, players: (PlayingPlayerView | undefined)[]): { text: string; colour?: CssColour }[] {
+const awardParts = (
+  line: string,
+  players: (PlayingPlayerView | undefined)[]
+): { text: string; colour?: CssColour }[] => {
   return line
     .split(/(\{\d\})/)
     .filter((part) => part !== "")

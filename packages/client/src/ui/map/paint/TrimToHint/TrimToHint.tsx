@@ -7,7 +7,7 @@ import { ToolLabel } from "../ToolLabel/ToolLabel"
 import { trimToHintTestIds } from "./TrimToHintTestIds"
 
 /** Remove the paint outside the hint's band, as one undoable step. For a moment the button says what it did. */
-export function TrimToHint({ enabled, band }: { enabled: boolean; band: HintBand }) {
+export const TrimToHint = ({ enabled, band }: { enabled: boolean; band: HintBand }) => {
   const paint = usePaint()
   const [note, setNote] = useState<string | undefined>(undefined)
   useEffect(() => {

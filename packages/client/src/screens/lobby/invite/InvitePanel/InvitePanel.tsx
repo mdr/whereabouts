@@ -17,7 +17,7 @@ import { Roster } from "../Roster/Roster"
 import styles from "./InvitePanel.module.css"
 
 /** The left panel: the code and link to share, who is here, and the player/watcher choice. */
-export function InvitePanel({
+export const InvitePanel = ({
   conn,
   view,
   online,
@@ -27,7 +27,7 @@ export function InvitePanel({
   view: GameView
   online: boolean
   ask: (request: ConfirmRequest) => void
-}) {
+}) => {
   const [renaming, setRenaming] = useState(false)
   const current = view.you.name
   const { players } = view

@@ -9,24 +9,25 @@ import { WristButton } from "./wrist-button"
 import { Hand } from "../hands/hand"
 import { HintAxis } from "@whereabouts/shared/hints"
 
-function makeTool(tool: SprayTool) {
-  return {
+const makeTool = (tool: SprayTool) => {
+  const made = {
     tool,
-    setTool(tool: SprayTool) {
-      this.tool = tool
+    setTool: (next: SprayTool) => {
+      made.tool = next
     }
   }
+  return made
 }
 
-function makePaint(over: Record<string, unknown> = {}) {
+const makePaint = (over: Record<string, unknown> = {}) => {
   return { undo: vi.fn(), redo: vi.fn(), trimToHint: vi.fn(() => 0), ...over }
 }
 
-function makeRound(paint = makePaint(), over: Partial<VrRound> = {}): VrRound {
+const makeRound = (paint = makePaint(), over: Partial<VrRound> = {}): VrRound => {
   return { paint, useHint: () => {}, hint: undefined, ...over } as unknown as VrRound
 }
 
-function makeActions(round: VrRound | undefined) {
+const makeActions = (round: VrRound | undefined) => {
   const notes: string[] = []
   const repaint = vi.fn()
   const tools = { [Hand.LEFT]: makeTool(Tool.ERASE), [Hand.RIGHT]: makeTool(Tool.PAINT) }

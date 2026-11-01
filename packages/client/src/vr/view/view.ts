@@ -170,7 +170,7 @@ export type VrView = VrPaintView | VrRevealView | VrDoneView | VrLobbyView
  * view and the question on it. Anything else, the clock, a hint, who is
  * ready, is a refresh.
  */
-export function sceneOf(view: VrView): string {
+export const sceneOf = (view: VrView): string => {
   if (view.type !== VrViewType.PAINT && view.type !== VrViewType.REVEAL) return view.type
   const { prompt, picture } = view.round
   const shows = picture && (picture.type === VrPictureType.PHOTO ? picture.photo : picture.flag)

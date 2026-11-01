@@ -47,7 +47,7 @@ import type { VrTable } from "../scores/scores"
 const named = (view: GameView, player: { id: string; name: string }) =>
   `${player.name}${player.id === view.you.id ? " (you)" : ""}`
 
-function shownRow(view: GameView, row: ShownRow): VrTable["rows"][number] {
+const shownRow = (view: GameView, row: ShownRow): VrTable["rows"][number] => {
   const select = () => (revealShown.value = row.pick)
   if (row.type === ShownRowType.EVERYONE) return { name: "Everyone", total: "", selected: row.selected, select }
   if (row.type === ShownRowType.HIDE_PAINT) return { name: "Hide paint", total: "", selected: row.selected, select }
@@ -72,7 +72,7 @@ interface GameVrShown {
   borders: Borders | undefined
 }
 
-function moreActions(view: GameView, conn: Connection): VrAction[] {
+const moreActions = (view: GameView, conn: Connection): VrAction[] => {
   return [
     ...(view.you.role.type === YouRoleType.SPECTATOR ? [takeSeat(conn, view, "Play from the next question")] : []),
     ...hostActions(conn, view, view.phase === Phase.REVEAL ? shownPlayerId(revealShown.value) : vrPicked.value),
@@ -83,13 +83,13 @@ function moreActions(view: GameView, conn: Connection): VrAction[] {
   ]
 }
 
-function playerState(player: PlayingPlayerView): string {
+const playerState = (player: PlayingPlayerView): string => {
   if (!player.connected) return "away"
   if (player.locked) return "done"
   return "guessing"
 }
 
-function playersTable(view: GameView): VrTable {
+const playersTable = (view: GameView): VrTable => {
   return {
     title: "Players",
     rows: [...view.players]
@@ -105,14 +105,14 @@ function playersTable(view: GameView): VrTable {
   }
 }
 
-function gameRound(
+const gameRound = (
   view: InPlayGameView,
   conn: Connection,
   paint: PaintController,
   shown: VrRoundShown,
   connection: string | undefined,
   { lockIn, timeUp }: Pick<GameVrShown, "lockIn" | "timeUp">
-): VrRound {
+): VrRound => {
   const at = roundOf(view)
   const { role } = view.you
   const note = roundNote(view.you)
@@ -136,7 +136,7 @@ function gameRound(
   })
 }
 
-function revealActions(model: RevealModel, conn: Connection): VrAction[] {
+const revealActions = (model: RevealModel, conn: Connection): VrAction[] => {
   const actions: VrAction[] = []
   if (model.ready) {
     actions.push({
@@ -149,14 +149,14 @@ function revealActions(model: RevealModel, conn: Connection): VrAction[] {
   return actions
 }
 
-function gameReveal(
+const gameReveal = (
   view: GameView,
   reveal: RevealView,
   conn: Connection,
   shown: VrRoundShown,
   connection: string | undefined,
   { outline, painted, borders }: Pick<GameVrShown, "outline" | "painted" | "borders">
-): VrReveal {
+): VrReveal => {
   const whose = revealShown.value
   const model = revealModel(view, reveal, whose)
   const mine = reveal.results.find((result) => result.playerId === view.you.id)
@@ -178,12 +178,12 @@ function gameReveal(
   })
 }
 
-export function gameVrView(
+export const gameVrView = (
   view: InPlayGameView,
   conn: Connection,
   paint: PaintController,
   pageShown: GameVrShown
-): VrView {
+): VrView => {
   const connection = connectionText(conn)
   const reveal = view.phase === Phase.REVEAL ? view.reveal : undefined
   const shown: VrRoundShown = {

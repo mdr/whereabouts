@@ -5,7 +5,7 @@ import { countdownTestIds } from "./CountdownTestIds"
 import styles from "./Countdown.module.css"
 
 /** Ticks once a second; returns whole seconds remaining, never negative. */
-function useCountdown(timeLeft: () => Ms): Seconds {
+const useCountdown = (timeLeft: () => Ms): Seconds => {
   const [, force] = useState(0)
   useEffect(() => {
     const id = setInterval(() => force((tick) => tick + 1), 250)
@@ -15,7 +15,7 @@ function useCountdown(timeLeft: () => Ms): Seconds {
 }
 
 /** The seconds left in a round, for the HUD's header. */
-export function Countdown({ timeLeft, warnAt = 10 }: { timeLeft: () => Ms; warnAt?: Seconds }) {
+export const Countdown = ({ timeLeft, warnAt = 10 }: { timeLeft: () => Ms; warnAt?: Seconds }) => {
   const left = useCountdown(timeLeft)
   return (
     <div class={cx(styles.countdown, left <= warnAt && styles.warn)} data-testid={countdownTestIds.countdown}>

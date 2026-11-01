@@ -16,7 +16,7 @@ const info = z
 const urls = new Map<FlagCode, Promise<string | undefined>>()
 
 /** The picture of the flag with this ISO code, or undefined when there is none. */
-export function flagUrl(code: FlagCode): Promise<string | undefined> {
+export const flagUrl = (code: FlagCode): Promise<string | undefined> => {
   let url = urls.get(code)
   if (!url) {
     const load = FLAGS[`../assets/flags/${code}.svg`]
@@ -27,11 +27,11 @@ export function flagUrl(code: FlagCode): Promise<string | undefined> {
 }
 
 /** The flag's width over its height, known before its picture loads. */
-export function flagRatio(code: FlagCode): number {
+export const flagRatio = (code: FlagCode): number => {
   return info[code]?.ratio ?? 3 / 2
 }
 
 /** The flag's file on Wikimedia Commons, for crediting it. */
-export function flagFile(code: FlagCode): CommonsFile | undefined {
+export const flagFile = (code: FlagCode): CommonsFile | undefined => {
   return info[code]?.file
 }

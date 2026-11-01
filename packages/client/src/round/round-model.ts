@@ -30,7 +30,7 @@ export enum RoundNote {
   DONE = "DONE"
 }
 
-export function roundNote({ role }: RoundYouView): RoundNote | undefined {
+export const roundNote = ({ role }: RoundYouView): RoundNote | undefined => {
   switch (role.type) {
     case YouRoleType.SPECTATOR:
       return RoundNote.WATCHING
@@ -87,7 +87,7 @@ export interface RevealModel {
   rows: ShownRow[]
 }
 
-export function revealModel(view: GameView, reveal: RevealView, shown: RevealShown): RevealModel {
+export const revealModel = (view: GameView, reveal: RevealView, shown: RevealShown): RevealModel => {
   const ready = new Set(reveal.ready)
   const present = view.players.filter((player) => player.connected)
   const last = isLastReveal(reveal)

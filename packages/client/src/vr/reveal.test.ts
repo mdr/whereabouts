@@ -6,17 +6,17 @@ import { colouredPaint, framing } from "./reveal"
 import { latLonToLocal } from "./globe/sphere"
 import { VrAnswerType, VrPaintsType, type VrReveal, type VrRound } from "./view/view"
 
-function makeLayer(at?: LatLon, km = 50): PaintLayer {
+const makeLayer = (at?: LatLon, km = 50): PaintLayer => {
   const layer = new PaintLayer(h3Resolution(4))
   if (at) layer.stamp(at, km, 1)
   return layer
 }
 
-function makeRound(layer = makeLayer()): VrRound {
+const makeRound = (layer = makeLayer()): VrRound => {
   return { paint: { layer } } as VrRound
 }
 
-function makeReveal(over: Partial<VrReveal> = {}): VrReveal {
+const makeReveal = (over: Partial<VrReveal> = {}): VrReveal => {
   const focus = over.focus ?? { lat: 0, lon: 0 }
   return {
     label: "",

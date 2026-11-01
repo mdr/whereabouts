@@ -5,13 +5,13 @@ import kit from "../../kit.module.css"
 import styles from "./ConnectionNote.module.css"
 
 /** Reconnecting, or the server's last complaint; undefined while all is well. */
-export function connectionText(conn: Connection): string | undefined {
+export const connectionText = (conn: Connection): string | undefined => {
   if (conn.status.value.type !== ConnectionStatus.CONNECTED) return "Reconnecting…"
   return conn.lastError.value
 }
 
 /** `onMap`: on a card of its own, since bare text over the map is hard to read. */
-export function ConnectionNote({ conn, onMap }: { conn: Connection; onMap?: boolean }) {
+export const ConnectionNote = ({ conn, onMap }: { conn: Connection; onMap?: boolean }) => {
   const text = connectionText(conn)
   if (text === undefined) return undefined
   const note = (

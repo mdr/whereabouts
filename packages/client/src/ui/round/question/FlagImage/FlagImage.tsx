@@ -9,7 +9,7 @@ import { flagImageTestIds } from "./FlagImageTestIds"
 import styles from "./FlagImage.module.css"
 
 /** A flag round's flag; click it to enlarge. No alt text naming it: that would give the answer away. */
-export function FlagImage({ code, painting }: { code: FlagCode; painting: boolean }) {
+export const FlagImage = ({ code, painting }: { code: FlagCode; painting: boolean }) => {
   const src = useFlagUrl(code)
   const [large, setLarge] = useState(false)
   useEscape(large, () => setLarge(false))

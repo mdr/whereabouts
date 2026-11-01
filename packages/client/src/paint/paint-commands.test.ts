@@ -19,7 +19,7 @@ const PARIS: LatLon = { lat: 48.86, lon: 2.35 }
 const MADRID: LatLon = { lat: 40.42, lon: -3.7 }
 const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RESOLUTION)
 
-function makeModel(...at: LatLon[]): PaintModel {
+const makeModel = (...at: LatLon[]): PaintModel => {
   const model = new PaintModel()
   model.reset(TOLERANCE)
   model.restore(Object.fromEntries(at.map((point) => [cellAt(point), 1])))

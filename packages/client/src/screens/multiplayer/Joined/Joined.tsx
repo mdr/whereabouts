@@ -22,7 +22,7 @@ import styles from "./Joined.module.css"
 const upcomingOf = (view: GameView | undefined) => (view && view.phase !== Phase.RESULTS ? view.upcoming : undefined)
 
 /** The game once a name is settled: its own component so its hooks always run. */
-export function Joined({ conn, entry }: { conn: Connection; entry: GameEntry }) {
+export const Joined = ({ conn, entry }: { conn: Connection; entry: GameEntry }) => {
   const create = entry.type === GameEntryType.HOST
   const code = entry.code
   // Once the server assigns a code to a new game, put it in the URL for sharing.
@@ -108,7 +108,7 @@ export function Joined({ conn, entry }: { conn: Connection; entry: GameEntry }) 
 }
 
 /** The headset's view while there is no game to show: joining it, or why not. */
-function VrNotice({ title, line, actions }: { title: string; line: string; actions: VrAction[] }) {
+const VrNotice = ({ title, line, actions }: { title: string; line: string; actions: VrAction[] }) => {
   useVrView({ type: VrViewType.LOBBY, summary: { title, scoreLine: line, actions } })
   return undefined
 }

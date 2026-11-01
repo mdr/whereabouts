@@ -4,17 +4,17 @@ import { PanelClearance } from "./clearance"
 
 const eye = new Vector3(0, 1.6, 0)
 
-function makePanel(x: number, z = -0.6): Object3D {
+const makePanel = (x: number, z = -0.6): Object3D => {
   const obj = new Object3D()
   obj.position.set(x, 1.5, z)
   return obj
 }
 
-function makeGlobe(radius = 0.2) {
+const makeGlobe = (radius = 0.2) => {
   return { centre: new Vector3(0, 1.4, -0.8), radius }
 }
 
-function placed(...panels: Object3D[]): PanelClearance {
+const placed = (...panels: Object3D[]): PanelClearance => {
   const clearance = new PanelClearance()
   clearance.placed(
     eye,

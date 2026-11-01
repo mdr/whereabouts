@@ -35,7 +35,7 @@ interface Snapshot {
  * a version counter, and this is the one place that reads a counter only to
  * depend on it.
  */
-function following<T>(version: ReadonlySignal<number>, read: () => T): ReadonlySignal<T> {
+const following = <T>(version: ReadonlySignal<number>, read: () => T): ReadonlySignal<T> => {
   return computed(() => {
     // oxlint-disable-next-line typescript/no-unused-expressions -- the read is the dependency
     version.value

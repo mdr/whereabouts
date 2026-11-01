@@ -36,7 +36,7 @@ import { h3Cell, h3Resolution } from "@whereabouts/shared/h3"
 
 type ViewOverrides<V extends GameView> = Partial<Omit<V, "you" | "phase">> & { you?: Partial<V["you"]> }
 
-function viewBase() {
+const viewBase = () => {
   return {
     code: roomCode("AB12"),
     config: {
@@ -69,12 +69,12 @@ export const JOINED_LATE = { type: YouRoleType.JOINED_LATE, colour: playerColour
 export const SPECTATING = { type: YouRoleType.SPECTATOR } as const
 
 /** A lobby view of one player, with whatever a test needs changed. */
-export function makeLobbyView({ you, ...over }: ViewOverrides<LobbyGameView> = {}): LobbyGameView {
+export const makeLobbyView = ({ you, ...over }: ViewOverrides<LobbyGameView> = {}): LobbyGameView => {
   return { ...viewBase(), you: { ...youBase(), role: seated(), ...you }, ...over, phase: Phase.LOBBY }
 }
 
 /** A view of the first of five rounds under way. */
-export function makeGuessingView({ you, ...over }: ViewOverrides<GuessingGameView> = {}): GuessingGameView {
+export const makeGuessingView = ({ you, ...over }: ViewOverrides<GuessingGameView> = {}): GuessingGameView => {
   return {
     ...viewBase(),
     you: { ...youBase(), role: makePlaying(), ...you },
@@ -85,7 +85,7 @@ export function makeGuessingView({ you, ...over }: ViewOverrides<GuessingGameVie
 }
 
 /** A view of the first of five rounds revealed. */
-export function makeRevealView({ you, ...over }: ViewOverrides<RevealGameView> = {}): RevealGameView {
+export const makeRevealView = ({ you, ...over }: ViewOverrides<RevealGameView> = {}): RevealGameView => {
   return {
     ...viewBase(),
     you: { ...youBase(), role: makePlaying(), ...you },
@@ -96,7 +96,7 @@ export function makeRevealView({ you, ...over }: ViewOverrides<RevealGameView> =
 }
 
 /** A view of the final results of a game nobody scored in. */
-export function makeResultsView({ you, ...over }: ViewOverrides<ResultsGameView> = {}): ResultsGameView {
+export const makeResultsView = ({ you, ...over }: ViewOverrides<ResultsGameView> = {}): ResultsGameView => {
   return {
     ...viewBase(),
     you: { ...youBase(), role: seated(), ...you },
@@ -109,7 +109,7 @@ export function makeResultsView({ you, ...over }: ViewOverrides<ResultsGameView>
 }
 
 /** Alice, the host, connected and playing, with whatever a test needs changed. */
-export function makePlayer(over: Partial<PlayingPlayerView> = {}): PlayingPlayerView {
+export const makePlayer = (over: Partial<PlayingPlayerView> = {}): PlayingPlayerView => {
   return {
     type: Role.PLAYER,
     id: playerId("p1"),
@@ -125,12 +125,12 @@ export function makePlayer(over: Partial<PlayingPlayerView> = {}): PlayingPlayer
 }
 
 /** Sam, connected and watching, with whatever a test needs changed. */
-export function makeSpectator(over: Partial<SpectatorView> = {}): SpectatorView {
+export const makeSpectator = (over: Partial<SpectatorView> = {}): SpectatorView => {
   return { type: Role.SPECTATOR, id: playerId("p9"), name: playerName("Sam"), connected: true, isHost: false, ...over }
 }
 
 /** The first of five reveals, of a place, with no results yet. */
-export function makeReveal(over: Partial<RevealView> = {}): RevealView {
+export const makeReveal = (over: Partial<RevealView> = {}): RevealView => {
   return {
     index: 0,
     total: 5,
@@ -146,12 +146,12 @@ export function makeReveal(over: Partial<RevealView> = {}): RevealView {
 }
 
 /** Alice's result, a pass unless the test says. */
-export function makeResult(over: Partial<RoundResultView> = {}): RoundResultView {
+export const makeResult = (over: Partial<RoundResultView> = {}): RoundResultView => {
   return { playerId: playerId("p1"), score: 500, guess: { type: RoundGuessType.PASSED }, ...over }
 }
 
 /** A point-round guess with a little paint. */
-export function makePainted(): RoundGuess {
+export const makePainted = (): RoundGuess => {
   return {
     type: RoundGuessType.PAINTED,
     paint: { cells: { [h3Cell("85283473fffffff")]: 1 }, floor: 0.05 },
@@ -161,7 +161,7 @@ export function makePainted(): RoundGuess {
 }
 
 /** A place question as players see it, with whatever a test needs changed. */
-export function makeQuestionView(over: Partial<QuestionView> = {}): QuestionView {
+export const makeQuestionView = (over: Partial<QuestionView> = {}): QuestionView => {
   return {
     type: QuestionType.PLACE,
     clue: { type: ClueType.NAME, prompt: "Where is Kyoto?" },
@@ -171,12 +171,12 @@ export function makeQuestionView(over: Partial<QuestionView> = {}): QuestionView
 }
 
 /** The answer of an area round, as players see it while guessing. */
-export function areaAnswerView(outline: string, tolerance = 200, surface = Surface.LAND): QuestionView["answer"] {
+export const areaAnswerView = (outline: string, tolerance = 200, surface = Surface.LAND): QuestionView["answer"] => {
   return { type: AnswerType.AREA, tolerance, outline: outlineId(outline), surface }
 }
 
 /** A country's flag round, marked as a point unless the answer says otherwise. */
-export function makeFlagQuestion(flag: string, label: string, over: Partial<FlagQuestion> = {}): FlagQuestion {
+export const makeFlagQuestion = (flag: string, label: string, over: Partial<FlagQuestion> = {}): FlagQuestion => {
   return {
     type: QuestionType.FLAG,
     id: questionId(`flag-${flag}`),

@@ -53,7 +53,7 @@ const w = new Vector3()
 const centre = new Vector3()
 
 let atlas: Promise<HTMLImageElement> | undefined = undefined
-function loadAtlas(): Promise<HTMLImageElement> {
+const loadAtlas = (): Promise<HTMLImageElement> => {
   atlas ??= (async () => {
     const image = new Image()
     image.src = FLAG_ATLAS.url

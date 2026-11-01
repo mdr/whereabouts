@@ -1,7 +1,7 @@
 import kit from "../kit.module.css"
 
 /** Small label/value rows for the drawer. */
-export function DevFacts({ facts }: { facts: [string, string | number][] }) {
+export const DevFacts = ({ facts }: { facts: [string, string | number][] }) => {
   return (
     <dl class={kit.facts}>
       {facts.map(([label, value]) => (

@@ -11,7 +11,7 @@ import { soloMapDetail, soloTypes } from "../../../settings/settings"
 import { useOutlines } from "../../../data/outlines"
 import { SoloGame } from "../SoloGame"
 
-export function Solo() {
+export const Solo = () => {
   useVrHold()
   return (
     <MapView>
@@ -21,7 +21,7 @@ export function Solo() {
 }
 
 /** The outlines come in their own chunk, fetched when a type painted whole is asked for. */
-function SoloLoader() {
+const SoloLoader = () => {
   const types = soloTypes.value
   const needed = types.some((type) => AREA_TYPES.includes(type))
   const loaded = useOutlines(needed)

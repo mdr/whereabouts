@@ -13,7 +13,7 @@ interface Position {
 }
 
 /** Calls `close` on Escape while `open`. */
-export function useEscape(open: boolean, close: () => void): void {
+export const useEscape = (open: boolean, close: () => void): void => {
   useEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent) => {
@@ -43,7 +43,7 @@ const TYPE_CLASS: Record<LightboxType, string | undefined> = {
  * click the backdrop, the close button or press Escape to leave. A photo is
  * a larger rendition than the thumbnail's, so zooming has detail to show.
  */
-export function Lightbox({
+export const Lightbox = ({
   src,
   type,
   ratio,
@@ -56,7 +56,7 @@ export function Lightbox({
   ratio?: number
   credit: ComponentChildren
   onClose: () => void
-}) {
+}) => {
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState<Position>({ x: 0, y: 0 })
   const frame = useElementRef<HTMLDivElement>()
@@ -65,7 +65,7 @@ export function Lightbox({
   const dragged = useRef(false)
 
   /** Zoom by `factor` keeping the point (cx, cy), relative to the frame centre, fixed. */
-  function zoomAt(factor: number, cx: Px, cy: Px) {
+  const zoomAt = (factor: number, cx: Px, cy: Px) => {
     const next = Math.min(MAX_ZOOM, Math.max(1, zoom * factor))
     if (next === zoom) return
     const relative = next / zoom
@@ -77,7 +77,7 @@ export function Lightbox({
     setZoom(next)
   }
   /** Client coordinates to an offset from the frame centre. */
-  function fromCentre(clientX: Px, clientY: Px) {
+  const fromCentre = (clientX: Px, clientY: Px) => {
     const rect = frame.current?.getBoundingClientRect()
     if (!rect) return { cx: 0, cy: 0 }
     return { cx: clientX - (rect.left + rect.width / 2), cy: clientY - (rect.top + rect.height / 2) }
@@ -117,7 +117,7 @@ export function Lightbox({
     pointers.current.delete(event.pointerId)
     if (pointers.current.size < 2) pinchDist.current = undefined
   }
-  function pinchDistance() {
+  const pinchDistance = () => {
     const [first, second] = [...pointers.current.values()]
     return Math.hypot(first!.x - second!.x, first!.y - second!.y) || 1
   }

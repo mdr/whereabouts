@@ -8,7 +8,7 @@ import { usePaint } from "../../../ui/map/MapView/MapView"
 import styles from "./CopyCase.module.css"
 
 /** Copies the paint and its score as text, to paste into a chat about the scoring (see scoring-case.ts). */
-export function CopyCase({
+export const CopyCase = ({
   question,
   answer,
   kernel
@@ -16,7 +16,7 @@ export function CopyCase({
   question: Question
   answer: ScoredAnswer
   kernel: ChoosableKernel
-}) {
+}) => {
   const paint = usePaint()
   const [copied, setCopied] = useState(false)
   // Where the clipboard is out of reach (a LAN address over http), the text to copy by hand.

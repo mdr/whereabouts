@@ -6,7 +6,7 @@ import { Icon } from "../../../../ui/icons"
 import { roleSwitchTestIds } from "./RoleSwitchTestIds"
 import styles from "./RoleSwitch.module.css"
 
-export function RoleSwitch({ conn, view, online }: { conn: Connection; view: GameView; online: boolean }) {
+export const RoleSwitch = ({ conn, view, online }: { conn: Connection; view: GameView; online: boolean }) => {
   const seatsFull = view.players.length >= MAX_PLAYERS
   const watchersFull = view.spectators.length >= MAX_SPECTATORS
   return (

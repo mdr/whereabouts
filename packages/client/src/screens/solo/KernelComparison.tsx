@@ -3,7 +3,7 @@ import { scoreAnswer, type ScoredAnswer } from "@whereabouts/shared/scoring/regi
 import { cx } from "../../ui/cx"
 import kit from "../../ui/kit.module.css"
 
-export function KernelComparison({
+export const KernelComparison = ({
   painted,
   answer,
   active
@@ -11,7 +11,7 @@ export function KernelComparison({
   painted: Distribution
   answer: ScoredAnswer
   active: KernelId
-}) {
+}) => {
   return (
     <ul class={cx(kit.results, kit.compare)}>
       {KERNELS.map((kernel) => (

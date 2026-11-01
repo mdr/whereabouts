@@ -37,7 +37,7 @@ const HANDOVER: Ms = 500
  * each render passes on what changed, such as the clock or who is ready.
  * The headset comes off when the player goes where it has nothing to show.
  */
-export function useVrView(view: VrView): void {
+export const useVrView = (view: VrView): void => {
   // The headset calls back long after this render; it should reach the screen as it is then.
   const latest = useRef(view)
   latest.current = view
@@ -56,7 +56,7 @@ export function useVrView(view: VrView): void {
  * Keep the headset on while this screen shows, though it has nothing for
  * the headset yet: a game or practice still loading.
  */
-export function useVrHold(): void {
+export const useVrHold = (): void => {
   useEffect(() => {
     showing++
     return () => {
@@ -74,7 +74,7 @@ export function useVrHold(): void {
  * a press the browser still counts as the player's, a few seconds at most,
  * and loading can take longer: then a second, larger button asks again.
  */
-export function VrButton({ view }: { view: VrView }) {
+export const VrButton = ({ view }: { view: VrView }) => {
   const [stage, setStage] = useState<LaunchStage | undefined>(undefined)
   const latest = useRef(view)
   latest.current = view
@@ -156,7 +156,7 @@ const STAGE_TEXT: Record<VrLoadStage, string> = {
 }
 
 /** A globe turning while the VR code loads, filling with paint stage by stage. */
-function VrLoading({ stage }: { stage: VrLoadStage }) {
+const VrLoading = ({ stage }: { stage: VrLoadStage }) => {
   const done = VR_LOAD_STAGES.indexOf(stage)
   return (
     <div class={styles.loading} role="status">

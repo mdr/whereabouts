@@ -11,7 +11,7 @@ import { ToolLabel } from "./ToolLabel/ToolLabel"
  * better score: a blob centred on a coastal answer loses its sea side (see
  * land.ts).
  */
-export function Trim({ enabled, water }: { enabled: boolean; water: boolean }) {
+export const Trim = ({ enabled, water }: { enabled: boolean; water: boolean }) => {
   const paint = usePaint()
   const [note, setNote] = useState<string | undefined>(undefined)
   const [busy, setBusy] = useState(false)

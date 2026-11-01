@@ -18,7 +18,7 @@ const held = { page: new Map<string, HTMLImageElement>(), headset: new Map<strin
 const KEEP = { page: 2 * MAX_ROUNDS, headset: 6 }
 
 /** The headset's are loaded as it loads them: to the browser, one loaded otherwise is a different picture. */
-function load(url: string, viewer: keyof typeof held): void {
+const load = (url: string, viewer: keyof typeof held): void => {
   const pictures = held[viewer]
   let image = pictures.get(url)
   if (image) pictures.delete(url)
@@ -32,7 +32,7 @@ function load(url: string, viewer: keyof typeof held): void {
   if (pictures.size > KEEP[viewer]) pictures.delete(pictures.keys().next().value!)
 }
 
-export function preloadPictures({ image, flag, revealPhoto }: QuestionPictures): void {
+export const preloadPictures = ({ image, flag, revealPhoto }: QuestionPictures): void => {
   if (image) load(commonsImageUrl(image), "page")
   if (revealPhoto) load(commonsImageUrl(revealPhoto), "page")
   const vr = loadedVr.value?.active.value ?? false
@@ -53,6 +53,6 @@ export function preloadPictures({ image, flag, revealPhoto }: QuestionPictures):
 }
 
 /** What is held, oldest first, for the tests. */
-export function heldPictures(): { page: string[]; headset: string[] } {
+export const heldPictures = (): { page: string[]; headset: string[] } => {
   return { page: [...held.page.keys()], headset: [...held.headset.keys()] }
 }

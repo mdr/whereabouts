@@ -3,7 +3,7 @@ import { MAP_PREVIEWS } from "../map-previews"
 import styles from "./MapDetailSummary.module.css"
 
 /** The chosen level as a picture with its name and what it adds. */
-export function MapDetailSummary({ value }: { value: MapDetail }) {
+export const MapDetailSummary = ({ value }: { value: MapDetail }) => {
   const level = MAP_DETAILS.find((candidate) => candidate.id === value) ?? MAP_DETAILS[0]!
   return (
     <>

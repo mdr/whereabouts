@@ -7,7 +7,7 @@ import type { PaintModel } from "./paint-model"
 import type { PaintView } from "./paint-view"
 import { Tool } from "./tool"
 
-function setup() {
+const setup = () => {
   const handlers = new Map<string, (event: unknown) => void>()
   const container = document.createElement("div")
   const map = {

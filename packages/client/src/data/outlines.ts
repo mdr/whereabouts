@@ -20,7 +20,7 @@ export const outlinesFailed = signal(false)
 
 let loading: Promise<Outlines> | undefined = undefined
 
-export function loadOutlines(): Promise<Outlines> {
+export const loadOutlines = (): Promise<Outlines> => {
   if (!loading) outlinesFailed.value = false
   loading ??= fetchBuildJson<Record<string, Outline>>(outlinesUrl).then(
     (json) => (outlines.value = outlinesFrom(json)),
@@ -35,7 +35,7 @@ export function loadOutlines(): Promise<Outlines> {
 }
 
 /** The outlines when `wanted`, loading them if need be; undefined until they arrive. */
-export function useOutlines(wanted: boolean): Outlines | undefined {
+export const useOutlines = (wanted: boolean): Outlines | undefined => {
   const all = outlines.value
   useEffect(() => {
     if (wanted && !all) loadOutlines().catch((error: unknown) => console.warn("could not load outlines", error))
@@ -44,7 +44,7 @@ export function useOutlines(wanted: boolean): Outlines | undefined {
 }
 
 /** An outline by id, loading them first if need be; undefined until they arrive. */
-export function useOutline(id: OutlineId | undefined): Outline | undefined {
+export const useOutline = (id: OutlineId | undefined): Outline | undefined => {
   const all = useOutlines(id !== undefined)
   return id && all ? all.get(id) : undefined
 }

@@ -6,7 +6,7 @@ import { PaintBlobs } from "../PaintBlobs/PaintBlobs"
 import styles from "./PaintDev.module.css"
 
 /** Developer-only paint settings and diagnostics. */
-export function PaintDev() {
+export const PaintDev = () => {
   const paint = usePaint()
   const stats = paint.stats.value
   return (
@@ -40,7 +40,7 @@ export function PaintDev() {
   )
 }
 
-function Slider(props: {
+const Slider = (props: {
   label: string
   min: number
   max: number
@@ -48,7 +48,7 @@ function Slider(props: {
   value: number
   onInput: (value: number) => void
   format: (value: number) => string
-}) {
+}) => {
   return (
     <div class={styles.row}>
       <label>{props.label}</label>

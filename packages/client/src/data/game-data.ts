@@ -13,7 +13,7 @@ import { useBorders } from "./borders"
 import { loadFacts } from "./facts"
 import { useOutlines } from "./outlines"
 
-export function useGameData(mix: QuestionMix, wanted = true): Borders | undefined {
+export const useGameData = (mix: QuestionMix, wanted = true): Borders | undefined => {
   useEffect(() => {
     if (wanted) loadFacts().catch((error: unknown) => console.warn("could not load the facts", error))
   }, [wanted])

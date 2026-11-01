@@ -8,7 +8,7 @@ import styles from "./Hint.module.css"
 const AXIS_ICON: Record<HintAxis, IconName> = { [HintAxis.LATITUDE]: "latitude", [HintAxis.LONGITUDE]: "longitude" }
 
 /** `left` is how many the player has; undefined in practice, where they are unlimited. */
-export function HintCard({
+export const HintCard = ({
   band,
   left,
   disabled,
@@ -18,7 +18,7 @@ export function HintCard({
   left?: number
   disabled?: boolean
   onUse: (axis: HintAxis) => void
-}) {
+}) => {
   if (band) {
     return (
       <Card class={styles.card}>

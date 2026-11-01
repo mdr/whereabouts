@@ -11,7 +11,7 @@ import { useOutlines } from "../../../data/outlines"
 import { LoadingOutlines } from "../../../ui/map/LoadingOutlines/LoadingOutlines"
 import { Review } from "../Review"
 
-export function ScoreReview() {
+export const ScoreReview = () => {
   return (
     <MapView>
       <ReviewLoader />
@@ -19,7 +19,7 @@ export function ScoreReview() {
   )
 }
 
-function ReviewLoader() {
+const ReviewLoader = () => {
   const loaded = useOutlines(true)
   if (!loaded) return <LoadingOutlines />
   return <Review outlines={loaded} />

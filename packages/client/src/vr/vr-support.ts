@@ -32,7 +32,7 @@ export class VrCodeMissing extends Error {}
 
 let loading: Promise<Vr> | undefined = undefined
 
-export function loadVr(): Promise<Vr> {
+export const loadVr = (): Promise<Vr> => {
   if (!loading) vrLoadStage.value = VrLoadStage.CODE
   loading ??= (async () => {
     const loaded = await import("./index").catch((error: unknown) => {

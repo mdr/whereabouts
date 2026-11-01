@@ -13,7 +13,7 @@ import { SoundToggle } from "../SoundToggle/SoundToggle"
 import styles from "./Hud.module.css"
 
 /** `reveal` lays out a round's reveal; MapView reads `data-hud` to lift the map's buttons above its sheet. */
-export function Hud({ reveal, children }: { reveal?: boolean; children: ComponentChildren }) {
+export const Hud = ({ reveal, children }: { reveal?: boolean; children: ComponentChildren }) => {
   return (
     <main class={cx(styles.hud, reveal && styles.reveal)} data-hud={reveal ? "reveal" : undefined}>
       {children}
@@ -21,16 +21,16 @@ export function Hud({ reveal, children }: { reveal?: boolean; children: Componen
   )
 }
 
-export function HudTop({ children }: { children: ComponentChildren }) {
+export const HudTop = ({ children }: { children: ComponentChildren }) => {
   return <div class={styles.top}>{children}</div>
 }
 
 /** `roomy`: something in it has opened up, and may take more of a phone's screen. */
-export function HudRight({ roomy, children }: { roomy?: boolean; children: ComponentChildren }) {
+export const HudRight = ({ roomy, children }: { roomy?: boolean; children: ComponentChildren }) => {
   return <div class={cx(styles.right, roomy && styles.roomy)}>{children}</div>
 }
 
-export function HudCenter({ children }: { children: ComponentChildren }) {
+export const HudCenter = ({ children }: { children: ComponentChildren }) => {
   return <div class={styles.center}>{children}</div>
 }
 
@@ -40,7 +40,7 @@ export function HudCenter({ children }: { children: ComponentChildren }) {
  * attribution button) can sit above it on phones, where the bar spans the
  * full width. `note`: a line under the buttons.
  */
-export function HudBottom({ note, children }: { note?: string; children: ComponentChildren }) {
+export const HudBottom = ({ note, children }: { note?: string; children: ComponentChildren }) => {
   const ref = useElementRef<HTMLDivElement>()
   useEffect(() => {
     const element = ref.current
@@ -71,7 +71,7 @@ export const toolbarGrow = styles.grow
  * round counter, the sound switch, and anything the screen wants on the
  * right (a countdown, a HeaderNote).
  */
-export function HudHeader({
+export const HudHeader = ({
   home,
   round,
   total,
@@ -81,7 +81,7 @@ export function HudHeader({
   round: number
   total: number | string
   right?: ComponentChildren
-}) {
+}) => {
   return (
     <div class={styles.header} data-testid={hudHeaderTestIds.header}>
       {home ? (
@@ -104,7 +104,7 @@ export function HudHeader({
 }
 
 /** Small print on the right of the header: a running total (kept to one line), or who is ready. */
-export function HeaderNote({
+export const HeaderNote = ({
   nowrap,
   title,
   testId,
@@ -114,7 +114,7 @@ export function HeaderNote({
   title?: string
   testId?: string
   children: ComponentChildren
-}) {
+}) => {
   return (
     <span class={cx(styles.note, nowrap && styles.nowrap)} title={title}>
       <span data-testid={testId}>{children}</span>

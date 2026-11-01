@@ -5,7 +5,7 @@ import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { awardsTestIds } from "./AwardsTestIds"
 import styles from "./Awards.module.css"
 
-export function Awards({ awards, byId }: { awards: Award[]; byId: ReadonlyMap<PlayerId, PlayingPlayerView> }) {
+export const Awards = ({ awards, byId }: { awards: Award[]; byId: ReadonlyMap<PlayerId, PlayingPlayerView> }) => {
   return (
     <section class={styles.awards} aria-label="Awards">
       <h2>Awards</h2>
@@ -29,7 +29,7 @@ export function Awards({ awards, byId }: { awards: Award[]; byId: ReadonlyMap<Pl
 }
 
 /** The line with each {n} replaced by that player's name, in their colour. */
-function AwardLine({ line, players }: { line: string; players: (PlayingPlayerView | undefined)[] }) {
+const AwardLine = ({ line, players }: { line: string; players: (PlayingPlayerView | undefined)[] }) => {
   return (
     <>
       {line.split(/(\{\d\})/).map((part, i) => {

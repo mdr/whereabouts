@@ -9,7 +9,7 @@ import styles from "./Banner.module.css"
  * to the spray, with "Whereabouts" over it. Children sit over the top left
  * (the lobby's Leave button). `tall` on the lobby's wider card.
  */
-export function Banner({ tall, children }: { tall?: boolean; children?: ComponentChildren }) {
+export const Banner = ({ tall, children }: { tall?: boolean; children?: ComponentChildren }) => {
   return (
     <header class={cx(styles.banner, tall && styles.tall)}>
       <img

@@ -17,7 +17,7 @@ import { navigate } from "../../router"
 import { JoinAs } from "./JoinAs/JoinAs"
 import { Joined } from "./Joined/Joined"
 
-export function Multiplayer({ entry }: { entry: GameEntry }) {
+export const Multiplayer = ({ entry }: { entry: GameEntry }) => {
   const conn = useMemo(() => new Connection(), [])
   // "Just watch" from the home screen or the join screen below.
   const [watch, setWatch] = useState(() => {

@@ -39,7 +39,7 @@ export type RoundPaint = Pick<PaintController, "reset" | "tool" | "useFiller" | 
   }
 }
 
-export function useRoundMap(
+export const useRoundMap = (
   paint: RoundPaint,
   {
     round,
@@ -62,7 +62,7 @@ export function useRoundMap(
     /** The screen's own start of a round, just after the paint is reset. */
     start?: () => void
   }
-): void {
+): void => {
   useEffect(() => {
     if (!painting || !question) return
     paint.reset(question.answer.tolerance)
@@ -94,34 +94,34 @@ export function useRoundMap(
 }
 
 /** What an area round asks to cover: "country", "island", "state"… */
-export function areaNoun(question: Pick<QuestionView, "type" | "feature">): string {
+export const areaNoun = (question: Pick<QuestionView, "type" | "feature">): string => {
   if (question.feature) return question.feature.toLowerCase()
   return question.type === QuestionType.STATE ? "state" : "country"
 }
 
 /** Whether Done now is a pass (nothing painted), clucking if so. */
-export function announcePass(paint: Pick<PaintController, "layer">): boolean {
+export const announcePass = (paint: Pick<PaintController, "layer">): boolean => {
   const pass = paint.layer.isEmpty
   if (pass) sound.play("chicken")
   return pass
 }
 
-export function showAnswer(
+export const showAnswer = (
   gameMap: Pick<GameMap, "showReveal" | "showRegionReveal" | "clearReveal">,
   { answer, shape }: RevealedAnswer
-): void {
+): void => {
   if (shape.type === RevealedShapeType.POINT) gameMap.showReveal(answer)
   else if (shape.outline) gameMap.showRegionReveal(shape.outline)
   else gameMap.clearReveal()
 }
 
 /** Frame the answer and the paint shown together, wherever the paint went. */
-export function frameReveal(
+export const frameReveal = (
   camera: Pick<MapCamera, "fitAnswerAndPaint" | "fitRegionAndPaint">,
   question: QuestionView,
   revealed: RevealedAnswer,
   paint: GeoJSON.FeatureCollection
-): void {
+): void => {
   if (revealed.shape.type === RevealedShapeType.AREA && revealed.shape.outline)
     camera.fitRegionAndPaint(revealed.answer, revealed.shape.outline, paint, question.answer.tolerance)
   else camera.fitAnswerAndPaint(revealed.answer, paint, question.answer.tolerance)

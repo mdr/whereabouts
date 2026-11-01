@@ -6,7 +6,7 @@
  */
 import { signal } from "@preact/signals"
 
-export function hasDevFlag(location: { search: string; hash: string }): boolean {
+export const hasDevFlag = (location: { search: string; hash: string }): boolean => {
   if (new URLSearchParams(location.search).has("dev")) return true
   const queryStart = location.hash.indexOf("?")
   return queryStart >= 0 && new URLSearchParams(location.hash.slice(queryStart)).has("dev")

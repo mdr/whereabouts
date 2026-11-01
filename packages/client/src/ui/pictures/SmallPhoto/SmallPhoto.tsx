@@ -7,7 +7,7 @@ import { useEscape } from "../Lightbox/Lightbox"
 import { PhotoLightbox } from "../PhotoLightbox"
 import styles from "../SmallPicture.module.css"
 
-export function SmallPhoto({ image }: { image: CommonsFile }) {
+export const SmallPhoto = ({ image }: { image: CommonsFile }) => {
   const [large, setLarge] = useState(false)
   useEscape(large, () => setLarge(false))
   const thumb = useElementRef<HTMLImageElement>()

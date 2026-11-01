@@ -9,7 +9,7 @@ import type { Globe } from "./globe"
 import { drawBorders, drawColour, drawLand } from "./globe-texture"
 
 /** Fetch the land and borders and draw the globe's textures; the colour one finishes in the background. */
-export async function drawGlobe(globe: Globe, renderer: World["renderer"]): Promise<void> {
+export const drawGlobe = async (globe: Globe, renderer: World["renderer"]): Promise<void> => {
   const [land, borders] = await Promise.all([
     fetchBuildJson<LandMaskData>(landUrl),
     fetchBuildJson<BordersData>(bordersUrl)

@@ -13,7 +13,7 @@ import { setupPanelTestIds } from "./SetupPanelTestIds"
 import styles from "./SetupPanel.module.css"
 
 /** The right panel: the game's setup, this device's switches, and the way to start. */
-export function SetupPanel({
+export const SetupPanel = ({
   conn,
   view,
   online,
@@ -25,7 +25,7 @@ export function SetupPanel({
   online: boolean
   vrView: VrView
   playerCount: number
-}) {
+}) => {
   const host = view.you.isHost
   return (
     <LobbyPanel>

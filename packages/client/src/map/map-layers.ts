@@ -53,12 +53,12 @@ export const REVEAL_ANSWER: LayerId<"circle"> = "reveal-answer"
 export const CURSOR_FILL: LayerId<"fill"> = "cursor-fill"
 export const CURSOR_OUTLINE: LayerId<"line"> = "cursor-outline"
 
-function emptyCollection(): GeoJSON.FeatureCollection {
+const emptyCollection = (): GeoJSON.FeatureCollection => {
   return { type: "FeatureCollection", features: [] }
 }
 
 /** Adds the game's own sources and layers above the style's. Layers are added in stacking order. */
-export function addGameLayers(map: MapLibreMap, labelLayers: string[], theme: Theme | undefined): void {
+export const addGameLayers = (map: MapLibreMap, labelLayers: string[], theme: Theme | undefined): void => {
   const below = map.getLayer("water") ? "water" : labelLayers[0]
   addRelief(map, below)
   addStateLayers(map, labelLayers[0], theme)
@@ -68,7 +68,7 @@ export function addGameLayers(map: MapLibreMap, labelLayers: string[], theme: Th
   addCursorLayers(map)
 }
 
-function addRelief(map: MapLibreMap, below: string | undefined): void {
+const addRelief = (map: MapLibreMap, below: string | undefined): void => {
   // Shaded relief for the reveal, from the public AWS terrain tiles. It
   // starts hidden, and MapLibre fetches nothing for a hidden layer, so
   // guessing costs no tile requests. It goes just under the water layer:
@@ -119,7 +119,7 @@ function addRelief(map: MapLibreMap, below: string | undefined): void {
   )
 }
 
-function addStateLayers(map: MapLibreMap, firstLabelLayer: string | undefined, theme: Theme | undefined): void {
+const addStateLayers = (map: MapLibreMap, firstLabelLayer: string | undefined, theme: Theme | undefined): void => {
   if (!map.getSource("openmaptiles")) return
   map.addLayer(
     {
@@ -158,7 +158,7 @@ function addStateLayers(map: MapLibreMap, firstLabelLayer: string | undefined, t
   })
 }
 
-function addHintLayers(map: MapLibreMap): void {
+const addHintLayers = (map: MapLibreMap): void => {
   // A hint's band, under the paint so painting over it stays readable.
   map.addSource(HINT_SOURCE, { type: "geojson", data: emptyCollection() })
   map.addLayer({
@@ -175,7 +175,7 @@ function addHintLayers(map: MapLibreMap): void {
   })
 }
 
-function addPaintLayers(map: MapLibreMap): void {
+const addPaintLayers = (map: MapLibreMap): void => {
   map.addSource(PAINT_SOURCE, { type: "geojson", data: emptyCollection() })
   map.addLayer({
     id: PAINT_FILL,
@@ -201,7 +201,7 @@ function addPaintLayers(map: MapLibreMap): void {
   })
 }
 
-function addRevealLayers(map: MapLibreMap): void {
+const addRevealLayers = (map: MapLibreMap): void => {
   map.addSource(REVEAL_SOURCE, { type: "geojson", data: emptyCollection() })
   // A region answer: the country filled faintly and outlined.
   const isArea: FilterSpecification = ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]]
@@ -233,7 +233,7 @@ function addRevealLayers(map: MapLibreMap): void {
   })
 }
 
-function addCursorLayers(map: MapLibreMap): void {
+const addCursorLayers = (map: MapLibreMap): void => {
   // Brush footprint: the exact cells the next stamp would touch.
   map.addSource(CURSOR_SOURCE, { type: "geojson", data: emptyCollection() })
   map.addLayer({

@@ -13,7 +13,7 @@ export interface StyleFetches {
   tileJsons: string[]
 }
 
-export function styleFetches(style: StyleSpecification, zoom: Zoom, pixelRatio: number): StyleFetches {
+export const styleFetches = (style: StyleSpecification, zoom: Zoom, pixelRatio: number): StyleFetches => {
   // A phone's whole world is below zoom 0, but its tiles are drawn at 0.
   const z = tileZoom(zoom)
   const shown = style.layers.filter((layer) => (layer.minzoom ?? 0) <= z && layer.layout?.visibility !== "none")
@@ -39,7 +39,7 @@ export function styleFetches(style: StyleSpecification, zoom: Zoom, pixelRatio: 
 }
 
 /** Every tile at the zoom MapLibre draws `zoom` with (512 px tiles: the zoom rounded down). */
-export function tileUrls(templates: string[], zoom: Zoom): string[] {
+export const tileUrls = (templates: string[], zoom: Zoom): string[] => {
   const z = tileZoom(zoom)
   const tileCount = 2 ** z
   const template = templates[0]
@@ -53,12 +53,12 @@ export function tileUrls(templates: string[], zoom: Zoom): string[] {
 
 const tileZoom = (zoom: Zoom): Zoom => Math.max(0, Math.floor(zoom))
 
-function sourceOf(layer: LayerSpecification): string | undefined {
+const sourceOf = (layer: LayerSpecification): string | undefined => {
   return "source" in layer && typeof layer.source === "string" ? layer.source : undefined
 }
 
 /** A symbol layer's font stack, as MapLibre names it in glyph URLs; undefined when it is an expression. */
-function fontOf(layer: LayerSpecification): string | undefined {
+const fontOf = (layer: LayerSpecification): string | undefined => {
   if (layer.type !== "symbol") return undefined
   const font: unknown = layer.layout?.["text-font"]
   return Array.isArray(font) && font.every((name) => typeof name === "string") ? font.join(",") : undefined

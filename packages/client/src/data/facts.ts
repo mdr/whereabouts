@@ -15,7 +15,7 @@ const facts = signal<RawFacts | undefined>(undefined)
 
 let loading: Promise<RawFacts> | undefined = undefined
 
-export function loadFacts(): Promise<RawFacts> {
+export const loadFacts = (): Promise<RawFacts> => {
   loading ??= import("@whereabouts/shared/facts.json").then(
     (loaded) => (facts.value = loaded.default),
     (error: unknown) => {
@@ -33,7 +33,7 @@ const checked = new Map<PlaceId, PlaceFacts | undefined>()
  * The facts for `place`, checked on first use. Only these few are parsed:
  * parsing the whole file as a round starts stalls the page.
  */
-export function factsOf(all: RawFacts, place: PlaceId): PlaceFacts | undefined {
+export const factsOf = (all: RawFacts, place: PlaceId): PlaceFacts | undefined => {
   if (checked.has(place)) return checked.get(place)
   const raw = all[place]
   const parsed = raw === undefined ? undefined : PlaceFactsSchema.safeParse(raw)
@@ -48,11 +48,11 @@ export function factsOf(all: RawFacts, place: PlaceId): PlaceFacts | undefined {
  * need be; the same for everyone with the same `seed` and `round`. Undefined
  * until loaded, or for an answer without facts.
  */
-export function useFact(
+export const useFact = (
   question: { place: PlaceId; type: QuestionType } | undefined,
   seed: string,
   round: number
-): Fact | undefined {
+): Fact | undefined => {
   const all = facts.value
   useEffect(() => {
     if (!all) loadFacts().catch((error: unknown) => console.warn("could not load the facts", error))

@@ -23,32 +23,32 @@ export interface PaintSetting {
   value: unknown
 }
 
-export function paintSetting<K extends LayerKind, P extends PaintProperty<K>>(
+export const paintSetting = <K extends LayerKind, P extends PaintProperty<K>>(
   layer: LayerId<K>,
   property: P,
   value: PaintValue<K, P>
-): PaintSetting {
+): PaintSetting => {
   return { layer, property: String(property), value }
 }
 
 /** MapLibre's setPaintProperty takes the union of every layer's properties; a PaintSetting was checked against its layer's kind. */
-export function applyPaint(map: MapLibreMap, { layer, property, value }: PaintSetting): void {
+export const applyPaint = (map: MapLibreMap, { layer, property, value }: PaintSetting): void => {
   map.setPaintProperty(layer, property as never, value as never)
 }
 
-export function setPaint<K extends LayerKind, P extends PaintProperty<K>>(
+export const setPaint = <K extends LayerKind, P extends PaintProperty<K>>(
   map: MapLibreMap,
   layer: LayerId<K>,
   property: P,
   value: PaintValue<K, P>
-): void {
+): void => {
   applyPaint(map, paintSetting(layer, property, value))
 }
 
 /** The id of a style layer if it is of this kind, so its settings can be checked. */
-export function idOfKind<K extends LayerKind>(
+export const idOfKind = <K extends LayerKind>(
   layer: { id: string; type: LayerKind },
   wanted: K
-): LayerId<K> | undefined {
+): LayerId<K> | undefined => {
   return layer.type === wanted ? layer.id : undefined
 }

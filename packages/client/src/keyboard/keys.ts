@@ -6,7 +6,7 @@
  */
 const NOT_TEXT = new Set(["range", "checkbox", "radio", "button", "submit", "reset", "color", "file", "image"])
 
-export function isTyping(target: EventTarget | undefined): boolean {
+export const isTyping = (target: EventTarget | undefined): boolean => {
   if (target instanceof HTMLInputElement) return !NOT_TEXT.has(target.type)
   if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return true
   return target instanceof HTMLElement && target.isContentEditable
@@ -15,7 +15,7 @@ export function isTyping(target: EventTarget | undefined): boolean {
 let tabbedTo: Element | undefined = undefined
 
 /** Start noting which control the player reached with the keyboard. Call once at start-up. */
-export function trackKeyboardFocus(): void {
+export const trackKeyboardFocus = (): void => {
   // Read as focus arrives: any key press, a shortcut's own included, turns a
   // clicked button's focus ring on too.
   window.addEventListener("focusin", (event) => {
@@ -34,6 +34,6 @@ export function trackKeyboardFocus(): void {
  * click shows no focus ring, and the map is no control: there the key is
  * the shortcut's.
  */
-export function forTabbedControl(event: KeyboardEvent): boolean {
+export const forTabbedControl = (event: KeyboardEvent): boolean => {
   return tabbedTo !== undefined && event.target === tabbedTo
 }

@@ -6,7 +6,7 @@
  */
 import { LandMask, WaterMask } from "@whereabouts/shared/paint/land"
 
-function once<T>(load: () => Promise<T>): () => Promise<T> {
+const once = <T>(load: () => Promise<T>): (() => Promise<T>) => {
   let loading: Promise<T> | undefined = undefined
   return () =>
     (loading ??= load().catch((error: unknown) => {

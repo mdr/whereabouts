@@ -26,11 +26,11 @@ interface VrFlag {
 export type VrPicture = VrPhoto | VrFlag
 
 /** A photo, with at the reveal a postcard back telling of the answer, or else a flag. */
-export function vrPicture(
+export const vrPicture = (
   photo: CommonsFile | undefined,
   flag: FlagCode | undefined,
   postcard: Postcard | undefined
-): VrPicture | undefined {
+): VrPicture | undefined => {
   if (photo) return { type: VrPictureType.PHOTO, photo, ...(postcard ? { postcard } : {}) }
   return flag ? { type: VrPictureType.FLAG, flag } : undefined
 }
@@ -48,7 +48,7 @@ const photoUrls = new Map<CommonsFile, Promise<string | undefined>>()
  * browser may read back, and the page's photo links go through redirects
  * that don't allow it, so it comes by Commons' API.
  */
-export function vrPhotoUrl(file: CommonsFile): Promise<string | undefined> {
+export const vrPhotoUrl = (file: CommonsFile): Promise<string | undefined> => {
   let url = photoUrls.get(file)
   if (!url) {
     url = lookUp(file)
@@ -58,7 +58,7 @@ export function vrPhotoUrl(file: CommonsFile): Promise<string | undefined> {
   return url
 }
 
-async function lookUp(file: CommonsFile): Promise<string | undefined> {
+const lookUp = async (file: CommonsFile): Promise<string | undefined> => {
   const api = new URL("https://commons.wikimedia.org/w/api.php")
   api.search = new URLSearchParams({
     action: "query",

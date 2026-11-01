@@ -5,7 +5,7 @@ import { mapDetailPickerTestIds } from "./MapDetailPickerTestIds"
 import styles from "./MapDetailPicker.module.css"
 
 /** Map detail as four picture choices, least detail (hardest) first; `narrow`, as two rows of two. */
-export function MapDetailPicker({
+export const MapDetailPicker = ({
   value,
   onChange,
   narrow
@@ -13,7 +13,7 @@ export function MapDetailPicker({
   value: MapDetail
   onChange: (value: MapDetail) => void
   narrow?: boolean
-}) {
+}) => {
   return (
     <div
       class={cx(styles.picker, narrow && styles.narrow)}

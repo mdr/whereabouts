@@ -46,7 +46,7 @@ export interface StyleIndex {
   styleLayers: StyleLayer[]
 }
 
-export function emptyStyleIndex(): StyleIndex {
+export const emptyStyleIndex = (): StyleIndex => {
   return {
     labels: [],
     borders: [],
@@ -61,11 +61,11 @@ export function emptyStyleIndex(): StyleIndex {
   }
 }
 
-export function indexStyle(
+export const indexStyle = (
   layers: readonly IndexedLayer[],
   borderPaintOf: (id: LayerId<"line">) => BorderPaint,
   filterOf: (id: string) => unknown
-): StyleIndex {
+): StyleIndex => {
   const index = emptyStyleIndex()
   for (const layer of layers) {
     const sourceLayer = layer["source-layer"] ?? ""

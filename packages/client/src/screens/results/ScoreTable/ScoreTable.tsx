@@ -11,7 +11,7 @@ import styles from "./ScoreTable.module.css"
  * asked, and a column per player in finishing order, each round's best
  * picked out. Many players scroll sideways, the rounds staying in view.
  */
-export function ScoreTable({ rounds, standings, byId, you, best, scrolls }: RoundListProps & { scrolls: boolean }) {
+export const ScoreTable = ({ rounds, standings, byId, you, best, scrolls }: RoundListProps & { scrolls: boolean }) => {
   return (
     <div class={cx(styles.scroll, scrolls && styles.scrolls)}>
       <table class={styles.table} data-testid={scoreTableTestIds.table}>

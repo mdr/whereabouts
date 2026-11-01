@@ -146,7 +146,7 @@ export class Picture {
 }
 
 /** A flag seen from behind: the same, mirrored. */
-function reverse(front: CanvasTexture): CanvasTexture {
+const reverse = (front: CanvasTexture): CanvasTexture => {
   const flipped = front.clone()
   flipped.repeat.set(-1, 1)
   flipped.offset.set(1, 0)
@@ -158,7 +158,7 @@ function reverse(front: CanvasTexture): CanvasTexture {
  * write the address on and a box for the stamp. At the reveal, the message
  * names the place and tells of it.
  */
-function postcard(aspect: number, message: Postcard | undefined): CanvasTexture {
+const postcard = (aspect: number, message: Postcard | undefined): CanvasTexture => {
   const canvas = document.createElement("canvas")
   canvas.height = 512
   canvas.width = Math.round(512 * aspect)
@@ -211,7 +211,7 @@ function postcard(aspect: number, message: Postcard | undefined): CanvasTexture 
 }
 
 /** `text` broken into lines no wider than `width` in the canvas's current font. */
-function wrap(ctx: CanvasRenderingContext2D, text: string, width: number): string[] {
+const wrap = (ctx: CanvasRenderingContext2D, text: string, width: number): string[] => {
   const lines: string[] = []
   let line = ""
   for (const word of text.split(" ")) {
@@ -225,7 +225,7 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, width: number): strin
   return lines
 }
 
-async function load(picture: VrPicture): Promise<HTMLImageElement | undefined> {
+const load = async (picture: VrPicture): Promise<HTMLImageElement | undefined> => {
   const url = picture.type === VrPictureType.FLAG ? await flagUrl(picture.flag) : await vrPhotoUrl(picture.photo)
   if (!url) return undefined
   const image = new Image()

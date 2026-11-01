@@ -18,7 +18,7 @@ type SoundView =
  * applause at the final results. The spray and eraser are the map's
  * business (MapView), and Pass and Clear play their own, where they happen.
  */
-export function useGameSounds(conn: Pick<Connection, "timeUntil">, view: SoundView | undefined): void {
+export const useGameSounds = (conn: Pick<Connection, "timeUntil">, view: SoundView | undefined): void => {
   const previous = useRef<RoundState | undefined>(undefined)
   const lastDeadline = useRef<number | undefined>(undefined)
   const phase = view?.phase

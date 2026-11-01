@@ -105,7 +105,7 @@ type Clip = keyof typeof URLS
  * `delay`, from `offset` into the clip. Arriving with 6 s left starts 4 s
  * in, so the alarm still lands on zero; with no time left there is nothing.
  */
-export function countdownPlan(timeLeft: Ms): { delay: Ms; offset: Seconds } | undefined {
+export const countdownPlan = (timeLeft: Ms): { delay: Ms; offset: Seconds } | undefined => {
   if (timeLeft <= 0) return undefined
   const lead = COUNTDOWN * 1000
   if (timeLeft >= lead) return { delay: timeLeft - lead, offset: 0 }
@@ -349,7 +349,7 @@ let installed = false
  * Unlock audio on the first tap or key press, and silence everything when
  * the switch goes off. Call once at start-up.
  */
-export function installSound(): void {
+export const installSound = (): void => {
   if (installed || typeof window === "undefined") return
   installed = true
   const unlock = () => sound.unlock()

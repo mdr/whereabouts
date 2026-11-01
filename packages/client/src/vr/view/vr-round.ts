@@ -22,7 +22,7 @@ export interface VrRoundShown {
 }
 
 /** AnswerMode and AreaInstruction in a line; undefined for a place. */
-export function answerModeText(question: Pick<QuestionView, "type" | "answer" | "feature">): string | undefined {
+export const answerModeText = (question: Pick<QuestionView, "type" | "answer" | "feature">): string | undefined => {
   const area = outlineOf(question.answer) !== undefined
   if (question.type === QuestionType.FLAG)
     return area ? "Paint the whole country: its shape counts." : "Paint where it is: a place, not a shape."
@@ -30,15 +30,15 @@ export function answerModeText(question: Pick<QuestionView, "type" | "answer" | 
 }
 
 /** PaintedIn as a line of text. */
-function paintedInText(where: PaintedCountry, answer?: string): string {
+const paintedInText = (where: PaintedCountry, answer?: string): string => {
   const right = where.country.clue.flag === answer
   return `Your paint: ${Math.round(where.share * 100)}% in ${where.country.label}${right ? ", the answer" : ""}`
 }
 
-export function vrRound(
+export const vrRound = (
   { question, revealed, fact }: VrRoundShown,
   own: Omit<VrRound, "prompt" | "mode" | "picture" | "water">
-): VrRound {
+): VrRound => {
   return {
     ...own,
     prompt: promptOf(question),
@@ -61,24 +61,24 @@ export interface VrScore {
   painted: PaintedCountry | undefined
 }
 
-export function vrScoreLine(you: VrScore | undefined, flag: FlagCode | undefined): string {
+export const vrScoreLine = (you: VrScore | undefined, flag: FlagCode | undefined): string => {
   if (!you) return "You sat this one out"
   const where = you.painted ? `. ${paintedInText(you.painted, flag)}` : ""
   return `${you.passed ? "Passed: " : ""}${formatPoints(you.score)} this round, ${formatPoints(you.total)} in all${where}`
 }
 
-function vrAnswer({ shape, answer }: RevealedAnswer): VrAnswer | undefined {
+const vrAnswer = ({ shape, answer }: RevealedAnswer): VrAnswer | undefined => {
   if (shape.type === RevealedShapeType.POINT) return { type: VrAnswerType.POINT, point: answer }
   return shape.outline && { type: VrAnswerType.OUTLINE, outline: shape.outline }
 }
 
-export function vrReveal(
+export const vrReveal = (
   { question, fact }: VrRoundShown,
   revealed: RevealedAnswer,
   you: VrScore | undefined,
   borders: Borders | undefined,
   own: Pick<VrReveal, "actions" | "table" | "note" | "paints">
-): VrReveal {
+): VrReveal => {
   return {
     ...own,
     label: revealed.label,

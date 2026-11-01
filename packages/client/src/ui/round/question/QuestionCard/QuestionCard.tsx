@@ -25,7 +25,7 @@ const PLACE_CLASS: Record<CardPlace, string | undefined> = {
   [CardPlace.REVEAL]: styles.reveal
 }
 
-export function QuestionCard({
+export const QuestionCard = ({
   question,
   hud,
   children,
@@ -45,7 +45,7 @@ export function QuestionCard({
   foldable?: boolean
   /** Fold it at first: at the reveal, the answer line shows folded, and the map matters more. */
   startFolded?: boolean
-}) {
+}) => {
   const image = clueImage(question.clue) ?? photo
   const ref = useElementRef<HTMLDivElement>()
   const prompt = promptOf(question)
@@ -93,7 +93,7 @@ export function QuestionCard({
  * its text, so this sets the card's least height: everything else, plus the
  * picture at its own min-height. Below that the column of cards scrolls.
  */
-function usePictureFloor(ref: RefObject<HTMLDivElement>, folded: boolean): void {
+const usePictureFloor = (ref: RefObject<HTMLDivElement>, folded: boolean): void => {
   // Before paint, so folding never shows a frame held at the unfolded floor.
   useLayoutEffect(() => {
     const card = ref.current
@@ -122,7 +122,7 @@ function usePictureFloor(ref: RefObject<HTMLDivElement>, folded: boolean): void 
  * Publishes the question card's height as `--question-h` on the document:
  * a phone's reveal leaves the map clear below the card (QuestionCard.module.css, map.ts).
  */
-function usePublishedHeight(ref: RefObject<HTMLDivElement>): void {
+const usePublishedHeight = (ref: RefObject<HTMLDivElement>): void => {
   useLayoutEffect(() => {
     const card = ref.current
     const root = document.documentElement

@@ -13,11 +13,11 @@ import { HintAllowance, VrAnswerType, VrPaintsType } from "./view"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { FactType } from "@whereabouts/shared/catalogue/facts"
 
-function painted(flag: string, label: string, share: number): PaintedCountry {
+const painted = (flag: string, label: string, share: number): PaintedCountry => {
   return { country: makeFlagQuestion(flag, label), share }
 }
 
-function score(over: Partial<VrScore> = {}): VrScore {
+const score = (over: Partial<VrScore> = {}): VrScore => {
   return { score: 640, passed: false, total: 1500, painted: undefined, ...over }
 }
 
@@ -78,11 +78,11 @@ const answer: RevealedAnswer = {
   photo: commonsFile("Kyoto.jpg")
 }
 
-function shown(over: Partial<VrRoundShown> = {}): VrRoundShown {
+const shown = (over: Partial<VrRoundShown> = {}): VrRoundShown => {
   return { question: place, revealed: undefined, fact: undefined, ...over }
 }
 
-function round(shown: VrRoundShown) {
+const round = (shown: VrRoundShown) => {
   return vrRound(shown, {
     paint: {} as PaintController,
     detail: MapDetail.POLITICAL,

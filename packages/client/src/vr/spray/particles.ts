@@ -15,7 +15,7 @@ const GRAVITY = 0.6
 const v = new Vector3()
 const jitter = new Vector3()
 
-function dot(): CanvasTexture {
+const dot = (): CanvasTexture => {
   const canvas = document.createElement("canvas")
   canvas.width = canvas.height = 32
   const ctx = canvas.getContext("2d")
@@ -31,7 +31,7 @@ function dot(): CanvasTexture {
 }
 
 /** A point within a ball of radius `r`. */
-function inBall(out: Vector3, radius: Metres): Vector3 {
+const inBall = (out: Vector3, radius: Metres): Vector3 => {
   do out.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1)
   while (out.lengthSq() > 1)
   return out.multiplyScalar(radius)

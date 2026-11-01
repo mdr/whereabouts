@@ -5,7 +5,7 @@ import type { PaintCell } from "@whereabouts/shared/paint/paint"
 const MIN_SHARE = 0.2
 
 /** The country with most of the paint, if it has at least MIN_SHARE of it. */
-export function mainCountry(borders: Borders, cells: Iterable<PaintCell>): PaintedCountry | undefined {
+export const mainCountry = (borders: Borders, cells: Iterable<PaintCell>): PaintedCountry | undefined => {
   const top = borders.paintedCountries(cells)[0]
   return top && top.share >= MIN_SHARE ? top : undefined
 }

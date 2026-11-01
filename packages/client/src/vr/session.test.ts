@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { headsetPassthrough } from "../settings/settings"
 import { HeadsetSession, SWITCH_TIMEOUT } from "./session"
 
-function makeSession() {
+const makeSession = () => {
   const visibilityState = signal(VisibilityState.NonImmersive)
   const world = { visibilityState, launchXR: vi.fn(), exitXR: vi.fn() }
   const hooks = { launching: vi.fn(), ended: vi.fn() }
@@ -13,7 +13,7 @@ function makeSession() {
   return { session, visibilityState, world, hooks }
 }
 
-function makeImmersive() {
+const makeImmersive = () => {
   const made = makeSession()
   made.visibilityState.value = VisibilityState.Visible
   return made

@@ -2,7 +2,7 @@ import { usePaint } from "../map/MapView/MapView"
 import { Icon } from "../icons"
 
 /** Submit or Done; with nothing painted, Pass. */
-export function DoneButton({
+export const DoneButton = ({
   label,
   onDone,
   paintedTitle,
@@ -12,7 +12,7 @@ export function DoneButton({
   onDone: () => void
   paintedTitle?: string
   testId: string
-}) {
+}) => {
   const paint = usePaint()
   const empty = paint.isEmpty.value
   return (

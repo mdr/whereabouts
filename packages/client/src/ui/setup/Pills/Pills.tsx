@@ -2,7 +2,7 @@ import { pillsTestIds } from "./PillsTestIds"
 import styles from "../pill-row.module.css"
 
 /** A row of pills for a small set of choices, one on. */
-export function Pills<T extends string | number>({
+export const Pills = <T extends string | number>({
   label,
   options,
   value,
@@ -12,7 +12,7 @@ export function Pills<T extends string | number>({
   options: readonly { value: T; label: string }[]
   value: T
   onChange: (value: T) => void
-}) {
+}) => {
   return (
     <div class={styles.pills} role="radiogroup" aria-label={label}>
       {options.map((option) => (

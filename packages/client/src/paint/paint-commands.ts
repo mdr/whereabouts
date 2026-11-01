@@ -8,13 +8,13 @@ import { loadLandMask, loadWaterMask } from "../data/land"
 import type { PaintModel } from "./paint-model"
 import { sound } from "../sound/sound"
 
-export function clearPaint(paint: Pick<PaintModel, "layer" | "clear">): void {
+export const clearPaint = (paint: Pick<PaintModel, "layer" | "clear">): void => {
   if (!paint.layer.isEmpty) sound.play("clear")
   paint.clear()
 }
 
 /** Trim sea, or in a lake or sea round Trim land. Its mask loads on first use. */
-export async function trimPaint(paint: Pick<PaintModel, "trimSea" | "trimLand">, water: boolean): Promise<string> {
+export const trimPaint = async (paint: Pick<PaintModel, "trimSea" | "trimLand">, water: boolean): Promise<string> => {
   try {
     const share = water ? paint.trimLand(await loadWaterMask()) : paint.trimSea(await loadLandMask())
     return trimmed(share, water ? "None on land" : "None at sea")
@@ -24,11 +24,11 @@ export async function trimPaint(paint: Pick<PaintModel, "trimSea" | "trimLand">,
   }
 }
 
-export function trimPaintToHint(paint: Pick<PaintModel, "trimToHint">, band: HintBand): string {
+export const trimPaintToHint = (paint: Pick<PaintModel, "trimToHint">, band: HintBand): string => {
   return trimmed(paint.trimToHint(band), "None outside")
 }
 
-function trimmed(share: number, none: string): string {
+const trimmed = (share: number, none: string): string => {
   if (share > 0) sound.play("clear")
   return share > 0 ? `Trimmed ${Math.max(1, Math.round(share * 100))}%` : none
 }

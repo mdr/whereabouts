@@ -10,7 +10,7 @@ import type { Outline } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"
 import { revealedShape } from "./revealed-shape"
 
-export function revealedFromView(reveal: RevealView, outline: Outline | undefined): RevealedAnswer {
+export const revealedFromView = (reveal: RevealView, outline: Outline | undefined): RevealedAnswer => {
   return {
     label: reveal.label,
     wiki: reveal.wiki,
@@ -52,7 +52,7 @@ export const shownPlayerId = (shown: RevealShown): PlayerId | undefined =>
   shown.type === RevealShownType.PLAYER ? shown.id : undefined
 
 /** The results whose paint to show, best first. */
-export function shownResults(results: RoundResultView[], shown: RevealShown): RoundResultView[] {
+export const shownResults = (results: RoundResultView[], shown: RevealShown): RoundResultView[] => {
   const painted = results.filter((result) => result.guess.type === RoundGuessType.PAINTED)
   switch (shown.type) {
     case RevealShownType.EVERYONE:
@@ -69,10 +69,10 @@ export function shownResults(results: RoundResultView[], shown: RevealShown): Ro
  * passes included, comes in score order, then anyone who sat the round out;
  * ties keep the standings order. Spectators are not listed: they never play.
  */
-export function revealOrder(
+export const revealOrder = (
   players: PlayingPlayerView[],
   results: RoundResultView[]
-): { player: PlayingPlayerView; result?: RoundResultView }[] {
+): { player: PlayingPlayerView; result?: RoundResultView }[] => {
   const group = (result?: RoundResultView) => (result ? 0 : 1)
   return [...players]
     .sort((a, b) => a.rank - b.rank)

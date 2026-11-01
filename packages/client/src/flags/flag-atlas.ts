@@ -18,7 +18,7 @@ export const FLAG_ATLAS = {
 const index = new Map(atlas.codes.map((code, i) => [code, i]))
 
 /** Where a flag is in the picture, in pixels, if it is there: each in its own shape. */
-export function atlasCell(code: string): { x: number; y: number; width: number; height: number } | undefined {
+export const atlasCell = (code: string): { x: number; y: number; width: number; height: number } | undefined => {
   const i = index.get(code)
   if (i === undefined) return undefined
   return {

@@ -19,7 +19,7 @@ export interface ConfirmRequest {
   safe?: boolean
 }
 
-export function ConfirmDialog({
+export const ConfirmDialog = ({
   request,
   onClose,
   online = true
@@ -28,7 +28,7 @@ export function ConfirmDialog({
   onClose: () => void
   /** Offline, a confirmed action would be lost, so confirming waits. */
   online?: boolean
-}) {
+}) => {
   const cancelRef = useElementRef<HTMLButtonElement>()
   useEffect(() => {
     if (!request) return
@@ -79,7 +79,7 @@ export function ConfirmDialog({
 }
 
 /** One dialog per screen: render `dialog`, call `ask` to open it. */
-export function useConfirm(online = true): { dialog: ComponentChildren; ask: (request: ConfirmRequest) => void } {
+export const useConfirm = (online = true): { dialog: ComponentChildren; ask: (request: ConfirmRequest) => void } => {
   const [request, setRequest] = useState<ConfirmRequest | undefined>(undefined)
   return {
     dialog: <ConfirmDialog request={request} onClose={() => setRequest(undefined)} online={online} />,
@@ -88,7 +88,7 @@ export function useConfirm(online = true): { dialog: ComponentChildren; ask: (re
 }
 
 /** The wording for removing a player, shared by every list that offers it. */
-export function kickRequest(name: string, onConfirm: () => void): ConfirmRequest {
+export const kickRequest = (name: string, onConfirm: () => void): ConfirmRequest => {
   return {
     title: `Remove ${name} from the game?`,
     body: "They lose their score and paint, and can't take their seat back. They can rejoin with the code as a new player.",
@@ -98,7 +98,7 @@ export function kickRequest(name: string, onConfirm: () => void): ConfirmRequest
 }
 
 /** The wording for handing the host role to another player. */
-export function makeHostRequest(name: string, onConfirm: () => void): ConfirmRequest {
+export const makeHostRequest = (name: string, onConfirm: () => void): ConfirmRequest => {
   return {
     title: `Make ${name} the host?`,
     body: "They take over starting the game, the setup, moving on and removing players. You carry on as a player.",
@@ -109,7 +109,7 @@ export function makeHostRequest(name: string, onConfirm: () => void): ConfirmReq
 }
 
 /** The host leaving the lobby: someone takes over, or the game closes. */
-export function leaveRequest(nextHost: string | undefined, onConfirm: () => void): ConfirmRequest {
+export const leaveRequest = (nextHost: string | undefined, onConfirm: () => void): ConfirmRequest => {
   return nextHost
     ? {
         title: "Leave the game?",
@@ -126,7 +126,7 @@ export function leaveRequest(nextHost: string | undefined, onConfirm: () => void
       }
 }
 
-export function endGameRequest(onConfirm: () => void): ConfirmRequest {
+export const endGameRequest = (onConfirm: () => void): ConfirmRequest => {
   return {
     title: "End the game now?",
     body: "This round is scored as it stands and everyone goes to the final standings.",

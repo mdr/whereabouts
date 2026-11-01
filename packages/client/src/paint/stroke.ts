@@ -11,7 +11,7 @@ export interface ScreenPoint {
  * `to`: evenly a quarter of the brush apart (at least 2 px), so a fast drag
  * leaves no gaps and a slow one doesn't pile stamps up.
  */
-export function strokePoints(from: ScreenPoint | undefined, to: ScreenPoint, brushRadius: Px): ScreenPoint[] {
+export const strokePoints = (from: ScreenPoint | undefined, to: ScreenPoint, brushRadius: Px): ScreenPoint[] => {
   if (!from) return [to]
   const dx = to.x - from.x
   const dy = to.y - from.y
@@ -37,11 +37,11 @@ export enum TouchStep {
  * with a single touch for a moment, so a second finger abandons the stroke
  * the first began.
  */
-export function touchStart(fingers: number, canPaint: boolean): TouchStep {
+export const touchStart = (fingers: number, canPaint: boolean): TouchStep => {
   return fingers === 1 && canPaint ? TouchStep.BEGIN : TouchStep.ABANDON
 }
 
-export function touchMove(fingers: number, painting: boolean): TouchStep {
+export const touchMove = (fingers: number, painting: boolean): TouchStep => {
   if (!painting) return TouchStep.IGNORE
   return fingers === 1 ? TouchStep.CONTINUE : TouchStep.ABANDON
 }

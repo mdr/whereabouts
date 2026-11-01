@@ -17,7 +17,7 @@ import { Phase } from "@whereabouts/shared/protocol/views"
 /** Open, it may take more of a phone's screen (HudRight's `roomy`). */
 export const playersPanelOpen = signal(false)
 
-export function PlayersPanel({
+export const PlayersPanel = ({
   view,
   onKick,
   onMakeHost
@@ -25,7 +25,7 @@ export function PlayersPanel({
   view: GameView
   onKick?: (player: PlayerView) => void
   onMakeHost?: (player: PlayerView) => void
-}) {
+}) => {
   const { players } = view
   const watching = view.spectators.length
   const online = players.filter((player) => player.connected).length

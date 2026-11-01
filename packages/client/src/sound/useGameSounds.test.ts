@@ -23,7 +23,7 @@ const guessing = (index = 0): View => ({ phase: Phase.GUESSING, round: { index, 
 const reveal = (index = 0): View => ({ phase: Phase.REVEAL, reveal: { index } })
 const results: View = { phase: Phase.RESULTS }
 
-function setup(first: View) {
+const setup = (first: View) => {
   let now: Instant = 0
   const conn = { timeUntil: (at: Instant): Ms => at - now }
   const hook = renderHook((view: View) => useGameSounds(conn, view), { initialProps: first })

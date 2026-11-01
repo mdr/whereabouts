@@ -23,7 +23,7 @@ const FIELDS = Object.keys(ConfigureSchema.shape) as (keyof ConfigurePatch)[]
  * against the options the game offers today and dropped alone if it is no
  * longer one of them, since the server rejects a patch with any bad value.
  */
-export function savedSetupPatch(saved: unknown): ConfigurePatch {
+export const savedSetupPatch = (saved: unknown): ConfigurePatch => {
   const patch: Record<string, unknown> = {}
   if (typeof saved !== "object" || !saved) return patch
   const setup = { ...(saved as Record<string, unknown>) }
@@ -40,14 +40,14 @@ export function savedSetupPatch(saved: unknown): ConfigurePatch {
 }
 
 /** Change the game's setup as host, and remember it for the next game: only once sent, so the two agree. */
-export function configureAsHost(conn: Connection, patch: ConfigurePatch): void {
+export const configureAsHost = (conn: Connection, patch: ConfigurePatch): void => {
   if (!conn.online.value) return
   conn.configure(patch)
   hostSetup.value = { ...savedSetupPatch(hostSetup.value), ...patch }
 }
 
 /** Once a game this tab created reaches its lobby, give it the remembered setup. */
-export function useSavedSetup(conn: Connection, view: GameView | undefined, created: boolean): void {
+export const useSavedSetup = (conn: Connection, view: GameView | undefined, created: boolean): void => {
   const applied = useRef(false)
   const ready = created && view?.phase === Phase.LOBBY && view.you.isHost
   useEffect(() => {
@@ -69,7 +69,7 @@ const OLD_MIX_KEYS: Record<string, QuestionType> = {
 }
 
 /** A mix saved under the old keys, under today's; any other left as it is. */
-function renamedMix(mix: unknown): unknown {
+const renamedMix = (mix: unknown): unknown => {
   if (typeof mix !== "object" || !mix || !Object.keys(mix).some((key) => key in OLD_MIX_KEYS)) return mix
   return mixOf(
     Object.fromEntries(Object.entries(mix).map(([key, count]) => [OLD_MIX_KEYS[key] ?? key, count as number]))
@@ -84,7 +84,7 @@ const OLD_SHARES: Record<string, number> = { off: 0, mixed: 0.25, only: 1 }
  * of photos, and whole countries and flags as off, mixed in (a quarter) or
  * only, split as those games split them. Undefined when none were saved.
  */
-function mixFromOldSetup(setup: Record<string, unknown>): QuestionMix | undefined {
+const mixFromOldSetup = (setup: Record<string, unknown>): QuestionMix | undefined => {
   const { rounds, photoShare, countries, flags } = setup
   if ([rounds, photoShare, countries, flags].every((value) => value === undefined)) return undefined
   const roundCount =

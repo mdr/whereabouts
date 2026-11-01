@@ -5,7 +5,7 @@ import { soundToggleTestIds } from "./SoundToggleTestIds"
 import styles from "./SoundToggle.module.css"
 
 /** The per-device sound switch as a speaker button. */
-export function SoundToggle() {
+export const SoundToggle = () => {
   const on = soundOn.value
   return (
     <button

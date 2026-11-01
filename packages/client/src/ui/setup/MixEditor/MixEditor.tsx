@@ -11,7 +11,7 @@ import { mixEditorTestIds } from "./MixEditorTestIds"
 import { RoundStrip } from "../RoundStrip/RoundStrip"
 import styles from "./MixEditor.module.css"
 
-export function MixEditor({ mix, onChange }: { mix: QuestionMix; onChange: (mix: QuestionMix) => void }) {
+export const MixEditor = ({ mix, onChange }: { mix: QuestionMix; onChange: (mix: QuestionMix) => void }) => {
   const rounds = mixTotal(mix)
   return (
     <div class={styles.editor}>

@@ -12,7 +12,7 @@ import styles from "./SmallFlagButton.module.css"
  * A flag the size of a list row; click it to enlarge. Shown once the round
  * is over, so its Commons credit (which names the country) can show too.
  */
-export function SmallFlagButton({ code }: { code: FlagCode }) {
+export const SmallFlagButton = ({ code }: { code: FlagCode }) => {
   const src = useFlagUrl(code)
   const file = flagFile(code)
   const [large, setLarge] = useState(false)

@@ -12,7 +12,7 @@ import styles from "./HostSettings.module.css"
 const ROUND_LENGTH_OPTIONS = ROUND_LENGTHS.map((ms) => ({ value: ms, label: String(ms / 1000) }))
 const HINTS = Array.from({ length: MAX_HINTS + 1 }, (_, n) => ({ value: n, label: String(n) }))
 
-export function HostSettings({ conn, view, online }: { conn: Connection; view: GameView; online: boolean }) {
+export const HostSettings = ({ conn, view, online }: { conn: Connection; view: GameView; online: boolean }) => {
   return (
     <fieldset class={styles.settings} disabled={!online}>
       <div class={styles.setting} data-testid={hostSettingsTestIds.questionsSetting}>

@@ -10,7 +10,15 @@ import styles from "./RoundStrip.module.css"
  * One cell per round, coloured by type, with the total unless `total` is
  * false; `centred` in a tile. The real order is shuffled.
  */
-export function RoundStrip({ mix, total = true, centred }: { mix: QuestionMix; total?: boolean; centred?: boolean }) {
+export const RoundStrip = ({
+  mix,
+  total = true,
+  centred
+}: {
+  mix: QuestionMix
+  total?: boolean
+  centred?: boolean
+}) => {
   const rounds = mixTotal(mix)
   return (
     <div class={cx(styles.strip, centred && styles.centred)} data-testid={roundStripTestIds.strip}>

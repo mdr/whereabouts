@@ -41,7 +41,7 @@ import { RoundResultsDev } from "../RoundResultsDev"
 import { revealTestIds } from "./RevealTestIds"
 import { paintLayer, paintsOf } from "../../../round/reveal-paint"
 
-export function Reveal({
+export const Reveal = ({
   conn,
   view,
   reveal,
@@ -53,7 +53,7 @@ export function Reveal({
   reveal: RevealView
   vrView: VrView
   fact: Fact | undefined
-}) {
+}) => {
   const paint = usePaint()
   const byId = new Map(view.players.map((player) => [player.id, player]))
   const selected = revealShown.value

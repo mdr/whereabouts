@@ -83,7 +83,7 @@ export class CountryFiller {
 }
 
 /** A ring of `km` around a point, [lon, lat], for outlining a speck of a country. */
-function circle({ lat, lon }: LatLon, km: Km): Ring {
+const circle = ({ lat, lon }: LatLon, km: Km): Ring => {
   const dLat = kmToDegrees(km)
   const dLon = dLat / Math.max(0.01, Math.cos(toRadians(lat)))
   const ring: Ring = []
@@ -99,7 +99,7 @@ function circle({ lat, lon }: LatLon, km: Km): Ring {
  * Political map): load the countries if need be, and hand them to the paint
  * controller.
  */
-export function useFillTool(paint: Pick<PaintController, "useFiller" | "offerFill">, active: boolean): void {
+export const useFillTool = (paint: Pick<PaintController, "useFiller" | "offerFill">, active: boolean): void => {
   const borders = useBorders(active)
   const outlines = useOutlines(active)
   useEffect(() => {

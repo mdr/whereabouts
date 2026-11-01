@@ -17,7 +17,7 @@ const TOUCH_EMULATION: Ms = 1000
  * A card by the pointer with the flag and name of the country under it
  * (or tapped, on a phone).
  */
-export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Borders }) {
+export const FlagHover = ({ gameMap, borders }: { gameMap: GameMap; borders: Borders }) => {
   const [hit, setHit] = useState<{ country: FlagQuestion; x: Px; y: Px } | undefined>(undefined)
   useEffect(() => {
     const map = gameMap.map

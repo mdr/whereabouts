@@ -12,7 +12,7 @@ import {
   type VrView
 } from "../view/view"
 
-function makeMenu() {
+const makeMenu = () => {
   const world = {
     createTransformEntity: () => ({ addComponent() {}, object3D: new Group() })
   } as unknown as World
@@ -28,16 +28,16 @@ function makeMenu() {
   return { menu, click: (id: string) => clicks.get(id)!() }
 }
 
-function makeAction(over: Partial<VrAction> = {}): { action: VrAction; press: () => void } {
+const makeAction = (over: Partial<VrAction> = {}): { action: VrAction; press: () => void } => {
   const press = vi.fn()
   return { action: { label: "Leave game", press, ...over }, press }
 }
 
-function makeLobby(actions: VrAction[]): VrView {
+const makeLobby = (actions: VrAction[]): VrView => {
   return { type: VrViewType.LOBBY, summary: { title: "Whereabouts", scoreLine: "", actions } }
 }
 
-function makeRound(over: Partial<VrRound> = {}): VrRound {
+const makeRound = (over: Partial<VrRound> = {}): VrRound => {
   return {
     paint: { layer: { isEmpty: true }, fillable: { value: false } },
     prompt: "Where is Paris?",
@@ -54,7 +54,7 @@ function makeRound(over: Partial<VrRound> = {}): VrRound {
   } as VrRound
 }
 
-function makeReveal(actions: VrAction[]): VrView {
+const makeReveal = (actions: VrAction[]): VrView => {
   return {
     type: VrViewType.REVEAL,
     round: makeRound(),
@@ -70,7 +70,7 @@ function makeReveal(actions: VrAction[]): VrView {
   }
 }
 
-function shownWith(menu: Menu, view: VrView) {
+const shownWith = (menu: Menu, view: VrView) => {
   menu.show(view)
   menu.refresh(view)
 }

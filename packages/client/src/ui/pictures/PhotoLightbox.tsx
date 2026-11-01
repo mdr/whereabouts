@@ -8,7 +8,7 @@ import { Lightbox, LightboxType } from "./Lightbox/Lightbox"
  * A photo enlarged: at once the thumbnail's rendition, which the page has,
  * at the size the larger one will show, then that larger one once loaded.
  */
-export function PhotoLightbox({
+export const PhotoLightbox = ({
   image,
   thumb,
   credit,
@@ -18,7 +18,7 @@ export function PhotoLightbox({
   thumb: HTMLImageElement | undefined
   credit: ComponentChildren
   onClose: () => void
-}) {
+}) => {
   const [src, setSrc] = useState(commonsImageUrl(image))
   useEffect(() => {
     const large = new Image()

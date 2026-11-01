@@ -12,11 +12,11 @@ const { LANDMARK, PLACE, COUNTRY, FLAG } = QuestionType
 const MIX = mixOf({ [LANDMARK]: 3, [PLACE]: 3, [COUNTRY]: 2, [FLAG]: 2 })
 const SAVED = { mix: MIX, roundLength: 90_000, mapDetail: MapDetail.POLITICAL }
 
-function lobby(isHost: boolean, phase: GameView["phase"] = Phase.LOBBY): GameView {
+const lobby = (isHost: boolean, phase: GameView["phase"] = Phase.LOBBY): GameView => {
   return { phase, you: { isHost } } as GameView
 }
 
-function Harness({ conn, view, created }: { conn: Connection; view: GameView | undefined; created: boolean }) {
+const Harness = ({ conn, view, created }: { conn: Connection; view: GameView | undefined; created: boolean }) => {
   useSavedSetup(conn, view, created)
   return undefined
 }

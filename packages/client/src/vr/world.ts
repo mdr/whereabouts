@@ -14,7 +14,7 @@ import { STARS_DISTANCE } from "./space"
  * too, where nobody sees it: twice the page's drawing, on a headset's
  * browser. Its loop calls these by name each frame, so they can wait.
  */
-function idleOffHeadset(world: World): void {
+const idleOffHeadset = (world: World): void => {
   const update = world.update.bind(world)
   world.update = (delta, time) => {
     if (world.session) update(delta, time)
@@ -26,7 +26,7 @@ function idleOffHeadset(world: World): void {
   }
 }
 
-export async function createWorld(host: HTMLElement): Promise<World> {
+export const createWorld = async (host: HTMLElement): Promise<World> => {
   const world = await World.create(host, {
     xr: {
       sessionMode: SessionMode.ImmersiveVR,
@@ -43,14 +43,14 @@ export async function createWorld(host: HTMLElement): Promise<World> {
 }
 
 /** A page holds only so many WebGL contexts; the next try makes its own. */
-export function destroyWorld(world: World | undefined, host: HTMLElement): void {
+export const destroyWorld = (world: World | undefined, host: HTMLElement): void => {
   world?.destroy()
   world?.renderer.dispose()
   world?.renderer.forceContextLoss()
   host.remove()
 }
 
-export function addLights(scene: Scene): void {
+export const addLights = (scene: Scene): void => {
   scene.add(new AmbientLight(0xffffff, 1.2))
   const sun = new DirectionalLight(0xffffff, 1.5)
   sun.position.set(1, 3, 2)

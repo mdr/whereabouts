@@ -32,7 +32,7 @@ interface GameRoute {
 }
 export type Route = HomeRoute | SoloRoute | ScoreReviewRoute | GameRoute
 
-export function parseRoute(hash: string): Route {
+export const parseRoute = (hash: string): Route => {
   const path = hash.replace(/^#/, "").replace(/\?.*$/, "")
   if (path === "/solo") return { type: RouteType.SOLO }
   if (path === "/score-review") return { type: RouteType.SCORE_REVIEW }
@@ -65,7 +65,7 @@ window.addEventListener("hashchange", () => {
 })
 
 /** Update the URL and the route together, so callers see the change synchronously. */
-export function navigate(to: string): void {
+export const navigate = (to: string): void => {
   if (location.hash !== `#${to}`) location.hash = to
   batch(() => {
     route.value = parseRoute(to)

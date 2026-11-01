@@ -3,7 +3,7 @@ import { cx } from "../../../../ui/cx"
 import kit from "../../../../ui/kit.module.css"
 import { deviceSwitchesTestIds } from "./DeviceSwitchesTestIds"
 
-export function DeviceSwitches() {
+export const DeviceSwitches = () => {
   return (
     <>
       <label class={cx(kit.check, kit.switch)}>

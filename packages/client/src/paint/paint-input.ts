@@ -19,11 +19,11 @@ import type { Degrees, Km, Px } from "@whereabouts/shared/units"
 const FILL_SMALL: Px = 12
 
 /** Add a listener, and return what removes it. */
-function listen<K extends keyof WindowEventMap>(
+const listen = <K extends keyof WindowEventMap>(
   target: Window | HTMLElement,
   type: K,
   handler: (event: WindowEventMap[K]) => void
-): () => void {
+): (() => void) => {
   target.addEventListener(type, handler as EventListener)
   return () => target.removeEventListener(type, handler as EventListener)
 }
@@ -345,6 +345,6 @@ export class PaintInput {
   }
 }
 
-function latLon(lngLat: LngLat): LatLon {
+const latLon = (lngLat: LngLat): LatLon => {
   return { lat: lngLat.lat, lon: lngLat.lng }
 }

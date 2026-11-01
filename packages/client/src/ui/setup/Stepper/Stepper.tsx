@@ -3,7 +3,7 @@ import { stepperTestIds } from "./StepperTestIds"
 import styles from "./Stepper.module.css"
 
 /** A − / + stepper for a count. */
-export function Stepper({
+export const Stepper = ({
   label,
   value,
   min,
@@ -15,7 +15,7 @@ export function Stepper({
   min: number
   max: number
   onChange: (value: number) => void
-}) {
+}) => {
   return (
     <div class={styles.stepper} role="group" aria-label={label}>
       <button

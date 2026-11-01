@@ -16,18 +16,18 @@ const RESOLUTION = resolutionForTolerance(TOLERANCE)
 const PARIS: LatLon = { lat: 48.86, lon: 2.35 }
 const MADRID: LatLon = { lat: 40.42, lon: -3.7 }
 
-function makeModel(): PaintModel {
+const makeModel = (): PaintModel => {
   const model = new PaintModel()
   model.reset(TOLERANCE)
   return model
 }
 
-function makeCountry(): FlagQuestion {
+const makeCountry = (): FlagQuestion => {
   return makeFlagQuestion("fr", "France", { answer: { type: AnswerType.POINT, at: PARIS, tolerance: TOLERANCE } })
 }
 
 /** A filler that finds France everywhere, filled with the cell at its answer. */
-function makeFiller(overrides: Partial<Filler> = {}): Filler {
+const makeFiller = (overrides: Partial<Filler> = {}): Filler => {
   return {
     countryAt: vi.fn(() => makeCountry()),
     outline: () => ({ type: "MultiPolygon", coordinates: [] }),
@@ -41,13 +41,13 @@ function makeFiller(overrides: Partial<Filler> = {}): Filler {
 
 const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RESOLUTION)
 
-function paintStroke(model: PaintModel, ...at: LatLon[]): void {
+const paintStroke = (model: PaintModel, ...at: LatLon[]): void => {
   model.beginStroke(Tool.PAINT)
   for (const point of at) model.stamp(point, 20, 1)
   model.endStroke()
 }
 
-function cells(model: PaintModel): Map<H3Cell, number> {
+const cells = (model: PaintModel): Map<H3Cell, number> => {
   return new Map(model.layer.cells)
 }
 

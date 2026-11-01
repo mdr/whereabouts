@@ -14,7 +14,7 @@ import { revealRowTestIds } from "./RevealRowTestIds"
 
 const hintedText = (axis: HintAxis) => `Used a ${axis.toLowerCase()} hint this round`
 
-export function RevealRow({
+export const RevealRow = ({
   p,
   r,
   you,
@@ -39,7 +39,7 @@ export function RevealRow({
   onHover: (on: boolean) => void
   /** Host only: remove this player. */
   onKick?: () => void
-}) {
+}) => {
   const delta = p.previousRank !== undefined ? p.previousRank - p.rank : 0
   return (
     <li

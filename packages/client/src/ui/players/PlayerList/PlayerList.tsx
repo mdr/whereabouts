@@ -12,12 +12,12 @@ import styles from "../Players.module.css"
 const graphemes = new Intl.Segmenter()
 
 /** A name's first character as a reader sees it, so a flag or family emoji stays whole. */
-export function initial(name: string): string {
+export const initial = (name: string): string => {
   const first = graphemes.segment(name.trim())[Symbol.iterator]().next()
   return first.done ? "?" : first.value.segment.toUpperCase()
 }
 
-export function PlayerList({
+export const PlayerList = ({
   players,
   you,
   showScores,
@@ -42,7 +42,7 @@ export function PlayerList({
   onKick?: (player: PlayerView) => void
   /** Host only: when given, other connected players' rows get a crown button that calls this. */
   onMakeHost?: (player: PlayerView) => void
-}) {
+}) => {
   return (
     <ul class={styles.list} data-testid={playerListTestIds.list}>
       {players.map((player) => {
@@ -110,7 +110,7 @@ export function PlayerList({
 }
 
 /** A spectator's eye, or a player's colour as an avatar or a dot. */
-function Mark({ player, avatars }: { player: PlayerView; avatars: boolean | undefined }) {
+const Mark = ({ player, avatars }: { player: PlayerView; avatars: boolean | undefined }) => {
   if (player.type === Role.SPECTATOR) {
     return (
       <span class={cx(avatars ? styles.avatar : styles.swatch, styles.watcher)} title="Watching" aria-hidden="true">
@@ -126,7 +126,7 @@ function Mark({ player, avatars }: { player: PlayerView; avatars: boolean | unde
   )
 }
 
-function Score({ player, arrows }: { player: PlayingPlayerView; arrows: boolean | undefined }) {
+const Score = ({ player, arrows }: { player: PlayingPlayerView; arrows: boolean | undefined }) => {
   const delta = arrows && player.previousRank !== undefined ? player.previousRank - player.rank : 0
   return (
     <>

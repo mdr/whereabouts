@@ -28,7 +28,7 @@ export const PLAYER_OPACITY: PaintValue<"fill", "fill-opacity"> = [
   0.9
 ]
 
-function roadPaint(layer: StyleLayer, theme: Theme): PaintSetting[] {
+const roadPaint = (layer: StyleLayer, theme: Theme): PaintSetting[] => {
   const line = idOfKind(layer, "line")
   if (line) return [paintSetting(line, "line-color", theme.road)]
   const fill = idOfKind(layer, "fill")
@@ -36,7 +36,7 @@ function roadPaint(layer: StyleLayer, theme: Theme): PaintSetting[] {
   return []
 }
 
-function fillPaint(layer: StyleLayer, theme: Theme): PaintSetting[] | undefined {
+const fillPaint = (layer: StyleLayer, theme: Theme): PaintSetting[] | undefined => {
   const fill = idOfKind(layer, "fill")
   if (!fill) return undefined
   if (layer.id === "water") return [paintSetting(fill, "fill-color", theme.water)]
@@ -50,7 +50,7 @@ function fillPaint(layer: StyleLayer, theme: Theme): PaintSetting[] | undefined 
 }
 
 /** The theme colours for one of the style's own layers. */
-export function styleLayerPaint(layer: StyleLayer, theme: Theme): PaintSetting[] {
+export const styleLayerPaint = (layer: StyleLayer, theme: Theme): PaintSetting[] => {
   const background = idOfKind(layer, "background")
   if (background) return [paintSetting(background, "background-color", theme.land)]
   const symbol = idOfKind(layer, "symbol")
@@ -69,7 +69,7 @@ export function styleLayerPaint(layer: StyleLayer, theme: Theme): PaintSetting[]
 }
 
 /** The theme colours for the game's own overlay layers. */
-export function overlayPaint(theme: Theme): PaintSetting[] {
+export const overlayPaint = (theme: Theme): PaintSetting[] => {
   return [
     paintSetting(STATE_BORDERS, "line-color", theme.revealBorder),
     paintSetting(STATE_LABELS, "text-color", theme.labelText),
@@ -86,10 +86,12 @@ export function overlayPaint(theme: Theme): PaintSetting[] {
 }
 
 /** The paint layer's colour and opacity expressions, from the theme's ramp. */
-export function paintRamp(theme: Theme): {
+export const paintRamp = (
+  theme: Theme
+): {
   color: PaintValue<"fill", "fill-color">
   opacity: PaintValue<"fill", "fill-opacity">
-} {
+} => {
   return {
     color: [
       "interpolate",

@@ -3,7 +3,7 @@ import { commonsPageUrl } from "@whereabouts/shared/questions"
 import { Icon } from "../../icons"
 import styles from "./CommonsCredit.module.css"
 
-export function CommonsCredit({ image }: { image: CommonsFile }) {
+export const CommonsCredit = ({ image }: { image: CommonsFile }) => {
   return (
     <a
       class={styles.credit}

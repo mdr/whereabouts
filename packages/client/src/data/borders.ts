@@ -21,7 +21,7 @@ const borders = signal<Borders | undefined>(undefined)
 
 let loading: Promise<Borders> | undefined = undefined
 
-function loadBorders(): Promise<Borders> {
+const loadBorders = (): Promise<Borders> => {
   loading ??= Promise.all([fetchBuildJson<ConstructorParameters<typeof Borders>[0]>(bordersUrl), loadOutlines()]).then(
     ([rawBorders]) => (borders.value = new Borders(rawBorders, CATALOGUE.filter(isFlagQuestion))),
     (error: unknown) => {
@@ -36,7 +36,7 @@ function loadBorders(): Promise<Borders> {
 const pinsOf = new WeakMap<Borders, { country: FlagQuestion; at: LatLon }[]>()
 
 /** Where each country's flag goes on a map: worked out once. */
-export function flagPins(loaded: Borders): { country: FlagQuestion; at: LatLon }[] {
+export const flagPins = (loaded: Borders): { country: FlagQuestion; at: LatLon }[] => {
   let pins = pinsOf.get(loaded)
   if (!pins) pinsOf.set(loaded, (pins = loaded.pins()))
   return pins
@@ -45,14 +45,14 @@ export function flagPins(loaded: Borders): { country: FlagQuestion; at: LatLon }
 const vrPinsOf = new WeakMap<Borders, VrFlagPin[]>()
 
 /** The outline the reveal draws where the country is painted whole, finer than its borders; else those. */
-function outline(loaded: Borders, country: FlagQuestion): FlatRing[] {
+const outline = (loaded: Borders, country: FlagQuestion): FlatRing[] => {
   const outline = country.answer.type === AnswerType.AREA ? outlines.value?.get(country.answer.outline) : undefined
   if (!outline) return loaded.rings(country.clue.flag)
   return outline.flatMap((polygon) => polygon.map(flatRing))
 }
 
 /** The same, as the headset takes them: the same array each time, so it sees no change. */
-export function vrFlagPins(loaded: Borders): VrFlagPin[] {
+export const vrFlagPins = (loaded: Borders): VrFlagPin[] => {
   let pins = vrPinsOf.get(loaded)
   if (!pins)
     vrPinsOf.set(
@@ -68,7 +68,7 @@ export function vrFlagPins(loaded: Borders): VrFlagPin[] {
 }
 
 /** The borders when `wanted` (a flag round), loading them if need be; undefined until they arrive. */
-export function useBorders(wanted: boolean): Borders | undefined {
+export const useBorders = (wanted: boolean): Borders | undefined => {
   const loaded = borders.value
   useEffect(() => {
     if (wanted && !loaded) loadBorders().catch((error: unknown) => console.warn("could not load borders", error))

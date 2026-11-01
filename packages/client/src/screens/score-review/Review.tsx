@@ -23,7 +23,7 @@ import { scoreReviewTestIds } from "./ScoreReview/ScoreReviewTestIds"
 import { VerdictCard, type Choice } from "./VerdictCard/VerdictCard"
 import { PAIR_COLOURS } from "./pair-colours"
 
-export function Review({ outlines }: { outlines: Outlines }) {
+export const Review = ({ outlines }: { outlines: Outlines }) => {
   const paint = usePaint()
   const set = reviewSet.value
   const cases = useMemo(() => reviewCases(set, CATALOGUE, outlines), [set, outlines])

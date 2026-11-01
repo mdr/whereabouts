@@ -24,7 +24,7 @@ const NEED_NAME_ID = "need-name"
  * The front door: a hero picture, your name, then three clearly separate
  * ways in (host, join, practise) and a short how-to-play.
  */
-export function Home() {
+export const Home = () => {
   const [code, setCode] = useState("")
   const name = nameToJoin(savedName.value)
   const ready = name !== undefined

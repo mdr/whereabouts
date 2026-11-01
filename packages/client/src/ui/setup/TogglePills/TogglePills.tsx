@@ -2,7 +2,7 @@ import { togglePillsTestIds } from "./TogglePillsTestIds"
 import styles from "../pill-row.module.css"
 
 /** Like Pills, but any number of options may be on, at least one. */
-export function TogglePills<T extends string>({
+export const TogglePills = <T extends string>({
   label,
   options,
   value,
@@ -12,7 +12,7 @@ export function TogglePills<T extends string>({
   options: readonly { value: T; label: string }[]
   value: readonly T[]
   onChange: (value: T[]) => void
-}) {
+}) => {
   return (
     <div class={styles.pills} role="group" aria-label={label}>
       {options.map((option) => {

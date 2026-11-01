@@ -26,7 +26,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js"
 
 /** A soft room for metal and lacquer to reflect. */
-export function reflections(renderer: WebGLRenderer): Texture {
+export const reflections = (renderer: WebGLRenderer): Texture => {
   const pmrem = new PMREMGenerator(renderer)
   const texture = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
   pmrem.dispose()
@@ -34,7 +34,7 @@ export function reflections(renderer: WebGLRenderer): Texture {
 }
 
 /** Gives every standard material under `root` the room to reflect. */
-export function reflect(root: Object3D, envMap: Texture): void {
+export const reflect = (root: Object3D, envMap: Texture): void => {
   root.traverse((object) => {
     if (!(object instanceof Mesh)) return
     const materials = object.material as Material | Material[]
@@ -46,7 +46,7 @@ export function reflect(root: Object3D, envMap: Texture): void {
   })
 }
 
-function canvasTexture(width: number, height: number, draw: (ctx: CanvasRenderingContext2D) => void): CanvasTexture {
+const canvasTexture = (width: number, height: number, draw: (ctx: CanvasRenderingContext2D) => void): CanvasTexture => {
   const canvas = document.createElement("canvas")
   canvas.width = width
   canvas.height = height
@@ -67,7 +67,7 @@ const lathe = (points: [radius: number, height: number][], segments = 32) =>
  * A spray can lying along -Z, its actuator forward: a domed base, a
  * printed label in the brush's colour, a shoulder up to the valve.
  */
-export function buildCan(brush: string): Group {
+export const buildCan = (brush: string): Group => {
   const can = new Group()
   const metal = new MeshStandardMaterial({ color: "#c9d1db", metalness: 0.85, roughness: 0.28 })
   const R = 0.033
@@ -139,7 +139,7 @@ export function buildCan(brush: string): Group {
 }
 
 /** An eraser lying along -Z, its worn rubber end forward, the back in a printed card sleeve. */
-export function buildEraser(): Group {
+export const buildEraser = (): Group => {
   const eraser = new Group()
   const rubber = new Mesh(
     new RoundedBoxGeometry(0.045, 0.025, 0.075, 4, 0.007),
@@ -167,7 +167,7 @@ export function buildEraser(): Group {
 }
 
 /** A paint pail lying along -Z, its open top forward and full to the brim in the brush's colour, a wire handle over it. */
-export function buildPail(brush: string): Group {
+export const buildPail = (brush: string): Group => {
   const pail = new Group()
   const metal = new MeshStandardMaterial({ color: "#c9d1db", metalness: 0.85, roughness: 0.3, side: DoubleSide })
   const body = new Mesh(
@@ -213,7 +213,7 @@ export function buildPail(brush: string): Group {
  * outline as the player sees it, up to pivots at the ends of its tilt axis
  * (the local Z axis; local +X points away from the player).
  */
-export function buildStand(radius: number): Group {
+export const buildStand = (radius: number): Group => {
   const stand = new Group()
   const brass = new MeshStandardMaterial({ color: "#c9a25a", metalness: 0.9, roughness: 0.3 })
   const grain = canvasTexture(256, 256, (ctx) => {

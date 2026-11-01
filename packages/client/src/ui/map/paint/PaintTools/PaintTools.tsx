@@ -35,7 +35,7 @@ const TOOL_HINT: Record<Tool, string> = {
  * `hint`: the band of a hint taken this round, offered as a trim too.
  * `canPass`: done with nothing painted is a pass, so say what that scores.
  */
-export function PaintTools({
+export const PaintTools = ({
   children,
   practice,
   water,
@@ -47,7 +47,7 @@ export function PaintTools({
   water?: boolean
   hint?: HintBand
   canPass?: boolean
-}) {
+}) => {
   const paint = usePaint()
   const activeTool = paint.tool.value
   const enabled = paint.enabled.value

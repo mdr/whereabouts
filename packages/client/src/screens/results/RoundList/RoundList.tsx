@@ -18,7 +18,7 @@ export interface RoundListProps {
 }
 
 /** A line per round: what it asked, who won it (and how many tied), and your score. */
-export function RoundList({ rounds, standings, byId, you, best }: RoundListProps) {
+export const RoundList = ({ rounds, standings, byId, you, best }: RoundListProps) => {
   const mine = standings.find((standing) => standing.playerId === you)
   return (
     <ol class={styles.list}>

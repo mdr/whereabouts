@@ -38,7 +38,7 @@ import { RoundNote, canEndGame, ownColour, roundNote, roundOf } from "../../roun
 import { noteText } from "../../round/round-words"
 import { gameVrView } from "../../vr/view/game-vr-view"
 
-export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView }) {
+export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView }) => {
   const paint = usePaint()
   const { role } = view.you
   const note = roundNote(view.you)

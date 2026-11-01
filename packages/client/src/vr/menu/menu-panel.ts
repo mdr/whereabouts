@@ -27,11 +27,11 @@ interface PanelState {
 
 type PanelContent = Record<string, PanelElement>
 
-export function viewHeading(view: VrView): string {
+export const viewHeading = (view: VrView): string => {
   return (view.type === VrViewType.PAINT && view.round.heading) || HEADINGS[view.type]
 }
 
-export function viewNote(view: VrView): string | undefined {
+export const viewNote = (view: VrView): string | undefined => {
   return view.type === VrViewType.PAINT
     ? view.round.note
     : view.type === VrViewType.REVEAL
@@ -39,16 +39,16 @@ export function viewNote(view: VrView): string | undefined {
       : view.summary.note
 }
 
-export function viewActions(view: VrView | undefined): VrAction[] {
+export const viewActions = (view: VrView | undefined): VrAction[] => {
   return view?.type === VrViewType.REVEAL ? view.reveal.actions : view && "summary" in view ? view.summary.actions : []
 }
 
 /** An action asking for confirmation says so once pressed. */
-export function actionLabel(action: VrAction, armed: VrAction | undefined): string {
+export const actionLabel = (action: VrAction, armed: VrAction | undefined): string => {
   return armed?.label === action.label && action.confirm ? action.confirm : action.label
 }
 
-export function panelContent(view: VrView, state: PanelState): PanelContent {
+export const panelContent = (view: VrView, state: PanelState): PanelContent => {
   const round = view.type === VrViewType.PAINT ? view.round : undefined
   const reveal = view.type === VrViewType.REVEAL ? view.reveal : undefined
   const more = view.more ?? []
@@ -65,7 +65,7 @@ export function panelContent(view: VrView, state: PanelState): PanelContent {
   }
 }
 
-function roundElements(round: VrRound | undefined): PanelContent {
+const roundElements = (round: VrRound | undefined): PanelContent => {
   const painting = round?.playing === true && round.unlock === undefined
   return {
     hint: {
@@ -81,7 +81,7 @@ function roundElements(round: VrRound | undefined): PanelContent {
   }
 }
 
-function resultElements(view: VrView): PanelContent {
+const resultElements = (view: VrView): PanelContent => {
   switch (view.type) {
     case VrViewType.PAINT:
       return { prompt: { text: view.round.prompt }, score: { shown: false }, fact: { shown: false } }
@@ -101,7 +101,7 @@ function resultElements(view: VrView): PanelContent {
   }
 }
 
-function buttonRow(prefix: string, actions: VrAction[], count: number, armed: VrAction | undefined): PanelContent {
+const buttonRow = (prefix: string, actions: VrAction[], count: number, armed: VrAction | undefined): PanelContent => {
   const row: PanelContent = {}
   for (let i = 0; i < count; i++) {
     const action = actions[i]
@@ -115,7 +115,7 @@ function buttonRow(prefix: string, actions: VrAction[], count: number, armed: Vr
   return row
 }
 
-function toggleElements(state: PanelState, reveal: VrReveal | undefined): PanelContent {
+const toggleElements = (state: PanelState, reveal: VrReveal | undefined): PanelContent => {
   return {
     soundLabel: { text: state.soundOn ? "Sound on" : "Sound off" },
     passthrough: { shown: state.passthroughOffered },

@@ -14,7 +14,7 @@ import { RevealRow } from "../RevealRow/RevealRow"
 import { revealScoresTestIds } from "./RevealScoresTestIds"
 
 /** Everyone's score, each row picking whose paint the map shows. */
-export function RevealScores({
+export const RevealScores = ({
   model,
   where,
   answerFlag,
@@ -30,7 +30,7 @@ export function RevealScores({
   onHover: (playerId: PlayerId | undefined) => void
   /** Host only: remove this player. */
   onKick: ((player: PlayingPlayerView) => void) | undefined
-}) {
+}) => {
   return (
     <Card title="Scores">
       <ul class={cx(players.list, players.pick)} data-testid={revealScoresTestIds.scoresList}>

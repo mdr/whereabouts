@@ -11,15 +11,15 @@ import {
   type VrView
 } from "../view/view"
 
-function makeState(over: Partial<Parameters<typeof panelContent>[1]> = {}) {
+const makeState = (over: Partial<Parameters<typeof panelContent>[1]> = {}) => {
   return { armed: undefined, soundOn: true, passthroughOn: false, passthroughOffered: false, ...over }
 }
 
-function makeAction(over: Partial<VrAction> = {}): VrAction {
+const makeAction = (over: Partial<VrAction> = {}): VrAction => {
   return { label: "Next", press() {}, ...over }
 }
 
-function makeRound(over: Partial<VrRound> = {}): VrRound {
+const makeRound = (over: Partial<VrRound> = {}): VrRound => {
   return {
     paint: { layer: { isEmpty: true }, fillable: { value: false } },
     prompt: "Where is Paris?",
@@ -36,11 +36,11 @@ function makeRound(over: Partial<VrRound> = {}): VrRound {
   } as VrRound
 }
 
-function makePaint(round: Partial<VrRound> = {}, more?: VrAction[]): VrView {
+const makePaint = (round: Partial<VrRound> = {}, more?: VrAction[]): VrView => {
   return { type: VrViewType.PAINT, round: makeRound(round), more }
 }
 
-function makeReveal(reveal: Partial<VrReveal> = {}, more?: VrAction[]): VrView {
+const makeReveal = (reveal: Partial<VrReveal> = {}, more?: VrAction[]): VrView => {
   return {
     type: VrViewType.REVEAL,
     round: makeRound(),
@@ -58,7 +58,7 @@ function makeReveal(reveal: Partial<VrReveal> = {}, more?: VrAction[]): VrView {
   }
 }
 
-function makeLobby(actions: VrAction[] = [], more?: VrAction[]): VrView {
+const makeLobby = (actions: VrAction[] = [], more?: VrAction[]): VrView => {
   return { type: VrViewType.LOBBY, summary: { title: "Whereabouts", scoreLine: "3 players", actions }, more }
 }
 

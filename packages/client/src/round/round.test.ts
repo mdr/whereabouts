@@ -19,7 +19,7 @@ const outline: Outline = [
   ]
 ]
 
-function revealed(over: Partial<RevealedAnswer> = {}): RevealedAnswer {
+const revealed = (over: Partial<RevealedAnswer> = {}): RevealedAnswer => {
   return {
     label: "Somewhere",
     wiki: wikiTitle("Somewhere"),
@@ -29,7 +29,7 @@ function revealed(over: Partial<RevealedAnswer> = {}): RevealedAnswer {
   }
 }
 
-function fakeMap() {
+const fakeMap = () => {
   return {
     showReveal: vi.fn(),
     showRegionReveal: vi.fn(),
@@ -37,7 +37,7 @@ function fakeMap() {
   }
 }
 
-function fakeCamera() {
+const fakeCamera = () => {
   return { fitAnswerAndPaint: vi.fn(), fitRegionAndPaint: vi.fn() }
 }
 

@@ -26,11 +26,11 @@ const EARLY: Ms = 750
  * the game mid-round). `previous` is undefined on the first view after loading, which
  * never cues anything: a refresh should not announce what is already there.
  */
-export function roundCue(
+export const roundCue = (
   previous: RoundState | undefined,
   next: RoundState,
   timeLeftAtChange: Ms
-): RoundCue | undefined {
+): RoundCue | undefined => {
   if (!previous) return undefined
   if (next.phase === Phase.GUESSING && (previous.phase !== Phase.GUESSING || previous.round !== next.round))
     return RoundCue.ROUND_START

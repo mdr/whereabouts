@@ -15,7 +15,7 @@ import kit from "../../kit.module.css"
 import styles from "./Shortcuts.module.css"
 
 /** The card itself, plus the `?` and Escape keys. Mount once per painting screen. */
-export function Shortcuts({ practice = false }: { practice?: boolean }) {
+export const Shortcuts = ({ practice = false }: { practice?: boolean }) => {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (isTyping(event.target ?? undefined)) return

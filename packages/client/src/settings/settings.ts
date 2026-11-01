@@ -15,7 +15,12 @@ import {
 import { ScoreVerdictSchema } from "@whereabouts/shared/scoring/score-verdict"
 
 /** A stored value that fails `schema`, such as one an older version wrote, starts from the initial value. */
-function persisted<S extends z.ZodType>(key: string, schema: S, initial: z.output<S>, storage: Storage = localStorage) {
+const persisted = <S extends z.ZodType>(
+  key: string,
+  schema: S,
+  initial: z.output<S>,
+  storage: Storage = localStorage
+) => {
   let start = initial
   try {
     const parsed = schema.safeParse(storage.getItem(key))
@@ -39,7 +44,7 @@ const oldEnumValue = <S extends z.ZodType>(schema: S) =>
   z.preprocess((value) => (typeof value === "string" ? value.toUpperCase().replaceAll("-", "_") : value), schema)
 
 /** Like persisted, for a JSON value; anything unreadable or failing `schema` starts from the initial value. */
-function persistedJson<S extends z.ZodType>(key: string, schema: S, initial: z.output<S>) {
+const persistedJson = <S extends z.ZodType>(key: string, schema: S, initial: z.output<S>) => {
   let start = initial
   try {
     const raw = localStorage.getItem(key) ?? undefined
@@ -73,18 +78,8 @@ try {
 } catch {
   /* storage unavailable */
 }
-/** The types of question practice asks, stored comma-separated; a type no longer offered is dropped. */
-export const soloTypes = persisted(
-  "wa.practiceTypes",
-  z
-    .string()
-    .transform((text) => text.split(",").filter((name) => z.enum(QuestionType).safeParse(name).success))
-    .pipe(z.array(z.enum(QuestionType)).min(1)),
-  oldPracticeTypes() ?? [QuestionType.LANDMARK, QuestionType.PLACE]
-)
-
 /** The types practice asked when it offered one pool at a time, by that pool's old name. */
-function oldPracticeTypes(): QuestionType[] | undefined {
+const oldPracticeTypes = (): QuestionType[] | undefined => {
   const pools: Record<string, QuestionType[]> = {
     places: [QuestionType.LANDMARK, QuestionType.PLACE],
     countries: [QuestionType.COUNTRY],
@@ -100,6 +95,16 @@ function oldPracticeTypes(): QuestionType[] | undefined {
     return undefined
   }
 }
+/** The types of question practice asks, stored comma-separated; a type no longer offered is dropped. */
+export const soloTypes = persisted(
+  "wa.practiceTypes",
+  z
+    .string()
+    .transform((text) => text.split(",").filter((name) => z.enum(QuestionType).safeParse(name).success))
+    .pipe(z.array(z.enum(QuestionType)).min(1)),
+  oldPracticeTypes() ?? [QuestionType.LANDMARK, QuestionType.PLACE]
+)
+
 /** Map detail while guessing in practice (one of MAP_DETAILS). */
 export const soloMapDetail = persisted("wa.mapDetail", oldEnumValue(MapDetailSchema), MapDetail.MINIMAL)
 /** On the reveal of a flag round, every country's flag on the map. */
@@ -131,25 +136,25 @@ export const scoreVerdicts = persistedJson(
   []
 )
 
+const randomToken = (): PlayerToken => {
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  return playerToken(Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(""))
+}
+
 /**
  * Reconnect token. Session storage so two tabs in one browser are two
  * players, while a refresh of one tab keeps its seat.
  */
 const storedToken = persisted("wa.token", PlayerTokenSchema, randomToken(), sessionStorage)
 
-export function seatToken(): PlayerToken {
+export const seatToken = (): PlayerToken => {
   return storedToken.value
 }
 
 /** Forget this tab's seat, e.g. after the host removed us; the next join is as a new player. */
-export function resetPlayerToken(): void {
+export const resetPlayerToken = (): void => {
   storedToken.value = randomToken()
-}
-
-function randomToken(): PlayerToken {
-  const bytes = new Uint8Array(16)
-  crypto.getRandomValues(bytes)
-  return playerToken(Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(""))
 }
 
 /**
@@ -175,7 +180,7 @@ export const askedToWatch = signal(false)
 export const joinedCode = persisted("wa.joined", RoomCodeSchema.or(z.literal("")), "", sessionStorage)
 
 /** A typed name as a game takes it, or undefined if it would not. */
-export function nameToJoin(typed: string): PlayerName | undefined {
+export const nameToJoin = (typed: string): PlayerName | undefined => {
   const parsed = PlayerNameSchema.safeParse(typed)
   return parsed.success ? parsed.data : undefined
 }

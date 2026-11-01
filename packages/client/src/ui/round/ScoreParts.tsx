@@ -1,7 +1,7 @@
 import kit from "../kit.module.css"
 
 /** Score, A and B in the dev drawer. */
-export function ScoreParts({ A, B }: { A: number; B: number }) {
+export const ScoreParts = ({ A, B }: { A: number; B: number }) => {
   return (
     <div class={kit.parts}>
       <span>

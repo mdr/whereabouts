@@ -14,7 +14,7 @@ import styles from "./SetupSummary.module.css"
  * value just changed is remounted (it is keyed on the value) with a class
  * that plays a short highlight; nothing flashes on first load.
  */
-export function SetupSummary({ view }: { view: GameView }) {
+export const SetupSummary = ({ view }: { view: GameView }) => {
   const { roundLength, mix, mapDetail, hints } = view.config
   const rounds = mixTotal(mix)
   const shown = useRef(view.config)

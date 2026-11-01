@@ -11,7 +11,7 @@ import { SmallPictureBox } from "../../../ui/pictures/SmallPictureBox"
 import styles from "./RoundPicture.module.css"
 
 /** A shape round shows the shape painted; the rest, the question's photo or flag, else the reveal's photo. */
-export function RoundPicture({ round }: { round: PlayedRound }) {
+export const RoundPicture = ({ round }: { round: PlayedRound }) => {
   if (round.area) return <RoundShape area={round.area} type={round.type} />
   if (round.image) return <SmallPhoto image={round.image} />
   if (round.flag) return <SmallFlagButton code={round.flag} />
@@ -23,7 +23,7 @@ export function RoundPicture({ round }: { round: PlayedRound }) {
   )
 }
 
-function RoundShape({ area, type }: { area: NonNullable<PlayedRound["area"]>; type: QuestionType }) {
+const RoundShape = ({ area, type }: { area: NonNullable<PlayedRound["area"]>; type: QuestionType }) => {
   const outline = useOutline(area.outline)
   const path = useMemo(() => (outline ? outlinePath(outline, area.centre, 56, 42) : ""), [outline])
   return (

@@ -16,7 +16,7 @@ const SCORE_COLUMN: Px = 58
  * scores where it fits, else a line per round with its winner and your
  * score, and a button for the full table.
  */
-export function Rounds(props: Omit<RoundListProps, "best">) {
+export const Rounds = (props: Omit<RoundListProps, "best">) => {
   const { rounds, standings } = props
   const ref = useElementRef<HTMLElement>()
   const [width, setWidth] = useState<Px | undefined>(undefined)

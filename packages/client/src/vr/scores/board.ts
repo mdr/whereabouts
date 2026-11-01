@@ -64,7 +64,7 @@ export class ResultsBoard {
   }
 }
 
-function draw(board: VrBoard): HTMLCanvasElement {
+const draw = (board: VrBoard): HTMLCanvasElement => {
   const awardRows = Math.ceil(board.awards.length / 2)
   const height =
     PAD * 2 +

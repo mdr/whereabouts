@@ -3,7 +3,7 @@ import { AnswerType } from "@whereabouts/shared/questions"
 import { ScoreParts } from "../../ui/round/ScoreParts"
 import kit from "../../ui/kit.module.css"
 
-export function PartsLine({ parts }: { parts: AnswerParts }) {
+export const PartsLine = ({ parts }: { parts: AnswerParts }) => {
   if (parts.type === AnswerType.POINT) return <ScoreParts A={parts.A} B={parts.B} />
   return (
     <div class={kit.parts}>

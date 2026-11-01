@@ -11,7 +11,7 @@ const MEDALS = ["🥇", "🥈", "🥉"]
 /** Past this many players the standings tighten up, the podium aside. */
 const MANY_PLAYERS = 8
 
-export function Standings({
+export const Standings = ({
   standings,
   byId,
   you
@@ -19,7 +19,7 @@ export function Standings({
   standings: FinalStanding[]
   byId: ReadonlyMap<PlayerId, PlayingPlayerView>
   you: string
-}) {
+}) => {
   return (
     <ol class={cx(styles.standings, standings.length > MANY_PLAYERS && styles.many)} aria-label="Final standings">
       {standings.map((standing, i) => {

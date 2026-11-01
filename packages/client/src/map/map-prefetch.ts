@@ -15,7 +15,7 @@ export const mapPrefetched = signal(false)
 
 let started = false
 
-export function prefetchMap(): void {
+export const prefetchMap = (): void => {
   if (started) return
   started = true
   const connection = (navigator as { connection?: { saveData?: boolean } }).connection
@@ -26,7 +26,7 @@ export function prefetchMap(): void {
   void Promise.all([warm(mapWorkerUrl), warmStyle()]).then(() => (mapPrefetched.value = true))
 }
 
-async function warmStyle(): Promise<void> {
+const warmStyle = async (): Promise<void> => {
   const style = await getJson<StyleSpecification>(STYLE_URL)
   if (!style) return
   const zoom = flatWorldZoom(innerWidth)
@@ -40,7 +40,7 @@ async function warmStyle(): Promise<void> {
   ])
 }
 
-async function warm(url: string): Promise<void> {
+const warm = async (url: string): Promise<void> => {
   try {
     await (await fetch(url, { priority: "low" })).arrayBuffer()
   } catch {
@@ -48,7 +48,7 @@ async function warm(url: string): Promise<void> {
   }
 }
 
-async function getJson<T>(url: string): Promise<T | undefined> {
+const getJson = async <T>(url: string): Promise<T | undefined> => {
   try {
     const response = await fetch(url, { priority: "low" })
     return response.ok ? ((await response.json()) as T) : undefined

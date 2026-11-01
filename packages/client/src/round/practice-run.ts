@@ -47,7 +47,7 @@ export interface DoneRun extends RunBase {
 export type PracticeRun = PaintingRun | RevealingRun | DoneRun
 
 /** The whole pool, shuffled by `seed`, from its first question. */
-export function startRun(pool: readonly Question[], seed: number): PaintingRun {
+export const startRun = (pool: readonly Question[], seed: number): PaintingRun => {
   return { type: PracticePhase.PAINT, questions: shuffle([...pool], seed), index: 0, results: [] }
 }
 
@@ -61,12 +61,12 @@ export const runTotal = (run: PracticeRun): number => run.results.reduce((total,
 export const runMaximum = (run: PracticeRun): number => run.questions.length * 1000
 
 /** Score the paint (undefined for a pass) against the current question, and show the reveal. */
-export function submitRound(
+export const submitRound = (
   run: PaintingRun,
   painted: Distribution | undefined,
   answer: ScoredAnswer,
   kernel: Kernel
-): RevealingRun {
+): RevealingRun => {
   const result = { question: currentQuestion(run), score: scoreAnswer(painted, answer, kernel).score }
   return { ...run, type: PracticePhase.REVEAL, results: [...run.results, result], revealed: { painted, result } }
 }
@@ -75,13 +75,13 @@ export function submitRound(
 /** What moving on from the reveal is called, on the page and in the headset. */
 export const nextLabel = (run: PracticeRun): string => (isLastRound(run) ? "Finish" : "Next question")
 
-export function nextRound(run: RevealingRun): PaintingRun | DoneRun {
+export const nextRound = (run: RevealingRun): PaintingRun | DoneRun => {
   const { questions, index, results } = run
   if (isLastRound(run)) return { type: PracticePhase.DONE, questions, index, results }
   return { type: PracticePhase.PAINT, questions, index: index + 1, results }
 }
 
-export function revealedFromQuestion(question: Question, outlines: Outlines): RevealedAnswer {
+export const revealedFromQuestion = (question: Question, outlines: Outlines): RevealedAnswer => {
   return {
     label: question.label,
     wiki: question.wiki,
@@ -95,7 +95,7 @@ export function revealedFromQuestion(question: Question, outlines: Outlines): Re
 }
 
 /** The rounds so far, latest first, for the headset's score table. */
-export function roundsTable(results: readonly PracticeResult[]): VrTable {
+export const roundsTable = (results: readonly PracticeResult[]): VrTable => {
   return {
     title: "Your rounds",
     rows: results

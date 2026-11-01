@@ -12,7 +12,7 @@ import styles from "./AllFlags.module.css"
 const ATLAS_PX_PER_CSS_PX = 4
 
 /** Every country's flag, on a pin stuck in its land. */
-export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Borders }) {
+export const AllFlags = ({ gameMap, borders }: { gameMap: GameMap; borders: Borders }) => {
   useEffect(() => {
     const markers = flagPins(borders).map(({ country, at }) => {
       const element = document.createElement("div")

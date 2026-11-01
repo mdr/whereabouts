@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test"
 import { styleLayerPaint, type StyleLayer } from "./map-theme"
 import { THEME } from "./themes"
 
-function makeLayer(overrides: Partial<StyleLayer> = {}): StyleLayer {
+const makeLayer = (overrides: Partial<StyleLayer> = {}): StyleLayer => {
   return { id: "x", type: "fill", sourceLayer: "", ...overrides }
 }
 

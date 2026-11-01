@@ -3,7 +3,10 @@ import type { RoundResultView } from "@whereabouts/shared/protocol/views"
 import { PASS_SCORE } from "@whereabouts/shared/scoring/scoring"
 import { RoundNote } from "./round-model"
 
-export function noteText(note: RoundNote, { askedToWatch, canUnlock }: { askedToWatch: boolean; canUnlock: boolean }) {
+export const noteText = (
+  note: RoundNote,
+  { askedToWatch, canUnlock }: { askedToWatch: boolean; canUnlock: boolean }
+) => {
   switch (note) {
     case RoundNote.WATCHING:
       return askedToWatch

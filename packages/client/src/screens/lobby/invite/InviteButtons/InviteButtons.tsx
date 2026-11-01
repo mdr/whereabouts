@@ -2,7 +2,7 @@ import { useState } from "preact/hooks"
 import { Icon } from "../../../../ui/icons"
 import styles from "./InviteButtons.module.css"
 
-export function InviteButtons({ code }: { code: string }) {
+export const InviteButtons = ({ code }: { code: string }) => {
   const [copied, setCopied] = useState(false)
   const url = `${location.origin}${location.pathname}#/game/${code}`
   const canShare = typeof navigator.share === "function"

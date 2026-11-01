@@ -6,7 +6,7 @@ import { answerTestIds } from "./AnswerTestIds"
 import styles from "./Answer.module.css"
 
 /** The revealed answer, with a link to read about it on Wikipedia. */
-export function Answer({ label, wiki }: { label: string; wiki: WikiTitle }) {
+export const Answer = ({ label, wiki }: { label: string; wiki: WikiTitle }) => {
   return (
     <p class={cx(styles.answer, "kept-folded")} data-testid={answerTestIds.answer}>
       It's <b>{label}</b>{" "}

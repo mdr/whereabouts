@@ -4,7 +4,7 @@ import { shortcutsButtonTestIds } from "./ShortcutsButtonTestIds"
 import styles from "./ShortcutsButton.module.css"
 
 /** Toolbar button that opens the card; hidden where there is no keyboard (see CSS). */
-export function ShortcutsButton() {
+export const ShortcutsButton = () => {
   return (
     <button
       class={styles.button}

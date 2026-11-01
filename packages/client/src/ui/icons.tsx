@@ -117,7 +117,7 @@ const ICONS = {
 
 export type IconName = keyof typeof ICONS
 
-export function Icon({ name, size = 16 }: { name: IconName; size?: Px }) {
+export const Icon = ({ name, size = 16 }: { name: IconName; size?: Px }) => {
   const Glyph = ICONS[name]
   return <Glyph class="icon" size={size} strokeWidth={2} aria-hidden="true" />
 }

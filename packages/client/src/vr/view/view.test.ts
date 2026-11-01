@@ -3,7 +3,7 @@ import type { CommonsFile, FlagCode } from "@whereabouts/shared/ids"
 import { VrPictureType } from "../picture/vr-picture"
 import { HintAllowance, VrViewType, sceneOf, type VrReveal, type VrRound, type VrView } from "./view"
 
-function makeRound(over: Partial<VrRound> = {}): VrRound {
+const makeRound = (over: Partial<VrRound> = {}): VrRound => {
   return { prompt: "Where is Paris?", picture: undefined, hint: undefined, hintsLeft: 3, ...over } as VrRound
 }
 

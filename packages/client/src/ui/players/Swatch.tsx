@@ -26,7 +26,7 @@ interface EveryoneSwatch {
 }
 
 /** A colour dot: a player's, a plain CSS colour, or everyone's. */
-export function Swatch(props: (PlayerSwatch | CssSwatch | EveryoneSwatch) & { as?: "span" | "i"; class?: string }) {
+export const Swatch = (props: (PlayerSwatch | CssSwatch | EveryoneSwatch) & { as?: "span" | "i"; class?: string }) => {
   const { as: Tag = "span", class: className } = props
   const everyone = props.type === SwatchType.EVERYONE
   const style = everyone

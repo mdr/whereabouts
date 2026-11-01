@@ -9,7 +9,7 @@ import styles from "./TakeSeat.module.css"
  * For a spectator mid-game: join in as a player, sitting out the round under
  * way and playing from the next question. Off while every seat is taken.
  */
-export function TakeSeatButton({ conn, view, inCard }: { conn: Connection; view: GameView; inCard?: boolean }) {
+export const TakeSeatButton = ({ conn, view, inCard }: { conn: Connection; view: GameView; inCard?: boolean }) => {
   const full = view.players.length >= MAX_PLAYERS
   return (
     <button

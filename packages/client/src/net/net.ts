@@ -44,7 +44,7 @@ interface RejectedState {
 
 export type ConnectionState = PlainState | RejectedState
 
-function wsUrl(): string {
+const wsUrl = (): string => {
   const proto = location.protocol === "https:" ? "wss:" : "ws:"
   return `${proto}//${location.host}/ws`
 }

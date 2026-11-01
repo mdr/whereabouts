@@ -26,7 +26,7 @@ const lonToX = (lon: Degrees, width: number) => ((lon + 180) / 360) * width
 const latToY = (lat: Degrees, height: number) => ((90 - lat) / 180) * height
 
 /** Trace a ring of [lon, lat] points, and again a world to the left if it runs past 180°. */
-function traceRing(ctx: CanvasRenderingContext2D, ring: Ring, width: number, height: number): void {
+const traceRing = (ctx: CanvasRenderingContext2D, ring: Ring, width: number, height: number): void => {
   let east = false
   for (const shift of [0, -360]) {
     if (shift && !east) return
@@ -49,7 +49,7 @@ const EDGE_STEP: Radians = toRadians(0.1)
  * flat picture would miss the small cells beside them, far from the equator
  * by many pixels, so long ones go in short steps.
  */
-export function cellRing(cell: H3Cell): Ring | undefined {
+export const cellRing = (cell: H3Cell): Ring | undefined => {
   let ring = alongGreatCircles(cellBoundaryLonLat(cell))
   const lons = ring.map(([lon]) => lon)
   if (Math.max(...lons) - Math.min(...lons) <= 180) return ring
@@ -63,7 +63,7 @@ export function cellRing(cell: H3Cell): Ring | undefined {
  * cell's hexagon covers: an H3 parent's outline only roughly follows its
  * children, so filling the mask alone leaves slivers of land undrawn.
  */
-function alongGreatCircles(ring: Ring): Ring {
+const alongGreatCircles = (ring: Ring): Ring => {
   const out: Ring = []
   const a = new Vector3()
   const b = new Vector3()
@@ -84,7 +84,7 @@ function alongGreatCircles(ring: Ring): Ring {
   return out
 }
 
-export function landCells(land: LandMaskData): H3Cell[] {
+export const landCells = (land: LandMaskData): H3Cell[] => {
   const finest = h3Resolution(land.resolution)
   const mask = new Set(land.cells.map(h3Cell))
   const resolutions = Array.from({ length: finest + 1 }, (_, resolution) => h3Resolution(resolution))
@@ -102,7 +102,7 @@ export function landCells(land: LandMaskData): H3Cell[] {
 }
 
 /** Returns the land alone, on a clear sea. */
-export function drawLand(canvas: HTMLCanvasElement, land: LandMaskData, theme: Theme): HTMLCanvasElement {
+export const drawLand = (canvas: HTMLCanvasElement, land: LandMaskData, theme: Theme): HTMLCanvasElement => {
   const { width: width, height: height } = canvas
   const landOnly = document.createElement("canvas")
   landOnly.width = width
@@ -146,11 +146,11 @@ const COLOUR_TILE_COUNT = 4
  * The land picture with natural colour over the land, dimmed as the page's
  * map dims it for the dark theme. The colour's own sea is opaque, so `landOnly` (from drawLand) cuts it to the land.
  */
-export async function drawColour(
+export const drawColour = async (
   canvas: HTMLCanvasElement,
   land: HTMLCanvasElement,
   landOnly: HTMLCanvasElement
-): Promise<void> {
+): Promise<void> => {
   const tiles = await Promise.all(
     Array.from({ length: COLOUR_TILE_COUNT ** 2 }, async (_, i) => {
       const image = new Image()
@@ -198,7 +198,7 @@ export async function drawColour(
 }
 
 /** National borders on a clear canvas, to lay over the land when the map shows them. */
-export function drawBorders(canvas: HTMLCanvasElement, borders: BordersData, theme: Theme): void {
+export const drawBorders = (canvas: HTMLCanvasElement, borders: BordersData, theme: Theme): void => {
   const ctx = canvas.getContext("2d")!
   const { width: width, height: height } = canvas
   ctx.strokeStyle = theme.border

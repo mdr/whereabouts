@@ -12,13 +12,13 @@ const c = new Color()
 const p = new Vector3()
 const mid = new Vector3()
 
-function rgb(hex: CssColour): [r: number, g: number, b: number] {
+const rgb = (hex: CssColour): [r: number, g: number, b: number] => {
   const packed = parseInt(hex.slice(1), 16)
   return [((packed >> 16) & 255) / 255, ((packed >> 8) & 255) / 255, (packed & 255) / 255]
 }
 
 /** The map's paint ramp (see GameMap.applyPaintRamp): colour stops at 0, ⅓, ⅔ and 1, mixed as the map mixes them. */
-function rampColour(theme: Theme, v: number, out: Color): number {
+const rampColour = (theme: Theme, v: number, out: Color): number => {
   const t = Math.min(1, Math.max(0, v)) * 3
   const i = Math.min(2, Math.floor(t))
   const a = rgb(theme.ramp[i]!)
@@ -33,12 +33,12 @@ function rampColour(theme: Theme, v: number, out: Color): number {
  * A cell in a player's colour (its own, or `colour` for all) shows as the
  * map shows one (GameMap.setPaintColour): more opaque the heavier it is.
  */
-export function paintGeometry(
+export const paintGeometry = (
   paint: GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: CssColour }>,
   theme: Theme,
   radius: Metres,
   colour?: CssColour
-): BufferGeometry {
+): BufferGeometry => {
   const rings = paint.features.map((feature) => {
     const ring = feature.geometry.coordinates[0]!
     const [first, last] = [ring[0]!, ring[ring.length - 1]!]

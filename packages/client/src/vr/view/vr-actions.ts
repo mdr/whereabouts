@@ -18,18 +18,18 @@ export const vrPicked = signal<PlayerId | undefined>(undefined)
 type Row = VrTable["rows"][number]
 
 /** For the host, a player's row picks them for Remove and Make host; pointing again lets go. */
-export function pickable(view: GameView, player: PlayerView): Pick<Row, "select" | "selected"> {
+export const pickable = (view: GameView, player: PlayerView): Pick<Row, "select" | "selected"> => {
   if (!view.you.isHost || player.id === view.you.id) return {}
   const picked = vrPicked.value === player.id
   return { selected: picked, select: () => (vrPicked.value = picked ? undefined : player.id) }
 }
 
 /** Remove and Make host for the player the host picked, each confirmed by a second press. */
-export function hostActions(
+export const hostActions = (
   conn: Pick<Connection, "kick" | "makeHost">,
   view: GameView,
   playerId: PlayerId | undefined
-): VrAction[] {
+): VrAction[] => {
   const player =
     view.you.isHost && playerId !== view.you.id
       ? everyone(view).find((candidate) => candidate.id === playerId)
@@ -57,7 +57,7 @@ export function hostActions(
 }
 
 /** A watcher's way in, while a seat is free. */
-export function takeSeat(conn: Pick<Connection, "setRole">, view: GameView, label: string): VrAction {
+export const takeSeat = (conn: Pick<Connection, "setRole">, view: GameView, label: string): VrAction => {
   return {
     label,
     press: () => conn.setRole(Role.PLAYER),

@@ -8,7 +8,7 @@ import { withRetries } from "./retry"
  */
 const KEY = "whereabouts.staleBuildReloadAt"
 
-export function reloadForNewBuild(): boolean {
+export const reloadForNewBuild = (): boolean => {
   try {
     if (Date.now() - Number(sessionStorage.getItem(KEY) ?? 0) < 60_000) return false
     sessionStorage.setItem(KEY, String(Date.now()))
@@ -19,7 +19,7 @@ export function reloadForNewBuild(): boolean {
   return true
 }
 
-export function reloadOnStaleBuild(): void {
+export const reloadOnStaleBuild = (): void => {
   window.addEventListener("vite:preloadError", (event) => {
     if (reloadForNewBuild()) event.preventDefault()
   })
@@ -29,7 +29,7 @@ export function reloadOnStaleBuild(): void {
  * A JSON file from this build, fetched rather than imported: Chrome never
  * fetches a failed module import again, so it could not be retried.
  */
-export function fetchBuildJson<T>(url: string): Promise<T> {
+export const fetchBuildJson = <T>(url: string): Promise<T> => {
   return withRetries(async () => {
     const response = await fetch(url)
     if (response.status === 404) reloadForNewBuild()

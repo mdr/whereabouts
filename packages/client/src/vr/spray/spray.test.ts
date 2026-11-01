@@ -17,7 +17,7 @@ beforeAll(() => {
 const eye = new Vector3(0, 1.6, 0)
 
 /** A globe turned to face `at` to the eye, within `reach` radians either side. */
-function globeFacing(at: LatLon, reach: number): Globe {
+const globeFacing = (at: LatLon, reach: number): Globe => {
   const globe = new Globe(1)
   globe.place(eye, new Vector3(0, 0, -1))
   globe.update(0.1, {}, { x: 0, y: 0 })
@@ -27,7 +27,7 @@ function globeFacing(at: LatLon, reach: number): Globe {
 }
 
 /** A hand at the eye, its ray pointing at the globe's centre. */
-function handAimedAt(globe: Globe): HandTool {
+const handAimedAt = (globe: Globe): HandTool => {
   const scene = new Object3D()
   const grip = new Object3D()
   const ray = new Object3D()

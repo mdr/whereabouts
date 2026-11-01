@@ -3,7 +3,7 @@ import { cx } from "../cx"
 import styles from "./SmallPicture.module.css"
 
 /** A photo the size of a list row; click it to enlarge. */
-export function SmallPictureBox({
+export const SmallPictureBox = ({
   class: className,
   style,
   children
@@ -11,7 +11,7 @@ export function SmallPictureBox({
   class?: string
   style?: Record<string, string>
   children?: ComponentChildren
-}) {
+}) => {
   return (
     <span class={cx(styles.smallPicture, className)} style={style}>
       {children}

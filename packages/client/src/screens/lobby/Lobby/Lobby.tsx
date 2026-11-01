@@ -28,7 +28,7 @@ import styles from "./Lobby.module.css"
  * the right. The host gets the controls; guests see the decided values,
  * which highlight briefly when the host changes one.
  */
-export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
+export const Lobby = ({ conn, view }: { conn: Connection; view: GameView }) => {
   const online = conn.online.value
   const { dialog, ask } = useConfirm(online)
   useEffect(prefetchMap, [])
@@ -71,7 +71,7 @@ export function Lobby({ conn, view }: { conn: Connection; view: GameView }) {
 }
 
 /** What the lobby shows in the headset: the players, and the host's or guest's actions. */
-function lobbyVrView(conn: Connection, view: GameView, online: boolean, leave: () => void): VrView {
+const lobbyVrView = (conn: Connection, view: GameView, online: boolean, leave: () => void): VrView => {
   const host = view.you.isHost
   const { players, spectators } = view
   return {

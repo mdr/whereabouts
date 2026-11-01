@@ -29,7 +29,7 @@ const PREFERENCE: { value: Choice; label: string }[] = [
 ]
 
 /** The playtester's side of the review: the verdict, a note, and the progress through the set. */
-export function VerdictCard({
+export const VerdictCard = ({
   reviewCase,
   scores,
   choice,
@@ -60,7 +60,7 @@ export function VerdictCard({
   judged: number
   total: number
   set: number
-}) {
+}) => {
   const done = judged >= total
   const options = reviewCase.type === ReviewCaseType.SINGLE ? FAIRNESS : PREFERENCE
   const ownVerdicts = scoreVerdicts.value
@@ -146,7 +146,7 @@ export function VerdictCard({
   )
 }
 
-function exportVerdicts(verdicts: ScoreVerdict[]): void {
+const exportVerdicts = (verdicts: ScoreVerdict[]): void => {
   const text = verdicts.map((verdict) => JSON.stringify(verdict)).join("\n") + "\n"
   const link = document.createElement("a")
   link.href = URL.createObjectURL(new Blob([text], { type: "application/x-ndjson" }))

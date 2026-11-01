@@ -22,7 +22,7 @@ import {
 
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 
-function fakeConn(status: PlainState["type"] = ConnectionStatus.CONNECTED) {
+const fakeConn = (status: PlainState["type"] = ConnectionStatus.CONNECTED) => {
   return {
     status: signal<ConnectionState>({ type: status }),
     online: signal(status === ConnectionStatus.CONNECTED),

@@ -12,7 +12,7 @@ import { VrAnswerType, VrPaintsType, type VrReveal, type VrRound } from "./view/
  * Where the reveal turns the globe to, and how wide round it to show: the
  * answer and every guess's paint.
  */
-export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: Radians } {
+export const framing = (reveal: VrReveal, round: VrRound): { at: LatLon; reach: Radians } => {
   const answerPoints = [latLonToLocal(reveal.focus)]
   const { answer } = reveal
   if (answer?.type === VrAnswerType.OUTLINE)
@@ -48,9 +48,9 @@ export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: 
 }
 
 /** Several players' paint as one collection, each cell in its player's colour. */
-export function colouredPaint(
+export const colouredPaint = (
   paints: { layer: PaintLayer; colour: CssColour }[]
-): GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: CssColour }> {
+): GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: CssColour }> => {
   return {
     type: "FeatureCollection",
     features: paints.flatMap(({ layer, colour }) =>

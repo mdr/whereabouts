@@ -8,7 +8,7 @@ import styles from "./PaintedIn.module.css"
  * Where some paint mostly was: "[flag] Peru 62%", marked when it is the
  * answer. `whose` names the painter for the title: "your", "Ann's".
  */
-export function PaintedIn({ where, answer, whose }: { where: PaintedCountry; answer?: string; whose: string }) {
+export const PaintedIn = ({ where, answer, whose }: { where: PaintedCountry; answer?: string; whose: string }) => {
   const percent = Math.round(where.share * 100)
   const right = where.country.clue.flag === answer
   return (

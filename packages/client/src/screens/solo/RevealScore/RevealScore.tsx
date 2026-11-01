@@ -15,7 +15,7 @@ import { PartsLine } from "../PartsLine"
 import styles from "./RevealScore.module.css"
 
 /** The revealed score's parts, and what other answers or kernels would have scored. */
-export function RevealScore({
+export const RevealScore = ({
   answer,
   kernel,
   parts,
@@ -28,7 +28,7 @@ export function RevealScore({
   /** Undefined for a pass. */
   painted: Distribution | undefined
   hover: ReadonlySignal<LatLon | undefined>
-}) {
+}) => {
   const hovered = hover.value
   // "What if the answer were here" only means something for a point answer.
   let hoverText: string | undefined =
