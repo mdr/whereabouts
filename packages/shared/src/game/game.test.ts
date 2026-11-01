@@ -28,7 +28,8 @@ import {
   mixOf,
   mixTotal,
   MapDetail,
-  Phase
+  Phase,
+  RoundGuessType
 } from "../protocol.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import {
@@ -254,7 +255,7 @@ describe("round loop", () => {
     it("a blank guess scores as a pass", () => {
       const { reveal } = revealedAfterDeadline()
       const second = reveal.results[1]
-      expect(second!.paint).toBeUndefined()
+      expect(second!.guess.type).toBe(RoundGuessType.PASSED)
       expect(second!.score).toBe(PASS_SCORE.score)
     })
 
@@ -277,7 +278,7 @@ describe("round loop", () => {
     expect(JSON.stringify(during)).not.toContain("cells")
     g.tick(T0 + 60_000 + ROUND_GRACE)
     const after = viewIn(g.view(tokB, T0 + 60_000), Phase.REVEAL)
-    expect(after.reveal.results.find((r) => r.playerId === "p1")!.paint).not.toBeUndefined()
+    expect(after.reveal.results.find((r) => r.playerId === "p1")!.guess.type).toBe(RoundGuessType.PAINTED)
   })
 
   it("locking freezes paint; late paint is rejected", () => {
@@ -323,7 +324,7 @@ describe("round loop", () => {
     g.lock(tokB, T0 + 5)
     expect(g.phase).toBe(Phase.REVEAL)
     const mine = viewIn(g.view(tokA, T0 + 5), Phase.REVEAL).reveal.results.find((r) => r.playerId === "p1")!
-    expect(mine.paint).toBeUndefined()
+    expect(mine.guess.type).toBe(RoundGuessType.PASSED)
     expect(mine.score).toBe(250)
   })
 
@@ -458,7 +459,7 @@ describe("round loop", () => {
     const results = viewIn(g.view(tokA, T0 + 61_000), Phase.REVEAL).reveal.results
     const alice = results.find((r) => r.playerId === "p1")!
     expect(alice.score).toBe(PASS_SCORE.score)
-    expect(alice.paint).toBeUndefined()
+    expect(alice.guess.type).toBe(RoundGuessType.PASSED)
     expect(results.find((r) => r.playerId === "p2")!.score).toBeGreaterThan(900)
   })
 })
@@ -1103,12 +1104,10 @@ describe("the question mix", () => {
     expect(reveal.label).toBe("Germany")
     const alice = reveal.results.find((r) => r.playerId === "p1")!
     expect(alice.score).toBeGreaterThan(985)
-    const fit = alice.parts.type === AnswerType.AREA ? alice.parts : { coverage: 0, precision: 0 }
-    expect(fit.coverage).toBeGreaterThan(0.95)
-    expect(fit.precision).toBeGreaterThan(0.95)
+    expect(alice.guess).toMatchObject({ type: RoundGuessType.PAINTED, parts: { type: AnswerType.AREA } })
     const bob = reveal.results.find((r) => r.playerId === "p2")!
     expect(bob.score).toBe(PASS_SCORE.score)
-    expect(bob.parts).toEqual({ type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B })
+    expect(bob.guess).toEqual({ type: RoundGuessType.PASSED })
   })
 
   it("scores a small country's flag as a point and reveals its name", () => {

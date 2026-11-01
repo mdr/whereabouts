@@ -4,7 +4,7 @@
  */
 import { signal } from "@preact/signals"
 import type { PlayerId } from "@whereabouts/shared/ids"
-import type { PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
+import { RoundGuessType, type PlayerView, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol"
 import type { Outline } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"
 import { revealedShape } from "./revealed-shape"
@@ -52,13 +52,14 @@ export const shownPlayerId = (shown: RevealShown): PlayerId | undefined =>
 
 /** The results whose paint to show, best first. */
 export function shownResults(results: RoundResultView[], shown: RevealShown): RoundResultView[] {
+  const painted = results.filter((r) => r.guess.type === RoundGuessType.PAINTED)
   switch (shown.type) {
     case RevealShownType.EVERYONE:
-      return results.filter((r) => r.paint)
+      return painted
     case RevealShownType.NOBODY:
       return []
     case RevealShownType.PLAYER:
-      return results.filter((r) => r.paint && r.playerId === shown.id)
+      return painted.filter((r) => r.playerId === shown.id)
   }
 }
 

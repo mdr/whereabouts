@@ -1,24 +1,20 @@
-import { AnswerType, type Outline } from "@whereabouts/shared/questions"
+import type { Outline } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
-import { h3Res } from "@whereabouts/shared/h3"
 import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
-import type { PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
+import { RoundGuessType, type PlayerView, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol"
 import { SHOW_EVERYONE, SHOW_NOBODY, revealedFromView, revealOrder, showPlayer, shownResults } from "./reveal"
-import { areaAnswerView, makePlayer, makeQuestionView } from "../test-view"
+import { areaAnswerView, makePainted, makePlayer, makeQuestionView } from "../test-view"
 import { RevealedShapeType } from "./revealed-shape"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
 const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
 
 const player = (name: string, rank: number): PlayerView => makePlayer({ id: idOf(name), name: playerName(name), rank })
-const paint = { cells: { "85283473fffffff": 1 }, floor: 0.05 }
 function result(name: string, score: number, painted = true): RoundResultView {
   return {
     playerId: idOf(name),
     score,
-    parts: { type: AnswerType.POINT, A: 0, B: 0 },
-    res: h3Res(5),
-    paint: painted ? paint : undefined
+    guess: painted ? makePainted() : { type: RoundGuessType.PASSED }
   }
 }
 

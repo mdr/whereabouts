@@ -42,7 +42,12 @@ const onward = (run: RevealingRun): PaintingRun => {
 const shown = (over: Partial<PracticeVrShown> = {}): PracticeVrShown => ({
   paint: {} as PaintController,
   question: makeQuestionView(),
-  answer: { label: "Kyoto", answer: { lat: 35, lon: 135.8 }, shape: { type: RevealedShapeType.POINT } },
+  answer: {
+    label: "Kyoto",
+    wiki: wikiTitle("Kyoto"),
+    answer: { lat: 35, lon: 135.8 },
+    shape: { type: RevealedShapeType.POINT }
+  },
   fact: undefined,
   detail: MapDetail.MINIMAL,
   hint: undefined,

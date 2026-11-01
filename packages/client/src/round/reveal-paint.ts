@@ -1,7 +1,12 @@
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import { colourCss, type CssColour } from "@whereabouts/shared/colours"
 import type { H3Res } from "@whereabouts/shared/h3"
-import type { PaintSubmission, PlayerView, RoundResultView } from "@whereabouts/shared/protocol"
+import {
+  RoundGuessType,
+  type PaintSubmission,
+  type PlayerView,
+  type RoundResultView
+} from "@whereabouts/shared/protocol"
 
 /** A player's paint at a reveal, in their colour, ready to draw. */
 export interface PlayerPaint {
@@ -34,6 +39,8 @@ function playerPaint(res: H3Res, paint: PaintSubmission, colour: CssColour): Pla
 export function paintsOf(results: RoundResultView[], players: PlayerView[]): PlayerPaint[] {
   return [...results].reverse().flatMap((r) => {
     const p = players.find((x) => x.id === r.playerId)
-    return p && r.paint ? [playerPaint(r.res, r.paint, colourCss(p.colour))] : []
+    return p && r.guess.type === RoundGuessType.PAINTED
+      ? [playerPaint(r.guess.res, r.guess.paint, colourCss(p.colour))]
+      : []
   })
 }

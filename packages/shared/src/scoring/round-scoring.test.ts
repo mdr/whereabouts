@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { CATALOGUE, outlinesFrom } from "../catalogue/catalogue.ts"
 import { PaintLayer, resolutionForTolerance } from "../paint/paint.ts"
-import type { PaintSubmission } from "../protocol.ts"
+import { RoundGuessType, type PaintSubmission } from "../protocol.ts"
 import { FactsType } from "../awards/awards.ts"
 import { AnswerType } from "../questions.ts"
 import { regionCells, scoredAnswer, type Area, type ScoredAnswer } from "./regions.ts"
@@ -41,8 +41,7 @@ describe("scoreRound", () => {
     const paint = paintAround(paris, paris.at.lat, paris.at.lon)
     const round = score(paris, makeDraft(paint))
     expect(round.score).toBeGreaterThan(900)
-    expect(round.parts.type).toBe(AnswerType.POINT)
-    expect(round.paint).toBe(paint)
+    expect(round.guess).toMatchObject({ type: RoundGuessType.PAINTED, paint, parts: { type: AnswerType.POINT } })
     expect(round.facts).toMatchObject({ type: FactsType.POINT, label: "Answer", score: round.score })
     if (round.facts.type !== FactsType.POINT) throw new Error("point facts expected")
     expect(round.facts.area).toBeGreaterThan(0)
@@ -54,22 +53,19 @@ describe("scoreRound", () => {
       for (const submission of [undefined, makeDraft(), makeLocked(T0 + 5_000)]) {
         const round = score(answer, submission)
         expect(round.score).toBe(PASS_SCORE.score)
-        expect(round.parts).toEqual({ type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B })
-        expect(round.paint).toBeUndefined()
+        expect(round.guess).toEqual({ type: RoundGuessType.PASSED })
         expect(round.facts).toMatchObject({ type: FactsType.PASSED })
       }
   })
 
-  it("scores an area painted whole near the top, with how the paint sat against the outline", () => {
+  it("scores an area painted whole near the top", () => {
     for (const area of [germany, answerOf("island-borneo") as Area]) {
       const round = score(area, makeDraft(paintAll(area)))
       expect(round.score).toBeGreaterThan(985)
-      if (round.parts.type !== AnswerType.AREA) throw new Error("area parts expected")
-      expect(round.parts.coverage).toBeGreaterThan(0.95)
-      expect(round.parts.precision).toBeGreaterThan(0.95)
+      expect(round.guess).toMatchObject({ type: RoundGuessType.PAINTED, parts: { type: AnswerType.AREA } })
       expect(round.facts).toMatchObject({
         type: FactsType.AREA,
-        region: { precision: round.parts.precision, nextDoor: false }
+        region: { precision: expect.closeTo(1, 1), nextDoor: false }
       })
     }
   })

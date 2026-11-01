@@ -28,7 +28,8 @@ import {
   type StateMessage,
   mixOf,
   mixTotal,
-  Phase
+  Phase,
+  RoundGuessType
 } from "@whereabouts/shared/protocol"
 import { ROUND_GRACE } from "@whereabouts/shared/game/game"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
@@ -325,7 +326,7 @@ describe("game server", () => {
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
     const scores = Object.fromEntries(viewIn(reveal, Phase.REVEAL).reveal.results.map((r) => [r.playerId, r.score]))
     expect(scores[byName.Alice!]).toBeGreaterThan(scores[byName.Bob!]!)
-    expect(viewIn(reveal, Phase.REVEAL).reveal.results.every((r) => r.paint !== undefined)).toBe(true)
+    expect(viewIn(reveal, Phase.REVEAL).reveal.results.every((r) => r.guess.type === RoundGuessType.PAINTED)).toBe(true)
 
     alice.send("next")
     await bob.until((v) => v.phase === Phase.GUESSING && v.round.index === 1)
@@ -340,7 +341,7 @@ describe("game server", () => {
     expect(results.results[0]!.playerId).toBe(byName.Alice)
   })
 
-  it("plays a country round: scored against the outline, with coverage and precision", async () => {
+  it("plays a country round: scored against the outline, against the area rule", async () => {
     const alice = player("Alice")
     alice.connect({ create: true })
     const lobby = await alice.until((v) => v.phase === Phase.LOBBY)
@@ -374,7 +375,7 @@ describe("game server", () => {
     const byName = Object.fromEntries(reveal.players.map((p) => [p.name, p.id]))
     const aliceResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((r) => r.playerId === byName.Alice)!
     expect(aliceResult.score).toBeGreaterThan(980)
-    expect(aliceResult.parts.type === AnswerType.AREA && aliceResult.parts.coverage).toBeGreaterThan(0.95)
+    expect(aliceResult.guess).toMatchObject({ type: RoundGuessType.PAINTED, parts: { type: AnswerType.AREA } })
     const bobResult = viewIn(reveal, Phase.REVEAL).reveal.results.find((r) => r.playerId === byName.Bob)!
     expect(bobResult.score).toBe(250)
   })

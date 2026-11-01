@@ -177,14 +177,14 @@ export function scoreArea(painted: Distribution, q: Area): AreaScore {
 }
 
 /** The point rule's parts. */
-export interface PointParts {
+interface PointParts {
   type: AnswerType.POINT
   A: number
   B: number
 }
 
 /** The area rule's parts. */
-export interface AreaParts {
+interface AreaParts {
   type: AnswerType.AREA
   shape: number
   nearness: number

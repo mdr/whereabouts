@@ -2,10 +2,10 @@
 import { FactsType, type RoundFacts } from "../awards/awards.ts"
 import { explainPoint, isHedge } from "./explain.ts"
 import { PaintLayer, resolutionForTolerance } from "../paint/paint.ts"
-import type { PaintSubmission, ScoreParts } from "../protocol.ts"
+import { RoundGuessType, type PaintSubmission, type RoundGuess } from "../protocol.ts"
 import { AnswerType } from "../questions.ts"
-import { regionFit, regionMisfit, scoreAnswer, type AnswerParts, type ScoredAnswer } from "./regions.ts"
-import { buildDistribution, type Distribution, type Kernel } from "./scoring.ts"
+import { regionMisfit, scoreAnswer, type ScoredAnswer } from "./regions.ts"
+import { buildDistribution, type Kernel } from "./scoring.ts"
 import type { Instant, Ms } from "../units.ts"
 
 export enum SubmissionType {
@@ -30,10 +30,8 @@ export type Submission = DraftSubmission | LockedSubmission
 
 export interface ScoredRound {
   score: number
-  parts: ScoreParts
+  guess: RoundGuess
   facts: RoundFacts
-  /** Undefined for a pass. */
-  paint?: PaintSubmission
 }
 
 /**
@@ -52,15 +50,16 @@ export function scoreRound(
   const res = resolutionForTolerance(answer.tolerance)
   const cells = painted ? [...PaintLayer.fromRecord(res, painted.cells).toCells()] : []
   const dist = painted ? buildDistribution(cells, painted.floor) : undefined
-  const { score, parts: answerParts } = scoreAnswer(dist, answer, kernel)
-  const parts = resultParts(answerParts, dist, answer)
+  const { score, parts } = scoreAnswer(dist, answer, kernel)
   const base = {
     label,
     score,
     lockedAfter: submission?.type === SubmissionType.LOCKED ? submission.at - startedAt : undefined,
     roundLength
   }
-  if (!painted || !dist) return { score, parts, facts: { type: FactsType.PASSED, ...base } }
+  if (!painted || !dist)
+    return { score, guess: { type: RoundGuessType.PASSED }, facts: { type: FactsType.PASSED, ...base } }
+  const guess: RoundGuess = { type: RoundGuessType.PAINTED, paint: painted, res, parts }
   const area = cells.reduce((a, c) => a + c.area, 0)
   if (answer.type === AnswerType.AREA) {
     const m = regionMisfit(dist, answer)
@@ -69,7 +68,7 @@ export function scoreRound(
       precision: m.precision,
       nextDoor: m.precision < 0.1 && m.off !== undefined && m.off.distance < 5 * answer.tolerance
     }
-    return { score, parts, facts: { type: FactsType.AREA, ...base, area, region }, paint: painted }
+    return { score, guess, facts: { type: FactsType.AREA, ...base, area, region } }
   }
   if (parts.type !== AnswerType.POINT) throw new Error("area parts for a point answer")
   const e = explainPoint(dist, answer.at, answer.tolerance, parts.A, parts.B, kernel)
@@ -82,12 +81,5 @@ export function scoreRound(
     hedged: isHedge(e, score, answer.tolerance),
     tolerance: answer.tolerance
   }
-  return { score, parts, facts: { type: FactsType.POINT, ...base, area, point }, paint: painted }
-}
-
-/** A result's parts: a painted area answer's add how the paint sat against the outline. */
-function resultParts(parts: AnswerParts, dist: Distribution | undefined, answer: ScoredAnswer): ScoreParts {
-  if (parts.type === AnswerType.POINT) return parts
-  if (!dist || answer.type !== AnswerType.AREA) throw new Error("area parts without an area paint")
-  return { ...parts, ...regionFit(dist, answer) }
+  return { score, guess, facts: { type: FactsType.POINT, ...base, area, point } }
 }

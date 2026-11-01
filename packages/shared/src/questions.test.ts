@@ -20,13 +20,8 @@ import { greatCircleDistance } from "./geo.ts"
 import { commonsFile, flagCode, outlineId, wikiTitle } from "./ids.ts"
 
 describe("wikipediaUrl", () => {
-  it("links the article, or searches for the label without one", () => {
-    expect(wikipediaUrl(wikiTitle("St. Peter's Basilica"), "St Peter's Basilica, Vatican City")).toBe(
-      "https://en.wikipedia.org/wiki/St._Peter's_Basilica"
-    )
-    expect(wikipediaUrl(undefined, "Oia, Santorini")).toBe(
-      "https://en.wikipedia.org/w/index.php?search=Oia%2C%20Santorini"
-    )
+  it("links the article", () => {
+    expect(wikipediaUrl(wikiTitle("St. Peter's Basilica"))).toBe("https://en.wikipedia.org/wiki/St._Peter's_Basilica")
   })
 })
 

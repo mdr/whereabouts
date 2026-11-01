@@ -3,12 +3,14 @@ import { useEffect, useMemo, useState } from "preact/hooks"
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import {
   outlineOf,
+  RoundGuessType,
   type GameView,
   type PlayerView,
   type RevealView,
   type RoundResultView
 } from "@whereabouts/shared/protocol"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
+import type { AnswerParts } from "@whereabouts/shared/scoring/regions"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import { AnswerType, QuestionType, clueFlag } from "@whereabouts/shared/questions"
 import type { Connection } from "../net/net"
@@ -88,7 +90,8 @@ export function Reveal({
     const m = new Map<string, PaintedCountry | undefined>()
     if (borders)
       for (const r of reveal.results)
-        if (r.paint) m.set(r.playerId, mainCountry(borders, paintLayer(r.res, r.paint).toCells()))
+        if (r.guess.type === RoundGuessType.PAINTED)
+          m.set(r.playerId, mainCountry(borders, paintLayer(r.guess.res, r.guess.paint).toCells()))
     return m
   }, [borders, reveal.index])
 
@@ -136,7 +139,7 @@ export function Reveal({
             question={reveal.question}
             revealed={answer}
             fact={fact}
-            you={mine && { score: mine.score, passed: !mine.paint }}
+            you={mine && { score: mine.score, passed: mine.guess.type === RoundGuessType.PASSED }}
             playedLabel="your score this round"
             where={mine && where.get(mine.playerId)}
             testIds={{ scoreCard: revealTestIds.scoreCard }}
@@ -181,7 +184,9 @@ export function Reveal({
                     where={where.get(row.player.id)}
                     answerFlag={answerFlag}
                     onSelect={() => setSelected(row.pick)}
-                    onHover={(on) => setHovered(on && row.result?.paint ? row.player.id : undefined)}
+                    onHover={(on) =>
+                      setHovered(on && row.result?.guess.type === RoundGuessType.PAINTED ? row.player.id : undefined)
+                    }
                     onKick={
                       view.you.isHost && !row.you
                         ? () => ask(kickRequest(row.player.name, () => conn.kick(row.player.id)))
@@ -233,13 +238,7 @@ export function Reveal({
                   {byId.get(r.playerId)?.name ?? "?"}
                   {byId.get(r.playerId)?.isHost && <HostTag />}
                 </span>
-                {r.parts.type === AnswerType.AREA ? (
-                  <span class={kit.parts}>
-                    shape <b>{Math.round(r.parts.shape)}</b> · nearness <b>{Math.round(r.parts.nearness)}</b>
-                  </span>
-                ) : (
-                  <ScoreParts A={r.parts.A} B={r.parts.B} />
-                )}
+                {r.guess.type === RoundGuessType.PAINTED && <PartsLine parts={r.guess.parts} />}
               </li>
             ))}
           </ul>
@@ -248,6 +247,15 @@ export function Reveal({
         <ConnectionDev conn={conn} view={view} />
       </DevDrawer>
     </>
+  )
+}
+
+function PartsLine({ parts }: { parts: AnswerParts }) {
+  if (parts.type === AnswerType.POINT) return <ScoreParts A={parts.A} B={parts.B} />
+  return (
+    <span class={kit.parts}>
+      shape <b>{Math.round(parts.shape)}</b> · nearness <b>{Math.round(parts.nearness)}</b>
+    </span>
   )
 }
 
@@ -295,7 +303,7 @@ function RevealRow({
           {p.name}
         </span>
         {p.isHost && <HostTag />}
-        {r && !r.paint && (
+        {r?.guess.type === RoundGuessType.PASSED && (
           <span class={pl.tag} title="Made no guess this round" data-testid={revealTestIds.passedTag}>
             passed
           </span>

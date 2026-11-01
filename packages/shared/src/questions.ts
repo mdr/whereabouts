@@ -203,11 +203,8 @@ export function commonsPageUrl(file: CommonsFile): string {
   return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, "_"))}`
 }
 
-/** The Wikipedia article for a place, or a search for its label when there is none. */
-export function wikipediaUrl(title: WikiTitle | undefined, label: string): string {
-  return title
-    ? `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`
-    : `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(label)}`
+export function wikipediaUrl(title: WikiTitle): string {
+  return `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`
 }
 
 /** Two questions in one game should be at least this far apart when the pool allows. */

@@ -20,7 +20,7 @@ import {
 import { HintAxisSchema } from "./hints.ts"
 import { KernelIdSchema } from "./scoring/scoring.ts"
 import { H3CellSchema, H3ResSchema } from "./h3.ts"
-import { MapDetailSchema, MixSchema, Phase } from "./protocol.ts"
+import { MapDetailSchema, MixSchema, Phase, RoundGuessType } from "./protocol.ts"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "./questions.ts"
 import { DegreesSchema, InstantSchema, KmSchema, MsSchema } from "./units.ts"
 
@@ -70,18 +70,18 @@ const PlayerViewSchema = z.strictObject({
 const RoundResultViewSchema = z.strictObject({
   playerId: PlayerIdSchema,
   score: z.number(),
-  parts: z.discriminatedUnion("type", [
-    z.strictObject({ type: z.literal(AnswerType.POINT), A: z.number(), B: z.number() }),
+  guess: z.discriminatedUnion("type", [
+    z.strictObject({ type: z.literal(RoundGuessType.PASSED) }),
     z.strictObject({
-      type: z.literal(AnswerType.AREA),
-      shape: z.number(),
-      nearness: z.number(),
-      coverage: z.number(),
-      precision: z.number()
+      type: z.literal(RoundGuessType.PAINTED),
+      paint: PaintSchema,
+      res: H3ResSchema,
+      parts: z.discriminatedUnion("type", [
+        z.strictObject({ type: z.literal(AnswerType.POINT), A: z.number(), B: z.number() }),
+        z.strictObject({ type: z.literal(AnswerType.AREA), shape: z.number(), nearness: z.number() })
+      ])
     })
   ]),
-  paint: PaintSchema.optional(),
-  res: H3ResSchema,
   hint: HintAxisSchema.optional()
 })
 
@@ -125,7 +125,7 @@ const RevealViewSchema = z.strictObject({
   answer: LatLonSchema,
   place: PlaceIdSchema,
   label: z.string(),
-  wiki: WikiTitleSchema.optional(),
+  wiki: WikiTitleSchema,
   photo: CommonsFileSchema.optional(),
   results: z.array(RoundResultViewSchema),
   ready: z.array(PlayerIdSchema)

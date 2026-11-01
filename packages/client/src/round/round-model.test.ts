@@ -2,12 +2,11 @@ import { describe, expect, it } from "vite-plus/test"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import { SHOW_EVERYONE, SHOW_NOBODY, showPlayer, type RevealShown } from "./reveal"
 import { RoundNote, ShownRowType, canEndGame, revealModel, roundNote, type ShownRow } from "./round-model"
-import { makePlayer, makeResult, makeGuessingView, makeReveal, makeRevealView } from "../test-view"
+import { makePainted, makePlayer, makeResult, makeGuessingView, makeReveal, makeRevealView } from "../test-view"
 
 const alice = makePlayer()
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 const sam = makePlayer({ id: playerId("p3"), name: playerName("Sam"), isHost: false, watching: true })
-const painted = { cells: { "85283473fffffff": 1 }, floor: 0.05 }
 
 const you = (over: Parameters<typeof makeGuessingView>[0] = {}) => makeGuessingView({ ...over }).you
 
@@ -47,7 +46,7 @@ describe("revealModel", () => {
   })
 
   it("marks you, who is ready, and who sat the round out", () => {
-    const reveal = makeReveal({ results: [makeResult({ playerId: bob.id, paint: painted })], ready: [bob.id] })
+    const reveal = makeReveal({ results: [makeResult({ playerId: bob.id, guess: makePainted() })], ready: [bob.id] })
     const rows = model({}, reveal).rows.filter((r) => r.type === ShownRowType.PLAYER)
     expect(rows.map((r) => [r.player.name, r.you, r.ready, r.result?.score])).toEqual([
       ["Bob", false, true, 500],

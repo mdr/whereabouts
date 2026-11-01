@@ -6,6 +6,7 @@ import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
 import type { Outline } from "@whereabouts/shared/questions"
 import {
   Phase,
+  RoundGuessType,
   type GameView,
   type InPlayGameView,
   type PlayerView,
@@ -49,7 +50,7 @@ function shownRow(view: GameView, row: ShownRow): VrTable["rows"][number] {
   if (row.type === ShownRowType.EVERYONE) return { name: "Everyone", total: "", selected: row.selected, select }
   if (row.type === ShownRowType.HIDE_PAINT) return { name: "Hide paint", total: "", selected: row.selected, select }
   const { player: p, result: r } = row
-  const played = `${roundScoreText(r)}${r && !r.paint ? " passed" : ""}`
+  const played = `${roundScoreText(r)}${r?.guess.type === RoundGuessType.PASSED ? " passed" : ""}`
   return {
     colour: colourCss(p.colour),
     name: named(view, p),
@@ -160,7 +161,12 @@ function gameReveal(
   const whose = revealShown.value
   const model = revealModel(view, reveal, whose)
   const mine = reveal.results.find((r) => r.playerId === view.you.id)
-  const score = mine && { score: mine.score, passed: !mine.paint, total: you(view)?.score ?? 0, painted }
+  const score = mine && {
+    score: mine.score,
+    passed: mine.guess.type === RoundGuessType.PASSED,
+    total: you(view)?.score ?? 0,
+    painted
+  }
   return vrReveal(shown, revealedFromView(reveal, outline), score, borders, {
     paints: { type: VrPaintsType.PLAYERS, paints: paintsOf(shownResults(reveal.results, whose), view.players) },
     table: {

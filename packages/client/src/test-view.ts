@@ -20,13 +20,15 @@ import {
   type PlayerView,
   type QuestionView,
   type RevealView,
+  RoundGuessType,
+  type RoundGuess,
   type RoundResultView,
   Phase,
   MapDetail
 } from "@whereabouts/shared/protocol"
 import { AnswerType, ClueType, QuestionType, Surface, type FlagQuestion } from "@whereabouts/shared/questions"
 import { KernelId } from "@whereabouts/shared/scoring/scoring"
-import { h3Res } from "@whereabouts/shared/h3"
+import { h3Cell, h3Res } from "@whereabouts/shared/h3"
 
 type ViewOverrides<V extends GameView> = Partial<Omit<V, "you" | "phase">> & { you?: Partial<V["you"]> }
 
@@ -113,15 +115,26 @@ export function makeReveal(over: Partial<RevealView> = {}): RevealView {
     answer: { lat: 35, lon: 135.8 },
     place: placeId("kyoto"),
     label: "Kyoto",
+    wiki: wikiTitle("Kyoto"),
     results: [],
     ready: [],
     ...over
   }
 }
 
-/** Alice's point-round result, scored but unpainted unless the test says. */
+/** Alice's result, a pass unless the test says. */
 export function makeResult(over: Partial<RoundResultView> = {}): RoundResultView {
-  return { playerId: playerId("p1"), score: 500, parts: { type: AnswerType.POINT, A: 0, B: 0 }, res: h3Res(5), ...over }
+  return { playerId: playerId("p1"), score: 500, guess: { type: RoundGuessType.PASSED }, ...over }
+}
+
+/** A point-round guess with a little paint. */
+export function makePainted(): RoundGuess {
+  return {
+    type: RoundGuessType.PAINTED,
+    paint: { cells: { [h3Cell("85283473fffffff")]: 1 }, floor: 0.05 },
+    res: h3Res(5),
+    parts: { type: AnswerType.POINT, A: 0, B: 0 }
+  }
 }
 
 /** A place question as players see it, with whatever a test needs changed. */

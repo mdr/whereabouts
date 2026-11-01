@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
+import { wikiTitle } from "@whereabouts/shared/ids"
 import { QuestionType, type Outline } from "@whereabouts/shared/questions"
 import { RevealedShapeType } from "./revealed-shape"
 import { frameReveal, showAnswer, type RevealedAnswer } from "./round"
@@ -19,7 +20,13 @@ const outline: Outline = [
 ]
 
 function revealed(over: Partial<RevealedAnswer> = {}): RevealedAnswer {
-  return { label: "Somewhere", answer: { lat: 35, lon: 135.8 }, shape: { type: RevealedShapeType.POINT }, ...over }
+  return {
+    label: "Somewhere",
+    wiki: wikiTitle("Somewhere"),
+    answer: { lat: 35, lon: 135.8 },
+    shape: { type: RevealedShapeType.POINT },
+    ...over
+  }
 }
 
 function fakeMap() {

@@ -32,11 +32,11 @@ export function FactLine({ fact }: { fact: Fact | undefined }) {
 }
 
 /** The revealed answer, with a link to read about it on Wikipedia. */
-export function Answer({ label, wiki }: { label: string; wiki?: WikiTitle }) {
+export function Answer({ label, wiki }: { label: string; wiki: WikiTitle }) {
   return (
     <p class={q.answer} data-testid={questionCardTestIds.answer}>
       It's <b>{label}</b>{" "}
-      <a class={q.wikiLink} href={wikipediaUrl(wiki, label)} target="_blank" rel="noopener noreferrer">
+      <a class={q.wikiLink} href={wikipediaUrl(wiki)} target="_blank" rel="noopener noreferrer">
         Wikipedia <Icon name="external" size={12} />
       </a>
     </p>

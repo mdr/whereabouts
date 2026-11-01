@@ -4,7 +4,7 @@ import { playedRound, questionPictures, questionView, revealOf } from "./game-vi
 import { h3Res } from "../h3.ts"
 import { playerId } from "../ids.ts"
 import { REVEAL_PHOTOS } from "../catalogue/photos.ts"
-import type { RoundResultView } from "../protocol.ts"
+import { RoundGuessType, type RoundResultView } from "../protocol.ts"
 import { AnswerType, ClueType, FLAG_POINT_PROMPT, QuestionType, answerCentre, promptOf } from "../questions.ts"
 
 const byId = (id: string) => CATALOGUE.find((q) => q.id === id)!
@@ -64,7 +64,16 @@ describe("revealOf", () => {
   it("shows the answer, its name and article, and the results as given", () => {
     const paris = byId("paris")
     const results: RoundResultView[] = [
-      { playerId: playerId("p1"), score: 900, parts: { type: AnswerType.POINT, A: 0.9, B: 0.8 }, res: h3Res(5) }
+      {
+        playerId: playerId("p1"),
+        score: 900,
+        guess: {
+          type: RoundGuessType.PAINTED,
+          paint: { cells: {}, floor: 0 },
+          res: h3Res(5),
+          parts: { type: AnswerType.POINT, A: 0.9, B: 0.8 }
+        }
+      }
     ]
     expect(revealOf(paris, { index: 2, total: 8 }, results)).toEqual({
       index: 2,

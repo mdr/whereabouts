@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
 import { colourCss } from "@whereabouts/shared/colours"
-import { onWater, outlineOf, type InPlayGameView, Phase } from "@whereabouts/shared/protocol"
+import { onWater, outlineOf, type InPlayGameView, Phase, RoundGuessType } from "@whereabouts/shared/protocol"
 import { QuestionType } from "@whereabouts/shared/questions"
 import type { Connection } from "../net/net"
 import { usePaint } from "../ui/map/MapView"
@@ -95,10 +95,10 @@ export function InGame({ conn, view }: { conn: Connection; view: InPlayGameView 
   const mine = reveal?.results.find((r) => r.playerId === view.you.id)
   const painted = useMemo(
     () =>
-      reveal?.question.type === QuestionType.FLAG && borders && mine?.paint
-        ? mainCountry(borders, paintLayer(mine.res, mine.paint).toCells())
+      reveal?.question.type === QuestionType.FLAG && borders && mine?.guess.type === RoundGuessType.PAINTED
+        ? mainCountry(borders, paintLayer(mine.guess.res, mine.guess.paint).toCells())
         : undefined,
-    [borders, reveal?.index, mine?.paint !== undefined]
+    [borders, reveal?.index, mine?.guess.type]
   )
   const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, outline, fact, painted, borders })
   useVrView(vrView)

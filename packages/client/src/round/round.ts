@@ -21,7 +21,7 @@ import { sound } from "../sound/sound"
 /** The answer as the reveal shows it. */
 export interface RevealedAnswer {
   label: string
-  wiki?: WikiTitle
+  wiki: WikiTitle
   answer: LatLon
   shape: RevealedShape
   /** The answer's photo, on a round that showed none while guessing. */

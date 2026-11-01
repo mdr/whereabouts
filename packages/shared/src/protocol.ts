@@ -14,7 +14,7 @@ import type { Instant, Km, Ms } from "./units.ts"
 import { paintFromBase64, paintToBase64 } from "./paint/paint-wire.ts"
 import { HintAxisSchema, MAX_HINTS, type HintAxis, type HintBand } from "./hints.ts"
 import type { KernelId } from "./scoring/scoring.ts"
-import type { AreaParts, PointParts } from "./scoring/regions.ts"
+import type { AnswerParts } from "./scoring/regions.ts"
 import {
   PlayerIdSchema,
   PlayerNameSchema,
@@ -31,7 +31,7 @@ import {
 } from "./ids.ts"
 import { CloseReason } from "./close-reason.ts"
 
-export const PROTOCOL_VERSION = 12
+export const PROTOCOL_VERSION = 13
 
 /** Sparse paint: H3 cell index -> intensity. Plus the uniform world floor. */
 export interface PaintSubmission {
@@ -251,17 +251,31 @@ interface RoundView {
   deadline: Instant
 }
 
-/** What went into a round's score; a painted area answer's adds how the paint sat against the outline. */
-export type ScoreParts = PointParts | (AreaParts & { coverage: number; precision: number })
+export enum RoundGuessType {
+  PASSED = "PASSED",
+  PAINTED = "PAINTED"
+}
+
+/** The player made no guess, or painted nothing. */
+interface PassedGuess {
+  type: RoundGuessType.PASSED
+}
+
+interface PaintedGuess {
+  type: RoundGuessType.PAINTED
+  paint: PaintSubmission
+  /** H3 resolution the paint was made at, for rendering. */
+  res: H3Res
+  /** What went into the score, by the rule that scored it. */
+  parts: AnswerParts
+}
+
+export type RoundGuess = PassedGuess | PaintedGuess
 
 export interface RoundResultView {
   playerId: PlayerId
   score: number
-  parts: ScoreParts
-  /** Absent when the player made no guess. */
-  paint?: PaintSubmission
-  /** H3 resolution the paint was made at, for rendering. */
-  res: H3Res
+  guess: RoundGuess
   /** The hint this player used on the round. */
   hint?: HintAxis
 }
@@ -274,8 +288,8 @@ export interface RevealView {
   /** Whose facts the reveal shows. */
   place: PlaceId
   label: string
-  /** Wikipedia article title for the answer, when known. */
-  wiki?: WikiTitle
+  /** Wikipedia article title for the answer. */
+  wiki: WikiTitle
   /** A photo of the answer, on a round that showed none while guessing (see photos.ts). */
   photo?: CommonsFile
   results: RoundResultView[]
@@ -435,22 +449,28 @@ export function viewFrom(
 
 /** A RoundReveal as the reveal topic carries it: JSON, with each paint as base64 binary. */
 export type RevealMessage = Omit<RoundReveal, "results"> & {
-  results: (Omit<RoundResultView, "paint"> & { paint?: string })[]
+  results: (Omit<RoundResultView, "guess"> & {
+    guess: PassedGuess | (Omit<PaintedGuess, "paint"> & { paint: string })
+  })[]
 }
 
 export function revealMessage(reveal: RoundReveal): RevealMessage {
   return {
     ...reveal,
-    results: reveal.results.map(({ paint, ...result }) => (paint ? { ...result, paint: paintToBase64(paint) } : result))
+    results: reveal.results.map(({ guess, ...result }) => ({
+      ...result,
+      guess: guess.type === RoundGuessType.PAINTED ? { ...guess, paint: paintToBase64(guess.paint) } : guess
+    }))
   }
 }
 
 export function revealFrom(message: RevealMessage): RoundReveal {
   return {
     ...message,
-    results: message.results.map(({ paint, ...result }) => {
-      const decoded = paint === undefined ? undefined : paintFromBase64(paint)
-      return decoded ? { ...result, paint: decoded } : result
+    results: message.results.map(({ guess, ...result }) => {
+      if (guess.type === RoundGuessType.PASSED) return { ...result, guess }
+      const paint = paintFromBase64(guess.paint)
+      return { ...result, guess: paint ? { ...guess, paint } : { type: RoundGuessType.PASSED } }
     })
   }
 }

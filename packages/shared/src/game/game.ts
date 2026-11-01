@@ -4,7 +4,6 @@
  * whether anything changed so the transport layer can rebroadcast views.
  */
 import { DEFAULT_KERNEL, kernelById, type Kernel } from "../scoring/scoring.ts"
-import { resolutionForTolerance } from "../paint/paint.ts"
 import type { Question } from "../questions.ts"
 import { playedRound, questionPictures, revealOf, roundHintBand, roundView } from "./game-views.ts"
 import { pickRounds, type QuestionBank } from "./round-picking.ts"
@@ -406,7 +405,6 @@ export class Game {
   private finishRound(): void {
     const q = this.questions[this.roundIndex]!
     const answer = scoredAnswer(q.answer, this.bank.outlines)
-    const res = resolutionForTolerance(answer.tolerance)
     const results: RoundResultView[] = []
     // Snapshot ranks before any score changes so arrows compare like with like.
     const playing = this.seats.playing()
@@ -415,17 +413,11 @@ export class Game {
     const timing = { startedAt: this.deadline - roundLength, roundLength }
     for (const p of playing) {
       if (p.joinedRound > this.roundIndex) continue
-      const { score, parts, facts, paint } = scoreRound(
-        q.label,
-        answer,
-        this.submissions.get(p.token),
-        this.kernel,
-        timing
-      )
+      const { score, guess, facts } = scoreRound(q.label, answer, this.submissions.get(p.token), this.kernel, timing)
       p.scores[this.roundIndex] = score
       p.facts[this.roundIndex] = facts
       const hint = this.hints.get(p.token)
-      results.push({ playerId: p.id, score, parts, paint, res, ...(hint ? { hint } : {}) })
+      results.push({ playerId: p.id, score, guess, ...(hint ? { hint } : {}) })
     }
     results.sort((a, b) => b.score - a.score)
     this.phase = Phase.REVEAL

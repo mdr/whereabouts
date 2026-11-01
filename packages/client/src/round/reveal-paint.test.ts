@@ -1,9 +1,7 @@
-import { AnswerType } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
-import { h3Cell, h3Res } from "@whereabouts/shared/h3"
 import { colourCss, playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
-import { makePlayer } from "../test-view"
+import { makePainted, makePlayer } from "../test-view"
 import type { PlayerView, RoundResultView } from "@whereabouts/shared/protocol"
 import { paintsOf } from "./reveal-paint"
 
@@ -16,9 +14,7 @@ function result(name: string, score = 500): RoundResultView {
   return {
     playerId: idOf(name),
     score,
-    parts: { type: AnswerType.POINT, A: 0, B: 0 },
-    res: h3Res(5),
-    paint: { cells: { [h3Cell("85283473fffffff")]: 1 }, floor: 0.05 }
+    guess: makePainted()
   }
 }
 

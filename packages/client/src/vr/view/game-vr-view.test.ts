@@ -7,7 +7,7 @@ import { ConnectionStatus, type Connection, type ConnectionState, type PlainStat
 import type { PaintController } from "../../paint/paint-controller"
 import { gameVrView } from "./game-vr-view"
 import { VrViewType, type VrView } from "./view"
-import { makePlayer, makeResult, makeGuessingView, makeReveal, makeRevealView } from "../../test-view"
+import { makePainted, makePlayer, makeResult, makeGuessingView, makeReveal, makeRevealView } from "../../test-view"
 
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 
@@ -60,7 +60,7 @@ describe("gameVrView", () => {
     const view = revealing({
       reveal: makeReveal({
         results: [
-          makeResult({ score: 612.4, paint: { cells: {}, floor: 0 }, hint: undefined }),
+          makeResult({ score: 612.4, guess: makePainted(), hint: undefined }),
           makeResult({ playerId: bob.id, score: 250 })
         ],
         ready: [bob.id]

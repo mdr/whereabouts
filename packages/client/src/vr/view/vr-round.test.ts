@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vite-plus/test"
-import { commonsFile, flagCode, sourceUrl } from "@whereabouts/shared/ids"
+import { commonsFile, flagCode, sourceUrl, wikiTitle } from "@whereabouts/shared/ids"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface, type Outline } from "@whereabouts/shared/questions"
 import type { PaintController } from "../../paint/paint-controller"
@@ -72,6 +72,7 @@ describe("answerModeText", () => {
 const place = makeQuestionView()
 const answer: RevealedAnswer = {
   label: "Kyoto",
+  wiki: wikiTitle("Kyoto"),
   answer: { lat: 35, lon: 135.8 },
   shape: { type: RevealedShapeType.POINT },
   photo: commonsFile("Kyoto.jpg")
