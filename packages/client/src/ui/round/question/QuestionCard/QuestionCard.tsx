@@ -2,7 +2,7 @@ import type { ComponentChildren, RefObject } from "preact"
 import { useLayoutEffect, useState } from "preact/hooks"
 import { clueFlag, clueImage, promptOf } from "@whereabouts/shared/questions"
 import type { CommonsFile } from "@whereabouts/shared/ids"
-import type { QuestionView } from "@whereabouts/shared/protocol/views"
+import { flagShown, type QuestionView } from "@whereabouts/shared/protocol/views"
 import { Icon } from "../../../icons"
 import { cx } from "../../../cx"
 import { useElementRef } from "../../../element-ref"
@@ -52,7 +52,7 @@ export const QuestionCard = ({
   const asked = `${prompt}${clueImage(question.clue) ?? ""} ${clueFlag(question.clue) ?? ""}`
   const [toggledQuestion, setToggledQuestion] = useState<string | undefined>(undefined)
   // A country round names the country, so its flag can show too.
-  const flag = clueFlag(question.clue) ?? question.countryFlag
+  const flag = flagShown(question)
   const canFold = foldable === true && Boolean(image || flag || children)
   const toggled = toggledQuestion === asked
   const folded = canFold && (startFolded === true) !== toggled

@@ -30,25 +30,36 @@ const PaintSchema = z.strictObject({ cells: z.record(H3CellSchema, z.number()), 
 
 const LatLonSchema = z.strictObject({ lat: DegreesSchema, lon: DegreesSchema })
 
-const QuestionViewSchema = z.strictObject({
-  type: z.enum(QuestionType),
-  clue: z.discriminatedUnion("type", [
-    z.strictObject({ type: z.literal(ClueType.PHOTO), image: CommonsFileSchema }),
-    z.strictObject({ type: z.literal(ClueType.NAME), prompt: z.string() }),
-    z.strictObject({ type: z.literal(ClueType.FLAG), flag: FlagCodeSchema })
-  ]),
-  answer: z.discriminatedUnion("type", [
-    z.strictObject({ type: z.literal(AnswerType.POINT), tolerance: KmSchema }),
-    z.strictObject({
-      type: z.literal(AnswerType.AREA),
-      tolerance: KmSchema,
-      outline: OutlineIdSchema,
-      surface: z.enum(Surface)
-    })
-  ]),
-  feature: z.enum(FeatureType).optional(),
-  countryFlag: FlagCodeSchema.optional()
+const PhotoClueViewSchema = z.strictObject({ type: z.literal(ClueType.PHOTO), image: CommonsFileSchema })
+const NameClueViewSchema = z.strictObject({ type: z.literal(ClueType.NAME), prompt: z.string() })
+const FlagClueViewSchema = z.strictObject({ type: z.literal(ClueType.FLAG), flag: FlagCodeSchema })
+const PointAnswerViewSchema = z.strictObject({ type: z.literal(AnswerType.POINT), tolerance: KmSchema })
+const AreaAnswerViewSchema = z.strictObject({
+  type: z.literal(AnswerType.AREA),
+  tolerance: KmSchema,
+  outline: OutlineIdSchema,
+  surface: z.enum(Surface)
 })
+const AnswerViewSchema = z.discriminatedUnion("type", [PointAnswerViewSchema, AreaAnswerViewSchema])
+
+const QuestionViewSchema = z.discriminatedUnion("type", [
+  z.strictObject({ type: z.literal(QuestionType.LANDMARK), clue: PhotoClueViewSchema, answer: PointAnswerViewSchema }),
+  z.strictObject({ type: z.literal(QuestionType.PLACE), clue: NameClueViewSchema, answer: PointAnswerViewSchema }),
+  z.strictObject({
+    type: z.literal(QuestionType.COUNTRY),
+    clue: NameClueViewSchema,
+    answer: AreaAnswerViewSchema,
+    countryFlag: FlagCodeSchema.optional()
+  }),
+  z.strictObject({ type: z.literal(QuestionType.FLAG), clue: FlagClueViewSchema, answer: AnswerViewSchema }),
+  z.strictObject({
+    type: z.literal(QuestionType.FEATURE),
+    feature: z.enum(FeatureType),
+    clue: NameClueViewSchema,
+    answer: AreaAnswerViewSchema
+  }),
+  z.strictObject({ type: z.literal(QuestionType.STATE), clue: NameClueViewSchema, answer: AnswerViewSchema })
+])
 
 const QuestionPicturesSchema = z.strictObject({
   image: CommonsFileSchema.optional(),

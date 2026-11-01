@@ -4,8 +4,8 @@ import { render, waitFor } from "@testing-library/preact"
 import { CardPlace, QuestionCard } from "./QuestionCard"
 import flagImage from "../FlagImage/FlagImage.module.css"
 import { flagCode } from "@whereabouts/shared/ids"
-import { ClueType, QuestionType } from "@whereabouts/shared/questions"
-import { areaAnswerView, makeQuestionView } from "../../../../test-view"
+import { ClueType } from "@whereabouts/shared/questions"
+import { areaAnswerView, makeCountryQuestionView, makeFlagQuestionView, makeQuestionView } from "../../../../test-view"
 import type * as flags from "../../../../flags/flags"
 
 vi.mock("../../../../flags/flags", async (original) => ({
@@ -13,12 +13,7 @@ vi.mock("../../../../flags/flags", async (original) => ({
   flagUrl: (code: string) => Promise.resolve(`/flags/${code}.svg`)
 }))
 
-const flagRoundOf = (code: string) =>
-  makeQuestionView({
-    type: QuestionType.FLAG,
-    clue: { type: ClueType.FLAG, flag: flagCode(code) },
-    answer: areaAnswerView(`${code}-region`, 65)
-  })
+const flagRoundOf = (code: string) => makeFlagQuestionView(code, areaAnswerView(`${code}-region`, 65))
 
 describe("QuestionCard", () => {
   it("shows the prompt but not the tolerance, which only drives scoring", () => {
@@ -35,8 +30,7 @@ describe("QuestionCard", () => {
     const country = render(
       <QuestionCard
         hud={CardPlace.PAINTING}
-        question={makeQuestionView({
-          type: QuestionType.COUNTRY,
+        question={makeCountryQuestionView({
           clue: { type: ClueType.NAME, prompt: "Paint the whole of Germany" },
           answer: areaAnswerView("germany-region", 65),
           countryFlag: flagCode("de")

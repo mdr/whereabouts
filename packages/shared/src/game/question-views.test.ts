@@ -30,10 +30,19 @@ describe("questionView", () => {
     }
   })
 
+  it("keeps each type's clue", () => {
+    for (const question of CATALOGUE) {
+      expect(questionView(question), question.id).toMatchObject({ type: question.type, clue: question.clue })
+    }
+  })
+
   it("names a feature's kind, and gives a country with a flag its flag", () => {
     const borneo = byId("island-borneo")
-    expect(questionView(borneo)).toMatchObject({ feature: borneo.type === QuestionType.FEATURE && borneo.feature })
-    expect(questionView(byId("germany-region")).countryFlag).toBe("de")
+    expect(questionView(borneo)).toMatchObject({
+      type: QuestionType.FEATURE,
+      feature: borneo.type === QuestionType.FEATURE && borneo.feature
+    })
+    expect(questionView(byId("germany-region"))).toMatchObject({ type: QuestionType.COUNTRY, countryFlag: "de" })
   })
 })
 

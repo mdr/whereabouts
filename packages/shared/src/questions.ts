@@ -65,7 +65,7 @@ export interface NameClue {
 }
 
 /** The place's flag. */
-interface FlagClue {
+export interface FlagClue {
   type: ClueType.FLAG
   flag: FlagCode
 }
@@ -187,12 +187,6 @@ export const answerCentre = (answer: Answer): LatLon => {
 
 export const isArea = (question: Question): question is Question & { answer: AreaAnswer } => {
   return question.answer.type === AnswerType.AREA
-}
-
-/** The flag a question shows: a flag round's, or the one beside a country's name. */
-export const flagShown = (question: Question): FlagCode | undefined => {
-  if (question.clue.type === ClueType.FLAG) return question.clue.flag
-  return question.type === QuestionType.COUNTRY ? question.countryFlag : undefined
 }
 
 export const commonsImageUrl = (file: CommonsFile, width = 900): string => {

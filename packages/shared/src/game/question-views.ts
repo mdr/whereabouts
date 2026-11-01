@@ -1,32 +1,68 @@
 /** What players are sent of a question: never where its answer is until the reveal. */
 import { revealPhoto } from "../catalogue/photos.ts"
 import { HintAxis, hintBand, seededUnit, type HintBand } from "../hints.ts"
-import type {
-  GuessingGameView,
-  PlayedRound,
-  QuestionPictures,
-  QuestionView,
-  RoundResultView,
-  RoundReveal
+import {
+  flagShown,
+  type AnswerView,
+  type AreaAnswerView,
+  type GuessingGameView,
+  type PlayedRound,
+  type PointAnswerView,
+  type QuestionPictures,
+  type QuestionView,
+  type RoundResultView,
+  type RoundReveal
 } from "../protocol/views.ts"
 import type { Instant } from "../units.ts"
-import { AnswerType, ClueType, QuestionType, answerCentre, flagShown, type Question } from "../questions.ts"
+import {
+  AnswerType,
+  ClueType,
+  QuestionType,
+  answerCentre,
+  type Answer,
+  type AreaAnswer,
+  type PointAnswer,
+  type Question
+} from "../questions.ts"
 
-/**
- * A question while it is asked. An area round sends its outline's id, which
- * the prompt or the flag gives away anyway.
- */
+const pointAnswerView = ({ type, tolerance }: PointAnswer): PointAnswerView => ({ type, tolerance })
+
+const areaAnswerView = ({ type, tolerance, outline, surface }: AreaAnswer): AreaAnswerView => ({
+  type,
+  tolerance,
+  outline,
+  surface
+})
+
+const answerView = (answer: Answer): AnswerView =>
+  answer.type === AnswerType.AREA ? areaAnswerView(answer) : pointAnswerView(answer)
+
+/** A question while it is asked. */
 export const questionView = (question: Question): QuestionView => {
-  const { answer } = question
-  return {
-    type: question.type,
-    clue: question.clue,
-    answer:
-      answer.type === AnswerType.AREA
-        ? { type: answer.type, tolerance: answer.tolerance, outline: answer.outline, surface: answer.surface }
-        : { type: answer.type, tolerance: answer.tolerance },
-    ...(question.type === QuestionType.FEATURE ? { feature: question.feature } : {}),
-    ...(question.type === QuestionType.COUNTRY && question.countryFlag ? { countryFlag: question.countryFlag } : {})
+  // One case per type: combined cases lose the correlation of clue and answer.
+  switch (question.type) {
+    case QuestionType.LANDMARK:
+      return { type: question.type, clue: question.clue, answer: pointAnswerView(question.answer) }
+    case QuestionType.PLACE:
+      return { type: question.type, clue: question.clue, answer: pointAnswerView(question.answer) }
+    case QuestionType.COUNTRY:
+      return {
+        type: question.type,
+        clue: question.clue,
+        answer: areaAnswerView(question.answer),
+        ...(question.countryFlag ? { countryFlag: question.countryFlag } : {})
+      }
+    case QuestionType.FLAG:
+      return { type: question.type, clue: question.clue, answer: answerView(question.answer) }
+    case QuestionType.FEATURE:
+      return {
+        type: question.type,
+        feature: question.feature,
+        clue: question.clue,
+        answer: areaAnswerView(question.answer)
+      }
+    case QuestionType.STATE:
+      return { type: question.type, clue: question.clue, answer: answerView(question.answer) }
   }
 }
 

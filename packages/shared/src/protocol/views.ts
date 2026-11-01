@@ -3,7 +3,15 @@ import type { LatLon } from "../geo.ts"
 import type { H3Cell, H3Resolution } from "../h3.ts"
 import type { HintAxis, HintBand } from "../hints.ts"
 import type { CommonsFile, FlagCode, OutlineId, PlaceId, PlayerId, PlayerName, RoomCode, WikiTitle } from "../ids.ts"
-import { AnswerType, Surface, type Clue, type FeatureType, type QuestionType } from "../questions.ts"
+import {
+  AnswerType,
+  QuestionType,
+  Surface,
+  type FeatureType,
+  type FlagClue,
+  type NameClue,
+  type PhotoClue
+} from "../questions.ts"
 import type { PlayingPlayerView, RoundYouRole, SpectatorView, YouRole } from "../roles.ts"
 import type { AnswerParts } from "../scoring/regions.ts"
 import type { Instant, Km, Points } from "../units.ts"
@@ -22,11 +30,21 @@ export enum Phase {
   RESULTS = "RESULTS"
 }
 
-/** What players see of an answer while guessing: what to mark, not where. */
-export type AnswerView =
-  | { type: AnswerType.POINT; tolerance: Km }
-  /** The outline, which the prompt or flag gives away anyway. */
-  | { type: AnswerType.AREA; tolerance: Km; outline: OutlineId; surface: Surface }
+/** What players see of a point answer while guessing: how near counts, not where. */
+export interface PointAnswerView {
+  type: AnswerType.POINT
+  tolerance: Km
+}
+
+/** What players see of an area answer while guessing: its outline, which the prompt or flag gives away anyway. */
+export interface AreaAnswerView {
+  type: AnswerType.AREA
+  tolerance: Km
+  outline: OutlineId
+  surface: Surface
+}
+
+export type AnswerView = PointAnswerView | AreaAnswerView
 
 /** Painted on water: trimming drops paint on land. */
 export const onWater = (answer: AnswerView): boolean =>
@@ -36,13 +54,58 @@ export const onWater = (answer: AnswerView): boolean =>
 export const outlineOf = (answer: AnswerView): OutlineId | undefined =>
   answer.type === AnswerType.AREA ? answer.outline : undefined
 
-export interface QuestionView {
-  type: QuestionType
-  clue: Clue
-  answer: AnswerView
-  feature?: FeatureType
-  /** Shown beside a country's name. */
+interface LandmarkQuestionView {
+  type: QuestionType.LANDMARK
+  clue: PhotoClue
+  answer: PointAnswerView
+}
+
+interface PlaceQuestionView {
+  type: QuestionType.PLACE
+  clue: NameClue
+  answer: PointAnswerView
+}
+
+interface CountryQuestionView {
+  type: QuestionType.COUNTRY
+  clue: NameClue
+  answer: AreaAnswerView
+  /** Shown beside the country's name. */
   countryFlag?: FlagCode
+}
+
+interface FlagQuestionView {
+  type: QuestionType.FLAG
+  clue: FlagClue
+  answer: AnswerView
+}
+
+interface FeatureQuestionView {
+  type: QuestionType.FEATURE
+  feature: FeatureType
+  clue: NameClue
+  answer: AreaAnswerView
+}
+
+interface StateQuestionView {
+  type: QuestionType.STATE
+  clue: NameClue
+  answer: AnswerView
+}
+
+/** A question while it is asked, by type as Question is: never where its answer is. */
+export type QuestionView =
+  | LandmarkQuestionView
+  | PlaceQuestionView
+  | CountryQuestionView
+  | FlagQuestionView
+  | FeatureQuestionView
+  | StateQuestionView
+
+/** The flag a question shows: a flag round's, or the one beside a country's name. */
+export const flagShown = (question: QuestionView): FlagCode | undefined => {
+  if (question.type === QuestionType.FLAG) return question.clue.flag
+  return question.type === QuestionType.COUNTRY ? question.countryFlag : undefined
 }
 
 interface RoundView {

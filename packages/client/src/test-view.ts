@@ -11,6 +11,8 @@ import {
 } from "@whereabouts/shared/ids"
 import { mixOf, MapDetail } from "@whereabouts/shared/protocol/config"
 import {
+  type AnswerView,
+  type AreaAnswerView,
   type GameView,
   type GuessingGameView,
   type LobbyGameView,
@@ -23,7 +25,14 @@ import {
   type RoundResultView,
   Phase
 } from "@whereabouts/shared/protocol/views"
-import { AnswerType, ClueType, QuestionType, Surface, type FlagQuestion } from "@whereabouts/shared/questions"
+import {
+  AnswerType,
+  ClueType,
+  QuestionType,
+  Surface,
+  type FeatureType,
+  type FlagQuestion
+} from "@whereabouts/shared/questions"
 import {
   Role,
   YouRoleType,
@@ -160,8 +169,12 @@ export const makePainted = (): RoundGuess => {
   }
 }
 
+type QuestionViewOf<T extends QuestionType> = Extract<QuestionView, { type: T }>
+
 /** A place question as players see it, with whatever a test needs changed. */
-export const makeQuestionView = (over: Partial<QuestionView> = {}): QuestionView => {
+export const makeQuestionView = (
+  over: Partial<QuestionViewOf<QuestionType.PLACE>> = {}
+): QuestionViewOf<QuestionType.PLACE> => {
   return {
     type: QuestionType.PLACE,
     clue: { type: ClueType.NAME, prompt: "Where is Kyoto?" },
@@ -171,8 +184,51 @@ export const makeQuestionView = (over: Partial<QuestionView> = {}): QuestionView
 }
 
 /** The answer of an area round, as players see it while guessing. */
-export const areaAnswerView = (outline: string, tolerance = 200, surface = Surface.LAND): QuestionView["answer"] => {
+export const areaAnswerView = (outline: string, tolerance = 200, surface = Surface.LAND): AreaAnswerView => {
   return { type: AnswerType.AREA, tolerance, outline: outlineId(outline), surface }
+}
+
+/** Peru as a country round, with whatever a test needs changed. */
+export const makeCountryQuestionView = (
+  over: Partial<QuestionViewOf<QuestionType.COUNTRY>> = {}
+): QuestionViewOf<QuestionType.COUNTRY> => {
+  return {
+    type: QuestionType.COUNTRY,
+    clue: { type: ClueType.NAME, prompt: "Paint the whole of Peru" },
+    answer: areaAnswerView("peru"),
+    ...over
+  }
+}
+
+/** An island, lake or sea round. */
+export const makeFeatureQuestionView = (
+  feature: FeatureType,
+  outline: string,
+  surface = Surface.LAND
+): QuestionViewOf<QuestionType.FEATURE> => {
+  return {
+    type: QuestionType.FEATURE,
+    feature,
+    clue: { type: ClueType.NAME, prompt: `Paint the ${feature.toLowerCase()}` },
+    answer: areaAnswerView(outline, 100, surface)
+  }
+}
+
+/** A flag round, marked as a point unless the answer says otherwise. */
+export const makeFlagQuestionView = (
+  flag: string,
+  answer: AnswerView = { type: AnswerType.POINT, tolerance: 20 }
+): QuestionViewOf<QuestionType.FLAG> => {
+  return { type: QuestionType.FLAG, clue: { type: ClueType.FLAG, flag: flagCode(flag) }, answer }
+}
+
+/** A US state painted whole. */
+export const makeStateQuestionView = (outline: string): QuestionViewOf<QuestionType.STATE> => {
+  return {
+    type: QuestionType.STATE,
+    clue: { type: ClueType.NAME, prompt: "Paint the whole state" },
+    answer: areaAnswerView(outline)
+  }
 }
 
 /** A country's flag round, marked as a point unless the answer says otherwise. */

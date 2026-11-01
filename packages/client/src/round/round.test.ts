@@ -1,13 +1,13 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
 import { wikiTitle } from "@whereabouts/shared/ids"
-import { QuestionType, type Outline } from "@whereabouts/shared/questions"
+import type { Outline } from "@whereabouts/shared/questions"
 import { RevealedShapeType } from "./revealed-shape"
 import { frameReveal, showAnswer, type RevealedAnswer } from "./round"
-import { areaAnswerView, makeQuestionView } from "../test-view"
+import { makeCountryQuestionView, makeQuestionView } from "../test-view"
 
 const place = makeQuestionView()
-const country = makeQuestionView({ type: QuestionType.COUNTRY, answer: areaAnswerView("peru", 200) })
+const country = makeCountryQuestionView()
 const outline: Outline = [
   [
     [

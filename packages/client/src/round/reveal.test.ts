@@ -4,7 +4,7 @@ import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/id
 import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { SHOW_EVERYONE, SHOW_NOBODY, revealedFromView, revealOrder, showPlayer, shownResults } from "./reveal"
-import { areaAnswerView, makePainted, makePlayer, makeQuestionView } from "../test-view"
+import { makeCountryQuestionView, makePainted, makePlayer, makeQuestionView } from "../test-view"
 import { RevealedShapeType } from "./revealed-shape"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
@@ -106,7 +106,7 @@ describe("revealedFromView", () => {
         ]
       ]
     ]
-    const area = { ...reveal, question: makeQuestionView({ answer: areaAnswerView("peru", 200) }) }
+    const area = { ...reveal, question: makeCountryQuestionView() }
     expect(revealedFromView(area, outline).shape).toEqual({ type: RevealedShapeType.AREA, outline })
     expect(revealedFromView(area, undefined).shape).toEqual({ type: RevealedShapeType.AREA, outline: undefined })
   })

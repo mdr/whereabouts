@@ -5,12 +5,11 @@ import { signal } from "@preact/signals"
 import { HintAxis, type HintBand } from "@whereabouts/shared/hints"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { type QuestionView } from "@whereabouts/shared/protocol/views"
-import { QuestionType } from "@whereabouts/shared/questions"
 import { useFillTool } from "../paint/fill"
 import { useRoundMap, type RoundPaint } from "./round"
 import { startOnPan } from "../settings/settings"
 import { RevealDetail } from "../map/shown-detail"
-import { areaAnswerView, makeQuestionView } from "../test-view"
+import { makeCountryQuestionView, makeQuestionView, makeStateQuestionView } from "../test-view"
 import { Tool } from "../paint/tool"
 
 vi.mock("../paint/fill", () => ({ useFillTool: vi.fn() }))
@@ -60,7 +59,7 @@ const setup = (over: Partial<Props> = {}) => {
   return { paint, start, hook, update }
 }
 
-const country = makeQuestionView({ type: QuestionType.COUNTRY, answer: areaAnswerView("peru") })
+const country = makeCountryQuestionView()
 
 afterEach(() => {
   startOnPan.value = false
@@ -109,7 +108,7 @@ describe("useRoundMap", () => {
   })
 
   it("shows everything at the reveal, and a state round's states", () => {
-    const state = makeQuestionView({ type: QuestionType.STATE, answer: areaAnswerView("state-texas") })
+    const state = makeStateQuestionView("state-texas")
     const { paint, update } = setup({ question: state, detail: MapDetail.WATER })
     expect(paint.gameMap.detail.setDetail).toHaveBeenLastCalledWith(MapDetail.WATER)
     expect(paint.gameMap.detail.setStateReveal).toHaveBeenLastCalledWith(false)

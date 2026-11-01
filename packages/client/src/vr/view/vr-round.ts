@@ -1,7 +1,7 @@
 import type { Points } from "@whereabouts/shared/units"
 /** The parts of the headset's round and reveal that practice and a game share. */
 import { QuestionType, clueFlag, clueImage, promptOf } from "@whereabouts/shared/questions"
-import { onWater, outlineOf, type QuestionView } from "@whereabouts/shared/protocol/views"
+import { flagShown, onWater, outlineOf, type QuestionView } from "@whereabouts/shared/protocol/views"
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
@@ -22,7 +22,7 @@ export interface VrRoundShown {
 }
 
 /** AnswerMode and AreaInstruction in a line; undefined for a place. */
-export const answerModeText = (question: Pick<QuestionView, "type" | "answer" | "feature">): string | undefined => {
+export const answerModeText = (question: QuestionView): string | undefined => {
   const area = outlineOf(question.answer) !== undefined
   if (question.type === QuestionType.FLAG)
     return area ? "Paint the whole country: its shape counts." : "Paint where it is: a place, not a shape."
@@ -45,7 +45,7 @@ export const vrRound = (
     mode: answerModeText(question),
     picture: vrPicture(
       clueImage(question.clue) ?? revealed?.photo,
-      clueFlag(question.clue) ?? question.countryFlag,
+      flagShown(question),
       revealed && { place: revealed.label, text: fact?.text }
     ),
     water: onWater(question.answer)

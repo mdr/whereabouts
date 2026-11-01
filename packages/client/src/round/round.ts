@@ -94,8 +94,8 @@ export const useRoundMap = (
 }
 
 /** What an area round asks to cover: "country", "island", "state"… */
-export const areaNoun = (question: Pick<QuestionView, "type" | "feature">): string => {
-  if (question.feature) return question.feature.toLowerCase()
+export const areaNoun = (question: QuestionView): string => {
+  if (question.type === QuestionType.FEATURE) return question.feature.toLowerCase()
   return question.type === QuestionType.STATE ? "state" : "country"
 }
 
