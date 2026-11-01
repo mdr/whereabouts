@@ -33,15 +33,15 @@ export function configFromEnv(env: Record<string, string | undefined>, defaultSt
 }
 
 /** A typo here would otherwise score every game with the default kernel unnoticed. */
-function kernelId(v: string) {
+function kernelId(name: string) {
   // Also the old names, written in lower case with hyphens.
-  const parsed = KernelIdSchema.safeParse(v.toUpperCase().replaceAll("-", "_"))
-  if (!parsed.success) throw new Error(`KERNEL must be one of ${KernelIdSchema.options.join(", ")}, not "${v}"`)
+  const parsed = KernelIdSchema.safeParse(name.toUpperCase().replaceAll("-", "_"))
+  if (!parsed.success) throw new Error(`KERNEL must be one of ${KernelIdSchema.options.join(", ")}, not "${name}"`)
   return parsed.data
 }
 
-function positiveInt(v: string | undefined): number | undefined {
-  if (v === undefined || v === "") return undefined
-  const n = Number(v)
-  return Number.isInteger(n) && n > 0 ? n : undefined
+function positiveInt(text: string | undefined): number | undefined {
+  if (text === undefined || text === "") return undefined
+  const parsed = Number(text)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined
 }

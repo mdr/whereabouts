@@ -81,14 +81,14 @@ export const ROOM_TYPE = "game"
 /** Injected clock so tests can drive time. */
 export interface Clock {
   now(): Instant
-  setTimeout(fn: () => void, delay: Ms): unknown
+  setTimeout(callback: () => void, delay: Ms): unknown
   clearTimeout(handle: unknown): void
 }
 
 export const realClock: Clock = {
   now: () => Date.now(),
-  setTimeout: (fn, ms) => setTimeout(fn, ms),
-  clearTimeout: (h) => clearTimeout(h as ReturnType<typeof setTimeout>)
+  setTimeout: (callback, delay) => setTimeout(callback, delay),
+  clearTimeout: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>)
 }
 
 export interface GameRoomDeps {

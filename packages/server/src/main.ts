@@ -12,8 +12,8 @@ const app = createApp({ staticDir, logger: true, addressLimits: config.addressLi
 const address = await app.listen(config.port, config.host)
 app.fastify.log.info(`whereabouts server on ${address} (static: ${staticDir ?? "none"})`)
 
-for (const sig of ["SIGINT", "SIGTERM"] as const) {
-  process.on(sig, () => {
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.on(signal, () => {
     void app.close().then(() => process.exit(0))
   })
 }
