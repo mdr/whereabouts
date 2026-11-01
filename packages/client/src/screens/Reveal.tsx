@@ -36,7 +36,7 @@ import { WAITING_FOR_OTHERS, readyCountText, roundScoreText } from "../round/rou
 import { ConnectionNote } from "../ui/connection/ConnectionNote"
 import { DevDrawer } from "../ui/dev/DevDrawer"
 import { ConnectionDev } from "../ui/connection/ConnectionDev"
-import { PaintDev } from "../ui/map/PaintTools"
+import { PaintDev } from "../ui/map/paint/PaintDev"
 import { Icon } from "../ui/icons"
 import { HostTag, RankArrow, Swatch, SwatchType } from "../ui/players/PlayerList"
 import { EndGameButton } from "../ui/players/HostControls"

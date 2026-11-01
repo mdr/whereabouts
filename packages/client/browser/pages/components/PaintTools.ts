@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test"
 import type { Tool } from "../../../src/paint/tool.ts"
-import { paintToolsTestIds } from "../../../src/ui/map/PaintToolsTestIds.ts"
+import { paintToolsTestIds } from "../../../src/ui/map/paint/PaintToolsTestIds.ts"
+import { trimToHintTestIds } from "../../../src/ui/map/paint/TrimToHintTestIds.ts"
 import { byTestIdWith, isUsable } from "../support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
@@ -42,7 +43,7 @@ export class PaintTools {
   }
 
   async trimToHint(): Promise<void> {
-    await this.#page.getByTestId(paintToolsTestIds.trimToHintButton).click()
+    await this.#page.getByTestId(trimToHintTestIds.trimToHintButton).click()
   }
 
   async undoWithKeyboard(): Promise<void> {

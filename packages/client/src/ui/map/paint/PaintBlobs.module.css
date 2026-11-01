@@ -1,0 +1,32 @@
+.blobs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  & li {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-variant-numeric: tabular-nums;
+  }
+  & li.muted {
+    color: var(--muted);
+  }
+}
+.bar {
+  flex: 1;
+  margin: 6px 10px;
+  height: 6px;
+  background: var(--control-bg);
+  border-radius: 3px;
+  overflow: hidden;
+
+  & i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+  }
+}
+.floor .bar i {
+  background: var(--accent-2);
+}
