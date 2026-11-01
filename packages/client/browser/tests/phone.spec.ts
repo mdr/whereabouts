@@ -6,23 +6,14 @@ import { devices } from "@playwright/test"
 import type { Screen } from "../pages/Screen.ts"
 import { Tool } from "../../src/paint/tool.ts"
 import { QuestionType } from "@whereabouts/shared/questions"
-import { check, newTab, shot } from "./support.ts"
+import { newTab, shot } from "./support.ts"
 
 test("phone", async ({ browser }) => {
   const phone = devices["iPhone 13"]
 
   const fits = async (screen: Screen, label: string): Promise<void> => {
-    const fit = await screen.fit()
     await screen.screenshot(shot(`phone-${label}.png`))
-    check(
-      fit.viewportWidth === phone.viewport.width,
-      `${label}: layout viewport ${fit.viewportWidth} is the screen width`
-    )
-    check(fit.scrollWidth <= fit.viewportWidth, `${label}: no horizontal scroll (${fit.scrollWidth})`)
-    check(
-      fit.overflowing.length === 0,
-      `${label}: nothing overflows${fit.overflowing.length ? `: ${fit.overflowing.slice(0, 5).join(", ")}` : ""}`
-    )
+    await screen.expectFits(label, phone.viewport.width)
   }
 
   const { aliceLobbyPage, code } = await test.step("Alice hosts a photo game", async () => {
@@ -51,26 +42,26 @@ test("phone", async ({ browser }) => {
       const aliceRoundPage = await aliceLobbyPage.startGame()
       const bobRoundPage = await bobLobbyPage.waitForGameToStart()
       await fits(bobRoundPage, "ingame")
-      check(await bobRoundPage.doneButtonIsUsable(), "ingame: the Done button is usable")
-      check(await bobRoundPage.paintTools.toolIsUsable(Tool.PAN), "ingame: the Pan tool is usable")
-      check(await bobRoundPage.map.attributionIsUsable(), "ingame: the map attribution button is usable")
-      check(await bobRoundPage.map.attributionClearsToolbar(), "ingame: the attribution button clears the toolbar")
-      check(await bobRoundPage.hud.questionFoldIsUsable(), "ingame: the question's fold button is usable")
+      await bobRoundPage.expectDoneUsable()
+      await bobRoundPage.paintTools.expectToolUsable(Tool.PAN)
+      await bobRoundPage.map.expectAttributionUsable()
+      await bobRoundPage.map.expectAttributionClearsToolbar()
+      await bobRoundPage.hud.expectQuestionFoldUsable()
+      // Settled, so the photo has loaded and the height is the whole card's.
+      await bobRoundPage.waitForLayoutToSettle()
       const unfolded = await bobRoundPage.hud.questionHeight()
       await bobRoundPage.hud.toggleQuestionFold()
-      const folded = await bobRoundPage.hud.questionHeight()
+      await bobRoundPage.hud.expectQuestionHeight("folding shrinks the question", { lessThan: unfolded })
       await fits(bobRoundPage, "ingame-folded")
-      check(folded < unfolded, `ingame: folding shrinks the question (${unfolded} to ${folded} px)`)
       await bobRoundPage.hud.toggleQuestionFold()
-      check((await bobRoundPage.hud.questionHeight()) === unfolded, "ingame: unfolding brings the whole question back")
+      await bobRoundPage.hud.expectQuestionHeight("unfolding brings the whole question back", { exactly: unfolded })
       return { aliceRoundPage, bobRoundPage }
     })
 
   const bobRoundDonePage = await test.step("a one-finger drag paints, then Bob is done", async () => {
     // One finger on the strip of map left clear (a photo makes the question card tall).
     await bobRoundPage.map.fingerDrag(await bobRoundPage.map.spotClearOfCards())
-    const cells = await bobRoundPage.map.yourPaintCells()
-    check(cells > 0, `a one-finger drag paints (${cells} cells)`)
+    await bobRoundPage.map.expectYourPaintCells({ greaterThan: 0 })
     await bobRoundPage.playersPanel.open()
     await fits(bobRoundPage, "ingame-players")
     await bobRoundPage.playersPanel.close()
@@ -86,16 +77,16 @@ test("phone", async ({ browser }) => {
       const bobRevealPage = await bobRoundDonePage.waitForReveal(60_000)
       await bobRevealPage.waitForLayoutToSettle()
       await fits(bobRevealPage, "reveal")
-      check(await bobRevealPage.answerLineIsUsable(), "reveal: the question card at the top names the answer")
-      check(await bobRevealPage.answerShowsAboveSheet(), "reveal: the answer shows on the map between the cards")
+      await bobRevealPage.expectAnswerLineUsable()
+      await bobRevealPage.expectAnswerShowsAboveSheet()
       await bobRevealPage.hud.toggleQuestionFold()
       await fits(bobRevealPage, "reveal-unfolded")
       await bobRevealPage.hud.toggleQuestionFold()
-      check(await bobRevealPage.scoreIsUsable(), "reveal: your score is on screen")
-      check(await bobRevealPage.readyButtonIsUsable(), "reveal: the Ready button is usable")
-      check(await bobRevealPage.scoresAreUsable(), "reveal: the scores list is usable")
-      check(await bobRevealPage.map.attributionClearsToolbar(), "reveal: the attribution button clears the toolbar")
-      check(await bobRevealPage.readyButtonIsUsable(), "reveal: scrolled to the scores, Ready is still usable")
+      await bobRevealPage.expectScoreCardUsable()
+      await bobRevealPage.expectReadyButtonUsable()
+      await bobRevealPage.expectScoresUsable()
+      await bobRevealPage.map.expectAttributionClearsToolbar()
+      await bobRevealPage.expectReadyButtonUsable("scrolled to the scores, the Ready button is still usable")
       await bobRevealPage.screenshot(shot(`phone-reveal-scrolled.png`))
       return { aliceRevealPage, bobRevealPage }
     })

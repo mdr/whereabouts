@@ -1,10 +1,18 @@
-import type { CDPSession, Page } from "@playwright/test"
+import { expect, type CDPSession, type Page } from "@playwright/test"
 import type {} from "../../../src/test-hooks.ts"
 import { mapViewTestIds } from "../../../src/ui/map/MapView/MapViewTestIds.ts"
 import { hudBottomTestIds } from "../../../src/ui/map/Hud/HudTestIds.ts"
 import { questionCardTestIds } from "../../../src/ui/round/question/QuestionCard/QuestionCardTestIds.ts"
 import { playersPanelTestIds } from "../../../src/ui/players/PlayersPanel/PlayersPanelTestIds.ts"
-import { isUsable, paceGesture, until } from "../support.ts"
+import {
+  expectNumber,
+  expectPolled,
+  expectUsable,
+  paceGesture,
+  softExpect,
+  stillTrueFor,
+  type Bounds
+} from "../support.ts"
 import type { Ms, Px } from "@whereabouts/shared/units"
 
 /** A spot on the map, as fractions of its width and height from the top left. */
@@ -32,19 +40,19 @@ export class MapPanel {
     await this.#page.getByTestId(mapViewTestIds.loading).waitFor({ state: "detached", timeout })
     // Still for half a second: a new round flies the view to its start.
     let stillSince = Date.now()
-    await until(
-      "the map to settle",
-      async () => {
-        const still = await this.#page.evaluate(() => {
-          const m = window.testHooks.map!.map
-          return m.loaded() && !m.isMoving()
-        })
-        if (!still) stillSince = Date.now()
-        return Date.now() - stillSince
-      },
-      (ms) => ms >= 500,
-      timeout
-    )
+    await expect
+      .poll(
+        async () => {
+          const still = await this.#page.evaluate(() => {
+            const m = window.testHooks.map!.map
+            return m.loaded() && !m.isMoving()
+          })
+          if (!still) stillSince = Date.now()
+          return Date.now() - stillSince
+        },
+        { message: "the map loads and stops moving", timeout, intervals: [100] }
+      )
+      .toBeGreaterThanOrEqual(500)
   }
 
   async #point({ across, down }: MapSpot): Promise<{ x: Px; y: Px }> {
@@ -163,8 +171,12 @@ export class MapPanel {
     )
   }
 
-  async showsGlobe(): Promise<boolean> {
-    return this.#page.evaluate(() => window.testHooks.map!.map.getProjection().type === "globe")
+  async expectGlobe(shown: boolean): Promise<void> {
+    await expect
+      .poll(() => this.#page.evaluate(() => window.testHooks.map!.map.getProjection().type === "globe"), {
+        message: shown ? "the map shows the globe" : "the map shows the flat map"
+      })
+      .toBe(shown)
   }
 
   /** Cells in your own paint this round. */
@@ -172,9 +184,17 @@ export class MapPanel {
     return this.#page.evaluate(() => window.testHooks.map!.paint.layer.size)
   }
 
+  async expectYourPaintCells(bounds: Bounds): Promise<void> {
+    await expectNumber("cells of your own paint", () => this.yourPaintCells(), bounds)
+  }
+
   /** How much paint you have: intensity times area, in km². */
   async yourPaintMass(): Promise<number> {
     return this.#page.evaluate(() => window.testHooks.map!.paint.layer.mass())
+  }
+
+  async expectYourPaintMass(bounds: Bounds): Promise<void> {
+    await expectNumber("the mass of your own paint, in km²", () => this.yourPaintMass(), bounds)
   }
 
   /** Which cells your paint is in. */
@@ -189,10 +209,11 @@ export class MapPanel {
 
   /** Until more paint uploads than `after` have been `kind`. */
   async waitForPaintUpload(kind: "attempted" | "sent", after: number): Promise<void> {
-    await until(
-      `a paint upload to be ${kind}`,
+    await expectNumber(
+      `a paint upload is ${kind}`,
       async () => (await this.paintUploads())[kind],
-      (count) => count > after
+      { greaterThan: after },
+      { timeout: 10_000 }
     )
   }
 
@@ -213,8 +234,11 @@ export class MapPanel {
     })
   }
 
-  /** Shapes in the hint band shaded on the map: 0 without a hint, 2 for a longitude band across 180°. */
-  async shownHintShapes(): Promise<number> {
+  async expectShownPaintCells(bounds: Bounds): Promise<void> {
+    await expectNumber("cells of paint drawn on the map", () => this.shownPaintCells(), bounds)
+  }
+
+  async #shownHintShapes(): Promise<number> {
     return this.#page.evaluate(() => {
       const source = window.testHooks.map!.map.getSource("hint") as unknown as
         | { serialize: () => { data: GeoJSON.FeatureCollection } }
@@ -223,14 +247,41 @@ export class MapPanel {
     })
   }
 
-  async attributionIsUsable(): Promise<boolean> {
-    return isUsable(this.#page.locator(".maplibregl-ctrl-attrib-button"))
+  /** Shapes in the hint band shaded on the map: 1, or 2 for a longitude band across 180°. */
+  async expectHintShapes(bounds: Bounds): Promise<void> {
+    await expectNumber("shapes in the hint band shaded on the map", () => this.#shownHintShapes(), bounds)
+  }
+
+  /** No hint band stays shaded for `duration`. */
+  async expectNoHintShapes(duration = 500): Promise<void> {
+    await stillTrueFor(
+      "the map having no hint band shaded",
+      duration,
+      () => this.#shownHintShapes(),
+      (shapes) => shapes === 0
+    )
+  }
+
+  async expectAttributionUsable(): Promise<void> {
+    await expectUsable(
+      this.#page.locator(".maplibregl-ctrl-attrib-button"),
+      "the map attribution button is on screen and uncovered"
+    )
   }
 
   /** On a phone the toolbar spans the screen, so the attribution button has to sit above it. */
-  async attributionClearsToolbar(): Promise<boolean> {
-    const attribution = (await this.#page.locator(".maplibregl-ctrl-bottom-right").boundingBox()) ?? undefined
-    const toolbar = (await this.#page.getByTestId(hudBottomTestIds.toolbar).boundingBox()) ?? undefined
-    return attribution !== undefined && toolbar !== undefined && attribution.y + attribution.height <= toolbar.y + 1
+  async expectAttributionClearsToolbar(): Promise<void> {
+    await expectPolled(
+      "the attribution button sits above the toolbar",
+      "above the toolbar",
+      async () => {
+        const attribution = (await this.#page.locator(".maplibregl-ctrl-bottom-right").boundingBox()) ?? undefined
+        const toolbar = (await this.#page.getByTestId(hudBottomTestIds.toolbar).boundingBox()) ?? undefined
+        return { attribution, toolbar }
+      },
+      ({ attribution, toolbar }) =>
+        attribution !== undefined && toolbar !== undefined && attribution.y + attribution.height <= toolbar.y + 1,
+      { expector: softExpect }
+    )
   }
 }

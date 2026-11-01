@@ -4,7 +4,7 @@
 // early. Carol opens a link to a game that has gone and hosts one under its
 // code. Saves screenshots.
 import { test } from "@playwright/test"
-import { check, newTab, shot } from "./support.ts"
+import { newTab, shot } from "./support.ts"
 
 test("host", async ({ browser }) => {
   const viewport = { viewport: { width: 1300, height: 850 } }
@@ -25,10 +25,7 @@ test("host", async ({ browser }) => {
   // In the lobby the host can remove Bob, but not herself.
   const { aliceRoundPage, bobRoundPage } =
     await test.step("the host can remove Bob in the lobby, then starts", async () => {
-      const removable = (await aliceLobbyPage.players.players())
-        .filter((player) => player.removable)
-        .map((player) => player.name)
-      check(JSON.stringify(removable) === '["Bob"]', `the host can remove ${JSON.stringify(removable)}`)
+      await aliceLobbyPage.players.expectRemovable(["Bob"])
 
       await aliceLobbyPage.chooseSecondsPerRound(30)
       const aliceRoundPage = await aliceLobbyPage.startGame()
@@ -53,16 +50,15 @@ test("host", async ({ browser }) => {
     let removal = await aliceRoundPage.playersPanel.askToRemove("Bob")
     console.log("dialog:", await removal.question())
     await removal.cancel()
-    check((await aliceRoundPage.playersPanel.players.names()).length === 2, "Cancel keeps Bob in the game")
+    // Cancel keeps Bob in the game.
+    await aliceRoundPage.playersPanel.players.expectCountStays(2)
     removal = await aliceRoundPage.playersPanel.askToRemove("Bob")
     await removal.confirm()
     const bobTurnedAwayPage = await bobRoundPage.waitUntilRemoved()
-    const reason = await bobTurnedAwayPage.reason()
-    check(reason === "You were removed from the game", `Bob is told: ${reason}`)
+    await bobTurnedAwayPage.expectReason("You were removed from the game")
     await bobTurnedAwayPage.screenshot(shot(`host-3-bob-removed.png`))
     await aliceRoundPage.playersPanel.players.waitForPlayerGone("Bob")
-    const remaining = await aliceRoundPage.playersPanel.players.names()
-    check(JSON.stringify(remaining) === '["Alice"]', `Alice sees ${JSON.stringify(remaining)}`)
+    await aliceRoundPage.playersPanel.players.expectNames(["Alice"])
     return bobTurnedAwayPage
   })
 
@@ -71,7 +67,6 @@ test("host", async ({ browser }) => {
     const bobHomePage = await bobTurnedAwayPage.backToStart()
     await bobHomePage.enterName("Bob II")
     await bobHomePage.joinGameMidRound(code)
-    check(true, "Bob rejoins as a new player")
   })
 
   // The host ends the game early, confirming in the dialog.
@@ -80,7 +75,6 @@ test("host", async ({ browser }) => {
     console.log("dialog:", await ending.question())
     await aliceRoundPage.screenshot(shot(`host-3b-end-dialog.png`))
     const resultsPage = await ending.confirm()
-    check(true, "ending the game goes to the final standings")
     await resultsPage.screenshot(shot(`host-4-results.png`))
   })
 
@@ -92,11 +86,10 @@ test("host", async ({ browser }) => {
     const carolJoinAsPage = await (await newTab(browser, "Carol", { context: viewport })).openGameLink(oldCode)
     await carolJoinAsPage.enterName("Carol")
     const carolTurnedAwayPage = await carolJoinAsPage.joinMissingGame()
-    const missing = await carolTurnedAwayPage.reason()
-    check(missing === "No game with that code", `Carol is told: ${missing}`)
+    await carolTurnedAwayPage.expectReason("No game with that code")
     await carolTurnedAwayPage.screenshot(shot(`host-5-no-such-game.png`))
     const carolLobbyPage = await carolTurnedAwayPage.hostUnderCode()
-    check((await carolLobbyPage.code()) === oldCode, `Carol hosts a game under ${oldCode}`)
+    await carolLobbyPage.expectCode(oldCode)
     await carolLobbyPage.screenshot(shot(`host-6-hosting-old-code.png`))
   })
 })

@@ -4,6 +4,8 @@ import { JoinAsPage } from "./JoinAsPage.ts"
 import { LoadFailures } from "./LoadFailures.ts"
 import { PracticeRoundPage } from "./PracticeRoundPage.ts"
 import { ScoreReviewPage } from "./ScoreReviewPage.ts"
+import { expectNumber, stillTrueFor } from "./support.ts"
+import type { Ms } from "@whereabouts/shared/units"
 
 /** One player's browser tab: where each test starts, and what it opens first. */
 export class Tab {
@@ -51,11 +53,23 @@ export class Tab {
   }
 
   /** Starts counting requests for terrain tiles (the shaded relief, which gives mountains away). */
-  countTerrainTileRequests(): { count: () => number } {
+  countTerrainTileRequests(): {
+    expectNone: (duration?: Ms) => Promise<void>
+    expectSome: () => Promise<void>
+  } {
     let requests = 0
     this.page.on("request", (request) => {
       if (request.url().includes("elevation-tiles-prod")) requests++
     })
-    return { count: () => requests }
+    return {
+      expectNone: (duration = 500) =>
+        stillTrueFor(
+          "no terrain tiles being requested",
+          duration,
+          () => Promise.resolve(requests),
+          (count) => count === 0
+        ),
+      expectSome: () => expectNumber("terrain tiles are requested", () => Promise.resolve(requests), { greaterThan: 0 })
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { until } from "../pages/support.ts"
+import { expectPolled, stillTrueFor } from "../pages/support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 import type { Tab } from "../pages/Tab.ts"
 
@@ -59,33 +59,129 @@ export const recordSounds = (): void => {
 /** The page clock, to time sounds against. */
 export const pageTime = (tab: Tab): Promise<number> => tab.page.evaluate(() => performance.now())
 
-/** The sounds recorded since the last call. */
-export const takeSounds = (tab: Tab): Promise<SoundEvent[]> => tab.page.evaluate(() => window.__audio.splice(0))
+const clipsPlayed = (events: SoundEvent[]): string[] =>
+  events.filter((event) => event.kind === "buffer").map((event) => event.clip ?? "")
 
-/** Adds the sounds recorded since the last call to `events` until `clip` is among them, or the timeout. */
-export const collectUntilPlayed = async (
-  tab: Tab,
-  events: SoundEvent[],
-  clip: string,
-  timeout: Ms = 5_000
-): Promise<void> => {
-  await until(
-    `the ${clip} sound`,
-    async () => {
-      events.push(...(await takeSounds(tab)))
-      return played(events, clip)
-    },
-    (heard) => heard,
-    timeout
-  )
-}
-
-export const played = (events: SoundEvent[], clip: string): boolean =>
-  events.some((event) => event.kind === "buffer" && event.clip === clip)
-
-export const stopped = (events: SoundEvent[], clip: string): boolean =>
-  events.some((event) => event.kind === "stop" && event.clip === clip)
+const clipsStopped = (events: SoundEvent[]): string[] =>
+  events.filter((event) => event.kind === "stop").map((event) => event.clip ?? "")
 
 /** The notes of the round cues (the countdown's own beeps are higher). */
-export const cueNotes = (events: SoundEvent[]): number[] =>
+const cueNotes = (events: SoundEvent[]): number[] =>
   events.filter((event) => event.kind === "osc" && (event.freq ?? 0) < 1500).map((event) => event.freq ?? 0)
+
+/** The sounds one tab records, handed to every window listening to it. */
+export class Sounds {
+  readonly #tab: Tab
+  readonly #windows = new Set<SoundEvent[]>()
+
+  constructor(tab: Tab) {
+    this.#tab = tab
+  }
+
+  /** Starts a window on what the tab plays from now on. */
+  async listen(): Promise<Listening> {
+    await this.#drain()
+    const events: SoundEvent[] = []
+    this.#windows.add(events)
+    return new Listening(events, () => this.#drain())
+  }
+
+  async #drain(): Promise<void> {
+    const fresh = await this.#tab.page.evaluate(() => window.__audio.splice(0))
+    for (const events of this.#windows) events.push(...fresh)
+  }
+}
+
+/** The sounds heard since it was opened. */
+class Listening {
+  readonly #events: SoundEvent[]
+  readonly #drain: () => Promise<void>
+
+  constructor(events: SoundEvent[], drain: () => Promise<void>) {
+    this.#events = events
+    this.#drain = drain
+  }
+
+  async #expect<T>(message: string, wanted: string, view: (events: SoundEvent[]) => T, ok: (value: T) => boolean) {
+    await expectPolled(
+      message,
+      wanted,
+      async () => {
+        await this.#drain()
+        return view(this.#events)
+      },
+      ok
+    )
+  }
+
+  async #expectHolds<T>(what: string, duration: Ms, view: (events: SoundEvent[]) => T, ok: (value: T) => boolean) {
+    await stillTrueFor(
+      what,
+      duration,
+      async () => {
+        await this.#drain()
+        return view(this.#events)
+      },
+      ok
+    )
+  }
+
+  async expectPlayed(clip: string, message: string): Promise<void> {
+    await this.#expect(message, `the ${clip} sound`, clipsPlayed, (clips) => clips.includes(clip))
+  }
+
+  async expectStopped(clip: string, message: string): Promise<void> {
+    await this.#expect(message, `the ${clip} sound stopped`, clipsStopped, (clips) => clips.includes(clip))
+  }
+
+  /** The clip does not play for `duration`. */
+  async expectNotPlayed(clip: string, duration: Ms = 500): Promise<void> {
+    await this.#expectHolds(`the ${clip} sound not playing`, duration, clipsPlayed, (clips) => !clips.includes(clip))
+  }
+
+  /** The clip is not stopped for `duration`. */
+  async expectNotStopped(clip: string, duration: Ms = 500): Promise<void> {
+    await this.#expectHolds(`the ${clip} sound not stopped`, duration, clipsStopped, (clips) => !clips.includes(clip))
+  }
+
+  async expectRisingCue(message: string): Promise<void> {
+    await this.#expect(
+      message,
+      "a rising pair of notes",
+      cueNotes,
+      ([low, high, ...more]) => low !== undefined && high !== undefined && more.length === 0 && low < high
+    )
+  }
+
+  async expectFallingCue(message: string): Promise<void> {
+    await this.#expect(
+      message,
+      "a falling pair of notes",
+      cueNotes,
+      ([high, low, ...more]) => high !== undefined && low !== undefined && more.length === 0 && high > low
+    )
+  }
+
+  /** No falling cue (nor any other round cue) plays for `duration`. */
+  async expectNoCue(duration = 500): Promise<void> {
+    await this.#expectHolds("no round cue playing", duration, cueNotes, (notes) => notes.length === 0)
+  }
+
+  /** The countdown starts once, about `seconds` after `startedAt` on the page clock. */
+  async expectCountdownStart(startedAt: number, seconds: number): Promise<void> {
+    await this.#expect(
+      `the countdown starts about ${seconds} s after Start`,
+      "one countdown start",
+      (events) =>
+        events
+          .filter((event) => event.kind === "buffer" && event.clip === "countdown")
+          .map((event) => `${((event.at - startedAt) / 1000).toFixed(1)} s`),
+      (starts) => starts.length === 1 && Math.abs(Number.parseFloat(starts[0]!) - seconds) < 1
+    )
+  }
+
+  /** Nothing is played for `duration`. */
+  async expectSilent(duration = 300): Promise<void> {
+    await this.#expectHolds("no sound playing", duration, clipsPlayed, (clips) => clips.length === 0)
+  }
+}

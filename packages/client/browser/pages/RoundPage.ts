@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test"
 import { HintAxis } from "@whereabouts/shared/hints"
 import { inGameTestIds } from "../../src/screens/InGame/InGameTestIds.ts"
 import { hintTestIds } from "../../src/ui/round/Hint/HintTestIds.ts"
@@ -10,7 +11,7 @@ import { RevealPage } from "./RevealPage.ts"
 import { RoundDonePage } from "./RoundDonePage.ts"
 import { Screen } from "./Screen.ts"
 import { TurnedAwayPage } from "./TurnedAwayPage.ts"
-import { isUsable, text, until } from "./support.ts"
+import { expectHintBand, expectUsable, stillTrueFor } from "./support.ts"
 import type { Tab } from "./Tab.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
@@ -24,7 +25,7 @@ export class RoundPage extends Screen {
 
   static async whenShown(tab: Tab, timeout: Ms = 15_000): Promise<RoundPage> {
     const round = new RoundPage(tab)
-    await tab.page.getByTestId(inGameTestIds.doneButton).waitFor({ timeout })
+    await expect(tab.page.getByTestId(inGameTestIds.doneButton), "the round is shown").toBeVisible({ timeout })
     await round.paintTools.waitUntilEnabled(timeout)
     await round.map.waitUntilSettled()
     return round
@@ -39,26 +40,50 @@ export class RoundPage extends Screen {
     this.devDrawer = new DevDrawer(tab.page)
   }
 
-  /** Use a hint: a band of latitude or longitude. Returns what the band says. */
-  async useHint(axis: HintAxis): Promise<string> {
+  /** Use a hint: a band of latitude or longitude. */
+  async useHint(axis: HintAxis): Promise<void> {
     await this.page.getByTestId(axis === HintAxis.LATITUDE ? hintTestIds.latitude : hintTestIds.longitude).click()
-    const band = await text(this.page.getByTestId(hintTestIds.band))
+    await expect(this.page.getByTestId(hintTestIds.band), "the hint names a band").toBeVisible()
     await this.map.waitUntilSettled()
-    return band
   }
 
-  /** Whether a hint is on offer this round. */
-  async canUseHint(): Promise<boolean> {
-    return (await this.page.getByTestId(hintTestIds.card).count()) > 0
+  async expectHintBand(axis: HintAxis): Promise<void> {
+    await expectHintBand(this.page.getByTestId(hintTestIds.band), axis)
+  }
+
+  /** The hint is on offer this round, and stays so for `duration`. */
+  async expectHintStillOffered(duration: Ms = 500): Promise<void> {
+    const card = this.page.getByTestId(hintTestIds.card)
+    await expect(card, "a hint is on offer").toBeVisible()
+    await stillTrueFor(
+      "a hint staying on offer",
+      duration,
+      () => card.count(),
+      (count) => count > 0
+    )
+  }
+
+  /** No hint is on offer, and none appears within `duration`. */
+  async expectNoHintOffered(duration = 500): Promise<void> {
+    await expect(this.page.getByTestId(inGameTestIds.doneButton), "the round is on screen").toBeVisible()
+    await stillTrueFor(
+      "no hint being on offer",
+      duration,
+      () => this.page.getByTestId(hintTestIds.card).count(),
+      (count) => count === 0
+    )
   }
 
   /** "Done", or "Pass" while nothing is painted. */
-  async doneButtonLabel(): Promise<string> {
-    return text(this.page.getByTestId(inGameTestIds.doneButton))
+  async expectDoneLabel(label: "Done" | "Pass"): Promise<void> {
+    await expect(
+      this.page.getByTestId(inGameTestIds.doneButton),
+      label === "Pass" ? "with nothing painted, the button reads Pass" : "with paint down, the button reads Done"
+    ).toHaveText(label)
   }
 
-  async doneButtonIsUsable(): Promise<boolean> {
-    return isUsable(this.page.getByTestId(inGameTestIds.doneButton))
+  async expectDoneUsable(): Promise<void> {
+    await expectUsable(this.page.getByTestId(inGameTestIds.doneButton), "the Done button is on screen and uncovered")
   }
 
   /** Done (or a pass), while others are still guessing. */
@@ -73,9 +98,16 @@ export class RoundPage extends Screen {
     return RevealPage.whenShown(this.tab)
   }
 
-  /** Whether the round is still under way for you. */
-  async isStillShown(): Promise<boolean> {
-    return (await this.page.getByTestId(inGameTestIds.doneButton).count()) > 0
+  /** The round stays under way for you for `duration`. */
+  async expectStaysOpen(duration: Ms = 1_000): Promise<void> {
+    const done = this.page.getByTestId(inGameTestIds.doneButton)
+    await expect(done, "the round is under way").toBeVisible()
+    await stillTrueFor(
+      "the round staying open",
+      duration,
+      () => done.count(),
+      (count) => count > 0
+    )
   }
 
   /** Refresh the page mid-round: you keep your seat and your paint. */
@@ -86,21 +118,21 @@ export class RoundPage extends Screen {
 
   /** Until the connection to the game has dropped. */
   async waitForDisconnect(): Promise<void> {
-    await until(
-      "the connection to drop",
-      () => this.page.evaluate(() => window.testHooks.connection?.connected()),
-      (connected) => connected === false
-    )
+    await expect
+      .poll(() => this.page.evaluate(() => window.testHooks.connection?.connected()), {
+        message: "the connection to the game drops"
+      })
+      .toBe(false)
   }
 
   /** Until the connection to the game is back. */
   async waitForReconnect(): Promise<void> {
-    await until(
-      "the connection to come back",
-      () => this.page.evaluate(() => window.testHooks.connection?.connected()),
-      (connected) => connected === true,
-      20_000
-    )
+    await expect
+      .poll(() => this.page.evaluate(() => window.testHooks.connection?.connected()), {
+        message: "the connection to the game comes back",
+        timeout: 20_000
+      })
+      .toBe(true)
   }
 
   /** Until the clock runs out. */

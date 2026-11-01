@@ -1,8 +1,8 @@
-import type { Page } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
 import type { Tool } from "../../../src/paint/tool.ts"
 import { paintToolsTestIds } from "../../../src/ui/map/paint/PaintTools/PaintToolsTestIds.ts"
 import { trimToHintTestIds } from "../../../src/ui/map/paint/TrimToHint/TrimToHintTestIds.ts"
-import { byTestIdWith, isUsable } from "../support.ts"
+import { byTestIdWith, expectUsable } from "../support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** The brush bar along the bottom of the map. */
@@ -25,11 +25,11 @@ export class PaintTools {
     await byTestIdWith(this.#page, paintToolsTestIds.toolButton, "tool", tool).click()
   }
 
-  async selectedTool(): Promise<string | undefined> {
-    const tool = await this.#page
-      .locator(`[data-testid="${paintToolsTestIds.toolButton}"][aria-pressed="true"]`)
-      .getAttribute("data-tool")
-    return tool ?? undefined
+  async expectSelectedTool(tool: Tool): Promise<void> {
+    await expect(
+      this.#page.locator(`[data-testid="${paintToolsTestIds.toolButton}"][aria-pressed="true"]`),
+      `the ${tool} tool is the one pressed`
+    ).toHaveAttribute("data-tool", tool)
   }
 
   /** Tab to the next control, as a keyboard player would, and press it with `key`. */
@@ -58,7 +58,10 @@ export class PaintTools {
     for (let i = 0; i < steps; i++) await this.#page.keyboard.press("]")
   }
 
-  async toolIsUsable(tool: Tool): Promise<boolean> {
-    return isUsable(byTestIdWith(this.#page, paintToolsTestIds.toolButton, "tool", tool))
+  async expectToolUsable(tool: Tool): Promise<void> {
+    await expectUsable(
+      byTestIdWith(this.#page, paintToolsTestIds.toolButton, "tool", tool),
+      `the ${tool} tool is on screen and uncovered`
+    )
   }
 }

@@ -2,7 +2,7 @@
 // the same reveal: paint erased before the deadline stays erased, and a stroke
 // still going at zero neither draws over the reveal nor goes missing.
 import { test } from "@playwright/test"
-import { check, newTab, shot } from "./support.ts"
+import { newTab, shot } from "./support.ts"
 
 test("deadline", async ({ browser }) => {
   const aliceHomePage = await (await newTab(browser, "Alice")).openHome()
@@ -26,23 +26,14 @@ test("deadline", async ({ browser }) => {
   const aliceRevealPage = await aliceRoundPage.waitForReveal()
   const bobRevealPage = await bobRoundPage.waitForReveal()
   await stroke
-  await aliceRevealPage.waitForRows(2)
+  await aliceRevealPage.expectRowCount(2)
 
-  const rows = await aliceRevealPage.rows()
-  check(
-    rows.some((row) => row.name === "Alice" && row.passed && row.roundScore === "+250"),
-    `paint cleared before the deadline scores as a pass: ${JSON.stringify(rows)}`
-  )
-  check(
-    rows.some((row) => row.name === "Bob" && !row.passed),
-    `a stroke still going at zero counts: ${JSON.stringify(rows)}`
-  )
+  // Paint cleared before the deadline scores as a pass; a stroke still going at zero counts.
+  await aliceRevealPage.expectRow("Alice", { passed: true, roundScore: "+250" })
+  await aliceRevealPage.expectRow("Bob", { passed: false })
+  await aliceRevealPage.map.expectShownPaintCells({ greaterThan: 0 })
   const aliceSees = await aliceRevealPage.map.shownPaintCells()
-  const bobSees = await bobRevealPage.map.shownPaintCells()
-  check(
-    aliceSees > 0 && aliceSees === bobSees,
-    `both players see the same paint at the reveal (${aliceSees} and ${bobSees} cells)`
-  )
+  await bobRevealPage.map.expectShownPaintCells({ exactly: aliceSees })
   await aliceRevealPage.screenshot(shot(`deadline-alice.png`))
   await bobRevealPage.screenshot(shot(`deadline-bob.png`))
 })

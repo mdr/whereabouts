@@ -1,3 +1,4 @@
+import { expect, type Locator } from "@playwright/test"
 import { revealTestIds } from "../../src/screens/reveal/Reveal/RevealTestIds.ts"
 import { revealRowTestIds } from "../../src/screens/reveal/RevealRow/RevealRowTestIds.ts"
 import { revealScoresTestIds } from "../../src/screens/reveal/RevealScores/RevealScoresTestIds.ts"
@@ -9,16 +10,15 @@ import { MapPanel } from "./components/MapPanel.ts"
 import { ResultsPage } from "./ResultsPage.ts"
 import { RoundPage } from "./RoundPage.ts"
 import { Screen } from "./Screen.ts"
-import { byTestIdWith, isUsable, text, until } from "./support.ts"
+import { byTestIdWith, expectPolled, expectUsable, softExpect, stillTrueFor, text } from "./support.ts"
 import type { Tab } from "./Tab.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
-export interface RevealRow {
-  name: string
+interface ExpectedRow {
   /** "+412", or "sat out". */
-  roundScore: string
-  passed: boolean
-  hinted: boolean
+  roundScore?: string
+  passed?: boolean
+  hinted?: boolean
 }
 
 /** An online round's reveal: the answer, everyone's scores, and getting ready for the next. */
@@ -28,7 +28,7 @@ export class RevealPage extends Screen {
 
   static async whenShown(tab: Tab, timeout: Ms = 10_000): Promise<RevealPage> {
     const reveal = new RevealPage(tab)
-    await tab.page.getByTestId(revealScoresTestIds.scoresList).waitFor({ timeout })
+    await expect(tab.page.getByTestId(revealScoresTestIds.scoresList), "the reveal is shown").toBeVisible({ timeout })
     await reveal.map.waitUntilSettled()
     return reveal
   }
@@ -39,8 +39,20 @@ export class RevealPage extends Screen {
     this.map = new MapPanel(tab.page)
   }
 
-  async isStillShown(): Promise<boolean> {
-    return (await this.page.getByTestId(revealScoresTestIds.scoresList).count()) > 0
+  #row(name: string): Locator {
+    return byTestIdWith(this.page, revealRowTestIds.playerRow, "player", name)
+  }
+
+  /** The reveal keeps showing for `duration`. */
+  async expectStaysShown(duration: Ms = 800): Promise<void> {
+    const scores = this.page.getByTestId(revealScoresTestIds.scoresList)
+    await expect(scores, "the reveal is shown").toBeVisible()
+    await stillTrueFor(
+      "still being on the reveal",
+      duration,
+      () => scores.count(),
+      (count) => count > 0
+    )
   }
 
   /** The line of interest about the answer, once the facts have loaded. */
@@ -48,36 +60,61 @@ export class RevealPage extends Screen {
     return text(this.page.getByTestId(factLineTestIds.fact))
   }
 
-  /** The players' rows, in the order shown. */
-  async rows(): Promise<RevealRow[]> {
-    const rows = await this.page.getByTestId(revealRowTestIds.playerRow).all()
-    return Promise.all(
-      rows.map(async (row) => ({
-        name: await text(row.getByTestId(revealRowTestIds.playerName)),
-        roundScore: await text(row.getByTestId(revealRowTestIds.roundScore)),
-        passed: (await row.getByTestId(revealRowTestIds.passedTag).count()) > 0,
-        hinted: (await row.getByTestId(revealRowTestIds.hintTag).count()) > 0
-      }))
+  async expectFactLine(): Promise<void> {
+    await expect(this.page.getByTestId(factLineTestIds.fact), "there is a line about the answer").toHaveText(/.{21}/)
+  }
+
+  async expectFact(fact: string): Promise<void> {
+    await expect(this.page.getByTestId(factLineTestIds.fact), "the line about the answer matches").toHaveText(fact)
+  }
+
+  async expectRowCount(count: number): Promise<void> {
+    await expect(this.page.getByTestId(revealRowTestIds.playerRow), `the reveal lists ${count} players`).toHaveCount(
+      count
     )
   }
 
-  async waitForRows(count: number): Promise<void> {
-    await until(
-      `${count} player rows`,
-      async () => (await this.rows()).length,
-      (rows) => rows === count
-    )
+  /** A player's row, with whatever of its score and tags is given. */
+  async expectRow(name: string, expected: ExpectedRow): Promise<void> {
+    const row = this.#row(name)
+    await expect(row, `${name} has a row on the reveal`).toBeVisible()
+    if (expected.roundScore !== undefined) {
+      await expect(row.getByTestId(revealRowTestIds.roundScore), `${name}'s round score`).toHaveText(
+        expected.roundScore
+      )
+    }
+    if (expected.passed !== undefined) {
+      await expect(
+        row.getByTestId(revealRowTestIds.passedTag),
+        expected.passed ? `${name} is tagged as passed` : `${name} is not tagged as passed`
+      ).toHaveCount(expected.passed ? 1 : 0)
+    }
+    if (expected.hinted !== undefined) {
+      await expect(
+        row.getByTestId(revealRowTestIds.hintTag),
+        expected.hinted ? `${name} is tagged as having used a hint` : `${name} is not tagged as having used a hint`
+      ).toHaveCount(expected.hinted ? 1 : 0)
+    }
+  }
+
+  /** `rowCount` rows are listed, and none of the names carries a "(you)" label. */
+  async expectNoYouLabels(rowCount: number): Promise<void> {
+    await this.expectRowCount(rowCount)
+    await expect(
+      this.page.getByTestId(revealRowTestIds.playerName).filter({ hasText: "(you)" }),
+      "nobody is labelled (you)"
+    ).toHaveCount(0)
   }
 
   /** Show just this player's paint. */
   async showOnly(name: string): Promise<void> {
-    await byTestIdWith(this.page, revealRowTestIds.playerRow, "player", name).click()
+    await this.#row(name).click()
     await this.map.waitUntilSettled()
   }
 
   /** Rest the mouse on this player's name. */
   async hoverPlayer(name: string): Promise<void> {
-    await byTestIdWith(this.page, revealRowTestIds.playerRow, "player", name).hover()
+    await this.#row(name).hover()
     await this.map.waitUntilSettled()
   }
 
@@ -94,17 +131,10 @@ export class RevealPage extends Screen {
   }
 
   /** "1 of 2 ready" */
-  async readyCount(): Promise<string> {
-    return text(this.page.getByTestId(revealTestIds.readyCount))
-  }
-
-  async waitForReadyCount(expected: string): Promise<void> {
-    await until(
-      `ready count "${expected}"`,
-      () => this.readyCount(),
-      (count) => count === expected,
-      5_000
-    )
+  async expectReadyCount(expected: string): Promise<void> {
+    await expect(this.page.getByTestId(revealTestIds.readyCount), `the reveal says ${expected}`).toHaveText(expected, {
+      timeout: 5_000
+    })
   }
 
   /** Ready, while others are not yet. */
@@ -138,32 +168,46 @@ export class RevealPage extends Screen {
     return ResultsPage.whenShown(this.tab, timeout)
   }
 
-  async readyButtonIsUsable(): Promise<boolean> {
-    return isUsable(this.page.getByTestId(revealTestIds.readyButton))
+  async expectReadyButtonUsable(message = "the Ready button is on screen and uncovered"): Promise<void> {
+    await expectUsable(this.page.getByTestId(revealTestIds.readyButton), message)
   }
 
   /** On a phone the scores are further down the sheet: scrolled to first. */
-  async scoresAreUsable(): Promise<boolean> {
+  async expectScoresUsable(): Promise<void> {
     const row = this.page.getByTestId(revealScoresTestIds.everyoneRow)
     // Not scrollIntoViewIfNeeded: a row under the sticky toolbar counts as in view.
     await row.evaluate((element) => element.scrollIntoView({ block: "center" }))
-    return isUsable(row)
+    await expectUsable(row, "the scores list is on screen and uncovered")
   }
 
-  async scoreIsUsable(): Promise<boolean> {
-    return isUsable(this.page.getByTestId(revealTestIds.scoreCard))
+  async expectScoreCardUsable(): Promise<void> {
+    await expectUsable(this.page.getByTestId(revealTestIds.scoreCard), "your score card is on screen and uncovered")
   }
 
-  /** On a phone, whether the answer shows in full on the map between the question card and the sheet of cards. */
-  async answerShowsAboveSheet(): Promise<boolean> {
-    const question = await this.page.getByTestId(questionCardTestIds.card).boundingBox()
-    const sheet = await this.page.getByTestId(revealTestIds.scoreCard).boundingBox()
-    if (!question || !sheet) return false
-    return (await this.map.answerShareBetween(question.y + question.height, sheet.y)) === 1
+  /** On a phone, the answer shows in full on the map between the question card and the sheet of cards. */
+  async expectAnswerShowsAboveSheet(): Promise<void> {
+    await this.map.waitUntilSettled()
+    await expectPolled(
+      "the answer shows in full on the map between the question card and the sheet",
+      "all of the answer",
+      async () => {
+        const question = await this.page.getByTestId(questionCardTestIds.card).boundingBox()
+        const sheet = await this.page.getByTestId(revealTestIds.scoreCard).boundingBox()
+        if (!question || !sheet) return "cards not on screen"
+        return (await this.map.answerShareBetween(question.y + question.height, sheet.y)) === 1
+          ? "all of the answer"
+          : "part of the answer is hidden"
+      },
+      (state) => state === "all of the answer",
+      { expector: softExpect }
+    )
   }
 
   /** The question card's line naming the answer, on screen and uncovered. */
-  async answerLineIsUsable(): Promise<boolean> {
-    return isUsable(this.page.getByTestId(answerTestIds.answer))
+  async expectAnswerLineUsable(): Promise<void> {
+    await expectUsable(
+      this.page.getByTestId(answerTestIds.answer),
+      "the question card names the answer, on screen and uncovered"
+    )
   }
 }

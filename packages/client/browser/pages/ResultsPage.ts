@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test"
 import { resultsTestIds } from "../../src/screens/results/Results/ResultsTestIds.ts"
 import { standingsTestIds } from "../../src/screens/results/Standings/StandingsTestIds.ts"
 import { LobbyPage } from "./LobbyPage.ts"
@@ -8,14 +9,15 @@ import type { Ms } from "@whereabouts/shared/units"
 /** The final standings. */
 export class ResultsPage extends Screen {
   static async whenShown(tab: Tab, timeout: Ms = 10_000): Promise<ResultsPage> {
-    await tab.page.getByTestId(resultsTestIds.page).waitFor({ timeout })
+    await expect(tab.page.getByTestId(resultsTestIds.page), "the final standings are shown").toBeVisible({ timeout })
     return new ResultsPage(tab)
   }
 
-  /** Player names, winner first. */
-  async standings(): Promise<string[]> {
-    const rows = await this.page.getByTestId(standingsTestIds.standingsRow).all()
-    return Promise.all(rows.map(async (row) => (await row.getAttribute("data-player")) ?? ""))
+  async expectStandingsCount(count: number): Promise<void> {
+    await expect(
+      this.page.getByTestId(standingsTestIds.standingsRow),
+      `the final standings list ${count} players`
+    ).toHaveCount(count)
   }
 
   /** Host: everyone back to the same lobby. */

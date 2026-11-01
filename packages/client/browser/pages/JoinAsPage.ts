@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test"
 import { joinAsTestIds } from "../../src/screens/multiplayer/JoinAs/JoinAsTestIds.ts"
 import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"
@@ -7,7 +8,7 @@ import { TurnedAwayPage } from "./TurnedAwayPage.ts"
 /** The page a game link opens: confirm your name, then join. */
 export class JoinAsPage extends Screen {
   static async whenShown(tab: Tab): Promise<JoinAsPage> {
-    await tab.page.getByTestId(joinAsTestIds.page).waitFor()
+    await expect(tab.page.getByTestId(joinAsTestIds.page), "the join page is shown").toBeVisible()
     return new JoinAsPage(tab)
   }
 

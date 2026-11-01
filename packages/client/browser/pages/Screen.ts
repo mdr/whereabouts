@@ -1,9 +1,9 @@
-import type { Page } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
 import type { Tab } from "./Tab.ts"
-import { until } from "./support.ts"
+import { softExpect } from "./support.ts"
 import type { Ms, Px } from "@whereabouts/shared/units"
 
-export interface Fit {
+interface Fit {
   viewportWidth: Px
   scrollWidth: Px
   /** Elements reaching past either side of the screen, described for a failure message. */
@@ -26,30 +26,33 @@ export abstract class Screen {
 
   /** Until nothing with a test id has moved or changed size for a third of a second. */
   async waitForLayoutToSettle(timeout: Ms = 10_000): Promise<void> {
-    let previous = ""
-    let stillSince = Date.now()
-    await until(
-      "the layout to settle",
-      async () => {
-        const layout = await this.page.evaluate(() =>
-          [...document.querySelectorAll("[data-testid]")]
-            .map((element) => {
-              const { left, top, width, height } = element.getBoundingClientRect()
-              return [left, top, width, height].map(Math.round).join(",")
-            })
-            .join(";")
-        )
-        if (layout !== previous) stillSince = Date.now()
-        previous = layout
-        return Date.now() - stillSince
-      },
-      (ms) => ms >= 300,
-      timeout
-    )
+    await this.#expectLayoutSettles(expect, timeout)
   }
 
-  /** How the screen fits the width of the window. */
-  async fit(): Promise<Fit> {
+  async #expectLayoutSettles(expector: typeof expect, timeout: Ms): Promise<void> {
+    let previous = ""
+    let stillSince = Date.now()
+    await expector
+      .poll(
+        async () => {
+          const layout = await this.page.evaluate(() =>
+            [...document.querySelectorAll("[data-testid]")]
+              .map((element) => {
+                const { left, top, width, height } = element.getBoundingClientRect()
+                return [left, top, width, height].map(Math.round).join(",")
+              })
+              .join(";")
+          )
+          if (layout !== previous) stillSince = Date.now()
+          previous = layout
+          return Date.now() - stillSince
+        },
+        { message: "the layout settles", timeout, intervals: [100] }
+      )
+      .toBeGreaterThanOrEqual(300)
+  }
+
+  async #fit(): Promise<Fit> {
     return this.page.evaluate(() => {
       const vw = window.innerWidth
       const overflowing: string[] = []
@@ -64,5 +67,29 @@ export abstract class Screen {
       }
       return { viewportWidth: vw, scrollWidth: document.documentElement.scrollWidth, overflowing }
     })
+  }
+
+  /** Once the layout has settled, the screen is no wider than the window; `viewportWidth` is what the window should measure. */
+  async expectFits(label: string, viewportWidth?: Px): Promise<void> {
+    await this.#expectLayoutSettles(softExpect, 10_000)
+    if (viewportWidth !== undefined) {
+      await softExpect
+        .poll(async () => (await this.#fit()).viewportWidth, {
+          message: `${label}: the layout viewport is the screen width`
+        })
+        .toBe(viewportWidth)
+    }
+    await softExpect
+      .poll(
+        async () => {
+          const { scrollWidth, viewportWidth: width } = await this.#fit()
+          return scrollWidth - width
+        },
+        { message: `${label}: the page does not scroll horizontally` }
+      )
+      .toBeLessThanOrEqual(0)
+    await softExpect
+      .poll(async () => (await this.#fit()).overflowing, { message: `${label}: nothing overflows the screen` })
+      .toEqual([])
   }
 }

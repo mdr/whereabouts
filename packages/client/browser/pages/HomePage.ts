@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test"
 import { homeTestIds } from "../../src/screens/Home/HomeTestIds.ts"
 import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"
@@ -7,7 +8,7 @@ import type { Tab } from "./Tab.ts"
 /** The front page: your name, then host, join or practise. */
 export class HomePage extends Screen {
   static async whenShown(tab: Tab): Promise<HomePage> {
-    await tab.page.getByTestId(homeTestIds.page).waitFor()
+    await expect(tab.page.getByTestId(homeTestIds.page), "the home page is shown").toBeVisible()
     return new HomePage(tab)
   }
 

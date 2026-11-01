@@ -1,4 +1,5 @@
-import type { Page } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
+import type { Ms } from "@whereabouts/shared/units"
 import type { Vec3 } from "../../../src/vr/probe.ts"
 import { Controllers } from "./Controllers.ts"
 import { installEmulator } from "./emulator.ts"
@@ -33,6 +34,10 @@ export class Headset {
 
   async inSession(): Promise<boolean> {
     return this.#page.evaluate(() => window.headset.activeSession !== undefined)
+  }
+
+  async expectInSession(timeout: Ms): Promise<void> {
+    await expect.poll(() => this.inSession(), { message: "the headset session opens", timeout }).toBe(true)
   }
 
   /** Times the VR scene has been drawn, in the headset or not. */

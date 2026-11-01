@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
 import { confirmDialogTestIds } from "../../../src/ui/ConfirmDialog/ConfirmDialogTestIds.ts"
 import { text } from "../support.ts"
 
@@ -8,7 +8,7 @@ export class ConfirmDialog<T> {
   readonly #confirmed: () => Promise<T>
 
   static async whenShown<T>(page: Page, confirmed: () => Promise<T>): Promise<ConfirmDialog<T>> {
-    await page.getByTestId(confirmDialogTestIds.dialog).waitFor()
+    await expect(page.getByTestId(confirmDialogTestIds.dialog), "the confirmation dialog is shown").toBeVisible()
     return new ConfirmDialog(page, confirmed)
   }
 
@@ -24,7 +24,7 @@ export class ConfirmDialog<T> {
   /** Back to the screen underneath, unchanged. */
   async cancel(): Promise<void> {
     await this.#page.getByTestId(confirmDialogTestIds.cancelButton).click()
-    await this.#page.getByTestId(confirmDialogTestIds.dialog).waitFor({ state: "detached" })
+    await expect(this.#page.getByTestId(confirmDialogTestIds.dialog), "Cancel closes the dialog").toBeHidden()
   }
 
   async confirm(): Promise<T> {

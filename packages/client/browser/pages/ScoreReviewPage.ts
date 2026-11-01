@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test"
 import { scoreReviewTestIds } from "../../src/screens/score-review/ScoreReview/ScoreReviewTestIds.ts"
 import { verdictCardTestIds } from "../../src/screens/score-review/VerdictCard/VerdictCardTestIds.ts"
 import { MapPanel } from "./components/MapPanel.ts"
@@ -11,7 +12,7 @@ export class ScoreReviewPage extends Screen {
 
   static async whenShown(tab: Tab): Promise<ScoreReviewPage> {
     const review = new ScoreReviewPage(tab)
-    await tab.page.getByTestId(verdictCardTestIds.progress).waitFor()
+    await expect(tab.page.getByTestId(verdictCardTestIds.progress), "the score review is shown").toBeVisible()
     await review.map.waitUntilSettled()
     return review
   }
@@ -31,9 +32,16 @@ export class ScoreReviewPage extends Screen {
     return (await this.page.getByTestId(verdictCardTestIds.pair).count()) > 0
   }
 
+  async expectScoreIsInteger(): Promise<void> {
+    await expect(this.page.getByTestId(scoreReviewTestIds.score), "a single guess shows its score").toHaveText(/^\d+$/)
+  }
+
   /** A pair's two scores, A then B. */
-  async pairScores(): Promise<string[]> {
-    return this.page.getByTestId(verdictCardTestIds.pairScore).allTextContents()
+  async expectPairScores(): Promise<void> {
+    await expect(
+      this.page.getByTestId(verdictCardTestIds.pairScore),
+      "a pair shows both scores, as whole numbers"
+    ).toHaveText([/^\d+$/, /^\d+$/])
   }
 
   /** Rest the mouse on guess A (0) or B (1) of a pair. */
@@ -55,8 +63,10 @@ export class ScoreReviewPage extends Screen {
   }
 
   /** "3 of 32 judged in this set." */
-  async progress(): Promise<string> {
-    return text(this.page.getByTestId(verdictCardTestIds.progress))
+  async expectJudged(count: number): Promise<void> {
+    await expect(this.page.getByTestId(verdictCardTestIds.progress), `${count} of the set of 32 are judged`).toHaveText(
+      new RegExp(`^${count} of 32`)
+    )
   }
 
   /** Give a verdict with its number key (1 much too low … 5 much too high) and submit with Enter. */

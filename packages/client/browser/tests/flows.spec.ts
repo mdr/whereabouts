@@ -2,7 +2,7 @@
 // mid-round keeps the seat and paint, a late joiner sits a round out then
 // plays (and passes), and Play again leads back to the same lobby.
 import { test } from "@playwright/test"
-import { check, newTab, shot } from "./support.ts"
+import { newTab, shot } from "./support.ts"
 
 test("flows", async ({ browser }) => {
   const { code, aliceLobbyPage, bobLobbyPage } = await test.step("Alice hosts and Bob joins", async () => {
@@ -23,43 +23,34 @@ test("flows", async ({ browser }) => {
 
   await test.step("a refresh mid-round keeps the seat and the paint", async () => {
     await aliceRoundPage.map.untilUploaded(() => aliceRoundPage.map.drag({ across: 0.5, down: 0.4 }))
+    await aliceRoundPage.map.expectShownPaintCells({ greaterThan: 0 })
     const before = await aliceRoundPage.map.shownPaintCells()
     aliceRoundPage = await aliceRoundPage.reload()
-    const after = await aliceRoundPage.map.shownPaintCells()
     // The upload is compacted to coarser cells, so the count drops but stays non-zero.
-    check(before > 0 && after > 0 && after <= before, `paint restored after refresh (${before} -> ${after} cells)`)
+    await aliceRoundPage.map.expectShownPaintCells({ greaterThan: 0, atMost: before })
     await aliceRoundPage.playersPanel.open()
-    const players = await aliceRoundPage.playersPanel.players.players()
-    check(
-      players.length === 2 && players.some((player) => player.name === "Alice" && player.isHost),
-      `still two players, Alice still host: ${JSON.stringify(players)}`
-    )
+    await aliceRoundPage.playersPanel.players.expectCount(2)
+    await aliceRoundPage.playersPanel.players.expectHost("Alice")
   })
 
   const caraRoundPage = await test.step("a late joiner sits round 1 out, then plays round 2", async () => {
     const caraHomePage = await (await newTab(browser, "Cara")).openHome()
     await caraHomePage.enterName("Cara")
     const caraSittingOutPage = await caraHomePage.joinGameMidRound(code)
-    check(true, "a late joiner is told they're sitting this round out")
     const aliceRoundDonePage = await aliceRoundPage.finish()
     const bobRevealPage = await bobRoundPage.finishLast()
     const aliceRevealPage = await aliceRoundDonePage.waitForReveal()
     const caraRevealPage = await caraSittingOutPage.waitForReveal()
-    const round1 = await aliceRevealPage.rows()
-    check(
-      round1.some((row) => row.name === "Cara" && row.roundScore === "sat out"),
-      `Cara shown as sitting out round 1: ${JSON.stringify(round1)}`
-    )
+    await aliceRevealPage.expectRowCount(3)
+    await aliceRevealPage.expectRow("Cara", { roundScore: "sat out" })
     aliceRoundPage = await aliceRevealPage.nextRound()
     bobRoundPage = await bobRevealPage.waitForNextRound()
-    const caraRoundPage = await caraRevealPage.waitForNextRound()
-    check(true, "the late joiner plays round 2")
-    return caraRoundPage
+    return caraRevealPage.waitForNextRound()
   })
 
   const { aliceRevealPage, bobRevealPage } = await test.step("a pass shows as +250 on the round 2 reveal", async () => {
     // With nothing painted Done is a pass; Cara has no idea and takes it.
-    check((await caraRoundPage.doneButtonLabel()) === "Pass", "with nothing painted, the button reads Pass")
+    await caraRoundPage.expectDoneLabel("Pass")
     const caraRoundDonePage = await caraRoundPage.finish()
     await caraRoundDonePage.screenshot(shot(`flows-cara-round2.png`))
     await bobRoundPage.map.drag({ across: 0.6, down: 0.5 })
@@ -67,24 +58,19 @@ test("flows", async ({ browser }) => {
     const aliceRoundDonePage = await aliceRoundPage.finish()
     const bobRevealPage = await bobRoundPage.finishLast()
     const aliceRevealPage = await aliceRoundDonePage.waitForReveal()
-    const round2 = await aliceRevealPage.rows()
-    check(
-      round2.some((row) => row.name === "Cara" && row.passed && row.roundScore === "+250"),
-      `a pass shows as +250, tagged passed: ${JSON.stringify(round2)}`
-    )
+    await aliceRevealPage.expectRowCount(3)
+    await aliceRevealPage.expectRow("Cara", { passed: true, roundScore: "+250" })
     return { aliceRevealPage, bobRevealPage }
   })
 
   await test.step("the final standings, then Play again", async () => {
     const aliceResultsPage = await aliceRevealPage.showFinalResults()
     const bobResultsPage = await bobRevealPage.waitForResults()
-    const standings = await aliceResultsPage.standings()
-    check(standings.length === 3, `three players in the final standings: ${JSON.stringify(standings)}`)
+    await aliceResultsPage.expectStandingsCount(3)
     await aliceResultsPage.screenshot(shot(`flows-results.png`))
     await aliceResultsPage.playAgain()
     const bobLobbyAgainPage = await bobResultsPage.waitForLobby()
-    check((await bobLobbyAgainPage.code()) === code, "Play again brings everyone back to the same lobby")
-    const inLobby = await bobLobbyAgainPage.players.names()
-    check(inLobby.length === 3, `all three are in the lobby: ${JSON.stringify(inLobby)}`)
+    await bobLobbyAgainPage.expectCode(code)
+    await bobLobbyAgainPage.players.expectCount(3)
   })
 })

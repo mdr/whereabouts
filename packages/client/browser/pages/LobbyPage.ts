@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test"
 import { QUESTION_TYPES, type QuestionType } from "@whereabouts/shared/questions"
 import { lobbyTestIds } from "../../src/screens/lobby/Lobby/LobbyTestIds.ts"
 import { invitePanelTestIds } from "../../src/screens/lobby/invite/InvitePanel/InvitePanelTestIds.ts"
@@ -10,7 +11,7 @@ import { stepperTestIds } from "../../src/ui/setup/Stepper/StepperTestIds.ts"
 import { PlayerList } from "./components/PlayerList.ts"
 import { RoundPage } from "./RoundPage.ts"
 import { Screen } from "./Screen.ts"
-import { byTestIdWith, text, until } from "./support.ts"
+import { byTestIdWith, text } from "./support.ts"
 import type { Tab } from "./Tab.ts"
 import type { Ms, Seconds } from "@whereabouts/shared/units"
 
@@ -25,7 +26,7 @@ export class LobbyPage extends Screen {
   readonly players: PlayerList
 
   static async whenShown(tab: Tab, timeout: Ms = 15_000): Promise<LobbyPage> {
-    await tab.page.getByTestId(lobbyTestIds.page).waitFor({ timeout })
+    await expect(tab.page.getByTestId(lobbyTestIds.page), "the lobby is shown").toBeVisible({ timeout })
     return new LobbyPage(tab)
   }
 
@@ -48,11 +49,7 @@ export class LobbyPage extends Screen {
       const up = now < count
       await row.getByTestId(up ? stepperTestIds.moreButton : stepperTestIds.fewerButton).click()
       const next = String(up ? now + 1 : now - 1)
-      await until(
-        `${type} count ${next}`,
-        () => text(value),
-        (count) => count === next
-      )
+      await expect(value, `the ${type} count reads ${next}`).toHaveText(next)
     }
   }
 
@@ -71,33 +68,36 @@ export class LobbyPage extends Screen {
     ).click()
   }
 
-  /** Whether this player has the host's setup controls. */
-  async canChangeSetup(): Promise<boolean> {
-    const controls =
-      (await this.page.getByTestId(hostSettingsTestIds.questionsSetting).count()) +
-      (await this.page.getByTestId(hostSettingsTestIds.secondsSetting).count())
-    return controls > 0
-  }
-
   /** A guest's view of the setup the host chose. */
-  async setupSummary(): Promise<SetupSummary> {
-    const value = (id: string) => text(this.page.getByTestId(id).getByTestId(setupSummaryTestIds.tileValue))
-    return {
-      rounds: await value(setupSummaryTestIds.rounds),
-      seconds: await value(setupSummaryTestIds.seconds),
-      questions: await text(this.page.getByTestId(setupSummaryTestIds.questions))
-    }
+  async expectSetupSummary(expected: SetupSummary): Promise<void> {
+    const tile = (id: string) => this.page.getByTestId(id).getByTestId(setupSummaryTestIds.tileValue)
+    await expect(tile(setupSummaryTestIds.rounds), `the setup shows ${expected.rounds} rounds`).toHaveText(
+      expected.rounds
+    )
+    await expect(tile(setupSummaryTestIds.seconds), `the setup shows ${expected.seconds} a round`).toHaveText(
+      expected.seconds
+    )
+    await expect(
+      this.page.getByTestId(setupSummaryTestIds.questions),
+      `the setup shows ${expected.questions}`
+    ).toHaveText(expected.questions)
   }
 
-  async waitForSetupSummary(expected: SetupSummary): Promise<void> {
-    await until(
-      `setup summary ${JSON.stringify(expected)}`,
-      () => this.setupSummary(),
-      (summary) =>
-        summary.rounds === expected.rounds &&
-        summary.seconds === expected.seconds &&
-        summary.questions === expected.questions
-    )
+  /** A guest sees the setup but none of the host's controls for it. */
+  async expectCannotChangeSetup(): Promise<void> {
+    await expect(this.page.getByTestId(setupSummaryTestIds.questions), "the guest sees the setup").toBeVisible()
+    await expect(
+      this.page.getByTestId(hostSettingsTestIds.questionsSetting),
+      "the guest has no question controls"
+    ).toHaveCount(0)
+    await expect(
+      this.page.getByTestId(hostSettingsTestIds.secondsSetting),
+      "the guest has no seconds control"
+    ).toHaveCount(0)
+  }
+
+  async expectCode(code: string): Promise<void> {
+    await expect(this.page.getByTestId(invitePanelTestIds.code), `the lobby code is ${code}`).toHaveText(code)
   }
 
   /** Host only. */

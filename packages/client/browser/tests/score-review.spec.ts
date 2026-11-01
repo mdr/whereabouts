@@ -1,16 +1,16 @@
 // The score review against the Vite dev server: single guesses judged by
 // keyboard and by clicking, a pair compared (pointing at one shows it
 // alone), the export, and the screen on a phone. Saves screenshots.
-import { test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import { decodeCase } from "@whereabouts/shared/scoring/scoring-case"
-import { check, newTab, shot } from "./support.ts"
+import { newTab, shot } from "./support.ts"
 
 test("score-review", async ({ browser }) => {
   const tab = await newTab(browser, "review", { context: { viewport: { width: 1400, height: 900 } } })
 
   const review = await test.step("the review opens with nothing judged", async () => {
     const review = await tab.openScoreReview()
-    check((await review.progress()).startsWith("0 of 32"), "a set of 32, nothing judged yet")
+    await review.expectJudged(0)
     return review
   })
 
@@ -25,26 +25,20 @@ test("score-review", async ({ browser }) => {
           await review.skip()
           continue
         }
-        const scores = await review.pairScores()
-        check(
-          scores.length === 2 && scores.every((score) => /^\d+$/.test(score)),
-          `a pair shows both scores (${scores.join(", ")})`
-        )
+        await review.expectPairScores()
+        await review.map.expectShownPaintCells({ greaterThan: 0 })
         const both = await review.map.shownPaintCells()
         await review.screenshot(shot(`review-pair.png`))
         await review.hoverGuess(0)
-        const onlyA = await review.map.shownPaintCells()
+        // Pointing at A shows it alone, then both again.
+        await review.map.expectShownPaintCells({ greaterThan: 0, lessThan: both })
         await review.stopHovering()
-        const again = await review.map.shownPaintCells()
-        check(
-          onlyA > 0 && onlyA < both && again === both,
-          `pointing at A shows it alone (${onlyA} of ${both} cells), then both again`
-        )
+        await review.map.expectShownPaintCells({ exactly: both })
         await review.judgeWithKeys(1)
         paired = true
       } else if (singles === 0) {
+        await review.expectScoreIsInteger()
         firstScore = await review.score()
-        check(/^\d+$/.test(firstScore), `a single guess shows its score (${firstScore})`)
         await review.screenshot(shot(`review-single.png`))
         await review.judgeWithKeys(3)
         singles++
@@ -53,7 +47,7 @@ test("score-review", async ({ browser }) => {
         singles++
       } else await review.skip()
     }
-    check((await review.progress()).startsWith("3 of 32"), `three judged (${await review.progress()})`)
+    await review.expectJudged(3)
     return firstScore
   })
 
@@ -64,16 +58,15 @@ test("score-review", async ({ browser }) => {
       .map((line) => JSON.parse(line) as Record<string, unknown>)
     const single = verdicts.filter((verdict) => verdict["verdict"] !== undefined)
     const pair = verdicts.find((verdict) => verdict["pair"] === true)
-    check(
-      single.length === 2 &&
-        single[0]!["verdict"] === 0 &&
-        single[1]!["verdict"] === -1 &&
-        single[1]!["shouldBe"] === 650,
-      `the export holds both single verdicts, with the score it should be (${single.map((verdict) => String(verdict["verdict"])).join(", ")})`
-    )
-    check(pair?.["prefer"] === -2 && (pair["cases"] as string[]).length === 2, "and the pair's, with both its cases")
+    expect(
+      single.map((verdict) => verdict["verdict"]),
+      "the export holds both single verdicts"
+    ).toEqual([0, -1])
+    expect(single[1]?.["shouldBe"], "and the score the second should have been").toBe(650)
+    expect(pair?.["prefer"], "the export holds the pair's verdict").toBe(-2)
+    expect(pair?.["cases"], "and the pair's two cases").toHaveLength(2)
     const c = await decodeCase(single[0]!["case"] as string)
-    check(Math.round(c.score) === Number(firstScore), `each case carries the score shown (${Math.round(c.score)})`)
+    expect(Math.round(c.score), "each case carries the score shown").toBe(Number(firstScore))
   })
 
   await test.step("the screen fits a phone", async () => {
@@ -81,11 +74,7 @@ test("score-review", async ({ browser }) => {
       context: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 }
     })
     const onPhone = await phone.openScoreReview()
-    const fit = await onPhone.fit()
-    check(
-      fit.scrollWidth <= fit.viewportWidth,
-      `fits a phone's width (${fit.overflowing.join(", ") || "nothing over"})`
-    )
+    await onPhone.expectFits("the score review on a phone")
     await onPhone.screenshot(shot(`review-phone.png`))
   })
 })

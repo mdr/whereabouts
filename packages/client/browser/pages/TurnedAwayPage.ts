@@ -1,19 +1,21 @@
+import { expect } from "@playwright/test"
 import { joinedTestIds } from "../../src/screens/multiplayer/Joined/JoinedTestIds.ts"
 import { HomePage } from "./HomePage.ts"
 import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"
-import { text } from "./support.ts"
 import type { Tab } from "./Tab.ts"
 
 /** What a player sees when they can't be in the game, e.g. after the host removes them. */
 export class TurnedAwayPage extends Screen {
   static async whenShown(tab: Tab): Promise<TurnedAwayPage> {
-    await tab.page.getByTestId(joinedTestIds.problem).waitFor({ timeout: 10_000 })
+    await expect(tab.page.getByTestId(joinedTestIds.problem), "the player is turned away").toBeVisible({
+      timeout: 10_000
+    })
     return new TurnedAwayPage(tab)
   }
 
-  async reason(): Promise<string> {
-    return text(this.page.getByTestId(joinedTestIds.problemTitle))
+  async expectReason(reason: string): Promise<void> {
+    await expect(this.page.getByTestId(joinedTestIds.problemTitle), `the player is told: ${reason}`).toHaveText(reason)
   }
 
   /** Host a game under the code that no game had. */

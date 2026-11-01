@@ -2,7 +2,7 @@
 // down reaches the server once it is back.
 import { test } from "@playwright/test"
 import type { WebSocketRoute } from "@playwright/test"
-import { check, newTab } from "./support.ts"
+import { newTab } from "./support.ts"
 
 test("reconnect", async ({ browser }) => {
   // Alice's game connection goes through a route the script can cut.
@@ -32,7 +32,7 @@ test("reconnect", async ({ browser }) => {
   await aliceRoundPage.waitForDisconnect()
   // The upload after the stroke goes nowhere.
   await aliceRoundPage.map.untilUploaded(() => aliceRoundPage.map.drag({ across: 0.5, down: 0.4 }), "attempted")
-  const painted = await aliceRoundPage.map.shownPaintCells()
+  await aliceRoundPage.map.expectShownPaintCells({ greaterThan: 0 })
   const { sent } = await aliceRoundPage.map.paintUploads()
 
   // Let it back; the client retries within a few seconds and sends the paint
@@ -41,6 +41,6 @@ test("reconnect", async ({ browser }) => {
   await aliceRoundPage.waitForReconnect()
   await aliceRoundPage.map.waitForPaintUpload("sent", sent)
   aliceRoundPage = await aliceRoundPage.reload()
-  const restored = await aliceRoundPage.map.shownPaintCells()
-  check(painted > 0 && restored > 0, `paint drawn offline reached the server (${painted} drawn, ${restored} back)`)
+  // What comes back after a refresh is what the server holds.
+  await aliceRoundPage.map.expectShownPaintCells({ greaterThan: 0 })
 })

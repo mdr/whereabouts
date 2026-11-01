@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test"
 import { hudHeaderTestIds } from "../../../src/ui/map/Hud/HudTestIds.ts"
 import { countdownTestIds } from "../../../src/ui/map/Countdown/CountdownTestIds.ts"
 import { soundToggleTestIds } from "../../../src/ui/map/SoundToggle/SoundToggleTestIds.ts"
@@ -6,7 +7,7 @@ import { questionImageTestIds } from "../../../src/ui/round/question/QuestionIma
 import { hostControlsTestIds } from "../../../src/ui/players/HostControls/HostControlsTestIds.ts"
 import { ConfirmDialog } from "./ConfirmDialog.ts"
 import { ResultsPage } from "../ResultsPage.ts"
-import { isUsable, text } from "../support.ts"
+import { expectNumber, expectUsable, softExpect, text, type Bounds } from "../support.ts"
 import type { Tab } from "../Tab.ts"
 import type { Ms, Px, Seconds } from "@whereabouts/shared/units"
 
@@ -28,8 +29,8 @@ export class Hud {
   }
 
   /** "Round 2 / 3" */
-  async round(): Promise<string> {
-    return text(this.#tab.page.getByTestId(hudHeaderTestIds.round))
+  async expectRound(round: string): Promise<void> {
+    await expect(this.#tab.page.getByTestId(hudHeaderTestIds.round), `the HUD says ${round}`).toHaveText(round)
   }
 
   async toggleSound(): Promise<void> {
@@ -40,8 +41,11 @@ export class Hud {
     return text(this.#tab.page.getByTestId(questionCardTestIds.prompt))
   }
 
-  async questionHasPhoto(): Promise<boolean> {
-    return (await this.#tab.page.getByTestId(questionImageTestIds.photo).count()) > 0
+  async expectQuestionPhoto(): Promise<void> {
+    await expect(
+      this.#tab.page.getByTestId(questionImageTestIds.photo).first(),
+      "the question has a photo"
+    ).toBeAttached()
   }
 
   /** Phones only: fold the question card down to its prompt, or open it out again. */
@@ -49,13 +53,21 @@ export class Hud {
     await this.#tab.page.getByTestId(questionCardTestIds.foldButton).click()
   }
 
-  async questionFoldIsUsable(): Promise<boolean> {
-    return isUsable(this.#tab.page.getByTestId(questionCardTestIds.foldButton))
+  async expectQuestionFoldUsable(): Promise<void> {
+    await expectUsable(
+      this.#tab.page.getByTestId(questionCardTestIds.foldButton),
+      "the question's fold button is on screen and uncovered"
+    )
   }
 
   /** The question card's height on screen, in CSS pixels. */
   async questionHeight(): Promise<Px> {
     return (await this.#tab.page.getByTestId(questionCardTestIds.card).boundingBox())?.height ?? 0
+  }
+
+  /** Phones: a layout check, so a failure does not stop the run. */
+  async expectQuestionHeight(message: string, bounds: Bounds): Promise<void> {
+    await expectNumber(message, () => this.questionHeight(), bounds, { expector: softExpect })
   }
 
   /** Host only: ending the game early asks first. */

@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test"
 import { inGameTestIds } from "../../src/screens/InGame/InGameTestIds.ts"
 import { Hud } from "./components/Hud.ts"
 import { PlayersPanel } from "./components/PlayersPanel.ts"
@@ -13,7 +14,9 @@ export class RoundDonePage extends Screen {
   readonly playersPanel: PlayersPanel
 
   static async whenShown(tab: Tab): Promise<RoundDonePage> {
-    await tab.page.getByTestId(inGameTestIds.doneNote).waitFor({ timeout: 5_000 })
+    await expect(tab.page.getByTestId(inGameTestIds.doneNote), "the player is told they are done").toBeVisible({
+      timeout: 5_000
+    })
     return new RoundDonePage(tab)
   }
 
