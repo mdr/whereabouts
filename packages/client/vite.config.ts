@@ -7,15 +7,18 @@ import { generateAll, writeDeclaration } from "./scripts/css-module-types.mjs"
 const clientPort = Number(process.env.CLIENT_PORT ?? 5173)
 const gamePort = Number(process.env.PORT ?? 8787)
 
-// Keeps the CSS modules' declarations (see scripts/css-module-types.mjs) current while editing.
+// Keeps the CSS modules' declarations (see scripts/css-module-types.mjs) current while
+// editing, and reports a bad composes without stopping the server.
 const cssModuleTypes: Plugin = {
   name: "css-module-types",
   apply: "serve",
-  buildStart: generateAll,
+  buildStart() {
+    for (const error of generateAll()) this.warn(error)
+  },
   watchChange(file, { event }) {
     if (!file.endsWith(".module.css")) return
-    if (event === "delete") generateAll()
-    else writeDeclaration(file)
+    const errors = event === "delete" ? generateAll() : writeDeclaration(file)
+    for (const error of errors) this.warn(error)
   }
 }
 

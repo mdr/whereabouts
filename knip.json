@@ -5,6 +5,7 @@
   "workspaces": {
     "packages/client": {
       "entry": ["scripts/*.mjs"],
+      "ignore": ["scripts/*.d.mts"],
       "ignoreDependencies": ["iwer"],
       "playwright": { "config": ["playwright.config.ts", "playwright.prod.config.ts"] }
     },
