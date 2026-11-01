@@ -1,10 +1,10 @@
 // Entering and leaving VR, on an emulated Quest 3 (see pages/Headset.ts).
 // Saves screenshots of the headset's view.
 import { test } from "@playwright/test"
-import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
-import { VrViewType } from "../../src/vr/view/view.ts"
-import { until } from "../pages/support.ts"
-import { check, shot } from "./support.ts"
+import { vrButtonTestIds } from "../../../src/ui/VrButtonTestIds.ts"
+import { VrViewType } from "../../../src/vr/view/view.ts"
+import { until } from "../../pages/support.ts"
+import { check, shot } from "../support.ts"
 import { headsetPractice } from "./vr-states.ts"
 import { closeAllTabs, enterVr, newHeadsetTab, poses, pressMenu } from "./vr-support.ts"
 

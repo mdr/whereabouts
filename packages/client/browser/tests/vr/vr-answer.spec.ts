@@ -1,10 +1,10 @@
 // A practice round's answer in VR, on an emulated Quest 3 (see pages/Headset.ts).
 // Saves screenshots of the headset's view.
 import { test } from "@playwright/test"
-import { soloTestIds } from "../../src/screens/solo/SoloTestIds.ts"
-import { VrViewType } from "../../src/vr/view/view.ts"
-import { until } from "../pages/support.ts"
-import { check, shot } from "./support.ts"
+import { soloTestIds } from "../../../src/screens/solo/SoloTestIds.ts"
+import { VrViewType } from "../../../src/vr/view/view.ts"
+import { until } from "../../pages/support.ts"
+import { check, shot } from "../support.ts"
 import { vrPracticeAnswer, vrPracticePainted } from "./vr-states.ts"
 import { closeAllTabs, pressMenu } from "./vr-support.ts"
 

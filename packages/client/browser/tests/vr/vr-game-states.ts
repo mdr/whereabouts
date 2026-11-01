@@ -1,13 +1,13 @@
 // Starting states for an online game whose host, Alice, plays in an emulated headset and Bob on a page.
 import type { Browser } from "@playwright/test"
 import { QuestionType } from "@whereabouts/shared/questions"
-import { VrViewType } from "../../src/vr/view/view.ts"
-import type { Headset } from "../pages/Headset.ts"
-import type { LobbyPage } from "../pages/LobbyPage.ts"
-import type { RevealPage } from "../pages/RevealPage.ts"
-import type { RoundPage } from "../pages/RoundPage.ts"
-import { until } from "../pages/support.ts"
-import { newTab } from "./support.ts"
+import { VrViewType } from "../../../src/vr/view/view.ts"
+import type { Headset } from "../../pages/Headset.ts"
+import type { LobbyPage } from "../../pages/LobbyPage.ts"
+import type { RevealPage } from "../../pages/RevealPage.ts"
+import type { RoundPage } from "../../pages/RoundPage.ts"
+import { until } from "../../pages/support.ts"
+import { newTab } from "../support.ts"
 import { enterVr, newHeadsetTab, poses, pressMenu } from "./vr-support.ts"
 
 type Vec = [number, number, number]

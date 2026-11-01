@@ -1,10 +1,10 @@
 import type { CDPSession, Page } from "@playwright/test"
-import type {} from "../../src/ui/map/MapView.tsx"
-import { mapViewTestIds } from "../../src/ui/map/MapViewTestIds.ts"
-import { hudBottomTestIds } from "../../src/ui/map/HudTestIds.ts"
-import { questionCardTestIds } from "../../src/ui/round/QuestionCardTestIds.ts"
-import { playersPanelTestIds } from "../../src/ui/players/PlayersPanelTestIds.ts"
-import { isUsable, until } from "./support.ts"
+import type {} from "../../../src/ui/map/MapView.tsx"
+import { mapViewTestIds } from "../../../src/ui/map/MapViewTestIds.ts"
+import { hudBottomTestIds } from "../../../src/ui/map/HudTestIds.ts"
+import { questionCardTestIds } from "../../../src/ui/round/QuestionCardTestIds.ts"
+import { playersPanelTestIds } from "../../../src/ui/players/PlayersPanelTestIds.ts"
+import { isUsable, until } from "../support.ts"
 import type { Ms, Px } from "@whereabouts/shared/units"
 
 /** A spot on the map, as fractions of its width and height from the top left. */

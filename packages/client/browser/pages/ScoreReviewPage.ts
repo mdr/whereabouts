@@ -1,5 +1,5 @@
 import { scoreReviewTestIds } from "../../src/screens/ScoreReviewTestIds.ts"
-import { MapPanel } from "./MapPanel.ts"
+import { MapPanel } from "./components/MapPanel.ts"
 import { Screen } from "./Screen.ts"
 import { text } from "./support.ts"
 import type { Tab } from "./Tab.ts"

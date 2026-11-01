@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test"
-import type { Tool } from "../../src/paint/tool.ts"
-import { paintToolsTestIds } from "../../src/ui/map/PaintToolsTestIds.ts"
-import { byTestIdWith, isUsable } from "./support.ts"
+import type { Tool } from "../../../src/paint/tool.ts"
+import { paintToolsTestIds } from "../../../src/ui/map/PaintToolsTestIds.ts"
+import { byTestIdWith, isUsable } from "../support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** The brush bar along the bottom of the map. */

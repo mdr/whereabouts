@@ -1,6 +1,6 @@
 import { inGameTestIds } from "../../src/screens/InGameTestIds.ts"
-import { Hud } from "./Hud.ts"
-import { PlayersPanel } from "./PlayersPanel.ts"
+import { Hud } from "./components/Hud.ts"
+import { PlayersPanel } from "./components/PlayersPanel.ts"
 import { RevealPage } from "./RevealPage.ts"
 import { RoundPage } from "./RoundPage.ts"
 import { Screen } from "./Screen.ts"

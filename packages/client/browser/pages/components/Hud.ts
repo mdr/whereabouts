@@ -1,10 +1,10 @@
-import { countdownTestIds, hudHeaderTestIds, soundToggleTestIds } from "../../src/ui/map/HudTestIds.ts"
-import { questionCardTestIds } from "../../src/ui/round/QuestionCardTestIds.ts"
-import { hostControlsTestIds } from "../../src/ui/players/HostControlsTestIds.ts"
+import { countdownTestIds, hudHeaderTestIds, soundToggleTestIds } from "../../../src/ui/map/HudTestIds.ts"
+import { questionCardTestIds } from "../../../src/ui/round/QuestionCardTestIds.ts"
+import { hostControlsTestIds } from "../../../src/ui/players/HostControlsTestIds.ts"
 import { ConfirmDialog } from "./ConfirmDialog.ts"
-import { ResultsPage } from "./ResultsPage.ts"
-import { isUsable, text } from "./support.ts"
-import type { Tab } from "./Tab.ts"
+import { ResultsPage } from "../ResultsPage.ts"
+import { isUsable, text } from "../support.ts"
+import type { Tab } from "../Tab.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** What sits over the map on every game screen: the header strip, the question, the host's End game. */

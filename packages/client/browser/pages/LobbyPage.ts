@@ -2,7 +2,7 @@ import { QUESTION_TYPES, type QuestionType } from "@whereabouts/shared/questions
 import { lobbyTestIds, setupSummaryTestIds } from "../../src/screens/lobby/LobbyTestIds.ts"
 import { mixEditorTestIds } from "../../src/ui/setup/MixEditorTestIds.ts"
 import { pillsTestIds, stepperTestIds } from "../../src/ui/setup/ControlsTestIds.ts"
-import { PlayerList } from "./PlayerList.ts"
+import { PlayerList } from "./components/PlayerList.ts"
 import { RoundPage } from "./RoundPage.ts"
 import { Screen } from "./Screen.ts"
 import { byTestIdWith, text, until } from "./support.ts"

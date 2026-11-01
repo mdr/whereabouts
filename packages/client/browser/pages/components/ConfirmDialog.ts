@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test"
-import { confirmDialogTestIds } from "../../src/ui/ConfirmDialogTestIds.ts"
-import { text } from "./support.ts"
+import { confirmDialogTestIds } from "../../../src/ui/ConfirmDialogTestIds.ts"
+import { text } from "../support.ts"
 
 /** The "are you sure?" dialog. Confirming leads to `T`: the screen the action takes you to. */
 export class ConfirmDialog<T> {

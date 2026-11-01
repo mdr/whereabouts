@@ -1,11 +1,11 @@
 // Helpers for the specs run in an emulated headset (see pages/Headset.ts).
 import type { Browser } from "@playwright/test"
-import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
-import { Headset } from "../pages/Headset.ts"
-import type { Screen } from "../pages/Screen.ts"
-import { until } from "../pages/support.ts"
-import type { Tab } from "../pages/Tab.ts"
-import { newTab } from "./support.ts"
+import { vrButtonTestIds } from "../../../src/ui/VrButtonTestIds.ts"
+import { Headset } from "../../pages/Headset.ts"
+import type { Screen } from "../../pages/Screen.ts"
+import { until } from "../../pages/support.ts"
+import type { Tab } from "../../pages/Tab.ts"
+import { newTab } from "../support.ts"
 
 type Vec = [number, number, number]
 

@@ -1,6 +1,6 @@
 import { soloTestIds } from "../../src/screens/solo/SoloTestIds.ts"
 import { factTestIds, questionCardTestIds } from "../../src/ui/round/QuestionCardTestIds.ts"
-import { MapPanel } from "./MapPanel.ts"
+import { MapPanel } from "./components/MapPanel.ts"
 import { Screen } from "./Screen.ts"
 import { text } from "./support.ts"
 import type { Tab } from "./Tab.ts"

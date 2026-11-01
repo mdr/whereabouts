@@ -4,9 +4,9 @@
 // reveal's score table, Ready and Next, and the final standings, awards and
 // rounds. Saves screenshots.
 import { test } from "@playwright/test"
-import { VrViewType } from "../../src/vr/view/view.ts"
-import { until } from "../pages/support.ts"
-import { check, shot } from "./support.ts"
+import { VrViewType } from "../../../src/vr/view/view.ts"
+import { until } from "../../pages/support.ts"
+import { check, shot } from "../support.ts"
 import { vrHostGuessing, vrHostInLobby, vrHostReveal } from "./vr-game-states.ts"
 import { closeAllTabs, pressMenu, spray } from "./vr-support.ts"
 
