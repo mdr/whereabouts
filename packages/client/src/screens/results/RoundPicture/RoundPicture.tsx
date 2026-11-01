@@ -1,4 +1,4 @@
-import type { PlayedRound } from "@whereabouts/shared/protocol/views"
+import { PictureType, type PlayedRound, type ShapePicture } from "@whereabouts/shared/protocol/views"
 import type { QuestionType } from "@whereabouts/shared/questions"
 import { useMemo } from "preact/hooks"
 import { useOutline } from "../../../data/outlines"
@@ -12,20 +12,26 @@ import styles from "./RoundPicture.module.css"
 
 /** A shape round shows the shape painted; the rest, the question's photo or flag, else the reveal's photo. */
 export const RoundPicture = ({ round }: { round: PlayedRound }) => {
-  if (round.area) return <RoundShape area={round.area} type={round.type} />
-  if (round.image) return <SmallPhoto image={round.image} />
-  if (round.flag) return <SmallFlagButton code={round.flag} />
-  if (round.revealPhoto) return <SmallPhoto image={round.revealPhoto} />
-  return (
-    <SmallPictureBox>
-      <Icon name="pin" size={18} />
-    </SmallPictureBox>
-  )
+  const { picture } = round
+  switch (picture.type) {
+    case PictureType.SHAPE:
+      return <RoundShape shape={picture} type={round.type} />
+    case PictureType.PHOTO:
+      return <SmallPhoto image={picture.photo} />
+    case PictureType.FLAG:
+      return <SmallFlagButton code={picture.flag} />
+    case PictureType.NONE:
+      return (
+        <SmallPictureBox>
+          <Icon name="pin" size={18} />
+        </SmallPictureBox>
+      )
+  }
 }
 
-const RoundShape = ({ area, type }: { area: NonNullable<PlayedRound["area"]>; type: QuestionType }) => {
-  const outline = useOutline(area.outline)
-  const path = useMemo(() => (outline ? outlinePath(outline, area.centre, 56, 42) : ""), [outline])
+const RoundShape = ({ shape, type }: { shape: ShapePicture; type: QuestionType }) => {
+  const outline = useOutline(shape.outline)
+  const path = useMemo(() => (outline ? outlinePath(outline, shape.centre, 56, 42) : ""), [outline])
   return (
     <SmallPictureBox class={styles.shape} style={typeColour(type)}>
       {path && (

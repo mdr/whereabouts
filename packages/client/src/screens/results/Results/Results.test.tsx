@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
 import { commonsFile, flagCode, outlineId, playerId, playerName } from "@whereabouts/shared/ids"
 import { playerColour } from "@whereabouts/shared/colours"
-import { type ResultsGameView } from "@whereabouts/shared/protocol/views"
+import { PictureType, type ResultsGameView } from "@whereabouts/shared/protocol/views"
 import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 import { signal } from "@preact/signals"
 import { type Connection, type ConnectionState, type PlainState, ConnectionStatus } from "../../../net/net"
@@ -54,8 +54,12 @@ const view = (isHost: boolean): ResultsGameView => {
       { playerId: playerId("p2"), total: 1250, rounds: [{ score: 500 }, { score: 750 }] }
     ],
     playedRounds: [
-      { label: "Taj Mahal, Agra", type: QuestionType.LANDMARK, image: commonsFile("Taj Mahal.jpeg") },
-      { label: "Perth, Australia", type: QuestionType.PLACE }
+      {
+        type: QuestionType.LANDMARK,
+        label: "Taj Mahal, Agra",
+        picture: { type: PictureType.PHOTO, photo: commonsFile("Taj Mahal.jpeg") }
+      },
+      { type: QuestionType.PLACE, label: "Perth, Australia", picture: { type: PictureType.NONE } }
     ],
     awards: [{ emoji: "🐔", title: "Chicken", playerIds: [playerId("p2")], line: "{0} passed 2 times. Brave." }]
   })
@@ -106,18 +110,22 @@ describe("Results", () => {
     const conn = makeConn()
     const gameView = view(false)
     gameView.playedRounds = [
-      { label: "Turkey", type: QuestionType.FLAG, flag: flagCode("tr") },
+      { type: QuestionType.FLAG, label: "Turkey", picture: { type: PictureType.FLAG, flag: flagCode("tr") } },
       {
-        label: "Bangladesh",
         type: QuestionType.COUNTRY,
-        area: { outline: outlineId("bangladesh-region"), centre: { lat: 23.8, lon: 90.3 } },
-        flag: flagCode("bd")
+        label: "Bangladesh",
+        picture: {
+          type: PictureType.SHAPE,
+          outline: outlineId("bangladesh-region"),
+          centre: { lat: 23.8, lon: 90.3 }
+        },
+        countryFlag: flagCode("bd")
       },
       {
-        label: "Black Sea",
         type: QuestionType.FEATURE,
+        label: "Black Sea",
         feature: FeatureType.SEA,
-        area: { outline: outlineId("sea-black-sea"), centre: { lat: 43.4, lon: 34.3 } }
+        picture: { type: PictureType.SHAPE, outline: outlineId("sea-black-sea"), centre: { lat: 43.4, lon: 34.3 } }
       }
     ]
     const { container } = render(<Results conn={conn} view={gameView} />)

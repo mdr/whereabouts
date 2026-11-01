@@ -4,7 +4,8 @@ import { signal } from "@preact/signals"
 import { commonsImageUrl } from "@whereabouts/shared/questions"
 import { commonsFile, flagCode } from "@whereabouts/shared/ids"
 import { MAX_ROUNDS } from "@whereabouts/shared/protocol/config"
-import { heldPictures, preloadPictures } from "./preload"
+import { PictureType } from "@whereabouts/shared/protocol/views"
+import { heldPictures, preloadPicture } from "./preload"
 import { loadedVr } from "../vr/vr-support"
 import type { Vr } from "../vr/index"
 
@@ -13,11 +14,11 @@ vi.mock("../vr/picture/vr-picture", () => ({ vrPhotoUrl: (file: string) => Promi
 
 const settle = () => new Promise((resolve) => setTimeout(resolve))
 
-describe("preloadPictures", () => {
+describe("preloadPicture", () => {
   it("holds a whole game's photos and no more, those asked for again counting as new", () => {
     const photo = (index: number) => commonsFile(`${index}.jpg`)
-    for (let i = 0; i < 40; i++) preloadPictures({ image: photo(i) })
-    preloadPictures({ image: photo(20) })
+    for (let i = 0; i < 40; i++) preloadPicture({ type: PictureType.PHOTO, photo: photo(i) })
+    preloadPicture({ type: PictureType.PHOTO, photo: photo(20) })
     const { page } = heldPictures()
     expect(page).toHaveLength(2 * MAX_ROUNDS)
     expect(page.at(-1)).toBe(commonsImageUrl(photo(20)))
@@ -25,11 +26,13 @@ describe("preloadPictures", () => {
   })
 
   it("loads the headset's renditions too, only while in VR", async () => {
-    preloadPictures({ image: commonsFile("a.jpg"), flag: flagCode("fr") })
+    preloadPicture({ type: PictureType.FLAG, flag: flagCode("fr") })
+    preloadPicture({ type: PictureType.PHOTO, photo: commonsFile("a.jpg") })
     await settle()
     expect(heldPictures().headset).toEqual([])
     loadedVr.value = { active: signal(true) } as unknown as Vr
-    preloadPictures({ image: commonsFile("b.jpg"), flag: flagCode("de") })
+    preloadPicture({ type: PictureType.FLAG, flag: flagCode("de") })
+    preloadPicture({ type: PictureType.PHOTO, photo: commonsFile("b.jpg") })
     await settle()
     expect(heldPictures().headset).toEqual(["/flags/de.svg", "https://thumb/b.jpg"])
     loadedVr.value = undefined

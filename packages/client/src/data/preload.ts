@@ -1,10 +1,10 @@
 /**
- * Loads a question's pictures before its round starts, so the photo or flag
- * (and the reveal's photo) is already in the page's image cache when it is shown.
+ * Loads a question's picture before its round starts, so it is already in
+ * the page's image cache when shown.
  */
 import { commonsImageUrl } from "@whereabouts/shared/questions"
 import { MAX_ROUNDS } from "@whereabouts/shared/protocol/config"
-import { type QuestionPictures } from "@whereabouts/shared/protocol/views"
+import { PictureType, type Picture } from "@whereabouts/shared/protocol/views"
 import { flagUrl } from "../flags/flags"
 import { vrPhotoUrl } from "../vr/picture/vr-picture"
 import { loadedVr } from "../vr/vr-support"
@@ -32,23 +32,24 @@ const load = (url: string, viewer: keyof typeof held): void => {
   if (pictures.size > KEEP[viewer]) pictures.delete(pictures.keys().next().value!)
 }
 
-export const preloadPictures = ({ image, flag, revealPhoto }: QuestionPictures): void => {
-  if (image) load(commonsImageUrl(image), "page")
-  if (revealPhoto) load(commonsImageUrl(revealPhoto), "page")
+export const preloadPicture = (picture: Picture): void => {
   const vr = loadedVr.value?.active.value ?? false
-  if (flag)
-    void flagUrl(flag).then((url) => {
-      if (!url) return
-      load(url, "page")
-      if (vr) load(url, "headset")
-    })
-  if (!vr) return
-  for (const photo of [image, revealPhoto]) {
-    if (photo)
-      vrPhotoUrl(photo).then(
-        (url) => url && load(url, "headset"),
-        () => undefined
-      )
+  switch (picture.type) {
+    case PictureType.PHOTO:
+      load(commonsImageUrl(picture.photo), "page")
+      if (vr)
+        vrPhotoUrl(picture.photo).then(
+          (url) => url && load(url, "headset"),
+          () => undefined
+        )
+      return
+    case PictureType.FLAG:
+      void flagUrl(picture.flag).then((url) => {
+        if (!url) return
+        load(url, "page")
+        if (vr) load(url, "headset")
+      })
+      return
   }
 }
 

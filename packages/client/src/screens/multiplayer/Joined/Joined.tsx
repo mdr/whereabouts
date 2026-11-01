@@ -1,10 +1,10 @@
 import { useEffect } from "preact/hooks"
 import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
-import { Phase, type GameView } from "@whereabouts/shared/protocol/views"
+import { Phase, PictureType, type GameView, type Picture } from "@whereabouts/shared/protocol/views"
 import { ConnectionStatus, type Connection } from "../../../net/net"
 import { RejectionAction } from "../../../net/rejection"
 import { joinedCode, resetPlayerToken } from "../../../settings/settings"
-import { preloadPictures } from "../../../data/preload"
+import { preloadPicture } from "../../../data/preload"
 import { navigate } from "../../../router"
 import { MapView } from "../../../ui/map/MapView/MapView"
 import { Lobby } from "../../lobby/Lobby/Lobby"
@@ -18,6 +18,9 @@ import { VrViewType, type VrAction } from "../../../vr/view/view"
 import { joinedTestIds } from "./JoinedTestIds"
 import kit from "../../../ui/kit.module.css"
 import styles from "./Joined.module.css"
+
+const pictureSource = (picture: Picture | undefined): string | undefined =>
+  picture && (picture.type === PictureType.PHOTO ? picture.photo : picture.flag)
 
 const upcomingOf = (view: GameView | undefined) => (view && view.phase !== Phase.RESULTS ? view.upcoming : undefined)
 
@@ -49,8 +52,8 @@ export const Joined = ({ conn, entry }: { conn: Connection; entry: GameEntry }) 
   useVrHold()
   const upcoming = upcomingOf(view)
   useEffect(() => {
-    if (upcoming) preloadPictures(upcoming)
-  }, [upcoming?.image, upcoming?.flag, upcoming?.revealPhoto])
+    if (upcoming) preloadPicture(upcoming)
+  }, [pictureSource(upcoming)])
 
   if (state.type === ConnectionStatus.REJECTED) {
     const why = state.rejection

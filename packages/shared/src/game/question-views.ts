@@ -8,7 +8,9 @@ import {
   type GuessingGameView,
   type PlayedRound,
   type PointAnswerView,
-  type QuestionPictures,
+  type Picture,
+  PictureType,
+  type ShapePicture,
   type QuestionView,
   type RoundResultView,
   type RoundReveal
@@ -85,21 +87,19 @@ export const roundHintBand = (question: Question, seed: number, roundIndex: numb
   return hintBand(answerCentre(question.answer), question.answer.tolerance, axis, unit)
 }
 
-/** A question's photo and flag, including the flag shown beside a country's name, and the photo for its reveal. */
-export const questionPictures = (question: Question): QuestionPictures => {
+/** A question's one picture, if it has one (each type has at most one): its photo, its flag, or its reveal's photo. */
+export const questionPicture = (question: Question): Picture | undefined => {
+  if (question.clue.type === ClueType.PHOTO) return { type: PictureType.PHOTO, photo: question.clue.image }
   const flag = flagShown(question)
+  if (flag) return { type: PictureType.FLAG, flag }
   const photo = revealPhoto(question)
-  return {
-    ...(question.clue.type === ClueType.PHOTO ? { image: question.clue.image } : {}),
-    ...(flag ? { flag } : {}),
-    ...(photo ? { revealPhoto: photo } : {})
-  }
+  return photo ? { type: PictureType.PHOTO, photo } : undefined
 }
 
-/** The pictures to fetch ahead for a question, if it has any. */
-export const upcomingOf = (question: Question | undefined): { upcoming?: QuestionPictures } => {
-  const pictures = question ? questionPictures(question) : {}
-  return Object.keys(pictures).length > 0 ? { upcoming: pictures } : {}
+/** The picture to fetch ahead for a question, if it has one. */
+export const upcomingOf = (question: Question | undefined): { upcoming?: Picture } => {
+  const picture = question && questionPicture(question)
+  return picture ? { upcoming: picture } : {}
 }
 
 /** A round's answer and everyone's results, for its reveal. */
@@ -122,15 +122,35 @@ export const revealOf = (
   }
 }
 
+const shapePicture = ({ outline, centre }: AreaAnswer): ShapePicture => ({ type: PictureType.SHAPE, outline, centre })
+
+const NO_PICTURE = { type: PictureType.NONE } as const
+
 /** A round as the final results list it. */
 export const playedRound = (question: Question): PlayedRound => {
-  return {
-    label: question.label,
-    type: question.type,
-    ...(question.type === QuestionType.FEATURE ? { feature: question.feature } : {}),
-    ...(question.answer.type === AnswerType.AREA && question.clue.type === ClueType.NAME
-      ? { area: { outline: question.answer.outline, centre: question.answer.centre } }
-      : {}),
-    ...questionPictures(question)
+  const { label } = question
+  switch (question.type) {
+    case QuestionType.COUNTRY:
+      return {
+        type: question.type,
+        label,
+        picture: shapePicture(question.answer),
+        ...(question.countryFlag ? { countryFlag: question.countryFlag } : {})
+      }
+    case QuestionType.FEATURE:
+      return { type: question.type, label, feature: question.feature, picture: shapePicture(question.answer) }
+    case QuestionType.STATE:
+      return {
+        type: question.type,
+        label,
+        picture:
+          question.answer.type === AnswerType.AREA
+            ? shapePicture(question.answer)
+            : (questionPicture(question) ?? NO_PICTURE)
+      }
+    case QuestionType.LANDMARK:
+    case QuestionType.PLACE:
+    case QuestionType.FLAG:
+      return { type: question.type, label, picture: questionPicture(question) ?? NO_PICTURE }
   }
 }

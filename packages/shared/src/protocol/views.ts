@@ -162,22 +162,64 @@ export interface RevealView {
   ready: PlayerId[]
 }
 
-/** The pictures a question shows, so a client can load the next round's before it starts. */
-export interface QuestionPictures {
-  image?: CommonsFile
-  flag?: FlagCode
-  /** Shown at the reveal (see photos.ts). */
-  revealPhoto?: CommonsFile
+export enum PictureType {
+  PHOTO = "PHOTO",
+  FLAG = "FLAG",
+  SHAPE = "SHAPE",
+  NONE = "NONE"
+}
+
+interface PhotoPicture {
+  type: PictureType.PHOTO
+  photo: CommonsFile
+}
+
+interface FlagPicture {
+  type: PictureType.FLAG
+  flag: FlagCode
+}
+
+/** A question's one picture: its photo, its flag, or the photo its reveal shows. */
+export type Picture = PhotoPicture | FlagPicture
+
+/** The shape a round asked to paint, for the results' thumbnail. */
+export interface ShapePicture {
+  type: PictureType.SHAPE
+  outline: OutlineId
+  centre: LatLon
+}
+
+interface NoPicture {
+  type: PictureType.NONE
+}
+
+type PlayedRoundPicture = Picture | ShapePicture | NoPicture
+
+/** A country round: its shape, with its flag beside its name where it has one. */
+interface CountryPlayedRound {
+  type: QuestionType.COUNTRY
+  label: string
+  picture: ShapePicture
+  countryFlag?: FlagCode
+}
+
+/** An island, lake or sea: its shape. */
+interface FeaturePlayedRound {
+  type: QuestionType.FEATURE
+  label: string
+  feature: FeatureType
+  picture: ShapePicture
+}
+
+/** Any other round: a state's shape where it was painted whole, else the round's photo or flag, if any. */
+interface OtherPlayedRound {
+  type: Exclude<QuestionType, QuestionType.COUNTRY | QuestionType.FEATURE>
+  label: string
+  picture: PlayedRoundPicture
 }
 
 /** A round of a finished game, for the final results: what it asked about. */
-export interface PlayedRound extends QuestionPictures {
-  label: string
-  type: QuestionType
-  feature?: FeatureType
-  /** The area painted, where the round asked for a shape by name. */
-  area?: { outline: OutlineId; centre: LatLon }
-}
+export type PlayedRound = CountryPlayedRound | FeaturePlayedRound | OtherPlayedRound
 
 export interface FinalStanding {
   playerId: PlayerId
@@ -223,23 +265,23 @@ interface GameViewBase {
 export interface LobbyGameView extends GameViewBase {
   phase: Phase.LOBBY
   you: YouView
-  /** Round 1's pictures, so they are loaded before it starts. */
-  upcoming?: QuestionPictures
+  /** Round 1's picture, so it is loaded before it starts. */
+  upcoming?: Picture
 }
 
 export interface GuessingGameView extends GameViewBase {
   phase: Phase.GUESSING
   you: GuessingYouView
   round: RoundView
-  /** The next round's pictures, absent on the last round. */
-  upcoming?: QuestionPictures
+  /** The next round's picture, absent on the last round or where it has none. */
+  upcoming?: Picture
 }
 
 export interface RevealGameView extends GameViewBase {
   phase: Phase.REVEAL
   you: RoundYouView
   reveal: RevealView
-  upcoming?: QuestionPictures
+  upcoming?: Picture
 }
 
 export interface ResultsGameView extends GameViewBase {

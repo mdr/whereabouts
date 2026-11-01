@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "preact/hooks"
 import { useSignal } from "@preact/signals"
 import { buildDistribution, kernelById } from "@whereabouts/shared/scoring/scoring"
 import { hintBand, type HintAxis, type HintBand } from "@whereabouts/shared/hints"
-import { questionPictures, questionView } from "@whereabouts/shared/game/question-views"
+import { questionPicture, questionView } from "@whereabouts/shared/game/question-views"
 import { scoreAnswer, scoredAnswer } from "@whereabouts/shared/scoring/regions"
 import { QuestionType, answerCentre, type Outlines, type Question } from "@whereabouts/shared/questions"
 import type { LatLon } from "@whereabouts/shared/geo"
@@ -25,7 +25,7 @@ import { devMode } from "../../ui/dev/dev"
 import { Icon } from "../../ui/icons"
 import { useBorders } from "../../data/borders"
 import { useFact } from "../../data/facts"
-import { preloadPictures } from "../../data/preload"
+import { preloadPicture } from "../../data/preload"
 import { HintCard } from "../../ui/round/Hint/Hint"
 import { AllFlags } from "../../ui/round/flag-reveal/AllFlags/AllFlags"
 import { AllFlagsSwitch } from "../../ui/round/flag-reveal/AllFlagsSwitch/AllFlagsSwitch"
@@ -91,7 +91,8 @@ export const SoloGame = ({ pool, outlines }: { pool: Question[]; outlines: Outli
 
   useEffect(() => {
     const next = questions[index + 1]
-    if (next) preloadPictures(questionPictures(next))
+    const picture = next && questionPicture(next)
+    if (picture) preloadPicture(picture)
   }, [questions, index])
 
   useEffect(() => {

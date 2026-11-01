@@ -10,7 +10,7 @@ import { CATALOGUE, outlinesFrom } from "../../catalogue/catalogue.ts"
 import { REVEAL_PHOTOS } from "../../catalogue/photos.ts"
 import { regionCells, scoredAnswer, type Area } from "../../scoring/regions.ts"
 import { type GameConfig, mixOf, MapDetail } from "../../protocol/config.ts"
-import { type QuestionView, Phase, RoundGuessType } from "../../protocol/views.ts"
+import { type Picture, type QuestionView, Phase, PictureType, RoundGuessType } from "../../protocol/views.ts"
 import outlinesJson from "../../../outlines.json" with { type: "json" }
 import { playerName } from "../../ids.ts"
 import { GameViewSchema } from "../../protocol/view-schema.ts"
@@ -116,6 +116,7 @@ describe("the question mix", () => {
 })
 
 describe("upcoming pictures", () => {
+  const photoOf = (picture: Picture | undefined) => (picture?.type === PictureType.PHOTO ? picture.photo : undefined)
   const photos = [landmark("one", "One.jpg"), landmark("two", "Two.jpg"), landmark("three", "Three.jpg")]
   const mix = mixOf({ [QuestionType.LANDMARK]: 2 })
   const imageOf = (game: Game, at: number) => {
@@ -126,15 +127,15 @@ describe("upcoming pictures", () => {
   it("sends round 1's photo in the lobby, the next round's while one is played, and nothing after the last", () => {
     const game = makeGame({ bank: { catalogue: photos }, config: { mix, roundLength: 60_000 } })
     game.join(tokA, playerName("Alice"), T0)
-    const first = viewIn(viewOf(game, tokA, T0), Phase.LOBBY).upcoming?.image
+    const first = photoOf(viewIn(viewOf(game, tokA, T0), Phase.LOBBY).upcoming)
     expect(first).toBeDefined()
     game.start(tokA, T0)
     expect(imageOf(game, T0)).toBe(first)
-    const second = viewIn(viewOf(game, tokA, T0), Phase.GUESSING).upcoming?.image
+    const second = photoOf(viewIn(viewOf(game, tokA, T0), Phase.GUESSING).upcoming)
     expect(second).toBeDefined()
     expect(second).not.toBe(first)
     game.tick(T0 + 60_000 + ROUND_GRACE)
-    expect(viewIn(viewOf(game, tokA, T0 + 61_000), Phase.REVEAL).upcoming?.image).toBe(second)
+    expect(photoOf(viewIn(viewOf(game, tokA, T0 + 61_000), Phase.REVEAL).upcoming)).toBe(second)
     game.next(tokA, T0 + 62_000)
     expect(imageOf(game, T0 + 62_000)).toBe(second)
     expect(viewIn(viewOf(game, tokA, T0 + 62_000), Phase.GUESSING).upcoming).toBeUndefined()
@@ -147,23 +148,25 @@ describe("upcoming pictures", () => {
       config: { mix: mixOf({ [QuestionType.PLACE]: 1 }), roundLength: 60_000 }
     })
     game.join(tokA, playerName("Alice"), T0)
-    const photo = viewIn(viewOf(game, tokA, T0), Phase.LOBBY).upcoming?.revealPhoto
-    expect(photo).toBeDefined()
-    expect(photo).toBe(REVEAL_PHOTOS[paris.place])
+    const photo = REVEAL_PHOTOS[paris.place]
+    expect(viewIn(viewOf(game, tokA, T0), Phase.LOBBY).upcoming).toEqual({ type: PictureType.PHOTO, photo })
     game.start(tokA, T0)
     expect(imageOf(game, T0)).toBeUndefined()
     game.tick(T0 + 60_000 + ROUND_GRACE)
     const view = viewIn(viewOf(game, tokA, T0 + 61_000), Phase.REVEAL)
     expect(view.reveal.photo).toBe(photo)
     game.next(tokA, T0 + 62_000)
-    expect(viewIn(viewOf(game, tokA, T0 + 62_000), Phase.RESULTS).playedRounds[0]?.revealPhoto).toBe(photo)
+    expect(viewIn(viewOf(game, tokA, T0 + 62_000), Phase.RESULTS).playedRounds[0]?.picture).toEqual({
+      type: PictureType.PHOTO,
+      photo
+    })
   })
 
   it("picks the rounds again when the host changes the setup, so round 1's photo is still the one asked", () => {
     const game = makeGame({ bank: { catalogue: photos }, config: { mix, roundLength: 60_000 } })
     game.join(tokA, playerName("Alice"), T0)
     game.configure(tokA, { mix: mixOf({ [QuestionType.LANDMARK]: 3 }) })
-    const first = viewIn(viewOf(game, tokA, T0), Phase.LOBBY).upcoming?.image
+    const first = photoOf(viewIn(viewOf(game, tokA, T0), Phase.LOBBY).upcoming)
     game.start(tokA, T0)
     expect(imageOf(game, T0)).toBe(first)
   })

@@ -22,7 +22,7 @@ import { Role, YouRoleType } from "../roles.ts"
 import { KernelIdSchema } from "../scoring/scoring.ts"
 import { H3CellSchema, H3ResolutionSchema } from "../h3.ts"
 import { MapDetailSchema, MixSchema } from "./config.ts"
-import { Phase, RoundGuessType } from "./views.ts"
+import { Phase, PictureType, RoundGuessType } from "./views.ts"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "../questions.ts"
 import { DegreesSchema, InstantSchema, KmSchema, MsSchema, PointsSchema } from "../units.ts"
 
@@ -61,11 +61,20 @@ const QuestionViewSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal(QuestionType.STATE), clue: NameClueViewSchema, answer: AnswerViewSchema })
 ])
 
-const QuestionPicturesSchema = z.strictObject({
-  image: CommonsFileSchema.optional(),
-  flag: FlagCodeSchema.optional(),
-  revealPhoto: CommonsFileSchema.optional()
+const PhotoPictureSchema = z.strictObject({ type: z.literal(PictureType.PHOTO), photo: CommonsFileSchema })
+const FlagPictureSchema = z.strictObject({ type: z.literal(PictureType.FLAG), flag: FlagCodeSchema })
+const PictureSchema = z.discriminatedUnion("type", [PhotoPictureSchema, FlagPictureSchema])
+const ShapePictureSchema = z.strictObject({
+  type: z.literal(PictureType.SHAPE),
+  outline: OutlineIdSchema,
+  centre: LatLonSchema
 })
+const PlayedRoundPictureSchema = z.discriminatedUnion("type", [
+  PhotoPictureSchema,
+  FlagPictureSchema,
+  ShapePictureSchema,
+  z.strictObject({ type: z.literal(PictureType.NONE) })
+])
 
 const SeatViewShape = {
   id: PlayerIdSchema,
@@ -170,13 +179,25 @@ const FinalStandingSchema = z.strictObject({
   total: PointsSchema,
   rounds: z.array(z.strictObject({ score: PointsSchema.optional() }))
 })
-const PlayedRoundSchema = z.strictObject({
-  label: z.string(),
-  type: z.enum(QuestionType),
-  feature: z.enum(FeatureType).optional(),
-  area: z.strictObject({ outline: OutlineIdSchema, centre: LatLonSchema }).optional(),
-  ...QuestionPicturesSchema.shape
-})
+const PlayedRoundSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    type: z.literal(QuestionType.COUNTRY),
+    label: z.string(),
+    picture: ShapePictureSchema,
+    countryFlag: FlagCodeSchema.optional()
+  }),
+  z.strictObject({
+    type: z.literal(QuestionType.FEATURE),
+    label: z.string(),
+    feature: z.enum(FeatureType),
+    picture: ShapePictureSchema
+  }),
+  z.strictObject({
+    type: z.enum([QuestionType.LANDMARK, QuestionType.PLACE, QuestionType.FLAG, QuestionType.STATE]),
+    label: z.string(),
+    picture: PlayedRoundPictureSchema
+  })
+])
 const AwardSchema = z.strictObject({
   emoji: z.string(),
   title: z.string(),
@@ -188,21 +209,21 @@ const LobbyGameViewSchema = z.strictObject({
   ...ViewShape,
   phase: z.literal(Phase.LOBBY),
   you: z.strictObject(SeatedYouShape),
-  upcoming: QuestionPicturesSchema.optional()
+  upcoming: PictureSchema.optional()
 })
 const GuessingGameViewSchema = z.strictObject({
   ...ViewShape,
   phase: z.literal(Phase.GUESSING),
   you: z.strictObject({ ...RoundYouShape, paint: PaintSchema.optional() }),
   round: RoundViewSchema,
-  upcoming: QuestionPicturesSchema.optional()
+  upcoming: PictureSchema.optional()
 })
 const RevealGameViewSchema = z.strictObject({
   ...ViewShape,
   phase: z.literal(Phase.REVEAL),
   you: z.strictObject(RoundYouShape),
   reveal: RevealViewSchema,
-  upcoming: QuestionPicturesSchema.optional()
+  upcoming: PictureSchema.optional()
 })
 const ResultsGameViewSchema = z.strictObject({
   ...ViewShape,
