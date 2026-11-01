@@ -5,6 +5,7 @@ import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { AnswerType, ClueType, FeatureType, QuestionType, Surface, type Outline } from "@whereabouts/shared/questions"
 import type { PaintController } from "../../paint/paint-controller"
 import { areaAnswerView, makeFlagQuestion, makeQuestionView } from "../../test-view"
+import { RevealedShapeType } from "../../round/revealed-shape"
 import type { RevealedAnswer } from "../../round/round"
 import { answerModeText, vrReveal, vrRound, vrScoreLine, type VrRoundShown, type VrScore } from "./vr-round"
 import { VrPictureType } from "../picture/vr-picture"
@@ -69,7 +70,12 @@ describe("answerModeText", () => {
 })
 
 const place = makeQuestionView()
-const answer: RevealedAnswer = { label: "Kyoto", answer: { lat: 35, lon: 135.8 }, photo: commonsFile("Kyoto.jpg") }
+const answer: RevealedAnswer = {
+  label: "Kyoto",
+  answer: { lat: 35, lon: 135.8 },
+  shape: { type: RevealedShapeType.POINT },
+  photo: commonsFile("Kyoto.jpg")
+}
 
 function shown(over: Partial<VrRoundShown> = {}): VrRoundShown {
   return { question: place, revealed: undefined, fact: undefined, ...over }
@@ -130,7 +136,11 @@ describe("vrReveal", () => {
         ]
       ]
     ]
-    expect(vrReveal(shown(), { ...answer, outline }, score(), undefined, own).answer).toEqual({
+    const area = (outline: Outline | undefined): RevealedAnswer => ({
+      ...answer,
+      shape: { type: RevealedShapeType.AREA, outline }
+    })
+    expect(vrReveal(shown(), area(outline), score(), undefined, own).answer).toEqual({
       type: VrAnswerType.OUTLINE,
       outline
     })
@@ -138,6 +148,11 @@ describe("vrReveal", () => {
       type: VrAnswerType.POINT,
       point: answer.answer
     })
+  })
+
+  it("shows no answer for an area until its outline loads, rather than a pin at its centre", () => {
+    const loading: RevealedAnswer = { ...answer, shape: { type: RevealedShapeType.AREA, outline: undefined } }
+    expect(vrReveal(shown(), loading, score(), undefined, own).answer).toBeUndefined()
   })
 
   it("offers every country's flag on a flag round only", () => {

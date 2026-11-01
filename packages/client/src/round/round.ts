@@ -7,14 +7,15 @@ import { useEffect } from "preact/hooks"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
-import { outlineOf, type MapDetail, type QuestionView } from "@whereabouts/shared/protocol"
-import { QuestionType, type Outline } from "@whereabouts/shared/questions"
+import type { MapDetail, QuestionView } from "@whereabouts/shared/protocol"
+import { QuestionType } from "@whereabouts/shared/questions"
 import type { GameMap } from "../map/map"
 import { RevealDetail, showsBorders } from "../map/shown-detail"
 import type { PaintController } from "../paint/paint-controller"
 import { useFillTool } from "../paint/fill"
 import { startOnPan } from "../settings/settings"
 import { Tool } from "../paint/tool"
+import { RevealedShapeType, type RevealedShape } from "./revealed-shape"
 import { sound } from "../sound/sound"
 
 /** The answer as the reveal shows it. */
@@ -22,8 +23,7 @@ export interface RevealedAnswer {
   label: string
   wiki?: WikiTitle
   answer: LatLon
-  /** A country's (or island's, lake's…) outline; undefined for a place, or until the outlines load. */
-  outline?: Outline
+  shape: RevealedShape
   /** The answer's photo, on a round that showed none while guessing. */
   photo?: CommonsFile
 }
@@ -102,12 +102,10 @@ export function announcePass(paint: Pick<PaintController, "layer">): boolean {
 
 export function showAnswer(
   gameMap: Pick<GameMap, "showReveal" | "showRegionReveal" | "clearReveal">,
-  question: QuestionView,
-  a: RevealedAnswer
+  { answer, shape }: RevealedAnswer
 ): void {
-  if (a.outline) gameMap.showRegionReveal(a.outline)
-  else if (outlineOf(question.answer) === undefined) gameMap.showReveal(a.answer)
-  // An outline still loading.
+  if (shape.type === RevealedShapeType.POINT) gameMap.showReveal(answer)
+  else if (shape.outline) gameMap.showRegionReveal(shape.outline)
   else gameMap.clearReveal()
 }
 
@@ -118,6 +116,7 @@ export function frameReveal(
   a: RevealedAnswer,
   paint: GeoJSON.FeatureCollection
 ): void {
-  if (a.outline) gameMap.fitRegionAndPaint(a.answer, a.outline, paint, question.answer.tolerance)
+  if (a.shape.type === RevealedShapeType.AREA && a.shape.outline)
+    gameMap.fitRegionAndPaint(a.answer, a.shape.outline, paint, question.answer.tolerance)
   else gameMap.fitAnswerAndPaint(a.answer, paint, question.answer.tolerance)
 }

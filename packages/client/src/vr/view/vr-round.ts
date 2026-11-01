@@ -4,8 +4,9 @@ import { onWater, outlineOf, type QuestionView } from "@whereabouts/shared/proto
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
-import { VrAnswerType, type VrReveal, type VrRound } from "./view"
+import { VrAnswerType, type VrAnswer, type VrReveal, type VrRound } from "./view"
 import { areaNoun, type RevealedAnswer } from "../../round/round"
+import { RevealedShapeType } from "../../round/revealed-shape"
 import { vrPicture } from "../picture/vr-picture"
 import { vrFlagPins } from "../../data/borders"
 import { allFlags } from "../../settings/settings"
@@ -66,6 +67,11 @@ export function vrScoreLine(you: VrScore | undefined, flag: FlagCode | undefined
   return `${you.passed ? "Passed: " : ""}${pts(you.score)} this round, ${pts(you.total)} in all${where}`
 }
 
+function vrAnswer({ shape, answer }: RevealedAnswer): VrAnswer | undefined {
+  if (shape.type === RevealedShapeType.POINT) return { type: VrAnswerType.POINT, point: answer }
+  return shape.outline && { type: VrAnswerType.OUTLINE, outline: shape.outline }
+}
+
 export function vrReveal(
   { question, fact }: VrRoundShown,
   revealed: RevealedAnswer,
@@ -76,9 +82,7 @@ export function vrReveal(
   return {
     ...own,
     label: revealed.label,
-    answer: revealed.outline
-      ? { type: VrAnswerType.OUTLINE, outline: revealed.outline }
-      : { type: VrAnswerType.POINT, point: revealed.answer },
+    answer: vrAnswer(revealed),
     focus: revealed.answer,
     stateRound: question.type === QuestionType.STATE,
     fact: fact?.text,

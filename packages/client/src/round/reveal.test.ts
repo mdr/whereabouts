@@ -4,7 +4,8 @@ import { h3Res } from "@whereabouts/shared/h3"
 import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
 import type { PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
 import { SHOW_EVERYONE, SHOW_NOBODY, revealedFromView, revealOrder, showPlayer, shownResults } from "./reveal"
-import { makePlayer, makeQuestionView } from "../test-view"
+import { areaAnswerView, makePlayer, makeQuestionView } from "../test-view"
+import { RevealedShapeType } from "./revealed-shape"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
 const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
@@ -92,7 +93,17 @@ describe("revealedFromView", () => {
     ready: []
   }
 
-  it("takes the answer from the reveal, with the outline once loaded", () => {
+  it("takes the answer from the reveal, as a point on a place round", () => {
+    expect(revealedFromView(reveal, undefined)).toEqual({
+      label: "Kyoto",
+      wiki: "Kyoto",
+      answer: { lat: 35, lon: 135.8 },
+      shape: { type: RevealedShapeType.POINT },
+      photo: undefined
+    })
+  })
+
+  it("is an area on an area round, with its outline once loaded", () => {
     const outline: Outline = [
       [
         [
@@ -103,13 +114,8 @@ describe("revealedFromView", () => {
         ]
       ]
     ]
-    expect(revealedFromView(reveal, outline)).toEqual({
-      label: "Kyoto",
-      wiki: "Kyoto",
-      answer: { lat: 35, lon: 135.8 },
-      outline,
-      photo: undefined
-    })
-    expect(revealedFromView(reveal, undefined).outline).toBeUndefined()
+    const area = { ...reveal, question: makeQuestionView({ answer: areaAnswerView("peru", 200) }) }
+    expect(revealedFromView(area, outline).shape).toEqual({ type: RevealedShapeType.AREA, outline })
+    expect(revealedFromView(area, undefined).shape).toEqual({ type: RevealedShapeType.AREA, outline: undefined })
   })
 })

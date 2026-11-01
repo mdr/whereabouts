@@ -15,7 +15,7 @@ import { VrAnswerType, VrPaintsType, type VrReveal, type VrRound } from "./view/
 export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: Radians } {
   const answerPoints = [latLonToLocal(reveal.focus)]
   const { answer } = reveal
-  if (answer.type === VrAnswerType.OUTLINE)
+  if (answer?.type === VrAnswerType.OUTLINE)
     for (const polygon of answer.outline)
       for (const [lon, lat] of polygon[0] ?? []) answerPoints.push(latLonToLocal({ lat: lat, lon: lon }))
   const groups = [answerPoints]

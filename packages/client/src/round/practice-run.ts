@@ -9,6 +9,7 @@ import { AnswerType, answerCentre, shuffle, type Outlines, type Question } from 
 import { revealPhoto } from "@whereabouts/shared/catalogue/photos"
 import type { VrTable } from "../vr/scores/scores"
 import type { RevealedAnswer } from "./round"
+import { revealedShape } from "./revealed-shape"
 
 export enum PracticePhase {
   PAINT = "PAINT",
@@ -84,7 +85,7 @@ export function revealedFromQuestion(q: Question, outlines: Outlines): RevealedA
     label: q.label,
     wiki: q.wiki,
     answer: answerCentre(q.answer),
-    outline: q.answer.type === AnswerType.AREA ? outlines.get(q.answer.outline) : undefined,
+    shape: revealedShape(q.answer, q.answer.type === AnswerType.AREA ? outlines.get(q.answer.outline) : undefined),
     photo: revealPhoto(q)
   }
 }

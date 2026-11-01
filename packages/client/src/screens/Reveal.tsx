@@ -94,7 +94,7 @@ export function Reveal({
 
   useEffect(() => {
     paint.enabled.value = false
-    showAnswer(paint.gameMap, reveal.question, answer)
+    showAnswer(paint.gameMap, answer)
   }, [reveal.index, outline])
 
   // Show everyone's paint in their colours (best score drawn on top), or one

@@ -98,7 +98,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
   // Cheat: show the answer while painting.
   useEffect(() => {
     if (phase !== PracticePhase.PAINT) return
-    if (cheating) showAnswer(paint.gameMap, question, answer)
+    if (cheating) showAnswer(paint.gameMap, answer)
     else paint.gameMap.clearReveal()
   }, [cheating, phase, index])
 
@@ -138,7 +138,7 @@ function SoloGame({ pool, outlines }: { pool: Question[]; outlines: Outlines }) 
     const dist = passed ? undefined : buildDistribution(paint.layer.toCells(), paint.floor.value)
     setRun(submitRound(run, dist, scored, kernel))
     paint.enabled.value = false
-    showAnswer(paint.gameMap, question, answer)
+    showAnswer(paint.gameMap, answer)
   }
 
   // Framed after the reveal's cards are in place: on a phone the map frames the answer around them.

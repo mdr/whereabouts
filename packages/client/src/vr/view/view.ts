@@ -101,7 +101,8 @@ type VrPaints = VrOwnPaint | VrPlayersPaint
 /** After a round: its answer and score. */
 export interface VrReveal {
   label: string
-  answer: VrAnswer
+  /** Undefined while an area's outline loads. */
+  answer: VrAnswer | undefined
   /** Where the globe turns to show the answer. */
   focus: LatLon
   /** The map then shows state lines and names, as the page's does. */

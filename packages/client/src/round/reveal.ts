@@ -7,13 +7,14 @@ import type { PlayerId } from "@whereabouts/shared/ids"
 import type { PlayerView, RevealView, RoundResultView } from "@whereabouts/shared/protocol"
 import type { Outline } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"
+import { revealedShape } from "./revealed-shape"
 
 export function revealedFromView(reveal: RevealView, outline: Outline | undefined): RevealedAnswer {
   return {
     label: reveal.label,
     wiki: reveal.wiki,
     answer: reveal.answer,
-    outline,
+    shape: revealedShape(reveal.question.answer, outline),
     photo: reveal.photo
   }
 }

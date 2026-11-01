@@ -4,6 +4,7 @@ import { cellAreaKm2, cellToLatLng, gridDisk, latLngToCell } from "@whereabouts/
 import { resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { scoredAnswer } from "@whereabouts/shared/scoring/regions"
 import { DEFAULT_KERNEL, PASS_SCORE, buildDistribution } from "@whereabouts/shared/scoring/scoring"
+import { RevealedShapeType } from "./revealed-shape"
 import {
   AnswerType,
   ClueType,
@@ -151,13 +152,13 @@ describe("roundsTable", () => {
 })
 
 describe("revealedFromQuestion", () => {
-  it("is a point question's own place, with no outline", () => {
+  it("is a point question's own place", () => {
     const kyoto = makePlace("kyoto")
     expect(revealedFromQuestion(kyoto, new Map())).toMatchObject({
       label: "kyoto",
       wiki: "kyoto",
       answer: { lat: 35, lon: 135.8 },
-      outline: undefined
+      shape: { type: RevealedShapeType.POINT }
     })
   })
 
@@ -189,7 +190,7 @@ describe("revealedFromQuestion", () => {
     }
     expect(revealedFromQuestion(country, new Map([[outlineId("square-region"), outline]]))).toMatchObject({
       answer: { lat: 0.5, lon: 0.5 },
-      outline
+      shape: { type: RevealedShapeType.AREA, outline }
     })
   })
 })
