@@ -12,8 +12,8 @@ import {
   watchHandoff
 } from "../../settings/settings"
 import { navigate } from "../../router"
-import { JoinAs } from "./JoinAs"
-import { Joined } from "./Joined"
+import { JoinAs } from "./JoinAs/JoinAs"
+import { Joined } from "./Joined/Joined"
 
 export function Multiplayer({ code, create }: { code: RoomCode | undefined; create: boolean }) {
   const conn = useMemo(() => new Connection(), [])

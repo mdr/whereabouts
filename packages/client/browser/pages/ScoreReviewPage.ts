@@ -1,5 +1,5 @@
-import { scoreReviewTestIds } from "../../src/screens/score-review/ScoreReviewTestIds.ts"
-import { verdictCardTestIds } from "../../src/screens/score-review/VerdictCardTestIds.ts"
+import { scoreReviewTestIds } from "../../src/screens/score-review/ScoreReview/ScoreReviewTestIds.ts"
+import { verdictCardTestIds } from "../../src/screens/score-review/VerdictCard/VerdictCardTestIds.ts"
 import { MapPanel } from "./components/MapPanel.ts"
 import { Screen } from "./Screen.ts"
 import { text } from "./support.ts"

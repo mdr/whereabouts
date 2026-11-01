@@ -1,4 +1,4 @@
-import { inGameTestIds } from "../../src/screens/InGameTestIds.ts"
+import { inGameTestIds } from "../../src/screens/InGame/InGameTestIds.ts"
 import { RevealPage } from "./RevealPage.ts"
 import { Screen } from "./Screen.ts"
 import type { Tab } from "./Tab.ts"

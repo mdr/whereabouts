@@ -1,9 +1,9 @@
 import { AnswerType } from "@whereabouts/shared/questions"
 import { RoundGuessType, type PlayerView, type RevealView } from "@whereabouts/shared/protocol"
 import type { AnswerParts } from "@whereabouts/shared/scoring/regions"
-import { Card } from "../../ui/Card"
+import { Card } from "../../ui/Card/Card"
 import kit from "../../ui/kit.module.css"
-import { HostTag } from "../../ui/players/HostTag"
+import { HostTag } from "../../ui/players/HostTag/HostTag"
 import { ScoreParts } from "../../ui/round/ScoreParts"
 
 /** Developer-only: how each player's score was made up. */

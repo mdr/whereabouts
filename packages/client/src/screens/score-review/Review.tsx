@@ -11,16 +11,16 @@ import {
   type ScoreVerdict
 } from "@whereabouts/shared/scoring/score-review"
 import { kernelById } from "@whereabouts/shared/scoring/scoring"
-import { usePaint } from "../../ui/map/MapView"
-import { CardPlace, QuestionCard } from "../../ui/round/question/QuestionCard"
-import { Answer } from "../../ui/round/question/Answer"
-import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../../ui/map/Hud"
+import { usePaint } from "../../ui/map/MapView/MapView"
+import { CardPlace, QuestionCard } from "../../ui/round/question/QuestionCard/QuestionCard"
+import { Answer } from "../../ui/round/question/Answer/Answer"
+import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../../ui/map/Hud/Hud"
 import { ScoreCard } from "../../ui/round/ScoreCard"
 import { isTyping } from "../../keyboard/keys"
 import { RevealDetail } from "../../map/shown-detail"
 import { reviewSet, scoreVerdicts, soloKernelId } from "../../settings/settings"
-import { scoreReviewTestIds } from "./ScoreReviewTestIds"
-import { VerdictCard, type Choice } from "./VerdictCard"
+import { scoreReviewTestIds } from "./ScoreReview/ScoreReviewTestIds"
+import { VerdictCard, type Choice } from "./VerdictCard/VerdictCard"
 import { PAIR_COLOURS } from "./pair-colours"
 
 export function Review({ outlines }: { outlines: Outlines }) {

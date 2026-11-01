@@ -1,4 +1,4 @@
-import { usePaint } from "../map/MapView"
+import { usePaint } from "../map/MapView/MapView"
 import { Icon } from "../icons"
 
 /** Submit or Done; with nothing painted, Pass. */

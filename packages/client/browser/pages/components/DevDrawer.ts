@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test"
-import { paintBlobsTestIds } from "../../../src/ui/map/paint/PaintBlobsTestIds.ts"
+import { paintBlobsTestIds } from "../../../src/ui/map/paint/PaintBlobs/PaintBlobsTestIds.ts"
 
 /** The playtest drawer that `?dev` adds on the right. */
 export class DevDrawer {

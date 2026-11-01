@@ -1,10 +1,10 @@
 import { KERNELS, KernelIdSchema, type ChoosableKernel } from "@whereabouts/shared/scoring/scoring"
 import type { ScoredAnswer } from "@whereabouts/shared/scoring/regions"
 import { AnswerType, type Question } from "@whereabouts/shared/questions"
-import { Card } from "../../ui/Card"
+import { Card } from "../../ui/Card/Card"
 import kit from "../../ui/kit.module.css"
 import { cheatLiveScore, soloKernelId } from "../../settings/settings"
-import { CopyCase } from "./CopyCase"
+import { CopyCase } from "./CopyCase/CopyCase"
 
 export function Cheats({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel: ChoosableKernel }) {
   return (

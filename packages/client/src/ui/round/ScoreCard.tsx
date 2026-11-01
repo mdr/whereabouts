@@ -1,6 +1,6 @@
 import type { Points } from "@whereabouts/shared/units"
 import type { ComponentChildren } from "preact"
-import { Card } from "../Card"
+import { Card } from "../Card/Card"
 import { cx } from "../cx"
 import sc from "./Score.module.css"
 

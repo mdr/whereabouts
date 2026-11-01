@@ -3,7 +3,7 @@
 import { test } from "@playwright/test"
 import { Hand } from "../../../src/vr/hands/hand.ts"
 import { WristButton } from "../../../src/vr/wrist/wrist-button.ts"
-import { hintTestIds } from "../../../src/ui/round/HintTestIds.ts"
+import { hintTestIds } from "../../../src/ui/round/Hint/HintTestIds.ts"
 import { until } from "../../pages/support.ts"
 import { check, shot } from "../support.ts"
 import { vrPractice, vrPracticePainted } from "./vr-states.ts"

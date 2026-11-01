@@ -1,8 +1,8 @@
 import { useEffect, useState } from "preact/hooks"
-import { usePaint } from "../MapView"
+import { usePaint } from "../MapView/MapView"
 import { Icon } from "../../icons"
 import { trimPaint } from "../../../paint/paint-commands"
-import { ToolLabel } from "./ToolLabel"
+import { ToolLabel } from "./ToolLabel/ToolLabel"
 
 /**
  * Remove paint more than about 20 km out to sea, or in a lake or sea round

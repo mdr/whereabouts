@@ -1,5 +1,5 @@
-import { resultsTestIds } from "../../src/screens/results/ResultsTestIds.ts"
-import { standingsTestIds } from "../../src/screens/results/StandingsTestIds.ts"
+import { resultsTestIds } from "../../src/screens/results/Results/ResultsTestIds.ts"
+import { standingsTestIds } from "../../src/screens/results/Standings/StandingsTestIds.ts"
 import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"
 import type { Tab } from "./Tab.ts"

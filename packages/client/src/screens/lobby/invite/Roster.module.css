@@ -1,4 +1,0 @@
-.watchingHeading {
-  composes: eyebrow from "../../../ui/kit.module.css";
-  margin: 14px 0 4px;
-}

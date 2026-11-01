@@ -2,7 +2,7 @@ import type { ComponentChildren } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { commonsImageUrl } from "@whereabouts/shared/questions"
 import type { CommonsFile } from "@whereabouts/shared/ids"
-import { Lightbox, LightboxType } from "./Lightbox"
+import { Lightbox, LightboxType } from "./Lightbox/Lightbox"
 
 /**
  * A photo enlarged: at once the thumbnail's rendition, which the page has,

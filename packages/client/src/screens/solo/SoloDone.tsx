@@ -1,9 +1,9 @@
-import { Banner } from "../../ui/Banner"
-import { Hud, HudCenter } from "../../ui/map/Hud"
+import { Banner } from "../../ui/Banner/Banner"
+import { Hud, HudCenter } from "../../ui/map/Hud/Hud"
 import { Icon } from "../../ui/icons"
 import kit from "../../ui/kit.module.css"
 import sc from "../../ui/round/Score.module.css"
-import { VrButton } from "../../ui/VrButton"
+import { VrButton } from "../../ui/VrButton/VrButton"
 import type { VrView } from "../../vr/view/view"
 import { runMaximum, runTotal, type PracticeRun } from "../../round/practice-run"
 

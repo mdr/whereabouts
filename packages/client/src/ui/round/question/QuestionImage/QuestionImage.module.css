@@ -1,0 +1,61 @@
+@import "../../../../media.css";
+
+.thumb {
+  position: relative;
+}
+button.thumbButton {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  cursor: zoom-in;
+  overflow: hidden;
+}
+.thumb img {
+  width: 100%;
+  border-radius: 6px;
+  display: block;
+  background: var(--shade);
+  aspect-ratio: 16/10;
+  object-fit: cover;
+  transition: filter 0.15s;
+}
+.thumbButton:hover img,
+.thumbButton:focus-visible img {
+  filter: brightness(1.12);
+}
+.thumbButton:hover,
+.thumbButton:focus-visible {
+  --badge-opacity: 1;
+}
+button.thumbButton:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+/* While painting, where the cards would overrun their column, the photo gives up height so the hints below stay on screen. */
+.thumb.painting {
+  flex: 0 1 auto;
+  min-height: 64px;
+  aspect-ratio: 16 / 10;
+
+  & .thumbButton {
+    position: absolute;
+    inset: 0;
+  }
+  & img {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+}
+
+@media (--phone) {
+  .thumb img,
+  .thumb.painting {
+    aspect-ratio: 2 / 1;
+  }
+}

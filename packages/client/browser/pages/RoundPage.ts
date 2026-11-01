@@ -1,6 +1,6 @@
 import { HintAxis } from "@whereabouts/shared/hints"
-import { inGameTestIds } from "../../src/screens/InGameTestIds.ts"
-import { hintTestIds } from "../../src/ui/round/HintTestIds.ts"
+import { inGameTestIds } from "../../src/screens/InGame/InGameTestIds.ts"
+import { hintTestIds } from "../../src/ui/round/Hint/HintTestIds.ts"
 import { DevDrawer } from "./components/DevDrawer.ts"
 import { Hud } from "./components/Hud.ts"
 import { MapPanel } from "./components/MapPanel.ts"

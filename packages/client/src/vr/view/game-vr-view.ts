@@ -14,7 +14,7 @@ import {
 } from "@whereabouts/shared/protocol"
 import type { Connection } from "../../net/net"
 import type { PaintController } from "../../paint/paint-controller"
-import { connectionText } from "../../ui/connection/ConnectionNote"
+import { connectionText } from "../../ui/connection/ConnectionNote/ConnectionNote"
 import { navigate } from "../../router"
 import { canUnlock } from "../../round/editing"
 import { revealedFromView, revealShown, shownPlayerId, shownResults } from "../../round/reveal"

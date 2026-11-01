@@ -1,4 +1,4 @@
-import { joinAsTestIds } from "../../src/screens/multiplayer/JoinAsTestIds.ts"
+import { joinAsTestIds } from "../../src/screens/multiplayer/JoinAs/JoinAsTestIds.ts"
 import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"
 import type { Tab } from "./Tab.ts"

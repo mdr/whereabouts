@@ -1,0 +1,40 @@
+@import "../../../media.css";
+
+.card {
+  width: min(880px, 100%);
+}
+/* The way home, over the top left of the banner. */
+.leave {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px 5px 8px;
+  font-size: 13px;
+  background: color-mix(in srgb, var(--page-bg) 72%, transparent);
+  border-color: color-mix(in srgb, var(--light) 18%, transparent);
+  backdrop-filter: blur(4px);
+}
+button.leave:hover {
+  background: color-mix(in srgb, var(--page-bg) 90%, transparent);
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media (--narrow) {
+  .cols {
+    grid-template-columns: 1fr;
+  }
+  /* One card of panels is enough on a phone: drop the outer one. */
+  .card {
+    background: none;
+    box-shadow: none;
+    padding: 4px 0;
+  }
+}

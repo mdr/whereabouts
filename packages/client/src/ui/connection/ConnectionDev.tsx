@@ -1,6 +1,6 @@
 import type { GameView } from "@whereabouts/shared/protocol"
 import type { Connection } from "../../net/net"
-import { Card } from "../Card"
+import { Card } from "../Card/Card"
 import { DevFacts } from "../dev/DevFacts"
 import { cx } from "../cx"
 import kit from "../kit.module.css"

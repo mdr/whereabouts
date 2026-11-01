@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test"
-import { mapViewTestIds } from "../../src/ui/map/MapViewTestIds.ts"
-import { loadingOutlinesTestIds } from "../../src/ui/map/LoadingOutlinesTestIds.ts"
-import { vrButtonTestIds } from "../../src/ui/VrButtonTestIds.ts"
+import { mapViewTestIds } from "../../src/ui/map/MapView/MapViewTestIds.ts"
+import { loadingOutlinesTestIds } from "../../src/ui/map/LoadingOutlines/LoadingOutlinesTestIds.ts"
+import { vrButtonTestIds } from "../../src/ui/VrButton/VrButtonTestIds.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** What a screen shows when the map, the outlines or VR will not load. */

@@ -1,4 +1,4 @@
-import { joinedTestIds } from "../../src/screens/multiplayer/JoinedTestIds.ts"
+import { joinedTestIds } from "../../src/screens/multiplayer/Joined/JoinedTestIds.ts"
 import { HomePage } from "./HomePage.ts"
 import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"

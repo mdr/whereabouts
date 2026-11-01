@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test"
 import type { Tool } from "../../../src/paint/tool.ts"
-import { paintToolsTestIds } from "../../../src/ui/map/paint/PaintToolsTestIds.ts"
-import { trimToHintTestIds } from "../../../src/ui/map/paint/TrimToHintTestIds.ts"
+import { paintToolsTestIds } from "../../../src/ui/map/paint/PaintTools/PaintToolsTestIds.ts"
+import { trimToHintTestIds } from "../../../src/ui/map/paint/TrimToHint/TrimToHintTestIds.ts"
 import { byTestIdWith, isUsable } from "../support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 

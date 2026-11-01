@@ -1,0 +1,191 @@
+import { useState } from "preact/hooks"
+import { MAP_DETAILS } from "@whereabouts/shared/protocol"
+import { nameHandoff, nameToJoin, savedName, soloMapDetail, soloTypes, watchHandoff } from "../../settings/settings"
+import { navigate } from "../../router"
+import { Icon } from "../../ui/icons"
+import { MapDetailPicker } from "../../ui/setup/MapDetailPicker/MapDetailPicker"
+import { TogglePills } from "../../ui/setup/TogglePills/TogglePills"
+import { VrButton, useVrView } from "../../ui/VrButton/VrButton"
+import { VrViewType, type VrView } from "../../vr/view/view"
+import { QUESTION_TYPES } from "@whereabouts/shared/questions"
+import { QUESTION_TYPE_LOOKS } from "../../question-types"
+
+const PRACTICE_OPTIONS = QUESTION_TYPES.map((t) => ({ value: t, label: QUESTION_TYPE_LOOKS[t].label }))
+import hero800 from "../../assets/hero-800.webp"
+import hero1448 from "../../assets/hero-1448.webp"
+import { homeTestIds } from "./HomeTestIds"
+import { cx } from "../../ui/cx"
+import kit from "../../ui/kit.module.css"
+import s from "./Home.module.css"
+
+const NEED_NAME_ID = "need-name"
+
+/**
+ * The front door: a hero picture, your name, then three clearly separate
+ * ways in (host, join, practise) and a short how-to-play.
+ */
+export function Home() {
+  const [code, setCode] = useState("")
+  const name = nameToJoin(savedName.value)
+  const ready = name !== undefined
+  // Says why Host and Join are disabled: a disabled button shows no tooltip.
+  const needName = ready ? undefined : NEED_NAME_ID
+  const types = soloTypes.value
+  const vrView: VrView = {
+    type: VrViewType.LOBBY,
+    summary: {
+      title: "Whereabouts",
+      scoreLine: `Practise: ${types.map((t) => QUESTION_TYPE_LOOKS[t].label).join(", ")}`,
+      note: "Take the headset off to host or join a game.",
+      actions: [
+        { label: "Practise", press: () => navigate("/solo") },
+        {
+          label: "Change topic",
+          // One type at a time: the next after the first chosen.
+          press: () =>
+            (soloTypes.value = [QUESTION_TYPES[(QUESTION_TYPES.indexOf(types[0]!) + 1) % QUESTION_TYPES.length]!])
+        }
+      ]
+    }
+  }
+  useVrView(vrView)
+  return (
+    <div class={kit.page} data-testid={homeTestIds.page}>
+      <div class={s.content}>
+        <header class={s.hero}>
+          <img
+            src={hero1448}
+            srcset={`${hero800} 800w, ${hero1448} 1448w`}
+            sizes="(max-width: 960px) 100vw, 960px"
+            alt="A figure spray-painting glowing hexagons onto a globe"
+          />
+          <div class={s.heroText}>
+            <h1>Whereabouts</h1>
+            <p class={s.tagline}>Paint where you think it is. Hedge when you're not sure.</p>
+          </div>
+        </header>
+
+        <label class={cx(kit.field, s.name)}>
+          <span>Your name</span>
+          <input
+            type="text"
+            maxLength={20}
+            placeholder="Your name"
+            data-testid={homeTestIds.nameInput}
+            value={savedName.value}
+            onInput={(e) => (savedName.value = e.currentTarget.value)}
+            aria-describedby={needName}
+          />
+          {!ready && (
+            // Read out through aria-describedby, not as part of the field's name.
+            <span class={cx(kit.hint, s.needName)} id={NEED_NAME_ID} aria-hidden>
+              Enter your name first
+            </span>
+          )}
+        </label>
+
+        <div class={s.modes}>
+          <section class={s.mode}>
+            <h2>Host a game</h2>
+            <p>Start a room and share the code with friends.</p>
+            <button
+              class="primary big"
+              disabled={!ready}
+              aria-describedby={needName}
+              onClick={() => navigate("/game/new")}
+              data-testid={homeTestIds.hostButton}
+            >
+              <Icon name="play" /> Host a game
+            </button>
+          </section>
+          <section class={s.mode}>
+            <h2>Join a game</h2>
+            <p>Got a code from a friend? Type it here.</p>
+            <form
+              class={kit.join}
+              onSubmit={(e) => {
+                e.preventDefault()
+                const c = code.trim().toUpperCase()
+                if (name && c.length >= 4) {
+                  nameHandoff.value = name
+                  // The "Just watch" button submits too, and says which it was.
+                  const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | undefined
+                  watchHandoff.value = submitter?.value === "watch"
+                  navigate(`/game/${c}`)
+                }
+              }}
+            >
+              <input
+                type="text"
+                placeholder="CODE"
+                maxLength={6}
+                value={code}
+                onInput={(e) => setCode(e.currentTarget.value.toUpperCase())}
+                class={cx(kit.codeInput, s.codeInput)}
+                aria-label="Game code"
+                data-testid={homeTestIds.codeInput}
+              />
+              <button
+                type="submit"
+                class="big"
+                disabled={!ready || code.trim().length < 4}
+                aria-describedby={needName}
+                data-testid={homeTestIds.joinButton}
+              >
+                Join
+              </button>
+              <button
+                type="submit"
+                value="watch"
+                class={s.watch}
+                disabled={!ready || code.trim().length < 4}
+                title="See every round without playing"
+              >
+                <Icon name="eye" size={14} /> Just watch
+              </button>
+            </form>
+          </section>
+          <section class={s.mode}>
+            <h2>Practise</h2>
+            <p>On your own, no clock. See how the scoring works.</p>
+            <div class={s.pool}>
+              <TogglePills
+                label="What to practise"
+                options={PRACTICE_OPTIONS}
+                value={types}
+                onChange={(v) => (soloTypes.value = v)}
+              />
+            </div>
+            <div class={s.go}>
+              <button class="big" onClick={() => navigate("/solo")} data-testid={homeTestIds.practiseButton}>
+                <Icon name="brush" /> Practise
+              </button>
+              <VrButton view={vrView} />
+            </div>
+            <details class={s.detail}>
+              <summary>Map detail: {MAP_DETAILS.find((d) => d.id === soloMapDetail.value)?.label ?? "Minimal"}</summary>
+              <MapDetailPicker narrow value={soloMapDetail.value} onChange={(v) => (soloMapDetail.value = v)} />
+            </details>
+          </section>
+        </div>
+
+        <section class={s.how}>
+          <h2 class={kit.eyebrow}>How to play</h2>
+          <ol>
+            <li>
+              <b>Read the clue.</b> Each round names a place or shows a photo of one.
+            </li>
+            <li>
+              <b>Paint the map.</b> Paint where you think it is, heavier where you're surer. Torn between two places?
+              Paint both.
+            </li>
+            <li>
+              <b>Score.</b> Points go to paint near the answer. A tight guess pays big when right and costs when wrong;
+              a wider one plays it safe.
+            </li>
+          </ol>
+        </section>
+      </div>
+    </div>
+  )
+}

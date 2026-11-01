@@ -1,4 +1,4 @@
-import { homeTestIds } from "../../src/screens/HomeTestIds.ts"
+import { homeTestIds } from "../../src/screens/Home/HomeTestIds.ts"
 import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"
 import { SittingOutPage } from "./SittingOutPage.ts"

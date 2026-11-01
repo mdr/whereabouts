@@ -1,6 +1,6 @@
 import type { Locator } from "@playwright/test"
-import { playerListTestIds } from "../../../src/ui/players/PlayerListTestIds.ts"
-import { hostTagTestIds } from "../../../src/ui/players/HostTagTestIds.ts"
+import { playerListTestIds } from "../../../src/ui/players/PlayerList/PlayerListTestIds.ts"
+import { hostTagTestIds } from "../../../src/ui/players/HostTag/HostTagTestIds.ts"
 import { until } from "../support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
