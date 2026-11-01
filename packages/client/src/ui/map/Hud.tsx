@@ -5,14 +5,12 @@
  * question make one sheet that scrolls up over the map.
  */
 import type { ComponentChildren } from "preact"
-import { useEffect, useState } from "preact/hooks"
+import { useEffect } from "preact/hooks"
 import { useElementRef } from "../element-ref"
-import { Icon } from "../icons"
-import { soundOn } from "../../settings/settings"
 import { cx } from "../cx"
-import { countdownTestIds, hudBottomTestIds, hudHeaderTestIds, soundToggleTestIds } from "./HudTestIds"
+import { hudBottomTestIds, hudHeaderTestIds } from "./HudTestIds"
+import { SoundToggle } from "./SoundToggle"
 import s from "./Hud.module.css"
-import type { Ms, Seconds } from "@whereabouts/shared/units"
 
 /** `reveal` lays out a round's reveal; MapView reads `data-hud` to lift the map's buttons above its sheet. */
 export function Hud({ reveal, children }: { reveal?: boolean; children: ComponentChildren }) {
@@ -68,24 +66,6 @@ export function HudBottom({ note, children }: { note?: string; children: Compone
 /** For a toolbar button that, like the primary one, takes the spare width of a phone's toolbar. */
 export const toolbarGrow = s.grow
 
-/** The per-device sound switch as a speaker button. */
-export function SoundToggle() {
-  const on = soundOn.value
-  return (
-    <button
-      type="button"
-      class={cx("icon", s.soundToggle)}
-      data-testid={soundToggleTestIds.button}
-      aria-pressed={on}
-      aria-label={on ? "Sounds on: turn off" : "Sounds off: turn on"}
-      title={on ? "Turn sounds off" : "Turn sounds on"}
-      onClick={() => (soundOn.value = !on)}
-    >
-      <Icon name={on ? "soundOn" : "soundOff"} />
-    </button>
-  )
-}
-
 /**
  * One-line strip at the top of the HUD: title (a link home where allowed),
  * round counter, the sound switch, and anything the screen wants on the
@@ -140,24 +120,5 @@ export function HeaderNote({
       <span data-testid={testId}>{children}</span>
       {title && <span class="sr-only">. {title}</span>}
     </span>
-  )
-}
-
-/** Ticks once a second; returns whole seconds remaining, never negative. */
-function useCountdown(timeLeft: () => Ms): Seconds {
-  const [, force] = useState(0)
-  useEffect(() => {
-    const id = setInterval(() => force((n) => n + 1), 250)
-    return () => clearInterval(id)
-  }, [])
-  return Math.max(0, Math.ceil(timeLeft() / 1000))
-}
-
-export function Countdown({ timeLeft, warnAt = 10 }: { timeLeft: () => Ms; warnAt?: Seconds }) {
-  const left = useCountdown(timeLeft)
-  return (
-    <div class={cx(s.countdown, left <= warnAt && s.warn)} data-testid={countdownTestIds.countdown}>
-      {left}
-    </div>
   )
 }

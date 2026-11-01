@@ -1,4 +1,6 @@
-import { countdownTestIds, hudHeaderTestIds, soundToggleTestIds } from "../../../src/ui/map/HudTestIds.ts"
+import { hudHeaderTestIds } from "../../../src/ui/map/HudTestIds.ts"
+import { countdownTestIds } from "../../../src/ui/map/CountdownTestIds.ts"
+import { soundToggleTestIds } from "../../../src/ui/map/SoundToggleTestIds.ts"
 import { questionCardTestIds } from "../../../src/ui/round/question/QuestionCardTestIds.ts"
 import { questionImageTestIds } from "../../../src/ui/round/question/QuestionImageTestIds.ts"
 import { hostControlsTestIds } from "../../../src/ui/players/HostControlsTestIds.ts"

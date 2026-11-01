@@ -1,0 +1,9 @@
+/* Bright when on, muted (with a cross) when off. */
+button.icon.soundToggle {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+}
+button.icon.soundToggle[aria-pressed="true"] {
+  color: var(--panel-fg);
+}

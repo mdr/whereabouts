@@ -124,45 +124,11 @@
   & .nowrap {
     white-space: nowrap;
   }
-  & .countdown {
-    font-size: 20px;
-    min-width: 40px;
-    padding: 2px 6px;
-  }
-  /* Bright when on, muted (with a cross) when off. */
-  & .soundToggle {
-    display: grid;
-    place-items: center;
-    padding: 4px;
-  }
-  & .soundToggle[aria-pressed="true"] {
-    color: var(--panel-fg);
-  }
 }
 /* Keeps the header to one line on the narrowest phones. */
 @container (max-width: 380px) {
   .header .roundWord {
     display: none;
-  }
-}
-
-.countdown {
-  font-size: 34px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  min-width: 56px;
-  text-align: center;
-  background: var(--card-bg);
-  border-radius: 8px;
-  padding: 4px 8px;
-}
-.countdown.warn {
-  color: var(--danger);
-  animation: pulse 1s infinite;
-}
-@keyframes pulse {
-  50% {
-    opacity: 0.55;
   }
 }
 

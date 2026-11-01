@@ -6,11 +6,3 @@ export const hudHeaderTestIds = {
 export const hudBottomTestIds = {
   toolbar: "HudBottom.toolbar"
 }
-
-export const soundToggleTestIds = {
-  button: "SoundToggle.button"
-}
-
-export const countdownTestIds = {
-  countdown: "Countdown.countdown"
-}
