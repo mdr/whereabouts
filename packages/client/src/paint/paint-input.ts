@@ -18,6 +18,16 @@ import type { Degrees, Km, Px } from "@whereabouts/shared/units"
 /** How near a point a small country's answer counts as under it, for the Fill tool. */
 const FILL_SMALL: Px = 12
 
+/** Add a listener, and return what removes it. */
+function listen<K extends keyof WindowEventMap>(
+  target: Window | HTMLElement,
+  type: K,
+  handler: (event: WindowEventMap[K]) => void
+): () => void {
+  target.addEventListener(type, handler as EventListener)
+  return () => target.removeEventListener(type, handler as EventListener)
+}
+
 export class PaintInput {
   readonly tool = signal<Tool>(Tool.PAINT)
   readonly brushRadius = signal<Px>(40)
@@ -44,6 +54,10 @@ export class PaintInput {
     this.model = model
     this.view = view
     const map = gameMap.map
+    const onMap = (type: string, handler: (event: never) => void): (() => void) => {
+      map.on(type as never, handler)
+      return () => map.off(type as never, handler)
+    }
     const onDown = (event: MapMouseEvent) => {
       if (!this.canPaint() || event.originalEvent.button !== 0 || !gameMap.onSurface(event.point)) return
       this.beginStroke(event.point)
@@ -150,42 +164,25 @@ export class PaintInput {
         this.hideCursor()
       }
     }
-    map.on("mousedown", onDown)
-    map.on("click", onClick)
-    map.on("mousemove", onMove)
-    map.on("mouseout", onOut)
-    map.on("zoom", onZoom)
-    map.on("touchstart", onTouchStart)
-    map.on("touchmove", onTouchMove)
-    map.on("touchend", onTouchEnd)
-    map.on("touchcancel", onTouchEnd)
-    window.addEventListener("mouseup", onUp)
-    canvas.addEventListener("pointerdown", onPointer)
-    canvas.addEventListener("pointermove", onPointer)
-    canvas.addEventListener("mousedown", onMiddleDown)
-    window.addEventListener("mousemove", onMiddleMove)
-    window.addEventListener("mouseup", onMiddleUp)
-    window.addEventListener("keydown", onKeyDown)
-    window.addEventListener("keyup", onKeyUp)
-    this.disposers.push(() => {
-      map.off("mousedown", onDown)
-      map.off("click", onClick)
-      map.off("mousemove", onMove)
-      map.off("mouseout", onOut)
-      map.off("zoom", onZoom)
-      map.off("touchstart", onTouchStart)
-      map.off("touchmove", onTouchMove)
-      map.off("touchend", onTouchEnd)
-      map.off("touchcancel", onTouchEnd)
-      window.removeEventListener("mouseup", onUp)
-      canvas.removeEventListener("pointerdown", onPointer)
-      canvas.removeEventListener("pointermove", onPointer)
-      canvas.removeEventListener("mousedown", onMiddleDown)
-      window.removeEventListener("mousemove", onMiddleMove)
-      window.removeEventListener("mouseup", onMiddleUp)
-      window.removeEventListener("keydown", onKeyDown)
-      window.removeEventListener("keyup", onKeyUp)
-    })
+    this.disposers.push(
+      onMap("mousedown", onDown),
+      onMap("click", onClick),
+      onMap("mousemove", onMove),
+      onMap("mouseout", onOut),
+      onMap("zoom", onZoom),
+      onMap("touchstart", onTouchStart),
+      onMap("touchmove", onTouchMove),
+      onMap("touchend", onTouchEnd),
+      onMap("touchcancel", onTouchEnd),
+      listen(window, "mouseup", onUp),
+      listen(canvas, "pointerdown", onPointer),
+      listen(canvas, "pointermove", onPointer),
+      listen(canvas, "mousedown", onMiddleDown),
+      listen(window, "mousemove", onMiddleMove),
+      listen(window, "mouseup", onMiddleUp),
+      listen(window, "keydown", onKeyDown),
+      listen(window, "keyup", onKeyUp)
+    )
     this.disposers.push(
       this.tool.subscribe(() => {
         if (this.stroke) this.endStroke()
