@@ -98,8 +98,8 @@ export class HeadsetScene {
   /** Whether space shows round the player, and whether the room should instead. */
   async surroundings(): Promise<{ space: boolean; passthrough: boolean }> {
     return this.#page.evaluate(() => ({
-      space: window.whereaboutsVr.probe.spaceShown,
-      passthrough: window.whereaboutsVr.probe.passthrough
+      space: window.testHooks.vr!.probe.spaceShown,
+      passthrough: window.testHooks.vr!.probe.passthrough
     }))
   }
 
@@ -110,6 +110,6 @@ export class HeadsetScene {
 
   /** Where a hand's tool would land on the globe, if it points at it. */
   async target(hand: Hand) {
-    return this.#page.evaluate((side) => window.whereaboutsVr.probe.targetOf(side), hand)
+    return this.#page.evaluate((side) => window.testHooks.vr!.probe.targetOf(side), hand)
   }
 }

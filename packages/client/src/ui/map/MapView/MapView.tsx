@@ -51,7 +51,7 @@ export const MapView = ({ children }: { children: ComponentChildren }) => {
         globeButton.current = new GlobeButton(() => (globeView.value = !globeView.value), mapViewTestIds.globeButton)
         gameMap.map.addControl(globeButton.current, "bottom-left")
         paintController = new PaintController(gameMap)
-        window.whereabouts = { map: gameMap.map, gameMap, paint: paintController }
+        window.testHooks.map = { map: gameMap.map, gameMap, paint: paintController }
         setController(paintController)
       },
       (error: unknown) => {
@@ -63,6 +63,7 @@ export const MapView = ({ children }: { children: ComponentChildren }) => {
     )
     return () => {
       clearTimeout(retry)
+      window.testHooks.map = undefined
       paintController?.dispose()
       gameMap.dispose()
     }
@@ -147,10 +148,4 @@ export const MapView = ({ children }: { children: ComponentChildren }) => {
       </PaintContext.Provider>
     </div>
   )
-}
-
-declare global {
-  interface Window {
-    whereabouts: { map: GameMap["map"]; gameMap: GameMap; paint: PaintController }
-  }
 }

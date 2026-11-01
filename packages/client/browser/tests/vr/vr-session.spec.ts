@@ -34,7 +34,7 @@ test("practice's VR button opens a headset session, and Leave VR ends it", async
   )
   check(!(await headset.scene.globeBordersShown()), "the globe shows no borders when the page's map would not")
 
-  await tab.page.evaluate(() => window.whereaboutsVr.exit())
+  await tab.page.evaluate(() => window.testHooks.vr!.exit())
   await until(
     "the session to end",
     () => headset.inSession(),

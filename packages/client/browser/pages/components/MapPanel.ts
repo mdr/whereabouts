@@ -1,5 +1,5 @@
 import type { CDPSession, Page } from "@playwright/test"
-import type {} from "../../../src/ui/map/MapView/MapView.tsx"
+import type {} from "../../../src/test-hooks.ts"
 import { mapViewTestIds } from "../../../src/ui/map/MapView/MapViewTestIds.ts"
 import { hudBottomTestIds } from "../../../src/ui/map/Hud/HudTestIds.ts"
 import { questionCardTestIds } from "../../../src/ui/round/question/QuestionCard/QuestionCardTestIds.ts"
@@ -16,7 +16,7 @@ export interface MapSpot {
 /**
  * The map that fills the game screens. MapLibre draws onto a canvas, so
  * spots are given as fractions of the map, and paint is read from the app's
- * debugging handle on `window.whereabouts`.
+ * debugging handle on `window.testHooks.map`.
  */
 export class MapPanel {
   readonly #page: Page
@@ -36,7 +36,7 @@ export class MapPanel {
       "the map to settle",
       async () => {
         const still = await this.#page.evaluate(() => {
-          const m = window.whereabouts.map
+          const m = window.testHooks.map!.map
           return m.loaded() && !m.isMoving()
         })
         if (!still) stillSince = Date.now()
@@ -147,7 +147,7 @@ export class MapPanel {
   async answerShareBetween(top: Px, bottom: Px): Promise<number> {
     return this.#page.evaluate(
       async ({ top, bottom }) => {
-        const { map } = window.whereabouts
+        const { map } = window.testHooks.map!
         const source = map.getSource("reveal") as unknown as { getData(): Promise<GeoJSON.FeatureCollection> }
         const points: GeoJSON.Position[] = []
         for (const { geometry: g } of (await source.getData()).features) {
@@ -164,28 +164,28 @@ export class MapPanel {
   }
 
   async showsGlobe(): Promise<boolean> {
-    return this.#page.evaluate(() => window.whereabouts.map.getProjection().type === "globe")
+    return this.#page.evaluate(() => window.testHooks.map!.map.getProjection().type === "globe")
   }
 
   /** Cells in your own paint this round. */
   async yourPaintCells(): Promise<number> {
-    return this.#page.evaluate(() => window.whereabouts.paint.layer.size)
+    return this.#page.evaluate(() => window.testHooks.map!.paint.layer.size)
   }
 
   /** How much paint you have: intensity times area, in km². */
   async yourPaintMass(): Promise<number> {
-    return this.#page.evaluate(() => window.whereabouts.paint.layer.mass())
+    return this.#page.evaluate(() => window.testHooks.map!.paint.layer.mass())
   }
 
   /** Which cells your paint is in. */
   async yourPaintCellIds(): Promise<string[]> {
-    return this.#page.evaluate(() => [...window.whereabouts.paint.layer.cells.keys()])
+    return this.#page.evaluate(() => [...window.testHooks.map!.paint.layer.cells.keys()])
   }
 
   /** Cells of paint drawn on the map: yours while guessing, whoever's is chosen at the reveal. */
   async shownPaintCells(): Promise<number> {
     return this.#page.evaluate(() => {
-      const source = window.whereabouts.map.getSource("paint") as unknown as
+      const source = window.testHooks.map!.map.getSource("paint") as unknown as
         | { serialize: () => { data: GeoJSON.FeatureCollection } }
         | undefined
       return source?.serialize().data.features.length ?? 0
@@ -195,7 +195,7 @@ export class MapPanel {
   /** Shapes in the hint band shaded on the map: 0 without a hint, 2 for a longitude band across 180°. */
   async shownHintShapes(): Promise<number> {
     return this.#page.evaluate(() => {
-      const source = window.whereabouts.map.getSource("hint") as unknown as
+      const source = window.testHooks.map!.map.getSource("hint") as unknown as
         | { serialize: () => { data: GeoJSON.FeatureCollection } }
         | undefined
       return source?.serialize().data.features.length ?? 0

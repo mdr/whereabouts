@@ -1,4 +1,5 @@
 import "./global.css"
+import "./test-hooks"
 import { render } from "preact"
 import { App } from "./app"
 import { installSound } from "./sound/sound"

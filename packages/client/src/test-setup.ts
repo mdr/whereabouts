@@ -6,3 +6,5 @@ afterEach(async () => {
   const { cleanup } = await import("@testing-library/preact")
   cleanup()
 })
+
+if (typeof document !== "undefined") await import("./test-hooks")

@@ -62,17 +62,17 @@ export class HeadsetPanels {
 
   /** Where a button on the wrist menu is. */
   async wristButton(id: WristButton): Promise<Vec3> {
-    return this.#page.evaluate((id) => window.whereaboutsVr.probe.wristButtonAt(id), id)
+    return this.#page.evaluate((id) => window.testHooks.vr!.probe.wristButtonAt(id), id)
   }
 
   /** Where a button on the VR menu is. */
   async menuButton(id: string): Promise<Vec3> {
-    return this.#settled(() => this.#page.evaluate((id) => window.whereaboutsVr.probe.menuButtonAt(id), id))
+    return this.#settled(() => this.#page.evaluate((id) => window.testHooks.vr!.probe.menuButtonAt(id), id))
   }
 
   /** Where a row of the score table is: Everyone, the players, then Hide paint on the reveal. */
   async scoreRow(i: number): Promise<Vec3> {
-    return this.#settled(() => this.#page.evaluate((i) => window.whereaboutsVr.probe.scoreRowAt(i), i))
+    return this.#settled(() => this.#page.evaluate((i) => window.testHooks.vr!.probe.scoreRowAt(i), i))
   }
 
   /**
@@ -85,8 +85,8 @@ export class HeadsetPanels {
     const at = async () => {
       const at = await where()
       const { frame, turning } = await this.#page.evaluate(() => ({
-        frame: window.whereaboutsVr.frames,
-        turning: window.whereaboutsVr.probe.globeTurning
+        frame: window.testHooks.vr!.frames,
+        turning: window.testHooks.vr!.probe.globeTurning
       }))
       return { at, frame, turning }
     }

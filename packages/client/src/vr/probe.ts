@@ -1,4 +1,4 @@
-/** What the browser tests read of the headset's scene, as `window.whereaboutsVr.probe`. */
+/** What the browser tests read of the headset's scene, as `window.testHooks.vr.probe`. */
 import { Vector3, type World } from "@iwsdk/core"
 import { headsetPassthrough } from "../settings/settings"
 import type { VrBoard, ResultsBoard } from "./scores/board"

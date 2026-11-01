@@ -88,7 +88,7 @@ export class Vr {
       onStage(VrLoadStage.LAND)
       // Drawn now, while the page says it is loading, so the pause never comes in the headset.
       await drawGlobe(vr.globe, world.renderer)
-      window.whereaboutsVr = vr
+      window.testHooks.vr = vr
       return vr
     } catch (error) {
       vr?.detail.dispose()
@@ -324,11 +324,5 @@ export class Vr {
     // The menu is scaled to fit a PANEL_SIZE square, whatever its own units.
     const top = (size.height * Math.min(PANEL_SIZE / size.width, PANEL_SIZE / size.height)) / 2
     this.picture.mesh.position.set(0, top + 0.015 + this.picture.height / 2, 0)
-  }
-}
-
-declare global {
-  interface Window {
-    whereaboutsVr: Vr
   }
 }

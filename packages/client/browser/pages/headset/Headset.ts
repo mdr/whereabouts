@@ -50,14 +50,14 @@ export class Headset {
    * Polled on a timer: in a headset session the page's own animation frames, Playwright's default, can stop.
    */
   async frames(n: number): Promise<void> {
-    const start = await this.#page.evaluate(() => window.whereaboutsVr.frames)
+    const start = await this.#page.evaluate(() => window.testHooks.vr!.frames)
     await this.#page
-      .waitForFunction((end) => window.whereaboutsVr.frames >= end, start + n, { polling: 50 })
+      .waitForFunction((end) => window.testHooks.vr!.frames >= end, start + n, { polling: 50 })
       .catch(async (err: unknown) => {
         const state = await this.#page.evaluate(() => ({
-          frames: window.whereaboutsVr.frames,
-          active: window.whereaboutsVr.active.value,
-          view: window.whereaboutsVr.probe.viewType,
+          frames: window.testHooks.vr!.frames,
+          active: window.testHooks.vr!.active.value,
+          view: window.testHooks.vr!.probe.viewType,
           visibility: document.visibilityState
         }))
         throw new Error(`No frames drawn: ${JSON.stringify({ start, ...state })}`, { cause: err })

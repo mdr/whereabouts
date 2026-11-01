@@ -71,9 +71,9 @@ export class Controllers {
     await this.#frames(3)
     // One frame gap can still outlast the window: then press again.
     for (let tries = 1; ; tries++) {
-      const clicks = await this.#page.evaluate(() => window.whereaboutsVr.clicks)
+      const clicks = await this.#page.evaluate(() => window.testHooks.vr!.clicks)
       await this.#page.evaluate(async (hand) => {
-        const vr = window.whereaboutsVr
+        const vr = window.testHooks.vr!
         const nextFrame = () =>
           new Promise<void>((resolve) => {
             const was = vr.frames
@@ -89,7 +89,7 @@ export class Controllers {
         trigger.updateButtonValue("trigger", 0)
         await nextFrame()
       }, XR_HAND[Hand.RIGHT])
-      if ((await this.#page.evaluate(() => window.whereaboutsVr.clicks)) > clicks) return
+      if ((await this.#page.evaluate(() => window.testHooks.vr!.clicks)) > clicks) return
       if (tries === 3) throw new Error("Three presses and no click")
       console.warn("  (no click: pressing again)")
     }
