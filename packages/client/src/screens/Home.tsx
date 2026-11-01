@@ -73,7 +73,7 @@ export function Home() {
             placeholder="Your name"
             data-testid={homeTestIds.nameInput}
             value={savedName.value}
-            onInput={(e) => (savedName.value = (e.target as HTMLInputElement).value)}
+            onInput={(e) => (savedName.value = e.currentTarget.value)}
             aria-describedby={needName}
           />
           {!ready && (
@@ -120,7 +120,7 @@ export function Home() {
                 placeholder="CODE"
                 maxLength={6}
                 value={code}
-                onInput={(e) => setCode((e.target as HTMLInputElement).value.toUpperCase())}
+                onInput={(e) => setCode(e.currentTarget.value.toUpperCase())}
                 class={cx(kit.codeInput, s.codeInput)}
                 aria-label="Game code"
                 data-testid={homeTestIds.codeInput}

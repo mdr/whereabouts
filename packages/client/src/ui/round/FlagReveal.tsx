@@ -76,7 +76,7 @@ export function AllFlagsSwitch() {
         type="checkbox"
         role="switch"
         checked={allFlags.value}
-        onChange={(e) => (allFlags.value = (e.target as HTMLInputElement).checked)}
+        onChange={(e) => (allFlags.value = e.currentTarget.checked)}
         data-testid={flagRevealTestIds.allFlagsSwitch}
       />
       Show all flags

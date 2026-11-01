@@ -195,7 +195,7 @@ function JoinAs({ code, onJoin }: { code: RoomCode | undefined; onJoin: (name: P
             maxLength={20}
             placeholder="Your name"
             value={name}
-            onInput={(e) => setName((e.target as HTMLInputElement).value)}
+            onInput={(e) => setName(e.currentTarget.value)}
             autoFocus
             data-testid={joinAsTestIds.nameInput}
           />

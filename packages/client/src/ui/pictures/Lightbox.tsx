@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact"
+import type { ComponentChildren, TargetedEvent } from "preact"
 import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import { commonsImageUrl } from "@whereabouts/shared/questions"
@@ -120,9 +120,9 @@ export function Lightbox({
     const { cx, cy } = fromCentre(e.clientX, e.clientY)
     zoomAt(Math.exp(-e.deltaY * 0.002), cx, cy)
   }
-  const onPointerDown = (e: PointerEvent) => {
+  const onPointerDown = (e: TargetedEvent<HTMLElement, PointerEvent>) => {
     // Captured, the click that follows goes to the frame, so onClick lives there; the credit link keeps its own.
-    if (!(e.target as Element).closest("a")) (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    if (!(e.target as Element).closest("a")) e.currentTarget.setPointerCapture(e.pointerId)
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     dragged.current = false
     if (pointers.current.size === 2) pinchDist.current = pinchDistance()

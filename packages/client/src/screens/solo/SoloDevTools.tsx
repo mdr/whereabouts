@@ -55,7 +55,7 @@ export function Cheats({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel:
         <input
           type="checkbox"
           checked={cheatLiveScore.value}
-          onChange={(e) => (cheatLiveScore.value = (e.target as HTMLInputElement).checked)}
+          onChange={(e) => (cheatLiveScore.value = e.currentTarget.checked)}
         />{" "}
         Show live score and the real answer while painting
       </label>
@@ -66,7 +66,7 @@ export function Cheats({ q, a, kernel }: { q: Question; a: ScoredAnswer; kernel:
           Scoring kernel{" "}
           <select
             value={soloKernelId.value}
-            onChange={(e) => (soloKernelId.value = KernelIdSchema.parse((e.target as HTMLSelectElement).value))}
+            onChange={(e) => (soloKernelId.value = KernelIdSchema.parse(e.currentTarget.value))}
             style={{ flex: 1 }}
           >
             {KERNELS.map((k) => (

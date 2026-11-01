@@ -190,7 +190,12 @@ export class GameMap {
   }
 
   private setPaintIfPresent(id: string, prop: string, value: unknown): void {
-    if (this.map.getLayer(id)) this.map.setPaintProperty(id, prop as never, value as never)
+    if (this.map.getLayer(id)) this.paintProperty(id, prop, value)
+  }
+
+  /** MapLibre types each paint property separately; ours come from tables and expressions. */
+  private paintProperty(id: string, prop: string, value: unknown): void {
+    this.map.setPaintProperty(id, prop as never, value as never)
   }
 
   /** Switch between the flat map and the globe, keeping a whole-world view whole. */
@@ -346,10 +351,10 @@ export class GameMap {
       if (!this.map.getLayer(id)) continue
       const own = this.borderPaint.get(id)
       const bold = this.revealBorders && own !== undefined
-      this.map.setPaintProperty(id, "line-color", bold ? this.theme.revealBorder : this.theme.border)
+      this.paintProperty(id, "line-color", bold ? this.theme.revealBorder : this.theme.border)
       if (!own) continue
-      this.map.setPaintProperty(id, "line-width", (bold ? REVEAL_BORDER_WIDTH : own.width) as never)
-      this.map.setPaintProperty(id, "line-opacity", (bold ? REVEAL_BORDER_OPACITY : own.opacity) as never)
+      this.paintProperty(id, "line-width", bold ? REVEAL_BORDER_WIDTH : own.width)
+      this.paintProperty(id, "line-opacity", bold ? REVEAL_BORDER_OPACITY : own.opacity)
     }
   }
 
@@ -390,22 +395,22 @@ export class GameMap {
       if (this.theme) this.applyPaintRamp(this.theme)
       return
     }
-    this.map.setPaintProperty(PAINT_FILL, "fill-color", colour)
-    this.map.setPaintProperty(PAINT_FILL, "fill-opacity", PLAYER_OPACITY as never)
+    this.paintProperty(PAINT_FILL, "fill-color", colour)
+    this.paintProperty(PAINT_FILL, "fill-opacity", PLAYER_OPACITY)
   }
 
   /** Colour each feature by its own `colour` property, for several players at once. */
   setPaintColourPerFeature(): void {
     if (!this.map.getLayer(PAINT_FILL)) return
-    this.map.setPaintProperty(PAINT_FILL, "fill-color", ["coalesce", ["get", "colour"], "#888888"])
-    this.map.setPaintProperty(PAINT_FILL, "fill-opacity", PLAYER_OPACITY as never)
+    this.paintProperty(PAINT_FILL, "fill-color", ["coalesce", ["get", "colour"], "#888888"])
+    this.paintProperty(PAINT_FILL, "fill-opacity", PLAYER_OPACITY)
   }
 
   private applyPaintRamp(t: Theme): void {
     if (!this.map.getLayer(PAINT_FILL)) return
     const ramp = paintRamp(t)
-    this.map.setPaintProperty(PAINT_FILL, "fill-color", ramp.color as never)
-    this.map.setPaintProperty(PAINT_FILL, "fill-opacity", ramp.opacity as never)
+    this.paintProperty(PAINT_FILL, "fill-color", ramp.color)
+    this.paintProperty(PAINT_FILL, "fill-opacity", ramp.opacity)
   }
 
   /** Marker at the answer: one clear dot. */

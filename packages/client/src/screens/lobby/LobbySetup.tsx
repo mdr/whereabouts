@@ -114,7 +114,7 @@ function DeviceSwitches() {
           role="switch"
           data-testid={lobbyTestIds.startOnPanSwitch}
           checked={startOnPan.value}
-          onChange={(e) => (startOnPan.value = (e.target as HTMLInputElement).checked)}
+          onChange={(e) => (startOnPan.value = e.currentTarget.checked)}
         />
         Start each round with the Pan tool (handy on a tablet)
       </label>
@@ -123,7 +123,7 @@ function DeviceSwitches() {
           type="checkbox"
           role="switch"
           checked={soundOn.value}
-          onChange={(e) => (soundOn.value = (e.target as HTMLInputElement).checked)}
+          onChange={(e) => (soundOn.value = e.currentTarget.checked)}
         />
         Sounds (spray, countdown and round cues)
       </label>
@@ -132,7 +132,7 @@ function DeviceSwitches() {
           type="checkbox"
           role="switch"
           checked={globeView.value}
-          onChange={(e) => (globeView.value = (e.target as HTMLInputElement).checked)}
+          onChange={(e) => (globeView.value = e.currentTarget.checked)}
         />
         Paint on a globe
       </label>

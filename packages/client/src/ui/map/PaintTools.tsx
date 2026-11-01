@@ -92,7 +92,7 @@ export function PaintTools({
           step={1}
           value={paint.brushSize.value}
           disabled={!enabled}
-          onInput={(e) => paint.setBrushSize(Number((e.target as HTMLInputElement).value))}
+          onInput={(e) => paint.setBrushSize(Number(e.currentTarget.value))}
         />
       </label>
       <span class={s.history}>
@@ -173,7 +173,7 @@ function Slider(props: {
         max={props.max}
         step={props.step}
         value={props.value}
-        onInput={(e) => props.onInput(Number((e.target as HTMLInputElement).value))}
+        onInput={(e) => props.onInput(Number(e.currentTarget.value))}
       />
       <output>{props.format(props.value)}</output>
     </div>

@@ -257,7 +257,7 @@ function Review({ outlines }: { outlines: Outlines }) {
                 max={1000}
                 step={10}
                 value={shouldBe}
-                onInput={(e) => setShouldBe((e.target as HTMLInputElement).value)}
+                onInput={(e) => setShouldBe(e.currentTarget.value)}
                 placeholder="optional"
               />
             </label>
@@ -265,7 +265,7 @@ function Review({ outlines }: { outlines: Outlines }) {
           <textarea
             rows={2}
             value={note}
-            onInput={(e) => setNote((e.target as HTMLTextAreaElement).value)}
+            onInput={(e) => setNote(e.currentTarget.value)}
             placeholder="Why? (optional)"
           />
           <p class={kit.hint} data-testid={scoreReviewTestIds.progress}>

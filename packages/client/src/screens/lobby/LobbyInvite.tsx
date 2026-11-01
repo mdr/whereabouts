@@ -179,7 +179,7 @@ function RenameForm({
         type="text"
         maxLength={20}
         value={name}
-        onInput={(e) => setName((e.target as HTMLInputElement).value)}
+        onInput={(e) => setName(e.currentTarget.value)}
         onKeyDown={(e) => {
           if (e.key === "Escape") onDone(undefined)
         }}
