@@ -94,7 +94,10 @@ describe("Results", () => {
     // Alice took round 1, Bob round 2.
     expect(rounds.map((r) => r.querySelector(`td.${scoreTable.best!}`)!.textContent)).toEqual(["800", "750"])
     expect(rounds[0]!.querySelectorAll(`.${pictures.smallPicture!} img`)).toHaveLength(1)
-    expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundType))!.textContent)).toEqual(["Landmark", "Place name"])
+    expect(rounds.map((r) => r.querySelector(tid(roundWhatTestIds.roundType))!.textContent)).toEqual([
+      "Landmark",
+      "Place name"
+    ])
   })
 
   it("tells a flag round from a country round: the flag, or the shape with the flag by its name", () => {
@@ -150,7 +153,10 @@ describe("Results", () => {
         "Taj Mahal, Agra",
         "Perth, Australia"
       ])
-      expect(rounds.map((r) => r.querySelector(tid(roundListTestIds.roundWinner))!.textContent)).toEqual(["Alice800", "Bob750"])
+      expect(rounds.map((r) => r.querySelector(tid(roundListTestIds.roundWinner))!.textContent)).toEqual([
+        "Alice800",
+        "Bob750"
+      ])
       // You are Bob: your score, picked out where you won.
       expect(rounds.map((r) => r.querySelector(tid(roundListTestIds.roundYours))!.textContent)).toEqual(["500", "750"])
       expect(rounds[1]!.querySelector(tid(roundListTestIds.roundYours))!.classList.contains(roundList.best!)).toBe(true)

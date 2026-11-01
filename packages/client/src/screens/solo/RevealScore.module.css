@@ -11,14 +11,3 @@
     color: var(--accent-2);
   }
 }
-.caseText {
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 6px;
-  font:
-    11px ui-monospace,
-    monospace;
-}
-.regionFit {
-  margin-top: 8px;
-}
