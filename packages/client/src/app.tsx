@@ -19,7 +19,7 @@ export function App() {
           create={r.create}
         />
       )
-    default:
+    case "home":
       return <Home />
   }
 }

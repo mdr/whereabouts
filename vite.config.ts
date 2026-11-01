@@ -167,6 +167,7 @@ export default defineConfig({
       "typescript/no-wrapper-object-types": "error",
       "typescript/only-throw-error": "error",
       "typescript/prefer-as-const": "error",
+      "typescript/switch-exhaustiveness-check": "error",
       "typescript/prefer-literal-enum-member": "error",
       "typescript/prefer-namespace-keyword": "error",
       "typescript/prefer-promise-reject-errors": "error",

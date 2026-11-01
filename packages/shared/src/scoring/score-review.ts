@@ -44,7 +44,25 @@ export enum GuessType {
   NEIGHBOUR = "NEIGHBOUR"
 }
 
-export const POINT_GUESSES: readonly GuessType[] = [
+type PointGuess =
+  | GuessType.BULLSEYE
+  | GuessType.CLOSE
+  | GuessType.NEAR_MISS
+  | GuessType.FAR_MISS
+  | GuessType.WIDE
+  | GuessType.HEDGE
+  | GuessType.SCATTERED
+type RegionGuess =
+  | GuessType.WHOLE
+  | GuessType.PART
+  | GuessType.SPILL
+  | GuessType.CENTRE
+  | GuessType.NEIGHBOUR
+  | GuessType.FAR_MISS
+  | GuessType.WIDE
+  | GuessType.HEDGE
+
+export const POINT_GUESSES: readonly PointGuess[] = [
   GuessType.BULLSEYE,
   GuessType.CLOSE,
   GuessType.NEAR_MISS,
@@ -53,7 +71,7 @@ export const POINT_GUESSES: readonly GuessType[] = [
   GuessType.HEDGE,
   GuessType.SCATTERED
 ]
-export const REGION_GUESSES: readonly GuessType[] = [
+export const REGION_GUESSES: readonly RegionGuess[] = [
   GuessType.WHOLE,
   GuessType.PART,
   GuessType.SPILL,
@@ -164,6 +182,9 @@ export function caseQuestion(q: Question, a: ScoredAnswer): ScoringCase["questio
   }
 }
 
+const isPointGuess = (t: GuessType): t is PointGuess => POINT_GUESSES.some((g) => g === t)
+const isRegionGuess = (t: GuessType): t is RegionGuess => REGION_GUESSES.some((g) => g === t)
+
 function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): ReviewGuess {
   const between = (lo: number, hi: number) => lo + (hi - lo) * rnd()
   const t = q.tolerance
@@ -181,6 +202,7 @@ function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): Review
     })
   }
   if (q.type !== AnswerType.AREA) {
+    if (!isPointGuess(type)) throw new Error(`${type} is not a guess at a point`)
     pointGuess(type, blob, between, rnd)
     return { type, layer }
   }
@@ -204,6 +226,7 @@ function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): Review
       strength
     })
   }
+  if (!isRegionGuess(type)) throw new Error(`${type} is not a guess at a region`)
   switch (type) {
     case GuessType.WHOLE:
       shape(1)
@@ -236,8 +259,6 @@ function paintGuess(q: ScoredAnswer, type: GuessType, rnd: () => number): Review
       blob(between(4, 8) * R, 0.8 * R, 1 - share)
       break
     }
-    default:
-      throw new Error(`${type} is not a guess at a region`)
   }
   return { type, layer }
 }
@@ -278,7 +299,7 @@ function scribble(layer: PaintLayer, rnd: () => number, patch: Patch): void {
 }
 
 function pointGuess(
-  type: GuessType,
+  type: PointGuess,
   blob: (at: number, radius: number, strength?: number) => void,
   between: (lo: number, hi: number) => number,
   rnd: () => number
@@ -302,8 +323,6 @@ function pointGuess(
     case GuessType.SCATTERED:
       for (let i = 3 + Math.floor(rnd() * 3); i > 0; i--) blob(between(0, 12), between(0.5, 1.5), between(0.5, 1))
       return
-    default:
-      throw new Error(`${type} is not a guess at a point`)
   }
 }
 
