@@ -9,7 +9,7 @@ import type { Question } from "../questions.ts"
 import { playedRound, questionPictures, revealOf, roundHintBand, roundView } from "./game-views.ts"
 import { pickRounds, type QuestionBank } from "./round-picking.ts"
 import { scoredAnswer } from "../scoring/regions.ts"
-import { scoreRound, type Submission } from "../scoring/round-scoring.ts"
+import { scoreRound, SubmissionType, type Submission } from "../scoring/round-scoring.ts"
 import { pickAwards, type Award } from "../awards/awards.ts"
 import { DEFAULT_HINTS, type HintAxis, type HintBand } from "../hints.ts"
 import type { PlayerId, PlayerName, PlayerToken, RoomCode } from "../ids.ts"
@@ -290,8 +290,8 @@ export class Game {
     if (player.joinedRound > this.roundIndex) return fail("sitting this round out")
     const current = this.submissions.get(token)
     // A stroke's upload can land just after the player locked in; it changes nothing.
-    if (current?.locked) return OK_SAME
-    this.submissions.set(token, { paint, locked: false })
+    if (current?.type === SubmissionType.LOCKED) return OK_SAME
+    this.submissions.set(token, { type: SubmissionType.DRAFT, paint })
     // Paint is private until the reveal, so other views do not change.
     return OK_SAME
   }
@@ -309,14 +309,13 @@ export class Game {
     if (this.phase !== Phase.GUESSING) return OK_SAME
     if (player.watching) return fail("you are watching")
     if (player.joinedRound > this.roundIndex) return fail("sitting this round out")
-    let current = this.submissions.get(token)
-    if (!current) {
-      current = { paint: { cells: {}, floor: 1 }, locked: false }
-      this.submissions.set(token, current)
-    }
-    if (current.locked) return OK_SAME
-    current.locked = true
-    current.lockedAt = now
+    const current = this.submissions.get(token)
+    if (current?.type === SubmissionType.LOCKED) return OK_SAME
+    this.submissions.set(token, {
+      type: SubmissionType.LOCKED,
+      paint: current?.paint ?? { cells: {}, floor: 1 },
+      at: now
+    })
     this.settleIfEveryoneDone(now)
     return OK_CHANGED
   }
@@ -330,8 +329,8 @@ export class Game {
     if (!player) return fail("unknown player")
     if (this.phase !== Phase.GUESSING) return OK_SAME
     const current = this.submissions.get(token)
-    if (!current?.locked) return OK_SAME
-    current.locked = false
+    if (current?.type !== SubmissionType.LOCKED) return OK_SAME
+    this.submissions.set(token, { type: SubmissionType.DRAFT, paint: current.paint })
     return OK_CHANGED
   }
 
@@ -356,7 +355,8 @@ export class Game {
    */
   private settleIfEveryoneDone(now: Instant): void {
     if (this.phase === Phase.GUESSING) {
-      if (everyoneDone(this.lockingIn(), (p) => this.submissions.get(p.token)?.locked === true)) this.finishRound()
+      if (everyoneDone(this.lockingIn(), (p) => this.submissions.get(p.token)?.type === SubmissionType.LOCKED))
+        this.finishRound()
     } else if (this.phase === Phase.REVEAL) {
       if (everyoneDone(this.present(), (p) => this.ready_.has(p.token))) this.advance(now)
     }
@@ -459,7 +459,7 @@ export class Game {
       players: playerViews(
         this.seats.all(),
         this.seats.effectiveHost(),
-        (t) => this.submissions.get(t)?.locked ?? false
+        (t) => this.submissions.get(t)?.type === SubmissionType.LOCKED
       )
     }
     const you: YouView = {
@@ -467,7 +467,7 @@ export class Game {
       isHost: me !== undefined && this.seats.isHost(me.token),
       sittingOut: me !== undefined && (me.watching || (this.phase !== Phase.LOBBY && me.joinedRound > this.roundIndex)),
       watching: me?.watching ?? false,
-      locked: this.submissions.get(token)?.locked ?? false,
+      locked: this.submissions.get(token)?.type === SubmissionType.LOCKED,
       hintsLeft: me && !me.watching ? Math.max(0, this.config.hints - me.hintsUsed) : 0,
       ...this.nextHostView(token)
     }

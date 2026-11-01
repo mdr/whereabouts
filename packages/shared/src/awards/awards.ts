@@ -8,25 +8,48 @@ import type { Km, Ms, SquareKm } from "../units.ts"
 import { candidateAwards, type Candidate } from "./award-rules.ts"
 import { shuffle } from "../questions.ts"
 
-/** What one player did in one round, kept for the awards at the end. */
-export interface RoundFacts {
+export enum FactsType {
+  PASSED = "PASSED",
+  POINT = "POINT",
+  AREA = "AREA"
+}
+
+interface BaseFacts {
   /** The place's name, for award text, e.g. "Taj Mahal, Agra". */
   label: string
   score: number
-  passed: boolean
   /** From the round's start to locking in; undefined when the clock ran out. */
   lockedAfter: Ms | undefined
   roundLength: Ms
+}
+
+interface PassedFacts extends BaseFacts {
+  type: FactsType.PASSED
+}
+
+/** A guess at a place. */
+export interface PointFacts extends BaseFacts {
+  type: FactsType.POINT
   /** Painted area. */
   area: SquareKm
   /**
-   * A place: where the paint was strongest, how far that is from the answer,
-   * and what spreading it and missing cost in points (see explain.ts).
+   * Where the paint was strongest, how far that is from the answer, and what
+   * spreading it and missing cost in points (see explain.ts).
    */
-  point?: { spot: LatLon; miss: Km; spread: number; missCost: number; hedged: boolean; tolerance: Km }
-  /** A country: the share of the paint on it, and whether the paint was all just over the border. */
-  region?: { precision: number; nextDoor: boolean }
+  point: { spot: LatLon; miss: Km; spread: number; missCost: number; hedged: boolean; tolerance: Km }
 }
+
+/** A guess at a country. */
+export interface AreaFacts extends BaseFacts {
+  type: FactsType.AREA
+  /** Painted area. */
+  area: SquareKm
+  /** The share of the paint on the country, and whether the paint was all just over the border. */
+  region: { precision: number; nextDoor: boolean }
+}
+
+/** What one player did in one round, kept for the awards at the end. */
+export type RoundFacts = PassedFacts | PointFacts | AreaFacts
 
 export interface PlayerFacts {
   playerId: PlayerId

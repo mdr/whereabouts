@@ -1,15 +1,17 @@
 import type { PlayerId } from "../ids.ts"
 import { greatCircleDistance } from "../geo.ts"
 import type { Km, Ms } from "../units.ts"
-import type { Award, PlayerFacts, RoundFacts } from "./awards.ts"
+import { FactsType, type Award, type AreaFacts, type PlayerFacts, type PointFacts, type RoundFacts } from "./awards.ts"
 
 export interface Candidate extends Award {
   booby: boolean
 }
 
+type PaintedFacts = PointFacts | AreaFacts
+
 interface PaintedRound {
   p: PlayerFacts
-  r: RoundFacts
+  r: PaintedFacts
 }
 
 /** What the rules share, worked out once. */
@@ -56,7 +58,8 @@ function top<T>(items: T[], value: (t: T) => number | undefined): { item: T; val
 }
 
 const played = (p: PlayerFacts) => p.rounds.filter((r): r is RoundFacts => r !== undefined)
-const painted = (p: PlayerFacts) => played(p).filter((r) => !r.passed)
+const painted = (p: PlayerFacts) => played(p).filter((r): r is PaintedFacts => r.type !== FactsType.PASSED)
+const pointRounds = (p: PlayerFacts) => played(p).filter((r): r is PointFacts => r.type === FactsType.POINT)
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length
 const total = (p: PlayerFacts) => played(p).reduce((s, r) => s + r.score, 0)
 const paintedArea = (p: PlayerFacts) => painted(p).reduce((s, r) => s + r.area, 0)
@@ -74,7 +77,7 @@ const bullseye: Rule = ({ rounds }) => {
 
 const offByAMile: Rule = ({ rounds }) => {
   const far = top(rounds, ({ r }) =>
-    r.point && r.point.miss >= 1500 && r.point.missCost >= 400 ? r.point.miss : undefined
+    r.type === FactsType.POINT && r.point.miss >= 1500 && r.point.missCost >= 400 ? r.point.miss : undefined
   )
   return (
     far &&
@@ -89,7 +92,7 @@ const offByAMile: Rule = ({ rounds }) => {
 
 const confidentlyWrong: Rule = ({ rounds }) => {
   const sure = top(rounds, ({ r }) =>
-    r.point && r.point.spread < 100 && r.point.missCost >= 600 ? r.point.missCost : undefined
+    r.type === FactsType.POINT && r.point.spread < 100 && r.point.missCost >= 600 ? r.point.missCost : undefined
   )
   return (
     sure &&
@@ -103,7 +106,7 @@ const confidentlyWrong: Rule = ({ rounds }) => {
 }
 
 const wrongHouse: Rule = ({ rounds }) => {
-  const door = rounds.find(({ r }) => r.region?.nextDoor)
+  const door = rounds.find(({ r }) => r.type === FactsType.AREA && r.region.nextDoor)
   return (
     door &&
     booby(
@@ -117,7 +120,9 @@ const wrongHouse: Rule = ({ rounds }) => {
 
 const borderControl: Rule = ({ rounds }) => {
   const spill = top(rounds, ({ r }) =>
-    r.region && r.region.precision >= 0.1 && r.region.precision <= 0.5 ? 1 - r.region.precision : undefined
+    r.type === FactsType.AREA && r.region.precision >= 0.1 && r.region.precision <= 0.5
+      ? 1 - r.region.precision
+      : undefined
   )
   return spill && booby("🚧", "Border Control", spill.item.p.playerId, `{0} treats borders as more of a suggestion.`)
 }
@@ -126,7 +131,7 @@ const borderControl: Rule = ({ rounds }) => {
 
 const fenceSitter: Rule = ({ players }) => {
   const sitter = top(players, (p) => {
-    const spreads = painted(p).flatMap((r) => (r.point ? [r.point.spread] : []))
+    const spreads = pointRounds(p).map((r) => r.point.spread)
     return spreads.length >= 2 && mean(spreads) >= 300 ? mean(spreads) : undefined
   })
   return (
@@ -137,7 +142,7 @@ const fenceSitter: Rule = ({ players }) => {
 
 const hedgeFundManager: Rule = ({ players }) => {
   const hedger = top(players, (p) => {
-    const n = painted(p).filter((r) => r.point?.hedged).length
+    const n = pointRounds(p).filter((r) => r.point.hedged).length
     return n >= 2 ? n : undefined
   })
   return (
@@ -153,7 +158,7 @@ const hedgeFundManager: Rule = ({ players }) => {
 
 const chicken: Rule = ({ players }) => {
   const passer = top(players, (p) => {
-    const n = played(p).filter((r) => r.passed).length
+    const n = played(p).filter((r) => r.type === FactsType.PASSED).length
     return n >= 2 ? n : undefined
   })
   return passer && booby("🐔", "Chicken", passer.item.playerId, `{0} passed ${passer.value} times. Brave.`)
@@ -332,9 +337,12 @@ const soNear: Rule = ({ players }) => {
 function sharedWrongSpots(a: PlayerFacts, b: PlayerFacts): number {
   let n = 0
   for (let r = 0; r < Math.min(a.rounds.length, b.rounds.length); r++) {
-    const pa = a.rounds[r]?.point
-    const pb = b.rounds[r]?.point
-    if (pa && pb && pa.missCost >= 100 && greatCircleDistance(pa.spot, pb.spot) < pa.tolerance) n++
+    const ra = a.rounds[r]
+    const rb = b.rounds[r]
+    if (ra?.type !== FactsType.POINT || rb?.type !== FactsType.POINT) continue
+    const pa = ra.point
+    const pb = rb.point
+    if (pa.missCost >= 100 && greatCircleDistance(pa.spot, pb.spot) < pa.tolerance) n++
   }
   return n
 }
