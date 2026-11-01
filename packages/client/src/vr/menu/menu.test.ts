@@ -2,7 +2,15 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 import { Group, type UIKitDocument, type World } from "@iwsdk/core"
 import { CONFIRM_WAIT, Menu } from "./menu"
-import { HintAllowance, VrViewType, type VrAction, type VrRound, type VrView } from "../view/view"
+import {
+  HintAllowance,
+  VrAnswerType,
+  VrPaintsType,
+  VrViewType,
+  type VrAction,
+  type VrRound,
+  type VrView
+} from "../view/view"
 
 function makeMenu() {
   const world = {
@@ -50,10 +58,11 @@ function makeReveal(actions: VrAction[]): VrView {
     round: makeRound(),
     reveal: {
       label: "Paris",
-      answer: { point: { lat: 48.9, lon: 2.4 } },
+      answer: { type: VrAnswerType.POINT, point: { lat: 48.9, lon: 2.4 } },
       focus: { lat: 48.9, lon: 2.4 },
       stateRound: false,
       scoreLine: "",
+      paints: { type: VrPaintsType.OWN },
       actions
     }
   }

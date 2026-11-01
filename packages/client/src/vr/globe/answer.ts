@@ -15,13 +15,10 @@ import {
   SphereGeometry,
   Vector3
 } from "three"
-import type { LatLon } from "@whereabouts/shared/geo"
-import type { Outline } from "@whereabouts/shared/questions"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal } from "./sphere"
 import type { Metres } from "@whereabouts/shared/units"
-
-export type VrAnswer = { point: LatLon } | { outline: Outline }
+import { VrAnswerType, type VrAnswer } from "../view/view"
 
 const PIN_LENGTH: Metres = 0.035
 const up = new Vector3(0, 1, 0)
@@ -46,10 +43,10 @@ export class AnswerMarker {
 
   show(answer: VrAnswer | undefined): void {
     this.group.visible = answer !== undefined
-    this.pin.visible = answer !== undefined && "point" in answer
-    this.outline.visible = answer !== undefined && "outline" in answer
+    this.pin.visible = answer?.type === VrAnswerType.POINT
+    this.outline.visible = answer?.type === VrAnswerType.OUTLINE
     if (!answer) return
-    if ("point" in answer) {
+    if (answer.type === VrAnswerType.POINT) {
       const at = latLonToLocal(answer.point)
       this.pin.position.copy(at).multiplyScalar(this.radius)
       this.pin.quaternion.copy(new Quaternion().setFromUnitVectors(up, at))

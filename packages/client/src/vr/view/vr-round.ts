@@ -4,7 +4,7 @@ import { onWater, outlineOf, type QuestionView } from "@whereabouts/shared/proto
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
-import type { VrReveal, VrRound } from "./view"
+import { VrAnswerType, type VrReveal, type VrRound } from "./view"
 import { areaNoun, type RevealedAnswer } from "../../round/round"
 import { vrPicture } from "../picture/vr-picture"
 import { vrFlagPins } from "../../data/borders"
@@ -76,7 +76,9 @@ export function vrReveal(
   return {
     ...own,
     label: revealed.label,
-    answer: revealed.outline ? { outline: revealed.outline } : { point: revealed.answer },
+    answer: revealed.outline
+      ? { type: VrAnswerType.OUTLINE, outline: revealed.outline }
+      : { type: VrAnswerType.POINT, point: revealed.answer },
     focus: revealed.answer,
     stateRound: question.type === QuestionType.STATE,
     fact: fact?.text,

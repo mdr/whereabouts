@@ -4,14 +4,14 @@ import { RevealDetail } from "../map/shown-detail"
 import type { VrFlagPin } from "./globe/flag-pins"
 import type { VrTable } from "./scores/scores"
 import { boardOf, flagPinsOf, globeDetail, paintsKey, patchDetail, tableOf } from "./shown"
-import { VrViewType, type VrReveal, type VrRound, type VrView } from "./view/view"
+import { VrPaintsType, VrViewType, type VrReveal, type VrRound, type VrView } from "./view/view"
 
 function makeRound(over: Partial<VrRound> = {}): VrRound {
   return { detail: MapDetail.WATER, ...over } as VrRound
 }
 
 function makeReveal(over: Partial<VrReveal> = {}): VrReveal {
-  return { stateRound: false, ...over } as VrReveal
+  return { stateRound: false, paints: { type: VrPaintsType.OWN }, ...over } as VrReveal
 }
 
 const paint = (round = makeRound()): VrView => ({ type: VrViewType.PAINT, round })
@@ -87,7 +87,7 @@ describe("paintsKey", () => {
   })
 
   it("joins the players' colours", () => {
-    const paints = [{ colour: "red" }, { colour: "blue" }] as VrReveal["paints"]
+    const paints = { type: VrPaintsType.PLAYERS, paints: [{ colour: "red" }, { colour: "blue" }] } as VrReveal["paints"]
     expect(paintsKey(reveal({ paints }))).toBe("red,blue")
   })
 })

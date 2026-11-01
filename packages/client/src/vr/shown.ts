@@ -4,7 +4,7 @@ import { RevealDetail, type ShownDetail } from "../map/shown-detail"
 import type { VrBoard } from "./scores/board"
 import type { VrFlagPin } from "./globe/flag-pins"
 import type { VrTable } from "./scores/scores"
-import { VrViewType, type VrView } from "./view/view"
+import { VrPaintsType, VrViewType, type VrView } from "./view/view"
 
 /** What the map patch over the globe draws: the reveal's state lines, or the round's detail. */
 export function patchDetail(view: VrView): MapDetail | { stateRound: boolean } | undefined {
@@ -35,5 +35,7 @@ export function flagPinsOf(view: VrView): VrFlagPin[] | undefined {
 
 /** Players' colours tell them apart, so they tell whose paint is shown. */
 export function paintsKey(view: VrView): string {
-  return view.type === VrViewType.REVEAL ? (view.reveal.paints?.map((p) => p.colour).join() ?? "own") : ""
+  if (view.type !== VrViewType.REVEAL) return ""
+  const { paints } = view.reveal
+  return paints.type === VrPaintsType.PLAYERS ? paints.paints.map((p) => p.colour).join() : "own"
 }

@@ -4,7 +4,7 @@ import { h3Res } from "@whereabouts/shared/h3"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { colouredPaint, framing } from "./reveal"
 import { latLonToLocal } from "./globe/sphere"
-import type { VrReveal, VrRound } from "./view/view"
+import { VrAnswerType, VrPaintsType, type VrReveal, type VrRound } from "./view/view"
 
 function makeLayer(at?: LatLon, km = 50): PaintLayer {
   const layer = new PaintLayer(h3Res(4))
@@ -20,7 +20,8 @@ function makeReveal(over: Partial<VrReveal> = {}): VrReveal {
   const focus = over.focus ?? { lat: 0, lon: 0 }
   return {
     label: "",
-    answer: { point: focus },
+    answer: { type: VrAnswerType.POINT, point: focus },
+    paints: { type: VrPaintsType.OWN },
     focus,
     stateRound: false,
     scoreLine: "",
@@ -55,13 +56,15 @@ describe("framing the reveal", () => {
 
   it("shows the whole world when the guesses are spread round it", () => {
     const reveal = makeReveal({
-      paints: [{ layer: makeLayer({ lat: 0, lon: 180 }), colour: "red" }]
+      paints: { type: VrPaintsType.PLAYERS, paints: [{ layer: makeLayer({ lat: 0, lon: 180 }), colour: "red" }] }
     })
     expect(framing(reveal, makeRound())).toEqual({ at: reveal.focus, reach: Math.PI })
   })
 
   it("frames the players' paint shown, not the round's own", () => {
-    const reveal = makeReveal({ paints: [{ layer: makeLayer({ lat: 0, lon: -30 }), colour: "red" }] })
+    const reveal = makeReveal({
+      paints: { type: VrPaintsType.PLAYERS, paints: [{ layer: makeLayer({ lat: 0, lon: -30 }), colour: "red" }] }
+    })
     const { at } = framing(reveal, makeRound(makeLayer({ lat: 0, lon: 30 })))
     expect(at.lon).toBeLessThan(0)
   })

@@ -2,11 +2,11 @@
 import type { CssColour } from "@whereabouts/shared/colours"
 import type { HintAxis, HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
+import type { Outline } from "@whereabouts/shared/questions"
 import type { MapDetail } from "@whereabouts/shared/protocol"
 import type { PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { PaintController } from "../../paint/paint-controller"
-import type { VrPicture } from "../picture/vr-picture"
-import type { VrAnswer } from "../globe/answer"
+import { VrPictureType, type VrPicture } from "../picture/vr-picture"
 import type { VrBoard } from "../scores/board"
 import type { VrFlagPin } from "../globe/flag-pins"
 import type { VrTable } from "../scores/scores"
@@ -64,6 +64,40 @@ export interface VrAction {
   confirm?: string
 }
 
+export enum VrAnswerType {
+  POINT = "POINT",
+  OUTLINE = "OUTLINE"
+}
+
+interface VrPointAnswer {
+  type: VrAnswerType.POINT
+  point: LatLon
+}
+
+interface VrOutlineAnswer {
+  type: VrAnswerType.OUTLINE
+  outline: Outline
+}
+
+export type VrAnswer = VrPointAnswer | VrOutlineAnswer
+
+export enum VrPaintsType {
+  OWN = "OWN",
+  PLAYERS = "PLAYERS"
+}
+
+interface VrOwnPaint {
+  type: VrPaintsType.OWN
+}
+
+interface VrPlayersPaint {
+  type: VrPaintsType.PLAYERS
+  paints: { layer: PaintLayer; colour: CssColour }[]
+}
+
+/** The paint shown at a reveal: your own, or players' in their colours as the score table picks it. */
+type VrPaints = VrOwnPaint | VrPlayersPaint
+
 /** After a round: its answer and score. */
 export interface VrReveal {
   label: string
@@ -75,8 +109,7 @@ export interface VrReveal {
   /** A line of interest about the answer. */
   fact?: string
   scoreLine: string
-  /** The paint shown in players' colours, as the score table picks it; your own paint when absent. */
-  paints?: { layer: PaintLayer; colour: CssColour }[]
+  paints: VrPaints
   table?: VrTable
   note?: string
   actions: VrAction[]
@@ -139,6 +172,6 @@ export type VrView = VrPaintView | VrRevealView | VrDoneView | VrLobbyView
 export function sceneOf(view: VrView): string {
   if (view.type !== VrViewType.PAINT && view.type !== VrViewType.REVEAL) return view.type
   const { prompt, picture } = view.round
-  const shows = picture && ("photo" in picture ? picture.photo : picture.flag)
+  const shows = picture && (picture.type === VrPictureType.PHOTO ? picture.photo : picture.flag)
   return JSON.stringify([view.type, prompt, shows])
 }

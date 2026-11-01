@@ -7,7 +7,23 @@ export interface Postcard {
   text?: string
 }
 
-export type VrPicture = { photo: CommonsFile; postcard?: Postcard } | { flag: FlagCode }
+export enum VrPictureType {
+  PHOTO = "PHOTO",
+  FLAG = "FLAG"
+}
+
+interface VrPhoto {
+  type: VrPictureType.PHOTO
+  photo: CommonsFile
+  postcard?: Postcard
+}
+
+interface VrFlag {
+  type: VrPictureType.FLAG
+  flag: FlagCode
+}
+
+export type VrPicture = VrPhoto | VrFlag
 
 /** A photo, with at the reveal a postcard back telling of the answer, or else a flag. */
 export function vrPicture(
@@ -15,8 +31,8 @@ export function vrPicture(
   flag: FlagCode | undefined,
   postcard: Postcard | undefined
 ): VrPicture | undefined {
-  if (photo) return { photo, ...(postcard ? { postcard } : {}) }
-  return flag ? { flag } : undefined
+  if (photo) return { type: VrPictureType.PHOTO, photo, ...(postcard ? { postcard } : {}) }
+  return flag ? { type: VrPictureType.FLAG, flag } : undefined
 }
 
 /**

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import type { CommonsFile, FlagCode } from "@whereabouts/shared/ids"
+import { VrPictureType } from "../picture/vr-picture"
 import { HintAllowance, VrViewType, sceneOf, type VrReveal, type VrRound, type VrView } from "./view"
 
 function makeRound(over: Partial<VrRound> = {}): VrRound {
@@ -30,14 +31,16 @@ describe("sceneOf", () => {
   })
 
   it("tells pictured questions with the same wording apart", () => {
-    const photo = (file: string) => makeRound({ prompt: "Where is this?", picture: { photo: file as CommonsFile } })
-    const flag = (code: string) => makeRound({ prompt: "Whose flag?", picture: { flag: code as FlagCode } })
+    const photo = (file: string) =>
+      makeRound({ prompt: "Where is this?", picture: { type: VrPictureType.PHOTO, photo: file as CommonsFile } })
+    const flag = (code: string) =>
+      makeRound({ prompt: "Whose flag?", picture: { type: VrPictureType.FLAG, flag: code as FlagCode } })
     expect(sceneOf(paint(photo("a.jpg")))).not.toBe(sceneOf(paint(photo("b.jpg"))))
     expect(sceneOf(paint(flag("fr")))).not.toBe(sceneOf(paint(flag("de"))))
   })
 
   it("keeps the answer's scene when its picture gains a postcard back", () => {
-    const photo = { photo: "a.jpg" as CommonsFile }
+    const photo = { type: VrPictureType.PHOTO, photo: "a.jpg" as CommonsFile } as const
     const withBack = makeRound({ picture: { ...photo, postcard: {} as never } })
     expect(sceneOf(reveal(withBack))).toBe(sceneOf(reveal(makeRound({ picture: photo }))))
   })

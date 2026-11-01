@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vite-plus/test"
 import { panelContent } from "./menu-panel"
-import { HintAllowance, VrViewType, type VrAction, type VrReveal, type VrRound, type VrView } from "../view/view"
+import {
+  HintAllowance,
+  VrAnswerType,
+  VrPaintsType,
+  VrViewType,
+  type VrAction,
+  type VrReveal,
+  type VrRound,
+  type VrView
+} from "../view/view"
 
 function makeState(over: Partial<Parameters<typeof panelContent>[1]> = {}) {
   return { armed: undefined, soundOn: true, passthroughOn: false, passthroughOffered: false, ...over }
@@ -37,10 +46,11 @@ function makeReveal(reveal: Partial<VrReveal> = {}, more?: VrAction[]): VrView {
     round: makeRound(),
     reveal: {
       label: "Paris",
-      answer: { point: { lat: 48.9, lon: 2.4 } },
+      answer: { type: VrAnswerType.POINT, point: { lat: 48.9, lon: 2.4 } },
       focus: { lat: 48.9, lon: 2.4 },
       stateRound: false,
       scoreLine: "90 points",
+      paints: { type: VrPaintsType.OWN },
       actions: [],
       ...reveal
     },

@@ -31,7 +31,15 @@ import { askedToWatch } from "../../settings/settings"
 import { paintsOf } from "../../round/reveal-paint"
 import { hostActions, pickable, takeSeat, vrPicked } from "./vr-actions"
 import { vrReveal, vrRound, type VrRoundShown } from "./vr-round"
-import { HintAllowance, VrViewType, type VrAction, type VrReveal, type VrRound, type VrView } from "./view"
+import {
+  HintAllowance,
+  VrPaintsType,
+  VrViewType,
+  type VrAction,
+  type VrReveal,
+  type VrRound,
+  type VrView
+} from "./view"
 import type { VrTable } from "../scores/scores"
 
 const named = (view: GameView, p: { id: string; name: string }) => `${p.name}${p.id === view.you.id ? " (you)" : ""}`
@@ -154,7 +162,7 @@ function gameReveal(
   const mine = reveal.results.find((r) => r.playerId === view.you.id)
   const score = mine && { score: mine.score, passed: !mine.paint, total: you(view)?.score ?? 0, painted }
   return vrReveal(shown, revealedFromView(reveal, outline), score, borders, {
-    paints: paintsOf(shownResults(reveal.results, whose), view.players),
+    paints: { type: VrPaintsType.PLAYERS, paints: paintsOf(shownResults(reveal.results, whose), view.players) },
     table: {
       title: `Round ${reveal.index + 1} of ${reveal.total}`,
       rows: model.rows.map((row) => shownRow(view, row)),

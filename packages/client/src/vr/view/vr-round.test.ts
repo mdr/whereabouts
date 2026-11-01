@@ -7,7 +7,8 @@ import type { PaintController } from "../../paint/paint-controller"
 import { areaAnswerView, makeFlagQuestion, makeQuestionView } from "../../test-view"
 import type { RevealedAnswer } from "../../round/round"
 import { answerModeText, vrReveal, vrRound, vrScoreLine, type VrRoundShown, type VrScore } from "./vr-round"
-import { HintAllowance } from "./view"
+import { VrPictureType } from "../picture/vr-picture"
+import { HintAllowance, VrAnswerType, VrPaintsType } from "./view"
 import { MapDetail } from "@whereabouts/shared/protocol"
 import { FactType } from "@whereabouts/shared/catalogue/facts"
 
@@ -92,6 +93,7 @@ describe("vrRound", () => {
     expect(round(shown()).picture).toBeUndefined()
     const fact = { type: FactType.FAME, text: "Old capital", source: sourceUrl("https://en.wikipedia.org/wiki/Kyoto") }
     expect(round(shown({ revealed: answer, fact })).picture).toEqual({
+      type: VrPictureType.PHOTO,
       photo: "Kyoto.jpg",
       postcard: { place: "Kyoto", text: "Old capital" }
     })
@@ -103,7 +105,7 @@ describe("vrRound", () => {
       answer: areaAnswerView("peru"),
       countryFlag: flagCode("pe")
     })
-    expect(round(shown({ question: peru })).picture).toEqual({ flag: "pe" })
+    expect(round(shown({ question: peru })).picture).toEqual({ type: VrPictureType.FLAG, flag: "pe" })
   })
 
   it("trims land on a lake or a sea", () => {
@@ -115,7 +117,7 @@ describe("vrRound", () => {
 })
 
 describe("vrReveal", () => {
-  const own = { actions: [] }
+  const own = { actions: [], paints: { type: VrPaintsType.OWN } as const }
 
   it("outlines an answer with an outline, and marks one without", () => {
     const outline: Outline = [
@@ -128,8 +130,14 @@ describe("vrReveal", () => {
         ]
       ]
     ]
-    expect(vrReveal(shown(), { ...answer, outline }, score(), undefined, own).answer).toEqual({ outline })
-    expect(vrReveal(shown(), answer, score(), undefined, own).answer).toEqual({ point: answer.answer })
+    expect(vrReveal(shown(), { ...answer, outline }, score(), undefined, own).answer).toEqual({
+      type: VrAnswerType.OUTLINE,
+      outline
+    })
+    expect(vrReveal(shown(), answer, score(), undefined, own).answer).toEqual({
+      type: VrAnswerType.POINT,
+      point: answer.answer
+    })
   })
 
   it("offers every country's flag on a flag round only", () => {

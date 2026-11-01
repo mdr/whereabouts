@@ -57,7 +57,7 @@ import { colouredPaint, framing } from "./reveal"
 import { PanelClearance } from "./clearance"
 import { wristActions } from "./wrist/wrist-actions"
 import { VrProbe } from "./probe"
-import { VrViewType, type VrRound, type VrView } from "./view/view"
+import { VrPaintsType, VrViewType, type VrRound, type VrView } from "./view/view"
 import { showsBorders, showsTerrain } from "../map/shown-detail"
 import type { Metres, Seconds } from "@whereabouts/shared/units"
 
@@ -409,7 +409,8 @@ export class Vr {
   }
 
   private redrawPaint(round: VrRound, now: Seconds): void {
-    const paints = this.view?.type === VrViewType.REVEAL ? this.view.reveal.paints : undefined
+    const shown = this.view?.type === VrViewType.REVEAL ? this.view.reveal.paints : undefined
+    const paints = shown?.type === VrPaintsType.PLAYERS ? shown.paints : undefined
     const paint = paints ? colouredPaint(paints) : round.paint.layer.toGeoJSON()
     this.globe.showPaint(paintGeometry(paint, THEME, PAINT_RADIUS, paints ? undefined : round.colour))
     this.shownPaintCells = paint.features.length

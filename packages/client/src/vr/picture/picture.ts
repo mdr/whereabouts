@@ -14,7 +14,7 @@ import {
   Vector3,
   type Object3D
 } from "three"
-import { VR_PHOTO_SIZE as MAX_SIZE, vrPhotoUrl, type Postcard, type VrPicture } from "./vr-picture"
+import { VR_PHOTO_SIZE as MAX_SIZE, vrPhotoUrl, type Postcard, type VrPicture, VrPictureType } from "./vr-picture"
 import { flagRatio, flagUrl } from "../../flags/flags"
 import type { Hand } from "../hands/hand"
 import { PictureBack } from "./picture-back"
@@ -109,7 +109,8 @@ export class Picture {
       (img) => {
         if (asked !== this.asked || !img) return
         // A flag's SVG has no size of its own.
-        const [w, h] = "flag" in picture ? [flagRatio(picture.flag), 1] : [img.naturalWidth, img.naturalHeight]
+        const [w, h] =
+          picture.type === VrPictureType.FLAG ? [flagRatio(picture.flag), 1] : [img.naturalWidth, img.naturalHeight]
         const fit = Math.min(MAX_SIZE / w, MAX_SIZE / h)
         const canvas = document.createElement("canvas")
         canvas.width = Math.round(w * fit)
@@ -120,7 +121,10 @@ export class Picture {
         texture.colorSpace = SRGBColorSpace
         // Sharp when tilted too; three caps it at what the GPU allows.
         texture.anisotropy = 16
-        const back = "flag" in picture ? reverse(texture) : postcard(canvas.width / canvas.height, picture.postcard)
+        const back =
+          picture.type === VrPictureType.FLAG
+            ? reverse(texture)
+            : postcard(canvas.width / canvas.height, picture.postcard)
         for (const [i, map] of [
           [FRONT, texture],
           [BACK, back]
@@ -130,8 +134,8 @@ export class Picture {
           material.map = map
           material.needsUpdate = true
         }
-        this.shownBack = "flag" in picture ? PictureBack.REVERSE : PictureBack.POSTCARD
-        this.shownPostcard = "flag" in picture ? undefined : picture.postcard
+        this.shownBack = picture.type === VrPictureType.FLAG ? PictureBack.REVERSE : PictureBack.POSTCARD
+        this.shownPostcard = picture.type === VrPictureType.FLAG ? undefined : picture.postcard
         const size = Math.min(MAX_W / w, MAX_H / h)
         this.mesh.scale.set(w * size, h * size, 1)
         this.mesh.visible = true
@@ -222,7 +226,7 @@ function wrap(g: CanvasRenderingContext2D, text: string, width: number): string[
 }
 
 async function load(picture: VrPicture): Promise<HTMLImageElement | undefined> {
-  const src = "flag" in picture ? await flagUrl(picture.flag) : await vrPhotoUrl(picture.photo)
+  const src = picture.type === VrPictureType.FLAG ? await flagUrl(picture.flag) : await vrPhotoUrl(picture.photo)
   if (!src) return undefined
   const img = new Image()
   img.crossOrigin = "anonymous"

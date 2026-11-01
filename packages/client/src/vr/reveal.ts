@@ -6,7 +6,7 @@ import type { LatLon } from "@whereabouts/shared/geo"
 import type { Radians } from "@whereabouts/shared/units"
 import type { PaintLayer } from "@whereabouts/shared/paint/paint"
 import { latLonToLocal, localToLatLon } from "./globe/sphere"
-import type { VrReveal, VrRound } from "./view/view"
+import { VrAnswerType, VrPaintsType, type VrReveal, type VrRound } from "./view/view"
 
 /**
  * Where the reveal turns the globe to, and how wide round it to show: the
@@ -15,11 +15,12 @@ import type { VrReveal, VrRound } from "./view/view"
 export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: Radians } {
   const answerPoints = [latLonToLocal(reveal.focus)]
   const { answer } = reveal
-  if ("outline" in answer)
+  if (answer.type === VrAnswerType.OUTLINE)
     for (const polygon of answer.outline)
       for (const [lon, lat] of polygon[0] ?? []) answerPoints.push(latLonToLocal({ lat: lat, lon: lon }))
   const groups = [answerPoints]
-  for (const { layer } of reveal.paints ?? [{ layer: round.paint.layer }]) {
+  const painted = reveal.paints.type === VrPaintsType.PLAYERS ? reveal.paints.paints : [{ layer: round.paint.layer }]
+  for (const { layer } of painted) {
     const cells = Object.keys(layer.toRecord()) as H3Cell[]
     if (cells.length > 0)
       groups.push(

@@ -8,7 +8,7 @@ import { navigate } from "../../router"
 import type { RevealedAnswer } from "../../round/round"
 import { PracticePhase, nextLabel, roundsTable, runMaximum, runTotal, type PracticeRun } from "../../round/practice-run"
 import { pts, vrReveal, vrRound, type VrRoundShown } from "./vr-round"
-import { HintAllowance, VrViewType, type VrView } from "./view"
+import { HintAllowance, VrPaintsType, VrViewType, type VrView } from "./view"
 
 export interface PracticeVrShown {
   paint: PaintController
@@ -69,7 +69,11 @@ export function practiceVrView(run: PracticeRun, s: PracticeVrShown): VrView {
       s.answer,
       { score: s.shownScore, passed: !run.revealed.dist, total, painted: s.where },
       s.borders,
-      { table: roundsTable(run.results), actions: [{ label: nextLabel(run), press: s.next }] }
+      {
+        paints: { type: VrPaintsType.OWN },
+        table: roundsTable(run.results),
+        actions: [{ label: nextLabel(run), press: s.next }]
+      }
     )
   }
 }
