@@ -60,7 +60,7 @@ test("host", async ({ browser }) => {
     const reason = await bobTurnedAwayPage.reason()
     check(reason === "You were removed from the game", `Bob is told: ${reason}`)
     await bobTurnedAwayPage.screenshot(shot(`host-3-bob-removed.png`))
-    await aliceRoundPage.pause(500)
+    await aliceRoundPage.playersPanel.players.waitForPlayerGone("Bob")
     const remaining = await aliceRoundPage.playersPanel.players.names()
     check(JSON.stringify(remaining) === '["Alice"]', `Alice sees ${JSON.stringify(remaining)}`)
     return bobTurnedAwayPage

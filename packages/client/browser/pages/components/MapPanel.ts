@@ -182,6 +182,27 @@ export class MapPanel {
     return this.#page.evaluate(() => [...window.testHooks.map!.paint.layer.cells.keys()])
   }
 
+  /** Paint uploads so far: tried, and of those, sent over a live connection. */
+  async paintUploads(): Promise<{ attempted: number; sent: number }> {
+    return this.#page.evaluate(() => ({ ...window.testHooks.paintUploads }))
+  }
+
+  /** Until more paint uploads than `after` have been `kind`. */
+  async waitForPaintUpload(kind: "attempted" | "sent", after: number): Promise<void> {
+    await until(
+      `a paint upload to be ${kind}`,
+      async () => (await this.paintUploads())[kind],
+      (count) => count > after
+    )
+  }
+
+  /** Runs `action` (a stroke, say) and waits for the paint upload it brings. */
+  async untilUploaded(action: () => Promise<void>, kind: "attempted" | "sent" = "sent"): Promise<void> {
+    const before = (await this.paintUploads())[kind]
+    await action()
+    await this.waitForPaintUpload(kind, before)
+  }
+
   /** Cells of paint drawn on the map: yours while guessing, whoever's is chosen at the reveal. */
   async shownPaintCells(): Promise<number> {
     return this.#page.evaluate(() => {

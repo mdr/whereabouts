@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "preact/hooks"
 import type { PlayerName } from "@whereabouts/shared/ids"
 import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
 import { Role } from "@whereabouts/shared/roles"
-import { Connection } from "../../net/net"
+import { Connection, ConnectionStatus } from "../../net/net"
 import {
   askedToWatch,
   joinedCode,
@@ -37,6 +37,13 @@ export const Multiplayer = ({ entry }: { entry: GameEntry }) => {
     if (joinedCode.value === entry.code) return nameToJoin(savedName.value)
     return undefined
   })
+
+  useEffect(() => {
+    window.testHooks.connection = { connected: () => conn.status.peek().type === ConnectionStatus.CONNECTED }
+    return () => {
+      window.testHooks.connection = undefined
+    }
+  }, [conn])
 
   useEffect(() => {
     if (entry.type === GameEntryType.HOST && !confirmedName) {

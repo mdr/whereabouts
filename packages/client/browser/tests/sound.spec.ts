@@ -6,7 +6,7 @@
 // results, and silence with the switch off.
 import { test } from "@playwright/test"
 import { Tool } from "../../src/paint/tool.ts"
-import { cueNotes, pageTime, played, recordSounds, stopped, takeSounds } from "./sounds.ts"
+import { cueNotes, pageTime, played, recordSounds, stopped, takeSounds, takeSoundsUntilPlayed } from "./sounds.ts"
 import { check, newTab, SWIFTSHADER } from "./support.ts"
 
 test.use({ launchOptions: { args: [...SWIFTSHADER, "--autoplay-policy=no-user-gesture-required"] } })
@@ -73,8 +73,7 @@ test("sound", async ({ browser }) => {
 
   // The round is 12 s, so the countdown should start about 2 s after Start.
   await test.step("the countdown starts at ten seconds left", async () => {
-    await annRoundPage.pause(1000)
-    sinceStart.push(...(await takeSounds(annTab)))
+    sinceStart.push(...(await takeSoundsUntilPlayed(annTab, "countdown")))
     const ticks = sinceStart.filter((event) => event.kind === "buffer" && event.clip === "countdown")
     const tickAt = ticks.map((event) => `${((event.at - startedAt) / 1000).toFixed(1)} s`)
     check(
@@ -116,10 +115,12 @@ test("sound", async ({ browser }) => {
   })
 
   await test.step("the final results play applause for everyone", async () => {
-    const annResultsPage = await annReveal2Page.showFinalResults()
+    await annReveal2Page.showFinalResults()
     await bobReveal2Page.waitForResults()
-    await annResultsPage.pause(400)
-    check(played(await takeSounds(annTab), "applause"), "Ann hears applause at the final results")
+    check(
+      played(await takeSoundsUntilPlayed(annTab, "applause"), "applause"),
+      "Ann hears applause at the final results"
+    )
     check(played(await takeSounds(bobTab), "applause"), "Bob hears it too")
   })
 

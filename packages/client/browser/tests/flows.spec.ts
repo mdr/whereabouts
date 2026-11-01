@@ -22,8 +22,7 @@ test("flows", async ({ browser }) => {
   let bobRoundPage = await bobLobbyPage.waitForGameToStart()
 
   await test.step("a refresh mid-round keeps the seat and the paint", async () => {
-    await aliceRoundPage.map.drag({ across: 0.5, down: 0.4 })
-    await aliceRoundPage.pause(900) // the paint uploads after a short pause
+    await aliceRoundPage.map.untilUploaded(() => aliceRoundPage.map.drag({ across: 0.5, down: 0.4 }))
     const before = await aliceRoundPage.map.shownPaintCells()
     aliceRoundPage = await aliceRoundPage.reload()
     const after = await aliceRoundPage.map.shownPaintCells()
@@ -63,9 +62,8 @@ test("flows", async ({ browser }) => {
     check((await caraRoundPage.doneButtonLabel()) === "Pass", "with nothing painted, the button reads Pass")
     const caraRoundDonePage = await caraRoundPage.finish()
     await caraRoundDonePage.screenshot(shot(`flows-cara-round2.png`))
-    await aliceRoundPage.map.drag({ across: 0.4, down: 0.5 })
     await bobRoundPage.map.drag({ across: 0.6, down: 0.5 })
-    await aliceRoundPage.pause(800)
+    await aliceRoundPage.map.untilUploaded(() => aliceRoundPage.map.drag({ across: 0.4, down: 0.5 }))
     const aliceRoundDonePage = await aliceRoundPage.finish()
     const bobRevealPage = await bobRoundPage.finishLast()
     const aliceRevealPage = await aliceRoundDonePage.waitForReveal()

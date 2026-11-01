@@ -4,6 +4,7 @@ import { Controllers } from "./Controllers.ts"
 import { installEmulator } from "./emulator.ts"
 import { HeadsetPanels } from "./HeadsetPanels.ts"
 import { HeadsetScene } from "./HeadsetScene.ts"
+import { until } from "../support.ts"
 import { probe } from "./probe.ts"
 
 /**
@@ -43,6 +44,39 @@ export class Headset {
       const p = window.headset.position
       return [p.x, p.y, p.z] as Vec3
     })
+  }
+
+  /**
+   * Until the scene has stopped changing: the globe still and its size,
+   * panels and paint the same over five frames. For a screenshot that does
+   * not depend on timing.
+   */
+  async settle(): Promise<void> {
+    const look = () =>
+      this.#page.evaluate(() => {
+        const { frames, probe } = window.testHooks.vr!
+        const layout = JSON.stringify([
+          probe.globeScale,
+          probe.panelGap,
+          probe.menuShown,
+          probe.tableShown,
+          probe.shownPaintCells,
+          probe.viewType
+        ])
+        return { frames, layout, turning: probe.globeTurning }
+      })
+    let was = await look()
+    await until(
+      "the headset scene to settle",
+      async () => {
+        const now = await look()
+        const calm = !now.turning && now.layout === was.layout && now.frames - was.frames >= 5
+        if (now.turning || now.layout !== was.layout) was = now
+        return calm
+      },
+      (calm) => calm,
+      30_000
+    )
   }
 
   /**

@@ -31,6 +31,9 @@ export const usePaintUpload = (
   const sendNow = () => {
     if (sendTimer.current) clearTimeout(sendTimer.current)
     sendTimer.current = undefined
+    const { paintUploads } = window.testHooks
+    paintUploads.attempted++
+    if (conn.status.peek().type === ConnectionStatus.CONNECTED) paintUploads.sent++
     conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.peek() })
   }
 

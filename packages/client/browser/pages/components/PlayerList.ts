@@ -34,6 +34,15 @@ export class PlayerList {
     return (await this.players()).map((player) => player.name)
   }
 
+  async waitForPlayerGone(name: string, timeout?: Ms): Promise<void> {
+    await until(
+      `${name} gone from the player list`,
+      () => this.names(),
+      (names) => !names.includes(name),
+      timeout
+    )
+  }
+
   async waitForPlayer(name: string, timeout?: Ms): Promise<void> {
     await until(
       `${name} in the player list`,

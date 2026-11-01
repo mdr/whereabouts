@@ -10,7 +10,7 @@ import { RevealPage } from "./RevealPage.ts"
 import { RoundDonePage } from "./RoundDonePage.ts"
 import { Screen } from "./Screen.ts"
 import { TurnedAwayPage } from "./TurnedAwayPage.ts"
-import { isUsable, text } from "./support.ts"
+import { isUsable, text, until } from "./support.ts"
 import type { Tab } from "./Tab.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
@@ -82,6 +82,25 @@ export class RoundPage extends Screen {
   async reload(): Promise<RoundPage> {
     await this.page.reload({ waitUntil: "networkidle" })
     return RoundPage.whenShown(this.tab)
+  }
+
+  /** Until the connection to the game has dropped. */
+  async waitForDisconnect(): Promise<void> {
+    await until(
+      "the connection to drop",
+      () => this.page.evaluate(() => window.testHooks.connection?.connected()),
+      (connected) => connected === false
+    )
+  }
+
+  /** Until the connection to the game is back. */
+  async waitForReconnect(): Promise<void> {
+    await until(
+      "the connection to come back",
+      () => this.page.evaluate(() => window.testHooks.connection?.connected()),
+      (connected) => connected === true,
+      20_000
+    )
   }
 
   /** Until the clock runs out. */

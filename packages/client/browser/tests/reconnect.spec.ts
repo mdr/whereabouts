@@ -29,15 +29,17 @@ test("reconnect", async ({ browser }) => {
   // Cut the connection, and keep it down while Alice paints.
   offline = true
   await live!.close()
-  await aliceRoundPage.pause(500)
-  await aliceRoundPage.map.drag({ across: 0.5, down: 0.4 })
-  await aliceRoundPage.pause(900) // the upload after the stroke goes nowhere
+  await aliceRoundPage.waitForDisconnect()
+  // The upload after the stroke goes nowhere.
+  await aliceRoundPage.map.untilUploaded(() => aliceRoundPage.map.drag({ across: 0.5, down: 0.4 }), "attempted")
   const painted = await aliceRoundPage.map.shownPaintCells()
+  const { sent } = await aliceRoundPage.map.paintUploads()
 
-  // Let it back; the client retries within a few seconds. A refresh then
-  // shows what the server holds.
+  // Let it back; the client retries within a few seconds and sends the paint
+  // again. A refresh then shows what the server holds.
   offline = false
-  await aliceRoundPage.pause(6000)
+  await aliceRoundPage.waitForReconnect()
+  await aliceRoundPage.map.waitForPaintUpload("sent", sent)
   aliceRoundPage = await aliceRoundPage.reload()
   const restored = await aliceRoundPage.map.shownPaintCells()
   check(painted > 0 && restored > 0, `paint drawn offline reached the server (${painted} drawn, ${restored} back)`)

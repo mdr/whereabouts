@@ -17,8 +17,7 @@ test("deadline", async ({ browser }) => {
   const bobRoundPage = await bobLobbyPage.waitForGameToStart()
 
   // Alice paints, lets it upload, then clears it all and waits out the clock.
-  await aliceRoundPage.map.drag({ across: 0.4, down: 0.5 })
-  await aliceRoundPage.pause(900)
+  await aliceRoundPage.map.untilUploaded(() => aliceRoundPage.map.drag({ across: 0.4, down: 0.5 }))
   await aliceRoundPage.paintTools.clear()
 
   // Bob starts a long stroke just before zero and keeps the button down well past it.
@@ -27,7 +26,7 @@ test("deadline", async ({ browser }) => {
   const aliceRevealPage = await aliceRoundPage.waitForReveal()
   const bobRevealPage = await bobRoundPage.waitForReveal()
   await stroke
-  await bobRevealPage.pause(500)
+  await aliceRevealPage.waitForRows(2)
 
   const rows = await aliceRevealPage.rows()
   check(

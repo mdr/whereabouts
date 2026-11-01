@@ -84,7 +84,7 @@ test("phone", async ({ browser }) => {
     await test.step("the reveal fits and its controls are usable", async () => {
       const aliceRevealPage = await aliceRoundPage.waitForReveal(60_000)
       const bobRevealPage = await bobRoundDonePage.waitForReveal(60_000)
-      await bobRevealPage.pause(1500)
+      await bobRevealPage.waitForLayoutToSettle()
       await fits(bobRevealPage, "reveal")
       check(await bobRevealPage.answerLineIsUsable(), "reveal: the question card at the top names the answer")
       check(await bobRevealPage.answerShowsAboveSheet(), "reveal: the answer shows on the map between the cards")

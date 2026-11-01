@@ -61,6 +61,14 @@ export class RevealPage extends Screen {
     )
   }
 
+  async waitForRows(count: number): Promise<void> {
+    await until(
+      `${count} player rows`,
+      async () => (await this.rows()).length,
+      (rows) => rows === count
+    )
+  }
+
   /** Show just this player's paint. */
   async showOnly(name: string): Promise<void> {
     await byTestIdWith(this.page, revealRowTestIds.playerRow, "player", name).click()
