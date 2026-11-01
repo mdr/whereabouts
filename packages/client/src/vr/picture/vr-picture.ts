@@ -1,6 +1,5 @@
 /** The headset's picture card, kept apart from the VR code so the page can say what it shows without loading it. */
 import type { CommonsFile, FlagCode } from "@whereabouts/shared/ids"
-import type { Px } from "@whereabouts/shared/units"
 
 /** What a photo's postcard back says at the reveal. */
 export interface Postcard {
@@ -24,7 +23,7 @@ export function vrPicture(
  * Sharp held a hand's width from the eyes, about 25 pixels a degree; a
  * width Commons serves (it rounds others up).
  */
-export const VR_PHOTO_SIZE: Px = 1920
+export const VR_PHOTO_SIZE = 1920
 
 const photoUrls = new Map<CommonsFile, Promise<string | undefined>>()
 

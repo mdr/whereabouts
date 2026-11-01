@@ -11,11 +11,11 @@ import type { Borders } from "@whereabouts/shared/borders"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { H3Cell, H3Res } from "@whereabouts/shared/h3"
 import { AnswerType, answerCentre, type FlagQuestion, type Outlines } from "@whereabouts/shared/questions"
-import type { LatLon, MultiPolygon, Ring } from "@whereabouts/shared/geo"
+import { kmToDegrees, type LatLon, type MultiPolygon, type Ring } from "@whereabouts/shared/geo"
 import type { PaintController } from "./paint-controller"
 import { useBorders } from "../data/borders"
 import { useOutlines } from "../data/outlines"
-import type { Px } from "@whereabouts/shared/units"
+import type { Km } from "@whereabouts/shared/units"
 
 export class CountryFiller {
   private readonly shapes = new Map<FlagCode, FillShape>()
@@ -32,10 +32,10 @@ export class CountryFiller {
 
   /**
    * The country at a point, or undefined (at sea, or where no country is named);
-   * failing that, a small country within `px` pixels at `kmPerPx`.
+   * failing that, a small country within `reach`.
    */
-  countryAt(p: LatLon, kmPerPx: number, px: Px): FlagQuestion | undefined {
-    return this.borders.countryAt(p) ?? this.borders.smallNear(p, kmPerPx, px)
+  countryAt(p: LatLon, reach: Km): FlagQuestion | undefined {
+    return this.borders.countryAt(p) ?? this.borders.smallNear(p, reach)
   }
 
   /** The country's outline, for the cursor. */
@@ -80,8 +80,8 @@ export class CountryFiller {
 }
 
 /** A ring of `km` around a point, [lon, lat], for outlining a speck of a country. */
-function circle({ lat, lon }: LatLon, km: number): Ring {
-  const dLat = km / 111.32
+function circle({ lat, lon }: LatLon, km: Km): Ring {
+  const dLat = kmToDegrees(km)
   const dLon = dLat / Math.max(0.01, Math.cos((lat * Math.PI) / 180))
   const ring: Ring = []
   for (let i = 0; i <= 32; i++) {

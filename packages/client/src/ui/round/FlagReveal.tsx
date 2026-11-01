@@ -20,6 +20,9 @@ import kit from "../kit.module.css"
 import s from "./FlagReveal.module.css"
 import type { Ms, Px } from "@whereabouts/shared/units"
 
+/** The flag atlas is drawn at this many times the size shown. */
+const ATLAS_PX_PER_CSS_PX = 4
+
 /** How near the pointer a small country's answer counts as under it: Tuvalu is far less than a pixel at world zoom. */
 const SMALL: Px = 12
 
@@ -46,11 +49,11 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
       flag.title = f.label
       const cell = atlasCell(f.clue.flag)
       if (cell) {
-        // The picture's flags are four times the size shown.
-        flag.style.width = `${cell.w / 4}px`
+        const css = (atlasPx: number): Px => atlasPx / ATLAS_PX_PER_CSS_PX
+        flag.style.width = `${css(cell.w)}px`
         flag.style.backgroundImage = `url(${FLAG_ATLAS.url})`
-        flag.style.backgroundSize = `${FLAG_ATLAS.width / 4}px ${FLAG_ATLAS.height / 4}px`
-        flag.style.backgroundPosition = `${-cell.x / 4}px ${-cell.y / 4}px`
+        flag.style.backgroundSize = `${css(FLAG_ATLAS.width)}px ${css(FLAG_ATLAS.height)}px`
+        flag.style.backgroundPosition = `${css(-cell.x)}px ${css(-cell.y)}px`
       }
       el.append(flag)
       // On the far side of the globe, hidden rather than faded.
@@ -83,12 +86,12 @@ export function AllFlagsSwitch() {
 
 /** A card by the pointer with the flag and name of the country under it. */
 export function FlagHover({ gameMap, borders }: { gameMap: GameMap; borders: Borders }) {
-  const [hit, setHit] = useState<{ f: FlagQuestion; x: number; y: number } | undefined>(undefined)
+  const [hit, setHit] = useState<{ f: FlagQuestion; x: Px; y: Px } | undefined>(undefined)
   useEffect(() => {
     const map = gameMap.map
     const show = (e: MapMouseEvent) => {
       const p = { lat: e.lngLat.lat, lon: e.lngLat.lng }
-      const f = borders.countryAt(p) ?? borders.smallNear(p, gameMap.metersPerPixel(p.lat) / 1000, SMALL)
+      const f = borders.countryAt(p) ?? borders.smallNear(p, (SMALL * gameMap.metresPerPixel(p.lat)) / 1000)
       setHit(f ? { f, x: e.originalEvent.clientX, y: e.originalEvent.clientY } : undefined)
     }
     const hide = () => setHit(undefined)

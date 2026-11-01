@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellArea, cellToLatLng, gridDisk, latLngToCell, UNITS } from "../h3.ts"
+import { cellAreaKm2, cellToLatLng, gridDisk, latLngToCell } from "../h3.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { CATALOGUE, isFlagQuestion, outlinesFrom } from "./catalogue.ts"
 import { resolutionForTolerance } from "../paint/paint.ts"
@@ -53,7 +53,7 @@ describe("flag questions", () => {
         buildDistribution(
           gridDisk(latLngToCell(lat, lon, res), 2).map((h) => {
             const [la, lo] = cellToLatLng(h)
-            return { lat: la, lon: lo, intensity: 1, area: cellArea(h, UNITS.km2), h3: h }
+            return { lat: la, lon: lo, intensity: 1, area: cellAreaKm2(h), h3: h }
           }),
           0.05
         )

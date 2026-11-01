@@ -1,9 +1,10 @@
 import type { Page } from "@playwright/test"
 import type { Tab } from "./Tab.ts"
+import type { Px } from "@whereabouts/shared/units"
 
 export interface Fit {
-  viewportWidth: number
-  scrollWidth: number
+  viewportWidth: Px
+  scrollWidth: Px
   /** Elements reaching past either side of the screen, described for a failure message. */
   overflowing: string[]
 }

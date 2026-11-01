@@ -17,11 +17,10 @@
  * to its `near` distance, or just the cell its answer is in.
  */
 import {
-  getHexagonEdgeLengthAvg,
+  edgeLengthKm,
   gridDisk,
   latLngToCell,
   polygonToCells,
-  UNITS,
   finerRes,
   h3Res,
   type H3Cell,
@@ -92,7 +91,7 @@ export function countryFill(shape: FillShape, finestRes: H3Res): H3Cell[] {
   }
   if (cells.length === 0) {
     const centre = latLngToCell(shape.answer.lat, shape.answer.lon, res)
-    const spacing = getHexagonEdgeLengthAvg(res, UNITS.km) * Math.sqrt(3)
+    const spacing = edgeLengthKm(res) * Math.sqrt(3)
     cells = gridDisk(centre, shape.near ? Math.round(shape.near / spacing) : 0)
   }
   return cells

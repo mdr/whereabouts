@@ -12,7 +12,7 @@ import { GameMap } from "../../map/map"
 import { RevealDetail } from "../../map/shown-detail"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal } from "./sphere"
-import type { Km, Metres, Seconds } from "@whereabouts/shared/units"
+import type { Degrees, Km, Metres, Seconds } from "@whereabouts/shared/units"
 
 const SIZE = 1024
 const PIXEL_RATIO = 2
@@ -24,8 +24,8 @@ const POLL: Seconds = 0.25
 const EQUATOR: Metres = 40_075_016.686
 const RAD = Math.PI / 180
 
-const mercY = (lat: number) => Math.log(Math.tan(Math.PI / 4 + (lat * RAD) / 2))
-const mercLat = (y: number) => (2 * Math.atan(Math.exp(y)) - Math.PI / 2) / RAD
+const mercY = (lat: Degrees) => Math.log(Math.tan(Math.PI / 4 + (lat * RAD) / 2))
+const mercLat = (y: number): Degrees => (2 * Math.atan(Math.exp(y)) - Math.PI / 2) / RAD
 
 export class DetailPatch {
   readonly mesh: Mesh<BufferGeometry, MeshBasicMaterial>

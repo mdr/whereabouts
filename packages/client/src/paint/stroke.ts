@@ -1,8 +1,9 @@
 /** The geometry and touch rules of a brush stroke, apart from the map they act on. */
+import type { Px } from "@whereabouts/shared/units"
 
 export interface ScreenPoint {
-  x: number
-  y: number
+  x: Px
+  y: Px
 }
 
 /**
@@ -10,7 +11,7 @@ export interface ScreenPoint {
  * `to`: evenly a quarter of the brush apart (at least 2 px), so a fast drag
  * leaves no gaps and a slow one doesn't pile stamps up.
  */
-export function strokePoints(from: ScreenPoint | undefined, to: ScreenPoint, brushSize: number): ScreenPoint[] {
+export function strokePoints(from: ScreenPoint | undefined, to: ScreenPoint, brushSize: Px): ScreenPoint[] {
   if (!from) return [to]
   const dx = to.x - from.x
   const dy = to.y - from.y

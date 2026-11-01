@@ -155,7 +155,7 @@ interface RoundsProps {
 function Rounds(props: RoundsProps) {
   const { rounds, standings } = props
   const ref = useElementRef<HTMLElement>()
-  const [width, setWidth] = useState<number | undefined>(undefined)
+  const [width, setWidth] = useState<Px | undefined>(undefined)
   const [everyone, setEveryone] = useState(false)
   useEffect(() => {
     const el = ref.current

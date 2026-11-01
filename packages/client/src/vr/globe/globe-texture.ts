@@ -4,7 +4,7 @@
  * answer away.
  */
 import {
-  cellToBoundary,
+  cellBoundaryLonLat,
   cellToChildren,
   cellToLatLng,
   getResolution,
@@ -15,13 +15,15 @@ import {
 } from "@whereabouts/shared/h3"
 import { decodeRing, ringOf, type BordersData } from "@whereabouts/shared/borders"
 import type { Ring } from "@whereabouts/shared/geo"
+import type { Degrees } from "@whereabouts/shared/units"
 import type { LandMaskData } from "@whereabouts/shared/paint/land"
 import { Vector3 } from "three"
+import { MAX_LAT } from "../../map/map-geometry"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal, localToLatLon } from "./sphere"
 
-const x = (lon: number, w: number) => ((lon + 180) / 360) * w
-const y = (lat: number, h: number) => ((90 - lat) / 180) * h
+const x = (lon: Degrees, w: number) => ((lon + 180) / 360) * w
+const y = (lat: Degrees, h: number) => ((90 - lat) / 180) * h
 
 /** Trace a ring of [lon, lat] points, and again a world to the left if it runs past 180°. */
 function traceRing(ctx: CanvasRenderingContext2D, ring: Ring, w: number, h: number): void {
@@ -48,7 +50,7 @@ const EDGE_STEP = (0.1 * Math.PI) / 180
  * by many pixels, so long ones go in short steps.
  */
 export function cellRing(cell: H3Cell): Ring | undefined {
-  let b = alongGreatCircles(cellToBoundary(cell, true))
+  let b = alongGreatCircles(cellBoundaryLonLat(cell))
   const lons = b.map(([lon]) => lon)
   if (Math.max(...lons) - Math.min(...lons) <= 180) return b
   b = b.map(([lon, lat]) => [lon < 0 ? lon + 360 : lon, lat])
@@ -139,7 +141,6 @@ export function drawLand(canvas: HTMLCanvasElement, land: LandMaskData, theme: T
 /** Natural Earth II colour relief, as the page's map shows on the reveal; its zoom 2 is about the land picture's detail. */
 const COLOUR_TILES = "https://tiles.openfreemap.org/natural_earth/ne2sr/2/{x}/{y}.png"
 const COLOUR_TILE_COUNT = 4
-const MERCATOR_MAX_LAT = 85.0511
 
 /**
  * The land picture with natural colour over the land, dimmed as the page's
@@ -179,7 +180,7 @@ export async function drawColour(
   const size = mercator.height
   for (let j = 0; j < h; j++) {
     const lat = 90 - ((j + 0.5) / h) * 180
-    if (Math.abs(lat) > MERCATOR_MAX_LAT) continue
+    if (Math.abs(lat) > MAX_LAT) continue
     const merc = Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360))
     const sy = ((1 - merc / Math.PI) / 2) * size
     f.drawImage(mercator, 0, Math.min(size - 1, Math.floor(sy)), size, 1, 0, j, w, 1)

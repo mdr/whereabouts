@@ -14,10 +14,8 @@ import type { FlagQuestion } from "@whereabouts/shared/questions"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { StrokeTool } from "./tool"
 import type { CountryFiller } from "./fill"
-import type { Km, Ms, Px } from "@whereabouts/shared/units"
+import type { Km, Ms } from "@whereabouts/shared/units"
 
-/** How near a point a small country's answer counts as under it, in pixels, for the Fill tool. */
-export const FILL_SMALL: Px = 12
 const HISTORY_LIMIT = 50
 const SETTLE: Ms = 200
 
@@ -160,9 +158,9 @@ export class PaintModel {
     this._fillable.value = on && this.filler !== undefined
   }
 
-  /** The country at a point, or a small one within FILL_SMALL pixels of it at `kmPerPx`. */
-  countryAt(at: LatLon, kmPerPx: number): FlagQuestion | undefined {
-    return this.filler?.countryAt(at, kmPerPx, FILL_SMALL)
+  /** The country at a point, or a small one within `reach` of it. */
+  countryAt(at: LatLon, reach: Km): FlagQuestion | undefined {
+    return this.filler?.countryAt(at, reach)
   }
 
   /** The country's outline, for the cursor. */
@@ -178,14 +176,14 @@ export class PaintModel {
    * Fill the country at a point with an even coat (see fill.ts), or take the
    * fill off if it is already filled; one undoable step. Nothing at sea.
    */
-  fillAt(at: LatLon, kmPerPx: number): void {
-    const f = this.countryAt(at, kmPerPx)
+  fillAt(at: LatLon, reach: Km): void {
+    const f = this.countryAt(at, reach)
     if (f) this.fill(f)
   }
 
   /** As fillAt, from outside the map: a small country counts within `near`. */
   fillOutside(at: LatLon, near: Km): void {
-    this.fillAt(at, near / FILL_SMALL)
+    this.fillAt(at, near)
   }
 
   private fill(f: FlagQuestion): void {

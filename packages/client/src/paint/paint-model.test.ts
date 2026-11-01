@@ -7,7 +7,7 @@ import { AnswerType, answerCentre, type FlagQuestion } from "@whereabouts/shared
 import { makeFlagQuestion } from "../test-view"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { Tool } from "./tool"
-import { FILL_SMALL, PaintModel, type Filler } from "./paint-model"
+import { PaintModel, type Filler } from "./paint-model"
 import { HintAxis } from "@whereabouts/shared/hints"
 import type { Km } from "@whereabouts/shared/units"
 
@@ -229,12 +229,12 @@ describe("PaintModel", () => {
       expect(model.layer.isEmpty).toBe(true)
     })
 
-    it("counts a small country within FILL_SMALL pixels of the point", () => {
+    it("counts a small country within the reach of the point", () => {
       const model = makeModel()
       const filler = makeFiller()
       model.useFiller(filler)
-      model.fillAt(PARIS, 2)
-      expect(filler.countryAt).toHaveBeenLastCalledWith(PARIS, 2, FILL_SMALL)
+      model.fillAt(PARIS, 24)
+      expect(filler.countryAt).toHaveBeenLastCalledWith(PARIS, 24)
     })
 
     it("from outside the map, counts a small country within a distance", () => {
@@ -242,7 +242,7 @@ describe("PaintModel", () => {
       const filler = makeFiller()
       model.useFiller(filler)
       model.fillOutside(PARIS, 60)
-      expect(filler.countryAt).toHaveBeenLastCalledWith(PARIS, 60 / FILL_SMALL, FILL_SMALL)
+      expect(filler.countryAt).toHaveBeenLastCalledWith(PARIS, 60)
       expect(model.layer.isEmpty).toBe(false)
     })
   })

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vite-plus/test"
 import { HintAxis } from "@whereabouts/shared/hints"
-import { bounds, boxAround, hintFeatures, MAX_LAT, toleranceBox } from "./map-geometry"
+import { bounds, boxAround, hintFeatures, MAX_LAT, MIN_LAT, toleranceBox } from "./map-geometry"
 import type { Box, Ring } from "@whereabouts/shared/geo"
+import type { Km } from "@whereabouts/shared/units"
 
 function polygon(ring: Ring, ...holes: Ring[]): GeoJSON.Feature {
   return { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [ring, ...holes] } }
@@ -61,11 +62,11 @@ describe("hintFeatures", () => {
     const features = hintFeatures({ axis: HintAxis.LATITUDE, from: -90, to: 40 })
     expect(features).toHaveLength(1)
     expect(ringOf(features[0]!)).toEqual([
-      [-180, -MAX_LAT],
-      [180, -MAX_LAT],
+      [-180, MIN_LAT],
+      [180, MIN_LAT],
       [180, 40],
       [-180, 40],
-      [-180, -MAX_LAT]
+      [-180, MIN_LAT]
     ])
   })
 
@@ -73,8 +74,8 @@ describe("hintFeatures", () => {
     const features = hintFeatures({ axis: HintAxis.LONGITUDE, from: 10, to: 30 })
     expect(features.map((f) => ringOf(f).slice(0, 3))).toEqual([
       [
-        [10, -MAX_LAT],
-        [30, -MAX_LAT],
+        [10, MIN_LAT],
+        [30, MIN_LAT],
         [30, MAX_LAT]
       ]
     ])
@@ -89,15 +90,18 @@ describe("hintFeatures", () => {
   })
 })
 
+/** A degree of arc on the ground, to the precision these tests check. */
+const KM_PER_DEGREE: Km = 111.195
+
 describe("toleranceBox", () => {
   it("is two tolerances tall, and as wide, at the equator", () => {
-    const [w, s, e, n] = toleranceBox({ lat: 0, lon: 0 }, 111)
+    const [w, s, e, n] = toleranceBox({ lat: 0, lon: 0 }, KM_PER_DEGREE)
     expect(n - s).toBeCloseTo(4)
     expect(e - w).toBeCloseTo(4)
   })
 
   it("caps the width near a pole", () => {
-    const [w, s, e, n] = toleranceBox({ lat: 89, lon: 0 }, 111)
+    const [w, s, e, n] = toleranceBox({ lat: 89, lon: 0 }, KM_PER_DEGREE)
     expect((n - s) / 2).toBeCloseTo(2)
     expect((e - w) / 2).toBeCloseTo(2 / 0.2)
   })

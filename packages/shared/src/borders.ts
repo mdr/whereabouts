@@ -20,7 +20,7 @@ import { answerCentre, type FlagQuestion } from "./questions.ts"
 import { flagCode, type FlagCode } from "./ids.ts"
 import type { PaintCell } from "./paint/paint.ts"
 import { FillShapeType, type FillShape } from "./paint/fill.ts"
-import type { Km, Px } from "./units.ts"
+import type { Degrees, Km } from "./units.ts"
 
 /** A ring as borders.json stores it: [lon, lat] steps in hundredths of a degree, the first from 0, 0. */
 export type RingSteps = number[]
@@ -105,15 +105,15 @@ export class Borders {
 
   /**
    * The small or scattered country with the nearest answer to this point, if
-   * it is within `px` pixels (at `kmPerPx`) or the country's own `near`. For
-   * the pointer: at world zoom Tuvalu is far less than a pixel across.
+   * it is within `reach` or the country's own `near`. For the pointer: at
+   * world zoom Tuvalu is far less than a pixel across.
    */
-  smallNear(p: LatLon, kmPerPx: number, px: Px): FlagQuestion | undefined {
+  smallNear(p: LatLon, reach: Km): FlagQuestion | undefined {
     let best: FlagQuestion | undefined = undefined
     let bestD = Infinity
     for (const { f, near } of this.small) {
       const d = greatCircleDistance(p, answerCentre(f.answer))
-      if (d <= Math.max(near, px * kmPerPx) && d < bestD) [best, bestD] = [f, d]
+      if (d <= Math.max(near, reach) && d < bestD) [best, bestD] = [f, d]
     }
     return best
   }
@@ -171,7 +171,7 @@ export class Borders {
   }
 
   private nearSmall(p: LatLon): FlagQuestion | undefined {
-    return this.smallNear(p, 0, 0)
+    return this.smallNear(p, 0)
   }
 
   private onLand({ lat, lon }: LatLon): FlagQuestion | undefined {
@@ -224,14 +224,14 @@ export function decodeRing(steps: RingSteps): FlatRing {
 }
 
 /** Ray casting in plain longitude and latitude, as Natural Earth's rings are drawn. */
-function inRing(r: FlatRing, x: number, y: number): boolean {
+function inRing(r: FlatRing, lon: Degrees, lat: Degrees): boolean {
   let inside = false
   for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2) {
     const xi = r[i]!,
       yi = r[i + 1]!,
       xj = r[j]!,
       yj = r[j + 1]!
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside
+    if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside
   }
   return inside
 }

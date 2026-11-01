@@ -9,7 +9,7 @@ export interface LatLon {
 }
 
 /** [lon, lat] in degrees: GeoJSON's order, the reverse of LatLon. */
-export type LonLat = [lon: number, lat: number]
+export type LonLat = [lon: Degrees, lat: Degrees]
 /** A closed loop of points. */
 export type Ring = LonLat[]
 /** An outer ring, then its holes. */
@@ -17,10 +17,15 @@ type Polygon = Ring[]
 /** One polygon per separate piece of land. */
 export type MultiPolygon = Polygon[]
 /** West, south, east, north, in degrees. */
-export type Box = [west: number, south: number, east: number, north: number]
+export type Box = [west: Degrees, south: Degrees, east: Degrees, north: Degrees]
 
-/** Unit-free 3D position on the Earth sphere, in kilometres. */
-export type Xyz = readonly [number, number, number]
+/** 3D position on the Earth sphere. */
+export type Xyz = readonly [x: Km, y: Km, z: Km]
+
+/** Degrees of arc along a great circle that span `km` on the ground. */
+export function kmToDegrees(km: Km): Degrees {
+  return km / ((EARTH_RADIUS * Math.PI) / 180)
+}
 
 export function toXyz({ lat, lon }: LatLon): Xyz {
   const la = (lat * Math.PI) / 180

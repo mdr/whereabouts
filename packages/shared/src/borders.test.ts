@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell, UNITS } from "./h3.ts"
+import { cellAreaKm2, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell } from "./h3.ts"
 import bordersJson from "../borders.json" with { type: "json" }
 import { Borders } from "./borders.ts"
 import type { PaintCell } from "./paint/paint.ts"
@@ -12,7 +12,7 @@ const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label
 
 function cell(h: H3Cell, intensity = 1): PaintCell {
   const [lat, lon] = cellToLatLng(h)
-  return { lat, lon, intensity, area: cellArea(h, UNITS.km2), h3: h }
+  return { lat, lon, intensity, area: cellAreaKm2(h), h3: h }
 }
 
 describe("borders", () => {
@@ -70,8 +70,8 @@ describe("borders", () => {
 
   it("finds a small country within a few pixels of the pointer", () => {
     // 25 km off Funafuti: beyond Tuvalu's own 15 km, but within 10 px at 5 km a pixel.
-    expect(borders.smallNear({ lat: -8.3, lon: 179.2 }, 0, 0)).toBeUndefined()
-    expect(borders.smallNear({ lat: -8.3, lon: 179.2 }, 5, 10)?.label).toBe("Tuvalu")
+    expect(borders.smallNear({ lat: -8.3, lon: 179.2 }, 0)).toBeUndefined()
+    expect(borders.smallNear({ lat: -8.3, lon: 179.2 }, 50)?.label).toBe("Tuvalu")
   })
 
   it("splits paint by country, by mass", () => {

@@ -10,6 +10,8 @@
  */
 import * as h3 from "h3-js"
 import { z } from "zod"
+import type { Ring } from "./geo.ts"
+import type { Degrees, Km, SquareKm } from "./units.ts"
 
 export const H3CellSchema = z
   .string()
@@ -49,16 +51,15 @@ const cells = (hs: string[]) => hs as H3Cell[]
 export const cellEntries = <V>(record: Readonly<Record<H3Cell, V>>): [H3Cell, V][] =>
   Object.entries(record) as [H3Cell, V][]
 
-export const UNITS = h3.UNITS
-type Unit = (typeof h3.UNITS)[keyof typeof h3.UNITS]
-
-export const latLngToCell = (lat: number, lng: number, res: H3Res): H3Cell => cell(h3.latLngToCell(lat, lng, res))
+export const latLngToCell = (lat: Degrees, lng: Degrees, res: H3Res): H3Cell => cell(h3.latLngToCell(lat, lng, res))
 export const cellToParent = (h: H3Cell, res: H3Res): H3Cell => cell(h3.cellToParent(h, res))
 export const cellToChildren = (h: H3Cell, res: H3Res): H3Cell[] => cells(h3.cellToChildren(h, res))
 export const getResolution = (h: H3Cell): H3Res => h3.getResolution(h) as H3Res
-export const cellToLatLng = (h: H3Cell) => h3.cellToLatLng(h)
-export const cellToBoundary = (h: H3Cell, formatAsGeoJson?: boolean) => h3.cellToBoundary(h, formatAsGeoJson)
-export const cellArea = (h: H3Cell, unit: Unit): number => h3.cellArea(h, unit)
+export const cellToLatLng = (h: H3Cell): [lat: Degrees, lng: Degrees] => h3.cellToLatLng(h)
+export const cellBoundaryLatLng = (h: H3Cell): [lat: Degrees, lng: Degrees][] => h3.cellToBoundary(h)
+/** GeoJSON order, as `LonLat`. */
+export const cellBoundaryLonLat = (h: H3Cell): Ring => h3.cellToBoundary(h, true)
+export const cellAreaKm2 = (h: H3Cell): SquareKm => h3.cellArea(h, h3.UNITS.km2)
 export const gridDisk = (h: H3Cell, k: number): H3Cell[] => cells(h3.gridDisk(h, k))
 export const gridDiskDistances = (h: H3Cell, k: number): H3Cell[][] => h3.gridDiskDistances(h, k) as H3Cell[][]
 export const gridDistance = (a: H3Cell, b: H3Cell): number => h3.gridDistance(a, b)
@@ -66,7 +67,7 @@ export const polygonToCells = (polygon: number[][] | number[][][], res: H3Res, i
   cells(h3.polygonToCells(polygon, res, isGeoJson))
 export const cellsToMultiPolygon = (hs: H3Cell[], formatAsGeoJson?: boolean) =>
   h3.cellsToMultiPolygon(hs, formatAsGeoJson)
-export const getHexagonEdgeLengthAvg = (res: H3Res, unit: Unit): number => h3.getHexagonEdgeLengthAvg(res, unit)
+export const edgeLengthKm = (res: H3Res): Km => h3.getHexagonEdgeLengthAvg(res, h3.UNITS.km)
 export const getRes0Cells = (): H3Cell[] => cells(h3.getRes0Cells())
 
 /** A cell's 64-bit index as its lower and upper 32 bits, for binary paint. */

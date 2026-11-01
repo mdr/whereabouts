@@ -7,6 +7,12 @@ import { CLOSE } from "../../keyboard/shortcuts"
 import { useElementRef } from "../element-ref"
 import { cx } from "../cx"
 import lb from "./Lightbox.module.css"
+import type { Px } from "@whereabouts/shared/units"
+
+interface Position {
+  x: Px
+  y: Px
+}
 
 /** Calls `close` on Escape while `open`. */
 export function useEscape(open: boolean, close: () => void): void {
@@ -88,14 +94,14 @@ export function Lightbox({
   onClose: () => void
 }) {
   const [zoom, setZoom] = useState(1)
-  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [pan, setPan] = useState<Position>({ x: 0, y: 0 })
   const frame = useElementRef<HTMLDivElement>()
-  const pointers = useRef(new Map<number, { x: number; y: number }>())
-  const pinchDist = useRef<number | undefined>(undefined)
+  const pointers = useRef(new Map<number, Position>())
+  const pinchDist = useRef<Px | undefined>(undefined)
   const dragged = useRef(false)
 
   /** Zoom by `factor` keeping the point (cx, cy), relative to the frame centre, fixed. */
-  function zoomAt(factor: number, cx: number, cy: number) {
+  function zoomAt(factor: number, cx: Px, cy: Px) {
     const next = Math.min(MAX_ZOOM, Math.max(1, zoom * factor))
     if (next === zoom) return
     const k = next / zoom
@@ -103,7 +109,7 @@ export function Lightbox({
     setZoom(next)
   }
   /** Client coordinates to an offset from the frame centre. */
-  function fromCentre(clientX: number, clientY: number) {
+  function fromCentre(clientX: Px, clientY: Px) {
     const r = frame.current?.getBoundingClientRect()
     if (!r) return { cx: 0, cy: 0 }
     return { cx: clientX - (r.left + r.width / 2), cy: clientY - (r.top + r.height / 2) }

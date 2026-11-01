@@ -13,7 +13,7 @@ import "maplibre-gl/dist/maplibre-gl.css"
 // file exists, so hand it a worker Vite has bundled and knows the URL of.
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url"
 export { mapWorkerUrl }
-import { cellToBoundary, type H3Cell } from "@whereabouts/shared/h3"
+import { cellBoundaryLatLng, type H3Cell } from "@whereabouts/shared/h3"
 import { cellsOutline } from "@whereabouts/shared/paint/paint"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { LatLon, LonLat } from "@whereabouts/shared/geo"
@@ -51,7 +51,7 @@ import {
   showsTerrain,
   type ShownDetail
 } from "./shown-detail"
-import type { Km } from "@whereabouts/shared/units"
+import type { Degrees, Km, Metres, Px } from "@whereabouts/shared/units"
 
 setWorkerUrl(mapWorkerUrl)
 
@@ -75,7 +75,7 @@ const REVEAL_BORDER_OPACITY = ["interpolate", ["linear"], ["zoom"], 1, 0.55, 2.5
 const PLACE_LABELS = ["label_other", "label_village", "label_town", "label_state", "label_city", "label_city_capital"]
 
 /** The flat map's zoom that shows the whole world on a map `width` px wide. */
-export function flatWorldZoom(width: number): number {
+export function flatWorldZoom(width: Px): number {
   return matchMedia(PHONE).matches ? Math.min(WORLD_ZOOM, Math.log2(width / WORLD_PX_Z0)) : WORLD_ZOOM
 }
 
@@ -367,7 +367,7 @@ export class GameMap {
 
   /** Outline the cells the next stamp would touch; undefined hides it. Dotted when erasing. */
   setCursorFootprint(cells: H3Cell[] | undefined, erase = false): void {
-    const shown = cells?.filter((c) => cellToBoundary(c).every(([lat]) => drawable(lat)))
+    const shown = cells?.filter((c) => cellBoundaryLatLng(c).every(([lat]) => drawable(lat)))
     const features: GeoJSON.Feature[] = shown?.length
       ? [{ type: "Feature", properties: { erase }, geometry: cellsOutline(shown) }]
       : []
@@ -448,7 +448,7 @@ export class GameMap {
   }
 
   /** At a latitude on the flat map. A globe has one scale, the flat map's at the view's centre. */
-  metersPerPixel(lat: number): number {
+  metresPerPixel(lat: Degrees): Metres {
     return metresPerPixel(this.globe ? this.map.getCenter().lat : lat, this.map.getZoom())
   }
 

@@ -41,6 +41,7 @@ import {
   type LucideProps
 } from "lucide-preact"
 import type { FunctionComponent } from "preact"
+import type { Px } from "@whereabouts/shared/units"
 
 // A globe with the band each hint shades on the map: across it, or up and down it.
 const LatitudeBand = createLucideIcon("latitude-band", [
@@ -116,7 +117,7 @@ const ICONS = {
 
 export type IconName = keyof typeof ICONS
 
-export function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
+export function Icon({ name, size = 16 }: { name: IconName; size?: Px }) {
   const Glyph = ICONS[name]
   return <Glyph class="icon" size={size} strokeWidth={2} aria-hidden="true" />
 }

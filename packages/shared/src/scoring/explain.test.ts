@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell, UNITS } from "../h3.ts"
+import { cellAreaKm2, cellToLatLng, gridDisk, type H3Cell, h3Res, latLngToCell } from "../h3.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { explainPoint, isHedge, type PointExplanation } from "./explain.ts"
 import { resolutionForTolerance } from "../paint/paint.ts"
@@ -12,7 +12,7 @@ const coat = (cells: H3Cell[]) =>
   buildDistribution(
     cells.map((h) => {
       const [lat, lon] = cellToLatLng(h)
-      return { lat, lon, intensity: 1, area: cellArea(h, UNITS.km2), h3: h }
+      return { lat, lon, intensity: 1, area: cellAreaKm2(h), h3: h }
     }),
     0.05
   )

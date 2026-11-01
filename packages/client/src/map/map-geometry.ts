@@ -1,27 +1,28 @@
 import type { LngLatBoundsLike, PaddingOptions } from "maplibre-gl"
 import { HintAxis, type HintBand } from "@whereabouts/shared/hints"
-import type { Box, LatLon, Ring } from "@whereabouts/shared/geo"
-import type { Km, Metres, Px } from "@whereabouts/shared/units"
+import { kmToDegrees, type Box, type LatLon, type Ring } from "@whereabouts/shared/geo"
+import type { Degrees, Km, Metres, Px } from "@whereabouts/shared/units"
 
 /** World circumference at the equator in metres, for metres-per-pixel maths. */
 const EQUATOR: Metres = 40075016.686
 /** MapLibre's world is 512 px wide at zoom 0. */
-export const WORLD_PX_Z0 = 512
+export const WORLD_PX_Z0: Px = 512
 /**
  * MapLibre's tiles stop this far north and south. Paint beyond it is never
  * seen on the flat map, and a globe smears it into a fan at the pole.
  */
-export const MAX_LAT = 85.0511
+export const MAX_LAT: Degrees = 85.0511
+export const MIN_LAT: Degrees = 0 - MAX_LAT
 /** The globe's starting size: its radius as a share of the map's shorter side. */
 const GLOBE_FILL = 0.4
 
-export function drawable(lat: number): boolean {
+export function drawable(lat: Degrees): boolean {
   return Math.abs(lat) <= MAX_LAT
 }
 
 /** A band as polygons: a longitude band across 180° is two, one each side. */
 export function hintFeatures(band: HintBand): GeoJSON.Feature[] {
-  const box = (west: number, east: number, south: number, north: number): GeoJSON.Feature => ({
+  const box = (west: Degrees, east: Degrees, south: Degrees, north: Degrees): GeoJSON.Feature => ({
     type: "Feature",
     properties: {},
     geometry: {
@@ -37,10 +38,9 @@ export function hintFeatures(band: HintBand): GeoJSON.Feature[] {
       ]
     }
   })
-  const p = MAX_LAT
-  if (band.axis === HintAxis.LATITUDE) return [box(-180, 180, Math.max(band.from, -p), Math.min(band.to, p))]
-  if (band.from <= band.to) return [box(band.from, band.to, -p, p)]
-  return [box(band.from, 180, -p, p), box(-180, band.to, -p, p)]
+  if (band.axis === HintAxis.LATITUDE) return [box(-180, 180, Math.max(band.from, MIN_LAT), Math.min(band.to, MAX_LAT))]
+  if (band.from <= band.to) return [box(band.from, band.to, MIN_LAT, MAX_LAT)]
+  return [box(band.from, 180, MIN_LAT, MAX_LAT), box(-180, band.to, MIN_LAT, MAX_LAT)]
 }
 
 function outerRingPoints(features: GeoJSON.Feature[]): Ring {
@@ -63,7 +63,7 @@ export function boxAround(features: GeoJSON.Feature[], box: Box): Box {
 
 /** Always at least two tolerances around the answer. */
 export function toleranceBox(answer: LatLon, tolerance: Km): Box {
-  const dLat = (2 * tolerance) / 111
+  const dLat = kmToDegrees(2 * tolerance)
   const dLon = dLat / Math.max(0.2, Math.cos((answer.lat * Math.PI) / 180))
   return [answer.lon - dLon, answer.lat - dLat, answer.lon + dLon, answer.lat + dLat]
 }
@@ -80,7 +80,8 @@ export function offsetFor(p: Required<PaddingOptions>): [x: Px, y: Px] {
   return [(p.left - p.right) / 2, (p.top - p.bottom) / 2]
 }
 
-export function metresPerPixel(lat: number, zoom: number): number {
+/** The ground length of one CSS pixel. */
+export function metresPerPixel(lat: Degrees, zoom: number): Metres {
   return (EQUATOR * Math.cos((lat * Math.PI) / 180)) / (WORLD_PX_Z0 * Math.pow(2, zoom))
 }
 
@@ -89,7 +90,7 @@ export function metresPerPixel(lat: number, zoom: number): number {
  * perspective a sphere of radius R px, seen from f px away, shows a disc of
  * radius f tan(asin(R / (f + R))).
  */
-export function globeWorldZoom(width: number, height: number, fovDegrees: number, lat: number): number {
+export function globeWorldZoom(width: Px, height: Px, fovDegrees: Degrees, lat: Degrees): number {
   const disc = GLOBE_FILL * Math.min(width, height)
   const f = height / 2 / Math.tan((fovDegrees * Math.PI) / 360)
   const sin = disc / Math.hypot(f, disc)

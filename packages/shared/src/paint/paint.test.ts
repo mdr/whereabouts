@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vite-plus/test"
 import {
-  cellArea,
+  cellAreaKm2,
   cellEntries,
   cellToLatLng,
   cellToParent,
-  getHexagonEdgeLengthAvg,
+  edgeLengthKm,
   getResolution,
   gridDisk,
   h3Res,
-  latLngToCell,
-  UNITS
+  latLngToCell
 } from "../h3.ts"
 import { greatCircleDistance } from "../geo.ts"
 import { PaintLayer, cellSpacing, cellsOutline, compactRecord, resolutionForTolerance } from "./paint.ts"
@@ -18,8 +17,8 @@ describe("resolutionForTolerance", () => {
   it("picks cells with edge at most a quarter of the tolerance", () => {
     for (const tol of [2, 3, 15, 50, 150, 400, 2000]) {
       const res = resolutionForTolerance(tol)
-      expect(getHexagonEdgeLengthAvg(res, UNITS.km)).toBeLessThanOrEqual(tol / 4)
-      if (res > 1) expect(getHexagonEdgeLengthAvg(h3Res(res - 1), UNITS.km)).toBeGreaterThan(tol / 4)
+      expect(edgeLengthKm(res)).toBeLessThanOrEqual(tol / 4)
+      if (res > 1) expect(edgeLengthKm(h3Res(res - 1))).toBeGreaterThan(tol / 4)
     }
   })
 })
@@ -170,8 +169,8 @@ describe("compactRecord", () => {
     // Its seven children, painted 1, merge into the 0.5 already on it.
     const children = cellEntries(fine).filter(([h]) => cellToParent(h, h3Res(6)) === parent)
     expect(children).toHaveLength(7)
-    const childMass = children.reduce((s, [h]) => s + cellArea(h, UNITS.km2), 0)
-    expect(small[parent]).toBeCloseTo(0.5 + childMass / cellArea(parent, UNITS.km2), 9)
+    const childMass = children.reduce((s, [h]) => s + cellAreaKm2(h), 0)
+    expect(small[parent]).toBeCloseTo(0.5 + childMass / cellAreaKm2(parent), 9)
   })
 
   it("scores almost identically before and after compaction", async () => {

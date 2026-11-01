@@ -13,13 +13,12 @@
  * form (see uniformKernelMean), so it costs nothing to evaluate.
  */
 import {
-  cellArea,
+  cellAreaKm2,
   cellToChildren,
   cellToLatLng,
   cellToParent,
   finerRes,
   getResolution,
-  UNITS,
   type H3Cell,
   type H3Res
 } from "../h3.ts"
@@ -168,7 +167,7 @@ function patchSimilarity(pt: WeightedPoint, answer: Xyz, tolerance: Km, widest: 
   const res = getResolution(pt.cell)
   if (res >= 15) return pt.p * kernelFromSq(dSq, tolerance, k, s2)
   const children = cellToChildren(pt.cell, finerRes(res))
-  const areas = children.map((c) => cellArea(c, UNITS.km2))
+  const areas = children.map((c) => cellAreaKm2(c))
   const total = areas.reduce((s, a) => s + a, 0)
   let A = 0
   for (let i = 0; i < children.length; i++) {
@@ -267,7 +266,7 @@ export function regionAnswer(cells: Iterable<H3Cell>, tolerance: Km, k: Kernel =
   const raw: WeightedPoint[] = []
   let total = 0
   for (const h of cells) {
-    const area = cellArea(h, UNITS.km2)
+    const area = cellAreaKm2(h)
     const [lat, lon] = cellToLatLng(h)
     raw.push({ xyz: toXyz({ lat, lon }), p: area, s2: HEX_VARIANCE_PER_AREA * area, cell: h })
     total += area
@@ -294,7 +293,7 @@ export function coarsenDistribution(dist: Distribution, res: H3Res): Distributio
   }
   for (const [h, p] of merged) {
     const [lat, lon] = cellToLatLng(h)
-    points.push({ xyz: toXyz({ lat, lon }), p, s2: HEX_VARIANCE_PER_AREA * cellArea(h, UNITS.km2), cell: h })
+    points.push({ xyz: toXyz({ lat, lon }), p, s2: HEX_VARIANCE_PER_AREA * cellAreaKm2(h), cell: h })
   }
   return { points, floor: dist.floor }
 }

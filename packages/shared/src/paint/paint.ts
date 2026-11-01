@@ -14,19 +14,18 @@
  * first, so only the part under the brush is removed.
  */
 import {
-  cellArea,
-  cellToBoundary,
+  cellAreaKm2,
+  cellBoundaryLonLat,
   cellToChildren,
   cellToLatLng,
   cellToParent,
-  getHexagonEdgeLengthAvg,
+  edgeLengthKm,
   getResolution,
   cellsToMultiPolygon,
   gridDisk,
   gridDiskDistances,
   gridDistance,
   latLngToCell,
-  UNITS,
   cellEntries,
   finerRes,
   h3Res,
@@ -44,14 +43,14 @@ const MAX_RINGS = 40
 export function resolutionForTolerance(tolerance: Km): H3Res {
   const target = tolerance / 4
   for (let res = 0; res <= 10; res++) {
-    if (getHexagonEdgeLengthAvg(h3Res(res), UNITS.km) <= target) return h3Res(Math.max(1, res))
+    if (edgeLengthKm(h3Res(res)) <= target) return h3Res(Math.max(1, res))
   }
   return h3Res(10)
 }
 
 /** Centre-to-centre distance between neighbouring cells. */
 export function cellSpacing(res: H3Res): Km {
-  return getHexagonEdgeLengthAvg(res, UNITS.km) * Math.sqrt(3)
+  return edgeLengthKm(res) * Math.sqrt(3)
 }
 
 export interface PaintCell {
@@ -289,7 +288,7 @@ export class PaintLayer {
   area(h: H3Cell): SquareKm {
     let a = this.areaCache.get(h)
     if (a === undefined) {
-      a = cellArea(h, UNITS.km2)
+      a = cellAreaKm2(h)
       this.areaCache.set(h, a)
     }
     return a
@@ -354,7 +353,7 @@ export class PaintLayer {
   private boundary(h: H3Cell): Ring {
     let b = this.boundaryCache.get(h)
     if (b === undefined) {
-      b = cellToBoundary(h, true)
+      b = cellBoundaryLonLat(h)
       // Cells straddling the antimeridian come back with longitudes on both
       // sides; unwrap so the polygon does not span the whole world.
       let minLon = Infinity
@@ -482,10 +481,10 @@ export function compactRecord(cells: Record<H3Cell, number>, budget = PAINT_CELL
         continue
       }
       const parent = cellToParent(h, h3Res(finest - 1))
-      mass.set(parent, (mass.get(parent) ?? 0) + v * cellArea(h, UNITS.km2))
+      mass.set(parent, (mass.get(parent) ?? 0) + v * cellAreaKm2(h))
     }
     for (const [parent, m] of mass) {
-      next[parent] = (next[parent] ?? 0) + m / cellArea(parent, UNITS.km2)
+      next[parent] = (next[parent] ?? 0) + m / cellAreaKm2(parent)
     }
     current = next
     count = Object.keys(current).length

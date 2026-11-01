@@ -47,7 +47,7 @@ export class MapPanel {
     )
   }
 
-  async #point({ across, down }: MapSpot): Promise<{ x: number; y: number }> {
+  async #point({ across, down }: MapSpot): Promise<{ x: Px; y: Px }> {
     const box = await this.#page.getByTestId(mapViewTestIds.map).boundingBox()
     if (!box) throw new Error("the map is not on screen")
     return { x: box.x + box.width * across, y: box.y + box.height * down }
@@ -99,7 +99,7 @@ export class MapPanel {
     await this.#page.mouse.move(x, y)
   }
 
-  async #touch(type: "touchStart" | "touchMove" | "touchEnd", points: { x: number; y: number }[]): Promise<void> {
+  async #touch(type: "touchStart" | "touchMove" | "touchEnd", points: { x: Px; y: Px }[]): Promise<void> {
     this.#cdp ??= await this.#page.context().newCDPSession(this.#page)
     await this.#cdp.send("Input.dispatchTouchEvent", {
       type,
@@ -144,7 +144,7 @@ export class MapPanel {
   }
 
   /** The share of the answer (its marker, or a country's outline) on screen between `top` and `bottom`. */
-  async answerShareBetween(top: number, bottom: number): Promise<number> {
+  async answerShareBetween(top: Px, bottom: Px): Promise<number> {
     return this.#page.evaluate(
       async ({ top, bottom }) => {
         const { map } = window.whereabouts

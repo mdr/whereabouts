@@ -4,8 +4,8 @@
  * painting a whole band scores little more than a pass would.
  */
 import { z } from "zod"
-import type { LatLon } from "./geo.ts"
-import { cellToBoundary, cellToLatLng, type H3Cell, type H3Res } from "./h3.ts"
+import { kmToDegrees, type LatLon } from "./geo.ts"
+import { cellBoundaryLatLng, cellToLatLng, type H3Cell, type H3Res } from "./h3.ts"
 import { keepCells } from "./paint/land.ts"
 import type { Degrees, Km } from "./units.ts"
 
@@ -34,7 +34,6 @@ export const HINT_WIDTH_TOLERANCES = 10
 const EDGE = 0.15
 /** A longitude band near a pole would otherwise span most of the world. */
 const MAX_LONGITUDE_SPAN: Degrees = 120
-const KM_PER_DEGREE = 111.195
 
 /**
  * The band of `axis` around `answer`, with the answer at a point set by
@@ -42,16 +41,16 @@ const KM_PER_DEGREE = 111.195
  * degrees, or tenths for a narrow band, so the labels are the band.
  */
 export function hintBand(answer: LatLon, tolerance: Km, axis: HintAxis, u: number): HintBand {
-  const km = HINT_WIDTH_TOLERANCES * tolerance
+  const span = kmToDegrees(HINT_WIDTH_TOLERANCES * tolerance)
   const at = EDGE + u * (1 - 2 * EDGE)
   if (axis === HintAxis.LATITUDE) {
-    const width = Math.min(km / KM_PER_DEGREE, 180)
+    const width = Math.min(span, 180)
     let from = answer.lat - at * width
     from = Math.min(Math.max(from, -90), 90 - width)
     const step = width < 5 ? 0.1 : 1
     return { axis, from: Math.max(-90, floorTo(from, step)), to: Math.min(90, ceilTo(from + width, step)) }
   }
-  const width = Math.min(km / (KM_PER_DEGREE * Math.cos((answer.lat * Math.PI) / 180)), MAX_LONGITUDE_SPAN)
+  const width = Math.min(span / Math.cos((answer.lat * Math.PI) / 180), MAX_LONGITUDE_SPAN)
   const from = answer.lon - at * width
   const step = width < 5 ? 0.1 : 1
   return { axis, from: wrap(floorTo(from, step)), to: wrap(ceilTo(from + width, step)) }
@@ -69,7 +68,7 @@ export function trimToHint(cells: ReadonlyMap<H3Cell, number>, band: HintBand, f
 }
 
 function cellMeetsBand(h: H3Cell, band: HintBand): boolean {
-  const corners = cellToBoundary(h)
+  const corners = cellBoundaryLatLng(h)
   if (band.axis === HintAxis.LATITUDE) {
     const lats = corners.map(([lat]) => lat)
     return Math.max(...lats) >= band.from && Math.min(...lats) <= band.to
@@ -86,7 +85,7 @@ function cellMeetsBand(h: H3Cell, band: HintBand): boolean {
 /** "Between 23°N and 37°N", "Between 170°E and 165°W". */
 export function describeHint(band: HintBand): string {
   const [pos, neg] = band.axis === HintAxis.LATITUDE ? ["N", "S"] : ["E", "W"]
-  const deg = (v: number) => {
+  const deg = (v: Degrees) => {
     const n = Math.abs(Math.round(v * 10) / 10)
     return n === 0 || n === 180 ? `${n}°` : `${n}°${v > 0 ? pos : neg}`
   }
@@ -101,6 +100,6 @@ export function seededUnit(...parts: number[]): number {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296
 }
 
-const floorTo = (v: number, step: number) => Math.round(Math.floor(v / step) * step * 10) / 10
-const ceilTo = (v: number, step: number) => Math.round(Math.ceil(v / step) * step * 10) / 10
-const wrap = (lon: number) => ((((lon + 180) % 360) + 360) % 360) - 180
+const floorTo = (v: Degrees, step: Degrees): Degrees => Math.round(Math.floor(v / step) * step * 10) / 10
+const ceilTo = (v: Degrees, step: Degrees): Degrees => Math.round(Math.ceil(v / step) * step * 10) / 10
+const wrap = (lon: Degrees): Degrees => ((((lon + 180) % 360) + 360) % 360) - 180

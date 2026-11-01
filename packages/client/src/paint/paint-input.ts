@@ -11,9 +11,12 @@ import type { PaintModel } from "./paint-model"
 import type { PaintView } from "./paint-view"
 import { forTabbedControl, isTyping } from "../keyboard/keys"
 import { PAN_HOLD, runPaintKey, type PaintKeyTarget } from "../keyboard/shortcuts"
-import { strokePoints, touchMove, touchStart, TouchStep } from "./stroke"
+import { strokePoints, touchMove, touchStart, TouchStep, type ScreenPoint } from "./stroke"
 import { Tool } from "./tool"
-import type { Km, Px } from "@whereabouts/shared/units"
+import type { Degrees, Km, Px } from "@whereabouts/shared/units"
+
+/** How near a point a small country's answer counts as under it, for the Fill tool. */
+const FILL_SMALL: Px = 12
 
 export class PaintInput {
   readonly tool = signal<Tool>(Tool.PAINT)
@@ -24,7 +27,7 @@ export class PaintInput {
 
   private spaceHeld = false
   /** Where a middle-button drag last was, while one pans the map. */
-  private middleFrom: { x: number; y: number } | undefined = undefined
+  private middleFrom: ScreenPoint | undefined = undefined
   private painting = false
   private lastStampPoint: Point | undefined = undefined
   private hoverListeners = new Set<(pos: LatLon) => void>()
@@ -89,7 +92,7 @@ export class PaintInput {
     // The Fill tool acts on a click (a tap, on a phone), so the map still drags.
     const onClick = (e: MapMouseEvent) => {
       if (!this.canFill() || !gameMap.onSurface(e.point)) return
-      this.model.fillAt(latLon(e.lngLat), this.kmPerPx(e.lngLat.lat))
+      this.model.fillAt(latLon(e.lngLat), this.fillReach(e.lngLat.lat))
       this.refreshCursor()
     }
     const keyTarget: PaintKeyTarget = {
@@ -253,12 +256,12 @@ export class PaintInput {
     this.refreshCursor()
   }
 
-  private kmPerPx(lat: number): number {
-    return this.gameMap.metersPerPixel(lat) / 1000
+  private fillReach(lat: Degrees): Km {
+    return (FILL_SMALL * this.gameMap.metresPerPixel(lat)) / 1000
   }
 
-  private brushRadius(lat: number): Km {
-    return (this.brushSize.value * this.gameMap.metersPerPixel(lat)) / 1000
+  private brushRadius(lat: Degrees): Km {
+    return (this.brushSize.value * this.gameMap.metresPerPixel(lat)) / 1000
   }
 
   // ---- strokes: shared by mouse and touch -----------------------------------
@@ -294,7 +297,7 @@ export class PaintInput {
   private updateCursor(lngLat: LngLat): void {
     if (this.canFill()) {
       // The country a click would fill, or unfill (dotted).
-      const f = this.model.countryAt(latLon(lngLat), this.kmPerPx(lngLat.lat))
+      const f = this.model.countryAt(latLon(lngLat), this.fillReach(lngLat.lat))
       this.gameMap.setCursorShape(f && this.model.outline(f), f ? this.model.isFilled(f) : false)
       return
     }

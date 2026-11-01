@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellToBoundary, cellToChildren, cellToLatLng, h3Res, latLngToCell, type H3Cell } from "@whereabouts/shared/h3"
+import {
+  cellBoundaryLonLat,
+  cellToChildren,
+  cellToLatLng,
+  h3Res,
+  latLngToCell,
+  type H3Cell
+} from "@whereabouts/shared/h3"
 import { Vector3 } from "three"
 import { cellRing, landCells } from "./globe-texture"
 import { latLonToLocal } from "./sphere"
@@ -20,7 +27,7 @@ describe("the VR globe's land", () => {
   it("draws a big cell's edges along the great circles, not straight across the flat picture", () => {
     const cell = latLngToCell(65, 100, h3Res(1))
     const ring = cellRing(cell)!.map(([lon, lat]) => latLonToLocal({ lat: lat, lon: lon }))
-    const corners = cellToBoundary(cell, true).map(([lon, lat]) => latLonToLocal({ lat, lon }))
+    const corners = cellBoundaryLonLat(cell).map(([lon, lat]) => latLonToLocal({ lat, lon }))
     for (let i = 0; i < corners.length - 1; i++) {
       const middle = new Vector3().addVectors(corners[i]!, corners[i + 1]!).normalize()
       const nearest = Math.min(...ring.map((p) => p.angleTo(middle)))
