@@ -2,17 +2,9 @@ import { describe, expect, it } from "vite-plus/test"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { CATALOGUE, outlinesFrom } from "../catalogue/catalogue.ts"
 import { AnswerType, QuestionType } from "../questions.ts"
-import {
-  POINT_GUESSES,
-  REGION_GUESSES,
-  REVIEW_SET_SIZE,
-  GuessType,
-  ReviewCaseType,
-  reviewCases,
-  guessCase,
-  scoreGuess,
-  type ReviewCase
-} from "./score-review.ts"
+import { POINT_GUESSES, REGION_GUESSES } from "./review-painting.ts"
+import { GuessType } from "./score-verdict.ts"
+import { REVIEW_SET_SIZE, ReviewCaseType, reviewCases, guessCase, scoreGuess, type ReviewCase } from "./score-review.ts"
 import { DEFAULT_KERNEL } from "./scoring.ts"
 import { decodeCase } from "./scoring-case.ts"
 

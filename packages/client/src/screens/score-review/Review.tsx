@@ -7,9 +7,9 @@ import {
   ReviewCaseType,
   guessCase,
   reviewCases,
-  scoreGuess,
-  type ScoreVerdict
+  scoreGuess
 } from "@whereabouts/shared/scoring/score-review"
+import type { ScoreVerdict } from "@whereabouts/shared/scoring/score-verdict"
 import { kernelById } from "@whereabouts/shared/scoring/scoring"
 import { usePaint } from "../../ui/map/MapView/MapView"
 import { CardPlace, QuestionCard } from "../../ui/round/question/QuestionCard/QuestionCard"

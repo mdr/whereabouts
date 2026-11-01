@@ -1,4 +1,5 @@
-import { ReviewCaseType, type ReviewCase, type ScoreVerdict } from "@whereabouts/shared/scoring/score-review"
+import { ReviewCaseType, type ReviewCase } from "@whereabouts/shared/scoring/score-review"
+import type { ScoreVerdict } from "@whereabouts/shared/scoring/score-verdict"
 import { Card } from "../../../ui/Card/Card"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { cx } from "../../../ui/cx"

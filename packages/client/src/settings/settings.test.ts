@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { KernelId } from "@whereabouts/shared/scoring/scoring"
-import { GuessType } from "@whereabouts/shared/scoring/score-review"
+import { GuessType } from "@whereabouts/shared/scoring/score-verdict"
 
 /** The settings as a page loading with these values stored would read them. */
 async function settingsWith(stored: Record<string, string>) {

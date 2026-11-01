@@ -12,7 +12,7 @@ import {
   type PlayerName,
   type PlayerToken
 } from "@whereabouts/shared/ids"
-import { ScoreVerdictSchema } from "@whereabouts/shared/scoring/score-review"
+import { ScoreVerdictSchema } from "@whereabouts/shared/scoring/score-verdict"
 
 /** A stored value that fails `schema`, such as one an older version wrote, starts from the initial value. */
 function persisted<S extends z.ZodType>(key: string, schema: S, initial: z.output<S>, storage: Storage = localStorage) {
