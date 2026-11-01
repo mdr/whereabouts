@@ -1,11 +1,3 @@
-/**
- * The score review, for playtesters tuning the scoring: made-up guesses at
- * real questions (see score-review.ts), the answer and the scores they get.
- * One guess alone asks whether its score is fair; two at the same answer
- * ask which deserves more. Verdicts stay in the browser until exported, a
- * line of JSON each, every one carrying its cases so they can be re-scored
- * as the scoring changes. Linked from nowhere.
- */
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import { AnswerType, type Outlines } from "@whereabouts/shared/questions"
 import { CATALOGUE } from "@whereabouts/shared/catalogue/catalogue"
@@ -18,61 +10,20 @@ import {
   scoreGuess,
   type ScoreVerdict
 } from "@whereabouts/shared/scoring/score-review"
-import { colourCss, playerColour } from "@whereabouts/shared/colours"
 import { kernelById } from "@whereabouts/shared/scoring/scoring"
-import { MapView, usePaint } from "../ui/map/MapView"
-import { Card } from "../ui/Card"
-import { CardPlace, QuestionCard } from "../ui/round/question/QuestionCard"
-import { Answer } from "../ui/round/question/Answer"
-import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../ui/map/Hud"
-import { ScoreCard } from "../ui/round/Round"
-import { Swatch, SwatchType } from "../ui/players/PlayerList"
-import { cx } from "../ui/cx"
-import kit from "../ui/kit.module.css"
-import pl from "../ui/players/Players.module.css"
-import s from "./ScoreReview.module.css"
-import { isTyping } from "../keyboard/keys"
-import { useOutlines } from "../data/outlines"
-import { RevealDetail } from "../map/shown-detail"
-import { LoadingOutlines } from "../ui/map/LoadingOutlines"
-import { reviewSet, scoreVerdicts, soloKernelId } from "../settings/settings"
+import { usePaint } from "../../ui/map/MapView"
+import { CardPlace, QuestionCard } from "../../ui/round/question/QuestionCard"
+import { Answer } from "../../ui/round/question/Answer"
+import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../../ui/map/Hud"
+import { ScoreCard } from "../../ui/round/Round"
+import { isTyping } from "../../keyboard/keys"
+import { RevealDetail } from "../../map/shown-detail"
+import { reviewSet, scoreVerdicts, soloKernelId } from "../../settings/settings"
 import { scoreReviewTestIds } from "./ScoreReviewTestIds"
+import { VerdictCard, type Choice } from "./VerdictCard"
+import { PAIR_COLOURS } from "./pair-colours"
 
-type Choice = -2 | -1 | 0 | 1 | 2
-
-const FAIRNESS: { value: Choice; label: string }[] = [
-  { value: -2, label: "Much too low" },
-  { value: -1, label: "Too low" },
-  { value: 0, label: "About right" },
-  { value: 1, label: "Too high" },
-  { value: 2, label: "Much too high" }
-]
-
-const PREFERENCE: { value: Choice; label: string }[] = [
-  { value: -2, label: "A, clearly" },
-  { value: -1, label: "A, a little" },
-  { value: 0, label: "About the same" },
-  { value: 1, label: "B, a little" },
-  { value: 2, label: "B, clearly" }
-]
-
-const PAIR_COLOURS = [colourCss(playerColour(0)), colourCss(playerColour(1))] as const
-
-export function ScoreReview() {
-  return (
-    <MapView>
-      <ReviewLoader />
-    </MapView>
-  )
-}
-
-function ReviewLoader() {
-  const loaded = useOutlines(true)
-  if (!loaded) return <LoadingOutlines />
-  return <Review outlines={loaded} />
-}
-
-function Review({ outlines }: { outlines: Outlines }) {
+export function Review({ outlines }: { outlines: Outlines }) {
   const paint = usePaint()
   const set = reviewSet.value
   const cases = useMemo(() => reviewCases(set, CATALOGUE, outlines), [set, outlines])
@@ -97,7 +48,6 @@ function Review({ outlines }: { outlines: Outlines }) {
   /** In a pair, the one guess shown alone: pinned by a click, or under the mouse. */
   const [pinned, setPinned] = useState<0 | 1 | undefined>(undefined)
   const [hovered, setHovered] = useState<0 | 1 | undefined>(undefined)
-  const done = judged.size >= cases.length
   const c = cases[index]!
   const q = c.question
   const a = c.answer
@@ -194,8 +144,6 @@ function Review({ outlines }: { outlines: Outlines }) {
     return () => window.removeEventListener("keydown", onKey)
   })
 
-  const options = c.type === ReviewCaseType.SINGLE ? FAIRNESS : PREFERENCE
-  const ownVerdicts = scoreVerdicts.value
   return (
     <Hud reveal>
       <HudTop>
@@ -212,84 +160,22 @@ function Review({ outlines }: { outlines: Outlines }) {
         )}
       </HudTop>
       <HudRight>
-        <Card
-          title={c.type === ReviewCaseType.SINGLE ? "Is this score fair?" : "Which deserves more?"}
-          class={s.review}
-        >
-          {c.type === ReviewCaseType.PAIR && (
-            <ul class={cx(pl.list, pl.pick)} data-testid={scoreReviewTestIds.pair}>
-              {(["A", "B"] as const).map((name, i) => (
-                <li
-                  class={pinned === i ? pl.selected : undefined}
-                  onClick={() => setPinned(pinned === i ? undefined : (i as 0 | 1))}
-                  onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(i as 0 | 1)}
-                  onPointerLeave={(e) => e.pointerType === "mouse" && setHovered(undefined)}
-                >
-                  <Swatch type={SwatchType.CSS} css={PAIR_COLOURS[i]!} />
-                  <span class={pl.name}>{name}</span>
-                  <span class={pl.roundScore} data-testid={scoreReviewTestIds.pairScore}>
-                    {Math.round(scores[i]!)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-          <div class={s.verdicts} role="radiogroup">
-            {options.map((o, i) => (
-              <button
-                type="button"
-                role="radio"
-                aria-checked={choice === o.value}
-                class={choice === o.value ? s.selected : undefined}
-                onClick={() => setChoice(o.value)}
-                data-testid={scoreReviewTestIds.verdict}
-                data-verdict={o.value}
-              >
-                <kbd>{i + 1}</kbd> {o.label}
-              </button>
-            ))}
-          </div>
-          {c.type === ReviewCaseType.SINGLE && (
-            <label class={s.shouldBe}>
-              It should be about
-              <input
-                type="number"
-                min={0}
-                max={1000}
-                step={10}
-                value={shouldBe}
-                onInput={(e) => setShouldBe(e.currentTarget.value)}
-                placeholder="optional"
-              />
-            </label>
-          )}
-          <textarea
-            rows={2}
-            value={note}
-            onInput={(e) => setNote(e.currentTarget.value)}
-            placeholder="Why? (optional)"
-          />
-          <p class={kit.hint} data-testid={scoreReviewTestIds.progress}>
-            {judged.size} of {cases.length} judged in this set
-            {done ? ": all done." : "."}
-            {c.type === ReviewCaseType.PAIR && " Point at A or B to see it alone; click to keep it."}
-          </p>
-          <div class={s.actions}>
-            <button
-              type="button"
-              onClick={() => exportVerdicts(ownVerdicts)}
-              disabled={ownVerdicts.length === 0}
-              data-testid={scoreReviewTestIds.exportButton}
-            >
-              Export {ownVerdicts.length} verdict{ownVerdicts.length === 1 ? "" : "s"}
-            </button>
-            {done && (
-              <button type="button" onClick={() => (reviewSet.value = set + 1)}>
-                Next set
-              </button>
-            )}
-          </div>
-        </Card>
+        <VerdictCard
+          c={c}
+          scores={scores}
+          choice={choice}
+          onChoose={setChoice}
+          shouldBe={shouldBe}
+          onShouldBe={setShouldBe}
+          note={note}
+          onNote={setNote}
+          pinned={pinned}
+          onPin={setPinned}
+          onHover={setHovered}
+          judged={judged.size}
+          total={cases.length}
+          set={set}
+        />
       </HudRight>
       <HudBottom>
         <button type="button" onClick={skip}>
@@ -306,13 +192,4 @@ function Review({ outlines }: { outlines: Outlines }) {
       </HudBottom>
     </Hud>
   )
-}
-
-function exportVerdicts(verdicts: ScoreVerdict[]): void {
-  const text = verdicts.map((v) => JSON.stringify(v)).join("\n") + "\n"
-  const a = document.createElement("a")
-  a.href = URL.createObjectURL(new Blob([text], { type: "application/x-ndjson" }))
-  a.download = `score-verdicts-${new Date().toISOString().slice(0, 10)}.jsonl`
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000)
 }

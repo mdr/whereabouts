@@ -2,7 +2,7 @@ import { route, visit } from "./router"
 import { Home } from "./screens/Home"
 import { Solo } from "./screens/solo/Solo"
 import { Multiplayer } from "./screens/multiplayer/Multiplayer"
-import { ScoreReview } from "./screens/ScoreReview"
+import { ScoreReview } from "./screens/score-review/ScoreReview"
 
 export function App() {
   const r = route.value

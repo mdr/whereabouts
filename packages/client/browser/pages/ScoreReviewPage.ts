@@ -1,4 +1,5 @@
-import { scoreReviewTestIds } from "../../src/screens/ScoreReviewTestIds.ts"
+import { scoreReviewTestIds } from "../../src/screens/score-review/ScoreReviewTestIds.ts"
+import { verdictCardTestIds } from "../../src/screens/score-review/VerdictCardTestIds.ts"
 import { MapPanel } from "./components/MapPanel.ts"
 import { Screen } from "./Screen.ts"
 import { text } from "./support.ts"
@@ -10,7 +11,7 @@ export class ScoreReviewPage extends Screen {
 
   static async whenShown(tab: Tab): Promise<ScoreReviewPage> {
     const review = new ScoreReviewPage(tab)
-    await tab.page.getByTestId(scoreReviewTestIds.progress).waitFor()
+    await tab.page.getByTestId(verdictCardTestIds.progress).waitFor()
     await review.map.waitUntilSettled()
     return review
   }
@@ -27,17 +28,17 @@ export class ScoreReviewPage extends Screen {
 
   /** Whether this case is two guesses to compare. */
   async isPair(): Promise<boolean> {
-    return (await this.page.getByTestId(scoreReviewTestIds.pair).count()) > 0
+    return (await this.page.getByTestId(verdictCardTestIds.pair).count()) > 0
   }
 
   /** A pair's two scores, A then B. */
   async pairScores(): Promise<string[]> {
-    return this.page.getByTestId(scoreReviewTestIds.pairScore).allTextContents()
+    return this.page.getByTestId(verdictCardTestIds.pairScore).allTextContents()
   }
 
   /** Rest the mouse on guess A (0) or B (1) of a pair. */
   async hoverGuess(i: 0 | 1): Promise<void> {
-    await this.page.getByTestId(scoreReviewTestIds.pair).locator("li").nth(i).hover()
+    await this.page.getByTestId(verdictCardTestIds.pair).locator("li").nth(i).hover()
     await this.map.waitUntilSettled()
   }
 
@@ -55,7 +56,7 @@ export class ScoreReviewPage extends Screen {
 
   /** "3 of 32 judged in this set." */
   async progress(): Promise<string> {
-    return text(this.page.getByTestId(scoreReviewTestIds.progress))
+    return text(this.page.getByTestId(verdictCardTestIds.progress))
   }
 
   /** Give a verdict with its number key (1 much too low … 5 much too high) and submit with Enter. */
@@ -67,7 +68,7 @@ export class ScoreReviewPage extends Screen {
 
   /** Give a verdict by clicking, with what it should have scored and why. */
   async judge(verdict: number, shouldBe: number, note: string): Promise<void> {
-    await this.page.locator(`[data-testid="${scoreReviewTestIds.verdict}"][data-verdict="${verdict}"]`).click()
+    await this.page.locator(`[data-testid="${verdictCardTestIds.verdict}"][data-verdict="${verdict}"]`).click()
     await this.page.getByRole("spinbutton", { name: "It should be about" }).fill(String(shouldBe))
     await this.page.getByPlaceholder("Why? (optional)").fill(note)
     await this.page.getByTestId(scoreReviewTestIds.submitButton).click()
@@ -78,7 +79,7 @@ export class ScoreReviewPage extends Screen {
   async export(): Promise<string> {
     const [download] = await Promise.all([
       this.page.waitForEvent("download"),
-      this.page.getByTestId(scoreReviewTestIds.exportButton).click()
+      this.page.getByTestId(verdictCardTestIds.exportButton).click()
     ])
     const stream = await download.createReadStream()
     const chunks: Buffer[] = []
