@@ -46,6 +46,8 @@ export async function spray(
   { centre, can }: { centre: Vec3; can: Vec3 },
   screenshot?: string
 ): Promise<number> {
+  // The menu lays out late; a ray on it mid-stroke ends the stroke, and the spray becomes two undo steps.
+  await headset.menuButton("done")
   await headset.pointRight(can, centre)
   await screen.pause(300)
   await headset.rightTrigger(1)
