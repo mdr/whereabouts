@@ -23,20 +23,20 @@ function persisted<S extends z.ZodType>(key: string, schema: S, initial: z.outpu
   } catch {
     /* storage unavailable */
   }
-  const s = signal(start)
+  const setting = signal(start)
   effect(() => {
     try {
-      storage.setItem(key, String(s.value))
+      storage.setItem(key, String(setting.value))
     } catch {
       /* ignore */
     }
   })
-  return s
+  return setting
 }
 
 /** An enum value saved before the enums, in lower case with hyphens, read as its member. */
 const oldEnumValue = <S extends z.ZodType>(schema: S) =>
-  z.preprocess((v) => (typeof v === "string" ? v.toUpperCase().replaceAll("-", "_") : v), schema)
+  z.preprocess((value) => (typeof value === "string" ? value.toUpperCase().replaceAll("-", "_") : value), schema)
 
 /** Like persisted, for a JSON value; anything unreadable or failing `schema` starts from the initial value. */
 function persistedJson<S extends z.ZodType>(key: string, schema: S, initial: z.output<S>) {
@@ -48,15 +48,15 @@ function persistedJson<S extends z.ZodType>(key: string, schema: S, initial: z.o
   } catch {
     /* storage unavailable, or not JSON */
   }
-  const s = signal(start)
+  const setting = signal(start)
   effect(() => {
     try {
-      localStorage.setItem(key, JSON.stringify(s.value))
+      localStorage.setItem(key, JSON.stringify(setting.value))
     } catch {
       /* ignore */
     }
   })
-  return s
+  return setting
 }
 
 /** The name as last typed, which may not yet be one a game accepts (see nameToJoin). */
@@ -78,7 +78,7 @@ export const soloTypes = persisted(
   "wa.practiceTypes",
   z
     .string()
-    .transform((s) => s.split(",").filter((t) => z.enum(QuestionType).safeParse(t).success))
+    .transform((text) => text.split(",").filter((name) => z.enum(QuestionType).safeParse(name).success))
     .pipe(z.array(z.enum(QuestionType)).min(1)),
   oldPracticeTypes() ?? [QuestionType.LANDMARK, QuestionType.PLACE]
 )
@@ -123,8 +123,8 @@ export const reviewSet = persistedJson("wa.reviewSet", z.number().int().min(1), 
 export const scoreVerdicts = persistedJson(
   "wa.scoreVerdicts",
   z.array(z.unknown()).transform((all) =>
-    all.flatMap((v) => {
-      const parsed = ScoreVerdictSchema.safeParse(v)
+    all.flatMap((value) => {
+      const parsed = ScoreVerdictSchema.safeParse(value)
       return parsed.success ? [parsed.data] : []
     })
   ),
@@ -149,7 +149,7 @@ export function resetPlayerToken(): void {
 function randomToken(): PlayerToken {
   const bytes = new Uint8Array(16)
   crypto.getRandomValues(bytes)
-  return playerToken(Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join(""))
+  return playerToken(Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(""))
 }
 
 /**

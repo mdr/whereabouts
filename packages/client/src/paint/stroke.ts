@@ -15,11 +15,11 @@ export function strokePoints(from: ScreenPoint | undefined, to: ScreenPoint, bru
   if (!from) return [to]
   const dx = to.x - from.x
   const dy = to.y - from.y
-  const dist = Math.hypot(dx, dy)
+  const distance = Math.hypot(dx, dy)
   const step = Math.max(2, brushRadius / 4)
-  const n = Math.floor(dist / step)
-  return Array.from({ length: n }, (_, i) => {
-    const t = ((i + 1) * step) / dist
+  const steps = Math.floor(distance / step)
+  return Array.from({ length: steps }, (_, i) => {
+    const t = ((i + 1) * step) / distance
     return { x: from.x + dx * t, y: from.y + dy * t }
   })
 }

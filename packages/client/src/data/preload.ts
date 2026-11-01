@@ -19,15 +19,15 @@ const KEEP = { page: 2 * MAX_ROUNDS, headset: 6 }
 /** The headset's are loaded as it loads them: to the browser, one loaded otherwise is a different picture. */
 function load(url: string, viewer: keyof typeof held): void {
   const pictures = held[viewer]
-  let img = pictures.get(url)
-  if (img) pictures.delete(url)
+  let image = pictures.get(url)
+  if (image) pictures.delete(url)
   else {
-    img = new Image()
-    if (viewer === "headset") img.crossOrigin = "anonymous"
-    else img.referrerPolicy = "no-referrer"
-    img.src = url
+    image = new Image()
+    if (viewer === "headset") image.crossOrigin = "anonymous"
+    else image.referrerPolicy = "no-referrer"
+    image.src = url
   }
-  pictures.set(url, img)
+  pictures.set(url, image)
   if (pictures.size > KEEP[viewer]) pictures.delete(pictures.keys().next().value!)
 }
 

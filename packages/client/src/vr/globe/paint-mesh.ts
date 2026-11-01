@@ -13,8 +13,8 @@ const p = new Vector3()
 const mid = new Vector3()
 
 function rgb(hex: CssColour): [r: number, g: number, b: number] {
-  const n = parseInt(hex.slice(1), 16)
-  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]
+  const packed = parseInt(hex.slice(1), 16)
+  return [((packed >> 16) & 255) / 255, ((packed >> 8) & 255) / 255, (packed & 255) / 255]
 }
 
 /** The map's paint ramp (see GameMap.applyPaintRamp): colour stops at 0, ⅓, ⅔ and 1, mixed as the map mixes them. */
@@ -39,27 +39,28 @@ export function paintGeometry(
   radius: Metres,
   colour?: CssColour
 ): BufferGeometry {
-  const rings = paint.features.map((f) => {
-    const ring = f.geometry.coordinates[0]!
+  const rings = paint.features.map((feature) => {
+    const ring = feature.geometry.coordinates[0]!
     const [first, last] = [ring[0]!, ring[ring.length - 1]!]
     return first[0] === last[0] && first[1] === last[1] ? ring.slice(0, -1) : ring
   })
-  const vertices = rings.reduce((n, r) => n + r.length + 1, 0)
-  const triangles = rings.reduce((n, r) => n + r.length, 0)
+  const vertices = rings.reduce((total, ring) => total + ring.length + 1, 0)
+  const triangles = rings.reduce((total, ring) => total + ring.length, 0)
   const position = new Float32Array(vertices * 3)
   const colours = new Float32Array(vertices * 4)
   const index = new Uint32Array(triangles * 3)
   let vi = 0
   let ii = 0
-  paint.features.forEach((f, k) => {
+  paint.features.forEach((feature, k) => {
     const ring = rings[k]!
-    const own = f.properties.colour ?? colour
+    const own = feature.properties.colour ?? colour
     const alpha = own
-      ? (c.set(own), 0.12 + 0.78 * Math.min(1, Math.max(0, f.properties.v)))
-      : rampColour(theme, f.properties.v, c)
+      ? (c.set(own), 0.12 + 0.78 * Math.min(1, Math.max(0, feature.properties.v)))
+      : rampColour(theme, feature.properties.v, c)
     const centre = vi
-    const put = (q: Vector3) => {
-      q.normalize()
+    const put = (point: Vector3) => {
+      point
+        .normalize()
         .multiplyScalar(radius)
         .toArray(position, vi * 3)
       colours.set([c.r, c.g, c.b, alpha], vi * 4)
@@ -75,9 +76,9 @@ export function paintGeometry(
       index[ii++] = centre + 1 + ((i + 1) % ring.length)
     }
   })
-  const g = new BufferGeometry()
-  g.setAttribute("position", new BufferAttribute(position, 3))
-  g.setAttribute("color", new BufferAttribute(colours, 4))
-  g.setIndex(new BufferAttribute(index, 1))
-  return g
+  const geometry = new BufferGeometry()
+  geometry.setAttribute("position", new BufferAttribute(position, 3))
+  geometry.setAttribute("color", new BufferAttribute(colours, 4))
+  geometry.setIndex(new BufferAttribute(index, 1))
+  return geometry
 }

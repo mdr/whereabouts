@@ -57,7 +57,7 @@ export class DetailPatch {
         this.gameMap.applyTheme(theme)
         this.ready = true
       },
-      (err: unknown) => console.warn("no map detail on the VR globe", err)
+      (error: unknown) => console.warn("no map detail on the VR globe", error)
     )
     this.texture = new CanvasTexture(this.gameMap.map.getCanvas())
     this.texture.colorSpace = SRGBColorSpace
@@ -146,8 +146,8 @@ export class DetailPatch {
 
   /** The sphere under the map's view, its texture laid as Mercator lays it. */
   private patch(): BufferGeometry {
-    const b = this.gameMap.map.getBounds()
-    const [south, north] = [mercY(b.getSouth()), mercY(b.getNorth())]
+    const bounds = this.gameMap.map.getBounds()
+    const [south, north] = [mercY(bounds.getSouth()), mercY(bounds.getNorth())]
     const position = new Float32Array((GRID + 1) ** 2 * 3)
     const uv = new Float32Array((GRID + 1) ** 2 * 2)
     const colour = new Float32Array((GRID + 1) ** 2 * 4)
@@ -156,7 +156,10 @@ export class DetailPatch {
       for (let i = 0; i <= GRID; i++) {
         const [u, v] = [i / GRID, j / GRID]
         const k = j * (GRID + 1) + i
-        const at = { lat: mercLat(south + (north - south) * v), lon: b.getWest() + (b.getEast() - b.getWest()) * u }
+        const at = {
+          lat: mercLat(south + (north - south) * v),
+          lon: bounds.getWest() + (bounds.getEast() - bounds.getWest()) * u
+        }
         latLonToLocal(at)
           .multiplyScalar(this.radius)
           .toArray(position, k * 3)
@@ -165,11 +168,11 @@ export class DetailPatch {
         if (i < GRID && j < GRID) index.push(k, k + 1, k + GRID + 1, k + 1, k + GRID + 2, k + GRID + 1)
       }
     }
-    const g = new BufferGeometry()
-    g.setAttribute("position", new BufferAttribute(position, 3))
-    g.setAttribute("uv", new BufferAttribute(uv, 2))
-    g.setAttribute("color", new BufferAttribute(colour, 4))
-    g.setIndex(index)
-    return g
+    const geometry = new BufferGeometry()
+    geometry.setAttribute("position", new BufferAttribute(position, 3))
+    geometry.setAttribute("uv", new BufferAttribute(uv, 2))
+    geometry.setAttribute("color", new BufferAttribute(colour, 4))
+    geometry.setIndex(index)
+    return geometry
   }
 }

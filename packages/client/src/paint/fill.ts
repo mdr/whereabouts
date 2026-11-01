@@ -37,46 +37,46 @@ export class CountryFiller {
    * The country at a point, or undefined (at sea, or where no country is named);
    * failing that, a small country within `reach`.
    */
-  countryAt(p: LatLon, reach: Km): FlagQuestion | undefined {
-    return this.borders.countryAt(p) ?? this.borders.smallNear(p, reach)
+  countryAt(point: LatLon, reach: Km): FlagQuestion | undefined {
+    return this.borders.countryAt(point) ?? this.borders.smallNear(point, reach)
   }
 
   /** The country's outline, for the cursor. */
-  outline(f: FlagQuestion): GeoJSON.MultiPolygon {
-    let o = this.cursors.get(f.clue.flag)
-    if (!o) {
-      const shape = this.shape(f)
+  outline(question: FlagQuestion): GeoJSON.MultiPolygon {
+    let cursor = this.cursors.get(question.clue.flag)
+    if (!cursor) {
+      const shape = this.shape(question)
       const coordinates: MultiPolygon =
-        shape.type === FillShapeType.OUTLINE ? shape.outline : shape.rings.map((r) => [r])
+        shape.type === FillShapeType.OUTLINE ? shape.outline : shape.rings.map((ring) => [ring])
       // A country too small for land of its own shows as its answer's surroundings.
-      o = {
+      cursor = {
         type: "MultiPolygon",
-        coordinates: coordinates.length > 0 ? coordinates : [[circle(answerCentre(f.answer), shape.near ?? 5)]]
+        coordinates: coordinates.length > 0 ? coordinates : [[circle(answerCentre(question.answer), shape.near ?? 5)]]
       }
-      this.cursors.set(f.clue.flag, o)
+      this.cursors.set(question.clue.flag, cursor)
     }
-    return o
+    return cursor
   }
 
   /** The cells filling the country on a layer of this finest resolution, compacted. */
-  cells(f: FlagQuestion, finestRes: H3Res): H3Cell[] {
-    const key: FillKey = `${f.clue.flag}:${finestRes}`
+  cells(question: FlagQuestion, finestRes: H3Res): H3Cell[] {
+    const key: FillKey = `${question.clue.flag}:${finestRes}`
     let cells = this.fills.get(key)
     if (!cells) {
-      cells = countryFill(this.shape(f), finestRes)
+      cells = countryFill(this.shape(question), finestRes)
       this.fills.set(key, cells)
     }
     return cells
   }
 
-  private shape(f: FlagQuestion): FillShape {
-    let shape = this.shapes.get(f.clue.flag)
+  private shape(question: FlagQuestion): FillShape {
+    let shape = this.shapes.get(question.clue.flag)
     if (!shape) {
-      const outline = f.answer.type === AnswerType.AREA ? this.outlines.get(f.answer.outline) : undefined
+      const outline = question.answer.type === AnswerType.AREA ? this.outlines.get(question.answer.outline) : undefined
       shape = outline
-        ? { type: FillShapeType.OUTLINE, outline, answer: answerCentre(f.answer) }
-        : this.borders.fillShape(f)
-      this.shapes.set(f.clue.flag, shape)
+        ? { type: FillShapeType.OUTLINE, outline, answer: answerCentre(question.answer) }
+        : this.borders.fillShape(question)
+      this.shapes.set(question.clue.flag, shape)
     }
     return shape
   }
@@ -88,8 +88,8 @@ function circle({ lat, lon }: LatLon, km: Km): Ring {
   const dLon = dLat / Math.max(0.01, Math.cos(toRadians(lat)))
   const ring: Ring = []
   for (let i = 0; i <= 32; i++) {
-    const a = (i / 32) * 2 * Math.PI
-    ring.push([lon + dLon * Math.cos(a), lat + dLat * Math.sin(a)])
+    const angle = (i / 32) * 2 * Math.PI
+    ring.push([lon + dLon * Math.cos(angle), lat + dLat * Math.sin(angle)])
   }
   return ring
 }
@@ -100,11 +100,11 @@ function circle({ lat, lon }: LatLon, km: Km): Ring {
  * controller.
  */
 export function useFillTool(paint: Pick<PaintController, "useFiller" | "offerFill">, active: boolean): void {
-  const b = useBorders(active)
-  const r = useOutlines(active)
+  const borders = useBorders(active)
+  const outlines = useOutlines(active)
   useEffect(() => {
-    if (b && r) paint.useFiller(new CountryFiller(b, r))
+    if (borders && outlines) paint.useFiller(new CountryFiller(borders, outlines))
     paint.offerFill(active)
-  }, [paint, active, b, r])
+  }, [paint, active, borders, outlines])
   useEffect(() => () => paint.offerFill(false), [paint])
 }

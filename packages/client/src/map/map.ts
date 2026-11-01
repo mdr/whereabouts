@@ -134,8 +134,8 @@ export class GameMap {
       // sprite) come after the style or do not hold the map back.
       let styled = false
       this.map.once("style.load", () => (styled = true))
-      this.map.on("error", (e) => {
-        if (!styled) reject(new Error("the map style did not load", { cause: e.error }))
+      this.map.on("error", (event) => {
+        if (!styled) reject(new Error("the map style did not load", { cause: event.error }))
       })
       this.map.once("load", () => {
         this.collapseAttribution()
@@ -152,44 +152,45 @@ export class GameMap {
    * away, as the OpenStreetMap and OpenMapTiles licences require.
    */
   private collapseAttribution(): void {
-    const el = this.map.getContainer().querySelector(".maplibregl-ctrl-attrib")
-    if (!el) return
-    el.classList.remove("maplibregl-compact-show")
-    el.removeAttribute("open")
+    const attribution = this.map.getContainer().querySelector(".maplibregl-ctrl-attrib")
+    if (!attribution) return
+    attribution.classList.remove("maplibregl-compact-show")
+    attribution.removeAttribute("open")
   }
 
   private indexStyleLayers(): void {
     const layers = this.map.getStyle().layers
     const roadSources = new Set(["transportation", "aeroway"])
     const urbanSources = new Set(["building", "landuse", "park"])
-    for (const l of layers) {
-      const sourceLayer = "source-layer" in l ? (l["source-layer"] ?? "") : ""
-      this.styleLayers.push({ id: l.id, type: l.type, sourceLayer })
-      if (l.type === "symbol") this.labelLayers.push(l.id)
-      else if (l.id.startsWith("boundary")) {
-        this.borderLayers.push(l.id)
-        if (NATIONAL_BORDERS.includes(l.id))
-          this.borderPaint.set(l.id, {
-            width: this.map.getPaintProperty(l.id, "line-width"),
-            opacity: this.map.getPaintProperty(l.id, "line-opacity")
+    for (const layer of layers) {
+      const sourceLayer = "source-layer" in layer ? (layer["source-layer"] ?? "") : ""
+      this.styleLayers.push({ id: layer.id, type: layer.type, sourceLayer })
+      if (layer.type === "symbol") this.labelLayers.push(layer.id)
+      else if (layer.id.startsWith("boundary")) {
+        this.borderLayers.push(layer.id)
+        if (NATIONAL_BORDERS.includes(layer.id))
+          this.borderPaint.set(layer.id, {
+            width: this.map.getPaintProperty(layer.id, "line-width"),
+            opacity: this.map.getPaintProperty(layer.id, "line-opacity")
           })
-      } else if (roadSources.has(sourceLayer)) this.roadLayers.push(l.id)
-      else if (urbanSources.has(sourceLayer)) this.urbanLayers.push(l.id)
-      else if (sourceLayer === "waterway") this.waterwayLayers.push(l.id)
+      } else if (roadSources.has(sourceLayer)) this.roadLayers.push(layer.id)
+      else if (urbanSources.has(sourceLayer)) this.urbanLayers.push(layer.id)
+      else if (sourceLayer === "waterway") this.waterwayLayers.push(layer.id)
       // Glaciers and ice shelves: they trace mountain ranges and polar coasts.
-      else if (l.id === "landcover_wood") this.woodLayers.push(l.id)
-      else if (l.id.startsWith("landcover_")) this.iceLayers.push(l.id)
-      else if (l.id === "water") this.waterFilter = this.map.getFilter("water")
+      else if (layer.id === "landcover_wood") this.woodLayers.push(layer.id)
+      else if (layer.id.startsWith("landcover_")) this.iceLayers.push(layer.id)
+      else if (layer.id === "water") this.waterFilter = this.map.getFilter("water")
     }
   }
 
-  applyTheme(t: Theme): void {
-    this.theme = t
-    for (const l of this.styleLayers) for (const s of styleLayerPaint(l, t)) this.setPaintIfPresent(s)
+  applyTheme(theme: Theme): void {
+    this.theme = theme
+    for (const setting of this.styleLayers.flatMap((layer) => styleLayerPaint(layer, theme)))
+      this.setPaintIfPresent(setting)
     this.styleBorders()
-    this.applyPaintRamp(t)
-    for (const s of overlayPaint(t)) this.setPaintIfPresent(s)
-    document.documentElement.style.setProperty("--ring-brush", t.brush)
+    this.applyPaintRamp(theme)
+    for (const setting of overlayPaint(theme)) this.setPaintIfPresent(setting)
+    document.documentElement.style.setProperty("--ring-brush", theme.brush)
   }
 
   private setPaintIfPresent(setting: PaintSetting): void {
@@ -217,10 +218,10 @@ export class GameMap {
     this.showGlobeButton()
     const control: IControl = {
       onAdd: () => {
-        const el = document.createElement("div")
-        el.className = "maplibregl-ctrl maplibregl-ctrl-group globe-ctrl"
-        el.append(button)
-        return el
+        const control = document.createElement("div")
+        control.className = "maplibregl-ctrl maplibregl-ctrl-group globe-ctrl"
+        control.append(button)
+        return control
       },
       onRemove: () => button.parentElement?.remove()
     }
@@ -362,15 +363,15 @@ export class GameMap {
 
   showPaint(data: GeoJSON.FeatureCollection): void {
     const features = data.features.filter(
-      (f) =>
-        f.geometry.type !== "Polygon" || f.geometry.coordinates.every((ring) => ring.every(([, lat]) => drawable(lat!)))
+      ({ geometry }) =>
+        geometry.type !== "Polygon" || geometry.coordinates.every((ring) => ring.every(([, lat]) => drawable(lat!)))
     )
     void this.source(PAINT_SOURCE)?.setData({ ...data, features })
   }
 
   /** Outline the cells the next stamp would touch; undefined hides it. Dotted when erasing. */
   setCursorFootprint(cells: H3Cell[] | undefined, erase = false): void {
-    const shown = cells?.filter((c) => cellBoundaryLatLng(c).every(([lat]) => drawable(lat)))
+    const shown = cells?.filter((cell) => cellBoundaryLatLng(cell).every(([lat]) => drawable(lat)))
     const features: GeoJSON.Feature[] = shown?.length
       ? [{ type: "Feature", properties: { erase }, geometry: cellsOutline(shown) }]
       : []
@@ -404,16 +405,16 @@ export class GameMap {
     setPaint(this.map, PAINT_FILL, "fill-opacity", PLAYER_OPACITY)
   }
 
-  private applyPaintRamp(t: Theme): void {
+  private applyPaintRamp(theme: Theme): void {
     if (!this.map.getLayer(PAINT_FILL)) return
-    const ramp = paintRamp(t)
+    const ramp = paintRamp(theme)
     setPaint(this.map, PAINT_FILL, "fill-color", ramp.color)
     setPaint(this.map, PAINT_FILL, "fill-opacity", ramp.opacity)
   }
 
   /** Marker at the answer: one clear dot. */
   showReveal(answer: LatLon): void {
-    const fc: GeoJSON.FeatureCollection = {
+    const collection: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",
       features: [
         {
@@ -423,7 +424,7 @@ export class GameMap {
         }
       ]
     }
-    void this.source(REVEAL_SOURCE)?.setData(fc)
+    void this.source(REVEAL_SOURCE)?.setData(collection)
   }
 
   /** A region answer: the outline (GeoJSON MultiPolygon coordinates), filled faintly. */
@@ -462,9 +463,9 @@ export class GameMap {
 
   /** The zoom of the whole-world view. On a phone the flat map fits the world's width to the screen. */
   private worldZoom(lat: Degrees = WORLD_CENTER[1]): Zoom {
-    const el = this.map.getContainer()
-    if (!this.globe) return flatWorldZoom(el.clientWidth)
-    const zoom = globeWorldZoom(el.clientWidth, el.clientHeight, this.map.getVerticalFieldOfView(), lat)
+    const container = this.map.getContainer()
+    if (!this.globe) return flatWorldZoom(container.clientWidth)
+    const zoom = globeWorldZoom(container.clientWidth, container.clientHeight, this.map.getVerticalFieldOfView(), lat)
     return Math.max(this.map.getMinZoom(), zoom)
   }
 
@@ -510,14 +511,14 @@ export class GameMap {
    * question card and the sheet.
    */
   private revealPadding(): Required<maplibregl.PaddingOptions> {
-    const { clientWidth: w, clientHeight: h } = this.map.getContainer()
+    const { clientWidth: width, clientHeight: height } = this.map.getContainer()
     if (matchMedia(PHONE_MEDIA_QUERY).matches) {
       // Below the header and the question card (--question-h, from the card).
       const card = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--question-h")) || 0
-      return { top: 64 + card + 8, bottom: h * (1 - SHEET_TOP) + 16, left: 24, right: 24 }
+      return { top: 64 + card + 8, bottom: height * (1 - SHEET_TOP) + 16, left: 24, right: 24 }
     }
     // A narrow window has less room beside the cards than they take.
-    const side = Math.min(340, w * 0.3)
+    const side = Math.min(340, width * 0.3)
     return { top: 40, bottom: 90, left: side, right: side }
   }
 }

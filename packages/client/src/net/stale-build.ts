@@ -20,8 +20,8 @@ export function reloadForNewBuild(): boolean {
 }
 
 export function reloadOnStaleBuild(): void {
-  window.addEventListener("vite:preloadError", (e) => {
-    if (reloadForNewBuild()) e.preventDefault()
+  window.addEventListener("vite:preloadError", (event) => {
+    if (reloadForNewBuild()) event.preventDefault()
   })
 }
 

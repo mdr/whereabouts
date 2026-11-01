@@ -39,7 +39,7 @@ describe("revealOrder", () => {
       result("fay", 120) // a confident miss scores below a pass
       // eve joined mid-round: no result at all
     ]
-    expect(revealOrder(players, results).map((row) => row.p.name)).toEqual([
+    expect(revealOrder(players, results).map((row) => row.player.name)).toEqual([
       "cara",
       "alice",
       "dan",
@@ -52,7 +52,7 @@ describe("revealOrder", () => {
   it("keeps the standings order for ties", () => {
     const players = [player("bob", 2), player("alice", 1)]
     const results = [result("alice", 500), result("bob", 500)]
-    expect(revealOrder(players, results).map((row) => row.p.name)).toEqual(["alice", "bob"])
+    expect(revealOrder(players, results).map((row) => row.player.name)).toEqual(["alice", "bob"])
   })
 })
 

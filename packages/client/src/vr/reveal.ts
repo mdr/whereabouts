@@ -24,8 +24,8 @@ export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: 
     const cells = Object.keys(layer.toRecord()) as H3Cell[]
     if (cells.length > 0)
       groups.push(
-        cells.map((h) => {
-          const { lat, lon } = layer.centre(h)
+        cells.map((cell) => {
+          const { lat, lon } = layer.centre(cell)
           return latLonToLocal({ lat, lon })
         })
       )
@@ -33,17 +33,17 @@ export function framing(reveal: VrReveal, round: VrRound): { at: LatLon; reach: 
   // The answer and each guess count once, however many cells a guess has:
   // else a far-off guess outweighs the answer and turns it out of view.
   const mid = groups.reduce(
-    (sum, g) =>
+    (sum, group) =>
       sum.addScaledVector(
-        g.reduce((s, p) => s.add(p), new Vector3()),
-        1 / g.length
+        group.reduce((total, point) => total.add(point), new Vector3()),
+        1 / group.length
       ),
     new Vector3()
   )
   // Spread round the world: show it all.
   if (mid.length() < groups.length * 0.2) return { at: reveal.focus, reach: Math.PI }
   mid.normalize()
-  const reach = Math.max(...groups.flat().map((p) => p.angleTo(mid)))
+  const reach = Math.max(...groups.flat().map((point) => point.angleTo(mid)))
   return { at: localToLatLon(mid), reach: reach * 1.15 + 0.002 }
 }
 
@@ -54,7 +54,7 @@ export function colouredPaint(
   return {
     type: "FeatureCollection",
     features: paints.flatMap(({ layer, colour }) =>
-      layer.toGeoJSON().features.map((f) => ({ ...f, properties: { ...f.properties, colour } }))
+      layer.toGeoJSON().features.map((feature) => ({ ...feature, properties: { ...feature.properties, colour } }))
     )
   }
 }

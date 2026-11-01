@@ -23,11 +23,11 @@ let loading: Promise<Borders> | undefined = undefined
 
 function loadBorders(): Promise<Borders> {
   loading ??= Promise.all([fetchBuildJson<ConstructorParameters<typeof Borders>[0]>(bordersUrl), loadOutlines()]).then(
-    ([m]) => (borders.value = new Borders(m, CATALOGUE.filter(isFlagQuestion))),
-    (err: unknown) => {
+    ([rawBorders]) => (borders.value = new Borders(rawBorders, CATALOGUE.filter(isFlagQuestion))),
+    (error: unknown) => {
       // Let the next caller try again, after a dropped connection say.
       loading = undefined
-      throw err
+      throw error
     }
   )
   return loading
@@ -36,32 +36,32 @@ function loadBorders(): Promise<Borders> {
 const pinsOf = new WeakMap<Borders, { country: FlagQuestion; at: LatLon }[]>()
 
 /** Where each country's flag goes on a map: worked out once. */
-export function flagPins(b: Borders): { country: FlagQuestion; at: LatLon }[] {
-  let pins = pinsOf.get(b)
-  if (!pins) pinsOf.set(b, (pins = b.pins()))
+export function flagPins(loaded: Borders): { country: FlagQuestion; at: LatLon }[] {
+  let pins = pinsOf.get(loaded)
+  if (!pins) pinsOf.set(loaded, (pins = loaded.pins()))
   return pins
 }
 
 const vrPinsOf = new WeakMap<Borders, VrFlagPin[]>()
 
 /** The outline the reveal draws where the country is painted whole, finer than its borders; else those. */
-function outline(b: Borders, country: FlagQuestion): FlatRing[] {
+function outline(loaded: Borders, country: FlagQuestion): FlatRing[] {
   const outline = country.answer.type === AnswerType.AREA ? outlines.value?.get(country.answer.outline) : undefined
-  if (!outline) return b.rings(country.clue.flag)
+  if (!outline) return loaded.rings(country.clue.flag)
   return outline.flatMap((polygon) => polygon.map(flatRing))
 }
 
 /** The same, as the headset takes them: the same array each time, so it sees no change. */
-export function vrFlagPins(b: Borders): VrFlagPin[] {
-  let pins = vrPinsOf.get(b)
+export function vrFlagPins(loaded: Borders): VrFlagPin[] {
+  let pins = vrPinsOf.get(loaded)
   if (!pins)
     vrPinsOf.set(
-      b,
-      (pins = flagPins(b).map(({ country, at }) => ({
+      loaded,
+      (pins = flagPins(loaded).map(({ country, at }) => ({
         flag: country.clue.flag,
         name: country.label,
         at,
-        rings: outline(b, country)
+        rings: outline(loaded, country)
       })))
     )
   return pins
@@ -69,9 +69,9 @@ export function vrFlagPins(b: Borders): VrFlagPin[] {
 
 /** The borders when `wanted` (a flag round), loading them if need be; undefined until they arrive. */
 export function useBorders(wanted: boolean): Borders | undefined {
-  const b = borders.value
+  const loaded = borders.value
   useEffect(() => {
-    if (wanted && !b) loadBorders().catch((err: unknown) => console.warn("could not load borders", err))
-  }, [wanted, b])
-  return wanted ? b : undefined
+    if (wanted && !loaded) loadBorders().catch((error: unknown) => console.warn("could not load borders", error))
+  }, [wanted, loaded])
+  return wanted ? loaded : undefined
 }

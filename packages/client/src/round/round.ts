@@ -88,9 +88,9 @@ export function useRoundMap(
 }
 
 /** What an area round asks to cover: "country", "island", "state"… */
-export function areaNoun(q: Pick<QuestionView, "type" | "feature">): string {
-  if (q.feature) return q.feature.toLowerCase()
-  return q.type === QuestionType.STATE ? "state" : "country"
+export function areaNoun(question: Pick<QuestionView, "type" | "feature">): string {
+  if (question.feature) return question.feature.toLowerCase()
+  return question.type === QuestionType.STATE ? "state" : "country"
 }
 
 /** Whether Done now is a pass (nothing painted), clucking if so. */
@@ -113,10 +113,10 @@ export function showAnswer(
 export function frameReveal(
   gameMap: Pick<GameMap, "fitAnswerAndPaint" | "fitRegionAndPaint">,
   question: QuestionView,
-  a: RevealedAnswer,
+  revealed: RevealedAnswer,
   paint: GeoJSON.FeatureCollection
 ): void {
-  if (a.shape.type === RevealedShapeType.AREA && a.shape.outline)
-    gameMap.fitRegionAndPaint(a.answer, a.shape.outline, paint, question.answer.tolerance)
-  else gameMap.fitAnswerAndPaint(a.answer, paint, question.answer.tolerance)
+  if (revealed.shape.type === RevealedShapeType.AREA && revealed.shape.outline)
+    gameMap.fitRegionAndPaint(revealed.answer, revealed.shape.outline, paint, question.answer.tolerance)
+  else gameMap.fitAnswerAndPaint(revealed.answer, paint, question.answer.tolerance)
 }

@@ -92,17 +92,17 @@ function draw(board: VrBoard): HTMLCanvasElement {
   if (board.awards.length > 0) {
     heading("AWARDS")
     const colW = (CANVAS_WIDTH - PAD * 2) / 2
-    board.awards.forEach((a, i) => {
+    board.awards.forEach((award, i) => {
       const x = PAD + (i % 2) * colW
       const top = y + Math.floor(i / 2) * 150
       ctx.font = `88px ${EMOJI}`
-      ctx.fillText(a.emoji, x, top + 60)
+      ctx.fillText(award.emoji, x, top + 60)
       ctx.fillStyle = "#f0fdff"
       ctx.font = `700 46px ${FONT}`
-      ctx.fillText(a.title, x + 120, top + 30, colW - 150)
+      ctx.fillText(award.title, x + 120, top + 30, colW - 150)
       ctx.font = `36px ${FONT}`
       let lx = x + 120
-      for (const part of a.line) {
+      for (const part of award.line) {
         ctx.fillStyle = part.colour ?? "#cfd8e3"
         ctx.font = `${part.colour ? "700 " : ""}36px ${FONT}`
         const room = x + colW - 30 - lx
@@ -120,17 +120,17 @@ function draw(board: VrBoard): HTMLCanvasElement {
     const colW = Math.min(180, (CANVAS_WIDTH - PAD * 2 - labelW) / Math.max(1, board.players.length))
     const colX = (j: number) => PAD + labelW + j * colW + colW / 2
     ctx.textAlign = "center"
-    board.players.forEach((p, j) => {
-      ctx.fillStyle = p.colour
+    board.players.forEach((player, j) => {
+      ctx.fillStyle = player.colour
       ctx.beginPath()
       ctx.arc(colX(j), y + 10, 14, 0, Math.PI * 2)
       ctx.fill()
       ctx.fillStyle = "#cfd8e3"
       ctx.font = `30px ${FONT}`
-      ctx.fillText(p.name, colX(j), y + 52, colW - 12)
+      ctx.fillText(player.name, colX(j), y + 52, colW - 12)
     })
     y += 80
-    board.rounds.forEach((r, i) => {
+    board.rounds.forEach((round, i) => {
       const rowY = y + i * ROW_HEIGHT + ROW_HEIGHT / 2
       if (i % 2 === 0) {
         ctx.fillStyle = "rgba(255,255,255,0.04)"
@@ -139,20 +139,20 @@ function draw(board: VrBoard): HTMLCanvasElement {
       ctx.textAlign = "left"
       ctx.fillStyle = "#cfd8e3"
       ctx.font = `36px ${FONT}`
-      ctx.fillText(`${i + 1}. ${r.label}`, PAD, rowY - 14, labelW - 30)
+      ctx.fillText(`${i + 1}. ${round.label}`, PAD, rowY - 14, labelW - 30)
       const typeX = PAD + ctx.measureText(`${i + 1}. `).width
-      ctx.fillStyle = r.colour
+      ctx.fillStyle = round.colour
       ctx.fillRect(typeX, rowY + 14, 18, 18)
       ctx.fillStyle = "#94a3b8"
       ctx.font = `28px ${FONT}`
-      ctx.fillText(r.type, typeX + 30, rowY + 24, labelW - 60)
-      const best = Math.max(-1, ...r.scores.map((s) => s ?? -1))
+      ctx.fillText(round.type, typeX + 30, rowY + 24, labelW - 60)
+      const best = Math.max(-1, ...round.scores.map((score) => score ?? -1))
       ctx.textAlign = "center"
-      r.scores.forEach((s, j) => {
-        const top = s !== undefined && s === best
+      round.scores.forEach((score, j) => {
+        const top = score !== undefined && score === best
         ctx.fillStyle = top ? "#67e8f9" : "#f0fdff"
         ctx.font = `${top ? "700 " : ""}38px ${FONT}`
-        ctx.fillText(s === undefined ? "–" : String(Math.round(s)), colX(j), rowY)
+        ctx.fillText(score === undefined ? "–" : String(Math.round(score)), colX(j), rowY)
       })
     })
     ctx.textAlign = "left"

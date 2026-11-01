@@ -24,11 +24,11 @@ export function loadOutlines(): Promise<Outlines> {
   if (!loading) outlinesFailed.value = false
   loading ??= fetchBuildJson<Record<string, Outline>>(outlinesUrl).then(
     (json) => (outlines.value = outlinesFrom(json)),
-    (err: unknown) => {
+    (error: unknown) => {
       // Let the next caller try again, after a dropped connection say.
       loading = undefined
       outlinesFailed.value = true
-      throw err
+      throw error
     }
   )
   return loading
@@ -38,7 +38,7 @@ export function loadOutlines(): Promise<Outlines> {
 export function useOutlines(wanted: boolean): Outlines | undefined {
   const all = outlines.value
   useEffect(() => {
-    if (wanted && !all) loadOutlines().catch((err: unknown) => console.warn("could not load outlines", err))
+    if (wanted && !all) loadOutlines().catch((error: unknown) => console.warn("could not load outlines", error))
   }, [wanted, all])
   return wanted ? all : undefined
 }

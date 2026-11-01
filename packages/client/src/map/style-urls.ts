@@ -16,7 +16,7 @@ export interface StyleFetches {
 export function styleFetches(style: StyleSpecification, zoom: Zoom, pixelRatio: number): StyleFetches {
   // A phone's whole world is below zoom 0, but its tiles are drawn at 0.
   const z = tileZoom(zoom)
-  const shown = style.layers.filter((l) => (l.minzoom ?? 0) <= z && l.layout?.visibility !== "none")
+  const shown = style.layers.filter((layer) => (layer.minzoom ?? 0) <= z && layer.layout?.visibility !== "none")
   const urls: string[] = []
   const tileJsons: string[] = []
   for (const id of new Set(shown.map(sourceOf))) {
@@ -26,10 +26,12 @@ export function styleFetches(style: StyleSpecification, zoom: Zoom, pixelRatio: 
     else if (source.url) tileJsons.push(source.url)
   }
   const ratio = pixelRatio > 1 ? "@2x" : ""
-  for (const sprite of typeof style.sprite === "string" ? [style.sprite] : (style.sprite ?? []).map((s) => s.url))
+  for (const sprite of typeof style.sprite === "string"
+    ? [style.sprite]
+    : (style.sprite ?? []).map((entry) => entry.url))
     urls.push(`${sprite}${ratio}.json`, `${sprite}${ratio}.png`)
   if (style.glyphs) {
-    const fonts = new Set(shown.flatMap((l) => fontOf(l) ?? []))
+    const fonts = new Set(shown.flatMap((layer) => fontOf(layer) ?? []))
     for (const font of fonts)
       urls.push(style.glyphs.replace("{fontstack}", encodeURIComponent(font)).replace("{range}", "0-255"))
   }
@@ -39,12 +41,12 @@ export function styleFetches(style: StyleSpecification, zoom: Zoom, pixelRatio: 
 /** Every tile at the zoom MapLibre draws `zoom` with (512 px tiles: the zoom rounded down). */
 export function tileUrls(templates: string[], zoom: Zoom): string[] {
   const z = tileZoom(zoom)
-  const n = 2 ** z
+  const tileCount = 2 ** z
   const template = templates[0]
   if (template === undefined) return []
   const urls: string[] = []
-  for (let x = 0; x < n; x++)
-    for (let y = 0; y < n; y++)
+  for (let x = 0; x < tileCount; x++)
+    for (let y = 0; y < tileCount; y++)
       urls.push(template.replace("{z}", String(z)).replace("{x}", String(x)).replace("{y}", String(y)))
   return urls
 }
@@ -59,5 +61,5 @@ function sourceOf(layer: LayerSpecification): string | undefined {
 function fontOf(layer: LayerSpecification): string | undefined {
   if (layer.type !== "symbol") return undefined
   const font: unknown = layer.layout?.["text-font"]
-  return Array.isArray(font) && font.every((f) => typeof f === "string") ? font.join(",") : undefined
+  return Array.isArray(font) && font.every((name) => typeof name === "string") ? font.join(",") : undefined
 }

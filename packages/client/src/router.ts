@@ -42,9 +42,9 @@ export function parseRoute(hash: string): Route {
     const code = roomCode(again[1]!.toUpperCase())
     return { type: RouteType.GAME, entry: { type: GameEntryType.HOST, code } }
   }
-  const m = /^\/game\/([A-Z0-9]{4,6})$/i.exec(path)
-  if (m) {
-    const code = roomCode(m[1]!.toUpperCase())
+  const match = /^\/game\/([A-Z0-9]{4,6})$/i.exec(path)
+  if (match) {
+    const code = roomCode(match[1]!.toUpperCase())
     return { type: RouteType.GAME, entry: { type: GameEntryType.JOIN, code, role: Role.PLAYER } }
   }
   return { type: RouteType.HOME }

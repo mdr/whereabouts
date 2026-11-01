@@ -19,7 +19,7 @@ type SoundView =
  * business (MapView), and Pass and Clear play their own, where they happen.
  */
 export function useGameSounds(conn: Pick<Connection, "timeUntil">, view: SoundView | undefined): void {
-  const prev = useRef<RoundState | undefined>(undefined)
+  const previous = useRef<RoundState | undefined>(undefined)
   const lastDeadline = useRef<number | undefined>(undefined)
   const phase = view?.phase
   const round =
@@ -30,7 +30,7 @@ export function useGameSounds(conn: Pick<Connection, "timeUntil">, view: SoundVi
     if (phase === undefined) return
     const next = { phase, round }
     const timeLeft = lastDeadline.current === undefined ? 0 : conn.timeUntil(lastDeadline.current)
-    const cue = roundCue(prev.current, next, timeLeft)
+    const cue = roundCue(previous.current, next, timeLeft)
     if (cue === RoundCue.ROUND_START) sound.chime(Chime.RISING)
     if (cue === RoundCue.FINISHED_EARLY) {
       sound.stopCountdown()
@@ -40,7 +40,7 @@ export function useGameSounds(conn: Pick<Connection, "timeUntil">, view: SoundVi
       sound.stopCountdown()
       sound.play("applause")
     }
-    prev.current = next
+    previous.current = next
   }, [phase, round])
 
   // Each round's countdown, including one joined partway through (after a

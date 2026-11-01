@@ -18,7 +18,7 @@ function placed(...panels: Object3D[]): PanelClearance {
   const clearance = new PanelClearance()
   clearance.placed(
     eye,
-    panels.map((obj) => ({ obj, half: 0.1 }))
+    panels.map((object) => ({ object, half: 0.1 }))
   )
   return clearance
 }

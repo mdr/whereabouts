@@ -23,7 +23,7 @@ export interface PaintKeyTarget {
 export interface Combo {
   /** The keys as the card shows them. */
   keys: string[]
-  matches(e: KeyPress): boolean
+  matches(event: KeyPress): boolean
   /** A paint key's action. */
   run?: (target: PaintKeyTarget) => void
   /** Works, but left off the card. */
@@ -42,21 +42,21 @@ export interface Shortcut {
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent)
 const MOD = isMac ? "⌘" : "Ctrl"
 
-const withMod = (e: KeyPress) => e.metaKey || e.ctrlKey
-const plain = (key: string) => (e: KeyPress) => e.key === key
+const withMod = (event: KeyPress) => event.metaKey || event.ctrlKey
+const plain = (key: string) => (event: KeyPress) => event.key === key
 
-function paintKey(key: string, run: (t: PaintKeyTarget) => void): Combo {
+function paintKey(key: string, run: (target: PaintKeyTarget) => void): Combo {
   return { keys: [key], matches: plain(key), run }
 }
 
 const BRUSH_STEP = 1.25
 
-export const PAN_HOLD: Combo = { keys: ["Space"], matches: (e) => e.code === "Space" }
+export const PAN_HOLD: Combo = { keys: ["Space"], matches: (event) => event.code === "Space" }
 export const SUBMIT: Combo = { keys: ["Enter"], matches: plain("Enter") }
 export const CLOSE: Combo = { keys: ["Esc"], matches: plain("Escape") }
 export const TOGGLE_LIST: Combo = {
   keys: ["?"],
-  matches: (e) => e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey
+  matches: (event) => event.key === "?" && !event.metaKey && !event.ctrlKey && !event.altKey
 }
 
 const SHORTCUTS: Shortcut[] = [
@@ -64,11 +64,11 @@ const SHORTCUTS: Shortcut[] = [
     action: "Pan / Paint / Erase / Fill",
     sep: "/",
     combos: [
-      paintKey("1", (t) => t.setTool(Tool.PAN)),
-      paintKey("2", (t) => t.setTool(Tool.PAINT)),
-      paintKey("3", (t) => t.setTool(Tool.ERASE)),
-      paintKey("4", (t) => {
-        if (t.canFill()) t.setTool(Tool.FILL)
+      paintKey("1", (target) => target.setTool(Tool.PAN)),
+      paintKey("2", (target) => target.setTool(Tool.PAINT)),
+      paintKey("3", (target) => target.setTool(Tool.ERASE)),
+      paintKey("4", (target) => {
+        if (target.canFill()) target.setTool(Tool.FILL)
       })
     ]
   },
@@ -76,15 +76,18 @@ const SHORTCUTS: Shortcut[] = [
   {
     action: "Brush smaller / larger",
     sep: "/",
-    combos: [paintKey("[", (t) => t.resizeBrush(1 / BRUSH_STEP)), paintKey("]", (t) => t.resizeBrush(BRUSH_STEP))]
+    combos: [
+      paintKey("[", (target) => target.resizeBrush(1 / BRUSH_STEP)),
+      paintKey("]", (target) => target.resizeBrush(BRUSH_STEP))
+    ]
   },
   {
     action: "Undo",
     combos: [
       {
         keys: [MOD, "Z"],
-        matches: (e) => withMod(e) && !e.shiftKey && e.key.toLowerCase() === "z",
-        run: (t) => t.undo()
+        matches: (event) => withMod(event) && !event.shiftKey && event.key.toLowerCase() === "z",
+        run: (target) => target.undo()
       }
     ]
   },
@@ -94,13 +97,13 @@ const SHORTCUTS: Shortcut[] = [
     combos: [
       {
         keys: [MOD, isMac ? "⇧" : "Shift", "Z"],
-        matches: (e) => withMod(e) && e.shiftKey && e.key.toLowerCase() === "z",
-        run: (t) => t.redo()
+        matches: (event) => withMod(event) && event.shiftKey && event.key.toLowerCase() === "z",
+        run: (target) => target.redo()
       },
       {
         keys: ["Ctrl", "Y"],
-        matches: (e) => withMod(e) && e.key.toLowerCase() === "y",
-        run: (t) => t.redo(),
+        matches: (event) => withMod(event) && event.key.toLowerCase() === "y",
+        run: (target) => target.redo(),
         unlisted: isMac
       }
     ]
@@ -112,19 +115,19 @@ const SHORTCUTS: Shortcut[] = [
 
 /** The card's rows: in practice, or in a game. */
 export function listedShortcuts(practice: boolean): Shortcut[] {
-  return SHORTCUTS.filter((s) => practice || !s.practiceOnly).map((s) => ({
-    ...s,
-    combos: s.combos.filter((c) => !c.unlisted)
+  return SHORTCUTS.filter((shortcut) => practice || !shortcut.practiceOnly).map((shortcut) => ({
+    ...shortcut,
+    combos: shortcut.combos.filter((combo) => !combo.unlisted)
   }))
 }
 
 /** Run the paint key `e` presses, if painting is on; whether it was one. */
-export function runPaintKey(e: KeyPress, target: PaintKeyTarget): boolean {
+export function runPaintKey(event: KeyPress, target: PaintKeyTarget): boolean {
   if (!target.enabled()) return false
-  for (const s of SHORTCUTS)
-    for (const c of s.combos)
-      if (c.run && c.matches(e)) {
-        c.run(target)
+  for (const shortcut of SHORTCUTS)
+    for (const combo of shortcut.combos)
+      if (combo.run && combo.matches(event)) {
+        combo.run(target)
         return true
       }
   return false

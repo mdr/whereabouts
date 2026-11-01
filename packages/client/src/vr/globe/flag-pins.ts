@@ -55,10 +55,10 @@ const centre = new Vector3()
 let atlas: Promise<HTMLImageElement> | undefined = undefined
 function loadAtlas(): Promise<HTMLImageElement> {
   atlas ??= (async () => {
-    const img = new Image()
-    img.src = FLAG_ATLAS.url
-    await img.decode()
-    return img
+    const image = new Image()
+    image.src = FLAG_ATLAS.url
+    await image.decode()
+    return image
   })()
   return atlas
 }
@@ -66,7 +66,7 @@ function loadAtlas(): Promise<HTMLImageElement> {
 /** A ray from a hand, and how far along it the globe is, if it reaches it. */
 export interface Pointer {
   origin: Vector3
-  dir: Vector3
+  direction: Vector3
   globe: number | undefined
 }
 
@@ -133,24 +133,24 @@ export class FlagPins {
   get outlined(): { name: string; segments: number } | undefined {
     if (!this.border.visible || this.pointed === undefined) return undefined
     const name = this.built?.pins[this.pointed]?.name
-    const n = this.border.geometry.getAttribute("position").count
-    return name === undefined ? undefined : { name, segments: n / 2 }
+    const pointCount = this.border.geometry.getAttribute("position").count
+    return name === undefined ? undefined : { name, segments: pointCount / 2 }
   }
 
   /** The flag nearest `to` with a border to outline, and where its middle is, for the browser tests. */
   nearest(to: Vector3): { name: string; at: Vector3 } | undefined {
     const pins = this.built?.pins ?? []
     let best: { name: string; at: Vector3 } | undefined = undefined
-    pins.forEach((p, i) => {
-      if (p.rings.length === 0) return
+    pins.forEach((pin, i) => {
+      if (pin.rings.length === 0) return
       const at = this.middle(i, new Vector3())
-      if (!best || at.distanceTo(to) < best.at.distanceTo(to)) best = { name: p.name, at }
+      if (!best || at.distanceTo(to) < best.at.distanceTo(to)) best = { name: pin.name, at }
     })
     return best
   }
 
   show(pins: VrFlagPin[] | undefined): void {
-    const key = pins ? pins.map((p) => p.flag).join() : ""
+    const key = pins ? pins.map((pin) => pin.flag).join() : ""
     if (key === this.key) return
     this.key = key
     const asked = ++this.asked
@@ -212,13 +212,13 @@ export class FlagPins {
     if (!built) return undefined
     let best: number | undefined = undefined
     let bestOff = 1
-    for (const { origin, dir, globe } of pointers) {
+    for (const { origin, direction, globe } of pointers) {
       built.pins.forEach((_, i) => {
         const mid = this.middle(i, v)
-        const t = w.copy(mid).sub(origin).dot(dir)
+        const t = w.copy(mid).sub(origin).dot(direction)
         // Ahead of the hand, and not round the back of the globe.
         if (t <= 0 || (globe !== undefined && t > globe + 0.03)) return
-        const miss = w.addScaledVector(dir, -t).length()
+        const miss = w.addScaledVector(direction, -t).length()
         const off = miss / (POINT_REACH + POINT_ANGLE * t)
         if (off < bestOff) [best, bestOff] = [i, off]
       })
@@ -248,32 +248,42 @@ export class FlagPins {
   }
 
   private async drawLabel(pin: VrFlagPin): Promise<void> {
-    const img = await loadAtlas()
+    const image = await loadAtlas()
     const ctx = this.labelCanvas.getContext("2d")
     if (!ctx) return
-    const { width: w, height: h } = this.labelCanvas
-    ctx.clearRect(0, 0, w, h)
+    const { width: width, height: height } = this.labelCanvas
+    ctx.clearRect(0, 0, width, height)
     ctx.fillStyle = "rgba(17, 24, 33, 0.92)"
     ctx.beginPath()
-    ctx.roundRect(0, 0, w, h, 24)
+    ctx.roundRect(0, 0, width, height, 24)
     ctx.fill()
     const cell = atlasCell(pin.flag)
     if (cell) {
       // As large as fits 80 × 60, beside the name.
-      const scale = Math.min(80 / cell.w, 60 / cell.h)
-      const [fw, fh] = [cell.w * scale, cell.h * scale]
-      ctx.drawImage(img, cell.x, cell.y, cell.w, cell.h, 18 + (80 - fw) / 2, (h - fh) / 2, fw, fh)
+      const scale = Math.min(80 / cell.width, 60 / cell.height)
+      const [flagWidth, flagHeight] = [cell.width * scale, cell.height * scale]
+      ctx.drawImage(
+        image,
+        cell.x,
+        cell.y,
+        cell.width,
+        cell.height,
+        18 + (80 - flagWidth) / 2,
+        (height - flagHeight) / 2,
+        flagWidth,
+        flagHeight
+      )
     }
     ctx.fillStyle = "#f0fdff"
     ctx.font = "700 40px system-ui, sans-serif"
     ctx.textBaseline = "middle"
-    ctx.fillText(pin.name, 116, h / 2, w - 134)
+    ctx.fillText(pin.name, 116, height / 2, width - 134)
     this.label.material.map!.needsUpdate = true
   }
 
   private sharedMaterials(): Promise<{ flags: MeshBasicMaterial; poles: LineBasicMaterial }> {
-    this.materials ??= loadAtlas().then((img) => {
-      const texture = new Texture(img)
+    this.materials ??= loadAtlas().then((image) => {
+      const texture = new Texture(image)
       texture.colorSpace = SRGBColorSpace
       texture.needsUpdate = true
       return {
@@ -303,23 +313,23 @@ export class FlagPins {
     const north = new Vector3()
     const corner = new Vector3()
     const { width, height } = FLAG_ATLAS
-    pins.forEach((p, i) => {
+    pins.forEach((pin, i) => {
       // Without a flag, a blank corner of the picture.
-      const cell = atlasCell(p.flag) ?? { x: width - 1, y: height - 1, w: 1, h: 1 }
-      const flagW = (FLAG_HEIGHT * cell.w) / cell.h
-      const n = latLonToLocal(p.at)
-      const foot = n.clone().multiplyScalar(this.base)
+      const cell = atlasCell(pin.flag) ?? { x: width - 1, y: height - 1, width: 1, height: 1 }
+      const flagW = (FLAG_HEIGHT * cell.width) / cell.height
+      const normal = latLonToLocal(pin.at)
+      const foot = normal.clone().multiplyScalar(this.base)
       feet.push(foot)
-      east.crossVectors(up, n).normalize()
-      north.crossVectors(n, east)
+      east.crossVectors(up, normal).normalize()
+      north.crossVectors(normal, east)
       mids.push(
-        n
+        normal
           .clone()
           .multiplyScalar(PIN_LENGTH + FLAG_HEIGHT / 2)
           .addScaledVector(east, flagW / 2)
       )
       for (const k of [0, 1]) foot.toArray(linePosition, (i * 2 + k) * 3)
-      v.copy(n)
+      v.copy(normal)
         .multiplyScalar(PIN_LENGTH)
         .toArray(lineOffset, (i * 2 + 1) * 3)
       lineIndex.fill(i, i * 2, i * 2 + 2)
@@ -332,15 +342,15 @@ export class FlagPins {
       ].entries()) {
         foot.toArray(position, (i * 4 + k) * 3)
         corner
-          .copy(n)
+          .copy(normal)
           .multiplyScalar(PIN_LENGTH)
           .addScaledVector(east, x!)
           .addScaledVector(north, y!)
           .toArray(offset, (i * 4 + k) * 3)
       }
       pinIndex.fill(i, i * 4, i * 4 + 4)
-      const [u0, u1] = [cell.x / width, (cell.x + cell.w) / width]
-      const [v0, v1] = [1 - (cell.y + cell.h) / height, 1 - cell.y / height]
+      const [u0, u1] = [cell.x / width, (cell.x + cell.width) / width]
+      const [v0, v1] = [1 - (cell.y + cell.height) / height, 1 - cell.y / height]
       uv.set([u0, v0, u1, v0, u1, v1, u0, v1], i * 8)
       index.set([i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3], i * 6)
     })

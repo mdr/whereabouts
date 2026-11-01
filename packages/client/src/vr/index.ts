@@ -158,18 +158,18 @@ export class Vr {
       const globe = vr.globe
       drawColour(globe.colourCanvas, globe.landCanvas, landOnly).then(
         () => globe.colourDrawn(renderer),
-        (err: unknown) => console.warn("could not colour the VR globe", err)
+        (error: unknown) => console.warn("could not colour the VR globe", error)
       )
       window.whereaboutsVr = vr
       return vr
-    } catch (err) {
+    } catch (error) {
       // A page holds only so many WebGL contexts; the next try makes its own.
       vr?.detail.dispose()
       world?.destroy()
       world?.renderer.dispose()
       world?.renderer.forceContextLoss()
       host.remove()
-      throw err
+      throw error
     }
   }
 
@@ -198,7 +198,7 @@ export class Vr {
     this.hands = new Hands(world, () => this.round?.paint)
     const { gripSpaces } = world.player
     const room = reflections(world.renderer)
-    for (const o of [this.globe.stand, gripSpaces.left, gripSpaces.right]) reflect(o, room)
+    for (const object of [this.globe.stand, gripSpaces.left, gripSpaces.right]) reflect(object, room)
 
     this.menu = new Menu(world, {
       clicked: () => this.clicks++,
@@ -218,11 +218,11 @@ export class Vr {
     this.wrist = new WristMenu(
       world,
       Object.fromEntries(
-        Object.entries(actions).map(([id, f]) => [
+        Object.entries(actions).map(([id, handler]) => [
           id,
           () => {
             this.clicks++
-            f()
+            handler()
           }
         ])
       ) as Record<WristButton, () => void>
@@ -247,7 +247,9 @@ export class Vr {
       tools: this.hands.tools
     })
 
-    void navigator.xr?.isSessionSupported(SessionMode.ImmersiveAR).then((ok) => this.menu.offerPassthrough(ok))
+    void navigator.xr
+      ?.isSessionSupported(SessionMode.ImmersiveAR)
+      .then((supported) => this.menu.offerPassthrough(supported))
     this.session = new HeadsetSession(world, {
       launching: (passthrough) => {
         this.space.group.visible = this.moon.mesh.visible = !passthrough
@@ -383,8 +385,8 @@ export class Vr {
     this.scores.place(head, forward)
     this.board.place(head, forward)
     this.clearance.placed(head, [
-      { obj: this.menu.object3D, half: PANEL_SIZE / 2 },
-      { obj: this.scores.object3D, half: SCORES_WIDTH / 2 }
+      { object: this.menu.object3D, half: PANEL_SIZE / 2 },
+      { object: this.scores.object3D, half: SCORES_WIDTH / 2 }
     ])
     this.placed = true
   }

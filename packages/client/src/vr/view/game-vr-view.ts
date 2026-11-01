@@ -44,19 +44,20 @@ import {
 } from "./view"
 import type { VrTable } from "../scores/scores"
 
-const named = (view: GameView, p: { id: string; name: string }) => `${p.name}${p.id === view.you.id ? " (you)" : ""}`
+const named = (view: GameView, player: { id: string; name: string }) =>
+  `${player.name}${player.id === view.you.id ? " (you)" : ""}`
 
 function shownRow(view: GameView, row: ShownRow): VrTable["rows"][number] {
   const select = () => (revealShown.value = row.pick)
   if (row.type === ShownRowType.EVERYONE) return { name: "Everyone", total: "", selected: row.selected, select }
   if (row.type === ShownRowType.HIDE_PAINT) return { name: "Hide paint", total: "", selected: row.selected, select }
-  const { player: p, result: r } = row
-  const played = `${roundScoreText(r)}${r?.guess.type === RoundGuessType.PASSED ? " passed" : ""}`
+  const { player, result } = row
+  const played = `${roundScoreText(result)}${result?.guess.type === RoundGuessType.PASSED ? " passed" : ""}`
   return {
-    colour: colourCss(p.colour),
-    name: named(view, p),
-    detail: `${played}${r?.hint ? ", hint" : ""}${row.ready ? ", ready" : ""}`,
-    total: Math.round(p.score).toLocaleString(),
+    colour: colourCss(player.colour),
+    name: named(view, player),
+    detail: `${played}${result?.hint ? ", hint" : ""}${row.ready ? ", ready" : ""}`,
+    total: Math.round(player.score).toLocaleString(),
     selected: row.selected,
     select
   }
@@ -82,9 +83,9 @@ function moreActions(view: GameView, conn: Connection): VrAction[] {
   ]
 }
 
-function playerState(p: PlayingPlayerView): string {
-  if (!p.connected) return "away"
-  if (p.locked) return "done"
+function playerState(player: PlayingPlayerView): string {
+  if (!player.connected) return "away"
+  if (player.locked) return "done"
   return "guessing"
 }
 
@@ -93,12 +94,12 @@ function playersTable(view: GameView): VrTable {
     title: "Players",
     rows: [...view.players]
       .sort((a, b) => a.rank - b.rank)
-      .map((p) => ({
-        colour: colourCss(p.colour),
-        name: named(view, p),
-        detail: playerState(p),
-        total: Math.round(p.score).toLocaleString(),
-        ...pickable(view, p)
+      .map((player) => ({
+        colour: colourCss(player.colour),
+        name: named(view, player),
+        detail: playerState(player),
+        total: Math.round(player.score).toLocaleString(),
+        ...pickable(view, player)
       })),
     hint: view.you.isHost ? "Point at a player to remove them or make them host." : undefined
   }
@@ -158,11 +159,11 @@ function gameReveal(
 ): VrReveal {
   const whose = revealShown.value
   const model = revealModel(view, reveal, whose)
-  const mine = reveal.results.find((r) => r.playerId === view.you.id)
+  const mine = reveal.results.find((result) => result.playerId === view.you.id)
   const score = mine && {
     score: mine.score,
     passed: mine.guess.type === RoundGuessType.PASSED,
-    total: view.players.find((p) => p.id === view.you.id)?.score ?? 0,
+    total: view.players.find((player) => player.id === view.you.id)?.score ?? 0,
     painted
   }
   return vrReveal(shown, revealedFromView(reveal, outline), score, borders, {
@@ -177,16 +178,26 @@ function gameReveal(
   })
 }
 
-export function gameVrView(view: InPlayGameView, conn: Connection, paint: PaintController, s: GameVrShown): VrView {
+export function gameVrView(
+  view: InPlayGameView,
+  conn: Connection,
+  paint: PaintController,
+  pageShown: GameVrShown
+): VrView {
   const connection = connectionText(conn)
   const reveal = view.phase === Phase.REVEAL ? view.reveal : undefined
   const shown: VrRoundShown = {
     question: roundOf(view).question,
-    revealed: reveal && revealedFromView(reveal, s.outline),
-    fact: s.fact
+    revealed: reveal && revealedFromView(reveal, pageShown.outline),
+    fact: pageShown.fact
   }
-  const round = gameRound(view, conn, paint, shown, connection, s)
+  const round = gameRound(view, conn, paint, shown, connection, pageShown)
   const more = moreActions(view, conn)
   if (view.phase !== Phase.REVEAL) return { type: VrViewType.PAINT, round, more }
-  return { type: VrViewType.REVEAL, round, more, reveal: gameReveal(view, view.reveal, conn, shown, connection, s) }
+  return {
+    type: VrViewType.REVEAL,
+    round,
+    more,
+    reveal: gameReveal(view, view.reveal, conn, shown, connection, pageShown)
+  }
 }

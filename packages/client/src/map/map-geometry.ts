@@ -53,7 +53,9 @@ export function hintFeatures(band: HintBand): GeoJSON.Feature[] {
 }
 
 function outerRingPoints(features: GeoJSON.Feature[]): Ring {
-  return features.flatMap((f) => (f.geometry.type === "Polygon" ? (f.geometry.coordinates[0] as Ring) : []))
+  return features.flatMap((feature) =>
+    feature.geometry.type === "Polygon" ? (feature.geometry.coordinates[0] as Ring) : []
+  )
 }
 
 /** `box` grown to take in the polygons' outer rings. */
@@ -61,9 +63,9 @@ export function boxAround(features: GeoJSON.Feature[], box: Box): Box {
   let [minLon, minLat, maxLon, maxLat] = box
   for (const [lon, lat] of outerRingPoints(features)) {
     // Cells that were unwrapped past 180 are folded back for the bbox.
-    const l = lon > 180 ? lon - 360 : lon
-    if (l < minLon) minLon = l
-    if (l > maxLon) maxLon = l
+    const folded = lon > 180 ? lon - 360 : lon
+    if (folded < minLon) minLon = folded
+    if (folded > maxLon) maxLon = folded
     if (lat < minLat) minLat = lat
     if (lat > maxLat) maxLat = lat
   }
@@ -85,8 +87,8 @@ export function bounds([w, s, e, n]: Box): LngLatBoundsLike {
 }
 
 /** Moves the centre into the middle of the clear part of the map. Unlike easeTo's padding, it does not stay set. */
-export function offsetFor(p: Required<PaddingOptions>): [x: Px, y: Px] {
-  return [(p.left - p.right) / 2, (p.top - p.bottom) / 2]
+export function offsetFor(padding: Required<PaddingOptions>): [x: Px, y: Px] {
+  return [(padding.left - padding.right) / 2, (padding.top - padding.bottom) / 2]
 }
 
 /** The ground length of one CSS pixel. */
@@ -101,8 +103,8 @@ export function metresPerPixel(lat: Degrees, zoom: Zoom): Metres {
  */
 export function globeWorldZoom(width: Px, height: Px, fov: Degrees, lat: Degrees): Zoom {
   const disc = GLOBE_FILL * Math.min(width, height)
-  const f = height / 2 / Math.tan(toRadians(fov) / 2)
-  const sin = disc / Math.hypot(f, disc)
-  const radius = (f * sin) / (1 - sin)
+  const focalLength = height / 2 / Math.tan(toRadians(fov) / 2)
+  const sin = disc / Math.hypot(focalLength, disc)
+  const radius = (focalLength * sin) / (1 - sin)
   return zoomForWorldWidth(2 * Math.PI * radius * Math.cos(toRadians(lat)))
 }

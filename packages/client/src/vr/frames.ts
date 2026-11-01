@@ -13,7 +13,7 @@ let native: { request: typeof requestAnimationFrame; cancel: typeof cancelAnimat
 export function timerFrames(on: boolean): void {
   if (on && !native) {
     native = { request: window.requestAnimationFrame, cancel: window.cancelAnimationFrame }
-    window.requestAnimationFrame = (cb) => window.setTimeout(() => cb(performance.now()), FRAME_INTERVAL)
+    window.requestAnimationFrame = (callback) => window.setTimeout(() => callback(performance.now()), FRAME_INTERVAL)
     window.cancelAnimationFrame = (id) => window.clearTimeout(id)
   } else if (!on && native) {
     window.requestAnimationFrame = native.request

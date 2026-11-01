@@ -61,17 +61,17 @@ export class PaintView {
   showLayers(entries: { layer: PaintLayer; colour: CssColour }[]): GeoJSON.FeatureCollection {
     return this.showColoured(
       entries.flatMap(({ layer, colour }) =>
-        layer.toGeoJSON().features.map((f) => ({ ...f, properties: { ...f.properties, colour } }))
+        layer.toGeoJSON().features.map((feature) => ({ ...feature, properties: { ...feature.properties, colour } }))
       )
     )
   }
 
   /** As showLayers, for features that already carry their `colour`. */
   showColoured(features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
-    const fc: GeoJSON.FeatureCollection = { type: "FeatureCollection", features }
+    const collection: GeoJSON.FeatureCollection = { type: "FeatureCollection", features }
     this.gameMap.setPaintColourPerFeature()
-    this.gameMap.showPaint(fc)
-    return fc
+    this.gameMap.showPaint(collection)
+    return collection
   }
 
   /** Put our own paint back on the map, in a player colour or the theme ramp. */

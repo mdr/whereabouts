@@ -29,7 +29,7 @@ export class PaintInput {
   /** Where a middle-button drag last was, while one pans the map. */
   private middleFrom: ScreenPoint | undefined = undefined
   private stroke: { tool: StrokeTool; last: Point | undefined } | undefined = undefined
-  private hoverListeners = new Set<(pos: LatLon) => void>()
+  private hoverListeners = new Set<(position: LatLon) => void>()
   /** Where the mouse is over the map, so the footprint can be redrawn without it moving. */
   private pointerAt: LngLat | undefined = undefined
   /** Whether the last pointer on the map can hover: a mouse or pen, not a finger. */
@@ -44,42 +44,43 @@ export class PaintInput {
     this.model = model
     this.view = view
     const map = gameMap.map
-    const onDown = (e: MapMouseEvent) => {
-      if (!this.canPaint() || e.originalEvent.button !== 0 || !gameMap.onSurface(e.point)) return
-      this.beginStroke(e.point)
+    const onDown = (event: MapMouseEvent) => {
+      if (!this.canPaint() || event.originalEvent.button !== 0 || !gameMap.onSurface(event.point)) return
+      this.beginStroke(event.point)
     }
     // Two fingers pan and zoom, which MapLibre handles itself once the
     // one-finger stroke is abandoned (stroke.ts).
-    const onTouchStart = (e: MapTouchEvent) => {
-      if (touchStart(e.points.length, this.canPaint()) === TouchStep.ABANDON) {
+    const onTouchStart = (event: MapTouchEvent) => {
+      if (touchStart(event.points.length, this.canPaint()) === TouchStep.ABANDON) {
         this.abandonStroke()
         return
       }
-      if (!gameMap.onSurface(e.point)) return
-      e.preventDefault()
-      this.beginStroke(e.point)
+      if (!gameMap.onSurface(event.point)) return
+      event.preventDefault()
+      this.beginStroke(event.point)
     }
-    const onTouchMove = (e: MapTouchEvent) => {
-      const step = touchMove(e.points.length, this.stroke !== undefined)
+    const onTouchMove = (event: MapTouchEvent) => {
+      const step = touchMove(event.points.length, this.stroke !== undefined)
       if (step === TouchStep.ABANDON) this.abandonStroke()
       if (step !== TouchStep.CONTINUE) return
-      e.preventDefault()
-      this.strokeTo(e.point)
+      event.preventDefault()
+      this.strokeTo(event.point)
       this.view.queue()
     }
     const onTouchEnd = () => this.endStroke()
-    const onMove = (e: MapMouseEvent) => {
-      const onEarth = gameMap.onSurface(e.point)
+    const onMove = (event: MapMouseEvent) => {
+      const onEarth = gameMap.onSurface(event.point)
       // A tap also sends a mouse move, which shouldn't leave a footprint behind.
       if (this.hovering) {
-        this.pointerAt = onEarth ? e.lngLat : undefined
+        this.pointerAt = onEarth ? event.lngLat : undefined
         this.refreshCursor()
       }
       if (this.stroke) {
-        this.strokeTo(e.point)
+        this.strokeTo(event.point)
         this.view.queue()
       }
-      if (onEarth) for (const l of this.hoverListeners) l({ lat: e.lngLat.lat, lon: e.lngLat.lng })
+      if (onEarth)
+        for (const listener of this.hoverListeners) listener({ lat: event.lngLat.lat, lon: event.lngLat.lng })
     }
     const onOut = () => {
       this.pointerAt = undefined
@@ -89,9 +90,9 @@ export class PaintInput {
     const onZoom = () => this.refreshCursor()
     const onUp = () => this.endStroke()
     // The Fill tool acts on a click (a tap, on a phone), so the map still drags.
-    const onClick = (e: MapMouseEvent) => {
-      if (!this.canFill() || !gameMap.onSurface(e.point)) return
-      this.model.fillAt(latLon(e.lngLat), this.fillReach(e.lngLat.lat))
+    const onClick = (event: MapMouseEvent) => {
+      if (!this.canFill() || !gameMap.onSurface(event.point)) return
+      this.model.fillAt(latLon(event.lngLat), this.fillReach(event.lngLat.lat))
       this.refreshCursor()
     }
     const keyTarget: PaintKeyTarget = {
@@ -102,48 +103,48 @@ export class PaintInput {
       undo: () => this.model.undo(),
       redo: () => this.model.redo()
     }
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (isTyping(e.target ?? undefined)) return
-      if (PAN_HOLD.matches(e)) {
-        if (forTabbedControl(e) || this.spaceHeld) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isTyping(event.target ?? undefined)) return
+      if (PAN_HOLD.matches(event)) {
+        if (forTabbedControl(event) || this.spaceHeld) return
         this.spaceHeld = true
         this.endStroke()
         this.applyInteraction()
-        e.preventDefault()
+        event.preventDefault()
         return
       }
-      if (runPaintKey(e, keyTarget)) e.preventDefault()
+      if (runPaintKey(event, keyTarget)) event.preventDefault()
     }
     // A middle-button drag pans whatever the tool, like holding Space.
     // MapLibre's own drag pan only listens to the left button.
-    const onMiddleDown = (e: MouseEvent) => {
-      if (e.button !== 1) return
-      e.preventDefault() // no autoscroll
+    const onMiddleDown = (event: MouseEvent) => {
+      if (event.button !== 1) return
+      event.preventDefault() // no autoscroll
       this.endStroke()
-      this.middleFrom = { x: e.clientX, y: e.clientY }
+      this.middleFrom = { x: event.clientX, y: event.clientY }
       map.getContainer().dataset["panning"] = ""
       this.applyInteraction()
     }
-    const onMiddleMove = (e: MouseEvent) => {
+    const onMiddleMove = (event: MouseEvent) => {
       if (!this.middleFrom) return
-      map.panBy([this.middleFrom.x - e.clientX, this.middleFrom.y - e.clientY], { duration: 0 })
-      this.middleFrom = { x: e.clientX, y: e.clientY }
+      map.panBy([this.middleFrom.x - event.clientX, this.middleFrom.y - event.clientY], { duration: 0 })
+      this.middleFrom = { x: event.clientX, y: event.clientY }
     }
-    const onMiddleUp = (e: MouseEvent) => {
-      if (e.button !== 1 || !this.middleFrom) return
+    const onMiddleUp = (event: MouseEvent) => {
+      if (event.button !== 1 || !this.middleFrom) return
       this.middleFrom = undefined
       delete map.getContainer().dataset["panning"]
       this.applyInteraction()
     }
     const canvas = map.getCanvasContainer()
-    const onKeyUp = (e: KeyboardEvent) => {
-      if (PAN_HOLD.matches(e)) {
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (PAN_HOLD.matches(event)) {
         this.spaceHeld = false
         this.applyInteraction()
       }
     }
-    const onPointer = (e: PointerEvent) => {
-      this.hovering = e.pointerType !== "touch"
+    const onPointer = (event: PointerEvent) => {
+      this.hovering = event.pointerType !== "touch"
       if (!this.hovering && this.pointerAt) {
         this.pointerAt = undefined
         this.hideCursor()
@@ -214,10 +215,10 @@ export class PaintInput {
   }
 
   dispose(): void {
-    for (const d of this.disposers) d()
+    for (const dispose of this.disposers) dispose()
   }
 
-  onHover(listener: (pos: LatLon) => void): () => void {
+  onHover(listener: (position: LatLon) => void): () => void {
     this.hoverListeners.add(listener)
     return () => this.hoverListeners.delete(listener)
   }
@@ -251,12 +252,12 @@ export class PaintInput {
     const canPaint = this.canPaint()
     if (canPaint) map.dragPan.disable()
     else map.dragPan.enable()
-    const el = map.getContainer()
+    const container = map.getContainer()
     // For the cursor (MapView.module.css).
     const brush = this.tool.value === Tool.PAINT || this.tool.value === Tool.ERASE
     const tool = this.canFill() ? Tool.FILL : canPaint && brush ? this.tool.value : undefined
-    if (tool) el.dataset["tool"] = tool
-    else delete el.dataset["tool"]
+    if (tool) container.dataset["tool"] = tool
+    else delete container.dataset["tool"]
     this.refreshCursor()
   }
 
@@ -298,8 +299,11 @@ export class PaintInput {
   private updateCursor(lngLat: LngLat): void {
     if (this.canFill()) {
       // The country a click would fill, or unfill (dotted).
-      const f = this.model.countryAt(latLon(lngLat), this.fillReach(lngLat.lat))
-      this.gameMap.setCursorShape(f && this.model.outline(f), f ? this.model.isFilled(f) : false)
+      const question = this.model.countryAt(latLon(lngLat), this.fillReach(lngLat.lat))
+      this.gameMap.setCursorShape(
+        question && this.model.outline(question),
+        question ? this.model.isFilled(question) : false
+      )
       return
     }
     if (!this.canPaint()) {
@@ -332,9 +336,9 @@ export class PaintInput {
     const stroke = this.stroke
     if (!stroke) return
     for (const { x, y } of strokePoints(stroke.last, point, this.brushRadius.value)) {
-      const p = new Point(x, y)
-      this.stampOnSurface(p, stroke.tool)
-      stroke.last = p
+      const stamp = new Point(x, y)
+      this.stampOnSurface(stamp, stroke.tool)
+      stroke.last = stamp
     }
   }
 

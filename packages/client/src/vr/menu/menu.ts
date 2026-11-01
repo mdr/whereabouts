@@ -80,15 +80,15 @@ export class Menu {
 
   /** To the left of the globe, turned to face the player. */
   place(head: Vector3, forward: Vector3): void {
-    const obj = this.object3D
+    const object = this.object3D
     const level = new Vector3(forward.x, 0, forward.z).normalize()
     const left = new Vector3(level.z, 0, -level.x)
-    obj.position
+    object.position
       .copy(head)
       .addScaledVector(level, 0.55)
       .addScaledVector(left, 0.5)
       .add(new Vector3(0, -0.1, 0))
-    obj.lookAt(head)
+    object.lookAt(head)
   }
 
   /** The menu loads on its own time; hook its buttons up once it has. */
@@ -100,10 +100,10 @@ export class Menu {
   wire(doc: UIKitDocument): void {
     this.doc = doc
     doc.setTargetDimensions(PANEL_SIZE, PANEL_SIZE)
-    const on = (id: string, f: () => void) =>
+    const on = (id: string, handler: () => void) =>
       doc.requireElementById(id).addEventListener("click", () => {
         this.handlers.clicked()
-        f()
+        handler()
       })
     on("done", () => this.handlers.done())
     on("unlock", () => this.view?.type === VrViewType.PAINT && this.view.round.unlock?.())
@@ -135,8 +135,8 @@ export class Menu {
     this.view = undefined
   }
 
-  offerPassthrough(ok: boolean): void {
-    this.passthroughOffered = ok
+  offerPassthrough(supported: boolean): void {
+    this.passthroughOffered = supported
     this.applyView()
   }
 
@@ -159,8 +159,9 @@ export class Menu {
       doc.getElementById("doneLabel")?.setProperties({ text: done })
     }
     if (!round.timeLeft) return
-    const s = Math.ceil(Math.max(0, round.timeLeft()) / 1000)
-    const clock = s > 0 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} left` : "Time's up"
+    const seconds = Math.ceil(Math.max(0, round.timeLeft()) / 1000)
+    const clock =
+      seconds > 0 ? `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")} left` : "Time's up"
     if (clock !== this.clockText) {
       this.clockText = clock
       doc.getElementById("clock")?.setProperties({ text: clock })
@@ -168,14 +169,17 @@ export class Menu {
   }
 
   buttonAt(id: string): Vec3 {
-    const p = this.doc!.requireElementById(id).getWorldPosition(new Vector3())
-    return [p.x, p.y, p.z]
+    const position = this.doc!.requireElementById(id).getWorldPosition(new Vector3())
+    return [position.x, position.y, position.z]
   }
 
   get shown(): MenuShown {
     const view = this.view
     const round = view?.type === VrViewType.PAINT ? view.round : undefined
-    const shown = (a: VrAction) => ({ label: actionLabel(a, this.armed?.action), enabled: a.enabled !== false })
+    const shown = (action: VrAction) => ({
+      label: actionLabel(action, this.armed?.action),
+      enabled: action.enabled !== false
+    })
     return {
       done: this.doneText,
       clock: this.clockText,

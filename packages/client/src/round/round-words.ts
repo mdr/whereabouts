@@ -25,4 +25,5 @@ export const readyCountText = (ready: number, present: number): string => `${rea
 export const WAITING_FOR_OTHERS = "Waiting for the others…"
 
 /** A pass scores too, so it shows its score like any other round. */
-export const roundScoreText = (r: RoundResultView | undefined): string => (r ? `+${Math.round(r.score)}` : "sat out")
+export const roundScoreText = (result: RoundResultView | undefined): string =>
+  result ? `+${Math.round(result.score)}` : "sat out"

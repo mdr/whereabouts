@@ -64,20 +64,20 @@ export class ScoreBoard {
 
   /** To the right of the globe, turned to face the player. */
   place(head: Vector3, forward: Vector3): void {
-    const obj = this.entity.object3D!
+    const object = this.entity.object3D!
     const level = new Vector3(forward.x, 0, forward.z).normalize()
     const right = new Vector3(-level.z, 0, level.x)
-    obj.position
+    object.position
       .copy(head)
       .addScaledVector(level, 0.55)
       .addScaledVector(right, 0.5)
       .add(new Vector3(0, -0.1, 0))
-    obj.lookAt(head)
+    object.lookAt(head)
   }
 
   rowAt(i: number): Vec3 {
-    const p = this.doc!.requireElementById(`row${i}`).getWorldPosition(new Vector3())
-    return [p.x, p.y, p.z]
+    const position = this.doc!.requireElementById(`row${i}`).getWorldPosition(new Vector3())
+    return [position.x, position.y, position.z]
   }
 
   show(table: VrTable | undefined): void {

@@ -317,24 +317,28 @@ export interface Rejection {
  * closing and for giving up on reconnecting.
  */
 export function describeDisconnect(code: number, reason: string | undefined): Rejection {
-  const r = reason ?? ""
-  if (r === "room_destroyed") {
+  const reasonText = reason ?? ""
+  if (reasonText === "room_destroyed") {
     return {
       title: "That game has ended",
       detail: "Everyone left, so the room was closed. Game codes only live while someone is in the game.",
       action: RejectionAction.NONE
     }
   }
-  if (r === "reconnect_failed") {
+  if (reasonText === "reconnect_failed") {
     return {
       title: "Lost the connection",
       detail: "We could not reach the game server. Check your network and try again.",
       action: RejectionAction.RETRY
     }
   }
-  if (!isCloseReason(r))
-    return { title: "Disconnected", detail: r || `The connection closed (code ${code}).`, action: RejectionAction.NONE }
-  switch (r) {
+  if (!isCloseReason(reasonText))
+    return {
+      title: "Disconnected",
+      detail: reasonText || `The connection closed (code ${code}).`,
+      action: RejectionAction.NONE
+    }
+  switch (reasonText) {
     case CloseReason.NO_SUCH_GAME:
       return {
         title: "No game with that code",

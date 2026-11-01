@@ -15,8 +15,8 @@ import { useOutlines } from "./outlines"
 
 export function useGameData(mix: QuestionMix, wanted = true): Borders | undefined {
   useEffect(() => {
-    if (wanted) loadFacts().catch((err: unknown) => console.warn("could not load the facts", err))
+    if (wanted) loadFacts().catch((error: unknown) => console.warn("could not load the facts", error))
   }, [wanted])
-  useOutlines(wanted && AREA_TYPES.some((t) => mix[t] > 0))
+  useOutlines(wanted && AREA_TYPES.some((type) => mix[type] > 0))
   return useBorders(wanted && mix[QuestionType.FLAG] > 0)
 }

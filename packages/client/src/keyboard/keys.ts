@@ -18,8 +18,8 @@ let tabbedTo: Element | undefined = undefined
 export function trackKeyboardFocus(): void {
   // Read as focus arrives: any key press, a shortcut's own included, turns a
   // clicked button's focus ring on too.
-  window.addEventListener("focusin", (e) => {
-    const target = e.target
+  window.addEventListener("focusin", (event) => {
+    const target = event.target
     tabbedTo =
       target instanceof HTMLElement && !target.closest(".maplibregl-map") && target.matches(":focus-visible")
         ? target
@@ -34,6 +34,6 @@ export function trackKeyboardFocus(): void {
  * click shows no focus ring, and the map is no control: there the key is
  * the shortcut's.
  */
-export function forTabbedControl(e: KeyboardEvent): boolean {
-  return tabbedTo !== undefined && e.target === tabbedTo
+export function forTabbedControl(event: KeyboardEvent): boolean {
+  return tabbedTo !== undefined && event.target === tabbedTo
 }

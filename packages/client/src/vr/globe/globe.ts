@@ -63,7 +63,7 @@ const v = new Vector3()
 const w = new Vector3()
 
 /** An angle the short way round, in (-π, π]. */
-const wrap = (a: Radians): Radians => Math.atan2(Math.sin(a), Math.cos(a))
+const wrap = (angle: Radians): Radians => Math.atan2(Math.sin(angle), Math.cos(angle))
 
 const stickActive = (stick: { x: number; y: number }) =>
   Math.abs(stick.x) > STICK_DEAD_ZONE || Math.abs(stick.y) > STICK_DEAD_ZONE
@@ -106,9 +106,9 @@ export class Globe {
   private readonly held: Partial<Record<Hand, Vector3>> = {}
   /** Two hands' gesture: how far apart they started, the zoom then, and the place between them. */
   private pair: { length: number; scale: number; spot: Vector3 } | undefined = undefined
-  private turning: { from: Turn; to: Turn; scale: number; toScale: number; t: number } | undefined = undefined
+  private turning: { from: Turn; to: Turn; scale: number; toScale: number; progress: number } | undefined = undefined
   /** What sits just above the land, and how far above it at the smallest. */
-  private readonly overlays: { obj: Object3D; radius: Metres }[] = []
+  private readonly overlays: { object: Object3D; radius: Metres }[] = []
 
   constructor(anisotropy: number) {
     this.landCanvas.width = 4096
@@ -162,10 +162,10 @@ export class Globe {
     return localToLatLon(this.group.worldToLocal(v.copy(to)))
   }
 
-  /** Adds `obj`, drawn at `radius` on the smallest globe, to sit that high above the land at any zoom. */
-  overlay(obj: Object3D, radius: Metres): void {
-    this.overlays.push({ obj, radius })
-    this.group.add(obj)
+  /** Adds `object`, drawn at `radius` on the smallest globe, to sit that high above the land at any zoom. */
+  overlay(object: Object3D, radius: Metres): void {
+    this.overlays.push({ object: object, radius })
+    this.group.add(object)
   }
 
   /** Sends the land to the GPU straight away rather than on the first frame that shows it. */
@@ -248,13 +248,19 @@ export class Globe {
       spin: this.turned.spin + wrap(-(place.spin + this.turned.spin)),
       tilt: Math.max(MIN_TILT, Math.min(MAX_TILT, eyeAt.tilt - placeTilt))
     }
-    this.turning = { from: { ...this.turned }, to, scale: this.scale, toScale, t: 0 }
+    this.turning = { from: { ...this.turned }, to, scale: this.scale, toScale, progress: 0 }
     this.rate.spin = this.rate.tilt = 0
   }
 
   /** Back to the size it starts at, turned as it is, as the page's map goes back to the whole world. */
   zoomOut(): void {
-    this.turning = { from: { ...this.turned }, to: { ...this.turned }, scale: this.scale, toScale: MIN_SCALE, t: 0 }
+    this.turning = {
+      from: { ...this.turned },
+      to: { ...this.turned },
+      scale: this.scale,
+      toScale: MIN_SCALE,
+      progress: 0
+    }
     this.rate.spin = this.rate.tilt = 0
   }
 
@@ -295,7 +301,7 @@ export class Globe {
       this.pinch(left, right)
     } else {
       this.pair = undefined
-      const hand = HANDS.find((h) => grips[h])
+      const hand = HANDS.find((hand) => grips[hand])
       if (hand) this.drag(dt, hand, grips[hand]!)
       else this.coast(dt)
     }
@@ -307,14 +313,14 @@ export class Globe {
     const turning = this.turning
     if (!turning) return
     const { from, to, scale, toScale } = turning
-    const t = (turning.t = Math.min(1, turning.t + dt / TURN))
-    const eased = smoothstep(t)
+    const progress = (turning.progress = Math.min(1, turning.progress + dt / TURN))
+    const eased = smoothstep(progress)
     this.turned.spin = from.spin + (to.spin - from.spin) * eased
     this.turned.tilt = from.tilt + (to.tilt - from.tilt) * eased
     this.orient()
     // Evenly in the logarithm, as the thumbstick zooms.
     this.setScale(scale * Math.pow(toScale / scale, eased))
-    if (t === 1) this.turning = undefined
+    if (progress === 1) this.turning = undefined
   }
 
   private pinch(left: Vector3, right: Vector3): void {
@@ -334,9 +340,9 @@ export class Globe {
   }
 
   private drag(dt: Seconds, hand: Hand, at: Vector3): void {
-    const prev = this.held[hand]
-    if (prev && dt > 0) {
-      const was = this.angles(prev, this.turned.tilt)
+    const previous = this.held[hand]
+    if (previous && dt > 0) {
+      const was = this.angles(previous, this.turned.tilt)
       const now = this.angles(v.copy(at).sub(this.centre), this.turned.tilt)
       const spin = wrap(now.spin - was.spin)
       const tilt = wrap(now.tilt - was.tilt)
@@ -356,9 +362,9 @@ export class Globe {
   }
 
   private rememberHeld(grips: Partial<Record<Hand, Vector3>>): void {
-    for (const h of HANDS) {
-      const p = grips[h]
-      this.held[h] = p ? (this.held[h] ?? new Vector3()).copy(p).sub(this.centre) : undefined
+    for (const hand of HANDS) {
+      const grip = grips[hand]
+      this.held[hand] = grip ? (this.held[hand] ?? new Vector3()).copy(grip).sub(this.centre) : undefined
     }
   }
 
@@ -367,13 +373,14 @@ export class Globe {
     if (Math.abs(stick.y) > STICK_DEAD_ZONE) this.setScale(this.group.scale.x * Math.exp(-stick.y * 1.2 * dt))
   }
 
-  private setScale(s: number): void {
-    const scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s))
+  private setScale(requested: number): void {
+    const scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, requested))
     this.group.scale.setScalar(scale)
     this.group.position.copy(this.anchor).addScaledVector(this.toward, RADIUS * scale)
     this.stand.scale.setScalar(scale)
     this.stand.position.copy(this.group.position)
-    for (const { obj, radius } of this.overlays) obj.scale.setScalar((RADIUS + (radius - RADIUS) / scale) / radius)
+    for (const { object, radius } of this.overlays)
+      object.scale.setScalar((RADIUS + (radius - RADIUS) / scale) / radius)
     // The facets' sag grows with the globe; the layers' height above them doesn't.
     this.surface.material.polygonOffsetUnits = 64 * scale
   }

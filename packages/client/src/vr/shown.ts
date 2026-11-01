@@ -37,5 +37,5 @@ export function flagPinsOf(view: VrView): VrFlagPin[] | undefined {
 export function paintsKey(view: VrView): string {
   if (view.type !== VrViewType.REVEAL) return ""
   const { paints } = view.reveal
-  return paints.type === VrPaintsType.PLAYERS ? paints.paints.map((p) => p.colour).join() : "own"
+  return paints.type === VrPaintsType.PLAYERS ? paints.paints.map((paint) => paint.colour).join() : "own"
 }

@@ -32,8 +32,8 @@ export function startHeartbeat(ping: () => void, dead: () => void): Heartbeat {
   const onVisible = () => {
     if (document.visibilityState === "visible") check()
   }
-  const onPageShow = (e: PageTransitionEvent) => {
-    if (e.persisted) check()
+  const onPageShow = (event: PageTransitionEvent) => {
+    if (event.persisted) check()
   }
   document.addEventListener("visibilitychange", onVisible)
   window.addEventListener("online", check)

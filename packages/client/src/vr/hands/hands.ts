@@ -22,7 +22,7 @@ export class Hands {
     this.world = world
     this.stroke = new PairedStroke(paint)
     const { gripSpaces, raySpaces } = world.player
-    const tool = (h: Hand) => new HandTool(gripSpaces[XR_HAND[h]], raySpaces[XR_HAND[h]], world.scene, THEME)
+    const tool = (hand: Hand) => new HandTool(gripSpaces[XR_HAND[hand]], raySpaces[XR_HAND[hand]], world.scene, THEME)
     this.tools = { [Hand.LEFT]: tool(Hand.LEFT), [Hand.RIGHT]: tool(Hand.RIGHT) }
     this.tools[Hand.LEFT].setTool(Tool.ERASE)
   }
@@ -32,7 +32,7 @@ export class Hands {
   }
 
   setColour(colour: CssColour | undefined): void {
-    for (const h of HANDS) this.tools[h].setColour(colour)
+    for (const hand of HANDS) this.tools[hand].setColour(colour)
   }
 
   /**
@@ -42,8 +42,8 @@ export class Hands {
    * the session.
    */
   showControllers(on: boolean): void {
-    for (const h of HANDS) {
-      const model = this.world.input.xr.visualAdapters.controller[XR_HAND[h]].visual?.model
+    for (const hand of HANDS) {
+      const model = this.world.input.xr.visualAdapters.controller[XR_HAND[hand]].visual?.model
       if (model) for (const part of model.children) part.visible = on
     }
   }
@@ -56,39 +56,39 @@ export class Hands {
     const pads = this.world.input.xr.gamepads
     const grips: Partial<Record<Hand, Vector3>> = {}
     const stick = { x: 0, y: 0 }
-    for (const h of HANDS) {
-      const pad = pads[XR_HAND[h]]
-      this.tools[h].busy = false
+    for (const hand of HANDS) {
+      const pad = pads[XR_HAND[hand]]
+      this.tools[hand].busy = false
       if (!pad) continue
-      const grip = this.world.player.gripSpaces[XR_HAND[h]].getWorldPosition(new Vector3())
+      const grip = this.world.player.gripSpaces[XR_HAND[hand]].getWorldPosition(new Vector3())
       const squeezed = pad.getButtonPressed(InputComponent.Squeeze)
-      this.tools[h].busy = squeezed
-      this.gripPicture(picture, pictureHome, h, pad.getButtonDown(InputComponent.Squeeze), squeezed, grip)
-      if (squeezed && picture.heldBy !== h) grips[h] = grip
-      const s = pad.getAxesValues(InputComponent.Thumbstick)
-      stick.x += s?.x ?? 0
-      stick.y += s?.y ?? 0
+      this.tools[hand].busy = squeezed
+      this.gripPicture(picture, pictureHome, hand, pad.getButtonDown(InputComponent.Squeeze), squeezed, grip)
+      if (squeezed && picture.heldBy !== hand) grips[hand] = grip
+      const axes = pad.getAxesValues(InputComponent.Thumbstick)
+      stick.x += axes?.x ?? 0
+      stick.y += axes?.y ?? 0
     }
     return { grips, stick }
   }
 
   pointers(globe: Globe): Pointer[] {
-    return HANDS.map((h) => ({ ...this.tools[h].pointer(), globe: this.tools[h].aim(globe) }))
+    return HANDS.map((hand) => ({ ...this.tools[hand].pointer(), globe: this.tools[hand].aim(globe) }))
   }
 
   showBeams(globe: Globe | undefined): void {
-    for (const h of HANDS) this.tools[h].showBeam(globe)
+    for (const hand of HANDS) this.tools[hand].showBeam(globe)
   }
 
   hold(on: boolean): void {
-    for (const h of HANDS) this.tools[h].hold(on)
+    for (const hand of HANDS) this.tools[hand].hold(on)
   }
 
   /** Not painting: tools away, droplets still settle. */
   rest(now: Seconds): void {
-    for (const h of HANDS) {
-      this.tools[h].hide()
-      this.tools[h].settle(now)
+    for (const hand of HANDS) {
+      this.tools[hand].hide()
+      this.tools[hand].settle(now)
     }
   }
 
@@ -100,20 +100,20 @@ export class Hands {
     // Both hands make one undo step; the first sets the stroke's sound.
     this.stroke.begin(
       strokeTool(
-        HANDS.map((h, i) => ({
-          tool: this.tools[h].tool,
-          touching: this.tools[h].touching(globe) !== undefined,
-          busy: this.tools[h].busy,
+        HANDS.map((hand, i) => ({
+          tool: this.tools[hand].tool,
+          touching: this.tools[hand].touching(globe) !== undefined,
+          busy: this.tools[hand].busy,
           trigger: triggers[i]!,
-          aimed: this.tools[h].aim(globe) !== undefined
+          aimed: this.tools[hand].aim(globe) !== undefined
         })),
         onMenu,
         TRIGGER_DEAD_ZONE
       )
     )
     // Every hand updates, even once one has sprayed: each moves its own spot.
-    const sprayed = HANDS.map((h, i) =>
-      this.tools[h].update(now, globe, triggers[i]!, onMenu, paint, pads[XR_HAND[h]]?.gamepad)
+    const sprayed = HANDS.map((hand, i) =>
+      this.tools[hand].update(now, globe, triggers[i]!, onMenu, paint, pads[XR_HAND[hand]]?.gamepad)
     ).includes(true)
     if (!sprayed) this.stroke.end()
     return sprayed
@@ -123,40 +123,40 @@ export class Hands {
   private gripPicture(
     picture: Picture,
     pictureHome: Object3D,
-    h: Hand,
+    hand: Hand,
     pressed: boolean,
     squeezed: boolean,
     grip: Vector3
   ): void {
     const { player, scene } = this.world
     if (pressed && !picture.heldBy) {
-      const ray = player.raySpaces[XR_HAND[h]]
+      const ray = player.raySpaces[XR_HAND[hand]]
       const origin = ray.getWorldPosition(new Vector3())
       if (picture.reaches(grip, origin, ray.getWorldDirection(new Vector3()).negate()))
-        picture.grab(h, scene, player.gripSpaces[XR_HAND[h]], player.head.getWorldPosition(new Vector3()))
+        picture.grab(hand, scene, player.gripSpaces[XR_HAND[hand]], player.head.getWorldPosition(new Vector3()))
     }
-    if (picture.heldBy === h && !squeezed) picture.release(pictureHome)
+    if (picture.heldBy === hand && !squeezed) picture.release(pictureHome)
   }
 
   // A steps through the right hand's tools, X the left's: Fill too on a country round.
   private cycleTools(fillable: boolean): void {
     const pads = this.world.input.xr.gamepads
-    for (const [h, button] of [
+    for (const [hand, button] of [
       [Hand.RIGHT, InputComponent.A_Button],
       [Hand.LEFT, InputComponent.X_Button]
     ] as const) {
-      const tool = this.tools[h]
-      const offered = offeredTool(tool.tool, fillable, h)
+      const tool = this.tools[hand]
+      const offered = offeredTool(tool.tool, fillable, hand)
       if (offered !== tool.tool) tool.setTool(offered)
-      if (pads[XR_HAND[h]]?.getButtonDown(button)) tool.setTool(nextTool(tool.tool, fillable))
+      if (pads[XR_HAND[hand]]?.getButtonDown(button)) tool.setTool(nextTool(tool.tool, fillable))
     }
   }
 
   private triggers(wristOpen: boolean): number[] {
     const pads = this.world.input.xr.gamepads
     // The left hand is turned to show the wrist menu, not to erase.
-    return HANDS.map((h) =>
-      h === Hand.LEFT && wristOpen ? 0 : (pads[XR_HAND[h]]?.getButtonValue(InputComponent.Trigger) ?? 0)
+    return HANDS.map((hand) =>
+      hand === Hand.LEFT && wristOpen ? 0 : (pads[XR_HAND[hand]]?.getButtonValue(InputComponent.Trigger) ?? 0)
     )
   }
 }

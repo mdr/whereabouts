@@ -86,11 +86,11 @@ export class PaintModel {
   private readonly unsubscribe: () => void
 
   constructor() {
-    this.unsubscribe = this.version.subscribe((v) => {
+    this.unsubscribe = this.version.subscribe((version) => {
       clearTimeout(this.settleTimer)
       this.settleTimer = setTimeout(() => {
         this.settleTimer = undefined
-        this.settledVersion.value = v
+        this.settledVersion.value = version
       }, SETTLE)
     })
   }
@@ -164,12 +164,12 @@ export class PaintModel {
   }
 
   /** The country's outline, for the cursor. */
-  outline(f: FlagQuestion): GeoJSON.MultiPolygon | undefined {
-    return this.filler?.outline(f)
+  outline(question: FlagQuestion): GeoJSON.MultiPolygon | undefined {
+    return this.filler?.outline(question)
   }
 
-  isFilled(f: FlagQuestion): boolean {
-    return this.fills.has(f.clue.flag)
+  isFilled(question: FlagQuestion): boolean {
+    return this.fills.has(question.clue.flag)
   }
 
   /**
@@ -177,8 +177,8 @@ export class PaintModel {
    * fill off if it is already filled; one undoable step. Nothing at sea.
    */
   fillAt(at: LatLon, reach: Km): void {
-    const f = this.countryAt(at, reach)
-    if (f) this.fill(f)
+    const question = this.countryAt(at, reach)
+    if (question) this.fill(question)
   }
 
   /** As fillAt, from outside the map: a small country counts within `near`. */
@@ -186,16 +186,16 @@ export class PaintModel {
     this.fillAt(at, near)
   }
 
-  private fill(f: FlagQuestion): void {
+  private fill(question: FlagQuestion): void {
     this.pushHistory()
-    const filled = this.fills.get(f.clue.flag)
+    const filled = this.fills.get(question.clue.flag)
     if (filled) {
       this._layer.removeCoat(filled, FILL_DENSITY)
-      this.fills.delete(f.clue.flag)
+      this.fills.delete(question.clue.flag)
     } else {
-      const cells = this.filler!.cells(f, this._layer.res)
+      const cells = this.filler!.cells(question, this._layer.res)
       this._layer.addCoat(cells, FILL_DENSITY)
-      this.fills.set(f.clue.flag, cells)
+      this.fills.set(question.clue.flag, cells)
     }
     this.changed()
   }
@@ -261,9 +261,9 @@ export class PaintModel {
     return { cells: new Map(this._layer.cells), fills: new Map(this.fills) }
   }
 
-  private restoreSnapshot(s: Snapshot): void {
-    this._layer.replaceCells(s.cells)
-    this.fills = s.fills
+  private restoreSnapshot(snapshot: Snapshot): void {
+    this._layer.replaceCells(snapshot.cells)
+    this.fills = snapshot.fills
   }
 
   private pushHistory(): void {
@@ -280,10 +280,10 @@ export class PaintModel {
   }
 
   undo(): void {
-    const prev = this.undoStack.pop()
-    if (!prev) return
+    const previous = this.undoStack.pop()
+    if (!previous) return
     this.redoStack.push(this.snapshot())
-    this.restoreSnapshot(prev)
+    this.restoreSnapshot(previous)
     this.syncHistoryFlags()
     this.changed()
   }

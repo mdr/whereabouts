@@ -81,15 +81,15 @@ export class WristMenu {
       else this.entity.removeComponent(RayInteractable)
     }
     if (!show) return
-    const obj = this.entity.object3D!
-    obj.position.copy(at).addScaledVector(palm, 0.07).addScaledVector(up, 0.04)
-    obj.lookAt(eyes)
+    const object = this.entity.object3D!
+    object.position.copy(at).addScaledVector(palm, 0.07).addScaledVector(up, 0.04)
+    object.lookAt(eyes)
   }
 
   /** `hint`: the band used this round, in words. `left`: how many more hints there are. */
   setState(water: boolean, hint: string | undefined, left: HintsLeft): void {
-    const s = this.state
-    if (s.water === water && s.hint === hint && s.left === left) return
+    const state = this.state
+    if (state.water === water && state.hint === hint && state.left === left) return
     this.state = { water, hint, left }
     this.apply()
   }
@@ -107,8 +107,8 @@ export class WristMenu {
 
   /** Where a button is, for the browser tests. */
   buttonAt(id: WristButton): Vec3 {
-    const p = this.doc!.requireElementById(id).getWorldPosition(new Vector3())
-    return [p.x, p.y, p.z]
+    const position = this.doc!.requireElementById(id).getWorldPosition(new Vector3())
+    return [position.x, position.y, position.z]
   }
 
   /** The menu loads on its own time; hook its buttons up once it has. */
@@ -117,7 +117,8 @@ export class WristMenu {
     const doc = PanelDocument.data.document[this.entity.index] as UIKitDocument
     this.doc = doc
     doc.setTargetDimensions(WRIST_WIDTH, WRIST_WIDTH * 1.6)
-    for (const [id, f] of Object.entries(this.handlers)) doc.requireElementById(id).addEventListener("click", f)
+    for (const [id, handler] of Object.entries(this.handlers))
+      doc.requireElementById(id).addEventListener("click", handler)
     this.apply()
   }
 
@@ -126,7 +127,7 @@ export class WristMenu {
     if (!doc) return
     const { water, hint, left } = this.state
     const show = (id: string, on: boolean) => doc.getElementById(id)?.setProperties({ display: on ? "flex" : "none" })
-    const text = (id: string, t: string) => doc.getElementById(id)?.setProperties({ text: t })
+    const text = (id: string, value: string) => doc.getElementById(id)?.setProperties({ text: value })
     show("hints", hint === undefined && left !== 0 && left !== HintAllowance.NONE)
     show(WristButton.TRIM_HINT, hint !== undefined)
     text("trimLabel", water ? "Trim land" : "Trim sea")

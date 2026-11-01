@@ -17,8 +17,13 @@ export function groundRadius(spot: Metres, globeRadius: Metres): Km {
 }
 
 /** Whether a stroke has moved a quarter of its radius, or been held long enough, for another stamp. */
-export function stampDue(last: { at: LatLon; t: Seconds } | undefined, at: LatLon, radius: Km, now: Seconds): boolean {
-  return !last || greatCircleDistance(last.at, at) >= radius / 4 || now - last.t >= STILL_STAMP
+export function stampDue(
+  last: { at: LatLon; time: Seconds } | undefined,
+  at: LatLon,
+  radius: Km,
+  now: Seconds
+): boolean {
+  return !last || greatCircleDistance(last.at, at) >= radius / 4 || now - last.time >= STILL_STAMP
 }
 
 /** The tool after this one: spray can, eraser, and the pail too when the round can be filled. */

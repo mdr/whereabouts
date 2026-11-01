@@ -73,10 +73,10 @@ export class Picture {
     return this.held
   }
 
-  /** Whether a hand at `grip`, pointing from `origin` along `dir`, is on the picture. */
-  reaches(grip: Vector3, origin: Vector3, dir: Vector3): boolean {
+  /** Whether a hand at `grip`, pointing from `origin` along `direction`, is on the picture. */
+  reaches(grip: Vector3, origin: Vector3, direction: Vector3): boolean {
     if (!this.mesh.visible) return false
-    raycaster.set(origin, dir)
+    raycaster.set(origin, direction)
     if (raycaster.intersectObject(this.mesh).length > 0) return true
     const size = Math.max(this.mesh.scale.x, this.mesh.scale.y) / 2
     return this.mesh.getWorldPosition(at).distanceTo(grip) < size + REACH
@@ -106,16 +106,16 @@ export class Picture {
     this.mesh.visible = false
     if (!picture) return
     void load(picture).then(
-      (img) => {
-        if (asked !== this.asked || !img) return
+      (image) => {
+        if (asked !== this.asked || !image) return
         // A flag's SVG has no size of its own.
-        const [w, h] =
-          picture.type === VrPictureType.FLAG ? [flagRatio(picture.flag), 1] : [img.naturalWidth, img.naturalHeight]
-        const fit = Math.min(VR_PHOTO_SIZE / w, VR_PHOTO_SIZE / h)
+        const [width, height] =
+          picture.type === VrPictureType.FLAG ? [flagRatio(picture.flag), 1] : [image.naturalWidth, image.naturalHeight]
+        const fit = Math.min(VR_PHOTO_SIZE / width, VR_PHOTO_SIZE / height)
         const canvas = document.createElement("canvas")
-        canvas.width = Math.round(w * fit)
-        canvas.height = Math.round(h * fit)
-        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height)
+        canvas.width = Math.round(width * fit)
+        canvas.height = Math.round(height * fit)
+        canvas.getContext("2d")!.drawImage(image, 0, 0, canvas.width, canvas.height)
         // A new texture each time: one already on the GPU keeps its first size.
         const texture = new CanvasTexture(canvas)
         texture.colorSpace = SRGBColorSpace
@@ -136,21 +136,21 @@ export class Picture {
         }
         this.shownBack = picture.type === VrPictureType.FLAG ? PictureBack.REVERSE : PictureBack.POSTCARD
         this.shownPostcard = picture.type === VrPictureType.FLAG ? undefined : picture.postcard
-        const size = Math.min(MAX_WIDTH / w, MAX_HEIGHT / h)
-        this.mesh.scale.set(w * size, h * size, 1)
+        const size = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height)
+        this.mesh.scale.set(width * size, height * size, 1)
         this.mesh.visible = true
       },
-      (err: unknown) => console.warn("could not load the picture for VR", err)
+      (error: unknown) => console.warn("could not load the picture for VR", error)
     )
   }
 }
 
 /** A flag seen from behind: the same, mirrored. */
 function reverse(front: CanvasTexture): CanvasTexture {
-  const t = front.clone()
-  t.repeat.set(-1, 1)
-  t.offset.set(1, 0)
-  return t
+  const flipped = front.clone()
+  flipped.repeat.set(-1, 1)
+  flipped.offset.set(1, 0)
+  return flipped
 }
 
 /**
@@ -162,61 +162,61 @@ function postcard(aspect: number, message: Postcard | undefined): CanvasTexture 
   const canvas = document.createElement("canvas")
   canvas.height = 512
   canvas.width = Math.round(512 * aspect)
-  const { width: w, height: h } = canvas
-  const g = canvas.getContext("2d")!
-  g.fillStyle = CARD
-  g.fillRect(0, 0, w, h)
-  g.strokeStyle = "#b9b0a0"
-  g.lineWidth = 3
-  g.beginPath()
-  g.moveTo(w * 0.55, h * 0.1)
-  g.lineTo(w * 0.55, h * 0.9)
+  const { width, height } = canvas
+  const ctx = canvas.getContext("2d")!
+  ctx.fillStyle = CARD
+  ctx.fillRect(0, 0, width, height)
+  ctx.strokeStyle = "#b9b0a0"
+  ctx.lineWidth = 3
+  ctx.beginPath()
+  ctx.moveTo(width * 0.55, height * 0.1)
+  ctx.lineTo(width * 0.55, height * 0.9)
   for (const y of [0.5, 0.62, 0.74, 0.86]) {
-    g.moveTo(w * 0.6, h * y)
-    g.lineTo(w * 0.94, h * y)
+    ctx.moveTo(width * 0.6, height * y)
+    ctx.lineTo(width * 0.94, height * y)
   }
-  g.stroke()
-  g.setLineDash([8, 6])
-  g.strokeRect(w * 0.94 - h * 0.22, h * 0.08, h * 0.22, h * 0.26)
-  g.fillStyle = "#8a8072"
-  g.font = `600 ${Math.round(h * 0.07)}px system-ui, sans-serif`
-  if (!message) g.fillText("Where is this?", w * 0.06, h * 0.18)
+  ctx.stroke()
+  ctx.setLineDash([8, 6])
+  ctx.strokeRect(width * 0.94 - height * 0.22, height * 0.08, height * 0.22, height * 0.26)
+  ctx.fillStyle = "#8a8072"
+  ctx.font = `600 ${Math.round(height * 0.07)}px system-ui, sans-serif`
+  if (!message) ctx.fillText("Where is this?", width * 0.06, height * 0.18)
   else {
-    const width = w * 0.45
-    const lines = wrap(g, `Greetings from ${message.place}!`, width)
-    g.fillStyle = "#4a443c"
-    lines.forEach((line, i) => g.fillText(line, w * 0.06, h * (0.18 + i * 0.09)))
+    const textWidth = width * 0.45
+    const lines = wrap(ctx, `Greetings from ${message.place}!`, textWidth)
+    ctx.fillStyle = "#4a443c"
+    lines.forEach((line, i) => ctx.fillText(line, width * 0.06, height * (0.18 + i * 0.09)))
     if (message.text) {
-      const top = h * (0.2 + lines.length * 0.09)
+      const top = height * (0.2 + lines.length * 0.09)
       // Smaller for a long fact on a narrow card, to stay clear of the name at the foot.
-      let size = Math.round(h * 0.052)
+      let size = Math.round(height * 0.052)
       let text: string[]
       for (;;) {
-        g.font = `italic ${size}px system-ui, sans-serif`
-        text = wrap(g, message.text, width)
-        if (top + text.length * size * 1.3 <= h * 0.82 || size <= h * 0.032) break
+        ctx.font = `italic ${size}px system-ui, sans-serif`
+        text = wrap(ctx, message.text, textWidth)
+        if (top + text.length * size * 1.3 <= height * 0.82 || size <= height * 0.032) break
         size--
       }
-      g.fillStyle = "#5c554b"
-      text.forEach((line, i) => g.fillText(line, w * 0.06, top + i * size * 1.3))
+      ctx.fillStyle = "#5c554b"
+      text.forEach((line, i) => ctx.fillText(line, width * 0.06, top + i * size * 1.3))
     }
-    g.fillStyle = "#8a8072"
+    ctx.fillStyle = "#8a8072"
   }
-  g.font = `${Math.round(h * 0.045)}px system-ui, sans-serif`
-  g.fillText("Whereabouts", w * 0.06, h * 0.9)
-  const t = new CanvasTexture(canvas)
-  t.colorSpace = SRGBColorSpace
-  t.anisotropy = 16
-  return t
+  ctx.font = `${Math.round(height * 0.045)}px system-ui, sans-serif`
+  ctx.fillText("Whereabouts", width * 0.06, height * 0.9)
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
+  texture.anisotropy = 16
+  return texture
 }
 
 /** `text` broken into lines no wider than `width` in the canvas's current font. */
-function wrap(g: CanvasRenderingContext2D, text: string, width: number): string[] {
+function wrap(ctx: CanvasRenderingContext2D, text: string, width: number): string[] {
   const lines: string[] = []
   let line = ""
   for (const word of text.split(" ")) {
     const longer = line ? `${line} ${word}` : word
-    if (line && g.measureText(longer).width > width) {
+    if (line && ctx.measureText(longer).width > width) {
       lines.push(line)
       line = word
     } else line = longer
@@ -226,11 +226,11 @@ function wrap(g: CanvasRenderingContext2D, text: string, width: number): string[
 }
 
 async function load(picture: VrPicture): Promise<HTMLImageElement | undefined> {
-  const src = picture.type === VrPictureType.FLAG ? await flagUrl(picture.flag) : await vrPhotoUrl(picture.photo)
-  if (!src) return undefined
-  const img = new Image()
-  img.crossOrigin = "anonymous"
-  img.src = src
-  await img.decode()
-  return img
+  const url = picture.type === VrPictureType.FLAG ? await flagUrl(picture.flag) : await vrPhotoUrl(picture.photo)
+  if (!url) return undefined
+  const image = new Image()
+  image.crossOrigin = "anonymous"
+  image.src = url
+  await image.decode()
+  return image
 }

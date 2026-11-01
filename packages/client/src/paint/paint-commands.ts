@@ -18,8 +18,8 @@ export async function trimPaint(paint: Pick<PaintModel, "trimSea" | "trimLand">,
   try {
     const share = water ? paint.trimLand(await loadWaterMask()) : paint.trimSea(await loadLandMask())
     return trimmed(share, water ? "None on land" : "None at sea")
-  } catch (err) {
-    console.warn("could not load the trim mask", err)
+  } catch (error) {
+    console.warn("could not load the trim mask", error)
     return "Try again"
   }
 }

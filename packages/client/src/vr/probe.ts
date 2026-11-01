@@ -70,7 +70,7 @@ export class VrProbe {
 
   /** Droplets and crumbs in the air. */
   get particlesLive(): number {
-    return HANDS.reduce((n, h) => n + this.vr.tools[h].particlesLive, 0)
+    return HANDS.reduce((total, hand) => total + this.vr.tools[hand].particlesLive, 0)
   }
 
   /** The narrowest gap, in radians as the player sees it, between a panel and the globe. */
@@ -94,8 +94,8 @@ export class VrProbe {
 
   /** The flag nearest the eyes with a border to outline, and where. */
   get flagFacing(): { name: string; at: Vec3 } | undefined {
-    const f = this.vr.flagPins.nearest(this.vr.world.player.head.getWorldPosition(new Vector3()))
-    return f && { name: f.name, at: [f.at.x, f.at.y, f.at.z] }
+    const pin = this.vr.flagPins.nearest(this.vr.world.player.head.getWorldPosition(new Vector3()))
+    return pin && { name: pin.name, at: [pin.at.x, pin.at.y, pin.at.z] }
   }
 
   /** How much paint the round has, all cells' intensities summed. */
@@ -114,7 +114,7 @@ export class VrProbe {
   }
 
   get toolsHeld(): boolean {
-    return HANDS.some((h) => this.vr.tools[h].held)
+    return HANDS.some((hand) => this.vr.tools[hand].held)
   }
 
   get spaceShown(): boolean {
@@ -170,34 +170,36 @@ export class VrProbe {
     back: PictureBack | undefined
   } {
     const { picture } = this.vr
-    const p = picture.mesh.getWorldPosition(new Vector3())
-    const f = picture.mesh.getWorldDirection(new Vector3())
+    const position = picture.mesh.getWorldPosition(new Vector3())
+    const forward = picture.mesh.getWorldDirection(new Vector3())
     return {
       held: picture.heldBy !== undefined,
-      at: [p.x, p.y, p.z],
-      facing: [f.x, f.y, f.z],
+      at: [position.x, position.y, position.z],
+      facing: [forward.x, forward.y, forward.z],
       back: picture.back
     }
   }
 
   /** Whether the controllers themselves show, rather than the can and eraser. */
   get controllersShown(): boolean {
-    return HANDS.some((h) =>
-      this.vr.world.input.xr.visualAdapters.controller[XR_HAND[h]].visual?.model.children.some((part) => part.visible)
+    return HANDS.some((hand) =>
+      this.vr.world.input.xr.visualAdapters.controller[XR_HAND[hand]].visual?.model.children.some(
+        (part) => part.visible
+      )
     )
   }
 
   /** Whether a ray shows from either hand, to point at flags. */
   get beamsShown(): boolean {
-    return HANDS.some((h) => this.vr.tools[h].beamShown)
+    return HANDS.some((hand) => this.vr.tools[hand].beamShown)
   }
 
   /** How far the moon is from the globe, and how big, in globe radii. */
   get moonShown(): { distance: number; radius: number } | undefined {
     const { mesh } = this.vr.moon
     if (!mesh.visible) return undefined
-    const r = this.vr.globe.radius
-    return { distance: mesh.position.distanceTo(this.vr.globe.centre) / r, radius: mesh.scale.x / r }
+    const radius = this.vr.globe.radius
+    return { distance: mesh.position.distanceTo(this.vr.globe.centre) / radius, radius: mesh.scale.x / radius }
   }
 
   get wristOpen(): boolean {
@@ -214,8 +216,8 @@ export class VrProbe {
 
   /** Where a hand's tool would land on the globe. */
   targetOf(hand: Hand): Vec3 | undefined {
-    const p = this.vr.tools[hand].target
-    return p && [p.x, p.y, p.z]
+    const target = this.vr.tools[hand].target
+    return target && [target.x, target.y, target.z]
   }
 
   menuButtonAt(id: string): Vec3 {

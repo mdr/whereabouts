@@ -22,19 +22,19 @@ import { MAX_LAT } from "../../map/map-geometry"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal, localToLatLon } from "./sphere"
 
-const lonToX = (lon: Degrees, w: number) => ((lon + 180) / 360) * w
-const latToY = (lat: Degrees, h: number) => ((90 - lat) / 180) * h
+const lonToX = (lon: Degrees, width: number) => ((lon + 180) / 360) * width
+const latToY = (lat: Degrees, height: number) => ((90 - lat) / 180) * height
 
 /** Trace a ring of [lon, lat] points, and again a world to the left if it runs past 180°. */
-function traceRing(ctx: CanvasRenderingContext2D, ring: Ring, w: number, h: number): void {
+function traceRing(ctx: CanvasRenderingContext2D, ring: Ring, width: number, height: number): void {
   let east = false
   for (const shift of [0, -360]) {
     if (shift && !east) return
     for (let i = 0; i < ring.length; i++) {
       const [lon, lat] = ring[i]!
       if (lon > 180) east = true
-      if (i === 0) ctx.moveTo(lonToX(lon + shift, w), latToY(lat, h))
-      else ctx.lineTo(lonToX(lon + shift, w), latToY(lat, h))
+      if (i === 0) ctx.moveTo(lonToX(lon + shift, width), latToY(lat, height))
+      else ctx.lineTo(lonToX(lon + shift, width), latToY(lat, height))
     }
     ctx.closePath()
   }
@@ -50,12 +50,12 @@ const EDGE_STEP: Radians = toRadians(0.1)
  * by many pixels, so long ones go in short steps.
  */
 export function cellRing(cell: H3Cell): Ring | undefined {
-  let b = alongGreatCircles(cellBoundaryLonLat(cell))
-  const lons = b.map(([lon]) => lon)
-  if (Math.max(...lons) - Math.min(...lons) <= 180) return b
-  b = b.map(([lon, lat]) => [lon < 0 ? lon + 360 : lon, lat])
-  const shifted = b.map(([lon]) => lon)
-  return Math.max(...shifted) - Math.min(...shifted) <= 180 ? b : undefined
+  let ring = alongGreatCircles(cellBoundaryLonLat(cell))
+  const lons = ring.map(([lon]) => lon)
+  if (Math.max(...lons) - Math.min(...lons) <= 180) return ring
+  ring = ring.map(([lon, lat]) => [lon < 0 ? lon + 360 : lon, lat])
+  const shifted = ring.map(([lon]) => lon)
+  return Math.max(...shifted) - Math.min(...shifted) <= 180 ? ring : undefined
 }
 
 /**
@@ -87,15 +87,15 @@ function alongGreatCircles(ring: Ring): Ring {
 export function landCells(land: LandMaskData): H3Cell[] {
   const finest = h3Res(land.res)
   const mask = new Set(land.cells.map(h3Cell))
-  const resolutions = Array.from({ length: finest + 1 }, (_, r) => h3Res(r))
+  const resolutions = Array.from({ length: finest + 1 }, (_, resolution) => h3Res(resolution))
   const out = [...mask]
-  for (const c of mask) {
-    const res = getResolution(c)
-    if (res === finest) continue
-    for (const k of cellToChildren(c, finest)) {
+  for (const cell of mask) {
+    const resolution = getResolution(cell)
+    if (resolution === finest) continue
+    for (const k of cellToChildren(cell, finest)) {
       const [lat, lon] = cellToLatLng(k)
-      if (latLngToCell(lat, lon, res) === c) continue
-      if (!resolutions.some((r) => mask.has(latLngToCell(lat, lon, r)))) out.push(k)
+      if (latLngToCell(lat, lon, resolution) === cell) continue
+      if (!resolutions.some((resolution) => mask.has(latLngToCell(lat, lon, resolution)))) out.push(k)
     }
   }
   return out
@@ -103,10 +103,10 @@ export function landCells(land: LandMaskData): H3Cell[] {
 
 /** Returns the land alone, on a clear sea. */
 export function drawLand(canvas: HTMLCanvasElement, land: LandMaskData, theme: Theme): HTMLCanvasElement {
-  const { width: w, height: h } = canvas
+  const { width: width, height: height } = canvas
   const landOnly = document.createElement("canvas")
-  landOnly.width = w
-  landOnly.height = h
+  landOnly.width = width
+  landOnly.height = height
   const ctx = landOnly.getContext("2d")!
   ctx.fillStyle = ctx.strokeStyle = theme.land
   ctx.lineWidth = 1
@@ -121,7 +121,7 @@ export function drawLand(canvas: HTMLCanvasElement, land: LandMaskData, theme: T
   ctx.beginPath()
   landCells(land).forEach((cell, i) => {
     const ring = cellRing(cell)
-    if (ring) traceRing(ctx, ring, w, h)
+    if (ring) traceRing(ctx, ring, width, height)
     if (i % 500 === 499) {
       fill()
       ctx.beginPath()
@@ -129,11 +129,11 @@ export function drawLand(canvas: HTMLCanvasElement, land: LandMaskData, theme: T
   })
   fill()
   // The cells around the south pole are skipped above, and it is all ice.
-  ctx.fillRect(0, latToY(-86, h), w, h)
+  ctx.fillRect(0, latToY(-86, height), width, height)
 
   const out = canvas.getContext("2d")!
   out.fillStyle = theme.water
-  out.fillRect(0, 0, w, h)
+  out.fillRect(0, 0, width, height)
   out.drawImage(landOnly, 0, 0)
   return landOnly
 }
@@ -153,40 +153,42 @@ export async function drawColour(
 ): Promise<void> {
   const tiles = await Promise.all(
     Array.from({ length: COLOUR_TILE_COUNT ** 2 }, async (_, i) => {
-      const img = new Image()
-      img.crossOrigin = "anonymous"
-      img.src = COLOUR_TILES.replace("{x}", String(i % COLOUR_TILE_COUNT)).replace(
+      const image = new Image()
+      image.crossOrigin = "anonymous"
+      image.src = COLOUR_TILES.replace("{x}", String(i % COLOUR_TILE_COUNT)).replace(
         "{y}",
         String(Math.floor(i / COLOUR_TILE_COUNT))
       )
-      await img.decode()
-      return img
+      await image.decode()
+      return image
     })
   )
   const tile = tiles[0]!.naturalWidth
   const mercator = document.createElement("canvas")
   mercator.width = mercator.height = tile * COLOUR_TILE_COUNT
-  const m = mercator.getContext("2d")!
+  const mercatorContext = mercator.getContext("2d")!
   // The page's raster-brightness-max 0.55 and raster-saturation 0.2.
-  m.filter = "brightness(0.55) saturate(1.25)"
-  tiles.forEach((img, i) => m.drawImage(img, (i % COLOUR_TILE_COUNT) * tile, Math.floor(i / COLOUR_TILE_COUNT) * tile))
+  mercatorContext.filter = "brightness(0.55) saturate(1.25)"
+  tiles.forEach((image, i) =>
+    mercatorContext.drawImage(image, (i % COLOUR_TILE_COUNT) * tile, Math.floor(i / COLOUR_TILE_COUNT) * tile)
+  )
 
-  const { width: w, height: h } = canvas
+  const { width: width, height: height } = canvas
   const flat = document.createElement("canvas")
-  flat.width = w
-  flat.height = h
-  const f = flat.getContext("2d")!
+  flat.width = width
+  flat.height = height
+  const flatContext = flat.getContext("2d")!
   // Mercator rows to the flat picture's, one row at a time.
   const size = mercator.height
-  for (let j = 0; j < h; j++) {
-    const lat = 90 - ((j + 0.5) / h) * 180
+  for (let j = 0; j < height; j++) {
+    const lat = 90 - ((j + 0.5) / height) * 180
     if (Math.abs(lat) > MAX_LAT) continue
-    const merc = Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360))
-    const sy = ((1 - merc / Math.PI) / 2) * size
-    f.drawImage(mercator, 0, Math.min(size - 1, Math.floor(sy)), size, 1, 0, j, w, 1)
+    const mercatorY = Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360))
+    const sy = ((1 - mercatorY / Math.PI) / 2) * size
+    flatContext.drawImage(mercator, 0, Math.min(size - 1, Math.floor(sy)), size, 1, 0, j, width, 1)
   }
-  f.globalCompositeOperation = "destination-in"
-  f.drawImage(landOnly, 0, 0)
+  flatContext.globalCompositeOperation = "destination-in"
+  flatContext.drawImage(landOnly, 0, 0)
 
   const ctx = canvas.getContext("2d")!
   ctx.drawImage(land, 0, 0)
@@ -198,12 +200,12 @@ export async function drawColour(
 /** National borders on a clear canvas, to lay over the land when the map shows them. */
 export function drawBorders(canvas: HTMLCanvasElement, borders: BordersData, theme: Theme): void {
   const ctx = canvas.getContext("2d")!
-  const { width: w, height: h } = canvas
+  const { width: width, height: height } = canvas
   ctx.strokeStyle = theme.border
-  ctx.lineWidth = Math.max(1, w / 4096)
+  ctx.lineWidth = Math.max(1, width / 4096)
   ctx.beginPath()
-  for (const steps of [...borders.countries.flatMap((c) => c.rings), ...borders.none]) {
-    traceRing(ctx, ringOf(decodeRing(steps)), w, h)
+  for (const steps of [...borders.countries.flatMap((country) => country.rings), ...borders.none]) {
+    traceRing(ctx, ringOf(decodeRing(steps)), width, height)
   }
   ctx.stroke()
 }

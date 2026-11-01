@@ -89,24 +89,24 @@ export interface RevealModel {
 
 export function revealModel(view: GameView, reveal: RevealView, shown: RevealShown): RevealModel {
   const ready = new Set(reveal.ready)
-  const present = view.players.filter((p) => p.connected)
+  const present = view.players.filter((player) => player.connected)
   const last = isLastReveal(reveal)
   return {
     last,
-    readyCount: present.filter((p) => ready.has(p.id)).length,
+    readyCount: present.filter((player) => ready.has(player.id)).length,
     presentCount: present.length,
     ready: view.you.role.type === YouRoleType.SPECTATOR ? undefined : { done: ready.has(view.you.id) },
     next: view.you.isHost ? { label: last ? "Show final results" : "Next round" } : undefined,
     rows: [
       { type: ShownRowType.EVERYONE, selected: shown.type === RevealShownType.EVERYONE, pick: SHOW_EVERYONE },
-      ...revealOrder(view.players, reveal.results).map(({ p, r }): ShownRow => ({
+      ...revealOrder(view.players, reveal.results).map(({ player, result }): ShownRow => ({
         type: ShownRowType.PLAYER,
-        player: p,
-        result: r,
-        you: p.id === view.you.id,
-        ready: ready.has(p.id),
-        selected: shownPlayerId(shown) === p.id,
-        pick: shownPlayerId(shown) === p.id ? SHOW_EVERYONE : showPlayer(p.id)
+        player,
+        result,
+        you: player.id === view.you.id,
+        ready: ready.has(player.id),
+        selected: shownPlayerId(shown) === player.id,
+        pick: shownPlayerId(shown) === player.id ? SHOW_EVERYONE : showPlayer(player.id)
       })),
       {
         type: ShownRowType.HIDE_PAINT,

@@ -22,7 +22,7 @@ describe("a spot's ground radius", () => {
 describe("a stroke's stamps", () => {
   const here = { lat: 0, lon: 0 }
   // A degree of longitude at the equator is about 111 km.
-  const last = { at: here, t: 10 }
+  const last = { at: here, time: 10 }
 
   it("start with the first", () => {
     expect(stampDue(undefined, here, 100, 10)).toBe(true)

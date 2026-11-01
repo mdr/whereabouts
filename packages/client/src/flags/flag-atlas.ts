@@ -15,11 +15,16 @@ export const FLAG_ATLAS = {
   height: rows * cellH
 }
 
-const index = new Map(atlas.codes.map((c, i) => [c, i]))
+const index = new Map(atlas.codes.map((code, i) => [code, i]))
 
 /** Where a flag is in the picture, in pixels, if it is there: each in its own shape. */
-export function atlasCell(code: string): { x: number; y: number; w: number; h: number } | undefined {
+export function atlasCell(code: string): { x: number; y: number; width: number; height: number } | undefined {
   const i = index.get(code)
   if (i === undefined) return undefined
-  return { x: (i % atlas.columns) * cellW, y: Math.floor(i / atlas.columns) * cellH, w: atlas.widths[i]!, h: cellH }
+  return {
+    x: (i % atlas.columns) * cellW,
+    y: Math.floor(i / atlas.columns) * cellH,
+    width: atlas.widths[i]!,
+    height: cellH
+  }
 }

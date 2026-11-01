@@ -8,22 +8,25 @@ import { toDegrees, toRadians, type LatLon } from "@whereabouts/shared/geo"
 import type { Metres } from "@whereabouts/shared/units"
 
 export function latLonToLocal({ lat, lon }: LatLon, out = new Vector3()): Vector3 {
-  const [la, lo] = [toRadians(lat), toRadians(lon)]
-  const c = Math.cos(la)
-  return out.set(c * Math.cos(lo), Math.sin(la), -c * Math.sin(lo))
+  const [latRadians, lonRadians] = [toRadians(lat), toRadians(lon)]
+  const cosLat = Math.cos(latRadians)
+  return out.set(cosLat * Math.cos(lonRadians), Math.sin(latRadians), -cosLat * Math.sin(lonRadians))
 }
 
-export function localToLatLon(v: Vector3): LatLon {
-  const n = v.length()
-  return { lat: toDegrees(Math.asin(Math.max(-1, Math.min(1, v.y / n)))), lon: toDegrees(Math.atan2(-v.z, v.x)) }
+export function localToLatLon(local: Vector3): LatLon {
+  const length = local.length()
+  return {
+    lat: toDegrees(Math.asin(Math.max(-1, Math.min(1, local.y / length)))),
+    lon: toDegrees(Math.atan2(-local.z, local.x))
+  }
 }
 
 /** Distance along a ray to where it first meets a sphere, or undefined if it misses or starts inside. */
-export function raySphere(origin: Vector3, dir: Vector3, centre: Vector3, radius: Metres): Metres | undefined {
+export function raySphere(origin: Vector3, direction: Vector3, centre: Vector3, radius: Metres): Metres | undefined {
   const ox = origin.x - centre.x
   const oy = origin.y - centre.y
   const oz = origin.z - centre.z
-  const b = ox * dir.x + oy * dir.y + oz * dir.z
+  const b = ox * direction.x + oy * direction.y + oz * direction.z
   const c = ox * ox + oy * oy + oz * oz - radius * radius
   if (c < 0) return undefined
   const disc = b * b - c

@@ -17,11 +17,11 @@ let loading: Promise<RawFacts> | undefined = undefined
 
 export function loadFacts(): Promise<RawFacts> {
   loading ??= import("@whereabouts/shared/facts.json").then(
-    (m) => (facts.value = m.default),
-    (err: unknown) => {
+    (loaded) => (facts.value = loaded.default),
+    (error: unknown) => {
       // Let the next caller try again, after a dropped connection say.
       loading = undefined
-      throw err
+      throw error
     }
   )
   return loading
@@ -55,7 +55,7 @@ export function useFact(
 ): Fact | undefined {
   const all = facts.value
   useEffect(() => {
-    if (!all) loadFacts().catch((err: unknown) => console.warn("could not load the facts", err))
+    if (!all) loadFacts().catch((error: unknown) => console.warn("could not load the facts", error))
   }, [all])
   return question === undefined || !all
     ? undefined

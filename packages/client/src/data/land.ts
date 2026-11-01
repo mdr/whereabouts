@@ -9,13 +9,17 @@ import { LandMask, WaterMask } from "@whereabouts/shared/paint/land"
 function once<T>(load: () => Promise<T>): () => Promise<T> {
   let loading: Promise<T> | undefined = undefined
   return () =>
-    (loading ??= load().catch((err: unknown) => {
+    (loading ??= load().catch((error: unknown) => {
       // Let the next press try again, after a dropped connection say.
       loading = undefined
-      throw err
+      throw error
     }))
 }
 
-export const loadLandMask = once(() => import("@whereabouts/shared/land.json").then((m) => new LandMask(m.default)))
+export const loadLandMask = once(() =>
+  import("@whereabouts/shared/land.json").then((land) => new LandMask(land.default))
+)
 
-export const loadWaterMask = once(() => import("@whereabouts/shared/water.json").then((m) => new WaterMask(m.default)))
+export const loadWaterMask = once(() =>
+  import("@whereabouts/shared/water.json").then((water) => new WaterMask(water.default))
+)

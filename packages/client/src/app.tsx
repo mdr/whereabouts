@@ -6,8 +6,8 @@ import { Multiplayer } from "./screens/multiplayer/Multiplayer"
 import { ScoreReview } from "./screens/score-review/ScoreReview/ScoreReview"
 
 export function App() {
-  const r = route.value
-  switch (r.type) {
+  const current = route.value
+  switch (current.type) {
     case RouteType.SOLO:
       return <Solo />
     case RouteType.SCORE_REVIEW:
@@ -15,8 +15,8 @@ export function App() {
     case RouteType.GAME:
       return (
         <Multiplayer
-          key={`${visit.value}:${r.entry.type === GameEntryType.HOST ? "new" : "join"}:${r.entry.code ?? ""}`}
-          entry={r.entry}
+          key={`${visit.value}:${current.entry.type === GameEntryType.HOST ? "new" : "join"}:${current.entry.code ?? ""}`}
+          entry={current.entry}
         />
       )
     case RouteType.HOME:

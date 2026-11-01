@@ -17,10 +17,10 @@ export const vrPicked = signal<PlayerId | undefined>(undefined)
 type Row = VrTable["rows"][number]
 
 /** For the host, a player's row picks them for Remove and Make host; pointing again lets go. */
-export function pickable(view: GameView, p: PlayerView): Pick<Row, "select" | "selected"> {
-  if (!view.you.isHost || p.id === view.you.id) return {}
-  const picked = vrPicked.value === p.id
-  return { selected: picked, select: () => (vrPicked.value = picked ? undefined : p.id) }
+export function pickable(view: GameView, player: PlayerView): Pick<Row, "select" | "selected"> {
+  if (!view.you.isHost || player.id === view.you.id) return {}
+  const picked = vrPicked.value === player.id
+  return { selected: picked, select: () => (vrPicked.value = picked ? undefined : player.id) }
 }
 
 /** Remove and Make host for the player the host picked, each confirmed by a second press. */
@@ -29,19 +29,28 @@ export function hostActions(
   view: GameView,
   playerId: PlayerId | undefined
 ): VrAction[] {
-  const p = view.you.isHost && playerId !== view.you.id ? everyone(view).find((x) => x.id === playerId) : undefined
-  if (!p) return []
+  const player =
+    view.you.isHost && playerId !== view.you.id
+      ? everyone(view).find((candidate) => candidate.id === playerId)
+      : undefined
+  if (!player) return []
   return [
     {
-      label: `Remove ${p.name}`,
-      confirm: `Press again to remove ${p.name}`,
+      label: `Remove ${player.name}`,
+      confirm: `Press again to remove ${player.name}`,
       press: () => {
         vrPicked.value = undefined
-        conn.kick(p.id)
+        conn.kick(player.id)
       }
     },
-    ...(p.connected && !p.isHost
-      ? [{ label: `Make ${p.name} host`, confirm: `Press again: ${p.name} hosts`, press: () => conn.makeHost(p.id) }]
+    ...(player.connected && !player.isHost
+      ? [
+          {
+            label: `Make ${player.name} host`,
+            confirm: `Press again: ${player.name} hosts`,
+            press: () => conn.makeHost(player.id)
+          }
+        ]
       : [])
   ]
 }

@@ -23,7 +23,7 @@ export function AllFlags({ gameMap, borders }: { gameMap: GameMap; borders: Bord
       const cell = atlasCell(country.clue.flag)
       if (cell) {
         const css = (atlasPx: number): Px => atlasPx / ATLAS_PX_PER_CSS_PX
-        flag.style.width = `${css(cell.w)}px`
+        flag.style.width = `${css(cell.width)}px`
         flag.style.backgroundImage = `url(${FLAG_ATLAS.url})`
         flag.style.backgroundSize = `${css(FLAG_ATLAS.width)}px ${css(FLAG_ATLAS.height)}px`
         flag.style.backgroundPosition = `${css(-cell.x)}px ${css(-cell.y)}px`

@@ -28,7 +28,7 @@ export interface PracticeVrShown {
   borders: Borders | undefined
 }
 
-export function practiceVrView(run: PracticeRun, s: PracticeVrShown): VrView {
+export function practiceVrView(run: PracticeRun, pageShown: PracticeVrShown): VrView {
   const total = runTotal(run)
   const home = { label: "Home", press: () => navigate("/") }
   if (run.type === PracticePhase.DONE)
@@ -38,25 +38,25 @@ export function practiceVrView(run: PracticeRun, s: PracticeVrShown): VrView {
         title: "Final score",
         scoreLine: `${formatPoints(total)} out of ${runMaximum(run).toLocaleString()}`,
         table: roundsTable(run.results),
-        actions: [{ label: "Play again", press: s.restart }]
+        actions: [{ label: "Play again", press: pageShown.restart }]
       },
       more: [home]
     }
 
   const shown: VrRoundShown = {
-    question: s.question,
-    revealed: run.type === PracticePhase.REVEAL ? s.answer : undefined,
-    fact: s.fact
+    question: pageShown.question,
+    revealed: run.type === PracticePhase.REVEAL ? pageShown.answer : undefined,
+    fact: pageShown.fact
   }
   const round = vrRound(shown, {
-    paint: s.paint,
+    paint: pageShown.paint,
     heading: `QUESTION ${run.index + 1} OF ${run.questions.length}, ${formatPoints(total)}`,
-    detail: s.detail,
-    hint: s.hint,
+    detail: pageShown.detail,
+    hint: pageShown.hint,
     hintsLeft: HintAllowance.UNLIMITED,
-    useHint: s.useHint,
+    useHint: pageShown.useHint,
     doneLabel: "Submit",
-    done: s.submit,
+    done: pageShown.submit,
     playing: true
   })
   const more = [{ ...home, confirm: "Press again to leave" }]
@@ -67,13 +67,13 @@ export function practiceVrView(run: PracticeRun, s: PracticeVrShown): VrView {
     more,
     reveal: vrReveal(
       shown,
-      s.answer,
-      { score: s.shownScore, passed: !run.revealed.painted, total, painted: s.where },
-      s.borders,
+      pageShown.answer,
+      { score: pageShown.shownScore, passed: !run.revealed.painted, total, painted: pageShown.where },
+      pageShown.borders,
       {
         paints: { type: VrPaintsType.OWN },
         table: roundsTable(run.results),
-        actions: [{ label: nextLabel(run), press: s.next }]
+        actions: [{ label: nextLabel(run), press: pageShown.next }]
       }
     )
   }

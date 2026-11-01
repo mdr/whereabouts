@@ -119,7 +119,7 @@ export enum Chime {
 }
 
 interface Voice {
-  src: AudioBufferSourceNode
+  source: AudioBufferSourceNode
   gain: GainNode
 }
 
@@ -156,9 +156,9 @@ class SoundEngine {
     for (const [clip, url] of Object.entries(URLS) as [Clip, string][]) {
       if (this.buffers[clip]) continue
       this.load(url).then(
-        (b) => (this.buffers[clip] = b),
-        (err: unknown) => {
-          console.warn("could not load a sound", url, err)
+        (buffer) => (this.buffers[clip] = buffer),
+        (error: unknown) => {
+          console.warn("could not load a sound", url, error)
           this.failedAt = Date.now()
           this.loading = false
         }
@@ -205,22 +205,22 @@ class SoundEngine {
       const [offset, length] = loop.slices[i]!
       const first = stroke.voices.length === 0
       const skip = first ? 0 : Math.min(loop.attack, length / 3)
-      const dur = length - skip
+      const duration = length - skip
       const at = stroke.nextAt
-      const src = ctx.createBufferSource()
+      const source = ctx.createBufferSource()
       const gain = ctx.createGain()
-      src.buffer = buffer
-      src.connect(gain).connect(this.master!)
+      source.buffer = buffer
+      source.connect(gain).connect(this.master!)
       gain.gain.setValueAtTime(0, at)
       gain.gain.linearRampToValueAtTime(loop.volume, at + (first ? 0.015 : loop.crossfade))
-      gain.gain.setValueAtTime(loop.volume, at + dur - loop.crossfade)
-      gain.gain.linearRampToValueAtTime(0, at + dur)
-      src.start(at, offset + skip, dur)
-      stroke.voices.push({ src, gain })
+      gain.gain.setValueAtTime(loop.volume, at + duration - loop.crossfade)
+      gain.gain.linearRampToValueAtTime(0, at + duration)
+      source.start(at, offset + skip, duration)
+      stroke.voices.push({ source: source, gain })
       // Keep only the voices that may still be sounding.
       if (stroke.voices.length > 4) stroke.voices.splice(0, stroke.voices.length - 4)
       stroke.last = i
-      stroke.nextAt = at + dur - loop.crossfade
+      stroke.nextAt = at + duration - loop.crossfade
     }
     stroke.timer = window.setTimeout(() => this.scheduleStroke(), 100)
   }
@@ -230,18 +230,18 @@ class SoundEngine {
     if (!stroke) return
     this.stroke = undefined
     clearTimeout(stroke.timer)
-    for (const v of stroke.voices) this.fadeOut(v, RELEASE)
+    for (const voice of stroke.voices) this.fadeOut(voice, RELEASE)
   }
 
-  private fadeOut(v: Voice, seconds: Seconds): void {
+  private fadeOut(voice: Voice, seconds: Seconds): void {
     const ctx = this.ctx
     if (!ctx) return
-    const t = ctx.currentTime
+    const time = ctx.currentTime
     try {
-      v.gain.gain.cancelScheduledValues(t)
-      v.gain.gain.setValueAtTime(v.gain.gain.value, t)
-      v.gain.gain.linearRampToValueAtTime(0, t + seconds)
-      v.src.stop(t + seconds + 0.02)
+      voice.gain.gain.cancelScheduledValues(time)
+      voice.gain.gain.setValueAtTime(voice.gain.gain.value, time)
+      voice.gain.gain.linearRampToValueAtTime(0, time + seconds)
+      voice.source.stop(time + seconds + 0.02)
     } catch {
       /* already stopped */
     }
@@ -264,20 +264,20 @@ class SoundEngine {
     const ctx = this.ready()
     const buffer = this.buffers.countdown
     if (!ctx || !buffer) return
-    const src = ctx.createBufferSource()
+    const source = ctx.createBufferSource()
     const gain = ctx.createGain()
-    src.buffer = buffer
-    src.connect(gain).connect(this.master!)
-    const t = ctx.currentTime + 0.01
+    source.buffer = buffer
+    source.connect(gain).connect(this.master!)
+    const time = ctx.currentTime + 0.01
     const progress = Math.min(1, offset / COUNTDOWN)
     const startGain = VOLUME.countdown * (COUNTDOWN_START_GAIN + (1 - COUNTDOWN_START_GAIN) * progress)
-    gain.gain.setValueAtTime(startGain, t)
-    gain.gain.linearRampToValueAtTime(VOLUME.countdown, t + Math.max(0, COUNTDOWN - offset))
-    src.start(t, offset)
-    src.onended = () => {
-      if (this.ticking?.src === src) this.ticking = undefined
+    gain.gain.setValueAtTime(startGain, time)
+    gain.gain.linearRampToValueAtTime(VOLUME.countdown, time + Math.max(0, COUNTDOWN - offset))
+    source.start(time, offset)
+    source.onended = () => {
+      if (this.ticking?.source === source) this.ticking = undefined
     }
-    this.ticking = { src, gain }
+    this.ticking = { source: source, gain }
   }
 
   /** Stop the countdown (and cancel one still to come) before its alarm. */
@@ -295,12 +295,12 @@ class SoundEngine {
     const ctx = this.ready()
     const buffer = this.buffers[name]
     if (!ctx || !buffer) return
-    const src = ctx.createBufferSource()
+    const source = ctx.createBufferSource()
     const gain = ctx.createGain()
-    src.buffer = buffer
+    source.buffer = buffer
     gain.gain.value = ONE_SHOT_VOLUME[name]
-    src.connect(gain).connect(this.master!)
-    src.start(ctx.currentTime + 0.01)
+    source.connect(gain).connect(this.master!)
+    source.start(ctx.currentTime + 0.01)
   }
 
   /** Two soft marimba notes a fifth apart. */
@@ -309,28 +309,28 @@ class SoundEngine {
     if (!ctx) return
     const low = 659
     const notes = kind === Chime.RISING ? [low, low * 1.5] : [low * 1.5, low]
-    const t = ctx.currentTime + 0.01
-    notes.forEach((f, i) => this.mallet(f, t + i * 0.14))
+    const time = ctx.currentTime + 0.01
+    notes.forEach((frequency, i) => this.mallet(frequency, time + i * 0.14))
   }
 
   /** A mallet tone: a sine with two quickly decaying overtones. */
-  private mallet(freq: number, at: Seconds): void {
+  private mallet(frequency: number, at: Seconds): void {
     const ctx = this.ctx!
-    for (const [mult, amp, decay] of [
+    for (const [multiplier, amplitude, decay] of [
       [1, 1, 0.9],
       [4, 0.25, 0.15],
       [10, 0.05, 0.05]
     ] as const) {
-      const osc = ctx.createOscillator()
+      const oscillator = ctx.createOscillator()
       const gain = ctx.createGain()
-      osc.type = "sine"
-      osc.frequency.value = freq * mult
+      oscillator.type = "sine"
+      oscillator.frequency.value = frequency * multiplier
       gain.gain.setValueAtTime(0, at)
-      gain.gain.linearRampToValueAtTime(VOLUME.cue * amp, at + 0.004)
+      gain.gain.linearRampToValueAtTime(VOLUME.cue * amplitude, at + 0.004)
       gain.gain.exponentialRampToValueAtTime(0.0001, at + decay)
-      osc.connect(gain).connect(this.master!)
-      osc.start(at)
-      osc.stop(at + decay + 0.05)
+      oscillator.connect(gain).connect(this.master!)
+      oscillator.start(at)
+      oscillator.stop(at + decay + 0.05)
     }
   }
 

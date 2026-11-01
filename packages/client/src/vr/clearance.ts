@@ -13,13 +13,13 @@ interface Seen {
 
 export class PanelClearance {
   /** Where the panels were placed, and from where. */
-  private homes: { obj: Object3D; at: Vector3; half: Metres }[] = []
+  private homes: { object: Object3D; at: Vector3; half: Metres }[] = []
   private readonly eye = new Vector3()
 
   /** The panels just placed, seen from `eye`; `half` is half a panel's width. */
-  placed(eye: Vector3, panels: { obj: Object3D; half: Metres }[]): void {
+  placed(eye: Vector3, panels: { object: Object3D; half: Metres }[]): void {
     this.eye.copy(eye)
-    this.homes = panels.map(({ obj, half }) => ({ obj, at: obj.position.clone(), half }))
+    this.homes = panels.map(({ object, half }) => ({ object, at: object.position.clone(), half }))
   }
 
   /**
@@ -28,31 +28,33 @@ export class PanelClearance {
    */
   update(globe: Seen): void {
     const eye = this.eye
-    const yaw = (p: Vector3) => Math.atan2(p.x - eye.x, p.z - eye.z)
-    const flat = (p: Vector3) => Math.hypot(p.x - eye.x, p.z - eye.z)
+    const yaw = (point: Vector3) => Math.atan2(point.x - eye.x, point.z - eye.z)
+    const flat = (point: Vector3) => Math.hypot(point.x - eye.x, point.z - eye.z)
     const centre = globe.centre
     const globeHalf = Math.asin(Math.min(1, globe.radius / Math.max(1e-6, flat(centre))))
     const globeYaw = yaw(centre)
-    for (const { obj, at, half } of this.homes) {
+    for (const { object, at, half } of this.homes) {
       const offset = Math.atan2(Math.sin(yaw(at) - globeYaw), Math.cos(yaw(at) - globeYaw))
       const need = globeHalf + Math.atan(half / flat(at)) + PANEL_CLEAR
       const by = Math.abs(offset) >= need ? 0 : Math.sign(offset || 1) * need - offset
-      obj.position.copy(at).sub(eye).applyAxisAngle(UP, by).add(eye)
-      obj.lookAt(eye)
+      object.position.copy(at).sub(eye).applyAxisAngle(UP, by).add(eye)
+      object.lookAt(eye)
     }
   }
 
   /** The narrowest gap, in radians as the player sees it, between a panel and the globe. */
   gap(globe: Seen): Radians {
     const eye = this.eye
-    const yaw = (p: Vector3) => Math.atan2(p.x - eye.x, p.z - eye.z)
-    const flat = (p: Vector3) => Math.hypot(p.x - eye.x, p.z - eye.z)
+    const yaw = (point: Vector3) => Math.atan2(point.x - eye.x, point.z - eye.z)
+    const flat = (point: Vector3) => Math.hypot(point.x - eye.x, point.z - eye.z)
     const centre = globe.centre
     const globeHalf = Math.asin(Math.min(1, globe.radius / flat(centre)))
     return Math.min(
-      ...this.homes.map(({ obj, half }) => {
-        const d = yaw(obj.position) - yaw(centre)
-        return Math.abs(Math.atan2(Math.sin(d), Math.cos(d))) - globeHalf - Math.atan(half / flat(obj.position))
+      ...this.homes.map(({ object, half }) => {
+        const delta = yaw(object.position) - yaw(centre)
+        return (
+          Math.abs(Math.atan2(Math.sin(delta), Math.cos(delta))) - globeHalf - Math.atan(half / flat(object.position))
+        )
       })
     )
   }

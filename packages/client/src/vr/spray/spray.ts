@@ -49,13 +49,13 @@ export const TRIGGER_DEAD_ZONE = 0.05
 const BEAM_LENGTH: Metres = 1.5
 
 const origin = new Vector3()
-const dir = new Vector3()
+const direction = new Vector3()
 const hit = new Vector3()
 const normal = new Vector3()
 const local = new Vector3()
 
 interface Pulsing {
-  pulse?(intensity: number, ms: Ms): Promise<boolean>
+  pulse?(intensity: number, duration: Ms): Promise<boolean>
 }
 
 export class HandTool {
@@ -82,7 +82,7 @@ export class HandTool {
   )
   private readonly beamEnd = new Mesh(new SphereGeometry(0.004, 12, 8), new MeshBasicMaterial({ color: "#ffffff" }))
   private readonly theme: Theme
-  private stroke: { at: LatLon; t: Seconds } | undefined = undefined
+  private stroke: { at: LatLon; time: Seconds } | undefined = undefined
   private lastPulse: Seconds = 0
   private toolNow: SprayTool = Tool.PAINT
 
@@ -165,15 +165,15 @@ export class HandTool {
   /** Where the ray meets the globe, if it does: distance from the can. */
   aim(globe: Target): number | undefined {
     this.ray.getWorldPosition(origin)
-    this.ray.getWorldDirection(dir).negate()
-    return raySphere(origin, dir, globe.centre, globe.radius)
+    this.ray.getWorldDirection(direction).negate()
+    return raySphere(origin, direction, globe.centre, globe.radius)
   }
 
   /** The controller's ray, from the hand outwards. */
-  pointer(): { origin: Vector3; dir: Vector3 } {
+  pointer(): { origin: Vector3; direction: Vector3 } {
     return {
       origin: this.ray.getWorldPosition(new Vector3()),
-      dir: this.ray.getWorldDirection(new Vector3()).negate()
+      direction: this.ray.getWorldDirection(new Vector3()).negate()
     }
   }
 
@@ -181,9 +181,9 @@ export class HandTool {
   showBeam(globe: Globe | undefined): void {
     this.beam.visible = this.beamEnd.visible = globe !== undefined
     if (!globe) return
-    const d = this.aim(globe) ?? BEAM_LENGTH
-    this.beam.scale.set(1, 1, d)
-    this.beamEnd.position.copy(origin).addScaledVector(dir, d)
+    const distance = this.aim(globe) ?? BEAM_LENGTH
+    this.beam.scale.set(1, 1, distance)
+    this.beamEnd.position.copy(origin).addScaledVector(direction, distance)
   }
 
   get beamShown(): boolean {
@@ -217,14 +217,14 @@ export class HandTool {
     }
     const tip = paint.enabled.value ? this.touching(globe) : undefined
     if (tip) return this.rub(now, globe, tip, paint, gamepad, dt)
-    const d = blocked ? undefined : this.aim(globe)
-    if (d === undefined) {
+    const distance = blocked ? undefined : this.aim(globe)
+    if (distance === undefined) {
       this.hide()
       return false
     }
-    hit.copy(origin).addScaledVector(dir, d)
+    hit.copy(origin).addScaledVector(direction, distance)
     normal.copy(hit).sub(globe.centre).normalize()
-    const spotSize = d * SPREAD
+    const spotSize = distance * SPREAD
     this.spot.visible = true
     this.spot.position.copy(hit).addScaledVector(normal, 0.002)
     this.spot.lookAt(local.copy(hit).add(normal))
@@ -250,7 +250,7 @@ export class HandTool {
       this.particles.spray(dt, 700 * trigger, origin, hit, spotSize, this.colour ?? this.theme.ramp[2])
     else this.particles.crumbs(dt, 90 * trigger, hit, normal, spotSize)
 
-    const thin = Math.min(1, FULL_STRENGTH_RANGE / d)
+    const thin = Math.min(1, FULL_STRENGTH_RANGE / distance)
     this.stamp(now, globe, hit, spotSize, (this.toolNow === Tool.ERASE ? -1 : 1) * 0.3 * trigger * thin, paint)
     this.pulse(now, 0.1 + 0.5 * trigger * thin, gamepad)
     return true
@@ -283,7 +283,7 @@ export class HandTool {
     const at = localToLatLon(globe.group.worldToLocal(local.copy(at3)))
     if (stampDue(this.stroke, at, radius, now)) {
       paint.stamp(at, radius, strength)
-      this.stroke = { at, t: now }
+      this.stroke = { at, time: now }
     }
   }
 

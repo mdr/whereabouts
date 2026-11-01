@@ -39,8 +39,8 @@ describe("flag pictures", () => {
     expect([...atlas.codes].sort()).toEqual([...codes].sort())
     for (const code of codes) {
       const cell = atlasCell(code)!
-      expect(cell.w / cell.h, code).toBeCloseTo(flagRatio(code), 1)
-      expect(cell.w, code).toBeLessThanOrEqual(atlas.cell[0]!)
+      expect(cell.width / cell.height, code).toBeCloseTo(flagRatio(code), 1)
+      expect(cell.width, code).toBeLessThanOrEqual(atlas.cell[0]!)
     }
   })
 })

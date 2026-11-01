@@ -35,10 +35,10 @@ export function reflections(renderer: WebGLRenderer): Texture {
 
 /** Gives every standard material under `root` the room to reflect. */
 export function reflect(root: Object3D, envMap: Texture): void {
-  root.traverse((o) => {
-    if (!(o instanceof Mesh)) return
-    const m = o.material as Material | Material[]
-    for (const material of Array.isArray(m) ? m : [m])
+  root.traverse((object) => {
+    if (!(object instanceof Mesh)) return
+    const materials = object.material as Material | Material[]
+    for (const material of Array.isArray(materials) ? materials : [materials])
       if (material instanceof MeshStandardMaterial) {
         material.envMap = envMap
         material.needsUpdate = true
@@ -46,10 +46,10 @@ export function reflect(root: Object3D, envMap: Texture): void {
   })
 }
 
-function canvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingContext2D) => void): CanvasTexture {
+function canvasTexture(width: number, height: number, draw: (ctx: CanvasRenderingContext2D) => void): CanvasTexture {
   const canvas = document.createElement("canvas")
-  canvas.width = w
-  canvas.height = h
+  canvas.width = width
+  canvas.height = height
   draw(canvas.getContext("2d")!)
   const texture = new CanvasTexture(canvas)
   texture.colorSpace = SRGBColorSpace
@@ -59,7 +59,7 @@ function canvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingContext2
 /** A lathe from (radius, height) pairs, in metres. */
 const lathe = (points: [radius: number, height: number][], segments = 32) =>
   new LatheGeometry(
-    points.map(([r, y]) => new Vector2(r, y)),
+    points.map(([radius, y]) => new Vector2(radius, y)),
     segments
   )
 
@@ -213,7 +213,7 @@ export function buildPail(brush: string): Group {
  * outline as the player sees it, up to pivots at the ends of its tilt axis
  * (the local Z axis; local +X points away from the player).
  */
-export function buildStand(r: number): Group {
+export function buildStand(radius: number): Group {
   const stand = new Group()
   const brass = new MeshStandardMaterial({ color: "#c9a25a", metalness: 0.9, roughness: 0.3 })
   const grain = canvasTexture(256, 256, (ctx) => {
@@ -231,24 +231,27 @@ export function buildStand(r: number): Group {
   })
   const wood = new MeshStandardMaterial({ map: grain, color: "#ffffff", metalness: 0, roughness: 0.45 })
 
-  const ring = r * 1.08
+  const ring = radius * 1.08
   // A torus arc runs from +X round through +Y: turned to run from +Z under the globe to -Z.
-  const arc = new Mesh(new TorusGeometry(ring, r * 0.022, 12, 96, Math.PI), brass)
+  const arc = new Mesh(new TorusGeometry(ring, radius * 0.022, 12, 96, Math.PI), brass)
   arc.rotation.z = Math.PI
   const yoke = new Group()
   yoke.add(arc)
   yoke.rotation.y = Math.PI / 2
   stand.add(yoke)
   for (const z of [1, -1]) {
-    const pivot = new Mesh(new CylinderGeometry(r * 0.03, r * 0.03, ring - r, 16).rotateX(Math.PI / 2), brass)
-    pivot.position.z = (z * (ring + r)) / 2
-    const knob = new Mesh(new SphereGeometry(r * 0.045, 20, 12), brass)
-    knob.position.z = z * (ring + r * 0.02)
+    const pivot = new Mesh(
+      new CylinderGeometry(radius * 0.03, radius * 0.03, ring - radius, 16).rotateX(Math.PI / 2),
+      brass
+    )
+    pivot.position.z = (z * (ring + radius)) / 2
+    const knob = new Mesh(new SphereGeometry(radius * 0.045, 20, 12), brass)
+    knob.position.z = z * (ring + radius * 0.02)
     stand.add(pivot, knob)
   }
 
   // Turned wood from the foot up to a brass collar under the yoke.
-  const stem = r * 0.5
+  const stem = radius * 0.5
   const turned = lathe(
     (
       [
@@ -267,13 +270,13 @@ export function buildStand(r: number): Group {
         [0.06, 0.5],
         [0, 0.5]
       ] as [radius: number, height: number][]
-    ).map(([x, y]) => [x * r, y * r]),
+    ).map(([x, y]) => [x * radius, y * radius]),
     48
   )
   const base = new Mesh(turned, wood)
   base.position.y = -ring - stem
-  const collar = new Mesh(new SphereGeometry(r * 0.05, 20, 12), brass)
-  collar.position.y = -ring - r * 0.01
+  const collar = new Mesh(new SphereGeometry(radius * 0.05, 20, 12), brass)
+  collar.position.y = -ring - radius * 0.01
   stand.add(base, collar)
   return stand
 }

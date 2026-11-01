@@ -17,7 +17,9 @@ export interface HandAtWork {
 /** The tool of the first hand rubbing or spraying the globe, if one is; Fill makes no stroke. */
 export function strokeTool(hands: HandAtWork[], onMenu: boolean, triggerDead: number): SprayTool | undefined {
   if (onMenu) return undefined
-  return hands.find((h) => h.touching || (!h.busy && h.tool !== Tool.FILL && h.trigger > triggerDead && h.aimed))?.tool
+  return hands.find(
+    (hand) => hand.touching || (!hand.busy && hand.tool !== Tool.FILL && hand.trigger > triggerDead && hand.aimed)
+  )?.tool
 }
 
 export type Strokes = Pick<PaintModel, "beginStroke" | "endStroke">

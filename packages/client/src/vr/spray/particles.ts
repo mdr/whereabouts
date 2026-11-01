@@ -20,21 +20,21 @@ function dot(): CanvasTexture {
   canvas.width = canvas.height = 32
   const ctx = canvas.getContext("2d")
   if (ctx) {
-    const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16)
-    g.addColorStop(0, "rgba(255,255,255,1)")
-    g.addColorStop(0.5, "rgba(255,255,255,0.6)")
-    g.addColorStop(1, "rgba(255,255,255,0)")
-    ctx.fillStyle = g
+    const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16)
+    gradient.addColorStop(0, "rgba(255,255,255,1)")
+    gradient.addColorStop(0.5, "rgba(255,255,255,0.6)")
+    gradient.addColorStop(1, "rgba(255,255,255,0)")
+    ctx.fillStyle = gradient
     ctx.fillRect(0, 0, 32, 32)
   }
   return new CanvasTexture(canvas)
 }
 
 /** A point within a ball of radius `r`. */
-function inBall(out: Vector3, r: Metres): Vector3 {
+function inBall(out: Vector3, radius: Metres): Vector3 {
   do out.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1)
   while (out.lengthSq() > 1)
-  return out.multiplyScalar(r)
+  return out.multiplyScalar(radius)
 }
 
 export class SprayParticles {
@@ -53,11 +53,11 @@ export class SprayParticles {
   private owed = 0
 
   constructor() {
-    const g = new BufferGeometry()
-    g.setAttribute("position", new BufferAttribute(this.position, 3))
-    g.setAttribute("color", new BufferAttribute(this.colour, 4))
+    const geometry = new BufferGeometry()
+    geometry.setAttribute("position", new BufferAttribute(this.position, 3))
+    geometry.setAttribute("color", new BufferAttribute(this.colour, 4))
     this.points = new Points(
-      g,
+      geometry,
       new PointsMaterial({
         size: 0.008,
         map: dot(),
@@ -96,22 +96,22 @@ export class SprayParticles {
 
   /** How many are in the air. */
   get live(): number {
-    let n = 0
-    for (let i = 0; i < MAX; i++) if (this.left[i]! > 0) n++
-    return n
+    let count = 0
+    for (let i = 0; i < MAX; i++) if (this.left[i]! > 0) count++
+    return count
   }
 
   update(dt: Seconds): void {
-    const p = this.position
-    const vel = this.velocity
+    const positions = this.position
+    const velocities = this.velocity
     for (let i = 0; i < MAX; i++) {
       if (this.left[i]! <= 0) continue
       const left = (this.left[i] = Math.max(0, this.left[i]! - dt))
-      if (this.falls[i]) vel[i * 3 + 1]! -= GRAVITY * dt
-      for (let k = 0; k < 3; k++) p[i * 3 + k]! += vel[i * 3 + k]! * dt
+      if (this.falls[i]) velocities[i * 3 + 1]! -= GRAVITY * dt
+      for (let k = 0; k < 3; k++) positions[i * 3 + k]! += velocities[i * 3 + k]! * dt
       // Fade in fast, out over the last third.
-      const t = left / this.life[i]!
-      this.colour[i * 4 + 3] = this.opacity[i]! * Math.min(1, t * 3, (1 - t) * 20)
+      const fraction = left / this.life[i]!
+      this.colour[i * 4 + 3] = this.opacity[i]! * Math.min(1, fraction * 3, (1 - fraction) * 20)
     }
     this.points.geometry.attributes["position"]!.needsUpdate = true
     this.points.geometry.attributes["color"]!.needsUpdate = true

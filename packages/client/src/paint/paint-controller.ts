@@ -59,7 +59,7 @@ export class PaintController extends PaintModel {
     this.view.showOwn(colour)
   }
 
-  onHover(listener: (pos: LatLon) => void): () => void {
+  onHover(listener: (position: LatLon) => void): () => void {
     return this.input.onHover(listener)
   }
 

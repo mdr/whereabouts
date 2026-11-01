@@ -22,11 +22,11 @@ export interface VrRoundShown {
 }
 
 /** AnswerMode and AreaInstruction in a line; undefined for a place. */
-export function answerModeText(q: Pick<QuestionView, "type" | "answer" | "feature">): string | undefined {
-  const area = outlineOf(q.answer) !== undefined
-  if (q.type === QuestionType.FLAG)
+export function answerModeText(question: Pick<QuestionView, "type" | "answer" | "feature">): string | undefined {
+  const area = outlineOf(question.answer) !== undefined
+  if (question.type === QuestionType.FLAG)
     return area ? "Paint the whole country: its shape counts." : "Paint where it is: a place, not a shape."
-  return area ? `Cover the whole ${areaNoun(q)}: its shape counts.` : undefined
+  return area ? `Cover the whole ${areaNoun(question)}: its shape counts.` : undefined
 }
 
 /** PaintedIn as a line of text. */

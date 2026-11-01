@@ -55,7 +55,7 @@ export const currentQuestion = (run: PracticeRun): Question => run.questions[run
 
 export const isLastRound = (run: PracticeRun): boolean => run.index + 1 >= run.questions.length
 
-export const runTotal = (run: PracticeRun): number => run.results.reduce((s, r) => s + r.score, 0)
+export const runTotal = (run: PracticeRun): number => run.results.reduce((total, result) => total + result.score, 0)
 
 /** The best a run could score: a thousand a question. */
 export const runMaximum = (run: PracticeRun): number => run.questions.length * 1000
@@ -81,13 +81,16 @@ export function nextRound(run: RevealingRun): PaintingRun | DoneRun {
   return { type: PracticePhase.PAINT, questions, index: index + 1, results }
 }
 
-export function revealedFromQuestion(q: Question, outlines: Outlines): RevealedAnswer {
+export function revealedFromQuestion(question: Question, outlines: Outlines): RevealedAnswer {
   return {
-    label: q.label,
-    wiki: q.wiki,
-    answer: answerCentre(q.answer),
-    shape: revealedShape(q.answer, q.answer.type === AnswerType.AREA ? outlines.get(q.answer.outline) : undefined),
-    photo: revealPhoto(q)
+    label: question.label,
+    wiki: question.wiki,
+    answer: answerCentre(question.answer),
+    shape: revealedShape(
+      question.answer,
+      question.answer.type === AnswerType.AREA ? outlines.get(question.answer.outline) : undefined
+    ),
+    photo: revealPhoto(question)
   }
 }
 
@@ -96,7 +99,10 @@ export function roundsTable(results: readonly PracticeResult[]): VrTable {
   return {
     title: "Your rounds",
     rows: results
-      .map((r, i) => ({ name: `${i + 1}. ${r.question.label}`, total: Math.round(r.score).toLocaleString() }))
+      .map((result, i) => ({
+        name: `${i + 1}. ${result.question.label}`,
+        total: Math.round(result.score).toLocaleString()
+      }))
       .reverse()
   }
 }

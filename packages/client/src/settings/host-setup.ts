@@ -71,8 +71,10 @@ const OLD_MIX_KEYS: Record<string, QuestionType> = {
 
 /** A mix saved under the old keys, under today's; any other left as it is. */
 function renamedMix(mix: unknown): unknown {
-  if (typeof mix !== "object" || !mix || !Object.keys(mix).some((k) => k in OLD_MIX_KEYS)) return mix
-  return mixOf(Object.fromEntries(Object.entries(mix).map(([k, n]) => [OLD_MIX_KEYS[k] ?? k, n as number])))
+  if (typeof mix !== "object" || !mix || !Object.keys(mix).some((key) => key in OLD_MIX_KEYS)) return mix
+  return mixOf(
+    Object.fromEntries(Object.entries(mix).map(([key, count]) => [OLD_MIX_KEYS[key] ?? key, count as number]))
+  )
 }
 
 const OLD_PHOTO_SHARES = [1, 0.75, 0.5, 0.25, 0]
@@ -85,8 +87,9 @@ const OLD_SHARES: Record<string, number> = { off: 0, mixed: 0.25, only: 1 }
  */
 function mixFromOldSetup(setup: Record<string, unknown>): QuestionMix | undefined {
   const { rounds, photoShare, countries, flags } = setup
-  if ([rounds, photoShare, countries, flags].every((v) => v === undefined)) return undefined
-  const r = typeof rounds === "number" && Number.isInteger(rounds) && rounds >= 1 && rounds <= MAX_ROUNDS ? rounds : 8
+  if ([rounds, photoShare, countries, flags].every((value) => value === undefined)) return undefined
+  const roundCount =
+    typeof rounds === "number" && Number.isInteger(rounds) && rounds >= 1 && rounds <= MAX_ROUNDS ? rounds : 8
   const photos = typeof photoShare === "number" && OLD_PHOTO_SHARES.includes(photoShare) ? photoShare : 0.5
   let countryShare = OLD_SHARES[String(countries)] ?? 0
   let flagShare = OLD_SHARES[String(flags)] ?? 0
@@ -95,14 +98,14 @@ function mixFromOldSetup(setup: Record<string, unknown>): QuestionMix | undefine
     countryShare /= sum
     flagShare /= sum
   }
-  const c = Math.round(r * countryShare)
-  const f = Math.min(Math.round(r * flagShare), r - c)
-  const named = r - c - f
+  const countryCount = Math.round(roundCount * countryShare)
+  const flagCount = Math.min(Math.round(roundCount * flagShare), roundCount - countryCount)
+  const named = roundCount - countryCount - flagCount
   const landmarks = Math.round(named * photos)
   return mixOf({
     [QuestionType.LANDMARK]: landmarks,
     [QuestionType.PLACE]: named - landmarks,
-    [QuestionType.COUNTRY]: c,
-    [QuestionType.FLAG]: f
+    [QuestionType.COUNTRY]: countryCount,
+    [QuestionType.FLAG]: flagCount
   })
 }

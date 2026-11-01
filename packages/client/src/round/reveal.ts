@@ -53,14 +53,14 @@ export const shownPlayerId = (shown: RevealShown): PlayerId | undefined =>
 
 /** The results whose paint to show, best first. */
 export function shownResults(results: RoundResultView[], shown: RevealShown): RoundResultView[] {
-  const painted = results.filter((r) => r.guess.type === RoundGuessType.PAINTED)
+  const painted = results.filter((result) => result.guess.type === RoundGuessType.PAINTED)
   switch (shown.type) {
     case RevealShownType.EVERYONE:
       return painted
     case RevealShownType.NOBODY:
       return []
     case RevealShownType.PLAYER:
-      return painted.filter((r) => r.playerId === shown.id)
+      return painted.filter((result) => result.playerId === shown.id)
   }
 }
 
@@ -72,10 +72,13 @@ export function shownResults(results: RoundResultView[], shown: RevealShown): Ro
 export function revealOrder(
   players: PlayingPlayerView[],
   results: RoundResultView[]
-): { p: PlayingPlayerView; r?: RoundResultView }[] {
-  const group = (r?: RoundResultView) => (r ? 0 : 1)
+): { player: PlayingPlayerView; result?: RoundResultView }[] {
+  const group = (result?: RoundResultView) => (result ? 0 : 1)
   return [...players]
     .sort((a, b) => a.rank - b.rank)
-    .map((p) => ({ p, r: results.find((x) => x.playerId === p.id) }))
-    .sort((a, b) => group(a.r) - group(b.r) || (b.r?.score ?? 0) - (a.r?.score ?? 0))
+    .map((player) => ({ player, result: results.find((result) => result.playerId === player.id) }))
+    .sort(
+      (left, right) =>
+        group(left.result) - group(right.result) || (right.result?.score ?? 0) - (left.result?.score ?? 0)
+    )
 }
