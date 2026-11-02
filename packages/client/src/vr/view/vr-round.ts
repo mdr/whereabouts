@@ -12,6 +12,8 @@ import { formatPoints } from "../../ui/format"
 import { vrPicture } from "../picture/vr-picture"
 import { vrFlagPins } from "../../data/borders"
 import { allFlags } from "../../settings/settings"
+import { lookalikesOf } from "@whereabouts/shared/catalogue/lookalike-flags"
+import { mixUpText } from "../../round/lookalike-words"
 
 /** A round as the headset shows it, in practice or a game. */
 export interface VrRoundShown {
@@ -70,6 +72,12 @@ const vrAnswer = ({ shape, answer }: RevealedAnswer): VrAnswer | undefined => {
   return shape.outline && { type: VrAnswerType.OUTLINE, outline: shape.outline, disputed: shape.disputed }
 }
 
+/** The panel's one line of interest: how to tell the flags apart, when the paint was in a look-alike; else the fact. */
+const factLine = (flag: FlagCode | undefined, you: VrScore | undefined, fact: Fact | undefined): string | undefined => {
+  const lookalikes = flag && you?.painted && lookalikesOf(flag, you.painted.country.clue.flag)
+  return (lookalikes && mixUpText(lookalikes)) ?? fact?.text
+}
+
 export const vrReveal = (
   { question, fact }: VrRoundShown,
   revealed: RevealedAnswer,
@@ -82,7 +90,7 @@ export const vrReveal = (
   answer: vrAnswer(revealed),
   focus: revealed.answer,
   stateRound: question.type === QuestionType.STATE,
-  fact: fact?.text,
+  fact: factLine(clueFlag(question.clue), you, fact),
   scoreLine: vrScoreLine(you, clueFlag(question.clue)),
   flags:
     question.type === QuestionType.FLAG

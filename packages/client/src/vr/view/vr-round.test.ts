@@ -172,3 +172,25 @@ describe("vrReveal", () => {
     expect(vrReveal(shown(), answer, score(), undefined, own).flags).toBeUndefined()
   })
 })
+
+describe("the headset's reveal line on a flag round", () => {
+  const own = { actions: [], paints: { type: VrPaintsType.OWN } as const }
+  const fact = {
+    type: FactType.FLAG,
+    text: "Adopted in 1945",
+    source: sourceUrl("https://en.wikipedia.org/wiki/Flag_of_Indonesia")
+  }
+  const indonesia = shown({ question: makeFlagQuestionView("id"), fact })
+
+  it("tells the flags apart when the paint was in a look-alike", () => {
+    const you = score({ painted: painted("pl", "Poland", 0.8) })
+    expect(vrReveal(indonesia, answer, you, undefined, own).fact).toBe(
+      "Poland: White over red. Indonesia: Red over white, and longer."
+    )
+  })
+
+  it("gives the fact otherwise", () => {
+    for (const you of [score({ painted: painted("id", "Indonesia", 0.8) }), score(), undefined])
+      expect(vrReveal(indonesia, answer, you, undefined, own).fact).toBe("Adopted in 1945")
+  })
+})
