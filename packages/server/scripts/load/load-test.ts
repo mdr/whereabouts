@@ -1,10 +1,13 @@
 /**
- * Plays one game with scripted players who all paint at the cell budget as
- * often as a client may upload, then lock in together, and reports what the
- * server went through: event-loop delay, memory and CPU while painting and at
- * each reveal, ping round trips, and how long each reveal took to arrive.
+ * Plays one game with scripted players and reports what the server went
+ * through: event-loop delay, memory and CPU while painting and at each
+ * reveal, ping round trips, and how long each reveal took to arrive.
  *
  *   node --experimental-transform-types scripts/load/load-test.ts --players 16 --spectators 8
+ *
+ * --paint typical (the default) paints as players do (typical-paint.ts);
+ * --paint budget has every player upload a paint at the cell budget as often
+ * as a client may for --paint-seconds, then all lock in together.
  *
  * Starts its own server unless given --url (then only client-side numbers).
  */
@@ -17,13 +20,12 @@ import { QuestionType } from "@whereabouts/shared/questions"
 import { Phase } from "@whereabouts/shared/protocol/views"
 import { Role } from "@whereabouts/shared/roles"
 import { GameEntryType } from "@whereabouts/shared/protocol/ticket"
-import { encodePaint } from "@whereabouts/shared/paint/paint-wire"
-import { bigPaint } from "./big-paint.ts"
+import { budgetPlan } from "./big-paint.ts"
+import { seededRandom, typicalPlan, type PaintPlan } from "./typical-paint.ts"
 import { Bot } from "./bot.ts"
 import type { ProbeSample } from "./server-probe.ts"
 import { formatSummary, mebibytes, summarise } from "./stats.ts"
 
-const UPLOAD_INTERVAL_MS = 400
 const ROUND_LENGTH_MS = 120_000
 
 const { values } = parseArgs({
@@ -31,7 +33,9 @@ const { values } = parseArgs({
     players: { type: "string", default: "16" },
     spectators: { type: "string", default: "8" },
     rounds: { type: "string", default: "3" },
+    paint: { type: "string", default: "typical" },
     "paint-seconds": { type: "string", default: "6" },
+    seed: { type: "string", default: "1" },
     /** Ask only this question type (LANDMARK, PLACE, COUNTRY, FLAG, FEATURE, STATE), not an even mix. */
     type: { type: "string" },
     port: { type: "string", default: "8899" },
@@ -42,6 +46,12 @@ const players = Number(values.players)
 const spectators = Number(values.spectators)
 const rounds = Number(values.rounds)
 const paintMs = Number(values["paint-seconds"]) * 1000
+const seed = Number(values.seed)
+if (values.paint !== "typical" && values.paint !== "budget") throw new Error("--paint is typical or budget")
+const planFor = (player: number, round: number, questionType: QuestionType | undefined): PaintPlan =>
+  values.paint === "budget"
+    ? budgetPlan(player, paintMs)
+    : typicalPlan(seededRandom(seed * 1_000_003 + round * 1009 + player), questionType === QuestionType.COUNTRY)
 const onlyType = values.type === undefined ? undefined : QuestionType[values.type as keyof typeof QuestionType]
 if (values.type !== undefined && onlyType === undefined) throw new Error(`unknown question type ${values.type}`)
 const mix = onlyType === undefined ? evenMix(rounds) : mixOf({ [onlyType]: rounds })
@@ -98,7 +108,6 @@ const hostBot = new Bot(url, "Host")
 const playerBots = [hostBot, ...Array.from({ length: players - 1 }, (_, i) => new Bot(url, `Player${i + 1}`))]
 const spectatorBots = Array.from({ length: spectators }, (_, i) => new Bot(url, `Watcher${i + 1}`))
 const everyone = [...playerBots, ...spectatorBots]
-const paints = playerBots.map((_, i) => encodePaint(bigPaint(i)))
 
 try {
   hostBot.connect({ type: GameEntryType.HOST })
@@ -112,9 +121,7 @@ try {
     `${players} players and ${spectators} spectators`
   )
 
-  console.log(
-    `${players} players, ${spectators} spectators, ${rounds} rounds; each upload ${mebibytes(paints[0]!.byteLength)} every ${UPLOAD_INTERVAL_MS} ms for ${paintMs / 1000} s`
-  )
+  console.log(`${players} players, ${spectators} spectators, ${rounds} rounds, ${values.paint} paint`)
   const idleFrom = Date.now()
   await new Promise((resolve) => setTimeout(resolve, 2000))
   console.log(`idle lobby — ${serverLine(idleFrom, Date.now() - 1000)}`)
@@ -126,16 +133,19 @@ try {
         bot.until((state) => state.phase === Phase.GUESSING && state.round.index === round, `round ${round + 1}`)
       )
     )
-    const questionType = guessing?.phase === Phase.GUESSING ? guessing.round.question.type : "?"
+    const questionType = guessing?.phase === Phase.GUESSING ? guessing.round.question.type : undefined
+    const plans = playerBots.map((_, player) => planFor(player, round, questionType))
     const paintFrom = Date.now()
-    const uploaders = playerBots.map((bot, i) => {
-      bot.sendPaint(paints[i]!)
-      return setInterval(() => bot.sendPaint(paints[i]!), UPLOAD_INTERVAL_MS)
+    const timers = plans.flatMap((plan, player) => {
+      const bot = playerBots[player]!
+      return [
+        ...plan.uploads.map((upload) => setTimeout(() => bot.sendPaint(upload.bytes), upload.atMs)),
+        setTimeout(() => bot.send(ClientTopic.LOCK), plan.lockAtMs)
+      ]
     })
-    await new Promise((resolve) => setTimeout(resolve, paintMs))
-    for (const uploader of uploaders) clearInterval(uploader)
-    for (const bot of playerBots) bot.send(ClientTopic.LOCK)
+    await new Promise((resolve) => setTimeout(resolve, Math.max(...plans.map((plan) => plan.lockAtMs))))
     const lockedAt = Date.now()
+    const uploads = plans.flatMap((plan) => plan.uploads)
 
     await Promise.all(
       everyone.map((bot) => bot.until(() => bot.reveals.length === round + 1, `round ${round + 1}'s reveal`, 60_000))
@@ -146,7 +156,10 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 1100))
 
     console.log(`\nround ${round + 1}: ${questionType}`)
-    console.log(`  painting — ${serverLine(paintFrom, lockedAt)}`)
+    console.log(
+      `  painting — ${uploads.length} uploads in ${((lockedAt - paintFrom) / 1000).toFixed(0)} s; final paints ${formatSummary(summarise(plans.map((plan) => plan.uploads.at(-1)?.cells ?? 0)), " cells")}`
+    )
+    console.log(`             ${serverLine(paintFrom, lockedAt)}`)
     console.log(`             ${pingLine(everyone, paintFrom, lockedAt)}`)
     console.log(
       `  reveal   — ${mebibytes(arrivals[0]!.bytes)} to each of ${everyone.length} (${mebibytes(arrivals.reduce((sum, arrival) => sum + arrival.bytes, 0))} in all)`
@@ -157,6 +170,7 @@ try {
     console.log(`             ${serverLine(lockedAt, lastArrival)}`)
     console.log(`             ${pingLine(everyone, lockedAt, lastArrival)}`)
 
+    for (const timer of timers) clearTimeout(timer)
     for (const bot of playerBots) bot.send(ClientTopic.READY)
   }
   await hostBot.until((state) => state.phase === Phase.RESULTS, "the results")

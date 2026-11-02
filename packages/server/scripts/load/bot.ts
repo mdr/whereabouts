@@ -30,6 +30,7 @@ export class Bot {
   private readonly decoder = new TextDecoder()
   private pingSentAt: number | undefined = undefined
   private pinger: NodeJS.Timeout | undefined = undefined
+  private open = false
   state: StateMessage | undefined = undefined
   readonly reveals: Arrival[] = []
   readonly pings: PingSample[] = []
@@ -54,8 +55,12 @@ export class Bot {
       this.errors.push((JSON.parse(this.decoder.decode(payload)) as { message: string }).message)
     )
     this.client.on(SocketEvent.KICKED, ({ reason }) => (this.closedFor = reason))
-    // The server terminates a connection whose send buffer is over its limit, with no reason given.
-    this.client.on(SocketEvent.DISCONNECT, () => (this.closedFor ??= "connection dropped"))
+    this.client.on(SocketEvent.CONNECT, () => (this.open = true))
+    this.client.on(SocketEvent.DISCONNECT, () => {
+      this.open = false
+      // The server terminates a connection whose send buffer is over its limit, with no reason given.
+      this.closedFor ??= "connection dropped"
+    })
   }
 
   connect(entry: GameEntry) {
@@ -63,7 +68,7 @@ export class Bot {
     this.client.connect(encodeTicket({ v: PROTOCOL_VERSION, token, name: playerName(this.name), entry }))
     // A ping still unanswered is skipped rather than overlapped, so a stall shows as one long round trip.
     this.pinger = setInterval(() => {
-      if (this.pingSentAt !== undefined || !this.client.connected) return
+      if (this.pingSentAt !== undefined || !this.open) return
       this.pingSentAt = Date.now()
       this.client.send(ClientTopic.PING, "")
     }, PING_INTERVAL_MS)
