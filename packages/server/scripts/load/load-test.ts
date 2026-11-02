@@ -22,7 +22,10 @@ import { Phase } from "@whereabouts/shared/protocol/views"
 import { Role } from "@whereabouts/shared/roles"
 import { GameEntryType } from "@whereabouts/shared/protocol/ticket"
 import { budgetPlan } from "./big-paint.ts"
-import { seededRandom, typicalPlan, type PaintPlan } from "./typical-paint.ts"
+import { seededRandom, typicalPlan, type Asked, type PaintPlan } from "./typical-paint.ts"
+import { outlineOf, type QuestionView } from "@whereabouts/shared/protocol/views"
+import { answerCentre } from "@whereabouts/shared/questions"
+import { BANK } from "../../src/rooms.ts"
 import { Bot } from "./bot.ts"
 import type { ProbeSample } from "./server-probe.ts"
 import { formatSummary, mebibytes, summarise } from "./stats.ts"
@@ -50,10 +53,24 @@ const rounds = Number(values.rounds)
 const paintMs = Number(values["paint-seconds"]) * 1000
 const seed = Number(values.seed)
 if (values.paint !== "typical" && values.paint !== "budget") throw new Error("--paint is typical or budget")
-const planFor = (player: number, round: number, questionType: QuestionType | undefined): PaintPlan =>
+/** What a player was asked, with the answer looked up by its clue so guesses can land near it. */
+const askedIn = (question: QuestionView): Asked => {
+  const clue = JSON.stringify(question.clue)
+  const asked = BANK.catalogue.find(
+    (candidate) => candidate.type === question.type && JSON.stringify(candidate.clue) === clue
+  )
+  const outline = outlineOf(question.answer)
+  return {
+    tolerance: question.answer.tolerance,
+    answer: asked && answerCentre(asked.answer),
+    outline: outline === undefined ? undefined : BANK.outlines.get(outline)
+  }
+}
+
+const planFor = (player: number, round: number, question: QuestionView): PaintPlan =>
   values.paint === "budget"
     ? budgetPlan(player, paintMs)
-    : typicalPlan(seededRandom(seed * 1_000_003 + round * 1009 + player), questionType === QuestionType.COUNTRY)
+    : typicalPlan(seededRandom(seed * 1_000_003 + round * 1009 + player), askedIn(question))
 const onlyType = values.type === undefined ? undefined : QuestionType[values.type as keyof typeof QuestionType]
 if (values.type !== undefined && onlyType === undefined) throw new Error(`unknown question type ${values.type}`)
 const mix = onlyType === undefined ? evenMix(rounds) : mixOf({ [onlyType]: rounds })
@@ -144,8 +161,9 @@ try {
         bot.until((state) => state.phase === Phase.GUESSING && state.round.index === round, `round ${round + 1}`)
       )
     )
-    const questionType = guessing?.phase === Phase.GUESSING ? guessing.round.question.type : undefined
-    const plans = playerBots.map((_, player) => planFor(player, round, questionType))
+    if (guessing?.phase !== Phase.GUESSING) throw new Error("not guessing")
+    const { question } = guessing.round
+    const plans = playerBots.map((_, player) => planFor(player, round, question))
     const paintFrom = Date.now()
     const timers = plans.flatMap((plan, player) => {
       const bot = playerBots[player]!
@@ -167,7 +185,7 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 1100))
     await fetchSamples()
 
-    console.log(`\nround ${round + 1}: ${questionType}`)
+    console.log(`\nround ${round + 1}: ${question.type}, tolerance ${question.answer.tolerance} km`)
     console.log(
       `  painting — ${uploads.length} uploads in ${((lockedAt - paintFrom) / 1000).toFixed(0)} s; final paints ${formatSummary(summarise(plans.map((plan) => plan.uploads.at(-1)?.cells ?? 0)), " cells")}`
     )

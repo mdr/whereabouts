@@ -1,15 +1,16 @@
 /**
- * How a typical player paints a round, built with the real PaintLayer: a few
- * scribbled strokes with the default brush, each uploaded 400 ms after it
- * ends as the client does, sometimes a second patch at another zoom (so
- * another cell size), and on country rounds sometimes a Fill instead.
+ * How a typical player paints a round, built with the real PaintLayer at the
+ * question's resolution: a few scribbled strokes with a brush about the
+ * tolerance across, near the answer, each uploaded 400 ms after it ends as
+ * the client does; sometimes a second patch zoomed in (so smaller cells); and
+ * on a round with an outline sometimes a Fill of the country instead.
  */
-import { gridDisk, h3Resolution, latLngToCell } from "@whereabouts/shared/h3"
 import { compactRecord } from "@whereabouts/shared/paint/compact"
-import { FILL_DENSITY } from "@whereabouts/shared/paint/fill"
-import { PaintLayer } from "@whereabouts/shared/paint/paint"
+import { countryFill, FILL_DENSITY, FillShapeType } from "@whereabouts/shared/paint/fill"
+import { PaintLayer, resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import type { LatLon } from "@whereabouts/shared/geo"
+import type { Outline } from "@whereabouts/shared/questions"
 import type { Km } from "@whereabouts/shared/units"
 
 interface Upload {
@@ -21,6 +22,15 @@ interface Upload {
 export interface PaintPlan {
   uploads: Upload[]
   lockAtMs: number
+}
+
+/** What a player knows of the question, and roughly where they think the answer is. */
+export interface Asked {
+  tolerance: Km
+  /** The answer, when the load test could look it up; guesses land a few tolerances from it. */
+  answer: LatLon | undefined
+  /** The country's outline, on a round with one: then a player may Fill it. */
+  outline: Outline | undefined
 }
 
 type Random = () => number
@@ -40,14 +50,14 @@ export const seededRandom = (seed: number): Random => {
 const between = (random: Random, low: number, high: number) => low + random() * (high - low)
 const KM_PER_DEGREE = 111
 
-/** The default 40 px brush at a zoom that shows a few countries; a zoomed patch scales it. */
-const BRUSH_RADIUS: Km = 120
+/** The default 40 px brush, in tolerances, at the zooms players paint at; a zoomed patch is a third of it. */
+const BRUSH_TOLERANCES = { low: 0.6, high: 1.5 }
+/** How far from the answer, in tolerances, a guess is centred. */
+const GUESS_ERROR = 3
 /** As the client: a stamp every quarter of the brush radius along the stroke, at 0.3 strength. */
 const STAMP_STEP = 0.25
 const STAMP_STRENGTH = 0.3
 const UPLOAD_DELAY_MS = 400
-/** Fills span Bulgaria (410 cells) to Chile (3106). */
-const FILL_CELLS = { low: 400, high: 3100 }
 const FILL_SHARE = 0.4
 
 const offset = (at: LatLon, eastKm: number, northKm: number): LatLon => ({
@@ -76,26 +86,23 @@ const upload = (cells: Record<string, number>, atMs: number): Upload => {
   }
 }
 
-const fillPlan = (random: Random, centre: LatLon): PaintPlan => {
-  const target = between(random, FILL_CELLS.low, FILL_CELLS.high)
-  const rings = Math.round((-3 + Math.sqrt(12 * target - 3)) / 6)
-  const cells = Object.fromEntries(
-    gridDisk(latLngToCell(centre.lat, centre.lon, h3Resolution(5)), rings).map((cell) => [cell, FILL_DENSITY])
-  )
+const fillPlan = (random: Random, layer: PaintLayer, outline: Outline, answer: LatLon): PaintPlan => {
+  const filled = countryFill({ type: FillShapeType.OUTLINE, outline, answer }, layer.resolution)
+  const cells = Object.fromEntries(filled.map((cell) => [cell, FILL_DENSITY]))
   const atMs = between(random, 3000, 10_000)
   return { uploads: [upload(cells, atMs)], lockAtMs: atMs + between(random, 1000, 5000) }
 }
 
-const strokesPlan = (random: Random, centre: LatLon): PaintPlan => {
-  const layer = new PaintLayer(h3Resolution(8))
+const strokesPlan = (random: Random, layer: PaintLayer, centre: LatLon, tolerance: Km): PaintPlan => {
+  const brush = tolerance * between(random, BRUSH_TOLERANCES.low, BRUSH_TOLERANCES.high)
   const strokes = Math.floor(between(random, 2, 9))
   const zoomedAt = random() < 0.3 ? Math.floor(between(random, 1, strokes)) : undefined
   const uploads: Upload[] = []
   let at = centre
   let clock = between(random, 2000, 6000)
   for (let stroke = 0; stroke < strokes; stroke++) {
-    if (stroke === zoomedAt) at = offset(centre, between(random, -800, 800), between(random, -800, 800))
-    const radius = zoomedAt !== undefined && stroke >= zoomedAt ? BRUSH_RADIUS / 3 : BRUSH_RADIUS
+    if (stroke === zoomedAt) at = offset(centre, between(random, -3, 3) * brush, between(random, -3, 3) * brush)
+    const radius = zoomedAt !== undefined && stroke >= zoomedAt ? brush / 3 : brush
     const start = offset(at, between(random, -1, 1) * radius, between(random, -1, 1) * radius)
     scribble(layer, random, start, radius)
     clock += between(random, 500, 1500)
@@ -106,7 +113,11 @@ const strokesPlan = (random: Random, centre: LatLon): PaintPlan => {
 }
 
 /** A player's uploads for one round, times from the round's start. */
-export const typicalPlan = (random: Random, fillAllowed: boolean): PaintPlan => {
-  const centre = { lat: between(random, -50, 60), lon: between(random, -170, 170) }
-  return fillAllowed && random() < FILL_SHARE ? fillPlan(random, centre) : strokesPlan(random, centre)
+export const typicalPlan = (random: Random, { tolerance, answer, outline }: Asked): PaintPlan => {
+  const layer = new PaintLayer(resolutionForTolerance(tolerance))
+  const target = answer ?? { lat: between(random, -50, 60), lon: between(random, -170, 170) }
+  if (outline && random() < FILL_SHARE) return fillPlan(random, layer, outline, target)
+  const error = GUESS_ERROR * tolerance
+  const centre = offset(target, between(random, -error, error), between(random, -error, error))
+  return strokesPlan(random, layer, centre, tolerance)
 }
