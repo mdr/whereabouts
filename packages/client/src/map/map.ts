@@ -18,6 +18,8 @@ import { addGameLayers, CURSOR_SOURCE, HINT_SOURCE, PAINT_FILL, PAINT_SOURCE, RE
 import { MapCamera, WORLD_CENTER, WORLD_ZOOM } from "./map-camera"
 import { applyPaint, setPaint, type PaintSetting } from "./map-paint"
 import { overlayPaint, paintRamp, PLAYER_OPACITY } from "./map-theme"
+import { FOCUS_ALL, type PaintFocus } from "./paint-focus"
+import { paintFocusStyle } from "./paint-focus-style"
 import { drawable, hintFeatures } from "./map-geometry"
 
 setWorkerUrl(mapWorkerUrl)
@@ -149,6 +151,7 @@ export class GameMap {
    */
   setPaintColour(colour: CssColour | undefined): void {
     if (!this.map.getLayer(PAINT_FILL)) return
+    this.map.setFilter(PAINT_FILL, undefined)
     if (colour === undefined) {
       if (this.theme) this.applyPaintRamp(this.theme)
       return
@@ -157,11 +160,22 @@ export class GameMap {
     setPaint(this.map, PAINT_FILL, "fill-opacity", PLAYER_OPACITY)
   }
 
-  /** Colour each feature by its own `colour` property, for several players at once. */
+  /** Colour each feature by its own `colour` property, for several players at once, all shown. */
   setPaintColourPerFeature(): void {
     if (!this.map.getLayer(PAINT_FILL)) return
     setPaint(this.map, PAINT_FILL, "fill-color", ["coalesce", ["get", "colour"], "#888888"])
-    setPaint(this.map, PAINT_FILL, "fill-opacity", PLAYER_OPACITY)
+    this.setPaintFocus(FOCUS_ALL)
+  }
+
+  /** Which of several players' paint shows (setPaintColourPerFeature), by each feature's `player`. */
+  paintFocus: PaintFocus = FOCUS_ALL
+
+  setPaintFocus(focus: PaintFocus): void {
+    if (!this.map.getLayer(PAINT_FILL)) return
+    this.paintFocus = focus
+    const { filter, opacity } = paintFocusStyle(focus)
+    this.map.setFilter(PAINT_FILL, filter)
+    setPaint(this.map, PAINT_FILL, "fill-opacity", opacity)
   }
 
   private applyPaintRamp(theme: Theme): void {

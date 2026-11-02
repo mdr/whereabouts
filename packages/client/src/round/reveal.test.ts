@@ -4,7 +4,16 @@ import { playerColour } from "@whereabouts/shared/colours"
 import { outlineId, placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
 import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
-import { SHOW_EVERYONE, SHOW_NOBODY, revealedFromView, revealOrder, showPlayer, shownResults } from "./reveal"
+import {
+  SHOW_EVERYONE,
+  SHOW_NOBODY,
+  paintFocus,
+  revealedFromView,
+  revealOrder,
+  showPlayer,
+  shownResults
+} from "./reveal"
+import { PaintFocusType } from "../map/paint-focus"
 import { areaAnswerView, makeCountryQuestionView, makePainted, makePlayer, makeQuestionView } from "../test-view"
 import { RevealedShapeType } from "./revealed-shape"
 
@@ -139,5 +148,21 @@ describe("revealedFromView", () => {
       outline: undefined,
       disputed: undefined
     })
+  })
+})
+
+describe("paintFocus", () => {
+  const alice = playerId("p1")
+  const bob = playerId("p2")
+
+  it("shows whoever is chosen", () => {
+    expect(paintFocus(SHOW_EVERYONE, undefined)).toEqual({ type: PaintFocusType.ALL })
+    expect(paintFocus(SHOW_NOBODY, undefined)).toEqual({ type: PaintFocusType.NONE })
+    expect(paintFocus(showPlayer(alice), undefined)).toEqual({ type: PaintFocusType.ONLY, player: alice })
+  })
+
+  it("highlights a hovered player over the rest, whoever is chosen", () => {
+    for (const shown of [SHOW_EVERYONE, SHOW_NOBODY, showPlayer(alice)])
+      expect(paintFocus(shown, bob)).toEqual({ type: PaintFocusType.HIGHLIGHT, player: bob })
   })
 })

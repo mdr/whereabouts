@@ -1,9 +1,10 @@
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import { colourCss, type CssColour } from "@whereabouts/shared/colours"
+import type { PlayerId } from "@whereabouts/shared/ids"
 import type { H3Resolution } from "@whereabouts/shared/h3"
 import { RoundGuessType, type PaintSubmission, type RoundResultView } from "@whereabouts/shared/protocol/views"
 
-/** A player's paint at a reveal, in their colour, ready to draw. */
+/** A player's paint at a reveal, in their colour and marked as theirs, ready to draw. */
 export interface PlayerPaint {
   layer: PaintLayer
   colour: CssColour
@@ -20,13 +21,18 @@ export const paintLayer = (resolution: H3Resolution, paint: PaintSubmission): Pa
   return layer
 }
 
-const playerPaint = (resolution: H3Resolution, paint: PaintSubmission, colour: CssColour): PlayerPaint => {
+const playerPaint = (
+  player: PlayerId,
+  resolution: H3Resolution,
+  paint: PaintSubmission,
+  colour: CssColour
+): PlayerPaint => {
   const cached = coloured.get(paint)
   if (cached?.colour === colour) return cached
   const layer = paintLayer(resolution, paint)
   const features = layer
     .toGeoJSON()
-    .features.map((feature) => ({ ...feature, properties: { ...feature.properties, colour } }))
+    .features.map((feature) => ({ ...feature, properties: { ...feature.properties, colour, player } }))
   const made = { layer, colour, features }
   coloured.set(paint, made)
   return made
@@ -38,6 +44,6 @@ export const paintsOf = (results: RoundResultView[]): PlayerPaint[] =>
     .reverse()
     .flatMap((result) =>
       result.guess.type === RoundGuessType.PAINTED
-        ? [playerPaint(result.guess.resolution, result.guess.paint, colourCss(result.colour))]
+        ? [playerPaint(result.playerId, result.guess.resolution, result.guess.paint, colourCss(result.colour))]
         : []
     )

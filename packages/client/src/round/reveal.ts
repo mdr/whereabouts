@@ -8,6 +8,7 @@ import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabo
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { Outlines } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"
+import { PaintFocusType, type PaintFocus } from "../map/paint-focus"
 import { revealedShape } from "./revealed-shape"
 
 export const revealedFromView = (reveal: RevealView, outlines: Outlines | undefined): RevealedAnswer => ({
@@ -48,6 +49,22 @@ export const revealShown = signal<RevealShown>(SHOW_EVERYONE)
 
 export const shownPlayerId = (shown: RevealShown): PlayerId | undefined =>
   shown.type === RevealShownType.PLAYER ? shown.id : undefined
+
+/**
+ * The map's focus, with everyone's paint loaded: whose is chosen, or a
+ * hovered player's over the rest dimmed.
+ */
+export const paintFocus = (shown: RevealShown, hovered: PlayerId | undefined): PaintFocus => {
+  if (hovered !== undefined) return { type: PaintFocusType.HIGHLIGHT, player: hovered }
+  switch (shown.type) {
+    case RevealShownType.EVERYONE:
+      return { type: PaintFocusType.ALL }
+    case RevealShownType.NOBODY:
+      return { type: PaintFocusType.NONE }
+    case RevealShownType.PLAYER:
+      return { type: PaintFocusType.ONLY, player: shown.id }
+  }
+}
 
 /** The results whose paint to show, best first. */
 export const shownResults = (results: RoundResultView[], shown: RevealShown): RoundResultView[] => {

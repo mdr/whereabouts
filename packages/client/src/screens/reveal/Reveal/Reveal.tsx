@@ -12,9 +12,9 @@ import { frameReveal, showAnswer } from "../../../round/round"
 import { questionCardHeight } from "../../../ui/round/question/QuestionCard/question-card-height"
 import {
   SHOW_EVERYONE,
+  paintFocus,
   revealedFromView,
   revealShown,
-  showPlayer,
   shownResults,
   type RevealShown
 } from "../../../round/reveal"
@@ -93,19 +93,19 @@ export const Reveal = ({
     showAnswer(paint.gameMap, answer)
   }, [reveal.index, outlines])
 
-  // Show everyone's paint in their colours (best score drawn on top), or one
-  // player's, framed together with the answer.
-  const show = (shown: RevealShown) =>
-    paint.showColoured(paintsOf(shownResults(reveal.results, shown)).flatMap((painted) => painted.features))
+  // Everyone's paint goes on the map once, in their colours (best score drawn
+  // on top); choosing or hovering a player only restyles it, which is instant.
   useEffect(() => {
-    frameReveal(paint.gameMap.camera, reveal.question, answer, show(selected))
+    paint.showColoured(paintsOf(reveal.results).flatMap((painted) => painted.features))
+  }, [reveal.index, reveal.results])
+  useEffect(() => {
+    paint.gameMap.setPaintFocus(paintFocus(selected, hovered))
+  }, [selected, hovered, reveal.index, reveal.results])
+  // Framed on what is chosen; not on hover, or the map would jump about as the mouse crosses the rows.
+  useEffect(() => {
+    const shown = paintsOf(shownResults(reveal.results, selected)).flatMap((painted) => painted.features)
+    frameReveal(paint.gameMap.camera, reveal.question, answer, { type: "FeatureCollection", features: shown })
   }, [selected, reveal.index, outlines, questionCardHeight.value])
-  // Not framed: the map would jump about as the mouse crosses the rows.
-  useEffect(() => {
-    if (hovered === undefined) return
-    show(showPlayer(hovered))
-    return () => show(selected)
-  }, [hovered, selected, reveal.index])
   useEffect(() => setHovered(undefined), [reveal.index])
 
   const mine = reveal.results.find((result) => result.playerId === view.you.id)

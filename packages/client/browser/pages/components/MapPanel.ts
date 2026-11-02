@@ -14,6 +14,7 @@ import {
   type Bounds
 } from "../support.ts"
 import type { Ms, Px } from "@whereabouts/shared/units"
+import { PaintFocusType } from "../../../src/map/paint-focus.ts"
 
 /** A spot on the map, as fractions of its width and height from the top left. */
 export interface MapSpot {
@@ -235,14 +236,21 @@ export class MapPanel {
     await this.waitForPaintUpload(kind, before)
   }
 
-  /** Cells of paint drawn on the map: yours while guessing, whoever's is chosen at the reveal. */
+  /**
+   * Cells of paint drawn at full strength: yours while guessing; at the
+   * reveal, whoever's is chosen, or the hovered player's over the rest dimmed.
+   */
   async shownPaintCells(): Promise<number> {
-    return this.#page.evaluate(() => {
-      const source = window.testHooks.map!.map.getSource("paint") as unknown as
+    return this.#page.evaluate((none) => {
+      const hooks = window.testHooks.map!
+      const source = hooks.map.getSource("paint") as unknown as
         | { serialize: () => { data: GeoJSON.FeatureCollection } }
         | undefined
-      return source?.serialize().data.features.length ?? 0
-    })
+      const features = source?.serialize().data.features ?? []
+      const focus = hooks.gameMap.paintFocus
+      if (!("player" in focus)) return focus.type === none ? 0 : features.length
+      return features.filter((feature) => feature.properties?.["player"] === focus.player).length
+    }, PaintFocusType.NONE)
   }
 
   async expectShownPaintCells(bounds: Bounds): Promise<void> {

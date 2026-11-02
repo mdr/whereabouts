@@ -91,7 +91,7 @@ test("multiplayer", async ({ browser }) => {
     const everyone = await bobRevealPage.map.shownPaintCells()
     await bobRevealPage.screenshot(shot(`mp-3b-reveal-everyone.png`))
     await bobRevealPage.hoverPlayer("Alice")
-    // Hovering Alice's name shows her paint alone, then everyone's again.
+    // Hovering Alice's name shows her paint over the rest dimmed, then everyone's again.
     await bobRevealPage.map.expectShownPaintCells({ greaterThan: 0, lessThan: everyone })
     await bobRevealPage.stopHovering()
     await bobRevealPage.map.expectShownPaintCells({ exactly: everyone })
