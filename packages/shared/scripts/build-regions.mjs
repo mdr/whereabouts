@@ -37,7 +37,6 @@ import { writeQuestions } from "./write-catalogue.mjs"
 import {
   POINT_BELOW_KM2,
   MIN_KEPT_SHARE,
-  SIMPLIFY_DEG,
   areaOf,
   cellsOf,
   centroid,
@@ -50,6 +49,7 @@ import {
   polygonsOf,
   regionToleranceKm,
   ringAreaKm2,
+  simplified,
   simplifyRing,
   slug
 } from "./outline.mjs"
@@ -195,10 +195,6 @@ const disputedLand = ({ areas = [], countries = [] }) =>
     })
   )
 
-const simplified = (polygons) =>
-  polygons
-    .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
-    .filter((polygon) => polygon.length > 0)
 const countries = ne.features.filter((feature) => {
   const properties = feature.properties
   return (

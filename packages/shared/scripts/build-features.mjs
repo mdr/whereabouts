@@ -25,7 +25,6 @@ import { writeQuestions } from "./write-catalogue.mjs"
 import {
   MIN_KEPT_SHARE,
   POINT_BELOW_KM2,
-  SIMPLIFY_DEG,
   areaOf,
   cellsOf,
   centroid,
@@ -37,7 +36,7 @@ import {
   polygonAreaKm2,
   polygonsOf,
   regionToleranceKm,
-  simplifyRing,
+  simplified,
   slug
 } from "./outline.mjs"
 
@@ -114,11 +113,6 @@ const features = async (name) => {
     : await (await fetch(`${NE}/${name}.geojson`)).text()
   return JSON.parse(text).features
 }
-
-const simplified = (polygons) =>
-  polygons
-    .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
-    .filter((polygon) => polygon.length > 0)
 
 const outlines = {}
 const places = []

@@ -33,7 +33,17 @@ import {
   type H3Cell,
   type H3Resolution
 } from "../h3.ts"
-import { bearing, fromXyz, greatCircleDistance, toXyz, type Box, type LatLon } from "../geo.ts"
+import {
+  bearing,
+  boxAround,
+  fromXyz,
+  greatCircleDistance,
+  inBox,
+  insidePolygon,
+  toXyz,
+  type Box,
+  type LatLon
+} from "../geo.ts"
 import type { Degrees, Km, Points, SquareKm } from "../units.ts"
 import {
   AnswerType,
@@ -134,26 +144,13 @@ export const regionCells = (area: Area, resolution: H3Resolution): H3Cell[] => {
 const boxes = new Map<OutlineId, Box>()
 
 /** Whether a point is inside a region's outline: inside an odd number of each polygon's rings. */
-export const insideRegion = (area: Area, { lat, lon }: LatLon): boolean => {
+export const insideRegion = (area: Area, point: LatLon): boolean => {
   let box = boxes.get(area.outline)
   if (!box) {
-    const points = area.polygons.flatMap((polygon) => polygon[0]!)
-    const lons = points.map(([x]) => x)
-    const lats = points.map(([, y]) => y)
-    box = [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)]
+    box = boxAround(area.polygons)
     boxes.set(area.outline, box)
   }
-  if (lon < box[0] || lat < box[1] || lon > box[2] || lat > box[3]) return false
-  return area.polygons.some((polygon) => {
-    let odd = false
-    for (const ring of polygon)
-      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-        const [x1, y1] = ring[i]!
-        const [x2, y2] = ring[j]!
-        if (y1 > lat !== y2 > lat && lon < x1 + ((lat - y1) * (x2 - x1)) / (y2 - y1)) odd = !odd
-      }
-    return odd
-  })
+  return inBox(box, point) && area.polygons.some((polygon) => insidePolygon(polygon, point))
 }
 
 /**

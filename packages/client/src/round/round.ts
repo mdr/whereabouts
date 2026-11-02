@@ -9,14 +9,15 @@ import type { LatLon } from "@whereabouts/shared/geo"
 import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
 import type { MapDetail } from "@whereabouts/shared/protocol/config"
 import type { QuestionView } from "@whereabouts/shared/protocol/views"
-import { QuestionType } from "@whereabouts/shared/questions"
+import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 import { FEATURE_TYPE_DISPLAY_INFO } from "../question-types"
 import type { DetailLayers } from "../map/detail-layers"
 import type { GameMap } from "../map/map"
 import type { MapCamera } from "../map/map-camera"
 import { RevealDetail, showsBorders } from "../map/shown-detail"
 import type { PaintController } from "../paint/paint-controller"
-import { useFillTool } from "../paint/fill"
+import { useFillTool } from "../paint/fill-tool"
+import { FillType } from "../paint/fill-target"
 import { startOnPan } from "../settings/settings"
 import { Tool } from "../paint/tool"
 import { RevealedShapeType, type RevealedShape } from "./revealed-shape"
@@ -73,12 +74,8 @@ export const useRoundMap = (
     paint.tool.value = startOnPan.value ? Tool.PAN : Tool.PAINT
   }, [round, painting])
 
-  // The Fill tool, for a country on a map that shows borders; on through
-  // the reveal, so a run of country rounds keeps the tool chosen.
-  useFillTool(
-    paint,
-    showsBorders(detail) && (question?.type === QuestionType.COUNTRY || question?.type === QuestionType.FLAG)
-  )
+  // The Fill tool, on through the reveal, so a run of such rounds keeps the tool chosen.
+  useFillTool(paint, question && fillTypeFor(question, detail))
 
   // The reveal shows everything, since borders, place names, rivers and
   // relief help make sense of the answer.
@@ -92,6 +89,15 @@ export const useRoundMap = (
     paint.gameMap.setHint(hint)
     return () => paint.gameMap.setHint(undefined)
   }, [hint?.axis, hint?.from, hint?.to])
+}
+
+/** What the Fill tool fills: a country on a map that shows borders, or an island on an island round. */
+const fillTypeFor = (question: QuestionView, detail: MapDetail): FillType | undefined => {
+  if (question.type === QuestionType.FEATURE)
+    return question.feature === FeatureType.ISLAND ? FillType.ISLAND : undefined
+  if (question.type === QuestionType.COUNTRY || question.type === QuestionType.FLAG)
+    return showsBorders(detail) ? FillType.COUNTRY : undefined
+  return undefined
 }
 
 /** What an area round asks to cover: "country", "island", "state"… */

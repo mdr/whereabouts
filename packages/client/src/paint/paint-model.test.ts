@@ -3,11 +3,10 @@ import { FILL_DENSITY } from "@whereabouts/shared/paint/fill"
 import { LandMask } from "@whereabouts/shared/paint/land"
 import { resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { cellToChildren, finerResolution, latLngToCell, type H3Cell } from "@whereabouts/shared/h3"
-import { AnswerType, answerCentre, type FlagQuestion } from "@whereabouts/shared/questions"
-import { makeFlagQuestion } from "../test-view"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { Tool } from "./tool"
-import { PaintModel, type Filler } from "./paint-model"
+import { PaintModel } from "./paint-model"
+import { FillType, type FillTarget, type Filler } from "./fill-target"
 import { HintAxis } from "@whereabouts/shared/hints"
 import type { Km } from "@whereabouts/shared/units"
 
@@ -22,17 +21,17 @@ const makeModel = (): PaintModel => {
   return model
 }
 
-const makeCountry = (): FlagQuestion =>
-  makeFlagQuestion("fr", "France", { answer: { type: AnswerType.POINT, at: PARIS, tolerance: TOLERANCE } })
+/** France, filled with the cell at Paris. */
+const FRANCE: FillTarget = {
+  id: "fr",
+  outline: { type: "MultiPolygon", coordinates: [] },
+  cells: (resolution) => [latLngToCell(PARIS.lat, PARIS.lon, resolution)]
+}
 
-/** A filler that finds France everywhere, filled with the cell at its answer. */
+/** A country filler that finds France everywhere. */
 const makeFiller = (overrides: Partial<Filler> = {}): Filler => ({
-  countryAt: vi.fn(() => makeCountry()),
-  outline: () => ({ type: "MultiPolygon", coordinates: [] }),
-  cells: (flag, resolution) => {
-    const at = answerCentre(flag.answer)
-    return [latLngToCell(at.lat, at.lon, resolution)]
-  },
+  type: FillType.COUNTRY,
+  targetAt: vi.fn(() => FRANCE),
   ...overrides
 })
 
@@ -150,15 +149,25 @@ describe("PaintModel", () => {
   })
 
   describe("the Fill tool", () => {
+    it("is offered only for what it has a filler for", () => {
+      const model = makeModel()
+      model.useFiller(makeFiller())
+      model.offerFill(FillType.ISLAND)
+      expect(model.fillable.value).toBe(false)
+      expect(model.fillType.value).toBeUndefined()
+      model.offerFill(FillType.COUNTRY)
+      expect(model.fillType.value).toBe(FillType.COUNTRY)
+    })
+
     it("is offered only with countries to fill with", () => {
       const model = makeModel()
-      model.offerFill(true)
+      model.offerFill(FillType.COUNTRY)
       expect(model.fillable.value).toBe(false)
 
       model.useFiller(makeFiller())
-      model.offerFill(true)
+      model.offerFill(FillType.COUNTRY)
       expect(model.fillable.value).toBe(true)
-      model.offerFill(false)
+      model.offerFill(undefined)
       expect(model.fillable.value).toBe(false)
     })
 
@@ -166,28 +175,31 @@ describe("PaintModel", () => {
       const model = makeModel()
       const first = makeFiller()
       model.useFiller(first)
+      model.offerFill(FillType.COUNTRY)
       model.useFiller(makeFiller())
+      model.offerFill(FillType.COUNTRY)
       model.fillAt(PARIS, 1)
-      expect(first.countryAt).toHaveBeenCalled()
+      expect(first.targetAt).toHaveBeenCalled()
     })
 
     it("fills a country with an even coat, and takes it off again", () => {
       const model = makeModel()
-      const france = makeCountry()
       model.useFiller(makeFiller())
+      model.offerFill(FillType.COUNTRY)
 
       model.fillAt(PARIS, 1)
       expect(cells(model)).toEqual(new Map([[cellAt(PARIS), FILL_DENSITY]]))
-      expect(model.isFilled(france)).toBe(true)
+      expect(model.isFilled(FRANCE)).toBe(true)
 
       model.fillAt(PARIS, 1)
       expect(model.layer.isEmpty).toBe(true)
-      expect(model.isFilled(france)).toBe(false)
+      expect(model.isFilled(FRANCE)).toBe(false)
     })
 
     it("leaves paint under a fill when the fill comes off", () => {
       const model = makeModel()
       model.useFiller(makeFiller())
+      model.offerFill(FillType.COUNTRY)
       paintStroke(model, PARIS)
       const painted = cells(model)
       model.fillAt(PARIS, 1)
@@ -197,22 +209,23 @@ describe("PaintModel", () => {
 
     it("undoes a fill, and remembers the country is no longer filled", () => {
       const model = makeModel()
-      const france = makeCountry()
       model.useFiller(makeFiller())
+      model.offerFill(FillType.COUNTRY)
       model.fillAt(PARIS, 1)
 
       model.undo()
       expect(model.layer.isEmpty).toBe(true)
-      expect(model.isFilled(france)).toBe(false)
+      expect(model.isFilled(FRANCE)).toBe(false)
       // So the next click fills it again rather than taking off a coat that isn't there.
       model.fillAt(PARIS, 1)
-      expect(model.isFilled(france)).toBe(true)
+      expect(model.isFilled(FRANCE)).toBe(true)
       expect(model.layer.isEmpty).toBe(false)
     })
 
     it("does nothing at sea", () => {
       const model = makeModel()
-      model.useFiller(makeFiller({ countryAt: () => undefined }))
+      model.useFiller(makeFiller({ targetAt: () => undefined }))
+      model.offerFill(FillType.COUNTRY)
       model.fillAt({ lat: 45, lon: -30 }, 1)
       expect(model.layer.isEmpty).toBe(true)
       expect(model.canUndo.value).toBe(false)
@@ -228,16 +241,18 @@ describe("PaintModel", () => {
       const model = makeModel()
       const filler = makeFiller()
       model.useFiller(filler)
+      model.offerFill(FillType.COUNTRY)
       model.fillAt(PARIS, 24)
-      expect(filler.countryAt).toHaveBeenLastCalledWith(PARIS, 24)
+      expect(filler.targetAt).toHaveBeenLastCalledWith(PARIS, 24)
     })
 
     it("from outside the map, counts a small country within a distance", () => {
       const model = makeModel()
       const filler = makeFiller()
       model.useFiller(filler)
+      model.offerFill(FillType.COUNTRY)
       model.fillOutside(PARIS, 60)
-      expect(filler.countryAt).toHaveBeenLastCalledWith(PARIS, 60)
+      expect(filler.targetAt).toHaveBeenLastCalledWith(PARIS, 60)
       expect(model.layer.isEmpty).toBe(false)
     })
   })
@@ -295,11 +310,11 @@ describe("PaintModel", () => {
 
     it("forgets what was filled", () => {
       const model = makeModel()
-      const france = makeCountry()
       model.useFiller(makeFiller())
+      model.offerFill(FillType.COUNTRY)
       model.fillAt(PARIS, 1)
       model.restore({})
-      expect(model.isFilled(france)).toBe(false)
+      expect(model.isFilled(FRANCE)).toBe(false)
     })
   })
 
@@ -319,6 +334,7 @@ describe("PaintModel", () => {
     it("moves with every change", () => {
       const model = makeModel()
       model.useFiller(makeFiller())
+      model.offerFill(FillType.COUNTRY)
       const changes: (() => void)[] = [
         () => paintStroke(model, PARIS),
         () => model.undo(),

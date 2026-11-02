@@ -40,7 +40,7 @@ const makeLobby = (actions: VrAction[]): VrView => ({
 
 const makeRound = (over: Partial<VrRound> = {}): VrRound =>
   ({
-    paint: { layer: { isEmpty: true }, fillable: { value: false } },
+    paint: { layer: { isEmpty: true }, fillable: { value: false }, fillType: { value: undefined } },
     prompt: "Where is Paris?",
     detail: "plain",
     picture: undefined,

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
+import { FillType } from "../../paint/fill-target"
 import type { PaintController } from "../../paint/paint-controller"
 import { panelContent, type PanelState } from "./menu-panel"
 import {
@@ -24,7 +25,7 @@ const makeAction = (over: Partial<VrAction> = {}): VrAction => ({ label: "Next",
 
 const makeRound = (over: Partial<VrRound> = {}): VrRound =>
   ({
-    paint: { layer: { isEmpty: true }, fillable: { value: false } },
+    paint: { layer: { isEmpty: true }, fillable: { value: false }, fillType: { value: undefined } },
     prompt: "Where is Paris?",
     detail: "plain",
     picture: undefined,
@@ -76,9 +77,12 @@ describe("panelContent", () => {
     expect(content["prompt"]).toEqual({ text: "Where is Paris?" })
   })
 
-  it("mentions the fill pail when the round can fill", () => {
-    const paint = { layer: { isEmpty: true }, fillable: { value: true } } as PaintController
-    expect(panelContent(makePaint({ paint }), makeState())["hint"]?.text).toContain("fill pail")
+  it("mentions the fill pail, and what it fills, when the round can fill", () => {
+    const paint = (fillType: FillType) =>
+      ({ layer: { isEmpty: true }, fillable: { value: true }, fillType: { value: fillType } }) as PaintController
+    const hint = (fillType: FillType) => panelContent(makePaint({ paint: paint(fillType) }), makeState())["hint"]?.text
+    expect(hint(FillType.COUNTRY)).toContain("fills the country it points at")
+    expect(hint(FillType.ISLAND)).toContain("fills the island it points at")
     expect(panelContent(makePaint(), makeState())["hint"]?.text).not.toContain("fill pail")
   })
 

@@ -418,7 +418,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
 | Action              | Control                                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Pan / Paint / Erase | `1` / `2` / `3`, or the buttons                                                                               |
-| Fill                | `4`, or the button (a country round on the Political map)                                                     |
+| Fill                | `4`, or the button (a country round on the Political map, or an island round)                                 |
 | Pan while painting  | hold `Space`, or drag with the middle button                                                                  |
 | Brush size          | slider, or `[` and `]`                                                                                        |
 | Undo / redo         | `Ctrl+Z` / `Ctrl+Shift+Z` (⌘ on Mac), or the buttons                                                          |
@@ -444,7 +444,7 @@ gzipped, fetched on the first press. The land mask cannot serve, since
 lakes are land in it. A lake or sea painted exactly loses nothing (a test
 checks every one).
 
-Fill appears in a round that asks for a country (whole countries and flags, not islands, lakes, seas or states)
+Fill appears in a round that asks for a country (whole countries and flags; not states)
 when the map detail is Political. A click (a tap, on a phone) fills the
 country under it with an even coat; fill several if unsure, each weighted by
 its area, and click a filled one to take it off. The outline under the
@@ -454,6 +454,12 @@ it is scored by, so filling the right one scores about 999; any other is
 filled with its land from `borders.json`, and a flag round asked as a point
 scores like an even coat of the country (Russia about 880, Malta about 980).
 See `packages/shared/src/paint/fill.ts`.
+
+Fill appears in an island round too, on any map detail, and fills the island
+under it: every 1:50m Natural Earth landmass from 50 km² up to Greenland's
+size (`packages/shared/islands.json`, built by `scripts/build-islands.mjs`,
+about 100 KB gzipped, fetched on the first island round). Each is simplified
+as an island answer's outline is, so filling the right island scores about 999.
 
 The outline under the pointer is the brush footprint: the exact hex cells the next stamp will touch, at the
 resolution the layer picks for that brush size, so at world zoom you see the

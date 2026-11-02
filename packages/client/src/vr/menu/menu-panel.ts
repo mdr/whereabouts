@@ -1,5 +1,7 @@
 /** What the menu panel shows for a view, keyed by element id from panel.uikitml. */
 import { VrViewType, type VrAction, type VrReveal, type VrRound, type VrView } from "../view/view"
+import type { FillType } from "../../paint/fill-target"
+import { FILL_NOUN } from "../../round/round-words"
 
 /** As many as the menu has buttons for, below the main actions. */
 export const MORE = 4
@@ -61,14 +63,17 @@ export const panelContent = (view: VrView, state: PanelState): PanelContent => {
   }
 }
 
+const fillHint = (fillType: FillType | undefined): string =>
+  fillType
+    ? `Turn your left palm up for paint tools and hints. A or X brings out the fill pail: a pull fills the ${FILL_NOUN[fillType]} it points at.`
+    : "Turn your left palm up for paint tools and hints."
+
 const roundElements = (round: VrRound | undefined): PanelContent => {
   const painting = round?.playing === true && round.unlock === undefined
   return {
     hint: {
       shown: painting,
-      text: round?.paint.fillable.value
-        ? "Turn your left palm up for paint tools and hints. A or X brings out the fill pail: a pull fills the country it points at."
-        : "Turn your left palm up for paint tools and hints."
+      text: fillHint(round?.paint.fillType.value)
     },
     mode: { shown: round?.mode !== undefined, text: round?.mode || undefined },
     done: { shown: painting },

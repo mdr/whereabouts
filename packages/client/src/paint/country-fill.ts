@@ -5,22 +5,21 @@
  * filling the right one scores about 999; any other with its land from
  * borders.json. Needs the borders and the countries loaded (useFillTool loads them).
  */
-import { useEffect } from "preact/hooks"
 import { countryFill, FillShapeType, type FillShape } from "@whereabouts/shared/paint/fill"
 import type { Borders } from "@whereabouts/shared/borders"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { H3Cell, H3Resolution } from "@whereabouts/shared/h3"
 import { AnswerType, answerCentre, type FlagQuestion, type Outlines } from "@whereabouts/shared/questions"
 import { kmToDegrees, toRadians, type LatLon, type MultiPolygon, type Ring } from "@whereabouts/shared/geo"
-import type { PaintController } from "./paint-controller"
-import { useBorders } from "../data/borders"
-import { useOutlines } from "../data/outlines"
 import type { Km } from "@whereabouts/shared/units"
+import { FillType, type FillTarget, type Filler } from "./fill-target"
 
 /** A country's flag code and the finest resolution it was filled for. */
 type FillKey = `${FlagCode}:${H3Resolution}`
 
-export class CountryFiller {
+export class CountryFiller implements Filler {
+  readonly type = FillType.COUNTRY
+  private readonly targets = new Map<FlagCode, FillTarget>()
   private readonly shapes = new Map<FlagCode, FillShape>()
   private readonly cursors = new Map<FlagCode, GeoJSON.MultiPolygon>()
   private readonly fills = new Map<FillKey, H3Cell[]>()
@@ -39,6 +38,21 @@ export class CountryFiller {
    */
   countryAt(point: LatLon, reach: Km): FlagQuestion | undefined {
     return this.borders.countryAt(point) ?? this.borders.smallNear(point, reach)
+  }
+
+  targetAt(point: LatLon, reach: Km): FillTarget | undefined {
+    const question = this.countryAt(point, reach)
+    if (!question) return undefined
+    let target = this.targets.get(question.clue.flag)
+    if (!target) {
+      target = {
+        id: question.clue.flag,
+        outline: this.outline(question),
+        cells: (finestResolution) => this.cells(question, finestResolution)
+      }
+      this.targets.set(question.clue.flag, target)
+    }
+    return target
   }
 
   /** The country's outline, for the cursor. */
@@ -92,19 +106,4 @@ const circle = ({ lat, lon }: LatLon, km: Km): Ring => {
     ring.push([lon + dLon * Math.cos(angle), lat + dLat * Math.sin(angle)])
   }
   return ring
-}
-
-/**
- * Offer the Fill tool while `active` (a round asking for a country, on the
- * Political map): load the countries if need be, and hand them to the paint
- * controller.
- */
-export const useFillTool = (paint: Pick<PaintController, "useFiller" | "offerFill">, active: boolean): void => {
-  const borders = useBorders(active)
-  const outlines = useOutlines(active)
-  useEffect(() => {
-    if (borders && outlines) paint.useFiller(new CountryFiller(borders, outlines))
-    paint.offerFill(active)
-  }, [paint, active, borders, outlines])
-  useEffect(() => () => paint.offerFill(false), [paint])
 }

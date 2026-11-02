@@ -295,12 +295,9 @@ export class PaintInput {
    */
   private updateCursor(lngLat: LngLat): void {
     if (this.canFill()) {
-      // The country a click would fill, or unfill (dotted).
-      const question = this.model.countryAt(latLon(lngLat), this.fillReach(lngLat.lat))
-      this.gameMap.setCursorShape(
-        question && this.model.outline(question),
-        question ? this.model.isFilled(question) : false
-      )
+      // What a click would fill, or unfill (dotted).
+      const target = this.model.targetAt(latLon(lngLat), this.fillReach(lngLat.lat))
+      this.gameMap.setCursorShape(target?.outline, target ? this.model.isFilled(target) : false)
       return
     }
     if (!this.canPaint()) {

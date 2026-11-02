@@ -8,6 +8,7 @@
     "./catalogue.json": "./catalogue.json",
     "./outlines.json": "./outlines.json",
     "./land.json": "./land.json",
+    "./islands.json": "./islands.json",
     "./water.json": "./water.json",
     "./borders.json": "./borders.json",
     "./facts.json": "./facts.json"

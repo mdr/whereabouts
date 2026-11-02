@@ -2,6 +2,10 @@
 import type { RoundResultView } from "@whereabouts/shared/protocol/views"
 import { PASS_SCORE } from "@whereabouts/shared/scoring/scoring"
 import { RoundNote } from "./round-model"
+import { FillType } from "../paint/fill-target"
+
+/** What the Fill tool fills, in a sentence. */
+export const FILL_NOUN: Record<FillType, string> = { [FillType.COUNTRY]: "country", [FillType.ISLAND]: "island" }
 
 export const noteText = (
   note: RoundNote,
