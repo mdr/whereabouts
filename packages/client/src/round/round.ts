@@ -10,6 +10,7 @@ import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
 import type { MapDetail } from "@whereabouts/shared/protocol/config"
 import type { QuestionView } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
+import { FEATURE_TYPE_DISPLAY_INFO } from "../question-types"
 import type { DetailLayers } from "../map/detail-layers"
 import type { GameMap } from "../map/map"
 import type { MapCamera } from "../map/map-camera"
@@ -95,7 +96,7 @@ export const useRoundMap = (
 
 /** What an area round asks to cover: "country", "island", "state"… */
 export const areaNoun = (question: QuestionView): string => {
-  if (question.type === QuestionType.FEATURE) return question.feature.toLowerCase()
+  if (question.type === QuestionType.FEATURE) return FEATURE_TYPE_DISPLAY_INFO[question.feature].noun
   return question.type === QuestionType.STATE ? "state" : "country"
 }
 

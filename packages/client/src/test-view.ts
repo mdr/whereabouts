@@ -43,6 +43,7 @@ import {
 } from "@whereabouts/shared/roles"
 import { KernelId } from "@whereabouts/shared/scoring/scoring"
 import { h3Cell, h3Resolution } from "@whereabouts/shared/h3"
+import { FEATURE_TYPE_DISPLAY_INFO } from "./question-types"
 
 export type ViewOverrides<V extends GameView> = Partial<Omit<V, "you" | "phase">> & { you?: Partial<V["you"]> }
 
@@ -217,7 +218,7 @@ export const makeFeatureQuestionView = (
 ): QuestionViewOf<QuestionType.FEATURE> => ({
   type: QuestionType.FEATURE,
   feature,
-  clue: { type: ClueType.NAME, prompt: `Paint the ${feature.toLowerCase()}` },
+  clue: { type: ClueType.NAME, prompt: `Paint the ${FEATURE_TYPE_DISPLAY_INFO[feature].noun}` },
   answer: areaAnswerView(outline, 100, surface)
 })
 

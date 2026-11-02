@@ -10,6 +10,7 @@
 - Except values whose literal types an outside library owns: an `as const` object, so its types apply.
 - Discriminators are called `type`. Variants are unions of named types, not a base interface plus intersections.
 - Full-word names. `undefined`, not `null`.
+- Never derive display text from code names (enum values, keys) by changing case; map each to its text.
 - Write the actual type, not an indirection like `GameMap["map"]`, unless it is very complex or inexpressible.
 - Small modules, one job each; pull pure logic out so it can be unit-tested.
 

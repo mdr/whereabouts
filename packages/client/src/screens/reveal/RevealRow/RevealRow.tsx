@@ -1,5 +1,5 @@
 import type { PaintedCountry } from "@whereabouts/shared/borders"
-import type { HintAxis } from "@whereabouts/shared/hints"
+import { HintAxis } from "@whereabouts/shared/hints"
 import { RoundGuessType, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { cx } from "../../../ui/cx"
@@ -12,7 +12,8 @@ import { PaintedIn } from "../../../ui/round/flag-reveal/PaintedIn/PaintedIn"
 import { roundScoreText } from "../../../round/round-words"
 import { revealRowTestIds } from "./RevealRowTestIds"
 
-const hintedText = (axis: HintAxis) => `Used a ${axis.toLowerCase()} hint this round`
+const HINT_AXIS_NOUN: Record<HintAxis, string> = { [HintAxis.LATITUDE]: "latitude", [HintAxis.LONGITUDE]: "longitude" }
+const hintedText = (axis: HintAxis) => `Used a ${HINT_AXIS_NOUN[axis]} hint this round`
 
 export const RevealRow = ({
   p,
