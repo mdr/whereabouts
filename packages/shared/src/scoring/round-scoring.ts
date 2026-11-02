@@ -23,6 +23,8 @@ interface LockedSubmission {
   paint: PaintSubmission
   /** When the player locked in. */
   at: Instant
+  /** Scored on locking in, so the round's end need not score everyone at once. */
+  scored: ScoredRound
 }
 
 /** A player's guess on a round. */
@@ -35,18 +37,19 @@ export interface ScoredRound {
 }
 
 /**
- * Score `submission` against `answer`. No submission, or an empty one, is a
- * pass; so is a blank map at the deadline, so waiting out the clock never
- * beats pressing Pass.
+ * Score `paint` against `answer`, locked in at `lockedAt` or still a draft.
+ * No paint, or an empty one, is a pass; so is a blank map at the deadline,
+ * so waiting out the clock never beats pressing Pass.
  */
 export const scoreRound = (
   label: string,
   answer: ScoredAnswer,
-  submission: Submission | undefined,
+  paint: PaintSubmission | undefined,
+  lockedAt: Instant | undefined,
   kernel: Kernel,
   { startedAt, roundLength }: { startedAt: Instant; roundLength: Ms }
 ): ScoredRound => {
-  const submittedPaint = submission && Object.keys(submission.paint.cells).length > 0 ? submission.paint : undefined
+  const submittedPaint = paint && Object.keys(paint.cells).length > 0 ? paint : undefined
   const resolution = resolutionForTolerance(answer.tolerance)
   const cells = submittedPaint ? [...PaintLayer.fromRecord(resolution, submittedPaint.cells).toCells()] : []
   const painted = submittedPaint ? buildDistribution(cells, submittedPaint.floor) : undefined
@@ -54,7 +57,7 @@ export const scoreRound = (
   const base = {
     label,
     score,
-    lockedAfter: submission?.type === SubmissionType.LOCKED ? submission.at - startedAt : undefined,
+    lockedAfter: lockedAt === undefined ? undefined : lockedAt - startedAt,
     roundLength
   }
   if (!submittedPaint || !painted)

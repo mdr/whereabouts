@@ -98,6 +98,22 @@ describe("round loop", () => {
     expect(game.lock(tokA, T0 + 3)).toEqual({ ok: true, changed: false })
   })
 
+  it("a guess is scored when it is locked in, not again when the round ends", () => {
+    const game = twoPlayerGame(1)
+    game.start(tokA, T0)
+    const question = currentQuestion(game, tokA, T0)
+    const paint = paintOn(question)
+    game.setPaint(tokA, paint)
+    game.lock(tokA, T0 + 1)
+    // Scoring this again would see nothing painted: a pass.
+    paint.cells = {}
+    game.lock(tokB, T0 + 2)
+    const mine = viewIn(viewOf(game, tokA, T0 + 2), Phase.REVEAL).reveal.results.find(
+      (result) => result.playerId === "p1"
+    )!
+    expect(mine.score).toBeGreaterThan(900)
+  })
+
   it("locking with nothing painted is a pass: the pass score, no paint, and the round can end early", () => {
     const game = twoPlayerGame(1)
     game.start(tokA, T0)

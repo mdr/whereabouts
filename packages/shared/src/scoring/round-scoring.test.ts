@@ -5,7 +5,7 @@ import { RoundGuessType, type PaintSubmission } from "../protocol/views.ts"
 import { FactsType } from "../awards/player-facts.ts"
 import { AnswerType } from "../questions.ts"
 import { regionCells, scoredAnswer, type Area, type ScoredAnswer } from "./regions.ts"
-import { scoreRound, SubmissionType, type Submission } from "./round-scoring.ts"
+import { scoreRound } from "./round-scoring.ts"
 import { DEFAULT_KERNEL, PASS_SCORE } from "./scoring.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 
@@ -29,11 +29,15 @@ const paintAll = (area: Area): PaintSubmission => {
 }
 
 const EMPTY: PaintSubmission = { cells: {}, floor: 1 }
-const makeDraft = (paint = EMPTY): Submission => ({ type: SubmissionType.DRAFT, paint })
-const makeLocked = (at: number, paint = EMPTY): Submission => ({ type: SubmissionType.LOCKED, paint, at })
+interface Guess {
+  paint: PaintSubmission
+  lockedAt: number | undefined
+}
+const makeDraft = (paint = EMPTY): Guess => ({ paint, lockedAt: undefined })
+const makeLocked = (at: number, paint = EMPTY): Guess => ({ paint, lockedAt: at })
 
-const score = (answer: ScoredAnswer, submission: Submission | undefined) =>
-  scoreRound("Answer", answer, submission, DEFAULT_KERNEL, TIMING)
+const score = (answer: ScoredAnswer, guess: Guess | undefined) =>
+  scoreRound("Answer", answer, guess?.paint, guess?.lockedAt, DEFAULT_KERNEL, TIMING)
 
 describe("scoreRound", () => {
   it("scores paint on a point answer, and says where it was strongest", () => {

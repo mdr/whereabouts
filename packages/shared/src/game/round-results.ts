@@ -1,28 +1,49 @@
 /** Scoring a finished round for everyone who played it. */
-import type { RoundResultView } from "../protocol/views.ts"
-import type { Outlines } from "../questions.ts"
+import type { PaintSubmission, RoundResultView } from "../protocol/views.ts"
+import type { Outlines, Question } from "../questions.ts"
 import { scoredAnswer } from "../scoring/regions.ts"
-import { scoreRound } from "../scoring/round-scoring.ts"
+import { scoreRound, SubmissionType, type ScoredRound } from "../scoring/round-scoring.ts"
 import type { Kernel } from "../scoring/scoring.ts"
-import type { Ms } from "../units.ts"
+import type { Instant, Ms } from "../units.ts"
 import type { PlayerSeat } from "./seats.ts"
 import { rankAmong } from "./standings.ts"
 import { playsRound, type GuessingState } from "./state.ts"
 
+export interface ScoringContext {
+  outlines: Outlines
+  kernel: Kernel
+  roundLength: Ms
+}
+
+/** One player's round, with this paint, locked in at `lockedAt` or still a draft. */
+export const scorePaint = (
+  question: Question,
+  deadline: Instant,
+  paint: PaintSubmission | undefined,
+  lockedAt: Instant | undefined,
+  { outlines, kernel, roundLength }: ScoringContext
+): ScoredRound =>
+  scoreRound(question.label, scoredAnswer(question.answer, outlines), paint, lockedAt, kernel, {
+    startedAt: deadline - roundLength,
+    roundLength
+  })
+
 export const scorePlayers = (
   playing: readonly PlayerSeat[],
   { round, deadline, submissions, hints }: GuessingState,
-  { outlines, kernel, roundLength }: { outlines: Outlines; kernel: Kernel; roundLength: Ms }
+  context: ScoringContext
 ): RoundResultView[] => {
   const { index, question } = round
-  const answer = scoredAnswer(question.answer, outlines)
   // Snapshot ranks before any score changes so arrows compare like with like.
   for (const seat of playing) seat.role.record.previousRank = rankAmong(seat, playing)
-  const timing = { startedAt: deadline - roundLength, roundLength }
   const results: RoundResultView[] = []
   for (const seat of playing) {
     if (!playsRound(seat.role, round)) continue
-    const { score, guess, facts } = scoreRound(question.label, answer, submissions.get(seat.token), kernel, timing)
+    const submission = submissions.get(seat.token)
+    const { score, guess, facts } =
+      submission?.type === SubmissionType.LOCKED
+        ? submission.scored
+        : scorePaint(question, deadline, submission?.paint, undefined, context)
     seat.role.record.scores[index] = score
     seat.role.record.facts[index] = facts
     const hint = hints.get(seat.token)

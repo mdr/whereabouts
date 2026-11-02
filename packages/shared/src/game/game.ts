@@ -8,7 +8,7 @@ import type { Question } from "../questions.ts"
 import { playerView } from "./player-view.ts"
 import { playedRound, revealOf } from "./question-views.ts"
 import { pickRounds, type QuestionBank } from "./round-picking.ts"
-import { scorePlayers } from "./round-results.ts"
+import { scorePaint, scorePlayers, type ScoringContext } from "./round-results.ts"
 import { SubmissionType } from "../scoring/round-scoring.ts"
 import { pickAwards } from "../awards/awards.ts"
 import { DEFAULT_HINTS, type HintAxis } from "../hints.ts"
@@ -301,10 +301,12 @@ export class Game {
     if (!playsRound(seat.role, state.round)) return fail("sitting this round out")
     const current = state.submissions.get(token)
     if (isLocked(current)) return OK_SAME
+    const paint = current?.paint ?? { cells: {}, floor: 1 }
     state.submissions.set(token, {
       type: SubmissionType.LOCKED,
-      paint: current?.paint ?? { cells: {}, floor: 1 },
-      at: now
+      paint,
+      at: now,
+      scored: scorePaint(state.round.question, state.deadline, paint, now, this.scoringContext())
     })
     this.settleIfEveryoneDone(now)
     return OK_CHANGED
@@ -414,13 +416,13 @@ export class Game {
     }
   }
 
+  private scoringContext(): ScoringContext {
+    return { outlines: this.bank.outlines, kernel: this.kernel, roundLength: this.config.roundLength }
+  }
+
   private closeRound(state: GuessingState): RevealState {
     const { round } = state
-    const results = scorePlayers(this.seats.playing(), state, {
-      outlines: this.bank.outlines,
-      kernel: this.kernel,
-      roundLength: this.config.roundLength
-    })
+    const results = scorePlayers(this.seats.playing(), state, this.scoringContext())
     return {
       phase: Phase.REVEAL,
       round,
