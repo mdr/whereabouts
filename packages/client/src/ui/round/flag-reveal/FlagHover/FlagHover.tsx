@@ -10,6 +10,12 @@ import styles from "./FlagHover.module.css"
 /** How near the pointer a small country's answer counts as under it: Tuvalu is far less than a pixel at world zoom. */
 const SMALL: Px = 12
 
+/** How far the card sits from the pointer, clear of the country under it. */
+const GAP: Px = 18
+/** About the card's largest size, the widest flags included: nearer the edge than this, it goes on the pointer's other side. */
+const CARD_WIDTH: Px = 260
+const CARD_HEIGHT: Px = 130
+
 /** How long after a touch a mouseout is taken for the browser's emulation, not the pointer leaving. */
 const TOUCH_EMULATION: Ms = 1000
 
@@ -47,14 +53,15 @@ export const FlagHover = ({ gameMap, borders }: { gameMap: GameMap; borders: Bor
     }
   }, [gameMap, borders])
   if (!hit) return undefined
-  // Beside the pointer, flipped left near the right edge so it stays on screen.
-  const left = hit.x > window.innerWidth - 220
+  // Beside the pointer, flipped near the right or bottom edge so it stays on screen.
+  const left = hit.x > window.innerWidth - CARD_WIDTH
+  const above = hit.y > window.innerHeight - CARD_HEIGHT
   return (
     <div
       class={styles.hover}
       style={{
-        top: `${hit.y + 14}px`,
-        ...(left ? { right: `${window.innerWidth - hit.x + 14}px` } : { left: `${hit.x + 14}px` })
+        ...(above ? { bottom: `${window.innerHeight - hit.y + GAP}px` } : { top: `${hit.y + GAP}px` }),
+        ...(left ? { right: `${window.innerWidth - hit.x + GAP}px` } : { left: `${hit.x + GAP}px` })
       }}
     >
       <SmallFlag code={hit.country.clue.flag} class={styles.hoverFlag} />
