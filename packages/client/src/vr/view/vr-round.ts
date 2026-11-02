@@ -67,7 +67,7 @@ export const vrScoreLine = (you: VrScore | undefined, flag: FlagCode | undefined
 
 const vrAnswer = ({ shape, answer }: RevealedAnswer): VrAnswer | undefined => {
   if (shape.type === RevealedShapeType.POINT) return { type: VrAnswerType.POINT, point: answer }
-  return shape.outline && { type: VrAnswerType.OUTLINE, outline: shape.outline }
+  return shape.outline && { type: VrAnswerType.OUTLINE, outline: shape.outline, disputed: shape.disputed }
 }
 
 export const vrReveal = (

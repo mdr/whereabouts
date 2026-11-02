@@ -3,7 +3,7 @@ import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
-import type { Outline } from "@whereabouts/shared/questions"
+import type { Outlines } from "@whereabouts/shared/questions"
 import {
   Phase,
   RoundGuessType,
@@ -66,7 +66,7 @@ const shownRow = (view: GameView, row: ShownRow): VrTableRow => {
 interface GameVrShown {
   lockIn: () => void
   timeUp: boolean
-  outline: Outline | undefined
+  outlines: Outlines | undefined
   fact: Fact | undefined
   painted: PaintedCountry | undefined
   borders: Borders | undefined
@@ -158,7 +158,7 @@ const gameReveal = (
   conn: Connection,
   shown: VrRoundShown,
   connection: string | undefined,
-  { outline, painted, borders }: Pick<GameVrShown, "outline" | "painted" | "borders">
+  { outlines, painted, borders }: Pick<GameVrShown, "outlines" | "painted" | "borders">
 ): VrReveal => {
   const whose = revealShown.value
   const model = revealModel(view, reveal, whose)
@@ -169,7 +169,7 @@ const gameReveal = (
     total: view.players.find((player) => player.id === view.you.id)?.score ?? 0,
     painted
   }
-  return vrReveal(shown, revealedFromView(reveal, outline), score, borders, {
+  return vrReveal(shown, revealedFromView(reveal, outlines), score, borders, {
     paints: { type: VrPaintsType.PLAYERS, paints: paintsOf(shownResults(reveal.results, whose)) },
     table: {
       title: `Round ${reveal.index + 1} of ${reveal.total}`,
@@ -191,7 +191,7 @@ export const gameVrView = (
   const reveal = view.phase === Phase.REVEAL ? view.reveal : undefined
   const shown: VrRoundShown = {
     question: roundOf(view).question,
-    revealed: reveal && revealedFromView(reveal, pageShown.outline),
+    revealed: reveal && revealedFromView(reveal, pageShown.outlines),
     fact: pageShown.fact
   }
   const round = gameRound(view, conn, paint, shown, connection, pageShown)

@@ -77,6 +77,8 @@ interface VrPointAnswer {
 interface VrOutlineAnswer {
   type: VrAnswerType.OUTLINE
   outline: Outline
+  /** Land in dispute beside it, which is not scored. */
+  disputed: Outline | undefined
 }
 
 export type VrAnswer = VrPointAnswer | VrOutlineAnswer

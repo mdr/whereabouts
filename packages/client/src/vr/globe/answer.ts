@@ -18,6 +18,7 @@ import {
 import type { Theme } from "../../map/themes"
 import { latLonToLocal } from "./sphere"
 import type { Metres } from "@whereabouts/shared/units"
+import type { Outline } from "@whereabouts/shared/questions"
 import { VrAnswerType, type VrAnswer } from "../view/view"
 
 const PIN_LENGTH: Metres = 0.035
@@ -27,6 +28,7 @@ export class AnswerMarker {
   readonly group = new Group()
   private readonly pin = new Group()
   private readonly outline: LineSegments
+  private readonly disputed: LineSegments
   private readonly radius: Metres
 
   constructor(theme: Theme, radius: Metres) {
@@ -37,7 +39,8 @@ export class AnswerMarker {
     head.position.y = 1
     this.pin.add(stalk, head)
     this.outline = new LineSegments(new BufferGeometry(), new LineBasicMaterial({ color: theme.answer }))
-    this.group.add(this.pin, this.outline)
+    this.disputed = new LineSegments(new BufferGeometry(), new LineBasicMaterial({ color: theme.disputed }))
+    this.group.add(this.pin, this.outline, this.disputed)
     this.group.visible = false
   }
 
@@ -45,6 +48,7 @@ export class AnswerMarker {
     this.group.visible = answer !== undefined
     this.pin.visible = answer?.type === VrAnswerType.POINT
     this.outline.visible = answer?.type === VrAnswerType.OUTLINE
+    this.disputed.visible = answer?.type === VrAnswerType.OUTLINE && answer.disputed !== undefined
     if (!answer) return
     if (answer.type === VrAnswerType.POINT) {
       const at = latLonToLocal(answer.point)
@@ -52,15 +56,20 @@ export class AnswerMarker {
       this.pin.quaternion.copy(new Quaternion().setFromUnitVectors(up, at))
       return
     }
+    this.draw(this.outline, answer.outline)
+    this.draw(this.disputed, answer.disputed ?? [])
+  }
+
+  private draw(lines: LineSegments, outline: Outline): void {
     const points: number[] = []
     const p = new Vector3()
-    for (const polygon of answer.outline)
+    for (const polygon of outline)
       for (const ring of polygon)
         for (let i = 0; i < ring.length - 1; i++)
           for (const [lon, lat] of [ring[i]!, ring[i + 1]!])
             latLonToLocal({ lat: lat, lon: lon }, p).multiplyScalar(this.radius).toArray(points, points.length)
-    this.outline.geometry.dispose()
-    this.outline.geometry = new BufferGeometry().setAttribute("position", new Float32BufferAttribute(points, 3))
+    lines.geometry.dispose()
+    lines.geometry = new BufferGeometry().setAttribute("position", new Float32BufferAttribute(points, 3))
   }
 
   /** `globeScale`: the globe's zoom, which the pin undoes. */

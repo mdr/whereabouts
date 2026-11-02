@@ -48,7 +48,7 @@ describe("frameReveal", () => {
 
   it("frames a country's outline together with the paint", () => {
     const camera = fakeCamera()
-    const a = revealed({ shape: { type: RevealedShapeType.AREA, outline } })
+    const a = revealed({ shape: { type: RevealedShapeType.AREA, outline, disputed: undefined } })
     frameReveal(camera, country, a, paint)
     expect(camera.fitRegionAndPaint).toHaveBeenCalledWith(a.answer, outline, paint, 200)
   })
@@ -63,13 +63,13 @@ describe("showAnswer", () => {
 
   it("outlines a country", () => {
     const map = fakeMap()
-    showAnswer(map, revealed({ shape: { type: RevealedShapeType.AREA, outline } }))
-    expect(map.showRegionReveal).toHaveBeenCalledWith(outline)
+    showAnswer(map, revealed({ shape: { type: RevealedShapeType.AREA, outline, disputed: undefined } }))
+    expect(map.showRegionReveal).toHaveBeenCalledWith(outline, undefined)
   })
 
   it("shows nothing for a country until its outline loads, rather than a misleading point", () => {
     const map = fakeMap()
-    showAnswer(map, revealed({ shape: { type: RevealedShapeType.AREA, outline: undefined } }))
+    showAnswer(map, revealed({ shape: { type: RevealedShapeType.AREA, outline: undefined, disputed: undefined } }))
     expect(map.clearReveal).toHaveBeenCalled()
     expect(map.showReveal).not.toHaveBeenCalled()
   })

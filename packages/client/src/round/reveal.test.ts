@@ -1,11 +1,11 @@
 import type { Outline } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { playerColour } from "@whereabouts/shared/colours"
-import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
+import { outlineId, placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
 import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import { SHOW_EVERYONE, SHOW_NOBODY, revealedFromView, revealOrder, showPlayer, shownResults } from "./reveal"
-import { makeCountryQuestionView, makePainted, makePlayer, makeQuestionView } from "../test-view"
+import { areaAnswerView, makeCountryQuestionView, makePainted, makePlayer, makeQuestionView } from "../test-view"
 import { RevealedShapeType } from "./revealed-shape"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
@@ -96,7 +96,7 @@ describe("revealedFromView", () => {
     })
   })
 
-  it("is an area on an area round, with its outline once loaded", () => {
+  it("is an area on an area round, with its outline and disputed land once loaded", () => {
     const outline: Outline = [
       [
         [
@@ -107,8 +107,37 @@ describe("revealedFromView", () => {
         ]
       ]
     ]
+    const disputed: Outline = [
+      [
+        [
+          [1, 0],
+          [2, 0],
+          [2, 1],
+          [1, 0]
+        ]
+      ]
+    ]
+    const outlines = new Map([
+      [outlineId("peru"), outline],
+      [outlineId("peru-disputed"), disputed]
+    ])
     const area = { ...reveal, question: makeCountryQuestionView() }
-    expect(revealedFromView(area, outline).shape).toEqual({ type: RevealedShapeType.AREA, outline })
-    expect(revealedFromView(area, undefined).shape).toEqual({ type: RevealedShapeType.AREA, outline: undefined })
+    expect(revealedFromView(area, outlines).shape).toEqual({
+      type: RevealedShapeType.AREA,
+      outline,
+      disputed: undefined
+    })
+    const contested = {
+      ...reveal,
+      question: makeCountryQuestionView({
+        answer: { ...areaAnswerView("peru"), disputed: outlineId("peru-disputed") }
+      })
+    }
+    expect(revealedFromView(contested, outlines).shape).toEqual({ type: RevealedShapeType.AREA, outline, disputed })
+    expect(revealedFromView(area, undefined).shape).toEqual({
+      type: RevealedShapeType.AREA,
+      outline: undefined,
+      disputed: undefined
+    })
   })
 })

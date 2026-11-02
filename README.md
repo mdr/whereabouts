@@ -379,9 +379,11 @@ changes: [docs/code-map.md](docs/code-map.md)):
   to it within 500 km, and every smaller island within 500 km of those (so
   Sicily and the Aegean stay; the Canaries, Svalbard and Alaska go),
   simplifies the outlines to about 1.5 km and sets the tolerance to a fifth
-  of the country's equivalent radius, sqrt(area / π). Countries with
-  disputed borders, or crossing the antimeridian, are not painted: their
-  flag round asks for a point. The outlines load on demand, in their own
+  of the country's equivalent radius, sqrt(area / π). A country with
+  disputed borders has the disputed land (Natural Earth's breakaway and
+  disputed areas) cut out of its outline; paint there is left out of the
+  score, and the reveal shows it greyed. Countries crossing the antimeridian
+  are not painted: their flag round asks for a point. The outlines load on demand, in their own
   chunk. Scoring (`scoreArea`) is `0.4 x shape + 0.6 x nearness`, a sum like
   the point rule's mixture of kernels, so credit for covering the country and
   for being near it add up:

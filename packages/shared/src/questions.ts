@@ -87,6 +87,8 @@ export interface AreaAnswer {
   /** A fifth of the area's equivalent radius, sqrt(area / pi). */
   tolerance: Km
   surface: Surface
+  /** Land in dispute, cut out of the outline: paint there is not scored. */
+  disputed?: OutlineId
 }
 
 export type Answer = PointAnswer | AreaAnswer

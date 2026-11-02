@@ -6,15 +6,15 @@ import { signal } from "@preact/signals"
 import type { PlayerId } from "@whereabouts/shared/ids"
 import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
-import type { Outline } from "@whereabouts/shared/questions"
+import type { Outlines } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"
 import { revealedShape } from "./revealed-shape"
 
-export const revealedFromView = (reveal: RevealView, outline: Outline | undefined): RevealedAnswer => ({
+export const revealedFromView = (reveal: RevealView, outlines: Outlines | undefined): RevealedAnswer => ({
   label: reveal.label,
   wiki: reveal.wiki,
   answer: reveal.answer,
-  shape: revealedShape(reveal.question.answer, outline),
+  shape: revealedShape(reveal.question.answer, outlines),
   photo: reveal.photo
 })
 

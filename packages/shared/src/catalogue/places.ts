@@ -39,7 +39,13 @@ const PlaceSchema: z.ZodType<Place> = z.strictObject({
   at: LatLonSchema.optional(),
   feature: z.enum(FeatureType).optional(),
   area: z
-    .strictObject({ outline: OutlineIdSchema, centre: LatLonSchema, tolerance: KmSchema, surface: z.enum(Surface) })
+    .strictObject({
+      outline: OutlineIdSchema,
+      centre: LatLonSchema,
+      tolerance: KmSchema,
+      surface: z.enum(Surface),
+      disputed: OutlineIdSchema.optional()
+    })
     .optional(),
   flag: z.strictObject({ code: FlagCodeSchema, wiki: WikiTitleSchema }).optional()
 })

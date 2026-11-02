@@ -2,12 +2,14 @@
 // countries as places and their outlines, and borders.json, from Natural
 // Earth's 1:50m countries (public domain). See write-catalogue.mjs.
 //
-// Usage: node scripts/build-regions.mjs [path/to/ne_50m_admin_0_countries.geojson]
-// Without a path it downloads the file from the Natural Earth repository.
+// Usage: node scripts/build-regions.mjs [countries.geojson [breakaway_disputed_areas.geojson]]
+// Without paths it downloads the files from the Natural Earth repository.
 //
 // The countries are the answers for "Paint the whole of Germany": every
-// sovereign country of at least POINT_BELOW_KM2 whose borders are not in
-// dispute and which does not cross the antimeridian, as an outline. Each keeps
+// sovereign country of at least POINT_BELOW_KM2 which does not cross the
+// antimeridian, as an outline. A country with disputed borders has the
+// disputed land cut out of its outline and kept as its own, which scoring
+// ignores (see DISPUTED). Each keeps
 // its largest landmass, the islands of at least MIN_PART_KM2 chained to it
 // within CHAIN_KM, and every smaller island within CHAIN_KM of those (so
 // Sicily, Crete and the Aegean stay; the Canaries, Svalbard and Alaska go). The tolerance is a fifth of the country's
@@ -30,6 +32,7 @@
 // also has near: its tolerance, the distance from its answer that counts as
 // the country too, since its islands are too small to hit.
 import { readFileSync, writeFileSync } from "node:fs"
+import polygonClipping from "polygon-clipping"
 import { writeQuestions } from "./write-catalogue.mjs"
 import {
   POINT_BELOW_KM2,
@@ -53,26 +56,41 @@ import {
 
 const NE_URL =
   "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson"
+const NE_DISPUTED_URL =
+  "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_breakaway_disputed_areas.geojson"
 /** Wider island chaining for a country in two halves: East Malaysia is 600 km from the peninsula. */
 const CHAIN_KM_FOR = { Malaysia: 800 }
 
 // Not UN members, and each wholly inside a disputed area: left out.
 const LEFT_OUT = new Set(["Northern Cyprus", "Somaliland", "Taiwan", "Kosovo"])
 
-// Part of the border is disputed, so no outline would be fair to paint: in
-// flag rounds these are asked as a point, and there are no "Paint the whole
-// of" rounds for them.
-const DISPUTED = new Set([
-  "China", // Aksai Chin, Arunachal Pradesh
-  "India", // Kashmir, Aksai Chin, Arunachal Pradesh
-  "Pakistan", // Kashmir
-  "Israel", // the West Bank, the Golan Heights
-  "Morocco", // Western Sahara
-  "Republic of Serbia", // Kosovo
-  "Somalia", // Somaliland
-  "Ukraine", // Crimea, drawn with Russia in Natural Earth
-  "Cyprus" // Northern Cyprus
-])
+/**
+ * The land each country holds or claims that another holds or claims too:
+ * Natural Earth's breakaway and disputed areas by BRK_NAME, and countries by
+ * ADMIN. Paint there neither scores nor costs, whichever border a player has
+ * in mind.
+ */
+const KASHMIR = ["Jammu and Kashmir", "Gilgit-Baltistan", "Siachen Glacier", "Junagadh and Manavadar"]
+const CHINA_INDIA = [
+  "Arunachal Pradesh",
+  "Tirpani Valleys",
+  "Bara Hotii Valleys",
+  "Demchok",
+  "Samdu Valleys",
+  "Aksai Chin",
+  "Shaksam Valley"
+]
+const DISPUTED = {
+  China: { areas: CHINA_INDIA, countries: ["Taiwan"] },
+  India: { areas: [...CHINA_INDIA, ...KASHMIR] },
+  Pakistan: { areas: KASHMIR },
+  Israel: { areas: ["Golan Heights"], countries: ["Palestine"] },
+  Morocco: { areas: ["W. Sahara"], countries: ["Western Sahara"] },
+  "Republic of Serbia": { countries: ["Kosovo"] },
+  Somalia: { countries: ["Somaliland"] },
+  Ukraine: { areas: ["Crimea", "Donetsk People's Republic", "Luhansk People's Republic"] },
+  Cyprus: { countries: ["Northern Cyprus"] }
+}
 
 // Overrides by Natural Earth ADMIN name. label: shown after the reveal
 // (default NAME_EN); the: prompts say "the Netherlands"; name: what the
@@ -158,7 +176,29 @@ const borderRings = (polygons) =>
       })
     })
 
-const ne = JSON.parse(process.argv[2] ? readFileSync(process.argv[2], "utf8") : await (await fetch(NE_URL)).text())
+const readGeoJson = async (path, url) => JSON.parse(path ? readFileSync(path, "utf8") : await (await fetch(url)).text())
+const ne = await readGeoJson(process.argv[2], NE_URL)
+const neDisputed = await readGeoJson(process.argv[3], NE_DISPUTED_URL)
+
+/** The disputed land of a country in DISPUTED, as one MultiPolygon. */
+const disputedLand = ({ areas = [], countries = [] }) =>
+  polygonClipping.union(
+    ...areas.map((name) => {
+      const feature = neDisputed.features.find((candidate) => candidate.properties.BRK_NAME === name)
+      if (!feature) throw new Error(`no disputed area named ${name}`)
+      return polygonsOf(feature.geometry)
+    }),
+    ...countries.map((admin) => {
+      const feature = ne.features.find((candidate) => candidate.properties.ADMIN === admin)
+      if (!feature) throw new Error(`no country named ${admin}`)
+      return polygonsOf(feature.geometry)
+    })
+  )
+
+const simplified = (polygons) =>
+  polygons
+    .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
+    .filter((polygon) => polygon.length > 0)
 const countries = ne.features.filter((feature) => {
   const properties = feature.properties
   return (
@@ -200,29 +240,32 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
   const why =
     area < POINT_BELOW_KM2
       ? "small"
-      : DISPUTED.has(properties.ADMIN)
-        ? "disputed"
-        : crossesAntimeridian(kept)
-          ? "antimeridian"
-          : keptShare < MIN_KEPT_SHARE
-            ? "scattered"
-            : properties.ADMIN === "United States of America"
-              ? "far-flung" // Alaska and Hawaii; the outline below keeps the contiguous states
-              : null
+      : crossesAntimeridian(kept)
+        ? "antimeridian"
+        : keptShare < MIN_KEPT_SHARE
+          ? "scattered"
+          : properties.ADMIN === "United States of America"
+            ? "far-flung" // Alaska and Hawaii; the outline below keeps the contiguous states
+            : null
 
   const place = { id: slug(label), label, wiki, flag: { code: flag, wiki: flagWiki } }
   places.push(place)
 
   if (!why || why === "far-flung") {
-    const cells = kept.flatMap((polygon) => cellsOf(polygon, 6))
+    const disputes = DISPUTED[properties.ADMIN]
+    const disputed = disputes ? disputedLand(disputes) : undefined
+    const undisputed = disputed ? polygonClipping.difference(kept, disputed) : kept
+    const cells = undisputed.flatMap((polygon) => cellsOf(polygon, 6))
     const keptArea = areaOf(cells)
     const tolerance = regionToleranceKm(keptArea)
     const contiguous = properties.ADMIN === "United States of America"
     const id = names.id ?? (contiguous ? "usa-region" : `${slug(label)}-region`)
-    outlines[id] = kept
-      .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
-      .filter((polygon) => polygon.length > 0)
+    outlines[id] = simplified(undisputed)
     const area = { outline: id, centre: centroid(cells), tolerance, surface: "LAND" }
+    if (disputed) {
+      area.disputed = `${id}-disputed`
+      outlines[area.disputed] = simplified(disputed)
+    }
     // The contiguous states are a place of their own, not the country its flag stands for.
     const painted = contiguous
       ? {

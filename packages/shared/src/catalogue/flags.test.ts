@@ -23,10 +23,10 @@ describe("flag questions", () => {
     }
   })
 
-  it("paint big countries whole and ask small, disputed and far-flung ones as a point", () => {
-    for (const code of ["de", "br", "ca", "au", "ie", "lb", "bs", "vu"])
+  it("paint big countries whole, disputed ones too, and ask small and far-flung ones as a point", () => {
+    for (const code of ["de", "br", "ca", "au", "ie", "lb", "bs", "vu", "in", "cn", "ua"])
       expect(flag(code).answer.type, code).toBe(AnswerType.AREA)
-    for (const code of ["va", "mc", "sg", "lu", "mt", "ki", "in", "cn", "ru", "us", "ua", "cy"])
+    for (const code of ["va", "mc", "sg", "lu", "mt", "ki", "ru", "us", "cy"])
       expect(flag(code).answer.type, code).toBe(AnswerType.POINT)
   })
 
@@ -44,7 +44,7 @@ describe("flag questions", () => {
   })
 
   it("score a tight paint on a point country's answer highly, and a far one low", () => {
-    for (const code of ["lu", "sg", "va", "in"]) {
+    for (const code of ["lu", "sg", "va", "ru"]) {
       const { answer } = flag(code)
       if (answer.type !== AnswerType.POINT) throw new Error(`${code} is painted whole`)
       const { at, tolerance } = answer

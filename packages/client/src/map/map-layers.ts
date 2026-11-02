@@ -49,6 +49,8 @@ export const HINT_FILL: LayerId<"fill"> = "hint-fill"
 export const HINT_EDGE: LayerId<"line"> = "hint-edge"
 export const REVEAL_REGION_FILL: LayerId<"fill"> = "reveal-region-fill"
 export const REVEAL_REGION_LINE: LayerId<"line"> = "reveal-region-line"
+export const REVEAL_DISPUTED_FILL: LayerId<"fill"> = "reveal-disputed-fill"
+export const REVEAL_DISPUTED_LINE: LayerId<"line"> = "reveal-disputed-line"
 export const REVEAL_ANSWER: LayerId<"circle"> = "reveal-answer"
 export const CURSOR_FILL: LayerId<"fill"> = "cursor-fill"
 export const CURSOR_OUTLINE: LayerId<"line"> = "cursor-outline"
@@ -201,8 +203,10 @@ const addPaintLayers = (map: MapLibreMap): void => {
 
 const addRevealLayers = (map: MapLibreMap): void => {
   map.addSource(REVEAL_SOURCE, { type: "geojson", data: emptyCollection() })
-  // A region answer: the country filled faintly and outlined.
-  const isArea: FilterSpecification = ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]]
+  // A region answer: the country filled faintly and outlined; its disputed land fainter, dashed.
+  const isPolygon: FilterSpecification = ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]]
+  const isArea: FilterSpecification = ["all", isPolygon, ["!", ["has", "disputed"]]]
+  const isDisputed: FilterSpecification = ["all", isPolygon, ["has", "disputed"]]
   map.addLayer({
     id: REVEAL_REGION_FILL,
     type: "fill",
@@ -216,6 +220,20 @@ const addRevealLayers = (map: MapLibreMap): void => {
     source: REVEAL_SOURCE,
     filter: isArea,
     paint: { "line-color": "#fbbf24", "line-width": 2 }
+  })
+  map.addLayer({
+    id: REVEAL_DISPUTED_FILL,
+    type: "fill",
+    source: REVEAL_SOURCE,
+    filter: isDisputed,
+    paint: { "fill-color": "#9aa4b2", "fill-opacity": 0.12 }
+  })
+  map.addLayer({
+    id: REVEAL_DISPUTED_LINE,
+    type: "line",
+    source: REVEAL_SOURCE,
+    filter: isDisputed,
+    paint: { "line-color": "#9aa4b2", "line-width": 1.5, "line-dasharray": [2, 2] }
   })
   map.addLayer({
     id: REVEAL_ANSWER,

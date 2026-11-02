@@ -28,6 +28,8 @@ export interface Theme {
   /** Answer marker. */
   answer: CssColour
   answerStroke: CssColour
+  /** Disputed land beside an area answer, which is not scored. */
+  disputed: CssColour
   /** Cursor brush ring. */
   brush: CssColour
 }
@@ -51,5 +53,6 @@ export const THEME: Theme = {
   rampOpacity: [0.08, 0.92],
   answer: "#fbbf24",
   answerStroke: "#1a1a1a",
+  disputed: "#9aa4b2",
   brush: "#ffffff"
 }

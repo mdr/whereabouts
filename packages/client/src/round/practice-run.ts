@@ -6,7 +6,7 @@ import type { Points } from "@whereabouts/shared/units"
  */
 import type { Distribution, Kernel } from "@whereabouts/shared/scoring/scoring"
 import { scoreAnswer, type ScoredAnswer } from "@whereabouts/shared/scoring/regions"
-import { AnswerType, answerCentre, shuffle, type Outlines, type Question } from "@whereabouts/shared/questions"
+import { answerCentre, shuffle, type Outlines, type Question } from "@whereabouts/shared/questions"
 import { revealPhoto } from "@whereabouts/shared/catalogue/photos"
 import type { VrTable } from "../vr/scores/scores"
 import type { RevealedAnswer } from "./round"
@@ -88,10 +88,7 @@ export const revealedFromQuestion = (question: Question, outlines: Outlines): Re
   label: question.label,
   wiki: question.wiki,
   answer: answerCentre(question.answer),
-  shape: revealedShape(
-    question.answer,
-    question.answer.type === AnswerType.AREA ? outlines.get(question.answer.outline) : undefined
-  ),
+  shape: revealedShape(question.answer, outlines),
   photo: revealPhoto(question)
 })
 

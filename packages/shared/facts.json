@@ -5950,7 +5950,11 @@
         "text": "'Seoul' is a native Korean word simply meaning 'capital city', so unlike most Korean place names it has no Chinese characters.",
         "source": "https://en.wikipedia.org/wiki/Seoul"
       },
-      { "type": "FAME", "text": "Hosted the 1988 Summer Olympics.", "source": "https://en.wikipedia.org/wiki/Seoul" },
+      {
+        "type": "FAME",
+        "text": "Hosted the 1988 Summer Olympics.",
+        "source": "https://en.wikipedia.org/wiki/Seoul"
+      },
       {
         "type": "TRIVIA",
         "text": "The Cheonggyecheon stream, long buried under concrete, was uncovered and restored in 2005 as an open stream through downtown.",
@@ -13819,7 +13823,11 @@
         "text": "Both the piano and the violin were invented here.",
         "source": "https://en.wikipedia.org/wiki/Italy"
       },
-      { "type": "FAME", "text": "Known as the birthplace of opera.", "source": "https://en.wikipedia.org/wiki/Italy" }
+      {
+        "type": "FAME",
+        "text": "Known as the birthplace of opera.",
+        "source": "https://en.wikipedia.org/wiki/Italy"
+      }
     ],
     "flag": [
       {
@@ -16553,6 +16561,28 @@
     ]
   },
   "china": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Four of history's most influential inventions, paper, printing, gunpowder and the compass, trace back to imperial China.",
+        "source": "https://en.wikipedia.org/wiki/Four_Great_Inventions"
+      },
+      {
+        "type": "FAME",
+        "text": "Thousands of life-size clay soldiers were buried to guard the first emperor, Qin Shi Huang, around 210 BCE.",
+        "source": "https://en.wikipedia.org/wiki/Terracotta_Army"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Wild giant pandas live only here, in a few mountain regions of Sichuan, Shaanxi and Gansu.",
+        "source": "https://en.wikipedia.org/wiki/Giant_panda"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Tea drinking began here, and the tea plant itself is native to the borderlands of southwestern China.",
+        "source": "https://en.wikipedia.org/wiki/Tea"
+      }
+    ],
     "flag": [
       {
         "type": "FLAG",
@@ -16625,6 +16655,28 @@
     ]
   },
   "india": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The Taj Mahal was built by the Mughal emperor Shah Jahan as a tomb for his wife Mumtaz Mahal.",
+        "source": "https://en.wikipedia.org/wiki/Taj_Mahal"
+      },
+      {
+        "type": "FAME",
+        "text": "The number system the world uses today, with its digits 0 to 9, was developed by Indian mathematicians.",
+        "source": "https://en.wikipedia.org/wiki/Hindu%E2%80%93Arabic_numeral_system"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Chess began here: its ancestor, a war game called chaturanga, was being played in India by the 7th century.",
+        "source": "https://en.wikipedia.org/wiki/Chess"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Mawsynram, in the northeast, is reportedly the wettest place on Earth, with nearly 12 metres of rain in an average year.",
+        "source": "https://en.wikipedia.org/wiki/Mawsynram"
+      }
+    ],
     "flag": [
       {
         "type": "FLAG",
@@ -16649,6 +16701,28 @@
     ]
   },
   "israel": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Hebrew, long used mostly for prayer and writing, was revived as an everyday spoken language here.",
+        "source": "https://en.wikipedia.org/wiki/Revival_of_the_Hebrew_language"
+      },
+      {
+        "type": "FAME",
+        "text": "Modern drip irrigation, which waters plants drop by drop, was invented here in the 1960s.",
+        "source": "https://en.wikipedia.org/wiki/Drip_irrigation"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Dead Sea is about nine times saltier than the ocean, so swimmers float almost effortlessly.",
+        "source": "https://en.wikipedia.org/wiki/Dead_Sea"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In the 1970s, Israeli scientists bred cherry tomatoes with better flavour and longer shelf life, helping make them a supermarket staple.",
+        "source": "https://en.wikipedia.org/wiki/Cherry_tomato"
+      }
+    ],
     "flag": [
       {
         "type": "FLAG",
@@ -16673,6 +16747,28 @@
     ]
   },
   "morocco": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The University of al-Qarawiyyin in Fes, founded in the 9th century, is often called the world's oldest continuously operating university.",
+        "source": "https://en.wikipedia.org/wiki/University_of_al-Qarawiyyin"
+      },
+      {
+        "type": "FAME",
+        "text": "Fossils found at Jebel Irhoud, about 300,000 years old, are among the oldest known remains of Homo sapiens.",
+        "source": "https://en.wikipedia.org/wiki/Jebel_Irhoud"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The old medina of Fes is one of the world's largest car-free urban areas, a maze of lanes best crossed on foot.",
+        "source": "https://en.wikipedia.org/wiki/Fes_el_Bali"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Gladiator and Kingdom of Heaven were filmed at studios near Ouarzazate, which has become a famous desert film location.",
+        "source": "https://en.wikipedia.org/wiki/Atlas_Studios"
+      }
+    ],
     "flag": [
       {
         "type": "FLAG",
@@ -16697,6 +16793,28 @@
     ]
   },
   "pakistan": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Mohenjo-daro, built around 2500 BCE, was one of the first great cities, with grid-planned streets and covered drains.",
+        "source": "https://en.wikipedia.org/wiki/Mohenjo-daro"
+      },
+      {
+        "type": "FAME",
+        "text": "K2, in the Karakoram range, is the second-highest mountain on Earth, at 8,611 metres.",
+        "source": "https://en.wikipedia.org/wiki/K2"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Khewra Salt Mine, one of the world's largest, has a small mosque built from salt bricks.",
+        "source": "https://en.wikipedia.org/wiki/Khewra_Salt_Mine"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Official World Cup footballs, including the 2018 tournament's, were made in the Pakistani city of Sialkot.",
+        "source": "https://en.wikipedia.org/wiki/Sialkot"
+      }
+    ],
     "flag": [
       {
         "type": "FLAG",
@@ -16721,6 +16839,28 @@
     ]
   },
   "serbia": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Belgrade, where the Sava meets the Danube, is one of the oldest continuously inhabited cities in Europe.",
+        "source": "https://en.wikipedia.org/wiki/Belgrade"
+      },
+      {
+        "type": "FAME",
+        "text": "The Roman emperor Constantine the Great was born in Naissus, now the Serbian city of Niš.",
+        "source": "https://en.wikipedia.org/wiki/Ni%C5%A1"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Serbia is one of the world's top raspberry producers.",
+        "source": "https://en.wikipedia.org/wiki/Raspberry"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Serbian is written in both Cyrillic and Latin letters, and many people use both in daily life.",
+        "source": "https://en.wikipedia.org/wiki/Serbian_language"
+      }
+    ],
     "flag": [
       {
         "type": "FLAG",
@@ -16841,6 +16981,28 @@
     ]
   },
   "somalia": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Somalia has the longest coastline of mainland Africa, more than 3,000 kilometres along the Indian Ocean and Gulf of Aden.",
+        "source": "https://en.wikipedia.org/wiki/Geography_of_Somalia"
+      },
+      {
+        "type": "FAME",
+        "text": "Most of the world's frankincense, a fragrant tree resin traded since ancient times, comes from the Horn of Africa, including Somalia.",
+        "source": "https://en.wikipedia.org/wiki/Frankincense"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In the 1920s Osman Yusuf Kenadid invented a new alphabet, Osmanya, to write Somali, before Latin letters became official in 1972.",
+        "source": "https://en.wikipedia.org/wiki/Osmanya_alphabet"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Somalia is often called a nation of poets, and verse, song and proverbs are prized for their wit.",
+        "source": "https://en.wikipedia.org/wiki/Culture_of_Somalia"
+      }
+    ],
     "flag": [
       {
         "type": "FLAG",
@@ -16860,6 +17022,28 @@
     ]
   },
   "ukraine": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "In the 10th and 11th centuries, Kyivan Rus', centred on Kyiv, became one of the largest and most powerful states in Europe.",
+        "source": "https://en.wikipedia.org/wiki/Ukraine"
+      },
+      {
+        "type": "FAME",
+        "text": "Much of its steppe is covered by chernozem, a deep, very fertile black soil that has made it a great farming country.",
+        "source": "https://en.wikipedia.org/wiki/Chernozem"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Kyiv's Arsenalna is among the world's deepest metro stations, about 105 metres below the surface.",
+        "source": "https://en.wikipedia.org/wiki/Arsenalna_(Kyiv_Metro)"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Around 4000 BCE, Trypillia farmers here built some of the largest settlements of their age, with thousands of buildings.",
+        "source": "https://en.wikipedia.org/wiki/Cucuteni%E2%80%93Trypillia_culture"
+      }
+    ],
     "flag": [
       {
         "type": "FLAG",

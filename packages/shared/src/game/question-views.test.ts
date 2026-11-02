@@ -24,7 +24,9 @@ describe("questionView", () => {
     for (const question of CATALOGUE) {
       const view = questionView(question)
       expect(Object.keys(view.answer).sort(), question.id).toEqual(
-        question.answer.type === AnswerType.AREA ? ["outline", "surface", "tolerance", "type"] : ["tolerance", "type"]
+        question.answer.type === AnswerType.AREA
+          ? [...(question.answer.disputed ? ["disputed"] : []), "outline", "surface", "tolerance", "type"]
+          : ["tolerance", "type"]
       )
       expect(JSON.stringify(view), question.id).not.toContain(`"${question.label}"`)
     }

@@ -37,7 +37,7 @@ const show = (view: InPlayGameView, conn = fakeConn(), { timeUp = false } = {}):
   gameVrView(view, conn, {} as PaintController, {
     lockIn: vi.fn(),
     timeUp,
-    outline: undefined,
+    outlines: undefined,
     fact: undefined,
     painted: undefined,
     borders: undefined

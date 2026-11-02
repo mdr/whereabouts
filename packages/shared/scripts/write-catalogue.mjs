@@ -37,15 +37,17 @@ const placesAsked = (catalogue, places) => {
   return asked
 }
 
-/** The outlines of the areas the catalogue's AREA questions are about, by id. */
+/** The outlines of the areas the catalogue's AREA questions are about, and their disputed land, by id. */
 const outlinesUsed = (catalogue, asked, outlines) => {
   const allOutlines = { ...read("outlines.json"), ...outlines }
   const used = {}
   for (const question of catalogue) {
     if (question.answer.type !== "AREA") continue
-    const id = asked.get(question.place).area?.outline
-    if (!allOutlines[id]) throw new Error(`${question.id}: no outline ${id}`)
-    used[id] = allOutlines[id]
+    const area = asked.get(question.place).area
+    for (const id of [area?.outline, ...(area?.disputed ? [area.disputed] : [])]) {
+      if (!allOutlines[id]) throw new Error(`${question.id}: no outline ${id}`)
+      used[id] = allOutlines[id]
+    }
   }
   return used
 }

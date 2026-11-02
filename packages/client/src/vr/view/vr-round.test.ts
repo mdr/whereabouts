@@ -143,11 +143,12 @@ describe("vrReveal", () => {
     ]
     const area = (outline: Outline | undefined): RevealedAnswer => ({
       ...answer,
-      shape: { type: RevealedShapeType.AREA, outline }
+      shape: { type: RevealedShapeType.AREA, outline, disputed: undefined }
     })
     expect(vrReveal(shown(), area(outline), score(), undefined, own).answer).toEqual({
       type: VrAnswerType.OUTLINE,
-      outline
+      outline,
+      disputed: undefined
     })
     expect(vrReveal(shown(), answer, score(), undefined, own).answer).toEqual({
       type: VrAnswerType.POINT,
@@ -156,7 +157,10 @@ describe("vrReveal", () => {
   })
 
   it("shows no answer for an area until its outline loads, rather than a pin at its centre", () => {
-    const loading: RevealedAnswer = { ...answer, shape: { type: RevealedShapeType.AREA, outline: undefined } }
+    const loading: RevealedAnswer = {
+      ...answer,
+      shape: { type: RevealedShapeType.AREA, outline: undefined, disputed: undefined }
+    }
     expect(vrReveal(shown(), loading, score(), undefined, own).answer).toBeUndefined()
   })
 

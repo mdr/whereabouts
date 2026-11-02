@@ -112,7 +112,7 @@ export const showAnswer = (
   { answer, shape }: RevealedAnswer
 ): void => {
   if (shape.type === RevealedShapeType.POINT) gameMap.showReveal(answer)
-  else if (shape.outline) gameMap.showRegionReveal(shape.outline)
+  else if (shape.outline) gameMap.showRegionReveal(shape.outline, shape.disputed)
   else gameMap.clearReveal()
 }
 

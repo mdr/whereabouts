@@ -28,7 +28,7 @@ import { Icon } from "../../../ui/icons"
 import { EndGameButton } from "../../../ui/players/HostControls/HostControls"
 import { TakeSeatButton } from "../../../ui/players/TakeSeat/TakeSeat"
 import { kickRequest, useConfirm } from "../../../ui/ConfirmDialog/ConfirmDialog"
-import { useOutline } from "../../../data/outlines"
+import { useOutlines } from "../../../data/outlines"
 import { useBorders } from "../../../data/borders"
 import { AllFlags } from "../../../ui/round/flag-reveal/AllFlags/AllFlags"
 import { AllFlagsSwitch } from "../../../ui/round/flag-reveal/AllFlagsSwitch/AllFlagsSwitch"
@@ -70,8 +70,8 @@ export const Reveal = ({
   const { dialog, ask } = useConfirm(online)
 
   // An area round shows its outline, once the outlines are loaded.
-  const outline = useOutline(outlineOf(reveal.question.answer))
-  const answer = revealedFromView(reveal, outline)
+  const outlines = useOutlines(outlineOf(reveal.question.answer) !== undefined)
+  const answer = revealedFromView(reveal, outlines)
 
   // A flag round names the country under the pointer, and where each player's paint mostly was.
   const answerFlag = clueFlag(reveal.question.clue)
@@ -91,7 +91,7 @@ export const Reveal = ({
   useEffect(() => {
     paint.enabled.value = false
     showAnswer(paint.gameMap, answer)
-  }, [reveal.index, outline])
+  }, [reveal.index, outlines])
 
   // Show everyone's paint in their colours (best score drawn on top), or one
   // player's, framed together with the answer.
@@ -99,7 +99,7 @@ export const Reveal = ({
     paint.showColoured(paintsOf(shownResults(reveal.results, shown)).flatMap((painted) => painted.features))
   useEffect(() => {
     frameReveal(paint.gameMap.camera, reveal.question, answer, show(selected))
-  }, [selected, reveal.index, outline, questionCardHeight.value])
+  }, [selected, reveal.index, outlines, questionCardHeight.value])
   // Not framed: the map would jump about as the mouse crosses the rows.
   useEffect(() => {
     if (hovered === undefined) return

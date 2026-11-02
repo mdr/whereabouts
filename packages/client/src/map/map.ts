@@ -186,12 +186,18 @@ export class GameMap {
     void this.source(REVEAL_SOURCE)?.setData(collection)
   }
 
-  /** A region answer: the outline (GeoJSON MultiPolygon coordinates), filled faintly. */
-  showRegionReveal(outline: Outline): void {
-    void this.source(REVEAL_SOURCE)?.setData({
-      type: "FeatureCollection",
-      features: [{ type: "Feature", properties: {}, geometry: { type: "MultiPolygon", coordinates: outline } }]
-    })
+  /** A region answer: the outline (GeoJSON MultiPolygon coordinates), filled faintly, and any disputed land, which is not scored. */
+  showRegionReveal(outline: Outline, disputed?: Outline): void {
+    const features: GeoJSON.Feature[] = [
+      { type: "Feature", properties: {}, geometry: { type: "MultiPolygon", coordinates: outline } }
+    ]
+    if (disputed)
+      features.push({
+        type: "Feature",
+        properties: { disputed: true },
+        geometry: { type: "MultiPolygon", coordinates: disputed }
+      })
+    void this.source(REVEAL_SOURCE)?.setData({ type: "FeatureCollection", features })
   }
 
   /** Shade a hint's band, or clear it. */

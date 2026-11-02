@@ -3227,6 +3227,13 @@
     "answer": { "type": "AREA" }
   },
   {
+    "id": "china-region",
+    "type": "COUNTRY",
+    "place": "china",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of China" },
+    "answer": { "type": "AREA" }
+  },
+  {
     "id": "colombia-region",
     "type": "COUNTRY",
     "place": "colombia",
@@ -3472,6 +3479,13 @@
     "answer": { "type": "AREA" }
   },
   {
+    "id": "india-region",
+    "type": "COUNTRY",
+    "place": "india",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of India" },
+    "answer": { "type": "AREA" }
+  },
+  {
     "id": "indonesia-region",
     "type": "COUNTRY",
     "place": "indonesia",
@@ -3497,6 +3511,13 @@
     "type": "COUNTRY",
     "place": "ireland",
     "clue": { "type": "NAME", "prompt": "Paint the whole of Ireland" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "israel-region",
+    "type": "COUNTRY",
+    "place": "israel",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Israel" },
     "answer": { "type": "AREA" }
   },
   {
@@ -3675,6 +3696,13 @@
     "answer": { "type": "AREA" }
   },
   {
+    "id": "morocco-region",
+    "type": "COUNTRY",
+    "place": "morocco",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Morocco" },
+    "answer": { "type": "AREA" }
+  },
+  {
     "id": "mozambique-region",
     "type": "COUNTRY",
     "place": "mozambique",
@@ -3766,6 +3794,13 @@
     "answer": { "type": "AREA" }
   },
   {
+    "id": "pakistan-region",
+    "type": "COUNTRY",
+    "place": "pakistan",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Pakistan" },
+    "answer": { "type": "AREA" }
+  },
+  {
     "id": "panama-region",
     "type": "COUNTRY",
     "place": "panama",
@@ -3819,6 +3854,13 @@
     "type": "COUNTRY",
     "place": "qatar",
     "clue": { "type": "NAME", "prompt": "Paint the whole of Qatar" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "serbia-region",
+    "type": "COUNTRY",
+    "place": "serbia",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Serbia" },
     "answer": { "type": "AREA" }
   },
   {
@@ -3882,6 +3924,13 @@
     "type": "COUNTRY",
     "place": "solomon-islands",
     "clue": { "type": "NAME", "prompt": "Paint the whole of the Solomon Islands" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "somalia-region",
+    "type": "COUNTRY",
+    "place": "somalia",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Somalia" },
     "answer": { "type": "AREA" }
   },
   {
@@ -4008,6 +4057,13 @@
     "type": "COUNTRY",
     "place": "uganda",
     "clue": { "type": "NAME", "prompt": "Paint the whole of Uganda" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "ukraine-region",
+    "type": "COUNTRY",
+    "place": "ukraine",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Ukraine" },
     "answer": { "type": "AREA" }
   },
   {
@@ -4182,13 +4238,7 @@
   },
   { "id": "flag-td", "type": "FLAG", "place": "chad", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-cl", "type": "FLAG", "place": "chile", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
-  {
-    "id": "flag-cn",
-    "type": "FLAG",
-    "place": "china",
-    "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "tolerance": 865 }
-  },
+  { "id": "flag-cn", "type": "FLAG", "place": "china", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-co", "type": "FLAG", "place": "colombia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
     "id": "flag-km",
@@ -4289,24 +4339,12 @@
   { "id": "flag-hn", "type": "FLAG", "place": "honduras", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-hu", "type": "FLAG", "place": "hungary", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-is", "type": "FLAG", "place": "iceland", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
-  {
-    "id": "flag-in",
-    "type": "FLAG",
-    "place": "india",
-    "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "tolerance": 500 }
-  },
+  { "id": "flag-in", "type": "FLAG", "place": "india", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-id", "type": "FLAG", "place": "indonesia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-ir", "type": "FLAG", "place": "iran", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-iq", "type": "FLAG", "place": "iraq", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-ie", "type": "FLAG", "place": "ireland", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
-  {
-    "id": "flag-il",
-    "type": "FLAG",
-    "place": "israel",
-    "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "tolerance": 40 }
-  },
+  { "id": "flag-il", "type": "FLAG", "place": "israel", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-it", "type": "FLAG", "place": "italy", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-ci", "type": "FLAG", "place": "ivory-coast", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-jm", "type": "FLAG", "place": "jamaica", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4388,13 +4426,7 @@
   },
   { "id": "flag-mn", "type": "FLAG", "place": "mongolia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-me", "type": "FLAG", "place": "montenegro", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
-  {
-    "id": "flag-ma",
-    "type": "FLAG",
-    "place": "morocco",
-    "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "tolerance": 215 }
-  },
+  { "id": "flag-ma", "type": "FLAG", "place": "morocco", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-mz", "type": "FLAG", "place": "mozambique", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-mm", "type": "FLAG", "place": "myanmar", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-na", "type": "FLAG", "place": "namibia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
@@ -4421,13 +4453,7 @@
   },
   { "id": "flag-no", "type": "FLAG", "place": "norway", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-om", "type": "FLAG", "place": "oman", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
-  {
-    "id": "flag-pk",
-    "type": "FLAG",
-    "place": "pakistan",
-    "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "tolerance": 265 }
-  },
+  { "id": "flag-pk", "type": "FLAG", "place": "pakistan", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
     "id": "flag-pw",
     "type": "FLAG",
@@ -4449,13 +4475,7 @@
   { "id": "flag-pl", "type": "FLAG", "place": "poland", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-pt", "type": "FLAG", "place": "portugal", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-qa", "type": "FLAG", "place": "qatar", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
-  {
-    "id": "flag-rs",
-    "type": "FLAG",
-    "place": "serbia",
-    "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "tolerance": 80 }
-  },
+  { "id": "flag-rs", "type": "FLAG", "place": "serbia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
     "id": "flag-cg",
     "type": "FLAG",
@@ -4552,13 +4572,7 @@
     "clue": { "type": "FLAG" },
     "answer": { "type": "AREA" }
   },
-  {
-    "id": "flag-so",
-    "type": "FLAG",
-    "place": "somalia",
-    "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "tolerance": 195 }
-  },
+  { "id": "flag-so", "type": "FLAG", "place": "somalia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
     "id": "flag-za",
     "type": "FLAG",
@@ -4610,13 +4624,7 @@
     "answer": { "type": "POINT", "tolerance": 15 }
   },
   { "id": "flag-ug", "type": "FLAG", "place": "uganda", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
-  {
-    "id": "flag-ua",
-    "type": "FLAG",
-    "place": "ukraine",
-    "clue": { "type": "FLAG" },
-    "answer": { "type": "POINT", "tolerance": 215 }
-  },
+  { "id": "flag-ua", "type": "FLAG", "place": "ukraine", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
     "id": "flag-ae",
     "type": "FLAG",

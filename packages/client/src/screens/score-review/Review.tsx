@@ -76,7 +76,7 @@ export const Review = ({ outlines }: { outlines: Outlines }) => {
     paint.reset(answer.tolerance)
     paint.enabled.value = false
     paint.gameMap.detail.setDetail(RevealDetail.REVEAL)
-    if (answer.type === AnswerType.AREA) paint.gameMap.showRegionReveal(answer.polygons)
+    if (answer.type === AnswerType.AREA) paint.gameMap.showRegionReveal(answer.polygons, answer.disputedPolygons)
     else paint.gameMap.showReveal(answer.at)
     if (reviewCase.type === ReviewCaseType.SINGLE) {
       paint.restore(reviewCase.guess.layer.toRecord())

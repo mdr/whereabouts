@@ -371,3 +371,30 @@ describe("scoreAnswer", () => {
     expect(scoreAnswer(undefined, germany, DEFAULT_KERNEL)).toEqual(pass)
   })
 })
+
+describe("disputed land", () => {
+  const india = byId("india-region")
+  const resolution = resolutionForTolerance(india.tolerance)
+  const indiaCells = regionCells(india, resolution)
+  const disputedCells = regionCells({ ...india, polygons: india.disputedPolygons! }, resolution)
+
+  it("is cut out of the outline", () => {
+    const outline = new Set(indiaCells)
+    expect(disputedCells.length).toBeGreaterThan(0)
+    expect(disputedCells.some((cell) => outline.has(cell))).toBe(false)
+  })
+
+  it("adds nothing and costs nothing when painted too", () => {
+    const alone = scoreAnswer(coat(indiaCells), india, DEFAULT_KERNEL).score
+    const withDisputed = scoreAnswer(coat([...indiaCells, ...disputedCells]), india, DEFAULT_KERNEL).score
+    expect(withDisputed).toBeCloseTo(alone, 6)
+  })
+
+  it("painted alone, scores as a pass", () => {
+    expect(scoreAnswer(coat(disputedCells), india, DEFAULT_KERNEL).score).toBe(PASS_SCORE.score)
+  })
+
+  it("is not on the fit either", () => {
+    expect(regionFit(coat([...indiaCells, ...disputedCells]), india).precision).toBeCloseTo(1, 6)
+  })
+})

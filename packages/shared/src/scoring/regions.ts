@@ -47,6 +47,7 @@ import {
 } from "../questions.ts"
 import type { OutlineId } from "../ids.ts"
 import { resolutionForTolerance } from "../paint/paint.ts"
+import { withoutDisputed } from "./disputed.ts"
 import {
   PASS_SCORE,
   coarsenDistribution,
@@ -58,8 +59,8 @@ import {
   type RegionAnswer
 } from "./scoring.ts"
 
-/** An area answer with its outline, as scoring needs it. */
-export type Area = AreaAnswer & { polygons: Outline }
+/** An area answer with its outline, and its disputed land's, as scoring needs it. */
+export type Area = AreaAnswer & { polygons: Outline; disputedPolygons?: Outline }
 
 /** What a guess is scored against: a point, or an area with its outline. */
 export type ScoredAnswer = PointAnswer | Area
@@ -69,8 +70,21 @@ export const scoredAnswer = (answer: Answer, outlines: Outlines): ScoredAnswer =
   if (answer.type === AnswerType.POINT) return answer
   const polygons = outlines.get(answer.outline)
   if (!polygons) throw new Error(`no outline ${answer.outline}`)
-  return { ...answer, polygons }
+  if (!answer.disputed) return { ...answer, polygons }
+  const disputedPolygons = outlines.get(answer.disputed)
+  if (!disputedPolygons) throw new Error(`no outline ${answer.disputed}`)
+  return { ...answer, polygons, disputedPolygons }
 }
+
+/** The paint that counts against an area: none on its disputed land. Undefined when none is left. */
+const countedPaint = (painted: Distribution, area: Area): Distribution | undefined =>
+  area.disputed && area.disputedPolygons
+    ? withoutDisputed(
+        painted,
+        { outline: area.disputed, polygons: area.disputedPolygons },
+        resolutionForTolerance(area.tolerance)
+      )
+    : painted
 
 /** The share of the score that is shape; the rest is nearness. */
 export const SHAPE_WEIGHT = 0.4
@@ -206,7 +220,9 @@ export const scoreAnswer = (
 ): { score: Points; parts: AnswerParts } => {
   if (!painted) return { score: PASS_SCORE.score, parts: { type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B } }
   if (answer.type === AnswerType.AREA) {
-    const { score, shape, nearness } = scoreArea(painted, answer)
+    const counted = countedPaint(painted, answer)
+    if (!counted) return scoreAnswer(undefined, answer, kernel)
+    const { score, shape, nearness } = scoreArea(counted, answer)
     return { score, parts: { type: AnswerType.AREA, shape, nearness } }
   }
   const { score, A, B } = scoreDistribution(painted, answer.at, answer.tolerance, kernel)
@@ -222,7 +238,9 @@ export const scoreAnswer = (
  * credit below; so an exact paint covers all of it, and so does a 50/50
  * hedge with another place.
  */
-export const regionFit = (painted: Distribution, area: Area): { coverage: number; precision: number } => {
+export const regionFit = (allPaint: Distribution, area: Area): { coverage: number; precision: number } => {
+  const painted = countedPaint(allPaint, area)
+  if (!painted) return { coverage: 0, precision: 0 }
   const paintedMass = 1 - painted.floor
   const region = regionAt(area)
   let onMass = 0
@@ -265,7 +283,9 @@ export interface RegionMisfit {
 const LEAN = 0.4
 
 /** regionFit, and where the paint off the country lies, for the awards. */
-export const regionMisfit = (painted: Distribution, area: Area): RegionMisfit => {
+export const regionMisfit = (allPaint: Distribution, area: Area): RegionMisfit => {
+  const painted = countedPaint(allPaint, area)
+  if (!painted) return { coverage: 0, precision: 0, off: undefined }
   const { coverage, precision } = regionFit(painted, area)
   const region = regionAt(area)
   const mass = paintMass(painted, area)
