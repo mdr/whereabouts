@@ -339,7 +339,7 @@ export default defineConfig({
         }
       },
       {
-        files: ["packages/client/browser/tests/**/*.ts"],
+        files: ["packages/client/browser/tests/**/*.ts", "packages/server/scripts/**/*.ts"],
         rules: {
           "no-console": "off"
         }

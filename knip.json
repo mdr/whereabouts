@@ -10,6 +10,9 @@
       "playwright": { "config": ["playwright.config.ts", "playwright.prod.config.ts"] }
     },
     "packages/shared": { "entry": ["scripts/*.mjs"] },
-    "packages/server": { "ignore": ["src/vendor/**"] }
+    "packages/server": {
+      "entry": ["scripts/load/load-test.ts", "scripts/load/server-probe.ts"],
+      "ignore": ["src/vendor/**"]
+    }
   }
 }
