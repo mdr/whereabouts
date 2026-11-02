@@ -9,7 +9,8 @@
  * --paint budget has every player upload a paint at the cell budget as often
  * as a client may for --paint-seconds, then all lock in together.
  *
- * Starts its own server unless given --url (then only client-side numbers).
+ * Starts its own server unless given --url; then the server's numbers come
+ * from --probe-url, if it runs server-probe.ts with PROBE_PORT set.
  */
 import { fork, type ChildProcess } from "node:child_process"
 import { fileURLToPath } from "node:url"
@@ -39,7 +40,8 @@ const { values } = parseArgs({
     /** Ask only this question type (LANDMARK, PLACE, COUNTRY, FLAG, FEATURE, STATE), not an even mix. */
     type: { type: "string" },
     port: { type: "string", default: "8899" },
-    url: { type: "string" }
+    url: { type: "string" },
+    "probe-url": { type: "string" }
   }
 })
 const players = Number(values.players)
@@ -80,6 +82,14 @@ const startServer = async (port: string): Promise<ChildProcess> => {
 
 const server = values.url === undefined ? await startServer(values.port) : undefined
 const url = values.url ?? `ws://127.0.0.1:${values.port}/ws`
+
+/** Brings in the remote probe's samples, if there is one. */
+const fetchSamples = async () => {
+  if (values["probe-url"] === undefined) return
+  const fetched = (await (await fetch(values["probe-url"])).json()) as ProbeSample[]
+  const latest = samples.at(-1)?.at ?? 0
+  samples.push(...fetched.filter((sample) => sample.at > latest))
+}
 
 const samplesIn = (from: number, to: number) => samples.filter((sample) => sample.at > from && sample.at <= to + 1000)
 
@@ -124,6 +134,7 @@ try {
   console.log(`${players} players, ${spectators} spectators, ${rounds} rounds, ${values.paint} paint`)
   const idleFrom = Date.now()
   await new Promise((resolve) => setTimeout(resolve, 2000))
+  await fetchSamples()
   console.log(`idle lobby — ${serverLine(idleFrom, Date.now() - 1000)}`)
 
   hostBot.send(ClientTopic.START)
@@ -154,6 +165,7 @@ try {
     const lastArrival = Math.max(...arrivals.map((arrival) => arrival.at))
     // Let the probe report the reveal's second before reading it.
     await new Promise((resolve) => setTimeout(resolve, 1100))
+    await fetchSamples()
 
     console.log(`\nround ${round + 1}: ${questionType}`)
     console.log(
