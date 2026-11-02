@@ -24,7 +24,7 @@ describe("describeDisconnect", () => {
       title: "You were removed from the game",
       action: RejectionAction.FORGET_SEAT
     })
-    expect(describeDisconnect(1000, CloseReason.FULL).detail).toContain("16 players and 8 people watching")
+    expect(describeDisconnect(1000, CloseReason.FULL).detail).toContain("24 players and 24 people watching")
     expect(describeDisconnect(0, "reconnect_failed").title).toBe("Lost the connection")
   })
 

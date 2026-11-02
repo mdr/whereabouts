@@ -5,7 +5,8 @@
  * marker, and as far as possible from the first eight and from each other,
  * colour-blind vision included (the analysis behind them measured each
  * against captures of the real map). Players can still pick one guess out
- * from the reveal's list when two look alike.
+ * from the reveal's list when two look alike. The last eight were picked by
+ * eye for hues the others lack, not yet checked against the map.
  */
 import { z } from "zod"
 
@@ -29,7 +30,15 @@ export const PLAYER_COLOURS = [
   "#0aff0a", // bright green
   "#f9b4d6", // pale pink
   "#5c9dff", // cornflower blue
-  "#ff3b0a" // red orange
+  "#ff3b0a", // red orange
+  "#ffffff", // white
+  "#7c4dff", // deep violet
+  "#e040fb", // magenta
+  "#64ffda", // mint
+  "#a1887f", // warm brown
+  "#9e9d24", // olive
+  "#5c6bc0", // indigo
+  "#455a64" // dark slate
 ] as const
 
 /** A player's place in PLAYER_COLOURS. Spectators have none. */

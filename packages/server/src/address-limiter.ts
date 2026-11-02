@@ -1,7 +1,7 @@
 /**
  * Connections per client address, checked before a socket is let in: how
  * many may be open at once, and how fast new ones may come. Generous, since
- * a school or household shares one address: a full game (16 players, 8
+ * a school or household shares one address: a full game (24 players, 24
  * watching) from one network, everyone refreshing, stays well inside both.
  */
 import { ConnectionLimiter, logging } from "@rivalis/core"

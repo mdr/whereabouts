@@ -4,7 +4,7 @@ import { fireEvent, render, screen, within } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName, roomCode } from "@whereabouts/shared/ids"
-import { mixOf, MapDetail } from "@whereabouts/shared/protocol/config"
+import { mixOf, MapDetail, MAX_PLAYERS, MAX_SPECTATORS } from "@whereabouts/shared/protocol/config"
 import { type GameView } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { Role } from "@whereabouts/shared/roles"
@@ -181,7 +181,7 @@ describe("Lobby spectators", () => {
     expect(lists[0]!.textContent).toContain("Bob")
     expect(lists[1]!.textContent).toContain("Sam")
     expect(lists[1]!.querySelectorAll(`.${players.watcher}`)).not.toHaveLength(0)
-    expect(inside(container).getByTestId(rosterTestIds.watchingHeading).textContent).toContain("1/8")
+    expect(inside(container).getByTestId(rosterTestIds.watchingHeading).textContent).toContain(`1/${MAX_SPECTATORS}`)
   })
 
   it("lets a player step back to watch, and a spectator take a seat", () => {
@@ -200,13 +200,13 @@ describe("Lobby spectators", () => {
     expect(setRole).toHaveBeenLastCalledWith(Role.PLAYER)
   })
 
-  it("keeps the seat button off when all sixteen seats are taken", () => {
+  it("keeps the seat button off when every seat is taken", () => {
     const gameView = view(false)
     gameView.you.role = SPECTATING
-    gameView.players = Array.from({ length: 16 }, (_, i) => guest(`p${i + 10}`, `P${i}`, i))
+    gameView.players = Array.from({ length: MAX_PLAYERS }, (_, i) => guest(`p${i + 10}`, `P${i}`, i))
     gameView.spectators = [watcher("p1", "Alice")]
     const { container } = render(<Lobby conn={conn} view={gameView} />)
     expect(inside(container).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!.disabled).toBe(true)
-    expect(container.textContent).toContain("All 16 player seats are taken")
+    expect(container.textContent).toContain(`All ${MAX_PLAYERS} player seats are taken`)
   })
 })

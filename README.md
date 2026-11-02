@@ -7,7 +7,7 @@ honest belief scores best, and a confident guess a little off still earns
 partial credit.
 
 Play at https://whereabouts-game.fly.dev: host a game and share its
-four-letter code (up to 16 players and 8 spectators), or practise solo. On
+four-letter code (up to 24 players and 24 spectators), or practise solo. On
 a Quest headset, practice and games can be played in VR, spraying paint
 onto a globe. Rounds mix landmark photos, place names, whole countries,
 flags, islands, lakes and seas, and US states.
@@ -164,9 +164,9 @@ changes: [docs/code-map.md](docs/code-map.md)):
   separate panels for hosting, joining with a code and practising solo,
   and a three-step how to play.
 - The host creates a game and gets a four-letter code; others join with it,
-  up to 16 players (one per player colour: the original eight plus eight
-  picked to stay distinct from them on the reveal's terrain) and up to 8
-  spectators. Spectators join with "Just watch", or are seated as one when
+  up to 24 players (one per player colour: the original eight, eight
+  picked to stay distinct from them on the reveal's terrain, and eight more
+  picked by eye) and up to 24 spectators. Spectators join with "Just watch", or are seated as one when
   every player seat is taken; they see each question and every reveal but
   have no paint, colour or score and are never waited on. A spectator can
   take a free seat at any point before the final results, sitting out the
@@ -365,7 +365,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
 - **Whole countries** (design notes and the decisions behind the scoring: [docs/country-scoring.md](docs/country-scoring.md)): in practice, the Practise panel on the front page
   chooses any of the question types; in a game, the host's mix sets how many
   rounds of each. The server holds `outlines.json` and scores country
-  rounds with `scoreArea` (16 players in 170 to 270 ms); a round
+  rounds with `scoreArea`, each guess as it is locked in; a round
   tells clients only the country's id, and a client fetches the outlines
   when a game with countries starts, to draw the country at the reveal,
   where each player's score card also says how much of the country they

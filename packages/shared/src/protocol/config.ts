@@ -9,10 +9,10 @@ export const ROUND_LENGTHS: readonly Ms[] = [10_000, 20_000, 30_000, 45_000, 60_
 const MIN_ROUNDS = 1
 export const MAX_ROUNDS = 15
 /** Players in one game, one per player colour. */
-export const MAX_PLAYERS = 16
+export const MAX_PLAYERS = 24
 
 /** Spectators in one game, on top of the players: they watch every round but do not play. */
-export const MAX_SPECTATORS = 8
+export const MAX_SPECTATORS = 24
 
 /**
  * How long a dropped player's seat is held (a refresh is the common case),

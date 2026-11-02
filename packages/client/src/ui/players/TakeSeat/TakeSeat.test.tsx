@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { fireEvent, render } from "@testing-library/preact"
 import { playerColour } from "@whereabouts/shared/colours"
 import { playerId, playerName } from "@whereabouts/shared/ids"
+import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import { makePlayer, makeSpectator } from "../../../test-view"
 import type { GameView } from "@whereabouts/shared/protocol/views"
 import { Role } from "@whereabouts/shared/roles"
@@ -27,8 +28,8 @@ describe("TakeSeatButton", () => {
     expect(setRole).toHaveBeenCalledWith(Role.PLAYER)
   })
 
-  it("is off while all sixteen seats are taken", () => {
-    const { container } = render(<TakeSeatButton conn={makeConn()} view={viewWith(16)} />)
+  it("is off while every seat is taken", () => {
+    const { container } = render(<TakeSeatButton conn={makeConn()} view={viewWith(MAX_PLAYERS)} />)
     expect(container.querySelector("button")!.disabled).toBe(true)
   })
 
