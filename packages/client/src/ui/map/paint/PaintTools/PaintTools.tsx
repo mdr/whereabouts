@@ -20,6 +20,12 @@ const TOOL_ICON: Record<Tool, IconName> = {
   [Tool.ERASE]: "eraser",
   [Tool.FILL]: "bucket"
 }
+const TOOL_LABEL: Record<Tool, string> = {
+  [Tool.PAN]: "Pan",
+  [Tool.PAINT]: "Paint",
+  [Tool.ERASE]: "Erase",
+  [Tool.FILL]: "Fill"
+}
 const TOOL_HINT: Record<Tool, string> = {
   [Tool.PAN]: "Pan the map (1). Hold Space to pan while painting.",
   [Tool.PAINT]: "Paint where you think it is (2). Paint again to weight an area more.",
@@ -69,7 +75,7 @@ export const PaintTools = ({
             data-testid={paintToolsTestIds.toolButton}
             data-tool={tool}
           >
-            <Icon name={TOOL_ICON[tool]} /> <ToolLabel>{tool[0]!.toUpperCase() + tool.slice(1)}</ToolLabel>
+            <Icon name={TOOL_ICON[tool]} /> <ToolLabel>{TOOL_LABEL[tool]}</ToolLabel>
           </button>
         ))}
         <button
