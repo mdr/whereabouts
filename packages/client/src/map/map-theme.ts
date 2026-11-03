@@ -13,15 +13,12 @@ import {
 } from "./map-layers"
 import { idOfKind, paintSetting, type LayerKind, type PaintSetting, type PaintValue } from "./map-paint"
 import type { Theme } from "./themes"
-import type { ExpressionSpecification } from "maplibre-gl"
 
 export interface StyleLayer {
   id: string
   type: LayerKind
   sourceLayer: string
 }
-
-export const PLAYER_OPACITY: ExpressionSpecification = ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9]
 
 const roadPaint = (layer: StyleLayer, theme: Theme): PaintSetting[] => {
   const line = idOfKind(layer, "line")

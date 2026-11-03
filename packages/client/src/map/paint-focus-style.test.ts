@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test"
 import { playerId } from "@whereabouts/shared/ids"
 import { FOCUS_ALL, PaintFocusType } from "./paint-focus"
 import { paintFocusStyle } from "./paint-focus-style"
-import { PLAYER_OPACITY } from "./map-theme"
+import { PLAYER_OPACITY } from "./player-ramp"
 
 const alice = playerId("p1")
 

@@ -17,7 +17,8 @@ import { DetailLayers } from "./detail-layers"
 import { addGameLayers, CURSOR_SOURCE, HINT_SOURCE, PAINT_FILL, PAINT_SOURCE, REVEAL_SOURCE } from "./map-layers"
 import { MapCamera, WORLD_CENTER, WORLD_ZOOM } from "./map-camera"
 import { applyPaint, setPaint, type PaintSetting } from "./map-paint"
-import { overlayPaint, paintRamp, PLAYER_OPACITY } from "./map-theme"
+import { overlayPaint, paintRamp } from "./map-theme"
+import { PLAYER_OPACITY, RAMP_FILL_PER_FEATURE, playerRamp, rampFill } from "./player-ramp"
 import { FOCUS_ALL, type PaintFocus } from "./paint-focus"
 import { paintFocusStyle } from "./paint-focus-style"
 import { drawable, hintFeatures } from "./map-geometry"
@@ -146,8 +147,8 @@ export class GameMap {
   }
 
   /**
-   * Colour the paint layer with a single hue (a player's colour) instead of
-   * the theme ramp. Pass undefined to restore the ramp.
+   * Colour the paint layer in a player's ramp instead of the theme ramp.
+   * Pass undefined to restore the theme ramp.
    */
   setPaintColour(colour: CssColour | undefined): void {
     if (!this.map.getLayer(PAINT_FILL)) return
@@ -156,14 +157,14 @@ export class GameMap {
       if (this.theme) this.applyPaintRamp(this.theme)
       return
     }
-    setPaint(this.map, PAINT_FILL, "fill-color", colour)
+    setPaint(this.map, PAINT_FILL, "fill-color", rampFill(playerRamp(colour)))
     setPaint(this.map, PAINT_FILL, "fill-opacity", PLAYER_OPACITY)
   }
 
-  /** Colour each feature by its own `colour` property, for several players at once, all shown. */
+  /** Colour each feature by the player ramp in its properties, for several players at once, all shown. */
   setPaintColourPerFeature(): void {
     if (!this.map.getLayer(PAINT_FILL)) return
-    setPaint(this.map, PAINT_FILL, "fill-color", ["coalesce", ["get", "colour"], "#888888"])
+    setPaint(this.map, PAINT_FILL, "fill-color", RAMP_FILL_PER_FEATURE)
     this.setPaintFocus(FOCUS_ALL)
   }
 

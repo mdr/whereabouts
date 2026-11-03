@@ -6,6 +6,7 @@ import type { CssColour } from "@whereabouts/shared/colours"
 import { BufferAttribute, BufferGeometry, Color, SRGBColorSpace, Vector3 } from "three"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal } from "./sphere"
+import { playerRamp, playerRampAt } from "../../map/player-ramp"
 import type { Metres } from "@whereabouts/shared/units"
 
 const c = new Color()
@@ -29,9 +30,19 @@ const rampColour = (theme: Theme, v: number, out: Color): number => {
   return o0 + (o1 - o0) * v
 }
 
+/** A player's ramp (map/player-ramp), as the map mixes it. */
+const ownColour = (colour: CssColour, v: number, out: Color): number => {
+  const {
+    colour: [red, green, blue],
+    opacity
+  } = playerRampAt(playerRamp(colour), v)
+  out.setRGB(red / 255, green / 255, blue / 255, SRGBColorSpace)
+  return opacity
+}
+
 /**
- * A cell in a player's colour (its own, or `colour` for all) shows as the
- * map shows one (GameMap.setPaintColour): more opaque the heavier it is.
+ * A cell in a player's ramp (its own, or `colour` for all) shows as the
+ * map shows one (GameMap.setPaintColour).
  */
 export const paintGeometry = (
   paint: GeoJSON.FeatureCollection<GeoJSON.Polygon, { v: number; colour?: CssColour }>,
@@ -54,9 +65,7 @@ export const paintGeometry = (
   paint.features.forEach((feature, k) => {
     const ring = rings[k]!
     const own = feature.properties.colour ?? colour
-    const alpha = own
-      ? (c.set(own), 0.12 + 0.78 * Math.min(1, Math.max(0, feature.properties.v)))
-      : rampColour(theme, feature.properties.v, c)
+    const alpha = own ? ownColour(own, feature.properties.v, c) : rampColour(theme, feature.properties.v, c)
     const centre = vi
     const put = (point: Vector3): void => {
       point

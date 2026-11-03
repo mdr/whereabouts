@@ -1,5 +1,6 @@
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
 import { colourCss, type CssColour } from "@whereabouts/shared/colours"
+import { playerRamp } from "../map/player-ramp"
 import type { PlayerId } from "@whereabouts/shared/ids"
 import type { H3Resolution } from "@whereabouts/shared/h3"
 import { RoundGuessType, type PaintSubmission, type RoundResultView } from "@whereabouts/shared/protocol/views"
@@ -32,7 +33,7 @@ const playerPaint = (
   const layer = paintLayer(resolution, paint)
   const features = layer
     .toGeoJSON()
-    .features.map((feature) => ({ ...feature, properties: { ...feature.properties, colour, player } }))
+    .features.map((feature) => ({ ...feature, properties: { ...feature.properties, ...playerRamp(colour), player } }))
   const made = { layer, colour, features }
   coloured.set(paint, made)
   return made

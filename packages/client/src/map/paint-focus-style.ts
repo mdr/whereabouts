@@ -2,7 +2,7 @@
 import type { ExpressionSpecification, FilterSpecification } from "maplibre-gl"
 import type { PlayerId } from "@whereabouts/shared/ids"
 import type { PaintValue } from "./map-paint"
-import { PLAYER_OPACITY } from "./map-theme"
+import { PLAYER_OPACITY } from "./player-ramp"
 import { PaintFocusType, type PaintFocus } from "./paint-focus"
 
 /** How much of its opacity a dimmed player's paint keeps. */

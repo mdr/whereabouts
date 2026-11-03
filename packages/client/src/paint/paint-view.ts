@@ -3,6 +3,7 @@ import type { CssColour } from "@whereabouts/shared/colours"
 import type { PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { GameMap } from "../map/map"
 import type { PaintModel } from "./paint-model"
+import { playerRamp } from "../map/player-ramp"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** How long a change waits for an animation frame before `version` moves without one. */
@@ -61,7 +62,9 @@ export class PaintView {
   showLayers(entries: { layer: PaintLayer; colour: CssColour }[]): GeoJSON.FeatureCollection {
     return this.showColoured(
       entries.flatMap(({ layer, colour }) =>
-        layer.toGeoJSON().features.map((feature) => ({ ...feature, properties: { ...feature.properties, colour } }))
+        layer
+          .toGeoJSON()
+          .features.map((feature) => ({ ...feature, properties: { ...feature.properties, ...playerRamp(colour) } }))
       )
     )
   }
