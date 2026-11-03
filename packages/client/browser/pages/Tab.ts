@@ -2,6 +2,7 @@ import type { Page } from "@playwright/test"
 import { HomePage } from "./HomePage.ts"
 import { JoinAsPage } from "./JoinAsPage.ts"
 import { LoadFailures } from "./LoadFailures.ts"
+import type { SoundEvent } from "./SoundEvent.ts"
 import { PracticeRoundPage } from "./PracticeRoundPage.ts"
 import { ScoreReviewPage } from "./ScoreReviewPage.ts"
 import { expectNumber, stillTrueFor } from "./support.ts"
@@ -23,6 +24,16 @@ export class Tab {
 
   async #open(route: string): Promise<void> {
     await this.page.goto(`${this.#baseUrl}/${this.#dev ? "?dev" : ""}#${route}`, { waitUntil: "networkidle" })
+  }
+
+  /** The page clock (performance.now()). */
+  pageTime(): Promise<number> {
+    return this.page.evaluate(() => performance.now())
+  }
+
+  /** Takes the sound events the page has recorded since the last call. */
+  drainRecordedSounds(): Promise<SoundEvent[]> {
+    return this.page.evaluate(() => window.__audio.splice(0))
   }
 
   async openHome(): Promise<HomePage> {

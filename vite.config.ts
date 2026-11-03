@@ -19,6 +19,13 @@ const noFixedWaits = [
   }
 ]
 
+const noRawPage = [
+  {
+    selector: String.raw`CallExpression > MemberExpression[property.name=/^(getBy(TestId|Text|Role|Label|Placeholder|Title|AltText)|locator|evaluate|evaluateHandle|\$|\$\$|\$eval|\$\$eval|waitForSelector)$/]`,
+    message: "Specs go through page objects: add a method to one in browser/pages."
+  }
+]
+
 const noFunctionExpressionConsts = [
   { selector: "VariableDeclarator > FunctionExpression", message: "Use an arrow function: const f = () => {}." }
 ]
@@ -458,6 +465,25 @@ export default defineConfig({
         }
       },
       {
+        files: ["packages/client/browser/tests/**/*.ts"],
+        rules: {
+          "eslint-js/no-restricted-syntax": [
+            "error",
+            ...noNull,
+            ...noReexports,
+            ...noFunctionExpressionConsts,
+            ...noFixedWaits,
+            ...noRawPage
+          ]
+        }
+      },
+      {
+        files: ["**/*TestIds.ts"],
+        rules: {
+          "test-ids/test-id-file": "error"
+        }
+      },
+      {
         files: ["**/*.config.{js,ts}"],
         rules: {
           "max-lines": "off",
@@ -472,7 +498,8 @@ export default defineConfig({
       },
       { name: "eslint-js", specifier: "oxlint-plugin-eslint" },
       { name: "sonarjs", specifier: "eslint-plugin-sonarjs" },
-      { name: "folders", specifier: "./lint/folder-size.mjs" }
+      { name: "folders", specifier: "./lint/folder-size.mjs" },
+      { name: "test-ids", specifier: "./lint/test-ids.mjs" }
     ]
   },
   fmt: {
