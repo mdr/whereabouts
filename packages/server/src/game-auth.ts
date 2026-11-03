@@ -3,7 +3,7 @@ import { CloseReason } from "@whereabouts/shared/close-reason"
 import { generateCode } from "@whereabouts/shared/ids"
 import { decodeTicket, GameEntryType } from "@whereabouts/shared/protocol/ticket"
 import { ROOM_TYPE, closeReason, type ActorData } from "./rooms.ts"
-import { LogEvent, logEvent } from "./telemetry/log-event.ts"
+import { LogCode, logEvent } from "./telemetry/log-event.ts"
 import type { Telemetry } from "./telemetry/telemetry.ts"
 import { TicketRefused } from "./vendor/WSTransport.ts"
 
@@ -28,7 +28,10 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     } catch (error) {
       if (error instanceof TicketRefused) {
         this.telemetry.metrics.connectionsRefused.inc({ reason: error.reason })
-        logEvent(this.telemetry.logger, LogEvent.CONNECTION_REFUSED, { address, reason: error.reason })
+        logEvent(this.telemetry.logger, LogCode.CONNECTION_REFUSED, `refused a connection: ${error.reason}`, {
+          address,
+          reason: error.reason
+        })
       }
       throw error
     }

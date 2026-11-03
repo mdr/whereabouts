@@ -16,6 +16,10 @@
 - Annotate functions' return types. Not needed for Preact components, nor where the type is too complex to write (then ask whether the function should be simpler).
 - Small modules, one job each; pull pure logic out so it can be unit-tested.
 
+## Logs
+
+- Server logs are flat JSON lines through `logEvent`: a `code` from `LogCode`, a short human `msg`, and camelCase fields with units in their names (`openMs`). Errors go in `err`. Never log paint, guesses or tokens; addresses only where a connection is refused.
+
 ## Folders
 
 - When several files in a folder share a prefix for one area (`paint-*`, `map-*`), give them a subfolder named after it, whatever the folder's size.

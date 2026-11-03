@@ -1,7 +1,7 @@
 import type { Logger } from "pino"
 
-/** The stable `event` field of a log line, for searching logs by what happened. */
-export enum LogEvent {
+/** The stable `code` field of a log line, for searching logs by what happened. */
+export enum LogCode {
   SERVER_STARTED = "SERVER_STARTED",
   SERVER_STOPPING = "SERVER_STOPPING",
   REQUEST = "REQUEST",
@@ -25,12 +25,13 @@ export enum LogEvent {
 
 export type LogLevel = "info" | "warn" | "error"
 
-/** Log one event as a JSON line: `event` and the fields, with the event also as the message. */
+/** Log one event as a JSON line: its `code`, a short sentence for people, and the fields. */
 export const logEvent = (
   logger: Logger,
-  event: LogEvent,
+  code: LogCode,
+  message: string,
   fields: Record<string, unknown> = {},
   level: LogLevel = "info"
 ): void => {
-  logger[level]({ event, ...fields }, event)
+  logger[level]({ code, ...fields }, message)
 }

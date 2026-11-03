@@ -8,7 +8,7 @@ import { CLIENT_ERRORS_PATH, ClientErrorReportSchema } from "@whereabouts/shared
 import type { Instant } from "@whereabouts/shared/units"
 import { clientAddress } from "../vendor/WSTransport.ts"
 import { KeyedTokenBucket, type BucketLimits } from "./token-bucket.ts"
-import { LogEvent, logEvent } from "../telemetry/log-event.ts"
+import { LogCode, logEvent } from "../telemetry/log-event.ts"
 import type { Telemetry } from "../telemetry/telemetry.ts"
 
 export interface ClientErrorLimits {
@@ -40,21 +40,38 @@ export const registerClientErrors = (
     const address = clientAddress(request.raw)
     const own = perAddress.take(address)
     if (!own.allowed) {
-      if (own.firstRefusal) logEvent(logger, LogEvent.CLIENT_ERROR_RATE_LIMITED, { address }, "warn")
+      if (own.firstRefusal)
+        logEvent(
+          logger,
+          LogCode.CLIENT_ERROR_RATE_LIMITED,
+          `client errors from ${address} limited`,
+          { address },
+          "warn"
+        )
       return reply.code(204).send()
     }
     const all = global.take(EVERYONE)
     if (!all.allowed) {
-      if (all.firstRefusal) logEvent(logger, LogEvent.CLIENT_ERROR_RATE_LIMITED, { address: EVERYONE }, "warn")
+      if (all.firstRefusal)
+        logEvent(
+          logger,
+          LogCode.CLIENT_ERROR_RATE_LIMITED,
+          `client errors from ${address} limited`,
+          { address: EVERYONE },
+          "warn"
+        )
       return reply.code(204).send()
     }
     const report = ClientErrorReportSchema.safeParse(request.body)
     if (!report.success) return reply.code(400).send({ error: "invalid body" })
     metrics.clientErrors.inc({ kind: report.data.kind })
+    // Every line already has the server's `build`; a tab left open across a deploy shows as a different clientBuild.
+    const { build: clientBuild, ...fields } = report.data
     logEvent(
       logger,
-      LogEvent.CLIENT_ERROR,
-      { ...report.data, userAgent: request.headers["user-agent"]?.slice(0, USER_AGENT_LENGTH) },
+      LogCode.CLIENT_ERROR,
+      `client error: ${report.data.kind}`,
+      { ...fields, clientBuild, userAgent: request.headers["user-agent"]?.slice(0, USER_AGENT_LENGTH) },
       "warn"
     )
     return reply.code(204).send()

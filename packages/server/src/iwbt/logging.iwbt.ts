@@ -4,7 +4,7 @@ import path from "node:path"
 import { afterAll, describe, expect } from "vite-plus/test"
 import { CloseReason } from "@whereabouts/shared/close-reason"
 import { QuestionType } from "@whereabouts/shared/questions"
-import { LogEvent } from "../telemetry/log-event.ts"
+import { LogCode } from "../telemetry/log-event.ts"
 import { eventually } from "../test-support/eventually.ts"
 import { useInProcessServer } from "../test-support/use-in-process-server.ts"
 
@@ -28,16 +28,16 @@ describe("the game's lifecycle in the logs", () => {
     await bob.ready()
     await alice.expectResults()
 
-    expect(server.logEvents.map((line) => line.event)).toEqual([
-      LogEvent.ROOM_OPENED,
-      LogEvent.PLAYER_JOINED,
-      LogEvent.PLAYER_JOINED,
-      LogEvent.GAME_STARTED,
-      LogEvent.ROUND_STARTED,
-      LogEvent.ROUND_REVEALED,
-      LogEvent.ROUND_STARTED,
-      LogEvent.ROUND_REVEALED,
-      LogEvent.GAME_ENDED
+    expect(server.logEvents.map((line) => line.code)).toEqual([
+      LogCode.ROOM_OPENED,
+      LogCode.PLAYER_JOINED,
+      LogCode.PLAYER_JOINED,
+      LogCode.GAME_STARTED,
+      LogCode.ROUND_STARTED,
+      LogCode.ROUND_REVEALED,
+      LogCode.ROUND_STARTED,
+      LogCode.ROUND_REVEALED,
+      LogCode.GAME_ENDED
     ])
     const [opened, joinedAlice, joinedBob, started, firstRound, firstReveal, , , ended] = server.logEvents
     expect(opened).toMatchObject({ room: alice.code, component: "room" })
@@ -69,7 +69,7 @@ describe("the game's lifecycle in the logs", () => {
     await alice.expectResults()
 
     expect(server.logEvents.at(-1)).toMatchObject({
-      event: LogEvent.GAME_ENDED,
+      code: LogCode.GAME_ENDED,
       completed: false,
       roundsPlayed: 1,
       playerCount: 1
@@ -81,28 +81,28 @@ describe("the game's lifecycle in the logs", () => {
     const bob = await alice.invite("Bob")
     bob.disconnect()
     await eventually(
-      () => server.logEvents.some((line) => line.event === LogEvent.PLAYER_LEFT),
+      () => server.logEvents.some((line) => line.code === LogCode.PLAYER_LEFT),
       () => "Bob's departure to be logged"
     )
     await bob.reconnect()
     await alice.remove(bob)
     await eventually(
-      () => server.logEvents.filter((line) => line.event === LogEvent.PLAYER_LEFT).length === 2,
+      () => server.logEvents.filter((line) => line.code === LogCode.PLAYER_LEFT).length === 2,
       () => "Bob's removal to be logged as a departure"
     )
 
-    const events = server.logEvents.map((line) => line.event)
+    const events = server.logEvents.map((line) => line.code)
     expect(events.slice(-4)).toEqual([
-      LogEvent.PLAYER_LEFT,
-      LogEvent.PLAYER_JOINED,
-      LogEvent.PLAYER_REMOVED,
-      LogEvent.PLAYER_LEFT
+      LogCode.PLAYER_LEFT,
+      LogCode.PLAYER_JOINED,
+      LogCode.PLAYER_REMOVED,
+      LogCode.PLAYER_LEFT
     ])
-    expect(server.logEvents.filter((line) => line.event === LogEvent.PLAYER_JOINED).at(-1)).toMatchObject({
+    expect(server.logEvents.filter((line) => line.code === LogCode.PLAYER_JOINED).at(-1)).toMatchObject({
       name: "Bob",
       rejoined: true
     })
-    expect(server.logEvents.find((line) => line.event === LogEvent.PLAYER_REMOVED)).toMatchObject({ name: "Bob" })
+    expect(server.logEvents.find((line) => line.code === LogCode.PLAYER_REMOVED)).toMatchObject({ name: "Bob" })
   })
 
   it("logs a room closing, with how long it was open", async ({ server }) => {
@@ -112,7 +112,7 @@ describe("the game's lifecycle in the logs", () => {
     await server.untilGameFreed(alice.code)
 
     expect(server.logEvents.at(-1)).toMatchObject({
-      event: LogEvent.ROOM_CLOSED,
+      code: LogCode.ROOM_CLOSED,
       openMs: expect.toSatisfy((ms: number) => ms >= 5000)
     })
   })
@@ -125,10 +125,10 @@ describe("the game's lifecycle in the logs", () => {
     await alice.expectResults()
     await server.player("Late").join(alice.code)
     await eventually(
-      () => server.logEvents.some((line) => line.event === LogEvent.PLAYER_TURNED_AWAY),
+      () => server.logEvents.some((line) => line.code === LogCode.PLAYER_TURNED_AWAY),
       () => "the turn-away to be logged"
     )
-    expect(server.logEvents.find((line) => line.event === LogEvent.PLAYER_TURNED_AWAY)).toMatchObject({
+    expect(server.logEvents.find((line) => line.code === LogCode.PLAYER_TURNED_AWAY)).toMatchObject({
       name: "Late",
       reason: CloseReason.FINISHED,
       address: expect.any(String)
@@ -138,7 +138,7 @@ describe("the game's lifecycle in the logs", () => {
   it("writes what Rivalis logs as JSON with the component that logged it", async ({ server }) => {
     await server.host("Alice")
     const transport = server.logLines.find((line) => line.component === "transport:websocket")
-    expect(transport).toMatchObject({ level: 30, msg: "initialized" })
+    expect(transport).toMatchObject({ level: "info", msg: "initialized" })
   })
 })
 
@@ -156,18 +156,18 @@ describe("request logging", () => {
     await fetch(`${server.httpUrl}/`)
     await fetch(`${server.httpUrl}/some/app/route`)
 
-    expect(server.logEvents.filter((line) => line.event === LogEvent.REQUEST)).toEqual([])
+    expect(server.logEvents.filter((line) => line.code === LogCode.REQUEST)).toEqual([])
   })
 
   it("logs a bundle file that is gone, which an old tab asks for after a deploy", async ({ server }) => {
     await fetch(`${server.httpUrl}/assets/index-old.js`)
 
     await eventually(
-      () => server.logEvents.some((line) => line.event === LogEvent.REQUEST),
+      () => server.logEvents.some((line) => line.code === LogCode.REQUEST),
       () => "the request to be logged"
     )
-    expect(server.logEvents.find((line) => line.event === LogEvent.REQUEST)).toMatchObject({
-      level: 30,
+    expect(server.logEvents.find((line) => line.code === LogCode.REQUEST)).toMatchObject({
+      level: "info",
       method: "GET",
       path: "/assets/index-old.js",
       statusCode: 404

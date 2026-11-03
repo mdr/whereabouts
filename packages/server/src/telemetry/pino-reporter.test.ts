@@ -41,7 +41,7 @@ describe("pinoLoggingFactory", () => {
     factory.getLogger("transport:websocket").debug("not wanted")
 
     expect(lines.map((line) => JSON.parse(line) as unknown)).toMatchObject([
-      { level: 40, component: "room", room: "WXYZ", ms: 40, msg: "tick slow" }
+      { level: "warn", component: "room", room: "WXYZ", ms: 40, msg: "tick slow" }
     ])
   })
 })

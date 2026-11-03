@@ -6,7 +6,7 @@
  */
 import { ConnectionLimiter } from "@rivalis/core"
 import type { Instant } from "@whereabouts/shared/units"
-import { LogEvent, logEvent } from "./telemetry/log-event.ts"
+import { LogCode, logEvent } from "./telemetry/log-event.ts"
 import { RefusalReason } from "./telemetry/metrics.ts"
 import type { Telemetry } from "./telemetry/telemetry.ts"
 
@@ -58,7 +58,13 @@ export class AddressLimiter extends ConnectionLimiter {
     if (why) {
       this.telemetry.metrics.connectionsRefused.inc({ reason: why })
       if (!entry.refusing)
-        logEvent(this.telemetry.logger, LogEvent.CONNECTION_REFUSED, { address, reason: why, open: entry.open }, "warn")
+        logEvent(
+          this.telemetry.logger,
+          LogCode.CONNECTION_REFUSED,
+          `refusing ${address}: ${why}`,
+          { address, reason: why, open: entry.open },
+          "warn"
+        )
       entry.refusing = true
       return false
     }

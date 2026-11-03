@@ -15,7 +15,7 @@ import { GameRoom, ROOM_TYPE, gameRoomFor, kickForRestart, type ActorData } from
 import { registerDevPlayers } from "./extra-players/dev-players-route.ts"
 import { registerClientErrors, type ClientErrorLimits } from "./client-errors/client-errors-route.ts"
 import { AddressLimiter, type AddressLimits } from "./address-limiter.ts"
-import { LogEvent, logEvent } from "./telemetry/log-event.ts"
+import { LogCode, logEvent } from "./telemetry/log-event.ts"
 import { RefusalReason, ServerErrorKind, type Metrics } from "./telemetry/metrics.ts"
 import { serveMetrics, type MetricsServer } from "./telemetry/metrics-server.ts"
 import { pinoLoggingFactory } from "./telemetry/pino-reporter.ts"
@@ -87,7 +87,13 @@ class LoggedRateLimiter extends TokenBucketRateLimiter {
     if (!ok && !this.closing.has(actorId)) {
       this.closing.add(actorId)
       this.telemetry.metrics.connectionsRefused.inc({ reason: RefusalReason.MESSAGE_RATE_LIMIT })
-      logEvent(this.telemetry.logger, LogEvent.RATE_LIMITED, { actorId }, "warn")
+      logEvent(
+        this.telemetry.logger,
+        LogCode.RATE_LIMITED,
+        `closing ${actorId}: over the message limit`,
+        { actorId },
+        "warn"
+      )
     }
     return ok
   }
@@ -122,7 +128,8 @@ export const createApp = (options: AppOptions): App => {
       telemetry.metrics.serverErrors.inc({ kind: ServerErrorKind.REQUEST_FAILED })
       logEvent(
         logger,
-        LogEvent.SERVER_ERROR,
+        LogCode.SERVER_ERROR,
+        `${request.method} ${request.url} failed`,
         { kind: ServerErrorKind.REQUEST_FAILED, path: request.url, err: error },
         "error"
       )
@@ -135,7 +142,8 @@ export const createApp = (options: AppOptions): App => {
     if (level)
       logEvent(
         logger,
-        LogEvent.REQUEST,
+        LogCode.REQUEST,
+        `${request.method} ${path} ${reply.statusCode}`,
         { method: request.method, path, statusCode: reply.statusCode, responseMs: Math.round(reply.elapsedTime) },
         level
       )
