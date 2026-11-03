@@ -16,7 +16,7 @@ import {
   type ClientErrorReport
 } from "@whereabouts/shared/protocol/client-error"
 import type { GameConnection } from "../game-server/route-socket.ts"
-import type { Ms } from "@whereabouts/shared/units"
+import type { Instant, Ms } from "@whereabouts/shared/units"
 
 /** One player's browser tab: where each test starts, and what it opens first. */
 export class Tab extends PageObject {
@@ -94,6 +94,11 @@ export class Tab extends PageObject {
   /** Take over the page's timers and clock, which then run at the normal rate until `fastForward`. Before opening any page. */
   installClock(): Promise<void> {
     return this.page.clock.install()
+  }
+
+  /** The page's date stays at `time` while its timers run as normal. Before opening any page. */
+  holdDateAt(time: Instant): Promise<void> {
+    return this.page.clock.setFixedTime(time)
   }
 
   /** Jump the page's clock on, firing the timers now due once. Needs `installClock`. */

@@ -75,6 +75,11 @@ tasks:
     cmds:
       - pnpm --filter ./packages/client e2e {{.CLI_ARGS}}
 
+  screenshots:
+    desc: "The screenshot tests, *.screenshot.ts, at desktop and phone size (task screenshots -- --update-snapshots to save new pictures)"
+    cmds:
+      - pnpm --filter ./packages/client screenshots {{.CLI_ARGS}}
+
   browser:
     desc: Every browser test, the isolated ones then the end-to-end ones
     cmds:

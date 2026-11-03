@@ -8,11 +8,12 @@ import { existsSync, readFileSync } from "node:fs"
 
 const WORLD = new URL("./offline-world/", import.meta.url).pathname
 /** Where the Commons API says a photo is: answered with the stand-in. */
-const PHOTO_URL = "https://upload.wikimedia.org/offline/photo.png"
+const PHOTO_URL = "https://upload.wikimedia.org/offline/photo.jpg"
 
 enum ContentType {
   GLB = "model/gltf-binary",
   JSON = "application/json",
+  JPEG = "image/jpeg",
   PNG = "image/png",
   PROTOBUF = "application/x-protobuf"
 }
@@ -25,7 +26,7 @@ interface Answer {
 const file = (path: string, contentType: ContentType): Answer | undefined =>
   existsSync(WORLD + path) ? { body: readFileSync(WORLD + path), contentType } : undefined
 
-const PHOTO = (): Answer | undefined => file("photo.png", ContentType.PNG)
+const PHOTO = (): Answer | undefined => file("photo.jpg", ContentType.JPEG)
 
 const tilesAnswer = (path: string): Answer | undefined => {
   if (path === "/styles/positron") return file("style.json", ContentType.JSON)

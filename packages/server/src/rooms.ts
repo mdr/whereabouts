@@ -115,7 +115,7 @@ export class GameRoom extends Room<ActorData> {
     this.openedAt = deps.clock.now()
     this.gameStartedAt = undefined
     logEvent(this.log, LOG_CODES.room.opened, "room opened")
-    this.game = new Game(roomCode(this.id), deps.bank, { config: deps.config })
+    this.game = new Game(roomCode(this.id), deps.bank, { config: deps.config, seed: deps.clock.now() })
     this.actorsByToken = new Map()
     this.timer = undefined
     this.emptyTimer = undefined

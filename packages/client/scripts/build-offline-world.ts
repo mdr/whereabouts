@@ -36,9 +36,12 @@ const CONTROLLER_MODELS =
   "https://cdn.jsdelivr.net/npm/@webxr-input-profiles/assets@1.0/dist/profiles/meta-quest-touch-plus"
 /** Latin script only: labels in other scripts don't draw. */
 const GLYPH_RANGES = ["0-255"]
+/** Every question's photo: small, and CC0 (Commons, "Russisch-Orthodoxe Kirche (Dresden) Zwiebeltürme"). */
+const PHOTO =
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/%21_Russisch-Orthodoxe_Kirche_%28Dresden%29_Zwiebelt%C3%BCrme.JPG/500px-%21_Russisch-Orthodoxe_Kirche_%28Dresden%29_Zwiebelt%C3%BCrme.JPG"
 
-const fetchOk = async (url: string): Promise<Buffer> => {
-  const response = await fetch(url)
+const fetchOk = async (url: string, headers: Record<string, string> = {}): Promise<Buffer> => {
+  const response = await fetch(url, { headers })
   if (!response.ok) throw new Error(`${url}: ${response.status}`)
   return Buffer.from(await response.arrayBuffer())
 }
@@ -131,7 +134,7 @@ for (const hand of ["left", "right"])
 
 // Terrarium encodes height as (R × 256 + G + B / 256) − 32768: this is sea level everywhere.
 add("stand-ins", write("flat-terrain.png", solidPng(256, [128, 0, 0])))
-add("stand-ins", write("photo.png", solidPng(64, [120, 128, 140])))
+add("stand-ins", write("photo.jpg", await fetchOk(PHOTO, { "User-Agent": "whereabouts-offline-world" })))
 
 for (const [kind, bytes] of Object.entries(sizes)) console.log(kind.padEnd(14), `${Math.round(bytes / 1024)} KB`)
 console.log("font stacks:", [...fontStacks].join(" | "))

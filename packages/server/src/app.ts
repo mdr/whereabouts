@@ -34,6 +34,8 @@ export interface AppOptions {
   clientErrorLimits?: ClientErrorLimits
   /** The commit the server was built from; "dev" by default. */
   build?: string
+  /** Where room codes' letters come from; Math.random by default. */
+  random?: () => number
   addressLimits?: AddressLimits
   /** Registers the playtest endpoints; never in production. */
   devTools?: boolean
@@ -200,7 +202,7 @@ export const createApp = (options: AppOptions): App => {
   })
   rivalis = new Rivalis<ActorData>({
     transports: [transport],
-    authMiddleware: new GameAuth(rooms, telemetry),
+    authMiddleware: new GameAuth(rooms, telemetry, options.random),
     rateLimiter: new LoggedRateLimiter(telemetry, { capacity: 30, refillPerSecond: 5 }),
     logging: pinoLoggingFactory(logger),
     maxPayloadBytes: MAX_PAYLOAD_BYTES

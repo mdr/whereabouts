@@ -95,7 +95,9 @@ export class MapPanel extends PageObject {
   /** The middle of the strip of map between the cards at the top and the toolbar. */
   async spotClearOfCards(): Promise<MapSpot> {
     const bottomOf = async (id: string): Promise<number> => {
-      const b = await this.#page.getByTestId(id).boundingBox()
+      const element = this.#page.getByTestId(id)
+      if ((await element.count()) === 0) return 0
+      const b = await element.boundingBox()
       return b ? b.y + b.height : 0
     }
     const top = Math.max(await bottomOf(questionCardTestIds.card), await bottomOf(playersPanelTestIds.toggle))
@@ -127,6 +129,12 @@ export class MapPanel extends PageObject {
       await paceGesture(this.#page, 30)
     }
     await this.#touch("touchEnd", [])
+  }
+
+  /** A stroke from `at` the way this screen's player makes one: a finger on a touch screen, else the mouse. */
+  async stroke(at: MapSpot): Promise<void> {
+    const touch = await this.#page.evaluate(() => matchMedia("(pointer: coarse)").matches)
+    await (touch ? this.fingerDrag(at) : this.drag(at, { distance: 120, steps: 20 }))
   }
 
   /** Two fingers either side of `at`, spread apart. */

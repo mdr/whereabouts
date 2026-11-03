@@ -51,6 +51,10 @@ export interface InProcessOptions {
   maxBufferedBytes?: number
   /** Serve metrics, on a port of its own. */
   metrics?: boolean
+  /** Where room codes' letters come from; Math.random by default. */
+  random?: () => number
+  /** The server's clock stands at this time until advanced, rather than running. */
+  frozenAt?: Instant
   /** Start as main does from this environment, whose game and address settings replace the ones above. */
   environment?: Record<string, string>
 }
@@ -87,9 +91,11 @@ export class InProcessServer {
     heartbeatIntervalMs,
     maxBufferedBytes,
     metrics,
-    environment
+    environment,
+    random,
+    frozenAt
   }: InProcessOptions = {}): Promise<InProcessServer> {
-    const clock = new FakeClock()
+    const clock = new FakeClock({ frozenAt })
     const bank = { ...BANK, catalogue: questions ? catalogue.filter(questions) : catalogue }
     configureGameRooms({ clock, bank, config })
     const logs = new LogCapture()
@@ -104,7 +110,8 @@ export class InProcessServer {
           clientErrorLimits,
           devTools,
           heartbeatIntervalMs,
-          maxBufferedBytes
+          maxBufferedBytes,
+          random
         })
     return new InProcessServer(app, clock, await app.listen(0), logs)
   }

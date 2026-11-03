@@ -11,7 +11,13 @@ export interface TabOptions {
   dev?: boolean
   baseUrl?: string
   /** Runs in the page before any of the app's scripts. */
-  initScript?: () => void
+  initScript?: (() => void) | { content: string }
+}
+
+/** The run's own screen, where its project sets one (the screenshot runs do), or a desktop window. */
+const projectContext = (): BrowserContextOptions => {
+  const { viewport, isMobile, hasTouch, deviceScaleFactor } = test.info().project.use
+  return viewport ? { viewport, isMobile, hasTouch, deviceScaleFactor } : { viewport: { width: 1300, height: 900 } }
 }
 
 /**
@@ -24,7 +30,7 @@ export const openTab = async (
   options: TabOptions,
   connect: (context: BrowserContext) => Promise<GameConnection | undefined>
 ): Promise<Tab> => {
-  const context = await browser.newContext(options.context ?? { viewport: { width: 1300, height: 900 } })
+  const context = await browser.newContext(options.context ?? projectContext())
   if (options.initScript) await context.addInitScript(options.initScript)
   const connection = await connect(context)
   const page = await context.newPage()

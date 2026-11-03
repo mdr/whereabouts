@@ -26,6 +26,44 @@ export abstract class Screen extends PageObject {
     await this.page.screenshot({ path })
   }
 
+  /**
+   * The screen looks as it did when its picture `name` was saved, once its
+   * fonts and images are in, the map (if any) has drawn and stopped, and the
+   * layout has stopped moving. For the *.screenshot.ts runs.
+   */
+  async expectScreenshot(name: string): Promise<void> {
+    await this.page.evaluate(() => document.fonts.ready)
+    await expect
+      .poll(
+        () =>
+          this.page.evaluate(() =>
+            [...document.images].every((image) => image.complete && (image.naturalWidth > 0 || !image.src))
+          ),
+        { message: "the images have loaded" }
+      )
+      .toBe(true)
+    await this.#expectMapStill()
+    await this.waitForLayoutToSettle()
+    await expect(this.page, `the screen looks like ${name}`).toHaveScreenshot(`${name}.png`)
+  }
+
+  async #expectMapStill(): Promise<void> {
+    let stillSince = Date.now()
+    await expect
+      .poll(
+        async () => {
+          const still = await this.page.evaluate(() => {
+            const map = window.testHooks.map?.map
+            return !map || (map.loaded() && map.areTilesLoaded() && !map.isMoving())
+          })
+          if (!still) stillSince = Date.now()
+          return Date.now() - stillSince
+        },
+        { message: "the map, if any, has drawn and stopped", timeout: 30_000, intervals: [100] }
+      )
+      .toBeGreaterThanOrEqual(500)
+  }
+
   /** Until nothing with a test id has moved or changed size for a third of a second. */
   async waitForLayoutToSettle(timeout: Ms = 10_000): Promise<void> {
     await this.#expectLayoutSettles(expect, timeout)

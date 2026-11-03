@@ -4,13 +4,14 @@
   "ignoreBinaries": ["nix"],
   "workspaces": {
     "packages/client": {
-      "entry": ["scripts/*.ts", "browser/**/*.{iwft,e2e}.ts"],
+      "entry": ["scripts/*.ts", "browser/**/*.{iwft,e2e,screenshot}.ts"],
       "ignoreDependencies": ["iwer"],
       "playwright": {
         "config": [
           "browser/playwright.iwft.config.ts",
           "browser/playwright.e2e.config.ts",
-          "browser/playwright.prod.config.ts"
+          "browser/playwright.prod.config.ts",
+          "browser/playwright.screenshot.config.ts"
         ]
       }
     },

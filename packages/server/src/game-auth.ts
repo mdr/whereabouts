@@ -16,11 +16,13 @@ import { CLOSE_REASON_TEXT } from "./telemetry/close-reason-text.ts"
 export class GameAuth extends AuthMiddleware<ActorData> {
   private rooms: () => RoomManager<ActorData>
   private telemetry: Telemetry
+  private random: () => number
 
-  constructor(rooms: () => RoomManager<ActorData>, telemetry: Telemetry) {
+  constructor(rooms: () => RoomManager<ActorData>, telemetry: Telemetry, random: () => number = Math.random) {
     super()
     this.rooms = rooms
     this.telemetry = telemetry
+    this.random = random
   }
 
   override async authenticate(ticket: string, context?: ConnectionContext): Promise<AuthResult<ActorData>> {
@@ -55,8 +57,8 @@ export class GameAuth extends AuthMiddleware<ActorData> {
       roomId = entry.code
       if (!rooms.get(roomId)) rooms.create(ROOM_TYPE, roomId)
     } else {
-      roomId = generateCode()
-      for (let i = 0; i < 20 && rooms.get(roomId); i++) roomId = generateCode()
+      roomId = generateCode(this.random)
+      for (let i = 0; i < 20 && rooms.get(roomId); i++) roomId = generateCode(this.random)
       if (rooms.get(roomId)) throw new TicketRefused(closeReason(CloseReason.UNAVAILABLE))
       rooms.create(ROOM_TYPE, roomId)
     }

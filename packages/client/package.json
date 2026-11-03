@@ -12,6 +12,7 @@
     "iwft": "playwright test -c browser/playwright.iwft.config.ts",
     "e2e": "playwright test -c browser/playwright.e2e.config.ts",
     "e2e:prod": "playwright test -c browser/playwright.prod.config.ts",
+    "screenshots": "playwright test -c browser/playwright.screenshot.config.ts",
     "css-types": "node scripts/css-module-types.ts"
   },
   "dependencies": {
