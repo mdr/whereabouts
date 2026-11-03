@@ -12,7 +12,7 @@ test("load-failures", async ({ browser }) => {
   await test.step("a map that will not load says so, and Try again loads it", async () => {
     const mapTab = await newOfflineTab(browser, "map")
     let styleBlocked = true
-    await mapTab.page.route(/openfreemap\.org\/styles\//, (route) => (styleBlocked ? route.abort() : route.continue()))
+    await mapTab.page.route(/openfreemap\.org\/styles\//, (route) => (styleBlocked ? route.abort() : route.fallback()))
     const mapFailures = await mapTab.openFailing("/solo")
     await mapFailures.expectMapFailure()
     styleBlocked = false
@@ -23,7 +23,7 @@ test("load-failures", async ({ browser }) => {
   await test.step("outlines that will not load say so, and Try again loads them", async () => {
     const outlinesTab = await newOfflineTab(browser, "outlines")
     let outlinesBlocked = true
-    await outlinesTab.page.route(/outlines\.json$/, (route) => (outlinesBlocked ? route.abort() : route.continue()))
+    await outlinesTab.page.route(/outlines\.json$/, (route) => (outlinesBlocked ? route.abort() : route.fallback()))
     const outlineFailures = await outlinesTab.openFailing("/score-review")
     await outlineFailures.expectOutlinesFailure()
     outlinesBlocked = false
@@ -35,7 +35,7 @@ test("load-failures", async ({ browser }) => {
     const vrTab = await newOfflineTab(browser, "vr")
     const headset = await Headset.install(vrTab.page)
     let landBlocked = true
-    await vrTab.page.route(/land\.json$/, (route) => (landBlocked ? route.abort() : route.continue()))
+    await vrTab.page.route(/land\.json$/, (route) => (landBlocked ? route.abort() : route.fallback()))
     await vrTab.openPractice()
     const vrFailures = new LoadFailures(vrTab.page)
     const canvases = await vrFailures.canvases()

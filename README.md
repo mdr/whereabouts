@@ -44,7 +44,12 @@ Other commands:
   module. Most specs are `*.iwft.ts` (isolated whole-frontend tests): the
   client against the real game server running inside the test's process
   (the `game` fixture in `browser/game-server`), on a fake clock the test
-  moves, with games set up and checked through it. One spec,
+  moves, with games set up and checked through it. They need no network:
+  every request beyond localhost is answered from `browser/offline/offline-world`
+  (the map at zoom 0–1 and relief at 0–2, which MapLibre overzooms, Latin
+  labels, flat terrain, a stand-in photo and the headset controllers; about
+  4 MB, built by `scripts/build-offline-world.mjs`), and any other request
+  fails the test. One spec,
   `multiplayer.e2e.ts`, plays on the dev servers instead, as the check that
   client and server work together. `task e2e` starts those dev servers,
   on spare ports, and runs everything (`task e2e -- solo host` for some);
