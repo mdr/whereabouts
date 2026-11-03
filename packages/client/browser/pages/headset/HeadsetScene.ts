@@ -1,3 +1,4 @@
+import { PageObject } from "../steps.ts"
 import type { Page } from "@playwright/test"
 import type { Ms } from "@whereabouts/shared/units"
 import { allFlagsTestIds } from "../../../src/ui/round/flag-reveal/AllFlags/AllFlagsTestIds.ts"
@@ -7,10 +8,11 @@ import { expectNumber, expectPolled, stillTrueFor, type Bounds, type PollOptions
 import { expectProbe, expectProbeNumber, probe } from "./probe.ts"
 
 /** What the headset's scene shows apart from its panels: the globe, flags, paint, tools, beams, moon and space. */
-export class HeadsetScene {
+export class HeadsetScene extends PageObject {
   readonly #page: Page
 
   constructor(page: Page) {
+    super()
     this.#page = page
   }
 

@@ -1,3 +1,4 @@
+import { PageObject } from "../steps.ts"
 import { expect, type CDPSession, type Page } from "@playwright/test"
 import type {} from "../../../src/test-hooks.ts"
 import { mapViewTestIds } from "../../../src/ui/map/MapView/MapViewTestIds.ts"
@@ -26,11 +27,12 @@ export interface MapSpot {
  * spots are given as fractions of the map, and paint is read from the app's
  * debugging handle on `window.testHooks.map`.
  */
-export class MapPanel {
+export class MapPanel extends PageObject {
   readonly #page: Page
   #cdp: CDPSession | undefined = undefined
 
   constructor(page: Page) {
+    super()
     this.#page = page
   }
 

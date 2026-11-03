@@ -1,3 +1,4 @@
+import { PageObject } from "../steps.ts"
 import type { Page } from "@playwright/test"
 import type { MenuShown } from "../../../src/vr/menu/menu.ts"
 import type { PictureBack } from "../../../src/vr/picture/picture-back.ts"
@@ -26,10 +27,11 @@ const angleBetween = (a: number[], b: number[]): number =>
   Math.acos(a.reduce((sum, component, i) => sum + component * b[i]!, 0) / Math.hypot(...a) / Math.hypot(...b))
 
 /** What the headset's panels show, and where their buttons are: the menu, scores, board, picture and wrist. */
-export class HeadsetPanels {
+export class HeadsetPanels extends PageObject {
   readonly #page: Page
 
   constructor(page: Page) {
+    super()
     this.#page = page
   }
 

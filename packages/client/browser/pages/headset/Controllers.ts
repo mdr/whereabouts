@@ -1,13 +1,15 @@
+import { PageObject } from "../steps.ts"
 import type { Page } from "@playwright/test"
 import { Hand, XR_HAND } from "../../../src/vr/hands/hand.ts"
 import type { Quaternion, Vec3 } from "../../../src/vr/probe.ts"
 
 /** The emulated controllers: where they are and what they press. */
-export class Controllers {
+export class Controllers extends PageObject {
   readonly #page: Page
   readonly #frames: (n: number) => Promise<void>
 
   constructor(page: Page, frames: (n: number) => Promise<void>) {
+    super()
     this.#page = page
     this.#frames = frames
   }

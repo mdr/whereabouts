@@ -1,3 +1,4 @@
+import { PageObject } from "../steps.ts"
 import { expect, type Page } from "@playwright/test"
 import type { Tool } from "../../../src/paint/tool.ts"
 import { paintToolsTestIds } from "../../../src/ui/map/paint/PaintTools/PaintToolsTestIds.ts"
@@ -6,10 +7,11 @@ import { byTestIdWith, expectUsable } from "../support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** The brush bar along the bottom of the map. */
-export class PaintTools {
+export class PaintTools extends PageObject {
   readonly #page: Page
 
   constructor(page: Page) {
+    super()
     this.#page = page
   }
 

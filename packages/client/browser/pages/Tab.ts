@@ -1,3 +1,4 @@
+import { PageObject } from "./steps.ts"
 import type { Page } from "@playwright/test"
 import { HomePage } from "./HomePage.ts"
 import { JoinAsPage } from "./JoinAsPage.ts"
@@ -8,7 +9,7 @@ import { expectNumber, stillTrueFor } from "./support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** One player's browser tab: where each test starts, and what it opens first. */
-export class Tab {
+export class Tab extends PageObject {
   /** For instrumentation (network, audio); tests drive the app through the pages. */
   readonly page: Page
   readonly #baseUrl: string
@@ -16,6 +17,7 @@ export class Tab {
 
   /** `dev` opens every page with the playtest drawer. */
   constructor(page: Page, baseUrl: string, { dev = false } = {}) {
+    super()
     this.page = page
     this.#baseUrl = baseUrl.replace(/\/$/, "")
     this.#dev = dev

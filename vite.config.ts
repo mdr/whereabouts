@@ -25,7 +25,12 @@ const noFunctionExpressionConsts = [
 
 export default defineConfig({
   test: {
-    include: ["packages/*/src/**/*.test.{ts,tsx}", "scripts/*.test.ts", "packages/*/scripts/*.test.ts"],
+    include: [
+      "packages/*/src/**/*.test.{ts,tsx}",
+      "packages/client/browser/pages/*.test.ts",
+      "scripts/*.test.ts",
+      "packages/*/scripts/*.test.ts"
+    ],
     setupFiles: ["packages/client/src/test-setup.ts"]
   },
   lint: {
