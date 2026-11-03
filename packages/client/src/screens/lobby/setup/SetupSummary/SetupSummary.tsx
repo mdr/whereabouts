@@ -34,14 +34,14 @@ export const SetupSummary = ({ view }: { view: GameView }) => {
     {
       key: "seconds",
       testId: setupSummaryTestIds.seconds,
-      value: `${roundLength / 1000} s`,
+      value: roundLength === undefined ? "No limit" : `${roundLength / 1000} s`,
       label: "per round",
       changed: roundLength !== before.roundLength
     },
     {
       key: "hints",
       testId: setupSummaryTestIds.hints,
-      value: String(hints),
+      value: hints === undefined ? "Unlimited" : String(hints),
       label: hints === 1 ? "hint each" : "hints each",
       changed: hints !== before.hints
     }

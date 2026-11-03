@@ -70,11 +70,16 @@ export const questionView = (question: Question): QuestionView => {
 }
 
 /** A round being guessed. */
-export const roundView = (question: Question, index: number, total: number, deadline: Instant): RoundView => ({
+export const roundView = (
+  question: Question,
+  index: number,
+  total: number,
+  deadline: Instant | undefined
+): RoundView => ({
   index,
   total,
   question: questionView(question),
-  deadline
+  ...(deadline === undefined ? {} : { deadline })
 })
 
 /** A round's band of each axis: the same for everyone who asks. */

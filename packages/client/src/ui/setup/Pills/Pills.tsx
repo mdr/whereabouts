@@ -10,7 +10,7 @@ export const Pills = <T extends string | number>({
 }: {
   label: string
   options: readonly { value: T; label: string }[]
-  value: T
+  value: T | undefined
   onChange: (value: T) => void
 }) => (
   <div class={styles.pills} role="radiogroup" aria-label={label}>

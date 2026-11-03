@@ -53,7 +53,9 @@ const lockStats = (player: PlayerFacts): { player: PlayerFacts; share: number; m
   const rounds = painted(player)
   if (rounds.length < 3) return undefined
   const locks = rounds.flatMap((round) =>
-    round.lockedAfter === undefined ? [] : [{ after: round.lockedAfter, of: round.roundLength }]
+    round.lockedAfter === undefined || round.roundLength === undefined
+      ? []
+      : [{ after: round.lockedAfter, of: round.roundLength }]
   )
   if (locks.length < rounds.length) return undefined
   return {
@@ -83,7 +85,8 @@ const lastSecondMerchant: Rule = ({ players }) => {
   const slow = top(players, (player) => {
     const count = painted(player).filter(
       (round) =>
-        round.lockedAfter === undefined || round.roundLength - round.lockedAfter < lastSecond(round.roundLength)
+        round.roundLength !== undefined &&
+        (round.lockedAfter === undefined || round.roundLength - round.lockedAfter < lastSecond(round.roundLength))
     ).length
     return count >= 2 ? count : undefined
   })

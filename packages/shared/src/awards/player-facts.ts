@@ -14,7 +14,8 @@ interface BaseFacts {
   score: Points
   /** From the round's start to locking in; undefined when the clock ran out. */
   lockedAfter: Ms | undefined
-  roundLength: Ms
+  /** Undefined for an untimed round. */
+  roundLength: Ms | undefined
 }
 
 interface PassedFacts extends BaseFacts {
