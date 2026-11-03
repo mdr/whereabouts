@@ -34,6 +34,7 @@
 
 ## Tests
 
+- Two levels: unit tests of services and pure functions (quick, run often), and IWFTs of the whole client in a browser (slower, run less). Nothing renders a component on its own: move its logic into the service or a pure function and unit-test that. A behaviour may be tested at both levels.
 - Specify only the data the scenario needs; `makeX` factories supply defaults.
 - Endpoint behaviour: `*.iwbt.ts` specs against the in-process server, through `TestPlayer`'s steps; only tests about the protocol itself touch `wire`.
 
