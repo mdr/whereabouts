@@ -100,6 +100,12 @@ export class RoundPage extends Screen {
     return RoundDonePage.whenShown(this.tab)
   }
 
+  /** Done (or a pass) by pressing Enter, while others are still guessing. */
+  async finishWithKeyboard(): Promise<RoundDonePage> {
+    await this.page.keyboard.press("Enter")
+    return RoundDonePage.whenShown(this.tab)
+  }
+
   /** Done (or a pass) as the last one guessing, which ends the round. */
   async finishLast(): Promise<RevealPage> {
     await this.page.getByTestId(inGameTestIds.doneButton).click()

@@ -1,29 +1,18 @@
 import { useEffect } from "preact/hooks"
 import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
-import { Phase, PictureType, type GameView, type Picture } from "@whereabouts/shared/protocol/views"
 import { ConnectionStatus } from "../../../game-service/connection-state"
 import { useGameService } from "../../../game-service/use-game-service"
 import { RejectionAction } from "../../../net/rejection"
 import { joinedCode, resetPlayerToken } from "../../../settings/settings"
-import { preloadPicture } from "../../../data/preload"
 import { navigate } from "../../../router"
-import { MapView } from "../../../ui/map/MapView/MapView"
-import { Lobby } from "../../lobby/Lobby/Lobby"
-import { InGame } from "../../InGame/InGame"
-import { Results } from "../../results/Results/Results"
 import { Banner } from "../../../ui/Banner/Banner"
-import { useGameSounds } from "../../../sound/useGameSounds"
 import { useSavedSetup } from "../../../settings/host-setup"
+import { GameScreen } from "../../GameScreen/GameScreen"
 import { useVrHold, useVrView } from "../../../ui/VrButton/VrButton"
 import { VrViewType, type VrAction } from "../../../vr/view/view"
 import { joinedTestIds } from "./JoinedTestIds"
 import kit from "../../../ui/kit.module.css"
 import styles from "./Joined.module.css"
-
-const pictureSource = (picture: Picture | undefined): string | undefined =>
-  picture && (picture.type === PictureType.PHOTO ? picture.photo : picture.flag)
-
-const upcomingOf = (view: GameView | undefined) => (view && view.phase !== Phase.RESULTS ? view.upcoming : undefined)
 
 /** The game once a name is settled: its own component so its hooks always run. */
 export const Joined = ({ entry }: { entry: GameEntry }) => {
@@ -49,13 +38,8 @@ export const Joined = ({ entry }: { entry: GameEntry }) => {
   }, [removed])
 
   const view = game.view.value
-  useGameSounds(game, view)
   useSavedSetup(game, view, create)
   useVrHold()
-  const upcoming = upcomingOf(view)
-  useEffect(() => {
-    if (upcoming) preloadPicture(upcoming)
-  }, [pictureSource(upcoming)])
 
   if (state.type === ConnectionStatus.REJECTED) {
     const why = state.rejection
@@ -103,13 +87,7 @@ export const Joined = ({ entry }: { entry: GameEntry }) => {
       </div>
     )
   }
-  if (view.phase === Phase.LOBBY) return <Lobby view={view} />
-  if (view.phase === Phase.RESULTS) return <Results view={view} />
-  return (
-    <MapView>
-      <InGame view={view} />
-    </MapView>
-  )
+  return <GameScreen view={view} />
 }
 
 /** The headset's view while there is no game to show: joining it, or why not. */

@@ -1,5 +1,6 @@
 import { colourCss } from "@whereabouts/shared/colours"
 import type { ResultsGameView } from "@whereabouts/shared/protocol/views"
+import { GameMode } from "../../../game-service/game-mode"
 import { useGameService } from "../../../game-service/use-game-service"
 import { Icon } from "../../../ui/icons"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"
@@ -7,6 +8,7 @@ import { HostWord } from "../../../ui/players/HostWord"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { Banner } from "../../../ui/Banner/Banner"
 import { ConnectionNote, connectionText } from "../../../ui/connection/ConnectionNote/ConnectionNote"
+import { formatPoints } from "../../../ui/format"
 import { QUESTION_TYPE_DISPLAY_INFO } from "../../../question-types"
 import { cx } from "../../../ui/cx"
 import kit from "../../../ui/kit.module.css"
@@ -23,15 +25,17 @@ import styles from "./Results.module.css"
 export const Results = ({ view }: { view: ResultsGameView }) => {
   const game = useGameService()
   const online = game.online.value
+  const alone = game.mode === GameMode.PRACTICE
   const standings = view.results
   const standingById = new Map(standings.map((standing) => [standing.playerId, standing]))
-  const winner = standings[0]
-  const host = view.players.find((player) => player.isHost)?.id
+  // Alone there is no one to beat, and nobody to be host over.
+  const winner = alone ? undefined : standings[0]
+  const host = alone ? undefined : view.players.find((player) => player.isHost)?.id
   const vrView: VrView = {
     type: VrViewType.DONE,
     summary: {
-      title: "Final standings",
-      scoreLine: winner ? `${winner.name} wins` : "",
+      title: alone ? "Final score" : "Final standings",
+      scoreLine: alone ? formatPoints(standings[0]?.total ?? 0) : winner ? `${winner.name} wins` : "",
       table: {
         title: "Standings",
         rows: standings.map((standing, i) => ({

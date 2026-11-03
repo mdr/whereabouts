@@ -112,6 +112,19 @@ describe("PracticeGameService", () => {
     expect(results[0]!.total).toBeGreaterThan(0)
   })
 
+  it("knows the full question on screen, at the reveal too", () => {
+    const { service } = makePracticeGameService()
+    expect(service.question.value).toBeUndefined()
+    service.begin()
+    const first = askedNow(service)
+    expect(service.question.value).toBe(first)
+    service.lock()
+    expect(service.question.value).toBe(first)
+    service.next()
+    expect(service.question.value).toBe(askedNow(service))
+    expect(service.question.value).not.toBe(first)
+  })
+
   it("also moves on when you press ready", () => {
     const { service } = makePracticeGameService()
     service.begin()

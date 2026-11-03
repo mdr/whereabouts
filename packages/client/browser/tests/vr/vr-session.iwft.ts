@@ -20,7 +20,7 @@ test("practice's VR button opens a headset session, and Leave VR ends it", async
   await headset.expectVrButtonInVr()
   await headset.settle()
   await round.screenshot(shot(`vr-1-entered.png`))
-  await headset.panels.expectHeading(/^QUESTION 1 OF/)
+  await headset.panels.expectHeading(/^ROUND 1 OF/)
   await headset.panels.expectMoreActions(["Home"])
   await headset.scene.expectNoGlobeBordersFor()
 

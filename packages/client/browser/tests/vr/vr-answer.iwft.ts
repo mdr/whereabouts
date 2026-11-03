@@ -9,17 +9,16 @@ import { closeAllTabs, pressMenu } from "./vr-support.ts"
 
 test.afterEach(async ({ browser }) => closeAllTabs(browser))
 
-test("Submit in VR shows the answer in the headset, and Next brings the next round, where Pass scores 250", async ({
+test("Done in VR shows the answer in the headset, and Next brings the next round, where Pass scores 250", async ({
   browser
 }) => {
   const { tab, headset, round, can } = await vrPracticePainted(browser, "vr-submit")
-  // Submit with the menu's button, pointing and pulling the trigger: the
+  // Done with the menu's button, pointing and pulling the trigger: the
   // headset stays on and shows the answer, and Next brings the next round to it.
-  await headset.panels.expectDoneLabel("Submit")
+  await headset.panels.expectDoneLabel("Done")
   await pressMenu(headset, can, "done")
   const reveal = await PracticeRevealPage.whenShownInHeadset(tab)
   await reveal.expectScore({ atLeast: 0, atMost: 1000 })
-  const score = await reveal.score()
   await headset.panels.expectView(VrViewType.REVEAL)
   await headset.expectInSession()
   await headset.panels.expectFact()
@@ -28,7 +27,6 @@ test("Submit in VR shows the answer in the headset, and Next brings the next rou
   await headset.scene.expectControllersShown(true)
   await headset.scene.expectGlobeColour(true, { timeout: 30_000 })
   await headset.scene.expectGlobeBorders(true)
-  await headset.panels.expectScoreTable({ rowCount: 1, totals: [String(score)] })
   await headset.settle()
   await round.screenshot(shot(`vr-reveal.png`))
   await round.screenshot(shot(`vr-8-answer.png`))
@@ -41,7 +39,6 @@ test("Submit in VR shows the answer in the headset, and Next brings the next rou
   await headset.panels.expectView(VrViewType.REVEAL)
   const passed = await PracticeRevealPage.whenShownInHeadset(tab)
   await passed.expectScore({ exactly: 250 })
-  await headset.panels.expectScoreTable({ rowCount: 2 })
   await round.screenshot(shot(`vr-10-passed.png`))
 })
 

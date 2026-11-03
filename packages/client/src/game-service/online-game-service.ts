@@ -25,6 +25,7 @@ import { describeDisconnect, type Rejection } from "../net/rejection"
 import { reloadForNewBuild } from "../net/stale-build"
 import { startHeartbeat, type Heartbeat } from "../net/heartbeat"
 import type { Instant, Ms } from "@whereabouts/shared/units"
+import { GameMode } from "./game-mode"
 import type { GameService } from "./game-service"
 import { ConnectionStatus, type ConnectionState } from "./connection-state"
 
@@ -75,6 +76,7 @@ export class OnlineGameService implements GameService {
   readonly clockOffset = signal<Ms>(0)
   readonly code = computed(() => this.view.value?.code)
   /** Whether a command sent now reaches the server: only paint and Done are resent after a drop. */
+  readonly mode = GameMode.ONLINE
   readonly online = computed(() => this.status.value.type === ConnectionStatus.CONNECTED)
 
   private client: GameClient | undefined = undefined

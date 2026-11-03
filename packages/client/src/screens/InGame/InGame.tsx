@@ -5,7 +5,12 @@ import { YouRoleType, everyone } from "@whereabouts/shared/roles"
 import { useGameService } from "../../game-service/use-game-service"
 import { usePaint } from "../../ui/map/MapView/MapView"
 import { Card } from "../../ui/Card/Card"
-import { Hud, HudHeader, HudRight, HudTop, toolbarGrow } from "../../ui/map/Hud/Hud"
+import { GameMode } from "../../game-service/game-mode"
+import { useEnterKey } from "../../keyboard/use-enter-key"
+import { RunningTotal } from "../../ui/round/RunningTotal"
+import { InGameSide } from "./InGameSide/InGameSide"
+import { PracticeDev } from "../solo/PracticeDev/PracticeDev"
+import { Hud, HudHeader, HudTop, toolbarGrow } from "../../ui/map/Hud/Hud"
 import { Countdown } from "../../ui/map/Countdown/Countdown"
 import kit from "../../ui/kit.module.css"
 import { DoneButton } from "../../ui/round/DoneButton"
@@ -19,10 +24,6 @@ import { ExtraPlayersDev } from "../../ui/dev/ExtraPlayersDev/ExtraPlayersDev"
 import { ConnectionDev } from "../../ui/connection/ConnectionDev"
 import { Reveal } from "../reveal/Reveal/Reveal"
 import { Icon } from "../../ui/icons"
-import { PlayersPanel, playersPanelOpen } from "../../ui/players/PlayersPanel/PlayersPanel"
-import { EndGameButton } from "../../ui/players/HostControls/HostControls"
-import { kickRequest, makeHostRequest } from "../../ui/ConfirmDialog/confirm-requests"
-import { useConfirm } from "../../ui/ConfirmDialog/ConfirmDialog"
 import { askedToWatch } from "../../settings/settings"
 import { TakeSeatButton } from "../../ui/players/TakeSeat/TakeSeat"
 import { HintCard } from "../../ui/round/Hint/Hint"
@@ -36,12 +37,13 @@ import { useRoundMap } from "../../round/round"
 import { usePaintUpload } from "../../paint/paint-upload"
 import { canPaint, canUnlock } from "../../round/editing"
 import { paintLayer } from "../../round/reveal-paint"
-import { RoundNote, canEndGame, ownColour, roundNote, roundOf } from "../../round/round-model"
+import { RoundNote, ownColour, roundNote, roundOf } from "../../round/round-model"
 import { noteText } from "../../round/round-words"
 import { gameVrView } from "../../vr/view/game-vr-view"
 
 export const InGame = ({ view }: { view: InPlayGameView }) => {
   const game = useGameService()
+  const practice = game.mode === GameMode.PRACTICE
   const paint = usePaint()
   const { role } = view.you
   const note = roundNote(view.you)
@@ -50,7 +52,6 @@ export const InGame = ({ view }: { view: InPlayGameView }) => {
   const question = roundOf(view).question
   // The countdown has reached zero: painting stops, and what is on screen is what counts.
   const [timeUp, setTimeUp] = useState(false)
-  const { dialog, ask } = useConfirm()
 
   const reveal = view.phase === Phase.REVEAL ? view.reveal : undefined
   const borders = useGameData(view.config.mix)
@@ -107,6 +108,9 @@ export const InGame = ({ view }: { view: InPlayGameView }) => {
   const vrView = gameVrView(view, game, paint, { lockIn, timeUp, outlines, fact, painted, borders })
   useVrView(vrView)
 
+  const lockable = view.phase === Phase.GUESSING && role.type === YouRoleType.PLAYING && !role.locked && editing
+  useEnterKey(lockable && !paint.isEmpty.value ? lockIn : undefined)
+
   if (view.phase === Phase.REVEAL) {
     return <Reveal view={view} reveal={view.reveal} vrView={vrView} fact={fact} />
   }
@@ -114,13 +118,19 @@ export const InGame = ({ view }: { view: InPlayGameView }) => {
   const { round } = view
   return (
     <>
-      {dialog}
       <Hud>
         <HudTop>
           <HudHeader
+            home={practice}
             round={round.index + 1}
             total={round.total}
-            right={deadline === undefined ? undefined : <Countdown timeLeft={() => game.timeUntil(deadline)} />}
+            right={
+              practice ? (
+                <RunningTotal view={view} />
+              ) : deadline === undefined ? undefined : (
+                <Countdown timeLeft={() => game.timeUntil(deadline)} />
+              )
+            }
           />
           <RoundPrompt question={round.question} />
           {role.type === YouRoleType.PLAYING && view.config.hints !== 0 && (
@@ -131,7 +141,7 @@ export const InGame = ({ view }: { view: InPlayGameView }) => {
               onUse={(axis) => game.hint(axis)}
             />
           )}
-          <ConnectionNote onMap />
+          {!practice && <ConnectionNote onMap />}
           {note === RoundNote.WATCHING && (
             <Card>
               <p class={kit.hint}>{noteText(note, words)}</p>
@@ -153,24 +163,7 @@ export const InGame = ({ view }: { view: InPlayGameView }) => {
             </Card>
           )}
         </HudTop>
-        <HudRight roomy={playersPanelOpen.value}>
-          <PlayersPanel
-            view={view}
-            onKick={view.you.isHost ? (player) => ask(kickRequest(player.name, () => game.kick(player.id))) : undefined}
-            onMakeHost={
-              view.you.isHost
-                ? (player) => ask(makeHostRequest(player.name, () => game.makeHost(player.id)))
-                : undefined
-            }
-          />
-          {canEndGame(view) && (
-            <EndGameButton
-              onEnd={() => game.end()}
-              title="Score this round as it stands and show the final standings"
-              besidePlayers
-            />
-          )}
-        </HudRight>
+        {!practice && <InGameSide view={view} />}
         {role.type === YouRoleType.PLAYING && (
           <PaintTools water={onWater(round.question.answer)} hint={view.you.hint} canPass={!role.locked}>
             {role.locked ? (
@@ -200,12 +193,18 @@ export const InGame = ({ view }: { view: InPlayGameView }) => {
         )}
       </Hud>
       <DevDrawer>
-        <Card title="Players">
-          <PlayerList players={everyone(view)} you={view.you.id} showScores />
-        </Card>
-        <ExtraPlayersDev code={view.code} phase={view.phase} />
+        {practice ? (
+          <PracticeDev view={view} />
+        ) : (
+          <>
+            <Card title="Players">
+              <PlayerList players={everyone(view)} you={view.you.id} showScores />
+            </Card>
+            <ExtraPlayersDev code={view.code} phase={view.phase} />
+          </>
+        )}
         <PaintDev />
-        <ConnectionDev view={view} />
+        {!practice && <ConnectionDev view={view} />}
       </DevDrawer>
     </>
   )

@@ -187,6 +187,12 @@ export class RevealPage extends Screen {
     return RoundPage.whenShown(this.tab, 10_000)
   }
 
+  /** Host: Next round by pressing Enter. */
+  async nextRoundWithKeyboard(): Promise<RoundPage> {
+    await this.page.keyboard.press("Enter")
+    return RoundPage.whenShown(this.tab, 10_000)
+  }
+
   /** Host, after the last round. */
   async showFinalResults(): Promise<ResultsPage> {
     await this.page.getByTestId(revealTestIds.nextButton).click()

@@ -6,9 +6,12 @@ import type { PlayerId, PlayerName, RoomCode } from "@whereabouts/shared/ids"
 import type { Role } from "@whereabouts/shared/roles"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 import type { ConnectionState } from "./connection-state"
+import type { GameMode } from "./game-mode"
 
 /** The game a screen shows: its state to read, and the commands a player can give. */
 export interface GameService {
+  /** Online with others, or practice alone: screens hide what has no point alone. */
+  readonly mode: GameMode
   readonly view: ReadonlySignal<GameView | undefined>
   readonly status: ReadonlySignal<ConnectionState>
   readonly lastError: ReadonlySignal<string | undefined>

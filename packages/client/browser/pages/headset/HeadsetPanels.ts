@@ -44,8 +44,8 @@ export class HeadsetPanels extends PageObject {
     await expectProbe(this.#page, "menuShown", message, wanted, ok, options)
   }
 
-  /** What the menu's Done button says: Submit, or Pass with nothing painted. */
-  async expectDoneLabel(label: "Submit" | "Done" | "Pass", options: PollOptions = {}): Promise<void> {
+  /** What the menu's Done button says: Done, or Pass with nothing painted. */
+  async expectDoneLabel(label: "Done" | "Pass", options: PollOptions = {}): Promise<void> {
     await this.#expectMenu(
       label === "Pass" ? "with nothing painted, the menu offers Pass" : `with paint down, the menu offers ${label}`,
       label,

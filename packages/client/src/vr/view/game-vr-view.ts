@@ -12,6 +12,7 @@ import {
   type RevealView
 } from "@whereabouts/shared/protocol/views"
 import { YouRoleType, type PlayingPlayerView } from "@whereabouts/shared/roles"
+import { GameMode } from "../../game-service/game-mode"
 import type { GameService } from "../../game-service/game-service"
 import type { PaintController } from "../../paint/paint-controller"
 import { connectionText } from "../../ui/connection/ConnectionNote/ConnectionNote"
@@ -23,6 +24,7 @@ import {
   canEndGame,
   ownColour,
   revealModel,
+  totalOf,
   roundNote,
   roundOf,
   type RevealModel,
@@ -30,6 +32,7 @@ import {
 } from "../../round/round-model"
 import { WAITING_FOR_OTHERS, noteText, readyCountText, roundScoreText } from "../../round/round-words"
 import { askedToWatch } from "../../settings/settings"
+import { formatPoints } from "../../ui/format"
 import { paintsOf } from "../../round/reveal-paint"
 import { hostActions, pickable, takeSeat, vrPicked } from "./vr-actions"
 import { vrReveal, vrRound, type VrRoundShown } from "./vr-round"
@@ -73,7 +76,12 @@ interface GameVrShown {
   borders: Borders | undefined
 }
 
-const moreActions = (view: GameView, game: GameService): VrAction[] => [
+const moreActions = (view: GameView, game: GameService): VrAction[] =>
+  game.mode === GameMode.PRACTICE
+    ? [{ label: "Home", confirm: "Press again to leave", press: () => navigate("/") }]
+    : onlineMoreActions(view, game)
+
+const onlineMoreActions = (view: GameView, game: GameService): VrAction[] => [
   ...(view.you.role.type === YouRoleType.SPECTATOR ? [takeSeat(game, view, "Play from the next question")] : []),
   ...hostActions(game, view, view.phase === Phase.REVEAL ? shownPlayerId(revealShown.value) : vrPicked.value),
   ...(canEndGame(view)
@@ -120,11 +128,12 @@ const gameRound = (
   const at = roundOf(view)
   const { role } = view.you
   const note = roundNote(view.you)
+  const practice = game.mode === GameMode.PRACTICE
   const deadline = view.phase === Phase.GUESSING ? view.round.deadline : undefined
   return vrRound(shown, {
     paint,
-    heading: `ROUND ${at.index + 1} OF ${at.total}`,
-    table: playersTable(view),
+    heading: `ROUND ${at.index + 1} OF ${at.total}${practice ? `, ${formatPoints(totalOf(view))}` : ""}`,
+    table: practice ? undefined : playersTable(view),
     detail: view.config.mapDetail,
     colour: ownColour(view.you),
     hint: view.you.hint,
@@ -144,8 +153,9 @@ const gameRound = (
 }
 
 const revealActions = (model: RevealModel, game: GameService): VrAction[] => {
+  const practice = game.mode === GameMode.PRACTICE
   const actions: VrAction[] = []
-  if (model.ready) {
+  if (model.ready && !practice) {
     actions.push({
       label: model.ready.done ? WAITING_FOR_OTHERS : "Ready",
       press: () => game.ready(),
@@ -164,6 +174,7 @@ const gameReveal = (
   connection: string | undefined,
   { outlines, painted, borders }: Pick<GameVrShown, "outlines" | "painted" | "borders">
 ): VrReveal => {
+  const practice = game.mode === GameMode.PRACTICE
   const whose = revealShown.value
   const model = revealModel(view, reveal, whose)
   const mine = reveal.results.find((result) => result.playerId === view.you.id)
@@ -175,12 +186,14 @@ const gameReveal = (
   }
   return vrReveal(shown, revealedFromView(reveal, outlines), score, borders, {
     paints: { type: VrPaintsType.PLAYERS, paints: paintsOf(shownResults(reveal.results, whose)) },
-    table: {
-      title: `Round ${reveal.index + 1} of ${reveal.total}`,
-      rows: model.rows.map((row) => shownRow(view, row)),
-      hint: "Point at a player to see just their guess."
-    },
-    note: connection ?? readyCountText(model.readyCount, model.presentCount),
+    table: practice
+      ? undefined
+      : {
+          title: `Round ${reveal.index + 1} of ${reveal.total}`,
+          rows: model.rows.map((row) => shownRow(view, row)),
+          hint: "Point at a player to see just their guess."
+        },
+    note: connection ?? (practice ? undefined : readyCountText(model.readyCount, model.presentCount)),
     actions: revealActions(model, game)
   })
 }

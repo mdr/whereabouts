@@ -49,14 +49,15 @@ test("flows", async ({ browser, game }) => {
       const caraHomePage = await (await newTab(browser, "Cara", { game })).openHome()
       await caraHomePage.enterName("Cara")
       const caraSittingOutPage = await caraHomePage.joinGameMidRound(code)
-      const aliceRoundDonePage = await aliceRoundPage.finish()
+      // Enter is Done with paint down, and Next round on the reveal for the host.
+      const aliceRoundDonePage = await aliceRoundPage.finishWithKeyboard()
       game.lock([bob])
       const aliceRevealPage = await aliceRoundDonePage.waitForReveal()
       const caraRevealPage = await caraSittingOutPage.waitForReveal()
       await aliceRevealPage.expectRowCount(3)
       await aliceRevealPage.expectRow("Cara", { roundScore: "sat out" })
       const roundOneRows = await aliceRevealPage.rows()
-      aliceRoundPage = await aliceRevealPage.nextRound()
+      aliceRoundPage = await aliceRevealPage.nextRoundWithKeyboard()
       return { caraRoundPage: await caraRevealPage.waitForNextRound(), roundOneRows }
     })
 

@@ -50,13 +50,11 @@ const toolHint = (tool: Tool, fillType: FillType | undefined): string => {
  */
 export const PaintTools = ({
   children,
-  practice,
   water,
   hint,
   canPass
 }: {
   children?: ComponentChildren
-  practice?: boolean
   water?: boolean
   hint?: HintBand
   canPass?: boolean
@@ -129,7 +127,7 @@ export const PaintTools = ({
         </button>
       </span>
       <ShortcutsButton />
-      <Shortcuts practice={practice} />
+      <Shortcuts />
       {children}
     </HudBottom>
   )

@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test"
 import { HintAxis } from "@whereabouts/shared/hints"
-import { soloTestIds } from "../../src/screens/solo/Solo/SoloTestIds.ts"
+import { inGameTestIds } from "../../src/screens/InGame/InGameTestIds.ts"
+import { revealTestIds } from "../../src/screens/reveal/Reveal/RevealTestIds.ts"
 import { hintTestIds } from "../../src/ui/round/Hint/HintTestIds.ts"
 import { DevDrawer } from "./components/DevDrawer.ts"
 import { Hud } from "./components/Hud.ts"
@@ -13,7 +14,7 @@ import { expectHintBand, stillTrueFor } from "./support.ts"
 import type { Tab } from "./Tab.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
-/** A practice question: paint, then Submit. */
+/** A practice round: paint, then Done. */
 export class PracticeRoundPage extends Screen {
   readonly hud: Hud
   readonly map: MapPanel
@@ -23,7 +24,7 @@ export class PracticeRoundPage extends Screen {
 
   static async whenShown(tab: Tab): Promise<PracticeRoundPage> {
     const round = new PracticeRoundPage(tab)
-    await expect(tab.page.getByTestId(soloTestIds.submitButton), "the practice round is shown").toBeVisible({
+    await expect(tab.page.getByTestId(inGameTestIds.doneButton), "the practice round is shown").toBeVisible({
       timeout: 30_000
     })
     await round.map.waitUntilSettled()
@@ -57,19 +58,19 @@ export class PracticeRoundPage extends Screen {
     await expect(card, "practice hints are not counted").not.toContainText("left")
   }
 
-  /** The round is not submitted: Submit is still there, and no score appears within `duration`. */
+  /** The round is not submitted: Done is still there, and no score appears within `duration`. */
   async expectNotSubmitted(duration: Ms = 1_000): Promise<void> {
-    await expect(this.page.getByTestId(soloTestIds.submitButton), "the round is still under way").toBeVisible()
+    await expect(this.page.getByTestId(inGameTestIds.doneButton), "the round is still under way").toBeVisible()
     await stillTrueFor(
       "no score appearing",
       duration,
-      () => this.page.getByTestId(soloTestIds.roundScore).count(),
+      () => this.page.getByTestId(revealTestIds.roundScore).count(),
       (count) => count === 0
     )
   }
 
   async submit(): Promise<PracticeRevealPage> {
-    await this.page.getByTestId(soloTestIds.submitButton).click()
+    await this.page.getByTestId(inGameTestIds.doneButton).click()
     return PracticeRevealPage.whenShown(this.tab)
   }
 

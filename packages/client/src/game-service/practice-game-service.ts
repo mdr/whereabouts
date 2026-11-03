@@ -2,7 +2,7 @@
  * Practice, run on the real rules engine in the browser: one player, no lobby, untimed rounds, unlimited hints,
  * the whole pool in a shuffled order.
  */
-import { signal, type ReadonlySignal } from "@preact/signals"
+import { computed, signal, type ReadonlySignal } from "@preact/signals"
 import { realClock, type Clock } from "@whereabouts/shared/clock"
 import type { CommandResult } from "@whereabouts/shared/game/command-result"
 import { Game } from "@whereabouts/shared/game/game"
@@ -16,12 +16,13 @@ import {
   type RoomCode
 } from "@whereabouts/shared/ids"
 import type { ConfigurePatch, MapDetail } from "@whereabouts/shared/protocol/config"
-import type { GameView, PaintSubmission } from "@whereabouts/shared/protocol/views"
+import { Phase, type GameView, type PaintSubmission } from "@whereabouts/shared/protocol/views"
 import { shuffle, type Outlines, type Question } from "@whereabouts/shared/questions"
 import type { Role } from "@whereabouts/shared/roles"
 import type { KernelId } from "@whereabouts/shared/scoring/scoring"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 import { ConnectionStatus, type ConnectionState } from "./connection-state"
+import { GameMode } from "./game-mode"
 import type { GameService } from "./game-service"
 
 export interface PracticeOptions {
@@ -43,12 +44,21 @@ const nextSeed = (seed: number): number => (Math.imul(seed ^ (seed >>> 15), 0x2c
 const CONNECTED: ConnectionState = { type: ConnectionStatus.CONNECTED }
 
 export class PracticeGameService implements GameService {
+  readonly mode = GameMode.PRACTICE
   readonly view: ReadonlySignal<GameView | undefined>
   readonly status: ReadonlySignal<ConnectionState> = signal(CONNECTED)
   readonly lastError: ReadonlySignal<string | undefined>
   readonly clockOffset: ReadonlySignal<Ms> = signal(0)
   readonly code: ReadonlySignal<RoomCode | undefined>
   readonly online: ReadonlySignal<boolean> = signal(true)
+
+  /** The round on screen with its answer: for the dev tools, never for a screen the player reads. */
+  readonly question = computed((): Question | undefined => {
+    const view = this.writableView.value
+    if (view?.phase === Phase.GUESSING) return this.questions[view.round.index]
+    if (view?.phase === Phase.REVEAL) return this.questions[view.reveal.index]
+    return undefined
+  })
 
   private readonly writableView = signal<GameView | undefined>(undefined)
   private readonly writableError = signal<string | undefined>(undefined)
@@ -58,6 +68,7 @@ export class PracticeGameService implements GameService {
   private readonly clock: Clock
   private seed: number
   private game: Game
+  private questions: readonly Question[] = []
   private timer: unknown = undefined
 
   constructor(options: PracticeOptions) {
@@ -69,6 +80,10 @@ export class PracticeGameService implements GameService {
     this.lastError = this.writableError
     this.code = this.writableCode
     this.writableCode.value = this.game.code
+  }
+
+  get outlines(): Outlines {
+    return this.options.outlines
   }
 
   /** Sits down and starts round 1 at once. */
@@ -138,13 +153,14 @@ export class PracticeGameService implements GameService {
 
   private newGame(code: RoomCode): Game {
     const { pool, outlines, mapDetail, kernelId } = this.options
+    this.questions = shuffle([...pool], this.seed)
     return new Game(
       code,
       { catalogue: pool, outlines },
       {
         config: { roundLength: undefined, hints: undefined, mapDetail, kernelId },
         seed: this.seed,
-        questions: shuffle([...pool], this.seed)
+        questions: this.questions
       }
     )
   }

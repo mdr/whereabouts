@@ -4,9 +4,15 @@ import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import { outlineOf, RoundGuessType, type GameView, type RevealView } from "@whereabouts/shared/protocol/views"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { QuestionType, clueFlag } from "@whereabouts/shared/questions"
+import { GameMode } from "../../../game-service/game-mode"
 import { useGameService } from "../../../game-service/use-game-service"
+import { useEnterKey } from "../../../keyboard/use-enter-key"
+import { RunningTotal } from "../../../ui/round/RunningTotal"
+import { RevealButtons } from "../RevealButtons/RevealButtons"
+import { RevealSide } from "../RevealSide/RevealSide"
+import { PracticeDev } from "../../solo/PracticeDev/PracticeDev"
 import { usePaint } from "../../../ui/map/MapView/MapView"
-import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../../../ui/map/Hud/Hud"
+import { HeaderNote, Hud, HudBottom, HudHeader, HudTop } from "../../../ui/map/Hud/Hud"
 import { RevealCards } from "../../../ui/round/RevealCards"
 import { frameReveal, showAnswer } from "../../../round/round"
 import { questionCardHeight } from "../../../ui/round/question/QuestionCard/question-card-height"
@@ -18,17 +24,12 @@ import {
   shownResults,
   type RevealShown
 } from "../../../round/reveal"
-import { canEndGame, revealModel } from "../../../round/round-model"
-import { WAITING_FOR_OTHERS, readyCountText } from "../../../round/round-words"
+import { revealModel } from "../../../round/round-model"
+import { readyCountText } from "../../../round/round-words"
 import { ConnectionNote } from "../../../ui/connection/ConnectionNote/ConnectionNote"
 import { DevDrawer } from "../../../ui/dev/DevDrawer/DevDrawer"
 import { ConnectionDev } from "../../../ui/connection/ConnectionDev"
 import { PaintDev } from "../../../ui/map/paint/PaintDev/PaintDev"
-import { Icon } from "../../../ui/icons"
-import { EndGameButton } from "../../../ui/players/HostControls/HostControls"
-import { TakeSeatButton } from "../../../ui/players/TakeSeat/TakeSeat"
-import { kickRequest } from "../../../ui/ConfirmDialog/confirm-requests"
-import { useConfirm } from "../../../ui/ConfirmDialog/ConfirmDialog"
 import { useOutlines } from "../../../data/outlines"
 import { useBorders } from "../../../data/borders"
 import { AllFlags } from "../../../ui/round/flag-reveal/AllFlags/AllFlags"
@@ -38,7 +39,6 @@ import { mainCountry } from "../../../ui/round/flag-reveal/main-country"
 import { VrButton } from "../../../ui/VrButton/VrButton"
 import { allFlags } from "../../../settings/settings"
 import type { VrView } from "../../../vr/view/view"
-import { RevealScores } from "../RevealScores/RevealScores"
 import { RoundResultsDev } from "../RoundResultsDev"
 import { revealTestIds } from "./RevealTestIds"
 import { paintLayer, paintsOf } from "../../../round/reveal-paint"
@@ -55,6 +55,7 @@ export const Reveal = ({
   fact: Fact | undefined
 }) => {
   const game = useGameService()
+  const practice = game.mode === GameMode.PRACTICE
   const paint = usePaint()
   const selected = revealShown.value
   const setSelected = (shown: RevealShown) => (revealShown.value = shown)
@@ -66,7 +67,6 @@ export const Reveal = ({
     },
     []
   )
-  const { dialog, ask } = useConfirm()
 
   // An area round shows its outline, once the outlines are loaded.
   const outlines = useOutlines(outlineOf(reveal.question.answer) !== undefined)
@@ -109,22 +109,27 @@ export const Reveal = ({
 
   const mine = reveal.results.find((result) => result.playerId === view.you.id)
   const model = revealModel(view, reveal, selected)
-  const iAmReady = model.ready?.done ?? false
+
+  useEnterKey(model.next && game.online.value ? () => game.next() : undefined)
 
   return (
     <>
-      {dialog}
       {borders && <FlagHover gameMap={paint.gameMap} borders={borders} />}
       {borders && allFlags.value && <AllFlags gameMap={paint.gameMap} borders={borders} />}
       <Hud reveal>
         <HudTop>
           <HudHeader
+            home={practice}
             round={reveal.index + 1}
             total={reveal.total}
             right={
-              <HeaderNote title="The next round starts when everyone is ready" testId={revealTestIds.readyCount}>
-                {readyCountText(model.readyCount, model.presentCount)}
-              </HeaderNote>
+              practice ? (
+                <RunningTotal view={view} />
+              ) : (
+                <HeaderNote title="The next round starts when everyone is ready" testId={revealTestIds.readyCount}>
+                  {readyCountText(model.readyCount, model.presentCount)}
+                </HeaderNote>
+              )
             }
           />
           <RevealCards
@@ -134,54 +139,34 @@ export const Reveal = ({
             you={mine && { score: mine.score, passed: mine.guess.type === RoundGuessType.PASSED }}
             playedLabel="your score this round"
             where={mine && where.get(mine.playerId)}
-            testIds={{ scoreCard: revealTestIds.scoreCard }}
+            testIds={{ scoreCard: revealTestIds.scoreCard, score: revealTestIds.roundScore }}
           />
-          <ConnectionNote onMap />
+          {!practice && <ConnectionNote onMap />}
         </HudTop>
-        <HudRight>
-          <RevealScores
+        {!practice && (
+          <RevealSide
+            view={view}
             model={model}
             where={where}
             answerFlag={answerFlag}
             onSelect={setSelected}
             onHover={setHovered}
-            onKick={view.you.isHost ? (player) => ask(kickRequest(player.name, () => game.kick(player.id))) : undefined}
           />
-          {/* Where it is while guessing too, and away from Next round below. */}
-          {canEndGame(view) && <EndGameButton onEnd={() => game.end()} />}
-        </HudRight>
+        )}
         <HudBottom>
           {answerFlag && <AllFlagsSwitch />}
           <VrButton view={vrView} />
-          {!model.ready ? (
-            <TakeSeatButton view={view} />
-          ) : (
-            <button
-              class={iAmReady ? "" : "primary"}
-              onClick={() => game.ready()}
-              disabled={iAmReady || !game.online.value}
-              data-testid={revealTestIds.readyButton}
-            >
-              <Icon name="check" /> {iAmReady ? WAITING_FOR_OTHERS : "Ready"}
-            </button>
-          )}
-          {model.next && (
-            <button
-              class={iAmReady || !model.ready ? "primary" : ""}
-              onClick={() => game.next()}
-              disabled={!game.online.value}
-              title="Go on without waiting"
-              data-testid={revealTestIds.nextButton}
-            >
-              <Icon name={model.last ? "flag" : "next"} /> {model.next.label}
-            </button>
-          )}
+          <RevealButtons view={view} model={model} />
         </HudBottom>
       </Hud>
       <DevDrawer>
-        <RoundResultsDev results={reveal.results} host={view.players.find((player) => player.isHost)?.id} />
+        {practice ? (
+          <PracticeDev view={view} />
+        ) : (
+          <RoundResultsDev results={reveal.results} host={view.players.find((player) => player.isHost)?.id} />
+        )}
         <PaintDev />
-        <ConnectionDev view={view} />
+        {!practice && <ConnectionDev view={view} />}
       </DevDrawer>
     </>
   )

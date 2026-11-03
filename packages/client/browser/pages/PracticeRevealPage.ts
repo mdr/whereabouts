@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test"
-import { soloTestIds } from "../../src/screens/solo/Solo/SoloTestIds.ts"
+import { revealTestIds } from "../../src/screens/reveal/Reveal/RevealTestIds.ts"
 import { questionImageTestIds } from "../../src/ui/round/question/QuestionImage/QuestionImageTestIds.ts"
 import { factLineTestIds } from "../../src/ui/round/question/FactLine/FactLineTestIds.ts"
 import { MapPanel } from "./components/MapPanel.ts"
@@ -13,7 +13,7 @@ export class PracticeRevealPage extends Screen {
 
   static async whenShown(tab: Tab): Promise<PracticeRevealPage> {
     const reveal = new PracticeRevealPage(tab)
-    await expect(tab.page.getByTestId(soloTestIds.roundScore), "the practice reveal is shown").toBeVisible()
+    await expect(tab.page.getByTestId(revealTestIds.roundScore), "the practice reveal is shown").toBeVisible()
     await reveal.map.waitUntilSettled()
     return reveal
   }
@@ -21,7 +21,7 @@ export class PracticeRevealPage extends Screen {
   /** The reveal while VR shows it: the page's map, which whenShown waits on, draws nothing then. */
   static async whenShownInHeadset(tab: Tab): Promise<PracticeRevealPage> {
     const reveal = new PracticeRevealPage(tab)
-    await expect(tab.page.getByTestId(soloTestIds.roundScore), "the practice reveal is shown").toBeVisible()
+    await expect(tab.page.getByTestId(revealTestIds.roundScore), "the practice reveal is shown").toBeVisible()
     return reveal
   }
 
@@ -31,7 +31,7 @@ export class PracticeRevealPage extends Screen {
   }
 
   async score(): Promise<number> {
-    return Number(await this.page.getByTestId(soloTestIds.roundScore).innerText())
+    return Number(await this.page.getByTestId(revealTestIds.roundScore).innerText())
   }
 
   async expectScore(bounds: Bounds): Promise<void> {
@@ -40,11 +40,11 @@ export class PracticeRevealPage extends Screen {
 
   /** Next round, clicked on the page: a headset has no pointer to press it. */
   async next(): Promise<void> {
-    await this.page.getByTestId(soloTestIds.nextButton).dispatchEvent("click")
+    await this.page.getByTestId(revealTestIds.nextButton).dispatchEvent("click")
   }
 
   async expectScoreIsInteger(): Promise<void> {
-    await expect(this.page.getByTestId(soloTestIds.roundScore), "the reveal shows a whole-number score").toHaveText(
+    await expect(this.page.getByTestId(revealTestIds.roundScore), "the reveal shows a whole-number score").toHaveText(
       /^-?\d+$/
     )
   }

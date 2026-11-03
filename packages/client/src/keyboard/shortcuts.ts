@@ -2,7 +2,7 @@
  * Every keyboard shortcut, in one table: the help card lists it, and the
  * handlers match keys against it, so the two can't disagree. The paint
  * keys also say what they do; the rest act where they belong (holding
- * Space in PaintInput, Enter in practice, ? and Esc in the card).
+ * Space in PaintInput, Enter in useEnterKey, ? and Esc in the card).
  */
 import { Tool } from "../paint/tool"
 
@@ -35,8 +35,6 @@ export interface Shortcut {
   combos: Combo[]
   /** Whether the combos are one per action ("/") or alternatives ("or"). */
   sep?: "/" | "or"
-  /** Listed only in practice, where it works. */
-  practiceOnly?: boolean
 }
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent)
@@ -110,14 +108,14 @@ const SHORTCUTS: Shortcut[] = [
       }
     ]
   },
-  { action: "Submit / next question", combos: [SUBMIT], practiceOnly: true },
+  { action: "Done / next round", combos: [SUBMIT] },
   { action: "Enlarged photo back", combos: [CLOSE] },
   { action: "These shortcuts", combos: [TOGGLE_LIST] }
 ]
 
-/** The card's rows: in practice, or in a game. */
-export const listedShortcuts = (practice: boolean): Shortcut[] =>
-  SHORTCUTS.filter((shortcut) => practice || !shortcut.practiceOnly).map((shortcut) => ({
+/** The card's rows. */
+export const listedShortcuts = (): Shortcut[] =>
+  SHORTCUTS.map((shortcut) => ({
     ...shortcut,
     combos: shortcut.combos.filter((combo) => !combo.unlisted)
   }))

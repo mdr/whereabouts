@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test"
 import { playerId, playerName, type PlayerName } from "@whereabouts/shared/ids"
 import type { GuessingGameView, RevealGameView, GuessingYouView } from "@whereabouts/shared/protocol/views"
 import { SHOW_EVERYONE, SHOW_NOBODY, showPlayer, type RevealShown } from "./reveal"
-import { RoundNote, ShownRowType, canEndGame, revealModel, roundNote, type ShownRow } from "./round-model"
+import { RoundNote, ShownRowType, canEndGame, revealModel, roundNote, totalOf, type ShownRow } from "./round-model"
 import {
   JOINED_LATE,
   SPECTATING,
@@ -33,6 +33,15 @@ describe("roundNote", () => {
     expect(roundNote(you({ you: { role: SPECTATING } }))).toBe(RoundNote.WATCHING)
     expect(roundNote(you({ you: { role: JOINED_LATE } }))).toBe(RoundNote.JOINED_LATE)
     expect(roundNote(you({ you: { role: makePlaying({ locked: true }) } }))).toBe(RoundNote.DONE)
+  })
+})
+
+describe("totalOf", () => {
+  it("is your own score, whoever else is playing", () => {
+    const view = makeGuessingView({
+      players: [makePlayer({ score: 300 }), makePlayer({ id: playerId("p2"), score: 900 })]
+    })
+    expect(totalOf(view)).toBe(300)
   })
 })
 

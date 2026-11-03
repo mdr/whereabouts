@@ -75,15 +75,12 @@ describe("the paint keys", () => {
 })
 
 describe("the listed shortcuts", () => {
-  const actions = (practice: boolean): string[] => listedShortcuts(practice).map((shortcut) => shortcut.action)
-
-  it("list Enter only in practice", () => {
-    expect(actions(true)).toContain("Submit / next question")
-    expect(actions(false)).not.toContain("Submit / next question")
+  it("list Enter, which locks in a guess and goes on from a reveal", () => {
+    expect(listedShortcuts().map((shortcut) => shortcut.action)).toContain("Done / next round")
   })
 
   it("list every paint key that works", () => {
-    const listed = listedShortcuts(false).flatMap((shortcut) => shortcut.combos.map((combo) => combo.keys.join("+")))
+    const listed = listedShortcuts().flatMap((shortcut) => shortcut.combos.map((combo) => combo.keys.join("+")))
     expect(listed).toEqual(expect.arrayContaining(["1", "2", "3", "4", "[", "]", "Ctrl+Z", "Ctrl+Shift+Z", "Ctrl+Y"]))
   })
 })

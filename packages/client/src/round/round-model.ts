@@ -47,6 +47,9 @@ export const ownColour = ({ role }: RoundYouView): CssColour | undefined =>
 
 const isLastReveal = (reveal: Pick<RevealView, "index" | "total">): boolean => reveal.index + 1 >= reveal.total
 
+/** Your score so far. */
+export const totalOf = (view: GameView): number => view.players.find((player) => player.id === view.you.id)?.score ?? 0
+
 /** The round under way or on show. */
 export const roundOf = (view: InPlayGameView): Pick<RevealView, "index" | "total" | "question"> =>
   view.phase === Phase.GUESSING ? view.round : view.reveal

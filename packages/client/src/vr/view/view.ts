@@ -37,7 +37,7 @@ export interface VrRound {
   picture: VrPicture | undefined
   /** A lake or sea round: trimming drops paint on land, not at sea. */
   water: boolean
-  /** Your paint's colour in a game, as the others see it; the map's ramp in practice. */
+  /** Your paint's colour, as the others see it; none while you watch. */
   colour?: CssColour
   hint: HintBand | undefined
   hintsLeft: HintsLeft
