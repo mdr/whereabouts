@@ -6,12 +6,10 @@ import { useElementRef } from "../../../element-ref"
 import { CommonsCredit } from "../../../pictures/CommonsCredit/CommonsCredit"
 import { useEscape } from "../../../pictures/Lightbox/Lightbox"
 import { PhotoLightbox } from "../../../pictures/PhotoLightbox"
+import { enlargeLabel } from "../enlarge-label"
 import { EnlargeBadge } from "../EnlargeBadge/EnlargeBadge"
 import { questionImageTestIds } from "./QuestionImageTestIds"
 import styles from "./QuestionImage.module.css"
-
-/** Whether a photo has shown its "Enlarge" label yet this session: after the first, just the icon. */
-let enlargeLabelShown = false
 
 /**
  * The question photo. Click it to enlarge over the map; click again or press
@@ -28,11 +26,7 @@ export const QuestionImage = ({
   painting: boolean
 }) => {
   const [large, setLarge] = useState(false)
-  const [withLabel] = useState(() => {
-    const first = !enlargeLabelShown
-    enlargeLabelShown = true
-    return first
-  })
+  const [withLabel] = useState(() => enlargeLabel.take())
   useEscape(large, () => setLarge(false))
   const credit = showCredit ? <CommonsCredit image={image} /> : undefined
   const thumb = useElementRef<HTMLImageElement>()

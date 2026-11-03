@@ -5,12 +5,9 @@ import { CLOSE } from "../../../keyboard/shortcuts"
 import { useElementRef } from "../../element-ref"
 import { cx } from "../../cx"
 import styles from "./Lightbox.module.css"
+import { CLICK_ZOOM, nextZoom, type Position } from "./lightbox-zoom"
+import { lightboxTestIds } from "./LightboxTestIds"
 import type { Px } from "@whereabouts/shared/units"
-
-interface Position {
-  x: Px
-  y: Px
-}
 
 /** Calls `close` on Escape while `open`. */
 export const useEscape = (open: boolean, close: () => void): void => {
@@ -23,9 +20,6 @@ export const useEscape = (open: boolean, close: () => void): void => {
     return () => window.removeEventListener("keydown", onKey)
   }, [open])
 }
-
-const MAX_ZOOM = 6
-const CLICK_ZOOM = 2.5
 
 export enum LightboxType {
   PHOTO = "PHOTO",
@@ -66,15 +60,10 @@ export const Lightbox = ({
 
   /** Zoom by `factor` keeping the point (cx, cy), relative to the frame centre, fixed. */
   const zoomAt = (factor: number, cx: Px, cy: Px) => {
-    const next = Math.min(MAX_ZOOM, Math.max(1, zoom * factor))
-    if (next === zoom) return
-    const relative = next / zoom
-    setPan(
-      next === 1
-        ? { x: 0, y: 0 }
-        : { x: pan.x * relative + cx * (1 - relative), y: pan.y * relative + cy * (1 - relative) }
-    )
-    setZoom(next)
+    const next = nextZoom({ zoom, pan }, factor, { x: cx, y: cy })
+    if (!next) return
+    setPan(next.pan)
+    setZoom(next.zoom)
   }
   /** Client coordinates to an offset from the frame centre. */
   const fromCentre = (clientX: Px, clientY: Px) => {
@@ -136,6 +125,7 @@ export const Lightbox = ({
   return createPortal(
     <div
       class={styles.lightbox}
+      data-testid={lightboxTestIds.lightbox}
       role="dialog"
       aria-modal="true"
       aria-label="Picture"
@@ -144,12 +134,13 @@ export const Lightbox = ({
       }}
       title="Scroll or pinch to zoom, drag to pan; click the backdrop or press Escape to close"
     >
-      <button class={styles.close} aria-label="Close" onClick={onClose}>
+      <button class={styles.close} aria-label="Close" onClick={onClose} data-testid={lightboxTestIds.close}>
         ×
       </button>
       <div
         class={cx(styles.frame, zoom > 1 && styles.zoomed)}
         ref={frame}
+        data-testid={lightboxTestIds.frame}
         onWheel={onWheel}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -163,6 +154,7 @@ export const Lightbox = ({
           alt=""
           referrerpolicy="no-referrer"
           draggable={false}
+          data-testid={lightboxTestIds.picture}
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
             ...(ratio && { "--ratio": String(ratio) })

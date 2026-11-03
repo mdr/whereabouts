@@ -5,6 +5,7 @@ import { cx } from "../../cx"
 import { CommonsCredit } from "../CommonsCredit/CommonsCredit"
 import { flagShape, useFlagUrl } from "../flag-url"
 import { Lightbox, LightboxType, useEscape } from "../Lightbox/Lightbox"
+import { smallFlagButtonTestIds } from "./SmallFlagButtonTestIds"
 import picture from "../SmallPicture.module.css"
 import styles from "./SmallFlagButton.module.css"
 
@@ -26,7 +27,7 @@ export const SmallFlagButton = ({ code }: { code: FlagCode }) => {
         disabled={!src}
         onClick={() => setLarge(true)}
       >
-        <span class={styles.flagShape} style={flagShape(code)}>
+        <span class={styles.flagShape} style={flagShape(code)} data-testid={smallFlagButtonTestIds.flag}>
           {src && <img src={src} alt="" draggable={false} />}
         </span>
         <span class="sr-only">Enlarge flag</span>

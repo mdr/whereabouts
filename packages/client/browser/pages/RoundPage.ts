@@ -7,6 +7,7 @@ import { Hud } from "./components/Hud.ts"
 import { MapPanel } from "./components/MapPanel.ts"
 import { PaintTools } from "./components/PaintTools.ts"
 import { PlayersPanel } from "./components/PlayersPanel.ts"
+import { QuestionCard } from "./components/QuestionCard.ts"
 import { RevealPage } from "./RevealPage.ts"
 import { RoundDonePage } from "./RoundDonePage.ts"
 import { Screen } from "./Screen.ts"
@@ -18,6 +19,7 @@ import type { Ms } from "@whereabouts/shared/units"
 /** An online round you are playing: paint, then Done (or Pass). */
 export class RoundPage extends Screen {
   readonly hud: Hud
+  readonly questionCard: QuestionCard
   readonly map: MapPanel
   readonly paintTools: PaintTools
   readonly playersPanel: PlayersPanel
@@ -34,6 +36,7 @@ export class RoundPage extends Screen {
   constructor(tab: Tab) {
     super(tab)
     this.hud = new Hud(tab)
+    this.questionCard = new QuestionCard(tab.page)
     this.map = new MapPanel(tab.page)
     this.paintTools = new PaintTools(tab.page)
     this.playersPanel = new PlayersPanel(tab.page)

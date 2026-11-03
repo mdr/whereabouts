@@ -1,11 +1,13 @@
 import type { CommonsFile } from "@whereabouts/shared/ids"
 import { commonsPageUrl } from "@whereabouts/shared/questions"
 import { Icon } from "../../icons"
+import { commonsCreditTestIds } from "./CommonsCreditTestIds"
 import styles from "./CommonsCredit.module.css"
 
 export const CommonsCredit = ({ image }: { image: CommonsFile }) => (
   <a
     class={styles.credit}
+    data-testid={commonsCreditTestIds.credit}
     href={commonsPageUrl(image)}
     target="_blank"
     rel="noopener"
