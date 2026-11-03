@@ -11,6 +11,8 @@ export interface ServerConfig {
   game: Partial<GameConfig>
   /** Undefined for the limiter's defaults. */
   addressLimits: AddressLimits | undefined
+  /** Playtest endpoints, for development servers only. */
+  devTools: boolean
 }
 
 export const configFromEnv = (env: Record<string, string | undefined>, defaultStaticDir: string): ServerConfig => {
@@ -28,7 +30,8 @@ export const configFromEnv = (env: Record<string, string | undefined>, defaultSt
     staticDir: env["STATIC_DIR"] === "" ? undefined : (env["STATIC_DIR"] ?? defaultStaticDir),
     game,
     addressLimits:
-      perAddress === undefined ? undefined : { maxOpen: perAddress, burst: perAddress, perSecond: perAddress }
+      perAddress === undefined ? undefined : { maxOpen: perAddress, burst: perAddress, perSecond: perAddress },
+    devTools: env["DEV_TOOLS"] === "1"
   }
 }
 

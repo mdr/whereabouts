@@ -463,6 +463,12 @@ export class Game {
     return state.phase === Phase.GUESSING ? state.submissions.get(token)?.paint : undefined
   }
 
+  /** The question being guessed, with its answer: for the server's own use, never sent to players. */
+  get questionBeingGuessed(): Question | undefined {
+    const state = this.state
+    return state.phase === Phase.GUESSING ? state.round.question : undefined
+  }
+
   /** The reveal on show, the same object for as long as it shows. */
   get roundReveal(): RoundReveal | undefined {
     const state = this.state

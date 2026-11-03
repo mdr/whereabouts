@@ -202,7 +202,10 @@ interface GameServer {
   aliceAndBob: () => Promise<{ alice: TestPlayer; bob: TestPlayer; code: RoomCode; bobId: PlayerId }>
 }
 
-export const useGameServer = ({ addressLimits }: { addressLimits?: AddressLimits } = {}): GameServer => {
+export const useGameServer = ({
+  addressLimits,
+  devTools
+}: { addressLimits?: AddressLimits; devTools?: boolean } = {}): GameServer => {
   let app: App
   let url: string
   let clock: FakeClock
@@ -211,7 +214,7 @@ export const useGameServer = ({ addressLimits }: { addressLimits?: AddressLimits
   beforeEach(async () => {
     clock = new FakeClock()
     configureGameRooms({ clock, bank, config })
-    app = createApp({ staticDir: undefined, logLevel: "warning", addressLimits })
+    app = createApp({ staticDir: undefined, logLevel: "warning", addressLimits, devTools })
     const address = await app.listen(0)
     url = address.replace(/^http/, "ws") + "/ws"
   })

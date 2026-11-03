@@ -9,12 +9,13 @@ import { FakeClock } from "./fake-clock.ts"
 import type { Game } from "@whereabouts/shared/game/game"
 import type { GameConfig } from "@whereabouts/shared/protocol/config"
 import type { Question } from "@whereabouts/shared/questions"
-import { playerName, playerToken, type PlayerToken, type RoomCode } from "@whereabouts/shared/ids"
+import type { PlayerToken, RoomCode } from "@whereabouts/shared/ids"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { viewIn } from "@whereabouts/shared/game/view-in"
 import { Phase } from "@whereabouts/shared/protocol/views"
 import type { Instant, Km } from "@whereabouts/shared/units"
-import { blobPaint } from "./blob-paint.ts"
+import { blobPaint } from "../extra-players/blob-paint.ts"
+import { seatPlayers } from "../extra-players/seat-players.ts"
 
 export interface InProcessOptions {
   config?: Partial<GameConfig>
@@ -71,12 +72,9 @@ export class InProcessServer {
 
   /** Seat players with no connection behind them, as if each had joined and kept still. */
   seat(code: RoomCode, names: string[]): PlayerToken[] {
-    const tokens = names.map((name) => playerToken(`${name}-seated-0123456789`))
+    let tokens: PlayerToken[] = []
     this.act(code, (game, now) => {
-      names.forEach((name, i) => {
-        const joined = game.join(tokens[i]!, playerName(name), now)
-        if (!joined.ok) throw new Error(`${name} could not join: ${joined.reason}`)
-      })
+      tokens = seatPlayers(game, names, now)
     })
     return tokens
   }

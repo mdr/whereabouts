@@ -283,9 +283,10 @@ export class GameRoom extends Room<ActorData> {
   }
 
   /** Test hook: change the game directly, then send everyone the result. */
-  act(change: (game: Game, now: Instant) => void): void {
-    change(this.game, deps.clock.now())
+  act<R>(change: (game: Game, now: Instant) => R): R {
+    const result = change(this.game, deps.clock.now())
     this.broadcastState()
+    return result
   }
 }
 

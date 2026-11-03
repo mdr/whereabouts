@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "node --watch --experimental-transform-types src/main.ts",
+    "dev": "DEV_TOOLS=1 node --watch --experimental-transform-types src/main.ts",
     "start": "node --experimental-transform-types src/main.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit"

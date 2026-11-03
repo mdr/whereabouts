@@ -494,6 +494,13 @@ and cell count, brush strength and world floor sliders, and connection
 diagnostics online. Players never see any of this; strength and floor are
 fixed for them.
 
+In an online game the drawer's Extra players card fills a room without
+opening tabs: "Add 16 players" in the lobby seats players with no browser
+behind them, and "Extra players paint" while guessing has each of them paint a
+blob near the answer (up to three tolerances off, so scores vary) and lock in.
+It calls `POST /api/dev/players`, which the server registers only when
+`DEV_TOOLS=1`: set by the server's `dev` script, never in production.
+
 `#/score-review`, linked from nowhere, is for tuning the scoring: a set of
 32 made-up guesses (`score-review.ts`) at place names, countries, islands,
 lakes and seas, and US states, seeded by the set number so every playtester

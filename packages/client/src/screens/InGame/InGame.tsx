@@ -15,6 +15,7 @@ import { PaintTools } from "../../ui/map/paint/PaintTools/PaintTools"
 import { PlayerList } from "../../ui/players/PlayerList/PlayerList"
 import { ConnectionNote } from "../../ui/connection/ConnectionNote/ConnectionNote"
 import { DevDrawer } from "../../ui/dev/DevDrawer/DevDrawer"
+import { ExtraPlayersDev } from "../../ui/dev/ExtraPlayersDev/ExtraPlayersDev"
 import { ConnectionDev } from "../../ui/connection/ConnectionDev"
 import { Reveal } from "../reveal/Reveal/Reveal"
 import { Icon } from "../../ui/icons"
@@ -197,6 +198,7 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
         <Card title="Players">
           <PlayerList players={everyone(view)} you={view.you.id} showScores />
         </Card>
+        <ExtraPlayersDev code={view.code} phase={view.phase} />
         <PaintDev />
         <ConnectionDev conn={conn} view={view} />
       </DevDrawer>
