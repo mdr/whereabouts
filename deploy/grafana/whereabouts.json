@@ -23,11 +23,11 @@
   "tags": ["whereabouts"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": true,
   "refresh": "1m",
   "time": {
-    "from": "now-7d",
+    "from": "now-24h",
     "to": "now"
   },
   "panels": [
@@ -496,8 +496,8 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "histogram_quantile(0.5, sum by (le) (rate(whereabouts_game_duration_seconds_bucket{app=\"whereabouts-game\"}[$__rate_interval])))",
-          "legendFormat": "median",
+          "expr": "sum(increase(whereabouts_game_duration_seconds_sum{app=\"whereabouts-game\"}[1h])) / sum(increase(whereabouts_game_duration_seconds_count{app=\"whereabouts-game\"}[1h]))",
+          "legendFormat": "average, past hour",
           "refId": "A"
         },
         {
@@ -505,8 +505,8 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "histogram_quantile(0.9, sum by (le) (rate(whereabouts_game_duration_seconds_bucket{app=\"whereabouts-game\"}[$__rate_interval])))",
-          "legendFormat": "90th percentile",
+          "expr": "histogram_quantile(0.9, sum by (le) (increase(whereabouts_game_duration_seconds_bucket{app=\"whereabouts-game\"}[1h])))",
+          "legendFormat": "90th percentile, past hour (by bucket)",
           "refId": "B"
         }
       ],
@@ -551,18 +551,9 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "histogram_quantile(0.5, sum by (le) (rate(whereabouts_players_per_game_bucket{app=\"whereabouts-game\"}[$__rate_interval])))",
-          "legendFormat": "median",
+          "expr": "sum(increase(whereabouts_players_per_game_sum{app=\"whereabouts-game\"}[1h])) / sum(increase(whereabouts_players_per_game_count{app=\"whereabouts-game\"}[1h]))",
+          "legendFormat": "average, past hour",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "expr": "histogram_quantile(0.9, sum by (le) (rate(whereabouts_players_per_game_bucket{app=\"whereabouts-game\"}[$__rate_interval])))",
-          "legendFormat": "90th percentile",
-          "refId": "B"
         }
       ],
       "fieldConfig": {
