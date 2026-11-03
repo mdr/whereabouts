@@ -1,3 +1,3 @@
 export const awardsTestIds = {
-  award: "Results.award"
+  award: "Awards.award"
 }

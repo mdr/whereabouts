@@ -1,4 +1,4 @@
 export const roundListTestIds = {
-  roundWinner: "Results.roundWinner",
-  roundYours: "Results.roundYours"
+  roundWinner: "RoundList.roundWinner",
+  roundYours: "RoundList.roundYours"
 }

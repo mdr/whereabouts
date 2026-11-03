@@ -2,7 +2,7 @@ import { PageObject } from "../steps.ts"
 import { expect, type CDPSession, type Page } from "@playwright/test"
 import type {} from "../../../src/test-hooks.ts"
 import { mapViewTestIds } from "../../../src/ui/map/MapView/MapViewTestIds.ts"
-import { hudBottomTestIds } from "../../../src/ui/map/Hud/HudTestIds.ts"
+import { hudTestIds } from "../../../src/ui/map/Hud/HudTestIds.ts"
 import { questionCardTestIds } from "../../../src/ui/round/question/QuestionCard/QuestionCardTestIds.ts"
 import { playersPanelTestIds } from "../../../src/ui/players/PlayersPanel/PlayersPanelTestIds.ts"
 import {
@@ -99,7 +99,7 @@ export class MapPanel extends PageObject {
       return b ? b.y + b.height : 0
     }
     const top = Math.max(await bottomOf(questionCardTestIds.card), await bottomOf(playersPanelTestIds.toggle))
-    const toolbar = await this.#page.getByTestId(hudBottomTestIds.toolbar).boundingBox()
+    const toolbar = await this.#page.getByTestId(hudTestIds.toolbar).boundingBox()
     const map = await this.#page.getByTestId(mapViewTestIds.map).boundingBox()
     if (!toolbar || !map) throw new Error("the map or toolbar is not on screen")
     return { across: 0.5, down: ((top + toolbar.y) / 2 - map.y) / map.height }
@@ -297,7 +297,7 @@ export class MapPanel extends PageObject {
       "above the toolbar",
       async () => {
         const attribution = (await this.#page.locator(".maplibregl-ctrl-bottom-right").boundingBox()) ?? undefined
-        const toolbar = (await this.#page.getByTestId(hudBottomTestIds.toolbar).boundingBox()) ?? undefined
+        const toolbar = (await this.#page.getByTestId(hudTestIds.toolbar).boundingBox()) ?? undefined
         return { attribution, toolbar }
       },
       ({ attribution, toolbar }) =>

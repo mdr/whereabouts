@@ -1,21 +1,7 @@
 import { expectPolled, stillTrueFor } from "../pages/support.ts"
 import type { Ms } from "@whereabouts/shared/units"
+import type { SoundEvent } from "../pages/SoundEvent.ts"
 import type { Tab } from "../pages/Tab.ts"
-
-export interface SoundEvent {
-  kind: "buffer" | "stop" | "osc"
-  /** A recorded clip, known by its length. */
-  clip?: string
-  freq?: number
-  /** performance.now() in the page. */
-  at: number
-}
-
-declare global {
-  interface Window {
-    __audio: SoundEvent[]
-  }
-}
 
 /**
  * Runs in the page before the app: records each Web Audio source started or
@@ -57,7 +43,7 @@ export const recordSounds = (): void => {
 /* oxlint-enable typescript/unbound-method */
 
 /** The page clock, to time sounds against. */
-export const pageTime = (tab: Tab): Promise<number> => tab.page.evaluate(() => performance.now())
+export const pageTime = (tab: Tab): Promise<number> => tab.pageTime()
 
 const clipsPlayed = (events: SoundEvent[]): string[] =>
   events.filter((event) => event.kind === "buffer").map((event) => event.clip ?? "")
@@ -87,7 +73,7 @@ export class Sounds {
   }
 
   async #drain(): Promise<void> {
-    const fresh = await this.#tab.page.evaluate(() => window.__audio.splice(0))
+    const fresh = await this.#tab.drainRecordedSounds()
     for (const events of this.#windows) events.push(...fresh)
   }
 }

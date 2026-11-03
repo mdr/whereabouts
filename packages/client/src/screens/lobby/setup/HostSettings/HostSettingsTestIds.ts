@@ -1,5 +1,5 @@
 export const hostSettingsTestIds = {
-  questionsSetting: "Lobby.questionsSetting",
-  secondsSetting: "Lobby.secondsSetting",
-  hintsSetting: "Lobby.hintsSetting"
+  questionsSetting: "HostSettings.questionsSetting",
+  secondsSetting: "HostSettings.secondsSetting",
+  hintsSetting: "HostSettings.hintsSetting"
 }

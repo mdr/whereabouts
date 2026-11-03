@@ -1,3 +1,3 @@
 export const questionImageTestIds = {
-  photo: "QuestionCard.photo"
+  photo: "QuestionImage.photo"
 }

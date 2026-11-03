@@ -1,3 +1,3 @@
 export const answerTestIds = {
-  answer: "QuestionCard.answer"
+  answer: "Answer.answer"
 }

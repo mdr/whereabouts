@@ -1,3 +1,3 @@
 export const factLineTestIds = {
-  fact: "Fact.fact"
+  fact: "FactLine.fact"
 }
