@@ -62,14 +62,19 @@ export class Game {
   private state: GameState = LOBBY_STATE
   private readonly seats = new Seats()
 
-  private questions: Question[] = []
+  private questions: readonly Question[] = []
+  private readonly given: readonly Question[] | undefined
 
   private seed: number
 
   constructor(
     code: RoomCode,
     bank: QuestionBank,
-    { config = {}, seed = Date.now() }: { config?: Partial<GameConfig>; seed?: number } = {}
+    {
+      config = {},
+      seed = Date.now(),
+      questions
+    }: { config?: Partial<GameConfig>; seed?: number; questions?: readonly Question[] } = {}
   ) {
     this.seed = seed
     this.code = code
@@ -77,7 +82,8 @@ export class Game {
     this.bank = bank
     this.kernel = kernelById(this.config.kernelId)
     if (bank.catalogue.length === 0) throw new Error("question catalogue is empty")
-    this.questions = pickRounds(this.bank, this.config, this.seed)
+    this.given = questions
+    this.questions = this.pickQuestions()
   }
 
   get phase(): Phase {
@@ -148,6 +154,11 @@ export class Game {
     return OK_CHANGED
   }
 
+  /** The questions given at construction, else a pick from the bank for the config and seed. */
+  private pickQuestions(): readonly Question[] {
+    return this.given ?? pickRounds(this.bank, this.config, this.seed)
+  }
+
   /** Host tunes the question mix (and so the rounds), round length and map detail while everyone is still in the lobby. */
   configure(token: PlayerToken, patch: ConfigurePatch): CommandResult {
     if (!this.seats.isHost(token)) return fail("only the host can change settings")
@@ -155,7 +166,7 @@ export class Game {
     const next = { ...this.config, ...patch }
     if (sameData(next, this.config)) return OK_SAME
     this.config = next
-    this.questions = pickRounds(this.bank, this.config, this.seed)
+    this.questions = this.pickQuestions()
     return OK_CHANGED
   }
 
@@ -173,7 +184,7 @@ export class Game {
     if (this.state.phase !== Phase.RESULTS) return fail("game is still running")
     this.state = LOBBY_STATE
     this.seed = now
-    this.questions = pickRounds(this.bank, this.config, this.seed)
+    this.questions = this.pickQuestions()
     for (const seat of this.seats.playing()) seat.role.record = freshRecord(0)
     // Back in a lobby, anyone away has its grace to come back, from now.
     for (const seat of this.seats.all()) if (!seat.connected) seat.leftAt = now
@@ -264,7 +275,7 @@ export class Game {
     }
     const { record } = seat.role
     if (state.hints.has(token)) return fail("one hint per round")
-    if (record.hintsUsed >= this.config.hints) return fail("no hints left")
+    if (this.config.hints !== undefined && record.hintsUsed >= this.config.hints) return fail("no hints left")
     state.hints.set(token, axis)
     record.hintsUsed++
     return OK_CHANGED
@@ -307,7 +318,7 @@ export class Game {
       type: SubmissionType.LOCKED,
       paint,
       at: now,
-      scored: scorePaint(state.round.question, state.deadline, paint, now, this.scoringContext())
+      scored: scorePaint(state.round.question, state.startedAt, paint, now, this.scoringContext())
     })
     this.settleIfEveryoneDone(now)
     return OK_CHANGED
@@ -377,7 +388,7 @@ export class Game {
       case Phase.LOBBY:
         return this.seats.freeLapsed(now)
       case Phase.GUESSING:
-        if (now < state.deadline + ROUND_GRACE) return false
+        if (state.deadline === undefined || now < state.deadline + ROUND_GRACE) return false
         this.state = this.closeRound(state)
         return true
       case Phase.REVEAL:
@@ -391,7 +402,7 @@ export class Game {
     const state = this.state
     switch (state.phase) {
       case Phase.GUESSING:
-        return state.deadline + ROUND_GRACE
+        return state.deadline === undefined ? undefined : state.deadline + ROUND_GRACE
       case Phase.LOBBY:
         return this.seats.nextLapseAt()
       case Phase.REVEAL:
@@ -411,7 +422,8 @@ export class Game {
     return {
       phase: Phase.GUESSING,
       round,
-      deadline: now + this.config.roundLength,
+      startedAt: now,
+      deadline: this.config.roundLength === undefined ? undefined : now + this.config.roundLength,
       submissions: new Map(),
       hints: new Map()
     }

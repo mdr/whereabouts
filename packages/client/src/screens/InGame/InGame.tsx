@@ -119,10 +119,10 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
           <HudHeader
             round={round.index + 1}
             total={round.total}
-            right={<Countdown timeLeft={() => conn.timeUntil(round.deadline)} />}
+            right={deadline === undefined ? undefined : <Countdown timeLeft={() => conn.timeUntil(deadline)} />}
           />
           <RoundPrompt question={round.question} />
-          {role.type === YouRoleType.PLAYING && view.config.hints > 0 && (
+          {role.type === YouRoleType.PLAYING && view.config.hints !== 0 && (
             <HintCard band={view.you.hint} left={role.hintsLeft} disabled={!online} onUse={(axis) => conn.hint(axis)} />
           )}
           <ConnectionNote conn={conn} onMap />

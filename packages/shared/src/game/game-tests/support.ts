@@ -101,9 +101,15 @@ export const makeGame = ({
   code = CODE,
   bank,
   config,
-  seed = 42
-}: { code?: RoomCode; bank?: Partial<QuestionBank>; config?: Partial<GameConfig>; seed?: number } = {}): Game =>
-  new Game(code, makeBank(bank), { config, seed })
+  seed = 42,
+  questions
+}: {
+  code?: RoomCode
+  bank?: Partial<QuestionBank>
+  config?: Partial<GameConfig>
+  seed?: number
+  questions?: readonly Question[]
+} = {}): Game => new Game(code, makeBank(bank), { config, seed, questions })
 
 export const twoPlayerGame = (rounds = 2): Game => {
   // The test pool is place names only.

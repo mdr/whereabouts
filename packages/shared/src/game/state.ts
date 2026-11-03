@@ -21,7 +21,9 @@ export interface LobbyState {
 export interface GuessingState {
   phase: Phase.GUESSING
   round: Round
-  deadline: Instant
+  startedAt: Instant
+  /** Undefined for an untimed round. */
+  deadline: Instant | undefined
   submissions: Map<PlayerToken, Submission>
   /** The hint each player used on this round. */
   hints: Map<PlayerToken, HintAxis>

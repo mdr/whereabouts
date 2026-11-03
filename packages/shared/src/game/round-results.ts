@@ -12,25 +12,25 @@ import { playsRound, type GuessingState } from "./state.ts"
 export interface ScoringContext {
   outlines: Outlines
   kernel: Kernel
-  roundLength: Ms
+  roundLength: Ms | undefined
 }
 
 /** One player's round, with this paint, locked in at `lockedAt` or still a draft. */
 export const scorePaint = (
   question: Question,
-  deadline: Instant,
+  startedAt: Instant,
   paint: PaintSubmission | undefined,
   lockedAt: Instant | undefined,
   { outlines, kernel, roundLength }: ScoringContext
 ): ScoredRound =>
   scoreRound(question.label, scoredAnswer(question.answer, outlines), paint, lockedAt, kernel, {
-    startedAt: deadline - roundLength,
+    startedAt,
     roundLength
   })
 
 export const scorePlayers = (
   playing: readonly PlayerSeat[],
-  { round, deadline, submissions, hints }: GuessingState,
+  { round, startedAt, submissions, hints }: GuessingState,
   context: ScoringContext
 ): RoundResultView[] => {
   const { index, question } = round
@@ -43,7 +43,7 @@ export const scorePlayers = (
     const { score, guess, facts } =
       submission?.type === SubmissionType.LOCKED
         ? submission.scored
-        : scorePaint(question, deadline, submission?.paint, undefined, context)
+        : scorePaint(question, startedAt, submission?.paint, undefined, context)
     seat.role.record.scores[index] = score
     seat.role.record.facts[index] = facts
     const hint = hints.get(seat.token)

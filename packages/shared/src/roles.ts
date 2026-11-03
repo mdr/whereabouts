@@ -61,7 +61,8 @@ interface YouSeated {
 /** Playing the round under way or on show. */
 export interface YouPlaying extends YouSeated {
   locked: boolean
-  hintsLeft: number
+  /** Undefined when hints are unlimited. */
+  hintsLeft?: number
 }
 
 /** Seated mid-round: sits it out and plays from the next. */

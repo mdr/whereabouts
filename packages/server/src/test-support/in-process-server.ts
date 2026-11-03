@@ -159,7 +159,7 @@ export class InProcessServer {
 
   /** Move the clock past the end of the round being guessed. */
   passDeadline(code: RoomCode = this.requireOnlyCode()): void {
-    this.clock.advance(this.requireGame(code).config.roundLength + ROUND_GRACE)
+    this.clock.advance((this.requireGame(code).config.roundLength ?? 0) + ROUND_GRACE)
   }
 
   /** The question being guessed, with its answer. */

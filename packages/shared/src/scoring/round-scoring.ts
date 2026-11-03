@@ -47,7 +47,7 @@ export const scoreRound = (
   paint: PaintSubmission | undefined,
   lockedAt: Instant | undefined,
   kernel: Kernel,
-  { startedAt, roundLength }: { startedAt: Instant; roundLength: Ms }
+  { startedAt, roundLength }: { startedAt: Instant; roundLength: Ms | undefined }
 ): ScoredRound => {
   const submittedPaint = paint && Object.keys(paint.cells).length > 0 ? paint : undefined
   const resolution = resolutionForTolerance(answer.tolerance)

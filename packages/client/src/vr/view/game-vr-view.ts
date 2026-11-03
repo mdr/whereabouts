@@ -128,7 +128,10 @@ const gameRound = (
     detail: view.config.mapDetail,
     colour: ownColour(view.you),
     hint: view.you.hint,
-    hintsLeft: view.config.hints > 0 && role.type === YouRoleType.PLAYING ? role.hintsLeft : HintAllowance.NONE,
+    hintsLeft:
+      view.config.hints !== 0 && role.type === YouRoleType.PLAYING
+        ? (role.hintsLeft ?? HintAllowance.UNLIMITED)
+        : HintAllowance.NONE,
     useHint: (axis: HintAxis) => conn.hint(axis),
     timeLeft: deadline === undefined ? undefined : () => conn.timeUntil(deadline),
     doneLabel: "Done",

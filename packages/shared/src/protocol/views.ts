@@ -114,8 +114,8 @@ export interface RoundView {
   index: number
   total: number
   question: QuestionView
-  /** Server epoch time when guessing ends. */
-  deadline: Instant
+  /** Server epoch time when guessing ends; undefined for an untimed round. */
+  deadline?: Instant
 }
 
 export enum RoundGuessType {

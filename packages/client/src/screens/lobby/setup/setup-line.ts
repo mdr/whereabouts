@@ -7,5 +7,5 @@ export const setupLine = (view: GameView): string => {
   const { roundLength, mix, mapDetail, hints } = view.config
   const rounds = mixTotal(mix)
   const map = MAP_DETAILS.find((detail) => detail.id === mapDetail)?.label ?? mapDetail
-  return `${rounds} ${rounds === 1 ? "round" : "rounds"} of ${roundLength / 1000} s, ${hints} ${hints === 1 ? "hint" : "hints"} each: ${describeMix(mix)}. ${map} map.`
+  return `${rounds} ${rounds === 1 ? "round" : "rounds"} ${roundLength === undefined ? "with no time limit" : `of ${roundLength / 1000} s`}, ${hints === undefined ? "unlimited hints" : `${hints} ${hints === 1 ? "hint" : "hints"} each`}: ${describeMix(mix)}. ${map} map.`
 }

@@ -88,12 +88,13 @@ export const ConfigureSchema = z.object({
 export type ConfigurePatch = z.infer<typeof ConfigureSchema>
 
 export interface GameConfig {
-  roundLength: Ms
+  /** How long a round runs; undefined for an untimed one, which ends when everyone has locked in. */
+  roundLength?: Ms
   /** How many rounds of each kind of question; their total (mixTotal) is the game's length. */
   mix: QuestionMix
   /** How much of the map shows while guessing (one of MAP_DETAILS). */
   mapDetail: MapDetail
   kernelId: KernelId
-  /** Hints each player may use in the game, one per round at most. */
-  hints: number
+  /** Hints each player may use in the game, one per round at most; undefined for no limit. */
+  hints?: number
 }

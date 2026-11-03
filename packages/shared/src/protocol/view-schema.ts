@@ -137,7 +137,7 @@ const RoundYouShape = {
       type: z.literal(YouRoleType.PLAYING),
       colour: PlayerColourSchema,
       locked: z.boolean(),
-      hintsLeft: z.number().int()
+      hintsLeft: z.number().int().optional()
     }),
     z.strictObject({ type: z.literal(YouRoleType.JOINED_LATE), colour: PlayerColourSchema }),
     SpectatingSchema
@@ -148,11 +148,11 @@ const RoundYouShape = {
 const ViewShape = {
   code: RoomCodeSchema,
   config: z.strictObject({
-    roundLength: MsSchema,
+    roundLength: MsSchema.optional(),
     mix: MixSchema,
     mapDetail: MapDetailSchema,
     kernelId: KernelIdSchema,
-    hints: z.number().int()
+    hints: z.number().int().optional()
   }),
   serverTime: InstantSchema,
   players: z.array(PlayingPlayerViewSchema),
@@ -163,7 +163,7 @@ const RoundViewSchema = z.strictObject({
   index: z.number().int(),
   total: z.number().int(),
   question: QuestionViewSchema,
-  deadline: InstantSchema
+  deadline: InstantSchema.optional()
 })
 const RevealViewSchema = z.strictObject({
   index: z.number().int(),
