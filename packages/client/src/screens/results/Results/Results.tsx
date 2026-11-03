@@ -1,5 +1,5 @@
-import { colourCss, type CssColour } from "@whereabouts/shared/colours"
-import type { FinalStanding, ResultsGameView } from "@whereabouts/shared/protocol/views"
+import { colourCss } from "@whereabouts/shared/colours"
+import type { ResultsGameView } from "@whereabouts/shared/protocol/views"
 import type { Connection } from "../../../net/net"
 import { Icon } from "../../../ui/icons"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"
@@ -15,7 +15,7 @@ import { navigate } from "../../../router"
 import { VrViewType, type VrView } from "../../../vr/view/view"
 import { Awards } from "../Awards/Awards"
 import { Rounds } from "../Rounds/Rounds"
-import { typeName } from "../RoundWhat/RoundWhat"
+import { awardParts, typeName } from "../results-table"
 import { Standings } from "../Standings/Standings"
 import { resultsTestIds } from "./ResultsTestIds"
 import styles from "./Results.module.css"
@@ -85,7 +85,7 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
             <Icon name="refresh" /> Play again
           </button>
         ) : (
-          <p class={kit.hint}>
+          <p class={kit.hint} data-testid={resultsTestIds.cannotPlayAgain}>
             <HostWord capital /> can start another game with the same group.
           </p>
         )}
@@ -99,16 +99,3 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
     </div>
   )
 }
-
-/** An award's line in pieces, each player's name in their colour. */
-const awardParts = (line: string, standings: (FinalStanding | undefined)[]): { text: string; colour?: CssColour }[] =>
-  line
-    .split(/(\{\d\})/)
-    .filter((part) => part !== "")
-    .map((part) => {
-      const match = /^\{(\d)\}$/.exec(part)
-      if (!match) return { text: part }
-      const standing = standings[Number(match[1])]
-      // Awards and standings come from the same finalists, so a standing is always found.
-      return { text: standing?.name ?? "Someone", colour: standing ? colourCss(standing.colour) : undefined }
-    })

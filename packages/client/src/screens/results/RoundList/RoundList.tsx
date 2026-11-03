@@ -4,6 +4,7 @@ import type { FinalStanding, PlayedRound } from "@whereabouts/shared/protocol/vi
 import { cx } from "../../../ui/cx"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { RoundWhat } from "../RoundWhat/RoundWhat"
+import { roundWinners } from "../results-table"
 import { roundListTestIds } from "./RoundListTestIds"
 import { roundsTestIds } from "../Rounds/RoundsTestIds"
 import styles from "./RoundList.module.css"
@@ -26,7 +27,7 @@ export const RoundList = ({ rounds, standings, you, best }: RoundListProps) => {
         {mine && <span class={styles.yours}>You</span>}
       </li>
       {rounds.map((round, roundIndex) => {
-        const winners = standings.filter((standing) => standing.rounds[roundIndex]?.score === best[roundIndex])
+        const winners = roundWinners(standings, roundIndex, best)
         const first = winners[0]
         const yours = mine?.rounds[roundIndex]?.score
         return (

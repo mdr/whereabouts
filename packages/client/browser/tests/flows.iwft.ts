@@ -10,14 +10,15 @@ import { shot } from "./support.ts"
 test.use({ serverOptions: { config: { mix: evenMix(2), roundLength: 120_000 } } })
 
 test("flows", async ({ browser, game }) => {
-  const { code, aliceLobbyPage, bob } = await test.step("Alice hosts and Bob is seated", async () => {
-    const aliceHomePage = await (await newTab(browser, "Alice", { game })).openHome()
+  const { code, aliceTab, aliceLobbyPage, bob } = await test.step("Alice hosts and Bob is seated", async () => {
+    const aliceTab = await newTab(browser, "Alice", { game })
+    const aliceHomePage = await aliceTab.openHome()
     await aliceHomePage.enterName("Alice")
     const aliceLobbyPage = await aliceHomePage.hostGame()
     const code = await aliceLobbyPage.code()
     const [bob] = game.seat(["Bob"])
     await aliceLobbyPage.players.waitForPlayer("Bob")
-    return { code, aliceLobbyPage, bob: bob! }
+    return { code, aliceTab, aliceLobbyPage, bob: bob! }
   })
   let aliceRoundPage = await aliceLobbyPage.startGame()
 
@@ -33,21 +34,23 @@ test("flows", async ({ browser, game }) => {
     await aliceRoundPage.playersPanel.players.expectHost("Alice")
   })
 
-  const caraRoundPage = await test.step("a late joiner sits round 1 out, then plays round 2", async () => {
-    const caraHomePage = await (await newTab(browser, "Cara", { game })).openHome()
-    await caraHomePage.enterName("Cara")
-    const caraSittingOutPage = await caraHomePage.joinGameMidRound(code)
-    const aliceRoundDonePage = await aliceRoundPage.finish()
-    game.lock([bob])
-    const aliceRevealPage = await aliceRoundDonePage.waitForReveal()
-    const caraRevealPage = await caraSittingOutPage.waitForReveal()
-    await aliceRevealPage.expectRowCount(3)
-    await aliceRevealPage.expectRow("Cara", { roundScore: "sat out" })
-    aliceRoundPage = await aliceRevealPage.nextRound()
-    return caraRevealPage.waitForNextRound()
-  })
+  const { caraRoundPage, roundOneRows } =
+    await test.step("a late joiner sits round 1 out, then plays round 2", async () => {
+      const caraHomePage = await (await newTab(browser, "Cara", { game })).openHome()
+      await caraHomePage.enterName("Cara")
+      const caraSittingOutPage = await caraHomePage.joinGameMidRound(code)
+      const aliceRoundDonePage = await aliceRoundPage.finish()
+      game.lock([bob])
+      const aliceRevealPage = await aliceRoundDonePage.waitForReveal()
+      const caraRevealPage = await caraSittingOutPage.waitForReveal()
+      await aliceRevealPage.expectRowCount(3)
+      await aliceRevealPage.expectRow("Cara", { roundScore: "sat out" })
+      const roundOneRows = await aliceRevealPage.rows()
+      aliceRoundPage = await aliceRevealPage.nextRound()
+      return { caraRoundPage: await caraRevealPage.waitForNextRound(), roundOneRows }
+    })
 
-  const { aliceRevealPage, caraRevealPage } =
+  const { aliceRevealPage, caraRevealPage, roundTwoRows } =
     await test.step("a pass shows as +250 on the round 2 reveal", async () => {
       // With nothing painted Done is a pass; Cara has no idea and takes it.
       await caraRoundPage.expectDoneLabel("Pass")
@@ -61,14 +64,34 @@ test("flows", async ({ browser, game }) => {
       await aliceRevealPage.expectRowCount(3)
       await aliceRevealPage.expectRow("Cara", { passed: true, roundScore: "+250" })
       const caraRevealPage = await caraRoundDonePage.waitForReveal()
-      return { aliceRevealPage, caraRevealPage }
+      return { aliceRevealPage, caraRevealPage, roundTwoRows: await aliceRevealPage.rows() }
     })
 
-  await test.step("the final standings, then Play again", async () => {
+  await test.step("the final standings agree with the reveals", async () => {
     const aliceResultsPage = await aliceRevealPage.showFinalResults()
     const caraResultsPage = await caraRevealPage.waitForResults()
     await aliceResultsPage.expectStandingsCount(3)
+    await aliceResultsPage.expectWinner(roundTwoRows[0]!.name)
+    // The reveal after the last round is in finishing order too.
+    for (const [index, { name, total }] of roundTwoRows.entries()) {
+      await aliceResultsPage.expectStanding(index + 1, name, total)
+    }
+    for (const [round, rows] of [roundOneRows, roundTwoRows].entries()) {
+      for (const { name, roundScore } of rows) await aliceResultsPage.expectRoundScore(round + 1, name, roundScore)
+    }
+    await aliceResultsPage.expectStandingIsYou("Alice", true)
+    await aliceResultsPage.expectStandingIsYou("Bob", false)
+    await caraResultsPage.expectStandingIsYou("Cara", true)
+    await caraResultsPage.expectStandingIsYou("Alice", false)
+    await caraResultsPage.expectCannotPlayAgain()
     await aliceResultsPage.screenshot(shot(`flows-results.png`))
+
+    // Held while the connection is down, since Play again would go nowhere.
+    aliceTab.connection!.cut()
+    await aliceResultsPage.expectPlayAgainHeldReconnecting()
+    aliceTab.connection!.restore()
+    await aliceResultsPage.expectPlayAgainAvailable()
+
     await aliceResultsPage.playAgain()
     const caraLobbyAgainPage = await caraResultsPage.waitForLobby()
     await caraLobbyAgainPage.expectCode(code)

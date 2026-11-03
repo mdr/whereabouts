@@ -31,6 +31,8 @@ test("phone", async ({ browser, game }) => {
     await aliceHomePage.enterName("Alice")
     const aliceLobbyPage = await aliceHomePage.hostGame()
     const code = await aliceLobbyPage.code()
+    // Four players are too many for the full scores table on a phone.
+    game.seat(["Cara", "Dan"])
     return { aliceLobbyPage, code }
   })
 
@@ -104,5 +106,8 @@ test("phone", async ({ browser, game }) => {
     await (await aliceRevealPage.hud.askToEndGame()).confirm()
     const bobResultsPage = await bobRevealPage.waitForResults()
     await fits(bobResultsPage, "results")
+    await bobResultsPage.expectRoundsListed(1)
+    await bobResultsPage.showEveryonesScores(4)
+    await bobResultsPage.showJustTheWinners(1)
   })
 })

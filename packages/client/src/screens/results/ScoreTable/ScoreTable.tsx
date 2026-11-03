@@ -48,6 +48,8 @@ export const ScoreTable = ({ rounds, standings, you, best, scrolls }: RoundListP
               return (
                 <td
                   key={standing.playerId}
+                  data-testid={scoreTableTestIds.score}
+                  data-player={standing.name}
                   class={cx(won && styles.best, standing.playerId === you && styles.you)}
                   title={score === undefined ? "Sat out" : won ? "Won the round" : undefined}
                 >

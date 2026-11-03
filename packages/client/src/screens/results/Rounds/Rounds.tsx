@@ -2,14 +2,11 @@ import { useEffect, useState } from "preact/hooks"
 import type { Px } from "@whereabouts/shared/units"
 import { cx } from "../../../ui/cx"
 import { useElementRef } from "../../../ui/element-ref"
+import { bestScores, roundsFit } from "../results-table"
 import { RoundList, type RoundListProps } from "../RoundList/RoundList"
 import { roundsTestIds } from "./RoundsTestIds"
 import { ScoreTable } from "../ScoreTable/ScoreTable"
 import styles from "./Rounds.module.css"
-
-/** The room the full table needs: the round column, then one column per player. */
-const ROUND_COLUMN: Px = 200
-const SCORE_COLUMN: Px = 58
 
 /**
  * What each round asked and how it went: the full table of everyone's
@@ -29,8 +26,8 @@ export const Rounds = (props: Omit<RoundListProps, "best">) => {
     return () => observer.disconnect()
   }, [])
   if (rounds.length === 0) return undefined
-  const fits = width === undefined ? standings.length <= 6 : width >= ROUND_COLUMN + standings.length * SCORE_COLUMN
-  const best = rounds.map((_, r) => Math.max(-1, ...standings.map((standing) => standing.rounds[r]?.score ?? -1)))
+  const fits = roundsFit(width, standings.length)
+  const best = bestScores(rounds.length, standings)
   return (
     <section class={styles.rounds} aria-label="Scores by round" ref={ref}>
       <h2>Rounds</h2>

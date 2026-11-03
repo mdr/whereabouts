@@ -1,17 +1,12 @@
 import type { PlayedRound } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
-import { FEATURE_TYPE_DISPLAY_INFO, QUESTION_TYPE_DISPLAY_INFO, questionTypeColourStyle } from "../../../question-types"
+import { questionTypeColourStyle } from "../../../question-types"
 import { SmallFlag } from "../../../ui/pictures/SmallFlag/SmallFlag"
 import { cx } from "../../../ui/cx"
 import { RoundPicture } from "../RoundPicture/RoundPicture"
+import { typeName } from "../results-table"
 import { roundWhatTestIds } from "./RoundWhatTestIds"
 import styles from "./RoundWhat.module.css"
-
-/** An island, lake or sea round says which. */
-export const typeName = (round: PlayedRound): string => {
-  if (round.type !== QuestionType.FEATURE) return QUESTION_TYPE_DISPLAY_INFO[round.type].roundName
-  return FEATURE_TYPE_DISPLAY_INFO[round.feature].roundName
-}
 
 /** The round's number, picture, what it asked about, and which type of question it was. */
 export const RoundWhat = ({ number, round, textClass }: { number: number; round: PlayedRound; textClass?: string }) => (

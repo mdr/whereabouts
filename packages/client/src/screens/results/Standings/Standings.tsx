@@ -24,6 +24,7 @@ export const Standings = ({
       <li
         key={standing.playerId}
         class={cx(styles.row, standing.playerId === you && styles.you, i >= MEDALS.length && styles.minor)}
+        aria-current={standing.playerId === you ? "true" : undefined}
         data-testid={standingsTestIds.standingsRow}
         data-player={standing.name}
       >

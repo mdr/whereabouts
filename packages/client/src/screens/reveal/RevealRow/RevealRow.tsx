@@ -92,7 +92,7 @@ export const RevealRow = ({
         {roundScoreText(r)}
       </span>
       <RankArrow delta={delta} />
-      <span class={players.scoreNum} title="Total so far">
+      <span class={players.scoreNum} title="Total so far" data-testid={revealRowTestIds.total}>
         {Math.round(p.score).toLocaleString()}
       </span>
       {where && (
