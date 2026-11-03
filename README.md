@@ -159,7 +159,10 @@ The server writes one JSON object per line to stdout, which Fly collects:
 Rivalis's and the transport's output too (with a `component` field), and a
 room's with `room` set to its code. Read them live with `task fly:logs`
 (`-- --no-tail` to print and stop), or search them in Fly's Grafana log search
-(7 days kept). `LOG_LEVEL` sets the
+(7 days kept). Every line has `build`, the commit the server was built
+from (`WHEREABOUTS_BUILD`, set by the Nix build; `dev` otherwise), as do
+client error reports and `/api/health`, which CI checks after a deploy.
+`LOG_LEVEL` sets the
 lowest level written (default `info`).
 
 Requests are not logged one by one: only API calls other than the health

@@ -17,6 +17,8 @@ export interface ServerConfig {
   metricsPort: number | undefined
   /** The lowest level of log line written (pino level names). */
   logLevel: string
+  /** The commit the server was built from, or "dev". */
+  build: string
 }
 
 export const configFromEnv = (env: Record<string, string | undefined>, defaultStaticDir: string): ServerConfig => {
@@ -37,7 +39,8 @@ export const configFromEnv = (env: Record<string, string | undefined>, defaultSt
       perAddress === undefined ? undefined : { maxOpen: perAddress, burst: perAddress, perSecond: perAddress },
     devTools: env["DEV_TOOLS"] === "1",
     metricsPort: positiveInt(env["METRICS_PORT"]),
-    logLevel: env["LOG_LEVEL"] || "info"
+    logLevel: env["LOG_LEVEL"] || "info",
+    build: env["WHEREABOUTS_BUILD"] || "dev"
   }
 }
 

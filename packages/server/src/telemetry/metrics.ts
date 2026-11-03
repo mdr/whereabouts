@@ -29,6 +29,7 @@ export class Metrics {
   readonly connectionsRefused: Counter<"reason">
   readonly serverErrors: Counter<"kind">
   readonly clientErrors: Counter<"kind">
+  readonly buildInfo: Gauge<"build">
 
   constructor(games: () => Game[]) {
     const { registry } = this
@@ -90,6 +91,12 @@ export class Metrics {
       name: "whereabouts_server_errors_total",
       help: "Failures inside the server that a player did not cause.",
       labelNames: ["kind"],
+      registers: [registry]
+    })
+    this.buildInfo = new Gauge({
+      name: "whereabouts_build_info",
+      help: "1, labelled with the commit the server was built from.",
+      labelNames: ["build"],
       registers: [registry]
     })
     this.clientErrors = new Counter({

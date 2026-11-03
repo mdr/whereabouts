@@ -20,9 +20,13 @@
         # Rebuild it on the shell's Node major so there is one Node here.
         pnpm = pkgs.pnpm.override { nodejs-slim = pkgs.nodejs-slim_22; };
 
+        # The commit built from, in client error reports, every log line and
+        # /api/health. CI builds a clean checkout, so this is its SHA; it
+        # changes with every commit, so each commit rebuilds the app.
+        build = self.rev or self.dirtyRev or "unknown";
+
         # Just the files the build needs: pnpm resolves from the lockfile, the
-        # workspace packages hold the source. Docs, CI and the top-level scripts stay out so
-        # editing them does not rebuild the image.
+        # workspace packages hold the source. Docs, CI and the top-level scripts stay out.
         src = lib.cleanSourceWith {
           src = self;
           filter = path: _type:
@@ -51,6 +55,8 @@
           COREPACK_ENABLE_STRICT = "0";
           COREPACK_ENABLE_AUTO_PIN = "0";
           COREPACK_ENABLE_NETWORK = "0";
+
+          VITE_BUILD = build;
 
           buildPhase = ''
             runHook preBuild
@@ -85,6 +91,7 @@
           name = "whereabouts-server";
           runtimeInputs = [ nodejs ];
           text = ''
+            export WHEREABOUTS_BUILD=${build}
             exec node --experimental-transform-types --disable-warning=ExperimentalWarning \
               ${whereabouts}/packages/server/src/main.ts "$@"
           '';

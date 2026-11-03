@@ -11,8 +11,8 @@ import {
 export interface PageContext {
   /** location.hash */
   hash: string
-  /** The src of every script on the page. */
-  scripts: string[]
+  /** The commit the client was built from, or "dev". */
+  build: string
 }
 
 /** Drops the query and fragment from every URL in the text, which could carry a token. */
@@ -23,10 +23,6 @@ const screenOf = (hash: string): string => hash.replace(/^#/, "").replace(/\?.*$
 
 const roomOf = (screen: string): string | undefined => /^\/game\/(?:new\/)?([A-Z0-9]{4,6})$/i.exec(screen)?.[1]
 
-/** The bundle's hashed file name (index-abc123.js); undefined on the dev server. */
-const buildOf = (scripts: string[]): string | undefined =>
-  scripts.map((src) => /\/assets\/([^/?#]+\.js)(?:[?#]|$)/.exec(src)?.[1]).find((name) => name !== undefined)
-
 const describeError = (error: unknown): { message: string; stack: string | undefined } => {
   if (error instanceof Error) return { message: `${error.name}: ${error.message}`, stack: error.stack }
   return { message: typeof error === "string" ? error : "non-error thrown", stack: undefined }
@@ -35,14 +31,13 @@ const describeError = (error: unknown): { message: string; stack: string | undef
 export const buildReport = (kind: ClientErrorKind, error: unknown, page: PageContext): ClientErrorReport => {
   const { message, stack } = describeError(error)
   const screen = screenOf(page.hash)
-  const build = buildOf(page.scripts)
   const room = roomOf(screen)
   return {
     kind,
     message: scrubUrls(message).slice(0, MAX_MESSAGE_LENGTH),
     ...(stack ? { stack: scrubUrls(stack).slice(0, MAX_STACK_LENGTH) } : {}),
     screen: screen.slice(0, MAX_SCREEN_LENGTH),
-    ...(build ? { build: build.slice(0, MAX_BUILD_LENGTH) } : {}),
+    build: page.build.slice(0, MAX_BUILD_LENGTH),
     ...(room ? { room: room.toUpperCase().slice(0, MAX_ROOM_LENGTH) } : {})
   }
 }

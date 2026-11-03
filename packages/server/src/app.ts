@@ -31,6 +31,8 @@ export interface AppOptions {
   /** Serve Prometheus metrics on this port (0 for any), apart from the public service; off by default. */
   metricsPort?: number
   clientErrorLimits?: ClientErrorLimits
+  /** The commit the server was built from; "dev" by default. */
+  build?: string
   addressLimits?: AddressLimits
   /** Registers the playtest endpoints; never in production. */
   devTools?: boolean
@@ -140,7 +142,9 @@ export const createApp = (options: AppOptions): App => {
     done()
   })
 
-  fastify.get("/api/health", () => ({ ok: true }))
+  const build = options.build ?? "dev"
+  telemetry.metrics.buildInfo.set({ build }, 1)
+  fastify.get("/api/health", () => ({ ok: true, build }))
   registerClientErrors(fastify, telemetry, options.clientErrorLimits)
 
   if (options.staticDir) {

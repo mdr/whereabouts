@@ -8,7 +8,7 @@ import {
 import { buildReport, mapFailureKind, scrubUrls } from "./build-report"
 import { MAX_REPORTS_PER_PAGE, ReportGate } from "./report-gate"
 
-const page = { hash: "#/solo", scripts: [] }
+const page = { hash: "#/solo", build: "dev" }
 
 describe("ReportGate", () => {
   const report = buildReport(ClientErrorKind.MAP_LOAD, new Error("offline"), page)
@@ -31,18 +31,16 @@ describe("ReportGate", () => {
 
 describe("buildReport", () => {
   it("names the screen without its query, and the room on a game screen", () => {
-    expect(buildReport(ClientErrorKind.UNCAUGHT, "x", { hash: "#/solo?dev", scripts: [] }).screen).toBe("/solo")
-    expect(buildReport(ClientErrorKind.UNCAUGHT, "x", { hash: "#/game/abcd", scripts: [] })).toMatchObject({
+    expect(buildReport(ClientErrorKind.UNCAUGHT, "x", { hash: "#/solo?dev", build: "dev" }).screen).toBe("/solo")
+    expect(buildReport(ClientErrorKind.UNCAUGHT, "x", { hash: "#/game/abcd", build: "dev" })).toMatchObject({
       screen: "/game/abcd",
       room: "ABCD"
     })
-    expect(buildReport(ClientErrorKind.UNCAUGHT, "x", { hash: "", scripts: [] })).toMatchObject({ screen: "/" })
+    expect(buildReport(ClientErrorKind.UNCAUGHT, "x", { hash: "", build: "dev" })).toMatchObject({ screen: "/" })
   })
 
-  it("names the build by the bundle's hashed file", () => {
-    const scripts = ["", "https://x.dev/assets/index-Ab12.js", "https://x.dev/assets/other.js"]
-    expect(buildReport(ClientErrorKind.UNCAUGHT, "x", { hash: "", scripts }).build).toBe("index-Ab12.js")
-    expect(buildReport(ClientErrorKind.UNCAUGHT, "x", { hash: "", scripts: ["/src/main.tsx"] }).build).toBeUndefined()
+  it("names the commit the client was built from", () => {
+    expect(buildReport(ClientErrorKind.UNCAUGHT, "x", { hash: "", build: "8722b07" }).build).toBe("8722b07")
   })
 
   it("cuts the message and stack to what the server accepts", () => {

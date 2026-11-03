@@ -129,3 +129,15 @@ jobs:
         run: |
           nix build "$FLYCTL" --no-link
           "$FLYCTL/bin/fly" deploy --image "$IMAGE" --ha=false --yes
+      # The site answers with the commit it runs, so a deploy that left the
+      # old machine serving fails here.
+      - name: Check the live build
+        if: steps.token.outputs.present == 'true'
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            build=$(curl -fsS https://whereabouts-game.fly.dev/api/health | jq -r .build) || build=""
+            [ "$build" = "$GITHUB_SHA" ] && exit 0
+            echo "live build is '$build', waiting for $GITHUB_SHA"
+            sleep 10
+          done
+          exit 1

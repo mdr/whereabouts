@@ -36,7 +36,7 @@ describe("static serving", () => {
   it("answers the health check, not the app's index.html", async ({ server }) => {
     const response = await fetch(`${server.httpUrl}/api/health`)
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({ ok: true })
+    expect(await response.json()).toEqual({ ok: true, build: "dev" })
   })
 
   it("answers 404 for an asset this build does not have, as for an old tab after a deploy", async ({ server }) => {

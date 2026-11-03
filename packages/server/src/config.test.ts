@@ -14,7 +14,8 @@ describe("configFromEnv", () => {
       addressLimits: undefined,
       devTools: false,
       metricsPort: undefined,
-      logLevel: "info"
+      logLevel: "info",
+      build: "dev"
     })
   })
 

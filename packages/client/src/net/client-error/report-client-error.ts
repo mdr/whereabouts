@@ -1,5 +1,6 @@
 import { CLIENT_ERRORS_PATH, type ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
 import { buildReport } from "./build-report"
+import { CLIENT_BUILD } from "../../build"
 import { ReportGate } from "./report-gate"
 
 const gate = new ReportGate()
@@ -9,7 +10,7 @@ export const reportClientError = (kind: ClientErrorKind, error: unknown): void =
   try {
     const report = buildReport(kind, error, {
       hash: location.hash,
-      scripts: Array.from(document.scripts, (script) => script.src)
+      build: CLIENT_BUILD
     })
     if (!gate.admit(report)) return
     fetch(CLIENT_ERRORS_PATH, {

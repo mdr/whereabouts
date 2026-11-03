@@ -14,7 +14,9 @@ export const createAppFromEnvironment = (
   configureGameRooms({ config: config.game })
   const staticDir = config.staticDir && existsSync(config.staticDir) ? config.staticDir : undefined
   const app = createApp({
-    logger: options.logger ?? createLogger(config.logLevel),
+    // Every line carries the build, so any line ties back to its commit.
+    logger: (options.logger ?? createLogger(config.logLevel)).child({ build: config.build }),
+    build: config.build,
     staticDir,
     addressLimits: config.addressLimits,
     devTools: config.devTools,
