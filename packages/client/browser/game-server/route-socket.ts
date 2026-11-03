@@ -64,3 +64,8 @@ export const routeGameSocket = async (context: BrowserContext, socketUrl: string
   })
   return connection
 }
+
+/** For tabs that never join a game: their game socket is closed at once. */
+export const refuseGameSocket = async (context: BrowserContext): Promise<void> => {
+  await context.routeWebSocket(/\/ws$/, (route) => void route.close())
+}

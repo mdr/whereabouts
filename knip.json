@@ -7,7 +7,13 @@
       "entry": ["scripts/*.mjs", "browser/**/*.{iwft,e2e}.ts"],
       "ignore": ["scripts/*.d.mts"],
       "ignoreDependencies": ["iwer"],
-      "playwright": { "config": ["playwright.config.ts", "playwright.prod.config.ts"] }
+      "playwright": {
+        "config": [
+          "browser/playwright.iwft.config.ts",
+          "browser/playwright.e2e.config.ts",
+          "browser/playwright.prod.config.ts"
+        ]
+      }
     },
     "packages/shared": { "entry": ["scripts/*.mjs"] },
     "packages/server": {

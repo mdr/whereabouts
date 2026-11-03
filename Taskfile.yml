@@ -51,19 +51,35 @@ tasks:
     cmds:
       - pnpm test {{.CLI_ARGS}}
 
-  e2e:
-    desc: "Run the browser tests against dev servers of their own (task e2e -- solo host for some)"
+  iwft:
+    desc: "The isolated browser tests, *.iwft.ts (task iwft -- solo host for some)"
     summary: |
-      Playwright Test starts Vite and the game server on spare ports (5180
-      and 8790), so a `pnpm dev` already running is left alone, with short
-      rounds for the one e2e spec; runs every spec in packages/client/browser/tests
-      (the iwft ones use a game server in their own process), or those
-      whose file names match the words after --, three at a time. Screenshots
-      go to smoke-out/e2e/, a report to smoke-out/e2e-report/.
-      Takes a few minutes for all of them.
+      Playwright Test starts a Vite dev server of its own on a spare port
+      (5180, or CLIENT_PORT), so a `pnpm dev` already running is left alone.
+      Each test that plays starts the game server in its own process, and
+      tabs answer the network from the offline world, so nothing else needs
+      to be up and they run offline. Runs every *.iwft.ts in
+      packages/client/browser/tests, or those whose paths match the words
+      after --, three at a time. Screenshots go to smoke-out/iwft/, a report
+      to smoke-out/iwft-report/.
     cmds:
-      # Named tests skip the dependency, which would run every other test first.
-      - pnpm --filter ./packages/client e2e {{if .CLI_ARGS}}--no-deps {{end}}{{.CLI_ARGS}}
+      - pnpm --filter ./packages/client iwft {{.CLI_ARGS}}
+
+  e2e:
+    desc: "The end-to-end browser tests, *.e2e.ts, against dev servers of their own (task e2e -- multiplayer)"
+    summary: |
+      Playwright Test starts Vite and the game server on spare ports (5190
+      and 8790, or CLIENT_PORT and PORT), with short rounds, and runs the
+      *.e2e.ts specs against them over the real network. Screenshots go to
+      smoke-out/e2e/, a report to smoke-out/e2e-report/.
+    cmds:
+      - pnpm --filter ./packages/client e2e {{.CLI_ARGS}}
+
+  browser:
+    desc: Every browser test, the isolated ones then the end-to-end ones
+    cmds:
+      - task: iwft
+      - task: e2e
 
   # --------------------------------------------------- the production build
 

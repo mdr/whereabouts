@@ -1,6 +1,6 @@
 // Helpers for the specs run in an emulated headset (see pages/headset/Headset.ts).
 import type { Browser } from "@playwright/test"
-import { Headset } from "../../pages/headset/Headset.ts"
+import type { Headset } from "../../pages/headset/Headset.ts"
 import type { Screen } from "../../pages/Screen.ts"
 import type { Tab } from "../../pages/Tab.ts"
 import type { TestGame } from "../../game-server/game-server.ts"
@@ -18,7 +18,7 @@ export const newHeadsetTab = async (
 ): Promise<{ tab: Tab; headset: Headset }> => {
   const options: TabOptions = { context: { viewport: { width: 1200, height: 800 } }, initScript }
   const tab = game ? await newTab(browser, label, { ...options, game }) : await newOfflineTab(browser, label, options)
-  return { tab, headset: await Headset.install(tab.page) }
+  return { tab, headset: await tab.installHeadset() }
 }
 
 /** Press the page's VR button and wait for the headset session. */

@@ -1,5 +1,5 @@
 import type { Browser } from "@playwright/test"
-import { routeGameSocket } from "../game-server/route-socket.ts"
+import { refuseGameSocket, routeGameSocket } from "../game-server/route-socket.ts"
 import { serveOfflineWorld } from "../offline/offline-world.ts"
 import type { TestGame } from "../game-server/game-server.ts"
 import type { Tab } from "../pages/Tab.ts"
@@ -20,6 +20,6 @@ export const newTab = (
 export const newOfflineTab = (browser: Browser, label: string, options: TabOptions = {}): Promise<Tab> =>
   openTab(browser, label, options, async (context) => {
     await serveOfflineWorld(context)
-    await context.routeWebSocket(/\/ws$/, (route) => void route.close())
+    await refuseGameSocket(context)
     return undefined
   })

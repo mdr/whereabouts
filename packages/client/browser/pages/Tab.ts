@@ -3,6 +3,8 @@ import type { Page } from "@playwright/test"
 import { HomePage } from "./HomePage.ts"
 import { JoinAsPage } from "./JoinAsPage.ts"
 import { LoadFailures } from "./LoadFailures.ts"
+import { DOWNLOAD_URL, type Download } from "./Download.ts"
+import { Headset } from "./headset/Headset.ts"
 import type { SoundEvent } from "./SoundEvent.ts"
 import { PracticeRoundPage } from "./PracticeRoundPage.ts"
 import { ScoreReviewPage } from "./ScoreReviewPage.ts"
@@ -18,6 +20,8 @@ export class Tab extends PageObject {
   readonly #dev: boolean
   /** The tab's game connection, when it plays on the in-process server. */
   readonly connection: GameConnection | undefined
+  readonly #failing = new Set<Download>()
+  readonly #intercepted = new Set<Download>()
 
   /** `dev` opens every page with the playtest drawer. */
   constructor(
@@ -30,6 +34,30 @@ export class Tab extends PageObject {
     this.#baseUrl = baseUrl.replace(/\/$/, "")
     this.#dev = dev
     this.connection = connection
+  }
+
+  /** Make a download fail, as a dropped connection would, until `allowDownload`. */
+  async failDownload(download: Download): Promise<void> {
+    this.#failing.add(download)
+    if (this.#intercepted.has(download)) return
+    this.#intercepted.add(download)
+    await this.page.route(DOWNLOAD_URL[download], (route) =>
+      this.#failing.has(download) ? route.abort() : route.fallback()
+    )
+  }
+
+  allowDownload(download: Download): void {
+    this.#failing.delete(download)
+  }
+
+  /** Emulate a headset in this tab, before the page loads. */
+  async installHeadset(): Promise<Headset> {
+    return Headset.install(this.page)
+  }
+
+  /** The failure messages on whatever screen is showing. */
+  loadFailures(): LoadFailures {
+    return new LoadFailures(this.page)
   }
 
   async #open(route: string): Promise<void> {

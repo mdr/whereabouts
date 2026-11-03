@@ -21,8 +21,12 @@ const noFixedWaits = [
 
 const noRawPage = [
   {
-    selector: String.raw`CallExpression > MemberExpression[property.name=/^(getBy(TestId|Text|Role|Label|Placeholder|Title|AltText)|locator|evaluate|evaluateHandle|\$|\$\$|\$eval|\$\$eval|waitForSelector)$/]`,
+    selector: String.raw`CallExpression > MemberExpression[property.name=/^(getBy(TestId|Text|Role|Label|Placeholder|Title|AltText)|locator|evaluate|evaluateHandle|\$|\$\$|\$eval|\$\$eval|waitForSelector|route|unroute|routeWebSocket|routeFromHAR)$/]`,
     message: "Specs go through page objects: add a method to one in browser/pages."
+  },
+  {
+    selector: "MemberExpression[property.name='page']",
+    message: "Specs go through page objects, not the tab's page: add a method to Tab or a page object."
   }
 ]
 
