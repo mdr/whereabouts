@@ -17,13 +17,7 @@ import { registerClientErrors, type ClientErrorLimits } from "./client-errors/cl
 import { AddressLimiter, type AddressLimits } from "./address-limiter.ts"
 import { logEvent } from "./telemetry/log-event.ts"
 import { LOG_CODES } from "./telemetry/log-codes.ts"
-import {
-  REFUSAL_REASON_TEXT,
-  RefusalReason,
-  SERVER_ERROR_KIND_TEXT,
-  ServerErrorKind,
-  type Metrics
-} from "./telemetry/metrics.ts"
+import { RefusalReason, SERVER_ERROR_KIND_TEXT, ServerErrorKind, type Metrics } from "./telemetry/metrics.ts"
 import { serveMetrics, type MetricsServer } from "./telemetry/metrics-server.ts"
 import { pinoLoggingFactory } from "./telemetry/pino-reporter.ts"
 import { requestLogLevel } from "./telemetry/request-log-filter.ts"
@@ -93,7 +87,7 @@ class LoggedRateLimiter extends TokenBucketRateLimiter {
     const ok = super.check(actorId)
     if (!ok && !this.closing.has(actorId)) {
       this.closing.add(actorId)
-      this.telemetry.metrics.connectionsRefused.inc({ reason: REFUSAL_REASON_TEXT[RefusalReason.MESSAGE_RATE_LIMIT] })
+      this.telemetry.metrics.countRefusal(RefusalReason.MESSAGE_RATE_LIMIT)
       logEvent(
         this.telemetry.logger,
         LOG_CODES.connection.rateLimited,
@@ -132,7 +126,7 @@ export const createApp = (options: AppOptions): App => {
   })
   fastify.addHook("onError", (request, _reply, error, done) => {
     if ((error.statusCode ?? 500) >= 500) {
-      telemetry.metrics.serverErrors.inc({ kind: SERVER_ERROR_KIND_TEXT[ServerErrorKind.REQUEST_FAILED] })
+      telemetry.metrics.countServerError(ServerErrorKind.REQUEST_FAILED)
       logEvent(
         logger,
         LOG_CODES.server.error,
@@ -202,8 +196,7 @@ export const createApp = (options: AppOptions): App => {
     connectionLimiter: new AddressLimiter(telemetry, options.addressLimits),
     ticketSource: "protocol",
     allowedOrigins: options.allowedOrigins ?? (() => true),
-    onHandleMessageRejected: () =>
-      telemetry.metrics.serverErrors.inc({ kind: SERVER_ERROR_KIND_TEXT[ServerErrorKind.HANDLE_MESSAGE_REJECTED] })
+    onHandleMessageRejected: () => telemetry.metrics.countServerError(ServerErrorKind.HANDLE_MESSAGE_REJECTED)
   })
   rivalis = new Rivalis<ActorData>({
     transports: [transport],

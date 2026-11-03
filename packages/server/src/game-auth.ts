@@ -30,7 +30,7 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     } catch (error) {
       if (error instanceof TicketRefused) {
         const reason = isCloseReason(error.reason) ? CLOSE_REASON_TEXT[error.reason] : error.reason
-        this.telemetry.metrics.connectionsRefused.inc({ reason })
+        if (isCloseReason(error.reason)) this.telemetry.metrics.countTurnedAway(error.reason)
         logEvent(this.telemetry.logger, LOG_CODES.connection.refused, `refused a connection: ${reason}`, {
           address,
           reason

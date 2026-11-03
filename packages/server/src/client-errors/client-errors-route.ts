@@ -1,7 +1,8 @@
 /**
  * Where players' browsers report what failed in them, so it reaches the
  * server logs. It answers 204 even when it drops a report, so a client
- * learns nothing and never retries; only a malformed body is refused.
+ * learns nothing and never retries; only a malformed body is refused. Every
+ * valid report is counted, whether or not the log keeps it.
  */
 import type { FastifyInstance } from "fastify"
 import { CLIENT_ERRORS_PATH, ClientErrorReportSchema } from "@whereabouts/shared/protocol/client-error"
@@ -10,6 +11,7 @@ import { clientAddress } from "../vendor/WSTransport.ts"
 import { KeyedTokenBucket, type BucketLimits } from "./token-bucket.ts"
 import { logEvent } from "../telemetry/log-event.ts"
 import { LOG_CODES } from "../telemetry/log-codes.ts"
+import { ClientErrorLimit } from "../telemetry/metric-labels.ts"
 import type { Telemetry } from "../telemetry/telemetry.ts"
 
 export interface ClientErrorLimits {
@@ -38,9 +40,14 @@ export const registerClientErrors = (
   const global = new KeyedTokenBucket(limits.global, now)
 
   fastify.post(CLIENT_ERRORS_PATH, { bodyLimit: BODY_LIMIT_BYTES }, (request, reply) => {
+    // Invalid bodies are refused first and never logged, so no flood of them can write to the log.
+    const report = ClientErrorReportSchema.safeParse(request.body)
+    if (!report.success) return reply.code(400).send({ error: "invalid body" })
+    metrics.countClientError(report.data.kind)
     const address = clientAddress(request.raw)
     const own = perAddress.take(address)
     if (!own.allowed) {
+      metrics.countClientErrorDropped(ClientErrorLimit.PER_ADDRESS)
       if (own.firstRefusal)
         logEvent(
           logger,
@@ -53,6 +60,7 @@ export const registerClientErrors = (
     }
     const all = global.take(EVERYONE)
     if (!all.allowed) {
+      metrics.countClientErrorDropped(ClientErrorLimit.GLOBAL)
       if (all.firstRefusal)
         logEvent(
           logger,
@@ -63,9 +71,6 @@ export const registerClientErrors = (
         )
       return reply.code(204).send()
     }
-    const report = ClientErrorReportSchema.safeParse(request.body)
-    if (!report.success) return reply.code(400).send({ error: "invalid body" })
-    metrics.clientErrors.inc({ kind: report.data.kind })
     // Every line already has the server's `build`; a tab left open across a deploy shows as a different clientBuild.
     const { build: clientBuild, ...fields } = report.data
     logEvent(

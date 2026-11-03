@@ -26,11 +26,12 @@ import { roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whe
 // The client loads the outlines on demand; the server holds them all, to score.
 import outlinesJson from "@whereabouts/shared/outlines.json" with { type: "json" }
 import type { Logger } from "pino"
-import { milestones, type GameSnapshot } from "@whereabouts/shared/game/milestones"
+import { MilestoneType, milestones, type GameSnapshot } from "@whereabouts/shared/game/milestones"
 import { readJson, readPaint, type Parsed } from "./inbound.ts"
 import { logEvent } from "./telemetry/log-event.ts"
 import { LOG_CODES } from "./telemetry/log-codes.ts"
 import { SERVER_ERROR_KIND_TEXT, ServerErrorKind } from "./telemetry/metrics.ts"
+import { JoinKind } from "./telemetry/metric-labels.ts"
 import { CLOSE_REASON_TEXT } from "./telemetry/close-reason-text.ts"
 import { recordMilestone } from "./telemetry/record-milestone.ts"
 import type { Telemetry } from "./telemetry/telemetry.ts"
@@ -117,6 +118,7 @@ export class GameRoom extends Room<ActorData> {
   declare private timer: unknown
   declare private log: Logger
   declare private openedAt: Instant
+  declare private gameStartedAt: Instant | undefined
   declare private emptyTimer: unknown
   /** The reveal on show, encoded once, and the connections it has gone to. */
   declare private sentReveal: { reveal: RoundReveal; text: string; to: WeakSet<Actor<ActorData>> } | undefined
@@ -124,6 +126,7 @@ export class GameRoom extends Room<ActorData> {
   protected override onCreate(): void {
     this.log = this.telemetry.logger.child({ component: "room", room: this.id })
     this.openedAt = deps.clock.now()
+    this.gameStartedAt = undefined
     logEvent(this.log, LOG_CODES.room.opened, "room opened")
     this.game = new Game(roomCode(this.id), deps.bank, { config: deps.config })
     this.actorsByToken = new Map()
@@ -173,7 +176,7 @@ export class GameRoom extends Room<ActorData> {
     const result = this.game.join(token, name, deps.clock.now(), role)
     if (!result.ok) {
       const reason = CLOSE_REASON_TEXT[result.reason]
-      this.telemetry.metrics.connectionsRefused.inc({ reason })
+      this.telemetry.metrics.countTurnedAway(result.reason)
       logEvent(this.log, LOG_CODES.player.turnedAway, `${name} turned away: ${reason}`, {
         name,
         reason,
@@ -182,7 +185,7 @@ export class GameRoom extends Room<ActorData> {
       actor.kick(closeReason(result.reason))
       return
     }
-    this.telemetry.metrics.playerJoins.inc({ rejoined: String(back) })
+    this.telemetry.metrics.countPlayerJoin(back ? JoinKind.REJOINED : JoinKind.NEW)
     const seat = this.game.identify(token)
     logEvent(this.log, LOG_CODES.player.joined, `${name} ${back ? "rejoined" : "joined"}`, {
       playerId: seat?.id,
@@ -220,7 +223,9 @@ export class GameRoom extends Room<ActorData> {
   }
 
   protected override onDestroy(): void {
-    logEvent(this.log, LOG_CODES.room.closed, "room closed", { openMs: deps.clock.now() - this.openedAt })
+    const openMs = deps.clock.now() - this.openedAt
+    this.telemetry.metrics.observeRoomLifetime(openMs)
+    logEvent(this.log, LOG_CODES.room.closed, "room closed", { openMs })
     this.clearTimer()
     this.cancelEmptyTimer()
   }
@@ -261,8 +266,12 @@ export class GameRoom extends Room<ActorData> {
   }
 
   private report(before: GameSnapshot): void {
-    for (const milestone of milestones(before, this.game.snapshot()))
-      recordMilestone(milestone, this.log, this.telemetry.metrics)
+    const now = deps.clock.now()
+    for (const milestone of milestones(before, this.game.snapshot())) {
+      if (milestone.type === MilestoneType.GAME_STARTED) this.gameStartedAt = now
+      const gameMs = this.gameStartedAt === undefined ? undefined : now - this.gameStartedAt
+      recordMilestone(milestone, this.log, this.telemetry.metrics, gameMs)
+    }
   }
 
   /** Give up this player's seat and close their connection; the client closes it too. */
@@ -327,7 +336,7 @@ export class GameRoom extends Room<ActorData> {
           this.broadcastState()
         } else this.armTimer()
       } catch (error) {
-        this.telemetry.metrics.serverErrors.inc({ kind: SERVER_ERROR_KIND_TEXT[ServerErrorKind.TICK_THREW] })
+        this.telemetry.metrics.countServerError(ServerErrorKind.TICK_THREW)
         logEvent(
           this.log,
           LOG_CODES.server.error,

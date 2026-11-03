@@ -184,10 +184,14 @@ dev, serves none) at `/metrics`, apart from the public port. `[metrics]` in
 `fly.toml` has Fly scrape it every 15 s into its managed Grafana (Explore, with
 the Prometheus data source), where the `whereabouts_*` series are queryable: `rooms_open`,
 `players_connected` and `spectators_connected` (gauges); `games_started_total`,
-`games_ended_total{completed}`, `rounds_total{type}`,
-`player_joins_total{rejoined}`, `connections_refused_total{reason}` and
-`server_errors_total{kind}`; plus Node's `process_*` and `nodejs_*`, for
-memory on the 512 MB machine. To log or count something new, use the `App`'s
+`games_ended_total{outcome}` (`finished`, `ended_early`),
+`rounds_total{question_type}`, `player_joins_total{kind}` (`new`, `rejoined`),
+`connections_refused_total{reason}`, `server_errors_total{kind}`,
+`client_errors_total{kind}` (every valid report, whether or not the log keeps
+it) and `client_errors_dropped_total{limit}` (`per_address`, `global`);
+histograms `game_duration_seconds`, `room_lifetime_seconds` and
+`players_per_game`; plus Node's `process_*` and `nodejs_*`, for
+memory on the 512 MB machine. Label values are snake_case, unlike the logs'. To log or count something new, use the `App`'s
 `logger` (`logEvent`) and `metrics.registry`.
 
 Players’ browsers report failures (a map, outlines or VR that will not load, uncaught errors) to `POST /api/client-errors`, which logs them at `warn` with `code: "clientError.reported"`. A report holds only the kind, an error message and stack with URL query strings removed, the screen and room code, the client build (logged as `clientBuild`, beside the server's `build`) and the user agent; never paint, guesses or tokens. It is limited to 5 per address, then 1 every 10 s, and 300 a minute overall.

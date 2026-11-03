@@ -57,7 +57,7 @@ export class AddressLimiter extends ConnectionLimiter {
           ? RefusalReason.ADDRESS_TOO_FAST
           : undefined
     if (why) {
-      this.telemetry.metrics.connectionsRefused.inc({ reason: REFUSAL_REASON_TEXT[why] })
+      this.telemetry.metrics.countRefusal(why)
       if (!entry.refusing)
         logEvent(
           this.telemetry.logger,
