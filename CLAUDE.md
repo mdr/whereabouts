@@ -12,6 +12,7 @@
 - Full-word names. `undefined`, not `null`.
 - Never derive display text from code names (enum values, keys) by changing case; map each to its text.
 - Write the actual type, not an indirection like `GameMap["map"]`, unless it is very complex or inexpressible.
+- Annotate functions' return types. Not needed for Preact components, nor where the type is too complex to write (then ask whether the function should be simpler).
 - Small modules, one job each; pull pure logic out so it can be unit-tested.
 
 ## Folders
