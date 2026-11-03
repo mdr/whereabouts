@@ -13,6 +13,10 @@ export interface ServerConfig {
   addressLimits: AddressLimits | undefined
   /** Playtest endpoints, for development servers only. */
   devTools: boolean
+  /** Port for Prometheus metrics, kept off the public service; undefined for none. */
+  metricsPort: number | undefined
+  /** The lowest level of log line written (pino level names). */
+  logLevel: string
 }
 
 export const configFromEnv = (env: Record<string, string | undefined>, defaultStaticDir: string): ServerConfig => {
@@ -31,7 +35,9 @@ export const configFromEnv = (env: Record<string, string | undefined>, defaultSt
     game,
     addressLimits:
       perAddress === undefined ? undefined : { maxOpen: perAddress, burst: perAddress, perSecond: perAddress },
-    devTools: env["DEV_TOOLS"] === "1"
+    devTools: env["DEV_TOOLS"] === "1",
+    metricsPort: positiveInt(env["METRICS_PORT"]),
+    logLevel: env["LOG_LEVEL"] || "info"
   }
 }
 

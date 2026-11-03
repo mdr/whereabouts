@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vite-plus/test"
 import { AddressLimiter } from "./address-limiter.ts"
+import { quietTelemetry } from "./telemetry/telemetry.ts"
 
 const limiter = (
   limits = { maxOpen: 3, burst: 5, perSecond: 1 }
 ): { addressLimiter: AddressLimiter; advance: (ms: number) => number } => {
   let now = 0
-  const addressLimiter = new AddressLimiter(limits, () => now)
+  const addressLimiter = new AddressLimiter(quietTelemetry(), limits, () => now)
   return { addressLimiter, advance: (ms: number) => (now += ms) }
 }
 

@@ -4,22 +4,31 @@
  */
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import Fastify, { type FastifyInstance } from "fastify"
+import Fastify, { LogController, type FastifyBaseLogger, type FastifyInstance } from "fastify"
 import fastifyStatic from "@fastify/static"
-import { Rivalis, TokenBucketRateLimiter, logging, type RoomManager } from "@rivalis/core"
+import { Rivalis, TokenBucketRateLimiter, type RoomManager } from "@rivalis/core"
+import type { Game } from "@whereabouts/shared/game/game"
+import type { Logger } from "pino"
 import WSTransport from "./vendor/WSTransport.ts"
 import { GameAuth } from "./game-auth.ts"
-import { GameRoom, ROOM_TYPE, kickForRestart, type ActorData } from "./rooms.ts"
+import { GameRoom, ROOM_TYPE, gameRoomFor, kickForRestart, type ActorData } from "./rooms.ts"
 import { registerDevPlayers } from "./extra-players/dev-players-route.ts"
 import { AddressLimiter, type AddressLimits } from "./address-limiter.ts"
+import { LogEvent, logEvent } from "./telemetry/log-event.ts"
+import { RefusalReason, ServerErrorKind, type Metrics } from "./telemetry/metrics.ts"
+import { serveMetrics, type MetricsServer } from "./telemetry/metrics-server.ts"
+import { pinoLoggingFactory } from "./telemetry/pino-reporter.ts"
+import { requestLogLevel } from "./telemetry/request-log-filter.ts"
+import { createLogger, createTelemetry, type Telemetry } from "./telemetry/telemetry.ts"
 
 export interface AppOptions {
   /** Directory of built client files to serve, or undefined for API-only (dev, behind Vite). */
   staticDir: string | undefined
   allowedOrigins?: string[]
-  logger?: boolean
-  /** Rivalis log level; defaults to info. */
-  logLevel?: Rivalis["logging"]["level"]
+  /** Where every log line goes, Rivalis's included; silent by default. */
+  logger?: Logger
+  /** Serve Prometheus metrics on this port (0 for any), apart from the public service; off by default. */
+  metricsPort?: number
   addressLimits?: AddressLimits
   /** Registers the playtest endpoints; never in production. */
   devTools?: boolean
@@ -32,7 +41,12 @@ export interface AppOptions {
 export interface App {
   fastify: FastifyInstance
   rivalis: Rivalis<ActorData>
+  /** Log events with logEvent(logger, ...); count things by adding to metrics.registry. */
+  logger: Logger
+  metrics: Metrics
   listen(port: number, host?: string): Promise<string>
+  /** Where the metrics are served, once listening and if asked for. */
+  metricsAddress(): string | undefined
   close(): Promise<void>
 }
 
@@ -55,15 +69,21 @@ const MAX_BUFFERED_BYTES = 4 * 1024 * 1024
  * the burst is for a host clicking through the lobby's settings.
  */
 class LoggedRateLimiter extends TokenBucketRateLimiter {
-  private logger = logging.getLogger("rate limit")
+  private telemetry: Telemetry
   /** Logged already: messages still in flight are refused too. */
   private closing = new Set<string>()
+
+  constructor(telemetry: Telemetry, options: ConstructorParameters<typeof TokenBucketRateLimiter>[0]) {
+    super(options)
+    this.telemetry = telemetry
+  }
 
   override check(actorId: string): boolean {
     const ok = super.check(actorId)
     if (!ok && !this.closing.has(actorId)) {
       this.closing.add(actorId)
-      this.logger.warning(`closing ${actorId}: over the message limit`)
+      this.telemetry.metrics.connectionsRefused.inc({ reason: RefusalReason.MESSAGE_RATE_LIMIT })
+      logEvent(this.telemetry.logger, LogEvent.RATE_LIMITED, { actorId }, "warn")
     }
     return ok
   }
@@ -75,7 +95,48 @@ class LoggedRateLimiter extends TokenBucketRateLimiter {
 }
 
 export const createApp = (options: AppOptions): App => {
-  const fastify = Fastify({ logger: options.logger ?? false })
+  const logger = options.logger ?? createLogger("silent")
+  let rivalis: Rivalis<ActorData> | undefined = undefined
+  const rooms = (): RoomManager<ActorData> => {
+    if (!rivalis) throw new Error("rivalis not ready")
+    return rivalis.rooms
+  }
+  const telemetry = createTelemetry(logger, () =>
+    [...rooms().keys()].flatMap((id): Game[] => {
+      const room = rooms().get(id)
+      return room instanceof GameRoom ? [room.state] : []
+    })
+  )
+  const fastifyLogger: FastifyBaseLogger = logger
+  // Requests are logged below, only the interesting ones.
+  const fastify = Fastify({
+    loggerInstance: fastifyLogger,
+    logController: new LogController({ disableRequestLogging: true })
+  })
+  fastify.addHook("onError", (request, _reply, error, done) => {
+    if ((error.statusCode ?? 500) >= 500) {
+      telemetry.metrics.serverErrors.inc({ kind: ServerErrorKind.REQUEST_FAILED })
+      logEvent(
+        logger,
+        LogEvent.SERVER_ERROR,
+        { kind: ServerErrorKind.REQUEST_FAILED, path: request.url, err: error },
+        "error"
+      )
+    }
+    done()
+  })
+  fastify.addHook("onResponse", (request, reply, done) => {
+    const path = request.url.split("?")[0] ?? request.url
+    const level = requestLogLevel(path, reply.statusCode)
+    if (level)
+      logEvent(
+        logger,
+        LogEvent.REQUEST,
+        { method: request.method, path, statusCode: reply.statusCode, responseMs: Math.round(reply.elapsedTime) },
+        level
+      )
+    done()
+  })
 
   fastify.get("/api/health", () => ({ ok: true }))
 
@@ -102,11 +163,6 @@ export const createApp = (options: AppOptions): App => {
     )
   }
 
-  let rivalis: Rivalis<ActorData> | undefined = undefined
-  const rooms = (): RoomManager<ActorData> => {
-    if (!rivalis) throw new Error("rivalis not ready")
-    return rivalis.rooms
-  }
   if (options.devTools) {
     registerDevPlayers(
       fastify,
@@ -121,30 +177,38 @@ export const createApp = (options: AppOptions): App => {
     maxPayload: MAX_PAYLOAD_BYTES,
     maxBufferedBytes: options.maxBufferedBytes ?? MAX_BUFFERED_BYTES,
     ...(options.heartbeatIntervalMs === undefined ? {} : { heartbeat: { intervalMs: options.heartbeatIntervalMs } }),
-    connectionLimiter: new AddressLimiter(options.addressLimits),
+    connectionLimiter: new AddressLimiter(telemetry, options.addressLimits),
     ticketSource: "protocol",
-    allowedOrigins: options.allowedOrigins ?? (() => true)
+    allowedOrigins: options.allowedOrigins ?? (() => true),
+    onHandleMessageRejected: () => telemetry.metrics.serverErrors.inc({ kind: ServerErrorKind.HANDLE_MESSAGE_REJECTED })
   })
   rivalis = new Rivalis<ActorData>({
     transports: [transport],
-    authMiddleware: new GameAuth(rooms),
-    rateLimiter: new LoggedRateLimiter({ capacity: 30, refillPerSecond: 5 }),
+    authMiddleware: new GameAuth(rooms, telemetry),
+    rateLimiter: new LoggedRateLimiter(telemetry, { capacity: 30, refillPerSecond: 5 }),
+    logging: pinoLoggingFactory(logger),
     maxPayloadBytes: MAX_PAYLOAD_BYTES
   })
-  if (options.logLevel) rivalis.logging.level = options.logLevel
-  rivalis.rooms.define(ROOM_TYPE, GameRoom)
+  rivalis.rooms.define(ROOM_TYPE, gameRoomFor(telemetry))
 
+  let metricsServer: MetricsServer | undefined = undefined
   return {
     fastify,
     rivalis,
+    logger,
+    metrics: telemetry.metrics,
     async listen(port, host = "127.0.0.1") {
       const address = await fastify.listen({ port, host })
+      if (options.metricsPort !== undefined)
+        metricsServer = await serveMetrics(telemetry.metrics.registry, options.metricsPort, host)
       return address
     },
+    metricsAddress: () => metricsServer?.address,
     async close() {
       kickForRestart(rivalis.rooms)
       await rivalis.shutdown({ timeoutMs: 2000 })
       await fastify.close()
+      await metricsServer?.close()
     }
   }
 }

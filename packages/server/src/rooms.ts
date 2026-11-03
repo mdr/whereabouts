@@ -25,7 +25,13 @@ import { CATALOGUE, outlinesFrom } from "@whereabouts/shared/catalogue/catalogue
 import { roomCode, type PlayerId, type PlayerName, type PlayerToken } from "@whereabouts/shared/ids"
 // The client loads the outlines on demand; the server holds them all, to score.
 import outlinesJson from "@whereabouts/shared/outlines.json" with { type: "json" }
+import type { Logger } from "pino"
+import { milestones, type GameSnapshot } from "@whereabouts/shared/game/milestones"
 import { readJson, readPaint, type Parsed } from "./inbound.ts"
+import { LogEvent, logEvent } from "./telemetry/log-event.ts"
+import { ServerErrorKind } from "./telemetry/metrics.ts"
+import { recordMilestone } from "./telemetry/record-milestone.ts"
+import type { Telemetry } from "./telemetry/telemetry.ts"
 import type { TimeoutHandle } from "@whereabouts/shared/timeout"
 
 /** Close reasons are codes from the shared list, which the client words. */
@@ -55,7 +61,7 @@ export interface ActorData {
   token: PlayerToken
   name: PlayerName
   entry: GameEntry
-  /** The client's network address, for the logs. */
+  /** The client's network address, for the log line of a player turned away. */
   address: string
 }
 
@@ -91,6 +97,11 @@ export const configureGameRooms = (next: Partial<GameRoomDeps>): void => {
 }
 
 export class GameRoom extends Room<ActorData> {
+  /** Where this room reports; each app's rooms are made by gameRoomFor. */
+  protected get telemetry(): Telemetry {
+    throw new Error("a GameRoom is made by gameRoomFor")
+  }
+
   // Not Rivalis's destroyOnEmpty, which closes the room the moment the last
   // player drops: a lone host's refresh would lose the game. An empty room
   // stays open for a while instead (see emptyGrace).
@@ -102,11 +113,16 @@ export class GameRoom extends Room<ActorData> {
   declare private game: Game
   declare private actorsByToken: Map<PlayerToken, Actor<ActorData>>
   declare private timer: unknown
+  declare private log: Logger
+  declare private openedAt: Instant
   declare private emptyTimer: unknown
   /** The reveal on show, encoded once, and the connections it has gone to. */
   declare private sentReveal: { reveal: RoundReveal; text: string; to: WeakSet<Actor<ActorData>> } | undefined
 
   protected override onCreate(): void {
+    this.log = this.telemetry.logger.child({ component: "room", room: this.id })
+    this.openedAt = deps.clock.now()
+    logEvent(this.log, LogEvent.ROOM_OPENED)
     this.game = new Game(roomCode(this.id), deps.bank, { config: deps.config })
     this.actorsByToken = new Map()
     this.timer = undefined
@@ -154,22 +170,25 @@ export class GameRoom extends Room<ActorData> {
     const back = this.game.playerTokens.includes(token)
     const result = this.game.join(token, name, deps.clock.now(), role)
     if (!result.ok) {
-      this.logger?.info(`${actor.id} (${name}, ${address}) turned away: ${result.reason}`)
+      this.telemetry.metrics.connectionsRefused.inc({ reason: result.reason })
+      logEvent(this.log, LogEvent.PLAYER_TURNED_AWAY, { name, reason: result.reason, address })
       actor.kick(closeReason(result.reason))
       return
     }
-    this.logger?.info(`${actor.id} (${name}, ${address}) ${back ? "rejoined" : "joined"}`)
+    this.telemetry.metrics.playerJoins.inc({ rejoined: String(back) })
+    const seat = this.game.identify(token)
+    logEvent(this.log, LogEvent.PLAYER_JOINED, { playerId: seat?.id, name, role: seat?.role, rejoined: back })
     const paint = this.game.paintOf(token)
     if (paint) actor.send(ServerTopic.PAINT, encodePaint(paint))
     this.broadcastState()
   }
 
   protected override onLeave(actor: Actor<ActorData>): void {
-    const { token } = actor.data!
-    this.logger?.info(`${actor.id} (${actor.data!.name}) left`)
+    const { token, name } = actor.data!
+    logEvent(this.log, LogEvent.PLAYER_LEFT, { playerId: this.game.identify(token)?.id, name })
     if (this.actorsByToken.get(token) !== actor) return // superseded by a reconnect
     this.actorsByToken.delete(token)
-    this.game.disconnect(token, deps.clock.now())
+    this.changing(() => this.game.disconnect(token, deps.clock.now()))
     this.broadcastState()
     if (this.actorCount === 0) {
       this.cancelEmptyTimer()
@@ -189,6 +208,7 @@ export class GameRoom extends Room<ActorData> {
   }
 
   protected override onDestroy(): void {
+    logEvent(this.log, LogEvent.ROOM_CLOSED, { openMs: deps.clock.now() - this.openedAt })
     this.clearTimer()
     this.cancelEmptyTimer()
   }
@@ -200,16 +220,31 @@ export class GameRoom extends Room<ActorData> {
 
   private handle<T>(actor: Actor<ActorData>, topic: string, parsed: Parsed<T>, handler: Handler<T>): void {
     if (!parsed.ok) {
-      this.logger?.warning(`${actor.id} (${actor.data!.name}) sent ${topic}: ${parsed.error}`)
+      logEvent(this.log, LogEvent.BAD_MESSAGE, { name: actor.data!.name, topic, error: parsed.error }, "warn")
       this.sendError(actor, parsed.error)
       return
     }
-    const result = handler(actor.data!.token, parsed.data, deps.clock.now())
+    // Paint arrives constantly and never moves the game on.
+    const run = (): CommandResult => handler(actor.data!.token, parsed.data, deps.clock.now())
+    const result = topic === (ClientTopic.PAINT as string) ? run() : this.changing(run)
     if (!result.ok) {
       this.sendError(actor, result.error)
       return
     }
     if (result.changed) this.broadcastState()
+  }
+
+  /** Run a change to the game, then log and count what it moved the game on to. */
+  private changing<R>(change: () => R): R {
+    const before = this.game.snapshot()
+    const result = change()
+    this.report(before)
+    return result
+  }
+
+  private report(before: GameSnapshot): void {
+    for (const milestone of milestones(before, this.game.snapshot()))
+      recordMilestone(milestone, this.log, this.telemetry.metrics)
   }
 
   /** Give up this player's seat and close their connection; the client closes it too. */
@@ -222,8 +257,12 @@ export class GameRoom extends Room<ActorData> {
   /** Remove a player from the game and close their connection, telling them why. */
   private removePlayer(token: PlayerToken, playerId: PlayerId, now: Instant): CommandResult {
     const target = this.game.tokenOf(playerId)
+    const name = target && this.actorsByToken.get(target)?.data?.name
     const result = this.game.kick(token, playerId, now)
-    if (result.ok && target !== undefined) this.actorsByToken.get(target)?.kick(closeReason(CloseReason.REMOVED))
+    if (result.ok && target !== undefined) {
+      logEvent(this.log, LogEvent.PLAYER_REMOVED, { playerId, name })
+      this.actorsByToken.get(target)?.kick(closeReason(CloseReason.REMOVED))
+    }
     return result
   }
 
@@ -264,10 +303,14 @@ export class GameRoom extends Room<ActorData> {
       // Rivalis catches what message handlers throw, but nothing catches a
       // timer: one room's bug would end the process and every game in it.
       try {
-        if (this.game.tick(deps.clock.now())) this.broadcastState()
-        else this.armTimer()
+        const before = this.game.snapshot()
+        if (this.game.tick(deps.clock.now())) {
+          this.report(before)
+          this.broadcastState()
+        } else this.armTimer()
       } catch (error) {
-        this.logger?.error(`tick threw: ${error instanceof Error ? error.message : String(error)}`)
+        this.telemetry.metrics.serverErrors.inc({ kind: ServerErrorKind.TICK_THREW })
+        logEvent(this.log, LogEvent.SERVER_ERROR, { kind: ServerErrorKind.TICK_THREW, err: error }, "error")
       }
     }, delay)
   }
@@ -284,7 +327,7 @@ export class GameRoom extends Room<ActorData> {
 
   /** Test hook: change the game directly, then send everyone the result. */
   act<R>(change: (game: Game, now: Instant) => R): R {
-    const result = change(this.game, deps.clock.now())
+    const result = this.changing(() => change(this.game, deps.clock.now()))
     this.broadcastState()
     return result
   }
@@ -294,3 +337,11 @@ type Handler<T> = (token: PlayerToken, body: T, now: Instant) => CommandResult
 type Commands = { [K in JsonTopic]: Handler<ClientMessages[K]> }
 /** One handler per topic, paint included, each given its topic's parsed body. */
 type Handlers = Commands & { [ClientTopic.PAINT]: Handler<PaintSubmission> }
+
+/** The room type for an app: GameRoom, reporting through that app's telemetry. */
+export const gameRoomFor = (telemetry: Telemetry): typeof GameRoom =>
+  class extends GameRoom {
+    protected override get telemetry(): Telemetry {
+      return telemetry
+    }
+  }

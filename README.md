@@ -153,6 +153,40 @@ scripts/fly.sh deploy --image registry.fly.io/whereabouts-game:<sha>   # roll ba
 
 Images are x86_64 Linux, so they are built in CI rather than on a Mac.
 
+### Logs and metrics
+
+The server writes one JSON object per line to stdout, which Fly collects:
+Rivalis's and the transport's output too (with a `component` field), and a
+room's with `room` set to its code. Read them live with `task fly:logs`
+(`-- --no-tail` to print and stop), or search them in Fly's Grafana log search
+(7 days kept). `LOG_LEVEL` sets the
+lowest level written (default `info`).
+
+Requests are not logged one by one: only API calls other than the health
+check, responses of 500 and above, and a missing `/assets/` file (an old tab
+after a deploy). Search by the `event` field:
+
+- server: `SERVER_STARTED`, `SERVER_STOPPING`, `REQUEST`, `SERVER_ERROR`
+- refusals: `CONNECTION_REFUSED` (with the address), `RATE_LIMITED`, `BAD_MESSAGE`
+- rooms: `ROOM_OPENED`, `ROOM_CLOSED` (`openMs`)
+- players: `PLAYER_JOINED` (`playerId`, `name`, `role`, `rejoined`), `PLAYER_LEFT`,
+  `PLAYER_TURNED_AWAY` (`reason`, `address`), `PLAYER_REMOVED`
+- games: `GAME_STARTED`, `ROUND_STARTED`, `ROUND_REVEALED` (`painted`,
+  `passed`, `missing`), `GAME_ENDED` (`completed`)
+
+What players guess or paint is never logged.
+
+Prometheus metrics are served on `METRICS_PORT` (9091 on Fly; unset, as in
+dev, serves none) at `/metrics`, apart from the public port. `[metrics]` in
+`fly.toml` has Fly scrape it every 15 s into its managed Grafana (Explore, with
+the Prometheus data source), where the `whereabouts_*` series are queryable: `rooms_open`,
+`players_connected` and `spectators_connected` (gauges); `games_started_total`,
+`games_ended_total{completed}`, `rounds_total{type}`,
+`player_joins_total{rejoined}`, `connections_refused_total{reason}` and
+`server_errors_total{kind}`; plus Node's `process_*` and `nodejs_*`, for
+memory on the 512 MB machine. To log or count something new, use the `App`'s
+`logger` (`logEvent`) and `metrics.registry`.
+
 ## Layout
 
 pnpm workspace with three packages (module by module, and checklists for common

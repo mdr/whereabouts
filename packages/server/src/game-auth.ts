@@ -3,6 +3,8 @@ import { CloseReason } from "@whereabouts/shared/close-reason"
 import { generateCode } from "@whereabouts/shared/ids"
 import { decodeTicket, GameEntryType } from "@whereabouts/shared/protocol/ticket"
 import { ROOM_TYPE, closeReason, type ActorData } from "./rooms.ts"
+import { LogEvent, logEvent } from "./telemetry/log-event.ts"
+import type { Telemetry } from "./telemetry/telemetry.ts"
 import { TicketRefused } from "./vendor/WSTransport.ts"
 
 /**
@@ -11,14 +13,25 @@ import { TicketRefused } from "./vendor/WSTransport.ts"
  */
 export class GameAuth extends AuthMiddleware<ActorData> {
   private rooms: () => RoomManager<ActorData>
+  private telemetry: Telemetry
 
-  constructor(rooms: () => RoomManager<ActorData>) {
+  constructor(rooms: () => RoomManager<ActorData>, telemetry: Telemetry) {
     super()
     this.rooms = rooms
+    this.telemetry = telemetry
   }
 
   override async authenticate(ticket: string, context?: ConnectionContext): Promise<AuthResult<ActorData>> {
-    return this.route(ticket, context?.remoteId ?? "unknown")
+    const address = context?.remoteId ?? "unknown"
+    try {
+      return this.route(ticket, address)
+    } catch (error) {
+      if (error instanceof TicketRefused) {
+        this.telemetry.metrics.connectionsRefused.inc({ reason: error.reason })
+        logEvent(this.telemetry.logger, LogEvent.CONNECTION_REFUSED, { address, reason: error.reason })
+      }
+      throw error
+    }
   }
 
   private route(ticket: string, address: string): AuthResult<ActorData> {

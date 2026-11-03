@@ -5,6 +5,8 @@
  * the same code players meet.
  */
 import { defaultStaticDir, createApp, type App } from "../app.ts"
+import { createLogger } from "../telemetry/telemetry.ts"
+import { LogCapture, type LogLine } from "./log-capture.ts"
 import { createAppFromEnvironment } from "../environment-app.ts"
 import type { AddressLimits } from "../address-limiter.ts"
 import { BANK, configureGameRooms, GameRoom } from "../rooms.ts"
@@ -43,6 +45,8 @@ export interface InProcessOptions {
   heartbeatIntervalMs?: number
   /** What may queue unread for one socket before it is dropped. */
   maxBufferedBytes?: number
+  /** Serve metrics, on a port of its own. */
+  metrics?: boolean
   /** Start as main does from this environment, whose game and address settings replace the ones above. */
   environment?: Record<string, string>
 }
@@ -57,8 +61,11 @@ export class InProcessServer {
   private readonly app: App
   private readonly players: TestPlayer[] = []
 
-  private constructor(app: App, clock: FakeClock, httpUrl: string) {
+  private readonly logs: LogCapture
+
+  private constructor(app: App, clock: FakeClock, httpUrl: string, logs: LogCapture) {
     this.app = app
+    this.logs = logs
     this.clock = clock
     this.httpUrl = httpUrl
     this.socketUrl = `${httpUrl.replace(/^http/, "ws")}/ws`
@@ -74,15 +81,44 @@ export class InProcessServer {
     staticDir,
     heartbeatIntervalMs,
     maxBufferedBytes,
+    metrics,
     environment
   }: InProcessOptions = {}): Promise<InProcessServer> {
     const clock = new FakeClock()
     const bank = { ...BANK, catalogue: questions ? catalogue.filter(questions) : catalogue }
     configureGameRooms({ clock, bank, config })
+    const logs = new LogCapture()
+    const logger = createLogger("info", logs)
     const app = environment
-      ? createAppFromEnvironment(environment, defaultStaticDir(), { logLevel: "warning" }).app
-      : createApp({ staticDir, logLevel: "warning", addressLimits, devTools, heartbeatIntervalMs, maxBufferedBytes })
-    return new InProcessServer(app, clock, await app.listen(0))
+      ? createAppFromEnvironment(environment, defaultStaticDir(), { logger }).app
+      : createApp({
+          staticDir,
+          logger,
+          metricsPort: metrics ? 0 : undefined,
+          addressLimits,
+          devTools,
+          heartbeatIntervalMs,
+          maxBufferedBytes
+        })
+    return new InProcessServer(app, clock, await app.listen(0), logs)
+  }
+
+  /** Every line the server has logged, parsed. */
+  get logLines(): readonly LogLine[] {
+    return this.logs.lines
+  }
+
+  /** The events the server has logged, in order. */
+  get logEvents(): readonly LogLine[] {
+    return this.logs.events
+  }
+
+  /** The metrics the server serves, as Prometheus text. */
+  async scrapeMetrics(): Promise<string> {
+    const address = this.app.metricsAddress()
+    if (!address) throw new Error("the server was not started with metrics")
+    const response = await fetch(`${address}/metrics`)
+    return response.text()
   }
 
   /** A player who can connect to this server. */

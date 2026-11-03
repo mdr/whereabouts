@@ -4,8 +4,11 @@
  * a school or household shares one address: a full game (24 players, 24
  * watching) from one network, everyone refreshing, stays well inside both.
  */
-import { ConnectionLimiter, logging } from "@rivalis/core"
+import { ConnectionLimiter } from "@rivalis/core"
 import type { Instant } from "@whereabouts/shared/units"
+import { LogEvent, logEvent } from "./telemetry/log-event.ts"
+import { RefusalReason } from "./telemetry/metrics.ts"
+import type { Telemetry } from "./telemetry/telemetry.ts"
 
 export interface AddressLimits {
   /** Open connections from one address. */
@@ -27,13 +30,14 @@ interface Entry {
 
 export class AddressLimiter extends ConnectionLimiter {
   private entries = new Map<string, Entry>()
-  private logger = logging.getLogger("connections")
   private sweptAt: Instant = 0
+  private telemetry: Telemetry
   private limits: AddressLimits
   private now: () => Instant
 
-  constructor(limits: AddressLimits = DEFAULT_ADDRESS_LIMITS, now: () => Instant = Date.now) {
+  constructor(telemetry: Telemetry, limits: AddressLimits = DEFAULT_ADDRESS_LIMITS, now: () => Instant = Date.now) {
     super()
+    this.telemetry = telemetry
     this.limits = limits
     this.now = now
   }
@@ -47,12 +51,14 @@ export class AddressLimiter extends ConnectionLimiter {
     this.entries.set(address, entry)
     const why =
       entry.open >= this.limits.maxOpen
-        ? `${entry.open} connections open`
+        ? RefusalReason.ADDRESS_TOO_MANY_OPEN
         : entry.tokens < 1
-          ? "connecting too often"
+          ? RefusalReason.ADDRESS_TOO_FAST
           : undefined
     if (why) {
-      if (!entry.refusing) this.logger.warning(`refusing ${address}: ${why}`)
+      this.telemetry.metrics.connectionsRefused.inc({ reason: why })
+      if (!entry.refusing)
+        logEvent(this.telemetry.logger, LogEvent.CONNECTION_REFUSED, { address, reason: why, open: entry.open }, "warn")
       entry.refusing = true
       return false
     }

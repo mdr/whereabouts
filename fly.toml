@@ -12,6 +12,13 @@ primary_region = "lhr"
 [env]
 PORT = "8080"
 HOST = "0.0.0.0"
+METRICS_PORT = "9091"
+
+# Fly scrapes this every 15 s into its managed Prometheus/Grafana. The port is
+# not in any service, so it is reachable only inside Fly's private network.
+[metrics]
+port = 9091
+path = "/metrics"
 
 [http_service]
 internal_port = 8080

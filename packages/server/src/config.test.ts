@@ -12,7 +12,9 @@ describe("configFromEnv", () => {
       staticDir: "/srv/client",
       game: {},
       addressLimits: undefined,
-      devTools: false
+      devTools: false,
+      metricsPort: undefined,
+      logLevel: "info"
     })
   })
 

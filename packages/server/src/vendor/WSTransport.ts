@@ -70,6 +70,8 @@ export type WSTransportOptions = {
      * to escalate (kick the slow actor) or just observe the drop.
      */
     onBackpressureDrop?: BackpressureDropFn
+    /** Invoked when handling an inbound message rejected, after it is logged. */
+    onHandleMessageRejected?: (reason: string) => void
 }
 
 type SocketWithHeartbeat = WebSocket & { missedPings?: number }
@@ -103,6 +105,8 @@ class WSTransport extends Transport {
     private ticketSource: TicketSource = 'query'
 
     private onBackpressureDrop: BackpressureDropFn | null = null
+
+    private onHandleMessageRejected: ((reason: string) => void) | null = null
 
     constructor(options: ServerOptions, queryTicketParam: string | null = null, transportOptions: WSTransportOptions = {}) {
         super()
@@ -158,6 +162,7 @@ class WSTransport extends Transport {
         if (typeof transportOptions.onBackpressureDrop === 'function') {
             this.onBackpressureDrop = transportOptions.onBackpressureDrop
         }
+        this.onHandleMessageRejected = transportOptions.onHandleMessageRejected ?? null
 
         const heartbeatConfig = transportOptions?.heartbeat
         if (heartbeatConfig !== false) {
@@ -310,6 +315,7 @@ class WSTransport extends Transport {
                 tl.handleMessage(aid, data as Uint8Array).catch((error) => {
                     const reason = error instanceof Error ? error.message : String(error)
                     this.logger.error(`handleMessage rejected for actor=${aid}: ${reason}`)
+                    this.onHandleMessageRejected?.(reason)
                 })
             }
         })

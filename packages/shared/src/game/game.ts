@@ -14,11 +14,12 @@ import { pickAwards } from "../awards/awards.ts"
 import { DEFAULT_HINTS, type HintAxis } from "../hints.ts"
 import type { PlayerId, PlayerName, PlayerToken, RoomCode } from "../ids.ts"
 import { evenMix, MapDetail, type ConfigurePatch, type GameConfig } from "../protocol/config.ts"
-import { Phase, type GameView, type PaintSubmission, type RoundReveal } from "../protocol/views.ts"
+import { Phase, RoundGuessType, type GameView, type PaintSubmission, type RoundReveal } from "../protocol/views.ts"
+import type { GameSnapshot, RevealTally } from "./milestones.ts"
 import { CloseReason } from "../close-reason.ts"
 import { OK_CHANGED, OK_SAME, fail, type CommandResult, type JoinResult } from "./command-result.ts"
 import { sameData } from "./same-data.ts"
-import { Seats, freshRecord, type PlayerSeat } from "./seats.ts"
+import { Seats, freshRecord, isPlayer, type PlayerSeat } from "./seats.ts"
 import { Role } from "../roles.ts"
 import { awardFacts, finalStandings } from "./standings.ts"
 import {
@@ -473,6 +474,50 @@ export class Game {
   get roundReveal(): RoundReveal | undefined {
     const state = this.state
     return state.phase === Phase.REVEAL ? state.reveal : undefined
+  }
+
+  /** Who a seated token is, for the server's logs. */
+  identify(token: PlayerToken): { id: PlayerId; role: Role } | undefined {
+    const seat = this.seats.get(token)
+    return seat && { id: seat.id, role: seat.role.type }
+  }
+
+  /** Who is connected, for the server's gauges. */
+  get connectedCounts(): { players: number; spectators: number } {
+    const connected = this.seats.all().filter((seat) => seat.connected)
+    const players = connected.filter(isPlayer).length
+    return { players, spectators: connected.length - players }
+  }
+
+  /** Where the game has got to, to compare with an earlier look (see milestones). */
+  snapshot(): GameSnapshot {
+    const state = this.state
+    const inPlay = state.phase === Phase.GUESSING || state.phase === Phase.REVEAL
+    return {
+      phase: state.phase,
+      roundIndex: inPlay ? state.round.index : undefined,
+      question: inPlay ? { id: state.round.question.id, type: state.round.question.type } : undefined,
+      tally: state.phase === Phase.REVEAL ? this.tallyOf(state) : undefined,
+      roundsPlayed: state.phase === Phase.RESULTS ? state.playedRounds.length : undefined,
+      totalRounds: this.questions.length,
+      playerCount: this.seats.playing().length,
+      mix: this.config.mix
+    }
+  }
+
+  private tallyOf(state: RevealState): RevealTally {
+    const tally = { painted: 0, passed: 0, missing: 0 }
+    for (const { playerId, guess } of state.reveal.results) {
+      if (guess.type === RoundGuessType.PAINTED) tally.painted++
+      else if (this.isLockedIn(state, playerId)) tally.passed++
+      else tally.missing++
+    }
+    return tally
+  }
+
+  private isLockedIn(state: RevealState, id: PlayerId): boolean {
+    const token = this.tokenOf(id)
+    return token !== undefined && state.lockedIn.has(token)
   }
 
   /** For tests and diagnostics. */
