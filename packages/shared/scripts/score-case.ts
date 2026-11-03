@@ -3,23 +3,24 @@
 // every kernel, and where the paint is relative to the answer.
 //
 // Usage, from packages/shared:
-//   node --experimental-transform-types scripts/score-case.mjs case.txt
-//   pbpaste | node --experimental-transform-types scripts/score-case.mjs
+//   node --experimental-transform-types scripts/score-case.ts case.txt
+//   pbpaste | node --experimental-transform-types scripts/score-case.ts
 import { readFileSync } from "node:fs"
 import { greatCircleDistance } from "../src/geo.ts"
 import { paintBlobs } from "../src/paint/blobs.ts"
 import { PaintLayer } from "../src/paint/paint.ts"
 import { KERNELS, buildDistribution, scoreDistribution } from "../src/scoring/scoring.ts"
 import { regionFit, scoreArea } from "../src/scoring/regions.ts"
-import { areaOf, questionById } from "./catalogue.mjs"
+import { h3Resolution } from "../src/h3.ts"
+import { areaOf, questionById } from "./catalogue.ts"
 import { CaseQuestionType, decodeCase } from "../src/scoring/scoring-case.ts"
 
 const text = readFileSync(process.argv[2] ?? 0, "utf8")
 const scoringCase = await decodeCase(text)
 const caseQuestion = scoringCase.question
-const layer = PaintLayer.fromRecord(scoringCase.resolution, scoringCase.cells)
+const layer = PaintLayer.fromRecord(h3Resolution(scoringCase.resolution), scoringCase.cells)
 const painted = buildDistribution(layer.toCells(), scoringCase.floor)
-const fixed = (value, places = 1) => value.toFixed(places)
+const fixed = (value: number, places = 1): string => value.toFixed(places)
 
 console.log(
   `${caseQuestion.type} ${caseQuestion.id}: ${caseQuestion.label}${caseQuestion.flag ? ` (flag ${caseQuestion.flag})` : ""}`

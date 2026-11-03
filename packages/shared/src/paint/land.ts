@@ -1,7 +1,7 @@
 /**
  * The land mask behind the "Trim sea" button: the H3 resolution-5 cells (about
  * 17 km across) that touch land, compacted (land.json, built by
- * scripts/build-land.mjs). A painted cell of any resolution is "near land"
+ * scripts/build-land.ts). A painted cell of any resolution is "near land"
  * when it overlaps the mask; trimming keeps only those. Around Italy that
  * kept 82% of sea paint within 10 km of land, 17% at 10 to 20 km, and none
  * beyond. Paint is never finer than its question's painting resolution, so
@@ -77,7 +77,7 @@ export const trimSea = (
 /**
  * The mask behind "Trim land", in a lake or sea round: the H3 resolution-5 cells
  * wholly on land and touching no lake, compacted (water.json, built by
- * scripts/build-water.mjs). The land mask cannot serve, since lakes are land
+ * scripts/build-water.ts). The land mask cannot serve, since lakes are land
  * in it. Paint within a cell of water stays, as paint within a cell of land
  * stays when trimming the sea.
  */

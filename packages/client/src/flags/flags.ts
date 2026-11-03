@@ -1,6 +1,6 @@
 /**
  * Flag pictures from Wikimedia Commons, at each flag's own proportions (see
- * scripts/build-flags.mjs). Each is its own small chunk, fetched when its
+ * scripts/build-flags.ts). Each is its own small chunk, fetched when its
  * round comes up, so the 194 flags cost nothing until they are shown.
  */
 import { z } from "zod"

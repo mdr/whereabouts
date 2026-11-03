@@ -1,6 +1,6 @@
 import { transform } from "lightningcss"
 import { describe, expect, it } from "vite-plus/test"
-import { composesErrors } from "./css-module-check.mjs"
+import { composesErrors } from "./css-module-check.ts"
 
 const KIT = ["overlay", "truncate"]
 

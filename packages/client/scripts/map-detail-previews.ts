@@ -2,10 +2,16 @@
 // page: the same frame (the northern Adriatic, Slovenia and Croatia) at each guessing level.
 // Captured at the size it is shown (180 x 120) at double density, so rivers and borders stay
 // a full pixel wide rather than thinning away when a larger capture is scaled down. Needs the
-// Vite dev server. Usage, from packages/client: node scripts/map-detail-previews.mjs
+// Vite dev server. Usage, from packages/client: node --experimental-transform-types scripts/map-detail-previews.ts
 import { chromium } from "@playwright/test"
+import { MapDetail } from "@whereabouts/shared/protocol/config"
 
-const LEVELS = ["minimal", "water", "physical", "political"]
+const PREVIEWS: Record<MapDetail, string> = {
+  [MapDetail.MINIMAL]: "minimal",
+  [MapDetail.WATER]: "water",
+  [MapDetail.PHYSICAL]: "physical",
+  [MapDetail.POLITICAL]: "political"
+}
 const SIZE = { width: 180, height: 120 }
 const browser = await chromium.launch({
   channel: "chrome",
@@ -15,25 +21,26 @@ const browser = await chromium.launch({
 const page = await browser.newPage({ viewport: SIZE, deviceScaleFactor: 2 })
 page.on("pageerror", (e) => console.log("[pageerror]", e.message))
 await page.goto("http://localhost:5173/#/solo", { waitUntil: "networkidle" })
-await page.waitForFunction(() => window.whereabouts?.map)
+await page.waitForFunction(() => window.testHooks.map)
 // Let the practice screen settle its own view first.
 await page.waitForTimeout(2500)
 await page.addStyleTag({ content: ".hud, .maplibregl-control-container { display: none !important; }" })
-for (const level of LEVELS) {
-  await page.evaluate((l) => {
-    window.whereabouts.map.jumpTo({ center: [14.5, 45.6], zoom: 4.2 })
-    window.whereabouts.gameMap.setDetail(l)
-  }, level)
+for (const [detail, name] of Object.entries(PREVIEWS) as [MapDetail, string][]) {
+  await page.evaluate((level) => {
+    const { map, gameMap } = window.testHooks.map!
+    map.jumpTo({ center: [14.5, 45.6], zoom: 4.2 })
+    gameMap.detail.setDetail(level)
+  }, detail)
   await page.evaluate(
     () =>
       new Promise((resolve) => {
-        const m = window.whereabouts.map
+        const { map: m } = window.testHooks.map!
         m.once("idle", resolve)
         m.triggerRepaint()
       })
   )
   await page.waitForTimeout(300)
-  await page.screenshot({ path: `src/assets/map-${level}.jpg`, type: "jpeg", quality: 80 })
-  console.log("wrote", `src/assets/map-${level}.jpg`)
+  await page.screenshot({ path: `src/assets/map-${name}.jpg`, type: "jpeg", quality: 80 })
+  console.log("wrote", `src/assets/map-${name}.jpg`)
 }
 await browser.close()

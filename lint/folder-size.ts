@@ -3,12 +3,18 @@ import { basename, dirname, relative } from "node:path"
 
 const CODE = /\.(ts|tsx|js|mjs)$/
 
+interface RuleContext {
+  filename: string
+  options: (number | undefined)[]
+  report: (problem: { node: unknown; message: string }) => void
+}
+
 /** Fails a folder with more entries than fit on one editor screen. */
 const maxEntries = {
   meta: { type: "suggestion", schema: [{ type: "integer", minimum: 1 }] },
-  create(context) {
+  create(context: RuleContext) {
     return {
-      Program(node) {
+      Program(node: unknown): void {
         const max = context.options[0] ?? 30
         const folder = dirname(context.filename)
         const entries = readdirSync(folder).filter((e) => !e.startsWith(".") && e !== "node_modules")

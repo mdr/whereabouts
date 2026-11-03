@@ -2,7 +2,7 @@
  * Which country is where, for the reveal of a flag round: the country under
  * the pointer, and the countries a player's paint fell in ("Mostly in
  * Peru"). From borders.json, built with the flag questions by
- * scripts/build-regions.mjs: every flag country's land, coarser than the
+ * scripts/build-regions.ts: every flag country's land, coarser than the
  * outlines scored (about 5 km, islands under 50 km² left out).
  *
  * Where Natural Earth marks an area indeterminate (Western Sahara,

@@ -192,7 +192,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
   The host also picks the round length (10, 20, 30, 45, 60, 90 or 120 seconds, as
   pills) and the map detail while guessing, from
   four picture choices (each a preview of the same frame, made by
-  `scripts/map-detail-previews.mjs`): Minimal (coastlines only, the
+  `scripts/map-detail-previews.ts`): Minimal (coastlines only, the
   default), Water (adds rivers and lakes), Physical (adds relief, natural
   colour, forests and ice) and Political (adds country borders). Place names
   never show while guessing. Practice remembers its own choice, set under
@@ -374,7 +374,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
   flags. A country question ("Paint
   the whole of Germany") has an area as its answer, not a point: 152
   countries from Natural Earth's 1:50m outlines (public domain), built into
-  `packages/shared/catalogue.json`, `places.json` and `outlines.json` by `scripts/build-regions.mjs`, which keeps
+  `packages/shared/catalogue.json`, `places.json` and `outlines.json` by `scripts/build-regions.ts`, which keeps
   each country's main landmass, the islands of 1,500 km² or more chained
   to it within 500 km, and every smaller island within 500 km of those (so
   Sicily and the Aegean stay; the Canaries, Svalbard and Alaska go),
@@ -426,7 +426,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
 | List these keys     | `?`, or the keyboard button in the toolbar                                                                    |
 
 Trim sea uses a land mask (`packages/shared/land.json`, built by
-`scripts/build-land.mjs` from Natural Earth's 1:10m land and minor islands):
+`scripts/build-land.ts` from Natural Earth's 1:10m land and minor islands):
 the H3 cells about 17 km across that touch land, about 110 KB gzipped,
 fetched on the first press. Most sea paint within 10 km of land stays,
 and none beyond about 20 km does. It is one undoable step and says
@@ -436,7 +436,7 @@ about 85 points in testing), while island answers often gain.
 
 In a lake or sea round the button is Trim land instead: it removes paint
 more than about 20 km from water, using a water mask
-(`packages/shared/water.json`, built by `scripts/build-water.mjs`): the
+(`packages/shared/water.json`, built by `scripts/build-water.ts`): the
 same-sized cells wholly on land and touching no lake, about 130 KB
 gzipped, fetched on the first press. The land mask cannot serve, since
 lakes are land in it. A lake or sea painted exactly loses nothing (a test

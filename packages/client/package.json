@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
-    "build": "node scripts/css-module-types.mjs && tsc --noEmit && vp build",
+    "build": "node scripts/css-module-types.ts && tsc --noEmit && vp build",
     "preview": "vp preview",
-    "typecheck": "node scripts/css-module-types.mjs && tsc --noEmit && tsc --noEmit -p browser",
+    "typecheck": "node scripts/css-module-types.ts && tsc --noEmit && tsc --noEmit -p browser",
     "smoke": "playwright test solo",
     "e2e": "playwright test",
     "e2e:prod": "playwright test -c playwright.prod.config.ts",
-    "css-types": "node scripts/css-module-types.mjs"
+    "css-types": "node scripts/css-module-types.ts"
   },
   "dependencies": {
     "@iwsdk/core": "1.0.1",

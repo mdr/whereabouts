@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM"],
-    "types": ["geojson"]
+    "types": ["node", "geojson"]
   },
-  "include": ["src", "catalogue.json", "outlines.json", "land.json", "borders.json"]
+  "include": ["src", "scripts", "catalogue.json", "outlines.json", "land.json", "borders.json"]
 }

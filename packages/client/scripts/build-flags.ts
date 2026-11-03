@@ -7,11 +7,47 @@
 // then drawn beside the original in headless Chrome: if they differ, it tries
 // finer rounding, and in the end keeps the original drawing.
 //
-// Usage, from packages/client: node scripts/build-flags.mjs [cache dir]
+// Usage, from packages/client: node scripts/build-flags.ts [cache dir]
 // With a cache dir, downloads are kept there and reused.
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
-import { optimize } from "svgo"
-import { chromium } from "@playwright/test"
+import { optimize, type PluginConfig } from "svgo"
+import { chromium, type Page } from "@playwright/test"
+
+interface FlagPlace {
+  id: string
+  flag: { code: string; wiki: string }
+}
+
+interface FlagQuestion {
+  type: string
+  place: string
+}
+
+interface Redirect {
+  from: string
+  to: string
+}
+
+interface WikiPage {
+  title: string
+  pageimage?: string
+  imageinfo?: { url: string; extmetadata: { LicenseShortName: { value: string } } }[]
+}
+
+interface WikiResponse {
+  query: { normalized?: Redirect[]; redirects?: Redirect[]; pages: WikiPage[] }
+}
+
+interface Source {
+  url: string
+  licence: string
+}
+
+interface FlagSize {
+  svg: string
+  w: number
+  h: number
+}
 
 const OUT = "src/assets/flags"
 const USER_AGENT = "WhereaboutsFlagBuilder/1.0 (https://github.com/mdr/whereabouts)"
@@ -26,18 +62,20 @@ const EXTRA_PRECISION = 3
 
 // Where the article's image is not the flag to show: Afghanistan's tricolour,
 // which the UN still recognises, not the Taliban's flag.
-const FILES = { af: "Flag of Afghanistan (2013–2021).svg" }
+const FILES: Record<string, string> = { af: "Flag of Afghanistan (2013–2021).svg" }
 
 const cacheDir = process.argv[2]
-const places = new Map(JSON.parse(readFileSync("../shared/places.json", "utf8")).map((p) => [p.id, p]))
-const flags = JSON.parse(readFileSync("../shared/catalogue.json", "utf8"))
+const places = new Map(
+  (JSON.parse(readFileSync("../shared/places.json", "utf8")) as FlagPlace[]).map((place) => [place.id, place])
+)
+const flags = (JSON.parse(readFileSync("../shared/catalogue.json", "utf8")) as FlagQuestion[])
   .filter((q) => q.type === "FLAG")
-  .map((q) => places.get(q.place).flag)
+  .map((q) => places.get(q.place)!.flag)
   .map(({ code, wiki }) => ({ flag: code, wiki }))
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
-const get = async (url) => {
+const get = async (url: string): Promise<Response> => {
   for (let attempt = 1; ; attempt++) {
     const response = await fetch(url, { headers: { "User-Agent": USER_AGENT } })
     if (response.ok) return response
@@ -46,14 +84,14 @@ const get = async (url) => {
   }
 }
 
-const api = async (host, params) => {
+const api = async (host: string, params: Record<string, string>): Promise<WikiResponse> => {
   const query = new URLSearchParams({ ...params, format: "json", formatversion: "2" })
-  return (await get(`https://${host}/w/api.php?${query}`)).json()
+  return (await (await get(`https://${host}/w/api.php?${query}`)).json()) as WikiResponse
 }
 
 /** Each article's main image, by article title. */
-const articleImages = async (titles) => {
-  const images = new Map()
+const articleImages = async (titles: string[]): Promise<Map<string, string | undefined>> => {
+  const images = new Map<string, string | undefined>()
   for (let i = 0; i < titles.length; i += 50) {
     const batch = titles.slice(i, i + 50)
     const { query } = await api("en.wikipedia.org", {
@@ -63,7 +101,7 @@ const articleImages = async (titles) => {
       redirects: "1",
       titles: batch.join("|")
     })
-    const asked = new Map()
+    const asked = new Map<string, string>()
     for (const { from, to } of [...(query.normalized ?? []), ...(query.redirects ?? [])]) {
       asked.set(to, asked.get(from) ?? from)
     }
@@ -73,8 +111,8 @@ const articleImages = async (titles) => {
 }
 
 /** Each Commons file's URL and licence, by file name. */
-const fileInfo = async (names) => {
-  const info = new Map()
+const fileInfo = async (names: string[]): Promise<Map<string, Source>> => {
+  const info = new Map<string, Source>()
   for (let i = 0; i < names.length; i += 50) {
     const { query } = await api("commons.wikimedia.org", {
       action: "query",
@@ -83,21 +121,21 @@ const fileInfo = async (names) => {
       iiextmetadatafilter: "LicenseShortName",
       titles: names
         .slice(i, i + 50)
-        .map((n) => `File:${n}`)
+        .map((name) => `File:${name}`)
         .join("|")
     })
     for (const page of query.pages) {
-      const [ii] = page.imageinfo
+      const [ii] = page.imageinfo!
       info.set(page.title.replace(/^File:/, "").replaceAll(" ", "_"), {
-        url: ii.url.replace(/\?.*/, ""),
-        licence: ii.extmetadata.LicenseShortName.value
+        url: ii!.url.replace(/\?.*/, ""),
+        licence: ii!.extmetadata.LicenseShortName.value
       })
     }
   }
   return info
 }
 
-const download = async (file, url) => {
+const download = async (file: string, url: string): Promise<string> => {
   const cached = cacheDir && `${cacheDir}/${file}`
   if (cached && existsSync(cached)) return readFileSync(cached, "utf8")
   await sleep(500)
@@ -110,20 +148,20 @@ const download = async (file, url) => {
  * The SVG with a viewBox the flag's own shape and no fixed size, so it fills
  * whatever box it is drawn in; and that shape's width and height.
  */
-const normalise = (svg) => {
-  const root = svg.match(/<svg\b[^>]*>/)[0]
-  const attr = (name) => root.match(new RegExp(`\\s${name}\\s*=\\s*["']([^"']*)["']`))?.[1]
+const normalise = (svg: string): FlagSize => {
+  const root = svg.match(/<svg\b[^>]*>/)![0]
+  const attr = (name: string): string | undefined => root.match(new RegExp(`\\s${name}\\s*=\\s*["']([^"']*)["']`))?.[1]
   const viewBox = attr("viewBox")
     ?.trim()
     .split(/[\s,]+/)
     .map(Number)
-  const width = parseFloat(attr("width"))
-  const height = parseFloat(attr("height"))
-  const [x, y, w, h] = viewBox ?? [0, 0, width, height]
+  const width = parseFloat(attr("width") ?? "")
+  const height = parseFloat(attr("height") ?? "")
+  const [x = 0, y = 0, w = 0, h = 0] = viewBox ?? [0, 0, width, height]
   if (!(w > 0 && h > 0)) throw new Error(`no size in ${root}`)
   let tag = root.replace(/\s(width|height|viewBox|preserveAspectRatio)\s*=\s*["'][^"']*["']/g, "")
   let body = svg.slice(svg.indexOf(root) + root.length, svg.lastIndexOf("</svg>"))
-  let box = [x, y, w, h]
+  let box: number[] = [x, y, w, h]
   // Stretched to its width and height: stretch the drawing to match instead.
   if (viewBox && attr("preserveAspectRatio") === "none" && width > 0 && height > 0) {
     const sy = (w * height) / width / h
@@ -131,13 +169,13 @@ const normalise = (svg) => {
     box = [x, 0, w, h * sy]
   }
   tag = tag.replace(/<svg\b/, `<svg viewBox="${box.join(" ")}"`)
-  return { svg: `${svg.slice(0, svg.indexOf(root))}${tag}${body}</svg>`, w: box[2], h: box[3] }
+  return { svg: `${svg.slice(0, svg.indexOf(root))}${tag}${body}</svg>`, w: box[2]!, h: box[3]! }
 }
 
 // A flag's title or description would name the country.
-const UNNAMED = ["removeTitle", { name: "removeDesc", params: { removeAny: true } }, "removeMetadata"]
+const UNNAMED: PluginConfig[] = ["removeTitle", { name: "removeDesc", params: { removeAny: true } }, "removeMetadata"]
 
-const shrink = (svg, precision) =>
+const shrink = (svg: string, precision: number): string =>
   optimize(svg, {
     multipass: true,
     floatPrecision: precision,
@@ -149,17 +187,17 @@ const shrink = (svg, precision) =>
  * at a quarter of the size drawn: a fine line shifted by part of a pixel
  * averages out, a shape that moved does not.
  */
-const differing = async (page, a, b, ratio) =>
+const differing = async (page: Page, a: string, b: string, ratio: number): Promise<number> =>
   page.evaluate(
     async ({ a, b, w, h, tolerance }) => {
       const [sw, sh] = [Math.round(w / 4), Math.round(h / 4)]
-      const draw = async (svg) => {
+      const draw = async (svg: string): Promise<Uint8ClampedArray> => {
         const img = new Image()
         img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
         await img.decode()
         const big = new OffscreenCanvas(w, h)
-        big.getContext("2d").drawImage(img, 0, 0, w, h)
-        const ctx = new OffscreenCanvas(sw, sh).getContext("2d")
+        big.getContext("2d")!.drawImage(img, 0, 0, w, h)
+        const ctx = new OffscreenCanvas(sw, sh).getContext("2d")!
         ctx.imageSmoothingQuality = "high"
         ctx.drawImage(big, 0, 0, sw, sh)
         return ctx.getImageData(0, 0, sw, sh).data
@@ -167,7 +205,7 @@ const differing = async (page, a, b, ratio) =>
       const [pa, pb] = [await draw(a), await draw(b)]
       let bad = 0
       for (let i = 0; i < pa.length; i += 4) {
-        const d = Math.abs(pa[i] - pb[i]) + Math.abs(pa[i + 1] - pb[i + 1]) + Math.abs(pa[i + 2] - pb[i + 2])
+        const d = Math.abs(pa[i]! - pb[i]!) + Math.abs(pa[i + 1]! - pb[i + 1]!) + Math.abs(pa[i + 2]! - pb[i + 2]!)
         if (d > tolerance) bad++
       }
       return bad / (sw * sh)
@@ -176,15 +214,18 @@ const differing = async (page, a, b, ratio) =>
   )
 
 const images = await articleImages(flags.map((f) => f.wiki))
-for (const f of flags) if (FILES[f.flag]) images.set(f.wiki, FILES[f.flag])
-const info = await fileInfo([...new Set(images.values())].filter(Boolean))
+for (const f of flags) {
+  const file = FILES[f.flag]
+  if (file) images.set(f.wiki, file)
+}
+const info = await fileInfo([...new Set(images.values())].filter((name) => name !== undefined))
 if (cacheDir) mkdirSync(cacheDir, { recursive: true })
 rmSync(OUT, { recursive: true, force: true })
 mkdirSync(OUT, { recursive: true })
 
 const browser = await chromium.launch({ channel: "chrome", headless: true })
 const page = await browser.newPage()
-const out = {}
+const out: Record<string, { ratio: number; file: string; licence: string }> = {}
 for (const f of [...flags].sort((a, b) => a.flag.localeCompare(b.flag))) {
   const file = images.get(f.wiki)?.replaceAll(" ", "_")
   const source = file && info.get(file)
@@ -212,5 +253,5 @@ for (const f of [...flags].sort((a, b) => a.flag.localeCompare(b.flag))) {
 }
 await browser.close()
 
-writeFileSync(`${OUT}/flags.json`, `${JSON.stringify(out, null, 2)}\n`)
+writeFileSync(`${OUT}/flags.json`, `${JSON.stringify(out, undefined, 2)}\n`)
 console.log(`${Object.keys(out).length} flags`)

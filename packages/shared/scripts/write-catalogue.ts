@@ -4,21 +4,53 @@
 // exactly the places asked about and outlines.json exactly the areas painted.
 import { execFileSync } from "node:child_process"
 import { readFileSync, writeFileSync } from "node:fs"
+import type { LatLon, MultiPolygon } from "../src/geo.ts"
+import {
+  QUESTION_TYPES,
+  type AnswerType,
+  type ClueType,
+  type FeatureType,
+  type NameClue,
+  type PhotoClue,
+  type QuestionType,
+  type Surface
+} from "../src/questions.ts"
 
-const ORDER = ["LANDMARK", "PLACE", "COUNTRY", "FLAG", "FEATURE", "STATE"]
-const file = (name) => new URL(`../${name}`, import.meta.url)
-const read = (name) => JSON.parse(readFileSync(file(name), "utf8"))
+/** A question as catalogue.json stores it. */
+export interface StoredQuestion {
+  id: string
+  type: QuestionType
+  place: string
+  clue: PhotoClue | NameClue | { type: ClueType.FLAG }
+  answer: { type: AnswerType; tolerance?: number }
+}
 
-const sortedCatalogue = (types, questions) =>
-  [...read("catalogue.json").filter((question) => !types.includes(question.type)), ...questions]
-    .sort((a, b) => ORDER.indexOf(a.type) - ORDER.indexOf(b.type))
+/** A place as places.json stores it. */
+export interface StoredPlace {
+  id: string
+  label: string
+  wiki: string
+  at?: LatLon
+  feature?: FeatureType
+  area?: { outline: string; centre: LatLon; tolerance: number; surface: Surface }
+  flag?: { code: string; wiki: string }
+}
+
+export type Outlines = Record<string, MultiPolygon>
+
+const file = (name: string): URL => new URL(`../${name}`, import.meta.url)
+const read = <T>(name: string): T => JSON.parse(readFileSync(file(name), "utf8")) as T
+
+const sortedCatalogue = (types: QuestionType[], questions: StoredQuestion[]): StoredQuestion[] =>
+  [...read<StoredQuestion[]>("catalogue.json").filter((question) => !types.includes(question.type)), ...questions]
+    .sort((a, b) => QUESTION_TYPES.indexOf(a.type) - QUESTION_TYPES.indexOf(b.type))
     .map(({ id, type, place, clue, answer }) => ({ id, type, place, clue, answer }))
 
 /** The places the catalogue asks about, each once, with optional fields only when set. */
-const placesAsked = (catalogue, places) => {
-  const allPlaces = new Map(read("places.json").map((place) => [place.id, place]))
+const placesAsked = (catalogue: StoredQuestion[], places: StoredPlace[]): Map<string, StoredPlace> => {
+  const allPlaces = new Map(read<StoredPlace[]>("places.json").map((place) => [place.id, place]))
   for (const place of places) allPlaces.set(place.id, { ...allPlaces.get(place.id), ...place })
-  const asked = new Map()
+  const asked = new Map<string, StoredPlace>()
   for (const question of catalogue) {
     const place = allPlaces.get(question.place)
     if (!place) throw new Error(`${question.id}: no place ${question.place}`)
@@ -38,14 +70,15 @@ const placesAsked = (catalogue, places) => {
 }
 
 /** The outlines of the areas the catalogue's AREA questions are about, by id. */
-const outlinesUsed = (catalogue, asked, outlines) => {
-  const allOutlines = { ...read("outlines.json"), ...outlines }
-  const used = {}
+const outlinesUsed = (catalogue: StoredQuestion[], asked: Map<string, StoredPlace>, outlines: Outlines): Outlines => {
+  const allOutlines = { ...read<Outlines>("outlines.json"), ...outlines }
+  const used: Outlines = {}
   for (const question of catalogue) {
     if (question.answer.type !== "AREA") continue
-    const id = asked.get(question.place).area?.outline
-    if (!allOutlines[id]) throw new Error(`${question.id}: no outline ${id}`)
-    used[id] = allOutlines[id]
+    const id = asked.get(question.place)?.area?.outline
+    const outline = id === undefined ? undefined : allOutlines[id]
+    if (!id || !outline) throw new Error(`${question.id}: no outline ${id}`)
+    used[id] = outline
   }
   return used
 }
@@ -54,7 +87,12 @@ const outlinesUsed = (catalogue, asked, outlines) => {
  * Write `questions` as the catalogue's questions of `types`, with the places
  * they bring (over any of the same id, keeping what they leave out) and those places' outlines by id.
  */
-export const writeQuestions = (types, questions, places, outlines) => {
+export const writeQuestions = (
+  types: QuestionType[],
+  questions: StoredQuestion[],
+  places: StoredPlace[],
+  outlines: Outlines
+): void => {
   const catalogue = sortedCatalogue(types, questions)
   const asked = placesAsked(catalogue, places)
   const used = outlinesUsed(catalogue, asked, outlines)

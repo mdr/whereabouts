@@ -1,5 +1,5 @@
 /**
- * Every flag country's flag in one picture (see scripts/build-flag-atlas.mjs),
+ * Every flag country's flag in one picture (see scripts/build-flag-atlas.ts),
  * for showing them all at once: one picture to load, not 194 to draw.
  */
 import atlas from "./flag-atlas.json"

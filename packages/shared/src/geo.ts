@@ -13,7 +13,7 @@ export type LonLat = [lon: Degrees, lat: Degrees]
 /** A closed loop of points. */
 export type Ring = LonLat[]
 /** An outer ring, then its holes. */
-type Polygon = Ring[]
+export type Polygon = Ring[]
 /** One polygon per separate piece of land. */
 export type MultiPolygon = Polygon[]
 /** West, south, east, north, in degrees. */

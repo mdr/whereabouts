@@ -345,7 +345,7 @@ export default defineConfig({
         }
       },
       {
-        files: ["**/*.mjs", "**/*.config.{js,ts}"],
+        files: ["**/scripts/**/*.ts", "lint/**/*.ts", "**/*.config.ts"],
         rules: {
           "no-console": "off",
           "no-restricted-imports": "off",
@@ -472,7 +472,7 @@ export default defineConfig({
       },
       { name: "eslint-js", specifier: "oxlint-plugin-eslint" },
       { name: "sonarjs", specifier: "eslint-plugin-sonarjs" },
-      { name: "folders", specifier: "./lint/folder-size.mjs" }
+      { name: "folders", specifier: "./lint/folder-size.ts" }
     ]
   },
   fmt: {

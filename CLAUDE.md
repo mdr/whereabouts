@@ -6,6 +6,7 @@
 
 ## Code
 
+- Write TypeScript, not JavaScript, scripts included (a test fails on a tracked `.js`/`.mjs`/`.cjs` outside `vendor/`). Scripts that import `src/` (it has enums) run with `node --experimental-transform-types`.
 - String enums with ALL_CAPS names and values; reference members, not raw strings.
 - Except values whose literal types an outside library owns: an `as const` object, so its types apply.
 - Discriminators are called `type`. Variants are unions of named types, not a base interface plus intersections.

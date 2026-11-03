@@ -1,8 +1,8 @@
 // Builds the catalogue's whole-country and flag questions, with the
 // countries as places and their outlines, and borders.json, from Natural
-// Earth's 1:50m countries (public domain). See write-catalogue.mjs.
+// Earth's 1:50m countries (public domain). See write-catalogue.ts.
 //
-// Usage: node scripts/build-regions.mjs [path/to/ne_50m_admin_0_countries.geojson]
+// Usage: node --experimental-transform-types scripts/build-regions.ts [path/to/ne_50m_admin_0_countries.geojson]
 // Without a path it downloads the file from the Natural Earth repository.
 //
 // The countries are the answers for "Paint the whole of Germany": every
@@ -30,7 +30,10 @@
 // also has near: its tolerance, the distance from its answer that counts as
 // the country too, since its islands are too small to hit.
 import { readFileSync, writeFileSync } from "node:fs"
-import { writeQuestions } from "./write-catalogue.mjs"
+import type { Box, LatLon, MultiPolygon, Polygon, Ring } from "../src/geo.ts"
+import { AnswerType, ClueType, QuestionType, Surface } from "../src/questions.ts"
+import { NATURAL_EARTH_URL, parseFeatures } from "./natural-earth.ts"
+import { writeQuestions, type Outlines, type StoredPlace, type StoredQuestion } from "./write-catalogue.ts"
 import {
   POINT_BELOW_KM2,
   MIN_KEPT_SHARE,
@@ -49,12 +52,47 @@ import {
   ringAreaKm2,
   simplifyRing,
   slug
-} from "./outline.mjs"
+} from "./outline.ts"
 
-const NE_URL =
-  "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson"
+const NE_URL = `${NATURAL_EARTH_URL}/ne_50m_admin_0_countries.geojson`
+
+interface CountryProperties {
+  TYPE: string
+  ADMIN: string
+  SOVEREIGNT: string
+  NAME_EN: string
+  ISO_A2_EH: string
+  LABEL_X: number
+  LABEL_Y: number
+}
+
+/** What differs from the default for a country. */
+interface NameOverride {
+  label?: string
+  the?: boolean
+  name?: string
+  wiki?: string
+  flagWiki?: string
+  id?: string
+  at?: LatLon
+}
+
+/** Why a country is asked as a point, not painted whole. */
+enum PointReason {
+  SMALL = "SMALL",
+  DISPUTED = "DISPUTED",
+  ANTIMERIDIAN = "ANTIMERIDIAN",
+  SCATTERED = "SCATTERED",
+  FAR_FLUNG = "FAR_FLUNG"
+}
+
+interface Border {
+  flag: string
+  rings: number[][]
+  near?: number
+}
 /** Wider island chaining for a country in two halves: East Malaysia is 600 km from the peninsula. */
-const CHAIN_KM_FOR = { Malaysia: 800 }
+const CHAIN_KM_FOR: Record<string, number> = { Malaysia: 800 }
 
 // Not UN members, and each wholly inside a disputed area: left out.
 const LEFT_OUT = new Set(["Northern Cyprus", "Somaliland", "Taiwan", "Kosovo"])
@@ -80,7 +118,7 @@ const DISPUTED = new Set([
 // English Wikipedia title (default the label); flagWiki: the title of the
 // article on its flag, linked from a flag round (default "Flag of" the
 // label); id: kept from before flags.
-const NAMES = {
+const NAMES: Record<string, NameOverride> = {
   "United Kingdom": { the: true, id: "uk-region" },
   "Democratic Republic of the Congo": { the: true, id: "drc-region" },
   "Republic of the Congo": { the: true },
@@ -117,36 +155,40 @@ const BORDER_MIN_KM2 = 50
  * a side (a polygon wholly inside one of these boxes, [west, south, east,
  * north]): Crimea, drawn with Russia in Natural Earth.
  */
-const BORDER_LEFT_OUT = { Russia: [[32, 44, 37, 46.5]] }
+const BORDER_LEFT_OUT: Record<string, Box[]> = { Russia: [[32, 44, 37, 46.5]] }
 /**
  * Natural Earth's Morocco includes the part of Western Sahara it controls:
  * everything south of the border, 27°40′N, names no country either.
  */
-const BORDER_NONE_SOUTH_OF = { Morocco: 27 + 40 / 60 }
+const BORDER_NONE_SOUTH_OF: Record<string, number> = { Morocco: 27 + 40 / 60 }
 
 /** A ring clipped to the part south of a parallel (Sutherland-Hodgman against one edge). */
-const southOf = (ring, lat0) => {
-  const out = []
+const southOf = (ring: Ring, lat0: number): Ring | undefined => {
+  const out: Ring = []
   for (let i = 0; i < ring.length - 1; i++) {
-    const [from, to] = [ring[i], ring[i + 1]]
+    const [from, to] = [ring[i]!, ring[i + 1]!]
     if (from[1] <= lat0) out.push(from)
     if (from[1] <= lat0 !== to[1] <= lat0) {
       const fraction = (lat0 - from[1]) / (to[1] - from[1])
       out.push([from[0] + fraction * (to[0] - from[0]), lat0])
     }
   }
-  return out.length >= 3 ? [...out, out[0]] : null
+  return out.length >= 3 ? [...out, out[0]!] : undefined
 }
-const inBoxes = (admin) => (polygon) =>
-  (BORDER_LEFT_OUT[admin] ?? []).some(([west, south, east, north]) =>
-    polygon[0].every(([lon, lat]) => lon >= west && lon <= east && lat >= south && lat <= north)
-  )
+const inBoxes =
+  (admin: string) =>
+  (polygon: Polygon): boolean =>
+    (BORDER_LEFT_OUT[admin] ?? []).some(([west, south, east, north]) =>
+      polygon[0]!.every(([lon, lat]) => lon >= west && lon <= east && lat >= south && lat <= north)
+    )
 
 /** Polygons' rings for borders.json, delta-encoded in hundredths of a degree. */
-const borderRings = (polygons) =>
+const borderRings = (polygons: MultiPolygon): number[][] =>
   polygons
-    .filter((polygon) => ringAreaKm2(polygon[0]) >= BORDER_MIN_KM2)
-    .flatMap((polygon) => polygon.map((ring) => simplifyRing(ring, BORDER_SIMPLIFY_DEG)).filter(Boolean))
+    .filter((polygon) => ringAreaKm2(polygon[0]!) >= BORDER_MIN_KM2)
+    .flatMap((polygon) =>
+      polygon.map((ring) => simplifyRing(ring, BORDER_SIMPLIFY_DEG)).filter((ring) => ring !== undefined)
+    )
     .map((ring) => {
       let x = 0,
         y = 0
@@ -158,8 +200,10 @@ const borderRings = (polygons) =>
       })
     })
 
-const ne = JSON.parse(process.argv[2] ? readFileSync(process.argv[2], "utf8") : await (await fetch(NE_URL)).text())
-const countries = ne.features.filter((feature) => {
+const features = parseFeatures<CountryProperties>(
+  process.argv[2] ? readFileSync(process.argv[2], "utf8") : await (await fetch(NE_URL)).text()
+)
+const countries = features.filter((feature) => {
   const properties = feature.properties
   return (
     ["Sovereign country", "Country", "Sovereignty", "Disputed"].includes(properties.TYPE) &&
@@ -168,13 +212,13 @@ const countries = ne.features.filter((feature) => {
   )
 })
 
-const regions = []
-const flags = []
-const places = []
-const outlines = {}
-const borders = []
+const regions: StoredQuestion[] = []
+const flags: StoredQuestion[] = []
+const places: StoredPlace[] = []
+const outlines: Outlines = {}
+const borders: Border[] = []
 const none = borderRings(
-  ne.features
+  features
     .filter((feature) => feature.properties.TYPE === "Indeterminate" && feature.properties.ADMIN !== "Antarctica")
     .flatMap((feature) => polygonsOf(feature.geometry))
 )
@@ -192,39 +236,46 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
   none.push(...borderRings(all.filter(inBoxes(properties.ADMIN))))
   const south = BORDER_NONE_SOUTH_OF[properties.ADMIN]
   if (south !== undefined)
-    none.push(...borderRings(all.map((polygon) => [southOf(polygon[0], south)]).filter(([ring]) => ring !== null)))
-  const border = { flag, rings: borderRings(all.filter((polygon) => !inBoxes(properties.ADMIN)(polygon))) }
+    none.push(
+      ...borderRings(
+        all.flatMap((polygon): Polygon[] => {
+          const ring = southOf(polygon[0]!, south)
+          return ring ? [[ring]] : []
+        })
+      )
+    )
+  const border: Border = { flag, rings: borderRings(all.filter((polygon) => !inBoxes(properties.ADMIN)(polygon))) }
   borders.push(border)
-  const kept = area >= POINT_BELOW_KM2 ? keptParts(feature.geometry, CHAIN_KM_FOR[properties.ADMIN]) : null
-  const keptShare = kept ? kept.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0) / area : 0
-  const why =
+  const kept = area >= POINT_BELOW_KM2 ? keptParts(feature.geometry, CHAIN_KM_FOR[properties.ADMIN]) : []
+  const keptShare = kept.length > 0 ? kept.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0) / area : 0
+  const why: PointReason | undefined =
     area < POINT_BELOW_KM2
-      ? "small"
+      ? PointReason.SMALL
       : DISPUTED.has(properties.ADMIN)
-        ? "disputed"
+        ? PointReason.DISPUTED
         : crossesAntimeridian(kept)
-          ? "antimeridian"
+          ? PointReason.ANTIMERIDIAN
           : keptShare < MIN_KEPT_SHARE
-            ? "scattered"
+            ? PointReason.SCATTERED
             : properties.ADMIN === "United States of America"
-              ? "far-flung" // Alaska and Hawaii; the outline below keeps the contiguous states
-              : null
+              ? PointReason.FAR_FLUNG // Alaska and Hawaii; the outline below keeps the contiguous states
+              : undefined
 
-  const place = { id: slug(label), label, wiki, flag: { code: flag, wiki: flagWiki } }
+  const place: StoredPlace = { id: slug(label), label, wiki, flag: { code: flag, wiki: flagWiki } }
   places.push(place)
 
-  if (!why || why === "far-flung") {
+  if (!why || why === PointReason.FAR_FLUNG) {
     const cells = kept.flatMap((polygon) => cellsOf(polygon, 6))
     const keptArea = areaOf(cells)
     const tolerance = regionToleranceKm(keptArea)
     const contiguous = properties.ADMIN === "United States of America"
     const id = names.id ?? (contiguous ? "usa-region" : `${slug(label)}-region`)
     outlines[id] = kept
-      .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
+      .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter((ring) => ring !== undefined))
       .filter((polygon) => polygon.length > 0)
-    const area = { outline: id, centre: centroid(cells), tolerance, surface: "LAND" }
+    const area = { outline: id, centre: centroid(cells), tolerance, surface: Surface.LAND }
     // The contiguous states are a place of their own, not the country its flag stands for.
-    const painted = contiguous
+    const painted: StoredPlace = contiguous
       ? {
           id: "contiguous-united-states",
           label: "Contiguous United States",
@@ -236,35 +287,41 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
     if (contiguous) places.push(painted)
     regions.push({
       id,
-      type: "COUNTRY",
+      type: QuestionType.COUNTRY,
       place: painted.id,
-      clue: { type: "NAME", prompt: `Paint the whole of ${contiguous ? "the contiguous United States" : name}` },
-      answer: { type: "AREA" }
+      clue: { type: ClueType.NAME, prompt: `Paint the whole of ${contiguous ? "the contiguous United States" : name}` },
+      answer: { type: AnswerType.AREA }
     })
   }
 
   if (!why) {
-    flags.push({ id: `flag-${flag}`, type: "FLAG", place: place.id, clue: { type: "FLAG" }, answer: { type: "AREA" } })
+    flags.push({
+      id: `flag-${flag}`,
+      type: QuestionType.FLAG,
+      place: place.id,
+      clue: { type: ClueType.FLAG },
+      answer: { type: AnswerType.AREA }
+    })
     console.log(
-      `${label}: painted, ${kept.length} part(s), ${Math.round(100 * keptShare)}% of its land, tolerance ${place.area.tolerance} km`
+      `${label}: painted, ${kept.length} part(s), ${Math.round(100 * keptShare)}% of its land, tolerance ${place.area!.tolerance} km`
     )
   } else {
     // Small and scattered countries are asked on land near their label
     // point (a centroid could fall in the sea between islands); larger ones
     // at their centre.
-    const island = why === "small" || why === "scattered"
+    const island = why === PointReason.SMALL || why === PointReason.SCATTERED
     const answer =
       names.at ?? (island ? islandAnswer(properties, all) : centroid(all.flatMap((polygon) => cellsOf(polygon, 4))))
     const spread = Math.max(
-      ...all.flatMap((polygon) => polygon[0].map((point) => distanceKm([answer.lon, answer.lat], point)))
+      ...all.flatMap((polygon) => polygon[0]!.map((point) => distanceKm([answer.lon, answer.lat], point)))
     )
     const tolerance = pointToleranceKm(area, spread, island)
     flags.push({
       id: `flag-${flag}`,
-      type: "FLAG",
+      type: QuestionType.FLAG,
       place: place.id,
-      clue: { type: "FLAG" },
-      answer: { type: "POINT", tolerance }
+      clue: { type: ClueType.FLAG },
+      answer: { type: AnswerType.POINT, tolerance }
     })
     place.at = answer
     if (island) border.near = tolerance
@@ -274,7 +331,7 @@ for (const feature of countries.sort((a, b) => a.properties.ADMIN.localeCompare(
   }
 }
 
-writeQuestions(["COUNTRY", "FLAG"], [...regions, ...flags], places, outlines)
+writeQuestions([QuestionType.COUNTRY, QuestionType.FLAG], [...regions, ...flags], places, outlines)
 const bordersJson = JSON.stringify({ countries: borders, none })
 writeFileSync(new URL("../borders.json", import.meta.url), bordersJson + "\n")
 console.log(`wrote ${borders.length} to borders.json, ${Math.round(bordersJson.length / 1024)} KB`)

@@ -1,11 +1,11 @@
 // Builds the catalogue's "Islands, lakes and seas" and "US states"
 // questions, with their outlines, from Natural Earth (public domain). See
-// write-catalogue.mjs.
+// write-catalogue.ts.
 //
-// Usage: node scripts/build-features.mjs [dir with the geojson files in FILES]
+// Usage: node --experimental-transform-types scripts/build-features.ts [dir with the geojson files in FILES]
 // Without a directory it downloads them from the Natural Earth repository.
 //
-// Each is painted whole, like a country (see build-regions.mjs), with the same
+// Each is painted whole, like a country (see build-regions.ts), with the same
 // rules: a state smaller than POINT_BELOW_KM2, or too scattered to outline, is
 // asked as a point instead.
 //
@@ -19,9 +19,11 @@
 // - Seas: the nearly closed ones, each the union of 1:10m marine areas, since
 //   Natural Earth splits off the Adriatic, the Gulf of Bothnia and the like.
 // - US states: 1:10m admin-1 with the Great Lakes cut out; not DC.
-import { readFileSync } from "node:fs"
 import polygonClipping from "polygon-clipping"
-import { writeQuestions } from "./write-catalogue.mjs"
+import type { LonLat, MultiPolygon } from "../src/geo.ts"
+import { AnswerType, ClueType, FeatureType, QuestionType, Surface } from "../src/questions.ts"
+import { loadFeatures } from "./natural-earth.ts"
+import { writeQuestions, type Outlines, type StoredPlace, type StoredQuestion } from "./write-catalogue.ts"
 import {
   MIN_KEPT_SHARE,
   POINT_BELOW_KM2,
@@ -39,9 +41,8 @@ import {
   regionToleranceKm,
   simplifyRing,
   slug
-} from "./outline.mjs"
+} from "./outline.ts"
 
-const NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson"
 const FILES = {
   land: "ne_50m_land",
   lakes: "ne_50m_lakes",
@@ -50,7 +51,7 @@ const FILES = {
 }
 
 /** Label, a point on the island [lon, lat], and where the default would not do, prompt name and Wikipedia title. */
-const ISLANDS = [
+const ISLANDS: [label: string, at: LonLat, names?: { name?: string; wiki?: string }][] = [
   ["Greenland", [-42, 72]],
   ["New Guinea", [140, -5]],
   ["Borneo", [114, 1]],
@@ -74,7 +75,7 @@ const ISLANDS = [
 ]
 
 /** Label and the 1:10m marine areas that make up each sea. */
-const SEAS = [
+const SEAS: [label: string, parts: string[]][] = [
   [
     "Mediterranean Sea",
     [
@@ -101,66 +102,83 @@ const SEAS = [
 ]
 
 /** States whose name is shared with a country or a city. */
-const STATE_NAMES = {
+const STATE_NAMES: Record<string, { label: string; name: string; wiki: string }> = {
   Georgia: { label: "Georgia (US state)", name: "the US state of Georgia", wiki: "Georgia (U.S. state)" },
   Washington: { label: "Washington State", name: "Washington State", wiki: "Washington (state)" },
   "New York": { label: "New York State", name: "New York State", wiki: "New York (state)" }
 }
 
-const features = async (name) => {
-  const dir = process.argv[2]
-  const text = dir
-    ? readFileSync(`${dir}/${name}.geojson`, "utf8")
-    : await (await fetch(`${NE}/${name}.geojson`)).text()
-  return JSON.parse(text).features
-}
-
-const simplified = (polygons) =>
+const simplified = (polygons: MultiPolygon): MultiPolygon =>
   polygons
-    .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter(Boolean))
+    .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter((ring) => ring !== undefined))
     .filter((polygon) => polygon.length > 0)
 
-const outlines = {}
-const places = []
+interface LakeProperties {
+  name?: string
+  featurecla: string
+}
+
+interface StateProperties {
+  adm0_a3: string
+  name: string
+}
+
+const outlines: Outlines = {}
+const places: StoredPlace[] = []
+
+enum Topic {
+  ISLAND = "ISLAND",
+  LAKE = "LAKE",
+  SEA = "SEA",
+  STATE = "STATE"
+}
+
+/** Each topic's id prefix, the feature it is on a place, and what its area is painted on. */
+const TOPICS: Record<Topic, { prefix: string; feature?: FeatureType; surface: Surface }> = {
+  [Topic.ISLAND]: { prefix: "island", feature: FeatureType.ISLAND, surface: Surface.LAND },
+  [Topic.LAKE]: { prefix: "lake", feature: FeatureType.LAKE, surface: Surface.WATER },
+  [Topic.SEA]: { prefix: "sea", feature: FeatureType.SEA, surface: Surface.WATER },
+  [Topic.STATE]: { prefix: "state", surface: Surface.LAND }
+}
 
 /** A place painted whole: an island, lake or sea (`feature`), or a state. */
-const region = (topic, label, name, wiki, polygons) => {
+const region = (topic: Topic, label: string, name: string, wiki: string, polygons: MultiPolygon): StoredQuestion => {
+  const { prefix, feature, surface } = TOPICS[topic]
   const cells = polygons.flatMap((polygon) => cellsOf(polygon, 6))
   const area = areaOf(cells)
   if (area < POINT_BELOW_KM2) throw new Error(`${label} is too small to paint: ${Math.round(area)} km²`)
-  const id = `${topic}-${slug(label)}`
+  const id = `${prefix}-${slug(label)}`
   const tolerance = regionToleranceKm(area)
   outlines[id] = simplified(polygons)
-  console.log(`${label}: ${topic}, ${polygons.length} part(s), ${Math.round(area)} km², tolerance ${tolerance} km`)
-  const water = topic === "lake" || topic === "sea"
+  console.log(`${label}: ${prefix}, ${polygons.length} part(s), ${Math.round(area)} km², tolerance ${tolerance} km`)
   places.push({
     id,
     label,
     wiki,
-    ...(topic === "state" ? {} : { feature: topic.toUpperCase() }),
-    area: { outline: id, centre: centroid(cells), tolerance, surface: water ? "WATER" : "LAND" }
+    ...(feature ? { feature } : {}),
+    area: { outline: id, centre: centroid(cells), tolerance, surface }
   })
   return {
     id,
-    type: topic === "state" ? "STATE" : "FEATURE",
+    type: topic === Topic.STATE ? QuestionType.STATE : QuestionType.FEATURE,
     place: id,
-    clue: { type: "NAME", prompt: `Paint the whole of ${name}` },
-    answer: { type: "AREA" }
+    clue: { type: ClueType.NAME, prompt: `Paint the whole of ${name}` },
+    answer: { type: AnswerType.AREA }
   }
 }
 
-const out = []
+const out: StoredQuestion[] = []
 
-const land = (await features(FILES.land)).flatMap((feature) => polygonsOf(feature.geometry))
+const land = (await loadFeatures(FILES.land, process.argv[2])).flatMap((feature) => polygonsOf(feature.geometry))
 for (const [label, at, names = {}] of ISLANDS) {
   const polygon = land.find((candidate) => onLand(at, [candidate]))
   if (!polygon) throw new Error(`${label}: no land at ${at}`)
   if (polygonAreaKm2(polygon) > 3e6) throw new Error(`${label}: ${at} is on a continent`)
-  out.push(region("island", label, names.name ?? label, names.wiki ?? label, [polygon]))
+  out.push(region(Topic.ISLAND, label, names.name ?? label, names.wiki ?? label, [polygon]))
 }
 
-const lakes = new Map()
-for (const feature of await features(FILES.lakes)) {
+const lakes = new Map<string, MultiPolygon>()
+for (const feature of await loadFeatures<LakeProperties>(FILES.lakes, process.argv[2])) {
   const name = feature.properties.name
   if (!name || feature.properties.featurecla === "Reservoir") continue
   lakes.set(name, [...(lakes.get(name) ?? []), ...polygonsOf(feature.geometry)])
@@ -168,51 +186,52 @@ for (const feature of await features(FILES.lakes)) {
 for (const [name, polygons] of [...lakes].sort(([a], [b]) => a.localeCompare(b))) {
   const area = polygons.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0)
   if (area < POINT_BELOW_KM2) continue
-  out.push(region("lake", name, name, name, polygons))
+  out.push(region(Topic.LAKE, name, name, name, polygons))
 }
 
-const marine = await features(FILES.seas)
+const marine = await loadFeatures<{ name: string }>(FILES.seas, process.argv[2])
 for (const [label, parts] of SEAS) {
   const polygons = parts.flatMap((part) => {
     const matching = marine.filter((feature) => feature.properties.name === part)
     if (matching.length === 0) throw new Error(`${label}: no marine area named ${part}`)
     return matching.flatMap((feature) => polygonsOf(feature.geometry))
   })
-  out.push(region("sea", label, `the ${label}`, label, polygonClipping.union(...polygons)))
+  out.push(region(Topic.SEA, label, `the ${label}`, label, polygonClipping.union(polygons[0]!, ...polygons.slice(1))))
 }
 
-const states = (await features(FILES.states)).filter(
+const states = (await loadFeatures<StateProperties>(FILES.states, process.argv[2])).filter(
   (feature) => feature.properties.adm0_a3 === "USA" && feature.properties.name !== "District of Columbia"
 )
 for (const feature of states.sort((a, b) => a.properties.name.localeCompare(b.properties.name))) {
   const properties = feature.properties
-  const names = STATE_NAMES[properties.name] ?? {}
-  const label = names.label ?? properties.name
-  const wiki = names.wiki ?? properties.name
+  const names = STATE_NAMES[properties.name]
+  const label = names?.label ?? properties.name
+  const wiki = names?.wiki ?? properties.name
+  const promptName = names?.name ?? properties.name
   const all = polygonsOf(feature.geometry)
   const area = all.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0)
-  const kept = area >= POINT_BELOW_KM2 ? keptParts(feature.geometry) : null
-  const keptShare = kept ? kept.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0) / area : 0
-  if (kept && keptShare >= MIN_KEPT_SHARE && !crossesAntimeridian(kept)) {
-    out.push(region("state", label, names.name ?? properties.name, wiki, kept))
+  const kept = area >= POINT_BELOW_KM2 ? keptParts(feature.geometry) : []
+  const keptShare = kept.length > 0 ? kept.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0) / area : 0
+  if (kept.length > 0 && keptShare >= MIN_KEPT_SHARE && !crossesAntimeridian(kept)) {
+    out.push(region(Topic.STATE, label, promptName, wiki, kept))
     continue
   }
   const answer = centroid(all.flatMap((polygon) => cellsOf(polygon, 9)))
   if (!onLand([answer.lon, answer.lat], all)) throw new Error(`${label}: its centre is not on its land`)
   const spread = Math.max(
-    ...all.flatMap((polygon) => polygon[0].map((point) => distanceKm([answer.lon, answer.lat], point)))
+    ...all.flatMap((polygon) => polygon[0]!.map((point) => distanceKm([answer.lon, answer.lat], point)))
   )
   const tolerance = pointToleranceKm(area, spread, false)
   const id = `state-${slug(label)}`
   places.push({ id, label, wiki, at: answer })
   out.push({
     id,
-    type: "STATE",
+    type: QuestionType.STATE,
     place: id,
-    clue: { type: "NAME", prompt: `Where is ${names.name ?? properties.name}?` },
-    answer: { type: "POINT", tolerance }
+    clue: { type: ClueType.NAME, prompt: `Where is ${promptName}?` },
+    answer: { type: AnswerType.POINT, tolerance }
   })
   console.log(`${label}: state, point, ${Math.round(area)} km², tolerance ${tolerance} km`)
 }
 
-writeQuestions(["FEATURE", "STATE"], out, places, outlines)
+writeQuestions([QuestionType.FEATURE, QuestionType.STATE], out, places, outlines)

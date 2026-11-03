@@ -38,7 +38,7 @@ and hedges. These goals came from comparing the two, case by case, on maps
 ### Targets
 
 Indicative scores for "Paint the whole of France", from that discussion.
-`calibrate-regions.mjs` checks the same cases over nine countries, with the
+`calibrate-regions.ts` checks the same cases over nine countries, with the
 neighbour played by the country's own shape moved two radii away.
 
 | Paint                                                                        | Target                                   |
@@ -226,7 +226,7 @@ near-versus-far case: Iran for Germany fell from 401 to 274, below Poland
 
 ### 8. A sum of shape and nearness, fitted to new targets
 
-Comparing the same paints as point and country answers (`scripts/compare-modes.mjs`)
+Comparing the same paints as point and country answers (`scripts/compare-modes.ts`)
 and then case by case on maps gave the goals and targets above. The rule then
 fell short of them in five ways:
 
@@ -328,7 +328,7 @@ Ukraine). A full radius scored the country about 950 and the neighbour about
 
 Two more kinds in the question mix, scored exactly as countries are, with the
 same limits: under 10,000 km², or too scattered, a place is asked as a point.
-`scripts/build-features.mjs` writes the catalogue's features and states:
+`scripts/build-features.ts` writes the catalogue's features and states:
 
 - **Islands:** the 20 largest that are not already a country round
   (Madagascar, Cuba, Iceland, Sri Lanka, Great Britain and Ireland are left
@@ -351,13 +351,13 @@ The Fill tool is off for these rounds, since it fills countries.
 
 The catalogue holds 150 countries from Natural Earth's 1:50m
 admin-0 outlines (public domain), built by
-`packages/shared/scripts/build-regions.mjs`: every sovereign country but
+`packages/shared/scripts/build-regions.ts`: every sovereign country but
 those asked only as a point in flag rounds (above), with the contiguous
 United States in place of the whole. Each keeps its largest landmass and
 islands of at least 1,500 km² within 500 km of what is kept, chained (so
 Sicily and Crete stay; the Canaries, Svalbard and Alaska go; Malaysia chains
 to 800 km to keep Borneo), simplified to about 1.5 km. The tolerance and
-these limits are set in `scripts/outline.mjs`, shared with the features. The flag rounds, built alongside, have one per
+these limits are set in `scripts/outline.ts`, shared with the features. The flag rounds, built alongside, have one per
 country, 194 in all: the country's outline, or a point and tolerance. Northern
 Cyprus, Somaliland, Taiwan and Kosovo are left out. `borders.json`, also
 built alongside, has every flag country's land for the reveal, coarser
@@ -369,7 +369,7 @@ The client fetches both files on demand (their own chunk); the server holds
 outlines.json and scores multiplayer rounds, which tell clients only the
 country's id until the reveal. Flag pictures are the SVGs on the flags'
 Wikipedia articles, from Wikimedia Commons (the client's
-scripts/build-flags.mjs), one small file per flag, fetched when its round
+scripts/build-flags.ts), one small file per flag, fetched when its round
 comes up.
 
 ## Cost
@@ -383,7 +383,7 @@ millions of cells.
 
 ## Recalibrating
 
-`packages/shared/scripts/calibrate-regions.mjs` (`pnpm calibrate` from
+`packages/shared/scripts/calibrate-regions.ts` (`pnpm calibrate` from
 `packages/shared`, about 10 seconds) scores, with the game's own rule:
 
 - synthetic paints built from each country's outline (partial, bloated,
@@ -399,6 +399,6 @@ its range is a miss, and the script exits non-zero; the rule misses 6 of the
 country's own scores; naming countries (`-- Germany Chile`) runs just those.
 
 The constants to tune are `SHAPE_WEIGHT`, `OFF_COUNTRY_COST` and
-`NEARNESS_KERNEL` in `regions.ts`, and `TOLERANCE_FRACTION` in `outline.mjs`, next to the build
+`NEARNESS_KERNEL` in `regions.ts`, and `TOLERANCE_FRACTION` in `outline.ts`, next to the build
 script. `regions.test.ts` pins the main
 behaviours; update it with the numbers when a change is meant.

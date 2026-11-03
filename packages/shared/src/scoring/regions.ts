@@ -1,7 +1,7 @@
 /**
  * Scoring area answers: "Paint the whole of Germany". The answer is the
  * country itself, an outline from Natural Earth (see
- * scripts/build-regions.mjs). The outlines live in outlines.json, which the
+ * scripts/build-regions.ts). The outlines live in outlines.json, which the
  * client loads on demand rather than bundling.
  *
  * The score is SHAPE_WEIGHT x shape + (1 - SHAPE_WEIGHT) x nearness, a sum
@@ -85,7 +85,7 @@ const OFF_COUNTRY_COST = 2
 /**
  * Gaussians 5, 10, 20 and 40 tolerances wide: one to eight country radii,
  * since a country's tolerance is a fifth of its radius. Fitted to the
- * targets in calibrate-regions.mjs.
+ * targets in calibrate-regions.ts.
  */
 const NEARNESS_KERNEL: Kernel = {
   id: "nearness",
