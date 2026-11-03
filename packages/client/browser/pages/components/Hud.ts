@@ -39,6 +39,14 @@ export class Hud extends PageObject {
     await this.#tab.page.getByTestId(soundToggleTestIds.button).click()
   }
 
+  /** The sound switch shows whether sound is on. */
+  async expectSound(on: boolean): Promise<void> {
+    await expect(
+      this.#tab.page.getByTestId(soundToggleTestIds.button),
+      `sound is ${on ? "on" : "off"}`
+    ).toHaveAttribute("aria-pressed", String(on))
+  }
+
   async prompt(): Promise<string> {
     return text(this.#tab.page.getByTestId(questionCardTestIds.prompt))
   }

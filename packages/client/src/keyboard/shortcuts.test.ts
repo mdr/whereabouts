@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, type Mock } from "vite-plus/test"
-import { listedShortcuts, runPaintKey, type KeyPress } from "./shortcuts"
+import { listedShortcuts, runPaintKey, TOGGLE_LIST, type KeyPress } from "./shortcuts"
 import { Tool } from "../paint/tool"
 
 const press = (key: string, mods: Partial<KeyPress> = {}): KeyPress => ({
@@ -85,5 +85,14 @@ describe("the listed shortcuts", () => {
   it("list every paint key that works", () => {
     const listed = listedShortcuts(false).flatMap((shortcut) => shortcut.combos.map((combo) => combo.keys.join("+")))
     expect(listed).toEqual(expect.arrayContaining(["1", "2", "3", "4", "[", "]", "Ctrl+Z", "Ctrl+Shift+Z", "Ctrl+Y"]))
+  })
+})
+
+describe("the shortcuts card key", () => {
+  it("is ? alone, not with Ctrl, Meta or Alt", () => {
+    expect(TOGGLE_LIST.matches(press("?"))).toBe(true)
+    expect(TOGGLE_LIST.matches(press("?", { ctrlKey: true }))).toBe(false)
+    expect(TOGGLE_LIST.matches(press("?", { metaKey: true }))).toBe(false)
+    expect(TOGGLE_LIST.matches(press("?", { altKey: true }))).toBe(false)
   })
 })

@@ -51,6 +51,11 @@ export class RoundPage extends Screen {
     await expectHintBand(this.page.getByTestId(hintTestIds.band), axis)
   }
 
+  /** The hint card says how many hints the player has left. */
+  async expectHintsLeft(count: number): Promise<void> {
+    await expect(this.page.getByTestId(hintTestIds.card), `${count} hints left`).toContainText(`${count} left`)
+  }
+
   /** The hint is on offer this round, and stays so for `duration`. */
   async expectHintStillOffered(duration: Ms = 500): Promise<void> {
     const card = this.page.getByTestId(hintTestIds.card)
