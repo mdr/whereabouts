@@ -3,6 +3,8 @@
  * offer them. A trim is one undoable step and returns a short note saying
  * what it did; the whoosh plays only when paint went.
  */
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../net/client-error/report-client-error"
 import type { HintBand } from "@whereabouts/shared/hints"
 import { loadLandMask, loadWaterMask } from "../data/land"
 import type { PaintModel } from "./paint-model"
@@ -20,6 +22,7 @@ export const trimPaint = async (paint: Pick<PaintModel, "trimSea" | "trimLand">,
     return trimmed(share, water ? "None on land" : "None at sea")
   } catch (error) {
     console.warn("could not load the trim mask", error)
+    reportClientError(ClientErrorKind.DATA_LOAD, error)
     return "Try again"
   }
 }

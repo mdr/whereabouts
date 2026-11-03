@@ -419,7 +419,7 @@ class WSTransport extends Transport {
  * client's own address in Fly-Client-IP. Only Fly's proxy reaches the
  * machine, and it sets the header itself, so it can be trusted there.
  */
-function clientAddress(request: IncomingMessage): string {
+export function clientAddress(request: IncomingMessage): string {
     const fly = request.headers['fly-client-ip']
     return (typeof fly === 'string' && fly !== '' ? fly : request.socket.remoteAddress) ?? 'unknown'
 }

@@ -3,6 +3,8 @@
  * chunk, fetched from a game's lobby (or practice's first round) and kept
  * from then on.
  */
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../net/client-error/report-client-error"
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
 import { PlaceFactsSchema, factsFor, pickFact, type Fact, type PlaceFacts } from "@whereabouts/shared/catalogue/facts"
@@ -55,7 +57,11 @@ export const useFact = (
 ): Fact | undefined => {
   const all = facts.value
   useEffect(() => {
-    if (!all) loadFacts().catch((error: unknown) => console.warn("could not load the facts", error))
+    if (!all)
+      loadFacts().catch((error: unknown) => {
+        console.warn("could not load the facts", error)
+        reportClientError(ClientErrorKind.DATA_LOAD, error)
+      })
   }, [all])
   return question === undefined || !all
     ? undefined

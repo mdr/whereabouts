@@ -22,6 +22,8 @@
  * - applause.mp3: "Voice_Crowd_Small_Expression_Applause_Stereo" by Nox_Sound
  *   (#752710).
  */
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../net/client-error/report-client-error"
 import { effect } from "@preact/signals"
 import sprayUrl from "../assets/sounds/spray.mp3"
 import eraserUrl from "../assets/sounds/eraser.mp3"
@@ -159,6 +161,7 @@ class SoundEngine {
         (buffer) => (this.buffers[clip] = buffer),
         (error: unknown) => {
           console.warn("could not load a sound", url, error)
+          reportClientError(ClientErrorKind.SOUND_LOAD, error)
           this.failedAt = Date.now()
           this.loading = false
         }

@@ -4,6 +4,8 @@
  * first time something needs them and kept from then on: practice with
  * any of them, or a game whose host switched them on.
  */
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../net/client-error/report-client-error"
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
 import { fetchBuildJson } from "../net/stale-build"
@@ -38,7 +40,11 @@ export const loadOutlines = (): Promise<Outlines> => {
 export const useOutlines = (wanted: boolean): Outlines | undefined => {
   const all = outlines.value
   useEffect(() => {
-    if (wanted && !all) loadOutlines().catch((error: unknown) => console.warn("could not load outlines", error))
+    if (wanted && !all)
+      loadOutlines().catch((error: unknown) => {
+        console.warn("could not load outlines", error)
+        reportClientError(ClientErrorKind.OUTLINES_LOAD, error)
+      })
   }, [wanted, all])
   return wanted ? all : undefined
 }

@@ -8,7 +8,13 @@ import { Headset } from "./headset/Headset.ts"
 import type { SoundEvent } from "./SoundEvent.ts"
 import { PracticeRoundPage } from "./PracticeRoundPage.ts"
 import { ScoreReviewPage } from "./ScoreReviewPage.ts"
-import { expectNumber, stillTrueFor } from "./support.ts"
+import { expectNumber, expectPolled, stillTrueFor } from "./support.ts"
+import {
+  CLIENT_ERRORS_PATH,
+  ClientErrorReportSchema,
+  type ClientErrorKind,
+  type ClientErrorReport
+} from "@whereabouts/shared/protocol/client-error"
 import type { GameConnection } from "../game-server/route-socket.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
@@ -20,6 +26,7 @@ export class Tab extends PageObject {
   readonly #dev: boolean
   /** The tab's game connection, when it plays on the in-process server. */
   readonly connection: GameConnection | undefined
+  readonly #clientErrors: ClientErrorReport[] = []
   readonly #failing = new Set<Download>()
   readonly #intercepted = new Set<Download>()
 
@@ -34,6 +41,26 @@ export class Tab extends PageObject {
     this.#baseUrl = baseUrl.replace(/\/$/, "")
     this.#dev = dev
     this.connection = connection
+  }
+
+  /** Keeps the page's error reports here instead of sending them to a server, so tests never add to a real one's logs. Before opening any page. */
+  async collectClientErrors(): Promise<void> {
+    await this.page.route(`**${CLIENT_ERRORS_PATH}`, (route) => {
+      const report = ClientErrorReportSchema.safeParse(route.request().postDataJSON())
+      if (report.success) this.#clientErrors.push(report.data)
+      return route.fulfill({ status: 204 })
+    })
+  }
+
+  /** The page told the server this kind of thing failed. */
+  expectClientErrorReported(kind: ClientErrorKind): Promise<void> {
+    return expectPolled(
+      `a ${kind} report is sent`,
+      kind,
+      () => Promise.resolve(this.#clientErrors.map((report) => report.kind)),
+      (kinds) => kinds.includes(kind),
+      {}
+    )
   }
 
   /** Make a download fail, as a dropped connection would, until `allowDownload`. */

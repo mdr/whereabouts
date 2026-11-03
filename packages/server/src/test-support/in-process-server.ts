@@ -7,6 +7,8 @@
 import { defaultStaticDir, createApp, type App } from "../app.ts"
 import { createAppFromEnvironment } from "../environment-app.ts"
 import type { AddressLimits } from "../address-limiter.ts"
+import type { ClientErrorLimits } from "../client-errors/client-errors-route.ts"
+import { CLIENT_ERRORS_PATH } from "@whereabouts/shared/protocol/client-error"
 import { BANK, configureGameRooms, GameRoom } from "../rooms.ts"
 import { FakeClock } from "./fake-clock.ts"
 import { eventually } from "./eventually.ts"
@@ -35,6 +37,10 @@ export interface InProcessOptions {
   questions?: (question: Question) => boolean
   /** Per address; unlimited by default. */
   addressLimits?: AddressLimits
+  /** Per address and overall, for browsers reporting errors. */
+  clientErrorLimits?: ClientErrorLimits
+  /** Keep what the HTTP side logs, for `logged`. */
+  captureLogs?: boolean
   /** Serves the development endpoints. */
   devTools?: boolean
   /** A built client to serve. */
@@ -56,8 +62,10 @@ export class InProcessServer {
   readonly httpUrl: string
   private readonly app: App
   private readonly players: TestPlayer[] = []
+  private readonly logLines: string[]
 
-  private constructor(app: App, clock: FakeClock, httpUrl: string) {
+  private constructor(app: App, clock: FakeClock, httpUrl: string, logLines: string[]) {
+    this.logLines = logLines
     this.app = app
     this.clock = clock
     this.httpUrl = httpUrl
@@ -70,6 +78,8 @@ export class InProcessServer {
     catalogue = BANK.catalogue,
     questions,
     addressLimits = UNLIMITED,
+    clientErrorLimits,
+    captureLogs,
     devTools,
     staticDir,
     heartbeatIntervalMs,
@@ -79,10 +89,36 @@ export class InProcessServer {
     const clock = new FakeClock()
     const bank = { ...BANK, catalogue: questions ? catalogue.filter(questions) : catalogue }
     configureGameRooms({ clock, bank, config })
+    const logLines: string[] = []
+    const logStream = captureLogs ? { write: (line: string) => void logLines.push(line) } : undefined
     const app = environment
       ? createAppFromEnvironment(environment, defaultStaticDir(), { logLevel: "warning" }).app
-      : createApp({ staticDir, logLevel: "warning", addressLimits, devTools, heartbeatIntervalMs, maxBufferedBytes })
-    return new InProcessServer(app, clock, await app.listen(0))
+      : createApp({
+          staticDir,
+          logLevel: "warning",
+          addressLimits,
+          clientErrorLimits,
+          logStream,
+          devTools,
+          heartbeatIntervalMs,
+          maxBufferedBytes
+        })
+    return new InProcessServer(app, clock, await app.listen(0), logLines)
+  }
+
+  /** What the HTTP side has logged so far, if `captureLogs` was set. */
+  get logged(): Record<string, unknown>[] {
+    return this.logLines.map((line) => JSON.parse(line) as Record<string, unknown>)
+  }
+
+  /** A browser reporting an error, from this address; the status it is answered with. */
+  async postClientError(body: unknown, address?: string): Promise<number> {
+    const response = await fetch(`${this.httpUrl}${CLIENT_ERRORS_PATH}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...(address ? { "fly-client-ip": address } : {}) },
+      body: JSON.stringify(body)
+    })
+    return response.status
   }
 
   /** A player who can connect to this server. */

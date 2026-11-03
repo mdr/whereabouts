@@ -5,6 +5,8 @@
  * round is revealed, and kept from then on. The reveal draws a country
  * painted whole by its outline, so it loads the outlines too.
  */
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../net/client-error/report-client-error"
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
 import { fetchBuildJson } from "../net/stale-build"
@@ -71,7 +73,11 @@ export const vrFlagPins = (loaded: Borders): VrFlagPin[] => {
 export const useBorders = (wanted: boolean): Borders | undefined => {
   const loaded = borders.value
   useEffect(() => {
-    if (wanted && !loaded) loadBorders().catch((error: unknown) => console.warn("could not load borders", error))
+    if (wanted && !loaded)
+      loadBorders().catch((error: unknown) => {
+        console.warn("could not load borders", error)
+        reportClientError(ClientErrorKind.DATA_LOAD, error)
+      })
   }, [wanted, loaded])
   return wanted ? loaded : undefined
 }

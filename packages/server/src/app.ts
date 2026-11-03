@@ -11,6 +11,7 @@ import WSTransport from "./vendor/WSTransport.ts"
 import { GameAuth } from "./game-auth.ts"
 import { GameRoom, ROOM_TYPE, kickForRestart, type ActorData } from "./rooms.ts"
 import { registerDevPlayers } from "./extra-players/dev-players-route.ts"
+import { registerClientErrors, type ClientErrorLimits } from "./client-errors/client-errors-route.ts"
 import { AddressLimiter, type AddressLimits } from "./address-limiter.ts"
 
 export interface AppOptions {
@@ -18,6 +19,9 @@ export interface AppOptions {
   staticDir: string | undefined
   allowedOrigins?: string[]
   logger?: boolean
+  /** Fastify's log lines (JSON) go here instead; for tests. */
+  logStream?: { write(line: string): void }
+  clientErrorLimits?: ClientErrorLimits
   /** Rivalis log level; defaults to info. */
   logLevel?: Rivalis["logging"]["level"]
   addressLimits?: AddressLimits
@@ -75,9 +79,12 @@ class LoggedRateLimiter extends TokenBucketRateLimiter {
 }
 
 export const createApp = (options: AppOptions): App => {
-  const fastify = Fastify({ logger: options.logger ?? false })
+  const fastify = Fastify({
+    logger: options.logStream ? { level: "warn", stream: options.logStream } : (options.logger ?? false)
+  })
 
   fastify.get("/api/health", () => ({ ok: true }))
+  registerClientErrors(fastify, options.clientErrorLimits)
 
   if (options.staticDir) {
     // Vite names bundled assets by content hash, so they can be cached for

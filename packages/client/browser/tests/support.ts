@@ -34,7 +34,9 @@ export const openTab = async (
   })
   const baseUrl = options.baseUrl ?? test.info().project.use.baseURL
   if (!baseUrl) throw new Error("no baseURL: set one in the Playwright config")
-  return new Tab(page, baseUrl, { dev: options.dev ?? false, connection })
+  const tab = new Tab(page, baseUrl, { dev: options.dev ?? false, connection })
+  await tab.collectClientErrors()
+  return tab
 }
 
 /** Where a test's screenshots go: its own folder under the output directory. */

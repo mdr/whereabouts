@@ -1,3 +1,5 @@
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../../net/client-error/report-client-error"
 import type { WebGLRenderer } from "three"
 import type { BordersData } from "@whereabouts/shared/borders"
 import type { LandMaskData } from "@whereabouts/shared/paint/land"
@@ -23,6 +25,9 @@ export const drawGlobe = async (globe: Globe, renderer: WebGLRenderer): Promise<
   // Not needed until the first answer, and it waits on the network.
   drawColour(globe.colourCanvas, globe.landCanvas, landOnly).then(
     () => globe.colourDrawn(renderer),
-    (error: unknown) => console.warn("could not colour the VR globe", error)
+    (error: unknown) => {
+      console.warn("could not colour the VR globe", error)
+      reportClientError(ClientErrorKind.VR_LOAD, error)
+    }
   )
 }

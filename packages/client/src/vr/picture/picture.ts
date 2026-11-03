@@ -4,6 +4,8 @@
  * it back. Turned over, a flag shows its reverse and a photo a postcard's
  * back.
  */
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../../net/client-error/report-client-error"
 import {
   BoxGeometry,
   CanvasTexture,
@@ -140,7 +142,10 @@ export class Picture {
         this.mesh.scale.set(width * size, height * size, 1)
         this.mesh.visible = true
       },
-      (error: unknown) => console.warn("could not load the picture for VR", error)
+      (error: unknown) => {
+        console.warn("could not load the picture for VR", error)
+        reportClientError(ClientErrorKind.VR_LOAD, error)
+      }
     )
   }
 }

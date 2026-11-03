@@ -153,6 +153,8 @@ scripts/fly.sh deploy --image registry.fly.io/whereabouts-game:<sha>   # roll ba
 
 Images are x86_64 Linux, so they are built in CI rather than on a Mac.
 
+Players’ browsers report failures (a map, outlines or VR that will not load, uncaught errors) to `POST /api/client-errors`, which logs them at `warn` with `event: "CLIENT_ERROR"`. A report holds only the kind, an error message and stack with URL query strings removed, the screen and room code, the client build and the user agent; never paint, guesses or tokens. It is limited to 5 per address, then 1 every 10 s, and 300 a minute overall.
+
 ## Layout
 
 pnpm workspace with three packages (module by module, and checklists for common

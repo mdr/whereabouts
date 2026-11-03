@@ -4,6 +4,8 @@
  * map draws it. The headset runs none of the page's animation frames, which
  * MapLibre draws on, so it is drawn here on demand with map.redraw().
  */
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../../net/client-error/report-client-error"
 import { BufferAttribute, BufferGeometry, CanvasTexture, Mesh, MeshBasicMaterial, SRGBColorSpace } from "three"
 import { greatCircleDistance, toDegrees, toRadians, type LatLon } from "@whereabouts/shared/geo"
 import type { HintBand } from "@whereabouts/shared/hints"
@@ -57,7 +59,10 @@ export class DetailPatch {
         this.gameMap.applyTheme(theme)
         this.ready = true
       },
-      (error: unknown) => console.warn("no map detail on the VR globe", error)
+      (error: unknown) => {
+        console.warn("no map detail on the VR globe", error)
+        reportClientError(ClientErrorKind.VR_LOAD, error)
+      }
     )
     this.texture = new CanvasTexture(this.gameMap.map.getCanvas())
     this.texture.colorSpace = SRGBColorSpace
