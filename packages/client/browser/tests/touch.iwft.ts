@@ -1,10 +1,11 @@
 // Touch on the map in practice mode, against the Vite dev server: one finger
 // paints; two fingers pan and zoom and leave no paint behind.
 import { test } from "@playwright/test"
-import { newTab, shot } from "./support.ts"
+import { newOfflineTab } from "./iwft-tab.ts"
+import { shot } from "./support.ts"
 
 test("touch", async ({ browser }) => {
-  const tab = await newTab(browser, "touch", {
+  const tab = await newOfflineTab(browser, "touch", {
     context: { viewport: { width: 1024, height: 768 }, hasTouch: true, isMobile: true }
   })
 

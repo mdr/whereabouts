@@ -4,7 +4,7 @@
   "ignoreBinaries": ["nix"],
   "workspaces": {
     "packages/client": {
-      "entry": ["scripts/*.mjs"],
+      "entry": ["scripts/*.mjs", "browser/**/*.{iwft,e2e}.ts"],
       "ignore": ["scripts/*.d.mts"],
       "ignoreDependencies": ["iwer"],
       "playwright": { "config": ["playwright.config.ts", "playwright.prod.config.ts"] }

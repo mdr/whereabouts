@@ -3,17 +3,21 @@ import type { Browser } from "@playwright/test"
 import { Headset } from "../../pages/headset/Headset.ts"
 import type { Screen } from "../../pages/Screen.ts"
 import type { Tab } from "../../pages/Tab.ts"
-import { newTab } from "../support.ts"
+import type { TestGame } from "../../game-server/game-server.ts"
+import { newOfflineTab, newTab } from "../iwft-tab.ts"
+import type { TabOptions } from "../support.ts"
 import { Hand } from "../../../src/vr/hands/hand.ts"
 import type { Vec3 } from "../../../src/vr/probe.ts"
 
-/** A new tab in an emulated headset. `initScript` runs in the page, so it can't use variables from outside it. */
+/** A new tab in an emulated headset. With `game` it plays on that server; without, it never joins a game. `initScript` runs in the page, so it can't use variables from outside it. */
 export const newHeadsetTab = async (
   browser: Browser,
   label: string,
-  initScript?: () => void
+  initScript?: () => void,
+  game?: TestGame
 ): Promise<{ tab: Tab; headset: Headset }> => {
-  const tab = await newTab(browser, label, { context: { viewport: { width: 1200, height: 800 } }, initScript })
+  const options: TabOptions = { context: { viewport: { width: 1200, height: 800 } }, initScript }
+  const tab = game ? await newTab(browser, label, { ...options, game }) : await newOfflineTab(browser, label, options)
   return { tab, headset: await Headset.install(tab.page) }
 }
 

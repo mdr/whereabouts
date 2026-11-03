@@ -4,11 +4,12 @@
 import { test } from "@playwright/test"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { HintAxis } from "@whereabouts/shared/hints"
-import { newTab, shot } from "./support.ts"
+import { newE2eTab } from "./e2e-tab.ts"
+import { shot } from "./support.ts"
 
 test("multiplayer", async ({ browser }) => {
   const { terrain, aliceLobbyPage, code } = await test.step("Alice hosts a game", async () => {
-    const aliceTab = await newTab(browser, "Alice")
+    const aliceTab = await newE2eTab(browser, "Alice")
     // Terrain tiles should load at the reveal only: shaded relief would give mountains away.
     const terrain = aliceTab.countTerrainTileRequests()
     const aliceHomePage = await aliceTab.openHome()
@@ -23,7 +24,7 @@ test("multiplayer", async ({ browser }) => {
   // Bob plays with the dev drawer, so it gets exercised too, and with a long
   // name, so the lists are checked for overflow.
   const bobLobbyPage = await test.step("Bob joins by code", async () => {
-    const bobHomePage = await (await newTab(browser, "Bob", { dev: true })).openHome()
+    const bobHomePage = await (await newE2eTab(browser, "Bob", { dev: true })).openHome()
     await bobHomePage.enterName("Bobbington-Smythe")
     const bobLobbyPage = await bobHomePage.joinGame(code)
     await aliceLobbyPage.players.waitForPlayer("Bobbington-Smythe", 5_000)

@@ -3,10 +3,11 @@
 // alone), the export, and the screen on a phone. Saves screenshots.
 import { expect, test } from "@playwright/test"
 import { decodeCase } from "@whereabouts/shared/scoring/scoring-case"
-import { newTab, shot } from "./support.ts"
+import { newOfflineTab } from "./iwft-tab.ts"
+import { shot } from "./support.ts"
 
 test("score-review", async ({ browser }) => {
-  const tab = await newTab(browser, "review", { context: { viewport: { width: 1400, height: 900 } } })
+  const tab = await newOfflineTab(browser, "review", { context: { viewport: { width: 1400, height: 900 } } })
 
   const review = await test.step("the review opens with nothing judged", async () => {
     const review = await tab.openScoreReview()
@@ -70,7 +71,7 @@ test("score-review", async ({ browser }) => {
   })
 
   await test.step("the screen fits a phone", async () => {
-    const phone = await newTab(browser, "phone", {
+    const phone = await newOfflineTab(browser, "phone", {
       context: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 }
     })
     const onPhone = await phone.openScoreReview()

@@ -6,7 +6,9 @@
 import { createApp, type App } from "../app.ts"
 import { BANK, configureGameRooms, GameRoom } from "../rooms.ts"
 import { FakeClock } from "./fake-clock.ts"
+import type { CommandResult } from "@whereabouts/shared/game/command-result"
 import type { Game } from "@whereabouts/shared/game/game"
+import type { HintAxis } from "@whereabouts/shared/hints"
 import type { GameConfig } from "@whereabouts/shared/protocol/config"
 import type { Question } from "@whereabouts/shared/questions"
 import { playerName, playerToken, type PlayerToken, type RoomCode } from "@whereabouts/shared/ids"
@@ -90,8 +92,30 @@ export class InProcessServer {
     })
   }
 
+  /** A seated player presses Done (a pass, with nothing painted). */
+  lock(code: RoomCode, token: PlayerToken): void {
+    this.command(code, (game, now) => game.lock(token, now))
+  }
+
+  /** A seated player presses Ready at the reveal. */
+  ready(code: RoomCode, token: PlayerToken): void {
+    this.command(code, (game, now) => game.ready(token, now))
+  }
+
+  /** A seated player uses a hint. */
+  hint(code: RoomCode, token: PlayerToken, axis: HintAxis): void {
+    this.command(code, (game) => game.hint(token, axis))
+  }
+
   async close(): Promise<void> {
     await this.app.close()
+  }
+
+  private command(code: RoomCode, run: (game: Game, now: Instant) => CommandResult): void {
+    this.act(code, (game, now) => {
+      const result = run(game, now)
+      if (!result.ok) throw new Error(`command refused: ${result.error}`)
+    })
   }
 
   private room(code: RoomCode): GameRoom | undefined {

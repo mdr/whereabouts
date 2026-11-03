@@ -2,10 +2,10 @@
 // and checks the map loads: the MapLibre worker must be fetched as
 // JavaScript, not the SPA fallback.
 import { expect, test } from "@playwright/test"
-import { newTab } from "../tests/support.ts"
+import { newE2eTab } from "../tests/e2e-tab.ts"
 
 test("prod", async ({ browser }) => {
-  const tab = await newTab(browser, "prod", { context: { viewport: { width: 1200, height: 800 } } })
+  const tab = await newE2eTab(browser, "prod", { context: { viewport: { width: 1200, height: 800 } } })
 
   const problems: string[] = []
   tab.page.on("console", (message) => {

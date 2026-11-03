@@ -1,14 +1,14 @@
-// The browser tests, against dev servers of their own on spare ports, so a
-// `pnpm dev` already running is left alone. `task e2e` runs them.
+// The browser tests. *.iwft.ts specs play on a game server in the test's own
+// process (or need none); *.e2e.ts specs use the dev servers started here, on
+// spare ports so a `pnpm dev` already running is left alone. `task e2e` runs them.
 import { defineConfig } from "@playwright/test"
 import { CHROME } from "./browser/tests/support.ts"
 
 const clientPort = process.env["CLIENT_PORT"] ?? "5180"
 const gamePort = process.env["PORT"] ?? "8790"
-// Short rounds, which every test copes with (reconnect picks its own).
+// Short rounds for the e2e specs.
 const env = { CLIENT_PORT: clientPort, PORT: gamePort, ROUND_MS: "12000", ROUNDS: "2", CONNECTIONS_PER_ADDRESS: "1000" }
-const LONG = /\/(vr\/[a-z-]+|load-failures)\.spec\.ts$/
-const TIMED = /\/(sound|deadline)\.spec\.ts$/
+const LONG = /\/(vr\/[a-z-]+|load-failures)\.iwft\.ts$/
 
 export default defineConfig({
   testDir: "browser/tests",
@@ -20,9 +20,9 @@ export default defineConfig({
   projects: [
     // Listed first so the longest start first and the run ends sooner.
     { name: "long", testMatch: LONG, fullyParallel: true },
-    { name: "main", testIgnore: [LONG, TIMED] },
-    // These time the round clock, which load from the others would skew.
-    { name: "timed", testMatch: TIMED, dependencies: ["long", "main"], workers: 1 }
+    { name: "iwft", testMatch: /\.iwft\.ts$/, testIgnore: LONG },
+    // Needs the game server below: Playwright cannot start it for this project alone.
+    { name: "e2e", testMatch: /\.e2e\.ts$/ }
   ],
   webServer: [
     {

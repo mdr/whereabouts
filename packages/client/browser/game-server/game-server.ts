@@ -7,6 +7,7 @@ import { expect, test as base } from "@playwright/test"
 import { InProcessServer, type InProcessOptions } from "../../../server/src/test-support/in-process-server.ts"
 import type { Game } from "@whereabouts/shared/game/game"
 import type { LatLon } from "@whereabouts/shared/geo"
+import type { HintAxis } from "@whereabouts/shared/hints"
 import type { PlayerToken, RoomCode } from "@whereabouts/shared/ids"
 import type { Km, Ms } from "@whereabouts/shared/units"
 
@@ -34,6 +35,20 @@ export class TestGame {
   /** A seated player paints a blob, `radius` across, around `at`. */
   paint(token: PlayerToken, at: LatLon, radius: Km): void {
     this.server.paint(this.code, token, at, radius)
+  }
+
+  /** Seated players press Done (a pass, with nothing painted). */
+  lock(tokens: PlayerToken[]): void {
+    tokens.forEach((token) => this.server.lock(this.code, token))
+  }
+
+  /** Seated players press Ready at the reveal. */
+  ready(tokens: PlayerToken[]): void {
+    tokens.forEach((token) => this.server.ready(this.code, token))
+  }
+
+  hint(token: PlayerToken, axis: HintAxis): void {
+    this.server.hint(this.code, token, axis)
   }
 
   private get code(): RoomCode {

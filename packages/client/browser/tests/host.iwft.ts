@@ -1,21 +1,24 @@
-// Host controls and the brush footprint, against the dev servers: Alice
+// Host controls and the brush footprint, against the in-process server: Alice
 // hosts and Bob joins by link; the footprint shows under Alice's cursor;
 // Alice removes Bob, who can come back as a new player; Alice ends the game
 // early. Carol opens a link to a game that has gone and hosts one under its
 // code. Saves screenshots.
-import { test } from "@playwright/test"
-import { newTab, shot } from "./support.ts"
+import { test } from "../game-server/game-server.ts"
+import { newTab } from "./iwft-tab.ts"
+import { shot } from "./support.ts"
 
-test("host", async ({ browser }) => {
+test.use({ serverOptions: { config: { roundLength: 30_000 } } })
+
+test("host", async ({ browser, game }) => {
   const viewport = { viewport: { width: 1300, height: 850 } }
 
   const { aliceLobbyPage, bobLobbyPage, code } = await test.step("Alice hosts and Bob joins by link", async () => {
-    const aliceHomePage = await (await newTab(browser, "Alice", { context: viewport })).openHome()
+    const aliceHomePage = await (await newTab(browser, "Alice", { context: viewport, game })).openHome()
     await aliceHomePage.enterName("Alice")
     const aliceLobbyPage = await aliceHomePage.hostGame()
     const code = await aliceLobbyPage.code()
 
-    const bobJoinAsPage = await (await newTab(browser, "Bob", { context: viewport })).openGameLink(code)
+    const bobJoinAsPage = await (await newTab(browser, "Bob", { context: viewport, game })).openGameLink(code)
     await bobJoinAsPage.enterName("Bob")
     const bobLobbyPage = await bobJoinAsPage.join()
     await aliceLobbyPage.players.waitForPlayer("Bob")
@@ -27,7 +30,6 @@ test("host", async ({ browser }) => {
     await test.step("the host can remove Bob in the lobby, then starts", async () => {
       await aliceLobbyPage.players.expectRemovable(["Bob"])
 
-      await aliceLobbyPage.chooseSecondsPerRound(30)
       const aliceRoundPage = await aliceLobbyPage.startGame()
       const bobRoundPage = await bobLobbyPage.waitForGameToStart()
       return { aliceRoundPage, bobRoundPage }
@@ -83,7 +85,7 @@ test("host", async ({ browser }) => {
       { length: 4 },
       () => "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 31)]
     ).join("")
-    const carolJoinAsPage = await (await newTab(browser, "Carol", { context: viewport })).openGameLink(oldCode)
+    const carolJoinAsPage = await (await newTab(browser, "Carol", { context: viewport, game })).openGameLink(oldCode)
     await carolJoinAsPage.enterName("Carol")
     const carolTurnedAwayPage = await carolJoinAsPage.joinMissingGame()
     await carolTurnedAwayPage.expectReason("No game with that code")

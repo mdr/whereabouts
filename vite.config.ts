@@ -26,6 +26,38 @@ const noRawPage = [
   }
 ]
 
+const browserImports = (
+  extra: { group: string[]; message: string }[]
+): ["error", { paths: { name: string; message: string }[]; patterns: object[] }] => [
+  "error",
+  {
+    paths: [{ name: "h3-js", message: "Import H3 from shared/src/h3.ts, which brands cells and resolutions." }],
+    patterns: [
+      {
+        group: ["**/support.ts"],
+        importNamePattern: "^(check|until)$",
+        message:
+          "Assert through a page object's expect… method, which retries; a boolean check passes or fails on one read."
+      },
+      ...extra
+    ]
+  }
+]
+
+const gameServerImports = [
+  {
+    group: ["**/game-server/*", "**/iwft-tab.ts", "**/in-process-server.ts"],
+    message: "An e2e spec plays on the dev servers' real game server: leave the in-process one to the iwft specs."
+  }
+]
+
+const realServerImports = [
+  {
+    group: ["**/e2e-tab.ts"],
+    message: "An iwft spec plays on the in-process server (the game fixture) or opens no game."
+  }
+]
+
 const noFunctionExpressionConsts = [
   { selector: "VariableDeclarator > FunctionExpression", message: "Use an arrow function: const f = () => {}." }
 ]
@@ -339,26 +371,16 @@ export default defineConfig({
             ...noFunctionExpressionConsts,
             ...noFixedWaits
           ],
-          "no-restricted-imports": [
-            "error",
-            {
-              paths: [
-                {
-                  name: "h3-js",
-                  message: "Import H3 from shared/src/h3.ts, which brands cells and resolutions."
-                }
-              ],
-              patterns: [
-                {
-                  group: ["**/support.ts"],
-                  importNamePattern: "^(check|until)$",
-                  message:
-                    "Assert through a page object's expect… method, which retries; a boolean check passes or fails on one read."
-                }
-              ]
-            }
-          ]
+          "no-restricted-imports": browserImports([])
         }
+      },
+      {
+        files: ["packages/client/browser/**/*.e2e.ts"],
+        rules: { "no-restricted-imports": browserImports(gameServerImports) }
+      },
+      {
+        files: ["packages/client/browser/**/*.iwft.ts"],
+        rules: { "no-restricted-imports": browserImports(realServerImports) }
       },
       {
         files: ["packages/client/browser/tests/**/*.ts", "packages/server/scripts/**/*.ts"],
@@ -473,7 +495,7 @@ export default defineConfig({
         plugins: ["vitest"]
       },
       {
-        files: ["**/*.test.{ts,tsx}", "packages/client/browser/**/*.spec.ts"],
+        files: ["**/*.test.{ts,tsx}", "packages/client/browser/**/*.{iwft,e2e}.ts"],
         rules: {
           "max-lines": ["error", { max: 600, skipBlankLines: true, skipComments: true }],
           "sonarjs/cognitive-complexity": "off"
