@@ -1,15 +1,9 @@
-import { existsSync } from "node:fs"
-import { createApp, defaultStaticDir } from "./app.ts"
-import { configFromEnv } from "./config.ts"
-import { configureGameRooms } from "./rooms.ts"
+import { defaultStaticDir } from "./app.ts"
+import { createAppFromEnvironment } from "./environment-app.ts"
 
-const config = configFromEnv(process.env, defaultStaticDir())
-configureGameRooms({ config: config.game })
+const { app, port, host, staticDir } = createAppFromEnvironment(process.env, defaultStaticDir(), { logger: true })
 
-const staticDir = config.staticDir && existsSync(config.staticDir) ? config.staticDir : undefined
-const app = createApp({ staticDir, logger: true, addressLimits: config.addressLimits, devTools: config.devTools })
-
-const address = await app.listen(config.port, config.host)
+const address = await app.listen(port, host)
 app.fastify.log.info(`whereabouts server on ${address} (static: ${staticDir ?? "none"})`)
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {

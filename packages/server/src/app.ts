@@ -23,6 +23,10 @@ export interface AppOptions {
   addressLimits?: AddressLimits
   /** Registers the playtest endpoints; never in production. */
   devTools?: boolean
+  /** How often idle sockets are pinged; for tests. */
+  heartbeatIntervalMs?: number
+  /** What may queue unread for one socket before it is dropped; for tests. */
+  maxBufferedBytes?: number
 }
 
 export interface App {
@@ -115,7 +119,8 @@ export const createApp = (options: AppOptions): App => {
   }
   const transport = new WSTransport({ server: fastify.server, path: "/ws" }, undefined, {
     maxPayload: MAX_PAYLOAD_BYTES,
-    maxBufferedBytes: MAX_BUFFERED_BYTES,
+    maxBufferedBytes: options.maxBufferedBytes ?? MAX_BUFFERED_BYTES,
+    ...(options.heartbeatIntervalMs === undefined ? {} : { heartbeat: { intervalMs: options.heartbeatIntervalMs } }),
     connectionLimiter: new AddressLimiter(options.addressLimits),
     ticketSource: "protocol",
     allowedOrigins: options.allowedOrigins ?? (() => true)
