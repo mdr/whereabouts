@@ -20,7 +20,6 @@ import {
   type GameView,
   type GuessingGameView,
   type LobbyGameView,
-  type ResultsGameView,
   type RevealGameView,
   type QuestionView,
   type RevealView,
@@ -122,17 +121,6 @@ export const makeRevealView = ({ you, ...over }: ViewOverrides<RevealGameView> =
   reveal: makeReveal(),
   ...over,
   phase: Phase.REVEAL
-})
-
-/** A view of the final results of a game nobody scored in. */
-export const makeResultsView = ({ you, ...over }: ViewOverrides<ResultsGameView> = {}): ResultsGameView => ({
-  ...viewBase(),
-  you: { ...youBase(), role: seated(), ...you },
-  results: [],
-  playedRounds: [],
-  awards: [],
-  ...over,
-  phase: Phase.RESULTS
 })
 
 /** Alice, the host, connected and playing, with whatever a test needs changed. */

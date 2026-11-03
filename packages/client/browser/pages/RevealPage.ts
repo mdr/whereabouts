@@ -108,6 +108,18 @@ export class RevealPage extends Screen {
     await expect(paintedIn, `${name}'s paint, in words`).toHaveAttribute("title", title)
   }
 
+  /** Every player's row as shown, in order. */
+  async rows(): Promise<{ name: string; roundScore: string; total: string }[]> {
+    const rows = this.page.getByTestId(revealRowTestIds.playerRow)
+    return Promise.all(
+      (await rows.all()).map(async (row) => ({
+        name: (await row.getAttribute("data-player")) ?? "",
+        roundScore: await text(row.getByTestId(revealRowTestIds.roundScore)),
+        total: await text(row.getByTestId(revealRowTestIds.total))
+      }))
+    )
+  }
+
   /** `rowCount` rows are listed, and none of the names carries a "(you)" label. */
   async expectNoYouLabels(rowCount: number): Promise<void> {
     await this.expectRowCount(rowCount)

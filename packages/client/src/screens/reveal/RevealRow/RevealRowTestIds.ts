@@ -3,5 +3,6 @@ export const revealRowTestIds = {
   playerName: "RevealRow.playerName",
   roundScore: "RevealRow.roundScore",
   passedTag: "RevealRow.passedTag",
-  hintTag: "RevealRow.hintTag"
+  hintTag: "RevealRow.hintTag",
+  total: "RevealRow.total"
 }

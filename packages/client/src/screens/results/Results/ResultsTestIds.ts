@@ -1,5 +1,6 @@
 export const resultsTestIds = {
   page: "Results.page",
   winner: "Results.winner",
-  playAgainButton: "Results.playAgainButton"
+  playAgainButton: "Results.playAgainButton",
+  cannotPlayAgain: "Results.cannotPlayAgain"
 }
