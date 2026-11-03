@@ -1,3 +1,4 @@
 export const mapDetailPickerTestIds = {
-  picker: "MapDetailPicker.picker"
+  picker: "MapDetailPicker.picker",
+  option: "MapDetailPicker.option"
 }

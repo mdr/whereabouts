@@ -48,10 +48,14 @@ export const configureAsHost = (game: HostSetupGame, patch: ConfigurePatch): voi
   hostSetup.value = { ...savedSetupPatch(hostSetup.value), ...patch }
 }
 
+/** A game this tab created, in its lobby, is the one to give the remembered setup. */
+export const shouldApplySavedSetup = (created: boolean, view: GameView | undefined): boolean =>
+  created && view?.phase === Phase.LOBBY && view.you.isHost
+
 /** Once a game this tab created reaches its lobby, give it the remembered setup. */
 export const useSavedSetup = (game: HostSetupGame, view: GameView | undefined, created: boolean): void => {
   const applied = useRef(false)
-  const ready = created && view?.phase === Phase.LOBBY && view.you.isHost
+  const ready = shouldApplySavedSetup(created, view)
   useEffect(() => {
     if (!ready || applied.current) return
     applied.current = true

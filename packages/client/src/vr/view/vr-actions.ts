@@ -5,10 +5,10 @@
  */
 import { signal } from "@preact/signals"
 import type { PlayerId } from "@whereabouts/shared/ids"
-import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import { type GameView } from "@whereabouts/shared/protocol/views"
 import { Role, everyone, type PlayerView } from "@whereabouts/shared/roles"
 import type { GameService } from "../../game-service/game-service"
+import { canTakeSeat } from "../../ui/players/seat-rules"
 import type { VrAction } from "./view"
 import type { VrTableRow } from "../scores/scores"
 
@@ -60,5 +60,5 @@ export const hostActions = (
 export const takeSeat = (game: Pick<GameService, "setRole" | "online">, view: GameView, label: string): VrAction => ({
   label,
   press: () => game.setRole(Role.PLAYER),
-  enabled: view.players.length < MAX_PLAYERS && game.online.value
+  enabled: canTakeSeat(view, game.online.value)
 })

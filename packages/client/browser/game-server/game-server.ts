@@ -32,6 +32,11 @@ export class TestGame {
     return this.server.seat(this.code, names)
   }
 
+  /** Seat spectators in the only game, with no tab behind them. */
+  watch(names: string[]): PlayerToken[] {
+    return this.server.watch(this.code, names)
+  }
+
   /** A seated player paints a blob, `radius` across, around `at`. */
   paint(token: PlayerToken, at: LatLon, radius: Km): void {
     this.server.paint(this.code, token, at, radius)

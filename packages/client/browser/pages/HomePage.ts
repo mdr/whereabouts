@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test"
 import { homeTestIds } from "../../src/screens/Home/HomeTestIds.ts"
+import { JoinAsPage } from "./JoinAsPage.ts"
 import { LobbyPage } from "./LobbyPage.ts"
 import { Screen } from "./Screen.ts"
 import { SittingOutPage } from "./SittingOutPage.ts"
@@ -30,6 +31,12 @@ export class HomePage extends Screen {
   async joinGameMidRound(code: string): Promise<SittingOutPage> {
     await this.#join(code)
     return SittingOutPage.whenShown(this.tab)
+  }
+
+  /** The browser's Back button, to the join page of a game just left. */
+  async goBackToGame(): Promise<JoinAsPage> {
+    await this.page.goBack()
+    return JoinAsPage.whenShown(this.tab)
   }
 
   async #join(code: string): Promise<void> {

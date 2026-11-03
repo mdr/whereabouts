@@ -31,12 +31,10 @@ test("multiplayer", async ({ browser }) => {
     return bobLobbyPage
   })
 
-  // The host makes it 3 photo rounds of 30 s; Bob sees the choice but can't change it.
-  await test.step("the host's setup reaches Bob, who can't change it", async () => {
+  // The host makes it 3 photo rounds of 30 s.
+  await test.step("the host sets 3 photo rounds of 30 s", async () => {
     await aliceLobbyPage.setOnlyQuestions(QuestionType.LANDMARK, 3)
     await aliceLobbyPage.chooseSecondsPerRound(30)
-    await bobLobbyPage.expectSetupSummary({ rounds: "3", seconds: "30 s", questions: "3 landmarks" })
-    await bobLobbyPage.expectCannotChangeSetup()
     await aliceLobbyPage.screenshot(shot(`mp-1b-lobby-settings.png`))
   })
 

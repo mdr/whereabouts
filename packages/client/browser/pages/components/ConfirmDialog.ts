@@ -23,6 +23,13 @@ export class ConfirmDialog<T> extends PageObject {
     return text(this.#page.getByTestId(confirmDialogTestIds.title))
   }
 
+  /** The dialog's wording includes this. */
+  async expectText(wording: string): Promise<void> {
+    await expect(this.#page.getByTestId(confirmDialogTestIds.dialog), `the dialog says "${wording}"`).toContainText(
+      wording
+    )
+  }
+
   /** Back to the screen underneath, unchanged. */
   async cancel(): Promise<void> {
     await this.#page.getByTestId(confirmDialogTestIds.cancelButton).click()
