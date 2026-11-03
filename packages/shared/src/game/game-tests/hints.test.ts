@@ -40,6 +40,13 @@ describe("hints", () => {
     expect(viewOf(game, tokA, T0).you.role).toMatchObject({ hintsLeft: 1 })
   })
 
+  it("shows a hint only to the player who asked for it", () => {
+    const { game } = inFirstRound()
+    game.hint(tokA, HintAxis.LATITUDE)
+    expect(viewIn(viewOf(game, tokB, T0), Phase.GUESSING).you.hint).toBeUndefined()
+    expect(viewOf(game, tokB, T0).you.role).toMatchObject({ hintsLeft: 2 })
+  })
+
   it("gives everyone who asks for the same axis the same band", () => {
     const { game } = inFirstRound()
     game.hint(tokA, HintAxis.LATITUDE)

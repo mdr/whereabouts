@@ -12,7 +12,6 @@ import { playerListTestIds } from "../../src/ui/players/PlayerList/PlayerListTes
 import { setupPanelTestIds } from "../../src/screens/lobby/setup/SetupPanel/SetupPanelTestIds.ts"
 import { setupSummaryTestIds } from "../../src/screens/lobby/setup/SetupSummary/SetupSummaryTestIds.ts"
 import { SetupTileType } from "../../src/screens/lobby/setup/setup-tiles.ts"
-import { playerListTestIds } from "../../src/ui/players/PlayerList/PlayerListTestIds.ts"
 import { mapDetailPickerTestIds } from "../../src/ui/setup/MapDetailPicker/MapDetailPickerTestIds.ts"
 import { mixEditorTestIds } from "../../src/ui/setup/MixEditor/MixEditorTestIds.ts"
 import { pillsTestIds } from "../../src/ui/setup/Pills/PillsTestIds.ts"

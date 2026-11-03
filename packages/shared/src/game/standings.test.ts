@@ -50,6 +50,12 @@ describe("finalStandings", () => {
       rounds: [{ score: 100 }, { score: 200 }, { score: 300 }]
     })
   })
+
+  it("orders tied totals by name, as the reveal does, whatever order the seats are in", () => {
+    const zoe = makePlayerSeat({ scores: [250] }, { name: "Zoe" as PlayerName })
+    const amy = makePlayerSeat({ scores: [250] }, { name: "Amy" as PlayerName })
+    expect(finalStandings([zoe, amy], 1).map((standing) => standing.name)).toEqual(["Amy", "Zoe"])
+  })
 })
 
 describe("rankAmong", () => {

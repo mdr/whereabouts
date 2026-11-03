@@ -34,7 +34,7 @@ export const finalStandings = (playing: readonly PlayerSeat[], roundCount: numbe
         return score === undefined ? {} : { score }
       })
     }))
-    .sort((a, b) => b.total - a.total)
+    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name))
 
 export const awardFacts = (playing: readonly PlayerSeat[], roundCount: number): PlayerFacts[] =>
   playing.map((seat) => ({
