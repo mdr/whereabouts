@@ -1,4 +1,5 @@
-// Practice mode against the Vite dev server: take a hint, paint two blobs,
+// Practice mode against the Vite dev server: take a hint, open and close the
+// shortcuts card, paint two blobs,
 // undo and redo the second with the keyboard, pan with Space and press a
 // button with it, trim to the hint and undo it,
 // paint on the globe but not the space around it, submit, and see a score.
@@ -15,11 +16,30 @@ test("solo", async ({ browser }) => {
   const practiceRoundPage = await test.step("a practice round gives a hint", async () => {
     const practiceRoundPage = await tab.openPractice()
     await practiceRoundPage.screenshot(shot(`1-start.png`))
+    await practiceRoundPage.devDrawer.expectShown()
+    await practiceRoundPage.expectUnlimitedHints()
     await practiceRoundPage.useHint(HintAxis.LONGITUDE)
     await practiceRoundPage.expectHintBand(HintAxis.LONGITUDE)
     // Two shapes when the band crosses 180°.
     await practiceRoundPage.map.expectHintShapes({ atLeast: 1, atMost: 2 })
     return practiceRoundPage
+  })
+
+  await test.step("the shortcuts card opens and closes", async () => {
+    const { shortcuts } = practiceRoundPage
+    await shortcuts.pressQuestionMark()
+    await shortcuts.expectOpen()
+    await shortcuts.pressQuestionMark()
+    await shortcuts.expectClosed()
+    await shortcuts.pressQuestionMark()
+    await shortcuts.pressEscape()
+    await shortcuts.expectClosed()
+    await shortcuts.clickToolbarButton()
+    await shortcuts.expectOpen()
+    await shortcuts.clickInsideCard()
+    await shortcuts.expectOpen()
+    await shortcuts.clickOutsideCard()
+    await shortcuts.expectClosed()
   })
 
   const back = await test.step("paint two blobs, undo and redo the second", async () => {
@@ -76,6 +96,8 @@ test("solo", async ({ browser }) => {
     await practiceRoundPage.map.toggleGlobe()
     await practiceRoundPage.map.expectGlobe(false)
     console.log("blobs:", await practiceRoundPage.devDrawer.blobs())
+    await practiceRoundPage.devDrawer.hide()
+    await practiceRoundPage.devDrawer.expectAbsent()
   })
 
   // The globe button, just clicked, has focus; Enter still submits.

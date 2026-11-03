@@ -1,7 +1,8 @@
 // The awkward multiplayer paths, against the in-process server: a refresh
 // mid-round keeps the seat and paint, a late joiner sits a round out then
-// plays (and passes), and Play again leads back to the same lobby. Bob is
+// plays (and passes), the one hint is used up, and Play again leads back to the same lobby. Bob is
 // seated by the server, with no tab of his own.
+import { HintAxis } from "@whereabouts/shared/hints"
 import { evenMix } from "@whereabouts/shared/protocol/config"
 import { test } from "../game-server/game-server.ts"
 import { newTab } from "./iwft-tab.ts"
@@ -20,6 +21,14 @@ test("flows", async ({ browser, game }) => {
     return { code, aliceLobbyPage, bob: bob! }
   })
   let aliceRoundPage = await aliceLobbyPage.startGame()
+
+  await test.step("Alice uses her one hint", async () => {
+    await aliceRoundPage.devDrawer.expectAbsent()
+    await aliceRoundPage.expectHintsLeft(1)
+    await aliceRoundPage.useHint(HintAxis.LATITUDE)
+    await aliceRoundPage.expectHintBand(HintAxis.LATITUDE)
+    await aliceRoundPage.map.expectHintShapes({ exactly: 1 })
+  })
 
   await test.step("a refresh mid-round keeps the seat and the paint", async () => {
     await aliceRoundPage.map.untilUploaded(() => aliceRoundPage.map.drag({ across: 0.5, down: 0.4 }))
@@ -45,6 +54,12 @@ test("flows", async ({ browser, game }) => {
     await aliceRevealPage.expectRow("Cara", { roundScore: "sat out" })
     aliceRoundPage = await aliceRevealPage.nextRound()
     return caraRevealPage.waitForNextRound()
+  })
+
+  await test.step("round 2 offers Alice no hint, and Cara hers", async () => {
+    await aliceRoundPage.map.expectNoHintShapes()
+    await aliceRoundPage.expectNoHintOffered()
+    await caraRoundPage.expectHintsLeft(1)
   })
 
   const { aliceRevealPage, caraRevealPage } =
