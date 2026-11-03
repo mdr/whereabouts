@@ -88,7 +88,7 @@ export const revealOrder = (
   players: PlayingPlayerView[],
   results: RoundResultView[]
 ): { player: PlayingPlayerView; result?: RoundResultView }[] => {
-  const group = (result?: RoundResultView) => (result ? 0 : 1)
+  const group = (result?: RoundResultView): 0 | 1 => (result ? 0 : 1)
   return [...players]
     .sort((a, b) => a.rank - b.rank)
     .map((player) => ({ player, result: results.find((result) => result.playerId === player.id) }))

@@ -58,13 +58,13 @@ export class PaintInput {
       map.on(type, handler)
       return () => map.off(type, handler)
     }
-    const onDown = (event: MapMouseEvent) => {
+    const onDown = (event: MapMouseEvent): void => {
       if (!this.canPaint() || event.originalEvent.button !== 0 || !gameMap.onSurface(event.point)) return
       this.beginStroke(event.point)
     }
     // Two fingers pan and zoom, which MapLibre handles itself once the
     // one-finger stroke is abandoned (stroke.ts).
-    const onTouchStart = (event: MapTouchEvent) => {
+    const onTouchStart = (event: MapTouchEvent): void => {
       if (touchStart(event.points.length, this.canPaint()) === TouchStep.ABANDON) {
         this.abandonStroke()
         return
@@ -73,7 +73,7 @@ export class PaintInput {
       event.preventDefault()
       this.beginStroke(event.point)
     }
-    const onTouchMove = (event: MapTouchEvent) => {
+    const onTouchMove = (event: MapTouchEvent): void => {
       const step = touchMove(event.points.length, this.stroke !== undefined)
       if (step === TouchStep.ABANDON) this.abandonStroke()
       if (step !== TouchStep.CONTINUE) return
@@ -81,8 +81,8 @@ export class PaintInput {
       this.strokeTo(event.point)
       this.view.queue()
     }
-    const onTouchEnd = () => this.endStroke()
-    const onMove = (event: MapMouseEvent) => {
+    const onTouchEnd = (): void => this.endStroke()
+    const onMove = (event: MapMouseEvent): void => {
       const onEarth = gameMap.onSurface(event.point)
       // A tap also sends a mouse move, which shouldn't leave a footprint behind.
       if (this.hovering) {
@@ -96,15 +96,15 @@ export class PaintInput {
       if (onEarth)
         for (const listener of this.hoverListeners) listener({ lat: event.lngLat.lat, lon: event.lngLat.lng })
     }
-    const onOut = () => {
+    const onOut = (): void => {
       this.pointerAt = undefined
       this.hideCursor()
     }
     // A zoom under a still pointer (the scroll wheel) changes the footprint too.
-    const onZoom = () => this.refreshCursor()
-    const onUp = () => this.endStroke()
+    const onZoom = (): void => this.refreshCursor()
+    const onUp = (): void => this.endStroke()
     // The Fill tool acts on a click (a tap, on a phone), so the map still drags.
-    const onClick = (event: MapMouseEvent) => {
+    const onClick = (event: MapMouseEvent): void => {
       if (!this.canFill() || !gameMap.onSurface(event.point)) return
       this.model.fillAt(latLon(event.lngLat), this.fillReach(event.lngLat.lat))
       this.refreshCursor()
@@ -117,7 +117,7 @@ export class PaintInput {
       undo: () => this.model.undo(),
       redo: () => this.model.redo()
     }
-    const onKeyDown = (event: KeyboardEvent) => {
+    const onKeyDown = (event: KeyboardEvent): void => {
       if (isTyping(event.target ?? undefined)) return
       if (PAN_HOLD.matches(event)) {
         if (forTabbedControl(event) || this.spaceHeld) return
@@ -131,7 +131,7 @@ export class PaintInput {
     }
     // A middle-button drag pans whatever the tool, like holding Space.
     // MapLibre's own drag pan only listens to the left button.
-    const onMiddleDown = (event: MouseEvent) => {
+    const onMiddleDown = (event: MouseEvent): void => {
       if (event.button !== 1) return
       event.preventDefault() // no autoscroll
       this.endStroke()
@@ -139,25 +139,25 @@ export class PaintInput {
       map.getContainer().dataset["panning"] = ""
       this.applyInteraction()
     }
-    const onMiddleMove = (event: MouseEvent) => {
+    const onMiddleMove = (event: MouseEvent): void => {
       if (!this.middleFrom) return
       map.panBy([this.middleFrom.x - event.clientX, this.middleFrom.y - event.clientY], { duration: 0 })
       this.middleFrom = { x: event.clientX, y: event.clientY }
     }
-    const onMiddleUp = (event: MouseEvent) => {
+    const onMiddleUp = (event: MouseEvent): void => {
       if (event.button !== 1 || !this.middleFrom) return
       this.middleFrom = undefined
       delete map.getContainer().dataset["panning"]
       this.applyInteraction()
     }
     const canvas = map.getCanvasContainer()
-    const onKeyUp = (event: KeyboardEvent) => {
+    const onKeyUp = (event: KeyboardEvent): void => {
       if (PAN_HOLD.matches(event)) {
         this.spaceHeld = false
         this.applyInteraction()
       }
     }
-    const onPointer = (event: PointerEvent) => {
+    const onPointer = (event: PointerEvent): void => {
       this.hovering = event.pointerType !== "touch"
       if (!this.hovering && this.pointerAt) {
         this.pointerAt = undefined

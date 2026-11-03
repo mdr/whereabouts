@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vite-plus/test"
 import { viewIn } from "../view-in.ts"
 import { Phase } from "../../protocol/views.ts"
-import { playerId, playerName } from "../../ids.ts"
+import { playerId, playerName, type PlayerId } from "../../ids.ts"
 import { CloseReason } from "../../close-reason.ts"
 import { T0, viewOf, tokA, tokB, tokC, paintAt, paintOn, twoPlayerGame, currentQuestion } from "./support.ts"
+import type { Game } from "../game.ts"
+import type { PlaceQuestion } from "../../questions.ts"
 
 describe("host removes a player", () => {
   describe("removing a player", () => {
-    const inRound = () => {
+    const inRound = (): { game: Game; question: PlaceQuestion; aliceId: PlayerId; bobId: PlayerId } => {
       const game = twoPlayerGame()
       game.start(tokA, T0)
       const question = currentQuestion(game, tokA, T0)

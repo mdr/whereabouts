@@ -57,7 +57,7 @@ const canvasTexture = (width: number, height: number, draw: (ctx: CanvasRenderin
 }
 
 /** A lathe from (radius, height) pairs, in metres. */
-const lathe = (points: [radius: number, height: number][], segments = 32) =>
+const lathe = (points: [radius: number, height: number][], segments = 32): LatheGeometry =>
   new LatheGeometry(
     points.map(([radius, y]) => new Vector2(radius, y)),
     segments

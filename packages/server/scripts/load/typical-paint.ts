@@ -47,7 +47,7 @@ export const seededRandom = (seed: number): Random => {
   }
 }
 
-const between = (random: Random, low: number, high: number) => low + random() * (high - low)
+const between = (random: Random, low: number, high: number): number => low + random() * (high - low)
 const KM_PER_DEGREE = 111
 
 /** The default 40 px brush, in tolerances, at the zooms players paint at; a zoomed patch is a third of it. */

@@ -20,10 +20,11 @@ import {
   makeSpectator,
   type ViewOverrides
 } from "../../test-view"
+import type { VrReveal, VrRound } from "./view.ts"
 
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 
-const fakeConn = (status: PlainStatus = ConnectionStatus.CONNECTED) =>
+const fakeConn = (status: PlainStatus = ConnectionStatus.CONNECTED): Connection =>
   ({
     status: signal<ConnectionState>({ type: status }),
     online: signal(status === ConnectionStatus.CONNECTED),
@@ -43,19 +44,19 @@ const show = (view: InPlayGameView, conn = fakeConn(), { timeUp = false } = {}):
     borders: undefined
   })
 
-const guessing = (over: ViewOverrides<GuessingGameView> = {}) => makeGuessingView(over)
-const revealing = (over: ViewOverrides<RevealGameView> = {}) =>
+const guessing = (over: ViewOverrides<GuessingGameView> = {}): GuessingGameView => makeGuessingView(over)
+const revealing = (over: ViewOverrides<RevealGameView> = {}): RevealGameView =>
   makeRevealView({ players: [makePlayer(), bob], ...over })
 
-const reveal = (view: VrView) => {
+const reveal = (view: VrView): VrReveal => {
   if (view.type !== VrViewType.REVEAL) throw new Error(`a ${view.type} view`)
   return view.reveal
 }
-const round = (view: VrView) => {
+const round = (view: VrView): VrRound => {
   if (view.type === VrViewType.REVEAL || view.type === VrViewType.PAINT) return view.round
   throw new Error(`a ${view.type} view`)
 }
-const note = (view: VrView) =>
+const note = (view: VrView): string | undefined =>
   view.type === VrViewType.PAINT || view.type === VrViewType.REVEAL ? view.round.note : undefined
 
 describe("gameVrView", () => {
@@ -92,7 +93,8 @@ describe("gameVrView", () => {
   })
 
   it("offers Ready until pressed, and the host the next round", () => {
-    const labels = (view: InPlayGameView) => reveal(show(view)).actions.map((action) => [action.label, action.enabled])
+    const labels = (view: InPlayGameView): (string | boolean | undefined)[][] =>
+      reveal(show(view)).actions.map((action) => [action.label, action.enabled])
     expect(labels(revealing())).toEqual([
       ["Ready", true],
       ["Next round", true]
@@ -126,7 +128,7 @@ describe("gameVrView", () => {
   })
 
   it("puts Leave game last, and End game only for the host before the last reveal", () => {
-    const labels = (view: InPlayGameView) => show(view).more?.map((action) => action.label)
+    const labels = (view: InPlayGameView): string[] | undefined => show(view).more?.map((action) => action.label)
     expect(labels(guessing())).toEqual(["End game", "Leave game"])
     expect(labels(guessing({ you: { isHost: false } }))).toEqual(["Leave game"])
     expect(labels(guessing({ you: { role: SPECTATING, isHost: false } }))).toEqual([

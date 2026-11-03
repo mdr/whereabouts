@@ -101,14 +101,15 @@ const server = values.url === undefined ? await startServer(values.port) : undef
 const url = values.url ?? `ws://127.0.0.1:${values.port}/ws`
 
 /** Brings in the remote probe's samples, if there is one. */
-const fetchSamples = async () => {
+const fetchSamples = async (): Promise<void> => {
   if (values["probe-url"] === undefined) return
   const fetched = (await (await fetch(values["probe-url"])).json()) as ProbeSample[]
   const latest = samples.at(-1)?.at ?? 0
   samples.push(...fetched.filter((sample) => sample.at > latest))
 }
 
-const samplesIn = (from: number, to: number) => samples.filter((sample) => sample.at > from && sample.at <= to + 1000)
+const samplesIn = (from: number, to: number): ProbeSample[] =>
+  samples.filter((sample) => sample.at > from && sample.at <= to + 1000)
 
 const serverLine = (from: number, to: number): string => {
   const window = samplesIn(from, to)

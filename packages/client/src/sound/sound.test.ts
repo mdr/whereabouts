@@ -30,7 +30,7 @@ describe("unlocking audio", () => {
       state = "interrupted"
       destination = {}
       resume = resume
-      createGain() {
+      createGain(): { connect(): void } {
         return { connect() {} }
       }
     }

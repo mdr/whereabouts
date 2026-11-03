@@ -123,7 +123,7 @@ export const keepCells = (
   target: H3Resolution
 ): Map<H3Cell, number> => {
   const kept = new Map<H3Cell, number>()
-  const add = (h: H3Cell, v: number) => kept.set(h, (kept.get(h) ?? 0) + v)
+  const add = (h: H3Cell, v: number): Map<H3Cell, number> => kept.set(h, (kept.get(h) ?? 0) + v)
   for (const [h, v] of cells) {
     if (!keep(h)) continue
     if (getResolution(h) >= target) {

@@ -5,12 +5,13 @@ import { RoundGuessType, type PaintSubmission } from "../protocol/views.ts"
 import { FactsType } from "../awards/player-facts.ts"
 import { AnswerType } from "../questions.ts"
 import { regionCells, scoredAnswer, type Area, type ScoredAnswer } from "./regions.ts"
-import { scoreRound } from "./round-scoring.ts"
+import { scoreRound, type ScoredRound } from "./round-scoring.ts"
 import { DEFAULT_KERNEL, PASS_SCORE } from "./scoring.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 
 const OUTLINES = outlinesFrom(outlinesJson)
-const answerOf = (id: string) => scoredAnswer(CATALOGUE.find((question) => question.id === id)!.answer, OUTLINES)
+const answerOf = (id: string): ScoredAnswer =>
+  scoredAnswer(CATALOGUE.find((question) => question.id === id)!.answer, OUTLINES)
 const paris = answerOf("paris")
 const germany = answerOf("germany-region") as Area
 
@@ -36,7 +37,7 @@ interface Guess {
 const makeDraft = (paint = EMPTY): Guess => ({ paint, lockedAt: undefined })
 const makeLocked = (at: number, paint = EMPTY): Guess => ({ paint, lockedAt: at })
 
-const score = (answer: ScoredAnswer, guess: Guess | undefined) =>
+const score = (answer: ScoredAnswer, guess: Guess | undefined): ScoredRound =>
   scoreRound("Answer", answer, guess?.paint, guess?.lockedAt, DEFAULT_KERNEL, TIMING)
 
 describe("scoreRound", () => {

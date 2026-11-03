@@ -22,7 +22,7 @@ const resolution = h3Resolution(4)
 const disputedCell = polygonToCells(SQUARE[0]!, resolution, true)[0]!
 const elsewhere = latLngToCell(40, 40, resolution)
 
-const total = (points: { p: number }[]) => points.reduce((sum, point) => sum + point.p, 0)
+const total = (points: { p: number }[]): number => points.reduce((sum, point) => sum + point.p, 0)
 
 describe("withoutDisputed", () => {
   it("leaves paint off the disputed land alone", () => {

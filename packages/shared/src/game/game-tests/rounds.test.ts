@@ -1,15 +1,16 @@
 import { describe, expect, it } from "vite-plus/test"
-import { ROUND_GRACE } from "../game.ts"
+import { ROUND_GRACE, type Game } from "../game.ts"
 import { viewIn } from "../view-in.ts"
 import { PASS_SCORE } from "../../scoring/scoring.ts"
-import { Phase, RoundGuessType } from "../../protocol/views.ts"
+import { Phase, RoundGuessType, type RevealView } from "../../protocol/views.ts"
 import { playerName } from "../../ids.ts"
 import { YouRoleType } from "../../roles.ts"
 import { T0, viewOf, tokA, tokB, tokC, paintAt, paintOn, twoPlayerGame, currentQuestion } from "./support.ts"
+import type { PlaceQuestion } from "../../questions.ts"
 
 describe("round loop", () => {
   describe("at the deadline", () => {
-    const revealedAfterDeadline = () => {
+    const revealedAfterDeadline = (): { game: Game; question: PlaceQuestion; reveal: RevealView } => {
       const game = twoPlayerGame(1)
       game.start(tokA, T0)
       const question = currentQuestion(game, tokA, T0)

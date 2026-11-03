@@ -258,7 +258,7 @@ describe("PaintModel", () => {
   })
 
   describe("trims", () => {
-    const parisLand = () => new LandMask({ resolution: RESOLUTION, cells: [cellAt(PARIS)] })
+    const parisLand = (): LandMask => new LandMask({ resolution: RESOLUTION, cells: [cellAt(PARIS)] })
 
     it("drops the paint off the land as one step, saying how much went", () => {
       const model = makeModel()

@@ -28,7 +28,7 @@ export const usePaintUpload = (
   const sendTimer = useRef<number | undefined>(undefined)
 
   /** Upload the paint now. An empty map is sent too: it takes back paint sent earlier. */
-  const sendNow = () => {
+  const sendNow = (): void => {
     if (sendTimer.current) clearTimeout(sendTimer.current)
     sendTimer.current = undefined
     const { paintUploads } = window.testHooks
@@ -74,7 +74,7 @@ export const usePaintUpload = (
 
   // Done with paint freezes it; Done with nothing painted is a pass, which
   // scores PASS_SCORE and lets the round end without waiting on you.
-  const lockIn = () => {
+  const lockIn = (): void => {
     announcePass(paint)
     lockWish.current = { round }
     sendNow()

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { ROUND_GRACE } from "../game.ts"
+import { ROUND_GRACE, type Game } from "../game.ts"
 import { viewIn } from "../view-in.ts"
 import { QuestionType } from "../../questions.ts"
 import { mixOf } from "../../protocol/config.ts"
@@ -9,7 +9,7 @@ import { YouRoleType } from "../../roles.ts"
 import { T0, viewOf, tokA, tokB, paintOn, makeGame, twoPlayerGame, currentQuestion } from "./support.ts"
 
 describe("the reveal", () => {
-  const atFirstReveal = () => {
+  const atFirstReveal = (): Game => {
     const game = twoPlayerGame(2)
     game.start(tokA, T0)
     game.tick(T0 + 60_000 + ROUND_GRACE)

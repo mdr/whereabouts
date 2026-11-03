@@ -21,12 +21,13 @@ import {
   type Distribution,
   KernelId
 } from "./scoring.ts"
+import type { Degrees, SquareKm } from "../units.ts"
 
 const r = 100
 const answer = { lat: 27.175, lon: 78.042 } // Taj Mahal
 
 /** Point `km` kilometres due north of `from` (small-distance approximation is fine here). */
-const north = (from: { lat: number; lon: number }, km: number) => ({
+const north = (from: { lat: number; lon: number }, km: number): { lat: number; lon: number } => ({
   lat: from.lat + (km / (Math.PI * EARTH_RADIUS)) * 180,
   lon: from.lon
 })
@@ -96,7 +97,7 @@ describe("uniform floor", () => {
   /** A single Gaussian's mean over the sphere, from `n` seeded random points. */
   const monteCarloMean = (width: number, n: number): number => {
     let seed = 12345
-    const random = () => {
+    const random = (): number => {
       seed = (seed * 1664525 + 1013904223) % 4294967296
       return seed / 4294967296
     }
@@ -151,7 +152,11 @@ describe("uniform floor", () => {
 })
 
 describe("buildDistribution", () => {
-  const cell = (intensity: number) => ({ ...answer, intensity, area: 1 })
+  const cell = (intensity: number): { intensity: number; area: number; lat: number; lon: number } => ({
+    ...answer,
+    intensity,
+    area: 1
+  })
 
   it("with nothing painted is all floor, whatever the floor asked, and scores like an even spread", () => {
     for (const floor of [0, 0.3, 1]) expect(buildDistribution([], floor)).toEqual({ points: [], floor: 1 })
@@ -201,7 +206,7 @@ describe("pass", () => {
 describe("pair sum", () => {
   it("truncated grid-hash sum matches the exact O(n^2) sum", () => {
     let seed = 7
-    const random = () => {
+    const random = (): number => {
       seed = (seed * 1664525 + 1013904223) % 4294967296
       return seed / 4294967296
     }
@@ -312,7 +317,7 @@ describe("mixture kernels", () => {
 
   it("aggregated pair sum matches the exact sum for coarse components", () => {
     let seed = 99
-    const random = () => {
+    const random = (): number => {
       seed = (seed * 1664525 + 1013904223) % 4294967296
       return seed / 4294967296
     }
@@ -404,15 +409,15 @@ describe("region answers", () => {
   const resolution = 4
 
   /** Cells within `rings` of the cell at `at`: a rough disc. */
-  const discCells = (at: { lat: number; lon: number }, rings: number) =>
+  const discCells = (at: { lat: number; lon: number }, rings: number): H3Cell[] =>
     h3.gridDisk(h3.latLngToCell(at.lat, at.lon, h3Resolution(resolution)), rings)
   /** An even coat of paint on `cells`. */
-  const paint = (cells: H3Cell[]) =>
+  const paint = (cells: H3Cell[]): { lat: Degrees; lon: Degrees; intensity: number; area: SquareKm; h3: H3Cell }[] =>
     cells.map((cell) => {
       const [lat, lon] = h3.cellToLatLng(cell)
       return { lat, lon, intensity: 1, area: h3.cellArea(cell), h3: cell }
     })
-  const painted = (cells: H3Cell[], floor = 0.05) => buildDistribution(paint(cells), floor)
+  const painted = (cells: H3Cell[], floor = 0.05): Distribution => buildDistribution(paint(cells), floor)
 
   const region = regionAnswer(discCells(centre, 10), tolerance)
 
@@ -467,7 +472,7 @@ describe("region answers", () => {
     const there = discCells(north(centre, 1500), 6)
     const rHere = regionAnswer(here, tolerance)
     const rThere = regionAnswer(there, tolerance)
-    const expected = (d: Distribution) => (scoreRegion(d, rHere).score + scoreRegion(d, rThere).score) / 2
+    const expected = (d: Distribution): number => (scoreRegion(d, rHere).score + scoreRegion(d, rThere).score) / 2
     const both = expected(painted([...here, ...there]))
     expect(both).toBeGreaterThan(expected(painted(here)))
     expect(both).toBeGreaterThan(expected(painted(there)))

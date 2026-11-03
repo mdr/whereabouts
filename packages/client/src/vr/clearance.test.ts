@@ -10,7 +10,7 @@ const makePanel = (x: number, z = -0.6): Object3D => {
   return obj
 }
 
-const makeGlobe = (radius = 0.2) => ({ centre: new Vector3(0, 1.4, -0.8), radius })
+const makeGlobe = (radius = 0.2): { centre: Vector3; radius: number } => ({ centre: new Vector3(0, 1.4, -0.8), radius })
 
 const placed = (...panels: Object3D[]): PanelClearance => {
   const clearance = new PanelClearance()

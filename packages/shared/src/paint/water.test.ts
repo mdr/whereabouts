@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { getResolution, h3Resolution, latLngToCell } from "../h3.ts"
+import { getResolution, h3Resolution, latLngToCell, type H3Cell } from "../h3.ts"
 import waterJson from "../../water.json" with { type: "json" }
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { WaterMask, paintAmount, trimLand } from "./land.ts"
@@ -9,7 +9,7 @@ import { CATALOGUE, outlinesFrom } from "../catalogue/catalogue.ts"
 import { AnswerType, Surface } from "../questions.ts"
 
 const mask = new WaterMask(waterJson)
-const at = (lat: number, lon: number, resolution: number) => latLngToCell(lat, lon, h3Resolution(resolution))
+const at = (lat: number, lon: number, resolution: number): H3Cell => latLngToCell(lat, lon, h3Resolution(resolution))
 
 describe("water mask", () => {
   it("keeps a lake or sea painted exactly", () => {

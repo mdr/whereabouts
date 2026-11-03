@@ -26,6 +26,7 @@ import {
   type RoomCode
 } from "../../ids.ts"
 import type { LatLon } from "../../geo.ts"
+import type { H3Cell } from "../../h3.ts"
 
 const place = (label: string, at: LatLon, tolerance = 100): PlaceQuestion => ({
   type: QuestionType.PLACE,
@@ -55,7 +56,7 @@ export const T0 = 1_000_000
 const CODE = roomCode("ABCD")
 
 /** A test player's seat token: tok("A") is tokA. */
-export const tok = (name: string) => playerToken(`tok${name}`.padEnd(16, "-"))
+export const tok = (name: string): PlayerToken => playerToken(`tok${name}`.padEnd(16, "-"))
 /** A seated token's view. */
 export const viewOf = (game: Game, token: PlayerToken, now: number): GameView => {
   const view = game.view(token, now)
@@ -75,14 +76,19 @@ export const tokW = tok("W")
 export const tokW1 = tok("W1")
 export const tokZ = tok("Z")
 
-export const paintAt = (question: Question, lat: number, lon: number) => {
+export const paintAt = (
+  question: Question,
+  lat: number,
+  lon: number
+): { cells: Record<H3Cell, number>; floor: number } => {
   const layer = new PaintLayer(resolutionForTolerance(question.answer.tolerance))
   layer.stamp({ lat, lon }, question.answer.tolerance / 2, 1)
   return { cells: layer.toRecord(), floor: 0.05 }
 }
 
 /** Paint on a place's answer. */
-export const paintOn = (question: PlaceQuestion) => paintAt(question, question.answer.at.lat, question.answer.at.lon)
+export const paintOn = (question: PlaceQuestion): { cells: Record<H3Cell, number>; floor: number } =>
+  paintAt(question, question.answer.at.lat, question.answer.at.lon)
 
 /** The three test places and no outlines. */
 const makeBank = (bank: Partial<QuestionBank> = {}): QuestionBank => ({
@@ -99,7 +105,7 @@ export const makeGame = ({
 }: { code?: RoomCode; bank?: Partial<QuestionBank>; config?: Partial<GameConfig>; seed?: number } = {}): Game =>
   new Game(code, makeBank(bank), { config, seed })
 
-export const twoPlayerGame = (rounds = 2) => {
+export const twoPlayerGame = (rounds = 2): Game => {
   // The test pool is place names only.
   const mix = mixOf({ [QuestionType.PLACE]: rounds })
   const game = makeGame({ config: { mix, roundLength: 60_000 } })

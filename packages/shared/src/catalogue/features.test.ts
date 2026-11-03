@@ -5,7 +5,7 @@ import { AnswerType, FeatureType, QuestionType, Surface, promptOf, type FeatureQ
 const FEATURES = CATALOGUE.filter((question): question is FeatureQuestion => question.type === QuestionType.FEATURE)
 const STATES = CATALOGUE.filter((question) => question.type === QuestionType.STATE)
 const COUNTRIES = CATALOGUE.filter((question) => question.type === QuestionType.COUNTRY)
-const of = (feature: FeatureType) => FEATURES.filter((question) => question.feature === feature)
+const of = (feature: FeatureType): FeatureQuestion[] => FEATURES.filter((question) => question.feature === feature)
 
 describe("islands, lakes, seas and US states", () => {
   it("are well formed", () => {

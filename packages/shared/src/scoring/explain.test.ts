@@ -3,12 +3,12 @@ import { cellArea, cellToLatLng, gridDisk, type H3Cell, h3Resolution, latLngToCe
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { explainPoint, isHedge, type PointExplanation } from "./explain.ts"
 import { resolutionForTolerance } from "../paint/paint.ts"
-import { regionCells, regionMisfit, scoreArea, scoredAnswer, type Area } from "./regions.ts"
+import { regionCells, regionMisfit, scoreArea, scoredAnswer, type Area, type RegionMisfit } from "./regions.ts"
 import { CATALOGUE, outlinesFrom } from "../catalogue/catalogue.ts"
 import { AnswerType } from "../questions.ts"
-import { buildDistribution, scoreDistribution } from "./scoring.ts"
+import { buildDistribution, scoreDistribution, type Distribution, type ScoreBreakdown } from "./scoring.ts"
 
-const coat = (cells: H3Cell[]) =>
+const coat = (cells: H3Cell[]): Distribution =>
   buildDistribution(
     cells.map((cell) => {
       const [lat, lon] = cellToLatLng(cell)
@@ -21,7 +21,12 @@ describe("explaining a place's score", () => {
   const answer = { lat: 48.8584, lon: 2.2945 }
   const tolerance = 150
   const resolution = resolutionForTolerance(tolerance)
-  const explain = (lat: number, lon: number, cellResolution: number, rings: number) => {
+  const explain = (
+    lat: number,
+    lon: number,
+    cellResolution: number,
+    rings: number
+  ): { scored: ScoreBreakdown; explained: PointExplanation } => {
     const d = coat(gridDisk(latLngToCell(lat, lon, h3Resolution(cellResolution)), rings))
     const scored = scoreDistribution(d, answer, tolerance)
     const explained = explainPoint(d, answer, tolerance, scored.A, scored.B)
@@ -80,7 +85,7 @@ describe("explaining a country's score", () => {
   const france = areaOf("france-region")
   const resolution = resolutionForTolerance(france.tolerance)
   const cells = regionCells(france, resolution)
-  const misfit = (cells: H3Cell[]) => regionMisfit(coat(cells), france)
+  const misfit = (cells: H3Cell[]): RegionMisfit => regionMisfit(coat(cells), france)
 
   it("an exact paint is on the country, with nothing off it", () => {
     expect(scoreArea(coat(cells), france).score).toBeGreaterThan(985)

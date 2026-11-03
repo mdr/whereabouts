@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vite-plus/test"
-import type { GuessingYouView } from "@whereabouts/shared/protocol/views"
+import type { GuessingYouView, GuessingGameView } from "@whereabouts/shared/protocol/views"
 import { canPaint, canUnlock } from "./editing"
 import { JOINED_LATE, SPECTATING, makeGuessingView, makePlaying, makeRevealView } from "../test-view"
 
-const guessing = (you: Partial<GuessingYouView> = {}) => makeGuessingView({ you })
+const guessing = (you: Partial<GuessingYouView> = {}): GuessingGameView => makeGuessingView({ you })
 
 describe("canPaint", () => {
   it("lets a player paint while guessing", () => {

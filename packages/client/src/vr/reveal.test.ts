@@ -28,7 +28,7 @@ const makeReveal = (over: Partial<VrReveal> = {}): VrReveal => {
   }
 }
 
-const angle = (a: LatLon, b: LatLon) => latLonToLocal(a).angleTo(latLonToLocal(b))
+const angle = (a: LatLon, b: LatLon): number => latLonToLocal(a).angleTo(latLonToLocal(b))
 
 describe("framing the reveal", () => {
   it("turns to the answer, close in, when nothing was painted", () => {
@@ -76,7 +76,8 @@ describe("players' paint in colour", () => {
       { layer: red, colour: "red" },
       { layer: blue, colour: "blue" }
     ])
-    const count = (colour: string) => paint.features.filter((feature) => feature.properties.colour === colour).length
+    const count = (colour: string): number =>
+      paint.features.filter((feature) => feature.properties.colour === colour).length
     expect(count("red")).toBe(red.toGeoJSON().features.length)
     expect(count("blue")).toBe(blue.toGeoJSON().features.length)
     expect(paint.features).toHaveLength(count("red") + count("blue"))

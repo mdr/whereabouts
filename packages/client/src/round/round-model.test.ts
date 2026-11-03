@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
-import { playerId, playerName } from "@whereabouts/shared/ids"
-import type { GuessingGameView, RevealGameView } from "@whereabouts/shared/protocol/views"
+import { playerId, playerName, type PlayerName } from "@whereabouts/shared/ids"
+import type { GuessingGameView, RevealGameView, GuessingYouView } from "@whereabouts/shared/protocol/views"
 import { SHOW_EVERYONE, SHOW_NOBODY, showPlayer, type RevealShown } from "./reveal"
 import { RoundNote, ShownRowType, canEndGame, revealModel, roundNote, type ShownRow } from "./round-model"
 import {
@@ -16,12 +16,13 @@ import {
   makeSpectator,
   type ViewOverrides
 } from "../test-view"
+import type { RevealModel } from "./round-model.ts"
 
 const alice = makePlayer()
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 const sam = makeSpectator()
 
-const you = (over: ViewOverrides<GuessingGameView> = {}) => makeGuessingView({ ...over }).you
+const you = (over: ViewOverrides<GuessingGameView> = {}): GuessingYouView => makeGuessingView({ ...over }).you
 
 describe("roundNote", () => {
   it("says nothing while you are painting", () => {
@@ -46,9 +47,13 @@ describe("canEndGame", () => {
 
 describe("revealModel", () => {
   const players = [alice, bob]
-  const model = (over: ViewOverrides<RevealGameView> = {}, reveal = makeReveal(), shown: RevealShown = SHOW_EVERYONE) =>
-    revealModel(makeRevealView({ players, spectators: [sam], ...over }), reveal, shown)
-  const names = (rows: ShownRow[]) => rows.map((row) => (row.type === ShownRowType.PLAYER ? row.player.name : row.type))
+  const model = (
+    over: ViewOverrides<RevealGameView> = {},
+    reveal = makeReveal(),
+    shown: RevealShown = SHOW_EVERYONE
+  ): RevealModel => revealModel(makeRevealView({ players, spectators: [sam], ...over }), reveal, shown)
+  const names = (rows: ShownRow[]): (ShownRowType.EVERYONE | ShownRowType.HIDE_PAINT | PlayerName)[] =>
+    rows.map((row) => (row.type === ShownRowType.PLAYER ? row.player.name : row.type))
 
   it("lists Everyone, the players by this round's score, then Hide paint", () => {
     const reveal = makeReveal({ results: [makeResult({ score: 300 }), makeResult({ playerId: bob.id, score: 700 })] })
@@ -65,7 +70,8 @@ describe("revealModel", () => {
   })
 
   it("selects whose paint shows, and picking the selected row again shows everyone", () => {
-    const pick = (shown: RevealShown) => model({}, makeReveal(), shown).rows.map((row) => [row.selected, row.pick])
+    const pick = (shown: RevealShown): (boolean | RevealShown)[][] =>
+      model({}, makeReveal(), shown).rows.map((row) => [row.selected, row.pick])
     expect(pick(SHOW_EVERYONE)).toEqual([
       [true, SHOW_EVERYONE],
       [false, showPlayer(alice.id)],

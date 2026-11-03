@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test"
+import { expect, type Page, type Locator } from "@playwright/test"
 import type { Ms } from "@whereabouts/shared/units"
 import type { Vec3 } from "../../../src/vr/probe.ts"
 import { Controllers } from "./Controllers.ts"
@@ -59,7 +59,7 @@ export class Headset {
     await this.#vr(vrButtonTestIds.enterButton).click()
   }
 
-  #vr(testId: string) {
+  #vr(testId: string): Locator {
     return this.#page.getByTestId(testId)
   }
 
@@ -98,7 +98,7 @@ export class Headset {
 
   /** The VR scene is not drawn on the page for `duration`. */
   async expectSceneStaysUndrawn(duration: Ms = 500): Promise<void> {
-    const drawn = () => probe(this.#page, "drawn")
+    const drawn = (): Promise<number> => probe(this.#page, "drawn")
     const was = await drawn()
     await stillTrueFor("the VR scene staying undrawn", duration, drawn, (now) => now === was)
   }
@@ -157,7 +157,7 @@ export class Headset {
    * not depend on timing.
    */
   async settle(): Promise<void> {
-    const look = () =>
+    const look = (): Promise<{ frames: number; layout: string; turning: boolean }> =>
       this.#page.evaluate(() => {
         const { frames, probe } = window.testHooks.vr!
         // Millimetres: a smoothed move never quite stops.

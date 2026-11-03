@@ -6,9 +6,10 @@ import {
   type PlayerFacts,
   type RoundFacts,
   type CountryFit,
-  type StrongestPoint
+  type StrongestPoint,
+  type Award
 } from "./player-facts.ts"
-import { playerId } from "../ids.ts"
+import { playerId, type PlayerId } from "../ids.ts"
 import type { Ms } from "../units.ts"
 
 const BASE = { label: "Paris", lockedAfter: 30_000, roundLength: 60_000 }
@@ -33,7 +34,7 @@ const pointRound = (score: number, point: StrongestPoint, extra: Extra = {}): Ro
 })
 const regionRound = (score: number, region: CountryFit): RoundFacts => ({ ...round(score), region })
 /** Player "a" is p1, "b" p2, and so on. */
-const idOf = (letter: string) => playerId(`p${letter.charCodeAt(0) - 96}`)
+const idOf = (letter: string): PlayerId => playerId(`p${letter.charCodeAt(0) - 96}`)
 const player = (letter: string, rounds: (RoundFacts | undefined)[]): PlayerFacts => ({ playerId: idOf(letter), rounds })
 const SEEDS = Array.from({ length: 20 }, (_, i) => ((i + 1) * 2654435761) >>> 0)
 
@@ -76,8 +77,8 @@ describe("pickAwards", () => {
   })
 
   it("leaves a short round's last seconds to the end of it", () => {
-    const at = (lockedAfter: Ms) => round(500, { lockedAfter, roundLength: 10_000 })
-    const titles = (rounds: RoundFacts[]) =>
+    const at = (lockedAfter: Ms): AreaFacts => round(500, { lockedAfter, roundLength: 10_000 })
+    const titles = (rounds: RoundFacts[]): string[] =>
       SEEDS.flatMap((seed) => pickAwards([player("a", rounds), player("b", [round(500), round(500)])], seed)).map(
         (award) => award.title
       )
@@ -97,9 +98,9 @@ describe("pickAwards", () => {
 })
 
 /** Every award these players earned, over enough seeds that the cap hides none. */
-const earned = (players: PlayerFacts[]) => SEEDS.flatMap((seed) => pickAwards(players, seed))
-const titles = (players: PlayerFacts[]) => new Set(earned(players).map((award) => award.title))
-const winners = (title: string, players: PlayerFacts[]) =>
+const earned = (players: PlayerFacts[]): Award[] => SEEDS.flatMap((seed) => pickAwards(players, seed))
+const titles = (players: PlayerFacts[]): Set<string> => new Set(earned(players).map((award) => award.title))
+const winners = (title: string, players: PlayerFacts[]): [PlayerId] | [PlayerId, PlayerId] | undefined =>
   earned(players).find((award) => award.title === title)?.playerIds
 const AVERAGE = [round(500), round(500)]
 const point = (extra: Partial<StrongestPoint>): StrongestPoint => ({
@@ -119,31 +120,40 @@ describe("each award", () => {
   })
 
   it("Off by a Mile: a costly miss of 1,500 km or more", () => {
-    const missed = (miss: number) => [pointRound(100, point({ miss, spread: 500, missCost: 450 })), round(500)]
+    const missed = (miss: number): RoundFacts[] => [
+      pointRound(100, point({ miss, spread: 500, missCost: 450 })),
+      round(500)
+    ]
     expect(winners("Off by a Mile", [player("a", missed(1600)), player("b", AVERAGE)])).toEqual([idOf("a")])
     expect(titles([player("a", missed(1400)), player("b", AVERAGE)])).not.toContain("Off by a Mile")
   })
 
   it("Confidently Wrong: tight paint that missed", () => {
-    const sure = (spread: number) => [pointRound(300, point({ miss: 800, spread, missCost: 650 })), round(500)]
+    const sure = (spread: number): RoundFacts[] => [
+      pointRound(300, point({ miss: 800, spread, missCost: 650 })),
+      round(500)
+    ]
     expect(winners("Confidently Wrong", [player("a", sure(50)), player("b", AVERAGE)])).toEqual([idOf("a")])
     expect(titles([player("a", sure(120)), player("b", AVERAGE)])).not.toContain("Confidently Wrong")
   })
 
   it("Wrong House: paint all just over a country's border", () => {
-    const door = (nextDoor: boolean) => [regionRound(200, { precision: 0.05, nextDoor }), round(500)]
+    const door = (nextDoor: boolean): RoundFacts[] => [regionRound(200, { precision: 0.05, nextDoor }), round(500)]
     expect(winners("Wrong House", [player("a", door(true)), player("b", AVERAGE)])).toEqual([idOf("a")])
     expect(titles([player("a", door(false)), player("b", AVERAGE)])).not.toContain("Wrong House")
   })
 
   it("Border Control: between a tenth and half the paint on the country", () => {
-    const spill = (precision: number) => [regionRound(400, { precision, nextDoor: false }), round(500)]
+    const spill = (precision: number): RoundFacts[] => [regionRound(400, { precision, nextDoor: false }), round(500)]
     expect(winners("Border Control", [player("a", spill(0.3)), player("b", AVERAGE)])).toEqual([idOf("a")])
     expect(titles([player("a", spill(0.6)), player("b", AVERAGE)])).not.toContain("Border Control")
   })
 
   it("Fence Sitter: places painted wide, on average", () => {
-    const wide = (spread: number) => [pointRound(500, point({ spread })), pointRound(500, point({ spread }))]
+    const wide = (spread: number): RoundFacts[] => [
+      pointRound(500, point({ spread })),
+      pointRound(500, point({ spread }))
+    ]
     expect(winners("Fence Sitter", [player("a", wide(350)), player("b", AVERAGE)])).toEqual([idOf("a")])
     expect(titles([player("a", wide(290)), player("b", AVERAGE)])).not.toContain("Fence Sitter")
   })
@@ -161,7 +171,8 @@ describe("each award", () => {
   })
 
   it("Fastest Finger: the quickest to lock in, under 40% of the round on average", () => {
-    const locked = (seconds: number) => Array.from({ length: 3 }, () => round(500, { lockedAfter: seconds * 1000 }))
+    const locked = (seconds: number): AreaFacts[] =>
+      Array.from({ length: 3 }, () => round(500, { lockedAfter: seconds * 1000 }))
     const fast = [player("a", locked(10)), player("b", locked(20))]
     expect(earned(fast).find((award) => award.title === "Fastest Finger")).toMatchObject({
       playerIds: [idOf("a")],
@@ -171,7 +182,7 @@ describe("each award", () => {
   })
 
   describe("Picasso: twice the paint of the others' middle player", () => {
-    const painting = (area: number) => [round(500, { area }), round(500, { area })]
+    const painting = (area: number): AreaFacts[] => [round(500, { area }), round(500, { area })]
 
     it("among three", () => {
       const others = [player("b", painting(10_000)), player("c", painting(10_000))]
@@ -191,7 +202,7 @@ describe("each award", () => {
   })
 
   it("One Careful Dab: the smallest paint, over three rounds or more", () => {
-    const painting = (area: number) => Array.from({ length: 3 }, () => round(500, { area }))
+    const painting = (area: number): AreaFacts[] => Array.from({ length: 3 }, () => round(500, { area }))
     expect(winners("One Careful Dab", [player("a", painting(100)), player("b", painting(10_000))])).toEqual([idOf("a")])
     expect(titles([player("a", painting(100)), player("b", painting(100))])).not.toContain("One Careful Dab")
   })
@@ -264,7 +275,7 @@ describe("handing out the awards", () => {
     pass(),
     pass()
   ])
-  const plain = (letter: string) =>
+  const plain = (letter: string): PlayerFacts =>
     player(
       letter,
       Array.from({ length: 5 }, () => round(500))
@@ -294,7 +305,10 @@ describe("handing out the awards", () => {
 
   it("hands out three to five, more with more players", () => {
     // The show-off's five, and a wooden spoon once there are three players: more than the cap each time.
-    const crowd = (size: number) => [showOff, ...["b", "c", "d", "e", "f", "g", "h"].slice(0, size - 1).map(plain)]
+    const crowd = (size: number): PlayerFacts[] => [
+      showOff,
+      ...["b", "c", "d", "e", "f", "g", "h"].slice(0, size - 1).map(plain)
+    ]
     for (const [size, count] of [
       [1, 3],
       [2, 3],

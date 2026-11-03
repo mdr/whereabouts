@@ -100,7 +100,7 @@ export class Menu {
   wire(doc: UIKitDocument): void {
     this.doc = doc
     doc.setTargetDimensions(PANEL_SIZE, PANEL_SIZE)
-    const on = (id: string, handler: () => void) =>
+    const on = (id: string, handler: () => void): void =>
       doc.requireElementById(id).addEventListener("click", () => {
         this.handlers.clicked()
         handler()
@@ -176,7 +176,7 @@ export class Menu {
   get shown(): MenuShown {
     const view = this.view
     const round = view?.type === VrViewType.PAINT ? view.round : undefined
-    const shown = (action: VrAction) => ({
+    const shown = (action: VrAction): { label: string; enabled: boolean } => ({
       label: actionLabel(action, this.armed?.action),
       enabled: action.enabled !== false
     })
@@ -220,7 +220,15 @@ export class Menu {
   }
 }
 
-const uikitProperties = ({ shown, text, disabled }: PanelElement) => ({
+const uikitProperties = ({
+  shown,
+  text,
+  disabled
+}: PanelElement): {
+  disabled?: boolean | undefined
+  text?: string | undefined
+  display?: "none" | "flex" | undefined
+} => ({
   ...(shown !== undefined && { display: shown ? ("flex" as const) : ("none" as const) }),
   ...(text !== undefined && { text }),
   ...(disabled !== undefined && { disabled })

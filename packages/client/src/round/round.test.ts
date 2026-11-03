@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from "vite-plus/test"
+import { describe, expect, it, vi, type Mock } from "vite-plus/test"
 import { wikiTitle } from "@whereabouts/shared/ids"
 import type { Outline } from "@whereabouts/shared/questions"
 import { RevealedShapeType } from "./revealed-shape"
@@ -27,13 +27,16 @@ const revealed = (over: Partial<RevealedAnswer> = {}): RevealedAnswer => ({
   ...over
 })
 
-const fakeMap = () => ({
+const fakeMap = (): { showReveal: Mock; showRegionReveal: Mock; clearReveal: Mock } => ({
   showReveal: vi.fn(),
   showRegionReveal: vi.fn(),
   clearReveal: vi.fn()
 })
 
-const fakeCamera = () => ({ fitAnswerAndPaint: vi.fn(), fitRegionAndPaint: vi.fn() })
+const fakeCamera = (): { fitAnswerAndPaint: Mock; fitRegionAndPaint: Mock } => ({
+  fitAnswerAndPaint: vi.fn(),
+  fitRegionAndPaint: vi.fn()
+})
 
 const paint: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] }
 

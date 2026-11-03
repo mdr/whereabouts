@@ -1,7 +1,7 @@
 import type { Outline } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { playerColour } from "@whereabouts/shared/colours"
-import { outlineId, placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
+import { outlineId, placeId, playerId, playerName, wikiTitle, type PlayerId } from "@whereabouts/shared/ids"
 import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import {
@@ -18,7 +18,7 @@ import { areaAnswerView, makeCountryQuestionView, makePainted, makePlayer, makeQ
 import { RevealedShapeType } from "./revealed-shape"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
-const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
+const idOf = (name: string): PlayerId => playerId(`p${NAMES.indexOf(name) + 1}`)
 
 const player = (name: string, rank: number): PlayingPlayerView =>
   makePlayer({ id: idOf(name), name: playerName(name), rank })

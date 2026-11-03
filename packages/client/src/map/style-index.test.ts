@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { indexStyle, type IndexedLayer } from "./style-index"
+import type { StyleIndex } from "./style-index.ts"
 
 const layers: IndexedLayer[] = [
   { id: "background", type: "background" },
@@ -14,7 +15,7 @@ const layers: IndexedLayer[] = [
   { id: "label_city", type: "symbol", "source-layer": "place" }
 ]
 
-const index = () =>
+const index = (): StyleIndex =>
   indexStyle(
     layers,
     (id) => ({ width: id.length, opacity: 0.5 }),

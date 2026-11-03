@@ -1,16 +1,21 @@
-import { afterEach, describe, expect, it, vi } from "vite-plus/test"
+import { afterEach, describe, expect, it, vi, type Mock } from "vite-plus/test"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import { Role } from "@whereabouts/shared/roles"
 import { makePlayer, makeLobbyView } from "../../test-view"
-import { signal } from "@preact/signals"
+import { signal, type Signal } from "@preact/signals"
 import { hostActions, pickable, takeSeat, vrPicked } from "./vr-actions"
 
 const host = makePlayer({ id: playerId("p1"), isHost: true })
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false })
 const asHost = makeLobbyView({ players: [host, bob], you: { id: host.id, isHost: true } })
 const asGuest = makeLobbyView({ players: [host, bob], you: { id: bob.id, isHost: false } })
-const conn = (online = true) => ({ kick: vi.fn(), makeHost: vi.fn(), setRole: vi.fn(), online: signal(online) })
+const conn = (online = true): { kick: Mock; makeHost: Mock; setRole: Mock; online: Signal<boolean> } => ({
+  kick: vi.fn(),
+  makeHost: vi.fn(),
+  setRole: vi.fn(),
+  online: signal(online)
+})
 
 afterEach(() => (vrPicked.value = undefined))
 

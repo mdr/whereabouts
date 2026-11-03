@@ -74,7 +74,7 @@ export class Controllers {
       const clicks = await this.#page.evaluate(() => window.testHooks.vr!.clicks)
       await this.#page.evaluate(async (hand) => {
         const vr = window.testHooks.vr!
-        const nextFrame = () =>
+        const nextFrame = (): Promise<void> =>
           new Promise<void>((resolve) => {
             const was = vr.frames
             const timer = setInterval(() => {

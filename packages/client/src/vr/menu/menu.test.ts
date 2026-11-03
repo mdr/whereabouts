@@ -12,7 +12,7 @@ import {
   type VrView
 } from "../view/view"
 
-const makeMenu = () => {
+const makeMenu = (): { menu: Menu; click: (id: string) => void } => {
   const world = {
     createTransformEntity: () => ({ addComponent() {}, object3D: new Group() })
   } as unknown as World
@@ -68,7 +68,7 @@ const makeReveal = (actions: VrAction[]): VrView => ({
   }
 })
 
-const shownWith = (menu: Menu, view: VrView) => {
+const shownWith = (menu: Menu, view: VrView): void => {
   menu.show(view)
   menu.refresh(view)
 }

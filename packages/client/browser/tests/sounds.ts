@@ -24,7 +24,7 @@ declare global {
 /* oxlint-disable typescript/unbound-method -- each original is applied with the node as this */
 export const recordSounds = (): void => {
   window.__audio = []
-  const log = (event: Omit<SoundEvent, "at">) => window.__audio.push({ ...event, at: performance.now() })
+  const log = (event: Omit<SoundEvent, "at">): number => window.__audio.push({ ...event, at: performance.now() })
   // Decoded lengths can differ by a frame or two.
   const LENGTHS: Record<string, number> = {
     spray: 26.38,
@@ -34,7 +34,7 @@ export const recordSounds = (): void => {
     clear: 0.45,
     applause: 2.89
   }
-  const clipOf = (buffer: AudioBuffer | undefined) =>
+  const clipOf = (buffer: AudioBuffer | undefined): string | undefined =>
     !buffer
       ? undefined
       : (Object.entries(LENGTHS).find(([, length]) => Math.abs(buffer.duration - length) < 0.06)?.[0] ?? "other")
@@ -102,7 +102,12 @@ class Listening {
     this.#drain = drain
   }
 
-  async #expect<T>(message: string, wanted: string, view: (events: SoundEvent[]) => T, ok: (value: T) => boolean) {
+  async #expect<T>(
+    message: string,
+    wanted: string,
+    view: (events: SoundEvent[]) => T,
+    ok: (value: T) => boolean
+  ): Promise<void> {
     await expectPolled(
       message,
       wanted,
@@ -114,7 +119,12 @@ class Listening {
     )
   }
 
-  async #expectHolds<T>(what: string, duration: Ms, view: (events: SoundEvent[]) => T, ok: (value: T) => boolean) {
+  async #expectHolds<T>(
+    what: string,
+    duration: Ms,
+    view: (events: SoundEvent[]) => T,
+    ok: (value: T) => boolean
+  ): Promise<void> {
     await stillTrueFor(
       what,
       duration,

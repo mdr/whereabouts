@@ -6,7 +6,7 @@ import { Borders } from "../borders.ts"
 import { CATALOGUE, isFlagQuestion, outlinesFrom } from "../catalogue/catalogue.ts"
 import { countryFill, FILL_CELL_BUDGET, FILL_DENSITY, FillShapeType, type FillShape } from "./fill.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint.ts"
-import { AnswerType, answerCentre } from "../questions.ts"
+import { AnswerType, answerCentre, type FlagQuestion } from "../questions.ts"
 import { scoreAnswer, scoredAnswer } from "../scoring/regions.ts"
 import { DEFAULT_KERNEL, buildDistribution } from "../scoring/scoring.ts"
 import { outlineId } from "../ids.ts"
@@ -14,7 +14,7 @@ import { outlineId } from "../ids.ts"
 const flags = CATALOGUE.filter(isFlagQuestion)
 const borders = new Borders(bordersJson, flags)
 const outlines = outlinesFrom(outlinesJson)
-const flag = (code: string) => flags.find((question) => question.clue.flag === code)!
+const flag = (code: string): FlagQuestion => flags.find((question) => question.clue.flag === code)!
 
 /** A flag round filled with its own country, as the client does it, and scored. */
 const fillAndScore = (code: string, finestResolution?: number): { score: number; cells: H3Cell[] } => {
@@ -80,7 +80,7 @@ describe("countryFill", () => {
     const cells = new Set(countryFill(borders.fillShape(flag("za")), h3Resolution(5)))
     const maseru = latLngToCell(-29.5, 28.2, h3Resolution(5))
     const joburg = latLngToCell(-26.2, 28.05, h3Resolution(5))
-    const has = (cell: H3Cell) =>
+    const has = (cell: H3Cell): boolean =>
       [3, 4, 5].some((resolution) => cells.has(resolution === 5 ? cell : cellToParent(cell, h3Resolution(resolution))))
     expect(has(joburg)).toBe(true)
     expect(has(maseru)).toBe(false)

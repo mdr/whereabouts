@@ -10,7 +10,7 @@ export const FILL_NOUN: Record<FillType, string> = { [FillType.COUNTRY]: "countr
 export const noteText = (
   note: RoundNote,
   { askedToWatch, canUnlock }: { askedToWatch: boolean; canUnlock: boolean }
-) => {
+): string => {
   switch (note) {
     case RoundNote.WATCHING:
       return askedToWatch

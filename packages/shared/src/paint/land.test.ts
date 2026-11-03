@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { cellToChildren, cellToParent, getResolution, h3Resolution, latLngToCell } from "../h3.ts"
+import { cellToChildren, cellToParent, getResolution, h3Resolution, latLngToCell, type H3Cell } from "../h3.ts"
 import landJson from "../../land.json" with { type: "json" }
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { LandMask, trimSea } from "./land.ts"
@@ -9,7 +9,7 @@ import { resolutionForTolerance } from "./paint.ts"
 import { regionCells, regionScoringResolution, scoredAnswer } from "../scoring/regions.ts"
 
 const mask = new LandMask(landJson)
-const at = (lat: number, lon: number, resolution: number) => latLngToCell(lat, lon, h3Resolution(resolution))
+const at = (lat: number, lon: number, resolution: number): H3Cell => latLngToCell(lat, lon, h3Resolution(resolution))
 
 describe("land mask", () => {
   it("keeps paint on every answer, at the resolution it is painted", () => {

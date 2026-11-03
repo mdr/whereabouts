@@ -30,7 +30,7 @@ const place = (id: string): PlaceQuestion => ({
   answer: { type: AnswerType.POINT, at: { lat: 35, lon: 135.8 }, tolerance: 50 }
 })
 
-const pass = (run: PaintingRun) =>
+const pass = (run: PaintingRun): RevealingRun =>
   submitRound(run, undefined, scoredAnswer(run.questions[run.index]!.answer, new Map()), DEFAULT_KERNEL)
 
 const onward = (run: RevealingRun): PaintingRun => {

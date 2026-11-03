@@ -204,7 +204,7 @@ export const MIN_SPREAD: Km = 50
 export const shuffle = <T>(items: T[], seed: number): T[] => {
   const out = items.slice()
   let state = seed >>> 0
-  const random = () => {
+  const random = (): number => {
     state = (state * 1664525 + 1013904223) >>> 0
     return state / 4294967296
   }

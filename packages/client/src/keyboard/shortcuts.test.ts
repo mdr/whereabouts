@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vite-plus/test"
+import { describe, expect, it, vi, type Mock } from "vite-plus/test"
 import { listedShortcuts, runPaintKey, type KeyPress } from "./shortcuts"
 import { Tool } from "../paint/tool"
 
@@ -12,7 +12,14 @@ const press = (key: string, mods: Partial<KeyPress> = {}): KeyPress => ({
   ...mods
 })
 
-const makeTarget = ({ enabled = true, canFill = true } = {}) => ({
+const makeTarget = ({ enabled = true, canFill = true } = {}): {
+  enabled: () => boolean
+  canFill: () => boolean
+  setTool: Mock<(tool: Tool) => void>
+  resizeBrush: Mock<(factor: number) => void>
+  undo: Mock
+  redo: Mock
+} => ({
   enabled: () => enabled,
   canFill: () => canFill,
   setTool: vi.fn<(tool: Tool) => void>(),
@@ -68,7 +75,7 @@ describe("the paint keys", () => {
 })
 
 describe("the listed shortcuts", () => {
-  const actions = (practice: boolean) => listedShortcuts(practice).map((shortcut) => shortcut.action)
+  const actions = (practice: boolean): string[] => listedShortcuts(practice).map((shortcut) => shortcut.action)
 
   it("list Enter only in practice", () => {
     expect(actions(true)).toContain("Submit / next question")

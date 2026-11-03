@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi } from "vite-plus/test"
-import { renderHook } from "@testing-library/preact"
+import { afterEach, describe, expect, it, vi, type Mock } from "vite-plus/test"
+import { renderHook, type RenderHookResult } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { HintAxis, type HintBand } from "@whereabouts/shared/hints"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
@@ -16,7 +16,11 @@ import { Tool } from "../paint/tool"
 
 vi.mock("../paint/fill-tool", () => ({ useFillTool: vi.fn() }))
 
-const makePaint = () =>
+interface MockPaint extends RoundPaint {
+  reset: Mock
+}
+
+const makePaint = (): MockPaint =>
   ({
     reset: vi.fn(),
     tool: signal(Tool.PAN),
@@ -39,7 +43,14 @@ interface Props {
   hint?: HintBand
 }
 
-const setup = (over: Partial<Props> = {}) => {
+interface Setup {
+  paint: MockPaint
+  start: Mock
+  hook: RenderHookResult<void, Props>
+  update: (change: Partial<Props>) => void
+}
+
+const setup = (over: Partial<Props> = {}): Setup => {
   const paint = makePaint()
   const start = vi.fn()
   let props: Props = {
@@ -53,7 +64,7 @@ const setup = (over: Partial<Props> = {}) => {
   const hook = renderHook((hookProps: Props) => useRoundMap(paint, { ...hookProps, hint: hookProps.hint, start }), {
     initialProps: props
   })
-  const update = (change: Partial<Props>) => {
+  const update = (change: Partial<Props>): void => {
     props = { ...props, ...change }
     hook.rerender(props)
   }
@@ -98,7 +109,7 @@ describe("useRoundMap", () => {
   })
 
   it("offers the Fill tool for a country on a map with borders, or an island, and only there", () => {
-    const offered = (over: Partial<Props>) => {
+    const offered = (over: Partial<Props>): FillType | undefined => {
       vi.mocked(useFillTool).mockClear()
       setup(over).hook.unmount()
       return vi.mocked(useFillTool).mock.calls.at(-1)?.[1]

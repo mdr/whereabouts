@@ -15,7 +15,7 @@ describe("the VR globe's land", () => {
   it("covers every finest cell of a coarse one, though the coarse hexagon does not", () => {
     const coarse = latLngToCell(34.8, 69.6, h3Resolution(2))
     const drawn = new Set<H3Cell>(landCells({ resolution: 4, cells: [coarse] }))
-    const under = (cell: H3Cell, resolution: number) => {
+    const under = (cell: H3Cell, resolution: number): H3Cell => {
       const [lat, lon] = cellToLatLng(cell)
       return latLngToCell(lat, lon, h3Resolution(resolution))
     }

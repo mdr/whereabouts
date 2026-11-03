@@ -6,7 +6,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import Fastify, { type FastifyInstance } from "fastify"
 import fastifyStatic from "@fastify/static"
-import { Rivalis, TokenBucketRateLimiter, logging } from "@rivalis/core"
+import { Rivalis, TokenBucketRateLimiter, logging, type RoomManager } from "@rivalis/core"
 import WSTransport from "./vendor/WSTransport.ts"
 import { GameAuth } from "./game-auth.ts"
 import { GameRoom, ROOM_TYPE, kickForRestart, type ActorData } from "./rooms.ts"
@@ -96,7 +96,7 @@ export const createApp = (options: AppOptions): App => {
   }
 
   let rivalis: Rivalis<ActorData> | undefined = undefined
-  const rooms = () => {
+  const rooms = (): RoomManager<ActorData> => {
     if (!rivalis) throw new Error("rivalis not ready")
     return rivalis.rooms
   }

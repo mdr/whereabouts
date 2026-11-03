@@ -4,8 +4,8 @@ import { RoundCue, roundCue } from "./round-cue"
 
 describe("roundCue", () => {
   const lobby = { phase: Phase.LOBBY, round: undefined }
-  const guessing = (round: number) => ({ phase: Phase.GUESSING, round })
-  const reveal = (round: number) => ({ phase: Phase.REVEAL, round })
+  const guessing = (round: number): { phase: Phase; round: number } => ({ phase: Phase.GUESSING, round })
+  const reveal = (round: number): { phase: Phase; round: number } => ({ phase: Phase.REVEAL, round })
 
   it("says nothing on the first view, so a refresh mid-round is not announced", () => {
     expect(roundCue(undefined, guessing(2), 30_000)).toBeUndefined()

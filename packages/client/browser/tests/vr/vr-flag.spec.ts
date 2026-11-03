@@ -65,7 +65,7 @@ test("a flag round's card shows the flag in its own shape, can be held, turned a
   await headset.scene.expectToolInHand(Hand.RIGHT, Tool.FILL)
   // Up and right of the globe's middle, at the prime meridian and the equator: the Sahel.
   const sahel: Vec3 = [centre[0] + 0.06, centre[1] + 0.05, centre[2] + 0.2]
-  const pull = async () => {
+  const pull = async (): Promise<void> => {
     await headset.controllers.pointRight(can, sahel)
     await headset.frames(3)
     await headset.controllers.rightTrigger(1)

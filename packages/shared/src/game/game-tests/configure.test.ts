@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vite-plus/test"
 import { viewIn } from "../view-in.ts"
 import { ClueType, QuestionType } from "../../questions.ts"
-import { type ConfigurePatch, mixOf, mixTotal, MapDetail } from "../../protocol/config.ts"
+import { type ConfigurePatch, mixOf, mixTotal, MapDetail, type QuestionMix } from "../../protocol/config.ts"
 import { Phase } from "../../protocol/views.ts"
 import { playerName } from "../../ids.ts"
 import { pool, landmark, T0, viewOf, tokA, tokB, paintAt, makeGame, twoPlayerGame, currentQuestion } from "./support.ts"
 
 describe("configure", () => {
-  const places = (count: number) => mixOf({ [QuestionType.PLACE]: count })
-  const landmarks = (count: number) => mixOf({ [QuestionType.LANDMARK]: count })
+  const places = (count: number): QuestionMix => mixOf({ [QuestionType.PLACE]: count })
+  const landmarks = (count: number): QuestionMix => mixOf({ [QuestionType.LANDMARK]: count })
 
   it("lets the host change the mix, and so the rounds, and round length in the lobby only", () => {
     const game = twoPlayerGame()

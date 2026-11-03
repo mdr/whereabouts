@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test"
 import type { Game } from "../game.ts"
 import { MAX_PLAYERS, MAX_SPECTATORS, SEAT_GRACE } from "../../protocol/config.ts"
 import { Phase } from "../../protocol/views.ts"
-import { playerId, playerName } from "../../ids.ts"
+import { playerId, playerName, type PlayerId } from "../../ids.ts"
 import { PLAYER_COLOURS } from "../../colours.ts"
 import { CloseReason } from "../../close-reason.ts"
 import { Role, YouRoleType } from "../../roles.ts"
@@ -69,7 +69,7 @@ describe("lobby", () => {
   it("the host can hand the role to another connected player, for good", () => {
     const game = twoPlayerGame()
     game.join(tokC, playerName("Cara"), T0)
-    const id = (name: string) => viewOf(game, tokA, T0).players.find((player) => player.name === name)!.id
+    const id = (name: string): PlayerId => viewOf(game, tokA, T0).players.find((player) => player.name === name)!.id
     expect(game.makeHost(tokB, id("Cara"))).toEqual({ ok: false, error: "only the host can hand over" })
     expect(game.makeHost(tokA, id("Alice"))).toEqual({ ok: false, error: "you are already the host" })
     expect(game.makeHost(tokA, playerId("p99"))).toEqual({ ok: false, error: "unknown player" })

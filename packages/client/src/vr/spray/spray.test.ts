@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import { beforeAll, describe, expect, it, vi } from "vite-plus/test"
-import { signal } from "@preact/signals"
+import { beforeAll, describe, expect, it, vi, type Mock } from "vite-plus/test"
+import { signal, type Signal } from "@preact/signals"
 import { Object3D, Vector3 } from "three"
 import { greatCircleDistance, type LatLon } from "@whereabouts/shared/geo"
 import { THEME } from "../../map/themes"
@@ -38,7 +38,11 @@ const handAimedAt = (globe: Globe): HandTool => {
   return new HandTool(grip, ray, scene, THEME)
 }
 
-const makePaint = () => ({ enabled: signal(true), stamp: vi.fn(), fillOutside: vi.fn() })
+const makePaint = (): { enabled: Signal<boolean>; stamp: Mock; fillOutside: Mock } => ({
+  enabled: signal(true),
+  stamp: vi.fn(),
+  fillOutside: vi.fn()
+})
 
 describe("a hand's spray", () => {
   it("lands where the turned globe faces it", () => {
@@ -52,7 +56,7 @@ describe("a hand's spray", () => {
 
   it("covers less ground on a globe zoomed in", () => {
     const at = { lat: -33.9, lon: 151.2 }
-    const radius = (reach: number) => {
+    const radius = (reach: number): number => {
       const globe = globeFacing(at, reach)
       const paint = makePaint()
       handAimedAt(globe).update(1, globe, 1, false, paint, undefined)

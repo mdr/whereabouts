@@ -3,12 +3,12 @@ import { cellArea, cellToLatLng, gridDisk, latLngToCell } from "../h3.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { CATALOGUE, isFlagQuestion, outlinesFrom } from "./catalogue.ts"
 import { resolutionForTolerance } from "../paint/paint.ts"
-import { buildDistribution, scoreDistribution } from "../scoring/scoring.ts"
-import { AnswerType, FLAG_AREA_PROMPT, FLAG_POINT_PROMPT, promptOf } from "../questions.ts"
+import { buildDistribution, scoreDistribution, type Distribution } from "../scoring/scoring.ts"
+import { AnswerType, FLAG_AREA_PROMPT, FLAG_POINT_PROMPT, promptOf, type FlagQuestion } from "../questions.ts"
 
 const FLAGS = CATALOGUE.filter(isFlagQuestion)
 const OUTLINES = outlinesFrom(outlinesJson)
-const flag = (code: string) => FLAGS.find((question) => question.clue.flag === code)!
+const flag = (code: string): FlagQuestion => FLAGS.find((question) => question.clue.flag === code)!
 
 describe("flag questions", () => {
   it("are one per country, well formed", () => {
@@ -50,7 +50,7 @@ describe("flag questions", () => {
       const { at, tolerance } = answer
       const lat: number = at.lat
       const resolution = resolutionForTolerance(tolerance)
-      const blob = (lat: number, lon: number) =>
+      const blob = (lat: number, lon: number): Distribution =>
         buildDistribution(
           gridDisk(latLngToCell(lat, lon, resolution), 2).map((cell) => {
             const [cellLat, cellLon] = cellToLatLng(cell)

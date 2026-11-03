@@ -13,7 +13,9 @@ import {
   type VrView
 } from "../view/view"
 
-const makeState = (over: Partial<PanelState> = {}) => ({
+const makeState = (
+  over: Partial<PanelState> = {}
+): { armed: VrAction | undefined; soundOn: boolean; passthroughOn: boolean; passthroughOffered: boolean } => ({
   armed: undefined,
   soundOn: true,
   passthroughOn: false,
@@ -78,9 +80,10 @@ describe("panelContent", () => {
   })
 
   it("mentions the fill pail, and what it fills, when the round can fill", () => {
-    const paint = (fillType: FillType) =>
+    const paint = (fillType: FillType): PaintController =>
       ({ layer: { isEmpty: true }, fillable: { value: true }, fillType: { value: fillType } }) as PaintController
-    const hint = (fillType: FillType) => panelContent(makePaint({ paint: paint(fillType) }), makeState())["hint"]?.text
+    const hint = (fillType: FillType): string | undefined =>
+      panelContent(makePaint({ paint: paint(fillType) }), makeState())["hint"]?.text
     expect(hint(FillType.COUNTRY)).toContain("fills the country it points at")
     expect(hint(FillType.ISLAND)).toContain("fills the island it points at")
     expect(panelContent(makePaint(), makeState())["hint"]?.text).not.toContain("fill pail")

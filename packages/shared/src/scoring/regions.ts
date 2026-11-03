@@ -373,7 +373,7 @@ const paintMass = (painted: Distribution, area: Area): Map<H3Cell, number> => {
   const paintResolution = resolutionForTolerance(area.tolerance)
   const region = regionAt(area)
   const mass = new Map<H3Cell, number>()
-  const add = (cell: H3Cell, amount: number) => mass.set(cell, (mass.get(cell) ?? 0) + amount)
+  const add = (cell: H3Cell, amount: number): Map<H3Cell, number> => mass.set(cell, (mass.get(cell) ?? 0) + amount)
   for (const point of painted.points) {
     if (!point.cell) continue
     const resolution = getResolution(point.cell)

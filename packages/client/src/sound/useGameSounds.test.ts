@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
-import { renderHook } from "@testing-library/preact"
+import { renderHook, type RenderHookResult } from "@testing-library/preact"
 import { Phase } from "@whereabouts/shared/protocol/views"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 import { Chime } from "./sound"
@@ -23,11 +23,16 @@ const guessing = (index = 0): View => ({ phase: Phase.GUESSING, round: { index, 
 const reveal = (index = 0): View => ({ phase: Phase.REVEAL, reveal: { index } })
 const results: View = { phase: Phase.RESULTS }
 
-const setup = (first: View) => {
+interface Setup {
+  hook: RenderHookResult<void, View>
+  at: (time: Instant, view: View) => void
+}
+
+const setup = (first: View): Setup => {
   let now: Instant = 0
   const conn = { timeUntil: (at: Instant): Ms => at - now }
   const hook = renderHook((view: View) => useGameSounds(conn, view), { initialProps: first })
-  const at = (time: Instant, view: View) => {
+  const at = (time: Instant, view: View): void => {
     now = time
     hook.rerender(view)
   }

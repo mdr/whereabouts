@@ -19,6 +19,7 @@ import { VrPictureType } from "../picture/vr-picture"
 import { HintAllowance, VrAnswerType, VrPaintsType } from "./view"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { FactType } from "@whereabouts/shared/catalogue/facts"
+import type { VrRound } from "./view.ts"
 
 const painted = (flag: string, label: string, share: number): PaintedCountry => ({
   country: makeFlagQuestion(flag, label),
@@ -91,7 +92,7 @@ const shown = (over: Partial<VrRoundShown> = {}): VrRoundShown => ({
   ...over
 })
 
-const round = (shown: VrRoundShown) =>
+const round = (shown: VrRoundShown): VrRound =>
   vrRound(shown, {
     paint: {} as PaintController,
     detail: MapDetail.POLITICAL,

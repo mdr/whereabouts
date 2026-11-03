@@ -44,8 +44,8 @@ export const coarserResolution = (resolution: H3Resolution): H3Resolution => {
   return coarser
 }
 
-const brandCell = (value: string) => value as H3Cell
-const brandCells = (values: string[]) => values as H3Cell[]
+const brandCell = (value: string): H3Cell => value as H3Cell
+const brandCells = (values: string[]): H3Cell[] => values as H3Cell[]
 
 /** A record's cells and values: Object.entries would widen its keys to plain strings. */
 export const cellEntries = <V>(record: Readonly<Record<H3Cell, V>>): [H3Cell, V][] =>
@@ -72,7 +72,7 @@ export const polygonToCells = (
   resolution: H3Resolution,
   isGeoJson?: boolean
 ): H3Cell[] => brandCells(h3.polygonToCells(polygon, resolution, isGeoJson))
-export const cellsToMultiPolygon = (cells: H3Cell[], formatAsGeoJson?: boolean) =>
+export const cellsToMultiPolygon = (cells: H3Cell[], formatAsGeoJson?: boolean): h3.CoordPair[][][] =>
   h3.cellsToMultiPolygon(cells, formatAsGeoJson)
 export const edgeLength = (resolution: H3Resolution): Km => h3.getHexagonEdgeLengthAvg(resolution, h3.UNITS.km)
 export const getRes0Cells = (): H3Cell[] => brandCells(h3.getRes0Cells())

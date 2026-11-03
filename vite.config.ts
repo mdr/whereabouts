@@ -279,6 +279,16 @@ export default defineConfig({
         }
       },
       {
+        // Components (.tsx) infer their return type; see CLAUDE.md.
+        files: ["**/*.ts", "**/*.mts", "**/*.cts"],
+        rules: {
+          "typescript/explicit-function-return-type": [
+            "error",
+            { allowExpressions: true, allowTypedFunctionExpressions: true, allowHigherOrderFunctions: true }
+          ]
+        }
+      },
+      {
         files: ["packages/shared/src/h3.ts"],
         rules: {
           "no-restricted-imports": "off"

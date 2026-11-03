@@ -91,12 +91,12 @@ export const decodeCase = async (text: string): Promise<ScoringCase> => {
     .filter((line) => line.length > 0)
   const start = lines.indexOf(MAGIC)
   if (start < 0) throw new Error(`not a scoring case: no "${MAGIC}" line`)
-  const field = (key: string) => {
+  const field = (key: string): string => {
     const line = lines.slice(start).find((candidate) => candidate.startsWith(`${key}: `))
     if (!line) throw new Error(`scoring case has no ${key} line`)
     return line.slice(key.length + 2)
   }
-  const named = (text: string, name: string) => {
+  const named = (text: string, name: string): string => {
     const match = new RegExp(`(?:^|\\s)${name}=(\\S+)`).exec(text)
     if (!match) throw new Error(`scoring case has no ${name}`)
     return match[1]!
@@ -151,7 +151,7 @@ export const decodeCase = async (text: string): Promise<ScoringCase> => {
   }
 }
 
-const round = (value: number, places: number) => Number(value.toFixed(places))
+const round = (value: number, places: number): number => Number(value.toFixed(places))
 
 const writeVarint = (out: number[], value: bigint): void => {
   do {

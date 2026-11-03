@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vite-plus/test"
+import { describe, expect, it, vi, type Mock } from "vite-plus/test"
 import { PairedStroke, strokeTool, type HandAtWork } from "./stroke"
 import { Tool } from "../../paint/tool"
 
@@ -31,7 +31,7 @@ describe("which hand starts a stroke", () => {
 })
 
 describe("a stroke made with both hands", () => {
-  const setup = () => {
+  const setup = (): { paint: { beginStroke: Mock; endStroke: Mock }; stroke: PairedStroke } => {
     const paint = { beginStroke: vi.fn(), endStroke: vi.fn() }
     return { paint, stroke: new PairedStroke(() => paint) }
   }

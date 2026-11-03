@@ -31,7 +31,8 @@ import {
   wikiTitle,
   type PlayerName,
   type PlayerToken,
-  type RoomCode
+  type RoomCode,
+  type PlayerId
 } from "@whereabouts/shared/ids"
 import {
   AnswerType,
@@ -45,12 +46,13 @@ import { createApp, type App } from "../app.ts"
 import { BANK, configureGameRooms, realClock, type Clock } from "../rooms.ts"
 import { Role, YouRoleType } from "@whereabouts/shared/roles"
 import type { AddressLimits } from "../address-limiter.ts"
+import type { H3Cell } from "@whereabouts/shared/h3"
 
 // Static imports hoist above this line, so the client is loaded dynamically.
 ;(globalThis as unknown as { window: unknown }).window = globalThis
 const { WSClient } = await import("@rivalis/browser")
 
-export const lockedIn = (view: GameView) =>
+export const lockedIn = (view: GameView): boolean =>
   (view.phase === Phase.GUESSING || view.phase === Phase.REVEAL) &&
   view.you.role.type === YouRoleType.PLAYING &&
   view.you.role.locked
@@ -74,7 +76,7 @@ const bank = {
 export const config = { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundLength: 60_000 }
 
 /** The place question a round asked. */
-export const askedIn = (round: GameView) =>
+export const askedIn = (round: GameView): PlaceQuestion =>
   questions.find((question) => promptOf(question) === promptOf(viewIn(round, Phase.GUESSING).round.question))!
 
 /** Real timers, but time can be jumped forward so deadlines fire immediately. */
@@ -82,19 +84,19 @@ class FakeClock implements Clock {
   offset = 0
   private pending = new Map<number, { at: number; fn: () => void }>()
   private seq = 0
-  now() {
+  now(): number {
     return Date.now() + this.offset
   }
-  setTimeout(fn: () => void, ms: number) {
+  setTimeout(fn: () => void, ms: number): number {
     const id = ++this.seq
     this.pending.set(id, { at: this.now() + ms, fn })
     return id
   }
-  clearTimeout(handle: unknown) {
+  clearTimeout(handle: unknown): void {
     this.pending.delete(handle as number)
   }
   /** Jump forward and fire everything now due, in order. */
-  advance(ms: number) {
+  advance(ms: number): void {
     this.offset += ms
     const due = [...this.pending.entries()]
       .filter(([, timer]) => timer.at <= this.now())
@@ -156,13 +158,13 @@ export class TestPlayer {
       this.errors.push((JSON.parse(decoder.decode(payload)) as { message: string }).message)
     )
   }
-  connect(entry: GameEntry) {
+  connect(entry: GameEntry): void {
     this.client.connect(encodeTicket({ v: PROTOCOL_VERSION, token: this.token, name: this.name, entry }))
   }
-  send<K extends JsonTopic>(...[topic, body]: ClientSend<K>) {
+  send<K extends JsonTopic>(...[topic, body]: ClientSend<K>): void {
     this.client.send(topic, JSON.stringify(body ?? {}))
   }
-  sendPaint(paint: PaintSubmission) {
+  sendPaint(paint: PaintSubmission): void {
     this.client.send(ClientTopic.PAINT, encodePaint(paint))
   }
   get latest(): GameView {
@@ -202,7 +204,11 @@ export const eventually = async (done: () => boolean, what: string, ms = 3000): 
   }
 }
 
-export const paintAt = (question: Question, lat: number, lon: number) => {
+export const paintAt = (
+  question: Question,
+  lat: number,
+  lon: number
+): { cells: Record<H3Cell, number>; floor: number } => {
   const { tolerance } = question.answer
   const layer = new PaintLayer(resolutionForTolerance(tolerance))
   layer.stamp({ lat, lon }, tolerance / 2, 1)
@@ -217,7 +223,14 @@ export const pollErrors = async (testPlayer: TestPlayer, ms = 2000): Promise<str
 }
 
 /** Boots the app on a random port around each test, with a fake clock; checks every state sent against GameViewSchema afterwards. */
-export const useGameServer = ({ addressLimits }: { addressLimits?: AddressLimits } = {}) => {
+interface GameServer {
+  readonly app: App
+  readonly clock: FakeClock
+  player: (name: string) => TestPlayer
+  aliceAndBob: () => Promise<{ alice: TestPlayer; bob: TestPlayer; code: RoomCode; bobId: PlayerId }>
+}
+
+export const useGameServer = ({ addressLimits }: { addressLimits?: AddressLimits } = {}): GameServer => {
   let app: App
   let url: string
   let clock: FakeClock
@@ -241,14 +254,14 @@ export const useGameServer = ({ addressLimits }: { addressLimits?: AddressLimits
     configureGameRooms({ clock: realClock })
   })
 
-  const player = (name: string) => {
+  const player = (name: string): TestPlayer => {
     const testPlayer = new TestPlayer(url, name)
     players.push(testPlayer)
     return testPlayer
   }
 
   /** Alice hosting and Bob joined, both seen in the lobby. */
-  const aliceAndBob = async () => {
+  const aliceAndBob = async (): Promise<{ alice: TestPlayer; bob: TestPlayer; code: RoomCode; bobId: PlayerId }> => {
     const alice = player("Alice")
     alice.connect(host())
     const { code } = await alice.until((view) => view.phase === Phase.LOBBY)

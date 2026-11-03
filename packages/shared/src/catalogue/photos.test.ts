@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vite-plus/test"
 import { CATALOGUE } from "./catalogue.ts"
 import { REVEAL_PHOTOS, revealPhoto } from "./photos.ts"
-import { QuestionType, clueImage } from "../questions.ts"
+import { QuestionType, clueImage, type Question } from "../questions.ts"
 
-const of = (...types: QuestionType[]) => CATALOGUE.filter((question) => types.includes(question.type))
+const of = (...types: QuestionType[]): Question[] => CATALOGUE.filter((question) => types.includes(question.type))
 
 describe("the reveal photos", () => {
   const shown = new Set<string>(

@@ -83,11 +83,11 @@ test("turning the left palm up opens the wrist menu, whose buttons clear, hint a
   await headset.controllers.hold(Hand.LEFT, leftHand, [0, 0, Math.SQRT1_2, Math.SQRT1_2])
   await headset.panels.expectWristOpen(true)
   await headset.settle()
-  const press = async (id: WristButton) => {
+  const press = async (id: WristButton): Promise<void> => {
     await headset.controllers.press(can, await headset.panels.wristButton(id))
   }
   await round.screenshot(shot(`vr-wrist.png`))
-  const undone = async () => {
+  const undone = async (): Promise<void> => {
     await round.paintTools.undoWithKeyboard()
     await round.map.expectYourPaintCells({ exactly: painted })
   }

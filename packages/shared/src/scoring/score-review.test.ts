@@ -2,29 +2,32 @@ import { describe, expect, it } from "vite-plus/test"
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { CATALOGUE, outlinesFrom } from "../catalogue/catalogue.ts"
 import { AnswerType, QuestionType } from "../questions.ts"
-import { POINT_GUESSES, REGION_GUESSES } from "./review-painting.ts"
+import { POINT_GUESSES, REGION_GUESSES, type ReviewGuess } from "./review-painting.ts"
 import { GuessType } from "./score-verdict.ts"
 import { REVIEW_SET_SIZE, ReviewCaseType, reviewCases, guessCase, scoreGuess, type ReviewCase } from "./score-review.ts"
 import { DEFAULT_KERNEL } from "./scoring.ts"
 import { decodeCase } from "./scoring-case.ts"
+import type { Points } from "../units.ts"
+import type { QuestionId } from "../ids.ts"
+import type { H3Cell } from "../h3.ts"
 
 const OUTLINES = outlinesFrom(outlinesJson)
-const casesOf = (set: number) => reviewCases(set, CATALOGUE, OUTLINES)
-const isArea = (reviewCase: ReviewCase) => reviewCase.answer.type === AnswerType.AREA
+const casesOf = (set: number): ReviewCase[] => reviewCases(set, CATALOGUE, OUTLINES)
+const isArea = (reviewCase: ReviewCase): boolean => reviewCase.answer.type === AnswerType.AREA
 
 // These score many paints: about 2 s alone, several times that on a busy machine.
 const HEAVY = { timeout: 20_000 }
 
-const guesses = (reviewCase: ReviewCase) =>
+const guesses = (reviewCase: ReviewCase): ReviewGuess[] =>
   reviewCase.type === ReviewCaseType.SINGLE ? [reviewCase.guess] : reviewCase.guesses
-const score = (reviewCase: ReviewCase, i = 0) =>
+const score = (reviewCase: ReviewCase, i = 0): Points =>
   scoreGuess(reviewCase.answer, guesses(reviewCase)[i]!.layer, DEFAULT_KERNEL).score
 
 describe("score review cases", () => {
   const cases = casesOf(1)
 
   it("are the same for a set every time, and differ between sets", HEAVY, () => {
-    const record = (set: number) =>
+    const record = (set: number): (QuestionId | (GuessType | Record<H3Cell, number>)[])[][] =>
       casesOf(set).map((reviewCase) => [
         reviewCase.question.id,
         ...guesses(reviewCase).map((guess) => [guess.type, guess.layer.toRecord()])
@@ -58,7 +61,7 @@ describe("score review cases", () => {
 
   it("score painting a whole country above painting far from it", HEAVY, () => {
     const all = [1, 2, 3, 4].flatMap((set) => casesOf(set))
-    const mean = (type: GuessType) => {
+    const mean = (type: GuessType): number => {
       const scores = all.flatMap((reviewCase) =>
         guesses(reviewCase).flatMap((guess, i) =>
           isArea(reviewCase) && guess.type === type ? [score(reviewCase, i)] : []

@@ -5,6 +5,7 @@ import type { Hand } from "../../../src/vr/hands/hand.ts"
 import type { SprayTool } from "../../../src/vr/spray/spray-rules.ts"
 import { expectNumber, expectPolled, stillTrueFor, type Bounds, type PollOptions } from "../support.ts"
 import { expectProbe, expectProbeNumber, probe } from "./probe.ts"
+import type { Vec3 } from "../../../src/vr/probe.ts"
 
 /** What the headset's scene shows apart from its panels: the globe, flags, paint, tools, beams, moon and space. */
 export class HeadsetScene {
@@ -15,7 +16,7 @@ export class HeadsetScene {
   }
 
   /** Cells of paint drawn on the VR globe. */
-  globePaintCells() {
+  globePaintCells(): Promise<number> {
     return probe(this.#page, "shownPaintCells")
   }
 
@@ -129,12 +130,12 @@ export class HeadsetScene {
   }
 
   /** The flag nearest the eyes with a border to outline, and where its middle is. */
-  flagFacing() {
+  flagFacing(): Promise<{ name: string; at: Vec3 } | undefined> {
     return probe(this.#page, "flagFacing")
   }
 
   /** How much paint the round has: every cell's intensity, summed. */
-  paintMass() {
+  paintMass(): Promise<number> {
     return probe(this.#page, "paintMass")
   }
 
@@ -272,7 +273,7 @@ export class HeadsetScene {
   }
 
   /** Where a hand's tool would land on the globe, if it points at it. */
-  async target(hand: Hand) {
+  async target(hand: Hand): Promise<Vec3 | undefined> {
     return this.#page.evaluate((side) => window.testHooks.vr!.probe.targetOf(side), hand)
   }
 }

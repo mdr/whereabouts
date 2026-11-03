@@ -44,7 +44,7 @@ interface SpectatorRole {
   type: Role.SPECTATOR
 }
 
-type SeatRole = PlayerRole | SpectatorRole
+export type SeatRole = PlayerRole | SpectatorRole
 
 const SPECTATOR_ROLE: SpectatorRole = { type: Role.SPECTATOR }
 

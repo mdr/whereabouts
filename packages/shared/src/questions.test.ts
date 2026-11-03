@@ -82,7 +82,8 @@ describe("the catalogue", () => {
   })
 
   it("names the place in a place's prompt, and not in a landmark's", () => {
-    const prompts = (type: QuestionType) => CATALOGUE.filter((question) => question.type === type).map(promptOf)
+    const prompts = (type: QuestionType): string[] =>
+      CATALOGUE.filter((question) => question.type === type).map(promptOf)
     expect(prompts(QuestionType.PLACE).filter((prompt) => !/^Where (is|are) /.test(prompt))).toEqual([])
     expect(new Set(prompts(QuestionType.LANDMARK))).toEqual(new Set([PHOTO_PROMPT]))
   })

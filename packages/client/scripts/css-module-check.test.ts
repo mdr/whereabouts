@@ -4,7 +4,7 @@ import { composesErrors } from "./css-module-check.mjs"
 
 const KIT = ["overlay", "truncate"]
 
-const check = (css: string, others: Record<string, string[]> = { "../kit.module.css": KIT }) => {
+const check = (css: string, others: Record<string, string[]> = { "../kit.module.css": KIT }): string[] => {
   const { exports } = transform({ filename: "a.module.css", code: new TextEncoder().encode(css), cssModules: true })
   return composesErrors({ file: "a.module.css", css, exports: exports ?? {}, lookup: (specifier) => others[specifier] })
 }

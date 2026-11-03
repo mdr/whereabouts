@@ -58,7 +58,7 @@ export const paintGeometry = (
       ? (c.set(own), 0.12 + 0.78 * Math.min(1, Math.max(0, feature.properties.v)))
       : rampColour(theme, feature.properties.v, c)
     const centre = vi
-    const put = (point: Vector3) => {
+    const put = (point: Vector3): void => {
       point
         .normalize()
         .multiplyScalar(radius)

@@ -92,7 +92,7 @@ export class MapPanel {
 
   /** The middle of the strip of map between the cards at the top and the toolbar. */
   async spotClearOfCards(): Promise<MapSpot> {
-    const bottomOf = async (id: string) => {
+    const bottomOf = async (id: string): Promise<number> => {
       const b = await this.#page.getByTestId(id).boundingBox()
       return b ? b.y + b.height : 0
     }

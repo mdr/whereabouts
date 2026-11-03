@@ -18,7 +18,7 @@ export interface Heartbeat {
 export const startHeartbeat = (ping: () => void, dead: () => void): Heartbeat => {
   let waiting: TimeoutHandle | undefined = undefined
 
-  const check = () => {
+  const check = (): void => {
     if (waiting !== undefined) return
     ping()
     waiting = setTimeout(() => {
@@ -30,17 +30,17 @@ export const startHeartbeat = (ping: () => void, dead: () => void): Heartbeat =>
   const every = setInterval(() => {
     if (document.visibilityState === "visible") check()
   }, PING_EVERY)
-  const onVisible = () => {
+  const onVisible = (): void => {
     if (document.visibilityState === "visible") check()
   }
-  const onPageShow = (event: PageTransitionEvent) => {
+  const onPageShow = (event: PageTransitionEvent): void => {
     if (event.persisted) check()
   }
   document.addEventListener("visibilitychange", onVisible)
   window.addEventListener("online", check)
   window.addEventListener("pageshow", onPageShow)
 
-  const stop = () => {
+  const stop = (): void => {
     clearInterval(every)
     clearTimeout(waiting)
     waiting = undefined

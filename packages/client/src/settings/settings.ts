@@ -1,5 +1,5 @@
 /** Per-browser preferences and identity, persisted where it makes sense. */
-import { effect, signal } from "@preact/signals"
+import { effect, signal, type Signal } from "@preact/signals"
 import { z } from "zod"
 import { DEFAULT_KERNEL, KernelIdSchema } from "@whereabouts/shared/scoring/scoring"
 import { MapDetailSchema, MapDetail } from "@whereabouts/shared/protocol/config"
@@ -20,7 +20,7 @@ const persisted = <S extends z.ZodType>(
   schema: S,
   initial: z.output<S>,
   storage: Storage = localStorage
-) => {
+): Signal<z.output<S>> => {
   let start = initial
   try {
     const parsed = schema.safeParse(storage.getItem(key))
@@ -40,11 +40,11 @@ const persisted = <S extends z.ZodType>(
 }
 
 /** An enum value saved before the enums, in lower case with hyphens, read as its member. */
-const oldEnumValue = <S extends z.ZodType>(schema: S) =>
+const oldEnumValue = <S extends z.ZodType>(schema: S): z.ZodPreprocess<S> =>
   z.preprocess((value) => (typeof value === "string" ? value.toUpperCase().replaceAll("-", "_") : value), schema)
 
 /** Like persisted, for a JSON value; anything unreadable or failing `schema` starts from the initial value. */
-const persistedJson = <S extends z.ZodType>(key: string, schema: S, initial: z.output<S>) => {
+const persistedJson = <S extends z.ZodType>(key: string, schema: S, initial: z.output<S>): Signal<z.output<S>> => {
   let start = initial
   try {
     const raw = localStorage.getItem(key) ?? undefined

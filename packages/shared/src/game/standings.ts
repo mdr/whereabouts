@@ -1,6 +1,6 @@
 /** Totals, ranks and the player list, worked out from the players' scores. */
 import type { PlayerFacts } from "../awards/player-facts.ts"
-import type { PlayerToken } from "../ids.ts"
+import type { PlayerToken, PlayerId, PlayerName } from "../ids.ts"
 import type { Points } from "../units.ts"
 import type { FinalStanding } from "../protocol/views.ts"
 import { Role, type PlayingPlayerView, type SpectatorView } from "../roles.ts"
@@ -49,7 +49,7 @@ export const rosterView = (
   isLocked: (token: PlayerToken) => boolean
 ): { players: PlayingPlayerView[]; spectators: SpectatorView[] } => {
   const playing = seats.filter(isPlayer)
-  const base = (seat: Seat) => ({
+  const base = (seat: Seat): { id: PlayerId; name: PlayerName; connected: boolean; isHost: boolean } => ({
     id: seat.id,
     name: seat.name,
     connected: seat.connected,
