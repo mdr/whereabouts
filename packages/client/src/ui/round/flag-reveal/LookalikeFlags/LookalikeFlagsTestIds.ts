@@ -1,4 +1,4 @@
 export const lookalikeFlagsTestIds = {
-  lookalikes: "FlagReveal.lookalikes",
-  flag: "FlagReveal.lookalikeFlag"
+  lookalikes: "LookalikeFlags.lookalikes",
+  flag: "LookalikeFlags.flag"
 }
