@@ -15,6 +15,20 @@ export enum RefusalReason {
   MESSAGE_RATE_LIMIT = "MESSAGE_RATE_LIMIT"
 }
 
+/** How a server error's kind reads in logs and metric labels. */
+export const SERVER_ERROR_KIND_TEXT: Record<ServerErrorKind, string> = {
+  [ServerErrorKind.TICK_THREW]: "tickThrew",
+  [ServerErrorKind.REQUEST_FAILED]: "requestFailed",
+  [ServerErrorKind.HANDLE_MESSAGE_REJECTED]: "handleMessageRejected"
+}
+
+/** How a refusal's reason reads in logs and metric labels. */
+export const REFUSAL_REASON_TEXT: Record<RefusalReason, string> = {
+  [RefusalReason.ADDRESS_TOO_MANY_OPEN]: "addressTooManyOpen",
+  [RefusalReason.ADDRESS_TOO_FAST]: "addressTooFast",
+  [RefusalReason.MESSAGE_RATE_LIMIT]: "messageRateLimit"
+}
+
 /**
  * The app's own registry, not prom-client's global one, so apps made side by
  * side (in tests) do not share counters. Gauges are read from the games when

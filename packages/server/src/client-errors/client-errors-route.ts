@@ -8,7 +8,8 @@ import { CLIENT_ERRORS_PATH, ClientErrorReportSchema } from "@whereabouts/shared
 import type { Instant } from "@whereabouts/shared/units"
 import { clientAddress } from "../vendor/WSTransport.ts"
 import { KeyedTokenBucket, type BucketLimits } from "./token-bucket.ts"
-import { LogCode, logEvent } from "../telemetry/log-event.ts"
+import { logEvent } from "../telemetry/log-event.ts"
+import { LOG_CODES } from "../telemetry/log-codes.ts"
 import type { Telemetry } from "../telemetry/telemetry.ts"
 
 export interface ClientErrorLimits {
@@ -43,7 +44,7 @@ export const registerClientErrors = (
       if (own.firstRefusal)
         logEvent(
           logger,
-          LogCode.CLIENT_ERROR_RATE_LIMITED,
+          LOG_CODES.clientError.rateLimited,
           `client errors from ${address} limited`,
           { address },
           "warn"
@@ -55,7 +56,7 @@ export const registerClientErrors = (
       if (all.firstRefusal)
         logEvent(
           logger,
-          LogCode.CLIENT_ERROR_RATE_LIMITED,
+          LOG_CODES.clientError.rateLimited,
           `client errors from ${address} limited`,
           { address: EVERYONE },
           "warn"
@@ -69,7 +70,7 @@ export const registerClientErrors = (
     const { build: clientBuild, ...fields } = report.data
     logEvent(
       logger,
-      LogCode.CLIENT_ERROR,
+      LOG_CODES.clientError.reported,
       `client error: ${report.data.kind}`,
       { ...fields, clientBuild, userAgent: request.headers["user-agent"]?.slice(0, USER_AGENT_LENGTH) },
       "warn"

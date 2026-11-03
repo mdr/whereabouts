@@ -17,7 +17,7 @@ const limits = {
 }
 
 const clientErrorEvents = (server: InProcessServer): readonly LogLine[] =>
-  server.logEvents.filter((line) => String(line.code).startsWith("CLIENT_ERROR"))
+  server.logEvents.filter((line) => String(line.code).startsWith("clientError."))
 
 describe("client error reports", () => {
   const it = useInProcessServer({ clientErrorLimits: limits })
@@ -28,7 +28,7 @@ describe("client error reports", () => {
     expect(await server.postClientError({ ...report, stack: "at map.ts:1", room: "ABCD" }, "10.0.0.1")).toBe(204)
     expect(clientErrorEvents(server)).toMatchObject([
       {
-        code: "CLIENT_ERROR",
+        code: "clientError.reported",
         level: "warn",
         kind: report.kind,
         message: report.message,
@@ -52,9 +52,9 @@ describe("client error reports", () => {
     for (let count = 0; count < 5; count++) statuses.push(await server.postClientError(report, "10.0.0.3"))
     expect(statuses).toEqual([204, 204, 204, 204, 204])
     expect(clientErrorEvents(server).map((line) => line.code)).toEqual([
-      "CLIENT_ERROR",
-      "CLIENT_ERROR",
-      "CLIENT_ERROR_RATE_LIMITED"
+      "clientError.reported",
+      "clientError.reported",
+      "clientError.rateLimited"
     ])
   })
 
@@ -62,7 +62,7 @@ describe("client error reports", () => {
     for (const address of ["10.0.1.1", "10.0.1.2", "10.0.1.3", "10.0.1.4", "10.0.1.5"])
       expect(await server.postClientError(report, address)).toBe(204)
     const events = clientErrorEvents(server).map((line) => line.code)
-    expect(events.filter((event) => event === "CLIENT_ERROR")).toHaveLength(3)
-    expect(events.filter((event) => event === "CLIENT_ERROR_RATE_LIMITED")).toHaveLength(1)
+    expect(events.filter((event) => event === "clientError.reported")).toHaveLength(3)
+    expect(events.filter((event) => event === "clientError.rateLimited")).toHaveLength(1)
   })
 })

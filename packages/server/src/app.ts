@@ -15,8 +15,15 @@ import { GameRoom, ROOM_TYPE, gameRoomFor, kickForRestart, type ActorData } from
 import { registerDevPlayers } from "./extra-players/dev-players-route.ts"
 import { registerClientErrors, type ClientErrorLimits } from "./client-errors/client-errors-route.ts"
 import { AddressLimiter, type AddressLimits } from "./address-limiter.ts"
-import { LogCode, logEvent } from "./telemetry/log-event.ts"
-import { RefusalReason, ServerErrorKind, type Metrics } from "./telemetry/metrics.ts"
+import { logEvent } from "./telemetry/log-event.ts"
+import { LOG_CODES } from "./telemetry/log-codes.ts"
+import {
+  REFUSAL_REASON_TEXT,
+  RefusalReason,
+  SERVER_ERROR_KIND_TEXT,
+  ServerErrorKind,
+  type Metrics
+} from "./telemetry/metrics.ts"
 import { serveMetrics, type MetricsServer } from "./telemetry/metrics-server.ts"
 import { pinoLoggingFactory } from "./telemetry/pino-reporter.ts"
 import { requestLogLevel } from "./telemetry/request-log-filter.ts"
@@ -86,10 +93,10 @@ class LoggedRateLimiter extends TokenBucketRateLimiter {
     const ok = super.check(actorId)
     if (!ok && !this.closing.has(actorId)) {
       this.closing.add(actorId)
-      this.telemetry.metrics.connectionsRefused.inc({ reason: RefusalReason.MESSAGE_RATE_LIMIT })
+      this.telemetry.metrics.connectionsRefused.inc({ reason: REFUSAL_REASON_TEXT[RefusalReason.MESSAGE_RATE_LIMIT] })
       logEvent(
         this.telemetry.logger,
-        LogCode.RATE_LIMITED,
+        LOG_CODES.connection.rateLimited,
         `closing ${actorId}: over the message limit`,
         { actorId },
         "warn"
@@ -125,12 +132,12 @@ export const createApp = (options: AppOptions): App => {
   })
   fastify.addHook("onError", (request, _reply, error, done) => {
     if ((error.statusCode ?? 500) >= 500) {
-      telemetry.metrics.serverErrors.inc({ kind: ServerErrorKind.REQUEST_FAILED })
+      telemetry.metrics.serverErrors.inc({ kind: SERVER_ERROR_KIND_TEXT[ServerErrorKind.REQUEST_FAILED] })
       logEvent(
         logger,
-        LogCode.SERVER_ERROR,
+        LOG_CODES.server.error,
         `${request.method} ${request.url} failed`,
-        { kind: ServerErrorKind.REQUEST_FAILED, path: request.url, err: error },
+        { kind: SERVER_ERROR_KIND_TEXT[ServerErrorKind.REQUEST_FAILED], path: request.url, err: error },
         "error"
       )
     }
@@ -142,7 +149,7 @@ export const createApp = (options: AppOptions): App => {
     if (level)
       logEvent(
         logger,
-        LogCode.REQUEST,
+        LOG_CODES.request.completed,
         `${request.method} ${path} ${reply.statusCode}`,
         { method: request.method, path, statusCode: reply.statusCode, responseMs: Math.round(reply.elapsedTime) },
         level
@@ -195,7 +202,8 @@ export const createApp = (options: AppOptions): App => {
     connectionLimiter: new AddressLimiter(telemetry, options.addressLimits),
     ticketSource: "protocol",
     allowedOrigins: options.allowedOrigins ?? (() => true),
-    onHandleMessageRejected: () => telemetry.metrics.serverErrors.inc({ kind: ServerErrorKind.HANDLE_MESSAGE_REJECTED })
+    onHandleMessageRejected: () =>
+      telemetry.metrics.serverErrors.inc({ kind: SERVER_ERROR_KIND_TEXT[ServerErrorKind.HANDLE_MESSAGE_REJECTED] })
   })
   rivalis = new Rivalis<ActorData>({
     transports: [transport],

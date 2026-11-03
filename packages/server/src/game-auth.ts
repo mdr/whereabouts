@@ -1,11 +1,13 @@
 import { AuthMiddleware, type AuthResult, type ConnectionContext, type RoomManager } from "@rivalis/core"
-import { CloseReason } from "@whereabouts/shared/close-reason"
+import { CloseReason, isCloseReason } from "@whereabouts/shared/close-reason"
 import { generateCode } from "@whereabouts/shared/ids"
 import { decodeTicket, GameEntryType } from "@whereabouts/shared/protocol/ticket"
 import { ROOM_TYPE, closeReason, type ActorData } from "./rooms.ts"
-import { LogCode, logEvent } from "./telemetry/log-event.ts"
+import { logEvent } from "./telemetry/log-event.ts"
+import { LOG_CODES } from "./telemetry/log-codes.ts"
 import type { Telemetry } from "./telemetry/telemetry.ts"
 import { TicketRefused } from "./vendor/WSTransport.ts"
+import { CLOSE_REASON_TEXT } from "./telemetry/close-reason-text.ts"
 
 /**
  * Parses the ticket, creates the room for hosts, and routes joiners to their
@@ -27,10 +29,11 @@ export class GameAuth extends AuthMiddleware<ActorData> {
       return this.route(ticket, address)
     } catch (error) {
       if (error instanceof TicketRefused) {
-        this.telemetry.metrics.connectionsRefused.inc({ reason: error.reason })
-        logEvent(this.telemetry.logger, LogCode.CONNECTION_REFUSED, `refused a connection: ${error.reason}`, {
+        const reason = isCloseReason(error.reason) ? CLOSE_REASON_TEXT[error.reason] : error.reason
+        this.telemetry.metrics.connectionsRefused.inc({ reason })
+        logEvent(this.telemetry.logger, LOG_CODES.connection.refused, `refused a connection: ${reason}`, {
           address,
-          reason: error.reason
+          reason
         })
       }
       throw error

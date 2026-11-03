@@ -28,8 +28,10 @@ import outlinesJson from "@whereabouts/shared/outlines.json" with { type: "json"
 import type { Logger } from "pino"
 import { milestones, type GameSnapshot } from "@whereabouts/shared/game/milestones"
 import { readJson, readPaint, type Parsed } from "./inbound.ts"
-import { LogCode, logEvent } from "./telemetry/log-event.ts"
-import { ServerErrorKind } from "./telemetry/metrics.ts"
+import { logEvent } from "./telemetry/log-event.ts"
+import { LOG_CODES } from "./telemetry/log-codes.ts"
+import { SERVER_ERROR_KIND_TEXT, ServerErrorKind } from "./telemetry/metrics.ts"
+import { CLOSE_REASON_TEXT } from "./telemetry/close-reason-text.ts"
 import { recordMilestone } from "./telemetry/record-milestone.ts"
 import type { Telemetry } from "./telemetry/telemetry.ts"
 import type { TimeoutHandle } from "@whereabouts/shared/timeout"
@@ -122,7 +124,7 @@ export class GameRoom extends Room<ActorData> {
   protected override onCreate(): void {
     this.log = this.telemetry.logger.child({ component: "room", room: this.id })
     this.openedAt = deps.clock.now()
-    logEvent(this.log, LogCode.ROOM_OPENED, "room opened")
+    logEvent(this.log, LOG_CODES.room.opened, "room opened")
     this.game = new Game(roomCode(this.id), deps.bank, { config: deps.config })
     this.actorsByToken = new Map()
     this.timer = undefined
@@ -170,10 +172,11 @@ export class GameRoom extends Room<ActorData> {
     const back = this.game.playerTokens.includes(token)
     const result = this.game.join(token, name, deps.clock.now(), role)
     if (!result.ok) {
-      this.telemetry.metrics.connectionsRefused.inc({ reason: result.reason })
-      logEvent(this.log, LogCode.PLAYER_TURNED_AWAY, `${name} turned away: ${result.reason}`, {
+      const reason = CLOSE_REASON_TEXT[result.reason]
+      this.telemetry.metrics.connectionsRefused.inc({ reason })
+      logEvent(this.log, LOG_CODES.player.turnedAway, `${name} turned away: ${reason}`, {
         name,
-        reason: result.reason,
+        reason,
         address
       })
       actor.kick(closeReason(result.reason))
@@ -181,7 +184,7 @@ export class GameRoom extends Room<ActorData> {
     }
     this.telemetry.metrics.playerJoins.inc({ rejoined: String(back) })
     const seat = this.game.identify(token)
-    logEvent(this.log, LogCode.PLAYER_JOINED, `${name} ${back ? "rejoined" : "joined"}`, {
+    logEvent(this.log, LOG_CODES.player.joined, `${name} ${back ? "rejoined" : "joined"}`, {
       playerId: seat?.id,
       name,
       role: seat?.role,
@@ -194,7 +197,7 @@ export class GameRoom extends Room<ActorData> {
 
   protected override onLeave(actor: Actor<ActorData>): void {
     const { token, name } = actor.data!
-    logEvent(this.log, LogCode.PLAYER_LEFT, `${name} left`, { playerId: this.game.identify(token)?.id, name })
+    logEvent(this.log, LOG_CODES.player.left, `${name} left`, { playerId: this.game.identify(token)?.id, name })
     if (this.actorsByToken.get(token) !== actor) return // superseded by a reconnect
     this.actorsByToken.delete(token)
     this.changing(() => this.game.disconnect(token, deps.clock.now()))
@@ -217,7 +220,7 @@ export class GameRoom extends Room<ActorData> {
   }
 
   protected override onDestroy(): void {
-    logEvent(this.log, LogCode.ROOM_CLOSED, "room closed", { openMs: deps.clock.now() - this.openedAt })
+    logEvent(this.log, LOG_CODES.room.closed, "room closed", { openMs: deps.clock.now() - this.openedAt })
     this.clearTimer()
     this.cancelEmptyTimer()
   }
@@ -231,7 +234,7 @@ export class GameRoom extends Room<ActorData> {
     if (!parsed.ok) {
       logEvent(
         this.log,
-        LogCode.BAD_MESSAGE,
+        LOG_CODES.connection.badMessage,
         `${actor.data!.name} sent a bad ${topic}`,
         { name: actor.data!.name, topic, error: parsed.error },
         "warn"
@@ -275,7 +278,7 @@ export class GameRoom extends Room<ActorData> {
     const name = target && this.actorsByToken.get(target)?.data?.name
     const result = this.game.kick(token, playerId, now)
     if (result.ok && target !== undefined) {
-      logEvent(this.log, LogCode.PLAYER_REMOVED, `${name} was removed`, { playerId, name })
+      logEvent(this.log, LOG_CODES.player.removed, `${name} was removed`, { playerId, name })
       this.actorsByToken.get(target)?.kick(closeReason(CloseReason.REMOVED))
     }
     return result
@@ -324,12 +327,12 @@ export class GameRoom extends Room<ActorData> {
           this.broadcastState()
         } else this.armTimer()
       } catch (error) {
-        this.telemetry.metrics.serverErrors.inc({ kind: ServerErrorKind.TICK_THREW })
+        this.telemetry.metrics.serverErrors.inc({ kind: SERVER_ERROR_KIND_TEXT[ServerErrorKind.TICK_THREW] })
         logEvent(
           this.log,
-          LogCode.SERVER_ERROR,
+          LOG_CODES.server.error,
           "a room timer threw",
-          { kind: ServerErrorKind.TICK_THREW, err: error },
+          { kind: SERVER_ERROR_KIND_TEXT[ServerErrorKind.TICK_THREW], err: error },
           "error"
         )
       }

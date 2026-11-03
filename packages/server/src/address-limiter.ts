@@ -6,8 +6,9 @@
  */
 import { ConnectionLimiter } from "@rivalis/core"
 import type { Instant } from "@whereabouts/shared/units"
-import { LogCode, logEvent } from "./telemetry/log-event.ts"
-import { RefusalReason } from "./telemetry/metrics.ts"
+import { logEvent } from "./telemetry/log-event.ts"
+import { LOG_CODES } from "./telemetry/log-codes.ts"
+import { REFUSAL_REASON_TEXT, RefusalReason } from "./telemetry/metrics.ts"
 import type { Telemetry } from "./telemetry/telemetry.ts"
 
 export interface AddressLimits {
@@ -56,13 +57,13 @@ export class AddressLimiter extends ConnectionLimiter {
           ? RefusalReason.ADDRESS_TOO_FAST
           : undefined
     if (why) {
-      this.telemetry.metrics.connectionsRefused.inc({ reason: why })
+      this.telemetry.metrics.connectionsRefused.inc({ reason: REFUSAL_REASON_TEXT[why] })
       if (!entry.refusing)
         logEvent(
           this.telemetry.logger,
-          LogCode.CONNECTION_REFUSED,
+          LOG_CODES.connection.refused,
           `refusing ${address}: ${why}`,
-          { address, reason: why, open: entry.open },
+          { address, reason: REFUSAL_REASON_TEXT[why], open: entry.open },
           "warn"
         )
       entry.refusing = true

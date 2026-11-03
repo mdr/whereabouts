@@ -18,7 +18,7 @@
 
 ## Logs
 
-- Server logs are flat JSON lines through `logEvent`: a `code` from `LogCode`, a short human `msg`, and camelCase fields with units in their names (`openMs`). Errors go in `err`. Never log paint, guesses or tokens; addresses only where a connection is refused.
+- Server logs are flat JSON lines through `logEvent`: a `code` from `LOG_CODES` (constants, not an enum: `LOG_CODES.group.event`, valued `"group.event"`, lowerCamel, grouped by subject), with `kind`/`reason` values in lowerCamel too, a short human `msg`, and camelCase fields with units in their names (`openMs`). Errors go in `err`. Never log paint, guesses or tokens; addresses only where a connection is refused.
 
 ## Folders
 

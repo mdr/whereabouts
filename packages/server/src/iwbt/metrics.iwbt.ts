@@ -31,7 +31,7 @@ describe("metrics", () => {
     expect(text).toContain('whereabouts_games_ended_total{completed="false"} 1\n')
     await expect
       .poll(async () => await server.scrapeMetrics())
-      .toContain('whereabouts_connections_refused_total{reason="FINISHED"} 1\n')
+      .toContain('whereabouts_connections_refused_total{reason="finished"} 1\n')
   })
 
   it("are not on the public service", async ({ server }) => {
