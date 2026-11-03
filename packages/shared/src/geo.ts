@@ -19,6 +19,29 @@ export type MultiPolygon = Polygon[]
 /** West, south, east, north, in degrees. */
 export type Box = [west: Degrees, south: Degrees, east: Degrees, north: Degrees]
 
+/** The box around polygons' outer rings. */
+export const boxAround = (polygons: MultiPolygon): Box => {
+  const points = polygons.flatMap((polygon) => polygon[0]!)
+  const lons = points.map(([lon]) => lon)
+  const lats = points.map(([, lat]) => lat)
+  return [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)]
+}
+
+export const inBox = ([west, south, east, north]: Box, { lat, lon }: LatLon): boolean =>
+  lon >= west && lat >= south && lon <= east && lat <= north
+
+/** Whether a point is inside a polygon: inside an odd number of its rings. */
+export const insidePolygon = (polygon: Polygon, { lat, lon }: LatLon): boolean => {
+  let odd = false
+  for (const ring of polygon)
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [x1, y1] = ring[i]!
+      const [x2, y2] = ring[j]!
+      if (y1 > lat !== y2 > lat && lon < x1 + ((lat - y1) * (x2 - x1)) / (y2 - y1)) odd = !odd
+    }
+  return odd
+}
+
 /** 3D position on the Earth sphere. */
 export type Xyz = readonly [x: Km, y: Km, z: Km]
 

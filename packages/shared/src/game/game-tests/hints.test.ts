@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
-import { ROUND_GRACE } from "../game.ts"
+import { ROUND_GRACE, type Game } from "../game.ts"
 import { viewIn } from "../view-in.ts"
-import { QuestionType } from "../../questions.ts"
+import { QuestionType, type PlaceQuestion } from "../../questions.ts"
 import { mixOf } from "../../protocol/config.ts"
 import { Phase } from "../../protocol/views.ts"
 import { playerName } from "../../ids.ts"
@@ -10,7 +10,7 @@ import { Role, YouRoleType } from "../../roles.ts"
 import { T0, viewOf, tokA, tokB, tokW, makeGame, twoPlayerGame, currentQuestion } from "./support.ts"
 
 describe("hints", () => {
-  const hintGame = () => {
+  const hintGame = (): Game => {
     const game = makeGame({
       config: { mix: mixOf({ [QuestionType.PLACE]: 3 }), hints: 2 }
     })
@@ -18,7 +18,7 @@ describe("hints", () => {
     game.join(tokB, playerName("Bob"), T0)
     return game
   }
-  const inFirstRound = () => {
+  const inFirstRound = (): { game: Game; question: PlaceQuestion } => {
     const game = hintGame()
     game.start(tokA, T0)
     return { game, question: currentQuestion(game, tokA, T0) }

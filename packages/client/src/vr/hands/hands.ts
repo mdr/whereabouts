@@ -22,7 +22,8 @@ export class Hands {
     this.world = world
     this.stroke = new PairedStroke(paint)
     const { gripSpaces, raySpaces } = world.player
-    const tool = (hand: Hand) => new HandTool(gripSpaces[XR_HAND[hand]], raySpaces[XR_HAND[hand]], world.scene, THEME)
+    const tool = (hand: Hand): HandTool =>
+      new HandTool(gripSpaces[XR_HAND[hand]], raySpaces[XR_HAND[hand]], world.scene, THEME)
     this.tools = { [Hand.LEFT]: tool(Hand.LEFT), [Hand.RIGHT]: tool(Hand.RIGHT) }
     this.tools[Hand.LEFT].setTool(Tool.ERASE)
   }

@@ -38,7 +38,8 @@ const AreaAnswerViewSchema = z.strictObject({
   type: z.literal(AnswerType.AREA),
   tolerance: KmSchema,
   outline: OutlineIdSchema,
-  surface: z.enum(Surface)
+  surface: z.enum(Surface),
+  disputed: OutlineIdSchema.optional()
 })
 const AnswerViewSchema = z.discriminatedUnion("type", [PointAnswerViewSchema, AreaAnswerViewSchema])
 

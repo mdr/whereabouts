@@ -70,18 +70,20 @@ describe("the catalogue", () => {
     }
   })
 
-  it("has an outline for every area answer, and none unused", () => {
+  it("has an outline for every area answer and its disputed land, and none unused", () => {
     const used = new Set<string>()
     for (const question of CATALOGUE)
-      if (question.answer.type === AnswerType.AREA) {
-        expect(outlines.get(question.answer.outline)?.length, question.id).toBeGreaterThan(0)
-        used.add(question.answer.outline)
-      }
+      if (question.answer.type === AnswerType.AREA)
+        for (const id of [question.answer.outline, question.answer.disputed ?? []].flat()) {
+          expect(outlines.get(id)?.length, question.id).toBeGreaterThan(0)
+          used.add(id)
+        }
     expect([...outlines.keys()].filter((id) => !used.has(id))).toEqual([])
   })
 
   it("names the place in a place's prompt, and not in a landmark's", () => {
-    const prompts = (type: QuestionType) => CATALOGUE.filter((question) => question.type === type).map(promptOf)
+    const prompts = (type: QuestionType): string[] =>
+      CATALOGUE.filter((question) => question.type === type).map(promptOf)
     expect(prompts(QuestionType.PLACE).filter((prompt) => !/^Where (is|are) /.test(prompt))).toEqual([])
     expect(new Set(prompts(QuestionType.LANDMARK))).toEqual(new Set([PHOTO_PROMPT]))
   })

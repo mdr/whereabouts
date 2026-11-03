@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vite-plus/test"
-import { ROUND_GRACE } from "../game.ts"
+import { ROUND_GRACE, type Game } from "../game.ts"
 import { viewIn } from "../view-in.ts"
 import { Phase } from "../../protocol/views.ts"
 import { playerId } from "../../ids.ts"
 import { petra, T0, viewOf, tokA, tokB, paintAt, paintOn, twoPlayerGame, currentQuestion } from "./support.ts"
 
 describe("awards", () => {
-  const atResults = () => {
+  const atResults = (): { game: Game; now: number } => {
     const game = twoPlayerGame(3)
     game.start(tokA, T0)
     let now = T0

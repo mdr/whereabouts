@@ -19,7 +19,7 @@ const interleave = (candidates: Candidate[]): Candidate[] => {
   return ordered
 }
 
-const hasAny = (set: Set<PlayerId>, ids: PlayerId[]) => ids.some((id) => set.has(id))
+const hasAny = (set: Set<PlayerId>, ids: PlayerId[]): boolean => ids.some((id) => set.has(id))
 
 /** Up to `max`, one each first, then seconds if there are fewer players than awards. */
 const spread = (ordered: Candidate[], max: number): Candidate[] => {

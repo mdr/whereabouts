@@ -27,7 +27,6 @@ import { writeQuestions, type Outlines, type StoredPlace, type StoredQuestion } 
 import {
   MIN_KEPT_SHARE,
   POINT_BELOW_KM2,
-  SIMPLIFY_DEG,
   areaOf,
   cellsOf,
   centroid,
@@ -39,7 +38,7 @@ import {
   polygonAreaKm2,
   polygonsOf,
   regionToleranceKm,
-  simplifyRing,
+  simplified,
   slug
 } from "./outline.ts"
 
@@ -107,11 +106,6 @@ const STATE_NAMES: Record<string, { label: string; name: string; wiki: string }>
   Washington: { label: "Washington State", name: "Washington State", wiki: "Washington (state)" },
   "New York": { label: "New York State", name: "New York State", wiki: "New York (state)" }
 }
-
-const simplified = (polygons: MultiPolygon): MultiPolygon =>
-  polygons
-    .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter((ring) => ring !== undefined))
-    .filter((polygon) => polygon.length > 0)
 
 interface LakeProperties {
   name?: string

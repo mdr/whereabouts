@@ -1,3 +1,3 @@
 export const deviceSwitchesTestIds = {
-  startOnPanSwitch: "Lobby.startOnPanSwitch"
+  startOnPanSwitch: "DeviceSwitches.startOnPanSwitch"
 }

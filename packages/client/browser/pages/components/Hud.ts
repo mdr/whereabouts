@@ -1,5 +1,6 @@
+import { PageObject } from "../steps.ts"
 import { expect } from "@playwright/test"
-import { hudHeaderTestIds } from "../../../src/ui/map/Hud/HudTestIds.ts"
+import { hudTestIds } from "../../../src/ui/map/Hud/HudTestIds.ts"
 import { countdownTestIds } from "../../../src/ui/map/Countdown/CountdownTestIds.ts"
 import { soundToggleTestIds } from "../../../src/ui/map/SoundToggle/SoundToggleTestIds.ts"
 import { questionCardTestIds } from "../../../src/ui/round/question/QuestionCard/QuestionCardTestIds.ts"
@@ -12,10 +13,11 @@ import type { Tab } from "../Tab.ts"
 import type { Ms, Px, Seconds } from "@whereabouts/shared/units"
 
 /** What sits over the map on every game screen: the header strip, the question, the host's End game. */
-export class Hud {
+export class Hud extends PageObject {
   readonly #tab: Tab
 
   constructor(tab: Tab) {
+    super()
     this.#tab = tab
   }
 
@@ -30,7 +32,7 @@ export class Hud {
 
   /** "Round 2 / 3" */
   async expectRound(round: string): Promise<void> {
-    await expect(this.#tab.page.getByTestId(hudHeaderTestIds.round), `the HUD says ${round}`).toHaveText(round)
+    await expect(this.#tab.page.getByTestId(hudTestIds.round), `the HUD says ${round}`).toHaveText(round)
   }
 
   async toggleSound(): Promise<void> {

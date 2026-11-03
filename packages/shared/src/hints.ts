@@ -89,7 +89,7 @@ const cellMeetsBand = (cell: H3Cell, band: HintBand): boolean => {
 /** "Between 23°N and 37°N", "Between 170°E and 165°W". */
 export const describeHint = (band: HintBand): string => {
   const [positive, negative] = band.axis === HintAxis.LATITUDE ? ["N", "S"] : ["E", "W"]
-  const describe = (degrees: Degrees) => {
+  const describe = (degrees: Degrees): string => {
     const magnitude = Math.abs(Math.round(degrees * 10) / 10)
     return magnitude === 0 || magnitude === 180 ? `${magnitude}°` : `${magnitude}°${degrees > 0 ? positive : negative}`
   }

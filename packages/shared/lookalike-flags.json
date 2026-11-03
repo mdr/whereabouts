@@ -1,0 +1,139 @@
+[
+  {
+    "flags": { "id": "Red over white, and longer", "mc": "Red over white, and nearly square", "pl": "White over red" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Indonesia"
+  },
+  {
+    "flags": {
+      "td": "Deep indigo blue, no emblem",
+      "ro": "Brighter blue, no emblem",
+      "ad": "Coat of arms on the yellow",
+      "md": "Eagle emblem, and longer"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Chad"
+  },
+  {
+    "flags": {
+      "ie": "Green at the hoist, then white, orange",
+      "ci": "Orange at the hoist, then white, green",
+      "it": "Green, white, red"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Ivory_Coast"
+  },
+  {
+    "flags": { "it": "Plain green, white, red", "mx": "Eagle emblem on the white, and longer" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Mexico"
+  },
+  {
+    "flags": { "au": "Large white star, five more white stars", "nz": "Four stars, red with white edge" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_New_Zealand"
+  },
+  {
+    "flags": { "no": "Red with a white-edged blue cross", "is": "Blue with a white-edged red cross" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Iceland"
+  },
+  {
+    "flags": { "nl": "Darker red and blue, shorter", "lu": "Light blue and brighter red, longer" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Luxembourg"
+  },
+  {
+    "flags": {
+      "ru": "White, blue, red, no emblem",
+      "si": "Mountain and three stars at the hoist",
+      "sk": "Shield with double cross at the hoist",
+      "rs": "Red, blue, white, with arms"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Slovenia"
+  },
+  {
+    "flags": {
+      "ml": "Green, yellow, red, no star",
+      "gn": "Red, yellow, green, no star",
+      "sn": "Green, yellow, red, green star",
+      "cm": "Green, red, yellow, yellow star"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Mali"
+  },
+  {
+    "flags": {
+      "co": "Yellow half, then blue and red thin",
+      "ec": "Yellow half, with a coat of arms",
+      "ve": "Equal stripes, arc of white stars"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Ecuador"
+  },
+  {
+    "flags": {
+      "eg": "Gold eagle on the white",
+      "sy": "Green on top, three red stars",
+      "iq": "Green Arabic script on the white",
+      "ye": "Plain red, white, black"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Egypt"
+  },
+  {
+    "flags": {
+      "hn": "Five blue stars on the white",
+      "sv": "Coat of arms on the white",
+      "ni": "Light blue, triangle emblem on the white"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Honduras"
+  },
+  {
+    "flags": { "ht": "Blue over red, coat of arms on white panel", "li": "Blue over red, gold crown at the hoist" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Liechtenstein"
+  },
+  {
+    "flags": { "qa": "Maroon with nine white points", "bh": "Red with five white points" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Bahrain"
+  },
+  {
+    "flags": {
+      "us": "Many white stars, thirteen stripes",
+      "lr": "One white star, eleven stripes",
+      "my": "Yellow crescent and star, fourteen stripes"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Liberia"
+  },
+  {
+    "flags": { "tr": "Crescent and star on plain red", "tn": "Crescent and star inside a white disc" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Tunisia"
+  },
+  {
+    "flags": { "at": "Red, white, red, equal bands", "lv": "Darker red, thin white band" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Latvia"
+  },
+  {
+    "flags": {
+      "hu": "Red, white, green from the top",
+      "bg": "White, green, red from the top",
+      "ir": "Green, white, red, red emblem on white"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Bulgaria"
+  },
+  {
+    "flags": {
+      "sd": "Green triangle at the hoist",
+      "jo": "Black top, red triangle with white star",
+      "kw": "Black trapezium at the hoist",
+      "ae": "Red bar at the hoist"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Jordan"
+  },
+  {
+    "flags": { "cn": "Five stars in the corner", "vn": "One big gold star in the centre" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Vietnam"
+  },
+  {
+    "flags": { "cr": "Blue outside, red band in the middle", "th": "Red outside, blue band in the middle" },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Costa_Rica"
+  },
+  {
+    "flags": {
+      "gh": "Red, yellow, green, black star",
+      "bo": "Red, yellow, green, no star",
+      "lt": "Yellow, green, red from the top"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Bolivia"
+  }
+]

@@ -1,0 +1,41 @@
+.lookalikes {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--divider);
+}
+.heading {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.flags {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.flag {
+  display: contents;
+}
+.picture {
+  height: 28px;
+  justify-self: start;
+}
+.text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  font-size: 13px;
+}
+.name {
+  font-weight: 600;
+}
+.answer .name {
+  color: var(--success);
+}
+.tip {
+  color: var(--soft-fg);
+}

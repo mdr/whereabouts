@@ -1,3 +1,3 @@
 export const shortcutsButtonTestIds = {
-  button: "Shortcuts.button"
+  button: "ShortcutsButton.button"
 }

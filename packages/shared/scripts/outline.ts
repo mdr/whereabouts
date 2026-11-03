@@ -18,7 +18,7 @@ interface Part {
 const MIN_PART_KM2 = 1500
 const CHAIN_KM = 500
 const TOLERANCE_FRACTION = 0.2
-export const SIMPLIFY_DEG = 0.015
+const SIMPLIFY_DEG = 0.015
 /** Countries smaller than this are asked as a point: too small to paint the shape of. */
 export const POINT_BELOW_KM2 = 10_000
 /**
@@ -167,6 +167,12 @@ export const centroid = (cells: string[]): LatLon => {
     lon: round4((Math.atan2(y, x) * 180) / Math.PI)
   }
 }
+
+/** An outline as outlines.json keeps it: each ring simplified to SIMPLIFY_DEG, dropping what vanishes. */
+export const simplified = (polygons: MultiPolygon): MultiPolygon =>
+  polygons
+    .map((polygon) => polygon.map((ring) => simplifyRing(ring, SIMPLIFY_DEG)).filter((ring) => ring !== undefined))
+    .filter((polygon) => polygon.length > 0)
 
 /** Douglas-Peucker on a closed ring, in degrees (longitude scaled by cos(lat)). */
 export const simplifyRing = (ring: Ring, epsilon: number): Ring | undefined => {

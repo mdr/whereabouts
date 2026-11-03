@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from "vite-plus/test"
+import { describe, expect, it, vi, type Mock } from "vite-plus/test"
 import { Point, type LngLat } from "maplibre-gl"
 import type { GameMap } from "../map/map"
 import { PaintInput } from "./paint-input"
@@ -7,7 +7,7 @@ import type { PaintModel } from "./paint-model"
 import type { PaintView } from "./paint-view"
 import { Tool } from "./tool"
 
-const setup = () => {
+const setup = (): { input: PaintInput; stamp: Mock; endStroke: Mock; mouse: (name: string, x: number) => void } => {
   const handlers = new Map<string, (event: unknown) => void>()
   const container = document.createElement("div")
   const map = {
@@ -36,7 +36,7 @@ const setup = () => {
   const view = { queue: vi.fn(), cancel: vi.fn() } as unknown as PaintView
   const input = new PaintInput(gameMap, model, view)
   input.enabled.value = true
-  const mouse = (name: string, x: number) =>
+  const mouse = (name: string, x: number): void =>
     handlers.get(name)!({
       point: new Point(x, 0),
       lngLat: { lat: 0, lng: x },

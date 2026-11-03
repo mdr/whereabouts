@@ -1,0 +1,31 @@
+import type { Instant, Ms } from "@whereabouts/shared/units"
+import type { Clock } from "../rooms.ts"
+
+/** Real time plus an offset. Timers fire only when `advance` passes them, so a test decides when deadlines come. */
+export class FakeClock implements Clock {
+  offset: Ms = 0
+  private pending = new Map<number, { at: Instant; fn: () => void }>()
+  private seq = 0
+  now(): Instant {
+    return Date.now() + this.offset
+  }
+  setTimeout(fn: () => void, ms: Ms): number {
+    const id = ++this.seq
+    this.pending.set(id, { at: this.now() + ms, fn })
+    return id
+  }
+  clearTimeout(handle: unknown): void {
+    this.pending.delete(handle as number)
+  }
+  /** Jump forward and fire everything now due, in order. */
+  advance(ms: Ms): void {
+    this.offset += ms
+    const due = [...this.pending.entries()]
+      .filter(([, timer]) => timer.at <= this.now())
+      .sort((a, b) => a[1].at - b[1].at)
+    for (const [id, timer] of due) {
+      this.pending.delete(id)
+      timer.fn()
+    }
+  }
+}

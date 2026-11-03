@@ -13,18 +13,21 @@ import {
   QuestionType,
   answerCentre,
   clueImage,
-  promptOf
+  promptOf,
+  type Question
 } from "../questions.ts"
 
-const byId = (id: string) => CATALOGUE.find((question) => question.id === id)!
-const ofType = (type: QuestionType) => CATALOGUE.filter((question) => question.type === type)
+const byId = (id: string): Question => CATALOGUE.find((question) => question.id === id)!
+const ofType = (type: QuestionType): Question[] => CATALOGUE.filter((question) => question.type === type)
 
 describe("questionView", () => {
   it("never says where the answer is, or what it is called", () => {
     for (const question of CATALOGUE) {
       const view = questionView(question)
       expect(Object.keys(view.answer).sort(), question.id).toEqual(
-        question.answer.type === AnswerType.AREA ? ["outline", "surface", "tolerance", "type"] : ["tolerance", "type"]
+        question.answer.type === AnswerType.AREA
+          ? [...(question.answer.disputed ? ["disputed"] : []), "outline", "surface", "tolerance", "type"]
+          : ["tolerance", "type"]
       )
       expect(JSON.stringify(view), question.id).not.toContain(`"${question.label}"`)
     }

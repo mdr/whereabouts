@@ -22,8 +22,8 @@ import { MAX_LAT } from "../../map/map-geometry"
 import type { Theme } from "../../map/themes"
 import { latLonToLocal, localToLatLon } from "./sphere"
 
-const lonToX = (lon: Degrees, width: number) => ((lon + 180) / 360) * width
-const latToY = (lat: Degrees, height: number) => ((90 - lat) / 180) * height
+const lonToX = (lon: Degrees, width: number): number => ((lon + 180) / 360) * width
+const latToY = (lat: Degrees, height: number): number => ((90 - lat) / 180) * height
 
 /** Trace a ring of [lon, lat] points, and again a world to the left if it runs past 180°. */
 const traceRing = (ctx: CanvasRenderingContext2D, ring: Ring, width: number, height: number): void => {
@@ -112,7 +112,7 @@ export const drawLand = (canvas: HTMLCanvasElement, land: LandMaskData, theme: T
   ctx.lineWidth = 1
   // Each fill's soft edge leaves a faint seam where it meets the next; a
   // thin stroke round it in the same colour closes them.
-  const fill = () => {
+  const fill = (): void => {
     ctx.fill()
     ctx.stroke()
   }

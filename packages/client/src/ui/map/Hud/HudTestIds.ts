@@ -1,8 +1,5 @@
-export const hudHeaderTestIds = {
-  header: "HudHeader.header",
-  round: "HudHeader.round"
-}
-
-export const hudBottomTestIds = {
-  toolbar: "HudBottom.toolbar"
+export const hudTestIds = {
+  header: "Hud.header",
+  round: "Hud.round",
+  toolbar: "Hud.toolbar"
 }

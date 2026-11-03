@@ -2085,6 +2085,19 @@
     "flag": { "code": "cl", "wiki": "Flag of Chile" }
   },
   {
+    "id": "china",
+    "label": "China",
+    "wiki": "China",
+    "area": {
+      "outline": "china-region",
+      "centre": { "lat": 36.6876, "lon": 103.4792 },
+      "tolerance": 345,
+      "surface": "LAND",
+      "disputed": "china-region-disputed"
+    },
+    "flag": { "code": "cn", "wiki": "Flag of China" }
+  },
+  {
     "id": "colombia",
     "label": "Colombia",
     "wiki": "Colombia",
@@ -2409,6 +2422,19 @@
     "flag": { "code": "is", "wiki": "Flag of Iceland" }
   },
   {
+    "id": "india",
+    "label": "India",
+    "wiki": "India",
+    "area": {
+      "outline": "india-region",
+      "centre": { "lat": 22.2664, "lon": 79.3291 },
+      "tolerance": 195,
+      "surface": "LAND",
+      "disputed": "india-region-disputed"
+    },
+    "flag": { "code": "in", "wiki": "Flag of India" }
+  },
+  {
     "id": "indonesia",
     "label": "Indonesia",
     "wiki": "Indonesia",
@@ -2455,6 +2481,19 @@
       "surface": "LAND"
     },
     "flag": { "code": "ie", "wiki": "Flag of Ireland" }
+  },
+  {
+    "id": "israel",
+    "label": "Israel",
+    "wiki": "Israel",
+    "area": {
+      "outline": "israel-region",
+      "centre": { "lat": 31.3279, "lon": 34.9438 },
+      "tolerance": 15,
+      "surface": "LAND",
+      "disputed": "israel-region-disputed"
+    },
+    "flag": { "code": "il", "wiki": "Flag of Israel" }
   },
   {
     "id": "italy",
@@ -2613,6 +2652,19 @@
     "flag": { "code": "mn", "wiki": "Flag of Mongolia" }
   },
   {
+    "id": "morocco",
+    "label": "Morocco",
+    "wiki": "Morocco",
+    "area": {
+      "outline": "morocco-region",
+      "centre": { "lat": 31.8651, "lon": -6.4091 },
+      "tolerance": 70,
+      "surface": "LAND",
+      "disputed": "morocco-region-disputed"
+    },
+    "flag": { "code": "ma", "wiki": "Flag of Morocco" }
+  },
+  {
     "id": "mozambique",
     "label": "Mozambique",
     "wiki": "Mozambique",
@@ -2745,6 +2797,19 @@
     "flag": { "code": "no", "wiki": "Flag of Norway" }
   },
   {
+    "id": "pakistan",
+    "label": "Pakistan",
+    "wiki": "Pakistan",
+    "area": {
+      "outline": "pakistan-region",
+      "centre": { "lat": 29.3273, "lon": 68.6614 },
+      "tolerance": 100,
+      "surface": "LAND",
+      "disputed": "pakistan-region-disputed"
+    },
+    "flag": { "code": "pk", "wiki": "Flag of Pakistan" }
+  },
+  {
     "id": "panama",
     "label": "Panama",
     "wiki": "Panama",
@@ -2817,6 +2882,19 @@
     "flag": { "code": "pt", "wiki": "Flag of Portugal" }
   },
   {
+    "id": "serbia",
+    "label": "Serbia",
+    "wiki": "Serbia",
+    "area": {
+      "outline": "serbia-region",
+      "centre": { "lat": 44.211, "lon": 20.8059 },
+      "tolerance": 30,
+      "surface": "LAND",
+      "disputed": "serbia-region-disputed"
+    },
+    "flag": { "code": "rs", "wiki": "Flag of Serbia" }
+  },
+  {
     "id": "republic-of-the-congo",
     "label": "Republic of the Congo",
     "wiki": "Republic of the Congo",
@@ -2887,6 +2965,19 @@
       "surface": "LAND"
     },
     "flag": { "code": "si", "wiki": "Flag of Slovenia" }
+  },
+  {
+    "id": "somalia",
+    "label": "Somalia",
+    "wiki": "Somalia",
+    "area": {
+      "outline": "somalia-region",
+      "centre": { "lat": 4.7397, "lon": 45.6792 },
+      "tolerance": 80,
+      "surface": "LAND",
+      "disputed": "somalia-region-disputed"
+    },
+    "flag": { "code": "so", "wiki": "Flag of Somalia" }
   },
   {
     "id": "south-africa",
@@ -3069,6 +3160,19 @@
     "flag": { "code": "ug", "wiki": "Flag of Uganda" }
   },
   {
+    "id": "ukraine",
+    "label": "Ukraine",
+    "wiki": "Ukraine",
+    "area": {
+      "outline": "ukraine-region",
+      "centre": { "lat": 49.2246, "lon": 31.0814 },
+      "tolerance": 85,
+      "surface": "LAND",
+      "disputed": "ukraine-region-disputed"
+    },
+    "flag": { "code": "ua", "wiki": "Flag of Ukraine" }
+  },
+  {
     "id": "united-arab-emirates",
     "label": "United Arab Emirates",
     "wiki": "United Arab Emirates",
@@ -3208,13 +3312,6 @@
     "flag": { "code": "ag", "wiki": "Flag of Antigua and Barbuda" }
   },
   {
-    "id": "china",
-    "label": "China",
-    "wiki": "China",
-    "at": { "lat": 36.6913, "lon": 103.4233 },
-    "flag": { "code": "cn", "wiki": "Flag of China" }
-  },
-  {
     "id": "dominica",
     "label": "Dominica",
     "wiki": "Dominica",
@@ -3227,41 +3324,6 @@
     "wiki": "Grenada",
     "at": { "lat": 12.1132, "lon": -61.6805 },
     "flag": { "code": "gd", "wiki": "Flag of Grenada" }
-  },
-  {
-    "id": "india",
-    "label": "India",
-    "wiki": "India",
-    "at": { "lat": 22.7434, "lon": 79.5226 },
-    "flag": { "code": "in", "wiki": "Flag of India" }
-  },
-  {
-    "id": "israel",
-    "label": "Israel",
-    "wiki": "Israel",
-    "at": { "lat": 31.3608, "lon": 34.9657 },
-    "flag": { "code": "il", "wiki": "Flag of Israel" }
-  },
-  {
-    "id": "morocco",
-    "label": "Morocco",
-    "wiki": "Morocco",
-    "at": { "lat": 29.7942, "lon": -8.743 },
-    "flag": { "code": "ma", "wiki": "Flag of Morocco" }
-  },
-  {
-    "id": "pakistan",
-    "label": "Pakistan",
-    "wiki": "Pakistan",
-    "at": { "lat": 29.8932, "lon": 69.1921 },
-    "flag": { "code": "pk", "wiki": "Flag of Pakistan" }
-  },
-  {
-    "id": "serbia",
-    "label": "Serbia",
-    "wiki": "Serbia",
-    "at": { "lat": 44.1089, "lon": 20.8677 },
-    "flag": { "code": "rs", "wiki": "Flag of Serbia" }
   },
   {
     "id": "russia",
@@ -3290,20 +3352,6 @@
     "wiki": "Saint Vincent and the Grenadines",
     "at": { "lat": 13.2541, "lon": -61.1958 },
     "flag": { "code": "vc", "wiki": "Flag of Saint Vincent and the Grenadines" }
-  },
-  {
-    "id": "somalia",
-    "label": "Somalia",
-    "wiki": "Somalia",
-    "at": { "lat": 4.7354, "lon": 45.6666 },
-    "flag": { "code": "so", "wiki": "Flag of Somalia" }
-  },
-  {
-    "id": "ukraine",
-    "label": "Ukraine",
-    "wiki": "Ukraine",
-    "at": { "lat": 49.1592, "lon": 31.3225 },
-    "flag": { "code": "ua", "wiki": "Flag of Ukraine" }
   },
   {
     "id": "united-states",

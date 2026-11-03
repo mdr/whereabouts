@@ -1,4 +1,4 @@
 export const roundsTestIds = {
-  playedRound: "Results.playedRound",
-  everyoneToggle: "Results.everyoneToggle"
+  playedRound: "Rounds.playedRound",
+  everyoneToggle: "Rounds.everyoneToggle"
 }

@@ -5,7 +5,7 @@ import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/tick
 import { Role } from "@whereabouts/shared/roles"
 import { navigate, parseRoute, route, RouteType } from "./router"
 
-const gameAt = (entry: GameEntry) => ({ type: RouteType.GAME, entry })
+const gameAt = (entry: GameEntry): { type: RouteType; entry: GameEntry } => ({ type: RouteType.GAME, entry })
 const join = (code: string): GameEntry => ({ type: GameEntryType.JOIN, code: roomCode(code), role: Role.PLAYER })
 const host = (code?: string): GameEntry => ({ type: GameEntryType.HOST, ...(code ? { code: roomCode(code) } : {}) })
 

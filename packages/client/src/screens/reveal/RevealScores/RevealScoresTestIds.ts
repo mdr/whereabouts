@@ -1,5 +1,5 @@
 export const revealScoresTestIds = {
-  scoresList: "Reveal.scoresList",
-  everyoneRow: "Reveal.everyoneRow",
-  hidePaintRow: "Reveal.hidePaintRow"
+  scoresList: "RevealScores.scoresList",
+  everyoneRow: "RevealScores.everyoneRow",
+  hidePaintRow: "RevealScores.hidePaintRow"
 }

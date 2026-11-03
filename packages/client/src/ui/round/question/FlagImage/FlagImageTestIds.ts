@@ -1,3 +1,3 @@
 export const flagImageTestIds = {
-  flag: "QuestionCard.flag"
+  flag: "FlagImage.flag"
 }

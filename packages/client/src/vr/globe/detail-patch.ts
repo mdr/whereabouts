@@ -23,7 +23,7 @@ const FADE = 0.12
 /** How often to look for the map having finished, while it waits for tiles. */
 const POLL: Seconds = 0.25
 
-const mercY = (lat: Degrees) => Math.log(Math.tan(Math.PI / 4 + toRadians(lat) / 2))
+const mercY = (lat: Degrees): number => Math.log(Math.tan(Math.PI / 4 + toRadians(lat) / 2))
 const mercLat = (y: number): Degrees => toDegrees(2 * Math.atan(Math.exp(y)) - Math.PI / 2)
 
 export class DetailPatch {

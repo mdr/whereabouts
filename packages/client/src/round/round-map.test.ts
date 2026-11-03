@@ -1,20 +1,26 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi } from "vite-plus/test"
-import { renderHook } from "@testing-library/preact"
+import { afterEach, describe, expect, it, vi, type Mock } from "vite-plus/test"
+import { renderHook, type RenderHookResult } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { HintAxis, type HintBand } from "@whereabouts/shared/hints"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { type QuestionView } from "@whereabouts/shared/protocol/views"
-import { useFillTool } from "../paint/fill"
+import { useFillTool } from "../paint/fill-tool"
+import { FillType } from "../paint/fill-target"
+import { FeatureType } from "@whereabouts/shared/questions"
 import { useRoundMap, type RoundPaint } from "./round"
 import { startOnPan } from "../settings/settings"
 import { RevealDetail } from "../map/shown-detail"
-import { makeCountryQuestionView, makeQuestionView, makeStateQuestionView } from "../test-view"
+import { makeCountryQuestionView, makeFeatureQuestionView, makeQuestionView, makeStateQuestionView } from "../test-view"
 import { Tool } from "../paint/tool"
 
-vi.mock("../paint/fill", () => ({ useFillTool: vi.fn() }))
+vi.mock("../paint/fill-tool", () => ({ useFillTool: vi.fn() }))
 
-const makePaint = () =>
+interface MockPaint extends RoundPaint {
+  reset: Mock
+}
+
+const makePaint = (): MockPaint =>
   ({
     reset: vi.fn(),
     tool: signal(Tool.PAN),
@@ -37,7 +43,14 @@ interface Props {
   hint?: HintBand
 }
 
-const setup = (over: Partial<Props> = {}) => {
+interface Setup {
+  paint: MockPaint
+  start: Mock
+  hook: RenderHookResult<void, Props>
+  update: (change: Partial<Props>) => void
+}
+
+const setup = (over: Partial<Props> = {}): Setup => {
   const paint = makePaint()
   const start = vi.fn()
   let props: Props = {
@@ -51,7 +64,7 @@ const setup = (over: Partial<Props> = {}) => {
   const hook = renderHook((hookProps: Props) => useRoundMap(paint, { ...hookProps, hint: hookProps.hint, start }), {
     initialProps: props
   })
-  const update = (change: Partial<Props>) => {
+  const update = (change: Partial<Props>): void => {
     props = { ...props, ...change }
     hook.rerender(props)
   }
@@ -95,15 +108,18 @@ describe("useRoundMap", () => {
     expect(setup().paint.tool.value).toBe(Tool.PAN)
   })
 
-  it("offers the Fill tool for a country on a map with borders, and only there", () => {
-    const offered = (over: Partial<Props>) => {
+  it("offers the Fill tool for a country on a map with borders, or an island, and only there", () => {
+    const offered = (over: Partial<Props>): FillType | undefined => {
       vi.mocked(useFillTool).mockClear()
       setup(over).hook.unmount()
       return vi.mocked(useFillTool).mock.calls.at(-1)?.[1]
     }
-    expect(offered({ question: country })).toBe(true)
-    expect(offered({ question: country, detail: MapDetail.PHYSICAL })).toBe(false)
-    expect(offered({})).toBe(false)
+    expect(offered({ question: country })).toBe(FillType.COUNTRY)
+    expect(offered({ question: country, detail: MapDetail.PHYSICAL })).toBeUndefined()
+    const island = makeFeatureQuestionView(FeatureType.ISLAND, "island-borneo")
+    expect(offered({ question: island, detail: MapDetail.PHYSICAL })).toBe(FillType.ISLAND)
+    expect(offered({ question: makeFeatureQuestionView(FeatureType.LAKE, "lake-victoria") })).toBeUndefined()
+    expect(offered({})).toBeUndefined()
   })
 
   it("shows everything at the reveal, and a state round's states", () => {

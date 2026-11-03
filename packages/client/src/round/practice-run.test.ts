@@ -3,7 +3,7 @@ import { outlineId, placeId, questionId, wikiTitle } from "@whereabouts/shared/i
 import { cellArea, cellToLatLng, gridDisk, latLngToCell } from "@whereabouts/shared/h3"
 import { resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { scoredAnswer } from "@whereabouts/shared/scoring/regions"
-import { DEFAULT_KERNEL, PASS_SCORE, buildDistribution } from "@whereabouts/shared/scoring/scoring"
+import { DEFAULT_KERNEL, PASS_SCORE, buildDistribution, type Distribution } from "@whereabouts/shared/scoring/scoring"
 import { RevealedShapeType } from "./revealed-shape"
 import {
   AnswerType,
@@ -44,7 +44,7 @@ const makePlace = (id: string, at: LatLon = { lat: 35, lon: 135.8 }): PlaceQuest
 const POOL = ["kyoto", "lima", "oslo"].map((id) => makePlace(id))
 
 /** Paint packed round `at`, at the question's painting resolution. */
-const blob = (at: LatLon) => {
+const blob = (at: LatLon): Distribution => {
   const h3 = latLngToCell(at.lat, at.lon, resolutionForTolerance(50))
   return buildDistribution(
     gridDisk(h3, 2).map((cell) => {

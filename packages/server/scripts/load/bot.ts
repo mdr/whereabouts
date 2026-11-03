@@ -63,7 +63,7 @@ export class Bot {
     })
   }
 
-  connect(entry: GameEntry) {
+  connect(entry: GameEntry): void {
     const token = playerToken(`${this.name}-load-token-0123456789abcdef`)
     this.client.connect(encodeTicket({ v: PROTOCOL_VERSION, token, name: playerName(this.name), entry }))
     // A ping still unanswered is skipped rather than overlapped, so a stall shows as one long round trip.
@@ -74,11 +74,11 @@ export class Bot {
     }, PING_INTERVAL_MS)
   }
 
-  send<K extends JsonTopic>(...[topic, body]: ClientSend<K>) {
+  send<K extends JsonTopic>(...[topic, body]: ClientSend<K>): void {
     this.client.send(topic, JSON.stringify(body ?? {}))
   }
 
-  sendPaint(bytes: Uint8Array) {
+  sendPaint(bytes: Uint8Array): void {
     this.client.send(ClientTopic.PAINT, bytes)
   }
 
@@ -92,7 +92,7 @@ export class Bot {
     throw new Error(`${this.name}: gave up after ${ms} ms waiting for ${what}`)
   }
 
-  disconnect() {
+  disconnect(): void {
     clearInterval(this.pinger)
     this.client.disconnect()
   }

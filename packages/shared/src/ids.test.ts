@@ -20,7 +20,7 @@ describe("identifiers", () => {
   it("come out of the wire schemas checked", () => {
     expect(KickSchema.safeParse({ playerId: "p2" }).success).toBe(true)
     expect(KickSchema.safeParse({ playerId: "0123456789abcdef" }).success).toBe(false)
-    const ticket = (code: string) =>
+    const ticket = (code: string): string =>
       encodeTicket({
         v: PROTOCOL_VERSION,
         token: "0123456789abcdef",

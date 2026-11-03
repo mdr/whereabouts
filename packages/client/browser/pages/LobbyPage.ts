@@ -1,4 +1,4 @@
-import { expect } from "@playwright/test"
+import { expect, type Locator } from "@playwright/test"
 import { QUESTION_TYPES, type QuestionType } from "@whereabouts/shared/questions"
 import { lobbyTestIds } from "../../src/screens/lobby/Lobby/LobbyTestIds.ts"
 import { invitePanelTestIds } from "../../src/screens/lobby/invite/InvitePanel/InvitePanelTestIds.ts"
@@ -70,7 +70,7 @@ export class LobbyPage extends Screen {
 
   /** A guest's view of the setup the host chose. */
   async expectSetupSummary(expected: SetupSummary): Promise<void> {
-    const tile = (id: string) => this.page.getByTestId(id).getByTestId(setupSummaryTestIds.tileValue)
+    const tile = (id: string): Locator => this.page.getByTestId(id).getByTestId(setupSummaryTestIds.tileValue)
     await expect(tile(setupSummaryTestIds.rounds), `the setup shows ${expected.rounds} rounds`).toHaveText(
       expected.rounds
     )

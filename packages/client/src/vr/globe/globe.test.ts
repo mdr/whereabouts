@@ -21,7 +21,7 @@ const placed = (): Globe => {
 }
 
 /** North stays in the upright plane through the eye: the globe never rolls. */
-const expectNoRoll = (globe: Globe) => {
+const expectNoRoll = (globe: Globe): void => {
   const north = new Vector3(0, 1, 0).applyQuaternion(globe.group.quaternion)
   const toEye = eye.clone().sub(globe.centre).normalize()
   const side = new Vector3().crossVectors(toEye, new Vector3(0, 1, 0)).normalize()
@@ -63,7 +63,7 @@ describe("the VR globe", () => {
     // Gripped up and off to one side, the hands then drawn apart.
     const mid = globe.centre.clone().add(new Vector3(0.12, 0.14, 0.12))
     const across = new Vector3(1, 0, 0)
-    const hands = (apart: number) => ({
+    const hands = (apart: number): Record<Hand, Vector3> => ({
       [Hand.LEFT]: mid.clone().addScaledVector(across, -apart / 2),
       [Hand.RIGHT]: mid.clone().addScaledVector(across, apart / 2)
     })

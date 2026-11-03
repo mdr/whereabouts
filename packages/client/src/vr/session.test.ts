@@ -1,11 +1,18 @@
 // @vitest-environment happy-dom
 import { SessionMode, VisibilityState } from "@iwsdk/core"
-import { signal } from "@preact/signals"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
+import { signal, type Signal } from "@preact/signals"
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vite-plus/test"
 import { headsetPassthrough } from "../settings/settings"
 import { HeadsetSession, SWITCH_TIMEOUT } from "./session"
 
-const makeSession = () => {
+interface MadeSession {
+  session: HeadsetSession
+  visibilityState: Signal<VisibilityState>
+  world: { visibilityState: Signal<VisibilityState>; launchXR: Mock; exitXR: Mock }
+  hooks: { launching: Mock; ended: Mock }
+}
+
+const makeSession = (): MadeSession => {
   const visibilityState = signal(VisibilityState.NonImmersive)
   const world = { visibilityState, launchXR: vi.fn(), exitXR: vi.fn() }
   const hooks = { launching: vi.fn(), ended: vi.fn() }
@@ -13,7 +20,7 @@ const makeSession = () => {
   return { session, visibilityState, world, hooks }
 }
 
-const makeImmersive = () => {
+const makeImmersive = (): MadeSession => {
   const made = makeSession()
   made.visibilityState.value = VisibilityState.Visible
   return made

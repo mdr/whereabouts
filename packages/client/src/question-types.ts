@@ -1,5 +1,5 @@
 import type { CssColour } from "@whereabouts/shared/colours"
-import { QuestionType } from "@whereabouts/shared/questions"
+import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 
 /** How a type of question is named and coloured wherever the client shows one. */
 interface QuestionTypeDisplayInfo {
@@ -71,3 +71,17 @@ export const QUESTION_TYPE_DISPLAY_INFO: Record<QuestionType, QuestionTypeDispla
 export const questionTypeColourStyle = (type: QuestionType): { "--question-type-colour": CssColour } => ({
   "--question-type-colour": QUESTION_TYPE_DISPLAY_INFO[type].colour
 })
+
+/** How an island, lake or sea round names what it asks about. */
+interface FeatureTypeDisplayInfo {
+  /** On the final results, e.g. "Island". */
+  roundName: string
+  /** In a sentence, e.g. "Cover the whole island". */
+  noun: string
+}
+
+export const FEATURE_TYPE_DISPLAY_INFO: Record<FeatureType, FeatureTypeDisplayInfo> = {
+  [FeatureType.ISLAND]: { roundName: "Island", noun: "island" },
+  [FeatureType.LAKE]: { roundName: "Lake", noun: "lake" },
+  [FeatureType.SEA]: { roundName: "Sea", noun: "sea" }
+}

@@ -1,4 +1,5 @@
-import { expect, type Page } from "@playwright/test"
+import { PageObject } from "../steps.ts"
+import { expect, type Page, type Locator } from "@playwright/test"
 import type { Ms } from "@whereabouts/shared/units"
 import type { Vec3 } from "../../../src/vr/probe.ts"
 import { Controllers } from "./Controllers.ts"
@@ -15,7 +16,7 @@ import { probe } from "./probe.ts"
  * browser can open a VR session and the script can move the controllers
  * and press their buttons. Install before the page loads.
  */
-export class Headset {
+export class Headset extends PageObject {
   readonly #page: Page
   readonly controllers: Controllers
   readonly scene: HeadsetScene
@@ -27,6 +28,7 @@ export class Headset {
   }
 
   constructor(page: Page) {
+    super()
     this.#page = page
     this.controllers = new Controllers(page, (n) => this.frames(n))
     this.scene = new HeadsetScene(page)
@@ -59,7 +61,7 @@ export class Headset {
     await this.#vr(vrButtonTestIds.enterButton).click()
   }
 
-  #vr(testId: string) {
+  #vr(testId: string): Locator {
     return this.#page.getByTestId(testId)
   }
 
@@ -98,7 +100,7 @@ export class Headset {
 
   /** The VR scene is not drawn on the page for `duration`. */
   async expectSceneStaysUndrawn(duration: Ms = 500): Promise<void> {
-    const drawn = () => probe(this.#page, "drawn")
+    const drawn = (): Promise<number> => probe(this.#page, "drawn")
     const was = await drawn()
     await stillTrueFor("the VR scene staying undrawn", duration, drawn, (now) => now === was)
   }
@@ -157,7 +159,7 @@ export class Headset {
    * not depend on timing.
    */
   async settle(): Promise<void> {
-    const look = () =>
+    const look = (): Promise<{ frames: number; layout: string; turning: boolean }> =>
       this.#page.evaluate(() => {
         const { frames, probe } = window.testHooks.vr!
         // Millimetres: a smoothed move never quite stops.

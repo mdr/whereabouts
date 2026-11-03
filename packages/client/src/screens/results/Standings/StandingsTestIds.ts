@@ -1,5 +1,5 @@
 export const standingsTestIds = {
-  standingsRow: "Results.standingsRow",
-  place: "Results.place",
-  total: "Results.total"
+  standingsRow: "Standings.standingsRow",
+  place: "Standings.place",
+  total: "Standings.total"
 }

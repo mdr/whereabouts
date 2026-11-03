@@ -19,13 +19,78 @@ const noFixedWaits = [
   }
 ]
 
+const noRawPage = [
+  {
+    selector: String.raw`CallExpression > MemberExpression[property.name=/^(getBy(TestId|Text|Role|Label|Placeholder|Title|AltText)|locator|evaluate|evaluateHandle|\$|\$\$|\$eval|\$\$eval|waitForSelector|route|unroute|routeWebSocket|routeFromHAR)$/]`,
+    message: "Specs go through page objects: add a method to one in browser/pages."
+  },
+  {
+    selector: "MemberExpression[property.name='page']",
+    message: "Specs go through page objects, not the tab's page: add a method to Tab or a page object."
+  }
+]
+
+const browserImports = (
+  extra: { group: string[]; message: string }[]
+): ["error", { paths: { name: string; message: string }[]; patterns: object[] }] => [
+  "error",
+  {
+    paths: [{ name: "h3-js", message: "Import H3 from shared/src/h3.ts, which brands cells and resolutions." }],
+    patterns: [
+      {
+        group: ["**/support.ts"],
+        importNamePattern: "^(check|until)$",
+        message:
+          "Assert through a page object's expect… method, which retries; a boolean check passes or fails on one read."
+      },
+      ...extra
+    ]
+  }
+]
+
+const gameServerImports = [
+  {
+    group: ["**/game-server/*", "**/iwft-tab.ts", "**/in-process-server.ts"],
+    message: "An e2e spec plays on the dev servers' real game server: leave the in-process one to the iwft specs."
+  }
+]
+
+const realServerImports = [
+  {
+    group: ["**/e2e-tab.ts"],
+    message: "An iwft spec plays on the in-process server (the game fixture) or opens no game."
+  }
+]
+
+const noWire = [
+  {
+    selector: "MemberExpression[property.name='wire']",
+    message: "Steps and expectations say what a player does and sees: `wire` is for tests about the protocol itself."
+  }
+]
+
+const noClientMessages = [
+  {
+    group: ["**/client-messages.ts"],
+    message: "A spec says what a player does, through TestPlayer's steps: topics are the protocol's business."
+  }
+]
+
+const h3Path = { name: "h3-js", message: "Import H3 from shared/src/h3.ts, which brands cells and resolutions." }
+
 const noFunctionExpressionConsts = [
   { selector: "VariableDeclarator > FunctionExpression", message: "Use an arrow function: const f = () => {}." }
 ]
 
 export default defineConfig({
   test: {
-    include: ["packages/*/src/**/*.test.{ts,tsx}", "scripts/*.test.ts", "packages/*/scripts/*.test.ts"],
+    include: [
+      "packages/*/src/**/*.test.{ts,tsx}",
+      "packages/server/src/**/*.iwbt.ts",
+      "packages/client/browser/pages/*.test.ts",
+      "scripts/*.test.ts",
+      "packages/*/scripts/*.test.ts"
+    ],
     setupFiles: ["packages/client/src/test-setup.ts"]
   },
   lint: {
@@ -279,6 +344,16 @@ export default defineConfig({
         }
       },
       {
+        // Components (.tsx) infer their return type; see CLAUDE.md.
+        files: ["**/*.ts", "**/*.mts", "**/*.cts"],
+        rules: {
+          "typescript/explicit-function-return-type": [
+            "error",
+            { allowExpressions: true, allowTypedFunctionExpressions: true, allowHigherOrderFunctions: true }
+          ]
+        }
+      },
+      {
         files: ["packages/shared/src/h3.ts"],
         rules: {
           "no-restricted-imports": "off"
@@ -317,25 +392,35 @@ export default defineConfig({
             ...noFunctionExpressionConsts,
             ...noFixedWaits
           ],
-          "no-restricted-imports": [
+          "no-restricted-imports": browserImports([])
+        }
+      },
+      {
+        files: ["packages/client/browser/**/*.e2e.ts"],
+        rules: { "no-restricted-imports": browserImports(gameServerImports) }
+      },
+      {
+        files: ["packages/client/browser/**/*.iwft.ts"],
+        rules: { "no-restricted-imports": browserImports(realServerImports) }
+      },
+      {
+        files: ["**/*.iwbt.ts"],
+        rules: {
+          "eslint-js/no-restricted-syntax": [
             "error",
-            {
-              paths: [
-                {
-                  name: "h3-js",
-                  message: "Import H3 from shared/src/h3.ts, which brands cells and resolutions."
-                }
-              ],
-              patterns: [
-                {
-                  group: ["**/support.ts"],
-                  importNamePattern: "^(check|until)$",
-                  message:
-                    "Assert through a page object's expect… method, which retries; a boolean check passes or fails on one read."
-                }
-              ]
-            }
-          ]
+            ...noNull,
+            ...noReexports,
+            ...noFunctionExpressionConsts,
+            ...noWire
+          ],
+          "no-restricted-imports": ["error", { paths: [h3Path], patterns: noClientMessages }]
+        }
+      },
+      {
+        files: ["**/protocol.iwbt.ts"],
+        rules: {
+          "eslint-js/no-restricted-syntax": ["error", ...noNull, ...noReexports, ...noFunctionExpressionConsts],
+          "no-restricted-imports": ["error", { paths: [h3Path] }]
         }
       },
       {
@@ -415,12 +500,12 @@ export default defineConfig({
         }
       },
       {
-        files: ["**/*.test.{ts,tsx}"],
+        files: ["**/*.test.{ts,tsx}", "**/*.iwbt.ts"],
         rules: {
           "vitest/expect-expect": [
             "error",
             {
-              assertFunctionNames: ["expect", "expectTypeOf", "*.until", "*.untilLatest"]
+              assertFunctionNames: ["expect", "expectTypeOf", "expect*", "*.expect*", "*.until*"]
             }
           ],
           "vitest/no-commented-out-tests": "error",
@@ -451,10 +536,35 @@ export default defineConfig({
         plugins: ["vitest"]
       },
       {
-        files: ["**/*.test.{ts,tsx}", "packages/client/browser/**/*.spec.ts"],
+        // The plugin does not see the `it` that useInProcessServer returns as a test.
+        files: ["**/*.iwbt.ts"],
+        rules: { "vitest/no-standalone-expect": "off" },
+        plugins: ["vitest"]
+      },
+      {
+        files: ["**/*.test.{ts,tsx}", "**/*.iwbt.ts", "packages/client/browser/**/*.{iwft,e2e}.ts"],
         rules: {
           "max-lines": ["error", { max: 600, skipBlankLines: true, skipComments: true }],
           "sonarjs/cognitive-complexity": "off"
+        }
+      },
+      {
+        files: ["packages/client/browser/tests/**/*.ts"],
+        rules: {
+          "eslint-js/no-restricted-syntax": [
+            "error",
+            ...noNull,
+            ...noReexports,
+            ...noFunctionExpressionConsts,
+            ...noFixedWaits,
+            ...noRawPage
+          ]
+        }
+      },
+      {
+        files: ["**/*TestIds.ts"],
+        rules: {
+          "test-ids/test-id-file": "error"
         }
       },
       {
@@ -472,7 +582,8 @@ export default defineConfig({
       },
       { name: "eslint-js", specifier: "oxlint-plugin-eslint" },
       { name: "sonarjs", specifier: "eslint-plugin-sonarjs" },
-      { name: "folders", specifier: "./lint/folder-size.ts" }
+      { name: "folders", specifier: "./lint/folder-size.ts" },
+      { name: "test-ids", specifier: "./lint/test-ids.ts" }
     ]
   },
   fmt: {

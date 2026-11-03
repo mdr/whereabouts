@@ -1,21 +1,7 @@
 import { expectPolled, stillTrueFor } from "../pages/support.ts"
 import type { Ms } from "@whereabouts/shared/units"
+import type { SoundEvent } from "../pages/SoundEvent.ts"
 import type { Tab } from "../pages/Tab.ts"
-
-export interface SoundEvent {
-  kind: "buffer" | "stop" | "osc"
-  /** A recorded clip, known by its length. */
-  clip?: string
-  freq?: number
-  /** performance.now() in the page. */
-  at: number
-}
-
-declare global {
-  interface Window {
-    __audio: SoundEvent[]
-  }
-}
 
 /**
  * Runs in the page before the app: records each Web Audio source started or
@@ -24,7 +10,7 @@ declare global {
 /* oxlint-disable typescript/unbound-method -- each original is applied with the node as this */
 export const recordSounds = (): void => {
   window.__audio = []
-  const log = (event: Omit<SoundEvent, "at">) => window.__audio.push({ ...event, at: performance.now() })
+  const log = (event: Omit<SoundEvent, "at">): number => window.__audio.push({ ...event, at: performance.now() })
   // Decoded lengths can differ by a frame or two.
   const LENGTHS: Record<string, number> = {
     spray: 26.38,
@@ -34,7 +20,7 @@ export const recordSounds = (): void => {
     clear: 0.45,
     applause: 2.89
   }
-  const clipOf = (buffer: AudioBuffer | undefined) =>
+  const clipOf = (buffer: AudioBuffer | undefined): string | undefined =>
     !buffer
       ? undefined
       : (Object.entries(LENGTHS).find(([, length]) => Math.abs(buffer.duration - length) < 0.06)?.[0] ?? "other")
@@ -57,7 +43,7 @@ export const recordSounds = (): void => {
 /* oxlint-enable typescript/unbound-method */
 
 /** The page clock, to time sounds against. */
-export const pageTime = (tab: Tab): Promise<number> => tab.page.evaluate(() => performance.now())
+export const pageTime = (tab: Tab): Promise<number> => tab.pageTime()
 
 const clipsPlayed = (events: SoundEvent[]): string[] =>
   events.filter((event) => event.kind === "buffer").map((event) => event.clip ?? "")
@@ -87,7 +73,7 @@ export class Sounds {
   }
 
   async #drain(): Promise<void> {
-    const fresh = await this.#tab.page.evaluate(() => window.__audio.splice(0))
+    const fresh = await this.#tab.drainRecordedSounds()
     for (const events of this.#windows) events.push(...fresh)
   }
 }
@@ -102,7 +88,12 @@ class Listening {
     this.#drain = drain
   }
 
-  async #expect<T>(message: string, wanted: string, view: (events: SoundEvent[]) => T, ok: (value: T) => boolean) {
+  async #expect<T>(
+    message: string,
+    wanted: string,
+    view: (events: SoundEvent[]) => T,
+    ok: (value: T) => boolean
+  ): Promise<void> {
     await expectPolled(
       message,
       wanted,
@@ -114,7 +105,12 @@ class Listening {
     )
   }
 
-  async #expectHolds<T>(what: string, duration: Ms, view: (events: SoundEvent[]) => T, ok: (value: T) => boolean) {
+  async #expectHolds<T>(
+    what: string,
+    duration: Ms,
+    view: (events: SoundEvent[]) => T,
+    ok: (value: T) => boolean
+  ): Promise<void> {
     await stillTrueFor(
       what,
       duration,

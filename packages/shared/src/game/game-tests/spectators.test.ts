@@ -4,7 +4,7 @@ import { viewIn } from "../view-in.ts"
 import { MAX_PLAYERS } from "../../protocol/config.ts"
 import { Phase } from "../../protocol/views.ts"
 import { playerName, roomCode } from "../../ids.ts"
-import { Role, YouRoleType, everyone } from "../../roles.ts"
+import { Role, YouRoleType, everyone, type PlayerView } from "../../roles.ts"
 import {
   T0,
   tok,
@@ -19,6 +19,7 @@ import {
   twoPlayerGame,
   currentQuestion
 } from "./support.ts"
+import type { PlaceQuestion } from "../../questions.ts"
 
 describe("spectators", () => {
   const T1 = T0 + 60_000
@@ -27,7 +28,7 @@ describe("spectators", () => {
     expect(game.join(tokS, playerName("Sam"), T0 + 2, Role.SPECTATOR).ok).toBe(true)
     return game
   }
-  const sam = (game: Game) => everyone(viewOf(game, tokA, T0)).find((player) => player.name === "Sam")!
+  const sam = (game: Game): PlayerView => everyone(viewOf(game, tokA, T0)).find((player) => player.name === "Sam")!
 
   it("joins to watch when asked, listed apart from the players, with no colour, score or rank", () => {
     const game = withSpectator()
@@ -40,12 +41,12 @@ describe("spectators", () => {
   })
 
   describe("in a game with players", () => {
-    const inRound = () => {
+    const inRound = (): { game: Game; question: PlaceQuestion } => {
       const game = withSpectator()
       game.start(tokA, T0)
       return { game, question: currentQuestion(game, tokA, T0) }
     }
-    const atReveal = () => {
+    const atReveal = (): Game => {
       const { game } = inRound()
       game.lock(tokA, T0 + 1)
       game.lock(tokB, T0 + 2)

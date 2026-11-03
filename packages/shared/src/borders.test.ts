@@ -5,10 +5,11 @@ import { Borders } from "./borders.ts"
 import type { PaintCell } from "./paint/paint.ts"
 import { CATALOGUE, isFlagQuestion } from "./catalogue/catalogue.ts"
 import { answerCentre } from "./questions.ts"
+import type { Degrees } from "./units.ts"
 
 const flags = CATALOGUE.filter(isFlagQuestion)
 const borders = new Borders(bordersJson, flags)
-const at = (lat: number, lon: number) => borders.countryAt({ lat, lon })?.label
+const at = (lat: number, lon: number): string | undefined => borders.countryAt({ lat, lon })?.label
 
 const cell = (h3Cell: H3Cell, intensity = 1): PaintCell => {
   const [lat, lon] = cellToLatLng(h3Cell)
@@ -79,7 +80,13 @@ describe("borders", () => {
     const lima = latLngToCell(-12.05, -77.04, h3Resolution(6))
     const sea = latLngToCell(30, -40, h3Resolution(6))
     // Equal areas, so the shares are the intensities': 3 of 5 in France, 1 in Peru, 1 at sea.
-    const even = (h3Cell: H3Cell, value: number) => ({ ...cell(h3Cell, value), area: 1 })
+    const even = (
+      h3Cell: H3Cell,
+      value: number
+    ): { area: number; lat: Degrees; lon: Degrees; intensity: number; h3: H3Cell } => ({
+      ...cell(h3Cell, value),
+      area: 1
+    })
     const split = borders.paintedCountries([even(paris, 3), even(lima, 1), even(sea, 1)])
     expect(split.map((part) => part.country.label)).toEqual(["France", "Peru"])
     expect(split[0]!.share).toBeCloseTo(0.6, 1)

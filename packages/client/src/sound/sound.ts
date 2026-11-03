@@ -352,7 +352,7 @@ let installed = false
 export const installSound = (): void => {
   if (installed || typeof window === "undefined") return
   installed = true
-  const unlock = () => sound.unlock()
+  const unlock = (): void => sound.unlock()
   for (const type of ["pointerdown", "keydown", "touchend"]) {
     window.addEventListener(type, unlock, { capture: true, passive: true })
   }

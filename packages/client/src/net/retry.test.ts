@@ -4,7 +4,7 @@ import { withRetries } from "./retry"
 describe("withRetries", () => {
   it("tries again after each delay, and gives up with the last error", async () => {
     let calls = 0
-    const failing = () => {
+    const failing = (): Promise<never> => {
       calls++
       return Promise.reject(new Error(`try ${calls}`))
     }

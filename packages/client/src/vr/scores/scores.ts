@@ -7,6 +7,7 @@ import {
   RayInteractable,
   Vector3,
   type Entity,
+  type Object3D,
   type UIKitDocument,
   type World
 } from "@iwsdk/core"
@@ -54,7 +55,7 @@ export class ScoreBoard {
     this.entity.object3D!.visible = false
   }
 
-  get object3D() {
+  get object3D(): Object3D {
     return this.entity.object3D!
   }
 
@@ -105,7 +106,7 @@ export class ScoreBoard {
     this.entity.object3D!.visible = table !== undefined
     const doc = this.doc
     if (!doc || !table) return
-    const set = (id: string, props: Record<string, unknown>) => doc.getElementById(id)?.setProperties(props)
+    const set = (id: string, props: Record<string, unknown>): void => doc.getElementById(id)?.setProperties(props)
     set("title", { text: table.title })
     const shown = table.rows.slice(0, TABLE_ROWS)
     for (let i = 0; i < TABLE_ROWS; i++) {

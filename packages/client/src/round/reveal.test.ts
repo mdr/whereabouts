@@ -1,15 +1,24 @@
 import type { Outline } from "@whereabouts/shared/questions"
 import { describe, expect, it } from "vite-plus/test"
 import { playerColour } from "@whereabouts/shared/colours"
-import { placeId, playerId, playerName, wikiTitle } from "@whereabouts/shared/ids"
+import { outlineId, placeId, playerId, playerName, wikiTitle, type PlayerId } from "@whereabouts/shared/ids"
 import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
-import { SHOW_EVERYONE, SHOW_NOBODY, revealedFromView, revealOrder, showPlayer, shownResults } from "./reveal"
-import { makeCountryQuestionView, makePainted, makePlayer, makeQuestionView } from "../test-view"
+import {
+  SHOW_EVERYONE,
+  SHOW_NOBODY,
+  paintFocus,
+  revealedFromView,
+  revealOrder,
+  showPlayer,
+  shownResults
+} from "./reveal"
+import { PaintFocusType } from "../map/paint-focus"
+import { areaAnswerView, makeCountryQuestionView, makePainted, makePlayer, makeQuestionView } from "../test-view"
 import { RevealedShapeType } from "./revealed-shape"
 
 const NAMES = ["alice", "bob", "cara", "dan", "eve", "fay", "sam"]
-const idOf = (name: string) => playerId(`p${NAMES.indexOf(name) + 1}`)
+const idOf = (name: string): PlayerId => playerId(`p${NAMES.indexOf(name) + 1}`)
 
 const player = (name: string, rank: number): PlayingPlayerView =>
   makePlayer({ id: idOf(name), name: playerName(name), rank })
@@ -96,7 +105,7 @@ describe("revealedFromView", () => {
     })
   })
 
-  it("is an area on an area round, with its outline once loaded", () => {
+  it("is an area on an area round, with its outline and disputed land once loaded", () => {
     const outline: Outline = [
       [
         [
@@ -107,8 +116,53 @@ describe("revealedFromView", () => {
         ]
       ]
     ]
+    const disputed: Outline = [
+      [
+        [
+          [1, 0],
+          [2, 0],
+          [2, 1],
+          [1, 0]
+        ]
+      ]
+    ]
+    const outlines = new Map([
+      [outlineId("peru"), outline],
+      [outlineId("peru-disputed"), disputed]
+    ])
     const area = { ...reveal, question: makeCountryQuestionView() }
-    expect(revealedFromView(area, outline).shape).toEqual({ type: RevealedShapeType.AREA, outline })
-    expect(revealedFromView(area, undefined).shape).toEqual({ type: RevealedShapeType.AREA, outline: undefined })
+    expect(revealedFromView(area, outlines).shape).toEqual({
+      type: RevealedShapeType.AREA,
+      outline,
+      disputed: undefined
+    })
+    const contested = {
+      ...reveal,
+      question: makeCountryQuestionView({
+        answer: { ...areaAnswerView("peru"), disputed: outlineId("peru-disputed") }
+      })
+    }
+    expect(revealedFromView(contested, outlines).shape).toEqual({ type: RevealedShapeType.AREA, outline, disputed })
+    expect(revealedFromView(area, undefined).shape).toEqual({
+      type: RevealedShapeType.AREA,
+      outline: undefined,
+      disputed: undefined
+    })
+  })
+})
+
+describe("paintFocus", () => {
+  const alice = playerId("p1")
+  const bob = playerId("p2")
+
+  it("shows whoever is chosen", () => {
+    expect(paintFocus(SHOW_EVERYONE, undefined)).toEqual({ type: PaintFocusType.ALL })
+    expect(paintFocus(SHOW_NOBODY, undefined)).toEqual({ type: PaintFocusType.NONE })
+    expect(paintFocus(showPlayer(alice), undefined)).toEqual({ type: PaintFocusType.ONLY, player: alice })
+  })
+
+  it("highlights a hovered player over the rest, whoever is chosen", () => {
+    for (const shown of [SHOW_EVERYONE, SHOW_NOBODY, showPlayer(alice)])
+      expect(paintFocus(shown, bob)).toEqual({ type: PaintFocusType.HIGHLIGHT, player: bob })
   })
 })

@@ -32,6 +32,7 @@ import {
   scoreDistribution,
   type Distribution
 } from "./scoring.ts"
+import type { Points } from "../units.ts"
 
 const OUTLINES = outlinesFrom(outlinesJson)
 const COUNTRIES = CATALOGUE.filter((question) => question.type === QuestionType.COUNTRY)
@@ -51,7 +52,7 @@ const pointOf = (wiki: string): PointAnswer => {
 }
 
 /** An even coat of paint over `cells`, with the usual 5% world floor. */
-const coat = (cells: H3Cell[], floor = 0.05) =>
+const coat = (cells: H3Cell[], floor = 0.05): Distribution =>
   buildDistribution(
     cells.map((cell) => {
       const [lat, lon] = cellToLatLng(cell)
@@ -61,7 +62,7 @@ const coat = (cells: H3Cell[], floor = 0.05) =>
   )
 
 /** Paint a region the way a player would: at the question's painting resolution. */
-const paintRegion = (area: Area) => coat(regionCells(area, resolutionForTolerance(area.tolerance)))
+const paintRegion = (area: Area): Distribution => coat(regionCells(area, resolutionForTolerance(area.tolerance)))
 
 describe("region questions", () => {
   it("are well formed", () => {
@@ -145,11 +146,11 @@ describe("shape and nearness", () => {
   const resolution = resolutionForTolerance(germany.tolerance)
   const cells = regionCells(germany, resolution)
   const poland = regionCells(byId("poland-region"), resolution)
-  const area = (cells: H3Cell[]) => cells.reduce((sum, cell) => sum + cellArea(cell), 0)
-  const score = (d: Distribution) => scoreArea(d, germany).score
+  const area = (cells: H3Cell[]): number => cells.reduce((sum, cell) => sum + cellArea(cell), 0)
+  const score = (d: Distribution): Points => scoreArea(d, germany).score
 
   /** Each part's share of the paint, spread evenly over its cells. */
-  const shares = (parts: [H3Cell[], number][], floor = 0.05) => {
+  const shares = (parts: [H3Cell[], number][], floor = 0.05): Distribution => {
     const density = new Map<H3Cell, number>()
     for (const [cells, share] of parts) {
       const d = share / area(cells)
@@ -164,7 +165,7 @@ describe("shape and nearness", () => {
     )
   }
   /** Germany grown ring by ring until it covers `times` its area. */
-  const grown = (times: number) => {
+  const grown = (times: number): H3Cell[] => {
     const set = new Set(cells)
     let frontier = cells
     while (area([...set]) < times * area(cells)) {
@@ -190,7 +191,7 @@ describe("shape and nearness", () => {
   // of the country's cells and m the paint off it: exact for even coats.
   describe("shape, worked by hand", () => {
     const japan = regionCells(byId("japan-region"), resolution)
-    const shape = (d: Distribution) => scoreArea(d, germany).shape
+    const shape = (d: Distribution): Points => scoreArea(d, germany).shape
 
     it("an exact coat loses only the floor's square: 1000 - 500 f^2", () => {
       expect(shape(coat(cells, 0))).toBeCloseTo(1000, 6)
@@ -262,7 +263,7 @@ describe("shape and nearness", () => {
   it("a faint wash around the country costs more the heavier it is", () => {
     const inside = new Set(cells)
     const ring = grown(4).filter((cell) => !inside.has(cell))
-    const washed = (x: number) =>
+    const washed = (x: number): Points =>
       score(
         shares([
           [cells, area(cells)],
@@ -320,7 +321,8 @@ describe("coarsenDistribution", () => {
     const answer = { lat: 48.8584, lon: 2.2945 }
     const d = coat(regionCells(byId("france-region"), h3Resolution(5)))
     const coarse = coarsenDistribution(d, h3Resolution(4))
-    const mass = (distribution: typeof d) => distribution.points.reduce((sum, p) => sum + p.p, 0) + distribution.floor
+    const mass = (distribution: typeof d): number =>
+      distribution.points.reduce((sum, p) => sum + p.p, 0) + distribution.floor
     expect(mass(coarse)).toBeCloseTo(1, 9)
     expect(coarse.points.length).toBeLessThan(d.points.length / 4)
     for (const tolerance of [60, 150]) {
@@ -369,5 +371,32 @@ describe("scoreAnswer", () => {
     const pass = { score: PASS_SCORE.score, parts: { type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B } }
     expect(scoreAnswer(undefined, place, DEFAULT_KERNEL)).toEqual(pass)
     expect(scoreAnswer(undefined, germany, DEFAULT_KERNEL)).toEqual(pass)
+  })
+})
+
+describe("disputed land", () => {
+  const india = byId("india-region")
+  const resolution = resolutionForTolerance(india.tolerance)
+  const indiaCells = regionCells(india, resolution)
+  const disputedCells = regionCells({ ...india, polygons: india.disputedPolygons! }, resolution)
+
+  it("is cut out of the outline", () => {
+    const outline = new Set(indiaCells)
+    expect(disputedCells.length).toBeGreaterThan(0)
+    expect(disputedCells.some((cell) => outline.has(cell))).toBe(false)
+  })
+
+  it("adds nothing and costs nothing when painted too", () => {
+    const alone = scoreAnswer(coat(indiaCells), india, DEFAULT_KERNEL).score
+    const withDisputed = scoreAnswer(coat([...indiaCells, ...disputedCells]), india, DEFAULT_KERNEL).score
+    expect(withDisputed).toBeCloseTo(alone, 6)
+  })
+
+  it("painted alone, scores as a pass", () => {
+    expect(scoreAnswer(coat(disputedCells), india, DEFAULT_KERNEL).score).toBe(PASS_SCORE.score)
+  })
+
+  it("is not on the fit either", () => {
+    expect(regionFit(coat([...indiaCells, ...disputedCells]), india).precision).toBeCloseTo(1, 6)
   })
 })

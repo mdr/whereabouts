@@ -1,6 +1,6 @@
 /**
- * One player's paint for a round, with its undo history, the countries the
- * Fill tool has filled, and the trims. Knows nothing of the map: the paint
+ * One player's paint for a round, with its undo history, the countries or
+ * islands the Fill tool has filled, and the trims. Knows nothing of the map: the paint
  * controller draws it and feeds it strokes.
  */
 import { batch, computed, signal, type ReadonlySignal } from "@preact/signals"
@@ -10,24 +10,19 @@ import { PaintLayer, resolutionForTolerance } from "@whereabouts/shared/paint/pa
 import { paintAmount, trimLand, trimSea, type LandMask, type WaterMask } from "@whereabouts/shared/paint/land"
 import { trimToHint, type HintBand } from "@whereabouts/shared/hints"
 import { h3Resolution, type H3Cell } from "@whereabouts/shared/h3"
-import type { FlagCode } from "@whereabouts/shared/ids"
-import type { FlagQuestion } from "@whereabouts/shared/questions"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { StrokeTool } from "./tool"
-import type { CountryFiller } from "./fill"
+import type { FillTarget, FillType, Filler } from "./fill-target"
 import type { Km, Ms } from "@whereabouts/shared/units"
 import type { TimeoutHandle } from "@whereabouts/shared/timeout"
 
 const HISTORY_LIMIT = 50
 const SETTLE: Ms = 200
 
-/** The countries the Fill tool works with (see fill.ts). */
-export type Filler = Pick<CountryFiller, "countryAt" | "outline" | "cells">
-
-/** One undo step: the cells, and which countries are filled. */
+/** One undo step: the cells, and what is filled. */
 interface Snapshot {
   cells: Map<H3Cell, number>
-  fills: Map<FlagCode, H3Cell[]>
+  fills: Map<string, H3Cell[]>
 }
 
 /**
@@ -69,18 +64,21 @@ export class PaintModel {
   readonly stroking = signal<StrokeTool | undefined>(undefined)
   /** The current question's tolerance (used by dev tooling). */
   readonly tolerance = signal<Km>(100)
-  private readonly _fillable = signal(false)
-  /** Whether the Fill tool is offered (see `offerFill`). */
-  readonly fillable: ReadonlySignal<boolean> = this._fillable
+  private readonly _fillType = signal<FillType | undefined>(undefined)
+  /** What the Fill tool fills, when it is offered (see `offerFill`). */
+  readonly fillType: ReadonlySignal<FillType | undefined> = this._fillType
+  /** Whether the Fill tool is offered. */
+  readonly fillable: ReadonlySignal<boolean> = computed(() => this._fillType.value !== undefined)
   private readonly _canUndo = signal(false)
   readonly canUndo: ReadonlySignal<boolean> = this._canUndo
   private readonly _canRedo = signal(false)
   readonly canRedo: ReadonlySignal<boolean> = this._canRedo
 
   private _layer = new PaintLayer(h3Resolution(4))
+  private readonly fillers = new Map<FillType, Filler>()
   private filler: Filler | undefined = undefined
-  /** The countries filled, by flag code, with the cells each was filled with. */
-  private fills = new Map<FlagCode, H3Cell[]>()
+  /** What is filled, by its id, with the cells each was filled with. */
+  private fills = new Map<string, H3Cell[]>()
   private undoStack: Snapshot[] = []
   private redoStack: Snapshot[] = []
   private settleTimer: TimeoutHandle | undefined = undefined
@@ -149,37 +147,33 @@ export class PaintModel {
 
   // ---- the Fill tool --------------------------------------------------------
 
-  /** The countries to fill with; kept once given. */
+  /** What to fill countries or islands with; the first of each type is kept. */
   useFiller(filler: Filler): void {
-    this.filler ??= filler
+    if (!this.fillers.has(filler.type)) this.fillers.set(filler.type, filler)
   }
 
-  /** Offer the Fill tool, when there are countries to fill with. */
-  offerFill(on: boolean): void {
-    this._fillable.value = on && this.filler !== undefined
+  /** Offer the Fill tool for countries or islands, once they are given; undefined takes it away. */
+  offerFill(type: FillType | undefined): void {
+    this.filler = type && this.fillers.get(type)
+    this._fillType.value = this.filler?.type
   }
 
-  /** The country at a point, or a small one within `reach` of it. */
-  countryAt(at: LatLon, reach: Km): FlagQuestion | undefined {
-    return this.filler?.countryAt(at, reach)
+  /** What a fill at this point would fill, or a small one within `reach` of it. */
+  targetAt(at: LatLon, reach: Km): FillTarget | undefined {
+    return this.filler?.targetAt(at, reach)
   }
 
-  /** The country's outline, for the cursor. */
-  outline(question: FlagQuestion): GeoJSON.MultiPolygon | undefined {
-    return this.filler?.outline(question)
-  }
-
-  isFilled(question: FlagQuestion): boolean {
-    return this.fills.has(question.clue.flag)
+  isFilled(target: FillTarget): boolean {
+    return this.fills.has(target.id)
   }
 
   /**
-   * Fill the country at a point with an even coat (see fill.ts), or take the
+   * Fill what is at a point with an even coat (see fill.ts), or take the
    * fill off if it is already filled; one undoable step. Nothing at sea.
    */
   fillAt(at: LatLon, reach: Km): void {
-    const question = this.countryAt(at, reach)
-    if (question) this.fill(question)
+    const target = this.targetAt(at, reach)
+    if (target) this.fill(target)
   }
 
   /** As fillAt, from outside the map: a small country counts within `near`. */
@@ -187,16 +181,16 @@ export class PaintModel {
     this.fillAt(at, near)
   }
 
-  private fill(question: FlagQuestion): void {
+  private fill(target: FillTarget): void {
     this.pushHistory()
-    const filled = this.fills.get(question.clue.flag)
+    const filled = this.fills.get(target.id)
     if (filled) {
       this._layer.removeCoat(filled, FILL_DENSITY)
-      this.fills.delete(question.clue.flag)
+      this.fills.delete(target.id)
     } else {
-      const cells = this.filler!.cells(question, this._layer.resolution)
+      const cells = target.cells(this._layer.resolution)
       this._layer.addCoat(cells, FILL_DENSITY)
-      this.fills.set(question.clue.flag, cells)
+      this.fills.set(target.id, cells)
     }
     this.changed()
   }

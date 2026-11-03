@@ -4,9 +4,10 @@ import { evenMix, mixOf, MapDetail, type QuestionMix } from "../protocol/config.
 import { FeatureType, QuestionType, type Question } from "../questions.ts"
 import { pickRounds, type QuestionBank } from "./round-picking.ts"
 import outlinesJson from "../../outlines.json" with { type: "json" }
+import type { QuestionId } from "../ids.ts"
 
 const OUTLINES = outlinesFrom(outlinesJson)
-const byId = (id: string) => CATALOGUE.find((question) => question.id === id)!
+const byId = (id: string): Question => CATALOGUE.find((question) => question.id === id)!
 
 const pick = ({
   catalogue = CATALOGUE,
@@ -23,7 +24,7 @@ const pick = ({
   return pickRounds(bank, { mix, mapDetail }, seed)
 }
 
-const ofType = (qs: Question[], type: QuestionType) => qs.filter((question) => question.type === type)
+const ofType = (qs: Question[], type: QuestionType): Question[] => qs.filter((question) => question.type === type)
 
 describe("pickRounds", () => {
   it("picks the same rounds for the same seed, and others for another", () => {
@@ -74,7 +75,7 @@ describe("pickRounds", () => {
     const features = CATALOGUE.filter((question) => question.type === QuestionType.FEATURE)
     const lake = features.find((question) => question.feature === FeatureType.LAKE)!
     const island = features.find((question) => question.feature === FeatureType.ISLAND)!
-    const asked = (mapDetail: MapDetail) =>
+    const asked = (mapDetail: MapDetail): QuestionId[] =>
       pick({ catalogue: [lake, island], mix: mixOf({ [QuestionType.FEATURE]: 2 }), mapDetail }).map(
         (question) => question.id
       )

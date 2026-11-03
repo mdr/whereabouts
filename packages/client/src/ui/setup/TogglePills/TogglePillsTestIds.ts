@@ -1,3 +1,3 @@
 export const togglePillsTestIds = {
-  option: "Pills.option"
+  option: "TogglePills.option"
 }

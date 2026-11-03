@@ -12,18 +12,18 @@ import { regionCells, scoredAnswer, type Area } from "../../scoring/regions.ts"
 import { type GameConfig, mixOf, MapDetail } from "../../protocol/config.ts"
 import { type Picture, type QuestionView, Phase, PictureType, RoundGuessType } from "../../protocol/views.ts"
 import outlinesJson from "../../../outlines.json" with { type: "json" }
-import { playerName } from "../../ids.ts"
+import { playerName, type OutlineId, type CommonsFile } from "../../ids.ts"
 import { GameViewSchema } from "../../protocol/view-schema.ts"
 import { Role } from "../../roles.ts"
 import { landmark, T0, viewOf, tokA, tokB, tokS, makeGame } from "./support.ts"
 
 describe("the question mix", () => {
   const OUTLINES = outlinesFrom(outlinesJson)
-  const byId = (id: string) => CATALOGUE.find((question) => question.id === id)!
-  const areaOf = (question: Question) => scoredAnswer(question.answer, OUTLINES) as Area
+  const byId = (id: string): Question => CATALOGUE.find((question) => question.id === id)!
+  const areaOf = (question: Question): Area => scoredAnswer(question.answer, OUTLINES) as Area
   const germany = byId("germany-region")
 
-  const gameWith = (config: Partial<GameConfig>, bank: Partial<QuestionBank> = {}) => {
+  const gameWith = (config: Partial<GameConfig>, bank: Partial<QuestionBank> = {}): Game => {
     const game = makeGame({
       bank: { catalogue: CATALOGUE, outlines: OUTLINES, ...bank },
       config: { roundLength: 60_000, ...config }
@@ -33,7 +33,7 @@ describe("the question mix", () => {
     return game
   }
 
-  const outlineOf = (question: QuestionView) =>
+  const outlineOf = (question: QuestionView): OutlineId | undefined =>
     question.answer.type === AnswerType.AREA ? question.answer.outline : undefined
 
   it("defaults to 2 of each type but the extras", () => {
@@ -47,7 +47,7 @@ describe("the question mix", () => {
     const game = gameWith({ mix, mapDetail: MapDetail.WATER })
     game.join(tokS, playerName("Sam"), T0 + 2, Role.SPECTATOR)
     let now = T0
-    const check = () => {
+    const check = (): void => {
       for (const token of [tokA, tokB, tokS]) {
         const checked = GameViewSchema.safeParse(viewOf(game, token, now))
         expect(checked.success, JSON.stringify(checked.error?.issues)).toBe(true)
@@ -116,10 +116,11 @@ describe("the question mix", () => {
 })
 
 describe("upcoming pictures", () => {
-  const photoOf = (picture: Picture | undefined) => (picture?.type === PictureType.PHOTO ? picture.photo : undefined)
+  const photoOf = (picture: Picture | undefined): CommonsFile | undefined =>
+    picture?.type === PictureType.PHOTO ? picture.photo : undefined
   const photos = [landmark("one", "One.jpg"), landmark("two", "Two.jpg"), landmark("three", "Three.jpg")]
   const mix = mixOf({ [QuestionType.LANDMARK]: 2 })
-  const imageOf = (game: Game, at: number) => {
+  const imageOf = (game: Game, at: number): CommonsFile | undefined => {
     const clue = viewIn(viewOf(game, tokA, at), Phase.GUESSING).round.question.clue
     return clue.type === ClueType.PHOTO ? clue.image : undefined
   }

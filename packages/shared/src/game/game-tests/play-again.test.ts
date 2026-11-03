@@ -7,7 +7,7 @@ import { Phase } from "../../protocol/views.ts"
 import { playerName, type PlayerToken } from "../../ids.ts"
 import { HintAxis } from "../../hints.ts"
 import { CloseReason } from "../../close-reason.ts"
-import type { Seat } from "../seats.ts"
+import type { Seat, SeatRole } from "../seats.ts"
 import { T0, viewOf, tokA, tokB, tokZ, paintOn, makeGame, twoPlayerGame, currentQuestion } from "./support.ts"
 
 describe("play again", () => {
@@ -52,7 +52,7 @@ describe("play again", () => {
   })
 
   it("play again leaves each player as a new joiner would be, but for who they are", () => {
-    const record = (game: Game, token: PlayerToken) =>
+    const record = (game: Game, token: PlayerToken): SeatRole =>
       (game as unknown as { seats: { get(token: PlayerToken): Seat } }).seats.get(token).role
     const fresh = twoPlayerGame(1)
     const game = makeGame({ config: { mix: mixOf({ [QuestionType.PLACE]: 1 }), roundLength: 60_000, hints: 1 } })

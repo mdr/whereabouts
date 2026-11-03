@@ -1,11 +1,14 @@
+@import "../../../../media.css";
+
 .hover {
   position: fixed;
   z-index: var(--z-float);
   pointer-events: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
+  gap: 6px;
+  padding: 8px 10px;
   border-radius: 6px;
   background: var(--panel-bg);
   color: var(--panel-fg);
@@ -15,5 +18,10 @@
   white-space: nowrap;
 }
 .hoverFlag {
-  height: 24px;
+  height: 88px;
+}
+@media (--phone) {
+  .hoverFlag {
+    height: 56px;
+  }
 }

@@ -70,12 +70,19 @@ const paintPointGuess = (answer: PointAnswer, type: PointGuess, random: () => nu
 }
 
 /** A blank layer for the answer, with the way to paint rough patches on it. */
-const painting = (answer: ScoredAnswer, random: () => number) => {
-  const between = (low: number, high: number) => low + (high - low) * random()
+const painting = (
+  answer: ScoredAnswer,
+  random: () => number
+): {
+  layer: PaintLayer
+  between: (low: number, high: number) => number
+  blob: (tolerancesAway: number, tolerancesAcross: number, strength?: number) => void
+} => {
+  const between = (low: number, high: number): number => low + (high - low) * random()
   const tolerance = answer.tolerance
   const layer = new PaintLayer(resolutionForTolerance(tolerance))
   /** A rough patch `tolerancesAcross` tolerances across, `tolerancesAway` tolerances from the answer in a random direction. */
-  const blob = (tolerancesAway: number, tolerancesAcross: number, strength = 1) => {
+  const blob = (tolerancesAway: number, tolerancesAcross: number, strength = 1): void => {
     const centre = offset(answerCentre(answer), tolerancesAway * tolerance, random() * 360)
     const radiusKm = tolerancesAcross * tolerance
     scribble(layer, random, {
@@ -101,7 +108,7 @@ const paintRegionGuess = (area: Area, type: RegionGuess, random: () => number): 
   })
   const oneCell: SquareKm = cells.length > 0 ? cellArea(cells[0]!) : 0
   /** Brush strokes over the region, or the part of it `keep` allows, `across` in radius. */
-  const shape = (strength: number, keep: (point: LatLon) => boolean = () => true, across: Km = R * tolerance) => {
+  const shape = (strength: number, keep: (point: LatLon) => boolean = () => true, across: Km = R * tolerance): void => {
     const kept = centres.filter(keep)
     const from = kept.length > 0 ? kept : [area.centre]
     scribble(layer, random, {

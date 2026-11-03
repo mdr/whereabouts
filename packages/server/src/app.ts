@@ -6,10 +6,11 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import Fastify, { type FastifyInstance } from "fastify"
 import fastifyStatic from "@fastify/static"
-import { Rivalis, TokenBucketRateLimiter, logging } from "@rivalis/core"
+import { Rivalis, TokenBucketRateLimiter, logging, type RoomManager } from "@rivalis/core"
 import WSTransport from "./vendor/WSTransport.ts"
 import { GameAuth } from "./game-auth.ts"
 import { GameRoom, ROOM_TYPE, kickForRestart, type ActorData } from "./rooms.ts"
+import { registerDevPlayers } from "./extra-players/dev-players-route.ts"
 import { AddressLimiter, type AddressLimits } from "./address-limiter.ts"
 
 export interface AppOptions {
@@ -20,6 +21,8 @@ export interface AppOptions {
   /** Rivalis log level; defaults to info. */
   logLevel?: Rivalis["logging"]["level"]
   addressLimits?: AddressLimits
+  /** Registers the playtest endpoints; never in production. */
+  devTools?: boolean
 }
 
 export interface App {
@@ -96,9 +99,19 @@ export const createApp = (options: AppOptions): App => {
   }
 
   let rivalis: Rivalis<ActorData> | undefined = undefined
-  const rooms = () => {
+  const rooms = (): RoomManager<ActorData> => {
     if (!rivalis) throw new Error("rivalis not ready")
     return rivalis.rooms
+  }
+  if (options.devTools) {
+    registerDevPlayers(
+      fastify,
+      (code, change) => {
+        const room = rooms().get(code)
+        return room instanceof GameRoom ? room.act(change) : undefined
+      },
+      Math.random
+    )
   }
   const transport = new WSTransport({ server: fastify.server, path: "/ws" }, undefined, {
     maxPayload: MAX_PAYLOAD_BYTES,

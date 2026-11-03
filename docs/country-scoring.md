@@ -279,12 +279,12 @@ before: the cap's sort cost more than three more Gaussians.
 
 A flag round shows a country's flag instead of its name. A country is painted
 whole, by the rule above, unless no outline would be fair to paint, in which
-case it is asked as a point and scored by the point rule, like a place:
+case it is asked as a point and scored by the point rule, like a place.
+(A country with a disputed border, such as India, is painted: the disputed
+land is cut out of its outline, and paint there is left out of the score.)
 
 - under 10,000 km² (Luxembourg, Singapore, the Caribbean and Pacific island
   states): too small to paint the shape of;
-- a disputed border (China, India, Pakistan, Israel, Morocco, Serbia, Somalia,
-  Ukraine, Cyprus);
 - crossing the antimeridian (Russia), or with Alaska and Hawaii (the United
   States);
 - a scattered archipelago, whose kept islands hold less than 75% of its land

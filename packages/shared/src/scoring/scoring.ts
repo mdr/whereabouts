@@ -299,11 +299,14 @@ export const coarsenDistribution = (painted: Distribution, resolution: H3Resolut
       merged.set(parent, (merged.get(parent) ?? 0) + point.p)
     }
   }
-  for (const [cell, mass] of merged) {
-    const [lat, lon] = cellToLatLng(cell)
-    points.push({ xyz: toXyz({ lat, lon }), p: mass, s2: HEX_VARIANCE_PER_AREA * cellArea(cell), cell })
-  }
+  for (const [cell, mass] of merged) points.push(cellPoint(cell, mass))
   return { points, floor: painted.floor }
+}
+
+/** A painted cell's mass, as a patch over the cell. */
+export const cellPoint = (cell: H3Cell, p: number): WeightedPoint => {
+  const [lat, lon] = cellToLatLng(cell)
+  return { xyz: toXyz({ lat, lon }), p, s2: HEX_VARIANCE_PER_AREA * cellArea(cell), cell }
 }
 
 export const scoreRegion = (painted: Distribution, region: RegionAnswer, exact = false): RegionScore => {

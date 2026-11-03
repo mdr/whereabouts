@@ -9,7 +9,7 @@ import {
   type ShownDetail
 } from "./shown-detail"
 
-const shown = (detail: ShownDetail) => ({
+const shown = (detail: ShownDetail): { water: boolean; terrain: boolean; borders: boolean; places: boolean } => ({
   water: showsInlandWater(detail),
   terrain: showsTerrain(detail),
   borders: showsBorders(detail),

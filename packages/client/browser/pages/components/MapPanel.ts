@@ -1,7 +1,8 @@
+import { PageObject } from "../steps.ts"
 import { expect, type CDPSession, type Page } from "@playwright/test"
 import type {} from "../../../src/test-hooks.ts"
 import { mapViewTestIds } from "../../../src/ui/map/MapView/MapViewTestIds.ts"
-import { hudBottomTestIds } from "../../../src/ui/map/Hud/HudTestIds.ts"
+import { hudTestIds } from "../../../src/ui/map/Hud/HudTestIds.ts"
 import { questionCardTestIds } from "../../../src/ui/round/question/QuestionCard/QuestionCardTestIds.ts"
 import { playersPanelTestIds } from "../../../src/ui/players/PlayersPanel/PlayersPanelTestIds.ts"
 import {
@@ -14,6 +15,7 @@ import {
   type Bounds
 } from "../support.ts"
 import type { Ms, Px } from "@whereabouts/shared/units"
+import { PaintFocusType } from "../../../src/map/paint-focus.ts"
 
 /** A spot on the map, as fractions of its width and height from the top left. */
 export interface MapSpot {
@@ -26,11 +28,12 @@ export interface MapSpot {
  * spots are given as fractions of the map, and paint is read from the app's
  * debugging handle on `window.testHooks.map`.
  */
-export class MapPanel {
+export class MapPanel extends PageObject {
   readonly #page: Page
   #cdp: CDPSession | undefined = undefined
 
   constructor(page: Page) {
+    super()
     this.#page = page
   }
 
@@ -91,12 +94,12 @@ export class MapPanel {
 
   /** The middle of the strip of map between the cards at the top and the toolbar. */
   async spotClearOfCards(): Promise<MapSpot> {
-    const bottomOf = async (id: string) => {
+    const bottomOf = async (id: string): Promise<number> => {
       const b = await this.#page.getByTestId(id).boundingBox()
       return b ? b.y + b.height : 0
     }
     const top = Math.max(await bottomOf(questionCardTestIds.card), await bottomOf(playersPanelTestIds.toggle))
-    const toolbar = await this.#page.getByTestId(hudBottomTestIds.toolbar).boundingBox()
+    const toolbar = await this.#page.getByTestId(hudTestIds.toolbar).boundingBox()
     const map = await this.#page.getByTestId(mapViewTestIds.map).boundingBox()
     if (!toolbar || !map) throw new Error("the map or toolbar is not on screen")
     return { across: 0.5, down: ((top + toolbar.y) / 2 - map.y) / map.height }
@@ -235,14 +238,21 @@ export class MapPanel {
     await this.waitForPaintUpload(kind, before)
   }
 
-  /** Cells of paint drawn on the map: yours while guessing, whoever's is chosen at the reveal. */
+  /**
+   * Cells of paint drawn at full strength: yours while guessing; at the
+   * reveal, whoever's is chosen, or the hovered player's over the rest dimmed.
+   */
   async shownPaintCells(): Promise<number> {
-    return this.#page.evaluate(() => {
-      const source = window.testHooks.map!.map.getSource("paint") as unknown as
+    return this.#page.evaluate((none) => {
+      const hooks = window.testHooks.map!
+      const source = hooks.map.getSource("paint") as unknown as
         | { serialize: () => { data: GeoJSON.FeatureCollection } }
         | undefined
-      return source?.serialize().data.features.length ?? 0
-    })
+      const features = source?.serialize().data.features ?? []
+      const focus = hooks.gameMap.paintFocus
+      if (!("player" in focus)) return focus.type === none ? 0 : features.length
+      return features.filter((feature) => feature.properties?.["player"] === focus.player).length
+    }, PaintFocusType.NONE)
   }
 
   async expectShownPaintCells(bounds: Bounds): Promise<void> {
@@ -287,7 +297,7 @@ export class MapPanel {
       "above the toolbar",
       async () => {
         const attribution = (await this.#page.locator(".maplibregl-ctrl-bottom-right").boundingBox()) ?? undefined
-        const toolbar = (await this.#page.getByTestId(hudBottomTestIds.toolbar).boundingBox()) ?? undefined
+        const toolbar = (await this.#page.getByTestId(hudTestIds.toolbar).boundingBox()) ?? undefined
         return { attribution, toolbar }
       },
       ({ attribution, toolbar }) =>

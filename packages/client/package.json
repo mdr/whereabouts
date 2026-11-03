@@ -8,9 +8,10 @@
     "build": "node scripts/css-module-types.ts && tsc --noEmit && vp build",
     "preview": "vp preview",
     "typecheck": "node scripts/css-module-types.ts && tsc --noEmit && tsc --noEmit -p browser",
-    "smoke": "playwright test solo",
-    "e2e": "playwright test",
-    "e2e:prod": "playwright test -c playwright.prod.config.ts",
+    "smoke": "playwright test -c browser/playwright.iwft.config.ts solo",
+    "iwft": "playwright test -c browser/playwright.iwft.config.ts",
+    "e2e": "playwright test -c browser/playwright.e2e.config.ts",
+    "e2e:prod": "playwright test -c browser/playwright.prod.config.ts",
     "css-types": "node scripts/css-module-types.ts"
   },
   "dependencies": {

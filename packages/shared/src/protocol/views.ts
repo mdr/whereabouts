@@ -43,6 +43,7 @@ export interface AreaAnswerView {
   tolerance: Km
   outline: OutlineId
   surface: Surface
+  disputed?: OutlineId
 }
 
 export type AnswerView = PointAnswerView | AreaAnswerView

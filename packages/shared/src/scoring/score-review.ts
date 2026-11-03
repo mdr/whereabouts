@@ -62,7 +62,7 @@ export const reviewCases = (set: number, catalogue: readonly Question[], outline
     )
     questions.forEach((question, i) => {
       let draws = 0
-      const random = () => seededUnit(set, pool, i, draws++)
+      const random = (): number => seededUnit(set, pool, i, draws++)
       const answer = scoredAnswer(question.answer, outlines)
       const paint = guessPainter(answer, set * 104729 + pool * 31 + i, random)
       if (i < singles) cases.push({ type: ReviewCaseType.SINGLE, question, answer, guess: paint(0) })

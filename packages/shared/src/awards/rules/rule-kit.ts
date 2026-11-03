@@ -63,17 +63,18 @@ export const top = <T>(items: T[], value: (item: T) => number | undefined): { it
   return tied ? undefined : best
 }
 
-export const played = (player: PlayerFacts) => player.rounds.filter((round): round is RoundFacts => round !== undefined)
-export const painted = (player: PlayerFacts) =>
+export const played = (player: PlayerFacts): RoundFacts[] =>
+  player.rounds.filter((round): round is RoundFacts => round !== undefined)
+export const painted = (player: PlayerFacts): PaintedFacts[] =>
   played(player).filter((round): round is PaintedFacts => round.type !== FactsType.PASSED)
-export const pointRounds = (player: PlayerFacts) =>
+export const pointRounds = (player: PlayerFacts): PointFacts[] =>
   played(player).filter((round): round is PointFacts => round.type === FactsType.POINT)
-export const mean = (values: number[]) => values.reduce((sum, value) => sum + value, 0) / values.length
+export const mean = (values: number[]): number => values.reduce((sum, value) => sum + value, 0) / values.length
 export const total = (player: PlayerFacts): Points => played(player).reduce((sum, round) => sum + round.score, 0)
-export const paintedArea = (player: PlayerFacts) => painted(player).reduce((sum, round) => sum + round.area, 0)
-export const byTotal = (players: PlayerFacts[]) => [...players].sort((a, b) => total(b) - total(a))
+export const paintedArea = (player: PlayerFacts): number => painted(player).reduce((sum, round) => sum + round.area, 0)
+export const byTotal = (players: PlayerFacts[]): PlayerFacts[] => [...players].sort((a, b) => total(b) - total(a))
 
-export const soleLeader = (ranks: Map<PlayerId, number>) =>
+export const soleLeader = (ranks: Map<PlayerId, number>): boolean =>
   [...ranks.values()].filter((rank) => rank === 1).length === 1
 
 export const median = (values: number[]): number => {

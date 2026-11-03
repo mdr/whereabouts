@@ -191,7 +191,7 @@ const GRID = 24
 
 /** A point inside the country's largest ring, as far from its edge as a grid search finds. */
 const inside = ({ country, rings }: Country): LatLon => {
-  const area = (box: Box) => (box[2] - box[0]) * (box[3] - box[1])
+  const area = (box: Box): number => (box[2] - box[0]) * (box[3] - box[1])
   const ring = rings.reduce((a, b) => (area(boxOf(b)) > area(boxOf(a)) ? b : a))
   const [west, south, east, north] = boxOf(ring)
   let best: LatLon = answerCentre(country.answer)

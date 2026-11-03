@@ -1,3 +1,4 @@
+import { PageObject } from "../steps.ts"
 import type { Page } from "@playwright/test"
 import type { MenuShown } from "../../../src/vr/menu/menu.ts"
 import type { PictureBack } from "../../../src/vr/picture/picture-back.ts"
@@ -26,10 +27,11 @@ const angleBetween = (a: number[], b: number[]): number =>
   Math.acos(a.reduce((sum, component, i) => sum + component * b[i]!, 0) / Math.hypot(...a) / Math.hypot(...b))
 
 /** What the headset's panels show, and where their buttons are: the menu, scores, board, picture and wrist. */
-export class HeadsetPanels {
+export class HeadsetPanels extends PageObject {
   readonly #page: Page
 
   constructor(page: Page) {
+    super()
     this.#page = page
   }
 
@@ -251,7 +253,7 @@ export class HeadsetPanels {
   }
 
   /** Whether a hand holds the question's picture, where it is, and which way its face points. */
-  pictureHeld() {
+  pictureHeld(): Promise<{ held: boolean; at: Vec3; facing: Vec3; back: PictureBack | undefined }> {
     return probe(this.#page, "pictureHeld")
   }
 
@@ -353,7 +355,7 @@ export class HeadsetPanels {
    * stall for a second or more.
    */
   async #settled(where: () => Promise<Vec3>): Promise<Vec3> {
-    const sample = async () => {
+    const sample = async (): Promise<{ at: Vec3; frame: number; turning: boolean }> => {
       const at = await where()
       const { frame, turning } = await this.#page.evaluate(() => ({
         frame: window.testHooks.vr!.frames,

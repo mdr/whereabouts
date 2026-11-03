@@ -1,3 +1,3 @@
 export const paintBlobsTestIds = {
-  blobs: "PaintDev.blobs"
+  blobs: "PaintBlobs.blobs"
 }

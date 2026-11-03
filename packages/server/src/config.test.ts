@@ -11,8 +11,14 @@ describe("configFromEnv", () => {
       host: "0.0.0.0",
       staticDir: "/srv/client",
       game: {},
-      addressLimits: undefined
+      addressLimits: undefined,
+      devTools: false
     })
+  })
+
+  it("turns on dev tools only for DEV_TOOLS=1", () => {
+    expect(configFromEnv({ DEV_TOOLS: "1" }, "/x").devTools).toBe(true)
+    expect(configFromEnv({ DEV_TOOLS: "true" }, "/x").devTools).toBe(false)
   })
 
   it("reads overrides and ignores junk", () => {

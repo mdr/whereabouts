@@ -1,7 +1,7 @@
 export const revealRowTestIds = {
-  playerRow: "Reveal.playerRow",
-  playerName: "Reveal.playerName",
-  roundScore: "Reveal.roundScore",
-  passedTag: "Reveal.passedTag",
-  hintTag: "Reveal.hintTag"
+  playerRow: "RevealRow.playerRow",
+  playerName: "RevealRow.playerName",
+  roundScore: "RevealRow.roundScore",
+  passedTag: "RevealRow.passedTag",
+  hintTag: "RevealRow.hintTag"
 }

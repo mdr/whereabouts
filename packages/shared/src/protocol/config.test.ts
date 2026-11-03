@@ -2,10 +2,10 @@ import { describe, expect, it } from "vite-plus/test"
 import { MAX_HINTS } from "../hints.ts"
 import { QuestionType } from "../questions.ts"
 import { KickSchema } from "./client-messages.ts"
-import { ConfigureSchema, MAX_ROUNDS, MapDetail, evenMix, mixOf } from "./config.ts"
+import { ConfigureSchema, MAX_ROUNDS, MapDetail, evenMix, mixOf, type QuestionMix } from "./config.ts"
 
 describe("ConfigureSchema", () => {
-  const mix = (counts: Partial<Record<QuestionType, number>>) => ({ mix: mixOf(counts) })
+  const mix = (counts: Partial<Record<QuestionType, number>>): { mix: QuestionMix } => ({ mix: mixOf(counts) })
 
   it("accepts supported values and rejects the rest", () => {
     expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 2, [QuestionType.PLACE]: 2 })).success).toBe(true)
@@ -35,7 +35,7 @@ describe("ConfigureSchema", () => {
 
 describe("evenMix", () => {
   it("splits the rounds evenly over the first four types, the rest to the first", () => {
-    const even = (landmarks: number, places: number, countries: number, flags: number) =>
+    const even = (landmarks: number, places: number, countries: number, flags: number): QuestionMix =>
       mixOf({
         [QuestionType.LANDMARK]: landmarks,
         [QuestionType.PLACE]: places,

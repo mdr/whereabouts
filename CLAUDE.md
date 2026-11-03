@@ -11,7 +11,9 @@
 - Except values whose literal types an outside library owns: an `as const` object, so its types apply.
 - Discriminators are called `type`. Variants are unions of named types, not a base interface plus intersections.
 - Full-word names. `undefined`, not `null`.
+- Never derive display text from code names (enum values, keys) by changing case; map each to its text.
 - Write the actual type, not an indirection like `GameMap["map"]`, unless it is very complex or inexpressible.
+- Annotate functions' return types. Not needed for Preact components, nor where the type is too complex to write (then ask whether the function should be simpler).
 - Small modules, one job each; pull pure logic out so it can be unit-tested.
 
 ## Folders
@@ -27,6 +29,7 @@
 ## Tests
 
 - Specify only the data the scenario needs; `makeX` factories supply defaults.
+- Endpoint behaviour: `*.iwbt.ts` specs against the in-process server, through `TestPlayer`'s steps; only tests about the protocol itself touch `wire`.
 
 ## Browser tests
 
@@ -35,6 +38,8 @@
 - State that ARIA already expresses (`aria-pressed`…): assert the ARIA attribute.
 - Page state: web-first assertions (`toHaveText`, `toBeVisible`…). Other state (map, VR, sound): `expect.poll`.
 - "Doesn't happen" checks hold over time, after a positive check.
+- Tests never assume a fixed port or shared state, so runs in other worktrees can go at the same time.
+- Play against the in-process server (the `game` fixture) in `*.iwft.ts` specs; use `*.e2e.ts` (the dev servers) only when the test is about client and server together. Set games up and check them through the fixture (`seat`, `paint`, `advance`, `expectGame`), not extra tabs.
 
 ## Product
 

@@ -82,7 +82,7 @@ const draw = (board: VrBoard): HTMLCanvasElement => {
   ctx.textBaseline = "middle"
   let y = PAD
 
-  const heading = (text: string) => {
+  const heading = (text: string): void => {
     ctx.fillStyle = "#94a3b8"
     ctx.font = `700 40px ${FONT}`
     ctx.fillText(text, PAD, y + 30)
@@ -118,7 +118,7 @@ const draw = (board: VrBoard): HTMLCanvasElement => {
     heading("ROUNDS")
     const labelW = 560
     const colW = Math.min(180, (CANVAS_WIDTH - PAD * 2 - labelW) / Math.max(1, board.players.length))
-    const colX = (j: number) => PAD + labelW + j * colW + colW / 2
+    const colX = (j: number): number => PAD + labelW + j * colW + colW / 2
     ctx.textAlign = "center"
     board.players.forEach((player, j) => {
       ctx.fillStyle = player.colour

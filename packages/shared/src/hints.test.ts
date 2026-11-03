@@ -4,6 +4,7 @@ import { CATALOGUE } from "./catalogue/catalogue.ts"
 import { answerCentre } from "./questions.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint/paint.ts"
 import { cellToLatLng, h3Resolution, latLngToCell, type H3Cell } from "./h3.ts"
+import type { Degrees } from "./units.ts"
 
 describe("hintBand", () => {
   const axes: HintAxis[] = [HintAxis.LATITUDE, HintAxis.LONGITUDE]
@@ -47,7 +48,7 @@ describe("hintBand", () => {
 })
 
 describe("trimToHint", () => {
-  const latLon = (cell: H3Cell) => {
+  const latLon = (cell: H3Cell): { lat: Degrees; lon: Degrees } => {
     const [lat, lon] = cellToLatLng(cell)
     return { lat, lon }
   }

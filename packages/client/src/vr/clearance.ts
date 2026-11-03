@@ -28,8 +28,8 @@ export class PanelClearance {
    */
   update(globe: Seen): void {
     const eye = this.eye
-    const yaw = (point: Vector3) => Math.atan2(point.x - eye.x, point.z - eye.z)
-    const flat = (point: Vector3) => Math.hypot(point.x - eye.x, point.z - eye.z)
+    const yaw = (point: Vector3): number => Math.atan2(point.x - eye.x, point.z - eye.z)
+    const flat = (point: Vector3): number => Math.hypot(point.x - eye.x, point.z - eye.z)
     const centre = globe.centre
     const globeHalf = Math.asin(Math.min(1, globe.radius / Math.max(1e-6, flat(centre))))
     const globeYaw = yaw(centre)
@@ -45,8 +45,8 @@ export class PanelClearance {
   /** The narrowest gap, in radians as the player sees it, between a panel and the globe. */
   gap(globe: Seen): Radians {
     const eye = this.eye
-    const yaw = (point: Vector3) => Math.atan2(point.x - eye.x, point.z - eye.z)
-    const flat = (point: Vector3) => Math.hypot(point.x - eye.x, point.z - eye.z)
+    const yaw = (point: Vector3): number => Math.atan2(point.x - eye.x, point.z - eye.z)
+    const flat = (point: Vector3): number => Math.hypot(point.x - eye.x, point.z - eye.z)
     const centre = globe.centre
     const globeHalf = Math.asin(Math.min(1, globe.radius / flat(centre)))
     return Math.min(

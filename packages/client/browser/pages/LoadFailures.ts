@@ -1,3 +1,4 @@
+import { PageObject } from "./steps.ts"
 import { expect, type Page } from "@playwright/test"
 import { mapViewTestIds } from "../../src/ui/map/MapView/MapViewTestIds.ts"
 import { loadingOutlinesTestIds } from "../../src/ui/map/LoadingOutlines/LoadingOutlinesTestIds.ts"
@@ -6,10 +7,11 @@ import { stillTrueFor } from "./support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** What a screen shows when the map, the outlines or VR will not load. */
-export class LoadFailures {
+export class LoadFailures extends PageObject {
   readonly #page: Page
 
   constructor(page: Page) {
+    super()
     this.#page = page
   }
 

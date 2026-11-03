@@ -1,5 +1,5 @@
 /** Server settings from the environment, kept pure so they can be tested. */
-import { KernelIdSchema } from "@whereabouts/shared/scoring/scoring"
+import { KernelIdSchema, type KernelId } from "@whereabouts/shared/scoring/scoring"
 import { evenMix, type GameConfig } from "@whereabouts/shared/protocol/config"
 import type { AddressLimits } from "./address-limiter.ts"
 
@@ -11,6 +11,8 @@ export interface ServerConfig {
   game: Partial<GameConfig>
   /** Undefined for the limiter's defaults. */
   addressLimits: AddressLimits | undefined
+  /** Playtest endpoints, for development servers only. */
+  devTools: boolean
 }
 
 export const configFromEnv = (env: Record<string, string | undefined>, defaultStaticDir: string): ServerConfig => {
@@ -28,12 +30,13 @@ export const configFromEnv = (env: Record<string, string | undefined>, defaultSt
     staticDir: env["STATIC_DIR"] === "" ? undefined : (env["STATIC_DIR"] ?? defaultStaticDir),
     game,
     addressLimits:
-      perAddress === undefined ? undefined : { maxOpen: perAddress, burst: perAddress, perSecond: perAddress }
+      perAddress === undefined ? undefined : { maxOpen: perAddress, burst: perAddress, perSecond: perAddress },
+    devTools: env["DEV_TOOLS"] === "1"
   }
 }
 
 /** A typo here would otherwise score every game with the default kernel unnoticed. */
-const kernelId = (name: string) => {
+const kernelId = (name: string): KernelId => {
   // Also the old names, written in lower case with hyphens.
   const parsed = KernelIdSchema.safeParse(name.toUpperCase().replaceAll("-", "_"))
   if (!parsed.success) throw new Error(`KERNEL must be one of ${KernelIdSchema.options.join(", ")}, not "${name}"`)

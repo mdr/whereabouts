@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 import { signal } from "@preact/signals"
 import { commonsImageUrl } from "@whereabouts/shared/questions"
-import { commonsFile, flagCode } from "@whereabouts/shared/ids"
+import { commonsFile, flagCode, type CommonsFile } from "@whereabouts/shared/ids"
 import { MAX_ROUNDS } from "@whereabouts/shared/protocol/config"
 import { PictureType } from "@whereabouts/shared/protocol/views"
 import { heldPictures, preloadPicture } from "./preload"
@@ -12,11 +12,11 @@ import type { Vr } from "../vr/index"
 vi.mock("../flags/flags", () => ({ flagUrl: (code: string) => Promise.resolve(`/flags/${code}.svg`) }))
 vi.mock("../vr/picture/vr-picture", () => ({ vrPhotoUrl: (file: string) => Promise.resolve(`https://thumb/${file}`) }))
 
-const settle = () => new Promise((resolve) => setTimeout(resolve))
+const settle = (): Promise<unknown> => new Promise((resolve) => setTimeout(resolve))
 
 describe("preloadPicture", () => {
   it("holds a whole game's photos and no more, those asked for again counting as new", () => {
-    const photo = (index: number) => commonsFile(`${index}.jpg`)
+    const photo = (index: number): CommonsFile => commonsFile(`${index}.jpg`)
     for (let i = 0; i < 40; i++) preloadPicture({ type: PictureType.PHOTO, photo: photo(i) })
     preloadPicture({ type: PictureType.PHOTO, photo: photo(20) })
     const { page } = heldPictures()

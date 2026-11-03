@@ -15,6 +15,9 @@ import { navigate } from "../../../router"
 import { Banner } from "../../../ui/Banner/Banner"
 import { useVrView } from "../../../ui/VrButton/VrButton"
 import { VrViewType, type VrView } from "../../../vr/view/view"
+import { DevDrawer } from "../../../ui/dev/DevDrawer/DevDrawer"
+import { ExtraPlayersDev } from "../../../ui/dev/ExtraPlayersDev/ExtraPlayersDev"
+import { ConnectionDev } from "../../../ui/connection/ConnectionDev"
 import { InvitePanel } from "../invite/InvitePanel/InvitePanel"
 import { SetupPanel } from "../setup/SetupPanel/SetupPanel"
 import { setupLine } from "../setup/setup-line"
@@ -45,28 +48,34 @@ export const Lobby = ({ conn, view }: { conn: Connection; view: GameView }) => {
   const vrView = lobbyVrView(conn, view, online, leave)
   useVrView(vrView)
   return (
-    <div class={kit.page}>
-      <div class={cx(kit.pageCard, styles.card)} data-testid={lobbyTestIds.page}>
-        {dialog}
-        <Banner tall>
-          <button
-            class={styles.leave}
-            data-testid={lobbyTestIds.leaveButton}
-            onClick={() =>
-              host
-                ? ask(leaveRequest(everyone(view).find((player) => player.id === view.you.nextHost)?.name, leave))
-                : leave()
-            }
-          >
-            <Icon name="back" size={15} /> Leave
-          </button>
-        </Banner>
-        <div class={styles.cols}>
-          <InvitePanel conn={conn} view={view} online={online} ask={ask} />
-          <SetupPanel conn={conn} view={view} online={online} vrView={vrView} playerCount={playerCount} />
+    <>
+      <div class={kit.page}>
+        <div class={cx(kit.pageCard, styles.card)} data-testid={lobbyTestIds.page}>
+          {dialog}
+          <Banner tall>
+            <button
+              class={styles.leave}
+              data-testid={lobbyTestIds.leaveButton}
+              onClick={() =>
+                host
+                  ? ask(leaveRequest(everyone(view).find((player) => player.id === view.you.nextHost)?.name, leave))
+                  : leave()
+              }
+            >
+              <Icon name="back" size={15} /> Leave
+            </button>
+          </Banner>
+          <div class={styles.cols}>
+            <InvitePanel conn={conn} view={view} online={online} ask={ask} />
+            <SetupPanel conn={conn} view={view} online={online} vrView={vrView} playerCount={playerCount} />
+          </div>
         </div>
       </div>
-    </div>
+      <DevDrawer>
+        <ExtraPlayersDev code={view.code} phase={view.phase} />
+        <ConnectionDev conn={conn} view={view} />
+      </DevDrawer>
+    </>
   )
 }
 

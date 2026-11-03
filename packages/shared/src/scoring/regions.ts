@@ -33,7 +33,17 @@ import {
   type H3Cell,
   type H3Resolution
 } from "../h3.ts"
-import { bearing, fromXyz, greatCircleDistance, toXyz, type Box, type LatLon } from "../geo.ts"
+import {
+  bearing,
+  boxAround,
+  fromXyz,
+  greatCircleDistance,
+  inBox,
+  insidePolygon,
+  toXyz,
+  type Box,
+  type LatLon
+} from "../geo.ts"
 import type { Degrees, Km, Points, SquareKm } from "../units.ts"
 import {
   AnswerType,
@@ -47,6 +57,7 @@ import {
 } from "../questions.ts"
 import type { OutlineId } from "../ids.ts"
 import { resolutionForTolerance } from "../paint/paint.ts"
+import { withoutDisputed } from "./disputed.ts"
 import {
   PASS_SCORE,
   coarsenDistribution,
@@ -58,8 +69,8 @@ import {
   type RegionAnswer
 } from "./scoring.ts"
 
-/** An area answer with its outline, as scoring needs it. */
-export type Area = AreaAnswer & { polygons: Outline }
+/** An area answer with its outline, and its disputed land's, as scoring needs it. */
+export type Area = AreaAnswer & { polygons: Outline; disputedPolygons?: Outline }
 
 /** What a guess is scored against: a point, or an area with its outline. */
 export type ScoredAnswer = PointAnswer | Area
@@ -69,8 +80,21 @@ export const scoredAnswer = (answer: Answer, outlines: Outlines): ScoredAnswer =
   if (answer.type === AnswerType.POINT) return answer
   const polygons = outlines.get(answer.outline)
   if (!polygons) throw new Error(`no outline ${answer.outline}`)
-  return { ...answer, polygons }
+  if (!answer.disputed) return { ...answer, polygons }
+  const disputedPolygons = outlines.get(answer.disputed)
+  if (!disputedPolygons) throw new Error(`no outline ${answer.disputed}`)
+  return { ...answer, polygons, disputedPolygons }
 }
+
+/** The paint that counts against an area: none on its disputed land. Undefined when none is left. */
+const countedPaint = (painted: Distribution, area: Area): Distribution | undefined =>
+  area.disputed && area.disputedPolygons
+    ? withoutDisputed(
+        painted,
+        { outline: area.disputed, polygons: area.disputedPolygons },
+        resolutionForTolerance(area.tolerance)
+      )
+    : painted
 
 /** The share of the score that is shape; the rest is nearness. */
 export const SHAPE_WEIGHT = 0.4
@@ -120,26 +144,13 @@ export const regionCells = (area: Area, resolution: H3Resolution): H3Cell[] => {
 const boxes = new Map<OutlineId, Box>()
 
 /** Whether a point is inside a region's outline: inside an odd number of each polygon's rings. */
-export const insideRegion = (area: Area, { lat, lon }: LatLon): boolean => {
+export const insideRegion = (area: Area, point: LatLon): boolean => {
   let box = boxes.get(area.outline)
   if (!box) {
-    const points = area.polygons.flatMap((polygon) => polygon[0]!)
-    const lons = points.map(([x]) => x)
-    const lats = points.map(([, y]) => y)
-    box = [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)]
+    box = boxAround(area.polygons)
     boxes.set(area.outline, box)
   }
-  if (lon < box[0] || lat < box[1] || lon > box[2] || lat > box[3]) return false
-  return area.polygons.some((polygon) => {
-    let odd = false
-    for (const ring of polygon)
-      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-        const [x1, y1] = ring[i]!
-        const [x2, y2] = ring[j]!
-        if (y1 > lat !== y2 > lat && lon < x1 + ((lat - y1) * (x2 - x1)) / (y2 - y1)) odd = !odd
-      }
-    return odd
-  })
+  return inBox(box, point) && area.polygons.some((polygon) => insidePolygon(polygon, point))
 }
 
 /**
@@ -206,7 +217,9 @@ export const scoreAnswer = (
 ): { score: Points; parts: AnswerParts } => {
   if (!painted) return { score: PASS_SCORE.score, parts: { type: AnswerType.POINT, A: PASS_SCORE.A, B: PASS_SCORE.B } }
   if (answer.type === AnswerType.AREA) {
-    const { score, shape, nearness } = scoreArea(painted, answer)
+    const counted = countedPaint(painted, answer)
+    if (!counted) return scoreAnswer(undefined, answer, kernel)
+    const { score, shape, nearness } = scoreArea(counted, answer)
     return { score, parts: { type: AnswerType.AREA, shape, nearness } }
   }
   const { score, A, B } = scoreDistribution(painted, answer.at, answer.tolerance, kernel)
@@ -222,7 +235,9 @@ export const scoreAnswer = (
  * credit below; so an exact paint covers all of it, and so does a 50/50
  * hedge with another place.
  */
-export const regionFit = (painted: Distribution, area: Area): { coverage: number; precision: number } => {
+export const regionFit = (allPaint: Distribution, area: Area): { coverage: number; precision: number } => {
+  const painted = countedPaint(allPaint, area)
+  if (!painted) return { coverage: 0, precision: 0 }
   const paintedMass = 1 - painted.floor
   const region = regionAt(area)
   let onMass = 0
@@ -265,7 +280,9 @@ export interface RegionMisfit {
 const LEAN = 0.4
 
 /** regionFit, and where the paint off the country lies, for the awards. */
-export const regionMisfit = (painted: Distribution, area: Area): RegionMisfit => {
+export const regionMisfit = (allPaint: Distribution, area: Area): RegionMisfit => {
+  const painted = countedPaint(allPaint, area)
+  if (!painted) return { coverage: 0, precision: 0, off: undefined }
   const { coverage, precision } = regionFit(painted, area)
   const region = regionAt(area)
   const mass = paintMass(painted, area)
@@ -356,7 +373,7 @@ const paintMass = (painted: Distribution, area: Area): Map<H3Cell, number> => {
   const paintResolution = resolutionForTolerance(area.tolerance)
   const region = regionAt(area)
   const mass = new Map<H3Cell, number>()
-  const add = (cell: H3Cell, amount: number) => mass.set(cell, (mass.get(cell) ?? 0) + amount)
+  const add = (cell: H3Cell, amount: number): Map<H3Cell, number> => mass.set(cell, (mass.get(cell) ?? 0) + amount)
   for (const point of painted.points) {
     if (!point.cell) continue
     const resolution = getResolution(point.cell)

@@ -1,11 +1,13 @@
+import { PageObject } from "../steps.ts"
 import type { Page } from "@playwright/test"
 import { paintBlobsTestIds } from "../../../src/ui/map/paint/PaintBlobs/PaintBlobsTestIds.ts"
 
 /** The playtest drawer that `?dev` adds on the right. */
-export class DevDrawer {
+export class DevDrawer extends PageObject {
   readonly #page: Page
 
   constructor(page: Page) {
+    super()
     this.#page = page
   }
 

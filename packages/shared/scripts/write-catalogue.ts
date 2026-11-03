@@ -6,8 +6,8 @@ import { execFileSync } from "node:child_process"
 import { readFileSync, writeFileSync } from "node:fs"
 import type { LatLon, MultiPolygon } from "../src/geo.ts"
 import {
+  AnswerType,
   QUESTION_TYPES,
-  type AnswerType,
   type ClueType,
   type FeatureType,
   type NameClue,
@@ -25,6 +25,14 @@ export interface StoredQuestion {
   answer: { type: AnswerType; tolerance?: number }
 }
 
+export interface StoredArea {
+  outline: string
+  disputed?: string
+  centre: LatLon
+  tolerance: number
+  surface: Surface
+}
+
 /** A place as places.json stores it. */
 export interface StoredPlace {
   id: string
@@ -32,7 +40,7 @@ export interface StoredPlace {
   wiki: string
   at?: LatLon
   feature?: FeatureType
-  area?: { outline: string; centre: LatLon; tolerance: number; surface: Surface }
+  area?: StoredArea
   flag?: { code: string; wiki: string }
 }
 
@@ -69,16 +77,18 @@ const placesAsked = (catalogue: StoredQuestion[], places: StoredPlace[]): Map<st
   return asked
 }
 
-/** The outlines of the areas the catalogue's AREA questions are about, by id. */
+/** The outlines of the areas the catalogue's AREA questions are about, and their disputed land, by id. */
 const outlinesUsed = (catalogue: StoredQuestion[], asked: Map<string, StoredPlace>, outlines: Outlines): Outlines => {
   const allOutlines = { ...read<Outlines>("outlines.json"), ...outlines }
   const used: Outlines = {}
   for (const question of catalogue) {
-    if (question.answer.type !== "AREA") continue
-    const id = asked.get(question.place)?.area?.outline
-    const outline = id === undefined ? undefined : allOutlines[id]
-    if (!id || !outline) throw new Error(`${question.id}: no outline ${id}`)
-    used[id] = outline
+    if (question.answer.type !== AnswerType.AREA) continue
+    const area = asked.get(question.place)?.area
+    for (const id of [area?.outline, ...(area?.disputed ? [area.disputed] : [])]) {
+      const outline = id === undefined ? undefined : allOutlines[id]
+      if (!id || !outline) throw new Error(`${question.id}: no outline ${id}`)
+      used[id] = outline
+    }
   }
   return used
 }

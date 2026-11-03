@@ -1,36 +1,50 @@
 // @vitest-environment happy-dom
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
-import { act, renderHook } from "@testing-library/preact"
-import { signal } from "@preact/signals"
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vite-plus/test"
+import { act, renderHook, type RenderHookResult } from "@testing-library/preact"
+import { signal, type Signal } from "@preact/signals"
 import { h3Resolution } from "@whereabouts/shared/h3"
 import { PaintLayer } from "@whereabouts/shared/paint/paint"
-import type { GuessingYouView, InPlayGameView } from "@whereabouts/shared/protocol/views"
+import type { GuessingYouView, InPlayGameView, GuessingGameView } from "@whereabouts/shared/protocol/views"
 import { ConnectionStatus, type ConnectionState } from "../net/net"
 import { usePaintUpload, type UploadPaint } from "./paint-upload"
 import { JOINED_LATE, SPECTATING, makeGuessingView, makePlaying } from "../test-view"
 
 const CELL = "85283473fffffff"
 
-const makePaint = (cells: Record<string, number> = { [CELL]: 1 }) => ({
+const makePaint = (
+  cells: Record<string, number> = { [CELL]: 1 }
+): { layer: PaintLayer; floor: Signal<number>; version: Signal<number> } => ({
   layer: PaintLayer.fromRecord(h3Resolution(5), cells),
   floor: signal(0.05),
   version: signal(0)
 })
 
 /** Make a change, and run the renders and effects it causes. */
-const run = (change: () => unknown) => {
+const run = (change: () => unknown): void => {
   void act(() => void change())
 }
-const wait = (ms: number) => run(() => vi.advanceTimersByTime(ms))
+const wait = (ms: number): void => run(() => vi.advanceTimersByTime(ms))
 
-const guessing = (you: Partial<GuessingYouView> = {}) => makeGuessingView({ you })
+const guessing = (you: Partial<GuessingYouView> = {}): GuessingGameView => makeGuessingView({ you })
 
 interface Props {
   view: InPlayGameView
   timeUp: boolean
 }
 
-const setup = ({ view = guessing(), paint = makePaint() }: { view?: InPlayGameView; paint?: UploadPaint } = {}) => {
+interface Setup {
+  conn: { status: Signal<ConnectionState>; sendPaint: Mock; lock: Mock }
+  paint: UploadPaint
+  hook: RenderHookResult<{ lockIn: () => void }, Props>
+  update: (over: Partial<Props>) => void
+  edit: () => void
+  settle: () => void
+}
+
+const setup = ({
+  view = guessing(),
+  paint = makePaint()
+}: { view?: InPlayGameView; paint?: UploadPaint } = {}): Setup => {
   const conn = {
     status: signal<ConnectionState>({ type: ConnectionStatus.CONNECTED }),
     sendPaint: vi.fn(),
@@ -40,12 +54,12 @@ const setup = ({ view = guessing(), paint = makePaint() }: { view?: InPlayGameVi
   const hook = renderHook((hookProps: Props) => usePaintUpload(conn, paint, hookProps.view, hookProps.timeUp), {
     initialProps: props
   })
-  const update = (over: Partial<Props>) => {
+  const update = (over: Partial<Props>): void => {
     props = { ...props, ...over }
     hook.rerender(props)
   }
-  const edit = () => run(() => paint.version.value++)
-  const settle = () => wait(400)
+  const edit = (): void => run(() => paint.version.value++)
+  const settle = (): void => wait(400)
   // The upload a fresh round makes on its own, out of the way.
   settle()
   conn.sendPaint.mockClear()

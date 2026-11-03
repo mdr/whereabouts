@@ -42,7 +42,7 @@ export interface Shortcut {
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent)
 const MOD = isMac ? "⌘" : "Ctrl"
 
-const withMod = (event: KeyPress) => event.metaKey || event.ctrlKey
+const withMod = (event: KeyPress): boolean => event.metaKey || event.ctrlKey
 const plain = (key: string) => (event: KeyPress) => event.key === key
 
 const paintKey = (key: string, run: (target: PaintKeyTarget) => void): Combo => ({

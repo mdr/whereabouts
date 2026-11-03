@@ -4,6 +4,8 @@ import {
   HINT_EDGE,
   HINT_FILL,
   REVEAL_ANSWER,
+  REVEAL_DISPUTED_FILL,
+  REVEAL_DISPUTED_LINE,
   REVEAL_REGION_FILL,
   REVEAL_REGION_LINE,
   STATE_BORDERS,
@@ -11,6 +13,7 @@ import {
 } from "./map-layers"
 import { idOfKind, paintSetting, type LayerKind, type PaintSetting, type PaintValue } from "./map-paint"
 import type { Theme } from "./themes"
+import type { ExpressionSpecification } from "maplibre-gl"
 
 export interface StyleLayer {
   id: string
@@ -18,15 +21,7 @@ export interface StyleLayer {
   sourceLayer: string
 }
 
-export const PLAYER_OPACITY: PaintValue<"fill", "fill-opacity"> = [
-  "interpolate",
-  ["linear"],
-  ["get", "v"],
-  0,
-  0.12,
-  1,
-  0.9
-]
+export const PLAYER_OPACITY: ExpressionSpecification = ["interpolate", ["linear"], ["get", "v"], 0, 0.12, 1, 0.9]
 
 const roadPaint = (layer: StyleLayer, theme: Theme): PaintSetting[] => {
   const line = idOfKind(layer, "line")
@@ -77,6 +72,8 @@ export const overlayPaint = (theme: Theme): PaintSetting[] => [
   paintSetting(REVEAL_ANSWER, "circle-stroke-color", theme.answerStroke),
   paintSetting(REVEAL_REGION_FILL, "fill-color", theme.answer),
   paintSetting(REVEAL_REGION_LINE, "line-color", theme.answer),
+  paintSetting(REVEAL_DISPUTED_FILL, "fill-color", theme.disputed),
+  paintSetting(REVEAL_DISPUTED_LINE, "line-color", theme.disputed),
   paintSetting(HINT_FILL, "fill-color", theme.brush),
   paintSetting(HINT_EDGE, "line-color", theme.brush),
   paintSetting(CURSOR_FILL, "fill-color", theme.brush),

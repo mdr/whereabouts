@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from "vite-plus/test"
+import { describe, expect, it, vi, type Mock } from "vite-plus/test"
 import type { HintBand } from "@whereabouts/shared/hints"
 import type { SprayTool } from "../spray/spray-rules"
 import { Tool } from "../../paint/tool"
@@ -9,7 +9,7 @@ import { WristButton } from "./wrist-button"
 import { Hand } from "../hands/hand"
 import { HintAxis } from "@whereabouts/shared/hints"
 
-const makeTool = (tool: SprayTool) => {
+const makeTool = (tool: SprayTool): { tool: SprayTool; setTool: (next: SprayTool) => void } => {
   const made = {
     tool,
     setTool: (next: SprayTool) => {
@@ -19,7 +19,7 @@ const makeTool = (tool: SprayTool) => {
   return made
 }
 
-const makePaint = (over: Record<string, unknown> = {}) => ({
+const makePaint = (over: Record<string, unknown> = {}): { undo: Mock; redo: Mock; trimToHint: Mock<() => number> } => ({
   undo: vi.fn(),
   redo: vi.fn(),
   trimToHint: vi.fn(() => 0),
@@ -29,7 +29,14 @@ const makePaint = (over: Record<string, unknown> = {}) => ({
 const makeRound = (paint = makePaint(), over: Partial<VrRound> = {}): VrRound =>
   ({ paint, useHint: () => {}, hint: undefined, ...over }) as unknown as VrRound
 
-const makeActions = (round: VrRound | undefined) => {
+interface MadeActions {
+  actions: Record<WristButton, () => void>
+  notes: string[]
+  repaint: Mock
+  tools: Record<Hand, { tool: SprayTool; setTool: (next: SprayTool) => void }>
+}
+
+const makeActions = (round: VrRound | undefined): MadeActions => {
   const notes: string[] = []
   const repaint = vi.fn()
   const tools = { [Hand.LEFT]: makeTool(Tool.ERASE), [Hand.RIGHT]: makeTool(Tool.PAINT) }

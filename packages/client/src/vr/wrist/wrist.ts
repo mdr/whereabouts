@@ -127,8 +127,9 @@ export class WristMenu {
     const doc = this.doc
     if (!doc) return
     const { water, hint, left } = this.state
-    const show = (id: string, on: boolean) => doc.getElementById(id)?.setProperties({ display: on ? "flex" : "none" })
-    const text = (id: string, value: string) => doc.getElementById(id)?.setProperties({ text: value })
+    const show = (id: string, on: boolean): void =>
+      doc.getElementById(id)?.setProperties({ display: on ? "flex" : "none" })
+    const text = (id: string, value: string): void => doc.getElementById(id)?.setProperties({ text: value })
     show("hints", hint === undefined && left !== 0 && left !== HintAllowance.NONE)
     show(WristButton.TRIM_HINT, hint !== undefined)
     text("trimLabel", water ? "Trim land" : "Trim sea")

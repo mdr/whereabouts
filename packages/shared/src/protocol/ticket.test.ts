@@ -19,7 +19,7 @@ describe("ticket codec", () => {
   })
 
   /** Encode an arbitrary object the same way a hostile client might. */
-  const encode = (value: unknown) => encodeTicket(value as Ticket)
+  const encode = (value: unknown): string => encodeTicket(value as Ticket)
 
   it("rejects garbage, wrong versions and bad shapes", () => {
     expect(decodeTicket("not-base64!!")).toBeUndefined()

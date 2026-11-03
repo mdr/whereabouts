@@ -31,9 +31,9 @@ describe("sceneOf", () => {
   })
 
   it("tells pictured questions with the same wording apart", () => {
-    const photo = (file: string) =>
+    const photo = (file: string): VrRound =>
       makeRound({ prompt: "Where is this?", picture: { type: VrPictureType.PHOTO, photo: file as CommonsFile } })
-    const flag = (code: string) =>
+    const flag = (code: string): VrRound =>
       makeRound({ prompt: "Whose flag?", picture: { type: VrPictureType.FLAG, flag: code as FlagCode } })
     expect(sceneOf(paint(photo("a.jpg")))).not.toBe(sceneOf(paint(photo("b.jpg"))))
     expect(sceneOf(paint(flag("fr")))).not.toBe(sceneOf(paint(flag("de"))))

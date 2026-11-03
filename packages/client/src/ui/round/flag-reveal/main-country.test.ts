@@ -2,14 +2,14 @@ import { describe, expect, it } from "vite-plus/test"
 import { Borders } from "@whereabouts/shared/borders"
 import { CATALOGUE, isFlagQuestion } from "@whereabouts/shared/catalogue/catalogue"
 import { h3Resolution } from "@whereabouts/shared/h3"
-import { PaintLayer } from "@whereabouts/shared/paint/paint"
+import { PaintLayer, type PaintCell } from "@whereabouts/shared/paint/paint"
 import bordersJson from "@whereabouts/shared/borders.json"
 import { mainCountry } from "./main-country"
 
 const borders = new Borders(bordersJson, CATALOGUE.filter(isFlagQuestion))
 
 /** A paint of these cells, one intensity each, as a reveal gets it. */
-const paint = (cells: string[]) =>
+const paint = (cells: string[]): IterableIterator<PaintCell> =>
   PaintLayer.fromRecord(h3Resolution(5), Object.fromEntries(cells.map((cell) => [cell, 1]))).toCells()
 
 describe("mainCountry", () => {

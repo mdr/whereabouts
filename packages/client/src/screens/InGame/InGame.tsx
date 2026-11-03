@@ -15,6 +15,7 @@ import { PaintTools } from "../../ui/map/paint/PaintTools/PaintTools"
 import { PlayerList } from "../../ui/players/PlayerList/PlayerList"
 import { ConnectionNote } from "../../ui/connection/ConnectionNote/ConnectionNote"
 import { DevDrawer } from "../../ui/dev/DevDrawer/DevDrawer"
+import { ExtraPlayersDev } from "../../ui/dev/ExtraPlayersDev/ExtraPlayersDev"
 import { ConnectionDev } from "../../ui/connection/ConnectionDev"
 import { Reveal } from "../reveal/Reveal/Reveal"
 import { Icon } from "../../ui/icons"
@@ -24,7 +25,7 @@ import { kickRequest, makeHostRequest, useConfirm } from "../../ui/ConfirmDialog
 import { askedToWatch } from "../../settings/settings"
 import { TakeSeatButton } from "../../ui/players/TakeSeat/TakeSeat"
 import { HintCard } from "../../ui/round/Hint/Hint"
-import { useOutline } from "../../data/outlines"
+import { useOutlines } from "../../data/outlines"
 import { useGameData } from "../../data/game-data"
 import { VrButton, useVrView } from "../../ui/VrButton/VrButton"
 import { mainCountry } from "../../ui/round/flag-reveal/main-country"
@@ -89,7 +90,7 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
   const { lockIn } = usePaintUpload(conn, paint, view, timeUp)
   const words = { askedToWatch: askedToWatch.value, canUnlock: canUnlock(view, timeUp) }
 
-  const outline = useOutline(outlineOf(question.answer))
+  const outlines = useOutlines(outlineOf(question.answer) !== undefined)
 
   // The room's code, so everyone in the game sees the same one.
   const fact = useFact(reveal && { place: reveal.place, type: reveal.question.type }, view.code, reveal?.index ?? 0)
@@ -102,7 +103,7 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
         : undefined,
     [borders, reveal?.index, mine?.guess.type]
   )
-  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, outline, fact, painted, borders })
+  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, outlines, fact, painted, borders })
   useVrView(vrView)
 
   if (view.phase === Phase.REVEAL) {
@@ -197,6 +198,7 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
         <Card title="Players">
           <PlayerList players={everyone(view)} you={view.you.id} showScores />
         </Card>
+        <ExtraPlayersDev code={view.code} phase={view.phase} />
         <PaintDev />
         <ConnectionDev conn={conn} view={view} />
       </DevDrawer>

@@ -1,3 +1,3 @@
 export const hostTagTestIds = {
-  hostTag: "PlayerList.hostTag"
+  hostTag: "HostTag.hostTag"
 }

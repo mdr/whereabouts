@@ -19,6 +19,7 @@ import { VrPictureType } from "../picture/vr-picture"
 import { HintAllowance, VrAnswerType, VrPaintsType } from "./view"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { FactType } from "@whereabouts/shared/catalogue/facts"
+import type { VrRound } from "./view.ts"
 
 const painted = (flag: string, label: string, share: number): PaintedCountry => ({
   country: makeFlagQuestion(flag, label),
@@ -91,7 +92,7 @@ const shown = (over: Partial<VrRoundShown> = {}): VrRoundShown => ({
   ...over
 })
 
-const round = (shown: VrRoundShown) =>
+const round = (shown: VrRoundShown): VrRound =>
   vrRound(shown, {
     paint: {} as PaintController,
     detail: MapDetail.POLITICAL,
@@ -143,11 +144,12 @@ describe("vrReveal", () => {
     ]
     const area = (outline: Outline | undefined): RevealedAnswer => ({
       ...answer,
-      shape: { type: RevealedShapeType.AREA, outline }
+      shape: { type: RevealedShapeType.AREA, outline, disputed: undefined }
     })
     expect(vrReveal(shown(), area(outline), score(), undefined, own).answer).toEqual({
       type: VrAnswerType.OUTLINE,
-      outline
+      outline,
+      disputed: undefined
     })
     expect(vrReveal(shown(), answer, score(), undefined, own).answer).toEqual({
       type: VrAnswerType.POINT,
@@ -156,7 +158,10 @@ describe("vrReveal", () => {
   })
 
   it("shows no answer for an area until its outline loads, rather than a pin at its centre", () => {
-    const loading: RevealedAnswer = { ...answer, shape: { type: RevealedShapeType.AREA, outline: undefined } }
+    const loading: RevealedAnswer = {
+      ...answer,
+      shape: { type: RevealedShapeType.AREA, outline: undefined, disputed: undefined }
+    }
     expect(vrReveal(shown(), loading, score(), undefined, own).answer).toBeUndefined()
   })
 
@@ -166,5 +171,27 @@ describe("vrReveal", () => {
     })
     expect(vrReveal(flagRound, answer, score(), undefined, own).flags).toMatchObject({ pins: undefined })
     expect(vrReveal(shown(), answer, score(), undefined, own).flags).toBeUndefined()
+  })
+})
+
+describe("the headset's reveal line on a flag round", () => {
+  const own = { actions: [], paints: { type: VrPaintsType.OWN } as const }
+  const fact = {
+    type: FactType.FLAG,
+    text: "Adopted in 1945",
+    source: sourceUrl("https://en.wikipedia.org/wiki/Flag_of_Indonesia")
+  }
+  const indonesia = shown({ question: makeFlagQuestionView("id"), fact })
+
+  it("tells the flags apart when the paint was in a look-alike", () => {
+    const you = score({ painted: painted("pl", "Poland", 0.8) })
+    expect(vrReveal(indonesia, answer, you, undefined, own).fact).toBe(
+      "Poland: White over red. Indonesia: Red over white, and longer."
+    )
+  })
+
+  it("gives the fact otherwise", () => {
+    for (const you of [score({ painted: painted("id", "Indonesia", 0.8) }), score(), undefined])
+      expect(vrReveal(indonesia, answer, you, undefined, own).fact).toBe("Adopted in 1945")
   })
 })

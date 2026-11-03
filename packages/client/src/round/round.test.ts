@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from "vite-plus/test"
+import { describe, expect, it, vi, type Mock } from "vite-plus/test"
 import { wikiTitle } from "@whereabouts/shared/ids"
 import type { Outline } from "@whereabouts/shared/questions"
 import { RevealedShapeType } from "./revealed-shape"
@@ -27,13 +27,16 @@ const revealed = (over: Partial<RevealedAnswer> = {}): RevealedAnswer => ({
   ...over
 })
 
-const fakeMap = () => ({
+const fakeMap = (): { showReveal: Mock; showRegionReveal: Mock; clearReveal: Mock } => ({
   showReveal: vi.fn(),
   showRegionReveal: vi.fn(),
   clearReveal: vi.fn()
 })
 
-const fakeCamera = () => ({ fitAnswerAndPaint: vi.fn(), fitRegionAndPaint: vi.fn() })
+const fakeCamera = (): { fitAnswerAndPaint: Mock; fitRegionAndPaint: Mock } => ({
+  fitAnswerAndPaint: vi.fn(),
+  fitRegionAndPaint: vi.fn()
+})
 
 const paint: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] }
 
@@ -48,7 +51,7 @@ describe("frameReveal", () => {
 
   it("frames a country's outline together with the paint", () => {
     const camera = fakeCamera()
-    const a = revealed({ shape: { type: RevealedShapeType.AREA, outline } })
+    const a = revealed({ shape: { type: RevealedShapeType.AREA, outline, disputed: undefined } })
     frameReveal(camera, country, a, paint)
     expect(camera.fitRegionAndPaint).toHaveBeenCalledWith(a.answer, outline, paint, 200)
   })
@@ -63,13 +66,13 @@ describe("showAnswer", () => {
 
   it("outlines a country", () => {
     const map = fakeMap()
-    showAnswer(map, revealed({ shape: { type: RevealedShapeType.AREA, outline } }))
-    expect(map.showRegionReveal).toHaveBeenCalledWith(outline)
+    showAnswer(map, revealed({ shape: { type: RevealedShapeType.AREA, outline, disputed: undefined } }))
+    expect(map.showRegionReveal).toHaveBeenCalledWith(outline, undefined)
   })
 
   it("shows nothing for a country until its outline loads, rather than a misleading point", () => {
     const map = fakeMap()
-    showAnswer(map, revealed({ shape: { type: RevealedShapeType.AREA, outline: undefined } }))
+    showAnswer(map, revealed({ shape: { type: RevealedShapeType.AREA, outline: undefined, disputed: undefined } }))
     expect(map.clearReveal).toHaveBeenCalled()
     expect(map.showReveal).not.toHaveBeenCalled()
   })

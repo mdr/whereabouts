@@ -3,7 +3,7 @@ import { poolOf } from "../catalogue/catalogue.ts"
 import type { PlaceId } from "../ids.ts"
 import type { GameConfig } from "../protocol/config.ts"
 import { QUESTION_TYPES, shuffle, type Outlines, type Question } from "../questions.ts"
-import { roundsOverlap, scoredAnswer } from "../scoring/regions.ts"
+import { roundsOverlap, scoredAnswer, type ScoredAnswer } from "../scoring/regions.ts"
 
 /** Everything a game picks its rounds from. */
 export interface QuestionBank {
@@ -28,7 +28,7 @@ export const pickRounds = (
 ): Question[] => {
   const chosen: Question[] = []
   const asked = new Set<PlaceId>()
-  const answer = (question: Question) => scoredAnswer(question.answer, outlines)
+  const answer = (question: Question): ScoredAnswer => scoredAnswer(question.answer, outlines)
   QUESTION_TYPES.forEach((type, i) => {
     const count = mix[type]
     if (count === 0) return

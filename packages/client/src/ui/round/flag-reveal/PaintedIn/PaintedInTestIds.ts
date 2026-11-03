@@ -1,3 +1,3 @@
 export const paintedInTestIds = {
-  paintedIn: "FlagReveal.paintedIn"
+  paintedIn: "PaintedIn.paintedIn"
 }

@@ -3,7 +3,7 @@ import { colourCss } from "@whereabouts/shared/colours"
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
-import type { Outline } from "@whereabouts/shared/questions"
+import type { Outlines } from "@whereabouts/shared/questions"
 import {
   Phase,
   RoundGuessType,
@@ -43,12 +43,13 @@ import {
   type VrView
 } from "./view"
 import type { VrTable, VrTableRow } from "../scores/scores"
+import type { RevealShown } from "../../round/reveal.ts"
 
-const named = (view: GameView, player: { id: string; name: string }) =>
+const named = (view: GameView, player: { id: string; name: string }): string =>
   `${player.name}${player.id === view.you.id ? " (you)" : ""}`
 
 const shownRow = (view: GameView, row: ShownRow): VrTableRow => {
-  const select = () => (revealShown.value = row.pick)
+  const select = (): RevealShown => (revealShown.value = row.pick)
   if (row.type === ShownRowType.EVERYONE) return { name: "Everyone", total: "", selected: row.selected, select }
   if (row.type === ShownRowType.HIDE_PAINT) return { name: "Hide paint", total: "", selected: row.selected, select }
   const { player, result } = row
@@ -66,7 +67,7 @@ const shownRow = (view: GameView, row: ShownRow): VrTableRow => {
 interface GameVrShown {
   lockIn: () => void
   timeUp: boolean
-  outline: Outline | undefined
+  outlines: Outlines | undefined
   fact: Fact | undefined
   painted: PaintedCountry | undefined
   borders: Borders | undefined
@@ -158,7 +159,7 @@ const gameReveal = (
   conn: Connection,
   shown: VrRoundShown,
   connection: string | undefined,
-  { outline, painted, borders }: Pick<GameVrShown, "outline" | "painted" | "borders">
+  { outlines, painted, borders }: Pick<GameVrShown, "outlines" | "painted" | "borders">
 ): VrReveal => {
   const whose = revealShown.value
   const model = revealModel(view, reveal, whose)
@@ -169,7 +170,7 @@ const gameReveal = (
     total: view.players.find((player) => player.id === view.you.id)?.score ?? 0,
     painted
   }
-  return vrReveal(shown, revealedFromView(reveal, outline), score, borders, {
+  return vrReveal(shown, revealedFromView(reveal, outlines), score, borders, {
     paints: { type: VrPaintsType.PLAYERS, paints: paintsOf(shownResults(reveal.results, whose)) },
     table: {
       title: `Round ${reveal.index + 1} of ${reveal.total}`,
@@ -191,7 +192,7 @@ export const gameVrView = (
   const reveal = view.phase === Phase.REVEAL ? view.reveal : undefined
   const shown: VrRoundShown = {
     question: roundOf(view).question,
-    revealed: reveal && revealedFromView(reveal, pageShown.outline),
+    revealed: reveal && revealedFromView(reveal, pageShown.outlines),
     fact: pageShown.fact
   }
   const round = gameRound(view, conn, paint, shown, connection, pageShown)

@@ -6,15 +6,16 @@ import { signal } from "@preact/signals"
 import type { PlayerId } from "@whereabouts/shared/ids"
 import { RoundGuessType, type RevealView, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
-import type { Outline } from "@whereabouts/shared/questions"
+import type { Outlines } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"
+import { PaintFocusType, type PaintFocus } from "../map/paint-focus"
 import { revealedShape } from "./revealed-shape"
 
-export const revealedFromView = (reveal: RevealView, outline: Outline | undefined): RevealedAnswer => ({
+export const revealedFromView = (reveal: RevealView, outlines: Outlines | undefined): RevealedAnswer => ({
   label: reveal.label,
   wiki: reveal.wiki,
   answer: reveal.answer,
-  shape: revealedShape(reveal.question.answer, outline),
+  shape: revealedShape(reveal.question.answer, outlines),
   photo: reveal.photo
 })
 
@@ -49,6 +50,22 @@ export const revealShown = signal<RevealShown>(SHOW_EVERYONE)
 export const shownPlayerId = (shown: RevealShown): PlayerId | undefined =>
   shown.type === RevealShownType.PLAYER ? shown.id : undefined
 
+/**
+ * The map's focus, with everyone's paint loaded: whose is chosen, or a
+ * hovered player's over the rest dimmed.
+ */
+export const paintFocus = (shown: RevealShown, hovered: PlayerId | undefined): PaintFocus => {
+  if (hovered !== undefined) return { type: PaintFocusType.HIGHLIGHT, player: hovered }
+  switch (shown.type) {
+    case RevealShownType.EVERYONE:
+      return { type: PaintFocusType.ALL }
+    case RevealShownType.NOBODY:
+      return { type: PaintFocusType.NONE }
+    case RevealShownType.PLAYER:
+      return { type: PaintFocusType.ONLY, player: shown.id }
+  }
+}
+
 /** The results whose paint to show, best first. */
 export const shownResults = (results: RoundResultView[], shown: RevealShown): RoundResultView[] => {
   const painted = results.filter((result) => result.guess.type === RoundGuessType.PAINTED)
@@ -71,7 +88,7 @@ export const revealOrder = (
   players: PlayingPlayerView[],
   results: RoundResultView[]
 ): { player: PlayingPlayerView; result?: RoundResultView }[] => {
-  const group = (result?: RoundResultView) => (result ? 0 : 1)
+  const group = (result?: RoundResultView): 0 | 1 => (result ? 0 : 1)
   return [...players]
     .sort((a, b) => a.rank - b.rank)
     .map((player) => ({ player, result: results.find((result) => result.playerId === player.id) }))

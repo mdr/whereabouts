@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { isTyping } from "./keys"
 
-const input = (type: string) => Object.assign(document.createElement("input"), { type })
+const input = (type: string): HTMLInputElement => Object.assign(document.createElement("input"), { type })
 
 describe("isTyping", () => {
   it("counts text entry as typing", () => {

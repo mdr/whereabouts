@@ -4,13 +4,19 @@
   "ignoreBinaries": ["nix"],
   "workspaces": {
     "packages/client": {
-      "entry": ["scripts/*.ts"],
+      "entry": ["scripts/*.ts", "browser/**/*.{iwft,e2e}.ts"],
       "ignoreDependencies": ["iwer"],
-      "playwright": { "config": ["playwright.config.ts", "playwright.prod.config.ts"] }
+      "playwright": {
+        "config": [
+          "browser/playwright.iwft.config.ts",
+          "browser/playwright.e2e.config.ts",
+          "browser/playwright.prod.config.ts"
+        ]
+      }
     },
     "packages/shared": { "entry": ["scripts/*.ts"] },
     "packages/server": {
-      "entry": ["scripts/load/load-test.ts", "scripts/load/server-probe.ts"],
+      "entry": ["scripts/load/load-test.ts", "scripts/load/server-probe.ts", "src/**/*.iwbt.ts"],
       "ignore": ["src/vendor/**"]
     }
   }

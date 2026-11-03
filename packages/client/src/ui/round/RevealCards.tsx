@@ -8,6 +8,8 @@ import { CardPlace, QuestionCard } from "./question/QuestionCard/QuestionCard"
 import { Answer } from "./question/Answer/Answer"
 import { FactLine } from "./question/FactLine/FactLine"
 import { PaintedIn } from "./flag-reveal/PaintedIn/PaintedIn"
+import { LookalikeFlags } from "./flag-reveal/LookalikeFlags/LookalikeFlags"
+import { lookalikesOf } from "@whereabouts/shared/catalogue/lookalike-flags"
 import { ScoreCard } from "./ScoreCard"
 import scoreStyles from "./Score.module.css"
 
@@ -31,22 +33,27 @@ export const RevealCards = ({
   /** A flag round: the country most of your paint was in. */
   where: PaintedCountry | undefined
   testIds: { scoreCard?: string; score?: string }
-}) => (
-  <>
-    <QuestionCard question={question} hud={CardPlace.REVEAL} credit photo={revealed.photo} foldable startFolded>
-      <Answer label={revealed.label} wiki={revealed.wiki} />
-      <FactLine fact={fact} />
-    </QuestionCard>
-    <ScoreCard
-      score={you ? Math.round(you.score) : "—"}
-      label={you ? (you.passed ? "you passed this round" : playedLabel) : "you sat this one out"}
-      testIds={testIds}
-    >
-      {where && (
-        <div class={scoreStyles.fit}>
-          Your paint: <PaintedIn where={where} answer={clueFlag(question.clue)} whose="your" />
-        </div>
-      )}
-    </ScoreCard>
-  </>
-)
+}) => {
+  const answerFlag = clueFlag(question.clue)
+  const lookalikes = answerFlag && lookalikesOf(answerFlag, where?.country.clue.flag)
+  return (
+    <>
+      <QuestionCard question={question} hud={CardPlace.REVEAL} credit photo={revealed.photo} foldable startFolded>
+        <Answer label={revealed.label} wiki={revealed.wiki} />
+        <FactLine fact={fact} />
+        {lookalikes && <LookalikeFlags lookalikes={lookalikes} />}
+      </QuestionCard>
+      <ScoreCard
+        score={you ? Math.round(you.score) : "—"}
+        label={you ? (you.passed ? "you passed this round" : playedLabel) : "you sat this one out"}
+        testIds={testIds}
+      >
+        {where && (
+          <div class={scoreStyles.fit}>
+            Your paint: <PaintedIn where={where} answer={answerFlag} whose="your" />
+          </div>
+        )}
+      </ScoreCard>
+    </>
+  )
+}

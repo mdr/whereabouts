@@ -1,3 +1,3 @@
 export const allFlagsSwitchTestIds = {
-  allFlagsSwitch: "FlagReveal.allFlagsSwitch"
+  allFlagsSwitch: "AllFlagsSwitch.allFlagsSwitch"
 }

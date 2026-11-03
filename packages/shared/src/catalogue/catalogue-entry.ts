@@ -69,7 +69,8 @@ export const joinQuestion = (entry: CatalogueEntry, places: ReadonlyMap<PlaceId,
     if (!place.at) throw new Error(`${entry.id}: ${place.id} has no point`)
     return { ...stored, at: place.at }
   }
-  const answer = (stored: StoredAnswer) => (stored.type === AnswerType.AREA ? area() : point(stored))
+  const answer = (stored: StoredAnswer): PointAnswer | AreaAnswer =>
+    stored.type === AnswerType.AREA ? area() : point(stored)
   const common = { id: entry.id, place: place.id, label: place.label, wiki: place.wiki }
   switch (entry.type) {
     case QuestionType.LANDMARK:

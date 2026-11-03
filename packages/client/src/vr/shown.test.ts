@@ -21,7 +21,7 @@ const reveal = (over: Partial<VrReveal> = {}, round = makeRound()): VrView => ({
 const summary = (type: VrViewType.DONE | VrViewType.LOBBY, over: Record<string, unknown> = {}): VrView =>
   ({ type, summary: over }) as unknown as VrView
 
-const table = (name: string) => name as unknown as VrTable
+const table = (name: string): VrTable => name as unknown as VrTable
 
 describe("globeDetail", () => {
   it("shows everything on the reveal", () => {

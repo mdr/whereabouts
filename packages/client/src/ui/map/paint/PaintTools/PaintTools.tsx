@@ -9,7 +9,8 @@ import { clearPaint } from "../../../../paint/paint-commands"
 import { Shortcuts } from "../../Shortcuts/Shortcuts"
 import { ShortcutsButton } from "../../ShortcutsButton/ShortcutsButton"
 import { paintToolsTestIds } from "./PaintToolsTestIds"
-import { PASS_NOTE } from "../../../../round/round-words"
+import { FILL_NOUN, PASS_NOTE } from "../../../../round/round-words"
+import { FillType } from "../../../../paint/fill-target"
 import { ToolLabel } from "../ToolLabel/ToolLabel"
 import { Trim } from "../Trim"
 import { TrimToHint } from "../TrimToHint/TrimToHint"
@@ -20,11 +21,23 @@ const TOOL_ICON: Record<Tool, IconName> = {
   [Tool.ERASE]: "eraser",
   [Tool.FILL]: "bucket"
 }
-const TOOL_HINT: Record<Tool, string> = {
-  [Tool.PAN]: "Pan the map (1). Hold Space to pan while painting.",
-  [Tool.PAINT]: "Paint where you think it is (2). Paint again to weight an area more.",
-  [Tool.ERASE]: "Erase paint (3)",
-  [Tool.FILL]: "Fill a whole country (4). Fill several if unsure; click a filled one to take it off."
+const TOOL_LABEL: Record<Tool, string> = {
+  [Tool.PAN]: "Pan",
+  [Tool.PAINT]: "Paint",
+  [Tool.ERASE]: "Erase",
+  [Tool.FILL]: "Fill"
+}
+const toolHint = (tool: Tool, fillType: FillType | undefined): string => {
+  switch (tool) {
+    case Tool.PAN:
+      return "Pan the map (1). Hold Space to pan while painting."
+    case Tool.PAINT:
+      return "Paint where you think it is (2). Paint again to weight an area more."
+    case Tool.ERASE:
+      return "Erase paint (3)"
+    case Tool.FILL:
+      return `Fill a whole ${FILL_NOUN[fillType ?? FillType.COUNTRY]} (4). Fill several if unsure; click a filled one to take it off.`
+  }
 }
 
 /**
@@ -51,7 +64,7 @@ export const PaintTools = ({
   const paint = usePaint()
   const activeTool = paint.tool.value
   const enabled = paint.enabled.value
-  // Fill only in a round asking for a country, on the Political map.
+  // Fill only for a country on a map with borders, or an island.
   const tools: Tool[] = paint.fillable.value
     ? [Tool.PAN, Tool.PAINT, Tool.ERASE, Tool.FILL]
     : [Tool.PAN, Tool.PAINT, Tool.ERASE]
@@ -63,13 +76,13 @@ export const PaintTools = ({
             key={tool}
             class={tool === activeTool ? "active" : undefined}
             aria-pressed={tool === activeTool}
-            title={TOOL_HINT[tool]}
+            title={toolHint(tool, paint.fillType.value)}
             onClick={() => (paint.tool.value = tool)}
             disabled={!enabled}
             data-testid={paintToolsTestIds.toolButton}
             data-tool={tool}
           >
-            <Icon name={TOOL_ICON[tool]} /> <ToolLabel>{tool[0]!.toUpperCase() + tool.slice(1)}</ToolLabel>
+            <Icon name={TOOL_ICON[tool]} /> <ToolLabel>{TOOL_LABEL[tool]}</ToolLabel>
           </button>
         ))}
         <button

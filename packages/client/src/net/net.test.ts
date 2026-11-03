@@ -9,7 +9,7 @@ import { GameEntryType, decodeTicket, type Ticket } from "@whereabouts/shared/pr
 import { ClientTopic } from "@whereabouts/shared/protocol/client-messages"
 import { SocketEvent } from "@whereabouts/shared/protocol/socket-event"
 import { ServerTopic, revealMessage, stateMessage } from "@whereabouts/shared/protocol/server-messages"
-import { type GameView, type RoundReveal, Phase } from "@whereabouts/shared/protocol/views"
+import { type GameView, type RoundReveal, Phase, type RevealGameView } from "@whereabouts/shared/protocol/views"
 import { Connection, ConnectionStatus, type GameClient } from "./net"
 import { RejectionAction, type Rejection } from "./rejection"
 import { makeGuessingView, makeLobbyView, makeQuestionView, makeRevealView } from "../test-view"
@@ -68,7 +68,7 @@ const TICKET = {
   entry: { type: GameEntryType.HOST as const }
 }
 
-const connected = () => {
+const connected = (): { conn: Connection; client: FakeClient; clients: FakeClient[] } => {
   const clients: FakeClient[] = []
   const conn = new Connection((_url, options) => {
     const c = new FakeClient(options)
@@ -279,7 +279,7 @@ describe("Connection view", () => {
       wiki: wikiTitle("Kyoto"),
       results: []
     }
-    const at = (index: number) => makeRevealView({ reveal: { ...reveal, index, ready: [] } })
+    const at = (index: number): RevealGameView => makeRevealView({ reveal: { ...reveal, index, ready: [] } })
     const { conn, client } = connected()
     client.open()
     client.emit(ServerTopic.REVEAL, encoder.encode(JSON.stringify(revealMessage(reveal))))
@@ -304,14 +304,14 @@ describe("Connection view", () => {
 describe("Connection liveness", () => {
   afterEach(() => vi.useRealTimers())
 
-  const inGame = () => {
+  const inGame = (): { conn: Connection; client: FakeClient; clients: FakeClient[] } => {
     vi.useFakeTimers()
     const game = connected()
     game.client.open()
     game.client.state(makeLobbyView({ code: roomCode("WXYZ") }))
     return game
   }
-  const pings = (client: FakeClient) => client.sent.filter((message) => message === ClientTopic.PING).length
+  const pings = (client: FakeClient): number => client.sent.filter((message) => message === ClientTopic.PING).length
 
   it("pings now and then, and carries on while the server answers", () => {
     const { conn, client, clients } = inGame()

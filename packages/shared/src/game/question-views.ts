@@ -29,11 +29,12 @@ import {
 
 const pointAnswerView = ({ type, tolerance }: PointAnswer): PointAnswerView => ({ type, tolerance })
 
-const areaAnswerView = ({ type, tolerance, outline, surface }: AreaAnswer): AreaAnswerView => ({
+const areaAnswerView = ({ type, tolerance, outline, surface, disputed }: AreaAnswer): AreaAnswerView => ({
   type,
   tolerance,
   outline,
-  surface
+  surface,
+  ...(disputed && { disputed })
 })
 
 const answerView = (answer: Answer): AnswerView =>

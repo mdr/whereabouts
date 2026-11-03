@@ -32,21 +32,35 @@ Other commands:
   (`nix develop .#ci`: node, pnpm and jq) whose paths all come from
   cache.nixos.org; the pnpm store is cached between runs with actions/cache.
 - `pnpm test`: unit tests for scoring, paint, the game state machine, the
-  protocol codec, server config and client components, plus end-to-end
-  server tests that drive the real server over WebSockets with the browser
-  client.
+  protocol codec, server config and client components, plus `*.iwbt.ts`
+  (isolated whole-backend tests) in `packages/server/src/iwbt`: players
+  (`TestPlayer`) host, join, paint and lock in against the real server running
+  inside the test's process, on a fake clock, through the browser client's
+  WebSocket.
 - `pnpm lint:fix` and `pnpm format` to tidy up.
 - Browser end-to-end tests in `packages/client/browser/tests`, run by
   Playwright Test in your installed Chrome. They are written against the
   page objects in `packages/client/browser/pages`: one per screen, and each
   action that moves to another screen returns that screen. Page objects find
   elements by the test ids each component declares in its `*TestIds.ts`
-  module. `task e2e` starts dev servers of its own, with short rounds, and
-  runs them all (`task e2e -- solo host` for some); `pnpm smoke` runs
-  `solo`. Screenshots go to `smoke-out/e2e/`. `task --list` shows what
+  module. Most specs are `*.iwft.ts` (isolated whole-frontend tests): the
+  client against the real game server running inside the test's process
+  (the `game` fixture in `browser/game-server`), on a fake clock the test
+  moves, with games set up and checked through it. They need no network:
+  every request beyond localhost is answered from `browser/offline/offline-world`
+  (the map at zoom 0–1 and relief at 0–2, which MapLibre overzooms, Latin
+  labels, flat terrain, a stand-in photo and the headset controllers; about
+  4 MB, built by `scripts/build-offline-world.ts`), and any other request
+  fails the test. One spec,
+  `multiplayer.e2e.ts`, plays on the dev servers instead, as the check that
+  client and server work together. `task iwft` runs the isolated specs,
+  starting only a Vite dev server of its own (`task iwft -- solo host` for
+  some); `task e2e` starts Vite and the game server and runs the e2e specs. Every
+  run picks free ports, so runs in other worktrees never collide; `task browser` runs both. `pnpm smoke` runs `solo`.
+  Screenshots go to `smoke-out/iwft/` and `smoke-out/e2e/`. `task --list` shows what
   else there is.
   - `solo`: practice mode: paint, undo and redo, submit.
-  - `multiplayer`: two players through setup, guessing, Done and Keep
+  - `multiplayer` (e2e): two players through setup, guessing, Done and Keep
     editing, the reveal and ready-up.
   - `flows`: refresh mid-round, late joiners and passing, play again.
   - `reconnect`: paint drawn while the connection is down reaches the
@@ -379,9 +393,11 @@ changes: [docs/code-map.md](docs/code-map.md)):
   to it within 500 km, and every smaller island within 500 km of those (so
   Sicily and the Aegean stay; the Canaries, Svalbard and Alaska go),
   simplifies the outlines to about 1.5 km and sets the tolerance to a fifth
-  of the country's equivalent radius, sqrt(area / π). Countries with
-  disputed borders, or crossing the antimeridian, are not painted: their
-  flag round asks for a point. The outlines load on demand, in their own
+  of the country's equivalent radius, sqrt(area / π). A country with
+  disputed borders has the disputed land (Natural Earth's breakaway and
+  disputed areas) cut out of its outline; paint there is left out of the
+  score, and the reveal shows it greyed. Countries crossing the antimeridian
+  are not painted: their flag round asks for a point. The outlines load on demand, in their own
   chunk. Scoring (`scoreArea`) is `0.4 x shape + 0.6 x nearness`, a sum like
   the point rule's mixture of kernels, so credit for covering the country and
   for being near it add up:
@@ -416,7 +432,7 @@ changes: [docs/code-map.md](docs/code-map.md)):
 | Action              | Control                                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Pan / Paint / Erase | `1` / `2` / `3`, or the buttons                                                                               |
-| Fill                | `4`, or the button (a country round on the Political map)                                                     |
+| Fill                | `4`, or the button (a country round on the Political map, or an island round)                                 |
 | Pan while painting  | hold `Space`, or drag with the middle button                                                                  |
 | Brush size          | slider, or `[` and `]`                                                                                        |
 | Undo / redo         | `Ctrl+Z` / `Ctrl+Shift+Z` (⌘ on Mac), or the buttons                                                          |
@@ -442,7 +458,7 @@ gzipped, fetched on the first press. The land mask cannot serve, since
 lakes are land in it. A lake or sea painted exactly loses nothing (a test
 checks every one).
 
-Fill appears in a round that asks for a country (whole countries and flags, not islands, lakes, seas or states)
+Fill appears in a round that asks for a country (whole countries and flags; not states)
 when the map detail is Political. A click (a tap, on a phone) fills the
 country under it with an even coat; fill several if unsure, each weighted by
 its area, and click a filled one to take it off. The outline under the
@@ -452,6 +468,12 @@ it is scored by, so filling the right one scores about 999; any other is
 filled with its land from `borders.json`, and a flag round asked as a point
 scores like an even coat of the country (Russia about 880, Malta about 980).
 See `packages/shared/src/paint/fill.ts`.
+
+Fill appears in an island round too, on any map detail, and fills the island
+under it: every 1:50m Natural Earth landmass from 50 km² up to Greenland's
+size (`packages/shared/islands.json`, built by `scripts/build-islands.ts`,
+about 100 KB gzipped, fetched on the first island round). Each is simplified
+as an island answer's outline is, so filling the right island scores about 999.
 
 The outline under the pointer is the brush footprint: the exact hex cells the next stamp will touch, at the
 resolution the layer picks for that brush size, so at world zoom you see the
@@ -485,6 +507,13 @@ side-by-side kernel scores, score-if-here on hover, the paint distribution by bl
 and cell count, brush strength and world floor sliders, and connection
 diagnostics online. Players never see any of this; strength and floor are
 fixed for them.
+
+In an online game the drawer's Extra players card fills a room without
+opening tabs: "Add 16 players" in the lobby seats players with no browser
+behind them, and "Extra players paint" while guessing has each of them paint a
+blob near the answer (up to three tolerances off, so scores vary) and lock in.
+It calls `POST /api/dev/players`, which the server registers only when
+`DEV_TOOLS=1`: set by the server's `dev` script, never in production.
 
 `#/score-review`, linked from nowhere, is for tuning the scoring: a set of
 32 made-up guesses (`score-review.ts`) at place names, countries, islands,

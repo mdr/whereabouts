@@ -17,7 +17,7 @@ export class GameAuth extends AuthMiddleware<ActorData> {
     this.rooms = rooms
   }
 
-  override async authenticate(ticket: string, context?: ConnectionContext) {
+  override async authenticate(ticket: string, context?: ConnectionContext): Promise<AuthResult<ActorData>> {
     return this.route(ticket, context?.remoteId ?? "unknown")
   }
 

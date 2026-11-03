@@ -1,3 +1,3 @@
 export const setupPanelTestIds = {
-  startButton: "Lobby.startButton"
+  startButton: "SetupPanel.startButton"
 }

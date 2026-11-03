@@ -3,7 +3,7 @@ import type { Ring } from "@whereabouts/shared/geo"
 import type { Outline } from "@whereabouts/shared/questions"
 import { outlinePath } from "./outline-path"
 
-const points = (path: string) =>
+const points = (path: string): (readonly [number, number])[] =>
   [...path.matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)].map((match) => [Number(match[1]), Number(match[2])] as const)
 
 describe("outlinePath", () => {

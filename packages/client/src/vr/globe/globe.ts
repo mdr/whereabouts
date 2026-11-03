@@ -65,10 +65,10 @@ const w = new Vector3()
 /** An angle the short way round, in (-π, π]. */
 const wrap = (angle: Radians): Radians => Math.atan2(Math.sin(angle), Math.cos(angle))
 
-const stickActive = (stick: { x: number; y: number }) =>
+const stickActive = (stick: { x: number; y: number }): boolean =>
   Math.abs(stick.x) > STICK_DEAD_ZONE || Math.abs(stick.y) > STICK_DEAD_ZONE
 
-const smoothstep = (t: number) => t * t * (3 - 2 * t)
+const smoothstep = (t: number): number => t * t * (3 - 2 * t)
 
 /** How the globe is turned: spun about its poles, then tilted. */
 interface Turn {
