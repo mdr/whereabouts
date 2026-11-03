@@ -8,7 +8,7 @@ import type { ComponentChildren } from "preact"
 import { useEffect } from "preact/hooks"
 import { useElementRef } from "../../element-ref"
 import { cx } from "../../cx"
-import { hudBottomTestIds, hudHeaderTestIds } from "./HudTestIds"
+import { hudTestIds } from "./HudTestIds"
 import { SoundToggle } from "../SoundToggle/SoundToggle"
 import styles from "./Hud.module.css"
 
@@ -50,7 +50,7 @@ export const HudBottom = ({ note, children }: { note?: string; children: Compone
     }
   }, [])
   return (
-    <div class={styles.bottom} ref={ref} data-testid={hudBottomTestIds.toolbar}>
+    <div class={styles.bottom} ref={ref} data-testid={hudTestIds.toolbar}>
       <div class={styles.toolbar}>{children}</div>
       {note && <p class={styles.toolbarNote}>{note}</p>}
     </div>
@@ -76,7 +76,7 @@ export const HudHeader = ({
   total: number | string
   right?: ComponentChildren
 }) => (
-  <div class={styles.header} data-testid={hudHeaderTestIds.header}>
+  <div class={styles.header} data-testid={hudTestIds.header}>
     {home ? (
       <a href="#/" class={styles.brand}>
         Whereabouts
@@ -84,7 +84,7 @@ export const HudHeader = ({
     ) : (
       <span class={styles.brand}>Whereabouts</span>
     )}
-    <span class={styles.round} data-testid={hudHeaderTestIds.round}>
+    <span class={styles.round} data-testid={hudTestIds.round}>
       <span class={styles.roundWord}>Round </span>
       <span class={styles.nowrap}>
         {round} / {total}

@@ -1,4 +1,4 @@
 export const roundStripTestIds = {
-  strip: "MixEditor.strip",
-  cell: "MixEditor.cell"
+  strip: "RoundStrip.strip",
+  cell: "RoundStrip.cell"
 }

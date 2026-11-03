@@ -1,3 +1,3 @@
 export const rosterTestIds = {
-  watchingHeading: "Lobby.watchingHeading"
+  watchingHeading: "Roster.watchingHeading"
 }

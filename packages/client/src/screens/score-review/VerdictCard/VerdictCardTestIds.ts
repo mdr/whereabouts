@@ -1,10 +1,10 @@
 export const verdictCardTestIds = {
-  pair: "ScoreReview.pair",
-  pairGuess: "ScoreReview.pairGuess",
-  shouldBeInput: "ScoreReview.shouldBeInput",
-  noteInput: "ScoreReview.noteInput",
-  pairScore: "ScoreReview.pairScore",
-  verdict: "ScoreReview.verdict",
-  progress: "ScoreReview.progress",
-  exportButton: "ScoreReview.exportButton"
+  pair: "VerdictCard.pair",
+  pairGuess: "VerdictCard.pairGuess",
+  shouldBeInput: "VerdictCard.shouldBeInput",
+  noteInput: "VerdictCard.noteInput",
+  pairScore: "VerdictCard.pairScore",
+  verdict: "VerdictCard.verdict",
+  progress: "VerdictCard.progress",
+  exportButton: "VerdictCard.exportButton"
 }

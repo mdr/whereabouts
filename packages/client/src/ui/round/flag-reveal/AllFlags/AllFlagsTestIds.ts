@@ -1,3 +1,3 @@
 export const allFlagsTestIds = {
-  pin: "FlagReveal.pin"
+  pin: "AllFlags.pin"
 }

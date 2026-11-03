@@ -1,3 +1,3 @@
 export const invitePanelTestIds = {
-  code: "Lobby.code"
+  code: "InvitePanel.code"
 }
