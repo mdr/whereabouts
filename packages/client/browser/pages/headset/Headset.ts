@@ -1,3 +1,4 @@
+import { PageObject } from "../steps.ts"
 import { expect, type Page, type Locator } from "@playwright/test"
 import type { Ms } from "@whereabouts/shared/units"
 import type { Vec3 } from "../../../src/vr/probe.ts"
@@ -15,7 +16,7 @@ import { probe } from "./probe.ts"
  * browser can open a VR session and the script can move the controllers
  * and press their buttons. Install before the page loads.
  */
-export class Headset {
+export class Headset extends PageObject {
   readonly #page: Page
   readonly controllers: Controllers
   readonly scene: HeadsetScene
@@ -27,6 +28,7 @@ export class Headset {
   }
 
   constructor(page: Page) {
+    super()
     this.#page = page
     this.controllers = new Controllers(page, (n) => this.frames(n))
     this.scene = new HeadsetScene(page)

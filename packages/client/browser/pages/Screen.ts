@@ -1,3 +1,4 @@
+import { PageObject } from "./steps.ts"
 import { expect, type Page } from "@playwright/test"
 import type { Tab } from "./Tab.ts"
 import { softExpect } from "./support.ts"
@@ -11,11 +12,12 @@ interface Fit {
 }
 
 /** What every screen can do, whichever it is. */
-export abstract class Screen {
+export abstract class Screen extends PageObject {
   protected readonly tab: Tab
   protected readonly page: Page
 
   constructor(tab: Tab) {
+    super()
     this.tab = tab
     this.page = tab.page
   }

@@ -1,9 +1,10 @@
+import { PageObject } from "../steps.ts"
 import { expect, type Page } from "@playwright/test"
 import { confirmDialogTestIds } from "../../../src/ui/ConfirmDialog/ConfirmDialogTestIds.ts"
 import { text } from "../support.ts"
 
 /** The "are you sure?" dialog. Confirming leads to `T`: the screen the action takes you to. */
-export class ConfirmDialog<T> {
+export class ConfirmDialog<T> extends PageObject {
   readonly #page: Page
   readonly #confirmed: () => Promise<T>
 
@@ -13,6 +14,7 @@ export class ConfirmDialog<T> {
   }
 
   constructor(page: Page, confirmed: () => Promise<T>) {
+    super()
     this.#page = page
     this.#confirmed = confirmed
   }

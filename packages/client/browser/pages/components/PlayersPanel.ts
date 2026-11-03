@@ -1,3 +1,4 @@
+import { PageObject } from "../steps.ts"
 import type { Page } from "@playwright/test"
 import { playersPanelTestIds } from "../../../src/ui/players/PlayersPanel/PlayersPanelTestIds.ts"
 import { playerListTestIds } from "../../../src/ui/players/PlayerList/PlayerListTestIds.ts"
@@ -6,11 +7,12 @@ import { PlayerList } from "./PlayerList.ts"
 import { byTestIdWith } from "../support.ts"
 
 /** The collapsible list of players over the map during a round. */
-export class PlayersPanel {
+export class PlayersPanel extends PageObject {
   readonly #page: Page
   readonly players: PlayerList
 
   constructor(page: Page) {
+    super()
     this.#page = page
     this.players = new PlayerList(page.getByTestId(playersPanelTestIds.card))
   }
