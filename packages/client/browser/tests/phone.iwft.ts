@@ -1,14 +1,24 @@
 // Every screen at phone size (Playwright's iPhone 13 profile, 390 px wide),
-// against the dev servers: the layout never makes the page wider than the
+// against the in-process server: the layout never makes the page wider than the
 // screen, and the controls a player needs are on screen and uncovered.
-import { test } from "@playwright/test"
 import { devices } from "@playwright/test"
+import { test } from "../game-server/game-server.ts"
 import type { Screen } from "../pages/Screen.ts"
 import { Tool } from "../../src/paint/tool.ts"
 import { QuestionType } from "@whereabouts/shared/questions"
-import { newTab, shot } from "./support.ts"
+import { mixOf } from "@whereabouts/shared/protocol/config"
+import { ROUND_GRACE } from "@whereabouts/shared/game/game"
+import { newTab } from "./iwft-tab.ts"
+import { shot } from "./support.ts"
 
-test("phone", async ({ browser }) => {
+const ROUND_LENGTH = 60_000
+
+// Photos make the tallest question card.
+test.use({
+  serverOptions: { config: { mix: mixOf({ [QuestionType.LANDMARK]: 2 }), roundLength: ROUND_LENGTH } }
+})
+
+test("phone", async ({ browser, game }) => {
   const phone = devices["iPhone 13"]
 
   const fits = async (screen: Screen, label: string): Promise<void> => {
@@ -17,18 +27,16 @@ test("phone", async ({ browser }) => {
   }
 
   const { aliceLobbyPage, code } = await test.step("Alice hosts a photo game", async () => {
-    const aliceHomePage = await (await newTab(browser, "Alice")).openHome()
+    const aliceHomePage = await (await newTab(browser, "Alice", { game })).openHome()
     await aliceHomePage.enterName("Alice")
     const aliceLobbyPage = await aliceHomePage.hostGame()
-    // Photos make the tallest question card.
-    await aliceLobbyPage.setOnlyQuestions(QuestionType.LANDMARK, 2)
     const code = await aliceLobbyPage.code()
     return { aliceLobbyPage, code }
   })
 
   const bobLobbyPage = await test.step("Bob joins on a phone: home and lobby fit", async () => {
     const bobHomePage = await (
-      await newTab(browser, "Bob", { context: { ...phone, isMobile: true, hasTouch: true } })
+      await newTab(browser, "Bob", { context: { ...phone, isMobile: true, hasTouch: true }, game })
     ).openHome()
     await fits(bobHomePage, "home")
     await bobHomePage.enterName("Bobbington")
@@ -73,8 +81,9 @@ test("phone", async ({ browser }) => {
   // Alice never presses Done, so the round runs out of time.
   const { aliceRevealPage, bobRevealPage } =
     await test.step("the reveal fits and its controls are usable", async () => {
-      const aliceRevealPage = await aliceRoundPage.waitForReveal(60_000)
-      const bobRevealPage = await bobRoundDonePage.waitForReveal(60_000)
+      game.advance(ROUND_LENGTH + ROUND_GRACE)
+      const aliceRevealPage = await aliceRoundPage.waitForReveal()
+      const bobRevealPage = await bobRoundDonePage.waitForReveal()
       await bobRevealPage.waitForLayoutToSettle()
       await fits(bobRevealPage, "reveal")
       await bobRevealPage.expectAnswerLineUsable()
@@ -93,7 +102,7 @@ test("phone", async ({ browser }) => {
 
   await test.step("the results fit", async () => {
     await (await aliceRevealPage.hud.askToEndGame()).confirm()
-    const bobResultsPage = await bobRevealPage.waitForResults(60_000)
+    const bobResultsPage = await bobRevealPage.waitForResults()
     await fits(bobResultsPage, "results")
   })
 })

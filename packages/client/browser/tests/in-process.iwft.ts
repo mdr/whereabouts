@@ -8,7 +8,7 @@ import { Phase } from "@whereabouts/shared/protocol/views"
 import { ROUND_GRACE } from "@whereabouts/shared/game/game"
 import { test } from "../game-server/game-server.ts"
 import { RevealPage } from "../pages/RevealPage.ts"
-import { newTab } from "./support.ts"
+import { newTab } from "./iwft-tab.ts"
 
 const ROUND_LENGTH = 60_000
 

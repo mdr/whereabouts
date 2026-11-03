@@ -56,10 +56,11 @@ tasks:
     summary: |
       Playwright Test starts Vite and the game server on spare ports (5180
       and 8790), so a `pnpm dev` already running is left alone, with short
-      rounds; runs every spec in packages/client/browser/tests, or those
+      rounds for the one e2e spec; runs every spec in packages/client/browser/tests
+      (the iwft ones use a game server in their own process), or those
       whose file names match the words after --, three at a time. Screenshots
       go to smoke-out/e2e/, a report to smoke-out/e2e-report/.
-      Takes about 4½ minutes for all of them.
+      Takes a few minutes for all of them.
     cmds:
       # Named tests skip the dependency, which would run every other test first.
       - pnpm --filter ./packages/client e2e {{if .CLI_ARGS}}--no-deps {{end}}{{.CLI_ARGS}}

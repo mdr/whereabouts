@@ -41,12 +41,17 @@ Other commands:
   page objects in `packages/client/browser/pages`: one per screen, and each
   action that moves to another screen returns that screen. Page objects find
   elements by the test ids each component declares in its `*TestIds.ts`
-  module. `task e2e` starts dev servers of its own, with short rounds, and
-  runs them all (`task e2e -- solo host` for some); `pnpm smoke` runs
-  `solo`. Screenshots go to `smoke-out/e2e/`. `task --list` shows what
+  module. Most specs are `*.iwft.ts` (isolated whole-frontend tests): the
+  client against the real game server running inside the test's process
+  (the `game` fixture in `browser/game-server`), on a fake clock the test
+  moves, with games set up and checked through it. One spec,
+  `multiplayer.e2e.ts`, plays on the dev servers instead, as the check that
+  client and server work together. `task e2e` starts those dev servers,
+  on spare ports, and runs everything (`task e2e -- solo host` for some);
+  `pnpm smoke` runs `solo`. Screenshots go to `smoke-out/e2e/`. `task --list` shows what
   else there is.
   - `solo`: practice mode: paint, undo and redo, submit.
-  - `multiplayer`: two players through setup, guessing, Done and Keep
+  - `multiplayer` (e2e): two players through setup, guessing, Done and Keep
     editing, the reveal and ready-up.
   - `flows`: refresh mid-round, late joiners and passing, play again.
   - `reconnect`: paint drawn while the connection is down reaches the

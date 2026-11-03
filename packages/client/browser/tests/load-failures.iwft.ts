@@ -6,11 +6,11 @@ import { Headset } from "../pages/headset/Headset.ts"
 import { PracticeRoundPage } from "../pages/PracticeRoundPage.ts"
 import { ScoreReviewPage } from "../pages/ScoreReviewPage.ts"
 import { LoadFailures } from "../pages/LoadFailures.ts"
-import { newTab } from "./support.ts"
+import { newOfflineTab } from "./iwft-tab.ts"
 
 test("load-failures", async ({ browser }) => {
   await test.step("a map that will not load says so, and Try again loads it", async () => {
-    const mapTab = await newTab(browser, "map")
+    const mapTab = await newOfflineTab(browser, "map")
     let styleBlocked = true
     await mapTab.page.route(/openfreemap\.org\/styles\//, (route) => (styleBlocked ? route.abort() : route.continue()))
     const mapFailures = await mapTab.openFailing("/solo")
@@ -21,7 +21,7 @@ test("load-failures", async ({ browser }) => {
   })
 
   await test.step("outlines that will not load say so, and Try again loads them", async () => {
-    const outlinesTab = await newTab(browser, "outlines")
+    const outlinesTab = await newOfflineTab(browser, "outlines")
     let outlinesBlocked = true
     await outlinesTab.page.route(/outlines\.json$/, (route) => (outlinesBlocked ? route.abort() : route.continue()))
     const outlineFailures = await outlinesTab.openFailing("/score-review")
@@ -32,7 +32,7 @@ test("load-failures", async ({ browser }) => {
   })
 
   await test.step("VR that will not load says so, leaves no canvas, and Try again opens the session", async () => {
-    const vrTab = await newTab(browser, "vr")
+    const vrTab = await newOfflineTab(browser, "vr")
     const headset = await Headset.install(vrTab.page)
     let landBlocked = true
     await vrTab.page.route(/land\.json$/, (route) => (landBlocked ? route.abort() : route.continue()))
@@ -48,7 +48,7 @@ test("load-failures", async ({ browser }) => {
   })
 
   await test.step("VR code that will not load offers a reload, since trying again cannot work", async () => {
-    const vrCodeTab = await newTab(browser, "vr code")
+    const vrCodeTab = await newOfflineTab(browser, "vr code")
     await Headset.install(vrCodeTab.page)
     await vrCodeTab.page.route(/\/src\/vr\/index\.ts/, (route) => route.abort())
     await vrCodeTab.openPractice()

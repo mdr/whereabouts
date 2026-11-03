@@ -6,10 +6,11 @@
 import { test } from "@playwright/test"
 import { Tool } from "../../src/paint/tool.ts"
 import { HintAxis } from "@whereabouts/shared/hints"
-import { newTab, shot } from "./support.ts"
+import { newOfflineTab } from "./iwft-tab.ts"
+import { shot } from "./support.ts"
 
 test("solo", async ({ browser }) => {
-  const tab = await newTab(browser, "solo", { context: { viewport: { width: 1400, height: 900 } }, dev: true })
+  const tab = await newOfflineTab(browser, "solo", { context: { viewport: { width: 1400, height: 900 } }, dev: true })
 
   const practiceRoundPage = await test.step("a practice round gives a hint", async () => {
     const practiceRoundPage = await tab.openPractice()

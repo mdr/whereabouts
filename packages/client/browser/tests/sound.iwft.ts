@@ -1,28 +1,39 @@
-// The game's sounds start and stop when they should, against the dev
-// servers: the rising cue at round start, the spray while painting and the
+// The game's sounds start and stop when they should, against the in-process
+// server: the rising cue at round start, the spray while painting and the
 // eraser while erasing, the whoosh for Clear, the chicken for a pass, the
 // countdown at ten seconds left, the falling cue and no alarm when everyone
 // finishes early, the alarm when time runs out, applause at the final
 // results, and silence with the switch off.
-import { test } from "@playwright/test"
+import { ROUND_GRACE } from "@whereabouts/shared/game/game"
+import { evenMix } from "@whereabouts/shared/protocol/config"
+import { test } from "../game-server/game-server.ts"
 import { Tool } from "../../src/paint/tool.ts"
 import { pageTime, recordSounds, Sounds } from "./sounds.ts"
-import { newTab, SWIFTSHADER } from "./support.ts"
+import { newOfflineTab, newTab } from "./iwft-tab.ts"
+import { SWIFTSHADER } from "./support.ts"
 
-test.use({ launchOptions: { args: [...SWIFTSHADER, "--autoplay-policy=no-user-gesture-required"] } })
+// The countdown starts ten seconds before the end of a long round; Ann's page clock is wound on to there.
+const ROUND_LENGTH = 120_000
+const COUNTDOWN_AT = ROUND_LENGTH - 10_000
 
-test("sound", async ({ browser }) => {
+test.use({
+  launchOptions: { args: [...SWIFTSHADER, "--autoplay-policy=no-user-gesture-required"] },
+  serverOptions: { config: { mix: evenMix(2), roundLength: ROUND_LENGTH } }
+})
+
+test("sound", async ({ browser, game }) => {
   const options = { context: { viewport: { width: 1280, height: 800 } }, initScript: recordSounds }
   const spot = { across: 0.47, down: 0.5 }
 
   const { annTab, annSounds, bobSounds, annLobbyPage, bobLobbyPage } =
     await test.step("Ann hosts and Bob joins", async () => {
-      const annTab = await newTab(browser, "Ann", options)
+      const annTab = await newTab(browser, "Ann", { ...options, game })
+      await annTab.installClock()
       const annHomePage = await annTab.openHome()
       await annHomePage.enterName("Ann")
       const annLobbyPage = await annHomePage.hostGame()
       const code = await annLobbyPage.code()
-      const bobTab = await newTab(browser, "Bob", options)
+      const bobTab = await newTab(browser, "Bob", { ...options, game })
       const bobJoinAsPage = await bobTab.openGameLink(code)
       await bobJoinAsPage.enterName("Bob")
       const bobLobbyPage = await bobJoinAsPage.join()
@@ -65,9 +76,10 @@ test("sound", async ({ browser }) => {
     await annRoundPage.paintTools.undoWithKeyboard()
   })
 
-  // The round is 12 s, so the countdown should start about 2 s after Start.
   await test.step("the countdown starts at ten seconds left", async () => {
-    await annSinceStart.expectCountdownStart(startedAt, 2)
+    const elapsed = (await pageTime(annTab)) - startedAt
+    await annTab.fastForward(COUNTDOWN_AT - elapsed + 200)
+    await annSinceStart.expectCountdownStart(startedAt, COUNTDOWN_AT / 1000 + 0.5)
   })
 
   // Everyone done early: the falling pair, and the countdown stops before its alarm.
@@ -90,6 +102,8 @@ test("sound", async ({ browser }) => {
     const annRound2Page = await annRevealPage.nextRound()
     const bobRound2Page = await bobRevealPage.waitForNextRound()
     const annRound2 = await annSounds.listen()
+    await annTab.fastForward(COUNTDOWN_AT + 1_000)
+    game.advance(ROUND_LENGTH + ROUND_GRACE)
     const annReveal2Page = await annRound2Page.waitForReveal()
     await annRound2.expectNoCue()
     await annRound2.expectNotStopped("countdown")
@@ -108,7 +122,7 @@ test("sound", async ({ browser }) => {
 
   // In practice mode.
   await test.step("with the switch off, painting is silent", async () => {
-    const soloTab = await newTab(browser, "solo", options)
+    const soloTab = await newOfflineTab(browser, "solo", options)
     const soloSounds = new Sounds(soloTab)
     const practiceRoundPage = await soloTab.openPractice()
     await practiceRoundPage.hud.toggleSound()

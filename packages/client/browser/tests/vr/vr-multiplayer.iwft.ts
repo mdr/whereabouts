@@ -1,20 +1,25 @@
-// An online game with the host in VR, on an emulated Quest 3 (see
-// pages/headset/Headset.ts), and a second player on the page: starting from the lobby
+// An online game on the in-process server with the host in VR, on an emulated
+// Quest 3 (see pages/headset/Headset.ts), and a second player seated by the server: starting from the lobby
 // in VR, the clock and the host's controls, Pass, Done and Keep editing, the
 // reveal's score table, Ready and Next, and the final standings, awards and
 // rounds. Saves screenshots.
-import { test } from "@playwright/test"
+import { test } from "../../game-server/game-server.ts"
+import { mixOf } from "@whereabouts/shared/protocol/config"
+import { QuestionType } from "@whereabouts/shared/questions"
 import { VrViewType } from "../../../src/vr/view/view.ts"
 import { shot } from "../support.ts"
 import { vrHostGuessing, vrHostInLobby, vrHostReveal } from "./vr-game-states.ts"
 import { closeAllTabs, pressMenu, pressScoreRow, spray } from "./vr-support.ts"
 
+test.use({ serverOptions: { config: { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundLength: 60_000 } } })
+
 test.afterEach(async ({ browser }) => closeAllTabs(browser))
 
 test("the host starts the game from VR in the lobby, and round 1's menu shows the clock, the round, the players and the host's controls", async ({
-  browser
+  browser,
+  game
 }) => {
-  const { headset, aliceLobby, bobLobby, can } = await vrHostInLobby(browser)
+  const { headset, aliceLobby, can } = await vrHostInLobby(browser, game)
 
   // The host goes into VR in the lobby, and starts the game from there.
   await headset.panels.expectView(VrViewType.LOBBY)
@@ -23,7 +28,6 @@ test("the host starts the game from VR in the lobby, and round 1's menu shows th
   await aliceLobby.screenshot(shot(`vrmp-0-lobby.png`))
   await pressMenu(headset, can, "act0")
   await aliceLobby.waitForGameToStart()
-  await bobLobby.waitForGameToStart()
   await headset.panels.expectView(VrViewType.PAINT, { timeout: 30_000 })
   await headset.expectInSession()
   await headset.panels.expectClock()
@@ -43,9 +47,10 @@ test("the host starts the game from VR in the lobby, and round 1's menu shows th
 })
 
 test("painting in VR turns Pass into Done, which locks the guess in until Keep editing, and on the reveal the score rows pick whose paint the globe shows", async ({
-  browser
+  browser,
+  game
 }) => {
-  const { headset, centre, can, aliceRound, bobRound } = await vrHostGuessing(browser)
+  const { headset, centre, can, aliceRound, bob } = await vrHostGuessing(browser, game)
 
   await spray(headset, aliceRound, { centre, can })
   await headset.panels.expectDoneLabel("Done")
@@ -57,8 +62,8 @@ test("painting in VR turns Pass into Done, which locks the guess in until Keep e
   await headset.panels.expectKeepEditing(false)
   await pressMenu(headset, can, "done")
   await headset.panels.expectKeepEditing(true)
-  await bobRound.map.drag({ across: 0.3, down: 0.55 })
-  await bobRound.finishLast()
+  game.paint(bob, { lat: 30, lon: 50 }, 300)
+  game.lock([bob])
 
   await headset.panels.expectView(VrViewType.REVEAL)
   await headset.panels.expectScoreTable({ title: "Round 1 of 2", rowCount: 4, namesInclude: ["Alice (you)"] })
@@ -82,9 +87,10 @@ test("painting in VR turns Pass into Done, which locks the guess in until Keep e
 })
 
 test("from the reveal, the host readies and brings round 2 with Next round, then the final standings and the awards board show in the headset", async ({
-  browser
+  browser,
+  game
 }) => {
-  const { headset, can, aliceRound, bobReveal } = await vrHostReveal(browser)
+  const { headset, can, aliceRound, bob } = await vrHostReveal(browser, game)
 
   await headset.panels.expectActions(["Ready", "Next round"])
   await pressMenu(headset, can, "act0")
@@ -94,8 +100,7 @@ test("from the reveal, the host readies and brings round 2 with Next round, then
   await headset.panels.expectView(VrViewType.PAINT)
   await headset.panels.expectDoneLabel("Pass")
   await pressMenu(headset, can, "done")
-  const bobRound2 = await bobReveal.waitForNextRound()
-  await bobRound2.finishLast()
+  game.lock([bob])
   await headset.panels.expectView(VrViewType.REVEAL)
   await headset.panels.expectActionOffered("Show final results")
   await pressMenu(headset, can, "act1")

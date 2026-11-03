@@ -7,6 +7,7 @@ import type { SoundEvent } from "./SoundEvent.ts"
 import { PracticeRoundPage } from "./PracticeRoundPage.ts"
 import { ScoreReviewPage } from "./ScoreReviewPage.ts"
 import { expectNumber, stillTrueFor } from "./support.ts"
+import type { GameConnection } from "../game-server/route-socket.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
 /** One player's browser tab: where each test starts, and what it opens first. */
@@ -15,17 +16,34 @@ export class Tab extends PageObject {
   readonly page: Page
   readonly #baseUrl: string
   readonly #dev: boolean
+  /** The tab's game connection, when it plays on the in-process server. */
+  readonly connection: GameConnection | undefined
 
   /** `dev` opens every page with the playtest drawer. */
-  constructor(page: Page, baseUrl: string, { dev = false } = {}) {
+  constructor(
+    page: Page,
+    baseUrl: string,
+    { dev = false, connection }: { dev?: boolean; connection?: GameConnection } = {}
+  ) {
     super()
     this.page = page
     this.#baseUrl = baseUrl.replace(/\/$/, "")
     this.#dev = dev
+    this.connection = connection
   }
 
   async #open(route: string): Promise<void> {
     await this.page.goto(`${this.#baseUrl}/${this.#dev ? "?dev" : ""}#${route}`, { waitUntil: "networkidle" })
+  }
+
+  /** Take over the page's timers and clock, which then run at the normal rate until `fastForward`. Before opening any page. */
+  installClock(): Promise<void> {
+    return this.page.clock.install()
+  }
+
+  /** Jump the page's clock on, firing the timers now due once. Needs `installClock`. */
+  fastForward(time: Ms): Promise<void> {
+    return this.page.clock.fastForward(time)
   }
 
   /** The page clock (performance.now()). */
