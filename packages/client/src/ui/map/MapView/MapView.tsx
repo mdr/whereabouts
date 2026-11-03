@@ -3,6 +3,8 @@
  * context. The map fills the screen; children are HUD overlays positioned on
  * top of it, plus the developer drawer when dev mode is on.
  */
+import { reportClientError } from "../../../net/client-error/report-client-error"
+import { mapFailureKind } from "../../../net/client-error/build-report"
 import { createContext } from "preact"
 import { useContext, useEffect, useRef, useState } from "preact/hooks"
 import { useElementRef } from "../../element-ref"
@@ -57,6 +59,7 @@ export const MapView = ({ children }: { children: ComponentChildren }) => {
       },
       (error: unknown) => {
         console.warn("could not load the map", error)
+        reportClientError(mapFailureKind(error), error)
         // One quiet try before troubling the player.
         if (attempt === 0) retry = setTimeout(() => setAttempt(1), 2000)
         else setFailed(true)

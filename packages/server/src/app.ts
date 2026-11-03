@@ -13,6 +13,7 @@ import WSTransport from "./vendor/WSTransport.ts"
 import { GameAuth } from "./game-auth.ts"
 import { GameRoom, ROOM_TYPE, gameRoomFor, kickForRestart, type ActorData } from "./rooms.ts"
 import { registerDevPlayers } from "./extra-players/dev-players-route.ts"
+import { registerClientErrors, type ClientErrorLimits } from "./client-errors/client-errors-route.ts"
 import { AddressLimiter, type AddressLimits } from "./address-limiter.ts"
 import { LogEvent, logEvent } from "./telemetry/log-event.ts"
 import { RefusalReason, ServerErrorKind, type Metrics } from "./telemetry/metrics.ts"
@@ -29,6 +30,7 @@ export interface AppOptions {
   logger?: Logger
   /** Serve Prometheus metrics on this port (0 for any), apart from the public service; off by default. */
   metricsPort?: number
+  clientErrorLimits?: ClientErrorLimits
   addressLimits?: AddressLimits
   /** Registers the playtest endpoints; never in production. */
   devTools?: boolean
@@ -139,6 +141,7 @@ export const createApp = (options: AppOptions): App => {
   })
 
   fastify.get("/api/health", () => ({ ok: true }))
+  registerClientErrors(fastify, telemetry, options.clientErrorLimits)
 
   if (options.staticDir) {
     // Vite names bundled assets by content hash, so they can be cached for

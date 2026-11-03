@@ -9,6 +9,8 @@ import { createLogger } from "../telemetry/telemetry.ts"
 import { LogCapture, type LogLine } from "./log-capture.ts"
 import { createAppFromEnvironment } from "../environment-app.ts"
 import type { AddressLimits } from "../address-limiter.ts"
+import type { ClientErrorLimits } from "../client-errors/client-errors-route.ts"
+import { CLIENT_ERRORS_PATH } from "@whereabouts/shared/protocol/client-error"
 import { BANK, configureGameRooms, GameRoom } from "../rooms.ts"
 import { FakeClock } from "./fake-clock.ts"
 import { eventually } from "./eventually.ts"
@@ -37,6 +39,8 @@ export interface InProcessOptions {
   questions?: (question: Question) => boolean
   /** Per address; unlimited by default. */
   addressLimits?: AddressLimits
+  /** Per address and overall, for browsers reporting errors. */
+  clientErrorLimits?: ClientErrorLimits
   /** Serves the development endpoints. */
   devTools?: boolean
   /** A built client to serve. */
@@ -77,6 +81,7 @@ export class InProcessServer {
     catalogue = BANK.catalogue,
     questions,
     addressLimits = UNLIMITED,
+    clientErrorLimits,
     devTools,
     staticDir,
     heartbeatIntervalMs,
@@ -96,6 +101,7 @@ export class InProcessServer {
           logger,
           metricsPort: metrics ? 0 : undefined,
           addressLimits,
+          clientErrorLimits,
           devTools,
           heartbeatIntervalMs,
           maxBufferedBytes
@@ -119,6 +125,16 @@ export class InProcessServer {
     if (!address) throw new Error("the server was not started with metrics")
     const response = await fetch(`${address}/metrics`)
     return response.text()
+  }
+
+  /** A browser reporting an error, from this address; the status it is answered with. */
+  async postClientError(body: unknown, address?: string): Promise<number> {
+    const response = await fetch(`${this.httpUrl}${CLIENT_ERRORS_PATH}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...(address ? { "fly-client-ip": address } : {}) },
+      body: JSON.stringify(body)
+    })
+    return response.status
   }
 
   /** A player who can connect to this server. */

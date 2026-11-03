@@ -2,17 +2,19 @@
 // server: the player is told, and Try again loads them once they can be
 // fetched. VR runs on an emulated headset (see pages/headset/Headset.ts).
 import { test } from "@playwright/test"
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
 import { Download } from "../pages/Download.ts"
 import { PracticeRoundPage } from "../pages/PracticeRoundPage.ts"
 import { ScoreReviewPage } from "../pages/ScoreReviewPage.ts"
 import { newOfflineTab } from "./iwft-tab.ts"
 
 test("load-failures", async ({ browser }) => {
-  await test.step("a map that will not load says so, and Try again loads it", async () => {
+  await test.step("a map that will not load says so and is reported to the server, and Try again loads it", async () => {
     const mapTab = await newOfflineTab(browser, "map")
     await mapTab.failDownload(Download.MAP_STYLE)
     const mapFailures = await mapTab.openFailing("/solo")
     await mapFailures.expectMapFailure()
+    await mapTab.expectClientErrorReported(ClientErrorKind.MAP_LOAD)
     mapTab.allowDownload(Download.MAP_STYLE)
     await mapFailures.retryMap()
     await PracticeRoundPage.whenShown(mapTab)

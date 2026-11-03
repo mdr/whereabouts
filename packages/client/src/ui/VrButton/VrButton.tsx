@@ -1,3 +1,5 @@
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../../net/client-error/report-client-error"
 import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import type { Vr } from "../../vr/index"
@@ -95,6 +97,7 @@ export const VrButton = ({ view }: { view: VrView }) => {
       },
       (error: unknown) => {
         console.warn("could not load VR", error)
+        reportClientError(error instanceof VrCodeMissing ? ClientErrorKind.VR_CODE : ClientErrorKind.VR_LOAD, error)
         setStage(error instanceof VrCodeMissing ? LaunchStage.CODE_MISSING : LaunchStage.FAILED)
       }
     )

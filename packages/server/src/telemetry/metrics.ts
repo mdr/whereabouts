@@ -28,6 +28,7 @@ export class Metrics {
   readonly playerJoins: Counter<"rejoined">
   readonly connectionsRefused: Counter<"reason">
   readonly serverErrors: Counter<"kind">
+  readonly clientErrors: Counter<"kind">
 
   constructor(games: () => Game[]) {
     const { registry } = this
@@ -88,6 +89,12 @@ export class Metrics {
     this.serverErrors = new Counter({
       name: "whereabouts_server_errors_total",
       help: "Failures inside the server that a player did not cause.",
+      labelNames: ["kind"],
+      registers: [registry]
+    })
+    this.clientErrors = new Counter({
+      name: "whereabouts_client_errors_total",
+      help: "Failures players' browsers reported, counted before the log's rate limits.",
       labelNames: ["kind"],
       registers: [registry]
     })

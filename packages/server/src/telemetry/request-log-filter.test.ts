@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
+import { CLIENT_ERRORS_PATH } from "@whereabouts/shared/protocol/client-error"
 import { requestLogLevel } from "./request-log-filter.ts"
 
 describe("requestLogLevel", () => {
@@ -10,8 +11,12 @@ describe("requestLogLevel", () => {
   })
 
   it("logs other API requests", () => {
-    expect(requestLogLevel("/api/client-error", 204)).toBe("info")
+    expect(requestLogLevel("/api/dev/players", 200)).toBe("info")
     expect(requestLogLevel("/api/unknown", 404)).toBe("info")
+  })
+
+  it("leaves client error reports to log themselves, so their rate limits hold", () => {
+    expect(requestLogLevel(CLIENT_ERRORS_PATH, 204)).toBeUndefined()
   })
 
   it("logs a missing bundle file, which an old tab asks for after a deploy", () => {

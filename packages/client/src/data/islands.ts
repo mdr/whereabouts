@@ -2,6 +2,8 @@
  * The landmasses for the Fill tool on an island round (islands.json, ~100 KB
  * gzipped): its own chunk, fetched on the first island round and kept.
  */
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../net/client-error/report-client-error"
 import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
 import type { Polygon } from "@whereabouts/shared/geo"
@@ -27,7 +29,11 @@ const loadIslands = (): Promise<IslandFiller> => {
 export const useIslands = (wanted: boolean): IslandFiller | undefined => {
   const loaded = islands.value
   useEffect(() => {
-    if (wanted && !loaded) loadIslands().catch((error: unknown) => console.warn("could not load islands", error))
+    if (wanted && !loaded)
+      loadIslands().catch((error: unknown) => {
+        console.warn("could not load islands", error)
+        reportClientError(ClientErrorKind.DATA_LOAD, error)
+      })
   }, [wanted, loaded])
   return wanted ? loaded : undefined
 }

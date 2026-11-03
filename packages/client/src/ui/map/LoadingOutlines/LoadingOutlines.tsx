@@ -1,3 +1,5 @@
+import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { reportClientError } from "../../../net/client-error/report-client-error"
 import { loadOutlines, outlinesFailed } from "../../../data/outlines"
 import { loadingOutlinesTestIds } from "./LoadingOutlinesTestIds"
 import { Card } from "../../Card/Card"
@@ -5,7 +7,11 @@ import { Hud, HudCenter } from "../Hud/Hud"
 
 /** Stands in for a screen that needs the outlines (useOutlines) until they arrive, and offers another try if they do not. */
 export const LoadingOutlines = () => {
-  const load = () => void loadOutlines().catch((error: unknown) => console.warn("could not load outlines", error))
+  const load = () =>
+    void loadOutlines().catch((error: unknown) => {
+      console.warn("could not load outlines", error)
+      reportClientError(ClientErrorKind.OUTLINES_LOAD, error)
+    })
   return (
     <Hud>
       <HudCenter>
