@@ -1,6 +1,7 @@
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { SmallFlag } from "../../../pictures/SmallFlag/SmallFlag"
 import { cx } from "../../../cx"
+import { paintedInTitle, paintedPercent } from "./painted-in-title"
 import { paintedInTestIds } from "./PaintedInTestIds"
 import styles from "./PaintedIn.module.css"
 
@@ -9,17 +10,16 @@ import styles from "./PaintedIn.module.css"
  * answer. `whose` names the painter for the title: "your", "Ann's".
  */
 export const PaintedIn = ({ where, answer, whose }: { where: PaintedCountry; answer?: string; whose: string }) => {
-  const percent = Math.round(where.share * 100)
   const right = where.country.clue.flag === answer
   return (
     <span
       class={cx(styles.paintedIn, right && styles.right)}
       data-testid={paintedInTestIds.paintedIn}
-      title={`${percent}% of ${whose} paint was in ${where.country.label}${right ? ", the answer" : ""}`}
+      title={paintedInTitle(where, answer, whose)}
     >
       <SmallFlag code={where.country.clue.flag} />
       <span class={styles.country}>{where.country.label}</span>
-      <span class={styles.share}>{percent}%</span>
+      <span class={styles.share}>{paintedPercent(where)}%</span>
     </span>
   )
 }

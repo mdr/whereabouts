@@ -4,9 +4,11 @@ import { revealRowTestIds } from "../../src/screens/reveal/RevealRow/RevealRowTe
 import { revealScoresTestIds } from "../../src/screens/reveal/RevealScores/RevealScoresTestIds.ts"
 import { questionCardTestIds } from "../../src/ui/round/question/QuestionCard/QuestionCardTestIds.ts"
 import { answerTestIds } from "../../src/ui/round/question/Answer/AnswerTestIds.ts"
+import { paintedInTestIds } from "../../src/ui/round/flag-reveal/PaintedIn/PaintedInTestIds.ts"
 import { factLineTestIds } from "../../src/ui/round/question/FactLine/FactLineTestIds.ts"
 import { Hud } from "./components/Hud.ts"
 import { MapPanel } from "./components/MapPanel.ts"
+import { QuestionCard } from "./components/QuestionCard.ts"
 import { ResultsPage } from "./ResultsPage.ts"
 import { RoundPage } from "./RoundPage.ts"
 import { Screen } from "./Screen.ts"
@@ -24,6 +26,7 @@ interface ExpectedRow {
 /** An online round's reveal: the answer, everyone's scores, and getting ready for the next. */
 export class RevealPage extends Screen {
   readonly hud: Hud
+  readonly questionCard: QuestionCard
   readonly map: MapPanel
 
   static async whenShown(tab: Tab, timeout: Ms = 10_000): Promise<RevealPage> {
@@ -36,6 +39,7 @@ export class RevealPage extends Screen {
   constructor(tab: Tab) {
     super(tab)
     this.hud = new Hud(tab)
+    this.questionCard = new QuestionCard(tab.page)
     this.map = new MapPanel(tab.page)
   }
 
@@ -95,6 +99,13 @@ export class RevealPage extends Screen {
         expected.hinted ? `${name} is tagged as having used a hint` : `${name} is not tagged as having used a hint`
       ).toHaveCount(expected.hinted ? 1 : 0)
     }
+  }
+
+  /** A flag round: the country most of this player's paint was in, with its share and whether it is the answer. */
+  async expectPaintedIn(name: string, country: string, title: RegExp): Promise<void> {
+    const paintedIn = this.#row(name).getByTestId(paintedInTestIds.paintedIn)
+    await expect(paintedIn, `${name}'s row names where their paint was`).toContainText(country)
+    await expect(paintedIn, `${name}'s paint, in words`).toHaveAttribute("title", title)
   }
 
   /** `rowCount` rows are listed, and none of the names carries a "(you)" label. */

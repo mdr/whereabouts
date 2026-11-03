@@ -10,6 +10,7 @@ import {
   QuestionType,
   Surface,
   answerCentre,
+  commonsImageUrl,
   promptOf,
   wikipediaUrl,
   type AreaAnswer,
@@ -18,6 +19,15 @@ import {
 } from "./questions.ts"
 import { greatCircleDistance } from "./geo.ts"
 import { commonsFile, flagCode, outlineId, wikiTitle } from "./ids.ts"
+
+describe("commonsImageUrl", () => {
+  const file = commonsFile("Some file.jpg")
+
+  it("asks for the file at the width given, 900 by default", () => {
+    expect(commonsImageUrl(file)).toBe("https://commons.wikimedia.org/wiki/Special:FilePath/Some%20file.jpg?width=900")
+    expect(commonsImageUrl(file, 1600)).toContain("?width=1600")
+  })
+})
 
 describe("wikipediaUrl", () => {
   it("links the article", () => {
