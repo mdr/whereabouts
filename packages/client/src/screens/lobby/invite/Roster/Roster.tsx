@@ -4,7 +4,7 @@ import { type GameView } from "@whereabouts/shared/protocol/views"
 import type { PlayerView } from "@whereabouts/shared/roles"
 import { useGameService } from "../../../../game-service/use-game-service"
 import { PlayerList } from "../../../../ui/players/PlayerList/PlayerList"
-import { kickRequest, makeHostRequest, type ConfirmRequest } from "../../../../ui/ConfirmDialog/ConfirmDialog"
+import { kickRequest, makeHostRequest, type ConfirmRequest } from "../../../../ui/ConfirmDialog/confirm-requests"
 import { rosterTestIds } from "./RosterTestIds"
 import styles from "./Roster.module.css"
 

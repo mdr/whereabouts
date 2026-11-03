@@ -9,6 +9,7 @@ import { type GameView } from "@whereabouts/shared/protocol/views"
 import { Role, everyone, type PlayerView } from "@whereabouts/shared/roles"
 import type { GameService } from "../../game-service/game-service"
 import { canTakeSeat } from "../../ui/players/seat-rules"
+import { canMakeHost } from "../../ui/players/can-make-host"
 import type { VrAction } from "./view"
 import type { VrTableRow } from "../scores/scores"
 
@@ -43,7 +44,7 @@ export const hostActions = (
         game.kick(player.id)
       }
     },
-    ...(player.connected && !player.isHost
+    ...(canMakeHost(view.you.id, player)
       ? [
           {
             label: `Make ${player.name} host`,

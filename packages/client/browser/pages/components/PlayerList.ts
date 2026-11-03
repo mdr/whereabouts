@@ -2,6 +2,8 @@ import { PageObject } from "../steps.ts"
 import { expect, type Locator } from "@playwright/test"
 import { playerListTestIds } from "../../../src/ui/players/PlayerList/PlayerListTestIds.ts"
 import { hostTagTestIds } from "../../../src/ui/players/HostTag/HostTagTestIds.ts"
+import { PlayerTag } from "../../../src/ui/players/player-tags.ts"
+import { ConfirmDialog } from "./ConfirmDialog.ts"
 import { byTestIdWith, stillTrueFor } from "../support.ts"
 import type { Ms } from "@whereabouts/shared/units"
 
@@ -53,6 +55,39 @@ export class PlayerList extends PageObject {
         .getByTestId(playerListTestIds.name),
       `the viewer can remove only ${JSON.stringify(names)}`
     ).toHaveText(names)
+  }
+
+  /** Whom the viewer can hand hosting to: others who are online and not hosting. */
+  async expectMakeable(names: string[]): Promise<void> {
+    await expect(
+      this.#rows()
+        .filter({ has: this.#root.page().getByTestId(playerListTestIds.makeHostButton) })
+        .getByTestId(playerListTestIds.name),
+      `the viewer can make only ${JSON.stringify(names)} host`
+    ).toHaveText(names)
+  }
+
+  /** Host only: handing over asks first. */
+  async askToMakeHost(name: string): Promise<ConfirmDialog<void>> {
+    await this.#row(name).getByTestId(playerListTestIds.makeHostButton).click()
+    return ConfirmDialog.whenShown(this.#root.page(), () => Promise.resolve())
+  }
+
+  #tag(name: string, tag: PlayerTag): Locator {
+    return this.#row(name).locator(`[data-testid="${playerListTestIds.tag}"][data-tag="${tag}"]`)
+  }
+
+  async expectOffline(name: string, offline = true): Promise<void> {
+    await expect(this.#tag(name, PlayerTag.OFFLINE), `${name} is ${offline ? "" : "not "}tagged offline`).toHaveCount(
+      offline ? 1 : 0
+    )
+  }
+
+  /** Finished guessing this round. */
+  async expectDone(name: string, done = true): Promise<void> {
+    await expect(this.#tag(name, PlayerTag.DONE), `${name} is ${done ? "" : "not "}tagged done`).toHaveCount(
+      done ? 1 : 0
+    )
   }
 
   /** The list keeps `count` players for `duration`, once it has that many. */

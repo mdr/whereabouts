@@ -7,6 +7,7 @@ import players from "../../../ui/players/Players.module.css"
 import { Icon } from "../../../ui/icons"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"
 import { RankArrow } from "../../../ui/players/RankArrow/RankArrow"
+import { rankMove } from "../../../ui/players/rank-move"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { PaintedIn } from "../../../ui/round/flag-reveal/PaintedIn/PaintedIn"
 import { roundScoreText } from "../../../round/round-words"
@@ -41,7 +42,6 @@ export const RevealRow = ({
   /** Host only: remove this player. */
   onKick?: () => void
 }) => {
-  const delta = p.previousRank !== undefined ? p.previousRank - p.rank : 0
   return (
     <li
       class={cx(selected && players.selected, you && players.you, where && players.withWhere)}
@@ -91,7 +91,7 @@ export const RevealRow = ({
       <span class={players.roundScore} title="This round" data-testid={revealRowTestIds.roundScore}>
         {roundScoreText(r)}
       </span>
-      <RankArrow delta={delta} />
+      <RankArrow move={rankMove(p)} />
       <span class={players.scoreNum} title="Total so far" data-testid={revealRowTestIds.total}>
         {Math.round(p.score).toLocaleString()}
       </span>

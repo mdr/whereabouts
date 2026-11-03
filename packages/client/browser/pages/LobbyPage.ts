@@ -7,6 +7,8 @@ import { roleSwitchTestIds } from "../../src/screens/lobby/invite/RoleSwitch/Rol
 import { rosterTestIds } from "../../src/screens/lobby/invite/Roster/RosterTestIds.ts"
 import { deviceSwitchesTestIds } from "../../src/screens/lobby/setup/DeviceSwitches/DeviceSwitchesTestIds.ts"
 import { hostSettingsTestIds } from "../../src/screens/lobby/setup/HostSettings/HostSettingsTestIds.ts"
+import { renameFormTestIds } from "../../src/screens/lobby/invite/RenameFormTestIds.ts"
+import { playerListTestIds } from "../../src/ui/players/PlayerList/PlayerListTestIds.ts"
 import { setupPanelTestIds } from "../../src/screens/lobby/setup/SetupPanel/SetupPanelTestIds.ts"
 import { setupSummaryTestIds } from "../../src/screens/lobby/setup/SetupSummary/SetupSummaryTestIds.ts"
 import { SetupTileType } from "../../src/screens/lobby/setup/setup-tiles.ts"
@@ -266,6 +268,22 @@ export class LobbyPage extends Screen {
   async askToLeave(): Promise<ConfirmDialog<HomePage>> {
     await this.page.getByTestId(lobbyTestIds.leaveButton).click()
     return ConfirmDialog.whenShown(this.page, () => HomePage.whenShown(this.tab))
+  }
+
+  /** Changes your own name from the player list. */
+  async rename(name: string): Promise<void> {
+    await this.page.getByTestId(playerListTestIds.renameButton).click()
+    await this.page.getByTestId(renameFormTestIds.input).fill(name)
+    await this.page.getByTestId(renameFormTestIds.saveButton).click()
+    await expect(this.page.getByTestId(renameFormTestIds.input), "the rename form closes").toBeHidden()
+  }
+
+  /** Whether the host's Start button is here. */
+  async expectHostControls(present = true): Promise<void> {
+    await expect(
+      this.page.getByTestId(setupPanelTestIds.startButton),
+      present ? "the host's Start button is here" : "there is no Start button"
+    ).toHaveCount(present ? 1 : 0)
   }
 
   /** Host only. */

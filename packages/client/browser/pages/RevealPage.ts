@@ -6,6 +6,8 @@ import { questionCardTestIds } from "../../src/ui/round/question/QuestionCard/Qu
 import { answerTestIds } from "../../src/ui/round/question/Answer/AnswerTestIds.ts"
 import { paintedInTestIds } from "../../src/ui/round/flag-reveal/PaintedIn/PaintedInTestIds.ts"
 import { factLineTestIds } from "../../src/ui/round/question/FactLine/FactLineTestIds.ts"
+import { rankArrowTestIds } from "../../src/ui/players/RankArrow/RankArrowTestIds.ts"
+import { RankMove } from "../../src/ui/players/rank-move.ts"
 import { Hud } from "./components/Hud.ts"
 import { MapPanel } from "./components/MapPanel.ts"
 import { QuestionCard } from "./components/QuestionCard.ts"
@@ -118,6 +120,14 @@ export class RevealPage extends Screen {
         total: await text(row.getByTestId(revealRowTestIds.total))
       }))
     )
+  }
+
+  /** Whether a player's rank rose, fell or held over the round. */
+  async expectRankMove(name: string, move: RankMove): Promise<void> {
+    await expect(
+      this.#row(name).getByTestId(rankArrowTestIds.arrow),
+      `${name}'s rank ${move === RankMove.SAME ? "held" : move === RankMove.UP ? "rose" : "fell"}`
+    ).toHaveAttribute("data-move", move)
   }
 
   /** `rowCount` rows are listed, and none of the names carries a "(you)" label. */

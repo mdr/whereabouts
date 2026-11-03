@@ -103,7 +103,9 @@ test("phone", async ({ browser, game }) => {
     })
 
   await test.step("the results fit", async () => {
-    await (await aliceRevealPage.hud.askToEndGame()).confirm()
+    const ending = await aliceRevealPage.hud.askToEndGame()
+    await ending.expectCoversViewport()
+    await ending.confirm()
     const bobResultsPage = await bobRevealPage.waitForResults()
     await fits(bobResultsPage, "results")
     await bobResultsPage.expectRoundsListed(1)
