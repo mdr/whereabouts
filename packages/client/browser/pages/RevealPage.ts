@@ -5,6 +5,8 @@ import { revealScoresTestIds } from "../../src/screens/reveal/RevealScores/Revea
 import { questionCardTestIds } from "../../src/ui/round/question/QuestionCard/QuestionCardTestIds.ts"
 import { answerTestIds } from "../../src/ui/round/question/Answer/AnswerTestIds.ts"
 import { factLineTestIds } from "../../src/ui/round/question/FactLine/FactLineTestIds.ts"
+import { rankArrowTestIds } from "../../src/ui/players/RankArrow/RankArrowTestIds.ts"
+import { RankMove } from "../../src/ui/players/rank-move.ts"
 import { Hud } from "./components/Hud.ts"
 import { MapPanel } from "./components/MapPanel.ts"
 import { ResultsPage } from "./ResultsPage.ts"
@@ -95,6 +97,14 @@ export class RevealPage extends Screen {
         expected.hinted ? `${name} is tagged as having used a hint` : `${name} is not tagged as having used a hint`
       ).toHaveCount(expected.hinted ? 1 : 0)
     }
+  }
+
+  /** Whether a player's rank rose, fell or held over the round. */
+  async expectRankMove(name: string, move: RankMove): Promise<void> {
+    await expect(
+      this.#row(name).getByTestId(rankArrowTestIds.arrow),
+      `${name}'s rank ${move === RankMove.SAME ? "held" : move === RankMove.UP ? "rose" : "fell"}`
+    ).toHaveAttribute("data-move", move)
   }
 
   /** `rowCount` rows are listed, and none of the names carries a "(you)" label. */

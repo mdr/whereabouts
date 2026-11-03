@@ -3,6 +3,7 @@ import type { PlayerName } from "@whereabouts/shared/ids"
 import { nameToJoin } from "../../../settings/settings"
 import { cx } from "../../../ui/cx"
 import kit from "../../../ui/kit.module.css"
+import { renameFormTestIds } from "./RenameFormTestIds"
 
 export const RenameForm = ({
   current,
@@ -31,9 +32,14 @@ export const RenameForm = ({
         onKeyDown={(event) => {
           if (event.key === "Escape") onDone(undefined)
         }}
+        data-testid={renameFormTestIds.input}
         autoFocus
       />
-      <button type="submit" disabled={nameToJoin(name) === undefined || !online}>
+      <button
+        type="submit"
+        data-testid={renameFormTestIds.saveButton}
+        disabled={nameToJoin(name) === undefined || !online}
+      >
         Save
       </button>
     </form>

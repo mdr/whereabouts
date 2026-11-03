@@ -1,27 +1,20 @@
 import { colourCss } from "@whereabouts/shared/colours"
 import type { PlayerId } from "@whereabouts/shared/ids"
-import { Role, type PlayerView, type PlayingPlayerView } from "@whereabouts/shared/roles"
+import { Role, type PlayerView } from "@whereabouts/shared/roles"
 import { Icon } from "../../icons"
 import { playerListTestIds } from "./PlayerListTestIds"
 import { cx } from "../../cx"
+import { canMakeHost } from "../can-make-host"
 import { HostTag } from "../HostTag/HostTag"
-import { RankArrow } from "../RankArrow/RankArrow"
+import { initial } from "../initial"
+import { PLAYER_TAG_TEXT, PlayerTag, playerTags } from "../player-tags"
 import { Swatch, SwatchType } from "../Swatch"
 import styles from "../Players.module.css"
-
-const graphemes = new Intl.Segmenter()
-
-/** A name's first character as a reader sees it, so a flag or family emoji stays whole. */
-export const initial = (name: string): string => {
-  const first = graphemes.segment(name.trim())[Symbol.iterator]().next()
-  return first.done ? "?" : first.value.segment.toUpperCase()
-}
 
 export const PlayerList = ({
   players,
   you,
   showScores,
-  arrows,
   showLocked,
   avatars,
   onRename,
@@ -31,7 +24,6 @@ export const PlayerList = ({
   players: PlayerView[]
   you: PlayerId
   showScores: boolean
-  arrows?: boolean
   /** Mark players who have finished guessing this round. */
   showLocked?: boolean
   /** A coloured circle with the initial instead of the small dot (the lobby). */
@@ -46,6 +38,7 @@ export const PlayerList = ({
   <ul class={styles.list} data-testid={playerListTestIds.list}>
     {players.map((player) => {
       const isYou = player.id === you
+      const tags = playerTags(player, { isYou, markWatchers: !avatars, showLocked: showLocked === true })
       return (
         <li
           key={player.id}
@@ -58,24 +51,25 @@ export const PlayerList = ({
             <span class={styles.nameText} data-testid={playerListTestIds.name}>
               {player.name}
             </span>
-            {player.isHost ? <HostTag /> : undefined}
-            {isYou ? <span class={styles.tag}>you</span> : undefined}
-            {!player.connected ? <span class={styles.tag}>offline</span> : undefined}
-            {player.type === Role.SPECTATOR && !avatars ? <span class={styles.tag}>watching</span> : undefined}
-            {showLocked && player.type === Role.PLAYER && player.locked ? (
-              <span class={cx(styles.tag, styles.done)} title="Finished guessing">
-                <Icon name="check" size={11} /> done
-              </span>
-            ) : undefined}
+            {tags.map((tag) => (
+              <Tag key={tag} tag={tag} />
+            ))}
           </span>
           {isYou && onRename && (
-            <button class="icon" title="Change your name" aria-label="Change your name" onClick={onRename}>
+            <button
+              class="icon"
+              title="Change your name"
+              aria-label="Change your name"
+              data-testid={playerListTestIds.renameButton}
+              onClick={onRename}
+            >
               ✎
             </button>
           )}
-          {!isYou && onMakeHost && player.connected && !player.isHost && (
+          {onMakeHost && canMakeHost(you, player) && (
             <button
               class={cx("icon", styles.makeHost)}
+              data-testid={playerListTestIds.makeHostButton}
               title={`Make ${player.name} the host`}
               aria-label={`Make ${player.name} the host`}
               onClick={(event) => {
@@ -100,12 +94,35 @@ export const PlayerList = ({
               <Icon name="kick" size={13} />
             </button>
           )}
-          {showScores && player.type === Role.PLAYER && <Score player={player} arrows={arrows} />}
+          {showScores && player.type === Role.PLAYER && (
+            <span class={styles.scoreNum} data-testid={playerListTestIds.score}>
+              {Math.round(player.score).toLocaleString()}
+            </span>
+          )}
         </li>
       )
     })}
   </ul>
 )
+
+const Tag = ({ tag }: { tag: PlayerTag }) => {
+  if (tag === PlayerTag.HOST) return <HostTag />
+  const text = PLAYER_TAG_TEXT[tag]
+  return tag === PlayerTag.DONE ? (
+    <span
+      class={cx(styles.tag, styles.done)}
+      title="Finished guessing"
+      data-testid={playerListTestIds.tag}
+      data-tag={tag}
+    >
+      <Icon name="check" size={11} /> {text}
+    </span>
+  ) : (
+    <span class={styles.tag} data-testid={playerListTestIds.tag} data-tag={tag}>
+      {text}
+    </span>
+  )
+}
 
 /** A spectator's eye, or a player's colour as an avatar or a dot. */
 const Mark = ({ player, avatars }: { player: PlayerView; avatars: boolean | undefined }) => {
@@ -121,17 +138,5 @@ const Mark = ({ player, avatars }: { player: PlayerView; avatars: boolean | unde
     <span class={styles.avatar} style={{ background: colourCss(player.colour) }} aria-hidden="true">
       {initial(player.name)}
     </span>
-  )
-}
-
-const Score = ({ player, arrows }: { player: PlayingPlayerView; arrows: boolean | undefined }) => {
-  const delta = arrows && player.previousRank !== undefined ? player.previousRank - player.rank : 0
-  return (
-    <>
-      {arrows && <RankArrow delta={delta} />}
-      <span class={styles.scoreNum} data-testid={playerListTestIds.score}>
-        {Math.round(player.score).toLocaleString()}
-      </span>
-    </>
   )
 }

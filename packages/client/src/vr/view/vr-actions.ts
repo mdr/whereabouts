@@ -9,6 +9,7 @@ import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import { type GameView } from "@whereabouts/shared/protocol/views"
 import { Role, everyone, type PlayerView } from "@whereabouts/shared/roles"
 import type { Connection } from "../../net/net"
+import { canMakeHost } from "../../ui/players/can-make-host"
 import type { VrAction } from "./view"
 import type { VrTableRow } from "../scores/scores"
 
@@ -43,7 +44,7 @@ export const hostActions = (
         conn.kick(player.id)
       }
     },
-    ...(player.connected && !player.isHost
+    ...(canMakeHost(view.you.id, player)
       ? [
           {
             label: `Make ${player.name} host`,

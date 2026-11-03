@@ -3,6 +3,7 @@
 // plays (and passes), and Play again leads back to the same lobby. Bob is
 // seated by the server, with no tab of his own.
 import { evenMix } from "@whereabouts/shared/protocol/config"
+import { RankMove } from "../../src/ui/players/rank-move.ts"
 import { test } from "../game-server/game-server.ts"
 import { newTab } from "./iwft-tab.ts"
 import { shot } from "./support.ts"
@@ -49,17 +50,22 @@ test("flows", async ({ browser, game }) => {
 
   const { aliceRevealPage, caraRevealPage } =
     await test.step("a pass shows as +250 on the round 2 reveal", async () => {
-      // With nothing painted Done is a pass; Cara has no idea and takes it.
+      // With nothing painted Done is a pass; Cara has no idea and takes it, and so do the others,
+      // so everyone gains the same and nobody changes rank.
       await caraRoundPage.expectDoneLabel("Pass")
+      await aliceRoundPage.playersPanel.open()
+      await aliceRoundPage.playersPanel.players.expectDone("Cara", false)
       const caraRoundDonePage = await caraRoundPage.finish()
+      await aliceRoundPage.playersPanel.players.expectDone("Cara")
       await caraRoundDonePage.screenshot(shot(`flows-cara-round2.png`))
-      game.paint(bob, { lat: 20, lon: 10 }, 300)
-      await aliceRoundPage.map.untilUploaded(() => aliceRoundPage.map.drag({ across: 0.4, down: 0.5 }))
       const aliceRoundDonePage = await aliceRoundPage.finish()
       game.lock([bob])
       const aliceRevealPage = await aliceRoundDonePage.waitForReveal()
       await aliceRevealPage.expectRowCount(3)
       await aliceRevealPage.expectRow("Cara", { passed: true, roundScore: "+250" })
+      await aliceRevealPage.expectRankMove("Alice", RankMove.SAME)
+      await aliceRevealPage.expectRankMove("Bob", RankMove.SAME)
+      await aliceRevealPage.expectRankMove("Cara", RankMove.SAME)
       const caraRevealPage = await caraRoundDonePage.waitForReveal()
       return { aliceRevealPage, caraRevealPage }
     })

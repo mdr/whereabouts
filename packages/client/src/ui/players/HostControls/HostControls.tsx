@@ -3,7 +3,8 @@
  * so the button opens a confirmation dialog first.
  */
 import { Icon } from "../../icons"
-import { endGameRequest, useConfirm } from "../../ConfirmDialog/ConfirmDialog"
+import { endGameRequest } from "../../ConfirmDialog/confirm-requests"
+import { useConfirm } from "../../ConfirmDialog/ConfirmDialog"
 import { hostControlsTestIds } from "./HostControlsTestIds"
 import { cx } from "../../cx"
 import styles from "./HostControls.module.css"
