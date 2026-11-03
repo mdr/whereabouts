@@ -54,8 +54,8 @@ tasks:
   iwft:
     desc: "The isolated browser tests, *.iwft.ts (task iwft -- solo host for some)"
     summary: |
-      Playwright Test starts a Vite dev server of its own on a spare port
-      (5180, or CLIENT_PORT), so a `pnpm dev` already running is left alone.
+      Playwright Test starts a Vite dev server of its own on a free port (or
+      CLIENT_PORT), so runs in other worktrees and a `pnpm dev` are left alone.
       Each test that plays starts the game server in its own process, and
       tabs answer the network from the offline world, so nothing else needs
       to be up and they run offline. Runs every *.iwft.ts in
@@ -68,8 +68,8 @@ tasks:
   e2e:
     desc: "The end-to-end browser tests, *.e2e.ts, against dev servers of their own (task e2e -- multiplayer)"
     summary: |
-      Playwright Test starts Vite and the game server on spare ports (5190
-      and 8790, or CLIENT_PORT and PORT), with short rounds, and runs the
+      Playwright Test starts Vite and the game server on free ports (or
+      CLIENT_PORT and PORT), with short rounds, and runs the
       *.e2e.ts specs against them over the real network. Screenshots go to
       smoke-out/e2e/, a report to smoke-out/e2e-report/.
     cmds:

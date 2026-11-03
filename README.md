@@ -53,8 +53,8 @@ Other commands:
   `multiplayer.e2e.ts`, plays on the dev servers instead, as the check that
   client and server work together. `task iwft` runs the isolated specs,
   starting only a Vite dev server of its own (`task iwft -- solo host` for
-  some); `task e2e` starts Vite and the game server, on spare ports, and runs
-  the e2e specs; `task browser` runs both. `pnpm smoke` runs `solo`.
+  some); `task e2e` starts Vite and the game server and runs the e2e specs. Every
+  run picks free ports, so runs in other worktrees never collide; `task browser` runs both. `pnpm smoke` runs `solo`.
   Screenshots go to `smoke-out/iwft/` and `smoke-out/e2e/`. `task --list` shows what
   else there is.
   - `solo`: practice mode: paint, undo and redo, submit.
