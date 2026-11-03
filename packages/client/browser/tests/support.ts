@@ -1,5 +1,7 @@
 import { test, type Browser, type BrowserContextOptions } from "@playwright/test"
 import { Tab } from "../pages/Tab.ts"
+import { routeGameSocket } from "../game-server/route-socket.ts"
+import type { TestGame } from "../game-server/game-server.ts"
 
 /** The local Chrome, headless, with WebGL in software so the map draws without a GPU. */
 export const SWIFTSHADER = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"]
@@ -11,12 +13,15 @@ export interface PlayerOptions {
   baseUrl?: string
   /** Runs in the page before any of the app's scripts. */
   initScript?: () => void
+  /** Play on this in-process server, not the dev server's. */
+  game?: TestGame
 }
 
 /** A new browser context and tab, with its page errors logged under `label`. */
 export const newTab = async (browser: Browser, label: string, options: PlayerOptions = {}): Promise<Tab> => {
   const context = await browser.newContext(options.context ?? { viewport: { width: 1300, height: 900 } })
   if (options.initScript) await context.addInitScript(options.initScript)
+  if (options.game) await routeGameSocket(context, options.game.server.socketUrl)
   const page = await context.newPage()
   page.on("pageerror", (error) => console.log(`[${label} pageerror]`, error.message))
   page.on("console", (message) => {

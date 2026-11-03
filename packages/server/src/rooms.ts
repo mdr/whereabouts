@@ -281,6 +281,12 @@ export class GameRoom extends Room<ActorData> {
   get state(): Game {
     return this.game
   }
+
+  /** Test hook: change the game directly, then send everyone the result. */
+  act(change: (game: Game, now: Instant) => void): void {
+    change(this.game, deps.clock.now())
+    this.broadcastState()
+  }
 }
 
 type Handler<T> = (token: PlayerToken, body: T, now: Instant) => CommandResult

@@ -43,7 +43,8 @@ import {
   type Question
 } from "@whereabouts/shared/questions"
 import { createApp, type App } from "../app.ts"
-import { BANK, configureGameRooms, realClock, type Clock } from "../rooms.ts"
+import { FakeClock } from "../test-support/fake-clock.ts"
+import { BANK, configureGameRooms, realClock } from "../rooms.ts"
 import { Role, YouRoleType } from "@whereabouts/shared/roles"
 import type { AddressLimits } from "../address-limiter.ts"
 import type { H3Cell } from "@whereabouts/shared/h3"
@@ -78,35 +79,6 @@ export const config = { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundLength: 60
 /** The place question a round asked. */
 export const askedIn = (round: GameView): PlaceQuestion =>
   questions.find((question) => promptOf(question) === promptOf(viewIn(round, Phase.GUESSING).round.question))!
-
-/** Real timers, but time can be jumped forward so deadlines fire immediately. */
-class FakeClock implements Clock {
-  offset = 0
-  private pending = new Map<number, { at: number; fn: () => void }>()
-  private seq = 0
-  now(): number {
-    return Date.now() + this.offset
-  }
-  setTimeout(fn: () => void, ms: number): number {
-    const id = ++this.seq
-    this.pending.set(id, { at: this.now() + ms, fn })
-    return id
-  }
-  clearTimeout(handle: unknown): void {
-    this.pending.delete(handle as number)
-  }
-  /** Jump forward and fire everything now due, in order. */
-  advance(ms: number): void {
-    this.offset += ms
-    const due = [...this.pending.entries()]
-      .filter(([, timer]) => timer.at <= this.now())
-      .sort((a, b) => a[1].at - b[1].at)
-    for (const [id, timer] of due) {
-      this.pending.delete(id)
-      timer.fn()
-    }
-  }
-}
 
 export const host = (code?: RoomCode): GameEntry => ({ type: GameEntryType.HOST, ...(code ? { code } : {}) })
 export const join = (code: RoomCode, role = Role.PLAYER): GameEntry => ({ type: GameEntryType.JOIN, code, role })
