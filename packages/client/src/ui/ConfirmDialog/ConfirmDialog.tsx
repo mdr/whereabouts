@@ -4,6 +4,7 @@
  * destructive. `useConfirm` gives a screen one dialog and an `ask` function.
  */
 import { useEffect, useState } from "preact/hooks"
+import { useGameService } from "../../game-service/use-game-service"
 import { useElementRef } from "../element-ref"
 import type { ComponentChildren } from "preact"
 import { createPortal } from "preact/compat"
@@ -79,10 +80,11 @@ export const ConfirmDialog = ({
 }
 
 /** One dialog per screen: render `dialog`, call `ask` to open it. */
-export const useConfirm = (online = true): { dialog: ComponentChildren; ask: (request: ConfirmRequest) => void } => {
+export const useConfirm = (): { dialog: ComponentChildren; ask: (request: ConfirmRequest) => void } => {
+  const { online } = useGameService()
   const [request, setRequest] = useState<ConfirmRequest | undefined>(undefined)
   return {
-    dialog: <ConfirmDialog request={request} onClose={() => setRequest(undefined)} online={online} />,
+    dialog: <ConfirmDialog request={request} onClose={() => setRequest(undefined)} online={online.value} />,
     ask: setRequest
   }
 }

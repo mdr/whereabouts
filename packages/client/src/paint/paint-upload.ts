@@ -3,11 +3,12 @@ import { compactRecord } from "@whereabouts/shared/paint/compact"
 import { Phase, type InPlayGameView } from "@whereabouts/shared/protocol/views"
 import { YouRoleType } from "@whereabouts/shared/roles"
 import { canPaint } from "../round/editing"
-import { type Connection, ConnectionStatus } from "../net/net"
+import type { GameService } from "../game-service/game-service"
+import { ConnectionStatus } from "../game-service/connection-state"
 import type { PaintController } from "./paint-controller"
 import { announcePass } from "../round/round"
 
-type UploadConnection = Pick<Connection, "status" | "sendPaint" | "lock">
+type UploadGame = Pick<GameService, "status" | "sendPaint" | "lock">
 export type UploadPaint = Pick<PaintController, "layer" | "floor" | "version">
 
 /**
@@ -15,7 +16,7 @@ export type UploadPaint = Pick<PaintController, "layer" | "floor" | "version">
  * gives Done (`lockIn`), which uploads before locking.
  */
 export const usePaintUpload = (
-  conn: UploadConnection,
+  game: UploadGame,
   paint: UploadPaint,
   view: InPlayGameView,
   timeUp: boolean
@@ -33,8 +34,8 @@ export const usePaintUpload = (
     sendTimer.current = undefined
     const { paintUploads } = window.testHooks
     paintUploads.attempted++
-    if (conn.status.peek().type === ConnectionStatus.CONNECTED) paintUploads.sent++
-    conn.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.peek() })
+    if (game.status.peek().type === ConnectionStatus.CONNECTED) paintUploads.sent++
+    game.sendPaint({ cells: compactRecord(paint.layer.toRecord()), floor: paint.floor.peek() })
   }
 
   const version = paint.version.value
@@ -59,7 +60,7 @@ export const usePaintUpload = (
 
   // Uploads made while the connection was down were lost. Once the server
   // has us back (its first state since), send the paint again.
-  const status = conn.status.value.type
+  const status = game.status.value.type
   const resend = useRef(false)
   useEffect(() => {
     if (status !== ConnectionStatus.CONNECTED) resend.current = true
@@ -69,7 +70,7 @@ export const usePaintUpload = (
     resend.current = false
     if (!editing) return
     sendNow()
-    if (lockWish.current && lockWish.current.round === round) conn.lock()
+    if (lockWish.current && lockWish.current.round === round) game.lock()
   }, [view])
 
   // Done with paint freezes it; Done with nothing painted is a pass, which
@@ -78,7 +79,7 @@ export const usePaintUpload = (
     announcePass(paint)
     lockWish.current = { round }
     sendNow()
-    conn.lock()
+    game.lock()
   }
 
   return { lockIn }

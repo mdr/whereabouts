@@ -4,7 +4,7 @@ import { render } from "@testing-library/preact"
 import { mixOf, MapDetail } from "@whereabouts/shared/protocol/config"
 import { type GameView, Phase } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
-import type { Connection } from "../net/net"
+import type { GameService } from "../game-service/game-service"
 import { hostSetup } from "./settings"
 import { configureAsHost, savedSetupPatch, useSavedSetup } from "./host-setup"
 
@@ -14,8 +14,8 @@ const SAVED = { mix: MIX, roundLength: 90_000, mapDetail: MapDetail.POLITICAL }
 
 const lobby = (isHost: boolean, phase: Phase = Phase.LOBBY): GameView => ({ phase, you: { isHost } }) as GameView
 
-const Harness = ({ conn, view, created }: { conn: Connection; view: GameView | undefined; created: boolean }) => {
-  useSavedSetup(conn, view, created)
+const Harness = ({ game, view, created }: { game: GameService; view: GameView | undefined; created: boolean }) => {
+  useSavedSetup(game, view, created)
   return undefined
 }
 
@@ -68,16 +68,16 @@ describe("savedSetupPatch", () => {
 describe("configureAsHost", () => {
   it("sends the change and remembers it alongside the earlier ones", () => {
     const configure = vi.fn()
-    const conn = { configure, online: { value: true } } as unknown as Connection
-    configureAsHost(conn, { mix: MIX })
-    configureAsHost(conn, { mapDetail: MapDetail.WATER })
+    const game = { configure, online: { value: true } } as unknown as GameService
+    configureAsHost(game, { mix: MIX })
+    configureAsHost(game, { mapDetail: MapDetail.WATER })
     expect(configure).toHaveBeenLastCalledWith({ mapDetail: MapDetail.WATER })
     expect(hostSetup.value).toEqual({ mix: MIX, mapDetail: MapDetail.WATER })
   })
 
   it("neither sends nor remembers a change while reconnecting", () => {
     const configure = vi.fn()
-    configureAsHost({ configure, online: { value: false } } as unknown as Connection, { mix: MIX })
+    configureAsHost({ configure, online: { value: false } } as unknown as GameService, { mix: MIX })
     expect(configure).not.toHaveBeenCalled()
     expect(hostSetup.value).toEqual({})
   })
@@ -87,11 +87,11 @@ describe("useSavedSetup", () => {
   it("gives a game this tab just created the remembered setup, once", () => {
     hostSetup.value = SAVED
     const configure = vi.fn()
-    const conn = { configure } as unknown as Connection
-    const { rerender } = render(<Harness conn={conn} view={undefined} created />)
+    const game = { configure } as unknown as GameService
+    const { rerender } = render(<Harness game={game} view={undefined} created />)
     expect(configure).not.toHaveBeenCalled()
-    rerender(<Harness conn={conn} view={lobby(true)} created />)
-    rerender(<Harness conn={conn} view={{ ...lobby(true) }} created />)
+    rerender(<Harness game={game} view={lobby(true)} created />)
+    rerender(<Harness game={game} view={{ ...lobby(true) }} created />)
     expect(configure).toHaveBeenCalledTimes(1)
     expect(configure).toHaveBeenCalledWith(SAVED)
   })
@@ -99,16 +99,16 @@ describe("useSavedSetup", () => {
   it("leaves joined games, refreshed lobbies and games under way alone", () => {
     hostSetup.value = SAVED
     const configure = vi.fn()
-    const conn = { configure } as unknown as Connection
-    render(<Harness conn={conn} view={lobby(true)} created={false} />)
-    render(<Harness conn={conn} view={lobby(false)} created />)
-    render(<Harness conn={conn} view={lobby(true, Phase.GUESSING)} created />)
+    const game = { configure } as unknown as GameService
+    render(<Harness game={game} view={lobby(true)} created={false} />)
+    render(<Harness game={game} view={lobby(false)} created />)
+    render(<Harness game={game} view={lobby(true, Phase.GUESSING)} created />)
     expect(configure).not.toHaveBeenCalled()
   })
 
   it("sends nothing when there is no remembered setup", () => {
     const configure = vi.fn()
-    render(<Harness conn={{ configure } as unknown as Connection} view={lobby(true)} created />)
+    render(<Harness game={{ configure } as unknown as GameService} view={lobby(true)} created />)
     expect(configure).not.toHaveBeenCalled()
   })
 })

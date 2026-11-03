@@ -36,28 +36,28 @@ No I/O; the same code runs in the browser and on the server.
 
 ## Client (`packages/client`)
 
-| Module                                                           | What it holds                                                                                |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `src/net/net.ts`                                                 | `Connection`: the WebSocket, views as signals, commands, the server clock offset             |
-| `src/net/heartbeat.ts`                                           | Pings the server so a connection that died without closing is noticed and replaced           |
-| `src/screens/`                                                   | One component per screen: Home, Lobby, InGame, Reveal, Results, Solo (practice), ScoreReview |
-| `src/ui/`                                                        | Shared components; each with a `*TestIds.ts` the browser page objects use                    |
-| `src/round/round.ts`, `src/vr/view/vr-round.ts`                  | Pure round logic for the page and for VR, tested apart from the components                   |
-| `src/round/reveal.ts`                                            | A game's reveal: whose paint shows, the order of the scores list, the answer to show         |
-| `src/round/round-model.ts`                                       | What a game's round and reveal tell you, as data the page and the headset each render        |
-| `src/vr/view/game-vr-view.ts`, `src/vr/view/practice-vr-view.ts` | A game's and practice's screens as the headset shows them                                    |
-| `src/round/practice-run.ts`                                      | Practice's run: shuffled pool, scoring each round, reveal and next                           |
-| `src/data/outlines.ts`, `src/data/borders.ts`                    | Lazily loaded outlines and borders; components reach them through `useOutlines`/`useBorders` |
-| `src/map/map-prefetch.ts`, `src/data/game-data.ts`               | What the lobby fetches ahead of round 1: the map's first downloads, then the game's data     |
-| `src/sound/sound.ts`, `src/sound/round-cue.ts`                   | The sound engine and recordings; which cue a change of game view calls for                   |
-| `src/paint/paint-commands.ts`                                    | Clear, Trim and Trim to hint, shared by the page's paint tools and the VR wrist menu         |
-| `src/keyboard/shortcuts.ts`                                      | Every keyboard shortcut: the help card lists it, the handlers match keys against it          |
-| `src/map/shown-detail.ts`                                        | What each map detail level shows, for the page map and the VR globe                          |
-| `src/question-types.ts`                                          | Each question type's label, units and colour                                                 |
-| `src/settings/settings.ts`, `src/settings/host-setup.ts`         | Browser-stored settings, and the host's saved setup                                          |
-| `src/map/map.ts`, `src/paint/paint-*.ts`                         | The MapLibre map and painting on it                                                          |
-| `src/vr/`                                                        | The headset scene (three.js, IWSDK)                                                          |
-| `browser/pages/`, `browser/tests/`                               | Playwright page objects, and the end-to-end tests that use them                              |
+| Module                                                           | What it holds                                                                                   |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `src/game-service/`                                              | `GameService`, what screens use; `OnlineGameService`: the WebSocket, views as signals, commands |
+| `src/net/heartbeat.ts`                                           | Pings the server so a connection that died without closing is noticed and replaced              |
+| `src/screens/`                                                   | One component per screen: Home, Lobby, InGame, Reveal, Results, Solo (practice), ScoreReview    |
+| `src/ui/`                                                        | Shared components; each with a `*TestIds.ts` the browser page objects use                       |
+| `src/round/round.ts`, `src/vr/view/vr-round.ts`                  | Pure round logic for the page and for VR, tested apart from the components                      |
+| `src/round/reveal.ts`                                            | A game's reveal: whose paint shows, the order of the scores list, the answer to show            |
+| `src/round/round-model.ts`                                       | What a game's round and reveal tell you, as data the page and the headset each render           |
+| `src/vr/view/game-vr-view.ts`, `src/vr/view/practice-vr-view.ts` | A game's and practice's screens as the headset shows them                                       |
+| `src/round/practice-run.ts`                                      | Practice's run: shuffled pool, scoring each round, reveal and next                              |
+| `src/data/outlines.ts`, `src/data/borders.ts`                    | Lazily loaded outlines and borders; components reach them through `useOutlines`/`useBorders`    |
+| `src/map/map-prefetch.ts`, `src/data/game-data.ts`               | What the lobby fetches ahead of round 1: the map's first downloads, then the game's data        |
+| `src/sound/sound.ts`, `src/sound/round-cue.ts`                   | The sound engine and recordings; which cue a change of game view calls for                      |
+| `src/paint/paint-commands.ts`                                    | Clear, Trim and Trim to hint, shared by the page's paint tools and the VR wrist menu            |
+| `src/keyboard/shortcuts.ts`                                      | Every keyboard shortcut: the help card lists it, the handlers match keys against it             |
+| `src/map/shown-detail.ts`                                        | What each map detail level shows, for the page map and the VR globe                             |
+| `src/question-types.ts`                                          | Each question type's label, units and colour                                                    |
+| `src/settings/settings.ts`, `src/settings/host-setup.ts`         | Browser-stored settings, and the host's saved setup                                             |
+| `src/map/map.ts`, `src/paint/paint-*.ts`                         | The MapLibre map and painting on it                                                             |
+| `src/vr/`                                                        | The headset scene (three.js, IWSDK)                                                             |
+| `browser/pages/`, `browser/tests/`                               | Playwright page objects, and the end-to-end tests that use them                                 |
 
 ## Checklists
 
@@ -71,7 +71,7 @@ No I/O; the same code runs in the browser and on the server.
 
 **Add a client→server message or a view field**
 
-1. A message: its schema in `ClientMessageSchemas`, a handler in `GameRoom.handlers()` (the compiler insists), a `Game` method, a `Connection` method.
+1. A message: its schema in `ClientMessageSchemas`, a handler in `GameRoom.handlers()` (the compiler insists), a `Game` method, a `GameService` method and its `OnlineGameService` implementation.
 2. A view field: the type in the `*GameView` variant(s) of the phases that carry it in `protocol/views.ts`, and the same field in the matching variant schema in `protocol/view-schema.ts`; `view-schema.test.ts` fails until they match.
 3. Bump `PROTOCOL_VERSION`.
 4. A browser page object, if the e2e tests should drive or read it.

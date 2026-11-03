@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "preact/hooks"
 import { onWater, outlineOf, type InPlayGameView, Phase, RoundGuessType } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { YouRoleType, everyone } from "@whereabouts/shared/roles"
-import type { Connection } from "../../net/net"
+import { useGameService } from "../../game-service/use-game-service"
 import { usePaint } from "../../ui/map/MapView/MapView"
 import { Card } from "../../ui/Card/Card"
 import { Hud, HudHeader, HudRight, HudTop, toolbarGrow } from "../../ui/map/Hud/Hud"
@@ -39,7 +39,8 @@ import { RoundNote, canEndGame, ownColour, roundNote, roundOf } from "../../roun
 import { noteText } from "../../round/round-words"
 import { gameVrView } from "../../vr/view/game-vr-view"
 
-export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView }) => {
+export const InGame = ({ view }: { view: InPlayGameView }) => {
+  const game = useGameService()
   const paint = usePaint()
   const { role } = view.you
   const note = roundNote(view.you)
@@ -48,8 +49,7 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
   const question = roundOf(view).question
   // The countdown has reached zero: painting stops, and what is on screen is what counts.
   const [timeUp, setTimeUp] = useState(false)
-  const online = conn.online.value
-  const { dialog, ask } = useConfirm(online)
+  const { dialog, ask } = useConfirm()
 
   const reveal = view.phase === Phase.REVEAL ? view.reveal : undefined
   const borders = useGameData(view.config.mix)
@@ -78,7 +78,7 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
   useEffect(() => {
     setTimeUp(false)
     if (!guessing || deadline === undefined) return
-    const timer = window.setTimeout(() => setTimeUp(true), Math.max(0, conn.timeUntil(deadline)))
+    const timer = window.setTimeout(() => setTimeUp(true), Math.max(0, game.timeUntil(deadline)))
     return () => clearTimeout(timer)
   }, [roundKey, guessing, deadline])
 
@@ -87,7 +87,7 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
     paint.enabled.value = editing
   }, [editing])
 
-  const { lockIn } = usePaintUpload(conn, paint, view, timeUp)
+  const { lockIn } = usePaintUpload(game, paint, view, timeUp)
   const words = { askedToWatch: askedToWatch.value, canUnlock: canUnlock(view, timeUp) }
 
   const outlines = useOutlines(outlineOf(question.answer) !== undefined)
@@ -103,11 +103,11 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
         : undefined,
     [borders, reveal?.index, mine?.guess.type]
   )
-  const vrView = gameVrView(view, conn, paint, { lockIn, timeUp, outlines, fact, painted, borders })
+  const vrView = gameVrView(view, game, paint, { lockIn, timeUp, outlines, fact, painted, borders })
   useVrView(vrView)
 
   if (view.phase === Phase.REVEAL) {
-    return <Reveal conn={conn} view={view} reveal={view.reveal} vrView={vrView} fact={fact} />
+    return <Reveal view={view} reveal={view.reveal} vrView={vrView} fact={fact} />
   }
 
   const { round } = view
@@ -119,17 +119,22 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
           <HudHeader
             round={round.index + 1}
             total={round.total}
-            right={<Countdown timeLeft={() => conn.timeUntil(round.deadline)} />}
+            right={<Countdown timeLeft={() => game.timeUntil(round.deadline)} />}
           />
           <RoundPrompt question={round.question} />
           {role.type === YouRoleType.PLAYING && view.config.hints > 0 && (
-            <HintCard band={view.you.hint} left={role.hintsLeft} disabled={!online} onUse={(axis) => conn.hint(axis)} />
+            <HintCard
+              band={view.you.hint}
+              left={role.hintsLeft}
+              disabled={!game.online.value}
+              onUse={(axis) => game.hint(axis)}
+            />
           )}
-          <ConnectionNote conn={conn} onMap />
+          <ConnectionNote onMap />
           {note === RoundNote.WATCHING && (
             <Card>
               <p class={kit.hint}>{noteText(note, words)}</p>
-              <TakeSeatButton conn={conn} view={view} inCard />
+              <TakeSeatButton view={view} inCard />
             </Card>
           )}
           {note === RoundNote.JOINED_LATE && (
@@ -150,19 +155,18 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
         <HudRight roomy={playersPanelOpen.value}>
           <PlayersPanel
             view={view}
-            onKick={view.you.isHost ? (player) => ask(kickRequest(player.name, () => conn.kick(player.id))) : undefined}
+            onKick={view.you.isHost ? (player) => ask(kickRequest(player.name, () => game.kick(player.id))) : undefined}
             onMakeHost={
               view.you.isHost
-                ? (player) => ask(makeHostRequest(player.name, () => conn.makeHost(player.id)))
+                ? (player) => ask(makeHostRequest(player.name, () => game.makeHost(player.id)))
                 : undefined
             }
           />
           {canEndGame(view) && (
             <EndGameButton
-              onEnd={() => conn.end()}
+              onEnd={() => game.end()}
               title="Score this round as it stands and show the final standings"
               besidePlayers
-              online={online}
             />
           )}
         </HudRight>
@@ -174,8 +178,8 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
                 title={
                   canUnlock(view, timeUp) ? "Take back Done and change your guess" : "Time's up: your guess stands"
                 }
-                disabled={!canUnlock(view, timeUp) || !online}
-                onClick={() => conn.unlock()}
+                disabled={!canUnlock(view, timeUp) || !game.online.value}
+                onClick={() => game.unlock()}
                 data-testid={inGameTestIds.keepEditingButton}
               >
                 <Icon name="edit" /> Keep editing
@@ -200,7 +204,7 @@ export const InGame = ({ conn, view }: { conn: Connection; view: InPlayGameView 
         </Card>
         <ExtraPlayersDev code={view.code} phase={view.phase} />
         <PaintDev />
-        <ConnectionDev conn={conn} view={view} />
+        <ConnectionDev view={view} />
       </DevDrawer>
     </>
   )

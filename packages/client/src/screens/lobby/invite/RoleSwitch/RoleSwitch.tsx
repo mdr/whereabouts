@@ -1,28 +1,29 @@
 import { MAX_PLAYERS, MAX_SPECTATORS } from "@whereabouts/shared/protocol/config"
 import { type GameView } from "@whereabouts/shared/protocol/views"
 import { Role, YouRoleType } from "@whereabouts/shared/roles"
-import type { Connection } from "../../../../net/net"
+import { useGameService } from "../../../../game-service/use-game-service"
 import { Icon } from "../../../../ui/icons"
 import { roleSwitchTestIds } from "./RoleSwitchTestIds"
 import styles from "./RoleSwitch.module.css"
 
-export const RoleSwitch = ({ conn, view, online }: { conn: Connection; view: GameView; online: boolean }) => {
+export const RoleSwitch = ({ view }: { view: GameView }) => {
+  const game = useGameService()
   const seatsFull = view.players.length >= MAX_PLAYERS
   const watchersFull = view.spectators.length >= MAX_SPECTATORS
   return (
     <div class={styles.roleSwitch} data-testid={roleSwitchTestIds.roleSwitch}>
       {view.you.role.type === YouRoleType.SPECTATOR ? (
         <button
-          onClick={() => conn.setRole(Role.PLAYER)}
-          disabled={seatsFull || !online}
+          onClick={() => game.setRole(Role.PLAYER)}
+          disabled={seatsFull || !game.online.value}
           title={seatsFull ? `All ${MAX_PLAYERS} seats are taken` : undefined}
         >
           <Icon name="play" /> Play instead
         </button>
       ) : (
         <button
-          onClick={() => conn.setRole(Role.SPECTATOR)}
-          disabled={watchersFull || !online}
+          onClick={() => game.setRole(Role.SPECTATOR)}
+          disabled={watchersFull || !game.online.value}
           title="See every round without playing"
         >
           <Icon name="eye" /> Just watch

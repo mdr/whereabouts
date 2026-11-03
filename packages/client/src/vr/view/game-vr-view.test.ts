@@ -3,7 +3,8 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { signal } from "@preact/signals"
 import { playerId, playerName } from "@whereabouts/shared/ids"
 import type { GuessingGameView, InPlayGameView, RevealGameView } from "@whereabouts/shared/protocol/views"
-import { ConnectionStatus, type Connection, type ConnectionState, type PlainStatus } from "../../net/net"
+import type { GameService } from "../../game-service/game-service"
+import { ConnectionStatus, type ConnectionState, type PlainStatus } from "../../game-service/connection-state"
 import type { PaintController } from "../../paint/paint-controller"
 import { gameVrView } from "./game-vr-view"
 import { VrViewType, type VrView } from "./view"
@@ -24,7 +25,7 @@ import type { VrReveal, VrRound } from "./view.ts"
 
 const bob = makePlayer({ id: playerId("p2"), name: playerName("Bob"), isHost: false, rank: 2 })
 
-const fakeConn = (status: PlainStatus = ConnectionStatus.CONNECTED): Connection =>
+const fakeGame = (status: PlainStatus = ConnectionStatus.CONNECTED): GameService =>
   ({
     status: signal<ConnectionState>({ type: status }),
     online: signal(status === ConnectionStatus.CONNECTED),
@@ -32,10 +33,10 @@ const fakeConn = (status: PlainStatus = ConnectionStatus.CONNECTED): Connection 
     ready: vi.fn(),
     next: vi.fn(),
     timeUntil: () => 10_000
-  }) as unknown as Connection
+  }) as unknown as GameService
 
-const show = (view: InPlayGameView, conn = fakeConn(), { timeUp = false } = {}): VrView =>
-  gameVrView(view, conn, {} as PaintController, {
+const show = (view: InPlayGameView, game = fakeGame(), { timeUp = false } = {}): VrView =>
+  gameVrView(view, game, {} as PaintController, {
     lockIn: vi.fn(),
     timeUp,
     outlines: undefined,
@@ -65,11 +66,11 @@ describe("gameVrView", () => {
       /^You're done\. .* Changed your mind\? Keep editing\.$/
     )
     expect(
-      note(show(guessing({ you: { role: makePlaying({ locked: true }) } }), fakeConn(), { timeUp: true }))
+      note(show(guessing({ you: { role: makePlaying({ locked: true }) } }), fakeGame(), { timeUp: true }))
     ).not.toMatch(/Keep editing/)
     expect(note(show(guessing({ you: { role: JOINED_LATE } })))).toMatch(/^You joined mid-round/)
     expect(
-      note(show(guessing({ you: { role: makePlaying({ locked: true }) } }), fakeConn(ConnectionStatus.CONNECTING)))
+      note(show(guessing({ you: { role: makePlaying({ locked: true }) } }), fakeGame(ConnectionStatus.CONNECTING)))
     ).toBe("Reconnecting…")
   })
 
@@ -105,7 +106,7 @@ describe("gameVrView", () => {
   })
 
   it("offers nothing to press while reconnecting, since it would be lost", () => {
-    const enabled = reveal(show(revealing(), fakeConn(ConnectionStatus.CONNECTING))).actions.map(
+    const enabled = reveal(show(revealing(), fakeGame(ConnectionStatus.CONNECTING))).actions.map(
       (action) => action.enabled
     )
     expect(enabled).toEqual([false, false])
@@ -139,7 +140,7 @@ describe("gameVrView", () => {
   })
 
   it("turns End game off while the connection is down, but not Leave game", () => {
-    const more = show(guessing(), fakeConn(ConnectionStatus.CONNECTING)).more ?? []
+    const more = show(guessing(), fakeGame(ConnectionStatus.CONNECTING)).more ?? []
     expect(more.map((action) => [action.label, action.enabled])).toEqual([
       ["End game", false],
       ["Leave game", undefined]

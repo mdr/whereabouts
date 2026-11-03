@@ -1,5 +1,5 @@
 /**
- * Connection to the game server. Wraps the Rivalis browser client and exposes
+ * The online game, over a connection to the game server. Wraps the Rivalis browser client and exposes
  * the latest GameView and connection status as signals.
  */
 import { WSClient, type ClientKickedEvent, type WSClientOptions } from "@rivalis/browser"
@@ -21,32 +21,12 @@ import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import { CloseReason, isCloseReason } from "@whereabouts/shared/close-reason"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { PlayerId, PlayerName } from "@whereabouts/shared/ids"
-import { describeDisconnect, type Rejection } from "./rejection"
-import { reloadForNewBuild } from "./stale-build"
-import { startHeartbeat, type Heartbeat } from "./heartbeat"
+import { describeDisconnect, type Rejection } from "../net/rejection"
+import { reloadForNewBuild } from "../net/stale-build"
+import { startHeartbeat, type Heartbeat } from "../net/heartbeat"
 import type { Instant, Ms } from "@whereabouts/shared/units"
-
-export enum ConnectionStatus {
-  IDLE = "IDLE",
-  CONNECTING = "CONNECTING",
-  CONNECTED = "CONNECTED",
-  DISCONNECTED = "DISCONNECTED",
-  REJECTED = "REJECTED"
-}
-
-export type PlainStatus = Exclude<ConnectionStatus, ConnectionStatus.REJECTED>
-
-interface PlainState {
-  type: PlainStatus
-}
-
-/** Turned away or closed out; `rejection` says why, in words for the player. */
-interface RejectedState {
-  type: ConnectionStatus.REJECTED
-  rejection: Rejection
-}
-
-export type ConnectionState = PlainState | RejectedState
+import type { GameService } from "./game-service"
+import { ConnectionStatus, type ConnectionState } from "./connection-state"
 
 const wsUrl = (): string => {
   const proto = location.protocol === "https:" ? "wss:" : "ws:"
@@ -60,7 +40,7 @@ const wsUrl = (): string => {
  */
 const JOIN_ATTEMPTS = 20
 
-/** What a Connection needs of the Rivalis client, so tests can drive a fake. */
+/** What an OnlineGameService needs of the Rivalis client, so tests can drive a fake. */
 export interface GameClient {
   readonly connected: boolean
   connect(ticket: string): void
@@ -83,7 +63,7 @@ export type ClientFactory = (url: string, options: WSClientOptions) => GameClien
 
 const wsClient: ClientFactory = (url, options) => new WSClient<ServerTopic>(url, options)
 
-export class Connection {
+export class OnlineGameService implements GameService {
   readonly view = signal<GameView | undefined>(undefined)
   readonly status = signal<ConnectionState>({ type: ConnectionStatus.IDLE })
   readonly lastError = signal<string | undefined>(undefined)
@@ -210,7 +190,7 @@ export class Connection {
   }
 
   /** Try again after giving up: back into the game it was in, if any. */
-  rejoin(): void {
+  rejoin = (): void => {
     if (this.comeBack) this.connect(this.comeBack())
   }
 
@@ -239,56 +219,54 @@ export class Connection {
     this.client.send(topic, JSON.stringify(body ?? {}))
   }
 
-  sendPaint(paint: PaintSubmission): void {
+  sendPaint = (paint: PaintSubmission): void => {
     if (this.client?.connected) this.client.send(ClientTopic.PAINT, encodePaint(paint))
   }
-  lock(): void {
+  lock = (): void => {
     this.send(ClientTopic.LOCK)
   }
-  unlock(): void {
+  unlock = (): void => {
     this.send(ClientTopic.UNLOCK)
   }
-  ready(): void {
+  ready = (): void => {
     this.send(ClientTopic.READY)
   }
-  configure(patch: ConfigurePatch): void {
+  configure = (patch: ConfigurePatch): void => {
     this.send(ClientTopic.CONFIGURE, patch)
   }
-  start(): void {
+  start = (): void => {
     this.send(ClientTopic.START)
   }
-  next(): void {
+  next = (): void => {
     this.send(ClientTopic.NEXT)
   }
-  again(): void {
+  again = (): void => {
     this.send(ClientTopic.AGAIN)
   }
-  rename(name: PlayerName): void {
+  rename = (name: PlayerName): void => {
     this.send(ClientTopic.RENAME, { name })
   }
-  hint(axis: HintAxis): void {
+  hint = (axis: HintAxis): void => {
     this.send(ClientTopic.HINT, { axis })
   }
-  kick(playerId: PlayerId): void {
+  kick = (playerId: PlayerId): void => {
     this.send(ClientTopic.KICK, { playerId })
   }
   /** Give up this seat for good (the lobby's Leave); disconnect afterwards. */
-  leave(): void {
+  leave = (): void => {
     this.send(ClientTopic.LEAVE)
   }
   /** In the lobby: watch instead of play, or take a free seat. */
-  setRole(role: Role): void {
+  setRole = (role: Role): void => {
     this.send(ClientTopic.SET_ROLE, { role })
   }
-  makeHost(playerId: PlayerId): void {
+  makeHost = (playerId: PlayerId): void => {
     this.send(ClientTopic.MAKE_HOST, { playerId })
   }
-  end(): void {
+  end = (): void => {
     this.send(ClientTopic.END)
   }
 
   /** Local-clock ms until a server deadline. */
-  timeUntil(at: Instant): Ms {
-    return at - (Date.now() + this.clockOffset.value)
-  }
+  timeUntil = (at: Instant): Ms => at - (Date.now() + this.clockOffset.value)
 }
