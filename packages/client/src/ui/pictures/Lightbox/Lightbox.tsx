@@ -1,6 +1,6 @@
 import type { ComponentChildren, TargetedEvent } from "preact"
 import { createPortal } from "preact/compat"
-import { useEffect, useRef, useState } from "preact/hooks"
+import { useLayoutEffect, useRef, useState } from "preact/hooks"
 import { CLOSE } from "../../../keyboard/shortcuts"
 import { useElementRef } from "../../element-ref"
 import { cx } from "../../cx"
@@ -11,7 +11,8 @@ import type { Px } from "@whereabouts/shared/units"
 
 /** Calls `close` on Escape while `open`. */
 export const useEscape = (open: boolean, close: () => void): void => {
-  useEffect(() => {
+  // Before the picture paints, so a key pressed as soon as it shows is heard.
+  useLayoutEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent) => {
       if (CLOSE.matches(event)) close()

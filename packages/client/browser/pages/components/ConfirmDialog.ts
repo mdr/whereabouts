@@ -10,8 +10,6 @@ export class ConfirmDialog<T> extends PageObject {
 
   static async whenShown<T>(page: Page, confirmed: () => Promise<T>): Promise<ConfirmDialog<T>> {
     await expect(page.getByTestId(confirmDialogTestIds.dialog), "the confirmation dialog is shown").toBeVisible()
-    // Focus lands on Cancel in the same effect that starts listening for Escape.
-    await expect(page.getByTestId(confirmDialogTestIds.cancelButton), "the dialog is ready for keys").toBeFocused()
     return new ConfirmDialog(page, confirmed)
   }
 

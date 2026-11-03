@@ -3,7 +3,7 @@
  * the backdrop and Cancel all dismiss it; the confirm button is styled as
  * destructive. `useConfirm` gives a screen one dialog and an `ask` function.
  */
-import { useEffect, useState } from "preact/hooks"
+import { useLayoutEffect, useState } from "preact/hooks"
 import { useGameService } from "../../game-service/use-game-service"
 import { useElementRef } from "../element-ref"
 import type { ComponentChildren } from "preact"
@@ -23,7 +23,8 @@ const ConfirmDialog = ({
   online?: boolean
 }) => {
   const cancelRef = useElementRef<HTMLButtonElement>()
-  useEffect(() => {
+  // Before the dialog paints, so a key pressed as soon as it shows is heard.
+  useLayoutEffect(() => {
     if (!request) return
     cancelRef.current?.focus()
     const onKey = (event: KeyboardEvent) => {

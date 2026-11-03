@@ -36,11 +36,7 @@ export class Lightbox extends PageObject {
   async exit(how: LightboxExit): Promise<void> {
     switch (how) {
       case LightboxExit.ESCAPE:
-        // The key is heard only once the page has set its listener, a moment after the picture shows.
-        await expect(async () => {
-          await this.#page.keyboard.press("Escape")
-          await expect(this.#page.getByTestId(lightboxTestIds.lightbox)).toHaveCount(0, { timeout: 500 })
-        }, "Escape closes the picture").toPass()
+        await this.#page.keyboard.press("Escape")
         break
       case LightboxExit.CLOSE_BUTTON:
         await this.#page.getByTestId(lightboxTestIds.close).click()
