@@ -28,6 +28,7 @@
 ## Tests
 
 - Specify only the data the scenario needs; `makeX` factories supply defaults.
+- Endpoint behaviour: `*.iwbt.ts` specs against the in-process server, through `TestPlayer`'s steps; only tests about the protocol itself touch `wire`.
 
 ## Browser tests
 

@@ -17,7 +17,7 @@
     },
     "packages/shared": { "entry": ["scripts/*.mjs"] },
     "packages/server": {
-      "entry": ["scripts/load/load-test.ts", "scripts/load/server-probe.ts"],
+      "entry": ["scripts/load/load-test.ts", "scripts/load/server-probe.ts", "src/**/*.iwbt.ts"],
       "ignore": ["src/vendor/**"]
     }
   }

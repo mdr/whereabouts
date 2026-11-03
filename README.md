@@ -32,9 +32,11 @@ Other commands:
   (`nix develop .#ci`: node, pnpm and jq) whose paths all come from
   cache.nixos.org; the pnpm store is cached between runs with actions/cache.
 - `pnpm test`: unit tests for scoring, paint, the game state machine, the
-  protocol codec, server config and client components, plus end-to-end
-  server tests that drive the real server over WebSockets with the browser
-  client.
+  protocol codec, server config and client components, plus `*.iwbt.ts`
+  (isolated whole-backend tests) in `packages/server/src/iwbt`: players
+  (`TestPlayer`) host, join, paint and lock in against the real server running
+  inside the test's process, on a fake clock, through the browser client's
+  WebSocket.
 - `pnpm lint:fix` and `pnpm format` to tidy up.
 - Browser end-to-end tests in `packages/client/browser/tests`, run by
   Playwright Test in your installed Chrome. They are written against the

@@ -1,16 +1,20 @@
 /**
  * The real game server inside a test's own process, on a spare port and a
- * fake clock: a browser test chooses its questions, changes a game directly
- * and reads it back, against the same code players meet.
+ * fake clock: a test chooses its questions, plays through players who connect
+ * to it or seats players directly, changes a game and reads it back, against
+ * the same code players meet.
  */
 import { createApp, type App } from "../app.ts"
+import type { AddressLimits } from "../address-limiter.ts"
 import { BANK, configureGameRooms, GameRoom } from "../rooms.ts"
 import { FakeClock } from "./fake-clock.ts"
+import { eventually } from "./eventually.ts"
+import { TestPlayer } from "./test-player.ts"
 import type { CommandResult } from "@whereabouts/shared/game/command-result"
-import type { Game } from "@whereabouts/shared/game/game"
+import { ROUND_GRACE, type Game } from "@whereabouts/shared/game/game"
 import type { HintAxis } from "@whereabouts/shared/hints"
 import type { GameConfig } from "@whereabouts/shared/protocol/config"
-import type { Question } from "@whereabouts/shared/questions"
+import { answerCentre, type Question } from "@whereabouts/shared/questions"
 import type { PlayerToken, RoomCode } from "@whereabouts/shared/ids"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { viewIn } from "@whereabouts/shared/game/view-in"
@@ -21,8 +25,16 @@ import { seatPlayers } from "../extra-players/seat-players.ts"
 
 export interface InProcessOptions {
   config?: Partial<GameConfig>
+  /** The questions to choose from, in place of the real ones. */
+  catalogue?: readonly Question[]
   /** Only these may be asked; every question by default. */
   questions?: (question: Question) => boolean
+  /** Per address; unlimited by default. */
+  addressLimits?: AddressLimits
+  /** Serves the development endpoints. */
+  devTools?: boolean
+  /** A built client to serve. */
+  staticDir?: string
 }
 
 const UNLIMITED = { maxOpen: 1000, burst: 1000, perSecond: 1000 }
@@ -31,22 +43,82 @@ export class InProcessServer {
   readonly clock: FakeClock
   /** Where the game's WebSocket listens. */
   readonly socketUrl: string
+  readonly httpUrl: string
   private readonly app: App
+  private readonly players: TestPlayer[] = []
 
-  private constructor(app: App, clock: FakeClock, socketUrl: string) {
+  private constructor(app: App, clock: FakeClock, httpUrl: string) {
     this.app = app
     this.clock = clock
-    this.socketUrl = socketUrl
+    this.httpUrl = httpUrl
+    this.socketUrl = `${httpUrl.replace(/^http/, "ws")}/ws`
   }
 
   /** One at a time per process: rooms read their clock, questions and config from module state. */
-  static async start({ config = {}, questions }: InProcessOptions = {}): Promise<InProcessServer> {
+  static async start({
+    config = {},
+    catalogue = BANK.catalogue,
+    questions,
+    addressLimits = UNLIMITED,
+    devTools,
+    staticDir
+  }: InProcessOptions = {}): Promise<InProcessServer> {
     const clock = new FakeClock()
-    const bank = questions ? { ...BANK, catalogue: BANK.catalogue.filter(questions) } : BANK
+    const bank = { ...BANK, catalogue: questions ? catalogue.filter(questions) : catalogue }
     configureGameRooms({ clock, bank, config })
-    const app = createApp({ staticDir: undefined, logLevel: "warning", addressLimits: UNLIMITED })
-    const address = await app.listen(0)
-    return new InProcessServer(app, clock, `${address.replace(/^http/, "ws")}/ws`)
+    const app = createApp({ staticDir, logLevel: "warning", addressLimits, devTools })
+    return new InProcessServer(app, clock, await app.listen(0))
+  }
+
+  /** A player who can connect to this server. */
+  player(name: string): TestPlayer {
+    const player = new TestPlayer(this, name)
+    this.players.push(player)
+    return player
+  }
+
+  /** A player who has opened a game and is in its lobby. */
+  async host(name: string, code?: RoomCode): Promise<TestPlayer> {
+    const player = this.player(name)
+    await player.host(code)
+    await player.expectLobby()
+    return player
+  }
+
+  /** Why each state a player was sent did not match the schema the client trusts. */
+  get invalidStates(): string[] {
+    return this.players.flatMap((player) => player.invalidStates)
+  }
+
+  /** Move the clock past the end of the round being guessed. */
+  passDeadline(code: RoomCode = this.requireOnlyCode()): void {
+    this.clock.advance(this.requireGame(code).config.roundLength + ROUND_GRACE)
+  }
+
+  /** The question being guessed, with its answer. */
+  questionOf(code: RoomCode = this.requireOnlyCode()): Question {
+    const question = this.requireGame(code).questionBeingGuessed
+    if (!question) throw new Error(`game ${code} is not asking a question`)
+    return question
+  }
+
+  /** Where the question being guessed has its answer. */
+  answerTo(code?: RoomCode): LatLon {
+    return answerCentre(this.questionOf(code).answer)
+  }
+
+  async untilNobodyConnected(code: RoomCode): Promise<void> {
+    await eventually(
+      () => this.requireGame(code).connectedCount === 0,
+      () => `the server to see everyone in ${code} go`
+    )
+  }
+
+  async untilGameFreed(code: RoomCode): Promise<void> {
+    await eventually(
+      () => this.game(code) === undefined,
+      () => `game ${code} to be freed`
+    )
   }
 
   /** The game a room holds, or undefined before it is hosted. */
@@ -105,8 +177,10 @@ export class InProcessServer {
     this.command(code, (game) => game.hint(token, axis))
   }
 
+  /** Disconnect the players this server made, and stop. */
   async close(): Promise<void> {
     await this.app.close()
+    for (const player of this.players) player.disconnect()
   }
 
   private command(code: RoomCode, run: (game: Game, now: Instant) => CommandResult): void {
@@ -114,6 +188,18 @@ export class InProcessServer {
       const result = run(game, now)
       if (!result.ok) throw new Error(`command refused: ${result.error}`)
     })
+  }
+
+  private requireOnlyCode(): RoomCode {
+    const code = this.onlyCode
+    if (!code) throw new Error("no game hosted, or more than one")
+    return code
+  }
+
+  private requireGame(code: RoomCode): Game {
+    const game = this.game(code)
+    if (!game) throw new Error(`no game ${code}`)
+    return game
   }
 
   private room(code: RoomCode): GameRoom | undefined {

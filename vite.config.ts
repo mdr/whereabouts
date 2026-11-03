@@ -62,6 +62,22 @@ const realServerImports = [
   }
 ]
 
+const noWire = [
+  {
+    selector: "MemberExpression[property.name='wire']",
+    message: "Steps and expectations say what a player does and sees: `wire` is for tests about the protocol itself."
+  }
+]
+
+const noClientMessages = [
+  {
+    group: ["**/client-messages.ts"],
+    message: "A spec says what a player does, through TestPlayer's steps: topics are the protocol's business."
+  }
+]
+
+const h3Path = { name: "h3-js", message: "Import H3 from shared/src/h3.ts, which brands cells and resolutions." }
+
 const noFunctionExpressionConsts = [
   { selector: "VariableDeclarator > FunctionExpression", message: "Use an arrow function: const f = () => {}." }
 ]
@@ -70,6 +86,7 @@ export default defineConfig({
   test: {
     include: [
       "packages/*/src/**/*.test.{ts,tsx}",
+      "packages/server/src/**/*.iwbt.ts",
       "packages/client/browser/pages/*.test.ts",
       "scripts/*.test.ts",
       "packages/*/scripts/*.test.ts"
@@ -387,6 +404,26 @@ export default defineConfig({
         rules: { "no-restricted-imports": browserImports(realServerImports) }
       },
       {
+        files: ["**/*.iwbt.ts"],
+        rules: {
+          "eslint-js/no-restricted-syntax": [
+            "error",
+            ...noNull,
+            ...noReexports,
+            ...noFunctionExpressionConsts,
+            ...noWire
+          ],
+          "no-restricted-imports": ["error", { paths: [h3Path], patterns: noClientMessages }]
+        }
+      },
+      {
+        files: ["**/protocol.iwbt.ts"],
+        rules: {
+          "eslint-js/no-restricted-syntax": ["error", ...noNull, ...noReexports, ...noFunctionExpressionConsts],
+          "no-restricted-imports": ["error", { paths: [h3Path] }]
+        }
+      },
+      {
         files: ["packages/client/browser/tests/**/*.ts", "packages/server/scripts/**/*.ts"],
         rules: {
           "no-console": "off"
@@ -463,12 +500,12 @@ export default defineConfig({
         }
       },
       {
-        files: ["**/*.test.{ts,tsx}"],
+        files: ["**/*.test.{ts,tsx}", "**/*.iwbt.ts"],
         rules: {
           "vitest/expect-expect": [
             "error",
             {
-              assertFunctionNames: ["expect", "expectTypeOf", "*.until", "*.untilLatest"]
+              assertFunctionNames: ["expect", "expectTypeOf", "expect*", "*.expect*", "*.until*"]
             }
           ],
           "vitest/no-commented-out-tests": "error",
@@ -499,7 +536,13 @@ export default defineConfig({
         plugins: ["vitest"]
       },
       {
-        files: ["**/*.test.{ts,tsx}", "packages/client/browser/**/*.{iwft,e2e}.ts"],
+        // The plugin does not see the `it` that useInProcessServer returns as a test.
+        files: ["**/*.iwbt.ts"],
+        rules: { "vitest/no-standalone-expect": "off" },
+        plugins: ["vitest"]
+      },
+      {
+        files: ["**/*.test.{ts,tsx}", "**/*.iwbt.ts", "packages/client/browser/**/*.{iwft,e2e}.ts"],
         rules: {
           "max-lines": ["error", { max: 600, skipBlankLines: true, skipComments: true }],
           "sonarjs/cognitive-complexity": "off"
