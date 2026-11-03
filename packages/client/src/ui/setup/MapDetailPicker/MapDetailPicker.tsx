@@ -28,6 +28,8 @@ export const MapDetailPicker = ({
         aria-checked={detail.id === value}
         class={detail.id === value ? styles.on : undefined}
         title={detail.detail}
+        data-testid={mapDetailPickerTestIds.option}
+        data-detail={detail.id}
         onClick={() => onChange(detail.id)}
       >
         <img src={MAP_PREVIEWS[detail.id]} alt="" />

@@ -1,5 +1,5 @@
-import { GameEntryType } from "@whereabouts/shared/protocol/ticket"
 import { route, RouteType, visit } from "./router"
+import { multiplayerKey } from "./multiplayer-key"
 import { Home } from "./screens/Home/Home"
 import { Solo } from "./screens/solo/Solo/Solo"
 import { Multiplayer } from "./screens/multiplayer/Multiplayer"
@@ -13,12 +13,7 @@ export const App = () => {
     case RouteType.SCORE_REVIEW:
       return <ScoreReview />
     case RouteType.GAME:
-      return (
-        <Multiplayer
-          key={`${visit.value}:${current.entry.type === GameEntryType.HOST ? "new" : "join"}:${current.entry.code ?? ""}`}
-          entry={current.entry}
-        />
-      )
+      return <Multiplayer key={multiplayerKey(visit.value, current.entry)} entry={current.entry} />
     case RouteType.HOME:
       return <Home />
   }

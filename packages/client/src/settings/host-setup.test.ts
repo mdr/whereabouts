@@ -1,23 +1,15 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
-import { render } from "@testing-library/preact"
+import { signal } from "@preact/signals"
 import { mixOf, MapDetail } from "@whereabouts/shared/protocol/config"
 import { type GameView, Phase } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
-import type { GameService } from "../game-service/game-service"
 import { hostSetup } from "./settings"
-import { configureAsHost, savedSetupPatch, useSavedSetup } from "./host-setup"
+import { configureAsHost, savedSetupPatch, shouldApplySavedSetup } from "./host-setup"
 
 const { LANDMARK, PLACE, COUNTRY, FLAG } = QuestionType
 const MIX = mixOf({ [LANDMARK]: 3, [PLACE]: 3, [COUNTRY]: 2, [FLAG]: 2 })
 const SAVED = { mix: MIX, roundLength: 90_000, mapDetail: MapDetail.POLITICAL }
-
-const lobby = (isHost: boolean, phase: Phase = Phase.LOBBY): GameView => ({ phase, you: { isHost } }) as GameView
-
-const Harness = ({ game, view, created }: { game: GameService; view: GameView | undefined; created: boolean }) => {
-  useSavedSetup(game, view, created)
-  return undefined
-}
 
 afterEach(() => {
   hostSetup.value = {}
@@ -35,7 +27,7 @@ describe("savedSetupPatch", () => {
   })
 
   it("turns a setup saved before the question mix into one", () => {
-    const old = (setup: object) => savedSetupPatch({ roundLength: 90_000, ...setup }).mix
+    const old = (setup: object): unknown => savedSetupPatch({ roundLength: 90_000, ...setup }).mix
     expect(old({ rounds: 12, photoShare: 0 })).toEqual(mixOf({ [PLACE]: 12 }))
     expect(old({ rounds: 8, photoShare: 0.75, countries: "mixed" })).toEqual(
       mixOf({ [LANDMARK]: 5, [PLACE]: 1, [COUNTRY]: 2 })
@@ -68,7 +60,7 @@ describe("savedSetupPatch", () => {
 describe("configureAsHost", () => {
   it("sends the change and remembers it alongside the earlier ones", () => {
     const configure = vi.fn()
-    const game = { configure, online: { value: true } } as unknown as GameService
+    const game = { configure, online: signal(true) }
     configureAsHost(game, { mix: MIX })
     configureAsHost(game, { mapDetail: MapDetail.WATER })
     expect(configure).toHaveBeenLastCalledWith({ mapDetail: MapDetail.WATER })
@@ -77,38 +69,23 @@ describe("configureAsHost", () => {
 
   it("neither sends nor remembers a change while reconnecting", () => {
     const configure = vi.fn()
-    configureAsHost({ configure, online: { value: false } } as unknown as GameService, { mix: MIX })
+    configureAsHost({ configure, online: signal(false) }, { mix: MIX })
     expect(configure).not.toHaveBeenCalled()
     expect(hostSetup.value).toEqual({})
   })
 })
 
-describe("useSavedSetup", () => {
-  it("gives a game this tab just created the remembered setup, once", () => {
-    hostSetup.value = SAVED
-    const configure = vi.fn()
-    const game = { configure } as unknown as GameService
-    const { rerender } = render(<Harness game={game} view={undefined} created />)
-    expect(configure).not.toHaveBeenCalled()
-    rerender(<Harness game={game} view={lobby(true)} created />)
-    rerender(<Harness game={game} view={{ ...lobby(true) }} created />)
-    expect(configure).toHaveBeenCalledTimes(1)
-    expect(configure).toHaveBeenCalledWith(SAVED)
+describe("shouldApplySavedSetup", () => {
+  const lobby = (isHost: boolean, phase: Phase = Phase.LOBBY): GameView => ({ phase, you: { isHost } }) as GameView
+
+  it("is for a game this tab just created, once it reaches its lobby", () => {
+    expect(shouldApplySavedSetup(true, undefined)).toBe(false)
+    expect(shouldApplySavedSetup(true, lobby(true))).toBe(true)
   })
 
-  it("leaves joined games, refreshed lobbies and games under way alone", () => {
-    hostSetup.value = SAVED
-    const configure = vi.fn()
-    const game = { configure } as unknown as GameService
-    render(<Harness game={game} view={lobby(true)} created={false} />)
-    render(<Harness game={game} view={lobby(false)} created />)
-    render(<Harness game={game} view={lobby(true, Phase.GUESSING)} created />)
-    expect(configure).not.toHaveBeenCalled()
-  })
-
-  it("sends nothing when there is no remembered setup", () => {
-    const configure = vi.fn()
-    render(<Harness game={{ configure } as unknown as GameService} view={lobby(true)} created />)
-    expect(configure).not.toHaveBeenCalled()
+  it("leaves joined games, guests' lobbies and games under way alone", () => {
+    expect(shouldApplySavedSetup(false, lobby(true))).toBe(false)
+    expect(shouldApplySavedSetup(true, lobby(false))).toBe(false)
+    expect(shouldApplySavedSetup(true, lobby(true, Phase.GUESSING))).toBe(false)
   })
 })

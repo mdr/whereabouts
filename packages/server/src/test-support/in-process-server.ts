@@ -220,6 +220,15 @@ export class InProcessServer {
     return tokens
   }
 
+  /** Seat spectators the same way. */
+  watch(code: RoomCode, names: string[]): PlayerToken[] {
+    let tokens: PlayerToken[] = []
+    this.act(code, (game, now) => {
+      tokens = seatPlayers(game, names, now, Role.SPECTATOR)
+    })
+    return tokens
+  }
+
   /** A seated player paints an even blob, `radius` across, around `at`. */
   paint(code: RoomCode, token: PlayerToken, at: LatLon, radius: Km): void {
     this.act(code, (game, now) => {

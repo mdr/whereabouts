@@ -1,8 +1,9 @@
-import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import { type GameView } from "@whereabouts/shared/protocol/views"
 import { Role } from "@whereabouts/shared/roles"
 import { useGameService } from "../../../game-service/use-game-service"
 import { Icon } from "../../icons"
+import { canTakeSeat, seatsTakenTitle } from "../seat-rules"
+import { takeSeatTestIds } from "./TakeSeatTestIds"
 import styles from "./TakeSeat.module.css"
 
 /**
@@ -11,13 +12,13 @@ import styles from "./TakeSeat.module.css"
  */
 export const TakeSeatButton = ({ view, inCard }: { view: GameView; inCard?: boolean }) => {
   const game = useGameService()
-  const full = view.players.length >= MAX_PLAYERS
   return (
     <button
       class={inCard ? styles.inCard : undefined}
       onClick={() => game.setRole(Role.PLAYER)}
-      disabled={full || !game.online.value}
-      title={full ? `All ${MAX_PLAYERS} player seats are taken` : "Play from the next question"}
+      disabled={!canTakeSeat(view, game.online.value)}
+      title={seatsTakenTitle(view) ?? "Play from the next question"}
+      data-testid={takeSeatTestIds.button}
     >
       <Icon name="play" /> Play from the next question
     </button>
