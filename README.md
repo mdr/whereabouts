@@ -194,6 +194,8 @@ histograms `game_duration_seconds`, `room_lifetime_seconds` and
 memory on the 512 MB machine. Label values are snake_case, unlike the logs'. To log or count something new, use the `App`'s
 `logger` (`logEvent`) and `metrics.registry`.
 
+`deploy/grafana/whereabouts.json` is a dashboard of them: players, games, rounds, errors and memory. Fly's Grafana has no API for dashboards, so import it by hand: in the app's Metrics (fly-metrics.net), Dashboards, New, Import, upload the file, pick "Prometheus on Fly", Import. After changing it, import again and choose to overwrite.
+
 Players’ browsers report failures (a map, outlines or VR that will not load, uncaught errors) to `POST /api/client-errors`, which logs them at `warn` with `code: "clientError.reported"`. A report holds only the kind, an error message and stack with URL query strings removed, the screen and room code, the client build (logged as `clientBuild`, beside the server's `build`) and the user agent; never paint, guesses or tokens. It is limited to 5 per address, then 1 every 10 s, and 300 a minute overall.
 
 ## Layout
