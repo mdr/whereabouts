@@ -4,7 +4,7 @@ import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import { outlineOf, RoundGuessType, type GameView, type RevealView } from "@whereabouts/shared/protocol/views"
 import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { QuestionType, clueFlag } from "@whereabouts/shared/questions"
-import type { Connection } from "../../../net/net"
+import { useGameService } from "../../../game-service/use-game-service"
 import { usePaint } from "../../../ui/map/MapView/MapView"
 import { HeaderNote, Hud, HudBottom, HudHeader, HudRight, HudTop } from "../../../ui/map/Hud/Hud"
 import { RevealCards } from "../../../ui/round/RevealCards"
@@ -43,18 +43,17 @@ import { revealTestIds } from "./RevealTestIds"
 import { paintLayer, paintsOf } from "../../../round/reveal-paint"
 
 export const Reveal = ({
-  conn,
   view,
   reveal,
   vrView,
   fact
 }: {
-  conn: Connection
   view: GameView
   reveal: RevealView
   vrView: VrView
   fact: Fact | undefined
 }) => {
+  const game = useGameService()
   const paint = usePaint()
   const selected = revealShown.value
   const setSelected = (shown: RevealShown) => (revealShown.value = shown)
@@ -66,8 +65,7 @@ export const Reveal = ({
     },
     []
   )
-  const online = conn.online.value
-  const { dialog, ask } = useConfirm(online)
+  const { dialog, ask } = useConfirm()
 
   // An area round shows its outline, once the outlines are loaded.
   const outlines = useOutlines(outlineOf(reveal.question.answer) !== undefined)
@@ -137,7 +135,7 @@ export const Reveal = ({
             where={mine && where.get(mine.playerId)}
             testIds={{ scoreCard: revealTestIds.scoreCard }}
           />
-          <ConnectionNote conn={conn} onMap />
+          <ConnectionNote onMap />
         </HudTop>
         <HudRight>
           <RevealScores
@@ -146,21 +144,21 @@ export const Reveal = ({
             answerFlag={answerFlag}
             onSelect={setSelected}
             onHover={setHovered}
-            onKick={view.you.isHost ? (player) => ask(kickRequest(player.name, () => conn.kick(player.id))) : undefined}
+            onKick={view.you.isHost ? (player) => ask(kickRequest(player.name, () => game.kick(player.id))) : undefined}
           />
           {/* Where it is while guessing too, and away from Next round below. */}
-          {canEndGame(view) && <EndGameButton onEnd={() => conn.end()} online={online} />}
+          {canEndGame(view) && <EndGameButton onEnd={() => game.end()} />}
         </HudRight>
         <HudBottom>
           {answerFlag && <AllFlagsSwitch />}
           <VrButton view={vrView} />
           {!model.ready ? (
-            <TakeSeatButton conn={conn} view={view} />
+            <TakeSeatButton view={view} />
           ) : (
             <button
               class={iAmReady ? "" : "primary"}
-              onClick={() => conn.ready()}
-              disabled={iAmReady || !online}
+              onClick={() => game.ready()}
+              disabled={iAmReady || !game.online.value}
               data-testid={revealTestIds.readyButton}
             >
               <Icon name="check" /> {iAmReady ? WAITING_FOR_OTHERS : "Ready"}
@@ -169,8 +167,8 @@ export const Reveal = ({
           {model.next && (
             <button
               class={iAmReady || !model.ready ? "primary" : ""}
-              onClick={() => conn.next()}
-              disabled={!online}
+              onClick={() => game.next()}
+              disabled={!game.online.value}
               title="Go on without waiting"
               data-testid={revealTestIds.nextButton}
             >
@@ -182,7 +180,7 @@ export const Reveal = ({
       <DevDrawer>
         <RoundResultsDev results={reveal.results} host={view.players.find((player) => player.isHost)?.id} />
         <PaintDev />
-        <ConnectionDev conn={conn} view={view} />
+        <ConnectionDev view={view} />
       </DevDrawer>
     </>
   )

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "preact/hooks"
 import type { LobbyGameView, ResultsGameView, RevealView, RoundView } from "@whereabouts/shared/protocol/views"
-import type { Connection } from "../net/net"
+import type { GameService } from "../game-service/game-service"
 import { Chime, sound } from "./sound"
 import { RoundCue, roundCue, type RoundState } from "./round-cue"
 import { Phase } from "@whereabouts/shared/protocol/views"
@@ -18,7 +18,7 @@ export type SoundView =
  * applause at the final results. The spray and eraser are the map's
  * business (MapView), and Pass and Clear play their own, where they happen.
  */
-export const useGameSounds = (conn: Pick<Connection, "timeUntil">, view: SoundView | undefined): void => {
+export const useGameSounds = (game: Pick<GameService, "timeUntil">, view: SoundView | undefined): void => {
   const previous = useRef<RoundState | undefined>(undefined)
   const lastDeadline = useRef<number | undefined>(undefined)
   const phase = view?.phase
@@ -29,7 +29,7 @@ export const useGameSounds = (conn: Pick<Connection, "timeUntil">, view: SoundVi
   useEffect(() => {
     if (phase === undefined) return
     const next = { phase, round }
-    const timeLeft = lastDeadline.current === undefined ? 0 : conn.timeUntil(lastDeadline.current)
+    const timeLeft = lastDeadline.current === undefined ? 0 : game.timeUntil(lastDeadline.current)
     const cue = roundCue(previous.current, next, timeLeft)
     if (cue === RoundCue.ROUND_START) sound.chime(Chime.RISING)
     if (cue === RoundCue.FINISHED_EARLY) {
@@ -49,7 +49,7 @@ export const useGameSounds = (conn: Pick<Connection, "timeUntil">, view: SoundVi
   useEffect(() => {
     if (deadline === undefined) return
     lastDeadline.current = deadline
-    sound.scheduleCountdown(conn.timeUntil(deadline))
+    sound.scheduleCountdown(game.timeUntil(deadline))
   }, [deadline])
 
   useEffect(() => () => sound.stopAll(), [])

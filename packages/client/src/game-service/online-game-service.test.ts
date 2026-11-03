@@ -10,10 +10,11 @@ import { ClientTopic } from "@whereabouts/shared/protocol/client-messages"
 import { SocketEvent } from "@whereabouts/shared/protocol/socket-event"
 import { ServerTopic, revealMessage, stateMessage } from "@whereabouts/shared/protocol/server-messages"
 import { type GameView, type RoundReveal, Phase, type RevealGameView } from "@whereabouts/shared/protocol/views"
-import { Connection, ConnectionStatus, type GameClient } from "./net"
-import { RejectionAction, type Rejection } from "./rejection"
+import { OnlineGameService, type GameClient } from "./online-game-service"
+import { ConnectionStatus } from "./connection-state"
+import { RejectionAction, type Rejection } from "../net/rejection"
 import { makeGuessingView, makeLobbyView, makeQuestionView, makeRevealView } from "../test-view"
-import { PING_EVERY, PONG_WITHIN } from "./heartbeat"
+import { PING_EVERY, PONG_WITHIN } from "../net/heartbeat"
 
 const encoder = new TextEncoder()
 
@@ -68,9 +69,9 @@ const TICKET = {
   entry: { type: GameEntryType.HOST as const }
 }
 
-const connected = (): { conn: Connection; client: FakeClient; clients: FakeClient[] } => {
+const connected = (): { conn: OnlineGameService; client: FakeClient; clients: FakeClient[] } => {
   const clients: FakeClient[] = []
-  const conn = new Connection((_url, options) => {
+  const conn = new OnlineGameService((_url, options) => {
     const c = new FakeClient(options)
     clients.push(c)
     return c
@@ -79,10 +80,10 @@ const connected = (): { conn: Connection; client: FakeClient; clients: FakeClien
   return { conn, client: clients[0]!, clients }
 }
 
-const rejectionOf = (conn: Connection): Rejection | undefined =>
+const rejectionOf = (conn: OnlineGameService): Rejection | undefined =>
   conn.status.value.type === ConnectionStatus.REJECTED ? conn.status.value.rejection : undefined
 
-describe("Connection status", () => {
+describe("OnlineGameService status", () => {
   afterEach(() => vi.useRealTimers())
 
   it("is connecting while it dials, and connected once in", () => {
@@ -224,7 +225,7 @@ describe("Connection status", () => {
   })
 })
 
-describe("Connection view", () => {
+describe("OnlineGameService view", () => {
   afterEach(() => vi.useRealTimers())
 
   it("shows each state, with the server's clock offset, and clears an old error", () => {
@@ -301,10 +302,10 @@ describe("Connection view", () => {
   })
 })
 
-describe("Connection liveness", () => {
+describe("OnlineGameService liveness", () => {
   afterEach(() => vi.useRealTimers())
 
-  const inGame = (): { conn: Connection; client: FakeClient; clients: FakeClient[] } => {
+  const inGame = (): { conn: OnlineGameService; client: FakeClient; clients: FakeClient[] } => {
     vi.useFakeTimers()
     const game = connected()
     game.client.open()

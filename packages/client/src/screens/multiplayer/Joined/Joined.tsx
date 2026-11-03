@@ -1,7 +1,8 @@
 import { useEffect } from "preact/hooks"
 import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
 import { Phase, PictureType, type GameView, type Picture } from "@whereabouts/shared/protocol/views"
-import { ConnectionStatus, type Connection } from "../../../net/net"
+import { ConnectionStatus } from "../../../game-service/connection-state"
+import { useGameService } from "../../../game-service/use-game-service"
 import { RejectionAction } from "../../../net/rejection"
 import { joinedCode, resetPlayerToken } from "../../../settings/settings"
 import { preloadPicture } from "../../../data/preload"
@@ -25,11 +26,12 @@ const pictureSource = (picture: Picture | undefined): string | undefined =>
 const upcomingOf = (view: GameView | undefined) => (view && view.phase !== Phase.RESULTS ? view.upcoming : undefined)
 
 /** The game once a name is settled: its own component so its hooks always run. */
-export const Joined = ({ conn, entry }: { conn: Connection; entry: GameEntry }) => {
+export const Joined = ({ entry }: { entry: GameEntry }) => {
+  const game = useGameService()
   const create = entry.type === GameEntryType.HOST
   const code = entry.code
   // Once the server assigns a code to a new game, put it in the URL for sharing.
-  const assigned = conn.code.value
+  const assigned = game.code.value
   useEffect(() => {
     if (!assigned) return
     joinedCode.value = assigned
@@ -38,7 +40,7 @@ export const Joined = ({ conn, entry }: { conn: Connection; entry: GameEntry }) 
 
   // Removed by the host: this tab's token is banned from that game, so drop
   // it (and the remembered code) and rejoin, if at all, as a new player.
-  const state = conn.status.value
+  const state = game.status.value
   const removed = state.type === ConnectionStatus.REJECTED && state.rejection.action === RejectionAction.FORGET_SEAT
   useEffect(() => {
     if (!removed) return
@@ -46,9 +48,9 @@ export const Joined = ({ conn, entry }: { conn: Connection; entry: GameEntry }) 
     joinedCode.value = ""
   }, [removed])
 
-  const view = conn.view.value
-  useGameSounds(conn, view)
-  useSavedSetup(conn, view, create)
+  const view = game.view.value
+  useGameSounds(game, view)
+  useSavedSetup(game, view, create)
   useVrHold()
   const upcoming = upcomingOf(view)
   useEffect(() => {
@@ -59,7 +61,7 @@ export const Joined = ({ conn, entry }: { conn: Connection; entry: GameEntry }) 
     const why = state.rejection
     const primary =
       why.action === RejectionAction.RETRY
-        ? { label: "Try again", press: () => conn.rejoin(), testId: joinedTestIds.tryAgainButton }
+        ? { label: "Try again", press: () => game.rejoin(), testId: joinedTestIds.tryAgainButton }
         : why.action === RejectionAction.HOST_UNDER_CODE && code
           ? {
               label: `Host game ${code}`,
@@ -101,11 +103,11 @@ export const Joined = ({ conn, entry }: { conn: Connection; entry: GameEntry }) 
       </div>
     )
   }
-  if (view.phase === Phase.LOBBY) return <Lobby conn={conn} view={view} />
-  if (view.phase === Phase.RESULTS) return <Results conn={conn} view={view} />
+  if (view.phase === Phase.LOBBY) return <Lobby view={view} />
+  if (view.phase === Phase.RESULTS) return <Results view={view} />
   return (
     <MapView>
-      <InGame conn={conn} view={view} />
+      <InGame view={view} />
     </MapView>
   )
 }

@@ -8,7 +8,7 @@ import type { PlayerId } from "@whereabouts/shared/ids"
 import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import { type GameView } from "@whereabouts/shared/protocol/views"
 import { Role, everyone, type PlayerView } from "@whereabouts/shared/roles"
-import type { Connection } from "../../net/net"
+import type { GameService } from "../../game-service/game-service"
 import type { VrAction } from "./view"
 import type { VrTableRow } from "../scores/scores"
 
@@ -24,7 +24,7 @@ export const pickable = (view: GameView, player: PlayerView): Pick<VrTableRow, "
 
 /** Remove and Make host for the player the host picked, each confirmed by a second press. */
 export const hostActions = (
-  conn: Pick<Connection, "kick" | "makeHost" | "online">,
+  game: Pick<GameService, "kick" | "makeHost" | "online">,
   view: GameView,
   playerId: PlayerId | undefined
 ): VrAction[] => {
@@ -36,20 +36,20 @@ export const hostActions = (
   return [
     {
       label: `Remove ${player.name}`,
-      enabled: conn.online.value,
+      enabled: game.online.value,
       confirm: `Press again to remove ${player.name}`,
       press: () => {
         vrPicked.value = undefined
-        conn.kick(player.id)
+        game.kick(player.id)
       }
     },
     ...(player.connected && !player.isHost
       ? [
           {
             label: `Make ${player.name} host`,
-            enabled: conn.online.value,
+            enabled: game.online.value,
             confirm: `Press again: ${player.name} hosts`,
-            press: () => conn.makeHost(player.id)
+            press: () => game.makeHost(player.id)
           }
         ]
       : [])
@@ -57,8 +57,8 @@ export const hostActions = (
 }
 
 /** A watcher's way in, while a seat is free. */
-export const takeSeat = (conn: Pick<Connection, "setRole" | "online">, view: GameView, label: string): VrAction => ({
+export const takeSeat = (game: Pick<GameService, "setRole" | "online">, view: GameView, label: string): VrAction => ({
   label,
-  press: () => conn.setRole(Role.PLAYER),
-  enabled: view.players.length < MAX_PLAYERS && conn.online.value
+  press: () => game.setRole(Role.PLAYER),
+  enabled: view.players.length < MAX_PLAYERS && game.online.value
 })

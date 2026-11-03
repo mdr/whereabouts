@@ -6,7 +6,9 @@ import { playerColour } from "@whereabouts/shared/colours"
 import { PictureType, type ResultsGameView } from "@whereabouts/shared/protocol/views"
 import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
 import { signal } from "@preact/signals"
-import { type Connection, type ConnectionState, type PlainStatus, ConnectionStatus } from "../../../net/net"
+import type { GameService } from "../../../game-service/game-service"
+import { type ConnectionState, type PlainStatus, ConnectionStatus } from "../../../game-service/connection-state"
+import { inGame } from "../../../game-service/test-wrapper"
 import { Results } from "./Results"
 import { resultsTestIds } from "./ResultsTestIds"
 import { standingsTestIds } from "../Standings/StandingsTestIds"
@@ -24,13 +26,13 @@ import { makePlayer, makeResultsView, makeStanding } from "../../../test-view"
 
 const tid = (id: string) => `[data-testid="${id}"]`
 
-const makeConn = (status: PlainStatus = ConnectionStatus.CONNECTED, again = vi.fn()) =>
+const makeGame = (status: PlainStatus = ConnectionStatus.CONNECTED, again = vi.fn()) =>
   ({
     again,
     status: signal<ConnectionState>({ type: status }),
     online: signal(status === ConnectionStatus.CONNECTED),
     lastError: signal(undefined)
-  }) as unknown as Connection
+  }) as unknown as GameService
 
 // The outlines are a download; these tests only need where a shape goes.
 vi.mock("../../../data/outlines", async (original) => ({ ...(await original<object>()), useOutline: () => undefined }))
@@ -72,8 +74,8 @@ const view = (isHost: boolean): ResultsGameView =>
 
 describe("Results", () => {
   it("names the winner, lists the standings by total, and highlights you", () => {
-    const conn = makeConn()
-    const { container } = render(<Results conn={conn} view={view(false)} />)
+    const game = makeGame()
+    const { container } = render(<Results view={view(false)} />, { wrapper: inGame(game) })
     expect(container.querySelector(tid(resultsTestIds.winner))!.textContent).toContain("Alice")
     expect(container.querySelector(tid(resultsTestIds.winner))!.textContent).toContain("wins")
     const rows = container.querySelectorAll(tid(standingsTestIds.standingsRow))
@@ -89,7 +91,7 @@ describe("Results", () => {
   it("shows a finalist no longer in the room by their own name and colour", () => {
     const gameView = view(false)
     gameView.players = [makePlayer({ score: 1500 })]
-    const { container } = render(<Results conn={makeConn()} view={gameView} />)
+    const { container } = render(<Results view={gameView} />, { wrapper: inGame(makeGame()) })
     const rows = [...container.querySelectorAll(tid(standingsTestIds.standingsRow))]
     expect(rows.map((row) => row.getAttribute("data-player"))).toEqual(["Alice", "Bob"])
     const heads = [...container.querySelectorAll(tid(scoreTableTestIds.playerName))].map((head) => head.textContent)
@@ -100,8 +102,8 @@ describe("Results", () => {
   })
 
   it("tables each round: what it asked, everyone's score in finishing order, its best picked out", () => {
-    const conn = makeConn()
-    const { container } = render(<Results conn={conn} view={view(false)} />)
+    const game = makeGame()
+    const { container } = render(<Results view={view(false)} />, { wrapper: inGame(game) })
     const heads = [...container.querySelectorAll(tid(scoreTableTestIds.playerName))].map(
       (heading) => heading.textContent
     )
@@ -125,7 +127,7 @@ describe("Results", () => {
   })
 
   it("tells a flag round from a country round: the flag, or the shape with the flag by its name", () => {
-    const conn = makeConn()
+    const game = makeGame()
     const gameView = view(false)
     gameView.playedRounds = [
       { type: QuestionType.FLAG, label: "Turkey", picture: { type: PictureType.FLAG, flag: flagCode("tr") } },
@@ -146,7 +148,7 @@ describe("Results", () => {
         picture: { type: PictureType.SHAPE, outline: outlineId("sea-black-sea"), centre: { lat: 43.4, lon: 34.3 } }
       }
     ]
-    const { container } = render(<Results conn={conn} view={gameView} />)
+    const { container } = render(<Results view={gameView} />, { wrapper: inGame(game) })
     const rounds = [...container.querySelectorAll(tid(roundsTestIds.playedRound))]
     expect(rounds.map((round) => round.querySelector(tid(roundWhatTestIds.roundType))!.textContent)).toEqual([
       "Flag",
@@ -173,8 +175,8 @@ describe("Results", () => {
       }
     )
     try {
-      const conn = makeConn()
-      const { container, getByText } = render(<Results conn={conn} view={view(false)} />)
+      const game = makeGame()
+      const { container, getByText } = render(<Results view={view(false)} />, { wrapper: inGame(game) })
       expect(container.querySelectorAll(tid(scoreTableTestIds.table))).toHaveLength(0)
       const rounds = [...container.querySelectorAll(tid(roundsTestIds.playedRound))]
       expect(rounds.map((round) => round.querySelector(tid(roundWhatTestIds.roundLabel))!.textContent)).toEqual([
@@ -202,15 +204,17 @@ describe("Results", () => {
 
   it("lets the host play again", () => {
     const again = vi.fn()
-    const { getByText } = render(<Results conn={makeConn(ConnectionStatus.CONNECTED, again)} view={view(true)} />)
+    const { getByText } = render(<Results view={view(true)} />, {
+      wrapper: inGame(makeGame(ConnectionStatus.CONNECTED, again))
+    })
     fireEvent.click(getByText("Play again"))
     expect(again).toHaveBeenCalledTimes(1)
   })
 
   it("holds Play again while reconnecting, and says so", () => {
-    const { container, getByText } = render(
-      <Results conn={makeConn(ConnectionStatus.DISCONNECTED)} view={view(true)} />
-    )
+    const { container, getByText } = render(<Results view={view(true)} />, {
+      wrapper: inGame(makeGame(ConnectionStatus.DISCONNECTED))
+    })
     expect(container.querySelector<HTMLButtonElement>(tid(resultsTestIds.playAgainButton))!.disabled).toBe(true)
     getByText("Reconnecting…")
   })

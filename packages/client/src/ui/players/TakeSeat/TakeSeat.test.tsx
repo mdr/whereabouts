@@ -7,7 +7,8 @@ import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import { makePlayer, makeSpectator } from "../../../test-view"
 import type { GameView } from "@whereabouts/shared/protocol/views"
 import { Role } from "@whereabouts/shared/roles"
-import type { Connection } from "../../../net/net"
+import type { GameService } from "../../../game-service/game-service"
+import { inGame } from "../../../game-service/test-wrapper"
 import { TakeSeatButton } from "./TakeSeat"
 
 const person = (i: number) =>
@@ -17,24 +18,26 @@ const viewWith = (players: number) =>
     players: Array.from({ length: players }, (_, i) => person(i)),
     spectators: [makeSpectator()]
   }) as GameView
-const makeConn = (overrides: { setRole?: () => void; online?: boolean } = {}) =>
-  ({ setRole: overrides.setRole ?? vi.fn(), online: { value: overrides.online ?? true } }) as unknown as Connection
+const makeGame = (overrides: { setRole?: () => void; online?: boolean } = {}) =>
+  ({ setRole: overrides.setRole ?? vi.fn(), online: { value: overrides.online ?? true } }) as unknown as GameService
 
 describe("TakeSeatButton", () => {
   it("asks to play when a seat is free", () => {
     const setRole = vi.fn()
-    const { container } = render(<TakeSeatButton conn={makeConn({ setRole })} view={viewWith(3)} />)
+    const { container } = render(<TakeSeatButton view={viewWith(3)} />, { wrapper: inGame(makeGame({ setRole })) })
     fireEvent.click(container.querySelector("button")!)
     expect(setRole).toHaveBeenCalledWith(Role.PLAYER)
   })
 
   it("is off while every seat is taken", () => {
-    const { container } = render(<TakeSeatButton conn={makeConn()} view={viewWith(MAX_PLAYERS)} />)
+    const { container } = render(<TakeSeatButton view={viewWith(MAX_PLAYERS)} />, { wrapper: inGame(makeGame()) })
     expect(container.querySelector("button")!.disabled).toBe(true)
   })
 
   it("is off while reconnecting, when asking would be lost", () => {
-    const { container } = render(<TakeSeatButton conn={makeConn({ online: false })} view={viewWith(3)} />)
+    const { container } = render(<TakeSeatButton view={viewWith(3)} />, {
+      wrapper: inGame(makeGame({ online: false }))
+    })
     expect(container.querySelector("button")!.disabled).toBe(true)
   })
 })

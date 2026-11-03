@@ -12,7 +12,7 @@ import {
   type RevealView
 } from "@whereabouts/shared/protocol/views"
 import { YouRoleType, type PlayingPlayerView } from "@whereabouts/shared/roles"
-import type { Connection } from "../../net/net"
+import type { GameService } from "../../game-service/game-service"
 import type { PaintController } from "../../paint/paint-controller"
 import { connectionText } from "../../ui/connection/ConnectionNote/ConnectionNote"
 import { navigate } from "../../router"
@@ -73,16 +73,16 @@ interface GameVrShown {
   borders: Borders | undefined
 }
 
-const moreActions = (view: GameView, conn: Connection): VrAction[] => [
-  ...(view.you.role.type === YouRoleType.SPECTATOR ? [takeSeat(conn, view, "Play from the next question")] : []),
-  ...hostActions(conn, view, view.phase === Phase.REVEAL ? shownPlayerId(revealShown.value) : vrPicked.value),
+const moreActions = (view: GameView, game: GameService): VrAction[] => [
+  ...(view.you.role.type === YouRoleType.SPECTATOR ? [takeSeat(game, view, "Play from the next question")] : []),
+  ...hostActions(game, view, view.phase === Phase.REVEAL ? shownPlayerId(revealShown.value) : vrPicked.value),
   ...(canEndGame(view)
     ? [
         {
           label: "End game",
           confirm: "Press again to end the game",
-          press: () => conn.end(),
-          enabled: conn.online.value
+          press: () => game.end(),
+          enabled: game.online.value
         }
       ]
     : []),
@@ -111,7 +111,7 @@ const playersTable = (view: GameView): VrTable => ({
 
 const gameRound = (
   view: InPlayGameView,
-  conn: Connection,
+  game: GameService,
   paint: PaintController,
   shown: VrRoundShown,
   connection: string | undefined,
@@ -129,34 +129,34 @@ const gameRound = (
     colour: ownColour(view.you),
     hint: view.you.hint,
     hintsLeft: view.config.hints > 0 && role.type === YouRoleType.PLAYING ? role.hintsLeft : HintAllowance.NONE,
-    useHint: (axis: HintAxis) => conn.hint(axis),
-    timeLeft: deadline === undefined ? undefined : () => conn.timeUntil(deadline),
+    useHint: (axis: HintAxis) => game.hint(axis),
+    timeLeft: deadline === undefined ? undefined : () => game.timeUntil(deadline),
     doneLabel: "Done",
     done: lockIn,
-    unlock: canUnlock(view, timeUp) ? () => conn.unlock() : undefined,
+    unlock: canUnlock(view, timeUp) ? () => game.unlock() : undefined,
     playing: role.type === YouRoleType.PLAYING,
     note:
       connection ?? (note && noteText(note, { askedToWatch: askedToWatch.value, canUnlock: canUnlock(view, timeUp) }))
   })
 }
 
-const revealActions = (model: RevealModel, conn: Connection): VrAction[] => {
+const revealActions = (model: RevealModel, game: GameService): VrAction[] => {
   const actions: VrAction[] = []
   if (model.ready) {
     actions.push({
       label: model.ready.done ? WAITING_FOR_OTHERS : "Ready",
-      press: () => conn.ready(),
-      enabled: !model.ready.done && conn.online.value
+      press: () => game.ready(),
+      enabled: !model.ready.done && game.online.value
     })
   }
-  if (model.next) actions.push({ label: model.next.label, press: () => conn.next(), enabled: conn.online.value })
+  if (model.next) actions.push({ label: model.next.label, press: () => game.next(), enabled: game.online.value })
   return actions
 }
 
 const gameReveal = (
   view: GameView,
   reveal: RevealView,
-  conn: Connection,
+  game: GameService,
   shown: VrRoundShown,
   connection: string | undefined,
   { outlines, painted, borders }: Pick<GameVrShown, "outlines" | "painted" | "borders">
@@ -178,30 +178,30 @@ const gameReveal = (
       hint: "Point at a player to see just their guess."
     },
     note: connection ?? readyCountText(model.readyCount, model.presentCount),
-    actions: revealActions(model, conn)
+    actions: revealActions(model, game)
   })
 }
 
 export const gameVrView = (
   view: InPlayGameView,
-  conn: Connection,
+  game: GameService,
   paint: PaintController,
   pageShown: GameVrShown
 ): VrView => {
-  const connection = connectionText(conn)
+  const connection = connectionText(game)
   const reveal = view.phase === Phase.REVEAL ? view.reveal : undefined
   const shown: VrRoundShown = {
     question: roundOf(view).question,
     revealed: reveal && revealedFromView(reveal, pageShown.outlines),
     fact: pageShown.fact
   }
-  const round = gameRound(view, conn, paint, shown, connection, pageShown)
-  const more = moreActions(view, conn)
+  const round = gameRound(view, game, paint, shown, connection, pageShown)
+  const more = moreActions(view, game)
   if (view.phase !== Phase.REVEAL) return { type: VrViewType.PAINT, round, more }
   return {
     type: VrViewType.REVEAL,
     round,
     more,
-    reveal: gameReveal(view, view.reveal, conn, shown, connection, pageShown)
+    reveal: gameReveal(view, view.reveal, game, shown, connection, pageShown)
   }
 }

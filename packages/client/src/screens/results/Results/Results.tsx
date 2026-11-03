@@ -1,6 +1,6 @@
 import { colourCss, type CssColour } from "@whereabouts/shared/colours"
 import type { FinalStanding, ResultsGameView } from "@whereabouts/shared/protocol/views"
-import type { Connection } from "../../../net/net"
+import { useGameService } from "../../../game-service/use-game-service"
 import { Icon } from "../../../ui/icons"
 import { HostTag } from "../../../ui/players/HostTag/HostTag"
 import { HostWord } from "../../../ui/players/HostWord"
@@ -20,8 +20,9 @@ import { Standings } from "../Standings/Standings"
 import { resultsTestIds } from "./ResultsTestIds"
 import styles from "./Results.module.css"
 
-export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameView }) => {
-  const online = conn.online.value
+export const Results = ({ view }: { view: ResultsGameView }) => {
+  const game = useGameService()
+  const online = game.online.value
   const standings = view.results
   const standingById = new Map(standings.map((standing) => [standing.playerId, standing]))
   const winner = standings[0]
@@ -40,8 +41,8 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
         }))
       },
       note:
-        connectionText(conn) ?? (view.you.isHost ? undefined : "The host can start another game with the same group."),
-      actions: view.you.isHost ? [{ label: "Play again", press: () => conn.again(), enabled: online }] : [],
+        connectionText(game) ?? (view.you.isHost ? undefined : "The host can start another game with the same group."),
+      actions: view.you.isHost ? [{ label: "Play again", press: () => game.again(), enabled: online }] : [],
       board: {
         awards: view.awards.map((award) => ({
           emoji: award.emoji,
@@ -78,7 +79,7 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
         {view.you.isHost ? (
           <button
             class="primary big"
-            onClick={() => conn.again()}
+            onClick={() => game.again()}
             disabled={!online}
             data-testid={resultsTestIds.playAgainButton}
           >
@@ -89,7 +90,7 @@ export const Results = ({ conn, view }: { conn: Connection; view: ResultsGameVie
             <HostWord capital /> can start another game with the same group.
           </p>
         )}
-        <ConnectionNote conn={conn} />
+        <ConnectionNote />
         {view.awards.length > 0 && <Awards awards={view.awards} byId={standingById} />}
         <Rounds rounds={view.playedRounds} standings={standings} you={view.you.id} />
         <p class={kit.hint}>

@@ -3,7 +3,8 @@ import { MAX_PLAYERS, MAX_SPECTATORS } from "@whereabouts/shared/protocol/config
 import { type GameView } from "@whereabouts/shared/protocol/views"
 import { colourCss } from "@whereabouts/shared/colours"
 import { Role, YouRoleType, everyone } from "@whereabouts/shared/roles"
-import type { Connection } from "../../../net/net"
+import { useGameService } from "../../../game-service/use-game-service"
+import type { GameService } from "../../../game-service/game-service"
 import { useGameData } from "../../../data/game-data"
 import { mapPrefetched, prefetchMap } from "../../../map/map-prefetch"
 import { joinedCode } from "../../../settings/settings"
@@ -31,9 +32,9 @@ import styles from "./Lobby.module.css"
  * the right. The host gets the controls; guests see the decided values,
  * which highlight briefly when the host changes one.
  */
-export const Lobby = ({ conn, view }: { conn: Connection; view: GameView }) => {
-  const online = conn.online.value
-  const { dialog, ask } = useConfirm(online)
+export const Lobby = ({ view }: { view: GameView }) => {
+  const game = useGameService()
+  const { dialog, ask } = useConfirm()
   useEffect(prefetchMap, [])
   useGameData(view.config.mix, mapPrefetched.value)
   const host = view.you.isHost
@@ -41,11 +42,11 @@ export const Lobby = ({ conn, view }: { conn: Connection; view: GameView }) => {
   // Home, giving up the seat now; the tab forgets the game so a refresh or
   // Back does not quietly rejoin it. Leaving the screen disconnects.
   const leave = () => {
-    conn.leave()
+    game.leave()
     joinedCode.value = ""
     navigate("/")
   }
-  const vrView = lobbyVrView(conn, view, online, leave)
+  const vrView = lobbyVrView(game, view, leave)
   useVrView(vrView)
   return (
     <>
@@ -66,21 +67,21 @@ export const Lobby = ({ conn, view }: { conn: Connection; view: GameView }) => {
             </button>
           </Banner>
           <div class={styles.cols}>
-            <InvitePanel conn={conn} view={view} online={online} ask={ask} />
-            <SetupPanel conn={conn} view={view} online={online} vrView={vrView} playerCount={playerCount} />
+            <InvitePanel view={view} ask={ask} />
+            <SetupPanel view={view} vrView={vrView} playerCount={playerCount} />
           </div>
         </div>
       </div>
       <DevDrawer>
         <ExtraPlayersDev code={view.code} phase={view.phase} />
-        <ConnectionDev conn={conn} view={view} />
+        <ConnectionDev view={view} />
       </DevDrawer>
     </>
   )
 }
 
 /** What the lobby shows in the headset: the players, and the host's or guest's actions. */
-const lobbyVrView = (conn: Connection, view: GameView, online: boolean, leave: () => void): VrView => {
+const lobbyVrView = (game: GameService, view: GameView, leave: () => void): VrView => {
   const host = view.you.isHost
   const { players, spectators } = view
   return {
@@ -102,19 +103,21 @@ const lobbyVrView = (conn: Connection, view: GameView, online: boolean, leave: (
         hint: host ? "Point at a player to remove them or make them host." : undefined
       },
       note:
-        connectionText(conn) ??
+        connectionText(game) ??
         `Friends join with the code ${view.code}. ${setupLine(view)}${host ? " Take the headset off to change it." : ""}`,
-      actions: host ? [{ label: "Start game", press: () => conn.start(), enabled: online && players.length >= 1 }] : []
+      actions: host
+        ? [{ label: "Start game", press: () => game.start(), enabled: game.online.value && players.length >= 1 }]
+        : []
     },
     more: [
       view.you.role.type === YouRoleType.SPECTATOR
-        ? takeSeat(conn, view, "Play instead")
+        ? takeSeat(game, view, "Play instead")
         : {
             label: "Just watch",
-            press: () => conn.setRole(Role.SPECTATOR),
-            enabled: online && spectators.length < MAX_SPECTATORS
+            press: () => game.setRole(Role.SPECTATOR),
+            enabled: game.online.value && spectators.length < MAX_SPECTATORS
           },
-      ...hostActions(conn, view, vrPicked.value),
+      ...hostActions(game, view, vrPicked.value),
       { label: "Leave", confirm: host ? "Press again to leave" : undefined, press: leave }
     ]
   }

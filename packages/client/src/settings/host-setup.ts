@@ -13,8 +13,10 @@ import {
 } from "@whereabouts/shared/protocol/config"
 import { type GameView, Phase } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
-import type { Connection } from "../net/net"
+import type { GameService } from "../game-service/game-service"
 import { hostSetup } from "./settings"
+
+type HostSetupGame = Pick<GameService, "configure" | "online">
 
 const FIELDS = Object.keys(ConfigureSchema.shape) as (keyof ConfigurePatch)[]
 
@@ -40,21 +42,21 @@ export const savedSetupPatch = (saved: unknown): ConfigurePatch => {
 }
 
 /** Change the game's setup as host, and remember it for the next game: only once sent, so the two agree. */
-export const configureAsHost = (conn: Connection, patch: ConfigurePatch): void => {
-  if (!conn.online.value) return
-  conn.configure(patch)
+export const configureAsHost = (game: HostSetupGame, patch: ConfigurePatch): void => {
+  if (!game.online.value) return
+  game.configure(patch)
   hostSetup.value = { ...savedSetupPatch(hostSetup.value), ...patch }
 }
 
 /** Once a game this tab created reaches its lobby, give it the remembered setup. */
-export const useSavedSetup = (conn: Connection, view: GameView | undefined, created: boolean): void => {
+export const useSavedSetup = (game: HostSetupGame, view: GameView | undefined, created: boolean): void => {
   const applied = useRef(false)
   const ready = created && view?.phase === Phase.LOBBY && view.you.isHost
   useEffect(() => {
     if (!ready || applied.current) return
     applied.current = true
     const patch = savedSetupPatch(hostSetup.value)
-    if (Object.keys(patch).length > 0) conn.configure(patch)
+    if (Object.keys(patch).length > 0) game.configure(patch)
   }, [ready])
 }
 

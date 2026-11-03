@@ -2,7 +2,7 @@ import { useState } from "preact/hooks"
 import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import { type GameView } from "@whereabouts/shared/protocol/views"
 import { YouRoleType } from "@whereabouts/shared/roles"
-import type { Connection } from "../../../../net/net"
+import { useGameService } from "../../../../game-service/use-game-service"
 import { askedToWatch, savedName } from "../../../../settings/settings"
 import { ConnectionNote } from "../../../../ui/connection/ConnectionNote/ConnectionNote"
 import type { ConfirmRequest } from "../../../../ui/ConfirmDialog/ConfirmDialog"
@@ -17,17 +17,8 @@ import { Roster } from "../Roster/Roster"
 import styles from "./InvitePanel.module.css"
 
 /** The left panel: the code and link to share, who is here, and the player/watcher choice. */
-export const InvitePanel = ({
-  conn,
-  view,
-  online,
-  ask
-}: {
-  conn: Connection
-  view: GameView
-  online: boolean
-  ask: (request: ConfirmRequest) => void
-}) => {
+export const InvitePanel = ({ view, ask }: { view: GameView; ask: (request: ConfirmRequest) => void }) => {
+  const game = useGameService()
   const [renaming, setRenaming] = useState(false)
   const current = view.you.name
   const { players } = view
@@ -40,14 +31,14 @@ export const InvitePanel = ({
         {view.code}
       </div>
       <InviteButtons code={view.code} />
-      <ConnectionNote conn={conn} />
+      <ConnectionNote />
       <h2>
         Players{" "}
         <span class={styles.count} title={`Up to ${MAX_PLAYERS} players`}>
           {players.length}/{MAX_PLAYERS}
         </span>
       </h2>
-      <Roster conn={conn} view={view} ask={ask} onRename={() => setRenaming(true)} />
+      <Roster view={view} ask={ask} onRename={() => setRenaming(true)} />
       {players.length + view.spectators.length === 1 && (
         <p class={cx(kit.hint, styles.waiting)}>Waiting for friends to join…</p>
       )}
@@ -56,14 +47,13 @@ export const InvitePanel = ({
           All {MAX_PLAYERS} player seats are taken, so you're watching. You can join if one frees up.
         </p>
       )}
-      <RoleSwitch conn={conn} view={view} online={online} />
+      <RoleSwitch view={view} />
       {renaming && (
         <RenameForm
           current={current}
-          online={online}
           onDone={(name) => {
             if (name && name !== current) {
-              conn.rename(name)
+              game.rename(name)
               savedName.value = name
             }
             setRenaming(false)

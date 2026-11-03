@@ -8,7 +8,9 @@ import { mixOf, MapDetail, MAX_PLAYERS, MAX_SPECTATORS } from "@whereabouts/shar
 import { type GameView } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { Role } from "@whereabouts/shared/roles"
-import { type Connection, type ConnectionState, ConnectionStatus } from "../../../net/net"
+import type { GameService } from "../../../game-service/game-service"
+import { type ConnectionState, ConnectionStatus } from "../../../game-service/connection-state"
+import { inGame } from "../../../game-service/test-wrapper"
 import { hostSetup, joinedCode, startOnPan } from "../../../settings/settings"
 import { route, RouteType } from "../../../router"
 import { Lobby } from "./Lobby"
@@ -51,7 +53,7 @@ const watcher = (id: string, name: string) => makeSpectator({ id: playerId(id), 
 const configure = vi.fn()
 const leave = vi.fn()
 const setRole = vi.fn()
-const conn = {
+const game = {
   status: signal<ConnectionState>({ type: ConnectionStatus.CONNECTED }),
   online: signal(true),
   lastError: signal(undefined),
@@ -59,7 +61,8 @@ const conn = {
   start: vi.fn(),
   leave,
   setRole
-} as unknown as Connection
+} as unknown as GameService
+const wrapper = inGame(game)
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -73,7 +76,7 @@ describe("Lobby", () => {
 
   it("offers a per-device choice to start rounds on the Pan tool, to hosts and guests alike", () => {
     for (const isHost of [true, false]) {
-      const { container, unmount } = render(<Lobby conn={conn} view={view(isHost)} />)
+      const { container, unmount } = render(<Lobby view={view(isHost)} />, { wrapper })
       const box = inside(container).getByTestId<HTMLInputElement>(deviceSwitchesTestIds.startOnPanSwitch)
       expect(box.checked).toBe(false)
       fireEvent.click(box)
@@ -85,14 +88,14 @@ describe("Lobby", () => {
 
   it("shows the saved choice", () => {
     startOnPan.value = true
-    const { container } = render(<Lobby conn={conn} view={view(false)} />)
+    const { container } = render(<Lobby view={view(false)} />, { wrapper })
     expect(inside(container).getByTestId<HTMLInputElement>(deviceSwitchesTestIds.startOnPanSwitch).checked).toBe(true)
   })
 })
 
 describe("Lobby setup", () => {
   it("gives the host the controls", () => {
-    const { container } = render(<Lobby conn={conn} view={view(true)} />)
+    const { container } = render(<Lobby view={view(true)} />, { wrapper })
     fireEvent.click(container.querySelector('[aria-label="More flags"]')!)
     expect(configure).toHaveBeenCalledWith({ mix: { ...MIX, [QuestionType.FLAG]: 1 } })
     fireEvent.click(container.querySelector('[aria-label="Fewer landmarks"]')!)
@@ -109,7 +112,7 @@ describe("Lobby setup", () => {
   })
 
   it("shows guests the decided values, not controls", () => {
-    const { container } = render(<Lobby conn={conn} view={view(false)} />)
+    const { container } = render(<Lobby view={view(false)} />, { wrapper })
     for (const id of [pillsTestIds.option, stepperTestIds.value, mapDetailPickerTestIds.picker])
       expect(inside(container).queryAllByTestId(id)).toHaveLength(0)
     const summary = inside(container).getByTestId(setupSummaryTestIds.summary)
@@ -127,10 +130,10 @@ describe("Lobby setup", () => {
   })
 
   it("highlights only the value the host just changed", () => {
-    const { container, rerender } = render(<Lobby conn={conn} view={view(false)} />)
+    const { container, rerender } = render(<Lobby view={view(false)} />, { wrapper })
     const next = view(false)
     next.config = { ...next.config, roundLength: 30_000 }
-    rerender(<Lobby conn={conn} view={next} />)
+    rerender(<Lobby view={next} />)
     expect([...container.querySelectorAll(`.${setupSummary.changed}`)].map((tile) => tile.textContent)).toEqual([
       "30 sper round"
     ])
@@ -140,7 +143,7 @@ describe("Lobby setup", () => {
 describe("Lobby leave", () => {
   it("takes a guest straight home, giving up the seat and forgetting the game", () => {
     joinedCode.value = roomCode("AB12")
-    const { container } = render(<Lobby conn={conn} view={view(false)} />)
+    const { container } = render(<Lobby view={view(false)} />, { wrapper })
     fireEvent.click(inside(container).getByTestId(lobbyTestIds.leaveButton))
     expect(leave).toHaveBeenCalledTimes(1)
     expect(joinedCode.value).toBe("")
@@ -152,7 +155,7 @@ describe("Lobby leave", () => {
     const bob = guest("p2", "Bob")
     gameView.players = [...gameView.players, bob]
     gameView.you.nextHost = bob.id
-    const { container } = render(<Lobby conn={conn} view={gameView} />)
+    const { container } = render(<Lobby view={gameView} />, { wrapper })
     fireEvent.click(inside(container).getByTestId(lobbyTestIds.leaveButton))
     expect(leave).not.toHaveBeenCalled()
     const modal = screen.getByTestId(confirmDialogTestIds.dialog)
@@ -162,7 +165,7 @@ describe("Lobby leave", () => {
   })
 
   it("warns a host on their own that the game closes", () => {
-    const { container } = render(<Lobby conn={conn} view={view(true)} />)
+    const { container } = render(<Lobby view={view(true)} />, { wrapper })
     fireEvent.click(inside(container).getByTestId(lobbyTestIds.leaveButton))
     expect(screen.getByTestId(confirmDialogTestIds.dialog).textContent).toContain(
       "It closes, since no one else is here."
@@ -175,7 +178,7 @@ describe("Lobby spectators", () => {
     const gameView = view(true)
     gameView.players = [...gameView.players, guest("p2", "Bob")]
     gameView.spectators = [watcher("p3", "Sam")]
-    const { container } = render(<Lobby conn={conn} view={gameView} />)
+    const { container } = render(<Lobby view={gameView} />, { wrapper })
     const lists = inside(container).getAllByTestId(playerListTestIds.list)
     expect(lists).toHaveLength(2)
     expect(lists[0]!.textContent).toContain("Bob")
@@ -185,7 +188,7 @@ describe("Lobby spectators", () => {
   })
 
   it("lets a player step back to watch, and a spectator take a seat", () => {
-    const { container, unmount } = render(<Lobby conn={conn} view={view(false)} />)
+    const { container, unmount } = render(<Lobby view={view(false)} />, { wrapper })
     fireEvent.click(inside(container).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!)
     expect(setRole).toHaveBeenLastCalledWith(Role.SPECTATOR)
     unmount()
@@ -193,7 +196,7 @@ describe("Lobby spectators", () => {
     gameView.you.role = SPECTATING
     gameView.players = []
     gameView.spectators = [watcher("p1", "Alice")]
-    const { container: c2 } = render(<Lobby conn={conn} view={gameView} />)
+    const { container: c2 } = render(<Lobby view={gameView} />, { wrapper })
     const play = inside(c2).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!
     expect(play.textContent).toContain("Play instead")
     fireEvent.click(play)
@@ -205,7 +208,7 @@ describe("Lobby spectators", () => {
     gameView.you.role = SPECTATING
     gameView.players = Array.from({ length: MAX_PLAYERS }, (_, i) => guest(`p${i + 10}`, `P${i}`, i))
     gameView.spectators = [watcher("p1", "Alice")]
-    const { container } = render(<Lobby conn={conn} view={gameView} />)
+    const { container } = render(<Lobby view={gameView} />, { wrapper })
     expect(inside(container).getByTestId(roleSwitchTestIds.roleSwitch).querySelector("button")!.disabled).toBe(true)
     expect(container.textContent).toContain(`All ${MAX_PLAYERS} player seats are taken`)
   })
