@@ -1,5 +1,6 @@
 import { test, type TestAPI } from "vite-plus/test"
-import { configureGameRooms, realClock } from "../rooms.ts"
+import { configureGameRooms } from "../rooms.ts"
+import { realClock } from "@whereabouts/shared/clock"
 import { InProcessServer, type InProcessOptions } from "./in-process-server.ts"
 import { TEST_CATALOGUE, TEST_CONFIG } from "./test-questions.ts"
 

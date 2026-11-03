@@ -1,5 +1,5 @@
-import type { Instant, Ms } from "@whereabouts/shared/units"
-import type { Clock } from "../rooms.ts"
+import type { Instant, Ms } from "../units.ts"
+import type { Clock } from "../clock.ts"
 
 /** Real time plus an offset. Timers fire only when `advance` passes them, so a test decides when deadlines come. */
 export class FakeClock implements Clock {

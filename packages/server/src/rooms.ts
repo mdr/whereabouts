@@ -35,7 +35,7 @@ import { JoinKind } from "./telemetry/metric-labels.ts"
 import { CLOSE_REASON_TEXT } from "./telemetry/close-reason-text.ts"
 import { recordMilestone } from "./telemetry/record-milestone.ts"
 import type { Telemetry } from "./telemetry/telemetry.ts"
-import type { TimeoutHandle } from "@whereabouts/shared/timeout"
+import { realClock, type Clock } from "@whereabouts/shared/clock"
 
 /** Close reasons are codes from the shared list, which the client words. */
 export const closeReason = (reason: CloseReason): string => reason
@@ -69,19 +69,6 @@ export interface ActorData {
 }
 
 export const ROOM_TYPE = "game"
-
-/** Injected clock so tests can drive time. */
-export interface Clock {
-  now(): Instant
-  setTimeout(callback: () => void, delay: Ms): unknown
-  clearTimeout(handle: unknown): void
-}
-
-export const realClock: Clock = {
-  now: () => Date.now(),
-  setTimeout: (callback, delay) => setTimeout(callback, delay),
-  clearTimeout: (handle) => clearTimeout(handle as TimeoutHandle)
-}
 
 export interface GameRoomDeps {
   clock: Clock
