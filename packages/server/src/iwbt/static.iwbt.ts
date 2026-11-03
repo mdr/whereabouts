@@ -33,6 +33,12 @@ describe("static serving", () => {
     expect(fallback.headers.get("cache-control")).toBe("no-cache")
   })
 
+  it("answers the health check, not the app's index.html", async ({ server }) => {
+    const response = await fetch(`${server.httpUrl}/api/health`)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ ok: true })
+  })
+
   it("answers 404 for an asset this build does not have, as for an old tab after a deploy", async ({ server }) => {
     expect((await fetch(`${server.httpUrl}/assets/regions-old.json`)).status).toBe(404)
   })

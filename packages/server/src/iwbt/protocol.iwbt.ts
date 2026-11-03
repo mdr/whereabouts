@@ -123,4 +123,33 @@ describe("protocol", () => {
     await bob.expectClosed()
     alice.expectStillConnected()
   })
+
+  it("answers a configure with a body the settings do not allow with an error", async ({ server }) => {
+    const alice = await server.host("Alice")
+    alice.wire.sendRaw(ClientTopic.CONFIGURE, JSON.stringify({ roundLength: 12_345 }))
+    await alice.wire.expectError("invalid CONFIGURE")
+    alice.expectStillConnected()
+  })
+})
+
+describe("refused handshakes", () => {
+  const it = useInProcessServer({ addressLimits: { maxOpen: 2, burst: 100, perSecond: 100 } })
+
+  it("give back their address slot, so a good ticket still gets in", async ({ server }) => {
+    const alice = await server.host("Alice")
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const old = server.player(`Old${attempt}`)
+      old.wire.connectWith(
+        encodeTicket({ v: PROTOCOL_VERSION - 1, token: old.token, name: old.name } as unknown as Ticket)
+      )
+      await old.expectClosedFor(CloseReason.OUTDATED)
+
+      const garbage = server.player(`Garbage${attempt}`)
+      garbage.wire.connectWith("not-a-ticket")
+      await garbage.expectClosed()
+    }
+
+    const bob = await alice.invite("Bob")
+    bob.expectStillConnected()
+  })
 })

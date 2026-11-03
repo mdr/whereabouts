@@ -249,9 +249,28 @@ export class TestPlayer {
     )
   }
 
+  /** Give up the seat: the server closes the connection, or refuses. */
   async leave(): Promise<void> {
-    this.wire.send(ClientTopic.LEAVE)
-    await this.expectClosed()
+    const { wire } = this
+    const errorsBefore = wire.errors.length
+    wire.send(ClientTopic.LEAVE)
+    await eventually(
+      () => {
+        const refusal = wire.errors[errorsBefore]
+        if (refusal !== undefined) throw new Refused(refusal)
+        return wire.closed
+      },
+      () => `${this.name}'s connection to close`
+    )
+  }
+
+  /** Watch instead of play. */
+  async watch(): Promise<void> {
+    await this.act(
+      () => this.wire.send(ClientTopic.SET_ROLE, { role: Role.SPECTATOR }),
+      (view) => view.you.role.type === YouRoleType.SPECTATOR,
+      "watching"
+    )
   }
 
   /** The connection drops, as when a tab closes. */

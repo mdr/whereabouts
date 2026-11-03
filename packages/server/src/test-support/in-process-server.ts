@@ -4,12 +4,16 @@
  * to it or seats players directly, changes a game and reads it back, against
  * the same code players meet.
  */
-import { createApp, type App } from "../app.ts"
+import { defaultStaticDir, createApp, type App } from "../app.ts"
+import { createAppFromEnvironment } from "../environment-app.ts"
 import type { AddressLimits } from "../address-limiter.ts"
 import { BANK, configureGameRooms, GameRoom } from "../rooms.ts"
 import { FakeClock } from "./fake-clock.ts"
 import { eventually } from "./eventually.ts"
 import { TestPlayer } from "./test-player.ts"
+import { RawSocket } from "./raw-socket.ts"
+import { GameEntryType, type GameEntry } from "@whereabouts/shared/protocol/ticket"
+import { Role } from "@whereabouts/shared/roles"
 import type { CommandResult } from "@whereabouts/shared/game/command-result"
 import { ROUND_GRACE, type Game } from "@whereabouts/shared/game/game"
 import type { HintAxis } from "@whereabouts/shared/hints"
@@ -35,6 +39,12 @@ export interface InProcessOptions {
   devTools?: boolean
   /** A built client to serve. */
   staticDir?: string
+  /** How often idle sockets are pinged, in real milliseconds. */
+  heartbeatIntervalMs?: number
+  /** What may queue unread for one socket before it is dropped. */
+  maxBufferedBytes?: number
+  /** Start as main does from this environment, whose game and address settings replace the ones above. */
+  environment?: Record<string, string>
 }
 
 const UNLIMITED = { maxOpen: 1000, burst: 1000, perSecond: 1000 }
@@ -61,12 +71,17 @@ export class InProcessServer {
     questions,
     addressLimits = UNLIMITED,
     devTools,
-    staticDir
+    staticDir,
+    heartbeatIntervalMs,
+    maxBufferedBytes,
+    environment
   }: InProcessOptions = {}): Promise<InProcessServer> {
     const clock = new FakeClock()
     const bank = { ...BANK, catalogue: questions ? catalogue.filter(questions) : catalogue }
     configureGameRooms({ clock, bank, config })
-    const app = createApp({ staticDir, logLevel: "warning", addressLimits, devTools })
+    const app = environment
+      ? createAppFromEnvironment(environment, defaultStaticDir(), { logLevel: "warning" }).app
+      : createApp({ staticDir, logLevel: "warning", addressLimits, devTools, heartbeatIntervalMs, maxBufferedBytes })
     return new InProcessServer(app, clock, await app.listen(0))
   }
 
@@ -177,6 +192,65 @@ export class InProcessServer {
     this.command(code, (game) => game.hint(token, axis))
   }
 
+  /** A player's connection arriving through a proxy that names the client's address. */
+  connectFrom(address: string, player: TestPlayer, code: RoomCode): RawSocket {
+    return new RawSocket(this.socketUrl, player, joinEntry(code), { address })
+  }
+
+  /** A player's connection from a page on another site. */
+  connectFromOrigin(origin: string, player: TestPlayer, code: RoomCode): RawSocket {
+    return new RawSocket(this.socketUrl, player, joinEntry(code), { origin })
+  }
+
+  /** A player's connection that can later stop answering pings or stop reading. */
+  connectStallable(player: TestPlayer, code: RoomCode): RawSocket {
+    return new RawSocket(this.socketUrl, player, joinEntry(code))
+  }
+
+  /** A player behind this address opens a game and drops the connection as soon as it is open. */
+  hostAndDrop(address: string, player: TestPlayer): void {
+    new RawSocket(this.socketUrl, player, { type: GameEntryType.HOST }, { address }).drop()
+  }
+
+  /** Keep trying to come in from this address, until the server has freed what an earlier connection held. */
+  async connectWhenAddressFree(address: string, player: TestPlayer, code: RoomCode): Promise<RawSocket> {
+    const start = Date.now()
+    for (;;) {
+      const socket = this.connectFrom(address, player, code)
+      try {
+        await socket.expectInGame()
+        return socket
+      } catch (error) {
+        if (Date.now() - start > 3000) throw new Error(`${address} was never let in`, { cause: error })
+      }
+    }
+  }
+
+  async untilGameCount(count: number): Promise<void> {
+    await eventually(
+      () => [...this.app.rivalis.rooms.keys()].length === count,
+      () => `${count} games to be open; ${[...this.app.rivalis.rooms.keys()].join(", ")} are`
+    )
+  }
+
+  /** From now on this game's timer fails when it fires. */
+  breakTimer(code: RoomCode): void {
+    const game = this.game(code)
+    if (!game) throw new Error(`no game ${code}`)
+    game.tick = () => {
+      throw new Error("the game's tick failed")
+    }
+  }
+
+  /** Send the game's players its state, over and over, until `done`. */
+  async keepBroadcasting(code: RoomCode, done: () => boolean): Promise<void> {
+    for (let batch = 0; !done(); batch++) {
+      if (batch > 500) throw new Error("gave up broadcasting")
+      for (let count = 0; count < 50; count++) this.act(code, () => undefined)
+      await new Promise((resolve) => setTimeout(resolve, 5))
+    }
+  }
+
   /** Disconnect the players this server made, and stop. */
   async close(): Promise<void> {
     await this.app.close()
@@ -207,3 +281,5 @@ export class InProcessServer {
     return room instanceof GameRoom ? room : undefined
   }
 }
+
+const joinEntry = (code: RoomCode): GameEntry => ({ type: GameEntryType.JOIN, code, role: Role.PLAYER })
