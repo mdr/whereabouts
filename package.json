@@ -18,7 +18,7 @@
     "format": "vp fmt",
     "format:check": "vp fmt --check",
     "knip": "pnpm css-types && knip",
-    "check": "pnpm css-types && vp check && knip && vp test run",
+    "check": "pnpm css-types && vp check && knip && vp test run && pnpm --filter ./packages/client exec vp build",
     "css-types": "pnpm --filter ./packages/client css-types"
   },
   "devDependencies": {
