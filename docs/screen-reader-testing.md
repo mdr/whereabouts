@@ -65,8 +65,8 @@ VoiceOver on the tab and returns a `ScreenReader`:
   reads them.
 - `heard(action)`: what VoiceOver said after something done to the app (a page-object
   click, a server event: `game.seat`, `game.server.player("Bob").join(code)`…), or nothing.
-  This is how to check what's announced. It uses Guidepup's `capture`, since Guidepup
-  only records speech around actions it's told about.
+  This is how to check what's announced. It listens until 3 s after the action (`heard(action, ms)` for longer), since
+  news may follow a change by a moment.
 - `command(run)`: what VoiceOver said for its own commands, e.g.
   `command((vo) => vo.press("Tab"))`. Don't run those inside `heard`: they share one
   queue, so it would wait forever.
