@@ -1,7 +1,7 @@
 import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
 import { reportClientError } from "../../net/client-error/report-client-error"
 import { createPortal } from "preact/compat"
-import { useEffect, useRef, useState } from "preact/hooks"
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks"
 import type { Vr } from "../../vr/index"
 import { sceneOf, type VrView } from "../../vr/view/view"
 import { VrCodeMissing, loadVr, loadedVr, vrLoadStage, vrSupported } from "../../vr/vr-support"
@@ -23,7 +23,7 @@ enum LaunchStage {
 
 /** How many screens now keep the headset on. */
 let showing = 0
-/** Long enough for the next screen's effects, which wait for a frame or 100 ms. */
+/** Long enough for the next screen, if it mounts a little later, to take the headset. */
 const HANDOVER: Ms = 500
 
 /**
@@ -53,7 +53,8 @@ export const useVrView = (view: VrView): void => {
  * the headset yet: a game or practice still loading.
  */
 export const useVrHold = (): void => {
-  useEffect(() => {
+  // Not useEffect: that can run after an overdue HANDOVER timer when the page stalls.
+  useLayoutEffect(() => {
     showing++
     return () => {
       showing--
