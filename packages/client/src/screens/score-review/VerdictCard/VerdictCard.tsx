@@ -2,6 +2,7 @@ import { ReviewCaseType, type ReviewCase } from "@whereabouts/shared/scoring/sco
 import type { ScoreVerdict } from "@whereabouts/shared/scoring/score-verdict"
 import { Card } from "../../../ui/Card/Card"
 import { Swatch, SwatchType } from "../../../ui/players/Swatch"
+import { onActivateKey } from "../../../keyboard/activate-key"
 import { cx } from "../../../ui/cx"
 import kit from "../../../ui/kit.module.css"
 import players from "../../../ui/players/Players.module.css"
@@ -72,10 +73,15 @@ export const VerdictCard = ({
       {reviewCase.type === ReviewCaseType.PAIR && (
         <ul class={cx(players.list, players.pick)} data-testid={verdictCardTestIds.pair}>
           {(["A", "B"] as const).map((name, i) => (
+            // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- A list item cannot take a button role, so the row is made focusable and keyed instead.
             <li
               data-testid={verdictCardTestIds.pairGuess}
               class={pinned === i ? players.selected : undefined}
+              aria-current={pinned === i}
+              // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- As above.
+              tabIndex={0}
               onClick={() => onPin(pinned === i ? undefined : (i as 0 | 1))}
+              onKeyDown={onActivateKey(() => onPin(pinned === i ? undefined : (i as 0 | 1)))}
               onPointerEnter={(event) => event.pointerType === "mouse" && onHover(i as 0 | 1)}
               onPointerLeave={(event) => event.pointerType === "mouse" && onHover(undefined)}
             >

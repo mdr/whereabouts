@@ -4,6 +4,7 @@ import { RoundGuessType } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
 import type { RevealShown } from "../../../round/reveal"
 import { Card } from "../../../ui/Card/Card"
+import { onActivateKey } from "../../../keyboard/activate-key"
 import { cx } from "../../../ui/cx"
 import { Icon } from "../../../ui/icons"
 import kit from "../../../ui/kit.module.css"
@@ -35,20 +36,30 @@ export const RevealScores = ({
     <ul class={cx(players.list, players.pick)} data-testid={revealScoresTestIds.scoresList}>
       {model.rows.map((row) =>
         row.type === ShownRowType.EVERYONE ? (
+          // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- A list item cannot take a button role, so the row is made focusable and keyed instead.
           <li
             key="everyone"
             class={cx(players.everyone, row.selected && players.selected)}
+            aria-current={row.selected}
+            // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- As above.
+            tabIndex={0}
             onClick={() => onSelect(row.pick)}
+            onKeyDown={onActivateKey(() => onSelect(row.pick))}
             data-testid={revealScoresTestIds.everyoneRow}
           >
             <Swatch type={SwatchType.EVERYONE} />
             <span class={players.name}>Everyone</span>
           </li>
         ) : row.type === ShownRowType.HIDE_PAINT ? (
+          // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- A list item cannot take a button role, so the row is made focusable and keyed instead.
           <li
             key="hide"
             class={cx(players.hidePaint, row.selected && players.selected)}
+            aria-current={row.selected}
+            // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- As above.
+            tabIndex={0}
             onClick={() => onSelect(row.pick)}
+            onKeyDown={onActivateKey(() => onSelect(row.pick))}
             data-testid={revealScoresTestIds.hidePaintRow}
             title="Show the map and the answer without anyone's paint"
           >

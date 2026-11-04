@@ -71,7 +71,7 @@ export const MapView = ({ children }: { children: ComponentChildren }) => {
       paintController?.dispose()
       gameMap.dispose()
     }
-  }, [attempt])
+  }, [attempt, mapElement])
 
   useEffect(() => {
     if (!controller) return

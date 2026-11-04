@@ -47,10 +47,12 @@ export const usePaintUpload = (
     return () => {
       if (sendTimer.current) clearTimeout(sendTimer.current)
     }
+    // oxlint-disable-next-line react/exhaustive-deps -- sendNow is new every render: these run on their own keys, not on each render.
   }, [version, floor, editing])
 
   useEffect(() => {
     if (timeUp && guessing && role.type === YouRoleType.PLAYING && !locked) sendNow()
+    // oxlint-disable-next-line react/exhaustive-deps -- sendNow is new every render: these run on their own keys, not on each render.
   }, [timeUp])
 
   // The round Done was last pressed in, until the server has us locked: a
@@ -71,6 +73,7 @@ export const usePaintUpload = (
     if (!editing) return
     sendNow()
     if (lockWish.current && lockWish.current.round === round) game.lock()
+    // oxlint-disable-next-line react/exhaustive-deps -- sendNow is new every render: these run on their own keys, not on each render.
   }, [view])
 
   // Done with paint freezes it; Done with nothing painted is a pass, which

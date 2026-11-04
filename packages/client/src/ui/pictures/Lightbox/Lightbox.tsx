@@ -19,7 +19,7 @@ export const useEscape = (open: boolean, close: () => void): void => {
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [open])
+  }, [open, close])
 }
 
 export enum LightboxType {
@@ -124,6 +124,7 @@ export const Lightbox = ({
 
   // Into <body>: a sticky table cell, say, would otherwise hold it under the cells below.
   return createPortal(
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- Backdrop click is a mouse shortcut; Escape and the Close button are the keyboard's.
     <div
       class={styles.lightbox}
       data-testid={lightboxTestIds.lightbox}
@@ -138,6 +139,7 @@ export const Lightbox = ({
       <button class={styles.close} aria-label="Close" onClick={onClose} data-testid={lightboxTestIds.close}>
         ×
       </button>
+      {/* oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- Zoom and pan are for the pointer; the picture is whole without them. */}
       <div
         class={cx(styles.frame, zoom > 1 && styles.zoomed)}
         ref={frame}

@@ -85,25 +85,28 @@ export const Reveal = ({
             mainCountry(borders, paintLayer(result.guess.resolution, result.guess.paint).toCells())
           )
     return countries
+    // oxlint-disable-next-line react/exhaustive-deps -- Keyed on the reveal's index, as the view is rebuilt on every update.
   }, [borders, reveal.index])
 
   useEffect(() => {
     paint.enabled.value = false
     showAnswer(paint.gameMap, answer)
+    // oxlint-disable-next-line react/exhaustive-deps -- Keyed on the reveal's index, as the view is rebuilt on every update.
   }, [reveal.index, outlines])
 
   // Everyone's paint goes on the map once, in their colours (best score drawn
   // on top); choosing or hovering a player only restyles it, which is instant.
   useEffect(() => {
     paint.showColoured(paintsOf(reveal.results).flatMap((painted) => painted.features))
-  }, [reveal.index, reveal.results])
+  }, [reveal.index, reveal.results, paint])
   useEffect(() => {
     paint.gameMap.setPaintFocus(paintFocus(selected, hovered))
-  }, [selected, hovered, reveal.index, reveal.results])
+  }, [selected, hovered, reveal.index, reveal.results, paint])
   // Framed on what is chosen; not on hover, or the map would jump about as the mouse crosses the rows.
   useEffect(() => {
     const shown = paintsOf(shownResults(reveal.results, selected)).flatMap((painted) => painted.features)
     frameReveal(paint.gameMap.camera, reveal.question, answer, { type: "FeatureCollection", features: shown })
+    // oxlint-disable-next-line react/exhaustive-deps -- Keyed on the reveal's index, as the view is rebuilt on every update.
   }, [selected, reveal.index, outlines, questionCardHeight.value])
   useEffect(() => setHovered(undefined), [reveal.index])
 

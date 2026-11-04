@@ -48,7 +48,7 @@ export const HudBottom = ({ note, children }: { note?: string; children: Compone
       observer.disconnect()
       root.style.removeProperty("--toolbar-h")
     }
-  }, [])
+  }, [ref])
   return (
     <div class={styles.bottom} ref={ref} data-testid={hudTestIds.toolbar}>
       <div class={styles.toolbar}>{children}</div>

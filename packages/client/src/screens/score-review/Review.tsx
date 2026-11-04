@@ -37,6 +37,7 @@ export const Review = ({ outlines }: { outlines: Outlines }) => {
     return undefined
   }
   const [index, setIndex] = useState(() => firstOpen(0) ?? 0)
+  // oxlint-disable-next-line react/exhaustive-deps -- Moves to the first open case when the set changes, not as verdicts come in.
   useEffect(() => setIndex(firstOpen(0) ?? 0), [set])
   const [choice, setChoiceState] = useState<Choice | undefined>(undefined)
   // Read by submit, so Enter straight after a number key sees the new choice before a render.
@@ -53,11 +54,14 @@ export const Review = ({ outlines }: { outlines: Outlines }) => {
   const reviewCase = cases[index]!
   const question = reviewCase.question
   const answer = reviewCase.answer
-  const guesses = reviewCase.type === ReviewCaseType.SINGLE ? [reviewCase.guess] : reviewCase.guesses
+  const guesses = useMemo(
+    () => (reviewCase.type === ReviewCaseType.SINGLE ? [reviewCase.guess] : reviewCase.guesses),
+    [reviewCase]
+  )
   const kernel = kernelById(soloKernelId.value)
   const scores = useMemo(
     () => guesses.map((guess) => scoreGuess(answer, guess.layer, kernel).score),
-    [reviewCase, kernel.id]
+    [guesses, answer, kernel]
   )
 
   const frame = (features: GeoJSON.FeatureCollection) => {
@@ -88,11 +92,13 @@ export const Review = ({ outlines }: { outlines: Outlines }) => {
     setNote("")
     setPinned(undefined)
     setHovered(undefined)
+    // oxlint-disable-next-line react/exhaustive-deps -- Keyed on the case or set these derive from; the derived values are new every render.
   }, [reviewCase])
 
   // Not reframed: the map would jump about as the mouse crosses the rows.
   useEffect(() => {
     if (reviewCase.type === ReviewCaseType.PAIR) showPair(hovered ?? pinned)
+    // oxlint-disable-next-line react/exhaustive-deps -- Keyed on the case or set these derive from; the derived values are new every render.
   }, [hovered, pinned])
 
   const submit = async () => {

@@ -60,6 +60,7 @@ export const Multiplayer = ({ entry }: { entry: GameEntry }) => {
       entry: entry.type === GameEntryType.HOST ? entry : { ...entry, role: watch ? Role.SPECTATOR : Role.PLAYER }
     })
     return () => game.disconnect()
+    // oxlint-disable-next-line react/exhaustive-deps -- Connects once per game and name; the entry and watch choice are read as they stand then.
   }, [game, confirmedName])
 
   if (!confirmedName) {

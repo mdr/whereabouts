@@ -30,6 +30,7 @@ export const JoinAs = ({ code, onJoin }: { code: RoomCode; onJoin: (name: Player
             placeholder="Your name"
             value={name}
             onInput={(event) => setName(event.currentTarget.value)}
+            // oxlint-disable-next-line jsx-a11y/no-autofocus -- This screen asks for one thing, the name.
             autoFocus
             data-testid={joinAsTestIds.nameInput}
           />

@@ -61,7 +61,7 @@ export const useSavedSetup = (game: HostSetupGame, view: GameView | undefined, c
     applied.current = true
     const patch = savedSetupPatch(hostSetup.value)
     if (Object.keys(patch).length > 0) game.configure(patch)
-  }, [ready])
+  }, [ready, game])
 }
 
 /** The mix's keys before the question types were named as they are now. */

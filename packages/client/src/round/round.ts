@@ -72,6 +72,7 @@ export const useRoundMap = (
     paint.gameMap.clearReveal()
     paint.gameMap.camera.resetView()
     paint.tool.value = startOnPan.value ? Tool.PAN : Tool.PAINT
+    // oxlint-disable-next-line react/exhaustive-deps -- A round starts afresh once, not whenever the question or paint objects are rebuilt.
   }, [round, painting])
 
   // The Fill tool, on through the reveal, so a run of such rounds keeps the tool chosen.
@@ -83,12 +84,13 @@ export const useRoundMap = (
   useEffect(() => {
     paint.gameMap.detail.setDetail(reveal ? RevealDetail.REVEAL : detail)
     paint.gameMap.detail.setStateReveal(reveal && stateRound)
-  }, [reveal, detail, stateRound])
+  }, [reveal, detail, stateRound, paint])
 
   useEffect(() => {
     paint.gameMap.setHint(hint)
     return () => paint.gameMap.setHint(undefined)
-  }, [hint?.axis, hint?.from, hint?.to])
+    // oxlint-disable-next-line react/exhaustive-deps -- Keyed on the hint's fields; the object is rebuilt on every update.
+  }, [hint?.axis, hint?.from, hint?.to, paint])
 }
 
 /** What the Fill tool fills: a country on a map that shows borders, or an island on an island round. */

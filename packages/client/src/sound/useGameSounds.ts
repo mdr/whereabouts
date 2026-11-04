@@ -41,7 +41,7 @@ export const useGameSounds = (game: Pick<GameService, "timeUntil">, view: SoundV
       sound.play("applause")
     }
     previous.current = next
-  }, [phase, round])
+  }, [phase, round, game])
 
   // Each round's countdown, including one joined partway through (after a
   // refresh, say). Nothing cancels it when the round ends on time, so the
@@ -50,7 +50,7 @@ export const useGameSounds = (game: Pick<GameService, "timeUntil">, view: SoundV
     if (deadline === undefined) return
     lastDeadline.current = deadline
     sound.scheduleCountdown(game.timeUntil(deadline))
-  }, [deadline])
+  }, [deadline, game])
 
   useEffect(() => () => sound.stopAll(), [])
 }

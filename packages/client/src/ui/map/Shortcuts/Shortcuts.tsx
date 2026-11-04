@@ -36,13 +36,19 @@ export const Shortcuts = () => {
   // Into <body>, like the confirm dialog: the toolbar's transform would
   // otherwise trap a fixed card.
   return createPortal(
-    <div class={styles.backdrop} data-testid={shortcutsTestIds.backdrop} onClick={() => (shortcutsOpen.value = false)}>
+    <div
+      class={styles.backdrop}
+      role="presentation"
+      data-testid={shortcutsTestIds.backdrop}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) shortcutsOpen.value = false
+      }}
+    >
       <Card
         as="section"
         class={styles.card}
         role="dialog"
         aria-labelledby="shortcuts-title"
-        onClick={(event) => event.stopPropagation()}
         data-testid={shortcutsTestIds.card}
       >
         <header>
