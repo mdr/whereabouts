@@ -4,7 +4,7 @@ import { playerId, playerName } from "@whereabouts/shared/ids"
 import { MAX_PLAYERS } from "@whereabouts/shared/protocol/config"
 import type { GameView } from "@whereabouts/shared/protocol/views"
 import { makeLobbyView, makePlayer } from "../../test-view"
-import { canTakeSeat, seatsTakenTitle } from "./seat-rules"
+import { canStart, canTakeSeat, seatsTakenTitle } from "./seat-rules"
 
 const viewWith = (count: number): GameView =>
   makeLobbyView({
@@ -26,5 +26,18 @@ describe("taking a seat", () => {
 
   it("is off while reconnecting, when asking would be lost", () => {
     expect(canTakeSeat(viewWith(3), false)).toBe(false)
+  })
+})
+
+describe("starting", () => {
+  it("needs a player who is here", () => {
+    const away = makePlayer({ connected: false })
+    expect(canStart(makeLobbyView({ players: [away] }), true)).toBe(false)
+    expect(canStart(makeLobbyView({ players: [away, makePlayer({ id: playerId("p2") })] }), true)).toBe(true)
+    expect(canStart(makeLobbyView({ players: [] }), true)).toBe(false)
+  })
+
+  it("is off while reconnecting", () => {
+    expect(canStart(viewWith(1), false)).toBe(false)
   })
 })

@@ -9,6 +9,7 @@ import { useGameData } from "../../../data/game-data"
 import { mapPrefetched, prefetchMap } from "../../../map/map-prefetch"
 import { joinedCode } from "../../../settings/settings"
 import { connectionText } from "../../../ui/connection/ConnectionNote/ConnectionNote"
+import { canStart } from "../../../ui/players/seat-rules"
 import { hostActions, pickable, takeSeat, vrPicked } from "../../../vr/view/vr-actions"
 import { Icon } from "../../../ui/icons"
 import { leaveRequest } from "../../../ui/ConfirmDialog/confirm-requests"
@@ -39,7 +40,6 @@ export const Lobby = ({ view }: { view: GameView }) => {
   useEffect(prefetchMap, [])
   useGameData(view.config.mix, mapPrefetched.value)
   const host = view.you.isHost
-  const playerCount = view.players.length
   // Home, giving up the seat now; the tab forgets the game so a refresh or
   // Back does not quietly rejoin it. Leaving the screen disconnects.
   const leave = () => {
@@ -69,7 +69,7 @@ export const Lobby = ({ view }: { view: GameView }) => {
           </Banner>
           <div class={styles.cols}>
             <InvitePanel view={view} ask={ask} />
-            <SetupPanel view={view} vrView={vrView} playerCount={playerCount} />
+            <SetupPanel view={view} vrView={vrView} />
           </div>
         </div>
       </div>
@@ -107,7 +107,7 @@ const lobbyVrView = (game: GameService, view: GameView, leave: () => void): VrVi
         connectionText(game) ??
         `Friends join with the code ${view.code}. ${setupLine(view)}${host ? " Take the headset off to change it." : ""}`,
       actions: host
-        ? [{ label: "Start game", press: () => game.start(), enabled: game.online.value && players.length >= 1 }]
+        ? [{ label: "Start game", press: () => game.start(), enabled: canStart(view, game.online.value) }]
         : []
     },
     more: [

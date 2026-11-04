@@ -171,7 +171,18 @@ describe("spectators", () => {
     expect(game.start(tokA, T0).ok).toBe(true)
     const otherGame = makeGame({ code: roomCode("WXYZ") })
     otherGame.join(tokH, playerName("Hana"), T0, Role.SPECTATOR)
-    expect(otherGame.start(tokH, T0)).toEqual({ ok: false, error: "no players" })
+    expect(otherGame.start(tokH, T0)).toEqual({ ok: false, error: "no players here" })
+  })
+
+  it("a watching host cannot start while every player is away", () => {
+    const game = twoPlayerGame(1)
+    game.join(tokH, playerName("Hana"), T0, Role.SPECTATOR)
+    game.makeHost(tokA, game.identify(tokH)!.id)
+    game.disconnect(tokA, T0 + 1)
+    game.disconnect(tokB, T0 + 1)
+    expect(game.start(tokH, T0 + 2)).toEqual({ ok: false, error: "no players here" })
+    game.join(tokB, playerName("Bob"), T0 + 3)
+    expect(game.start(tokH, T0 + 4).ok).toBe(true)
   })
 
   it("a spectator reclaims their seat as a spectator after a refresh", () => {

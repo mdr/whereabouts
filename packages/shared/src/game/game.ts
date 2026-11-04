@@ -146,7 +146,8 @@ export class Game {
   start(token: PlayerToken, now: Instant): CommandResult {
     if (!this.seats.isHost(token)) return fail("only the host can start")
     if (this.state.phase !== Phase.LOBBY) return fail("game already started")
-    if (this.seats.playing().length === 0) return fail("no players")
+    // Seats held for players who are away don't count: nobody would be there to play.
+    if (this.present().length === 0) return fail("no players here")
     const first = this.roundAt(0)
     if (!first) return fail("no rounds to play")
     for (const seat of this.seats.playing()) seat.role.record = freshRecord(0)

@@ -1,6 +1,7 @@
 import type { GameView } from "@whereabouts/shared/protocol/views"
 import { useGameService } from "../../../../game-service/use-game-service"
 import { HostWord } from "../../../../ui/players/HostWord"
+import { canStart } from "../../../../ui/players/seat-rules"
 import { Icon } from "../../../../ui/icons"
 import { VrButton } from "../../../../ui/VrButton/VrButton"
 import type { VrView } from "../../../../vr/view/view"
@@ -13,7 +14,7 @@ import { setupPanelTestIds } from "./SetupPanelTestIds"
 import styles from "./SetupPanel.module.css"
 
 /** The right panel: the game's setup, this device's switches, and the way to start. */
-export const SetupPanel = ({ view, vrView, playerCount }: { view: GameView; vrView: VrView; playerCount: number }) => {
+export const SetupPanel = ({ view, vrView }: { view: GameView; vrView: VrView }) => {
   const game = useGameService()
   const host = view.you.isHost
   return (
@@ -38,8 +39,8 @@ export const SetupPanel = ({ view, vrView, playerCount }: { view: GameView; vrVi
             class="primary big"
             data-testid={setupPanelTestIds.startButton}
             onClick={() => game.start()}
-            disabled={playerCount < 1 || !game.online.value}
-            title={playerCount < 1 ? "Someone needs to play: take a seat, or wait for a player" : undefined}
+            disabled={!canStart(view, game.online.value)}
+            title={!canStart(view, true) ? "Someone needs to play: take a seat, or wait for a player" : undefined}
           >
             <Icon name="play" /> Start game
           </button>
