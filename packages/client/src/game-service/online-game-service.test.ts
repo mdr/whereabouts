@@ -2,7 +2,9 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import type { WSClientOptions } from "@rivalis/browser"
 import { CloseReason } from "@whereabouts/shared/close-reason"
-import { placeId, playerName, playerToken, roomCode, wikiTitle } from "@whereabouts/shared/ids"
+import { HintAxis } from "@whereabouts/shared/hints"
+import { placeId, playerId, playerName, playerToken, roomCode, wikiTitle } from "@whereabouts/shared/ids"
+import { Role } from "@whereabouts/shared/roles"
 import { viewIn } from "@whereabouts/shared/game/view-in"
 import { decodePaint, encodePaint } from "@whereabouts/shared/paint/paint-wire"
 import { GameEntryType, decodeTicket, type Ticket } from "@whereabouts/shared/protocol/ticket"
@@ -15,6 +17,9 @@ import { ConnectionStatus } from "./connection-state"
 import { RejectionAction, type Rejection } from "../net/rejection"
 import { makeGuessingView, makeLobbyView, makeQuestionView, makeRevealView } from "../test-view"
 import { PING_EVERY, PONG_WITHIN } from "../net/heartbeat"
+import { reloadForNewBuild } from "../net/stale-build"
+
+vi.mock("../net/stale-build", () => ({ reloadForNewBuild: vi.fn(() => false) }))
 
 const encoder = new TextEncoder()
 
@@ -22,6 +27,7 @@ class FakeClient implements GameClient {
   connected = false
   readonly tickets: string[] = []
   readonly sent: ClientTopic[] = []
+  readonly bodies: unknown[] = []
   private readonly listeners = new Map<string, (arg?: unknown) => void>()
 
   readonly options: WSClientOptions
@@ -36,8 +42,9 @@ class FakeClient implements GameClient {
   disconnect(): void {
     this.connected = false
   }
-  send(topic: ClientTopic): void {
+  send(topic: ClientTopic, body: string | Uint8Array): void {
     this.sent.push(topic)
+    this.bodies.push(typeof body === "string" && body !== "" ? JSON.parse(body) : body)
   }
   on(event: string, listener: (payload: never) => void): this {
     this.listeners.set(event, listener as (payload?: unknown) => void)
@@ -69,14 +76,16 @@ const TICKET = {
   entry: { type: GameEntryType.HOST as const }
 }
 
-const connected = (): { conn: OnlineGameService; client: FakeClient; clients: FakeClient[] } => {
+const connected = (
+  ticket: Omit<Ticket, "v"> = TICKET
+): { conn: OnlineGameService; client: FakeClient; clients: FakeClient[] } => {
   const clients: FakeClient[] = []
   const conn = new OnlineGameService((_url, options) => {
     const c = new FakeClient(options)
     clients.push(c)
     return c
   })
-  conn.connect(TICKET)
+  conn.connect(ticket)
   return { conn, client: clients[0]!, clients }
 }
 
@@ -203,6 +212,37 @@ describe("OnlineGameService status", () => {
     })
   })
 
+  it("comes back as a spectator when it joined to watch", async () => {
+    const { client } = connected({
+      ...TICKET,
+      entry: { type: GameEntryType.JOIN, code: roomCode("WXYZ"), role: Role.SPECTATOR }
+    })
+    client.open()
+    client.state(makeLobbyView({ code: roomCode("WXYZ") }))
+    expect(await client.nextTicket()).toMatchObject({
+      entry: { type: GameEntryType.JOIN, code: "WXYZ", role: Role.SPECTATOR }
+    })
+  })
+
+  it("comes back as a player to a game it hosted", async () => {
+    const { client } = connected()
+    client.open()
+    client.state(makeLobbyView({ code: roomCode("WXYZ") }))
+    expect(await client.nextTicket()).toMatchObject({ entry: { role: Role.PLAYER } })
+  })
+
+  it("reloads for the new build when the server says it is out of date, rejected only if it cannot", () => {
+    vi.mocked(reloadForNewBuild).mockReturnValueOnce(true)
+    const reloading = connected()
+    reloading.client.emit(SocketEvent.KICKED, { code: 4003, reason: CloseReason.OUTDATED })
+    expect(reloading.conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
+
+    vi.mocked(reloadForNewBuild).mockReturnValueOnce(false)
+    const stuck = connected()
+    stuck.client.emit(SocketEvent.KICKED, { code: 4003, reason: CloseReason.OUTDATED })
+    expect(stuck.conn.status.value.type).toBe(ConnectionStatus.REJECTED)
+  })
+
   it("tries again a moment after the server sheds it for sending too much, rejoining its game", async () => {
     vi.useFakeTimers()
     const { conn, client, clients } = connected()
@@ -299,6 +339,30 @@ describe("OnlineGameService view", () => {
     conn.lock()
     conn.sendPaint({ cells: {}, floor: 0 })
     expect(client.sent).toEqual([ClientTopic.LOCK, ClientTopic.PAINT])
+  })
+
+  it("sends each command under its own topic, with what it needs", () => {
+    const { conn, client } = connected()
+    client.open()
+    const commands: [() => void, ClientTopic, unknown][] = [
+      [() => conn.lock(), ClientTopic.LOCK, {}],
+      [() => conn.unlock(), ClientTopic.UNLOCK, {}],
+      [() => conn.ready(), ClientTopic.READY, {}],
+      [() => conn.configure({ hints: 2 }), ClientTopic.CONFIGURE, { hints: 2 }],
+      [() => conn.start(), ClientTopic.START, {}],
+      [() => conn.next(), ClientTopic.NEXT, {}],
+      [() => conn.again(), ClientTopic.AGAIN, {}],
+      [() => conn.rename(playerName("Bea")), ClientTopic.RENAME, { name: "Bea" }],
+      [() => conn.hint(HintAxis.LONGITUDE), ClientTopic.HINT, { axis: HintAxis.LONGITUDE }],
+      [() => conn.kick(playerId("p2")), ClientTopic.KICK, { playerId: "p2" }],
+      [() => conn.leave(), ClientTopic.LEAVE, {}],
+      [() => conn.setRole(Role.SPECTATOR), ClientTopic.SET_ROLE, { role: Role.SPECTATOR }],
+      [() => conn.makeHost(playerId("p2")), ClientTopic.MAKE_HOST, { playerId: "p2" }],
+      [() => conn.end(), ClientTopic.END, {}]
+    ]
+    for (const [command] of commands) command()
+    expect(client.sent).toEqual(commands.map(([, topic]) => topic))
+    expect(client.bodies).toEqual(commands.map(([, , body]) => body))
   })
 })
 
