@@ -81,7 +81,7 @@ describe("scoreRound", () => {
     it("is next door when all the paint is a neighbour's, and not otherwise", () => {
       expect(nextDoor(germany)).toBe(true)
       expect(nextDoor(france)).toBe(false)
-      expect(nextDoor(answerOf("australia-region") as Area)).toBe(false)
+      expect(nextDoor(answerOf("japan-region") as Area)).toBe(false)
     })
 
     it("is not next door when a tenth or more of the paint is on the country", () => {
