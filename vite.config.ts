@@ -88,7 +88,6 @@ export default defineConfig({
       "packages/*/src/**/*.test.{ts,tsx}",
       "packages/server/src/**/*.iwbt.ts",
       "packages/client/browser/pages/*.test.ts",
-      "packages/client/browser/voiceover/*.test.ts",
       "scripts/**/*.test.ts",
       "lint/**/*.test.ts",
       "packages/*/scripts/*.test.ts"

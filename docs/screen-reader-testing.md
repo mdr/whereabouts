@@ -47,32 +47,30 @@ VoiceOver takes over the Mac: it speaks aloud, moves keyboard focus, and needs t
 window frontmost. It can't run headless or while someone is using the machine, so it is
 not part of `task iwft` or CI.
 
-## Exploring a screen
+## Listening to a screen
 
-Write a script of commands, one per line, and run it:
+Write a throwaway spec, `packages/client/browser/voiceover/<name>.voiceover.ts`, and run it:
 
 ```sh
-nix develop -c task voiceover -- my-script.txt
+nix develop -c task voiceover -- <name>
 ```
 
-It opens Home in Chrome, served as in the IWFTs (the in-process game server and the offline
-world), starts VoiceOver, moves it into the page, then runs each line and prints what
-VoiceOver said. The transcript is also saved under `smoke-out/voiceover/`. For example:
+These specs are for exploring and for checking a fix, not a suite: nothing else runs them.
+Copy `lobby.voiceover.ts`, the worked example. A spec gets the IWFT fixtures (`game`, a `tab`
+on the in-process server and the offline world) and drives the app with page objects to
+the state it wants, quickly and with VoiceOver still off. Then `await listen()` starts
+VoiceOver on the tab and returns a `ScreenReader`:
 
-```
-# Home, item by item, then by Tab
-next 12
-press Tab Tab Tab
-heading
-# practice
-open /solo
-next 5
-```
+- `readAll()`: every item from VoiceOver's place to the end of the page, as VO-Right
+  reads them.
+- `heard(action)`: what VoiceOver said while `action` ran: a keypress, a click, a server
+  event (`game.seat`, `game.paint`…). This is how to check what's announced.
+- `report(title, phrases)`: prints them, and adds them to `heard.txt` in the test's
+  folder under `smoke-out/voiceover/`.
+- `voiceOver`: Guidepup's
+  [VoiceOver](https://www.guidepup.dev/docs/api/class-voiceover) for anything else
+  (`next`, `nextHeading`, `press("Shift+Tab")`, `act`, `itemText`…).
+- `enterPage()`: puts VoiceOver back in the page after `tab.open`.
 
-The commands are `next [n]`, `previous [n]`, `heading`, `landmark`, `act` (press what
-VoiceOver is on), `press <keys…>` (e.g. `Tab`, `Shift+Tab`, `Escape`), `type <text>`,
-`open <route>`, `seat <names…>` (players with no tab, in the hosted game) and `item` (what
-VoiceOver says about the current item). A line it can't read stops the run before VoiceOver
-starts, with the list. They're in `packages/client/browser/voiceover/commands.ts`.
-
-It takes about a minute for VoiceOver to start and settle, then a second or two per step.
+VoiceOver takes about a minute to start and settle, then a second or so per item, so a
+long `readAll` takes a few minutes. VoiceOver stops after the test, pass or fail.

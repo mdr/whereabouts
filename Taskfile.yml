@@ -81,9 +81,9 @@ tasks:
       - pnpm --filter ./packages/client screenshots {{.CLI_ARGS}}
 
   voiceover:
-    desc: "Run a script of VoiceOver commands against the game and print what VoiceOver says (task voiceover -- script.txt; see docs/screen-reader-testing.md)"
+    desc: "Run a VoiceOver spec, *.voiceover.ts, which takes over the Mac (task voiceover -- lobby; see docs/screen-reader-testing.md)"
     cmds:
-      - VOICEOVER_SCRIPT="$(cd "{{.USER_WORKING_DIR}}" && realpath {{.CLI_ARGS}})" pnpm --filter ./packages/client voiceover
+      - pnpm --filter ./packages/client voiceover {{.CLI_ARGS}}
 
   browser:
     desc: Every browser test, the isolated ones then the end-to-end ones

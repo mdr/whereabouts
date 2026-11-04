@@ -1,5 +1,5 @@
-// The VoiceOver exploration (voiceover/*.voiceover.ts): drives the real VoiceOver over a headed
-// Chrome, so it takes over the Mac while it runs. `task voiceover -- <script>` runs it.
+// Specs that listen with the real VoiceOver (voiceover/*.voiceover.ts), over a headed Chrome:
+// run by hand, never in a suite, since they take over the Mac. `task voiceover -- <spec>` runs one.
 import { defineConfig } from "@playwright/test"
 import { devServer, portsIn, runSettings } from "./playwright-common.ts"
 
