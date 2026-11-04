@@ -6,15 +6,7 @@
  */
 import { LandMask, WaterMask } from "@whereabouts/shared/paint/land"
 
-const once = <T>(load: () => Promise<T>): (() => Promise<T>) => {
-  let loading: Promise<T> | undefined = undefined
-  return () =>
-    (loading ??= load().catch((error: unknown) => {
-      // Let the next press try again, after a dropped connection say.
-      loading = undefined
-      throw error
-    }))
-}
+import { once } from "./load-once"
 
 export const loadLandMask = once(() =>
   import("@whereabouts/shared/land.json").then((land) => new LandMask(land.default))

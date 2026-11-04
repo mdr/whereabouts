@@ -36,3 +36,17 @@ describe("useOutlines", () => {
     expect(hook.result.current).toEqual(SQUARE)
   })
 })
+
+describe("loadOutlines", () => {
+  it("offers another try after a failed load, and tries again when asked", async () => {
+    vi.resetModules()
+    const fresh = await import("./outlines")
+    fetchBuildJson.mockRejectedValueOnce(new Error("dropped"))
+    await expect(fresh.loadOutlines()).rejects.toThrow("dropped")
+    expect(fresh.outlinesFailed.value).toBe(true)
+
+    const retry = fresh.loadOutlines()
+    expect(fresh.outlinesFailed.value).toBe(false)
+    expect((await retry).get(outlineId("square"))).toEqual(SQUARE)
+  })
+})

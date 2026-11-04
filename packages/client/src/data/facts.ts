@@ -10,24 +10,15 @@ import { useEffect } from "preact/hooks"
 import { PlaceFactsSchema, factsFor, pickFact, type Fact, type PlaceFacts } from "@whereabouts/shared/catalogue/facts"
 import type { PlaceId } from "@whereabouts/shared/ids"
 import type { QuestionType } from "@whereabouts/shared/questions"
+import { once } from "./load-once"
 
 type RawFacts = Readonly<Record<string, unknown>>
 
 const facts = signal<RawFacts | undefined>(undefined)
 
-let loading: Promise<RawFacts> | undefined = undefined
-
-export const loadFacts = (): Promise<RawFacts> => {
-  loading ??= import("@whereabouts/shared/facts.json").then(
-    (loaded) => (facts.value = loaded.default),
-    (error: unknown) => {
-      // Let the next caller try again, after a dropped connection say.
-      loading = undefined
-      throw error
-    }
-  )
-  return loading
-}
+export const loadFacts = once(() =>
+  import("@whereabouts/shared/facts.json").then((loaded) => (facts.value = loaded.default))
+)
 
 const checked = new Map<PlaceId, PlaceFacts | undefined>()
 

@@ -8,22 +8,15 @@ import { signal } from "@preact/signals"
 import { useEffect } from "preact/hooks"
 import type { Polygon } from "@whereabouts/shared/geo"
 import { IslandFiller } from "../paint/island-fill"
+import { once } from "./load-once"
 
 const islands = signal<IslandFiller | undefined>(undefined)
 
-let loading: Promise<IslandFiller> | undefined = undefined
-
-const loadIslands = (): Promise<IslandFiller> => {
-  loading ??= import("@whereabouts/shared/islands.json").then(
-    (json) => (islands.value = new IslandFiller(json.default as Polygon[])),
-    (error: unknown) => {
-      // Let the next round try again, after a dropped connection say.
-      loading = undefined
-      throw error
-    }
+const loadIslands = once(() =>
+  import("@whereabouts/shared/islands.json").then(
+    (json) => (islands.value = new IslandFiller(json.default as Polygon[]))
   )
-  return loading
-}
+)
 
 /** The islands to fill, loading them first if need be; undefined until they arrive. */
 export const useIslands = (wanted: boolean): IslandFiller | undefined => {

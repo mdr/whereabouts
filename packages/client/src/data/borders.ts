@@ -16,24 +16,17 @@ import { AnswerType, type FlagQuestion } from "@whereabouts/shared/questions"
 import { CATALOGUE, isFlagQuestion } from "@whereabouts/shared/catalogue/catalogue"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { loadOutlines, outlines } from "./outlines"
+import { once } from "./load-once"
 import type { VrFlagPin } from "../vr/globe/flag-pins"
 
 /** The borders, once loaded. */
 const borders = signal<Borders | undefined>(undefined)
 
-let loading: Promise<Borders> | undefined = undefined
-
-const loadBorders = (): Promise<Borders> => {
-  loading ??= Promise.all([fetchBuildJson<BordersData>(bordersUrl), loadOutlines()]).then(
-    ([rawBorders]) => (borders.value = new Borders(rawBorders, CATALOGUE.filter(isFlagQuestion))),
-    (error: unknown) => {
-      // Let the next caller try again, after a dropped connection say.
-      loading = undefined
-      throw error
-    }
+const loadBorders = once(() =>
+  Promise.all([fetchBuildJson<BordersData>(bordersUrl), loadOutlines()]).then(
+    ([rawBorders]) => (borders.value = new Borders(rawBorders, CATALOGUE.filter(isFlagQuestion)))
   )
-  return loading
-}
+)
 
 const pinsOf = new WeakMap<Borders, { country: FlagQuestion; at: LatLon }[]>()
 
