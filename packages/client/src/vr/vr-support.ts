@@ -5,18 +5,12 @@
  */
 import { signal } from "@preact/signals"
 import type { Vr } from "./index"
+import { VrLoadStage } from "./load-stage"
 
 export const vrSupported = signal(false)
 /** The VR code, once loaded. */
 export const loadedVr = signal<Vr | undefined>(undefined)
 
-/** How far loading has got, in order. */
-export enum VrLoadStage {
-  CODE = "CODE",
-  HEADSET = "HEADSET",
-  LAND = "LAND"
-}
-export const VR_LOAD_STAGES: readonly VrLoadStage[] = Object.values(VrLoadStage)
 export const vrLoadStage = signal(VrLoadStage.CODE)
 
 navigator.xr?.isSessionSupported("immersive-vr").then(

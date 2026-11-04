@@ -4,15 +4,8 @@ import { createPortal } from "preact/compat"
 import { useEffect, useRef, useState } from "preact/hooks"
 import type { Vr } from "../../vr/index"
 import { sceneOf, type VrView } from "../../vr/view/view"
-import {
-  VR_LOAD_STAGES,
-  VrCodeMissing,
-  loadVr,
-  loadedVr,
-  vrLoadStage,
-  vrSupported,
-  VrLoadStage
-} from "../../vr/vr-support"
+import { VrCodeMissing, loadVr, loadedVr, vrLoadStage, vrSupported } from "../../vr/vr-support"
+import { VR_LOAD_STAGES, VrLoadStage } from "../../vr/load-stage"
 import { Icon } from "../icons"
 import { vrButtonTestIds } from "./VrButtonTestIds"
 import styles from "./VrButton.module.css"

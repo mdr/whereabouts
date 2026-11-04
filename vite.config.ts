@@ -89,12 +89,13 @@ export default defineConfig({
       "packages/server/src/**/*.iwbt.ts",
       "packages/client/browser/pages/*.test.ts",
       "scripts/*.test.ts",
+      "lint/**/*.test.ts",
       "packages/*/scripts/*.test.ts"
     ],
     setupFiles: ["packages/client/src/test-setup.ts"]
   },
   lint: {
-    plugins: ["oxc", "typescript", "unicorn"],
+    plugins: ["oxc", "typescript", "unicorn", "import"],
     categories: {
       correctness: "off"
     },
@@ -311,7 +312,11 @@ export default defineConfig({
           fixStyle: "inline-type-imports"
         }
       ],
-      "vite-plus/prefer-vite-plus-imports": "error"
+      "vite-plus/prefer-vite-plus-imports": "error",
+      "import/no-cycle": "error",
+      "boundaries/packages": "error",
+      "boundaries/test-support": "error",
+      "boundaries/client-layers": "error"
     },
     overrides: [
       {
@@ -394,6 +399,11 @@ export default defineConfig({
           ],
           "no-restricted-imports": browserImports([])
         }
+      },
+      {
+        // A page object's step returns the page it leads to, so pages that lead to each other import each other.
+        files: ["packages/client/browser/pages/**/*.ts"],
+        rules: { "import/no-cycle": "off" }
       },
       {
         files: ["packages/client/browser/**/*.e2e.ts"],
@@ -583,7 +593,8 @@ export default defineConfig({
       { name: "eslint-js", specifier: "oxlint-plugin-eslint" },
       { name: "sonarjs", specifier: "eslint-plugin-sonarjs" },
       { name: "folders", specifier: "./lint/folder-size.ts" },
-      { name: "test-ids", specifier: "./lint/test-ids.ts" }
+      { name: "test-ids", specifier: "./lint/test-ids.ts" },
+      { name: "boundaries", specifier: "./lint/boundaries/plugin.ts" }
     ]
   },
   fmt: {
