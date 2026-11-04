@@ -54,6 +54,38 @@ describe("explaining a place's score", () => {
   })
 })
 
+describe("the share of paint near the answer", () => {
+  const answer = { lat: 48.8584, lon: 2.2945 }
+  const tolerance = 150
+  const disk = (lat: number): H3Cell[] =>
+    gridDisk(latLngToCell(lat, answer.lon, h3Resolution(resolutionForTolerance(tolerance))), 1)
+  const nearShare = (cells: H3Cell[]): number => {
+    const painted = coat(cells)
+    const scored = scoreDistribution(painted, answer, tolerance)
+    return explainPoint(painted, answer, tolerance, scored.A, scored.B).nearShare
+  }
+
+  // Within four tolerances (600 km) counts as near: 4.7 degrees is about 520 km, 6.1 about 680 km.
+  it.each([
+    ["on the answer", 0, 1],
+    ["about 3.5 tolerances away", 4.7, 1],
+    ["about 4.5 tolerances away", 6.1, 0],
+    ["far away", 20, 0]
+  ])("paint %s", (_, degreesNorth, share) => {
+    expect(nearShare(disk(answer.lat + degreesNorth))).toBeCloseTo(share, 5)
+  })
+
+  it("is the fraction of the paint that is near, when some is and some is not", () => {
+    // A little over half: cells count by area, and those near Paris are bigger than those farther north.
+    expect(nearShare([...disk(answer.lat), ...disk(answer.lat + 20)])).toBeCloseTo(0.55, 2)
+  })
+
+  it("is none for no paint at all", () => {
+    const nothing = buildDistribution([], 1)
+    expect(explainPoint(nothing, answer, tolerance, 0, 0).nearShare).toBe(0)
+  })
+})
+
 describe("a hedge", () => {
   const TOLERANCE = 100
   const explained = (best: number, extra: Partial<PointExplanation> = {}): PointExplanation => ({

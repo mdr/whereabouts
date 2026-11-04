@@ -53,6 +53,45 @@ describe("scoreRound", () => {
     expect(round.facts.point.miss).toBeLessThan(paris.tolerance)
   })
 
+  it("splits a tight miss's lost points into the spread of the paint and the cost of missing", () => {
+    if (paris.type !== AnswerType.POINT) throw new Error("Paris is a point")
+    const round = score(paris, makeDraft(paintAround(paris, paris.at.lat + 2.7, paris.at.lon)))
+    if (round.facts.type !== FactsType.POINT) throw new Error("point facts expected")
+    const { spread, missCost, miss } = round.facts.point
+    expect(round.score).toBeCloseTo(420, 0)
+    expect(spread).toBeCloseTo(3.5, 1)
+    expect(missCost).toBeCloseTo(576.5, 1)
+    expect(spread + missCost + round.score).toBeCloseTo(1000, 5)
+    expect(miss).toBeCloseTo(299, 0)
+    expect(round.facts.point.hedged).toBe(false)
+    expect(round.facts.point.tolerance).toBe(paris.tolerance)
+  })
+
+  describe("painting next door to a country", () => {
+    const france = answerOf("france-region") as Area
+    const paintOf = (area: Area): PaintSubmission => {
+      const resolution = resolutionForTolerance(france.tolerance)
+      return { cells: Object.fromEntries(regionCells(area, resolution).map((cell) => [cell, 1])), floor: 0.05 }
+    }
+    const nextDoor = (painted: Area): boolean | undefined => {
+      const round = score(france, makeDraft(paintOf(painted)))
+      return round.facts.type === FactsType.AREA ? round.facts.region.nextDoor : undefined
+    }
+
+    it("is next door when all the paint is a neighbour's, and not otherwise", () => {
+      expect(nextDoor(germany)).toBe(true)
+      expect(nextDoor(france)).toBe(false)
+      expect(nextDoor(answerOf("australia-region") as Area)).toBe(false)
+    })
+
+    it("is not next door when a tenth or more of the paint is on the country", () => {
+      const resolution = resolutionForTolerance(france.tolerance)
+      const both = [...regionCells(france, resolution), ...regionCells(germany, resolution)]
+      const round = score(france, makeDraft({ cells: Object.fromEntries(both.map((cell) => [cell, 1])), floor: 0.05 }))
+      expect(round.facts).toMatchObject({ type: FactsType.AREA, region: { nextDoor: false } })
+    })
+  })
+
   it("scores a pass, an empty map and no submission alike, on either kind of round, with no paint to show", () => {
     for (const answer of [paris, germany])
       for (const submission of [undefined, makeDraft(), makeLocked(T0 + 5_000)]) {
