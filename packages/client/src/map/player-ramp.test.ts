@@ -14,6 +14,22 @@ describe("playerRamp", () => {
     expect(playerRampAt(ramp, 1)).toEqual({ colour: [158, 222, 251], opacity: 0.9 })
   })
 
+  it("mixes the colours and the opacity in proportion between the stops", () => {
+    const ramp = playerRamp("#4fc3f7")
+    const quarter = playerRampAt(ramp, 0.25)
+    expect(quarter.colour).toEqual([58, 142, 179])
+    expect(quarter.opacity).toBeCloseTo(0.3375, 10)
+    const threeQuarters = playerRampAt(ramp, 0.75)
+    expect(threeQuarters.colour).toEqual([119, 209, 249])
+    expect(threeQuarters.opacity).toBeCloseTo(0.7125, 10)
+  })
+
+  it("holds at the ends for weights outside 0 to 1", () => {
+    const ramp = playerRamp("#4fc3f7")
+    expect(playerRampAt(ramp, -3)).toEqual(playerRampAt(ramp, 0))
+    expect(playerRampAt(ramp, 3)).toEqual(playerRampAt(ramp, 1))
+  })
+
   it("stops the tint short of white, so no two players' heaviest paint is the same", () => {
     const tints = PLAYER_COLOURS.filter((colour) => colour !== "#ffffff").map((colour) => playerRamp(colour).tint)
     expect(tints).not.toContain("#ffffff")
