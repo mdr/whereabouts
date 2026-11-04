@@ -333,7 +333,7 @@ export class HeadsetPanels extends PageObject {
 
   /** Where a button on the wrist menu is. */
   async wristButton(id: WristButton): Promise<Vec3> {
-    return this.#page.evaluate((id) => window.testHooks.vr!.probe.wristButtonAt(id), id)
+    return this.#settled(() => this.#page.evaluate((id) => window.testHooks.vr!.probe.wristButtonAt(id), id))
   }
 
   /** Where a button on the VR menu is. */
