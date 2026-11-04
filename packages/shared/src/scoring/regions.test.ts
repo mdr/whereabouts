@@ -344,6 +344,12 @@ describe("roundsOverlap", () => {
     expect(roundsOverlap(paris, byId("botswana-region"))).toBe(false)
   })
 
+  it("finds two places within 50 km of each other, and not two farther apart", () => {
+    const apart = (degrees: number): PointAnswer => ({ ...paris, at: { ...paris.at, lat: paris.at.lat + degrees } })
+    expect(roundsOverlap(paris, apart(0.3))).toBe(true)
+    expect(roundsOverlap(paris, apart(0.6))).toBe(false)
+  })
+
   it("finds an island inside a country, but not neighbouring countries", () => {
     const honshu = byId(CATALOGUE.find((question) => question.label === "Honshu")!.id)
     expect(roundsOverlap(honshu, byId("japan-region"))).toBe(true)

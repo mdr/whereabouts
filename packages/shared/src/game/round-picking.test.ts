@@ -91,6 +91,14 @@ describe("pickRounds", () => {
     expect(pick({ catalogue: [monaco, byId("flag-mc")], mix }).map((question) => question.id)).toEqual([monaco.id])
   })
 
+  it("keeps clear of a round already chosen, whichever of several it is", () => {
+    const place = (wiki: string): Question => CATALOGUE.find((question) => question.wiki === wiki)!
+    const catalogue = [place("Paris"), place("Gaborone"), byId("botswana-region"), byId("germany-region")]
+    const mix = mixOf({ [QuestionType.PLACE]: 2, [QuestionType.COUNTRY]: 1 })
+    for (let seed = 1; seed <= 20; seed++)
+      expect(pick({ catalogue, mix, seed }).map((question) => question.id)).toContain("germany-region")
+  })
+
   it("keeps a place's country out of the same game when another country will do", () => {
     const gaborone = CATALOGUE.find((question) => question.wiki === "Gaborone")!
     const catalogue = [gaborone, byId("botswana-region"), byId("germany-region")]
