@@ -1,4 +1,4 @@
-import { expect } from "@playwright/test"
+import { expect, type Locator } from "@playwright/test"
 import { scoreReviewTestIds } from "../../src/screens/score-review/ScoreReview/ScoreReviewTestIds.ts"
 import { verdictCardTestIds } from "../../src/screens/score-review/VerdictCard/VerdictCardTestIds.ts"
 import { MapPanel } from "./components/MapPanel.ts"
@@ -74,6 +74,30 @@ export class ScoreReviewPage extends Screen {
     await this.page.keyboard.press(String(key))
     await this.page.keyboard.press("Enter")
     await this.map.waitUntilSettled()
+  }
+
+  /** The verdict choices are one Tab stop. */
+  async expectVerdictsOneTabStop(): Promise<void> {
+    await expect(
+      this.page.getByTestId(verdictCardTestIds.verdict).and(this.page.locator('[tabindex="0"]')),
+      "the verdict choices are one Tab stop"
+    ).toHaveCount(1)
+  }
+
+  /** Click a verdict, then press a key on it. */
+  async clickVerdictThenPress(verdict: number, key: string): Promise<void> {
+    await this.#verdict(verdict).click()
+    await this.page.keyboard.press(key)
+  }
+
+  /** This verdict is the one chosen and has focus. */
+  async expectVerdictChosenAndFocused(verdict: number): Promise<void> {
+    await expect(this.#verdict(verdict), `verdict ${verdict} is chosen`).toBeChecked()
+    await expect(this.#verdict(verdict), `verdict ${verdict} has focus`).toBeFocused()
+  }
+
+  #verdict(verdict: number): Locator {
+    return this.page.locator(`[data-testid="${verdictCardTestIds.verdict}"][data-verdict="${verdict}"]`)
   }
 
   /** Give a verdict by clicking, with what it should have scored and why. */

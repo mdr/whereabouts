@@ -5,6 +5,7 @@ import { Swatch, SwatchType } from "../../../ui/players/Swatch"
 import { cx } from "../../../ui/cx"
 import kit from "../../../ui/kit.module.css"
 import players from "../../../ui/players/Players.module.css"
+import { useRadioGroup } from "../../../keyboard/use-radio-group"
 import { reviewSet, scoreVerdicts } from "../../../settings/settings"
 import { PAIR_COLOURS } from "../pair-colours"
 import { verdictCardTestIds } from "./VerdictCardTestIds"
@@ -63,6 +64,10 @@ export const VerdictCard = ({
 }) => {
   const done = judged >= total
   const options = reviewCase.type === ReviewCaseType.SINGLE ? FAIRNESS : PREFERENCE
+  const radio = useRadioGroup({
+    checkedIndex: options.findIndex((option) => option.value === choice),
+    select: (index) => onChoose(options[index]!.value)
+  })
   const ownVerdicts = scoreVerdicts.value
   return (
     <Card
@@ -88,12 +93,13 @@ export const VerdictCard = ({
           ))}
         </ul>
       )}
-      <div class={styles.verdicts} role="radiogroup">
+      <div class={styles.verdicts} role="radiogroup" aria-label="Verdict" {...radio.groupProps}>
         {options.map((option, i) => (
           <button
             type="button"
             role="radio"
             aria-checked={choice === option.value}
+            tabIndex={radio.tabIndex(i)}
             class={choice === option.value ? styles.selected : undefined}
             onClick={() => onChoose(option.value)}
             data-testid={verdictCardTestIds.verdict}

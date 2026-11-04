@@ -42,6 +42,28 @@ test("lobby setup", async ({ browser, game }) => {
     await aliceLobbyPage.expectMapDetail(MapDetail.WATER)
   })
 
+  await test.step("arrow keys move and select within the hints and map detail choices", async () => {
+    await aliceLobbyPage.chooseHints(1)
+    await aliceLobbyPage.expectHintsOneTabStop()
+    await aliceLobbyPage.pressKeyOnHints("ArrowRight")
+    await aliceLobbyPage.expectHints(2)
+    await aliceLobbyPage.expectHintsFocused(2)
+    await aliceLobbyPage.pressKeyOnHints("ArrowLeft")
+    await aliceLobbyPage.expectHints(1)
+    await aliceLobbyPage.expectHintsFocused(1)
+
+    await aliceLobbyPage.expectMapDetailOneTabStop()
+    await aliceLobbyPage.chooseMapDetail(MapDetail.MINIMAL)
+    await aliceLobbyPage.pressKeyOnMapDetail("ArrowLeft")
+    await aliceLobbyPage.expectMapDetail(MapDetail.POLITICAL)
+    await aliceLobbyPage.expectMapDetailFocused(MapDetail.POLITICAL)
+    await aliceLobbyPage.pressKeyOnMapDetail("ArrowDown")
+    await aliceLobbyPage.expectMapDetail(MapDetail.MINIMAL)
+    await aliceLobbyPage.expectMapDetailFocused(MapDetail.MINIMAL)
+    await aliceLobbyPage.chooseMapDetail(MapDetail.WATER)
+    await aliceLobbyPage.expectMapDetail(MapDetail.WATER)
+  })
+
   await test.step("Bob sees the decided values, not controls", async () => {
     await bobLobbyPage.expectSetupSummary({
       rounds: "5",
