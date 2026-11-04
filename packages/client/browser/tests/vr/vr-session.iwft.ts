@@ -1,6 +1,6 @@
 // Entering and leaving VR, on an emulated Quest 3 (see pages/headset/Headset.ts).
 // Saves screenshots of the headset's view.
-import { test } from "@playwright/test"
+import { test } from "../../coverage/coverage-test.ts"
 import { VrViewType } from "../../../src/vr/view/view.ts"
 import { shot } from "../support.ts"
 import { headsetPractice } from "./vr-states.ts"

@@ -1,7 +1,8 @@
 // The score review against the Vite dev server: single guesses judged by
 // keyboard and by clicking, a pair compared (pointing at one shows it
 // alone), the export, and the screen on a phone. Saves screenshots.
-import { expect, test } from "@playwright/test"
+import { expect } from "@playwright/test"
+import { test } from "../coverage/coverage-test.ts"
 import { decodeCase } from "@whereabouts/shared/scoring/scoring-case"
 import { newOfflineTab } from "./iwft-tab.ts"
 import { shot } from "./support.ts"

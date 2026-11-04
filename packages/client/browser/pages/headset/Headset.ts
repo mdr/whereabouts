@@ -10,6 +10,7 @@ import type { Hand } from "../../../src/vr/hands/hand.ts"
 import { holdUntil, expectPolled, stillTrueFor } from "../support.ts"
 import { vrButtonTestIds } from "../../../src/ui/VrButton/VrButtonTestIds.ts"
 import { probe } from "./probe.ts"
+import { COVERAGE } from "../../coverage/coverage-options.ts"
 
 /**
  * An emulated Meta Quest 3 (Meta's IWER) in place of WebXR, so a desktop
@@ -71,12 +72,21 @@ export class Headset extends PageObject {
   }
 
   async expectInSession(timeout: Ms = 10_000): Promise<void> {
+    const inSession = (): Promise<boolean> => this.#page.evaluate(() => window.headset.activeSession !== undefined)
+    // Recording coverage can slow the VR code's load past the press's user activation, so VR asks again.
+    if (COVERAGE) await this.#pressEnterButtonIfAskedAgain(inSession, timeout)
+    await expect.poll(inSession, { message: "the headset session opens", timeout }).toBe(true)
+  }
+
+  async #pressEnterButtonIfAskedAgain(inSession: () => Promise<boolean>, timeout: Ms): Promise<void> {
+    const enter = this.#vr(vrButtonTestIds.enterButton)
     await expect
-      .poll(() => this.#page.evaluate(() => window.headset.activeSession !== undefined), {
-        message: "the headset session opens",
+      .poll(async () => (await inSession()) || (await enter.isVisible()), {
+        message: "the headset session opens, or VR asks again",
         timeout
       })
       .toBe(true)
+    if (await enter.isVisible()) await enter.click()
   }
 
   async expectOutOfSession(timeout: Ms = 10_000): Promise<void> {

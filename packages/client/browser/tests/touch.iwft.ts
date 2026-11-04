@@ -1,6 +1,6 @@
 // Touch on the map in practice mode, against the Vite dev server: one finger
 // paints; two fingers pan and zoom and leave no paint behind.
-import { test } from "@playwright/test"
+import { test } from "../coverage/coverage-test.ts"
 import { newOfflineTab } from "./iwft-tab.ts"
 import { shot } from "./support.ts"
 

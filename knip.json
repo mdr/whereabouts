@@ -3,8 +3,11 @@
   "includeEntryExports": true,
   "ignoreBinaries": ["nix"],
   "workspaces": {
+    ".": {
+      "ignoreDependencies": ["vitest-monocart-coverage", "@vitest/coverage-custom"]
+    },
     "packages/client": {
-      "entry": ["scripts/*.ts", "browser/**/*.{iwft,e2e,screenshot}.ts"],
+      "entry": ["scripts/*.ts", "browser/**/*.{iwft,e2e,screenshot}.ts", "browser/coverage/global-coverage.ts"],
       "ignoreDependencies": ["iwer"],
       "playwright": {
         "config": [

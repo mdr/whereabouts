@@ -1,7 +1,7 @@
 // The map, the outlines and VR failing to load, against the Vite dev
 // server: the player is told, and Try again loads them once they can be
 // fetched. VR runs on an emulated headset (see pages/headset/Headset.ts).
-import { test } from "@playwright/test"
+import { test } from "../coverage/coverage-test.ts"
 import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
 import { Download } from "../pages/Download.ts"
 import { PracticeRoundPage } from "../pages/PracticeRoundPage.ts"

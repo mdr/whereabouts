@@ -1,6 +1,6 @@
 // Painting the globe in VR, on an emulated Quest 3 (see pages/headset/Headset.ts).
 // Saves screenshots of the headset's view.
-import { test } from "@playwright/test"
+import { test } from "../../coverage/coverage-test.ts"
 import { HintAxis } from "@whereabouts/shared/hints"
 import { Hand } from "../../../src/vr/hands/hand.ts"
 import { WristButton } from "../../../src/vr/wrist/wrist-button.ts"
