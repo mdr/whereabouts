@@ -63,14 +63,22 @@ VoiceOver on the tab and returns a `ScreenReader`:
 
 - `readAll()`: every item from VoiceOver's place to the end of the page, as VO-Right
   reads them.
-- `heard(action)`: what VoiceOver said while `action` ran: a keypress, a click, a server
-  event (`game.seat`, `game.paint`…). This is how to check what's announced.
+- `heard(action)`: what VoiceOver said after something done to the app (a page-object
+  click, a server event: `game.seat`, `game.server.player("Bob").join(code)`…), or nothing.
+  This is how to check what's announced. It uses Guidepup's `capture`, since Guidepup
+  only records speech around actions it's told about.
+- `command(run)`: what VoiceOver said for its own commands, e.g.
+  `command((vo) => vo.press("Tab"))`. Don't run those inside `heard`: they share one
+  queue, so it would wait forever.
 - `report(title, phrases)`: prints them, and adds them to `heard.txt` in the test's
   folder under `smoke-out/voiceover/`.
 - `voiceOver`: Guidepup's
   [VoiceOver](https://www.guidepup.dev/docs/api/class-voiceover) for anything else
   (`next`, `nextHeading`, `press("Shift+Tab")`, `act`, `itemText`…).
 - `enterPage()`: puts VoiceOver back in the page after `tab.open`.
+
+Start with a VoiceOver move (`vo.next()`): in one spec that began with `press("Tab")`,
+nothing was heard all run.
 
 VoiceOver takes about a minute to start and settle, then a second or so per item, so a
 long `readAll` takes a few minutes. VoiceOver stops after the test, pass or fail.

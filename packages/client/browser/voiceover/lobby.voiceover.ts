@@ -17,6 +17,6 @@ test("the lobby, as VoiceOver reads it, and whether a player joining is announce
   })
   screenReader.report("while Bob joins", joining)
 
-  const tabbing = await screenReader.heard(() => screenReader.voiceOver.press("Tab"))
+  const tabbing = await screenReader.command((voiceOver) => voiceOver.press("Tab"))
   expect(tabbing.length, "Tab moves somewhere VoiceOver names").toBeGreaterThan(0)
 })

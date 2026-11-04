@@ -26,10 +26,29 @@ export class ScreenReader {
     await moveIntoWebContent(this.voiceOver)
   }
 
-  /** What VoiceOver said while `action` ran: a keypress, a VoiceOver move, a server event. */
+  /**
+   * What VoiceOver said after `action`, something done to the app (a Playwright click, a
+   * server event): an empty list if it said nothing new. Not for VoiceOver's own commands,
+   * which `command` reports.
+   */
   async heard(action: () => unknown): Promise<string[]> {
+    const before = await this.voiceOver.lastSpokenPhrase()
+    const { spokenPhrase } = await this.voiceOver.capture(
+      async () => {
+        await action()
+      },
+      { capture: true }
+    )
+    // With nothing new to hear, capture gives back the last thing VoiceOver said, or its idle
+    // hint on using the current item.
+    const said = spokenPhrase.replace(/\s*You are currently on .*$/s, "").trim()
+    return said === "" || spokenPhrase === before ? [] : [said]
+  }
+
+  /** What VoiceOver said for its own commands in `run`, e.g. `voiceOver.press("Tab")`. */
+  async command(run: (voiceOver: VoiceOver) => Promise<unknown>): Promise<string[]> {
     await this.voiceOver.clearSpokenPhraseLog()
-    await action()
+    await run(this.voiceOver)
     return (await this.voiceOver.spokenPhraseLog()).filter((phrase) => phrase !== "")
   }
 
