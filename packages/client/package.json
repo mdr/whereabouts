@@ -13,6 +13,7 @@
     "e2e": "playwright test -c browser/playwright.e2e.config.ts",
     "e2e:prod": "playwright test -c browser/playwright.prod.config.ts",
     "screenshots": "playwright test -c browser/playwright.screenshot.config.ts",
+    "voiceover": "playwright test -c browser/playwright.voiceover.config.ts",
     "css-types": "node scripts/css-module-types.ts"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@guidepup/guidepup": "0.40.0",
     "@playwright/test": "^1.63.0",
     "@preact/preset-vite": "^2.10.0",
     "@testing-library/preact": "^3.2.4",

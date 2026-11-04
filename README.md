@@ -60,7 +60,9 @@ Other commands:
   Screenshots go to `smoke-out/iwft/` and `smoke-out/e2e/`. `task coverage`
   runs the unit tests and the isolated specs recording V8 coverage (browser
   and in-process server) and merges them with monocart-coverage-reports into
-  `smoke-out/coverage/report/`. `task --list` shows what else there is.
+  `smoke-out/coverage/report/`. `task voiceover` drives the real VoiceOver through a
+  screen and prints what it says ([docs/screen-reader-testing.md](docs/screen-reader-testing.md)).
+  `task --list` shows what else there is.
   - `solo`: practice mode: paint, undo and redo, submit.
   - `multiplayer` (e2e): two players through setup, guessing, Done and Keep
     editing, the reveal and ready-up.

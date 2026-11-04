@@ -87,7 +87,8 @@ export class Tab extends PageObject {
     return new LoadFailures(this.page)
   }
 
-  async #open(route: string): Promise<void> {
+  /** Load a route, e.g. "/solo". */
+  async open(route: string): Promise<void> {
     await this.page.goto(`${this.#baseUrl}/${this.#dev ? "?dev" : ""}#${route}`, { waitUntil: "networkidle" })
   }
 
@@ -117,17 +118,17 @@ export class Tab extends PageObject {
   }
 
   async openHome(): Promise<HomePage> {
-    await this.#open("/")
+    await this.open("/")
     return HomePage.whenShown(this)
   }
 
   async openScoreReview(): Promise<ScoreReviewPage> {
-    await this.#open("/score-review")
+    await this.open("/score-review")
     return ScoreReviewPage.whenShown(this)
   }
 
   async openPractice(): Promise<PracticeRoundPage> {
-    await this.#open("/solo")
+    await this.open("/solo")
     return PracticeRoundPage.whenShown(this)
   }
 
@@ -139,7 +140,7 @@ export class Tab extends PageObject {
 
   /** The link a host shares. */
   async openGameLink(code: string): Promise<JoinAsPage> {
-    await this.#open(`/game/${code}`)
+    await this.open(`/game/${code}`)
     return JoinAsPage.whenShown(this)
   }
 

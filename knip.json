@@ -7,14 +7,19 @@
       "ignoreDependencies": ["vitest-monocart-coverage", "@vitest/coverage-custom"]
     },
     "packages/client": {
-      "entry": ["scripts/*.ts", "browser/**/*.{iwft,e2e,screenshot}.ts", "browser/coverage/global-coverage.ts"],
+      "entry": [
+        "scripts/*.ts",
+        "browser/**/*.{iwft,e2e,screenshot,voiceover}.ts",
+        "browser/coverage/global-coverage.ts"
+      ],
       "ignoreDependencies": ["iwer"],
       "playwright": {
         "config": [
           "browser/playwright.iwft.config.ts",
           "browser/playwright.e2e.config.ts",
           "browser/playwright.prod.config.ts",
-          "browser/playwright.screenshot.config.ts"
+          "browser/playwright.screenshot.config.ts",
+          "browser/playwright.voiceover.config.ts"
         ]
       }
     },
