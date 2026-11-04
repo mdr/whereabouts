@@ -122,6 +122,23 @@ tasks:
     cmds:
       - node scripts/coverage/merge-coverage.ts {{.CLI_ARGS}}
 
+  mutate:
+    desc: "Mutation testing: which small changes to some source the unit tests miss (task mutate -- 'packages/shared/src/awards/**/*.ts')"
+    summary: |
+      StrykerJS changes the source files matching the globs (comma-separated)
+      in small ways, one mutant at a time, and runs the unit tests that cover
+      each; a mutant no test fails is behaviour the tests don't pin down.
+      Minutes per folder: run it on a module at a time, and not while editing
+      or testing in this checkout, since it changes the files in place
+      (putting them back at the end). Results build up in
+      smoke-out/mutation/incremental.json, so a rerun only tries mutants in
+      changed code or tests (MUTATE_FLAGS=--force to redo them). Report in
+      smoke-out/mutation/report.html. Test files are left out; so are
+      scoring.ts and kernel-sums.ts, whose hot loops slow their tests past
+      their timeouts once instrumented.
+    cmds:
+      - pnpm mutate {{.MUTATE_FLAGS}} --mutate {{.CLI_ARGS}}',!**/*.test.ts,!**/*.test.tsx,!packages/shared/src/scoring/{scoring,kernel-sums}.ts'
+
   # --------------------------------------------------- the production build
 
   build:
