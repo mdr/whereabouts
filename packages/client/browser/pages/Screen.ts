@@ -2,6 +2,7 @@ import { PageObject } from "./steps.ts"
 import { expect, type Page } from "@playwright/test"
 import type { Tab } from "./Tab.ts"
 import { softExpect } from "./support.ts"
+import { expectAccessible } from "./accessibility.ts"
 import type { Ms, Px } from "@whereabouts/shared/units"
 
 interface Fit {
@@ -29,7 +30,8 @@ export abstract class Screen extends PageObject {
   /**
    * The screen looks as it did when its picture `name` was saved, once its
    * fonts and images are in, the map (if any) has drawn and stopped, and the
-   * layout has stopped moving. For the *.screenshot.ts runs.
+   * layout has stopped moving, and it has no WCAG A/AA accessibility
+   * violations. For the *.screenshot.ts runs.
    */
   async expectScreenshot(name: string): Promise<void> {
     await this.page.evaluate(() => document.fonts.ready)
@@ -45,6 +47,7 @@ export abstract class Screen extends PageObject {
     await this.#expectMapStill()
     await this.waitForLayoutToSettle()
     await expect(this.page, `the screen looks like ${name}`).toHaveScreenshot(`${name}.png`)
+    await expectAccessible(this.page, name)
   }
 
   async #expectMapStill(): Promise<void> {

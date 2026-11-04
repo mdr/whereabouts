@@ -45,6 +45,7 @@
 - State that ARIA already expresses (`aria-pressed`…): assert the ARIA attribute.
 - Page state: web-first assertions (`toHaveText`, `toBeVisible`…). Other state (map, VR, sound): `expect.poll`.
 - "Doesn't happen" checks hold over time, after a positive check.
+- Every `expectScreenshot` also runs an axe scan (WCAG A/AA) of that screen and fails on any violation: fix the app, don't skip the rule.
 - Tests never assume a fixed port or shared state, so runs in other worktrees can go at the same time.
 - Play against the in-process server (the `game` fixture) in `*.iwft.ts` specs; use `*.e2e.ts` (the dev servers) only when the test is about client and server together. Set games up and check them through the fixture (`seat`, `paint`, `advance`, `expectGame`), not extra tabs.
 - Screenshot tests (`*.screenshot.ts`, `task screenshots`) cover only the main multiplayer screens, through page objects and `expectScreenshot`, on still tabs and a still server. Pictures come from this machine only.
