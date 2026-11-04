@@ -33,6 +33,7 @@ export const RenameForm = ({
           if (event.key === "Escape") onDone(undefined)
         }}
         data-testid={renameFormTestIds.input}
+        // oxlint-disable-next-line jsx-a11y/no-autofocus -- The player just asked to rename, and the field is all there is.
         autoFocus
       />
       <button

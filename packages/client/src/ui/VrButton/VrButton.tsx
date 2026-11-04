@@ -45,9 +45,10 @@ export const useVrView = (view: VrView): void => {
   latest.current = view
   const vr = loadedVr.value
   const active = vr?.active.value ?? false
+  const scene = sceneOf(view)
   useEffect(() => {
     if (vr && active) vr.show(latest.current)
-  }, [vr, active, sceneOf(view)])
+  }, [vr, active, scene])
   useEffect(() => {
     if (vr && active) vr.refresh(latest.current)
   })

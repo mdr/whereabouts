@@ -25,18 +25,19 @@ export const PracticeDev = ({ view }: { view: GameView }) => {
   const paint = usePaint()
   const hover = useSignal<LatLon | undefined>(undefined)
   const question = practice?.question.value
+  const outlines = practice?.outlines
   const kernel = kernelById(soloKernelId.value)
-  const scored = useMemo(() => (question ? scoredAnswer(question.answer, practice.outlines) : undefined), [question])
+  const scored = useMemo(() => (question ? scoredAnswer(question.answer, outlines!) : undefined), [question, outlines])
   const cheating = cheatLiveScore.value
   const guessing = view.phase === Phase.GUESSING
 
   useEffect(() => {
     if (!guessing || !cheating || !question) return
-    showAnswer(paint.gameMap, revealedFromQuestion(question, practice.outlines))
+    showAnswer(paint.gameMap, revealedFromQuestion(question, outlines!))
     return () => paint.gameMap.clearReveal()
-  }, [guessing, cheating, question])
+  }, [guessing, cheating, question, outlines, paint])
 
-  useEffect(() => paint.onHover((point) => (hover.value = point)), [paint])
+  useEffect(() => paint.onHover((point) => (hover.value = point)), [paint, hover])
 
   // The revealed paint again, to score under the kernel chosen now.
   const guess =
@@ -50,7 +51,7 @@ export const PracticeDev = ({ view }: { view: GameView }) => {
   )
   const rescored = useMemo(
     () => (guess && scored ? scoreAnswer(painted, scored, kernel) : undefined),
-    [guess, scored, painted, kernel.id]
+    [guess, scored, painted, kernel]
   )
 
   if (!question || !scored) return undefined

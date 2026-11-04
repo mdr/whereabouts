@@ -26,25 +26,33 @@ const ConfirmDialog = ({
   // Before the dialog paints, so a key pressed as soon as it shows is heard.
   useLayoutEffect(() => {
     if (!request) return
-    cancelRef.current?.focus()
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose()
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [request])
+  }, [request, onClose])
+  useLayoutEffect(() => {
+    if (request) cancelRef.current?.focus()
+  }, [request, cancelRef])
   if (!request) return undefined
   // Rendered into <body>: a transformed ancestor (the bottom toolbar is one)
   // would otherwise become the box the fixed backdrop fills.
   return createPortal(
-    <div class={styles.backdrop} onClick={onClose} data-testid={confirmDialogTestIds.backdrop}>
+    <div
+      class={styles.backdrop}
+      role="presentation"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose()
+      }}
+      data-testid={confirmDialogTestIds.backdrop}
+    >
       <div
         class={styles.modal}
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
         data-testid={confirmDialogTestIds.dialog}
-        onClick={(event) => event.stopPropagation()}
       >
         <h2 id="confirm-title" data-testid={confirmDialogTestIds.title}>
           {request.title}

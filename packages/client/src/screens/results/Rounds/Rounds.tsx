@@ -24,7 +24,7 @@ export const Rounds = (props: Omit<RoundListProps, "best">) => {
     const observer = new ResizeObserver(() => setWidth(element.clientWidth))
     observer.observe(element)
     return () => observer.disconnect()
-  }, [])
+  }, [ref])
   if (rounds.length === 0) return undefined
   const fits = roundsFit(width, standings.length)
   const best = bestScores(rounds.length, standings)

@@ -82,12 +82,12 @@ export const InGame = ({ view }: { view: InPlayGameView }) => {
     if (!guessing || deadline === undefined) return
     const timer = window.setTimeout(() => setTimeUp(true), Math.max(0, game.timeUntil(deadline)))
     return () => clearTimeout(timer)
-  }, [roundKey, guessing, deadline])
+  }, [roundKey, guessing, deadline, game])
 
   const editing = canPaint(view, timeUp)
   useEffect(() => {
     paint.enabled.value = editing
-  }, [editing])
+  }, [editing, paint])
 
   const { lockIn } = usePaintUpload(game, paint, view, timeUp)
   const words = { askedToWatch: askedToWatch.value, canUnlock: canUnlock(view, timeUp) }
@@ -103,6 +103,7 @@ export const InGame = ({ view }: { view: InPlayGameView }) => {
       reveal?.question.type === QuestionType.FLAG && borders && mine?.guess.type === RoundGuessType.PAINTED
         ? mainCountry(borders, paintLayer(mine.guess.resolution, mine.guess.paint).toCells())
         : undefined,
+    // oxlint-disable-next-line react/exhaustive-deps -- Keyed on the reveal's index; the view is rebuilt on every update.
     [borders, reveal?.index, mine?.guess.type]
   )
   const vrView = gameVrView(view, game, paint, { lockIn, timeUp, outlines, fact, painted, borders })

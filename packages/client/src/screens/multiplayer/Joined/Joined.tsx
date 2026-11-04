@@ -25,7 +25,7 @@ export const Joined = ({ entry }: { entry: GameEntry }) => {
     if (!assigned) return
     joinedCode.value = assigned
     if (create) history.replaceState(undefined, "", `#/game/${assigned}`)
-  }, [assigned])
+  }, [assigned, create])
 
   // Removed by the host: this tab's token is banned from that game, so drop
   // it (and the remembered code) and rejoin, if at all, as a new player.

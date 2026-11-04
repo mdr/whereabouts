@@ -2,6 +2,7 @@ import type { PaintedCountry } from "@whereabouts/shared/borders"
 import { HintAxis } from "@whereabouts/shared/hints"
 import { RoundGuessType, type RoundResultView } from "@whereabouts/shared/protocol/views"
 import type { PlayingPlayerView } from "@whereabouts/shared/roles"
+import { onActivateKey } from "../../../keyboard/activate-key"
 import { cx } from "../../../ui/cx"
 import players from "../../../ui/players/Players.module.css"
 import { Icon } from "../../../ui/icons"
@@ -42,9 +43,14 @@ export const RevealRow = ({
   /** Host only: remove this player. */
   onKick?: () => void
 }) => (
+  // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- A list item cannot take a button role, so the row is made focusable and keyed instead.
   <li
     class={cx(selected && players.selected, you && players.you, where && players.withWhere)}
+    aria-current={selected}
+    // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- As above.
+    tabIndex={0}
     onClick={onSelect}
+    onKeyDown={onActivateKey(onSelect)}
     onPointerEnter={(event) => event.pointerType === "mouse" && onHover(true)}
     onPointerLeave={(event) => event.pointerType === "mouse" && onHover(false)}
     data-testid={revealRowTestIds.playerRow}

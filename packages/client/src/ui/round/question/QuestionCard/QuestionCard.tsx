@@ -116,7 +116,7 @@ const usePictureFloor = (ref: RefObject<HTMLDivElement>, folded: boolean): void 
       observer.disconnect()
       card.style.minHeight = ""
     }
-  }, [folded])
+  }, [folded, ref])
 }
 
 /**
@@ -140,5 +140,5 @@ const usePublishedHeight = (ref: RefObject<HTMLDivElement>): void => {
       root.style.removeProperty("--question-h")
       questionCardHeight.value = 0
     }
-  }, [])
+  }, [ref])
 }

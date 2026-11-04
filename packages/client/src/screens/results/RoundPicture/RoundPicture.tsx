@@ -31,7 +31,7 @@ export const RoundPicture = ({ round }: { round: PlayedRound }) => {
 
 const RoundShape = ({ shape, type }: { shape: ShapePicture; type: QuestionType }) => {
   const outline = useOutline(shape.outline)
-  const path = useMemo(() => (outline ? outlinePath(outline, shape.centre, 56, 42) : ""), [outline])
+  const path = useMemo(() => (outline ? outlinePath(outline, shape.centre, 56, 42) : ""), [outline, shape.centre])
   return (
     <SmallPictureBox class={styles.shape} style={questionTypeColourStyle(type)}>
       {path && (
