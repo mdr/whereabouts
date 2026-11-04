@@ -11,7 +11,8 @@ import { shot } from "../support.ts"
 import { vrHostGuessing, vrHostInLobby, vrHostReveal } from "./vr-game-states.ts"
 import { closeAllTabs, pressMenu, pressScoreRow, spray } from "./vr-support.ts"
 
-test.use({ serverOptions: { config: { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundLength: 60_000 } } })
+// The longest round there is: on a busy machine a minute can run out before a round's steps are done.
+test.use({ serverOptions: { config: { mix: mixOf({ [QuestionType.PLACE]: 2 }), roundLength: 120_000 } } })
 
 test.afterEach(async ({ browser }) => closeAllTabs(browser))
 

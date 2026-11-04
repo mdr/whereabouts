@@ -328,8 +328,8 @@ export class LobbyPage extends Screen {
   }
 
   /** A guest waiting for the host to start. */
-  async waitForGameToStart(): Promise<RoundPage> {
-    return RoundPage.whenShown(this.tab)
+  async waitForGameToStart(timeout?: Ms): Promise<RoundPage> {
+    return RoundPage.whenShown(this.tab, timeout)
   }
 
   /** A spectator waiting for the host to start. */

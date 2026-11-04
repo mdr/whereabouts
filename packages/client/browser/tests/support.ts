@@ -3,8 +3,11 @@ import { Tab } from "../pages/Tab.ts"
 import { startPageCoverage } from "../coverage/page-coverage.ts"
 import type { GameConnection } from "../game-server/route-socket.ts"
 
-/** The local Chrome, headless, with WebGL in software so the map draws without a GPU. */
-export const SWIFTSHADER = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"]
+/**
+ * The local Chrome, headless, with WebGL in software so the map draws without a GPU. 2D canvases
+ * draw on the CPU too: through SwiftShader the VR globe's textures took 35 s on a busy machine.
+ */
+export const SWIFTSHADER = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--disable-accelerated-2d-canvas"]
 export const CHROME = { channel: "chrome", headless: true, launchOptions: { args: SWIFTSHADER } }
 
 export interface TabOptions {

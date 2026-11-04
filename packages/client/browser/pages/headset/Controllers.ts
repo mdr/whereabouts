@@ -2,6 +2,10 @@ import { PageObject } from "../steps.ts"
 import type { Page } from "@playwright/test"
 import { Hand, XR_HAND } from "../../../src/vr/hands/hand.ts"
 import type { Quaternion, Vec3 } from "../../../src/vr/probe.ts"
+import type { Ms } from "@whereabouts/shared/units"
+
+/** How long to keep pressing for a click. */
+const PRESSING: Ms = 30_000
 
 /** The emulated controllers: where they are and what they press. */
 export class Controllers extends PageObject {
@@ -66,15 +70,17 @@ export class Controllers extends PageObject {
    * needs the frame seeing the trigger released to come within 800 ms of the
    * frame seeing it pressed (the ray pointer's clickThresholdMs), and under
    * load frames can be further apart than that: so the trigger is let go
-   * as soon as the frame that saw it pressed is over.
+   * as soon as the frame that saw it pressed is over, and pressed again,
+   * as a player would, until a press lands between two quick frames.
    */
   async press(from: Vec3, at: Vec3): Promise<void> {
     await this.pointRight(from, at)
     await this.#frames(3)
-    // One frame gap can still outlast the window: then press again.
-    for (let tries = 1; ; tries++) {
+    const gaps: Ms[] = []
+    const giveUp = Date.now() + PRESSING
+    while (Date.now() < giveUp) {
       const clicks = await this.#page.evaluate(() => window.testHooks.vr!.clicks)
-      await this.#page.evaluate(async (hand) => {
+      const gap = await this.#page.evaluate(async (hand) => {
         const vr = window.testHooks.vr!
         const nextFrame = (): Promise<void> =>
           new Promise<void>((resolve) => {
@@ -88,13 +94,17 @@ export class Controllers extends PageObject {
         const trigger = window.headset.controllers[hand]!
         trigger.updateButtonValue("trigger", 1)
         await nextFrame()
+        const pressed = performance.now()
         trigger.updateButtonValue("trigger", 0)
         await nextFrame()
+        return performance.now() - pressed
       }, XR_HAND[Hand.RIGHT])
       if ((await this.#page.evaluate(() => window.testHooks.vr!.clicks)) > clicks) return
-      if (tries === 3) throw new Error("Three presses and no click")
-      console.warn("  (no click: pressing again)")
+      gaps.push(Math.round(gap))
     }
+    throw new Error(
+      `No click in ${gaps.length} presses over ${PRESSING / 1000} s; the frames seeing press and release came ${gaps.join(", ")} ms apart`
+    )
   }
 
   /** Push the right thumbstick: up is y -1. */

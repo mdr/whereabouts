@@ -7,6 +7,9 @@ import { Download } from "../pages/Download.ts"
 import { PracticeRoundPage } from "../pages/PracticeRoundPage.ts"
 import { ScoreReviewPage } from "../pages/ScoreReviewPage.ts"
 import { newOfflineTab } from "./iwft-tab.ts"
+import { closeAllTabs } from "./vr/vr-support.ts"
+
+test.afterEach(async ({ browser }) => closeAllTabs(browser))
 
 test("load-failures", async ({ browser }) => {
   await test.step("a map that will not load says so and is reported to the server, and Try again loads it", async () => {
