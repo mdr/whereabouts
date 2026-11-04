@@ -224,6 +224,12 @@ describe("each award", () => {
   it("Bottled It: leading alone after a round, and not winning", () => {
     const b = player("b", [round(500), round(500), round(500)])
     expect(winners("Bottled It", [player("a", [round(900), round(100), round(100)]), b])).toEqual([idOf("a")])
+    expect(
+      earned([
+        player("a", [round(500), round(900), round(100), round(100)]),
+        player("b", [round(400), round(500), round(1000), round(1000)])
+      ]).find((award) => award.title === "Bottled It")?.line
+    ).toBe("{0} led after round 2. Then didn't.")
     expect(titles([player("a", [round(500), round(100), round(100)]), b])).not.toContain("Bottled It")
   })
 
@@ -238,20 +244,39 @@ describe("each award", () => {
     expect(titles([player("a", [round(400), round(600), round(400), round(600)]), wild])).not.toContain("Beige")
   })
 
+  it("Beige: the steadiest of those who qualify", () => {
+    const steady = player("a", [round(500), round(520), round(480), round(500)])
+    const lessSteady = player("b", [round(460), round(540), round(460), round(540)])
+    expect(winners("Beige", [lessSteady, steady])).toEqual([idOf("a")])
+  })
+
   it("On Fire: three rounds of 850 or more in a row", () => {
     const b = player("b", [round(500), round(500), round(500), round(500)])
     expect(winners("On Fire", [player("a", [round(900), round(900), round(900), round(500)]), b])).toEqual([idOf("a")])
     expect(titles([player("a", [round(900), round(900), round(500), round(900)]), b])).not.toContain("On Fire")
   })
 
-  it("Wooden Spoon: last of three or more", () => {
+  it("Wooden Spoon: last of three or more, wherever they come in the list", () => {
     const three = [player("a", AVERAGE), player("b", AVERAGE), player("c", [round(100), round(100)])]
     expect(winners("Wooden Spoon", three)).toEqual([idOf("c")])
     expect(titles(three.slice(1))).not.toContain("Wooden Spoon")
+    const lastFirst = [
+      player("a", [round(100), round(100)]),
+      player("b", [round(300), round(300)]),
+      player("c", AVERAGE)
+    ]
+    expect(winners("Wooden Spoon", lastFirst)).toEqual([idOf("a")])
+  })
+
+  it("the one with the most wins an award, even when listed after another who qualifies", () => {
+    expect(winners("Bullseye", [player("a", [round(960), round(500)]), player("b", [round(990), round(500)])])).toEqual(
+      [idOf("b")]
+    )
   })
 
   it("So Near: second by no more than 3% of the winner's total", () => {
     expect(winners("So Near", [player("a", AVERAGE), player("b", [round(490), round(500)])])).toEqual([idOf("b")])
+    expect(winners("So Near", [player("b", [round(490), round(500)]), player("a", AVERAGE)])).toEqual([idOf("b")])
     expect(titles([player("a", AVERAGE), player("b", [round(460), round(500)])])).not.toContain("So Near")
   })
 
@@ -262,6 +287,8 @@ describe("each award", () => {
       idOf("b")
     ])
     expect(titles([player("a", [wrong, wrong]), player("b", [wrong, round(300)])])).not.toContain("Hive Mind")
+    const elsewhere = pointRound(300, point({ spot: { lat: -40, lon: 100 }, missCost: 400 }))
+    expect(titles([player("a", [wrong, wrong]), player("b", [elsewhere, elsewhere])])).not.toContain("Hive Mind")
   })
 })
 
@@ -297,6 +324,21 @@ describe("handing out the awards", () => {
       player("b", [pass(), pass(), round(500)]),
       player("c", [round(300), round(300), round(300)])
     ]
+    for (const seed of SEEDS)
+      expect(new Set(pickAwards(players, seed).flatMap((award) => award.playerIds))).toEqual(
+        new Set(["a", "b", "c"].map(idOf))
+      )
+  })
+
+  it("gives a player a second award only after everyone has one", () => {
+    // Chicken and Hedge Fund Manager are a's; Bullseye is b's and Wooden Spoon c's.
+    const hedged = pointRound(300, point({ hedged: true }))
+    const players = [
+      player("a", [hedged, hedged, pass(500), pass(500)]),
+      player("b", [round(960), round(500), round(500), round(500)]),
+      player("c", [round(0), round(300), round(0), round(300)])
+    ]
+    expect(titles(players)).toEqual(new Set(["Chicken", "Hedge Fund Manager", "Bullseye", "Wooden Spoon"]))
     for (const seed of SEEDS)
       expect(new Set(pickAwards(players, seed).flatMap((award) => award.playerIds))).toEqual(
         new Set(["a", "b", "c"].map(idOf))
