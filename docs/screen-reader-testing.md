@@ -63,13 +63,13 @@ VoiceOver on the tab and returns a `ScreenReader`:
 
 - `readAll()`: every item from VoiceOver's place to the end of the page, as VO-Right
   reads them.
-- `heard(action)`: what VoiceOver said after something done to the app (a page-object
-  click, a server event: `game.seat`, `game.server.player("Bob").join(code)`…), or nothing.
-  This is how to check what's announced. It listens until 3 s after the action (`heard(action, ms)` for longer), since
-  news may follow a change by a moment.
+- `heard(action)`: what VoiceOver says from the start of something done to the app (a
+  page-object click, a server event: `game.seat`, `game.server.player("Bob").join(code)`…)
+  until 3 s after it, or nothing. This is how to check what's announced. Pass a longer time
+  (`heard(action, 5_000)`) for news the app delays, such as the lobby's, which waits a
+  second to tell a burst of joins as one.
 - `command(run)`: what VoiceOver said for its own commands, e.g.
-  `command((vo) => vo.press("Tab"))`. Don't run those inside `heard`: they share one
-  queue, so it would wait forever.
+  `command((vo) => vo.nextHeading())`, from Guidepup's record of them.
 - `report(title, phrases)`: prints them, and adds them to `heard.txt` in the test's
   folder under `smoke-out/voiceover/`.
 - `voiceOver`: Guidepup's
@@ -77,8 +77,33 @@ VoiceOver on the tab and returns a `ScreenReader`:
   (`next`, `nextHeading`, `press("Shift+Tab")`, `act`, `itemText`…).
 - `enterPage()`: puts VoiceOver back in the page after `tab.open`.
 
-Start with a VoiceOver move (`vo.next()`): in one spec that began with `press("Tab")`,
-nothing was heard all run.
+Read `heard.txt` rather than the terminal: a long `readAll` scrolls out of view. Delete the
+spec when you're done.
 
 VoiceOver takes about a minute to start and settle, then a second or so per item, so a
 long `readAll` takes a few minutes. VoiceOver stops after the test, pass or fail.
+
+## What we've learned
+
+- **Nothing heard doesn't yet mean nothing said.** Before concluding the app is silent,
+  check two things.
+  - Did the app write what it should? A headless IWFT that prints the live region's
+    markup answers that in seconds, without VoiceOver.
+  - Was VoiceOver listening? Guidepup's own record (`spokenPhraseLog`, `lastSpokenPhrase`)
+    holds only what was said during its commands, so it never has announcements.
+    `heard` asks VoiceOver itself, through AppleScript's `content of last phrase`.
+- **VoiceOver voices live regions only in the frontmost app.** If another window comes
+  forward (a terminal, a notification), announcements go unspoken while VoiceOver moves
+  still work. `heard` brings Chrome forward first, but leave the Mac alone while a spec runs.
+- **Moving VoiceOver is more reliable than pressing keys.** `next`, `nextHeading` and
+  `readAll` always worked. `press("Tab")` was sometimes heard as nothing, or as VoiceOver's
+  hint for the item it was on. Start a spec with a VoiceOver move.
+- **What VoiceOver says isn't always the change itself.** If the item under VoiceOver's
+  cursor changes, it reads that item again ("PLAYERS, 4 OF 24"), before or instead of an
+  announcement elsewhere. After a pause it gives a hint ("You are currently on a
+  button…"), which `heard` drops.
+- **It reads what's shown.** CSS capitals come out as written ("GAME SETUP"). Text built
+  from separate pieces may be read piece by piece: a heading of `Players`, `{n}`, `/`,
+  `{max}` came out as "PLAYERS level 1 1 level 1 / level 1 24". Give such text one
+  spoken string.
+- **Check a fix in both directions:** hear the problem first, then hear it gone.
