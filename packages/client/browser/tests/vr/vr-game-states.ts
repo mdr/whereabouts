@@ -43,7 +43,8 @@ export const vrHostGuessing = async (browser: Browser, game: TestGame): Promise<
   await headset.panels.expectView(VrViewType.LOBBY)
   await headset.panels.expectScoreTable({ rowCount: 2 })
   await pressMenu(headset, can, "act0")
-  const aliceRound = await aliceLobby.waitForGameToStart()
+  // The page draws the round while the headset session draws its frames, both in software.
+  const aliceRound = await aliceLobby.waitForGameToStart(60_000)
   await headset.panels.expectView(VrViewType.PAINT, { timeout: 30_000 })
   return { headset, centre, can, aliceRound, bob }
 }

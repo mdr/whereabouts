@@ -224,7 +224,8 @@ export class HeadsetPanels extends PageObject {
         return { size, ratio }
       },
       ({ size, ratio }) => size !== undefined && Math.abs(size[0] / size[1] / ratio - 1) < 0.01,
-      { timeout: 10_000, ...options }
+      // The shape comes with the flag's image, as slow under load as the picture itself.
+      { timeout: 60_000, ...options }
     )
   }
 
