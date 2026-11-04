@@ -3,7 +3,7 @@ import { useState } from "preact/hooks"
 import { flagRatio } from "../../../../flags/flags"
 import { cx } from "../../../cx"
 import { flagShape, useFlagUrl } from "../../../pictures/flag-url"
-import { Lightbox, LightboxType, useEscape } from "../../../pictures/Lightbox/Lightbox"
+import { Lightbox, LightboxType } from "../../../pictures/Lightbox/Lightbox"
 import { EnlargeBadge } from "../EnlargeBadge/EnlargeBadge"
 import { flagImageTestIds } from "./FlagImageTestIds"
 import styles from "./FlagImage.module.css"
@@ -12,7 +12,6 @@ import styles from "./FlagImage.module.css"
 export const FlagImage = ({ code, painting }: { code: FlagCode; painting: boolean }) => {
   const src = useFlagUrl(code)
   const [large, setLarge] = useState(false)
-  useEscape(large, () => setLarge(false))
   return (
     <>
       <button

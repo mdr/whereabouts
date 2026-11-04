@@ -53,7 +53,7 @@ const BRUSH_STEP = 1.25
 
 export const PAN_HOLD: Combo = { keys: ["Space"], matches: (event) => event.code === "Space" }
 export const SUBMIT: Combo = { keys: ["Enter"], matches: plain("Enter") }
-export const CLOSE: Combo = { keys: ["Esc"], matches: plain("Escape") }
+const CLOSE: Combo = { keys: ["Esc"], matches: plain("Escape") }
 export const TOGGLE_LIST: Combo = {
   keys: ["?"],
   matches: (event) => event.key === "?" && !event.metaKey && !event.ctrlKey && !event.altKey

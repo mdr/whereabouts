@@ -46,6 +46,23 @@ export class ConfirmDialog<T> extends PageObject {
     await expect(this.#dialog(), "clicking inside keeps the dialog open").toBeVisible()
   }
 
+  /** Tab, forwards and back, never takes focus to the page behind: it stays in the dialog (or leaves the page, to the browser). */
+  async expectTabStaysInside(): Promise<void> {
+    for (const key of ["Tab", "Tab", "Tab", "Shift+Tab", "Shift+Tab", "Shift+Tab"]) {
+      await this.#page.keyboard.press(key)
+      await expectPolled(
+        `after ${key}, focus is not on the page behind the dialog`,
+        "none of the page behind",
+        () =>
+          this.#page.evaluate((backdropId) => {
+            const focused = document.activeElement
+            return focused === document.body || !!focused?.closest(`[data-testid="${backdropId}"]`)
+          }, confirmDialogTestIds.backdrop),
+        (inside) => inside
+      )
+    }
+  }
+
   /** The dialog's wording includes this. */
   async expectText(wording: string): Promise<void> {
     await expect(this.#page.getByTestId(confirmDialogTestIds.dialog), `the dialog says "${wording}"`).toContainText(

@@ -240,3 +240,23 @@
     color: var(--panel-fg);
   }
 }
+
+/* A modal <dialog> with the browser's box, border, colours and backdrop taken off, for the layer to style. */
+.modalLayer {
+  margin: 0;
+  border: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  color: inherit;
+  outline: none;
+
+  &:not([open]) {
+    display: none;
+  }
+  &::backdrop {
+    background: transparent;
+  }
+}

@@ -1,26 +1,13 @@
 import type { ComponentChildren, TargetedEvent } from "preact"
 import { createPortal } from "preact/compat"
-import { useLayoutEffect, useRef, useState } from "preact/hooks"
-import { CLOSE } from "../../../keyboard/shortcuts"
+import { useRef, useState } from "preact/hooks"
 import { useElementRef } from "../../element-ref"
+import { onDialogCancel, useModalDialog } from "../../modal-dialog"
 import { cx } from "../../cx"
 import styles from "./Lightbox.module.css"
 import { CLICK_ZOOM, nextZoom, type Position } from "./lightbox-zoom"
 import { lightboxTestIds } from "./LightboxTestIds"
 import type { Px } from "@whereabouts/shared/units"
-
-/** Calls `close` on Escape while `open`. */
-export const useEscape = (open: boolean, close: () => void): void => {
-  // Before the picture paints, so a key pressed as soon as it shows is heard.
-  useLayoutEffect(() => {
-    if (!open) return
-    const onKey = (event: KeyboardEvent) => {
-      if (CLOSE.matches(event)) close()
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [open])
-}
 
 export enum LightboxType {
   PHOTO = "PHOTO",
@@ -58,6 +45,7 @@ export const Lightbox = ({
   const pointers = useRef(new Map<number, Position>())
   const pinchDist = useRef<Px | undefined>(undefined)
   const dragged = useRef(false)
+  const dialogRef = useModalDialog()
 
   /** Zoom by `factor` keeping the point (cx, cy), relative to the frame centre, fixed. */
   const zoomAt = (factor: number, cx: Px, cy: Px) => {
@@ -124,12 +112,13 @@ export const Lightbox = ({
 
   // Into <body>: a sticky table cell, say, would otherwise hold it under the cells below.
   return createPortal(
-    <div
+    <dialog
+      ref={dialogRef}
       class={styles.lightbox}
       data-testid={lightboxTestIds.lightbox}
-      role="dialog"
-      aria-modal="true"
       aria-label="Picture"
+      tabIndex={-1}
+      onCancel={onDialogCancel(onClose)}
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
@@ -163,7 +152,7 @@ export const Lightbox = ({
         />
         {credit}
       </div>
-    </div>,
+    </dialog>,
     document.body
   )
 }

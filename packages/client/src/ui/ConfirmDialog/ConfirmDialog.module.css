@@ -1,5 +1,5 @@
 .backdrop {
-  composes: overlay from "../kit.module.css";
+  composes: overlay modalLayer from "../kit.module.css";
   background: color-mix(in srgb, var(--shade) 60%, transparent);
 }
 .modal {

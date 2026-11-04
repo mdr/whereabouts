@@ -6,6 +6,7 @@
 import { useLayoutEffect, useState } from "preact/hooks"
 import { useGameService } from "../../game-service/use-game-service"
 import { useElementRef } from "../element-ref"
+import { onDialogCancel, useModalDialog } from "../modal-dialog"
 import type { ComponentChildren } from "preact"
 import { createPortal } from "preact/compat"
 import type { ConfirmRequest } from "./confirm-requests"
@@ -23,29 +24,27 @@ const ConfirmDialog = ({
   online?: boolean
 }) => {
   const cancelRef = useElementRef<HTMLButtonElement>()
-  // Before the dialog paints, so a key pressed as soon as it shows is heard.
+  const dialogRef = useModalDialog(request !== undefined)
+  // After the dialog opens, which focuses the dialog itself.
   useLayoutEffect(() => {
-    if (!request) return
-    cancelRef.current?.focus()
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose()
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
+    if (request) cancelRef.current?.focus()
   }, [request])
   if (!request) return undefined
   // Rendered into <body>: a transformed ancestor (the bottom toolbar is one)
   // would otherwise become the box the fixed backdrop fills.
   return createPortal(
-    <div class={styles.backdrop} onClick={onClose} data-testid={confirmDialogTestIds.backdrop}>
-      <div
-        class={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirm-title"
-        data-testid={confirmDialogTestIds.dialog}
-        onClick={(event) => event.stopPropagation()}
-      >
+    <dialog
+      ref={dialogRef}
+      class={styles.backdrop}
+      aria-labelledby="confirm-title"
+      tabIndex={-1}
+      data-testid={confirmDialogTestIds.backdrop}
+      onCancel={onDialogCancel(onClose)}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose()
+      }}
+    >
+      <div class={styles.modal} data-testid={confirmDialogTestIds.dialog}>
         <h2 id="confirm-title" data-testid={confirmDialogTestIds.title}>
           {request.title}
         </h2>
@@ -67,7 +66,7 @@ const ConfirmDialog = ({
           </button>
         </div>
       </div>
-    </div>,
+    </dialog>,
     document.body
   )
 }

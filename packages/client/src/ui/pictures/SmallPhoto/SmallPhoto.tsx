@@ -3,13 +3,11 @@ import { commonsImageUrl } from "@whereabouts/shared/questions"
 import type { CommonsFile } from "@whereabouts/shared/ids"
 import { useElementRef } from "../../element-ref"
 import { CommonsCredit } from "../CommonsCredit/CommonsCredit"
-import { useEscape } from "../Lightbox/Lightbox"
 import { PhotoLightbox } from "../PhotoLightbox"
 import styles from "../SmallPicture.module.css"
 
 export const SmallPhoto = ({ image }: { image: CommonsFile }) => {
   const [large, setLarge] = useState(false)
-  useEscape(large, () => setLarge(false))
   const thumb = useElementRef<HTMLImageElement>()
   return (
     <>

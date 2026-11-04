@@ -6,9 +6,10 @@
  */
 import { shortcutsOpen } from "../shortcuts-open"
 import { useEffect } from "preact/hooks"
+import { onDialogCancel, useModalDialog } from "../../modal-dialog"
 import { createPortal } from "preact/compat"
 import { isTyping } from "../../../keyboard/keys"
-import { CLOSE, TOGGLE_LIST, listedShortcuts } from "../../../keyboard/shortcuts"
+import { TOGGLE_LIST, listedShortcuts } from "../../../keyboard/shortcuts"
 import { Card } from "../../Card/Card"
 import { shortcutsTestIds } from "./ShortcutsTestIds"
 import kit from "../../kit.module.css"
@@ -22,8 +23,6 @@ export const Shortcuts = () => {
       if (TOGGLE_LIST.matches(event)) {
         shortcutsOpen.value = !shortcutsOpen.value
         event.preventDefault()
-      } else if (CLOSE.matches(event) && shortcutsOpen.value) {
-        shortcutsOpen.value = false
       }
     }
     window.addEventListener("keydown", onKey)
@@ -32,24 +31,29 @@ export const Shortcuts = () => {
       shortcutsOpen.value = false
     }
   }, [])
+  const dialogRef = useModalDialog(shortcutsOpen.value)
   if (!shortcutsOpen.value) return undefined
+  const close = () => (shortcutsOpen.value = false)
   // Into <body>, like the confirm dialog: the toolbar's transform would
   // otherwise trap a fixed card.
   return createPortal(
-    <div class={styles.backdrop} data-testid={shortcutsTestIds.backdrop} onClick={() => (shortcutsOpen.value = false)}>
-      <Card
-        as="section"
-        class={styles.card}
-        role="dialog"
-        aria-labelledby="shortcuts-title"
-        onClick={(event) => event.stopPropagation()}
-        data-testid={shortcutsTestIds.card}
-      >
+    <dialog
+      ref={dialogRef}
+      class={styles.backdrop}
+      aria-labelledby="shortcuts-title"
+      tabIndex={-1}
+      data-testid={shortcutsTestIds.backdrop}
+      onCancel={onDialogCancel(close)}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) close()
+      }}
+    >
+      <Card as="section" class={styles.card} data-testid={shortcutsTestIds.card}>
         <header>
           <h2 id="shortcuts-title" class={kit.eyebrow}>
             Keyboard shortcuts
           </h2>
-          <button class="icon" aria-label="Close" title="Close (Esc)" onClick={() => (shortcutsOpen.value = false)}>
+          <button class="icon" aria-label="Close" title="Close (Esc)" onClick={close}>
             ×
           </button>
         </header>
@@ -71,7 +75,7 @@ export const Shortcuts = () => {
           ))}
         </dl>
       </Card>
-    </div>,
+    </dialog>,
     document.body
   )
 }

@@ -1,6 +1,6 @@
 /* A card over the map, lighter than a dialog. */
 .backdrop {
-  composes: overlay from "../../kit.module.css";
+  composes: overlay modalLayer from "../../kit.module.css";
   background: color-mix(in srgb, var(--shade) 35%, transparent);
 }
 .card {
