@@ -3,7 +3,8 @@
  * (see InProcessServer): `server` starts one for each test, `newTab` with
  * it sends that tab's game there, and `TestGame` sets games up and checks them.
  */
-import { expect, test as base } from "@playwright/test"
+import { expect } from "@playwright/test"
+import { test as base } from "../coverage/coverage-test.ts"
 import { InProcessServer, type InProcessOptions } from "../../../server/src/test-support/in-process-server.ts"
 import type { Game } from "@whereabouts/shared/game/game"
 import type { LatLon } from "@whereabouts/shared/geo"

@@ -57,8 +57,10 @@ Other commands:
   starting only a Vite dev server of its own (`task iwft -- solo host` for
   some); `task e2e` starts Vite and the game server and runs the e2e specs. Every
   run picks free ports, so runs in other worktrees never collide; `task browser` runs both. `pnpm smoke` runs `solo`.
-  Screenshots go to `smoke-out/iwft/` and `smoke-out/e2e/`. `task --list` shows what
-  else there is.
+  Screenshots go to `smoke-out/iwft/` and `smoke-out/e2e/`. `task coverage`
+  runs the unit tests and the isolated specs recording V8 coverage (browser
+  and in-process server) and merges them with monocart-coverage-reports into
+  `smoke-out/coverage/report/`. `task --list` shows what else there is.
   - `solo`: practice mode: paint, undo and redo, submit.
   - `multiplayer` (e2e): two players through setup, guessing, Done and Keep
     editing, the reveal and ready-up.

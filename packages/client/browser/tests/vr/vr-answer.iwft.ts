@@ -1,6 +1,6 @@
 // A practice round's answer in VR, on an emulated Quest 3 (see pages/headset/Headset.ts).
 // Saves screenshots of the headset's view.
-import { test } from "@playwright/test"
+import { test } from "../../coverage/coverage-test.ts"
 import { PracticeRevealPage } from "../../pages/PracticeRevealPage.ts"
 import { VrViewType } from "../../../src/vr/view/view.ts"
 import { shot } from "../support.ts"

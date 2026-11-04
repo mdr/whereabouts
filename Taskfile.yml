@@ -86,6 +86,42 @@ tasks:
       - task: iwft
       - task: e2e
 
+  coverage:
+    desc: Which source lines the unit and isolated browser tests run, together - a report in smoke-out/coverage/report/ (takes several minutes)
+    summary: |
+      Runs the unit tests and then every *.iwft.ts, each recording V8
+      coverage, and merges the two into one report of the client, server
+      and shared source (tests and test support left out; files nothing
+      ran show at 0%). Open smoke-out/coverage/report/index.html; the
+      totals are in summary.txt and, by package, packages.txt beside it.
+      A failing test still leaves its run's coverage, so the report is made
+      regardless.
+    cmds:
+      - task: coverage:unit
+        ignore_error: true
+      - task: coverage:iwft
+        ignore_error: true
+      - task: coverage:report
+
+  coverage:unit:
+    desc: The unit tests, recording coverage for coverage:report
+    cmds:
+      - pnpm css-types
+      # Coverage slows the heavy scoring tests well past the usual 5 s.
+      - pnpm exec vp test run --coverage --testTimeout=300000 {{.CLI_ARGS}}
+
+  coverage:iwft:
+    desc: "The isolated browser tests, recording coverage for coverage:report (task coverage:iwft -- solo host for some)"
+    env:
+      COVERAGE: "1"
+    cmds:
+      - pnpm --filter ./packages/client iwft {{.CLI_ARGS}}
+
+  coverage:report:
+    desc: "Merge the coverage recorded by coverage:unit and coverage:iwft into smoke-out/coverage/report/ (task coverage:report -- unit for one alone)"
+    cmds:
+      - node scripts/coverage/merge-coverage.ts {{.CLI_ARGS}}
+
   # --------------------------------------------------- the production build
 
   build:

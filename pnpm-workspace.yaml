@@ -23,6 +23,8 @@ catalog:
 overrides:
   vite@*: "catalog:"
   playwright-core: 1.63.0
+  # The coverage provider must match the Vitest that Vite+ bundles.
+  "@vitest/coverage-v8": 5.0.3
 peerDependencyRules:
   allowAny:
     - vite

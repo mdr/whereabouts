@@ -4,7 +4,7 @@
 // button with it, trim to the hint and undo it,
 // paint on the globe but not the space around it, submit, and see a score.
 // Saves screenshots.
-import { test } from "@playwright/test"
+import { test } from "../coverage/coverage-test.ts"
 import { Tool } from "../../src/paint/tool.ts"
 import { HintAxis } from "@whereabouts/shared/hints"
 import { newOfflineTab } from "./iwft-tab.ts"

@@ -1,6 +1,6 @@
 // Flag rounds in VR, on an emulated Quest 3 (see pages/headset/Headset.ts).
 // Saves screenshots of the headset's view.
-import { test } from "@playwright/test"
+import { test } from "../../coverage/coverage-test.ts"
 import { Quaternion, Vector3 } from "three"
 import { Tool } from "../../../src/paint/tool.ts"
 import { Hand } from "../../../src/vr/hands/hand.ts"

@@ -88,11 +88,24 @@ export default defineConfig({
       "packages/*/src/**/*.test.{ts,tsx}",
       "packages/server/src/**/*.iwbt.ts",
       "packages/client/browser/pages/*.test.ts",
-      "scripts/*.test.ts",
+      "scripts/**/*.test.ts",
       "lint/**/*.test.ts",
       "packages/*/scripts/*.test.ts"
     ],
-    setupFiles: ["packages/client/src/test-setup.ts"]
+    setupFiles: ["packages/client/src/test-setup.ts"],
+    // Only with --coverage (task coverage): raw V8 data for scripts/coverage/merge-coverage.ts.
+    coverage: {
+      provider: "custom",
+      customProviderModule: "vitest-monocart-coverage",
+      include: ["packages/*/src/**"],
+      reportOnFailure: true,
+      coverageReportOptions: {
+        name: "Unit tests",
+        outputDir: "smoke-out/coverage/unit",
+        reports: ["raw"],
+        logging: "error"
+      }
+    }
   },
   lint: {
     plugins: ["oxc", "typescript", "unicorn", "import"],
@@ -472,6 +485,25 @@ export default defineConfig({
         files: ["packages/client/browser/tests/**/*.ts", "packages/server/scripts/**/*.ts"],
         rules: {
           "no-console": "off"
+        }
+      },
+      {
+        files: ["packages/client/browser/tests/**/*.iwft.ts"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              paths: [
+                h3Path,
+                {
+                  name: "@playwright/test",
+                  importNames: ["test"],
+                  message:
+                    "Import test from browser/coverage/coverage-test.ts (or game-server.ts), which records coverage."
+                }
+              ]
+            }
+          ]
         }
       },
       {

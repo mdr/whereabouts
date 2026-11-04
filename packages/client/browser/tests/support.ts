@@ -1,5 +1,6 @@
 import { test, type Browser, type BrowserContext, type BrowserContextOptions } from "@playwright/test"
 import { Tab } from "../pages/Tab.ts"
+import { startPageCoverage } from "../coverage/page-coverage.ts"
 import type { GameConnection } from "../game-server/route-socket.ts"
 
 /** The local Chrome, headless, with WebGL in software so the map draws without a GPU. */
@@ -34,6 +35,7 @@ export const openTab = async (
   if (options.initScript) await context.addInitScript(options.initScript)
   const connection = await connect(context)
   const page = await context.newPage()
+  await startPageCoverage(page)
   page.on("pageerror", (error) => console.log(`[${label} pageerror]`, error.message))
   page.on("console", (message) => {
     if (message.type() === "error") console.log(`[${label} console.error]`, message.text().slice(0, 200))
