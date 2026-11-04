@@ -1,10 +1,13 @@
-import { describe, expect } from "vite-plus/test"
+import { afterEach, describe, expect, vi } from "vite-plus/test"
 import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
+import { Game } from "@whereabouts/shared/game/game"
 import { EMPTY_GAME_GRACE } from "@whereabouts/shared/protocol/config"
 import { useInProcessServer } from "../test-support/use-in-process-server.ts"
+import { LOG_CODES } from "../telemetry/log-codes.ts"
 
 describe("metrics", () => {
   const it = useInProcessServer({ metrics: true })
+  afterEach(() => vi.restoreAllMocks())
 
   it("report a started game and a connected player on the metrics port", async ({ server }) => {
     const alice = await server.host("Alice")
@@ -64,6 +67,27 @@ describe("metrics", () => {
     const text = await server.scrapeMetrics()
     expect(text).toContain("whereabouts_room_lifetime_seconds_count 1\n")
     expect(text).toContain('whereabouts_room_lifetime_seconds_bucket{le="10"} 0\n')
+  })
+
+  it("count a room's timer that threw, logged, while the server plays on", async ({ server }) => {
+    const alice = await server.host("Alice")
+    await alice.start()
+    await alice.expectGuessing()
+    vi.spyOn(Game.prototype, "tick").mockImplementationOnce(() => {
+      throw new Error("tick bug")
+    })
+    server.passDeadline()
+
+    await expect
+      .poll(async () => await server.scrapeMetrics())
+      .toContain('whereabouts_server_errors_total{kind="tick_threw"} 1\n')
+    expect(server.logEvents.find((line) => line.code === LOG_CODES.server.error)).toMatchObject({
+      kind: "tickThrew",
+      err: expect.objectContaining({ message: "tick bug" })
+    })
+    const bob = await server.host("Bob")
+    await bob.start()
+    await bob.expectGuessing()
   })
 
   it("are not on the public service", async ({ server }) => {
