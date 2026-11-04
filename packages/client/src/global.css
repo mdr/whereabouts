@@ -40,6 +40,7 @@
   --accent: #ffa726;
   --accent-2: #4fc3f7;
   --danger: #ef5350;
+  --danger-solid: #d32f2f;
   /* Lighter, for small text on a card or panel. */
   --danger-fg: #ff7b72;
   --success: #66bb6a;
@@ -167,8 +168,8 @@ button.big {
   font-size: 16px;
 }
 button.danger.solid {
-  background: var(--danger);
-  border-color: var(--danger);
+  background: var(--danger-solid);
+  border-color: var(--danger-solid);
   color: var(--light);
 }
 

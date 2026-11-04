@@ -16,7 +16,9 @@ export default defineConfig({
   // Longer than the usual 5 s: the first page waits on a cold dev server's fonts.
   expect: {
     timeout: 15_000,
-    toHaveScreenshot: { animations: "disabled", caret: "hide", scale: "css", maxDiffPixels: 0 }
+    // Playwright's default threshold (0.2) passes a visibly different button colour; at 0.05 the
+    // software-drawn map still varies by a few pixels between runs, which 50 allows.
+    toHaveScreenshot: { animations: "disabled", caret: "hide", scale: "css", maxDiffPixels: 50, threshold: 0.05 }
   },
   projects: [
     { name: "desktop", use: { viewport: { width: 1300, height: 900 } } },
