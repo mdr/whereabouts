@@ -89,8 +89,11 @@ export class Headset extends PageObject {
       if (await this.#inSession()) return "in a session"
       if (await enter.isVisible()) return "asking again"
       if (await this.#vr(vrButtonTestIds.failed).isVisible()) return "failed to load"
-      const stage = this.#vr(vrButtonTestIds.loadingStage)
-      return (await stage.isVisible()) ? `loading, at ${await stage.getAttribute("data-stage")}` : "not loading"
+      // Not getAttribute: it waits for the element, which goes once the session opens.
+      const [stage] = await this.#vr(vrButtonTestIds.loadingStage).evaluateAll((shown) =>
+        shown.map((element) => element.getAttribute("data-stage"))
+      )
+      return stage ? `loading, at ${stage}` : "not loading"
     }
     await expect
       .poll(progress, { message: "the headset session opens, or VR asks again", timeout })
