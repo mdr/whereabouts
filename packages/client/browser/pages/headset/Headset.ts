@@ -84,12 +84,17 @@ export class Headset extends PageObject {
    */
   async expectEnteredAfterPress(timeout: Ms): Promise<void> {
     const enter = this.#vr(vrButtonTestIds.enterButton)
+    // On a timeout, the last answer says how far it got.
+    const progress = async (): Promise<string> => {
+      if (await this.#inSession()) return "in a session"
+      if (await enter.isVisible()) return "asking again"
+      if (await this.#vr(vrButtonTestIds.failed).isVisible()) return "failed to load"
+      const stage = this.#vr(vrButtonTestIds.loadingStage)
+      return (await stage.isVisible()) ? `loading, at ${await stage.getAttribute("data-stage")}` : "not loading"
+    }
     await expect
-      .poll(async () => (await this.#inSession()) || (await enter.isVisible()), {
-        message: "the headset session opens, or VR asks again",
-        timeout
-      })
-      .toBe(true)
+      .poll(progress, { message: "the headset session opens, or VR asks again", timeout })
+      .toMatch(/^(in a session|asking again)$/)
     if (await enter.isVisible()) await enter.click()
     await this.expectInSession(timeout)
   }
