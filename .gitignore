@@ -14,3 +14,5 @@ result
 
 # generated CSS module declarations
 *.module.css.d.ts
+# left by mutation testing (task mutate) when a test runner is killed
+stryker-setup-*.js
