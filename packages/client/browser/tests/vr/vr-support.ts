@@ -25,7 +25,7 @@ export const newHeadsetTab = async (
 export const enterVr = async (headset: Headset): Promise<void> => {
   await headset.pressVrButton()
   // The first sessions after the dev server starts load the VR code cold, several at once.
-  await headset.expectInSession(90_000)
+  await headset.expectEnteredAfterPress(90_000)
 }
 
 /**

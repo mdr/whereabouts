@@ -42,7 +42,7 @@ test("load-failures", async ({ browser }) => {
     await vrFailures.expectNoCanvasLeftBehind(canvases)
     vrTab.allowDownload(Download.LAND_MASK)
     await vrFailures.retryVr()
-    await headset.expectInSession(60_000)
+    await headset.expectEnteredAfterPress(60_000)
   })
 
   await test.step("VR code that will not load offers a reload, since trying again cannot work", async () => {

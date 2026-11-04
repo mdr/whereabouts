@@ -30,6 +30,8 @@ export default defineConfig({
     open: false,
     // A Cloudflare quick tunnel, for opening the dev server on a headset (see README).
     allowedHosts: [".trycloudflare.com"],
+    // Test runs compile the VR code at start, so it is ready by the first press of VR.
+    ...(process.env.WARM_VR === "1" && { warmup: { clientFiles: ["./src/vr/index.ts"] } }),
     proxy: {
       // Game server (Fastify + Rivalis) during development.
       "/ws": { target: `ws://localhost:${gamePort}`, ws: true },

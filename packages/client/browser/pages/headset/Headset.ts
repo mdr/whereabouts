@@ -10,7 +10,6 @@ import type { Hand } from "../../../src/vr/hands/hand.ts"
 import { holdUntil, expectPolled, stillTrueFor } from "../support.ts"
 import { vrButtonTestIds } from "../../../src/ui/VrButton/VrButtonTestIds.ts"
 import { probe } from "./probe.ts"
-import { COVERAGE } from "../../coverage/coverage-options.ts"
 
 /**
  * An emulated Meta Quest 3 (Meta's IWER) in place of WebXR, so a desktop
@@ -71,22 +70,28 @@ export class Headset extends PageObject {
     await this.#page.evaluate(() => window.testHooks.vr!.exit())
   }
 
-  async expectInSession(timeout: Ms = 10_000): Promise<void> {
-    const inSession = (): Promise<boolean> => this.#page.evaluate(() => window.headset.activeSession !== undefined)
-    // Recording coverage can slow the VR code's load past the press's user activation, so VR asks again.
-    if (COVERAGE) await this.#pressEnterButtonIfAskedAgain(inSession, timeout)
-    await expect.poll(inSession, { message: "the headset session opens", timeout }).toBe(true)
+  #inSession(): Promise<boolean> {
+    return this.#page.evaluate(() => window.headset.activeSession !== undefined)
   }
 
-  async #pressEnterButtonIfAskedAgain(inSession: () => Promise<boolean>, timeout: Ms): Promise<void> {
+  async expectInSession(timeout: Ms = 10_000): Promise<void> {
+    await expect.poll(() => this.#inSession(), { message: "the headset session opens", timeout }).toBe(true)
+  }
+
+  /**
+   * After pressing VR: in a session, as a player would be. When the VR code took longer
+   * to load than the browser counts the press as theirs, VR asks again, and they press again.
+   */
+  async expectEnteredAfterPress(timeout: Ms): Promise<void> {
     const enter = this.#vr(vrButtonTestIds.enterButton)
     await expect
-      .poll(async () => (await inSession()) || (await enter.isVisible()), {
+      .poll(async () => (await this.#inSession()) || (await enter.isVisible()), {
         message: "the headset session opens, or VR asks again",
         timeout
       })
       .toBe(true)
     if (await enter.isVisible()) await enter.click()
+    await this.expectInSession(timeout)
   }
 
   async expectOutOfSession(timeout: Ms = 10_000): Promise<void> {

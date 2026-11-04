@@ -19,7 +19,7 @@ export const runSettings = (name: string, clientPort: string): PlaywrightTestCon
 export const devServer = (workspace: string, url: string, env: Record<string, string>): WebServer => ({
   command: `pnpm --filter ./packages/${workspace} dev`,
   cwd: "../../..",
-  env,
+  env: { WARM_VR: "1", ...env },
   url,
   reuseExistingServer: false
 })
