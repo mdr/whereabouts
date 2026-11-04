@@ -15,6 +15,14 @@ test("score-review", async ({ browser }) => {
     return review
   })
 
+  await test.step("the verdicts are one Tab stop and the arrow keys move and choose", async () => {
+    await review.expectVerdictsOneTabStop()
+    await review.clickVerdictThenPress(0, "ArrowRight")
+    await review.expectVerdictChosenAndFocused(1)
+    await review.clickVerdictThenPress(-2, "ArrowUp")
+    await review.expectVerdictChosenAndFocused(2)
+  })
+
   // Judge the first single by keys and the next by clicking; compare the first pair.
   const firstScore = await test.step("judge two singles and compare a pair", async () => {
     let singles = 0

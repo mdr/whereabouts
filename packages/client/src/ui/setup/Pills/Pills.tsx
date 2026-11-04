@@ -1,3 +1,4 @@
+import { useRadioGroup } from "../../../keyboard/use-radio-group"
 import { pillsTestIds } from "./PillsTestIds"
 import styles from "../pill-row.module.css"
 
@@ -12,21 +13,28 @@ export const Pills = <T extends string | number>({
   options: readonly { value: T; label: string }[]
   value: T | undefined
   onChange: (value: T) => void
-}) => (
-  <div class={styles.pills} role="radiogroup" aria-label={label}>
-    {options.map((option) => (
-      <button
-        key={String(option.value)}
-        type="button"
-        role="radio"
-        aria-checked={option.value === value}
-        class={option.value === value ? styles.on : undefined}
-        onClick={() => onChange(option.value)}
-        data-testid={pillsTestIds.option}
-        data-value={option.value}
-      >
-        {option.label}
-      </button>
-    ))}
-  </div>
-)
+}) => {
+  const radio = useRadioGroup({
+    checkedIndex: options.findIndex((option) => option.value === value),
+    select: (index) => onChange(options[index]!.value)
+  })
+  return (
+    <div class={styles.pills} role="radiogroup" aria-label={label} {...radio.groupProps}>
+      {options.map((option, index) => (
+        <button
+          key={String(option.value)}
+          type="button"
+          role="radio"
+          aria-checked={option.value === value}
+          tabIndex={radio.tabIndex(index)}
+          class={option.value === value ? styles.on : undefined}
+          onClick={() => onChange(option.value)}
+          data-testid={pillsTestIds.option}
+          data-value={option.value}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  )
+}

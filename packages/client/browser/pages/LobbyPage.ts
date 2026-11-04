@@ -149,6 +149,42 @@ export class LobbyPage extends Screen {
     await expect(this.#pill(hostSettingsTestIds.hintsSetting, hints), `${hints} hints are chosen`).toBeChecked()
   }
 
+  /** Host: the hints choice has exactly one Tab stop, so Tab reaches the group once. */
+  async expectHintsOneTabStop(): Promise<void> {
+    await expect(
+      this.page.getByTestId(hostSettingsTestIds.hintsSetting).locator('[role="radio"][tabindex="0"]'),
+      "the hints choices are one Tab stop"
+    ).toHaveCount(1)
+  }
+
+  /** Host: press a key on the hints choice that has the keyboard (click one first). */
+  async pressKeyOnHints(key: string): Promise<void> {
+    await this.page.keyboard.press(key)
+  }
+
+  /** Host: this hints choice is the one that has focus. */
+  async expectHintsFocused(hints: number): Promise<void> {
+    await expect(this.#pill(hostSettingsTestIds.hintsSetting, hints), `${hints} hints has focus`).toBeFocused()
+  }
+
+  /** Host: the map detail choice has exactly one Tab stop. */
+  async expectMapDetailOneTabStop(): Promise<void> {
+    await expect(
+      this.page.getByTestId(mapDetailPickerTestIds.picker).locator('[role="radio"][tabindex="0"]'),
+      "the map detail choices are one Tab stop"
+    ).toHaveCount(1)
+  }
+
+  /** Host: press a key on the map detail choice that has the keyboard (click one first). */
+  async pressKeyOnMapDetail(key: string): Promise<void> {
+    await this.page.keyboard.press(key)
+  }
+
+  /** Host: this map detail is the one that has focus. */
+  async expectMapDetailFocused(detail: MapDetail): Promise<void> {
+    await expect(this.#mapDetail(detail), `${detail} map detail has focus`).toBeFocused()
+  }
+
   async chooseMapDetail(detail: MapDetail): Promise<void> {
     await this.#mapDetail(detail).click()
   }
