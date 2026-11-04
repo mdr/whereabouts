@@ -28,6 +28,7 @@ test("lobby leave", async ({ browser, game }) => {
   await test.step("a host alone is warned the game closes, and cancels", async () => {
     const leaving = await aliceLobbyPage.askToLeave()
     await leaving.expectText("It closes, since no one else is here.")
+    await leaving.expectTabStaysInside()
     await leaving.cancel()
     await aliceLobbyPage.players.expectNames(["Alice"])
   })

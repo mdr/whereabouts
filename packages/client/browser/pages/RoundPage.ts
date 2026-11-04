@@ -8,6 +8,7 @@ import { MapPanel } from "./components/MapPanel.ts"
 import { PaintTools } from "./components/PaintTools.ts"
 import { PlayersPanel } from "./components/PlayersPanel.ts"
 import { QuestionCard } from "./components/QuestionCard.ts"
+import { Shortcuts } from "./components/Shortcuts.ts"
 import { RevealPage } from "./RevealPage.ts"
 import { RoundDonePage } from "./RoundDonePage.ts"
 import { Screen } from "./Screen.ts"
@@ -24,6 +25,7 @@ export class RoundPage extends Screen {
   readonly paintTools: PaintTools
   readonly playersPanel: PlayersPanel
   readonly devDrawer: DevDrawer
+  readonly shortcuts: Shortcuts
 
   static async whenShown(tab: Tab, timeout: Ms = 15_000): Promise<RoundPage> {
     const round = new RoundPage(tab)
@@ -41,6 +43,7 @@ export class RoundPage extends Screen {
     this.paintTools = new PaintTools(tab.page)
     this.playersPanel = new PlayersPanel(tab.page)
     this.devDrawer = new DevDrawer(tab.page)
+    this.shortcuts = new Shortcuts(tab.page)
   }
 
   /** Use a hint: a band of latitude or longitude. */

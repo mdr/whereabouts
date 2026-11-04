@@ -4,7 +4,7 @@ import { flagFile, flagRatio } from "../../../flags/flags"
 import { cx } from "../../cx"
 import { CommonsCredit } from "../CommonsCredit/CommonsCredit"
 import { flagShape, useFlagUrl } from "../flag-url"
-import { Lightbox, LightboxType, useEscape } from "../Lightbox/Lightbox"
+import { Lightbox, LightboxType } from "../Lightbox/Lightbox"
 import { smallFlagButtonTestIds } from "./SmallFlagButtonTestIds"
 import picture from "../SmallPicture.module.css"
 import styles from "./SmallFlagButton.module.css"
@@ -17,7 +17,6 @@ export const SmallFlagButton = ({ code }: { code: FlagCode }) => {
   const src = useFlagUrl(code)
   const file = flagFile(code)
   const [large, setLarge] = useState(false)
-  useEscape(large, () => setLarge(false))
   return (
     <>
       <button

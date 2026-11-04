@@ -20,6 +20,8 @@ test("photo rounds", async ({ browser, game }) => {
   await homePage.enterName("Alice")
   const roundPage = await (await homePage.hostGame()).startGame()
   const card = roundPage.questionCard
+  // From the start: a larger rendition fetched in an earlier step would be cached, and arrive at once.
+  await card.holdLargePhotos()
 
   await test.step("the first photo of the session says Enlarge", async () => {
     await card.expectEnlargeLabel(true)
@@ -58,7 +60,6 @@ test("photo rounds", async ({ browser, game }) => {
   })
 
   await test.step("the larger rendition replaces the thumbnail's, keeping the zoom", async () => {
-    await card.holdLargePhotos()
     const lightbox = await card.enlargePhoto()
     await lightbox.expectPhotoWidth(900)
     await lightbox.clickPicture()

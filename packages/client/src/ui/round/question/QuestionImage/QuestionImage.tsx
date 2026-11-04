@@ -4,7 +4,6 @@ import type { CommonsFile } from "@whereabouts/shared/ids"
 import { cx } from "../../../cx"
 import { useElementRef } from "../../../element-ref"
 import { CommonsCredit } from "../../../pictures/CommonsCredit/CommonsCredit"
-import { useEscape } from "../../../pictures/Lightbox/Lightbox"
 import { PhotoLightbox } from "../../../pictures/PhotoLightbox"
 import { enlargeLabel } from "../enlarge-label"
 import { EnlargeBadge } from "../EnlargeBadge/EnlargeBadge"
@@ -27,7 +26,6 @@ export const QuestionImage = ({
 }) => {
   const [large, setLarge] = useState(false)
   const [withLabel] = useState(() => enlargeLabel.take())
-  useEscape(large, () => setLarge(false))
   const credit = showCredit ? <CommonsCredit image={image} /> : undefined
   const thumb = useElementRef<HTMLImageElement>()
   return (

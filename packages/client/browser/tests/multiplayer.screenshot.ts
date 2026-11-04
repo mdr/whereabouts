@@ -2,6 +2,7 @@
 import { mixOf } from "@whereabouts/shared/protocol/config"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { test } from "../game-server/game-server.ts"
+import { LightboxExit } from "../pages/components/Lightbox.ts"
 import { newStillTab, stillServer } from "./still-tab.ts"
 
 test.use({
@@ -34,6 +35,23 @@ test("a game", async ({ browser, game }) => {
     await roundPage.map.stroke(await roundPage.map.spotClearOfCards())
     await roundPage.map.expectYourPaintCells({ greaterThan: 0 })
     await roundPage.expectScreenshot("round")
+    await test.step("the end-game confirmation", async () => {
+      const ending = await roundPage.hud.askToEndGame()
+      await roundPage.expectScreenshot("confirm")
+      await ending.cancel()
+    })
+    await test.step("the shortcuts card", async () => {
+      await roundPage.shortcuts.pressQuestionMark()
+      await roundPage.shortcuts.expectOpen()
+      await roundPage.expectScreenshot("shortcuts")
+      await roundPage.shortcuts.pressEscape()
+      await roundPage.shortcuts.expectClosed()
+    })
+    await test.step("the enlarged photo", async () => {
+      const lightbox = await roundPage.questionCard.enlargePhoto()
+      await roundPage.expectScreenshot("lightbox")
+      await lightbox.exit(LightboxExit.ESCAPE)
+    })
     return roundPage
   })
 
