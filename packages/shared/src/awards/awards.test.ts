@@ -156,12 +156,15 @@ describe("each award", () => {
     ]
     expect(winners("Fence Sitter", [player("a", wide(350)), player("b", AVERAGE)])).toEqual([idOf("a")])
     expect(titles([player("a", wide(290)), player("b", AVERAGE)])).not.toContain("Fence Sitter")
+    expect(titles([player("a", wide(400).slice(0, 1)), player("b", AVERAGE)])).not.toContain("Fence Sitter")
   })
 
   it("Hedge Fund Manager: two or more hedged rounds", () => {
     const hedged = pointRound(500, point({ hedged: true }))
     expect(winners("Hedge Fund Manager", [player("a", [hedged, hedged]), player("b", AVERAGE)])).toEqual([idOf("a")])
     expect(titles([player("a", [hedged, round(500)]), player("b", AVERAGE)])).not.toContain("Hedge Fund Manager")
+    const plain = pointRound(500, point({}))
+    expect(titles([player("a", [plain, plain]), player("b", AVERAGE)])).not.toContain("Hedge Fund Manager")
   })
 
   it("Chicken: two or more passes", () => {
@@ -181,6 +184,27 @@ describe("each award", () => {
     expect(titles([player("a", locked(25)), player("b", locked(30))])).not.toContain("Fastest Finger")
   })
 
+  it("Fastest Finger: only for locking in every time, in at least three rounds", () => {
+    const quick = round(500, { lockedAfter: 5_000 })
+    const other = player("b", AVERAGE)
+    expect(titles([player("a", [quick, quick]), other])).not.toContain("Fastest Finger")
+    expect(titles([player("a", [quick, quick, round(500, { lockedAfter: undefined })]), other])).not.toContain(
+      "Fastest Finger"
+    )
+    expect(titles([player("a", [quick, quick, round(500, { roundLength: undefined })]), other])).not.toContain(
+      "Fastest Finger"
+    )
+  })
+
+  it("Last-Second Merchant: counts rounds the clock ran out on, not untimed ones", () => {
+    const outOfTime = round(500, { lockedAfter: undefined })
+    const untimed = round(500, { lockedAfter: undefined, roundLength: undefined })
+    const other = player("b", AVERAGE)
+    expect(winners("Last-Second Merchant", [player("a", [outOfTime, outOfTime]), other])).toEqual([idOf("a")])
+    expect(titles([player("a", [untimed, untimed]), other])).not.toContain("Last-Second Merchant")
+    expect(titles([player("a", [outOfTime, untimed]), other])).not.toContain("Last-Second Merchant")
+  })
+
   describe("Picasso: twice the paint of the others' middle player", () => {
     const painting = (area: number): AreaFacts[] => [round(500, { area }), round(500, { area })]
 
@@ -193,6 +217,11 @@ describe("each award", () => {
     it("between two", () => {
       expect(winners("Picasso", [player("a", painting(20_000)), player("b", painting(10_000))])).toEqual([idOf("a")])
       expect(titles([player("a", painting(19_000)), player("b", painting(10_000))])).not.toContain("Picasso")
+    })
+
+    it("is measured against the median of the others, however they are listed", () => {
+      const painters = [50_000, 10_000, 30_000, 20_000].map((area, i) => player("abcd"[i]!, painting(area)))
+      expect(winners("Picasso", painters)).toEqual([idOf("a")])
     })
 
     it("never alone, or against no paint", () => {
@@ -236,6 +265,11 @@ describe("each award", () => {
   it("Rollercoaster: 700 points or more between a player's best and worst", () => {
     expect(winners("Rollercoaster", [player("a", [round(100), round(900)]), player("b", AVERAGE)])).toEqual([idOf("a")])
     expect(titles([player("a", [round(150), round(840)]), player("b", AVERAGE)])).not.toContain("Rollercoaster")
+  })
+
+  it("Rollercoaster: the biggest swing, not the highest scores", () => {
+    const swings = [player("a", [round(0), round(900)]), player("b", [round(200), round(950)])]
+    expect(winners("Rollercoaster", swings)).toEqual([idOf("a")])
   })
 
   it("Beige: four rounds or more, all alike", () => {
@@ -290,6 +324,25 @@ describe("each award", () => {
     const elsewhere = pointRound(300, point({ spot: { lat: -40, lon: 100 }, missCost: 400 }))
     expect(titles([player("a", [wrong, wrong]), player("b", [elsewhere, elsewhere])])).not.toContain("Hive Mind")
   })
+
+  it("Hive Mind: not for being right in the same place", () => {
+    const right = pointRound(950, point({ spot: { lat: 10, lon: 10 }, missCost: 50 }))
+    expect(titles([player("a", [right, right]), player("b", [right, right])])).not.toContain("Hive Mind")
+  })
+
+  it("Hive Mind: the pair who share the most spots, and rounds one sat out count for nothing", () => {
+    const wrong = pointRound(300, point({ spot: { lat: 10, lon: 10 }, missCost: 400 }))
+    const elsewhere = pointRound(300, point({ spot: { lat: -40, lon: 100 }, missCost: 400 }))
+    const players = [
+      player("a", [wrong, wrong, wrong]),
+      player("b", [wrong, wrong, wrong]),
+      player("c", [wrong, wrong, elsewhere])
+    ]
+    expect(winners("Hive Mind", players)).toEqual([idOf("a"), idOf("b")])
+    const sitOuts = [player("a", [wrong, wrong, undefined]), player("b", [wrong, wrong, wrong])]
+    expect(winners("Hive Mind", sitOuts)).toEqual([idOf("a"), idOf("b")])
+    expect(winners("Hive Mind", sitOuts.reverse())).toEqual([idOf("b"), idOf("a")])
+  })
 })
 
 describe("handing out the awards", () => {
@@ -331,14 +384,18 @@ describe("handing out the awards", () => {
   })
 
   it("gives a player a second award only after everyone has one", () => {
-    // Chicken and Hedge Fund Manager are a's; Bullseye is b's and Wooden Spoon c's.
-    const hedged = pointRound(300, point({ hedged: true }))
+    // a earns only booby prizes (Chicken, Hedge Fund Manager, Fence Sitter, Wooden Spoon), b and c a prize each:
+    // two booby prizes to a real one would otherwise fill the three places with a's.
+    const hedged = pointRound(0, point({ hedged: true, spread: 300 }))
+    const hedgedHigher = pointRound(200, point({ hedged: true, spread: 300 }))
     const players = [
-      player("a", [hedged, hedged, pass(500), pass(500)]),
-      player("b", [round(960), round(500), round(500), round(500)]),
-      player("c", [round(0), round(300), round(0), round(300)])
+      player("a", [hedged, hedgedHigher, pass(0), pass(200)]),
+      player("b", [round(500), round(600), round(960), round(400)]),
+      player("c", [round(900), round(900), round(900), round(500)])
     ]
-    expect(titles(players)).toEqual(new Set(["Chicken", "Hedge Fund Manager", "Bullseye", "Wooden Spoon"]))
+    expect(titles(players)).toEqual(
+      new Set(["Chicken", "Hedge Fund Manager", "Fence Sitter", "Wooden Spoon", "Bullseye", "On Fire"])
+    )
     for (const seed of SEEDS)
       expect(new Set(pickAwards(players, seed).flatMap((award) => award.playerIds))).toEqual(
         new Set(["a", "b", "c"].map(idOf))
