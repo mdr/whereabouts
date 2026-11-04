@@ -14,6 +14,7 @@ import { invitePanelTestIds } from "./InvitePanelTestIds"
 import { RenameForm } from "../RenameForm"
 import { RoleSwitch } from "../RoleSwitch/RoleSwitch"
 import { Roster } from "../Roster/Roster"
+import { RosterNews } from "../RosterNews/RosterNews"
 import styles from "./InvitePanel.module.css"
 
 /** The left panel: the code and link to share, who is here, and the player/watcher choice. */
@@ -33,12 +34,15 @@ export const InvitePanel = ({ view, ask }: { view: GameView; ask: (request: Conf
       <InviteButtons code={view.code} />
       <ConnectionNote />
       <h2>
-        Players{" "}
-        <span class={styles.count} title={`Up to ${MAX_PLAYERS} players`}>
+        {/* One text for VoiceOver: in pieces, it reads the heading level before each. */}
+        <span aria-hidden="true">Players</span>{" "}
+        <span class={styles.count} title={`Up to ${MAX_PLAYERS} players`} aria-hidden="true">
           {players.length}/{MAX_PLAYERS}
         </span>
+        <span class="sr-only">{`Players, ${players.length} of ${MAX_PLAYERS}`}</span>
       </h2>
       <Roster view={view} ask={ask} onRename={() => setRenaming(true)} />
+      <RosterNews view={view} />
       {players.length + view.spectators.length === 1 && (
         <p class={cx(kit.hint, styles.waiting)}>Waiting for friends to join…</p>
       )}

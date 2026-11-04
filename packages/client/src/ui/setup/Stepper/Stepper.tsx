@@ -19,19 +19,21 @@ export const Stepper = ({
   <div class={styles.stepper} role="group" aria-label={label}>
     <button
       type="button"
-      aria-label={`Fewer ${label.toLowerCase()}`}
+      aria-label={`Fewer ${label}`}
       data-testid={stepperTestIds.fewerButton}
       disabled={value <= min}
       onClick={() => onChange(value - 1)}
     >
       <Icon name="minus" />
     </button>
-    <span class={styles.value} aria-live="polite" data-testid={stepperTestIds.value}>
-      {value}
+    {/* Told as "3 Landmarks" when it changes, not a bare number. */}
+    <span class={styles.value} aria-live="polite" aria-atomic="true">
+      <span data-testid={stepperTestIds.value}>{value}</span>
+      <span class="sr-only">{` ${label}`}</span>
     </span>
     <button
       type="button"
-      aria-label={`More ${label.toLowerCase()}`}
+      aria-label={`More ${label}`}
       data-testid={stepperTestIds.moreButton}
       disabled={value >= max}
       onClick={() => onChange(value + 1)}

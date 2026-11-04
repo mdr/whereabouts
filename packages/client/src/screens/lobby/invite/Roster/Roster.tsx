@@ -38,10 +38,11 @@ export const Roster = ({
       {watchers.length > 0 && (
         <Fragment key={1}>
           <h3 class={styles.watchingHeading} data-testid={rosterTestIds.watchingHeading}>
-            Watching{" "}
-            <span title={`Up to ${MAX_SPECTATORS} people can watch`}>
+            <span aria-hidden="true">Watching</span>{" "}
+            <span title={`Up to ${MAX_SPECTATORS} people can watch`} aria-hidden="true">
               {watchers.length}/{MAX_SPECTATORS}
             </span>
+            <span class="sr-only">{`Watching, ${watchers.length} of ${MAX_SPECTATORS}`}</span>
           </h3>
           {list(watchers)}
         </Fragment>
