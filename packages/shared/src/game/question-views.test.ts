@@ -129,4 +129,11 @@ describe("revealOf", () => {
       results
     })
   })
+
+  it("says whose a part of a country is, which its question kept back", () => {
+    const svalbard = byId("part-svalbard")
+    expect(JSON.stringify(questionView(svalbard))).not.toContain("Norway")
+    expect(revealOf(svalbard, { index: 0, total: 1 }, []).partOf).toEqual({ status: "part of Norway", flag: "no" })
+    expect(revealOf(byId("paris"), { index: 0, total: 1 }, [])).not.toHaveProperty("partOf")
+  })
 })

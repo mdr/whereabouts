@@ -11,6 +11,7 @@ import {
   type ClueType,
   type FeatureType,
   type NameClue,
+  type PartOf,
   type PhotoClue,
   type QuestionType,
   type Surface
@@ -42,6 +43,7 @@ export interface StoredPlace {
   feature?: FeatureType
   area?: StoredArea
   flag?: { code: string; wiki: string }
+  partOf?: PartOf
 }
 
 export type Outlines = Record<string, MultiPolygon>
@@ -54,6 +56,10 @@ const sortedCatalogue = (types: QuestionType[], questions: StoredQuestion[]): St
     .sort((a, b) => QUESTION_TYPES.indexOf(a.type) - QUESTION_TYPES.indexOf(b.type))
     .map(({ id, type, place, clue, answer }) => ({ id, type, place, clue, answer }))
 
+/** The fields that are set, in order. */
+const setOnly = <T extends object>(fields: T): Partial<T> =>
+  Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== undefined)) as Partial<T>
+
 /** The places the catalogue asks about, each once, with optional fields only when set. */
 const placesAsked = (catalogue: StoredQuestion[], places: StoredPlace[]): Map<string, StoredPlace> => {
   const allPlaces = new Map(read<StoredPlace[]>("places.json").map((place) => [place.id, place]))
@@ -63,16 +69,8 @@ const placesAsked = (catalogue: StoredQuestion[], places: StoredPlace[]): Map<st
     const place = allPlaces.get(question.place)
     if (!place) throw new Error(`${question.id}: no place ${question.place}`)
     if (asked.has(question.place)) continue
-    const { id, label, wiki, at, feature, area, flag } = place
-    asked.set(id, {
-      id,
-      label,
-      wiki,
-      ...(at ? { at } : {}),
-      ...(feature ? { feature } : {}),
-      ...(area ? { area } : {}),
-      ...(flag ? { flag } : {})
-    })
+    const { id, label, wiki, at, feature, area, flag, partOf } = place
+    asked.set(id, { id, label, wiki, ...setOnly({ at, feature, area, flag, partOf }) })
   }
   return asked
 }

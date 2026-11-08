@@ -66,6 +66,8 @@ export const questionView = (question: Question): QuestionView => {
       }
     case QuestionType.STATE:
       return { type: question.type, clue: question.clue, answer: answerView(question.answer) }
+    case QuestionType.PART_OF_COUNTRY:
+      return { type: question.type, clue: question.clue, answer: answerView(question.answer) }
   }
 }
 
@@ -119,6 +121,7 @@ export const revealOf = (
     label: question.label,
     wiki: question.wiki,
     ...(photo ? { photo } : {}),
+    ...(question.type === QuestionType.PART_OF_COUNTRY ? { partOf: question.partOf } : {}),
     results
   }
 }
@@ -141,6 +144,7 @@ export const playedRound = (question: Question): PlayedRound => {
     case QuestionType.FEATURE:
       return { type: question.type, label, feature: question.feature, picture: shapePicture(question.answer) }
     case QuestionType.STATE:
+    case QuestionType.PART_OF_COUNTRY:
       return {
         type: question.type,
         label,

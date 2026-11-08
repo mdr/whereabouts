@@ -9,7 +9,7 @@ import type { LatLon } from "@whereabouts/shared/geo"
 import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
 import type { MapDetail } from "@whereabouts/shared/protocol/config"
 import type { QuestionView } from "@whereabouts/shared/protocol/views"
-import { FeatureType, QuestionType } from "@whereabouts/shared/questions"
+import { FeatureType, QuestionType, type PartOf } from "@whereabouts/shared/questions"
 import { FEATURE_TYPE_DISPLAY_INFO } from "../question-types"
 import type { DetailLayers } from "../map/detail-layers"
 import type { GameMap } from "../map/map"
@@ -31,6 +31,7 @@ export interface RevealedAnswer {
   shape: RevealedShape
   /** The answer's photo, on a round that showed none while guessing. */
   photo?: CommonsFile
+  partOf?: PartOf
 }
 
 /** What a round needs of the paint and its map. */
@@ -105,7 +106,8 @@ const fillTypeFor = (question: QuestionView, detail: MapDetail): FillType | unde
 /** What an area round asks to cover: "country", "island", "state"… */
 export const areaNoun = (question: QuestionView): string => {
   if (question.type === QuestionType.FEATURE) return FEATURE_TYPE_DISPLAY_INFO[question.feature].noun
-  return question.type === QuestionType.STATE ? "state" : "country"
+  if (question.type === QuestionType.STATE) return "state"
+  return question.type === QuestionType.PART_OF_COUNTRY ? "place" : "country"
 }
 
 /** Whether Done now is a pass (nothing painted), clucking if so. */

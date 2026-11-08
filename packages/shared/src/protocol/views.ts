@@ -11,6 +11,7 @@ import {
   type FeatureType,
   type FlagClue,
   type NameClue,
+  type PartOf,
   type PhotoClue
 } from "../questions.ts"
 import type { PlayingPlayerView, RoundYouRole, SpectatorView, YouRole } from "../roles.ts"
@@ -95,6 +96,13 @@ interface StateQuestionView {
   answer: AnswerView
 }
 
+/** Whose it is waits for the reveal. */
+interface PartOfCountryQuestionView {
+  type: QuestionType.PART_OF_COUNTRY
+  clue: NameClue
+  answer: AnswerView
+}
+
 /** A question while it is asked, by type as Question is: never where its answer is. */
 export type QuestionView =
   | LandmarkQuestionView
@@ -103,6 +111,7 @@ export type QuestionView =
   | FlagQuestionView
   | FeatureQuestionView
   | StateQuestionView
+  | PartOfCountryQuestionView
 
 /** The flag a question shows: a flag round's, or the one beside a country's name. */
 export const flagShown = (question: QuestionView): FlagCode | undefined => {
@@ -162,6 +171,8 @@ export interface RevealView {
   wiki: WikiTitle
   /** A photo of the answer, on a round that showed none while guessing (see photos.ts). */
   photo?: CommonsFile
+  /** On a part of a country: whose, and how. */
+  partOf?: PartOf
   results: RoundResultView[]
   /** Ids of players who have pressed Ready. The round advances when everyone connected has. */
   ready: PlayerId[]
@@ -216,7 +227,7 @@ interface FeaturePlayedRound {
   picture: ShapePicture
 }
 
-/** Any other round: a state's shape where it was painted whole, else the round's photo or flag, if any. */
+/** Any other round: a state's or part of a country's shape where it was painted whole, else the round's photo or flag, if any. */
 interface OtherPlayedRound {
   type: Exclude<QuestionType, QuestionType.COUNTRY | QuestionType.FEATURE>
   label: string

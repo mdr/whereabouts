@@ -59,7 +59,8 @@ const QuestionViewSchema = z.discriminatedUnion("type", [
     clue: NameClueViewSchema,
     answer: AreaAnswerViewSchema
   }),
-  z.strictObject({ type: z.literal(QuestionType.STATE), clue: NameClueViewSchema, answer: AnswerViewSchema })
+  z.strictObject({ type: z.literal(QuestionType.STATE), clue: NameClueViewSchema, answer: AnswerViewSchema }),
+  z.strictObject({ type: z.literal(QuestionType.PART_OF_COUNTRY), clue: NameClueViewSchema, answer: AnswerViewSchema })
 ])
 
 const PhotoPictureSchema = z.strictObject({ type: z.literal(PictureType.PHOTO), photo: CommonsFileSchema })
@@ -174,6 +175,7 @@ const RevealViewSchema = z.strictObject({
   label: z.string(),
   wiki: WikiTitleSchema,
   photo: CommonsFileSchema.optional(),
+  partOf: z.strictObject({ status: z.string(), flag: FlagCodeSchema }).optional(),
   results: z.array(RoundResultViewSchema),
   ready: z.array(PlayerIdSchema)
 })
@@ -198,7 +200,13 @@ const PlayedRoundSchema = z.discriminatedUnion("type", [
     picture: ShapePictureSchema
   }),
   z.strictObject({
-    type: z.enum([QuestionType.LANDMARK, QuestionType.PLACE, QuestionType.FLAG, QuestionType.STATE]),
+    type: z.enum([
+      QuestionType.LANDMARK,
+      QuestionType.PLACE,
+      QuestionType.FLAG,
+      QuestionType.STATE,
+      QuestionType.PART_OF_COUNTRY
+    ]),
     label: z.string(),
     picture: PlayedRoundPictureSchema
   })

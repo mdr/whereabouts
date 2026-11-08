@@ -86,7 +86,7 @@ export const vrReveal = (
   own: Pick<VrReveal, "actions" | "table" | "note" | "paints">
 ): VrReveal => ({
   ...own,
-  label: revealed.label,
+  label: revealed.partOf ? `${revealed.label}, ${revealed.partOf.status}` : revealed.label,
   answer: vrAnswer(revealed),
   focus: revealed.answer,
   stateRound: question.type === QuestionType.STATE,

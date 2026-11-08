@@ -74,6 +74,11 @@ export class RevealPage extends Screen {
     await expect(this.page.getByTestId(factLineTestIds.fact), "the line about the answer matches").toHaveText(fact)
   }
 
+  /** On a part of a country: whose it is, after its name. */
+  async expectPartOf(status: string): Promise<void> {
+    await expect(this.page.getByTestId(answerTestIds.partOf), "the answer says whose it is").toHaveText(`, ${status}`)
+  }
+
   async expectRowCount(count: number): Promise<void> {
     await expect(this.page.getByTestId(revealRowTestIds.playerRow), `the reveal lists ${count} players`).toHaveCount(
       count

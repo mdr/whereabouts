@@ -36,6 +36,7 @@ export type CatalogueEntry = EntryBase &
     | { type: QuestionType.FLAG; clue: { type: ClueType.FLAG }; answer: StoredAnswer }
     | { type: QuestionType.FEATURE; clue: NameClue; answer: { type: AnswerType.AREA } }
     | { type: QuestionType.STATE; clue: NameClue; answer: StoredAnswer }
+    | { type: QuestionType.PART_OF_COUNTRY; clue: NameClue; answer: StoredAnswer }
   )
 
 const PointSchema = z.strictObject({ type: z.literal(AnswerType.POINT), tolerance: KmSchema })
@@ -54,7 +55,13 @@ export const CatalogueEntrySchema: z.ZodType<CatalogueEntry> = z.discriminatedUn
     answer: AnyAnswerSchema
   }),
   z.strictObject({ ...base, type: z.literal(QuestionType.FEATURE), clue: NameClueSchema, answer: AreaSchema }),
-  z.strictObject({ ...base, type: z.literal(QuestionType.STATE), clue: NameClueSchema, answer: AnyAnswerSchema })
+  z.strictObject({ ...base, type: z.literal(QuestionType.STATE), clue: NameClueSchema, answer: AnyAnswerSchema }),
+  z.strictObject({
+    ...base,
+    type: z.literal(QuestionType.PART_OF_COUNTRY),
+    clue: NameClueSchema,
+    answer: AnyAnswerSchema
+  })
 ])
 
 /** The question as the game sees it, with what it takes from its place. */
@@ -100,5 +107,8 @@ export const joinQuestion = (entry: CatalogueEntry, places: ReadonlyMap<PlaceId,
       return { ...common, type: entry.type, feature: place.feature, clue: entry.clue, answer: area() }
     case QuestionType.STATE:
       return { ...common, type: entry.type, clue: entry.clue, answer: answer(entry.answer) }
+    case QuestionType.PART_OF_COUNTRY:
+      if (!place.partOf) throw new Error(`${entry.id}: ${place.id} is not part of a country`)
+      return { ...common, type: entry.type, clue: entry.clue, answer: answer(entry.answer), partOf: place.partOf }
   }
 }

@@ -64,6 +64,14 @@ export const QUESTION_TYPE_DISPLAY_INFO: Record<QuestionType, QuestionTypeDispla
     singularForm: "US state",
     pluralForm: "US states",
     colour: "#fff176"
+  },
+  [QuestionType.PART_OF_COUNTRY]: {
+    heading: "Parts of countries",
+    description: "Territories, island regions and UK nations",
+    roundName: "Part of a country",
+    singularForm: "part of a country",
+    pluralForm: "parts of countries",
+    colour: "#4db6ac"
   }
 }
 

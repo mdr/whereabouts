@@ -39,7 +39,7 @@ export const RevealCards = ({
   return (
     <>
       <QuestionCard question={question} hud={CardPlace.REVEAL} credit photo={revealed.photo} foldable startFolded>
-        <Answer label={revealed.label} wiki={revealed.wiki} />
+        <Answer label={revealed.label} wiki={revealed.wiki} partOf={revealed.partOf} />
         <FactLine fact={fact} />
         {lookalikes && <LookalikeFlags lookalikes={lookalikes} />}
       </QuestionCard>

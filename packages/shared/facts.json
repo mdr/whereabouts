@@ -9945,7 +9945,7 @@
       }
     ]
   },
-  "hong-kong": {
+  "part-hong-kong": {
     "about": [
       {
         "type": "FAME",
@@ -11039,7 +11039,7 @@
       }
     ]
   },
-  "crete": {
+  "part-crete": {
     "about": [
       {
         "type": "FAME",
@@ -17091,7 +17091,7 @@
       }
     ]
   },
-  "island-greenland": {
+  "part-greenland": {
     "about": [
       {
         "type": "FAME",
@@ -17542,7 +17542,7 @@
       }
     ]
   },
-  "island-tasmania": {
+  "part-tasmania": {
     "about": [
       {
         "type": "FAME",
@@ -19276,6 +19276,846 @@
         "type": "TRIVIA",
         "text": "Its name comes from a Native American language and means \"at the big plains\".",
         "source": "https://en.wikipedia.org/wiki/Wyoming"
+      }
+    ]
+  },
+  "part-england": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Where the Industrial Revolution began in the 18th century, making it the world's first industrialised nation.",
+        "source": "https://en.wikipedia.org/wiki/England"
+      },
+      {
+        "type": "FAME",
+        "text": "Home to Oxford and Cambridge, the two oldest universities in the English-speaking world.",
+        "source": "https://en.wikipedia.org/wiki/England"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its name means 'land of the Angles', a Germanic tribe who settled in Britain in the early Middle Ages.",
+        "source": "https://en.wikipedia.org/wiki/England"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The world's first public inter-city railway, between Liverpool and Manchester, opened here in 1830.",
+        "source": "https://en.wikipedia.org/wiki/England"
+      }
+    ]
+  },
+  "part-scotland": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Home of golf: the modern game began here in the 15th century, and St Andrews' Old Course draws pilgrims.",
+        "source": "https://en.wikipedia.org/wiki/Scotland"
+      },
+      {
+        "type": "FAME",
+        "text": "Contains Ben Nevis, at 1,345 metres the highest peak in the British Isles.",
+        "source": "https://en.wikipedia.org/wiki/Scotland"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its national animal is the unicorn, a Scottish heraldic symbol since the 12th century.",
+        "source": "https://en.wikipedia.org/wiki/Scotland"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Has an estimated 900 islands, of which roughly 118 are inhabited.",
+        "source": "https://en.wikipedia.org/wiki/Scotland"
+      }
+    ]
+  },
+  "part-wales": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Snowdon, at 1,085 metres, is the highest mountain in Britain outside the Scottish Highlands.",
+        "source": "https://en.wikipedia.org/wiki/Snowdon"
+      },
+      {
+        "type": "FAME",
+        "text": "Four UNESCO World Heritage Sites here include the castles and town walls built by Edward I.",
+        "source": "https://en.wikipedia.org/wiki/Wales"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Crib Goch in Snowdonia is the wettest spot in the UK, with about 4.5 metres of rain a year.",
+        "source": "https://en.wikipedia.org/wiki/Wales"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In legend, a red dragon for the Britons and a white one for the Anglo-Saxons were found beneath a fort at Dinas Emrys.",
+        "source": "https://en.wikipedia.org/wiki/Wales"
+      }
+    ]
+  },
+  "part-northern-ireland": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Home to Lough Neagh, the largest lake in the British Isles.",
+        "source": "https://en.wikipedia.org/wiki/Northern_Ireland"
+      },
+      {
+        "type": "FAME",
+        "text": "Its Giant's Causeway is a UNESCO World Heritage Site of about 40,000 interlocking basalt columns.",
+        "source": "https://en.wikipedia.org/wiki/Giant%27s_Causeway"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Lough Neagh supplies about 40 per cent of Northern Ireland's drinking water.",
+        "source": "https://en.wikipedia.org/wiki/Lough_Neagh"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Titanic was built in its capital, Belfast, at the Harland and Wolff shipyard.",
+        "source": "https://en.wikipedia.org/wiki/Titanic"
+      }
+    ]
+  },
+  "part-isle-of-man": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Famed for the TT motorcycle races, held on its public roads.",
+        "source": "https://en.wikipedia.org/wiki/Isle_of_Man"
+      },
+      {
+        "type": "FAME",
+        "text": "Its parliament, Tynwald, claims to be the world's oldest continuously governing body.",
+        "source": "https://en.wikipedia.org/wiki/Tynwald"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Home of the Manx cat, a breed with a short tail or none at all.",
+        "source": "https://en.wikipedia.org/wiki/Isle_of_Man"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In 1881 it became the first national legislature to give some women the vote in a general election.",
+        "source": "https://en.wikipedia.org/wiki/Isle_of_Man"
+      }
+    ]
+  },
+  "part-jersey": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Famous for Jersey Royals, early new potatoes grown on its south-facing coastal slopes.",
+        "source": "https://en.wikipedia.org/wiki/Jersey"
+      },
+      {
+        "type": "FAME",
+        "text": "Home to Jersey Zoo, set up by the zoologist and author Gerald Durrell.",
+        "source": "https://en.wikipedia.org/wiki/Jersey"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The 1980s BBC detective drama Bergerac was set here.",
+        "source": "https://en.wikipedia.org/wiki/Jersey"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its capital, St Helier, is named for a hermit who, legend says, picked up his own head after being beheaded.",
+        "source": "https://en.wikipedia.org/wiki/Jersey"
+      }
+    ]
+  },
+  "part-guernsey": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Known worldwide for its cattle, prized for their rich, creamy milk.",
+        "source": "https://en.wikipedia.org/wiki/Guernsey"
+      },
+      {
+        "type": "FAME",
+        "text": "The French writer Victor Hugo spent fifteen years in exile here, writing some of his best-known works.",
+        "source": "https://en.wikipedia.org/wiki/Guernsey"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Until 1806 a tidal channel made its northern tip an island at high tide, until it was drained as a defence measure.",
+        "source": "https://en.wikipedia.org/wiki/Guernsey"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its Little Chapel is covered inside and out with seashells, pebbles and broken china.",
+        "source": "https://en.wikipedia.org/wiki/Little_Chapel"
+      }
+    ]
+  },
+  "part-gibraltar": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Dominated by a 426-metre limestone Rock, one of the Pillars of Hercules of ancient legend.",
+        "source": "https://en.wikipedia.org/wiki/Gibraltar"
+      },
+      {
+        "type": "FAME",
+        "text": "Its Barbary macaques are the only wild monkeys in Europe, though everyone calls them apes.",
+        "source": "https://en.wikipedia.org/wiki/Gibraltar"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The airport runway crosses the main road, so traffic is stopped by barriers whenever a plane lands or takes off.",
+        "source": "https://en.wikipedia.org/wiki/Gibraltar"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Gorham's Cave holds evidence that Neanderthals lived here around 50,000 years ago.",
+        "source": "https://en.wikipedia.org/wiki/Gibraltar"
+      }
+    ]
+  },
+  "part-bermuda": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Home to St George's, the oldest continuously inhabited English town in the New World.",
+        "source": "https://en.wikipedia.org/wiki/Bermuda"
+      },
+      {
+        "type": "FAME",
+        "text": "Famous for its pink sand beaches and clear blue water.",
+        "source": "https://en.wikipedia.org/wiki/Bermuda"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Settled by accident: in 1609 the Sea Venture, bound for Jamestown, ran onto its reef, and everyone aboard survived.",
+        "source": "https://en.wikipedia.org/wiki/Bermuda"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its Olympic team marches in the Opening Ceremony in Bermuda shorts, in summer and winter alike.",
+        "source": "https://en.wikipedia.org/wiki/Bermuda"
+      }
+    ]
+  },
+  "part-cayman-islands": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Has one of the highest standards of living in the Caribbean, built on financial services and tourism.",
+        "source": "https://en.wikipedia.org/wiki/Cayman_Islands"
+      },
+      {
+        "type": "FAME",
+        "text": "Stingray City, a shallow sandbar in Grand Cayman, lets visitors pet and swim with southern stingrays.",
+        "source": "https://en.wikipedia.org/wiki/Stingray_City,_Grand_Cayman"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Columbus sighted the islands in 1503 and named them 'Las Tortugas' after the many turtles.",
+        "source": "https://en.wikipedia.org/wiki/Cayman_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The stingrays gather there because divers began feeding them squid in the 1980s, and they learned to follow boat engines.",
+        "source": "https://en.wikipedia.org/wiki/Cayman_Islands"
+      }
+    ]
+  },
+  "part-falkland-islands": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Home to five species of penguin and some of the planet's largest albatross colonies.",
+        "source": "https://en.wikipedia.org/wiki/Falkland_Islands"
+      },
+      {
+        "type": "FAME",
+        "text": "Sheep farming for high-quality wool is a mainstay of the economy, alongside fishing and tourism.",
+        "source": "https://en.wikipedia.org/wiki/Falkland_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its only native land mammal, the warrah, was hunted to extinction by European settlers.",
+        "source": "https://en.wikipedia.org/wiki/Falkland_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its weekly newspaper is called The Penguin News.",
+        "source": "https://en.wikipedia.org/wiki/Falkland_Islands"
+      }
+    ]
+  },
+  "part-faroe-islands": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "A volcanic archipelago built from layers of basalt lava that erupted 50 to 60 million years ago.",
+        "source": "https://en.wikipedia.org/wiki/Faroe_Islands"
+      },
+      {
+        "type": "FAME",
+        "text": "Its parliament, the Løgting, claims to be one of the world's oldest continuously running parliaments.",
+        "source": "https://en.wikipedia.org/wiki/Faroe_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The name most likely means 'sheep islands'.",
+        "source": "https://en.wikipedia.org/wiki/Faroe_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Tunnels through the mountains, plus bridges and causeways, link nearly all its settlements by road.",
+        "source": "https://en.wikipedia.org/wiki/Faroe_Islands"
+      }
+    ]
+  },
+  "part-svalbard": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Home to the Global Seed Vault, a secure backup of crop seeds from around the world.",
+        "source": "https://en.wikipedia.org/wiki/Svalbard_Global_Seed_Vault"
+      },
+      {
+        "type": "FAME",
+        "text": "Ny-Ålesund here is the world's northernmost functioning civilian settlement.",
+        "source": "https://en.wikipedia.org/wiki/Svalbard"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The midnight sun lasts 99 days at its southern edge and 141 days at its northern edge.",
+        "source": "https://en.wikipedia.org/wiki/Svalbard"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "About 60 per cent of the archipelago is covered by glaciers.",
+        "source": "https://en.wikipedia.org/wiki/Svalbard"
+      }
+    ]
+  },
+  "part-french-guiana": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Home to Europe's spaceport near the equator, which launched the James Webb Space Telescope.",
+        "source": "https://en.wikipedia.org/wiki/French_Guiana"
+      },
+      {
+        "type": "FAME",
+        "text": "About 99 per cent forested, with the European Union's largest national park.",
+        "source": "https://en.wikipedia.org/wiki/French_Guiana"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Devil's Island was part of a French penal system, run from 1852 to 1953, that inspired the book Papillon.",
+        "source": "https://en.wikipedia.org/wiki/French_Guiana"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It is France's second-largest region, about a seventh the size of European France, with under four people per square kilometre.",
+        "source": "https://en.wikipedia.org/wiki/French_Guiana"
+      }
+    ]
+  },
+  "part-reunion": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Home to Piton de la Fournaise, one of the most active volcanoes in the world.",
+        "source": "https://en.wikipedia.org/wiki/Piton_de_la_Fournaise"
+      },
+      {
+        "type": "FAME",
+        "text": "A UNESCO World Heritage Site covers about 40 per cent of the island.",
+        "source": "https://en.wikipedia.org/wiki/R%C3%A9union"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Cirque de Mafate, a vast collapsed crater, can be reached only on foot or by helicopter.",
+        "source": "https://en.wikipedia.org/wiki/R%C3%A9union"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Piton des Neiges, the island's highest point, means 'peak of snows', yet snow there is rare.",
+        "source": "https://en.wikipedia.org/wiki/R%C3%A9union"
+      }
+    ]
+  },
+  "part-guadeloupe": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Two main islands that form a butterfly shape seen from above.",
+        "source": "https://en.wikipedia.org/wiki/Guadeloupe"
+      },
+      {
+        "type": "FAME",
+        "text": "Its volcano, La Grande Soufrière, is the highest peak in the Lesser Antilles at 1,467 metres.",
+        "source": "https://en.wikipedia.org/wiki/Guadeloupe"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Columbus named it in 1493 after a shrine to Our Lady of Guadalupe in the Spanish town of Guadalupe.",
+        "source": "https://en.wikipedia.org/wiki/Guadeloupe"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "A 1976 eruption scare saw about 73,600 people leave the south of Basse-Terre, though damage was far less than feared.",
+        "source": "https://en.wikipedia.org/wiki/Guadeloupe"
+      }
+    ]
+  },
+  "part-martinique": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "In 1902 Mont Pelée erupted and destroyed the town of Saint-Pierre, the worst volcanic disaster of the 20th century.",
+        "source": "https://en.wikipedia.org/wiki/Mount_Pel%C3%A9e"
+      },
+      {
+        "type": "FAME",
+        "text": "The third-largest island in the Lesser Antilles, after Trinidad and Guadeloupe.",
+        "source": "https://en.wikipedia.org/wiki/Martinique"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Only three people are known to have survived Pelée's main eruption; one was saved by his dungeon-like jail cell.",
+        "source": "https://en.wikipedia.org/wiki/Mount_Pel%C3%A9e"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The painter Paul Gauguin lived here in 1887, painting its tropical landscape.",
+        "source": "https://en.wikipedia.org/wiki/Martinique"
+      }
+    ]
+  },
+  "part-french-polynesia": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "121 islands and atolls scattered over more than 2,000 kilometres of the South Pacific.",
+        "source": "https://en.wikipedia.org/wiki/French_Polynesia"
+      },
+      {
+        "type": "FAME",
+        "text": "Its best-known islands are Tahiti, home to the capital Papeete, and Bora Bora.",
+        "source": "https://en.wikipedia.org/wiki/French_Polynesia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Samuel Wallis was the first European to visit Tahiti, in 1767; James Cook arrived two years later to watch the transit of Venus.",
+        "source": "https://en.wikipedia.org/wiki/French_Polynesia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Paul Gauguin spent the last years of his life here.",
+        "source": "https://en.wikipedia.org/wiki/French_Polynesia"
+      }
+    ]
+  },
+  "part-new-caledonia": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Its huge lagoon and the barrier reef around it are a UNESCO World Heritage Site.",
+        "source": "https://en.wikipedia.org/wiki/New_Caledonia"
+      },
+      {
+        "type": "FAME",
+        "text": "Nickel was found here in 1864, and mining began in earnest after 1876.",
+        "source": "https://en.wikipedia.org/wiki/New_Caledonia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Captain Cook named it after Scotland, which the northeast coast reminded him of.",
+        "source": "https://en.wikipedia.org/wiki/New_Caledonia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It flies two flags side by side: the French tricolour and the Kanak flag.",
+        "source": "https://en.wikipedia.org/wiki/New_Caledonia"
+      }
+    ]
+  },
+  "part-corsica": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The fourth-largest island in the Mediterranean, and the birthplace of Napoleon Bonaparte.",
+        "source": "https://en.wikipedia.org/wiki/Corsica"
+      },
+      {
+        "type": "FAME",
+        "text": "Mountains cover two-thirds of it, and the GR20 trail across them is one of Europe's most notable hikes.",
+        "source": "https://en.wikipedia.org/wiki/Corsica"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It was an independent republic from 1755 under Pasquale Paoli, after Genoese rule that began in 1284.",
+        "source": "https://en.wikipedia.org/wiki/Corsica"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its people became known across Europe as mercenary soldiers and officers.",
+        "source": "https://en.wikipedia.org/wiki/Corsica"
+      }
+    ]
+  },
+  "part-puerto-rico": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The Puerto Rico Trench, off its north coast, holds the deepest point in the Atlantic Ocean.",
+        "source": "https://en.wikipedia.org/wiki/Puerto_Rico_Trench"
+      },
+      {
+        "type": "FAME",
+        "text": "El Yunque is the only tropical rainforest in the US Forest Service system.",
+        "source": "https://en.wikipedia.org/wiki/Puerto_Rico"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Mosquito Bay, on Vieques, was named the world's brightest bioluminescent bay by Guinness World Records.",
+        "source": "https://en.wikipedia.org/wiki/Mosquito_Bay"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The coquí, a small frog, is named after the sound of its call.",
+        "source": "https://en.wikipedia.org/wiki/Puerto_Rico"
+      }
+    ]
+  },
+  "part-guam": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The largest and southernmost of the Mariana Islands, and the largest island in Micronesia.",
+        "source": "https://en.wikipedia.org/wiki/Guam"
+      },
+      {
+        "type": "FAME",
+        "text": "Ferdinand Magellan was the first European to visit and claim it, in 1521.",
+        "source": "https://en.wikipedia.org/wiki/Guam"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its unofficial motto is 'Where America's Day Begins', a nod to its place by the International Date Line.",
+        "source": "https://en.wikipedia.org/wiki/Guam"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The accidentally introduced brown tree snake nearly wiped out its native birds.",
+        "source": "https://en.wikipedia.org/wiki/Guam"
+      }
+    ]
+  },
+  "part-us-virgin-islands": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Three main islands, St Thomas, St John and St Croix, plus dozens of smaller ones.",
+        "source": "https://en.wikipedia.org/wiki/United_States_Virgin_Islands"
+      },
+      {
+        "type": "FAME",
+        "text": "Once the Danish West Indies, until the US bought them from Denmark in 1917 for $25 million.",
+        "source": "https://en.wikipedia.org/wiki/United_States_Virgin_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Unlike the rest of the US, traffic here drives on the left.",
+        "source": "https://en.wikipedia.org/wiki/United_States_Virgin_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Point Udall, on St Croix, is the easternmost point of the United States.",
+        "source": "https://en.wikipedia.org/wiki/United_States_Virgin_Islands"
+      }
+    ]
+  },
+  "part-aruba": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Just 29 kilometres from Venezuela's Paraguaná peninsula, it is defined by white sandy beaches.",
+        "source": "https://en.wikipedia.org/wiki/Aruba"
+      },
+      {
+        "type": "FAME",
+        "text": "Arikok National Park protects about a fifth of the island.",
+        "source": "https://en.wikipedia.org/wiki/Aruba"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its name may come from the Caquetío word Oruba, meaning 'well-situated island'.",
+        "source": "https://en.wikipedia.org/wiki/Aruba"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Gold was found here in 1824 by a 12-year-old herder named Willem Rasmijn.",
+        "source": "https://en.wikipedia.org/wiki/Aruba"
+      }
+    ]
+  },
+  "part-curacao": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The largest of the ABC islands, about 65 kilometres north of Venezuela.",
+        "source": "https://en.wikipedia.org/wiki/Cura%C3%A7ao"
+      },
+      {
+        "type": "FAME",
+        "text": "Known for its bitter-orange liqueur, flavoured with dried peel of the laraha fruit.",
+        "source": "https://en.wikipedia.org/wiki/Cura%C3%A7ao"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Papiamentu, a creole spoken across the ABC islands, is official alongside Dutch and English.",
+        "source": "https://en.wikipedia.org/wiki/Cura%C3%A7ao"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It is the smallest nation by population and area ever to qualify for a football World Cup.",
+        "source": "https://en.wikipedia.org/wiki/Cura%C3%A7ao"
+      }
+    ]
+  },
+  "part-macau": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Under Portuguese rule from the 1550s until 1999, it was the last European colony in Asia.",
+        "source": "https://en.wikipedia.org/wiki/Macau"
+      },
+      {
+        "type": "FAME",
+        "text": "Its historic centre blends Chinese and Portuguese architecture and became a UNESCO World Heritage Site in 2005.",
+        "source": "https://en.wikipedia.org/wiki/Macau"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Two-thirds of its land has been reclaimed from the sea.",
+        "source": "https://en.wikipedia.org/wiki/Macau"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Among the most densely populated places on Earth.",
+        "source": "https://en.wikipedia.org/wiki/Macau"
+      }
+    ]
+  },
+  "part-canary-islands": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "An archipelago of seven main islands, including Fuerteventura, Gran Canaria and Lanzarote.",
+        "source": "https://en.wikipedia.org/wiki/Canary_Islands"
+      },
+      {
+        "type": "FAME",
+        "text": "Four of Spain's sixteen national parks are here, among them Timanfaya's volcanic landscape on Lanzarote.",
+        "source": "https://en.wikipedia.org/wiki/National_parks_of_Spain"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The name likely comes from Latin for 'Islands of the Dogs'; the canary bird is named after the islands.",
+        "source": "https://en.wikipedia.org/wiki/Canary_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "London's Canary Wharf is named after a warehouse that handled imports from these islands.",
+        "source": "https://en.wikipedia.org/wiki/Canary_Islands"
+      }
+    ]
+  },
+  "part-balearic-islands": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Ibiza is famed for its electronic music and nightlife.",
+        "source": "https://en.wikipedia.org/wiki/Balearic_Islands"
+      },
+      {
+        "type": "FAME",
+        "text": "Mallorca is by far the largest island, home to more than three-quarters of the population.",
+        "source": "https://en.wikipedia.org/wiki/Balearic_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Mayonnaise is said to originate from Mahón, the main town of Menorca.",
+        "source": "https://en.wikipedia.org/wiki/Balearic_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Chopin spent the winter of 1838 to 1839 in Valldemossa, on Mallorca, with George Sand.",
+        "source": "https://en.wikipedia.org/wiki/Valldemossa"
+      }
+    ]
+  },
+  "part-azores": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Nine volcanic islands about 1,400 kilometres west of mainland Portugal.",
+        "source": "https://en.wikipedia.org/wiki/Azores"
+      },
+      {
+        "type": "FAME",
+        "text": "Mount Pico, on the island of Pico, is the highest point in all of Portugal.",
+        "source": "https://en.wikipedia.org/wiki/Azores"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "They sit on a triple junction between three of the world's major tectonic plates.",
+        "source": "https://en.wikipedia.org/wiki/Azores"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Azores High, a semi-permanent Atlantic pressure system, is named after them.",
+        "source": "https://en.wikipedia.org/wiki/Azores"
+      }
+    ]
+  },
+  "part-madeira": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Famous for Madeira wine, a fortified wine named after the island.",
+        "source": "https://en.wikipedia.org/wiki/Madeira"
+      },
+      {
+        "type": "FAME",
+        "text": "Its ancient laurel forests, the laurisilva, are a UNESCO World Heritage Site.",
+        "source": "https://en.wikipedia.org/wiki/Madeira"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Founding Fathers of the United States are said to have toasted independence with Madeira wine.",
+        "source": "https://en.wikipedia.org/wiki/Madeira"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Charles I, the last Austrian emperor, died here in exile in 1922.",
+        "source": "https://en.wikipedia.org/wiki/Madeira"
+      }
+    ]
+  },
+  "part-sicily": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The largest and most populous island in the Mediterranean.",
+        "source": "https://en.wikipedia.org/wiki/Sicily"
+      },
+      {
+        "type": "FAME",
+        "text": "Its landmark, Mount Etna, is the tallest active volcano in Europe.",
+        "source": "https://en.wikipedia.org/wiki/Sicily"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its triangular shape earned it the ancient name Trinacria.",
+        "source": "https://en.wikipedia.org/wiki/Sicily"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Muslim rule introduced lemons, oranges, pistachios and sugar cane.",
+        "source": "https://en.wikipedia.org/wiki/Sicily"
+      }
+    ]
+  },
+  "part-sardinia": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The second-largest island in the Mediterranean, after Sicily.",
+        "source": "https://en.wikipedia.org/wiki/Sardinia"
+      },
+      {
+        "type": "FAME",
+        "text": "About 7,000 nuraghi, ancient stone towers, dot the landscape.",
+        "source": "https://en.wikipedia.org/wiki/Sardinia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its own Sardinian language is one of Italy's twelve officially protected minority languages.",
+        "source": "https://en.wikipedia.org/wiki/Sardinia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In 1861 its kingdom became the Kingdom of Italy, when its parliament changed the name.",
+        "source": "https://en.wikipedia.org/wiki/Sardinia"
+      }
+    ]
+  },
+  "part-galapagos-islands": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Famous for endemic species, such as giant tortoises, that Charles Darwin studied in the 1830s.",
+        "source": "https://en.wikipedia.org/wiki/Gal%C3%A1pagos_Islands"
+      },
+      {
+        "type": "FAME",
+        "text": "A UNESCO World Heritage Site since 1978, spread over 127 islands, islets and rocks.",
+        "source": "https://en.wikipedia.org/wiki/Gal%C3%A1pagos_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its name comes from its native giant tortoises, called galápagos in Spanish.",
+        "source": "https://en.wikipedia.org/wiki/Gal%C3%A1pagos_Islands"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Ecuador annexed it on 12 February 1832, which is Darwin's birthday.",
+        "source": "https://en.wikipedia.org/wiki/Gal%C3%A1pagos_Islands"
+      }
+    ]
+  },
+  "part-easter-island": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Renowned for nearly 1,000 monumental statues called moai.",
+        "source": "https://en.wikipedia.org/wiki/Easter_Island"
+      },
+      {
+        "type": "FAME",
+        "text": "One of the world's most remote inhabited islands, about 3,500 kilometres from mainland Chile.",
+        "source": "https://en.wikipedia.org/wiki/Easter_Island"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Dutch navigator Jacob Roggeveen reached it on Easter Sunday, 1722.",
+        "source": "https://en.wikipedia.org/wiki/Easter_Island"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It is the only territory in Polynesia where Spanish is an official language.",
+        "source": "https://en.wikipedia.org/wiki/Easter_Island"
+      }
+    ]
+  },
+  "part-zanzibar": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Known as the Spice Islands, it was famed worldwide for its cloves.",
+        "source": "https://en.wikipedia.org/wiki/Zanzibar"
+      },
+      {
+        "type": "FAME",
+        "text": "Stone Town, its historic centre, is a UNESCO World Heritage Site.",
+        "source": "https://en.wikipedia.org/wiki/Zanzibar"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The British bombardment of 1896, often called the shortest war in history, ended within an hour.",
+        "source": "https://en.wikipedia.org/wiki/Zanzibar"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Home to the Zanzibar red colobus, one of Africa's rarest primates.",
+        "source": "https://en.wikipedia.org/wiki/Zanzibar"
       }
     ]
   }

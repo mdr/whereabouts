@@ -7,7 +7,9 @@ const of = (...types: QuestionType[]): Question[] => CATALOGUE.filter((question)
 
 describe("the reveal photos", () => {
   const shown = new Set<string>(
-    of(QuestionType.PLACE, QuestionType.FEATURE, QuestionType.STATE).map((question) => question.place)
+    of(QuestionType.PLACE, QuestionType.FEATURE, QuestionType.STATE, QuestionType.PART_OF_COUNTRY).map(
+      (question) => question.place
+    )
   )
 
   it("are for places a round shows them for", () => {
@@ -23,8 +25,13 @@ describe("the reveal photos", () => {
     }
   })
 
-  it("give every place-name, island, lake, sea and US state round a photo", () => {
-    for (const question of of(QuestionType.PLACE, QuestionType.FEATURE, QuestionType.STATE))
+  it("give every place-name, island, lake, sea, US state and part-of-a-country round a photo", () => {
+    for (const question of of(
+      QuestionType.PLACE,
+      QuestionType.FEATURE,
+      QuestionType.STATE,
+      QuestionType.PART_OF_COUNTRY
+    ))
       expect(revealPhoto(question), question.id).toBeDefined()
   })
 

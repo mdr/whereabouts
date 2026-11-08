@@ -13,3 +13,8 @@
 .wikiLink svg {
   vertical-align: -1px;
 }
+.flag {
+  height: 12px;
+  margin-left: 6px;
+  vertical-align: -1px;
+}

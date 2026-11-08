@@ -1,5 +1,5 @@
 import { revealPhoto } from "@whereabouts/shared/catalogue/photos"
-import { answerCentre, type Outlines, type Question } from "@whereabouts/shared/questions"
+import { QuestionType, answerCentre, type Outlines, type Question } from "@whereabouts/shared/questions"
 import type { RevealedAnswer } from "./round"
 import { revealedShape } from "./revealed-shape"
 
@@ -9,5 +9,6 @@ export const revealedFromQuestion = (question: Question, outlines: Outlines): Re
   wiki: question.wiki,
   answer: answerCentre(question.answer),
   shape: revealedShape(question.answer, outlines),
-  photo: revealPhoto(question)
+  photo: revealPhoto(question),
+  ...(question.type === QuestionType.PART_OF_COUNTRY ? { partOf: question.partOf } : {})
 })

@@ -2569,13 +2569,6 @@
     "answer": { "type": "POINT", "tolerance": 250 }
   },
   {
-    "id": "hong-kong",
-    "type": "PLACE",
-    "place": "hong-kong",
-    "clue": { "type": "NAME", "prompt": "Where is Hong Kong?" },
-    "answer": { "type": "POINT", "tolerance": 200 }
-  },
-  {
     "id": "guangzhou",
     "type": "PLACE",
     "place": "guangzhou",
@@ -2888,13 +2881,6 @@
     "type": "PLACE",
     "place": "tenerife",
     "clue": { "type": "NAME", "prompt": "Where is Tenerife?" },
-    "answer": { "type": "POINT", "tolerance": 150 }
-  },
-  {
-    "id": "crete",
-    "type": "PLACE",
-    "place": "crete",
-    "clue": { "type": "NAME", "prompt": "Where is Crete?" },
     "answer": { "type": "POINT", "tolerance": 150 }
   },
   {
@@ -4663,13 +4649,6 @@
   { "id": "flag-zm", "type": "FLAG", "place": "zambia", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   { "id": "flag-zw", "type": "FLAG", "place": "zimbabwe", "clue": { "type": "FLAG" }, "answer": { "type": "AREA" } },
   {
-    "id": "island-greenland",
-    "type": "FEATURE",
-    "place": "island-greenland",
-    "clue": { "type": "NAME", "prompt": "Paint the whole of Greenland" },
-    "answer": { "type": "AREA" }
-  },
-  {
     "id": "island-new-guinea",
     "type": "FEATURE",
     "place": "island-new-guinea",
@@ -4793,13 +4772,6 @@
     "type": "FEATURE",
     "place": "island-banks-island",
     "clue": { "type": "NAME", "prompt": "Paint the whole of Banks Island" },
-    "answer": { "type": "AREA" }
-  },
-  {
-    "id": "island-tasmania",
-    "type": "FEATURE",
-    "place": "island-tasmania",
-    "clue": { "type": "NAME", "prompt": "Paint the whole of Tasmania" },
     "answer": { "type": "AREA" }
   },
   {
@@ -5304,6 +5276,279 @@
     "type": "STATE",
     "place": "state-wyoming",
     "clue": { "type": "NAME", "prompt": "Paint the whole of Wyoming" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-england",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-england",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of England" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-scotland",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-scotland",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Scotland" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-wales",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-wales",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Wales" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-northern-ireland",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-northern-ireland",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Northern Ireland" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-isle-of-man",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-isle-of-man",
+    "clue": { "type": "NAME", "prompt": "Where is the Isle of Man?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-jersey",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-jersey",
+    "clue": { "type": "NAME", "prompt": "Where is Jersey?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-guernsey",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-guernsey",
+    "clue": { "type": "NAME", "prompt": "Where is Guernsey?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-gibraltar",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-gibraltar",
+    "clue": { "type": "NAME", "prompt": "Where is Gibraltar?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-bermuda",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-bermuda",
+    "clue": { "type": "NAME", "prompt": "Where is Bermuda?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-cayman-islands",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-cayman-islands",
+    "clue": { "type": "NAME", "prompt": "Where are the Cayman Islands?" },
+    "answer": { "type": "POINT", "tolerance": 40 }
+  },
+  {
+    "id": "part-falkland-islands",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-falkland-islands",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of the Falkland Islands" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-greenland",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-greenland",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Greenland" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-faroe-islands",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-faroe-islands",
+    "clue": { "type": "NAME", "prompt": "Where are the Faroe Islands?" },
+    "answer": { "type": "POINT", "tolerance": 25 }
+  },
+  {
+    "id": "part-svalbard",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-svalbard",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Svalbard" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-french-guiana",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-french-guiana",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of French Guiana" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-reunion",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-reunion",
+    "clue": { "type": "NAME", "prompt": "Where is Réunion?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-guadeloupe",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-guadeloupe",
+    "clue": { "type": "NAME", "prompt": "Where is Guadeloupe?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-martinique",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-martinique",
+    "clue": { "type": "NAME", "prompt": "Where is Martinique?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-french-polynesia",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-french-polynesia",
+    "clue": { "type": "NAME", "prompt": "Where is French Polynesia?" },
+    "answer": { "type": "POINT", "tolerance": 405 }
+  },
+  {
+    "id": "part-new-caledonia",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-new-caledonia",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of New Caledonia" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-corsica",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-corsica",
+    "clue": { "type": "NAME", "prompt": "Where is Corsica?" },
+    "answer": { "type": "POINT", "tolerance": 25 }
+  },
+  {
+    "id": "part-puerto-rico",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-puerto-rico",
+    "clue": { "type": "NAME", "prompt": "Where is Puerto Rico?" },
+    "answer": { "type": "POINT", "tolerance": 40 }
+  },
+  {
+    "id": "part-guam",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-guam",
+    "clue": { "type": "NAME", "prompt": "Where is Guam?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-us-virgin-islands",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-us-virgin-islands",
+    "clue": { "type": "NAME", "prompt": "Where are the US Virgin Islands?" },
+    "answer": { "type": "POINT", "tolerance": 20 }
+  },
+  {
+    "id": "part-aruba",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-aruba",
+    "clue": { "type": "NAME", "prompt": "Where is Aruba?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-curacao",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-curacao",
+    "clue": { "type": "NAME", "prompt": "Where is Curaçao?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-hong-kong",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-hong-kong",
+    "clue": { "type": "NAME", "prompt": "Where is Hong Kong?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-macau",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-macau",
+    "clue": { "type": "NAME", "prompt": "Where is Macau?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-canary-islands",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-canary-islands",
+    "clue": { "type": "NAME", "prompt": "Where are the Canary Islands?" },
+    "answer": { "type": "POINT", "tolerance": 80 }
+  },
+  {
+    "id": "part-balearic-islands",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-balearic-islands",
+    "clue": { "type": "NAME", "prompt": "Where are the Balearic Islands?" },
+    "answer": { "type": "POINT", "tolerance": 40 }
+  },
+  {
+    "id": "part-azores",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-azores",
+    "clue": { "type": "NAME", "prompt": "Where are the Azores?" },
+    "answer": { "type": "POINT", "tolerance": 135 }
+  },
+  {
+    "id": "part-madeira",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-madeira",
+    "clue": { "type": "NAME", "prompt": "Where is Madeira?" },
+    "answer": { "type": "POINT", "tolerance": 80 }
+  },
+  {
+    "id": "part-sicily",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-sicily",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Sicily" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-sardinia",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-sardinia",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Sardinia" },
+    "answer": { "type": "AREA" }
+  },
+  {
+    "id": "part-crete",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-crete",
+    "clue": { "type": "NAME", "prompt": "Where is Crete?" },
+    "answer": { "type": "POINT", "tolerance": 35 }
+  },
+  {
+    "id": "part-galapagos-islands",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-galapagos-islands",
+    "clue": { "type": "NAME", "prompt": "Where are the Galápagos Islands?" },
+    "answer": { "type": "POINT", "tolerance": 75 }
+  },
+  {
+    "id": "part-easter-island",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-easter-island",
+    "clue": { "type": "NAME", "prompt": "Where is Easter Island?" },
+    "answer": { "type": "POINT", "tolerance": 15 }
+  },
+  {
+    "id": "part-zanzibar",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-zanzibar",
+    "clue": { "type": "NAME", "prompt": "Where is Zanzibar?" },
+    "answer": { "type": "POINT", "tolerance": 35 }
+  },
+  {
+    "id": "part-tasmania",
+    "type": "PART_OF_COUNTRY",
+    "place": "part-tasmania",
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Tasmania" },
     "answer": { "type": "AREA" }
   }
 ]

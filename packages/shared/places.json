@@ -1706,7 +1706,6 @@
     "at": { "lat": -22.9111, "lon": -43.2056 }
   },
   { "id": "shanghai", "label": "Shanghai, China", "wiki": "Shanghai", "at": { "lat": 31.2325, "lon": 121.4692 } },
-  { "id": "hong-kong", "label": "Hong Kong", "wiki": "Hong Kong", "at": { "lat": 22.3, "lon": 114.2 } },
   { "id": "guangzhou", "label": "Guangzhou, China", "wiki": "Guangzhou", "at": { "lat": 23.13, "lon": 113.26 } },
   { "id": "shenzhen", "label": "Shenzhen, China", "wiki": "Shenzhen", "at": { "lat": 22.5467, "lon": 114.0544 } },
   { "id": "chongqing", "label": "Chongqing, China", "wiki": "Chongqing", "at": { "lat": 29.5637, "lon": 106.5504 } },
@@ -1797,7 +1796,6 @@
   { "id": "porto", "label": "Porto, Portugal", "wiki": "Porto", "at": { "lat": 41.15, "lon": -8.6108 } },
   { "id": "palma", "label": "Palma, Mallorca", "wiki": "Palma de Mallorca", "at": { "lat": 39.5667, "lon": 2.65 } },
   { "id": "tenerife", "label": "Tenerife", "wiki": "Tenerife", "at": { "lat": 28.2686, "lon": -16.6056 } },
-  { "id": "crete", "label": "Crete", "wiki": "Crete", "at": { "lat": 35.21, "lon": 24.91 } },
   { "id": "krakow", "label": "Kraków, Poland", "wiki": "Kraków", "at": { "lat": 50.0614, "lon": 19.9372 } },
   { "id": "geneva", "label": "Geneva, Switzerland", "wiki": "Geneva", "at": { "lat": 46.2017, "lon": 6.1469 } },
   { "id": "salzburg", "label": "Salzburg, Austria", "wiki": "Salzburg", "at": { "lat": 47.8, "lon": 13.045 } },
@@ -3361,18 +3359,6 @@
     "flag": { "code": "us", "wiki": "Flag of the United States" }
   },
   {
-    "id": "island-greenland",
-    "label": "Greenland",
-    "wiki": "Greenland",
-    "feature": "ISLAND",
-    "area": {
-      "outline": "island-greenland",
-      "centre": { "lat": 73.0863, "lon": -41.801 },
-      "tolerance": 165,
-      "surface": "LAND"
-    }
-  },
-  {
     "id": "island-new-guinea",
     "label": "New Guinea",
     "wiki": "New Guinea",
@@ -3584,18 +3570,6 @@
     "area": {
       "outline": "island-banks-island",
       "centre": { "lat": 73.0171, "lon": -121.3743 },
-      "tolerance": 30,
-      "surface": "LAND"
-    }
-  },
-  {
-    "id": "island-tasmania",
-    "label": "Tasmania",
-    "wiki": "Tasmania",
-    "feature": "ISLAND",
-    "area": {
-      "outline": "island-tasmania",
-      "centre": { "lat": -42.0139, "lon": 146.5938 },
       "tolerance": 30,
       "surface": "LAND"
     }
@@ -4393,5 +4367,338 @@
       "tolerance": 55,
       "surface": "LAND"
     }
+  },
+  {
+    "id": "part-england",
+    "label": "England",
+    "wiki": "England",
+    "area": {
+      "outline": "part-england",
+      "centre": { "lat": 52.564, "lon": -1.4644 },
+      "tolerance": 40,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "a nation of the United Kingdom", "flag": "gb" }
+  },
+  {
+    "id": "part-scotland",
+    "label": "Scotland",
+    "wiki": "Scotland",
+    "area": {
+      "outline": "part-scotland",
+      "centre": { "lat": 56.8014, "lon": -4.1656 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "a nation of the United Kingdom", "flag": "gb" }
+  },
+  {
+    "id": "part-wales",
+    "label": "Wales",
+    "wiki": "Wales",
+    "area": {
+      "outline": "part-wales",
+      "centre": { "lat": 52.3348, "lon": -3.7509 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "a nation of the United Kingdom", "flag": "gb" }
+  },
+  {
+    "id": "part-northern-ireland",
+    "label": "Northern Ireland",
+    "wiki": "Northern Ireland",
+    "area": {
+      "outline": "part-northern-ireland",
+      "centre": { "lat": 54.6064, "lon": -6.6909 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "part of the United Kingdom", "flag": "gb" }
+  },
+  {
+    "id": "part-isle-of-man",
+    "label": "Isle of Man",
+    "wiki": "Isle of Man",
+    "at": { "lat": 54.2208, "lon": -4.5301 },
+    "partOf": { "status": "a British Crown dependency", "flag": "gb" }
+  },
+  {
+    "id": "part-jersey",
+    "label": "Jersey",
+    "wiki": "Jersey",
+    "at": { "lat": 49.2208, "lon": -2.0901 },
+    "partOf": { "status": "a British Crown dependency", "flag": "gb" }
+  },
+  {
+    "id": "part-guernsey",
+    "label": "Guernsey",
+    "wiki": "Guernsey",
+    "at": { "lat": 49.4635, "lon": -2.5617 },
+    "partOf": { "status": "a British Crown dependency", "flag": "gb" }
+  },
+  {
+    "id": "part-gibraltar",
+    "label": "Gibraltar",
+    "wiki": "Gibraltar",
+    "at": { "lat": 36.1294, "lon": -5.3467 },
+    "partOf": { "status": "a British overseas territory", "flag": "gb" }
+  },
+  {
+    "id": "part-bermuda",
+    "label": "Bermuda",
+    "wiki": "Bermuda",
+    "at": { "lat": 32.2966, "lon": -64.7636 },
+    "partOf": { "status": "a British overseas territory", "flag": "gb" }
+  },
+  {
+    "id": "part-cayman-islands",
+    "label": "Cayman Islands",
+    "wiki": "Cayman Islands",
+    "at": { "lat": 19.3199, "lon": -81.2405 },
+    "partOf": { "status": "a British overseas territory", "flag": "gb" }
+  },
+  {
+    "id": "part-falkland-islands",
+    "label": "Falkland Islands",
+    "wiki": "Falkland Islands",
+    "area": {
+      "outline": "part-falkland-islands",
+      "centre": { "lat": -51.7323, "lon": -59.3732 },
+      "tolerance": 10,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "a British overseas territory, claimed by Argentina", "flag": "gb" }
+  },
+  {
+    "id": "part-greenland",
+    "label": "Greenland",
+    "wiki": "Greenland",
+    "area": {
+      "outline": "part-greenland",
+      "centre": { "lat": 73.132, "lon": -41.7835 },
+      "tolerance": 165,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "part of the Kingdom of Denmark", "flag": "dk" }
+  },
+  {
+    "id": "part-faroe-islands",
+    "label": "Faroe Islands",
+    "wiki": "Faroe Islands",
+    "at": { "lat": 62.1856, "lon": -7.0584 },
+    "partOf": { "status": "part of the Kingdom of Denmark", "flag": "dk" }
+  },
+  {
+    "id": "part-svalbard",
+    "label": "Svalbard",
+    "wiki": "Svalbard",
+    "area": {
+      "outline": "part-svalbard",
+      "centre": { "lat": 78.8206, "lon": 18.3355 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "part of Norway", "flag": "no" }
+  },
+  {
+    "id": "part-french-guiana",
+    "label": "French Guiana",
+    "wiki": "French Guiana",
+    "area": {
+      "outline": "part-french-guiana",
+      "centre": { "lat": 3.9212, "lon": -53.2438 },
+      "tolerance": 35,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "an overseas region of France", "flag": "fr" }
+  },
+  {
+    "id": "part-reunion",
+    "label": "Réunion",
+    "wiki": "Réunion",
+    "at": { "lat": -21.1135, "lon": 55.5357 },
+    "partOf": { "status": "an overseas region of France", "flag": "fr" }
+  },
+  {
+    "id": "part-guadeloupe",
+    "label": "Guadeloupe",
+    "wiki": "Guadeloupe",
+    "at": { "lat": 16.2993, "lon": -61.4336 },
+    "partOf": { "status": "an overseas region of France", "flag": "fr" }
+  },
+  {
+    "id": "part-martinique",
+    "label": "Martinique",
+    "wiki": "Martinique",
+    "at": { "lat": 14.712, "lon": -61.0557 },
+    "partOf": { "status": "an overseas region of France", "flag": "fr" }
+  },
+  {
+    "id": "part-french-polynesia",
+    "label": "French Polynesia",
+    "wiki": "French Polynesia",
+    "at": { "lat": -17.6281, "lon": -149.4616 },
+    "partOf": { "status": "an overseas collectivity of France", "flag": "fr" }
+  },
+  {
+    "id": "part-new-caledonia",
+    "label": "New Caledonia",
+    "wiki": "New Caledonia",
+    "area": {
+      "outline": "part-new-caledonia",
+      "centre": { "lat": -21.3009, "lon": 165.6893 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "a territory of France", "flag": "fr" }
+  },
+  {
+    "id": "part-corsica",
+    "label": "Corsica",
+    "wiki": "Corsica",
+    "at": { "lat": 42.1542, "lon": 9.1034 },
+    "partOf": { "status": "part of France", "flag": "fr" }
+  },
+  {
+    "id": "part-puerto-rico",
+    "label": "Puerto Rico",
+    "wiki": "Puerto Rico",
+    "at": { "lat": 18.2347, "lon": -66.4811 },
+    "partOf": { "status": "a US territory", "flag": "us" }
+  },
+  {
+    "id": "part-guam",
+    "label": "Guam",
+    "wiki": "Guam",
+    "at": { "lat": 13.3542, "lon": 144.7036 },
+    "partOf": { "status": "a US territory", "flag": "us" }
+  },
+  {
+    "id": "part-us-virgin-islands",
+    "label": "US Virgin Islands",
+    "wiki": "United States Virgin Islands",
+    "at": { "lat": 17.7467, "lon": -64.7792 },
+    "partOf": { "status": "a US territory", "flag": "us" }
+  },
+  {
+    "id": "part-aruba",
+    "label": "Aruba",
+    "wiki": "Aruba",
+    "at": { "lat": 12.5174, "lon": -69.9728 },
+    "partOf": { "status": "a country within the Kingdom of the Netherlands", "flag": "nl" }
+  },
+  {
+    "id": "part-curacao",
+    "label": "Curaçao",
+    "wiki": "Curaçao",
+    "at": { "lat": 12.145, "lon": -68.9206 },
+    "partOf": { "status": "a country within the Kingdom of the Netherlands", "flag": "nl" }
+  },
+  {
+    "id": "part-hong-kong",
+    "label": "Hong Kong",
+    "wiki": "Hong Kong",
+    "at": { "lat": 22.4488, "lon": 114.0978 },
+    "partOf": { "status": "a special administrative region of China", "flag": "cn" }
+  },
+  {
+    "id": "part-macau",
+    "label": "Macau",
+    "wiki": "Macau",
+    "at": { "lat": 22.1297, "lon": 113.556 },
+    "partOf": { "status": "a special administrative region of China", "flag": "cn" }
+  },
+  {
+    "id": "part-canary-islands",
+    "label": "Canary Islands",
+    "wiki": "Canary Islands",
+    "at": { "lat": 28.2869, "lon": -16.5585 },
+    "partOf": { "status": "an autonomous community of Spain", "flag": "es" }
+  },
+  {
+    "id": "part-balearic-islands",
+    "label": "Balearic Islands",
+    "wiki": "Balearic Islands",
+    "at": { "lat": 39.5722, "lon": 2.8974 },
+    "partOf": { "status": "an autonomous community of Spain", "flag": "es" }
+  },
+  {
+    "id": "part-azores",
+    "label": "Azores",
+    "wiki": "Azores",
+    "at": { "lat": 37.7786, "lon": -25.5108 },
+    "partOf": { "status": "an autonomous region of Portugal", "flag": "pt" }
+  },
+  {
+    "id": "part-madeira",
+    "label": "Madeira",
+    "wiki": "Madeira",
+    "at": { "lat": 32.742, "lon": -16.9461 },
+    "partOf": { "status": "an autonomous region of Portugal", "flag": "pt" }
+  },
+  {
+    "id": "part-sicily",
+    "label": "Sicily",
+    "wiki": "Sicily",
+    "area": {
+      "outline": "part-sicily",
+      "centre": { "lat": 37.5883, "lon": 14.1537 },
+      "tolerance": 20,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "a region of Italy", "flag": "it" }
+  },
+  {
+    "id": "part-sardinia",
+    "label": "Sardinia",
+    "wiki": "Sardinia",
+    "area": {
+      "outline": "part-sardinia",
+      "centre": { "lat": 40.083, "lon": 9.0295 },
+      "tolerance": 15,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "a region of Italy", "flag": "it" }
+  },
+  {
+    "id": "part-crete",
+    "label": "Crete",
+    "wiki": "Crete",
+    "at": { "lat": 35.2332, "lon": 24.8481 },
+    "partOf": { "status": "a region of Greece", "flag": "gr" }
+  },
+  {
+    "id": "part-galapagos-islands",
+    "label": "Galápagos Islands",
+    "wiki": "Galápagos Islands",
+    "at": { "lat": -0.7306, "lon": -90.8114 },
+    "partOf": { "status": "a province of Ecuador", "flag": "ec" }
+  },
+  {
+    "id": "part-easter-island",
+    "label": "Easter Island",
+    "wiki": "Easter Island",
+    "at": { "lat": -27.124, "lon": -109.3554 },
+    "partOf": { "status": "part of Chile", "flag": "cl" }
+  },
+  {
+    "id": "part-zanzibar",
+    "label": "Zanzibar",
+    "wiki": "Zanzibar",
+    "at": { "lat": -6.1298, "lon": 39.319 },
+    "partOf": { "status": "a semi-autonomous part of Tanzania", "flag": "tz" }
+  },
+  {
+    "id": "part-tasmania",
+    "label": "Tasmania",
+    "wiki": "Tasmania",
+    "area": {
+      "outline": "part-tasmania",
+      "centre": { "lat": -41.9317, "lon": 146.6031 },
+      "tolerance": 30,
+      "surface": "LAND"
+    },
+    "partOf": { "status": "a state of Australia", "flag": "au" }
   }
 ]

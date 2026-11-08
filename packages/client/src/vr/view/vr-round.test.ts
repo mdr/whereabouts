@@ -172,6 +172,12 @@ describe("vrReveal", () => {
     expect(vrReveal(flagRound, answer, score(), undefined, own).flags).toMatchObject({ pins: undefined })
     expect(vrReveal(shown(), answer, score(), undefined, own).flags).toBeUndefined()
   })
+
+  it("says whose a part of a country is after its name", () => {
+    const svalbard = { ...answer, label: "Svalbard", partOf: { status: "part of Norway", flag: flagCode("no") } }
+    expect(vrReveal(shown(), svalbard, score(), undefined, own).label).toBe("Svalbard, part of Norway")
+    expect(vrReveal(shown(), answer, score(), undefined, own).label).toBe(answer.label)
+  })
 })
 
 describe("the headset's reveal line on a flag round", () => {

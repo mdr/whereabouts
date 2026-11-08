@@ -28,7 +28,7 @@ export const EMPTY_RESULTS_GRACE: Ms = 2 * 60_000
 export type QuestionMix = Record<QuestionType, number>
 
 /** Types an even mix (the default game) leaves out. */
-const EXTRA_TYPES: readonly QuestionType[] = [QuestionType.FEATURE, QuestionType.STATE]
+const EXTRA_TYPES: readonly QuestionType[] = [QuestionType.FEATURE, QuestionType.STATE, QuestionType.PART_OF_COUNTRY]
 
 export const mixTotal = (mix: QuestionMix): number => QUESTION_TYPES.reduce((s, t) => s + mix[t], 0)
 

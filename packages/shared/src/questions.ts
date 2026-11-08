@@ -24,7 +24,8 @@ export enum QuestionType {
   COUNTRY = "COUNTRY",
   FLAG = "FLAG",
   FEATURE = "FEATURE",
-  STATE = "STATE"
+  STATE = "STATE",
+  PART_OF_COUNTRY = "PART_OF_COUNTRY"
 }
 
 export const QUESTION_TYPES: readonly QuestionType[] = Object.values(QuestionType)
@@ -143,6 +144,22 @@ interface StateQuestion extends QuestionBase {
   answer: PointAnswer | AreaAnswer
 }
 
+/** How a part of a country belongs to it, for the reveal. */
+export interface PartOf {
+  /** Follows the place's name: "a nation of the United Kingdom". */
+  status: string
+  /** The country's flag. */
+  flag: FlagCode
+}
+
+/** A territory, outlying island or UK nation: painted whole, or marked as a point when too small to paint. */
+export interface PartOfCountryQuestion extends QuestionBase {
+  type: QuestionType.PART_OF_COUNTRY
+  clue: NameClue
+  answer: PointAnswer | AreaAnswer
+  partOf: PartOf
+}
+
 export type Question =
   | LandmarkQuestion
   | PlaceQuestion
@@ -150,6 +167,7 @@ export type Question =
   | FlagQuestion
   | FeatureQuestion
   | StateQuestion
+  | PartOfCountryQuestion
 
 /** A place's land. */
 export type Outline = MultiPolygon

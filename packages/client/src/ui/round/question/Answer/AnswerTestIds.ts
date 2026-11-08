@@ -1,3 +1,4 @@
 export const answerTestIds = {
-  answer: "Answer.answer"
+  answer: "Answer.answer",
+  partOf: "Answer.partOf"
 }

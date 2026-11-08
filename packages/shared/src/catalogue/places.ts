@@ -16,7 +16,7 @@ import {
   type WikiTitle
 } from "../ids.ts"
 import type { LatLon } from "../geo.ts"
-import { FeatureType, LatLonSchema, Surface, type AreaAnswer } from "../questions.ts"
+import { FeatureType, LatLonSchema, Surface, type AreaAnswer, type PartOf } from "../questions.ts"
 
 export interface Place {
   id: PlaceId
@@ -30,6 +30,8 @@ export interface Place {
   area?: Omit<AreaAnswer, "type">
   /** A country's flag, with the article on it. */
   flag?: { code: FlagCode; wiki: WikiTitle }
+  /** A part of a country: whose, and how. */
+  partOf?: PartOf
 }
 
 const PlaceSchema: z.ZodType<Place> = z.strictObject({
@@ -47,7 +49,8 @@ const PlaceSchema: z.ZodType<Place> = z.strictObject({
       disputed: OutlineIdSchema.optional()
     })
     .optional(),
-  flag: z.strictObject({ code: FlagCodeSchema, wiki: WikiTitleSchema }).optional()
+  flag: z.strictObject({ code: FlagCodeSchema, wiki: WikiTitleSchema }).optional(),
+  partOf: z.strictObject({ status: z.string(), flag: FlagCodeSchema }).optional()
 })
 
 /** places.json as read, by id. */

@@ -19,7 +19,7 @@ describe("islands, lakes, seas and US states", () => {
   })
 
   it("leave out islands already asked as a country", () => {
-    expect(of(FeatureType.ISLAND)).toHaveLength(20)
+    expect(of(FeatureType.ISLAND)).toHaveLength(18)
     const countries = new Set(COUNTRIES.map((question) => question.label))
     for (const question of of(FeatureType.ISLAND)) expect(countries.has(question.label), question.label).toBe(false)
     for (const name of ["Madagascar", "Cuba", "Iceland", "Sri Lanka", "Great Britain", "Ireland"])

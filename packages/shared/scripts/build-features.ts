@@ -51,7 +51,6 @@ const FILES = {
 
 /** Label, a point on the island [lon, lat], and where the default would not do, prompt name and Wikipedia title. */
 const ISLANDS: [label: string, at: LonLat, names?: { name?: string; wiki?: string }][] = [
-  ["Greenland", [-42, 72]],
   ["New Guinea", [140, -5]],
   ["Borneo", [114, 1]],
   ["Baffin Island", [-72, 68]],
@@ -69,8 +68,7 @@ const ISLANDS: [label: string, at: LonLat, names?: { name?: string; wiki?: strin
   ["Hokkaido", [143, 43.5]],
   ["Sakhalin", [142.8, 50]],
   ["Hispaniola", [-71, 19]],
-  ["Banks Island", [-121, 73]],
-  ["Tasmania", [146.5, -42]]
+  ["Banks Island", [-121, 73]]
 ]
 
 /** Label and the 1:10m marine areas that make up each sea. */

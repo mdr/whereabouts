@@ -40,7 +40,8 @@ export const QUESTION_TYPE_LABEL: Record<QuestionType, string> = {
   [QuestionType.COUNTRY]: "country",
   [QuestionType.FLAG]: "flag",
   [QuestionType.FEATURE]: "feature",
-  [QuestionType.STATE]: "state"
+  [QuestionType.STATE]: "state",
+  [QuestionType.PART_OF_COUNTRY]: "part_of_country"
 }
 
 export const CLIENT_ERROR_KIND_LABEL: Record<ClientErrorKind, string> = {

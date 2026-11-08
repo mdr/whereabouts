@@ -13,7 +13,12 @@ export const REVEAL_PHOTOS: Readonly<Partial<Record<PlaceId, CommonsFile>>> = z
   .parse(photosJson)
 
 /** Rounds whose reveal shows a photo: not a landmark, which has its own, nor a country or flag, which shows the flag. */
-const WITH_REVEAL_PHOTO: readonly QuestionType[] = [QuestionType.PLACE, QuestionType.FEATURE, QuestionType.STATE]
+const WITH_REVEAL_PHOTO: readonly QuestionType[] = [
+  QuestionType.PLACE,
+  QuestionType.FEATURE,
+  QuestionType.STATE,
+  QuestionType.PART_OF_COUNTRY
+]
 
 /** The photo for a round's reveal. */
 export const revealPhoto = (question: Question): CommonsFile | undefined =>

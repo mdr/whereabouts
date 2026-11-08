@@ -16,7 +16,8 @@ export const revealedFromView = (reveal: RevealView, outlines: Outlines | undefi
   wiki: reveal.wiki,
   answer: reveal.answer,
   shape: revealedShape(reveal.question.answer, outlines),
-  photo: reveal.photo
+  photo: reveal.photo,
+  partOf: reveal.partOf
 })
 
 export enum RevealShownType {

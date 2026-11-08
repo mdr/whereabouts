@@ -324,15 +324,17 @@ neighbour's area two radii away about 640 (India, Pakistan, Serbia, Somalia,
 Ukraine). A full radius scored the country about 950 and the neighbour about
 725, too generous next to the region rule's 435 for Poland against Germany.
 
-## Islands, lakes, seas and US states
+## Islands, lakes, seas, US states and parts of countries
 
-Two more kinds in the question mix, scored exactly as countries are, with the
+Three more kinds in the question mix, scored exactly as countries are, with the
 same limits: under 10,000 km², or too scattered, a place is asked as a point.
-`scripts/build-features.ts` writes the catalogue's features and states:
+`scripts/build-features.ts` writes the catalogue's features and states, and
+`scripts/build-parts.ts` its parts of countries:
 
-- **Islands:** the 20 largest that are not already a country round
+- **Islands:** the 18 largest that are not already a country round
   (Madagascar, Cuba, Iceland, Sri Lanka, Great Britain and Ireland are left
-  out), from the same 1:50m land as the country outlines.
+  out) or a part of a country (Greenland, Tasmania), from the same 1:50m
+  land as the country outlines.
 - **Lakes:** the 15 of 10,000 km² or more. A lake is asked only on a map
   detail that draws lakes (Water and up): on Minimal they are drawn as land.
 - **Seas:** the nearly closed ones (Mediterranean, Black, Caspian, Red,
@@ -344,6 +346,14 @@ same limits: under 10,000 km², or too scattered, a place is asked as a point.
   cut out. Rhode Island and Delaware are points; Hawaii keeps its three
   largest islands. State lines never show while guessing, even on the
   Political map; the reveal draws them.
+- **Parts of countries:** 39 territories, outlying islands and the UK
+  nations, from the 1:10m map units, or admin-1 where Natural Earth has
+  the place only as provinces (the Canaries, Sicily, Tasmania…). Twelve are
+  painted, from Greenland to Northern Ireland; the rest are points, an
+  archipelago's tolerance widened by its spread as for island states. The
+  reveal says whose each is, in words written for it ("a British Crown
+  dependency"), with that country's flag. Mainland regions (Catalonia,
+  Bavaria) are left out for now.
 
 The Fill tool is off for these rounds, since it fills countries.
 
