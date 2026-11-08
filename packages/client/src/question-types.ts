@@ -67,7 +67,7 @@ export const QUESTION_TYPE_DISPLAY_INFO: Record<QuestionType, QuestionTypeDispla
   },
   [QuestionType.PART_OF_COUNTRY]: {
     heading: "Parts of countries",
-    description: "Territories, island regions and UK nations",
+    description: "Territories, islands and regions",
     roundName: "Part of a country",
     singularForm: "part of a country",
     pluralForm: "parts of countries",
