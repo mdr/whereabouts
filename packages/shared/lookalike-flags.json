@@ -1,6 +1,11 @@
 [
   {
-    "flags": { "id": "Red over white, and longer", "mc": "Red over white, and nearly square", "pl": "White over red" },
+    "flags": {
+      "id": "Plain red over white, and longer",
+      "mc": "Plain red over white, nearly square",
+      "pl": "White over red",
+      "sg": "White crescent and five stars on the red"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Indonesia"
   },
   {
@@ -21,19 +26,31 @@
     "source": "https://en.wikipedia.org/wiki/Flag_of_Ivory_Coast"
   },
   {
-    "flags": { "it": "Plain green, white, red", "mx": "Eagle emblem on the white, and longer" },
+    "flags": {
+      "it": "Plain green, white, red",
+      "mx": "Eagle emblem on the white, and longer"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Mexico"
   },
   {
-    "flags": { "au": "Large white star, five more white stars", "nz": "Four stars, red with white edge" },
+    "flags": {
+      "au": "Large white star, five more white stars",
+      "nz": "Four stars, red with white edge"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_New_Zealand"
   },
   {
-    "flags": { "no": "Red with a white-edged blue cross", "is": "Blue with a white-edged red cross" },
+    "flags": {
+      "no": "Red with a white-edged blue cross",
+      "is": "Blue with a white-edged red cross"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Iceland"
   },
   {
-    "flags": { "nl": "Darker red and blue, shorter", "lu": "Light blue and brighter red, longer" },
+    "flags": {
+      "nl": "Darker red and blue, shorter",
+      "lu": "Light blue and brighter red, longer"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Luxembourg"
   },
   {
@@ -73,18 +90,26 @@
   },
   {
     "flags": {
-      "hn": "Five blue stars on the white",
-      "sv": "Coat of arms on the white",
-      "ni": "Light blue, triangle emblem on the white"
+      "hn": "Navy blue, five blue stars on the white",
+      "sv": "Dark blue, coat of arms on the white",
+      "ni": "Mid blue, triangle emblem on the white",
+      "ar": "Pale sky blue, golden sun on the white",
+      "gt": "Stripes run down, not across"
     },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Honduras"
   },
   {
-    "flags": { "ht": "Blue over red, coat of arms on white panel", "li": "Blue over red, gold crown at the hoist" },
+    "flags": {
+      "ht": "Blue over red, coat of arms on white panel",
+      "li": "Blue over red, gold crown at the hoist"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Liechtenstein"
   },
   {
-    "flags": { "qa": "Maroon with nine white points", "bh": "Red with five white points" },
+    "flags": {
+      "qa": "Maroon with nine white points",
+      "bh": "Red with five white points"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Bahrain"
   },
   {
@@ -96,18 +121,26 @@
     "source": "https://en.wikipedia.org/wiki/Flag_of_Liberia"
   },
   {
-    "flags": { "tr": "Crescent and star on plain red", "tn": "Crescent and star inside a white disc" },
+    "flags": {
+      "tr": "Crescent and star on plain red",
+      "tn": "Crescent and star inside a white disc"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Tunisia"
   },
   {
-    "flags": { "at": "Red, white, red, equal bands", "lv": "Darker red, thin white band" },
+    "flags": {
+      "at": "Red, white, red, equal bands, no emblem",
+      "lv": "Darker red, thin white band",
+      "lb": "Green cedar tree on a wide white band"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Latvia"
   },
   {
     "flags": {
-      "hu": "Red, white, green from the top",
+      "hu": "Red, white, green, equal bands, no emblem",
       "bg": "White, green, red from the top",
-      "ir": "Green, white, red, red emblem on white"
+      "ir": "Green, white, red, red emblem on white",
+      "tj": "Red, wide white, green, gold crown and stars"
     },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Bulgaria"
   },
@@ -121,11 +154,17 @@
     "source": "https://en.wikipedia.org/wiki/Flag_of_Jordan"
   },
   {
-    "flags": { "cn": "Five stars in the corner", "vn": "One big gold star in the centre" },
+    "flags": {
+      "cn": "Five stars in the corner",
+      "vn": "One big gold star in the centre"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Vietnam"
   },
   {
-    "flags": { "cr": "Blue outside, red band in the middle", "th": "Red outside, blue band in the middle" },
+    "flags": {
+      "cr": "Blue outside, red band in the middle",
+      "th": "Red outside, blue band in the middle"
+    },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Costa_Rica"
   },
   {
@@ -135,5 +174,34 @@
       "lt": "Yellow, green, red from the top"
     },
     "source": "https://en.wikipedia.org/wiki/Flag_of_Bolivia"
+  },
+  {
+    "flags": {
+      "in": "Saffron, white, green, blue wheel in the middle",
+      "ne": "Orange, white, green, orange disc, nearly square"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Niger"
+  },
+  {
+    "flags": {
+      "ke": "Shield and spears in the middle",
+      "ss": "Blue triangle with a gold star at the hoist",
+      "mw": "Red rising sun on the black, no white edging"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Kenya"
+  },
+  {
+    "flags": {
+      "pa": "Quartered, a star in each white quarter",
+      "do": "White cross, coat of arms in the middle"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Panama"
+  },
+  {
+    "flags": {
+      "tv": "Nine gold stars in the fly",
+      "fj": "Coat of arms shield in the fly"
+    },
+    "source": "https://en.wikipedia.org/wiki/Flag_of_Fiji"
   }
 ]

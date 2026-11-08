@@ -192,7 +192,7 @@ describe("the headset's reveal line on a flag round", () => {
   it("tells the flags apart when the paint was in a look-alike", () => {
     const you = score({ painted: painted("pl", "Poland", 0.8) })
     expect(vrReveal(indonesia, answer, you, undefined, own).fact).toBe(
-      "Poland: White over red. Indonesia: Red over white, and longer."
+      "Poland: White over red. Indonesia: Plain red over white, and longer."
     )
   })
 

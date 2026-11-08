@@ -22,7 +22,7 @@ test("look-alike flags open large together", async ({ browser, game }) => {
 
   await test.step("a small flag opens them all large, the answer's first", async () => {
     const compare = await revealPage.compareLookalikes(2)
-    await compare.expectFlags(["Indonesia", "Monaco", "Poland"])
+    await compare.expectFlags(["Indonesia", "Monaco", "Poland", "Singapore"])
     await compare.expectFlagsAtLeast(100)
     await compare.exit(LightboxExit.ESCAPE)
   })

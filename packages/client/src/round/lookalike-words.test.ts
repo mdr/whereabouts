@@ -25,7 +25,7 @@ describe("lookalikesHeading", () => {
 describe("mixUpText", () => {
   it("says what marks the painted flag apart from the answer, painted first", () => {
     expect(mixUpText(lookalikesOf(indonesia, poland)!)).toBe(
-      "Poland: White over red. Indonesia: Red over white, and longer."
+      "Poland: White over red. Indonesia: Plain red over white, and longer."
     )
   })
 
