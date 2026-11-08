@@ -8,8 +8,8 @@ export const useEnterKey = (act: (() => void) | undefined): void => {
     if (!act) return
     const onKey = (event: KeyboardEvent): void => {
       if (!SUBMIT.matches(event) || event.repeat || forTabbedControl(event)) return
-      // A photo or the shortcuts list open over the round has the keyboard.
-      if (document.querySelector('[role="dialog"]')) return
+      // A dialog open over the round, an enlarged picture say, has the keyboard.
+      if (document.querySelector("dialog[open]")) return
       // A clicked button keeps focus, and Enter would press it as well.
       event.preventDefault()
       act()

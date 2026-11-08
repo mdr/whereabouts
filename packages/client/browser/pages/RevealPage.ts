@@ -6,9 +6,11 @@ import { questionCardTestIds } from "../../src/ui/round/question/QuestionCard/Qu
 import { answerTestIds } from "../../src/ui/round/question/Answer/AnswerTestIds.ts"
 import { paintedInTestIds } from "../../src/ui/round/flag-reveal/PaintedIn/PaintedInTestIds.ts"
 import { factLineTestIds } from "../../src/ui/round/question/FactLine/FactLineTestIds.ts"
+import { lookalikeFlagsTestIds } from "../../src/ui/round/flag-reveal/LookalikeFlags/LookalikeFlagsTestIds.ts"
 import { rankArrowTestIds } from "../../src/ui/players/RankArrow/RankArrowTestIds.ts"
 import { RankMove } from "../../src/ui/players/rank-move.ts"
 import { Hud } from "./components/Hud.ts"
+import { LookalikeCompare } from "./components/LookalikeCompare.ts"
 import { MapPanel } from "./components/MapPanel.ts"
 import { QuestionCard } from "./components/QuestionCard.ts"
 import { ResultsPage } from "./ResultsPage.ts"
@@ -77,6 +79,14 @@ export class RevealPage extends Screen {
   /** On a part of a country: whose it is, after its name. */
   async expectPartOf(status: string): Promise<void> {
     await expect(this.page.getByTestId(answerTestIds.partOf), "the answer says whose it is").toHaveText(`, ${status}`)
+  }
+
+  /** A flag round: open its look-alikes large, from the given one of the small flags (0, the answer's, first). */
+  async compareLookalikes(from = 0): Promise<LookalikeCompare> {
+    await this.page.getByTestId(lookalikeFlagsTestIds.enlarge).nth(from).click()
+    const compare = new LookalikeCompare(this.page)
+    await compare.expectOpen()
+    return compare
   }
 
   async expectRowCount(count: number): Promise<void> {
@@ -190,6 +200,11 @@ export class RevealPage extends Screen {
   async nextRound(): Promise<RoundPage> {
     await this.page.getByTestId(revealTestIds.nextButton).click()
     return RoundPage.whenShown(this.tab, 10_000)
+  }
+
+  /** Press Enter, expecting nothing of it. */
+  async pressEnter(): Promise<void> {
+    await this.page.keyboard.press("Enter")
   }
 
   /** Host: Next round by pressing Enter. */

@@ -19,9 +19,18 @@
 .flag {
   display: contents;
 }
+.enlarge {
+  justify-self: start;
+  align-self: center;
+  display: flex;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  cursor: zoom-in;
+}
 .picture {
   height: 28px;
-  justify-self: start;
 }
 .text {
   display: flex;

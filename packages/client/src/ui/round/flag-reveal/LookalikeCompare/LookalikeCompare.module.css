@@ -1,0 +1,82 @@
+@import "../../../../media.css";
+
+.backdrop {
+  composes: overlay modalLayer from "../../../kit.module.css";
+  background: color-mix(in srgb, var(--shade) 70%, transparent);
+  padding: 16px;
+}
+.card {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 18px 20px 22px;
+  border-radius: 12px;
+  background: var(--panel-bg);
+  color: var(--panel-fg);
+  box-shadow: var(--shadow-raised);
+}
+.heading {
+  margin: 0 40px 16px 0;
+  font-size: 16px;
+}
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+}
+/* Every flag the same height, so their shapes compare too. */
+.flags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 22px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.flag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 100%;
+  text-align: center;
+  font-size: 14px;
+}
+.picture {
+  height: min(130px, (100vw - 72px) / var(--flag-ratio));
+  margin-bottom: 8px;
+  border-radius: 3px;
+}
+.name {
+  font-weight: 600;
+}
+.answer .name {
+  color: var(--success);
+}
+.tip {
+  max-width: 300px;
+  color: var(--soft-fg);
+}
+/* Two to a row, so a group of four shows without scrolling. */
+@media (--phone) {
+  .flags {
+    gap: 18px 12px;
+  }
+  .flag {
+    width: calc(50% - 6px);
+    font-size: 13px;
+  }
+  .picture {
+    height: auto;
+    width: 100%;
+    max-width: calc(100px * var(--flag-ratio));
+  }
+}
