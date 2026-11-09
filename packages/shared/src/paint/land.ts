@@ -76,10 +76,9 @@ export const trimSea = (
 
 /**
  * The mask behind "Trim land", in a lake or sea round: the H3 resolution-5 cells
- * wholly on land and touching no lake, compacted (water.json, built by
- * scripts/build-water.ts). The land mask cannot serve, since lakes are land
- * in it. Paint within a cell of water stays, as paint within a cell of land
- * stays when trimming the sea.
+ * wholly on land, compacted (water.json, built by scripts/build-water.ts). A
+ * cell a quarter or more lake is wet, as is any cell a lake round's outline
+ * touches. The land mask cannot serve, since lakes are land in it.
  */
 export interface WaterMaskData {
   resolution: number
@@ -90,10 +89,15 @@ export interface WaterMaskData {
 export class WaterMask {
   readonly resolution: H3Resolution
   private readonly dry: Set<H3Cell>
+  /** Every strict ancestor of a dry cell: a coarse cell with dry land somewhere inside. */
+  private readonly dryAncestors = new Set<H3Cell>()
 
   constructor(data: WaterMaskData) {
     this.resolution = h3Resolution(data.resolution)
     this.dry = new Set(data.dry.map(h3Cell))
+    for (const cell of this.dry)
+      for (const resolution of resolutionsTo(getResolution(cell) - 1))
+        this.dryAncestors.add(cellToParent(cell, resolution))
   }
 
   /** Whether any of this cell is outside the dry cells. Compaction puts any cell wholly dry, or an ancestor, in the set. */
@@ -103,15 +107,36 @@ export class WaterMask {
       if (this.dry.has(level === resolution ? cell : cellToParent(cell, level))) return false
     return true
   }
+
+  /** The share of this cell's mask cells that are wet: 0 or 1 at the mask's resolution or finer. */
+  wetShare(cell: H3Cell): number {
+    if (!this.nearWater(cell)) return 0
+    const resolution = getResolution(cell)
+    if (resolution >= this.resolution || !this.dryAncestors.has(cell)) return 1
+    const children = cellToChildren(cell, h3Resolution(resolution + 1))
+    return children.reduce((sum, child) => sum + this.wetShare(child), 0) / children.length
+  }
 }
+
+/**
+ * Paint coarser than the mask stays only where this much of it is wet (3 of
+ * a cell's 7 children): keeping it for any wet child left a fringe of land
+ * round seas, wider in lake country.
+ */
+const MIN_WET_SHARE = 0.4
 
 /** The paint without its cells on dry land, split as trimSea splits. */
 export const trimLand = (
   cells: ReadonlyMap<H3Cell, number>,
   mask: WaterMask,
   finestResolution: H3Resolution
-): Map<H3Cell, number> =>
-  keepCells(cells, (cell) => mask.nearWater(cell), h3Resolution(Math.min(mask.resolution, finestResolution)))
+): Map<H3Cell, number> => {
+  const target = h3Resolution(Math.min(mask.resolution, finestResolution))
+  // A cell coarser than the target is split if it has any water, and its children judged.
+  const keep = (cell: H3Cell): boolean =>
+    getResolution(cell) < target ? mask.nearWater(cell) : mask.wetShare(cell) >= MIN_WET_SHARE
+  return keepCells(cells, keep, target)
+}
 
 /**
  * The paint in the cells `keep` accepts. A cell coarser than `target` that

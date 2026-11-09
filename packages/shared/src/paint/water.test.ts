@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { getResolution, h3Resolution, latLngToCell, type H3Cell } from "../h3.ts"
+import { cellToChildren, getResolution, h3Resolution, latLngToCell, type H3Cell } from "../h3.ts"
 import waterJson from "../../water.json" with { type: "json" }
 import outlinesJson from "../../outlines.json" with { type: "json" }
 import { WaterMask, paintAmount, trimLand } from "./land.ts"
@@ -31,7 +31,8 @@ describe("water mask", () => {
     for (const [lat, lon] of [
       [23, 13], // the Sahara
       [48, 2.35], // Paris
-      [40, -100] // Kansas
+      [40, -100], // Kansas
+      [52.337, -87.639] // northern Ontario, by a small lake
     ])
       expect(mask.nearWater(at(lat!, lon!, 6)), `${lat}, ${lon}`).toBe(false)
     for (const [lat, lon] of [
@@ -56,5 +57,17 @@ describe("water mask", () => {
       expect(mask.nearWater(cell)).toBe(true)
     }
     expect([...trimLand(new Map([[at(30, -40, 3), 1]]), mask, h3Resolution(7)).keys()]).toEqual([at(30, -40, 3)])
+  })
+
+  it("keeps paint coarser than the mask only where 3 of its 7 parts are wet", () => {
+    const cell = at(52, -87, 4)
+    const parts = cellToChildren(cell, h3Resolution(5))
+    const withDry = (count: number): WaterMask => new WaterMask({ resolution: 5, dry: parts.slice(0, count) })
+    const trim = (count: number): H3Cell[] => [
+      ...trimLand(new Map([[cell, 1]]), withDry(count), h3Resolution(4)).keys()
+    ]
+    expect(withDry(4).wetShare(cell)).toBeCloseTo(3 / 7)
+    expect(trim(4)).toEqual([cell])
+    expect(trim(5)).toEqual([])
   })
 })
