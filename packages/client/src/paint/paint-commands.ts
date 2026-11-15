@@ -6,6 +6,7 @@
 import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
 import { reportClientError } from "../net/client-error/report-client-error"
 import type { HintBand } from "@whereabouts/shared/hints"
+import { Surface } from "@whereabouts/shared/questions"
 import { loadLandMask, loadWaterMask } from "../data/land"
 import type { PaintModel } from "./paint-model"
 import { sound } from "../sound/sound"
@@ -16,10 +17,10 @@ export const clearPaint = (paint: Pick<PaintModel, "layer" | "clear">): void => 
 }
 
 /** Trim sea, or in a lake or sea round Trim land. Its mask loads on first use. */
-export const trimPaint = async (paint: Pick<PaintModel, "trimSea" | "trimLand">, water: boolean): Promise<string> => {
+export const trimPaint = async (paint: Pick<PaintModel, "trimSea" | "trimLand">, surface: Surface): Promise<string> => {
   try {
-    const share = water ? paint.trimLand(await loadWaterMask()) : paint.trimSea(await loadLandMask())
-    return trimmed(share, water ? "None on land" : "None at sea")
+    if (surface === Surface.LAND) return trimmed(paint.trimSea(await loadLandMask()), "None at sea")
+    return trimmed(paint.trimLand(await loadWaterMask(surface)), "None on land")
   } catch (error) {
     console.warn("could not load the trim mask", error)
     reportClientError(ClientErrorKind.DATA_LOAD, error)

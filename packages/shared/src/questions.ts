@@ -50,8 +50,12 @@ export enum FeatureType {
 /** What an area answer is painted on: trimming drops paint off it. */
 export enum Surface {
   LAND = "LAND",
-  WATER = "WATER"
+  SEA = "SEA",
+  LAKE = "LAKE"
 }
+
+/** Painted on a lake or sea: trimming drops paint on land. */
+export const onWater = (surface: Surface): boolean => surface !== Surface.LAND
 
 export interface PhotoClue {
   type: ClueType.PHOTO

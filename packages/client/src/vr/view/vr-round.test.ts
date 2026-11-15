@@ -69,7 +69,7 @@ describe("answerModeText", () => {
   })
 
   it("names what to cover on an area round, and says nothing for a place", () => {
-    expect(answerModeText(makeFeatureQuestionView(FeatureType.LAKE, "lake-baikal", Surface.WATER))).toBe(
+    expect(answerModeText(makeFeatureQuestionView(FeatureType.LAKE, "lake-baikal", Surface.LAKE))).toBe(
       "Cover the whole lake: its shape counts."
     )
     expect(answerModeText(makeQuestionView())).toBeUndefined()
@@ -120,11 +120,11 @@ describe("vrRound", () => {
     expect(round(shown({ question: peru })).picture).toEqual({ type: VrPictureType.FLAG, flag: "pe" })
   })
 
-  it("trims land on a lake or a sea", () => {
-    const sea = makeFeatureQuestionView(FeatureType.SEA, "sea-baltic", Surface.WATER)
+  it("trims land on a lake or a sea, as each", () => {
+    const sea = makeFeatureQuestionView(FeatureType.SEA, "sea-baltic", Surface.SEA)
     const island = makeFeatureQuestionView(FeatureType.ISLAND, "island-borneo")
-    expect(round(shown({ question: sea })).water).toBe(true)
-    expect(round(shown({ question: island })).water).toBe(false)
+    expect(round(shown({ question: sea })).surface).toBe(Surface.SEA)
+    expect(round(shown({ question: island })).surface).toBe(Surface.LAND)
   })
 })
 

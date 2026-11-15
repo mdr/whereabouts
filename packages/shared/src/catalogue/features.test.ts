@@ -38,9 +38,9 @@ describe("islands, lakes, seas and US states", () => {
     expect(of(FeatureType.SEA)).toHaveLength(7)
   })
 
-  it("paint lakes and seas on water, islands on land", () => {
-    for (const question of [...of(FeatureType.LAKE), ...of(FeatureType.SEA)])
-      expect(question.answer.surface, question.id).toBe(Surface.WATER)
+  it("paint lakes on lakes, seas on the sea, islands on land", () => {
+    for (const question of of(FeatureType.LAKE)) expect(question.answer.surface, question.id).toBe(Surface.LAKE)
+    for (const question of of(FeatureType.SEA)) expect(question.answer.surface, question.id).toBe(Surface.SEA)
     for (const question of of(FeatureType.ISLAND)) expect(question.answer.surface, question.id).toBe(Surface.LAND)
   })
 

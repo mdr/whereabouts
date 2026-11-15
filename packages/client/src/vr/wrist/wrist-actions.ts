@@ -33,7 +33,7 @@ export const wristActions = (on: WristTargets): Record<WristButton, () => void> 
     [WristButton.LATITUDE]: act((round) => round.useHint(HintAxis.LATITUDE)),
     [WristButton.LONGITUDE]: act((round) => round.useHint(HintAxis.LONGITUDE)),
     [WristButton.TRIM]: act((round) => {
-      void trimPaint(round.paint, round.water).then((note) => {
+      void trimPaint(round.paint, round.surface).then((note) => {
         on.note(note)
         on.repaint()
       })

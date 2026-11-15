@@ -1,8 +1,9 @@
 // Builds water.json, the mask the "Trim land" button uses in a lake or sea
 // round: every H3 cell at WATER_RESOLUTION lying wholly on land, compacted.
-// A cell at least LAKE_SHARE lake is wet, and so is any cell a lake round's
-// outline touches, since those rounds are scored by their outlines and must
-// never trim themselves away. From Natural Earth's 1:10m land and lakes
+// In a lake round a cell at least LAKE_SHARE lake is wet, and so is any cell a
+// lake round's outline touches, since those rounds are scored by their
+// outlines and must never trim themselves away. Those cells are listed apart,
+// as lakes, since a sea round ignores lakes. From Natural Earth's 1:10m land and lakes
 // (public domain) and the lake rounds' outlines: build those first. The land
 // mask (build-land.ts) cannot serve: lakes are land in it.
 //
@@ -32,6 +33,7 @@ const cells = (polygon: Polygon, resolution: number, mode: keyof typeof POLYGON_
 const dry = new Set<string>()
 for (const polygon of await polygons("ne_10m_land"))
   for (const cell of cells(polygon, WATER_RESOLUTION, "containmentFull")) dry.add(cell)
+const seaDry = new Set(dry)
 const before = dry.size
 
 const json = <T>(file: string): T => JSON.parse(readFileSync(new URL(`../${file}`, import.meta.url), "utf8")) as T
@@ -56,9 +58,10 @@ for (const cell of touched) {
 }
 
 const compacted = compactCells([...dry]).sort()
-const out = JSON.stringify({ resolution: WATER_RESOLUTION, dry: compacted })
+const lakeOnly = compactCells([...seaDry].filter((cell) => !dry.has(cell))).sort()
+const out = JSON.stringify({ resolution: WATER_RESOLUTION, dry: compacted, lakes: lakeOnly })
 writeFileSync(new URL("../water.json", import.meta.url), out + "\n")
 console.log(
   `${before} dry cells, ${byRounds} of them by a lake round, ${before - byRounds - dry.size} more by other lakes ` +
-    `(of ${touched.size} touching one), ${compacted.length} compacted: ${Math.round(out.length / 1024)} KB`
+    `(of ${touched.size} touching one), ${compacted.length} + ${lakeOnly.length} compacted: ${Math.round(out.length / 1024)} KB`
 )

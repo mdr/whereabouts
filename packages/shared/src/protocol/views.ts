@@ -49,9 +49,9 @@ export interface AreaAnswerView {
 
 export type AnswerView = PointAnswerView | AreaAnswerView
 
-/** Painted on water: trimming drops paint on land. */
-export const onWater = (answer: AnswerView): boolean =>
-  answer.type === AnswerType.AREA && answer.surface === Surface.WATER
+/** What the answer is painted on, so what trimming keeps. */
+export const surfaceOf = (answer: AnswerView): Surface =>
+  answer.type === AnswerType.AREA ? answer.surface : Surface.LAND
 
 /** The outline to paint, on an area round. */
 export const outlineOf = (answer: AnswerView): OutlineId | undefined =>

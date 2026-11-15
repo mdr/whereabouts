@@ -3583,7 +3583,7 @@
       "outline": "lake-great-bear-lake",
       "centre": { "lat": 66.0171, "lon": -120.9252 },
       "tolerance": 20,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3595,7 +3595,7 @@
       "outline": "lake-great-slave-lake",
       "centre": { "lat": 61.7782, "lon": -113.85 },
       "tolerance": 20,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3607,7 +3607,7 @@
       "outline": "lake-lake-baikal",
       "centre": { "lat": 53.4045, "lon": 107.6325 },
       "tolerance": 20,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3619,7 +3619,7 @@
       "outline": "lake-lake-balkhash",
       "centre": { "lat": 46.2911, "lon": 75.5935 },
       "tolerance": 15,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3631,7 +3631,7 @@
       "outline": "lake-lake-erie",
       "centre": { "lat": 42.1614, "lon": -81.253 },
       "tolerance": 20,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3643,7 +3643,7 @@
       "outline": "lake-lake-huron",
       "centre": { "lat": 44.9666, "lon": -82.2507 },
       "tolerance": 30,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3655,7 +3655,7 @@
       "outline": "lake-lake-ladoga",
       "centre": { "lat": 60.8552, "lon": 31.4567 },
       "tolerance": 15,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3667,7 +3667,7 @@
       "outline": "lake-lake-malawi",
       "centre": { "lat": -11.9558, "lon": 34.5114 },
       "tolerance": 20,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3679,7 +3679,7 @@
       "outline": "lake-lake-michigan",
       "centre": { "lat": 44.0035, "lon": -86.7786 },
       "tolerance": 25,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3691,7 +3691,7 @@
       "outline": "lake-lake-onega",
       "centre": { "lat": 61.7872, "lon": 35.3668 },
       "tolerance": 10,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3703,7 +3703,7 @@
       "outline": "lake-lake-ontario",
       "centre": { "lat": 43.678, "lon": -77.7637 },
       "tolerance": 15,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3715,7 +3715,7 @@
       "outline": "lake-lake-superior",
       "centre": { "lat": 47.5494, "lon": -87.7602 },
       "tolerance": 30,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3727,7 +3727,7 @@
       "outline": "lake-lake-tanganyika",
       "centre": { "lat": -6.2165, "lon": 29.878 },
       "tolerance": 20,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3739,7 +3739,7 @@
       "outline": "lake-lake-victoria",
       "centre": { "lat": -1.0932, "lon": 32.9056 },
       "tolerance": 30,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3751,7 +3751,7 @@
       "outline": "lake-lake-winnipeg",
       "centre": { "lat": 52.5723, "lon": -97.7685 },
       "tolerance": 20,
-      "surface": "WATER"
+      "surface": "LAKE"
     }
   },
   {
@@ -3763,7 +3763,7 @@
       "outline": "sea-mediterranean-sea",
       "centre": { "lat": 37.2991, "lon": 17.1654 },
       "tolerance": 180,
-      "surface": "WATER"
+      "surface": "SEA"
     }
   },
   {
@@ -3775,7 +3775,7 @@
       "outline": "sea-black-sea",
       "centre": { "lat": 43.2872, "lon": 34.2 },
       "tolerance": 75,
-      "surface": "WATER"
+      "surface": "SEA"
     }
   },
   {
@@ -3787,7 +3787,7 @@
       "outline": "sea-caspian-sea",
       "centre": { "lat": 41.6652, "lon": 50.7226 },
       "tolerance": 70,
-      "surface": "WATER"
+      "surface": "SEA"
     }
   },
   {
@@ -3799,7 +3799,7 @@
       "outline": "sea-red-sea",
       "centre": { "lat": 20.4685, "lon": 38.7085 },
       "tolerance": 75,
-      "surface": "WATER"
+      "surface": "SEA"
     }
   },
   {
@@ -3811,7 +3811,7 @@
       "outline": "sea-persian-gulf",
       "centre": { "lat": 26.8087, "lon": 52.0358 },
       "tolerance": 55,
-      "surface": "WATER"
+      "surface": "SEA"
     }
   },
   {
@@ -3823,7 +3823,7 @@
       "outline": "sea-baltic-sea",
       "centre": { "lat": 58.865, "lon": 19.6596 },
       "tolerance": 70,
-      "surface": "WATER"
+      "surface": "SEA"
     }
   },
   {
@@ -3835,7 +3835,7 @@
       "outline": "sea-hudson-bay",
       "centre": { "lat": 59.0152, "lon": -84.594 },
       "tolerance": 105,
-      "surface": "WATER"
+      "surface": "SEA"
     }
   },
   {

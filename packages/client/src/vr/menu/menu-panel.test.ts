@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
+import { Surface } from "@whereabouts/shared/questions"
 import { FillType } from "../../paint/fill-target"
 import type { PaintController } from "../../paint/paint-controller"
 import { panelContent, type PanelState } from "./menu-panel"
@@ -31,7 +32,7 @@ const makeRound = (over: Partial<VrRound> = {}): VrRound =>
     prompt: "Where is Paris?",
     detail: "plain",
     picture: undefined,
-    water: false,
+    surface: Surface.LAND,
     hint: undefined,
     hintsLeft: HintAllowance.NONE,
     useHint() {},

@@ -26,6 +26,7 @@ import {
   type H3Cell,
   type H3Resolution
 } from "../h3.ts"
+import { Surface } from "../questions.ts"
 
 export interface LandMaskData {
   /** The mask's finest resolution. */
@@ -76,14 +77,17 @@ export const trimSea = (
 
 /**
  * The mask behind "Trim land", in a lake or sea round: the H3 resolution-5 cells
- * wholly on land, compacted (water.json, built by scripts/build-water.ts). A
- * cell a quarter or more lake is wet, as is any cell a lake round's outline
- * touches. The land mask cannot serve, since lakes are land in it.
+ * wholly on land, compacted (water.json, built by scripts/build-water.ts). In
+ * a lake round a cell a quarter or more lake is wet too, as is any cell a lake
+ * round's outline touches; a sea round ignores lakes, or Finland's would keep
+ * a Baltic blob's paint. The land mask cannot serve: its cells touch land, not lie wholly on it.
  */
 export interface WaterMaskData {
   resolution: number
-  /** Compacted cells: each at resolution or coarser. */
+  /** Dry in every round. Compacted cells: each at resolution or coarser. */
   dry: string[]
+  /** Wet only by lakes: dry in a sea round. Compacted likewise. */
+  lakes: string[]
 }
 
 export class WaterMask {
@@ -92,9 +96,9 @@ export class WaterMask {
   /** Every strict ancestor of a dry cell: a coarse cell with dry land somewhere inside. */
   private readonly dryAncestors = new Set<H3Cell>()
 
-  constructor(data: WaterMaskData) {
+  constructor(data: WaterMaskData, surface: Surface.SEA | Surface.LAKE) {
     this.resolution = h3Resolution(data.resolution)
-    this.dry = new Set(data.dry.map(h3Cell))
+    this.dry = new Set((surface === Surface.SEA ? [...data.dry, ...data.lakes] : data.dry).map(h3Cell))
     for (const cell of this.dry)
       for (const resolution of resolutionsTo(getResolution(cell) - 1))
         this.dryAncestors.add(cellToParent(cell, resolution))

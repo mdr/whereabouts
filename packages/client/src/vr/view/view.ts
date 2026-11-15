@@ -2,7 +2,7 @@
 import type { CssColour } from "@whereabouts/shared/colours"
 import type { HintAxis, HintBand } from "@whereabouts/shared/hints"
 import type { LatLon } from "@whereabouts/shared/geo"
-import type { Outline } from "@whereabouts/shared/questions"
+import type { Outline, Surface } from "@whereabouts/shared/questions"
 import type { MapDetail } from "@whereabouts/shared/protocol/config"
 import type { PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { PaintController } from "../../paint/paint-controller"
@@ -35,8 +35,8 @@ export interface VrRound {
   /** What the page's map shows while painting. */
   detail: MapDetail
   picture: VrPicture | undefined
-  /** A lake or sea round: trimming drops paint on land, not at sea. */
-  water: boolean
+  /** What the answer is painted on, so what trimming keeps. */
+  surface: Surface
   /** Your paint's colour, as the others see it; none while you watch. */
   colour?: CssColour
   hint: HintBand | undefined

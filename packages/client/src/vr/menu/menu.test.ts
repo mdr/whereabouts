@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test"
+import { Surface } from "@whereabouts/shared/questions"
 import { Group, type UIKitDocument, type World } from "@iwsdk/core"
 import { CONFIRM_WAIT, Menu } from "./menu"
 import {
@@ -44,7 +45,7 @@ const makeRound = (over: Partial<VrRound> = {}): VrRound =>
     prompt: "Where is Paris?",
     detail: "plain",
     picture: undefined,
-    water: false,
+    surface: Surface.LAND,
     hint: undefined,
     hintsLeft: HintAllowance.NONE,
     useHint() {},

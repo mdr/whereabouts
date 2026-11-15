@@ -9,6 +9,7 @@ import { Color, Vector3, SessionMode, type World } from "@iwsdk/core"
 import type { Signal } from "@preact/signals"
 import { EARTH_RADIUS } from "@whereabouts/shared/geo"
 import { describeHint } from "@whereabouts/shared/hints"
+import { onWater } from "@whereabouts/shared/questions"
 import { THEME } from "../map/themes"
 import { ANSWER_RADIUS, DETAIL_RADIUS, Globe, HINT_RADIUS, OUTLINE_RADIUS, PIN_RADIUS } from "./globe/globe"
 import { Hand, XR_HAND } from "./hands/hand"
@@ -219,7 +220,7 @@ export class Vr {
     if (detail) this.detail.setDetail(detail)
     this.hint.show(round?.hint)
     this.detail.setHint(round?.hint)
-    if (round) this.wrist.setState(round.water, round.hint && describeHint(round.hint), round.hintsLeft)
+    if (round) this.wrist.setState(onWater(round.surface), round.hint && describeHint(round.hint), round.hintsLeft)
     this.hands.setColour(round?.colour)
     const shown = globeDetail(view)
     this.globe.showColour(shown !== undefined && showsTerrain(shown))

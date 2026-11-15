@@ -3,6 +3,7 @@ import { LandMask, WaterMask } from "@whereabouts/shared/paint/land"
 import { resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { latLngToCell, type H3Cell } from "@whereabouts/shared/h3"
 import { HintAxis } from "@whereabouts/shared/hints"
+import { Surface } from "@whereabouts/shared/questions"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { Km } from "@whereabouts/shared/units"
 import { PaintModel } from "./paint-model"
@@ -46,27 +47,30 @@ describe("trimPaint", () => {
   it("trims the sea with the land mask, saying how much went", async () => {
     vi.mocked(loadLandMask).mockResolvedValue(new LandMask({ resolution: RESOLUTION, cells: [cellAt(PARIS)] }))
     const model = makeModel(PARIS, MADRID)
-    expect(await trimPaint(model, false)).toMatch(/^Trimmed \d+%$/)
+    expect(await trimPaint(model, Surface.LAND)).toMatch(/^Trimmed \d+%$/)
     expect([...model.layer.cells.keys()]).toEqual([cellAt(PARIS)])
     expect(play).toHaveBeenCalledWith("clear")
   })
 
   it("says so, silently, when nothing is at sea", async () => {
     vi.mocked(loadLandMask).mockResolvedValue(new LandMask({ resolution: RESOLUTION, cells: [cellAt(PARIS)] }))
-    expect(await trimPaint(makeModel(PARIS), false)).toBe("None at sea")
+    expect(await trimPaint(makeModel(PARIS), Surface.LAND)).toBe("None at sea")
     expect(play).not.toHaveBeenCalled()
   })
 
   it("trims the land with the water mask in a lake or sea round", async () => {
-    vi.mocked(loadWaterMask).mockResolvedValue(new WaterMask({ resolution: RESOLUTION, dry: [] }))
-    expect(await trimPaint(makeModel(PARIS), true)).toBe("None on land")
+    vi.mocked(loadWaterMask).mockResolvedValue(
+      new WaterMask({ resolution: RESOLUTION, dry: [], lakes: [] }, Surface.SEA)
+    )
+    expect(await trimPaint(makeModel(PARIS), Surface.SEA)).toBe("None on land")
+    expect(loadWaterMask).toHaveBeenCalledWith(Surface.SEA)
     expect(loadLandMask).not.toHaveBeenCalled()
   })
 
   it("asks for another try when the mask won't load", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {})
     vi.mocked(loadLandMask).mockRejectedValue(new Error("offline"))
-    expect(await trimPaint(makeModel(PARIS), false)).toBe("Try again")
+    expect(await trimPaint(makeModel(PARIS), Surface.LAND)).toBe("Try again")
   })
 })
 

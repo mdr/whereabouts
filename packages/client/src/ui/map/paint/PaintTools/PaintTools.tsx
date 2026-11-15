@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact"
 import type { HintBand } from "@whereabouts/shared/hints"
+import { Surface } from "@whereabouts/shared/questions"
 import { usePaint } from "../../MapView/MapView"
 import { HudBottom } from "../../Hud/Hud"
 import styles from "./PaintTools.module.css"
@@ -44,18 +45,18 @@ const toolHint = (tool: Tool, fillType: FillType | undefined): string => {
  * The player-facing brush bar: tool, clear, brush size, undo/redo, and
  * whatever action buttons the screen passes in (done, next).
  *
- * `water`: the answer is a lake or sea, so Trim land replaces Trim sea.
+ * `surface`: what the answer is painted on; on a lake or sea, Trim land replaces Trim sea.
  * `hint`: the band of a hint taken this round, offered as a trim too.
  * `canPass`: done with nothing painted is a pass, so say what that scores.
  */
 export const PaintTools = ({
   children,
-  water,
+  surface,
   hint,
   canPass
 }: {
   children?: ComponentChildren
-  water?: boolean
+  surface?: Surface
   hint?: HintBand
   canPass?: boolean
 }) => {
@@ -91,7 +92,7 @@ export const PaintTools = ({
         >
           <Icon name="trash" /> <ToolLabel>Clear</ToolLabel>
         </button>
-        <Trim enabled={enabled} water={water ?? false} />
+        <Trim enabled={enabled} surface={surface ?? Surface.LAND} />
         {hint && <TrimToHint enabled={enabled} band={hint} />}
       </div>
       <label class={styles.brush} title="Brush size ([ and ] also work)">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "preact/hooks"
+import { onWater, type Surface } from "@whereabouts/shared/questions"
 import { usePaint } from "../MapView/MapView"
 import { Icon } from "../../icons"
 import { trimPaint } from "../../../paint/paint-commands"
@@ -11,7 +12,8 @@ import { ToolLabel } from "./ToolLabel/ToolLabel"
  * better score: a blob centred on a coastal answer loses its sea side (see
  * land.ts).
  */
-export const Trim = ({ enabled, water }: { enabled: boolean; water: boolean }) => {
+export const Trim = ({ enabled, surface }: { enabled: boolean; surface: Surface }) => {
+  const water = onWater(surface)
   const paint = usePaint()
   const [note, setNote] = useState<string | undefined>(undefined)
   const [busy, setBusy] = useState(false)
@@ -23,7 +25,7 @@ export const Trim = ({ enabled, water }: { enabled: boolean; water: boolean }) =
   const trim = async () => {
     setBusy(true)
     try {
-      setNote(await trimPaint(paint, water))
+      setNote(await trimPaint(paint, surface))
     } finally {
       setBusy(false)
     }

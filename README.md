@@ -502,9 +502,11 @@ about 85 points in testing), while island answers often gain.
 In a lake or sea round the button is Trim land instead: it removes paint
 more than about 20 km from water, using a water mask
 (`packages/shared/water.json`, built by `scripts/build-water.ts`): the
-same-sized cells wholly on land and touching no lake, about 130 KB
-gzipped, fetched on the first press. The land mask cannot serve, since
-lakes are land in it. A lake or sea painted exactly loses nothing (a test
+same-sized cells wholly on land, about 150 KB gzipped, fetched on the
+first press. In a lake round a cell a quarter or more lake counts as
+water too; a sea round ignores lakes, so a Baltic blob over Finland's
+lakes is trimmed. The land mask cannot serve: its cells touch land
+rather than lie wholly on it. A lake or sea painted exactly loses nothing (a test
 checks every one).
 
 Fill appears in a round that asks for a country (whole countries and flags; not states)

@@ -128,8 +128,8 @@ enum Topic {
 /** Each topic's id prefix, the feature it is on a place, and what its area is painted on. */
 const TOPICS: Record<Topic, { prefix: string; feature?: FeatureType; surface: Surface }> = {
   [Topic.ISLAND]: { prefix: "island", feature: FeatureType.ISLAND, surface: Surface.LAND },
-  [Topic.LAKE]: { prefix: "lake", feature: FeatureType.LAKE, surface: Surface.WATER },
-  [Topic.SEA]: { prefix: "sea", feature: FeatureType.SEA, surface: Surface.WATER },
+  [Topic.LAKE]: { prefix: "lake", feature: FeatureType.LAKE, surface: Surface.LAKE },
+  [Topic.SEA]: { prefix: "sea", feature: FeatureType.SEA, surface: Surface.SEA },
   [Topic.STATE]: { prefix: "state", surface: Surface.LAND }
 }
 

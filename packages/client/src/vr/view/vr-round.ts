@@ -1,7 +1,7 @@
 import type { Points } from "@whereabouts/shared/units"
 /** The parts of the headset's round and reveal that practice and a game share. */
 import { QuestionType, clueFlag, clueImage, promptOf } from "@whereabouts/shared/questions"
-import { flagShown, onWater, outlineOf, type QuestionView } from "@whereabouts/shared/protocol/views"
+import { flagShown, outlineOf, surfaceOf, type QuestionView } from "@whereabouts/shared/protocol/views"
 import type { Fact } from "@whereabouts/shared/catalogue/facts"
 import type { FlagCode } from "@whereabouts/shared/ids"
 import type { Borders, PaintedCountry } from "@whereabouts/shared/borders"
@@ -39,7 +39,7 @@ const paintedInText = (where: PaintedCountry, answer?: string): string => {
 
 export const vrRound = (
   { question, revealed, fact }: VrRoundShown,
-  own: Omit<VrRound, "prompt" | "mode" | "picture" | "water">
+  own: Omit<VrRound, "prompt" | "mode" | "picture" | "surface">
 ): VrRound => ({
   ...own,
   prompt: promptOf(question),
@@ -49,7 +49,7 @@ export const vrRound = (
     flagShown(question),
     revealed && { place: revealed.label, text: fact?.text }
   ),
-  water: onWater(question.answer)
+  surface: surfaceOf(question.answer)
 })
 
 /** Your score at the reveal, or undefined when you sat the round out. */

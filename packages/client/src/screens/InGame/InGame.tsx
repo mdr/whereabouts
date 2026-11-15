@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "preact/hooks"
-import { onWater, outlineOf, type InPlayGameView, Phase, RoundGuessType } from "@whereabouts/shared/protocol/views"
+import { surfaceOf, outlineOf, type InPlayGameView, Phase, RoundGuessType } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { YouRoleType, everyone } from "@whereabouts/shared/roles"
 import { useGameService } from "../../game-service/use-game-service"
@@ -166,7 +166,7 @@ export const InGame = ({ view }: { view: InPlayGameView }) => {
         </HudTop>
         {!practice && <InGameSide view={view} />}
         {role.type === YouRoleType.PLAYING && (
-          <PaintTools water={onWater(round.question.answer)} hint={view.you.hint} canPass={!role.locked}>
+          <PaintTools surface={surfaceOf(round.question.answer)} hint={view.you.hint} canPass={!role.locked}>
             {role.locked ? (
               <button
                 class={toolbarGrow}
