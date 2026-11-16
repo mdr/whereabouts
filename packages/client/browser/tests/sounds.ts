@@ -18,6 +18,7 @@ export const recordSounds = (): void => {
     countdown: 12.5,
     chicken: 2.75,
     clear: 0.45,
+    splat: 0.74,
     applause: 2.89
   }
   const clipOf = (buffer: AudioBuffer | undefined): string | undefined =>

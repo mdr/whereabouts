@@ -5,7 +5,7 @@ import { resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { cellToChildren, finerResolution, latLngToCell, type H3Cell } from "@whereabouts/shared/h3"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { Tool } from "./tool"
-import { PaintModel } from "./paint-model"
+import { FillChange, PaintModel } from "./paint-model"
 import { FillType, type FillTarget, type Filler } from "./fill-target"
 import { HintAxis } from "@whereabouts/shared/hints"
 import type { Km } from "@whereabouts/shared/units"
@@ -187,11 +187,11 @@ describe("PaintModel", () => {
       model.useFiller(makeFiller())
       model.offerFill(FillType.COUNTRY)
 
-      model.fillAt(PARIS, 1)
+      expect(model.fillAt(PARIS, 1)).toBe(FillChange.FILLED)
       expect(cells(model)).toEqual(new Map([[cellAt(PARIS), FILL_DENSITY]]))
       expect(model.isFilled(FRANCE)).toBe(true)
 
-      model.fillAt(PARIS, 1)
+      expect(model.fillAt(PARIS, 1)).toBe(FillChange.UNFILLED)
       expect(model.layer.isEmpty).toBe(true)
       expect(model.isFilled(FRANCE)).toBe(false)
     })
@@ -226,7 +226,7 @@ describe("PaintModel", () => {
       const model = makeModel()
       model.useFiller(makeFiller({ targetAt: () => undefined }))
       model.offerFill(FillType.COUNTRY)
-      model.fillAt({ lat: 45, lon: -30 }, 1)
+      expect(model.fillAt({ lat: 45, lon: -30 }, 1)).toBeUndefined()
       expect(model.layer.isEmpty).toBe(true)
       expect(model.canUndo.value).toBe(false)
     })

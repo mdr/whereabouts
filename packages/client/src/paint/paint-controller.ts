@@ -8,11 +8,12 @@ import type { CssColour } from "@whereabouts/shared/colours"
 import type { PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { GameMap } from "../map/map"
-import { PaintModel } from "./paint-model"
+import { FillChange, PaintModel } from "./paint-model"
 import { PaintView } from "./paint-view"
 import { PaintInput } from "./paint-input"
 import type { Tool } from "./tool"
 import type { Km, Px } from "@whereabouts/shared/units"
+import { sound } from "../sound/sound"
 
 export class PaintController extends PaintModel {
   readonly gameMap: GameMap
@@ -42,6 +43,12 @@ export class PaintController extends PaintModel {
 
   protected override changed(): void {
     this.view.queue()
+  }
+
+  override fillAt(at: LatLon, reach: Km): FillChange | undefined {
+    const change = super.fillAt(at, reach)
+    if (change === FillChange.FILLED) sound.play("splat")
+    return change
   }
 
   override reset(tolerance: Km): void {

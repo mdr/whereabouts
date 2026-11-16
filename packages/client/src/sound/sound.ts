@@ -2,7 +2,7 @@
  * Game sounds: a spray while painting and an eraser rubbing while erasing,
  * the last-ten-seconds countdown, a soft marimba pair for a round starting
  * and for a round finishing early, a chicken for a pass, a whoosh for Clear,
- * and applause for the final results. One per-device switch (`soundOn` in
+ * a splat for filling a country, and applause for the final results. One per-device switch (`soundOn` in
  * settings) silences everything.
  *
  * Browsers only let a page make sound after the player has tapped or pressed
@@ -19,6 +19,7 @@
  * - chicken.mp3: the first three clucks of "Chicken clucking" by Breviceps
  *   (#456803).
  * - clear.mp3: "Swipe Whoosh" by qubodup (#60007).
+ * - splat.mp3: the first splat of "splat.wav" by zolopher (#44203).
  * - applause.mp3: "Voice_Crowd_Small_Expression_Applause_Stereo" by Nox_Sound
  *   (#752710).
  */
@@ -30,6 +31,7 @@ import eraserUrl from "../assets/sounds/eraser.mp3"
 import countdownUrl from "../assets/sounds/countdown.mp3"
 import chickenUrl from "../assets/sounds/chicken.mp3"
 import clearUrl from "../assets/sounds/clear.mp3"
+import splatUrl from "../assets/sounds/splat.mp3"
 import applauseUrl from "../assets/sounds/applause.mp3"
 import { soundOn } from "../settings/settings"
 import type { Ms, Seconds } from "@whereabouts/shared/units"
@@ -88,7 +90,7 @@ const COUNTDOWN: Seconds = 10
 /** The countdown starts soft and reaches full volume at the alarm. */
 const COUNTDOWN_START_GAIN = 0.25
 
-const ONE_SHOT_VOLUME = { chicken: 0.45, clear: 0.5, applause: 0.6 }
+const ONE_SHOT_VOLUME = { chicken: 0.45, clear: 0.5, splat: 0.5, applause: 0.6 }
 type OneShot = keyof typeof ONE_SHOT_VOLUME
 const VOLUME = { countdown: 0.6, cue: 0.3 }
 
@@ -98,6 +100,7 @@ const URLS = {
   countdown: countdownUrl,
   chicken: chickenUrl,
   clear: clearUrl,
+  splat: splatUrl,
   applause: applauseUrl
 }
 type Clip = keyof typeof URLS
@@ -293,7 +296,7 @@ class SoundEngine {
 
   // ---- one-shots and cues ------------------------------------------------------
 
-  /** Play a recording once: the chicken for a pass, the whoosh for Clear, applause at the end. */
+  /** Play a recording once: the chicken for a pass, the whoosh for Clear, a splat for a fill, applause at the end. */
   play(name: OneShot): void {
     const ctx = this.ready()
     const buffer = this.buffers[name]

@@ -19,6 +19,11 @@ import type { TimeoutHandle } from "@whereabouts/shared/timeout"
 const HISTORY_LIMIT = 50
 const SETTLE: Ms = 200
 
+export enum FillChange {
+  FILLED = "FILLED",
+  UNFILLED = "UNFILLED"
+}
+
 /** One undo step: the cells, and what is filled. */
 interface Snapshot {
   cells: Map<H3Cell, number>
@@ -171,28 +176,32 @@ export class PaintModel {
    * Fill what is at a point with an even coat (see fill.ts), or take the
    * fill off if it is already filled; one undoable step. Nothing at sea.
    */
-  fillAt(at: LatLon, reach: Km): void {
+  fillAt(at: LatLon, reach: Km): FillChange | undefined {
     const target = this.targetAt(at, reach)
-    if (target) this.fill(target)
+    return target && this.fill(target)
   }
 
   /** As fillAt, from outside the map: a small country counts within `near`. */
-  fillOutside(at: LatLon, near: Km): void {
-    this.fillAt(at, near)
+  fillOutside(at: LatLon, near: Km): FillChange | undefined {
+    return this.fillAt(at, near)
   }
 
-  private fill(target: FillTarget): void {
+  private fill(target: FillTarget): FillChange {
     this.pushHistory()
     const filled = this.fills.get(target.id)
+    let change: FillChange
     if (filled) {
       this._layer.removeCoat(filled, FILL_DENSITY)
       this.fills.delete(target.id)
+      change = FillChange.UNFILLED
     } else {
       const cells = target.cells(this._layer.resolution)
       this._layer.addCoat(cells, FILL_DENSITY)
       this.fills.set(target.id, cells)
+      change = FillChange.FILLED
     }
     this.changed()
+    return change
   }
 
   // ---- trims ----------------------------------------------------------------

@@ -290,8 +290,9 @@ changes: [docs/code-map.md](docs/code-map.md)):
   stroke is held: a spray for Paint and a rubber eraser for Erase, each
   random slices of a real recording crossfaded so a long stroke never
   repeats the same stretch twice running (panning is silent). A whoosh for
-  Clear when there was paint to wipe, and a chicken for Pass. In online
-  rounds, a ticking countdown over the last ten seconds, soft at first,
+  Clear when there was paint to wipe, a splat for filling a country, and a
+  chicken for Pass. In online rounds, a ticking countdown over the last
+  ten seconds, soft at first,
   timed to the deadline so its alarm lands on zero; two soft marimba notes
   rising as each round starts and falling when everyone finishes early
   (which stops the countdown before its alarm); applause for everyone at
