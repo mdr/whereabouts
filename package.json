@@ -5,7 +5,7 @@
   "type": "module",
   "engines": {
     "node": "24.x",
-    "pnpm": "12.x"
+    "pnpm": "11.x"
   },
   "scripts": {
     "dev": "pnpm --parallel --filter ./packages/client --filter ./packages/server dev",

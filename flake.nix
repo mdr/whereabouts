@@ -18,7 +18,7 @@
         nodejs = pkgs.nodejs_24;
         # nixpkgs' pnpm bundles its own Node runtime; build it on the shell's
         # Node major so there is one Node here.
-        pnpm = pkgs.pnpm_12.override { nodejs-slim = pkgs.nodejs-slim_24; };
+        pnpm = pkgs.pnpm_11.override { nodejs-slim = pkgs.nodejs-slim_24; };
 
         # The commit built from, in client error reports, every log line and
         # /api/health. CI builds a clean checkout, so this is its SHA; it
