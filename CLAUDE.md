@@ -11,6 +11,9 @@
 - Except values whose literal types an outside library owns: an `as const` object, so its types apply.
 - Discriminators are called `type`. Variants are unions of named types, not a base interface plus intersections.
 - Full-word names. `undefined`, not `null`.
+- Type a number or string that means something, rather than leaving it bare: a flavour or a brand.
+  - Flavours (units: `Km`, `Ms`, `Px`, `Points`… in `units.ts`; `CssColour`; `LayerId`): `number & { readonly [unit]?: "Km" }`. A plain value is accepted and arithmetic needs no casts, but one flavour is not accepted where another is wanted. Use them where any value of the type is valid.
+  - Brands (IDs and other checked formats: `PlayerId`, `RoomCode`, `H3Cell`… in `ids.ts`): a Zod schema ending `.brand<"PlayerId">()`, the type inferred from it, and a constructor that parses (`playerId(text)`). Only parsing makes one, so a plain value is rejected. Wire schemas use them, so parsed messages arrive branded. Parse rather than cast with `as`.
 - Never derive display text from code names (enum values, keys) by changing case; map each to its text.
 - Write the actual type, not an indirection like `GameMap["map"]`, unless it is very complex or inexpressible.
 - Annotate functions' return types. Not needed for Preact components, nor where the type is too complex to write (then ask whether the function should be simpler).
