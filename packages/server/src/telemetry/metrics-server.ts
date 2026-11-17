@@ -1,5 +1,5 @@
 import { createServer, type Server } from "node:http"
-import type { Registry } from "prom-client"
+import type { Registry } from "@prometheus-io/client"
 
 export interface MetricsServer {
   /** The address it listens on. */

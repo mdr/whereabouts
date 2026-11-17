@@ -1,4 +1,4 @@
-import type { RefObject } from "preact"
+import type { ElementRef } from "./element-ref"
 import { useLayoutEffect } from "preact/hooks"
 import { useElementRef } from "./element-ref"
 
@@ -8,7 +8,7 @@ import { useElementRef } from "./element-ref"
  * before paint, so a key pressed as soon as it shows is heard. The dialog
  * itself has focus, so no control shows a ring that a click would not have.
  */
-export const useModalDialog = (open = true): RefObject<HTMLDialogElement> => {
+export const useModalDialog = (open = true): ElementRef<HTMLDialogElement> => {
   const ref = useElementRef<HTMLDialogElement>()
   useLayoutEffect(() => {
     const dialog = ref.current

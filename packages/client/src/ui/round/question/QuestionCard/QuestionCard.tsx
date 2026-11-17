@@ -1,11 +1,11 @@
-import type { ComponentChildren, RefObject } from "preact"
+import type { ComponentChildren } from "preact"
 import { useLayoutEffect, useState } from "preact/hooks"
 import { clueFlag, clueImage, promptOf } from "@whereabouts/shared/questions"
 import type { CommonsFile } from "@whereabouts/shared/ids"
 import { flagShown, type QuestionView } from "@whereabouts/shared/protocol/views"
 import { Icon } from "../../../icons"
 import { cx } from "../../../cx"
-import { useElementRef } from "../../../element-ref"
+import { useElementRef, type ElementRef } from "../../../element-ref"
 import { FlagImage } from "../FlagImage/FlagImage"
 import { QuestionImage } from "../QuestionImage/QuestionImage"
 import { questionCardTestIds } from "./QuestionCardTestIds"
@@ -94,7 +94,7 @@ export const QuestionCard = ({
  * its text, so this sets the card's least height: everything else, plus the
  * picture at its own min-height. Below that the column of cards scrolls.
  */
-const usePictureFloor = (ref: RefObject<HTMLDivElement>, folded: boolean): void => {
+const usePictureFloor = (ref: ElementRef<HTMLDivElement>, folded: boolean): void => {
   // Before paint, so folding never shows a frame held at the unfolded floor.
   useLayoutEffect(() => {
     const card = ref.current
@@ -123,7 +123,7 @@ const usePictureFloor = (ref: RefObject<HTMLDivElement>, folded: boolean): void 
  * Publishes the question card's height as `--question-h` on the document:
  * a phone's reveal leaves the map clear below the card (QuestionCard.module.css, map-camera.ts).
  */
-const usePublishedHeight = (ref: RefObject<HTMLDivElement>): void => {
+const usePublishedHeight = (ref: ElementRef<HTMLDivElement>): void => {
   useLayoutEffect(() => {
     const card = ref.current
     const root = document.documentElement

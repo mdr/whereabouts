@@ -1,5 +1,5 @@
 import type { Lookalikes } from "@whereabouts/shared/catalogue/lookalike-flags"
-import { createPortal } from "preact/compat"
+import { createPortal } from "preact"
 import { SmallFlag } from "../../../pictures/SmallFlag/SmallFlag"
 import { onDialogCancel, useModalDialog } from "../../../modal-dialog"
 import { cx } from "../../../cx"

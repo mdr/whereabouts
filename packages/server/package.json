@@ -10,14 +10,14 @@
     "build": "tsc --noEmit"
   },
   "dependencies": {
-    "@fastify/static": "^8.3.0",
+    "@fastify/static": "^10.1.11",
+    "@prometheus-io/client": "^0.16.1",
     "@rivalis/core": "^8.0.0",
     "@toolcase/base": "~3.0.3",
     "@toolcase/logging": "~3.0.2",
     "@whereabouts/shared": "workspace:*",
     "fastify": "^5.12.8",
     "pino": "^10.4.0",
-    "prom-client": "^15.1.3",
     "ws": "^8.23.0",
     "zod": "^4.6.7"
   },

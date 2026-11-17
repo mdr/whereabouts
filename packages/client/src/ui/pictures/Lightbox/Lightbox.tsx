@@ -1,5 +1,5 @@
 import type { ComponentChildren, TargetedEvent } from "preact"
-import { createPortal } from "preact/compat"
+import { createPortal } from "preact"
 import { useRef, useState } from "preact/hooks"
 import { useElementRef } from "../../element-ref"
 import { onDialogCancel, useModalDialog } from "../../modal-dialog"

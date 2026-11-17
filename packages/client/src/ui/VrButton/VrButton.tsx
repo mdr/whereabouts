@@ -1,6 +1,6 @@
 import { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
 import { reportClientError } from "../../net/client-error/report-client-error"
-import { createPortal } from "preact/compat"
+import { createPortal } from "preact"
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks"
 import type { Vr } from "../../vr/index"
 import { sceneOf, type VrView } from "../../vr/view/view"

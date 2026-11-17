@@ -7,7 +7,7 @@
 import { shortcutsOpen } from "../shortcuts-open"
 import { useEffect } from "preact/hooks"
 import { onDialogCancel, useModalDialog } from "../../modal-dialog"
-import { createPortal } from "preact/compat"
+import { createPortal } from "preact"
 import { isTyping } from "../../../keyboard/keys"
 import { TOGGLE_LIST, listedShortcuts } from "../../../keyboard/shortcuts"
 import { Card } from "../../Card/Card"

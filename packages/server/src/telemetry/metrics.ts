@@ -1,4 +1,4 @@
-import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from "prom-client"
+import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from "@prometheus-io/client"
 import type { CloseReason } from "@whereabouts/shared/close-reason"
 import type { Game } from "@whereabouts/shared/game/game"
 import type { ClientErrorKind } from "@whereabouts/shared/protocol/client-error"
@@ -65,7 +65,7 @@ const PLAYER_COUNT_BUCKETS = [1, 2, 3, 4, 6, 8, 12, 16, 24]
 const secondsOf = (ms: Ms): number => ms / 1000
 
 /**
- * The app's own registry, not prom-client's global one, so apps made side by
+ * The app's own registry, not the client library's global one, so apps made side by
  * side (in tests) do not share counters. Gauges are read from the games when
  * scraped. Add a metric to `registry` to count something new: `whereabouts_`
  * snake_case, base units, `_total` on counters; labels and their values

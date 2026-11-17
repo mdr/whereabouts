@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi, type Mock } from "vite-plus/test"
-import { renderHook, type RenderHookResult } from "@testing-library/preact"
+import { act, renderHook, type RenderHookResult } from "@testing-library/preact"
 import { signal } from "@preact/signals"
 import { HintAxis, type HintBand } from "@whereabouts/shared/hints"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
@@ -132,12 +132,12 @@ describe("useRoundMap", () => {
     expect(paint.gameMap.detail.setStateReveal).toHaveBeenLastCalledWith(true)
   })
 
-  it("shades the hint's band, and takes it off when the round's map goes", () => {
+  it("shades the hint's band, and takes it off when the round's map goes", async () => {
     const band: HintBand = { axis: HintAxis.LATITUDE, from: 10, to: 20 }
     const { paint, update, hook } = setup()
     update({ hint: band })
     expect(paint.gameMap.setHint).toHaveBeenLastCalledWith(band)
-    hook.unmount()
+    await act(() => hook.unmount())
     expect(paint.gameMap.setHint).toHaveBeenLastCalledWith(undefined)
   })
 })

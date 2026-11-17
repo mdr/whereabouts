@@ -170,8 +170,8 @@ export const createApp = (options: AppOptions): App => {
       etag: false,
       lastModified: false,
       cacheControl: false,
-      setHeaders(response, filePath) {
-        response.setHeader("Cache-Control", cacheControlFor(filePath))
+      setHeaders(reply, filePath) {
+        reply.header("Cache-Control", cacheControlFor(filePath))
       }
     })
     // Single-page app: unknown paths fall through to index.html. Not a
