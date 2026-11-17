@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import { HintAxis } from "@whereabouts/shared/hints"
-import { bounds, boxAround, hintFeatures, MAX_LAT, MIN_LAT, toleranceBox } from "./map-geometry"
+import { bounds, boxAround, flatCentreReachable, hintFeatures, MAX_LAT, MIN_LAT, toleranceBox } from "./map-geometry"
 import type { Box, Ring } from "@whereabouts/shared/geo"
 import type { Km } from "@whereabouts/shared/units"
 
@@ -113,5 +113,18 @@ describe("bounds", () => {
       [-10, -85],
       [10, 85]
     ])
+  })
+})
+
+describe("flatCentreReachable", () => {
+  it("reaches any latitude in a world much taller than the view", () => {
+    expect(flatCentreReachable(-50, 4, 900)).toBe(true)
+  })
+
+  it("reaches only near the equator when the world is barely taller than the view", () => {
+    // Zoom 1.2 draws the world about 1176 px tall.
+    expect(flatCentreReachable(0, 1.2, 900)).toBe(true)
+    expect(flatCentreReachable(-50, 1.2, 900)).toBe(false)
+    expect(flatCentreReachable(50, 1.2, 900)).toBe(false)
   })
 })

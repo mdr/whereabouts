@@ -36,7 +36,7 @@ interface FakeMap {
   fitBounds: Mock
 }
 
-const makeFakeMap = ({ zoom = 4, centreLat = 0, fitZoom = 3 } = {}): FakeMap => {
+const makeFakeMap = ({ zoom = 4, centreLat = 0, fitZoom = 3, fitCentreLat = 0 } = {}): FakeMap => {
   const container = document.createElement("div")
   Object.defineProperty(container, "clientWidth", { value: 1600 })
   Object.defineProperty(container, "clientHeight", { value: 900 })
@@ -49,7 +49,7 @@ const makeFakeMap = ({ zoom = 4, centreLat = 0, fitZoom = 3 } = {}): FakeMap => 
     getContainer: () => container,
     getVerticalFieldOfView: () => 37,
     setProjection: vi.fn(),
-    cameraForBounds: () => ({ zoom: fitZoom }),
+    cameraForBounds: () => ({ zoom: fitZoom, center: { lng: 0, lat: fitCentreLat } }),
     easeTo,
     fitBounds
   } as unknown as MapLibreMap
@@ -111,6 +111,28 @@ describe("MapCamera", () => {
     new MapCamera(map).fitAnswerAndPaint(PARIS, paintAt({ lat: 0, lon: -170 }, { lat: 0, lon: 170 }), 50)
     expect(fitBounds).not.toHaveBeenCalled()
     expect(easeTo).toHaveBeenCalledWith(expect.objectContaining({ center: [PARIS.lon, PARIS.lat], zoom: 1 }))
+  })
+
+  it("on a phone, frames just the answer when the paint spans most of the world, as the world fills its height", () => {
+    vi.spyOn(window, "matchMedia").mockReturnValue({ matches: true } as MediaQueryList)
+    const { map, easeTo, fitBounds } = makeFakeMap()
+    new MapCamera(map).fitAnswerAndPaint(PARIS, paintAt({ lat: 0, lon: -170 }, { lat: 0, lon: 170 }), 50)
+    vi.restoreAllMocks()
+    expect(easeTo).not.toHaveBeenCalled()
+    const [[west], [east]] = fitBounds.mock.calls[0]![0] as [[number, number], [number, number]]
+    expect(west).toBeGreaterThan(-5)
+    expect(east).toBeLessThan(10)
+  })
+
+  it("on a phone, frames just the answer when the flat map can't centre on answer and paint together", () => {
+    vi.spyOn(window, "matchMedia").mockReturnValue({ matches: true } as MediaQueryList)
+    // A 900 px tall view at zoom 1.2 leaves the world little room to pan, so 50°S is out of reach.
+    const { map, fitBounds } = makeFakeMap({ fitZoom: 1.2, fitCentreLat: -50 })
+    new MapCamera(map).fitAnswerAndPaint(PARIS, paintAt({ lat: -70, lon: 40 }), 50)
+    vi.restoreAllMocks()
+    const [[west], [east]] = fitBounds.mock.calls[0]![0] as [[number, number], [number, number]]
+    expect(west).toBeGreaterThan(-5)
+    expect(east).toBeLessThan(10)
   })
 
   it("keeps a whole-world view whole when switching to the globe, and a zoomed-in one where it is", () => {

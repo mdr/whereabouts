@@ -5,6 +5,7 @@ import type { Map as MapLibreMap, PaddingOptions } from "maplibre-gl"
 import {
   boxAround,
   bounds,
+  flatCentreReachable,
   globeWorldZoom,
   metresPerPixel,
   offsetFor,
@@ -106,17 +107,27 @@ export class MapCamera {
   ): void {
     const answerBox = boxAround(outline, toleranceBox(answer, tolerance))
     const box = boxAround(paint.features, answerBox)
-    const padding = this.padding()
-    if (box[2] - box[0] > 300) {
+    const phone = matchMedia(PHONE_MEDIA_QUERY).matches
+    const padding = this.padding(phone)
+    const spansWorld = box[2] - box[0] > 300
+    if (spansWorld && !phone) {
       // Spans most of the world; just show it all, at the answer's latitude in case the world is taller than the view.
       const zoom = this.globe ? this.worldZoom(20) : this.map.getMinZoom()
       const lat = this.globe ? 20 : answer.lat
       void this.map.easeTo({ center: [answer.lon, lat], zoom, offset: offsetFor(padding), duration: 900 })
       return
     }
-    const camera = this.map.cameraForBounds(bounds(box), { padding, maxZoom: 10 })
-    // Too wide even zoomed right out, as paint far off can be on a phone: the answer matters more.
-    const fits = camera !== undefined && (camera.zoom ?? 0) >= this.map.getMinZoom()
+    // Too wide even zoomed right out, as paint far off can be on a phone: the answer matters more. Nor on a phone
+    // when the flat map can't centre on the box, as its world fills the height: the answer would sit under the sheet.
+    const camera = spansWorld ? undefined : this.map.cameraForBounds(bounds(box), { padding, maxZoom: 10 })
+    const zoom = camera?.zoom ?? 0
+    const centreLat = camera?.center && ("lat" in camera.center ? camera.center.lat : camera.center[1])
+    const reachable =
+      !phone ||
+      this.globe ||
+      centreLat === undefined ||
+      flatCentreReachable(centreLat, zoom, this.map.getContainer().clientHeight)
+    const fits = camera !== undefined && zoom >= this.map.getMinZoom() && reachable
     void this.map.fitBounds(bounds(fits ? box : answerBox), { padding, duration: 900, maxZoom: 10 })
   }
 
@@ -130,11 +141,11 @@ export class MapCamera {
     this.fitAnswerAndPaint(answer, paint, tolerance, parts)
   }
 
-  private padding(): Required<PaddingOptions> {
+  private padding(phone: boolean): Required<PaddingOptions> {
     const { clientWidth: width, clientHeight: height } = this.map.getContainer()
     // The question card's height, from --question-h.
     const questionCardHeight =
       parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--question-h")) || 0
-    return revealPadding({ width, height, phone: matchMedia(PHONE_MEDIA_QUERY).matches, questionCardHeight })
+    return revealPadding({ width, height, phone, questionCardHeight })
   }
 }

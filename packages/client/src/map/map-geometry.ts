@@ -14,6 +14,18 @@ const worldWidth = (zoom: Zoom): Px => WORLD_WIDTH_AT_ZOOM_0 * Math.pow(2, zoom)
 export const zoomForWorldWidth = (width: Px): Zoom => Math.log2(width / WORLD_WIDTH_AT_ZOOM_0)
 
 /**
+ * Whether the flat map can centre on a latitude at a zoom. MapLibre keeps the
+ * world covering the view, so a world little taller than the view barely pans
+ * north or south.
+ */
+export const flatCentreReachable = (lat: Degrees, zoom: Zoom, height: Px): boolean => {
+  const world = worldWidth(zoom)
+  const clamped = toRadians(Math.max(MIN_LAT, Math.min(MAX_LAT, lat)))
+  const y = ((1 - Math.log(Math.tan(Math.PI / 4 + clamped / 2)) / Math.PI) / 2) * world
+  return y >= height / 2 - 1 && y <= world - height / 2 + 1
+}
+
+/**
  * MapLibre's tiles stop this far north and south. Paint beyond it is never
  * seen on the flat map, and a globe smears it into a fan at the pole.
  */
