@@ -4,8 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "engines": {
-    "node": "22.x",
-    "pnpm": "11.x"
+    "node": "24.x",
+    "pnpm": "12.x"
   },
   "scripts": {
     "dev": "pnpm --parallel --filter ./packages/client --filter ./packages/server dev",
@@ -27,9 +27,9 @@
     "@stryker-mutator/core": "^10.1.1",
     "@stryker-mutator/vitest-runner": "^10.1.1",
     "eslint-plugin-sonarjs": "^4.2.2",
-    "knip": "^6.38.0",
-    "monocart-coverage-reports": "^3.2.0",
-    "oxlint-plugin-eslint": "1.87.0",
+    "knip": "^6.45.1",
+    "monocart-coverage-reports": "^3.2.1",
+    "oxlint-plugin-eslint": "1.93.0",
     "typescript": "^7.0.2",
     "vite-plus": "catalog:",
     "vitest-monocart-coverage": "^5.0.0"

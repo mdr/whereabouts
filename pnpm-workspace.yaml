@@ -5,7 +5,7 @@ packages:
 #
 # node and pnpm come from the Nix flake. `pmOnFail: ignore` stops pnpm
 # downloading and switching to whatever version package.json#packageManager
-# or devEngines might name (the pnpm 11 replacement for
+# or devEngines might name (the pnpm 11+ replacement for
 # managePackageManagerVersions: false). `engineStrict` makes a node or pnpm
 # major mismatch a hard error, so drift outside `nix develop` fails loudly.
 pmOnFail: ignore
@@ -18,13 +18,13 @@ minimumReleaseAge: 2880
 allowBuilds:
   esbuild: true
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@1.1.0
-  vite-plus: 1.1.0
+  vite: npm:@voidzero-dev/vite-plus-core@1.6.0
+  vite-plus: 1.6.0
 overrides:
   vite@*: "catalog:"
-  playwright-core: 1.63.0
+  playwright-core: 1.65.1
   # The coverage provider must match the Vitest that Vite+ bundles.
-  "@vitest/coverage-v8": 5.0.3
+  "@vitest/coverage-v8": 5.1.0
 peerDependencyRules:
   allowAny:
     - vite

@@ -1,6 +1,6 @@
 /**
  * One connection's protocol level: the messages as they go over the socket and
- * the states as the client puts them together. Node 22 provides global
+ * the states as the client puts them together. Node provides global
  * WebSocket, TextEncoder and URL; the client reads them from `window`, so the
  * test aliases window to globalThis.
  */

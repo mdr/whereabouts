@@ -3,9 +3,6 @@
   "includeEntryExports": true,
   "ignoreBinaries": ["nix"],
   "workspaces": {
-    ".": {
-      "ignoreDependencies": ["vitest-monocart-coverage", "@vitest/coverage-custom"]
-    },
     "packages/client": {
       "entry": [
         "scripts/*.ts",
@@ -23,7 +20,9 @@
         ]
       }
     },
-    "packages/shared": { "entry": ["scripts/*.ts"] },
+    "packages/shared": {
+      "entry": ["scripts/*.ts"]
+    },
     "packages/server": {
       "entry": ["scripts/load/load-test.ts", "scripts/load/server-probe.ts", "src/**/*.iwbt.ts"],
       "ignore": ["src/vendor/**"]

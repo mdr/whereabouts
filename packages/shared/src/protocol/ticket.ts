@@ -56,7 +56,7 @@ const TicketSchema = z.object({
 /**
  * Tickets travel in the Sec-WebSocket-Protocol header, which forbids most
  * punctuation, so they are base64url-encoded JSON. TextEncoder and btoa are
- * available in browsers and Node 22 alike.
+ * available in browsers and Node alike.
  */
 export const encodeTicket = (ticket: Ticket): string => {
   const bytes = new TextEncoder().encode(JSON.stringify(ticket))
