@@ -176,7 +176,7 @@ const addHintLayers = (map: MapLibreMap): void => {
 }
 
 const addPaintLayers = (map: MapLibreMap): void => {
-  map.addSource(PAINT_SOURCE, { type: "geojson", data: emptyCollection() })
+  map.addSource(PAINT_SOURCE, { type: "geojson", data: emptyCollection(), tolerance: 0 })
   map.addLayer({
     id: PAINT_FILL,
     type: "fill",
