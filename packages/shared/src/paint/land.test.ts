@@ -83,9 +83,9 @@ describe("land mask", () => {
     const kept = trimSea(new Map([[coast, 3]]), mask, h3Resolution(7))
     expect(kept.has(coast)).toBe(false)
     expect(kept.size).toBeGreaterThan(0)
-    expect(kept.size).toBeLessThan(cellToChildren(coast, h3Resolution(5)).length)
+    expect(kept.size).toBeLessThan(cellToChildren(coast, h3Resolution(6)).length)
     for (const [cell, count] of kept) {
-      expect(getResolution(cell)).toBe(5)
+      expect(getResolution(cell)).toBe(6)
       expect(count).toBe(3)
       expect(mask.nearLand(cell)).toBe(true)
     }

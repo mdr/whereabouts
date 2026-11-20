@@ -66,7 +66,7 @@ describe("water mask", () => {
     expect(kept.has(coast)).toBe(false)
     expect(kept.size).toBeGreaterThan(0)
     for (const [cell, count] of kept) {
-      expect(getResolution(cell)).toBe(5)
+      expect(getResolution(cell)).toBe(6)
       expect(count).toBe(2)
       expect(seaMask.nearWater(cell)).toBe(true)
     }

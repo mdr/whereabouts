@@ -3,15 +3,23 @@ import {
   cellBoundaryLonLat,
   cellToChildren,
   cellToLatLng,
+  cellToParent,
   h3Resolution,
   latLngToCell,
   type H3Cell
 } from "@whereabouts/shared/h3"
 import { Vector3 } from "three"
-import { cellRing, landCells } from "./globe-texture"
+import { cellRing, coarsenMask, landCells } from "./globe-texture"
 import { latLonToLocal } from "./sphere"
 
 describe("the VR globe's land", () => {
+  it("draws a finer mask at its ancestors, keeping coarse cells as they are", () => {
+    const fine = latLngToCell(52.4, -4.1, h3Resolution(6))
+    const coarse = latLngToCell(7.6, 80.7, h3Resolution(3))
+    const land = coarsenMask({ resolution: 6, cells: [fine, coarse] }, h3Resolution(5))
+    expect(land).toEqual({ resolution: 5, cells: [cellToParent(fine, h3Resolution(5)), coarse] })
+  })
+
   it("covers every finest cell of a coarse one, though the coarse hexagon does not", () => {
     const coarse = latLngToCell(34.8, 69.6, h3Resolution(2))
     const drawn = new Set<H3Cell>(landCells({ resolution: 4, cells: [coarse] }))

@@ -3,24 +3,33 @@
 // In a lake round a cell at least LAKE_SHARE lake is wet, and so is any cell a
 // lake round's outline touches, since those rounds are scored by their
 // outlines and must never trim themselves away. Those cells are listed apart,
-// as lakes, since a sea round ignores lakes. From Natural Earth's 1:10m land and lakes
-// (public domain) and the lake rounds' outlines: build those first. The land
-// mask (build-land.ts) cannot serve: lakes are land in it.
+// as lakes, since a sea round ignores lakes. Every cell a sea round paints is
+// wet in every round, for the same reason. From Natural Earth's 1:10m land and
+// lakes (public domain) and the lake and sea rounds' outlines: build those
+// first. The land mask (build-land.ts) cannot serve: lakes are land in it.
 //
 // Usage: node --experimental-transform-types scripts/build-water.ts [dir with ne_10m_land.geojson and ne_10m_lakes.geojson]
 // Without a directory it downloads both from the Natural Earth repository.
-// Takes about eight minutes.
+// Takes about an hour.
 import { readFileSync, writeFileSync } from "node:fs"
-import { cellToChildren, compactCells, polygonToCellsExperimental, POLYGON_TO_CELLS_FLAGS } from "h3-js"
+import {
+  cellToChildren,
+  cellToParent,
+  compactCells,
+  polygonToCells,
+  polygonToCellsExperimental,
+  POLYGON_TO_CELLS_FLAGS
+} from "h3-js"
 import { FeatureType } from "../src/questions.ts"
+import { resolutionForTolerance } from "../src/paint/paint.ts"
 import type { MultiPolygon, Polygon } from "../src/geo.ts"
 import { loadFeatures } from "./natural-earth.ts"
 import { polygonsOf } from "./outline.ts"
 import type { StoredPlace, Outlines } from "./write-catalogue.ts"
 
-const WATER_RESOLUTION = 5
+const WATER_RESOLUTION = 6
 /** Lake share is measured in these cells' centres, 49 to a mask cell. */
-const SAMPLE_RESOLUTION = 7
+const SAMPLE_RESOLUTION = WATER_RESOLUTION + 2
 /** Northern Canada's countless small lakes would otherwise keep most of its land. */
 const LAKE_SHARE = 0.25
 
@@ -33,12 +42,26 @@ const cells = (polygon: Polygon, resolution: number, mode: keyof typeof POLYGON_
 const dry = new Set<string>()
 for (const polygon of await polygons("ne_10m_land"))
   for (const cell of cells(polygon, WATER_RESOLUTION, "containmentFull")) dry.add(cell)
-const seaDry = new Set(dry)
-const before = dry.size
 
 const json = <T>(file: string): T => JSON.parse(readFileSync(new URL(`../${file}`, import.meta.url), "utf8")) as T
 const outlines = json<Outlines>("outlines.json")
-const lakeRounds = json<StoredPlace[]>("places.json")
+const places = json<StoredPlace[]>("places.json")
+
+// A sea round's paint is coarser than the mask, so trimLand judges each painted cell by its mask cells'
+// wet share: the cells the round paints (centres inside its outline, as regionCells) are wet throughout.
+for (const place of places.filter((place) => place.feature === FeatureType.SEA)) {
+  const resolution = resolutionForTolerance(place.area!.tolerance)
+  for (const polygon of outlines[place.area!.outline]!)
+    for (const cell of polygonToCells(polygon, resolution, true))
+      for (const part of resolution <= WATER_RESOLUTION
+        ? cellToChildren(cell, WATER_RESOLUTION)
+        : [cellToParent(cell, WATER_RESOLUTION)])
+        dry.delete(part)
+}
+const seaDry = new Set(dry)
+const before = dry.size
+
+const lakeRounds = places
   .filter((place) => place.feature === FeatureType.LAKE)
   .flatMap((place) => outlines[place.area!.outline]!)
 for (const polygon of lakeRounds)

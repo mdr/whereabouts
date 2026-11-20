@@ -5,19 +5,19 @@
 //
 // Usage: node scripts/build-land.ts [dir with ne_10m_land.geojson and ne_10m_minor_islands.geojson]
 // Without a directory it downloads both from the Natural Earth repository.
-// Takes about five minutes.
+// Takes about an hour and a half.
 //
 // A painted cell is trimmed when its LAND_RESOLUTION cell is not in the mask. A
-// cell touching land by a sliver is kept whole, so with cells about 17 km
-// across, sea paint within roughly 0 to 20 km of land stays and the rest
-// goes. There is no further margin: answers are all on land (a test checks),
-// so the mask need not keep open sea for them.
+// cell touching land by a sliver is kept whole, so with cells about 7 km
+// across, sea paint within roughly 7 km of land stays and the rest goes.
+// There is no further margin: answers are all on land (a test checks), so the
+// mask need not keep open sea for them.
 import { writeFileSync } from "node:fs"
 import { compactCells, polygonToCellsExperimental, POLYGON_TO_CELLS_FLAGS } from "h3-js"
 import { loadFeatures } from "./natural-earth.ts"
 import { polygonsOf } from "./outline.ts"
 
-const LAND_RESOLUTION = 5
+const LAND_RESOLUTION = 6
 const FILES = ["ne_10m_land", "ne_10m_minor_islands"]
 
 const land = new Set<string>()

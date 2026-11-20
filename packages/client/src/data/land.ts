@@ -1,8 +1,8 @@
 /**
  * The masks for the trim buttons, each its own chunk, fetched the first time
  * its button is pressed and kept from then on: the land mask for "Trim sea"
- * (land.json, ~100 KB gzipped) and the water mask for "Trim land" in a lake
- * or sea round (water.json, ~150 KB gzipped).
+ * (land.json, ~370 KB gzipped) and the water mask for "Trim land" in a lake
+ * or sea round (water.json, ~550 KB gzipped).
  */
 import { LandMask, WaterMask } from "@whereabouts/shared/paint/land"
 import { Surface } from "@whereabouts/shared/questions"

@@ -7,11 +7,15 @@ import {
   cellBoundaryLonLat,
   cellToChildren,
   cellToLatLng,
+  cellToParent,
+  coarserResolution,
   getResolution,
   h3Cell,
   h3Resolution,
   latLngToCell,
-  type H3Cell
+  resolutionsTo,
+  type H3Cell,
+  type H3Resolution
 } from "@whereabouts/shared/h3"
 import { decodeRing, ringOf, type BordersData } from "@whereabouts/shared/borders"
 import { toRadians, type Ring } from "@whereabouts/shared/geo"
@@ -84,6 +88,36 @@ const alongGreatCircles = (ring: Ring): Ring => {
   return out
 }
 
+/** Cells about 2 px across on the land picture: finer ones would only take longer to draw. */
+const GLOBE_RESOLUTION = h3Resolution(5)
+
+/** The mask no finer than `resolution`: each finer cell becomes its ancestor there, and full families their parent. */
+export const coarsenMask = (land: LandMaskData, resolution: H3Resolution): LandMaskData => {
+  if (land.resolution <= resolution) return land
+  const cells = new Set<H3Cell>()
+  for (const text of land.cells) {
+    const cell = h3Cell(text)
+    cells.add(getResolution(cell) > resolution ? cellToParent(cell, resolution) : cell)
+  }
+  for (const level of [...resolutionsTo(resolution)].reverse()) if (level > 0) mergeFamilies(cells, level)
+  return { resolution, cells: [...cells] }
+}
+
+/** Replaces each complete family of `level` cells in `cells` with its parent. */
+const mergeFamilies = (cells: Set<H3Cell>, level: H3Resolution): void => {
+  const families = new Map<H3Cell, H3Cell[]>()
+  for (const cell of cells) {
+    if (getResolution(cell) !== level) continue
+    const parent = cellToParent(cell, coarserResolution(level))
+    families.set(parent, [...(families.get(parent) ?? []), cell])
+  }
+  for (const [parent, children] of families) {
+    if (children.length < cellToChildren(parent, level).length) continue
+    for (const child of children) cells.delete(child)
+    cells.add(parent)
+  }
+}
+
 export const landCells = (land: LandMaskData): H3Cell[] => {
   const finest = h3Resolution(land.resolution)
   const mask = new Set(land.cells.map(h3Cell))
@@ -119,7 +153,7 @@ export const drawLand = (canvas: HTMLCanvasElement, land: LandMaskData, theme: T
   // Chrome builds one huge path far more slowly than many small ones: all
   // 40,000 cells in one took 5 s, in fills of 500 under 1 s.
   ctx.beginPath()
-  landCells(land).forEach((cell, i) => {
+  landCells(coarsenMask(land, GLOBE_RESOLUTION)).forEach((cell, i) => {
     const ring = cellRing(cell)
     if (ring) traceRing(ctx, ring, width, height)
     if (i % 500 === 499) {

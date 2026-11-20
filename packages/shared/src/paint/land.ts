@@ -1,11 +1,11 @@
 /**
- * The land mask behind the "Trim sea" button: the H3 resolution-5 cells (about
- * 17 km across) that touch land, compacted (land.json, built by
+ * The land mask behind the "Trim sea" button: the H3 resolution-6 cells (about
+ * 7 km across) that touch land, compacted (land.json, built by
  * scripts/build-land.ts). A painted cell of any resolution is "near land"
- * when it overlaps the mask; trimming keeps only those. Around Italy that
- * kept 82% of sea paint within 10 km of land, 17% at 10 to 20 km, and none
- * beyond. Paint is never finer than its question's painting resolution, so
- * the painted cell holding an answer always holds land too: no answer is
+ * when it overlaps the mask; trimming keeps only those, so sea paint more
+ * than about 7 km from land goes. Paint is never finer than its question's
+ * painting resolution, so the painted cell holding an answer always holds
+ * land too: no answer is
  * trimmed, even one between islands (a test checks every answer).
  *
  * Trimming is the player's choice, like the eraser, not a free gain: a blob
@@ -76,11 +76,13 @@ export const trimSea = (
   keepCells(cells, (cell) => mask.nearLand(cell), h3Resolution(Math.min(mask.resolution, finestResolution)))
 
 /**
- * The mask behind "Trim land", in a lake or sea round: the H3 resolution-5 cells
+ * The mask behind "Trim land", in a lake or sea round: the H3 resolution-6 cells
  * wholly on land, compacted (water.json, built by scripts/build-water.ts). In
  * a lake round a cell a quarter or more lake is wet too, as is any cell a lake
  * round's outline touches; a sea round ignores lakes, or Finland's would keep
- * a Baltic blob's paint. The land mask cannot serve: its cells touch land, not lie wholly on it.
+ * a Baltic blob's paint. Every cell a sea round paints is wet in every round,
+ * so a sea painted exactly is never trimmed. The land mask cannot serve: its
+ * cells touch land, not lie wholly on it.
  */
 export interface WaterMaskData {
   resolution: number
