@@ -2927,6 +2927,90 @@
     "capital": { "of": "tanzania", "kind": "FORMER" }
   },
   {
+    "id": "apia",
+    "label": "Apia, Samoa",
+    "wiki": "Apia",
+    "at": { "lat": -13.8333, "lon": -171.75 },
+    "capital": { "of": "samoa", "kind": "NATIONAL" }
+  },
+  {
+    "id": "honiara",
+    "label": "Honiara, Solomon Islands",
+    "wiki": "Honiara",
+    "at": { "lat": -9.4319, "lon": 159.9556 },
+    "capital": { "of": "solomon-islands", "kind": "NATIONAL" }
+  },
+  {
+    "id": "ngerulmud",
+    "label": "Ngerulmud, Palau",
+    "wiki": "Ngerulmud",
+    "at": { "lat": 7.5006, "lon": 134.6242 },
+    "capital": { "of": "palau", "kind": "NATIONAL" }
+  },
+  {
+    "id": "nukualofa",
+    "label": "Nukuʻalofa, Tonga",
+    "wiki": "Nukuʻalofa",
+    "at": { "lat": -21.1333, "lon": -175.2 },
+    "capital": { "of": "tonga", "kind": "NATIONAL" }
+  },
+  {
+    "id": "suva",
+    "label": "Suva, Fiji",
+    "wiki": "Suva",
+    "at": { "lat": -18.1416, "lon": 178.4419 },
+    "capital": { "of": "fiji", "kind": "NATIONAL" }
+  },
+  {
+    "id": "south-tarawa",
+    "label": "South Tarawa, Kiribati",
+    "wiki": "South Tarawa",
+    "at": { "lat": 1.3576, "lon": 173.0504 },
+    "capital": { "of": "kiribati", "kind": "NATIONAL" }
+  },
+  {
+    "id": "funafuti",
+    "label": "Funafuti, Tuvalu",
+    "wiki": "Funafuti",
+    "at": { "lat": -8.5167, "lon": 179.2 },
+    "capital": { "of": "tuvalu", "kind": "NATIONAL" }
+  },
+  {
+    "id": "majuro",
+    "label": "Majuro, Marshall Islands",
+    "wiki": "Majuro",
+    "at": { "lat": 7.0833, "lon": 171.3833 },
+    "capital": { "of": "marshall-islands", "kind": "NATIONAL" }
+  },
+  {
+    "id": "koror",
+    "label": "Koror, Palau",
+    "wiki": "Koror",
+    "at": { "lat": 7.3422, "lon": 134.4772 },
+    "capital": { "of": "palau", "kind": "FORMER" }
+  },
+  {
+    "id": "port-vila",
+    "label": "Port Vila, Vanuatu",
+    "wiki": "Port Vila",
+    "at": { "lat": -17.7333, "lon": 168.3167 },
+    "capital": { "of": "vanuatu", "kind": "NATIONAL" }
+  },
+  {
+    "id": "yaren",
+    "label": "Yaren, Nauru",
+    "wiki": "Yaren",
+    "at": { "lat": -0.5456, "lon": 166.925 },
+    "capital": { "of": "nauru", "kind": "NATIONAL" }
+  },
+  {
+    "id": "palikir",
+    "label": "Palikir, Federated States of Micronesia",
+    "wiki": "Palikir",
+    "at": { "lat": 6.9172, "lon": 158.1589 },
+    "capital": { "of": "federated-states-of-micronesia", "kind": "NATIONAL" }
+  },
+  {
     "id": "afghanistan",
     "label": "Afghanistan",
     "wiki": "Afghanistan",

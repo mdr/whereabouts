@@ -3577,6 +3577,90 @@
     "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
+    "id": "apia",
+    "type": "PLACE",
+    "place": "apia",
+    "clue": { "type": "NAME", "prompt": "Where is Apia?" },
+    "answer": { "type": "POINT", "tolerance": 800 }
+  },
+  {
+    "id": "honiara",
+    "type": "PLACE",
+    "place": "honiara",
+    "clue": { "type": "NAME", "prompt": "Where is Honiara?" },
+    "answer": { "type": "POINT", "tolerance": 800 }
+  },
+  {
+    "id": "ngerulmud",
+    "type": "PLACE",
+    "place": "ngerulmud",
+    "clue": { "type": "NAME", "prompt": "Where is Ngerulmud?" },
+    "answer": { "type": "POINT", "tolerance": 800 }
+  },
+  {
+    "id": "nukualofa",
+    "type": "PLACE",
+    "place": "nukualofa",
+    "clue": { "type": "NAME", "prompt": "Where is Nukuʻalofa?" },
+    "answer": { "type": "POINT", "tolerance": 800 }
+  },
+  {
+    "id": "suva",
+    "type": "PLACE",
+    "place": "suva",
+    "clue": { "type": "NAME", "prompt": "Where is Suva?" },
+    "answer": { "type": "POINT", "tolerance": 700 }
+  },
+  {
+    "id": "south-tarawa",
+    "type": "PLACE",
+    "place": "south-tarawa",
+    "clue": { "type": "NAME", "prompt": "Where is South Tarawa?" },
+    "answer": { "type": "POINT", "tolerance": 1000 }
+  },
+  {
+    "id": "funafuti",
+    "type": "PLACE",
+    "place": "funafuti",
+    "clue": { "type": "NAME", "prompt": "Where is Funafuti?" },
+    "answer": { "type": "POINT", "tolerance": 800 }
+  },
+  {
+    "id": "majuro",
+    "type": "PLACE",
+    "place": "majuro",
+    "clue": { "type": "NAME", "prompt": "Where is Majuro?" },
+    "answer": { "type": "POINT", "tolerance": 1000 }
+  },
+  {
+    "id": "koror",
+    "type": "PLACE",
+    "place": "koror",
+    "clue": { "type": "NAME", "prompt": "Where is Koror?" },
+    "answer": { "type": "POINT", "tolerance": 800 }
+  },
+  {
+    "id": "port-vila",
+    "type": "PLACE",
+    "place": "port-vila",
+    "clue": { "type": "NAME", "prompt": "Where is Port Vila?" },
+    "answer": { "type": "POINT", "tolerance": 700 }
+  },
+  {
+    "id": "yaren",
+    "type": "PLACE",
+    "place": "yaren",
+    "clue": { "type": "NAME", "prompt": "Where is Yaren?" },
+    "answer": { "type": "POINT", "tolerance": 800 }
+  },
+  {
+    "id": "palikir",
+    "type": "PLACE",
+    "place": "palikir",
+    "clue": { "type": "NAME", "prompt": "Where is Palikir?" },
+    "answer": { "type": "POINT", "tolerance": 1000 }
+  },
+  {
     "id": "afghanistan-region",
     "type": "COUNTRY",
     "place": "afghanistan",

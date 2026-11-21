@@ -13009,6 +13009,224 @@
       }
     ]
   },
+  "apia": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Apia is the capital and largest city of Samoa, on the central north coast of Upolu island.",
+        "source": "https://en.wikipedia.org/wiki/Apia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In March 1889 six American and German warships were wrecked in Apia harbour by a hurricane; only Britain's HMS Calliope steamed out and survived.",
+        "source": "https://en.wikipedia.org/wiki/Apia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Robert Louis Stevenson lived above the town and is buried on the summit of Mount Vaea, which rises directly behind it.",
+        "source": "https://en.wikipedia.org/wiki/Mount_Vaea"
+      }
+    ]
+  },
+  "honiara": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Honiara is the capital and largest city of Solomon Islands, on the northwest coast of Guadalcanal.",
+        "source": "https://en.wikipedia.org/wiki/Honiara"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Honiara grew from a wartime American base on Guadalcanal, and became the capital in the late 1940s after the old capital, Tulagi, was destroyed.",
+        "source": "https://en.wikipedia.org/wiki/Honiara"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its name comes from a Guadalcanal phrase usually translated as \"place of the east wind\".",
+        "source": "https://en.wikipedia.org/wiki/Honiara"
+      }
+    ]
+  },
+  "ngerulmud": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Ngerulmud replaced Koror as the seat of government of Palau in October 2006, on the island of Babeldaob.",
+        "source": "https://en.wikipedia.org/wiki/Ngerulmud"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "With no permanent fixed population, it is often described as the least populous capital of any sovereign nation in the world.",
+        "source": "https://en.wikipedia.org/wiki/Ngerulmud"
+      }
+    ]
+  },
+  "nukualofa": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Nukuʻalofa is the capital and largest city of Tonga, on the north coast of the island of Tongatapu.",
+        "source": "https://en.wikipedia.org/wiki/Nuku%CA%BBalofa"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The king's white, red-roofed Royal Palace on the waterfront is built of wood in Victorian style, dating from the 1860s.",
+        "source": "https://en.wikipedia.org/wiki/Royal_Palace,_Tonga"
+      }
+    ]
+  },
+  "suva": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Suva is the capital and most populous settlement of Fiji, and the main port, on the southeast coast of Viti Levu.",
+        "source": "https://en.wikipedia.org/wiki/Suva"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Suva replaced Levuka as capital because Levuka was squeezed between a steep mountainside and the sea, with no room to grow.",
+        "source": "https://en.wikipedia.org/wiki/Suva"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Suva was a mangrove swamp with no roads or buildings when Royal Engineers began clearing it to build the new capital.",
+        "source": "https://en.wikipedia.org/wiki/Suva"
+      }
+    ]
+  },
+  "south-tarawa": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "South Tarawa is the capital of Kiribati, a string of coral islets on Tarawa atoll, home to more than half the country's people.",
+        "source": "https://en.wikipedia.org/wiki/South_Tarawa"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Causeways join its islets into one long strip, mostly under three metres above the sea and only about 450 metres wide.",
+        "source": "https://en.wikipedia.org/wiki/South_Tarawa"
+      },
+      {
+        "type": "FAME",
+        "text": "At Betio, at its western end, US Marines fought the Battle of Tarawa against Japanese defenders in 1943.",
+        "source": "https://en.wikipedia.org/wiki/South_Tarawa"
+      }
+    ]
+  },
+  "funafuti": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "In the 1890s the Royal Society bored deep into Funafuti's coral to test Charles Darwin's theory of how atolls form.",
+        "source": "https://en.wikipedia.org/wiki/Funafuti"
+      },
+      {
+        "type": "FAME",
+        "text": "Officially the whole atoll is Tuvalu's capital, though most government offices stand in the village of Vaiaku, on Fongafale islet.",
+        "source": "https://en.wikipedia.org/wiki/Funafuti"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Between its few flights, Funafuti's airport runway doubles as a sports ground, where people play football and volleyball and dry their washing.",
+        "source": "https://en.wikipedia.org/wiki/Funafuti"
+      }
+    ]
+  },
+  "majuro": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Majuro's lagoon port is one of the world's busiest for transhipping tuna, with carrier ships queuing to take catches from fishing boats.",
+        "source": "https://en.wikipedia.org/wiki/Majuro"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Part of Majuro's piped water is caught from rain falling on the international airport's runway and stored in reservoirs.",
+        "source": "https://en.wikipedia.org/wiki/Majuro"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The atoll's highest point, at Laura, is only about three metres above sea level.",
+        "source": "https://en.wikipedia.org/wiki/Majuro"
+      }
+    ]
+  },
+  "koror": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Koror was Palau's capital until 2006, when the government moved to Ngerulmud on Babeldaob, but it is still the largest town.",
+        "source": "https://en.wikipedia.org/wiki/Ngerulmud"
+      },
+      {
+        "type": "FAME",
+        "text": "Koror State holds the Rock Islands Southern Lagoon, Palau's first World Heritage Site, listed in 2012 for its limestone islands and marine lakes.",
+        "source": "https://en.wikipedia.org/wiki/Koror"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Koror Jail has become a tourist stop, because inmates carve and sell elaborate wooden storyboards from a shop on the grounds.",
+        "source": "https://en.wikipedia.org/wiki/Koror_Jail"
+      }
+    ]
+  },
+  "port-vila": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Port Vila is Vanuatu's capital and largest city, on the island of Efate, and its main centre for tourism and trade.",
+        "source": "https://en.wikipedia.org/wiki/Port_Vila"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Under the Anglo-French Condominium, each power ran its own police, courts, clinics and schools, earning it the nickname 'the Pandemonium'.",
+        "source": "https://en.wikipedia.org/wiki/New_Hebrides"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In 1889 settlers around Port Vila declared the independent municipality of Franceville, which lasted only until the following June.",
+        "source": "https://en.wikipedia.org/wiki/Port_Vila"
+      }
+    ]
+  },
+  "yaren": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Nauru has no official capital, but Yaren, home to its parliament and government offices, is accepted as the capital in practice.",
+        "source": "https://en.wikipedia.org/wiki/Yaren"
+      },
+      {
+        "type": "FAME",
+        "text": "Yaren is the seat of government of the world's smallest republic, and Nauru's only airport lies within its district.",
+        "source": "https://en.wikipedia.org/wiki/Yaren"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Moqua Well, an underground lake in a cave beside the airstrip, was the main source of fresh water in the Second World War.",
+        "source": "https://en.wikipedia.org/wiki/Moqua_Well"
+      }
+    ]
+  },
+  "palikir": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Palikir has been the capital of the Federated States of Micronesia since 1989, when it replaced the nearby coastal town of Kolonia.",
+        "source": "https://en.wikipedia.org/wiki/Palikir"
+      },
+      {
+        "type": "FAME",
+        "text": "It is a purpose-built capital: the government chose to develop the small town of Palikir as its administrative centre.",
+        "source": "https://en.wikipedia.org/wiki/Palikir"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "With over five metres of rain a year, it is one of the wettest capital cities in the world.",
+        "source": "https://en.wikipedia.org/wiki/Palikir"
+      }
+    ]
+  },
   "afghanistan": {
     "about": [
       {
