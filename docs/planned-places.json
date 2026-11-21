@@ -1,9 +1,0 @@
-{
-  "about": "Place-name questions agreed on 2026-11-21 but not yet added. Each needs, from research: coordinates and title of its English Wikipedia article, a reveal photo (Commons JPEG, landscape, at least 1,600 px wide, looked at), and three or four facts each checked against two sources. Tolerances follow the country's own question where it has one; capital.kind uses CapitalKind in packages/shared/src/catalogue/places.ts. Delete each entry once added.",
-  "skipped": [
-    "Monaco, Singapore, Vatican City, Luxembourg, San Marino, Djibouti, Kuwait City, São Tomé: capitals named as, or as good as, their country",
-    "Palestine",
-    "Ciudad de la Paz, Equatorial Guinea"
-  ],
-  "places": []
-}
