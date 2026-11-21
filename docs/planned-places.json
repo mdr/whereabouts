@@ -18,39 +18,6 @@
       "tolerance": 800
     },
     {
-      "id": "asuncion",
-      "label": "Asunción, Paraguay",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "paraguay",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Asunción?",
-      "tolerance": 400
-    },
-    {
-      "id": "belmopan",
-      "label": "Belmopan, Belize",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "belize",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Belmopan?",
-      "tolerance": 300
-    },
-    {
-      "id": "bridgetown",
-      "label": "Bridgetown, Barbados",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "barbados",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Bridgetown?",
-      "tolerance": 300
-    },
-    {
       "id": "funafuti",
       "label": "Funafuti, Tuvalu",
       "group": "capital-of-country-asked-by-name",
@@ -62,17 +29,6 @@
       "tolerance": 800
     },
     {
-      "id": "georgetown",
-      "label": "Georgetown, Guyana",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "guyana",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Georgetown, the national capital?",
-      "tolerance": 400
-    },
-    {
       "id": "honiara",
       "label": "Honiara, Solomon Islands",
       "group": "capital-of-country-asked-by-name",
@@ -82,17 +38,6 @@
       },
       "prompt": "Where is Honiara?",
       "tolerance": 800
-    },
-    {
-      "id": "kingston",
-      "label": "Kingston, Jamaica",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "jamaica",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Kingston, the national capital?",
-      "tolerance": 300
     },
     {
       "id": "majuro",
@@ -138,28 +83,6 @@
       },
       "prompt": "Where is Nukuʻalofa?",
       "tolerance": 800
-    },
-    {
-      "id": "paramaribo",
-      "label": "Paramaribo, Suriname",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "suriname",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Paramaribo?",
-      "tolerance": 400
-    },
-    {
-      "id": "port-of-spain",
-      "label": "Port of Spain, Trinidad and Tobago",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "trinidad-and-tobago",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Port of Spain?",
-      "tolerance": 300
     },
     {
       "id": "port-vila",
@@ -215,64 +138,6 @@
       },
       "prompt": "Where is Palikir?",
       "tolerance": 1000
-    },
-    {
-      "id": "sucre",
-      "label": "Sucre, Bolivia",
-      "group": "second-capital-of-country-already-covered",
-      "capital": {
-        "of": "bolivia",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Sucre?",
-      "tolerance": 300,
-      "note": "Constitutional capital; La Paz is already tagged as seat of government"
-    },
-    {
-      "id": "the-hague",
-      "label": "The Hague, Netherlands",
-      "group": "second-capital-of-country-already-covered",
-      "capital": {
-        "of": "netherlands",
-        "kind": "SEAT_OF_GOVERNMENT"
-      },
-      "prompt": "Where is The Hague?",
-      "tolerance": 50
-    },
-    {
-      "id": "bloemfontein",
-      "label": "Bloemfontein, South Africa",
-      "group": "second-capital-of-country-already-covered",
-      "capital": {
-        "of": "south-africa",
-        "kind": "JUDICIAL"
-      },
-      "prompt": "Where is Bloemfontein?",
-      "tolerance": 300
-    },
-    {
-      "id": "putrajaya",
-      "label": "Putrajaya, Malaysia",
-      "group": "second-capital-of-country-already-covered",
-      "capital": {
-        "of": "malaysia",
-        "kind": "SEAT_OF_GOVERNMENT"
-      },
-      "prompt": "Where is Putrajaya?",
-      "tolerance": 300,
-      "note": "About 25 km from Kuala Lumpur"
-    },
-    {
-      "id": "dar-es-salaam",
-      "label": "Dar es Salaam, Tanzania",
-      "group": "second-capital-of-country-already-covered",
-      "capital": {
-        "of": "tanzania",
-        "kind": "FORMER"
-      },
-      "prompt": "Where is Dar es Salaam?",
-      "tolerance": 300,
-      "note": "Capital until 1996; still the largest city"
     }
   ]
 }

@@ -12786,6 +12786,229 @@
       }
     ]
   },
+  "asuncion": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Founded on 15 August 1537, the Feast of the Assumption, Asunción launched expeditions that founded other cities, earning it the nickname Mother of Cities.",
+        "source": "https://en.wikipedia.org/wiki/Asunci%C3%B3n"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Many of Asunción's cobbled streets were paved with basalt from Cerro Tacumbú, a hill quarried so heavily that its quarry is now a lagoon.",
+        "source": "https://en.wikipedia.org/wiki/Asunci%C3%B3n"
+      },
+      {
+        "type": "FAME",
+        "text": "Asunción lies on the east bank of the Paraguay River, at Paraguay's border with Argentina.",
+        "source": "https://en.wikipedia.org/wiki/Asunci%C3%B3n"
+      }
+    ]
+  },
+  "bridgetown": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Historic Bridgetown and its Garrison became Barbados's first UNESCO World Heritage Site in 2011.",
+        "source": "https://en.wikipedia.org/wiki/Bridgetown"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Careenage, a narrow inlet also called the Constitution River, runs through the middle of the city and splits it in two.",
+        "source": "https://en.wikipedia.org/wiki/Bridgetown"
+      },
+      {
+        "type": "FAME",
+        "text": "English settlers first arrived at the site in 1628, and the city's Parliament Buildings date from the 1870s.",
+        "source": "https://en.wikipedia.org/wiki/Bridgetown"
+      }
+    ]
+  },
+  "kingston": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Kingston began as a refuge across the harbour for people fleeing the 1692 earthquake that sank much of Port Royal.",
+        "source": "https://en.wikipedia.org/wiki/Kingston,_Jamaica"
+      },
+      {
+        "type": "FAME",
+        "text": "Bob Marley's former home and studio at 56 Hope Road, Kingston, is now the Bob Marley Museum.",
+        "source": "https://en.wikipedia.org/wiki/Bob_Marley_Museum"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "After a major earthquake in 1907, buildings in Kingston's city centre were limited to 60 feet (18 metres) in height.",
+        "source": "https://en.wikipedia.org/wiki/Kingston,_Jamaica"
+      }
+    ]
+  },
+  "port-of-spain": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Seven grand, eccentric mansions from around 1904, the Magnificent Seven, stand around Queen's Park Savannah.",
+        "source": "https://en.wikipedia.org/wiki/Port_of_Spain"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Stollmeyer's Castle, built in 1904 for a Trinidadian businessman, is said to be modelled on Scotland's Balmoral Castle.",
+        "source": "https://en.wikipedia.org/wiki/Port_of_Spain"
+      },
+      {
+        "type": "FAME",
+        "text": "At about 110 hectares, Queen's Park Savannah is the city's largest open space and the central stage for Carnival.",
+        "source": "https://en.wikipedia.org/wiki/Port_of_Spain"
+      }
+    ]
+  },
+  "the-hague": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Amsterdam is the Dutch capital, but the government and parliament sit in The Hague, which is why it is called the seat of government.",
+        "source": "https://en.wikipedia.org/wiki/The_Hague"
+      },
+      {
+        "type": "FAME",
+        "text": "The Peace Palace, opened in 1913 and funded largely by Andrew Carnegie, now houses the International Court of Justice.",
+        "source": "https://en.wikipedia.org/wiki/The_Hague"
+      }
+    ]
+  },
+  "putrajaya": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Malaysia's federal government works in Putrajaya, a purpose-built administrative capital, while Kuala Lumpur remains the national capital.",
+        "source": "https://en.wikipedia.org/wiki/Putrajaya"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Built from scratch as a garden city, Putrajaya is named after Malaysia's first prime minister, Tunku Abdul Rahman.",
+        "source": "https://en.wikipedia.org/wiki/Putrajaya"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Nearly 40 per cent of the city is parks, wetlands and open water, set around a large man-made lake.",
+        "source": "https://en.wikipedia.org/wiki/Putrajaya"
+      }
+    ]
+  },
+  "belmopan": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Belize moved its capital here in 1970, building a new inland city after Hurricane Hattie wrecked coastal Belize City in 1961.",
+        "source": "https://en.wikipedia.org/wiki/Belmopan"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The National Assembly building, the heart of the city's design, is made to resemble a pre-Columbian Maya temple.",
+        "source": "https://en.wikipedia.org/wiki/Belmopan"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "With only about 21,000 people, it is among the smallest national capitals in the world.",
+        "source": "https://en.wikipedia.org/wiki/Belmopan"
+      }
+    ]
+  },
+  "georgetown": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The Secretariat of CARICOM, the Caribbean Community, is based in Georgetown.",
+        "source": "https://en.wikipedia.org/wiki/Georgetown,_Guyana"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The city lies below high-tide level, kept dry by a seawall and canals whose sluice gates open only at low tide.",
+        "source": "https://en.wikipedia.org/wiki/Georgetown,_Guyana"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "St George's Cathedral, built of timber, stands 43.5 metres tall and was long billed as the world's tallest wooden building.",
+        "source": "https://en.wikipedia.org/wiki/St._George%27s_Cathedral,_Georgetown"
+      }
+    ]
+  },
+  "paramaribo": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Its historic inner city of mainly wooden Dutch colonial buildings has been a UNESCO World Heritage Site since 2002.",
+        "source": "https://en.wikipedia.org/wiki/Paramaribo"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Saints Peter and Paul Cathedral is said to be the largest wooden building in the Western Hemisphere.",
+        "source": "https://en.wikipedia.org/wiki/Saint_Peter_and_Paul_Cathedral,_Paramaribo"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "On Keizerstraat a synagogue and a mosque stand side by side, a pairing often seen as a sign of the city's religious harmony.",
+        "source": "https://en.wikipedia.org/wiki/Mosque_Keizerstraat"
+      }
+    ]
+  },
+  "sucre": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Sucre is Bolivia's constitutional capital and seat of the Supreme Court, while the government sits in La Paz.",
+        "source": "https://en.wikipedia.org/wiki/Sucre"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Many colonial buildings are painted white, which earned Sucre the nickname La Ciudad Blanca, the White City.",
+        "source": "https://en.wikipedia.org/wiki/Sucre"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "About 2,800 metres up in the Andes, it has a mild, cool climate all year.",
+        "source": "https://en.wikipedia.org/wiki/Sucre"
+      }
+    ]
+  },
+  "bloemfontein": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "It is South Africa's judicial capital, home to the Supreme Court of Appeal, alongside Pretoria and Cape Town.",
+        "source": "https://en.wikipedia.org/wiki/Bloemfontein"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "J. R. R. Tolkien, author of The Lord of the Rings, was born in Bloemfontein in 1892.",
+        "source": "https://en.wikipedia.org/wiki/Bloemfontein"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Known as the City of Roses, its Sesotho name, Mangaung, means place of cheetahs.",
+        "source": "https://en.wikipedia.org/wiki/Bloemfontein"
+      }
+    ]
+  },
+  "dar-es-salaam": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Tanzania moved its capital to Dodoma, officially by 1996, but Dar es Salaam remains the largest city and the economic hub.",
+        "source": "https://en.wikipedia.org/wiki/Dar_es_Salaam"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Sultan Majid of Zanzibar founded it in the 1860s beside the fishing village of Mzizima, naming it Arabic for 'haven of peace'.",
+        "source": "https://en.wikipedia.org/wiki/Dar_es_Salaam"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "With over seven million people, it is one of the largest cities in East Africa.",
+        "source": "https://en.wikipedia.org/wiki/Dar_es_Salaam"
+      }
+    ]
+  },
   "afghanistan": {
     "about": [
       {

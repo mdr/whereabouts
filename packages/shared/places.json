@@ -2843,6 +2843,90 @@
     "capital": { "of": "the-gambia", "kind": "NATIONAL" }
   },
   {
+    "id": "asuncion",
+    "label": "Asunción, Paraguay",
+    "wiki": "Asunción",
+    "at": { "lat": -25.28, "lon": -57.6344 },
+    "capital": { "of": "paraguay", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bridgetown",
+    "label": "Bridgetown, Barbados",
+    "wiki": "Bridgetown",
+    "at": { "lat": 13.0969, "lon": -59.6131 },
+    "capital": { "of": "barbados", "kind": "NATIONAL" }
+  },
+  {
+    "id": "kingston",
+    "label": "Kingston, Jamaica",
+    "wiki": "Kingston, Jamaica",
+    "at": { "lat": 17.9714, "lon": -76.7931 },
+    "capital": { "of": "jamaica", "kind": "NATIONAL" }
+  },
+  {
+    "id": "port-of-spain",
+    "label": "Port of Spain, Trinidad and Tobago",
+    "wiki": "Port of Spain",
+    "at": { "lat": 10.6667, "lon": -61.5167 },
+    "capital": { "of": "trinidad-and-tobago", "kind": "NATIONAL" }
+  },
+  {
+    "id": "the-hague",
+    "label": "The Hague, Netherlands",
+    "wiki": "The Hague",
+    "at": { "lat": 52.08, "lon": 4.31 },
+    "capital": { "of": "netherlands", "kind": "SEAT_OF_GOVERNMENT" }
+  },
+  {
+    "id": "putrajaya",
+    "label": "Putrajaya, Malaysia",
+    "wiki": "Putrajaya",
+    "at": { "lat": 2.93, "lon": 101.69 },
+    "capital": { "of": "malaysia", "kind": "SEAT_OF_GOVERNMENT" }
+  },
+  {
+    "id": "belmopan",
+    "label": "Belmopan, Belize",
+    "wiki": "Belmopan",
+    "at": { "lat": 17.2522, "lon": -88.7639 },
+    "capital": { "of": "belize", "kind": "NATIONAL" }
+  },
+  {
+    "id": "georgetown",
+    "label": "Georgetown, Guyana",
+    "wiki": "Georgetown, Guyana",
+    "at": { "lat": 6.8011, "lon": -58.155 },
+    "capital": { "of": "guyana", "kind": "NATIONAL" }
+  },
+  {
+    "id": "paramaribo",
+    "label": "Paramaribo, Suriname",
+    "wiki": "Paramaribo",
+    "at": { "lat": 5.8522, "lon": -55.2039 },
+    "capital": { "of": "suriname", "kind": "NATIONAL" }
+  },
+  {
+    "id": "sucre",
+    "label": "Sucre, Bolivia",
+    "wiki": "Sucre",
+    "at": { "lat": -19.0475, "lon": -65.26 },
+    "capital": { "of": "bolivia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bloemfontein",
+    "label": "Bloemfontein, South Africa",
+    "wiki": "Bloemfontein",
+    "at": { "lat": -29.1167, "lon": 26.2167 },
+    "capital": { "of": "south-africa", "kind": "JUDICIAL" }
+  },
+  {
+    "id": "dar-es-salaam",
+    "label": "Dar es Salaam, Tanzania",
+    "wiki": "Dar es Salaam",
+    "at": { "lat": -6.8161, "lon": 39.2803 },
+    "capital": { "of": "tanzania", "kind": "FORMER" }
+  },
+  {
     "id": "afghanistan",
     "label": "Afghanistan",
     "wiki": "Afghanistan",

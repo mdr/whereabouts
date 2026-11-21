@@ -3493,6 +3493,90 @@
     "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
+    "id": "asuncion",
+    "type": "PLACE",
+    "place": "asuncion",
+    "clue": { "type": "NAME", "prompt": "Where is Asunción?" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "bridgetown",
+    "type": "PLACE",
+    "place": "bridgetown",
+    "clue": { "type": "NAME", "prompt": "Where is Bridgetown?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "kingston",
+    "type": "PLACE",
+    "place": "kingston",
+    "clue": { "type": "NAME", "prompt": "Where is Kingston, the national capital?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "port-of-spain",
+    "type": "PLACE",
+    "place": "port-of-spain",
+    "clue": { "type": "NAME", "prompt": "Where is Port of Spain?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "the-hague",
+    "type": "PLACE",
+    "place": "the-hague",
+    "clue": { "type": "NAME", "prompt": "Where is The Hague?" },
+    "answer": { "type": "POINT", "tolerance": 50 }
+  },
+  {
+    "id": "putrajaya",
+    "type": "PLACE",
+    "place": "putrajaya",
+    "clue": { "type": "NAME", "prompt": "Where is Putrajaya?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "belmopan",
+    "type": "PLACE",
+    "place": "belmopan",
+    "clue": { "type": "NAME", "prompt": "Where is Belmopan?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "georgetown",
+    "type": "PLACE",
+    "place": "georgetown",
+    "clue": { "type": "NAME", "prompt": "Where is Georgetown, the national capital?" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "paramaribo",
+    "type": "PLACE",
+    "place": "paramaribo",
+    "clue": { "type": "NAME", "prompt": "Where is Paramaribo?" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "sucre",
+    "type": "PLACE",
+    "place": "sucre",
+    "clue": { "type": "NAME", "prompt": "Where is Sucre?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "bloemfontein",
+    "type": "PLACE",
+    "place": "bloemfontein",
+    "clue": { "type": "NAME", "prompt": "Where is Bloemfontein?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "dar-es-salaam",
+    "type": "PLACE",
+    "place": "dar-es-salaam",
+    "clue": { "type": "NAME", "prompt": "Where is Dar es Salaam?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
     "id": "afghanistan-region",
     "type": "COUNTRY",
     "place": "afghanistan",
