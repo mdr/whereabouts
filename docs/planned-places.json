@@ -285,17 +285,6 @@
       "note": "Kosovo is in the bank without a flag (left out of country and flag rounds as disputed): relax the places test so a capital only has to name a place the bank asks about"
     },
     {
-      "id": "andorra-la-vella",
-      "label": "Andorra la Vella, Andorra",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "andorra",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Andorra la Vella?",
-      "tolerance": 80
-    },
-    {
       "id": "apia",
       "label": "Apia, Samoa",
       "group": "capital-of-country-asked-by-name",
@@ -329,17 +318,6 @@
       "tolerance": 400
     },
     {
-      "id": "bandar-seri-begawan",
-      "label": "Bandar Seri Begawan, Brunei",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "brunei",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Bandar Seri Begawan?",
-      "tolerance": 400
-    },
-    {
       "id": "belmopan",
       "label": "Belmopan, Belize",
       "group": "capital-of-country-asked-by-name",
@@ -360,40 +338,6 @@
       },
       "prompt": "Where is Bridgetown?",
       "tolerance": 300
-    },
-    {
-      "id": "chisinau",
-      "label": "Chișinău, Moldova",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "moldova",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Chișinău?",
-      "tolerance": 120
-    },
-    {
-      "id": "sri-jayawardenepura-kotte",
-      "label": "Sri Jayawardenepura Kotte, Sri Lanka",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "sri-lanka",
-        "kind": "LEGISLATIVE"
-      },
-      "prompt": "Where is Sri Jayawardenepura Kotte?",
-      "tolerance": 250
-    },
-    {
-      "id": "colombo",
-      "label": "Colombo, Sri Lanka",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "sri-lanka",
-        "kind": "SEAT_OF_GOVERNMENT"
-      },
-      "prompt": "Where is Colombo?",
-      "tolerance": 250,
-      "note": "Executive and judicial capital, and the largest city"
     },
     {
       "id": "porto-novo",
@@ -417,17 +361,6 @@
       "prompt": "Where is Cotonou?",
       "tolerance": 300,
       "note": "Seat of government and largest city"
-    },
-    {
-      "id": "doha",
-      "label": "Doha, Qatar",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "qatar",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Doha?",
-      "tolerance": 200
     },
     {
       "id": "freetown",
@@ -576,28 +509,6 @@
       "tolerance": 1000
     },
     {
-      "id": "male",
-      "label": "Malé, Maldives",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "maldives",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Malé?",
-      "tolerance": 400
-    },
-    {
-      "id": "manama",
-      "label": "Manama, Bahrain",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "bahrain",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Manama?",
-      "tolerance": 200
-    },
-    {
       "id": "maseru",
       "label": "Maseru, Lesotho",
       "group": "capital-of-country-asked-by-name",
@@ -676,17 +587,6 @@
       "tolerance": 400
     },
     {
-      "id": "podgorica",
-      "label": "Podgorica, Montenegro",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "montenegro",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Podgorica?",
-      "tolerance": 100
-    },
-    {
       "id": "port-louis",
       "label": "Port Louis, Mauritius",
       "group": "capital-of-country-asked-by-name",
@@ -731,17 +631,6 @@
       "tolerance": 500
     },
     {
-      "id": "skopje",
-      "label": "Skopje, North Macedonia",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "north-macedonia",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Skopje?",
-      "tolerance": 100
-    },
-    {
       "id": "suva",
       "label": "Suva, Fiji",
       "group": "capital-of-country-asked-by-name",
@@ -751,50 +640,6 @@
       },
       "prompt": "Where is Suva?",
       "tolerance": 700
-    },
-    {
-      "id": "thimphu",
-      "label": "Thimphu, Bhutan",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "bhutan",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Thimphu?",
-      "tolerance": 350
-    },
-    {
-      "id": "tirana",
-      "label": "Tirana, Albania",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "albania",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Tirana?",
-      "tolerance": 100
-    },
-    {
-      "id": "vaduz",
-      "label": "Vaduz, Liechtenstein",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "liechtenstein",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Vaduz?",
-      "tolerance": 80
-    },
-    {
-      "id": "valletta",
-      "label": "Valletta, Malta",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "malta",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Valletta?",
-      "tolerance": 100
     },
     {
       "id": "victoria",
@@ -819,39 +664,6 @@
       "tolerance": 800
     },
     {
-      "id": "yerevan",
-      "label": "Yerevan, Armenia",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "armenia",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Yerevan?",
-      "tolerance": 300
-    },
-    {
-      "id": "phnom-penh",
-      "label": "Phnom Penh, Cambodia",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "cambodia",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Phnom Penh?",
-      "tolerance": 300
-    },
-    {
-      "id": "vientiane",
-      "label": "Vientiane, Laos",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "laos",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Vientiane?",
-      "tolerance": 400
-    },
-    {
       "id": "south-tarawa",
       "label": "South Tarawa, Kiribati",
       "group": "capital-of-country-asked-by-name",
@@ -872,17 +684,6 @@
       },
       "prompt": "Where is Banjul?",
       "tolerance": 300
-    },
-    {
-      "id": "dili",
-      "label": "Dili, Timor-Leste",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "timor-leste",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Dili?",
-      "tolerance": 400
     },
     {
       "id": "palikir",

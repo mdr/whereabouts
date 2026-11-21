@@ -2415,6 +2415,132 @@
   { "id": "swansea", "label": "Swansea, Wales", "wiki": "Swansea", "at": { "lat": 51.6167, "lon": -3.95 } },
   { "id": "dundee", "label": "Dundee, Scotland", "wiki": "Dundee", "at": { "lat": 56.4606, "lon": -2.97 } },
   {
+    "id": "andorra-la-vella",
+    "label": "Andorra la Vella, Andorra",
+    "wiki": "Andorra la Vella",
+    "at": { "lat": 42.5061, "lon": 1.5217 },
+    "capital": { "of": "andorra", "kind": "NATIONAL" }
+  },
+  {
+    "id": "skopje",
+    "label": "Skopje, North Macedonia",
+    "wiki": "Skopje",
+    "at": { "lat": 41.9961, "lon": 21.4317 },
+    "capital": { "of": "north-macedonia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "vaduz",
+    "label": "Vaduz, Liechtenstein",
+    "wiki": "Vaduz",
+    "at": { "lat": 47.1406, "lon": 9.5222 },
+    "capital": { "of": "liechtenstein", "kind": "NATIONAL" }
+  },
+  {
+    "id": "phnom-penh",
+    "label": "Phnom Penh, Cambodia",
+    "wiki": "Phnom Penh",
+    "at": { "lat": 11.5694, "lon": 104.9211 },
+    "capital": { "of": "cambodia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "manama",
+    "label": "Manama, Bahrain",
+    "wiki": "Manama",
+    "at": { "lat": 26.2233, "lon": 50.5875 },
+    "capital": { "of": "bahrain", "kind": "NATIONAL" }
+  },
+  {
+    "id": "sri-jayawardenepura-kotte",
+    "label": "Sri Jayawardenepura Kotte, Sri Lanka",
+    "wiki": "Sri Jayawardenepura Kotte",
+    "at": { "lat": 6.9108, "lon": 79.8878 },
+    "capital": { "of": "sri-lanka", "kind": "LEGISLATIVE" }
+  },
+  {
+    "id": "yerevan",
+    "label": "Yerevan, Armenia",
+    "wiki": "Yerevan",
+    "at": { "lat": 40.1778, "lon": 44.5128 },
+    "capital": { "of": "armenia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "podgorica",
+    "label": "Podgorica, Montenegro",
+    "wiki": "Podgorica",
+    "at": { "lat": 42.4414, "lon": 19.2628 },
+    "capital": { "of": "montenegro", "kind": "NATIONAL" }
+  },
+  {
+    "id": "valletta",
+    "label": "Valletta, Malta",
+    "wiki": "Valletta",
+    "at": { "lat": 35.8983, "lon": 14.5125 },
+    "capital": { "of": "malta", "kind": "NATIONAL" }
+  },
+  {
+    "id": "vientiane",
+    "label": "Vientiane, Laos",
+    "wiki": "Vientiane",
+    "at": { "lat": 17.98, "lon": 102.63 },
+    "capital": { "of": "laos", "kind": "NATIONAL" }
+  },
+  {
+    "id": "male",
+    "label": "Malé, Maldives",
+    "wiki": "Malé",
+    "at": { "lat": 4.1753, "lon": 73.5089 },
+    "capital": { "of": "maldives", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bandar-seri-begawan",
+    "label": "Bandar Seri Begawan, Brunei",
+    "wiki": "Bandar Seri Begawan",
+    "at": { "lat": 4.8903, "lon": 114.9422 },
+    "capital": { "of": "brunei", "kind": "NATIONAL" }
+  },
+  {
+    "id": "tirana",
+    "label": "Tirana, Albania",
+    "wiki": "Tirana",
+    "at": { "lat": 41.3283, "lon": 19.8181 },
+    "capital": { "of": "albania", "kind": "NATIONAL" }
+  },
+  {
+    "id": "chisinau",
+    "label": "Chișinău, Moldova",
+    "wiki": "Chișinău",
+    "at": { "lat": 47.0228, "lon": 28.8353 },
+    "capital": { "of": "moldova", "kind": "NATIONAL" }
+  },
+  {
+    "id": "thimphu",
+    "label": "Thimphu, Bhutan",
+    "wiki": "Thimphu",
+    "at": { "lat": 27.4722, "lon": 89.6361 },
+    "capital": { "of": "bhutan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "doha",
+    "label": "Doha, Qatar",
+    "wiki": "Doha",
+    "at": { "lat": 25.2867, "lon": 51.5333 },
+    "capital": { "of": "qatar", "kind": "NATIONAL" }
+  },
+  {
+    "id": "colombo",
+    "label": "Colombo, Sri Lanka",
+    "wiki": "Colombo",
+    "at": { "lat": 6.9344, "lon": 79.8428 },
+    "capital": { "of": "sri-lanka", "kind": "SEAT_OF_GOVERNMENT" }
+  },
+  {
+    "id": "dili",
+    "label": "Dili, Timor-Leste",
+    "wiki": "Dili",
+    "at": { "lat": -8.5536, "lon": 125.5783 },
+    "capital": { "of": "timor-leste", "kind": "NATIONAL" }
+  },
+  {
     "id": "afghanistan",
     "label": "Afghanistan",
     "wiki": "Afghanistan",

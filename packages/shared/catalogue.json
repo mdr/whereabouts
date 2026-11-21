@@ -3059,6 +3059,132 @@
     "answer": { "type": "POINT", "tolerance": 40 }
   },
   {
+    "id": "andorra-la-vella",
+    "type": "PLACE",
+    "place": "andorra-la-vella",
+    "clue": { "type": "NAME", "prompt": "Where is Andorra la Vella?" },
+    "answer": { "type": "POINT", "tolerance": 80 }
+  },
+  {
+    "id": "skopje",
+    "type": "PLACE",
+    "place": "skopje",
+    "clue": { "type": "NAME", "prompt": "Where is Skopje?" },
+    "answer": { "type": "POINT", "tolerance": 100 }
+  },
+  {
+    "id": "vaduz",
+    "type": "PLACE",
+    "place": "vaduz",
+    "clue": { "type": "NAME", "prompt": "Where is Vaduz?" },
+    "answer": { "type": "POINT", "tolerance": 80 }
+  },
+  {
+    "id": "phnom-penh",
+    "type": "PLACE",
+    "place": "phnom-penh",
+    "clue": { "type": "NAME", "prompt": "Where is Phnom Penh?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "manama",
+    "type": "PLACE",
+    "place": "manama",
+    "clue": { "type": "NAME", "prompt": "Where is Manama?" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "sri-jayawardenepura-kotte",
+    "type": "PLACE",
+    "place": "sri-jayawardenepura-kotte",
+    "clue": { "type": "NAME", "prompt": "Where is Sri Jayawardenepura Kotte?" },
+    "answer": { "type": "POINT", "tolerance": 250 }
+  },
+  {
+    "id": "yerevan",
+    "type": "PLACE",
+    "place": "yerevan",
+    "clue": { "type": "NAME", "prompt": "Where is Yerevan?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "podgorica",
+    "type": "PLACE",
+    "place": "podgorica",
+    "clue": { "type": "NAME", "prompt": "Where is Podgorica?" },
+    "answer": { "type": "POINT", "tolerance": 100 }
+  },
+  {
+    "id": "valletta",
+    "type": "PLACE",
+    "place": "valletta",
+    "clue": { "type": "NAME", "prompt": "Where is Valletta?" },
+    "answer": { "type": "POINT", "tolerance": 100 }
+  },
+  {
+    "id": "vientiane",
+    "type": "PLACE",
+    "place": "vientiane",
+    "clue": { "type": "NAME", "prompt": "Where is Vientiane?" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "male",
+    "type": "PLACE",
+    "place": "male",
+    "clue": { "type": "NAME", "prompt": "Where is Malé?" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "bandar-seri-begawan",
+    "type": "PLACE",
+    "place": "bandar-seri-begawan",
+    "clue": { "type": "NAME", "prompt": "Where is Bandar Seri Begawan?" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "tirana",
+    "type": "PLACE",
+    "place": "tirana",
+    "clue": { "type": "NAME", "prompt": "Where is Tirana?" },
+    "answer": { "type": "POINT", "tolerance": 100 }
+  },
+  {
+    "id": "chisinau",
+    "type": "PLACE",
+    "place": "chisinau",
+    "clue": { "type": "NAME", "prompt": "Where is Chișinău?" },
+    "answer": { "type": "POINT", "tolerance": 120 }
+  },
+  {
+    "id": "thimphu",
+    "type": "PLACE",
+    "place": "thimphu",
+    "clue": { "type": "NAME", "prompt": "Where is Thimphu?" },
+    "answer": { "type": "POINT", "tolerance": 350 }
+  },
+  {
+    "id": "doha",
+    "type": "PLACE",
+    "place": "doha",
+    "clue": { "type": "NAME", "prompt": "Where is Doha?" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "colombo",
+    "type": "PLACE",
+    "place": "colombo",
+    "clue": { "type": "NAME", "prompt": "Where is Colombo?" },
+    "answer": { "type": "POINT", "tolerance": 250 }
+  },
+  {
+    "id": "dili",
+    "type": "PLACE",
+    "place": "dili",
+    "clue": { "type": "NAME", "prompt": "Where is Dili?" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
     "id": "afghanistan-region",
     "type": "COUNTRY",
     "place": "afghanistan",

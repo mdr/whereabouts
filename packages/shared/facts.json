@@ -11653,6 +11653,318 @@
       }
     ]
   },
+  "andorra-la-vella": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "At about 1,023 metres up in the Pyrenees, it is the highest capital city in Europe.",
+        "source": "https://en.wikipedia.org/wiki/Andorra_la_Vella"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its sixteenth-century Casa de la Vall was Andorra's parliament house from 1702 until 2011.",
+        "source": "https://en.wikipedia.org/wiki/Andorra_la_Vella"
+      },
+      {
+        "type": "FAME",
+        "text": "Tourism is its main industry, and as a low-tax capital it is a major seller of duty-free goods.",
+        "source": "https://en.wikipedia.org/wiki/Andorra_la_Vella"
+      }
+    ]
+  },
+  "skopje": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "A 1963 earthquake destroyed about 80 per cent of the city, which was then largely rebuilt to modernist plans.",
+        "source": "https://en.wikipedia.org/wiki/Skopje"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Mother Teresa was born in Skopje in 1910, when it was part of the Ottoman Empire.",
+        "source": "https://en.wikipedia.org/wiki/Mother_Teresa"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "After the earthquake, a United Nations competition to plan its rebuilding was won by the Japanese architect Kenzo Tange.",
+        "source": "https://en.wikipedia.org/wiki/Kenz%C5%8D_Tange"
+      }
+    ]
+  },
+  "vaduz": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Vaduz Castle, the home of Liechtenstein's ruling princely family, overlooks the town from its hillside.",
+        "source": "https://en.wikipedia.org/wiki/Vaduz_Castle"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It is a national capital with fewer than 6,000 residents.",
+        "source": "https://en.wikipedia.org/wiki/Vaduz"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Liechtenstein has no airport of its own, so visitors to Vaduz usually fly into Zurich.",
+        "source": "https://en.wikipedia.org/wiki/Vaduz"
+      }
+    ]
+  },
+  "phnom-penh": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "It stands where the Tonle Sap and Mekong rivers meet, at the start of the Bassac River.",
+        "source": "https://en.wikipedia.org/wiki/Phnom_Penh"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "By legend, a widow named Penh found Buddha statues inside a tree washed ashore and raised a hill shrine, giving the city its name.",
+        "source": "https://en.wikipedia.org/wiki/Phnom_Penh"
+      },
+      {
+        "type": "FAME",
+        "text": "It was once nicknamed the Pearl of Asia and prized as one of the most beautiful cities in Indochina.",
+        "source": "https://en.wikipedia.org/wiki/Phnom_Penh"
+      }
+    ]
+  },
+  "manama": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "In 1905 Bahrain's pearling fleet numbered over 900 boats, crewed by some 17,500 men.",
+        "source": "https://en.wikipedia.org/wiki/Manama"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Cheap Japanese cultured pearls ruined the trade, which collapsed in the 1920s and 1930s.",
+        "source": "https://en.wikipedia.org/wiki/Manama"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Three wind turbines hang between the twin towers of its Bahrain World Trade Center.",
+        "source": "https://en.wikipedia.org/wiki/Bahrain_World_Trade_Center"
+      }
+    ]
+  },
+  "sri-jayawardenepura-kotte": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "It is Sri Lanka's legislative capital, standing right beside Colombo, the commercial capital.",
+        "source": "https://en.wikipedia.org/wiki/Sri_Jayawardenepura_Kotte"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Parliament sits on a small island in the middle of a man-made lake, reclaimed from marshland.",
+        "source": "https://en.wikipedia.org/wiki/Sri_Jayawardenepura_Kotte"
+      },
+      {
+        "type": "FAME",
+        "text": "It was capital of the Kingdom of Kotte, one of Sri Lanka's largest historic kingdoms, until the end of the 16th century.",
+        "source": "https://en.wikipedia.org/wiki/Sri_Jayawardenepura_Kotte"
+      }
+    ]
+  },
+  "yerevan": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Founded in 782 BC as the fortress of Erebuni, it is older even than Rome, traditionally founded in 753 BC.",
+        "source": "https://en.wikipedia.org/wiki/Yerevan"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Mount Ararat, Armenia's national symbol, towers over the city's skyline, yet stands across the border in Turkey.",
+        "source": "https://en.wikipedia.org/wiki/Mount_Ararat"
+      },
+      {
+        "type": "FAME",
+        "text": "UNESCO named it World Book Capital for 2012.",
+        "source": "https://en.wikipedia.org/wiki/Yerevan"
+      }
+    ]
+  },
+  "podgorica": {
+    "about": [
+      {
+        "type": "TRIVIA",
+        "text": "With about 1,660 mm of rain a year, it is one of the wettest capitals in Europe.",
+        "source": "https://en.wikipedia.org/wiki/Podgorica"
+      },
+      {
+        "type": "FAME",
+        "text": "From 1946 to 1992 the Montenegrin capital was called Titograd, after Yugoslavia's leader Josip Broz Tito.",
+        "source": "https://en.wikipedia.org/wiki/Podgorica"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Bombing in the Second World War destroyed most of the city.",
+        "source": "https://en.wikipedia.org/wiki/Bombing_of_Podgorica_in_World_War_II"
+      }
+    ]
+  },
+  "valletta": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "At just 0.61 square kilometres, Valletta is the smallest capital city in the European Union.",
+        "source": "https://en.wikipedia.org/wiki/Valletta"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It is named after Jean de Valette, the Grand Master who led the defence in the Great Siege of 1565.",
+        "source": "https://en.wikipedia.org/wiki/Valletta"
+      },
+      {
+        "type": "FAME",
+        "text": "Its foundation stone was laid in March 1566, and the whole city has been a UNESCO World Heritage Site since 1980.",
+        "source": "https://en.wikipedia.org/wiki/Valletta"
+      }
+    ]
+  },
+  "vientiane": {
+    "about": [
+      {
+        "type": "TRIVIA",
+        "text": "The Patuxai arch is said to be built with American cement meant for a new airport, so locals call it the vertical runway.",
+        "source": "https://en.wikipedia.org/wiki/Patuxai"
+      },
+      {
+        "type": "FAME",
+        "text": "The golden Pha That Luang stupa, rebuilt by King Setthathirath in 1566, is the national symbol of Laos.",
+        "source": "https://en.wikipedia.org/wiki/Pha_That_Luang"
+      },
+      {
+        "type": "FAME",
+        "text": "Laos's capital stands on a bend of the Mekong, which here forms the border with Thailand.",
+        "source": "https://en.wikipedia.org/wiki/Vientiane"
+      }
+    ]
+  },
+  "male": {
+    "about": [
+      {
+        "type": "TRIVIA",
+        "text": "The island is under two kilometres long, yet more than 200,000 people live on it, one of the most crowded islands on Earth.",
+        "source": "https://en.wikipedia.org/wiki/Mal%C3%A9"
+      },
+      {
+        "type": "FAME",
+        "text": "Velana International Airport sits on its own island, Hulhulé, joined to Malé by the Sinamalé Bridge, opened in 2018.",
+        "source": "https://en.wikipedia.org/wiki/Sinamal%C3%A9_Bridge"
+      },
+      {
+        "type": "FAME",
+        "text": "The Hukuru Miskiy, built of carved coral stone in the 1650s, is one of the oldest mosques in the Maldives.",
+        "source": "https://en.wikipedia.org/wiki/Mal%C3%A9_Friday_Mosque"
+      }
+    ]
+  },
+  "bandar-seri-begawan": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The Sultan's palace, Istana Nurul Iman, is listed by Guinness World Records as the world's largest residential palace.",
+        "source": "https://en.wikipedia.org/wiki/Istana_Nurul_Iman"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Kampong Ayer, houses on stilts over the Brunei River, is one of the largest stilt villages in the world.",
+        "source": "https://en.wikipedia.org/wiki/Bandar_Seri_Begawan"
+      },
+      {
+        "type": "FAME",
+        "text": "Until 4 October 1970 the city was called Brunei Town, before it was renamed after Sultan Omar Ali Saifuddien III.",
+        "source": "https://en.wikipedia.org/wiki/Bandar_Seri_Begawan"
+      }
+    ]
+  },
+  "tirana": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Tirana has been Albania's capital since a congress at Lushnjë chose it in 1920, and it is also the country's largest city.",
+        "source": "https://en.wikipedia.org/wiki/Tirana"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "As mayor from 2000, the painter Edi Rama had grey communist-era apartment blocks repainted in bright colours, turning the city into a tourist draw.",
+        "source": "https://en.wikipedia.org/wiki/Tirana"
+      }
+    ]
+  },
+  "chisinau": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "First recorded in 1436 as a monastery village, it is now Moldova's capital and by far its largest city.",
+        "source": "https://en.wikipedia.org/wiki/Chi%C8%99in%C4%83u"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its Triumphal Arch was built in the 1840s to mark Russia's victory over the Ottoman Empire.",
+        "source": "https://en.wikipedia.org/wiki/Triumphal_Arch,_Chi%C8%99in%C4%83u"
+      }
+    ]
+  },
+  "thimphu": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Thimphu is Bhutan's capital and largest city, declared the capital in 1961 and standing at more than 2,200 metres up in the Himalayan valley.",
+        "source": "https://en.wikipedia.org/wiki/Thimphu"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The capital has no traffic lights; police officers in white gloves direct the cars with hand signals instead.",
+        "source": "https://en.wikipedia.org/wiki/Thimphu"
+      }
+    ]
+  },
+  "doha": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Doha hosted the 2022 FIFA World Cup, the first held in the Arab world.",
+        "source": "https://en.wikipedia.org/wiki/Doha"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Pearl, a man-made island of nearly 400 hectares, was reclaimed from the Gulf just off Doha's West Bay.",
+        "source": "https://en.wikipedia.org/wiki/Doha"
+      }
+    ]
+  },
+  "colombo": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Colombo is Sri Lanka's executive and judicial capital and its most populous city, while Parliament sits in Sri Jayawardenepura Kotte next door.",
+        "source": "https://en.wikipedia.org/wiki/Colombo"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The name is traditionally traced to the Sinhala Kolon thota, meaning port on the river Kelani.",
+        "source": "https://en.wikipedia.org/wiki/Colombo"
+      }
+    ]
+  },
+  "dili": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The capital of Portuguese Timor from 1769, when the colony moved its seat here from Lifau, it is still the chief port.",
+        "source": "https://en.wikipedia.org/wiki/Dili"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The 27-metre Cristo Rei statue of Jesus stands on a globe and was a gift from Indonesia in 1996.",
+        "source": "https://en.wikipedia.org/wiki/Cristo_Rei_of_Dili"
+      }
+    ]
+  },
   "afghanistan": {
     "about": [
       {
