@@ -11965,6 +11965,286 @@
       }
     ]
   },
+  "yamoussoukro": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Its Basilica of Our Lady of Peace, consecrated by Pope John Paul II in 1990, is billed as the largest Christian church in the world.",
+        "source": "https://en.wikipedia.org/wiki/Yamoussoukro"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Pope reportedly agreed to consecrate the huge basilica only if a hospital was built nearby, which was finally completed in 2014.",
+        "source": "https://en.wikipedia.org/wiki/Basilica_of_Our_Lady_of_Peace"
+      },
+      {
+        "type": "FAME",
+        "text": "It became Ivory Coast's political capital in 1983, though Abidjan on the coast remains the economic capital.",
+        "source": "https://en.wikipedia.org/wiki/Yamoussoukro"
+      }
+    ]
+  },
+  "ouagadougou": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Every two years it hosts FESPACO, widely described as Africa's largest film festival, which draws filmmakers from across the continent.",
+        "source": "https://en.wikipedia.org/wiki/Ouagadougou"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Every Friday at about 7 am, the Moro-Naba, the traditional Mossi king, holds a short ritual court ceremony at his palace.",
+        "source": "https://en.wikipedia.org/wiki/Moro-Naba_Ceremony"
+      },
+      {
+        "type": "FAME",
+        "text": "It has been the seat of the Mossi kings, the Moro-Naba, since the 15th century.",
+        "source": "https://en.wikipedia.org/wiki/Ouagadougou"
+      }
+    ]
+  },
+  "nouakchott": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Mauritania's capital was built almost from scratch, on the site of a small fishing village, in the years before independence in 1960.",
+        "source": "https://en.wikipedia.org/wiki/Nouakchott"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its name probably comes from a Berber phrase meaning \"place of the winds\", which suits its exposed Atlantic coast.",
+        "source": "https://en.wikipedia.org/wiki/Nouakchott"
+      },
+      {
+        "type": "FAME",
+        "text": "Droughts from the 1970s drove nomads to the city, and its population grew from tens of thousands to many hundreds of thousands.",
+        "source": "https://en.wikipedia.org/wiki/Nouakchott"
+      }
+    ]
+  },
+  "yaounde": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Cameroon's capital is nicknamed the City of Seven Hills, in the manner of Rome.",
+        "source": "https://en.wikipedia.org/wiki/Yaound%C3%A9"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It began as a German outpost in the late 1880s, later run by botanist Georg Zenker as an agricultural research station.",
+        "source": "https://en.wikipedia.org/wiki/Yaound%C3%A9"
+      },
+      {
+        "type": "FAME",
+        "text": "Unlike many African capitals, it is inland and high, standing about 750 metres above sea level.",
+        "source": "https://en.wikipedia.org/wiki/Yaound%C3%A9"
+      }
+    ]
+  },
+  "libreville": {
+    "about": [
+      {
+        "type": "TRIVIA",
+        "text": "Its name is French for \"Freetown\", as it was founded in 1849 for people freed from a Brazilian slave ship.",
+        "source": "https://en.wikipedia.org/wiki/Libreville"
+      },
+      {
+        "type": "FAME",
+        "text": "It is the capital and largest city of Gabon, home to roughly a third of the country's people.",
+        "source": "https://en.wikipedia.org/wiki/Libreville"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It lies on the Atlantic coast only about 45 kilometres north of the equator.",
+        "source": "https://en.wikipedia.org/wiki/Libreville"
+      }
+    ]
+  },
+  "abidjan": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Yamoussoukro became the official capital in 1983, yet Abidjan remains the biggest city, the economic hub, and home to many government offices.",
+        "source": "https://en.wikipedia.org/wiki/Abidjan"
+      },
+      {
+        "type": "FAME",
+        "text": "It is the most populous French-speaking city in West Africa.",
+        "source": "https://en.wikipedia.org/wiki/Abidjan"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Saint Paul's Cathedral, designed by the Italian architect Aldo Spirito, was consecrated by Pope John Paul II in 1985.",
+        "source": "https://en.wikipedia.org/wiki/St._Paul%27s_Cathedral,_Abidjan"
+      }
+    ]
+  },
+  "niamey": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The Kennedy Bridge, opened in 1970, was the first to span the Niger at Niamey, letting the city grow onto the far bank.",
+        "source": "https://en.wikipedia.org/wiki/Kennedy_Bridge_(Niamey)"
+      },
+      {
+        "type": "FAME",
+        "text": "As Niger's largest city, Niamey is its political, economic and cultural centre, standing on the banks of the Niger River.",
+        "source": "https://en.wikipedia.org/wiki/Niamey"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Grand Mosque of Niamey was paid for by Libya, in the days of Muammar Gaddafi.",
+        "source": "https://en.wikipedia.org/wiki/Grand_Mosque_of_Niamey"
+      }
+    ]
+  },
+  "conakry": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Conakry began on tiny Tombo Island, one of the Îles de Los, before spreading along the 36-kilometre Kaloum Peninsula.",
+        "source": "https://en.wikipedia.org/wiki/Conakry"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It is among the world's rainiest capitals: over 3.5 metres of rain a year, with more than a metre in both July and August.",
+        "source": "https://en.wikipedia.org/wiki/Conakry"
+      },
+      {
+        "type": "FAME",
+        "text": "About a fifth of all Guineans live in Conakry, which has more than eight times the population of Kankan, the next-largest city.",
+        "source": "https://en.wikipedia.org/wiki/Conakry"
+      }
+    ]
+  },
+  "bangui": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Bangui stands on the Ubangi River, which here forms the border with the Democratic Republic of the Congo, whose town of Zongo lies opposite.",
+        "source": "https://en.wikipedia.org/wiki/Bangui"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Bangui Magnetic Anomaly, centred near the city and about 700 by 1,000 kilometres across, is among Africa's largest magnetic anomalies.",
+        "source": "https://en.wikipedia.org/wiki/Bangui_magnetic_anomaly"
+      },
+      {
+        "type": "FAME",
+        "text": "Its name comes from the Bobangi word for the rapids beside the city.",
+        "source": "https://en.wikipedia.org/wiki/Bangui"
+      }
+    ]
+  },
+  "malabo": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Malabo lies on the north coast of the island of Bioko, not on the mainland part of Equatorial Guinea.",
+        "source": "https://en.wikipedia.org/wiki/Malabo"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It was called Santa Isabel until 1973, when it was renamed after Malabo, a Bubi king.",
+        "source": "https://en.wikipedia.org/wiki/Malabo"
+      },
+      {
+        "type": "FAME",
+        "text": "Pico Basilé, the country's highest mountain at over 3,000 metres, rises behind the city.",
+        "source": "https://en.wikipedia.org/wiki/Malabo"
+      }
+    ]
+  },
+  "bamako": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "At twenty storeys, the BCEAO Tower is the tallest building in Mali, with a design drawn from the Sudano-Sahelian mosques of Djenné and Timbuktu.",
+        "source": "https://en.wikipedia.org/wiki/Bamako"
+      },
+      {
+        "type": "FAME",
+        "text": "Bamako became capital of French Sudan in 1908 and stayed capital when Mali gained independence in 1960.",
+        "source": "https://en.wikipedia.org/wiki/Bamako"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its name comes from the Bambara language and is usually translated as \"crocodile river\".",
+        "source": "https://en.wikipedia.org/wiki/Bamako"
+      }
+    ]
+  },
+  "ndjamena": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The French founded it in 1900 as Fort-Lamy, and in 1973 it was renamed N'Djamena as part of an Africanisation drive.",
+        "source": "https://en.wikipedia.org/wiki/N%27Djamena"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its name comes from an Arabic term, taken from a nearby village, that is usually translated as \"place of rest\".",
+        "source": "https://en.wikipedia.org/wiki/N%27Djamena"
+      },
+      {
+        "type": "FAME",
+        "text": "It stands where the Chari and Logone rivers meet, directly across the river from Kousséri in Cameroon.",
+        "source": "https://en.wikipedia.org/wiki/N%27Djamena"
+      }
+    ]
+  },
+  "bissau": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Bissau replaced Bolama as the capital of Portuguese Guinea in 1941, and has been the capital of Guinea-Bissau since independence.",
+        "source": "https://en.wikipedia.org/wiki/Bissau"
+      },
+      {
+        "type": "FAME",
+        "text": "Its Amura fortress, rebuilt in 1753, now houses a museum honouring the independence struggle and the mausoleum of Amílcar Cabral.",
+        "source": "https://en.wikipedia.org/wiki/Fortaleza_de_S%C3%A3o_Jos%C3%A9_da_Amura"
+      }
+    ]
+  },
+  "brazzaville": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "It faces Kinshasa across the Congo River, and the two are among the closest pair of national capitals in the world.",
+        "source": "https://en.wikipedia.org/wiki/Brazzaville"
+      },
+      {
+        "type": "FAME",
+        "text": "During the Second World War it was the base of Free French resistance in Africa.",
+        "source": "https://en.wikipedia.org/wiki/Brazzaville"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The river below the city is unnavigable, so a railway, completed in 1934, links Brazzaville to the Atlantic port of Pointe-Noire.",
+        "source": "https://en.wikipedia.org/wiki/Brazzaville"
+      }
+    ]
+  },
+  "juba": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Juba, on the White Nile, became the capital when South Sudan gained independence on 9 July 2011.",
+        "source": "https://en.wikipedia.org/wiki/Juba"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Greek traders supplying the British garrisons shaped early Juba, and their old quarter is now the suburb of Hai Jalaba.",
+        "source": "https://en.wikipedia.org/wiki/Juba"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In 2011 the government announced the capital would move to Ramciel, near the middle of the country, but the move has still not happened.",
+        "source": "https://en.wikipedia.org/wiki/Juba"
+      }
+    ]
+  },
   "afghanistan": {
     "about": [
       {

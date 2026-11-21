@@ -2541,6 +2541,111 @@
     "capital": { "of": "timor-leste", "kind": "NATIONAL" }
   },
   {
+    "id": "yamoussoukro",
+    "label": "Yamoussoukro, Ivory Coast",
+    "wiki": "Yamoussoukro",
+    "at": { "lat": 6.8161, "lon": -5.2742 },
+    "capital": { "of": "ivory-coast", "kind": "NATIONAL" }
+  },
+  {
+    "id": "ouagadougou",
+    "label": "Ouagadougou, Burkina Faso",
+    "wiki": "Ouagadougou",
+    "at": { "lat": 12.3686, "lon": -1.5275 },
+    "capital": { "of": "burkina-faso", "kind": "NATIONAL" }
+  },
+  {
+    "id": "nouakchott",
+    "label": "Nouakchott, Mauritania",
+    "wiki": "Nouakchott",
+    "at": { "lat": 18.0853, "lon": -15.9725 },
+    "capital": { "of": "mauritania", "kind": "NATIONAL" }
+  },
+  {
+    "id": "yaounde",
+    "label": "Yaoundé, Cameroon",
+    "wiki": "Yaoundé",
+    "at": { "lat": 3.8667, "lon": 11.5167 },
+    "capital": { "of": "cameroon", "kind": "NATIONAL" }
+  },
+  {
+    "id": "libreville",
+    "label": "Libreville, Gabon",
+    "wiki": "Libreville",
+    "at": { "lat": 0.4078, "lon": 9.4403 },
+    "capital": { "of": "gabon", "kind": "NATIONAL" }
+  },
+  {
+    "id": "abidjan",
+    "label": "Abidjan, Ivory Coast",
+    "wiki": "Abidjan",
+    "at": { "lat": 5.3167, "lon": -4.0333 },
+    "capital": { "of": "ivory-coast", "kind": "FORMER" }
+  },
+  {
+    "id": "niamey",
+    "label": "Niamey, Niger",
+    "wiki": "Niamey",
+    "at": { "lat": 13.5136, "lon": 2.1089 },
+    "capital": { "of": "niger", "kind": "NATIONAL" }
+  },
+  {
+    "id": "conakry",
+    "label": "Conakry, Guinea",
+    "wiki": "Conakry",
+    "at": { "lat": 9.5092, "lon": -13.7122 },
+    "capital": { "of": "guinea", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bangui",
+    "label": "Bangui, Central African Republic",
+    "wiki": "Bangui",
+    "at": { "lat": 4.3733, "lon": 18.5628 },
+    "capital": { "of": "central-african-republic", "kind": "NATIONAL" }
+  },
+  {
+    "id": "malabo",
+    "label": "Malabo, Equatorial Guinea",
+    "wiki": "Malabo",
+    "at": { "lat": 3.7456, "lon": 8.7744 },
+    "capital": { "of": "equatorial-guinea", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bamako",
+    "label": "Bamako, Mali",
+    "wiki": "Bamako",
+    "at": { "lat": 12.6392, "lon": -8.0028 },
+    "capital": { "of": "mali", "kind": "NATIONAL" }
+  },
+  {
+    "id": "ndjamena",
+    "label": "N'Djamena, Chad",
+    "wiki": "N'Djamena",
+    "at": { "lat": 12.1053, "lon": 15.0447 },
+    "capital": { "of": "chad", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bissau",
+    "label": "Bissau, Guinea-Bissau",
+    "wiki": "Bissau",
+    "at": { "lat": 11.86, "lon": -15.5833 },
+    "capital": { "of": "guinea-bissau", "kind": "NATIONAL" }
+  },
+  {
+    "id": "brazzaville",
+    "label": "Brazzaville, Republic of the Congo",
+    "wiki": "Brazzaville",
+    "at": { "lat": -4.267, "lon": 15.267 },
+    "capital": { "of": "republic-of-the-congo", "kind": "NATIONAL" }
+  },
+  {
+    "id": "juba",
+    "label": "Juba, South Sudan",
+    "wiki": "Juba",
+    "at": { "lat": 4.8539, "lon": 31.5825 },
+    "capital": { "of": "south-sudan", "kind": "NATIONAL" }
+  },
+  {
     "id": "afghanistan",
     "label": "Afghanistan",
     "wiki": "Afghanistan",

@@ -3185,6 +3185,111 @@
     "answer": { "type": "POINT", "tolerance": 400 }
   },
   {
+    "id": "yamoussoukro",
+    "type": "PLACE",
+    "place": "yamoussoukro",
+    "clue": { "type": "NAME", "prompt": "Where is Yamoussoukro?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "ouagadougou",
+    "type": "PLACE",
+    "place": "ouagadougou",
+    "clue": { "type": "NAME", "prompt": "Where is Ouagadougou?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "nouakchott",
+    "type": "PLACE",
+    "place": "nouakchott",
+    "clue": { "type": "NAME", "prompt": "Where is Nouakchott?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "yaounde",
+    "type": "PLACE",
+    "place": "yaounde",
+    "clue": { "type": "NAME", "prompt": "Where is Yaoundé?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "libreville",
+    "type": "PLACE",
+    "place": "libreville",
+    "clue": { "type": "NAME", "prompt": "Where is Libreville?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "abidjan",
+    "type": "PLACE",
+    "place": "abidjan",
+    "clue": { "type": "NAME", "prompt": "Where is Abidjan?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "niamey",
+    "type": "PLACE",
+    "place": "niamey",
+    "clue": { "type": "NAME", "prompt": "Where is Niamey?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "conakry",
+    "type": "PLACE",
+    "place": "conakry",
+    "clue": { "type": "NAME", "prompt": "Where is Conakry?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "bangui",
+    "type": "PLACE",
+    "place": "bangui",
+    "clue": { "type": "NAME", "prompt": "Where is Bangui?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "malabo",
+    "type": "PLACE",
+    "place": "malabo",
+    "clue": { "type": "NAME", "prompt": "Where is Malabo?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "bamako",
+    "type": "PLACE",
+    "place": "bamako",
+    "clue": { "type": "NAME", "prompt": "Where is Bamako?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "ndjamena",
+    "type": "PLACE",
+    "place": "ndjamena",
+    "clue": { "type": "NAME", "prompt": "Where is N'Djamena?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "bissau",
+    "type": "PLACE",
+    "place": "bissau",
+    "clue": { "type": "NAME", "prompt": "Where is Bissau?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "brazzaville",
+    "type": "PLACE",
+    "place": "brazzaville",
+    "clue": { "type": "NAME", "prompt": "Where is Brazzaville?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "juba",
+    "type": "PLACE",
+    "place": "juba",
+    "clue": { "type": "NAME", "prompt": "Where is Juba?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
     "id": "afghanistan-region",
     "type": "COUNTRY",
     "place": "afghanistan",

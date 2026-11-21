@@ -108,12 +108,12 @@ describe("the catalogue", () => {
   })
 
   /**
-   * Rome and Vatican City; a capital and the country it is the capital of
-   * (Vaduz and Liechtenstein); two capitals of one country (Colombo and
-   * Sri Jayawardenepura Kotte).
+   * Rome and Vatican City; Kinshasa and Brazzaville, across the Congo; a
+   * capital and the country it is the capital of (Vaduz and Liechtenstein);
+   * two capitals of one country (Colombo and Sri Jayawardenepura Kotte).
    */
   const deliberatelyNear = (a: PlaceId, b: PlaceId): boolean => {
-    if ([a, b].sort().join("+") === "rome+vatican-city") return true
+    if (["rome+vatican-city", "brazzaville+kinshasa"].includes([a, b].sort().join("+"))) return true
     const [capitalA, capitalB] = [PLACES.get(a)?.capital, PLACES.get(b)?.capital]
     return capitalA?.of === b || capitalB?.of === a || (capitalA?.of !== undefined && capitalA.of === capitalB?.of)
   }
