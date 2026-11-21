@@ -8,7 +8,7 @@ import { type QuestionView } from "@whereabouts/shared/protocol/views"
 import { useFillTool } from "../paint/fill-tool"
 import { FillType } from "../paint/fill-target"
 import { FeatureType } from "@whereabouts/shared/questions"
-import { useRoundMap, type RoundPaint } from "./round"
+import { CONTIGUOUS_STATES, UNITED_STATES, useRoundMap, type RoundPaint } from "./round"
 import { startOnPan } from "../settings/settings"
 import { RevealDetail } from "../map/shown-detail"
 import { makeCountryQuestionView, makeFeatureQuestionView, makeQuestionView, makeStateQuestionView } from "../test-view"
@@ -85,8 +85,18 @@ describe("useRoundMap", () => {
     expect(start).toHaveBeenCalledTimes(1)
     expect(paint.reset.mock.invocationCallOrder[0]).toBeLessThan(start.mock.invocationCallOrder[0]!)
     expect(paint.gameMap.clearReveal).toHaveBeenCalled()
-    expect(paint.gameMap.camera.resetView).toHaveBeenCalled()
+    expect(paint.gameMap.camera.resetView).toHaveBeenCalledWith(undefined)
     expect(paint.tool.value).toBe(Tool.PAINT)
+  })
+
+  it("starts a state round on the lower 48 rather than the world", () => {
+    const { paint } = setup({ question: makeStateQuestionView("state-ohio") })
+    expect(paint.gameMap.camera.resetView).toHaveBeenCalledWith(CONTIGUOUS_STATES)
+  })
+
+  it.each(["state-alaska", "state-hawaii"])("starts %s's round on all fifty states", (outline) => {
+    const { paint } = setup({ question: makeStateQuestionView(outline) })
+    expect(paint.gameMap.camera.resetView).toHaveBeenCalledWith(UNITED_STATES)
   })
 
   it("keeps the paint through a fresh copy of the same round's question", () => {

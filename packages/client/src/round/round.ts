@@ -5,10 +5,10 @@
  */
 import { useEffect } from "preact/hooks"
 import type { HintBand } from "@whereabouts/shared/hints"
-import type { LatLon } from "@whereabouts/shared/geo"
-import type { CommonsFile, WikiTitle } from "@whereabouts/shared/ids"
+import type { Box, LatLon } from "@whereabouts/shared/geo"
+import { outlineId, type CommonsFile, type OutlineId, type WikiTitle } from "@whereabouts/shared/ids"
 import type { MapDetail } from "@whereabouts/shared/protocol/config"
-import type { QuestionView } from "@whereabouts/shared/protocol/views"
+import { outlineOf, type QuestionView } from "@whereabouts/shared/protocol/views"
 import { FeatureType, QuestionType, type PartOf } from "@whereabouts/shared/questions"
 import { FEATURE_TYPE_DISPLAY_INFO } from "../question-types"
 import type { DetailLayers } from "../map/detail-layers"
@@ -71,7 +71,7 @@ export const useRoundMap = (
     paint.reset(question.answer.tolerance)
     start?.()
     paint.gameMap.clearReveal()
-    paint.gameMap.camera.resetView()
+    paint.gameMap.camera.resetView(startRegion(question))
     paint.tool.value = startOnPan.value ? Tool.PAN : Tool.PAINT
     // oxlint-disable-next-line react/exhaustive-deps -- A round starts afresh once, not whenever the question or paint objects are rebuilt.
   }, [round, painting])
@@ -92,6 +92,20 @@ export const useRoundMap = (
     return () => paint.gameMap.setHint(undefined)
     // oxlint-disable-next-line react/exhaustive-deps -- Keyed on the hint's fields; the object is rebuilt on every update.
   }, [hint?.axis, hint?.from, hint?.to, paint])
+}
+
+/** The lower 48 states, with some of Canada and Mexico round them. */
+export const CONTIGUOUS_STATES: Box = [-135, 15, -55, 58]
+/** All fifty states, from Hawaii to Maine and Alaska's north coast; the Aleutians run on past this. */
+export const UNITED_STATES: Box = [-168, 18, -66, 72]
+/** States outside the lower 48, whose rounds start on all fifty. */
+const OUTLYING_STATES: ReadonlySet<OutlineId> = new Set(["state-alaska", "state-hawaii"].map(outlineId))
+
+/** Where a round's map starts, if not the whole world: a state round on the United States. */
+const startRegion = (question: QuestionView): Box | undefined => {
+  if (question.type !== QuestionType.STATE) return undefined
+  const outline = outlineOf(question.answer)
+  return outline && OUTLYING_STATES.has(outline) ? UNITED_STATES : CONTIGUOUS_STATES
 }
 
 /** What the Fill tool fills: a country on a map that shows borders, or an island on an island round. */

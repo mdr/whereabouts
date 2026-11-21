@@ -1,4 +1,4 @@
-import type { LatLon, LonLat } from "@whereabouts/shared/geo"
+import type { Box, LatLon, LonLat } from "@whereabouts/shared/geo"
 import type { Outline } from "@whereabouts/shared/questions"
 import type { Degrees, Km, Px, Zoom } from "@whereabouts/shared/units"
 import type { Map as MapLibreMap, PaddingOptions } from "maplibre-gl"
@@ -18,6 +18,8 @@ export const WORLD_ZOOM: Zoom = 1.6
 /** The phone layout's width, and where its reveal sheet starts, as a share of the screen's height (media.css --phone, Hud.module.css). */
 const PHONE_MEDIA_QUERY = "(max-width: 640px)"
 const SHEET_TOP = 0.5
+/** Clear of the toolbar along the bottom. */
+const START_PADDING: Required<PaddingOptions> = { top: 40, bottom: 90, left: 40, right: 40 }
 
 /** The flat map's zoom that shows the whole world on a map `width` px wide. */
 export const flatWorldZoom = (width: Px): Zoom =>
@@ -82,9 +84,10 @@ export class MapCamera {
     return (px * metresPerPixel(this.globe ? this.map.getCenter().lat : lat, this.map.getZoom())) / 1000
   }
 
-  /** Back to the whole-world starting view, e.g. at the start of a round. */
-  resetView(): void {
-    void this.map.easeTo({ center: WORLD_CENTER, zoom: this.worldZoom(), duration: 700 })
+  /** Back to the starting view, e.g. at the start of a round: the whole world, or `region` clear of the toolbar. */
+  resetView(region?: Box): void {
+    if (region) void this.map.fitBounds(bounds(region), { padding: START_PADDING, duration: 700 })
+    else void this.map.easeTo({ center: WORLD_CENTER, zoom: this.worldZoom(), duration: 700 })
   }
 
   /** The zoom of the whole-world view. On a phone the flat map fits the world's width to the screen. */
