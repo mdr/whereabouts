@@ -18,6 +18,24 @@ import {
 import type { LatLon } from "../geo.ts"
 import { FeatureType, LatLonSchema, Surface, type AreaAnswer, type PartOf } from "../questions.ts"
 
+/** Which of a country's capitals a city is. */
+export enum CapitalKind {
+  NATIONAL = "NATIONAL",
+  /** Where the government sits, apart from the official capital: The Hague, La Paz. */
+  SEAT_OF_GOVERNMENT = "SEAT_OF_GOVERNMENT",
+  LEGISLATIVE = "LEGISLATIVE",
+  JUDICIAL = "JUDICIAL",
+  /** Still widely taken for the capital: Abidjan, Dar es Salaam. */
+  FORMER = "FORMER"
+}
+
+/** A city that is a country's capital. */
+interface Capital {
+  /** The country's place, where the catalogue has one. */
+  of?: PlaceId
+  kind: CapitalKind
+}
+
 export interface Place {
   id: PlaceId
   label: string
@@ -32,6 +50,8 @@ export interface Place {
   flag?: { code: FlagCode; wiki: WikiTitle }
   /** A part of a country: whose, and how. */
   partOf?: PartOf
+  /** A national capital. */
+  capital?: Capital
 }
 
 const PlaceSchema: z.ZodType<Place> = z.strictObject({
@@ -50,7 +70,8 @@ const PlaceSchema: z.ZodType<Place> = z.strictObject({
     })
     .optional(),
   flag: z.strictObject({ code: FlagCodeSchema, wiki: WikiTitleSchema }).optional(),
-  partOf: z.strictObject({ status: z.string(), flag: FlagCodeSchema }).optional()
+  partOf: z.strictObject({ status: z.string(), flag: FlagCodeSchema }).optional(),
+  capital: z.strictObject({ of: PlaceIdSchema.optional(), kind: z.enum(CapitalKind) }).optional()
 })
 
 /** places.json as read, by id. */

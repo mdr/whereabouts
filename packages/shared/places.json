@@ -773,27 +773,48 @@
     "wiki": "St Michael's Mount",
     "at": { "lat": 50.116, "lon": -5.4772 }
   },
-  { "id": "tashkent", "label": "Tashkent, Uzbekistan", "wiki": "Tashkent", "at": { "lat": 41.2995, "lon": 69.2401 } },
+  {
+    "id": "tashkent",
+    "label": "Tashkent, Uzbekistan",
+    "wiki": "Tashkent",
+    "at": { "lat": 41.2995, "lon": 69.2401 },
+    "capital": { "of": "uzbekistan", "kind": "NATIONAL" }
+  },
   {
     "id": "ulaanbaatar",
     "label": "Ulaanbaatar, Mongolia",
     "wiki": "Ulaanbaatar",
-    "at": { "lat": 47.8864, "lon": 106.9057 }
+    "at": { "lat": 47.8864, "lon": 106.9057 },
+    "capital": { "of": "mongolia", "kind": "NATIONAL" }
   },
   { "id": "timbuktu", "label": "Timbuktu, Mali", "wiki": "Timbuktu", "at": { "lat": 16.7735, "lon": -3.0074 } },
   {
     "id": "wellington",
     "label": "Wellington, New Zealand",
     "wiki": "Wellington",
-    "at": { "lat": -41.2865, "lon": 174.7762 }
+    "at": { "lat": -41.2865, "lon": 174.7762 },
+    "capital": { "of": "new-zealand", "kind": "NATIONAL" }
   },
-  { "id": "reykjavik", "label": "Reykjavík, Iceland", "wiki": "Reykjavík", "at": { "lat": 64.1466, "lon": -21.9426 } },
-  { "id": "kinshasa", "label": "Kinshasa, DR Congo", "wiki": "Kinshasa", "at": { "lat": -4.3217, "lon": 15.3125 } },
+  {
+    "id": "reykjavik",
+    "label": "Reykjavík, Iceland",
+    "wiki": "Reykjavík",
+    "at": { "lat": 64.1466, "lon": -21.9426 },
+    "capital": { "of": "iceland", "kind": "NATIONAL" }
+  },
+  {
+    "id": "kinshasa",
+    "label": "Kinshasa, DR Congo",
+    "wiki": "Kinshasa",
+    "at": { "lat": -4.3217, "lon": 15.3125 },
+    "capital": { "of": "democratic-republic-of-the-congo", "kind": "NATIONAL" }
+  },
   {
     "id": "montevideo",
     "label": "Montevideo, Uruguay",
     "wiki": "Montevideo",
-    "at": { "lat": -34.9011, "lon": -56.1645 }
+    "at": { "lat": -34.9011, "lon": -56.1645 },
+    "capital": { "of": "uruguay", "kind": "NATIONAL" }
   },
   {
     "id": "aberystwyth",
@@ -813,10 +834,34 @@
     "at": { "lat": 54.1509, "lon": -4.4815 }
   },
   { "id": "st-helier", "label": "St Helier, Jersey", "wiki": "St Helier", "at": { "lat": 49.1868, "lon": -2.1071 } },
-  { "id": "dublin", "label": "Dublin", "wiki": "Dublin", "at": { "lat": 53.3498, "lon": -6.2603 } },
-  { "id": "paris", "label": "Paris", "wiki": "Paris", "at": { "lat": 48.8566, "lon": 2.3522 } },
-  { "id": "brussels", "label": "Brussels", "wiki": "Brussels", "at": { "lat": 50.8503, "lon": 4.3517 } },
-  { "id": "amsterdam", "label": "Amsterdam", "wiki": "Amsterdam", "at": { "lat": 52.3676, "lon": 4.9041 } },
+  {
+    "id": "dublin",
+    "label": "Dublin",
+    "wiki": "Dublin",
+    "at": { "lat": 53.3498, "lon": -6.2603 },
+    "capital": { "of": "ireland", "kind": "NATIONAL" }
+  },
+  {
+    "id": "paris",
+    "label": "Paris",
+    "wiki": "Paris",
+    "at": { "lat": 48.8566, "lon": 2.3522 },
+    "capital": { "of": "france", "kind": "NATIONAL" }
+  },
+  {
+    "id": "brussels",
+    "label": "Brussels",
+    "wiki": "Brussels",
+    "at": { "lat": 50.8503, "lon": 4.3517 },
+    "capital": { "of": "belgium", "kind": "NATIONAL" }
+  },
+  {
+    "id": "amsterdam",
+    "label": "Amsterdam",
+    "wiki": "Amsterdam",
+    "at": { "lat": 52.3676, "lon": 4.9041 },
+    "capital": { "of": "netherlands", "kind": "NATIONAL" }
+  },
   {
     "id": "luxembourg",
     "label": "Luxembourg",
@@ -824,10 +869,34 @@
     "at": { "lat": 49.7337, "lon": 6.0776 },
     "flag": { "code": "lu", "wiki": "Flag of Luxembourg" }
   },
-  { "id": "berlin", "label": "Berlin", "wiki": "Berlin", "at": { "lat": 52.52, "lon": 13.405 } },
-  { "id": "madrid", "label": "Madrid", "wiki": "Madrid", "at": { "lat": 40.4168, "lon": -3.7038 } },
-  { "id": "lisbon", "label": "Lisbon", "wiki": "Lisbon", "at": { "lat": 38.7223, "lon": -9.1393 } },
-  { "id": "rome", "label": "Rome", "wiki": "Rome", "at": { "lat": 41.9028, "lon": 12.4964 } },
+  {
+    "id": "berlin",
+    "label": "Berlin",
+    "wiki": "Berlin",
+    "at": { "lat": 52.52, "lon": 13.405 },
+    "capital": { "of": "germany", "kind": "NATIONAL" }
+  },
+  {
+    "id": "madrid",
+    "label": "Madrid",
+    "wiki": "Madrid",
+    "at": { "lat": 40.4168, "lon": -3.7038 },
+    "capital": { "of": "spain", "kind": "NATIONAL" }
+  },
+  {
+    "id": "lisbon",
+    "label": "Lisbon",
+    "wiki": "Lisbon",
+    "at": { "lat": 38.7223, "lon": -9.1393 },
+    "capital": { "of": "portugal", "kind": "NATIONAL" }
+  },
+  {
+    "id": "rome",
+    "label": "Rome",
+    "wiki": "Rome",
+    "at": { "lat": 41.9028, "lon": 12.4964 },
+    "capital": { "of": "italy", "kind": "NATIONAL" }
+  },
   {
     "id": "vatican-city",
     "label": "Vatican City",
@@ -870,22 +939,89 @@
     "at": { "lat": 35.8929, "lon": 14.433 },
     "flag": { "code": "mt", "wiki": "Flag of Malta" }
   },
-  { "id": "vienna", "label": "Vienna", "wiki": "Vienna", "at": { "lat": 48.2082, "lon": 16.3738 } },
-  { "id": "prague", "label": "Prague", "wiki": "Prague", "at": { "lat": 50.0755, "lon": 14.4378 } },
-  { "id": "warsaw", "label": "Warsaw", "wiki": "Warsaw", "at": { "lat": 52.2297, "lon": 21.0122 } },
-  { "id": "budapest", "label": "Budapest", "wiki": "Budapest", "at": { "lat": 47.4979, "lon": 19.0402 } },
-  { "id": "copenhagen", "label": "Copenhagen", "wiki": "Copenhagen", "at": { "lat": 55.6761, "lon": 12.5683 } },
-  { "id": "oslo", "label": "Oslo", "wiki": "Oslo", "at": { "lat": 59.9139, "lon": 10.7522 } },
-  { "id": "stockholm", "label": "Stockholm", "wiki": "Stockholm", "at": { "lat": 59.3293, "lon": 18.0686 } },
-  { "id": "helsinki", "label": "Helsinki", "wiki": "Helsinki", "at": { "lat": 60.1699, "lon": 24.9384 } },
-  { "id": "athens", "label": "Athens", "wiki": "Athens", "at": { "lat": 37.9838, "lon": 23.7275 } },
-  { "id": "ljubljana", "label": "Ljubljana, Slovenia", "wiki": "Ljubljana", "at": { "lat": 46.0569, "lon": 14.5058 } },
-  { "id": "zagreb", "label": "Zagreb, Croatia", "wiki": "Zagreb", "at": { "lat": 45.815, "lon": 15.9819 } },
+  {
+    "id": "vienna",
+    "label": "Vienna",
+    "wiki": "Vienna",
+    "at": { "lat": 48.2082, "lon": 16.3738 },
+    "capital": { "of": "austria", "kind": "NATIONAL" }
+  },
+  {
+    "id": "prague",
+    "label": "Prague",
+    "wiki": "Prague",
+    "at": { "lat": 50.0755, "lon": 14.4378 },
+    "capital": { "of": "czech-republic", "kind": "NATIONAL" }
+  },
+  {
+    "id": "warsaw",
+    "label": "Warsaw",
+    "wiki": "Warsaw",
+    "at": { "lat": 52.2297, "lon": 21.0122 },
+    "capital": { "of": "poland", "kind": "NATIONAL" }
+  },
+  {
+    "id": "budapest",
+    "label": "Budapest",
+    "wiki": "Budapest",
+    "at": { "lat": 47.4979, "lon": 19.0402 },
+    "capital": { "of": "hungary", "kind": "NATIONAL" }
+  },
+  {
+    "id": "copenhagen",
+    "label": "Copenhagen",
+    "wiki": "Copenhagen",
+    "at": { "lat": 55.6761, "lon": 12.5683 },
+    "capital": { "of": "denmark", "kind": "NATIONAL" }
+  },
+  {
+    "id": "oslo",
+    "label": "Oslo",
+    "wiki": "Oslo",
+    "at": { "lat": 59.9139, "lon": 10.7522 },
+    "capital": { "of": "norway", "kind": "NATIONAL" }
+  },
+  {
+    "id": "stockholm",
+    "label": "Stockholm",
+    "wiki": "Stockholm",
+    "at": { "lat": 59.3293, "lon": 18.0686 },
+    "capital": { "of": "sweden", "kind": "NATIONAL" }
+  },
+  {
+    "id": "helsinki",
+    "label": "Helsinki",
+    "wiki": "Helsinki",
+    "at": { "lat": 60.1699, "lon": 24.9384 },
+    "capital": { "of": "finland", "kind": "NATIONAL" }
+  },
+  {
+    "id": "athens",
+    "label": "Athens",
+    "wiki": "Athens",
+    "at": { "lat": 37.9838, "lon": 23.7275 },
+    "capital": { "of": "greece", "kind": "NATIONAL" }
+  },
+  {
+    "id": "ljubljana",
+    "label": "Ljubljana, Slovenia",
+    "wiki": "Ljubljana",
+    "at": { "lat": 46.0569, "lon": 14.5058 },
+    "capital": { "of": "slovenia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "zagreb",
+    "label": "Zagreb, Croatia",
+    "wiki": "Zagreb",
+    "at": { "lat": 45.815, "lon": 15.9819 },
+    "capital": { "of": "croatia", "kind": "NATIONAL" }
+  },
   {
     "id": "sarajevo",
     "label": "Sarajevo, Bosnia and Herzegovina",
     "wiki": "Sarajevo",
-    "at": { "lat": 43.8563, "lon": 18.4131 }
+    "at": { "lat": 43.8563, "lon": 18.4131 },
+    "capital": { "of": "bosnia-and-herzegovina", "kind": "NATIONAL" }
   },
   {
     "id": "montenegro",
@@ -940,19 +1076,62 @@
     },
     "flag": { "code": "md", "wiki": "Flag of Moldova" }
   },
-  { "id": "vilnius", "label": "Vilnius, Lithuania", "wiki": "Vilnius", "at": { "lat": 54.6872, "lon": 25.2797 } },
-  { "id": "riga", "label": "Riga, Latvia", "wiki": "Riga", "at": { "lat": 56.9496, "lon": 24.1052 } },
-  { "id": "tallinn", "label": "Tallinn, Estonia", "wiki": "Tallinn", "at": { "lat": 59.437, "lon": 24.7536 } },
+  {
+    "id": "vilnius",
+    "label": "Vilnius, Lithuania",
+    "wiki": "Vilnius",
+    "at": { "lat": 54.6872, "lon": 25.2797 },
+    "capital": { "of": "lithuania", "kind": "NATIONAL" }
+  },
+  {
+    "id": "riga",
+    "label": "Riga, Latvia",
+    "wiki": "Riga",
+    "at": { "lat": 56.9496, "lon": 24.1052 },
+    "capital": { "of": "latvia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "tallinn",
+    "label": "Tallinn, Estonia",
+    "wiki": "Tallinn",
+    "at": { "lat": 59.437, "lon": 24.7536 },
+    "capital": { "of": "estonia", "kind": "NATIONAL" }
+  },
   {
     "id": "bratislava",
     "label": "Bratislava, Slovakia",
     "wiki": "Bratislava",
-    "at": { "lat": 48.1486, "lon": 17.1077 }
+    "at": { "lat": 48.1486, "lon": 17.1077 },
+    "capital": { "of": "slovakia", "kind": "NATIONAL" }
   },
-  { "id": "minsk", "label": "Minsk, Belarus", "wiki": "Minsk", "at": { "lat": 53.9006, "lon": 27.559 } },
-  { "id": "kyiv", "label": "Kyiv, Ukraine", "wiki": "Kyiv", "at": { "lat": 50.4501, "lon": 30.5234 } },
-  { "id": "bucharest", "label": "Bucharest, Romania", "wiki": "Bucharest", "at": { "lat": 44.4268, "lon": 26.1025 } },
-  { "id": "sofia", "label": "Sofia, Bulgaria", "wiki": "Sofia", "at": { "lat": 42.6977, "lon": 23.3219 } },
+  {
+    "id": "minsk",
+    "label": "Minsk, Belarus",
+    "wiki": "Minsk",
+    "at": { "lat": 53.9006, "lon": 27.559 },
+    "capital": { "of": "belarus", "kind": "NATIONAL" }
+  },
+  {
+    "id": "kyiv",
+    "label": "Kyiv, Ukraine",
+    "wiki": "Kyiv",
+    "at": { "lat": 50.4501, "lon": 30.5234 },
+    "capital": { "of": "ukraine", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bucharest",
+    "label": "Bucharest, Romania",
+    "wiki": "Bucharest",
+    "at": { "lat": 44.4268, "lon": 26.1025 },
+    "capital": { "of": "romania", "kind": "NATIONAL" }
+  },
+  {
+    "id": "sofia",
+    "label": "Sofia, Bulgaria",
+    "wiki": "Sofia",
+    "at": { "lat": 42.6977, "lon": 23.3219 },
+    "capital": { "of": "bulgaria", "kind": "NATIONAL" }
+  },
   {
     "id": "cyprus",
     "label": "Cyprus",
@@ -960,47 +1139,194 @@
     "at": { "lat": 34.9133, "lon": 33.0842 },
     "flag": { "code": "cy", "wiki": "Flag of Cyprus" }
   },
-  { "id": "ottawa", "label": "Ottawa, Canada", "wiki": "Ottawa", "at": { "lat": 45.4215, "lon": -75.6972 } },
+  {
+    "id": "ottawa",
+    "label": "Ottawa, Canada",
+    "wiki": "Ottawa",
+    "at": { "lat": 45.4215, "lon": -75.6972 },
+    "capital": { "of": "canada", "kind": "NATIONAL" }
+  },
   {
     "id": "washington",
     "label": "Washington, D.C.",
     "wiki": "Washington, D.C.",
-    "at": { "lat": 38.9072, "lon": -77.0369 }
+    "at": { "lat": 38.9072, "lon": -77.0369 },
+    "capital": { "of": "united-states", "kind": "NATIONAL" }
   },
-  { "id": "canberra", "label": "Canberra, Australia", "wiki": "Canberra", "at": { "lat": -35.2809, "lon": 149.13 } },
-  { "id": "nairobi", "label": "Nairobi, Kenya", "wiki": "Nairobi", "at": { "lat": -1.2921, "lon": 36.8219 } },
-  { "id": "brasilia", "label": "Brasília, Brazil", "wiki": "Brasília", "at": { "lat": -15.7975, "lon": -47.8919 } },
-  { "id": "abuja", "label": "Abuja, Nigeria", "wiki": "Abuja", "at": { "lat": 9.0765, "lon": 7.3986 } },
-  { "id": "ankara", "label": "Ankara, Turkey", "wiki": "Ankara", "at": { "lat": 39.9334, "lon": 32.8597 } },
-  { "id": "astana", "label": "Astana, Kazakhstan", "wiki": "Astana", "at": { "lat": 51.1694, "lon": 71.4491 } },
-  { "id": "kathmandu", "label": "Kathmandu, Nepal", "wiki": "Kathmandu", "at": { "lat": 27.7172, "lon": 85.324 } },
-  { "id": "hanoi", "label": "Hanoi, Vietnam", "wiki": "Hanoi", "at": { "lat": 21.0285, "lon": 105.8542 } },
-  { "id": "addis-ababa", "label": "Addis Ababa, Ethiopia", "wiki": "Addis Ababa", "at": { "lat": 9.03, "lon": 38.74 } },
-  { "id": "lima", "label": "Lima, Peru", "wiki": "Lima", "at": { "lat": -12.0464, "lon": -77.0428 } },
-  { "id": "bogota", "label": "Bogotá, Colombia", "wiki": "Bogotá", "at": { "lat": 4.711, "lon": -74.0721 } },
-  { "id": "santiago", "label": "Santiago, Chile", "wiki": "Santiago", "at": { "lat": -33.4489, "lon": -70.6693 } },
+  {
+    "id": "canberra",
+    "label": "Canberra, Australia",
+    "wiki": "Canberra",
+    "at": { "lat": -35.2809, "lon": 149.13 },
+    "capital": { "of": "australia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "nairobi",
+    "label": "Nairobi, Kenya",
+    "wiki": "Nairobi",
+    "at": { "lat": -1.2921, "lon": 36.8219 },
+    "capital": { "of": "kenya", "kind": "NATIONAL" }
+  },
+  {
+    "id": "brasilia",
+    "label": "Brasília, Brazil",
+    "wiki": "Brasília",
+    "at": { "lat": -15.7975, "lon": -47.8919 },
+    "capital": { "of": "brazil", "kind": "NATIONAL" }
+  },
+  {
+    "id": "abuja",
+    "label": "Abuja, Nigeria",
+    "wiki": "Abuja",
+    "at": { "lat": 9.0765, "lon": 7.3986 },
+    "capital": { "of": "nigeria", "kind": "NATIONAL" }
+  },
+  {
+    "id": "ankara",
+    "label": "Ankara, Turkey",
+    "wiki": "Ankara",
+    "at": { "lat": 39.9334, "lon": 32.8597 },
+    "capital": { "of": "turkey", "kind": "NATIONAL" }
+  },
+  {
+    "id": "astana",
+    "label": "Astana, Kazakhstan",
+    "wiki": "Astana",
+    "at": { "lat": 51.1694, "lon": 71.4491 },
+    "capital": { "of": "kazakhstan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "kathmandu",
+    "label": "Kathmandu, Nepal",
+    "wiki": "Kathmandu",
+    "at": { "lat": 27.7172, "lon": 85.324 },
+    "capital": { "of": "nepal", "kind": "NATIONAL" }
+  },
+  {
+    "id": "hanoi",
+    "label": "Hanoi, Vietnam",
+    "wiki": "Hanoi",
+    "at": { "lat": 21.0285, "lon": 105.8542 },
+    "capital": { "of": "vietnam", "kind": "NATIONAL" }
+  },
+  {
+    "id": "addis-ababa",
+    "label": "Addis Ababa, Ethiopia",
+    "wiki": "Addis Ababa",
+    "at": { "lat": 9.03, "lon": 38.74 },
+    "capital": { "of": "ethiopia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "lima",
+    "label": "Lima, Peru",
+    "wiki": "Lima",
+    "at": { "lat": -12.0464, "lon": -77.0428 },
+    "capital": { "of": "peru", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bogota",
+    "label": "Bogotá, Colombia",
+    "wiki": "Bogotá",
+    "at": { "lat": 4.711, "lon": -74.0721 },
+    "capital": { "of": "colombia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "santiago",
+    "label": "Santiago, Chile",
+    "wiki": "Santiago",
+    "at": { "lat": -33.4489, "lon": -70.6693 },
+    "capital": { "of": "chile", "kind": "NATIONAL" }
+  },
   {
     "id": "pretoria",
     "label": "Pretoria, South Africa",
     "wiki": "Pretoria",
-    "at": { "lat": -25.7479, "lon": 28.2293 }
+    "at": { "lat": -25.7479, "lon": 28.2293 },
+    "capital": { "of": "south-africa", "kind": "SEAT_OF_GOVERNMENT" }
   },
-  { "id": "riyadh", "label": "Riyadh, Saudi Arabia", "wiki": "Riyadh", "at": { "lat": 24.7136, "lon": 46.6753 } },
-  { "id": "islamabad", "label": "Islamabad, Pakistan", "wiki": "Islamabad", "at": { "lat": 33.6844, "lon": 73.0479 } },
-  { "id": "dhaka", "label": "Dhaka, Bangladesh", "wiki": "Dhaka", "at": { "lat": 23.8103, "lon": 90.4125 } },
-  { "id": "manila", "label": "Manila, Philippines", "wiki": "Manila", "at": { "lat": 14.5995, "lon": 120.9842 } },
-  { "id": "jakarta", "label": "Jakarta, Indonesia", "wiki": "Jakarta", "at": { "lat": -6.2088, "lon": 106.8456 } },
-  { "id": "seoul", "label": "Seoul, South Korea", "wiki": "Seoul", "at": { "lat": 37.5665, "lon": 126.978 } },
-  { "id": "tehran", "label": "Tehran, Iran", "wiki": "Tehran", "at": { "lat": 35.6892, "lon": 51.389 } },
-  { "id": "baghdad", "label": "Baghdad, Iraq", "wiki": "Baghdad", "at": { "lat": 33.3152, "lon": 44.3661 } },
-  { "id": "kabul", "label": "Kabul, Afghanistan", "wiki": "Kabul", "at": { "lat": 34.5553, "lon": 69.2075 } },
-  { "id": "havana", "label": "Havana, Cuba", "wiki": "Havana", "at": { "lat": 23.1136, "lon": -82.3666 } },
-  { "id": "mexico-city", "label": "Mexico City", "wiki": "Mexico City", "at": { "lat": 19.4326, "lon": -99.1332 } },
+  {
+    "id": "riyadh",
+    "label": "Riyadh, Saudi Arabia",
+    "wiki": "Riyadh",
+    "at": { "lat": 24.7136, "lon": 46.6753 },
+    "capital": { "of": "saudi-arabia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "islamabad",
+    "label": "Islamabad, Pakistan",
+    "wiki": "Islamabad",
+    "at": { "lat": 33.6844, "lon": 73.0479 },
+    "capital": { "of": "pakistan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "dhaka",
+    "label": "Dhaka, Bangladesh",
+    "wiki": "Dhaka",
+    "at": { "lat": 23.8103, "lon": 90.4125 },
+    "capital": { "of": "bangladesh", "kind": "NATIONAL" }
+  },
+  {
+    "id": "manila",
+    "label": "Manila, Philippines",
+    "wiki": "Manila",
+    "at": { "lat": 14.5995, "lon": 120.9842 },
+    "capital": { "of": "philippines", "kind": "NATIONAL" }
+  },
+  {
+    "id": "jakarta",
+    "label": "Jakarta, Indonesia",
+    "wiki": "Jakarta",
+    "at": { "lat": -6.2088, "lon": 106.8456 },
+    "capital": { "of": "indonesia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "seoul",
+    "label": "Seoul, South Korea",
+    "wiki": "Seoul",
+    "at": { "lat": 37.5665, "lon": 126.978 },
+    "capital": { "of": "south-korea", "kind": "NATIONAL" }
+  },
+  {
+    "id": "tehran",
+    "label": "Tehran, Iran",
+    "wiki": "Tehran",
+    "at": { "lat": 35.6892, "lon": 51.389 },
+    "capital": { "of": "iran", "kind": "NATIONAL" }
+  },
+  {
+    "id": "baghdad",
+    "label": "Baghdad, Iraq",
+    "wiki": "Baghdad",
+    "at": { "lat": 33.3152, "lon": 44.3661 },
+    "capital": { "of": "iraq", "kind": "NATIONAL" }
+  },
+  {
+    "id": "kabul",
+    "label": "Kabul, Afghanistan",
+    "wiki": "Kabul",
+    "at": { "lat": 34.5553, "lon": 69.2075 },
+    "capital": { "of": "afghanistan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "havana",
+    "label": "Havana, Cuba",
+    "wiki": "Havana",
+    "at": { "lat": 23.1136, "lon": -82.3666 },
+    "capital": { "of": "cuba", "kind": "NATIONAL" }
+  },
+  {
+    "id": "mexico-city",
+    "label": "Mexico City",
+    "wiki": "Mexico City",
+    "at": { "lat": 19.4326, "lon": -99.1332 },
+    "capital": { "of": "mexico", "kind": "NATIONAL" }
+  },
   {
     "id": "buenos-aires",
     "label": "Buenos Aires, Argentina",
     "wiki": "Buenos Aires",
-    "at": { "lat": -34.6037, "lon": -58.3816 }
+    "at": { "lat": -34.6037, "lon": -58.3816 },
+    "capital": { "of": "argentina", "kind": "NATIONAL" }
   },
   {
     "id": "eswatini",
@@ -1577,112 +1903,363 @@
     },
     "flag": { "code": "sb", "wiki": "Flag of the Solomon Islands" }
   },
-  { "id": "tokyo", "label": "Tokyo, Japan", "wiki": "Tokyo", "at": { "lat": 35.6897, "lon": 139.6922 } },
-  { "id": "beijing", "label": "Beijing, China", "wiki": "Beijing", "at": { "lat": 39.9067, "lon": 116.3975 } },
-  { "id": "new-delhi", "label": "New Delhi, India", "wiki": "New Delhi", "at": { "lat": 28.6139, "lon": 77.2089 } },
-  { "id": "bangkok", "label": "Bangkok, Thailand", "wiki": "Bangkok", "at": { "lat": 13.7525, "lon": 100.4942 } },
+  {
+    "id": "tokyo",
+    "label": "Tokyo, Japan",
+    "wiki": "Tokyo",
+    "at": { "lat": 35.6897, "lon": 139.6922 },
+    "capital": { "of": "japan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "beijing",
+    "label": "Beijing, China",
+    "wiki": "Beijing",
+    "at": { "lat": 39.9067, "lon": 116.3975 },
+    "capital": { "of": "china", "kind": "NATIONAL" }
+  },
+  {
+    "id": "new-delhi",
+    "label": "New Delhi, India",
+    "wiki": "New Delhi",
+    "at": { "lat": 28.6139, "lon": 77.2089 },
+    "capital": { "of": "india", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bangkok",
+    "label": "Bangkok, Thailand",
+    "wiki": "Bangkok",
+    "at": { "lat": 13.7525, "lon": 100.4942 },
+    "capital": { "of": "thailand", "kind": "NATIONAL" }
+  },
   {
     "id": "kuala-lumpur",
     "label": "Kuala Lumpur, Malaysia",
     "wiki": "Kuala Lumpur",
-    "at": { "lat": 3.1478, "lon": 101.6953 }
+    "at": { "lat": 3.1478, "lon": 101.6953 },
+    "capital": { "of": "malaysia", "kind": "NATIONAL" }
   },
-  { "id": "taipei", "label": "Taipei, Taiwan", "wiki": "Taipei", "at": { "lat": 25.0375, "lon": 121.5625 } },
+  {
+    "id": "taipei",
+    "label": "Taipei, Taiwan",
+    "wiki": "Taipei",
+    "at": { "lat": 25.0375, "lon": 121.5625 },
+    "capital": { "kind": "NATIONAL" }
+  },
   {
     "id": "pyongyang",
     "label": "Pyongyang, North Korea",
     "wiki": "Pyongyang",
-    "at": { "lat": 39.0167, "lon": 125.7475 }
+    "at": { "lat": 39.0167, "lon": 125.7475 },
+    "capital": { "of": "north-korea", "kind": "NATIONAL" }
   },
-  { "id": "naypyidaw", "label": "Naypyidaw, Myanmar", "wiki": "Naypyidaw", "at": { "lat": 19.7475, "lon": 96.115 } },
-  { "id": "baku", "label": "Baku, Azerbaijan", "wiki": "Baku", "at": { "lat": 40.3756, "lon": 49.8325 } },
-  { "id": "mogadishu", "label": "Mogadishu, Somalia", "wiki": "Mogadishu", "at": { "lat": 2.0392, "lon": 45.3419 } },
-  { "id": "tbilisi", "label": "Tbilisi, Georgia", "wiki": "Tbilisi", "at": { "lat": 41.7225, "lon": 44.7925 } },
-  { "id": "dushanbe", "label": "Dushanbe, Tajikistan", "wiki": "Dushanbe", "at": { "lat": 38.5367, "lon": 68.78 } },
-  { "id": "ashgabat", "label": "Ashgabat, Turkmenistan", "wiki": "Ashgabat", "at": { "lat": 37.9375, "lon": 58.38 } },
-  { "id": "bishkek", "label": "Bishkek, Kyrgyzstan", "wiki": "Bishkek", "at": { "lat": 42.8747, "lon": 74.6122 } },
-  { "id": "damascus", "label": "Damascus, Syria", "wiki": "Damascus", "at": { "lat": 33.5131, "lon": 36.3094 } },
-  { "id": "beirut", "label": "Beirut, Lebanon", "wiki": "Beirut", "at": { "lat": 33.8981, "lon": 35.5058 } },
-  { "id": "amman", "label": "Amman, Jordan", "wiki": "Amman", "at": { "lat": 31.9497, "lon": 35.9328 } },
-  { "id": "muscat", "label": "Muscat, Oman", "wiki": "Muscat", "at": { "lat": 23.5889, "lon": 58.4083 } },
+  {
+    "id": "naypyidaw",
+    "label": "Naypyidaw, Myanmar",
+    "wiki": "Naypyidaw",
+    "at": { "lat": 19.7475, "lon": 96.115 },
+    "capital": { "of": "myanmar", "kind": "NATIONAL" }
+  },
+  {
+    "id": "baku",
+    "label": "Baku, Azerbaijan",
+    "wiki": "Baku",
+    "at": { "lat": 40.3756, "lon": 49.8325 },
+    "capital": { "of": "azerbaijan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "mogadishu",
+    "label": "Mogadishu, Somalia",
+    "wiki": "Mogadishu",
+    "at": { "lat": 2.0392, "lon": 45.3419 },
+    "capital": { "of": "somalia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "tbilisi",
+    "label": "Tbilisi, Georgia",
+    "wiki": "Tbilisi",
+    "at": { "lat": 41.7225, "lon": 44.7925 },
+    "capital": { "of": "georgia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "dushanbe",
+    "label": "Dushanbe, Tajikistan",
+    "wiki": "Dushanbe",
+    "at": { "lat": 38.5367, "lon": 68.78 },
+    "capital": { "of": "tajikistan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "ashgabat",
+    "label": "Ashgabat, Turkmenistan",
+    "wiki": "Ashgabat",
+    "at": { "lat": 37.9375, "lon": 58.38 },
+    "capital": { "of": "turkmenistan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bishkek",
+    "label": "Bishkek, Kyrgyzstan",
+    "wiki": "Bishkek",
+    "at": { "lat": 42.8747, "lon": 74.6122 },
+    "capital": { "of": "kyrgyzstan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "damascus",
+    "label": "Damascus, Syria",
+    "wiki": "Damascus",
+    "at": { "lat": 33.5131, "lon": 36.3094 },
+    "capital": { "of": "syria", "kind": "NATIONAL" }
+  },
+  {
+    "id": "beirut",
+    "label": "Beirut, Lebanon",
+    "wiki": "Beirut",
+    "at": { "lat": 33.8981, "lon": 35.5058 },
+    "capital": { "of": "lebanon", "kind": "NATIONAL" }
+  },
+  {
+    "id": "amman",
+    "label": "Amman, Jordan",
+    "wiki": "Amman",
+    "at": { "lat": 31.9497, "lon": 35.9328 },
+    "capital": { "of": "jordan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "muscat",
+    "label": "Muscat, Oman",
+    "wiki": "Muscat",
+    "at": { "lat": 23.5889, "lon": 58.4083 },
+    "capital": { "of": "oman", "kind": "NATIONAL" }
+  },
   {
     "id": "abu-dhabi",
     "label": "Abu Dhabi, United Arab Emirates",
     "wiki": "Abu Dhabi",
-    "at": { "lat": 24.4667, "lon": 54.3667 }
+    "at": { "lat": 24.4667, "lon": 54.3667 },
+    "capital": { "of": "united-arab-emirates", "kind": "NATIONAL" }
   },
-  { "id": "sanaa", "label": "Sanaa, Yemen", "wiki": "Sanaa", "at": { "lat": 15.3483, "lon": 44.2064 } },
-  { "id": "cairo", "label": "Cairo, Egypt", "wiki": "Cairo", "at": { "lat": 30.0444, "lon": 31.2358 } },
-  { "id": "algiers", "label": "Algiers, Algeria", "wiki": "Algiers", "at": { "lat": 36.7325, "lon": 3.0872 } },
-  { "id": "tunis", "label": "Tunis, Tunisia", "wiki": "Tunis", "at": { "lat": 36.8064, "lon": 10.1817 } },
-  { "id": "rabat", "label": "Rabat, Morocco", "wiki": "Rabat", "at": { "lat": 34.0211, "lon": -6.8414 } },
-  { "id": "tripoli", "label": "Tripoli, Libya", "wiki": "Tripoli, Libya", "at": { "lat": 32.8875, "lon": 13.1875 } },
-  { "id": "khartoum", "label": "Khartoum, Sudan", "wiki": "Khartoum", "at": { "lat": 15.6, "lon": 32.5 } },
-  { "id": "dakar", "label": "Dakar, Senegal", "wiki": "Dakar", "at": { "lat": 14.6928, "lon": -17.4467 } },
-  { "id": "accra", "label": "Accra, Ghana", "wiki": "Accra", "at": { "lat": 5.55, "lon": -0.2 } },
-  { "id": "luanda", "label": "Luanda, Angola", "wiki": "Luanda", "at": { "lat": -8.8383, "lon": 13.2344 } },
-  { "id": "lusaka", "label": "Lusaka, Zambia", "wiki": "Lusaka", "at": { "lat": -15.4167, "lon": 28.2833 } },
-  { "id": "harare", "label": "Harare, Zimbabwe", "wiki": "Harare", "at": { "lat": -17.8292, "lon": 31.0522 } },
-  { "id": "maputo", "label": "Maputo, Mozambique", "wiki": "Maputo", "at": { "lat": -25.9689, "lon": 32.5733 } },
-  { "id": "kampala", "label": "Kampala, Uganda", "wiki": "Kampala", "at": { "lat": 0.3136, "lon": 32.5811 } },
-  { "id": "dodoma", "label": "Dodoma, Tanzania", "wiki": "Dodoma", "at": { "lat": -6.1731, "lon": 35.7419 } },
-  { "id": "windhoek", "label": "Windhoek, Namibia", "wiki": "Windhoek", "at": { "lat": -22.57, "lon": 17.0836 } },
-  { "id": "gaborone", "label": "Gaborone, Botswana", "wiki": "Gaborone", "at": { "lat": -24.6581, "lon": 25.9122 } },
+  {
+    "id": "sanaa",
+    "label": "Sanaa, Yemen",
+    "wiki": "Sanaa",
+    "at": { "lat": 15.3483, "lon": 44.2064 },
+    "capital": { "of": "yemen", "kind": "NATIONAL" }
+  },
+  {
+    "id": "cairo",
+    "label": "Cairo, Egypt",
+    "wiki": "Cairo",
+    "at": { "lat": 30.0444, "lon": 31.2358 },
+    "capital": { "of": "egypt", "kind": "NATIONAL" }
+  },
+  {
+    "id": "algiers",
+    "label": "Algiers, Algeria",
+    "wiki": "Algiers",
+    "at": { "lat": 36.7325, "lon": 3.0872 },
+    "capital": { "of": "algeria", "kind": "NATIONAL" }
+  },
+  {
+    "id": "tunis",
+    "label": "Tunis, Tunisia",
+    "wiki": "Tunis",
+    "at": { "lat": 36.8064, "lon": 10.1817 },
+    "capital": { "of": "tunisia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "rabat",
+    "label": "Rabat, Morocco",
+    "wiki": "Rabat",
+    "at": { "lat": 34.0211, "lon": -6.8414 },
+    "capital": { "of": "morocco", "kind": "NATIONAL" }
+  },
+  {
+    "id": "tripoli",
+    "label": "Tripoli, Libya",
+    "wiki": "Tripoli, Libya",
+    "at": { "lat": 32.8875, "lon": 13.1875 },
+    "capital": { "of": "libya", "kind": "NATIONAL" }
+  },
+  {
+    "id": "khartoum",
+    "label": "Khartoum, Sudan",
+    "wiki": "Khartoum",
+    "at": { "lat": 15.6, "lon": 32.5 },
+    "capital": { "of": "sudan", "kind": "NATIONAL" }
+  },
+  {
+    "id": "dakar",
+    "label": "Dakar, Senegal",
+    "wiki": "Dakar",
+    "at": { "lat": 14.6928, "lon": -17.4467 },
+    "capital": { "of": "senegal", "kind": "NATIONAL" }
+  },
+  {
+    "id": "accra",
+    "label": "Accra, Ghana",
+    "wiki": "Accra",
+    "at": { "lat": 5.55, "lon": -0.2 },
+    "capital": { "of": "ghana", "kind": "NATIONAL" }
+  },
+  {
+    "id": "luanda",
+    "label": "Luanda, Angola",
+    "wiki": "Luanda",
+    "at": { "lat": -8.8383, "lon": 13.2344 },
+    "capital": { "of": "angola", "kind": "NATIONAL" }
+  },
+  {
+    "id": "lusaka",
+    "label": "Lusaka, Zambia",
+    "wiki": "Lusaka",
+    "at": { "lat": -15.4167, "lon": 28.2833 },
+    "capital": { "of": "zambia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "harare",
+    "label": "Harare, Zimbabwe",
+    "wiki": "Harare",
+    "at": { "lat": -17.8292, "lon": 31.0522 },
+    "capital": { "of": "zimbabwe", "kind": "NATIONAL" }
+  },
+  {
+    "id": "maputo",
+    "label": "Maputo, Mozambique",
+    "wiki": "Maputo",
+    "at": { "lat": -25.9689, "lon": 32.5733 },
+    "capital": { "of": "mozambique", "kind": "NATIONAL" }
+  },
+  {
+    "id": "kampala",
+    "label": "Kampala, Uganda",
+    "wiki": "Kampala",
+    "at": { "lat": 0.3136, "lon": 32.5811 },
+    "capital": { "of": "uganda", "kind": "NATIONAL" }
+  },
+  {
+    "id": "dodoma",
+    "label": "Dodoma, Tanzania",
+    "wiki": "Dodoma",
+    "at": { "lat": -6.1731, "lon": 35.7419 },
+    "capital": { "of": "tanzania", "kind": "NATIONAL" }
+  },
+  {
+    "id": "windhoek",
+    "label": "Windhoek, Namibia",
+    "wiki": "Windhoek",
+    "at": { "lat": -22.57, "lon": 17.0836 },
+    "capital": { "of": "namibia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "gaborone",
+    "label": "Gaborone, Botswana",
+    "wiki": "Gaborone",
+    "at": { "lat": -24.6581, "lon": 25.9122 },
+    "capital": { "of": "botswana", "kind": "NATIONAL" }
+  },
   {
     "id": "antananarivo",
     "label": "Antananarivo, Madagascar",
     "wiki": "Antananarivo",
-    "at": { "lat": -18.91, "lon": 47.525 }
+    "at": { "lat": -18.91, "lon": 47.525 },
+    "capital": { "of": "madagascar", "kind": "NATIONAL" }
   },
-  { "id": "caracas", "label": "Caracas, Venezuela", "wiki": "Caracas", "at": { "lat": 10.5061, "lon": -66.9144 } },
-  { "id": "quito", "label": "Quito, Ecuador", "wiki": "Quito", "at": { "lat": -0.22, "lon": -78.5125 } },
-  { "id": "la-paz", "label": "La Paz, Bolivia", "wiki": "La Paz", "at": { "lat": -16.4958, "lon": -68.1333 } },
+  {
+    "id": "caracas",
+    "label": "Caracas, Venezuela",
+    "wiki": "Caracas",
+    "at": { "lat": 10.5061, "lon": -66.9144 },
+    "capital": { "of": "venezuela", "kind": "NATIONAL" }
+  },
+  {
+    "id": "quito",
+    "label": "Quito, Ecuador",
+    "wiki": "Quito",
+    "at": { "lat": -0.22, "lon": -78.5125 },
+    "capital": { "of": "ecuador", "kind": "NATIONAL" }
+  },
+  {
+    "id": "la-paz",
+    "label": "La Paz, Bolivia",
+    "wiki": "La Paz",
+    "at": { "lat": -16.4958, "lon": -68.1333 },
+    "capital": { "of": "bolivia", "kind": "SEAT_OF_GOVERNMENT" }
+  },
   {
     "id": "panama-city",
     "label": "Panama City, Panama",
     "wiki": "Panama City",
-    "at": { "lat": 8.9711, "lon": -79.5347 }
+    "at": { "lat": 8.9711, "lon": -79.5347 },
+    "capital": { "of": "panama", "kind": "NATIONAL" }
   },
   {
     "id": "san-jose-cr",
     "label": "San José, Costa Rica",
     "wiki": "San José, Costa Rica",
-    "at": { "lat": 9.9325, "lon": -84.08 }
+    "at": { "lat": 9.9325, "lon": -84.08 },
+    "capital": { "of": "costa-rica", "kind": "NATIONAL" }
   },
-  { "id": "managua", "label": "Managua, Nicaragua", "wiki": "Managua", "at": { "lat": 12.1364, "lon": -86.2514 } },
+  {
+    "id": "managua",
+    "label": "Managua, Nicaragua",
+    "wiki": "Managua",
+    "at": { "lat": 12.1364, "lon": -86.2514 },
+    "capital": { "of": "nicaragua", "kind": "NATIONAL" }
+  },
   {
     "id": "tegucigalpa",
     "label": "Tegucigalpa, Honduras",
     "wiki": "Tegucigalpa",
-    "at": { "lat": 14.1058, "lon": -87.2047 }
+    "at": { "lat": 14.1058, "lon": -87.2047 },
+    "capital": { "of": "honduras", "kind": "NATIONAL" }
   },
   {
     "id": "san-salvador",
     "label": "San Salvador, El Salvador",
     "wiki": "San Salvador",
-    "at": { "lat": 13.6989, "lon": -89.1914 }
+    "at": { "lat": 13.6989, "lon": -89.1914 },
+    "capital": { "of": "el-salvador", "kind": "NATIONAL" }
   },
   {
     "id": "guatemala-city",
     "label": "Guatemala City, Guatemala",
     "wiki": "Guatemala City",
-    "at": { "lat": 14.6417, "lon": -90.5133 }
+    "at": { "lat": 14.6417, "lon": -90.5133 },
+    "capital": { "of": "guatemala", "kind": "NATIONAL" }
   },
   {
     "id": "santo-domingo",
     "label": "Santo Domingo, Dominican Republic",
     "wiki": "Santo Domingo",
-    "at": { "lat": 18.4625, "lon": -69.9361 }
+    "at": { "lat": 18.4625, "lon": -69.9361 },
+    "capital": { "of": "dominican-republic", "kind": "NATIONAL" }
   },
   {
     "id": "port-au-prince",
     "label": "Port-au-Prince, Haiti",
     "wiki": "Port-au-Prince",
-    "at": { "lat": 18.5364, "lon": -72.3464 }
+    "at": { "lat": 18.5364, "lon": -72.3464 },
+    "capital": { "of": "haiti", "kind": "NATIONAL" }
   },
-  { "id": "moscow", "label": "Moscow, Russia", "wiki": "Moscow", "at": { "lat": 55.7558, "lon": 37.6178 } },
-  { "id": "bern", "label": "Bern, Switzerland", "wiki": "Bern", "at": { "lat": 46.9481, "lon": 7.4475 } },
-  { "id": "belgrade", "label": "Belgrade, Serbia", "wiki": "Belgrade", "at": { "lat": 44.8178, "lon": 20.4569 } },
+  {
+    "id": "moscow",
+    "label": "Moscow, Russia",
+    "wiki": "Moscow",
+    "at": { "lat": 55.7558, "lon": 37.6178 },
+    "capital": { "of": "russia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bern",
+    "label": "Bern, Switzerland",
+    "wiki": "Bern",
+    "at": { "lat": 46.9481, "lon": 7.4475 },
+    "capital": { "of": "switzerland", "kind": "NATIONAL" }
+  },
+  {
+    "id": "belgrade",
+    "label": "Belgrade, Serbia",
+    "wiki": "Belgrade",
+    "at": { "lat": 44.8178, "lon": 20.4569 },
+    "capital": { "of": "serbia", "kind": "NATIONAL" }
+  },
   { "id": "new-york", "label": "New York City", "wiki": "New York City", "at": { "lat": 40.7128, "lon": -74.0061 } },
   { "id": "los-angeles", "label": "Los Angeles", "wiki": "Los Angeles", "at": { "lat": 34.05, "lon": -118.25 } },
   { "id": "chicago", "label": "Chicago", "wiki": "Chicago", "at": { "lat": 41.8819, "lon": -87.6278 } },
@@ -1741,7 +2318,8 @@
     "id": "cape-town",
     "label": "Cape Town, South Africa",
     "wiki": "Cape Town",
-    "at": { "lat": -33.9253, "lon": 18.4239 }
+    "at": { "lat": -33.9253, "lon": 18.4239 },
+    "capital": { "of": "south-africa", "kind": "LEGISLATIVE" }
   },
   {
     "id": "casablanca",

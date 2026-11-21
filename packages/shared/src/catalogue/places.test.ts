@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { CATALOGUE, PLACES } from "./catalogue.ts"
-import { AnswerType, QUESTION_TYPES } from "../questions.ts"
+import { AnswerType, QUESTION_TYPES, QuestionType } from "../questions.ts"
+import { CapitalKind } from "./places.ts"
 
 describe("the places", () => {
   it("are each asked about", () => {
@@ -29,6 +30,30 @@ describe("the places", () => {
     expect(
       [...PLACES.values()].filter((place) => !!place.at !== pointed.has(place.id)).map((place) => place.id)
     ).toEqual([])
+  })
+
+  describe("that are capitals", () => {
+    const capitals = [...PLACES.values()].filter((place) => place.capital)
+
+    it("are asked as place names", () => {
+      const named = new Set(
+        CATALOGUE.filter((question) => question.type === QuestionType.PLACE).map((question) => question.place)
+      )
+      expect(capitals.filter((place) => !named.has(place.id)).map((place) => place.id)).toEqual([])
+    })
+
+    it("belong to a country, one with a flag", () => {
+      expect(
+        capitals.filter(({ capital }) => capital!.of && !PLACES.get(capital!.of)?.flag).map((place) => place.id)
+      ).toEqual([])
+    })
+
+    it("are at most one national capital to a country", () => {
+      const national = capitals
+        .filter(({ capital }) => capital!.kind === CapitalKind.NATIONAL && capital!.of)
+        .map(({ capital }) => capital!.of)
+      expect(national.filter((country, i) => national.indexOf(country) !== i)).toEqual([])
+    })
   })
 
   it("are asked at most once by each type of question", () => {

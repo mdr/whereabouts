@@ -5,6 +5,7 @@
 import { execFileSync } from "node:child_process"
 import { readFileSync, writeFileSync } from "node:fs"
 import type { LatLon, MultiPolygon } from "../src/geo.ts"
+import type { CapitalKind } from "../src/catalogue/places.ts"
 import {
   AnswerType,
   QUESTION_TYPES,
@@ -44,6 +45,7 @@ export interface StoredPlace {
   area?: StoredArea
   flag?: { code: string; wiki: string }
   partOf?: PartOf
+  capital?: { of?: string; kind: CapitalKind }
 }
 
 export type Outlines = Record<string, MultiPolygon>
@@ -69,8 +71,8 @@ const placesAsked = (catalogue: StoredQuestion[], places: StoredPlace[]): Map<st
     const place = allPlaces.get(question.place)
     if (!place) throw new Error(`${question.id}: no place ${question.place}`)
     if (asked.has(question.place)) continue
-    const { id, label, wiki, at, feature, area, flag, partOf } = place
-    asked.set(id, { id, label, wiki, ...setOnly({ at, feature, area, flag, partOf }) })
+    const { id, label, wiki, at, feature, area, flag, partOf, capital } = place
+    asked.set(id, { id, label, wiki, ...setOnly({ at, feature, area, flag, partOf, capital }) })
   }
   return asked
 }
