@@ -7,117 +7,6 @@
   ],
   "places": [
     {
-      "id": "nassau",
-      "label": "Nassau, The Bahamas",
-      "group": "capital-of-country-not-asked-by-name",
-      "capital": {
-        "of": "the-bahamas",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Nassau, the national capital?",
-      "tolerance": 300
-    },
-    {
-      "id": "st-johns",
-      "label": "St John's, Antigua and Barbuda",
-      "group": "capital-of-country-not-asked-by-name",
-      "capital": {
-        "of": "antigua-and-barbuda",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is St John's, the national capital?",
-      "tolerance": 300
-    },
-    {
-      "id": "basseterre",
-      "label": "Basseterre, Saint Kitts and Nevis",
-      "group": "capital-of-country-not-asked-by-name",
-      "capital": {
-        "of": "saint-kitts-and-nevis",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Basseterre?",
-      "tolerance": 300
-    },
-    {
-      "id": "castries",
-      "label": "Castries, Saint Lucia",
-      "group": "capital-of-country-not-asked-by-name",
-      "capital": {
-        "of": "saint-lucia",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Castries?",
-      "tolerance": 300
-    },
-    {
-      "id": "kingstown",
-      "label": "Kingstown, Saint Vincent and the Grenadines",
-      "group": "capital-of-country-not-asked-by-name",
-      "capital": {
-        "of": "saint-vincent-and-the-grenadines",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Kingstown?",
-      "tolerance": 300
-    },
-    {
-      "id": "roseau",
-      "label": "Roseau, Dominica",
-      "group": "capital-of-country-not-asked-by-name",
-      "capital": {
-        "of": "dominica",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Roseau?",
-      "tolerance": 300
-    },
-    {
-      "id": "st-georges",
-      "label": "St George's, Grenada",
-      "group": "capital-of-country-not-asked-by-name",
-      "capital": {
-        "of": "grenada",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is St George's, the national capital?",
-      "tolerance": 300
-    },
-    {
-      "id": "port-moresby",
-      "label": "Port Moresby, Papua New Guinea",
-      "group": "capital-of-country-not-asked-by-name",
-      "capital": {
-        "of": "papua-new-guinea",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Port Moresby?",
-      "tolerance": 400
-    },
-    {
-      "id": "london",
-      "label": "London, United Kingdom",
-      "group": "capital-of-country-not-asked-by-name",
-      "capital": {
-        "of": "united-kingdom",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is London?",
-      "tolerance": 30
-    },
-    {
-      "id": "pristina",
-      "label": "Pristina, Kosovo",
-      "group": "capital-of-country-not-asked-by-name",
-      "capital": {
-        "of": "kosovo",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Pristina?",
-      "tolerance": 100,
-      "note": "Kosovo is in the bank without a flag (left out of country and flag rounds as disputed): relax the places test so a capital only has to name a place the bank asks about"
-    },
-    {
       "id": "apia",
       "label": "Apia, Samoa",
       "group": "capital-of-country-asked-by-name",
@@ -586,14 +475,6 @@
       "prompt": "Where is Dar es Salaam?",
       "tolerance": 300,
       "note": "Capital until 1996; still the largest city"
-    },
-    {
-      "id": "jerusalem",
-      "label": "Jerusalem",
-      "group": "city",
-      "prompt": "Where is Jerusalem?",
-      "tolerance": 250,
-      "note": "A city, not tagged as a capital. Facts avoid sovereignty; reveal photo must not be the Dome of the Rock (a landmark round's photo)"
     }
   ]
 }

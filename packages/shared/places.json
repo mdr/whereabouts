@@ -2646,6 +2646,77 @@
     "capital": { "of": "south-sudan", "kind": "NATIONAL" }
   },
   {
+    "id": "nassau",
+    "label": "Nassau, The Bahamas",
+    "wiki": "Nassau, Bahamas",
+    "at": { "lat": 25.0781, "lon": -77.3386 },
+    "capital": { "of": "the-bahamas", "kind": "NATIONAL" }
+  },
+  {
+    "id": "basseterre",
+    "label": "Basseterre, Saint Kitts and Nevis",
+    "wiki": "Basseterre",
+    "at": { "lat": 17.3, "lon": -62.7333 },
+    "capital": { "of": "saint-kitts-and-nevis", "kind": "NATIONAL" }
+  },
+  {
+    "id": "kingstown",
+    "label": "Kingstown, Saint Vincent and the Grenadines",
+    "wiki": "Kingstown",
+    "at": { "lat": 13.1578, "lon": -61.225 },
+    "capital": { "of": "saint-vincent-and-the-grenadines", "kind": "NATIONAL" }
+  },
+  {
+    "id": "st-georges",
+    "label": "St George's, Grenada",
+    "wiki": "St. George's, Grenada",
+    "at": { "lat": 12.0525, "lon": -61.7531 },
+    "capital": { "of": "grenada", "kind": "NATIONAL" }
+  },
+  {
+    "id": "london",
+    "label": "London, United Kingdom",
+    "wiki": "London",
+    "at": { "lat": 51.5072, "lon": -0.1275 },
+    "capital": { "of": "united-kingdom", "kind": "NATIONAL" }
+  },
+  { "id": "jerusalem", "label": "Jerusalem", "wiki": "Jerusalem", "at": { "lat": 31.7789, "lon": 35.2256 } },
+  {
+    "id": "st-johns",
+    "label": "St John's, Antigua and Barbuda",
+    "wiki": "St. John's, Antigua and Barbuda",
+    "at": { "lat": 17.117, "lon": -61.85 },
+    "capital": { "of": "antigua-and-barbuda", "kind": "NATIONAL" }
+  },
+  {
+    "id": "castries",
+    "label": "Castries, Saint Lucia",
+    "wiki": "Castries",
+    "at": { "lat": 14.0108, "lon": -60.9894 },
+    "capital": { "of": "saint-lucia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "roseau",
+    "label": "Roseau, Dominica",
+    "wiki": "Roseau",
+    "at": { "lat": 15.3014, "lon": -61.3883 },
+    "capital": { "of": "dominica", "kind": "NATIONAL" }
+  },
+  {
+    "id": "port-moresby",
+    "label": "Port Moresby, Papua New Guinea",
+    "wiki": "Port Moresby",
+    "at": { "lat": -9.4789, "lon": 147.1494 },
+    "capital": { "of": "papua-new-guinea", "kind": "NATIONAL" }
+  },
+  {
+    "id": "pristina",
+    "label": "Pristina, Kosovo",
+    "wiki": "Pristina",
+    "at": { "lat": 42.6667, "lon": 21.1667 },
+    "capital": { "of": "kosovo", "kind": "NATIONAL" }
+  },
+  {
     "id": "afghanistan",
     "label": "Afghanistan",
     "wiki": "Afghanistan",

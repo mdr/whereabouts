@@ -12245,6 +12245,215 @@
       }
     ]
   },
+  "nassau": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Nassau is the capital of the Bahamas and holds about three-quarters of the country's people, all on the single island of New Providence.",
+        "source": "https://en.wikipedia.org/wiki/Nassau,_Bahamas"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "From 1706 pirates made Nassau their base, until Woodes Rogers arrived as royal governor in 1718 and offered them a pardon.",
+        "source": "https://en.wikipedia.org/wiki/Nassau,_Bahamas"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It began as Charles Town in 1670, and was renamed Nassau in 1695 after the royal House of Orange-Nassau of King William III.",
+        "source": "https://en.wikipedia.org/wiki/Nassau,_Bahamas"
+      }
+    ]
+  },
+  "basseterre": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Founded by the French in 1627, Basseterre is one of the oldest towns in the eastern Caribbean and capital of Saint Kitts and Nevis.",
+        "source": "https://en.wikipedia.org/wiki/Basseterre"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Circus, Basseterre's central roundabout, is modelled on London's Piccadilly Circus and has a Victorian memorial fountain with a clock at its centre.",
+        "source": "https://en.wikipedia.org/wiki/Basseterre"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The name is French for 'low land', and Port Zante, in the middle of the bay, stands on land reclaimed from the sea in 1995.",
+        "source": "https://en.wikipedia.org/wiki/Basseterre"
+      }
+    ]
+  },
+  "kingstown": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Kingstown is the capital and largest city of Saint Vincent and the Grenadines, and the country's main port, set among steep hills.",
+        "source": "https://en.wikipedia.org/wiki/Kingstown"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its botanic garden, begun in 1765, is claimed to be the oldest in the Western Hemisphere.",
+        "source": "https://en.wikipedia.org/wiki/Kingstown"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "William Bligh, of the Bounty mutiny, delivered breadfruit plants from the South Seas to Kingstown's garden in 1793.",
+        "source": "https://en.wikipedia.org/wiki/Kingstown"
+      }
+    ]
+  },
+  "st-georges": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "St George's, capital of Grenada, is a major port for the island's spices, exporting nutmeg, mace and cocoa.",
+        "source": "https://en.wikipedia.org/wiki/St._George%27s,_Grenada"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The town lies on an old volcanic crater, and its horseshoe-shaped harbour, the Carenage, is the crater's flooded centre.",
+        "source": "https://en.wikipedia.org/wiki/St._George%27s,_Grenada"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The French founded it in 1650 as Fort Royal, and the British renamed it after England's patron saint after taking the island in 1763.",
+        "source": "https://en.wikipedia.org/wiki/St._George%27s,_Grenada"
+      }
+    ]
+  },
+  "london": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The Royal Observatory at Greenwich in London defines the Prime Meridian, 0 degrees longitude, and Greenwich Mean Time.",
+        "source": "https://en.wikipedia.org/wiki/London"
+      },
+      {
+        "type": "FAME",
+        "text": "The City of London, its ancient core, was founded by the Romans as Londinium and still keeps its medieval boundaries.",
+        "source": "https://en.wikipedia.org/wiki/London"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In 2012 London became the first city to host the modern Summer Olympics three times, after 1908 and 1948.",
+        "source": "https://en.wikipedia.org/wiki/2012_Summer_Olympics"
+      }
+    ]
+  },
+  "jerusalem": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "One of the oldest cities in the world, Jerusalem is holy to Judaism, Christianity and Islam.",
+        "source": "https://en.wikipedia.org/wiki/Jerusalem"
+      },
+      {
+        "type": "FAME",
+        "text": "The walls around the Old City were last rebuilt in the 1500s under Suleiman the Magnificent of the Ottoman Empire.",
+        "source": "https://en.wikipedia.org/wiki/Jerusalem"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "A rule dating from British rule requires new buildings to be faced in local stone, giving the city its pale golden look.",
+        "source": "https://en.wikipedia.org/wiki/Jerusalem"
+      }
+    ]
+  },
+  "st-johns": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "St John's is the largest city and main port of Antigua and Barbuda, with cruise ships docking right in its harbour.",
+        "source": "https://en.wikipedia.org/wiki/St._John%27s,_Antigua_and_Barbuda"
+      },
+      {
+        "type": "FAME",
+        "text": "The white baroque twin towers of St John's Cathedral dominate the city's skyline.",
+        "source": "https://en.wikipedia.org/wiki/St._John%27s,_Antigua_and_Barbuda"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In 1736 a St John's man, Prince Klaas, was accused of plotting to turn Antigua into an independent African kingdom.",
+        "source": "https://en.wikipedia.org/wiki/St._John%27s,_Antigua_and_Barbuda"
+      }
+    ]
+  },
+  "castries": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Two Nobel laureates were born in Castries: the economist Arthur Lewis in 1915 and the poet Derek Walcott in 1930.",
+        "source": "https://en.wikipedia.org/wiki/Castries"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In March 1942 a German U-boat slipped into Castries harbour and torpedoed two ships at the quayside; the liner Lady Nelson was later raised.",
+        "source": "https://en.wikipedia.org/wiki/Castries"
+      },
+      {
+        "type": "FAME",
+        "text": "Castries is home to the secretariat of the Organisation of Eastern Caribbean States, the regional group of small island nations.",
+        "source": "https://en.wikipedia.org/wiki/Castries"
+      }
+    ]
+  },
+  "roseau": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The novelist Jean Rhys, author of Wide Sargasso Sea, was born in Roseau in 1890.",
+        "source": "https://en.wikipedia.org/wiki/Roseau"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Roseau stands on the site of a Kalinago village called Sairi, and French settlers named it after the reeds growing along the river.",
+        "source": "https://en.wikipedia.org/wiki/Roseau"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Roseau's Windsor Park cricket stadium, finished in 2007, was a gift from China worth EC$33 million.",
+        "source": "https://en.wikipedia.org/wiki/Roseau"
+      }
+    ]
+  },
+  "port-moresby": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Port Moresby's Parliament House, opened in 1984, is modelled on a traditional haus tambaran, or spirit house, of the Sepik region.",
+        "source": "https://en.wikipedia.org/wiki/National_Parliament_House,_Port_Moresby"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Captain John Moresby named the harbour in 1873 after his father, Admiral Sir Fairfax Moresby.",
+        "source": "https://en.wikipedia.org/wiki/Port_Moresby"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Port Moresby has no road link to Lae, the country's industrial hub; the two are connected directly only by air.",
+        "source": "https://en.wikipedia.org/wiki/Port_Moresby"
+      }
+    ]
+  },
+  "pristina": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The singer Rita Ora was born in Pristina in 1990.",
+        "source": "https://en.wikipedia.org/wiki/Pristina"
+      },
+      {
+        "type": "FAME",
+        "text": "Pristina's Catholic cathedral, consecrated in 2017, is dedicated to Mother Teresa, the nun of Albanian heritage.",
+        "source": "https://en.wikipedia.org/wiki/Pristina"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "A clay figure over 5,000 years old, the Goddess on the Throne, was found near Pristina and has become a symbol of the city.",
+        "source": "https://en.wikipedia.org/wiki/Pristina"
+      }
+    ]
+  },
   "afghanistan": {
     "about": [
       {

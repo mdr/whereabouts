@@ -3290,6 +3290,83 @@
     "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
+    "id": "nassau",
+    "type": "PLACE",
+    "place": "nassau",
+    "clue": { "type": "NAME", "prompt": "Where is Nassau, the national capital?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "basseterre",
+    "type": "PLACE",
+    "place": "basseterre",
+    "clue": { "type": "NAME", "prompt": "Where is Basseterre?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "kingstown",
+    "type": "PLACE",
+    "place": "kingstown",
+    "clue": { "type": "NAME", "prompt": "Where is Kingstown?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "st-georges",
+    "type": "PLACE",
+    "place": "st-georges",
+    "clue": { "type": "NAME", "prompt": "Where is St George's, the national capital?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "london",
+    "type": "PLACE",
+    "place": "london",
+    "clue": { "type": "NAME", "prompt": "Where is London?" },
+    "answer": { "type": "POINT", "tolerance": 30 }
+  },
+  {
+    "id": "jerusalem",
+    "type": "PLACE",
+    "place": "jerusalem",
+    "clue": { "type": "NAME", "prompt": "Where is Jerusalem?" },
+    "answer": { "type": "POINT", "tolerance": 250 }
+  },
+  {
+    "id": "st-johns",
+    "type": "PLACE",
+    "place": "st-johns",
+    "clue": { "type": "NAME", "prompt": "Where is St John's, the national capital?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "castries",
+    "type": "PLACE",
+    "place": "castries",
+    "clue": { "type": "NAME", "prompt": "Where is Castries?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "roseau",
+    "type": "PLACE",
+    "place": "roseau",
+    "clue": { "type": "NAME", "prompt": "Where is Roseau?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "port-moresby",
+    "type": "PLACE",
+    "place": "port-moresby",
+    "clue": { "type": "NAME", "prompt": "Where is Port Moresby?" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "pristina",
+    "type": "PLACE",
+    "place": "pristina",
+    "clue": { "type": "NAME", "prompt": "Where is Pristina?" },
+    "answer": { "type": "POINT", "tolerance": 100 }
+  },
+  {
     "id": "afghanistan-region",
     "type": "COUNTRY",
     "place": "afghanistan",
