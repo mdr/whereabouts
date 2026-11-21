@@ -10041,6 +10041,97 @@
       }
     ]
   },
+  "tianjin": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Its port, the largest in northern China, is Beijing's main gateway to the sea.",
+        "source": "https://en.wikipedia.org/wiki/Port_of_Tianjin"
+      },
+      {
+        "type": "FAME",
+        "text": "Several European powers and Japan once ran self-contained enclaves here, leaving churches and thousands of European-style villas beside the Hai River.",
+        "source": "https://en.wikipedia.org/wiki/Tianjin"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its 120-metre Ferris wheel, the Tianjin Eye, stands on top of a bridge over the river.",
+        "source": "https://en.wikipedia.org/wiki/Tianjin_Eye"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Since 2008, a bullet train has covered the 117 kilometres to Beijing in about half an hour, down from 70 minutes.",
+        "source": "https://en.wikipedia.org/wiki/Beijing%E2%80%93Tianjin_intercity_railway"
+      }
+    ]
+  },
+  "chengdu": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "UNESCO named it a City of Gastronomy, honouring a cuisine built on fiery chillies and numbing Sichuan peppercorns.",
+        "source": "https://en.wikipedia.org/wiki/Chengdu"
+      },
+      {
+        "type": "FAME",
+        "text": "Its panda base, founded in 1987 with six rescued wild pandas, is a leading centre for breeding and studying giant pandas.",
+        "source": "https://en.wikipedia.org/wiki/Chengdu_Research_Base_of_Giant_Panda_Breeding"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Around the 11th century, merchants here began issuing jiaozi, regarded as the first paper money in history, because iron coins were so heavy.",
+        "source": "https://en.wikipedia.org/wiki/Jiaozi_(currency)"
+      }
+    ]
+  },
+  "wuhan": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The 1911 Wuchang Uprising began here, starting the revolution that ended 2,000 years of imperial rule in China.",
+        "source": "https://en.wikipedia.org/wiki/Wuchang_Uprising"
+      },
+      {
+        "type": "FAME",
+        "text": "It sits where the Han River joins the Yangtze, and the rivers split it into three districts: Wuchang, Hankou and Hanyang.",
+        "source": "https://en.wikipedia.org/wiki/Wuhan"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Yellow Crane Tower was rebuilt in 1985 about a kilometre from its old site, because a Yangtze bridge pier now stands there.",
+        "source": "https://en.wikipedia.org/wiki/Yellow_Crane_Tower"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Opened in 1957, its Yangtze River Bridge was the first road-and-rail bridge over the river; before it, trains crossed by ferry.",
+        "source": "https://en.wikipedia.org/wiki/Wuhan_Yangtze_River_Bridge"
+      }
+    ]
+  },
+  "xian": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "One of China's Five Great Ancient Capitals, it served several of the most important dynasties, including the Zhou, Qin, Han and Tang.",
+        "source": "https://en.wikipedia.org/wiki/Xi%27an"
+      },
+      {
+        "type": "FAME",
+        "text": "Known then as Chang'an, it was the eastern end of the Silk Road, and five of its sites are UNESCO-listed.",
+        "source": "https://en.wikipedia.org/wiki/Xi%27an"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its Ming-era city wall forms a complete circuit, and visitors can hire bicycles and ride all the way round on top.",
+        "source": "https://en.wikipedia.org/wiki/Fortifications_of_Xi%27an"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In the seventh century, as Chang'an, it was probably the largest city in the world, with around a million people.",
+        "source": "https://en.wikipedia.org/wiki/Chang%27an"
+      }
+    ]
+  },
   "osaka": {
     "about": [
       {
@@ -10153,6 +10244,54 @@
         "type": "TRIVIA",
         "text": "In 1906 it became one of the first cities in India to have electricity.",
         "source": "https://en.wikipedia.org/wiki/Bengaluru"
+      }
+    ]
+  },
+  "hyderabad": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Founded in 1591 beside Golconda fort, it is now the capital of Telangana, and its Charminar arch has come to symbolise it.",
+        "source": "https://en.wikipedia.org/wiki/Hyderabad"
+      },
+      {
+        "type": "FAME",
+        "text": "UNESCO named it a Creative City of Gastronomy in 2019, with biryani, kebabs and haleem at the centre of its food culture.",
+        "source": "https://en.wikipedia.org/wiki/Hyderabad"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Nicknamed the City of Pearls, it was long a great market for pearls and for diamonds from the Golconda mines.",
+        "source": "https://en.wikipedia.org/wiki/Hyderabad"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Charminar, with its four minarets, was reportedly the first building raised in the new city.",
+        "source": "https://en.wikipedia.org/wiki/Charminar"
+      }
+    ]
+  },
+  "ahmedabad": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Its old walled city became India's first UNESCO World Heritage City in 2017.",
+        "source": "https://en.wikipedia.org/wiki/Ahmedabad"
+      },
+      {
+        "type": "FAME",
+        "text": "In 1917 Mahatma Gandhi founded the Satyagraha Ashram, now Sabarmati Ashram, on the Sabarmati riverbank here, a centre of the independence movement.",
+        "source": "https://en.wikipedia.org/wiki/Sabarmati_Ashram"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its Narendra Modi Stadium is the largest cricket stadium in the world.",
+        "source": "https://en.wikipedia.org/wiki/Narendra_Modi_Stadium"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its many cotton mills earned it the nickname \"Manchester of India\".",
+        "source": "https://en.wikipedia.org/wiki/Ahmedabad"
       }
     ]
   },

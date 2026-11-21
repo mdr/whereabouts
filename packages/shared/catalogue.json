@@ -2590,6 +2590,34 @@
     "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
+    "id": "tianjin",
+    "type": "PLACE",
+    "place": "tianjin",
+    "clue": { "type": "NAME", "prompt": "Where is Tianjin?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "chengdu",
+    "type": "PLACE",
+    "place": "chengdu",
+    "clue": { "type": "NAME", "prompt": "Where is Chengdu?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "wuhan",
+    "type": "PLACE",
+    "place": "wuhan",
+    "clue": { "type": "NAME", "prompt": "Where is Wuhan?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "xian",
+    "type": "PLACE",
+    "place": "xian",
+    "clue": { "type": "NAME", "prompt": "Where is Xi'an?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
     "id": "osaka",
     "type": "PLACE",
     "place": "osaka",
@@ -2622,6 +2650,20 @@
     "type": "PLACE",
     "place": "bengaluru",
     "clue": { "type": "NAME", "prompt": "Where is Bengaluru?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "hyderabad",
+    "type": "PLACE",
+    "place": "hyderabad",
+    "clue": { "type": "NAME", "prompt": "Where is Hyderabad, the state capital?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "ahmedabad",
+    "type": "PLACE",
+    "place": "ahmedabad",
+    "clue": { "type": "NAME", "prompt": "Where is Ahmedabad?" },
     "answer": { "type": "POINT", "tolerance": 300 }
   },
   {
