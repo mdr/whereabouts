@@ -3367,6 +3367,132 @@
     "answer": { "type": "POINT", "tolerance": 100 }
   },
   {
+    "id": "asmara",
+    "type": "PLACE",
+    "place": "asmara",
+    "clue": { "type": "NAME", "prompt": "Where is Asmara?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "lilongwe",
+    "type": "PLACE",
+    "place": "lilongwe",
+    "clue": { "type": "NAME", "prompt": "Where is Lilongwe?" },
+    "answer": { "type": "POINT", "tolerance": 350 }
+  },
+  {
+    "id": "lome",
+    "type": "PLACE",
+    "place": "lome",
+    "clue": { "type": "NAME", "prompt": "Where is Lomé?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "moroni",
+    "type": "PLACE",
+    "place": "moroni",
+    "clue": { "type": "NAME", "prompt": "Where is Moroni?" },
+    "answer": { "type": "POINT", "tolerance": 500 }
+  },
+  {
+    "id": "gitega",
+    "type": "PLACE",
+    "place": "gitega",
+    "clue": { "type": "NAME", "prompt": "Where is Gitega?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "praia",
+    "type": "PLACE",
+    "place": "praia",
+    "clue": { "type": "NAME", "prompt": "Where is Praia?" },
+    "answer": { "type": "POINT", "tolerance": 500 }
+  },
+  {
+    "id": "freetown",
+    "type": "PLACE",
+    "place": "freetown",
+    "clue": { "type": "NAME", "prompt": "Where is Freetown?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "mbabane",
+    "type": "PLACE",
+    "place": "mbabane",
+    "clue": { "type": "NAME", "prompt": "Where is Mbabane?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "maseru",
+    "type": "PLACE",
+    "place": "maseru",
+    "clue": { "type": "NAME", "prompt": "Where is Maseru?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "porto-novo",
+    "type": "PLACE",
+    "place": "porto-novo",
+    "clue": { "type": "NAME", "prompt": "Where is Porto-Novo?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "bujumbura",
+    "type": "PLACE",
+    "place": "bujumbura",
+    "clue": { "type": "NAME", "prompt": "Where is Bujumbura?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "victoria",
+    "type": "PLACE",
+    "place": "victoria",
+    "clue": { "type": "NAME", "prompt": "Where is Victoria, the national capital?" },
+    "answer": { "type": "POINT", "tolerance": 500 }
+  },
+  {
+    "id": "kigali",
+    "type": "PLACE",
+    "place": "kigali",
+    "clue": { "type": "NAME", "prompt": "Where is Kigali?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "lobamba",
+    "type": "PLACE",
+    "place": "lobamba",
+    "clue": { "type": "NAME", "prompt": "Where is Lobamba?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "monrovia",
+    "type": "PLACE",
+    "place": "monrovia",
+    "clue": { "type": "NAME", "prompt": "Where is Monrovia?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "cotonou",
+    "type": "PLACE",
+    "place": "cotonou",
+    "clue": { "type": "NAME", "prompt": "Where is Cotonou?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "port-louis",
+    "type": "PLACE",
+    "place": "port-louis",
+    "clue": { "type": "NAME", "prompt": "Where is Port Louis?" },
+    "answer": { "type": "POINT", "tolerance": 500 }
+  },
+  {
+    "id": "banjul",
+    "type": "PLACE",
+    "place": "banjul",
+    "clue": { "type": "NAME", "prompt": "Where is Banjul?" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
     "id": "afghanistan-region",
     "type": "COUNTRY",
     "place": "afghanistan",

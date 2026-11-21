@@ -2717,6 +2717,132 @@
     "capital": { "of": "kosovo", "kind": "NATIONAL" }
   },
   {
+    "id": "asmara",
+    "label": "Asmara, Eritrea",
+    "wiki": "Asmara",
+    "at": { "lat": 15.3358, "lon": 38.9411 },
+    "capital": { "of": "eritrea", "kind": "NATIONAL" }
+  },
+  {
+    "id": "lilongwe",
+    "label": "Lilongwe, Malawi",
+    "wiki": "Lilongwe",
+    "at": { "lat": -13.9864, "lon": 33.7681 },
+    "capital": { "of": "malawi", "kind": "NATIONAL" }
+  },
+  {
+    "id": "lome",
+    "label": "Lomé, Togo",
+    "wiki": "Lomé",
+    "at": { "lat": 6.1308, "lon": 1.2153 },
+    "capital": { "of": "togo", "kind": "NATIONAL" }
+  },
+  {
+    "id": "moroni",
+    "label": "Moroni, Comoros",
+    "wiki": "Moroni, Comoros",
+    "at": { "lat": -11.699, "lon": 43.256 },
+    "capital": { "of": "comoros", "kind": "NATIONAL" }
+  },
+  {
+    "id": "gitega",
+    "label": "Gitega, Burundi",
+    "wiki": "Gitega",
+    "at": { "lat": -3.4283, "lon": 29.925 },
+    "capital": { "of": "burundi", "kind": "NATIONAL" }
+  },
+  {
+    "id": "praia",
+    "label": "Praia, Cape Verde",
+    "wiki": "Praia",
+    "at": { "lat": 14.918, "lon": -23.509 },
+    "capital": { "of": "cape-verde", "kind": "NATIONAL" }
+  },
+  {
+    "id": "freetown",
+    "label": "Freetown, Sierra Leone",
+    "wiki": "Freetown",
+    "at": { "lat": 8.4872, "lon": -13.2356 },
+    "capital": { "of": "sierra-leone", "kind": "NATIONAL" }
+  },
+  {
+    "id": "mbabane",
+    "label": "Mbabane, Eswatini",
+    "wiki": "Mbabane",
+    "at": { "lat": -26.3167, "lon": 31.1333 },
+    "capital": { "of": "eswatini", "kind": "NATIONAL" }
+  },
+  {
+    "id": "maseru",
+    "label": "Maseru, Lesotho",
+    "wiki": "Maseru",
+    "at": { "lat": -29.31, "lon": 27.48 },
+    "capital": { "of": "lesotho", "kind": "NATIONAL" }
+  },
+  {
+    "id": "porto-novo",
+    "label": "Porto-Novo, Benin",
+    "wiki": "Porto-Novo",
+    "at": { "lat": 6.4972, "lon": 2.605 },
+    "capital": { "of": "benin", "kind": "NATIONAL" }
+  },
+  {
+    "id": "bujumbura",
+    "label": "Bujumbura, Burundi",
+    "wiki": "Bujumbura",
+    "at": { "lat": -3.3628, "lon": 29.3656 },
+    "capital": { "of": "burundi", "kind": "FORMER" }
+  },
+  {
+    "id": "victoria",
+    "label": "Victoria, Seychelles",
+    "wiki": "Victoria, Seychelles",
+    "at": { "lat": -4.6231, "lon": 55.4525 },
+    "capital": { "of": "seychelles", "kind": "NATIONAL" }
+  },
+  {
+    "id": "kigali",
+    "label": "Kigali, Rwanda",
+    "wiki": "Kigali",
+    "at": { "lat": -1.9525, "lon": 30.115 },
+    "capital": { "of": "rwanda", "kind": "NATIONAL" }
+  },
+  {
+    "id": "lobamba",
+    "label": "Lobamba, Eswatini",
+    "wiki": "Lobamba",
+    "at": { "lat": -26.4464, "lon": 31.2017 },
+    "capital": { "of": "eswatini", "kind": "LEGISLATIVE" }
+  },
+  {
+    "id": "monrovia",
+    "label": "Monrovia, Liberia",
+    "wiki": "Monrovia",
+    "at": { "lat": 6.3133, "lon": -10.8014 },
+    "capital": { "of": "liberia", "kind": "NATIONAL" }
+  },
+  {
+    "id": "cotonou",
+    "label": "Cotonou, Benin",
+    "wiki": "Cotonou",
+    "at": { "lat": 6.3667, "lon": 2.4333 },
+    "capital": { "of": "benin", "kind": "SEAT_OF_GOVERNMENT" }
+  },
+  {
+    "id": "port-louis",
+    "label": "Port Louis, Mauritius",
+    "wiki": "Port Louis",
+    "at": { "lat": -20.1644, "lon": 57.5042 },
+    "capital": { "of": "mauritius", "kind": "NATIONAL" }
+  },
+  {
+    "id": "banjul",
+    "label": "Banjul, The Gambia",
+    "wiki": "Banjul",
+    "at": { "lat": 13.4542, "lon": -16.5753 },
+    "capital": { "of": "the-gambia", "kind": "NATIONAL" }
+  },
+  {
     "id": "afghanistan",
     "label": "Afghanistan",
     "wiki": "Afghanistan",

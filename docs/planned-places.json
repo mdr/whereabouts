@@ -18,17 +18,6 @@
       "tolerance": 800
     },
     {
-      "id": "asmara",
-      "label": "Asmara, Eritrea",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "eritrea",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Asmara?",
-      "tolerance": 300
-    },
-    {
       "id": "asuncion",
       "label": "Asunción, Paraguay",
       "group": "capital-of-country-asked-by-name",
@@ -62,40 +51,6 @@
       "tolerance": 300
     },
     {
-      "id": "porto-novo",
-      "label": "Porto-Novo, Benin",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "benin",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Porto-Novo?",
-      "tolerance": 300
-    },
-    {
-      "id": "cotonou",
-      "label": "Cotonou, Benin",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "benin",
-        "kind": "SEAT_OF_GOVERNMENT"
-      },
-      "prompt": "Where is Cotonou?",
-      "tolerance": 300,
-      "note": "Seat of government and largest city"
-    },
-    {
-      "id": "freetown",
-      "label": "Freetown, Sierra Leone",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "sierra-leone",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Freetown?",
-      "tolerance": 300
-    },
-    {
       "id": "funafuti",
       "label": "Funafuti, Tuvalu",
       "group": "capital-of-country-asked-by-name",
@@ -118,29 +73,6 @@
       "tolerance": 400
     },
     {
-      "id": "gitega",
-      "label": "Gitega, Burundi",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "burundi",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Gitega?",
-      "tolerance": 300
-    },
-    {
-      "id": "bujumbura",
-      "label": "Bujumbura, Burundi",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "burundi",
-        "kind": "FORMER"
-      },
-      "prompt": "Where is Bujumbura?",
-      "tolerance": 300,
-      "note": "Capital until 2019; still the largest city"
-    },
-    {
       "id": "honiara",
       "label": "Honiara, Solomon Islands",
       "group": "capital-of-country-asked-by-name",
@@ -150,17 +82,6 @@
       },
       "prompt": "Where is Honiara?",
       "tolerance": 800
-    },
-    {
-      "id": "kigali",
-      "label": "Kigali, Rwanda",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "rwanda",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Kigali?",
-      "tolerance": 300
     },
     {
       "id": "kingston",
@@ -174,52 +95,6 @@
       "tolerance": 300
     },
     {
-      "id": "lilongwe",
-      "label": "Lilongwe, Malawi",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "malawi",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Lilongwe?",
-      "tolerance": 350
-    },
-    {
-      "id": "mbabane",
-      "label": "Mbabane, Eswatini",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "eswatini",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Mbabane?",
-      "tolerance": 300,
-      "note": "Executive capital"
-    },
-    {
-      "id": "lobamba",
-      "label": "Lobamba, Eswatini",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "eswatini",
-        "kind": "LEGISLATIVE"
-      },
-      "prompt": "Where is Lobamba?",
-      "tolerance": 300,
-      "note": "Royal and legislative capital"
-    },
-    {
-      "id": "lome",
-      "label": "Lomé, Togo",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "togo",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Lomé?",
-      "tolerance": 300
-    },
-    {
       "id": "majuro",
       "label": "Majuro, Marshall Islands",
       "group": "capital-of-country-asked-by-name",
@@ -229,39 +104,6 @@
       },
       "prompt": "Where is Majuro?",
       "tolerance": 1000
-    },
-    {
-      "id": "maseru",
-      "label": "Maseru, Lesotho",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "lesotho",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Maseru?",
-      "tolerance": 300
-    },
-    {
-      "id": "monrovia",
-      "label": "Monrovia, Liberia",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "liberia",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Monrovia?",
-      "tolerance": 300
-    },
-    {
-      "id": "moroni",
-      "label": "Moroni, Comoros",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "comoros",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Moroni?",
-      "tolerance": 500
     },
     {
       "id": "ngerulmud",
@@ -309,17 +151,6 @@
       "tolerance": 400
     },
     {
-      "id": "port-louis",
-      "label": "Port Louis, Mauritius",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "mauritius",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Port Louis?",
-      "tolerance": 500
-    },
-    {
       "id": "port-of-spain",
       "label": "Port of Spain, Trinidad and Tobago",
       "group": "capital-of-country-asked-by-name",
@@ -342,17 +173,6 @@
       "tolerance": 700
     },
     {
-      "id": "praia",
-      "label": "Praia, Cape Verde",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "cape-verde",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Praia?",
-      "tolerance": 500
-    },
-    {
       "id": "suva",
       "label": "Suva, Fiji",
       "group": "capital-of-country-asked-by-name",
@@ -362,17 +182,6 @@
       },
       "prompt": "Where is Suva?",
       "tolerance": 700
-    },
-    {
-      "id": "victoria",
-      "label": "Victoria, Seychelles",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "seychelles",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Victoria, the national capital?",
-      "tolerance": 500
     },
     {
       "id": "yaren",
@@ -395,17 +204,6 @@
       },
       "prompt": "Where is South Tarawa?",
       "tolerance": 1000
-    },
-    {
-      "id": "banjul",
-      "label": "Banjul, The Gambia",
-      "group": "capital-of-country-asked-by-name",
-      "capital": {
-        "of": "the-gambia",
-        "kind": "NATIONAL"
-      },
-      "prompt": "Where is Banjul?",
-      "tolerance": 300
     },
     {
       "id": "palikir",

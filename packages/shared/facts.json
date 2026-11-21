@@ -12454,6 +12454,338 @@
       }
     ]
   },
+  "asmara": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Asmara's Italian-era modernist architecture earned it a place on the UNESCO World Heritage List in 2017, the first modernist site listed in Africa.",
+        "source": "https://en.wikipedia.org/wiki/Asmara"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "At 2,325 metres up on the Ethiopian Plateau, it is the second-highest capital in Africa, behind only Addis Ababa.",
+        "source": "https://en.wikipedia.org/wiki/Asmara"
+      }
+    ]
+  },
+  "lilongwe": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Lilongwe replaced Zomba as Malawi's capital in 1975, on the orders of President Hastings Banda.",
+        "source": "https://en.wikipedia.org/wiki/Lilongwe"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Banda moved the capital here partly for its central position in the country, and partly because he was born just north of the city.",
+        "source": "https://en.wikipedia.org/wiki/Lilongwe"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Lilongwe grew from roughly 20,000 people in 1966 to nearly a million by 2018, and has a nature sanctuary right in its centre.",
+        "source": "https://en.wikipedia.org/wiki/Lilongwe"
+      }
+    ]
+  },
+  "lome": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Lomé's Grand Marché was the base of the Nana Benz, women cloth traders who grew rich importing Dutch wax prints from the 1950s.",
+        "source": "https://en.wikipedia.org/wiki/Lom%C3%A9"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Lomé lies so close to Ghana that the border crossing at Aflao is less than two kilometres from the city centre.",
+        "source": "https://en.wikipedia.org/wiki/Lom%C3%A9"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its Akodessewa district has a famed fetish market selling charms and dried animal parts used in traditional vodun practice.",
+        "source": "https://en.wikipedia.org/wiki/Lom%C3%A9"
+      }
+    ]
+  },
+  "moroni": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Moroni's Old Friday Mosque, beside the harbour, dates from 1427 and is the city's best-known landmark.",
+        "source": "https://en.wikipedia.org/wiki/Moroni,_Comoros"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The capital sits at the foot of Mount Karthala, one of the world's largest active volcanoes, which has erupted repeatedly.",
+        "source": "https://en.wikipedia.org/wiki/Moroni,_Comoros"
+      },
+      {
+        "type": "FAME",
+        "text": "Moroni is the largest city of the Comoros, on the west coast of the island of Grande Comore.",
+        "source": "https://en.wikipedia.org/wiki/Moroni,_Comoros"
+      }
+    ]
+  },
+  "gitega": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Gitega became Burundi's political capital in 2019, while Bujumbura on Lake Tanganyika remains the economic capital.",
+        "source": "https://en.wikipedia.org/wiki/Gitega"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Before the monarchy was abolished in 1966, Gitega was the seat of the kings of Burundi, and royal drum sanctuaries still stand nearby.",
+        "source": "https://en.wikipedia.org/wiki/Gitega"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its National Museum, founded in 1955, holds the royal drums and traditional arts of the old kingdom.",
+        "source": "https://en.wikipedia.org/wiki/Gitega"
+      }
+    ]
+  },
+  "praia": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Praia has been Cape Verde's capital since 1770, when its defensible plateau made it safer from pirates than the old capital, Cidade Velha.",
+        "source": "https://en.wikipedia.org/wiki/Praia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It was Charles Darwin's first landfall on the Beagle voyage: the ship anchored at Porto Praya on 16 January 1832.",
+        "source": "https://en.wikipedia.org/wiki/Praia"
+      },
+      {
+        "type": "FAME",
+        "text": "About 29 per cent of all Cape Verdeans live in the municipality of Praia, the country's largest city.",
+        "source": "https://en.wikipedia.org/wiki/Praia"
+      }
+    ]
+  },
+  "freetown": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Fourah Bay College, founded here in 1827, is regarded as the oldest western-style university in West Africa.",
+        "source": "https://en.wikipedia.org/wiki/Freetown"
+      },
+      {
+        "type": "FAME",
+        "text": "Its harbour, in the Sierra Leone River estuary, is one of the world's largest natural deep-water harbours.",
+        "source": "https://en.wikipedia.org/wiki/Freetown"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Settlers freed from slavery are said to have prayed under a cotton tree and named Freetown; a storm felled it in 2023.",
+        "source": "https://en.wikipedia.org/wiki/Cotton_Tree_(Sierra_Leone)"
+      }
+    ]
+  },
+  "mbabane": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Mbabane is Eswatini's largest city and its executive capital, while parliament sits at nearby Lobamba.",
+        "source": "https://en.wikipedia.org/wiki/Mbabane"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The city takes its name from a chief, Mbabane Kunene, who lived in the area when British settlers arrived.",
+        "source": "https://en.wikipedia.org/wiki/Mbabane"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Mbabane stands about 1,200 metres up on the highveld, so it is cooler than its subtropical latitude suggests.",
+        "source": "https://en.wikipedia.org/wiki/Mbabane"
+      }
+    ]
+  },
+  "maseru": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Maseru, Lesotho's capital and largest city, stands on the Caledon River, which here forms the border with South Africa.",
+        "source": "https://en.wikipedia.org/wiki/Maseru"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its name is a Sesotho word usually translated as \"red sandstones\".",
+        "source": "https://en.wikipedia.org/wiki/Maseru"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Maseru was founded in 1869 and has been the capital ever since, even though Lesotho is completely surrounded by South Africa.",
+        "source": "https://en.wikipedia.org/wiki/Maseru"
+      }
+    ]
+  },
+  "porto-novo": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Porto-Novo is Benin's official capital and home to its National Assembly, though the presidency and most ministries are in Cotonou.",
+        "source": "https://en.wikipedia.org/wiki/Porto-Novo"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The name is Portuguese for \"New Port\"; the Gun people called the city Hogbonu and the Yoruba called it Ajashe.",
+        "source": "https://en.wikipedia.org/wiki/Porto-Novo"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Da Silva Museum shows life for the Afro-Brazilians who settled here after returning to Africa, and holds an Afro-Brazilian festival each January.",
+        "source": "https://en.wikipedia.org/wiki/Porto-Novo"
+      }
+    ]
+  },
+  "bujumbura": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Bujumbura is Burundi's largest city and economic capital; Gitega became the political capital in 2019.",
+        "source": "https://en.wikipedia.org/wiki/Bujumbura"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It lies on Lake Tanganyika, the world's second-deepest lake after Baikal.",
+        "source": "https://en.wikipedia.org/wiki/Bujumbura"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Once called Usumbura, the city grew from a small lakeside village under German and then Belgian colonial rule.",
+        "source": "https://en.wikipedia.org/wiki/Bujumbura"
+      }
+    ]
+  },
+  "victoria": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Victoria, on Mahé, is the capital and largest city of Seychelles, home to nearly three in ten of its people.",
+        "source": "https://en.wikipedia.org/wiki/Victoria,_Seychelles"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its silver clock tower is a small copy of Little Ben, the clock tower by Victoria station in London.",
+        "source": "https://en.wikipedia.org/wiki/Victoria,_Seychelles"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "French settlers called the town L'Etablissement until 1841, when the British renamed it after Queen Victoria.",
+        "source": "https://en.wikipedia.org/wiki/Victoria,_Seychelles"
+      }
+    ]
+  },
+  "kigali": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Kigali is often ranked among the cleanest cities in Africa, helped by policies such as plastic bag bans.",
+        "source": "https://en.wikipedia.org/wiki/Kigali"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "At independence in 1962 Kigali had only about 6,000 residents; it now holds well over a million.",
+        "source": "https://en.wikipedia.org/wiki/Kigali"
+      },
+      {
+        "type": "FAME",
+        "text": "Founded as a German colonial outpost in 1907, Kigali became Rwanda's capital when the country gained independence in 1962.",
+        "source": "https://en.wikipedia.org/wiki/Kigali"
+      }
+    ]
+  },
+  "lobamba": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Lobamba is Eswatini's legislative and royal capital, while Mbabane, about 16 km away, is the administrative capital.",
+        "source": "https://en.wikipedia.org/wiki/Lobamba"
+      },
+      {
+        "type": "FAME",
+        "text": "Eswatini's Parliament sits in Lobamba and has two chambers, the Senate and the House of Assembly.",
+        "source": "https://en.wikipedia.org/wiki/Lobamba"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Each August or September, young women bring cut reeds to the Queen Mother at the royal village of Ludzidzini, in the Umhlanga Reed Dance.",
+        "source": "https://en.wikipedia.org/wiki/Lobamba"
+      }
+    ]
+  },
+  "monrovia": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Monrovia is named after the US president James Monroe, and is one of only two world capitals named for an American president.",
+        "source": "https://en.wikipedia.org/wiki/Monrovia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its first settlers, formerly enslaved people from the United States and the West Indies, landed on an island at the Mesurado river mouth in 1822.",
+        "source": "https://en.wikipedia.org/wiki/Monrovia"
+      }
+    ]
+  },
+  "cotonou": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Cotonou is Benin's largest city and its seat of government, though the official capital, Porto-Novo, is where the legislature meets.",
+        "source": "https://en.wikipedia.org/wiki/Cotonou"
+      },
+      {
+        "type": "FAME",
+        "text": "Its autonomous port is one of the largest in West Africa.",
+        "source": "https://en.wikipedia.org/wiki/Cotonou"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its Dantokpa market is one of the largest open-air markets in West Africa.",
+        "source": "https://en.wikipedia.org/wiki/Dantokpa_Market"
+      }
+    ]
+  },
+  "port-louis": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Port Louis's Aapravasi Ghat, an immigration depot that received almost half a million Indian labourers from 1834 to 1920, is a UNESCO World Heritage Site.",
+        "source": "https://en.wikipedia.org/wiki/Aapravasi_Ghat"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its Champ de Mars racecourse is home to the Mauritius Turf Club, founded in 1812, the oldest racing club in the Southern Hemisphere.",
+        "source": "https://en.wikipedia.org/wiki/Champ_de_Mars_Racecourse"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Blue Penny Museum, at the Caudan Waterfront, shows two of the world's rarest stamps, the Mauritius 'Post Office' one-penny and two-pence of 1847.",
+        "source": "https://en.wikipedia.org/wiki/Blue_Penny_Museum"
+      }
+    ]
+  },
+  "banjul": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Banjul was called Bathurst until 1973, when it took its present name.",
+        "source": "https://en.wikipedia.org/wiki/Banjul"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Banjul stands on St Mary's Island, where the Gambia River meets the Atlantic, and ferries cross the river from it to Barra.",
+        "source": "https://en.wikipedia.org/wiki/Banjul"
+      },
+      {
+        "type": "FAME",
+        "text": "Arch 22, a gate about 35 metres tall, marks the entrance to the city.",
+        "source": "https://en.wikipedia.org/wiki/Arch_22"
+      }
+    ]
+  },
   "afghanistan": {
     "about": [
       {
