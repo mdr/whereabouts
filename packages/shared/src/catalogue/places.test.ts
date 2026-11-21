@@ -42,9 +42,10 @@ describe("the places", () => {
       expect(capitals.filter((place) => !named.has(place.id)).map((place) => place.id)).toEqual([])
     })
 
-    it("belong to a country, one with a flag", () => {
+    // Not always one with a flag: Kosovo, a disputed country, is asked only by name.
+    it("belong to a country the catalogue asks about", () => {
       expect(
-        capitals.filter(({ capital }) => capital!.of && !PLACES.get(capital!.of)?.flag).map((place) => place.id)
+        capitals.filter(({ capital }) => capital!.of && !PLACES.has(capital!.of)).map((place) => place.id)
       ).toEqual([])
     })
 

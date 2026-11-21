@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 import outlinesJson from "../outlines.json" with { type: "json" }
-import { CATALOGUE, outlinesFrom } from "./catalogue/catalogue.ts"
+import { CATALOGUE, PLACES, outlinesFrom } from "./catalogue/catalogue.ts"
 import {
   AnswerType,
   ClueType,
@@ -18,6 +18,7 @@ import {
   type PointAnswer
 } from "./questions.ts"
 import { greatCircleDistance } from "./geo.ts"
+import type { PlaceId } from "./ids.ts"
 import { commonsFile, flagCode, outlineId, wikiTitle } from "./ids.ts"
 
 describe("commonsImageUrl", () => {
@@ -106,13 +107,22 @@ describe("the catalogue", () => {
     expect(places.filter((question) => question.answer.tolerance >= 700).length).toBeGreaterThanOrEqual(8)
   })
 
+  /**
+   * Rome and Vatican City; a capital and the country it is the capital of
+   * (Vaduz and Liechtenstein); two capitals of one country (Colombo and
+   * Sri Jayawardenepura Kotte).
+   */
+  const deliberatelyNear = (a: PlaceId, b: PlaceId): boolean => {
+    if ([a, b].sort().join("+") === "rome+vatican-city") return true
+    const [capitalA, capitalB] = [PLACES.get(a)?.capital, PLACES.get(b)?.capital]
+    return capitalA?.of === b || capitalB?.of === a || (capitalA?.of !== undefined && capitalA.of === capitalB?.of)
+  }
+
   it("does not put two places on the same spot", () => {
     for (let i = 0; i < places.length; i++) {
       for (let j = i + 1; j < places.length; j++) {
         const distance = greatCircleDistance(answerCentre(places[i]!.answer), answerCentre(places[j]!.answer))
-        // Rome and Vatican City are the one deliberate near-pair.
-        const pair = [places[i]!.id, places[j]!.id].sort().join("+")
-        if (pair === "rome+vatican") continue
+        if (deliberatelyNear(places[i]!.place, places[j]!.place)) continue
         expect(distance, `${places[i]!.id} and ${places[j]!.id} are ${distance.toFixed(0)} km apart`).toBeGreaterThan(
           20
         )

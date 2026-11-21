@@ -1,0 +1,965 @@
+{
+  "about": "Place-name questions agreed on 2026-11-21 but not yet added. Each needs, from research: coordinates and title of its English Wikipedia article, a reveal photo (Commons JPEG, landscape, at least 1,600 px wide, looked at), and three or four facts each checked against two sources. Tolerances follow the country's own question where it has one; capital.kind uses CapitalKind in packages/shared/src/catalogue/places.ts. Delete each entry once added.",
+  "skipped": [
+    "Monaco, Singapore, Vatican City, Luxembourg, San Marino, Djibouti, Kuwait City, São Tomé: capitals named as, or as good as, their country",
+    "Palestine",
+    "Ciudad de la Paz, Equatorial Guinea"
+  ],
+  "places": [
+    {
+      "id": "yamoussoukro",
+      "label": "Yamoussoukro, Ivory Coast",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "ivory-coast",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Yamoussoukro?",
+      "tolerance": 300
+    },
+    {
+      "id": "abidjan",
+      "label": "Abidjan, Ivory Coast",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "ivory-coast",
+        "kind": "FORMER"
+      },
+      "prompt": "Where is Abidjan?",
+      "tolerance": 300,
+      "note": "Former capital; still the largest city and seat of some government offices"
+    },
+    {
+      "id": "bamako",
+      "label": "Bamako, Mali",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "mali",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Bamako?",
+      "tolerance": 300
+    },
+    {
+      "id": "ouagadougou",
+      "label": "Ouagadougou, Burkina Faso",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "burkina-faso",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Ouagadougou?",
+      "tolerance": 300
+    },
+    {
+      "id": "niamey",
+      "label": "Niamey, Niger",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "niger",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Niamey?",
+      "tolerance": 300
+    },
+    {
+      "id": "ndjamena",
+      "label": "N'Djamena, Chad",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "chad",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is N'Djamena?",
+      "tolerance": 300
+    },
+    {
+      "id": "nouakchott",
+      "label": "Nouakchott, Mauritania",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "mauritania",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Nouakchott?",
+      "tolerance": 300
+    },
+    {
+      "id": "conakry",
+      "label": "Conakry, Guinea",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "guinea",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Conakry?",
+      "tolerance": 300
+    },
+    {
+      "id": "bissau",
+      "label": "Bissau, Guinea-Bissau",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "guinea-bissau",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Bissau?",
+      "tolerance": 300
+    },
+    {
+      "id": "yaounde",
+      "label": "Yaoundé, Cameroon",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "cameroon",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Yaoundé?",
+      "tolerance": 300
+    },
+    {
+      "id": "bangui",
+      "label": "Bangui, Central African Republic",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "central-african-republic",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Bangui?",
+      "tolerance": 300
+    },
+    {
+      "id": "brazzaville",
+      "label": "Brazzaville, Republic of the Congo",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "republic-of-the-congo",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Brazzaville?",
+      "tolerance": 300
+    },
+    {
+      "id": "libreville",
+      "label": "Libreville, Gabon",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "gabon",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Libreville?",
+      "tolerance": 300
+    },
+    {
+      "id": "malabo",
+      "label": "Malabo, Equatorial Guinea",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "equatorial-guinea",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Malabo?",
+      "tolerance": 300,
+      "note": "Ciudad de la Paz, the designated capital still being built, is left out"
+    },
+    {
+      "id": "juba",
+      "label": "Juba, South Sudan",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "south-sudan",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Juba?",
+      "tolerance": 300
+    },
+    {
+      "id": "nassau",
+      "label": "Nassau, The Bahamas",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "the-bahamas",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Nassau, the national capital?",
+      "tolerance": 300
+    },
+    {
+      "id": "st-johns",
+      "label": "St John's, Antigua and Barbuda",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "antigua-and-barbuda",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is St John's, the national capital?",
+      "tolerance": 300
+    },
+    {
+      "id": "basseterre",
+      "label": "Basseterre, Saint Kitts and Nevis",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "saint-kitts-and-nevis",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Basseterre?",
+      "tolerance": 300
+    },
+    {
+      "id": "castries",
+      "label": "Castries, Saint Lucia",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "saint-lucia",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Castries?",
+      "tolerance": 300
+    },
+    {
+      "id": "kingstown",
+      "label": "Kingstown, Saint Vincent and the Grenadines",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "saint-vincent-and-the-grenadines",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Kingstown?",
+      "tolerance": 300
+    },
+    {
+      "id": "roseau",
+      "label": "Roseau, Dominica",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "dominica",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Roseau?",
+      "tolerance": 300
+    },
+    {
+      "id": "st-georges",
+      "label": "St George's, Grenada",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "grenada",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is St George's, the national capital?",
+      "tolerance": 300
+    },
+    {
+      "id": "port-moresby",
+      "label": "Port Moresby, Papua New Guinea",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "papua-new-guinea",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Port Moresby?",
+      "tolerance": 400
+    },
+    {
+      "id": "london",
+      "label": "London, United Kingdom",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "united-kingdom",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is London?",
+      "tolerance": 30
+    },
+    {
+      "id": "pristina",
+      "label": "Pristina, Kosovo",
+      "group": "capital-of-country-not-asked-by-name",
+      "capital": {
+        "of": "kosovo",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Pristina?",
+      "tolerance": 100,
+      "note": "Kosovo is in the bank without a flag (left out of country and flag rounds as disputed): relax the places test so a capital only has to name a place the bank asks about"
+    },
+    {
+      "id": "andorra-la-vella",
+      "label": "Andorra la Vella, Andorra",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "andorra",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Andorra la Vella?",
+      "tolerance": 80
+    },
+    {
+      "id": "apia",
+      "label": "Apia, Samoa",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "samoa",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Apia?",
+      "tolerance": 800
+    },
+    {
+      "id": "asmara",
+      "label": "Asmara, Eritrea",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "eritrea",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Asmara?",
+      "tolerance": 300
+    },
+    {
+      "id": "asuncion",
+      "label": "Asunción, Paraguay",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "paraguay",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Asunción?",
+      "tolerance": 400
+    },
+    {
+      "id": "bandar-seri-begawan",
+      "label": "Bandar Seri Begawan, Brunei",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "brunei",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Bandar Seri Begawan?",
+      "tolerance": 400
+    },
+    {
+      "id": "belmopan",
+      "label": "Belmopan, Belize",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "belize",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Belmopan?",
+      "tolerance": 300
+    },
+    {
+      "id": "bridgetown",
+      "label": "Bridgetown, Barbados",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "barbados",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Bridgetown?",
+      "tolerance": 300
+    },
+    {
+      "id": "chisinau",
+      "label": "Chișinău, Moldova",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "moldova",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Chișinău?",
+      "tolerance": 120
+    },
+    {
+      "id": "sri-jayawardenepura-kotte",
+      "label": "Sri Jayawardenepura Kotte, Sri Lanka",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "sri-lanka",
+        "kind": "LEGISLATIVE"
+      },
+      "prompt": "Where is Sri Jayawardenepura Kotte?",
+      "tolerance": 250
+    },
+    {
+      "id": "colombo",
+      "label": "Colombo, Sri Lanka",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "sri-lanka",
+        "kind": "SEAT_OF_GOVERNMENT"
+      },
+      "prompt": "Where is Colombo?",
+      "tolerance": 250,
+      "note": "Executive and judicial capital, and the largest city"
+    },
+    {
+      "id": "porto-novo",
+      "label": "Porto-Novo, Benin",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "benin",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Porto-Novo?",
+      "tolerance": 300
+    },
+    {
+      "id": "cotonou",
+      "label": "Cotonou, Benin",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "benin",
+        "kind": "SEAT_OF_GOVERNMENT"
+      },
+      "prompt": "Where is Cotonou?",
+      "tolerance": 300,
+      "note": "Seat of government and largest city"
+    },
+    {
+      "id": "doha",
+      "label": "Doha, Qatar",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "qatar",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Doha?",
+      "tolerance": 200
+    },
+    {
+      "id": "freetown",
+      "label": "Freetown, Sierra Leone",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "sierra-leone",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Freetown?",
+      "tolerance": 300
+    },
+    {
+      "id": "funafuti",
+      "label": "Funafuti, Tuvalu",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "tuvalu",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Funafuti?",
+      "tolerance": 800
+    },
+    {
+      "id": "georgetown",
+      "label": "Georgetown, Guyana",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "guyana",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Georgetown, the national capital?",
+      "tolerance": 400
+    },
+    {
+      "id": "gitega",
+      "label": "Gitega, Burundi",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "burundi",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Gitega?",
+      "tolerance": 300
+    },
+    {
+      "id": "bujumbura",
+      "label": "Bujumbura, Burundi",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "burundi",
+        "kind": "FORMER"
+      },
+      "prompt": "Where is Bujumbura?",
+      "tolerance": 300,
+      "note": "Capital until 2019; still the largest city"
+    },
+    {
+      "id": "honiara",
+      "label": "Honiara, Solomon Islands",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "solomon-islands",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Honiara?",
+      "tolerance": 800
+    },
+    {
+      "id": "kigali",
+      "label": "Kigali, Rwanda",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "rwanda",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Kigali?",
+      "tolerance": 300
+    },
+    {
+      "id": "kingston",
+      "label": "Kingston, Jamaica",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "jamaica",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Kingston, the national capital?",
+      "tolerance": 300
+    },
+    {
+      "id": "lilongwe",
+      "label": "Lilongwe, Malawi",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "malawi",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Lilongwe?",
+      "tolerance": 350
+    },
+    {
+      "id": "mbabane",
+      "label": "Mbabane, Eswatini",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "eswatini",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Mbabane?",
+      "tolerance": 300,
+      "note": "Executive capital"
+    },
+    {
+      "id": "lobamba",
+      "label": "Lobamba, Eswatini",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "eswatini",
+        "kind": "LEGISLATIVE"
+      },
+      "prompt": "Where is Lobamba?",
+      "tolerance": 300,
+      "note": "Royal and legislative capital"
+    },
+    {
+      "id": "lome",
+      "label": "Lomé, Togo",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "togo",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Lomé?",
+      "tolerance": 300
+    },
+    {
+      "id": "majuro",
+      "label": "Majuro, Marshall Islands",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "marshall-islands",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Majuro?",
+      "tolerance": 1000
+    },
+    {
+      "id": "male",
+      "label": "Malé, Maldives",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "maldives",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Malé?",
+      "tolerance": 400
+    },
+    {
+      "id": "manama",
+      "label": "Manama, Bahrain",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "bahrain",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Manama?",
+      "tolerance": 200
+    },
+    {
+      "id": "maseru",
+      "label": "Maseru, Lesotho",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "lesotho",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Maseru?",
+      "tolerance": 300
+    },
+    {
+      "id": "monrovia",
+      "label": "Monrovia, Liberia",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "liberia",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Monrovia?",
+      "tolerance": 300
+    },
+    {
+      "id": "moroni",
+      "label": "Moroni, Comoros",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "comoros",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Moroni?",
+      "tolerance": 500
+    },
+    {
+      "id": "ngerulmud",
+      "label": "Ngerulmud, Palau",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "palau",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Ngerulmud?",
+      "tolerance": 800
+    },
+    {
+      "id": "koror",
+      "label": "Koror, Palau",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "palau",
+        "kind": "FORMER"
+      },
+      "prompt": "Where is Koror?",
+      "tolerance": 800,
+      "note": "Capital until 2006; still the largest town"
+    },
+    {
+      "id": "nukualofa",
+      "label": "Nukuʻalofa, Tonga",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "tonga",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Nukuʻalofa?",
+      "tolerance": 800
+    },
+    {
+      "id": "paramaribo",
+      "label": "Paramaribo, Suriname",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "suriname",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Paramaribo?",
+      "tolerance": 400
+    },
+    {
+      "id": "podgorica",
+      "label": "Podgorica, Montenegro",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "montenegro",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Podgorica?",
+      "tolerance": 100
+    },
+    {
+      "id": "port-louis",
+      "label": "Port Louis, Mauritius",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "mauritius",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Port Louis?",
+      "tolerance": 500
+    },
+    {
+      "id": "port-of-spain",
+      "label": "Port of Spain, Trinidad and Tobago",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "trinidad-and-tobago",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Port of Spain?",
+      "tolerance": 300
+    },
+    {
+      "id": "port-vila",
+      "label": "Port Vila, Vanuatu",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "vanuatu",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Port Vila?",
+      "tolerance": 700
+    },
+    {
+      "id": "praia",
+      "label": "Praia, Cape Verde",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "cape-verde",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Praia?",
+      "tolerance": 500
+    },
+    {
+      "id": "skopje",
+      "label": "Skopje, North Macedonia",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "north-macedonia",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Skopje?",
+      "tolerance": 100
+    },
+    {
+      "id": "suva",
+      "label": "Suva, Fiji",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "fiji",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Suva?",
+      "tolerance": 700
+    },
+    {
+      "id": "thimphu",
+      "label": "Thimphu, Bhutan",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "bhutan",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Thimphu?",
+      "tolerance": 350
+    },
+    {
+      "id": "tirana",
+      "label": "Tirana, Albania",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "albania",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Tirana?",
+      "tolerance": 100
+    },
+    {
+      "id": "vaduz",
+      "label": "Vaduz, Liechtenstein",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "liechtenstein",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Vaduz?",
+      "tolerance": 80
+    },
+    {
+      "id": "valletta",
+      "label": "Valletta, Malta",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "malta",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Valletta?",
+      "tolerance": 100
+    },
+    {
+      "id": "victoria",
+      "label": "Victoria, Seychelles",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "seychelles",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Victoria, the national capital?",
+      "tolerance": 500
+    },
+    {
+      "id": "yaren",
+      "label": "Yaren, Nauru",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "nauru",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Yaren?",
+      "tolerance": 800
+    },
+    {
+      "id": "yerevan",
+      "label": "Yerevan, Armenia",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "armenia",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Yerevan?",
+      "tolerance": 300
+    },
+    {
+      "id": "phnom-penh",
+      "label": "Phnom Penh, Cambodia",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "cambodia",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Phnom Penh?",
+      "tolerance": 300
+    },
+    {
+      "id": "vientiane",
+      "label": "Vientiane, Laos",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "laos",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Vientiane?",
+      "tolerance": 400
+    },
+    {
+      "id": "south-tarawa",
+      "label": "South Tarawa, Kiribati",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "kiribati",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is South Tarawa?",
+      "tolerance": 1000
+    },
+    {
+      "id": "banjul",
+      "label": "Banjul, The Gambia",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "the-gambia",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Banjul?",
+      "tolerance": 300
+    },
+    {
+      "id": "dili",
+      "label": "Dili, Timor-Leste",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "timor-leste",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Dili?",
+      "tolerance": 400
+    },
+    {
+      "id": "palikir",
+      "label": "Palikir, Federated States of Micronesia",
+      "group": "capital-of-country-asked-by-name",
+      "capital": {
+        "of": "federated-states-of-micronesia",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Palikir?",
+      "tolerance": 1000
+    },
+    {
+      "id": "sucre",
+      "label": "Sucre, Bolivia",
+      "group": "second-capital-of-country-already-covered",
+      "capital": {
+        "of": "bolivia",
+        "kind": "NATIONAL"
+      },
+      "prompt": "Where is Sucre?",
+      "tolerance": 300,
+      "note": "Constitutional capital; La Paz is already tagged as seat of government"
+    },
+    {
+      "id": "the-hague",
+      "label": "The Hague, Netherlands",
+      "group": "second-capital-of-country-already-covered",
+      "capital": {
+        "of": "netherlands",
+        "kind": "SEAT_OF_GOVERNMENT"
+      },
+      "prompt": "Where is The Hague?",
+      "tolerance": 50
+    },
+    {
+      "id": "bloemfontein",
+      "label": "Bloemfontein, South Africa",
+      "group": "second-capital-of-country-already-covered",
+      "capital": {
+        "of": "south-africa",
+        "kind": "JUDICIAL"
+      },
+      "prompt": "Where is Bloemfontein?",
+      "tolerance": 300
+    },
+    {
+      "id": "putrajaya",
+      "label": "Putrajaya, Malaysia",
+      "group": "second-capital-of-country-already-covered",
+      "capital": {
+        "of": "malaysia",
+        "kind": "SEAT_OF_GOVERNMENT"
+      },
+      "prompt": "Where is Putrajaya?",
+      "tolerance": 300,
+      "note": "About 25 km from Kuala Lumpur"
+    },
+    {
+      "id": "dar-es-salaam",
+      "label": "Dar es Salaam, Tanzania",
+      "group": "second-capital-of-country-already-covered",
+      "capital": {
+        "of": "tanzania",
+        "kind": "FORMER"
+      },
+      "prompt": "Where is Dar es Salaam?",
+      "tolerance": 300,
+      "note": "Capital until 1996; still the largest city"
+    },
+    {
+      "id": "jerusalem",
+      "label": "Jerusalem",
+      "group": "city",
+      "prompt": "Where is Jerusalem?",
+      "tolerance": 250,
+      "note": "A city, not tagged as a capital. Facts avoid sovereignty; reveal photo must not be the Dome of the Rock (a landmark round's photo)"
+    }
+  ]
+}
