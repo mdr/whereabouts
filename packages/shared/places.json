@@ -913,6 +913,46 @@
     "at": { "lat": 45.4642, "lon": 9.1914 }
   },
   {
+    "id": "antelope-canyon",
+    "label": "Antelope Canyon, Arizona",
+    "wiki": "Antelope Canyon",
+    "at": { "lat": 36.862, "lon": -111.3743 }
+  },
+  {
+    "id": "hoover-dam",
+    "label": "Hoover Dam, Nevada–Arizona border",
+    "wiki": "Hoover Dam",
+    "at": { "lat": 36.0156, "lon": -114.7378 }
+  },
+  {
+    "id": "lake-titicaca",
+    "label": "Uros floating islands, Lake Titicaca",
+    "wiki": "Lake Titicaca",
+    "at": { "lat": -15.8225, "lon": -69.9694 }
+  },
+  { "id": "old-havana", "label": "Old Havana, Cuba", "wiki": "Old Havana", "at": { "lat": 23.1359, "lon": -82.3583 } },
+  {
+    "id": "cartagena",
+    "label": "Walled city of Cartagena, Colombia",
+    "wiki": "Cartagena, Colombia",
+    "at": { "lat": 10.4236, "lon": -75.5513 }
+  },
+  {
+    "id": "okavango",
+    "label": "Okavango Delta, Botswana",
+    "wiki": "Okavango Delta",
+    "at": { "lat": -19.4, "lon": 22.9 }
+  },
+  { "id": "meroe", "label": "Pyramids of Meroë, Sudan", "wiki": "Meroë", "at": { "lat": 16.9333, "lon": 33.7264 } },
+  { "id": "persepolis", "label": "Persepolis, Iran", "wiki": "Persepolis", "at": { "lat": 29.935, "lon": 52.89 } },
+  {
+    "id": "naqsh-e-jahan",
+    "label": "Naqsh-e Jahan Square, Isfahan",
+    "wiki": "Naqsh-e Jahan Square",
+    "at": { "lat": 32.6575, "lon": 51.6778 }
+  },
+  { "id": "baalbek", "label": "Baalbek, Lebanon", "wiki": "Baalbek", "at": { "lat": 34.0063, "lon": 36.2073 } },
+  {
     "id": "tashkent",
     "label": "Tashkent, Uzbekistan",
     "wiki": "Tashkent",

@@ -1378,6 +1378,76 @@
     "answer": { "type": "POINT", "tolerance": 80 }
   },
   {
+    "id": "antelope-canyon",
+    "type": "LANDMARK",
+    "place": "antelope-canyon",
+    "clue": { "type": "PHOTO", "image": "Upper Antelope Canyon 03 2013.jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "hoover-dam",
+    "type": "LANDMARK",
+    "place": "hoover-dam",
+    "clue": { "type": "PHOTO", "image": "Hoover Dam from Mike O'Callaghan–Pat Tillman Memorial Bridge.jpg" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "lake-titicaca",
+    "type": "LANDMARK",
+    "place": "lake-titicaca",
+    "clue": { "type": "PHOTO", "image": "Pérou les uros du lac Titicaca (5).jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "old-havana",
+    "type": "LANDMARK",
+    "place": "old-havana",
+    "clue": { "type": "PHOTO", "image": "Old American car in Havanna.jpg" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "cartagena",
+    "type": "LANDMARK",
+    "place": "cartagena",
+    "clue": { "type": "PHOTO", "image": "Puerta del Reloj, Cartagena 01.jpg" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "okavango",
+    "type": "LANDMARK",
+    "place": "okavango",
+    "clue": { "type": "PHOTO", "image": "Okavango Delta, Botswana1.jpg" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "meroe",
+    "type": "LANDMARK",
+    "place": "meroe",
+    "clue": { "type": "PHOTO", "image": "Meroe Pyramids.jpg" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "persepolis",
+    "type": "LANDMARK",
+    "place": "persepolis",
+    "clue": { "type": "PHOTO", "image": "2018-09-21 Iran, Persepolis, Tachara (from the southeast).jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "naqsh-e-jahan",
+    "type": "LANDMARK",
+    "place": "naqsh-e-jahan",
+    "clue": { "type": "PHOTO", "image": "Naqsh-i Jahan Square, Jan. 2018.jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "baalbek",
+    "type": "LANDMARK",
+    "place": "baalbek",
+    "clue": { "type": "PHOTO", "image": "Temple of Bacchus, Baalbek, Lebanon (49890013476).jpg" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
     "id": "tashkent",
     "type": "PLACE",
     "place": "tashkent",

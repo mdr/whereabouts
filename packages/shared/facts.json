@@ -4431,6 +4431,191 @@
       }
     ]
   },
+  "antelope-canyon": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Flash floods carved this slot canyon from Navajo Sandstone, on Navajo land near Page, Arizona.",
+        "source": "https://en.wikipedia.org/wiki/Antelope_Canyon"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The two main sections have nicknames: Upper Antelope Canyon is known as The Crack, and Lower Antelope Canyon as The Corkscrew.",
+        "source": "https://en.wikipedia.org/wiki/Antelope_Canyon"
+      }
+    ]
+  },
+  "hoover-dam": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "This 221-metre concrete dam on the Colorado River holds back Lake Mead, one of the largest reservoirs in the United States.",
+        "source": "https://en.wikipedia.org/wiki/Hoover_Dam"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its concrete would pave a two-lane road all the way from San Francisco to New York.",
+        "source": "https://en.wikipedia.org/wiki/Hoover_Dam"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Roosevelt administration renamed it Boulder Dam in 1933 to drop Herbert Hoover's name; Congress restored Hoover Dam in 1947.",
+        "source": "https://en.wikipedia.org/wiki/Hoover_Dam"
+      }
+    ]
+  },
+  "lake-titicaca": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The Uros people live on dozens of artificial islands made from layers of cut totora reeds, in the western corner of Lake Titicaca near Puno.",
+        "source": "https://en.wikipedia.org/wiki/Lake_Titicaca"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The reeds at the bottom rot, so the Uros must keep stacking fresh ones on top to stay afloat.",
+        "source": "https://en.wikipedia.org/wiki/Lake_Titicaca"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Legend says the Uros built the islands to escape hostile neighbours on land, and could tow them away to safety.",
+        "source": "https://en.wikipedia.org/wiki/Lake_Titicaca"
+      }
+    ]
+  },
+  "old-havana": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Founded in 1519, Old Havana is a UNESCO World Heritage Site (listed 1982) for its Baroque and neoclassical buildings and its fortifications.",
+        "source": "https://en.wikipedia.org/wiki/Old_Havana"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "After French corsair Jacques de Sores destroyed much of the city in 1555, the Spanish built fortresses and walls to protect it.",
+        "source": "https://en.wikipedia.org/wiki/Old_Havana"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Every night at 9 p.m. soldiers at La Cabaña fortress fire a ceremonial cannon shot, el cañonazo de las nueve.",
+        "source": "https://en.wikipedia.org/wiki/Old_Havana"
+      }
+    ]
+  },
+  "cartagena": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "About 11 kilometres of stone walls ring the old town, a UNESCO World Heritage Site since 1984.",
+        "source": "https://en.wikipedia.org/wiki/Cartagena,_Colombia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In 1586 Francis Drake burned about 200 houses and the cathedral, and left only once a ransom was paid.",
+        "source": "https://en.wikipedia.org/wiki/Cartagena,_Colombia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Baroque Clock Tower gate, built between 1704 and 1738, was the main entrance to the walled city.",
+        "source": "https://en.wikipedia.org/wiki/Cartagena,_Colombia"
+      }
+    ]
+  },
+  "okavango": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "It is one of the world's largest inland deltas, where the Okavango River spreads across the Kalahari instead of reaching the sea.",
+        "source": "https://en.wikipedia.org/wiki/Okavango_Delta"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The delta is fullest in Botswana's dry season, because floodwater from Angolan rains takes about four months to creep down to it.",
+        "source": "https://en.wikipedia.org/wiki/Okavango_Delta"
+      },
+      {
+        "type": "FAME",
+        "text": "In 2014 it became UNESCO's 1,000th World Heritage Site.",
+        "source": "https://en.wikipedia.org/wiki/Okavango_Delta"
+      }
+    ]
+  },
+  "meroe": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Meroë was a capital of the Kingdom of Kush, and its royal cemetery holds more than 200 pyramids.",
+        "source": "https://en.wikipedia.org/wiki/Meroë"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Sudan has far more pyramids than Egypt, but the Nubian ones are much smaller and steeper.",
+        "source": "https://en.wikipedia.org/wiki/Nubian_pyramids"
+      },
+      {
+        "type": "FAME",
+        "text": "The site was inscribed on the UNESCO World Heritage List in 2011.",
+        "source": "https://en.wikipedia.org/wiki/Meroë"
+      }
+    ]
+  },
+  "persepolis": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Darius I founded Persepolis around 518 BC as a ceremonial capital of the Achaemenid Persian Empire.",
+        "source": "https://en.wikipedia.org/wiki/Persepolis"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Alexander the Great's army plundered it in 330 BC, and the palace of Xerxes was burned, perhaps deliberately.",
+        "source": "https://en.wikipedia.org/wiki/Persepolis"
+      },
+      {
+        "type": "FAME",
+        "text": "UNESCO made it a World Heritage Site in 1979.",
+        "source": "https://en.wikipedia.org/wiki/Persepolis"
+      }
+    ]
+  },
+  "naqsh-e-jahan": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Shah Abbas I made it the heart of his capital in the early 1600s, and it is among the largest city squares in the world.",
+        "source": "https://en.wikipedia.org/wiki/Naqsh-e_Jahan_Square"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The square began as a polo ground, and its stone goalposts from the 1600s still stand at either end.",
+        "source": "https://en.wikipedia.org/wiki/Naqsh-e_Jahan_Square"
+      },
+      {
+        "type": "FAME",
+        "text": "Surrounded by two mosques, a palace and a bazaar, it became a UNESCO World Heritage Site in 1979.",
+        "source": "https://en.wikipedia.org/wiki/Naqsh-e_Jahan_Square"
+      }
+    ]
+  },
+  "baalbek": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Its Roman temple complex, begun in the first century BC, is one of the largest and best preserved in the empire.",
+        "source": "https://en.wikipedia.org/wiki/Baalbek"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The foundations include three limestone blocks, the Trilithon, each estimated at around 800 tonnes, and nobody is sure how they were moved.",
+        "source": "https://en.wikipedia.org/wiki/Baalbek"
+      },
+      {
+        "type": "FAME",
+        "text": "Only six of the Temple of Jupiter's original 54 columns still stand, towering above the site.",
+        "source": "https://en.wikipedia.org/wiki/Temple_of_Jupiter,_Baalbek"
+      }
+    ]
+  },
   "tashkent": {
     "about": [
       {
