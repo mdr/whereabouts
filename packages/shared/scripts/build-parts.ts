@@ -7,8 +7,8 @@
 // Territories, outlying islands and the UK nations, from the 1:10m map
 // units, or admin-1 where Natural Earth keeps the place only as provinces
 // of its country. Each is painted whole, like a country (see
-// build-regions.ts), with the same rules: smaller than POINT_BELOW_KM2, or
-// too scattered to outline, it is asked as a point instead.
+// build-regions.ts), with the same rules: smaller than POINT_BELOW_KM2 (unless
+// marked painted), or too scattered to outline, it is asked as a point instead.
 import polygonClipping from "polygon-clipping"
 import type { LatLon, LonLat, MultiPolygon } from "../src/geo.ts"
 import { AnswerType, ClueType, QuestionType, Surface, type PartOf } from "../src/questions.ts"
@@ -80,6 +80,8 @@ interface Part {
   wiki?: string
   status: string
   flag: string
+  /** Painted whole though smaller than POINT_BELOW_KM2: a long island, which a point would score unfairly at its ends. */
+  painted?: true
 }
 
 const mapUnit = (geounit: string): MapUnitSource => ({ type: SourceType.MAP_UNIT, geounit })
@@ -138,7 +140,7 @@ const PARTS: Part[] = [
     flag: "fr"
   },
   { label: "New Caledonia", source: mapUnit("New Caledonia"), status: "a territory of France", flag: "fr" },
-  { label: "Corsica", source: region("France", "Corse"), status: "part of France", flag: "fr" },
+  { label: "Corsica", source: region("France", "Corse"), status: "part of France", flag: "fr", painted: true },
   { label: "Puerto Rico", source: mapUnit("Puerto Rico"), ...US_TERRITORY },
   { label: "Guam", source: mapUnit("Guam"), ...US_TERRITORY },
   {
@@ -171,7 +173,7 @@ const PARTS: Part[] = [
   { label: "Madeira", source: mapUnit("Madeira"), ...PORTUGUESE_REGION },
   { label: "Sicily", source: region("Italy", "Sicily"), ...ITALIAN_REGION },
   { label: "Sardinia", source: region("Italy", "Sardegna"), ...ITALIAN_REGION },
-  { label: "Crete", source: province("Greece", "Kriti"), status: "a region of Greece", flag: "gr" },
+  { label: "Crete", source: province("Greece", "Kriti"), status: "a region of Greece", flag: "gr", painted: true },
   {
     label: "Galápagos Islands",
     name: "the Galápagos Islands",
@@ -237,12 +239,12 @@ const outlines: Outlines = {}
 const places: StoredPlace[] = []
 const out: StoredQuestion[] = []
 
-const build = ({ label, source, name = label, plural = false, wiki = label, status, flag }: Part): void => {
+const build = ({ label, source, name = label, plural = false, wiki = label, status, flag, painted }: Part): void => {
   const id = `part-${slug(label)}`
   const partOf: PartOf = { status, flag: flagCode(flag) }
   const { polygons, label: labelPoint } = landOf(source)
   const area = polygons.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0)
-  const kept = area >= POINT_BELOW_KM2 ? keptParts({ type: "MultiPolygon", coordinates: polygons }) : []
+  const kept = area >= POINT_BELOW_KM2 || painted ? keptParts({ type: "MultiPolygon", coordinates: polygons }) : []
   const keptShare = kept.length > 0 ? kept.reduce((sum, polygon) => sum + polygonAreaKm2(polygon), 0) / area : 0
   if (kept.length > 0 && keptShare >= MIN_KEPT_SHARE && !crossesAntimeridian(kept)) {
     const cells = kept.flatMap((polygon) => cellsOf(polygon, 6))
@@ -254,6 +256,8 @@ const build = ({ label, source, name = label, plural = false, wiki = label, stat
       label,
       wiki,
       partOf,
+      // Set, not left out, so it replaces a point the place was asked at before.
+      at: undefined,
       area: { outline: id, centre: centroid(cells), tolerance, surface: Surface.LAND }
     })
     out.push({
@@ -272,7 +276,7 @@ const build = ({ label, source, name = label, plural = false, wiki = label, stat
     ...polygons.flatMap((polygon) => polygon[0]!.map((point) => distanceKm([at.lon, at.lat], point)))
   )
   const tolerance = pointToleranceKm(area, spread, polygons.length > 1)
-  places.push({ id, label, wiki, partOf, at })
+  places.push({ id, label, wiki, partOf, at, area: undefined })
   out.push({
     id,
     type: QuestionType.PART_OF_COUNTRY,

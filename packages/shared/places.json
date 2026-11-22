@@ -5916,7 +5916,12 @@
     "id": "part-corsica",
     "label": "Corsica",
     "wiki": "Corsica",
-    "at": { "lat": 42.1542, "lon": 9.1034 },
+    "area": {
+      "outline": "part-corsica",
+      "centre": { "lat": 42.1591, "lon": 9.1069 },
+      "tolerance": 10,
+      "surface": "LAND"
+    },
     "partOf": { "status": "part of France", "flag": "fr" }
   },
   {
@@ -6024,7 +6029,12 @@
     "id": "part-crete",
     "label": "Crete",
     "wiki": "Crete",
-    "at": { "lat": 35.2332, "lon": 24.8481 },
+    "area": {
+      "outline": "part-crete",
+      "centre": { "lat": 35.2342, "lon": 24.8449 },
+      "tolerance": 10,
+      "surface": "LAND"
+    },
     "partOf": { "status": "a region of Greece", "flag": "gr" }
   },
   {

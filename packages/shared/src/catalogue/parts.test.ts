@@ -14,6 +14,8 @@ describe("parts of countries", () => {
         .map((question) => question.label)
         .sort()
     ).toEqual([
+      "Corsica",
+      "Crete",
       "England",
       "Falkland Islands",
       "French Guiana",

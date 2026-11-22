@@ -6345,8 +6345,8 @@
     "id": "part-corsica",
     "type": "PART_OF_COUNTRY",
     "place": "part-corsica",
-    "clue": { "type": "NAME", "prompt": "Where is Corsica?" },
-    "answer": { "type": "POINT", "tolerance": 25 }
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Corsica" },
+    "answer": { "type": "AREA" }
   },
   {
     "id": "part-puerto-rico",
@@ -6443,8 +6443,8 @@
     "id": "part-crete",
     "type": "PART_OF_COUNTRY",
     "place": "part-crete",
-    "clue": { "type": "NAME", "prompt": "Where is Crete?" },
-    "answer": { "type": "POINT", "tolerance": 35 }
+    "clue": { "type": "NAME", "prompt": "Paint the whole of Crete" },
+    "answer": { "type": "AREA" }
   },
   {
     "id": "part-galapagos-islands",
