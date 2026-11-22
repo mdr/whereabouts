@@ -26,7 +26,7 @@ import { reloadForNewBuild } from "../net/stale-build"
 import { startHeartbeat, type Heartbeat } from "../net/heartbeat"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 import { GameMode } from "./game-mode"
-import type { GameService } from "./game-service"
+import { ConfigureOrigin, type GameService } from "./game-service"
 import { ConnectionStatus, type ConnectionState } from "./connection-state"
 import { CommandAnalytics } from "./command-analytics"
 import type { Telemetry } from "../telemetry/telemetry"
@@ -98,7 +98,7 @@ export class OnlineGameService implements GameService {
 
   constructor(telemetry: Telemetry, makeClient: ClientFactory = wsClient) {
     this.telemetry = telemetry
-    this.commands = new CommandAnalytics(telemetry.analytics)
+    this.commands = new CommandAnalytics(telemetry)
     this.makeClient = makeClient
   }
 
@@ -253,8 +253,8 @@ export class OnlineGameService implements GameService {
     this.commands.ready()
     this.send(ClientTopic.READY)
   }
-  configure = (patch: ConfigurePatch): void => {
-    this.commands.configure(patch)
+  configure = (patch: ConfigurePatch, origin = ConfigureOrigin.HOST): void => {
+    this.commands.configure(patch, origin)
     this.send(ClientTopic.CONFIGURE, patch)
   }
   start = (): void => {

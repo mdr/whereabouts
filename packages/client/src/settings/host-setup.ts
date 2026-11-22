@@ -13,7 +13,7 @@ import {
 } from "@whereabouts/shared/protocol/config"
 import { type GameView, Phase } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
-import type { GameService } from "../game-service/game-service"
+import { ConfigureOrigin, type GameService } from "../game-service/game-service"
 import { hostSetup } from "./settings"
 
 type HostSetupGame = Pick<GameService, "configure" | "online">
@@ -60,7 +60,7 @@ export const useSavedSetup = (game: HostSetupGame, view: GameView | undefined, c
     if (!ready || applied.current) return
     applied.current = true
     const patch = savedSetupPatch(hostSetup.value)
-    if (Object.keys(patch).length > 0) game.configure(patch)
+    if (Object.keys(patch).length > 0) game.configure(patch, ConfigureOrigin.SAVED)
   }, [ready, game])
 }
 

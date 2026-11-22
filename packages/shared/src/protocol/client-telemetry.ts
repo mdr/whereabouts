@@ -11,6 +11,29 @@ export enum TelemetryLevel {
   DEBUG = "DEBUG"
 }
 
+/** Names a log line gives its own fields, or pino gives them: a record's fields may not use them. */
+export const RESERVED_FIELDS = [
+  "code",
+  "msg",
+  "time",
+  "level",
+  "pid",
+  "hostname",
+  "build",
+  "component",
+  "err",
+  "source",
+  "session",
+  "clientBuild",
+  "clientAt",
+  "screen",
+  "room",
+  "playerId",
+  "userAgent"
+] as const
+
+export type ReservedField = (typeof RESERVED_FIELDS)[number]
+
 export const MAX_RECORDS_PER_BATCH = 50
 export const MAX_FIELDS = 12
 const MAX_TEXT_LENGTH = 100

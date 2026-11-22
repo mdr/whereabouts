@@ -23,7 +23,7 @@ import type { KernelId } from "@whereabouts/shared/scoring/scoring"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 import { ConnectionStatus, type ConnectionState } from "./connection-state"
 import { GameMode } from "./game-mode"
-import type { GameService } from "./game-service"
+import { ConfigureOrigin, type GameService } from "./game-service"
 import { CommandAnalytics } from "./command-analytics"
 import type { Telemetry } from "../telemetry/telemetry"
 
@@ -78,7 +78,7 @@ export class PracticeGameService implements GameService {
   constructor(options: PracticeOptions) {
     this.options = options
     this.clock = options.clock ?? realClock
-    this.commands = new CommandAnalytics(options.telemetry.analytics)
+    this.commands = new CommandAnalytics(options.telemetry)
     this.seed = options.seed ?? this.clock.now()
     this.game = this.newGame(generateCode())
     this.view = this.writableView
@@ -139,8 +139,8 @@ export class PracticeGameService implements GameService {
   }
 
   // Multiplayer-only: forwarded to the game, which answers as it would a lone host. Screens hide them.
-  configure = (patch: ConfigurePatch): void => {
-    this.commands.configure(patch)
+  configure = (patch: ConfigurePatch, origin = ConfigureOrigin.HOST): void => {
+    this.commands.configure(patch, origin)
     this.run((game) => game.configure(PRACTICE_TOKEN, patch))
   }
   start = (): void => {

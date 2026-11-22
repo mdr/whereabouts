@@ -7,6 +7,7 @@
 import type { FastifyInstance } from "fastify"
 import {
   CLIENT_TELEMETRY_PATH,
+  RESERVED_FIELDS,
   TelemetryBatchSchema,
   TelemetryLevel,
   type TelemetryRecord
@@ -43,26 +44,7 @@ const LEVEL: Record<TelemetryLevel, LogLevel> = {
   [TelemetryLevel.DEBUG]: "info"
 }
 
-/** The line's own fields, and pino's, which a browser's fields may not replace. */
-const RESERVED = new Set([
-  "code",
-  "msg",
-  "time",
-  "level",
-  "pid",
-  "hostname",
-  "build",
-  "component",
-  "err",
-  "source",
-  "session",
-  "clientBuild",
-  "clientAt",
-  "screen",
-  "room",
-  "playerId",
-  "userAgent"
-])
+const RESERVED: ReadonlySet<string> = new Set(RESERVED_FIELDS)
 
 const ownFields = (fields: TelemetryRecord["fields"]): TelemetryRecord["fields"] =>
   Object.fromEntries(Object.entries(fields).filter(([name]) => !RESERVED.has(name)))

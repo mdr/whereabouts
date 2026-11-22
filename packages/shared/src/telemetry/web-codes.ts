@@ -6,7 +6,8 @@ export const WEB_LOG_CODES = {
   app: { started: "app.started" },
   map: { created: "map.created" },
   paint: { reset: "paint.reset", restored: "paint.restored" },
-  connection: { changed: "connection.changed" }
+  connection: { changed: "connection.changed" },
+  setup: { restored: "setup.restored" }
 } as const
 
 export const ANALYTICS_CODES = {

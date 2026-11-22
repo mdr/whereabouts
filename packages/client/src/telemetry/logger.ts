@@ -1,10 +1,10 @@
 import type { Clock } from "@whereabouts/shared/clock"
-import { TelemetryLevel, type FieldValue } from "@whereabouts/shared/protocol/client-telemetry"
+import { TelemetryLevel, type FieldValue, type ReservedField } from "@whereabouts/shared/protocol/client-telemetry"
 import type { WebCode, WebLogCode } from "@whereabouts/shared/telemetry/web-codes"
 import type { Instant } from "@whereabouts/shared/units"
 
-/** Small facts and IDs: never what a player typed, their paint, or a token. */
-export type Fields = Record<string, FieldValue | undefined>
+/** Small facts and IDs: never what a player typed, their paint, or a token; never a name the log line uses itself. */
+export type Fields = Record<string, FieldValue | undefined> & Partial<Record<ReservedField, never>>
 
 export interface LogEntry {
   at: Instant

@@ -8,6 +8,12 @@ import type { Instant, Ms } from "@whereabouts/shared/units"
 import type { ConnectionState } from "./connection-state"
 import type { GameMode } from "./game-mode"
 
+/** Who a setup change comes from: the host, or this browser putting back the host's last setup. */
+export enum ConfigureOrigin {
+  HOST = "HOST",
+  SAVED = "SAVED"
+}
+
 /** The game a screen shows: its state to read, and the commands a player can give. */
 export interface GameService {
   /** Online with others, or practice alone: screens hide what has no point alone. */
@@ -27,7 +33,7 @@ export interface GameService {
   readonly lock: () => void
   readonly unlock: () => void
   readonly ready: () => void
-  readonly configure: (patch: ConfigurePatch) => void
+  readonly configure: (patch: ConfigurePatch, origin?: ConfigureOrigin) => void
   readonly start: () => void
   readonly next: () => void
   readonly again: () => void

@@ -16,6 +16,7 @@ import { ServerTopic, revealMessage, stateMessage } from "@whereabouts/shared/pr
 import { type GameView, type RoundReveal, Phase, type RevealGameView } from "@whereabouts/shared/protocol/views"
 import { OnlineGameService, type GameClient } from "./online-game-service"
 import { ConnectionStatus } from "./connection-state"
+import { ConfigureOrigin } from "./game-service"
 import { RejectionAction, type Rejection } from "../net/rejection"
 import { makeGuessingView, makeLobbyView, makeQuestionView, makeRevealView } from "../test-view"
 import { PING_EVERY, PONG_WITHIN } from "../net/heartbeat"
@@ -127,6 +128,16 @@ describe("OnlineGameService status", () => {
     client.open()
     conn.hint(HintAxis.LATITUDE)
     expect(telemetry.lastFields(ANALYTICS_CODES.hint.taken)).toEqual({ axis: HintAxis.LATITUDE })
+  })
+
+  it("logs the host's saved setup going back, but tracks only a change the host makes", () => {
+    const { conn, client, telemetry } = connected()
+    client.open()
+    telemetry.entries.length = 0
+    conn.configure({ hints: 1, roundLength: 30_000 }, ConfigureOrigin.SAVED)
+    conn.configure({ hints: 2 })
+    expect(telemetry.codes()).toEqual([WEB_LOG_CODES.setup.restored, ANALYTICS_CODES.setup.changed])
+    expect(telemetry.lastFields(WEB_LOG_CODES.setup.restored)).toEqual({ settings: "hints,roundLength" })
   })
 
   it("is disconnected when a connection drops", () => {
