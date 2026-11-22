@@ -3885,6 +3885,339 @@
       }
     ]
   },
+  "great-barrier-reef": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "It is the world's largest coral reef system, made up of about 2,900 individual reefs stretching more than 2,000 kilometres along Queensland's coast.",
+        "source": "https://en.wikipedia.org/wiki/Great_Barrier_Reef"
+      },
+      {
+        "type": "FAME",
+        "text": "UNESCO made it a World Heritage Site in 1981.",
+        "source": "https://en.wikipedia.org/wiki/Great_Barrier_Reef"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The heart-shaped Heart Reef, part of Hardy Reef, is best seen from the air, and landing on it is not allowed.",
+        "source": "https://en.wikipedia.org/wiki/Heart_Reef"
+      }
+    ]
+  },
+  "aoraki": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "At 3,724 metres, Aoraki is New Zealand's highest mountain, in the Southern Alps of the South Island.",
+        "source": "https://en.wikipedia.org/wiki/Aoraki_/_Mount_Cook"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Edmund Hillary trained on its slopes before climbing Everest in 1953.",
+        "source": "https://en.wikipedia.org/wiki/Aoraki_/_Mount_Cook"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In Ngāi Tahu tradition, Aoraki was a young man whose canoe was wrecked, turning him and his brothers to stone as the Southern Alps.",
+        "source": "https://en.wikipedia.org/wiki/Aoraki_/_Mount_Cook"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "A huge rock avalanche in 1991 knocked about ten metres off its summit.",
+        "source": "https://en.wikipedia.org/wiki/Aoraki_/_Mount_Cook"
+      }
+    ]
+  },
+  "rotorua": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Pōhutu is the largest active geyser in the Southern Hemisphere, in the Whakarewarewa geothermal valley.",
+        "source": "https://en.wikipedia.org/wiki/P%C5%8Dhutu_Geyser"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It erupts many times a day, sometimes shooting water up to about 30 metres high.",
+        "source": "https://en.wikipedia.org/wiki/P%C5%8Dhutu_Geyser"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its Māori name means 'big splash' or 'explosion'.",
+        "source": "https://en.wikipedia.org/wiki/P%C5%8Dhutu_Geyser"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The smaller Prince of Wales Feathers geyser next to it nearly always erupts first, a minute or so before Pōhutu.",
+        "source": "https://en.wikipedia.org/wiki/P%C5%8Dhutu_Geyser"
+      }
+    ]
+  },
+  "tikal": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Tikal was one of the largest cities of the ancient Maya, flourishing in the rainforest of northern Guatemala for over a thousand years.",
+        "source": "https://en.wikipedia.org/wiki/Tikal"
+      },
+      {
+        "type": "FAME",
+        "text": "UNESCO listed Tikal National Park as a World Heritage Site in 1979.",
+        "source": "https://en.wikipedia.org/wiki/Tikal"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Temple I, the Temple of the Great Jaguar, is about 47 metres tall and holds the tomb of the ruler Jasaw Chan K'awiil.",
+        "source": "https://en.wikipedia.org/wiki/Tikal"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Tikal's temples served as the rebel base on Yavin 4 in the original 1977 Star Wars film.",
+        "source": "https://en.wikipedia.org/wiki/Tikal"
+      }
+    ]
+  },
+  "panama-canal": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The 82-kilometre canal, opened in 1914, links the Atlantic and Pacific Oceans across Panama and spared ships the voyage round Cape Horn.",
+        "source": "https://en.wikipedia.org/wiki/Panama_Canal"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Ships are lifted about 26 metres above sea level to cross the canal, in locks filled by gravity alone, with no pumps.",
+        "source": "https://en.wikipedia.org/wiki/Panama_Canal"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Because the isthmus bends, the canal's Atlantic entrance lies west of its Pacific one.",
+        "source": "https://en.wikipedia.org/wiki/Panama_Canal"
+      }
+    ]
+  },
+  "lincoln-memorial": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Dedicated in 1922, the memorial honours Abraham Lincoln with a seated marble statue inside a Greek-temple-style building.",
+        "source": "https://en.wikipedia.org/wiki/Lincoln_Memorial"
+      },
+      {
+        "type": "FAME",
+        "text": "Martin Luther King Jr. gave his 'I Have a Dream' speech from its steps in 1963.",
+        "source": "https://en.wikipedia.org/wiki/Lincoln_Memorial"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its 36 outer columns stand for the 36 states in the Union when Lincoln died.",
+        "source": "https://en.wikipedia.org/wiki/Lincoln_Memorial"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The memorial was on the back of the US one-cent coin from 1959 to 2008.",
+        "source": "https://en.wikipedia.org/wiki/Lincoln_Memorial"
+      }
+    ]
+  },
+  "lencois-maranhenses": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Its white dunes and rainwater lagoons earned the park UNESCO World Heritage status in 2024.",
+        "source": "https://en.wikipedia.org/wiki/Lençóis_Maranhenses_National_Park"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It looks like a desert but gets roughly 1,200 millimetres of rain a year; the lagoons fill because rock beneath the sand stops drainage.",
+        "source": "https://en.wikipedia.org/wiki/Lençóis_Maranhenses_National_Park"
+      }
+    ]
+  },
+  "ngorongoro": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "It is often called the world's largest inactive, intact and unfilled volcanic caldera, with a floor of about 260 square kilometres.",
+        "source": "https://en.wikipedia.org/wiki/Ngorongoro_Conservation_Area"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "A huge volcano collapsed into itself two to three million years ago, leaving a crater about 600 metres deep.",
+        "source": "https://en.wikipedia.org/wiki/Ngorongoro_Conservation_Area"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Around 25,000 large animals live on the crater floor, including black rhinos, but giraffes and impalas are absent.",
+        "source": "https://en.wikipedia.org/wiki/Ngorongoro_Conservation_Area"
+      }
+    ]
+  },
+  "avenue-of-the-baobabs": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Grandidier's baobabs about 30 metres tall line an unpaved road between Morondava and Belon'i Tsiribihina in western Madagascar.",
+        "source": "https://en.wikipedia.org/wiki/Avenue_of_the_Baobabs"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Only 20 to 25 trees stand along the 260-metre stretch, the survivors of a dense forest that once covered the area.",
+        "source": "https://en.wikipedia.org/wiki/Avenue_of_the_Baobabs"
+      }
+    ]
+  },
+  "jemaa-el-fnaa": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Marrakesh's main square has been a market and gathering place since the eleventh century, at the entrance to the medina.",
+        "source": "https://en.wikipedia.org/wiki/Jemaa_el-Fnaa"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "UNESCO recognised it as a masterpiece of intangible heritage in 2001 for its storytellers, musicians and performers, not its buildings.",
+        "source": "https://en.wikipedia.org/wiki/Jemaa_el-Fnaa"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "By day it hosts orange-juice sellers and snake charmers; by evening dozens of food stalls appear and the crowds peak.",
+        "source": "https://en.wikipedia.org/wiki/Jemaa_el-Fnaa"
+      }
+    ]
+  },
+  "ait-benhaddou": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "This fortified earthen village on the old caravan route from the Sahara to Marrakesh has been a World Heritage Site since 1987.",
+        "source": "https://en.wikipedia.org/wiki/Aït_Benhaddou"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It has stood in for ancient and fantasy worlds in films such as Lawrence of Arabia, Gladiator and Alexander, and in Game of Thrones.",
+        "source": "https://en.wikipedia.org/wiki/Aït_Benhaddou"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Only a few families still live inside the ksar; most villagers moved to a modern village across the river.",
+        "source": "https://en.wikipedia.org/wiki/Aït_Benhaddou"
+      }
+    ]
+  },
+  "great-zimbabwe": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Among the largest ancient stone ruins south of the Sahara, it was the capital of a medieval gold-trading kingdom.",
+        "source": "https://en.wikipedia.org/wiki/Great_Zimbabwe"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The Great Enclosure's granite walls, up to 11 metres high and about 250 metres long, were built without any mortar.",
+        "source": "https://en.wikipedia.org/wiki/Great_Zimbabwe"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Zimbabwe means roughly 'houses of stone' in Shona, and the country took its name from these ruins at independence in 1980.",
+        "source": "https://en.wikipedia.org/wiki/Great_Zimbabwe"
+      }
+    ]
+  },
+  "etna": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Etna is the tallest active volcano in Europe outside the Caucasus, and one of the most active in the world.",
+        "source": "https://en.wikipedia.org/wiki/Mount_Etna"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Ancient Greeks said Zeus buried the monster Typhon under Etna, and that its eruptions were his thrashing.",
+        "source": "https://en.wikipedia.org/wiki/Mount_Etna"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Etna's summit height changes with its eruptions, so it is quoted anywhere from about 3,320 to over 3,400 metres.",
+        "source": "https://en.wikipedia.org/wiki/Mount_Etna"
+      }
+    ]
+  },
+  "geirangerfjord": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Geirangerfjord is a UNESCO World Heritage Site, listed in 2005 together with Nærøyfjord as the West Norwegian Fjords.",
+        "source": "https://en.wikipedia.org/wiki/Geirangerfjord"
+      },
+      {
+        "type": "FAME",
+        "text": "The Seven Sisters waterfall tumbles about 250 metres down the fjord wall in seven separate streams.",
+        "source": "https://en.wikipedia.org/wiki/Geirangerfjord"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Legend says the Suitor, a waterfall facing the Seven Sisters across the fjord, courted all seven and was rejected by each.",
+        "source": "https://en.wikipedia.org/wiki/Geirangerfjord"
+      }
+    ]
+  },
+  "winter-palace": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The Winter Palace was the winter home of Russia's Romanov emperors, a Baroque palace designed by Francesco Bartolomeo Rastrelli.",
+        "source": "https://en.wikipedia.org/wiki/Winter_Palace"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its walls have been straw yellow, dull red and, since the Second World War restoration, the pale green seen today.",
+        "source": "https://en.wikipedia.org/wiki/Winter_Palace"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "During the First World War its state rooms were turned into a military hospital.",
+        "source": "https://en.wikipedia.org/wiki/Winter_Palace"
+      }
+    ]
+  },
+  "skellig-michael": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Monks built a monastery on the rock's summit some time between the 6th and 8th centuries, living in stone beehive huts.",
+        "source": "https://en.wikipedia.org/wiki/Skellig_Michael"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Visitors climb roughly 600 steep stone steps to reach the monastery, about 180 metres above the sea.",
+        "source": "https://en.wikipedia.org/wiki/Skellig_Michael"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It appeared as Luke Skywalker's island hideaway, Ahch-To, in recent Star Wars films.",
+        "source": "https://en.wikipedia.org/wiki/Skellig_Michael"
+      }
+    ]
+  },
+  "tallinn-old-town": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The Old Town was Estonia's first World Heritage Site, inscribed by UNESCO in 1997.",
+        "source": "https://en.wikipedia.org/wiki/Tallinn_Old_Town"
+      },
+      {
+        "type": "FAME",
+        "text": "UNESCO calls it an exceptionally complete and well-preserved medieval trading city of northern Europe, once part of the Hanseatic League.",
+        "source": "https://en.wikipedia.org/wiki/Tallinn_Old_Town"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Tallinn's Town Hall is the only surviving Gothic town hall in northern Europe.",
+        "source": "https://en.wikipedia.org/wiki/Tallinn_Town_Hall"
+      }
+    ]
+  },
   "tashkent": {
     "about": [
       {

@@ -774,6 +774,98 @@
     "at": { "lat": 50.116, "lon": -5.4772 }
   },
   {
+    "id": "great-barrier-reef",
+    "label": "Great Barrier Reef, Queensland",
+    "wiki": "Great Barrier Reef",
+    "at": { "lat": -16.4, "lon": 145.8 }
+  },
+  {
+    "id": "aoraki",
+    "label": "Aoraki / Mount Cook, New Zealand",
+    "wiki": "Aoraki / Mount Cook",
+    "at": { "lat": -43.595, "lon": 170.1419 }
+  },
+  {
+    "id": "rotorua",
+    "label": "Pōhutu Geyser, Rotorua",
+    "wiki": "Pōhutu Geyser",
+    "at": { "lat": -38.1635, "lon": 176.2541 }
+  },
+  { "id": "tikal", "label": "Tikal, Guatemala", "wiki": "Tikal", "at": { "lat": 17.2219, "lon": -89.6236 } },
+  {
+    "id": "panama-canal",
+    "label": "Panama Canal, Miraflores Locks",
+    "wiki": "Panama Canal",
+    "at": { "lat": 9.08, "lon": -79.68 }
+  },
+  {
+    "id": "lincoln-memorial",
+    "label": "Lincoln Memorial, Washington, D.C.",
+    "wiki": "Lincoln Memorial",
+    "at": { "lat": 38.8893, "lon": -77.0502 }
+  },
+  {
+    "id": "lencois-maranhenses",
+    "label": "Lençóis Maranhenses, Brazil",
+    "wiki": "Lençóis Maranhenses National Park",
+    "at": { "lat": -2.533, "lon": -43.117 }
+  },
+  {
+    "id": "ngorongoro",
+    "label": "Ngorongoro Crater, Tanzania",
+    "wiki": "Ngorongoro Conservation Area",
+    "at": { "lat": -3.1667, "lon": 35.5833 }
+  },
+  {
+    "id": "avenue-of-the-baobabs",
+    "label": "Avenue of the Baobabs, Madagascar",
+    "wiki": "Avenue of the Baobabs",
+    "at": { "lat": -20.25, "lon": 44.4194 }
+  },
+  {
+    "id": "jemaa-el-fnaa",
+    "label": "Jemaa el-Fnaa, Marrakech",
+    "wiki": "Jemaa el-Fnaa",
+    "at": { "lat": 31.6258, "lon": -7.9894 }
+  },
+  {
+    "id": "ait-benhaddou",
+    "label": "Aït Benhaddou, Morocco",
+    "wiki": "Aït Benhaddou",
+    "at": { "lat": 31.0472, "lon": -7.1289 }
+  },
+  {
+    "id": "great-zimbabwe",
+    "label": "Great Zimbabwe",
+    "wiki": "Great Zimbabwe",
+    "at": { "lat": -20.2667, "lon": 30.9333 }
+  },
+  { "id": "etna", "label": "Mount Etna, Sicily", "wiki": "Mount Etna", "at": { "lat": 37.755, "lon": 14.995 } },
+  {
+    "id": "geirangerfjord",
+    "label": "Geirangerfjord, Norway",
+    "wiki": "Geirangerfjord",
+    "at": { "lat": 62.121, "lon": 7.129 }
+  },
+  {
+    "id": "winter-palace",
+    "label": "Winter Palace, Saint Petersburg",
+    "wiki": "Winter Palace",
+    "at": { "lat": 59.9404, "lon": 30.3139 }
+  },
+  {
+    "id": "skellig-michael",
+    "label": "Skellig Michael, County Kerry",
+    "wiki": "Skellig Michael",
+    "at": { "lat": 51.7711, "lon": -10.5406 }
+  },
+  {
+    "id": "tallinn-old-town",
+    "label": "Old Town of Tallinn",
+    "wiki": "Tallinn Old Town",
+    "at": { "lat": 59.4372, "lon": 24.7453 }
+  },
+  {
     "id": "tashkent",
     "label": "Tashkent, Uzbekistan",
     "wiki": "Tashkent",

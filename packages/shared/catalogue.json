@@ -1169,6 +1169,128 @@
     "answer": { "type": "POINT", "tolerance": 25 }
   },
   {
+    "id": "great-barrier-reef",
+    "type": "LANDMARK",
+    "place": "great-barrier-reef",
+    "clue": {
+      "type": "PHOTO",
+      "image": "The heart reef, part of the Great Barrier Reef near Airlie Beach, Whitsunday Islands, Queensland.jpg"
+    },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "aoraki",
+    "type": "LANDMARK",
+    "place": "aoraki",
+    "clue": { "type": "PHOTO", "image": "Icebergs in Hooker Glacier Lake in front of Aoraki Mount Cook.jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "rotorua",
+    "type": "LANDMARK",
+    "place": "rotorua",
+    "clue": { "type": "PHOTO", "image": "Pohutu Geyser erupting.jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "tikal",
+    "type": "LANDMARK",
+    "place": "tikal",
+    "clue": { "type": "PHOTO", "image": "Temple of the Great Jaguar, Tikal, Petén, Guatemala.jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "panama-canal",
+    "type": "LANDMARK",
+    "place": "panama-canal",
+    "clue": { "type": "PHOTO", "image": "Cruise ship passing Miraflores Locks 2019-10-24.jpg" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "lincoln-memorial",
+    "type": "LANDMARK",
+    "place": "lincoln-memorial",
+    "clue": { "type": "PHOTO", "image": "Lincoln Memorial east side.JPG" },
+    "answer": { "type": "POINT", "tolerance": 150 }
+  },
+  {
+    "id": "lencois-maranhenses",
+    "type": "LANDMARK",
+    "place": "lencois-maranhenses",
+    "clue": { "type": "PHOTO", "image": "Lençóis Maranhenses 2018 (cropped).jpg" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "ngorongoro",
+    "type": "LANDMARK",
+    "place": "ngorongoro",
+    "clue": { "type": "PHOTO", "image": "Ngorongoro-1001-2.jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "avenue-of-the-baobabs",
+    "type": "LANDMARK",
+    "place": "avenue-of-the-baobabs",
+    "clue": { "type": "PHOTO", "image": "Avenue of Baobabs (45333912101).jpg" },
+    "answer": { "type": "POINT", "tolerance": 400 }
+  },
+  {
+    "id": "jemaa-el-fnaa",
+    "type": "LANDMARK",
+    "place": "jemaa-el-fnaa",
+    "clue": { "type": "PHOTO", "image": "Djemaa el Fna.jpg" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "ait-benhaddou",
+    "type": "LANDMARK",
+    "place": "ait-benhaddou",
+    "clue": { "type": "PHOTO", "image": "Aït Benhaddou Ksar, Morocco.jpg" },
+    "answer": { "type": "POINT", "tolerance": 250 }
+  },
+  {
+    "id": "great-zimbabwe",
+    "type": "LANDMARK",
+    "place": "great-zimbabwe",
+    "clue": { "type": "PHOTO", "image": "Conical Tower - Great Enclosure III (33736918448).jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "etna",
+    "type": "LANDMARK",
+    "place": "etna",
+    "clue": { "type": "PHOTO", "image": "Mt Etna and Catania1.jpg" },
+    "answer": { "type": "POINT", "tolerance": 150 }
+  },
+  {
+    "id": "geirangerfjord",
+    "type": "LANDMARK",
+    "place": "geirangerfjord",
+    "clue": { "type": "PHOTO", "image": "Geirangerfjord .jpg" },
+    "answer": { "type": "POINT", "tolerance": 150 }
+  },
+  {
+    "id": "winter-palace",
+    "type": "LANDMARK",
+    "place": "winter-palace",
+    "clue": { "type": "PHOTO", "image": "Winter Palace-2025-09-msu---2707.jpg" },
+    "answer": { "type": "POINT", "tolerance": 150 }
+  },
+  {
+    "id": "skellig-michael",
+    "type": "LANDMARK",
+    "place": "skellig-michael",
+    "clue": { "type": "PHOTO", "image": "Skellig Michael03(js).jpg" },
+    "answer": { "type": "POINT", "tolerance": 150 }
+  },
+  {
+    "id": "tallinn-old-town",
+    "type": "LANDMARK",
+    "place": "tallinn-old-town",
+    "clue": { "type": "PHOTO", "image": "Vanalinn Patkuli platvormilt 2013.jpg" },
+    "answer": { "type": "POINT", "tolerance": 120 }
+  },
+  {
     "id": "tashkent",
     "type": "PLACE",
     "place": "tashkent",
