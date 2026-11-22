@@ -1,12 +1,15 @@
 /**
- * The question mix: how many rounds of each type of question. The host sets
- * a count per type with − / +; the counts are the game's rounds. A strip of coloured cells, one per round, shows the game at a
+ * The question mix: how many rounds of each type of question. The host picks
+ * a preset, or sets a count per type with − / +; the counts are the game's
+ * rounds. A strip of coloured cells, one per round, shows the game at a
  * glance, to the host and (in the setup summary) to guests.
  */
 import { type QuestionMix } from "@whereabouts/shared/protocol/config"
 import { QUESTION_TYPES } from "@whereabouts/shared/questions"
 import { QUESTION_TYPE_DISPLAY_INFO, questionTypeColourStyle } from "../../../question-types"
 import { Stepper } from "../Stepper/Stepper"
+import { Pills } from "../Pills/Pills"
+import { MIX_PRESETS, presetMix, presetOf } from "../mix-presets"
 import { mixStepBounds } from "../mix-step-bounds"
 import { mixEditorTestIds } from "./MixEditorTestIds"
 import { RoundStrip } from "../RoundStrip/RoundStrip"
@@ -14,6 +17,12 @@ import styles from "./MixEditor.module.css"
 
 export const MixEditor = ({ mix, onChange }: { mix: QuestionMix; onChange: (mix: QuestionMix) => void }) => (
   <div class={styles.editor}>
+    <Pills
+      label="Presets"
+      options={MIX_PRESETS}
+      value={presetOf(mix)}
+      onChange={(preset) => onChange(presetMix(preset))}
+    />
     <ul class={styles.rows}>
       {QUESTION_TYPES.map((type) => {
         const displayInfo = QUESTION_TYPE_DISPLAY_INFO[type]

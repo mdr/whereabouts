@@ -16,6 +16,7 @@ import { mapDetailPickerTestIds } from "../../src/ui/setup/MapDetailPicker/MapDe
 import { mixEditorTestIds } from "../../src/ui/setup/MixEditor/MixEditorTestIds.ts"
 import { pillsTestIds } from "../../src/ui/setup/Pills/PillsTestIds.ts"
 import { roundStripTestIds } from "../../src/ui/setup/RoundStrip/RoundStripTestIds.ts"
+import type { MixPreset } from "../../src/ui/setup/mix-presets.ts"
 import { stepperTestIds } from "../../src/ui/setup/Stepper/StepperTestIds.ts"
 import { ConfirmDialog } from "./components/ConfirmDialog.ts"
 import { PlayerList } from "./components/PlayerList.ts"
@@ -71,7 +72,7 @@ export class LobbyPage extends Screen {
     return LobbyPage.whenShown(this.tab)
   }
 
-  #pill(setting: string, value: number): Locator {
+  #pill(setting: string, value: number | string): Locator {
     return byTestIdWith(this.page.getByTestId(setting), pillsTestIds.option, "value", String(value))
   }
 
@@ -86,6 +87,19 @@ export class LobbyPage extends Screen {
       "detail",
       detail
     )
+  }
+
+  /** Host: set the whole question mix at once. */
+  async chooseMixPreset(preset: MixPreset): Promise<void> {
+    await this.#pill(hostSettingsTestIds.questionsSetting, preset).click()
+  }
+
+  /** Host: this preset is on, or with none, the mix matches no preset. */
+  async expectMixPreset(preset: MixPreset | undefined): Promise<void> {
+    const presets = this.page.getByTestId(hostSettingsTestIds.questionsSetting).getByTestId(pillsTestIds.option)
+    if (preset)
+      await expect(this.#pill(hostSettingsTestIds.questionsSetting, preset), `the ${preset} preset is on`).toBeChecked()
+    else await expect(presets.and(this.page.locator('[aria-checked="true"]')), "no preset is on").toHaveCount(0)
   }
 
   /** Host: set how many rounds ask this kind of question, one step at a time. */

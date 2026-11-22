@@ -13,7 +13,7 @@ import { SubmissionType } from "../scoring/round-scoring.ts"
 import { pickAwards } from "../awards/awards.ts"
 import { DEFAULT_HINTS, type HintAxis } from "../hints.ts"
 import type { PlayerId, PlayerName, PlayerToken, RoomCode } from "../ids.ts"
-import { evenMix, MapDetail, type ConfigurePatch, type GameConfig } from "../protocol/config.ts"
+import { DEFAULT_MIX, MapDetail, type ConfigurePatch, type GameConfig } from "../protocol/config.ts"
 import { Phase, RoundGuessType, type GameView, type PaintSubmission, type RoundReveal } from "../protocol/views.ts"
 import type { GameSnapshot, RevealTally } from "./milestones.ts"
 import { CloseReason } from "../close-reason.ts"
@@ -37,7 +37,7 @@ import type { Instant, Ms } from "../units.ts"
 
 const DEFAULT_CONFIG: GameConfig = {
   roundLength: 60_000,
-  mix: evenMix(8),
+  mix: DEFAULT_MIX,
   mapDetail: MapDetail.MINIMAL,
   kernelId: DEFAULT_KERNEL.id,
   hints: DEFAULT_HINTS

@@ -47,6 +47,9 @@ export const evenMix = (rounds: number): QuestionMix => {
   return mixOf(Object.fromEntries(types.map((t, i) => [t, each + (i < rest ? 1 : 0)])))
 }
 
+/** The mix a new game starts with. */
+export const DEFAULT_MIX: QuestionMix = evenMix(8)
+
 const roundCount = z.number().int().min(0).max(MAX_ROUNDS)
 export const MixSchema = z
   .record(z.enum(QuestionType), roundCount)

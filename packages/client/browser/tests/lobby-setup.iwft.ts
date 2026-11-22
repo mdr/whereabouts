@@ -1,11 +1,13 @@
 // The lobby's game setup, against the in-process server: the host sets the
-// questions, seconds, hints and map detail, and Bob, who joins by link, sees
-// the decided values without controls and sees which one just changed. Each
-// device keeps its own choice to start rounds on the Pan tool.
+// questions (one by one or by a preset), seconds, hints and map detail, and
+// Bob, who joins by link, sees the decided values without controls and sees
+// which one just changed. Each device keeps its own choice to start rounds on
+// the Pan tool.
 import { MapDetail } from "@whereabouts/shared/protocol/config"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { Tool } from "../../src/paint/tool.ts"
 import { SetupTileType } from "../../src/screens/lobby/setup/setup-tiles.ts"
+import { MixPreset } from "../../src/ui/setup/mix-presets.ts"
 import { test } from "../game-server/game-server.ts"
 import { newTab } from "./iwft-tab.ts"
 
@@ -19,6 +21,21 @@ test("lobby setup", async ({ browser, game }) => {
     const bobLobbyPage = await bobJoinAsPage.join()
     await aliceLobbyPage.players.waitForPlayer("Bob")
     return { aliceLobbyPage, bobLobbyPage }
+  })
+
+  await test.step("a preset sets the whole mix, and Default puts the game's own back", async () => {
+    await aliceLobbyPage.expectMixPreset(MixPreset.DEFAULT)
+    await aliceLobbyPage.chooseMixPreset(MixPreset.EVERYTHING)
+    await aliceLobbyPage.expectMixPreset(MixPreset.EVERYTHING)
+    await aliceLobbyPage.expectQuestionCount(QuestionType.STATE, 2)
+    await aliceLobbyPage.expectRoundCount(14)
+    await aliceLobbyPage.setQuestionCount(QuestionType.FLAG, 3)
+    await aliceLobbyPage.expectMixPreset(undefined)
+    await aliceLobbyPage.chooseMixPreset(MixPreset.DEFAULT)
+    await aliceLobbyPage.expectMixPreset(MixPreset.DEFAULT)
+    await aliceLobbyPage.expectQuestionCount(QuestionType.FLAG, 2)
+    await aliceLobbyPage.expectQuestionCount(QuestionType.STATE, 0)
+    await aliceLobbyPage.expectRoundCount(8)
   })
 
   await test.step("the host cannot take the game below one round", async () => {
