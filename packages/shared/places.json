@@ -865,6 +865,53 @@
     "wiki": "Tallinn Old Town",
     "at": { "lat": 59.4372, "lon": 24.7453 }
   },
+  { "id": "the-bund", "label": "The Bund, Shanghai", "wiki": "The Bund", "at": { "lat": 31.238, "lon": 121.4861 } },
+  { "id": "taipei-101", "label": "Taipei 101", "wiki": "Taipei 101", "at": { "lat": 25.0336, "lon": 121.5647 } },
+  {
+    "id": "himeji-castle",
+    "label": "Himeji Castle, Japan",
+    "wiki": "Himeji Castle",
+    "at": { "lat": 34.8394, "lon": 134.6939 }
+  },
+  {
+    "id": "gyeongbokgung",
+    "label": "Gyeongbokgung, Seoul",
+    "wiki": "Gyeongbokgung",
+    "at": { "lat": 37.5799, "lon": 126.9768 }
+  },
+  { "id": "wat-arun", "label": "Wat Arun, Bangkok", "wiki": "Wat Arun", "at": { "lat": 13.7436, "lon": 100.4889 } },
+  { "id": "tanah-lot", "label": "Tanah Lot, Bali", "wiki": "Tanah Lot", "at": { "lat": -8.6211, "lon": 115.0872 } },
+  {
+    "id": "chocolate-hills",
+    "label": "Chocolate Hills, Bohol",
+    "wiki": "Chocolate Hills",
+    "at": { "lat": 9.9167, "lon": 124.1667 }
+  },
+  { "id": "hawa-mahal", "label": "Hawa Mahal, Jaipur", "wiki": "Hawa Mahal", "at": { "lat": 26.9239, "lon": 75.8267 } },
+  {
+    "id": "varanasi",
+    "label": "Ghats of Varanasi",
+    "wiki": "Ghats in Varanasi",
+    "at": { "lat": 25.307, "lon": 83.0104 }
+  },
+  {
+    "id": "gergeti",
+    "label": "Gergeti Trinity Church, Georgia",
+    "wiki": "Gergeti Trinity Church",
+    "at": { "lat": 42.6625, "lon": 44.6203 }
+  },
+  {
+    "id": "segovia-aqueduct",
+    "label": "Aqueduct of Segovia",
+    "wiki": "Aqueduct of Segovia",
+    "at": { "lat": 40.9479, "lon": -4.1178 }
+  },
+  {
+    "id": "milan-cathedral",
+    "label": "Milan Cathedral",
+    "wiki": "Milan Cathedral",
+    "at": { "lat": 45.4642, "lon": 9.1914 }
+  },
   {
     "id": "tashkent",
     "label": "Tashkent, Uzbekistan",

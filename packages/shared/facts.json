@@ -4218,6 +4218,219 @@
       }
     ]
   },
+  "the-bund": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "The Bund is Shanghai's riverside promenade, lined with about 50 Western-style buildings from the late 19th and early 20th centuries.",
+        "source": "https://en.wikipedia.org/wiki/The_Bund"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Across the river, Pudong's skyscraper district was mostly farmland and warehouses until it was designated for development in 1990.",
+        "source": "https://en.wikipedia.org/wiki/Lujiazui"
+      },
+      {
+        "type": "FAME",
+        "text": "The Oriental Pearl Tower, finished in 1994, was the tallest structure in China until 2007.",
+        "source": "https://en.wikipedia.org/wiki/Oriental_Pearl_Tower"
+      }
+    ]
+  },
+  "taipei-101": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Completed in 2004, Taipei 101 was the world's tallest building until Dubai's Burj Khalifa overtook it in 2010.",
+        "source": "https://en.wikipedia.org/wiki/Taipei_101"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "A 660-tonne steel ball hangs inside the tower's upper floors, swinging to steady it against typhoon winds and earthquakes.",
+        "source": "https://en.wikipedia.org/wiki/Taipei_101"
+      }
+    ]
+  },
+  "himeji-castle": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "In 1993 it was among the first places in Japan to be made a UNESCO World Heritage Site.",
+        "source": "https://en.wikipedia.org/wiki/Himeji_Castle"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its gleaming white plaster walls earned it the nickname Hakuro-jo, the White Heron Castle.",
+        "source": "https://en.wikipedia.org/wiki/Himeji_Castle"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The keep came through the 1945 bombing of Himeji and the 1995 Kobe earthquake with only minor damage.",
+        "source": "https://en.wikipedia.org/wiki/Himeji_Castle"
+      }
+    ]
+  },
+  "gyeongbokgung": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Built in 1395 as the main royal palace of the Joseon dynasty, it is the largest of Seoul's Five Grand Palaces.",
+        "source": "https://en.wikipedia.org/wiki/Gyeongbokgung"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Burned during the Japanese invasions of the 1590s, the palace lay in ruins for more than 250 years before rebuilding in the 1860s.",
+        "source": "https://en.wikipedia.org/wiki/Gyeongbokgung"
+      }
+    ]
+  },
+  "wat-arun": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Its central prang, over 70 metres tall, makes Wat Arun one of the most recognisable landmarks on Bangkok's Chao Phraya river.",
+        "source": "https://en.wikipedia.org/wiki/Wat_Arun"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The spires are said to be studded with broken Chinese porcelain, once used as ballast in trading ships sailing to Bangkok.",
+        "source": "https://en.wikipedia.org/wiki/Wat_Arun"
+      },
+      {
+        "type": "FAME",
+        "text": "The prangs were raised to their present height in the early 19th century, under Kings Rama II and Rama III.",
+        "source": "https://en.wikipedia.org/wiki/Wat_Arun"
+      }
+    ]
+  },
+  "tanah-lot": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "This Hindu temple sits on a rock just offshore and is one of Bali's most visited sights, especially at sunset.",
+        "source": "https://en.wikipedia.org/wiki/Tanah_Lot"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Sacred sea snakes are said to guard the temple, living in caves at the foot of the rock.",
+        "source": "https://en.wikipedia.org/wiki/Tanah_Lot"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Legend says the priest Nirartha founded it in the 16th century.",
+        "source": "https://en.wikipedia.org/wiki/Tanah_Lot"
+      }
+    ]
+  },
+  "chocolate-hills": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "More than a thousand near-identical grass-covered domes, 30 to 50 metres high, dot Bohol, making this one of the Philippines' best-known natural sights.",
+        "source": "https://en.wikipedia.org/wiki/Chocolate_Hills"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The hills are green most of the year but dry out and turn chocolate-brown in the dry season, which gives them their name.",
+        "source": "https://en.wikipedia.org/wiki/Chocolate_Hills"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "One local legend says the hills are the leftovers of a days-long mud-and-rock fight between two giants.",
+        "source": "https://en.wikipedia.org/wiki/Chocolate_Hills"
+      }
+    ]
+  },
+  "hawa-mahal": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Built in 1799 by Maharaja Sawai Pratap Singh, its 953 latticed windows let royal women watch street life without being seen.",
+        "source": "https://en.wikipedia.org/wiki/Hawa_Mahal"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its name means Palace of the Winds: the honeycomb of small windows lets breezes through to cool the rooms in summer.",
+        "source": "https://en.wikipedia.org/wiki/Hawa_Mahal"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "The architect, Lal Chand Ustad, built five storeys of reddish-pink sandstone, a colour tied to Jaipur's nickname, the Pink City.",
+        "source": "https://en.wikipedia.org/wiki/Hawa_Mahal"
+      }
+    ]
+  },
+  "varanasi": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "Long flights of stone steps line the Ganges at Varanasi, where Hindu pilgrims bathe and pray; Dashashwamedh Ghat is the most popular.",
+        "source": "https://en.wikipedia.org/wiki/Ghats_in_Varanasi"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Two of the ghats, Manikarnika and Harishchandra, are used only for cremations.",
+        "source": "https://en.wikipedia.org/wiki/Ghats_in_Varanasi"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Every evening at Dashashwamedh Ghat, priests perform a Ganga aarti lasting about 45 minutes, with tiers of blazing brass lamps.",
+        "source": "https://en.wikipedia.org/wiki/Ghats_in_Varanasi"
+      }
+    ]
+  },
+  "gergeti": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "This 14th-century church stands alone at about 2,170 metres, beneath the glaciers of Mount Kazbek.",
+        "source": "https://en.wikipedia.org/wiki/Gergeti_Trinity_Church"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "In times of danger, precious relics from across Georgia, including Saint Nino's Cross, were brought here for safekeeping.",
+        "source": "https://georgianencyclopedia.ge/en/form_eng/539"
+      }
+    ]
+  },
+  "segovia-aqueduct": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "This Roman aqueduct, up to 28.5 metres high with 167 arches, is Segovia's emblem and part of a UNESCO World Heritage Site.",
+        "source": "https://en.wikipedia.org/wiki/Aqueduct_of_Segovia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "It is built from granite blocks laid without any mortar, held together by their own weight.",
+        "source": "https://en.wikipedia.org/wiki/Aqueduct_of_Segovia"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Nobody is certain when it was built: it is usually put in the 1st century AD, though 2016 evidence points to after 112 AD.",
+        "source": "https://en.wikipedia.org/wiki/Aqueduct_of_Segovia"
+      }
+    ]
+  },
+  "milan-cathedral": {
+    "about": [
+      {
+        "type": "FAME",
+        "text": "It is the largest church in Italy and one of the largest in the world, with room for about 40,000 people.",
+        "source": "https://en.wikipedia.org/wiki/Milan_Cathedral"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Building began in 1386 and the last portal was inaugurated only in 1965, so it took nearly six centuries.",
+        "source": "https://en.wikipedia.org/wiki/Milan_Cathedral"
+      },
+      {
+        "type": "TRIVIA",
+        "text": "Its Candoglia marble came from a quarry given to the cathedral for good, with blocks floated to the city along canals.",
+        "source": "https://en.wikipedia.org/wiki/Milan_Cathedral"
+      }
+    ]
+  },
   "tashkent": {
     "about": [
       {

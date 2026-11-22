@@ -1291,6 +1291,93 @@
     "answer": { "type": "POINT", "tolerance": 120 }
   },
   {
+    "id": "the-bund",
+    "type": "LANDMARK",
+    "place": "the-bund",
+    "clue": { "type": "PHOTO", "image": "Skyline Pudong am Morgen August 2016.jpg" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "taipei-101",
+    "type": "LANDMARK",
+    "place": "taipei-101",
+    "clue": { "type": "PHOTO", "image": "晚霞下的台北101.jpg" },
+    "answer": { "type": "POINT", "tolerance": 150 }
+  },
+  {
+    "id": "himeji-castle",
+    "type": "LANDMARK",
+    "place": "himeji-castle",
+    "clue": { "type": "PHOTO", "image": "Himeji castle in may 2015.jpg" },
+    "answer": { "type": "POINT", "tolerance": 150 }
+  },
+  {
+    "id": "gyeongbokgung",
+    "type": "LANDMARK",
+    "place": "gyeongbokgung",
+    "clue": {
+      "type": "PHOTO",
+      "image": "Front view of the Imperial Throne Hall Geunjeongjeon at Gyeongbokgung Palace with blue sky in Seoul.jpg"
+    },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "wat-arun",
+    "type": "LANDMARK",
+    "place": "wat-arun",
+    "clue": { "type": "PHOTO", "image": "Phra Prang Wat Arun Ratchawararam.jpg" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "tanah-lot",
+    "type": "LANDMARK",
+    "place": "tanah-lot",
+    "clue": { "type": "PHOTO", "image": "TanahLot 2014.JPG" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "chocolate-hills",
+    "type": "LANDMARK",
+    "place": "chocolate-hills",
+    "clue": { "type": "PHOTO", "image": "Bohol Hills, Chocolate Hills, Philippines.jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "hawa-mahal",
+    "type": "LANDMARK",
+    "place": "hawa-mahal",
+    "clue": { "type": "PHOTO", "image": "Hawa Mahal 2011.jpg" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "varanasi",
+    "type": "LANDMARK",
+    "place": "varanasi",
+    "clue": { "type": "PHOTO", "image": "Ahilya Ghat by the Ganges, Varanasi.jpg" },
+    "answer": { "type": "POINT", "tolerance": 300 }
+  },
+  {
+    "id": "gergeti",
+    "type": "LANDMARK",
+    "place": "gergeti",
+    "clue": { "type": "PHOTO", "image": "Gergeti Trinity Church 09.23.jpg" },
+    "answer": { "type": "POINT", "tolerance": 200 }
+  },
+  {
+    "id": "segovia-aqueduct",
+    "type": "LANDMARK",
+    "place": "segovia-aqueduct",
+    "clue": { "type": "PHOTO", "image": "Aqueduct of Segovia 08.jpg" },
+    "answer": { "type": "POINT", "tolerance": 100 }
+  },
+  {
+    "id": "milan-cathedral",
+    "type": "LANDMARK",
+    "place": "milan-cathedral",
+    "clue": { "type": "PHOTO", "image": "Milan-duomo-front-facade.jpg" },
+    "answer": { "type": "POINT", "tolerance": 80 }
+  },
+  {
     "id": "tashkent",
     "type": "PLACE",
     "place": "tashkent",
