@@ -76,7 +76,7 @@ export const PaintTools = ({
             class={tool === activeTool ? "active" : undefined}
             aria-pressed={tool === activeTool}
             title={toolHint(tool, paint.fillType.value)}
-            onClick={() => (paint.tool.value = tool)}
+            onClick={() => paint.chooseTool(tool)}
             disabled={!enabled}
             data-testid={paintToolsTestIds.toolButton}
             data-tool={tool}

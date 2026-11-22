@@ -19,9 +19,9 @@ export interface PageContext {
 export const scrubUrls = (text: string): string => text.replace(/(https?:\/\/[^\s?#"')]+)[?#][^\s"')]*/g, "$1")
 
 /** A route such as "/game/ABCD", without its query. */
-const screenOf = (hash: string): string => hash.replace(/^#/, "").replace(/\?.*$/, "") || "/"
+export const screenOf = (hash: string): string => hash.replace(/^#/, "").replace(/\?.*$/, "") || "/"
 
-const roomOf = (screen: string): string | undefined => /^\/game\/(?:new\/)?([A-Z0-9]{4,6})$/i.exec(screen)?.[1]
+export const roomOf = (screen: string): string | undefined => /^\/game\/(?:new\/)?([A-Z0-9]{4,6})$/i.exec(screen)?.[1]
 
 const describeError = (error: unknown): { message: string; stack: string | undefined } => {
   if (error instanceof Error) return { message: `${error.name}: ${error.message}`, stack: error.stack }

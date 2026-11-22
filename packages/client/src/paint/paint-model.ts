@@ -11,10 +11,12 @@ import { paintAmount, trimLand, trimSea, type LandMask, type WaterMask } from "@
 import { trimToHint, type HintBand } from "@whereabouts/shared/hints"
 import { h3Resolution, type H3Cell } from "@whereabouts/shared/h3"
 import type { LatLon } from "@whereabouts/shared/geo"
-import type { StrokeTool } from "./tool"
+import type { StrokeTool, Tool } from "./tool"
 import type { FillTarget, FillType, Filler } from "./fill-target"
 import type { Km, Ms } from "@whereabouts/shared/units"
 import type { TimeoutHandle } from "@whereabouts/shared/timeout"
+import { ANALYTICS_CODES, WEB_LOG_CODES } from "@whereabouts/shared/telemetry/web-codes"
+import type { Telemetry } from "../telemetry/telemetry"
 
 const HISTORY_LIMIT = 50
 const SETTLE: Ms = 200
@@ -22,6 +24,13 @@ const SETTLE: Ms = 200
 export enum FillChange {
   FILLED = "FILLED",
   UNFILLED = "UNFILLED"
+}
+
+/** Which trim a player pressed. */
+export enum TrimKind {
+  SEA = "SEA",
+  LAND = "LAND",
+  HINT = "HINT"
 }
 
 /** One undo step: the cells, and what is filled. */
@@ -88,8 +97,10 @@ export class PaintModel {
   private redoStack: Snapshot[] = []
   private settleTimer: TimeoutHandle | undefined = undefined
   private readonly unsubscribe: () => void
+  protected readonly telemetry: Pick<Telemetry, "logger" | "analytics">
 
-  constructor() {
+  constructor(telemetry: Pick<Telemetry, "logger" | "analytics">) {
+    this.telemetry = telemetry
     this.unsubscribe = this.version.subscribe((version) => {
       clearTimeout(this.settleTimer)
       this.settleTimer = setTimeout(() => {
@@ -120,6 +131,11 @@ export class PaintModel {
 
   /** Start a fresh layer sized for a question's tolerance. */
   reset(tolerance: Km): void {
+    this.telemetry.logger.info(WEB_LOG_CODES.paint.reset, "paint started afresh", {
+      hadPaint: !this._layer.isEmpty,
+      undoSteps: this.undoStack.length,
+      toleranceKm: tolerance
+    })
     batch(() => {
       this.tolerance.value = tolerance
       this._layer = new PaintLayer(resolutionForTolerance(tolerance))
@@ -134,6 +150,11 @@ export class PaintModel {
    * coarser), as a fresh start: nothing filled and nothing to undo.
    */
   restore(cells: Record<H3Cell, number>): void {
+    this.telemetry.logger.info(WEB_LOG_CODES.paint.restored, "paint restored from the server", {
+      hadPaint: !this._layer.isEmpty,
+      undoSteps: this.undoStack.length,
+      restoredCells: Object.keys(cells).length
+    })
     batch(() => {
       this._layer = PaintLayer.fromRecord(this._layer.resolution, cells)
       this.fills = new Map()
@@ -143,6 +164,10 @@ export class PaintModel {
   }
 
   clear(): void {
+    this.telemetry.analytics.track(ANALYTICS_CODES.paint.cleared, "cleared the paint", {
+      hadPaint: !this._layer.isEmpty,
+      undoSteps: this.undoStack.length
+    })
     if (this._layer.isEmpty) return
     this.pushHistory()
     this._layer.clear()
@@ -201,6 +226,7 @@ export class PaintModel {
       change = FillChange.FILLED
     }
     this.changed()
+    this.telemetry.analytics.track(ANALYTICS_CODES.paint.filled, "filled with the Fill tool", { change })
     return change
   }
 
@@ -211,26 +237,36 @@ export class PaintModel {
    * the share of the paint's mass removed: 0 when there was none at sea.
    */
   trimSea(mask: LandMask): number {
-    return this.keepOnly(trimSea(this._layer.cells, mask, this._layer.resolution))
+    return this.keepOnly(TrimKind.SEA, trimSea(this._layer.cells, mask, this._layer.resolution))
   }
 
   /** Drop the paint on dry land, for a lake or sea, as trimSea drops it at sea. */
   trimLand(mask: WaterMask): number {
-    return this.keepOnly(trimLand(this._layer.cells, mask, this._layer.resolution))
+    return this.keepOnly(TrimKind.LAND, trimLand(this._layer.cells, mask, this._layer.resolution))
   }
 
   /** Drop the paint outside a hint's band, as trimSea drops it at sea. */
   trimToHint(band: HintBand): number {
-    return this.keepOnly(trimToHint(this._layer.cells, band, this._layer.resolution))
+    return this.keepOnly(TrimKind.HINT, trimToHint(this._layer.cells, band, this._layer.resolution))
   }
 
-  private keepOnly(kept: Map<H3Cell, number>): number {
+  private keepOnly(trim: TrimKind, kept: Map<H3Cell, number>): number {
     const share = 1 - paintAmount(kept) / paintAmount(this._layer.cells)
-    if (!(share > 1e-9)) return 0
+    const removed = share > 1e-9 ? share : 0
+    this.telemetry.analytics.track(ANALYTICS_CODES.paint.trimmed, "trimmed the paint", {
+      trim,
+      removedPercent: Math.round(removed * 100)
+    })
+    if (removed === 0) return 0
     this.pushHistory()
     this._layer.replaceCells(kept)
     this.changed()
     return share
+  }
+
+  /** A player picked a tool, as opposed to a round starting on one. */
+  toolChosen(tool: Tool): void {
+    this.telemetry.analytics.track(ANALYTICS_CODES.paint.toolChosen, "chose a tool", { tool })
   }
 
   // ---- strokes --------------------------------------------------------------
@@ -254,7 +290,7 @@ export class PaintModel {
   /** End a stroke and take its paint back, leaving nothing to redo. */
   abandonStroke(): void {
     this.endStroke()
-    this.undo()
+    this.stepBack()
     this.redoStack.pop()
     this.syncHistoryFlags()
   }
@@ -284,12 +320,18 @@ export class PaintModel {
   }
 
   undo(): void {
+    if (this.stepBack())
+      this.telemetry.analytics.track(ANALYTICS_CODES.paint.undone, "undid", { undoSteps: this.undoStack.length })
+  }
+
+  private stepBack(): boolean {
     const previous = this.undoStack.pop()
-    if (!previous) return
+    if (!previous) return false
     this.redoStack.push(this.snapshot())
     this.restoreSnapshot(previous)
     this.syncHistoryFlags()
     this.changed()
+    return true
   }
 
   redo(): void {
@@ -299,6 +341,7 @@ export class PaintModel {
     this.restoreSnapshot(next)
     this.syncHistoryFlags()
     this.changed()
+    this.telemetry.analytics.track(ANALYTICS_CODES.paint.redone, "redid", { undoSteps: this.undoStack.length })
   }
 
   private syncHistoryFlags(): void {

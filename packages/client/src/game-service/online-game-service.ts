@@ -28,6 +28,9 @@ import type { Instant, Ms } from "@whereabouts/shared/units"
 import { GameMode } from "./game-mode"
 import type { GameService } from "./game-service"
 import { ConnectionStatus, type ConnectionState } from "./connection-state"
+import { CommandAnalytics } from "./command-analytics"
+import type { Telemetry } from "../telemetry/telemetry"
+import { WEB_LOG_CODES } from "@whereabouts/shared/telemetry/web-codes"
 
 const wsUrl = (): string => {
   const proto = location.protocol === "https:" ? "wss:" : "ws:"
@@ -90,14 +93,27 @@ export class OnlineGameService implements GameService {
   private heartbeat: Heartbeat | undefined = undefined
 
   private readonly makeClient: ClientFactory
+  private readonly telemetry: Telemetry
+  private readonly commands: CommandAnalytics
 
-  constructor(makeClient: ClientFactory = wsClient) {
+  constructor(telemetry: Telemetry, makeClient: ClientFactory = wsClient) {
+    this.telemetry = telemetry
+    this.commands = new CommandAnalytics(telemetry.analytics)
     this.makeClient = makeClient
+  }
+
+  private setStatus(status: ConnectionState): void {
+    if (status.type !== this.status.value.type)
+      this.telemetry.logger.info(WEB_LOG_CODES.connection.changed, `connection ${status.type}`, {
+        status: status.type,
+        rejectionAction: status.type === ConnectionStatus.REJECTED ? status.rejection.action : undefined
+      })
+    this.status.value = status
   }
 
   connect(ticket: Omit<Ticket, "v">): void {
     this.disconnect()
-    this.status.value = { type: ConnectionStatus.CONNECTING }
+    this.setStatus({ type: ConnectionStatus.CONNECTING })
     this.lastError.value = undefined
     // Once in a game, coming back means joining it, not hosting another.
     const again = (): Omit<Ticket, "v"> => {
@@ -117,7 +133,7 @@ export class OnlineGameService implements GameService {
       this.reveal = undefined
       this.paint = undefined
       this.offsetMeasured = false
-      this.status.value = { type: ConnectionStatus.CONNECTED }
+      this.setStatus({ type: ConnectionStatus.CONNECTED })
       this.stopHeartbeat()
       this.heartbeat = startHeartbeat(
         () => client.send(ClientTopic.PING, ""),
@@ -128,7 +144,7 @@ export class OnlineGameService implements GameService {
     })
     client.on(SocketEvent.DISCONNECT, () => {
       this.stopHeartbeat()
-      if (!this.rejected()) this.status.value = { type: ConnectionStatus.DISCONNECTED }
+      if (!this.rejected()) this.setStatus({ type: ConnectionStatus.DISCONNECTED })
     })
     client.on(SocketEvent.RECONNECTING, (attempt) => {
       if (this.view.value || this.rejected()) return
@@ -138,7 +154,7 @@ export class OnlineGameService implements GameService {
         return
       }
       // Still trying to get in for the first time: not yet a failure.
-      this.status.value = { type: ConnectionStatus.CONNECTING }
+      this.setStatus({ type: ConnectionStatus.CONNECTING })
     })
     client.on(SocketEvent.KICKED, ({ code, reason }) => {
       this.stopHeartbeat()
@@ -179,6 +195,7 @@ export class OnlineGameService implements GameService {
       if (!this.offsetMeasured || offset > this.clockOffset.value) this.clockOffset.value = offset
       this.offsetMeasured = true
       this.view.value = view
+      this.telemetry.identify(view.you.id)
       // A fresh state means the server is happy with us; stop showing an old complaint.
       this.lastError.value = undefined
     })
@@ -200,7 +217,7 @@ export class OnlineGameService implements GameService {
     this.stopHeartbeat()
     this.client?.disconnect()
     this.client = undefined
-    if (!this.rejected()) this.status.value = { type: ConnectionStatus.IDLE }
+    if (!this.rejected()) this.setStatus({ type: ConnectionStatus.IDLE })
   }
 
   private rejected(): boolean {
@@ -208,7 +225,7 @@ export class OnlineGameService implements GameService {
   }
 
   private reject(rejection: Rejection): void {
-    this.status.value = { type: ConnectionStatus.REJECTED, rejection }
+    this.setStatus({ type: ConnectionStatus.REJECTED, rejection })
   }
 
   private stopHeartbeat(): void {
@@ -225,47 +242,61 @@ export class OnlineGameService implements GameService {
     if (this.client?.connected) this.client.send(ClientTopic.PAINT, encodePaint(paint))
   }
   lock = (): void => {
+    this.commands.lock(this.online.value)
     this.send(ClientTopic.LOCK)
   }
   unlock = (): void => {
+    this.commands.unlock(this.online.value)
     this.send(ClientTopic.UNLOCK)
   }
   ready = (): void => {
+    this.commands.ready()
     this.send(ClientTopic.READY)
   }
   configure = (patch: ConfigurePatch): void => {
+    this.commands.configure(patch)
     this.send(ClientTopic.CONFIGURE, patch)
   }
   start = (): void => {
+    this.commands.start()
     this.send(ClientTopic.START)
   }
   next = (): void => {
+    this.commands.next()
     this.send(ClientTopic.NEXT)
   }
   again = (): void => {
+    this.commands.again()
     this.send(ClientTopic.AGAIN)
   }
   rename = (name: PlayerName): void => {
+    this.commands.rename()
     this.send(ClientTopic.RENAME, { name })
   }
   hint = (axis: HintAxis): void => {
+    this.commands.hint(axis)
     this.send(ClientTopic.HINT, { axis })
   }
   kick = (playerId: PlayerId): void => {
+    this.commands.kick(playerId)
     this.send(ClientTopic.KICK, { playerId })
   }
   /** Give up this seat for good (the lobby's Leave); disconnect afterwards. */
   leave = (): void => {
+    this.commands.leave()
     this.send(ClientTopic.LEAVE)
   }
   /** In the lobby: watch instead of play, or take a free seat. */
   setRole = (role: Role): void => {
+    this.commands.setRole(role)
     this.send(ClientTopic.SET_ROLE, { role })
   }
   makeHost = (playerId: PlayerId): void => {
+    this.commands.makeHost(playerId)
     this.send(ClientTopic.MAKE_HOST, { playerId })
   }
   end = (): void => {
+    this.commands.end()
     this.send(ClientTopic.END)
   }
 

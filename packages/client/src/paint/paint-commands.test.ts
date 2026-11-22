@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
+import { testTelemetry } from "../telemetry/test-telemetry"
 import { LandMask, WaterMask } from "@whereabouts/shared/paint/land"
 import { resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { latLngToCell, type H3Cell } from "@whereabouts/shared/h3"
@@ -21,7 +22,7 @@ const MADRID: LatLon = { lat: 40.42, lon: -3.7 }
 const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RESOLUTION)
 
 const makeModel = (...at: LatLon[]): PaintModel => {
-  const model = new PaintModel()
+  const model = new PaintModel(testTelemetry())
   model.reset(TOLERANCE)
   model.restore(Object.fromEntries(at.map((point) => [cellAt(point), 1])))
   return model

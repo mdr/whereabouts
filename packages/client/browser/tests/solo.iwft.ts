@@ -1,12 +1,14 @@
 // Practice mode against the Vite dev server: take a hint, open and close the
 // shortcuts card, paint two blobs,
 // undo and redo the second with the keyboard, pan with Space and press a
-// button with it, trim to the hint and undo it,
+// button with it, trim to the hint and undo it (which the page reports),
 // paint on the globe but not the space around it, submit, and see a score.
 // Saves screenshots.
 import { test } from "../coverage/coverage-test.ts"
 import { Tool } from "../../src/paint/tool.ts"
 import { HintAxis } from "@whereabouts/shared/hints"
+import { ANALYTICS_CODES, WEB_LOG_CODES } from "@whereabouts/shared/telemetry/web-codes"
+import { TrimKind } from "../../src/paint/paint-model.ts"
 import { newOfflineTab } from "./iwft-tab.ts"
 import { shot } from "./support.ts"
 
@@ -82,6 +84,13 @@ test("solo", async ({ browser }) => {
     await practiceRoundPage.screenshot(shot(`2b-trimmed-to-hint.png`))
     await practiceRoundPage.paintTools.undoWithKeyboard()
     await practiceRoundPage.map.expectYourPaintMass({ exactly: before })
+  })
+
+  await test.step("the page sends what happened and what the player did", async () => {
+    await tab.expectTelemetry(WEB_LOG_CODES.app.started)
+    await tab.expectTelemetry(ANALYTICS_CODES.nav.screenOpened)
+    await tab.expectTelemetry(ANALYTICS_CODES.paint.trimmed, { trim: TrimKind.HINT })
+    await tab.expectTelemetry(ANALYTICS_CODES.paint.undone)
   })
 
   await test.step("paint on the globe but not the space around it", async () => {

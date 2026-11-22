@@ -10,6 +10,8 @@ import { Icon } from "../icons"
 import { vrButtonTestIds } from "./VrButtonTestIds"
 import styles from "./VrButton.module.css"
 import type { Ms } from "@whereabouts/shared/units"
+import { ANALYTICS_CODES } from "@whereabouts/shared/telemetry/web-codes"
+import { useTelemetry } from "../../telemetry/use-telemetry"
 
 /** Where a press of the VR button has got: the overlay it shows until the headset opens. */
 enum LaunchStage {
@@ -72,6 +74,7 @@ export const useVrHold = (): void => {
  * and loading can take longer: then a second, larger button asks again.
  */
 export const VrButton = ({ view }: { view: VrView }) => {
+  const telemetry = useTelemetry()
   const [stage, setStage] = useState<LaunchStage | undefined>(undefined)
   const latest = useRef(view)
   latest.current = view
@@ -80,6 +83,7 @@ export const VrButton = ({ view }: { view: VrView }) => {
   const vr = loadedVr.value
   const enter = (loaded: Vr) => {
     setStage(undefined)
+    telemetry.analytics.track(ANALYTICS_CODES.vr.entered, "entered VR")
     loaded.enter(latest.current)
   }
   const press = () => {

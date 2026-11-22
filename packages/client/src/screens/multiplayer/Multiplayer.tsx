@@ -16,11 +16,13 @@ import {
   watchHandoff
 } from "../../settings/settings"
 import { navigate } from "../../router"
+import { useTelemetry } from "../../telemetry/use-telemetry"
 import { JoinAs } from "./JoinAs/JoinAs"
 import { Joined } from "./Joined/Joined"
 
 export const Multiplayer = ({ entry }: { entry: GameEntry }) => {
-  const game = useMemo(() => new OnlineGameService(), [])
+  const telemetry = useTelemetry()
+  const game = useMemo(() => new OnlineGameService(telemetry), [telemetry])
   // "Just watch" from the home screen or the join screen below.
   const [watch, setWatch] = useState(() => {
     const handed = watchHandoff.value

@@ -5,9 +5,11 @@ import { PracticeGameService } from "../../../game-service/practice-game-service
 import { GameServiceProvider } from "../../../game-service/use-game-service"
 import { nameToJoin, savedName, soloKernelId, soloMapDetail } from "../../../settings/settings"
 import { GameScreen } from "../../GameScreen/GameScreen"
+import { useTelemetry } from "../../../telemetry/use-telemetry"
 
 /** One run of practice: a PracticeGameService from the moment this mounts to when it unmounts. */
 export const PracticeGame = ({ pool, outlines }: { pool: Question[]; outlines: Outlines }) => {
+  const telemetry = useTelemetry()
   const [service] = useState(
     () =>
       new PracticeGameService({
@@ -15,7 +17,8 @@ export const PracticeGame = ({ pool, outlines }: { pool: Question[]; outlines: O
         outlines,
         mapDetail: soloMapDetail.value,
         kernelId: soloKernelId.value,
-        name: nameToJoin(savedName.value) ?? playerName("You")
+        name: nameToJoin(savedName.value) ?? playerName("You"),
+        telemetry
       })
   )
   useEffect(() => {

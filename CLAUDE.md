@@ -23,6 +23,8 @@
 
 - Server logs are flat JSON lines through `logEvent`: a `code` from `LOG_CODES` (constants, not an enum: `LOG_CODES.group.event`, valued `"group.event"`, lowerCamel, grouped by subject), with `kind`/`reason` values in lowerCamel too, a short human `msg`, and camelCase fields with units in their names (`openMs`). Errors go in `err`. Never log paint, guesses or tokens; addresses only where a connection is refused.
 
+- The web app logs through `createLogger` (what happens to the app: `WEB_LOG_CODES`) and tracks through `Analytics.track` (what a player does: `ANALYTICS_CODES`, every concrete action, never pointer moves or keystrokes). Records go to the console and in batches to the server's log. Services take a `Telemetry` through their constructors; tests use `testTelemetry()`.
+
 - Metrics: `whereabouts_` snake_case names in base units (`_seconds`), `_total` on counters; labels and their values snake_case, from a small fixed set, never IDs, codes or names. Each enum maps to its label in a `Record`.
 
 ## Folders

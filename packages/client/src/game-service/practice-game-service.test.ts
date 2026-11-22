@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
+import { testTelemetry } from "../telemetry/test-telemetry"
 import { viewIn } from "@whereabouts/shared/game/view-in"
 import { paintOn, pool } from "@whereabouts/shared/game/game-tests/support"
 import { HintAxis } from "@whereabouts/shared/hints"
@@ -24,6 +25,7 @@ const makePracticeGameService = (
     mapDetail: MapDetail.MINIMAL,
     kernelId: KernelId.SINGLE,
     name: playerName("Alice"),
+    telemetry: testTelemetry(),
     seed: SEED,
     clock,
     ...options

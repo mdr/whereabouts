@@ -14,6 +14,7 @@ import { PaintInput } from "./paint-input"
 import type { Tool } from "./tool"
 import type { Km, Px } from "@whereabouts/shared/units"
 import { sound } from "../sound/sound"
+import type { Telemetry } from "../telemetry/telemetry"
 
 export class PaintController extends PaintModel {
   readonly gameMap: GameMap
@@ -24,8 +25,8 @@ export class PaintController extends PaintModel {
   readonly strength: Signal<number>
   readonly enabled: Signal<boolean>
 
-  constructor(gameMap: GameMap) {
-    super()
+  constructor(gameMap: GameMap, telemetry: Pick<Telemetry, "logger" | "analytics">) {
+    super(telemetry)
     this.gameMap = gameMap
     this.view = new PaintView(gameMap, this)
     this.input = new PaintInput(gameMap, this, this.view)
@@ -74,5 +75,9 @@ export class PaintController extends PaintModel {
 
   setBrushSize(size: Px): void {
     this.input.setBrushSize(size)
+  }
+
+  chooseTool(tool: Tool): void {
+    this.input.chooseTool(tool)
   }
 }

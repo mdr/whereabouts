@@ -24,6 +24,8 @@ import type { Instant, Ms } from "@whereabouts/shared/units"
 import { ConnectionStatus, type ConnectionState } from "./connection-state"
 import { GameMode } from "./game-mode"
 import type { GameService } from "./game-service"
+import { CommandAnalytics } from "./command-analytics"
+import type { Telemetry } from "../telemetry/telemetry"
 
 export interface PracticeOptions {
   pool: readonly Question[]
@@ -31,6 +33,7 @@ export interface PracticeOptions {
   mapDetail: MapDetail
   kernelId: KernelId
   name: PlayerName
+  telemetry: Telemetry
   clock?: Clock
   /** Fixes the first shuffle; each play again moves on from it. */
   seed?: number
@@ -66,6 +69,7 @@ export class PracticeGameService implements GameService {
 
   private readonly options: PracticeOptions
   private readonly clock: Clock
+  private readonly commands: CommandAnalytics
   private seed: number
   private game: Game
   private questions: readonly Question[] = []
@@ -74,6 +78,7 @@ export class PracticeGameService implements GameService {
   constructor(options: PracticeOptions) {
     this.options = options
     this.clock = options.clock ?? realClock
+    this.commands = new CommandAnalytics(options.telemetry.analytics)
     this.seed = options.seed ?? this.clock.now()
     this.game = this.newGame(generateCode())
     this.view = this.writableView
@@ -102,25 +107,32 @@ export class PracticeGameService implements GameService {
     this.run((game) => game.setPaint(PRACTICE_TOKEN, paint))
   }
   lock = (): void => {
+    this.commands.lock(true)
     this.run((game, now) => game.lock(PRACTICE_TOKEN, now))
   }
   unlock = (): void => {
+    this.commands.unlock(true)
     this.run((game) => game.unlock(PRACTICE_TOKEN))
   }
   ready = (): void => {
+    this.commands.ready()
     this.run((game, now) => game.ready(PRACTICE_TOKEN, now))
   }
   next = (): void => {
+    this.commands.next()
     this.run((game, now) => game.next(PRACTICE_TOKEN, now))
   }
   hint = (axis: HintAxis): void => {
+    this.commands.hint(axis)
     this.run((game) => game.hint(PRACTICE_TOKEN, axis))
   }
   end = (): void => {
+    this.commands.end()
     this.run((game) => game.end(PRACTICE_TOKEN))
   }
   /** A fresh run with a new shuffle, straight into round 1. */
   again = (): void => {
+    this.commands.again()
     this.seed = nextSeed(this.seed)
     this.game = this.newGame(this.game.code)
     this.startRun()
@@ -128,24 +140,31 @@ export class PracticeGameService implements GameService {
 
   // Multiplayer-only: forwarded to the game, which answers as it would a lone host. Screens hide them.
   configure = (patch: ConfigurePatch): void => {
+    this.commands.configure(patch)
     this.run((game) => game.configure(PRACTICE_TOKEN, patch))
   }
   start = (): void => {
+    this.commands.start()
     this.run((game, now) => game.start(PRACTICE_TOKEN, now))
   }
   rename = (name: PlayerName): void => {
+    this.commands.rename()
     this.run((game) => game.rename(PRACTICE_TOKEN, name))
   }
   kick = (playerId: PlayerId): void => {
+    this.commands.kick(playerId)
     this.run((game, now) => game.kick(PRACTICE_TOKEN, playerId, now))
   }
   leave = (): void => {
+    this.commands.leave()
     this.run((game) => game.leave(PRACTICE_TOKEN))
   }
   setRole = (role: Role): void => {
+    this.commands.setRole(role)
     this.run((game) => game.setRole(PRACTICE_TOKEN, role))
   }
   makeHost = (playerId: PlayerId): void => {
+    this.commands.makeHost(playerId)
     this.run((game) => game.makeHost(PRACTICE_TOKEN, playerId))
   }
 

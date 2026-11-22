@@ -1,5 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
+import { testTelemetry, type TestTelemetry } from "../telemetry/test-telemetry"
+import { ANALYTICS_CODES, WEB_LOG_CODES } from "@whereabouts/shared/telemetry/web-codes"
 import type { WSClientOptions } from "@rivalis/browser"
 import { CloseReason } from "@whereabouts/shared/close-reason"
 import { HintAxis } from "@whereabouts/shared/hints"
@@ -78,15 +80,16 @@ const TICKET = {
 
 const connected = (
   ticket: Omit<Ticket, "v"> = TICKET
-): { conn: OnlineGameService; client: FakeClient; clients: FakeClient[] } => {
+): { conn: OnlineGameService; client: FakeClient; clients: FakeClient[]; telemetry: TestTelemetry } => {
   const clients: FakeClient[] = []
-  const conn = new OnlineGameService((_url, options) => {
+  const telemetry = testTelemetry()
+  const conn = new OnlineGameService(telemetry, (_url, options) => {
     const c = new FakeClient(options)
     clients.push(c)
     return c
   })
   conn.connect(ticket)
-  return { conn, client: clients[0]!, clients }
+  return { conn, client: clients[0]!, clients, telemetry }
 }
 
 const rejectionOf = (conn: OnlineGameService): Rejection | undefined =>
@@ -100,6 +103,30 @@ describe("OnlineGameService status", () => {
     expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTING)
     client.open()
     expect(conn.status.value.type).toBe(ConnectionStatus.CONNECTED)
+  })
+
+  it("logs each change of connection, and tags later records with the player once in a game", () => {
+    const { client, telemetry } = connected()
+    client.open()
+    client.close()
+    expect(telemetry.entries.map((entry) => entry.fields["status"])).toEqual([
+      ConnectionStatus.CONNECTING,
+      ConnectionStatus.CONNECTED,
+      ConnectionStatus.DISCONNECTED
+    ])
+    expect(telemetry.codes()).toEqual(Array(3).fill(WEB_LOG_CODES.connection.changed))
+    client.open()
+    client.state(makeLobbyView())
+    expect(telemetry.playerId).toBe(makeLobbyView().you.id)
+  })
+
+  it("tracks a command, saying whether it could reach the server", () => {
+    const { conn, client, telemetry } = connected()
+    conn.lock()
+    expect(telemetry.lastFields(ANALYTICS_CODES.guess.lockedIn)).toEqual({ online: false })
+    client.open()
+    conn.hint(HintAxis.LATITUDE)
+    expect(telemetry.lastFields(ANALYTICS_CODES.hint.taken)).toEqual({ axis: HintAxis.LATITUDE })
   })
 
   it("is disconnected when a connection drops", () => {

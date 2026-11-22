@@ -1,11 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
+import { testTelemetry, type TestTelemetry } from "../telemetry/test-telemetry"
+import { ANALYTICS_CODES, WEB_LOG_CODES } from "@whereabouts/shared/telemetry/web-codes"
 import { FILL_DENSITY } from "@whereabouts/shared/paint/fill"
 import { LandMask } from "@whereabouts/shared/paint/land"
 import { resolutionForTolerance } from "@whereabouts/shared/paint/paint"
 import { cellToChildren, finerResolution, latLngToCell, type H3Cell } from "@whereabouts/shared/h3"
 import type { LatLon } from "@whereabouts/shared/geo"
 import { Tool } from "./tool"
-import { FillChange, PaintModel } from "./paint-model"
+import { FillChange, PaintModel, TrimKind } from "./paint-model"
 import { FillType, type FillTarget, type Filler } from "./fill-target"
 import { HintAxis } from "@whereabouts/shared/hints"
 import type { Km } from "@whereabouts/shared/units"
@@ -16,7 +18,7 @@ const PARIS: LatLon = { lat: 48.86, lon: 2.35 }
 const MADRID: LatLon = { lat: 40.42, lon: -3.7 }
 
 const makeModel = (): PaintModel => {
-  const model = new PaintModel()
+  const model = new PaintModel(testTelemetry())
   model.reset(TOLERANCE)
   return model
 }
@@ -371,6 +373,69 @@ describe("PaintModel", () => {
       vi.advanceTimersByTime(50)
       expect(model.settledVersion.value).toBe(model.version.value)
       model.dispose()
+    })
+  })
+
+  describe("telemetry", () => {
+    const tracked = (): { model: PaintModel; telemetry: TestTelemetry } => {
+      const telemetry = testTelemetry()
+      const model = new PaintModel(telemetry)
+      model.reset(TOLERANCE)
+      telemetry.entries.length = 0
+      return { model, telemetry }
+    }
+
+    it("tracks clear, undo and redo, but not the stroke a pinch takes back", () => {
+      const { model, telemetry } = tracked()
+      paintStroke(model, PARIS)
+      model.clear()
+      model.undo()
+      model.redo()
+      model.beginStroke(Tool.PAINT)
+      model.stamp(MADRID, 20, 1)
+      model.abandonStroke()
+      expect(telemetry.codes()).toEqual([
+        ANALYTICS_CODES.paint.cleared,
+        ANALYTICS_CODES.paint.undone,
+        ANALYTICS_CODES.paint.redone
+      ])
+    })
+
+    it("tracks a trim with how much it took, even when it took nothing", () => {
+      const { model, telemetry } = tracked()
+      paintStroke(model, PARIS, MADRID)
+      model.trimToHint({ axis: HintAxis.LATITUDE, from: 45, to: 55 })
+      expect(telemetry.lastFields(ANALYTICS_CODES.paint.trimmed)).toMatchObject({ trim: TrimKind.HINT })
+      expect(telemetry.lastFields(ANALYTICS_CODES.paint.trimmed)?.["removedPercent"]).toBeGreaterThan(0)
+      model.trimToHint({ axis: HintAxis.LATITUDE, from: 45, to: 55 })
+      expect(telemetry.lastFields(ANALYTICS_CODES.paint.trimmed)).toEqual({ trim: TrimKind.HINT, removedPercent: 0 })
+    })
+
+    it("logs the paint starting afresh or restored, with what it had, so a lost painting shows in the log", () => {
+      const { model, telemetry } = tracked()
+      paintStroke(model, PARIS)
+      model.reset(TOLERANCE)
+      expect(telemetry.lastFields(WEB_LOG_CODES.paint.reset)).toEqual({
+        hadPaint: true,
+        undoSteps: 1,
+        toleranceKm: TOLERANCE
+      })
+      model.restore({ [cellAt(MADRID)]: 1 })
+      expect(telemetry.lastFields(WEB_LOG_CODES.paint.restored)).toEqual({
+        hadPaint: false,
+        undoSteps: 0,
+        restoredCells: 1
+      })
+    })
+
+    it("tracks a fill, and a tool the player picks", () => {
+      const { model, telemetry } = tracked()
+      model.useFiller(makeFiller())
+      model.offerFill(FillType.COUNTRY)
+      model.fillAt(PARIS, 10)
+      model.toolChosen(Tool.ERASE)
+      expect(telemetry.lastFields(ANALYTICS_CODES.paint.filled)).toEqual({ change: FillChange.FILLED })
+      expect(telemetry.lastFields(ANALYTICS_CODES.paint.toolChosen)).toEqual({ tool: Tool.ERASE })
     })
   })
 })

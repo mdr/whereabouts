@@ -11,6 +11,8 @@ import { createAppFromEnvironment } from "../environment-app.ts"
 import type { AddressLimits } from "../address-limiter.ts"
 import type { ClientErrorLimits } from "../client-errors/client-errors-route.ts"
 import { CLIENT_ERRORS_PATH } from "@whereabouts/shared/protocol/client-error"
+import { CLIENT_TELEMETRY_PATH } from "@whereabouts/shared/protocol/client-telemetry"
+import type { ClientTelemetryLimits } from "../client-telemetry/client-telemetry-route.ts"
 import { BANK, configureGameRooms, GameRoom } from "../rooms.ts"
 import { FakeClock } from "@whereabouts/shared/test-support/fake-clock"
 import { eventually } from "./eventually.ts"
@@ -41,6 +43,8 @@ export interface InProcessOptions {
   addressLimits?: AddressLimits
   /** Per address and overall, for browsers reporting errors. */
   clientErrorLimits?: ClientErrorLimits
+  /** Per address and overall, for browsers sending their log and analytics records. */
+  clientTelemetryLimits?: ClientTelemetryLimits
   /** Serves the development endpoints. */
   devTools?: boolean
   /** A built client to serve. */
@@ -86,6 +90,7 @@ export class InProcessServer {
     questions,
     addressLimits = UNLIMITED,
     clientErrorLimits,
+    clientTelemetryLimits,
     devTools,
     staticDir,
     heartbeatIntervalMs,
@@ -108,6 +113,7 @@ export class InProcessServer {
           metricsPort: metrics ? 0 : undefined,
           addressLimits,
           clientErrorLimits,
+          clientTelemetryLimits,
           devTools,
           heartbeatIntervalMs,
           maxBufferedBytes,
@@ -137,6 +143,15 @@ export class InProcessServer {
   /** A browser reporting an error, from this address; the status it is answered with. */
   async postClientError(body: unknown, address?: string): Promise<number> {
     const response = await fetch(`${this.httpUrl}${CLIENT_ERRORS_PATH}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...(address ? { "fly-client-ip": address } : {}) },
+      body: JSON.stringify(body)
+    })
+    return response.status
+  }
+
+  async postClientTelemetry(body: unknown, address?: string): Promise<number> {
+    const response = await fetch(`${this.httpUrl}${CLIENT_TELEMETRY_PATH}`, {
       method: "POST",
       headers: { "content-type": "application/json", ...(address ? { "fly-client-ip": address } : {}) },
       body: JSON.stringify(body)

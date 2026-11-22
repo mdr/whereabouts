@@ -11,7 +11,8 @@ export const LOG_CODES = {
   player: { joined: "player.joined", left: "player.left", turnedAway: "player.turnedAway", removed: "player.removed" },
   game: { started: "game.started", ended: "game.ended" },
   round: { started: "round.started", revealed: "round.revealed" },
-  clientError: { reported: "clientError.reported", rateLimited: "clientError.rateLimited" }
+  clientError: { reported: "clientError.reported", rateLimited: "clientError.rateLimited" },
+  clientTelemetry: { rateLimited: "clientTelemetry.rateLimited" }
 } as const
 
 type LogCodes = typeof LOG_CODES

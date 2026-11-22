@@ -15,6 +15,12 @@ import {
   type ClientErrorKind,
   type ClientErrorReport
 } from "@whereabouts/shared/protocol/client-error"
+import {
+  CLIENT_TELEMETRY_PATH,
+  TelemetryBatchSchema,
+  type TelemetryRecord
+} from "@whereabouts/shared/protocol/client-telemetry"
+import type { WebCode } from "@whereabouts/shared/telemetry/web-codes"
 import type { GameConnection } from "../game-server/route-socket.ts"
 import type { Instant, Ms } from "@whereabouts/shared/units"
 
@@ -27,6 +33,7 @@ export class Tab extends PageObject {
   /** The tab's game connection, when it plays on the in-process server. */
   readonly connection: GameConnection | undefined
   readonly #clientErrors: ClientErrorReport[] = []
+  readonly #telemetry: TelemetryRecord[] = []
   readonly #failing = new Set<Download>()
   readonly #intercepted = new Set<Download>()
 
@@ -50,6 +57,32 @@ export class Tab extends PageObject {
       if (report.success) this.#clientErrors.push(report.data)
       return route.fulfill({ status: 204 })
     })
+  }
+
+  /** Keeps the page's log and analytics batches here, as collectClientErrors keeps its reports. Before opening any page. */
+  async collectTelemetry(): Promise<void> {
+    await this.page.route(`**${CLIENT_TELEMETRY_PATH}`, (route) => {
+      const batch = TelemetryBatchSchema.safeParse(route.request().postDataJSON())
+      if (batch.success) this.#telemetry.push(...batch.data.records)
+      return route.fulfill({ status: batch.success ? 204 : 400 })
+    })
+  }
+
+  /** The page sent a record with this code, and these fields among its own. */
+  async expectTelemetry(code: WebCode, fields: TelemetryRecord["fields"] = {}): Promise<void> {
+    // As when the tab is put away: the page sends what it has queued at once.
+    await this.page.evaluate(() => dispatchEvent(new Event("pagehide")))
+    await expectPolled(
+      `a ${code} record is sent with ${JSON.stringify(fields)}`,
+      code,
+      () => Promise.resolve(this.#telemetry),
+      (records) =>
+        records.some(
+          (record) =>
+            record.code === code && Object.entries(fields).every(([name, value]) => record.fields[name] === value)
+        ),
+      {}
+    )
   }
 
   /** The page told the server this kind of thing failed. */

@@ -1,4 +1,5 @@
 import { CLIENT_ERRORS_PATH } from "@whereabouts/shared/protocol/client-error"
+import { CLIENT_TELEMETRY_PATH } from "@whereabouts/shared/protocol/client-telemetry"
 import type { LogLevel } from "./log-event.ts"
 
 /**
@@ -9,7 +10,7 @@ import type { LogLevel } from "./log-event.ts"
  */
 export const requestLogLevel = (path: string, statusCode: number): LogLevel | undefined => {
   if (statusCode >= 500) return "error"
-  if (path === "/api/health" || path === CLIENT_ERRORS_PATH) return undefined
+  if (path === "/api/health" || path === CLIENT_ERRORS_PATH || path === CLIENT_TELEMETRY_PATH) return undefined
   if (path.startsWith("/api/")) return "info"
   if (path.startsWith("/assets/") && statusCode === 404) return "info"
   return undefined

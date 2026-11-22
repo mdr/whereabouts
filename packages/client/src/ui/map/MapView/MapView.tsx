@@ -26,6 +26,8 @@ import { Tool } from "../../../paint/tool"
 import styles from "./MapView.module.css"
 import { MapDetail } from "@whereabouts/shared/protocol/config"
 import type { TimeoutHandle } from "@whereabouts/shared/timeout"
+import { WEB_LOG_CODES } from "@whereabouts/shared/telemetry/web-codes"
+import { useTelemetry } from "../../../telemetry/use-telemetry"
 
 const PaintContext = createContext<PaintController | undefined>(undefined)
 
@@ -36,6 +38,7 @@ export const usePaint = (): PaintController => {
 }
 
 export const MapView = ({ children }: { children: ComponentChildren }) => {
+  const telemetry = useTelemetry()
   const mapElement = useElementRef<HTMLDivElement>()
   const globeButton = useRef<GlobeButton | undefined>(undefined)
   const [controller, setController] = useState<PaintController | undefined>(undefined)
@@ -53,7 +56,8 @@ export const MapView = ({ children }: { children: ComponentChildren }) => {
         gameMap.detail.setDetail(MapDetail.MINIMAL)
         globeButton.current = new GlobeButton(() => (globeView.value = !globeView.value), mapViewTestIds.globeButton)
         gameMap.map.addControl(globeButton.current, "bottom-left")
-        paintController = new PaintController(gameMap)
+        paintController = new PaintController(gameMap, telemetry)
+        telemetry.logger.info(WEB_LOG_CODES.map.created, "map ready", { attempt })
         window.testHooks.map = { map: gameMap.map, gameMap, paint: paintController }
         setController(paintController)
       },
@@ -71,7 +75,7 @@ export const MapView = ({ children }: { children: ComponentChildren }) => {
       paintController?.dispose()
       gameMap.dispose()
     }
-  }, [attempt, mapElement])
+  }, [attempt, mapElement, telemetry])
 
   useEffect(() => {
     if (!controller) return

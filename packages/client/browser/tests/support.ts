@@ -47,6 +47,7 @@ export const openTab = async (
   if (!baseUrl) throw new Error("no baseURL: set one in the Playwright config")
   const tab = new Tab(page, baseUrl, { dev: options.dev ?? false, connection })
   await tab.collectClientErrors()
+  await tab.collectTelemetry()
   return tab
 }
 

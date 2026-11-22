@@ -1,6 +1,8 @@
 import type { ComponentChildren, TargetedEvent } from "preact"
 import { createPortal } from "preact"
-import { useRef, useState } from "preact/hooks"
+import { useEffect, useRef, useState } from "preact/hooks"
+import { ANALYTICS_CODES } from "@whereabouts/shared/telemetry/web-codes"
+import { useTelemetry } from "../../../telemetry/use-telemetry"
 import { useElementRef } from "../../element-ref"
 import { onDialogCancel, useModalDialog } from "../../modal-dialog"
 import { cx } from "../../cx"
@@ -46,6 +48,10 @@ export const Lightbox = ({
   const pinchDist = useRef<Px | undefined>(undefined)
   const dragged = useRef(false)
   const dialogRef = useModalDialog()
+  const telemetry = useTelemetry()
+  useEffect(() => {
+    telemetry.analytics.track(ANALYTICS_CODES.picture.enlarged, "enlarged a picture", { type })
+  }, [telemetry, type])
 
   /** Zoom by `factor` keeping the point (cx, cy), relative to the frame centre, fixed. */
   const zoomAt = (factor: number, cx: Px, cy: Px) => {

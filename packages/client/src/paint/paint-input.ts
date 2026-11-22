@@ -111,7 +111,7 @@ export class PaintInput {
     }
     const keyTarget: PaintKeyTarget = {
       enabled: () => this.enabled.value,
-      setTool: (tool) => (this.tool.value = tool),
+      setTool: (tool) => this.chooseTool(tool),
       canFill: () => this.model.fillable.value,
       resizeBrush: (factor) => this.setBrushSize(this.brushRadius.value * factor),
       undo: () => this.model.undo(),
@@ -218,6 +218,12 @@ export class PaintInput {
   onHover(listener: (position: LatLon) => void): () => void {
     this.hoverListeners.add(listener)
     return () => this.hoverListeners.delete(listener)
+  }
+
+  /** The player picks a tool, from the brush bar or a key. */
+  chooseTool(tool: Tool): void {
+    this.tool.value = tool
+    this.model.toolChosen(tool)
   }
 
   setBrushSize(size: Px): void {
