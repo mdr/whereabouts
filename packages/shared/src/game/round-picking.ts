@@ -2,7 +2,7 @@
 import { poolOf } from "../catalogue/catalogue.ts"
 import type { PlaceId } from "../ids.ts"
 import type { GameConfig } from "../protocol/config.ts"
-import { QUESTION_TYPES, shuffle, type Outlines, type Question } from "../questions.ts"
+import { QUESTION_TYPES, QuestionType, shuffle, type Outlines, type Question } from "../questions.ts"
 import { roundsOverlap, scoredAnswer, type ScoredAnswer } from "../scoring/regions.ts"
 
 /** Everything a game picks its rounds from. */
@@ -13,7 +13,15 @@ export interface QuestionBank {
 }
 
 /** One per question type, so each type's pool is shuffled differently. */
-const SALTS = [0x9e3779b9, 0x7f4a7c15, 0x2545f491, 0x68e31da4, 0x1b873593, 0x85ebca6b]
+const SALTS: Record<QuestionType, number> = {
+  [QuestionType.LANDMARK]: 0x9e3779b9,
+  [QuestionType.PLACE]: 0x7f4a7c15,
+  [QuestionType.COUNTRY]: 0x2545f491,
+  [QuestionType.FLAG]: 0x68e31da4,
+  [QuestionType.FEATURE]: 0x1b873593,
+  [QuestionType.STATE]: 0x85ebca6b,
+  [QuestionType.PART_OF_COUNTRY]: 0xcc9e2d51
+}
 
 /**
  * The rounds' questions, as many of each type as the mix asks while they
@@ -29,10 +37,10 @@ export const pickRounds = (
   const chosen: Question[] = []
   const asked = new Set<PlaceId>()
   const answer = (question: Question): ScoredAnswer => scoredAnswer(question.answer, outlines)
-  QUESTION_TYPES.forEach((type, i) => {
+  QUESTION_TYPES.forEach((type) => {
     const count = mix[type]
     if (count === 0) return
-    const candidates = shuffle(poolOf(catalogue, [type], mapDetail), seed ^ SALTS[i]!).filter(
+    const candidates = shuffle(poolOf(catalogue, [type], mapDetail), seed ^ SALTS[type]).filter(
       (question) => !asked.has(question.place)
     )
     for (let n = 0; n < count && candidates.length > 0; n++) {
