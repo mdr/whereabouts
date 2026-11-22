@@ -5827,7 +5827,7 @@
       "tolerance": 10,
       "surface": "LAND"
     },
-    "partOf": { "status": "a British overseas territory, claimed by Argentina", "flag": "gb" }
+    "partOf": { "status": "a British overseas territory", "flag": "gb" }
   },
   {
     "id": "part-greenland",

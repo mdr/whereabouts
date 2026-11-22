@@ -123,8 +123,7 @@ const PARTS: Part[] = [
     name: "the Falkland Islands",
     plural: true,
     source: mapUnit("Falkland Islands"),
-    status: "a British overseas territory, claimed by Argentina",
-    flag: "gb"
+    ...BRITISH_TERRITORY
   },
   { label: "Greenland", source: mapUnit("Greenland"), ...DANISH },
   { label: "Faroe Islands", name: "the Faroe Islands", plural: true, source: mapUnit("Faroe Islands"), ...DANISH },
