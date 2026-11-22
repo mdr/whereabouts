@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { signal } from "@preact/signals"
-import { mixOf, MapDetail } from "@whereabouts/shared/protocol/config"
+import { MAX_ROUNDS, mixOf, MapDetail } from "@whereabouts/shared/protocol/config"
 import { type GameView, Phase } from "@whereabouts/shared/protocol/views"
 import { QuestionType } from "@whereabouts/shared/questions"
 import { hostSetup } from "./settings"
@@ -21,7 +21,7 @@ describe("savedSetupPatch", () => {
   })
 
   it("drops only the settings the game no longer offers, so the rest still apply", () => {
-    expect(savedSetupPatch({ ...SAVED, roundLength: 75_000, mix: { ...MIX, [FLAG]: 9 } })).toEqual({
+    expect(savedSetupPatch({ ...SAVED, roundLength: 75_000, mix: { ...MIX, [FLAG]: MAX_ROUNDS } })).toEqual({
       mapDetail: MapDetail.POLITICAL
     })
   })

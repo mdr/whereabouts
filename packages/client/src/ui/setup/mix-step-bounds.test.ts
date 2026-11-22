@@ -19,7 +19,8 @@ describe("mixStepBounds", () => {
   })
 
   it("stops a type where the game reaches the most rounds", () => {
-    expect(mixStepBounds(mixOf({ [LANDMARK]: 10, [PLACE]: 5 }), LANDMARK).max).toBe(10)
-    expect(mixStepBounds(mixOf({ [LANDMARK]: 10, [PLACE]: 5 }), PLACE).max).toBe(5)
+    const full = mixOf({ [LANDMARK]: MAX_ROUNDS - 5, [PLACE]: 5 })
+    expect(mixStepBounds(full, LANDMARK).max).toBe(MAX_ROUNDS - 5)
+    expect(mixStepBounds(full, PLACE).max).toBe(5)
   })
 })

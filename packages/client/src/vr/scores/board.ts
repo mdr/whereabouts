@@ -18,6 +18,9 @@ export interface VrBoard {
 const CANVAS_WIDTH = 1400
 const PAD = 64
 const ROW_HEIGHT = 84
+/** Beyond this many rounds, each takes one line, so a long game's board stays legible. */
+const ROOMY_ROUNDS = 15
+const COMPACT_ROW_HEIGHT = 52
 const BOARD_WIDTH: Metres = 0.95
 const MAX_HEIGHT: Metres = 0.75
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
@@ -65,11 +68,13 @@ export class ResultsBoard {
 }
 
 const draw = (board: VrBoard): HTMLCanvasElement => {
+  const compact = board.rounds.length > ROOMY_ROUNDS
+  const rowHeight = compact ? COMPACT_ROW_HEIGHT : ROW_HEIGHT
   const awardRows = Math.ceil(board.awards.length / 2)
   const height =
     PAD * 2 +
     (board.awards.length > 0 ? 90 + awardRows * 150 + 40 : 0) +
-    (board.rounds.length > 0 ? 170 + board.rounds.length * ROW_HEIGHT : 0)
+    (board.rounds.length > 0 ? 170 + board.rounds.length * rowHeight : 0)
   const canvas = document.createElement("canvas")
   canvas.width = CANVAS_WIDTH
   canvas.height = height
@@ -131,21 +136,29 @@ const draw = (board: VrBoard): HTMLCanvasElement => {
     })
     y += 80
     board.rounds.forEach((round, i) => {
-      const rowY = y + i * ROW_HEIGHT + ROW_HEIGHT / 2
+      const rowY = y + i * rowHeight + rowHeight / 2
       if (i % 2 === 0) {
         ctx.fillStyle = "rgba(255,255,255,0.04)"
-        ctx.fillRect(PAD - 16, rowY - ROW_HEIGHT / 2, CANVAS_WIDTH - PAD * 2 + 32, ROW_HEIGHT)
+        ctx.fillRect(PAD - 16, rowY - rowHeight / 2, CANVAS_WIDTH - PAD * 2 + 32, rowHeight)
       }
       ctx.textAlign = "left"
-      ctx.fillStyle = "#cfd8e3"
-      ctx.font = `36px ${FONT}`
-      ctx.fillText(`${i + 1}. ${round.label}`, PAD, rowY - 14, labelW - 30)
-      const typeX = PAD + ctx.measureText(`${i + 1}. `).width
-      ctx.fillStyle = round.colour
-      ctx.fillRect(typeX, rowY + 14, 18, 18)
-      ctx.fillStyle = "#94a3b8"
-      ctx.font = `28px ${FONT}`
-      ctx.fillText(round.type, typeX + 30, rowY + 24, labelW - 60)
+      if (compact) {
+        ctx.fillStyle = round.colour
+        ctx.fillRect(PAD, rowY - 9, 18, 18)
+        ctx.fillStyle = "#cfd8e3"
+        ctx.font = `34px ${FONT}`
+        ctx.fillText(`${i + 1}. ${round.label}`, PAD + 30, rowY, labelW - 60)
+      } else {
+        ctx.fillStyle = "#cfd8e3"
+        ctx.font = `36px ${FONT}`
+        ctx.fillText(`${i + 1}. ${round.label}`, PAD, rowY - 14, labelW - 30)
+        const typeX = PAD + ctx.measureText(`${i + 1}. `).width
+        ctx.fillStyle = round.colour
+        ctx.fillRect(typeX, rowY + 14, 18, 18)
+        ctx.fillStyle = "#94a3b8"
+        ctx.font = `28px ${FONT}`
+        ctx.fillText(round.type, typeX + 30, rowY + 24, labelW - 60)
+      }
       const best = Math.max(-1, ...round.scores.map((score) => score ?? -1))
       ctx.textAlign = "center"
       round.scores.forEach((score, j) => {

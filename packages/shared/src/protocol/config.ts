@@ -7,7 +7,7 @@ import type { Ms } from "../units.ts"
 /** Round lengths the host may pick. */
 export const ROUND_LENGTHS: readonly Ms[] = [10_000, 20_000, 30_000, 45_000, 60_000, 90_000, 120_000]
 const MIN_ROUNDS = 1
-export const MAX_ROUNDS = 15
+export const MAX_ROUNDS = 30
 /** Players in one game, one per player colour. */
 export const MAX_PLAYERS = 24
 
@@ -50,7 +50,10 @@ export const evenMix = (rounds: number): QuestionMix => {
 const roundCount = z.number().int().min(0).max(MAX_ROUNDS)
 export const MixSchema = z
   .record(z.enum(QuestionType), roundCount)
-  .refine((m) => mixTotal(m) >= MIN_ROUNDS && mixTotal(m) <= MAX_ROUNDS, "a game has 1 to 15 rounds")
+  .refine(
+    (m) => mixTotal(m) >= MIN_ROUNDS && mixTotal(m) <= MAX_ROUNDS,
+    `a game has ${MIN_ROUNDS} to ${MAX_ROUNDS} rounds`
+  )
 
 /**
  * How much of the map shows while guessing, least first. The reveal always

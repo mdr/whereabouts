@@ -11,7 +11,9 @@ describe("ConfigureSchema", () => {
     expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 2, [QuestionType.PLACE]: 2 })).success).toBe(true)
     expect(ConfigureSchema.safeParse({ roundLength: 45_000 }).success).toBe(true)
     expect(ConfigureSchema.safeParse(mix({})).success).toBe(false)
-    expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 8, [QuestionType.PLACE]: 8 })).success).toBe(false)
+    expect(
+      ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: MAX_ROUNDS, [QuestionType.PLACE]: 1 })).success
+    ).toBe(false)
     expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: -1, [QuestionType.PLACE]: 2 })).success).toBe(false)
     expect(ConfigureSchema.safeParse(mix({ [QuestionType.LANDMARK]: 1.5 })).success).toBe(false)
     expect(ConfigureSchema.safeParse({ mix: { [QuestionType.LANDMARK]: 3 } }).success).toBe(false)

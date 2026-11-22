@@ -17,12 +17,13 @@ const settle = (): Promise<unknown> => new Promise((resolve) => setTimeout(resol
 describe("preloadPicture", () => {
   it("holds a whole game's photos and no more, those asked for again counting as new", () => {
     const photo = (index: number): CommonsFile => commonsFile(`${index}.jpg`)
-    for (let i = 0; i < 40; i++) preloadPicture({ type: PictureType.PHOTO, photo: photo(i) })
+    const game = 2 * MAX_ROUNDS + 10
+    for (let i = 0; i < game; i++) preloadPicture({ type: PictureType.PHOTO, photo: photo(i) })
     preloadPicture({ type: PictureType.PHOTO, photo: photo(20) })
     const { page } = heldPictures()
     expect(page).toHaveLength(2 * MAX_ROUNDS)
     expect(page.at(-1)).toBe(commonsImageUrl(photo(20)))
-    expect(page[0]).toBe(commonsImageUrl(photo(40 - 2 * MAX_ROUNDS)))
+    expect(page[0]).toBe(commonsImageUrl(photo(game - 2 * MAX_ROUNDS)))
   })
 
   it("loads the headset's renditions too, only while in VR", async () => {
