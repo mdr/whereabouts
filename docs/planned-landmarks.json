@@ -1,0 +1,124 @@
+{
+  "about": "Landmark (photo) rounds planned but not yet added, mostly to even out the regions: of the 164 landmarks, about 75 are in Europe and 12 in Africa. Each has an id, a label in the style of the existing ones, a region, a tolerance in km and, where it matters, a note on the photo.",
+  "skipped": {
+    "Western Wall": "next to the Dome of the Rock, so the same answer",
+    "Kaaba, Mecca": "religiously sensitive as a photo to guess from",
+    "Prambanan": "40 km from Borobudur",
+    "Itsukushima Shrine": "20 km from the Hiroshima Peace Memorial",
+    "Mount Vesuvius": "10 km from Pompeii",
+    "Horseshoe Bend": "8 km from Antelope Canyon",
+    "Mount Fitz Roy": "Patagonia already has Torres del Paine and Perito Moreno",
+    "Hassan II Mosque": "Morocco already has Chefchaouen, and gets Marrakech and Aït Benhaddou",
+    "Westminster Abbey, St Paul's, London Eye": "London already has four",
+    "Rialto Bridge, Astronomical Clock, Little Mermaid": "Venice, Prague and Copenhagen already have one each",
+    "Kirkjufell": "Iceland already has three",
+    "Robben Island": "hard to photograph recognisably"
+  },
+  "landmarks": [
+    {
+      "id": "great-barrier-reef",
+      "label": "Great Barrier Reef, Queensland",
+      "region": "Oceania",
+      "tolerance": 400,
+      "note": "Aerial view of the reef, e.g. Heart Reef"
+    },
+    { "id": "aoraki", "label": "Aoraki / Mount Cook, New Zealand", "region": "Oceania", "tolerance": 300 },
+    { "id": "rotorua", "label": "Pōhutu Geyser, Rotorua", "region": "Oceania", "tolerance": 300 },
+    { "id": "tikal", "label": "Tikal, Guatemala", "region": "Americas", "tolerance": 300 },
+    {
+      "id": "panama-canal",
+      "label": "Panama Canal, Miraflores Locks",
+      "region": "Americas",
+      "tolerance": 200,
+      "note": "A ship in the locks"
+    },
+    { "id": "lincoln-memorial", "label": "Lincoln Memorial, Washington, D.C.", "region": "Americas", "tolerance": 150 },
+    { "id": "antelope-canyon", "label": "Antelope Canyon, Arizona", "region": "Americas", "tolerance": 300 },
+    { "id": "cloud-gate", "label": "Cloud Gate, Chicago", "region": "Americas", "tolerance": 150 },
+    { "id": "hoover-dam", "label": "Hoover Dam, Nevada–Arizona border", "region": "Americas", "tolerance": 200 },
+    { "id": "lake-titicaca", "label": "Uros floating islands, Lake Titicaca", "region": "Americas", "tolerance": 300 },
+    {
+      "id": "old-havana",
+      "label": "Old Havana, Cuba",
+      "region": "Americas",
+      "tolerance": 200,
+      "note": "Classic cars on a street, or El Capitolio"
+    },
+    { "id": "cartagena", "label": "Walled city of Cartagena, Colombia", "region": "Americas", "tolerance": 200 },
+    {
+      "id": "lencois-maranhenses",
+      "label": "Lençóis Maranhenses, Brazil",
+      "region": "Americas",
+      "tolerance": 400,
+      "note": "Dunes with rainwater lagoons"
+    },
+    { "id": "ngorongoro", "label": "Ngorongoro Crater, Tanzania", "region": "Africa", "tolerance": 300 },
+    {
+      "id": "avenue-of-the-baobabs",
+      "label": "Avenue of the Baobabs, Madagascar",
+      "region": "Africa",
+      "tolerance": 400
+    },
+    {
+      "id": "jemaa-el-fnaa",
+      "label": "Jemaa el-Fnaa, Marrakech",
+      "region": "Africa",
+      "tolerance": 200,
+      "note": "The square with the Koutoubia minaret"
+    },
+    { "id": "ait-benhaddou", "label": "Aït Benhaddou, Morocco", "region": "Africa", "tolerance": 250 },
+    { "id": "great-zimbabwe", "label": "Great Zimbabwe", "region": "Africa", "tolerance": 300 },
+    { "id": "okavango", "label": "Okavango Delta, Botswana", "region": "Africa", "tolerance": 400 },
+    { "id": "meroe", "label": "Pyramids of Meroë, Sudan", "region": "Africa", "tolerance": 400 },
+    {
+      "id": "sheikh-zayed-mosque",
+      "label": "Sheikh Zayed Grand Mosque, Abu Dhabi",
+      "region": "Middle East",
+      "tolerance": 150
+    },
+    { "id": "persepolis", "label": "Persepolis, Iran", "region": "Middle East", "tolerance": 300 },
+    { "id": "naqsh-e-jahan", "label": "Naqsh-e Jahan Square, Isfahan", "region": "Middle East", "tolerance": 300 },
+    { "id": "baalbek", "label": "Baalbek, Lebanon", "region": "Middle East", "tolerance": 200 },
+    {
+      "id": "the-bund",
+      "label": "The Bund, Shanghai",
+      "region": "East Asia",
+      "tolerance": 200,
+      "note": "Looking across to the Pudong skyline"
+    },
+    { "id": "taipei-101", "label": "Taipei 101", "region": "East Asia", "tolerance": 150 },
+    { "id": "himeji-castle", "label": "Himeji Castle, Japan", "region": "East Asia", "tolerance": 150 },
+    {
+      "id": "gyeongbokgung",
+      "label": "Gyeongbokgung, Seoul",
+      "region": "East Asia",
+      "tolerance": 200,
+      "note": "Korea has no landmark yet"
+    },
+    { "id": "wat-arun", "label": "Wat Arun, Bangkok", "region": "South-East Asia", "tolerance": 200 },
+    { "id": "tanah-lot", "label": "Tanah Lot, Bali", "region": "South-East Asia", "tolerance": 300 },
+    {
+      "id": "chocolate-hills",
+      "label": "Chocolate Hills, Bohol",
+      "region": "South-East Asia",
+      "tolerance": 300,
+      "note": "The Philippines has no landmark yet"
+    },
+    { "id": "hawa-mahal", "label": "Hawa Mahal, Jaipur", "region": "South Asia", "tolerance": 200 },
+    { "id": "varanasi", "label": "Ghats of Varanasi", "region": "South Asia", "tolerance": 300 },
+    {
+      "id": "gergeti",
+      "label": "Gergeti Trinity Church, Georgia",
+      "region": "Caucasus",
+      "tolerance": 200,
+      "note": "With Mount Kazbek behind"
+    },
+    { "id": "segovia-aqueduct", "label": "Aqueduct of Segovia", "region": "Europe", "tolerance": 100 },
+    { "id": "milan-cathedral", "label": "Milan Cathedral", "region": "Europe", "tolerance": 80 },
+    { "id": "etna", "label": "Mount Etna, Sicily", "region": "Europe", "tolerance": 150 },
+    { "id": "geirangerfjord", "label": "Geirangerfjord, Norway", "region": "Europe", "tolerance": 150 },
+    { "id": "winter-palace", "label": "Winter Palace, Saint Petersburg", "region": "Europe", "tolerance": 150 },
+    { "id": "skellig-michael", "label": "Skellig Michael, County Kerry", "region": "Europe", "tolerance": 60 },
+    { "id": "tallinn-old-town", "label": "Old Town of Tallinn", "region": "Europe", "tolerance": 120 }
+  ]
+}
