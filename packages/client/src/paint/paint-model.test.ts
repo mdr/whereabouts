@@ -1,3 +1,4 @@
+import { AnswerType } from "@whereabouts/shared/questions"
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { testTelemetry, type TestTelemetry } from "../telemetry/test-telemetry"
 import { ANALYTICS_CODES, WEB_LOG_CODES } from "@whereabouts/shared/telemetry/web-codes"
@@ -19,7 +20,7 @@ const MADRID: LatLon = { lat: 40.42, lon: -3.7 }
 
 const makeModel = (): PaintModel => {
   const model = new PaintModel(testTelemetry())
-  model.reset(TOLERANCE)
+  model.reset({ type: AnswerType.AREA, tolerance: TOLERANCE })
   return model
 }
 
@@ -324,7 +325,7 @@ describe("PaintModel", () => {
     it("starts empty at the question's resolution, with no history", () => {
       const model = makeModel()
       paintStroke(model, PARIS)
-      model.reset(10)
+      model.reset({ type: AnswerType.AREA, tolerance: 10 })
       expect(model.layer.isEmpty).toBe(true)
       expect(model.layer.resolution).toBe(resolutionForTolerance(10))
       expect(model.tolerance.value).toBe(10)
@@ -345,7 +346,7 @@ describe("PaintModel", () => {
         () => model.clear(),
         () => model.restore({ [cellAt(MADRID)]: 1 }),
         () => model.trimToHint({ axis: HintAxis.LATITUDE, from: 45, to: 55 }),
-        () => model.reset(TOLERANCE)
+        () => model.reset({ type: AnswerType.AREA, tolerance: TOLERANCE })
       ]
       for (const change of changes) {
         const before = model.version.value
@@ -380,7 +381,7 @@ describe("PaintModel", () => {
     const tracked = (): { model: PaintModel; telemetry: TestTelemetry } => {
       const telemetry = testTelemetry()
       const model = new PaintModel(telemetry)
-      model.reset(TOLERANCE)
+      model.reset({ type: AnswerType.AREA, tolerance: TOLERANCE })
       telemetry.entries.length = 0
       return { model, telemetry }
     }
@@ -414,7 +415,7 @@ describe("PaintModel", () => {
     it("logs the paint starting afresh or restored, with what it had, so a lost painting shows in the log", () => {
       const { model, telemetry } = tracked()
       paintStroke(model, PARIS)
-      model.reset(TOLERANCE)
+      model.reset({ type: AnswerType.AREA, tolerance: TOLERANCE })
       expect(telemetry.lastFields(WEB_LOG_CODES.paint.reset)).toEqual({
         hadPaint: true,
         undoSteps: 1,

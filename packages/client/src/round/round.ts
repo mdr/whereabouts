@@ -68,7 +68,7 @@ export const useRoundMap = (
 ): void => {
   useEffect(() => {
     if (!painting || !question) return
-    paint.reset(question.answer.tolerance)
+    paint.reset(question.answer)
     start?.()
     paint.gameMap.clearReveal()
     paint.gameMap.camera.resetView(startRegion(question))

@@ -1,7 +1,7 @@
 /** Scoring one player's round: the score, its parts, and the facts the awards read. */
 import { FactsType, type RoundFacts } from "../awards/player-facts.ts"
 import { explainPoint, isHedge } from "./explain.ts"
-import { PaintLayer, resolutionForTolerance } from "../paint/paint.ts"
+import { PaintLayer, paintResolution } from "../paint/paint.ts"
 import { RoundGuessType, type PaintSubmission, type RoundGuess } from "../protocol/views.ts"
 import { AnswerType } from "../questions.ts"
 import { regionMisfit, scoreAnswer, type ScoredAnswer } from "./regions.ts"
@@ -50,7 +50,7 @@ export const scoreRound = (
   { startedAt, roundLength }: { startedAt: Instant; roundLength: Ms | undefined }
 ): ScoredRound => {
   const submittedPaint = paint && Object.keys(paint.cells).length > 0 ? paint : undefined
-  const resolution = resolutionForTolerance(answer.tolerance)
+  const resolution = paintResolution(answer)
   const cells = submittedPaint ? [...PaintLayer.fromRecord(resolution, submittedPaint.cells).toCells()] : []
   const painted = submittedPaint ? buildDistribution(cells, submittedPaint.floor) : undefined
   const { score, parts } = scoreAnswer(painted, answer, kernel)

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vite-plus/test"
 import { cellToLatLng, edgeLength, h3Resolution, latLngToCell } from "../h3.ts"
 import { greatCircleDistance } from "../geo.ts"
-import { PaintLayer, cellSpacing, resolutionForTolerance } from "./paint.ts"
+import { PaintLayer, cellSpacing, paintResolution, resolutionForTolerance } from "./paint.ts"
+import { AnswerType } from "../questions.ts"
 
 describe("resolutionForTolerance", () => {
   it("picks cells with edge at most a quarter of the tolerance", () => {
@@ -10,6 +11,20 @@ describe("resolutionForTolerance", () => {
       expect(edgeLength(resolution)).toBeLessThanOrEqual(tolerance / 4)
       if (resolution > 1) expect(edgeLength(h3Resolution(resolution - 1))).toBeGreaterThan(tolerance / 4)
     }
+  })
+})
+
+describe("paintResolution", () => {
+  it("paints an area at its tolerance's resolution", () => {
+    expect(paintResolution({ type: AnswerType.AREA, tolerance: 300 })).toBe(resolutionForTolerance(300))
+  })
+
+  it("paints a point with a generous tolerance in cells no wider than about 10 km at the edge, so a small country has a shape", () => {
+    expect(edgeLength(paintResolution({ type: AnswerType.POINT, tolerance: 300 }))).toBeLessThan(11)
+  })
+
+  it("paints a point with a tight tolerance at its tolerance's resolution", () => {
+    expect(paintResolution({ type: AnswerType.POINT, tolerance: 3 })).toBe(resolutionForTolerance(3))
   })
 })
 

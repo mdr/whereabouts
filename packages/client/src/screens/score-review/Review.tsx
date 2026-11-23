@@ -77,7 +77,7 @@ export const Review = ({ outlines }: { outlines: Outlines }) => {
     )
 
   useEffect(() => {
-    paint.reset(answer.tolerance)
+    paint.reset(answer)
     paint.enabled.value = false
     paint.gameMap.detail.setDetail(RevealDetail.REVEAL)
     if (answer.type === AnswerType.AREA) paint.gameMap.showRegionReveal(answer.polygons, answer.disputedPolygons)

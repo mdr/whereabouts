@@ -79,9 +79,9 @@ afterEach(() => {
 })
 
 describe("useRoundMap", () => {
-  it("starts a round afresh: paint reset to its tolerance, then the screen's start, the map cleared, the brush picked", () => {
+  it("starts a round afresh: paint reset for its answer, then the screen's start, the map cleared, the brush picked", () => {
     const { paint, start } = setup()
-    expect(paint.reset).toHaveBeenCalledWith(50)
+    expect(paint.reset).toHaveBeenCalledWith(expect.objectContaining({ tolerance: 50 }))
     expect(start).toHaveBeenCalledTimes(1)
     expect(paint.reset.mock.invocationCallOrder[0]).toBeLessThan(start.mock.invocationCallOrder[0]!)
     expect(paint.gameMap.clearReveal).toHaveBeenCalled()

@@ -5,7 +5,7 @@
  */
 import type { Signal } from "@preact/signals"
 import type { CssColour } from "@whereabouts/shared/colours"
-import type { PaintLayer } from "@whereabouts/shared/paint/paint"
+import type { PaintedAnswer, PaintLayer } from "@whereabouts/shared/paint/paint"
 import type { LatLon } from "@whereabouts/shared/geo"
 import type { GameMap } from "../map/map"
 import { FillChange, PaintModel } from "./paint-model"
@@ -52,8 +52,8 @@ export class PaintController extends PaintModel {
     return change
   }
 
-  override reset(tolerance: Km): void {
-    super.reset(tolerance)
+  override reset(answer: PaintedAnswer): void {
+    super.reset(answer)
     this.view.draw()
   }
 

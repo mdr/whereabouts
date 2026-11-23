@@ -6,7 +6,7 @@
 import { batch, computed, signal, type ReadonlySignal } from "@preact/signals"
 import { FILL_DENSITY } from "@whereabouts/shared/paint/fill"
 import { paintBlobs } from "@whereabouts/shared/paint/blobs"
-import { PaintLayer, resolutionForTolerance } from "@whereabouts/shared/paint/paint"
+import { PaintLayer, paintResolution, type PaintedAnswer } from "@whereabouts/shared/paint/paint"
 import { paintAmount, trimLand, trimSea, type LandMask, type WaterMask } from "@whereabouts/shared/paint/land"
 import { trimToHint, type HintBand } from "@whereabouts/shared/hints"
 import { h3Resolution, type H3Cell } from "@whereabouts/shared/h3"
@@ -129,8 +129,9 @@ export class PaintModel {
     this.version.value++
   }
 
-  /** Start a fresh layer sized for a question's tolerance. */
-  reset(tolerance: Km): void {
+  /** Start a fresh layer sized for a question's answer. */
+  reset(answer: PaintedAnswer): void {
+    const { tolerance } = answer
     this.telemetry.logger.info(WEB_LOG_CODES.paint.reset, "paint started afresh", {
       hadPaint: !this._layer.isEmpty,
       undoSteps: this.undoStack.length,
@@ -138,7 +139,7 @@ export class PaintModel {
     })
     batch(() => {
       this.tolerance.value = tolerance
-      this._layer = new PaintLayer(resolutionForTolerance(tolerance))
+      this._layer = new PaintLayer(paintResolution(answer))
       this.fills = new Map()
       this.version.value++
       this.clearHistory()

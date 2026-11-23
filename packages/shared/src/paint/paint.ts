@@ -4,7 +4,7 @@
  * Cells are near-equal-area within a resolution, so intensity is a density and
  * converts to probability mass with only a per-cell area factor. A layer has a
  * finest resolution, chosen per question so a cell edge is at most a quarter
- * of the tolerance; each brush stroke then picks the coarsest resolution that
+ * of the tolerance (finer for a point, see paintResolution); each brush stroke then picks the coarsest resolution that
  * still fits a few cells across the brush. Painting a continent at world zoom
  * writes a few hundred large cells rather than tens of thousands of tiny ones,
  * and the cost of a stamp is roughly constant whatever the zoom.
@@ -34,6 +34,7 @@ import {
 import { chordDistanceSq, toXyz, type LatLon, type Ring } from "../geo.ts"
 import { unwrapAntimeridian } from "./cell-outline.ts"
 import type { Degrees, Km, SquareKm } from "../units.ts"
+import { AnswerType } from "../questions.ts"
 
 /** Cells across the brush radius a stamp aims for; sets the stamp resolution. */
 const TARGET_RINGS = 5
@@ -46,6 +47,24 @@ export const resolutionForTolerance = (tolerance: Km): H3Resolution => {
     if (edgeLength(h3Resolution(resolution)) <= target) return h3Resolution(Math.max(1, resolution))
   }
   return h3Resolution(10)
+}
+
+/**
+ * A point's tolerance is generous, so cells sized from it alone could be
+ * wider than a small country: a point's cells are at least this fine.
+ */
+const POINT_RESOLUTION = h3Resolution(5)
+
+/** What sizes a question's paint: its kind of answer and its tolerance. */
+export interface PaintedAnswer {
+  type: AnswerType
+  tolerance: Km
+}
+
+/** The finest resolution a question's paint may use. */
+export const paintResolution = ({ type, tolerance }: PaintedAnswer): H3Resolution => {
+  const resolution = resolutionForTolerance(tolerance)
+  return type === AnswerType.POINT && resolution < POINT_RESOLUTION ? POINT_RESOLUTION : resolution
 }
 
 /** Centre-to-centre distance between neighbouring cells. */

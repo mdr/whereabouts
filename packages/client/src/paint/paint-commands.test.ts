@@ -1,3 +1,4 @@
+import { AnswerType } from "@whereabouts/shared/questions"
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { testTelemetry } from "../telemetry/test-telemetry"
 import { LandMask, WaterMask } from "@whereabouts/shared/paint/land"
@@ -23,7 +24,7 @@ const cellAt = ({ lat, lon }: LatLon): H3Cell => latLngToCell(lat, lon, RESOLUTI
 
 const makeModel = (...at: LatLon[]): PaintModel => {
   const model = new PaintModel(testTelemetry())
-  model.reset(TOLERANCE)
+  model.reset({ type: AnswerType.AREA, tolerance: TOLERANCE })
   model.restore(Object.fromEntries(at.map((point) => [cellAt(point), 1])))
   return model
 }

@@ -1,6 +1,6 @@
 import { EARTH_RADIUS, greatCircleDistance, toDegrees, toRadians, type LatLon } from "../geo.ts"
 import { cellArea, cellToLatLng } from "../h3.ts"
-import { PaintLayer, resolutionForTolerance } from "../paint/paint.ts"
+import { PaintLayer, paintResolution } from "../paint/paint.ts"
 import { AnswerType, answerCentre, shuffle, type PointAnswer } from "../questions.ts"
 import type { Degrees, Km, SquareKm } from "../units.ts"
 import { insideRegion, regionCells, type Area, type ScoredAnswer } from "./regions.ts"
@@ -80,7 +80,7 @@ const painting = (
 } => {
   const between = (low: number, high: number): number => low + (high - low) * random()
   const tolerance = answer.tolerance
-  const layer = new PaintLayer(resolutionForTolerance(tolerance))
+  const layer = new PaintLayer(paintResolution(answer))
   /** A rough patch `tolerancesAcross` tolerances across, `tolerancesAway` tolerances from the answer in a random direction. */
   const blob = (tolerancesAway: number, tolerancesAcross: number, strength = 1): void => {
     const centre = offset(answerCentre(answer), tolerancesAway * tolerance, random() * 360)
