@@ -30,6 +30,12 @@ export const DEFAULT_HINTS = 1
 
 /** A band's width, in the round's tolerances. */
 export const HINT_WIDTH_TOLERANCES = 10
+/**
+ * The widest a band gets, in km. Ten tolerances of a remote island (800 km)
+ * would span a third of the Pacific; a band along one axis still spreads
+ * paint too thin to score well at this width.
+ */
+export const MAX_HINT_WIDTH: Km = 3000
 /** The answer is never in this outer share of the band at either edge. */
 const EDGE = 0.15
 /** A longitude band near a pole would otherwise span most of the world. */
@@ -41,7 +47,7 @@ const MAX_LONGITUDE_SPAN: Degrees = 120
  * degrees, or tenths for a narrow band, so the labels are the band.
  */
 export const hintBand = (answer: LatLon, tolerance: Km, axis: HintAxis, unit: number): HintBand => {
-  const span = kmToDegrees(HINT_WIDTH_TOLERANCES * tolerance)
+  const span = kmToDegrees(Math.min(HINT_WIDTH_TOLERANCES * tolerance, MAX_HINT_WIDTH))
   const at = EDGE + unit * (1 - 2 * EDGE)
   if (axis === HintAxis.LATITUDE) {
     const width = Math.min(span, 180)

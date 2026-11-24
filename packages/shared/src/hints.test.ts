@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vite-plus/test"
-import { HINT_WIDTH_TOLERANCES, describeHint, hintBand, inHintBand, seededUnit, trimToHint, HintAxis } from "./hints.ts"
+import {
+  HINT_WIDTH_TOLERANCES,
+  MAX_HINT_WIDTH,
+  describeHint,
+  hintBand,
+  inHintBand,
+  seededUnit,
+  trimToHint,
+  HintAxis
+} from "./hints.ts"
 import { CATALOGUE } from "./catalogue/catalogue.ts"
 import { answerCentre } from "./questions.ts"
 import { PaintLayer, resolutionForTolerance } from "./paint/paint.ts"
@@ -27,6 +36,14 @@ describe("hintBand", () => {
       expect(answer.lat - band.from).toBeGreaterThan(0.1 * (band.to - band.from))
       expect(band.to - answer.lat).toBeGreaterThan(0.1 * (band.to - band.from))
     }
+  })
+
+  it("is at most 3,000 km wide, however generous the tolerance", () => {
+    const yaren = { lat: -0.547, lon: 166.92 }
+    const latitude = hintBand(yaren, 800, HintAxis.LATITUDE, 0.5)
+    expect((latitude.to - latitude.from) * 111.195).toBeLessThan(MAX_HINT_WIDTH + 2 * 111.195)
+    const longitude = hintBand(yaren, 800, HintAxis.LONGITUDE, 0.5)
+    expect((longitude.to - longitude.from) * 111.195).toBeLessThan(MAX_HINT_WIDTH + 2 * 111.195)
   })
 
   it("wraps a longitude band across 180°, and stays inside the poles", () => {
