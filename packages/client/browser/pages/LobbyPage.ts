@@ -327,6 +327,14 @@ export class LobbyPage extends Screen {
     await expect(this.page.getByTestId(renameFormTestIds.input), "the rename form closes").toBeHidden()
   }
 
+  /** Rename, saving with Enter in the name field. */
+  async renameWithEnter(name: string): Promise<void> {
+    await this.page.getByTestId(playerListTestIds.renameButton).click()
+    await this.page.getByTestId(renameFormTestIds.input).fill(name)
+    await this.page.getByTestId(renameFormTestIds.input).press("Enter")
+    await expect(this.page.getByTestId(renameFormTestIds.input), "the rename form closes").toBeHidden()
+  }
+
   /** Whether the host's Start button is here. */
   async expectHostControls(present = true): Promise<void> {
     await expect(
@@ -338,6 +346,12 @@ export class LobbyPage extends Screen {
   /** Host only. */
   async startGame(): Promise<RoundPage> {
     await this.page.getByTestId(setupPanelTestIds.startButton).click()
+    return RoundPage.whenShown(this.tab)
+  }
+
+  /** Host only: Enter starts the game. */
+  async startGameWithKeyboard(): Promise<RoundPage> {
+    await this.page.keyboard.press("Enter")
     return RoundPage.whenShown(this.tab)
   }
 

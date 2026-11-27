@@ -77,8 +77,16 @@ test("host", async ({ browser, game }) => {
     await bobLobbyPage.expectHostControls(false)
   })
 
-  const { aliceRoundPage, bobRoundPage } = await test.step("the host starts", async () => {
-    const aliceRoundPage = await aliceLobbyPage.startGame()
+  await test.step("the host renames herself with Enter, which saves the name and does not start the game", async () => {
+    await aliceLobbyPage.renameWithEnter("Alicia")
+    await bobLobbyPage.players.waitForPlayer("Alicia")
+    await aliceLobbyPage.renameWithEnter("Alice")
+    await bobLobbyPage.players.waitForPlayer("Alice")
+    await aliceLobbyPage.expectHostControls()
+  })
+
+  const { aliceRoundPage, bobRoundPage } = await test.step("the host starts with Enter", async () => {
+    const aliceRoundPage = await aliceLobbyPage.startGameWithKeyboard()
     const bobRoundPage = await bobLobbyPage.waitForGameToStart()
     return { aliceRoundPage, bobRoundPage }
   })

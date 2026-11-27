@@ -2,6 +2,7 @@ import type { GameView } from "@whereabouts/shared/protocol/views"
 import { useGameService } from "../../../../game-service/use-game-service"
 import { HostWord } from "../../../../ui/players/HostWord"
 import { canStart } from "../../../../ui/players/seat-rules"
+import { useEnterKey } from "../../../../keyboard/use-enter-key"
 import { Icon } from "../../../../ui/icons"
 import { VrButton } from "../../../../ui/VrButton/VrButton"
 import type { VrView } from "../../../../vr/view/view"
@@ -13,10 +14,12 @@ import { SetupSummary } from "../SetupSummary/SetupSummary"
 import { setupPanelTestIds } from "./SetupPanelTestIds"
 import styles from "./SetupPanel.module.css"
 
-/** The right panel: the game's setup, this device's switches, and the way to start. */
+/** The right panel: the game's setup, this device's switches, and the way to start (the Start button, or Enter). */
 export const SetupPanel = ({ view, vrView }: { view: GameView; vrView: VrView }) => {
   const game = useGameService()
   const host = view.you.isHost
+  const startable = host && canStart(view, game.online.value)
+  useEnterKey(startable ? () => game.start() : undefined)
   return (
     <LobbyPanel>
       <h2>Game setup</h2>
@@ -39,7 +42,7 @@ export const SetupPanel = ({ view, vrView }: { view: GameView; vrView: VrView })
             class="primary big"
             data-testid={setupPanelTestIds.startButton}
             onClick={() => game.start()}
-            disabled={!canStart(view, game.online.value)}
+            disabled={!startable}
             title={!canStart(view, true) ? "Someone needs to play: take a seat, or wait for a player" : undefined}
           >
             <Icon name="play" /> Start game
