@@ -1,6 +1,6 @@
 // The awkward multiplayer paths, against the in-process server: a refresh
 // mid-round keeps the seat and paint, a late joiner sits a round out then
-// plays (and passes), the one hint is used up, and Play again leads back to the same lobby. Bob is
+// plays (and passes), the one hint is used up, and Play again (Enter) leads back to the same lobby. Bob is
 // seated by the server, with no tab of his own.
 import { HintAxis } from "@whereabouts/shared/hints"
 import { evenMix } from "@whereabouts/shared/protocol/config"
@@ -114,7 +114,7 @@ test("flows", async ({ browser, game }) => {
     aliceTab.connection!.restore()
     await aliceResultsPage.expectPlayAgainAvailable()
 
-    await aliceResultsPage.playAgain()
+    await aliceResultsPage.playAgainWithKeyboard()
     const caraLobbyAgainPage = await caraResultsPage.waitForLobby()
     await caraLobbyAgainPage.expectCode(code)
     await caraLobbyAgainPage.players.expectCount(3)

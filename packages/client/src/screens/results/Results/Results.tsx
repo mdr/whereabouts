@@ -14,6 +14,7 @@ import { cx } from "../../../ui/cx"
 import kit from "../../../ui/kit.module.css"
 import { VrButton, useVrView } from "../../../ui/VrButton/VrButton"
 import { navigate } from "../../../router"
+import { useEnterKey } from "../../../keyboard/use-enter-key"
 import { VrViewType, type VrView } from "../../../vr/view/view"
 import { Awards } from "../Awards/Awards"
 import { Rounds } from "../Rounds/Rounds"
@@ -22,9 +23,14 @@ import { Standings } from "../Standings/Standings"
 import { resultsTestIds } from "./ResultsTestIds"
 import styles from "./Results.module.css"
 
+/** Enter plays again, for the host while connected. */
+const usePlayAgainKey = (host: boolean, online: boolean, again: () => void): void =>
+  useEnterKey(host && online ? again : undefined)
+
 export const Results = ({ view }: { view: ResultsGameView }) => {
   const game = useGameService()
   const online = game.online.value
+  usePlayAgainKey(view.you.isHost, online, () => game.again())
   const alone = game.mode === GameMode.PRACTICE
   const standings = view.results
   const standingById = new Map(standings.map((standing) => [standing.playerId, standing]))

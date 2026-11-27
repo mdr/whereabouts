@@ -112,6 +112,12 @@ export class ResultsPage extends Screen {
     return LobbyPage.whenShown(this.tab, 10_000)
   }
 
+  /** Host: everyone back to the same lobby, by pressing Enter. */
+  async playAgainWithKeyboard(): Promise<LobbyPage> {
+    await this.page.keyboard.press("Enter")
+    return LobbyPage.whenShown(this.tab, 10_000)
+  }
+
   async waitForLobby(): Promise<LobbyPage> {
     return LobbyPage.whenShown(this.tab, 10_000)
   }
